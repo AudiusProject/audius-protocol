@@ -87,6 +87,7 @@ from src.api.v1.models.users import (
     challenge_response,
     connected_wallets,
     decoded_user_token,
+    email_access,
     encoded_user_id,
     purchase,
     remixed_track_aggregate,
@@ -2553,8 +2554,6 @@ class FullPurchasesCount(Resource):
     @full_ns.marshal_with(purchases_count_response)
     def get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, full_ns)
-        if decoded_id and not is_authorized_request(decoded_id):
-            abort(403, message="You are not authorized to access this resource")
         args = purchases_and_sales_count_parser.parse_args()
         content_ids = args.get("content_ids", [])
         decoded_content_ids = decode_ids_array(content_ids) if content_ids else []
@@ -2610,8 +2609,6 @@ class FullSalesCount(Resource):
     @full_ns.marshal_with(purchases_count_response)
     def get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, full_ns)
-        if decoded_id and not is_authorized_request(decoded_id):
-            abort(403, message="You are not authorized to access this resource")
         args = purchases_and_sales_count_parser.parse_args()
         content_ids = args.get("content_ids", [])
         decoded_content_ids = decode_ids_array(content_ids) if content_ids else []
@@ -3128,8 +3125,8 @@ class FullMutedUsers(Resource):
         return success_response(muted_users)
 
 
-email_key_response = make_response(
-    "email_key_response", ns, fields.String(required=False, allow_null=True)
+email_access_response = make_response(
+    "email_access_response", ns, fields.Nested(email_access, allow_null=True)
 )
 
 
@@ -3146,7 +3143,7 @@ class UserEmailKey(Resource):
         },
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
-    @ns.marshal_with(email_key_response)
+    @ns.marshal_with(email_access_response)
     @cache(ttl_sec=5)
     def get(self, receiving_user_id, grantor_user_id):
         receiving_user_id = decode_with_abort(receiving_user_id, ns)
@@ -3166,4 +3163,4 @@ class UserEmailKey(Resource):
             if not email_access:
                 return success_response(None)
 
-            return success_response(email_access.encrypted_key)
+            return success_response(email_access.to_dict())

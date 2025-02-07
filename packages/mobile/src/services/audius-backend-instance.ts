@@ -1,8 +1,8 @@
 import { audiusBackend } from '@audius/common/services'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
-import { env } from 'app/env'
 import { track } from 'app/services/analytics'
+import { env } from 'app/services/env'
 import { reportToSentry } from 'app/utils/reportToSentry'
 
 import { monitoringCallbacks } from './monitoringCallbacks'

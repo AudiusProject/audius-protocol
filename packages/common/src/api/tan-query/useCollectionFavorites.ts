@@ -57,7 +57,7 @@ export const useCollectionFavorites = (
       return users
     },
     select: (data) => data.pages.flat(),
-    staleTime: options?.staleTime,
+    ...options,
     enabled: options?.enabled !== false && !!collectionId
   })
 }

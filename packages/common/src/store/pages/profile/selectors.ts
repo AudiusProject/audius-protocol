@@ -38,6 +38,8 @@ export const getProfileCollectionSortMode = (
   state: CommonState,
   handle: string
 ) => getProfile(state, handle)?.collectionSortMode
+export const getCollectionsStatus = (state: CommonState, handle?: string) =>
+  getProfile(state, handle)?.collectionStatus as Status
 export const getIsSubscribed = (state: CommonState, handle?: string) =>
   getProfile(state, handle)?.isNotificationSubscribed
 export const getProfileUser = (

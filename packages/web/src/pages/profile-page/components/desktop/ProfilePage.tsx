@@ -14,7 +14,8 @@ import {
   Status,
   ID,
   ProfilePictureSizes,
-  User
+  User,
+  Collection
 } from '@audius/common/models'
 import {
   profilePageFeedLineupActions as feedActions,
@@ -106,6 +107,8 @@ export type ProfilePageProps = {
   showMuteUserConfirmationModal: boolean
 
   profile: User | null
+  albums: Collection[] | null
+  playlists: Collection[] | null
   status: Status
 
   // Methods

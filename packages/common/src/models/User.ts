@@ -112,8 +112,6 @@ export type User = UserMetadata & ComputedUserProperties
 
 export type WriteableUserMetadata = User & {
   events?: UserEvent
-  associated_sol_wallets?: Nullable<Record<string, { signature: string }>>
-  associated_wallets?: Nullable<Record<string, { signature: string }>>
 }
 
 export type CachedAccount = {

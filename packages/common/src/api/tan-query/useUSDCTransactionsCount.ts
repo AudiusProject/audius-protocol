@@ -44,7 +44,7 @@ export const useUSDCTransactionsCount = (
       })
       return data ?? 0
     },
-    staleTime: options?.staleTime,
+    ...options,
     enabled: options?.enabled !== false && !!currentUserId
   })
 }

@@ -64,7 +64,7 @@ export const useUserTracksByHandle = (
 
       return tracks
     },
-    staleTime: options?.staleTime,
+    ...options,
     enabled: options?.enabled !== false && !!handle
   })
 }

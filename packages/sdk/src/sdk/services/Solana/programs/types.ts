@@ -5,6 +5,7 @@ import {
 } from '@solana/web3.js'
 import { z } from 'zod'
 
+import type { LoggerService } from '../../Logger'
 import { PublicKeySchema, type SolanaWalletAdapter } from '../types'
 
 export type SolanaClientConfigInternal = {
@@ -12,6 +13,7 @@ export type SolanaClientConfigInternal = {
   rpcEndpoints: string[]
   /** Configuration to use for the RPC connection. */
   rpcConfig?: ConnectionConfig
+  logger: LoggerService
 }
 
 export type SolanaClientConfig = Partial<SolanaClientConfigInternal> & {
@@ -98,9 +100,15 @@ export const BuildTransactionSchema = z
         z.object({
           /**
            * Specify the precise percentile (0-100) of recent priority fees
-           * to use as this transactions priority fee per compute unit.
+           * to use as this transaction's base priority fee per compute unit.
            */
           percentile: z.number().min(0).max(100),
+          /**
+           * Multiply the base priority fee per compute unit by some factor.
+           * For example a multiplier of 2 and percentile of 50 will set the
+           * priority fee to twice the median.
+           */
+          multiplier: z.number().min(0).optional(),
           /**
            * The minimum microLamports to use as the priority fee per compute
            * unit, regardless of the percentiles.
@@ -119,6 +127,12 @@ export const BuildTransactionSchema = z
            */
           priority: PrioritySchema,
           /**
+           * Multiply the base priority fee per compute unit by some factor.
+           * For example a multiplier of 2 and percentile of 50 will set the
+           * priority fee to twice the median.
+           */
+          multiplier: z.number().min(0).optional(),
+          /**
            * The minimum microLamports to use as the priority fee per compute
            * unit, regardless of the percentiles.
            */
@@ -128,6 +142,24 @@ export const BuildTransactionSchema = z
            * unit, regardless of the percentiles.
            */
           maximumMicroLamports: z.number().min(0).optional()
+        })
+      ])
+      .nullable()
+      .optional(),
+    computeLimit: z
+      .union([
+        z.object({
+          /**
+           * Set hard limit on the compute units used.
+           */
+          units: z.number().min(0)
+        }),
+        z.object({
+          /**
+           * Simulate the transaction and multiply the simulated unitsConsumed
+           * by this number to find the budget limit.
+           */
+          simulationMultiplier: z.number().min(0)
         })
       ])
       .nullable()

@@ -4,15 +4,16 @@ import { useCallback } from 'react'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 
+import artist2Hollis from 'assets/img/publicSite/Artist-2hollis.webp'
+import artistAlinaBaraz from 'assets/img/publicSite/Artist-AlinaBaraz.webp'
 import artistAluna from 'assets/img/publicSite/Artist-Aluna.webp'
-import artistDeadmau5 from 'assets/img/publicSite/Artist-Deadmau5.webp'
-import artistDiplo from 'assets/img/publicSite/Artist-Diplo.webp'
-import artistKennyBeats from 'assets/img/publicSite/Artist-Kenny-Beats.webp'
-import artistLoloZouai from 'assets/img/publicSite/Artist-Lolo-Zouai.webp'
-import artistMattOX from 'assets/img/publicSite/Artist-Matt-OX.webp'
-import artistRezz from 'assets/img/publicSite/Artist-Rezz.webp'
+import artistColdbrew from 'assets/img/publicSite/Artist-Coldbrew.webp'
+import artistConnorPrice from 'assets/img/publicSite/Artist-ConnorPrice.webp'
+import artistDisclosure from 'assets/img/publicSite/Artist-Disclosure.webp'
+import artistKatoOnTheTrack from 'assets/img/publicSite/Artist-KatoOnTheTrack.webp'
+import artistMollyMcPhaul from 'assets/img/publicSite/Artist-MollyMcPhaul.webp'
+import artistRLGrime from 'assets/img/publicSite/Artist-RLGrime.webp'
 import artistSkrillex from 'assets/img/publicSite/Artist-Skrillex.webp'
-import artistZedd from 'assets/img/publicSite/Artist-Zedd.webp'
 import useHasViewed from 'hooks/useHasViewed'
 
 import styles from './WhoUsesAudius.module.css'
@@ -20,7 +21,7 @@ import styles from './WhoUsesAudius.module.css'
 const messages = {
   title: 'Who Uses Audius?',
   subtitle:
-    'Thousands of artists across dozens of genres—including electronic, hip-hop, and more—use Audius to forge unparalleled connections with fans.'
+    'Hundreds of thousands of artists across dozens of genres—including electronic, hip-hop, and more—use Audius to forge deep relationships with fans.'
 }
 
 type AristProps = {
@@ -66,9 +67,14 @@ const MobileArtist = (props: AristProps) => {
 
 const artists = [
   {
-    name: 'deadmau5',
-    handle: 'deadmau5',
-    imageUrl: artistDeadmau5
+    name: 'Disclosure',
+    handle: 'disclosure',
+    imageUrl: artistDisclosure
+  },
+  {
+    name: 'Alina Baraz',
+    handle: 'alinabaraz',
+    imageUrl: artistAlinaBaraz
   },
   {
     name: 'Skrillex',
@@ -76,19 +82,9 @@ const artists = [
     imageUrl: artistSkrillex
   },
   {
-    name: 'Zedd',
-    handle: 'zedd',
-    imageUrl: artistZedd
-  },
-  {
-    name: 'Kenny Beats',
-    handle: 'kennybeats',
-    imageUrl: artistKennyBeats
-  },
-  {
-    name: 'Matt OX',
-    handle: 'mattox',
-    imageUrl: artistMattOX
+    name: 'RL Grime',
+    handle: 'rlgrime',
+    imageUrl: artistRLGrime
   },
   {
     name: 'Aluna',
@@ -96,19 +92,29 @@ const artists = [
     imageUrl: artistAluna
   },
   {
-    name: 'Diplo',
-    handle: 'diplo',
-    imageUrl: artistDiplo
+    name: '2Hollis',
+    handle: 'drippysoup',
+    imageUrl: artist2Hollis
   },
   {
-    name: 'Lolo Zouai',
-    handle: 'lolozouai',
-    imageUrl: artistLoloZouai
+    name: 'Molly McPhaul',
+    handle: 'mollymcphaul',
+    imageUrl: artistMollyMcPhaul
   },
   {
-    name: 'Rezz',
-    handle: 'officialrezz',
-    imageUrl: artistRezz
+    name: 'Connor Price',
+    handle: 'connorprice_',
+    imageUrl: artistConnorPrice
+  },
+  {
+    name: 'Kato On The Track',
+    handle: 'katoproducer',
+    imageUrl: artistKatoOnTheTrack
+  },
+  {
+    name: 'Coldbrew',
+    handle: 'coldbrew',
+    imageUrl: artistColdbrew
   }
 ]
 

@@ -39,7 +39,7 @@ export const useTrendingPlaylists = (
     pageSize = DEFAULT_PAGE_SIZE,
     time = full.GetTrendingPlaylistsTimeEnum.Week
   }: UseTrendingPlaylistsArgs = {},
-  config?: QueryOptions
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
@@ -87,8 +87,8 @@ export const useTrendingPlaylists = (
 
       return processedPlaylists
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false
+    ...options,
+    enabled: options?.enabled !== false
   })
 
   const lineupData = useLineupQuery({

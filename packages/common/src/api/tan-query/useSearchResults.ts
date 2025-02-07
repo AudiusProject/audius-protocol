@@ -264,7 +264,7 @@ const useSearchQueryProps = (
     select: (data: InfiniteData<any[]>) => {
       return data?.pages?.flat()
     },
-    staleTime: options?.staleTime,
+    ...options,
     enabled: options?.enabled !== false && currentUserId !== undefined
   }
 }

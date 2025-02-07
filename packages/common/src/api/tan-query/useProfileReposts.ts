@@ -37,7 +37,7 @@ export const getProfileRepostsQueryKey = ({
 
 export const useProfileReposts = (
   { handle, pageSize = DEFAULT_PAGE_SIZE }: UseProfileRepostsArgs,
-  config?: QueryOptions
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
@@ -95,8 +95,8 @@ export const useProfileReposts = (
 
       return reposts
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!handle
+    ...options,
+    enabled: options?.enabled !== false && !!handle
   })
 
   const lineupData = useLineupQuery({

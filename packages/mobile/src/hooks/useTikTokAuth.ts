@@ -11,8 +11,8 @@ import {
   events as tikTokEvents
 } from 'react-native-tiktok'
 
-import { env } from 'app/env'
 import { track, make } from 'app/services/analytics'
+import { env } from 'app/services/env'
 import { dispatch } from 'app/store'
 import * as oauthActions from 'app/store/oauth/actions'
 import { Provider } from 'app/store/oauth/reducer'
