@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 
 import { route } from '@audius/common/utils'
 import {
-  IconAudiusLogoHorizontalNew,
+  IconAudiusLogoHorizontalColorNew,
   IconKebabHorizontal,
   IconCloudDownload,
   IconCaretDown,
@@ -133,7 +133,7 @@ const NavBanner = (props: NavBannerProps) => {
         })}
       >
         <div className={styles.leftLogo}>
-          <IconAudiusLogoHorizontalNew className={styles.horizontalLogo} />
+          <IconAudiusLogoHorizontalColorNew className={styles.horizontalLogo} />
         </div>
         <UnstyledButton
           style={{ cursor: 'pointer' }}
@@ -157,7 +157,9 @@ const NavBanner = (props: NavBannerProps) => {
       <div className={styles.contentContainer}>
         <div className={styles.leftLogo}>
           <Link to={TRENDING_PAGE}>
-            <IconAudiusLogoHorizontalNew className={styles.horizontalLogo} />
+            <IconAudiusLogoHorizontalColorNew
+              className={styles.horizontalLogo}
+            />
           </Link>
         </div>
         <div className={styles.linkContainer}>
