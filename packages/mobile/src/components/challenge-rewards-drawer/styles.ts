@@ -40,9 +40,6 @@ export const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     flexDirection: 'row',
     justifyContent: 'center'
   },
-  rewardCell: {
-    justifyContent: 'center'
-  },
   progressCell: {
     flex: 1,
     paddingLeft: spacing(4),
