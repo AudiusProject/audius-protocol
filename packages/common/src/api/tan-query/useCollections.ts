@@ -47,7 +47,6 @@ export const useCollections = (
       return collectionIds?.map((id) => collectionsMap[id])
     },
     ...options,
-    placeholderData: (prev) => prev,
     enabled: options?.enabled !== false && !!collectionIds
   })
 }
