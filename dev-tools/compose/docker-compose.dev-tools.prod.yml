@@ -21,6 +21,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
   audius-cmd:
+    args:
+      TURBO_TEAM: '${TURBO_TEAM:-}'
+      TURBO_TOKEN: '${TURBO_TOKEN:-}'
     build:
       context: ${PROJECT_ROOT}
       dockerfile: ${PROJECT_ROOT}/packages/commands/Dockerfile.prod
