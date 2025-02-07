@@ -60,9 +60,9 @@ def _genre_based_related_artists(
     session: Session,
     user_id: int,
     current_user_id: int,
-    filter_followed: bool,
     limit=100,
     offset=0,
+    filter_followed=False,
 ):
     result = session.execute(
         _genre_based_sql,
@@ -71,6 +71,7 @@ def _genre_based_related_artists(
             "current_user_id": current_user_id,
             "filter_followed": filter_followed,
             "limit": limit,
+            "offset": offset,
         },
     ).fetchall()
     user_ids = [r["user_id"] for r in result]
@@ -90,7 +91,7 @@ def get_related_artists(
     users = []
     with db.scoped_session() as session:
         users = _genre_based_related_artists(
-            session, user_id, current_user_id, filter_followed, limit, offset
+            session, user_id, current_user_id, limit, offset, filter_followed
         )
         user_ids = list(map(lambda user: user["user_id"], users))
         users = populate_user_metadata(session, user_ids, users, current_user_id)
