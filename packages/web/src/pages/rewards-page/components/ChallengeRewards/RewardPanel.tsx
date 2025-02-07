@@ -93,7 +93,6 @@ export const RewardPanel = ({
   return (
     <Paper
       onClick={openRewardModal}
-      h={PANEL_HEIGHT}
       flex={`0 0 calc(50% - ${spacing.unit4}px)`}
       column
       m='s'
@@ -101,6 +100,7 @@ export const RewardPanel = ({
       border='strong'
       css={{
         minWidth: PANEL_WIDTH,
+        minHeight: PANEL_HEIGHT,
         backgroundColor: hasDisbursed ? color.neutral.n25 : undefined
       }}
     >
