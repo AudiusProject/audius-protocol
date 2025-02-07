@@ -1,5 +1,6 @@
 import { OptionalId } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { keyBy } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
@@ -68,7 +69,8 @@ export const useTracks = (
         dispatch(addEntries(entries, undefined, undefined, 'react-query'))
       }
 
-      return tracks
+      const tracksMap = keyBy(tracks, 'track_id')
+      return trackIds?.map((id) => tracksMap[id])
     },
     ...options,
     enabled: options?.enabled !== false && !!trackIds
