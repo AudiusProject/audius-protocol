@@ -76,6 +76,8 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.prod
       args:
         app_name: solana-relay
+        TURBO_TEAM: '${TURBO_TEAM:-}'
+        TURBO_TOKEN: '${TURBO_TOKEN:-}'
     env_file: .env # used by the startup script
     environment:
       audius_solana_rewards_manager_program_address: '${SOLANA_REWARD_MANAGER_PUBLIC_KEY}'
@@ -150,6 +152,8 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.prod
       args:
         app_name: verified-notifications
+        TURBO_TEAM: '${TURBO_TEAM:-}'
+        TURBO_TOKEN: '${TURBO_TOKEN:-}'
     restart: on-failure
     profiles:
       - pedalboard
