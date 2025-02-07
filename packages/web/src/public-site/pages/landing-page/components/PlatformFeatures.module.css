@@ -94,6 +94,7 @@
   display: inline-flex;
   align-items: center;
   min-width: 430px;
+  gap: 24px;
 }
 
 .featureIconContainer {
@@ -109,7 +110,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 24px;
 }
 
 .featureIconContainer path {

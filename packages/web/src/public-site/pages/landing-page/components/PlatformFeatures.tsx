@@ -26,7 +26,6 @@ type FeatureProps = {
   title: string
   description: string | ReactNode
   icon: ReactNode
-  iconPosition: 'above' | 'side'
 }
 
 const features: Array<Omit<FeatureProps, 'iconPosition'>> = [
@@ -75,9 +74,8 @@ const features: Array<Omit<FeatureProps, 'iconPosition'>> = [
 const Feature = (props: FeatureProps) => {
   return (
     <div className={styles.feature}>
-      {props.iconPosition === 'side' ? props.icon : null}
+      {props.icon}
       <div className={styles.featureText}>
-        {props.iconPosition === 'above' ? props.icon : null}
         <div className={styles.featureTitle}>{props.title}</div>
         <div className={styles.featureDescription}>{props.description}</div>
       </div>
@@ -153,11 +151,7 @@ const PlatformFeatures = (props: PlatformFeaturesProps) => {
           ) : null}
           <div className={styles.features}>
             {features.map((feature) => (
-              <Feature
-                iconPosition={!props.isMobile && isNarrow ? 'above' : 'side'}
-                key={feature.title}
-                {...feature}
-              />
+              <Feature key={feature.title} {...feature} />
             ))}
           </div>
         </div>
