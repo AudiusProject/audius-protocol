@@ -331,6 +331,9 @@ export const makeOptimisticChallengeSortComparator = (
     if (userChallenge1?.claimableAmount > 0) {
       return -1
     }
+    if (userChallenge2?.claimableAmount > 0) {
+      return 1
+    }
     if (
       userChallenge1?.challenge_id &&
       isNewChallenge(userChallenge1?.challenge_id)
@@ -340,18 +343,9 @@ export const makeOptimisticChallengeSortComparator = (
     if (userChallenge1?.state === 'disbursed') {
       return 1
     }
-    // if (userChallenge1?.state === 'completed') {
-    //   return -1
-    // }
     if (userChallenge2?.state === 'disbursed') {
       return -1
     }
-    if (userChallenge2?.claimableAmount > 0) {
-      return 1
-    }
-    // if (userChallenge2?.state === 'completed') {
-    //   return 1
-    // }
     return 0
   }
 }
