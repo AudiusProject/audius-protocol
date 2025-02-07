@@ -84,7 +84,7 @@ services:
       - discovery
 
   discovery-provider-elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.1
     environment:
       discovery.type: single-node
       xpack.security.enabled: false
