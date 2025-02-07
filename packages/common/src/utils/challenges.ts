@@ -1,6 +1,5 @@
 import {
   ChallengeRewardID,
-  UserChallenge,
   UndisbursedUserChallenge,
   OptimisticUserChallenge,
   ChallengeName,
@@ -318,32 +317,6 @@ export const challengeRewardsConfig: Record<
   }
 }
 
-export const makeChallengeSortComparator = (
-  userChallenges: Record<string, UserChallenge>
-): ((id1: ChallengeRewardID, id2: ChallengeRewardID) => number) => {
-  return (id1, id2) => {
-    const userChallenge1 = userChallenges[id1]
-    const userChallenge2 = userChallenges[id2]
-
-    if (!userChallenge1 || !userChallenge2) {
-      return 0
-    }
-    if (userChallenge1.is_disbursed) {
-      return 1
-    }
-    if (userChallenge1.is_complete) {
-      return -1
-    }
-    if (userChallenge2.is_disbursed) {
-      return -1
-    }
-    if (userChallenge2.is_complete) {
-      return 1
-    }
-    return 0
-  }
-}
-
 export const makeOptimisticChallengeSortComparator = (
   userChallenges: Partial<Record<ChallengeRewardID, OptimisticUserChallenge>>
 ): ((id1: ChallengeRewardID, id2: ChallengeRewardID) => number) => {
@@ -351,32 +324,26 @@ export const makeOptimisticChallengeSortComparator = (
     const userChallenge1 = userChallenges[id1]
     const userChallenge2 = userChallenges[id2]
 
-    if (
-      userChallenge1?.challenge_id &&
-      isNewChallenge(userChallenge1?.challenge_id)
-    ) {
-      return -1
-    }
     if (!userChallenge1 || !userChallenge2) {
       return 0
     }
     if (userChallenge1?.claimableAmount > 0) {
       return -1
     }
-    if (userChallenge1?.state === 'disbursed') {
-      return 1
-    }
-    if (userChallenge1?.state === 'completed') {
-      return -1
-    }
-    if (userChallenge2?.state === 'disbursed') {
-      return -1
-    }
     if (userChallenge2?.claimableAmount > 0) {
       return 1
     }
-    if (userChallenge2?.state === 'completed') {
+    if (
+      userChallenge1?.challenge_id &&
+      isNewChallenge(userChallenge1?.challenge_id)
+    ) {
+      return -1
+    }
+    if (userChallenge1?.state === 'disbursed') {
       return 1
+    }
+    if (userChallenge2?.state === 'disbursed') {
+      return -1
     }
     return 0
   }
