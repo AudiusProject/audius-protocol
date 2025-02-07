@@ -355,9 +355,9 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
       border='strong'
       w='100%'
       justifyContent='center'
-      ph='xl'
       pv='l'
       borderRadius='s'
+      backgroundColor='surface1'
     >
       {challenge?.challenge_id === ChallengeName.OneShot &&
       challenge?.state === 'incomplete' ? (
@@ -667,16 +667,11 @@ export const ChallengeRewardsModal = () => {
     dispatch(resetAndCancelClaimReward())
   }, [dispatch, setOpen])
 
-  const { title, icon } = getChallengeConfig(modalType)
+  const { title } = getChallengeConfig(modalType)
 
   return (
     <ModalDrawer
-      title={
-        <>
-          {icon}
-          {title}
-        </>
-      }
+      title={title}
       showTitleHeader
       isOpen={isOpen}
       onClose={onClose}

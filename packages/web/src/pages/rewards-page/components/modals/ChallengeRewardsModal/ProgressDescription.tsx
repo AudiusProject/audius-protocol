@@ -11,7 +11,7 @@ export const ProgressDescription = ({
   description: ReactNode
 }) => {
   return (
-    <Flex column gap='m' p='xl'>
+    <Flex column gap='m' pv='s'>
       <Text variant='body'>{description}</Text>
     </Flex>
   )
