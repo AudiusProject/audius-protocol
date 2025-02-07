@@ -41,7 +41,8 @@ const messages = {
   claimedLabel: '$AUDIO claimed so far',
   upcomingRewards: 'Upcoming Rewards',
   readyToClaim: 'Ready to Claim',
-  close: 'Close'
+  close: 'Close',
+  claiming: 'Claiming'
 }
 
 type ChallengeRewardsDrawerContentProps = {
@@ -216,12 +217,14 @@ export const ChallengeRewardsDrawerContent = ({
           <Button
             key='claimButton'
             style={styles.claimButton}
-            variant={claimInProgress ? 'secondary' : 'primary'}
+            variant={'primary'}
             isLoading={claimInProgress}
             onPress={onClaim}
-            iconRight={IconArrowRight}
+            iconRight={claimInProgress ? null : IconArrowRight}
           >
-            {messages.claimableAmountLabel(claimableAmount)}
+            {claimInProgress
+              ? messages.claiming
+              : messages.claimableAmountLabel(claimableAmount)}
           </Button>
         ) : (
           <Button variant='secondary' onPress={onClose} fullWidth>
