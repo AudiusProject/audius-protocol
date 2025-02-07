@@ -2,7 +2,11 @@ import { ReactNode, useCallback } from 'react'
 
 import { ChallengeName } from '@audius/common/models'
 import { audioRewardsPageSelectors, ClaimStatus } from '@audius/common/store'
-import { challengeRewardsConfig } from '@audius/common/utils'
+import {
+  challengeRewardsConfig,
+  fillString,
+  formatNumberCommas
+} from '@audius/common/utils'
 import { Button, Flex, IconVerified, Text, IconCheck } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -90,7 +94,15 @@ export const DefaultChallengeContent = ({
           <IconCheck size='s' color='subdued' />
         ) : null}
         <Text variant='label' size='l' strength='strong' color='subdued'>
-          {progressLabel}
+          {progressLabel
+            ? fillString(
+                progressLabel,
+                formatNumberCommas(
+                  challenge?.current_step_count?.toString() ?? ''
+                ),
+                formatNumberCommas(challenge?.max_steps?.toString() ?? '')
+              )
+            : null}
         </Text>
       </Flex>
     </Flex>
