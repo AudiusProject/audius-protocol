@@ -12,7 +12,6 @@
     "test:watch": "jest --watchAll",
     "test": "jest --runInBand --forceExit --updateSnapshot",
     "test-push": "ts-node scripts/test-push-notification.ts",
-    "test-gen": "jest --updateSnapshot",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],
