@@ -308,9 +308,12 @@ export const challengeRewardsConfig: Record<
     id: 'trending-underground'
   },
   o: {
-    title: 'Airdrop - Februrary 2025',
-    description: () => 'Claim your $AUDIO before it expires!',
-    fullDescription: () => 'Claim your $AUDIO before it expires!',
+    title: 'Airdrop 2: Artist Appreciation',
+    description: () =>
+      `We're thrilled to reward our talented artist community for driving Audius' growth and success! \n\n Claim your tokens before they expire on 05/13/25!`,
+    fullDescription: () =>
+      `We're thrilled to reward our talented artist community for driving Audius' growth and success! \n\n Claim your tokens before they expire on 05/13/25!`,
+
     panelButtonText: '',
     id: ChallengeName.OneShot,
     remainingLabel: 'Ineligible',
