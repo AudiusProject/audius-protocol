@@ -371,26 +371,6 @@ export function* updateProfileAsync(action) {
     ])
   )
 
-  // // Get existing metadata and combine with it
-  // const cid = metadata.metadata_multihash ?? null
-  // if (cid) {
-  //   try {
-  //     const {
-  //       data: { data }
-  //     } = yield call([sdk.full.cidData, sdk.full.cidData.getMetadata], {
-  //       metadataId: cid
-  //     })
-  //     const collectibles = metadata.collectibles
-  //     metadata = merge(data, metadata)
-  //     metadata.collectibles = collectibles
-  //   } catch (e) {
-  //     // Although we failed to fetch the existing user metadata, this should only
-  //     // happen if the user's account data is unavailable across the whole network.
-  //     // In favor of availability, we write anyway.
-  //     console.error(e)
-  //   }
-  // }
-
   // For base64 images (coming from native), convert to a blob
   if (metadata.updatedCoverPhoto?.type === 'base64') {
     metadata.updatedCoverPhoto.file = dataURLtoFile(

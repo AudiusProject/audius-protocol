@@ -15,6 +15,7 @@ export const getUserCollectiblesQueryKey = ({
   userId
 }: GetUserCollectiblesArgs) => [QUERY_KEYS.userCollectibles, userId]
 
+/** Returns the user's known/ordered collectibles list if they have been set */
 export const useUserCollectibles = (
   args: GetUserCollectiblesArgs,
   options?: QueryOptions
