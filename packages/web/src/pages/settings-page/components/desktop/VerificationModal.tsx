@@ -346,7 +346,7 @@ const VerificationModal = (props: VerificationModalProps) => {
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        showDismissButton={canDismiss}
+        showDismissButton
         dismissOnClickOutside={canDismiss}
         showTitleHeader
         title={messages.title}
