@@ -291,7 +291,7 @@ export const TanQueryLineup = ({
           pauseTrack: pause,
           playingTrackId,
           togglePlay,
-          isLoading: slicedLineup.entries[index] === undefined,
+          isLoading: lineupQueryData.data?.[index] === undefined,
           numLoadingSkeletonRows: numPlaylistSkeletonRows,
           isTrending,
           source: ModalSource.LineUpCollectionTile,
@@ -326,13 +326,13 @@ export const TanQueryLineup = ({
         {Array(skeletonCount)
           .fill(null)
           .map((_, index) => {
-            // @ts-ignore - TODO: these types werent being enforced before - something smelly here
             return (
               <li
                 key={index}
                 className={cn({ [tileStyles!]: !!tileStyles })}
                 css={{ listStyle: 'none' }}
               >
+                {/* @ts-ignore - TODO: these types werent being enforced before */}
                 <TrackTile {...skeletonTileProps(index)} key={index} />
               </li>
             )
