@@ -4,14 +4,12 @@ import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
-import { Kind } from '~/models/Kind'
-import { addEntries } from '~/store/cache/actions'
-import { EntriesByKind } from '~/store/cache/types'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
-import { getUserQueryKey } from './useUser'
+import { useUser } from './useUser'
+import { primeUserData } from './utils/primeUserData'
 
 export const getUserByHandleQueryKey = (handle: string | null | undefined) => [
   QUERY_KEYS.userByHandle,
@@ -27,7 +25,7 @@ export const useUserByHandle = (
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
 
-  return useQuery({
+  const { data: userId } = useQuery({
     queryKey: getUserByHandleQueryKey(handle),
     queryFn: async () => {
       if (!handle) return null
@@ -40,21 +38,18 @@ export const useUserByHandle = (
 
       // Prime the user query cache with user data
       if (user) {
-        queryClient.setQueryData(getUserQueryKey(user.user_id), user)
-
-        // Sync user data to Redux
-        const entries: EntriesByKind = {
-          [Kind.USERS]: {
-            [user.user_id]: user
-          }
-        }
-
-        dispatch(addEntries(entries, undefined, undefined, 'react-query'))
+        primeUserData({
+          users: [user],
+          queryClient,
+          dispatch
+        })
       }
 
-      return user
+      return user?.user_id
     },
     ...options,
     enabled: options?.enabled !== false && !!handle
   })
+
+  return useUser(userId)
 }
