@@ -10,8 +10,7 @@ import {
   IconNotificationOn,
   IconButton,
   IconGift,
-  Flex,
-  spacing
+  Flex
 } from '@audius/harmony'
 import cn from 'classnames'
 import { History } from 'history'
