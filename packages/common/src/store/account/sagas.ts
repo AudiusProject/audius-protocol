@@ -224,20 +224,6 @@ export function* fetchAccountAsync({
     )
   }
 
-  if (accountData?.user?.metadata_multihash) {
-    const { data: accountCidData } = yield* call(
-      [sdk.full.cidData, sdk.full.cidData.getMetadata],
-      {
-        metadataId: accountData?.user?.metadata_multihash
-      }
-    )
-    // @ts-expect-error type of accountCidData is opaque
-    accountData.user = {
-      ...accountData.user,
-      ...(accountCidData?.data ?? {})
-    }
-  }
-
   const guestEmailFromLocalStorage = yield* call(
     [localStorage, localStorage.getItem],
     'guestEmail'
