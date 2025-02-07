@@ -340,7 +340,9 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
           {messages.verifiedChallenge}
         </div>
       ) : null}
-      <Text variant='body'>{fullDescription?.(challenge)}</Text>
+      <Text variant='body' style={{ whiteSpace: 'pre-line' }}>
+        {fullDescription?.(challenge)}
+      </Text>
       {isCooldownChallenge ? (
         <Text variant='body' color='subdued'>
           {messages.cooldownDescription}
