@@ -4,11 +4,12 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
-import { ID, UserMetadata } from '~/models'
+import { ID } from '~/models'
 import { getUserId } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
+import { useUsers } from './useUsers'
 import { primeUserData } from './utils/primeUserData'
 
 const DEFAULT_PAGE_SIZE = 20
@@ -32,10 +33,10 @@ export const useMutualFollowers = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  return useInfiniteQuery({
+  const { data: userIds } = useInfiniteQuery({
     queryKey: getMutualFollowersQueryKey({ userId, pageSize }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: UserMetadata[], allPages) => {
+    getNextPageParam: (lastPage: ID[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -49,10 +50,12 @@ export const useMutualFollowers = (
       })
       const users = userMetadataListFromSDK(data)
       primeUserData({ users, queryClient, dispatch })
-      return users
+      return users?.map((user) => user.user_id)
     },
     select: (data) => data.pages.flat(),
     ...options,
     enabled: options?.enabled !== false && !!userId && !!currentUserId
   })
+
+  return useUsers(userIds)
 }

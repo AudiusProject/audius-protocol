@@ -8,6 +8,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
+import { useCollections } from './useCollections'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeCollectionData } from './utils/primeCollectionData'
 
@@ -39,7 +40,7 @@ export const useUserAlbums = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  return useQuery({
+  const { data: collectionIds } = useQuery({
     queryKey: getUserAlbumsQueryKey(params),
     queryFn: async () => {
       if (!userId) return []
@@ -60,9 +61,11 @@ export const useUserAlbums = (
 
       primeCollectionData({ collections, queryClient, dispatch })
 
-      return collections
+      return collections?.map((collection) => collection.playlist_id) ?? []
     },
     ...options,
     enabled: options?.enabled !== false && !!userId
   })
+
+  return useCollections(collectionIds)
 }
