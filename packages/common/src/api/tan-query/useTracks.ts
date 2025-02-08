@@ -45,7 +45,7 @@ export const useTracks = (
       primeTrackData({ tracks, queryClient, dispatch })
 
       const tracksMap = keyBy(tracks, 'track_id')
-      return trackIds?.map((id) => tracksMap[id])
+      return trackIds?.map((id) => tracksMap[id]).filter(removeNullable)
     },
     ...options,
     enabled: options?.enabled !== false && encodedIds && encodedIds.length > 0
