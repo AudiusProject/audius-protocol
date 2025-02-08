@@ -55,7 +55,7 @@ services:
     <<: *common
     healthcheck:
       # identity_service is the last db to be created in init-db.sql
-      test: ['CMD', 'pg_isready', '--dbname', 'identity_service']
+      test: [ 'CMD', 'pg_isready', '--dbname', 'identity_service' ]
       interval: 10s
       timeout: 5s
 
@@ -70,21 +70,8 @@ services:
       file: docker-compose.audiusd.yml
       service: audiusd
     container_name: audiusd-1
-    ports:
-      - '6701:26659' # Http Console
-      - '6702:1991' # Mediorum Server
-      - '6703:50051' # Core GRPC Server
-    environment:
-      NETWORK: dev
-      AUDIUSD_STORAGE_ENABLED: false
-      audius_discprov_env: dev
-      audius_core_root_dir: ./tmp/discoveryOneHome
-      audius_discprov_url: http://audius-protocol-discovery-provider-1
-      audius_db_url: postgresql://postgres:postgres@db:5432/discovery_provider_1
-      audius_delegate_private_key: d09ba371c359f10f22ccda12fd26c598c7921bda3220c9942174562bc6a36fe8
-      audius_web3_eth_provider_url: http://eth-ganache:8545
-      runDownMigration: true
-      externalAddress: audiusd-1:26656
+    env_file:
+      - ${PROJECT_ROOT}/dev-tools/environment/audiusd-1.env
     <<: *common
 
   audiusd-2:
@@ -92,18 +79,8 @@ services:
       file: docker-compose.audiusd.yml
       service: audiusd
     container_name: audiusd-2
-    ports:
-      - '6711:26659'
-      - '6712:1991'
-      - '6713:50051'
-    environment:
-      NETWORK: dev
-      AUDIUSD_STORAGE_ENABLED: true
-      audius_core_root_dir: ./tmp/content1Home
-      delegatePrivateKey: 21118f9a6de181061a2abd549511105adb4877cf9026f271092e6813b7cf58ab
-      creatorNodeEndpoint: http://audius-protocol-creator-node-1
-      runDownMigration: true
-      externalAddress: audiusd-2:26656
+    env_file:
+      - ${PROJECT_ROOT}/dev-tools/environment/audiusd-2.env
     <<: *common
 
   audiusd-3:
@@ -111,18 +88,8 @@ services:
       file: docker-compose.audiusd.yml
       service: audiusd
     container_name: audiusd-3
-    ports:
-      - '6721:26659'
-      - '6722:1991'
-      - '6723:50051'
-    environment:
-      NETWORK: dev
-      AUDIUSD_STORAGE_ENABLED: true
-      audius_core_root_dir: ./tmp/content2Home
-      delegatePrivateKey: 1166189cdf129cdcb011f2ad0e5be24f967f7b7026d162d7c36073b12020b61c
-      creatorNodeEndpoint: http://audius-protocol-creator-node-2
-      runDownMigration: true
-      externalAddress: audiusd-3:26656
+    env_file:
+      - ${PROJECT_ROOT}/dev-tools/environment/audiusd-3.env
     <<: *common
 
   audiusd-4:
@@ -130,18 +97,8 @@ services:
       file: docker-compose.audiusd.yml
       service: audiusd
     container_name: audiusd-4
-    ports:
-      - '6731:26659'
-      - '6732:1991'
-      - '6733:50051'
-    environment:
-      NETWORK: dev
-      AUDIUSD_STORAGE_ENABLED: true
-      audius_core_root_dir: ./tmp/content3Home
-      delegatePrivateKey: 1aa14c63d481dcc1185a654eb52c9c0749d07ac8f30ef17d45c3c391d9bf68eb
-      creatorNodeEndpoint: http://audius-protocol-creator-node-3
-      runDownMigration: true
-      externalAddress: audiusd-4:26656
+    env_file:
+      - ${PROJECT_ROOT}/dev-tools/environment/audiusd-4.env
     <<: *common
 
   # Identity
