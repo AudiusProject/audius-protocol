@@ -60,7 +60,6 @@
                 <data android:scheme="http" />
                 <data android:host="redirect.audius.co" />
                 <data android:host="audius.co" />
-                <data android:pathPattern="/oauth/auth.*" />
             </intent-filter>
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
