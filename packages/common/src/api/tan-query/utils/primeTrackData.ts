@@ -9,6 +9,7 @@ import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
 import { getTrackQueryKey } from '../useTrack'
+import { getTracksQueryKey } from '../useTracks'
 
 import { primeUserDataInternal } from './primeUserData'
 
@@ -75,6 +76,11 @@ export const primeTrackDataInternal = ({
       !queryClient.getQueryData(getTrackQueryKey(track.track_id))
     ) {
       queryClient.setQueryData(getTrackQueryKey(track.track_id), track)
+      if (tracks.length > 1) {
+        const ids = tracks.map((track) => track.track_id)
+        // TODO: this creates a second source of truth for the tracks
+        queryClient.setQueryData(getTracksQueryKey(ids), tracks)
+      }
     }
 
     // Prime user data from track owner

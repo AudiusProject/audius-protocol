@@ -9,6 +9,7 @@ import { EntriesByKind } from '~/store/cache/types'
 
 import { getCollectionQueryKey } from '../useCollection'
 import { getCollectionByPermalinkQueryKey } from '../useCollectionByPermalink'
+import { getCollectionsQueryKey } from '../useCollections'
 
 import { primeTrackDataInternal } from './primeTrackData'
 import { primeUserDataInternal } from './primeUserData'
@@ -82,6 +83,11 @@ export const primeCollectionDataInternal = ({
         getCollectionQueryKey(collection.playlist_id),
         collection
       )
+      if (collections.length > 1) {
+        const ids = collections.map((collection) => collection.playlist_id)
+        // TODO: this creates a second source of truth for the collections
+        queryClient.setQueryData(getCollectionsQueryKey(ids), collections)
+      }
     }
 
     // Prime collection by permalink only if it doesn't exist and skipQueryData is false

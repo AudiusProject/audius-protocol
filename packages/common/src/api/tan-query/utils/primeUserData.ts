@@ -9,6 +9,7 @@ import { EntriesByKind } from '~/store/cache/types'
 
 import { getUserQueryKey } from '../useUser'
 import { getUserByHandleQueryKey } from '../useUserByHandle'
+import { getUsersQueryKey } from '../useUsers'
 
 export const primeUserData = ({
   users,
@@ -47,6 +48,11 @@ export const primeUserDataInternal = ({
       !queryClient.getQueryData(getUserQueryKey(user.user_id))
     ) {
       queryClient.setQueryData(getUserQueryKey(user.user_id), user)
+      if (users.length > 1) {
+        const ids = users.map((user) => user.user_id)
+        // TODO: this creates a second source of truth for the users
+        queryClient.setQueryData(getUsersQueryKey(ids), users)
+      }
     }
     // Prime user by handle
     if (
