@@ -100,7 +100,7 @@ services:
   audiusd-1:
     image: audius/audiusd:prerelease
     env_file:
-      - ${PROJECT_ROOT}/cmd/core/infra/dev_config/discovery-one.docker.env
+      - ${PROJECT_ROOT}/dev-tools/environment/audiusd-1.env
     restart: unless-stopped
     healthcheck:
       test: ['CMD', 'curl', 'http://localhost:26659/console/health_check']
@@ -117,7 +117,7 @@ services:
   audiusd-2:
     image: audius/audiusd:prerelease
     env_file:
-      - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-one.docker.env
+      - ${PROJECT_ROOT}/dev-tools/environment/audiusd-2.env
     restart: unless-stopped
     healthcheck:
       test: ['CMD', 'curl', 'http://localhost:1991/health_check']
@@ -134,7 +134,7 @@ services:
   audiusd-3:
     image: audius/audiusd:prerelease
     env_file:
-      - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-two.docker.env
+      - ${PROJECT_ROOT}/dev-tools/environment/audiusd-3.env
     restart: unless-stopped
     healthcheck:
       test: ['CMD', 'curl', 'http://localhost:1991/health_check']
@@ -151,7 +151,7 @@ services:
   audiusd-4:
     image: audius/audiusd:prerelease
     env_file:
-      - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-three.docker.env
+      - ${PROJECT_ROOT}/dev-tools/environment/audiusd-4.env
     restart: unless-stopped
     healthcheck:
       test: ['CMD', 'curl', 'http://localhost:1991/health_check']
