@@ -47,7 +47,9 @@ export const useCollections = (
       primeCollectionData({ collections, queryClient, dispatch })
 
       const collectionsMap = keyBy(collections, 'playlist_id')
-      return collectionIds?.map((id) => collectionsMap[id])
+      return collectionIds
+        ?.map((id) => collectionsMap[id])
+        .filter(removeNullable)
     },
     ...options,
     enabled: options?.enabled !== false && encodedIds && encodedIds.length > 0

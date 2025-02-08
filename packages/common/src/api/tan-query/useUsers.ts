@@ -41,7 +41,7 @@ export const useUsers = (
       primeUserData({ users, queryClient, dispatch })
 
       const usersMap = keyBy(users, 'user_id')
-      return userIds?.map((id) => usersMap[id])
+      return userIds?.map((id) => usersMap[id]).filter(removeNullable)
     },
     ...options,
     enabled: options?.enabled !== false && encodedIds && encodedIds.length > 0
