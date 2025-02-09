@@ -564,8 +564,8 @@ def update_user_associated_wallets(
         if added_wallets or removed_wallets:
             for wallet in added_wallets:
                 session.add(wallet)
-            for previous_wallet in previous_wallets:
-                session.delete(previous_wallet)
+            for wallet in removed_wallets:
+                session.delete(wallet)
 
             enqueue_immediate_balance_refresh(redis, [user_record.user_id])
     except Exception as e:
