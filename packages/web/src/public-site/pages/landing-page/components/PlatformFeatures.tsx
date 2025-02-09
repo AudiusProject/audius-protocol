@@ -7,14 +7,8 @@ import { useSpring, animated } from 'react-spring'
 
 import productShot from 'assets/img/publicSite/ProductShot3.webp'
 import useHasViewed from 'hooks/useHasViewed'
-import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
 
 import styles from './PlatformFeatures.module.css'
-
-const DESKTOP_NAV_BANNER_MIN_WIDTH = 1410
-const MOBILE_WIDTH_MEDIA_QUERY = window.matchMedia(
-  `(max-width: ${DESKTOP_NAV_BANNER_MIN_WIDTH}px)`
-)
 
 const messages = {
   title: ' Empowering Features for Artists',
@@ -26,7 +20,6 @@ type FeatureProps = {
   title: string
   description: string | ReactNode
   icon: ReactNode
-  iconPosition: 'above' | 'side'
 }
 
 const features: Array<Omit<FeatureProps, 'iconPosition'>> = [
@@ -75,9 +68,8 @@ const features: Array<Omit<FeatureProps, 'iconPosition'>> = [
 const Feature = (props: FeatureProps) => {
   return (
     <div className={styles.feature}>
-      {props.iconPosition === 'side' ? props.icon : null}
+      {props.icon}
       <div className={styles.featureText}>
-        {props.iconPosition === 'above' ? props.icon : null}
         <div className={styles.featureTitle}>{props.title}</div>
         <div className={styles.featureDescription}>{props.description}</div>
       </div>
@@ -90,11 +82,6 @@ type PlatformFeaturesProps = {
 }
 
 const PlatformFeatures = (props: PlatformFeaturesProps) => {
-  const isNarrow = useMatchesBreakpoint({
-    mediaQuery: MOBILE_WIDTH_MEDIA_QUERY,
-    initialValue: props.isMobile
-  })
-
   // Animate in the title and subtitle text
   const [hasViewed, refInView] = useHasViewed(0.8)
 
@@ -153,11 +140,7 @@ const PlatformFeatures = (props: PlatformFeaturesProps) => {
           ) : null}
           <div className={styles.features}>
             {features.map((feature) => (
-              <Feature
-                iconPosition={!props.isMobile && isNarrow ? 'above' : 'side'}
-                key={feature.title}
-                {...feature}
-              />
+              <Feature key={feature.title} {...feature} />
             ))}
           </div>
         </div>
