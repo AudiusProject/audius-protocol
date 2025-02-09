@@ -75,8 +75,18 @@ def _genre_based_related_artists(
         },
     ).fetchall()
     user_ids = [r["user_id"] for r in result]
-    users = session.query(User).filter(User.user_id.in_(user_ids)).all()
-    return helpers.query_result_to_list(users)
+    
+    # Get all users in a single query
+    users_query = session.query(User).filter(User.user_id.in_(user_ids))
+    users = users_query.all()
+    
+    # Convert to list and create a map of user_id -> user
+    users_list = helpers.query_result_to_list(users)
+    users_map = {user["user_id"]: user for user in users_list}
+    
+    # Preserve order from original query by mapping user_ids back to users
+    ordered_users = [users_map[user_id] for user_id in user_ids]
+    return ordered_users
 
 
 @time_method
