@@ -65,14 +65,6 @@ def rollup_aggregates(
         step_count = sum(challenge.amount for challenge in user_challenges)
         amount = "1"
         is_complete = True
-    elif parent_challenge.id == "e":
-        # for listen streak we want to sum the actual step counts as they represent the
-        # number of consecutive days in the user's listen streak
-        num_complete = sum(
-            challenge.current_step_count
-            for challenge in user_challenges
-            if challenge.current_step_count is not None
-        )
     elif parent_challenge.step_count:
         is_complete = num_complete >= parent_challenge.step_count
     else:
