@@ -525,7 +525,7 @@ def update_user_associated_wallets(
                 previous_wallets.append(wallet)
 
         # Verify the wallet signatures and create the user id to wallet associations
-        added_wallets = []
+        current_wallets = []
         for associated_wallet, wallet_metadata in associated_wallets.items():
             if "signature" not in wallet_metadata or not isinstance(
                 wallet_metadata["signature"], str
@@ -550,16 +550,37 @@ def update_user_associated_wallets(
                     blocknumber=user_record.blocknumber,
                     blockhash=user_record.blockhash,
                 )
-                added_wallets.append(associated_wallet_entry)
-        is_updated_wallets = set(
-            [prev_wallet.wallet for prev_wallet in previous_wallets]
-        ) != set([wallet.wallet for wallet in added_wallets])
+                current_wallets.append(associated_wallet_entry)
 
-        if is_updated_wallets:
+        # Create wallet address sets for each list
+        previous_wallets_set = set([wallet.wallet for wallet in previous_wallets])
+        current_wallets_set = set()
+        for wallet in current_wallets:
+            # Check and throw if current_wallets has duplicate wallet addresses
+            if wallet.wallet in current_wallets_set:
+                raise Exception("Duplicate wallet in list of current wallets")
+
+            current_wallets_set.add(wallet.wallet)
+
+        # Get the net new and removed wallet addresses
+        added_wallets_set = current_wallets_set - previous_wallets_set
+        removed_wallets_set = previous_wallets_set - current_wallets_set
+
+        # Make the added and removed wallet lists for updates
+        added_wallets = [
+            wallet for wallet in current_wallets if wallet.wallet in added_wallets_set
+        ]
+        removed_wallets = [
+            wallet
+            for wallet in previous_wallets
+            if wallet.wallet in removed_wallets_set
+        ]
+
+        if added_wallets or removed_wallets:
             for wallet in added_wallets:
                 session.add(wallet)
-            for previous_wallet in previous_wallets:
-                session.delete(previous_wallet)
+            for wallet in removed_wallets:
+                session.delete(wallet)
 
             enqueue_immediate_balance_refresh(redis, [user_record.user_id])
     except Exception as e:

@@ -1,5 +1,6 @@
 import { Id } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { keyBy } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
@@ -36,7 +37,8 @@ export const useUsers = (
       const users = userMetadataListFromSDK(data)
       primeUserData({ users, queryClient, dispatch })
 
-      return users
+      const usersMap = keyBy(users, 'user_id')
+      return userIds?.map((id) => usersMap[id])
     },
     ...options,
     enabled: options?.enabled !== false && encodedIds && encodedIds.length > 0
