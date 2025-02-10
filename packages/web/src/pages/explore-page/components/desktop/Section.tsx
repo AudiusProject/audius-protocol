@@ -24,6 +24,7 @@ type SectionProps = {
   layout?: Layout
   className?: string
   children?: JSX.Element | JSX.Element[] | ReactNode
+  onExpand?: () => void
 }
 
 const Section = ({
@@ -33,12 +34,14 @@ const Section = ({
   expandText,
   layout,
   className,
-  children
+  children,
+  onExpand
 }: SectionProps) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const expand = useCallback(() => {
     setIsExpanded(true)
-  }, [setIsExpanded])
+    onExpand?.()
+  }, [setIsExpanded, onExpand])
 
   return (
     <div

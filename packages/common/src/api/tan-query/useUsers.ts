@@ -1,4 +1,4 @@
-import { Id } from '@audius/sdk'
+import { Id, OptionalId } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
 import { useDispatch } from 'react-redux'
@@ -10,6 +10,7 @@ import { removeNullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
+import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils/primeUserData'
 
 export const getUsersQueryKey = (userIds: ID[] | null | undefined) => [
@@ -24,6 +25,7 @@ export const useUsers = (
   const { audiusSdk } = useAudiusQueryContext()
   const dispatch = useDispatch()
   const queryClient = useQueryClient()
+  const { data: currentUserId } = useCurrentUserId()
   const encodedIds = userIds?.map((id) => Id.parse(id)).filter(removeNullable)
 
   return useQuery({
@@ -31,14 +33,15 @@ export const useUsers = (
     queryFn: async () => {
       const sdk = await audiusSdk()
       const { data } = await sdk.full.users.getBulkUsers({
-        id: encodedIds
+        id: encodedIds,
+        userId: OptionalId.parse(currentUserId)
       })
 
       const users = userMetadataListFromSDK(data)
       primeUserData({ users, queryClient, dispatch })
 
       const usersMap = keyBy(users, 'user_id')
-      return userIds?.map((id) => usersMap[id])
+      return userIds?.map((id) => usersMap[id]).filter(removeNullable)
     },
     ...options,
     enabled: options?.enabled !== false && encodedIds && encodedIds.length > 0
