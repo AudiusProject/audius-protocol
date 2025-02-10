@@ -4,7 +4,14 @@ import { useSupportedUsers } from '@audius/common/api'
 import { User } from '@audius/common/models'
 import { profilePageSelectors } from '@audius/common/store'
 import { formatCount, MAX_PROFILE_SUPPORTING_TILES } from '@audius/common/utils'
-import { IconTipping, IconArrowRight, PlainButton, Flex } from '@audius/harmony'
+import {
+  IconTipping,
+  IconArrowRight,
+  PlainButton,
+  Skeleton,
+  Flex,
+  Box
+} from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
@@ -17,6 +24,7 @@ import {
   UserListType
 } from 'store/application/ui/userListModal/types'
 
+import { ProfilePageNavSectionItem } from './ProfilePageNavSectionItem'
 import { ProfilePageNavSectionTitle } from './ProfilePageNavSectionTitle'
 import { SupportingTile } from './SupportingTile'
 const { getProfileUser } = profilePageSelectors
@@ -32,7 +40,11 @@ const formatViewAllMessage = (count: number) => {
 
 const SupportingListForProfile = ({ profile }: { profile: User }) => {
   const dispatch = useDispatch()
-  const { data: supportedUsers, isSuccess } = useSupportedUsers({
+  const {
+    data: supportedUsers = [],
+    isSuccess,
+    isLoading
+  } = useSupportedUsers({
     userId: profile.user_id,
     pageSize: MAX_PROFILE_SUPPORTING_TILES
   })
@@ -50,29 +62,52 @@ const SupportingListForProfile = ({ profile }: { profile: User }) => {
     }
   }, [profile, dispatch])
 
-  return isSuccess && supportedUsers.length > 0 ? (
-    <Flex direction='column' mt='2xl' gap='l'>
+  const shouldShowSection =
+    isLoading || (isSuccess && supportedUsers.length > 0)
+  if (!shouldShowSection) return null
+
+  const skeletonCount = Math.min(
+    profile.supporting_count,
+    MAX_PROFILE_SUPPORTING_TILES
+  )
+
+  return (
+    <ProfilePageNavSectionItem>
       <ProfilePageNavSectionTitle
         title={messages.supporting}
-        titleIcon={<IconTipping color='default' size='m' />}
+        Icon={IconTipping}
       />
-      {supportedUsers.map((supporting) => (
-        <SupportingTile
-          key={supporting.receiver.user_id}
-          supporting={supporting}
-        />
-      ))}
-      {profile.supporting_count > MAX_PROFILE_SUPPORTING_TILES ? (
-        <PlainButton
-          iconRight={IconArrowRight}
-          css={{ alignSelf: 'flex-start' }}
-          onClick={handleClickSeeMore}
-        >
-          {formatViewAllMessage(profile.supporting_count)}
-        </PlainButton>
-      ) : null}
-    </Flex>
-  ) : null
+      {isLoading ? (
+        <Flex column gap='m'>
+          {Array(skeletonCount)
+            .fill(null)
+            .map((_, index) => (
+              <Skeleton key={index} h={122} borderRadius='m' />
+            ))}
+          {/* Spacer to account for the gap between the last tile and the see more button */}
+          <Box h={16} />
+        </Flex>
+      ) : (
+        <>
+          {supportedUsers.map((supporting) => (
+            <SupportingTile
+              key={supporting.receiver.user_id}
+              supporting={supporting}
+            />
+          ))}
+          {profile.supporting_count > MAX_PROFILE_SUPPORTING_TILES ? (
+            <PlainButton
+              iconRight={IconArrowRight}
+              css={{ alignSelf: 'flex-start' }}
+              onClick={handleClickSeeMore}
+            >
+              {formatViewAllMessage(profile.supporting_count)}
+            </PlainButton>
+          ) : null}
+        </>
+      )}
+    </ProfilePageNavSectionItem>
+  )
 }
 
 export const SupportingList = () => {

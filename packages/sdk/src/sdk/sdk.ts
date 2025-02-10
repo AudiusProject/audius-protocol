@@ -257,7 +257,8 @@ const initializeServices = (config: SdkConfig) => {
     config.services?.solanaClient ??
     new SolanaClient({
       ...getDefaultSolanaClientConfig(servicesConfig),
-      solanaWalletAdapter
+      solanaWalletAdapter,
+      logger
     })
 
   const claimableTokensClient =

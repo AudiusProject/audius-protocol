@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { useMutualFollowers } from '@audius/common/api'
 import { User } from '@audius/common/models'
 import { accountSelectors, profilePageSelectors } from '@audius/common/store'
-import { IconUserFollowing } from '@audius/harmony'
+import { Flex, IconUserFollowing } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
@@ -15,7 +15,6 @@ import {
   UserListType
 } from 'store/application/ui/userListModal/types'
 
-import styles from './ProfileMutuals.module.css'
 import { ProfilePageNavSectionTitle } from './ProfilePageNavSectionTitle'
 import { ProfilePictureListTile } from './ProfilePictureListTile'
 
@@ -50,15 +49,15 @@ export const ProfileMutuals = () => {
     dispatch(setVisibility(true))
   }, [dispatch, userId])
 
-  if (!profile || userId === accountId || !mutuals) {
+  if (!profile || userId === accountId || !mutuals || mutuals.length === 0) {
     return null
   }
 
   return (
-    <div>
+    <Flex column gap='m'>
       <ProfilePageNavSectionTitle
         title={messages.mutuals}
-        titleIcon={<IconUserFollowing className={styles.followingIcon} />}
+        Icon={IconUserFollowing}
       />
       <ProfilePictureListTile
         onClick={handleClick}
@@ -67,6 +66,6 @@ export const ProfileMutuals = () => {
         limit={MAX_MUTUALS}
         disableProfileClick
       />
-    </div>
+    </Flex>
   )
 }

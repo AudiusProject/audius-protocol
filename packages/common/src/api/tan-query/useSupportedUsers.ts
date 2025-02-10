@@ -65,7 +65,7 @@ export const useSupportedUsers = (
       return supporting
     },
     select: (data) => data.pages.flat(),
-    staleTime: options?.staleTime,
+    ...options,
     enabled: options?.enabled !== false && !!userId
   })
 }

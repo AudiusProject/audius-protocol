@@ -92,43 +92,6 @@
   margin-bottom: 14px;
 }
 
-.info .location,
-.info .joined {
-  color: var(--harmony-neutral);
-  font-size: var(--harmony-font-xs);
-  font-weight: var(--harmony-font-medium);
-  line-height: 16px;
-  user-select: none;
-}
-
-.description {
-  margin-bottom: var(--harmony-unit-4);
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* truncates the content at a maximum of 4 lines */
-/* works on modern browsers */
-.truncated {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 4; /* number of lines to show */
-  line-clamp: 4;
-  -webkit-box-orient: vertical;
-}
-
-.socials {
-  display: flex;
-  flex-direction: column;
-  row-gap: var(--harmony-unit-4);
-  padding-bottom: var(--harmony-unit-2);
-}
-.info .socialsTruncated {
-  display: flex;
-  align-items: center;
-}
-
 .titleContainer {
   display: flex;
   align-items: center;
@@ -235,28 +198,4 @@
 
 .tabBody {
   margin: -6px;
-}
-
-.badge {
-  margin-bottom: 16px !important;
-}
-
-.socialsTruncated > * {
-  margin-bottom: 0px !important;
-}
-
-.tipAudioButtonContainer {
-  margin-top: 32px;
-}
-
-.aiGeneratedCalloutContainer {
-  margin-top: 32px;
-}
-
-.profileBottomSection {
-  display: flex;
-  flex-direction: column;
-  margin-top: 32px;
-  margin-bottom: 32px;
-  gap: 32px;
 }

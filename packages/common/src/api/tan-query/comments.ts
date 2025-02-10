@@ -77,12 +77,11 @@ export type GetCommentsByTrackArgs = {
 
 export const getTrackCommentListQueryKey = ({
   trackId,
-  sortMethod,
-  pageSize
+  sortMethod
 }: Omit<GetCommentsByTrackArgs, 'userId'>) => [
   QUERY_KEYS.trackCommentList,
   trackId,
-  { sortMethod, pageSize }
+  { sortMethod }
 ]
 
 export const useGetCommentsByTrackId = ({
@@ -464,12 +463,15 @@ export const usePostComment = () => {
         )
       } else {
         queryClient.setQueryData<InfiniteData<ID[]>>(
-          [QUERY_KEYS.trackCommentList, trackId, currentSort],
+          getTrackCommentListQueryKey({ trackId, sortMethod: currentSort }),
           (prevData) => {
+            // NOTE: The prevData here should never be undefined so the backup object should never be used
+            // If it is undefined then the query key might be incorrect
             const newState = cloneDeep(prevData) ?? {
-              pages: [],
+              pages: [[]],
               pageParams: [0]
             }
+
             newState.pages[0].unshift(newId)
             return newState
           }

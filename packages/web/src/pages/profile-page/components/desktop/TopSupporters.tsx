@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { useSupporters } from '@audius/common/api'
 import { profilePageSelectors } from '@audius/common/store'
 import { MAX_PROFILE_TOP_SUPPORTERS } from '@audius/common/utils'
-import { IconTrophy } from '@audius/harmony'
+import { IconTrophy, Skeleton } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
@@ -15,9 +15,9 @@ import {
   UserListType
 } from 'store/application/ui/userListModal/types'
 
+import { ProfilePageNavSectionItem } from './ProfilePageNavSectionItem'
 import { ProfilePageNavSectionTitle } from './ProfilePageNavSectionTitle'
 import { ProfilePictureListTile } from './ProfilePictureListTile'
-import styles from './TopSupporters.module.css'
 const { getProfileUser } = profilePageSelectors
 
 const messages = {
@@ -27,7 +27,7 @@ const messages = {
 export const TopSupporters = () => {
   const dispatch = useDispatch()
   const profile = useSelector(getProfileUser)
-  const { data: supporters = [] } = useSupporters({
+  const { data: supporters = [], isLoading } = useSupporters({
     userId: profile?.user_id,
     pageSize: MAX_PROFILE_TOP_SUPPORTERS
   })
@@ -45,23 +45,27 @@ export const TopSupporters = () => {
     }
   }, [profile, dispatch])
 
-  if (!profile || supporters.length === 0) {
+  if (!profile || (!isLoading && supporters.length === 0)) {
     return null
   }
 
   return (
-    <div>
+    <ProfilePageNavSectionItem>
       <ProfilePageNavSectionTitle
         title={messages.topSupporters}
-        titleIcon={<IconTrophy className={styles.trophyIcon} />}
+        Icon={IconTrophy}
       />
-      <ProfilePictureListTile
-        onClick={handleClick}
-        users={supporters.map((supporter) => supporter.sender)}
-        totalUserCount={profile.supporter_count}
-        limit={MAX_PROFILE_TOP_SUPPORTERS}
-        disableProfileClick
-      />
-    </div>
+      {isLoading ? (
+        <Skeleton h={84} borderRadius='m' noShimmer />
+      ) : (
+        <ProfilePictureListTile
+          onClick={handleClick}
+          users={supporters.map((supporter) => supporter.sender)}
+          totalUserCount={profile.supporter_count}
+          limit={MAX_PROFILE_TOP_SUPPORTERS}
+          disableProfileClick
+        />
+      )}
+    </ProfilePageNavSectionItem>
   )
 }

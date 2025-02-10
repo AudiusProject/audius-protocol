@@ -9,8 +9,7 @@ import type {
   UserChallengeState
 } from '@audius/common/models'
 import { ClaimStatus } from '@audius/common/store'
-import { fillString, formatNumberCommas } from '@audius/common/utils'
-import { View } from 'react-native'
+import { formatNumberCommas, fillString } from '@audius/common/utils'
 import { ScrollView } from 'react-native-gesture-handler'
 
 import {
@@ -18,11 +17,10 @@ import {
   Button,
   IconArrowRight,
   IconCheck,
-  IconVerified
+  Flex
 } from '@audius/harmony-native'
 import { ProgressBar } from 'app/components/progress-bar'
 import { formatLabel } from 'app/utils/challenges'
-import { useThemePalette } from 'app/utils/theme'
 
 import { SummaryTable } from '../summary-table'
 
@@ -42,7 +40,8 @@ const messages = {
   claimableAmountLabel: (amount) => `Claim ${amount} $AUDIO`,
   claimedLabel: '$AUDIO claimed so far',
   upcomingRewards: 'Upcoming Rewards',
-  readyToClaim: 'Ready to Claim'
+  readyToClaim: 'Ready to Claim',
+  close: 'Close'
 }
 
 type ChallengeRewardsDrawerContentProps = {
@@ -78,6 +77,8 @@ type ChallengeRewardsDrawerContentProps = {
   challengeId: ChallengeRewardID
   /** True if challenge has a cooldown */
   isCooldownChallenge: boolean
+  /** Callback that runs on the close button being clicked */
+  onClose: () => void
 }
 
 /** Generic drawer content used for most challenges, responsible for rendering the
@@ -100,29 +101,24 @@ export const ChallengeRewardsDrawerContent = ({
   onClaim,
   isVerifiedChallenge,
   showProgressBar,
-  children
+  children,
+  onClose
 }: ChallengeRewardsDrawerContentProps) => {
   const styles = useStyles()
-  const palette = useThemePalette()
-  const isInProgress = challengeState === 'in_progress'
-  const isClaimable = claimableAmount > 0
   const {
     cooldownChallenges,
     summary,
     isEmpty: isCooldownChallengesEmpty
   } = useChallengeCooldownSchedule({ challengeId })
 
-  const claimInProgress =
-    claimStatus === ClaimStatus.CLAIMING ||
-    claimStatus === ClaimStatus.WAITING_FOR_RETRY
-  const claimError = claimStatus === ClaimStatus.ERROR
-
+  const isInProgress = challengeState === 'in_progress'
   const hasCompleted =
     challengeState === 'completed' || challengeState === 'disbursed'
-  const statusText = hasCompleted
-    ? messages.complete
-    : isClaimable
-      ? messages.readyToClaim
+  const isClaimable = claimableAmount > 0
+  const statusText = isClaimable
+    ? messages.readyToClaim
+    : hasCompleted
+      ? messages.complete
       : isInProgress
         ? fillString(
             progressLabel,
@@ -130,6 +126,11 @@ export const ChallengeRewardsDrawerContent = ({
             formatNumberCommas(stepCount)
           )
         : messages.incomplete
+
+  const claimInProgress =
+    claimStatus === ClaimStatus.CLAIMING ||
+    claimStatus === ClaimStatus.WAITING_FOR_RETRY
+  const claimError = claimStatus === ClaimStatus.ERROR
 
   const renderCooldownSummaryTable = () => {
     if (isCooldownChallenge && !isCooldownChallengesEmpty) {
@@ -152,15 +153,8 @@ export const ChallengeRewardsDrawerContent = ({
       <ScrollView style={styles.content}>
         {isVerifiedChallenge ? (
           <ChallengeDescription
-            task={messages.taskVerified}
-            taskIcon={
-              <IconVerified
-                style={styles.subheaderIcon}
-                fill={palette.staticPrimary}
-                fillSecondary={palette.staticWhite}
-              />
-            }
             description={description}
+            isCooldownChallenge={isCooldownChallenge}
           />
         ) : (
           <ChallengeDescription
@@ -168,11 +162,11 @@ export const ChallengeRewardsDrawerContent = ({
             isCooldownChallenge={isCooldownChallenge}
           />
         )}
-        <View style={styles.statusGrid}>
-          <View style={styles.statusGridColumns}>
+        <Flex alignItems='center' gap='3xl' w='100%'>
+          <Flex row alignItems='center' gap='xl'>
             <ChallengeReward amount={amount} subtext={messages.audio} />
             {showProgressBar ? (
-              <View style={styles.progressCell}>
+              <Flex style={styles.progressCell}>
                 <Text
                   color='subdued'
                   style={[styles.subheader, styles.progressSubheader]}
@@ -184,52 +178,41 @@ export const ChallengeRewardsDrawerContent = ({
                   {messages.progress}
                 </Text>
                 <ProgressBar progress={currentStep} max={stepCount} />
-              </View>
+              </Flex>
             ) : null}
-          </View>
-          <View
-            style={[
-              styles.statusCell,
-              hasCompleted ? styles.statusCellComplete : null
-            ]}
+          </Flex>
+          <Flex
+            w='100%'
+            ph='xl'
+            border='default'
+            borderRadius='s'
+            backgroundColor='surface1'
           >
-            <Text
-              style={[styles.subheader]}
-              strength='strong'
-              textTransform='uppercase'
-              variant='label'
-              color={
-                hasCompleted ? 'white' : isInProgress ? 'accent' : 'default'
-              }
+            <Flex
+              row
+              w='100%'
+              alignItems='center'
+              justifyContent='center'
+              gap='s'
+              pv='l'
             >
-              {statusText}
-            </Text>
-          </View>
-        </View>
-        <View style={styles.claimRewardsContainer}>
-          {isClaimable && onClaim ? (
-            isCooldownChallenge ? (
-              renderCooldownSummaryTable()
-            ) : (
-              <>
-                <Button
-                  style={styles.claimButton}
-                  variant={claimInProgress ? 'secondary' : 'primary'}
-                  isLoading={claimInProgress}
-                  onPress={onClaim}
-                  iconLeft={IconCheck}
-                >
-                  {messages.claim}
-                </Button>
-              </>
-            )
-          ) : null}
-          {claimError ? <ClaimError aaoErrorCode={aaoErrorCode} /> : null}
-        </View>
-        {children}
+              {hasCompleted ? <IconCheck size='s' color='subdued' /> : null}
+              {/* Hack due to broken lineHeight for certain fonts */}
+              <Flex mt='unitHalf'>
+                <Text variant='label' size='l' color='subdued'>
+                  {statusText}
+                </Text>
+              </Flex>
+            </Flex>
+          </Flex>
+          {children}
+          <Flex w='100%'>
+            {isCooldownChallenge ? renderCooldownSummaryTable() : null}
+          </Flex>
+        </Flex>
       </ScrollView>
-      {isClaimable && onClaim && isCooldownChallenge ? (
-        <View style={styles.stickyClaimRewardsContainer}>
+      <Flex w='100%' ph='l' pv='m' gap='l'>
+        {isClaimable && onClaim ? (
           <Button
             key='claimButton'
             style={styles.claimButton}
@@ -240,8 +223,13 @@ export const ChallengeRewardsDrawerContent = ({
           >
             {messages.claimableAmountLabel(claimableAmount)}
           </Button>
-        </View>
-      ) : null}
+        ) : (
+          <Button variant='secondary' onPress={onClose} fullWidth>
+            {messages.close}
+          </Button>
+        )}
+        {claimError ? <ClaimError aaoErrorCode={aaoErrorCode} /> : null}
+      </Flex>
     </>
   )
 }

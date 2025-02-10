@@ -30,7 +30,6 @@ jobs:
       requires:
         - lint-discovery-provider
         - test-discovery-provider
-        - test-discovery-provider-notifications
         - push-discovery-provider
 
       filters:

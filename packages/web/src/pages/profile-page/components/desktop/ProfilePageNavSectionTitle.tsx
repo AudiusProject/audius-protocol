@@ -1,21 +1,19 @@
-import { ReactNode } from 'react'
-
-import styles from './ProfilePageNavSectionTitle.module.css'
+import { Divider, Flex, IconComponent, Text } from '@audius/harmony'
 
 type ProfilePageNavSectionTitleProps = {
-  title?: string
-  titleIcon?: ReactNode
+  title: string
+  Icon: IconComponent
 }
 
 export const ProfilePageNavSectionTitle = ({
   title,
-  titleIcon
+  Icon
 }: ProfilePageNavSectionTitleProps) => (
-  <div className={styles.titleContainer}>
-    <div className={styles.titleAndIcon}>
-      {titleIcon}
-      {title ? <span className={styles.title}>{title}</span> : null}
-    </div>
-    <span className={styles.line} />
-  </div>
+  <Flex alignItems='center' gap='s'>
+    <Icon size='m' color='default' />
+    <Text variant='title' size='s'>
+      {title}
+    </Text>
+    <Divider color='default' />
+  </Flex>
 )

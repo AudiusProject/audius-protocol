@@ -30,7 +30,7 @@ import { usePrevious } from 'react-use'
 
 import { Flex, IconSend, mergeRefs } from '@audius/harmony-native'
 import { Text, TextInput } from 'app/components/core'
-import { env } from 'app/env'
+import { env } from 'app/services/env'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'

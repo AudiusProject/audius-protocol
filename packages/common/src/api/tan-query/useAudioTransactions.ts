@@ -79,7 +79,7 @@ export const useAudioTransactions = (
       if (lastPage?.length < pageSize) return undefined
       return allPages.length * pageSize
     },
-    staleTime: options?.staleTime,
+    ...options,
     enabled: options?.enabled !== false && !!userId
   })
 

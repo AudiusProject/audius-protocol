@@ -1,6 +1,8 @@
 import { readFileSync } from 'fs'
 import path from 'path'
 
+import type { full } from '@audius/sdk'
+
 const runAgainstLocalStack = process.env.RUN_AGAINST_LOCAL_STACK === 'true'
 
 const getData = (filename: string) =>
@@ -8,15 +10,19 @@ const getData = (filename: string) =>
 const user = () => getData('user.json')
 const track = () => getData('track.json')
 const remix = () => getData('remix.json')
-const album = () => getData('album.json')
+const album = () => getData('album.json')[0]
+const album2 = () => getData('album2.json')[0]
+const playlist = () => getData('playlist.json')[0]
 const user2 = () => getData('user2.json')
 const track2 = () => getData('track2.json')
 
-const sanitizeName = (title: string) => title.replace(/ /g, '-').toLowerCase()
-
 export const getUser = () => {
   if (runAgainstLocalStack) {
-    const { name, entropy } = user()
+    const { name } = user()
+    const entropy = readFileSync(
+      path.resolve('../web/e2e/data/', 'entropy.txt'),
+      'utf8'
+    )
 
     return {
       name,
@@ -32,28 +38,21 @@ export const getUser = () => {
 
 export const getTrack = () => {
   if (runAgainstLocalStack) {
-    const { handle } = user()
-    const { title } = track()
-
-    return {
-      url: `${handle}/${sanitizeName(title)}`,
-      name: title
-    }
+    return track() as Pick<full.TrackFull, 'permalink' | 'title'>
   }
 
   return {
-    url: 'sebastian12/bachgavotte-1',
-    name: 'probers_track_do_not_delete'
+    permalink: '/sebastian12/bachgavotte-1',
+    title: '/probers_track_do_not_delete'
   }
 }
 
 export const getTrack2 = () => {
   if (runAgainstLocalStack) {
-    const { handle } = user2()
-    const { title } = track2()
+    const { title, permalink } = track2()
 
     return {
-      url: `${handle}/${sanitizeName(title)}`,
+      url: permalink,
       name: title
     }
   }
@@ -66,11 +65,10 @@ export const getTrack2 = () => {
 
 export const getRemix = () => {
   if (runAgainstLocalStack) {
-    const { handle } = user()
-    const { title } = remix()
+    const { title, permalink } = remix()
 
     return {
-      url: `${handle}/${sanitizeName(title)}`,
+      url: permalink,
       name: title
     }
   }
@@ -84,11 +82,10 @@ export const getRemix = () => {
 
 export const getRemixes = () => {
   if (runAgainstLocalStack) {
-    const { handle } = user()
-    const { title } = track()
+    const { permalink } = track()
 
     return {
-      url: `${handle}/${sanitizeName(title)}/remixes`
+      url: `${permalink}/remixes`
     }
   }
 
@@ -99,29 +96,34 @@ export const getRemixes = () => {
 
 export const getAlbum = () => {
   if (runAgainstLocalStack) {
-    const { handle } = user()
-    const { playlist_name } = album()
-
-    return {
-      url: `${handle}/album/${sanitizeName(playlist_name)}`,
-      name: playlist_name
-    }
+    return album() as Pick<full.PlaylistFull, 'playlistName' | 'permalink'>
   }
 
   return {
-    url: 'df/album/probers_album_do_not_delete-512',
-    name: 'probers_album_do_not_delete'
+    permalink: '/df/album/probers_album_do_not_delete-512',
+    playlistName: 'probers_album_do_not_delete'
+  }
+}
+
+export const getEditableAlbum = () => {
+  if (runAgainstLocalStack) {
+    return album2() as Pick<full.PlaylistFull, 'playlistName' | 'permalink'>
+  }
+
+  // TODO: Find one for stage or eliminate stage testing
+  return {
+    permalink: '',
+    playlistName: ''
   }
 }
 
 export const getPlaylist = () => {
   if (runAgainstLocalStack) {
-    const { handle } = user()
-    const { playlist_name } = album()
+    const { playlistName, permalink } = playlist()
 
     return {
-      url: `${handle}/album/${sanitizeName(playlist_name)}`,
-      name: playlist_name
+      url: permalink,
+      name: playlistName
     }
   }
 

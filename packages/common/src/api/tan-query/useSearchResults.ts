@@ -31,7 +31,6 @@ import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
 import { primeCollectionData } from './utils/primeCollectionData'
 import { primeTrackData } from './utils/primeTrackData'
 import { primeUserData } from './utils/primeUserData'
-import { queryOptions } from './utils/queryOptions'
 import { useLineupQuery } from './utils/useLineupQuery'
 
 export type SearchCategory = 'all' | 'tracks' | 'albums' | 'playlists' | 'users'
@@ -273,8 +272,8 @@ const useSearchQueryProps = (
     select: (data: InfiniteData<any[]>) => {
       return data?.pages?.flat()
     },
-    enabled: options?.enabled !== false && currentUserId !== undefined,
-    ...queryOptions(options)
+    ...options,
+    enabled: options?.enabled !== false && currentUserId !== undefined
   }
 }
 

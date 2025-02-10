@@ -54,7 +54,7 @@ export const useUserByHandle = (
 
       return user
     },
-    staleTime: options?.staleTime,
+    ...options,
     enabled: options?.enabled !== false && !!handle
   })
 }

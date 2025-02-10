@@ -56,6 +56,7 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
   ChallengeName.FirstPlaylist,
   ChallengeName.FirstTip,
   ChallengeName.ListenStreak,
+  ChallengeName.ListenStreakEndless,
   ChallengeName.MobileInstall,
   ChallengeName.ProfileCompletion,
   ChallengeName.Referrals,

@@ -2,17 +2,17 @@ import { useEffect, useState } from 'react'
 
 import { route } from '@audius/common/utils'
 import {
-  IconAudiusLogoHorizontal,
+  IconAudiusLogoHorizontalNew,
   IconInstagram,
-  IconRemove,
+  IconClose,
   IconTwitter,
   IconDiscord,
   IconTelegram,
   IconCloudDownload as IconDownloadQueued,
   IconSupport,
-  IconMerch,
   IconBlog,
-  IconFoundation
+  IconFoundation,
+  IconLink
 } from '@audius/harmony'
 import cn from 'classnames'
 import ReactDOM from 'react-dom'
@@ -29,7 +29,7 @@ const {
   AUDIUS_DISCORD_LINK,
   AUDIUS_HELP_LINK,
   AUDIUS_INSTAGRAM_LINK,
-  AUDIUS_MERCH_LINK,
+  AUDIUS_PROTOCOL_DASHBOARD_LINK,
   AUDIUS_ORG,
   SIGN_UP_PAGE,
   AUDIUS_TELEGRAM_LINK,
@@ -42,7 +42,7 @@ const messages = {
   downloadTheApp: 'Download the App',
   helpAndSupport: 'Help & Support',
   readTheBlog: 'Read the Blog',
-  merchStore: 'Merch Store',
+  protocolDashboard: 'Protocol Dashboard',
   openAudioFoundation: 'Open Audio Foundation'
 }
 
@@ -86,13 +86,13 @@ const dappLinks = [
     link: AUDIUS_BLOG_LINK
   },
   {
-    text: messages.merchStore,
+    text: messages.protocolDashboard,
     icon: (
-      <IconMerch
+      <IconLink
         className={cn(styles.dappLinkIcon, styles.dappLinkIconStroke)}
       />
     ),
-    link: AUDIUS_MERCH_LINK
+    link: AUDIUS_PROTOCOL_DASHBOARD_LINK
   },
   {
     text: messages.openAudioFoundation,
@@ -150,17 +150,11 @@ const NavOverlay = (props: NavOverlayProps) => {
         </div>
         <div className={styles.content}>
           <div className={styles.iconContainer}>
-            <IconAudiusLogoHorizontal
-              width={132}
+            <IconAudiusLogoHorizontalNew
+              width={160}
               className={styles.horizontalLogo}
-              css={{
-                margin: 0
-              }}
             />
-            <IconRemove
-              className={styles.iconClose}
-              onClick={props.closeNavScreen}
-            />
+            <IconClose color='staticWhite' onClick={props.closeNavScreen} />
           </div>
           <div className={styles.dappLinksContainer}>
             <div className={styles.dappLinks}>

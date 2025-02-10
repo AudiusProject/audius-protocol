@@ -23,20 +23,24 @@
 }
 
 .title {
-  color: #7e1bcc;
+  background: linear-gradient(315deg, #5b23e1 0%, #a22feb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
   font-size: 56px;
-  font-weight: 900;
-  line-height: 68px;
+  line-height: 72px;
   text-align: center;
   user-select: none;
+  margin-bottom: 12px;
 }
 
 .subTitle {
-  color: #858199;
+  color: #6c6780;
   font-size: 24px;
   font-weight: 500;
   line-height: 32px;
   text-align: center;
+  margin-bottom: 12px;
 }
 
 .tracksContainer {
@@ -109,7 +113,7 @@
 }
 
 .trackTitle {
-  color: #858199;
+  color: #6c6780;
   font-size: 18px;
   line-height: 24px;
   font-weight: 500;
@@ -236,11 +240,11 @@
 }
 
 .mobileContainer .mobileIconArrow path {
-  fill: #858199;
+  fill: #6c6780;
 }
 
 .mobileContainer .trackArtist {
-  color: #858199;
+  color: #6c6780;
   font-size: 14px;
   font-weight: 500;
   line-height: 18px;

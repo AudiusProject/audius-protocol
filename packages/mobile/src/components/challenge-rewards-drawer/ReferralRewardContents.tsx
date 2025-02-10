@@ -17,7 +17,7 @@ export const ReferralRewardContents = ({
   const inviteUrl = `audius.co/signup?rf=${handle}`
 
   return (
-    <Flex gap='m'>
+    <Flex gap='m' w='100%'>
       <TwitterShareButton inviteUrl={inviteUrl} isVerified={isVerified} />
       <ReferralLinkCopyButton inviteUrl={inviteUrl} />
     </Flex>

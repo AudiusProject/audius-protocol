@@ -35,7 +35,7 @@ export const useCurrentUser = (options?: QueryOptions) => {
       const account = accountFromSDK(data)
       return account?.user
     },
-    staleTime: options?.staleTime,
+    ...options,
     enabled: options?.enabled !== false && !!currentUser
   })
 }

@@ -1,6 +1,5 @@
 import {
   ChallengeRewardID,
-  UserChallenge,
   UndisbursedUserChallenge,
   OptimisticUserChallenge,
   ChallengeName,
@@ -127,7 +126,7 @@ export const challengeRewardsConfig: Record<
     id: ChallengeName.ListenStreakEndless,
     title: 'Listening Streak',
     description: () =>
-      'Listen to Audius daily for a week to start a streak and earn $AUDIO for each day you keep it going.',
+      'Listen to music on Audius daily for seven days to start a streak. After that, earn $AUDIO for each consecutive day you continue listening.',
     fullDescription: () =>
       'Listen to music on Audius daily for seven days to start a streak. After that, earn $AUDIO for each consecutive day you continue listening.',
     progressLabel: '%0/%1 Days',
@@ -308,39 +307,13 @@ export const challengeRewardsConfig: Record<
     id: 'trending-underground'
   },
   o: {
-    title: 'Airdrop - January 2025',
+    title: 'Airdrop - Februrary 2025',
     description: () => 'Claim your $AUDIO before it expires!',
     fullDescription: () => 'Claim your $AUDIO before it expires!',
     panelButtonText: '',
     id: ChallengeName.OneShot,
     remainingLabel: 'Ineligible',
     progressLabel: 'Ready to Claim'
-  }
-}
-
-export const makeChallengeSortComparator = (
-  userChallenges: Record<string, UserChallenge>
-): ((id1: ChallengeRewardID, id2: ChallengeRewardID) => number) => {
-  return (id1, id2) => {
-    const userChallenge1 = userChallenges[id1]
-    const userChallenge2 = userChallenges[id2]
-
-    if (!userChallenge1 || !userChallenge2) {
-      return 0
-    }
-    if (userChallenge1.is_disbursed) {
-      return 1
-    }
-    if (userChallenge1.is_complete) {
-      return -1
-    }
-    if (userChallenge2.is_disbursed) {
-      return -1
-    }
-    if (userChallenge2.is_complete) {
-      return 1
-    }
-    return 0
   }
 }
 
@@ -351,32 +324,26 @@ export const makeOptimisticChallengeSortComparator = (
     const userChallenge1 = userChallenges[id1]
     const userChallenge2 = userChallenges[id2]
 
-    if (
-      userChallenge1?.challenge_id &&
-      isNewChallenge(userChallenge1?.challenge_id)
-    ) {
-      return -1
-    }
     if (!userChallenge1 || !userChallenge2) {
       return 0
     }
     if (userChallenge1?.claimableAmount > 0) {
       return -1
     }
-    if (userChallenge1?.state === 'disbursed') {
-      return 1
-    }
-    if (userChallenge1?.state === 'completed') {
-      return -1
-    }
-    if (userChallenge2?.state === 'disbursed') {
-      return -1
-    }
     if (userChallenge2?.claimableAmount > 0) {
       return 1
     }
-    if (userChallenge2?.state === 'completed') {
+    if (
+      userChallenge1?.challenge_id &&
+      isNewChallenge(userChallenge1?.challenge_id)
+    ) {
+      return -1
+    }
+    if (userChallenge1?.state === 'disbursed') {
       return 1
+    }
+    if (userChallenge2?.state === 'disbursed') {
+      return -1
     }
     return 0
   }

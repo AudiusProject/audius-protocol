@@ -87,7 +87,7 @@ export const useDeveloperApps = (options?: QueryOptions) => {
 
       return data
     },
-    staleTime: options?.staleTime,
+    ...options,
     enabled: options?.enabled !== false && !!userId
   })
 }

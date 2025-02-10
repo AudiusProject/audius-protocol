@@ -32,7 +32,7 @@ export const usePurchasesCount = (
       })
       return data
     },
-    staleTime: options?.staleTime,
+    ...options,
     enabled: options?.enabled !== false && !!audiusSdk && !!userId
   })
 }

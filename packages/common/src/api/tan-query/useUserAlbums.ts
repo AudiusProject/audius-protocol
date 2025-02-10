@@ -62,7 +62,7 @@ export const useUserAlbums = (
 
       return collections
     },
-    staleTime: options?.staleTime,
+    ...options,
     enabled: options?.enabled !== false && !!userId
   })
 }

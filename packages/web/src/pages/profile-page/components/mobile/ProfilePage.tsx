@@ -11,7 +11,8 @@ import {
   ID,
   ProfilePictureSizes,
   CoverPhotoSizes,
-  User
+  User,
+  Collection
 } from '@audius/common/models'
 import {
   profilePageFeedLineupActions as feedActions,
@@ -96,6 +97,8 @@ export type ProfilePageProps = {
   trackIsActive: boolean
 
   profile: User | null
+  albums: Collection[] | null
+  playlists: Collection[] | null
   status: Status
   goToRoute: (route: string) => void
 
@@ -106,6 +109,8 @@ export type ProfilePageProps = {
   // Methods
   changeTab: (tab: ProfilePageTabs) => void
   getLineupProps: (lineup: any) => any
+  loadMoreArtistTracks: (offset: number, limit: number) => void
+  loadMoreUserFeed: (offset: number, limit: number) => void
   onFollow: (id: ID) => void
   onConfirmUnfollow: (id: ID) => void
   updateName: (name: string) => void

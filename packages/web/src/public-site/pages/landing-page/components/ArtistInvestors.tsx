@@ -1,3 +1,5 @@
+import { route } from '@audius/common/src/utils'
+import { TextLink } from '@audius/harmony'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 
@@ -11,9 +13,10 @@ import useHasViewed from 'hooks/useHasViewed'
 import styles from './ArtistInvestors.module.css'
 
 const messages = {
-  title: 'Our Artist Investors',
-  subtitle: 'We built Audius with you in mind and with them by our side.',
-  manyMore: 'And so many more!'
+  title: 'Backed By The Best',
+  subtitle:
+    'Audius is built by and for the community with an all-star team of music industry and artist backers.',
+  joinTheMovement: 'Join the Movement!'
 }
 
 type AristProps = {
@@ -106,7 +109,15 @@ const ArtistInvestors = (props: ArtistInvestorsProps) => {
               <MobileArtist key={artist.name} {...artist} />
             ))}
           </div>
-          <h3 className={styles.subTitle}>{messages.manyMore}</h3>
+          <TextLink
+            target='_blank'
+            variant='visible'
+            textVariant='body'
+            css={{ fontSize: '24px' }}
+            href={route.SIGN_UP_PAGE}
+          >
+            {messages.joinTheMovement}
+          </TextLink>
         </div>
       </div>
     )
@@ -132,7 +143,15 @@ const ArtistInvestors = (props: ArtistInvestorsProps) => {
             <Artist key={artist.name} {...artist} />
           ))}
         </div>
-        <h3 className={styles.subTitle}>{messages.manyMore}</h3>
+        <TextLink
+          target='_blank'
+          variant='visible'
+          textVariant='body'
+          css={{ fontSize: '24px' }}
+          href={route.SIGN_UP_PAGE}
+        >
+          {messages.joinTheMovement}
+        </TextLink>
       </div>
     </div>
   )
