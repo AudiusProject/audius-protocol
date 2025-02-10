@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 const initialState = {}
 
-type SignOutPayload = undefined
+type SignOutPayload = { fromOAuth?: boolean }
 
 const slice = createSlice({
   name: 'sign-out',
