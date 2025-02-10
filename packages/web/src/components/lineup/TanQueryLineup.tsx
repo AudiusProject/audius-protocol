@@ -271,7 +271,7 @@ export const TanQueryLineup = ({
           statSize,
           containerClassName,
           uid: entry.uid,
-          isLoading: slicedLineup.entries[index] === undefined,
+          isLoading: lineupQueryData.data?.[index] === undefined,
           isTrending,
           onClick: onClickTile,
           source: ModalSource.LineUpTrackTile,
@@ -291,7 +291,7 @@ export const TanQueryLineup = ({
           pauseTrack: pause,
           playingTrackId,
           togglePlay,
-          isLoading: slicedLineup.entries[index] === undefined,
+          isLoading: lineupQueryData.data?.[index] === undefined,
           numLoadingSkeletonRows: numPlaylistSkeletonRows,
           isTrending,
           source: ModalSource.LineUpCollectionTile,
@@ -326,17 +326,22 @@ export const TanQueryLineup = ({
         {Array(skeletonCount)
           .fill(null)
           .map((_, index) => {
-            // @ts-ignore - TODO: these types werent being enforced before - something smelly here
-            return <TrackTile {...skeletonTileProps(index)} key={index} />
+            return (
+              <li
+                key={index}
+                className={cn({ [tileStyles!]: !!tileStyles })}
+                css={{ listStyle: 'none' }}
+              >
+                {/* @ts-ignore - TODO: these types werent being enforced before */}
+                <TrackTile {...skeletonTileProps(index)} key={index} />
+              </li>
+            )
           })}
       </>
     )
   }
 
-  // On initial load we won't have any data loaded so we show skeletons based on the initial page size
-  if ((isFetching && tiles.length === 0) || isLoading) {
-    return renderSkeletons(initialPageSize ?? pageSize)
-  }
+  const isInitialLoad = (isFetching && tiles.length === 0) || isLoading
 
   if (isError) {
     tiles = []
@@ -362,7 +367,7 @@ export const TanQueryLineup = ({
           }}
         >
           {tiles.length === 0 ? (
-            isFetching ? (
+            isFetching || isInitialLoad ? (
               renderSkeletons(initialPageSize ?? pageSize)
             ) : (
               emptyElement
@@ -392,9 +397,9 @@ export const TanQueryLineup = ({
                   {tile}
                 </li>
               ))}
+              {isFetching && shouldLoadMore && renderSkeletons(pageSize)}
             </InfiniteScroll>
           )}
-          {isFetching && shouldLoadMore && renderSkeletons(pageSize)}
         </div>
       </div>
       {!hasNextPage && endOfLineup ? endOfLineup : null}

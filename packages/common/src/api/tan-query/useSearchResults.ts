@@ -27,6 +27,7 @@ import { useCurrentUserId } from '..'
 
 import { QUERY_KEYS } from './queryKeys'
 import { FlatUseInfiniteQueryResult, QueryOptions } from './types'
+import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
 import { primeCollectionData } from './utils/primeCollectionData'
 import { primeTrackData } from './utils/primeTrackData'
 import { primeUserData } from './utils/primeUserData'
@@ -209,15 +210,22 @@ const useSearchQueryProps = (
         )
       }
 
+      // We only prime other caches when loading data into the all category
+      const shouldPrimeCache = category === 'all'
+
       // Prime entity cache data & the individual search slice data
       if (tracks?.length) {
         primeTrackData({ tracks, queryClient, dispatch })
-        primeSearchSlice(tracks, 'tracks')
+        if (shouldPrimeCache) {
+          primeSearchSlice(tracks, 'tracks')
+        }
       }
 
       if (users?.length) {
         primeUserData({ users, queryClient, dispatch })
-        primeSearchSlice(users, 'users')
+        if (shouldPrimeCache) {
+          primeSearchSlice(users, 'users')
+        }
       }
 
       if (albums?.length || playlists?.length) {
@@ -226,11 +234,11 @@ const useSearchQueryProps = (
           queryClient,
           dispatch
         })
-        if (albums?.length) {
+        if (albums?.length && shouldPrimeCache) {
           primeSearchSlice(albums, 'albums')
         }
 
-        if (playlists?.length) {
+        if (playlists?.length && shouldPrimeCache) {
           primeSearchSlice(playlists, 'playlists')
         }
       }
@@ -384,9 +392,9 @@ export const useSearchUserResults = (
       const data = await queryProps.queryFn({ pageParam })
       return data.users
     }
-  })
+  }) as FlatUseInfiniteQueryResult<UserMetadata>
 
-  return queryData as FlatUseInfiniteQueryResult<UserMetadata>
+  return { ...queryData, loadNextPage: loadNextPage(queryData) }
 }
 
 export const useSearchAlbumResults = (
@@ -412,9 +420,9 @@ export const useSearchAlbumResults = (
       const data = await queryProps.queryFn({ pageParam })
       return data.albums
     }
-  })
+  }) as FlatUseInfiniteQueryResult<UserCollectionMetadata>
 
-  return queryData as FlatUseInfiniteQueryResult<UserCollectionMetadata>
+  return { ...queryData, loadNextPage: loadNextPage(queryData) }
 }
 
 export const useSearchPlaylistResults = (
@@ -440,7 +448,7 @@ export const useSearchPlaylistResults = (
       const data = await queryProps.queryFn({ pageParam })
       return data.playlists
     }
-  })
+  }) as FlatUseInfiniteQueryResult<UserCollectionMetadata>
 
-  return queryData as FlatUseInfiniteQueryResult<UserCollectionMetadata>
+  return { ...queryData, loadNextPage: loadNextPage(queryData) }
 }
