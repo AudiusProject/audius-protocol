@@ -9,7 +9,7 @@ export * from './AuthorizedApp';
 export * from './AuthorizedApps';
 export * from './BlobInfo';
 export * from './ChallengeResponse';
-export * from './CollectiblesData';
+export * from './Collectibles';
 export * from './CollectiblesResponse';
 export * from './CollectionActivity';
 export * from './Comment';

@@ -14,12 +14,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { CollectiblesData } from './CollectiblesData';
+import type { Collectibles } from './Collectibles';
 import {
-    CollectiblesDataFromJSON,
-    CollectiblesDataFromJSONTyped,
-    CollectiblesDataToJSON,
-} from './CollectiblesData';
+    CollectiblesFromJSON,
+    CollectiblesFromJSONTyped,
+    CollectiblesToJSON,
+} from './Collectibles';
 
 /**
  * 
@@ -29,10 +29,10 @@ import {
 export interface CollectiblesResponse {
     /**
      * 
-     * @type {CollectiblesData}
+     * @type {Collectibles}
      * @memberof CollectiblesResponse
      */
-    data?: CollectiblesData;
+    data?: Collectibles;
 }
 
 /**
@@ -54,7 +54,7 @@ export function CollectiblesResponseFromJSONTyped(json: any, ignoreDiscriminator
     }
     return {
         
-        'data': !exists(json, 'data') ? undefined : CollectiblesDataFromJSON(json['data']),
+        'data': !exists(json, 'data') ? undefined : CollectiblesFromJSON(json['data']),
     };
 }
 
@@ -67,7 +67,7 @@ export function CollectiblesResponseToJSON(value?: CollectiblesResponse | null):
     }
     return {
         
-        'data': CollectiblesDataToJSON(value.data),
+        'data': CollectiblesToJSON(value.data),
     };
 }
 
