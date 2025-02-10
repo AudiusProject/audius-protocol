@@ -272,7 +272,7 @@ remove_associated_wallet_metadata_format = {
     "chain": None,
 }
 
-collectibles_data_metadata_format = {
+collectibles_metadata_format = {
     "collectibles": None,
 }
 

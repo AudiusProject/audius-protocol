@@ -17,7 +17,7 @@ from src.exceptions import IndexingValidationError
 from src.models.indexing.cid_data import CIDData
 from src.models.tracks.track import Track
 from src.models.users.associated_wallet import AssociatedWallet
-from src.models.users.collectibles_data import CollectiblesData
+from src.models.users.collectibles import Collectibles
 from src.models.users.user import User
 from src.models.users.user_events import UserEvent
 from src.models.users.user_payout_wallet_history import UserPayoutWalletHistory
@@ -339,7 +339,7 @@ def update_user_metadata(
         # Dual-write for collectibles data to support legacy indexing
         # TODO: Remove after clients updated to use new transactions
         # https://linear.app/audius/issue/PAY-3894/remove-collection-and-other-cid-metadata-indexing
-        collectibles_data = CollectiblesData(
+        collectibles = Collectibles(
             user_id=user_record.user_id,
             data=metadata["collectibles"],
             blockhash=params.event_blockhash,
@@ -348,9 +348,7 @@ def update_user_metadata(
 
         # We can just add_record here. Outer EM logic will take care
         # of deleting previous record if it exists
-        params.add_record(
-            user_record.user_id, collectibles_data, EntityType.COLLECTIBLES_DATA
-        )
+        params.add_record(user_record.user_id, collectibles, EntityType.COLLECTIBLES)
 
         if (
             metadata["collectibles"]
@@ -678,7 +676,7 @@ def update_user_collectibles(params: ManageEntityParameters):
             # If invalid format, don't update
             raise IndexingValidationError("Invalid collectibles data format")
 
-        collectibles_data = CollectiblesData(
+        collectibles = Collectibles(
             user_id=user_id,
             data=metadata["collectibles"],
             blockhash=params.event_blockhash,
@@ -687,7 +685,7 @@ def update_user_collectibles(params: ManageEntityParameters):
 
         # We can just add_record here. Outer EM logic will take care
         # of deleting previous record if it exists
-        params.add_record(user_id, collectibles_data, EntityType.COLLECTIBLES_DATA)
+        params.add_record(user_id, collectibles, EntityType.COLLECTIBLES)
 
         if metadata["collectibles"].items():
             existing_user.has_collectibles = True

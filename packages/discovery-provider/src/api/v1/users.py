@@ -85,7 +85,7 @@ from src.api.v1.models.users import (
     account_full,
     associated_wallets,
     challenge_response,
-    collectibles_data,
+    collectibles,
     connected_wallets,
     decoded_user_token,
     email_access,
@@ -114,10 +114,7 @@ from src.queries.get_associated_user_id import get_associated_user_id
 from src.queries.get_associated_user_wallet import get_associated_user_wallet
 from src.queries.get_authorization import is_authorized_request
 from src.queries.get_challenges import get_challenges
-from src.queries.get_collectibles_data import (
-    GetCollectiblesDataArgs,
-    get_collectibles_data,
-)
+from src.queries.get_collectibles import GetCollectiblesArgs, get_collectibles
 from src.queries.get_collection_library import (
     CollectionType,
     GetCollectionLibraryArgs,
@@ -1964,7 +1961,7 @@ class ConnectedWallets(Resource):
 
 
 collectibles_response = make_response(
-    "collectibles_response", ns, fields.Nested(collectibles_data, allow_null=True)
+    "collectibles_response", ns, fields.Nested(collectibles, allow_null=True)
 )
 
 
@@ -1980,9 +1977,7 @@ class UserCollectibles(Resource):
     @cache(ttl_sec=10)
     def get(self, id):
         decoded_id = decode_with_abort(id, full_ns)
-        collectibles = get_collectibles_data(
-            GetCollectiblesDataArgs(user_id=decoded_id)
-        )
+        collectibles = get_collectibles(GetCollectiblesArgs(user_id=decoded_id))
         return success_response({"data": collectibles} if collectibles else None)
 
 

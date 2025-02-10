@@ -6,8 +6,8 @@ from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
 
 
-class CollectiblesData(Base, RepresentableMixin):
-    __tablename__ = "collectibles_data"
+class Collectibles(Base, RepresentableMixin):
+    __tablename__ = "collectibles"
 
     user_id = Column(
         Integer,
