@@ -1,15 +1,9 @@
 import { useCallback, memo, ReactNode, useEffect, useState } from 'react'
 
-import {
-  useCurrentUserId,
-  useGetMutedUsers,
-  useUserPlaylists,
-  useUserAlbums
-} from '@audius/common/api'
+import { useCurrentUserId, useGetMutedUsers } from '@audius/common/api'
 import { useMuteUser } from '@audius/common/context'
 import { commentsMessages } from '@audius/common/messages'
 import {
-  CreatePlaylistSource,
   Status,
   Collection,
   ID,
@@ -23,10 +17,7 @@ import {
 import {
   profilePageFeedLineupActions as feedActions,
   profilePageTracksLineupActions as tracksActions,
-  ProfilePageTabs,
-  profilePageSelectors,
-  CommonState,
-  CollectionSortMode
+  ProfilePageTabs
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -39,16 +30,12 @@ import {
   IconRepost as IconReposts,
   Text,
   Hint,
-  IconQuestionCircle,
-  LoadingSpinner
+  IconQuestionCircle
 } from '@audius/harmony'
-import { useSelector } from 'react-redux'
 
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
-import { CollectionCard } from 'components/collection'
 import { ConfirmationModal } from 'components/confirmation-modal'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
-import CardLineup from 'components/lineup/CardLineup'
 import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
 import Mask from 'components/mask/Mask'
@@ -66,23 +53,12 @@ import { getUserPageSEOFields } from 'utils/seo'
 
 import { DeactivatedProfileTombstone } from '../DeactivatedProfileTombstone'
 
+import { AlbumTab } from './AlbumTab'
+import { PlaylistTab } from './PlaylistTab'
 import styles from './ProfilePage.module.css'
 import ProfileWrapping from './ProfileWrapping'
 
 const { profilePage } = route
-const { getProfileCollectionSortMode } = profilePageSelectors
-
-const messages = {
-  emptyPlaylists: 'created any playlists',
-  emptyAlbums: 'created any albums'
-}
-
-const mapSortMode = (
-  mode: CollectionSortMode | undefined
-): 'recent' | 'popular' => {
-  if (mode === CollectionSortMode.SAVE_COUNT) return 'popular'
-  return 'recent'
-}
 
 export type ProfilePageProps = {
   // State
@@ -188,122 +164,6 @@ export type ProfilePageProps = {
   onCloseUnblockUserConfirmationModal: () => void
   onCloseMuteUserConfirmationModal: () => void
   onCloseUnmuteUserConfirmationModal: () => void
-}
-
-type PlaylistTabProps = {
-  userId: ID | null
-  profile: User
-  isOwner: boolean
-}
-
-type AlbumTabProps = {
-  userId: ID | null
-  profile: User
-  isOwner: boolean
-}
-
-const PlaylistTab = ({ userId, profile, isOwner }: PlaylistTabProps) => {
-  const sortMode = useSelector((state: CommonState) =>
-    getProfileCollectionSortMode(state, profile?.handle ?? '')
-  )
-  const { data: playlists, isPending } = useUserPlaylists({
-    userId,
-    sortMethod: mapSortMode(sortMode)
-  })
-
-  const playlistCards = playlists?.map((playlist) => {
-    return (
-      <CollectionCard
-        key={playlist.playlist_id}
-        id={playlist.playlist_id}
-        size='m'
-      />
-    )
-  })
-
-  if (isOwner) {
-    playlistCards?.unshift(
-      <UploadChip
-        key='upload-chip'
-        type='playlist'
-        variant='card'
-        isFirst={playlistCards.length === 0}
-        source={CreatePlaylistSource.PROFILE_PAGE}
-      />
-    )
-  }
-
-  if (isPending) {
-    return (
-      <Flex justifyContent='center' mt='2xl'>
-        <Box w={24}>
-          <LoadingSpinner />
-        </Box>
-      </Flex>
-    )
-  }
-
-  if (!playlistCards?.length) {
-    return (
-      <EmptyTab
-        isOwner={isOwner}
-        name={profile?.name}
-        text={messages.emptyPlaylists}
-      />
-    )
-  }
-
-  return <CardLineup cardsClassName={styles.cardLineup} cards={playlistCards} />
-}
-
-const AlbumTab = ({ userId, profile, isOwner }: AlbumTabProps) => {
-  const sortMode = useSelector((state: CommonState) =>
-    getProfileCollectionSortMode(state, profile?.handle ?? '')
-  )
-  const { data: albums, isPending } = useUserAlbums({
-    userId,
-    sortMethod: mapSortMode(sortMode)
-  })
-
-  const albumCards = albums?.map((album) => {
-    return (
-      <CollectionCard key={album.playlist_id} id={album.playlist_id} size='m' />
-    )
-  })
-
-  if (isOwner) {
-    albumCards?.unshift(
-      <UploadChip
-        key='upload-chip'
-        type='album'
-        variant='card'
-        isFirst={albumCards && albumCards.length === 0}
-        source={CreatePlaylistSource.PROFILE_PAGE}
-      />
-    )
-  }
-
-  if (isPending) {
-    return (
-      <Flex justifyContent='center' mt='2xl'>
-        <Box w={24}>
-          <LoadingSpinner />
-        </Box>
-      </Flex>
-    )
-  }
-
-  if (!albumCards?.length) {
-    return (
-      <EmptyTab
-        isOwner={isOwner}
-        name={profile?.name}
-        text={messages.emptyAlbums}
-      />
-    )
-  }
-
-  return <CardLineup cardsClassName={styles.cardLineup} cards={albumCards} />
 }
 
 const ProfilePage = ({

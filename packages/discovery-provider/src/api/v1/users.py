@@ -183,6 +183,7 @@ from src.queries.get_users import get_users
 from src.queries.get_users_account import GetAccountArgs, get_account
 from src.queries.query_helpers import (
     CollectionLibrarySortMethod,
+    CollectionSortMethod,
     PurchaseSortMethod,
     SortDirection,
 )
