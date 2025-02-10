@@ -20,7 +20,7 @@ one_shot_users as (
     select temp.handle_lc,
         temp.amount,
         users.user_id
-    from temp_stage_one_shot temp
+    from temp_prod_airdrop_qa temp
         join users on temp.handle_lc = users.handle_lc
 )
 INSERT INTO user_challenges (
