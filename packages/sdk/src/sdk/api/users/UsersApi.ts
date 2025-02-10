@@ -719,7 +719,7 @@ export class UsersApi extends GeneratedUsersApi {
 
     return await this.entityManager.manageEntity({
       userId,
-      entityType: EntityType.COLLECTIBLES_DATA,
+      entityType: EntityType.COLLECTIBLES,
       entityId: 0, // unused
       action: Action.UPDATE,
       metadata: JSON.stringify({
