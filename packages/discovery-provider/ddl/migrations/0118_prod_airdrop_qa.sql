@@ -1,5 +1,5 @@
 begin;
-do $$ begin -- run only on stage
+do $$ begin -- run only on prod
 if exists (
     select *
     from "blocks"
