@@ -6,6 +6,7 @@ from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.challenges.listen_streak_endless_challenge import NUM_DAYS_IN_STREAK
 from src.models.rewards.challenge import Challenge, ChallengeType
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
 from src.models.rewards.user_challenge import UserChallenge
@@ -55,6 +56,7 @@ def rollup_aggregates(
         0,
     )
     amount = parent_challenge.amount
+    step_count = num_complete
 
     # The parent challenge should have a step count, otherwise, we can just
     # say it's complete.
@@ -65,6 +67,13 @@ def rollup_aggregates(
         step_count = sum(challenge.amount for challenge in user_challenges)
         amount = "1"
         is_complete = True
+    elif parent_challenge.id == "e":
+        sorted_challenges = sorted(user_challenges, key=lambda x: x.created_at)
+        most_recent_challenge = sorted_challenges[-1]
+        if not most_recent_challenge.is_complete:
+            step_count = most_recent_challenge.current_step_count
+        is_complete = num_complete >= NUM_DAYS_IN_STREAK
+        amount = str(num_complete)
     elif parent_challenge.step_count:
         is_complete = num_complete >= parent_challenge.step_count
     else:
@@ -75,7 +84,7 @@ def rollup_aggregates(
         "user_id": user_challenges[0].user_id,
         "specifier": "",
         "is_complete": is_complete,
-        "current_step_count": num_complete,
+        "current_step_count": step_count,
         "max_steps": step_count,
         "challenge_type": parent_challenge.type,
         "is_active": parent_challenge.active,
@@ -218,12 +227,9 @@ def get_challenges(
     for i, user_challenge in enumerate(existing_user_challenges):
         parent_challenge = all_challenges_map[user_challenge.challenge_id]
         if parent_challenge.type == ChallengeType.aggregate:
-            # Filter out aggregate user_challenges that aren't complete.
-            # this probably shouldn't even happen (what does it mean?)
-            if user_challenge.is_complete:
-                aggregate_user_challenges_map[user_challenge.challenge_id].append(
-                    user_challenge
-                )
+            aggregate_user_challenges_map[user_challenge.challenge_id].append(
+                user_challenge
+            )
         else:
             # If we're a trending challenge, don't add if the user_challenge is incomplete
             if (
