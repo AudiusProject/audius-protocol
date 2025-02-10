@@ -1,8 +1,6 @@
+import { useUnfollowUser, useFollowUser } from '@audius/common/api'
 import { ShareSource, FollowSource, ID } from '@audius/common/models'
-import {
-  usersSocialActions as socialActions,
-  shareModalUIActions
-} from '@audius/common/store'
+import { shareModalUIActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/harmony'
 import { connect } from 'react-redux'
@@ -29,8 +27,11 @@ const Menu = ({
   currentUserFollows = false,
   ...props
 }: UserMenuProps) => {
+  const { mutate: followUser } = useFollowUser()
+  const { mutate: unfollowUser } = useUnfollowUser()
+
   const getMenu = () => {
-    const { userId, shareUser, unFollowUser, followUser, goToRoute } = props
+    const { userId, shareUser, goToRoute } = props
 
     const shareMenuItem = {
       text: 'Share',
@@ -42,7 +43,15 @@ const Menu = ({
     const followMenuItem = {
       text: currentUserFollows ? 'Unfollow' : 'Follow',
       onClick: () =>
-        currentUserFollows ? unFollowUser(userId) : followUser(userId)
+        currentUserFollows
+          ? unfollowUser({
+              followeeUserId: userId,
+              source: FollowSource.OVERFLOW
+            })
+          : followUser({
+              followeeUserId: userId,
+              source: FollowSource.OVERFLOW
+            })
     }
 
     const artistPageMenuItem = {
@@ -72,11 +81,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
           source: ShareSource.OVERFLOW
         })
       )
-    },
-    followUser: (userId: ID) =>
-      dispatch(socialActions.followUser(userId, FollowSource.OVERFLOW)),
-    unFollowUser: (userId: ID) =>
-      dispatch(socialActions.unfollowUser(userId, FollowSource.OVERFLOW))
+    }
   }
 }
 

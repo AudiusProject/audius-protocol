@@ -1,11 +1,10 @@
-import { ID } from '@audius/common/models'
+import { useUnfollowUser } from '@audius/common/api'
+import { FollowSource, ID } from '@audius/common/models'
 
 import ActionSheetModal from 'components/action-drawer/ActionDrawer'
-
 type UnfollowConfirmationModalProps = {
   isOpen: boolean
   onClose: () => void
-  unfollowUser: (userId: ID) => void
   userId: ID
 }
 
@@ -22,12 +21,12 @@ const actions = [
 const UnfollowConfirmationModal = ({
   isOpen,
   onClose,
-  userId,
-  unfollowUser
+  userId
 }: UnfollowConfirmationModalProps) => {
+  const { mutate: unfollowUser } = useUnfollowUser()
   const actionCallbacks = [
     () => {
-      unfollowUser(userId)
+      unfollowUser({ followeeUserId: userId, source: FollowSource.USER_LIST })
       onClose()
     },
     () => {
