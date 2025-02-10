@@ -6,7 +6,6 @@ import {
   ShareSource,
   RepostSource,
   FavoriteSource,
-  FollowSource,
   PlaybackSource,
   FavoriteType,
   PlayableType,
@@ -18,7 +17,8 @@ import {
   isContentUSDCPurchaseGated,
   UserMetadata,
   UserCollectionMetadata,
-  ModalSource
+  ModalSource,
+  FollowSource
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -30,7 +30,6 @@ import {
   queueSelectors,
   collectionsSocialActions as socialCollectionsActions,
   tracksSocialActions as socialTracksActions,
-  usersSocialActions as socialUsersActions,
   mobileOverflowMenuUIActions,
   modalsActions,
   shareModalUIActions,
@@ -126,7 +125,22 @@ type OwnProps = {
 type CollectionPageProviderProps = OwnProps &
   ReturnType<ReturnType<typeof makeMapStateToProps>> &
   ReturnType<typeof mapDispatchToProps> &
-  RouteComponentProps
+  RouteComponentProps & {
+    onFollow: ({
+      followeeUserId,
+      source
+    }: {
+      followeeUserId: ID
+      source: FollowSource
+    }) => void
+    onUnfollow: ({
+      followeeUserId,
+      source
+    }: {
+      followeeUserId: ID
+      source: FollowSource
+    }) => void
+  }
 
 type CollectionPageState = {
   filterText: string
@@ -682,18 +696,6 @@ class CollectionPage extends Component<
     }
   }
 
-  onFollow = () => {
-    const { onFollow, collection } = this.props
-    if (!collection) return
-    onFollow(collection.playlist_owner_id)
-  }
-
-  onUnfollow = () => {
-    const { onUnfollow, collection } = this.props
-    if (!collection) return
-    onUnfollow(collection.playlist_owner_id)
-  }
-
   render() {
     const {
       playing,
@@ -706,7 +708,9 @@ class CollectionPage extends Component<
       tracks,
       userPlaylists,
       smartCollection,
-      trackCount
+      trackCount,
+      onFollow,
+      onUnfollow
     } = this.props
     const { allowReordering } = this.state
 
@@ -761,8 +765,8 @@ class CollectionPage extends Component<
       onClickMobileOverflow: this.props.clickOverflow,
       onClickFavorites: this.onClickFavorites,
       onClickReposts: this.onClickReposts,
-      onFollow: this.onFollow,
-      onUnfollow: this.onUnfollow,
+      onFollow,
+      onUnfollow,
       trackCount
     }
 
@@ -916,14 +920,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     unsaveTrack: (trackId: number) =>
       dispatch(
         socialTracksActions.unsaveTrack(trackId, FavoriteSource.COLLECTION_PAGE)
-      ),
-    onFollow: (userId: ID) =>
-      dispatch(
-        socialUsersActions.followUser(userId, FollowSource.COLLECTION_PAGE)
-      ),
-    onUnfollow: (userId: ID) =>
-      dispatch(
-        socialUsersActions.unfollowUser(userId, FollowSource.COLLECTION_PAGE)
       ),
     clickOverflow: (collectionId: ID, overflowActions: OverflowAction[]) =>
       dispatch(

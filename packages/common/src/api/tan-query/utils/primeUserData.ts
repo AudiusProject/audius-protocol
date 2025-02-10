@@ -3,7 +3,7 @@ import { AnyAction, Dispatch } from 'redux'
 import { SetRequired } from 'type-fest'
 
 import { Kind } from '~/models'
-import { User } from '~/models/User'
+import { User, UserMetadata } from '~/models/User'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
@@ -17,7 +17,7 @@ export const primeUserData = ({
   forceReplace = false,
   skipQueryData = false
 }: {
-  users: User[]
+  users: (User | UserMetadata)[]
   queryClient: QueryClient
   dispatch: Dispatch<AnyAction>
   forceReplace?: boolean
@@ -32,7 +32,7 @@ export const primeUserDataInternal = ({
   queryClient,
   skipQueryData = false
 }: {
-  users: User[]
+  users: (User | UserMetadata)[]
   queryClient: QueryClient
   skipQueryData?: boolean
 }): EntriesByKind => {

@@ -112,8 +112,6 @@ export type ProfilePageProps = {
   status: Status
 
   // Methods
-  onFollow: () => void
-  onUnfollow: () => void
   updateName: (name: string) => void
   updateBio: (bio: string) => void
   updateLocation: (location: string) => void
@@ -397,8 +395,6 @@ const ProfilePage = ({
   status,
   getLineupProps,
   updateProfile,
-  onFollow,
-  onUnfollow,
   updateName,
   updateBio,
   updateLocation,
@@ -770,8 +766,6 @@ const ProfilePage = ({
             following={following}
             isSubscribed={isSubscribed}
             onToggleSubscribe={toggleNotificationSubscription}
-            onFollow={onFollow}
-            onUnfollow={onUnfollow}
             canCreateChat={canCreateChat}
             onMessage={onMessage}
             isBlocked={isBlocked}

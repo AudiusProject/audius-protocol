@@ -1,8 +1,12 @@
 import { useCallback, useRef } from 'react'
 
-import { useCurrentUserId } from '@audius/common/api'
+import {
+  useCurrentUserId,
+  useFollowUser,
+  useUnfollowUser,
+  useUser
+} from '@audius/common/api'
 import { ID, User, FollowSource } from '@audius/common/models'
-import { profilePageActions, usersSocialActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { FollowButton, Scrollbar } from '@audius/harmony'
 import { css } from '@emotion/react'
@@ -14,7 +18,6 @@ import { useDispatch } from 'react-redux'
 import ArtistChip from 'components/artist/ArtistChip'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { MountPlacement } from 'components/types'
-import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { setVisibility } from 'store/application/ui/userListModal/slice'
 import { push } from 'utils/navigation'
@@ -22,7 +25,6 @@ import { push } from 'utils/navigation'
 import styles from './UserList.module.css'
 
 const { profilePage } = route
-const { setNotificationSubscription } = profilePageActions
 
 const SCROLL_THRESHOLD = 400
 
@@ -35,6 +37,77 @@ const skeletonData: SkeletonItem[] = range(6).map((index) => ({
   _loading: true,
   user_id: `skeleton ${index}`
 }))
+
+type UserListItemProps = {
+  userId: ID
+  isLastItem: boolean
+  onClickArtistName: (handle: string) => void
+  onClose: () => void
+  showSupportFor?: ID
+  showSupportFrom?: ID
+}
+
+const UserListItem = ({
+  userId,
+  isLastItem,
+  onClickArtistName,
+  onClose,
+  showSupportFor,
+  showSupportFrom
+}: UserListItemProps) => {
+  const isMobile = useIsMobile()
+  const { data: currentUserId } = useCurrentUserId()
+  const { mutate: followUser } = useFollowUser()
+  const { mutate: unfollowUser } = useUnfollowUser()
+  const { data: user } = useUser(userId)
+
+  const handleClickArtistName = useCallback(() => {
+    if (user) {
+      onClickArtistName(user.handle)
+    }
+  }, [onClickArtistName, user])
+
+  if (!user) {
+    return null
+  }
+
+  return (
+    <div
+      className={cn(styles.userContainer, {
+        [styles.notLastUser]: !isLastItem
+      })}
+    >
+      <ArtistChip
+        user={user}
+        onClickArtistName={handleClickArtistName}
+        onNavigateAway={onClose}
+        showPopover={!isMobile}
+        popoverMount={MountPlacement.BODY}
+        showSupportFor={showSupportFor}
+        showSupportFrom={showSupportFrom}
+      />
+      {user.user_id !== currentUserId && (
+        <FollowButton
+          size='small'
+          isFollowing={user.does_current_user_follow}
+          onFollow={() =>
+            followUser({
+              followeeUserId: user.user_id,
+              source: FollowSource.USER_LIST
+            })
+          }
+          onUnfollow={() =>
+            unfollowUser({
+              followeeUserId: user.user_id,
+              source: FollowSource.USER_LIST
+            })
+          }
+          fullWidth={false}
+        />
+      )}
+    </div>
+  )
+}
 
 type UserListProps = {
   data: User[] | undefined
@@ -54,39 +127,10 @@ export const UserList = ({
   showSupportFrom
 }: UserListProps) => {
   const dispatch = useDispatch()
-  const isMobile = useIsMobile()
-  const { data: currentUserId } = useCurrentUserId()
 
   const handleClose = useCallback(
     () => dispatch(setVisibility(false)),
     [dispatch]
-  )
-
-  const handleFollow = useCallback(
-    (userId: ID) => {
-      if (!currentUserId) {
-        handleClose()
-      } else {
-        dispatch(usersSocialActions.followUser(userId, FollowSource.USER_LIST))
-      }
-    },
-    [currentUserId, dispatch, handleClose]
-  )
-
-  const handleUnfollow = useCallback(
-    (userId: ID) => {
-      if (!currentUserId) {
-        handleClose()
-      } else if (isMobile) {
-        dispatch(unfollowConfirmationActions.setOpen(userId))
-      } else {
-        dispatch(
-          usersSocialActions.unfollowUser(userId, FollowSource.USER_LIST)
-        )
-        dispatch(setNotificationSubscription(userId, false, false))
-      }
-    },
-    [currentUserId, isMobile, handleClose, dispatch]
   )
 
   const handleClickArtistName = useCallback(
@@ -130,31 +174,15 @@ export const UserList = ({
                 Add loading skeleton
               </div>
             ) : (
-              <div
+              <UserListItem
                 key={user.user_id}
-                className={cn(styles.userContainer, {
-                  [styles.notLastUser]: data && index !== data.length - 1
-                })}
-              >
-                <ArtistChip
-                  user={user}
-                  onClickArtistName={() => handleClickArtistName(user.handle)}
-                  onNavigateAway={handleClose}
-                  showPopover={!isMobile}
-                  popoverMount={MountPlacement.BODY}
-                  showSupportFor={showSupportFor}
-                  showSupportFrom={showSupportFrom}
-                />
-                {user.user_id !== currentUserId && (
-                  <FollowButton
-                    size='small'
-                    isFollowing={user.does_current_user_follow}
-                    onFollow={() => handleFollow(user.user_id)}
-                    onUnfollow={() => handleUnfollow(user.user_id)}
-                    fullWidth={false}
-                  />
-                )}
-              </div>
+                userId={user.user_id}
+                isLastItem={data ? index === data.length - 1 : false}
+                onClickArtistName={handleClickArtistName}
+                onClose={handleClose}
+                showSupportFor={showSupportFor}
+                showSupportFrom={showSupportFrom}
+              />
             )
           )}
           {isLoading && <div className={styles.spacer} />}
