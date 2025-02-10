@@ -50,7 +50,6 @@ const DEFAULT_GATED_TRACK_POLL_INTERVAL_MS = 1000
 
 const {
   updateNftAccessSignatures,
-  revokeAccess,
   updateGatedContentStatus,
   updateGatedContentStatuses,
   addFolloweeId,
@@ -59,7 +58,7 @@ const {
   removeTippedUserId
 } = gatedContentActions
 
-const { refreshTipGatedTracks } = tippingActions
+const { refreshTipGatedTracks, revokeFollowGatedAccess } = tippingActions
 const { show: showConfetti } = musicConfettiActions
 
 const { updateUserEthCollectibles, updateUserSolCollectibles } =
@@ -646,6 +645,45 @@ function* updateSpecialAccessTracks(
   )
 }
 
+/**
+ * 1. Get follow-gated tracks of unfollowed user
+ * 2. Set those track statuses to 'LOCKED'
+ * 3. Revoke access for those tracks
+ */
+function* handleRevokeFollowGatedAccess(
+  action: ReturnType<typeof revokeFollowGatedAccess>
+) {
+  // Remove followee from gated content store to unsubscribe from
+  // polling their newly loaded follow gated track signatures.
+  yield* put(removeFolloweeId({ id: action.payload.userId }))
+
+  const statusMap: { [id: ID]: GatedContentStatus } = {}
+  const revokeAccessMap: { [id: ID]: 'stream' | 'download' } = {}
+  const cachedTracks = yield* select(getTracks, {})
+
+  Object.keys(cachedTracks).forEach((trackId) => {
+    const id = parseInt(trackId)
+    const {
+      owner_id: ownerId,
+      stream_conditions: streamConditions,
+      download_conditions: downloadConditions
+    } = cachedTracks[id]
+    const isStreamFollowGated = isContentFollowGated(streamConditions)
+    const isDownloadFollowGated = isContentFollowGated(downloadConditions)
+    if (isStreamFollowGated && ownerId === action.payload.userId) {
+      statusMap[id] = 'LOCKED'
+      // note: if necessary, update some ui status to show that the track download is locked
+      revokeAccessMap[id] = 'stream'
+    } else if (isDownloadFollowGated && ownerId === action.payload.userId) {
+      // note: if necessary, update some ui status to show that the track download is locked
+      revokeAccessMap[id] = 'download'
+    }
+  })
+
+  yield* put(updateGatedContentStatuses(statusMap))
+  yield* call(revokeAccess, revokeAccessMap)
+}
+
 function* handleTipGatedTracks(
   action: ReturnType<typeof refreshTipGatedTracks>
 ) {
@@ -661,8 +699,7 @@ function* handleTipGatedTracks(
  * Remove stream signatures from track metadata when they're
  * no longer accessible by the user.
  */
-function* handleRevokeAccess(action: ReturnType<typeof revokeAccess>) {
-  const { revokeAccessMap } = action.payload
+function* revokeAccess(revokeAccessMap: { [id: ID]: 'stream' | 'download' }) {
   const metadatas = Object.keys(revokeAccessMap).map((trackId) => {
     const id = parseInt(trackId)
     const access =
@@ -692,10 +729,10 @@ function* watchTipGatedTracks() {
   yield* takeEvery(refreshTipGatedTracks.type, handleTipGatedTracks)
 }
 
-function* watchRevokeAccess() {
-  yield* takeEvery(revokeAccess.type, handleRevokeAccess)
+function* watchRevokeFollowGatedAccess() {
+  yield* takeEvery(revokeFollowGatedAccess.type, handleRevokeFollowGatedAccess)
 }
 
 export const sagas = () => {
-  return [watchGatedTracks, watchTipGatedTracks, watchRevokeAccess]
+  return [watchGatedTracks, watchTipGatedTracks, watchRevokeFollowGatedAccess]
 }

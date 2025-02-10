@@ -1,6 +1,6 @@
 import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
 import { useAppContext } from '~/context/appContext'
@@ -8,14 +8,12 @@ import { Kind } from '~/models'
 import { Name, FollowSource } from '~/models/Analytics'
 import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
-import { Track, isContentFollowGated } from '~/models/Track'
 import { UserMetadata } from '~/models/User'
 import { update } from '~/store/cache/actions'
-import { getTracks } from '~/store/cache/tracks/selectors'
-import { CommonState } from '~/store/commonStore'
-import { removeFolloweeId, revokeAccess } from '~/store/gated-content/slice'
+import { removeFolloweeId } from '~/store/gated-content/slice'
+import { revokeFollowGatedAccess } from '~/store/tipping/slice'
 
-import { QUERY_KEYS } from './queryKeys'
+import { getCurrentAccountQueryKey } from './useCurrentAccount'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getUserQueryKey } from './useUser'
 import { getUserByHandleQueryKey } from './useUserByHandle'
@@ -38,7 +36,6 @@ export const useUnfollowUser = () => {
     analytics: { track, make }
   } = useAppContext()
   const { data: currentUserId } = useCurrentUserId()
-  const tracks = useSelector((state: CommonState) => getTracks(state, {}))
 
   return useMutation({
     mutationFn: async ({ followeeUserId, source }: UnfollowUserParams) => {
@@ -55,31 +52,7 @@ export const useUnfollowUser = () => {
       // Handle gated content
       dispatch(removeFolloweeId({ id: followeeUserId }))
 
-      // Revoke access to follow-gated tracks
-      if (tracks) {
-        const revokeAccessMap: { [id: ID]: 'stream' | 'download' } = {}
-        Object.values(tracks).forEach((track: Track) => {
-          const isStreamFollowGated =
-            track.stream_conditions &&
-            isContentFollowGated(track.stream_conditions)
-          const isDownloadFollowGated =
-            track.download_conditions &&
-            isContentFollowGated(track.download_conditions)
-
-          if (isStreamFollowGated && track.owner_id === followeeUserId) {
-            revokeAccessMap[track.track_id] = 'stream'
-          } else if (
-            isDownloadFollowGated &&
-            track.owner_id === followeeUserId
-          ) {
-            revokeAccessMap[track.track_id] = 'download'
-          }
-        })
-
-        if (Object.keys(revokeAccessMap).length > 0) {
-          dispatch(revokeAccess({ revokeAccessMap }))
-        }
-      }
+      dispatch(revokeFollowGatedAccess({ userId: followeeUserId }))
 
       // Track the unfollow
       if (source) {
@@ -98,13 +71,12 @@ export const useUnfollowUser = () => {
       }
 
       await queryClient.cancelQueries({
-        queryKey: [QUERY_KEYS.user, followeeUserId]
+        queryKey: getUserQueryKey(followeeUserId)
       })
 
-      const previousUser = queryClient.getQueryData<UserMetadata>([
-        QUERY_KEYS.user,
-        followeeUserId
-      ])
+      const previousUser = queryClient.getQueryData<UserMetadata>(
+        getUserQueryKey(followeeUserId)
+      )
 
       const followeeUpdate = {
         does_current_user_follow: false,
@@ -116,32 +88,29 @@ export const useUnfollowUser = () => {
           ...followeeUpdate
         }
         queryClient.setQueryData(getUserQueryKey(followeeUserId), updatedUser)
-        if (previousUser.handle) {
-          queryClient.setQueryData(
-            getUserByHandleQueryKey(previousUser.handle),
-            updatedUser
-          )
-        }
+        queryClient.setQueryData(
+          getUserByHandleQueryKey(previousUser.handle),
+          updatedUser
+        )
       }
       dispatch(update(Kind.USERS, [{ id: followeeUserId, metadata: update }]))
 
-      const currentUser = queryClient.getQueryData<UserMetadata>([
-        QUERY_KEYS.user,
-        currentUserId
-      ])
+      const currentUser = queryClient.getQueryData<UserMetadata>(
+        getUserQueryKey(currentUserId)
+      )
       if (currentUser) {
-        queryClient.setQueryData([QUERY_KEYS.user, currentUserId], {
+        queryClient.setQueryData(getUserQueryKey(currentUserId), {
           ...currentUser,
           followee_count: Math.max((currentUser?.followee_count ?? 0) - 1, 0)
         })
       }
 
-      const previousAccountUser = queryClient.getQueryData<UserMetadata>([
-        QUERY_KEYS.accountUser
-      ])
+      const previousAccountUser = queryClient.getQueryData<UserMetadata>(
+        getCurrentAccountQueryKey(currentUserId)
+      )
 
       if (previousAccountUser) {
-        queryClient.setQueryData([QUERY_KEYS.accountUser], {
+        queryClient.setQueryData(getCurrentAccountQueryKey(currentUserId), {
           ...previousAccountUser,
           followee_count: Math.max(
             (previousAccountUser?.followee_count ?? 0) - 1,
@@ -176,16 +145,17 @@ export const useUnfollowUser = () => {
       if (previousUser) {
         queryClient.setQueryData(getUserQueryKey(followeeUserId), previousUser)
 
-        if (previousUser.handle) {
-          queryClient.setQueryData(
-            getUserByHandleQueryKey(previousUser.handle),
-            previousUser
-          )
-        }
+        queryClient.setQueryData(
+          getUserByHandleQueryKey(previousUser.handle),
+          previousUser
+        )
       }
 
       if (previousAccountUser) {
-        queryClient.setQueryData([QUERY_KEYS.accountUser], previousAccountUser)
+        queryClient.setQueryData(
+          getUserByHandleQueryKey(previousAccountUser.handle),
+          previousAccountUser
+        )
       }
 
       reportToSentry({
