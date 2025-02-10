@@ -179,7 +179,7 @@ export const mrvr = async (db: Knex, date: Date): Promise<void> => {
         "Gross Revenue",
         "Gross revenue With Deductions",
         country_code as "Territory",
-        ("Total Downloads" > 0 or "Total Streams" > 0) as "Has_usage_flag",
+        CASE WHEN ("Total Downloads" > 0 or "Total Streams" > 0) THEN 'TRUE' ELSE 'FALSE' END as "Has_usage_flag",
         coalesce("Total Downloads", 0) as "Total Downloads",
         coalesce("Total Streams", 0) as "Total Streams",
         "Currency",
