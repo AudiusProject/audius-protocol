@@ -14,7 +14,7 @@ from integration_tests.utils import populate_mock_db, populate_mock_db_blocks
 from src.challenges.challenge_event import ChallengeEvent
 from src.models.indexing.cid_data import CIDData
 from src.models.users.associated_wallet import AssociatedWallet
-from src.models.users.collectibles_data import CollectiblesData
+from src.models.users.collectibles import Collectibles
 from src.models.users.user import User
 from src.queries.get_balances import IMMEDIATE_REFRESH_REDIS_PREFIX
 from src.solana.solana_client_manager import SolanaClientManager
@@ -1981,7 +1981,7 @@ def test_add_user_collectibles(app, mocker):
                 "args": AttributeDict(
                     {
                         "_entityId": "",
-                        "_entityType": "CollectiblesData",
+                        "_entityType": "Collectibles",
                         "_userId": 1,
                         "_action": "Create",
                         "_metadata": json.dumps(
@@ -1997,7 +1997,7 @@ def test_add_user_collectibles(app, mocker):
                 "args": AttributeDict(
                     {
                         "_entityId": "",
-                        "_entityType": "CollectiblesData",
+                        "_entityType": "Collectibles",
                         "_userId": 2,
                         "_action": "Create",
                         "_metadata": json.dumps(
@@ -2054,9 +2054,7 @@ def test_add_user_collectibles(app, mocker):
 
         # Verify collectibles were added
         collectibles_data = (
-            session.query(CollectiblesData)
-            .filter(CollectiblesData.user_id == 1)
-            .first()
+            session.query(Collectibles).filter(Collectibles.user_id == 1).first()
         )
         assert collectibles_data is not None
         assert collectibles_data.data == valid_collectibles["collectibles"]
@@ -2079,9 +2077,7 @@ def test_add_user_collectibles(app, mocker):
         # Verify no collectibles were added
         assert total_changes == 0
         current_data = (
-            session.query(CollectiblesData)
-            .filter(CollectiblesData.user_id == 2)
-            .first()
+            session.query(Collectibles).filter(Collectibles.user_id == 2).first()
         )
         assert current_data is None
 
@@ -2110,7 +2106,7 @@ def test_update_user_collectibles(app, mocker):
                 "args": AttributeDict(
                     {
                         "_entityId": "",
-                        "_entityType": "CollectiblesData",
+                        "_entityType": "Collectibles",
                         "_userId": 1,
                         "_action": "Update",
                         "_metadata": json.dumps(
@@ -2126,7 +2122,7 @@ def test_update_user_collectibles(app, mocker):
                 "args": AttributeDict(
                     {
                         "_entityId": "",
-                        "_entityType": "CollectiblesData",
+                        "_entityType": "Collectibles",
                         "_userId": 1,
                         "_action": "Update",
                         "_metadata": json.dumps(
@@ -2142,7 +2138,7 @@ def test_update_user_collectibles(app, mocker):
                 "args": AttributeDict(
                     {
                         "_entityId": "",
-                        "_entityType": "CollectiblesData",
+                        "_entityType": "Collectibles",
                         "_userId": 2,
                         "_action": "Update",
                         "_metadata": json.dumps(
@@ -2211,9 +2207,7 @@ def test_update_user_collectibles(app, mocker):
 
         # Verify collectibles were updated
         updated_data = (
-            session.query(CollectiblesData)
-            .filter(CollectiblesData.user_id == 1)
-            .first()
+            session.query(Collectibles).filter(Collectibles.user_id == 1).first()
         )
         assert updated_data is not None
         assert updated_data.data == updated_collectibles["collectibles"]
@@ -2230,9 +2224,7 @@ def test_update_user_collectibles(app, mocker):
         )
         assert total_changes == 0
         current_data = (
-            session.query(CollectiblesData)
-            .filter(CollectiblesData.user_id == 1)
-            .first()
+            session.query(Collectibles).filter(Collectibles.user_id == 1).first()
         )
         assert current_data is not None
         assert current_data.data == updated_collectibles["collectibles"]
@@ -2249,9 +2241,7 @@ def test_update_user_collectibles(app, mocker):
         assert total_changes == 1
 
         current_data = (
-            session.query(CollectiblesData)
-            .filter(CollectiblesData.user_id == 2)
-            .first()
+            session.query(Collectibles).filter(Collectibles.user_id == 2).first()
         )
         assert current_data is not None
         assert current_data.data == {}
