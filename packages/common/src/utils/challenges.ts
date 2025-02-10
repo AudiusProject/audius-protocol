@@ -309,7 +309,7 @@ export const challengeRewardsConfig: Record<
   },
   o: {
     shortTitle: 'Airdrop 2: Artists',
-    title: 'Airdrop 2: Artist Appreciationdfa',
+    title: 'Airdrop 2: Artist Appreciation',
     description: () =>
       `We're thrilled to reward our talented artist community for driving Audius' growth and success!`,
     fullDescription: () =>
