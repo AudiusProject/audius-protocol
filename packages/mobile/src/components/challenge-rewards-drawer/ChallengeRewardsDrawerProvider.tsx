@@ -208,7 +208,7 @@ export const ChallengeRewardsDrawerProvider = () => {
       onClose={handleClose}
       isFullscreen
       isGestureSupported={false}
-      title={config.title}
+      title={config.shortTitle ?? config.title}
     >
       {isAudioMatchingChallenge(modalType) ? (
         <AudioMatchingChallengeDrawerContent
@@ -232,7 +232,11 @@ export const ChallengeRewardsDrawerProvider = () => {
         />
       ) : (
         <ChallengeRewardsDrawerContent
-          description={config.description(challenge)}
+          description={
+            config.fullDescription
+              ? config.fullDescription(challenge)
+              : config.description(challenge)
+          }
           progressLabel={config.progressLabel ?? 'Completed'}
           completedLabel={config.completedLabel}
           amount={progressRewardAmount}
