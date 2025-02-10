@@ -68,9 +68,21 @@ def rollup_aggregates(
         amount = "1"
         is_complete = True
     elif parent_challenge.id == "e":
-        sorted_challenges = sorted(user_challenges, key=lambda x: x.created_at)
-        most_recent_challenge = sorted_challenges[-1]
-        if not most_recent_challenge.is_complete:
+        sorted_challenges = sorted(
+            user_challenges, key=lambda x: x.created_at, reverse=True
+        )
+        most_recent_challenge = sorted_challenges[0]
+        if most_recent_challenge.is_complete:
+            step_count = 0
+            for challenge in sorted_challenges:
+                if challenge.current_step_count is None:
+                    continue
+                if challenge.amount < NUM_DAYS_IN_STREAK:
+                    step_count += challenge.current_step_count
+                else:
+                    step_count += challenge.current_step_count
+                    break
+        else:
             step_count = most_recent_challenge.current_step_count
         is_complete = num_complete >= NUM_DAYS_IN_STREAK
         amount = str(num_complete)
