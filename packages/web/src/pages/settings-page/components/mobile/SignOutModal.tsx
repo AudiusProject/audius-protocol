@@ -38,7 +38,7 @@ const SignOutModal = (props: SignOutModalProps) => {
   const handleSignOut = useCallback(() => {
     record(
       make(Name.SETTINGS_LOG_OUT, {
-        callback: () => dispatch(signOut())
+        callback: () => dispatch(signOut({}))
       })
     )
   }, [record, dispatch])

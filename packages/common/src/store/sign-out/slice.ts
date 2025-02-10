@@ -8,7 +8,7 @@ const slice = createSlice({
   name: 'sign-out',
   initialState,
   reducers: {
-    signOut: (_state, _action: PayloadAction<SignOutPayload>) => {}
+    signOut: (_state, _action?: PayloadAction<SignOutPayload>) => {}
   }
 })
 

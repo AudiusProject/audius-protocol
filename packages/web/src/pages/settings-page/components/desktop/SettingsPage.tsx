@@ -184,7 +184,7 @@ export const SettingsPage = () => {
   }, [setIsNotificationSettingsModalVisible])
 
   const signOut = useCallback(() => {
-    dispatch(signOutAction())
+    dispatch(signOutAction({}))
   }, [dispatch])
 
   const handleSignOut = useCallback(() => {
