@@ -129,7 +129,7 @@ const messages = {
   upcomingRewards: 'Upcoming Rewards',
   cooldownDescription:
     'Note: There is a 7 day waiting period from completion until you can claim your reward.',
-
+  oneShotDescription: 'Claim your tokens before they expire on 05/13/25!',
   // Profile checks
   profileCheckNameAndHandle: 'Name & Handle',
   profileCheckProfilePicture: 'Profile Picture',
@@ -289,7 +289,8 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
     fullDescription,
     progressLabel,
     completedLabel,
-    isVerifiedChallenge
+    isVerifiedChallenge,
+    id
   } = challengeRewardsConfig[modalType]
   const { modalButtonInfo } = getChallengeConfig(modalType)
   const {
@@ -346,6 +347,9 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
           {messages.cooldownDescription}
         </Text>
       ) : null}
+      {id === ChallengeName.OneShot && (
+        <Text variant='body'>{messages.oneShotDescription}</Text>
+      )}
     </Flex>
   )
 
