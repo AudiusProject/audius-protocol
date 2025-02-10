@@ -82,6 +82,6 @@ export const coreRelay = async (
       'core relay success'
     )
   } catch (e) {
-    logger.error({ error: e }, 'core relay failure:')
+    logger.error({ err: e }, 'core relay failure:')
   }
 }
