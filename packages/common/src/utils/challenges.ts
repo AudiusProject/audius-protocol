@@ -309,7 +309,7 @@ export const challengeRewardsConfig: Record<
   o: {
     title: 'Airdrop 2: Artist Appreciation',
     description: () =>
-      `We're thrilled to reward our talented artist community for driving Audius' growth and success! \n\n Claim your tokens before they expire on 05/13/25!`,
+      `We're thrilled to reward our talented artist community for driving Audius' growth and success!`,
     fullDescription: () =>
       `We're thrilled to reward our talented artist community for driving Audius' growth and success! \n\n Claim your tokens before they expire on 05/13/25!`,
 
