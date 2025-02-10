@@ -25,7 +25,7 @@ export const SignOutConfirmationDrawer = () => {
   const { onClose } = useDrawerState(MODAL_NAME)
 
   const handleSignOut = useCallback(() => {
-    dispatch(signOut({}))
+    dispatch(signOut())
     onClose()
   }, [dispatch, onClose])
 
