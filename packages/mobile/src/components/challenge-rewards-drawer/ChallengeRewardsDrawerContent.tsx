@@ -4,9 +4,10 @@ import {
   formatCooldownChallenges,
   useChallengeCooldownSchedule
 } from '@audius/common/hooks'
-import type {
-  ChallengeRewardID,
-  UserChallengeState
+import {
+  ChallengeName,
+  type ChallengeRewardID,
+  type UserChallengeState
 } from '@audius/common/models'
 import { ClaimStatus } from '@audius/common/store'
 import { formatNumberCommas, fillString } from '@audius/common/utils'
@@ -43,7 +44,8 @@ const messages = {
   upcomingRewards: 'Upcoming Rewards',
   readyToClaim: 'Ready to Claim',
   close: 'Close',
-  claiming: 'Claiming'
+  claiming: 'Claiming',
+  ineligible: 'Ineligible'
 }
 
 type ChallengeRewardsDrawerContentProps = {
@@ -127,7 +129,9 @@ export const ChallengeRewardsDrawerContent = ({
             formatNumberCommas(currentStep),
             formatNumberCommas(stepCount)
           )
-        : messages.incomplete
+        : challengeId === ChallengeName.OneShot
+          ? messages.ineligible
+          : messages.incomplete
 
   const claimInProgress =
     claimStatus === ClaimStatus.CLAIMING ||
