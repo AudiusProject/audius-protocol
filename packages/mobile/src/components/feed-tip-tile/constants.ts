@@ -1,0 +1,1 @@
+export const NUM_FEED_TIPPERS_DISPLAYED = 2

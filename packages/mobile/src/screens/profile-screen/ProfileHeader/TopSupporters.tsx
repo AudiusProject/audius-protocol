@@ -1,9 +1,18 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
-import { useSupporters } from '@audius/common/api'
-import { MAX_PROFILE_TOP_SUPPORTERS } from '@audius/common/utils'
+import { useProxySelector } from '@audius/common/hooks'
+import {
+  cacheUsersSelectors,
+  tippingSelectors,
+  tippingActions
+} from '@audius/common/store'
+import {
+  MAX_PROFILE_TOP_SUPPORTERS,
+  removeNullable
+} from '@audius/common/utils'
 import { Text, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { Flex, IconCaretRight, IconTrophy } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -13,6 +22,9 @@ import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 import { useSelectProfile } from '../selectors'
+const { getOptimisticSupportersForUser } = tippingSelectors
+const { fetchSupportersForUser } = tippingActions
+const { getUsers } = cacheUsersSelectors
 
 const messages = {
   topSupporters: 'Top Supporters',
@@ -52,6 +64,27 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   }
 }))
 
+const useSelectTopSupporters = (userId: number) =>
+  useProxySelector(
+    (state) => {
+      const supporters = getOptimisticSupportersForUser(state, userId)
+      if (!supporters) return []
+
+      const topSupporterIds = Object.keys(supporters)
+        .sort((id1, id2) => supporters[id1].rank - supporters[id2].rank)
+        .map((id) => supporters[id])
+        .map((supporter) => supporter.sender_id)
+
+      const supporterUsers = getUsers(state, { ids: topSupporterIds })
+
+      const topSupporters = topSupporterIds
+        .map((id) => supporterUsers[id])
+        .filter(removeNullable)
+      return topSupporters
+    },
+    [userId]
+  )
+
 export const TopSupporters = () => {
   const styles = useStyles()
   const { secondary, neutral } = useThemeColors()
@@ -61,10 +94,22 @@ export const TopSupporters = () => {
     'supporter_count'
   ])
 
-  const { data: supporters = [], isSuccess } = useSupporters({
-    userId: user_id,
-    pageSize: MAX_PROFILE_TOP_SUPPORTERS
+  const dispatch = useDispatch()
+
+  const shouldFetchSupporters = useSelector((state) => {
+    return (
+      !state.tipping.supporters[user_id] &&
+      !state.tipping.supportersOverrides[user_id]
+    )
   })
+
+  useEffect(() => {
+    if (supporter_count > 0 && shouldFetchSupporters) {
+      dispatch(fetchSupportersForUser({ userId: user_id }))
+    }
+  }, [supporter_count, shouldFetchSupporters, dispatch, user_id])
+
+  const topSupporters = useSelectTopSupporters(user_id)
 
   const handlePress = useCallback(() => {
     navigation.push('TopSupporters', { userId: user_id, source: 'profile' })
@@ -73,9 +118,9 @@ export const TopSupporters = () => {
   return supporter_count ? (
     <Flex pv='s' alignItems='center' pointerEvents='box-none'>
       <TouchableOpacity style={styles.touchableRoot} onPress={handlePress}>
-        {isSuccess && supporters.length > 0 ? (
+        {topSupporters.length > 0 ? (
           <ProfilePictureList
-            users={supporters.map((supporter) => supporter.sender)}
+            users={topSupporters}
             totalUserCount={supporter_count}
             limit={MAX_PROFILE_TOP_SUPPORTERS}
             style={styles.profilePictureList}

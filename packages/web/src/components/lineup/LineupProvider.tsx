@@ -10,7 +10,11 @@ import {
   Lineup,
   ModalSource
 } from '@audius/common/models'
-import { LineupBaseActions, playerSelectors } from '@audius/common/store'
+import {
+  LineupBaseActions,
+  tippingSelectors,
+  playerSelectors
+} from '@audius/common/store'
 import cn from 'classnames'
 import InfiniteScroll from 'react-infinite-scroller'
 import { connect } from 'react-redux'
@@ -19,6 +23,7 @@ import { Transition } from 'react-spring/renderprops.cjs'
 import { Dispatch } from 'redux'
 
 import { TrackEvent, make } from 'common/store/analytics/actions'
+import { FeedTipTile } from 'components/tipping/feed-tip-tile/FeedTipTile'
 import {
   TrackTileProps,
   PlaylistTileProps,
@@ -32,6 +37,7 @@ import { push } from 'utils/navigation'
 import styles from './Lineup.module.css'
 import { delineateByTime, delineateByFeatured } from './delineate'
 import { LineupVariant } from './types'
+const { getShowTip } = tippingSelectors
 const { getPlaying, getUid } = playerSelectors
 
 // The max number of tiles to load
@@ -196,6 +202,9 @@ export interface LineupProviderProps {
 
   /** Are we in a trending lineup? Allows tiles to specialize their rendering */
   isTrending?: boolean
+
+  /** Whether we are in the feed lineup */
+  showFeedTipTile?: boolean
 
   /** Function triggered on click of tile */
   onClickTile?: (trackId: ID) => void
@@ -476,6 +485,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       lineup: { isMetadataLoading, page, entries = [] },
       numPlaylistSkeletonRows,
       isTrending = false,
+      showFeedTipTile = false,
       onClickTile
     } = this.props
     const isMobile = this.context.isMobile
@@ -526,6 +536,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
             isLoading: !this.canLoad(index),
             hasLoaded: this.hasLoaded,
             isTrending,
+            showFeedTipTile,
             onClick: onClickTile,
             source: ModalSource.LineUpTrackTile
           }
@@ -550,6 +561,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
             hasLoaded: this.hasLoaded,
             numLoadingSkeletonRows: numPlaylistSkeletonRows,
             isTrending,
+            showFeedTipTile,
             source: ModalSource.LineUpCollectionTile
           }
 
@@ -778,6 +790,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
                 threshold={loadMoreThreshold}
                 element='ol'
               >
+                {showFeedTipTile ? <FeedTipTile /> : null}
                 {tiles.map((tile, index) => (
                   <li
                     key={index}
@@ -798,6 +811,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
 
 function mapStateToProps(state: AppState) {
   return {
+    showTip: getShowTip(state),
     playing: getPlaying(state),
     playingUid: getUid(state)
   }

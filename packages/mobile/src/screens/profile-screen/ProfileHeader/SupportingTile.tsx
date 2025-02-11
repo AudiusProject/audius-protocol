@@ -1,13 +1,14 @@
 import { useCallback } from 'react'
 
-import { WidthSizes } from '@audius/common/models'
-import type { SupportedUserMetadata } from '@audius/common/models'
+import { WidthSizes, type Supporting } from '@audius/common/models'
+import { cacheUsersSelectors } from '@audius/common/store'
 import { TIPPING_TOP_RANK_THRESHOLD } from '@audius/web/src/utils/constants'
 import { css } from '@emotion/native'
 import { useTheme } from '@emotion/react'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { ImageBackground, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
+import { useSelector } from 'react-redux'
 
 import { IconTrophy } from '@audius/harmony-native'
 import { Text, Tile, ProfilePicture } from 'app/components/core'
@@ -17,6 +18,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
+const { getUser } = cacheUsersSelectors
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
   root: {
@@ -69,19 +71,22 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 }))
 
 type SupportingTileProps = {
-  supportedUser: SupportedUserMetadata
+  supporting: Supporting
   style?: StyleProp<ViewStyle>
   scaleTo?: number
 }
 
 export const SupportingTile = (props: SupportingTileProps) => {
-  const { supportedUser, style, scaleTo } = props
-  const { receiver, rank } = supportedUser
+  const { supporting, style, scaleTo } = props
   const styles = useStyles()
   const navigation = useNavigation()
   const { secondary } = useThemeColors()
-  const { user_id, handle, name } = receiver || {}
-  const isTopRank = rank >= 1 && rank <= TIPPING_TOP_RANK_THRESHOLD
+  const user = useSelector((state) => {
+    return getUser(state, { id: supporting.receiver_id })
+  })
+  const { user_id, handle, name } = user || {}
+  const isTopRank =
+    supporting.rank >= 1 && supporting.rank <= TIPPING_TOP_RANK_THRESHOLD
   const { spacing: harmonySpacing } = useTheme()
 
   const { source: coverPhotoSource } = useCoverPhoto({
@@ -100,7 +105,7 @@ export const SupportingTile = (props: SupportingTileProps) => {
     width: spacing(3.75)
   }
 
-  return receiver ? (
+  return user ? (
     <Tile style={[styles.root, style]} onPress={handlePress} scaleTo={scaleTo}>
       <ImageBackground style={styles.backgroundImage} source={coverPhotoSource}>
         <LinearGradient
@@ -127,7 +132,7 @@ export const SupportingTile = (props: SupportingTileProps) => {
                 color='secondary'
                 fontSize='large'
               >
-                {supportedUser.rank}
+                {supporting.rank}
               </Text>
             </View>
           ) : null}
@@ -139,7 +144,7 @@ export const SupportingTile = (props: SupportingTileProps) => {
               })}
               mr='s'
               borderWidth='thin'
-              userId={user_id}
+              userId={user.user_id}
             />
             <Text
               style={styles.nameText}
@@ -149,7 +154,7 @@ export const SupportingTile = (props: SupportingTileProps) => {
             >
               {name}
             </Text>
-            <UserBadges user={receiver} hideName />
+            <UserBadges user={user} hideName />
           </View>
         </LinearGradient>
       </ImageBackground>

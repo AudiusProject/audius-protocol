@@ -12,6 +12,9 @@ import {
   Collection,
   UserCollectionMetadata,
   User,
+  UserFollowees,
+  FolloweeRepost,
+  UID,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import {
@@ -29,6 +32,7 @@ import {
   toastActions,
   getContext,
   confirmerActions,
+  Entry,
   trackPageActions,
   getSDK
 } from '@audius/common/store'
@@ -39,10 +43,19 @@ import {
   updatePlaylistArtwork
 } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
-import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
+import {
+  all,
+  call,
+  fork,
+  put,
+  select,
+  takeEvery,
+  takeLatest
+} from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import watchTrackErrors from 'common/store/cache/collections/errorSagas'
+import { fetchUsers } from 'common/store/cache/users/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import {
   addPlaylistsNotInLibrary,
@@ -804,8 +817,53 @@ function* confirmDeletePlaylist(userId: ID, playlistId: ID) {
   )
 }
 
+function* fetchRepostInfo(entries: Entry<Collection>[]) {
+  const userIds: ID[] = []
+  entries.forEach((entry) => {
+    if (entry.metadata.followee_reposts) {
+      entry.metadata.followee_reposts.forEach((repost) =>
+        userIds.push(repost.user_id)
+      )
+    }
+  })
+  if (userIds.length > 0) {
+    const { entries: users, uids } = yield* call(fetchUsers, userIds)
+
+    const updates: UserFollowees[] = []
+    entries.forEach((entry) => {
+      const followeeRepostUsers: {
+        id: ID
+        metadata: { _followees: FolloweeRepost[] }
+      } = { id: entry.id, metadata: { _followees: [] } }
+      const subscriptionUids: UID[] = []
+      entry.metadata.followee_reposts.forEach((repost) => {
+        followeeRepostUsers.metadata._followees.push({
+          ...repost,
+          ...users[repost.user_id]
+        })
+        subscriptionUids.push(uids[repost.user_id])
+      })
+      updates.push(followeeRepostUsers)
+    })
+
+    yield* put(cacheActions.update(Kind.COLLECTIONS, updates))
+  }
+}
+
+function* watchAdd() {
+  yield* takeEvery(
+    cacheActions.ADD_SUCCEEDED,
+    function* (action: ReturnType<typeof cacheActions.addSucceeded>) {
+      if (action.kind === Kind.COLLECTIONS) {
+        yield* fork(fetchRepostInfo, action.entries as Entry<Collection>[])
+      }
+    }
+  )
+}
+
 export default function sagas() {
   return [
+    watchAdd,
     createPlaylistSaga,
     createAlbumSaga,
     watchEditPlaylist,

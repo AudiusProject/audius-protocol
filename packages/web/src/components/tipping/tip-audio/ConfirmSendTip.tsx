@@ -138,7 +138,6 @@ export const ConfirmSendTip = () => {
       <div className={cn(styles.flexCenter, styles.buttonContainer)}>
         <Button
           variant='primary'
-          fullWidth
           onClick={handleConfirmSendClick}
           iconRight={isSending ? undefined : IconCheck}
           isLoading={isSending || isConverting}

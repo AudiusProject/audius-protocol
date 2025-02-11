@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
+import { StringKeys } from '@audius/common/services'
 import {
   accountSelectors,
   tippingActions,
@@ -14,6 +15,7 @@ import {
   ModalHeader,
   ModalTitle
 } from '@audius/harmony'
+import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated, Transition } from 'react-spring/renderprops.cjs'
@@ -22,6 +24,7 @@ import { usePrevious } from 'react-use'
 import IconGoldBadge from 'assets/img/tokenBadgeGold48@2x.webp'
 import { useSelector } from 'common/hooks/useSelector'
 import { useManagedAccountNotAllowedCallback } from 'hooks/useManagedAccountNotAllowedRedirect'
+import { useRemoteVar } from 'hooks/useRemoteConfig'
 
 import { ConfirmSendTip } from './ConfirmSendTip'
 import { SendTip } from './SendTip'
@@ -117,6 +120,10 @@ export const TipAudioModal = () => {
   const { user: recipient, onSuccessActions } = useSelector(getSendTipData)
   const currentUserId = useSelector(accountSelectors.getUserId)
 
+  const audioFeaturesDegradedText = useRemoteVar(
+    StringKeys.AUDIO_FEATURES_DEGRADED_TEXT
+  )
+
   const onClose = useCallback(() => {
     // After success + close, take the user to the chat they were
     // attempting to make if they were unlocking DMs by tipping.
@@ -161,7 +168,9 @@ export const TipAudioModal = () => {
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      bodyClassName={styles.modalBody}
+      bodyClassName={cn(styles.modalBody, {
+        [styles.biggerModalBody]: !!audioFeaturesDegradedText
+      })}
       dismissOnClickOutside={
         sendStatus !== 'SENDING' && sendStatus !== 'CONVERTING'
       }
