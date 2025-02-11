@@ -20,6 +20,7 @@ export type IconButtonProps = {
   ripple?: boolean
   style?: StyleProp<ViewStyle>
   disabledHint?: string
+  iconStyle?: StyleProp<ViewStyle>
 } & Pick<IconProps, 'color' | 'size' | 'shadow'> &
   Omit<BaseButtonProps, 'fill' | 'styles'> &
   (
@@ -41,6 +42,7 @@ export const IconButton = (props: IconButtonProps) => {
     onPress,
     disabled,
     disabledHint,
+    iconStyle,
     ...other
   } = props
   const pressed = useSharedValue(0)
@@ -88,6 +90,7 @@ export const IconButton = (props: IconButtonProps) => {
         color={disabled ? 'disabled' : iconColor}
         size={size}
         shadow={shadow}
+        style={iconStyle}
       />
     </BaseButton>
   )
