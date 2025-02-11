@@ -1,5 +1,7 @@
-import logging  # pylint: disable=C0302
+import logging
+from typing import List, Optional, TypedDict
 
+from sqlakeyset import get_page
 from sqlalchemy import and_, asc, desc, func, or_
 from sqlalchemy.orm import aliased
 
@@ -433,4 +435,47 @@ def get_track_notification_setting(track_id, current_user_id):
 
         return {
             "is_muted": notification_setting.is_muted if notification_setting else False
+        }
+
+
+class GetUserCommentsArgs(TypedDict):
+    user_id: int
+    page: Optional[str]
+    limit: int
+
+
+class UserCommentsResponse(TypedDict):
+    comments: List[dict]
+    next: Optional[str]
+    has_next: bool
+
+
+def get_user_comments(args: GetUserCommentsArgs) -> UserCommentsResponse:
+    page = args.get("page", None)
+    limit = args.get("limit", 50)
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        query = (
+            session.query(Comment)
+            .filter(Comment.user_id == args.get("user_id"))
+            .filter(Comment.is_delete == False)
+            .filter(Comment.is_visible == True)
+            .order_by(desc(Comment.created_at), Comment.comment_id)
+        )
+        comments = get_page(query, per_page=limit, page=page)
+
+        return {
+            "comments": [
+                {
+                    "id": comment.comment_id,
+                    "message": comment.text,
+                    "created_at": str(comment.created_at),
+                    "updated_at": (
+                        str(comment.updated_at) if comment.updated_at else None
+                    ),
+                }
+                for comment in comments
+            ],
+            "next": comments.paging.bookmark_next,
+            "has_next": comments.paging.has_next,
         }

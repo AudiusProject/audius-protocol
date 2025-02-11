@@ -64,6 +64,7 @@ from src.api.v1.models.activities import (
     track_activity_full_model,
     track_activity_model,
 )
+from src.api.v1.models.comments import user_comments_model
 from src.api.v1.models.common import favorite
 from src.api.v1.models.developer_apps import authorized_app, developer_app
 from src.api.v1.models.extensions.fields import NestedOneOf
@@ -118,7 +119,11 @@ from src.queries.get_collection_library import (
     GetCollectionLibraryArgs,
     get_collection_library,
 )
-from src.queries.get_comments import get_muted_users
+from src.queries.get_comments import (
+    GetUserCommentsArgs,
+    get_muted_users,
+    get_user_comments,
+)
 from src.queries.get_developer_apps import (
     get_developer_apps_by_user,
     get_developer_apps_with_grant_for_user,
@@ -3153,3 +3158,47 @@ class UserEmailKey(Resource):
                 return success_response(None)
 
             return success_response(email_access.to_dict())
+
+
+user_comments_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+user_comments_parser.add_argument(
+    "page",
+    required=False,
+    default=None,
+    type=str,
+    description="Page token returned from previous request to get next set of results",
+)
+user_comments_parser.add_argument(
+    "limit",
+    required=False,
+    default=50,
+    type=int,
+    description="Number of comments to return",
+)
+
+user_comments_response = make_response(
+    "user_comments_response",
+    ns,
+    fields.Nested(user_comments_model),
+)
+
+
+@ns.route("/<string:id>/comments")
+class UserComments(Resource):
+    @ns.doc(
+        id="Get User Comments",
+        description="Gets the comments for the given user",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(user_comments_parser)
+    @ns.marshal_with(user_comments_response)
+    def get(self, id):
+        args = user_comments_parser.parse_args()
+        decoded_id = decode_with_abort(id, ns)
+        res = get_user_comments(
+            GetUserCommentsArgs(
+                user_id=decoded_id, page=args.get("page"), limit=args.get("limit")
+            )
+        )
+        return success_response(res)

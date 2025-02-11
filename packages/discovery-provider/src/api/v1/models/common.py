@@ -40,6 +40,14 @@ full_response = ns.model(
     },
 )
 
+keyset_pagination_model = ns.model(
+    "keyset_pagination",
+    {
+        "next": fields.String(required=True),
+        "has_next": fields.Boolean(required=True),
+    },
+)
+
 
 # This mapper ensures that we output a lowercase version of the _member name_ of
 # a Enum. The default `fields.String` marshaller wraps enums with str(),

@@ -1,6 +1,6 @@
 from flask_restx import fields
 
-from .common import ns
+from .common import keyset_pagination_model, ns
 
 comment_mention = ns.model(
     "comment_mention",
@@ -54,6 +54,23 @@ base_comment_model = ns.model(
     },
 )
 
+user_comment_model = ns.model(
+    "user_comment",
+    {
+        "id": fields.String(required=True),
+        "message": fields.String(required=True),
+        "created_at": fields.String(required=True),
+        "updated_at": fields.String(required=False),
+    },
+)
+
+user_comments_model = ns.clone(
+    "user_comments",
+    keyset_pagination_model,
+    {
+        "comments": fields.List(fields.Nested(user_comment_model), required=True),
+    },
+)
 
 comment_notification_setting_model = ns.model(
     "comment_notification_setting",
