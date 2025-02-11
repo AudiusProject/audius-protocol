@@ -1,14 +1,17 @@
 import { ID } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
-import { Flex } from '@audius/harmony'
 import cn from 'classnames'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
+import { animated } from 'react-spring'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { AiGeneratedCallout } from 'components/ai-generated-button/AiGeneratedCallout'
 import Input from 'components/data-entry/Input'
 import TextArea from 'components/data-entry/TextArea'
 import { TipAudioButton } from 'components/tipping/tip-audio/TipAudioButton'
+import { OpacityTransition } from 'components/transition-container/OpacityTransition'
 import UploadChip from 'components/upload/UploadChip'
+import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
 import { Type } from 'pages/profile-page/components/SocialLink'
 import { ProfileTopTags } from 'pages/profile-page/components/desktop/ProfileTopTags'
 
@@ -92,6 +95,12 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
 
   const accountUserId = useSelector(getUserId)
 
+  const renderTipAudioButton = (_: any, style: object) => (
+    <animated.div className={styles.tipAudioButtonContainer} style={style}>
+      <TipAudioButton />
+    </animated.div>
+  )
+
   if (editMode) {
     return (
       <div className={styles.edit}>
@@ -174,9 +183,10 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
   } else if (!loading && !isDeactivated) {
     const showUploadChip = isOwner && !isArtist
     return (
-      <Flex column gap='2xl' mr='xl'>
+      <div className={styles.about}>
+        <ProfilePageBadge userId={userId} className={styles.badge} />
+
         <ProfileBio
-          userId={userId}
           handle={handle}
           bio={bio}
           location={location}
@@ -187,17 +197,25 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
           instagramHandle={instagramHandle}
           tikTokHandle={tikTokHandle}
         />
-        {accountUserId !== userId ? <TipAudioButton /> : null}
-        {allowAiAttribution ? <AiGeneratedCallout handle={handle} /> : null}
-        <SupportingList />
-        <TopSupporters />
-        <ProfileMutuals />
-        <RelatedArtists />
-        {isArtist ? <ProfileTopTags /> : null}
-        {showUploadChip ? (
-          <UploadChip type='track' variant='nav' source='nav' />
+        {accountUserId !== userId ? (
+          <OpacityTransition render={renderTipAudioButton} />
         ) : null}
-      </Flex>
+        {allowAiAttribution ? (
+          <div className={styles.aiGeneratedCalloutContainer}>
+            <AiGeneratedCallout handle={handle} />
+          </div>
+        ) : null}
+        <SupportingList />
+        <div className={styles.profileBottomSection}>
+          <TopSupporters />
+          <ProfileMutuals />
+          <RelatedArtists />
+          {isArtist ? <ProfileTopTags /> : null}
+          {showUploadChip ? (
+            <UploadChip type='track' variant='nav' source='nav' />
+          ) : null}
+        </div>
+      </div>
     )
   } else {
     return null

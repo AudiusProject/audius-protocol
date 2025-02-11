@@ -4,6 +4,9 @@ import {
   UserProfileListProps,
   UserProfilePictureList
 } from 'components/notification/Notification/components/UserProfilePictureList'
+import { USER_LENGTH_LIMIT } from 'components/notification/Notification/utils'
+
+import styles from './ProfilePictureListTile.module.css'
 
 const messages = {
   viewAll: 'View All'
@@ -12,12 +15,11 @@ const messages = {
 type ProfilePictureListTileProps = UserProfileListProps & {
   onClick: () => void
 }
-
 export const ProfilePictureListTile = ({
   onClick,
   users,
   totalUserCount,
-  limit,
+  limit = USER_LENGTH_LIMIT,
   disableProfileClick,
   disablePopover,
   stopPropagation,
@@ -27,11 +29,8 @@ export const ProfilePictureListTile = ({
     <Flex
       direction='column'
       gap='m'
-      ph='m'
-      pv='s'
       alignItems='flex-start'
-      backgroundColor='white'
-      borderRadius='m'
+      className={styles.tileContainer}
       onClick={onClick}
     >
       <UserProfilePictureList
@@ -43,9 +42,7 @@ export const ProfilePictureListTile = ({
         stopPropagation={stopPropagation}
         profilePictureClassname={profilePictureClassname}
       />
-      <PlainButton variant='subdued' iconRight={IconArrowRight}>
-        {messages.viewAll}
-      </PlainButton>
+      <PlainButton iconRight={IconArrowRight}>{messages.viewAll}</PlainButton>
     </Flex>
   )
 }
