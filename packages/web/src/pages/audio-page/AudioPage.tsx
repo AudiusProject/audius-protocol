@@ -1,8 +1,6 @@
 import { ReactNode, useContext, useEffect } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
-import { Feature } from '@audius/common/models'
-import { FeatureFlags, StringKeys } from '@audius/common/services'
+import { StringKeys } from '@audius/common/services'
 import { tokenDashboardPageActions, walletActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
@@ -44,10 +42,6 @@ const RewardsContent = () => {
     StringKeys.AUDIO_FEATURES_DEGRADED_TEXT
   )
 
-  const { isEnabled: isClaimAllRewardsEnabled } = useFeatureFlag(
-    FeatureFlags.CLAIM_ALL_REWARDS
-  )
-
   useRequiresAccount(TRENDING_PAGE)
 
   return (
@@ -60,7 +54,7 @@ const RewardsContent = () => {
           </span>
         </div>
       ) : null}
-      {/* {isClaimAllRewardsEnabled ? <ClaimAllRewardsPanel /> : null} */}
+      <ClaimAllRewardsPanel />
       <WalletManagementTile />
       <AudioWalletTransactions />
       <ExplainerTile className={wm(styles.explainerTile)} />
