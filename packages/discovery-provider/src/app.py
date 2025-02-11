@@ -532,7 +532,8 @@ def configure_celery(celery, test_config=None):
     # Start tasks that should fire upon startup
     celery.send_task("cache_current_nodes")
     celery.send_task("cache_entity_counts")
-    celery.send_task("index_nethermind", queue="index_nethermind")
+    if environment != "dev":
+        celery.send_task("index_nethermind", queue="index_nethermind")
     celery.send_task("index_user_bank", queue="index_sol")
     celery.send_task("index_payment_router", queue="index_sol")
     celery.send_task("index_core", queue="index_core")

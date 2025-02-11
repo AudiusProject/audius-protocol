@@ -169,15 +169,20 @@ class BlockResponse(google.protobuf.message.Message):
     TRANSACTIONS_FIELD_NUMBER: builtins.int
     CURRENT_HEIGHT_FIELD_NUMBER: builtins.int
     TIMESTAMP_FIELD_NUMBER: builtins.int
+    TRANSACTION_RESPONSES_FIELD_NUMBER: builtins.int
     blockhash: builtins.str
     chainid: builtins.str
     proposer: builtins.str
     height: builtins.int
     current_height: builtins.int
     @property
-    def transactions(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___SignedTransaction]: ...
+    def transactions(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___SignedTransaction]:
+        """TODO: deprecate in favor of txs"""
+
     @property
     def timestamp(self) -> google.protobuf.timestamp_pb2.Timestamp: ...
+    @property
+    def transaction_responses(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___TransactionResponse]: ...
     def __init__(
         self,
         *,
@@ -188,9 +193,10 @@ class BlockResponse(google.protobuf.message.Message):
         transactions: collections.abc.Iterable[global___SignedTransaction] | None = ...,
         current_height: builtins.int = ...,
         timestamp: google.protobuf.timestamp_pb2.Timestamp | None = ...,
+        transaction_responses: collections.abc.Iterable[global___TransactionResponse] | None = ...,
     ) -> None: ...
     def HasField(self, field_name: typing.Literal["timestamp", b"timestamp"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing.Literal["blockhash", b"blockhash", "chainid", b"chainid", "current_height", b"current_height", "height", b"height", "proposer", b"proposer", "timestamp", b"timestamp", "transactions", b"transactions"]) -> None: ...
+    def ClearField(self, field_name: typing.Literal["blockhash", b"blockhash", "chainid", b"chainid", "current_height", b"current_height", "height", b"height", "proposer", b"proposer", "timestamp", b"timestamp", "transaction_responses", b"transaction_responses", "transactions", b"transactions"]) -> None: ...
 
 global___BlockResponse = BlockResponse
 
@@ -468,7 +474,7 @@ class ManageEntityLegacy(google.protobuf.message.Message):
     metadata: builtins.str
     signature: builtins.str
     signer: builtins.str
-    nonce: builtins.int
+    nonce: builtins.str
     def __init__(
         self,
         *,
@@ -479,7 +485,7 @@ class ManageEntityLegacy(google.protobuf.message.Message):
         metadata: builtins.str = ...,
         signature: builtins.str = ...,
         signer: builtins.str = ...,
-        nonce: builtins.int = ...,
+        nonce: builtins.str = ...,
     ) -> None: ...
     def ClearField(self, field_name: typing.Literal["action", b"action", "entity_id", b"entity_id", "entity_type", b"entity_type", "metadata", b"metadata", "nonce", b"nonce", "signature", b"signature", "signer", b"signer", "user_id", b"user_id"]) -> None: ...
 

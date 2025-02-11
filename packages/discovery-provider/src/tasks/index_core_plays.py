@@ -8,7 +8,7 @@ from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.social.play import Play
-from src.tasks.core.gen.protocol_pb2 import SignedTransaction
+from src.tasks.core.gen.protocol_pb2 import BlockResponse, SignedTransaction
 
 
 class PlayInfo(TypedDict):
@@ -31,6 +31,29 @@ class PlayChallengeInfo(TypedDict):
 
 
 def index_core_plays(
+    logger: LoggerAdapter,
+    session: Session,
+    challenge_bus: ChallengeEventBus,
+    latest_indexed_slot: int,
+    indexing_plays: bool,
+    block: BlockResponse,
+) -> Optional[int]:
+    if not indexing_plays:
+        return None
+
+    indexed_slot: Optional[int] = None
+    for tx in block.transaction_responses:
+        indexed_slot = index_core_play(
+            logger=logger,
+            session=session,
+            challenge_bus=challenge_bus,
+            latest_indexed_slot=latest_indexed_slot,
+            tx=tx,
+        )
+    return indexed_slot
+
+
+def index_core_play(
     logger: LoggerAdapter,
     session: Session,
     challenge_bus: ChallengeEventBus,
