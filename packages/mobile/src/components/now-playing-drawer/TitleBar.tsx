@@ -1,55 +1,31 @@
-import { View } from 'react-native'
-
-import { IconCaretRight } from '@audius/harmony-native'
-import Text from 'app/components/text'
-import { makeStyles } from 'app/styles'
-import { useColor } from 'app/utils/theme'
+import {
+  Text,
+  IconCaretRight,
+  IconButton,
+  Flex,
+  Box
+} from '@audius/harmony-native'
 
 const messages = {
   nowPlaying: 'NOW PLAYING'
 }
-
-const useStyles = makeStyles(({ palette, spacing }) => ({
-  root: {
-    marginTop: spacing(4),
-    marginHorizontal: spacing(4),
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between'
-  },
-  caret: {
-    transform: [{ rotate: '90deg' }]
-  },
-  text: {
-    fontSize: 18,
-    color: palette.neutralLight4
-  },
-  offsetRight: {
-    width: 24
-  }
-}))
 
 type TitleBarProps = {
   onClose: () => void
 }
 
 export const TitleBar = ({ onClose }: TitleBarProps) => {
-  const styles = useStyles()
-  const caretColor = useColor('neutralLight4')
   return (
-    <View style={styles.root}>
-      <IconCaretRight
-        width={24}
-        height={24}
-        fill={caretColor}
-        style={styles.caret}
+    <Flex row alignItems='center' justifyContent='space-between' ph='l' pt='l'>
+      <IconButton
+        icon={IconCaretRight}
         onPress={onClose}
-        hitSlop={{ top: 4, right: 4, left: 4, bottom: 4 }}
+        iconStyle={{ transform: [{ rotate: '90deg' }] }}
       />
-      <Text style={styles.text} weight='heavy'>
+      <Text variant='label' size='xl' strength='strong' color='subdued'>
         {messages.nowPlaying}
       </Text>
-      <View style={styles.offsetRight} />
-    </View>
+      <Box w={24} />
+    </Flex>
   )
 }

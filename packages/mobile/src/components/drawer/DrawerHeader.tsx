@@ -7,7 +7,6 @@ import type { IconComponent } from '@audius/harmony-native'
 import { Flex, IconClose, spacing } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
-import { useColor } from 'app/utils/theme'
 
 type DrawerHeaderProps = {
   onClose: () => void
@@ -49,8 +48,6 @@ export const DrawerHeader = (props: DrawerHeaderProps) => {
     blockClose = false
   } = props
   const styles = useStyles()
-  const iconRemoveColor = useColor('neutralLight4')
-  const titleIconColor = useColor('neutral')
 
   return title || isFullscreen ? (
     <View style={styles.titleBarContainer}>
@@ -61,12 +58,12 @@ export const DrawerHeader = (props: DrawerHeaderProps) => {
           style={styles.dismissContainer}
           hitSlop={spacing.m}
         >
-          <IconClose size='m' fill={iconRemoveColor} />
+          <IconClose size='m' color='subdued' />
         </TouchableOpacity>
       ) : null}
       {title ? (
         <Flex gap='s' alignItems='center' direction='row'>
-          {TitleIcon ? <TitleIcon size='m' fill={titleIconColor} /> : null}
+          {TitleIcon ? <TitleIcon size='m' color='default' /> : null}
           {titleImage ? (
             <Image style={styles.titleImage} source={titleImage} />
           ) : null}
