@@ -409,7 +409,9 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
 
   const errorContent =
     claimStatus === ClaimStatus.ERROR ? (
-      <div className={styles.claimError}>{getErrorMessage(aaoErrorCode)}</div>
+      <Text color='danger' strength='strong' textAlign='center'>
+        {getErrorMessage(aaoErrorCode)}
+      </Text>
     ) : null
 
   useEffect(() => {
