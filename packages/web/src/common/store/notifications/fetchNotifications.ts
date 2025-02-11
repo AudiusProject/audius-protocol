@@ -36,6 +36,8 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
     FeatureFlags.COMMENTS_ENABLED
   )
 
+  const isOneShotEnabled = yield* call(getFeatureEnabled, FeatureFlags.ONE_SHOT)
+
   const validTypes = [
     ValidTypes.RepostOfRepost,
     ValidTypes.SaveOfRepost,
@@ -68,5 +70,12 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
     ? transformAndCleanList(data.notifications, notificationFromSDK)
     : []
 
-  return { notifications, totalUnviewed: data?.unreadCount ?? 0 }
+  const filteredNotifications = isOneShotEnabled
+    ? notifications
+    : notifications.filter((n) => !n.groupId?.includes('challenge:o'))
+
+  return {
+    notifications: filteredNotifications,
+    totalUnviewed: data?.unreadCount ?? 0
+  }
 }
