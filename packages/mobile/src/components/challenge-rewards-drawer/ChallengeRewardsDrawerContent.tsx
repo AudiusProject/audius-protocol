@@ -51,6 +51,8 @@ const messages = {
 type ChallengeRewardsDrawerContentProps = {
   /** The description of the challenge */
   description: string
+  /** The optional description of the challenge */
+  optionalDescription?: string
   /** The current progress the user has made */
   currentStep: number
   /** The number of steps the user has to complete in total */
@@ -90,6 +92,7 @@ type ChallengeRewardsDrawerContentProps = {
  */
 export const ChallengeRewardsDrawerContent = ({
   description,
+  optionalDescription,
   amount,
   currentStep,
   stepCount = 1,
@@ -157,17 +160,11 @@ export const ChallengeRewardsDrawerContent = ({
   return (
     <>
       <ScrollView style={styles.content}>
-        {isVerifiedChallenge ? (
-          <ChallengeDescription
-            description={description}
-            isCooldownChallenge={isCooldownChallenge}
-          />
-        ) : (
-          <ChallengeDescription
-            description={description}
-            isCooldownChallenge={isCooldownChallenge}
-          />
-        )}
+        <ChallengeDescription
+          description={description}
+          optionalDescription={isClaimable ? optionalDescription : undefined}
+          isCooldownChallenge={isCooldownChallenge}
+        />
         <Flex alignItems='center' gap='3xl' w='100%'>
           <Flex row alignItems='center' gap='xl'>
             <ChallengeReward amount={amount} subtext={messages.audio} />
