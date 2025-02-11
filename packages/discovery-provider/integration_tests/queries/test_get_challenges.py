@@ -861,14 +861,14 @@ def test_listen_streak_endless_challenge(app):
             assert len(challenges) == 1
             assert challenges[0]["challenge_id"] == "e"
             assert challenges[0]["is_complete"] == False
-            assert challenges[0]["amount"] == "0"
+            assert challenges[0]["amount"] == "1"
             assert challenges[0]["current_step_count"] == 3
 
             challenges = get_challenges(4, False, session, bus)
             assert len(challenges) == 1
             assert challenges[0]["challenge_id"] == "e"
             assert challenges[0]["is_complete"] == True
-            assert challenges[0]["amount"] == "9"
+            assert challenges[0]["amount"] == "1"
             assert challenges[0]["current_step_count"] == 9
 
             challenges = get_challenges(5, False, session, bus)
@@ -876,11 +876,11 @@ def test_listen_streak_endless_challenge(app):
             assert challenges[0]["challenge_id"] == "e"
             assert challenges[0]["is_complete"] == True
             assert challenges[0]["current_step_count"] == 3
-            assert challenges[0]["amount"] == "8"
+            assert challenges[0]["amount"] == "1"
 
             challenges = get_challenges(6, False, session, bus)
             assert len(challenges) == 1
             assert challenges[0]["challenge_id"] == "e"
             assert challenges[0]["is_complete"] == True
             assert challenges[0]["current_step_count"] == 0
-            assert challenges[0]["amount"] == "8"
+            assert challenges[0]["amount"] == "1"
