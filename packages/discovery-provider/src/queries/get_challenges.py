@@ -45,6 +45,8 @@ def get_disbursed_amount(disbursements: List[ChallengeDisbursement]) -> int:
 
 
 def rollup_aggregates(
+    event_bus: ChallengeEventBus,
+    session: Session,
     user_challenges: List[UserChallenge],
     parent_challenge: Challenge,
     disbursements: List[ChallengeDisbursement],
@@ -56,7 +58,7 @@ def rollup_aggregates(
         0,
     )
     amount = parent_challenge.amount
-    step_count = num_complete
+    current_step_count = num_complete
 
     # The parent challenge should have a step count, otherwise, we can just
     # say it's complete.
@@ -77,28 +79,33 @@ def rollup_aggregates(
         )
         most_recent_challenge = sorted_challenges[0]
         if most_recent_challenge.is_complete:
-            step_count = 0
+            current_step_count = 0
             for challenge in sorted_challenges:
                 if challenge.current_step_count is None:
                     continue
-                step_count += challenge.current_step_count
+                current_step_count += challenge.current_step_count
                 if challenge.current_step_count >= NUM_DAYS_IN_STREAK:
                     break
         else:
-            step_count = most_recent_challenge.current_step_count
+            current_step_count = most_recent_challenge.current_step_count or 0
         is_complete = num_complete >= NUM_DAYS_IN_STREAK
         amount = str(num_complete)
     elif parent_challenge.step_count:
         is_complete = num_complete >= parent_challenge.step_count
     else:
         is_complete = True
+    override_step_count = event_bus.get_manager(
+        parent_challenge.id
+    ).get_override_challenge_step_count(session, user_challenges[0].user_id)
+    if override_step_count is not None:
+        current_step_count = override_step_count
 
     response_dict: ChallengeResponse = {
         "challenge_id": parent_challenge.id,
         "user_id": user_challenges[0].user_id,
         "specifier": "",
         "is_complete": is_complete,
-        "current_step_count": step_count,
+        "current_step_count": current_step_count,
         "max_steps": step_count,
         "challenge_type": parent_challenge.type,
         "is_active": parent_challenge.active,
@@ -271,6 +278,8 @@ def get_challenges(
         parent_challenge = all_challenges_map[challenge_id]
         rolled_up.append(
             rollup_aggregates(
+                event_bus,
+                session,
                 challenges,
                 parent_challenge,
                 get_disbursements_by_challenge_id(disbursements, challenge_id),
