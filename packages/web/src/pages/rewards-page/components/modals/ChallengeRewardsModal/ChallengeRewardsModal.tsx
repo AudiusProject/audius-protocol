@@ -108,7 +108,8 @@ const messages = {
     'Something has gone wrong, not all your rewards were claimed. Please try again or contact support@audius.co.',
   claimErrorAAO:
     'Your account is unable to claim rewards at this time. Please try again later or contact support@audius.co. ',
-  claimableAmountLabel: (amount: number) => `Claim $${amount} AUDIO`,
+  claimableAmountLabel: (amount: number) =>
+    `Claim ${formatNumberCommas(amount)} $AUDIO`,
   twitterShare: (
     modalType:
       | 'referrals'
