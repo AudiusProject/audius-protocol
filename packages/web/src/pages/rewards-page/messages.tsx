@@ -1,4 +1,4 @@
-import { dayjs, removeNullable } from '@audius/common/utils'
+import { dayjs, formatNumberCommas, removeNullable } from '@audius/common/utils'
 import { Text } from '@audius/harmony'
 
 import { SummaryTableItem } from 'components/summary-table'
@@ -25,9 +25,10 @@ export const messages = {
   goldAudioToken: 'Gold $AUDIO token',
   available: '$AUDIO available',
   now: 'now!',
-  formatCooldownAmount: (amount: number) => `${amount} ${messages.pending}`,
+  formatCooldownAmount: (amount: number) =>
+    `${formatNumberCommas(amount)} ${messages.pending}`,
   formatClaimableAmount: (amount: number) =>
-    `${amount} ${messages.available} ${messages.now}`,
+    `${formatNumberCommas(amount)} ${messages.available} ${messages.now}`,
   availableMessage: (summaryItems: ClaimableSummaryTableItem[]) => {
     const filteredSummaryItems = summaryItems.filter(removeNullable)
     const summaryItem = filteredSummaryItems.pop()
