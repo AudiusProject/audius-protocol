@@ -99,8 +99,6 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
   const [isExpanded, toggleIsExpanded] = useToggle(false)
   const { motion } = useTheme()
 
-  const divider = <Divider />
-
   const contentHeight = 66 + suggestedTracks.length * 74
   const contentStyles = useSpring({
     height: isExpanded ? contentHeight : 0
@@ -128,7 +126,7 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
       </div>
       <animated.div className={styles.content} style={contentStyles}>
         <ul>
-          {divider}
+          <Divider />
           {!suggestedTracks ? (
             <LoadingSpinner className={styles.loading} />
           ) : null}
@@ -143,7 +141,7 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
               ) : (
                 <SuggestedTrackSkeleton />
               )}
-              {divider}
+              <Divider />
             </li>
           ))}
         </ul>
