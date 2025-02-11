@@ -237,6 +237,7 @@ export const ChallengeRewardsDrawerProvider = () => {
               ? config.fullDescription(challenge)
               : config.description(challenge)
           }
+          optionalDescription={config.optionalDescription}
           progressLabel={config.progressLabel ?? 'Completed'}
           completedLabel={config.completedLabel}
           amount={progressRewardAmount}

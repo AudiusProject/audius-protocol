@@ -287,6 +287,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   const currentStepCount = challenge?.current_step_count || 0
   const {
     fullDescription,
+    optionalDescription,
     progressLabel,
     completedLabel,
     isVerifiedChallenge
@@ -342,6 +343,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
       ) : null}
       <Text variant='body' style={{ whiteSpace: 'pre-line' }}>
         {fullDescription?.(challenge)}
+        {challenge?.claimableAmount ? optionalDescription : null}
       </Text>
       {isCooldownChallenge ? (
         <Text variant='body' color='subdued'>
