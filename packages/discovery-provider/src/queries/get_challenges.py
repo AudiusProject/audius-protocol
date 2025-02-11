@@ -73,7 +73,6 @@ def rollup_aggregates(
         # `step_count` should only reflect the _current_ in-progress streak, so we
         # count only the `step_count` of the most recent "full" 7-day streak user_challenge
         # row, and sum that with the 1-amount user_challenge rows after that one (if any).
-        # But `amount` should still reflect the total claimable amount.
         sorted_challenges = sorted(
             user_challenges, key=lambda x: x.created_at, reverse=True
         )
@@ -89,7 +88,6 @@ def rollup_aggregates(
         else:
             current_step_count = most_recent_challenge.current_step_count or 0
         is_complete = num_complete >= NUM_DAYS_IN_STREAK
-        amount = str(num_complete)
     elif parent_challenge.step_count:
         is_complete = num_complete >= parent_challenge.step_count
     else:
