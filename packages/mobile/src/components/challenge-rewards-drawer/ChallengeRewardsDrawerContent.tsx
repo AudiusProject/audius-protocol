@@ -37,7 +37,8 @@ const messages = {
   complete: 'Complete',
   claim: 'Claim This Reward',
   claimableLabel: '$AUDIO available to claim',
-  claimableAmountLabel: (amount) => `Claim ${amount} $AUDIO`,
+  claimableAmountLabel: (amount) =>
+    `Claim ${formatNumberCommas(amount)} $AUDIO`,
   claimedLabel: '$AUDIO claimed so far',
   upcomingRewards: 'Upcoming Rewards',
   readyToClaim: 'Ready to Claim',
