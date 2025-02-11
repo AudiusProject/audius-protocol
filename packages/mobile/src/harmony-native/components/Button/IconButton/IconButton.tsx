@@ -50,7 +50,7 @@ export const IconButton = (props: IconButtonProps) => {
   const buttonStyles = {
     borderRadius: 1000,
     padding: spacing.xs,
-    overflow: 'unset'
+    overflow: 'visible' as const
   }
 
   const rippleStyles = useAnimatedStyle(
