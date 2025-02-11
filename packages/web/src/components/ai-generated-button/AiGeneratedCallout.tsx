@@ -34,7 +34,7 @@ export const AiGeneratedCallout = ({ handle }: { handle: string }) => {
       </div>
       <div className={styles.body}>
         <div className={styles.description}>{messages.description}</div>
-        <Box pl='m' mt='m'>
+        <Box pl='xs' mt='m'>
           <PlainButton
             variant='subdued'
             iconRight={IconArrow}

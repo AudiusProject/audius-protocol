@@ -45,7 +45,7 @@ export const TopSupporters = () => {
     }
   }, [profile, dispatch])
 
-  if (!profile || profile.supporter_count === 0) {
+  if (!profile || (!isLoading && supporters.length === 0)) {
     return null
   }
 
