@@ -50,7 +50,7 @@ export const ChallengeRewardsTile = ({
   const [haveChallengesLoaded, setHaveChallengesLoaded] = useState(false)
   const { isEnabled: isOneShotEnabled } = useFeatureFlag(FeatureFlags.ONE_SHOT)
   const { isEnabled: isClaimAllRewardsEnabled } = useFeatureFlag(
-    FeatureFlags.CLAIM_ALL_REWARDS
+    FeatureFlags.CLAIM_ALL_REWARDS_TILE
   )
 
   // The referred challenge only needs a tile if the user was referred
