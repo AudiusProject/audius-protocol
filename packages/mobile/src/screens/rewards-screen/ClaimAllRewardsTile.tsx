@@ -5,7 +5,7 @@ import {
   useChallengeCooldownSchedule,
   useFeatureFlag
 } from '@audius/common/hooks'
-import { FeatureFlags } from '@audius/common/services/remote-config/feature-flags'
+import { FeatureFlags } from '@audius/common/services'
 import { modalsActions } from '@audius/common/store'
 import { Image, View } from 'react-native'
 import { useDispatch } from 'react-redux'
