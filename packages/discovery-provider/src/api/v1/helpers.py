@@ -20,6 +20,7 @@ from src.queries.get_support_for_user import SupportResponse
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
 from src.queries.query_helpers import (
     CollectionLibrarySortMethod,
+    CollectionSortMethod,
     LibraryFilterType,
     SearchSortMethod,
     SortDirection,
@@ -954,7 +955,24 @@ user_tracks_route_parser.add_argument(
 )
 
 user_playlists_route_parser = pagination_with_current_user_parser.copy()
+user_playlists_route_parser.add_argument(
+    "sort_method",
+    required=False,
+    description="The sort method to use",
+    type=str,
+    default=CollectionSortMethod.recent,
+    choices=CollectionSortMethod._member_names_
+)
+
 user_albums_route_parser = pagination_with_current_user_parser.copy()
+user_albums_route_parser.add_argument(
+    "sort_method",
+    required=False,
+    description="The sort method to use",
+    type=str,
+    default=CollectionSortMethod.recent,
+    choices=CollectionSortMethod._member_names_
+)
 
 full_search_parser = pagination_with_current_user_parser.copy()
 full_search_parser.add_argument("query", required=False, description="The search query")

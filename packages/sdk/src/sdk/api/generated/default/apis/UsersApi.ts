@@ -155,6 +155,7 @@ export interface GetAlbumsByUserRequest {
     offset?: number;
     limit?: number;
     userId?: string;
+    sortMethod?: GetAlbumsByUserSortMethodEnum;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -212,6 +213,7 @@ export interface GetPlaylistsByUserRequest {
     offset?: number;
     limit?: number;
     userId?: string;
+    sortMethod?: GetPlaylistsByUserSortMethodEnum;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -615,6 +617,10 @@ export class UsersApi extends runtime.BaseAPI {
             queryParameters['user_id'] = params.userId;
         }
 
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
@@ -991,6 +997,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (params.userId !== undefined) {
             queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1874,6 +1884,22 @@ export const GetAIAttributedTracksByUserHandleFilterTracksEnum = {
     Unlisted: 'unlisted'
 } as const;
 export type GetAIAttributedTracksByUserHandleFilterTracksEnum = typeof GetAIAttributedTracksByUserHandleFilterTracksEnum[keyof typeof GetAIAttributedTracksByUserHandleFilterTracksEnum];
+/**
+ * @export
+ */
+export const GetAlbumsByUserSortMethodEnum = {
+    Recent: 'recent',
+    Popular: 'popular'
+} as const;
+export type GetAlbumsByUserSortMethodEnum = typeof GetAlbumsByUserSortMethodEnum[keyof typeof GetAlbumsByUserSortMethodEnum];
+/**
+ * @export
+ */
+export const GetPlaylistsByUserSortMethodEnum = {
+    Recent: 'recent',
+    Popular: 'popular'
+} as const;
+export type GetPlaylistsByUserSortMethodEnum = typeof GetPlaylistsByUserSortMethodEnum[keyof typeof GetPlaylistsByUserSortMethodEnum];
 /**
  * @export
  */

@@ -143,6 +143,7 @@ export interface GetAlbumsByUserRequest {
     offset?: number;
     limit?: number;
     userId?: string;
+    sortMethod?: GetAlbumsByUserSortMethodEnum;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -226,6 +227,7 @@ export interface GetPlaylistsByUserRequest {
     offset?: number;
     limit?: number;
     userId?: string;
+    sortMethod?: GetPlaylistsByUserSortMethodEnum;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -665,6 +667,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (params.userId !== undefined) {
             queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1162,6 +1168,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (params.userId !== undefined) {
             queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -2765,6 +2775,14 @@ export type GetAIAttributedTracksByUserHandleFilterTracksEnum = typeof GetAIAttr
 /**
  * @export
  */
+export const GetAlbumsByUserSortMethodEnum = {
+    Recent: 'recent',
+    Popular: 'popular'
+} as const;
+export type GetAlbumsByUserSortMethodEnum = typeof GetAlbumsByUserSortMethodEnum[keyof typeof GetAlbumsByUserSortMethodEnum];
+/**
+ * @export
+ */
 export const GetAudioTransactionsSortMethodEnum = {
     Date: 'date',
     TransactionType: 'transaction_type'
@@ -2801,6 +2819,14 @@ export const GetFavoritesSortDirectionEnum = {
     Desc: 'desc'
 } as const;
 export type GetFavoritesSortDirectionEnum = typeof GetFavoritesSortDirectionEnum[keyof typeof GetFavoritesSortDirectionEnum];
+/**
+ * @export
+ */
+export const GetPlaylistsByUserSortMethodEnum = {
+    Recent: 'recent',
+    Popular: 'popular'
+} as const;
+export type GetPlaylistsByUserSortMethodEnum = typeof GetPlaylistsByUserSortMethodEnum[keyof typeof GetPlaylistsByUserSortMethodEnum];
 /**
  * @export
  */
