@@ -617,10 +617,6 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
             metadata = helpers.get_tx_arg(event, "_metadata")
             signer = helpers.get_tx_arg(event, "_signer")
 
-            logger.info(
-                f"index_core manage entity {entity_id} {entity_type} {action} {user_id} {metadata} {signer}"
-            )
-
             if entity_type in entity_types_to_fetch:
                 entities_to_fetch[entity_type].add(entity_id)
             if entity_type == EntityType.USER:
