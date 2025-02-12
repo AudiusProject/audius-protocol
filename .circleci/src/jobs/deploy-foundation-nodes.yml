@@ -25,3 +25,4 @@ steps:
   - docker-tag-images:
       tag: __version__
       service: all
+  - docker-vanity-tag-audiusd

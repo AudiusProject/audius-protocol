@@ -663,3 +663,4 @@ def index_rewards_manager(self):
     finally:
         if have_lock:
             update_lock.release()
+        celery.send_task("index_rewards_manager", countdown=0.5, queue="index_core")

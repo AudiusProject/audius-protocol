@@ -15,6 +15,7 @@ export type ChallengeRewardsInfo = {
   title: string
   description: (amount: OptimisticUserChallenge | undefined) => string
   fullDescription?: (amount: OptimisticUserChallenge | undefined) => string
+  optionalDescription?: string
   progressLabel?: string
   remainingLabel?: string
   completedLabel?: string
@@ -313,8 +314,9 @@ export const challengeRewardsConfig: Record<
     description: () =>
       `We're thrilled to reward our talented artist community for driving Audius' growth and success!`,
     fullDescription: () =>
-      `We're thrilled to reward our talented artist community for driving Audius' growth and success! \n\nClaim your tokens before they expire on 05/13/25!`,
-
+      `We're thrilled to reward our talented artist community for driving Audius' growth and success!`,
+    optionalDescription:
+      '\n\nClaim your tokens before they expire on 05/13/25!',
     panelButtonText: '',
     id: ChallengeName.OneShot,
     remainingLabel: 'Ineligible',

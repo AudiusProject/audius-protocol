@@ -108,7 +108,8 @@ const messages = {
     'Something has gone wrong, not all your rewards were claimed. Please try again or contact support@audius.co.',
   claimErrorAAO:
     'Your account is unable to claim rewards at this time. Please try again later or contact support@audius.co. ',
-  claimableAmountLabel: (amount: number) => `Claim $${amount} AUDIO`,
+  claimableAmountLabel: (amount: number) =>
+    `Claim ${formatNumberCommas(amount)} $AUDIO`,
   twitterShare: (
     modalType:
       | 'referrals'
@@ -287,6 +288,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   const currentStepCount = challenge?.current_step_count || 0
   const {
     fullDescription,
+    optionalDescription,
     progressLabel,
     completedLabel,
     isVerifiedChallenge
@@ -342,6 +344,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
       ) : null}
       <Text variant='body' style={{ whiteSpace: 'pre-line' }}>
         {fullDescription?.(challenge)}
+        {challenge?.claimableAmount ? optionalDescription : null}
       </Text>
       {isCooldownChallenge ? (
         <Text variant='body' color='subdued'>
