@@ -49,9 +49,11 @@ def index_core_entity_manager(
                     "_nonce": manage_entity_tx.nonce,
                 }
             ),
-            "transactionHash": web3.to_bytes(hexstr=tx_hash),
+            "transactionHash": web3.to_bytes(text=tx_hash),
         }
-        tx_receipts.append(tx_receipt)
+
+        # suppress typechecker as this is what tests do
+        tx_receipts.append(tx_receipt)  # type: ignore[arg-type]
 
     try:
         latest_indexed_block_record = (
@@ -59,6 +61,9 @@ def index_core_entity_manager(
         )
         if not latest_indexed_block_record:
             raise Exception("latest_indexed_block not found")
+
+        if not latest_indexed_block_record.number:
+            raise Exception("latest block record found but without number")
 
         next_em_block = latest_indexed_block_record.number + 1
         next_em_block_model = Block(
@@ -80,8 +85,6 @@ def index_core_entity_manager(
         )
         return next_em_block
     except Exception as e:
-        logger.error(
-            f"entity manager error in core blocks {e}", exc_info=True
-        )
+        logger.error(f"entity manager error in core blocks {e}", exc_info=True)
         # raise error so we don't index this block
         raise e

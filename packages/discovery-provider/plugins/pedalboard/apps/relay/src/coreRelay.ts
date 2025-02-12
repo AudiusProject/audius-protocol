@@ -38,8 +38,8 @@ export const coreRelay = async (
       entityType,
       action,
       metadata: metadataAny,
-      subjectSig
-      // nonce: nonceBytes
+      subjectSig,
+      nonce: nonceBytes
     } = decodeAbi(encodedABI)
 
     const signer = request.senderAddress
@@ -47,7 +47,7 @@ export const coreRelay = async (
     const entityId = BigInt(entityIdBig.toString())
     const metadata = JSON.stringify(metadataAny)
     const signature = ethers.utils.hexlify(subjectSig)
-    // const nonce = ethers.utils.hexlify(nonceBytes)
+    const nonce = ethers.utils.hexlify(nonceBytes)
 
     const manageEntity = create(ManageEntityLegacySchema, {
       userId,
@@ -57,7 +57,7 @@ export const coreRelay = async (
       metadata,
       signature,
       signer,
-      nonce: BigInt(1),
+      nonce,
     })
 
     const signedTransaction = create(SignedTransactionSchema, {

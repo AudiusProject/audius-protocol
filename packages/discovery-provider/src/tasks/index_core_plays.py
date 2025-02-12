@@ -48,7 +48,7 @@ def index_core_plays(
             session=session,
             challenge_bus=challenge_bus,
             latest_indexed_slot=latest_indexed_slot,
-            tx=tx,
+            tx=tx.transaction,
         )
     return indexed_slot
 
