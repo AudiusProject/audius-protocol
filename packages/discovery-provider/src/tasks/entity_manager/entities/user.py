@@ -186,6 +186,7 @@ def create_user(
     cid_type: Dict[str, str],
     cid_metadata: Dict[str, Dict],
 ):
+    logger.info(f"entity_manager_event_tx {params.metadata}")
     validate_user_tx(params)
 
     user_id = params.user_id
@@ -209,11 +210,13 @@ def create_user(
         user_metadata, metadata_cid = parse_metadata(
             params.metadata, Action.UPDATE, EntityType.USER
         )
-    except Exception:
+    except Exception as e:
+        logger.info(f"entity_manager_event_tx error {e}")
         # fallback to multi tx signup if parsing fails
         pass
 
     # If parsing succeeds, we know this is a single tx signup
+    logger.info(f"entity_manager_event_tx {user_metadata}")
     if user_metadata is not None:
         validate_user_metadata(
             params.session,

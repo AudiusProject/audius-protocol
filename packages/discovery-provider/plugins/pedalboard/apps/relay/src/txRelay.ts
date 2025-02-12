@@ -32,8 +32,11 @@ export const relayTransaction = async (
     if (config.environment === "dev") {
       const coreHealth = await getCoreIndexerHealth()
       logger.info({ coreHealth }, "core health from redis")
-      const receipt = coreRelay(logger, requestId, validatedRelayRequest)
-      if (coreHealth?.indexing_entity_manager) {
+      const receipt = await coreRelay(logger, requestId, validatedRelayRequest)
+      const indexingEntityManager = coreHealth?.indexing_entity_manager
+      logger.info({ indexingEntityManager }, "indexing em")
+      if (indexingEntityManager) {
+        logger.info({ receipt }, "sending back")
         res.send({ receipt })
         next()
         return

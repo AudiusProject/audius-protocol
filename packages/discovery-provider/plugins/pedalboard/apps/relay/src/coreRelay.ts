@@ -52,7 +52,7 @@ export const coreRelay = async (
     const signer = request.senderAddress
     const userId = BigInt(userIdBig.toString())
     const entityId = BigInt(entityIdBig.toString())
-    const metadata = JSON.stringify(metadataAny)
+    const metadata = metadataAny as string
     const signature = ethers.utils.hexlify(subjectSig)
     const nonce = ethers.utils.hexlify(nonceBytes)
 
