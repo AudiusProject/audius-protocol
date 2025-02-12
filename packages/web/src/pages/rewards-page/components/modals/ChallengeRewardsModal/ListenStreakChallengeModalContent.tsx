@@ -44,7 +44,7 @@ export const ListenStreakChallengeModalContent = ({
   )
   const progressReward = (
     <ProgressReward
-      amount={formatNumberCommas(userChallenge?.amount ?? '')}
+      amount={userChallenge?.amount}
       subtext={messages.rewardSubtext}
     />
   )
@@ -105,17 +105,22 @@ export const ListenStreakChallengeModalContent = ({
           </Flex>
           <Flex column gap='l'>
             {progressStatusLabel}
-            <Flex
-              backgroundColor='surface1'
-              ph='xl'
-              pv='m'
-              borderRadius='s'
-              border='default'
-              justifyContent='space-between'
-            >
-              <Text variant='title'>{messages.readyToClaim}</Text>
-              <Text variant='title'>{userChallenge?.claimableAmount}</Text>
-            </Flex>
+            {userChallenge?.claimableAmount &&
+            userChallenge?.claimableAmount > 0 ? (
+              <Flex
+                backgroundColor='surface1'
+                ph='xl'
+                pv='m'
+                borderRadius='s'
+                border='default'
+                justifyContent='space-between'
+              >
+                <Text variant='title'>{messages.readyToClaim}</Text>
+                <Text variant='title'>
+                  {userChallenge?.claimableAmount} $AUDIO
+                </Text>
+              </Flex>
+            ) : null}
           </Flex>
         </Paper>
       )}

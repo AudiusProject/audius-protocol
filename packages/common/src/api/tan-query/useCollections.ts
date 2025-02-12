@@ -1,5 +1,6 @@
 import { OptionalId } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { keyBy } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
@@ -10,6 +11,7 @@ import { removeNullable } from '~/utils'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
+import { useCurrentUserId } from './useCurrentUserId'
 import { primeCollectionData } from './utils/primeCollectionData'
 
 export const getCollectionsQueryKey = (
@@ -23,17 +25,18 @@ export const useCollections = (
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
+  const { data: currentUserId } = useCurrentUserId()
+  const encodedIds = collectionIds
+    ?.map((id) => OptionalId.parse(id))
+    .filter(removeNullable)
 
   return useQuery({
     queryKey: getCollectionsQueryKey(collectionIds),
     queryFn: async () => {
-      const encodedIds = collectionIds
-        ?.map((id) => OptionalId.parse(id))
-        .filter(removeNullable)
-      if (!encodedIds || encodedIds.length === 0) return []
       const sdk = await audiusSdk()
       const { data } = await sdk.full.playlists.getBulkPlaylists({
-        id: encodedIds
+        id: encodedIds,
+        userId: OptionalId.parse(currentUserId)
       })
 
       const collections = transformAndCleanList(
@@ -43,9 +46,12 @@ export const useCollections = (
 
       primeCollectionData({ collections, queryClient, dispatch })
 
-      return collections
+      const collectionsMap = keyBy(collections, 'playlist_id')
+      return collectionIds
+        ?.map((id) => collectionsMap[id])
+        .filter(removeNullable)
     },
     ...options,
-    enabled: options?.enabled !== false && !!collectionIds
+    enabled: options?.enabled !== false && encodedIds && encodedIds.length > 0
   })
 }

@@ -36,9 +36,8 @@
   overflow: hidden;
   color: #a3a1b2;
   font-size: 42px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 42px;
-  text-transform: uppercase;
   text-align: center;
   user-select: none;
 }
@@ -47,24 +46,16 @@
   position: relative;
   display: inline-flex;
   overflow: hidden;
-  text-transform: uppercase;
   font-size: 72px;
-  font-weight: 800;
-  line-height: 88px;
+  font-weight: 700;
+  line-height: 96px;
   text-align: center;
   margin-bottom: 16px;
 }
 
-@media (max-width: 1240px) {
-  .coloredTitle {
-    font-size: 48px;
-    line-height: 60px;
-  }
-}
-
 @media (max-width: 994px) {
   .coloredTitle {
-    font-size: 34px;
+    font-size: 48px;
     line-height: 60px;
   }
 }
@@ -77,7 +68,7 @@
 }
 
 .subText {
-  color: #858199;
+  color: #6c6780;
   font-size: 24px;
   font-weight: 500;
   line-height: 32px;
@@ -107,7 +98,7 @@
 }
 
 .textAnimate {
-  margin-right: 8px;
+  margin-right: 16px;
   overflow: hidden;
   display: inline-flex;
 }
@@ -197,13 +188,11 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 42px;
   line-height: 52px;
   max-width: 500px;
   text-align: center;
-  text-transform: uppercase;
-
   background: linear-gradient(315deg, #5b23e1 0%, #a22feb 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -213,10 +202,6 @@
 .mobileContainer .coloredTitleWord {
   margin-bottom: 0px;
   user-select: none;
-}
-
-.mobileContainer .textAnimate:not(:first-child) .coloredTitleWord {
-  margin-right: -8px;
 }
 
 .mobileContainer .textAnimate {

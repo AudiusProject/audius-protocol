@@ -1,20 +1,14 @@
 import { ReactNode } from 'react'
 
-import { IconAllTime, IconCart, IconUserGroup } from '@audius/harmony'
+import { IconAllTime, IconCart, IconUserGroup, IconGift } from '@audius/harmony'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 
-import productShot from 'assets/img/publicSite/ProductShot3@2x.webp'
+import productShot from 'assets/img/publicSite/ProductShot3.webp'
 import useHasViewed from 'hooks/useHasViewed'
-import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
 
 import styles from './PlatformFeatures.module.css'
-
-const DESKTOP_NAV_BANNER_MIN_WIDTH = 1170
-const MOBILE_WIDTH_MEDIA_QUERY = window.matchMedia(
-  `(max-width: ${DESKTOP_NAV_BANNER_MIN_WIDTH}px)`
-)
 
 const messages = {
   title: ' Empowering Features for Artists',
@@ -26,36 +20,46 @@ type FeatureProps = {
   title: string
   description: string | ReactNode
   icon: ReactNode
-  iconPosition: 'above' | 'side'
 }
 
 const features: Array<Omit<FeatureProps, 'iconPosition'>> = [
-  {
-    title: 'Earn On Your Terms',
-    description: 'You set the price, and earn bonus $AUDIO for every sale.',
-    icon: (
-      <div className={styles.featureIconContainer}>
-        <IconCart className={styles.cartIcon} />
-      </div>
-    )
-  },
-  {
-    title: 'Grow Your Fanbase',
-    description:
-      'A robust, rabid community of millions of tastemakers are ready for your best.',
-    icon: (
-      <div className={styles.featureIconContainer}>
-        <IconUserGroup className={styles.fanbaseIcon} />
-      </div>
-    )
-  },
   {
     title: 'Free Unlimited Uploads & No Ads',
     description:
       'Free to use, with no limitations on uploads and a completely ad-free experience.',
     icon: (
       <div className={styles.featureIconContainer}>
-        <IconAllTime className={styles.allTimeIcon} />
+        <IconAllTime size='xl' className={styles.allTimeIcon} />
+      </div>
+    )
+  },
+  {
+    title: 'Grow Your Fanbase',
+    description:
+      'With Remix Contests, direct messaging, comments, and more. Audius gives you the tools to build a thriving fan community.',
+    icon: (
+      <div className={styles.featureIconContainer}>
+        <IconCart size='xl' className={styles.cartIcon} />
+      </div>
+    )
+  },
+  {
+    title: 'Sell Your Beats, Stems, & More',
+    description:
+      'Take advantage of features like premium download gates, and earn bonus rewards with every sale!',
+    icon: (
+      <div className={styles.featureIconContainer}>
+        <IconUserGroup size='xl' className={styles.fanbaseIcon} />
+      </div>
+    )
+  },
+  {
+    title: 'Earn Token Rewards',
+    description:
+      'Earn $AUDIO token rewards by completing achievements or winning weekly competitions!',
+    icon: (
+      <div className={styles.featureIconContainer}>
+        <IconGift size='xl' className={styles.giftIcon} />
       </div>
     )
   }
@@ -64,9 +68,8 @@ const features: Array<Omit<FeatureProps, 'iconPosition'>> = [
 const Feature = (props: FeatureProps) => {
   return (
     <div className={styles.feature}>
-      {props.iconPosition === 'side' ? props.icon : null}
+      {props.icon}
       <div className={styles.featureText}>
-        {props.iconPosition === 'above' ? props.icon : null}
         <div className={styles.featureTitle}>{props.title}</div>
         <div className={styles.featureDescription}>{props.description}</div>
       </div>
@@ -79,11 +82,6 @@ type PlatformFeaturesProps = {
 }
 
 const PlatformFeatures = (props: PlatformFeaturesProps) => {
-  const isNarrow = useMatchesBreakpoint({
-    mediaQuery: MOBILE_WIDTH_MEDIA_QUERY,
-    initialValue: props.isMobile
-  })
-
   // Animate in the title and subtitle text
   const [hasViewed, refInView] = useHasViewed(0.8)
 
@@ -142,11 +140,7 @@ const PlatformFeatures = (props: PlatformFeaturesProps) => {
           ) : null}
           <div className={styles.features}>
             {features.map((feature) => (
-              <Feature
-                iconPosition={!props.isMobile && isNarrow ? 'above' : 'side'}
-                key={feature.title}
-                {...feature}
-              />
+              <Feature key={feature.title} {...feature} />
             ))}
           </div>
         </div>

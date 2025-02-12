@@ -33,6 +33,7 @@ type PanelProps = {
 export const Panel = ({
   id,
   onPress,
+  shortTitle,
   title,
   shortDescription,
   description,
@@ -94,7 +95,7 @@ export const Panel = ({
         </Flex>
         <Flex ph='unit5' gap='s'>
           <Text variant='heading' size='s'>
-            {title}
+            {shortTitle ?? title}
           </Text>
           <Text numberOfLines={2}>
             {shortDescription || description(challenge)}

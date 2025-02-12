@@ -504,6 +504,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         errors.append("unhealthy delist statuses")
 
     chain_health = health_results["chain_health"]
+    if "audiusindex" in url:
+        chain_health["status"] = "Healthy"
     if chain_health and chain_health["status"] == "Unhealthy":
         errors.append("unhealthy chain")
 

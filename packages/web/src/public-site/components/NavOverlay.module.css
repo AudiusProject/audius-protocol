@@ -32,7 +32,7 @@
 }
 
 .content {
-  background: linear-gradient(119deg, #5200ff 1%, #9e00ff 99%);
+  background: linear-gradient(119deg, #a435d8 -10%, #4118af 40%);
   position: absolute;
   z-index: 2000;
   height: 100vh;
@@ -47,15 +47,6 @@
   display: flex;
   justify-content: space-between;
   margin-bottom: 20px;
-}
-
-.iconClose {
-  width: 32px;
-  height: 32px;
-}
-
-.iconClose path {
-  fill: var(--harmony-static-white);
 }
 
 .horizontalLogo {

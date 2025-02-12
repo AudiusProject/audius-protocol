@@ -1,11 +1,11 @@
 .container {
   display: inline-flex;
   align-items: center;
-  height: 72px;
+  height: 80px;
   width: 100%;
   position: fixed;
   top: 0px;
-  bottom: 72px;
+  bottom: 80px;
   z-index: 100;
   transition: all 0.15s ease-in-out;
   background-color: rgba(255, 255, 255, 0);
@@ -72,7 +72,7 @@
 
 .horizontalLogo {
   cursor: pointer;
-  max-width: 132px;
+  max-width: 160px;
 }
 
 .horizontalLogo {

@@ -17,6 +17,8 @@ from src.utils.config import shared_config
 logger = logging.getLogger(__name__)
 env = shared_config["discprov"]["env"]
 
+NUM_DAYS_IN_STREAK = 7
+
 base_timedelta = timedelta(days=1)
 if env == "stage":
     base_timedelta = timedelta(minutes=1)
@@ -34,7 +36,7 @@ def get_listen_streak_override(session: Session, user_id: int) -> Optional[int]:
 
     # If last_listen_date is over 48 hrs, return zero
     current_datetime = datetime.now()
-    if current_datetime - user_listen_challenge.last_listen_date >= timedelta(days=2):
+    if current_datetime - user_listen_challenge.last_listen_date >= base_timedelta * 2:
         return 0
     return None
 
@@ -58,7 +60,7 @@ class ChallengeListenEndlessStreakUpdater(ChallengeUpdater):
             and not most_recent_challenge.is_complete
             and listen_streak is not None
             and listen_streak.last_listen_date is not None
-            and created_at - listen_streak.last_listen_date <= timedelta(days=2)
+            and created_at - listen_streak.last_listen_date <= base_timedelta * 2
         ):
             return most_recent_challenge
         return None
@@ -71,6 +73,8 @@ class ChallengeListenEndlessStreakUpdater(ChallengeUpdater):
         # Otherwise, create a new specifier
         created_at = datetime.fromtimestamp(extra["created_at"])
         formatted_date = created_at.strftime("%Y%m%d")
+        if env == "stage":
+            formatted_date = created_at.strftime("%Y%m%d%H%M%S")
         return f"{hex(user_id)[2:]}_{formatted_date}"
 
     def should_create_new_challenge(
@@ -104,7 +108,7 @@ class ChallengeListenEndlessStreakUpdater(ChallengeUpdater):
             matching_partial_challenge = completion_map[user_challenge.user_id]
             # For endless streak challenges - these rows should only have amount/step_count = 1
             if (
-                matching_partial_challenge.listen_streak > 7
+                matching_partial_challenge.listen_streak > NUM_DAYS_IN_STREAK
                 and user_challenge.current_step_count == 0
             ):
                 user_challenge.amount = 1
@@ -112,11 +116,13 @@ class ChallengeListenEndlessStreakUpdater(ChallengeUpdater):
                 user_challenge.is_complete = True
             # For first normal listen streak challenge - amount/step_count get updated as streak progresses
             else:
-                user_challenge.amount = 7
+                user_challenge.amount = NUM_DAYS_IN_STREAK
                 user_challenge.current_step_count = (
                     matching_partial_challenge.listen_streak
                 )
-                user_challenge.is_complete = user_challenge.current_step_count >= 7
+                user_challenge.is_complete = (
+                    user_challenge.current_step_count >= NUM_DAYS_IN_STREAK
+                )
 
     def on_after_challenge_creation(
         self, session: Session, metadatas: List[FullEventMetadata]

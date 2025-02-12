@@ -70,7 +70,7 @@ const challengeRewardsConfig: {
     icon: <TrebleClefIcon />
   },
   o: {
-    title: 'Airdrop - January 2025',
+    title: 'Airdrop 2: Artist Appreciation',
     icon: <TrebleClefIcon />
   }
 }
@@ -386,6 +386,8 @@ const notificationMap = {
     let bodyText
     if (notification.challengeId === 'rd') {
       bodyText = `You’ve received ${rewardAmount} $AUDIO for being referred! Invite your friends to join to earn more!`
+    } else if (notification.challengeId === 'o') {
+      bodyText = `Congrats!🎉 You’re eligible for the Airdrop! Claim your tokens now!`
     } else {
       bodyText = `You’ve earned ${rewardAmount} $AUDIO for completing this challenge!`
     }
