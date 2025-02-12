@@ -30,6 +30,7 @@ export const useTrack = (
     queryKey: getTrackQueryKey(trackId),
     queryFn: async () => {
       const sdk = await audiusSdk()
+      // todo: use the batcher
       const { data } = await sdk.full.tracks.getTrack({
         trackId: Id.parse(trackId)
       })

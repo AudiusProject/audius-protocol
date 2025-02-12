@@ -94,7 +94,7 @@ export const primeCollectionDataInternal = ({
     ) {
       queryClient.setQueryData(
         getCollectionByPermalinkQueryKey(collection.permalink),
-        collection
+        collection?.playlist_id
       )
     }
 

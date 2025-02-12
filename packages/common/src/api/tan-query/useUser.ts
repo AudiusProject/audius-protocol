@@ -1,5 +1,5 @@
 import { Id, OptionalId } from '@audius/sdk'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
@@ -30,6 +30,7 @@ export const useUser = (
     queryKey: getUserQueryKey(userId),
     queryFn: async () => {
       const sdk = await audiusSdk()
+      // todo: use the batcher
       const { data } = await sdk.full.users.getUser({
         id: Id.parse(userId),
         userId: OptionalId.parse(currentUserId)

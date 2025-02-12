@@ -30,6 +30,7 @@ export const useCollection = (
     queryKey: getCollectionQueryKey(collectionId),
     queryFn: async () => {
       const sdk = await audiusSdk()
+      // todo: use the batcher
       const { data } = await sdk.full.playlists.getPlaylist({
         playlistId: Id.parse(collectionId),
         userId: OptionalId.parse(currentUserId)
