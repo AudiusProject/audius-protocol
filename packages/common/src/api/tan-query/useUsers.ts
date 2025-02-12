@@ -64,7 +64,7 @@ export const useUsers = (
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
 
-  const queries = useQueries({
+  return useQueries({
     queries: (userIds ?? []).map((userId) => ({
       queryKey: getUserQueryKey(userId),
       queryFn: async () => {
@@ -81,6 +81,4 @@ export const useUsers = (
     })),
     combine: combineQueryResults<UserMetadata[]>
   })
-
-  return queries
 }
