@@ -27,7 +27,7 @@ export enum FeatureFlags {
   TRACK_REPLACE_DOWNLOADS = 'track_replace_downloads',
   LISTEN_STREAK_ENDLESS = 'listen_streak_endless',
   ONE_SHOT = 'one_shot',
-  CLAIM_ALL_REWARDS = 'claim_all_rewards'
+  CLAIM_ALL_REWARDS_TILE = 'claim_all_rewards_tile'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -70,5 +70,5 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.TRACK_REPLACE_DOWNLOADS]: false,
   [FeatureFlags.LISTEN_STREAK_ENDLESS]: false,
   [FeatureFlags.ONE_SHOT]: false,
-  [FeatureFlags.CLAIM_ALL_REWARDS]: false
+  [FeatureFlags.CLAIM_ALL_REWARDS_TILE]: true
 }
