@@ -1,13 +1,15 @@
 from datetime import datetime, timedelta
 
-from sqlalchemy import Date, and_
+from sqlalchemy import String, and_, cast, func
 
 from src.models.notifications.notification import Notification
 from src.models.rewards.listen_streak_challenge import ChallengeListenStreak
 from src.tasks.celery_app import celery
+from src.utils.config import shared_config
 from src.utils.structured_logger import StructuredLogger, log_duration
 
 logger = StructuredLogger(__name__)
+env = shared_config["discprov"]["env"]
 
 LISTEN_STREAK = "listen_streak"
 HOURS_PER_DAY = 24
@@ -16,18 +18,17 @@ LAST_LISTEN_HOURS_AGO = HOURS_PER_DAY - LISTEN_STREAK_BUFFER
 
 
 def get_listen_streak_notification_group_id(user_id, date):
-    # Format date as YYYY-MM-DD
-    date_str = date.strftime("%Y-%m-%d")
-    return f"{LISTEN_STREAK}:{user_id}:{date_str}"
+    return f"{LISTEN_STREAK}:{user_id}:{date}"
 
 
 @log_duration(logger)
 def _create_listen_streak_notifications(session):
-    logger.info(f"REED: running create_listen_streak_notifications")
-
     now = datetime.now()
     window_end = now - timedelta(hours=LAST_LISTEN_HOURS_AGO)
     window_start = now - timedelta(hours=LAST_LISTEN_HOURS_AGO + 1)
+    if env == "stage" or env == "dev":
+        window_end = now - timedelta(minutes=1)
+        window_start = now - timedelta(minutes=2)
 
     # Find listen streaks that need notifications
     listen_streaks = (
@@ -37,9 +38,12 @@ def _create_listen_streak_notifications(session):
             and_(
                 Notification.user_ids.any(ChallengeListenStreak.user_id),
                 Notification.group_id
-                == get_listen_streak_notification_group_id(
-                    ChallengeListenStreak.user_id,
-                    ChallengeListenStreak.last_listen_date.cast(Date),
+                == func.concat(
+                    LISTEN_STREAK,
+                    ":",
+                    cast(ChallengeListenStreak.user_id, String),
+                    ":",
+                    func.to_char(ChallengeListenStreak.last_listen_date, "YYYY-MM-DD"),
                 ),
                 Notification.timestamp >= window_start,
             ),
@@ -63,8 +67,7 @@ def _create_listen_streak_notifications(session):
             user_ids=[streak.user_id],
             type=LISTEN_STREAK,
             data={
-                "listen_streak": streak.listen_streak,
-                "last_listen_date": streak.last_listen_date.isoformat(),
+                "streak": streak.listen_streak,
             },
             timestamp=datetime.now(),
         )

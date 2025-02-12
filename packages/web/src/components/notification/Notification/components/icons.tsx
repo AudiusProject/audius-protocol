@@ -13,7 +13,8 @@ import {
   IconTrending as IconTrendingBase,
   IconTrophy,
   IconUser,
-  IconCart as IconCartBase
+  IconCart as IconCartBase,
+  IconFire
 } from '@audius/harmony'
 
 import styles from './icons.module.css'
@@ -76,5 +77,16 @@ export const IconAnnouncement = () => {
 export const IconAddTrackToPlaylist = () => {
   return (
     <IconPlaylist color='accent' className={styles.iconAddTrackToPlaylist} />
+  )
+}
+
+export const IconStreakFire = () => {
+  const { spacing } = useTheme()
+  return (
+    <div className={styles.iconWrapper} css={{ marginRight: spacing.s }}>
+      <span className={styles.iconEmoji} role='img' aria-label='fire'>
+        🔥
+      </span>
+    </div>
   )
 }

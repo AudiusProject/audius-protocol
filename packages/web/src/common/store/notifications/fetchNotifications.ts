@@ -47,7 +47,8 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
     ValidTypes.CommentThread,
     ValidTypes.CommentMention,
     ValidTypes.CommentReaction,
-    ValidTypes.ClaimableReward
+    ValidTypes.ClaimableReward,
+    ValidTypes.ListenStreak
   ].filter(removeNullable)
 
   const { data } = yield* call(

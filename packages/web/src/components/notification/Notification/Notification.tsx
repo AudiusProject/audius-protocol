@@ -17,6 +17,7 @@ import { CommentThreadNotification } from './CommentThreadNotification'
 import { FavoriteNotification } from './FavoriteNotification'
 import { FavoriteOfRepostNotification } from './FavoriteOfRepostNotification'
 import { FollowNotification } from './FollowNotification'
+import { ListenStreakNotification } from './ListenStreakNotification'
 import { MilestoneNotification } from './MilestoneNotification'
 import { RemixCosignNotification } from './RemixCosignNotification'
 import { RemixCreateNotification } from './RemixCreateNotification'
@@ -148,6 +149,9 @@ export const Notification = (props: NotificationProps) => {
       }
       case NotificationType.CommentReaction: {
         return <CommentReactionNotification notification={notification} />
+      }
+      case NotificationType.ListenStreak: {
+        return <ListenStreakNotification notification={notification} />
       }
       default: {
         return null
