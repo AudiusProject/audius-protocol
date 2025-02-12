@@ -25,6 +25,7 @@ export enum FeatureFlags {
   FAST_REFERRAL = 'fast_referral',
   REACT_QUERY_SYNC = 'react_query_sync',
   TRACK_REPLACE_DOWNLOADS = 'track_replace_downloads',
+  LISTEN_STREAK_ENDLESS = 'listen_streak_endless',
   ONE_SHOT = 'one_shot',
   CLAIM_ALL_REWARDS = 'claim_all_rewards'
 }
@@ -67,6 +68,7 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.FAST_REFERRAL]: false,
   [FeatureFlags.REACT_QUERY_SYNC]: false,
   [FeatureFlags.TRACK_REPLACE_DOWNLOADS]: false,
+  [FeatureFlags.LISTEN_STREAK_ENDLESS]: false,
   [FeatureFlags.ONE_SHOT]: false,
   [FeatureFlags.CLAIM_ALL_REWARDS]: false
 }
