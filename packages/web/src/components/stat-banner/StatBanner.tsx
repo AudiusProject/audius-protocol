@@ -17,16 +17,14 @@ import {
   Button,
   FollowButton,
   Flex,
-  Skeleton
+  Skeleton,
+  Box
 } from '@audius/harmony'
-import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
 import { ArtistRecommendationsPopup } from 'components/artist-recommendations/ArtistRecommendationsPopup'
 import Stats, { StatProps } from 'components/stats/Stats'
 import SubscribeButton from 'components/subscribe-button/SubscribeButton'
-
-import styles from './StatBanner.module.css'
 
 const { getChatPermissionsStatus } = chatSelectors
 
@@ -54,7 +52,6 @@ export type ProfileMode = 'visitor' | 'owner' | 'editing'
 type StatsBannerProps = {
   stats?: StatProps[]
   mode?: ProfileMode
-  isEmpty?: boolean
   profileId?: number
   areArtistRecommendationsVisible?: boolean
   onCloseArtistRecommendations?: () => void
@@ -167,7 +164,6 @@ export const StatBanner = (props: StatsBannerProps) => {
       { number: 0, title: 'reposts' }
     ] as StatProps[],
     mode = 'visitor',
-    isEmpty = false,
     profileId,
     areArtistRecommendationsVisible = false,
     onCloseArtistRecommendations,
@@ -230,12 +226,7 @@ export const StatBanner = (props: StatsBannerProps) => {
           <Button variant='secondary' size='small' onClick={onCancel}>
             {messages.cancel}
           </Button>
-          <Button
-            variant='primary'
-            size='small'
-            className={cn(styles.buttonTwo, styles.statButton)}
-            onClick={onSave}
-          >
+          <Button variant='primary' size='small' onClick={onSave}>
             {messages.save}
           </Button>
         </>
@@ -301,22 +292,22 @@ export const StatBanner = (props: StatsBannerProps) => {
   }
 
   return (
-    <div className={styles.wrapper}>
-      {!isEmpty ? (
-        <div className={styles.statBanner}>
-          <div className={styles.stats}>
-            <Stats clickable userId={profileId!} stats={stats} size='large' />
-          </div>
-          <Flex
-            justifyContent='flex-end'
-            gap='s'
-            alignItems='center'
-            css={{ zIndex: 3 }}
-          >
-            {buttons}
-          </Flex>
-        </div>
-      ) : null}
-    </div>
+    <Flex justifyContent='space-between' alignItems='center' flex='1 1 100%'>
+      <Box w={330}>
+        <Stats clickable userId={profileId!} stats={stats} size='large' />
+      </Box>
+      <Flex
+        justifyContent='flex-end'
+        gap='s'
+        alignItems='center'
+        css={{ zIndex: 3 }}
+      >
+        {buttons}
+      </Flex>
+    </Flex>
   )
 }
+
+export const EmptyStatBanner = () => (
+  <Box h='unit14' w='100%' backgroundColor='surface1' borderBottom='default' />
+)

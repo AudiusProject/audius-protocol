@@ -26,6 +26,7 @@ import {
   Flex,
   IconAlbum,
   IconCollectible as IconCollectibles,
+  IconArtistBadge as BadgeArtist,
   IconNote,
   IconPlaylists,
   IconRepost as IconReposts,
@@ -34,7 +35,9 @@ import {
   IconQuestionCircle,
   LoadingSpinner
 } from '@audius/harmony'
+import cn from 'classnames'
 
+import { MAX_PAGE_WIDTH_PX } from 'common/utils/layout'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
 import { CollectionCard } from 'components/collection'
 import { ConfirmationModal } from 'components/confirmation-modal'
@@ -43,12 +46,18 @@ import CardLineup from 'components/lineup/CardLineup'
 import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
 import Mask from 'components/mask/Mask'
-import NavBanner from 'components/nav-banner/NavBanner'
+import NavBanner, { EmptyNavBanner } from 'components/nav-banner/NavBanner'
 import Page from 'components/page/Page'
+import ProfilePicture from 'components/profile-picture/ProfilePicture'
 import { ProfileCompletionHeroCard } from 'components/profile-progress/components/ProfileCompletionHeroCard'
-import { ProfileMode, StatBanner } from 'components/stat-banner/StatBanner'
+import {
+  EmptyStatBanner,
+  ProfileMode,
+  StatBanner
+} from 'components/stat-banner/StatBanner'
 import { StatProps } from 'components/stats/Stats'
 import UploadChip from 'components/upload/UploadChip'
+import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import useTabs, { TabHeader, useTabRecalculator } from 'hooks/useTabs/useTabs'
 import { BlockUserConfirmationModal } from 'pages/chat-page/components/BlockUserConfirmationModal'
 import { UnblockUserConfirmationModal } from 'pages/chat-page/components/UnblockUserConfirmationModal'
@@ -56,9 +65,16 @@ import EmptyTab from 'pages/profile-page/components/EmptyTab'
 import { getUserPageSEOFields } from 'utils/seo'
 
 import { DeactivatedProfileTombstone } from '../DeactivatedProfileTombstone'
+import { EditableName } from '../EditableName'
 
 import styles from './ProfilePage.module.css'
 import ProfileWrapping from './ProfileWrapping'
+import {
+  COVER_PHOTO_HEIGHT_PX,
+  PROFILE_LEFT_COLUMN_WIDTH_PX,
+  PROFILE_LOCKUP_HEIGHT_PX,
+  PROFILE_COLUMN_GAP
+} from './constants'
 
 const { profilePage } = route
 
@@ -171,6 +187,10 @@ export type ProfilePageProps = {
   onCloseUnmuteUserConfirmationModal: () => void
 }
 
+const LeftColumnSpacer = () => (
+  <Box w={PROFILE_LEFT_COLUMN_WIDTH_PX} css={{ flexShrink: 0 }} />
+)
+
 const ProfilePage = ({
   isOwner,
   profile,
@@ -277,6 +297,8 @@ const ProfilePage = ({
     (profileNeverSetCollectiblesOrder || profileHasNonEmptyCollectiblesOrder)
   const didCollectiblesLoadAndWasEmpty =
     profileHasCollectibles && !profileHasNonEmptyCollectiblesOrder
+
+  const isDeactivated = !!profile?.is_deactivated
 
   const isUserOnTheirProfile = accountUserId === userId
 
@@ -658,7 +680,7 @@ const ProfilePage = ({
       fromOpacity={1}
     >
       <Box w='100%'>
-        <ProfileWrapping
+        {/* <ProfileWrapping
           userId={userId}
           isDeactivated={!!profile?.is_deactivated}
           allowAiAttribution={!!profile?.allow_ai_attribution}
@@ -692,7 +714,7 @@ const ProfilePage = ({
           onUpdateTikTokHandle={updateTikTokHandle}
           onUpdateWebsite={updateWebsite}
           onUpdateDonation={updateDonation}
-        />
+        /> */}
         <CoverPhoto
           userId={userId}
           updatedCoverPhoto={updatedCoverPhoto ? updatedCoverPhoto.url : ''}
@@ -702,54 +724,167 @@ const ProfilePage = ({
           edit={editMode}
           darken={editMode}
         />
-        <Mask show={editMode} zIndex={2}>
-          <StatBanner
-            isEmpty={!profile || profile.is_deactivated}
-            mode={mode}
-            stats={stats}
-            profileId={profile?.user_id}
-            areArtistRecommendationsVisible={areArtistRecommendationsVisible}
-            onCloseArtistRecommendations={onCloseArtistRecommendations}
-            onEdit={onEdit}
-            onSave={onSave}
-            onShare={onShare}
-            onCancel={onCancel}
-            following={following}
-            isSubscribed={isSubscribed}
-            onToggleSubscribe={toggleNotificationSubscription}
-            onFollow={onFollow}
-            onUnfollow={onUnfollow}
-            canCreateChat={canCreateChat}
-            onMessage={onMessage}
-            isBlocked={isBlocked}
-            isMuted={isMutedState}
-            accountUserId={accountUserId}
-            onBlock={onBlock}
-            onUnblock={onUnblock}
-            onMute={onMute}
-          />
-          <Flex direction='column'>
-            <NavBanner
-              empty={!profile || profile.is_deactivated}
-              tabs={tabs}
-              dropdownDisabled={dropdownDisabled}
-              onChange={changeTab}
-              activeTab={activeTab}
-              isArtist={isArtist}
-              onSortByRecent={onSortByRecent}
-              onSortByPopular={onSortByPopular}
-              shouldMaskContent={shouldMaskContent}
-            />
-
-            <div className={styles.content}>
-              {profile && profile.is_deactivated ? (
-                <DeactivatedProfileTombstone />
-              ) : (
-                body
+        {/* Profile Photo and Name */}
+        <Flex
+          h={COVER_PHOTO_HEIGHT_PX}
+          justifyContent='center'
+          alignItems='flex-end'
+          w='100%'
+          css={{ position: 'absolute', top: 0 }}
+        >
+          <Flex
+            alignItems='center'
+            columnGap={PROFILE_COLUMN_GAP}
+            h={PROFILE_LOCKUP_HEIGHT_PX}
+            css={{ maxWidth: MAX_PAGE_WIDTH_PX }}
+            flex='1 1 100%'
+          >
+            <Flex
+              css={{ flexShrink: 0, zIndex: 10 }}
+              w={PROFILE_LEFT_COLUMN_WIDTH_PX}
+              justifyContent='center'
+            >
+              <ProfilePicture
+                userId={userId}
+                updatedProfilePicture={
+                  updatedProfilePicture ? updatedProfilePicture.url : ''
+                }
+                error={
+                  updatedProfilePicture ? updatedProfilePicture.error : false
+                }
+                profilePictureSizes={isDeactivated ? null : profilePictureSizes}
+                loading={status === Status.LOADING}
+                editMode={editMode}
+                hasProfilePicture={hasProfilePicture}
+                onDrop={updateProfilePicture}
+              />
+            </Flex>
+            <Box
+              flex='1 1 100%'
+              css={{
+                position: 'relative',
+                textAlign: 'left',
+                userSelect: 'none'
+              }}
+              className={styles.nameWrapper}
+            >
+              <BadgeArtist
+                className={cn(styles.badgeArtist, {
+                  [styles.hide]:
+                    !isArtist || status === Status.LOADING || isDeactivated
+                })}
+              />
+              {!isDeactivated && userId && (
+                <>
+                  <EditableName
+                    className={editMode ? styles.editableName : styles.name}
+                    name={name}
+                    editable={editMode}
+                    verified={verified}
+                    onChange={updateName}
+                    userId={userId}
+                  />
+                  <div className={styles.handleWrapper}>
+                    <h2 className={styles.handle}>{handle}</h2>
+                    <FollowsYouBadge userId={userId} />
+                  </div>
+                </>
               )}
-            </div>
+            </Box>
           </Flex>
-        </Mask>
+        </Flex>
+
+        {!profile || profile.is_deactivated ? (
+          <Box>
+            <EmptyStatBanner />
+            <EmptyNavBanner />
+            <Flex
+              w='100%'
+              mh='auto'
+              css={{ maxWidth: MAX_PAGE_WIDTH_PX }}
+              columnGap={PROFILE_COLUMN_GAP}
+            >
+              <LeftColumnSpacer />
+              <DeactivatedProfileTombstone />
+            </Flex>
+          </Box>
+        ) : (
+          <Mask show={editMode} zIndex={2}>
+            {/* StatBanner */}
+            <Flex
+              h='unit14'
+              justifyContent='center'
+              w='100%'
+              backgroundColor='surface1'
+              borderBottom='default'
+            >
+              <Flex
+                flex='1 1 100%'
+                h='100%'
+                css={{ maxWidth: MAX_PAGE_WIDTH_PX }}
+                columnGap={PROFILE_COLUMN_GAP}
+              >
+                <LeftColumnSpacer />
+                <StatBanner
+                  mode={mode}
+                  stats={stats}
+                  profileId={profile?.user_id}
+                  areArtistRecommendationsVisible={
+                    areArtistRecommendationsVisible
+                  }
+                  onCloseArtistRecommendations={onCloseArtistRecommendations}
+                  onEdit={onEdit}
+                  onSave={onSave}
+                  onShare={onShare}
+                  onCancel={onCancel}
+                  following={following}
+                  isSubscribed={isSubscribed}
+                  onToggleSubscribe={toggleNotificationSubscription}
+                  onFollow={onFollow}
+                  onUnfollow={onUnfollow}
+                  canCreateChat={canCreateChat}
+                  onMessage={onMessage}
+                  isBlocked={isBlocked}
+                  isMuted={isMutedState}
+                  accountUserId={accountUserId}
+                  onBlock={onBlock}
+                  onUnblock={onUnblock}
+                  onMute={onMute}
+                />
+              </Flex>
+            </Flex>
+            <Flex direction='column'>
+              {/* NavBanner */}
+              <Flex
+                h='unit12'
+                justifyContent='center'
+                w='100%'
+                backgroundColor='white'
+              >
+                <Flex
+                  flex='1 1 100%'
+                  h='100%'
+                  css={{ maxWidth: MAX_PAGE_WIDTH_PX }}
+                  columnGap={PROFILE_COLUMN_GAP}
+                >
+                  <LeftColumnSpacer />
+                  <NavBanner
+                    tabs={tabs}
+                    dropdownDisabled={dropdownDisabled}
+                    onChange={changeTab}
+                    activeTab={activeTab}
+                    isArtist={isArtist}
+                    onSortByRecent={onSortByRecent}
+                    onSortByPopular={onSortByPopular}
+                    shouldMaskContent={shouldMaskContent}
+                  />
+                </Flex>
+              </Flex>
+
+              <div className={styles.content}>{body}</div>
+            </Flex>
+          </Mask>
+        )}
       </Box>
 
       {profile ? (

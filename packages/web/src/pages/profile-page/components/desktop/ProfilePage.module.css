@@ -10,33 +10,6 @@
   padding: 0 16px;
 }
 
-.profileWrapping {
-  position: absolute;
-  /* Put the profilewrapping over the tab accent */
-  z-index: 10;
-  width: 100%;
-  max-width: 992px;
-  margin: 0 auto;
-  left: 0;
-  right: 0;
-  top: 264px;
-  padding: 0 16px;
-}
-
-.header {
-  height: 0;
-  display: flex;
-}
-
-.nameWrapper {
-  position: relative;
-  margin-left: 32px;
-  text-align: left;
-  user-select: none;
-  max-width: 720px;
-  width: 100%;
-}
-
 .handleWrapper {
   margin-top: 4px;
   display: flex;
@@ -68,30 +41,6 @@
   margin-top: -8px;
 }
 
-.info {
-  position: relative;
-  top: 237px;
-  width: 246px;
-  height: 0;
-  margin-left: -17px;
-  text-align: left;
-}
-
-.info > .about {
-  margin-left: 17px;
-  margin-right: 5px;
-  padding-right: 16px;
-  padding-bottom: 80px;
-}
-
-.info .infoHeader {
-  color: var(--harmony-n-600);
-  font-size: var(--harmony-font-xs);
-  font-weight: var(--harmony-font-heavy);
-  letter-spacing: 0.5px;
-  margin-bottom: 14px;
-}
-
 .titleContainer {
   display: flex;
   align-items: center;
@@ -115,21 +64,6 @@
   font-weight: var(--harmony-font-bold);
   font-size: var(--harmony-font-s);
   color: var(--harmony-n-400);
-}
-
-.info .followers {
-  user-select: none;
-  padding-top: 24px;
-  border-top: 1px solid var(--harmony-n-150);
-}
-
-.info .followers > .followersContent {
-  max-height: 250px;
-  overflow-y: auto;
-}
-
-.info .followers > .followersContent > * {
-  margin-bottom: 6px;
 }
 
 .info > .edit {

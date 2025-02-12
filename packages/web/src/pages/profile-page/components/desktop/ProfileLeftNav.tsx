@@ -174,7 +174,7 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
   } else if (!loading && !isDeactivated) {
     const showUploadChip = isOwner && !isArtist
     return (
-      <Flex column gap='2xl' mr='xl'>
+      <Flex column gap='2xl'>
         <ProfileBio
           userId={userId}
           handle={handle}

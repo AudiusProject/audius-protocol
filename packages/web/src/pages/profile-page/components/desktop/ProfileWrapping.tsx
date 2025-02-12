@@ -1,6 +1,6 @@
 import { ID, ProfilePictureSizes } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
-import { IconArtistBadge as BadgeArtist } from '@audius/harmony'
+import { IconArtistBadge as BadgeArtist, Box, Flex } from '@audius/harmony'
 import cn from 'classnames'
 
 import ProfilePicture from 'components/profile-picture/ProfilePicture'
@@ -87,45 +87,29 @@ const ProfileWrapping = (props: ProfileWrappingProps) => {
   } = props
 
   return (
-    <div className={styles.profileWrapping}>
-      <div className={styles.header}>
-        <ProfilePicture
-          userId={userId}
-          updatedProfilePicture={
-            updatedProfilePicture ? updatedProfilePicture.url : ''
-          }
-          error={updatedProfilePicture ? updatedProfilePicture.error : false}
-          profilePictureSizes={isDeactivated ? null : profilePictureSizes}
-          loading={loading}
-          editMode={editMode}
-          hasProfilePicture={hasProfilePicture}
-          onDrop={onUpdateProfilePicture}
-        />
-        <div className={styles.nameWrapper}>
-          <BadgeArtist
-            className={cn(styles.badgeArtist, {
-              [styles.hide]: !isArtist || loading || isDeactivated
-            })}
-          />
-          {!isDeactivated && userId && (
-            <>
-              <EditableName
-                className={editMode ? styles.editableName : styles.name}
-                name={name}
-                editable={editMode}
-                verified={verified}
-                onChange={onUpdateName}
-                userId={userId}
-              />
-              <div className={styles.handleWrapper}>
-                <h2 className={styles.handle}>{handle}</h2>
-                <FollowsYouBadge userId={userId} />
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-      <div className={styles.info}>
+    <Box
+      w='100%'
+      css={{
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 264,
+        maxWidth: 1080,
+        margin: '0 auto',
+        /* Put the profilewrapping over the tab accent */
+        zIndex: 10
+      }}
+    >
+      <Box
+        css={{
+          position: 'relative',
+          top: 237,
+          width: 240,
+          height: 0,
+          textAlign: 'left'
+        }}
+        className={styles.info}
+      >
         {userId && (
           <ProfileLeftNav
             userId={userId}
@@ -156,8 +140,8 @@ const ProfileWrapping = (props: ProfileWrappingProps) => {
             onUpdateDonation={onUpdateDonation}
           />
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   )
 }
 
