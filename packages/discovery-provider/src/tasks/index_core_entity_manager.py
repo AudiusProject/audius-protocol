@@ -35,6 +35,7 @@ def index_core_entity_manager(
         if tx_type != "manage_entity":
             continue
 
+        logger.info(f"index_core manage entity {tx_hash} {block.blockhash}")
         manage_entity_tx = tx.manage_entity
         tx_receipt = {
             "args": AttributeDict(
@@ -62,7 +63,7 @@ def index_core_entity_manager(
         if not latest_indexed_block_record:
             raise Exception("latest_indexed_block not found")
 
-        if not latest_indexed_block_record.number:
+        if latest_indexed_block_record.number is None:
             raise Exception("latest block record found but without number")
 
         next_em_block = latest_indexed_block_record.number + 1

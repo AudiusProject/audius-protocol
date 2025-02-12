@@ -1,6 +1,7 @@
 import { config, wallets, web3 } from '.'
 import { coreRelay } from './coreRelay'
 import { internalError } from './error'
+import { getCoreIndexerHealth } from './redis'
 import { retryPromise } from './utils'
 import { confirm } from './web3'
 import {
@@ -29,7 +30,14 @@ export const relayTransaction = async (
   let submit = undefined
   try {
     if (config.environment === "dev") {
-      coreRelay(logger, requestId, validatedRelayRequest)
+      const coreHealth = await getCoreIndexerHealth()
+      logger.info({ coreHealth }, "core health from redis")
+      const receipt = coreRelay(logger, requestId, validatedRelayRequest)
+      if (coreHealth?.indexing_entity_manager) {
+        res.send({ receipt })
+        next()
+        return
+      }
     }
 
     // gather some transaction params

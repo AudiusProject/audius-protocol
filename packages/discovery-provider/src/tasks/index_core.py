@@ -9,7 +9,6 @@ from sqlalchemy import desc
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.core.core_indexed_blocks import CoreIndexedBlocks
 from src.models.social.play import Play
-from src.tasks import index_core_entity_manager
 from src.tasks.celery_app import celery
 from src.tasks.core.core_client import CoreClient, get_core_instance
 from src.tasks.core.gen.protocol_pb2 import BlockResponse
@@ -18,6 +17,7 @@ from src.tasks.index_core_cutovers import (
     get_core_cutover_chain_id,
     get_sol_cutover,
 )
+from src.tasks.index_core_entity_manager import index_core_entity_manager
 from src.tasks.index_core_plays import index_core_plays
 from src.utils.config import shared_config
 from src.utils.session_manager import SessionManager
@@ -108,7 +108,7 @@ def update_core_health(
 ):
     health: CoreHealth = {
         "chain_id": latest_indexed_block.chainid,
-        "indexing_entity_manager": False,
+        "indexing_entity_manager": environment == "dev",
         "indexing_plays": indexing_plays,
         "latest_chain_block": latest_indexed_block.current_height,
         "latest_indexed_block": latest_indexed_block.height,
@@ -236,7 +236,7 @@ def index_core(self):
                 update_task=self,
                 web3=self.web3,
                 session=session,
-                index_core_entity_manager=indexing_entity_manager,
+                indexing_entity_manager=indexing_entity_manager,
                 block=block,
             )
 

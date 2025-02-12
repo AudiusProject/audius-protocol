@@ -12,14 +12,21 @@ import { ValidatedRelayRequest } from './types/relay'
 import * as grpc from '@grpc/grpc-js'
 import { readConfig } from './config/config.js'
 import pino from 'pino'
+import { TransactionReceipt } from 'web3-core'
 
 let client: Client<typeof Protocol> | null = null
+
+type CoreRelayResponse = {
+  txhash: string
+  block: bigint
+  blockhash: string
+}
 
 export const coreRelay = async (
   logger: pino.Logger,
   requestId: string,
   request: ValidatedRelayRequest
-) => {
+): Promise<TransactionReceipt | null> => {
   try {
     if (client === null) {
       const config = readConfig()
@@ -77,11 +84,50 @@ export const coreRelay = async (
     logger.info(
       {
         tx: transaction,
-        txhash: txhash
+        txhash: txhash,
+        block: res.blockHeight,
+        blockhash: res.blockHash
       },
       'core relay success'
     )
+    return {
+      status: true,
+      transactionHash: txhash,
+      transactionIndex: 0,
+      blockHash: res.blockHash,
+      blockNumber: Number(res.blockHeight),
+      from: signer || "",
+      to: signer || "",
+      cumulativeGasUsed: 10,
+      gasUsed: 10,
+      effectiveGasPrice: 420,
+      logs: [],
+      logsBloom: ""
+    }
   } catch (e) {
     logger.error({ err: e }, 'core relay failure:')
+    return null
   }
 }
+
+/**
+ * 
+ * export interface TransactionReceipt {
+     status: boolean;
+     transactionHash: string;
+     transactionIndex: number;
+     blockHash: string;
+     blockNumber: number;
+     from: string;
+     to: string;
+     contractAddress?: string;
+     cumulativeGasUsed: number;
+     gasUsed: number;
+     effectiveGasPrice: number;
+     logs: Log[];
+     logsBloom: string;
+     events?: {
+         [eventName: string]: EventLog;
+     };
+ }
+ */

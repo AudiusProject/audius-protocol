@@ -119,7 +119,11 @@ class TransactionResponse(google.protobuf.message.Message):
 
     TXHASH_FIELD_NUMBER: builtins.int
     TRANSACTION_FIELD_NUMBER: builtins.int
+    BLOCK_HEIGHT_FIELD_NUMBER: builtins.int
+    BLOCK_HASH_FIELD_NUMBER: builtins.int
     txhash: builtins.str
+    block_height: builtins.int
+    block_hash: builtins.str
     @property
     def transaction(self) -> global___SignedTransaction: ...
     def __init__(
@@ -127,9 +131,11 @@ class TransactionResponse(google.protobuf.message.Message):
         *,
         txhash: builtins.str = ...,
         transaction: global___SignedTransaction | None = ...,
+        block_height: builtins.int = ...,
+        block_hash: builtins.str = ...,
     ) -> None: ...
     def HasField(self, field_name: typing.Literal["transaction", b"transaction"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing.Literal["transaction", b"transaction", "txhash", b"txhash"]) -> None: ...
+    def ClearField(self, field_name: typing.Literal["block_hash", b"block_hash", "block_height", b"block_height", "transaction", b"transaction", "txhash", b"txhash"]) -> None: ...
 
 global___TransactionResponse = TransactionResponse
 
