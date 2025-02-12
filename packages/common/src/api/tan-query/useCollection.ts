@@ -28,13 +28,17 @@ export const useCollection = (
     queryKey: getCollectionQueryKey(collectionId),
     queryFn: async () => {
       const sdk = await audiusSdk()
-      return await getCollectionsBatcher.fetch({
-        id: collectionId!,
-        context: { sdk, currentUserId, queryClient, dispatch }
+      const batchGetCollections = getCollectionsBatcher({
+        sdk,
+        currentUserId,
+        queryClient,
+        dispatch
+      })
+      return await batchGetCollections.fetch({
+        id: collectionId!
       })
     },
-    staleTime: options?.staleTime ?? Infinity,
-    gcTime: Infinity,
+    ...options,
     enabled: options?.enabled !== false && !!collectionId
   })
 }

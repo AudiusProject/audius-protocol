@@ -1,51 +1,45 @@
 import { Id, OptionalId } from '@audius/sdk'
-import { QueryClient } from '@tanstack/react-query'
 import { create, keyResolver, windowScheduler } from '@yornaath/batshit'
-import { Dispatch } from 'redux'
+import { memoize } from 'lodash'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { transformAndCleanList } from '~/adapters/utils'
-import { ID } from '~/models'
 import { UserCollectionMetadata } from '~/models/Collection'
-import { removeNullable } from '~/utils/typeUtils'
 
 import { primeCollectionData } from '../utils/primeCollectionData'
 
-import { BatchQuery } from './types'
+import { BatchContext, BatchQuery } from './types'
 
-export type BatchContext = {
-  sdk: any
-  currentUserId: ID | null | undefined
-  queryClient: QueryClient
-  dispatch: Dispatch
-}
+export const getCollectionsBatcher = memoize((context: BatchContext) =>
+  create({
+    fetcher: async (
+      queries: BatchQuery[]
+    ): Promise<UserCollectionMetadata[]> => {
+      const { sdk, currentUserId, queryClient, dispatch } = context
+      if (!queries.length) return []
+      const ids = queries.map((q) => q.id)
 
-export const getCollectionsBatcher = create({
-  fetcher: async (queries: BatchQuery[]): Promise<UserCollectionMetadata[]> => {
-    // Hack because batshit doesn't support context properly
-    const { sdk, currentUserId, queryClient, dispatch } = queries[0].context
-    if (!queries.length) return []
-    const ids = queries.map((q) => q.id)
+      const { data } = await sdk.full.playlists.getBulkPlaylists({
+        id: ids.map((id) => Id.parse(id)),
+        userId: OptionalId.parse(currentUserId)
+      })
 
-    const { data } = await sdk.full.playlists.getBulkPlaylists({
-      playlistId: ids.map((id) => Id.parse(id)).filter(removeNullable),
-      userId: OptionalId.parse(currentUserId)
-    })
+      const collections = transformAndCleanList(
+        data,
+        userCollectionMetadataFromSDK
+      )
 
-    const collections = transformAndCleanList(
-      data,
-      userCollectionMetadataFromSDK
-    )
+      // Prime related entities
+      primeCollectionData({
+        collections,
+        queryClient,
+        dispatch,
+        skipQueryData: true
+      })
 
-    // Prime related entities
-    primeCollectionData({
-      collections,
-      queryClient,
-      dispatch
-    })
-
-    return collections
-  },
-  resolver: keyResolver('playlist_id'),
-  scheduler: windowScheduler(10)
-})
+      return collections
+    },
+    resolver: keyResolver('playlist_id'),
+    scheduler: windowScheduler(10)
+  })
+)

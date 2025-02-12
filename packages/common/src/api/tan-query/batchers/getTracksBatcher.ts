@@ -1,41 +1,32 @@
 import { Id, OptionalId } from '@audius/sdk'
-import { QueryClient } from '@tanstack/react-query'
 import { create, keyResolver, windowScheduler } from '@yornaath/batshit'
-import { Dispatch } from 'redux'
+import { memoize } from 'lodash'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { transformAndCleanList } from '~/adapters/utils'
-import { ID } from '~/models/Identifiers'
 import { UserTrackMetadata } from '~/models/Track'
-import { removeNullable } from '~/utils/typeUtils'
 
 import { primeTrackData } from '../utils/primeTrackData'
 
-import { BatchQuery } from './types'
+import { BatchContext, BatchQuery } from './types'
 
-export type BatchContext = {
-  sdk: any
-  currentUserId: ID | null | undefined
-  queryClient: QueryClient
-  dispatch: Dispatch
-}
+export const getTracksBatcher = memoize((context: BatchContext) =>
+  create({
+    fetcher: async (queries: BatchQuery[]): Promise<UserTrackMetadata[]> => {
+      const { sdk, currentUserId, queryClient, dispatch } = context
+      if (!queries.length) return []
+      const ids = queries.map((q) => q.id)
+      const { data } = await sdk.full.tracks.getBulkTracks({
+        id: ids.map((id) => Id.parse(id)),
+        userId: OptionalId.parse(currentUserId)
+      })
 
-export const getTracksBatcher = create({
-  fetcher: async (queries: BatchQuery[]): Promise<UserTrackMetadata[]> => {
-    // Hack because batshit doesn't support context properly
-    const { sdk, currentUserId, queryClient, dispatch } = queries[0].context
-    if (!queries.length) return []
-    const ids = queries.map((q) => q.id)
-    const { data } = await sdk.full.tracks.getBulkTracks({
-      id: ids.map((id) => Id.parse(id)).filter(removeNullable),
-      userId: OptionalId.parse(currentUserId)
-    })
+      const tracks = transformAndCleanList(data, userTrackMetadataFromSDK)
+      primeTrackData({ tracks, queryClient, dispatch, skipQueryData: true })
 
-    const tracks = transformAndCleanList(data, userTrackMetadataFromSDK)
-    primeTrackData({ tracks, queryClient, dispatch })
-
-    return tracks
-  },
-  resolver: keyResolver('track_id'),
-  scheduler: windowScheduler(10)
-})
+      return tracks
+    },
+    resolver: keyResolver('track_id'),
+    scheduler: windowScheduler(10)
+  })
+)

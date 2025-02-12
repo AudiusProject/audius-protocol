@@ -31,15 +31,18 @@ export const useUsers = (
       queryKey: getUserQueryKey(userId),
       queryFn: async () => {
         const sdk = await audiusSdk()
-        return await getUsersBatcher.fetch({
-          id: userId,
-          context: { sdk, currentUserId, queryClient, dispatch }
+        const batchGetUsers = getUsersBatcher({
+          sdk,
+          currentUserId,
+          queryClient,
+          dispatch
+        })
+        return await batchGetUsers.fetch({
+          id: userId
         })
       },
       ...options,
-      enabled: options?.enabled !== false && !!userId,
-      staleTime: options?.staleTime ?? Infinity,
-      gcTime: Infinity
+      enabled: options?.enabled !== false && !!userId
     })),
     combine: combineQueryResults<UserMetadata[]>
   })

@@ -28,13 +28,17 @@ export const useTrack = (
     queryKey: getTrackQueryKey(trackId),
     queryFn: async () => {
       const sdk = await audiusSdk()
-      return await getTracksBatcher.fetch({
-        id: trackId!,
-        context: { sdk, currentUserId, queryClient, dispatch }
+      const batchGetTracks = getTracksBatcher({
+        sdk,
+        currentUserId,
+        queryClient,
+        dispatch
+      })
+      return await batchGetTracks.fetch({
+        id: trackId!
       })
     },
-    staleTime: options?.staleTime ?? Infinity,
-    gcTime: Infinity,
+    ...options,
     enabled: options?.enabled !== false && !!trackId
   })
 }
