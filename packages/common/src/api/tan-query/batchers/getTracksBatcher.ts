@@ -11,16 +11,13 @@ import { removeNullable } from '~/utils/typeUtils'
 
 import { primeTrackData } from '../utils/primeTrackData'
 
+import { BatchQuery } from './types'
+
 export type BatchContext = {
   sdk: any
   currentUserId: ID | null | undefined
   queryClient: QueryClient
   dispatch: Dispatch
-}
-
-export type BatchQuery = {
-  id: ID
-  context: BatchContext
 }
 
 export const getTracksBatcher = create({
@@ -30,7 +27,7 @@ export const getTracksBatcher = create({
     if (!queries.length) return []
     const ids = queries.map((q) => q.id)
     const { data } = await sdk.full.tracks.getBulkTracks({
-      id: ids.map((id: ID) => Id.parse(id)).filter(removeNullable),
+      id: ids.map((id) => Id.parse(id)).filter(removeNullable),
       userId: OptionalId.parse(currentUserId)
     })
 

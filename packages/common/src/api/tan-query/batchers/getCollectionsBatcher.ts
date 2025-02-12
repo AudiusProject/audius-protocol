@@ -11,16 +11,13 @@ import { removeNullable } from '~/utils/typeUtils'
 
 import { primeCollectionData } from '../utils/primeCollectionData'
 
+import { BatchQuery } from './types'
+
 export type BatchContext = {
   sdk: any
   currentUserId: ID | null | undefined
   queryClient: QueryClient
   dispatch: Dispatch
-}
-
-export type BatchQuery = {
-  id: ID
-  context: BatchContext
 }
 
 export const getCollectionsBatcher = create({
@@ -31,7 +28,7 @@ export const getCollectionsBatcher = create({
     const ids = queries.map((q) => q.id)
 
     const { data } = await sdk.full.playlists.getBulkPlaylists({
-      playlistId: ids.map((id: ID) => Id.parse(id)).filter(removeNullable),
+      playlistId: ids.map((id) => Id.parse(id)).filter(removeNullable),
       userId: OptionalId.parse(currentUserId)
     })
 

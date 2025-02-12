@@ -1,6 +1,4 @@
 import { Name, FeedFilter } from '@audius/common/models'
-import { useUserByHandle } from '@audius/common/src/api/tan-query/useUserByHandle'
-import { useUsers } from '@audius/common/src/api/tan-query/useUsers'
 import { feedPageLineupActions as feedActions } from '@audius/common/store'
 import { IconFeed } from '@audius/harmony'
 
@@ -80,9 +78,6 @@ const FeedPageContent = ({
     />
   )
 
-  // Debugging
-  const { data: users, isLoading } = useUsers([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-
   return (
     <Page
       title={feedTitle}
@@ -90,10 +85,6 @@ const FeedPageContent = ({
       size='large'
       header={header}
     >
-      <div>
-        {isLoading && <div>Loading...</div>}
-        {users?.map((user) => <div key={user.user_id}>{user.name}</div>)}
-      </div>
       <Lineup
         emptyElement={<EmptyFeed />}
         endOfLineup={<EndOfLineup />}

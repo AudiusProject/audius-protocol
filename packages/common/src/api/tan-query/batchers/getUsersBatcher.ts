@@ -10,16 +10,13 @@ import { removeNullable } from '~/utils/typeUtils'
 
 import { primeUserData } from '../utils/primeUserData'
 
+import { BatchQuery } from './types'
+
 export type BatchContext = {
   sdk: any
   currentUserId: ID | null | undefined
   queryClient: QueryClient
   dispatch: Dispatch
-}
-
-export type BatchQuery = {
-  id: ID
-  context: BatchContext
 }
 
 export const getUsersBatcher = create({
@@ -29,7 +26,7 @@ export const getUsersBatcher = create({
     if (!queries.length) return []
     const ids = queries.map((q) => q.id)
     const { data } = await sdk.full.users.getBulkUsers({
-      id: ids.map((id: ID) => Id.parse(id)).filter(removeNullable),
+      id: ids.map((id) => Id.parse(id)).filter(removeNullable),
       userId: OptionalId.parse(currentUserId)
     })
 
