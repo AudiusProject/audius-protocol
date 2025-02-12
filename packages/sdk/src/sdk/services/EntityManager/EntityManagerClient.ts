@@ -131,7 +131,6 @@ export class EntityManagerClient implements EntityManagerService {
       })
     })
     const jsonResponse = await response.json()
-    this.logger.info({ jsonResponse }, "json response to confirm")
     if (response.ok) {
       if (!skipConfirmation) {
         await this.confirmWrite({
