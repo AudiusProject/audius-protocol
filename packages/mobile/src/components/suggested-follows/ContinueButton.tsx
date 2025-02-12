@@ -1,10 +1,10 @@
+import { getFollowIds } from 'common/store/pages/signon/selectors'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import type { ButtonProps } from '@audius/harmony-native'
 import { IconArrowRight, Button } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
-import type { AppState } from 'app/store'
 import { makeStyles } from 'app/styles'
 
 const minSelectedArtistsCount = 3
@@ -33,9 +33,7 @@ type ContinueButtonProps = Partial<ButtonProps>
 
 export const ContinueButton = (props: ContinueButtonProps) => {
   const styles = useStyles()
-  const selectedUserIds = useSelector(
-    (state: AppState) => state.signOn.followArtists.selectedUserIds
-  )
+  const selectedUserIds = useSelector(getFollowIds)
 
   const followedArtistsCount = selectedUserIds.length
   const hasFollowedEnoughArtists =

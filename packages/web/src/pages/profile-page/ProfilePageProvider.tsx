@@ -27,7 +27,6 @@ import {
   ChatPermissionAction,
   queueSelectors,
   usersSocialActions as socialActions,
-  relatedArtistsUISelectors,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
   OverflowAction,
@@ -70,7 +69,6 @@ const { setFollowers } = followersUserListActions
 const { setFollowing } = followingUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
-const { selectSuggestedFollowsUsers } = relatedArtistsUISelectors
 const { fetchHasTracks } = accountActions
 const { createPlaylist } = cacheCollectionsActions
 
@@ -78,8 +76,7 @@ const {
   makeGetProfile,
   getCollectionsStatus,
   getProfileFeedLineup,
-  getProfileTracksLineup,
-  getProfileUserId
+  getProfileTracksLineup
 } = profilePageSelectors
 const { getUserId, getAccountHasTracks } = accountSelectors
 const { createChat, blockUser, unblockUser } = chatActions
@@ -255,9 +252,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     } = this.props
     if (!profile) return
     this.props.onFollow(profile.user_id)
-    if (this.props.relatedArtists && this.props.relatedArtists.length > 0) {
-      this.setState({ areArtistRecommendationsVisible: true })
-    }
+    this.setState({ areArtistRecommendationsVisible: true })
   }
 
   onUnfollow = () => {
@@ -995,9 +990,6 @@ function makeMapStateToProps() {
       playing: getPlaying(state),
       buffering: getBuffering(state),
       pathname: getLocationPathname(state),
-      relatedArtists: selectSuggestedFollowsUsers(state, {
-        id: getProfileUserId(state, handleLower) ?? 0
-      }),
       chatPermissions: getCanCreateChat(state, {
         userId: profile.profile?.user_id
       }),
