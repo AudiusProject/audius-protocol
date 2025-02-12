@@ -2,8 +2,10 @@ import { useCallback } from 'react'
 
 import {
   formatCooldownChallenges,
-  useChallengeCooldownSchedule
+  useChallengeCooldownSchedule,
+  useFeatureFlag
 } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import {
   Box,
   Button,
@@ -24,6 +26,7 @@ import styles from '../RewardsTile.module.css'
 import { messages } from '../messages'
 
 export const ClaimAllRewardsPanel = () => {
+  const { isEnabled } = useFeatureFlag(FeatureFlags.CLAIM_ALL_REWARDS_TILE)
   const isMobile = useIsMobile() || window.innerWidth < 1080
   const wm = useWithMobileStyle(styles.mobile)
   const { cooldownChallenges, cooldownAmount, claimableAmount, isEmpty } =
@@ -48,7 +51,7 @@ export const ClaimAllRewardsPanel = () => {
     }
   }, [claimable, cooldownAmount, onClickClaimAllRewards, onClickMoreInfo])
 
-  if (isEmpty) return null
+  if (isEmpty || !isEnabled) return null
 
   if (isMobile) {
     return (
