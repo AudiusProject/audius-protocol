@@ -337,6 +337,9 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     )
 
     url = shared_config["discprov"]["url"]
+    is_ai = False
+    if "audiusindex" in url:
+        is_ai = True
 
     auto_upgrade_enabled = (
         True if os.getenv("audius_auto_upgrade_enabled") == "true" else False
@@ -505,7 +508,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
 
     chain_health = health_results["chain_health"]
     if chain_health and chain_health["status"] == "Unhealthy":
-        errors.append("unhealthy chain")
+        if not is_ai:
+            errors.append("unhealthy chain")
 
     is_dev = shared_config["discprov"]["env"] == "dev"
     if not is_dev and not chain_health:
