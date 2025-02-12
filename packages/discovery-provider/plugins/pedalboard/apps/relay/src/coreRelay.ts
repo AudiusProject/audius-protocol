@@ -109,25 +109,3 @@ export const coreRelay = async (
     return null
   }
 }
-
-/**
- * 
- * export interface TransactionReceipt {
-     status: boolean;
-     transactionHash: string;
-     transactionIndex: number;
-     blockHash: string;
-     blockNumber: number;
-     from: string;
-     to: string;
-     contractAddress?: string;
-     cumulativeGasUsed: number;
-     gasUsed: number;
-     effectiveGasPrice: number;
-     logs: Log[];
-     logsBloom: string;
-     events?: {
-         [eventName: string]: EventLog;
-     };
- }
- */
