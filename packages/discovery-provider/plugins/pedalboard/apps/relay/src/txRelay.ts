@@ -28,9 +28,7 @@ export const relayTransaction = async (
   let nonce = undefined
   let submit = undefined
   try {
-    if (config.environment === "dev") {
-      coreRelay(logger, requestId, validatedRelayRequest)
-    }
+    coreRelay(logger, requestId, validatedRelayRequest)
 
     // gather some transaction params
     nonce = await retryPromise(() => web3.getTransactionCount(address))
