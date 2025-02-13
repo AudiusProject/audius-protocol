@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import { useUserAlbums } from '@audius/common/api'
 import { CreatePlaylistSource, ID, User } from '@audius/common/models'
 import {
@@ -10,7 +12,7 @@ import { GetAlbumsByUserSortMethodEnum } from '@audius/sdk'
 import { useSelector } from 'react-redux'
 
 import { CollectionCard } from 'components/collection'
-import CardLineup from 'components/lineup/CardLineup'
+import { InfiniteCardLineup } from 'components/lineup/InfiniteCardLineup'
 import UploadChip from 'components/upload/UploadChip'
 import EmptyTab from 'pages/profile-page/components/EmptyTab'
 
@@ -28,20 +30,33 @@ const messages = {
   emptyAlbums: 'created any albums'
 }
 
-type AlbumTabProps = {
+type AlbumsTabProps = {
   userId: ID | null
   profile: User
   isOwner: boolean
 }
 
-export const AlbumTab = ({ userId, profile, isOwner }: AlbumTabProps) => {
+export const AlbumsTab = ({ userId, profile, isOwner }: AlbumsTabProps) => {
   const sortMode = useSelector((state: CommonState) =>
     getProfileCollectionSortMode(state, profile?.handle ?? '')
   )
-  const { data: albums, isPending } = useUserAlbums({
+  const {
+    data: albums,
+    isPending,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage
+  } = useUserAlbums({
     userId,
-    sortMethod: mapSortMode(sortMode)
+    sortMethod: mapSortMode(sortMode),
+    pageSize: 20
   })
+
+  const handleLoadMore = useCallback(() => {
+    if (!isFetchingNextPage) {
+      fetchNextPage()
+    }
+  }, [fetchNextPage, isFetchingNextPage])
 
   const albumCards = albums?.map((album) => {
     return (
@@ -55,13 +70,13 @@ export const AlbumTab = ({ userId, profile, isOwner }: AlbumTabProps) => {
         key='upload-chip'
         type='album'
         variant='card'
-        isFirst={albumCards && albumCards.length === 0}
+        isFirst={albumCards?.length === 0}
         source={CreatePlaylistSource.PROFILE_PAGE}
       />
     )
   }
 
-  if (isPending) {
+  if (isPending && !albumCards?.length) {
     return (
       <Flex justifyContent='center' mt='2xl'>
         <Box w={24}>
@@ -81,5 +96,13 @@ export const AlbumTab = ({ userId, profile, isOwner }: AlbumTabProps) => {
     )
   }
 
-  return <CardLineup cardsClassName={styles.cardLineup} cards={albumCards} />
+  return (
+    <InfiniteCardLineup
+      cardsClassName={styles.cardLineup}
+      cards={albumCards}
+      hasMore={hasNextPage}
+      loadMore={handleLoadMore}
+      isLoadingMore={isFetchingNextPage}
+    />
+  )
 }

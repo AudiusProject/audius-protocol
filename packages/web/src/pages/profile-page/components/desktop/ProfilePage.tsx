@@ -53,8 +53,8 @@ import { getUserPageSEOFields } from 'utils/seo'
 
 import { DeactivatedProfileTombstone } from '../DeactivatedProfileTombstone'
 
-import { AlbumTab } from './AlbumTab'
-import { PlaylistTab } from './PlaylistTab'
+import { AlbumsTab } from './AlbumsTab'
+import { PlaylistsTab } from './PlaylistsTab'
 import styles from './ProfilePage.module.css'
 import ProfileWrapping from './ProfileWrapping'
 
@@ -337,10 +337,10 @@ const ProfilePage = ({
         ) : null}
       </div>,
       <div key={ProfilePageTabs.ALBUMS} className={styles.cards}>
-        <AlbumTab isOwner={isOwner} profile={profile} userId={userId} />
+        <AlbumsTab isOwner={isOwner} profile={profile} userId={userId} />
       </div>,
       <div key={ProfilePageTabs.PLAYLISTS} className={styles.cards}>
-        <PlaylistTab isOwner={isOwner} profile={profile} userId={userId} />
+        <PlaylistsTab isOwner={isOwner} profile={profile} userId={userId} />
       </div>,
       <div key={ProfilePageTabs.REPOSTS} className={styles.tiles}>
         {status === Status.SUCCESS ? (
@@ -443,7 +443,7 @@ const ProfilePage = ({
         )}
       </div>,
       <div key={ProfilePageTabs.PLAYLISTS} className={styles.cards}>
-        <PlaylistTab isOwner={isOwner} profile={profile} userId={userId} />
+        <PlaylistsTab isOwner={isOwner} profile={profile} userId={userId} />
       </div>
     ]
 
