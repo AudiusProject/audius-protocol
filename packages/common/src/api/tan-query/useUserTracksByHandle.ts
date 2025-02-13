@@ -63,7 +63,7 @@ export const useUserTracksByHandle = (
       const tracks = transformAndCleanList(data, userTrackMetadataFromSDK)
       primeTrackData({ tracks, queryClient, dispatch })
 
-      return tracks?.map((track) => track.track_id) ?? []
+      return tracks.map((track) => track.track_id)
     },
     ...options,
     enabled: options?.enabled !== false && !!handle

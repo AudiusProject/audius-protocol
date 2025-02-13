@@ -105,7 +105,7 @@ export const useLibraryCollections = (
         dispatch
       })
 
-      return collections?.map((collection) => collection.playlist_id) ?? []
+      return collections.map((collection) => collection.playlist_id)
     },
     select: (data) => data.pages.flat(),
     staleTime: options?.staleTime ?? Infinity,

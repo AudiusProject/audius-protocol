@@ -33,7 +33,7 @@ export const useMutedUsers = (options?: QueryOptions) => {
       })
       const users = userMetadataListFromSDK(data)
       primeUserData({ users, queryClient, dispatch })
-      return users?.map((user) => user.user_id)
+      return users.map((user) => user.user_id)
     },
     ...options,
     enabled: options?.enabled !== false && !!currentUserId

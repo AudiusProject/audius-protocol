@@ -68,7 +68,7 @@ export const useUserAlbums = (
 
       primeCollectionData({ collections, queryClient, dispatch })
 
-      return collections?.map((collection) => collection.playlist_id) ?? []
+      return collections.map((collection) => collection.playlist_id)
     },
     select: (data) => data.pages.flat(),
     ...options,

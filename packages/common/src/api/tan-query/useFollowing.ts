@@ -54,7 +54,7 @@ export const useFollowing = (
       })
       const users = userMetadataListFromSDK(data)
       primeUserData({ users, queryClient, dispatch })
-      return users?.map((user) => user.user_id)
+      return users.map((user) => user.user_id)
     },
     select: (data) => data.pages.flat(),
     ...options,
