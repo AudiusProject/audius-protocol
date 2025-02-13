@@ -530,7 +530,6 @@ def configure_celery(celery, test_config=None):
     celery.send_task("cache_entity_counts")
     if environment != "dev":
         celery.send_task("index_nethermind", queue="index_nethermind")
-    celery.send_task("index_nethermind", queue="index_nethermind")
     celery.send_task("index_rewards_manager", queue="index_sol")
     celery.send_task("index_user_bank", queue="index_sol")
     celery.send_task("index_payment_router", queue="index_sol")
