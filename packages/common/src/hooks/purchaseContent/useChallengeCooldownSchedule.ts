@@ -75,6 +75,7 @@ export const useChallengeCooldownSchedule = ({
   const challenges = useSelector(getUndisbursedUserChallenges)
     .filter((c) => multiple || c.challenge_id === challengeId)
     .filter((c) => !TRENDING_CHALLENGE_IDS.has(c.challenge_id))
+    .filter((c) => c.challenge_id !== 'e')
 
   const optimisticChallenges = useSelector(getOptimisticUserChallenges)
 
