@@ -93,9 +93,8 @@ describe('StorageNodeSelector', () => {
       logger
     })
 
-    expect(await storageNodeSelector.getSelectedNode()).toEqual(
-      storageNodeA.endpoint
-    )
+    const nodes = storageNodeSelector.getNodes('test')
+    expect(nodes[0]!).toEqual(storageNodeA.endpoint)
   })
 
   it('selects the first healthy node', async () => {
@@ -117,51 +116,6 @@ describe('StorageNodeSelector', () => {
     )
   })
 
-  it('selects correct storage node when discovery node already available', async () => {
-    const discoveryNodeSelector = new DiscoveryNodeSelector({
-      healthCheckThresholds: {
-        minVersion: '1.2.3'
-      },
-      initialSelectedNode: discoveryNode
-    })
-
-    const storageNodeSelector = new StorageNodeSelector({
-      discoveryNodeSelector,
-      logger
-    })
-
-    await waitForExpect(async () => {
-      expect(await storageNodeSelector.getSelectedNode()).toEqual(
-        storageNodeA.endpoint
-      )
-    })
-  })
-
-  it('selects correct storage node when discovery node is selected', async () => {
-    const bootstrapDiscoveryNodes = [discoveryNode].map((endpoint) => ({
-      endpoint,
-      delegateOwnerWallet: '',
-      ownerWallet: ''
-    }))
-    const discoveryNodeSelector = new DiscoveryNodeSelector({
-      healthCheckThresholds: {
-        minVersion: '1.2.3'
-      },
-      bootstrapServices: bootstrapDiscoveryNodes
-    })
-
-    const storageNodeSelector = new StorageNodeSelector({
-      discoveryNodeSelector,
-      logger
-    })
-
-    await waitForExpect(async () => {
-      expect(await storageNodeSelector.getSelectedNode()).toEqual(
-        storageNodeA.endpoint
-      )
-    })
-  })
-
   it('selects correct nodes when provided a cid', async () => {
     const bootstrapNodes = [storageNodeA, storageNodeB]
     const cid = 'QmNnuRwRWxrbWwE9ib9dvWVr4hLgcHGAJ8euys8WH5NgCX'
@@ -176,25 +130,6 @@ describe('StorageNodeSelector', () => {
       storageNodeB.endpoint,
       storageNodeA.endpoint
     ])
-  })
-
-  it('force reselects successfully', async () => {
-    const bootstrapNodes = [storageNodeA, storageNodeB]
-
-    const storageNodeSelector = new StorageNodeSelector({
-      bootstrapNodes,
-      discoveryNodeSelector,
-      logger
-    })
-
-    expect(await storageNodeSelector.getSelectedNode()).toEqual(
-      storageNodeA.endpoint
-    )
-
-    // force reselect
-    expect(await storageNodeSelector.getSelectedNode(true)).toEqual(
-      storageNodeB.endpoint
-    )
   })
 
   it('tries selecting all nodes', async () => {
