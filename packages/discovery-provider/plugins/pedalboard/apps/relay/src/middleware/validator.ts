@@ -201,6 +201,8 @@ export const retrieveUser = async (
       chainId: config.acdcChainId!
     })
 
+    console.log({ recoveredAddress, senderAddress, contractAddress, chainId: config.acdcChainId! }, "retrieveUser recoveredAddress")
+
     query = query.where('wallet', '=', recoveredAddress)
     addedWalletClause = true
   }

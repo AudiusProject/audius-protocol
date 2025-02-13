@@ -18,12 +18,27 @@ class AudiusLibsWrapper {
   }
 
   async init() {
-    const dataWeb3 = await AudiusLibs.Utils.configureWeb3(
-      web3ProviderUrl,
-      null,
-      false
-    )
-    if (!dataWeb3) throw new Error('Web3 incorrectly configured')
+    let web3Config = undefined
+    if (config.get('environment') !== 'development') {
+      const dataWeb3 = await AudiusLibs.Utils.configureWeb3(
+        web3ProviderUrl,
+        null,
+        false
+      )
+      if (!dataWeb3) throw new Error('Web3 incorrectly configured')
+
+      web3Config = {
+        registryAddress,
+        useExternalWeb3: true,
+        externalWeb3Config: {
+          web3: dataWeb3,
+          // this is a stopgap since libs external web3 init requires an ownerWallet
+          // this is never actually used in the service's libs calls
+          ownerWallet: config.get('relayerPublicKey')
+        },
+        entityManagerAddress
+      }
+    }
 
     const discoveryProviderWhitelist = config.get('discoveryProviderWhitelist')
       ? new Set(config.get('discoveryProviderWhitelist').split(','))
@@ -31,9 +46,9 @@ class AudiusLibsWrapper {
 
     const feePayerSecretKeys = config.get('solanaFeePayerWallets')
       ? config
-          .get('solanaFeePayerWallets')
-          .map((item) => item.privateKey)
-          .map((key) => Uint8Array.from(key))
+        .get('solanaFeePayerWallets')
+        .map((item) => item.privateKey)
+        .map((key) => Uint8Array.from(key))
       : null
 
     const solanaWeb3Config = AudiusLibs.configSolanaWeb3({
@@ -71,17 +86,7 @@ class AudiusLibsWrapper {
         config.get('ethProviderUrl'),
         config.get('ethOwnerWallet')
       ),
-      web3Config: {
-        registryAddress,
-        useExternalWeb3: true,
-        externalWeb3Config: {
-          web3: dataWeb3,
-          // this is a stopgap since libs external web3 init requires an ownerWallet
-          // this is never actually used in the service's libs calls
-          ownerWallet: config.get('relayerPublicKey')
-        },
-        entityManagerAddress
-      },
+      web3Config,
       isServer: true,
       captchaConfig: { serviceKey: config.get('recaptchaServiceKey') },
       solanaWeb3Config,

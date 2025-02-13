@@ -218,12 +218,6 @@ services:
 
   # Blockchain
 
-  poa-ganache:
-    extends:
-      file: docker-compose.blockchain.yml
-      service: poa-ganache
-    <<: *common
-
   eth-ganache:
     extends:
       file: docker-compose.blockchain.yml
