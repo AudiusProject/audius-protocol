@@ -81,6 +81,7 @@ export const Avatar = (props: AvatarProps) => {
         noText
         aria-label={label}
         popoverMount={MountPlacement.PARENT}
+        noOverflow={popover}
       >
         <HarmonyAvatar src={image} {...other} />
       </UserLink>
