@@ -69,7 +69,8 @@
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-gutter: stable;
-  padding: var(--harmony-unit-2) var(--harmony-unit-4);
+  padding: var(--harmony-unit-2) var(--harmony-unit-2) var(--harmony-unit-2)
+    var(--harmony-unit-4);
 }
 
 .characterCount {

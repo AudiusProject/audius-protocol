@@ -772,7 +772,7 @@ def process_user_bank_txs() -> None:
 
 
 # ####### CELERY TASKS ####### #
-@celery.task(name="index_user_bank", bind=True)
+@celery.task(name="index_user_bank", rate_limit="5/s", bind=True)
 @save_duration_metric(metric_group="celery_task")
 def index_user_bank(self):
     # Cache custom task class properties

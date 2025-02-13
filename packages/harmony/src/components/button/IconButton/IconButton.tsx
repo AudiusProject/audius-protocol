@@ -40,7 +40,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
       background: 'transparent',
       border: 'none',
       borderRadius: '50%',
-      padding: spacing.xs,
+      padding: ripple ? spacing.xs : 0,
       overflow: 'unset',
       svg: {
         transition: `

@@ -1,6 +1,11 @@
 import { useCallback, memo, ReactNode, useEffect, useState } from 'react'
 
-import { useGetCurrentUserId, useGetMutedUsers } from '@audius/common/api'
+import {
+  useCurrentUserId,
+  useGetMutedUsers,
+  useUserPlaylists,
+  useUserAlbums
+} from '@audius/common/api'
 import { useMuteUser } from '@audius/common/context'
 import { commentsMessages } from '@audius/common/messages'
 import {
@@ -18,7 +23,10 @@ import {
 import {
   profilePageFeedLineupActions as feedActions,
   profilePageTracksLineupActions as tracksActions,
-  ProfilePageTabs
+  ProfilePageTabs,
+  profilePageSelectors,
+  CommonState,
+  CollectionSortMode
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -36,6 +44,7 @@ import {
   LoadingSpinner
 } from '@audius/harmony'
 import cn from 'classnames'
+import { useSelector } from 'react-redux'
 
 import { MAX_PAGE_WIDTH_PX } from 'common/utils/layout'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
@@ -78,6 +87,17 @@ import {
 } from './constants'
 
 const { profilePage } = route
+const { getProfileCollectionSortMode } = profilePageSelectors
+const messages = {
+  emptyPlaylists: 'created any playlists',
+  emptyAlbums: 'created any albums'
+}
+const mapSortMode = (
+  mode: CollectionSortMode | undefined
+): 'recent' | 'popular' => {
+  if (mode === CollectionSortMode.SAVE_COUNT) return 'popular'
+  return 'recent'
+}
 
 export type ProfilePageProps = {
   // State
@@ -123,10 +143,7 @@ export type ProfilePageProps = {
   showUnmuteUserConfirmationModal: boolean
 
   profile: User | null
-  albums: Collection[] | null
-  playlists: Collection[] | null
   status: Status
-  collectionStatus: Status
   goToRoute: (route: string) => void
   artistTracks: LineupState<Track>
   playArtistTrack: (uid: UID) => void
@@ -188,6 +205,112 @@ export type ProfilePageProps = {
   onCloseUnmuteUserConfirmationModal: () => void
 }
 
+type PlaylistTabProps = {
+  userId: ID | null
+  profile: User
+  isOwner: boolean
+}
+
+type AlbumTabProps = {
+  userId: ID | null
+  profile: User
+  isOwner: boolean
+}
+
+const PlaylistTab = ({ userId, profile, isOwner }: PlaylistTabProps) => {
+  const sortMode = useSelector((state: CommonState) =>
+    getProfileCollectionSortMode(state, profile?.handle ?? '')
+  )
+  const { data: playlists, isPending } = useUserPlaylists({
+    userId,
+    sortMethod: mapSortMode(sortMode)
+  })
+  const playlistCards = playlists?.map((playlist) => {
+    return (
+      <CollectionCard
+        key={playlist.playlist_id}
+        id={playlist.playlist_id}
+        size='m'
+      />
+    )
+  })
+  if (isOwner) {
+    playlistCards?.unshift(
+      <UploadChip
+        key='upload-chip'
+        type='playlist'
+        variant='card'
+        isFirst={playlistCards.length === 0}
+        source={CreatePlaylistSource.PROFILE_PAGE}
+      />
+    )
+  }
+  if (isPending) {
+    return (
+      <Flex justifyContent='center' mt='2xl'>
+        <Box w={24}>
+          <LoadingSpinner />
+        </Box>
+      </Flex>
+    )
+  }
+  if (!playlistCards?.length) {
+    return (
+      <EmptyTab
+        isOwner={isOwner}
+        name={profile?.name}
+        text={messages.emptyPlaylists}
+      />
+    )
+  }
+  return <CardLineup cardsClassName={styles.cardLineup} cards={playlistCards} />
+}
+
+const AlbumTab = ({ userId, profile, isOwner }: AlbumTabProps) => {
+  const sortMode = useSelector((state: CommonState) =>
+    getProfileCollectionSortMode(state, profile?.handle ?? '')
+  )
+  const { data: albums, isPending } = useUserAlbums({
+    userId,
+    sortMethod: mapSortMode(sortMode)
+  })
+  const albumCards = albums?.map((album) => {
+    return (
+      <CollectionCard key={album.playlist_id} id={album.playlist_id} size='m' />
+    )
+  })
+  if (isOwner) {
+    albumCards?.unshift(
+      <UploadChip
+        key='upload-chip'
+        type='album'
+        variant='card'
+        isFirst={albumCards && albumCards.length === 0}
+        source={CreatePlaylistSource.PROFILE_PAGE}
+      />
+    )
+  }
+  if (isPending) {
+    return (
+      <Flex justifyContent='center' mt='2xl'>
+        <Box w={24}>
+          <LoadingSpinner />
+        </Box>
+      </Flex>
+    )
+  }
+  if (!albumCards?.length) {
+    return (
+      <EmptyTab
+        isOwner={isOwner}
+        name={profile?.name}
+        text={messages.emptyAlbums}
+      />
+    )
+  }
+  return <CardLineup cardsClassName={styles.cardLineup} cards={albumCards} />
+}
+
 const LeftColumnSpacer = () => (
   <Box
     w={PROFILE_LEFT_COLUMN_WIDTH_PX}
@@ -198,16 +321,12 @@ const LeftColumnSpacer = () => (
 const ProfilePage = ({
   isOwner,
   profile,
-  albums,
-  playlists,
   status,
   goToRoute,
-  // Tracks
   artistTracks,
   playArtistTrack,
   pauseArtistTrack,
   getLineupProps,
-  // Feed
   userFeed,
   playUserFeedTrack,
   pauseUserFeedTrack,
@@ -215,7 +334,6 @@ const ProfilePage = ({
   loadMoreUserFeed,
   loadMoreArtistTracks,
   updateProfile,
-
   onFollow,
   onUnfollow,
   updateName,
@@ -238,8 +356,6 @@ const ProfilePage = ({
   onSortByRecent,
   onSortByPopular,
   isArtist,
-  status: profileLoadingStatus,
-  collectionStatus,
   activeTab,
   shouldMaskContent,
   editMode,
@@ -251,7 +367,6 @@ const ProfilePage = ({
   onUnblock,
   onMute,
   isBlocked,
-  // Chat modals
   showBlockUserConfirmationModal,
   onCloseBlockUserConfirmationModal,
   showUnblockUserConfirmationModal,
@@ -312,40 +427,7 @@ const ProfilePage = ({
   }, [tabRecalculator])
 
   const getArtistProfileContent = () => {
-    if (!profile || !albums || !playlists) return { headers: [], elements: [] }
-    const albumCards = albums.map((album) => (
-      <CollectionCard key={album.playlist_id} id={album.playlist_id} size='m' />
-    ))
-    if (isOwner) {
-      albumCards.unshift(
-        <UploadChip
-          key='upload-chip'
-          type='album'
-          variant='card'
-          isFirst={albumCards.length === 0}
-          source={CreatePlaylistSource.PROFILE_PAGE}
-        />
-      )
-    }
-
-    const playlistCards = playlists.map((playlist) => (
-      <CollectionCard
-        key={playlist.playlist_id}
-        id={playlist.playlist_id}
-        size='m'
-      />
-    ))
-    if (isOwner) {
-      playlistCards.unshift(
-        <UploadChip
-          key='upload-chip'
-          type='playlist'
-          variant='card'
-          isFirst={playlistCards.length === 0}
-          source={CreatePlaylistSource.PROFILE_PAGE}
-        />
-      )
-    }
+    if (!profile) return { headers: [], elements: [] }
 
     const trackUploadChip = isOwner ? (
       <UploadChip
@@ -409,43 +491,10 @@ const ProfilePage = ({
         ) : null}
       </Box>,
       <Box w='100%' key={ProfilePageTabs.ALBUMS}>
-        {collectionStatus !== Status.SUCCESS &&
-        collectionStatus !== Status.ERROR ? (
-          <Flex justifyContent='center' mt='2xl'>
-            <Box w={24}>
-              <LoadingSpinner />
-            </Box>
-          </Flex>
-        ) : albums.length === 0 && !isOwner ? (
-          <EmptyTab
-            isOwner={isOwner}
-            name={profile.name}
-            text={'created any albums'}
-          />
-        ) : (
-          <CardLineup cardsClassName={styles.cardLineup} cards={albumCards} />
-        )}
+        <AlbumTab isOwner={isOwner} profile={profile} userId={userId} />
       </Box>,
       <Box w='100%' key={ProfilePageTabs.PLAYLISTS}>
-        {collectionStatus !== Status.SUCCESS &&
-        collectionStatus !== Status.ERROR ? (
-          <Flex justifyContent='center' mt='2xl'>
-            <Box w={24}>
-              <LoadingSpinner />
-            </Box>
-          </Flex>
-        ) : playlists.length === 0 && !isOwner ? (
-          <EmptyTab
-            isOwner={isOwner}
-            name={profile.name}
-            text={'created any playlists'}
-          />
-        ) : (
-          <CardLineup
-            cardsClassName={styles.cardLineup}
-            cards={playlistCards}
-          />
-        )}
+        <PlaylistTab isOwner={isOwner} profile={profile} userId={userId} />
       </Box>,
       <Box w='100%' key={ProfilePageTabs.REPOSTS}>
         {status === Status.SUCCESS ? (
@@ -509,22 +558,7 @@ const ProfilePage = ({
   }
 
   const getUserProfileContent = () => {
-    if (!profile || !playlists) return { headers: [], elements: [] }
-    const playlistCards = playlists.map((playlist) => (
-      <CollectionCard
-        key={playlist.playlist_id}
-        id={playlist.playlist_id}
-        size='m'
-      />
-    ))
-    playlistCards.unshift(
-      <UploadChip
-        type='playlist'
-        variant='card'
-        source={CreatePlaylistSource.PROFILE_PAGE}
-        isFirst={playlistCards.length === 0}
-      />
-    )
+    if (!profile) return { headers: [], elements: [] }
 
     const headers: TabHeader[] = [
       {
@@ -563,18 +597,7 @@ const ProfilePage = ({
         )}
       </Box>,
       <Box w='100%' key={ProfilePageTabs.PLAYLISTS}>
-        {playlists.length === 0 && !isOwner ? (
-          <EmptyTab
-            isOwner={isOwner}
-            name={profile.name}
-            text={'created any playlists'}
-          />
-        ) : (
-          <CardLineup
-            cardsClassName={styles.cardLineup}
-            cards={playlistCards}
-          />
-        )}
+        <PlaylistTab isOwner={isOwner} profile={profile} userId={userId} />
       </Box>
     ]
 
@@ -656,7 +679,7 @@ const ProfilePage = ({
   ) as ReactNode
 
   const [muteUser] = useMuteUser()
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useCurrentUserId()
 
   const { data: mutedUsers } = useGetMutedUsers({
     userId: currentUserId
@@ -686,7 +709,7 @@ const ProfilePage = ({
           userId={userId}
           updatedCoverPhoto={updatedCoverPhoto ? updatedCoverPhoto.url : ''}
           error={updatedCoverPhoto ? updatedCoverPhoto.error : false}
-          loading={profileLoadingStatus === Status.LOADING}
+          loading={status === Status.LOADING}
           onDrop={updateCoverPhoto}
           edit={editMode}
           darken={editMode}

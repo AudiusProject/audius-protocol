@@ -13,6 +13,7 @@ class CoreIndexedBlocks(Base):
     chain_id = Column(Text, nullable=False)
     height = Column(Integer, nullable=False)
     plays_slot = Column(Integer)
+    em_block = Column(Integer)
 
     # Set composite primary key
     __table_args__ = (

@@ -120,6 +120,7 @@ from src.tasks.entity_manager.utils import (
     save_cid_metadata,
 )
 from src.utils import helpers
+from src.utils.config import shared_config
 from src.utils.indexing_errors import IndexingError
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.structured_logger import StructuredLogger
@@ -128,6 +129,8 @@ logger = StructuredLogger(__name__)
 
 # Please toggle below variable to true for development
 ENABLE_DEVELOPMENT_FEATURES = True
+
+environment = shared_config["discprov"]["env"]
 
 entity_type_table_mapping = {
     "Save": Save.__tablename__,
@@ -1543,6 +1546,8 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
 
 
 def get_entity_manager_events_tx(update_task, tx_receipt: TxReceipt):
+    if environment == "dev":
+        return [tx_receipt]
     return getattr(
         update_task.entity_manager_contract.events, MANAGE_ENTITY_EVENT_TYPE
     )().process_receipt(tx_receipt)

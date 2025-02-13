@@ -12,14 +12,21 @@ import { ValidatedRelayRequest } from './types/relay'
 import * as grpc from '@grpc/grpc-js'
 import { readConfig } from './config/config.js'
 import pino from 'pino'
+import { TransactionReceipt } from 'web3-core'
 
 let client: Client<typeof Protocol> | null = null
+
+type CoreRelayResponse = {
+  txhash: string
+  block: bigint
+  blockhash: string
+}
 
 export const coreRelay = async (
   logger: pino.Logger,
   requestId: string,
   request: ValidatedRelayRequest
-) => {
+): Promise<TransactionReceipt | null> => {
   try {
     if (client === null) {
       const config = readConfig()
@@ -38,16 +45,16 @@ export const coreRelay = async (
       entityType,
       action,
       metadata: metadataAny,
-      subjectSig
-      // nonce: nonceBytes
+      subjectSig,
+      nonce: nonceBytes
     } = decodeAbi(encodedABI)
 
     const signer = request.senderAddress
     const userId = BigInt(userIdBig.toString())
     const entityId = BigInt(entityIdBig.toString())
-    const metadata = JSON.stringify(metadataAny)
+    const metadata = metadataAny as string
     const signature = ethers.utils.hexlify(subjectSig)
-    // const nonce = ethers.utils.hexlify(nonceBytes)
+    const nonce = ethers.utils.hexlify(nonceBytes)
 
     const manageEntity = create(ManageEntityLegacySchema, {
       userId,
@@ -57,7 +64,7 @@ export const coreRelay = async (
       metadata,
       signature,
       signer,
-      nonce: BigInt(1),
+      nonce,
     })
 
     const signedTransaction = create(SignedTransactionSchema, {
@@ -77,11 +84,28 @@ export const coreRelay = async (
     logger.info(
       {
         tx: transaction,
-        txhash: txhash
+        txhash: txhash,
+        block: res.blockHeight,
+        blockhash: res.blockHash
       },
       'core relay success'
     )
+    return {
+      status: true,
+      transactionHash: txhash,
+      transactionIndex: 0,
+      blockHash: res.blockHash,
+      blockNumber: Number(res.blockHeight),
+      from: signer || "",
+      to: signer || "",
+      cumulativeGasUsed: 10,
+      gasUsed: 10,
+      effectiveGasPrice: 420,
+      logs: [],
+      logsBloom: ""
+    }
   } catch (e) {
     logger.error({ err: e }, 'core relay failure:')
+    return null
   }
 }
