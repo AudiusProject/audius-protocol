@@ -426,6 +426,7 @@ def test_get_playlists_default_and_invalid_sort(app, test_entities):
             )
             assert len(playlists_default) > 0
             # Most recently created should be first
+            print("asdf recent playlist:", playlists_default[0]["playlist_id"])
             assert playlists_default[0]["playlist_id"] == 8
 
             # Test invalid sort method (should default to recent)
