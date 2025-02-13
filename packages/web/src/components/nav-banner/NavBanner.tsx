@@ -9,6 +9,7 @@ import {
 } from '@audius/harmony'
 import { useMedia as useMediaQuery } from 'react-use'
 
+import { MAX_PAGE_WIDTH_PX } from 'common/utils/layout'
 import { removeNullable } from 'utils/typeUtils'
 
 const messages = {
@@ -32,7 +33,10 @@ const NavBanner = (props: NavBannerProps) => {
   const { tabs, onSortByRecent, onSortByPopular, dropdownDisabled, isArtist } =
     props
 
-  const hideSortButton = useMediaQuery('(max-width: 1200px)')
+  // Only show sort button at full width to avoid crowding the tabs
+  const hideSortButton = useMediaQuery(
+    `(max-width: ${MAX_PAGE_WIDTH_PX + 120}px)`
+  )
 
   const menuItems = [
     onSortByRecent
