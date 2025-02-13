@@ -11,7 +11,6 @@ import {
 } from 'vitest'
 import waitForExpect from 'wait-for-expect'
 
-import { createAppWalletClient } from '../AudiusWalletClient'
 import { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'
 import type { HealthCheckResponseData } from '../DiscoveryNodeSelector/healthCheckTypes'
 import { Logger } from '../Logger'
@@ -27,11 +26,8 @@ const storageNodeB = {
   delegateOwnerWallet: '0xc0ffee254729296a45a3885639AC7E10F9d54972'
 }
 
-const userWallet = '0xc0ffee254729296a45a3885639AC7E10F9d54979'
-
 const discoveryNode = 'https://discovery-provider.audius.co'
 
-const audiusWalletClient = createAppWalletClient({ apiKey: userWallet })
 const logger = new Logger()
 const discoveryNodeSelector = new DiscoveryNodeSelector({
   initialSelectedNode: discoveryNode
@@ -93,7 +89,6 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       bootstrapNodes,
-      audiusWalletClient,
       discoveryNodeSelector,
       logger
     })
@@ -113,7 +108,6 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       bootstrapNodes,
-      audiusWalletClient,
       discoveryNodeSelector,
       logger
     })
@@ -133,7 +127,6 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       discoveryNodeSelector,
-      audiusWalletClient,
       logger
     })
 
@@ -159,7 +152,6 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       discoveryNodeSelector,
-      audiusWalletClient,
       logger
     })
 
@@ -176,7 +168,6 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       bootstrapNodes,
-      audiusWalletClient,
       discoveryNodeSelector,
       logger
     })
@@ -192,7 +183,6 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       bootstrapNodes,
-      audiusWalletClient,
       discoveryNodeSelector,
       logger
     })
@@ -222,7 +212,6 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       bootstrapNodes,
-      audiusWalletClient,
       discoveryNodeSelector,
       logger
     })
