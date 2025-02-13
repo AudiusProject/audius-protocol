@@ -91,8 +91,7 @@ export const mrvr = async (db: Knex, date: Date): Promise<void> => {
   const cbs = async () => {
     const mrvrCbs = await db.raw(
       `
-      with
-
+            with
       countries as (
         select
           nicename as "country",
@@ -116,6 +115,16 @@ export const mrvr = async (db: Knex, date: Date): Promise<void> => {
           and created_at < :end
       ),
 
+      purchases_by_country as (
+        select
+          country_code,
+          count(distinct buyer_user_id) as buyer_count,
+          sum("revenue_usd") as revenue_usd,
+          sum("tip_usd") as tip_usd
+        from purchases
+        group by country_code
+      ),
+
       -- aggregate downloads by country for purchaseable content
       purchase_downloads as (
         select
@@ -131,23 +140,7 @@ export const mrvr = async (db: Knex, date: Date): Promise<void> => {
         group by country_code
       ),
 
-      -- aggregate streams by country for purchaseable content
-      purchase_streams as (
-        select
-          "country_code",
-          count(distinct play_item_id) as track_count,
-          sum(count) as stream_count,
-          sum(count * duration) as stream_ath
-        from aggregate_monthly_plays
-        join countries using (country)
-        join tracks on play_item_id = track_id
-        where play_item_id in (select content_id from purchases)
-          and "timestamp" >= :start
-          and "timestamp" < :end
-        group by country_code
-      ),
-
-            -- aggregate downloads by country for purchaseable content
+      -- aggregate downloads by country for purchaseable content
       free_downloads as (
         select
           "country_code",
@@ -158,21 +151,23 @@ export const mrvr = async (db: Knex, date: Date): Promise<void> => {
         join tracks using (track_id)
         where d.created_at >= :start
           and d.created_at < :end
+          and track_id not in (select content_id from purchases)
         group by country_code
       ),
 
       -- aggregate streams by country for purchaseable content
       free_streams as (
         select
-          "country_code",
+          coalesce(country_code, 'WW') as country_code,
           count(distinct play_item_id) as track_count,
           sum(count) as stream_count,
           sum(count * duration) as stream_ath
         from aggregate_monthly_plays amp
-        join countries on nullif(amp.country, '') = countries.country
+        left join countries using (country)
         join tracks on play_item_id = track_id
         where "timestamp" >= :start
           and "timestamp" < :end
+          and track_id not in (select content_id from purchases)
         group by country_code
       )
 
@@ -184,7 +179,7 @@ export const mrvr = async (db: Knex, date: Date): Promise<void> => {
         "Gross Revenue",
         "Gross revenue With Deductions",
         country_code as "Territory",
-        case when ("Total Downloads" > 0 or "Total Streams" > 0) then true else false end as "Has_usage_flag",
+        CASE WHEN ("Total Downloads" > 0 or "Total Streams" > 0) THEN 'TRUE' ELSE 'FALSE' END as "Has_usage_flag",
         coalesce("Total Downloads", 0) as "Total Downloads",
         coalesce("Total Streams", 0) as "Total Streams",
         "Currency",
@@ -199,24 +194,24 @@ export const mrvr = async (db: Knex, date: Date): Promise<void> => {
         select
           'Downloads / Monetized Content' as "Offering",
           'Paid' as "UserType",
-          count(distinct "buyer_user_id") as "Subscriber Count",
+          buyer_count as "Subscriber Count",
           coalesce(trunc(
             case when
-              is_country_eur("country_code") then sum("revenue_usd") * :usdToEurRate
-              else sum("revenue_usd")
+              is_country_eur("country_code") then revenue_usd * :usdToEurRate
+              else revenue_usd
             end,
             2
           ), 0) as "Gross Revenue",
           coalesce(trunc(
             case when
-              is_country_eur("country_code") then sum("revenue_usd") * :usdToEurRate
-              else sum("revenue_usd")
+              is_country_eur("country_code") then revenue_usd * :usdToEurRate
+              else revenue_usd
             end,
             2
           ), 0) as "Gross revenue With Deductions",
           country_code,
-          sum(download_count) as "Total Downloads",
-          sum(stream_count) as "Total Streams",
+          download_count as "Total Downloads",
+          0::numeric as "Total Streams",
           case when
             is_country_eur("country_code") then 'EUR'
             else 'USD'
@@ -226,21 +221,19 @@ export const mrvr = async (db: Knex, date: Date): Promise<void> => {
           trunc(0, 2) as "Record Label Payments",
           trunc(0, 2) as "Average Subscription Price",
 
-          sum(coalesce(download_ath, 0) + coalesce(stream_ath, 0))::float / 3600 as "Aggregate Transmission Hours",
+          coalesce(download_ath, 0)::float / 3600 as "Aggregate Transmission Hours",
 
           coalesce(trunc(
             case when
-              is_country_eur("country_code") then sum("tip_usd") * :usdToEurRate
-              else sum("tip_usd")
+              is_country_eur("country_code") then tip_usd * :usdToEurRate
+              else tip_usd
             end,
             2
           ), 0) as "Tip Revenue"
 
         from countries
-        left join purchases using (country_code)
+        left join purchases_by_country using (country_code)
         left join purchase_downloads using (country_code)
-        left join purchase_streams using (country_code)
-        group by country_code
 
         union all
 
@@ -269,6 +262,7 @@ export const mrvr = async (db: Knex, date: Date): Promise<void> => {
         from countries
         left join free_streams using (country_code)
         left join free_downloads using (country_code)
+
       ) subq;
       `,
       { start, end, usdToEurRate }

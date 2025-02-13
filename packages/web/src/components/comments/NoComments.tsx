@@ -14,7 +14,7 @@ export const NoComments = () => {
       <Text>{messages.noComments}</Text>
       <Text color='subdued'>
         {isEntityOwner
-          ? messages.noCommentsOwner
+          ? messages.noCommentsPreviewOwner
           : messages.noCommentsDescription}
       </Text>
     </Flex>
