@@ -193,7 +193,11 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
         column
         gap='2xl'
         w={PROFILE_LEFT_COLUMN_WIDTH_PX}
-        css={{ flexShrink: 0, textAlign: 'left' }}
+        css={{
+          flexShrink: 0,
+          textAlign: 'left',
+          zIndex: zIndex.PROFILE_EDITABLE_COMPONENTS
+        }}
       >
         <ProfileBio
           userId={userId}
