@@ -9,7 +9,9 @@ from src.challenges.challenge import (
     FullEventMetadata,
 )
 from src.challenges.challenge_event_bus import ChallengeEventBus
-from src.challenges.listen_streak_challenge import listen_streak_challenge_manager
+from src.challenges.listen_streak_endless_challenge import (
+    listen_streak_endless_challenge_manager,
+)
 from src.challenges.referral_challenge import (
     referral_challenge_manager,
     verified_referral_challenge_manager,
@@ -566,7 +568,11 @@ def setup_listen_streak_challenge(session):
     # Setup
     blocks = [
         Block(blockhash="0x1", number=1, parenthash="", is_current=False),
-        Block(blockhash="0x2", number=2, parenthash="", is_current=True),
+        Block(blockhash="0x2", number=2, parenthash="", is_current=False),
+        Block(blockhash="0x3", number=3, parenthash="", is_current=False),
+        Block(blockhash="0x4", number=4, parenthash="", is_current=False),
+        Block(blockhash="0x5", number=5, parenthash="", is_current=False),
+        Block(blockhash="0x6", number=6, parenthash="", is_current=True),
     ]
     users = [
         User(
@@ -589,49 +595,216 @@ def setup_listen_streak_challenge(session):
             updated_at=datetime.now(),
             is_verified=True,
         ),
+        User(
+            blockhash="0x3",
+            blocknumber=3,
+            user_id=3,
+            is_current=True,
+            wallet="0xFakeWallet3",
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            is_verified=False,
+        ),
+        User(
+            blockhash="0x4",
+            blocknumber=4,
+            user_id=4,
+            is_current=True,
+            wallet="0xFakeWallet4",
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            is_verified=False,
+        ),
+        User(
+            blockhash="0x5",
+            blocknumber=5,
+            user_id=5,
+            is_current=True,
+            wallet="0xFakeWallet5",
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            is_verified=False,
+        ),
+        User(
+            blockhash="0x6",
+            blocknumber=6,
+            user_id=6,
+            is_current=True,
+            wallet="0xFakeWallet6",
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            is_verified=False,
+        ),
     ]
 
     challenges = [
         Challenge(
-            id="l",
-            type=ChallengeType.numeric,
+            id="e",
+            type=ChallengeType.aggregate,
             active=True,
             amount="1",
-            step_count=7,
+            step_count=2147483647,
         )
     ]
 
     user_challenges = [
         UserChallenge(
-            challenge_id="l",
+            challenge_id="e",
             user_id=1,
             specifier="1",
             is_complete=False,
             current_step_count=5,
             amount=1,
-            completed_at=datetime.now(),
+            created_at=datetime.now(),
         ),
         UserChallenge(
-            challenge_id="l",
+            challenge_id="e",
             user_id=2,
             specifier="2",
             is_complete=False,
             current_step_count=5,
             amount=1,
+            created_at=datetime.now(),
+        ),
+        # User 3 has just started a new streak for the first time
+        UserChallenge(
+            challenge_id="e",
+            user_id=3,
+            specifier="3x0",
+            is_complete=False,
+            current_step_count=3,
+            amount=7,
+            created_at=datetime.now(),
+        ),
+        # User 4 has an ongoing listen streak of 9
+        UserChallenge(
+            challenge_id="e",
+            user_id=4,
+            specifier="4x0",
+            is_complete=True,
+            current_step_count=7,
+            amount=7,
+            completed_at=datetime.now() - timedelta(days=2),
+            created_at=datetime.now() - timedelta(days=9),
+        ),
+        UserChallenge(
+            challenge_id="e",
+            user_id=4,
+            specifier="4x1",
+            is_complete=True,
+            current_step_count=1,
+            amount=1,
+            completed_at=datetime.now() - timedelta(days=1),
+            created_at=datetime.now() - timedelta(days=1),
+        ),
+        UserChallenge(
+            challenge_id="e",
+            user_id=4,
+            specifier="4x2",
+            is_complete=True,
+            current_step_count=1,
+            amount=1,
             completed_at=datetime.now(),
+            created_at=datetime.now(),
+        ),
+        # User 5 has one complete listen streak of 8, and an in-progress streak of 3
+        UserChallenge(
+            challenge_id="e",
+            user_id=5,
+            specifier="5x0",
+            is_complete=True,
+            current_step_count=7,
+            amount=7,
+            completed_at=datetime.now() - timedelta(days=30),
+            created_at=datetime.now() - timedelta(days=37),
+        ),
+        UserChallenge(
+            challenge_id="e",
+            user_id=5,
+            specifier="5x1",
+            is_complete=True,
+            current_step_count=1,
+            amount=1,
+            completed_at=datetime.now() - timedelta(days=29),
+            created_at=datetime.now() - timedelta(days=29),
+        ),
+        UserChallenge(
+            challenge_id="e",
+            user_id=5,
+            specifier="5x2",
+            is_complete=False,
+            current_step_count=3,
+            amount=3,
+            created_at=datetime.now(),
+        ),
+        # User 6 has one complete streak of 8, and a broken streak of 2
+        UserChallenge(
+            challenge_id="e",
+            user_id=6,
+            specifier="6x0",
+            is_complete=True,
+            current_step_count=7,
+            amount=7,
+            completed_at=datetime.now() - timedelta(days=30),
+            created_at=datetime.now() - timedelta(days=37),
+        ),
+        UserChallenge(
+            challenge_id="e",
+            user_id=6,
+            specifier="6x1",
+            is_complete=True,
+            current_step_count=1,
+            amount=1,
+            completed_at=datetime.now() - timedelta(days=29),
+            created_at=datetime.now() - timedelta(days=29),
+        ),
+        UserChallenge(
+            challenge_id="e",
+            user_id=6,
+            specifier="6x2",
+            is_complete=False,
+            current_step_count=2,
+            amount=7,
+            created_at=datetime.now() - timedelta(days=4),
         ),
     ]
 
     listen_streak_challenges = [
+        # User 1 has a completed listen streak of 5
         ChallengeListenStreak(
             user_id=1,
             last_listen_date=datetime.now() - timedelta(hours=12),
             listen_streak=5,
         ),
+        # User 2 has a broken listen streak of 5 - override should take effect
         ChallengeListenStreak(
             user_id=2,
             last_listen_date=datetime.now() - timedelta(hours=50),
             listen_streak=5,
+        ),
+        # User 3 has a new listen streak of 3
+        ChallengeListenStreak(
+            user_id=3,
+            last_listen_date=datetime.now() - timedelta(hours=12),
+            listen_streak=3,
+        ),
+        # User 4 has an ongoing listen streak of 9
+        ChallengeListenStreak(
+            user_id=4,
+            last_listen_date=datetime.now() - timedelta(hours=12),
+            listen_streak=9,
+        ),
+        # User 5 has an ongoing listen streak of 3
+        ChallengeListenStreak(
+            user_id=5,
+            last_listen_date=datetime.now() - timedelta(hours=12),
+            listen_streak=3,
+        ),
+        # User 6 has a broken listen streak of 3 - override should take effect
+        ChallengeListenStreak(
+            user_id=6,
+            last_listen_date=datetime.now() - timedelta(days=3),
+            listen_streak=2,
         ),
     ]
 
@@ -650,7 +823,7 @@ def setup_listen_streak_challenge(session):
 
     redis_conn = get_redis()
     bus = ChallengeEventBus(redis_conn)
-    bus.register_listener(DEFAULT_EVENT, listen_streak_challenge_manager)
+    bus.register_listener(DEFAULT_EVENT, listen_streak_endless_challenge_manager)
     return bus
 
 
@@ -662,7 +835,7 @@ def test_get_challenges_with_no_override_step_count(app):
 
             challenges = get_challenges(1, False, session, bus)
             assert len(challenges) == 1
-            assert challenges[0]["challenge_id"] == "l"
+            assert challenges[0]["challenge_id"] == "e"
             assert challenges[0]["current_step_count"] == 5
 
 
@@ -674,5 +847,40 @@ def test_get_challenges_with_override_step_count(app):
 
             challenges = get_challenges(2, False, session, bus)
             assert len(challenges) == 1
-            assert challenges[0]["challenge_id"] == "l"
+            assert challenges[0]["challenge_id"] == "e"
             assert challenges[0]["current_step_count"] == 0
+
+
+def test_listen_streak_endless_challenge(app):
+    with app.app_context():
+        db = get_db()
+        with db.scoped_session() as session:
+            bus = setup_listen_streak_challenge(session)
+
+            challenges = get_challenges(3, False, session, bus)
+            assert len(challenges) == 1
+            assert challenges[0]["challenge_id"] == "e"
+            assert challenges[0]["is_complete"] == False
+            assert challenges[0]["amount"] == "1"
+            assert challenges[0]["current_step_count"] == 3
+
+            challenges = get_challenges(4, False, session, bus)
+            assert len(challenges) == 1
+            assert challenges[0]["challenge_id"] == "e"
+            assert challenges[0]["is_complete"] == True
+            assert challenges[0]["amount"] == "1"
+            assert challenges[0]["current_step_count"] == 9
+
+            challenges = get_challenges(5, False, session, bus)
+            assert len(challenges) == 1
+            assert challenges[0]["challenge_id"] == "e"
+            assert challenges[0]["is_complete"] == True
+            assert challenges[0]["current_step_count"] == 3
+            assert challenges[0]["amount"] == "1"
+
+            challenges = get_challenges(6, False, session, bus)
+            assert len(challenges) == 1
+            assert challenges[0]["challenge_id"] == "e"
+            assert challenges[0]["is_complete"] == True
+            assert challenges[0]["current_step_count"] == 0
+            assert challenges[0]["amount"] == "1"
