@@ -64,6 +64,7 @@ from src.api.v1.models.activities import (
     track_activity_full_model,
     track_activity_model,
 )
+from src.api.v1.models.comments import base_comment_model
 from src.api.v1.models.common import favorite
 from src.api.v1.models.developer_apps import authorized_app, developer_app
 from src.api.v1.models.extensions.fields import NestedOneOf
@@ -120,7 +121,7 @@ from src.queries.get_collection_library import (
     GetCollectionLibraryArgs,
     get_collection_library,
 )
-from src.queries.get_comments import get_muted_users
+from src.queries.get_comments import get_muted_users, get_user_comments
 from src.queries.get_developer_apps import (
     get_developer_apps_by_user,
     get_developer_apps_with_grant_for_user,
@@ -3192,3 +3193,33 @@ class UserEmailKey(Resource):
                 return success_response(None)
 
             return success_response(email_access.to_dict())
+
+
+# Comments
+user_comments_response = make_response(
+    "user_comments_response", ns, fields.List(fields.Nested(base_comment_model))
+)
+
+
+@ns.route("/<string:id>/comments")
+class UserComments(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""User Comments""",
+        description="""Get user comment history""",
+        params={"id": "A User ID"},
+        responses={
+            200: "Success",
+            400: "Bad request",
+            500: "Server error",
+        },
+    )
+    @ns.expect(pagination_with_current_user_parser)
+    @ns.marshal_with(user_comments_response)
+    @cache(ttl_sec=5)
+    def get(self, id):
+        args = pagination_with_current_user_parser.parse_args()
+        decoded_id = decode_with_abort(id, ns)
+        current_user_id = args.get("user_id")
+        user_comments = get_user_comments(args, decoded_id, current_user_id)
+        return success_response(user_comments)
