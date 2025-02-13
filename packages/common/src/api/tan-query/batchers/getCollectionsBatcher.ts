@@ -5,19 +5,17 @@ import { memoize } from 'lodash'
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { transformAndCleanList } from '~/adapters/utils'
 import { UserCollectionMetadata } from '~/models/Collection'
+import { ID } from '~/models/Identifiers'
 
 import { primeCollectionData } from '../utils/primeCollectionData'
 
-import { BatchContext, BatchQuery } from './types'
+import { BatchContext } from './types'
 
 export const getCollectionsBatcher = memoize((context: BatchContext) =>
   create({
-    fetcher: async (
-      queries: BatchQuery[]
-    ): Promise<UserCollectionMetadata[]> => {
+    fetcher: async (ids: ID[]): Promise<UserCollectionMetadata[]> => {
       const { sdk, currentUserId, queryClient, dispatch } = context
-      if (!queries.length) return []
-      const ids = queries.map((q) => q.id)
+      if (!ids.length) return []
 
       const { data } = await sdk.full.playlists.getBulkPlaylists({
         id: ids.map((id) => Id.parse(id)),

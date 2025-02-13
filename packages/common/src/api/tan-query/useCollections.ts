@@ -36,9 +36,7 @@ export const useCollections = (
           queryClient,
           dispatch
         })
-        return await batchGetCollections.fetch({
-          id: collectionId
-        })
+        return await batchGetCollections.fetch(collectionId)
       },
       ...options,
       enabled: options?.enabled !== false && !!collectionId

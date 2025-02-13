@@ -37,9 +37,7 @@ export const useTracks = (
           queryClient,
           dispatch
         })
-        return await batchGetTracks.fetch({
-          id: trackId
-        })
+        return await batchGetTracks.fetch(trackId)
       },
       ...options,
       enabled: options?.enabled !== false && !!trackId

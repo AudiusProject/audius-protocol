@@ -4,18 +4,18 @@ import { memoize } from 'lodash'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { transformAndCleanList } from '~/adapters/utils'
+import { ID } from '~/models/Identifiers'
 import { UserTrackMetadata } from '~/models/Track'
 
 import { primeTrackData } from '../utils/primeTrackData'
 
-import { BatchContext, BatchQuery } from './types'
+import { BatchContext } from './types'
 
 export const getTracksBatcher = memoize((context: BatchContext) =>
   create({
-    fetcher: async (queries: BatchQuery[]): Promise<UserTrackMetadata[]> => {
+    fetcher: async (ids: ID[]): Promise<UserTrackMetadata[]> => {
       const { sdk, currentUserId, queryClient, dispatch } = context
-      if (!queries.length) return []
-      const ids = queries.map((q) => q.id)
+      if (!ids.length) return []
       const { data } = await sdk.full.tracks.getBulkTracks({
         id: ids.map((id) => Id.parse(id)),
         userId: OptionalId.parse(currentUserId)

@@ -10,7 +10,3 @@ export type BatchContext = {
   queryClient: QueryClient
   dispatch: Dispatch
 }
-
-export type BatchQuery = {
-  id: ID
-}

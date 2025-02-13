@@ -34,9 +34,7 @@ export const useUser = (
         queryClient,
         dispatch
       })
-      return await batchGetUsers.fetch({
-        id: userId!
-      })
+      return await batchGetUsers.fetch(userId!)
     },
     ...options,
     enabled: options?.enabled !== false && !!userId
