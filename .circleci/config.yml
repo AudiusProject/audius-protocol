@@ -337,12 +337,10 @@ workflows:
             comms/.* run-discovery-workflow true
             packages/identity-service/.* run-identity-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
-            contracts/.* run-contracts-workflow true
             .circleci/.* run-discovery-workflow true
             .circleci/.* run-identity-workflow true
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-protocol-dashboard-workflow true
-            .circleci/.* run-contracts-workflow true
             .circleci/.* run-sdk-workflow true
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
@@ -389,12 +387,10 @@ workflows:
             comms/.* run-discovery-workflow true
             packages/identity-service/.* run-identity-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
-            contracts/.* run-contracts-workflow true
             .circleci/.* run-discovery-workflow true
             .circleci/.* run-identity-workflow true
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-protocol-dashboard-workflow true
-            .circleci/.* run-contracts-workflow true
             .circleci/.* run-sdk-workflow true
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
@@ -437,7 +433,6 @@ workflows:
           mapping: |
             .* run-integration-workflow true
             .* run-eth-contracts-workflow true
-            .* run-contracts-workflow true
             .* run-release-workflow true
             .* run-sdk-workflow true
           requires:

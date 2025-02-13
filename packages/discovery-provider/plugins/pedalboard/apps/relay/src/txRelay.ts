@@ -24,8 +24,6 @@ export const relayTransaction = async (
   const { validatedRelayRequest, logger, requestId } = res.locals.ctx
   const { encodedABI, gasLimit, contractAddress } = validatedRelayRequest
 
-  const senderWallet = wallets.selectNextWallet()
-  const address = await senderWallet.getAddress()
   let nonce = undefined
   let submit = undefined
   try {
@@ -42,6 +40,9 @@ export const relayTransaction = async (
         return
       }
     }
+
+    const senderWallet = wallets.selectNextWallet()
+    const address = await senderWallet.getAddress()
 
     // gather some transaction params
     nonce = await retryPromise(() => web3.getTransactionCount(address))
@@ -63,7 +64,6 @@ export const relayTransaction = async (
     receipt.blockNumber += config.finalPoaBlock
     logger.info(
       {
-        senderWallet: address,
         nonce,
         txHash: submit?.hash,
         blocknumber: receipt.blockNumber
@@ -73,7 +73,7 @@ export const relayTransaction = async (
     res.send({ receipt })
   } catch (e) {
     logger.error(
-      { senderWallet: address, nonce, txHash: submit?.hash },
+      { nonce, txHash: submit?.hash },
       'transaction submission failed'
     )
     internalError(next, e)
