@@ -5,7 +5,6 @@ from sqlalchemy import and_, desc, or_
 from sqlalchemy.orm.exc import NoResultFound
 
 from src import exceptions
-
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
@@ -56,11 +55,10 @@ def _get_unpopulated_playlists(session, args):
         playlist_query = playlist_query.order_by(desc(Playlist.created_at))
     elif sort_method == "popular":
         playlist_query = playlist_query.join(
-            AggregatePlaylist,
-            AggregatePlaylist.playlist_id == Playlist.playlist_id
+            AggregatePlaylist, AggregatePlaylist.playlist_id == Playlist.playlist_id
         ).order_by(
             desc(AggregatePlaylist.repost_count + AggregatePlaylist.save_count),
-            desc(Playlist.created_at)
+            desc(Playlist.created_at),
         )
 
     if routes:
