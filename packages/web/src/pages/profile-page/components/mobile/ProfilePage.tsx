@@ -41,10 +41,10 @@ import { getUserPageSEOFields } from 'utils/seo'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import { DeactivatedProfileTombstone } from '../DeactivatedProfileTombstone'
-import EmptyTab from '../EmptyTab'
 
 import { AlbumsTab } from './AlbumsTab'
 import EditProfile from './EditProfile'
+import { EmptyTab } from './EmptyTab'
 import { PlaylistsTab } from './PlaylistsTab'
 import ProfileHeader from './ProfileHeader'
 import styles from './ProfilePage.module.css'

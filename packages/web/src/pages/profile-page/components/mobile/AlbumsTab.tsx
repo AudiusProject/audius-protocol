@@ -7,8 +7,7 @@ import { Box, Flex, LoadingSpinner } from '@audius/harmony'
 import { CollectionCard } from 'components/collection'
 import { InfiniteCardLineup } from 'components/lineup/InfiniteCardLineup'
 
-import EmptyTab from '../EmptyTab'
-
+import { EmptyTab } from './EmptyTab'
 import styles from './ProfilePage.module.css'
 
 type AlbumsTabProps = {
@@ -54,10 +53,7 @@ export const AlbumsTab = ({ isOwner, profile, userId }: AlbumsTabProps) => {
   if (!albums?.length && !isOwner) {
     return (
       <EmptyTab
-        isOwner={isOwner}
-        name={profile.name}
-        text={`${isOwner ? 'You' : profile.name} haven't created any albums yet`}
-        css={{ marginTop: 0 }}
+        message={`${isOwner ? 'You' : profile.name} haven't created any albums yet`}
       />
     )
   }
