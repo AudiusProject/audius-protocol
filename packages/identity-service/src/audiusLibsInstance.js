@@ -46,9 +46,9 @@ class AudiusLibsWrapper {
 
     const feePayerSecretKeys = config.get('solanaFeePayerWallets')
       ? config
-        .get('solanaFeePayerWallets')
-        .map((item) => item.privateKey)
-        .map((key) => Uint8Array.from(key))
+          .get('solanaFeePayerWallets')
+          .map((item) => item.privateKey)
+          .map((key) => Uint8Array.from(key))
       : null
 
     const solanaWeb3Config = AudiusLibs.configSolanaWeb3({
