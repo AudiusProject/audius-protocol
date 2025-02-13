@@ -7,7 +7,7 @@ type Args = {
 }
 
 export const useFeaturedPlaylists = (args?: Args, options?: QueryOptions) => {
-  const { data: exploreContent } = useExploreContent(options)
+  const { data: exploreContent } = useExploreContent()
   const { limit } = args ?? {}
 
   return useCollections(exploreContent?.featuredPlaylists.slice(0, limit), {

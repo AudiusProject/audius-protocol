@@ -9,6 +9,7 @@ import {
   audioRewardsPageActions,
   audioRewardsPageSelectors
 } from '@audius/common/store'
+import { formatNumberCommas } from '@audius/common/utils'
 import { ScrollView, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -29,8 +30,8 @@ const { getClaimStatus } = audioRewardsPageSelectors
 const messages = {
   // Claim success toast
   claimSuccessMessage: 'All rewards successfully claimed!',
-  pending: (amount: number) => `${amount} Pending`,
-  claimAudio: (amount: number) => `Claim ${amount} $AUDIO`,
+  pending: (amount: number) => `${formatNumberCommas(amount)} Pending`,
+  claimAudio: (amount: number) => `Claim ${formatNumberCommas(amount)} $AUDIO`,
   claiming: 'Claiming $AUDIO',
   done: 'Done'
 }

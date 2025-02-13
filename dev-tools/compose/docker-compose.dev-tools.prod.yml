@@ -22,6 +22,9 @@ services:
 
   audius-cmd:
     build:
+      args:
+        TURBO_TEAM: '${TURBO_TEAM:-}'
+        TURBO_TOKEN: '${TURBO_TOKEN:-}'
       context: ${PROJECT_ROOT}
       dockerfile: ${PROJECT_ROOT}/packages/commands/Dockerfile.prod
     environment:

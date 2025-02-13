@@ -253,8 +253,10 @@ const createWindow = () => {
     height: 1080,
     minWidth: 800,
     minHeight: 600,
-    titleBarStyle: 'hidden',
-    nativeWindowOpen: true,
+    // Use different title bar style based on platform
+    titleBarStyle: process.platform === 'darwin' ? 'hidden' : 'default',
+    // Enable frame on Windows, hidden on macOS
+    frame: process.platform !== 'darwin',
     webPreferences: {
       nodeIntegration: true,
       // TODO: Look into a way to turn on contextIsolation (it is safer),
@@ -268,8 +270,10 @@ const createWindow = () => {
   // Create the browser window.
   mainWindow = new BrowserWindow(config)
 
-  // Hide win/linux menus
-  mainWindow.removeMenu()
+  // Hide menu only on Windows, keeping the window controls
+  if (process.platform === 'win32') {
+    mainWindow.setMenuBarVisibility(false)
+  }
 
   if (appEnvironment === Environment.LOCALHOST) {
     mainWindow.loadURL(`http://localhost:${localhostPort}`)

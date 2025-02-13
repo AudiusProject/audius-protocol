@@ -33,6 +33,7 @@ export const ProfilePictureListTile = ({
       backgroundColor='white'
       borderRadius='m'
       onClick={onClick}
+      css={{ cursor: 'pointer' }}
     >
       <UserProfilePictureList
         users={users}

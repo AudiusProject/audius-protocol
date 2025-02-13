@@ -28,6 +28,12 @@ COPY --from=builder /app/scripts ./scripts
 
 RUN CI=true npm i --maxsockets 1
 
+ARG TURBO_TEAM
+ENV TURBO_TEAM=$TURBO_TEAM
+
+ARG TURBO_TOKEN
+ENV TURBO_TOKEN=$TURBO_TOKEN
+
 # Build the project and its dependencies
 COPY --from=builder /app/out/full/ .
 COPY turbo.json turbo.json

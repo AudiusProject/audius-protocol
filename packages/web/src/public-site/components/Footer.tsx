@@ -1,6 +1,6 @@
 import { route } from '@audius/common/utils'
 import {
-  IconAudiusLogoHorizontalColor,
+  IconAudiusLogoHorizontalColorNew,
   IconTelegram,
   IconInstagram,
   IconTwitter as IconTwitterBird,
@@ -26,7 +26,7 @@ const {
   DOWNLOAD_LINK,
   AUDIUS_HELP_LINK,
   AUDIUS_ORG,
-  AUDIUS_MERCH_LINK,
+  AUDIUS_PROTOCOL_DASHBOARD_LINK,
   AUDIUS_TELEGRAM_LINK
 } = route
 
@@ -47,16 +47,16 @@ const resourcesLinks = [
     link: AUDIUS_BLOG_LINK
   },
   {
-    text: 'Merch Store',
-    link: AUDIUS_MERCH_LINK
-  },
-  {
     text: 'Brand / Press',
     link: AUDIUS_PRESS_LINK
   },
   {
     text: 'Open Audio Foundation',
     link: AUDIUS_ORG
+  },
+  {
+    text: 'Protocol Dashboard',
+    link: AUDIUS_PROTOCOL_DASHBOARD_LINK
   }
 ]
 
@@ -106,7 +106,7 @@ const Footer = (props: FooterProps) => {
     >
       <div className={styles.content}>
         <div className={styles.logoLinkContainer}>
-          <IconAudiusLogoHorizontalColor
+          <IconAudiusLogoHorizontalColorNew
             className={styles.logo}
             onClick={handleClickRoute(
               HOME_PAGE,

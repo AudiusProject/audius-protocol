@@ -10,15 +10,8 @@ begin
 
         if (cooldown_days is null or cooldown_days = 0) then
             -- Check if there is an existing notification with the same fields in the last 15 minutes
-            select id into existing_notification 
-            from notification
-            where
-            type = 'claimable_reward' and
-            new.user_id = any(user_ids) and
-            timestamp >= (new.completed_at - interval '1 hour')
-            limit 1;
 
-            if existing_notification is null and new.challenge_id not in ('tt', 'tp', 'tut') then
+            if new.challenge_id not in ('tt', 'tp', 'tut') then
                 insert into notification
                 (blocknumber, user_ids, timestamp, type, group_id, specifier, data)
                 values

@@ -6,6 +6,7 @@ import {
   CollectionSortMode
 } from '@audius/common/store'
 import { Box, Flex, LoadingSpinner } from '@audius/harmony'
+import { GetAlbumsByUserSortMethodEnum } from '@audius/sdk'
 import { useSelector } from 'react-redux'
 
 import { CollectionCard } from 'components/collection'
@@ -17,11 +18,10 @@ import styles from './ProfilePage.module.css'
 
 const { getProfileCollectionSortMode } = profilePageSelectors
 
-const mapSortMode = (
-  mode: CollectionSortMode | undefined
-): 'recent' | 'save_count' => {
-  if (mode === CollectionSortMode.SAVE_COUNT) return 'save_count'
-  return 'recent'
+const mapSortMode = (mode: CollectionSortMode | undefined) => {
+  if (mode === CollectionSortMode.SAVE_COUNT)
+    return GetAlbumsByUserSortMethodEnum.Popular
+  return GetAlbumsByUserSortMethodEnum.Recent
 }
 
 const messages = {

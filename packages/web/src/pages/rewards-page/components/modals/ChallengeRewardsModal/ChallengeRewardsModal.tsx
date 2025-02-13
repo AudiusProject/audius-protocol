@@ -108,7 +108,8 @@ const messages = {
     'Something has gone wrong, not all your rewards were claimed. Please try again or contact support@audius.co.',
   claimErrorAAO:
     'Your account is unable to claim rewards at this time. Please try again later or contact support@audius.co. ',
-  claimableAmountLabel: (amount: number) => `Claim $${amount} AUDIO`,
+  claimableAmountLabel: (amount: number) =>
+    `Claim ${formatNumberCommas(amount)} $AUDIO`,
   twitterShare: (
     modalType:
       | 'referrals'
@@ -287,6 +288,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   const currentStepCount = challenge?.current_step_count || 0
   const {
     fullDescription,
+    optionalDescription,
     progressLabel,
     completedLabel,
     isVerifiedChallenge
@@ -340,7 +342,10 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
           {messages.verifiedChallenge}
         </div>
       ) : null}
-      <Text variant='body'>{fullDescription?.(challenge)}</Text>
+      <Text variant='body' style={{ whiteSpace: 'pre-line' }}>
+        {fullDescription?.(challenge)}
+        {challenge?.claimableAmount ? optionalDescription : null}
+      </Text>
       {isCooldownChallenge ? (
         <Text variant='body' color='subdued'>
           {messages.cooldownDescription}
@@ -355,9 +360,9 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
       border='strong'
       w='100%'
       justifyContent='center'
-      ph='xl'
       pv='l'
       borderRadius='s'
+      backgroundColor='surface1'
     >
       {challenge?.challenge_id === ChallengeName.OneShot &&
       challenge?.state === 'incomplete' ? (
@@ -409,7 +414,9 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
 
   const errorContent =
     claimStatus === ClaimStatus.ERROR ? (
-      <div className={styles.claimError}>{getErrorMessage(aaoErrorCode)}</div>
+      <Text color='danger' strength='strong' textAlign='center'>
+        {getErrorMessage(aaoErrorCode)}
+      </Text>
     ) : null
 
   useEffect(() => {
@@ -593,7 +600,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
             <Paper column shadow='flat' w='100%' borderRadius='s'>
               <Flex justifyContent='center'>
                 <ProgressReward
-                  amount={formatNumberCommas(progressRewardAmount ?? '')}
+                  amount={progressRewardAmount}
                   subtext={messages.audio}
                 />
                 {renderProgressBar()}
@@ -612,7 +619,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
               <Flex justifyContent='space-between' w='100%'>
                 <ProgressDescription description={progressDescription} />
                 <ProgressReward
-                  amount={formatNumberCommas(progressRewardAmount ?? '')}
+                  amount={progressRewardAmount}
                   subtext={messages.audio}
                 />
               </Flex>
@@ -667,16 +674,11 @@ export const ChallengeRewardsModal = () => {
     dispatch(resetAndCancelClaimReward())
   }, [dispatch, setOpen])
 
-  const { title, icon } = getChallengeConfig(modalType)
+  const { title } = getChallengeConfig(modalType)
 
   return (
     <ModalDrawer
-      title={
-        <>
-          {icon}
-          {title}
-        </>
-      }
+      title={title}
       showTitleHeader
       isOpen={isOpen}
       onClose={onClose}

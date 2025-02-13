@@ -4,6 +4,7 @@ import IconAudiusLogoSVG from '../assets/icons/AudiusLogo.svg'
 import IconAudiusLogoColorSVG from '../assets/icons/AudiusLogoColor.svg'
 import IconAudiusLogoHorizontalSVG from '../assets/icons/AudiusLogoHorizontal.svg'
 import IconAudiusLogoHorizontalColorSVG from '../assets/icons/AudiusLogoHorizontalColor.svg'
+import IconAudiusLogoHorizontalColorNewSVG from '../assets/icons/AudiusLogoHorizontalColorNew.svg'
 import IconAudiusLogoHorizontalNewSVG from '../assets/icons/AudiusLogoHorizontalNew.svg'
 import IconAudiusLogoVerticalSVG from '../assets/icons/AudiusLogoVertical.svg'
 import IconLogoCoinbaseSVG from '../assets/icons/Coinbase.svg'
@@ -28,6 +29,7 @@ import IconSnapChatSVG from '../assets/icons/SnapChat.svg'
 import IconTelegramSVG from '../assets/icons/Telegram.svg'
 import IconTikTokSVG from '../assets/icons/TikTok.svg'
 import IconTwitterSVG from '../assets/icons/Twitter.svg'
+import IconXSVG from '../assets/icons/X.svg'
 import { createImageIcon } from '../utils/createImageIcon'
 
 export const IconAudiusLogo = IconAudiusLogoSVG as IconComponent
@@ -38,6 +40,8 @@ export const IconAudiusLogoHorizontalColor =
   IconAudiusLogoHorizontalColorSVG as IconComponent
 export const IconAudiusLogoHorizontalNew =
   IconAudiusLogoHorizontalNewSVG as IconComponent
+export const IconAudiusLogoHorizontalColorNew =
+  IconAudiusLogoHorizontalColorNewSVG as IconComponent
 export const IconAudiusLogoVertical = IconAudiusLogoVerticalSVG as IconComponent
 export const IconLogoCoinbase = IconLogoCoinbaseSVG as IconComponent
 export const IconLogoCoinbasePay = IconLogoCoinbasePaySVG as IconComponent
@@ -61,3 +65,4 @@ export const IconSnapChat = IconSnapChatSVG as IconComponent
 export const IconTelegram = IconTelegramSVG as IconComponent
 export const IconTikTok = IconTikTokSVG as IconComponent
 export const IconTwitter = IconTwitterSVG as IconComponent
+export const IconX = IconXSVG as IconComponent

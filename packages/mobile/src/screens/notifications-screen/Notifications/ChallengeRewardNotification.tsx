@@ -4,6 +4,7 @@ import type { BNAudio } from '@audius/common/models'
 import type { ChallengeRewardNotification as ChallengeRewardNotificationType } from '@audius/common/store'
 import {
   challengeRewardsConfig,
+  formatNumberCommas,
   stringWeiToAudioBN
 } from '@audius/common/utils'
 import { Platform } from 'react-native'
@@ -20,7 +21,8 @@ import {
 } from '../Notification'
 
 const messages = {
-  amountEarned: (amount: BNAudio) => `You've earned ${amount} $AUDIO`,
+  amountEarned: (amount: BNAudio) =>
+    `You've earned ${formatNumberCommas(Number(amount.toString()))} $AUDIO`,
   referredText:
     ' for being referred! Invite your friends to join to earn more!',
   challengeCompleteText: ' for completing this challenge!',
