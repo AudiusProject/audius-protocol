@@ -7,11 +7,8 @@ import {
   IconSort as SortIcon,
   Box
 } from '@audius/harmony'
-import cn from 'classnames'
 
 import { removeNullable } from 'utils/typeUtils'
-
-import styles from './NavBanner.module.css'
 
 const messages = {
   sortByRecent: 'Sort by Recent',
@@ -31,14 +28,8 @@ type NavBannerProps = {
 }
 
 const NavBanner = (props: NavBannerProps) => {
-  const {
-    tabs,
-    onSortByRecent,
-    onSortByPopular,
-    shouldMaskContent,
-    dropdownDisabled,
-    isArtist
-  } = props
+  const { tabs, onSortByRecent, onSortByPopular, dropdownDisabled, isArtist } =
+    props
 
   const menuItems = [
     onSortByRecent
@@ -57,20 +48,12 @@ const NavBanner = (props: NavBannerProps) => {
 
   return (
     // TODO-NOW: Might want to export NavBanner and StatBanner containers and content separately
-    <Flex
-      w='100%'
-      justifyContent='space-between'
-      css={{ position: 'relative' }}
-      // TODO-NOW: Can I move the global css def into this?
-      className={cn(styles.navBanner, {
-        overflowVisible: !shouldMaskContent
-      })}
-    >
+    <Flex w='100%' justifyContent='space-between'>
       <Box w='100%'>{tabs}</Box>
 
       {isArtist && (
         // TODO-NOW: How do we do media queries to hide this if screen < 1140px?
-        <Box css={{ position: 'absolute', right: 0 }}>
+        <Box alignSelf='center'>
           {!dropdownDisabled ? (
             <PopupMenu
               items={menuItems}

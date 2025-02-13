@@ -188,7 +188,10 @@ export type ProfilePageProps = {
 }
 
 const LeftColumnSpacer = () => (
-  <Box w={PROFILE_LEFT_COLUMN_WIDTH_PX} css={{ flexShrink: 0 }} />
+  <Box
+    w={PROFILE_LEFT_COLUMN_WIDTH_PX}
+    flex={`0 0 ${PROFILE_LEFT_COLUMN_WIDTH_PX}px`}
+  />
 )
 
 const ProfilePage = ({
@@ -379,7 +382,7 @@ const ProfilePage = ({
       }
     ]
     const elements = [
-      <div key={ProfilePageTabs.TRACKS} className={styles.tiles}>
+      <Box w='100%' key={ProfilePageTabs.TRACKS}>
         {renderProfileCompletionCard()}
         {status === Status.SUCCESS ? (
           artistTracks.status === Status.SUCCESS &&
@@ -403,8 +406,8 @@ const ProfilePage = ({
             />
           )
         ) : null}
-      </div>,
-      <div key={ProfilePageTabs.ALBUMS} className={styles.cards}>
+      </Box>,
+      <Box w='100%' key={ProfilePageTabs.ALBUMS}>
         {collectionStatus !== Status.SUCCESS &&
         collectionStatus !== Status.ERROR ? (
           <Flex justifyContent='center' mt='2xl'>
@@ -421,8 +424,8 @@ const ProfilePage = ({
         ) : (
           <CardLineup cardsClassName={styles.cardLineup} cards={albumCards} />
         )}
-      </div>,
-      <div key={ProfilePageTabs.PLAYLISTS} className={styles.cards}>
+      </Box>,
+      <Box w='100%' key={ProfilePageTabs.PLAYLISTS}>
         {collectionStatus !== Status.SUCCESS &&
         collectionStatus !== Status.ERROR ? (
           <Flex justifyContent='center' mt='2xl'>
@@ -442,8 +445,8 @@ const ProfilePage = ({
             cards={playlistCards}
           />
         )}
-      </div>,
-      <div key={ProfilePageTabs.REPOSTS} className={styles.tiles}>
+      </Box>,
+      <Box w='100%' key={ProfilePageTabs.REPOSTS}>
         {status === Status.SUCCESS ? (
           (userFeed.status === Status.SUCCESS &&
             userFeed.entries.length === 0) ||
@@ -463,7 +466,7 @@ const ProfilePage = ({
             />
           )
         ) : null}
-      </div>
+      </Box>
     ]
 
     if (
@@ -480,7 +483,7 @@ const ProfilePage = ({
       })
 
       elements.push(
-        <div key={ProfilePageTabs.COLLECTIBLES} className={styles.tiles}>
+        <Box w='100%' key={ProfilePageTabs.COLLECTIBLES}>
           <CollectiblesPage
             userId={userId}
             name={name}
@@ -492,7 +495,7 @@ const ProfilePage = ({
             onLoad={recalculate}
             onSave={onSave}
           />
-        </div>
+        </Box>
       )
     }
 
@@ -617,7 +620,6 @@ const ProfilePage = ({
     isMobile: false,
     tabs: headers,
     tabRecalculator,
-    bodyClassName: styles.tabBody,
     initialTab: activeTab || undefined,
     elements,
     pathname: profilePage(handle)
@@ -853,35 +855,42 @@ const ProfilePage = ({
                 />
               </Flex>
             </Flex>
-            <Flex direction='column'>
-              {/* NavBanner */}
+            {/* NavBanner */}
+            <Flex
+              h='unit14'
+              justifyContent='center'
+              w='100%'
+              backgroundColor='white'
+            >
               <Flex
+                flex='1 1 100%'
                 h='unit12'
-                justifyContent='center'
-                w='100%'
-                backgroundColor='white'
+                alignSelf='flex-end'
+                justifyContent='flex-start'
+                css={{ maxWidth: MAX_PAGE_WIDTH_PX }}
+                columnGap={PROFILE_COLUMN_GAP}
               >
-                <Flex
-                  flex='1 1 100%'
-                  h='100%'
-                  css={{ maxWidth: MAX_PAGE_WIDTH_PX }}
-                  columnGap={PROFILE_COLUMN_GAP}
-                >
-                  <LeftColumnSpacer />
-                  <NavBanner
-                    tabs={tabs}
-                    dropdownDisabled={dropdownDisabled}
-                    onChange={changeTab}
-                    activeTab={activeTab}
-                    isArtist={isArtist}
-                    onSortByRecent={onSortByRecent}
-                    onSortByPopular={onSortByPopular}
-                    shouldMaskContent={shouldMaskContent}
-                  />
-                </Flex>
+                <LeftColumnSpacer />
+                <NavBanner
+                  tabs={tabs}
+                  dropdownDisabled={dropdownDisabled}
+                  onChange={changeTab}
+                  activeTab={activeTab}
+                  isArtist={isArtist}
+                  onSortByRecent={onSortByRecent}
+                  onSortByPopular={onSortByPopular}
+                />
               </Flex>
-
-              <div className={styles.content}>{body}</div>
+            </Flex>
+            <Flex w='100%' justifyContent='center' pt='2xl'>
+              <Flex
+                flex='1 1 100%'
+                columnGap={PROFILE_COLUMN_GAP}
+                css={{ maxWidth: MAX_PAGE_WIDTH_PX }}
+              >
+                <LeftColumnSpacer />
+                <Box flex='1 1 100%'>{body}</Box>
+              </Flex>
             </Flex>
           </Mask>
         )}

@@ -97,39 +97,9 @@
   padding-left: 9px;
 }
 
-/* Style for content section */
-.content {
-  max-width: 753px;
-  padding-left: 229px;
-  padding-top: 16px;
-  box-sizing: content-box;
-}
-
-@media screen and (min-width: 1218px) {
-  .content {
-    margin: 0 auto;
-    width: 100%;
-  }
-}
-
-.tiles,
-.cards {
-  width: 100%;
-  margin-top: 4px;
-  min-height: 500px;
-  padding: 0px 16px;
-}
-
 .cardLineup {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-}
-
-.cardLineup > * {
-  margin: 6px;
-}
-
-.tabBody {
-  margin: -6px;
+  gap: var(--harmony-unit-3);
 }
