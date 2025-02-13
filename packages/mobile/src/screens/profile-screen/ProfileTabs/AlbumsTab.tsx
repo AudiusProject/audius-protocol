@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import { useUserAlbums } from '@audius/common/api'
 import { useIsFocused } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
@@ -19,10 +21,19 @@ export const AlbumsTab = () => {
   const isOwner = useSelector((state) => getIsOwner(state, handle ?? ''))
   const isFocused = useIsFocused()
 
-  const { data: albums, isPending } = useUserAlbums(
-    { userId: user_id },
-    { enabled: isFocused }
-  )
+  const {
+    data: albums,
+    isPending,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage
+  } = useUserAlbums({ userId: user_id }, { enabled: isFocused })
+
+  const handleEndReached = useCallback(() => {
+    if (!isFetchingNextPage && hasNextPage) {
+      fetchNextPage()
+    }
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
 
   return (
     <CollectionList
@@ -35,6 +46,8 @@ export const AlbumsTab = () => {
       showsVerticalScrollIndicator={false}
       totalCount={album_count}
       isLoading={isPending}
+      onEndReached={handleEndReached}
+      isLoadingMore={isFetchingNextPage}
     />
   )
 }
