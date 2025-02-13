@@ -350,46 +350,40 @@ def test_get_playlists_sorting(app, test_entities):
             # Make playlist 1 most popular with 3 saves
             {
                 "user_id": 2,
-            "save_type": "playlist", 
-            "save_item_id": 1,
-        },
-        {
-            "user_id": 3,
-            "save_type": "playlist",
-            "save_item_id": 1,
-        },
-        # Give playlist 6 one save
-        {
-            "user_id": 2,
-            "save_type": "playlist",
-            "save_item_id": 6,
-        }
-    ]
+                "save_type": "playlist",
+                "save_item_id": 1,
+            },
+            {
+                "user_id": 3,
+                "save_type": "playlist",
+                "save_item_id": 1,
+            },
+            # Give playlist 6 one save
+            {
+                "user_id": 2,
+                "save_type": "playlist",
+                "save_item_id": 6,
+            },
+        ]
     }
 
     with app.test_request_context():
         db = get_db()
         populate_mock_db(db, test_entities)
         populate_mock_db(db, save_entities)
-        
+
         with db.scoped_session():
             # Test recent sorting (default)
             playlists_recent = get_playlists(
-                GetPlaylistsArgs(
-                    user_id=1,
-                    sort_method="recent"
-                ),
+                GetPlaylistsArgs(user_id=1, sort_method="recent"),
             )
             assert len(playlists_recent) > 0
             # Most recently created should be first
             assert playlists_recent[0]["playlist_id"] == 7
-            
+
             # Test popular sorting
             playlists_popular = get_playlists(
-                GetPlaylistsArgs(
-                    user_id=1,
-                    sort_method="popular"
-                ),
+                GetPlaylistsArgs(user_id=1, sort_method="popular"),
             )
             assert len(playlists_popular) > 0
             print([playlist["playlist_id"] for playlist in playlists_popular])
@@ -402,45 +396,45 @@ def test_get_playlists_sorting(app, test_entities):
 def test_get_playlists_default_and_invalid_sort(app, test_entities):
     """Test default sorting behavior and invalid sort methods"""
     # Add some test data with different creation timestamps
-    test_entities["playlists"].extend([
-        {
-            "playlist_id": 8,
-            "playlist_owner_id": 1,
-            "playlist_name": "newest playlist",
-            "is_current": True,
-            "created_at": datetime.now() + timedelta(days=1)
-        },
-        {
-            "playlist_id": 9,
-            "playlist_owner_id": 1,
-            "playlist_name": "older playlist",
-            "is_current": True,
-            "created_at": datetime.now() - timedelta(days=1)
-        }
-    ])
+    test_entities["playlists"].extend(
+        [
+            {
+                "playlist_id": 8,
+                "playlist_owner_id": 1,
+                "playlist_name": "newest playlist",
+                "is_current": True,
+                "created_at": datetime.now() + timedelta(days=1),
+            },
+            {
+                "playlist_id": 9,
+                "playlist_owner_id": 1,
+                "playlist_name": "older playlist",
+                "is_current": True,
+                "created_at": datetime.now() - timedelta(days=1),
+            },
+        ]
+    )
 
     with app.test_request_context():
         db = get_db()
         populate_mock_db(db, test_entities)
-        
+
         with db.scoped_session():
             # Test default sorting (should be same as recent)
             playlists_default = get_playlists(
-                GetPlaylistsArgs(
-                    user_id=1
-                ),
+                GetPlaylistsArgs(user_id=1),
             )
             assert len(playlists_default) > 0
             # Most recently created should be first
             assert playlists_default[0]["playlist_id"] == 8
-            
+
             # Test invalid sort method (should default to recent)
             playlists_invalid = get_playlists(
-                GetPlaylistsArgs(
-                    user_id=1,
-                    sort_method="invalid_sort"
-                ),
+                GetPlaylistsArgs(user_id=1, sort_method="invalid_sort"),
             )
             assert len(playlists_invalid) > 0
             # Should match default sort order
-            assert playlists_invalid[0]["playlist_id"] == playlists_default[0]["playlist_id"]
+            assert (
+                playlists_invalid[0]["playlist_id"]
+                == playlists_default[0]["playlist_id"]
+            )
