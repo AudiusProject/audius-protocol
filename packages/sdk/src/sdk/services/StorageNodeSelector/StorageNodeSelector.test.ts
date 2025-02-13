@@ -9,7 +9,6 @@ import {
   afterEach,
   vitest
 } from 'vitest'
-import waitForExpect from 'wait-for-expect'
 
 import { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'
 import type { HealthCheckResponseData } from '../DiscoveryNodeSelector/healthCheckTypes'
