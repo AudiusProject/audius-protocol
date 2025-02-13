@@ -99,49 +99,7 @@ const ProfileWrapping = (props: ProfileWrappingProps) => {
         /* Put the profilewrapping over the tab accent */
         zIndex: 10
       }}
-    >
-      <Box
-        css={{
-          position: 'relative',
-          top: 237,
-          width: 240,
-          height: 0,
-          textAlign: 'left'
-        }}
-        className={styles.info}
-      >
-        {userId && (
-          <ProfileLeftNav
-            userId={userId}
-            isDeactivated={isDeactivated}
-            loading={loading}
-            isOwner={isOwner}
-            isArtist={isArtist}
-            editMode={editMode}
-            handle={handle}
-            bio={bio}
-            location={location}
-            allowAiAttribution={allowAiAttribution}
-            twitterHandle={twitterHandle}
-            instagramHandle={instagramHandle}
-            tikTokHandle={tikTokHandle}
-            twitterVerified={twitterVerified}
-            instagramVerified={instagramVerified}
-            tikTokVerified={tikTokVerified}
-            website={website}
-            donation={donation}
-            created={created}
-            onUpdateBio={onUpdateBio}
-            onUpdateLocation={onUpdateLocation}
-            onUpdateTwitterHandle={onUpdateTwitterHandle}
-            onUpdateInstagramHandle={onUpdateInstagramHandle}
-            onUpdateTikTokHandle={onUpdateTikTokHandle}
-            onUpdateWebsite={onUpdateWebsite}
-            onUpdateDonation={onUpdateDonation}
-          />
-        )}
-      </Box>
-    </Box>
+    ></Box>
   )
 }
 

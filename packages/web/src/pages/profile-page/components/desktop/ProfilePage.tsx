@@ -67,8 +67,8 @@ import { getUserPageSEOFields } from 'utils/seo'
 import { DeactivatedProfileTombstone } from '../DeactivatedProfileTombstone'
 import { EditableName } from '../EditableName'
 
+import { ProfileLeftNav } from './ProfileLeftNav'
 import styles from './ProfilePage.module.css'
-import ProfileWrapping from './ProfileWrapping'
 import {
   COVER_PHOTO_HEIGHT_PX,
   PROFILE_LEFT_COLUMN_WIDTH_PX,
@@ -677,46 +677,10 @@ const ProfilePage = ({
       canonicalUrl={canonicalUrl}
       structuredData={structuredData}
       variant='flush'
-      contentClassName={styles.profilePageWrapper}
       scrollableSearch
       fromOpacity={1}
     >
-      <Box w='100%'>
-        {/* <ProfileWrapping
-          userId={userId}
-          isDeactivated={!!profile?.is_deactivated}
-          allowAiAttribution={!!profile?.allow_ai_attribution}
-          loading={status === Status.LOADING}
-          verified={verified}
-          profilePictureSizes={profilePictureSizes}
-          updatedProfilePicture={updatedProfilePicture}
-          hasProfilePicture={hasProfilePicture}
-          isOwner={isOwner}
-          isArtist={isArtist}
-          editMode={editMode}
-          name={name}
-          handle={handle}
-          bio={bio}
-          location={location}
-          twitterHandle={twitterHandle}
-          instagramHandle={instagramHandle}
-          tikTokHandle={tikTokHandle}
-          twitterVerified={!!twitterVerified}
-          instagramVerified={!!instagramVerified}
-          tikTokVerified={!!tikTokVerified}
-          website={website}
-          donation={donation}
-          created={created}
-          onUpdateName={updateName}
-          onUpdateProfilePicture={updateProfilePicture}
-          onUpdateBio={updateBio}
-          onUpdateLocation={updateLocation}
-          onUpdateTwitterHandle={updateTwitterHandle}
-          onUpdateInstagramHandle={updateInstagramHandle}
-          onUpdateTikTokHandle={updateTikTokHandle}
-          onUpdateWebsite={updateWebsite}
-          onUpdateDonation={updateDonation}
-        /> */}
+      <Box w='100%' pb='2xl'>
         <CoverPhoto
           userId={userId}
           updatedCoverPhoto={updatedCoverPhoto ? updatedCoverPhoto.url : ''}
@@ -807,7 +771,7 @@ const ProfilePage = ({
               columnGap={PROFILE_COLUMN_GAP}
             >
               <LeftColumnSpacer />
-              <DeactivatedProfileTombstone />
+              {status === Status.SUCCESS && <DeactivatedProfileTombstone />}
             </Flex>
           </Box>
         ) : (
@@ -882,13 +846,45 @@ const ProfilePage = ({
                 />
               </Flex>
             </Flex>
+            {/* Left side and Tab Content */}
             <Flex w='100%' justifyContent='center' pt='2xl'>
               <Flex
                 flex='1 1 100%'
                 columnGap={PROFILE_COLUMN_GAP}
                 css={{ maxWidth: MAX_PAGE_WIDTH_PX }}
               >
-                <LeftColumnSpacer />
+                {/* <LeftColumnSpacer /> */}
+                {/* TODO-NOW: don't conditionally render this */}
+                {userId && (
+                  <ProfileLeftNav
+                    userId={userId}
+                    isDeactivated={isDeactivated}
+                    loading={status === Status.LOADING}
+                    isOwner={isOwner}
+                    isArtist={isArtist}
+                    editMode={editMode}
+                    handle={handle}
+                    bio={bio}
+                    location={location}
+                    allowAiAttribution={!!profile?.allow_ai_attribution}
+                    twitterHandle={twitterHandle}
+                    instagramHandle={instagramHandle}
+                    tikTokHandle={tikTokHandle}
+                    twitterVerified={twitterVerified}
+                    instagramVerified={instagramVerified}
+                    tikTokVerified={tikTokVerified}
+                    website={website}
+                    donation={donation}
+                    created={created}
+                    onUpdateBio={updateBio}
+                    onUpdateLocation={updateLocation}
+                    onUpdateTwitterHandle={updateTwitterHandle}
+                    onUpdateInstagramHandle={updateInstagramHandle}
+                    onUpdateTikTokHandle={updateTikTokHandle}
+                    onUpdateWebsite={updateWebsite}
+                    onUpdateDonation={updateDonation}
+                  />
+                )}
                 <Box flex='1 1 100%'>{body}</Box>
               </Flex>
             </Flex>

@@ -20,6 +20,7 @@ import styles from './ProfilePage.module.css'
 import { RelatedArtists } from './RelatedArtists'
 import { SupportingList } from './SupportingList'
 import { TopSupporters } from './TopSupporters'
+import { PROFILE_LEFT_COLUMN_WIDTH_PX } from './constants'
 const { getUserId } = accountSelectors
 
 const messages = {
@@ -174,7 +175,12 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
   } else if (!loading && !isDeactivated) {
     const showUploadChip = isOwner && !isArtist
     return (
-      <Flex column gap='2xl'>
+      <Flex
+        column
+        gap='2xl'
+        w={PROFILE_LEFT_COLUMN_WIDTH_PX}
+        css={{ flexShrink: 0, textAlign: 'left' }}
+      >
         <ProfileBio
           userId={userId}
           handle={handle}
