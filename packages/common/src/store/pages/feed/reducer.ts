@@ -14,7 +14,6 @@ import { FeedFilter, Track } from '../../../models'
 import { FeedPageState } from './types'
 
 const initialState = {
-  suggestedFollows: [],
   feedFilter: FeedFilter.ALL,
   feed: feedLinupInitialState
 }

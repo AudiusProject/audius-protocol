@@ -86,6 +86,19 @@ docker-tag-images:
           done
     - docker-logout
 
+docker-vanity-tag-audiusd:
+  description: |
+    'Adds a semver tag to audius/audiusd:edge that corresponds to the newly released protocol version. '
+    'Makes reverting a bad protocol release easier.'
+  steps:
+    - install-crane
+    - docker-login
+    - run:
+        name:
+        command: |
+          [ -n "$exported_version_tag" ]
+          crane copy "audius/audiusd:edge" "audius/audiusd:${exported_version_tag}"
+
 docker-prune:
   description: 'Perform docker system prune based on disk usage'
   parameters:

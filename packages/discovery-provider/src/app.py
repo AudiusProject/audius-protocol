@@ -377,10 +377,6 @@ def configure_celery(celery, test_config=None):
                 "task": "index_oracles",
                 "schedule": timedelta(minutes=5),
             },
-            "index_rewards_manager": {
-                "task": "index_rewards_manager",
-                "schedule": timedelta(seconds=5),
-            },
             "index_user_listening_history": {
                 "task": "index_user_listening_history",
                 "schedule": timedelta(seconds=5),
@@ -532,7 +528,9 @@ def configure_celery(celery, test_config=None):
     # Start tasks that should fire upon startup
     celery.send_task("cache_current_nodes")
     celery.send_task("cache_entity_counts")
-    celery.send_task("index_nethermind", queue="index_nethermind")
+    if environment != "dev":
+        celery.send_task("index_nethermind", queue="index_nethermind")
+    celery.send_task("index_rewards_manager", queue="index_sol")
     celery.send_task("index_user_bank", queue="index_sol")
     celery.send_task("index_payment_router", queue="index_sol")
     celery.send_task("index_core", queue="index_core")

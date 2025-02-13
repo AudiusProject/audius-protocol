@@ -2,13 +2,6 @@ export * as addToCollectionUISelectors from './add-to-collection/selectors'
 export * as addToCollectionUIActions from './add-to-collection/actions'
 export { default as addToCollectionUIReducer } from './add-to-collection/reducer'
 
-export * as relatedArtistsUISelectors from './related-artists/selectors'
-export {
-  default as relatedArtistsUIReducer,
-  actions as relatedArtistsUIActions
-} from './related-artists/slice'
-export { default as relatedArtistsSagas } from './related-artists/sagas'
-
 export * as collectibleDetailsUISelectors from './collectible-details/selectors'
 export {
   default as collectibleDetailsUIReducer,

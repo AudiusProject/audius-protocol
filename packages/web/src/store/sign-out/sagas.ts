@@ -20,20 +20,25 @@ const { signOut: signOutAction } = signOutActions
 function* watchSignOut() {
   const localStorage = yield* getContext('localStorage')
   const authService = yield* getContext('authService')
-  yield takeLatest(signOutAction.type, function* () {
-    if (wagmiConfig.state.status === 'connected') {
-      yield call(disconnect, wagmiConfig)
+  yield takeLatest(
+    signOutAction.type,
+    function* (action: ReturnType<typeof signOutAction>) {
+      if (wagmiConfig.state.status === 'connected') {
+        yield call(disconnect, wagmiConfig)
+      }
+      yield put(resetAccount())
+      yield put(unsubscribeBrowserPushNotifications())
+      yield put(resetWalletState())
+      yield put(
+        make(Name.SETTINGS_LOG_OUT, {
+          callback: () => signOut(localStorage, authService)
+        })
+      )
+      if (!action?.payload?.fromOAuth) {
+        yield put(push(TRENDING_PAGE))
+      }
     }
-    yield put(resetAccount())
-    yield put(unsubscribeBrowserPushNotifications())
-    yield put(resetWalletState())
-    yield put(
-      make(Name.SETTINGS_LOG_OUT, {
-        callback: () => signOut(localStorage, authService)
-      })
-    )
-    yield put(push(TRENDING_PAGE))
-  })
+  )
 }
 
 export default function sagas() {

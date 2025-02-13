@@ -60,7 +60,10 @@ export const primeUserDataInternal = ({
       user.handle &&
       !queryClient.getQueryData(getUserByHandleQueryKey(user.handle))
     ) {
-      queryClient.setQueryData(getUserByHandleQueryKey(user.handle), user)
+      queryClient.setQueryData(
+        getUserByHandleQueryKey(user.handle),
+        user?.user_id
+      )
     }
 
     entries[Kind.USERS][user.user_id] = user

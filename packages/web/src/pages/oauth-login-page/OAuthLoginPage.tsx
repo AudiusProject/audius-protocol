@@ -258,7 +258,7 @@ export const OAuthLoginPage = () => {
   }
 
   const handleSignOut = () => {
-    dispatch(signOut())
+    dispatch(signOut({ fromOAuth: true }))
   }
 
   const { data: currentWeb3User } = useGetCurrentWeb3User({})

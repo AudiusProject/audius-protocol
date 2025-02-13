@@ -5,10 +5,14 @@ import {
   ChallengeRewardID,
   UndisbursedUserChallenge
 } from '~/models/AudioRewards'
+import { FeatureFlags } from '~/services'
+import { getOptimisticUserChallenges } from '~/store/challenges/selectors'
 import { audioRewardsPageSelectors } from '~/store/pages'
 import { isCooldownChallengeClaimable } from '~/utils/challenges'
 import dayjs, { Dayjs } from '~/utils/dayjs'
 import { utcToLocalTime } from '~/utils/timeUtil'
+
+import { useFeatureFlag } from '../useFeatureFlag'
 
 const { getUndisbursedUserChallenges } = audioRewardsPageSelectors
 
@@ -71,12 +75,31 @@ export const useChallengeCooldownSchedule = ({
   challengeId?: ChallengeRewardID
   multiple?: boolean
 }) => {
+  const { isEnabled: isEndlessListenStreakEnabled } = useFeatureFlag(
+    FeatureFlags.LISTEN_STREAK_ENDLESS
+  )
   const challenges = useSelector(getUndisbursedUserChallenges)
     .filter((c) => multiple || c.challenge_id === challengeId)
     .filter((c) => !TRENDING_CHALLENGE_IDS.has(c.challenge_id))
+    .filter((c) => isEndlessListenStreakEnabled || c.challenge_id !== 'e')
+
+  const optimisticChallenges = useSelector(getOptimisticUserChallenges)
+
+  // Filter out challenges that have been optimistically claimed
+  const filteredChallenges = challenges.filter((challenge) => {
+    const optimisticChallenge = optimisticChallenges[challenge.challenge_id]
+    // If there's no optimistic challenge or it has a claimable amount, keep the challenge
+    if (!optimisticChallenge || optimisticChallenge.claimableAmount > 0) {
+      return true
+    }
+    // Check if this specific specifier is still undisbursed
+    return optimisticChallenge.undisbursedSpecifiers.some(
+      (spec) => spec.specifier === challenge.specifier
+    )
+  })
 
   const [claimableChallenges, cooldownChallenges] = partition(
-    challenges,
+    filteredChallenges,
     isCooldownChallengeClaimable
   )
   const claimableAmount = sum(claimableChallenges.map((c) => c.amount))

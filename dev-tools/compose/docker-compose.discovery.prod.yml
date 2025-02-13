@@ -84,7 +84,7 @@ services:
       - discovery
 
   discovery-provider-elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.1
     environment:
       discovery.type: single-node
       xpack.security.enabled: false
@@ -156,8 +156,6 @@ services:
       retries: 180
     depends_on:
       db:
-        condition: service_healthy
-      poa-ganache:
         condition: service_healthy
       eth-ganache:
         condition: service_healthy

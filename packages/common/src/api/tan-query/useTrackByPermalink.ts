@@ -8,11 +8,8 @@ import { getUserId } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
-import { getTrackQueryKey, useTrack } from './useTrack'
+import { useTrack } from './useTrack'
 import { primeTrackData } from './utils/primeTrackData'
-
-// If the user edits a stale track, the optimistic update fails
-const STALE_TIME = Infinity
 
 export const getTrackByPermalinkQueryKey = (
   permalink: string | undefined | null
@@ -27,10 +24,6 @@ export const useTrackByPermalink = (
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
 
-  const isMutating = queryClient.isMutating({
-    mutationKey: getTrackByPermalinkQueryKey(permalink)
-  })
-
   const { data: trackId } = useQuery({
     queryKey: getTrackByPermalinkQueryKey(permalink),
     queryFn: async () => {
@@ -40,20 +33,20 @@ export const useTrackByPermalink = (
         userId: Id.parse(currentUserId)
       })
 
-      const track = data[0] ? userTrackMetadataFromSDK(data[0]) : null
+      if (data.length === 0) {
+        return null
+      }
+
+      const track = userTrackMetadataFromSDK(data[0])
 
       if (track) {
-        // Prime related entities
         primeTrackData({ tracks: [track], queryClient, dispatch })
-
-        // Prime track cache
-        queryClient.setQueryData(getTrackQueryKey(track.track_id), track)
       }
 
       return track?.track_id
     },
-    staleTime: options?.staleTime ?? STALE_TIME,
-    enabled: options?.enabled !== false && !!permalink && !isMutating
+    staleTime: options?.staleTime ?? Infinity,
+    enabled: options?.enabled !== false && !!permalink
   })
 
   return useTrack(trackId)

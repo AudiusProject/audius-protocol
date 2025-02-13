@@ -137,6 +137,11 @@ class SortMethod(str, enum.Enum):
     most_listens_by_user = "most_listens_by_user"
 
 
+class CollectionSortMethod(str, enum.Enum):
+    recent = "recent"
+    popular = "popular"
+
+
 class PurchaseSortMethod(str, enum.Enum):
     content_title = "content_title"
     artist_name = "artist_name"

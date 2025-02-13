@@ -1,22 +1,23 @@
-import { Fragment } from 'react'
+import { useCallback } from 'react'
 
-import { fetchAllFollowArtists } from 'common/store/pages/signon/actions'
-import type { StyleProp, ViewStyle } from 'react-native'
-import { FlatList, ScrollView, View } from 'react-native'
-import { useDispatch } from 'react-redux'
-import { useEffectOnce } from 'react-use'
+import { feedPageActions, feedPageLineupActions } from '@audius/common/store'
+import * as signOnActions from 'common/store/pages/signon/actions'
+import { getFollowIds } from 'common/store/pages/signon/selectors'
+import { Dimensions, FlatList, ScrollView, View } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 import { ContinueButton } from './ContinueButton'
-import { PickArtistsForMeButton } from './PickArtistsForMeButton'
-import { SelectArtistCategoryButtons } from './SelectArtistCategoryButtons'
 import { SuggestedArtistsList } from './SuggestedArtistsList'
+
+const { height } = Dimensions.get('window')
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
   root: {
-    flex: 1
+    flex: 1,
+    height: height - 220
   },
   header: {
     paddingHorizontal: spacing(4),
@@ -37,56 +38,47 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 }))
 
 const messages = {
-  title: 'Follow At Least 3 Artists To Get Started',
+  title: `Oops! There's nothing here.`,
   instruction:
     'Tracks uploaded or reposted by people you follow will appear in your feed.'
 }
 
-type SuggestedFollowsProps = {
-  style?: StyleProp<ViewStyle>
-  onArtistsSelected: () => void
-  title: string
-  screen: 'sign-on' | 'feed'
-}
-
-export const SuggestedFollows = (props: SuggestedFollowsProps) => {
-  const { style, onArtistsSelected, title, screen } = props
+export const SuggestedFollows = () => {
   const styles = useStyles()
   const dispatch = useDispatch()
 
-  useEffectOnce(() => {
-    dispatch(fetchAllFollowArtists())
-  })
+  const selectedUserIds = useSelector(getFollowIds)
+
+  const handleArtistsSelected = useCallback(() => {
+    // Set eager users and refetch lineup
+    dispatch(signOnActions.followArtists())
+    dispatch(feedPageLineupActions.fetchLineupMetadatas())
+    // Async go follow users
+    dispatch(feedPageActions.followUsers(selectedUserIds))
+  }, [dispatch, selectedUserIds])
 
   const headerElement = (
     <>
       <View style={styles.header}>
-        {title ? (
-          <Text variant='h1' color='secondary' style={styles.title}>
-            {title}
-          </Text>
-        ) : null}
+        <Text variant='h1' color='secondary' style={styles.title}>
+          {messages.title}
+        </Text>
         <Text variant='body1' style={styles.instruction}>
           {messages.instruction}
         </Text>
-        <SelectArtistCategoryButtons />
       </View>
-      <PickArtistsForMeButton />
     </>
   )
 
-  const InnerComponent = screen === 'sign-on' ? Fragment : ScrollView
-
   return (
-    <View style={[styles.root, style]}>
-      <InnerComponent>
-        {screen === 'feed' ? headerElement : null}
+    <View style={styles.root}>
+      <ScrollView>
         <SuggestedArtistsList
           FlatListComponent={FlatList}
-          ListHeaderComponent={screen === 'sign-on' ? headerElement : null}
+          ListHeaderComponent={headerElement}
         />
-      </InnerComponent>
-      <ContinueButton onPress={onArtistsSelected} />
+      </ScrollView>
+      <ContinueButton onPress={handleArtistsSelected} />
     </View>
   )
 }

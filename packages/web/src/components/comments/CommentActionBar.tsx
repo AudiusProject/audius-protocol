@@ -316,7 +316,7 @@ export const CommentActionBar = ({
 
   return (
     <Flex gap='l' alignItems='center'>
-      <Flex alignItems='center'>
+      <Flex alignItems='center' gap='xs'>
         {/* TODO: we should use FavoriteButton here */}
         <IconButton
           icon={IconHeart}

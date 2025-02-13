@@ -21,9 +21,9 @@ export const useUserByHandle = (
   options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
-  const dispatch = useDispatch()
-  const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
+  const queryClient = useQueryClient()
+  const dispatch = useDispatch()
 
   const { data: userId } = useQuery({
     queryKey: getUserByHandleQueryKey(handle),
@@ -36,16 +36,8 @@ export const useUserByHandle = (
       })
       const user = userMetadataListFromSDK(data)[0]
 
-      // Prime the user query cache with user data
-      if (user) {
-        primeUserData({
-          users: [user],
-          queryClient,
-          dispatch
-        })
-      }
-
-      return user?.user_id
+      primeUserData({ users: [user], queryClient, dispatch })
+      return user.user_id
     },
     ...options,
     enabled: options?.enabled !== false && !!handle

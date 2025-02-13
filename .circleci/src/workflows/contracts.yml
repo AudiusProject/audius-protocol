@@ -1,6 +1,0 @@
-when: << pipeline.parameters.run-contracts-workflow >>
-jobs:
-  - test:
-      name: test-contracts
-      context: Vercel
-      service: contracts

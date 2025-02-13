@@ -133,7 +133,8 @@ export const ChallengeRewardsTile = () => {
   // The referred challenge only needs a tile if the user was referred
   const hideReferredTile = !userChallenges.referred?.is_complete
   const rewardIds = useRewardIds({
-    referred: hideReferredTile
+    referred: hideReferredTile,
+    [ChallengeName.Referred]: hideReferredTile
   })
 
   useEffect(() => {
