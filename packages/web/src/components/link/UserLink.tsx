@@ -71,7 +71,7 @@ export const UserLink = (props: UserLinkProps) => {
 
   return popover && handle ? (
     <ArtistPopover
-      css={{ display: 'inline-flex', overflow: 'hidden' }}
+      css={{ display: 'inline-flex' }}
       handle={handle}
       component='span'
       mount={popoverMount}
