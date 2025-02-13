@@ -18,7 +18,7 @@ class AudiusLibsWrapper {
   }
 
   async init() {
-    let web3Config = undefined
+    let web3Config
     if (config.get('environment') !== 'development') {
       const dataWeb3 = await AudiusLibs.Utils.configureWeb3(
         web3ProviderUrl,
