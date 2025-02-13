@@ -618,5 +618,13 @@ export const notificationFromSDK = (
         ...formatBaseNotification(notification)
       }
     }
+    case 'listen_streak': {
+      const data = notification.actions[0].data
+      return {
+        type: NotificationType.ListenStreak,
+        streak: data.streak,
+        ...formatBaseNotification(notification)
+      }
+    }
   }
 }

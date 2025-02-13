@@ -176,6 +176,10 @@ export function* parseAndProcessNotifications(
       }
       userIdsToFetch = new Set([...userIdsToFetch, ...notification.userIds])
     }
+
+    // if (type === NotificationType.ListenStreak) {
+    //   userIdsToFetch.add(notification.userId)
+    // }
   })
 
   yield* waitForAccount()

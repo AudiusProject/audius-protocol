@@ -99,6 +99,9 @@ models/FullUserResponse.ts
 models/GetTipsResponse.ts
 models/Grant.ts
 models/HistoryResponseFull.ts
+models/ListenStreakNotification.ts
+models/ListenStreakNotificationAction.ts
+models/ListenStreakNotificationActionData.ts
 models/ManagedUser.ts
 models/ManagedUsersResponse.ts
 models/ManagersResponse.ts

@@ -16,6 +16,7 @@ from src.queries.get_notifications import (
     CreateTrackNotification,
     FollowerMilestoneNotification,
     FollowNotification,
+    ListenStreakNotification,
     Notification,
     NotificationAction,
     NotificationData,
@@ -741,6 +742,22 @@ def extend_comment_reaction(action: NotificationAction):
     }
 
 
+def extend_listen_streak(action: NotificationAction):
+    data: ListenStreakNotification = action["data"]  # type: ignore
+    return {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
+        "data": {
+            "streak": data["streak"],
+        },
+    }
+
+
 notification_action_handler = {
     "follow": extend_follow,
     "repost": extend_repost,
@@ -775,4 +792,5 @@ notification_action_handler = {
     "comment_thread": extend_comment_thread,
     "comment_mention": extend_comment_mention,
     "comment_reaction": extend_comment_reaction,
+    "listen_streak": extend_listen_streak,
 }

@@ -17,10 +17,10 @@ from src.utils.config import shared_config
 logger = logging.getLogger(__name__)
 env = shared_config["discprov"]["env"]
 
-NUM_DAYS_IN_STREAK = 7
+NUM_DAYS_IN_STREAK = 3
 
 base_timedelta = timedelta(days=1)
-if env == "stage":
+if env == "stage" or env == "dev":
     base_timedelta = timedelta(minutes=1)
 
 
@@ -91,7 +91,7 @@ class ChallengeListenEndlessStreakUpdater(ChallengeUpdater):
         # Otherwise, create a new specifier
         created_at = datetime.fromtimestamp(extra["created_at"])
         formatted_date = created_at.strftime("%Y%m%d")
-        if env == "stage":
+        if env == "stage" or env == "dev":
             formatted_date = created_at.strftime("%Y%m%d%H%M%S")
         return f"{hex(user_id)[2:]}_{formatted_date}"
 

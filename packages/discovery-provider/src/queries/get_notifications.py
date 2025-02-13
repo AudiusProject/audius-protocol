@@ -173,6 +173,7 @@ class NotificationType(str, Enum):
     COMMENT_THREAD = "comment_thread"
     COMMENT_MENTION = "comment_mention"
     COMMENT_REACTION = "comment_reaction"
+    LISTEN_STREAK = "listen_streak"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -476,6 +477,10 @@ class CommentReactionNotification(TypedDict):
     reacter_user_id: int
 
 
+class ListenStreakNotification(TypedDict):
+    streak: int
+
+
 NotificationData = Union[
     AnnouncementNotification,
     FollowNotification,
@@ -507,6 +512,7 @@ NotificationData = Union[
     CommentThreadNotification,
     CommentMentionNotification,
     CommentReactionNotification,
+    ListenStreakNotification,
 ]
 
 

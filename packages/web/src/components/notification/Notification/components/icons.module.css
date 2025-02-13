@@ -30,3 +30,8 @@
   height: 32px;
   width: 32px;
 }
+
+.iconEmoji {
+  font-size: var(--unit-6);
+  line-height: 1;
+}
