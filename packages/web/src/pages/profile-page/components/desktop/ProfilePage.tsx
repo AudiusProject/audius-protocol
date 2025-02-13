@@ -48,7 +48,7 @@ import UploadChip from 'components/upload/UploadChip'
 import useTabs, { TabHeader, useTabRecalculator } from 'hooks/useTabs/useTabs'
 import { BlockUserConfirmationModal } from 'pages/chat-page/components/BlockUserConfirmationModal'
 import { UnblockUserConfirmationModal } from 'pages/chat-page/components/UnblockUserConfirmationModal'
-import EmptyTab from 'pages/profile-page/components/EmptyTab'
+import EmptyTab from 'pages/profile-page/components/desktop/EmptyTab'
 import { getUserPageSEOFields } from 'utils/seo'
 
 import { DeactivatedProfileTombstone } from '../DeactivatedProfileTombstone'
