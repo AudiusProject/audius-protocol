@@ -183,6 +183,7 @@ from src.queries.get_users import get_users
 from src.queries.get_users_account import GetAccountArgs, get_account
 from src.queries.query_helpers import (
     CollectionLibrarySortMethod,
+    CollectionSortMethod,
     PurchaseSortMethod,
     SortDirection,
 )
@@ -926,7 +927,7 @@ class PlaylistsFull(Resource):
             limit=limit,
             offset=offset,
             kind="Playlist",
-            sort_method=sort_method
+            sort_method=sort_method,
         )
         playlists = get_playlists(args)
         playlists = list(map(extend_playlist, playlists))
@@ -1003,7 +1004,7 @@ class AlbumsFull(Resource):
             limit=limit,
             offset=offset,
             kind="Album",
-            sort_method=sort_method
+            sort_method=sort_method,
         )
         albums = get_playlists(args)
         albums = list(map(extend_playlist, albums))

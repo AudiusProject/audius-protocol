@@ -961,7 +961,7 @@ user_playlists_route_parser.add_argument(
     description="The sort method to use",
     type=str,
     default=CollectionSortMethod.recent,
-    choices=CollectionSortMethod._member_names_
+    choices=CollectionSortMethod._member_names_,
 )
 
 user_albums_route_parser = pagination_with_current_user_parser.copy()
@@ -971,7 +971,7 @@ user_albums_route_parser.add_argument(
     description="The sort method to use",
     type=str,
     default=CollectionSortMethod.recent,
-    choices=CollectionSortMethod._member_names_
+    choices=CollectionSortMethod._member_names_,
 )
 
 full_search_parser = pagination_with_current_user_parser.copy()
