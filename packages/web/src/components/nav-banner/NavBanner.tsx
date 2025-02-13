@@ -7,6 +7,7 @@ import {
   IconSort as SortIcon,
   Box
 } from '@audius/harmony'
+import { useMedia as useMediaQuery } from 'react-use'
 
 import { removeNullable } from 'utils/typeUtils'
 
@@ -31,6 +32,8 @@ const NavBanner = (props: NavBannerProps) => {
   const { tabs, onSortByRecent, onSortByPopular, dropdownDisabled, isArtist } =
     props
 
+  const hideSortButton = useMediaQuery('(max-width: 1200px)')
+
   const menuItems = [
     onSortByRecent
       ? {
@@ -47,12 +50,10 @@ const NavBanner = (props: NavBannerProps) => {
   ].filter(removeNullable)
 
   return (
-    // TODO-NOW: Might want to export NavBanner and StatBanner containers and content separately
     <Flex w='100%' justifyContent='space-between'>
       <Box w='100%'>{tabs}</Box>
 
-      {isArtist && (
-        // TODO-NOW: How do we do media queries to hide this if screen < 1140px?
+      {isArtist && !hideSortButton && (
         <Box alignSelf='center'>
           {!dropdownDisabled ? (
             <PopupMenu

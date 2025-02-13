@@ -25,7 +25,7 @@ import { useSelector } from 'react-redux'
 import { ArtistRecommendationsPopup } from 'components/artist-recommendations/ArtistRecommendationsPopup'
 import Stats, { StatProps } from 'components/stats/Stats'
 import SubscribeButton from 'components/subscribe-button/SubscribeButton'
-
+import { zIndex } from 'utils/zIndex'
 const { getChatPermissionsStatus } = chatSelectors
 
 const BUTTON_COLLAPSE_WIDTHS = {
@@ -300,7 +300,7 @@ export const StatBanner = (props: StatsBannerProps) => {
         justifyContent='flex-end'
         gap='s'
         alignItems='center'
-        css={{ zIndex: 3 }}
+        css={{ zIndex: zIndex.PROFILE_EDITABLE_COMPONENTS }}
       >
         {buttons}
       </Flex>

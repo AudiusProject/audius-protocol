@@ -61,11 +61,12 @@ import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import useTabs, { TabHeader, useTabRecalculator } from 'hooks/useTabs/useTabs'
 import { BlockUserConfirmationModal } from 'pages/chat-page/components/BlockUserConfirmationModal'
 import { UnblockUserConfirmationModal } from 'pages/chat-page/components/UnblockUserConfirmationModal'
-import EmptyTab from 'pages/profile-page/components/EmptyTab'
 import { getUserPageSEOFields } from 'utils/seo'
+import { zIndex } from 'utils/zIndex'
 
 import { DeactivatedProfileTombstone } from '../DeactivatedProfileTombstone'
 import { EditableName } from '../EditableName'
+import { EmptyTab } from '../EmptyTab'
 
 import { ProfileLeftNav } from './ProfileLeftNav'
 import styles from './ProfilePage.module.css'
@@ -540,7 +541,7 @@ const ProfilePage = ({
       }
     ]
     const elements = [
-      <div key={ProfilePageTabs.REPOSTS} className={styles.tiles}>
+      <Box w='100%' key={ProfilePageTabs.REPOSTS}>
         {renderProfileCompletionCard()}
         {(userFeed.status === Status.SUCCESS &&
           userFeed.entries.length === 0) ||
@@ -560,8 +561,8 @@ const ProfilePage = ({
             actions={feedActions}
           />
         )}
-      </div>,
-      <div key={ProfilePageTabs.PLAYLISTS} className={styles.cards}>
+      </Box>,
+      <Box w='100%' key={ProfilePageTabs.PLAYLISTS}>
         {playlists.length === 0 && !isOwner ? (
           <EmptyTab
             isOwner={isOwner}
@@ -574,7 +575,7 @@ const ProfilePage = ({
             cards={playlistCards}
           />
         )}
-      </div>
+      </Box>
     ]
 
     if (
@@ -590,7 +591,7 @@ const ProfilePage = ({
       })
 
       elements.push(
-        <div key={ProfilePageTabs.COLLECTIBLES} className={styles.tiles}>
+        <Box w='100%' key={ProfilePageTabs.COLLECTIBLES}>
           <CollectiblesPage
             userId={userId}
             name={name}
@@ -602,7 +603,7 @@ const ProfilePage = ({
             onLoad={recalculate}
             onSave={onSave}
           />
-        </div>
+        </Box>
       )
     }
 
@@ -706,7 +707,10 @@ const ProfilePage = ({
             flex='1 1 100%'
           >
             <Flex
-              css={{ flexShrink: 0, zIndex: 10 }}
+              css={{
+                flexShrink: 0,
+                zIndex: zIndex.PROFILE_EDITABLE_COMPONENTS
+              }}
               w={PROFILE_LEFT_COLUMN_WIDTH_PX}
               justifyContent='center'
             >
@@ -725,7 +729,8 @@ const ProfilePage = ({
                 onDrop={updateProfilePicture}
               />
             </Flex>
-            <Box
+            <Flex
+              column
               flex='1 1 100%'
               css={{
                 position: 'relative',
@@ -750,13 +755,15 @@ const ProfilePage = ({
                     onChange={updateName}
                     userId={userId}
                   />
-                  <div className={styles.handleWrapper}>
-                    <h2 className={styles.handle}>{handle}</h2>
+                  <Flex alignItems='center' columnGap='s'>
+                    <Text shadow='emphasis' variant='title' color='staticWhite'>
+                      {handle}
+                    </Text>
                     <FollowsYouBadge userId={userId} />
-                  </div>
+                  </Flex>
                 </>
               )}
-            </Box>
+            </Flex>
           </Flex>
         </Flex>
 
@@ -775,7 +782,7 @@ const ProfilePage = ({
             </Flex>
           </Box>
         ) : (
-          <Mask show={editMode} zIndex={2}>
+          <Mask show={editMode} zIndex={zIndex.PROFILE_EDIT_MASK}>
             {/* StatBanner */}
             <Flex
               h='unit14'
@@ -853,38 +860,34 @@ const ProfilePage = ({
                 columnGap={PROFILE_COLUMN_GAP}
                 css={{ maxWidth: MAX_PAGE_WIDTH_PX }}
               >
-                {/* <LeftColumnSpacer /> */}
-                {/* TODO-NOW: don't conditionally render this */}
-                {userId && (
-                  <ProfileLeftNav
-                    userId={userId}
-                    isDeactivated={isDeactivated}
-                    loading={status === Status.LOADING}
-                    isOwner={isOwner}
-                    isArtist={isArtist}
-                    editMode={editMode}
-                    handle={handle}
-                    bio={bio}
-                    location={location}
-                    allowAiAttribution={!!profile?.allow_ai_attribution}
-                    twitterHandle={twitterHandle}
-                    instagramHandle={instagramHandle}
-                    tikTokHandle={tikTokHandle}
-                    twitterVerified={twitterVerified}
-                    instagramVerified={instagramVerified}
-                    tikTokVerified={tikTokVerified}
-                    website={website}
-                    donation={donation}
-                    created={created}
-                    onUpdateBio={updateBio}
-                    onUpdateLocation={updateLocation}
-                    onUpdateTwitterHandle={updateTwitterHandle}
-                    onUpdateInstagramHandle={updateInstagramHandle}
-                    onUpdateTikTokHandle={updateTikTokHandle}
-                    onUpdateWebsite={updateWebsite}
-                    onUpdateDonation={updateDonation}
-                  />
-                )}
+                <ProfileLeftNav
+                  userId={userId}
+                  isDeactivated={isDeactivated}
+                  loading={status === Status.LOADING}
+                  isOwner={isOwner}
+                  isArtist={isArtist}
+                  editMode={editMode}
+                  handle={handle}
+                  bio={bio}
+                  location={location}
+                  allowAiAttribution={!!profile?.allow_ai_attribution}
+                  twitterHandle={twitterHandle}
+                  instagramHandle={instagramHandle}
+                  tikTokHandle={tikTokHandle}
+                  twitterVerified={twitterVerified}
+                  instagramVerified={instagramVerified}
+                  tikTokVerified={tikTokVerified}
+                  website={website}
+                  donation={donation}
+                  created={created}
+                  onUpdateBio={updateBio}
+                  onUpdateLocation={updateLocation}
+                  onUpdateTwitterHandle={updateTwitterHandle}
+                  onUpdateInstagramHandle={updateInstagramHandle}
+                  onUpdateTikTokHandle={updateTikTokHandle}
+                  onUpdateWebsite={updateWebsite}
+                  onUpdateDonation={updateDonation}
+                />
                 <Box flex='1 1 100%'>{body}</Box>
               </Flex>
             </Flex>
