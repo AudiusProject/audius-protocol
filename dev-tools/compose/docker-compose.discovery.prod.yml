@@ -157,8 +157,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      poa-ganache:
-        condition: service_healthy
       eth-ganache:
         condition: service_healthy
       solana-test-validator:

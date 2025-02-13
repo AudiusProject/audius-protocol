@@ -48,20 +48,6 @@ services:
         limits:
           memory: 3G
 
-  poa-ganache:
-    image: audius/poa-ganache:latest
-    command: bash /tmp/dev-tools/startup/poa-ganache.sh
-    volumes:
-      - poa-contracts-abis:/usr/src/app/build/contracts
-      - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
-    logging: *default-logging
-    deploy:
-      mode: global
-    profiles:
-      - tests
-      - chain
-      - poa
-
   eth-ganache:
     image: audius/eth-ganache:latest
     command: bash /tmp/dev-tools/startup/eth-ganache.sh
@@ -204,29 +190,6 @@ services:
       mode: global
     profiles:
       - tests
-
-  # contracts
-  test-contracts:
-    user: ${DOCKER_UID:-root}:${DOCKER_GID:-root}
-    build:
-      context: ${PROJECT_ROOT}/contracts
-      dockerfile: Dockerfile
-      args:
-        bootstrapSPIds: ${BOOTSTRAP_SP_IDS}
-        bootstrapSPDelegateWallets: ${BOOTSTRAP_SP_DELEGATE_WALLETS}
-        bootstrapSPOwnerWallets: ${BOOTSTRAP_SP_OWNER_WALLETS}
-    entrypoint: sh -c '[ "$$1" = "test" ] || sleep inf && (shift; npm run test)' -
-    logging: *default-logging
-    deploy:
-      mode: global
-    depends_on:
-      poa-ganache:
-        condition: service_healthy
-    profiles:
-      - poa
-    volumes:
-      - ${PROJECT_ROOT}/contracts:/usr/src/app
-      - /usr/src/app/node_modules
 
   # eth-contracts
   test-eth-contracts:

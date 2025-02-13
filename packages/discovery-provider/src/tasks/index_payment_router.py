@@ -1005,7 +1005,7 @@ def process_payment_router_txs() -> None:
 
 
 # ####### CELERY TASKS ####### #
-@celery.task(name="index_payment_router", time_limit=300, bind=True)
+@celery.task(name="index_payment_router", rate_limit="5/s", time_limit=300, bind=True)
 @save_duration_metric(metric_group="celery_task")
 def index_payment_router(self):
     # Cache custom task class properties
@@ -1040,4 +1040,4 @@ def index_payment_router(self):
     finally:
         if have_lock:
             update_lock.release()
-        celery.send_task("index_payment_router", countdown=0.5, queue="index_sol")
+        celery.send_task("index_payment_router", queue="index_sol")

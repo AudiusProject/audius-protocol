@@ -162,7 +162,7 @@ export const TextAreaV2 = forwardRef<HTMLTextAreaElement, TextAreaV2Props>(
               <div className={styles.bottomRight}>
                 <div
                   className={styles.children}
-                  style={{ height: `${sizeToLineHeight[size]}px` }}
+                  css={{ height: sizeToLineHeight[size] }}
                 >
                   {children}
                 </div>

@@ -51,3 +51,16 @@ export const readAAOState = async (
     return null
   }
 }
+
+export const getCoreIndexerHealth = async (): Promise<any | null> => {
+  try {
+    const cacheKey = "core:indexer:health"
+    const redis = await getRedisConnection()
+    const cacheValue = await redis.get(cacheKey)
+    if (cacheValue === null) return null
+    return JSON.parse(cacheValue)
+  } catch (e) {
+    logger.error({ err: e }, 'could not read core health state')
+    return null
+  }
+}

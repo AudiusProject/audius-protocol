@@ -23,7 +23,6 @@ x-common: &common
     - 'audius-protocol-identity-service-1:host-gateway'
     - 'audius-protocol-solana-test-validator-1:host-gateway'
     - 'audius-protocol-eth-ganache-1:host-gateway'
-    - 'audius-protocol-poa-ganache-1:host-gateway'
     - 'audius-protocol-pedalboard:host-gateway'
   deploy:
     resources:
@@ -217,12 +216,6 @@ services:
     <<: *common
 
   # Blockchain
-
-  poa-ganache:
-    extends:
-      file: docker-compose.blockchain.yml
-      service: poa-ganache
-    <<: *common
 
   eth-ganache:
     extends:

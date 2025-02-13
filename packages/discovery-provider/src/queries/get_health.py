@@ -22,6 +22,7 @@ from src.queries.get_oldest_unarchived_play import get_oldest_unarchived_play
 from src.queries.get_sol_plays import get_sol_play_health_info
 from src.queries.get_trusted_notifier_discrepancies import get_delist_statuses_ok
 from src.tasks.index_core import (
+    CoreHealth,
     core_health_check_cache_key,
     core_listens_health_check_cache_key,
 )
@@ -263,7 +264,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         latest_indexed_block_num = db_block_state["number"] or 0
         latest_indexed_block_hash = db_block_state["blockhash"]
 
-    core_health = get_core_health(redis=redis)
+    core_health: CoreHealth = get_core_health(redis=redis)
     core_listens_health = get_core_listens_health(
         redis=redis, plays_count_max_drift=plays_count_max_drift
     )
@@ -272,6 +273,13 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     play_health_info = get_play_health_info(redis, plays_count_max_drift)
     if indexing_plays_with_core:
         play_health_info = core_listens_health
+
+    indexing_entity_manager_with_core = core_health and core_health.get(
+        "indexing_entity_manager"
+    )
+    if indexing_entity_manager_with_core:
+        latest_indexed_block_num = core_health.get("latest_indexed_block") or -1
+        latest_block_num = core_health.get("latest_chain_block") or -1
 
     user_bank_health_info = get_solana_indexer_status(
         redis, redis_keys.solana.user_bank, user_bank_max_drift
@@ -504,8 +512,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         errors.append("unhealthy delist statuses")
 
     chain_health = health_results["chain_health"]
-    if "audiusindex" in url:
-        chain_health["status"] = "Healthy"
     if chain_health and chain_health["status"] == "Unhealthy":
         errors.append("unhealthy chain")
 

@@ -26,11 +26,16 @@ export let web3: providers.JsonRpcProvider
 export let wallets: WalletManager
 
 const main = async () => {
-  // async config
-  const connectedWeb3 = await connectWeb3(config)
-  web3 = connectedWeb3.web3
-  config.acdcChainId = connectedWeb3.chainId.toString()
-  wallets = new WalletManager(web3)
+  if (config.environment !== "dev") {
+    // async config
+    const connectedWeb3 = await connectWeb3(config)
+    web3 = connectedWeb3.web3
+    config.acdcChainId = connectedWeb3.chainId.toString()
+    wallets = new WalletManager(web3)
+  } else {
+    // needs to stay so decoding can happen correctly
+    config.acdcChainId = "1337"
+  }
 
   // start webserver after async config
   const { serverHost, serverPort } = config

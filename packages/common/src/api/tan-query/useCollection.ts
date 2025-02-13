@@ -1,16 +1,14 @@
-import { Id, OptionalId } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
-import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
 import { ID } from '~/models'
+import { UserCollectionMetadata } from '~/models/Collection'
 
+import { getCollectionsBatcher } from './batchers/getCollectionsBatcher'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
-import { getCollectionByPermalinkQueryKey } from './useCollectionByPermalink'
 import { useCurrentUserId } from './useCurrentUserId'
-import { primeCollectionData } from './utils/primeCollectionData'
 
 export const getCollectionQueryKey = (collectionId: ID | null | undefined) => [
   QUERY_KEYS.collection,
@@ -26,39 +24,19 @@ export const useCollection = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  return useQuery({
+  return useQuery<UserCollectionMetadata | null>({
     queryKey: getCollectionQueryKey(collectionId),
     queryFn: async () => {
       const sdk = await audiusSdk()
-      const { data } = await sdk.full.playlists.getPlaylist({
-        playlistId: Id.parse(collectionId),
-        userId: OptionalId.parse(currentUserId)
+      const batchGetCollections = getCollectionsBatcher({
+        sdk,
+        currentUserId,
+        queryClient,
+        dispatch
       })
-
-      if (!data?.[0]) return null
-      const collection = userCollectionMetadataFromSDK(data[0])
-
-      if (collection) {
-        // Prime related entities
-        primeCollectionData({
-          collections: [collection],
-          queryClient,
-          dispatch
-        })
-
-        // Prime collectionByPermalink cache if we have a permalink
-        if (collection.permalink) {
-          queryClient.setQueryData(
-            getCollectionByPermalinkQueryKey(collection.permalink),
-            collection
-          )
-        }
-      }
-
-      return collection
+      return await batchGetCollections.fetch(collectionId!)
     },
-    staleTime: options?.staleTime ?? Infinity,
-    gcTime: Infinity,
+    ...options,
     enabled: options?.enabled !== false && !!collectionId
   })
 }

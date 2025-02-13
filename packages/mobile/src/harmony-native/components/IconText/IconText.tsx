@@ -6,15 +6,11 @@ import type { IconTextProps } from './types'
 
 export const IconText = ({
   children,
-  color = 'default',
+  color = 'subdued',
   icons = []
 }: IconTextProps) => {
   const separator = (
-    <Text
-      variant='body'
-      color='default'
-      style={{ fontSize: 8, lineHeight: 20 }}
-    >
+    <Text variant='body' color={color} style={{ fontSize: 8, lineHeight: 20 }}>
       •
     </Text>
   )
