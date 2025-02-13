@@ -191,11 +191,6 @@ services:
     profiles:
       - tests
 
-  # contracts
-  test-contracts:
-    image: busybox:1.31.1
-    entrypoint: ["sh", "-c", "exit 0"]
-
   # eth-contracts
   test-eth-contracts:
     user: ${DOCKER_UID:-root}:${DOCKER_GID:-root}
