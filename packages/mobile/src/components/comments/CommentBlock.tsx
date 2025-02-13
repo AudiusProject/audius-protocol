@@ -115,7 +115,7 @@ export const CommentBlockInternal = (
                 <ArtistPick isLiked={isArtistReacted} isPinned={isPinned} />
               ) : null}
               {!isTombstone ? (
-                <Flex direction='row' gap='s' alignItems='center' w='65%'>
+                <Flex direction='row' gap='s' alignItems='center'>
                   {isLoadingUser ? <Skeleton width={80} height={18} /> : null}
                   {userId !== undefined && !isLoadingUser ? (
                     <UserLink
