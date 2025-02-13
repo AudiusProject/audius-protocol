@@ -42,7 +42,8 @@ export enum Feature {
   Chats = 'chats',
   Social = 'social',
   Notifications = 'notifications',
-  Rewards = 'rewards'
+  Rewards = 'rewards',
+  Edit = 'edit'
 }
 
 export type ReportToSentryArgs = {
