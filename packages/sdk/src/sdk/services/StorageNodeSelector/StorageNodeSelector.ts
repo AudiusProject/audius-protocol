@@ -2,7 +2,6 @@ import { productionConfig } from '../../config/production'
 import fetch from '../../utils/fetch'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { RendezvousHash } from '../../utils/rendezvous'
-import type { AudiusWalletClient } from '../AudiusWalletClient'
 import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 import type { HealthCheckResponseData } from '../DiscoveryNodeSelector/healthCheckTypes'
 import type { LoggerService } from '../Logger'
@@ -20,7 +19,6 @@ const DISCOVERY_RESPONSE_TIMEOUT = 15000
 
 export class StorageNodeSelector implements StorageNodeSelectorService {
   private readonly config: StorageNodeSelectorConfigInternal
-  private readonly audiusWalletClient: AudiusWalletClient
   private readonly logger: LoggerService
   private nodes: StorageNode[]
   private orderedNodes?: string[] // endpoints (lowercase)
@@ -37,7 +35,6 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
       getDefaultStorageNodeSelectorConfig(productionConfig)
     )
     this.discoveryNodeSelector = config.discoveryNodeSelector
-    this.audiusWalletClient = config.audiusWalletClient
 
     this.logger = this.config.logger.createPrefixedLogger(
       '[storage-node-selector]'
@@ -145,9 +142,7 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
 
   private async selectUntilEndOfList(): Promise<string | undefined> {
     if (!this.orderedNodes?.length) {
-      this.orderedNodes = this.orderNodes(
-        (await this.audiusWalletClient.getAddresses())[0]!.toLowerCase()
-      )
+      this.orderedNodes = this.orderNodes(new Date().toString())
     }
 
     if (this.orderedNodes.length === 0) {

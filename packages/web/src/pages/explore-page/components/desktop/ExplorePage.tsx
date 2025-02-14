@@ -1,19 +1,11 @@
 import { useCallback } from 'react'
 
-import { useFeaturedPlaylists, useFeaturedProfiles } from '@audius/common/api'
-import {
-  Variant as CollectionVariant,
-  UserCollection,
-  User,
-  Variant
-} from '@audius/common/models'
+import { Variant as CollectionVariant, Variant } from '@audius/common/models'
 import { ExploreCollectionsVariant } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { IconExplore } from '@audius/harmony'
-import Lottie from 'lottie-react'
 import { useNavigate } from 'react-router-dom-v5-compat'
 
-import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import {
   HEAVY_ROTATION,
   BEST_NEW_RELEASES,
@@ -44,18 +36,14 @@ import {
 } from 'pages/explore-page/collections'
 import { BASE_URL, stripBaseUrl } from 'utils/route'
 
-import { CollectionArtCard } from './CollectionArtCard'
 import styles from './ExplorePage.module.css'
+import { FeaturedPlaylists } from './FeaturedPlaylists'
+import { FeaturedProfiles } from './FeaturedProfiles'
 import Section, { Layout } from './Section'
-import UserArtCard from './UserArtCard'
 
 const { EXPLORE_PAGE } = route
 
 const messages = {
-  featuredPlaylists: 'Playlists We Love Right Now',
-  featuredProfiles: 'Artists You Should Follow',
-  exploreMorePlaylists: 'Explore More Playlists',
-  exploreMoreProfiles: 'Explore More Artists',
   justForYou: 'Just For You',
   justForYouSubtitle: `Content curated for you based on your likes,
 reposts, and follows. Refreshes often so if you like a track, favorite it.`,
@@ -98,12 +86,6 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
       tile.variant === ExploreCollectionsVariant.DIRECT_LINK &&
       tile.title === PREMIUM_TRACKS.title
     return !isPremiumTracksTile || isUSDCPurchasesEnabled
-  })
-
-  const { data: playlists, isLoading: isLoadingPlaylists } =
-    useFeaturedPlaylists({ limit: 4 })
-  const { data: profiles, isLoading: isLoadingProfiles } = useFeaturedProfiles({
-    limit: 4
   })
 
   const navigate = useNavigate()
@@ -194,48 +176,8 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
         ))}
       </Section>
 
-      <Section
-        title={messages.featuredPlaylists}
-        expandable
-        expandText={messages.exploreMorePlaylists}
-      >
-        {isLoadingPlaylists ? (
-          <div className={styles.loadingSpinner}>
-            <Lottie loop autoplay animationData={loadingSpinner} />
-          </div>
-        ) : (
-          playlists?.map((playlist: UserCollection) => {
-            return (
-              <CollectionArtCard
-                key={playlist.playlist_id}
-                id={playlist.playlist_id}
-              />
-            )
-          })
-        )}
-      </Section>
-
-      <Section
-        title={messages.featuredProfiles}
-        expandable
-        expandText={messages.exploreMoreProfiles}
-      >
-        {isLoadingProfiles ? (
-          <div className={styles.loadingSpinner}>
-            <Lottie loop autoplay animationData={loadingSpinner} />
-          </div>
-        ) : (
-          profiles?.map((profile: User, i: number) => {
-            return (
-              <UserArtCard
-                key={profile.user_id}
-                id={profile.user_id}
-                index={i}
-              />
-            )
-          })
-        )}
-      </Section>
+      <FeaturedPlaylists />
+      <FeaturedProfiles />
     </Page>
   )
 }

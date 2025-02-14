@@ -17,6 +17,8 @@ from src.utils.config import shared_config
 logger = logging.getLogger(__name__)
 env = shared_config["discprov"]["env"]
 
+NUM_DAYS_IN_STREAK = 7
+
 base_timedelta = timedelta(days=1)
 if env == "stage":
     base_timedelta = timedelta(minutes=1)
@@ -34,7 +36,7 @@ def get_listen_streak_override(session: Session, user_id: int) -> Optional[int]:
 
     # If last_listen_date is over 48 hrs, return zero
     current_datetime = datetime.now()
-    if current_datetime - user_listen_challenge.last_listen_date >= timedelta(days=2):
+    if current_datetime - user_listen_challenge.last_listen_date >= base_timedelta * 2:
         return 0
     return None
 
@@ -51,14 +53,32 @@ class ChallengeListenEndlessStreakUpdater(ChallengeUpdater):
         )
         listen_streaks = get_listen_streak_challenges(session, [user_id])
         listen_streak = listen_streaks[0] if listen_streaks else None
+        time_since_last_listen = (
+            created_at - listen_streak.last_listen_date
+            if listen_streak is not None and listen_streak.last_listen_date is not None
+            else None
+        )
 
-        # If existing incomplete listen streak (< 7 days) is not broken, use the existing challenge metadata
+        # This is a bit tricky:
+        # - Don't create a new user_challenge row if there is an existing incomplete 7-day listen
+        #   streak row that's within the last 2 days, because we want to update that row instead.
+        # - If the user has already completed the 7-day challenge, and the next user_challenge row
+        #   is going to be a 1-amount row, we should create that row only if the new play event is
+        #   outside the 1-day window since the last listen date. See the comment above _handle_track_listens
+        #   for more details.
         if (
             most_recent_challenge is not None
-            and not most_recent_challenge.is_complete
-            and listen_streak is not None
-            and listen_streak.last_listen_date is not None
-            and created_at - listen_streak.last_listen_date <= timedelta(days=2)
+            and time_since_last_listen is not None
+            and (
+                (
+                    most_recent_challenge.is_complete
+                    and time_since_last_listen <= base_timedelta
+                )
+                or (
+                    not most_recent_challenge.is_complete
+                    and time_since_last_listen <= base_timedelta * 2
+                )
+            )
         ):
             return most_recent_challenge
         return None
@@ -71,6 +91,8 @@ class ChallengeListenEndlessStreakUpdater(ChallengeUpdater):
         # Otherwise, create a new specifier
         created_at = datetime.fromtimestamp(extra["created_at"])
         formatted_date = created_at.strftime("%Y%m%d")
+        if env == "stage":
+            formatted_date = created_at.strftime("%Y%m%d%H%M%S")
         return f"{hex(user_id)[2:]}_{formatted_date}"
 
     def should_create_new_challenge(
@@ -104,19 +126,21 @@ class ChallengeListenEndlessStreakUpdater(ChallengeUpdater):
             matching_partial_challenge = completion_map[user_challenge.user_id]
             # For endless streak challenges - these rows should only have amount/step_count = 1
             if (
-                matching_partial_challenge.listen_streak > 7
+                matching_partial_challenge.listen_streak > NUM_DAYS_IN_STREAK
                 and user_challenge.current_step_count == 0
             ):
                 user_challenge.amount = 1
                 user_challenge.current_step_count = 1
                 user_challenge.is_complete = True
-            # For first normal listen streak challenge - amount/step_count get updated as streak progresses
+            # For first 7-day listen streak challenge - amount/step_count get updated as streak progresses
             else:
-                user_challenge.amount = 7
+                user_challenge.amount = NUM_DAYS_IN_STREAK
                 user_challenge.current_step_count = (
                     matching_partial_challenge.listen_streak
                 )
-                user_challenge.is_complete = user_challenge.current_step_count >= 7
+                user_challenge.is_complete = (
+                    user_challenge.current_step_count >= NUM_DAYS_IN_STREAK
+                )
 
     def on_after_challenge_creation(
         self, session: Session, metadatas: List[FullEventMetadata]
@@ -147,7 +171,9 @@ class ChallengeListenEndlessStreakUpdater(ChallengeUpdater):
         if new_listen_streak_challenges:
             session.add_all(new_listen_streak_challenges)
 
-    # Helpers
+    # Note that the ChallengeListenStreak table doesn't necessarily contain the user's most recent
+    # listen date. It only updates the last listen date if the new play event is more than 24 hours
+    # since the last listen date.
     def _handle_track_listens(
         self,
         partial_completions: List[ChallengeListenStreak],
@@ -163,7 +189,7 @@ class ChallengeListenEndlessStreakUpdater(ChallengeUpdater):
             if last_date is None:
                 partial_completion.last_listen_date = new_date
                 partial_completion.listen_streak = 1
-            # If last timestamp is more than 24 hours ago, update streak
+            # If last timestamp is more than 24 hours ago, update streak.
             elif new_date - last_date >= base_timedelta:
                 partial_completion.last_listen_date = new_date
                 # Check if the user lost their streak

@@ -3,6 +3,7 @@ services:
     container_name: audiusd
     image: audius/audiusd:prerelease
     restart: unless-stopped
+    pull_policy: always
     profiles:
       - discovery
       - storage

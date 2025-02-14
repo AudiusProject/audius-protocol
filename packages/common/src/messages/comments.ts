@@ -5,10 +5,11 @@ export const commentsMessages = {
   title: 'Comments',
   postComment: 'Post Comment',
   addComment: 'Add a comment',
-  noComments: 'Nothing here yet. Be the first to comment!',
-  noCommentsOwner:
+  noComments: 'Nothing here yet',
+  noCommentsPreview: 'Nothing here yet. Be the first to comment!',
+  noCommentsPreviewOwner:
     'Get the conversation started! Leave a comment to encourage others to join in.',
-  noCommentsDescription: 'Be the first to comment on this track',
+  noCommentsDescription: 'Be the first to comment on this track!',
   viewAll: 'View All',
   showMoreReplies: 'Show More Replies',
   reply: 'Reply',

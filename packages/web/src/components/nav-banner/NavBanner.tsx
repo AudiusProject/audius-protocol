@@ -1,11 +1,16 @@
 import { ReactElement } from 'react'
 
-import { Flex, Button, PopupMenu, IconSort as SortIcon } from '@audius/harmony'
-import cn from 'classnames'
+import {
+  Flex,
+  Button,
+  PopupMenu,
+  IconSort as SortIcon,
+  Box
+} from '@audius/harmony'
+import { useMedia as useMediaQuery } from 'react-use'
 
+import { MAX_PAGE_WIDTH_PX } from 'common/utils/layout'
 import { removeNullable } from 'utils/typeUtils'
-
-import styles from './NavBanner.module.css'
 
 const messages = {
   sortByRecent: 'Sort by Recent',
@@ -16,7 +21,6 @@ const messages = {
 type NavBannerProps = {
   tabs?: ReactElement
   dropdownDisabled?: boolean
-  empty?: boolean
   onChange?: (tab?: any) => void
   onSortByRecent?: () => void
   onSortByPopular?: () => void
@@ -26,15 +30,13 @@ type NavBannerProps = {
 }
 
 const NavBanner = (props: NavBannerProps) => {
-  const {
-    tabs,
-    onSortByRecent,
-    onSortByPopular,
-    shouldMaskContent,
-    dropdownDisabled,
-    isArtist,
-    empty
-  } = props
+  const { tabs, onSortByRecent, onSortByPopular, dropdownDisabled, isArtist } =
+    props
+
+  // Only show sort button at full width to avoid crowding the tabs
+  const hideSortButton = useMediaQuery(
+    `(max-width: ${MAX_PAGE_WIDTH_PX + 120}px)`
+  )
 
   const menuItems = [
     onSortByRecent
@@ -52,40 +54,35 @@ const NavBanner = (props: NavBannerProps) => {
   ].filter(removeNullable)
 
   return (
-    <Flex h={48} w='100%' justifyContent='center'>
-      <div className={styles.background} />
-      {!empty ? (
-        <div
-          className={cn(styles.navBanner, {
-            overflowVisible: !shouldMaskContent
-          })}
-        >
-          <div className={styles.tabs}>{tabs}</div>
+    <Flex w='100%' justifyContent='space-between'>
+      <Box w='100%'>{tabs}</Box>
 
-          {isArtist && (
-            <div className={styles.dropdown}>
-              {!dropdownDisabled ? (
-                <PopupMenu
-                  items={menuItems}
-                  anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-                  renderTrigger={(ref, triggerPopup) => (
-                    <Button
-                      ref={ref}
-                      size='small'
-                      variant='secondary'
-                      iconLeft={SortIcon}
-                      aria-label={messages.openSortButton}
-                      onClick={() => triggerPopup()}
-                    />
-                  )}
+      {isArtist && !hideSortButton && (
+        <Box alignSelf='center'>
+          {!dropdownDisabled ? (
+            <PopupMenu
+              items={menuItems}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+              renderTrigger={(ref, triggerPopup) => (
+                <Button
+                  ref={ref}
+                  size='small'
+                  variant='secondary'
+                  iconLeft={SortIcon}
+                  aria-label={messages.openSortButton}
+                  onClick={() => triggerPopup()}
                 />
-              ) : null}
-            </div>
-          )}
-        </div>
-      ) : null}
+              )}
+            />
+          ) : null}
+        </Box>
+      )}
     </Flex>
   )
 }
+
+export const EmptyNavBanner = () => (
+  <Box h='unit12' w='100%' backgroundColor='white' />
+)
 
 export default NavBanner

@@ -26,14 +26,10 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
   const userId = yield* select(accountSelectors.getUserId)
   const encodedUserId = Id.parse(userId)
 
-  const isUSDCPurchasesEnabled = yield* call(
+  const isOneShotEnabled = yield* call(getFeatureEnabled, FeatureFlags.ONE_SHOT)
+  const isListenStreakEndlessEnabled = yield* call(
     getFeatureEnabled,
-    FeatureFlags.USDC_PURCHASES
-  )
-
-  const isCommentsEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.COMMENTS_ENABLED
+    FeatureFlags.LISTEN_STREAK_ENDLESS
   )
 
   const validTypes = [
@@ -42,15 +38,15 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
     ValidTypes.TrendingPlaylist,
     ValidTypes.TrendingUnderground,
     ValidTypes.Tastemaker,
-    isUSDCPurchasesEnabled ? ValidTypes.UsdcPurchaseBuyer : null,
-    isUSDCPurchasesEnabled ? ValidTypes.UsdcPurchaseSeller : null,
+    ValidTypes.UsdcPurchaseBuyer,
+    ValidTypes.UsdcPurchaseSeller,
     ValidTypes.TrackAddedToPurchasedAlbum,
     ValidTypes.RequestManager,
     ValidTypes.ApproveManagerRequest,
-    isCommentsEnabled ? ValidTypes.Comment : null,
-    isCommentsEnabled ? ValidTypes.CommentThread : null,
-    isCommentsEnabled ? ValidTypes.CommentMention : null,
-    isCommentsEnabled ? ValidTypes.CommentReaction : null,
+    ValidTypes.Comment,
+    ValidTypes.CommentThread,
+    ValidTypes.CommentMention,
+    ValidTypes.CommentReaction,
     ValidTypes.ClaimableReward
   ].filter(removeNullable)
 
@@ -68,5 +64,18 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
     ? transformAndCleanList(data.notifications, notificationFromSDK)
     : []
 
-  return { notifications, totalUnviewed: data?.unreadCount ?? 0 }
+  const oneShotFilteredNotifications = isOneShotEnabled
+    ? notifications
+    : notifications.filter((n) => !n.groupId?.includes('challenge:o'))
+
+  const listenStreakEndlessFilteredNotifications = isListenStreakEndlessEnabled
+    ? oneShotFilteredNotifications
+    : oneShotFilteredNotifications.filter(
+        (n) => !n.groupId?.includes('challenge:e')
+      )
+
+  return {
+    notifications: listenStreakEndlessFilteredNotifications,
+    totalUnviewed: data?.unreadCount ?? 0
+  }
 }

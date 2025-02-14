@@ -57,7 +57,7 @@ const sanitizeHandle = (handle: string) => {
 
 type SocialLinkInputProps = {
   type: Type
-  className: string
+  className?: string
   defaultValue: string
   onChange: (value: string) => void
   isDisabled?: boolean

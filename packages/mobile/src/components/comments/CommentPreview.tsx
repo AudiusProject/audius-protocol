@@ -115,7 +115,9 @@ const CommentPreviewContent = (props: CommentPreviewContentProps) => {
     return (
       <Flex gap='m'>
         <Text variant='body'>
-          {isEntityOwner ? messages.noCommentsOwner : messages.noComments}
+          {isEntityOwner
+            ? messages.noCommentsPreviewOwner
+            : messages.noCommentsPreview}
         </Text>
         <TouchableWithoutFeedback onPress={handleFormPress}>
           <View>

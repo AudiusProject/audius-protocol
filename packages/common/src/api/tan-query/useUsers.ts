@@ -1,15 +1,16 @@
-import { Id } from '@audius/sdk'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
-import { userMetadataListFromSDK } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
-import { removeNullable } from '~/utils/typeUtils'
+import { UserMetadata } from '~/models/User'
 
+import { getUsersBatcher } from './batchers/getUsersBatcher'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
-import { primeUserData } from './utils/primeUserData'
+import { useCurrentUserId } from './useCurrentUserId'
+import { getUserQueryKey } from './useUser'
+import { combineQueryResults } from './utils/combineQueryResults'
 
 export const getUsersQueryKey = (userIds: ID[] | null | undefined) => [
   QUERY_KEYS.users,
@@ -23,22 +24,24 @@ export const useUsers = (
   const { audiusSdk } = useAudiusQueryContext()
   const dispatch = useDispatch()
   const queryClient = useQueryClient()
-  const encodedIds = userIds?.map((id) => Id.parse(id)).filter(removeNullable)
+  const { data: currentUserId } = useCurrentUserId()
 
-  return useQuery({
-    queryKey: getUsersQueryKey(userIds),
-    queryFn: async () => {
-      const sdk = await audiusSdk()
-      const { data } = await sdk.full.users.getBulkUsers({
-        id: encodedIds
-      })
-
-      const users = userMetadataListFromSDK(data)
-      primeUserData({ users, queryClient, dispatch })
-
-      return users
-    },
-    ...options,
-    enabled: options?.enabled !== false && encodedIds && encodedIds.length > 0
+  return useQueries({
+    queries: (userIds ?? []).map((userId) => ({
+      queryKey: getUserQueryKey(userId),
+      queryFn: async () => {
+        const sdk = await audiusSdk()
+        const batchGetUsers = getUsersBatcher({
+          sdk,
+          currentUserId,
+          queryClient,
+          dispatch
+        })
+        return await batchGetUsers.fetch(userId)
+      },
+      ...options,
+      enabled: options?.enabled !== false && !!userId
+    })),
+    combine: combineQueryResults<UserMetadata[]>
   })
 }

@@ -3,19 +3,16 @@ import {
   userWalletsFromSDK
 } from '@audius/common/adapters'
 import { Kind } from '@audius/common/models'
-import { DoubleKeys } from '@audius/common/services'
 import {
   accountSelectors,
   cacheActions,
   profilePageActions as profileActions,
   chatActions,
   reachabilitySelectors,
-  relatedArtistsUIActions as relatedArtistsActions,
   collectiblesActions,
   confirmerActions,
   confirmTransaction,
-  getSDK,
-  profilePageActions
+  getSDK
 } from '@audius/common/store'
 import {
   squashNewLines,
@@ -36,11 +33,7 @@ import {
   takeEvery
 } from 'redux-saga/effects'
 
-import {
-  fetchUsers,
-  fetchUserByHandle,
-  fetchUserSocials
-} from 'common/store/cache/users/sagas'
+import { fetchUsers, fetchUserByHandle } from 'common/store/cache/users/sagas'
 import feedSagas from 'common/store/pages/profile/lineups/feed/sagas.js'
 import tracksSagas from 'common/store/pages/profile/lineups/tracks/sagas.js'
 import {
@@ -49,8 +42,6 @@ import {
 } from 'common/store/social/users/sagas'
 import { push as pushRoute } from 'utils/navigation'
 import { waitForWrite } from 'utils/sagaHelpers'
-
-import { watchFetchProfileCollections } from './fetchProfileCollectionsSaga'
 
 const { NOT_FOUND_PAGE } = route
 const { getIsReachable } = reachabilitySelectors
@@ -267,9 +258,6 @@ export function* fetchSolanaCollectibles(user) {
 }
 
 function* fetchProfileAsync(action) {
-  const isNativeMobile = yield getContext('isNativeMobile')
-  const { getRemoteVar } = yield getContext('remoteConfigInstance')
-
   try {
     let user
     if (action.handle) {
@@ -307,13 +295,6 @@ function* fetchProfileAsync(action) {
       )
     )
 
-    if (!isNativeMobile) {
-      // Fetch user socials and collections after fetching the user itself
-      yield fork(fetchUserSocials, action)
-      // Note that mobile dispatches this action at the component level
-      yield put(profilePageActions.fetchCollections(user.handle))
-    }
-
     // Get chat permissions
     yield put(fetchPermissions({ userIds: [user.user_id] }))
 
@@ -331,18 +312,6 @@ function* fetchProfileAsync(action) {
         user.handle
       )
     )
-
-    if (!isNativeMobile) {
-      const showArtistRecommendationsPercent =
-        getRemoteVar(DoubleKeys.SHOW_ARTIST_RECOMMENDATIONS_PERCENT) || 0
-      if (Math.random() < showArtistRecommendationsPercent) {
-        yield put(
-          relatedArtistsActions.fetchRelatedArtists({
-            artistId: user.user_id
-          })
-        )
-      }
-    }
   } catch (err) {
     console.error(`Fetch users error: ${err}`)
     const isReachable = yield select(getIsReachable)
@@ -491,7 +460,6 @@ export default function sagas() {
     ...tracksSagas(),
     watchFetchProfile,
     watchUpdateProfile,
-    watchSetNotificationSubscription,
-    watchFetchProfileCollections
+    watchSetNotificationSubscription
   ]
 }

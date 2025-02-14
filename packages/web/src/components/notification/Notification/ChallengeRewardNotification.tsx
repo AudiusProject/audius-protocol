@@ -2,7 +2,11 @@ import { useCallback } from 'react'
 
 import { Name, BNAudio, ChallengeRewardID } from '@audius/common/models'
 import { ChallengeRewardNotification as ChallengeRewardNotificationType } from '@audius/common/store'
-import { route, stringWeiToAudioBN } from '@audius/common/utils'
+import {
+  formatNumberCommas,
+  route,
+  stringWeiToAudioBN
+} from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
@@ -21,12 +25,11 @@ import { IconRewards } from './components/icons'
 const { REWARDS_PAGE } = route
 
 const messages = {
-  amountEarned: (amount: BNAudio) => `You've earned ${amount} $AUDIO`,
+  amountEarned: (amount: BNAudio) =>
+    `You've earned ${formatNumberCommas(Number(amount.toString()))} $AUDIO`,
   referredText:
     ' for being referred! Invite your friends to join to earn more!',
   challengeCompleteText: ' for completing this challenge!',
-  body: (amount: number) =>
-    `You've earned ${amount} $AUDIO for completing this challenge!`,
   twitterShareText:
     'I earned $AUDIO for completing challenges on @audius #Audius #AudioRewards'
 }

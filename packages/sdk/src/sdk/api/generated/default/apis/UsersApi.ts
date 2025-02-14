@@ -18,6 +18,7 @@ import * as runtime from '../runtime';
 import type {
   AlbumsResponse,
   AuthorizedApps,
+  CollectiblesResponse,
   ConnectedWalletsResponse,
   DeveloperApps,
   EmailAccessResponse,
@@ -51,6 +52,8 @@ import {
     AlbumsResponseToJSON,
     AuthorizedAppsFromJSON,
     AuthorizedAppsToJSON,
+    CollectiblesResponseFromJSON,
+    CollectiblesResponseToJSON,
     ConnectedWalletsResponseFromJSON,
     ConnectedWalletsResponseToJSON,
     DeveloperAppsFromJSON,
@@ -155,6 +158,7 @@ export interface GetAlbumsByUserRequest {
     offset?: number;
     limit?: number;
     userId?: string;
+    sortMethod?: GetAlbumsByUserSortMethodEnum;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -212,6 +216,7 @@ export interface GetPlaylistsByUserRequest {
     offset?: number;
     limit?: number;
     userId?: string;
+    sortMethod?: GetPlaylistsByUserSortMethodEnum;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -230,6 +235,7 @@ export interface GetRelatedUsersRequest {
     offset?: number;
     limit?: number;
     userId?: string;
+    filterFollowed?: boolean;
 }
 
 export interface GetRemixersRequest {
@@ -307,6 +313,10 @@ export interface GetUserByHandleRequest {
 export interface GetUserChallengesRequest {
     id: string;
     showHistorical?: boolean;
+}
+
+export interface GetUserCollectiblesRequest {
+    id: string;
 }
 
 export interface GetUserEmailKeyRequest {
@@ -612,6 +622,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (params.userId !== undefined) {
             queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -992,6 +1006,10 @@ export class UsersApi extends runtime.BaseAPI {
             queryParameters['user_id'] = params.userId;
         }
 
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
@@ -1092,6 +1110,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (params.userId !== undefined) {
             queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.filterFollowed !== undefined) {
+            queryParameters['filter_followed'] = params.filterFollowed;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1591,6 +1613,37 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
+     * Get the User\'s indexed collectibles data
+     */
+    async getUserCollectiblesRaw(params: GetUserCollectiblesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CollectiblesResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserCollectibles.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/collectibles`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CollectiblesResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get the User\'s indexed collectibles data
+     */
+    async getUserCollectibles(params: GetUserCollectiblesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CollectiblesResponse> {
+        const response = await this.getUserCollectiblesRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
      * Gets the encrypted key for email access between the receiving user and granting user.
      */
     async getUserEmailKeyRaw(params: GetUserEmailKeyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EmailAccessResponse>> {
@@ -1869,6 +1922,22 @@ export const GetAIAttributedTracksByUserHandleFilterTracksEnum = {
     Unlisted: 'unlisted'
 } as const;
 export type GetAIAttributedTracksByUserHandleFilterTracksEnum = typeof GetAIAttributedTracksByUserHandleFilterTracksEnum[keyof typeof GetAIAttributedTracksByUserHandleFilterTracksEnum];
+/**
+ * @export
+ */
+export const GetAlbumsByUserSortMethodEnum = {
+    Recent: 'recent',
+    Popular: 'popular'
+} as const;
+export type GetAlbumsByUserSortMethodEnum = typeof GetAlbumsByUserSortMethodEnum[keyof typeof GetAlbumsByUserSortMethodEnum];
+/**
+ * @export
+ */
+export const GetPlaylistsByUserSortMethodEnum = {
+    Recent: 'recent',
+    Popular: 'popular'
+} as const;
+export type GetPlaylistsByUserSortMethodEnum = typeof GetPlaylistsByUserSortMethodEnum[keyof typeof GetPlaylistsByUserSortMethodEnum];
 /**
  * @export
  */

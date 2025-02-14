@@ -21,21 +21,28 @@ REDIS_URL = shared_config["redis"]["url"]
 BLOCK_NUMBER = 10
 
 
-def create_play(offset: int) -> Play:
+def create_play_day_offset(day_offset: int, hour_offset: int = 0) -> Play:
+    delta = timedelta(hours=hour_offset) + timedelta(days=day_offset)
+
     return Play(
-        id=offset,
+        id=day_offset * 24 + hour_offset,
         user_id=1,
         source=None,
         play_item_id=1,
         slot=1,
         signature=None,
-        updated_at=datetime.now() + timedelta(days=offset),
-        created_at=datetime.now() + timedelta(days=offset),
+        updated_at=datetime.now() + delta,
+        created_at=datetime.now() + delta,
     )
 
 
-def dispatch_play(offset: int, session: Session, bus: ChallengeEventBus):
-    play = create_play(offset)
+def dispatch_play(
+    day_offset: int,
+    session: Session,
+    bus: ChallengeEventBus,
+    hour_offset: int = 0,
+):
+    play = create_play_day_offset(day_offset, hour_offset)
     session.add(play)
     session.flush()
     bus.dispatch(
@@ -338,6 +345,48 @@ def test_multiple_listen_streak_challenges(app):
         assert state[1].current_step_count == 7 and state[1].is_complete == True
         assert state[2].current_step_count == 1 and state[2].is_complete == True
         assert state[3].current_step_count == 2 and state[3].is_complete == False
+
+
+def test_multiple_listens_in_one_day(app):
+    redis_conn = get_redis()
+    bus = ChallengeEventBus(redis_conn)
+    # Register events with the bus
+    bus.register_listener(
+        ChallengeEvent.track_listen, listen_streak_endless_challenge_manager
+    )
+
+    with app.app_context():
+        db = get_db()
+
+    with db.scoped_session() as session:
+        setup_challenges(session)
+
+        def dp_day(offset):
+            return dispatch_play(offset, session, bus)
+
+        def dp_hour(offset, hour_offset):
+            return dispatch_play(offset, session, bus, hour_offset=hour_offset)
+
+        scope_and_process = make_scope_and_process(bus, session)
+
+        # Get to 6 plays over 6 days
+        scope_and_process(lambda: dp_day(0))
+        scope_and_process(lambda: dp_day(1))
+        scope_and_process(lambda: dp_day(2))
+        scope_and_process(lambda: dp_day(3))
+        scope_and_process(lambda: dp_day(4))
+        scope_and_process(lambda: dp_day(5))
+
+        # On the 7th day, dispatch 2 plays in the same day
+        scope_and_process(lambda: dp_day(6))
+        scope_and_process(lambda: dp_hour(6, 1))
+        scope_and_process(lambda: dp_hour(6, 2))
+
+        state = listen_streak_endless_challenge_manager.get_user_challenge_state(
+            session
+        )
+        assert len(state) == 1
+        assert state[0].current_step_count == 7 and state[0].is_complete == True
 
 
 def test_anon_listen(app):

@@ -11,7 +11,6 @@ import { squashNewLines } from '~/utils/formatUtil'
 import { QUERY_KEYS } from './queryKeys'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getUserQueryKey } from './useUser'
-import { getUserByHandleQueryKey } from './useUserByHandle'
 
 export type MutationContext = {
   previousMetadata: UserMetadata | undefined
@@ -90,17 +89,6 @@ export const useUpdateProfile = () => {
           ...previousMetadata,
           ...metadata
         })
-
-        // Also update user by handle if it exists
-        if (previousMetadata.handle) {
-          queryClient.setQueryData(
-            getUserByHandleQueryKey(previousMetadata.handle),
-            (old: any) => ({
-              ...old,
-              ...metadata
-            })
-          )
-        }
       }
 
       return { previousMetadata }
@@ -112,14 +100,6 @@ export const useUpdateProfile = () => {
           ...context.previousMetadata,
           ...metadata
         })
-
-        // Roll back user by handle data
-        if (context.previousMetadata.handle) {
-          queryClient.setQueryData(
-            getUserByHandleQueryKey(context.previousMetadata.handle),
-            context.previousMetadata
-          )
-        }
       }
 
       reportToSentry({

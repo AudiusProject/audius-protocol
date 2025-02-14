@@ -49,11 +49,15 @@ export const ChallengeRewardsTile = ({
   const optimisticUserChallenges = useSelector(getOptimisticUserChallenges)
   const [haveChallengesLoaded, setHaveChallengesLoaded] = useState(false)
   const { isEnabled: isOneShotEnabled } = useFeatureFlag(FeatureFlags.ONE_SHOT)
+  const { isEnabled: isClaimAllRewardsEnabled } = useFeatureFlag(
+    FeatureFlags.CLAIM_ALL_REWARDS_TILE
+  )
 
   // The referred challenge only needs a tile if the user was referred
   const hideReferredTile = !userChallenges.referred?.is_complete
   const rewardIds = useRewardIds({
-    referred: hideReferredTile
+    referred: hideReferredTile,
+    [ChallengeName.Referred]: hideReferredTile
   })
 
   useEffect(() => {
@@ -94,7 +98,7 @@ export const ChallengeRewardsTile = ({
 
   return (
     <Flex direction='column' gap='l'>
-      <ClaimAllRewardsPanel />
+      {isClaimAllRewardsEnabled ? <ClaimAllRewardsPanel /> : null}
       <Tile className={wm(styles.rewardsTile, className)}>
         <Text variant='display' size='s' className={wm(styles.title)}>
           {messages.title}
