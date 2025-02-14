@@ -71,12 +71,6 @@ export interface Comment {
     reactCount: number;
     /**
      * 
-     * @type {number}
-     * @memberof Comment
-     */
-    replyCount: number;
-    /**
-     * 
      * @type {boolean}
      * @memberof Comment
      */
@@ -119,6 +113,12 @@ export interface Comment {
     updatedAt?: string;
     /**
      * 
+     * @type {number}
+     * @memberof Comment
+     */
+    replyCount?: number;
+    /**
+     * 
      * @type {Array<ReplyComment>}
      * @memberof Comment
      */
@@ -133,7 +133,6 @@ export function instanceOfComment(value: object): value is Comment {
     isInstance = isInstance && "id" in value && value["id"] !== undefined;
     isInstance = isInstance && "message" in value && value["message"] !== undefined;
     isInstance = isInstance && "reactCount" in value && value["reactCount"] !== undefined;
-    isInstance = isInstance && "replyCount" in value && value["replyCount"] !== undefined;
     isInstance = isInstance && "isEdited" in value && value["isEdited"] !== undefined;
     isInstance = isInstance && "createdAt" in value && value["createdAt"] !== undefined;
 
@@ -156,7 +155,6 @@ export function CommentFromJSONTyped(json: any, ignoreDiscriminator: boolean): C
         'mentions': !exists(json, 'mentions') ? undefined : ((json['mentions'] as Array<any>).map(CommentMentionFromJSON)),
         'trackTimestampS': !exists(json, 'track_timestamp_s') ? undefined : json['track_timestamp_s'],
         'reactCount': json['react_count'],
-        'replyCount': json['reply_count'],
         'isEdited': json['is_edited'],
         'isCurrentUserReacted': !exists(json, 'is_current_user_reacted') ? undefined : json['is_current_user_reacted'],
         'isArtistReacted': !exists(json, 'is_artist_reacted') ? undefined : json['is_artist_reacted'],
@@ -164,6 +162,7 @@ export function CommentFromJSONTyped(json: any, ignoreDiscriminator: boolean): C
         'isMuted': !exists(json, 'is_muted') ? undefined : json['is_muted'],
         'createdAt': json['created_at'],
         'updatedAt': !exists(json, 'updated_at') ? undefined : json['updated_at'],
+        'replyCount': !exists(json, 'reply_count') ? undefined : json['reply_count'],
         'replies': !exists(json, 'replies') ? undefined : ((json['replies'] as Array<any>).map(ReplyCommentFromJSON)),
     };
 }
@@ -183,7 +182,6 @@ export function CommentToJSON(value?: Comment | null): any {
         'mentions': value.mentions === undefined ? undefined : ((value.mentions as Array<any>).map(CommentMentionToJSON)),
         'track_timestamp_s': value.trackTimestampS,
         'react_count': value.reactCount,
-        'reply_count': value.replyCount,
         'is_edited': value.isEdited,
         'is_current_user_reacted': value.isCurrentUserReacted,
         'is_artist_reacted': value.isArtistReacted,
@@ -191,6 +189,7 @@ export function CommentToJSON(value?: Comment | null): any {
         'is_muted': value.isMuted,
         'created_at': value.createdAt,
         'updated_at': value.updatedAt,
+        'reply_count': value.replyCount,
         'replies': value.replies === undefined ? undefined : ((value.replies as Array<any>).map(ReplyCommentToJSON)),
     };
 }

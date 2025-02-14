@@ -64,6 +64,7 @@ from src.api.v1.models.activities import (
     track_activity_full_model,
     track_activity_model,
 )
+from src.api.v1.models.comments import comment_mention, reply_comment_model
 from src.api.v1.models.common import favorite
 from src.api.v1.models.developer_apps import authorized_app, developer_app
 from src.api.v1.models.extensions.fields import NestedOneOf
@@ -120,7 +121,7 @@ from src.queries.get_collection_library import (
     GetCollectionLibraryArgs,
     get_collection_library,
 )
-from src.queries.get_comments import get_muted_users
+from src.queries.get_comments import get_muted_users, get_user_comments
 from src.queries.get_developer_apps import (
     get_developer_apps_by_user,
     get_developer_apps_with_grant_for_user,
@@ -3192,3 +3193,62 @@ class UserEmailKey(Resource):
                 return success_response(None)
 
             return success_response(email_access.to_dict())
+
+
+# Comments
+user_comment_model = ns.model(
+    "comment",
+    {
+        "id": fields.String(required=True),
+        "user_id": fields.String(required=False),
+        "message": fields.String(required=True),
+        "mentions": fields.List(
+            fields.Nested(comment_mention),
+            required=False,
+        ),
+        "track_timestamp_s": fields.Integer(required=False),
+        "react_count": fields.Integer(required=True),
+        "is_edited": fields.Boolean(required=True),
+        "is_current_user_reacted": fields.Boolean(required=False),
+        "is_artist_reacted": fields.Boolean(required=False),
+        "is_tombstone": fields.Boolean(required=False),
+        "is_muted": fields.Boolean(required=False),
+        "created_at": fields.String(required=True),
+        "updated_at": fields.String(required=False),
+        "reply_count": fields.Integer(required=False),
+        "replies": fields.List(fields.Nested(reply_comment_model), require=False),
+    },
+)
+user_comments_response = make_response(
+    "user_comments_response", ns, fields.List(fields.Nested(user_comment_model))
+)
+
+
+@ns.route("/<string:id>/comments")
+class UserComments(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""User Comments""",
+        description="""Get user comment history""",
+        params={"id": "A User ID"},
+        responses={
+            200: "Success",
+            400: "Bad request",
+            500: "Server error",
+        },
+    )
+    @ns.expect(pagination_with_current_user_parser)
+    @ns.marshal_with(user_comments_response)
+    @cache(ttl_sec=5)
+    def get(self, id):
+        args = pagination_with_current_user_parser.parse_args()
+        decoded_id = decode_with_abort(id, ns)
+        current_user_id = get_current_user_id(args)
+        args = {
+            **args,
+            "target_user_id": decoded_id,
+            "current_user_id": current_user_id,
+        }
+        user_comments = get_user_comments(args)
+
+        return success_response(user_comments)

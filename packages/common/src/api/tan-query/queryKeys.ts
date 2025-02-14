@@ -2,6 +2,7 @@ export const QUERY_KEYS = {
   aiTracks: 'aiTracks',
   accountUser: 'accountUser',
   trackCommentList: 'trackCommentList',
+  userCommentList: 'userCommentList',
   comment: 'comment',
   commentReplies: 'commentReplies',
   exploreContent: 'exploreContent',

@@ -94,6 +94,7 @@ export * from './UndisbursedChallenge';
 export * from './UndisbursedChallenges';
 export * from './User';
 export * from './UserAssociatedWalletResponse';
+export * from './UserCommentsResponse';
 export * from './UserResponse';
 export * from './UserSearch';
 export * from './UserTrackListenCountsResponse';
