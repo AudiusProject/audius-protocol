@@ -3,8 +3,8 @@
   "version": "0.1.30",
   "private": true,
   "scripts": {
-    "build": "tsc && copyfiles -u 2 './src/core-sdk/**/*.js' './dist/core-sdk'",
-    "build:watch": "tsc --watch --preserveWatchOutput && copyfiles -u 2 './src/core-sdk/**/*.js' './dist/core-sdk'",
+    "build": "tsc",
+    "build:watch": "tsc --watch --preserveWatchOutput",
     "clean": "rm -rf dist",
     "dev": "concurrently \"npm:build:watch\" \"nodemon ./dist/index.js\"",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
@@ -38,6 +38,7 @@
     "eth-sig-util": "^3.0.1",
     "ethers": "^5.7.0",
     "express": "^4.18.2",
+    "web3-core": "1.10.3",
     "http-status-codes": "^2.2.0",
     "knex": "^2.4.2",
     "morgan": "^1.10.0",
