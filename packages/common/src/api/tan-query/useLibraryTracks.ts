@@ -92,7 +92,7 @@ export const useLibraryTracks = (
       })
 
       const tracks = data
-        ?.map((activity) => userTrackMetadataFromSDK(activity.item))
+        .map((activity) => userTrackMetadataFromSDK(activity.item))
         .filter(removeNullable)
 
       primeTrackData({ tracks, queryClient, dispatch })

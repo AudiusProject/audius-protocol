@@ -5,10 +5,11 @@ import { useDispatch } from 'react-redux'
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { transformAndCleanList } from '~/adapters/utils'
 import { useAudiusQueryContext } from '~/audius-query'
-import { UserCollectionMetadata } from '~/models/Collection'
+import { ID } from '~/models'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
+import { useCollections } from './useCollections'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeCollectionData } from './utils/primeCollectionData'
 
@@ -40,10 +41,10 @@ export const useUserAlbums = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  return useInfiniteQuery({
+  const { data: collectionIds } = useInfiniteQuery({
     queryKey: getUserAlbumsQueryKey(params),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: UserCollectionMetadata[], allPages) => {
+    getNextPageParam: (lastPage: ID[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -67,10 +68,12 @@ export const useUserAlbums = (
 
       primeCollectionData({ collections, queryClient, dispatch })
 
-      return collections
+      return collections.map((collection) => collection.playlist_id)
     },
     select: (data) => data.pages.flat(),
     ...options,
     enabled: options?.enabled !== false && !!userId
   })
+
+  return useCollections(collectionIds)
 }
