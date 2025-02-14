@@ -11,33 +11,34 @@ import { primeCollectionData } from '../utils/primeCollectionData'
 
 import { BatchContext } from './types'
 
-export const getCollectionsBatcher = memoize((context: BatchContext) =>
-  create({
-    fetcher: async (ids: ID[]): Promise<UserCollectionMetadata[]> => {
-      const { sdk, currentUserId, queryClient, dispatch } = context
-      if (!ids.length) return []
+export const getCollectionsBatcher = memoize(
+  (context: BatchContext) =>
+    create({
+      fetcher: async (ids: ID[]): Promise<UserCollectionMetadata[]> => {
+        const { sdk, currentUserId, queryClient, dispatch } = context
+        if (!ids.length) return []
 
-      const { data } = await sdk.full.playlists.getBulkPlaylists({
-        id: ids.map((id) => Id.parse(id)),
-        userId: OptionalId.parse(currentUserId)
-      })
+        const { data } = await sdk.full.playlists.getBulkPlaylists({
+          id: ids.map((id) => Id.parse(id)),
+          userId: OptionalId.parse(currentUserId)
+        })
 
-      const collections = transformAndCleanList(
-        data,
-        userCollectionMetadataFromSDK
-      )
+        const collections = transformAndCleanList(
+          data,
+          userCollectionMetadataFromSDK
+        )
 
-      // Prime related entities
-      primeCollectionData({
-        collections,
-        queryClient,
-        dispatch,
-        skipQueryData: true
-      })
+        primeCollectionData({
+          collections,
+          queryClient,
+          dispatch,
+          skipQueryData: true
+        })
 
-      return collections
-    },
-    resolver: keyResolver('playlist_id'),
-    scheduler: windowScheduler(10)
-  })
+        return collections
+      },
+      resolver: keyResolver('playlist_id'),
+      scheduler: windowScheduler(10)
+    }),
+  (context) => context.currentUserId
 )

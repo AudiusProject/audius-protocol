@@ -11,22 +11,31 @@ import { primeTrackData } from '../utils/primeTrackData'
 
 import { BatchContext } from './types'
 
-export const getTracksBatcher = memoize((context: BatchContext) =>
-  create({
-    fetcher: async (ids: ID[]): Promise<UserTrackMetadata[]> => {
-      const { sdk, currentUserId, queryClient, dispatch } = context
-      if (!ids.length) return []
-      const { data } = await sdk.full.tracks.getBulkTracks({
-        id: ids.map((id) => Id.parse(id)),
-        userId: OptionalId.parse(currentUserId)
-      })
+export const getTracksBatcher = memoize(
+  (context: BatchContext) =>
+    create({
+      fetcher: async (ids: ID[]): Promise<UserTrackMetadata[]> => {
+        const { sdk, currentUserId, queryClient, dispatch } = context
+        if (!ids.length) return []
 
-      const tracks = transformAndCleanList(data, userTrackMetadataFromSDK)
-      primeTrackData({ tracks, queryClient, dispatch, skipQueryData: true })
+        const { data } = await sdk.full.tracks.getBulkTracks({
+          id: ids.map((id) => Id.parse(id)),
+          userId: OptionalId.parse(currentUserId)
+        })
 
-      return tracks
-    },
-    resolver: keyResolver('track_id'),
-    scheduler: windowScheduler(10)
-  })
+        const tracks = transformAndCleanList(data, userTrackMetadataFromSDK)
+
+        primeTrackData({
+          tracks,
+          queryClient,
+          dispatch,
+          skipQueryData: true
+        })
+
+        return tracks
+      },
+      resolver: keyResolver('track_id'),
+      scheduler: windowScheduler(10)
+    }),
+  (context) => context.currentUserId
 )
