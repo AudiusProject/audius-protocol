@@ -34,7 +34,7 @@
 }
 .iconSave path,
 .iconRemove path {
-  fill: var(--harmony-static-white);
+  fill: var(--harmony-white);
 }
 
 .isMobile .iconRemove {

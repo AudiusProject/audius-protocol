@@ -20,7 +20,7 @@
     var(--ai-secondary) 100%
   );
   align-items: center;
-  color: var(--harmony-static-white);
+  color: var(--harmony-white);
   font-weight: var(--harmony-font-bold);
   font-size: var(--harmony-font-m);
   line-height: 20px;
@@ -49,5 +49,5 @@
 }
 
 .iconRobot path {
-  fill: var(--harmony-static-white);
+  fill: var(--harmony-white);
 }

@@ -5,7 +5,7 @@
 /* Theme Color Definitions */
 :root {
   /* Static Colors */
-  --harmony-static-static-white: #ffffffff;
+  --harmony-static-white: #ffffffff;
   --harmony-static-black: #000000;
   --harmony-static-primary: #cc0fe0ff;
 
@@ -108,9 +108,6 @@ html[data-theme='day'] {
   --harmony-trending-blue: #216fdcff;
   --harmony-ai-green: #1fd187ff;
   --harmony-glass-overlay: #ffffffd9;
-
-  /* Overrides static-white to be regular white */
-  --harmony-static-white: var(--harmony-white);
 }
 
 /* Dark Theme */
@@ -162,9 +159,6 @@ html[data-theme='dark'] {
   --harmony-trending-blue: #2a85e8ff;
   --harmony-ai-green: #1ecf7aff;
   --harmony-glass-overlay: #2f334899;
-
-  /* Overrides static-white to be regular white */
-  --harmony-static-white: var(--harmony-white);
 }
 
 /* Matrix Theme */
@@ -216,7 +210,4 @@ html[data-theme='matrix'] {
   --harmony-trending-blue: #1eeb6fff;
   --harmony-ai-green: #1eeb57ff;
   --harmony-glass-overlay: #01010199;
-
-  /* Overrides static-white to be regular white */
-  --harmony-static-white: var(--harmony-white);
 }
