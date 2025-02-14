@@ -9,6 +9,7 @@ import { ID } from '~/models/Identifiers'
 
 import { primeCollectionData } from '../utils/primeCollectionData'
 
+import { contextCacheResolver } from './contextCacheResolver'
 import { BatchContext } from './types'
 
 export const getCollectionsBatcher = memoize(
@@ -40,5 +41,5 @@ export const getCollectionsBatcher = memoize(
       resolver: keyResolver('playlist_id'),
       scheduler: windowScheduler(10)
     }),
-  (context) => context.currentUserId
+  contextCacheResolver()
 )

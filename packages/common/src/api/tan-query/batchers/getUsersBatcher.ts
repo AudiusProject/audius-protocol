@@ -8,6 +8,7 @@ import { UserMetadata } from '~/models/User'
 
 import { primeUserData } from '../utils/primeUserData'
 
+import { contextCacheResolver } from './contextCacheResolver'
 import { BatchContext } from './types'
 
 export const getUsersBatcher = memoize(
@@ -29,5 +30,5 @@ export const getUsersBatcher = memoize(
       resolver: keyResolver('user_id'),
       scheduler: windowScheduler(10)
     }),
-  (context) => context.currentUserId
+  contextCacheResolver()
 )

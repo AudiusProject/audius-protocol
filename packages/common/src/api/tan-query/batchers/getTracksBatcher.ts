@@ -9,6 +9,7 @@ import { UserTrackMetadata } from '~/models/Track'
 
 import { primeTrackData } from '../utils/primeTrackData'
 
+import { contextCacheResolver } from './contextCacheResolver'
 import { BatchContext } from './types'
 
 export const getTracksBatcher = memoize(
@@ -37,5 +38,5 @@ export const getTracksBatcher = memoize(
       resolver: keyResolver('track_id'),
       scheduler: windowScheduler(10)
     }),
-  (context) => context.currentUserId
+  contextCacheResolver()
 )
