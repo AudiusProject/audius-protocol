@@ -41,11 +41,12 @@ export const PlaylistsTab = ({
   profile,
   isOwner
 }: PlaylistsTabProps) => {
+  const { handle, name, playlist_count } = profile
   const sortMode = useSelector((state: CommonState) =>
-    getProfileCollectionSortMode(state, profile?.handle ?? '')
+    getProfileCollectionSortMode(state, handle)
   )
   const {
-    data: playlists,
+    data: playlists = [],
     isPending,
     hasNextPage,
     fetchNextPage,
@@ -62,7 +63,7 @@ export const PlaylistsTab = ({
     }
   }, [fetchNextPage, isFetchingNextPage])
 
-  const playlistCards = playlists?.map((playlist) => {
+  const playlistCards = playlists.map((playlist) => {
     return (
       <CollectionCard
         key={playlist.playlist_id}
@@ -73,18 +74,18 @@ export const PlaylistsTab = ({
   })
 
   if (isOwner) {
-    playlistCards?.unshift(
+    playlistCards.unshift(
       <UploadChip
         key='upload-chip'
         type='playlist'
         variant='card'
-        isFirst={playlistCards?.length === 0}
+        isFirst={playlistCards.length === 0}
         source={CreatePlaylistSource.PROFILE_PAGE}
       />
     )
   }
 
-  if (isPending && !playlistCards?.length) {
+  if (playlist_count !== 0 && isPending && !playlists.length) {
     return (
       <Flex justifyContent='center' mt='2xl'>
         <Box w={24}>
@@ -94,13 +95,9 @@ export const PlaylistsTab = ({
     )
   }
 
-  if (!playlistCards?.length) {
+  if (playlist_count === 0 && !playlists.length) {
     return (
-      <EmptyTab
-        isOwner={isOwner}
-        name={profile?.name}
-        text={messages.emptyPlaylists}
-      />
+      <EmptyTab isOwner={isOwner} name={name} text={messages.emptyPlaylists} />
     )
   }
 
