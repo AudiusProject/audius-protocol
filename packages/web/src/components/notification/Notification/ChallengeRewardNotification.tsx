@@ -1,6 +1,11 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
-import { Name, BNAudio, ChallengeRewardID } from '@audius/common/models'
+import {
+  BNAudio,
+  ChallengeName,
+  ChallengeRewardID,
+  Name
+} from '@audius/common/models'
 import { ChallengeRewardNotification as ChallengeRewardNotificationType } from '@audius/common/store'
 import {
   formatNumberCommas,
@@ -24,9 +29,13 @@ import { IconRewards } from './components/icons'
 
 const { REWARDS_PAGE } = route
 
+const formatNumber = (amount: BNAudio) => {
+  return formatNumberCommas(Number(amount.toString()))
+}
+
 const messages = {
   amountEarned: (amount: BNAudio) =>
-    `You've earned ${formatNumberCommas(Number(amount.toString()))} $AUDIO`,
+    `You've earned ${formatNumber(amount)} $AUDIO`,
   referredText:
     ' for being referred! Invite your friends to join to earn more!',
   challengeCompleteText: ' for completing this challenge!',
@@ -50,7 +59,7 @@ export const ChallengeRewardNotification = (
   props: ChallengeRewardNotificationProps
 ) => {
   const { notification } = props
-  const { challengeId, timeLabel, isViewed, type } = notification
+  const { challengeId, timeLabel, isViewed, type, listenStreak } = notification
   const dispatch = useDispatch()
   const record = useRecord()
   const mappedChallengeRewardsConfigKey =
@@ -65,17 +74,35 @@ export const ChallengeRewardNotification = (
     )
   }, [dispatch, record, type])
 
+  const notificationTitle = useMemo(() => {
+    if (challengeId === ChallengeName.ListenStreakEndless) {
+      return `${title}: Day ${listenStreak}`
+    }
+    return title
+  }, [challengeId, listenStreak, title])
+
+  const amountEarnedText = useMemo(() => {
+    switch (challengeId) {
+      case ChallengeName.ListenStreakEndless: {
+        const amountEarned = Number(formatNumber(amount))
+        if (amountEarned > 1) {
+          return `You've earned ${amountEarned} $AUDIO for hitting Day ${listenStreak} of your listening streak! You’ll now earn an additional $AUDIO reward for every day you keep your streak going!`
+        }
+        return `You’ve earned ${amountEarned} $AUDIO for maintaining your listening streak! Keep your streak going to continue earning daily rewards!`
+      }
+      case 'referred':
+        return messages.amountEarned(amount) + messages.referredText
+      default:
+        return messages.amountEarned(amount) + messages.challengeCompleteText
+    }
+  }, [challengeId, amount, listenStreak])
+
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
       <NotificationHeader icon={<IconRewards>{icon}</IconRewards>}>
-        <NotificationTitle>{title}</NotificationTitle>
+        <NotificationTitle>{notificationTitle}</NotificationTitle>
       </NotificationHeader>
-      <NotificationBody>
-        {messages.amountEarned(amount)}
-        {challengeId === 'referred'
-          ? messages.referredText
-          : messages.challengeCompleteText}
-      </NotificationBody>
+      <NotificationBody>{amountEarnedText}</NotificationBody>
       <TwitterShareButton
         type='static'
         url={env.AUDIUS_URL}
