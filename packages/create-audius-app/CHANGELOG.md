@@ -1,5 +1,11 @@
 # create-audius-app
 
+## 1.1.0
+
+### Minor Changes
+
+- 749589c: Remove package-lock files to ensure installs are up to date for newly generated projects
+
 ## 1.0.9
 
 ### Patch Changes
