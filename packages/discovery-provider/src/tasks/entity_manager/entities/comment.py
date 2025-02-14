@@ -503,6 +503,23 @@ def validate_comment_reaction_tx(params: ManageEntityParameters):
     validate_signer(params)
     comment_id = params.entity_id
     user_id = params.user_id
+    metadata = params.metadata
+    entity_id = metadata.get("entity_id")
+    entity_type = metadata.get("entity_type", EntityType.TRACK.value)
+
+    # Validate comment exists
+    if comment_id not in params.existing_records[EntityType.COMMENT.value]:
+        raise IndexingValidationError(f"Cannot react to comment {comment_id} that does not exist")
+
+    # Validate track exists if entity_id is provided
+    if entity_id and entity_id not in params.existing_records[EntityType.TRACK.value]:
+        raise IndexingValidationError(f"Track {entity_id} does not exist")
+
+    # Validate entity type
+    if entity_type != EntityType.TRACK.value:
+        raise IndexingValidationError(f"Entity type {entity_type} is not supported for reactions")
+
+    # Check if user has already reacted
     if (
         params.action == Action.REACT
         and (user_id, comment_id)
