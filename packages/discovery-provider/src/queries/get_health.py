@@ -264,7 +264,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         latest_indexed_block_num = db_block_state["number"] or 0
         latest_indexed_block_hash = db_block_state["blockhash"]
 
-    core_health: CoreHealth = get_core_health(redis=redis)
+    core_health = get_core_health(redis=redis)
     core_listens_health = get_core_listens_health(
         redis=redis, plays_count_max_drift=plays_count_max_drift
     )
@@ -278,8 +278,10 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "indexing_entity_manager"
     )
     if indexing_entity_manager_with_core:
-        latest_indexed_block_num = core_health.get("latest_indexed_block") or -1
-        latest_block_num = core_health.get("latest_chain_block") or -1
+        latest_indexed_block_num = (
+            core_health and core_health.get("latest_indexed_block") or -1
+        )
+        latest_block_num = core_health and core_health.get("latest_chain_block") or -1
 
     user_bank_health_info = get_solana_indexer_status(
         redis, redis_keys.solana.user_bank, user_bank_max_drift
@@ -738,7 +740,7 @@ def get_core_listens_health(redis: Redis, plays_count_max_drift: Optional[int]):
         return None
 
 
-def get_core_health(redis: Redis):
+def get_core_health(redis: Redis) -> Optional[CoreHealth]:
     try:
         core_health = redis.get(core_health_check_cache_key)
         if core_health:
@@ -762,6 +764,11 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None):
 
     latest_block_num = None
     latest_block_hash = None
+
+    if environment == "dev":
+        core_health = get_core_health(redis=redis)
+        if core_health:
+            return core_health.get("latest_chain_block"), ""
 
     if redis is None or web3 is None:
         raise Exception("Invalid arguments for get_latest_chain_block_set_if_nx")
