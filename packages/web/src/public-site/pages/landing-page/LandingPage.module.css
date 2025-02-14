@@ -20,10 +20,10 @@
 
 ::selection {
   background: var(--harmony-s-500);
-  color: var(--harmony-static-white);
+  color: var(--harmony-white);
 }
 
 ::-moz-selection {
   background: var(--harmony-s-500);
-  color: var(--harmony-static-white);
+  color: var(--harmony-white);
 }
