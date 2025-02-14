@@ -164,8 +164,7 @@ export const userMetadataToSdk = (
       'handle',
       'metadata_multihash',
       'is_deactivated',
-      'allow_ai_attribution',
-      'collectibles_order_unset'
+      'allow_ai_attribution'
     ])
   ),
   bio: input.bio ?? undefined,
@@ -177,7 +176,6 @@ export const userMetadataToSdk = (
     isMobileUser: input.events?.is_mobile_user ?? undefined
   },
   location: input.location ?? undefined,
-  collectibles: input.collectibles ?? undefined,
   twitterHandle: input.twitter_handle ?? undefined,
   instagramHandle: input.instagram_handle ?? undefined,
   playlistLibrary: input.playlist_library ?? undefined,

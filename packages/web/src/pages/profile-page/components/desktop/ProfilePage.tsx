@@ -3,6 +3,7 @@ import { useCallback, memo, ReactNode, useEffect, useState } from 'react'
 import {
   useCurrentUserId,
   useGetMutedUsers,
+  useUserCollectibles,
   useUserPlaylists,
   useUserAlbums
 } from '@audius/common/api'
@@ -406,11 +407,13 @@ const ProfilePage = ({
     return isOwner ? <ProfileCompletionHeroCard /> : null
   }
 
+  const { data: collectibles } = useUserCollectibles({ userId })
+
   const profileHasCollectibles =
     profile?.collectibleList?.length || profile?.solanaCollectibleList?.length
-  const profileNeverSetCollectiblesOrder = !profile?.collectibles
+  const profileNeverSetCollectiblesOrder = !collectibles
   const profileHasNonEmptyCollectiblesOrder =
-    profile?.collectibles?.order?.length ?? false
+    collectibles?.order?.length ?? false
   const profileHasVisibleImageOrVideoCollectibles =
     profileHasCollectibles &&
     (profileNeverSetCollectiblesOrder || profileHasNonEmptyCollectiblesOrder)
@@ -540,10 +543,10 @@ const ProfilePage = ({
             isMobile={false}
             isUserOnTheirProfile={isUserOnTheirProfile}
             profile={profile}
-            updateProfile={updateProfile}
             updateProfilePicture={updateProfilePicture}
             onLoad={recalculate}
             onSave={onSave}
+            allowUpdates
           />
         </Box>
       )
@@ -621,10 +624,10 @@ const ProfilePage = ({
             isMobile={false}
             isUserOnTheirProfile={isUserOnTheirProfile}
             profile={profile}
-            updateProfile={updateProfile}
             updateProfilePicture={updateProfilePicture}
             onLoad={recalculate}
             onSave={onSave}
+            allowUpdates
           />
         </Box>
       )

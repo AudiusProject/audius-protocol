@@ -1,6 +1,10 @@
 import { useEffect, useContext, ReactNode } from 'react'
 
-import { useUserPlaylists, useUserAlbums } from '@audius/common/api'
+import {
+  useUserCollectibles,
+  useUserPlaylists,
+  useUserAlbums
+} from '@audius/common/api'
 import {
   Status,
   Collection,
@@ -52,7 +56,6 @@ import EditProfile from './EditProfile'
 import ProfileHeader from './ProfileHeader'
 import styles from './ProfilePage.module.css'
 import { ShareUserButton } from './ShareUserButton'
-
 const { profilePage } = route
 
 export type ProfilePageProps = {
@@ -393,6 +396,8 @@ const ProfilePage = g(
       setHeader(null)
     }, [setHeader])
 
+    const { data: collectibles } = useUserCollectibles({ userId })
+
     const messages = getMessages({ name, isOwner })
     let content
     let profileTabs
@@ -440,9 +445,9 @@ const ProfilePage = g(
 
     const profileHasCollectibles =
       profile?.collectibleList?.length || profile?.solanaCollectibleList?.length
-    const profileNeverSetCollectiblesOrder = !profile?.collectibles
+    const profileNeverSetCollectiblesOrder = !collectibles
     const profileHasNonEmptyCollectiblesOrder =
-      profile?.collectibles?.order?.length ?? false
+      collectibles?.order?.length ?? false
     const profileHasVisibleImageOrVideoCollectibles =
       profileHasCollectibles &&
       (profileNeverSetCollectiblesOrder || profileHasNonEmptyCollectiblesOrder)
