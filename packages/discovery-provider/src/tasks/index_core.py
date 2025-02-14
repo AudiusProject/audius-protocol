@@ -116,7 +116,7 @@ def update_core_health(
     redis.set(core_health_check_cache_key, json.dumps(health))
 
 
-@celery.task(name="index_core", bind=True)
+@celery.task(name="index_core", rate_limit="5/s", bind=True)
 def index_core(self):
     redis: Redis = index_core.redis
     db: SessionManager = index_core.db
@@ -300,7 +300,4 @@ def index_core(self):
 
         if have_lock:
             update_lock.release()
-        if not block_indexed:
-            celery.send_task("index_core", countdown=0.5, queue="index_core")
-        else:
-            celery.send_task("index_core", queue="index_core")
+        celery.send_task("index_core", queue="index_core")

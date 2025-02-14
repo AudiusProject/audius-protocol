@@ -19,6 +19,8 @@ web3: Optional[Web3] = None
 
 GATEWAY_FALLBACK_BLOCKDIFF = 10000
 
+environment = shared_config["discprov"]["env"]
+
 
 def get_web3(web3endpoint=None):
     # pylint: disable=W0603
@@ -29,6 +31,10 @@ def get_web3(web3endpoint=None):
 
     if web3endpoint:
         web3 = Web3(HTTPProvider(web3endpoint))
+    elif environment == "dev":
+        # doesn't need to connect, only used for signature recovery after core
+        logger.info("web3_provider.py | using unconnected rpc for recovery")
+        web3 = Web3(HTTPProvider("http://localhost:8545"))
     else:
         local_rpc = os.getenv("audius_web3_localhost")
         local_web3 = Web3(HTTPProvider(local_rpc))
