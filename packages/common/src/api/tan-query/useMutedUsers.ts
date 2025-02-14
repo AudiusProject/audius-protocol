@@ -9,6 +9,7 @@ import { ID } from '~/models/Identifiers'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
+import { useUsers } from './useUsers'
 import { primeUserData } from './utils/primeUserData'
 
 export const getMutedUsersQueryKey = (currentUserId: ID | null | undefined) => [
@@ -22,7 +23,7 @@ export const useMutedUsers = (options?: QueryOptions) => {
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  return useQuery({
+  const { data: userIds } = useQuery({
     queryKey: getMutedUsersQueryKey(currentUserId),
     queryFn: async () => {
       if (!currentUserId) return []
@@ -32,9 +33,11 @@ export const useMutedUsers = (options?: QueryOptions) => {
       })
       const users = userMetadataListFromSDK(data)
       primeUserData({ users, queryClient, dispatch })
-      return users
+      return users.map((user) => user.user_id)
     },
     ...options,
     enabled: options?.enabled !== false && !!currentUserId
   })
+
+  return useUsers(userIds)
 }

@@ -37,7 +37,7 @@
 
 :not(.isMobile).genreButton:hover {
   background-color: var(--harmony-s-100);
-  color: var(--harmony-static-white);
+  color: var(--harmony-white);
   border: 1px solid var(--harmony-s-100);
 }
 

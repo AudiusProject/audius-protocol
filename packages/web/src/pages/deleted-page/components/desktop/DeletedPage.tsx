@@ -12,9 +12,9 @@ import { ArtistPopover } from 'components/artist/ArtistPopover'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import Lineup, { LineupProps } from 'components/lineup/Lineup'
-import NavBanner from 'components/nav-banner/NavBanner'
+import { EmptyNavBanner } from 'components/nav-banner/NavBanner'
 import Page from 'components/page/Page'
-import { StatBanner } from 'components/stat-banner/StatBanner'
+import { EmptyStatBanner } from 'components/stat-banner/StatBanner'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
@@ -163,8 +163,8 @@ const DeletedPage = g(
       >
         <div className={styles.headerWrapper}>
           <CoverPhoto userId={user ? user.user_id : null} />
-          <StatBanner isEmpty />
-          <NavBanner empty />
+          <EmptyStatBanner />
+          <EmptyNavBanner />
         </div>
         <div className={styles.contentWrapper}>
           {renderTile()}

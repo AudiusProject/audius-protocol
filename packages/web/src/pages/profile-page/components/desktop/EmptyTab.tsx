@@ -1,28 +1,20 @@
-import { ReactNode } from 'react'
+import { Flex, Text } from '@audius/harmony'
 
 type EmptyTabProps = {
-  text?: string
-  name?: string
-  isOwner?: boolean
-  tab?: 'playlists' | 'albums' | 'tracks' | 'reposts'
-  style?: React.CSSProperties
+  isOwner: boolean
+  name: string
+  text: string
 }
 
-const EmptyTab = ({ text, name, isOwner, tab, style }: EmptyTabProps) => {
-  let message: ReactNode
-  if (text) {
-    message = text
-  } else if (tab) {
-    message = isOwner
-      ? `You haven't created any ${tab} yet`
-      : `${name} hasn't created any ${tab} yet`
-  }
-
+export const EmptyTab = (props: EmptyTabProps) => {
+  const text = props.isOwner
+    ? `You haven't ${props.text} yet...`
+    : `${props.name} hasn’t ${props.text} yet...`
   return (
-    <div className='emptyTab' style={style}>
-      {message}
-    </div>
+    <Flex p='l' flex={1} w='100%' justifyContent='center'>
+      <Text>
+        {text} <i className='emoji thinking-face' />
+      </Text>
+    </Flex>
   )
 }
-
-export default EmptyTab

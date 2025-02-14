@@ -43,6 +43,7 @@ from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.associated_wallet import AssociatedWallet, WalletChain
+from src.models.users.collectibles import Collectibles
 from src.models.users.email import EmailAccess, EncryptedEmail
 from src.models.users.supporter_rank_up import SupporterRankUp
 from src.models.users.usdc_purchase import PurchaseAccessType, USDCPurchase
@@ -182,6 +183,7 @@ def populate_mock_db(db, entities, block_offset=None):
         user_payout_wallet_history = entities.get("user_payout_wallet_history", [])
         encrypted_emails = entities.get("encrypted_emails", [])
         email_access = entities.get("email_access", [])
+        collectibles = entities.get("collectibles", [])
 
         num_blocks = max(
             len(tracks),
@@ -203,6 +205,7 @@ def populate_mock_db(db, entities, block_offset=None):
             len(track_price_history),
             len(album_price_history),
             len(user_payout_wallet_history),
+            len(collectibles),
         )
         for i in range(block_offset, block_offset + num_blocks):
             max_block = session.query(Block).filter(Block.number == i).first()
@@ -918,5 +921,15 @@ def populate_mock_db(db, entities, block_offset=None):
                 updated_at=email_access_meta.get("updated_at", datetime.now()),
             )
             session.add(email_access)
+        for i, collectible_data in enumerate(collectibles):
+            collectible_data_record = Collectibles(
+                user_id=collectible_data.get("user_id", i),
+                data=collectible_data.get("data", {}),
+                blockhash=collectible_data.get("blockhash", str(i + block_offset)),
+                blocknumber=collectible_data.get("blocknumber", i + block_offset),
+                created_at=collectible_data.get("created_at", datetime.now()),
+                updated_at=collectible_data.get("updated_at", datetime.now()),
+            )
+            session.add(collectible_data_record)
 
         session.commit()

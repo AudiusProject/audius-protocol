@@ -113,7 +113,7 @@
 }
 
 .featureIconContainer path {
-  fill: var(--harmony-static-white);
+  fill: var(--harmony-white);
 }
 
 .featureIconContainer:has(.cartIcon) {

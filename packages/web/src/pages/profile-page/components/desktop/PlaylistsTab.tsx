@@ -14,8 +14,8 @@ import { useSelector } from 'react-redux'
 import { CollectionCard } from 'components/collection'
 import { InfiniteCardLineup } from 'components/lineup/InfiniteCardLineup'
 import UploadChip from 'components/upload/UploadChip'
-import EmptyTab from 'pages/profile-page/components/desktop/EmptyTab'
 
+import { EmptyTab } from './EmptyTab'
 import styles from './ProfilePage.module.css'
 
 const { getProfileCollectionSortMode } = profilePageSelectors

@@ -66,7 +66,6 @@ export type UserMetadata = {
   profile_picture_sizes: Nullable<CID>
   metadata_multihash: Nullable<CID>
   has_collectibles: boolean
-  collectiblesOrderUnset?: boolean
   primary_id: number
   secondary_ids: number[]
 
