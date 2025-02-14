@@ -1,5 +1,15 @@
 # @audius/harmony
 
+## 0.4.0
+
+### Minor Changes
+
+- d11f31c: Add X icon
+
+### Patch Changes
+
+- 4cbd971: Add isActive and activeColor to IconButton
+
 ## 0.3.5
 
 ### Patch Changes

@@ -1,5 +1,20 @@
 # @audius/sdk
 
+## 8.1.0
+
+### Minor Changes
+
+- fb32b3d: Update add/remove wallet to use new transaction types
+- c8a0e06: Add support for fetching collectibles
+- 1056ad1: Adds support for updating user collectibles preferences
+- 2edda3f: Pass playlist_contents in updated format
+
+### Patch Changes
+
+- 53fdcf9: Add priority fees to Challenge Rewards Claiming
+- fcb5221: Add new listen streak challenge to allow list
+- 202f0b3: Add support for setting compute budget limit, add multiplier for priority fee percentile.
+
 ## 8.0.1
 
 ### Patch Changes
