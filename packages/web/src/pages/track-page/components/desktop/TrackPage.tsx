@@ -10,9 +10,9 @@ import { CommentSection } from 'components/comments/CommentSection'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
 import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
-import NavBanner from 'components/nav-banner/NavBanner'
+import { EmptyNavBanner } from 'components/nav-banner/NavBanner'
 import Page from 'components/page/Page'
-import { StatBanner } from 'components/stat-banner/StatBanner'
+import { EmptyStatBanner } from 'components/stat-banner/StatBanner'
 import { GiantTrackTile } from 'components/track/GiantTrackTile'
 import { TrackTileSize } from 'components/track/types'
 import { getTrackDefaults, emptyStringGuard } from 'pages/track-page/utils'
@@ -234,8 +234,8 @@ const TrackPage = ({
     >
       <Box w='100%' css={{ position: 'absolute', height: '376px' }}>
         <CoverPhoto loading={loading} userId={user ? user.user_id : null} />
-        <StatBanner isEmpty />
-        <NavBanner empty />
+        <EmptyStatBanner />
+        <EmptyNavBanner />
       </Box>
       <Flex
         direction='column'

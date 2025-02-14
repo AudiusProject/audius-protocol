@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from 'react'
 
+import { useUserCollectibles } from '@audius/common/api'
 import { RandomImage } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
@@ -137,8 +138,12 @@ const CollectionPage = ({ onSelect, source }) => {
   const refs = useRef({})
   const [loadedImgs, setLoadedImgs] = useState([])
   const [page, setPage] = useState(1)
-  const { collectibles, collectibleList, solanaCollectibleList } =
+  const { collectibleList, solanaCollectibleList, user_id } =
     useSelector(getAccountUser)
+
+  const { data: profileCollectibles } = useUserCollectibles({
+    userId: user_id
+  })
   const allCollectibles = [
     ...(collectibleList || []),
     ...(solanaCollectibleList || [])
@@ -148,8 +153,8 @@ const CollectionPage = ({ onSelect, source }) => {
     return acc
   }, {})
 
-  const visibleCollectibles = collectibles?.order
-    ? collectibles.order
+  const visibleCollectibles = profileCollectibles?.order
+    ? profileCollectibles.order
         .map((id) => collectibleIdMap[id])
         .filter(removeNullable)
     : allCollectibles
@@ -237,15 +242,19 @@ const ImageSelectionPopup = ({
   const mainContentRef = useMainContentRef()
   const [page, setPage] = useState(messages.uploadYourOwn)
   const windowSize = useWindowSize()
-  const { collectibles, collectibleList, solanaCollectibleList } =
+  const { collectibleList, solanaCollectibleList, user_id } =
     useSelector(getAccountUser)
+
+  const { data: profileCollectibles } = useUserCollectibles({
+    userId: user_id
+  })
 
   const allCollectibles = [
     ...(collectibleList || []),
     ...(solanaCollectibleList || [])
   ]
-  const visibleCollectibles = collectibles?.order
-    ? allCollectibles.filter((c) => collectibles?.order?.includes(c.id))
+  const visibleCollectibles = profileCollectibles?.order
+    ? profileCollectibles.order
     : allCollectibles
 
   const handleClose = () => {
