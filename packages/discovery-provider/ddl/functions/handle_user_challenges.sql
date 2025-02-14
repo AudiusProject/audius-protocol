@@ -5,7 +5,6 @@ declare
   listen_streak_value integer;
 begin
     if (new.is_complete = true) then
-        raise notice 'Farid Debug: Processing user challenge completion for user % (challenge: %)', new.user_id, new.challenge_id;
         -- attempt to insert a new notification, ignoring conflicts
         select challenges.cooldown_days into cooldown_days from challenges where id = new.challenge_id;
 
@@ -62,12 +61,6 @@ begin
                 end
             )
             on conflict do nothing;
-            
-            if found then
-                raise notice 'Farid Debug: Inserted new challenge reward notification for user % (challenge: %)', new.user_id, new.challenge_id;
-            else
-                raise notice 'Farid Debug: Skipped duplicate notification for user % (challenge: %)', new.user_id, new.challenge_id;
-            end if;
         else
             -- transactional notifications cover this 
             if (new.challenge_id != 'b' and new.challenge_id != 's') then
