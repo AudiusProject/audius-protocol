@@ -345,7 +345,6 @@ workflows:
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
             .circleci/.* run-embed-workflow true
-            .circleci/.* run-integration-workflow true
             package-lock.json run-sdk-workflow true
             .* run-release-workflow false
             packages/discovery-provider/.* run-discovery-workflow true
