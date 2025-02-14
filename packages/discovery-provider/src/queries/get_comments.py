@@ -1,4 +1,5 @@
-import logging  # pylint: disable=C0302
+import logging
+from typing import TypedDict
 
 from sqlalchemy import and_, asc, desc, func, or_
 from sqlalchemy.orm import aliased
@@ -397,10 +398,21 @@ def get_track_comments(args, track_id, current_user_id=None):
         return track_comment_res
 
 
-def get_user_comments(args, user_id, current_user_id):
+class GetUserCommentsArgs(TypedDict):
+    sort_method: str
+    offset: int
+    limit: int
+    target_user_id: int
+    current_user_id: int
+
+
+def get_user_comments(args: GetUserCommentsArgs):
     offset, limit = format_offset(args), format_limit(
         args, default_limit=COMMENT_ROOT_DEFAULT_LIMIT
     )
+
+    user_id = args["target_user_id"]
+    current_user_id = args["current_user_id"]
 
     user_comments = []
     db = get_db_read_replica()
@@ -444,11 +456,6 @@ def get_user_comments(args, user_id, current_user_id):
                         mentioned_users.c.is_delete,
                     )
                 ).label("mentions"),
-                Track.owner_id.label("artist_id"),
-            )
-            .outerjoin(
-                Track,
-                Comment.entity_id == Track.track_id,
             )
             .outerjoin(
                 mentioned_users,
@@ -467,7 +474,6 @@ def get_user_comments(args, user_id, current_user_id):
                 Comment.comment_id,
                 react_count_subquery.c.react_count,
                 CommentNotificationSetting.is_muted,
-                Track.owner_id,
             )
             .filter(
                 Comment.user_id == user_id,
@@ -481,14 +487,7 @@ def get_user_comments(args, user_id, current_user_id):
         ).all()
 
         user_comments_res = []
-        for [user_comment, react_count, is_muted, mentions, artist_id] in user_comments:
-            replies = get_replies(
-                session,
-                user_comment.comment_id,
-                current_user_id,
-                artist_id,
-                limit=None,
-            )
+        for [user_comment, react_count, is_muted, mentions] in user_comments:
 
             def remove_delete(mention):
                 del mention["is_delete"]
@@ -499,7 +498,6 @@ def get_user_comments(args, user_id, current_user_id):
                     mention["user_id"] is not None and mention["is_delete"] is not True
                 )
 
-            reply_count = len(replies)
             user_comments_res.append(
                 {
                     "id": encode_int_id(user_comment.comment_id),
@@ -518,11 +516,9 @@ def get_user_comments(args, user_id, current_user_id):
                     "is_edited": user_comment.is_edited,
                     "track_timestamp_s": user_comment.track_timestamp_s,
                     "react_count": react_count,
-                    "reply_count": reply_count,
                     "is_current_user_reacted": get_is_reacted(
                         session, current_user_id, user_comment.comment_id
                     ),
-                    "replies": replies[:3],
                     "created_at": str(user_comment.created_at),
                     "updated_at": str(user_comment.updated_at),
                     "is_muted": is_muted if is_muted is not None else False,

@@ -941,7 +941,7 @@ export const useReportComment = () => {
               replies: prevData.replies?.filter(
                 (reply: ReplyComment) => reply.id !== commentId
               ),
-              replyCount: prevData.replyCount - 1
+              replyCount: prevData.replyCount ? prevData.replyCount - 1 : 0
             } as Comment
           }
         )
@@ -1047,7 +1047,7 @@ export const useMuteUser = () => {
                   // Subtract how many replies were removed from total reply count
                   // NOTE: remember that not all replies by the user may be showing due to pagination
                   rootComment.replyCount =
-                    rootComment.replyCount -
+                    (rootComment.replyCount ?? 0) -
                     (prevReplyCount - rootComment.replies.length)
                 }
 
