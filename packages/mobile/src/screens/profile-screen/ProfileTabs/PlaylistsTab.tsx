@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import { useUserPlaylists } from '@audius/common/api'
 import { CreatePlaylistSource } from '@audius/common/models'
 import { useIsFocused } from '@react-navigation/native'
@@ -20,10 +22,19 @@ export const PlaylistsTab = () => {
   const isOwner = useSelector((state) => getIsOwner(state, handle ?? ''))
   const isFocused = useIsFocused()
 
-  const { data: playlists, isPending } = useUserPlaylists(
-    { userId: user_id },
-    { enabled: isFocused }
-  )
+  const {
+    data: playlists,
+    isPending,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage
+  } = useUserPlaylists({ userId: user_id }, { enabled: isFocused })
+
+  const handleEndReached = useCallback(() => {
+    if (!isFetchingNextPage && hasNextPage) {
+      fetchNextPage()
+    }
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
 
   return (
     <CollectionList
@@ -38,6 +49,8 @@ export const PlaylistsTab = () => {
       showCreateCollectionTile={isOwner}
       createPlaylistSource={CreatePlaylistSource.PROFILE_PAGE}
       isLoading={isPending}
+      onEndReached={handleEndReached}
+      isLoadingMore={isFetchingNextPage}
     />
   )
 }
