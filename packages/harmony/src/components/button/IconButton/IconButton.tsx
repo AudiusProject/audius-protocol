@@ -12,6 +12,8 @@ export type IconButtonProps = {
   ripple?: boolean
   'aria-label': string
   iconCss?: CSSObject
+  isActive?: boolean
+  activeColor?: IconProps['color']
 } & Pick<IconProps, 'color' | 'size' | 'shadow' | 'height' | 'width'> &
   BaseButtonProps
 
@@ -31,10 +33,16 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
       width,
       iconCss,
       children,
+      isActive,
+      activeColor,
       ...other
     } = props
     const { disabled, isLoading, asChild } = other
     const { color, cornerRadius, spacing, motion, iconSizes } = useTheme()
+
+    const currentIconColor = disabled
+      ? 'disabled'
+      : (isActive && activeColor) || iconColor
 
     const buttonCss: CSSObject = {
       background: 'transparent',
@@ -43,27 +51,34 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
       padding: ripple ? spacing.xs : 0,
       overflow: 'unset',
       svg: {
-        transition: `
-        transform ${motion.hover},
-        color ${motion.hover}
-        `
+        transition: `transform ${motion.hover}`,
+        path: {
+          transition: `fill ${motion.hover}`
+        }
       },
       '&:hover': {
         transform: 'scale(1.0)',
         svg: {
-          transform: 'scale(1.1)'
+          transform: 'scale(1.1)',
+          path: {
+            fill: activeColor ? color.icon[activeColor] : undefined
+          }
         }
       },
       '&:active': {
         transform: 'scale(1.0)',
         svg: {
-          transform: 'scale(0.98)'
+          transform: 'scale(0.98)',
+          path: {
+            fill: activeColor ? color.icon[activeColor] : undefined
+          }
         }
       }
     }
 
     const rippleCss: CSSObject = {
-      '&:hover': {
+      transition: `background-color ${motion.hover}`,
+      '&:hover, &[data-active="true"]': {
         backgroundColor: color.neutral.n100
       },
       '&:active': {
@@ -78,8 +93,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
     const loadingIconCss: CSSObject = {
       ...iconCss,
       height: iconSizes[size],
-      width: iconSizes[size],
-      color: color.icon[iconColor ?? 'default']
+      width: iconSizes[size]
     }
 
     return (
@@ -87,14 +101,15 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         ref={ref}
         type={asChild ? undefined : 'button'}
         {...other}
-        css={[buttonCss, ripple && rippleCss]}
+        css={[buttonCss, (ripple || isActive) && rippleCss]}
         styles={{ icon: loadingIconCss }}
         slotted
+        data-active={isActive}
       >
         {isLoading ? null : (
           <Icon
             aria-hidden
-            color={disabled ? 'disabled' : iconColor}
+            color={currentIconColor}
             size={size}
             shadow={shadow}
             height={height}

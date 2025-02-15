@@ -68,6 +68,81 @@ const messages = {
  * QUERIES
  *
  */
+export type GetCommentsByUserIdArgs = {
+  userId: ID
+  currentUserId?: ID
+  sortMethod?: CommentSortMethod
+  pageSize?: number
+}
+
+export const useGetCommentsByUserId = ({
+  userId,
+  currentUserId,
+  pageSize = COMMENT_ROOT_PAGE_SIZE
+}: GetCommentsByUserIdArgs) => {
+  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const isMutating = useIsMutating()
+  const queryClient = useQueryClient()
+  const dispatch = useDispatch()
+
+  const queryRes = useInfiniteQuery({
+    enabled: !!userId && userId !== 0 && isMutating === 0,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage: ID[], pages) => {
+      if (lastPage?.length < pageSize) return undefined
+      return (pages.length ?? 0) * pageSize
+    },
+    queryKey: [QUERY_KEYS.userCommentList, userId],
+    queryFn: async ({ pageParam }): Promise<ID[]> => {
+      const sdk = await audiusSdk()
+      const commentsRes = await sdk.users.userComments({
+        id: Id.parse(userId),
+        userId: currentUserId?.toString() ?? undefined,
+        offset: pageParam,
+        limit: pageSize
+      })
+
+      const commentList = transformAndCleanList(
+        commentsRes.data,
+        commentFromSDK
+      )
+
+      // Populate individual comment cache
+      commentList.forEach((comment) => {
+        queryClient.setQueryData<CommentOrReply>(
+          getCommentQueryKey(comment.id),
+          comment
+        )
+        comment?.replies?.forEach?.((reply) =>
+          queryClient.setQueryData<CommentOrReply>(
+            getCommentQueryKey(reply.id),
+            reply
+          )
+        )
+      })
+      // For the comment list cache, we only store the ids of the comments (organized by sort method)
+      return commentList.map((comment) => comment.id)
+    },
+    staleTime: Infinity, // Stale time is set to infinity so that we never reload data thats currently shown on screen (because sorting could have changed)
+    gcTime: 0 // Cache time is set to 1 so that the data is cleared any time we leave the page viewing it or change sorts
+  })
+
+  const { error } = queryRes
+
+  useEffect(() => {
+    if (error) {
+      reportToSentry({
+        error,
+        name: 'Comments',
+        feature: Feature.Comments
+      })
+      dispatch(toast({ content: messages.loadError('comments') }))
+    }
+  }, [error, dispatch, reportToSentry])
+
+  return { ...queryRes, data: queryRes.data?.pages?.flat() ?? [] }
+}
+
 export type GetCommentsByTrackArgs = {
   trackId: ID
   userId: ID | null
@@ -866,7 +941,7 @@ export const useReportComment = () => {
               replies: prevData.replies?.filter(
                 (reply: ReplyComment) => reply.id !== commentId
               ),
-              replyCount: prevData.replyCount - 1
+              replyCount: prevData.replyCount ? prevData.replyCount - 1 : 0
             } as Comment
           }
         )
@@ -972,7 +1047,7 @@ export const useMuteUser = () => {
                   // Subtract how many replies were removed from total reply count
                   // NOTE: remember that not all replies by the user may be showing due to pagination
                   rootComment.replyCount =
-                    rootComment.replyCount -
+                    (rootComment.replyCount ?? 0) -
                     (prevReplyCount - rootComment.replies.length)
                 }
 

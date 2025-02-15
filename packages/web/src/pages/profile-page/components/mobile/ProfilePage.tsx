@@ -1,10 +1,6 @@
-import { useEffect, useContext, ReactNode } from 'react'
+import { useEffect, useContext } from 'react'
 
-import {
-  useUserCollectibles,
-  useUserPlaylists,
-  useUserAlbums
-} from '@audius/common/api'
+import { useUserCollectibles } from '@audius/common/api'
 import {
   Status,
   Collection,
@@ -27,17 +23,12 @@ import {
   IconCollectible as IconCollectibles,
   IconNote,
   IconPlaylists,
-  IconRepost as IconReposts,
-  LoadingSpinner,
-  Box,
-  Flex
+  IconRepost as IconReposts
 } from '@audius/harmony'
 import cn from 'classnames'
 
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
-import { CollectionCard } from 'components/collection'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
-import CardLineup from 'components/lineup/CardLineup'
 import Lineup from 'components/lineup/Lineup'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, {
@@ -52,7 +43,10 @@ import { withNullGuard } from 'utils/withNullGuard'
 
 import { DeactivatedProfileTombstone } from '../DeactivatedProfileTombstone'
 
+import { AlbumsTab } from './AlbumsTab'
 import EditProfile from './EditProfile'
+import { EmptyTab } from './EmptyTab'
+import { PlaylistsTab } from './PlaylistsTab'
 import ProfileHeader from './ProfileHeader'
 import styles from './ProfilePage.module.css'
 import { ShareUserButton } from './ShareUserButton'
@@ -142,14 +136,6 @@ export type ProfilePageProps = {
   onCloseArtistRecommendations: () => void
 }
 
-type EmptyTabProps = {
-  message: ReactNode
-}
-
-const EmptyTab = (props: EmptyTabProps) => {
-  return <div className={styles.emptyTab}>{props.message}</div>
-}
-
 const artistTabs: TabHeader[] = [
   {
     icon: <IconNote />,
@@ -229,102 +215,6 @@ const g = withNullGuard((props: ProfilePageProps) => {
     return { ...props, profile }
   }
 })
-
-const PlaylistsTab = ({
-  isOwner,
-  profile,
-  userId
-}: {
-  isOwner: boolean
-  profile: User
-  userId: ID | null
-}) => {
-  const { data: playlists, isPending } = useUserPlaylists({ userId })
-
-  const playlistCards =
-    playlists?.map((playlist) => (
-      <CollectionCard
-        key={playlist.playlist_id}
-        id={playlist.playlist_id}
-        size='xs'
-      />
-    )) || []
-
-  if (isPending) {
-    return (
-      <Flex justifyContent='center' mt='l'>
-        <Box w={24}>
-          <LoadingSpinner />
-        </Box>
-      </Flex>
-    )
-  }
-
-  if (!playlists?.length && !isOwner) {
-    return (
-      <EmptyTab
-        message={
-          <>
-            {isOwner
-              ? "You haven't created any playlists yet"
-              : `${profile.name} hasn't created any playlists yet`}
-            <i className={cn('emoji', 'face-with-monocle', styles.emoji)} />
-          </>
-        }
-      />
-    )
-  }
-
-  return <CardLineup cardsClassName={styles.cardLineup} cards={playlistCards} />
-}
-
-const AlbumsTab = ({
-  isOwner,
-  profile,
-  userId
-}: {
-  isOwner: boolean
-  profile: User
-  userId: ID | null
-}) => {
-  const { data: albums, isPending } = useUserAlbums({ userId })
-
-  const albumCards =
-    albums?.map((album) => (
-      <CollectionCard
-        key={album.playlist_id}
-        id={album.playlist_id}
-        size='xs'
-      />
-    )) || []
-
-  if (isPending) {
-    return (
-      <Flex justifyContent='center' mt='l'>
-        <Box w={24}>
-          <LoadingSpinner />
-        </Box>
-      </Flex>
-    )
-  }
-
-  if (!albums?.length && !isOwner) {
-    return (
-      <EmptyTab
-        message={
-          <>
-            {isOwner
-              ? "You haven't created any albums yet"
-              : `${profile.name} hasn't created any albums yet`}
-            <i className={cn('emoji', 'face-with-monocle', styles.emoji)} />
-          </>
-        }
-      />
-    )
-  }
-
-  return <CardLineup cardsClassName={styles.cardLineup} cards={albumCards} />
-}
 
 const ProfilePage = g(
   ({

@@ -104,6 +104,7 @@ models/UndisbursedChallenge.ts
 models/UndisbursedChallenges.ts
 models/User.ts
 models/UserAssociatedWalletResponse.ts
+models/UserCommentsResponse.ts
 models/UserResponse.ts
 models/UserSearch.ts
 models/UserTrackListenCountsResponse.ts

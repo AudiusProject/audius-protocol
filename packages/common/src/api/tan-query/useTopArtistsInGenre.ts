@@ -31,7 +31,7 @@ export const useTopArtistsInGenre = (
   const dispatch = useDispatch()
   const { genre, pageSize = ARTISTS_PER_GENRE_PAGE_SIZE } = args
 
-  const { data: userIds } = useInfiniteQuery({
+  const { data: userIds, ...queryResult } = useInfiniteQuery({
     queryKey: getTopArtistsInGenreQueryKey(genre, pageSize),
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
@@ -54,5 +54,10 @@ export const useTopArtistsInGenre = (
     enabled: options?.enabled !== false && !!genre
   })
 
-  return useUsers(userIds)
+  const { data: users } = useUsers(userIds)
+
+  return {
+    data: users,
+    ...queryResult
+  }
 }

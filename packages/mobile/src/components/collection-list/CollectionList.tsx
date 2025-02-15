@@ -29,17 +29,26 @@ type CreateCollectionTileProps = {
   createPlaylistCallback?: () => void
 }
 
+// Props for infinite loading
+type InfiniteLoadingProps = {
+  onEndReached?: () => void
+  onEndReachedThreshold?: number
+  isLoadingMore?: boolean
+}
+
 type FullCollectionListProps = {
   collection?: Collection[]
   renderItem?: ListRenderItem<Collection | CreateCard> | null
   onCollectionPress?: (id: ID) => void
 } & FullListProps &
-  CreateCollectionTileProps
+  CreateCollectionTileProps &
+  InfiniteLoadingProps
 
 type CollectionIdListProps = {
   collectionIds: ID[]
 } & IDListProps &
-  CreateCollectionTileProps
+  CreateCollectionTileProps &
+  InfiniteLoadingProps
 
 type CollectionListProps = FullCollectionListProps | CollectionIdListProps
 
@@ -53,6 +62,9 @@ const FullCollectionList = (props: FullCollectionListProps) => {
     createPlaylistCallback,
     renderItem,
     onCollectionPress,
+    onEndReached,
+    onEndReachedThreshold,
+    isLoadingMore,
     ...other
   } = props
 
@@ -93,6 +105,9 @@ const FullCollectionList = (props: FullCollectionListProps) => {
       data={updatedCollection}
       renderItem={renderItem ?? renderCard}
       LoadingCardComponent={CollectionCardSkeleton}
+      onEndReached={onEndReached}
+      onEndReachedThreshold={onEndReachedThreshold}
+      isLoadingMore={isLoadingMore}
       {...other}
     />
   )
@@ -112,6 +127,9 @@ const CollectionIDList = (props: CollectionIdListProps) => {
     createPlaylistSource = CreatePlaylistSource.LIBRARY_PAGE,
     createPlaylistTrackId,
     createPlaylistCallback,
+    onEndReached,
+    onEndReachedThreshold,
+    isLoadingMore,
     ...other
   } = props
 
@@ -147,6 +165,9 @@ const CollectionIDList = (props: CollectionIdListProps) => {
       data={idList}
       renderItem={renderCard}
       LoadingCardComponent={CollectionCardSkeleton}
+      onEndReached={onEndReached}
+      onEndReachedThreshold={onEndReachedThreshold}
+      isLoadingMore={isLoadingMore}
       {...other}
     />
   )

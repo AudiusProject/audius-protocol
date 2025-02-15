@@ -92,7 +92,7 @@ class ChallengeListenEndlessStreakUpdater(ChallengeUpdater):
         created_at = datetime.fromtimestamp(extra["created_at"])
         formatted_date = created_at.strftime("%Y%m%d")
         if env == "stage":
-            formatted_date = created_at.strftime("%Y%m%d%H%M%S")
+            formatted_date = created_at.strftime("%Y%m%d%H%M")
         return f"{hex(user_id)[2:]}_{formatted_date}"
 
     def should_create_new_challenge(

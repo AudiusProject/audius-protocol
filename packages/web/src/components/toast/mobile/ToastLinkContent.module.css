@@ -3,12 +3,12 @@
 }
 
 .link {
-  color: var(--harmony-static-white);
-  border-bottom: 1px solid var(--harmony-static-white);
+  color: var(--harmony-white);
+  border-bottom: 1px solid var(--harmony-white);
   transition: border-color 100ms;
 }
 
 .link:hover {
-  color: var(--harmony-static-white);
+  color: var(--harmony-white);
   border-color: rgba(0, 0, 0, 0);
 }
