@@ -2,11 +2,11 @@ create or replace function handle_on_user_challenge() returns trigger as $$
 declare
   cooldown_days integer;
   existing_notification integer;
+  listen_streak_value integer;
 begin
     if (new.is_complete = true) then
         -- attempt to insert a new notification, ignoring conflicts
         select challenges.cooldown_days into cooldown_days from challenges where id = new.challenge_id;
-
 
         if (cooldown_days is null or cooldown_days = 0) then
             -- Check if there is an existing notification with the same fields in the last 15 minutes
@@ -27,6 +27,13 @@ begin
                 on conflict do nothing;
             end if;
 
+            if new.challenge_id = 'e' then
+                select listen_streak into listen_streak_value
+                from challenge_listen_streak
+                where user_id = new.user_id
+                limit 1;
+            end if;
+
             insert into notification
             (blocknumber, user_ids, timestamp, type, group_id, specifier, data)
             values
@@ -37,7 +44,21 @@ begin
                 'challenge_reward',
                 'challenge_reward:' || new.user_id || ':challenge:' || new.challenge_id || ':specifier:' || new.specifier,
                 new.user_id,
-                json_build_object('specifier', new.specifier, 'challenge_id', new.challenge_id, 'amount', new.amount::text || '00000000' ) -- convert amount
+                case 
+                    when new.challenge_id = 'e' then
+                        json_build_object(
+                            'specifier', new.specifier,
+                            'challenge_id', new.challenge_id,
+                            'amount', new.amount::text || '00000000',
+                            'listen_streak', coalesce(listen_streak_value, 0)
+                        )
+                    else
+                        json_build_object(
+                            'specifier', new.specifier,
+                            'challenge_id', new.challenge_id,
+                            'amount', new.amount::text || '00000000'
+                        )
+                end
             )
             on conflict do nothing;
         else

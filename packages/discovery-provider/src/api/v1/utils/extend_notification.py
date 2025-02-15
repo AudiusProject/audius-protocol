@@ -343,6 +343,7 @@ def extend_challenge_reward(action: NotificationAction):
             "amount": to_wei_string(data["amount"]),
             "specifier": data["specifier"],
             "challenge_id": data["challenge_id"],
+            "listen_streak": data.get("listen_streak"),
         },
     }
 
