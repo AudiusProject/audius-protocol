@@ -42,7 +42,7 @@ export const useRelatedArtists = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const { data: userIds } = useInfiniteQuery({
+  const { data: userIds, ...queryResult } = useInfiniteQuery({
     queryKey: getRelatedArtistsQueryKey({ artistId, pageSize, filterFollowed }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: ID[], allPages) => {
@@ -67,5 +67,10 @@ export const useRelatedArtists = (
     enabled: options?.enabled !== false && !!artistId
   })
 
-  return useUsers(userIds)
+  const { data: users } = useUsers(userIds)
+
+  return {
+    data: users,
+    ...queryResult
+  }
 }

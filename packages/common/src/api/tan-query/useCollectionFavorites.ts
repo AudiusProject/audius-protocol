@@ -37,7 +37,7 @@ export const useCollectionFavorites = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  return useInfiniteQuery({
+  const { data: users, ...queryResult } = useInfiniteQuery({
     queryKey: getCollectionFavoritesQueryKey({ collectionId, pageSize }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: User[], allPages) => {
@@ -60,4 +60,9 @@ export const useCollectionFavorites = (
     ...options,
     enabled: options?.enabled !== false && !!collectionId
   })
+
+  return {
+    data: users,
+    ...queryResult
+  }
 }

@@ -33,7 +33,7 @@ export const useCollectionReposts = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const { data: userIds } = useInfiniteQuery({
+  const { data: userIds, ...queryResult } = useInfiniteQuery({
     queryKey: getCollectionRepostsQueryKey({ collectionId, pageSize }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: ID[], allPages) => {
@@ -57,5 +57,10 @@ export const useCollectionReposts = (
     enabled: options?.enabled !== false && !!collectionId
   })
 
-  return useUsers(userIds)
+  const { data: users } = useUsers(userIds)
+
+  return {
+    data: users,
+    ...queryResult
+  }
 }
