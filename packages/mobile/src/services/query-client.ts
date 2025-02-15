@@ -10,7 +10,8 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: true,
       refetchOnReconnect: true,
       refetchOnMount: true,
-      throwOnError: env.ENVIRONMENT === 'development' // feature-tan-query TODO: remove before going to main?
+      throwOnError: env.ENVIRONMENT === 'development', // feature-tan-query TODO: remove before going to main?,
+      experimental_prefetchInRender: true
     }
   }
 })

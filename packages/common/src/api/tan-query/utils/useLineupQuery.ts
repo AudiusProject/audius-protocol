@@ -1,9 +1,14 @@
+import { useMemo } from 'react'
+
 import { UseInfiniteQueryResult } from '@tanstack/react-query'
+import { partition } from 'lodash'
 import { Selector, useDispatch, useSelector } from 'react-redux'
 
 import {
+  LineupEntry,
   Collection,
   ID,
+  Kind,
   LineupState,
   LineupTrack,
   PlaybackSource,
@@ -15,6 +20,9 @@ import {
 import { CommonState } from '~/store/commonStore'
 import { LineupActions } from '~/store/lineup/actions'
 import { getPlaying } from '~/store/player/selectors'
+
+import { useCollections } from '../useCollections'
+import { useTracks } from '../useTracks'
 
 import { loadNextPage } from './infiniteQueryLoadNextPage'
 
@@ -62,11 +70,44 @@ export const useLineupQuery = ({
     lineup.status
   ])
 
+  const [lineupTrackIds, lineupCollectionIds] = useMemo(() => {
+    const [tracks, collections] = partition(
+      lineup.entries,
+      (entry) => entry.kind === Kind.TRACKS
+    )
+    return [
+      tracks.map((entry) => entry.id),
+      collections.map((entry) => entry.id)
+    ]
+  }, [lineup.entries])
+
+  const { data: tracks } = useTracks(lineupTrackIds)
+  const { data: collections } = useCollections(lineupCollectionIds)
+
+  const entries: LineupEntry<LineupTrack | Track | Collection>[] =
+    useMemo(() => {
+      return lineup.entries.map((entry) => {
+        const entity =
+          entry.kind === Kind.TRACKS
+            ? tracks?.find((track) => track.track_id === entry.id)
+            : entry.kind === Kind.COLLECTIONS
+              ? collections?.find(
+                  (collection) => collection.playlist_id === entry.id
+                )
+              : entry
+        return {
+          ...entry,
+          ...entity
+        } as LineupEntry<LineupTrack | Track | Collection>
+      })
+    }, [lineup.entries, tracks, collections])
+
   return {
     status,
     source: playbackSource,
     lineup: {
       ...lineup,
+      entries,
       status,
       isMetadataLoading: status === Status.LOADING,
       hasMore: queryData.isLoading ? true : queryData.hasNextPage

@@ -74,22 +74,21 @@ export const TrackTableLineup = ({
   const isBuffering = useSelector(getBuffering)
 
   // Merge lineup entries with their corresponding track data
-  const mergedData = useMemo(() => {
+  const entries = useMemo(() => {
     if (lineup.entries.length === 0 || !tracks || tracks.length === 0) return []
-    const merged = tracks.map((track, index) => ({
-      ...lineup.entries[index],
-      ...track
-    }))
+
     return hasNextPage
-      ? merged.concat(new Array(pageSize).fill({ kind: Kind.EMPTY }))
-      : merged
+      ? (lineup.entries as LineupTrack[]).concat(
+          new Array(pageSize).fill({ kind: Kind.EMPTY })
+        )
+      : (lineup.entries as LineupTrack[])
   }, [lineup.entries, tracks, hasNextPage, pageSize])
 
   // Get the playing index by finding the current track in the data
   const playingIndex = useMemo(() => {
     if (!currentQueueItem?.uid) return -1
-    return mergedData.findIndex((track) => track.uid === currentQueueItem.uid)
-  }, [currentQueueItem?.uid, mergedData])
+    return entries.findIndex((track) => track.uid === currentQueueItem.uid)
+  }, [currentQueueItem?.uid, entries])
 
   const onClickFavorite = useCallback(
     (track: TrackWithUID) => {
@@ -134,7 +133,7 @@ export const TrackTableLineup = ({
           })
         )
       } else {
-        play(mergedData[index].uid)
+        play(entries[index].uid)
         dispatch(
           make(Name.PLAYBACK_PLAY, {
             id: `${track.track_id}`,
@@ -143,13 +142,13 @@ export const TrackTableLineup = ({
         )
       }
     },
-    [dispatch, isPlaying, pause, play, playingSource, playingIndex, mergedData]
+    [dispatch, isPlaying, pause, play, playingSource, playingIndex, entries]
   )
 
   return (
     <TracksTable
       {...props}
-      data={mergedData}
+      data={entries}
       onClickFavorite={onClickFavorite}
       onClickRepost={onClickRepost}
       playing={isPlaying && !isBuffering}
