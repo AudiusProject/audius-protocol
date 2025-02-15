@@ -1,4 +1,4 @@
-import { Collectible, CollectiblesMetadata } from '~/models/Collectible'
+import { Collectible } from '~/models/Collectible'
 import { Color } from '~/models/Color'
 import { CID, ID } from '~/models/Identifiers'
 import {
@@ -27,8 +27,6 @@ export type UserMetadata = {
   bio: Nullable<string>
   blocknumber: number
   collectibleList?: Collectible[]
-  collectibles?: CollectiblesMetadata
-  collectiblesOrderUnset?: boolean
   cover_photo_cids?: Nullable<CoverPhotoSizesCids>
   cover_photo_sizes: Nullable<CID>
   cover_photo: CoverPhotoSizes & { mirrors?: string[] | undefined }

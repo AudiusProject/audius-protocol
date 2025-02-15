@@ -18,6 +18,7 @@ import * as runtime from '../runtime';
 import type {
   AlbumsResponse,
   AuthorizedApps,
+  CollectiblesResponse,
   ConnectedWalletsResponse,
   DeveloperApps,
   EmailAccessResponse,
@@ -39,6 +40,7 @@ import type {
   TagsResponse,
   TracksResponse,
   UserAssociatedWalletResponse,
+  UserCommentsResponse,
   UserResponse,
   UserSearch,
   UserTrackListenCountsResponse,
@@ -51,6 +53,8 @@ import {
     AlbumsResponseToJSON,
     AuthorizedAppsFromJSON,
     AuthorizedAppsToJSON,
+    CollectiblesResponseFromJSON,
+    CollectiblesResponseToJSON,
     ConnectedWalletsResponseFromJSON,
     ConnectedWalletsResponseToJSON,
     DeveloperAppsFromJSON,
@@ -93,6 +97,8 @@ import {
     TracksResponseToJSON,
     UserAssociatedWalletResponseFromJSON,
     UserAssociatedWalletResponseToJSON,
+    UserCommentsResponseFromJSON,
+    UserCommentsResponseToJSON,
     UserResponseFromJSON,
     UserResponseToJSON,
     UserSearchFromJSON,
@@ -312,6 +318,10 @@ export interface GetUserChallengesRequest {
     showHistorical?: boolean;
 }
 
+export interface GetUserCollectiblesRequest {
+    id: string;
+}
+
 export interface GetUserEmailKeyRequest {
     receivingUserId: string;
     grantorUserId: string;
@@ -339,6 +349,13 @@ export interface SearchUsersRequest {
     genre?: Array<string>;
     sortMethod?: SearchUsersSortMethodEnum;
     isVerified?: string;
+}
+
+export interface UserCommentsRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
 }
 
 export interface VerifyIDTokenRequest {
@@ -1606,6 +1623,37 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
+     * Get the User\'s indexed collectibles data
+     */
+    async getUserCollectiblesRaw(params: GetUserCollectiblesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CollectiblesResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserCollectibles.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/collectibles`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CollectiblesResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get the User\'s indexed collectibles data
+     */
+    async getUserCollectibles(params: GetUserCollectiblesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CollectiblesResponse> {
+        const response = await this.getUserCollectiblesRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
      * Gets the encrypted key for email access between the receiving user and granting user.
      */
     async getUserEmailKeyRaw(params: GetUserEmailKeyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EmailAccessResponse>> {
@@ -1804,6 +1852,49 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async searchUsers(params: SearchUsersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserSearch> {
         const response = await this.searchUsersRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Get user comment history
+     */
+    async userCommentsRaw(params: UserCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserCommentsResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling userComments.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/comments`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => UserCommentsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get user comment history
+     */
+    async userComments(params: UserCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserCommentsResponse> {
+        const response = await this.userCommentsRaw(params, initOverrides);
         return await response.value();
     }
 

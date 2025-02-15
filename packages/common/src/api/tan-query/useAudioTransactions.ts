@@ -86,7 +86,7 @@ export const useAudioTransactions = (
   const pages = query.data?.pages
   // Get user IDs from tip transactions
   const userIds = pages?.[pages.length - 1]
-    ?.map((tx: TransactionDetails) => {
+    .map((tx: TransactionDetails) => {
       if (tx.transactionType === TransactionType.TIP) {
         return tx.metadata
       }

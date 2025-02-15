@@ -1,5 +1,5 @@
 .container {
-  width: 208px;
+  width: 100%;
   height: 56px;
   border-radius: 6px;
   padding: 8px 6px;
@@ -15,6 +15,7 @@
 }
 
 .isCompact {
+  width: 208px;
   border-radius: 8px;
   border: 1px solid var(--harmony-n-100);
   justify-content: center;

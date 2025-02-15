@@ -46,6 +46,8 @@ import {
   UnfollowUserSchema,
   UnsubscribeFromUserRequest,
   UnsubscribeFromUserSchema,
+  UpdateCollectiblesRequest,
+  UpdateCollectiblesSchema,
   UpdateProfileRequest,
   UpdateProfileSchema
 } from './types'
@@ -241,8 +243,6 @@ export class UsersApi extends GeneratedUsersApi {
 
     const cid = (await generateMetadataCidV1(updatedMetadata)).toString()
 
-    const { collectibles, ...indexedMetadataValues } = updatedMetadata
-
     // Write metadata to chain
     return await this.entityManager.manageEntity({
       userId,
@@ -251,11 +251,7 @@ export class UsersApi extends GeneratedUsersApi {
       action: Action.UPDATE,
       metadata: JSON.stringify({
         cid,
-        data: {
-          ...snakecaseKeys(indexedMetadataValues),
-          // Do not snake case values that are part of cid data.
-          collectibles
-        }
+        data: updatedMetadata
       }),
       ...advancedOptions
     })
@@ -708,6 +704,27 @@ export class UsersApi extends GeneratedUsersApi {
           wallet_address,
           chain
         }
+      })
+    })
+  }
+
+  /** @hidden
+   * Update user collectibles preferences
+   */
+  async updateCollectibles(params: UpdateCollectiblesRequest) {
+    const { userId, collectibles } = await parseParams(
+      'updateCollectibles',
+      UpdateCollectiblesSchema
+    )(params)
+
+    return await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.COLLECTIBLES,
+      entityId: 0, // unused
+      action: Action.UPDATE,
+      metadata: JSON.stringify({
+        cid: '',
+        data: { collectibles: collectibles ?? {} }
       })
     })
   }

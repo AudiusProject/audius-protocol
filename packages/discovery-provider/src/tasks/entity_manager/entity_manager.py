@@ -32,6 +32,7 @@ from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.associated_wallet import AssociatedWallet
+from src.models.users.collectibles import Collectibles
 from src.models.users.email import EmailAccess, EncryptedEmail
 from src.models.users.user import User
 from src.models.users.user_events import UserEvent
@@ -103,6 +104,7 @@ from src.tasks.entity_manager.entities.user import (
     create_user,
     remove_associated_wallet,
     update_user,
+    update_user_collectibles,
     verify_user,
 )
 from src.tasks.entity_manager.utils import (
@@ -141,6 +143,7 @@ entity_type_table_mapping = {
     "Track": Track.__tablename__,
     "User": User.__tablename__,
     "AssociatedWallet": AssociatedWallet.__tablename__,
+    "Collectibles": Collectibles.__tablename__,
     "UserEvent": UserEvent.__tablename__,
     "TrackRoute": TrackRoute.__tablename__,
     "PlaylistRoute": PlaylistRoute.__tablename__,
@@ -457,6 +460,10 @@ def entity_manager_update(
                         and params.entity_type == EntityType.ASSOCIATED_WALLET
                     ):
                         remove_associated_wallet(params)
+                    elif (
+                        params.action == Action.CREATE or params.action == Action.UPDATE
+                    ) and params.entity_type == EntityType.COLLECTIBLES:
+                        update_user_collectibles(params)
 
                     logger.debug("process transaction")  # log event context
                 except IndexingValidationError as e:
@@ -622,6 +629,8 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
             if entity_type == EntityType.USER:
                 entities_to_fetch[EntityType.USER_EVENT].add(user_id)
                 entities_to_fetch[EntityType.ASSOCIATED_WALLET].add(user_id)
+                if action == Action.UPDATE:
+                    entities_to_fetch[EntityType.COLLECTIBLES].add(user_id)
                 if action == Action.MUTE or action == Action.UNMUTE:
                     entities_to_fetch[EntityType.MUTED_USER].add((user_id, entity_id))
                     entities_to_fetch[EntityType.USER].add(entity_id)
@@ -851,6 +860,9 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                         )
             if entity_type == EntityType.ASSOCIATED_WALLET:
                 entities_to_fetch[EntityType.ASSOCIATED_WALLET].add(user_id)
+            if entity_type == EntityType.COLLECTIBLES:
+                entities_to_fetch[EntityType.COLLECTIBLES].add(user_id)
+                entities_to_fetch[EntityType.USER].add(user_id)
 
     return entities_to_fetch
 
@@ -988,6 +1000,24 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         existing_entities_in_json[EntityType.ASSOCIATED_WALLET] = {
             (wallet_json["wallet"]): wallet_json
             for _, wallet_json in associated_wallets
+        }
+
+    if entities_to_fetch["Collectibles"]:
+        collectibles_results: List[Tuple[Collectibles, dict]] = (
+            session.query(
+                Collectibles,
+                literal_column(f"row_to_json({Collectibles.__tablename__})"),
+            )
+            .filter(Collectibles.user_id.in_(entities_to_fetch["Collectibles"]))
+            .all()
+        )
+        existing_entities[EntityType.COLLECTIBLES] = {
+            collectibles.user_id: collectibles
+            for collectibles, _ in collectibles_results
+        }
+        existing_entities_in_json[EntityType.COLLECTIBLES] = {
+            collectible_json["user_id"]: collectible_json
+            for _, collectible_json in collectibles_results
         }
 
     # FOLLOWS

@@ -35,7 +35,7 @@
 }
 
 .spinner g path {
-  stroke: var(--harmony-static-static-white);
+  stroke: var(--harmony-static-white);
 }
 
 .usdcInfo {

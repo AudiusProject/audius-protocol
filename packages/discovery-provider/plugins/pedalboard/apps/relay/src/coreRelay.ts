@@ -9,7 +9,6 @@ import {
   ManageEntityLegacySchema
 } from './core-sdk/protocol_pb'
 import { ValidatedRelayRequest } from './types/relay'
-import * as grpc from '@grpc/grpc-js'
 import { readConfig } from './config/config.js'
 import pino from 'pino'
 import { TransactionReceipt } from 'web3-core'

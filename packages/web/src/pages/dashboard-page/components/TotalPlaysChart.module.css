@@ -49,7 +49,7 @@
 }
 
 .iconListens {
-  fill: var(--harmony-static-white);
+  fill: var(--harmony-white);
 }
 
 :global(.totalPlaysTooltipContainer) {
@@ -64,7 +64,7 @@
 
 :global(.totalPlaysTooltipTitle) {
   text-transform: uppercase;
-  color: var(--harmony-static-white);
+  color: var(--harmony-white);
   font-family: var(--harmony-font-family);
   font-size: 10px;
   font-weight: 500;
@@ -85,7 +85,7 @@
 }
 
 :global(.totalPlaysTooltipLabelText) {
-  color: var(--harmony-static-white);
+  color: var(--harmony-white);
   font-family: var(--harmony-font-family);
   font-size: 14px;
   white-space: nowrap;
