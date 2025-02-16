@@ -212,6 +212,7 @@ export const notificationFromSDK = (
         challengeId,
         entityType: Entity.User,
         amount: data.amount as StringWei,
+        listenStreak: data.listenStreak,
         ...formatBaseNotification(notification)
       }
     }
