@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux'
 import { NavLink, useLocation } from 'react-router-dom'
 
 import { make } from 'common/store/analytics/actions'
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import {
   RestrictionType,
   useRequiresAccountOnClick
@@ -18,7 +19,7 @@ export type LeftNavLinkProps = Omit<NavItemProps, 'isSelected'> & {
   exact?: boolean
 }
 
-export const LeftNavLink = (props: LeftNavLinkProps) => {
+const LeftNavLinkContent = (props: LeftNavLinkProps) => {
   const {
     to,
     disabled,
@@ -71,3 +72,7 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
     </NavLink>
   )
 }
+
+export const LeftNavLink = componentWithErrorBoundary(LeftNavLinkContent, {
+  name: 'LeftNavLink'
+})
