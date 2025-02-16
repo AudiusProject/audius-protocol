@@ -319,6 +319,7 @@ class ChallengeRewardNotification(TypedDict):
     amount: int
     specifier: str
     challenge_id: str
+    listen_streak: Optional[int]
 
 
 class ClaimableRewardNotification(TypedDict):
