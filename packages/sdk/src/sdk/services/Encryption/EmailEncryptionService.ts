@@ -1,43 +1,26 @@
-import * as fs from 'fs'
-
 import { base64 } from '@scure/base'
-import { chunk } from 'lodash'
 
 import type { Configuration } from '../..'
 import { BaseAPI } from '../..'
 import { CryptoUtils } from '../../utils/crypto'
-import { encodeHashId } from '../../utils/hashId'
 import type { AudiusWalletClient } from '../AudiusWalletClient'
 
 import type {
-  BatchEncryptionInput,
-  BatchEncryptionResult,
   EncryptedEmailsResult,
   EncryptedKey,
   SharedSymmetricKey
 } from './types'
 
-// Types for encrypted data CSV
-type EncryptedDataRecord = {
-  email_owner_id: number
-  encrypted_email: string
-  encrypted_key_owner: string
-  encrypted_key_seller: string
-  encrypted_key_grantees: string[]
-  seller_id: number
-  grantee_ids: number[]
-}
-
-type PurchaseRecord = {
-  buyer: {
-    email: string
-    user_id: number
-  }
-  seller_user_id: number
-  grantee_user_ids: number[]
-}
-
 export class EmailEncryptionService extends BaseAPI {
+  private readonly symmetricKeyCache = new Map<string, Promise<Uint8Array>>()
+  private readonly sharedSecretCache = new Map<string, Promise<Uint8Array>>()
+  private readonly cacheSize = 1000
+
+  /**
+   * Constructs a new EmailEncryptionService instance
+   * @param config - SDK configuration object
+   * @param audiusWalletClient - Configured AudiusWalletClient instance for cryptographic operations
+   */
   constructor(
     config: Configuration,
     private readonly audiusWalletClient: AudiusWalletClient
@@ -55,8 +38,8 @@ export class EmailEncryptionService extends BaseAPI {
 
   /**
    * Encrypts a symmetric key for a user using their public key and shared secret
-   * @param userId The ID of the user to encrypt for
-   * @param symmetricKey The symmetric key to encrypt
+   * @param userId - The ID of the user to encrypt for
+   * @param symmetricKey - The symmetric key to encrypt
    * @returns The encrypted key as a base64 string
    */
   async encryptSymmetricKey(
@@ -75,26 +58,45 @@ export class EmailEncryptionService extends BaseAPI {
   }
 
   /**
-   * Decrypts a symmetric key using a user's shared secret
-   * @param encryptedKey The encrypted symmetric key as a base64 string
-   * @param userId The ID of the user who encrypted the key
-   * @returns The decrypted symmetric key
+   * Decrypts a symmetric key using cached shared secrets
+   * @param encryptedKey - The encrypted symmetric key as a base64 string
+   * @param userId - The ID of the user who encrypted the key
+   * @param pubkeyBase64 - Optional pre-provided public key to avoid API calls
+   * @returns The decrypted symmetric key from cache or new decryption
+   * @remarks Uses LRU caching for symmetric keys and shared secrets to improve performance
    */
   async decryptSymmetricKey(
     encryptedKey: string,
-    userId: string
+    userId: string,
+    pubkeyBase64?: string
   ): Promise<Uint8Array> {
-    const userPublicKey = await this.getPublicKey(userId)
-    const sharedSecret = await this.audiusWalletClient.getSharedSecret({
-      publicKey: userPublicKey
-    })
-    return await CryptoUtils.decrypt(sharedSecret, base64.decode(encryptedKey))
+    const cacheKey = `${userId}-${encryptedKey}`
+
+    if (!this.symmetricKeyCache.has(cacheKey)) {
+      // Store the promise in the cache to handle concurrent requests
+      this.symmetricKeyCache.set(
+        cacheKey,
+        pubkeyBase64
+          ? this.decryptSymmetricKeyWithPublicKey(encryptedKey, pubkeyBase64)
+          : this.decryptSymmetricKeyDirect(encryptedKey, userId)
+      )
+
+      // Remove oldest entries if caches get too large
+      if (this.symmetricKeyCache.size >= this.cacheSize) {
+        this.removeOldestEntries(this.symmetricKeyCache)
+      }
+      if (this.sharedSecretCache.size >= this.cacheSize) {
+        this.removeOldestEntries(this.sharedSecretCache)
+      }
+    }
+
+    return this.symmetricKeyCache.get(cacheKey)!
   }
 
   /**
    * Encrypts an email using a symmetric key
-   * @param email The email to encrypt
-   * @param symmetricKey The symmetric key to use
+   * @param email - The email to encrypt
+   * @param symmetricKey - The symmetric key to use
    * @returns The encrypted email as a base64 string
    */
   async encryptEmail(email: string, symmetricKey: Uint8Array): Promise<string> {
@@ -104,8 +106,8 @@ export class EmailEncryptionService extends BaseAPI {
 
   /**
    * Decrypts an email using a symmetric key
-   * @param encryptedEmail The encrypted email as a base64 string
-   * @param symmetricKey The symmetric key to use
+   * @param encryptedEmail - The encrypted email as a base64 string
+   * @param symmetricKey - The symmetric key to use
    * @returns The decrypted email
    */
   async decryptEmail(
@@ -120,10 +122,11 @@ export class EmailEncryptionService extends BaseAPI {
 
   /**
    * Creates and distributes a symmetric key between an email owner and recipients
-   * @param emailOwnerId The ID of the email owner
-   * @param receivingIds List of user IDs who will receive access
-   * @param grantorId The ID of the user granting access
+   * @param emailOwnerId - The ID of the email owner
+   * @param receivingIds - List of user IDs who will receive access
+   * @param grantorId - The ID of the user granting access
    * @returns The encrypted symmetric keys for storage
+   * @remarks Includes the email owner in the recipient list automatically
    */
   async createSharedKey(
     emailOwnerId: string,
@@ -158,11 +161,11 @@ export class EmailEncryptionService extends BaseAPI {
   }
 
   /**
-   * Encrypts emails for multiple recipients
-   * @param emailOwnerId The ID of the email owner
-   * @param receivingIds List of user IDs who will receive access
-   * @param grantorId The ID of the user granting access
-   * @param emails List of emails to encrypt
+   * Encrypts emails for multiple recipients using a shared symmetric key
+   * @param emailOwnerId - The ID of the email owner
+   * @param receivingIds - List of user IDs who will receive access
+   * @param grantorId - The ID of the user granting access
+   * @param emails - List of emails to encrypt
    * @returns Object containing encrypted emails and encrypted symmetric keys
    */
   async encryptEmails(
@@ -189,49 +192,57 @@ export class EmailEncryptionService extends BaseAPI {
     }
   }
 
+  // Caching Infrastructure
   /**
-   * Batch encrypts emails for multiple recipients
-   * @param data Array of objects containing email owner IDs, receiving IDs, and emails to encrypt
-   * @returns Array of encryption results
+   * Removes oldest entries from a cache map when size limit is reached
+   * @param map - The cache map to prune
+   * @remarks Implements LRU-like cache eviction by removing oldest 1/3 of entries
+   * @private Internal cache maintenance utility
    */
-  async batchEncryptEmails(
-    data: BatchEncryptionInput[]
-  ): Promise<BatchEncryptionResult[]> {
-    return Promise.all(
-      data.map(
-        async ({ email_owner_id, receiving_ids, grantor_id, emails }) => {
-          const encodedOwnerId = encodeHashId(email_owner_id)
-          const encodedReceivingIds = (
-            receiving_ids?.map((id) => encodeHashId(id)) || []
-          ).filter((id): id is string => id !== null)
-          const encodedGrantorId = encodeHashId(grantor_id)
+  private removeOldestEntries<K, V>(map: Map<K, V>) {
+    const entries = Array.from(map.keys())
+    entries.slice(0, this.cacheSize / 3).forEach((key) => map.delete(key))
+  }
 
-          if (!encodedOwnerId || !encodedGrantorId) {
-            throw new Error('Invalid user ID')
-          }
-
-          const { encryptedEmails, receiverEncryptedKeys } =
-            await this.encryptEmails(
-              encodedOwnerId,
-              encodedReceivingIds,
-              encodedGrantorId,
-              emails
-            )
-
-          return {
-            email_owner_id,
-            encryptedEmails,
-            receiverEncryptedKeys
-          }
-        }
-      )
-    )
+  // Core Decryption Implementations
+  /**
+   * Direct decryption path using user ID to fetch public key
+   * @param encryptedKey - Base64 encoded encrypted symmetric key
+   * @param userId - ID of user who encrypted the key
+   * @returns Decrypted symmetric key bytes
+   * @private Internal decryption implementation
+   */
+  private async decryptSymmetricKeyDirect(
+    encryptedKey: string,
+    userId: string
+  ): Promise<Uint8Array> {
+    const userPublicKey = await this.getPublicKey(userId)
+    const sharedSecret = await this.getSharedSecretWithCache(userPublicKey)
+    return await CryptoUtils.decrypt(sharedSecret, base64.decode(encryptedKey))
   }
 
   /**
-   * Gets the public key for a user
-   * @param userId The ID of the user to get the public key for
+   * Optimized decryption path using pre-provided public key
+   * @param encryptedKey - Base64 encoded encrypted symmetric key
+   * @param pubkeyBase64 - Base64 encoded public key of encrypting user
+   * @returns Decrypted symmetric key bytes
+   * @private Internal decryption implementation
+   * @remarks Bypasses public key API call when key is already known
+   */
+  private async decryptSymmetricKeyWithPublicKey(
+    encryptedKey: string,
+    pubkeyBase64: string
+  ): Promise<Uint8Array> {
+    const userPublicKey = base64.decode(pubkeyBase64)
+    const sharedSecret = await this.getSharedSecretWithCache(userPublicKey)
+    return await CryptoUtils.decrypt(sharedSecret, base64.decode(encryptedKey))
+  }
+
+  /**
+   * Gets the public key for a user from the comms API
+   * @param userId - The ID of the user to get the public key for
    * @returns The user's public key as a Uint8Array
+   * @private Internal API call wrapper
    */
   private async getPublicKey(userId: string): Promise<Uint8Array> {
     const response = await this.request({
@@ -244,144 +255,21 @@ export class EmailEncryptionService extends BaseAPI {
   }
 
   /**
-   * Process and encrypt emails in batches for backfill
-   * @param adminUserId The admin user ID to use as grantor
-   * @param purchases The purchase records to process
-   * @returns Array of encrypted data records
+   * Retrieves shared secret with caching mechanism
+   * @param publicKey - Public key to derive shared secret from
+   * @returns Cached shared secret promise
+   * @private Manages LRU cache for shared secrets
    */
-  async processAndEncryptEmails(
-    adminUserId: number,
-    purchases: any[]
-  ): Promise<EncryptedDataRecord[]> {
-    // Process in smaller batches to manage memory and API limits
-    const BATCH_SIZE = 50
-    const allRecords = this.getAllRecordsFromPurchases(purchases)
-    const batches = chunk(allRecords, BATCH_SIZE)
-
-    const allResults: EncryptedDataRecord[] = []
-
-    for (const batch of batches) {
-      try {
-        // Prepare batch input
-        const batchInputs: BatchEncryptionInput[] = batch.map((record) => ({
-          email_owner_id: record.buyer.user_id,
-          emails: [record.buyer.email],
-          receiving_ids: [record.seller_user_id, ...record.grantee_user_ids],
-          grantor_id: adminUserId
-        }))
-
-        // Use batch encryption for efficiency
-        const encryptionResults = await this.batchEncryptEmails(batchInputs)
-
-        // Transform results into CSV format
-        const results = encryptionResults.map((result, index) => {
-          const originalRecord = batch[index]
-          if (!originalRecord) {
-            throw new Error(`Missing original record for index ${index}`)
-          }
-
-          const { email_owner_id, encryptedEmails, receiverEncryptedKeys } =
-            result
-
-          if (!encryptedEmails?.[0]) {
-            throw new Error(
-              `Missing encrypted email for record ${email_owner_id}`
-            )
-          }
-
-          const ownerKey = receiverEncryptedKeys.find((k) => {
-            return k.receivingId === encodeHashId(email_owner_id)
-          })?.encryptedKey
-          if (!ownerKey) {
-            throw new Error(`Missing owner key for record ${email_owner_id}`)
-          }
-
-          const sellerKey = receiverEncryptedKeys.find(
-            (k) => k.receivingId === encodeHashId(originalRecord.seller_user_id)
-          )?.encryptedKey
-          if (!sellerKey) {
-            throw new Error(`Missing seller key for record ${email_owner_id}`)
-          }
-
-          const granteeKeys = originalRecord.grantee_user_ids
-            .map((granteeId) => {
-              const key = receiverEncryptedKeys.find(
-                (k) => k.receivingId === encodeHashId(granteeId)
-              )?.encryptedKey
-              if (!key) {
-                console.warn(
-                  `Missing grantee key for grantee ${granteeId} in record ${email_owner_id}`
-                )
-              }
-              return key
-            })
-            .filter((key): key is string => Boolean(key))
-
-          return {
-            email_owner_id,
-            encrypted_email: encryptedEmails[0],
-            encrypted_key_owner: ownerKey,
-            encrypted_key_seller: sellerKey,
-            encrypted_key_grantees: granteeKeys,
-            seller_id: originalRecord.seller_user_id,
-            grantee_ids: originalRecord.grantee_user_ids
-          }
-        })
-
-        allResults.push(...results)
-
-        // Add delay between batches to avoid rate limiting
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-      } catch (error) {
-        console.error('Failed to process batch:', error)
-        // Log failed batch for retry
-        await this.logFailedBatch(batch, error)
-      }
+  private async getSharedSecretWithCache(
+    publicKey: Uint8Array
+  ): Promise<Uint8Array> {
+    const cacheKey = Buffer.from(publicKey).toString('base64')
+    if (!this.sharedSecretCache.has(cacheKey)) {
+      this.sharedSecretCache.set(
+        cacheKey,
+        this.audiusWalletClient.getSharedSecret({ publicKey })
+      )
     }
-
-    return allResults
-  }
-
-  /**
-   * Log failed batches for retry
-   * @param batch The failed batch
-   * @param error The error that occurred
-   */
-  private async logFailedBatch(
-    batch: PurchaseRecord[],
-    error?: unknown
-  ): Promise<void> {
-    const failedBatchData = {
-      timestamp: new Date().toISOString(),
-      error: error?.toString(),
-      records: batch
-    }
-
-    fs.appendFileSync(
-      'failed_batches.json',
-      JSON.stringify(failedBatchData) + '\n'
-    )
-  }
-
-  /**
-   * Flatten purchases data into records
-   * @param purchases The purchases data to flatten
-   * @returns Array of purchase records
-   */
-  private getAllRecordsFromPurchases(purchases: any[]): PurchaseRecord[] {
-    const records: PurchaseRecord[] = []
-
-    for (const purchase of purchases) {
-      const { seller_user_id, grantee_user_ids, buyer_details } = purchase
-      for (const buyer of buyer_details) {
-        records.push({
-          buyer,
-          seller_user_id,
-          grantee_user_ids: grantee_user_ids || []
-        })
-      }
-    }
-
-    return records
+    return this.sharedSecretCache.get(cacheKey)!
   }
 }
