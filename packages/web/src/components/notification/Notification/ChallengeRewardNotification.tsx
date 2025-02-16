@@ -40,7 +40,11 @@ const messages = {
     ' for being referred! Invite your friends to join to earn more!',
   challengeCompleteText: ' for completing this challenge!',
   twitterShareText:
-    'I earned $AUDIO for completing challenges on @audius #Audius #AudioRewards'
+    'I earned $AUDIO for completing challenges on @audius #Audius #AudioRewards',
+  streakMilestone: (amountEarned: number, listenStreak: number) =>
+    `You've earned ${amountEarned} $AUDIO for hitting Day ${listenStreak} of your listening streak! You'll now earn an additional $AUDIO reward for every day you keep your streak going!`,
+  streakMaintenance: (amountEarned: number) =>
+    `You've earned ${amountEarned} $AUDIO for maintaining your listening streak! Keep your streak going to continue earning daily rewards!`
 }
 
 type ChallengeRewardNotificationProps = {
@@ -86,9 +90,9 @@ export const ChallengeRewardNotification = (
       case ChallengeName.ListenStreakEndless: {
         const amountEarned = Number(formatNumber(amount))
         if (amountEarned > 1) {
-          return `You've earned ${amountEarned} $AUDIO for hitting Day ${listenStreak} of your listening streak! You’ll now earn an additional $AUDIO reward for every day you keep your streak going!`
+          return messages.streakMilestone(amountEarned, listenStreak ?? 0)
         }
-        return `You’ve earned ${amountEarned} $AUDIO for maintaining your listening streak! Keep your streak going to continue earning daily rewards!`
+        return messages.streakMaintenance(amountEarned)
       }
       case 'referred':
         return messages.amountEarned(amount) + messages.referredText
