@@ -13,6 +13,7 @@ import {
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import { make, track as trackEvent } from 'services/analytics'
 import * as userListActions from 'store/application/ui/userListModal/slice'
 import {
@@ -32,7 +33,7 @@ type TrackStatsProps = {
   scrollToCommentSection: () => void
 }
 
-export const TrackStats = (props: TrackStatsProps) => {
+const TrackStatsContent = (props: TrackStatsProps) => {
   const { trackId, scrollToCommentSection } = props
   const { data: track } = useGetTrackById({ id: trackId })
   const { data: currentUserId } = useGetCurrentUserId({})
@@ -135,3 +136,7 @@ export const TrackStats = (props: TrackStatsProps) => {
     </Flex>
   )
 }
+
+export const TrackStats = componentWithErrorBoundary(TrackStatsContent, {
+  name: 'TrackStats'
+})

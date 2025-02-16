@@ -3,6 +3,7 @@ import { route } from '@audius/common/utils'
 import { Text } from '@audius/harmony'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
@@ -18,7 +19,7 @@ type ArtistCardProps = {
   name: string
 }
 
-export const ArtistCard = ({ userId, handle, name }: ArtistCardProps) => {
+const ArtistCardContent = ({ userId, handle, name }: ArtistCardProps) => {
   const profilePicture = useProfilePicture({
     userId,
     size: SquareSizes.SIZE_150_BY_150
@@ -58,3 +59,7 @@ export const ArtistCard = ({ userId, handle, name }: ArtistCardProps) => {
     </div>
   )
 }
+
+export const ArtistCard = componentWithErrorBoundary(ArtistCardContent, {
+  name: 'ArtistCard'
+})

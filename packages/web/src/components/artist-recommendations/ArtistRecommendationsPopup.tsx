@@ -5,6 +5,7 @@ import { cacheUsersSelectors } from '@audius/common/store'
 import { Popup } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import { useMainContentRef } from 'pages/MainContentContext'
 import { AppState } from 'store/types'
 import zIndex from 'utils/zIndex'
@@ -20,7 +21,7 @@ type Props = {
   onClose: () => void
 }
 
-export const ArtistRecommendationsPopup = (props: Props) => {
+const ArtistRecommendationsPopupContent = (props: Props) => {
   const { anchorRef, artistId, isVisible, onClose } = props
   const mainContentRef = useMainContentRef()
 
@@ -58,3 +59,10 @@ export const ArtistRecommendationsPopup = (props: Props) => {
     </Popup>
   )
 }
+
+export const ArtistRecommendationsPopup = componentWithErrorBoundary(
+  ArtistRecommendationsPopupContent,
+  {
+    name: 'ArtistRecommendationsPopup'
+  }
+)

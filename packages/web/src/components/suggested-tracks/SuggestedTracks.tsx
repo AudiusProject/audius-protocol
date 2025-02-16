@@ -15,6 +15,7 @@ import { animated, useSpring } from '@react-spring/web'
 import { useToggle } from 'react-use'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Skeleton from 'components/skeleton/Skeleton'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
@@ -92,7 +93,7 @@ type SuggestedTracksProps = {
   collectionId: ID
 }
 
-export const SuggestedTracks = (props: SuggestedTracksProps) => {
+const SuggestedTracksContent = (props: SuggestedTracksProps) => {
   const { collectionId } = props
   const { suggestedTracks, onRefresh, onAddTrack, isRefreshing } =
     useGetSuggestedPlaylistTracks(collectionId)
@@ -155,3 +156,10 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
     </Paper>
   )
 }
+
+export const SuggestedTracks = componentWithErrorBoundary(
+  SuggestedTracksContent,
+  {
+    name: 'SuggestedTracks'
+  }
+)

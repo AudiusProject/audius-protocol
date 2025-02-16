@@ -14,6 +14,7 @@ import { IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import Menu from 'components/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
 import Skeleton from 'components/skeleton/Skeleton'
@@ -46,7 +47,7 @@ type TrackListItemProps = {
   isLastTrack?: boolean
 }
 
-const TrackListItem = ({
+const TrackListItemContent = ({
   track,
   active,
   disableActions,
@@ -219,4 +220,6 @@ const TrackListItem = ({
   )
 }
 
-export default memo(TrackListItem)
+export default componentWithErrorBoundary(memo(TrackListItemContent), {
+  name: 'TrackListItem'
+})

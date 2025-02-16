@@ -40,6 +40,7 @@ import { Dispatch } from 'redux'
 
 import { TrackEvent, make } from 'common/store/analytics/actions'
 import { Draggable } from 'components/dragndrop'
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import { UserLink } from 'components/link'
 import { OwnProps as CollectionkMenuProps } from 'components/menu/CollectionMenu'
 import Menu from 'components/menu/Menu'
@@ -93,7 +94,7 @@ type ConnectedPlaylistTileProps = OwnProps &
   ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
-const ConnectedPlaylistTile = ({
+const ConnectedPlaylistTileContent = ({
   ordered,
   index,
   size,
@@ -521,7 +522,11 @@ function mapDispatchToProps(dispatch: Dispatch) {
   }
 }
 
-export default connect(
+const ConnectedComponent = connect(
   mapStateToProps,
   mapDispatchToProps
-)(memo(ConnectedPlaylistTile))
+)(memo(ConnectedPlaylistTileContent))
+
+export default componentWithErrorBoundary(ConnectedComponent, {
+  name: 'ConnectedPlaylistTile'
+})

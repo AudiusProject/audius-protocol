@@ -5,6 +5,7 @@ import { profilePageActions, usersSocialActions } from '@audius/common/store'
 import { FollowButton } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import Stats, { StatProps } from 'components/stats/Stats'
 
 import styles from './ArtistCard.module.css'
@@ -18,7 +19,7 @@ type ArtistCardProps = {
   onNavigateAway: () => void
 }
 
-export const ArtistCard = (props: ArtistCardProps) => {
+export const ArtistCardContent = (props: ArtistCardProps) => {
   const { artist, onNavigateAway } = props
   const {
     user_id,
@@ -108,3 +109,7 @@ export const ArtistCard = (props: ArtistCardProps) => {
     </div>
   )
 }
+
+export const ArtistCard = componentWithErrorBoundary(ArtistCardContent, {
+  name: 'ArtistCard'
+})

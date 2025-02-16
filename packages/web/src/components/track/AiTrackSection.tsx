@@ -13,6 +13,7 @@ import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import UserBadges from 'components/user-badges/UserBadges'
 import { emptyStringGuard } from 'pages/track-page/utils'
 import { push } from 'utils/navigation'
@@ -35,7 +36,7 @@ type AiTrackSectionProps = {
   descriptionClassName?: string
 }
 
-export const AiTrackSection = ({
+const AiTrackSectionContent = ({
   attributedUserId,
   className,
   descriptionClassName
@@ -91,3 +92,10 @@ export const AiTrackSection = ({
     </div>
   )
 }
+
+export const AiTrackSection = componentWithErrorBoundary(
+  AiTrackSectionContent,
+  {
+    name: 'AiTrackSection'
+  }
+)

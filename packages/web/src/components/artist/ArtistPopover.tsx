@@ -9,6 +9,7 @@ import Popover from 'antd/lib/popover'
 import cn from 'classnames'
 
 import { useSelector } from 'common/hooks/useSelector'
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import { MountPlacement } from 'components/types'
 
 import { ArtistCard } from './ArtistCard'
@@ -43,7 +44,7 @@ type ArtistPopoverProps = {
   className?: string
 }
 
-export const ArtistPopover = ({
+const ArtistPopoverContent = ({
   handle,
   children,
   placement = Placement.RightBottom,
@@ -110,3 +111,7 @@ export const ArtistPopover = ({
     </Component>
   )
 }
+
+export const ArtistPopover = componentWithErrorBoundary(ArtistPopoverContent, {
+  name: 'ArtistPopover'
+})

@@ -24,6 +24,7 @@ import { useHover } from 'react-use'
 
 import { make } from 'common/store/analytics/actions'
 import { Avatar } from 'components/avatar/Avatar'
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import Skeleton from 'components/skeleton/Skeleton'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useMedia } from 'hooks/useMedia'
@@ -34,7 +35,7 @@ type FollowArtistTileProps = {
   user: UserMetadata
 } & HTMLProps<HTMLInputElement>
 
-export const FollowArtistCard = (props: FollowArtistTileProps) => {
+const FollowArtistCardContent = (props: FollowArtistTileProps) => {
   const {
     user: { name, user_id, is_verified, track_count, follower_count }
   } = props
@@ -215,6 +216,13 @@ export const FollowArtistCard = (props: FollowArtistTileProps) => {
     </Paper>
   )
 }
+
+export const FollowArtistCard = componentWithErrorBoundary(
+  FollowArtistCardContent,
+  {
+    name: 'FollowArtistCard'
+  }
+)
 
 export const FollowArtistTileSkeleton = () => {
   const { isMobile } = useMedia()

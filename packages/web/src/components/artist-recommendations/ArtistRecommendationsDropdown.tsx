@@ -3,6 +3,8 @@ import { useRef } from 'react'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
+
 import {
   ArtistRecommendations,
   ArtistRecommendationsProps
@@ -21,7 +23,7 @@ const fast = {
   friction: 40
 }
 
-export const ArtistRecommendationsDropdown = (
+const ArtistRecommendationsDropdownContent = (
   props: ArtistRecommendationsDropdownProps
 ) => {
   const { isVisible } = props
@@ -48,3 +50,10 @@ export const ArtistRecommendationsDropdown = (
     </animated.div>
   )
 }
+
+export const ArtistRecommendationsDropdown = componentWithErrorBoundary(
+  ArtistRecommendationsDropdownContent,
+  {
+    name: 'ArtistRecommendationsDropdown'
+  }
+)
