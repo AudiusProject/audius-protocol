@@ -88,6 +88,9 @@ const ArtistPickModalContent = () => {
   )
 }
 
-export default componentWithErrorBoundary(ArtistPickModalContent, {
-  name: 'ArtistPickModal'
-})
+export const ArtistPickModal = componentWithErrorBoundary(
+  ArtistPickModalContent,
+  {
+    name: 'ArtistPickModal'
+  }
+)
