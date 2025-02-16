@@ -377,6 +377,7 @@ challenge_reward_notification_action_data = ns.model(
         "amount": fields.String(required=True),
         "specifier": fields.String(required=True),
         "challenge_id": fields.String(required=True),
+        "listen_streak": fields.Integer(required=False),
     },
 )
 challenge_reward_notification_action = ns.clone(

@@ -26,13 +26,16 @@ export const useTopTags = (
   return useQuery({
     queryKey: getTopTagsQueryKey(userId),
     queryFn: async () => {
-      const sdk = await audiusSdk()
-      const { data = [] } = await sdk.users.getTopTrackTags({
-        id: Id.parse(userId),
-        limit
-      })
-
-      return data
+      try {
+        const sdk = await audiusSdk()
+        const { data = [] } = await sdk.users.getTopTrackTags({
+          id: Id.parse(userId),
+          limit
+        })
+        return data
+      } catch {
+        return []
+      }
     },
     ...options,
     enabled: options?.enabled !== false

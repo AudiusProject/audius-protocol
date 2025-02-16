@@ -464,6 +464,7 @@ export type ChallengeRewardNotification = BaseNotification & {
   challengeId: ChallengeRewardID
   entityType: string
   amount: StringWei
+  listenStreak?: number
 }
 
 export type ClaimableRewardNotification = BaseNotification & {
