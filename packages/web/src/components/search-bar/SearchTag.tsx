@@ -6,6 +6,7 @@ import { Tag, TagProps } from '@audius/harmony'
 import { Link } from 'react-router-dom'
 
 import { make, useRecord } from 'common/store/analytics/actions'
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 
 type TagClickingEvent = Extract<
   AllTrackingEvents,
@@ -17,7 +18,7 @@ type SearchTagProps = Extract<TagProps, { children: string }> & {
   source: TagClickingEvent['source']
 }
 
-export const SearchTag = (props: SearchTagProps) => {
+const SearchTagContent = (props: SearchTagProps) => {
   const { onClick, source, children, ...other } = props
   const record = useRecord()
 
@@ -37,3 +38,7 @@ export const SearchTag = (props: SearchTagProps) => {
     </Link>
   )
 }
+
+export const SearchTag = componentWithErrorBoundary(SearchTagContent, {
+  name: 'SearchTag'
+})

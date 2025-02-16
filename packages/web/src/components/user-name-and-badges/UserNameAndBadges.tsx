@@ -8,6 +8,7 @@ import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 
@@ -74,10 +75,17 @@ function isIdProps(
   return (props as UserNameAndBadgesWithIdProps).userId != null
 }
 
-export const UserNameAndBadges = (props: UserNameAndBadgesProps) => {
+const UserNameAndBadgesContent = (props: UserNameAndBadgesProps) => {
   return isIdProps(props) ? (
     <LoadUserAndRender {...props} />
   ) : (
     <UserNameAndBadgesImpl {...props} />
   )
 }
+
+export const UserNameAndBadges = componentWithErrorBoundary(
+  UserNameAndBadgesContent,
+  {
+    name: 'UserNameAndBadges'
+  }
+)

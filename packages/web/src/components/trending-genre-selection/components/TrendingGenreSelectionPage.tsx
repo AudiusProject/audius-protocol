@@ -1,5 +1,6 @@
 import { useEffect, useContext } from 'react'
 
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 import GenreSelectionList from 'pages/trending-page/components/GenreSelectionList'
@@ -16,7 +17,7 @@ const messages = {
   title: 'PICK A GENRE'
 }
 
-const TrendingGenreSelectionPage = ({
+const TrendingGenreSelectionPageContent = ({
   selectedGenre,
   didSelectGenre,
   genres
@@ -42,4 +43,9 @@ const TrendingGenreSelectionPage = ({
   )
 }
 
-export default TrendingGenreSelectionPage
+export const TrendingGenreSelectionPage = componentWithErrorBoundary(
+  TrendingGenreSelectionPageContent,
+  {
+    name: 'TrendingGenreSelectionPage'
+  }
+)

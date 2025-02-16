@@ -13,6 +13,7 @@ import { useDispatch } from 'react-redux'
 
 import { AvatarList } from 'components/avatar'
 import { UserName, VanityMetric } from 'components/entity/VanityMetrics'
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import { TrackTileSize } from 'components/track/types'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { make, track as trackEvent } from 'services/analytics'
@@ -35,10 +36,10 @@ const { getTrack } = cacheTracksSelectors
 
 type RepostsMetricProps = {
   trackId: ID
-  size?: TrackTileSize
+  size: TrackTileSize
 }
 
-export const RepostsMetric = (props: RepostsMetricProps) => {
+const RepostsMetricContent = (props: RepostsMetricProps) => {
   const { trackId, size } = props
 
   const repostCount = useSelector((state) => {
@@ -106,11 +107,15 @@ export const RepostsMetric = (props: RepostsMetricProps) => {
   )
 }
 
+export const RepostsMetric = componentWithErrorBoundary(RepostsMetricContent, {
+  name: 'RepostsMetric'
+})
+
 type SavesMetricProps = {
   trackId: ID
 }
 
-export const SavesMetric = (props: SavesMetricProps) => {
+const SavesMetricContent = (props: SavesMetricProps) => {
   const { trackId } = props
   const saveCount = useSelector((state) => {
     return getTrack(state, { id: trackId })?.save_count
@@ -144,12 +149,16 @@ export const SavesMetric = (props: SavesMetricProps) => {
   )
 }
 
+export const SavesMetric = componentWithErrorBoundary(SavesMetricContent, {
+  name: 'SavesMetric'
+})
+
 type CommentMetricProps = {
   trackId: ID
   size: TrackTileSize
 }
 
-export const CommentMetric = (props: CommentMetricProps) => {
+const CommentMetricContent = (props: CommentMetricProps) => {
   const { trackId, size } = props
   const isMobile = useIsMobile()
   const commentCount = useSelector((state) => {
@@ -191,11 +200,15 @@ export const CommentMetric = (props: CommentMetricProps) => {
   )
 }
 
+export const CommentMetric = componentWithErrorBoundary(CommentMetricContent, {
+  name: 'CommentMetric'
+})
+
 type PlayMetricProps = {
   trackId: ID
 }
 
-export const PlayMetric = (props: PlayMetricProps) => {
+const PlayMetricContent = (props: PlayMetricProps) => {
   const { trackId } = props
   const playCount = useSelector((state) => {
     return getTrack(state, { id: trackId })?.play_count ?? 0
@@ -205,3 +218,7 @@ export const PlayMetric = (props: PlayMetricProps) => {
 
   return <VanityMetric disabled>{formatCount(playCount)} Plays</VanityMetric>
 }
+
+export const PlayMetric = componentWithErrorBoundary(PlayMetricContent, {
+  name: 'PlayMetric'
+})

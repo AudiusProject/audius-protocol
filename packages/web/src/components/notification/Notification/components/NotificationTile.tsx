@@ -9,6 +9,7 @@ import { Notification } from '@audius/common/store'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import { closeNotificationPanel } from 'store/application/ui/notifications/notificationsUISlice'
 
 import styles from './NotificationTile.module.css'
@@ -23,7 +24,7 @@ type NotificationTileProps = {
   disableClosePanel?: boolean
 }
 
-export const NotificationTile = (props: NotificationTileProps) => {
+const NotificationTileContent = (props: NotificationTileProps) => {
   const { notification, onClick, children, disabled, disableClosePanel } = props
   const { isViewed } = notification
   const dispatch = useDispatch()
@@ -52,3 +53,10 @@ export const NotificationTile = (props: NotificationTileProps) => {
     </div>
   )
 }
+
+export const NotificationTile = componentWithErrorBoundary(
+  NotificationTileContent,
+  {
+    name: 'NotificationTile'
+  }
+)

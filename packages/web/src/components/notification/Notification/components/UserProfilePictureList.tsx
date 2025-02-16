@@ -6,6 +6,7 @@ import { formatCount } from '@audius/common/utils'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import Tooltip from 'components/tooltip/Tooltip'
 import {
   setUsers as setUserListUsers,
@@ -47,7 +48,7 @@ export type UserProfileListProps = {
   profilePictureClassname?: string
 }
 
-export const UserProfilePictureList = ({
+const UserProfilePictureListContent = ({
   users,
   totalUserCount,
   limit = USER_LENGTH_LIMIT,
@@ -148,3 +149,10 @@ export const UserProfilePictureList = ({
     </div>
   )
 }
+
+export const UserProfilePictureList = componentWithErrorBoundary(
+  UserProfilePictureListContent,
+  {
+    name: 'UserProfilePictureList'
+  }
+)

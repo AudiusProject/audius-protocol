@@ -10,6 +10,7 @@ import { MAX_ARTIST_HOVER_TOP_SUPPORTING } from '@audius/common/utils'
 import { IconTipping as IconTip } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import { UserProfilePictureList } from 'components/notification/Notification/components/UserProfilePictureList'
 import {
   setUsers,
@@ -31,7 +32,8 @@ type ArtistSupportingProps = {
   artist: User
   onNavigateAway?: () => void
 }
-export const ArtistSupporting = (props: ArtistSupportingProps) => {
+
+const ArtistSupportingContent = (props: ArtistSupportingProps) => {
   const { artist, onNavigateAway } = props
   const { user_id, supporting_count } = artist
   const dispatch = useDispatch()
@@ -92,3 +94,10 @@ export const ArtistSupporting = (props: ArtistSupportingProps) => {
     <div className={styles.emptyContainer} />
   ) : null
 }
+
+export const ArtistSupporting = componentWithErrorBoundary(
+  ArtistSupportingContent,
+  {
+    name: 'ArtistSupporting'
+  }
+)

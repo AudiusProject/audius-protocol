@@ -45,6 +45,7 @@ import { ChatBlastAudience } from '@audius/sdk'
 import { useRouteMatch } from 'react-router-dom'
 
 import { useSelector } from 'common/hooks/useSelector'
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import { UserList } from 'components/user-list/UserList'
 import { ChatBlastWithAudienceCTA } from 'pages/chat-page/components/ChatBlastWithAudienceCTA'
 import { UserListType } from 'store/application/ui/userListModal/types'
@@ -91,7 +92,7 @@ const messages = {
   remixers: 'Remixers'
 }
 
-const UserListModal = ({
+const UserListModalContent = ({
   userListType,
   isOpen,
   onClose
@@ -287,4 +288,6 @@ const UserListModal = ({
   )
 }
 
-export default UserListModal
+export default componentWithErrorBoundary(UserListModalContent, {
+  name: 'UserListModal'
+})

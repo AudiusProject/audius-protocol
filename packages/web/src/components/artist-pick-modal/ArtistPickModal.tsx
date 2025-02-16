@@ -14,6 +14,7 @@ import {
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import { useSelector } from 'utils/reducer'
 
 const { setArtistPick, unsetArtistPick } = tracksSocialActions
@@ -40,7 +41,7 @@ const messagesMap = {
   }
 }
 
-export const ArtistPickModal = () => {
+const ArtistPickModalContent = () => {
   const {
     isOpen,
     onClose,
@@ -86,3 +87,7 @@ export const ArtistPickModal = () => {
     </Modal>
   )
 }
+
+export default componentWithErrorBoundary(ArtistPickModalContent, {
+  name: 'ArtistPickModal'
+})

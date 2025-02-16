@@ -22,6 +22,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import ArtistChip from 'components/artist/ArtistChip'
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import { MountPlacement } from 'components/types'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
 import { useIsMobile } from 'hooks/useIsMobile'
@@ -56,7 +57,7 @@ type UserListProps = {
   onNavigateAway?: () => void
 }
 
-export const UserList = ({
+const UserListContent = ({
   tag,
   stateSelector,
   userIdSelector,
@@ -194,3 +195,7 @@ export const UserList = ({
     </div>
   )
 }
+
+export const UserList = componentWithErrorBoundary(UserListContent, {
+  name: 'UserList'
+})
