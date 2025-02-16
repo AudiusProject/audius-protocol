@@ -104,17 +104,17 @@
 }
 
 .dappLinkIcon path {
-  fill: var(--harmony-static-white);
+  fill: var(--harmony-white);
 }
 
 .dappLinkIconStroke path {
   fill: none;
-  stroke: var(--harmony-static-white);
+  stroke: var(--harmony-white);
 }
 
 .dappLinkText {
   margin-left: 16px;
-  color: var(--harmony-static-white);
+  color: var(--harmony-white);
   font-size: 20px;
   line-height: 20px;
   font-weight: 700;
@@ -132,5 +132,5 @@
 }
 
 .icon path {
-  fill: var(--harmony-static-white);
+  fill: var(--harmony-white);
 }

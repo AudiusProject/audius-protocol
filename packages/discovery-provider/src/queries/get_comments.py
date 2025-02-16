@@ -1,4 +1,5 @@
-import logging  # pylint: disable=C0302
+import logging
+from typing import TypedDict
 
 from sqlalchemy import and_, asc, desc, func, or_
 from sqlalchemy.orm import aliased
@@ -395,6 +396,136 @@ def get_track_comments(args, track_id, current_user_id=None):
                 }
             )
         return track_comment_res
+
+
+class GetUserCommentsArgs(TypedDict):
+    sort_method: str
+    offset: int
+    limit: int
+    target_user_id: int
+    current_user_id: int
+
+
+def get_user_comments(args: GetUserCommentsArgs):
+    offset, limit = format_offset(args), format_limit(
+        args, default_limit=COMMENT_ROOT_DEFAULT_LIMIT
+    )
+
+    user_id = args["target_user_id"]
+    current_user_id = args["current_user_id"]
+
+    user_comments = []
+    db = get_db_read_replica()
+
+    with db.scoped_session() as session:
+        mentioned_users = (
+            session.query(
+                CommentMention.comment_id,
+                CommentMention.user_id,
+                User.handle,
+                CommentMention.is_delete,
+            )
+            .join(User, CommentMention.user_id == User.user_id)
+            .subquery()
+        )
+
+        react_count_subquery = (
+            session.query(
+                CommentReaction.comment_id,
+                func.count(CommentReaction.comment_id).label("react_count"),
+            )
+            .filter(CommentReaction.is_delete == False)
+            .group_by(CommentReaction.comment_id)
+            .subquery()
+        )
+
+        user_comments = (
+            session.query(
+                Comment,
+                func.coalesce(react_count_subquery.c.react_count, 0).label(
+                    "react_count"
+                ),
+                CommentNotificationSetting.is_muted,
+                func.array_agg(
+                    func.json_build_object(
+                        "user_id",
+                        mentioned_users.c.user_id,
+                        "handle",
+                        mentioned_users.c.handle,
+                        "is_delete",
+                        mentioned_users.c.is_delete,
+                    )
+                ).label("mentions"),
+            )
+            .outerjoin(
+                mentioned_users,
+                Comment.comment_id == mentioned_users.c.comment_id,
+            )
+            .outerjoin(
+                react_count_subquery,
+                Comment.comment_id == react_count_subquery.c.comment_id,
+            )
+            .outerjoin(
+                CommentNotificationSetting,
+                (Comment.comment_id == CommentNotificationSetting.entity_id)
+                & (CommentNotificationSetting.entity_type == "Comment"),
+            )
+            .group_by(
+                Comment.comment_id,
+                react_count_subquery.c.react_count,
+                CommentNotificationSetting.is_muted,
+            )
+            .filter(
+                Comment.user_id == user_id,
+                Comment.is_delete == False,
+                Comment.is_visible == True,
+                Comment.entity_type == "Track",
+            )
+            .order_by(desc(Comment.created_at))
+            .offset(offset)
+            .limit(limit)
+        ).all()
+
+        user_comments_res = []
+        for [user_comment, react_count, is_muted, mentions] in user_comments:
+
+            def remove_delete(mention):
+                del mention["is_delete"]
+                return mention
+
+            def filter_mentions(mention):
+                return (
+                    mention["user_id"] is not None and mention["is_delete"] is not True
+                )
+
+            user_comments_res.append(
+                {
+                    "id": encode_int_id(user_comment.comment_id),
+                    "user_id": (
+                        encode_int_id(user_comment.user_id)
+                        if not user_comment.is_delete
+                        else None
+                    ),
+                    "mentions": list(
+                        map(remove_delete, filter(filter_mentions, mentions))
+                    ),
+                    "message": (
+                        user_comment.text if not user_comment.is_delete else "[Removed]"
+                    ),
+                    "track_id": user_comment.entity_id,
+                    "is_edited": user_comment.is_edited,
+                    "track_timestamp_s": user_comment.track_timestamp_s,
+                    "react_count": react_count,
+                    "is_current_user_reacted": get_is_reacted(
+                        session, current_user_id, user_comment.comment_id
+                    ),
+                    "created_at": str(user_comment.created_at),
+                    "updated_at": str(user_comment.updated_at),
+                    "is_muted": is_muted if is_muted is not None else False,
+                }
+            )
+
+        return user_comments_res
 
 
 def get_muted_users(current_user_id):

@@ -7,6 +7,10 @@ import {
   useState
 } from 'react'
 
+import {
+  useUpdateUserCollectibles,
+  useUserCollectibles
+} from '@audius/common/api'
 import { useInstanceVar } from '@audius/common/hooks'
 import {
   CollectiblesMetadata,
@@ -114,7 +118,7 @@ type CollectiblesPageProps = {
   isMobile: boolean
   isUserOnTheirProfile: boolean
   profile: UserMetadata
-  updateProfile?: (metadata: any) => void
+  allowUpdates?: boolean
   updateProfilePicture?: (
     selectedFiles: any,
     source: 'original' | 'unsplash' | 'url'
@@ -129,13 +133,19 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
     name,
     isMobile,
     profile,
-    updateProfile,
+    allowUpdates = false,
     updateProfilePicture,
     isUserOnTheirProfile,
     onLoad,
     onSave
   } = props
   const { toast } = useContext(ToastContext)
+  const { data: profileCollectibles, isLoading: isProfileCollectiblesLoading } =
+    useUserCollectibles({ userId })
+  const {
+    mutate: updateUserCollectibles,
+    isPending: isUpdatingUserCollectibles
+  } = useUpdateUserCollectibles()
   const dispatch = useDispatch()
   const ethCollectibleList = profile?.collectibleList ?? null
   const solanaCollectibleList = useMemo(() => {
@@ -152,7 +162,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
   const isLoading =
     profile.collectibleList === undefined ||
     profile.solanaCollectibleList === undefined ||
-    (hasCollectibles && !profile.collectibles)
+    isProfileCollectiblesLoading
 
   useEffect(() => {
     if (!isLoading && onLoad) {
@@ -262,24 +272,25 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
         if (solanaCollectibleList) {
           setHasSetSolanaCollectibles(true)
         }
-      } else if (profile.collectibles) {
+      } else if (profileCollectibles) {
         /**
          * include collectibles returned by OpenSea which have not been stored in the user preferences
          */
-        const dedupedCollectiblesOrder = dedupe(profile.collectibles.order)
+        const dedupedCollectiblesOrder = dedupe(profileCollectibles.order)
         const metadata: CollectiblesMetadata = {
-          ...profile.collectibles,
+          ...profileCollectibles,
           order: dedupedCollectiblesOrder
         }
 
         // Remove duplicates in user collectibles order if any
         if (
           isUserOnTheirProfile &&
-          updateProfile &&
-          profile.collectibles.order.length !== dedupedCollectiblesOrder.length
+          userId &&
+          allowUpdates &&
+          profileCollectibles.order.length !== dedupedCollectiblesOrder.length
         ) {
-          updateProfile({
-            ...profile,
+          updateUserCollectibles({
+            userId,
             collectibles: metadata
           })
         }
@@ -287,7 +298,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
         /**
          * Update id of collectibles to use correct format
          */
-        Object.keys(profile.collectibles).forEach((key) => {
+        Object.keys(profileCollectibles).forEach((key) => {
           if (key !== 'order' && key.indexOf(':::') === -1) {
             const savedCollectible = collectibleList.find(
               (c) => c.tokenId === key
@@ -328,14 +339,16 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
       }
     }
   }, [
-    profile,
+    profileCollectibles,
+    userId,
+    updateUserCollectibles,
     hasCollectibles,
     collectibleList,
     ethCollectibleList,
     solanaCollectibleList,
     collectiblesMetadata,
     isUserOnTheirProfile,
-    updateProfile,
+    allowUpdates,
     getHasSetEthCollectibles,
     setHasSetEthCollectibles,
     getHasSetSolanaCollectibles,
@@ -352,7 +365,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
 
   const handleDoneClick = useCallback(() => {
     setIsEditingPreferences(false)
-    if (updateProfile) {
+    if (allowUpdates && userId) {
       // There was a previous bug where NFTs may have been duplicated.
       // To be on the safe side and ensure that this doesn't happen anymore,
       // we turn the order array into a set, then back into an array.
@@ -360,12 +373,18 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
         ...collectiblesMetadata,
         order: dedupe(collectiblesMetadata?.order ?? [])
       }
-      updateProfile({
-        ...profile,
+      updateUserCollectibles({
+        userId,
         collectibles: dedupedCollectiblesMetadata
       })
     }
-  }, [setIsEditingPreferences, updateProfile, profile, collectiblesMetadata])
+  }, [
+    setIsEditingPreferences,
+    updateUserCollectibles,
+    allowUpdates,
+    userId,
+    collectiblesMetadata
+  ])
 
   const handleShowCollectible = useCallback(
     (id: string) => () => {
@@ -784,7 +803,11 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
             </div>
           )}
           <Box m='l'>
-            <HarmonyButton variant='primary' onClick={handleDoneClick}>
+            <HarmonyButton
+              variant='primary'
+              onClick={handleDoneClick}
+              disabled={isUpdatingUserCollectibles}
+            >
               Done
             </HarmonyButton>
           </Box>

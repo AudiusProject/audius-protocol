@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef } from 'react'
 
+import { useUserCollectibles } from '@audius/common/api'
 import type { Collectible } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import Clipboard from '@react-native-clipboard/clipboard'
@@ -74,22 +75,19 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
 
 export const CollectiblesTab = () => {
   const styles = useStyles()
-  const {
-    user_id,
-    handle,
-    name,
-    collectibles: profileCollectibles,
-    collectibleList,
-    solanaCollectibleList
-  } = useSelectProfile([
-    'user_id',
-    'handle',
-    'name',
-    'collectibles',
-    'collectibleList',
-    'solanaCollectibleList'
-  ])
+  const { user_id, handle, name, collectibleList, solanaCollectibleList } =
+    useSelectProfile([
+      'user_id',
+      'handle',
+      'name',
+      'collectibleList',
+      'solanaCollectibleList'
+    ])
   const accountId = useSelector(getUserId)
+  const { data: profileCollectibles, isLoading: profileCollectiblesLoading } =
+    useUserCollectibles({
+      userId: user_id
+    })
   const isOwner = user_id === accountId
   const { toast } = useToast()
   const ref = useRef<RNFlatList>(null)
@@ -109,6 +107,8 @@ export const CollectiblesTab = () => {
   }, [handle, name, toast])
 
   const collectibles = useMemo(() => {
+    // If we're still loading, don't show anything
+    if (profileCollectiblesLoading) return []
     const allCollectibles = [
       ...(collectibleList ?? []),
       ...(solanaCollectibleList ?? [])
@@ -147,7 +147,12 @@ export const CollectiblesTab = () => {
       }
     }
     return visible
-  }, [collectibleList, profileCollectibles?.order, solanaCollectibleList])
+  }, [
+    collectibleList,
+    profileCollectibles?.order,
+    solanaCollectibleList,
+    profileCollectiblesLoading
+  ])
 
   if (!user_id) return null
 

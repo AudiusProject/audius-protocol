@@ -134,7 +134,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 
   if (!rootComment || !('id' in rootComment)) return null
 
-  const { replyCount } = rootComment
+  const { replyCount = 0 } = rootComment
 
   const replies = rootComment.replies ?? []
 

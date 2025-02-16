@@ -168,7 +168,7 @@
   margin-bottom: 20px;
   font-size: var(--harmony-font-xs);
   line-height: 15px;
-  color: var(--harmony-static-white);
+  color: var(--harmony-white);
   gap: var(--harmony-unit-2);
 }
 
