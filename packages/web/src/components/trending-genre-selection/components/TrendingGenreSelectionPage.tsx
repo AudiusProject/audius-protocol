@@ -43,9 +43,6 @@ const TrendingGenreSelectionPageContent = ({
   )
 }
 
-export const TrendingGenreSelectionPage = componentWithErrorBoundary(
-  TrendingGenreSelectionPageContent,
-  {
-    name: 'TrendingGenreSelectionPage'
-  }
-)
+export default componentWithErrorBoundary(TrendingGenreSelectionPageContent, {
+  name: 'TrendingGenreSelectionPage'
+})
