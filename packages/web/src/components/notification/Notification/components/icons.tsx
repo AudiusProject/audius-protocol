@@ -13,8 +13,7 @@ import {
   IconTrending as IconTrendingBase,
   IconTrophy,
   IconUser,
-  IconCart as IconCartBase,
-  IconFire
+  IconCart as IconCartBase
 } from '@audius/harmony'
 
 import styles from './icons.module.css'
@@ -80,18 +79,10 @@ export const IconAddTrackToPlaylist = () => {
   )
 }
 
-export const IconStreakFire = (size: 's' | 'm' = 's') => {
-  const { spacing } = useTheme()
+export const IconStreakFire = () => {
   return (
-    <div className={styles.iconWrapper} css={{ marginRight: spacing.s }}>
-      <span
-        className={styles.iconEmoji}
-        role='img'
-        aria-label='fire'
-        css={{ fontSize: size === 's' ? '40px' : '24px' }}
-      >
-        🔥
-      </span>
-    </div>
+    <span role='img' aria-label='fire' css={{ fontSize: 32 }}>
+      🔥
+    </span>
   )
 }

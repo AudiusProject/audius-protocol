@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { listenStreakReminderMessages as messages } from '@audius/common/messages'
 import { Name } from '@audius/common/models'
 import { ListenStreakReminderNotification as ListenStreakNotificationType } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -16,12 +17,6 @@ import { NotificationTitle } from './components/NotificationTitle'
 import { IconStreakFire } from './components/icons'
 
 const { REWARDS_PAGE } = route
-
-const messages = {
-  title: 'Keep Your Streak Going!',
-  body: (streak: number) =>
-    `Your ${streak} day listening streak will end in 6 hours! Keep listening to earn daily rewards!`
-}
 
 type ListenStreakReminderNotificationProps = {
   notification: ListenStreakNotificationType
@@ -47,7 +42,7 @@ export const ListenStreakReminderNotification = (
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
-      <NotificationHeader icon={IconStreakFire('m')}>
+      <NotificationHeader icon={<IconStreakFire />}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationBody>{messages.body(notification.streak)}</NotificationBody>
