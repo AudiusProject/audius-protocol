@@ -24,6 +24,7 @@ from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.playlists.playlist_track import PlaylistTrack
 from src.models.rewards.challenge import Challenge
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
+from src.models.rewards.listen_streak_challenge import ChallengeListenStreak
 from src.models.rewards.reward_manager import RewardManagerTransaction
 from src.models.rewards.user_challenge import UserChallenge
 from src.models.social.aggregate_monthly_plays import AggregateMonthlyPlay
@@ -154,6 +155,7 @@ def populate_mock_db(db, entities, block_offset=None):
         stems = entities.get("stems", [])
         challenges = entities.get("challenges", [])
         user_challenges = entities.get("user_challenges", [])
+        challenge_listen_streaks = entities.get("challenge_listen_streaks", [])
         plays = entities.get("plays", [])
         aggregate_plays = entities.get("aggregate_plays", [])
         aggregate_track = entities.get("aggregate_track", [])
@@ -931,5 +933,13 @@ def populate_mock_db(db, entities, block_offset=None):
                 updated_at=collectible_data.get("updated_at", datetime.now()),
             )
             session.add(collectible_data_record)
+
+        for i, challenge_listen_streak in enumerate(challenge_listen_streaks):
+            streak = ChallengeListenStreak(
+                user_id=challenge_listen_streak.get("user_id", i),
+                last_listen_date=challenge_listen_streak.get("last_listen_date", datetime.now()),
+                listen_streak=challenge_listen_streak.get("listen_streak", 1),
+            )
+            session.add(streak)
 
         session.commit()

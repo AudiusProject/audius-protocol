@@ -478,7 +478,7 @@ class CommentReactionNotification(TypedDict):
     reacter_user_id: int
 
 
-class ListenStreakNotification(TypedDict):
+class ListenStreakReminderNotification(TypedDict):
     streak: int
 
 
@@ -513,7 +513,7 @@ NotificationData = Union[
     CommentThreadNotification,
     CommentMentionNotification,
     CommentReactionNotification,
-    ListenStreakNotification,
+    ListenStreakReminderNotification,
 ]
 
 

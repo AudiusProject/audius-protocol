@@ -17,32 +17,32 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ListenStreakNotificationActionData
+ * @interface ListenStreakReminderNotificationActionData
  */
-export interface ListenStreakNotificationActionData {
+export interface ListenStreakReminderNotificationActionData {
     /**
      * 
      * @type {number}
-     * @memberof ListenStreakNotificationActionData
+     * @memberof ListenStreakReminderNotificationActionData
      */
     streak: number;
 }
 
 /**
- * Check if a given object implements the ListenStreakNotificationActionData interface.
+ * Check if a given object implements the ListenStreakReminderNotificationActionData interface.
  */
-export function instanceOfListenStreakNotificationActionData(value: object): value is ListenStreakNotificationActionData {
+export function instanceOfListenStreakReminderNotificationActionData(value: object): value is ListenStreakReminderNotificationActionData {
     let isInstance = true;
     isInstance = isInstance && "streak" in value && value["streak"] !== undefined;
 
     return isInstance;
 }
 
-export function ListenStreakNotificationActionDataFromJSON(json: any): ListenStreakNotificationActionData {
-    return ListenStreakNotificationActionDataFromJSONTyped(json, false);
+export function ListenStreakReminderNotificationActionDataFromJSON(json: any): ListenStreakReminderNotificationActionData {
+    return ListenStreakReminderNotificationActionDataFromJSONTyped(json, false);
 }
 
-export function ListenStreakNotificationActionDataFromJSONTyped(json: any, ignoreDiscriminator: boolean): ListenStreakNotificationActionData {
+export function ListenStreakReminderNotificationActionDataFromJSONTyped(json: any, ignoreDiscriminator: boolean): ListenStreakReminderNotificationActionData {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -52,7 +52,7 @@ export function ListenStreakNotificationActionDataFromJSONTyped(json: any, ignor
     };
 }
 
-export function ListenStreakNotificationActionDataToJSON(value?: ListenStreakNotificationActionData | null): any {
+export function ListenStreakReminderNotificationActionDataToJSON(value?: ListenStreakReminderNotificationActionData | null): any {
     if (value === undefined) {
         return undefined;
     }

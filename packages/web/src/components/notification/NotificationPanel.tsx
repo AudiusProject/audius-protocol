@@ -4,7 +4,8 @@ import { Status } from '@audius/common/models'
 import {
   notificationsActions,
   notificationsSelectors,
-  Notification as Notifications
+  Notification as Notifications,
+  NotificationType
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import {
@@ -70,7 +71,11 @@ const SCROLL_THRESHOLD = 1000
  * notification in a modal  */
 export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
   const panelIsOpen = useSelector(getNotificationPanelIsOpen)
-  const notifications = useSelector(selectAllNotifications)
+  const notificationss = useSelector(selectAllNotifications)
+  const notifications = [
+    { type: NotificationType.ListenStreakReminder, streak: 1 },
+    ...notificationss
+  ]
   const hasMore = useSelector(getNotificationHasMore)
   const status = useSelector(getNotificationStatus)
   const isNotificationModalOpen = useSelector(getNotificationModalIsOpen)

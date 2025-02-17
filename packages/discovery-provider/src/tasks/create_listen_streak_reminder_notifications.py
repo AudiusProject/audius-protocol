@@ -22,7 +22,7 @@ def get_listen_streak_notification_group_id(user_id, date):
 
 
 @log_duration(logger)
-def _create_listen_streak_notifications(session):
+def _create_listen_streak_reminder_notifications(session):
     now = datetime.now()
     window_end = now - timedelta(hours=LAST_LISTEN_HOURS_AGO)
     window_start = now - timedelta(hours=LAST_LISTEN_HOURS_AGO + 1)
@@ -30,7 +30,7 @@ def _create_listen_streak_notifications(session):
         window_end = now - timedelta(minutes=1)
         window_start = now - timedelta(minutes=2)
 
-    # Find listen streaks that need notifications
+    # Find listen streaks that need reminder notifications
     listen_streaks = (
         session.query(ChallengeListenStreak)
         .outerjoin(
@@ -73,32 +73,32 @@ def _create_listen_streak_notifications(session):
         )
         new_notifications.append(new_notification)
 
-    logger.debug(f"Inserting {len(new_notifications)} listen streak notifications")
+    logger.debug(f"Inserting {len(new_notifications)} listen streak reminder notifications")
     session.add_all(new_notifications)
     session.commit()
 
 
 # ####### CELERY TASKS ####### #
-@celery.task(name="create_listen_streak_notifications", bind=True)
-def create_listen_streak_notifications(self):
-    redis = create_listen_streak_notifications.redis
-    db = create_listen_streak_notifications.db
+@celery.task(name="create_listen_streak_reminder_notifications", bind=True)
+def create_listen_streak_reminder_notifications(self):
+    redis = create_listen_streak_reminder_notifications.redis
+    db = create_listen_streak_reminder_notifications.db
 
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
     update_lock = redis.lock(
-        "create_listen_streak_notifications_lock", blocking_timeout=25, timeout=600
+        "create_listen_streak_reminder_notifications_lock", blocking_timeout=25, timeout=600
     )
     try:
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             with db.scoped_session() as session:
-                _create_listen_streak_notifications(session)
+                _create_listen_streak_reminder_notifications(session)
         else:
             logger.info("Failed to acquire lock")
     except Exception as e:
-        logger.error(f"Error creating listen streak notifications: {e}")
+        logger.error(f"Error creating listen streak reminder notifications: {e}")
     finally:
         if have_lock:
             update_lock.release()

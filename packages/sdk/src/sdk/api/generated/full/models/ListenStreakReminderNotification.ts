@@ -14,55 +14,55 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ListenStreakNotificationAction } from './ListenStreakNotificationAction';
+import type { ListenStreakReminderNotificationAction } from './ListenStreakReminderNotificationAction';
 import {
-    ListenStreakNotificationActionFromJSON,
-    ListenStreakNotificationActionFromJSONTyped,
-    ListenStreakNotificationActionToJSON,
-} from './ListenStreakNotificationAction';
+    ListenStreakReminderNotificationActionFromJSON,
+    ListenStreakReminderNotificationActionFromJSONTyped,
+    ListenStreakReminderNotificationActionToJSON,
+} from './ListenStreakReminderNotificationAction';
 
 /**
  * 
  * @export
- * @interface ListenStreakNotification
+ * @interface ListenStreakReminderNotification
  */
-export interface ListenStreakNotification {
+export interface ListenStreakReminderNotification {
     /**
      * 
      * @type {string}
-     * @memberof ListenStreakNotification
+     * @memberof ListenStreakReminderNotification
      */
     type: string;
     /**
      * 
      * @type {string}
-     * @memberof ListenStreakNotification
+     * @memberof ListenStreakReminderNotification
      */
     groupId: string;
     /**
      * 
      * @type {boolean}
-     * @memberof ListenStreakNotification
+     * @memberof ListenStreakReminderNotification
      */
     isSeen: boolean;
     /**
      * 
      * @type {number}
-     * @memberof ListenStreakNotification
+     * @memberof ListenStreakReminderNotification
      */
     seenAt?: number;
     /**
      * 
-     * @type {Array<ListenStreakNotificationAction>}
-     * @memberof ListenStreakNotification
+     * @type {Array<ListenStreakReminderNotificationAction>}
+     * @memberof ListenStreakReminderNotification
      */
-    actions: Array<ListenStreakNotificationAction>;
+    actions: Array<ListenStreakReminderNotificationAction>;
 }
 
 /**
- * Check if a given object implements the ListenStreakNotification interface.
+ * Check if a given object implements the ListenStreakReminderNotification interface.
  */
-export function instanceOfListenStreakNotification(value: object): value is ListenStreakNotification {
+export function instanceOfListenStreakReminderNotification(value: object): value is ListenStreakReminderNotification {
     let isInstance = true;
     isInstance = isInstance && "type" in value && value["type"] !== undefined;
     isInstance = isInstance && "groupId" in value && value["groupId"] !== undefined;
@@ -72,11 +72,11 @@ export function instanceOfListenStreakNotification(value: object): value is List
     return isInstance;
 }
 
-export function ListenStreakNotificationFromJSON(json: any): ListenStreakNotification {
-    return ListenStreakNotificationFromJSONTyped(json, false);
+export function ListenStreakReminderNotificationFromJSON(json: any): ListenStreakReminderNotification {
+    return ListenStreakReminderNotificationFromJSONTyped(json, false);
 }
 
-export function ListenStreakNotificationFromJSONTyped(json: any, ignoreDiscriminator: boolean): ListenStreakNotification {
+export function ListenStreakReminderNotificationFromJSONTyped(json: any, ignoreDiscriminator: boolean): ListenStreakReminderNotification {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -86,11 +86,11 @@ export function ListenStreakNotificationFromJSONTyped(json: any, ignoreDiscrimin
         'groupId': json['group_id'],
         'isSeen': json['is_seen'],
         'seenAt': !exists(json, 'seen_at') ? undefined : json['seen_at'],
-        'actions': ((json['actions'] as Array<any>).map(ListenStreakNotificationActionFromJSON)),
+        'actions': ((json['actions'] as Array<any>).map(ListenStreakReminderNotificationActionFromJSON)),
     };
 }
 
-export function ListenStreakNotificationToJSON(value?: ListenStreakNotification | null): any {
+export function ListenStreakReminderNotificationToJSON(value?: ListenStreakReminderNotification | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -103,7 +103,7 @@ export function ListenStreakNotificationToJSON(value?: ListenStreakNotification 
         'group_id': value.groupId,
         'is_seen': value.isSeen,
         'seen_at': value.seenAt,
-        'actions': ((value.actions as Array<any>).map(ListenStreakNotificationActionToJSON)),
+        'actions': ((value.actions as Array<any>).map(ListenStreakReminderNotificationActionToJSON)),
     };
 }
 

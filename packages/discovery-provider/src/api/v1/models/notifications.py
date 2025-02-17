@@ -910,23 +910,23 @@ comment_reaction_notification = ns.clone(
     },
 )
 
-listen_streak_notification_action_data = ns.model(
-    "listen_streak_notification_action_data",
+listen_streak_reminder_notification_action_data = ns.model(
+    "listen_streak_reminder_notification_action_data",
     {
         "streak": fields.Integer(required=True),
     },
 )
-listen_streak_notification_action = ns.clone(
-    "listen_streak_notification_action",
+listen_streak_reminder_notification_action = ns.clone(
+    "listen_streak_reminder_notification_action",
     notification_action_base,
-    {"data": fields.Nested(listen_streak_notification_action_data, required=True)},
+    {"data": fields.Nested(listen_streak_reminder_notification_action_data, required=True)},
 )
-listen_streak_notification = ns.clone(
-    "listen_streak_notification",
+listen_streak_reminder_notification = ns.clone(
+    "listen_streak_reminder_notification",
     notification_base,
     {
         "actions": fields.List(
-            fields.Nested(listen_streak_notification_action, required=True),
+            fields.Nested(listen_streak_reminder_notification_action, required=True),
             required=True,
         )
     },
@@ -970,7 +970,7 @@ notification = ns.add_model(
             "comment_thread": comment_thread_notification,
             "comment_mention": comment_mention_notification,
             "comment_reaction": comment_reaction_notification,
-            "listen_streak": listen_streak_notification,
+            "listen_streak_reminder": listen_streak_reminder_notification,
         },
         discriminator="type",
     ),

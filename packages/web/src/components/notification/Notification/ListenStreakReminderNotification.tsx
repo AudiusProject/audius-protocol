@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import { Name } from '@audius/common/models'
-import { ListenStreakNotification as ListenStreakNotificationType } from '@audius/common/store'
+import { ListenStreakReminderNotification as ListenStreakNotificationType } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 
@@ -13,7 +13,6 @@ import { NotificationFooter } from './components/NotificationFooter'
 import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
-import { TwitterShareButton } from './components/TwitterShareButton'
 import { IconStreakFire } from './components/icons'
 
 const { REWARDS_PAGE } = route
@@ -24,12 +23,12 @@ const messages = {
     `Your ${streak} day listening streak will end in 6 hours! Keep listening to earn daily rewards!`
 }
 
-type ListenStreakNotificationProps = {
+type ListenStreakReminderNotificationProps = {
   notification: ListenStreakNotificationType
 }
 
-export const ListenStreakNotification = (
-  props: ListenStreakNotificationProps
+export const ListenStreakReminderNotification = (
+  props: ListenStreakReminderNotificationProps
 ) => {
   const { notification } = props
   const record = useRecord()
@@ -48,18 +47,10 @@ export const ListenStreakNotification = (
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
-      <NotificationHeader icon={<IconStreakFire size='l' />}>
+      <NotificationHeader icon={IconStreakFire('m')}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationBody>{messages.body(notification.streak)}</NotificationBody>
-      <TwitterShareButton
-        type='static'
-        url={link}
-        shareText={text}
-        analytics={make(Name.NOTIFICATIONS_CLICK_MILESTONE_TWITTER_SHARE, {
-          milestone: text
-        })}
-      />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )
