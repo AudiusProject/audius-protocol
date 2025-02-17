@@ -42,6 +42,7 @@ pytest integration_tests/tasks/test_index_user_bank.py::test_process_user_bank_t
 # and select Dev Containers: Attach to Running Container.
 # Navigate to the test you want to run and run it!
 ```
+
 [Install the Dev Containers extension for VSCode](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers).
 
 ## Linting
