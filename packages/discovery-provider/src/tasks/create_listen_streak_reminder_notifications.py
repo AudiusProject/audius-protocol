@@ -73,7 +73,9 @@ def _create_listen_streak_reminder_notifications(session):
         )
         new_notifications.append(new_notification)
 
-    logger.debug(f"Inserting {len(new_notifications)} listen streak reminder notifications")
+    logger.debug(
+        f"Inserting {len(new_notifications)} listen streak reminder notifications"
+    )
     session.add_all(new_notifications)
     session.commit()
 
@@ -88,7 +90,9 @@ def create_listen_streak_reminder_notifications(self):
     have_lock = False
     # Define redis lock object
     update_lock = redis.lock(
-        "create_listen_streak_reminder_notifications_lock", blocking_timeout=25, timeout=600
+        "create_listen_streak_reminder_notifications_lock",
+        blocking_timeout=25,
+        timeout=600,
     )
     try:
         have_lock = update_lock.acquire(blocking=False)

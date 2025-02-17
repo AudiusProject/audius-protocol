@@ -745,7 +745,6 @@ def extend_comment_reaction(action: NotificationAction):
 
 def extend_listen_streak_reminder(action: NotificationAction):
     data: ListenStreakReminderNotification = action["data"]  # type: ignore
-    print('dylanxyz', data)
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],

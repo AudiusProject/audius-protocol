@@ -919,7 +919,11 @@ listen_streak_reminder_notification_action_data = ns.model(
 listen_streak_reminder_notification_action = ns.clone(
     "listen_streak_reminder_notification_action",
     notification_action_base,
-    {"data": fields.Nested(listen_streak_reminder_notification_action_data, required=True)},
+    {
+        "data": fields.Nested(
+            listen_streak_reminder_notification_action_data, required=True
+        )
+    },
 )
 listen_streak_reminder_notification = ns.clone(
     "listen_streak_reminder_notification",

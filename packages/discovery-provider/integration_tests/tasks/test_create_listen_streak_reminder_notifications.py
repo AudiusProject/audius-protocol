@@ -150,5 +150,7 @@ def test_multiple_streaks(app):
             assert notification.type == LISTEN_STREAK_REMINDER
             user_id = int(notification.specifier)
             assert notification.user_ids == [user_id]
-            expected_streak = TEST_STREAK if user_id == TEST_USER_ID else TEST_STREAK + 1
-            assert notification.data == {"streak": expected_streak} 
+            expected_streak = (
+                TEST_STREAK if user_id == TEST_USER_ID else TEST_STREAK + 1
+            )
+            assert notification.data == {"streak": expected_streak}

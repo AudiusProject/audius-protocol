@@ -937,7 +937,9 @@ def populate_mock_db(db, entities, block_offset=None):
         for i, challenge_listen_streak in enumerate(challenge_listen_streaks):
             streak = ChallengeListenStreak(
                 user_id=challenge_listen_streak.get("user_id", i),
-                last_listen_date=challenge_listen_streak.get("last_listen_date", datetime.now()),
+                last_listen_date=challenge_listen_streak.get(
+                    "last_listen_date", datetime.now()
+                ),
                 listen_streak=challenge_listen_streak.get("listen_streak", 1),
             )
             session.add(streak)
