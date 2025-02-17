@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from integration_tests.utils import populate_mock_db
 from src.models.notifications.notification import Notification
 from src.tasks.create_listen_streak_reminder_notifications import (
-    LISTEN_STREAK,
+    LISTEN_STREAK_REMINDER,
     _create_listen_streak_reminder_notifications,
     get_listen_streak_notification_group_id,
 )
@@ -47,7 +47,7 @@ def test_create_listen_streak_reminder_notification(app):
         assert notification.specifier == str(TEST_USER_ID)
         assert notification.group_id == TEST_GROUP_ID
         assert notification.data == {"streak": TEST_STREAK}
-        assert notification.type == LISTEN_STREAK
+        assert notification.type == LISTEN_STREAK_REMINDER
         assert notification.user_ids == [TEST_USER_ID]
 
 
@@ -102,7 +102,7 @@ def test_ignore_existing_notification(app):
             {
                 "specifier": str(TEST_USER_ID),
                 "group_id": TEST_GROUP_ID,
-                "type": LISTEN_STREAK,
+                "type": LISTEN_STREAK_REMINDER,
                 "user_ids": [TEST_USER_ID],
                 "data": {"streak": TEST_STREAK},
                 "timestamp": listen_time,
@@ -147,7 +147,7 @@ def test_multiple_streaks(app):
 
         assert len(all_notifications) == 2
         for notification in all_notifications:
-            assert notification.type == LISTEN_STREAK
+            assert notification.type == LISTEN_STREAK_REMINDER
             user_id = int(notification.specifier)
             assert notification.user_ids == [user_id]
             expected_streak = TEST_STREAK if user_id == TEST_USER_ID else TEST_STREAK + 1

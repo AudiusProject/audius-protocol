@@ -162,6 +162,6 @@ export const GetNotificationsValidTypesEnum = {
     CommentThread: 'comment_thread',
     CommentMention: 'comment_mention',
     CommentReaction: 'comment_reaction',
-    ListenStreak: 'listen_streak'
+    ListenStreakReminder: 'listen_streak_reminder'
 } as const;
 export type GetNotificationsValidTypesEnum = typeof GetNotificationsValidTypesEnum[keyof typeof GetNotificationsValidTypesEnum];

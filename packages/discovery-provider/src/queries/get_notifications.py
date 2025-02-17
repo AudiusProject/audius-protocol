@@ -173,7 +173,7 @@ class NotificationType(str, Enum):
     COMMENT_THREAD = "comment_thread"
     COMMENT_MENTION = "comment_mention"
     COMMENT_REACTION = "comment_reaction"
-    LISTEN_STREAK = "listen_streak"
+    LISTEN_STREAK_REMINDER = "listen_streak_reminder"
 
     def __str__(self) -> str:
         return str.__str__(self)

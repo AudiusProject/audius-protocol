@@ -11,14 +11,14 @@ from src.utils.structured_logger import StructuredLogger, log_duration
 logger = StructuredLogger(__name__)
 env = shared_config["discprov"]["env"]
 
-LISTEN_STREAK = "listen_streak"
+LISTEN_STREAK_REMINDER = "listen_streak_reminder"
 HOURS_PER_DAY = 24
 LISTEN_STREAK_BUFFER = 6
 LAST_LISTEN_HOURS_AGO = HOURS_PER_DAY - LISTEN_STREAK_BUFFER
 
 
 def get_listen_streak_notification_group_id(user_id, date):
-    return f"{LISTEN_STREAK}:{user_id}:{date}"
+    return f"{LISTEN_STREAK_REMINDER}:{user_id}:{date}"
 
 
 @log_duration(logger)
@@ -39,7 +39,7 @@ def _create_listen_streak_reminder_notifications(session):
                 Notification.user_ids.any(ChallengeListenStreak.user_id),
                 Notification.group_id
                 == func.concat(
-                    LISTEN_STREAK,
+                    LISTEN_STREAK_REMINDER,
                     ":",
                     cast(ChallengeListenStreak.user_id, String),
                     ":",
@@ -65,7 +65,7 @@ def _create_listen_streak_reminder_notifications(session):
             ),
             blocknumber=None,  # Not blockchain related
             user_ids=[streak.user_id],
-            type=LISTEN_STREAK,
+            type=LISTEN_STREAK_REMINDER,
             data={
                 "streak": streak.listen_streak,
             },

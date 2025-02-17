@@ -73,7 +73,7 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
   const panelIsOpen = useSelector(getNotificationPanelIsOpen)
   const notificationss = useSelector(selectAllNotifications)
   const notifications = [
-    { type: NotificationType.ListenStreakReminder, streak: 1 },
+    // { type: NotificationType.ListenStreakReminder, streak: 1 },
     ...notificationss
   ]
   const hasMore = useSelector(getNotificationHasMore)
