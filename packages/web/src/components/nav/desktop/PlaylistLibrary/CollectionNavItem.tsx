@@ -100,7 +100,13 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
     getCollection(state, { id: typeof id === 'string' ? null : id })
   )
 
-  const { permalink } = collection ?? {}
+  const accountCollection = useSelector((state) =>
+    typeof id === 'number' && state.account.collections[id]
+      ? state.account.collections[id]
+      : null
+  )
+
+  const { permalink } = collection ?? accountCollection ?? {}
 
   const [isDeleteConfirmationOpen, toggleDeleteConfirmationOpen] =
     useToggle(false)
