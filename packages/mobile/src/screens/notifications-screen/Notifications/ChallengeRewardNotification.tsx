@@ -21,9 +21,13 @@ import {
   NotificationTwitterButton
 } from '../Notification'
 
+const formatNumber = (amount: BNAudio) => {
+  return formatNumberCommas(Number(amount.toString()))
+}
+
 const messages = {
   amountEarned: (amount: BNAudio) =>
-    `You've earned ${formatNumberCommas(Number(amount.toString()))} $AUDIO`,
+    `You've earned ${formatNumber(amount)} $AUDIO`,
   referredText: 'for being referred! Invite your friends to join to earn more!',
   challengeCompleteText: 'for completing this challenge!',
   twitterShareText:
@@ -71,7 +75,7 @@ export const ChallengeRewardNotification = (
   }, [challengeId, listenStreak, info])
 
   const notificationText = useMemo(() => {
-    const amountEarned = Number(formatNumberCommas(amount.toString()))
+    const amountEarned = Number(formatNumber(amount))
     switch (challengeId) {
       case ChallengeName.ListenStreakEndless:
         if (amountEarned > 1) {
