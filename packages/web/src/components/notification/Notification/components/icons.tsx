@@ -78,3 +78,11 @@ export const IconAddTrackToPlaylist = () => {
     <IconPlaylist color='accent' className={styles.iconAddTrackToPlaylist} />
   )
 }
+
+export const IconStreakFire = () => {
+  return (
+    <span role='img' aria-label='fire' css={{ fontSize: 32 }}>
+      🔥
+    </span>
+  )
+}
