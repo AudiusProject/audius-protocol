@@ -87,7 +87,7 @@ export const useIsUnauthorizedForHandleRedirect = (
     !accountUserId ||
     accountsStatus === Status.LOADING ||
     accountsStatus === Status.IDLE
-  const isOwner = accountHandle === handle
+  const isOwner = accountHandle?.toLowerCase() === handle.toLowerCase()
   const isManaged =
     !!accountHandle &&
     managedAccounts.find(({ user }) => user.handle.toLowerCase() === handle)
