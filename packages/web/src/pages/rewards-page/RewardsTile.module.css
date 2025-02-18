@@ -1,8 +1,3 @@
-.rewardsTile {
-  background-color: var(--harmony-white);
-  margin-bottom: 32px;
-  padding: 42px 28px 32px;
-}
 .title {
   background: var(--harmony-gradient);
   background-clip: text;

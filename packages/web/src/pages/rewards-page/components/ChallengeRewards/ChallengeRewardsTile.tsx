@@ -13,18 +13,17 @@ import {
   makeOptimisticChallengeSortComparator,
   removeNullable
 } from '@audius/common/utils'
-import { Box, Flex, Text } from '@audius/harmony'
+import { Box, Flex, LoadingSpinner, Paper, Text } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useSetVisibility } from 'common/hooks/useModalState'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { getChallengeConfig } from 'pages/rewards-page/config'
 
 import styles from '../../RewardsTile.module.css'
 import { messages } from '../../messages'
 import { ClaimAllRewardsPanel } from '../ClaimAllRewardsPanel'
-import { Tile } from '../Tile'
 
 import { RewardPanel } from './RewardPanel'
 import { useRewardIds } from './hooks/useRewardIds'
@@ -95,11 +94,12 @@ export const ChallengeRewardsTile = ({
   })
 
   const wm = useWithMobileStyle(styles.mobile)
+  const isMobile = useIsMobile()
 
   return (
     <Flex direction='column' gap='l'>
       {isClaimAllRewardsEnabled ? <ClaimAllRewardsPanel /> : null}
-      <Tile className={wm(styles.rewardsTile, className)}>
+      <Paper column p={isMobile ? 'm' : 'xl'} css={{ minHeight: 1000 }}>
         <Text variant='display' size='s' className={wm(styles.title)}>
           {messages.title}
         </Text>
@@ -109,13 +109,24 @@ export const ChallengeRewardsTile = ({
           </Text>
         </Box>
         {userChallengesLoading && !haveChallengesLoaded ? (
-          <LoadingSpinner className={wm(styles.loadingRewardsTile)} />
+          <Box
+            h='unit10'
+            w='unit10'
+            css={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)'
+            }}
+          >
+            <LoadingSpinner />
+          </Box>
         ) : (
-          <>
-            <div className={styles.rewardsContainer}>{rewardsTiles}</div>
-          </>
+          <Flex wrap='wrap' gap='l'>
+            {rewardsTiles}
+          </Flex>
         )}
-      </Tile>
+      </Paper>
     </Flex>
   )
 }

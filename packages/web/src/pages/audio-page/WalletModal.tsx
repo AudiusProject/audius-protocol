@@ -366,6 +366,7 @@ const WalletModal = () => {
               'AWAITING_CONVERTING_ETH_AUDIO_TO_SOL'
         })}
         showTitleHeader
+        // @ts-expect-error - eventually get off legacy
         title={getTitle(modalState)}
         showDismissButton={allowDismiss}
         dismissOnClickOutside={allowDismiss}

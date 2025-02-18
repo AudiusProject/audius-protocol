@@ -5,7 +5,6 @@ import { useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import ModalDrawer from 'components/modal-drawer/ModalDrawer'
-import { useIsMobile } from 'hooks/useIsMobile'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 
 import ClickableAddress from '../ClickableAddress'
@@ -26,16 +25,6 @@ const messages = {
 export const VipDiscordModal = () => {
   const discordCode = useSelector(getDiscordCode)
   const [isOpen, setIsOpen] = useModalState('VipDiscord')
-  const isMobile = useIsMobile()
-
-  const modalTitle = isMobile ? (
-    <div className={styles.discordDrawerTitle}>{messages.title}</div>
-  ) : (
-    <div className={styles.titleWrapper}>
-      <IconDiscord />
-      {messages.title}
-    </div>
-  )
 
   const handleClick = () => {
     window.open(AUDIUS_DISCORD_LINK, '_blank')
@@ -45,14 +34,13 @@ export const VipDiscordModal = () => {
 
   return (
     <ModalDrawer
+      newModal
       isOpen={isOpen}
       onClose={() => setIsOpen(false)}
-      bodyClassName={styles.modalBody}
-      showTitleHeader
-      title={modalTitle}
+      size='medium'
+      title={messages.title}
+      icon={<IconDiscord />}
       dismissOnClickOutside
-      showDismissButton
-      contentHorizontalPadding={24}
     >
       <div className={wm(styles.modalContainer)}>
         <div className={styles.description}>{messages.description}</div>

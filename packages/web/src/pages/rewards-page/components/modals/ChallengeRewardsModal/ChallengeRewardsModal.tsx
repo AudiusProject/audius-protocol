@@ -33,7 +33,6 @@ import {
   Text,
   ProgressBar,
   Flex,
-  Paper,
   IconArrowRight
 } from '@audius/harmony'
 import cn from 'classnames'
@@ -598,17 +597,15 @@ const ChallengeRewardsBody = ({ onClose }: BodyProps) => {
       <Flex column alignItems='center' gap='2xl' w='100%'>
         {isMobile ? (
           <>
-            {progressDescription}
-            <Paper column shadow='flat' w='100%' borderRadius='s'>
-              <Flex justifyContent='center'>
-                <ProgressReward
-                  amount={progressRewardAmount}
-                  subtext={messages.audio}
-                />
-                {renderProgressBar()}
-              </Flex>
-              <Flex justifyContent='center'>{renderProgressStatusLabel()}</Flex>
-            </Paper>
+            <Flex column gap='l'>
+              {progressDescription}
+              <ProgressReward
+                amount={progressRewardAmount}
+                subtext={messages.audio}
+              />
+            </Flex>
+            {renderProgressBar()}
+            {renderProgressStatusLabel()}
             {modalType === 'profile-completion' ||
             modalType === ChallengeName.ProfileCompletion ? (
               <ProfileChecks />
@@ -617,23 +614,19 @@ const ChallengeRewardsBody = ({ onClose }: BodyProps) => {
           </>
         ) : (
           <>
-            <Paper column w='100%' borderRadius='s' shadow='flat'>
-              <Flex justifyContent='space-between' w='100%'>
-                {progressDescription}
-                <ProgressReward
-                  amount={progressRewardAmount}
-                  subtext={messages.audio}
-                />
-              </Flex>
-              <Flex column gap='xl'>
-                {renderProgressStatusLabel()}
-                {renderProgressBar()}
-              </Flex>
-              {modalType === 'profile-completion' ||
-              modalType === ChallengeName.ProfileCompletion ? (
-                <ProfileChecks />
-              ) : null}
-            </Paper>
+            <Flex alignItems='center' justifyContent='space-between' gap='l'>
+              {progressDescription}
+              <ProgressReward
+                amount={progressRewardAmount}
+                subtext={messages.audio}
+              />
+            </Flex>
+            {renderProgressStatusLabel()}
+            {renderProgressBar()}
+            {modalType === 'profile-completion' ||
+            modalType === ChallengeName.ProfileCompletion ? (
+              <ProfileChecks />
+            ) : null}
             {renderCooldownSummaryTable()}
           </>
         )}
