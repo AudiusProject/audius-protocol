@@ -351,8 +351,8 @@ const CollectionPage = ({
               onClickRemove={isOwner ? onClickRemove : undefined}
               onClickRepost={onClickRepostTrack}
               onClickPurchase={openPurchaseModal}
-              onReorderTracks={onReorderTracks}
-              onSortTracks={onSortTracks}
+              onReorder={onReorderTracks}
+              onSort={onSortTracks}
               isReorderable={
                 userId !== null && userId === playlistOwnerId && allowReordering
               }
