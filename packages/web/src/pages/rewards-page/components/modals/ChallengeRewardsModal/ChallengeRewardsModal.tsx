@@ -34,7 +34,8 @@ import {
   Text,
   ProgressBar,
   Flex,
-  Paper
+  Paper,
+  IconArrowRight
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
@@ -266,10 +267,10 @@ const getErrorMessage = (aaoErrorCode?: number) => {
 }
 
 type BodyProps = {
-  dismissModal: () => void
+  onClose: () => void
 }
 
-const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
+const ChallengeRewardsBody = ({ onClose }: BodyProps) => {
   const { toast } = useContext(ToastContext)
   const claimStatus = useSelector(getClaimStatus)
   const aaoErrorCode = useSelector(getAAOErrorCode)
@@ -339,17 +340,19 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
       {isVerifiedChallenge ? (
         <div className={styles.verifiedChallenge}>
           <IconVerified />
-          {messages.verifiedChallenge}
+          <ProgressDescription>
+            {messages.verifiedChallenge}
+          </ProgressDescription>
         </div>
       ) : null}
-      <Text variant='body' style={{ whiteSpace: 'pre-line' }}>
+      <ProgressDescription css={{ whiteSpace: 'pre-line' }}>
         {fullDescription?.(challenge)}
         {challenge?.claimableAmount ? optionalDescription : null}
-      </Text>
+      </ProgressDescription>
       {isCooldownChallenge ? (
-        <Text variant='body' color='subdued'>
+        <ProgressDescription color='subdued'>
           {messages.cooldownDescription}
-        </Text>
+        </ProgressDescription>
       ) : null}
     </Flex>
   )
@@ -455,8 +458,8 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   const goToRoute = useCallback(() => {
     if (!buttonLink) return
     dispatch(pushRoute(buttonLink))
-    dismissModal()
-  }, [buttonLink, dispatch, dismissModal])
+    onClose()
+  }, [buttonLink, dispatch, onClose])
 
   const formatLabel = useCallback((item: any) => {
     const { label, claimableDate, isClose } = item
@@ -561,14 +564,14 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
       <Button
         variant='primary'
         isLoading={claimInProgress}
-        iconRight={IconCheck}
+        iconRight={IconArrowRight}
         onClick={onClaimRewardClicked}
         fullWidth
       >
         {messages.claimableAmountLabel(audioToClaim)}
       </Button>
     ) : (
-      <Button variant='secondary' onClick={dismissModal} fullWidth>
+      <Button variant='secondary' onClick={onClose} fullWidth>
         {messages.close}
       </Button>
     )
@@ -579,7 +582,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
     modalContent = (
       <AudioMatchingRewardsModalContent
         errorContent={errorContent}
-        onNavigateAway={dismissModal}
+        onNavigateAway={onClose}
         challenge={challenge}
         challengeName={modalType}
       />
@@ -596,7 +599,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
       <Flex column alignItems='center' gap='2xl' w='100%'>
         {isMobile ? (
           <>
-            <ProgressDescription description={progressDescription} />
+            {progressDescription}
             <Paper column shadow='flat' w='100%' borderRadius='s'>
               <Flex justifyContent='center'>
                 <ProgressReward
@@ -617,7 +620,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
           <>
             <Paper column w='100%' borderRadius='s' shadow='flat'>
               <Flex justifyContent='space-between' w='100%'>
-                <ProgressDescription description={progressDescription} />
+                {progressDescription}
                 <ProgressReward
                   amount={progressRewardAmount}
                   subtext={messages.audio}
@@ -655,10 +658,12 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   }
 
   return (
-    <Flex column alignItems='center' gap='2xl'>
+    <Flex column gap='2xl' h='100%' justifyContent='space-between'>
       {modalContent}
-      {renderClaimButton()}
-      {errorContent}
+      <Flex column gap='l' w='100%'>
+        {renderClaimButton()}
+        {errorContent}
+      </Flex>
     </Flex>
   )
 }
@@ -678,20 +683,19 @@ export const ChallengeRewardsModal = () => {
 
   return (
     <ModalDrawer
+      newModal
+      size='medium'
       title={title}
       showTitleHeader
       isOpen={isOpen}
       onClose={onClose}
       isFullscreen={true}
-      useGradientTitle={false}
       titleClassName={wm(styles.title)}
       headerContainerClassName={styles.header}
       showDismissButton
       dismissOnClickOutside
     >
-      <ModalContent>
-        <ChallengeRewardsBody dismissModal={onClose} />
-      </ModalContent>
+      <ChallengeRewardsBody onClose={onClose} />
     </ModalDrawer>
   )
 }

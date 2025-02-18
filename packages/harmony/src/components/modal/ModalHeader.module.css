@@ -36,7 +36,7 @@
   display: inline;
   font-size: var(--harmony-font-xl);
   font-weight: var(--harmony-font-heavy);
-  color: var(--harmony-n-600);
+  color: var(--harmony-n-400);
   text-transform: uppercase;
 }
 
@@ -50,7 +50,7 @@
   display: inline;
   font-size: var(--harmony-font-s);
   font-weight: var(--harmony-font-medium);
-  color: var(--harmony-n-600);
+  color: var(--harmony-n-400);
 }
 
 .icon {

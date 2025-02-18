@@ -52,7 +52,7 @@ export const RewardPanel = ({
   progressLabel,
   remainingLabel
 }: RewardPanelProps) => {
-  const { color, spacing } = useTheme()
+  const { spacing } = useTheme()
   const userChallenges = useSelector(getOptimisticUserChallenges)
   const { history } = useHistoryContext()
 
@@ -98,11 +98,8 @@ export const RewardPanel = ({
       m='s'
       shadow='flat'
       border='strong'
-      css={{
-        minWidth: PANEL_WIDTH,
-        minHeight: PANEL_HEIGHT,
-        backgroundColor: hasDisbursed ? color.neutral.n25 : undefined
-      }}
+      backgroundColor={hasDisbursed ? 'surface1' : undefined}
+      css={{ minWidth: PANEL_WIDTH, minHeight: PANEL_HEIGHT }}
     >
       <Flex column h='100%'>
         <Flex
@@ -124,9 +121,7 @@ export const RewardPanel = ({
             w='100%'
             gap='s'
           >
-            <Text variant='heading' size='s'>
-              {title}
-            </Text>
+            <Text variant='heading'>{title}</Text>
             <Flex css={{ minHeight: 40 }}>
               <Text variant='body' textAlign='left'>
                 {description(challenge)}

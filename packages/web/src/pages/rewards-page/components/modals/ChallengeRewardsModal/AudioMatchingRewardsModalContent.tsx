@@ -94,17 +94,14 @@ export const AudioMatchingRewardsModalContent = ({
   const userChallenge = useSelector(getOptimisticUserChallenges)[challengeName]
 
   const progressDescription = (
-    <ProgressDescription
-      description={
-        <Flex column gap='m'>
-          <Text variant='body'>{fullDescription?.(challenge)}</Text>
-          <Text variant='body' color='subdued'>
-            {messages.descriptionSubtext[challengeName]}
-          </Text>
-        </Flex>
-      }
-    />
+    <Flex column gap='m'>
+      <ProgressDescription>{fullDescription?.(challenge)}</ProgressDescription>
+      <ProgressDescription color='subdued'>
+        {messages.descriptionSubtext[challengeName]}
+      </ProgressDescription>
+    </Flex>
   )
+
   const progressReward = (
     <ProgressReward
       amount={challenge?.amount}
