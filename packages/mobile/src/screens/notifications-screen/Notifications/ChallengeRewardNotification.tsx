@@ -21,6 +21,8 @@ import {
   NotificationTwitterButton
 } from '../Notification'
 
+import { IconStreakFire } from './ListenStreakReminderNotification'
+
 const formatNumber = (amount: BNAudio) => {
   return formatNumberCommas(Number(amount.toString()))
 }
@@ -93,7 +95,14 @@ export const ChallengeRewardNotification = (
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
-      <NotificationHeader icon={IconAudiusLogo}>
+      <NotificationHeader
+        icon={IconAudiusLogo}
+        emoji={
+          challengeId === ChallengeName.ListenStreakEndless ? (
+            <IconStreakFire />
+          ) : undefined
+        }
+      >
         <NotificationTitle>
           {Platform.OS === 'ios' && title.includes('Tip')
             ? title.replace('Tip', '$AUDIO')
