@@ -20,7 +20,7 @@ env = shared_config["discprov"]["env"]
 NUM_DAYS_IN_STREAK = 3
 
 base_timedelta = timedelta(days=1)
-if env == "stage" or env == "dev":
+if env == "stage":
     base_timedelta = timedelta(minutes=1)
 
 
@@ -91,7 +91,7 @@ class ChallengeListenEndlessStreakUpdater(ChallengeUpdater):
         # Otherwise, create a new specifier
         created_at = datetime.fromtimestamp(extra["created_at"])
         formatted_date = created_at.strftime("%Y%m%d")
-        if env == "stage" or env == "dev":
+        if env == "stage":
             formatted_date = created_at.strftime("%Y%m%d%H%M")
         return f"{hex(user_id)[2:]}_{formatted_date}"
 
