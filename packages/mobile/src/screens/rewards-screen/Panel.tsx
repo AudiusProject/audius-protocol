@@ -107,7 +107,12 @@ export const Panel = ({
                   <IconCheck fill={neutralLight4} size='s' />
                 ) : null}
                 <Flex row alignItems='center'>
-                  <Text variant='label' size='l' color='subdued'>
+                  <Text
+                    variant='label'
+                    size='l'
+                    color='subdued'
+                    style={{ lineHeight: 0 }}
+                  >
                     {formattedProgressLabel}
                   </Text>
                 </Flex>
