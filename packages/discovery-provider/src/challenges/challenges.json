@@ -13,7 +13,7 @@
     "id": "l",
     "type": "numeric",
     "amount": 1,
-    "active": true,
+    "active": false,
     "step_count": 7,
     "starting_block": 116023891,
     "weekly_pool": 25000
@@ -22,7 +22,7 @@
     "id": "e",
     "type": "aggregate",
     "amount": 1,
-    "active": false,
+    "active": true,
     "step_count": 2147483647,
     "starting_block": 116023891,
     "weekly_pool": 25000
