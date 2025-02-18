@@ -24,9 +24,8 @@ import {
 const messages = {
   amountEarned: (amount: BNAudio) =>
     `You've earned ${formatNumberCommas(Number(amount.toString()))} $AUDIO`,
-  referredText:
-    ' for being referred! Invite your friends to join to earn more!',
-  challengeCompleteText: ' for completing this challenge!',
+  referredText: 'for being referred! Invite your friends to join to earn more!',
+  challengeCompleteText: 'for completing this challenge!',
   twitterShareText:
     'I earned $AUDIO for completing challenges on @audius #AudioRewards',
   streakMilestone: (amountEarned: number, listenStreak: number) =>
