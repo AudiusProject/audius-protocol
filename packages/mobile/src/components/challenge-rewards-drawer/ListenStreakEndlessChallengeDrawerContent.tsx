@@ -83,12 +83,14 @@ export const ListenStreakEndlessChallengeDrawerContent = ({
               pv='l'
             >
               <IconHeadphones size='s' color='subdued' />
-              {/* Hack due to broken lineHeight for certain fonts */}
-              <Flex mt='unitHalf'>
-                <Text variant='label' size='l' color='subdued'>
-                  {messages.day(challenge.current_step_count)}
-                </Text>
-              </Flex>
+              <Text
+                variant='label'
+                size='l'
+                color='subdued'
+                style={{ lineHeight: 0 }}
+              >
+                {messages.day(challenge.current_step_count)}
+              </Text>
             </Flex>
             {claimedAmount > 0 ? (
               <Flex
