@@ -26,7 +26,7 @@ def _create_listen_streak_reminder_notifications(session):
     now = datetime.now()
     window_end = now - timedelta(hours=LAST_LISTEN_HOURS_AGO)
     window_start = now - timedelta(hours=LAST_LISTEN_HOURS_AGO + 1)
-    if env == "stage" or env == "dev":
+    if env == "stage":
         window_end = now - timedelta(minutes=1)
         window_start = now - timedelta(minutes=2)
 

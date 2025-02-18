@@ -17,7 +17,7 @@ from src.utils.config import shared_config
 logger = logging.getLogger(__name__)
 env = shared_config["discprov"]["env"]
 
-NUM_DAYS_IN_STREAK = 3
+NUM_DAYS_IN_STREAK = 7
 
 base_timedelta = timedelta(days=1)
 if env == "stage":
