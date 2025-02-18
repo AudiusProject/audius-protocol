@@ -23,7 +23,6 @@ import {
   getClaimableChallengeSpecifiers
 } from '@audius/common/utils'
 import {
-  ModalContent,
   IconCopy,
   IconValidationCheck,
   IconCheck,

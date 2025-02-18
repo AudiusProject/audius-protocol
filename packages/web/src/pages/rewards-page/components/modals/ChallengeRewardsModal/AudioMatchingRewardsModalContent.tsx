@@ -12,12 +12,12 @@ import {
   route
 } from '@audius/common/utils'
 import {
+  Box,
   Button,
   ButtonProps,
   Flex,
   IconArrowRight,
   IconCloudUpload,
-  Paper,
   Text
 } from '@audius/harmony'
 import { useSelector } from 'react-redux'
@@ -35,14 +35,8 @@ const { getOptimisticUserChallenges } = challengesSelectors
 
 const messages = {
   rewardMapping: {
-    [ChallengeName.AudioMatchingBuy]: '$AUDIO Every Dollar Spent',
-    [ChallengeName.AudioMatchingSell]: '$AUDIO Every Dollar Earned'
-  },
-  descriptionSubtext: {
-    [ChallengeName.AudioMatchingBuy]:
-      'Note: There is a 7 day waiting period between when you purchase and when you can claim your reward.',
-    [ChallengeName.AudioMatchingSell]:
-      'Note: There is a 7 day waiting period between when your track is purchased and when you can claim your reward.'
+    [ChallengeName.AudioMatchingBuy]: '$AUDIO / Dollar',
+    [ChallengeName.AudioMatchingSell]: '$AUDIO / Dollar'
   },
   viewPremiumTracks: 'View Premium Tracks',
   uploadTrack: 'Upload Track',
@@ -94,12 +88,7 @@ export const AudioMatchingRewardsModalContent = ({
   const userChallenge = useSelector(getOptimisticUserChallenges)[challengeName]
 
   const progressDescription = (
-    <Flex column gap='m'>
-      <ProgressDescription>{fullDescription?.(challenge)}</ProgressDescription>
-      <ProgressDescription color='subdued'>
-        {messages.descriptionSubtext[challengeName]}
-      </ProgressDescription>
-    </Flex>
+    <ProgressDescription>{fullDescription?.(challenge)}</ProgressDescription>
   )
 
   const progressReward = (
@@ -116,10 +105,11 @@ export const AudioMatchingRewardsModalContent = ({
         justifyContent='center'
         ph='xl'
         pv='l'
-        borderTop='strong'
-        backgroundColor='surface2'
+        border='default'
+        backgroundColor='surface1'
+        borderRadius='s'
       >
-        <Text variant='label' size='l' strength='strong'>
+        <Text variant='label' size='l' color='subdued'>
           {messages.totalClaimed(
             formatNumberCommas(userChallenge.disbursed_amount.toString())
           )}
@@ -167,37 +157,36 @@ export const AudioMatchingRewardsModalContent = ({
   }
 
   return (
-    <Flex column gap='2xl'>
+    <Flex column gap='2xl' justifyContent='space-between' h='100%'>
       {isMobile ? (
-        <>
+        <Flex column gap='2xl'>
           {progressDescription}
-          <Paper column shadow='flat' w='100%' css={{ overflow: 'hidden' }}>
-            <Flex justifyContent='center'>{progressReward}</Flex>
-            {progressStatusLabel}
-          </Paper>
+          {progressReward}
+          {progressStatusLabel}
           {renderCooldownSummaryTable()}
-        </>
+        </Flex>
       ) : (
-        <>
-          <Paper shadow='flat' direction='column'>
-            <Flex justifyContent='center'>
-              {progressDescription}
-              {progressReward}
-            </Flex>
-            {progressStatusLabel}
-          </Paper>
+        <Flex column gap='2xl'>
+          <Flex alignItems='center' justifyContent='space-between' gap='2xl'>
+            {progressDescription}
+            {progressReward}
+          </Flex>
+          {progressStatusLabel}
           {renderCooldownSummaryTable()}
-        </>
+        </Flex>
       )}
-      {challenge?.claimableAmount && challenge.claimableAmount > 0 ? null : (
-        <Button
-          variant='secondary'
-          fullWidth
-          {...ctaButtonProps[challengeName]}
-          onClick={handleClickCTA}
-        />
-      )}
-      {errorContent}
+      {/* Hack alert, move this button down closer to the submit button */}
+      <Box css={{ marginBottom: -16 }}>
+        {challenge?.claimableAmount && challenge.claimableAmount > 0 ? null : (
+          <Button
+            variant='secondary'
+            fullWidth
+            {...ctaButtonProps[challengeName]}
+            onClick={handleClickCTA}
+          />
+        )}
+        {errorContent}
+      </Box>
     </Flex>
   )
 }

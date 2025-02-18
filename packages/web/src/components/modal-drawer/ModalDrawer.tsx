@@ -49,7 +49,9 @@ const ModalDrawer = (props: ModalDrawerProps) => {
               {props.title}
             </Text>
           </Flex>
-          {props.children}
+          <Flex pv='2xl' ph='l' h='100%'>
+            {props.children}
+          </Flex>
         </Flex>
       </Drawer>
     )
