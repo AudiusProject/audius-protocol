@@ -13,7 +13,7 @@ import {
   NotificationTitle
 } from '../Notification'
 
-const IconStreakFire = () => {
+export const IconStreakFire = () => {
   return <Text style={{ fontSize: 32 }}>🔥</Text>
 }
 
