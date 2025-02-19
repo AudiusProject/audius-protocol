@@ -2,7 +2,7 @@ import type { OptimisticUserChallenge } from '@audius/common/models'
 import { ChallengeName } from '@audius/common/models'
 import { ClaimStatus } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
-import { ScrollView } from 'react-native'
+import { Platform, ScrollView } from 'react-native'
 
 import {
   Flex,
@@ -87,7 +87,8 @@ export const ListenStreakEndlessChallengeDrawerContent = ({
                 variant='label'
                 size='l'
                 color='subdued'
-                style={{ lineHeight: 0 }}
+                // iOS has a bug where emojis are not vertically aligned with the text
+                style={{ lineHeight: Platform.OS === 'ios' ? 0 : undefined }}
               >
                 {messages.day(challenge.current_step_count)}
               </Text>
