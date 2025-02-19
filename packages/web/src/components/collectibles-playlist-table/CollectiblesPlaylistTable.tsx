@@ -38,7 +38,7 @@ type CollectiblesPlaylistTableProps = {
   onClickRow?: (collectible: any, index: number) => void
   onClickTrackName?: (collectible: any) => void
   playing?: boolean
-  playingIndex?: number
+  activeIndex?: number
   tableClassName?: string
   wrapperClassName?: string
 }
@@ -59,7 +59,7 @@ export const CollectiblesPlaylistTable = ({
   onClickRow,
   onClickTrackName: onClickCollectibleName,
   playing = false,
-  playingIndex = -1,
+  activeIndex = -1,
   tableClassName,
   wrapperClassName
 }: CollectiblesPlaylistTableProps) => {
@@ -67,7 +67,7 @@ export const CollectiblesPlaylistTable = ({
   const renderPlayButtonCell = useCallback(
     (cellInfo: CollectibleCell) => {
       const index = cellInfo.row.index
-      const active = index === playingIndex
+      const active = index === activeIndex
       return (
         <TablePlayButton
           className={cn(styles.tablePlayButton, { [styles.active]: active })}
@@ -77,7 +77,7 @@ export const CollectiblesPlaylistTable = ({
         />
       )
     },
-    [playing, playingIndex]
+    [playing, activeIndex]
   )
 
   const renderCollectibleNameCell = useCallback(
@@ -94,7 +94,7 @@ export const CollectiblesPlaylistTable = ({
         >
           <div
             className={cn(styles.textCell, styles.collectibleName, {
-              [styles.isPlaying]: index === playingIndex
+              [styles.isPlaying]: index === activeIndex
             })}
           >
             {collectible.name}
@@ -102,7 +102,7 @@ export const CollectiblesPlaylistTable = ({
         </div>
       )
     },
-    [onClickCollectibleName, playingIndex]
+    [onClickCollectibleName, activeIndex]
   )
 
   const renderLengthCell = useCallback((cellInfo: CollectibleCell) => {
@@ -198,7 +198,7 @@ export const CollectiblesPlaylistTable = ({
       data={data}
       loading={loading}
       onClickRow={handleClickRow}
-      activeIndex={playingIndex}
+      activeIndex={activeIndex}
       isVirtualized={isVirtualized}
     />
   )

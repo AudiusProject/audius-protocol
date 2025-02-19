@@ -85,8 +85,8 @@ export const TrackTableLineup = ({
       : merged
   }, [lineup.entries, tracks, hasNextPage, pageSize])
 
-  // Get the playing index by finding the current track in the data
-  const playingIndex = useMemo(() => {
+  // Get the active index by finding the current track in the data
+  const activeIndex = useMemo(() => {
     if (!currentQueueItem?.uid) return -1
     return mergedData.findIndex((track) => track.uid === currentQueueItem.uid)
   }, [currentQueueItem?.uid, mergedData])
@@ -125,7 +125,7 @@ export const TrackTableLineup = ({
 
   const onClickRow = useCallback(
     (track: TrackWithUID, index: number) => {
-      if (index === playingIndex && isPlaying) {
+      if (index === activeIndex && isPlaying) {
         pause()
         dispatch(
           make(Name.PLAYBACK_PAUSE, {
@@ -143,7 +143,7 @@ export const TrackTableLineup = ({
         )
       }
     },
-    [dispatch, isPlaying, pause, play, playingSource, playingIndex, mergedData]
+    [activeIndex, isPlaying, pause, dispatch, playingSource, play, mergedData]
   )
 
   return (
@@ -153,7 +153,7 @@ export const TrackTableLineup = ({
       onClickFavorite={onClickFavorite}
       onClickRepost={onClickRepost}
       playing={isPlaying && !isBuffering}
-      activeIndex={playingIndex}
+      activeIndex={activeIndex}
       onClickRow={onClickRow}
       fetchMore={loadNextPage}
       loading={isInitialLoading}
