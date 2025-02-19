@@ -31,10 +31,7 @@ export const useUserCollectibles = (
       const { data } = await sdk.users.getUserCollectibles({
         id: Id.parse(userId)
       })
-      return (data?.data ?? {
-        order: [],
-        collectibles: []
-      }) as CollectiblesMetadata
+      return (data?.data as CollectiblesMetadata) ?? null
     },
     ...options,
     enabled: options?.enabled !== false && !!args.userId
