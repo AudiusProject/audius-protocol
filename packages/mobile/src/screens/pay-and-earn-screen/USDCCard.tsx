@@ -4,7 +4,6 @@ import { useUSDCBalance } from '@audius/common/hooks'
 import { useAddFundsModal } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import { css } from '@emotion/native'
-import BN from 'bn.js'
 import LinearGradient from 'react-native-linear-gradient'
 
 import {
