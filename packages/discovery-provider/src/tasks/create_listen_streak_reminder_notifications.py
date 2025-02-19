@@ -12,9 +12,8 @@ logger = StructuredLogger(__name__)
 env = shared_config["discprov"]["env"]
 
 LISTEN_STREAK_REMINDER = "listen_streak_reminder"
-HOURS_PER_DAY = 24
-LISTEN_STREAK_BUFFER = 6
-LAST_LISTEN_HOURS_AGO = (HOURS_PER_DAY * 2) - LISTEN_STREAK_BUFFER
+# 2 days - 6 hours
+LISTEN_STREAK_BUFFER = 42
 
 
 def get_listen_streak_notification_group_id(user_id, date):
@@ -24,8 +23,8 @@ def get_listen_streak_notification_group_id(user_id, date):
 @log_duration(logger)
 def _create_listen_streak_reminder_notifications(session):
     now = datetime.now()
-    window_end = now - timedelta(hours=LAST_LISTEN_HOURS_AGO)
-    window_start = now - timedelta(hours=LAST_LISTEN_HOURS_AGO + 1)
+    window_end = now - timedelta(hours=LISTEN_STREAK_BUFFER)
+    window_start = now - timedelta(hours=LISTEN_STREAK_BUFFER + 1)
     if env == "stage":
         window_end = now - timedelta(minutes=1)
         window_start = now - timedelta(minutes=2)
