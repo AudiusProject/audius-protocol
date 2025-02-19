@@ -41,7 +41,8 @@ import {
   CommentNotification,
   CommentThreadNotification,
   CommentMentionNotification,
-  CommentReactionNotification
+  CommentReactionNotification,
+  ListenStreakReminderNotification
 } from '../../types/notifications'
 import { ApproveManagerRequest } from './approveManagerRequest'
 import { Follow } from './follow'
@@ -79,6 +80,7 @@ import { Comment } from './comment'
 import { CommentThread } from './commentThread'
 import { CommentMention } from './commentMention'
 import { CommentReaction } from './commentReaction'
+import { ListenStreakReminder } from './listenStreakReminder'
 
 export const mapNotifications = (
   notifications: (NotificationRow | EmailNotification)[],
@@ -309,6 +311,15 @@ const mapNotification = (
       data: CommentReactionNotification
     }
     return new CommentReaction(dnDb, identityDb, saveNotification)
+  } else if (notification.type == 'listen_streak_reminder') {
+    const ListenStreakReminderNotification = notification as NotificationRow & {
+      data: ListenStreakReminderNotification
+    }
+    return new ListenStreakReminder(
+      dnDb,
+      identityDb,
+      ListenStreakReminderNotification
+    )
   }
 
   logger.info(`Notification type: ${notification.type} has no handler`)
