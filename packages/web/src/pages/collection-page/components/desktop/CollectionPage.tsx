@@ -161,7 +161,7 @@ const CollectionPage = ({
   const { status, metadata, user } = collection
 
   // TODO: Consider dynamic lineups, esp. for caching improvement.
-  const [dataSource, playingIndex] =
+  const [dataSource, activeIndex] =
     tracks.status === Status.SUCCESS
       ? getFilteredData(tracks.entries)
       : [[], -1]
@@ -344,7 +344,7 @@ const CollectionPage = ({
               loading={isNftPlaylist ? collectionLoading : tracksLoading}
               userId={userId}
               playing={playing}
-              playingIndex={playingIndex}
+              activeIndex={activeIndex}
               data={dataSource}
               onClickRow={onClickRow}
               onClickFavorite={onClickSave}

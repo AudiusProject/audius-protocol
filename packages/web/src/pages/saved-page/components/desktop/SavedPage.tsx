@@ -138,15 +138,15 @@ const SavedPage = ({
   })
 
   const getTracksTableData = (): [SavedPageTrack[], number] => {
-    let [data, playingIndex] = getFilteredData(entries)
+    let [data, activeIndex] = getFilteredData(entries)
     if (!hasReachedEnd) {
       // Add in some empty rows to show user that more are loading in
       data = data.concat(new Array(5).fill({ kind: Kind.EMPTY }))
     }
-    return [data, playingIndex]
+    return [data, activeIndex]
   }
 
-  const [dataSource, playingIndex] =
+  const [dataSource, activeIndex] =
     status === Status.SUCCESS || entries.length
       ? getTracksTableData()
       : [[], -1]
@@ -244,7 +244,7 @@ const SavedPage = ({
           onClickRow={onClickRow}
           onSort={allTracksFetched ? onSortTracks : onSortChange}
           playing={queuedAndPlaying}
-          activeIndex={playingIndex}
+          activeIndex={activeIndex}
           scrollRef={mainContentRef}
           useLocalSort={allTracksFetched}
           fetchBatchSize={50}
