@@ -1102,7 +1102,7 @@ export const useGetTrackCommentNotificationSetting = (
   return useQuery({
     queryKey: getTrackCommentNotificationSettingQueryKey(trackId),
     queryFn: async () => {
-      if (!currentUserId) return
+      if (!currentUserId) return null
       const sdk = await audiusSdk()
       return await sdk.tracks.trackCommentNotificationSetting({
         trackId: Id.parse(trackId),
