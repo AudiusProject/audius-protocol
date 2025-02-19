@@ -7,9 +7,11 @@ import {
   MutableRefObject
 } from 'react'
 
+import { Box, Flex } from '@audius/harmony'
 import { animated, useSpring } from '@react-spring/web'
 import cn from 'classnames'
 
+import { MAX_PAGE_WIDTH_PX } from 'common/utils/layout'
 import { MetaTags, MetaTagsProps } from 'components/meta-tags/MetaTags'
 import DesktopSearchBar from 'components/search-bar/ConnectedSearchBar'
 
@@ -158,11 +160,31 @@ export const Page = (props: PageProps) => {
           </div>
         </div>
 
-        {scrollableSearch && (
-          <div className={styles.searchWrapper}>
-            <DesktopSearchBar />
-          </div>
-        )}
+        {scrollableSearch &&
+          (variant === 'flush' ? (
+            <Box
+              css={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0
+              }}
+            >
+              <Flex
+                justifyContent='flex-start'
+                flex='1 1 100%'
+                mh='auto'
+                mt='2xl'
+                css={{ maxWidth: MAX_PAGE_WIDTH_PX }}
+              >
+                <DesktopSearchBar />
+              </Flex>
+            </Box>
+          ) : (
+            <div className={styles.searchWrapper}>
+              <DesktopSearchBar />
+            </div>
+          ))}
       </animated.div>
     </>
   )
