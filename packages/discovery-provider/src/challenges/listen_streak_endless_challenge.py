@@ -17,11 +17,12 @@ from src.utils.config import shared_config
 logger = logging.getLogger(__name__)
 env = shared_config["discprov"]["env"]
 
-NUM_DAYS_IN_STREAK = 3 if env == "stage" else 7
+NUM_DAYS_IN_STREAK = 7
 
 base_timedelta = timedelta(days=1)
 if env == "stage":
     base_timedelta = timedelta(minutes=1)
+    NUM_DAYS_IN_STREAK = 3
 
 
 def get_listen_streak_override(session: Session, user_id: int) -> Optional[int]:
