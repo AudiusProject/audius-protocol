@@ -90,7 +90,7 @@ export const useTrackHistory = (
           return track
         }
       )
-      primeTrackData({ tracks, queryClient, dispatch, skipQueryData: true })
+      primeTrackData({ tracks, queryClient, dispatch })
 
       // Update lineup when new data arrives
       // TODO: can this inside useLineupQuery?
@@ -116,6 +116,7 @@ export const useTrackHistory = (
     lineupSelector: historyPageSelectors.getHistoryTracksLineup,
     playbackSource: PlaybackSource.HISTORY_PAGE
   })
+
   return {
     ...queryData,
     ...lineupData,
