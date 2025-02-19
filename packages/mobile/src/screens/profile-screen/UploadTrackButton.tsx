@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { IconCloudUpload, Button, Flex } from '@audius/harmony-native'
+import { IconCloudUpload, Button } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 const messages = {
@@ -15,16 +15,14 @@ export const UploadTrackButton = () => {
   }, [navigation])
 
   return (
-    <Flex pointerEvents='box-none' mt='xs'>
-      <Button
-        variant='secondary'
-        iconLeft={IconCloudUpload}
-        size='small'
-        fullWidth
-        onPress={handlePress}
-      >
-        {messages.uploadTrack}
-      </Button>
-    </Flex>
+    <Button
+      variant='secondary'
+      iconLeft={IconCloudUpload}
+      size='small'
+      fullWidth
+      onPress={handlePress}
+    >
+      {messages.uploadTrack}
+    </Button>
   )
 }

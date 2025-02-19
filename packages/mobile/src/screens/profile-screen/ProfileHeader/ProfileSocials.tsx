@@ -111,7 +111,6 @@ export const ProfileSocials = () => {
   }
   return (
     <View pointerEvents='box-none' style={styles.root}>
-      {tier !== 'none' ? <ProfileTierTile interactive={false} /> : null}
       <Animated.View
         pointerEvents='box-none'
         style={[

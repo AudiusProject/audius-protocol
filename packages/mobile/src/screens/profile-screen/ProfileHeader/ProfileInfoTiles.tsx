@@ -31,6 +31,8 @@ import { useThemePalette } from 'app/utils/theme'
 
 import { useSelectProfile } from '../selectors'
 
+import { ProfileTierTile } from './ProfileTierTile'
+
 const { getUserId } = accountSelectors
 const MAX_CARD_PROFILE_PICTURES = 4
 
@@ -156,7 +158,8 @@ export const ProfileInfoTiles = () => {
     user_id,
     current_user_followee_follow_count,
     supporting_count,
-    allow_ai_attribution: hasAiAttribution
+    allow_ai_attribution: hasAiAttribution,
+    supporter_count
   } = useSelectProfile([
     'supporting_count',
     'supporter_count',
@@ -204,6 +207,7 @@ export const ProfileInfoTiles = () => {
       style={styles.rootScrollView}
       contentContainerStyle={styles.rootScrollViewContent}
     >
+      <ProfileTierTile />
       {hasAiAttribution ? (
         <ProfileInfoTile
           screen='AiGeneratedTracks'
@@ -244,7 +248,7 @@ export const ProfileInfoTiles = () => {
           icon={IconTrophy}
           title={messages.tipSupporters}
           content={
-            <UserListWithCount users={supporters} count={supporters.length} />
+            <UserListWithCount users={supporters} count={supporter_count} />
           }
         />
       ) : null}

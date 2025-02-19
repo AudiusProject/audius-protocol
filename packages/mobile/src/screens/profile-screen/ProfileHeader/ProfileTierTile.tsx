@@ -19,8 +19,7 @@ const messages = {
 }
 
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
-  root: { marginRight: spacing(3) },
-  tile: { height: 50 },
+  tile: { height: 64 },
   content: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -85,7 +84,7 @@ export const ProfileTierTile = (props: ProfileTierTileProps) => {
     return (
       <Tile
         styles={{
-          root: [styles.root, style],
+          root: [style],
           tile: styles.tile,
           content: styles.content
         }}
@@ -97,7 +96,7 @@ export const ProfileTierTile = (props: ProfileTierTileProps) => {
   }
 
   return (
-    <View pointerEvents='none' style={[styles.root, styles.viewContent, style]}>
+    <View pointerEvents='none' style={[styles.viewContent, style]}>
       {content}
     </View>
   )
