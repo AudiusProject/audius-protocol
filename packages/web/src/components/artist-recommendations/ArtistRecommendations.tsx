@@ -1,23 +1,12 @@
-import { forwardRef, ReactNode, useCallback, useEffect, useState } from 'react'
+import { forwardRef, ReactNode, useCallback, useEffect } from 'react'
 
 import { useRelatedArtists } from '@audius/common/api'
-import {
-  Name,
-  FollowSource,
-  SquareSizes,
-  ID,
-  User
-} from '@audius/common/models'
-import {
-  cacheUsersSelectors,
-  usersSocialActions as socialActions,
-  CommonState
-} from '@audius/common/store'
+import { Name, FollowSource, SquareSizes, ID } from '@audius/common/models'
+import { usersSocialActions as socialActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { FollowButton, IconButton, IconClose } from '@audius/harmony'
 import cn from 'classnames'
-import { isEmpty } from 'lodash'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
@@ -32,7 +21,6 @@ import { push } from 'utils/navigation'
 import styles from './ArtistRecommendations.module.css'
 
 const { profilePage } = route
-const { getUsers } = cacheUsersSelectors
 
 export type ArtistRecommendationsProps = {
   itemClassName?: string
@@ -133,26 +121,15 @@ export const ArtistRecommendations = forwardRef<
   } = props
   const dispatch = useDispatch()
 
-  const [idsToFollow, setIdsToFollow] = useState<ID[] | null>(null)
-  const artistsToFollow = useSelector<CommonState, User[]>((state) =>
-    Object.values(getUsers(state, { ids: idsToFollow ?? [] }))
-  )
-
-  const { data: suggestedArtists } = useRelatedArtists({
+  const { data: suggestedArtists = [] } = useRelatedArtists({
     artistId,
-    filterFollowed: true
+    filterFollowed: true,
+    pageSize: 7
   })
-
-  useEffect(() => {
-    if (suggestedArtists && !isEmpty(suggestedArtists)) {
-      setIdsToFollow(suggestedArtists.map((user) => user.user_id))
-    }
-  }, [suggestedArtists])
 
   // Follow/Unfollow listeners
   const handleFollowAll = useCallback(() => {
-    if (!artistsToFollow) return
-    artistsToFollow.forEach((a) => {
+    suggestedArtists.forEach((a) => {
       dispatch(
         socialActions.followUser(
           a.user_id,
@@ -160,19 +137,7 @@ export const ArtistRecommendations = forwardRef<
         )
       )
     })
-  }, [dispatch, artistsToFollow])
-
-  const handleUnfollowAll = useCallback(() => {
-    if (!artistsToFollow) return
-    artistsToFollow.forEach((a) => {
-      dispatch(
-        socialActions.unfollowUser(
-          a.user_id,
-          FollowSource.ARTIST_RECOMMENDATIONS_POPUP
-        )
-      )
-    })
-  }, [dispatch, artistsToFollow])
+  }, [dispatch, suggestedArtists])
 
   // Navigate to profile pages on artist links
   const onArtistNameClicked = useCallback(
@@ -182,11 +147,7 @@ export const ArtistRecommendations = forwardRef<
     [dispatch]
   )
 
-  const isFollowingAll =
-    artistsToFollow?.length > 0 &&
-    artistsToFollow.every((a) => a.does_current_user_follow)
-  const isLoading =
-    !isFollowingAll && (!suggestedArtists || suggestedArtists.length === 0)
+  const isLoading = !suggestedArtists || suggestedArtists.length === 0
 
   const renderMainContent = () => {
     if (isLoading) return <LoadingSpinner className={styles.spinner} />
@@ -199,7 +160,7 @@ export const ArtistRecommendations = forwardRef<
             itemClassName
           )}
         >
-          {artistsToFollow.map((a) => (
+          {suggestedArtists.map((a) => (
             <div key={a.user_id} className={styles.profilePictureWrapper}>
               <ArtistProfilePictureWrapper
                 userId={a.user_id}
@@ -210,7 +171,7 @@ export const ArtistRecommendations = forwardRef<
         </div>
         <div className={cn(styles.contentItem, itemClassName)}>
           {`${messages.featuring} `}
-          {artistsToFollow
+          {suggestedArtists
             .slice(0, 3)
             .map<ReactNode>((a, i) => (
               <ArtistPopoverWrapper
@@ -223,8 +184,8 @@ export const ArtistRecommendations = forwardRef<
               />
             ))
             .reduce((prev, curr) => [prev, ', ', curr], '')}
-          {artistsToFollow.length > 3
-            ? `, and ${artistsToFollow.length - 3} others.`
+          {suggestedArtists.length > 3
+            ? `, and ${suggestedArtists.length - 3} others.`
             : ''}
         </div>
       </>
@@ -257,10 +218,9 @@ export const ArtistRecommendations = forwardRef<
       <div className={cn(styles.contentItem, itemClassName)}>
         <FollowButton
           disabled={isLoading}
-          isFollowing={isFollowingAll}
+          isFollowing={false}
           messages={messages}
           onFollow={handleFollowAll}
-          onUnfollow={handleUnfollowAll}
         />
       </div>
     </div>
