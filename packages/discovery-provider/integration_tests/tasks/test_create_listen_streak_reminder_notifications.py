@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 TEST_USER_ID = 1
 TEST_STREAK = 3
-TEST_DATE = (datetime.now() - timedelta(hours=18, minutes=30)).date()
+TEST_DATE = (datetime.now() - timedelta(hours=42, minutes=30)).date()
 TEST_GROUP_ID = get_listen_streak_notification_group_id(TEST_USER_ID, TEST_DATE)
 
 
@@ -24,8 +24,8 @@ def test_create_listen_streak_reminder_notification(app):
         db = get_db()
 
     now = datetime.now()
-    # Place listen time clearly within the window (between 18-19 hours ago)
-    listen_time = now - timedelta(hours=18, minutes=30)
+    # Place listen time clearly within the window (between 42-43 hours ago)
+    listen_time = now - timedelta(hours=42, minutes=30)
 
     entities = {
         "challenge_listen_streaks": [
@@ -57,8 +57,8 @@ def test_ignore_outside_time_window(app):
         db = get_db()
 
     now = datetime.now()
-    too_recent = now - timedelta(hours=17)  # Too recent (< 18 hours ago)
-    too_old = now - timedelta(hours=20)  # Too old (> 19 hours ago)
+    too_recent = now - timedelta(hours=41)  # Too recent (< 42 hours ago)
+    too_old = now - timedelta(hours=44)  # Too old (> 43 hours ago)
 
     entities = {
         "challenge_listen_streaks": [
@@ -88,7 +88,7 @@ def test_ignore_existing_notification(app):
         db = get_db()
 
     now = datetime.now()
-    listen_time = now - timedelta(hours=18, minutes=30)
+    listen_time = now - timedelta(hours=42, minutes=30)
 
     entities = {
         "challenge_listen_streaks": [
@@ -123,7 +123,7 @@ def test_multiple_streaks(app):
         db = get_db()
 
     now = datetime.now()
-    listen_time = now - timedelta(hours=18, minutes=30)
+    listen_time = now - timedelta(hours=42, minutes=30)
 
     entities = {
         "challenge_listen_streaks": [

@@ -14,7 +14,7 @@ env = shared_config["discprov"]["env"]
 LISTEN_STREAK_REMINDER = "listen_streak_reminder"
 HOURS_PER_DAY = 24
 LISTEN_STREAK_BUFFER = 6
-LAST_LISTEN_HOURS_AGO = HOURS_PER_DAY - LISTEN_STREAK_BUFFER
+LAST_LISTEN_HOURS_AGO = (HOURS_PER_DAY * 2) - LISTEN_STREAK_BUFFER
 
 
 def get_listen_streak_notification_group_id(user_id, date):
