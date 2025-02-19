@@ -7,9 +7,15 @@ import {
   walletActions,
   modalsActions
 } from '@audius/common/store'
-import { isNullOrUndefined, formatWei } from '@audius/common/utils'
+import {
+  isNullOrUndefined,
+  formatWeiToAudioString,
+  formatCurrencyBalance
+} from '@audius/common/utils'
 import { css } from '@emotion/native'
 import { useFocusEffect } from '@react-navigation/native'
+import BN from 'bn.js'
+import numeral from 'numeral'
 import { Image, Linking } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import LinearGradient from 'react-native-linear-gradient'
@@ -174,7 +180,9 @@ export const AudioScreen = () => {
                   paddingVertical: 8
                 })}
               >
-                {formatWei(totalBalance, true, 0)}
+                {formatCurrencyBalance(
+                  parseInt(formatWeiToAudioString(totalBalance))
+                )}
               </Text>
             )}
           </Flex>

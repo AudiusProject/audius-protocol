@@ -84,17 +84,22 @@ export const USDCCard = () => {
               variant='heading'
               size='s'
               strength='strong'
-              color='inverse'
+              color='staticWhite'
               style={css({ opacity: 0.8 })}
             >
               {messages.usdc}
             </Text>
           </Flex>
-          <Text variant='display' size='s' strength='strong' color='inverse'>
+          <Text
+            variant='display'
+            size='s'
+            strength='strong'
+            color='staticWhite'
+          >
             ${usdcBalanceFormatted}
           </Text>
         </Flex>
-        <Text variant='body' color='inverse'>
+        <Text variant='body' color='staticWhite'>
           {messages.buyAndSell}
         </Text>
         <PlainButton
