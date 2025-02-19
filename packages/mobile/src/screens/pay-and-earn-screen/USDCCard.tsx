@@ -48,7 +48,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 export const USDCCard = () => {
   const styles = useStyles()
   const { data: balance } = useUSDCBalance()
-  const usdcBalanceFormatted = USDC(balance ?? new BN(0)).toLocaleString()
+  const usdcBalanceFormatted = USDC(balance ?? 0).toLocaleString()
 
   const { onPress: onLearnMorePress } = useLink(LEARN_MORE_LINK)
 
