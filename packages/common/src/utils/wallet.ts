@@ -66,14 +66,14 @@ export const stringUSDCToBN = (stringUSDC: StringUSDC): BNUSDC => {
 }
 
 /**
- * @deprecated Don't use BN to represent whole AUDIO. Use `AUDIO().toString()` from {@link FixedDecimal} instead.
+ * @deprecated Don't use BN to represent whole AUDIO. Use `AUDIO()` from {@link FixedDecimal} instead.
  */
 export const stringAudioToBN = (stringAudio: StringAudio): BNAudio => {
   return new BN(stringAudio) as BNAudio
 }
 
 /**
- * @deprecated Don't use BN to represent whole AUDIO. Use `AUDIO().toString()` from {@link FixedDecimal} instead.
+ * @deprecated Don't use BN to represent whole AUDIO. Use `AUDIO()` from {@link FixedDecimal} instead.
  */
 export const stringWeiToAudioBN = (stringWei: StringWei): BNAudio => {
   const bnWei = stringWeiToBN(stringWei)
