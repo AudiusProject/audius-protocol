@@ -183,7 +183,6 @@ export class AppNotificationsProcessor {
           })
           status.processed += 1
         } catch (e) {
-          logger.info(`asdf error ${e}`)
           if (e instanceof RequiresRetry) {
             status.needsRetry += 1
             // enqueue in redis
