@@ -342,9 +342,17 @@ export const makeOptimisticChallengeSortComparator = (
     }
     if (
       userChallenge1?.challenge_id &&
-      isNewChallenge(userChallenge1?.challenge_id)
+      isNewChallenge(userChallenge1?.challenge_id) &&
+      userChallenge1?.state !== 'disbursed'
     ) {
       return -1
+    }
+    if (
+      userChallenge2?.challenge_id &&
+      isNewChallenge(userChallenge2?.challenge_id) &&
+      userChallenge2?.state !== 'disbursed'
+    ) {
+      return 1
     }
     if (userChallenge1?.state === 'disbursed') {
       return 1
