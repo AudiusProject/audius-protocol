@@ -1,12 +1,8 @@
 import { useCallback } from 'react'
 
 import { useUSDCBalance } from '@audius/common/hooks'
-import type { BNUSDC } from '@audius/common/models'
 import { useAddFundsModal } from '@audius/common/store'
-import {
-  formatCurrencyBalance,
-  formatUSDCWeiToFloorCentsNumber
-} from '@audius/common/utils'
+import { USDC } from '@audius/fixed-decimal'
 import { css } from '@emotion/native'
 import BN from 'bn.js'
 import LinearGradient from 'react-native-linear-gradient'
@@ -52,10 +48,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 export const USDCCard = () => {
   const styles = useStyles()
   const { data: balance } = useUSDCBalance()
-  const balanceCents = formatUSDCWeiToFloorCentsNumber(
-    (balance ?? new BN(0)) as BNUSDC
-  )
-  const usdcBalanceFormatted = formatCurrencyBalance(balanceCents / 100)
+  const usdcBalanceFormatted = USDC(balance ?? new BN(0)).toLocaleString()
 
   const { onPress: onLearnMorePress } = useLink(LEARN_MORE_LINK)
 
