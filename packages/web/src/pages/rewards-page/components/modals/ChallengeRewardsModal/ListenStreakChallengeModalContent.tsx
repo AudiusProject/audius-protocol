@@ -1,16 +1,19 @@
-import { ChallengeName, OptimisticUserChallenge } from '@audius/common/models'
 import { challengesSelectors } from '@audius/common/store'
 import {
   formatNumberCommas,
   challengeRewardsConfig
 } from '@audius/common/utils'
-import { Flex, IconHeadphones, Paper, Text } from '@audius/harmony'
+import { Flex, IconHeadphones, Text } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import { useIsMobile } from 'hooks/useIsMobile'
 
+import { ChallengeRewardsLayout } from './ChallengeRewardsLayout'
+import { ClaimButton } from './ClaimButton'
+import { CooldownSummaryTable } from './CooldownSummaryTable'
 import { ProgressDescription } from './ProgressDescription'
 import { ProgressReward } from './ProgressReward'
+import { type ListenStreakChallengeProps } from './types'
 
 const { getOptimisticUserChallenges } = challengesSelectors
 
@@ -23,16 +26,12 @@ const messages = {
   readyToClaim: 'Ready to claim!'
 }
 
-type ListenStreakChallengeModalContentProps = {
-  challenge?: OptimisticUserChallenge
-  challengeName: ChallengeName
-}
-
-/** Implements custom ChallengeRewardsContent for the $AUDIO matching challenges */
 export const ListenStreakChallengeModalContent = ({
   challenge,
-  challengeName
-}: ListenStreakChallengeModalContentProps) => {
+  challengeName,
+  onNavigateAway,
+  errorContent
+}: ListenStreakChallengeProps) => {
   const isMobile = useIsMobile()
   const { fullDescription } = challengeRewardsConfig[challengeName]
   const userChallenge = useSelector(getOptimisticUserChallenges)[challengeName]
@@ -42,6 +41,7 @@ export const ListenStreakChallengeModalContent = ({
       description={<Text variant='body'>{fullDescription?.(challenge)}</Text>}
     />
   )
+
   const progressReward = (
     <ProgressReward
       amount={userChallenge?.amount}
@@ -50,80 +50,76 @@ export const ListenStreakChallengeModalContent = ({
   )
 
   const progressStatusLabel = userChallenge ? (
-    <Flex
-      ph='xl'
-      backgroundColor='surface2'
-      border='default'
-      borderRadius='s'
-      column={isMobile}
-    >
+    <Flex column gap='l'>
       <Flex
-        pv='l'
-        gap='s'
-        w='100%'
-        justifyContent={isMobile ? 'center' : 'flex-start'}
-        alignItems='center'
+        ph='xl'
+        backgroundColor='surface2'
+        border='default'
+        borderRadius='s'
+        column={isMobile}
       >
-        <IconHeadphones size='m' color='subdued' />
-        <Text variant='label' size='l' color='subdued'>
-          {messages.day(userChallenge.current_step_count)}
-        </Text>
-      </Flex>
-      {userChallenge.disbursed_amount ? (
         <Flex
           pv='l'
+          gap='s'
           w='100%'
-          justifyContent={isMobile ? 'center' : 'flex-end'}
+          justifyContent={isMobile ? 'center' : 'flex-start'}
           alignItems='center'
-          borderTop={isMobile ? 'default' : undefined}
         >
+          <IconHeadphones size='m' color='subdued' />
           <Text variant='label' size='l' color='subdued'>
-            {messages.totalClaimed(
-              formatNumberCommas(userChallenge.disbursed_amount.toString())
-            )}
+            {messages.day(userChallenge.current_step_count)}
           </Text>
+        </Flex>
+        {userChallenge.disbursed_amount ? (
+          <Flex
+            pv='l'
+            w='100%'
+            justifyContent={isMobile ? 'center' : 'flex-end'}
+            alignItems='center'
+            borderTop={isMobile ? 'default' : undefined}
+          >
+            <Text variant='label' size='l' color='subdued'>
+              {messages.totalClaimed(
+                formatNumberCommas(userChallenge.disbursed_amount.toString())
+              )}
+            </Text>
+          </Flex>
+        ) : null}
+      </Flex>
+      {userChallenge.claimableAmount ? (
+        <Flex
+          backgroundColor='surface1'
+          ph='xl'
+          pv='m'
+          borderRadius='s'
+          border='default'
+          justifyContent='space-between'
+        >
+          <Text variant='title'>{messages.readyToClaim}</Text>
+          <Text variant='title'>{userChallenge?.claimableAmount}</Text>
         </Flex>
       ) : null}
     </Flex>
   ) : null
 
   return (
-    <Flex column gap='2xl'>
-      {isMobile ? (
-        <>
-          {progressDescription}
-          <Paper column shadow='flat' w='100%' borderRadius='s'>
-            <Flex justifyContent='center'>{progressReward}</Flex>
-            {progressStatusLabel}
-          </Paper>
-        </>
-      ) : (
-        <Paper shadow='flat' w='100%' direction='column' borderRadius='s'>
-          <Flex justifyContent='center'>
-            {progressDescription}
-            {progressReward}
-          </Flex>
-          <Flex column gap='l'>
-            {progressStatusLabel}
-            {userChallenge?.claimableAmount &&
-            userChallenge?.claimableAmount > 0 ? (
-              <Flex
-                backgroundColor='surface1'
-                ph='xl'
-                pv='m'
-                borderRadius='s'
-                border='default'
-                justifyContent='space-between'
-              >
-                <Text variant='title'>{messages.readyToClaim}</Text>
-                <Text variant='title'>
-                  {userChallenge?.claimableAmount} $AUDIO
-                </Text>
-              </Flex>
-            ) : null}
-          </Flex>
-        </Paper>
-      )}
-    </Flex>
+    <ChallengeRewardsLayout
+      description={progressDescription}
+      reward={progressReward}
+      progress={progressStatusLabel}
+      additionalContent={
+        challenge?.cooldown_days && challenge.cooldown_days > 0 ? (
+          <CooldownSummaryTable challengeId={challenge.challenge_id} />
+        ) : null
+      }
+      actions={
+        <ClaimButton
+          challenge={challenge}
+          claimInProgress={false}
+          onClose={onNavigateAway}
+        />
+      }
+      errorContent={errorContent}
+    />
   )
 }
