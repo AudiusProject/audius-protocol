@@ -14,6 +14,7 @@ export type DefaultChallengeProps = BaseChallengeContentProps & {
     | ChallengeName.AudioMatchingBuy
     | ChallengeName.AudioMatchingSell
     | ChallengeName.ListenStreakEndless
+    | ChallengeName.OneShot
   >
 }
 
@@ -27,9 +28,14 @@ export type ListenStreakChallengeProps = BaseChallengeContentProps & {
   challengeName: ChallengeName.ListenStreakEndless
 }
 
+export type OneShotChallengeProps = BaseChallengeContentProps & {
+  challengeName: ChallengeName.OneShot
+}
+
 export type ChallengeContentProps =
   | AudioMatchingChallengeProps
   | ListenStreakChallengeProps
+  | OneShotChallengeProps
   | DefaultChallengeProps
 
 export type ChallengeContentComponent =
