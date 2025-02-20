@@ -1,7 +1,7 @@
 import { MouseEventHandler, useCallback } from 'react'
 
 import { Name, User } from '@audius/common/models'
-import { Notification } from '@audius/common/store'
+import { Notification, useNotificationModal } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
@@ -10,7 +10,6 @@ import { make, useRecord } from 'common/store/analytics/actions'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { closeNotificationPanel } from 'store/application/ui/notifications/notificationsUISlice'
 import { push } from 'utils/navigation'
 
 import styles from './UserNameLink.module.css'
@@ -37,16 +36,13 @@ export const UserNameLink = (props: UserNameLinkProps) => {
   const { handle, user_id, name, is_deactivated } = user
 
   const profileLink = profilePage(handle)
-
-  const handleNavigateAway = useCallback(() => {
-    dispatch(closeNotificationPanel())
-  }, [dispatch])
+  const { onClose } = useNotificationModal()
 
   const handleClick: MouseEventHandler = useCallback(
     (event) => {
       event.stopPropagation()
       event.preventDefault()
-      handleNavigateAway()
+      onClose()
       dispatch(push(profilePage(handle)))
       record(
         make(Name.NOTIFICATIONS_CLICK_TILE, {
@@ -55,7 +51,7 @@ export const UserNameLink = (props: UserNameLinkProps) => {
         })
       )
     },
-    [dispatch, handle, record, type, profileLink, handleNavigateAway]
+    [onClose, dispatch, handle, record, type, profileLink]
   )
 
   const rootClassName = cn(styles.root, className)
@@ -85,11 +81,7 @@ export const UserNameLink = (props: UserNameLinkProps) => {
 
   if (!isMobile) {
     userNameElement = (
-      <ArtistPopover
-        handle={handle}
-        component='span'
-        onNavigateAway={handleNavigateAway}
-      >
+      <ArtistPopover handle={handle} component='span' onNavigateAway={onClose}>
         {userNameElement}
       </ArtistPopover>
     )

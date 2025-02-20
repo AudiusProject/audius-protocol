@@ -15,6 +15,7 @@ type SetUsersPayload = {
   userListType: UserListType
   entityType: UserListEntityType
   id: ID
+  entity?: any
 }
 
 // Slice

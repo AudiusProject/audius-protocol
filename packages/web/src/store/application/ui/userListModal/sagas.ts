@@ -24,7 +24,7 @@ function* watchSetUsers() {
   yield takeEvery(
     setUsers.type,
     function* (action: ReturnType<typeof setUsers>) {
-      const { userListType, entityType, id } = action.payload
+      const { userListType, entityType, id, entity } = action.payload
       switch (userListType) {
         case UserListType.FAVORITE:
           yield put(
@@ -56,9 +56,7 @@ function* watchSetUsers() {
           yield put(setMutuals(id))
           break
         case UserListType.NOTIFICATION:
-          yield put(
-            notificationActions.setNotificationId(id as unknown as string)
-          )
+          yield put(notificationActions.setNotification(entity))
           break
         case UserListType.RELATED_ARTISTS:
           yield put(setRelatedArtists(id))

@@ -182,8 +182,8 @@ export const useNotifications = (options?: QueryOptions) => {
       const { data } = await sdk.full.notifications.getNotifications({
         userId: Id.parse(currentUserId),
         limit: DEFAULT_LIMIT,
-        timestamp: (pageParam as PageParam)?.timestamp,
-        groupId: (pageParam as PageParam)?.groupId,
+        timestamp: pageParam?.timestamp,
+        groupId: pageParam?.groupId,
         validTypes
       })
 
