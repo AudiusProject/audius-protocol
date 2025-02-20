@@ -1,13 +1,13 @@
 import { ID } from '@audius/common/models'
 import { route } from '@audius/common/utils'
-import { decodeHashId } from '@audius/sdk'
+import { OptionalHashId } from '@audius/sdk'
 import { matchPath } from 'react-router-dom'
 
 const { TRACK_ID_PAGE, TRACK_PAGE } = route
 
 export type TrackRouteParams =
-  | { slug: string; handle: string; trackId: undefined }
-  | { slug: undefined; trackId: ID; handle: undefined }
+  | { slug: string; trackId: null; handle: string }
+  | { slug: null; trackId: ID; handle: null }
   | null
 
 /**
@@ -21,9 +21,9 @@ export const parseTrackRoute = (route: string): TrackRouteParams => {
     exact: true
   })
   if (trackIdPageMatch) {
-    const trackId = decodeHashId(trackIdPageMatch.params.id)
-    if (trackId === null) return null
-    return { slug: undefined, trackId, handle: undefined }
+    const trackId = OptionalHashId.parse(trackIdPageMatch.params.id)
+    if (!trackId) return null
+    return { slug: null, trackId, handle: null }
   }
 
   const trackPageMatch = matchPath<{ slug: string; handle: string }>(route, {
@@ -32,7 +32,7 @@ export const parseTrackRoute = (route: string): TrackRouteParams => {
   })
   if (trackPageMatch) {
     const { handle, slug } = trackPageMatch.params
-    return { slug, handle, trackId: undefined }
+    return { slug, trackId: null, handle }
   }
 
   return null

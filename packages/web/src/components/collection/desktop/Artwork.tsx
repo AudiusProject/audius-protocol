@@ -25,7 +25,7 @@ type ArtworkProps = {
   collectionId: number
   callback: () => void
   gradient?: string
-  icon: ComponentType<SVGProps<SVGSVGElement>> | null
+  icon: ComponentType<SVGProps<SVGSVGElement>>
   imageOverride?: string
   isOwner: boolean
 }
