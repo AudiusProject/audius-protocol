@@ -1,7 +1,8 @@
 import { challengesSelectors } from '@audius/common/store'
 import {
   formatNumberCommas,
-  challengeRewardsConfig
+  challengeRewardsConfig,
+  getChallengeStatusLabel
 } from '@audius/common/utils'
 import { Flex, IconHeadphones, Text } from '@audius/harmony'
 import { useSelector } from 'react-redux'
@@ -36,6 +37,7 @@ export const ListenStreakChallengeModalContent = ({
   const { fullDescription } = challengeRewardsConfig[challengeName]
   const userChallenge = useSelector(getOptimisticUserChallenges)[challengeName]
 
+  console.log('REED', { userChallenge })
   const progressDescription = (
     <ProgressDescription
       description={<Text variant='body'>{fullDescription?.(challenge)}</Text>}
@@ -67,7 +69,7 @@ export const ListenStreakChallengeModalContent = ({
         >
           <IconHeadphones size='m' color='subdued' />
           <Text variant='label' size='l' color='subdued'>
-            {messages.day(userChallenge.current_step_count)}
+            {getChallengeStatusLabel(userChallenge, challengeName)}
           </Text>
         </Flex>
         {userChallenge.disbursed_amount ? (

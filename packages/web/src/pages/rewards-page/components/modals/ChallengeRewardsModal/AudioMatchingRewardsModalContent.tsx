@@ -3,8 +3,8 @@ import { useCallback } from 'react'
 import { ChallengeName } from '@audius/common/models'
 import { challengesSelectors } from '@audius/common/store'
 import {
-  formatNumberCommas,
   challengeRewardsConfig,
+  getChallengeStatusLabel,
   route
 } from '@audius/common/utils'
 import {
@@ -71,6 +71,26 @@ export const AudioMatchingRewardsModalContent = ({
   const { fullDescription } = challengeRewardsConfig[challengeName]
   const userChallenge = useSelector(getOptimisticUserChallenges)[challengeName]
 
+  const statusLabel = userChallenge
+    ? getChallengeStatusLabel(userChallenge, challengeName)
+    : null
+
+  const progressStatusLabel =
+    userChallenge && userChallenge?.disbursed_amount > 0 ? (
+      <Flex
+        alignItems='center'
+        justifyContent='center'
+        ph='xl'
+        pv='l'
+        borderTop='strong'
+        backgroundColor='surface2'
+      >
+        <Text variant='label' size='l' strength='strong'>
+          {statusLabel}
+        </Text>
+      </Flex>
+    ) : null
+
   const progressDescription = (
     <ProgressDescription
       description={
@@ -90,24 +110,6 @@ export const AudioMatchingRewardsModalContent = ({
       subtext={messages.rewardMapping[challengeName]}
     />
   )
-
-  const progressStatusLabel =
-    userChallenge && userChallenge?.disbursed_amount > 0 ? (
-      <Flex
-        alignItems='center'
-        justifyContent='center'
-        ph='xl'
-        pv='l'
-        borderTop='strong'
-        backgroundColor='surface2'
-      >
-        <Text variant='label' size='l' strength='strong'>
-          {messages.totalClaimed(
-            formatNumberCommas(userChallenge.disbursed_amount.toString())
-          )}
-        </Text>
-      </Flex>
-    ) : null
 
   const handleClickCTA = useCallback(() => {
     const route =
