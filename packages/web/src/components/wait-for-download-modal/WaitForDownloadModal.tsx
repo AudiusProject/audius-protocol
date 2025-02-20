@@ -99,7 +99,6 @@ export const WaitForDownloadModal = () => {
       onClosed={handleClosed}
       bodyClassName={styles.modal}
       isFullscreen
-      useGradientTitle={false}
       dismissOnClickOutside
       wrapperClassName={isMobile ? styles.mobileWrapper : undefined}
     >

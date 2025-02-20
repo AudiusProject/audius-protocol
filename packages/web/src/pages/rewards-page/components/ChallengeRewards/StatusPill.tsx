@@ -1,19 +1,25 @@
-import { Flex, IconSparkles, Text, TextProps, useTheme } from '@audius/harmony'
+import {
+  BoxProps,
+  Flex,
+  IconSparkles,
+  Text,
+  TextProps,
+  useTheme
+} from '@audius/harmony'
 
 import { messages } from '../../messages'
 
 type BasePillProps = {
   children: React.ReactNode
   color: TextProps['color']
-  backgroundColor?: string
   borderColor?: string
-}
+} & Pick<BoxProps, 'backgroundColor' | 'border'>
 
 const BasePill = ({
   children,
   color,
-  backgroundColor,
-  borderColor
+  borderColor,
+  backgroundColor
 }: BasePillProps) => {
   const isSimpleText = typeof children === 'string'
   return (
@@ -24,8 +30,8 @@ const BasePill = ({
       h='xl'
       ph='s'
       borderRadius='l'
+      backgroundColor={backgroundColor}
       css={{
-        backgroundColor,
         border: borderColor ? `1px solid ${borderColor}` : undefined
       }}
     >
@@ -55,7 +61,7 @@ export const StatusPill = ({
     return (
       <BasePill
         color='white'
-        backgroundColor={color.background.primary}
+        backgroundColor='primary'
         borderColor={color.primary.p400}
       >
         {messages.readyToClaim}
@@ -67,7 +73,7 @@ export const StatusPill = ({
     return (
       <BasePill
         color='accent'
-        backgroundColor={color.background.surface1}
+        backgroundColor='surface2'
         borderColor={color.border.strong}
       >
         <Flex alignItems='center' justifyContent='center' gap='xs'>

@@ -2,7 +2,9 @@ import {
   ChallengeRewardID,
   OptimisticUserChallenge
 } from '@audius/common/models'
-import { Box, Flex, Paper, Text, useTheme } from '@audius/harmony'
+import { Paper, Text, useTheme } from '@audius/harmony'
+
+import { useIsMobile } from 'hooks/useIsMobile'
 
 export type RewardPanelProps = {
   title: string
@@ -11,46 +13,33 @@ export type RewardPanelProps = {
   id: ChallengeRewardID
 }
 
+const PANEL_WIDTH = 320
+
 export const RewardPanel = ({
   title,
   description,
   onClickButton
 }: RewardPanelProps) => {
   const { spacing } = useTheme()
+  const isMobile = useIsMobile()
 
   return (
     <Paper
       onClick={onClickButton}
-      ph='s'
-      h={144}
-      flex={`0 0 calc(50% - ${spacing.unit4}px)`}
+      pv='unit10'
+      w='100%'
+      ph={isMobile ? 'l' : 'xl'}
+      flex={`1 1 calc(50% - ${spacing.unit4}px)`}
       direction='column'
-      m='s'
       shadow='flat'
       border='strong'
-      css={{
-        minWidth: '336px'
-      }}
+      alignItems='flex-start'
+      css={{ minWidth: PANEL_WIDTH }}
     >
-      <Flex direction='column' justifyContent='center' h='100%' gap='xl'>
-        <Flex
-          direction='column'
-          alignItems='flex-start'
-          justifyContent='space-between'
-          w='100%'
-          gap='s'
-          pl='l'
-        >
-          <Box>
-            <Text variant='heading'>{title}</Text>
-          </Box>
-          <Box css={{ textAlign: 'left' }}>
-            <Text variant='body' size='l' strength='default'>
-              {description()}
-            </Text>
-          </Box>
-        </Flex>
-      </Flex>
+      <Text variant='heading'>{title}</Text>
+      <Text variant='body' size='l' strength='default' textAlign='left'>
+        {description()}
+      </Text>
     </Paper>
   )
 }

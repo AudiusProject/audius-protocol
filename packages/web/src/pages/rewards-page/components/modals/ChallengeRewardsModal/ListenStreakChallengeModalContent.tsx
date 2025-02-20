@@ -4,7 +4,7 @@ import {
   formatNumberCommas,
   challengeRewardsConfig
 } from '@audius/common/utils'
-import { Flex, IconHeadphones, Paper, Text } from '@audius/harmony'
+import { Flex, IconHeadphones, Text } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import { useIsMobile } from 'hooks/useIsMobile'
@@ -16,8 +16,6 @@ const { getOptimisticUserChallenges } = challengesSelectors
 
 const messages = {
   rewardSubtext: '$AUDIO/day',
-  descriptionSubtext:
-    'Listen to music on Audius daily for a week to start a streak and earn $AUDIO for each day you keep it going.',
   totalClaimed: (amount: string) => `${amount} $AUDIO Claimed`,
   day: (day: number) => `Day ${day} ${day > 0 ? '🔥' : ''}`,
   readyToClaim: 'Ready to claim!'
@@ -38,9 +36,7 @@ export const ListenStreakChallengeModalContent = ({
   const userChallenge = useSelector(getOptimisticUserChallenges)[challengeName]
 
   const progressDescription = (
-    <ProgressDescription
-      description={<Text variant='body'>{fullDescription?.(challenge)}</Text>}
-    />
+    <ProgressDescription>{fullDescription?.(challenge)}</ProgressDescription>
   )
   const progressReward = (
     <ProgressReward
@@ -52,7 +48,7 @@ export const ListenStreakChallengeModalContent = ({
   const progressStatusLabel = userChallenge ? (
     <Flex
       ph='xl'
-      backgroundColor='surface2'
+      backgroundColor='surface1'
       border='default'
       borderRadius='s'
       column={isMobile}
@@ -61,7 +57,9 @@ export const ListenStreakChallengeModalContent = ({
         pv='l'
         gap='s'
         w='100%'
-        justifyContent={isMobile ? 'center' : 'flex-start'}
+        justifyContent={
+          isMobile || !userChallenge.disbursed_amount ? 'center' : 'flex-start'
+        }
         alignItems='center'
       >
         <IconHeadphones size='m' color='subdued' />
@@ -69,7 +67,7 @@ export const ListenStreakChallengeModalContent = ({
           {messages.day(userChallenge.current_step_count)}
         </Text>
       </Flex>
-      {userChallenge.disbursed_amount ? (
+      {!userChallenge.disbursed_amount ? (
         <Flex
           pv='l'
           w='100%'
@@ -87,43 +85,38 @@ export const ListenStreakChallengeModalContent = ({
     </Flex>
   ) : null
 
-  return (
+  const readyToClaim =
+    userChallenge?.claimableAmount && userChallenge?.claimableAmount > 0 ? (
+      <Flex
+        backgroundColor='surface1'
+        ph='xl'
+        pv='m'
+        borderRadius='s'
+        border='default'
+        justifyContent='space-between'
+      >
+        <Text variant='title'>{messages.readyToClaim}</Text>
+        <Text variant='title'>{userChallenge?.claimableAmount} $AUDIO</Text>
+      </Flex>
+    ) : null
+
+  return isMobile ? (
+    <Flex column gap='3xl'>
+      <Flex column alignItems='center' gap='xl'>
+        {progressDescription}
+        {progressReward}
+      </Flex>
+      {progressStatusLabel}
+      {readyToClaim}
+    </Flex>
+  ) : (
     <Flex column gap='2xl'>
-      {isMobile ? (
-        <>
-          {progressDescription}
-          <Paper column shadow='flat' w='100%' borderRadius='s'>
-            <Flex justifyContent='center'>{progressReward}</Flex>
-            {progressStatusLabel}
-          </Paper>
-        </>
-      ) : (
-        <Paper shadow='flat' w='100%' direction='column' borderRadius='s'>
-          <Flex justifyContent='center'>
-            {progressDescription}
-            {progressReward}
-          </Flex>
-          <Flex column gap='l'>
-            {progressStatusLabel}
-            {userChallenge?.claimableAmount &&
-            userChallenge?.claimableAmount > 0 ? (
-              <Flex
-                backgroundColor='surface1'
-                ph='xl'
-                pv='m'
-                borderRadius='s'
-                border='default'
-                justifyContent='space-between'
-              >
-                <Text variant='title'>{messages.readyToClaim}</Text>
-                <Text variant='title'>
-                  {userChallenge?.claimableAmount} $AUDIO
-                </Text>
-              </Flex>
-            ) : null}
-          </Flex>
-        </Paper>
-      )}
+      <Flex alignItems='center' gap='xl'>
+        {progressDescription}
+        {progressReward}
+      </Flex>
+      {progressStatusLabel}
+      {readyToClaim}
     </Flex>
   )
 }

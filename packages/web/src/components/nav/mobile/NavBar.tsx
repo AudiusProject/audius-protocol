@@ -132,6 +132,7 @@ const NavBar = ({
   if (leftElement === LeftPreset.BACK) {
     left = (
       <IconButton
+        ripple
         aria-label='go back'
         icon={IconCaretLeft}
         color='subdued'
@@ -141,6 +142,7 @@ const NavBar = ({
   } else if (leftElement === LeftPreset.CLOSE) {
     left = (
       <IconButton
+        ripple
         aria-label='close'
         color='subdued'
         icon={IconClose}
@@ -151,6 +153,7 @@ const NavBar = ({
   } else if (leftElement === LeftPreset.CLOSE_NO_ANIMATION) {
     left = (
       <IconButton
+        ripple
         aria-label='close'
         color='subdued'
         icon={IconClose}
@@ -169,6 +172,7 @@ const NavBar = ({
       <>
         <Flex>
           <IconButton
+            ripple
             aria-label='notifications'
             color={notificationCount > 0 ? 'warning' : 'subdued'}
             icon={IconNotificationOn}
@@ -198,6 +202,7 @@ const NavBar = ({
         </Flex>
         <Flex>
           <IconButton
+            ripple
             aria-label='audio rewards'
             color={rewardsCount > 0 ? 'warning' : 'subdued'}
             icon={IconGift}
@@ -231,12 +236,14 @@ const NavBar = ({
     left = (
       <>
         <IconButton
+          ripple
           aria-label='settings'
           color='subdued'
           icon={IconSettings}
           onClick={goToSettingsPage}
         />
         <IconButton
+          ripple
           aria-label='audio rewards'
           color={rewardsCount > 0 ? 'warning' : 'subdued'}
           icon={IconGift}

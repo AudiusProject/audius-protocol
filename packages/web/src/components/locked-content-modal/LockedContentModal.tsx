@@ -48,7 +48,6 @@ export const LockedContentModal = () => {
       bodyClassName={styles.modalBody}
       dismissOnClickOutside
       isFullscreen={false}
-      useGradientTitle={false}
     >
       <ModalHeader
         className={cn(styles.modalHeader, { [styles.mobile]: isMobile })}

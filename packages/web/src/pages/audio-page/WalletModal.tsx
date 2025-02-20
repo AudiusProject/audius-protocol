@@ -366,11 +366,11 @@ const WalletModal = () => {
               'AWAITING_CONVERTING_ETH_AUDIO_TO_SOL'
         })}
         showTitleHeader
+        // @ts-expect-error - eventually get off legacy
         title={getTitle(modalState)}
         showDismissButton={allowDismiss}
         dismissOnClickOutside={allowDismiss}
         contentHorizontalPadding={24}
-        useGradientTitle={false}
       >
         <div
           className={wm(styles.modalContainer, {

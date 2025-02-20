@@ -338,7 +338,6 @@ export const PremiumContentPurchaseModal = () => {
       onClosed={handleClosed}
       bodyClassName={styles.modal}
       isFullscreen
-      useGradientTitle={false}
       dismissOnClickOutside
       zIndex={zIndex.PREMIUM_CONTENT_PURCHASE_MODAL}
       wrapperClassName={isMobile ? styles.mobileWrapper : undefined}

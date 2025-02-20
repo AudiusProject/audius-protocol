@@ -25,6 +25,7 @@ import { useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
 import { useHistoryContext } from 'app/HistoryProvider'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { make, track } from 'services/analytics'
 import { doesMatchRoute } from 'utils/route'
 
@@ -52,7 +53,7 @@ export const RewardPanel = ({
   progressLabel,
   remainingLabel
 }: RewardPanelProps) => {
-  const { color, spacing } = useTheme()
+  const { spacing } = useTheme()
   const userChallenges = useSelector(getOptimisticUserChallenges)
   const { history } = useHistoryContext()
 
@@ -89,20 +90,17 @@ export const RewardPanel = ({
     progressLabel,
     remainingLabel
   })
+  const isMobile = useIsMobile()
 
   return (
     <Paper
       onClick={openRewardModal}
       flex={`1 1 calc(50% - ${spacing.unit4}px)`}
       column
-      m='s'
       shadow='flat'
       border='strong'
-      css={{
-        minWidth: PANEL_WIDTH,
-        minHeight: PANEL_HEIGHT,
-        backgroundColor: hasDisbursed ? color.neutral.n25 : undefined
-      }}
+      backgroundColor={hasDisbursed ? 'surface1' : undefined}
+      css={{ minWidth: PANEL_WIDTH, minHeight: PANEL_HEIGHT }}
     >
       <Flex column h='100%'>
         <Flex
@@ -116,7 +114,7 @@ export const RewardPanel = ({
             shouldShowNewChallengePill={shouldShowNewChallengePill}
           />
         </Flex>
-        <Flex column h='100%' gap='l' ph='xl' pv='unit9'>
+        <Flex column h='100%' gap='l' ph={isMobile ? 'l' : 'xl'} pv='unit9'>
           <Flex
             column
             alignItems='flex-start'
@@ -124,9 +122,7 @@ export const RewardPanel = ({
             w='100%'
             gap='s'
           >
-            <Text variant='heading' size='s'>
-              {title}
-            </Text>
+            <Text variant='heading'>{title}</Text>
             <Flex css={{ minHeight: 40 }}>
               <Text variant='body' textAlign='left'>
                 {description(challenge)}

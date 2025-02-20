@@ -1,18 +1,17 @@
-import { ReactNode } from 'react'
+import { Text, TextProps } from '@audius/harmony'
 
-import { Flex, Text } from '@audius/harmony'
+import { useIsMobile } from 'hooks/useIsMobile'
 
-/** Renders the description section for an audio challenge modal. A default label
- * is rendered if none is provided.
- */
-export const ProgressDescription = ({
-  description
-}: {
-  description: ReactNode
-}) => {
+type ProgressDescriptionProps = TextProps
+
+export const ProgressDescription = (props: ProgressDescriptionProps) => {
+  const isMobile = useIsMobile()
   return (
-    <Flex column gap='m' pv='s'>
-      <Text variant='body'>{description}</Text>
-    </Flex>
+    <Text
+      variant='body'
+      size='l'
+      textAlign={isMobile ? 'center' : 'left'}
+      {...props}
+    />
   )
 }

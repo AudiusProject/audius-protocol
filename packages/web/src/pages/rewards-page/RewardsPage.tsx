@@ -3,7 +3,7 @@ import { ReactNode, useContext, useEffect } from 'react'
 import { StringKeys } from '@audius/common/services'
 import { tokenDashboardPageActions, walletActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { IconGift } from '@audius/harmony'
+import { Flex, IconGift } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { Header } from 'components/header/desktop/Header'
@@ -40,7 +40,7 @@ const RewardsContent = () => {
   useRequiresAccount(TRENDING_PAGE)
 
   return (
-    <>
+    <Flex column>
       {audioFeaturesDegradedText ? (
         <div className={styles.topBanner}>
           <span className={styles.topBannerText}>
@@ -48,10 +48,10 @@ const RewardsContent = () => {
           </span>
         </div>
       ) : null}
-      <ChallengeRewardsTile className={styles.mobile} />
-      <TrendingRewardsTile className={styles.mobile} />
+      <ChallengeRewardsTile />
+      <TrendingRewardsTile />
       <Tiers />
-    </>
+    </Flex>
   )
 }
 
