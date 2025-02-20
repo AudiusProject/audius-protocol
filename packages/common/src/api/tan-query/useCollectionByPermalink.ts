@@ -8,6 +8,7 @@ import { getUserId } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
+import { useCollection } from './useCollection'
 import { primeCollectionData } from './utils/primeCollectionData'
 
 const STALE_TIME = Infinity
@@ -37,7 +38,7 @@ export const useCollectionByPermalink = (
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
 
-  return useQuery({
+  const { data: collectionId } = useQuery({
     queryKey: getCollectionByPermalinkQueryKey(permalink),
     queryFn: async () => {
       const { handle, slug } = playlistPermalinkToHandleAndSlug(permalink!)
@@ -61,9 +62,11 @@ export const useCollectionByPermalink = (
         })
       }
 
-      return collection
+      return collection?.playlist_id
     },
     staleTime: options?.staleTime ?? STALE_TIME,
     enabled: options?.enabled !== false && !!permalink
   })
+
+  return useCollection(collectionId)
 }

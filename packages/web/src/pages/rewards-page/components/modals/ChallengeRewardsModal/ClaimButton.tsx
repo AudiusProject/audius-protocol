@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
 import { OptimisticUserChallenge } from '@audius/common/models'
-import { audioRewardsPageActions, ClaimStatus } from '@audius/common/store'
+import { audioRewardsPageActions } from '@audius/common/store'
 import { getClaimableChallengeSpecifiers } from '@audius/common/utils'
 import { Button, IconCheck } from '@audius/harmony'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 const { claimChallengeReward } = audioRewardsPageActions
 

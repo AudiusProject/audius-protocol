@@ -1,30 +1,32 @@
-import { Id, OptionalId } from '@audius/sdk'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { full, Id, OptionalId } from '@audius/sdk'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { transformAndCleanList } from '~/adapters/utils'
 import { useAudiusQueryContext } from '~/audius-query'
+import { ID } from '~/models'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
+import { useCollections } from './useCollections'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeCollectionData } from './utils/primeCollectionData'
 
 type GetAlbumsOptions = {
   userId: number | null
-  limit?: number
-  offset?: number
+  pageSize?: number
+  sortMethod?: full.GetAlbumsByUserSortMethodEnum
 }
 
 export const getUserAlbumsQueryKey = (params: GetAlbumsOptions) => {
-  const { userId, limit, offset } = params
+  const { userId, pageSize, sortMethod } = params
   return [
     QUERY_KEYS.userAlbums,
     userId,
     {
-      limit,
-      offset
+      pageSize,
+      sortMethod
     }
   ]
 }
@@ -35,13 +37,18 @@ export const useUserAlbums = (
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
-  const { userId, limit, offset } = params
+  const { userId, pageSize = 10, sortMethod = 'recent' } = params
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  return useQuery({
+  const { data: collectionIds, ...queryResult } = useInfiniteQuery({
     queryKey: getUserAlbumsQueryKey(params),
-    queryFn: async () => {
+    initialPageParam: 0,
+    getNextPageParam: (lastPage: ID[], allPages) => {
+      if (lastPage.length < pageSize) return undefined
+      return allPages.length * pageSize
+    },
+    queryFn: async ({ pageParam }) => {
       if (!userId) return []
 
       const sdk = await audiusSdk()
@@ -49,8 +56,9 @@ export const useUserAlbums = (
       const { data } = await sdk.full.users.getAlbumsByUser({
         id: Id.parse(userId),
         userId: OptionalId.parse(currentUserId),
-        limit,
-        offset
+        limit: pageSize,
+        offset: pageParam as number,
+        sortMethod
       })
 
       const collections = transformAndCleanList(
@@ -60,9 +68,17 @@ export const useUserAlbums = (
 
       primeCollectionData({ collections, queryClient, dispatch })
 
-      return collections
+      return collections.map((collection) => collection.playlist_id)
     },
+    select: (data) => data.pages.flat(),
     ...options,
     enabled: options?.enabled !== false && !!userId
   })
+
+  const { data: collections } = useCollections(collectionIds)
+
+  return {
+    data: collections,
+    ...queryResult
+  }
 }

@@ -1,18 +1,14 @@
-import { Id, OptionalId } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { userMetadataListFromSDK } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
-import { Kind } from '~/models/Kind'
+import { UserMetadata } from '~/models/User'
 import { getUserId } from '~/store/account/selectors'
-import { addEntries } from '~/store/cache/actions'
-import { EntriesByKind } from '~/store/cache/types'
 
+import { getUsersBatcher } from './batchers/getUsersBatcher'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
-import { getUserByHandleQueryKey } from './useUserByHandle'
 
 export const getUserQueryKey = (userId: ID | null | undefined) => [
   QUERY_KEYS.user,
@@ -28,34 +24,19 @@ export const useUser = (
   const queryClient = useQueryClient()
   const currentUserId = useSelector(getUserId)
 
-  return useQuery({
+  return useQuery<UserMetadata | null>({
     queryKey: getUserQueryKey(userId),
     queryFn: async () => {
       const sdk = await audiusSdk()
-      const { data } = await sdk.full.users.getUser({
-        id: Id.parse(userId),
-        userId: OptionalId.parse(currentUserId)
+      const batchGetUsers = getUsersBatcher({
+        sdk,
+        currentUserId,
+        queryClient,
+        dispatch
       })
-      const user = userMetadataListFromSDK(data)[0]
-
-      // Prime both user and userByHandle caches
-      if (user) {
-        queryClient.setQueryData(getUserByHandleQueryKey(user.handle), user)
-
-        // Sync user data to Redux
-        const entries: EntriesByKind = {
-          [Kind.USERS]: {
-            [user.user_id]: user
-          }
-        }
-
-        dispatch(addEntries(entries, undefined, undefined, 'react-query'))
-      }
-
-      return user
+      return await batchGetUsers.fetch(userId!)
     },
-    staleTime: options?.staleTime ?? Infinity,
-    gcTime: Infinity,
+    ...options,
     enabled: options?.enabled !== false && !!userId
   })
 }

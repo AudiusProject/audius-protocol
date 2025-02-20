@@ -2,8 +2,7 @@ import {
   notificationFromSDK,
   transformAndCleanList
 } from '@audius/common/adapters'
-import { FeatureFlags } from '@audius/common/services'
-import { accountSelectors, getContext, getSDK } from '@audius/common/store'
+import { accountSelectors, getSDK } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 import { Id, GetNotificationsValidTypesEnum as ValidTypes } from '@audius/sdk'
 import { call, select } from 'typed-redux-saga'
@@ -22,19 +21,8 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
   } = config
 
   const sdk = yield* getSDK()
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const userId = yield* select(accountSelectors.getUserId)
   const encodedUserId = Id.parse(userId)
-
-  const isUSDCPurchasesEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.USDC_PURCHASES
-  )
-
-  const isCommentsEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.COMMENTS_ENABLED
-  )
 
   const validTypes = [
     ValidTypes.RepostOfRepost,
@@ -42,16 +30,15 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
     ValidTypes.TrendingPlaylist,
     ValidTypes.TrendingUnderground,
     ValidTypes.Tastemaker,
-    isUSDCPurchasesEnabled ? ValidTypes.UsdcPurchaseBuyer : null,
-    isUSDCPurchasesEnabled ? ValidTypes.UsdcPurchaseSeller : null,
+    ValidTypes.UsdcPurchaseBuyer,
+    ValidTypes.UsdcPurchaseSeller,
     ValidTypes.TrackAddedToPurchasedAlbum,
     ValidTypes.RequestManager,
     ValidTypes.ApproveManagerRequest,
-    isCommentsEnabled ? ValidTypes.Comment : null,
-    isCommentsEnabled ? ValidTypes.CommentThread : null,
-    isCommentsEnabled ? ValidTypes.CommentMention : null,
-    isCommentsEnabled ? ValidTypes.CommentReaction : null,
-    ValidTypes.ClaimableReward
+    ValidTypes.Comment,
+    ValidTypes.CommentThread,
+    ValidTypes.CommentMention,
+    ValidTypes.CommentReaction
   ].filter(removeNullable)
 
   const { data } = yield* call(
@@ -68,5 +55,8 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
     ? transformAndCleanList(data.notifications, notificationFromSDK)
     : []
 
-  return { notifications, totalUnviewed: data?.unreadCount ?? 0 }
+  return {
+    notifications,
+    totalUnviewed: data?.unreadCount ?? 0
+  }
 }

@@ -13,7 +13,6 @@ import { TrackMetadataForUpload } from '~/store/upload'
 
 import { QUERY_KEYS } from './queryKeys'
 import { getTrackQueryKey } from './useTrack'
-import { getTrackByPermalinkQueryKey } from './useTrackByPermalink'
 import { handleStemUpdates } from './utils/handleStemUpdates'
 import { primeTrackData } from './utils/primeTrackData'
 
@@ -101,26 +100,6 @@ export const useUpdateTrack = () => {
         })
       }
 
-      // Optimistically update trackByPermalink
-      if (previousTrack) {
-        queryClient.setQueryData(
-          getTrackByPermalinkQueryKey(previousTrack.permalink),
-          (old: any) => ({
-            ...old,
-            ...metadata
-            // TODO: add optimistic update for artwork
-          })
-        )
-        queryClient.setQueryData(
-          getTrackByPermalinkQueryKey(metadata.permalink),
-          (old: any) => ({
-            ...previousTrack,
-            ...old,
-            ...metadata
-          })
-        )
-      }
-
       // Optimistically update all collections that contain this track
       queryClient.setQueriesData(
         { queryKey: [QUERY_KEYS.collection] },
@@ -155,10 +134,6 @@ export const useUpdateTrack = () => {
       if (context?.previousTrack) {
         queryClient.setQueryData(
           getTrackQueryKey(trackId),
-          context.previousTrack
-        )
-        queryClient.setQueryData(
-          getTrackByPermalinkQueryKey(context.previousTrack.permalink),
           context.previousTrack
         )
       }

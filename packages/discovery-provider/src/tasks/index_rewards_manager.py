@@ -631,7 +631,7 @@ def process_solana_rewards_manager(
 
 
 # ####### CELERY TASKS ####### #
-@celery.task(name="index_rewards_manager", bind=True)
+@celery.task(name="index_rewards_manager", rate_limit="5/s", bind=True)
 @save_duration_metric(metric_group="celery_task")
 def index_rewards_manager(self):
     redis = index_rewards_manager.redis
@@ -663,3 +663,4 @@ def index_rewards_manager(self):
     finally:
         if have_lock:
             update_lock.release()
+        celery.send_task("index_rewards_manager", queue="index_sol")

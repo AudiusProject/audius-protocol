@@ -17,7 +17,9 @@ from src.tasks.index_core_cutovers import (
     get_core_cutover_chain_id,
     get_sol_cutover,
 )
+from src.tasks.index_core_entity_manager import index_core_entity_manager
 from src.tasks.index_core_plays import index_core_plays
+from src.utils.config import shared_config
 from src.utils.session_manager import SessionManager
 
 root_logger = logging.getLogger(__name__)
@@ -30,6 +32,8 @@ CORE_INDEXER_ERROR_SLEEP_SECS = 5
 core_health_check_cache_key = "core:indexer:health"
 core_listens_health_check_cache_key = "core:indexer:health:listens"
 core_em_health_check_cache_key = "core:indexer:health:em"
+
+environment = shared_config["discprov"]["env"]
 
 
 class CoreListensTxInfo(TypedDict):
@@ -104,7 +108,7 @@ def update_core_health(
 ):
     health: CoreHealth = {
         "chain_id": latest_indexed_block.chainid,
-        "indexing_entity_manager": False,
+        "indexing_entity_manager": environment == "dev",
         "indexing_plays": indexing_plays,
         "latest_chain_block": latest_indexed_block.current_height,
         "latest_indexed_block": latest_indexed_block.height,
@@ -188,6 +192,7 @@ def index_core(self):
                 return
 
             indexing_plays = past_sol_plays_cutover and past_core_plays_cutover
+            indexing_entity_manager = environment == "dev"
 
             next_block = latest_indexed_block_height + 1
 
@@ -217,30 +222,23 @@ def index_core(self):
                 )
                 return
 
-            indexed_slot: Optional[int] = None
+            indexed_slot = index_core_plays(
+                logger=logger,
+                session=session,
+                challenge_bus=challenge_bus,
+                latest_indexed_slot=latest_indexed_slot,
+                indexing_plays=indexing_plays,
+                block=block,
+            )
 
-            for tx in block.transactions:
-                transaction_type = tx.WhichOneof("transaction")
-                if transaction_type == "plays":
-                    if indexing_plays:
-                        indexed_slot = index_core_plays(
-                            logger=logger,
-                            session=session,
-                            challenge_bus=challenge_bus,
-                            latest_indexed_slot=latest_indexed_slot,
-                            tx=tx,
-                        )
-                    continue
-                elif transaction_type == "manage_entity":
-                    continue
-                elif transaction_type == "validator_registration":
-                    continue
-                elif transaction_type == "sla_rollup":
-                    continue
-                else:
-                    logger.warning(
-                        f"index_core.py | unhandled tx type found {transaction_type}"
-                    )
+            indexed_em_block = index_core_entity_manager(
+                logger=logger,
+                update_task=self,
+                web3=self.web3,
+                session=session,
+                indexing_entity_manager=indexing_entity_manager,
+                block=block,
+            )
 
             # get block parenthash, in none case also use None
             # this would be the case in solana cutover where the previous
@@ -263,6 +261,7 @@ def index_core(self):
                 blockhash=block.blockhash,
                 parenthash=parenthash,
                 plays_slot=indexed_slot,
+                em_block=indexed_em_block,
             )
 
             exists = (

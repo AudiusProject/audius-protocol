@@ -444,7 +444,7 @@ class CollectionPage extends Component<
     const filterText = this.state.filterText
     const { tracks } = this.props
     const playingUid = this.getPlayingUid()
-    const playingIndex = tracks.entries.findIndex(
+    const activeIndex = tracks.entries.findIndex(
       ({ uid }) => uid === playingUid
     )
     const filteredMetadata = this.formatMetadata(trackMetadatas).filter(
@@ -453,9 +453,9 @@ class CollectionPage extends Component<
         item.user.name.toLowerCase().indexOf(filterText.toLowerCase()) > -1
     )
     const filteredIndex =
-      playingIndex > -1
+      activeIndex > -1
         ? filteredMetadata.findIndex((metadata) => metadata.uid === playingUid)
-        : playingIndex
+        : activeIndex
     return [filteredMetadata, filteredIndex] as [
       typeof filteredMetadata,
       number

@@ -65,7 +65,7 @@ else
             --concurrency 1 \
             --prefetch-multiplier 1 \
             2>&1 | tee >(logger -t index_core_worker) &
-            
+
         # start worker dedicated to indexing ACDC
         audius_service=worker celery -A src.worker.celery worker -Q index_nethermind \
             --loglevel "$audius_discprov_loglevel" \
@@ -78,7 +78,7 @@ else
         audius_service=worker celery -A src.worker.celery worker -Q index_sol \
             --loglevel "$audius_discprov_loglevel" \
             --hostname=index_sol \
-            --concurrency 1 \
+            --concurrency 3 \
             --prefetch-multiplier 1 \
             2>&1 | tee >(logger -t index_sol_worker) &
 

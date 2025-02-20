@@ -82,5 +82,5 @@
 
 :global(.ant-select-item-option-active) .primaryContainer,
 :global(.ant-select-item-option-active) .secondaryContainer {
-  color: var(--harmony-static-static-white);
+  color: var(--harmony-static-white);
 }

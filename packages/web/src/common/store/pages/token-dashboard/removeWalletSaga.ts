@@ -29,7 +29,6 @@ const { getBalance } = walletActions
 
 const { requestConfirmation } = confirmerActions
 
-// TODO-NOW
 function* removeWallet(action: ConfirmRemoveWalletAction) {
   yield* waitForWrite()
   const sdk = yield* getSDK()

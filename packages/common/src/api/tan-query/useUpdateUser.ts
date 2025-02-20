@@ -9,7 +9,6 @@ import { UserMetadata } from '~/models/User'
 
 import { QUERY_KEYS } from './queryKeys'
 import { getUserQueryKey } from './useUser'
-import { getUserByHandleQueryKey } from './useUserByHandle'
 
 type MutationContext = {
   previousUser: UserMetadata | undefined
@@ -70,12 +69,6 @@ export const useUpdateUser = () => {
         ...old,
         ...metadata
       }))
-
-      // Optimistically update userByHandle queries if they match the user
-      queryClient.setQueryData(
-        getUserByHandleQueryKey(metadata.handle),
-        (old: any) => ({ ...old, ...metadata })
-      )
 
       // Optimistically update accountUser queries if they match the user
       queryClient.setQueriesData(
@@ -149,12 +142,6 @@ export const useUpdateUser = () => {
       // If the mutation fails, roll back user data
       if (context?.previousUser) {
         queryClient.setQueryData(getUserQueryKey(userId), context.previousUser)
-
-        // Roll back userByHandle queries
-        queryClient.setQueryData(
-          getUserByHandleQueryKey(context.previousUser?.handle),
-          context.previousUser
-        )
       }
 
       // Roll back accountUser queries if we have the previous state

@@ -21,6 +21,27 @@ module.exports = {
           }
         ]
       }
+    ],
+    'no-restricted-syntax': [
+      'error',
+      {
+        selector:
+          'CallExpression[callee.name=useQuery] > ObjectExpression > Property[key.name=queryFn] ReturnStatement > Identifier[name=undefined]',
+        message:
+          'Do not return undefined in React Query queryFn. Return null instead.'
+      },
+      {
+        selector:
+          'CallExpression[callee.name=useQuery] > ObjectExpression > Property[key.name=queryFn] IfStatement > BlockStatement > ReturnStatement:not([argument])',
+        message:
+          'Do not return undefined in React Query queryFn. Return null instead.'
+      },
+      {
+        selector:
+          'CallExpression[callee.name=useQuery] > ObjectExpression > Property[key.name=queryFn] ReturnStatement:not([argument])',
+        message:
+          'Do not return undefined in React Query queryFn. Return null instead.'
+      }
     ]
   }
 }

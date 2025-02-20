@@ -183,7 +183,6 @@ const initializeServices = (config: SdkConfig) => {
     config.services?.storageNodeSelector ??
     new StorageNodeSelector({
       ...getDefaultStorageNodeSelectorConfig(servicesConfig),
-      audiusWalletClient,
       discoveryNodeSelector,
       logger
     })

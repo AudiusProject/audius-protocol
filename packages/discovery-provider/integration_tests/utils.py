@@ -24,6 +24,7 @@ from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.playlists.playlist_track import PlaylistTrack
 from src.models.rewards.challenge import Challenge
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
+from src.models.rewards.listen_streak_challenge import ChallengeListenStreak
 from src.models.rewards.reward_manager import RewardManagerTransaction
 from src.models.rewards.user_challenge import UserChallenge
 from src.models.social.aggregate_monthly_plays import AggregateMonthlyPlay
@@ -43,6 +44,7 @@ from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.associated_wallet import AssociatedWallet, WalletChain
+from src.models.users.collectibles import Collectibles
 from src.models.users.email import EmailAccess, EncryptedEmail
 from src.models.users.supporter_rank_up import SupporterRankUp
 from src.models.users.usdc_purchase import PurchaseAccessType, USDCPurchase
@@ -153,6 +155,7 @@ def populate_mock_db(db, entities, block_offset=None):
         stems = entities.get("stems", [])
         challenges = entities.get("challenges", [])
         user_challenges = entities.get("user_challenges", [])
+        challenge_listen_streaks = entities.get("challenge_listen_streaks", [])
         plays = entities.get("plays", [])
         aggregate_plays = entities.get("aggregate_plays", [])
         aggregate_track = entities.get("aggregate_track", [])
@@ -182,6 +185,7 @@ def populate_mock_db(db, entities, block_offset=None):
         user_payout_wallet_history = entities.get("user_payout_wallet_history", [])
         encrypted_emails = entities.get("encrypted_emails", [])
         email_access = entities.get("email_access", [])
+        collectibles = entities.get("collectibles", [])
 
         num_blocks = max(
             len(tracks),
@@ -203,6 +207,7 @@ def populate_mock_db(db, entities, block_offset=None):
             len(track_price_history),
             len(album_price_history),
             len(user_payout_wallet_history),
+            len(collectibles),
         )
         for i in range(block_offset, block_offset + num_blocks):
             max_block = session.query(Block).filter(Block.number == i).first()
@@ -918,5 +923,25 @@ def populate_mock_db(db, entities, block_offset=None):
                 updated_at=email_access_meta.get("updated_at", datetime.now()),
             )
             session.add(email_access)
+        for i, collectible_data in enumerate(collectibles):
+            collectible_data_record = Collectibles(
+                user_id=collectible_data.get("user_id", i),
+                data=collectible_data.get("data", {}),
+                blockhash=collectible_data.get("blockhash", str(i + block_offset)),
+                blocknumber=collectible_data.get("blocknumber", i + block_offset),
+                created_at=collectible_data.get("created_at", datetime.now()),
+                updated_at=collectible_data.get("updated_at", datetime.now()),
+            )
+            session.add(collectible_data_record)
+
+        for i, challenge_listen_streak in enumerate(challenge_listen_streaks):
+            streak = ChallengeListenStreak(
+                user_id=challenge_listen_streak.get("user_id", i),
+                last_listen_date=challenge_listen_streak.get(
+                    "last_listen_date", datetime.now()
+                ),
+                listen_streak=challenge_listen_streak.get("listen_streak", 1),
+            )
+            session.add(streak)
 
         session.commit()

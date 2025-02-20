@@ -11,6 +11,10 @@ export enum zIndex {
   // TODO: use these enums
 
   GATED_TRACK_TILE_CORNER_TAG = 3,
+  // Legacy tabs component from useTabs()
+  TAB_ACCENT = 9,
+  PROFILE_EDIT_MASK = 10,
+  PROFILE_EDITABLE_COMPONENTS = 11,
 
   // FROSTED_HEADER_BACKGROUND = 10,
   // HEADER_CONTAINER = 13,

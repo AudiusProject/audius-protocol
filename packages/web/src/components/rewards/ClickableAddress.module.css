@@ -27,7 +27,7 @@
   font-size: var(--harmony-font-m);
   line-height: 24px;
   text-align: center;
-  color: var(--harmony-static-white);
+  color: var(--harmony-white);
   word-break: break-all;
 }
 
@@ -37,7 +37,7 @@
 }
 
 .icon path {
-  fill: var(--harmony-static-white);
+  fill: var(--harmony-white);
 }
 
 .toast {

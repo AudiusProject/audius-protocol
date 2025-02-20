@@ -3,19 +3,16 @@ import {
   userWalletsFromSDK
 } from '@audius/common/adapters'
 import { Kind } from '@audius/common/models'
-import { DoubleKeys } from '@audius/common/services'
 import {
   accountSelectors,
   cacheActions,
   profilePageActions as profileActions,
   chatActions,
   reachabilitySelectors,
-  relatedArtistsUIActions as relatedArtistsActions,
   collectiblesActions,
   confirmerActions,
   confirmTransaction,
-  getSDK,
-  profilePageActions
+  getSDK
 } from '@audius/common/store'
 import {
   squashNewLines,
@@ -26,7 +23,6 @@ import {
   route
 } from '@audius/common/utils'
 import { Id } from '@audius/sdk'
-import { merge } from 'lodash'
 import {
   all,
   call,
@@ -37,11 +33,7 @@ import {
   takeEvery
 } from 'redux-saga/effects'
 
-import {
-  fetchUsers,
-  fetchUserByHandle,
-  fetchUserSocials
-} from 'common/store/cache/users/sagas'
+import { fetchUsers, fetchUserByHandle } from 'common/store/cache/users/sagas'
 import feedSagas from 'common/store/pages/profile/lineups/feed/sagas.js'
 import tracksSagas from 'common/store/pages/profile/lineups/tracks/sagas.js'
 import {
@@ -50,8 +42,6 @@ import {
 } from 'common/store/social/users/sagas'
 import { push as pushRoute } from 'utils/navigation'
 import { waitForWrite } from 'utils/sagaHelpers'
-
-import { watchFetchProfileCollections } from './fetchProfileCollectionsSaga'
 
 const { NOT_FOUND_PAGE } = route
 const { getIsReachable } = reachabilitySelectors
@@ -69,42 +59,6 @@ const { fetchPermissions } = chatActions
 
 function* watchFetchProfile() {
   yield takeEvery(profileActions.FETCH_PROFILE, fetchProfileAsync)
-}
-
-function* fetchProfileCustomizedCollectibles(user) {
-  const sdk = yield getSDK()
-  const cid = user?.metadata_multihash ?? null
-  if (cid) {
-    const {
-      data: { data: metadata }
-    } = yield call([sdk.full.cidData, sdk.full.cidData.getMetadata], {
-      metadataId: cid
-    })
-    if (metadata?.collectibles) {
-      yield put(
-        cacheActions.update(Kind.USERS, [
-          {
-            id: user.user_id,
-            metadata: {
-              collectibles: metadata.collectibles,
-              collectiblesOrderUnset: false
-            }
-          }
-        ])
-      )
-    } else {
-      yield put(
-        cacheActions.update(Kind.USERS, [
-          {
-            id: user.user_id,
-            metadata: {
-              collectiblesOrderUnset: true
-            }
-          }
-        ])
-      )
-    }
-  }
 }
 
 export function* fetchEthereumCollectiblesForWallets(wallets) {
@@ -304,9 +258,6 @@ export function* fetchSolanaCollectibles(user) {
 }
 
 function* fetchProfileAsync(action) {
-  const isNativeMobile = yield getContext('isNativeMobile')
-  const { getRemoteVar } = yield getContext('remoteConfigInstance')
-
   try {
     let user
     if (action.handle) {
@@ -344,17 +295,9 @@ function* fetchProfileAsync(action) {
       )
     )
 
-    if (!isNativeMobile) {
-      // Fetch user socials and collections after fetching the user itself
-      yield fork(fetchUserSocials, action)
-      // Note that mobile dispatches this action at the component level
-      yield put(profilePageActions.fetchCollections(user.handle))
-    }
-
     // Get chat permissions
     yield put(fetchPermissions({ userIds: [user.user_id] }))
 
-    yield fork(fetchProfileCustomizedCollectibles, user)
     yield fork(fetchEthereumCollectibles, user)
     yield fork(fetchSolanaCollectibles, user)
 
@@ -369,18 +312,6 @@ function* fetchProfileAsync(action) {
         user.handle
       )
     )
-
-    if (!isNativeMobile) {
-      const showArtistRecommendationsPercent =
-        getRemoteVar(DoubleKeys.SHOW_ARTIST_RECOMMENDATIONS_PERCENT) || 0
-      if (Math.random() < showArtistRecommendationsPercent) {
-        yield put(
-          relatedArtistsActions.fetchRelatedArtists({
-            artistId: user.user_id
-          })
-        )
-      }
-    }
   } catch (err) {
     console.error(`Fetch users error: ${err}`)
     const isReachable = yield select(getIsReachable)
@@ -399,8 +330,7 @@ function* watchUpdateProfile() {
 
 export function* updateProfileAsync(action) {
   yield waitForWrite()
-  const sdk = yield getSDK()
-  let metadata = { ...action.metadata }
+  const metadata = { ...action.metadata }
   metadata.bio = squashNewLines(metadata.bio)
 
   const accountUserId = yield select(getUserId)
@@ -409,26 +339,6 @@ export function* updateProfileAsync(action) {
       { id: accountUserId, metadata: { name: metadata.name } }
     ])
   )
-
-  // Get existing metadata and combine with it
-  const cid = metadata.metadata_multihash ?? null
-  if (cid) {
-    try {
-      const {
-        data: { data }
-      } = yield call([sdk.full.cidData, sdk.full.cidData.getMetadata], {
-        metadataId: cid
-      })
-      const collectibles = metadata.collectibles
-      metadata = merge(data, metadata)
-      metadata.collectibles = collectibles
-    } catch (e) {
-      // Although we failed to fetch the existing user metadata, this should only
-      // happen if the user's account data is unavailable across the whole network.
-      // In favor of availability, we write anyway.
-      console.error(e)
-    }
-  }
 
   // For base64 images (coming from native), convert to a blob
   if (metadata.updatedCoverPhoto?.type === 'base64') {
@@ -550,7 +460,6 @@ export default function sagas() {
     ...tracksSagas(),
     watchFetchProfile,
     watchUpdateProfile,
-    watchSetNotificationSubscription,
-    watchFetchProfileCollections
+    watchSetNotificationSubscription
   ]
 }

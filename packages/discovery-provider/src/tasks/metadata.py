@@ -272,6 +272,10 @@ remove_associated_wallet_metadata_format = {
     "chain": None,
 }
 
+collectibles_metadata_format = {
+    "collectibles": None,
+}
+
 
 class PlaylistMetadata(TypedDict):
     playlist_contents: Optional[Any]

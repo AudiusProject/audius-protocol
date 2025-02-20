@@ -3,15 +3,20 @@ import { useCallback } from 'react'
 import { useGetSuggestedPlaylistTracks } from '@audius/common/api'
 import { SquareSizes, ID, Track } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
-import { Button, IconCaretDown, IconRefresh, useTheme } from '@audius/harmony'
+import {
+  Button,
+  Divider,
+  IconCaretDown,
+  IconRefresh,
+  Paper,
+  useTheme
+} from '@audius/harmony'
 import { animated, useSpring } from '@react-spring/web'
 import { useToggle } from 'react-use'
 
-import { Divider } from 'components/divider'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Skeleton from 'components/skeleton/Skeleton'
-import { Tile } from 'components/tile'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { useSelector } from 'utils/reducer'
@@ -94,15 +99,13 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
   const [isExpanded, toggleIsExpanded] = useToggle(false)
   const { motion } = useTheme()
 
-  const divider = <Divider className={styles.trackDivider} />
-
   const contentHeight = 66 + suggestedTracks.length * 74
   const contentStyles = useSpring({
     height: isExpanded ? contentHeight : 0
   })
 
   return (
-    <Tile className={styles.root} elevation='mid'>
+    <Paper column css={{ textAlign: 'left' }}>
       <div
         className={styles.heading}
         role='button'
@@ -123,7 +126,7 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
       </div>
       <animated.div className={styles.content} style={contentStyles}>
         <ul>
-          {divider}
+          <Divider />
           {!suggestedTracks ? (
             <LoadingSpinner className={styles.loading} />
           ) : null}
@@ -138,7 +141,7 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
               ) : (
                 <SuggestedTrackSkeleton />
               )}
-              {divider}
+              <Divider />
             </li>
           ))}
         </ul>
@@ -149,6 +152,6 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
           </div>
         </button>
       </animated.div>
-    </Tile>
+    </Paper>
   )
 }

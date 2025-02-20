@@ -1,5 +1,6 @@
-import { useEffect, useContext, ReactNode } from 'react'
+import { useEffect, useContext } from 'react'
 
+import { useUserCollectibles } from '@audius/common/api'
 import {
   Status,
   Collection,
@@ -22,17 +23,12 @@ import {
   IconCollectible as IconCollectibles,
   IconNote,
   IconPlaylists,
-  IconRepost as IconReposts,
-  LoadingSpinner,
-  Box,
-  Flex
+  IconRepost as IconReposts
 } from '@audius/harmony'
 import cn from 'classnames'
 
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
-import { CollectionCard } from 'components/collection'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
-import CardLineup from 'components/lineup/CardLineup'
 import Lineup from 'components/lineup/Lineup'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, {
@@ -47,11 +43,13 @@ import { withNullGuard } from 'utils/withNullGuard'
 
 import { DeactivatedProfileTombstone } from '../DeactivatedProfileTombstone'
 
+import { AlbumsTab } from './AlbumsTab'
 import EditProfile from './EditProfile'
+import { EmptyTab } from './EmptyTab'
+import { PlaylistsTab } from './PlaylistsTab'
 import ProfileHeader from './ProfileHeader'
 import styles from './ProfilePage.module.css'
 import { ShareUserButton } from './ShareUserButton'
-
 const { profilePage } = route
 
 export type ProfilePageProps = {
@@ -94,8 +92,6 @@ export type ProfilePageProps = {
   trackIsActive: boolean
 
   profile: User | null
-  albums: Collection[] | null
-  playlists: Collection[] | null
   status: Status
   collectionStatus: Status
   goToRoute: (route: string) => void
@@ -138,14 +134,6 @@ export type ProfilePageProps = {
   didChangeTabsFrom: (prevLabel: string, currentLabel: string) => void
   areArtistRecommendationsVisible: boolean
   onCloseArtistRecommendations: () => void
-}
-
-type EmptyTabProps = {
-  message: ReactNode
-}
-
-const EmptyTab = (props: EmptyTabProps) => {
-  return <div className={styles.emptyTab}>{props.message}</div>
 }
 
 const artistTabs: TabHeader[] = [
@@ -222,9 +210,9 @@ const getMessages = ({
 })
 
 const g = withNullGuard((props: ProfilePageProps) => {
-  const { profile, albums, playlists } = props
-  if (profile && albums && playlists) {
-    return { ...props, profile, albums, playlists }
+  const { profile } = props
+  if (profile) {
+    return { ...props, profile }
   }
 })
 
@@ -254,8 +242,6 @@ const ProfilePage = g(
     tikTokVerified,
     website,
     donation,
-    albums,
-    playlists,
     artistTracks,
     userFeed,
     getLineupProps,
@@ -299,6 +285,8 @@ const ProfilePage = g(
     useEffect(() => {
       setHeader(null)
     }, [setHeader])
+
+    const { data: collectibles } = useUserCollectibles({ userId })
 
     const messages = getMessages({ name, isOwner })
     let content
@@ -347,9 +335,9 @@ const ProfilePage = g(
 
     const profileHasCollectibles =
       profile?.collectibleList?.length || profile?.solanaCollectibleList?.length
-    const profileNeverSetCollectiblesOrder = !profile?.collectibles
+    const profileNeverSetCollectiblesOrder = !collectibles
     const profileHasNonEmptyCollectiblesOrder =
-      profile?.collectibles?.order?.length ?? false
+      collectibles?.order?.length ?? false
     const profileHasVisibleImageOrVideoCollectibles =
       profileHasCollectibles &&
       (profileNeverSetCollectiblesOrder || profileHasNonEmptyCollectiblesOrder)
@@ -385,22 +373,7 @@ const ProfilePage = g(
         />
       )
     } else {
-      const playlistCards = (playlists || []).map((playlist) => (
-        <CollectionCard
-          key={playlist.playlist_id}
-          id={playlist.playlist_id}
-          size='xs'
-        />
-      ))
       if (isArtist) {
-        const albumCards = (albums || []).map((album) => (
-          <CollectionCard
-            key={album.playlist_id}
-            id={album.playlist_id}
-            size='xs'
-          />
-        ))
-
         profileTabs = artistTabs
         profileElements = [
           <div className={styles.tracksLineupContainer} key='artistTracks'>
@@ -428,56 +401,10 @@ const ProfilePage = g(
             )}
           </div>,
           <div className={styles.cardLineupContainer} key='artistAlbums'>
-            {collectionStatus !== Status.SUCCESS &&
-            collectionStatus !== Status.ERROR ? (
-              <Flex justifyContent='center' mt='l'>
-                <Box w={24}>
-                  <LoadingSpinner />
-                </Box>
-              </Flex>
-            ) : (albums || []).length === 0 ? (
-              <EmptyTab
-                message={
-                  <>
-                    {messages.emptyAlbums}
-                    <i
-                      className={cn('emoji', 'face-with-monocle', styles.emoji)}
-                    />
-                  </>
-                }
-              />
-            ) : (
-              <CardLineup
-                cardsClassName={styles.cardLineup}
-                cards={albumCards}
-              />
-            )}
+            <AlbumsTab isOwner={isOwner} profile={profile} userId={userId} />
           </div>,
           <div className={styles.cardLineupContainer} key='artistPlaylists'>
-            {collectionStatus !== Status.SUCCESS &&
-            collectionStatus !== Status.ERROR ? (
-              <Flex justifyContent='center' mt='l'>
-                <Box w={24}>
-                  <LoadingSpinner />
-                </Box>
-              </Flex>
-            ) : (playlists || []).length === 0 ? (
-              <EmptyTab
-                message={
-                  <>
-                    {messages.emptyPlaylists}
-                    <i
-                      className={cn('emoji', 'face-with-monocle', styles.emoji)}
-                    />
-                  </>
-                }
-              />
-            ) : (
-              <CardLineup
-                cardsClassName={styles.cardLineup}
-                cards={playlistCards}
-              />
-            )}
+            <PlaylistsTab isOwner={isOwner} profile={profile} userId={userId} />
           </div>,
           <div className={styles.tracksLineupContainer} key='artistUsers'>
             {profile.repost_count === 0 ? (
@@ -530,23 +457,7 @@ const ProfilePage = g(
             )}
           </div>,
           <div className={styles.cardLineupContainer} key='playlists'>
-            {(playlists || []).length === 0 ? (
-              <EmptyTab
-                message={
-                  <>
-                    {messages.emptyPlaylists}
-                    <i
-                      className={cn('emoji', 'face-with-monocle', styles.emoji)}
-                    />
-                  </>
-                }
-              />
-            ) : (
-              <CardLineup
-                cardsClassName={styles.cardLineup}
-                cards={playlistCards}
-              />
-            )}
+            <PlaylistsTab isOwner={isOwner} profile={profile} userId={userId} />
           </div>
         ]
       }

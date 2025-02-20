@@ -71,7 +71,7 @@ export const CommentThread = ({ commentId }: { commentId: ID }) => {
 
   if (!rootComment) return null
 
-  const { replyCount } = rootComment
+  const { replyCount = 0 } = rootComment
 
   const hasReplies = replyCount > 0
 

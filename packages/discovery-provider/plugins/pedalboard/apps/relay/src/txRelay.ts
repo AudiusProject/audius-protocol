@@ -1,6 +1,7 @@
 import { config, wallets, web3 } from '.'
 import { coreRelay } from './coreRelay'
 import { internalError } from './error'
+import { getCoreIndexerHealth } from './redis'
 import { retryPromise } from './utils'
 import { confirm } from './web3'
 import {
@@ -23,14 +24,25 @@ export const relayTransaction = async (
   const { validatedRelayRequest, logger, requestId } = res.locals.ctx
   const { encodedABI, gasLimit, contractAddress } = validatedRelayRequest
 
-  const senderWallet = wallets.selectNextWallet()
-  const address = await senderWallet.getAddress()
   let nonce = undefined
   let submit = undefined
   try {
     if (config.environment === "dev") {
-      coreRelay(logger, requestId, validatedRelayRequest)
+      const coreHealth = await getCoreIndexerHealth()
+      logger.info({ coreHealth }, "core health from redis")
+      const receipt = await coreRelay(logger, requestId, validatedRelayRequest)
+      const indexingEntityManager = coreHealth?.indexing_entity_manager
+      logger.info({ indexingEntityManager }, "indexing em")
+      if (indexingEntityManager) {
+        logger.info({ receipt }, "sending back")
+        res.send({ receipt })
+        next()
+        return
+      }
     }
+
+    const senderWallet = wallets.selectNextWallet()
+    const address = await senderWallet.getAddress()
 
     // gather some transaction params
     nonce = await retryPromise(() => web3.getTransactionCount(address))
@@ -52,7 +64,6 @@ export const relayTransaction = async (
     receipt.blockNumber += config.finalPoaBlock
     logger.info(
       {
-        senderWallet: address,
         nonce,
         txHash: submit?.hash,
         blocknumber: receipt.blockNumber
@@ -62,7 +73,7 @@ export const relayTransaction = async (
     res.send({ receipt })
   } catch (e) {
     logger.error(
-      { senderWallet: address, nonce, txHash: submit?.hash },
+      { nonce, txHash: submit?.hash },
       'transaction submission failed'
     )
     internalError(next, e)

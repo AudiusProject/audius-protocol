@@ -4,9 +4,10 @@ import {
   formatCooldownChallenges,
   useChallengeCooldownSchedule
 } from '@audius/common/hooks'
-import type {
-  ChallengeRewardID,
-  UserChallengeState
+import {
+  ChallengeName,
+  type ChallengeRewardID,
+  type UserChallengeState
 } from '@audius/common/models'
 import { ClaimStatus } from '@audius/common/store'
 import { formatNumberCommas, fillString } from '@audius/common/utils'
@@ -37,16 +38,21 @@ const messages = {
   complete: 'Complete',
   claim: 'Claim This Reward',
   claimableLabel: '$AUDIO available to claim',
-  claimableAmountLabel: (amount) => `Claim ${amount} $AUDIO`,
+  claimableAmountLabel: (amount) =>
+    `Claim ${formatNumberCommas(amount)} $AUDIO`,
   claimedLabel: '$AUDIO claimed so far',
   upcomingRewards: 'Upcoming Rewards',
   readyToClaim: 'Ready to Claim',
-  close: 'Close'
+  close: 'Close',
+  claiming: 'Claiming',
+  ineligible: 'Ineligible'
 }
 
 type ChallengeRewardsDrawerContentProps = {
   /** The description of the challenge */
   description: string
+  /** The optional description of the challenge */
+  optionalDescription?: string
   /** The current progress the user has made */
   currentStep: number
   /** The number of steps the user has to complete in total */
@@ -86,6 +92,7 @@ type ChallengeRewardsDrawerContentProps = {
  */
 export const ChallengeRewardsDrawerContent = ({
   description,
+  optionalDescription,
   amount,
   currentStep,
   stepCount = 1,
@@ -125,7 +132,9 @@ export const ChallengeRewardsDrawerContent = ({
             formatNumberCommas(currentStep),
             formatNumberCommas(stepCount)
           )
-        : messages.incomplete
+        : challengeId === ChallengeName.OneShot
+          ? messages.ineligible
+          : messages.incomplete
 
   const claimInProgress =
     claimStatus === ClaimStatus.CLAIMING ||
@@ -151,17 +160,11 @@ export const ChallengeRewardsDrawerContent = ({
   return (
     <>
       <ScrollView style={styles.content}>
-        {isVerifiedChallenge ? (
-          <ChallengeDescription
-            description={description}
-            isCooldownChallenge={isCooldownChallenge}
-          />
-        ) : (
-          <ChallengeDescription
-            description={description}
-            isCooldownChallenge={isCooldownChallenge}
-          />
-        )}
+        <ChallengeDescription
+          description={description}
+          optionalDescription={isClaimable ? optionalDescription : undefined}
+          isCooldownChallenge={isCooldownChallenge}
+        />
         <Flex alignItems='center' gap='3xl' w='100%'>
           <Flex row alignItems='center' gap='xl'>
             <ChallengeReward amount={amount} subtext={messages.audio} />
@@ -216,12 +219,14 @@ export const ChallengeRewardsDrawerContent = ({
           <Button
             key='claimButton'
             style={styles.claimButton}
-            variant={claimInProgress ? 'secondary' : 'primary'}
+            variant={'primary'}
             isLoading={claimInProgress}
             onPress={onClaim}
-            iconRight={IconArrowRight}
+            iconRight={claimInProgress ? null : IconArrowRight}
           >
-            {messages.claimableAmountLabel(claimableAmount)}
+            {claimInProgress
+              ? messages.claiming
+              : messages.claimableAmountLabel(claimableAmount)}
           </Button>
         ) : (
           <Button variant='secondary' onPress={onClose} fullWidth>

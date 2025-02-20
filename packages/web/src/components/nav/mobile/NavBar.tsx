@@ -9,7 +9,8 @@ import {
   IconClose,
   IconNotificationOn,
   IconButton,
-  IconGift
+  IconGift,
+  Flex
 } from '@audius/harmony'
 import cn from 'classnames'
 import { History } from 'history'
@@ -166,24 +167,64 @@ const NavBar = ({
   } else if (leftElement === LeftPreset.NOTIFICATION && isSignedIn) {
     left = (
       <>
-        <IconButton
-          aria-label='notifications'
-          color={notificationCount > 0 ? 'warning' : 'subdued'}
-          icon={IconNotificationOn}
-          onClick={goToNotificationPage}
-        />
-        {notificationCount > 0 && (
-          <div className={styles.iconTag}>{formatCount(notificationCount)}</div>
-        )}
-        <IconButton
-          aria-label='audio rewards'
-          color={rewardsCount > 0 ? 'warning' : 'subdued'}
-          icon={IconGift}
-          onClick={goToRewardsPage}
-        />
-        {rewardsCount > 0 && (
-          <div className={styles.iconTag}>{formatCount(rewardsCount)}</div>
-        )}
+        <Flex>
+          <IconButton
+            aria-label='notifications'
+            color={notificationCount > 0 ? 'warning' : 'subdued'}
+            icon={IconNotificationOn}
+            onClick={goToNotificationPage}
+          />
+          {notificationCount > 0 && (
+            <Flex
+              css={{
+                position: 'absolute',
+                top: 0,
+                right: 6,
+                backgroundColor: 'var(--harmony-red)',
+                color: 'var(--harmony-white)',
+                fontSize: '11px',
+                fontWeight: 'bold',
+                letterSpacing: '0.07px',
+                lineHeight: '14px',
+                textTransform: 'uppercase',
+                padding: '0px 6px',
+                transform: 'translateX(50%)',
+                borderRadius: '8px'
+              }}
+            >
+              {formatCount(notificationCount)}
+            </Flex>
+          )}
+        </Flex>
+        <Flex>
+          <IconButton
+            aria-label='audio rewards'
+            color={rewardsCount > 0 ? 'warning' : 'subdued'}
+            icon={IconGift}
+            onClick={goToRewardsPage}
+          />
+          {rewardsCount > 0 && (
+            <Flex
+              css={{
+                position: 'absolute',
+                top: 0,
+                right: 6,
+                backgroundColor: 'var(--harmony-red)',
+                color: 'var(--harmony-white)',
+                fontSize: '11px',
+                fontWeight: 'bold',
+                letterSpacing: '0.07px',
+                lineHeight: '14px',
+                textTransform: 'uppercase',
+                padding: '0px 6px',
+                transform: 'translateX(50%)',
+                borderRadius: '8px'
+              }}
+            >
+              {formatCount(rewardsCount)}
+            </Flex>
+          )}
+        </Flex>
       </>
     )
   } else if (leftElement === LeftPreset.SETTINGS && isSignedIn) {

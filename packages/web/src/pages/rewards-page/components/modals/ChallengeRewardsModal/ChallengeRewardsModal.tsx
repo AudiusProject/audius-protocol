@@ -1,93 +1,37 @@
-import { useCallback, useEffect, useContext, useMemo } from 'react'
+import { useCallback, useEffect, useContext } from 'react'
 
-import {
-  formatCooldownChallenges,
-  useChallengeCooldownSchedule
-} from '@audius/common/hooks'
 import { ChallengeName } from '@audius/common/models'
 import {
-  accountSelectors,
   challengesSelectors,
   audioRewardsPageSelectors,
   audioRewardsPageActions,
   ClaimStatus,
-  musicConfettiActions,
-  ChallengeRewardsModalType
+  musicConfettiActions
 } from '@audius/common/store'
-import {
-  fillString,
-  formatNumberCommas,
-  getAAOErrorEmojis,
-  challengeRewardsConfig,
-  isAudioMatchingChallenge,
-  getClaimableChallengeSpecifiers
-} from '@audius/common/utils'
-import {
-  ModalContent,
-  IconCopy,
-  IconValidationCheck,
-  IconCheck,
-  IconVerified,
-  IconTwitter as IconTwitterBird,
-  SocialButton,
-  Button,
-  Text,
-  Flex
-} from '@audius/harmony'
-import cn from 'classnames'
+import { getAAOErrorEmojis } from '@audius/common/utils'
+import { ModalContent, IconCopy, Button } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
-import QRCode from 'assets/img/imageQR.png'
 import { useModalState } from 'common/hooks/useModalState'
 import ModalDrawer from 'components/modal-drawer/ModalDrawer'
-import { SummaryTable } from 'components/summary-table'
 import Toast from 'components/toast/Toast'
 import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement, MountPlacement } from 'components/types'
-import { useIsMobile } from 'hooks/useIsMobile'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { getChallengeConfig } from 'pages/rewards-page/config'
 import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import { CLAIM_REWARD_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
-import { push as pushRoute } from 'utils/navigation'
-import { openTwitterLink } from 'utils/tweet'
 
-import { AudioMatchingRewardsModalContent } from './AudioMatchingRewardsModalContent'
-import { ChallengeRewardsLayout } from './ChallengeRewardsLayout'
-import { ListenStreakChallengeModalContent } from './ListenStreakChallengeModalContent'
 import { getChallengeContent } from './challengeContentRegistry'
 import styles from './styles.module.css'
 
 const { show: showConfetti } = musicConfettiActions
-const {
-  getAAOErrorCode,
-  getChallengeRewardsModalType,
-  getClaimStatus,
-  getUndisbursedUserChallenges
-} = audioRewardsPageSelectors
-const {
-  setChallengeRewardsModalType,
-  resetAndCancelClaimReward,
-  claimChallengeReward
-} = audioRewardsPageActions
-const { getOptimisticUserChallenges, getCompletionStages } = challengesSelectors
-const getUserHandle = accountSelectors.getUserHandle
+const { getAAOErrorCode, getChallengeRewardsModalType, getClaimStatus } =
+  audioRewardsPageSelectors
+const { resetAndCancelClaimReward } = audioRewardsPageActions
+const { getOptimisticUserChallenges } = challengesSelectors
 
-export const useRewardsModalType = (): [
-  ChallengeRewardsModalType,
-  (type: ChallengeRewardsModalType) => void
-] => {
-  const dispatch = useDispatch()
-  const modalType = useSelector(getChallengeRewardsModalType)
-  const setModalType = useCallback(
-    (type: ChallengeRewardsModalType) => {
-      dispatch(setChallengeRewardsModalType({ modalType: type }))
-    },
-    [dispatch]
-  )
-  return [modalType, setModalType]
-}
 const inviteLink = getCopyableLink('/signup?rf=%0')
 
 const messages = {
@@ -180,76 +124,6 @@ export const InviteLink = ({ className, inviteLink }: InviteLinkProps) => {
   )
 }
 
-type TwitterShareButtonProps = {
-  modalType:
-    | 'referrals'
-    | 'ref-v'
-    | ChallengeName.Referrals
-    | ChallengeName.ReferralsVerified
-  inviteLink: string
-}
-
-const TwitterShareButton = ({
-  modalType,
-  inviteLink
-}: TwitterShareButtonProps) => {
-  const isMobile = useIsMobile()
-
-  return (
-    <SocialButton
-      socialType='twitter'
-      iconLeft={IconTwitterBird}
-      onClick={() => openTwitterLink(inviteLink, messages.twitterCopy)}
-      aria-label={messages.twitterReferralLabel}
-      fullWidth={isMobile}
-    >
-      {messages.twitterShare(modalType)}
-    </SocialButton>
-  )
-}
-
-const ProfileChecks = () => {
-  const completionStages = useSelector(getCompletionStages)
-  const wm = useWithMobileStyle(styles.mobile)
-  const isMobile = useIsMobile()
-
-  const config: Record<string, boolean> = {
-    [messages.profileCheckNameAndHandle]: completionStages.hasNameAndHandle,
-    [messages.profileCheckProfilePicture]: completionStages.hasProfilePicture,
-    [messages.profileCheckCoverPhoto]: completionStages.hasCoverPhoto,
-    [messages.profileCheckProfileDescription]:
-      completionStages.hasProfileDescription,
-    [messages.profileCheckFavorite]: completionStages.hasFavoritedItem,
-    [messages.profileCheckRepost]: !!completionStages.hasReposted,
-    [messages.profileCheckFollow]: completionStages.hasFollowedAccounts
-  }
-
-  return (
-    <Flex
-      column
-      gap='m'
-      wrap='wrap'
-      ph={isMobile ? undefined : 'xl'}
-      pv={isMobile ? undefined : 'm'}
-      justifyContent='center'
-      css={{
-        maxHeight: 150
-      }}
-    >
-      {Object.keys(config).map((key) => (
-        <div className={wm(styles.profileTask)} key={key}>
-          {config[key] ? (
-            <IconValidationCheck />
-          ) : (
-            <div className={styles.profileTaskCircle} />
-          )}
-          <p className={cn({ [styles.completeText]: config[key] })}>{key}</p>
-        </div>
-      ))}
-    </Flex>
-  )
-}
-
 const getErrorMessage = (aaoErrorCode?: number) => {
   if (aaoErrorCode !== undefined) {
     return (
@@ -271,7 +145,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   const dispatch = useDispatch()
   const claimStatus = useSelector(getClaimStatus)
   const aaoErrorCode = useSelector(getAAOErrorCode)
-  const [modalType] = useRewardsModalType()
+  const modalType = useSelector(getChallengeRewardsModalType) as ChallengeName
   const userChallenges = useSelector(getOptimisticUserChallenges)
   const challenge = userChallenges[modalType]
 
@@ -303,7 +177,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
 }
 
 export const ChallengeRewardsModal = () => {
-  const [modalType] = useRewardsModalType()
+  const modalType = useSelector(getChallengeRewardsModalType) as ChallengeName
   const [isOpen, setOpen] = useModalState('ChallengeRewardsExplainer')
   const dispatch = useDispatch()
   const wm = useWithMobileStyle(styles.mobile)

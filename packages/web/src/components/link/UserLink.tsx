@@ -21,6 +21,8 @@ type UserLinkProps = Omit<TextLinkProps, 'to'> & {
   popoverMount?: MountPlacement
   noText?: boolean // Should be used if you're intending for the children to be the link element (i.e. Avatar)
   noBadges?: boolean
+  // Hack to fix avatars wrapped in user link
+  noOverflow?: boolean
 }
 
 export const UserLink = (props: UserLinkProps) => {
@@ -32,6 +34,7 @@ export const UserLink = (props: UserLinkProps) => {
     children,
     noText,
     noBadges,
+    noOverflow,
     ...other
   } = props
   const { spacing } = useTheme()
@@ -71,7 +74,10 @@ export const UserLink = (props: UserLinkProps) => {
 
   return popover && handle ? (
     <ArtistPopover
-      css={{ display: 'inline-flex', overflow: 'hidden' }}
+      css={{
+        display: 'inline-flex',
+        overflow: noOverflow ? 'visible' : 'hidden'
+      }}
       handle={handle}
       component='span'
       mount={popoverMount}

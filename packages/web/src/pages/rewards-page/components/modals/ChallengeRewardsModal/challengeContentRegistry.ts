@@ -19,7 +19,7 @@ export const challengeContentRegistry: ChallengeContentMap = {
 }
 
 export const getChallengeContent = (
-  challengeName: ChallengeName | string
+  challengeName: ChallengeName
 ): ChallengeContentComponent => {
   return (
     challengeContentRegistry[challengeName] ?? challengeContentRegistry.default

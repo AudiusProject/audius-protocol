@@ -40,7 +40,8 @@ export enum MappingVariable {
   PushComment = 'push_comment',
   PushCommentThread = 'push_comment_thread',
   PushCommentMention = 'push_comment_mention',
-  PushCommentReaction = 'push_comment_reaction'
+  PushCommentReaction = 'push_comment_reaction',
+  PushListenStreakReminder = 'push_listen_streak_reminder'
 }
 
 export const NotificationsEmailPlugin = 'notification_email_plugin'

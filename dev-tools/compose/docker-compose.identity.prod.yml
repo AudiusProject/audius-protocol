@@ -83,8 +83,6 @@ services:
         condition: service_healthy
       identity-service-redis:
         condition: service_healthy
-      poa-ganache:
-        condition: service_healthy
       eth-ganache:
         condition: service_healthy
       solana-test-validator:

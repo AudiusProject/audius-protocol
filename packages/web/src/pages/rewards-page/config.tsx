@@ -125,6 +125,7 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
     }
   },
   [ChallengeName.ListenStreakEndless]: {
+    icon: <i className='emoji large fire' />,
     modalButtonInfo: {
       incomplete: linkButtonMap.trendingTracks,
       inProgress: linkButtonMap.trendingTracks,

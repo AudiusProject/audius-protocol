@@ -4,7 +4,6 @@
 
 .wrapper {
   padding: 24px 0;
-  margin-top: 4px;
   max-width: 1080px;
   border: 1px solid var(--harmony-n-100);
   border-radius: 8px;
@@ -169,7 +168,7 @@
   margin-bottom: 20px;
   font-size: var(--harmony-font-xs);
   line-height: 15px;
-  color: var(--harmony-static-white);
+  color: var(--harmony-white);
   gap: var(--harmony-unit-2);
 }
 
