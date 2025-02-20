@@ -7,7 +7,8 @@ import {
   walletActions,
   modalsActions
 } from '@audius/common/store'
-import { isNullOrUndefined, formatWei } from '@audius/common/utils'
+import { isNullOrUndefined } from '@audius/common/utils'
+import { AUDIO } from '@audius/fixed-decimal'
 import { css } from '@emotion/native'
 import { useFocusEffect } from '@react-navigation/native'
 import { Image, Linking } from 'react-native'
@@ -174,7 +175,7 @@ export const AudioScreen = () => {
                   paddingVertical: 8
                 })}
               >
-                {formatWei(totalBalance, true, 0)}
+                {AUDIO(totalBalance).toShorthand()}
               </Text>
             )}
           </Flex>

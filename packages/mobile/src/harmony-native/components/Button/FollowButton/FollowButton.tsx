@@ -17,9 +17,10 @@ import { Flex } from '../../layout'
 
 import type { FollowButtonProps } from './types'
 
-const messages = {
+const defaultMessages = {
   follow: 'Follow',
-  following: 'Following'
+  following: 'Following',
+  unfollow: 'Unfollow'
 }
 
 export const FollowButton = (props: FollowButtonProps) => {
@@ -31,12 +32,14 @@ export const FollowButton = (props: FollowButtonProps) => {
     size = 'default',
     value,
     onChange,
+    messages: messagesProp,
     ...other
   } = props
   const { disabled, onPress } = other
   const [following, setFollowing] = useState(isFollowing)
   const { color, cornerRadius } = useTheme()
   const isInput = !!onChange
+  const messages = { ...defaultMessages, ...messagesProp }
 
   useEffect(() => {
     setFollowing(isFollowing)
@@ -71,7 +74,7 @@ export const FollowButton = (props: FollowButtonProps) => {
     : null
 
   return (
-    <Pressable onPress={handlePress} {...inputProps}>
+    <Pressable onPress={handlePress} disabled={disabled} {...inputProps}>
       <Flex
         h={size === 'small' ? 28 : 32}
         direction='row'

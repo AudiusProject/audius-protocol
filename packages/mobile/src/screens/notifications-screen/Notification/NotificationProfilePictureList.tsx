@@ -6,7 +6,11 @@ import { View, Text } from 'react-native'
 import { makeStyles } from 'app/styles'
 
 import { NotificationProfilePicture } from './NotificationProfilePicture'
-import { PROFILE_PICTURE_BORDER_WIDTH } from './constants'
+import {
+  DEFAULT_IMAGE_WIDTH,
+  DEFAULT_IMAGE_HEIGHT,
+  PROFILE_PICTURE_BORDER_WIDTH
+} from './constants'
 
 const USER_LENGTH_LIMIT = 9
 const BASE_ZINDEX = 1
@@ -15,15 +19,6 @@ const messages = {
   count: (remainingUsersCount: number) =>
     `${remainingUsersCount < 100 ? '+' : ''}${formatCount(remainingUsersCount)}`
 }
-
-/**
- * Not all profile picture lists have the same profile picture size.
- * Some components pass in the dimensions (width and height) while others
- * use the default of spacing(10) - 2 (which is equal to 38).
- * We use the dimensions to determine how to position the
- * extra profile picture +N text.
- */
-const defaultImageDimensions = { width: 38, height: 38 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   root: {
@@ -87,10 +82,17 @@ export const ProfilePictureList = (props: ProfilePictureListProps) => {
     interactive,
     imageStyles
   } = props
-  const imageWidth = imageStyles?.width ?? defaultImageDimensions.width
-  const imageHeight = imageStyles?.height ?? defaultImageDimensions.height
+  /**
+   * Not all profile picture lists have the same profile picture size.
+   * Some components pass in the dimensions (width and height) while others
+   * use the default of spacing(10) - 2 (which is equal to 38).
+   * We use the dimensions to determine how to position the
+   * extra profile picture +N text.
+   */
+  const imageWidth = imageStyles?.width ?? DEFAULT_IMAGE_WIDTH
+  const imageHeight = imageStyles?.height ?? DEFAULT_IMAGE_HEIGHT
 
-  const useSmallText = imageWidth < defaultImageDimensions.width
+  const useSmallText = imageWidth < DEFAULT_IMAGE_WIDTH
 
   // We want the View containing the "+" count to be the size of the
   // inside content of the NotificationProfilePicture it is sitting above.
