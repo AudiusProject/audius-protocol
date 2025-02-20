@@ -124,12 +124,12 @@ export const AudioMatchingRewardsModalContent = ({
       reward={progressReward}
       progress={progressStatusLabel}
       additionalContent={
-        challenge?.cooldown_days && challenge.cooldown_days > 0 ? (
+        challenge?.cooldown_days ? (
           <CooldownSummaryTable challengeId={challenge.challenge_id} />
         ) : null
       }
       actions={
-        challenge?.claimableAmount && challenge.claimableAmount > 0 ? (
+        challenge?.claimableAmount ? (
           <ClaimButton
             challenge={challenge}
             claimInProgress={false}

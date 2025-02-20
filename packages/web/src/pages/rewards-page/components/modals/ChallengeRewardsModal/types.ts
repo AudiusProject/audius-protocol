@@ -8,6 +8,15 @@ export type BaseChallengeContentProps = {
   errorContent?: ReactNode
 }
 
+export type DefaultChallengeProps = BaseChallengeContentProps & {
+  challengeName: Exclude<
+    ChallengeName,
+    | ChallengeName.AudioMatchingBuy
+    | ChallengeName.AudioMatchingSell
+    | ChallengeName.ListenStreakEndless
+  >
+}
+
 export type AudioMatchingChallengeProps = BaseChallengeContentProps & {
   challengeName:
     | ChallengeName.AudioMatchingBuy
@@ -16,15 +25,6 @@ export type AudioMatchingChallengeProps = BaseChallengeContentProps & {
 
 export type ListenStreakChallengeProps = BaseChallengeContentProps & {
   challengeName: ChallengeName.ListenStreakEndless
-}
-
-export type DefaultChallengeProps = BaseChallengeContentProps & {
-  challengeName: Exclude<
-    ChallengeName,
-    | ChallengeName.AudioMatchingBuy
-    | ChallengeName.AudioMatchingSell
-    | ChallengeName.ListenStreakEndless
-  >
 }
 
 export type ChallengeContentProps =

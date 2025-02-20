@@ -53,7 +53,7 @@ export const DefaultChallengeContent = ({
     isVerifiedChallenge
   } = config
 
-  const showProgressBar =
+  const isProgressBarVisible =
     challenge &&
     challenge.max_steps &&
     challenge.max_steps > 1 &&
@@ -62,19 +62,24 @@ export const DefaultChallengeContent = ({
   const progressDescription = (
     <Flex column gap='m' w='100%'>
       {isVerifiedChallenge ? (
-        <div className='verifiedChallenge'>
+        <Flex gap='s'>
           <IconVerified />
           {messages.verifiedChallenge}
-        </div>
+        </Flex>
       ) : null}
       <Text variant='body'>{fullDescription?.(challenge)}</Text>
-      {challenge?.cooldown_days && challenge.cooldown_days > 0 ? (
+      {challenge?.cooldown_days ? (
         <Text variant='body' color='subdued'>
           {messages.cooldownDescription}
         </Text>
       ) : null}
     </Flex>
   )
+
+  const isChallengeCompleted =
+    challenge?.state === 'completed' ||
+    challenge?.state === 'disbursed' ||
+    (challenge?.claimableAmount ?? 0) > 0
 
   const progressStatusLabel = (
     <Flex
@@ -88,11 +93,7 @@ export const DefaultChallengeContent = ({
       backgroundColor='surface1'
     >
       <Flex alignItems='center' gap='s'>
-        {challenge?.state === 'completed' ||
-        challenge?.state === 'disbursed' ||
-        (challenge?.claimableAmount ?? 0) > 0 ? (
-          <IconCheck size='s' color='subdued' />
-        ) : null}
+        {isChallengeCompleted ? <IconCheck size='s' color='subdued' /> : null}
         <Text variant='label' size='l' strength='strong' color='subdued'>
           {progressLabel
             ? fillString(
@@ -116,28 +117,36 @@ export const DefaultChallengeContent = ({
     [dispatch, onNavigateAway]
   )
 
-  const buttonLink = (challenge as any)?.buttonLink
-  const buttonLabel = (challenge as any)?.buttonLabel
+  const buttonLink =
+    challenge && 'buttonLink' in challenge
+      ? (challenge.buttonLink as string)
+      : null
+  const buttonLabel =
+    challenge && 'buttonLabel' in challenge
+      ? (challenge.buttonLabel as string)
+      : null
 
   const renderAdditionalContent = () => {
     const contents: ReactNode[] = []
 
-    if (challengeName === ChallengeName.ProfileCompletion) {
-      contents.push(<ProfileChecks key='profile-checks' />)
-    }
-    if (
-      challengeName === ChallengeName.MobileInstall ||
-      challengeName === ChallengeName.ConnectVerified
-    ) {
-      contents.push(<MobileInstallContent key='mobile-install' />)
-    }
-    if (challenge?.cooldown_days && challenge.cooldown_days > 0) {
-      contents.push(
-        <CooldownSummaryTable
-          key='cooldown-summary'
-          challengeId={challenge.challenge_id}
-        />
-      )
+    switch (challengeName) {
+      case ChallengeName.ProfileCompletion:
+        contents.push(<ProfileChecks key='profile-checks' />)
+        break
+      case ChallengeName.MobileInstall:
+      case ChallengeName.ConnectVerified:
+        contents.push(<MobileInstallContent key='mobile-install' />)
+        break
+      default:
+        if (challenge?.cooldown_days && challenge.cooldown_days > 0) {
+          contents.push(
+            <CooldownSummaryTable
+              key='cooldown-summary'
+              challengeId={challenge.challenge_id}
+            />
+          )
+        }
+        break
     }
 
     return contents.length > 0 ? (
@@ -150,16 +159,16 @@ export const DefaultChallengeContent = ({
   return (
     <ChallengeRewardsLayout
       description={progressDescription}
-      amount={challenge?.totalAmount ?? undefined}
+      amount={challenge?.totalAmount}
       rewardSubtext={messages.audio}
       progressStatusLabel={progressStatusLabel}
       progressValue={
-        showProgressBar
+        isProgressBarVisible
           ? (challenge?.current_step_count ?? undefined)
           : undefined
       }
       progressMax={
-        showProgressBar ? (challenge?.max_steps ?? undefined) : undefined
+        isProgressBarVisible ? (challenge?.max_steps ?? undefined) : undefined
       }
       additionalContent={renderAdditionalContent()}
       actions={

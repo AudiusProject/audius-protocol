@@ -5,7 +5,7 @@ import { Flex, Paper } from '@audius/harmony'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { DefaultProgress } from './DefaultProgress'
-import { DefaultReward } from './DefaultReward'
+import { DefaultReward } from './ProgressReward'
 
 export type ChallengeRewardsLayoutProps = {
   header?: ReactNode
