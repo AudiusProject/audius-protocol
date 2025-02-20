@@ -101,6 +101,10 @@ export const chatPage = (id: string) => {
   return `/messages/${id}`
 }
 
+export const userCommentsPage = (handle: string) => {
+  return `/${profilePage(handle)}/comments`
+}
+
 export const doesMatchRoute = (
   location: Location,
   route: string,

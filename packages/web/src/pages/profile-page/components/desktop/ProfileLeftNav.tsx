@@ -16,6 +16,7 @@ import SocialLinkInput from '../SocialLinkInput'
 
 import { ProfileBio } from './ProfileBio'
 import { ProfileMutuals } from './ProfileMutuals'
+import { RecentComments } from './RecentComments'
 import { RelatedArtists } from './RelatedArtists'
 import { SupportingList } from './SupportingList'
 import { TopSupporters } from './TopSupporters'
@@ -213,6 +214,7 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
         />
         {accountUserId !== userId ? <TipAudioButton /> : null}
         {allowAiAttribution ? <AiGeneratedCallout handle={handle} /> : null}
+        <RecentComments userId={userId} />
         <SupportingList />
         <TopSupporters />
         <ProfileMutuals />
