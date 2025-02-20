@@ -1,3 +1,4 @@
+import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
@@ -12,13 +13,17 @@ import { accountActions } from '~/store/account'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getTrackQueryKey } from './useTrack'
 import { useUser } from './useUser'
+import { primeTrackData } from './utils/primeTrackData'
 
 export type UnfavoriteTrackArgs = {
   trackId: ID
   source: string
 }
 
-export const useUnfavoriteTrack = () => {
+export const useUnfavoriteTrack = ({
+  trackId,
+  source
+}: UnfavoriteTrackArgs) => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
@@ -29,15 +34,15 @@ export const useUnfavoriteTrack = () => {
   } = useAppContext()
 
   return useMutation({
-    mutationFn: async ({ trackId }: UnfavoriteTrackArgs) => {
+    mutationFn: async () => {
       if (!currentUserId) throw new Error('User ID is required')
       const sdk = await audiusSdk()
       await sdk.tracks.unfavoriteTrack({
-        trackId: trackId.toString(),
-        userId: currentUserId.toString()
+        trackId: Id.parse(trackId),
+        userId: Id.parse(currentUserId)
       })
     },
-    onMutate: async ({ trackId, source }: UnfavoriteTrackArgs) => {
+    onMutate: async () => {
       if (!currentUserId || !currentUser) {
         // TODO: throw toast and redirect to sign in
         throw new Error('User ID is required')
@@ -72,7 +77,7 @@ export const useUnfavoriteTrack = () => {
       // Optimistically update track data
       const update: Partial<Track> = {
         has_current_user_saved: false,
-        save_count: previousTrack.save_count - 1
+        save_count: Math.max(previousTrack.save_count - 1, 0)
       }
 
       // Handle co-sign logic for remixes
@@ -98,14 +103,16 @@ export const useUnfavoriteTrack = () => {
         }
       }
 
-      queryClient.setQueryData(getTrackQueryKey(trackId), {
-        ...previousTrack,
-        ...update
+      primeTrackData({
+        tracks: [{ ...previousTrack, ...update }],
+        queryClient,
+        dispatch,
+        forceReplace: true
       })
 
       return { previousTrack, previousUser: currentUser }
     },
-    onError: (error, { trackId }, context) => {
+    onError: (error, _, context) => {
       if (!context) return
 
       // Revert optimistic updates

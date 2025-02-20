@@ -13,14 +13,14 @@ import { accountActions } from '~/store/account'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getTrackQueryKey } from './useTrack'
 import { useUser } from './useUser'
+import { primeTrackData } from './utils/primeTrackData'
 
 type FavoriteTrackArgs = {
   trackId: ID
   source?: string
-  isFeed?: boolean
 }
 
-export const useFavoriteTrack = () => {
+export const useFavoriteTrack = ({ trackId, source }: FavoriteTrackArgs) => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
@@ -29,6 +29,7 @@ export const useFavoriteTrack = () => {
   const {
     analytics: { track: trackEvent }
   } = useAppContext()
+
   return useMutation({
     mutationFn: async ({ trackId }: FavoriteTrackArgs) => {
       if (!currentUserId) throw new Error('User ID is required')
@@ -38,7 +39,7 @@ export const useFavoriteTrack = () => {
         userId: Id.parse(currentUserId)
       })
     },
-    onMutate: async ({ trackId, source }: FavoriteTrackArgs) => {
+    onMutate: async () => {
       if (!currentUserId || !currentUser) {
         // TODO: throw toast and redirect to sign in
         throw new Error('User ID is required')
@@ -96,14 +97,16 @@ export const useFavoriteTrack = () => {
         update._co_sign = remixOf.tracks[0]
       }
 
-      queryClient.setQueryData(getTrackQueryKey(trackId), {
-        ...previousTrack,
-        ...update
+      primeTrackData({
+        tracks: [{ ...previousTrack, ...update }],
+        queryClient,
+        dispatch,
+        forceReplace: true
       })
 
       return { previousTrack, previousUser: currentUser }
     },
-    onSuccess: async (_, { trackId }) => {
+    onSuccess: async () => {
       // Handle co-sign events after successful save
       const track = queryClient.getQueryData<Track>(getTrackQueryKey(trackId))
       if (!track) return
@@ -146,7 +149,7 @@ export const useFavoriteTrack = () => {
         }
       }
     },
-    onError: (error, { trackId }, context) => {
+    onError: (error, _, context) => {
       if (!context) return
 
       // Revert optimistic updates
