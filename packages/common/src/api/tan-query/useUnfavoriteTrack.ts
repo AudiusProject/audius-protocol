@@ -1,0 +1,123 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useDispatch } from 'react-redux'
+
+import { useAudiusQueryContext } from '~/audius-query'
+import { useAppContext } from '~/context/appContext'
+import { Name } from '~/models/Analytics'
+import { Feature } from '~/models/ErrorReporting'
+import { ID } from '~/models/Identifiers'
+import { Track } from '~/models/Track'
+import { accountActions } from '~/store/account'
+
+import { useCurrentUserId } from './useCurrentUserId'
+import { getTrackQueryKey } from './useTrack'
+import { useUser } from './useUser'
+
+export type UnfavoriteTrackArgs = {
+  trackId: ID
+  source: string
+}
+
+export const useUnfavoriteTrack = () => {
+  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const queryClient = useQueryClient()
+  const dispatch = useDispatch()
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: currentUser } = useUser(currentUserId)
+  const {
+    analytics: { track: trackEvent }
+  } = useAppContext()
+
+  return useMutation({
+    mutationFn: async ({ trackId }: UnfavoriteTrackArgs) => {
+      if (!currentUserId) throw new Error('User ID is required')
+      const sdk = await audiusSdk()
+      await sdk.tracks.unfavoriteTrack({
+        trackId: trackId.toString(),
+        userId: currentUserId.toString()
+      })
+    },
+    onMutate: async ({ trackId, source }: UnfavoriteTrackArgs) => {
+      if (!currentUserId || !currentUser) {
+        // TODO: throw toast and redirect to sign in
+        throw new Error('User ID is required')
+      }
+
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: getTrackQueryKey(trackId) })
+
+      // Snapshot the previous values
+      const previousTrack = queryClient.getQueryData<Track>(
+        getTrackQueryKey(trackId)
+      )
+      if (!previousTrack) throw new Error('Track not found')
+
+      // Don't allow unfavoriting if not already favorited
+      if (!previousTrack.has_current_user_saved)
+        throw new Error('Track not favorited')
+
+      // Decrement the save count
+      dispatch(accountActions.decrementTrackSaveCount())
+
+      // Track analytics event
+      trackEvent({
+        eventName: Name.UNFAVORITE,
+        properties: {
+          kind: 'track',
+          source,
+          id: trackId
+        }
+      })
+
+      // Optimistically update track data
+      const update: Partial<Track> = {
+        has_current_user_saved: false,
+        save_count: previousTrack.save_count - 1
+      }
+
+      // Handle co-sign logic for remixes
+      const remixTrack = previousTrack.remix_of?.tracks?.[0]
+      const isCoSign = remixTrack?.user?.user_id === currentUserId
+      if (remixTrack && isCoSign) {
+        const remixOf = {
+          tracks: [
+            {
+              ...remixTrack,
+              has_remix_author_saved: false
+            }
+          ]
+        }
+        update.remix_of = remixOf
+        if (
+          remixOf.tracks[0].has_remix_author_saved ||
+          remixOf.tracks[0].has_remix_author_reposted
+        ) {
+          update._co_sign = remixOf.tracks[0]
+        } else {
+          update._co_sign = null
+        }
+      }
+
+      queryClient.setQueryData(getTrackQueryKey(trackId), {
+        ...previousTrack,
+        ...update
+      })
+
+      return { previousTrack, previousUser: currentUser }
+    },
+    onError: (error, { trackId }, context) => {
+      if (!context) return
+
+      // Revert optimistic updates
+      queryClient.setQueryData(getTrackQueryKey(trackId), context.previousTrack)
+      dispatch(accountActions.incrementTrackSaveCount())
+
+      reportToSentry({
+        error,
+        additionalInfo: { trackId },
+        name: 'Unfavorite Track',
+        feature: Feature.Social
+      })
+    }
+  })
+}
