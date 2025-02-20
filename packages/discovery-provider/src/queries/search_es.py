@@ -809,18 +809,29 @@ def user_dsl(
     genres=[],
     sort_method="relevant",
 ):
-    # must_search_str = search_str + " " + search_str.replace(" ", "")
     dsl = {
         "must": [
             {"term": {"is_deactivated": {"value": False}}},
             {
                 "bool": {
                     "should": [
+                        # Original base matching with added fields
                         *base_match(
                             search_str,
                             extra_fields=["handle.searchable", "name.searchable"],
                             boost=len(search_str) * 0.1,
                         ),
+                        # Cross fields match ensuring all terms are present (for "noah m" case)
+                        {
+                            "multi_match": {
+                                "query": search_str,
+                                "fields": ["name.searchable", "handle.searchable"],
+                                "type": "cross_fields",
+                                "operator": "and",
+                                "boost": len(search_str) * 0.5,
+                            }
+                        },
+                        # Original wildcard matching
                         {
                             "wildcard": {
                                 "name": {
@@ -839,25 +850,21 @@ def user_dsl(
                                 }
                             }
                         },
-                        (
-                            {
-                                "term": {
-                                    "name": {
-                                        "value": search_str.replace(" ", ""),
-                                        "boost": len(search_str) * 0.5,
-                                    }
+                        {
+                            "term": {
+                                "name": {
+                                    "value": search_str.replace(" ", ""),
+                                    "boost": len(search_str) * 0.5,
                                 }
                             }
-                        ),
+                        },
                         {
-                            "term": (
-                                {
-                                    "handle": {
-                                        "value": search_str.replace(" ", ""),
-                                        "boost": len(search_str) * 0.5,
-                                    }
+                            "term": {
+                                "handle": {
+                                    "value": search_str.replace(" ", ""),
+                                    "boost": len(search_str) * 0.5,
                                 }
-                            )
+                            }
                         },
                         {
                             "match": {
@@ -896,16 +903,14 @@ def user_dsl(
                 extra_fields=["name"],
                 boost=len(search_str) * 12,
             ),
-            (
-                {
-                    "term": {
-                        "name": {
-                            "value": search_str,
-                            "boost": (len(search_str) * 0.1) ** 2,
-                        }
+            {
+                "term": {
+                    "name": {
+                        "value": search_str,
+                        "boost": (len(search_str) * 0.1) ** 2,
                     }
                 }
-            ),
+            },
             {"term": {"is_verified": {"value": True, "boost": 5}}},
         ],
     }
