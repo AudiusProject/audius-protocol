@@ -34,6 +34,10 @@ export const fullAiPage = (handle: string) => {
   return `${fullProfilePage(handle)}/ai`
 }
 
+export const fullCommentHistoryPage = (handle: string) => {
+  return `${fullProfilePage(handle)}/comments`
+}
+
 export const albumPage = (handle: string, title: string, id: ID) => {
   return `/${encodeUrlName(handle)}/album/${encodeUrlName(title)}-${id}`
 }

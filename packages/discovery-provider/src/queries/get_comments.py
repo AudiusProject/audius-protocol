@@ -506,6 +506,8 @@ def get_user_comments(args: GetUserCommentsArgs):
                         if not user_comment.is_delete
                         else None
                     ),
+                    "entity_id": encode_int_id(user_comment.entity_id),
+                    "entity_type": user_comment.entity_type,
                     "mentions": list(
                         map(remove_delete, filter(filter_mentions, mentions))
                     ),

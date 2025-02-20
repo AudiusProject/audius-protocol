@@ -56,6 +56,7 @@ import { AudioPage } from 'pages/audio-page/AudioPage'
 import { ChatPageProvider } from 'pages/chat-page/ChatPageProvider'
 import { CollectiblesPlaylistPage } from 'pages/collectibles-playlist-page'
 import CollectionPage from 'pages/collection-page/CollectionPage'
+import CommentHistoryPage from 'pages/comment-history/CommentHistoryPage'
 import { DashboardPage } from 'pages/dashboard-page/DashboardPage'
 import { DeactivateAccountPage } from 'pages/deactivate-account-page/DeactivateAccountPage'
 import { EditCollectionPage } from 'pages/edit-collection-page'
@@ -174,6 +175,7 @@ const {
   publicSiteRoutes,
   CHAT_PAGE,
   PROFILE_PAGE_AI_ATTRIBUTED_TRACKS,
+  PROFILE_PAGE_COMMENTS,
   EXPLORE_PREMIUM_TRACKS_PAGE,
   PAYMENTS_PAGE,
   WITHDRAWALS_PAGE,
@@ -911,6 +913,12 @@ class WebPlayer extends Component {
                       containerRef={this.props.mainContentRef.current}
                     />
                   )}
+                />
+                <Route
+                  exact
+                  path={PROFILE_PAGE_COMMENTS}
+                  component={CommentHistoryPage}
+                  containerRef={this.props.mainContentRef.current}
                 />
                 <Route
                   exact

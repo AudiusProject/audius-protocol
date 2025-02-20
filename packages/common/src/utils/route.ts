@@ -139,6 +139,7 @@ export const PROFILE_PAGE_COLLECTIBLES = '/:handle/collectibles'
 export const PROFILE_PAGE_COLLECTIBLE_DETAILS =
   '/:handle/collectibles/:collectibleId'
 export const PROFILE_PAGE_AI_ATTRIBUTED_TRACKS = '/:handle/ai'
+export const PROFILE_PAGE_COMMENTS = '/:handle/comments'
 
 // Opaque id routes
 export const TRACK_ID_PAGE = '/tracks/:id'
@@ -292,6 +293,7 @@ export const orderedRoutes = [
   SUPPORTING_USERS_ROUTE,
   TOP_SUPPORTERS_USERS_ROUTE,
   REWARDS_PAGE,
+  PROFILE_PAGE_COMMENTS,
   PROFILE_PAGE,
   PROFILE_PAGE_COLLECTIBLES,
   PROFILE_PAGE_COLLECTIBLE_DETAILS

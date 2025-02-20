@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import {
   CommentMention,
   TrackCommentsSortMethodEnum as CommentSortMethod,
+  encodeHashId,
   EntityManagerAction,
   EntityType,
   Id
@@ -69,8 +70,8 @@ const messages = {
  *
  */
 export type GetCommentsByUserIdArgs = {
-  userId: ID
-  currentUserId?: ID
+  userId: ID | null
+  currentUserId?: ID | null
   sortMethod?: CommentSortMethod
   pageSize?: number
 }
@@ -122,9 +123,7 @@ export const useGetCommentsByUserId = ({
       })
       // For the comment list cache, we only store the ids of the comments (organized by sort method)
       return commentList.map((comment) => comment.id)
-    },
-    staleTime: Infinity, // Stale time is set to infinity so that we never reload data thats currently shown on screen (because sorting could have changed)
-    gcTime: 0 // Cache time is set to 1 so that the data is cleared any time we leave the page viewing it or change sorts
+    }
   })
 
   const { error } = queryRes
@@ -267,7 +266,7 @@ export const useGetCommentById = (commentId: ID) => {
   return queryRes
 }
 
-const COMMENT_COUNT_POLL_INTERVAL = 10 * 1000 // 5 secs
+const COMMENT_COUNT_POLL_INTERVAL = 10 * 1000 // 10 secs
 
 export type TrackCommentCount = {
   previousValue: number
@@ -513,6 +512,8 @@ export const usePostComment = () => {
       args.newId = newId
       const newComment: Comment = {
         id: newId,
+        entityId: encodeHashId(trackId)!,
+        entityType: 'Track',
         userId,
         message: body,
         mentions,
