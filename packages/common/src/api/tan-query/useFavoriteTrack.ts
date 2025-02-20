@@ -31,7 +31,7 @@ export const useFavoriteTrack = ({ trackId, source }: FavoriteTrackArgs) => {
   } = useAppContext()
 
   return useMutation({
-    mutationFn: async ({ trackId }: FavoriteTrackArgs) => {
+    mutationFn: async () => {
       if (!currentUserId) throw new Error('User ID is required')
       const sdk = await audiusSdk()
       await sdk.tracks.favoriteTrack({
