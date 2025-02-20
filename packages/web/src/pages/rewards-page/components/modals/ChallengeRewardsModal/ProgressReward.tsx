@@ -9,7 +9,7 @@ export const ProgressReward = ({
   subtext
 }: {
   amount?: number
-  subtext: string
+  subtext?: string
 }) => {
   return (
     <Flex p='xl' column>
@@ -21,9 +21,11 @@ export const ProgressReward = ({
       >
         {formatNumberCommas(amount ?? '')}
       </Text>
-      <Text variant='label' size='l' color='subdued' textAlign='center'>
-        {subtext}
-      </Text>
+      {subtext && (
+        <Text variant='label' size='l' color='subdued' textAlign='center'>
+          {subtext}
+        </Text>
+      )}
     </Flex>
   )
 }
