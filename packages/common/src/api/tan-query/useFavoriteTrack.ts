@@ -2,12 +2,13 @@ import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
-import { Name } from '@audius/common/models'
-import { accountActions, make } from '@audius/common/store'
 import { useAudiusQueryContext } from '~/audius-query'
+import { useAppContext } from '~/context/appContext'
+import { Name } from '~/models/Analytics'
 import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
 import { Track } from '~/models/Track'
+import { accountActions } from '~/store/account'
 
 import { useCurrentUserId } from './useCurrentUserId'
 import { getTrackQueryKey } from './useTrack'
@@ -25,7 +26,9 @@ export const useFavoriteTrack = () => {
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
   const { data: currentUser } = useUser(currentUserId)
-
+  const {
+    analytics: { track: trackEvent }
+  } = useAppContext()
   return useMutation({
     mutationFn: async ({ trackId }: FavoriteTrackArgs) => {
       if (!currentUserId) throw new Error('User ID is required')
@@ -35,8 +38,11 @@ export const useFavoriteTrack = () => {
         userId: Id.parse(currentUserId)
       })
     },
-    onMutate: async ({ trackId, source, isFeed }: FavoriteTrackArgs) => {
-      if (!currentUserId || !currentUser) throw new Error('User ID is required')
+    onMutate: async ({ trackId, source }: FavoriteTrackArgs) => {
+      if (!currentUserId || !currentUser) {
+        // TODO: throw toast and redirect to sign in
+        throw new Error('User ID is required')
+      }
 
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: getTrackQueryKey(trackId) })
@@ -49,26 +55,27 @@ export const useFavoriteTrack = () => {
 
       // Don't allow favoriting your own track
       if (previousTrack.owner_id === currentUserId)
-        return { previousTrack, previousUser: currentUser }
+        throw new Error('Cannot favorite your own track')
 
       // Don't allow favoriting if already favorited
       if (previousTrack.has_current_user_saved)
-        return { previousTrack, previousUser: currentUser }
+        throw new Error('Track already favorited')
 
       // Increment the save count
       dispatch(accountActions.incrementTrackSaveCount())
 
       // Track analytics event
-      dispatch(
-        make(Name.FAVORITE, {
+      trackEvent({
+        eventName: Name.FAVORITE,
+        properties: {
           kind: 'track',
           source,
           id: trackId
-        })
-      )
+        }
+      })
 
       // Optimistically update track data
-      const eagerlyUpdatedMetadata: Partial<Track> = {
+      const update: Partial<Track> = {
         has_current_user_saved: true,
         save_count: previousTrack.save_count + 1
       }
@@ -85,18 +92,18 @@ export const useFavoriteTrack = () => {
             }
           ]
         }
-        eagerlyUpdatedMetadata.remix_of = remixOf
-        eagerlyUpdatedMetadata._co_sign = remixOf.tracks[0]
+        update.remix_of = remixOf
+        update._co_sign = remixOf.tracks[0]
       }
 
       queryClient.setQueryData(getTrackQueryKey(trackId), {
         ...previousTrack,
-        ...eagerlyUpdatedMetadata
+        ...update
       })
 
       return { previousTrack, previousUser: currentUser }
     },
-    onSuccess: async (_, { trackId, source }) => {
+    onSuccess: async (_, { trackId }) => {
       // Handle co-sign events after successful save
       const track = queryClient.getQueryData<Track>(getTrackQueryKey(trackId))
       if (!track) return
@@ -114,26 +121,28 @@ export const useFavoriteTrack = () => {
         )
 
         // Dispatch co-sign events
-        dispatch(
-          make(Name.REMIX_COSIGN_INDICATOR, {
+        trackEvent({
+          eventName: Name.REMIX_COSIGN_INDICATOR,
+          properties: {
             id: trackId,
             handle: currentUser?.handle,
             original_track_id: parentTrack?.track_id,
             original_track_title: parentTrack?.title,
             action: 'favorited'
-          })
-        )
+          }
+        })
 
         if (!hasAlreadyCoSigned) {
-          dispatch(
-            make(Name.REMIX_COSIGN, {
+          trackEvent({
+            eventName: Name.REMIX_COSIGN,
+            properties: {
               id: trackId,
               handle: currentUser?.handle,
               original_track_id: parentTrack?.track_id,
               original_track_title: parentTrack?.title,
               action: 'favorited'
-            })
-          )
+            }
+          })
         }
       }
     },

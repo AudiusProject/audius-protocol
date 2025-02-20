@@ -11,8 +11,7 @@ type TrackRepostErrors =
 const errorSagas = createErrorSagas<TrackRepostErrors>({
   errorTypes: [
     socialTrackActions.REPOST_FAILED,
-    socialTrackActions.UNSAVE_TRACK_FAILED,
-    socialTrackActions.SAVE_TRACK_FAILED
+    socialTrackActions.UNSAVE_TRACK_FAILED
   ],
   getShouldRedirect: () => false,
   getShouldReport: () => true,
