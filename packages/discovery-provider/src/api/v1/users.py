@@ -1968,7 +1968,6 @@ class ConnectedWallets(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.marshal_with(connected_wallets_response)
-    @cache(ttl_sec=10)
     def get(self, id):
         decoded_id = decode_with_abort(id, full_ns)
         wallets = get_associated_user_wallet({"user_id": decoded_id})
