@@ -1,4 +1,4 @@
-import { forwardRef, ReactNode, useCallback, useEffect } from 'react'
+import { forwardRef, ReactNode, useCallback, useEffect, useState } from 'react'
 
 import { useRelatedArtists } from '@audius/common/api'
 import { Name, FollowSource, SquareSizes, ID } from '@audius/common/models'
@@ -34,7 +34,7 @@ export type ArtistRecommendationsProps = {
 const messages = {
   follow: 'Follow All',
   unfollow: 'Unfollow All',
-  following: 'Following',
+  following: 'Following All',
   featuring: 'Featuring'
 }
 const ArtistProfilePictureWrapper = ({
@@ -120,6 +120,7 @@ export const ArtistRecommendations = forwardRef<
     onClose
   } = props
   const dispatch = useDispatch()
+  const [hasFollowedAll, setHasFollowedAll] = useState(false)
 
   const { data: suggestedArtists = [] } = useRelatedArtists({
     artistId,
@@ -137,6 +138,19 @@ export const ArtistRecommendations = forwardRef<
         )
       )
     })
+    setHasFollowedAll(true)
+  }, [dispatch, suggestedArtists])
+
+  const handleUnfollowAll = useCallback(() => {
+    suggestedArtists.forEach((a) => {
+      dispatch(
+        socialActions.unfollowUser(
+          a.user_id,
+          FollowSource.ARTIST_RECOMMENDATIONS_POPUP
+        )
+      )
+    })
+    setHasFollowedAll(false)
   }, [dispatch, suggestedArtists])
 
   // Navigate to profile pages on artist links
@@ -218,9 +232,10 @@ export const ArtistRecommendations = forwardRef<
       <div className={cn(styles.contentItem, itemClassName)}>
         <FollowButton
           disabled={isLoading}
-          isFollowing={false}
+          isFollowing={hasFollowedAll}
           messages={messages}
           onFollow={handleFollowAll}
+          onUnfollow={handleUnfollowAll}
         />
       </div>
     </div>

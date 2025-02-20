@@ -1,4 +1,4 @@
-import { Fragment, useCallback } from 'react'
+import { Fragment, useCallback, useState } from 'react'
 
 import { useRelatedArtists } from '@audius/common/api'
 import { FollowSource } from '@audius/common/models'
@@ -10,13 +10,12 @@ import { TouchableOpacity } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import {
-  IconUserFollow,
   IconClose,
   useTheme,
   IconButton,
-  Button,
   Flex,
-  Text
+  Text,
+  FollowButton
 } from '@audius/harmony-native'
 import { ProfilePicture } from 'app/components/core'
 import { UserLink } from 'app/components/user-link'
@@ -24,11 +23,13 @@ import { useNavigation } from 'app/hooks/useNavigation'
 
 import { useSelectProfile } from '../selectors'
 
-const { followUser } = usersSocialActions
+const { followUser, unfollowUser } = usersSocialActions
 
 const messages = {
   description: 'Here are some accounts that vibe well with',
-  followAll: 'Follow All',
+  follow: 'Follow All',
+  unfollow: 'Unfollow All',
+  following: 'Following All',
   closeLabel: 'Close'
 }
 
@@ -42,8 +43,9 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
   const navigation = useNavigation()
   const { user_id, name } = useSelectProfile(['user_id', 'name'])
   const dispatch = useDispatch()
+  const [hasFollowedAll, setHasFollowedAll] = useState(false)
 
-  const { data: suggestedArtists = [] } = useRelatedArtists({
+  const { data: suggestedArtists = [], isPending } = useRelatedArtists({
     artistId: user_id,
     filterFollowed: true,
     pageSize: 7
@@ -55,6 +57,16 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
         followUser(artist.user_id, FollowSource.ARTIST_RECOMMENDATIONS_POPUP)
       )
     })
+    setHasFollowedAll(true)
+  }, [suggestedArtists, dispatch])
+
+  const handlePressUnfollow = useCallback(() => {
+    suggestedArtists.forEach((artist) => {
+      dispatch(
+        unfollowUser(artist.user_id, FollowSource.ARTIST_RECOMMENDATIONS_POPUP)
+      )
+    })
+    setHasFollowedAll(false)
   }, [suggestedArtists, dispatch])
 
   const handlePressArtist = useCallback(
@@ -114,14 +126,13 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
           suggestedArtists.length - suggestedArtistNames.length
         } others`}</Text>
       </Text>
-      <Button
-        variant='primary'
-        iconLeft={IconUserFollow}
-        fullWidth
-        onPress={handlePressFollow}
-      >
-        {messages.followAll}
-      </Button>
+      <FollowButton
+        isFollowing={hasFollowedAll}
+        onFollow={handlePressFollow}
+        onUnfollow={handlePressUnfollow}
+        disabled={isPending}
+        messages={messages}
+      />
     </Flex>
   )
 }
