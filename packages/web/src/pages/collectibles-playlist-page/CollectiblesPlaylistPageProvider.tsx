@@ -360,14 +360,14 @@ export const CollectiblesPlaylistPageProvider = ({
   const getFilteredData = useCallback(
     (trackMetadatas: CollectionTrack[]) => {
       const playingUid = getPlayingUid()
-      const playingIndex = entries.findIndex(({ uid }) => uid === playingUid)
+      const activeIndex = entries.findIndex(({ uid }) => uid === playingUid)
       const formattedMetadata = formatMetadata(trackMetadatas)
       const filteredIndex =
-        playingIndex > -1
+        activeIndex > -1
           ? formattedMetadata.findIndex(
               (metadata) => metadata.uid === playingUid
             )
-          : playingIndex
+          : activeIndex
       return [formattedMetadata, filteredIndex] as [
         typeof formattedMetadata,
         number

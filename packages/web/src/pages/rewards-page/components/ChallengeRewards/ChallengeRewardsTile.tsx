@@ -48,7 +48,6 @@ export const ChallengeRewardsTile = ({
   const userChallenges = useSelector(getUserChallenges)
   const optimisticUserChallenges = useSelector(getOptimisticUserChallenges)
   const [haveChallengesLoaded, setHaveChallengesLoaded] = useState(false)
-  const { isEnabled: isOneShotEnabled } = useFeatureFlag(FeatureFlags.ONE_SHOT)
   const { isEnabled: isClaimAllRewardsEnabled } = useFeatureFlag(
     FeatureFlags.CLAIM_ALL_REWARDS_TILE
   )
@@ -82,11 +81,8 @@ export const ChallengeRewardsTile = ({
         // Filter out challenges that DN didn't return
         .map((id) => userChallenges[id]?.challenge_id)
         .filter(removeNullable)
-        .filter((id) =>
-          isOneShotEnabled ? true : id !== ChallengeName.OneShot
-        )
         .sort(makeOptimisticChallengeSortComparator(optimisticUserChallenges)),
-    [rewardIds, optimisticUserChallenges, userChallenges, isOneShotEnabled]
+    [rewardIds, optimisticUserChallenges, userChallenges]
   )
 
   const rewardsTiles = rewardIdsSorted.map((id) => {

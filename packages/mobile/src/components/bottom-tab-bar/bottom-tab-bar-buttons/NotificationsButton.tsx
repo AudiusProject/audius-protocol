@@ -1,14 +1,11 @@
-import { notificationsSelectors } from '@audius/common/store'
+import { useNotificationUnreadCount } from '@audius/common/api'
 import { View, Text } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import { makeStyles } from 'app/styles'
 
 import type { BottomTabBarButtonProps } from './BottomTabBarButton'
 import { BottomTabBarButton } from './BottomTabBarButton'
 import iconNotifications from './animations/iconNotifications.lottie'
-
-const { getNotificationUnviewedCount } = notificationsSelectors
 
 const colorKeypaths = ['Bell.Group 1.Fill 1', 'Clapper.Group 1.Fill 1']
 
@@ -38,7 +35,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 
 export const NotificationsButton = (props: NotificationsButtonProps) => {
   const styles = useStyles()
-  const notificationCount = useSelector(getNotificationUnviewedCount)
+  const { data: notificationCount = 0 } = useNotificationUnreadCount()
 
   return (
     <BottomTabBarButton

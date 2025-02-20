@@ -161,7 +161,7 @@ const CollectionPage = ({
   const { status, metadata, user } = collection
 
   // TODO: Consider dynamic lineups, esp. for caching improvement.
-  const [dataSource, playingIndex] =
+  const [dataSource, activeIndex] =
     tracks.status === Status.SUCCESS
       ? getFilteredData(tracks.entries)
       : [[], -1]
@@ -344,15 +344,15 @@ const CollectionPage = ({
               loading={isNftPlaylist ? collectionLoading : tracksLoading}
               userId={userId}
               playing={playing}
-              playingIndex={playingIndex}
+              activeIndex={activeIndex}
               data={dataSource}
               onClickRow={onClickRow}
               onClickFavorite={onClickSave}
               onClickRemove={isOwner ? onClickRemove : undefined}
               onClickRepost={onClickRepostTrack}
               onClickPurchase={openPurchaseModal}
-              onReorderTracks={onReorderTracks}
-              onSortTracks={onSortTracks}
+              onReorder={onReorderTracks}
+              onSort={onSortTracks}
               isReorderable={
                 userId !== null && userId === playlistOwnerId && allowReordering
               }

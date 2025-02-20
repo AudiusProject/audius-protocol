@@ -3,39 +3,51 @@ import { View } from 'react-native'
 
 import { makeStyles } from 'app/styles'
 
+import { DEFAULT_IMAGE_WIDTH, DEFAULT_IMAGE_HEIGHT } from './constants'
+
 const useStyles = makeStyles(({ spacing, palette }) => ({
   root: {
-    flexDirection: 'row',
-    marginRight: spacing(6)
+    flexDirection: 'row'
   },
   image: {
     marginRight: spacing(-2),
-    width: 28,
-    height: 28,
-    borderRadius: 14,
     backgroundColor: palette.skeleton
-  },
-  extra: {
-    width: spacing(2)
   }
 }))
 
 type ProfilePictureListSkeletonProps = {
   count: number
   limit: number
+  imageStyles?: {
+    width?: number
+    height?: number
+  }
 }
 
-export const ProfilePictureListSkeleton = (
-  props: ProfilePictureListSkeletonProps
-) => {
-  const { count, limit } = props
+export const ProfilePictureListSkeleton = ({
+  count,
+  limit,
+  imageStyles
+}: ProfilePictureListSkeletonProps) => {
   const styles = useStyles()
+  const imageWidth = imageStyles?.width ?? DEFAULT_IMAGE_WIDTH
+  const imageHeight = imageStyles?.height ?? DEFAULT_IMAGE_HEIGHT
+
   return (
     <View style={styles.root}>
       {times(Math.min(count, limit)).map((index) => (
-        <View key={index} style={styles.image} />
+        <View
+          key={index}
+          style={[
+            styles.image,
+            {
+              width: imageWidth,
+              height: imageHeight,
+              borderRadius: Math.ceil(imageWidth / 2)
+            }
+          ]}
+        />
       ))}
-      {count >= limit ? <View style={styles.extra} /> : null}
     </View>
   )
 }

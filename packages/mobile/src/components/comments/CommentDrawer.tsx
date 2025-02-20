@@ -25,7 +25,7 @@ import {
 import type { ParamListBase } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import type { TouchableOpacityProps } from 'react-native'
-import { TouchableOpacity } from 'react-native'
+import { Platform, TouchableOpacity } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
@@ -275,14 +275,16 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
         </BottomSheetFooter>
       </GestureDetector>
     ),
-    // intentionally excluding insets.bottom because it causes a rerender
-    // when the keyboard is opened on android, causing the keyboard to close
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
+      gesture,
+      insets.bottom,
       entityId,
+      replyingAndEditingState,
+      uid,
+      actions,
       onAutoCompleteChange,
       setAutocompleteHandler,
-      replyingAndEditingState
+      autoFocusInput
     ]
   )
 
@@ -314,7 +316,9 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
         )}
         footerComponent={renderFooterComponent}
         onDismiss={handleCloseDrawer}
-        android_keyboardInputMode='adjustResize'
+        android_keyboardInputMode='adjustPan'
+        keyboardBehavior={Platform.OS === 'android' ? 'extend' : 'fillParent'}
+        keyboardBlurBehavior='restore'
       >
         <CommentSectionProvider
           entityId={entityId}

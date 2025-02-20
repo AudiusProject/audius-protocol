@@ -2,6 +2,12 @@ import type { ChangeEvent } from 'react'
 
 import type { PressableProps } from 'react-native'
 
+export type FollowButtonMessages = {
+  follow?: string
+  following?: string
+  unfollow?: string
+}
+
 export type FollowButtonProps = {
   /**
    * Swap between the default (squared) and pill (rounded) forms.
@@ -29,6 +35,12 @@ export type FollowButtonProps = {
    * Callback for when an unfollow is triggered.
    */
   onUnfollow?: () => void
+
+  /**
+   * Custom messages to override the default text
+   */
+  messages?: FollowButtonMessages
+
   value?: any
   onChange?: (e: ChangeEvent<HTMLInputElement>) => void
 } & Pick<PressableProps, 'onPress' | 'disabled'>

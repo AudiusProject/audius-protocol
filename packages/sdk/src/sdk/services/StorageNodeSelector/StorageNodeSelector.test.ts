@@ -56,11 +56,11 @@ const mswHandlers = [
   }),
 
   rest.get(`${storageNodeA.endpoint}/health_check`, (_req, res, ctx) => {
-    return res(ctx.status(200))
+    return res(ctx.status(200), ctx.json({ data: { diskHasSpace: true } }))
   }),
 
   rest.get(`${storageNodeB.endpoint}/health_check`, (_req, res, ctx) => {
-    return res(ctx.status(200))
+    return res(ctx.status(200), ctx.json({ data: { diskHasSpace: true } }))
   })
 ]
 

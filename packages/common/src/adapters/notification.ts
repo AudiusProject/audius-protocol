@@ -212,6 +212,7 @@ export const notificationFromSDK = (
         challengeId,
         entityType: Entity.User,
         amount: data.amount as StringWei,
+        listenStreak: data.listenStreak,
         ...formatBaseNotification(notification)
       }
     }
@@ -615,6 +616,14 @@ export const notificationFromSDK = (
         entityId,
         entityType,
         entityUserId,
+        ...formatBaseNotification(notification)
+      }
+    }
+    case 'listen_streak_reminder': {
+      const data = notification.actions[0].data
+      return {
+        type: NotificationType.ListenStreakReminder,
+        streak: data.streak,
         ...formatBaseNotification(notification)
       }
     }
