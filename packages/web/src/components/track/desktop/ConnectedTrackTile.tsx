@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, MouseEvent, useRef } from 'react'
 
+import { useFavoriteTrack, useUnfavoriteTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,
@@ -124,6 +125,15 @@ const ConnectedTrackTile = ({
   const hasPreview = !!track?.preview_cid
   const isArtistPick = artist_pick_track_id === trackId
 
+  const { mutate: favoriteTrack } = useFavoriteTrack({
+    trackId,
+    source: FavoriteSource.TILE
+  })
+  const { mutate: unfavoriteTrack } = useUnfavoriteTrack({
+    trackId,
+    source: FavoriteSource.TILE
+  })
+
   const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(trackWithFallback)
   const loading = isLoading || isFetchingNFTAccess
@@ -210,11 +220,11 @@ const ConnectedTrackTile = ({
 
   const onClickFavorite = useCallback(() => {
     if (isFavorited) {
-      unsaveTrack(trackId)
+      unfavoriteTrack()
     } else {
-      saveTrack(trackId, isFeed)
+      favoriteTrack()
     }
-  }, [isFavorited, unsaveTrack, trackId, saveTrack, isFeed])
+  }, [isFavorited, unfavoriteTrack, favoriteTrack])
 
   const onClickRepost = useCallback(() => {
     if (isReposted) {

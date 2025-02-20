@@ -56,8 +56,6 @@ export type OwnProps = {
   onHeroRepost: (isReposted: boolean, trackId: ID) => void
   onFollow: () => void
   onUnfollow: () => void
-
-  onSaveTrack: (isSaved: boolean, trackId: ID) => void
   makePublic: (trackId: ID) => void
   // Tracks Lineup Props
   tracks: LineupState<Track>
@@ -85,7 +83,6 @@ const TrackPage = ({
   goToAllRemixesPage,
   onHeroShare,
   onHeroRepost,
-  onSaveTrack,
   onFollow,
   onUnfollow,
   makePublic,
@@ -121,9 +118,6 @@ const TrackPage = ({
   const onPreview = () =>
     onHeroPlay({ isPlaying: heroPlaying, isPreview: true })
 
-  const onSave = isOwner
-    ? () => {}
-    : () => heroTrack && onSaveTrack(isSaved, heroTrack.track_id)
   const onShare = () => (heroTrack ? onHeroShare(heroTrack.track_id) : null)
   const onRepost = () =>
     heroTrack ? onHeroRepost(isReposted, heroTrack.track_id) : null
@@ -186,7 +180,6 @@ const TrackPage = ({
       onPreview={onPreview}
       onShare={onShare}
       onRepost={onRepost}
-      onSave={onSave}
       following={following}
       onFollow={onFollow}
       onUnfollow={onUnfollow}
