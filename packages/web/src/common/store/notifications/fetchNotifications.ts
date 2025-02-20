@@ -2,8 +2,7 @@ import {
   notificationFromSDK,
   transformAndCleanList
 } from '@audius/common/adapters'
-import { FeatureFlags } from '@audius/common/services'
-import { accountSelectors, getContext, getSDK } from '@audius/common/store'
+import { accountSelectors, getSDK } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 import { Id, GetNotificationsValidTypesEnum as ValidTypes } from '@audius/sdk'
 import { call, select } from 'typed-redux-saga'
@@ -22,15 +21,8 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
   } = config
 
   const sdk = yield* getSDK()
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const userId = yield* select(accountSelectors.getUserId)
   const encodedUserId = Id.parse(userId)
-
-  const isOneShotEnabled = yield* call(getFeatureEnabled, FeatureFlags.ONE_SHOT)
-  const isListenStreakEndlessEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.LISTEN_STREAK_ENDLESS
-  )
 
   const validTypes = [
     ValidTypes.RepostOfRepost,
@@ -46,8 +38,7 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
     ValidTypes.Comment,
     ValidTypes.CommentThread,
     ValidTypes.CommentMention,
-    ValidTypes.CommentReaction,
-    isListenStreakEndlessEnabled ? ValidTypes.ListenStreakReminder : null
+    ValidTypes.CommentReaction
   ].filter(removeNullable)
 
   const { data } = yield* call(
@@ -64,18 +55,8 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
     ? transformAndCleanList(data.notifications, notificationFromSDK)
     : []
 
-  const oneShotFilteredNotifications = isOneShotEnabled
-    ? notifications
-    : notifications.filter((n) => !n.groupId?.includes('challenge:o'))
-
-  const listenStreakEndlessFilteredNotifications = isListenStreakEndlessEnabled
-    ? oneShotFilteredNotifications
-    : oneShotFilteredNotifications.filter(
-        (n) => !n.groupId?.includes('challenge:e')
-      )
-
   return {
-    notifications: listenStreakEndlessFilteredNotifications,
+    notifications,
     totalUnviewed: data?.unreadCount ?? 0
   }
 }

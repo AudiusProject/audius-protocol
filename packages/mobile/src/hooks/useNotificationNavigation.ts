@@ -238,7 +238,7 @@ export const useNotificationNavigation = () => {
       [NotificationType.ChallengeReward]: (
         notification: ChallengeRewardNotification
       ) => {
-        navigation.navigate('AudioScreen')
+        navigation.navigate('RewardsScreen')
       },
       [PushNotificationType.FavoriteAlbum]: socialActionHandler,
       [PushNotificationType.FavoritePlaylist]: socialActionHandler,

@@ -1,5 +1,5 @@
 import { challengesSelectors, profilePageActions } from '@audius/common/store'
-import { Flex, Text, useTheme } from '@audius/harmony'
+import { Box, Flex, Text, useTheme } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
@@ -8,7 +8,6 @@ import { SegmentedProgressBar } from 'components/segmented-progress-bar/Segmente
 
 import { useProfileCompletionDismissal, useVerticalCollapse } from '../hooks'
 
-import styles from './ProfileCompletionHeroCard.module.css'
 import { TaskCompletionList } from './TaskCompletionList'
 
 const { profileMeterDismissed } = profilePageActions
@@ -78,16 +77,44 @@ export const ProfileCompletionHeroCard = () => {
       {transitions.map(({ item, key, props }) =>
         item ? (
           <animated.div style={props} key={key}>
-            <div className={styles.container}>
-              <div className={styles.leftContainer}>
-                <div className={styles.completionTextPercentage}>
+            <Flex
+              shadow='emphasis'
+              w='100%'
+              borderRadius='m'
+              css={{ userSelect: 'none', overflow: 'hidden' }}
+            >
+              <Flex
+                column
+                justifyContent='flex-start'
+                alignItems='center'
+                backgroundColor='white'
+                ph='l'
+                w={289}
+                css={{
+                  flexShrink: 0,
+                  fontSize: 26,
+                  fontWeight: 'bold',
+                  lineHeight: 32,
+                  letterSpacing: 0.93
+                }}
+              >
+                <Box
+                  mt={34}
+                  css={(theme) => ({
+                    color: theme.color.text.accent,
+                    fontSize: '52px',
+                    fontWeight: theme.typography.weight.heavy,
+                    lineHeight: theme.typography.lineHeight.xl,
+                    letterSpacing: 1.86
+                  })}
+                >
                   <animated.span>
                     {animatedPercentage.interpolate((v: unknown) =>
                       (v as number).toFixed()
                     )}
                   </animated.span>
                   %
-                </div>
+                </Box>
                 <Flex p='m'>
                   <Text variant='title' size='m'>
                     {messages.complete}
@@ -97,18 +124,38 @@ export const ProfileCompletionHeroCard = () => {
                   numSteps={completionStages.length}
                   stepsComplete={stepsCompleted}
                 />
-              </div>
+              </Flex>
               <Flex
                 p='l'
+                flex={1}
                 h={CARD_HEIGHT_PIXELS}
                 css={{ backgroundColor: color.secondary.s300 }}
               >
                 <TaskCompletionList completionStages={completionStages} />
               </Flex>
-              <button className={styles.dismissButton} onClick={onDismiss}>
+              <button
+                css={(theme) => ({
+                  position: 'absolute',
+                  bottom: theme.spacing.m,
+                  right: theme.spacing.m,
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  color: theme.color.text.white,
+                  fontSize: theme.typography.size.xs,
+                  opacity: 0.5,
+                  textAlign: 'center',
+                  fontWeight: theme.typography.weight.medium,
+                  letterSpacing: 0.43,
+                  cursor: 'pointer',
+                  '&:hover': {
+                    textDecoration: 'underline'
+                  }
+                })}
+                onClick={onDismiss}
+              >
                 Dismiss
               </button>
-            </div>
+            </Flex>
           </animated.div>
         ) : null
       )}

@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
-import { FeatureFlags } from '@audius/common/services'
 import { AIRDROP_PAGE } from '@audius/common/src/utils/route'
 import { useDispatch } from 'react-redux'
 
@@ -21,18 +19,15 @@ export const AirdropAppBanner = () => {
   const hasDismissed = window.localStorage.getItem(
     AIRDROP_BANNER_LOCAL_STORAGE_KEY
   )
-  const { isEnabled: isOneShotEnabled = false } = useFeatureFlag(
-    FeatureFlags.ONE_SHOT
-  )
-  const [isVisible, setIsVisible] = useState(!hasDismissed && isOneShotEnabled)
+  const [isVisible, setIsVisible] = useState(!hasDismissed)
 
   useEffect(() => {
-    if (!hasDismissed && isOneShotEnabled) {
+    if (!hasDismissed) {
       setIsVisible(true)
     } else {
       setIsVisible(false)
     }
-  }, [isOneShotEnabled, hasDismissed])
+  }, [hasDismissed])
 
   const handleClose = useCallback(() => {
     setIsVisible(false)
