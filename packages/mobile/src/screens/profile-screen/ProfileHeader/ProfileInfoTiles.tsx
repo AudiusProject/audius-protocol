@@ -3,7 +3,6 @@ import { useMemo, useCallback } from 'react'
 
 import {
   useMutualFollowers,
-  useRelatedArtists,
   useSupportedUsers,
   useSupporters
 } from '@audius/common/api'
@@ -24,7 +23,10 @@ import {
 } from '@audius/harmony-native'
 import { Tile } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { ProfilePictureList } from 'app/screens/notifications-screen/Notification'
+import {
+  ProfilePictureList,
+  ProfilePictureListSkeleton
+} from 'app/screens/notifications-screen/Notification'
 import { makeStyles } from 'app/styles'
 import type { SvgProps } from 'app/types/svg'
 import { useThemePalette } from 'app/utils/theme'
@@ -35,6 +37,7 @@ import { ProfileTierTile } from './ProfileTierTile'
 
 const { getUserId } = accountSelectors
 const MAX_CARD_PROFILE_PICTURES = 4
+const PROFILE_CARD_PICTURE_SIZE = 24
 
 const useInfoTileStyles = makeStyles(({ spacing }) => ({
   tile: { flexDirection: 'column', height: 64 },
@@ -79,11 +82,131 @@ type ProfileInfoTileProps = {
   content: React.ReactNode
 }
 
-const ViewAllText = () => {
+const UserListWithCount = ({
+  users,
+  count,
+  loading = false
+}: {
+  users: UserMetadata[]
+  loading?: boolean
+  count: number
+}) => {
+  const styles = useInfoTileStyles()
   return (
-    <Text variant='body' size='s' color='subdued'>
-      {messages.viewAll}
-    </Text>
+    <View style={styles.userList}>
+      {loading ? (
+        <ProfilePictureListSkeleton
+          count={count}
+          limit={MAX_CARD_PROFILE_PICTURES}
+          imageStyles={{
+            width: PROFILE_CARD_PICTURE_SIZE,
+            height: PROFILE_CARD_PICTURE_SIZE
+          }}
+        />
+      ) : (
+        <ProfilePictureList
+          users={users}
+          limit={MAX_CARD_PROFILE_PICTURES}
+          showOverflowCount={false}
+          interactive={false}
+          imageStyles={{
+            width: PROFILE_CARD_PICTURE_SIZE,
+            height: PROFILE_CARD_PICTURE_SIZE
+          }}
+        />
+      )}
+      <Text variant='body' size='s' strength='strong' color='subdued'>
+        {count}
+      </Text>
+    </View>
+  )
+}
+
+const MutualsTile = ({
+  user_id,
+  count
+}: {
+  user_id: number
+  count: number
+}) => {
+  const { data: mutuals = [], isLoading } = useMutualFollowers({
+    userId: user_id,
+    pageSize: MAX_PROFILE_TOP_SUPPORTERS
+  })
+
+  return (
+    <ProfileInfoTile
+      screen='Mutuals'
+      icon={IconUserFollowing}
+      title={messages.mutuals}
+      content={
+        <UserListWithCount users={mutuals} count={count} loading={isLoading} />
+      }
+    />
+  )
+}
+
+const SupportersTile = ({
+  user_id,
+  count
+}: {
+  user_id: number
+  count: number
+}) => {
+  const { data: supporterRecords = [], isLoading } = useSupporters({
+    userId: user_id,
+    pageSize: MAX_PROFILE_TOP_SUPPORTERS
+  })
+
+  const supporters = useMemo(() => {
+    return supporterRecords.map((supporter) => supporter.sender)
+  }, [supporterRecords])
+
+  return (
+    <ProfileInfoTile
+      screen='TopSupporters'
+      icon={IconTrophy}
+      title={messages.tipSupporters}
+      content={
+        <UserListWithCount
+          users={supporters}
+          count={count}
+          loading={isLoading}
+        />
+      }
+    />
+  )
+}
+
+const SupportedUsersTile = ({
+  user_id,
+  count
+}: {
+  user_id: number
+  count: number
+}) => {
+  const { data: supportedUserRecords = [], isLoading } = useSupportedUsers({
+    userId: user_id,
+    pageSize: MAX_PROFILE_TOP_SUPPORTERS
+  })
+
+  const supportedUsers = useMemo(() => {
+    return supportedUserRecords.map((supportedUser) => supportedUser.receiver)
+  }, [supportedUserRecords])
+
+  return (
+    <ProfileInfoTile
+      screen='SupportingUsers'
+      icon={IconTipping}
+      title={messages.supportedUsers}
+      content={
+        <UserListWithCount
+          loading={isLoading}
+          users={supportedUsers}
+          count={count}
+        />
+      }
+    />
   )
 }
 
@@ -118,29 +241,6 @@ const ProfileInfoTile = (props: ProfileInfoTileProps) => {
   )
 }
 
-const UserListWithCount = ({
-  users,
-  count
-}: {
-  users: UserMetadata[]
-  count: number
-}) => {
-  const styles = useInfoTileStyles()
-  return (
-    <View style={styles.userList}>
-      <ProfilePictureList
-        users={users}
-        limit={MAX_CARD_PROFILE_PICTURES}
-        showOverflowCount={false}
-        imageStyles={{ width: 24, height: 24 }}
-      />
-      <Text variant='body' size='s' strength='strong' color='subdued'>
-        {count}
-      </Text>
-    </View>
-  )
-}
-
 const useStyles = makeStyles(({ spacing }) => ({
   rootScrollView: {
     marginHorizontal: spacing(-3)
@@ -167,38 +267,11 @@ export const ProfileInfoTiles = () => {
     'user_id',
     'allow_ai_attribution'
   ])
-  const { data: supporterRecords = [] } = useSupporters({
-    userId: user_id,
-    pageSize: MAX_PROFILE_TOP_SUPPORTERS
-  })
-
-  const supporters = useMemo(() => {
-    return supporterRecords.map((supporter) => supporter.sender)
-  }, [supporterRecords])
-
-  const { data: supportedUserRecords = [] } = useSupportedUsers({
-    userId: user_id,
-    pageSize: MAX_PROFILE_TOP_SUPPORTERS
-  })
-
-  const supportedUsers = useMemo(() => {
-    return supportedUserRecords.map((supportedUser) => supportedUser.receiver)
-  }, [supportedUserRecords])
-
-  const { data: mutuals = [] } = useMutualFollowers({
-    userId: user_id,
-    pageSize: MAX_PROFILE_TOP_SUPPORTERS
-  })
 
   const accountId = useSelector(getUserId)
 
   const hasMutuals =
     user_id !== accountId && current_user_followee_follow_count > 0
-
-  const { data: relatedArtists = [] } = useRelatedArtists({
-    artistId: user_id,
-    pageSize: 1
-  })
 
   return (
     <ScrollView
@@ -213,53 +286,36 @@ export const ProfileInfoTiles = () => {
           screen='AiGeneratedTracks'
           icon={IconRobot}
           title={messages.aiGeneratedTracks}
-          content={<ViewAllText />}
-        />
-      ) : null}
-      {supportedUsers && supportedUsers.length > 0 ? (
-        <ProfileInfoTile
-          screen='SupportingUsers'
-          icon={IconTipping}
-          title={messages.supportedUsers}
           content={
-            <UserListWithCount
-              users={supportedUsers}
-              count={supporting_count}
-            />
+            <Text variant='body' size='s' color='subdued'>
+              {messages.viewAll}
+            </Text>
           }
         />
       ) : null}
-      {hasMutuals && mutuals.length > 0 ? (
-        <ProfileInfoTile
-          screen='Mutuals'
-          icon={IconUserFollowing}
-          title={messages.mutuals}
-          content={
-            <UserListWithCount
-              users={mutuals}
-              count={current_user_followee_follow_count}
-            />
-          }
+      {supporting_count > 0 ? (
+        <SupportedUsersTile user_id={user_id} count={supporting_count} />
+      ) : null}
+      {hasMutuals ? (
+        <MutualsTile
+          user_id={user_id}
+          count={current_user_followee_follow_count}
         />
       ) : null}
-      {supporters.length > 0 ? (
-        <ProfileInfoTile
-          screen='TopSupporters'
-          icon={IconTrophy}
-          title={messages.tipSupporters}
-          content={
-            <UserListWithCount users={supporters} count={supporter_count} />
-          }
-        />
+      {supporter_count > 0 ? (
+        <SupportersTile user_id={user_id} count={supporter_count} />
       ) : null}
-      {relatedArtists.length > 0 ? (
-        <ProfileInfoTile
-          screen='RelatedArtists'
-          icon={IconUserGroup}
-          title={messages.relatedArtists}
-          content={<ViewAllText />}
-        />
-      ) : null}
+
+      <ProfileInfoTile
+        screen='RelatedArtists'
+        icon={IconUserGroup}
+        title={messages.relatedArtists}
+        content={
+          <Text variant='body' size='s' color='subdued'>
+            {messages.viewAll}
+          </Text>
+        }
+      />
     </ScrollView>
   )
 }
