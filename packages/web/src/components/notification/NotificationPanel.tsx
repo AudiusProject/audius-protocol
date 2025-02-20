@@ -18,6 +18,7 @@ import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParam } from 'react-use'
 
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import {
   getModalNotification,
@@ -68,7 +69,7 @@ const SCROLL_THRESHOLD = 1000
 /** The notification panel displays the list of notifications w/ a
  * summary of each notification and a link to open the full
  * notification in a modal  */
-export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
+const NotificationPanelContent = ({ anchorRef }: NotificationPanelProps) => {
   const panelIsOpen = useSelector(getNotificationPanelIsOpen)
   const notifications = useSelector(selectAllNotifications)
   const hasMore = useSelector(getNotificationHasMore)
@@ -206,3 +207,10 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
     </>
   )
 }
+
+export const NotificationPanel = componentWithErrorBoundary(
+  NotificationPanelContent,
+  {
+    name: 'NotificationPanel'
+  }
+)

@@ -25,6 +25,7 @@ import { useSelector } from 'react-redux'
 
 import { CollectionDogEar } from 'components/collection'
 import { CollectionTileStats } from 'components/collection/CollectionTileStats'
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import { TextLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
@@ -69,7 +70,7 @@ const RankAndIndexIndicator = ({
   )
 }
 
-const TrackTile = ({
+const TrackTileContent = ({
   size,
   order,
   standalone,
@@ -325,4 +326,6 @@ const TrackTile = ({
   )
 }
 
-export default memo(TrackTile)
+export default componentWithErrorBoundary(memo(TrackTileContent), {
+  name: 'TrackTile'
+})

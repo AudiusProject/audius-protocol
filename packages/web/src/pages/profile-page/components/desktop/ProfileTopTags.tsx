@@ -1,6 +1,7 @@
 import { useTopTags } from '@audius/common/api'
 import { Paper, IconTrending } from '@audius/harmony'
 
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import { SearchTag } from 'components/search-bar/SearchTag'
 import { useProfileParams } from 'pages/profile-page/useProfileParams'
 
@@ -13,7 +14,7 @@ const messages = {
 
 const MOST_USED_TAGS_COUNT = 5
 
-export const ProfileTopTags = () => {
+const ProfileTopTagsContent = () => {
   const user = useProfileParams()
   const { data: topTags, isPending } = useTopTags({
     userId: user?.user_id,
@@ -38,3 +39,10 @@ export const ProfileTopTags = () => {
     </ProfilePageNavSectionItem>
   )
 }
+
+export const ProfileTopTags = componentWithErrorBoundary(
+  ProfileTopTagsContent,
+  {
+    name: 'ProfileTopTags'
+  }
+)

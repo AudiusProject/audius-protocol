@@ -4,6 +4,7 @@ import { Flex } from '@audius/harmony'
 import { Mood } from '@audius/sdk'
 
 import { MetadataItem } from 'components/entity/MetadataItem'
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import { moodMap } from 'utils/Moods'
 
 type TrackMetadataListProps = {
@@ -13,7 +14,7 @@ type TrackMetadataListProps = {
 /**
  * The additional metadata shown at the bottom of the Track Page Header
  */
-export const TrackMetadataList = (props: TrackMetadataListProps) => {
+const TrackMetadataListContent = (props: TrackMetadataListProps) => {
   const { trackId } = props
   const metadataItems = useTrackMetadata({
     trackId
@@ -35,3 +36,10 @@ export const TrackMetadataList = (props: TrackMetadataListProps) => {
     </Flex>
   )
 }
+
+export const TrackMetadataList = componentWithErrorBoundary(
+  TrackMetadataListContent,
+  {
+    name: 'TrackMetadataList'
+  }
+)

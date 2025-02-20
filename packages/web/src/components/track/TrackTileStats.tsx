@@ -3,6 +3,7 @@ import { ID } from '@audius/common/models'
 import { cacheTracksSelectors } from '@audius/common/store'
 import { Flex, Skeleton } from '@audius/harmony'
 
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import { EntityRank } from 'components/lineup/EntityRank'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useSelector } from 'utils/reducer'
@@ -27,7 +28,7 @@ type TrackTileStatsProps = {
   isLoading?: boolean
 }
 
-export const TrackTileStats = (props: TrackTileStatsProps) => {
+const TrackTileStatsContent = (props: TrackTileStatsProps) => {
   const { trackId, isTrending, rankIndex, size, isLoading } = props
 
   const isUnlockable = useIsTrackUnlockable(trackId)
@@ -70,3 +71,10 @@ export const TrackTileStats = (props: TrackTileStatsProps) => {
     </Flex>
   )
 }
+
+export const TrackTileStats = componentWithErrorBoundary(
+  TrackTileStatsContent,
+  {
+    name: 'TrackTileStats'
+  }
+)

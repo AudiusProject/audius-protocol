@@ -9,6 +9,7 @@ import { formatCount, pluralize } from '@audius/common/utils'
 import { IconHeart, PlainButton, PlainButtonProps } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import {
   setUsers,
   setVisibility
@@ -32,7 +33,7 @@ type FavoriteStatsProps = {
   noText?: boolean
 } & Partial<Omit<PlainButtonProps, 'iconLeft' | 'onClick' | 'id'>>
 
-export const FavoriteStats = ({
+const FavoriteStatsContent = ({
   id,
   entityType,
   noText,
@@ -79,3 +80,7 @@ export const FavoriteStats = ({
     </PlainButton>
   )
 }
+
+export const FavoriteStats = componentWithErrorBoundary(FavoriteStatsContent, {
+  name: 'FavoriteStats'
+})

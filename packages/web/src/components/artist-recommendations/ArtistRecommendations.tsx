@@ -11,6 +11,7 @@ import { useDispatch } from 'react-redux'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { MountPlacement } from 'components/types'
 import UserBadges from 'components/user-badges/UserBadges'
@@ -107,7 +108,7 @@ const ArtistPopoverWrapper = ({
   )
 }
 
-export const ArtistRecommendations = forwardRef<
+const ArtistRecommendationsContent = forwardRef<
   HTMLDivElement,
   ArtistRecommendationsProps
 >((props, ref) => {
@@ -241,3 +242,10 @@ export const ArtistRecommendations = forwardRef<
     </div>
   )
 })
+
+export const ArtistRecommendations = componentWithErrorBoundary(
+  ArtistRecommendationsContent,
+  {
+    name: 'ArtistRecommendations'
+  }
+)

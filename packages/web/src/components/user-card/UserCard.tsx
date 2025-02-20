@@ -8,6 +8,7 @@ import { useLinkClickHandler } from 'react-router-dom-v5-compat'
 
 import { Avatar } from 'components/avatar'
 import { Card, CardProps, CardFooter, CardContent } from 'components/card'
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import { UserLink } from 'components/link'
 import { useSelector } from 'utils/reducer'
 
@@ -31,7 +32,7 @@ export type UserCardProps = Omit<CardProps, 'id'> & {
   onUserLinkClick?: (e: MouseEvent<HTMLAnchorElement>) => void
 }
 
-export const UserCard = (props: UserCardProps) => {
+const UserCardContent = (props: UserCardProps) => {
   const { id, loading, size, onClick, onUserLinkClick, ...other } = props
 
   const user = useSelector((state) => getUser(state, { id }))
@@ -100,3 +101,7 @@ export const UserCard = (props: UserCardProps) => {
     </Card>
   )
 }
+
+export const UserCard = componentWithErrorBoundary(UserCardContent, {
+  name: 'UserCard'
+})

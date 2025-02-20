@@ -2,13 +2,14 @@ import { useCallback } from 'react'
 
 import { ExpandableNavItem, ExpandableNavItemProps } from '@audius/harmony'
 
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import { RestrictionType, useRequiresAccountFn } from 'hooks/useRequiresAccount'
 
 type Props = Omit<ExpandableNavItemProps, 'onClick'> & {
   restriction?: RestrictionType
 }
 
-export const RestrictedExpandableNavItem = ({
+const RestrictedExpandableNavItemContent = ({
   restriction = 'none',
   disabled,
   ...props
@@ -25,3 +26,10 @@ export const RestrictedExpandableNavItem = ({
     <ExpandableNavItem onClick={handleClick} disabled={disabled} {...props} />
   )
 }
+
+export const RestrictedExpandableNavItem = componentWithErrorBoundary(
+  RestrictedExpandableNavItemContent,
+  {
+    name: 'RestrictedExpandableNavItem'
+  }
+)

@@ -8,6 +8,7 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import {
   TrackTileSize,
   DesktopPlaylistTileProps as PlaylistTileProps
@@ -27,7 +28,7 @@ const DefaultTileContainer = ({ children }: { children: ReactNode }) => (
 // When we separate track tile from playlist tile, this will be removed.
 const onClick = () => {}
 
-const PlaylistTile = ({
+const PlaylistTileContent = ({
   size,
   order,
   isFavorited,
@@ -191,4 +192,6 @@ const PlaylistTile = ({
   )
 }
 
-export default memo(PlaylistTile)
+export default componentWithErrorBoundary(memo(PlaylistTileContent), {
+  name: 'PlaylistTile'
+})

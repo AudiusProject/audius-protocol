@@ -1,5 +1,7 @@
 import { IconHeart, IconPin, IconText } from '@audius/harmony'
 
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
+
 const pinIcon = { icon: IconPin }
 const heartIcon = { icon: IconHeart, color: 'active' }
 
@@ -8,7 +10,7 @@ type ArtistPickProps = {
   isLiked?: boolean
 }
 
-export const ArtistPick = ({
+const ArtistPickContent = ({
   isPinned = false,
   isLiked = false
 }: ArtistPickProps) => {
@@ -24,3 +26,7 @@ export const ArtistPick = ({
     </IconText>
   )
 }
+
+export const ArtistPick = componentWithErrorBoundary(ArtistPickContent, {
+  name: 'ArtistPick'
+})

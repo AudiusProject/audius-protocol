@@ -11,6 +11,7 @@ import { Box } from '@audius/harmony'
 import cn from 'classnames'
 
 import transparentPlaceholderImg from 'assets/img/1x1-transparent.png'
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import Skeleton from 'components/skeleton/Skeleton'
 
 import styles from './DynamicImage.module.css'
@@ -95,7 +96,7 @@ const fadeIn = (
 /**
  * A dynamic image that transitions between changes to the `image` prop.
  */
-const DynamicImage = ({
+const DynamicImageContent = ({
   image,
   isUrl = true,
   wrapperClassName,
@@ -202,4 +203,11 @@ const DynamicImage = ({
   )
 }
 
-export default memo(DynamicImage)
+const DynamicImageWithErrorBoundary = componentWithErrorBoundary(
+  memo(DynamicImageContent),
+  {
+    name: 'DynamicImage'
+  }
+)
+
+export default DynamicImageWithErrorBoundary

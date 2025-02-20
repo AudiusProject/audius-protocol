@@ -25,6 +25,7 @@ import { Dispatch } from 'redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { Draggable } from 'components/dragndrop'
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import { UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
@@ -39,6 +40,7 @@ import { TrackTileSize } from '../types'
 
 import styles from './ConnectedTrackTile.module.css'
 import TrackTile from './TrackTile'
+
 const { getUid, getPlaying, getBuffering } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { getTrack } = cacheTracksSelectors
@@ -68,7 +70,7 @@ type ConnectedTrackTileProps = OwnProps &
   ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
-const ConnectedTrackTile = ({
+const ConnectedTrackTileContent = ({
   uid,
   index,
   size,
@@ -372,7 +374,11 @@ function mapDispatchToProps(dispatch: Dispatch) {
   }
 }
 
-export default connect(
+const ConnectedComponent = connect(
   mapStateToProps,
   mapDispatchToProps
-)(memo(ConnectedTrackTile))
+)(memo(ConnectedTrackTileContent))
+
+export default componentWithErrorBoundary(ConnectedComponent, {
+  name: 'ConnectedTrackTile'
+})
