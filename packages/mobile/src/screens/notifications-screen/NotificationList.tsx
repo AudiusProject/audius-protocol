@@ -99,8 +99,15 @@ export const NotificationList = () => {
     isLoading: isPending,
     isError,
     fetchNextPage,
-    refetch
+    refetch,
+    isFetchingNextPage
   } = useNotifications()
+
+  const handleLoadMore = useCallback(() => {
+    if (!isFetchingNextPage) {
+      fetchNextPage()
+    }
+  }, [fetchNextPage, isFetchingNextPage])
 
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true)
@@ -136,8 +143,7 @@ export const NotificationList = () => {
           </View>
         ) : undefined
       }
-      onEndReached={() => fetchNextPage()}
-      onEndReachedThreshold={0.8}
+      onEndReached={handleLoadMore}
       scrollEnabled={!gesturesDisabled}
       onViewableItemsChanged={visibilityCallback}
     />

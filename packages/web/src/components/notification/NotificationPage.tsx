@@ -1,4 +1,4 @@
-import { useEffect, useContext } from 'react'
+import { useEffect, useContext, useCallback } from 'react'
 
 import {
   useNotifications,
@@ -30,8 +30,20 @@ const SCROLL_THRESHOLD = 300
  * summary of each notification and a link to open the full
  * notification in a modal  */
 export const NotificationPage = () => {
-  const { notifications, isPending, hasNextPage, fetchNextPage } =
-    useNotifications()
+  const {
+    notifications,
+    isPending,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage
+  } = useNotifications()
+
+  const handleLoadMore = useCallback(() => {
+    if (!isFetchingNextPage) {
+      fetchNextPage()
+    }
+  }, [fetchNextPage, isFetchingNextPage])
+
   const { mutate: markAsViewed } = useMarkNotificationsAsViewed()
 
   const { setLeft, setCenter, setRight } = useContext(NavContext)!
@@ -63,7 +75,7 @@ export const NotificationPage = () => {
           gap='s'
           // @ts-ignore
           pageStart={0}
-          loadMore={() => fetchNextPage()}
+          loadMore={handleLoadMore}
           hasMore={hasNextPage}
           useWindow={true}
           initialLoad={false}

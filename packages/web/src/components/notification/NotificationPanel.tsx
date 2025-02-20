@@ -52,8 +52,21 @@ export const NotificationPanel = ({
   isOpen,
   onClose
 }: NotificationPanelProps) => {
-  const { notifications, fetchNextPage, hasNextPage, isPending, isError } =
-    useNotifications({ enabled: isOpen })
+  const {
+    notifications,
+    fetchNextPage,
+    hasNextPage,
+    isPending,
+    isError,
+    isFetchingNextPage
+  } = useNotifications({ enabled: isOpen })
+
+  const handleLoadMore = useCallback(() => {
+    if (!isFetchingNextPage) {
+      fetchNextPage()
+    }
+  }, [fetchNextPage, isFetchingNextPage])
+
   const isUserListOpen = useSelector(getIsUserListOpen)
   const { mutate: markAsViewed } = useMarkNotificationsAsViewed()
 
@@ -120,7 +133,7 @@ export const NotificationPanel = ({
         </Flex>
         <Scrollbar className={styles.scrollContent} id={scrollbarId}>
           <InfiniteScroll
-            loadMore={() => fetchNextPage()}
+            loadMore={handleLoadMore}
             hasMore={hasNextPage}
             initialLoad={isPending}
             useWindow={false}
