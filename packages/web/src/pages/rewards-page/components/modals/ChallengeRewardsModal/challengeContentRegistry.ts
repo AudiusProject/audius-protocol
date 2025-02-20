@@ -3,6 +3,7 @@ import { ChallengeName } from '@audius/common/models'
 import { AudioMatchingRewardsModalContent } from './AudioMatchingRewardsModalContent'
 import { DefaultChallengeContent } from './DefaultChallengeContent'
 import { ListenStreakChallengeModalContent } from './ListenStreakChallengeModalContent'
+import { OneShotChallengeModalContent } from './OneShotChallengeModalContent'
 import {
   type ChallengeContentMap,
   type ChallengeContentComponent
@@ -15,6 +16,8 @@ export const challengeContentRegistry: ChallengeContentMap = {
     AudioMatchingRewardsModalContent as ChallengeContentComponent,
   [ChallengeName.ListenStreakEndless]:
     ListenStreakChallengeModalContent as ChallengeContentComponent,
+  [ChallengeName.OneShot]:
+    OneShotChallengeModalContent as ChallengeContentComponent,
   default: DefaultChallengeContent as ChallengeContentComponent
 }
 
