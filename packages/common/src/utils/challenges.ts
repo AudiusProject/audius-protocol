@@ -33,7 +33,6 @@ export const challengeRewardsConfig: Record<
       `Earn ${challenge?.amount} $AUDIO for you and your friend.`,
     fullDescription: (challenge) =>
       `Invite your Friends! You’ll earn ${challenge?.amount} $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)`,
-    progressLabel: '%0/%1 Invites Accepted',
     remainingLabel: '%0/%1 Invites Remain',
     panelButtonText: 'Invite Your Friends'
   },
@@ -44,7 +43,6 @@ export const challengeRewardsConfig: Record<
       `Earn ${challenge?.amount} $AUDIO for you and your friend.`,
     fullDescription: (challenge) =>
       `Invite your Friends! You’ll earn ${challenge?.amount} $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)`,
-    progressLabel: '%0/%1 Invites Accepted',
     remainingLabel: '%0/%1 Invites Remain',
     panelButtonText: 'Invite Your Friends'
   },
@@ -55,7 +53,6 @@ export const challengeRewardsConfig: Record<
       `Earn up to ${formatNumberCommas(challenge?.totalAmount ?? '')} $AUDIO`,
     fullDescription: (challenge) =>
       `Invite your fans! You’ll earn ${challenge?.amount} $AUDIO for each fan who joins with your link (and they’ll get an $AUDIO too)`,
-    progressLabel: '%0/%1 Invites Accepted',
     remainingLabel: '%0/%1 Invites Remain',
     panelButtonText: 'Invite your Fans',
     isVerifiedChallenge: true
@@ -67,7 +64,6 @@ export const challengeRewardsConfig: Record<
       `Earn up to ${formatNumberCommas(challenge?.totalAmount ?? '')} $AUDIO`,
     fullDescription: (challenge) =>
       `Invite your fans! You’ll earn ${challenge?.amount} $AUDIO for each fan who joins with your link (and they’ll get an $AUDIO too)`,
-    progressLabel: '%0/%1 Invites Accepted',
     remainingLabel: '%0/%1 Invites Remain',
     panelButtonText: 'Invite your Fans',
     isVerifiedChallenge: true
