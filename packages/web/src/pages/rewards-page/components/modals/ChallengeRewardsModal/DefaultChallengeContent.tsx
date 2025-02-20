@@ -4,8 +4,6 @@ import { ChallengeName } from '@audius/common/models'
 import { audioRewardsPageSelectors, ClaimStatus } from '@audius/common/store'
 import {
   challengeRewardsConfig,
-  fillString,
-  formatNumberCommas,
   getChallengeStatusLabel
 } from '@audius/common/utils'
 import { Button, Flex, IconVerified, Text, IconCheck } from '@audius/harmony'
