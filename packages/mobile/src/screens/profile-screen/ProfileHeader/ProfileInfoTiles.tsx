@@ -224,7 +224,7 @@ const ProfileInfoTile = (props: ProfileInfoTileProps) => {
   return (
     <Tile
       styles={{
-        root: [style],
+        root: style,
         tile: styles.tile,
         content: styles.tileContent
       }}
