@@ -525,7 +525,7 @@ def be_followed(current_user_id):
                 "id": str(current_user_id),
                 "path": "following_ids",
             },
-            "boost": 500,
+            "boost": 50,
         }
     }
 
@@ -819,7 +819,7 @@ def user_dsl(
                         *base_match(
                             search_str,
                             extra_fields=["handle.searchable", "name.searchable"],
-                            boost=len(search_str) * 0.1,
+                            boost=len(search_str) * 0.5,
                         ),
                         # Cross fields match ensuring all terms are present (for "noah m" case)
                         {
@@ -846,7 +846,7 @@ def user_dsl(
                                 "name.searchable": {
                                     "query": search_str,
                                     "fuzziness": "AUTO",
-                                    "boost": len(search_str) * 0.01,
+                                    "boost": len(search_str) * 0.1,
                                 }
                             }
                         },
@@ -854,7 +854,7 @@ def user_dsl(
                             "term": {
                                 "name": {
                                     "value": search_str.replace(" ", ""),
-                                    "boost": len(search_str) * 0.5,
+                                    "boost": len(search_str) * 2,
                                 }
                             }
                         },
@@ -862,7 +862,7 @@ def user_dsl(
                             "term": {
                                 "handle": {
                                     "value": search_str.replace(" ", ""),
-                                    "boost": len(search_str) * 0.5,
+                                    "boost": len(search_str) * 2,
                                 }
                             }
                         },
@@ -870,7 +870,7 @@ def user_dsl(
                             "match": {
                                 "tracks.genre": {
                                     "query": search_str.title(),
-                                    "boost": 12,
+                                    "boost": 6,
                                 }
                             }
                         },
@@ -886,7 +886,7 @@ def user_dsl(
                             "match": {
                                 "tracks.mood": {
                                     "query": search_str.title(),
-                                    "boost": 12,
+                                    "boost": 6,
                                 }
                             }
                         },
@@ -901,13 +901,13 @@ def user_dsl(
                 search_str,
                 operator="and",
                 extra_fields=["name"],
-                boost=len(search_str) * 12,
+                boost=len(search_str) * 24,
             ),
             {
                 "term": {
                     "name": {
                         "value": search_str,
-                        "boost": (len(search_str) * 0.1) ** 2,
+                        "boost": (len(search_str) * 0.2) ** 2,
                     }
                 }
             },
