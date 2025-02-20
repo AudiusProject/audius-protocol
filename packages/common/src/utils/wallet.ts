@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { FixedDecimal } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 
 import {
@@ -18,7 +20,6 @@ import {
   convertFloatToWei
 } from '~/utils/formatUtil'
 import { Nullable } from '~/utils/typeUtils'
-import type { FixedDecimal } from '@audius/fixed-decimal'
 
 /** AUDIO utils */
 const WEI_DECIMALS = 18 // 18 decimals on ETH AUDIO

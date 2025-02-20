@@ -1,8 +1,9 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { FixedDecimal } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 import numeral from 'numeral'
 
 import { BNWei } from '~/models/Wallet'
-import type { FixedDecimal } from '@audius/fixed-decimal'
 
 import dayjs from './dayjs'
 
