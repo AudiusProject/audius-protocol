@@ -37,7 +37,6 @@ export const ListenStreakChallengeModalContent = ({
   const { fullDescription } = challengeRewardsConfig[challengeName]
   const userChallenge = useSelector(getOptimisticUserChallenges)[challengeName]
 
-  console.log('REED', { userChallenge })
   const progressDescription = (
     <ProgressDescription
       description={<Text variant='body'>{fullDescription?.(challenge)}</Text>}

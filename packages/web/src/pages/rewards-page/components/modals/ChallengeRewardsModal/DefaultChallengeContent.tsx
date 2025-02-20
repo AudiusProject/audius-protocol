@@ -95,7 +95,6 @@ export const DefaultChallengeContent = ({
       </Flex>
     </Flex>
   )
-  console.log('REED', { challenge })
 
   const goToRoute = useCallback(
     (route: string) => {
