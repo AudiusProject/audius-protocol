@@ -1,6 +1,9 @@
 import { useCallback } from 'react'
 
-import { OptimisticUserChallenge } from '@audius/common/models'
+import {
+  OptimisticUserChallenge,
+  UndisbursedUserChallenge
+} from '@audius/common/models'
 import { audioRewardsPageActions } from '@audius/common/store'
 import { getClaimableChallengeSpecifiers } from '@audius/common/utils'
 import { Button, IconCheck } from '@audius/harmony'
@@ -17,7 +20,7 @@ type ClaimButtonProps = {
   challenge?: OptimisticUserChallenge
   claimInProgress: boolean
   onClose: () => void
-  undisbursedChallenges?: OptimisticUserChallenge[]
+  undisbursedChallenges?: UndisbursedUserChallenge[]
 }
 
 export const ClaimButton = ({
