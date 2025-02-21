@@ -8,14 +8,6 @@ import {
 import { weiToString } from '@audius/common/utils'
 import { all, put, race, select, take, takeLatest } from 'typed-redux-saga'
 
-import commonTokenDashboardSagas from 'common/store/pages/token-dashboard/sagas'
-import {
-  loadWalletLink,
-  loadBitski,
-  loadWalletConnect
-} from 'services/web3-modal'
-
-import { watchConnectNewWallet } from './connectNewWalletSaga'
 const { setVisibility } = modalsActions
 const { send: walletSend, sendSucceeded, sendFailed } = walletActions
 const { getSendData } = tokenDashboardPageSelectors
@@ -23,8 +15,7 @@ const {
   pressSend,
   setModalState,
   setModalVisibility: setSendAUDIOModalVisibility,
-  confirmSend,
-  preloadWalletProviders
+  confirmSend
 } = tokenDashboardPageActions
 
 function* pressSendAsync() {
@@ -84,12 +75,6 @@ function* confirmSendAsync() {
   yield* put(setModalState({ modalState: sentState }))
 }
 
-function* preloadProviders() {
-  yield loadWalletConnect()
-  yield loadBitski()
-  yield loadWalletLink()
-}
-
 function* watchPressSend() {
   yield* takeLatest(pressSend.type, pressSendAsync)
 }
@@ -98,18 +83,8 @@ function* watchConfirmSend() {
   yield* takeLatest(confirmSend.type, confirmSendAsync)
 }
 
-function* watchPreloadWalletProviders() {
-  yield* takeLatest(preloadWalletProviders.type, preloadProviders)
-}
-
 const sagas = () => {
-  return [
-    ...commonTokenDashboardSagas(),
-    watchPressSend,
-    watchConfirmSend,
-    watchPreloadWalletProviders,
-    watchConnectNewWallet
-  ]
+  return [watchPressSend, watchConfirmSend]
 }
 
 export default sagas

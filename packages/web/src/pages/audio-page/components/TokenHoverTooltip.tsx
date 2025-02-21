@@ -1,13 +1,13 @@
 import { ReactNode } from 'react'
 
 import { BNWei } from '@audius/common/models'
-import { formatWei } from '@audius/common/utils'
+import { AUDIO, type AudioWei } from '@audius/fixed-decimal'
 
 import Tooltip from 'components/tooltip/Tooltip'
 
 type TokenHoverTooltipProps = {
   children: ReactNode
-  balance: BNWei
+  balance: BNWei | AudioWei
   parentMount?: boolean
 }
 
@@ -18,8 +18,8 @@ const TokenHoverTooltip = ({
 }: TokenHoverTooltipProps) => {
   return (
     <Tooltip
-      text={`${formatWei(balance)} $AUDIO`}
-      disabled={balance.isZero()}
+      text={`${AUDIO(balance).toLocaleString()} $AUDIO`}
+      disabled={AUDIO(balance).value === BigInt(0)}
       placement='top'
       mouseEnterDelay={0.2}
       mount={parentMount ? 'parent' : undefined}

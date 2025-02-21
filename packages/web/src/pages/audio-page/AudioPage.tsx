@@ -1,7 +1,7 @@
 import { ReactNode, useContext, useEffect } from 'react'
 
 import { StringKeys } from '@audius/common/services'
-import { tokenDashboardPageActions, walletActions } from '@audius/common/store'
+import { walletActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
@@ -28,7 +28,6 @@ import ExplainerTile from './components/ExplainerTile'
 import { WalletManagementTile } from './components/WalletManagementTile'
 const { AUDIO_PAGE, TRENDING_PAGE } = route
 const { getBalance } = walletActions
-const { preloadWalletProviders } = tokenDashboardPageActions
 
 const messages = {
   title: '$AUDIO Wallet',
@@ -63,10 +62,6 @@ const RewardsContent = () => {
 }
 
 const DesktopPage = ({ children }: { children: ReactNode }) => {
-  const dispatch = useDispatch()
-  useEffect(() => {
-    dispatch(preloadWalletProviders())
-  }, [dispatch])
   const header = <Header primary={messages.title} />
   return (
     <Page

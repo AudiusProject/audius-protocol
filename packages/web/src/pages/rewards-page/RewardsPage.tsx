@@ -1,7 +1,7 @@
 import { ReactNode, useContext, useEffect } from 'react'
 
 import { StringKeys } from '@audius/common/services'
-import { tokenDashboardPageActions, walletActions } from '@audius/common/store'
+import { walletActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { IconGift } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
@@ -25,7 +25,6 @@ import { ChallengeRewardsTile } from './components/ChallengeRewards/ChallengeRew
 import { TrendingRewardsTile } from './components/TrendingRewards/TrendingRewardsTile'
 const { REWARDS_PAGE, TRENDING_PAGE } = route
 const { getBalance } = walletActions
-const { preloadWalletProviders } = tokenDashboardPageActions
 
 const messages = {
   title: 'Rewards & Perks',
@@ -56,10 +55,6 @@ const RewardsContent = () => {
 }
 
 const DesktopPage = ({ children }: { children: ReactNode }) => {
-  const dispatch = useDispatch()
-  useEffect(() => {
-    dispatch(preloadWalletProviders())
-  }, [dispatch])
   const header = <Header icon={IconGift} primary={messages.title} />
   return (
     <Page

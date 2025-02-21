@@ -23,6 +23,7 @@ import { getSystemAppearance, getTheme } from 'utils/theme/theme'
 import { AppContextProvider } from './AppContextProvider'
 import { AudiusQueryProvider } from './AudiusQueryProvider'
 import { useHistoryContext } from './HistoryProvider'
+import { wagmiAdapter } from './ReownAppKitModal'
 import { ThemeProvider } from './ThemeProvider'
 
 type AppProvidersProps = {
@@ -56,7 +57,7 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
   })
 
   return (
-    <WagmiProvider config={wagmiConfig}>
+    <WagmiProvider config={wagmiAdapter.wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         <ReduxProvider store={store}>
           <Router history={storeHistory}>
@@ -90,3 +91,4 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
     </WagmiProvider>
   )
 }
+export { wagmiConfig }
