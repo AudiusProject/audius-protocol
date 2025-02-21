@@ -6,6 +6,7 @@ import { AudioMatchingChallengeContent } from './AudioMatchingChallengeContent'
 import { DefaultChallengeContent } from './DefaultChallengeContent'
 import { ListenStreakEndlessChallengeContent } from './ListenStreakEndlessChallengeContent'
 import { ProfileCompletionChallengeContent } from './ProfileCompletionChallengeContent'
+import { ReferralChallengeContent } from './ReferralChallengeContent'
 import type { ChallengeContentProps } from './types'
 
 type ChallengeContentComponent = ComponentType<ChallengeContentProps>
@@ -19,6 +20,7 @@ export const challengeContentRegistry: ChallengeContentMap = {
   [ChallengeName.AudioMatchingSell]: AudioMatchingChallengeContent,
   [ChallengeName.ListenStreakEndless]: ListenStreakEndlessChallengeContent,
   [ChallengeName.ProfileCompletion]: ProfileCompletionChallengeContent,
+  [ChallengeName.Referrals]: ReferralChallengeContent,
   default: DefaultChallengeContent
 }
 
