@@ -8,11 +8,14 @@ import {
   useUserComments
 } from '@audius/common/api'
 import { Comment } from '@audius/common/models'
+import { profilePage } from '@audius/common/src/utils/route'
 import {
   Box,
+  Button,
   Flex,
   IconButton,
   IconHeart,
+  IconMessage,
   LoadingSpinner,
   Paper,
   Skeleton,
@@ -40,8 +43,10 @@ const messages = {
   description: (userName: string | null) =>
     `Comment History${userName ? ` for ${userName}` : ''}`,
   by: ' by ',
-  noComments: 'No comments',
-  view: 'View'
+  view: 'View',
+  nothingToDisplay: 'Nothing to Display',
+  noComments: "This user hasn't left any comments yet!",
+  backToProfile: 'Back To Profile'
 }
 
 const UserComment = ({ commentId }: { commentId: number }) => {
@@ -139,6 +144,35 @@ const UserComment = ({ commentId }: { commentId: number }) => {
   )
 }
 
+const NoComments = ({ handle }: { handle?: string }) => {
+  const navigate = useNavigate()
+
+  const goToProfile = useCallback(() => {
+    if (handle) {
+      navigate(profilePage(handle))
+    }
+  }, [handle, navigate])
+
+  return (
+    <Flex column gap='2xl' p='l'>
+      <Flex column alignItems='center' gap='l'>
+        <IconMessage size='3xl' color='subdued' />
+        <Text variant='heading' size='s'>
+          {messages.nothingToDisplay}
+        </Text>
+        <Text variant='body' size='l'>
+          {messages.noComments}
+        </Text>
+      </Flex>
+      <Box>
+        <Button variant='secondary' size='small' onClick={goToProfile}>
+          {messages.backToProfile}
+        </Button>
+      </Box>
+    </Flex>
+  )
+}
+
 export type CommentHistoryPageProps = {
   title: string
 }
@@ -189,7 +223,7 @@ export const CommentHistoryPage = ({ title }: CommentHistoryPageProps) => {
             ) : (
               <>
                 {commentIds.length === 0 ? (
-                  <Text>{messages.noComments}</Text>
+                  <NoComments handle={user?.handle} />
                 ) : (
                   commentIds.map((id) => (
                     <UserComment key={id} commentId={id} />
