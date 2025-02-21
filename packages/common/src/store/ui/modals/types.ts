@@ -103,6 +103,7 @@ export type Modals =
   | 'PayoutWallet'
   | 'EditTrackFormOverflowMenu'
   | 'ExternalWalletSignUp'
+  | 'ConnectedWallets'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState
