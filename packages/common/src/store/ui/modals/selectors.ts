@@ -7,3 +7,6 @@ export const getModalVisibility = (state: CommonState, modal: Modals) =>
 
 export const getModalIsOpen = (state: CommonState) =>
   Object.values(state.ui.modals).some((modalState) => modalState.isOpen)
+
+export const getChallengeRewardsModalState = (state: CommonState) =>
+  state.ui.modals.ChallengeRewards

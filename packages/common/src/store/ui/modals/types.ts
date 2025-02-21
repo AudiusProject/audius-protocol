@@ -1,33 +1,14 @@
+import type { ChallengeName } from '@audius/common/src/models/AudioRewards'
 import { Action } from '@reduxjs/toolkit'
 
 import { ModalSource } from '~/models/Analytics'
 
-import { AddFundsModalState } from './add-funds-modal'
-import { AlbumTrackRemoveConfirmationModalState } from './album-track-remove-confirmation-modal'
-import { AnnouncementModalState } from './announcement-modal'
-import { ArtistPickModalState } from './artist-pick-modal'
-import { CoinflowOnrampModalState } from './coinflow-onramp-modal'
-import { CoinflowWithdrawModalState } from './coinflow-withdraw-modal'
-import { ChatBlastModalState } from './create-chat-blast-modal'
-import { DeleteTrackConfirmationModalState } from './delete-track-confirmation-modal'
-import { EarlyReleaseConfirmationModalState } from './early-release-confirmation-modal'
-import { EditAccessConfirmationModalState } from './edit-access-confirmation-modal'
-import { HideContentConfirmationModalState } from './hide-confirmation-modal'
-import { InboxUnavailableModalState } from './inbox-unavailable-modal'
-import { LeavingAudiusModalState } from './leaving-audius-modal'
-import { PremiumContentPurchaseModalState } from './premium-content-purchase-modal'
-import { PublishConfirmationModalState } from './publish-confirmation-modal'
-import { ReplaceTrackConfirmationModalState } from './replace-track-confirmation-modal'
-import { ReplaceTrackProgressModalState } from './replace-track-progress-modal'
-import { UploadConfirmationModalState } from './upload-confirmation-modal'
-import { USDCManualTransferModalState } from './usdc-manual-transfer-modal'
-import { USDCPurchaseDetailsModalState } from './usdc-purchase-details-modal'
-import { USDCTransactionDetailsModalState } from './usdc-transaction-details-modal'
-import { WaitForDownloadModalState } from './wait-for-download-modal'
-import { WithdrawUSDCModalState } from './withdraw-usdc-modal'
-
 export type BaseModalState = {
   isOpen: boolean | 'closing'
+}
+
+export type ChallengeRewardsModalState = BaseModalState & {
+  challengeName?: ChallengeName
 }
 
 export type CreateChatModalState = {
@@ -39,7 +20,7 @@ export type CreateChatModalState = {
 export type Modals =
   | 'TiersExplainer'
   | 'TrendingRewardsExplainer'
-  | 'ChallengeRewardsExplainer'
+  | 'ChallengeRewards'
   | 'ClaimAllRewards'
   | 'LinkSocialRewardsExplainer'
   | 'APIRewardsExplainer'
@@ -63,15 +44,13 @@ export type Modals =
   | 'AddToCollection'
   | 'DeletePlaylistConfirmation'
   | 'DeleteTrackConfirmation'
-  | 'ReplaceTrackConfirmation'
-  | 'ReplaceTrackProgress'
+  | 'DuplicateAddConfirmation'
   | 'FeatureFlagOverride'
   | 'BuyAudio'
   | 'BuyAudioRecovery'
   | 'TransactionDetails'
   | 'VipDiscord'
   | 'StripeOnRamp'
-  | 'CoinflowOnramp'
   | 'InboxSettings'
   | 'CommentSettings'
   | 'PrivateKeyExporter'
@@ -80,7 +59,6 @@ export type Modals =
   | 'ProfileActions'
   | 'PublishContentModal'
   | 'AiAttributionSettings'
-  | 'DuplicateAddConfirmation'
   | 'PremiumContentPurchaseModal'
   | 'CreateChatModal'
   | 'ChatBlastModal'
@@ -107,46 +85,18 @@ export type Modals =
   | 'Announcement'
   | 'Notification'
 
-export type BasicModalsState = {
-  [modal in Modals]: BaseModalState
+export type ModalsState = {
+  [key in Modals]: key extends 'ChallengeRewards'
+    ? ChallengeRewardsModalState
+    : BaseModalState
 }
-
-export type StatefulModalsState = {
-  CoinflowOnramp: CoinflowOnrampModalState
-  CreateChatModal: CreateChatModalState
-  ChatBlastModal: ChatBlastModalState
-  InboxUnavailableModal: InboxUnavailableModalState
-  LeavingAudiusModal: LeavingAudiusModalState
-  WithdrawUSDCModal: WithdrawUSDCModalState
-  USDCPurchaseDetailsModal: USDCPurchaseDetailsModalState
-  USDCTransactionDetailsModal: USDCTransactionDetailsModalState
-  USDCManualTransferModal: USDCManualTransferModalState
-  AddFundsModal: AddFundsModalState
-  PremiumContentPurchaseModal: PremiumContentPurchaseModalState
-  CoinflowWithdraw: CoinflowWithdrawModalState
-  WaitForDownloadModal: WaitForDownloadModalState
-  ArtistPick: ArtistPickModalState
-  AlbumTrackRemoveConfirmation: AlbumTrackRemoveConfirmationModalState
-  UploadConfirmation: UploadConfirmationModalState
-  EditAccessConfirmation: EditAccessConfirmationModalState
-  EarlyReleaseConfirmation: EarlyReleaseConfirmationModalState
-  PublishConfirmation: PublishConfirmationModalState
-  HideContentConfirmation: HideContentConfirmationModalState
-  DeleteTrackConfirmation: DeleteTrackConfirmationModalState
-  ReplaceTrackConfirmation: ReplaceTrackConfirmationModalState
-  ReplaceTrackProgress: ReplaceTrackProgressModalState
-  Announcement: AnnouncementModalState
-  Notification: BaseModalState
-}
-
-export type ModalsState = BasicModalsState & StatefulModalsState
 
 export type TrackModalOpenedActionPayload = {
-  name: string
   source: ModalSource
-  trackingData?: Record<string, any>
+  modal: Modals
 }
 
 export type TrackModalClosedActionPayload = {
-  name: string
+  source: ModalSource
+  modal: Modals
 }
