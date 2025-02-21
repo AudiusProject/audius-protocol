@@ -17,7 +17,7 @@ import type { InputRef } from 'antd/lib/input'
 import cn from 'classnames'
 import { Link, useHistory, useLocation, matchPath } from 'react-router-dom'
 import { useSearchParams } from 'react-router-dom-v5-compat'
-import { useThrottle } from 'react-use'
+import { useDebounce } from 'react-use'
 
 import { searchResultsPage } from 'utils/route'
 
@@ -26,7 +26,7 @@ import { UserResult, TrackResult, CollectionResult } from './SearchBarResult'
 const { SEARCH_PAGE } = route
 
 const DEFAULT_LIMIT = 3
-const THROTTLE_MS = 400
+const DEBOUNCE_MS = 400
 
 const ViewMoreButton = ({ query }: { query: string }) => (
   <Flex
@@ -62,22 +62,34 @@ export const DesktopSearchBar = () => {
   const initialQuery = searchParams.get('query') || ''
 
   const [inputValue, setInputValue] = useState(initialQuery)
-  const throttledValue = useThrottle(inputValue, THROTTLE_MS)
+  const [debouncedValue, setDebouncedValue] = useState(inputValue)
+  useDebounce(
+    () => {
+      setDebouncedValue(inputValue)
+    },
+    DEBOUNCE_MS,
+    [inputValue]
+  )
+
   const inputRef = useRef<InputRef>(null)
   const history = useHistory()
 
   const isSearchPage = !!matchPath(location.pathname, { path: SEARCH_PAGE })
 
   const { data, isLoading } = useSearchAutocomplete(
-    { query: throttledValue, limit: DEFAULT_LIMIT },
+    { query: debouncedValue, limit: DEFAULT_LIMIT },
     { enabled: !isSearchPage }
   )
 
   useEffect(() => {
     if (isSearchPage) {
-      setSearchParams({ query: throttledValue })
+      if (debouncedValue) {
+        setSearchParams({ query: debouncedValue })
+      } else {
+        setSearchParams({})
+      }
     }
-  }, [throttledValue, isSearchPage, setSearchParams])
+  }, [debouncedValue, isSearchPage, setSearchParams])
 
   const handleSearch = useCallback((value: string) => {
     setInputValue(value)
@@ -85,24 +97,6 @@ export const DesktopSearchBar = () => {
 
   const handleClear = useCallback(() => {
     setInputValue('')
-  }, [])
-
-  const handleFocus = useCallback(() => {
-    const searchElement = inputRef.current?.input?.closest(
-      '.ant-select-selection-search'
-    )
-    if (searchElement) {
-      searchElement.classList.add('expanded')
-    }
-  }, [])
-
-  const handleBlur = useCallback(() => {
-    const searchElement = inputRef.current?.input?.closest(
-      '.ant-select-selection-search'
-    )
-    if (searchElement) {
-      searchElement.classList.remove('expanded')
-    }
   }, [])
 
   const handleSelect = useCallback(() => {
@@ -173,27 +167,59 @@ export const DesktopSearchBar = () => {
       ].filter((group) => group.options.length > 0)
     : []
 
-  const showResults = !isSearchPage && (data || isLoading)
+  const showResults = !isSearchPage && !!(data || isLoading)
   const hasNoResults = data && inputValue && options.length === 0
   const hasResults = data && options.length > 0
 
-  const viewMoreOption =
-    hasResults && inputValue
-      ? [
-          {
-            options: [
-              {
-                label: <ViewMoreButton query={inputValue} />,
-                value: 'viewMore'
-              }
-            ]
-          }
-        ]
-      : []
+  if (hasResults && inputValue) {
+    options.push({
+      options: [
+        {
+          label: <ViewMoreButton query={inputValue} />,
+          // @ts-expect-error
+          value: 'viewMore'
+        }
+      ]
+    })
+  } else if (hasNoResults) {
+    options.push({
+      options: [
+        {
+          label: <NoResults />,
+          // @ts-expect-error
+          value: 'no-results'
+        }
+      ]
+    })
+  }
 
-  const noResultsOption = hasNoResults
-    ? [{ options: [{ label: <NoResults />, value: 'no-results' }] }]
-    : []
+  const [isFocused, setIsFocused] = useState(false)
+
+  const handleFocus = useCallback(() => {
+    const searchElement = inputRef.current?.input?.closest(
+      '.ant-select-selection-search'
+    )
+    if (searchElement) {
+      searchElement.classList.add('expanded')
+    }
+    setIsFocused(true)
+  }, [])
+
+  const handleBlur = useCallback(() => {
+    if (!document.hasFocus()) return
+
+    const searchElement = inputRef.current?.input?.closest(
+      '.ant-select-selection-search'
+    )
+    if (searchElement) {
+      setTimeout(
+        () => searchElement.classList.remove('expanded'),
+        // Wait for dropdown to close before contracting
+        showResults ? 100 : 0
+      )
+    }
+    setIsFocused(false)
+  }, [showResults])
 
   return (
     <Flex className={styles.searchBar}>
@@ -202,13 +228,12 @@ export const DesktopSearchBar = () => {
           [styles.searchBoxEmpty]: hasNoResults
         })}
         dropdownMatchSelectWidth={false}
-        options={
-          showResults ? [...options, ...viewMoreOption, ...noResultsOption] : []
-        }
+        options={options}
         value={inputValue}
         onSearch={handleSearch}
         onSelect={handleSelect}
         getPopupContainer={(trigger) => trigger.parentNode as HTMLElement}
+        open={showResults && isFocused}
       >
         <Input
           inputMode='search'

@@ -331,9 +331,9 @@
 
 :global(.ant-select-item-option-active) .primary,
 :global(.ant-select-item-option-active) .secondary {
-  color: var(--harmony-white);
+  color: var(--harmony-static-white);
 }
 
 :global(.ant-select-item-option-active) .iconArrow path {
-  fill: var(--harmony-white) !important;
+  fill: var(--harmony-static-white);
 }
