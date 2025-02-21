@@ -2,11 +2,11 @@ import type { ComponentType } from 'react'
 import { useState, useMemo, useCallback } from 'react'
 
 import {
-  useGetCommentsByUserId,
   useMutualFollowers,
   useRelatedArtists,
   useSupportedUsers,
-  useSupporters
+  useSupporters,
+  useUserComments
 } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import type { UserMetadata } from '@audius/common/models'
@@ -312,10 +312,7 @@ export const ProfileInfoTiles = () => {
     user_id !== accountId && current_user_followee_follow_count > 0
 
   const { data: recentComments = [], isLoading: loadingComments } =
-    useGetCommentsByUserId({
-      userId: user_id,
-      pageSize: 1
-    })
+    useUserComments(user_id, 1)
 
   // Only animate if comments are not immediately visible
   const [useAnimation] = useState(loadingComments)
