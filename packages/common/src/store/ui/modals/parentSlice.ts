@@ -1,17 +1,16 @@
-import type { ChallengeName } from '@audius/common/src/models/AudioRewards'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import {
+  BaseModalState,
   Modals,
-  ModalsState,
   TrackModalClosedActionPayload,
   TrackModalOpenedActionPayload
 } from './types'
 
-export const initialState: ModalsState = {
+export const initialState: Record<Modals, BaseModalState> = {
   TiersExplainer: { isOpen: false },
   TrendingRewardsExplainer: { isOpen: false },
-  ChallengeRewards: { isOpen: false, challengeName: undefined },
+  ChallengeRewards: { isOpen: false },
   ClaimAllRewards: { isOpen: false },
   LinkSocialRewardsExplainer: { isOpen: false },
   APIRewardsExplainer: { isOpen: false },
@@ -49,27 +48,30 @@ export const initialState: ModalsState = {
   PlaybackRate: { isOpen: false },
   ProfileActions: { isOpen: false },
   PublishContentModal: { isOpen: false },
+  AlbumTrackRemoveConfirmation: { isOpen: false },
   AiAttributionSettings: { isOpen: false },
   PremiumContentPurchaseModal: { isOpen: false },
   CreateChatModal: { isOpen: false },
   ChatBlastModal: { isOpen: false },
-  InboxUnavailableModal: { isOpen: false },
   LeavingAudiusModal: { isOpen: false },
+  InboxUnavailableModal: { isOpen: false },
   UploadConfirmation: { isOpen: false },
   EditAccessConfirmation: { isOpen: false },
   EarlyReleaseConfirmation: { isOpen: false },
   PublishConfirmation: { isOpen: false },
   HideContentConfirmation: { isOpen: false },
+  ReplaceTrackConfirmation: { isOpen: false },
+  ReplaceTrackProgress: { isOpen: false },
   WithdrawUSDCModal: { isOpen: false },
   USDCPurchaseDetailsModal: { isOpen: false },
   USDCTransactionDetailsModal: { isOpen: false },
   USDCManualTransferModal: { isOpen: false },
+  CoinflowOnramp: { isOpen: false },
   AddFundsModal: { isOpen: false },
   Welcome: { isOpen: false },
   CoinflowWithdraw: { isOpen: false },
   WaitForDownloadModal: { isOpen: false },
   ArtistPick: { isOpen: false },
-  AlbumTrackRemoveConfirmation: { isOpen: false },
   PayoutWallet: { isOpen: false },
   EditTrackFormOverflowMenu: { isOpen: false },
   ExternalWalletSignUp: { isOpen: false },
@@ -78,7 +80,7 @@ export const initialState: ModalsState = {
 }
 
 const slice = createSlice({
-  name: 'modals',
+  name: 'application/ui/modals',
   initialState,
   reducers: {
     setVisibility: (
@@ -86,26 +88,28 @@ const slice = createSlice({
       action: PayloadAction<{
         modal: Modals
         visible: boolean | 'closing'
-        challengeName?: ChallengeName
       }>
     ) => {
-      const { modal, visible, challengeName } = action.payload
-      if (modal === 'ChallengeRewards') {
-        state[modal] = { isOpen: visible, challengeName }
-      } else {
-        state[modal] = { isOpen: visible }
-      }
+      const { modal, visible } = action.payload
+      state[modal].isOpen = visible
     },
     trackModalOpened: (
       _state,
       _action: PayloadAction<TrackModalOpenedActionPayload>
-    ) => {},
+    ) => {
+      // handled by saga
+    },
     trackModalClosed: (
       _state,
       _action: PayloadAction<TrackModalClosedActionPayload>
-    ) => {}
+    ) => {
+      // handled by saga
+    }
   }
 })
 
-export const { actions } = slice
+export const { setVisibility } = slice.actions
+
+export const actions = slice.actions
+
 export default slice.reducer
