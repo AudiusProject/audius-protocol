@@ -12,6 +12,8 @@ reply_comment_model = ns.model(
     "reply_comment",
     {
         "id": fields.String(required=True),
+        "entity_id": fields.String(required=True),
+        "entity_type": fields.String(required=True),
         "user_id": fields.String(required=True),
         "message": fields.String(required=True),
         "mentions": fields.List(

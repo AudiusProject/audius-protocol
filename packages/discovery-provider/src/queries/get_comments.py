@@ -149,6 +149,8 @@ def get_replies(
         {
             "id": encode_int_id(reply.comment_id),
             "user_id": encode_int_id(reply.user_id),
+            "entity_id": encode_int_id(reply.entity_id),
+            "entity_type": reply.entity_type,
             "message": reply.text,
             "mentions": list(map(remove_delete, filter(filter_mentions, mentions))),
             "track_timestamp_s": reply.track_timestamp_s,

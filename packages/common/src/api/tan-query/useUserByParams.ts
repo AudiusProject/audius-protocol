@@ -36,7 +36,7 @@ export const useUserByParams = (params: UserParams, options?: QueryOptions) => {
 
   useEffect(() => {
     if (isSuccess && userIdResult && handleResult) {
-      dispatch(fetchProfileSucceeded(handleResult, userIdResult, false))
+      dispatch(fetchProfileSucceeded(handleResult, userIdResult, true))
     }
   }, [isSuccess, userIdResult, dispatch, handleResult])
 

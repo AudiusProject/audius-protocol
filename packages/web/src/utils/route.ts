@@ -35,7 +35,7 @@ export const fullAiPage = (handle: string) => {
 }
 
 export const fullCommentHistoryPage = (handle: string) => {
-  return `${fullProfilePage(handle)}/comments`
+  return `${profilePage(handle)}/comments`
 }
 
 export const albumPage = (handle: string, title: string, id: ID) => {
