@@ -352,6 +352,8 @@ export const ProfileInfoTiles = () => {
         {isRecentCommentsEnabled && recentComments.length > 0 && (
           <Animated.View entering={fadeInAnimation}>
             <ProfileInfoTile
+              // TODO: This should open the recent comments drawer when pressed
+              // https://linear.app/audius/issue/C-5797/implement-comment-history-drawer-on-mobile
               screen='RecentComments'
               icon={IconMessage}
               title={messages.comments}
