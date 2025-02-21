@@ -1,4 +1,6 @@
+import { useFeatureFlag } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { Box, Flex, Text } from '@audius/harmony'
 
@@ -92,6 +94,9 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
   } = props
 
   const accountUserId = useSelector(getUserId)
+  const recentCommentsFlag = useFeatureFlag(FeatureFlags.RECENT_COMMENTS)
+  const isRecentCommentsEnabled =
+    recentCommentsFlag.isLoaded && recentCommentsFlag.isEnabled
 
   if (editMode) {
     return (
@@ -214,7 +219,7 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
         />
         {accountUserId !== userId ? <TipAudioButton /> : null}
         {allowAiAttribution ? <AiGeneratedCallout handle={handle} /> : null}
-        <RecentComments userId={userId} />
+        {isRecentCommentsEnabled ? <RecentComments userId={userId} /> : null}
         <SupportingList />
         <TopSupporters />
         <ProfileMutuals />

@@ -1,6 +1,12 @@
 import { useCallback } from 'react'
 
-import { useGetCommentById, useGetCommentsByUserId } from '@audius/common/api'
+import {
+  useCurrentUserId,
+  useGetCommentById,
+  useGetCommentsByUserId
+} from '@audius/common/api'
+import { Comment } from '@audius/common/models'
+import { useTrack } from '@audius/common/src/api/tan-query/useTrack'
 import { useUser } from '@audius/common/src/api/tan-query/useUser'
 import {
   Flex,
@@ -13,7 +19,7 @@ import {
 import { useDispatch } from 'react-redux'
 
 import { push } from 'utils/navigation'
-import { userCommentsPage } from 'utils/route'
+import { fullCommentHistoryPage } from 'utils/route'
 
 import { ProfilePageNavSectionItem } from './ProfilePageNavSectionItem'
 import { ProfilePageNavSectionTitle } from './ProfilePageNavSectionTitle'
@@ -24,16 +30,21 @@ const messages = {
 }
 
 const CommentListItem = ({ id }: { id: number }) => {
-  const { data: comment } = useGetCommentById(id)
-  if (!comment || !('message' in comment)) return null
+  const { data } = useGetCommentById(id)
+  // TODO-NOW: Fix these
+  const comment = data as Comment | undefined
+  //   const { data: track } = useTrack(comment?.entityId, {
+  //     enabled: !!comment?.entityId
+  //   })
 
-  // TODO-NOW: Update to new comment reponse so we can get trackId
+  if (!comment /* || !track */) return null
 
   return (
     <Flex column gap='m' w='100%'>
       <Flex column gap='2xs' w='100%'>
         <Text variant='body' size='s' color='subdued'>
-          Title
+          {/* {track.title} */}
+          Track Title
         </Text>
         <Text variant='body' size='s' ellipses>
           {comment.message}
@@ -47,14 +58,16 @@ const CommentListItem = ({ id }: { id: number }) => {
 export const RecentComments = ({ userId }: { userId: number }) => {
   const dispatch = useDispatch()
   const { data: user } = useUser(userId)
+  const { data: currentUserId } = useCurrentUserId()
   const { data: commentIds = [] } = useGetCommentsByUserId({
     userId,
+    currentUserId,
     pageSize: 3
   })
 
   const onClickViewAll = useCallback(() => {
     if (user?.handle) {
-      dispatch(push(userCommentsPage(user.handle)))
+      dispatch(push(fullCommentHistoryPage(user.handle)))
     }
   }, [dispatch, user?.handle])
 
