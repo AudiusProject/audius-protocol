@@ -51,7 +51,6 @@ const PlaylistTile = ({
   tileClassName,
   tracksContainerClassName,
   onClickTitle,
-  onClickRepost,
   onClickFavorite,
   onClickShare,
   onTogglePlay,
@@ -129,7 +128,6 @@ const PlaylistTile = ({
           bottomBar={bottomBar}
           showIconButtons={showIconButtons}
           containerClassName={tileClassName}
-          onClickRepost={onClickRepost}
           onClickFavorite={onClickFavorite}
           onClickShare={onClickShare}
           onTogglePlay={onTogglePlay}
@@ -181,7 +179,6 @@ const PlaylistTile = ({
             isMatrixMode={isMatrixMode}
             showIconButtons={showIconButtons}
             onClickFavorite={onClickFavorite}
-            onClickRepost={onClickRepost}
             onClickShare={onClickShare}
             onClickGatedUnlockPill={onClickGatedUnlockPill}
           />

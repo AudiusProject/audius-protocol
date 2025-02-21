@@ -4,7 +4,6 @@ import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,
   ShareSource,
-  RepostSource,
   FavoriteSource,
   PlaybackSource,
   ModalSource,
@@ -49,6 +48,7 @@ import { PlayButtonStatus } from 'components/play-bar/types'
 import { GatedConditionsPill } from 'components/track/GatedConditionsPill'
 import { TrackDogEar } from 'components/track/TrackDogEar'
 import UserBadges from 'components/user-badges/UserBadges'
+import { useRepostTrack } from 'hooks/useRepost'
 import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
 import {
   useTrackCoverArt,
@@ -73,8 +73,7 @@ const { getBuffering, getCounter, getPlaying, getPlaybackRate, getSeek } =
 const { seek, reset } = playerActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
-const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
-  tracksSocialActions
+const { saveTrack, unsaveTrack } = tracksSocialActions
 const { next, pause, play, previous, repeat, shuffle } = queueActions
 const getUserId = accountSelectors.getUserId
 const { getGatedContentStatusMap } = gatedContentSelectors
@@ -130,8 +129,6 @@ const NowPlaying = g(
     shuffle,
     save,
     unsave,
-    repost,
-    undoRepost,
     clickOverflow,
     goToRoute
   }) => {
@@ -206,7 +203,7 @@ const NowPlaying = g(
     } else {
       displayInfo = {
         title: collectible?.name as string,
-        track_id: collectible?.id as string,
+        track_id: Number(collectible?.id),
         owner_id: user?.user_id,
         has_current_user_saved: false,
         has_current_user_reposted: false,
@@ -263,11 +260,12 @@ const NowPlaying = g(
       }
     }, [track, track_id, has_current_user_saved, unsave, save])
 
+    const handleRepostTrack = useRepostTrack()
     const toggleRepost = useCallback(() => {
       if (track && track_id && typeof track_id !== 'string') {
-        has_current_user_reposted ? undoRepost(track_id) : repost(track_id)
+        handleRepostTrack({ trackId: track_id })
       }
-    }, [track, track_id, has_current_user_reposted, undoRepost, repost])
+    }, [track, track_id, handleRepostTrack])
 
     const onShare = useCallback(() => {
       if (track && track_id && typeof track_id !== 'string') share(track_id)
@@ -616,10 +614,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(saveTrack(trackId, FavoriteSource.NOW_PLAYING)),
     unsave: (trackId: ID) =>
       dispatch(unsaveTrack(trackId, FavoriteSource.NOW_PLAYING)),
-    repost: (trackId: ID) =>
-      dispatch(repostTrack(trackId, RepostSource.NOW_PLAYING)),
-    undoRepost: (trackId: ID) =>
-      dispatch(undoRepostTrack(trackId, RepostSource.NOW_PLAYING)),
     clickOverflow: (
       trackId: ID | string,
       overflowActions: OverflowAction[],

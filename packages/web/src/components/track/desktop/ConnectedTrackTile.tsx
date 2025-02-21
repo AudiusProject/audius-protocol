@@ -43,8 +43,7 @@ const { getUid, getPlaying, getBuffering } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { getTrack } = cacheTracksSelectors
 const { getUserFromTrack } = cacheUsersSelectors
-const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
-  tracksSocialActions
+const { saveTrack, unsaveTrack } = tracksSocialActions
 const { getUserHandle } = accountSelectors
 const { setLockedContentId } = gatedContentActions
 
@@ -85,8 +84,6 @@ const ConnectedTrackTile = ({
   userHandle,
   saveTrack,
   unsaveTrack,
-  repostTrack,
-  undoRepostTrack,
   shareTrack,
   isTrending,
   isFeed = false,
@@ -216,14 +213,6 @@ const ConnectedTrackTile = ({
     }
   }, [isFavorited, unsaveTrack, trackId, saveTrack, isFeed])
 
-  const onClickRepost = useCallback(() => {
-    if (isReposted) {
-      undoRepostTrack(trackId)
-    } else {
-      repostTrack(trackId, isFeed)
-    }
-  }, [repostTrack, undoRepostTrack, trackId, isReposted, isFeed])
-
   const onClickShare = useCallback(() => {
     shareTrack(trackId)
   }, [shareTrack, trackId])
@@ -309,7 +298,6 @@ const ConnectedTrackTile = ({
         [styles.loading]: loading,
         [styles.active]: isActive
       })}
-      onClickRepost={onClickRepost}
       onClickFavorite={onClickFavorite}
       onClickShare={onClickShare}
       onClickLocked={openLockedContentModal}
@@ -361,10 +349,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
           source: ShareSource.TILE
         })
       ),
-    repostTrack: (trackId: ID, isFeed: boolean) =>
-      dispatch(repostTrack(trackId, RepostSource.TILE, isFeed)),
-    undoRepostTrack: (trackId: ID) =>
-      dispatch(undoRepostTrack(trackId, RepostSource.TILE)),
     saveTrack: (trackId: ID, isFeed: boolean) =>
       dispatch(saveTrack(trackId, FavoriteSource.TILE, isFeed)),
     unsaveTrack: (trackId: ID) =>

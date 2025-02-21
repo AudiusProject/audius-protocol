@@ -31,6 +31,7 @@ import { connect } from 'react-redux'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import { Dispatch } from 'redux'
 
+import { useRepostTrack } from 'hooks/useRepost'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { AppState } from 'store/types'
 import { push } from 'utils/navigation'
@@ -47,15 +48,9 @@ const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { requestOpen: openDeletePlaylist } =
   deletePlaylistConfirmationModalUIActions
 const { requestOpen: openAddToCollection } = addToCollectionUIActions
-const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
-  tracksSocialActions
-const {
-  repostCollection,
-  saveCollection,
-  shareCollection,
-  undoRepostCollection,
-  unsaveCollection
-} = collectionsSocialActions
+const { saveTrack, unsaveTrack } = tracksSocialActions
+const { saveCollection, shareCollection, unsaveCollection } =
+  collectionsSocialActions
 const { getTrack } = cacheTracksSelectors
 const { getUser } = cacheUsersSelectors
 const { getCollection } = cacheCollectionsSelectors
@@ -85,12 +80,8 @@ const ConnectedMobileOverflowModal = ({
   collectionPermalink,
   isAlbum,
   shareCollection,
-  repostTrack,
-  unrepostTrack,
   saveTrack,
   unsaveTrack,
-  repostCollection,
-  unrepostCollection,
   saveCollection,
   unsaveCollection,
   addToCollection,
@@ -111,10 +102,9 @@ const ConnectedMobileOverflowModal = ({
   const { mutate: followUser } = useFollowUser()
   const { mutate: unfollowUser } = useUnfollowUser()
   const navigate = useNavigate()
+  const handleRepostTrack = useRepostTrack()
   // Create callbacks
   const {
-    onRepost,
-    onUnrepost,
     onFavorite,
     onUnfavorite,
     onShare,
@@ -154,8 +144,8 @@ const ConnectedMobileOverflowModal = ({
         if (!id || !ownerId || !handle || !title || isAlbum === undefined)
           return {}
         return {
-          onRepost: () => repostTrack(id as ID),
-          onUnrepost: () => unrepostTrack(id as ID),
+          onRepost: () => handleRepostTrack({ trackId: id as ID }),
+          onUnrepost: () => handleRepostTrack({ trackId: id as ID }),
           onFavorite: () => saveTrack(id as ID),
           onUnfavorite: () => unsaveTrack(id as ID),
           onAddToAlbum: () => addToCollection('album', id as ID, title),
@@ -191,8 +181,8 @@ const ConnectedMobileOverflowModal = ({
       case OverflowSource.COLLECTIONS: {
         if (!id || !handle || !title || isAlbum === undefined) return {}
         return {
-          onRepost: () => repostCollection(id as ID),
-          onUnrepost: () => unrepostCollection(id as ID),
+          onRepost: () => {}, // TODO: Implement repost collection
+          onUnrepost: () => {}, // TODO: Implement unrepost collection
           onFavorite: () => saveCollection(id as ID),
           onUnfavorite: () => unsaveCollection(id as ID),
           onShare: () => shareCollection(id as ID),
@@ -240,8 +230,8 @@ const ConnectedMobileOverflowModal = ({
       callbacks={overflowActionCallbacks}
       isOpen={isOpen}
       onClose={onClose}
-      onRepost={onRepost}
-      onUnrepost={onUnrepost}
+      onRepost={() => handleRepostTrack({ trackId: id as ID })}
+      onUnrepost={() => handleRepostTrack({ trackId: id as ID })}
       onFavorite={onFavorite}
       onUnfavorite={onUnfavorite}
       onShare={onShare}
@@ -355,10 +345,6 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
     onClose: () =>
       dispatch(setVisibility({ modal: 'Overflow', visible: false })),
     // Tracks
-    repostTrack: (trackId: ID) =>
-      dispatch(repostTrack(trackId, RepostSource.OVERFLOW)),
-    unrepostTrack: (trackId: ID) =>
-      dispatch(undoRepostTrack(trackId, RepostSource.OVERFLOW)),
     saveTrack: (trackId: ID) =>
       dispatch(saveTrack(trackId, FavoriteSource.OVERFLOW)),
     unsaveTrack: (trackId: ID) =>
@@ -367,10 +353,6 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
     // Collections
     shareCollection: (collectionId: ID) =>
       dispatch(shareCollection(collectionId, ShareSource.OVERFLOW)),
-    repostCollection: (collectionId: ID, metadata?: any) =>
-      dispatch(repostCollection(collectionId, metadata)),
-    unrepostCollection: (collectionId: ID, metadata?: any) =>
-      dispatch(undoRepostCollection(collectionId, metadata)),
     saveCollection: (collectionId: ID) =>
       dispatch(saveCollection(collectionId, FavoriteSource.OVERFLOW)),
     unsaveCollection: (collectionId: ID) =>

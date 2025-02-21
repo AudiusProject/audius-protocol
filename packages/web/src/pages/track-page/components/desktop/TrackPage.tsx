@@ -11,6 +11,7 @@ import NavBanner from 'components/nav-banner/NavBanner'
 import Page from 'components/page/Page'
 import { StatBanner } from 'components/stat-banner/StatBanner'
 import { GiantTrackTile } from 'components/track/GiantTrackTile'
+import { useRepostTrack } from 'hooks/useRepost'
 import { getTrackDefaults, emptyStringGuard } from 'pages/track-page/utils'
 
 import { TrackPageLineup } from '../TrackPageLineup'
@@ -35,7 +36,6 @@ export type OwnProps = {
     isPreview?: boolean
   }) => void
   onHeroShare: (trackId: ID) => void
-  onHeroRepost: (isReposted: boolean, trackId: ID) => void
   onFollow: () => void
   onUnfollow: () => void
 
@@ -56,7 +56,6 @@ const TrackPage = ({
   userId,
   onHeroPlay,
   onHeroShare,
-  onHeroRepost,
   onSaveTrack,
   onFollow,
   onUnfollow,
@@ -67,6 +66,8 @@ const TrackPage = ({
   const following = user?.does_current_user_follow ?? false
   const isSaved = heroTrack?.has_current_user_saved ?? false
   const isReposted = heroTrack?.has_current_user_reposted ?? false
+
+  const repostTrack = useRepostTrack()
 
   const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(heroTrack)
@@ -87,7 +88,7 @@ const TrackPage = ({
     : () => heroTrack && onSaveTrack(isSaved, heroTrack.track_id)
   const onShare = () => (heroTrack ? onHeroShare(heroTrack.track_id) : null)
   const onRepost = () =>
-    heroTrack ? onHeroRepost(isReposted, heroTrack.track_id) : null
+    heroTrack ? repostTrack({ trackId: heroTrack.track_id }) : null
 
   const commentSectionRef = useRef<HTMLDivElement | null>(null)
 

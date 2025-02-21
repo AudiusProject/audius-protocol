@@ -14,6 +14,7 @@ import NavContext, {
   CenterPreset,
   RightPreset
 } from 'components/nav/mobile/NavContext'
+import { useRepostTrack } from 'hooks/useRepost'
 import { getTrackDefaults } from 'pages/track-page/utils'
 
 import { TrackPageLineup } from '../TrackPageLineup'
@@ -39,7 +40,6 @@ export type OwnProps = {
     isPreview?: boolean
   }) => void
   onHeroShare: (trackId: ID) => void
-  onHeroRepost: (isReposted: boolean, trackId: number) => void
   onClickMobileOverflow: (
     trackId: ID,
     overflowActions: OverflowAction[]
@@ -64,7 +64,6 @@ const TrackPage = ({
   onHeroPlay,
   onHeroShare,
   onSaveTrack,
-  onHeroRepost,
   onClickMobileOverflow,
 
   goToFavoritesPage,
@@ -81,6 +80,8 @@ const TrackPage = ({
   useEffect(() => {
     setHeader(null)
   }, [setHeader])
+
+  const repostTrack = useRepostTrack()
 
   const isOwner = heroTrack ? heroTrack.owner_id === userId : false
   const isSaved = heroTrack ? heroTrack.has_current_user_saved : false
@@ -106,7 +107,7 @@ const TrackPage = ({
     : () => heroTrack && onSaveTrack(isSaved, heroTrack.track_id)
   const onRepost = isOwner
     ? () => {}
-    : () => heroTrack && onHeroRepost(isReposted, heroTrack.track_id)
+    : () => heroTrack && repostTrack({ trackId: heroTrack.track_id })
   const onShare = () => {
     heroTrack && onHeroShare(heroTrack.track_id)
   }

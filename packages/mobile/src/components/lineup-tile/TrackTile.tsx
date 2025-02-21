@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 
 import {
   ShareSource,
-  RepostSource,
   FavoriteSource,
   PlaybackSource,
   SquareSizes,
@@ -41,8 +40,7 @@ import { LineupTile } from './LineupTile'
 const { getUid } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
-const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
-  tracksSocialActions
+const { saveTrack, unsaveTrack } = tracksSocialActions
 const { getUserFromTrack } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const { getUserId } = accountSelectors
@@ -228,17 +226,6 @@ export const TrackTileComponent = ({
     }
   }, [track_id, dispatch, has_current_user_saved])
 
-  const handlePressRepost = useCallback(() => {
-    if (track_id === undefined) {
-      return
-    }
-    if (has_current_user_reposted) {
-      dispatch(undoRepostTrack(track_id, RepostSource.TILE))
-    } else {
-      dispatch(repostTrack(track_id, RepostSource.TILE))
-    }
-  }, [track_id, dispatch, has_current_user_reposted])
-
   const publish = useCallback(() => {
     dispatch(trackPageActions.makeTrackPublic(track_id))
   }, [dispatch, track_id])
@@ -267,7 +254,6 @@ export const TrackTileComponent = ({
       isUnlisted={is_unlisted}
       onPress={handlePress}
       onPressOverflow={handlePressOverflow}
-      onPressRepost={handlePressRepost}
       onPressSave={handlePressSave}
       onPressShare={handlePressShare}
       onPressTitle={handlePressTitle}

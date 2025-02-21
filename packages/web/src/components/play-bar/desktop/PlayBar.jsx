@@ -2,7 +2,6 @@ import { Component } from 'react'
 
 import {
   Name,
-  RepostSource,
   FavoriteSource,
   PlaybackSource,
   Kind
@@ -57,8 +56,7 @@ const {
 
 const { seek, reset } = playerActions
 const { getTheme } = themeSelectors
-const { repostTrack, undoRepostTrack, saveTrack, unsaveTrack } =
-  tracksSocialActions
+const { saveTrack, unsaveTrack } = tracksSocialActions
 const { play, pause, next, previous, repeat, shuffle } = queueActions
 const { getLineupEntries } = lineupSelectors
 const { getUserId } = accountSelectors
@@ -194,14 +192,6 @@ class PlayBar extends Component {
       favorited
         ? this.props.unsaveTrack(trackId)
         : this.props.saveTrack(trackId)
-    }
-  }
-
-  onToggleRepost = (reposted, trackId) => {
-    if (trackId) {
-      reposted
-        ? this.props.undoRepostTrack(trackId)
-        : this.props.repostTrack(trackId)
     }
   }
 
@@ -444,7 +434,6 @@ class PlayBar extends Component {
               trackId={trackId}
               uid={uid}
               isOwner={isOwner}
-              onToggleRepost={this.onToggleRepost}
               onToggleFavorite={this.onToggleFavorite}
             />
           </div>
@@ -524,10 +513,6 @@ const mapDispatchToProps = (dispatch) => ({
   shuffle: (enable) => {
     dispatch(shuffle({ enable }))
   },
-  repostTrack: (trackId) =>
-    dispatch(repostTrack(trackId, RepostSource.PLAYBAR)),
-  undoRepostTrack: (trackId) =>
-    dispatch(undoRepostTrack(trackId, RepostSource.PLAYBAR)),
   saveTrack: (trackId) => dispatch(saveTrack(trackId, FavoriteSource.PLAYBAR)),
   unsaveTrack: (trackId) =>
     dispatch(unsaveTrack(trackId, FavoriteSource.PLAYBAR)),

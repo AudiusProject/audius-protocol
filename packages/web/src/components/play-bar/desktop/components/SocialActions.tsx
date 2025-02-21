@@ -15,11 +15,11 @@ import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import Tooltip from 'components/tooltip/Tooltip'
 import { GatedConditionsPill } from 'components/track/GatedConditionsPill'
+import { useRepostTrack } from 'hooks/useRepost'
 import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
 import { shouldShowDark } from 'utils/theme/theme'
 
 import styles from './SocialActions.module.css'
-
 const { getTheme } = themeSelectors
 const { getGatedContentStatusMap } = gatedContentSelectors
 const { getTrack } = cacheTracksSelectors
@@ -28,7 +28,6 @@ type SocialActionsProps = {
   trackId: ID
   uid: UID
   isOwner: boolean
-  onToggleRepost: (reposted: boolean, trackId: ID) => void
   onToggleFavorite: (favorited: boolean, trackId: ID) => void
 }
 
@@ -43,7 +42,6 @@ export const SocialActions = ({
   trackId,
   uid,
   isOwner,
-  onToggleRepost,
   onToggleFavorite
 }: SocialActionsProps) => {
   const track = useSelector((state: CommonState) =>
@@ -67,6 +65,7 @@ export const SocialActions = ({
     )
   }, [trackId, openPremiumContentPurchaseModal])
 
+  const handleRepostTrack = useRepostTrack()
   const { hasStreamAccess } = useGatedContentAccess(track)
 
   const theme = useSelector(getTheme)
@@ -98,7 +97,7 @@ export const SocialActions = ({
                 {!isUnlisted ? (
                   <RepostButton
                     aria-label={repostText}
-                    onClick={() => onToggleRepost(reposted, trackId)}
+                    onClick={() => handleRepostTrack({ trackId })}
                     isActive={reposted}
                     isDisabled={
                       isFavoriteAndRepostDisabled || track?.is_unlisted

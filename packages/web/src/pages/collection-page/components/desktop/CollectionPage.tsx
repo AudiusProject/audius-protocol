@@ -1,4 +1,4 @@
-import { ChangeEvent, useMemo } from 'react'
+import { ChangeEvent, useCallback, useMemo } from 'react'
 
 import {
   Variant,
@@ -31,6 +31,7 @@ import { Divider } from 'components/divider'
 import Page from 'components/page/Page'
 import { SuggestedTracks } from 'components/suggested-tracks'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
+import { useRepostTrack } from 'hooks/useRepost'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons'
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'
@@ -116,7 +117,6 @@ export type CollectionPageProps = {
     trackMetadata: CollectionTrack[]
   ) => [CollectionPageTrackRecord[], number]
   onFilterChange: (evt: ChangeEvent<HTMLInputElement>) => void
-  onClickRepostTrack: (record: CollectionPageTrackRecord) => void
   onClickPurchaseTrack: (record: CollectionPageTrackRecord) => void
   onSortTracks: (sorters: any) => void
   onReorderTracks: (source: number, destination: number) => void
@@ -151,7 +151,6 @@ const CollectionPage = ({
   onPreview,
   onClickRow,
   onClickSave,
-  onClickRepostTrack,
   onSortTracks,
   onReorderTracks,
   onClickRemove,
@@ -234,6 +233,14 @@ const CollectionPage = ({
     [openPremiumContentModal]
   )
   const isPlayable = !areAllTracksDeleted && numTracks > 0
+
+  const repostTrack = useRepostTrack()
+  const onClickRepostTrack = useCallback(
+    (record: CollectionPageTrackRecord) => {
+      repostTrack({ trackId: record.track_id })
+    },
+    [repostTrack]
+  )
 
   const topSection = (
     <CollectionHeader
