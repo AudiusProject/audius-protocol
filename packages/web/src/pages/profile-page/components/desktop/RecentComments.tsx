@@ -10,8 +10,11 @@ import {
   Divider,
   Text,
   PlainButton,
-  IconArrowRight
+  IconArrowRight,
+  Skeleton,
+  useTheme
 } from '@audius/harmony'
+import { OptionalHashId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
 import { push } from 'utils/navigation'
@@ -27,21 +30,25 @@ const messages = {
 
 const CommentListItem = ({ id }: { id: number }) => {
   const { data } = useGetCommentById(id)
-  // TODO-NOW: Fix these
+  const theme = useTheme()
   const comment = data as Comment | undefined
-  //   const { data: track } = useTrack(comment?.entityId, {
-  //     enabled: !!comment?.entityId
-  //   })
+  const { data: track } = useTrack(OptionalHashId.parse(comment?.entityId), {
+    enabled: !!comment?.entityId
+  })
 
-  if (!comment /* || !track */) return null
+  if (!comment) return null
 
   return (
     <Flex column gap='m' w='100%'>
       <Flex column gap='2xs' w='100%'>
-        <Text variant='body' size='s' color='subdued'>
-          {/* {track.title} */}
-          Track Title
-        </Text>
+        {track ? (
+          <Text variant='body' size='s' color='subdued'>
+            {track.title}
+          </Text>
+        ) : (
+          <Skeleton w='80%' h={theme.typography.lineHeight.m} />
+        )}
+
         <Text variant='body' size='s' ellipses>
           {comment.message}
         </Text>
