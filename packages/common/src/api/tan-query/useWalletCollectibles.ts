@@ -18,7 +18,7 @@ export const getCollectiblesQueryKey = ({
 }: UseWalletCollectibles) => [QUERY_KEYS.walletCollectibles, chain, address]
 
 /**
- * Query function for getting the AUDIO balance of an Ethereum wallet.
+ * Query function for getting the collectibles of an Ethereum or Solana wallet.
  */
 export const useWalletCollectibles = (
   { address, chain }: UseWalletCollectibles,
