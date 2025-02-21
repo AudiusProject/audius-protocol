@@ -98,6 +98,12 @@ export interface SaleJson {
      * @memberof SaleJson
      */
     isInitial?: boolean;
+    /**
+     * Base64 encoded public key of the buyer
+     * @type {string}
+     * @memberof SaleJson
+     */
+    pubkeyBase64?: string;
 }
 
 /**
@@ -132,6 +138,7 @@ export function SaleJsonFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'encryptedEmail': !exists(json, 'encrypted_email') ? undefined : json['encrypted_email'],
         'encryptedKey': !exists(json, 'encrypted_key') ? undefined : json['encrypted_key'],
         'isInitial': !exists(json, 'is_initial') ? undefined : json['is_initial'],
+        'pubkeyBase64': !exists(json, 'pubkey_base64') ? undefined : json['pubkey_base64'],
     };
 }
 
@@ -157,6 +164,7 @@ export function SaleJsonToJSON(value?: SaleJson | null): any {
         'encrypted_email': value.encryptedEmail,
         'encrypted_key': value.encryptedKey,
         'is_initial': value.isInitial,
+        'pubkey_base64': value.pubkeyBase64,
     };
 }
 

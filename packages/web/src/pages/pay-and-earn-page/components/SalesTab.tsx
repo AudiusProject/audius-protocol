@@ -172,6 +172,92 @@ export const useSales = () => {
         return
       }
 
+      const BATCH_SIZE = 10
+      const CONCURRENT_BATCHES = 3
+      const rows = []
+
+      // Process sales in concurrent batches
+      for (let i = 0; i < sales.length; i += BATCH_SIZE * CONCURRENT_BATCHES) {
+        const batchPromises = []
+
+        // Create promises for concurrent batch processing
+        for (let j = 0; j < CONCURRENT_BATCHES; j++) {
+          const start = i + j * BATCH_SIZE
+          const end = Math.min(start + BATCH_SIZE, sales.length)
+          if (start < sales.length) {
+            const batch = sales.slice(start, end)
+
+            // Process the batch
+            const batchPromise = Promise.all(
+              batch.map(async (sale) => {
+                try {
+                  const decryptionId = sale.isInitial
+                    ? (env.EMAIL_ENCRYPTION_UUID ?? 0)
+                    : sale.buyerUserId
+
+                  let decryptedEmail = ''
+                  if (
+                    sale.encryptedEmail &&
+                    sale.encryptedKey &&
+                    sale.pubkeyBase64
+                  ) {
+                    try {
+                      // Use the pubkey directly from the sale data
+                      const symmetricKey =
+                        await sdk.services.emailEncryptionService.decryptSymmetricKey(
+                          sale.encryptedKey,
+                          Id.parse(decryptionId),
+                          sale.pubkeyBase64
+                        )
+                      decryptedEmail =
+                        await sdk.services.emailEncryptionService.decryptEmail(
+                          sale.encryptedEmail,
+                          symmetricKey
+                        )
+                    } catch (err) {
+                      console.error('Error decrypting email:', err)
+                    }
+                  }
+
+                  return [
+                    sale.title,
+                    sale.link,
+                    sale.purchasedBy,
+                    decryptedEmail,
+                    sale.date,
+                    sale.salePrice,
+                    sale.networkFee,
+                    sale.payExtra,
+                    sale.total,
+                    sale.country
+                  ]
+                } catch (err) {
+                  console.error('Error processing sale:', err)
+                  return [
+                    sale.title,
+                    sale.link,
+                    sale.purchasedBy,
+                    '',
+                    sale.date,
+                    sale.salePrice,
+                    sale.networkFee,
+                    sale.payExtra,
+                    sale.total,
+                    sale.country
+                  ]
+                }
+              })
+            )
+
+            batchPromises.push(batchPromise)
+          }
+        }
+
+        // Wait for all concurrent batches to complete
+        const batchResults = await Promise.all(batchPromises)
+        rows.push(...batchResults.flat())
+      }
+
       const headers = [
         'Title',
         'Link',
@@ -184,45 +270,6 @@ export const useSales = () => {
         'Total',
         'Country'
       ]
-
-      const rows = await Promise.all(
-        sales.map(async (sale) => {
-          let decryptedEmail = ''
-          try {
-            const decryptionId = sale.isInitial
-              ? (env.EMAIL_ENCRYPTION_UUID ?? 0)
-              : sale.buyerUserId
-
-            const symmetricKey =
-              await sdk.services.emailEncryptionService.decryptSymmetricKey(
-                sale.encryptedKey ?? '',
-                Id.parse(decryptionId)
-              )
-
-            decryptedEmail =
-              sale.encryptedEmail && sale.encryptedKey
-                ? await sdk.services.emailEncryptionService
-                    .decryptEmail(sale.encryptedEmail, symmetricKey)
-                    .catch(() => '')
-                : ''
-          } catch (err) {
-            console.error('Error decrypting email:', err)
-          }
-
-          return [
-            sale.title,
-            sale.link,
-            sale.purchasedBy,
-            decryptedEmail,
-            sale.date,
-            sale.salePrice,
-            sale.networkFee,
-            sale.payExtra,
-            sale.total,
-            sale.country
-          ]
-        })
-      )
 
       const csvContent = [
         headers.join(','),
