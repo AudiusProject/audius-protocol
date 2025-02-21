@@ -4,6 +4,7 @@ import { ModalSource } from '~/models/Analytics'
 
 import { AddFundsModalState } from './add-funds-modal'
 import { AlbumTrackRemoveConfirmationModalState } from './album-track-remove-confirmation-modal'
+import { AnnouncementModalState } from './announcement-modal'
 import { ArtistPickModalState } from './artist-pick-modal'
 import { CoinflowOnrampModalState } from './coinflow-onramp-modal'
 import { CoinflowWithdrawModalState } from './coinflow-withdraw-modal'
@@ -104,6 +105,8 @@ export type Modals =
   | 'EditTrackFormOverflowMenu'
   | 'ExternalWalletSignUp'
   | 'ConnectedWallets'
+  | 'Announcement'
+  | 'Notification'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState
@@ -133,6 +136,8 @@ export type StatefulModalsState = {
   DeleteTrackConfirmation: DeleteTrackConfirmationModalState
   ReplaceTrackConfirmation: ReplaceTrackConfirmationModalState
   ReplaceTrackProgress: ReplaceTrackProgressModalState
+  Announcement: AnnouncementModalState
+  Notification: BaseModalState
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState

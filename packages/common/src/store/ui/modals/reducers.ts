@@ -2,6 +2,7 @@ import { Action, combineReducers, Reducer } from '@reduxjs/toolkit'
 
 import { addFundsModalReducer } from './add-funds-modal'
 import { albumTrackRemoveConfirmationModalReducer } from './album-track-remove-confirmation-modal'
+import { announcementModalReducer } from './announcement-modal'
 import { artistPickModalReducer } from './artist-pick-modal'
 import { coinflowOnrampModalReducer } from './coinflow-onramp-modal'
 import { coinflowWithdrawModalReducer } from './coinflow-withdraw-modal'
@@ -15,6 +16,7 @@ import { externalWalletSignUpModalReducer } from './external-wallet-sign-up-moda
 import { hideContentConfirmationModalReducer } from './hide-confirmation-modal'
 import { inboxUnavailableModalReducer } from './inbox-unavailable-modal'
 import { leavingAudiusModalReducer } from './leaving-audius-modal'
+import { notificationModalReducer } from './notification-modal'
 import parentReducer, { initialState } from './parentSlice'
 import { premiumContentPurchaseModalReducer } from './premium-content-purchase-modal'
 import { publishConfirmationModalReducer } from './publish-confirmation-modal'
@@ -70,7 +72,9 @@ const combinedReducers = combineReducers({
   PublishConfirmation: publishConfirmationModalReducer,
   HideContentConfirmation: hideContentConfirmationModalReducer,
   ExternalWalletSignUp: externalWalletSignUpModalReducer,
-  ConnectedWallets: connectedWalletsModalReducer
+  ConnectedWallets: connectedWalletsModalReducer,
+  Announcement: announcementModalReducer,
+  Notification: notificationModalReducer
 })
 
 /**

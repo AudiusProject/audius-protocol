@@ -75,7 +75,9 @@ export const initialState: BasicModalsState = {
   PayoutWallet: { isOpen: false },
   EditTrackFormOverflowMenu: { isOpen: false },
   ExternalWalletSignUp: { isOpen: false },
-  ConnectedWallets: { isOpen: false }
+  ConnectedWallets: { isOpen: false },
+  Announcement: { isOpen: false },
+  Notification: { isOpen: false }
 }
 
 const slice = createSlice({

@@ -10,7 +10,6 @@ import { makeStyles } from 'app/styles'
 
 import { useSelectProfile } from '../selectors'
 
-import { ProfileTierTile } from './ProfileTierTile'
 import {
   InstagramSocialLink,
   TikTokSocialLink,
@@ -111,7 +110,6 @@ export const ProfileSocials = () => {
   }
   return (
     <View pointerEvents='box-none' style={styles.root}>
-      {tier !== 'none' ? <ProfileTierTile interactive={false} /> : null}
       <Animated.View
         pointerEvents='box-none'
         style={[

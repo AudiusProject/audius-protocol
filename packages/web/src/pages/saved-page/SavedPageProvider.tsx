@@ -225,14 +225,14 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
   ): [SavedPageTrack[], number] => {
     const { tracks } = this.props
     const playingUid = this.getPlayingUid()
-    const playingIndex = tracks.entries.findIndex(
+    const activeIndex = tracks.entries.findIndex(
       ({ uid }: any) => uid === playingUid
     )
     const filteredMetadata = this.formatMetadata(trackMetadatas)
     const filteredIndex =
-      playingIndex > -1
+      activeIndex > -1
         ? filteredMetadata.findIndex((metadata) => metadata.uid === playingUid)
-        : playingIndex
+        : activeIndex
     return [filteredMetadata, filteredIndex]
   }
 
@@ -242,7 +242,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
     const { tracks } = this.props
     const filterText = this.state.filterText ?? ''
     const playingUid = this.getPlayingUid()
-    const playingIndex = tracks.entries.findIndex(
+    const activeIndex = tracks.entries.findIndex(
       ({ uid }: any) => uid === playingUid
     )
     const filteredMetadata = this.formatMetadata(trackMetadatas)
@@ -253,9 +253,9 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
           item.user?.name.toLowerCase().indexOf(filterText.toLowerCase()) > -1
       )
     const filteredIndex =
-      playingIndex > -1
+      activeIndex > -1
         ? filteredMetadata.findIndex((metadata) => metadata.uid === playingUid)
-        : playingIndex
+        : activeIndex
     return [filteredMetadata, filteredIndex]
   }
 

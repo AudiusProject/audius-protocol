@@ -91,7 +91,8 @@ export const notificationTypeMapping = {
   comment: MappingVariable.PushComment,
   comment_thread: MappingVariable.PushCommentThread,
   comment_mention: MappingVariable.PushCommentMention,
-  comment_reaction: MappingVariable.PushCommentReaction
+  comment_reaction: MappingVariable.PushCommentReaction,
+  listen_streak_reminder: MappingVariable.PushListenStreakReminder
 }
 
 export class AppNotificationsProcessor {

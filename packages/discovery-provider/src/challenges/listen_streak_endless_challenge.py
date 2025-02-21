@@ -22,6 +22,7 @@ NUM_DAYS_IN_STREAK = 7
 base_timedelta = timedelta(days=1)
 if env == "stage":
     base_timedelta = timedelta(minutes=1)
+    NUM_DAYS_IN_STREAK = 3
 
 
 def get_listen_streak_override(session: Session, user_id: int) -> Optional[int]:

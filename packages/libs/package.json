@@ -71,7 +71,7 @@
     "cipher-base": "1.0.4",
     "crc-32": "1.2.2",
     "cross-fetch": "4.0.0",
-    "elliptic": "6.5.4",
+    "elliptic": "6.6.1",
     "esm": "3.2.25",
     "eth-sig-util": "2.5.4",
     "ethereumjs-tx": "2.1.2",

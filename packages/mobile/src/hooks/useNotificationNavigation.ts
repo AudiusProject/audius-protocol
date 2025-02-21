@@ -53,15 +53,13 @@ import {
   PushNotificationType,
   Entity,
   Achievement,
-  tippingActions,
-  notificationsUserListActions
+  tippingActions
 } from '@audius/common/store'
 import type { AppState } from '@audius/web/src/store/types'
 import { useDispatch, useStore } from 'react-redux'
 
 import { useNavigation } from './useNavigation'
 
-const { setNotificationId } = notificationsUserListActions
 const { beginTip } = tippingActions
 
 /**
@@ -87,14 +85,13 @@ export const useNotificationNavigation = () => {
         | FavoritePushNotification
     ) => {
       if ('userIds' in notification) {
-        const { id, type, userIds } = notification
+        const { type, userIds } = notification
         const firstUserId = userIds[0]
         const isMultiUser = userIds.length > 1
 
         if (isMultiUser) {
-          dispatch(setNotificationId(id))
           navigation.navigate('NotificationUsers', {
-            id,
+            notification,
             notificationType: type,
             count: userIds.length
           })
@@ -106,7 +103,7 @@ export const useNotificationNavigation = () => {
         navigation.navigate('Profile', { id: notification.initiator })
       }
     },
-    [dispatch, navigation]
+    [navigation]
   )
 
   const userIdHandler = useCallback(
@@ -238,7 +235,7 @@ export const useNotificationNavigation = () => {
       [NotificationType.ChallengeReward]: (
         notification: ChallengeRewardNotification
       ) => {
-        navigation.navigate('AudioScreen')
+        navigation.navigate('RewardsScreen')
       },
       [PushNotificationType.FavoriteAlbum]: socialActionHandler,
       [PushNotificationType.FavoritePlaylist]: socialActionHandler,

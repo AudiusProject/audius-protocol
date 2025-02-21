@@ -17,17 +17,17 @@ const userListReducer = UserListReducerFactory.createReducer({
 })
 
 const initialState = {
-  id: null
+  notification: null
 }
 
 const notificationUsersPageReducer = createReducer<
   NotificationUsersPageOwnState,
   NotificationUsersActions
 >(initialState, {
-  [actions.SET_NOTIFICATION_ID](state, action) {
+  [actions.SET_NOTIFICATION](state, action) {
     return {
       ...state,
-      id: action.id
+      notification: action.notification
     }
   }
 })

@@ -21,10 +21,11 @@ import { TipAudioButton } from '../TipAudioButton'
 import { UploadTrackButton } from '../UploadTrackButton'
 import { useSelectProfile } from '../selectors'
 
+import { Bio } from './Bio'
 import { CollapsedSection } from './CollapsedSection'
 import { ExpandHeaderToggleButton } from './ExpandHeaderToggleButton'
-import { ExpandedSection } from './ExpandedSection'
-import { TopSupporters } from './TopSupporters'
+import { ProfileInfoTiles } from './ProfileInfoTiles'
+import { SocialsAndSites } from './SocialsAndSites'
 
 const getUserId = accountSelectors.getUserId
 
@@ -133,7 +134,11 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
         <OnlineOnly>
           <ProfileMetrics />
           {isExpanded ? (
-            <ExpandedSection />
+            <>
+              <Bio />
+              <SocialsAndSites />
+              <ProfileInfoTiles />
+            </>
           ) : (
             <CollapsedSection
               isExpandable={isExpandable}
@@ -150,8 +155,9 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
           {!hasUserFollowed ? null : (
             <ArtistRecommendations onClose={handleCloseArtistRecs} />
           )}
-          {isOwner ? <UploadTrackButton /> : <TipAudioButton />}
-          <TopSupporters />
+          <Flex pointerEvents='box-none' mt='xs'>
+            {isOwner ? <UploadTrackButton /> : <TipAudioButton />}
+          </Flex>
         </OnlineOnly>
       </Flex>
     </>

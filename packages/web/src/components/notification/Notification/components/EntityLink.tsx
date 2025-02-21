@@ -1,12 +1,11 @@
 import { MouseEventHandler, useCallback } from 'react'
 
 import { Name, Collection, Track, User } from '@audius/common/models'
-import { Entity } from '@audius/common/store'
+import { Entity, useNotificationModal } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import { closeNotificationPanel } from 'store/application/ui/notifications/notificationsUISlice'
 import { push } from 'utils/navigation'
 
 import { getEntityLink } from '../utils'
@@ -27,6 +26,7 @@ export const useGoToEntity = (
 ) => {
   const dispatch = useDispatch()
   const record = useRecord()
+  const { onClose } = useNotificationModal()
 
   const handleClick: MouseEventHandler = useCallback(
     (event) => {
@@ -37,7 +37,7 @@ export const useGoToEntity = (
       if (goToComments) {
         link = `${link}?showComments=true`
       }
-      dispatch(closeNotificationPanel())
+      onClose()
       dispatch(push(link))
       record(
         make(Name.NOTIFICATIONS_CLICK_TILE, {
@@ -46,7 +46,7 @@ export const useGoToEntity = (
         })
       )
     },
-    [dispatch, entity, entityType, goToComments, record]
+    [dispatch, entity, entityType, goToComments, onClose, record]
   )
   return handleClick
 }

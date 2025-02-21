@@ -1,10 +1,11 @@
 import { useCallback } from 'react'
 
 import { listenStreakReminderMessages as messages } from '@audius/common/messages'
+import { ChallengeName } from '@audius/common/models'
 import type { ListenStreakReminderNotification as ListenStreakReminderNotificationType } from '@audius/common/store'
+import { audioRewardsPageActions, modalsActions } from '@audius/common/store'
 import { Text } from 'react-native'
-
-import { useNavigation } from 'app/hooks/useNavigation'
+import { useDispatch } from 'react-redux'
 
 import {
   NotificationTile,
@@ -12,6 +13,9 @@ import {
   NotificationText,
   NotificationTitle
 } from '../Notification'
+
+const { setChallengeRewardsModalType } = audioRewardsPageActions
+const { setVisibility } = modalsActions
 
 export const IconStreakFire = () => {
   return <Text style={{ fontSize: 32 }}>🔥</Text>
@@ -25,11 +29,18 @@ export const ListenStreakReminderNotification = (
   props: ListenStreakReminderNotificationProps
 ) => {
   const { notification } = props
-  const navigation = useNavigation()
+  const dispatch = useDispatch()
 
   const handlePress = useCallback(() => {
-    navigation.navigate('AudioScreen')
-  }, [navigation])
+    dispatch(
+      setChallengeRewardsModalType({
+        modalType: ChallengeName.ListenStreakEndless
+      })
+    )
+    dispatch(
+      setVisibility({ modal: 'ChallengeRewardsExplainer', visible: true })
+    )
+  }, [dispatch])
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
