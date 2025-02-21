@@ -93,6 +93,7 @@ import reachabilitySagas from 'store/reachability/sagas'
 import reloadSagas from 'store/reload/sagas'
 import routingSagas from 'store/routing/sagas'
 import signOutSagas from 'store/sign-out/sagas'
+import tokenDashboardSagas from 'store/token-dashboard/sagas'
 
 export default function* rootSaga() {
   const sagas = ([] as (() => Generator<any, void, any>)[]).concat(
@@ -190,6 +191,7 @@ export default function* rootSaga() {
     smartCollectionPageSagas(),
     searchUsersModalSagas(),
     stemUploadSagas(),
+    tokenDashboardSagas(),
     userListModalSagas(),
     vipDiscordModalSagas(),
     commonReachabilitySagas(),
