@@ -6,8 +6,7 @@ import {
   audioRewardsPageSelectors,
   audioRewardsPageActions,
   ClaimStatus,
-  modalsActions,
-  modalsSelectors
+  modalsActions
 } from '@audius/common/store'
 import type { CommonState } from '@audius/common/store'
 import { getClaimableChallengeSpecifiers } from '@audius/common/utils'
@@ -33,7 +32,6 @@ const {
 } = audioRewardsPageActions
 const { getOptimisticUserChallenges } = challengesSelectors
 const { setVisibility } = modalsActions
-const { getChallengeRewardsModalState } = modalsSelectors
 
 const MODAL_NAME = 'ChallengeRewards'
 
@@ -43,10 +41,8 @@ const messages = {
 
 export const ChallengeRewardsDrawer = () => {
   const dispatch = useDispatch()
-  const modalState = useSelector(getChallengeRewardsModalState)
   const modalType = useSelector(getChallengeRewardsModalType)
-  const challengeName =
-    (modalType as unknown as ChallengeName) ?? modalState?.challengeName
+  const challengeName = modalType as unknown as ChallengeName
   const userChallenges = useSelector((state: CommonState) =>
     getOptimisticUserChallenges(state, true)
   )
