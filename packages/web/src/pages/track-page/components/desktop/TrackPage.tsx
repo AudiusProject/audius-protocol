@@ -11,7 +11,7 @@ import NavBanner from 'components/nav-banner/NavBanner'
 import Page from 'components/page/Page'
 import { StatBanner } from 'components/stat-banner/StatBanner'
 import { GiantTrackTile } from 'components/track/GiantTrackTile'
-import { useRepostTrack } from 'hooks/useRepost'
+import { useRepostTrackWeb } from 'hooks/useRepost'
 import { getTrackDefaults, emptyStringGuard } from 'pages/track-page/utils'
 
 import { TrackPageLineup } from '../TrackPageLineup'
@@ -67,7 +67,7 @@ const TrackPage = ({
   const isSaved = heroTrack?.has_current_user_saved ?? false
   const isReposted = heroTrack?.has_current_user_reposted ?? false
 
-  const repostTrack = useRepostTrack()
+  const repostTrack = useRepostTrackWeb()
 
   const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(heroTrack)

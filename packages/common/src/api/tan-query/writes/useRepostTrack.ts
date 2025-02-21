@@ -30,7 +30,6 @@ export const useRepostTrack = () => {
     },
 
     onMutate: ({ trackId }) => {
-      console.log('MUTATING')
       const prevTrack = queryClient.getQueryData<UserTrackMetadata>(
         getTrackQueryKey(trackId)
       ) as UserTrackMetadata

@@ -17,7 +17,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
-import { useRepostTrack } from 'hooks/useRepost'
+import { useRepostTrackWeb } from 'hooks/useRepost'
 
 import { TracksTable } from './TracksTable'
 import type { TracksTableProps, TrackWithUID } from './types'
@@ -107,7 +107,7 @@ export const TrackTableLineup = ({
     [dispatch]
   )
 
-  const repostTrack = useRepostTrack()
+  const repostTrack = useRepostTrackWeb()
   const onClickRepost = useCallback(
     (track: TrackWithUID) => repostTrack({ trackId: track.track_id }),
     [repostTrack]

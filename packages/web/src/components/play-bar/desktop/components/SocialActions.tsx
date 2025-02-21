@@ -15,7 +15,7 @@ import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import Tooltip from 'components/tooltip/Tooltip'
 import { GatedConditionsPill } from 'components/track/GatedConditionsPill'
-import { useRepostTrack } from 'hooks/useRepost'
+import { useRepostTrackWeb } from 'hooks/useRepost'
 import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
 import { shouldShowDark } from 'utils/theme/theme'
 
@@ -65,7 +65,7 @@ export const SocialActions = ({
     )
   }, [trackId, openPremiumContentPurchaseModal])
 
-  const handleRepostTrack = useRepostTrack()
+  const handleRepostTrack = useRepostTrackWeb()
   const { hasStreamAccess } = useGatedContentAccess(track)
 
   const theme = useSelector(getTheme)

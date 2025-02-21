@@ -27,7 +27,7 @@ import { Dispatch } from 'redux'
 
 import * as embedModalActions from 'components/embed-modal/store/actions'
 import { ToastContext } from 'components/toast/ToastContext'
-import { useRepostTrack } from 'hooks/useRepost'
+import { useRepostTrackWeb } from 'hooks/useRepost'
 import { AppState } from 'store/types'
 import { push } from 'utils/navigation'
 import { albumPage } from 'utils/route'
@@ -149,7 +149,7 @@ const TrackMenu = ({
     getUserTrackPositions(state, { userId: currentUserId })
   )
 
-  const handleRepostTrack = useRepostTrack()
+  const handleRepostTrack = useRepostTrackWeb()
 
   const getMenu = () => {
     const {

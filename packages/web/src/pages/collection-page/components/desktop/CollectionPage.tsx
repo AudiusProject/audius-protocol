@@ -31,7 +31,7 @@ import { Divider } from 'components/divider'
 import Page from 'components/page/Page'
 import { SuggestedTracks } from 'components/suggested-tracks'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
-import { useRepostTrack } from 'hooks/useRepost'
+import { useRepostTrackWeb } from 'hooks/useRepost'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons'
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'
@@ -234,7 +234,7 @@ const CollectionPage = ({
   )
   const isPlayable = !areAllTracksDeleted && numTracks > 0
 
-  const repostTrack = useRepostTrack()
+  const repostTrack = useRepostTrackWeb()
   const onClickRepostTrack = useCallback(
     (record: CollectionPageTrackRecord) => {
       repostTrack({ trackId: record.track_id })

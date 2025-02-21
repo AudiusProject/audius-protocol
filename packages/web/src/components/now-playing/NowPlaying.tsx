@@ -48,7 +48,7 @@ import { PlayButtonStatus } from 'components/play-bar/types'
 import { GatedConditionsPill } from 'components/track/GatedConditionsPill'
 import { TrackDogEar } from 'components/track/TrackDogEar'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useRepostTrack } from 'hooks/useRepost'
+import { useRepostTrackWeb } from 'hooks/useRepost'
 import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
 import {
   useTrackCoverArt,
@@ -260,7 +260,7 @@ const NowPlaying = g(
       }
     }, [track, track_id, has_current_user_saved, unsave, save])
 
-    const handleRepostTrack = useRepostTrack()
+    const handleRepostTrack = useRepostTrackWeb()
     const toggleRepost = useCallback(() => {
       if (track && track_id && typeof track_id !== 'string') {
         handleRepostTrack({ trackId: track_id })

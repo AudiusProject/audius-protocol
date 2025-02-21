@@ -31,7 +31,7 @@ import { connect } from 'react-redux'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import { Dispatch } from 'redux'
 
-import { useRepostTrack } from 'hooks/useRepost'
+import { useRepostTrackWeb } from 'hooks/useRepost'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { AppState } from 'store/types'
 import { push } from 'utils/navigation'
@@ -102,7 +102,7 @@ const ConnectedMobileOverflowModal = ({
   const { mutate: followUser } = useFollowUser()
   const { mutate: unfollowUser } = useUnfollowUser()
   const navigate = useNavigate()
-  const handleRepostTrack = useRepostTrack()
+  const handleRepostTrack = useRepostTrackWeb()
   // Create callbacks
   const {
     onFavorite,

@@ -29,7 +29,7 @@ import { capitalize } from 'lodash'
 import { make } from 'common/store/analytics/actions'
 import { SignOnLink } from 'components/SignOnLink'
 import { TwitterShareButton } from 'components/twitter-share-button/TwitterShareButton'
-import { useRepostTrack } from 'hooks/useRepost'
+import { useRepostTrackWeb } from 'hooks/useRepost'
 import { fullCollectionPage, fullTrackPage } from 'utils/route'
 
 import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
@@ -125,7 +125,7 @@ export const PurchaseContentFormFooter = ({
   )
   const { onClose } = usePremiumContentPurchaseModal()
 
-  const handleRepostTrack = useRepostTrack()
+  const handleRepostTrack = useRepostTrackWeb()
 
   const onRepost = useCallback(() => {
     if (isAlbum) {

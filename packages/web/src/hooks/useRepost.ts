@@ -27,20 +27,20 @@ const { getIsGuestAccount } = accountSelectors
  * @param trackId - The ID of the track to repost
  * @returns A callback function that reposts the track
  */
-export const useRepostTrack = () => {
+export const useRepostTrackWeb = () => {
   const isGuest = useSelector(getIsGuestAccount)
   const dispatch = useDispatch()
   const { mutate: repostTrack } = useRepostTrackQuery()
   const queryClient = useQueryClient()
 
   return useCallback(
-    ({ trackId }: { trackId: ID }) => {
+    async ({ trackId }: { trackId: ID }) => {
       if (isGuest) {
         dispatch(openSignOn(false))
         dispatch(showRequiresAccountToast())
         make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' })
       } else {
-        repostTrack({ trackId })
+        await repostTrack({ trackId })
         // Note: not able do useTrack here since the trackId is provided at callback time.
         // Instead just check what the value was at the time of the method call.
         const track = queryClient.getQueryData<UserTrackMetadata>(

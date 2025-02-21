@@ -14,7 +14,7 @@ import NavContext, {
   CenterPreset,
   RightPreset
 } from 'components/nav/mobile/NavContext'
-import { useRepostTrack } from 'hooks/useRepost'
+import { useRepostTrackWeb } from 'hooks/useRepost'
 import { getTrackDefaults } from 'pages/track-page/utils'
 
 import { TrackPageLineup } from '../TrackPageLineup'
@@ -81,7 +81,7 @@ const TrackPage = ({
     setHeader(null)
   }, [setHeader])
 
-  const repostTrack = useRepostTrack()
+  const repostTrack = useRepostTrackWeb()
 
   const isOwner = heroTrack ? heroTrack.owner_id === userId : false
   const isSaved = heroTrack ? heroTrack.has_current_user_saved : false

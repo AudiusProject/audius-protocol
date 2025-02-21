@@ -24,7 +24,7 @@ import { TextLink, UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { TrackTileProps, TrackTileSize } from 'components/track/types'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useRepostTrack } from 'hooks/useRepost'
+import { useRepostTrackWeb } from 'hooks/useRepost'
 import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
 
 import { TrackDogEar } from '../TrackDogEar'
@@ -116,7 +116,7 @@ const TrackTile = (props: CombinedProps) => {
   const isPurchase = isContentUSDCPurchaseGated(streamConditions)
   const onToggleSave = useCallback(() => toggleSave(id), [toggleSave, id])
 
-  const handleRepostTrack = useRepostTrack()
+  const handleRepostTrack = useRepostTrackWeb()
   const onClickRepost = useCallback(
     () => handleRepostTrack({ trackId: id as ID }),
     [handleRepostTrack, id]

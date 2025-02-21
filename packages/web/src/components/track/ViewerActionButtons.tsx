@@ -11,7 +11,7 @@ import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import ShareButton from 'components/alt-button/ShareButton'
 import Tooltip from 'components/tooltip/Tooltip'
-import { useRepostTrack } from 'hooks/useRepost'
+import { useRepostTrackWeb } from 'hooks/useRepost'
 
 import { GatedConditionsPill } from './GatedConditionsPill'
 import styles from './desktop/TrackTile.module.css'
@@ -106,7 +106,7 @@ const TrackViewerActionButtons = ({
   const { streamConditions, isUnlisted, isFavorited, isReposted } =
     useTrackEntityDetails(contentId)
 
-  const handleRepostTrack = useRepostTrack()
+  const handleRepostTrack = useRepostTrackWeb()
   return (
     <BaseViewerActionButtons
       {...rest}
