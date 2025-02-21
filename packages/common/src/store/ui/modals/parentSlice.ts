@@ -1,13 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import {
-  BaseModalState,
+  BasicModalsState,
   Modals,
   TrackModalClosedActionPayload,
   TrackModalOpenedActionPayload
 } from './types'
 
-export const initialState: Record<Modals, BaseModalState> = {
+export const initialState: BasicModalsState = {
   TiersExplainer: { isOpen: false },
   TrendingRewardsExplainer: { isOpen: false },
   ChallengeRewards: { isOpen: false },
