@@ -3201,6 +3201,8 @@ user_comment_model = ns.model(
     {
         "id": fields.String(required=True),
         "user_id": fields.String(required=False),
+        "entity_id": fields.String(required=True),
+        "entity_type": fields.String(required=True),
         "message": fields.String(required=True),
         "mentions": fields.List(
             fields.Nested(comment_mention),

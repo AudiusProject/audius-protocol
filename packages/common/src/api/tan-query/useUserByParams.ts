@@ -32,12 +32,13 @@ export const useUserByParams = (params: UserParams, options?: QueryOptions) => {
 
   const { isSuccess, data } = query
   const userIdResult = data?.user_id
+  const handleResult = data?.handle
 
   useEffect(() => {
-    if (isSuccess && userIdResult) {
-      dispatch(fetchProfileSucceeded(userIdResult))
+    if (isSuccess && userIdResult && handleResult) {
+      dispatch(fetchProfileSucceeded(handleResult, userIdResult, true))
     }
-  }, [isSuccess, userIdResult, dispatch])
+  }, [isSuccess, userIdResult, dispatch, handleResult])
 
   return query
 }
