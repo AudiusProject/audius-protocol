@@ -121,7 +121,7 @@ const TrackMenu = ({
   ddexApp = null,
   ...props
 }: TrackMenuProps) => {
-  const { trackPermalink, goToRoute, trackId } = props
+  const { trackPermalink, goToRoute } = props
   const { toast } = useContext(ToastContext)
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)

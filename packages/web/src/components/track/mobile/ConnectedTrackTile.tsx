@@ -1,12 +1,7 @@
 import { memo } from 'react'
 
 import { useGatedContentAccess } from '@audius/common/hooks'
-import {
-  ShareSource,
-  RepostSource,
-  FavoriteSource,
-  ID
-} from '@audius/common/models'
+import { ShareSource, FavoriteSource, ID } from '@audius/common/models'
 import {
   accountSelectors,
   cacheTracksSelectors,
