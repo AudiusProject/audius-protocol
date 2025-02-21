@@ -3,7 +3,6 @@ import { useEffect } from 'react'
 import {
   CommentMention,
   TrackCommentsSortMethodEnum as CommentSortMethod,
-  encodeHashId,
   EntityManagerAction,
   EntityType,
   Id
@@ -38,6 +37,7 @@ import { toast } from '~/store/ui/toast/slice'
 import { Nullable } from '~/utils'
 
 import { QUERY_KEYS } from './queryKeys'
+import { useCurrentUserId } from './useCurrentUserId'
 
 type CommentOrReply = Comment | ReplyComment
 
@@ -69,19 +69,12 @@ const messages = {
  * QUERIES
  *
  */
-export type GetCommentsByUserIdArgs = {
-  userId: ID | null
-  currentUserId?: ID | null
-  sortMethod?: CommentSortMethod
-  pageSize?: number
-}
-
-export const useGetCommentsByUserId = ({
-  userId,
-  currentUserId,
+export const useUserComments = (
+  userId: ID | null,
   pageSize = COMMENT_ROOT_PAGE_SIZE
-}: GetCommentsByUserIdArgs) => {
+) => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const { data: currentUserId } = useCurrentUserId()
   const isMutating = useIsMutating()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
@@ -512,7 +505,7 @@ export const usePostComment = () => {
       args.newId = newId
       const newComment: Comment = {
         id: newId,
-        entityId: encodeHashId(trackId)!,
+        entityId: Id.parse(trackId),
         entityType: 'Track',
         userId,
         message: body,

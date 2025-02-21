@@ -365,6 +365,8 @@ def get_track_comments(args, track_id, current_user_id=None):
             track_comment_res.append(
                 {
                     "id": encode_int_id(track_comment.comment_id),
+                    "entity_id": encode_int_id(track_comment.entity_id),
+                    "entity_type": track_comment.entity_type,
                     "user_id": (
                         encode_int_id(track_comment.user_id)
                         if not track_comment.is_delete
@@ -514,7 +516,6 @@ def get_user_comments(args: GetUserCommentsArgs):
                     "message": (
                         user_comment.text if not user_comment.is_delete else "[Removed]"
                     ),
-                    "track_id": user_comment.entity_id,
                     "is_edited": user_comment.is_edited,
                     "track_timestamp_s": user_comment.track_timestamp_s,
                     "react_count": react_count,

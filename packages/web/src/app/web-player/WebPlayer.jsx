@@ -918,7 +918,6 @@ class WebPlayer extends Component {
                   exact
                   path={PROFILE_PAGE_COMMENTS}
                   component={CommentHistoryPage}
-                  containerRef={this.props.mainContentRef.current}
                 />
                 <Route
                   exact

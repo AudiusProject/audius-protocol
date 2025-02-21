@@ -1,14 +1,13 @@
-import { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import {
   useGetCommentById,
-  useGetCommentsByUserId,
-  useGetCurrentUserId,
-  useGetTrackById,
-  useGetUserByHandle,
-  useGetUserById
+  useTrack,
+  useUser,
+  useUserByParams,
+  useUserComments
 } from '@audius/common/api'
-import { Status } from '@audius/common/models'
+import { Comment } from '@audius/common/models'
 import {
   Box,
   Flex,
@@ -20,7 +19,7 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
-import { Comment, decodeHashId } from '@audius/sdk'
+import { HashId } from '@audius/sdk'
 import dayjs from 'dayjs'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useNavigate } from 'react-router-dom-v5-compat'
@@ -31,12 +30,15 @@ import { Timestamp } from 'components/comments/Timestamp'
 import { Header } from 'components/header/desktop/Header'
 import { TrackLink, UserLink } from 'components/link'
 import Page from 'components/page/Page'
+import { useMainContentRef } from 'pages/MainContentContext'
 import { useProfileParams } from 'pages/profile-page/useProfileParams'
 import { fullCommentHistoryPage } from 'utils/route'
 
 import { CommentText } from './CommentText'
 
 const messages = {
+  description: (userName: string | null) =>
+    `Comment History${userName ? ` for ${userName}` : ''}`,
   by: ' by ',
   noComments: 'No comments',
   view: 'View'
@@ -59,10 +61,8 @@ const UserComment = ({ commentId }: { commentId: number }) => {
     isCurrentUserReacted
   } = comment
 
-  // @ts-expect-error - the id is a number
-  const { status } = useGetUserById({ id: userId })
-  const { data: track } = useGetTrackById({ id: decodeHashId(entityId) })
-  const isLoadingUser = status === Status.LOADING
+  const { isPending: isUserPending } = useUser(userId)
+  const { data: track } = useTrack(HashId.parse(entityId))
   const createdAtDate = useMemo(
     () => dayjs.utc(createdAt).toDate(),
     [createdAt]
@@ -77,9 +77,8 @@ const UserComment = ({ commentId }: { commentId: number }) => {
   if (!comment) return null
 
   return (
-    <Flex w='100%' gap='l' pv='m'>
+    <Flex w='100%' gap='l'>
       <Box>
-        {/* @ts-expect-error - the id is a number */}
         <Avatar userId={userId} size='medium' popover alignSelf='flex-start' />
       </Box>
       <Flex column w='100%' gap='s' alignItems='flex-start'>
@@ -100,10 +99,9 @@ const UserComment = ({ commentId }: { commentId: number }) => {
           <Flex column>
             <Flex justifyContent='space-between'>
               <Flex gap='s' alignItems='center'>
-                {isLoadingUser ? <Skeleton w={80} h={18} /> : null}
+                {isUserPending ? <Skeleton w={80} h={18} /> : null}
                 {userId !== undefined ? (
                   <UserLink
-                    // @ts-expect-error - the id is a number
                     userId={userId}
                     popover
                     size='l'
@@ -119,26 +117,22 @@ const UserComment = ({ commentId }: { commentId: number }) => {
               isEdited={isEdited}
               isPreview={false}
               mentions={mentions}
-              // @ts-expect-error - the id is a number
               commentId={id}
             >
               {message}
             </CommentText>
           </Flex>
         </Flex>
-        <Flex gap='l' alignItems='center'>
+        <Flex gap='l' alignItems='center' onClick={goToTrackPage}>
           <Flex alignItems='center' gap='xs'>
             <IconButton
               icon={IconHeart}
               color={isCurrentUserReacted ? 'active' : 'subdued'}
               aria-label='Heart comment'
-              onClick={goToTrackPage}
             />
             <Text> {reactCount || ''}</Text>
           </Flex>
-          <TextLink variant='subdued' onClick={goToTrackPage}>
-            {messages.view}
-          </TextLink>
+          <TextLink variant='subdued'>{messages.view}</TextLink>
         </Flex>
       </Flex>
     </Flex>
@@ -151,26 +145,22 @@ export type CommentHistoryPageProps = {
 
 export const CommentHistoryPage = ({ title }: CommentHistoryPageProps) => {
   const profileParams = useProfileParams()
-  const containerRef = useRef<HTMLDivElement>(null)
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: user } = useGetUserByHandle({
-    handle: profileParams?.handle ?? '',
-    currentUserId
-  })
+  const containerRef = useMainContentRef()
+  const { data: user } = useUserByParams(profileParams ?? {})
 
   const {
     data: commentIds,
     hasNextPage,
     fetchNextPage,
-    isLoading,
+    isPending,
     isFetchingNextPage
-  } = useGetCommentsByUserId({
-    userId: user?.user_id ?? 0,
-    currentUserId
-  })
+  } = useUserComments(user?.user_id ?? null)
 
   const renderHeader = () => <Header showBackButton primary={title} />
-  const getScrollParent = useCallback(() => containerRef.current ?? null, [])
+  const getScrollParent = useCallback(
+    () => containerRef.current ?? null,
+    [containerRef]
+  )
 
   const handleLoadMore = useCallback(() => {
     fetchNextPage()
@@ -179,9 +169,8 @@ export const CommentHistoryPage = ({ title }: CommentHistoryPageProps) => {
 
   return (
     <Page
-      containerRef={containerRef}
       title={title}
-      description={`Comment History${user?.name ? ` for ${user.name}` : ''}`}
+      description={messages.description(user?.name ?? null)}
       canonicalUrl={user ? fullCommentHistoryPage(user.handle) : ''}
       header={renderHeader()}
     >
@@ -191,11 +180,11 @@ export const CommentHistoryPage = ({ title }: CommentHistoryPageProps) => {
           loadMore={handleLoadMore}
           getScrollParent={getScrollParent}
           useWindow={false}
-          style={{ width: '100%' }}
+          css={{ width: '100%' }}
           threshold={-250}
         >
-          <Flex direction='column' p='xl' pt='l'>
-            {isLoading ? (
+          <Flex direction='column' p='xl' gap='l'>
+            {isPending ? (
               <CommentBlockSkeletons />
             ) : (
               <>
