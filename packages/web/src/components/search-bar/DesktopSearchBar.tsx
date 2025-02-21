@@ -29,25 +29,23 @@ const DEFAULT_LIMIT = 3
 const THROTTLE_MS = 400
 
 const ViewMoreButton = ({ query }: { query: string }) => (
-  <Link to={searchResultsPage('all', query)}>
-    <Flex
-      alignItems='center'
-      ph='l'
-      pv='m'
-      gap='2xs'
-      css={{
-        cursor: 'pointer',
-        '&:hover': {
-          backgroundColor: 'var(--neutral-light-8)'
-        }
-      }}
-    >
-      <Text variant='label' size='s' color='subdued'>
-        View More Results
-      </Text>
-      <IconArrowRight size='s' color='subdued' />
-    </Flex>
-  </Link>
+  <Flex
+    as={Link}
+    // @ts-expect-error
+    to={searchResultsPage('all', query)}
+    alignItems='center'
+    ph='l'
+    pv='m'
+    gap='2xs'
+    css={{
+      cursor: 'pointer'
+    }}
+  >
+    <Text variant='label' size='s' color='subdued' className={styles.primary}>
+      View More Results
+    </Text>
+    <IconArrowRight size='s' color='subdued' className={styles.iconArrow} />
+  </Flex>
 )
 
 const NoResults = () => (

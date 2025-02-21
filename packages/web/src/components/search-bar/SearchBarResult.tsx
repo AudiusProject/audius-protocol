@@ -9,6 +9,9 @@ import { Text, Flex, Avatar, Artwork } from '@audius/harmony'
 import { Link } from 'react-router-dom'
 
 import UserBadges from 'components/user-badges/UserBadges'
+
+import styles from './DesktopSearchBar.module.css'
+
 const { profilePage, collectionPage } = route
 
 const ResultWrapper = ({
@@ -18,21 +21,17 @@ const ResultWrapper = ({
   children: React.ReactNode
   to: string
 }) => (
-  <Link to={to}>
-    <Flex
-      alignItems='center'
-      gap='s'
-      p='s'
-      css={{
-        minWidth: 0,
-        '&:hover': {
-          backgroundColor: 'var(--neutral-light-8)'
-        }
-      }}
-    >
-      {children}
-    </Flex>
-  </Link>
+  <Flex
+    as={Link}
+    // @ts-expect-error
+    to={to}
+    alignItems='center'
+    gap='s'
+    p='s'
+    css={{ minWidth: 0 }}
+  >
+    {children}
+  </Flex>
 )
 
 type ResultTextProps = {
@@ -50,6 +49,7 @@ const ResultText = ({ primary, secondary, badges }: ResultTextProps) => (
         color='default'
         css={{ minWidth: 0 }}
         ellipses
+        className={styles.primary}
       >
         {primary}
       </Text>
@@ -61,6 +61,7 @@ const ResultText = ({ primary, secondary, badges }: ResultTextProps) => (
       color='subdued'
       css={{ minWidth: 0 }}
       ellipses
+      className={styles.secondary}
     >
       {secondary}
     </Text>
@@ -71,7 +72,7 @@ type UserResultProps = {
   user: User
 }
 
-const UserResult = ({ user }: UserResultProps) => (
+export const UserResult = ({ user }: UserResultProps) => (
   <ResultWrapper to={profilePage(user.handle)}>
     <Avatar
       h={30}
@@ -92,7 +93,7 @@ type TrackResultProps = {
   track: UserTrackMetadata
 }
 
-const TrackResult = ({ track }: TrackResultProps) => (
+export const TrackResult = ({ track }: TrackResultProps) => (
   <ResultWrapper to={track.permalink}>
     <Artwork
       h={30}
@@ -108,7 +109,7 @@ type CollectionResultProps = {
   collection: UserCollectionMetadata
 }
 
-const CollectionResult = ({ collection }: CollectionResultProps) => (
+export const CollectionResult = ({ collection }: CollectionResultProps) => (
   <ResultWrapper
     to={collectionPage(
       collection.user.handle,
@@ -130,5 +131,3 @@ const CollectionResult = ({ collection }: CollectionResultProps) => (
     />
   </ResultWrapper>
 )
-
-export { UserResult, TrackResult, CollectionResult }
