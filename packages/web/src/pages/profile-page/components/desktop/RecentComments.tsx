@@ -29,6 +29,7 @@ const messages = {
 }
 
 const CommentListItem = ({ id }: { id: number }) => {
+  const dispatch = useDispatch()
   const { data } = useGetCommentById(id)
   const theme = useTheme()
   const comment = data as Comment | undefined
@@ -38,8 +39,20 @@ const CommentListItem = ({ id }: { id: number }) => {
 
   if (!comment) return null
 
+  const handleClick = () => {
+    if (track) {
+      dispatch(push(track.permalink))
+    }
+  }
+
   return (
-    <Flex column gap='m' w='100%'>
+    <Flex
+      column
+      gap='m'
+      w='100%'
+      css={{ cursor: 'pointer' }}
+      onClick={handleClick}
+    >
       <Flex column gap='2xs' w='100%'>
         {track ? (
           <Text variant='body' size='s' color='subdued'>
