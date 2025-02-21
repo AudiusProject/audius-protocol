@@ -40,7 +40,7 @@ export const modal = createAppKit({
   projectId,
   metadata,
   themeVariables: {
-    '--w3m-z-index': zIndex.WEB3_WALLET_CONNECT_MODAL // above ConnectWalletModal
+    '--w3m-z-index': zIndex.REOWN_APPKIT_MODAL // above ConnectWalletModal
   },
   features: {
     send: false,
