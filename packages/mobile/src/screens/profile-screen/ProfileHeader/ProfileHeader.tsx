@@ -155,7 +155,7 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
           {!hasUserFollowed ? null : (
             <ArtistRecommendations onClose={handleCloseArtistRecs} />
           )}
-          <Flex pointerEvents='box-none' mt='xs'>
+          <Flex pointerEvents='box-none' mt='s'>
             {isOwner ? <UploadTrackButton /> : <TipAudioButton />}
           </Flex>
         </OnlineOnly>
