@@ -1,10 +1,6 @@
 import { useCallback } from 'react'
 
-import {
-  useCurrentUserId,
-  useGetCommentById,
-  useGetCommentsByUserId
-} from '@audius/common/api'
+import { useGetCommentById, useUserComments } from '@audius/common/api'
 import { Comment } from '@audius/common/models'
 import { useTrack } from '@audius/common/src/api/tan-query/useTrack'
 import { useUser } from '@audius/common/src/api/tan-query/useUser'
@@ -58,13 +54,7 @@ const CommentListItem = ({ id }: { id: number }) => {
 export const RecentComments = ({ userId }: { userId: number }) => {
   const dispatch = useDispatch()
   const { data: user } = useUser(userId)
-  const { data: currentUserId } = useCurrentUserId()
-  const { data: commentIds = [] } = useGetCommentsByUserId({
-    userId,
-    currentUserId,
-    pageSize: 3
-  })
-
+  const { data: commentIds = [] } = useUserComments(userId, 3)
   const onClickViewAll = useCallback(() => {
     if (user?.handle) {
       dispatch(push(fullCommentHistoryPage(user.handle)))
