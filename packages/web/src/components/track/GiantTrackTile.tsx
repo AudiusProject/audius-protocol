@@ -1,13 +1,11 @@
 import { Suspense, lazy, useCallback, useState } from 'react'
 
-import { useUnfavoriteTrack, useFavoriteTrack } from '@audius/common/api'
 import {
   isContentUSDCPurchaseGated,
   ID,
   FieldVisibility,
   Remix,
-  AccessConditions,
-  FavoriteSource
+  AccessConditions
 } from '@audius/common/models'
 import {
   cacheTracksSelectors,
@@ -122,6 +120,7 @@ type GiantTrackTileProps = {
   onPlay: () => void
   onPreview: () => void
   onRepost: () => void
+  onSave: () => void
   onShare: () => void
   onUnfollow: () => void
   playing: boolean
@@ -165,6 +164,7 @@ export const GiantTrackTile = ({
   onMakePublic,
   onPlay,
   onPreview,
+  onSave,
   onShare,
   onRepost,
   onUnfollow,
@@ -186,14 +186,6 @@ export const GiantTrackTile = ({
     () => setArtworkLoading(false),
     [setArtworkLoading]
   )
-  const { mutate: favoriteTrack } = useFavoriteTrack({
-    trackId,
-    source: FavoriteSource.TILE
-  })
-  const { mutate: unfavoriteTrack } = useUnfavoriteTrack({
-    trackId,
-    source: FavoriteSource.TILE
-  })
   const isLongFormContent =
     genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
@@ -340,13 +332,7 @@ export const GiantTrackTile = ({
                 variant={isSaved ? 'primary' : 'secondary'}
                 widthToHideText={BUTTON_COLLAPSE_WIDTHS.third}
                 iconLeft={IconHeart}
-                onClick={() => {
-                  if (isSaved) {
-                    unfavoriteTrack()
-                  } else {
-                    favoriteTrack()
-                  }
-                }}
+                onClick={onSave}
               >
                 {isSaved ? 'favorited' : 'favorite'}
               </Button>
