@@ -3,9 +3,9 @@ import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
+import { TrackMetadata } from '~/models/Track'
 
 import { getTracksBatcher } from './batchers/getTracksBatcher'
-import { TQTrack } from './models'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
@@ -24,7 +24,7 @@ export const useTrack = (
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
 
-  return useQuery<TQTrack | null>({
+  return useQuery<TrackMetadata | null>({
     queryKey: getTrackQueryKey(trackId),
     queryFn: async () => {
       const sdk = await audiusSdk()

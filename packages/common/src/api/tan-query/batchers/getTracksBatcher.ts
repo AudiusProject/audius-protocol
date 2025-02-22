@@ -4,9 +4,9 @@ import { memoize, omit } from 'lodash'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { transformAndCleanList } from '~/adapters/utils'
+import { TrackMetadata } from '~/models'
 import { ID } from '~/models/Identifiers'
 
-import { TQTrack } from '../models'
 import { primeTrackData } from '../utils/primeTrackData'
 
 import { contextCacheResolver } from './contextCacheResolver'
@@ -15,7 +15,7 @@ import { BatchContext } from './types'
 export const getTracksBatcher = memoize(
   (context: BatchContext) =>
     create({
-      fetcher: async (ids: ID[]): Promise<TQTrack[]> => {
+      fetcher: async (ids: ID[]): Promise<TrackMetadata[]> => {
         const { sdk, currentUserId, queryClient, dispatch } = context
         if (!ids.length) return []
 
@@ -33,9 +33,8 @@ export const getTracksBatcher = memoize(
           skipQueryData: true
         })
 
-        const tqTracks: TQTrack[] = tracks.map((t) => ({
-          ...omit(t, 'user'),
-          userId: t.user.user_id
+        const tqTracks: TrackMetadata[] = tracks.map((t) => ({
+          ...omit(t, 'user')
         }))
         return tqTracks
       },

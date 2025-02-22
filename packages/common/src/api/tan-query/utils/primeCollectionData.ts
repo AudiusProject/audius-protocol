@@ -81,8 +81,7 @@ export const primeCollectionDataInternal = ({
     ) {
       const tqCollection: TQCollection = {
         ...omit(collection, ['tracks', 'user']),
-        userId: collection.user.user_id,
-        tracks: collection.tracks?.map((t) => t.track_id) ?? []
+        trackIds: collection.tracks?.map((t) => t.track_id) ?? []
       }
       queryClient.setQueryData(
         getCollectionQueryKey(collection.playlist_id),

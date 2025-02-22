@@ -38,8 +38,7 @@ export const getCollectionsBatcher = memoize(
 
         const tqCollections: TQCollection[] = collections.map((c) => ({
           ...omit(c, ['tracks', 'user']),
-          userId: c.user.user_id,
-          tracks: c.tracks?.map((t) => t.track_id) ?? []
+          trackIds: c.tracks?.map((t) => t.track_id) ?? []
         }))
         return tqCollections
       },

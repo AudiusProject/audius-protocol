@@ -1,4 +1,4 @@
-import { call, select, takeEvery } from 'typed-redux-saga'
+import { call, select, takeEvery, all } from 'typed-redux-saga'
 
 import { FeatureFlags } from '~/services/remote-config/feature-flags'
 
@@ -16,7 +16,7 @@ import {
 } from './actions'
 import { getEntry } from './selectors'
 import { syncWithReactQuery } from './syncWithReactQuery'
-import { EntryMap, Entry } from './types'
+import { EntryMap } from './types'
 
 function* watchAddSucceeded() {
   const queryClient = yield* getContext('queryClient')
@@ -35,7 +35,7 @@ function* watchAddSucceeded() {
       syncWithReactQuery(queryClient, {
         [action.kind]: {
           ...action.entries.reduce((acc, entry) => {
-            acc[entry.id] = entry
+            acc[entry.id] = entry.metadata
             return acc
           }, {} as EntryMap)
         }
@@ -89,7 +89,7 @@ function* watchUpdate() {
         id: entry.id
       })
       if (latestEntry) {
-        entriesMap[entry.id] = { id: entry.id, metadata: latestEntry }
+        entriesMap[entry.id] = latestEntry
       }
     }
 
@@ -111,38 +111,27 @@ function* watchIncrement() {
     if (!isReactQuerySyncEnabled) return
 
     // For increment actions, we need to merge the delta with existing data
+    // First get all existing entries from Redux
+    const existingEntries = yield* all(
+      action.entries.map((entry) =>
+        select(getEntry, {
+          kind: action.kind,
+          id: entry.id
+        })
+      )
+    )
+    const existingEntriesMap = action.entries.reduce(
+      (acc, entry, index) => {
+        const existingEntry = existingEntries[index]
+        acc[entry.id] = existingEntry ?? undefined
+        return acc
+      },
+      {} as Record<string, any>
+    )
+
     // Transform entries into the format expected by syncWithReactQuery
     syncWithReactQuery(queryClient, {
-      [action.kind]: {
-        ...action.entries.reduce((acc, entry) => {
-          // For increment actions, we need to get the existing data and apply the delta
-          const existingData = queryClient.getQueryData([
-            action.kind,
-            entry.id
-          ]) as Entry | undefined
-          acc[entry.id] = {
-            ...existingData,
-            ...entry,
-            metadata: {
-              ...(existingData?.metadata || {}),
-              ...Object.entries(entry.metadata || {}).reduce(
-                (metaAcc, [key, value]) => {
-                  // If the existing data has this field, add the delta
-                  if (existingData?.metadata?.[key] !== undefined) {
-                    metaAcc[key] =
-                      (existingData.metadata[key] || 0) + (value as number)
-                  } else {
-                    metaAcc[key] = value
-                  }
-                  return metaAcc
-                },
-                {} as Record<string, any>
-              )
-            }
-          }
-          return acc
-        }, {} as EntryMap)
-      }
+      [action.kind]: existingEntriesMap
     })
   })
 }

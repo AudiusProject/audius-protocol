@@ -1,4 +1,7 @@
+import { useMemo } from 'react'
+
 import { useQueries, useQueryClient } from '@tanstack/react-query'
+import { keyBy } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
@@ -25,7 +28,7 @@ export const useCollections = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  return useQueries({
+  const { data: collections, ...queryResults } = useQueries({
     queries: (collectionIds ?? []).map((collectionId) => ({
       queryKey: getCollectionQueryKey(collectionId),
       queryFn: async () => {
@@ -43,4 +46,12 @@ export const useCollections = (
     })),
     combine: combineQueryResults<UserCollectionMetadata[]>
   })
+
+  const byId = useMemo(() => keyBy(collections, 'playlist_id'), [collections])
+
+  return {
+    data: collections,
+    byId,
+    ...queryResults
+  }
 }

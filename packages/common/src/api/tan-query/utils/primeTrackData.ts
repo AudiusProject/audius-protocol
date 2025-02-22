@@ -4,12 +4,11 @@ import { AnyAction, Dispatch } from 'redux'
 import { SetRequired } from 'type-fest'
 
 import { Kind } from '~/models'
-import { UserTrackMetadata } from '~/models/Track'
+import { TrackMetadata, UserTrackMetadata } from '~/models/Track'
 import { User } from '~/models/User'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
-import { TQTrack } from '../models'
 import { getTrackQueryKey } from '../useTrack'
 
 import { primeUserDataInternal } from './primeUserData'
@@ -76,9 +75,8 @@ export const primeTrackDataInternal = ({
       !skipQueryData &&
       !queryClient.getQueryData(getTrackQueryKey(track.track_id))
     ) {
-      const tqTrack: TQTrack = {
-        ...omit(track, 'user'),
-        userId: track.user.user_id
+      const tqTrack: TrackMetadata = {
+        ...omit(track, 'user')
       }
       queryClient.setQueryData(getTrackQueryKey(track.track_id), tqTrack)
     }

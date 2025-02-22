@@ -1,9 +1,12 @@
+import { useMemo } from 'react'
+
 import { useQueries, useQueryClient } from '@tanstack/react-query'
+import { keyBy } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
-import { UserTrackMetadata } from '~/models/Track'
+import { TrackMetadata } from '~/models/Track'
 
 import { getTracksBatcher } from './batchers/getTracksBatcher'
 import { QUERY_KEYS } from './queryKeys'
@@ -26,7 +29,7 @@ export const useTracks = (
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
 
-  return useQueries({
+  const { data: tracks, ...queryResults } = useQueries({
     queries: (trackIds ?? []).map((trackId) => ({
       queryKey: getTrackQueryKey(trackId),
       queryFn: async () => {
@@ -42,6 +45,14 @@ export const useTracks = (
       ...options,
       enabled: options?.enabled !== false && !!trackId
     })),
-    combine: combineQueryResults<UserTrackMetadata[]>
+    combine: combineQueryResults<TrackMetadata[]>
   })
+
+  const byId = useMemo(() => keyBy(tracks, 'track_id'), [tracks])
+
+  return {
+    data: tracks,
+    byId,
+    ...queryResults
+  }
 }
