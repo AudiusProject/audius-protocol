@@ -1,12 +1,12 @@
 import { Id, OptionalId } from '@audius/sdk'
 import { create, keyResolver, windowScheduler } from '@yornaath/batshit'
-import { memoize } from 'lodash'
+import { memoize, omit } from 'lodash'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { transformAndCleanList } from '~/adapters/utils'
-import { UserCollectionMetadata } from '~/models/Collection'
 import { ID } from '~/models/Identifiers'
 
+import { TQCollection } from '../models'
 import { primeCollectionData } from '../utils/primeCollectionData'
 
 import { contextCacheResolver } from './contextCacheResolver'
@@ -15,7 +15,7 @@ import { BatchContext } from './types'
 export const getCollectionsBatcher = memoize(
   (context: BatchContext) =>
     create({
-      fetcher: async (ids: ID[]): Promise<UserCollectionMetadata[]> => {
+      fetcher: async (ids: ID[]): Promise<TQCollection[]> => {
         const { sdk, currentUserId, queryClient, dispatch } = context
         if (!ids.length) return []
 
@@ -36,7 +36,12 @@ export const getCollectionsBatcher = memoize(
           skipQueryData: true
         })
 
-        return collections
+        const tqCollections: TQCollection[] = collections.map((c) => ({
+          ...omit(c, ['tracks', 'user']),
+          userId: c.user.user_id,
+          tracks: c.tracks?.map((t) => t.track_id) ?? []
+        }))
+        return tqCollections
       },
       resolver: keyResolver('playlist_id'),
       scheduler: windowScheduler(10)
