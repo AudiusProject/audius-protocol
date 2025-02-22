@@ -1,5 +1,6 @@
 import {
   buyUSDCSagas,
+  cacheSagas,
   castSagas,
   chatSagas,
   reachabilitySagas as commonReachabilitySagas,
@@ -144,6 +145,7 @@ export default function* rootSaga() {
     modalsSagas(),
 
     // Cache
+    cacheSagas(),
     coreCacheSagas(),
     collectionsSagas(),
     tracksSagas(),

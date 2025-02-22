@@ -15,7 +15,9 @@ import {
   Status,
   Track,
   UID,
-  combineStatuses
+  combineStatuses,
+  UserTrackMetadata,
+  UserCollectionMetadata
 } from '~/models'
 import { CommonState } from '~/store/commonStore'
 import { LineupActions } from '~/store/lineup/actions'
@@ -23,6 +25,7 @@ import { getPlaying } from '~/store/player/selectors'
 
 import { useCollections } from '../useCollections'
 import { useTracks } from '../useTracks'
+import { useUsers } from '../useUsers'
 
 import { loadNextPage } from './infiniteQueryLoadNextPage'
 
@@ -81,26 +84,44 @@ export const useLineupQuery = ({
     ]
   }, [lineup.entries])
 
-  const { data: tracks } = useTracks(lineupTrackIds)
-  const { data: collections } = useCollections(lineupCollectionIds)
+  const { byId: tracksById } = useTracks(lineupTrackIds)
+  const { byId: collectionsById } = useCollections(lineupCollectionIds)
+  const userIds = useMemo(() => {
+    const userIds = lineup.entries.map((entry) =>
+      entry.kind === Kind.TRACKS
+        ? tracksById[entry.id]?.owner_id
+        : collectionsById[entry.id]?.playlist_owner_id
+    )
+    return userIds
+  }, [lineup.entries, tracksById, collectionsById])
+  const { byId: usersById } = useUsers(userIds)
+  const entries: LineupEntry<
+    LineupTrack | UserTrackMetadata | UserCollectionMetadata
+  >[] = useMemo(() => {
+    const newEntries = lineup.entries.map((entry) => {
+      const entity =
+        entry.kind === Kind.TRACKS
+          ? tracksById[entry.id]
+          : entry.kind === Kind.COLLECTIONS
+            ? collectionsById[entry.id]
+            : entry
 
-  const entries: LineupEntry<LineupTrack | Track | Collection>[] =
-    useMemo(() => {
-      return lineup.entries.map((entry) => {
-        const entity =
-          entry.kind === Kind.TRACKS
-            ? tracks?.find((track) => track.track_id === entry.id)
-            : entry.kind === Kind.COLLECTIONS
-              ? collections?.find(
-                  (collection) => collection.playlist_id === entry.id
-                )
-              : entry
-        return {
-          ...entry,
-          ...entity
-        } as LineupEntry<LineupTrack | Track | Collection>
-      })
-    }, [lineup.entries, tracks, collections])
+      const userId =
+        entry.kind === Kind.TRACKS
+          ? tracksById[entry.id]?.owner_id
+          : collectionsById[entry.id]?.playlist_owner_id
+
+      const lineupEntry = {
+        ...entry,
+        ...entity
+      } as LineupEntry<LineupTrack | UserTrackMetadata | UserCollectionMetadata>
+      if (userId) {
+        lineupEntry.user = usersById[userId]
+      }
+      return lineupEntry
+    })
+    return newEntries
+  }, [lineup.entries, tracksById, collectionsById, usersById])
 
   return {
     status,
