@@ -105,7 +105,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   LockedContent: LockedContentModal,
   APIRewardsExplainer: TopAPIModal,
   TrendingRewardsExplainer: TrendingRewardsModal,
-  ChallengeRewardsExplainer: ChallengeRewardsModal,
+  ChallengeRewards: ChallengeRewardsModal,
   ClaimAllRewards: ClaimAllRewardsModal,
   TransferAudioMobileWarning: TransferAudioMobileDrawer,
   BrowserPushPermissionConfirmation: BrowserPushConfirmationModal,

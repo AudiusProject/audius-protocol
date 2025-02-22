@@ -93,7 +93,7 @@ const fetchAccountSucceeded = accountActions.fetchAccountSucceeded
 
 const { getUserId } = accountSelectors
 
-const CHALLENGE_REWARDS_MODAL_NAME = 'ChallengeRewardsExplainer'
+const CHALLENGE_REWARDS_MODAL_NAME = 'ChallengeRewards'
 
 function getOracleConfig(remoteConfigInstance: RemoteConfigInstance, env: Env) {
   const { ENVIRONMENT, ORACLE_ETH_ADDRESSES, AAO_ENDPOINT } = env
