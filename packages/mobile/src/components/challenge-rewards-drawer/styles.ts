@@ -107,5 +107,8 @@ export const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     marginTop: spacing(4),
     textAlign: 'center',
     color: palette.neutralLight4
+  },
+  cooldownNote: {
+    marginTop: spacing(4)
   }
 }))

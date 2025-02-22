@@ -1,1 +1,6 @@
-export { ChallengeRewardsDrawerProvider as ChallengeRewardsDrawer } from './ChallengeRewardsDrawerProvider'
+export { AudioMatchingChallengeContent } from './AudioMatchingChallengeContent'
+export { ChallengeRewardsDrawer } from './ChallengeRewardsDrawer'
+export { ChallengeRewardsLayout } from './ChallengeRewardsLayout'
+export { DefaultChallengeContent } from './DefaultChallengeContent'
+export { ListenStreakEndlessChallengeContent } from './ListenStreakEndlessChallengeContent'
+export type { Challenge, ChallengeContentProps } from './types'

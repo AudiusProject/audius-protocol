@@ -38,7 +38,7 @@ export type CreateChatModalState = {
 export type Modals =
   | 'TiersExplainer'
   | 'TrendingRewardsExplainer'
-  | 'ChallengeRewardsExplainer'
+  | 'ChallengeRewards'
   | 'ClaimAllRewards'
   | 'LinkSocialRewardsExplainer'
   | 'APIRewardsExplainer'

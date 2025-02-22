@@ -99,7 +99,7 @@ export const NativeDrawer = (props: NativeDrawerProps) => {
 const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   TiersExplainer: TiersExplainerDrawer,
   TrendingRewardsExplainer: TrendingRewardsDrawer,
-  ChallengeRewardsExplainer: ChallengeRewardsDrawer,
+  ChallengeRewards: ChallengeRewardsDrawer,
   ClaimAllRewards: ClaimAllRewardsDrawer,
   APIRewardsExplainer: ApiRewardsDrawer,
   TransferAudioMobileWarning: TransferAudioMobileDrawer,

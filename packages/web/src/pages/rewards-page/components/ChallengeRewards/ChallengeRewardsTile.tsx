@@ -72,7 +72,7 @@ export const ChallengeRewardsTile = ({
 
   const openModal = (modalType: ChallengeRewardsModalType) => {
     dispatch(setChallengeRewardsModalType({ modalType }))
-    setVisibility('ChallengeRewardsExplainer')(true)
+    setVisibility('ChallengeRewards')(true)
   }
 
   const rewardIdsSorted = useMemo(
