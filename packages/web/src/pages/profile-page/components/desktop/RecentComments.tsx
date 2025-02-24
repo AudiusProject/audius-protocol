@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 import { useGetCommentById, useUserComments } from '@audius/common/api'
 import { Comment } from '@audius/common/models'
@@ -12,11 +12,13 @@ import {
   PlainButton,
   IconArrowRight,
   Skeleton,
-  useTheme
+  useTheme,
+  Box
 } from '@audius/harmony'
 import { OptionalHashId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
+import { TrackLink } from 'components/link'
 import { push } from 'utils/navigation'
 import { fullCommentHistoryPage } from 'utils/route'
 
@@ -33,6 +35,7 @@ const CommentListItem = ({ id }: { id: number }) => {
   const { data } = useGetCommentById(id)
   const theme = useTheme()
   const comment = data as Comment | undefined
+  const [isHovered, setIsHovered] = useState(false)
   const { data: track } = useTrack(OptionalHashId.parse(comment?.entityId), {
     enabled: !!comment?.entityId
   })
@@ -52,12 +55,18 @@ const CommentListItem = ({ id }: { id: number }) => {
       w='100%'
       css={{ cursor: 'pointer' }}
       onClick={handleClick}
+      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={() => setIsHovered(true)}
     >
       <Flex column gap='2xs' w='100%'>
         {track ? (
-          <Text variant='body' size='s' color='subdued'>
-            {track.title}
-          </Text>
+          <TrackLink
+            size='s'
+            variant='subdued'
+            showUnderline={isHovered}
+            trackId={track?.track_id}
+            isSingleLine
+          />
         ) : (
           <Skeleton w='80%' h={theme.typography.lineHeight.m} />
         )}
@@ -74,7 +83,7 @@ const CommentListItem = ({ id }: { id: number }) => {
 export const RecentComments = ({ userId }: { userId: number }) => {
   const dispatch = useDispatch()
   const { data: user } = useUser(userId)
-  const { data: commentIds = [] } = useUserComments(userId, 3)
+  const { data: commentIds = [] } = useUserComments(userId, 'profilePage', 3)
   const onClickViewAll = useCallback(() => {
     if (user?.handle) {
       dispatch(push(fullCommentHistoryPage(user.handle)))
@@ -102,13 +111,11 @@ export const RecentComments = ({ userId }: { userId: number }) => {
         {commentIds.map((id) => (
           <CommentListItem key={id} id={id} />
         ))}
-        <PlainButton
-          variant='subdued'
-          iconRight={IconArrowRight}
-          onClick={onClickViewAll}
-        >
-          {messages.viewAll}
-        </PlainButton>
+        <Box w='100%' onClick={onClickViewAll}>
+          <PlainButton variant='subdued' iconRight={IconArrowRight}>
+            {messages.viewAll}
+          </PlainButton>
+        </Box>
       </Flex>
     </ProfilePageNavSectionItem>
   )

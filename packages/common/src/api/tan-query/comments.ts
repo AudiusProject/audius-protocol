@@ -71,6 +71,7 @@ const messages = {
  */
 export const useUserComments = (
   userId: ID | null,
+  source: 'profilePage' | 'commentHistoryPage' = 'profilePage',
   pageSize = COMMENT_ROOT_PAGE_SIZE
 ) => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
@@ -86,7 +87,7 @@ export const useUserComments = (
       if (lastPage?.length < pageSize) return undefined
       return (pages.length ?? 0) * pageSize
     },
-    queryKey: [QUERY_KEYS.userCommentList, userId],
+    queryKey: [QUERY_KEYS.userCommentList, userId, source],
     queryFn: async ({ pageParam }): Promise<ID[]> => {
       const sdk = await audiusSdk()
       const commentsRes = await sdk.users.userComments({
