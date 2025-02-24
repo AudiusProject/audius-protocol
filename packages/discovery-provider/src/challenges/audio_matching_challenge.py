@@ -85,6 +85,23 @@ class AudioMatchingSellerChallengeUpdater(ChallengeUpdater):
     def should_show_challenge_for_user(self, session: Session, user_id: int) -> bool:
         return does_user_exist_with_verification_status(session, user_id, True)
 
+    def update_user_challenges(
+        self,
+        session: Session,
+        event: str,
+        user_challenges: List[UserChallenge],
+        step_count: Optional[int],
+        event_metadatas: List[FullEventMetadata],
+        starting_block: Optional[int],
+    ):
+        challenge_id = user_challenges[0].challenge_id
+        challenge_amount = get_challenge_amount(session, challenge_id)
+        for idx, user_challenge in enumerate(user_challenges):
+            metadata = event_metadatas[idx]
+            if metadata and "amount" in metadata["extra"]:
+                user_challenge.amount = challenge_amount * metadata["extra"]["amount"]
+                user_challenge.is_complete = True
+
 
 audio_matching_buyer_challenge_manager = ChallengeManager(
     "b", AudioMatchingBuyerChallengeUpdater()
