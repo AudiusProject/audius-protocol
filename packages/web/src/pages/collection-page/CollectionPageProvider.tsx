@@ -467,14 +467,6 @@ class CollectionPage extends Component<
     }
   }
 
-  onClickRepostTrack = (record: CollectionPageTrackRecord) => {
-    if (!record.has_current_user_reposted) {
-      this.props.repostTrack(record.track_id)
-    } else {
-      this.props.undoRepostTrack(record.track_id)
-    }
-  }
-
   onClickPurchaseTrack = (record: CollectionPageTrackRecord) => {
     this.props.openPremiumContentPurchaseModal({
       contentId: record.track_id,
@@ -757,7 +749,6 @@ class CollectionPage extends Component<
       onHeroTrackRepost: this.onHeroTrackRepost,
       onClickRow: this.onClickRow,
       onClickSave: this.onClickSave,
-      onClickRepostTrack: this.onClickRepostTrack,
       onClickPurchaseTrack: this.onClickPurchaseTrack,
       onSortTracks: this.onSortTracks,
       onReorderTracks: this.onReorderTracks,
@@ -901,17 +892,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
           collectionId: playlistId,
           source: ShareSource.TILE
         })
-      ),
-    repostTrack: (trackId: number) =>
-      dispatch(
-        socialTracksActions.repostTrack(trackId, RepostSource.COLLECTION_PAGE)
-      ),
-    undoRepostTrack: (trackId: number) =>
-      dispatch(
-        socialTracksActions.undoRepostTrack(
-          trackId,
-          RepostSource.COLLECTION_PAGE
-        )
       ),
     saveTrack: (trackId: number) =>
       dispatch(

@@ -3,7 +3,6 @@ import { useContext } from 'react'
 import { useTrack } from '@audius/common/api'
 import {
   ShareSource,
-  RepostSource,
   FavoriteSource,
   PlayableType,
   ID
@@ -28,14 +27,14 @@ import { Dispatch } from 'redux'
 
 import * as embedModalActions from 'components/embed-modal/store/actions'
 import { ToastContext } from 'components/toast/ToastContext'
+import { useRepostTrackWeb } from 'hooks/useRepost'
 import { AppState } from 'store/types'
 import { push } from 'utils/navigation'
 import { albumPage } from 'utils/route'
 
 const { profilePage } = route
 const { requestOpen: openAddToCollection } = addToCollectionUIActions
-const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack, shareTrack } =
-  tracksSocialActions
+const { saveTrack, unsaveTrack, shareTrack } = tracksSocialActions
 const { getCollectionId } = collectionPageSelectors
 const { addTrackToPlaylist } = cacheCollectionsActions
 const { deleteTrack } = cacheTracksActions
@@ -150,6 +149,8 @@ const TrackMenu = ({
     getUserTrackPositions(state, { userId: currentUserId })
   )
 
+  const handleRepostTrack = useRepostTrackWeb()
+
   const getMenu = () => {
     const {
       goToRoute,
@@ -160,7 +161,6 @@ const TrackMenu = ({
       isReposted,
       openAddToCollectionModal,
       openEmbedModal,
-      repostTrack,
       saveTrack,
       setArtistPick,
       shareTrack,
@@ -168,7 +168,6 @@ const TrackMenu = ({
       trackTitle,
       trackPermalink,
       genre,
-      undoRepostTrack,
       unsaveTrack,
       unsetArtistPick
     } = props
@@ -192,7 +191,7 @@ const TrackMenu = ({
       // Set timeout so the menu has time to close before we propagate the change.
       onClick: () =>
         setTimeout(() => {
-          isReposted ? undoRepostTrack(trackId) : repostTrack(trackId)
+          handleRepostTrack({ trackId })
           toast(isReposted ? messages.unreposted : messages.reposted)
         }, 0)
     }
@@ -374,10 +373,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(saveTrack(trackId, FavoriteSource.OVERFLOW)),
     unsaveTrack: (trackId: ID) =>
       dispatch(unsaveTrack(trackId, FavoriteSource.OVERFLOW)),
-    repostTrack: (trackId: ID) =>
-      dispatch(repostTrack(trackId, RepostSource.OVERFLOW)),
-    undoRepostTrack: (trackId: ID) =>
-      dispatch(undoRepostTrack(trackId, RepostSource.OVERFLOW)),
     setArtistPick: (trackId: ID) =>
       dispatch(artistPickModalActions.open({ trackId })),
     unsetArtistPick: () =>

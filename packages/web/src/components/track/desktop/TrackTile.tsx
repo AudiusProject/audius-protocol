@@ -93,7 +93,6 @@ const TrackTile = ({
   showIconButtons = true,
   containerClassName,
   onClickTitle,
-  onClickRepost,
   onClickFavorite,
   onClickShare,
   onClickLocked,
@@ -105,6 +104,7 @@ const TrackTile = ({
   source
 }: TrackTileProps) => {
   const currentUserId = useSelector(getUserId)
+
   const trackPositionInfo = useSelector((state: CommonState) =>
     getTrackPosition(state, { trackId, userId: currentUserId })
   )
@@ -308,7 +308,6 @@ const TrackTile = ({
                 isDarkMode={isDarkMode}
                 isMatrixMode={isMatrixMode}
                 showIconButtons={showIconButtons}
-                onClickRepost={onClickRepost}
                 onClickFavorite={onClickFavorite}
                 onClickShare={onClickShare}
                 onClickGatedUnlockPill={

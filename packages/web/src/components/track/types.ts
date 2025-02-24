@@ -199,9 +199,6 @@ export type DesktopTrackTileProps = {
   /** on click title */
   onClickTitle?: (e: MouseEvent) => void
 
-  /** on click repost icon */
-  onClickRepost: (e?: MouseEvent) => void
-
   /** on click favorite icon */
   onClickFavorite: (e?: MouseEvent) => void
 

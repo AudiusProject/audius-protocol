@@ -6,12 +6,10 @@ import {
   isPurchaseableAlbum,
   usePurchaseContentErrorMessage
 } from '@audius/common/hooks'
-import { Name, RepostSource } from '@audius/common/models'
+import { Name } from '@audius/common/models'
 import {
   PurchaseContentStage,
   PurchaseContentError,
-  tracksSocialActions,
-  collectionsSocialActions,
   usePremiumContentPurchaseModal
 } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
@@ -27,11 +25,11 @@ import {
 } from '@audius/harmony'
 import { useField } from 'formik'
 import { capitalize } from 'lodash'
-import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import { SignOnLink } from 'components/SignOnLink'
 import { TwitterShareButton } from 'components/twitter-share-button/TwitterShareButton'
+import { useRepostTrackWeb } from 'hooks/useRepost'
 import { fullCollectionPage, fullTrackPage } from 'utils/route'
 
 import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
@@ -107,7 +105,6 @@ export const PurchaseContentFormFooter = ({
   const title = 'title' in metadata ? metadata.title : metadata.playlist_name
   const isAlbum = isPurchaseableAlbum(metadata)
   const isHidden = isAlbum ? metadata.is_private : metadata.is_unlisted
-  const dispatch = useDispatch()
   const isPurchased = stage === PurchaseContentStage.FINISH
   const { totalPrice } = purchaseSummaryValues
   const [{ value: isGuestCheckout }] = useField(GUEST_CHECKOUT)
@@ -128,20 +125,15 @@ export const PurchaseContentFormFooter = ({
   )
   const { onClose } = usePremiumContentPurchaseModal()
 
+  const handleRepostTrack = useRepostTrackWeb()
+
   const onRepost = useCallback(() => {
-    dispatch(
-      isReposted
-        ? (isAlbum
-            ? collectionsSocialActions.undoRepostCollection
-            : tracksSocialActions.undoRepostTrack)(
-            contentId,
-            RepostSource.PURCHASE
-          )
-        : (isAlbum
-            ? collectionsSocialActions.repostCollection
-            : tracksSocialActions.repostTrack)(contentId, RepostSource.PURCHASE)
-    )
-  }, [contentId, dispatch, isAlbum, isReposted])
+    if (isAlbum) {
+      // TODO: Implement repost collection
+    } else {
+      handleRepostTrack({ trackId: contentId })
+    }
+  }, [handleRepostTrack, isAlbum, contentId])
 
   if (isPurchased) {
     return (

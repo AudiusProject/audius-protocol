@@ -11,6 +11,7 @@ import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import ShareButton from 'components/alt-button/ShareButton'
 import Tooltip from 'components/tooltip/Tooltip'
+import { useRepostTrackWeb } from 'hooks/useRepost'
 
 import { GatedConditionsPill } from './GatedConditionsPill'
 import styles from './desktop/TrackTile.module.css'
@@ -35,10 +36,13 @@ type ViewerActionButtonProps = {
   isDarkMode?: boolean
   isMatrixMode: boolean
   showIconButtons?: boolean
-  onClickRepost: (e: MouseEvent) => void
   onClickFavorite: (e?: MouseEvent) => void
   onClickShare: (e?: MouseEvent) => void
   onClickGatedUnlockPill?: (e: MouseEvent) => void
+}
+
+type QueryActionMethods = {
+  onClickRepost: () => void
 }
 
 type EntityDetails = {
@@ -101,14 +105,17 @@ const TrackViewerActionButtons = ({
 }: ViewerActionButtonProps) => {
   const { streamConditions, isUnlisted, isFavorited, isReposted } =
     useTrackEntityDetails(contentId)
+
+  const handleRepostTrack = useRepostTrackWeb()
   return (
     <BaseViewerActionButtons
+      {...rest}
       streamConditions={streamConditions}
       isUnlisted={isUnlisted}
       isFavorited={isFavorited}
       isReposted={isReposted}
       contentId={contentId}
-      {...rest}
+      onClickRepost={() => handleRepostTrack({ trackId: contentId })}
     />
   )
 }
@@ -121,6 +128,7 @@ const CollectionViewerActionButtons = ({
     useCollectionEntityDetails(contentId)
   return (
     <BaseViewerActionButtons
+      onClickRepost={() => {}} // TODO: Implement repost collection
       streamConditions={streamConditions}
       isUnlisted={isUnlisted}
       isFavorited={isFavorited}
@@ -149,7 +157,7 @@ const BaseViewerActionButtons = ({
   onClickFavorite,
   onClickShare,
   onClickGatedUnlockPill
-}: ViewerActionButtonProps & EntityDetails) => {
+}: ViewerActionButtonProps & EntityDetails & QueryActionMethods) => {
   const gatedStatusMap = useSelector(getGatedContentStatusMap)
   const gatedStatus = contentId && gatedStatusMap[contentId]
 

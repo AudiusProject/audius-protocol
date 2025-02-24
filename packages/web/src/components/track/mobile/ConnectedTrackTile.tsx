@@ -1,12 +1,7 @@
 import { memo } from 'react'
 
 import { useGatedContentAccess } from '@audius/common/hooks'
-import {
-  ShareSource,
-  RepostSource,
-  FavoriteSource,
-  ID
-} from '@audius/common/models'
+import { ShareSource, FavoriteSource, ID } from '@audius/common/models'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -39,8 +34,7 @@ const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
 const { getTrack } = cacheTracksSelectors
 const { getUserFromTrack } = cacheUsersSelectors
-const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
-  tracksSocialActions
+const { saveTrack, unsaveTrack } = tracksSocialActions
 const getUserId = accountSelectors.getUserId
 
 type OwnProps = Omit<
@@ -84,8 +78,6 @@ const ConnectedTrackTile = ({
   currentUserId,
   saveTrack,
   unsaveTrack,
-  repostTrack,
-  unrepostTrack,
   shareTrack,
   clickOverflow,
   darkMode,
@@ -138,14 +130,6 @@ const ConnectedTrackTile = ({
       unsaveTrack(trackId)
     } else {
       saveTrack(trackId, isFeed)
-    }
-  }
-
-  const toggleRepost = (trackId: ID) => {
-    if (has_current_user_reposted) {
-      unrepostTrack(trackId)
-    } else {
-      repostTrack(trackId, isFeed)
     }
   }
 
@@ -279,7 +263,6 @@ const ConnectedTrackTile = ({
       onShare={onShare}
       onClickOverflow={onClickOverflow}
       renderOverflow={renderOverflowMenu}
-      toggleRepost={toggleRepost}
       isOwner={isOwner}
       darkMode={darkMode}
       isMatrix={isMatrix()}
@@ -323,10 +306,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(saveTrack(trackId, FavoriteSource.TILE, isFeed)),
     unsaveTrack: (trackId: ID) =>
       dispatch(unsaveTrack(trackId, FavoriteSource.TILE)),
-    repostTrack: (trackId: ID, isFeed: boolean) =>
-      dispatch(repostTrack(trackId, RepostSource.TILE, isFeed)),
-    unrepostTrack: (trackId: ID) =>
-      dispatch(undoRepostTrack(trackId, RepostSource.TILE)),
     clickOverflow: (trackId: ID, overflowActions: OverflowAction[]) =>
       dispatch(
         open({ source: OverflowSource.TRACKS, id: trackId, overflowActions })

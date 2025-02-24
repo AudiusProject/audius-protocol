@@ -4,7 +4,6 @@ import {
   Name,
   PlaybackSource,
   FavoriteSource,
-  RepostSource,
   LineupTrack,
   UserTrackMetadata,
   Kind
@@ -18,6 +17,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
+import { useRepostTrackWeb } from 'hooks/useRepost'
 
 import { TracksTable } from './TracksTable'
 import type { TracksTableProps, TrackWithUID } from './types'
@@ -107,20 +107,10 @@ export const TrackTableLineup = ({
     [dispatch]
   )
 
+  const repostTrack = useRepostTrackWeb()
   const onClickRepost = useCallback(
-    (track: TrackWithUID) => {
-      const trackId = track.track_id
-      if (!track.has_current_user_reposted) {
-        dispatch(
-          tracksSocialActions.repostTrack(trackId, RepostSource.TRACK_PAGE)
-        )
-      } else {
-        dispatch(
-          tracksSocialActions.undoRepostTrack(trackId, RepostSource.TRACK_PAGE)
-        )
-      }
-    },
-    [dispatch]
+    (track: TrackWithUID) => repostTrack({ trackId: track.track_id }),
+    [repostTrack]
   )
 
   const onClickRow = useCallback(

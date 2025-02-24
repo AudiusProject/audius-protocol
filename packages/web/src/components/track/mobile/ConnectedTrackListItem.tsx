@@ -1,7 +1,6 @@
 import { memo, useCallback } from 'react'
 
 import {
-  RepostSource,
   FavoriteSource,
   ID,
   isContentUSDCPurchaseGated,
@@ -38,8 +37,7 @@ const { getGatedContentStatusMap } = gatedContentSelectors
 
 const { open } = mobileOverflowMenuUIActions
 const { getUserFromTrack } = cacheUsersSelectors
-const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
-  tracksSocialActions
+const { saveTrack, unsaveTrack } = tracksSocialActions
 const getUserId = accountSelectors.getUserId
 const { getTrack } = cacheTracksSelectors
 
@@ -150,10 +148,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(saveTrack(trackId, FavoriteSource.TRACK_LIST)),
     unsaveTrack: (trackId: ID) =>
       dispatch(unsaveTrack(trackId, FavoriteSource.TRACK_LIST)),
-    repostTrack: (trackId: ID) =>
-      dispatch(repostTrack(trackId, RepostSource.TRACK_LIST)),
-    unrepostTrack: (trackId: ID) =>
-      dispatch(undoRepostTrack(trackId, RepostSource.TRACK_LIST)),
     clickOverflow: (trackId: ID, overflowActions: OverflowAction[]) =>
       dispatch(
         open({ source: OverflowSource.TRACKS, id: trackId, overflowActions })

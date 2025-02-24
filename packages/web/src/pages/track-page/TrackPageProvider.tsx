@@ -4,7 +4,6 @@ import { useTrackByParams } from '@audius/common/api'
 import {
   Name,
   ShareSource,
-  RepostSource,
   FavoriteSource,
   FollowSource,
   PlaybackSource,
@@ -328,15 +327,6 @@ class TrackPage extends Component<TrackPageProps, TrackPageProviderState> {
     }
   }
 
-  onHeroRepost = (isReposted: boolean, trackId: ID) => {
-    const { repostTrack, undoRepostTrack } = this.props
-    if (!isReposted) {
-      repostTrack(trackId)
-    } else {
-      undoRepostTrack(trackId)
-    }
-  }
-
   onHeroShare = (trackId: ID) => {
     const { shareTrack } = this.props
     shareTrack(trackId)
@@ -446,7 +436,6 @@ class TrackPage extends Component<TrackPageProps, TrackPageProviderState> {
       userId,
       previewing,
       onHeroPlay: this.onHeroPlay,
-      onHeroRepost: this.onHeroRepost,
       onHeroShare: this.onHeroShare,
       onSaveTrack: this.onSaveTrack,
       onClickMobileOverflow: this.props.clickOverflow,
@@ -539,14 +528,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
       ),
     deleteTrack: (trackId: ID) =>
       dispatch(cacheTrackActions.deleteTrack(trackId)),
-    repostTrack: (trackId: ID) =>
-      dispatch(
-        socialTracksActions.repostTrack(trackId, RepostSource.TRACK_PAGE)
-      ),
-    undoRepostTrack: (trackId: ID) =>
-      dispatch(
-        socialTracksActions.undoRepostTrack(trackId, RepostSource.TRACK_PAGE)
-      ),
     editTrack: (trackId: ID, formFields: any) =>
       dispatch(cacheTrackActions.editTrack(trackId, formFields)),
     onConfirmUnfollow: (userId: ID) =>
