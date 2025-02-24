@@ -86,5 +86,7 @@ export const env: Env = {
   WORMHOLE_ADDRESS: '0x6E7a1F7339bbB62b23D44797b63e4258d283E095',
   WORMHOLE_RPC_HOSTS:
     'https://wormhole-v2-mainnet-api.certus.one,https://wormhole.inotel.ro,https://wormhole-v2-mainnet-api.mcf.rocks,https://wormhole-v2-mainnet-api.chainlayer.network,https://wormhole-v2-mainnet-api.staking.fund,https://wormhole-v2-mainnet-api.chainlayer.network',
-  EMAIL_ENCRYPTION_UUID: 61969424
+  EMAIL_ENCRYPTION_UUID: 61969424,
+  EMAIL_ENCRYPTION_PUBLIC_KEY:
+    'BMpaZ9tHeeNXvmEL1bqxbcJfi0HOcp+Zf1HARJ+N5ZPUwqYuUU67td1GgE1NjX+hb2j39OwI9wjfBmnfagHKMqk='
 }
