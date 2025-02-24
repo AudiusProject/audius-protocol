@@ -4,8 +4,14 @@ from sqlalchemy.orm.session import Session
 
 from src.challenges.challenge import ChallengeManager, ChallengeUpdater
 from src.models.users.user import User
+from src.utils.config import shared_config
 
-AUDIO_MATCHING_MULTIPLIER = 5
+env = shared_config["discprov"]["env"]
+
+AUDIO_MATCHING_MULTIPLIER = 1
+
+if env == "stage" or env == "dev":
+    AUDIO_MATCHING_MULTIPLIER = 5
 
 
 def generate_audio_matching_specifier(user_id: int, extra: Dict) -> str:
