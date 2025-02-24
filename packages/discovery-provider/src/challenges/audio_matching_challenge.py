@@ -1,17 +1,18 @@
-from typing import Dict, Optional, Tuple
+import logging
+from typing import Dict, List, Optional, Tuple
 
 from sqlalchemy.orm.session import Session
 
-from src.challenges.challenge import ChallengeManager, ChallengeUpdater
+from src.challenges.challenge import (
+    ChallengeManager,
+    ChallengeUpdater,
+    FullEventMetadata,
+)
+from src.models.rewards.challenge import Challenge
+from src.models.rewards.user_challenge import UserChallenge
 from src.models.users.user import User
-from src.utils.config import shared_config
 
-env = shared_config["discprov"]["env"]
-
-AUDIO_MATCHING_MULTIPLIER = 1
-
-if env == "stage" or env == "dev":
-    AUDIO_MATCHING_MULTIPLIER = 5
+logger = logging.getLogger(__name__)
 
 
 def generate_audio_matching_specifier(user_id: int, extra: Dict) -> str:
@@ -33,6 +34,15 @@ def does_user_exist_with_verification_status(
     return bool(user)
 
 
+def get_challenge_amount(session: Session, challenge_id: str) -> Optional[int]:
+    """Get the amount from the Challenge model for a given challenge_id"""
+    challenge = session.query(Challenge).filter(Challenge.id == challenge_id).first()
+    if not challenge:
+        logger.error(f"Farid: Challenge not found for id: {challenge_id}")
+        return None
+    return int(challenge.amount)
+
+
 class AudioMatchingBuyerChallengeUpdater(ChallengeUpdater):
     def generate_specifier(self, session: Session, user_id: int, extra: Dict) -> str:
         return generate_audio_matching_specifier(user_id, extra)
@@ -40,13 +50,27 @@ class AudioMatchingBuyerChallengeUpdater(ChallengeUpdater):
     def should_create_new_challenge(
         self, session, event: str, user_id: int, extra: Dict
     ) -> bool:
-        # Apply 5x multiplier to the amount before creating the challenge
-        if "amount" in extra:
-            extra["amount"] = extra["amount"] * AUDIO_MATCHING_MULTIPLIER
         return True
 
     def should_show_challenge_for_user(self, session: Session, user_id: int) -> bool:
         return True
+
+    def update_user_challenges(
+        self,
+        session: Session,
+        event: str,
+        user_challenges: List[UserChallenge],
+        step_count: Optional[int],
+        event_metadatas: List[FullEventMetadata],
+        starting_block: Optional[int],
+    ):
+        challenge_id = user_challenges[0].challenge_id
+        challenge_amount = get_challenge_amount(session, challenge_id)
+        for idx, user_challenge in enumerate(user_challenges):
+            metadata = event_metadatas[idx]
+            if metadata and "amount" in metadata["extra"]:
+                user_challenge.amount = challenge_amount * metadata["extra"]["amount"]
+                user_challenge.is_complete = True
 
 
 class AudioMatchingSellerChallengeUpdater(ChallengeUpdater):
@@ -56,9 +80,6 @@ class AudioMatchingSellerChallengeUpdater(ChallengeUpdater):
     def should_create_new_challenge(
         self, session, event: str, user_id: int, extra: Dict
     ) -> bool:
-        # Apply 5x multiplier to the amount before creating the challenge
-        if "amount" in extra:
-            extra["amount"] = extra["amount"] * AUDIO_MATCHING_MULTIPLIER
         return does_user_exist_with_verification_status(session, user_id, True)
 
     def should_show_challenge_for_user(self, session: Session, user_id: int) -> bool:

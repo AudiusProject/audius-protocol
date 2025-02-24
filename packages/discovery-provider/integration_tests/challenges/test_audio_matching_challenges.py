@@ -3,7 +3,6 @@ from datetime import datetime
 from sqlalchemy.sql.expression import or_
 
 from src.challenges.audio_matching_challenge import (
-    AUDIO_MATCHING_MULTIPLIER,
     audio_matching_buyer_challenge_manager,
     audio_matching_seller_challenge_manager,
 )
@@ -124,14 +123,14 @@ def test_audio_matching_challenge(app):
             .all()
         )
         assert len(buyer_challenges) == 1
-        assert buyer_challenges[0][0] == AMOUNT_FIVE * AUDIO_MATCHING_MULTIPLIER
+        assert buyer_challenges[0][0] == AMOUNT_FIVE * 5
         seller_challenges = (
             session.query(UserChallenge.amount)
             .filter(UserChallenge.user_id == seller_verified.user_id)
             .all()
         )
         assert len(seller_challenges) == 1
-        assert seller_challenges[0][0] == AMOUNT_FIVE * AUDIO_MATCHING_MULTIPLIER
+        assert seller_challenges[0][0] == AMOUNT_FIVE * 5
 
         # Test: unverified sellers don't get challenges
         bus.dispatch(
