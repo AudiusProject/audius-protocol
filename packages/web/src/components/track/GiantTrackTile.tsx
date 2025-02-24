@@ -1,11 +1,13 @@
 import { Suspense, lazy, useCallback, useState } from 'react'
 
+import { useToggleSaveTrack } from '@audius/common/api'
 import {
   isContentUSDCPurchaseGated,
   ID,
   FieldVisibility,
   Remix,
-  AccessConditions
+  AccessConditions,
+  FavoriteSource
 } from '@audius/common/models'
 import {
   cacheTracksSelectors,
@@ -186,6 +188,11 @@ export const GiantTrackTile = ({
     () => setArtworkLoading(false),
     [setArtworkLoading]
   )
+  const toggleSaveTrack = useToggleSaveTrack({
+    trackId,
+    source: FavoriteSource.TRACK_PAGE
+  })
+
   const isLongFormContent =
     genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
@@ -332,7 +339,7 @@ export const GiantTrackTile = ({
                 variant={isSaved ? 'primary' : 'secondary'}
                 widthToHideText={BUTTON_COLLAPSE_WIDTHS.third}
                 iconLeft={IconHeart}
-                onClick={onSave}
+                onClick={toggleSaveTrack}
               >
                 {isSaved ? 'favorited' : 'favorite'}
               </Button>

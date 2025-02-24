@@ -15,15 +15,14 @@ import { getTrackQueryKey } from './useTrack'
 import { useUser } from './useUser'
 import { primeTrackData } from './utils/primeTrackData'
 
+const getUnfavoriteMutationKey = (trackId: ID) => ['unfavorite-track', trackId]
+
 export type UnfavoriteTrackArgs = {
   trackId: ID
   source: string
 }
 
-export const useUnfavoriteTrack = ({
-  trackId,
-  source
-}: UnfavoriteTrackArgs) => {
+export const useUnfavoriteTrack = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
@@ -34,15 +33,20 @@ export const useUnfavoriteTrack = ({
   } = useAppContext()
 
   return useMutation({
-    mutationFn: async () => {
+    // mutationKey: getUnfavoriteMutationKey(trackId),
+    mutationFn: async ({ trackId }: UnfavoriteTrackArgs) => {
       if (!currentUserId) throw new Error('User ID is required')
+      const isMutationInFlight = queryClient.isFetching({
+        queryKey: getUnfavoriteMutationKey(trackId)
+      })
+      if (isMutationInFlight) return
       const sdk = await audiusSdk()
       await sdk.tracks.unfavoriteTrack({
         trackId: Id.parse(trackId),
         userId: Id.parse(currentUserId)
       })
     },
-    onMutate: async () => {
+    onMutate: async ({ trackId, source }) => {
       if (!currentUserId || !currentUser) {
         // TODO: throw toast and redirect to sign in
         throw new Error('User ID is required')
@@ -112,7 +116,7 @@ export const useUnfavoriteTrack = ({
 
       return { previousTrack, previousUser: currentUser }
     },
-    onError: (error, _, context) => {
+    onError: (error, { trackId }, context) => {
       if (!context) return
 
       // Revert optimistic updates

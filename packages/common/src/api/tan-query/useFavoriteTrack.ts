@@ -20,7 +20,7 @@ type FavoriteTrackArgs = {
   source?: string
 }
 
-export const useFavoriteTrack = ({ trackId, source }: FavoriteTrackArgs) => {
+export const useFavoriteTrack = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
@@ -31,7 +31,7 @@ export const useFavoriteTrack = ({ trackId, source }: FavoriteTrackArgs) => {
   } = useAppContext()
 
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async ({ trackId }: FavoriteTrackArgs) => {
       if (!currentUserId) throw new Error('User ID is required')
       const sdk = await audiusSdk()
       await sdk.tracks.favoriteTrack({
@@ -39,7 +39,7 @@ export const useFavoriteTrack = ({ trackId, source }: FavoriteTrackArgs) => {
         userId: Id.parse(currentUserId)
       })
     },
-    onMutate: async () => {
+    onMutate: async ({ trackId, source }) => {
       if (!currentUserId || !currentUser) {
         // TODO: throw toast and redirect to sign in
         throw new Error('User ID is required')
@@ -106,7 +106,7 @@ export const useFavoriteTrack = ({ trackId, source }: FavoriteTrackArgs) => {
 
       return { previousTrack, previousUser: currentUser }
     },
-    onSuccess: async () => {
+    onSuccess: async (_, { trackId }) => {
       // Handle co-sign events after successful save
       const track = queryClient.getQueryData<Track>(getTrackQueryKey(trackId))
       if (!track) return
@@ -149,7 +149,7 @@ export const useFavoriteTrack = ({ trackId, source }: FavoriteTrackArgs) => {
         }
       }
     },
-    onError: (error, _, context) => {
+    onError: (error, { trackId }, context) => {
       if (!context) return
 
       // Revert optimistic updates
