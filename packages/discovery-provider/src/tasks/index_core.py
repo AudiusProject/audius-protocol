@@ -25,14 +25,15 @@ from src.tasks.index_core_entity_manager import (
 )
 from src.tasks.index_core_plays import index_core_plays
 from src.utils.config import shared_config
+from src.utils.core import (
+    core_health_check_cache_key,
+    core_listens_health_check_cache_key,
+)
 from src.utils.session_manager import SessionManager
 
 root_logger = logging.getLogger(__name__)
 
 index_core_lock_key = "index_core_lock"
-core_health_check_cache_key = "core:indexer:health"
-core_listens_health_check_cache_key = "core:indexer:health:listens"
-core_em_health_check_cache_key = "core:indexer:health:em"
 
 environment = shared_config["discprov"]["env"]
 
