@@ -4,7 +4,10 @@ import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
-import { supportedUserMetadataListFromSDK } from '~/models/Tipping'
+import {
+  SupportedUserMetadata,
+  supportedUserMetadataListFromSDK
+} from '~/models/Tipping'
 import { SUPPORTING_PAGINATION_SIZE } from '~/utils/constants'
 
 import { QUERY_KEYS } from './queryKeys'
@@ -35,7 +38,10 @@ export const useSupportedUsers = (
   return useInfiniteQuery({
     queryKey: getSupportedUsersQueryKey(userId, pageSize),
     initialPageParam: 0,
-    getNextPageParam: (lastPage, allPages) => {
+    getNextPageParam: (
+      lastPage: SupportedUserMetadata[],
+      allPages: SupportedUserMetadata[][]
+    ) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
