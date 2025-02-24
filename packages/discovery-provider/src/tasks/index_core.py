@@ -13,8 +13,8 @@ from src.tasks.celery_app import celery
 from src.tasks.core.core_client import CoreClient, get_core_instance
 from src.tasks.core.gen.protocol_pb2 import BlockResponse
 from src.tasks.index_core_cutovers import (
-    get_core_cutover,
-    get_core_cutover_chain_id,
+    get_plays_core_cutover,
+    get_plays_core_cutover_chain_id,
     get_sol_cutover,
 )
 from src.tasks.index_core_entity_manager import index_core_entity_manager
@@ -145,8 +145,8 @@ def index_core(self):
             # gather initialization data for indexer
             # TODO: cache this across celery messages
             sol_plays_cutover = get_sol_cutover()
-            core_plays_cutover = get_core_cutover()
-            core_plays_cutover_chain_id = get_core_cutover_chain_id()
+            core_plays_cutover = get_plays_core_cutover()
+            core_plays_cutover_chain_id = get_plays_core_cutover_chain_id()
 
             core_node_info = core.get_node_info()
 
