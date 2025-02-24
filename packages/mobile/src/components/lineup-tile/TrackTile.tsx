@@ -100,7 +100,6 @@ export const TrackTileComponent = ({
     duration,
     field_visibility,
     is_unlisted,
-    has_current_user_reposted,
     has_current_user_saved,
     title,
     track_id,
