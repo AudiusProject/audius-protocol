@@ -42,6 +42,31 @@ def get_challenge_amount(session: Session, challenge_id: str) -> Optional[int]:
     return int(challenge.amount)
 
 
+def update_audio_matching_user_challenges(
+    session: Session,
+    event: str,
+    user_challenges: List[UserChallenge],
+    step_count: Optional[int],
+    event_metadatas: List[FullEventMetadata],
+    starting_block: Optional[int],
+):
+    """
+    Shared implementation for updating audio matching user challenges.
+    Updates the challenge amount based on metadata and marks challenges as complete.
+    """
+    challenge_id = user_challenges[0].challenge_id
+    challenge_amount = get_challenge_amount(session, challenge_id)
+
+    if not challenge_amount:
+        return
+
+    for idx, user_challenge in enumerate(user_challenges):
+        metadata = event_metadatas[idx]
+        if metadata and "amount" in metadata["extra"]:
+            user_challenge.amount = challenge_amount * metadata["extra"]["amount"]
+            user_challenge.is_complete = True
+
+
 class AudioMatchingBuyerChallengeUpdater(ChallengeUpdater):
     def generate_specifier(self, session: Session, user_id: int, extra: Dict) -> str:
         return generate_audio_matching_specifier(user_id, extra)
@@ -63,17 +88,9 @@ class AudioMatchingBuyerChallengeUpdater(ChallengeUpdater):
         event_metadatas: List[FullEventMetadata],
         starting_block: Optional[int],
     ):
-        challenge_id = user_challenges[0].challenge_id
-        challenge_amount = get_challenge_amount(session, challenge_id)
-
-        if not challenge_amount:
-            return
-
-        for idx, user_challenge in enumerate(user_challenges):
-            metadata = event_metadatas[idx]
-            if metadata and "amount" in metadata["extra"]:
-                user_challenge.amount = challenge_amount * metadata["extra"]["amount"]
-                user_challenge.is_complete = True
+        update_audio_matching_user_challenges(
+            session, event, user_challenges, step_count, event_metadatas, starting_block
+        )
 
 
 class AudioMatchingSellerChallengeUpdater(ChallengeUpdater):
@@ -97,13 +114,9 @@ class AudioMatchingSellerChallengeUpdater(ChallengeUpdater):
         event_metadatas: List[FullEventMetadata],
         starting_block: Optional[int],
     ):
-        challenge_id = user_challenges[0].challenge_id
-        challenge_amount = get_challenge_amount(session, challenge_id)
-        for idx, user_challenge in enumerate(user_challenges):
-            metadata = event_metadatas[idx]
-            if metadata and "amount" in metadata["extra"]:
-                user_challenge.amount = challenge_amount * metadata["extra"]["amount"]
-                user_challenge.is_complete = True
+        update_audio_matching_user_challenges(
+            session, event, user_challenges, step_count, event_metadatas, starting_block
+        )
 
 
 audio_matching_buyer_challenge_manager = ChallengeManager(
