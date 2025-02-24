@@ -5,6 +5,8 @@ from sqlalchemy.orm.session import Session
 from src.challenges.challenge import ChallengeManager, ChallengeUpdater
 from src.models.users.user import User
 
+AUDIO_MATCHING_MULTIPLIER = 5
+
 
 def generate_audio_matching_specifier(user_id: int, extra: Dict) -> str:
     return f"{hex(user_id)[2:]}:{hex(extra['track_id'])[2:]}"
@@ -32,6 +34,9 @@ class AudioMatchingBuyerChallengeUpdater(ChallengeUpdater):
     def should_create_new_challenge(
         self, session, event: str, user_id: int, extra: Dict
     ) -> bool:
+        # Apply 5x multiplier to the amount before creating the challenge
+        if "amount" in extra:
+            extra["amount"] = extra["amount"] * AUDIO_MATCHING_MULTIPLIER
         return True
 
     def should_show_challenge_for_user(self, session: Session, user_id: int) -> bool:
@@ -45,6 +50,9 @@ class AudioMatchingSellerChallengeUpdater(ChallengeUpdater):
     def should_create_new_challenge(
         self, session, event: str, user_id: int, extra: Dict
     ) -> bool:
+        # Apply 5x multiplier to the amount before creating the challenge
+        if "amount" in extra:
+            extra["amount"] = extra["amount"] * AUDIO_MATCHING_MULTIPLIER
         return does_user_exist_with_verification_status(session, user_id, True)
 
     def should_show_challenge_for_user(self, session: Session, user_id: int) -> bool:
