@@ -1,6 +1,9 @@
 import { useCallback } from 'react'
 
-import { useChallengeCooldownSchedule } from '@audius/common/hooks'
+import {
+  useChallengeCooldownSchedule,
+  formatCooldownChallenges
+} from '@audius/common/hooks'
 import { ChallengeRewardID } from '@audius/common/models'
 import { Text } from '@audius/harmony'
 
@@ -45,7 +48,7 @@ export const CooldownSummaryTable = ({
   return (
     <SummaryTable
       title={messages.upcomingRewards}
-      items={cooldownChallenges.map(formatLabel)}
+      items={formatCooldownChallenges(cooldownChallenges).map(formatLabel)}
       summaryItem={summary}
       secondaryTitle={messages.audio}
       summaryLabelColor='accent'

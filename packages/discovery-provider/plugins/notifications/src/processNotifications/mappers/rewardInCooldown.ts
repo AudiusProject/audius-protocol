@@ -69,12 +69,12 @@ const challengeMessages = {
   s: {
     title: 'Sell to Earn',
     description:
-      'Receive 1 additional $AUDIO for each dollar earned from sales',
+      'Receive 5 additional $AUDIO for each dollar earned from sales',
     imageUrl: 'AXu4i3Zj3QCGifxQ5ug5z8Pp8am9mS.png'
   },
   b: {
     title: 'Spend to Earn',
-    description: 'Earn 1 $AUDIO for each dollar you spend on Audius.',
+    description: 'Earn 5 $AUDIO for each dollar you spend on Audius.',
     imageUrl: 'AXu4i3Zj3QCGifxQ5ug5z8Pp8am9mS.png'
   }
 }
