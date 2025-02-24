@@ -55,3 +55,27 @@ def get_plays_core_cutover() -> int:
     if env == "stage":
         return STAGE_PLAYS_CORE_CUTOVER
     return PROD_PLAYS_CORE_CUTOVER
+
+
+def get_em_core_cutovers_chain_id() -> str:
+    if env == "dev":
+        return DEV_EM_CORE_CUTOVER_CHAIN_ID
+    if env == "stage":
+        return STAGE_EM_CORE_CUTOVER_CHAIN_ID
+    return PROD_EM_CORE_CUTOVER_CHAIN_ID
+
+
+def get_em_cutover() -> int:
+    if env == "dev":
+        return DEV_EM_ACDC_CUTOVER
+    if env == "stage":
+        return STAGE_EM_ACDC_CUTOVER
+    return PROD_EM_ACDC_CUTOVER
+
+
+def get_em_core_cutover() -> int:
+    if env == "dev":
+        return DEV_EM_CORE_CUTOVER
+    if env == "stage":
+        return STAGE_EM_CORE_CUTOVER
+    return PROD_EM_CORE_CUTOVER
