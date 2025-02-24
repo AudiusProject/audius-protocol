@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
-import { UserTrackMetadata } from '~/models/Track'
+import { TrackMetadata } from '~/models/Track'
 
 import { getTracksBatcher } from './batchers/getTracksBatcher'
 import { QUERY_KEYS } from './queryKeys'
@@ -24,7 +24,7 @@ export const useTrack = (
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
 
-  return useQuery<UserTrackMetadata | null>({
+  return useQuery<TrackMetadata | null>({
     queryKey: getTrackQueryKey(trackId),
     queryFn: async () => {
       const sdk = await audiusSdk()

@@ -37,9 +37,7 @@ export const ListenStreakReminderNotification = (
         modalType: ChallengeName.ListenStreakEndless
       })
     )
-    dispatch(
-      setVisibility({ modal: 'ChallengeRewardsExplainer', visible: true })
-    )
+    dispatch(setVisibility({ modal: 'ChallengeRewards', visible: true }))
   }, [dispatch])
 
   return (

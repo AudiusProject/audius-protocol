@@ -37,6 +37,7 @@ import { toast } from '~/store/ui/toast/slice'
 import { Nullable } from '~/utils'
 
 import { QUERY_KEYS } from './queryKeys'
+import { useCurrentUserId } from './useCurrentUserId'
 
 type CommentOrReply = Comment | ReplyComment
 
@@ -68,19 +69,12 @@ const messages = {
  * QUERIES
  *
  */
-export type GetCommentsByUserIdArgs = {
-  userId: ID
-  currentUserId?: ID
-  sortMethod?: CommentSortMethod
-  pageSize?: number
-}
-
-export const useGetCommentsByUserId = ({
-  userId,
-  currentUserId,
+export const useUserComments = (
+  userId: ID | null,
   pageSize = COMMENT_ROOT_PAGE_SIZE
-}: GetCommentsByUserIdArgs) => {
+) => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const { data: currentUserId } = useCurrentUserId()
   const isMutating = useIsMutating()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
@@ -122,9 +116,7 @@ export const useGetCommentsByUserId = ({
       })
       // For the comment list cache, we only store the ids of the comments (organized by sort method)
       return commentList.map((comment) => comment.id)
-    },
-    staleTime: Infinity, // Stale time is set to infinity so that we never reload data thats currently shown on screen (because sorting could have changed)
-    gcTime: 0 // Cache time is set to 1 so that the data is cleared any time we leave the page viewing it or change sorts
+    }
   })
 
   const { error } = queryRes
@@ -267,7 +259,7 @@ export const useGetCommentById = (commentId: ID) => {
   return queryRes
 }
 
-const COMMENT_COUNT_POLL_INTERVAL = 10 * 1000 // 5 secs
+const COMMENT_COUNT_POLL_INTERVAL = 10 * 1000 // 10 secs
 
 export type TrackCommentCount = {
   previousValue: number
@@ -513,6 +505,8 @@ export const usePostComment = () => {
       args.newId = newId
       const newComment: Comment = {
         id: newId,
+        entityId: Id.parse(trackId),
+        entityType: 'Track',
         userId,
         message: body,
         mentions,

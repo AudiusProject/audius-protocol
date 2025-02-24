@@ -1,4 +1,5 @@
 import { QueryClient } from '@tanstack/react-query'
+import { omit } from 'lodash'
 import { AnyAction, Dispatch } from 'redux'
 import { SetRequired } from 'type-fest'
 
@@ -7,8 +8,8 @@ import { CollectionMetadata, UserCollectionMetadata } from '~/models/Collection'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
+import { TQCollection } from '../models'
 import { getCollectionQueryKey } from '../useCollection'
-import { getCollectionByPermalinkQueryKey } from '../useCollectionByPermalink'
 
 import { primeTrackDataInternal } from './primeTrackData'
 import { primeUserDataInternal } from './primeUserData'
@@ -78,23 +79,13 @@ export const primeCollectionDataInternal = ({
       !skipQueryData &&
       !queryClient.getQueryData(getCollectionQueryKey(collection.playlist_id))
     ) {
+      const tqCollection: TQCollection = {
+        ...omit(collection, ['tracks', 'user']),
+        trackIds: collection.tracks?.map((t) => t.track_id) ?? []
+      }
       queryClient.setQueryData(
         getCollectionQueryKey(collection.playlist_id),
-        collection
-      )
-    }
-
-    // Prime collection by permalink only if it doesn't exist and skipQueryData is false
-    if (
-      !skipQueryData &&
-      collection.permalink &&
-      !queryClient.getQueryData(
-        getCollectionByPermalinkQueryKey(collection.permalink)
-      )
-    ) {
-      queryClient.setQueryData(
-        getCollectionByPermalinkQueryKey(collection.permalink),
-        collection?.playlist_id
+        tqCollection
       )
     }
 

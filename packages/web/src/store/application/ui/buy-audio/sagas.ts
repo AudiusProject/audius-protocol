@@ -660,7 +660,8 @@ function* getSwapTransaction({
       addressLookupTables: lookupTableAddresses.map(
         (address) => new PublicKey(address)
       ),
-      priorityFee: null // already has compute budget instructions from Jupiter
+      priorityFee: null, // already has compute budget instructions from Jupiter
+      computeLimit: null // already has compute budget instructions from Jupiter
     }
   )
   return transaction

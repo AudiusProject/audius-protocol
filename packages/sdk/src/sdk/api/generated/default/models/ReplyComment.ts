@@ -38,6 +38,18 @@ export interface ReplyComment {
      * @type {string}
      * @memberof ReplyComment
      */
+    entityId: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ReplyComment
+     */
+    entityType: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ReplyComment
+     */
     userId: string;
     /**
      * 
@@ -101,6 +113,8 @@ export interface ReplyComment {
 export function instanceOfReplyComment(value: object): value is ReplyComment {
     let isInstance = true;
     isInstance = isInstance && "id" in value && value["id"] !== undefined;
+    isInstance = isInstance && "entityId" in value && value["entityId"] !== undefined;
+    isInstance = isInstance && "entityType" in value && value["entityType"] !== undefined;
     isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
     isInstance = isInstance && "message" in value && value["message"] !== undefined;
     isInstance = isInstance && "reactCount" in value && value["reactCount"] !== undefined;
@@ -121,6 +135,8 @@ export function ReplyCommentFromJSONTyped(json: any, ignoreDiscriminator: boolea
     return {
         
         'id': json['id'],
+        'entityId': json['entity_id'],
+        'entityType': json['entity_type'],
         'userId': json['user_id'],
         'message': json['message'],
         'mentions': !exists(json, 'mentions') ? undefined : ((json['mentions'] as Array<any>).map(CommentMentionFromJSON)),
@@ -144,6 +160,8 @@ export function ReplyCommentToJSON(value?: ReplyComment | null): any {
     return {
         
         'id': value.id,
+        'entity_id': value.entityId,
+        'entity_type': value.entityType,
         'user_id': value.userId,
         'message': value.message,
         'mentions': value.mentions === undefined ? undefined : ((value.mentions as Array<any>).map(CommentMentionToJSON)),

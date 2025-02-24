@@ -81,8 +81,9 @@ export const useUpdateTrack = () => {
     },
     onMutate: async ({ trackId, metadata }): Promise<MutationContext> => {
       // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.track, trackId] })
-      await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.collection] })
+      await queryClient.cancelQueries({
+        queryKey: getTrackQueryKey(trackId)
+      })
 
       // Snapshot the previous values
       const previousTrack = queryClient.getQueryData<UserTrackMetadata>([
@@ -99,28 +100,6 @@ export const useUpdateTrack = () => {
           forceReplace: true
         })
       }
-
-      // Optimistically update all collections that contain this track
-      queryClient.setQueriesData(
-        { queryKey: [QUERY_KEYS.collection] },
-        (oldData: any) => {
-          if (!oldData?.tracks?.some((track: any) => track.id === trackId)) {
-            return oldData
-          }
-
-          return {
-            ...oldData,
-            tracks: oldData.tracks.map((track: any) =>
-              track.id === trackId
-                ? {
-                    ...track,
-                    ...metadata
-                  }
-                : track
-            )
-          }
-        }
-      )
 
       // Return context with the previous track and metadata
       return { previousTrack }

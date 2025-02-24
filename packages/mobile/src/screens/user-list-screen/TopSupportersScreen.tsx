@@ -8,7 +8,7 @@ import {
 } from '@audius/common/store'
 import { ChatBlastAudience } from '@audius/sdk'
 import { css } from '@emotion/native'
-import { View } from 'react-native'
+import { Platform, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Box, IconTrophy } from '@audius/harmony-native'
@@ -25,7 +25,8 @@ const { getUserList, getId: getSupportersId } = topSupportersUserListSelectors
 const { getUser } = cacheUsersSelectors
 
 const messages = {
-  title: 'Top Supporters'
+  title: 'Tip Supporters',
+  titleAlt: 'Top Supporters'
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -48,6 +49,7 @@ export const TopSupportersScreen = () => {
   const supportersUser = useSelector((state) =>
     getUser(state, { id: supportersId })
   )
+  const baseTitle = Platform.OS === 'ios' ? messages.titleAlt : messages.title
   const dispatch = useDispatch()
 
   const handleSetSupporters = useCallback(() => {
@@ -60,10 +62,10 @@ export const TopSupportersScreen = () => {
         <Text variant='h3' style={styles.titleName} numberOfLines={1}>
           {supportersUser.name}
         </Text>
-        <Text variant='h3'>&apos;s&nbsp;{messages.title}</Text>
+        <Text variant='h3'>&apos;s&nbsp;{baseTitle}</Text>
       </View>
     ) : (
-      messages.title
+      baseTitle
     )
 
   return (

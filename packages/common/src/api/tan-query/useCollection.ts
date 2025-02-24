@@ -3,9 +3,9 @@ import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
 import { ID } from '~/models'
-import { UserCollectionMetadata } from '~/models/Collection'
 
 import { getCollectionsBatcher } from './batchers/getCollectionsBatcher'
+import { TQCollection } from './models'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
@@ -24,7 +24,7 @@ export const useCollection = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  return useQuery<UserCollectionMetadata | null>({
+  return useQuery<TQCollection | null>({
     queryKey: getCollectionQueryKey(collectionId),
     queryFn: async () => {
       const sdk = await audiusSdk()

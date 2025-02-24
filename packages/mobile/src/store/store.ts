@@ -110,7 +110,7 @@ const rootReducer = combineReducers({
   ...commonStoreReducers,
   // These also belong in common store reducers but are here until we move them to the @audius/common package:
   backend,
-  signOn: signOnReducer as SignOnPageReducer,
+  signOn: signOnReducer as unknown as SignOnPageReducer,
   searchBar,
 
   drawers,

@@ -149,9 +149,7 @@ export const ChallengeRewardsTile = () => {
 
   const openModal = (modalType: ChallengeRewardsModalType) => {
     dispatch(setChallengeRewardsModalType({ modalType }))
-    dispatch(
-      setVisibility({ modal: 'ChallengeRewardsExplainer', visible: true })
-    )
+    dispatch(setVisibility({ modal: 'ChallengeRewards', visible: true }))
   }
 
   const rewardsPanels = rewardIds

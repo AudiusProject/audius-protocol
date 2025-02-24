@@ -83,7 +83,7 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
   }
 
   return (
-    <Flex gap='s' pb='l'>
+    <Flex gap='s' pb='m'>
       <Flex row alignItems='center' gap='s'>
         <IconButton
           icon={IconClose}

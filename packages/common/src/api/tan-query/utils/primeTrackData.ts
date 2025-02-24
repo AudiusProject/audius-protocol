@@ -1,4 +1,5 @@
 import { QueryClient } from '@tanstack/react-query'
+import { omit } from 'lodash'
 import { AnyAction, Dispatch } from 'redux'
 import { SetRequired } from 'type-fest'
 
@@ -74,7 +75,10 @@ export const primeTrackDataInternal = ({
       !skipQueryData &&
       !queryClient.getQueryData(getTrackQueryKey(track.track_id))
     ) {
-      queryClient.setQueryData(getTrackQueryKey(track.track_id), track)
+      const tqTrack: TrackMetadata = {
+        ...omit(track, 'user')
+      }
+      queryClient.setQueryData(getTrackQueryKey(track.track_id), tqTrack)
     }
 
     // Prime user data from track owner

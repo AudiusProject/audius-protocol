@@ -4,8 +4,7 @@ import { ChallengeName } from '@audius/common/models'
 import { audioRewardsPageSelectors, ClaimStatus } from '@audius/common/store'
 import {
   challengeRewardsConfig,
-  fillString,
-  formatNumberCommas
+  getChallengeStatusLabel
 } from '@audius/common/utils'
 import { Button, Flex, IconVerified, Text, IconCheck } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
@@ -42,16 +41,10 @@ export const DefaultChallengeContent = ({
 
   const config = challengeRewardsConfig[challengeName as ChallengeName] ?? {
     fullDescription: () => '',
-    progressLabel: '',
     completedLabel: '',
     isVerifiedChallenge: false
   }
-  const {
-    fullDescription,
-    progressLabel,
-    completedLabel,
-    isVerifiedChallenge
-  } = config
+  const { fullDescription, completedLabel, isVerifiedChallenge } = config
 
   const isProgressBarVisible =
     challenge &&
@@ -95,15 +88,7 @@ export const DefaultChallengeContent = ({
       <Flex alignItems='center' gap='s'>
         {isChallengeCompleted ? <IconCheck size='s' color='subdued' /> : null}
         <Text variant='label' size='l' strength='strong' color='subdued'>
-          {progressLabel
-            ? fillString(
-                progressLabel,
-                formatNumberCommas(
-                  challenge?.current_step_count?.toString() ?? ''
-                ),
-                formatNumberCommas(challenge?.max_steps?.toString() ?? '')
-              )
-            : null}
+          {getChallengeStatusLabel(challenge, challengeName)}
         </Text>
       </Flex>
     </Flex>
