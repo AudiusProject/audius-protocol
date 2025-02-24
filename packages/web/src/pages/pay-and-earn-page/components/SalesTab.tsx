@@ -203,11 +203,14 @@ export const useSales = () => {
                   ) {
                     try {
                       // Use the pubkey directly from the sale data
+                      const pubkeyToUse = sale.isInitial
+                        ? env.EMAIL_ENCRYPTION_PUBLIC_KEY
+                        : sale.pubkeyBase64
                       const symmetricKey =
                         await sdk.services.emailEncryptionService.decryptSymmetricKey(
                           sale.encryptedKey,
                           Id.parse(decryptionId),
-                          sale.pubkeyBase64
+                          pubkeyToUse
                         )
                       decryptedEmail =
                         await sdk.services.emailEncryptionService.decryptEmail(
