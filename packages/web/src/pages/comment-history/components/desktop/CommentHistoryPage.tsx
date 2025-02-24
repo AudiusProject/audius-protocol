@@ -215,7 +215,7 @@ export const CommentHistoryPage = ({ title }: CommentHistoryPageProps) => {
           getScrollParent={getScrollParent}
           useWindow={false}
           css={{ width: '100%' }}
-          threshold={-250}
+          threshold={250}
         >
           <Flex direction='column' p='xl' gap='l'>
             {isPending ? (
