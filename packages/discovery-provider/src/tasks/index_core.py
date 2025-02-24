@@ -190,7 +190,7 @@ def index_core(self):
             past_core_em_cutover = (
                 on_cutover_chain_and_passed_cutover or not on_cutover_chain
             )
-            correct_env = environment == "dev"
+            correct_env = environment == "dev" or environment == "stage"
             if (
                 on_cutover_chain
                 and past_core_em_cutover
