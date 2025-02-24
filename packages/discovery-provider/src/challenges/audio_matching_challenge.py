@@ -37,6 +37,8 @@ def does_user_exist_with_verification_status(
 def get_challenge_amount(session: Session, challenge_id: str) -> Optional[int]:
     """Get the amount from the Challenge model for a given challenge_id"""
     challenge = session.query(Challenge).filter(Challenge.id == challenge_id).first()
+    if not challenge:
+        return None
     return int(challenge.amount)
 
 
@@ -63,6 +65,10 @@ class AudioMatchingBuyerChallengeUpdater(ChallengeUpdater):
     ):
         challenge_id = user_challenges[0].challenge_id
         challenge_amount = get_challenge_amount(session, challenge_id)
+
+        if not challenge_amount:
+            return
+
         for idx, user_challenge in enumerate(user_challenges):
             metadata = event_metadatas[idx]
             if metadata and "amount" in metadata["extra"]:
