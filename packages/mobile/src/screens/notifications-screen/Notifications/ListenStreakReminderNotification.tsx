@@ -1,9 +1,10 @@
 import { useCallback } from 'react'
 
 import { listenStreakReminderMessages as messages } from '@audius/common/messages'
-import { ChallengeName } from '@audius/common/models'
+import { ChallengeName, Name } from '@audius/common/models'
 import type { ListenStreakReminderNotification as ListenStreakReminderNotificationType } from '@audius/common/store'
 import { audioRewardsPageActions, modalsActions } from '@audius/common/store'
+import { make, useRecord } from 'common/store/analytics/actions'
 import { Text } from 'react-native'
 import { useDispatch } from 'react-redux'
 
@@ -29,7 +30,9 @@ export const ListenStreakReminderNotification = (
   props: ListenStreakReminderNotificationProps
 ) => {
   const { notification } = props
+  const { type } = notification
   const dispatch = useDispatch()
+  const record = useRecord()
 
   const handlePress = useCallback(() => {
     dispatch(
@@ -38,7 +41,8 @@ export const ListenStreakReminderNotification = (
       })
     )
     dispatch(setVisibility({ modal: 'ChallengeRewards', visible: true }))
-  }, [dispatch])
+    record(make(Name.NOTIFICATIONS_CLICK_TILE, { kind: type, link_to: '' }))
+  }, [dispatch, record, type])
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
