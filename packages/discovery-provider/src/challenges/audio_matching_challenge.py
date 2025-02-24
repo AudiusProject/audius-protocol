@@ -37,9 +37,6 @@ def does_user_exist_with_verification_status(
 def get_challenge_amount(session: Session, challenge_id: str) -> Optional[int]:
     """Get the amount from the Challenge model for a given challenge_id"""
     challenge = session.query(Challenge).filter(Challenge.id == challenge_id).first()
-    if not challenge:
-        logger.error(f"Farid: Challenge not found for id: {challenge_id}")
-        return None
     return int(challenge.amount)
 
 
