@@ -33,6 +33,7 @@ from src.models.users.user_events import UserEvent
 from src.tasks.calculate_trending_challenges import enqueue_trending_challenges
 from src.tasks.celery_app import celery
 from src.tasks.entity_manager.entity_manager import entity_manager_update
+from src.tasks.index_core_cutovers import get_em_cutover
 from src.tasks.sort_block_transactions import sort_block_transactions
 from src.utils import helpers, web3_provider
 from src.utils.constants import CONTRACT_TYPES
@@ -539,6 +540,10 @@ def index_nethermind(self):
             in_valid_state, next_block = get_relevant_blocks(
                 web3, latest_database_block, FINAL_POA_BLOCK
             )
+
+            if latest_database_block.number >= get_em_cutover():
+                return
+
             if not next_block:
                 # Nothing to index
                 logger.disable()
