@@ -962,7 +962,7 @@ class TrackSearchResult(Resource):
         bpm_max = args.get("bpm_max")
         sort_method = args.get("sort_method")
         only_downloadable = args.get("only_downloadable")
-        limit = format_limit(args)
+        limit = format_limit(args, 500, 10)
         offset = format_offset(args)
         search_args = {
             "query": query,
