@@ -11,6 +11,7 @@ import CoverPhoto from 'components/cover-photo/CoverPhoto'
 import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
 import { EmptyNavBanner } from 'components/nav-banner/NavBanner'
+import { FlushPageContainer } from 'components/page/FlushPageContainer'
 import Page from 'components/page/Page'
 import { EmptyStatBanner } from 'components/stat-banner/StatBanner'
 import { GiantTrackTile } from 'components/track/GiantTrackTile'
@@ -237,119 +238,125 @@ const TrackPage = ({
         <EmptyStatBanner />
         <EmptyNavBanner />
       </Box>
-      <Flex
-        direction='column'
-        css={{ position: 'relative', padding: '200px 16px 60px' }}
-      >
-        {renderGiantTrackTile()}
-        {hasRemixes && !commentsFlagEnabled ? (
-          <Flex justifyContent='center' mt='3xl' ph='l'>
-            <Remixes
-              trackIds={defaults.remixTrackIds!}
-              goToAllRemixes={goToAllRemixesPage}
-              count={defaults.remixesCount}
-            />
-          </Flex>
-        ) : null}
+      <FlushPageContainer>
         <Flex
-          gap='2xl'
-          w='100%'
-          direction={isDesktop ? 'row' : 'column'}
-          mt='3xl'
-          mh='auto'
-          css={{ maxWidth: 1080 }}
-          justifyContent='center'
+          direction='column'
+          pt={200}
+          pb={60}
+          css={{ position: 'relative' }}
         >
-          {isCommentingEnabled ? (
-            <Flex flex='3'>
-              <CommentSection
-                entityId={defaults.trackId}
-                commentSectionRef={commentSectionRef}
+          {renderGiantTrackTile()}
+          {hasRemixes && !commentsFlagEnabled ? (
+            <Flex justifyContent='center' mt='3xl' ph='l'>
+              <Remixes
+                trackIds={defaults.remixTrackIds!}
+                goToAllRemixes={goToAllRemixesPage}
+                count={defaults.remixesCount}
               />
             </Flex>
           ) : null}
-          {hasRemixes || hasMoreByTracks ? (
-            <Flex
-              direction='column'
-              alignItems={
-                isCommentingEnabled && isDesktop ? 'flex-start' : 'center'
-              }
-              gap='2xl'
-              flex={1}
-              css={{
-                minWidth: 330,
-                maxWidth: isCommentingEnabled ? '100%' : '774px'
-              }}
-            >
-              {hasRemixes ? <TrackRemixes trackId={defaults.trackId} /> : null}
-              <Flex
-                direction='column'
-                alignItems='flex-start'
-                justifyContent='center'
-                gap='l'
-                w='100%'
-              >
-                {hasValidRemixParent
-                  ? renderOriginalTrackTitle()
-                  : renderMoreByTitle()}
-                <Lineup
-                  lineup={tracks}
-                  // Styles for leading element (original track if remix).
-                  leadingElementId={defaults.remixParentTrackId}
-                  leadingElementDelineator={
-                    <Flex gap='3xl' direction='column'>
-                      <Box
-                        alignSelf={
-                          isCommentingEnabled ? 'flex-start' : 'center'
-                        }
-                      >
-                        <ViewOtherRemixesButton
-                          parentTrackId={defaults.remixParentTrackId!}
-                          size={isCommentingEnabled ? 'xs' : 'small'}
-                        />
-                      </Box>
-                      <Flex
-                        mb='l'
-                        justifyContent={
-                          isCommentingEnabled ? 'flex-start' : 'center'
-                        }
-                      >
-                        {renderMoreByTitle()}
-                      </Flex>
-                    </Flex>
-                  }
-                  leadingElementTileProps={{ size: TrackTileSize.LARGE }}
-                  laggingContainerClassName={
-                    !isCommentingEnabled
-                      ? styles.moreByArtistContainer
-                      : undefined
-                  }
-                  lineupContainerStyles={styles.width100}
-                  applyLeadingElementStylesToSkeleton
-                  // Don't render the first tile in the lineup since it's actually the "giant"
-                  // track tile this page is about.
-                  start={1}
-                  // Show max 5 loading tiles
-                  count={6}
-                  // Managed from the parent rather than allowing the lineup to fetch content itself.
-                  selfLoad={false}
-                  variant={lineupVariant}
-                  playingUid={currentQueueItem.uid}
-                  playingSource={currentQueueItem.source}
-                  playingTrackId={
-                    currentQueueItem.track && currentQueueItem.track.track_id
-                  }
-                  playing={isPlaying}
-                  buffering={isBuffering}
-                  playTrack={play}
-                  pauseTrack={pause}
-                  actions={tracksActions}
+          <Flex
+            gap='2xl'
+            w='100%'
+            direction={isDesktop ? 'row' : 'column'}
+            mt='3xl'
+            mh='auto'
+            css={{ maxWidth: 1080 }}
+            justifyContent='center'
+          >
+            {isCommentingEnabled ? (
+              <Flex flex='3'>
+                <CommentSection
+                  entityId={defaults.trackId}
+                  commentSectionRef={commentSectionRef}
                 />
               </Flex>
-            </Flex>
-          ) : null}
+            ) : null}
+            {hasRemixes || hasMoreByTracks ? (
+              <Flex
+                direction='column'
+                alignItems={
+                  isCommentingEnabled && isDesktop ? 'flex-start' : 'center'
+                }
+                gap='2xl'
+                flex={1}
+                css={{
+                  minWidth: 330,
+                  maxWidth: isCommentingEnabled ? '100%' : '774px'
+                }}
+              >
+                {hasRemixes ? (
+                  <TrackRemixes trackId={defaults.trackId} />
+                ) : null}
+                <Flex
+                  direction='column'
+                  alignItems='flex-start'
+                  justifyContent='center'
+                  gap='l'
+                  w='100%'
+                >
+                  {hasValidRemixParent
+                    ? renderOriginalTrackTitle()
+                    : renderMoreByTitle()}
+                  <Lineup
+                    lineup={tracks}
+                    // Styles for leading element (original track if remix).
+                    leadingElementId={defaults.remixParentTrackId}
+                    leadingElementDelineator={
+                      <Flex gap='3xl' direction='column'>
+                        <Box
+                          alignSelf={
+                            isCommentingEnabled ? 'flex-start' : 'center'
+                          }
+                        >
+                          <ViewOtherRemixesButton
+                            parentTrackId={defaults.remixParentTrackId!}
+                            size={isCommentingEnabled ? 'xs' : 'small'}
+                          />
+                        </Box>
+                        <Flex
+                          mb='l'
+                          justifyContent={
+                            isCommentingEnabled ? 'flex-start' : 'center'
+                          }
+                        >
+                          {renderMoreByTitle()}
+                        </Flex>
+                      </Flex>
+                    }
+                    leadingElementTileProps={{ size: TrackTileSize.LARGE }}
+                    laggingContainerClassName={
+                      !isCommentingEnabled
+                        ? styles.moreByArtistContainer
+                        : undefined
+                    }
+                    lineupContainerStyles={styles.width100}
+                    applyLeadingElementStylesToSkeleton
+                    // Don't render the first tile in the lineup since it's actually the "giant"
+                    // track tile this page is about.
+                    start={1}
+                    // Show max 5 loading tiles
+                    count={6}
+                    // Managed from the parent rather than allowing the lineup to fetch content itself.
+                    selfLoad={false}
+                    variant={lineupVariant}
+                    playingUid={currentQueueItem.uid}
+                    playingSource={currentQueueItem.source}
+                    playingTrackId={
+                      currentQueueItem.track && currentQueueItem.track.track_id
+                    }
+                    playing={isPlaying}
+                    buffering={isBuffering}
+                    playTrack={play}
+                    pauseTrack={pause}
+                    actions={tracksActions}
+                  />
+                </Flex>
+              </Flex>
+            ) : null}
+          </Flex>
         </Flex>
-      </Flex>
+      </FlushPageContainer>
     </Page>
   )
 }
