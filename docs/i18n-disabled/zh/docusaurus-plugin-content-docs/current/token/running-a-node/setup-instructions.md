@@ -338,7 +338,7 @@ Example: `audius-cli configure-ipfs 108.174.10.10`
 
 Before registering a service to the dashboard we need to make sure the service is properly configured. Follow the checks below for the type of service you're configuring. Failure to verify that all of these work properly could cause user actions to fail and may lead to slashing actions.
 
-The `sp-actions/` folder contains scripts that test the health of services. Run the corresponding checks for your service type below to verify your service is correctly sete up. Be sure to run `npm install` in `sp-actions/` to install all depdencies.
+The `sp-actions/` folder contains scripts that test the health of services. Run the corresponding checks for your service type below to verify your service is correctly sete up. Be sure to run `npm install` in `sp-actions/` to install all dependencies.
 
 For more information about `sp-actions/` see the README in the [sp-actions/ folder](https://github.com/AudiusProject/audius-k8s-manifests/tree/main/sp-utilities)
 
