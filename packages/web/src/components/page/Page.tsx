@@ -7,7 +7,7 @@ import {
   MutableRefObject
 } from 'react'
 
-import { Box } from '@audius/harmony'
+import { Box, Flex } from '@audius/harmony'
 import { animated, useSpring } from '@react-spring/web'
 import cn from 'classnames'
 
@@ -171,9 +171,9 @@ export const Page = (props: PageProps) => {
               }}
             >
               <FlushPageContainer mt='2xl'>
-                <Box alignSelf='flex-start'>
+                <Flex flex={1} justifyContent='flex-start'>
                   <DesktopSearchBar />
-                </Box>
+                </Flex>
               </FlushPageContainer>
             </Box>
           ) : (
