@@ -57,7 +57,7 @@ func DiscoveryMain() {
 			return err
 		}
 
-		go pubkeystore.StartPubkeyBackfill()
+		go pubkeystore.StartPubkeyBackfill(discoveryConfig)
 
 		return nil
 
