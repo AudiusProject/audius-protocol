@@ -3,7 +3,7 @@ from datetime import datetime
 
 from integration_tests.utils import populate_mock_db
 from src.models.comments.comment_report import COMMENT_KARMA_THRESHOLD
-from src.queries.get_comments import COMMENT_ROOT_DEFAULT_LIMIT, get_user_comments
+from src.queries.comments import COMMENT_ROOT_DEFAULT_LIMIT, get_user_comments
 from src.utils.db_session import get_db
 from src.utils.helpers import decode_string_id
 

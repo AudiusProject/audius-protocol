@@ -103,6 +103,7 @@ from src.api.v1.playlists import get_tracks_for_playlist
 from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.exceptions import PermissionError
 from src.models.users.email import EmailAccess
+from src.queries.comments import get_muted_users, get_user_comments
 from src.queries.download_csv import (
     DownloadPurchasesArgs,
     DownloadSalesArgs,
@@ -121,7 +122,6 @@ from src.queries.get_collection_library import (
     GetCollectionLibraryArgs,
     get_collection_library,
 )
-from src.queries.get_comments import get_muted_users, get_user_comments
 from src.queries.get_developer_apps import (
     get_developer_apps_by_user,
     get_developer_apps_with_grant_for_user,

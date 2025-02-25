@@ -9,7 +9,7 @@ from src.api.v1.helpers import (
     success_response,
 )
 from src.api.v1.models.comments import reply_comment_model
-from src.queries.get_comments import get_paginated_replies
+from src.queries.comments import get_paginated_replies
 from src.queries.get_unclaimed_id import get_unclaimed_id
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
