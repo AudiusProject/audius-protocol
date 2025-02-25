@@ -1,4 +1,5 @@
 import {
+  Connection,
   Transaction,
   TransactionMessage,
   VersionedTransaction
@@ -9,6 +10,7 @@ import { Logger } from 'pino'
 import { recover } from 'web3-eth-accounts'
 import { keccak256 } from 'web3-utils'
 import { z } from 'zod'
+import { normalizeEp } from '../../utils/connections'
 
 import {
   LISTENS_RATE_LIMIT_IP_PREFIX,
@@ -49,6 +51,16 @@ export const recordListenParamsSchema = z.object({
     })
     .transform((val) => val.toString())
 })
+
+let conn: Connection | null = null
+
+export const getListensConnection = (): Connection => {
+  if (conn) {
+    return conn
+  }
+  conn = new Connection(normalizeEp(config.listenRpcUrl))
+  return conn
+}
 
 export interface RecordListenRequest extends Request {
   body: z.infer<typeof recordListenBodySchema>
@@ -102,7 +114,7 @@ export const recordListen = async (
     })
 
   logger.info({ secpInstruction, listenInstruction }, 'instructions')
-  const latestBlockHash = await getConnection().getLatestBlockhash()
+  const latestBlockHash = await getListensConnection().getLatestBlockhash()
 
   const feePayer = getFeePayerKeyPair()
   const tx = new Transaction({
@@ -135,11 +147,8 @@ export const recordListen = async (
     'pre send'
   )
 
-  const solTxSignature = await sendTransactionWithRetries({
-    transaction,
-    commitment: 'confirmed',
-    confirmationStrategy,
-    logger
+  const solTxSignature = await getListensConnection().sendRawTransaction(transaction.serialize(), {
+    skipPreflight: true,
   })
 
   logger.info({ solTxSignature }, 'transaction sig')
