@@ -21,6 +21,7 @@ from src.queries.get_genre_metrics import get_genre_metrics
 from src.queries.get_historical_route_metrics import get_historical_route_metrics
 from src.queries.get_personal_route_metrics import get_personal_route_metrics
 from src.queries.get_plays_metrics import get_plays_metrics
+from src.queries.get_total_plays import get_total_plays
 from src.queries.get_trailing_metrics import get_aggregate_route_metrics_trailing
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import (
@@ -30,7 +31,7 @@ from src.utils.redis_metrics import (
     get_summed_unique_metrics,
 )
 
-from .models.metrics import genre_metric, plays_metric
+from .models.metrics import genre_metric, plays_metric, total_plays_metric
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +43,9 @@ plays_metrics_response = make_response(
 )
 genre_metrics_response = make_response(
     "genre_metrics", ns, fields.List(fields.Nested(genre_metric))
+)
+total_plays_response = make_response(
+    "total_plays", ns, fields.Nested(total_plays_metric)
 )
 
 metrics_route_parser = reqparse.RequestParser()
@@ -323,4 +327,19 @@ class GenreMetrics(Resource):
 
         genre_metrics = get_genre_metrics(args)
         response = success_response(genre_metrics)
+        return response
+
+
+@ns.route("/total_plays", doc=False)
+class TotalPlaysMetric(Resource):
+    @ns.doc(
+        id="""Get Total Plays""",
+        responses={200: "Success", 500: "Server error"},
+    )
+    @ns.marshal_with(total_plays_response)
+    @cache(ttl_sec=3 * 60 * 60)
+    def get(self):
+        """Gets the total number of plays across all tracks"""
+        total_plays = get_total_plays()
+        response = success_response({"total": total_plays})
         return response
