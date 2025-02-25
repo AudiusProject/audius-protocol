@@ -65,7 +65,7 @@ const CommentListItem = ({ id }: { id: number }) => {
             variant='subdued'
             showUnderline={isHovered}
             trackId={track?.track_id}
-            isSingleLine
+            ellipses
           />
         ) : (
           <Skeleton w='80%' h={theme.typography.lineHeight.m} />
