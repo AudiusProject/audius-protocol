@@ -23,4 +23,4 @@ def _get_total_plays(session):
         func.sum(func.coalesce(AggregatePlay.count, 0))
     ).scalar()
 
-    return total_plays if total_plays else 0
+    return int(total_plays) if total_plays else 0
