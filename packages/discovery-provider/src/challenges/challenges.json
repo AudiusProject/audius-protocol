@@ -10,15 +10,6 @@
     "cooldown_days": 7
   },
   {
-    "id": "l",
-    "type": "numeric",
-    "amount": 1,
-    "active": false,
-    "step_count": 7,
-    "starting_block": 116023891,
-    "weekly_pool": 25000
-  },
-  {
     "id": "e",
     "type": "aggregate",
     "amount": 1,
