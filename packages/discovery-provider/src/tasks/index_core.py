@@ -13,25 +13,27 @@ from src.tasks.celery_app import celery
 from src.tasks.core.core_client import CoreClient, get_core_instance
 from src.tasks.core.gen.protocol_pb2 import BlockResponse
 from src.tasks.index_core_cutovers import (
-    get_core_cutover,
-    get_core_cutover_chain_id,
+    get_em_core_cutover,
+    get_em_core_cutovers_chain_id,
+    get_em_cutover,
+    get_plays_core_cutover,
     get_sol_cutover,
 )
-from src.tasks.index_core_entity_manager import index_core_entity_manager
+from src.tasks.index_core_entity_manager import (
+    get_latest_acdc_block,
+    index_core_entity_manager,
+)
 from src.tasks.index_core_plays import index_core_plays
 from src.utils.config import shared_config
+from src.utils.core import (
+    core_health_check_cache_key,
+    core_listens_health_check_cache_key,
+)
 from src.utils.session_manager import SessionManager
 
 root_logger = logging.getLogger(__name__)
 
 index_core_lock_key = "index_core_lock"
-
-CORE_INDEXER_MINIMUM_TIME_SECS = 1
-CORE_INDEXER_ERROR_SLEEP_SECS = 5
-
-core_health_check_cache_key = "core:indexer:health"
-core_listens_health_check_cache_key = "core:indexer:health:listens"
-core_em_health_check_cache_key = "core:indexer:health:em"
 
 environment = shared_config["discprov"]["env"]
 
@@ -104,11 +106,14 @@ def update_core_listens_health(
 
 
 def update_core_health(
-    redis: Redis, latest_indexed_block: BlockResponse, indexing_plays: bool
+    redis: Redis,
+    latest_indexed_block: BlockResponse,
+    indexing_plays: bool,
+    indexing_em: bool,
 ):
     health: CoreHealth = {
         "chain_id": latest_indexed_block.chainid,
-        "indexing_entity_manager": environment == "dev",
+        "indexing_entity_manager": indexing_em,
         "indexing_plays": indexing_plays,
         "latest_chain_block": latest_indexed_block.current_height,
         "latest_indexed_block": latest_indexed_block.height,
@@ -135,18 +140,15 @@ def index_core(self):
 
         # state that gets populated as indexing job goes on
         # used for updating health check and other things
-        indexing_plays = False
-        core_plays_cutover = 0
-        sol_plays_cutover = 0
         block_indexed: Optional[BlockResponse] = None
+        indexing_entity_manager = False
 
         # execute all of indexing in one db session
         with db.scoped_session() as session:
             # gather initialization data for indexer
-            # TODO: cache this across celery messages
-            sol_plays_cutover = get_sol_cutover()
-            core_plays_cutover = get_core_cutover()
-            core_plays_cutover_chain_id = get_core_cutover_chain_id()
+            acdc_em_cutover = get_em_cutover()
+            core_em_cutover = get_em_core_cutover()
+            core_em_cutover_chain_id = get_em_core_cutovers_chain_id()
 
             core_node_info = core.get_node_info()
 
@@ -176,23 +178,26 @@ def index_core(self):
             if latest_slot_record and latest_slot_record.slot:
                 latest_indexed_slot = cast(int, latest_slot_record.slot)
 
-            # do some checks to see if we should be indexing or not
-            on_cutover_chain = core_plays_cutover_chain_id == core_chain_id
+            # do some checks to see if we should be indexing em or not
+            latest_acdc_block = get_latest_acdc_block(session)
+            latest_acdc_block_height = latest_acdc_block.number
+            past_acdc_cutover = latest_acdc_block_height >= acdc_em_cutover
+
+            on_cutover_chain = core_em_cutover_chain_id == core_chain_id
             on_cutover_chain_and_passed_cutover = (
-                on_cutover_chain and latest_core_block_height >= core_plays_cutover
+                on_cutover_chain and latest_core_block_height >= core_em_cutover
             )
-            past_core_plays_cutover = (
+            past_core_em_cutover = (
                 on_cutover_chain_and_passed_cutover or not on_cutover_chain
             )
-            if on_cutover_chain and not past_core_plays_cutover:
-                return
-
-            past_sol_plays_cutover = sol_plays_cutover <= latest_indexed_slot
-            if not past_sol_plays_cutover:
-                return
-
-            indexing_plays = past_sol_plays_cutover and past_core_plays_cutover
-            indexing_entity_manager = environment == "dev"
+            correct_env = environment == "dev" or environment == "stage"
+            if (
+                on_cutover_chain
+                and past_core_em_cutover
+                and past_acdc_cutover
+                and correct_env
+            ):
+                indexing_entity_manager = True
 
             next_block = latest_indexed_block_height + 1
 
@@ -227,7 +232,6 @@ def index_core(self):
                 session=session,
                 challenge_bus=challenge_bus,
                 latest_indexed_slot=latest_indexed_slot,
-                indexing_plays=indexing_plays,
                 block=block,
             )
 
@@ -282,13 +286,14 @@ def index_core(self):
             update_core_health(
                 redis=redis,
                 latest_indexed_block=block_indexed,
-                indexing_plays=indexing_plays,
+                indexing_plays=True,
+                indexing_em=indexing_entity_manager,
             )
             update_core_listens_health(
                 redis=redis,
                 latest_indexed_block=block_indexed,
-                core_plays_cutover=core_plays_cutover,
-                sol_plays_cutover=sol_plays_cutover,
+                core_plays_cutover=get_plays_core_cutover(),
+                sol_plays_cutover=get_sol_cutover(),
             )
 
     except Exception as e:

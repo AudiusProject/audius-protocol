@@ -33,8 +33,10 @@ from src.models.users.user_events import UserEvent
 from src.tasks.calculate_trending_challenges import enqueue_trending_challenges
 from src.tasks.celery_app import celery
 from src.tasks.entity_manager.entity_manager import entity_manager_update
+from src.tasks.index_core_cutovers import get_em_cutover
 from src.tasks.sort_block_transactions import sort_block_transactions
 from src.utils import helpers, web3_provider
+from src.utils.config import shared_config
 from src.utils.constants import CONTRACT_TYPES
 from src.utils.indexing_errors import NotAllTransactionsFetched
 from src.utils.redis_constants import (
@@ -52,6 +54,8 @@ TX_TYPE_TO_HANDLER_MAP = {
 BLOCKS_PER_DAY = (24 * 60 * 60) / 5
 
 FINAL_POA_BLOCK = helpers.get_final_poa_block()
+
+environment = shared_config["discprov"]["env"]
 
 
 logger = StructuredLogger(__name__)
@@ -535,10 +539,18 @@ def index_nethermind(self):
     try:
         with db.scoped_session() as session:
             latest_database_block = get_latest_database_block(session)
+            correct_env = environment == "dev" or environment == "stage"
+            if latest_database_block.number >= get_em_cutover() and correct_env:
+                logger.info(
+                    f"Reached EM cutover block, not requeueing index_nethermind {get_em_cutover()}"
+                )
+                update_lock.release()
+                return
 
             in_valid_state, next_block = get_relevant_blocks(
                 web3, latest_database_block, FINAL_POA_BLOCK
             )
+
             if not next_block:
                 # Nothing to index
                 logger.disable()
