@@ -1,5 +1,6 @@
 from sqlalchemy import func
 
+from src.challenges.challenge_event import ChallengeEvent
 from src.exceptions import IndexingValidationError
 from src.models.comments.comment import Comment
 from src.models.comments.comment_mention import CommentMention
@@ -107,6 +108,7 @@ def validate_write_comment_tx(params: ManageEntityParameters):
 
 def create_comment(params: ManageEntityParameters):
     validate_write_comment_tx(params)
+    challenge_bus = params.challenge_bus
     existing_records = params.existing_records
     metadata = params.metadata
     user_id = params.user_id
@@ -171,6 +173,13 @@ def create_comment(params: ManageEntityParameters):
     )
 
     params.add_record(comment_id, comment_record, EntityType.COMMENT)
+    challenge_bus.dispatch(
+        ChallengeEvent.first_weekly_comment,
+        params.block_number,
+        params.block_datetime,
+        user_id,
+        {"comment_id": comment_id},
+    )
 
     if (
         not is_reply

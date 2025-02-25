@@ -15,6 +15,9 @@ from src.challenges.challenge import ChallengeManager, EventMetadata
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.connect_verified_challenge import connect_verified_challenge_manager
 from src.challenges.first_playlist_challenge import first_playlist_challenge_manager
+from src.challenges.first_weekly_comment_challenge import (
+    first_weekly_comment_challenge_manager,
+)
 from src.challenges.listen_streak_challenge import listen_streak_challenge_manager
 from src.challenges.listen_streak_endless_challenge import (
     listen_streak_endless_challenge_manager,
@@ -283,5 +286,7 @@ def setup_challenge_bus():
         ChallengeEvent.audio_matching_seller, audio_matching_seller_challenge_manager
     )
     bus.register_listener(ChallengeEvent.one_shot, one_shot_challenge_manager)
-
+    bus.register_listener(
+        ChallengeEvent.first_weekly_comment, first_weekly_comment_challenge_manager
+    )
     return bus

@@ -157,5 +157,16 @@
     "starting_block": 0,
     "weekly_pool": 2147483647,
     "cooldown_days": 0
+  },
+  {
+    "id": "c",
+    "name": "FIRST_WEEKLY_COMMENT",
+    "type": "aggregate",
+    "amount": 1,
+    "active": true,
+    "step_count": 2147483647,
+    "starting_block": 0,
+    "weekly_pool": 2147483647,
+    "cooldown_days": 0
   }
 ]
