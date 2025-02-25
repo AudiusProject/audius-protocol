@@ -1,18 +1,24 @@
 import { useCallback } from 'react'
 
-import { ID, Kind, Name, Status } from '@audius/common/models'
+import {
+  FlatUseInfiniteQueryResult,
+  useSearchAlbumResults
+} from '@audius/common/api'
+import { Kind, Name, UserCollectionMetadata } from '@audius/common/models'
 import { searchActions } from '@audius/common/store'
 import { Box, Flex, Text, useTheme } from '@audius/harmony'
 import { range } from 'lodash'
+import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import { CollectionCard } from 'components/collection'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { useMainContentRef } from 'pages/MainContentContext'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { SortMethodFilterButton } from '../SortMethodFilterButton'
-import { useGetSearchResults, useSearchParams } from '../hooks'
+import { useSearchParams } from '../hooks'
 
 const { addItem: addRecentSearch } = searchActions
 
@@ -21,19 +27,43 @@ const messages = {
 }
 
 type AlbumResultsProps = {
-  ids: ID[]
+  queryData: Omit<FlatUseInfiniteQueryResult<UserCollectionMetadata>, 'status'>
   limit?: number
   skeletonCount?: number
 }
 
+const AlbumResultsSkeletons = ({
+  skeletonCount = 10
+}: {
+  skeletonCount: number
+}) => {
+  const isMobile = useIsMobile()
+  return (
+    <>
+      {range(skeletonCount).map((_, i) => (
+        <CollectionCard
+          key={`album_card_skeleton_${i}`}
+          id={0}
+          size={isMobile ? 'xs' : 's'}
+          css={isMobile ? { maxWidth: 320 } : undefined}
+          loading={true}
+        />
+      ))}
+    </>
+  )
+}
+
 export const AlbumResults = (props: AlbumResultsProps) => {
-  const { limit = 100, ids, skeletonCount = 10 } = props
-  const { query } = useSearchParams()
+  const { limit, skeletonCount = 10, queryData } = props
+  const { data = [], isFetching, isInitialLoading } = queryData
+  const searchParams = useSearchParams()
+  const { query } = searchParams
 
   const isMobile = useIsMobile()
   const dispatch = useDispatch()
 
-  const truncatedIds = ids?.slice(0, limit) ?? []
+  const truncatedResults =
+    limit !== undefined ? (data?.slice(0, limit) ?? []) : data
 
   const handleClick = useCallback(
     (id?: number) => {
@@ -46,18 +76,24 @@ export const AlbumResults = (props: AlbumResultsProps) => {
             }
           })
         )
+        dispatch(
+          make(Name.SEARCH_RESULT_SELECT, {
+            term: query,
+            source: 'search results page',
+            id,
+            kind: 'playlist'
+          })
+        )
       }
-      dispatch(
-        make(Name.SEARCH_RESULT_SELECT, {
-          term: query,
-          source: 'search results page',
-          id,
-          kind: 'playlist'
-        })
-      )
     },
     [dispatch, query]
   )
+
+  // Only show pagination skeletons when we're not loading the first page & still under the limit
+  const shouldShowMoreSkeletons =
+    isFetching &&
+    !isInitialLoading &&
+    (limit === undefined || data?.length < limit)
 
   return (
     <Box
@@ -71,26 +107,23 @@ export const AlbumResults = (props: AlbumResultsProps) => {
       }}
       p={isMobile ? 'm' : undefined}
     >
-      {!truncatedIds.length
-        ? range(skeletonCount).map((_, i) => (
-            <CollectionCard
-              key={`user_card_sekeleton_${i}`}
-              id={0}
-              size={isMobile ? 'xs' : 's'}
-              css={isMobile ? { maxWidth: 320 } : undefined}
-              loading={true}
-            />
-          ))
-        : truncatedIds.map((id) => (
-            <CollectionCard
-              key={id}
-              id={id}
-              size={isMobile ? 'xs' : 's'}
-              css={isMobile ? { maxWidth: 320 } : undefined}
-              onClick={() => handleClick(id)}
-              onCollectionLinkClick={() => handleClick(id)}
-            />
-          ))}
+      {!truncatedResults.length ? (
+        <AlbumResultsSkeletons skeletonCount={skeletonCount} />
+      ) : (
+        truncatedResults.map((album) => (
+          <CollectionCard
+            key={album.playlist_id}
+            id={album.playlist_id}
+            size={isMobile ? 'xs' : 's'}
+            css={isMobile ? { maxWidth: 320 } : undefined}
+            onClick={() => handleClick(album.playlist_id)}
+            onCollectionLinkClick={() => handleClick(album.playlist_id)}
+          />
+        ))
+      )}
+      {shouldShowMoreSkeletons ? (
+        <AlbumResultsSkeletons skeletonCount={skeletonCount} />
+      ) : null}
     </Box>
   )
 }
@@ -98,28 +131,50 @@ export const AlbumResults = (props: AlbumResultsProps) => {
 export const AlbumResultsPage = () => {
   const isMobile = useIsMobile()
   const { color } = useTheme()
+  const mainContentRef = useMainContentRef()
 
-  const { data: ids, status } = useGetSearchResults('albums')
-  const isLoading = status === Status.LOADING
+  const getMainContentRef = useCallback(() => {
+    if (isMobile) {
+      return null
+    }
+    return mainContentRef?.current || null
+  }, [isMobile, mainContentRef])
 
-  const isResultsEmpty = ids?.length === 0
+  const searchParams = useSearchParams()
+  const queryData = useSearchAlbumResults(searchParams)
+  const { data, isLoading, hasNextPage, loadNextPage } = queryData
+
+  const isResultsEmpty = data?.length === 0
   const showNoResultsTile = !isLoading && isResultsEmpty
 
   return (
-    <Flex
-      direction='column'
-      gap='xl'
-      css={isMobile ? { backgroundColor: color.background.default } : {}}
+    <InfiniteScroll
+      pageStart={0}
+      loadMore={loadNextPage}
+      hasMore={hasNextPage}
+      getScrollParent={getMainContentRef}
+      initialLoad={false}
+      useWindow={isMobile}
     >
-      {!isMobile ? (
-        <Flex justifyContent='space-between' alignItems='center'>
-          <Text variant='heading' textAlign='left'>
-            {messages.albums}
-          </Text>
-          <SortMethodFilterButton />
-        </Flex>
-      ) : null}
-      {showNoResultsTile ? <NoResultsTile /> : <AlbumResults ids={ids} />}
-    </Flex>
+      <Flex
+        direction='column'
+        gap='xl'
+        css={isMobile ? { backgroundColor: color.background.default } : {}}
+      >
+        {!isMobile ? (
+          <Flex justifyContent='space-between' alignItems='center'>
+            <Text variant='heading' textAlign='left'>
+              {messages.albums}
+            </Text>
+            <SortMethodFilterButton />
+          </Flex>
+        ) : null}
+        {showNoResultsTile ? (
+          <NoResultsTile />
+        ) : (
+          <AlbumResults queryData={queryData} skeletonCount={12} />
+        )}
+      </Flex>
+    </InfiniteScroll>
   )
 }
