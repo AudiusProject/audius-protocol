@@ -41,7 +41,7 @@ def get_is_reacted(session, user_id, comment_id):
         )
         .first()
     )
-    return not is_react.is_delete if is_react else False
+    return is_react is not None
 
 
 def get_replies(
@@ -61,25 +61,9 @@ def get_replies(
             .owner_id
         )
 
-    muted_by_karma = (
-        session.query(MutedUser.muted_user_id)
-        .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
-        .filter(MutedUser.is_delete == False)
-        .group_by(MutedUser.muted_user_id)
-        .having(func.sum(AggregateUser.follower_count) >= COMMENT_KARMA_THRESHOLD)
-        .subquery()
-    )
-
-    mentioned_users = (
-        session.query(
-            CommentMention.comment_id,
-            CommentMention.user_id,
-            User.handle,
-            CommentMention.is_delete,
-        )
-        .join(User, CommentMention.user_id == User.user_id)
-        .subquery()
-    )
+    base_query = _get_base_comments_query(session, current_user_id)
+    mentioned_users = base_query["mentioned_users"]
+    muted_by_karma = base_query["muted_by_karma"]
 
     replies = (
         session.query(
@@ -138,32 +122,18 @@ def get_replies(
         .all()
     )
 
-    def remove_delete(mention):
-        del mention["is_delete"]
-        return mention
-
-    def filter_mentions(mention):
-        return mention["user_id"] is not None and mention["is_delete"] is not True
-
     return [
-        {
-            "id": encode_int_id(reply.comment_id),
-            "user_id": encode_int_id(reply.user_id),
-            "entity_id": encode_int_id(reply.entity_id),
-            "entity_type": reply.entity_type,
-            "message": reply.text,
-            "mentions": list(map(remove_delete, filter(filter_mentions, mentions))),
-            "track_timestamp_s": reply.track_timestamp_s,
-            "react_count": react_count,
-            "is_current_user_reacted": get_is_reacted(
-                session, current_user_id, reply.comment_id
-            ),
-            "is_artist_reacted": get_is_reacted(session, artist_id, reply.comment_id),
-            "replies": None,
-            "created_at": str(reply.created_at),
-            "updated_at": str(reply.updated_at) if reply.updated_at else None,
-        }
-        for [reply, react_count, mentions] in replies
+        _format_comment_response(
+            reply,
+            react_count,
+            None,
+            mentions,
+            current_user_id,
+            session,
+            include_replies=False,
+            artist_id=artist_id,
+        )
+        for reply, react_count, mentions in replies
     ]
 
 
@@ -190,41 +160,15 @@ def get_track_comments(args, track_id, current_user_id=None):
         args, default_limit=COMMENT_ROOT_DEFAULT_LIMIT
     )
 
-    track_comments = []
     db = get_db_read_replica()
-
     CommentThreadAlias = aliased(CommentThread)
     ReplyCountAlias = aliased(CommentThread)
 
     with db.scoped_session() as session:
-        mentioned_users = (
-            session.query(
-                CommentMention.comment_id,
-                CommentMention.user_id,
-                User.handle,
-                CommentMention.is_delete,
-            )
-            .join(User, CommentMention.user_id == User.user_id)
-            .subquery()
-        )
-
-        react_count_subquery = (
-            session.query(
-                CommentReaction.comment_id,
-                func.count(CommentReaction.comment_id).label("react_count"),
-            )
-            .filter(CommentReaction.is_delete == False)
-            .group_by(CommentReaction.comment_id)
-            .subquery()
-        )
-        muted_by_karma = (
-            session.query(MutedUser.muted_user_id)
-            .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
-            .filter(MutedUser.is_delete == False)
-            .group_by(MutedUser.muted_user_id)
-            .having(func.sum(AggregateUser.follower_count) >= COMMENT_KARMA_THRESHOLD)
-            .subquery()
-        )
+        base_query = _get_base_comments_query(session, current_user_id)
+        mentioned_users = base_query["mentioned_users"]
+        react_count_subquery = base_query["react_count_subquery"]
+        muted_by_karma = base_query["muted_by_karma"]
 
         # default to top sort
         sort_method = args.get("sort_method", "top")
@@ -260,20 +204,12 @@ def get_track_comments(args, track_id, current_user_id=None):
                 ).label("mentions"),
             )
             .outerjoin(
-                CommentThreadAlias,
-                Comment.comment_id == CommentThreadAlias.comment_id,
+                CommentThreadAlias, Comment.comment_id == CommentThreadAlias.comment_id
             )
+            .outerjoin(CommentReport, Comment.comment_id == CommentReport.comment_id)
+            .outerjoin(AggregateUser, AggregateUser.user_id == CommentReport.user_id)
             .outerjoin(
-                CommentReport,
-                Comment.comment_id == CommentReport.comment_id,
-            )
-            .outerjoin(
-                AggregateUser,
-                AggregateUser.user_id == CommentReport.user_id,
-            )
-            .outerjoin(
-                mentioned_users,
-                Comment.comment_id == mentioned_users.c.comment_id,
+                mentioned_users, Comment.comment_id == mentioned_users.c.comment_id
             )
             .outerjoin(
                 react_count_subquery,
@@ -292,8 +228,7 @@ def get_track_comments(args, track_id, current_user_id=None):
                 ),
             )
             .outerjoin(
-                ReplyCountAlias,
-                Comment.comment_id == ReplyCountAlias.parent_comment_id,
+                ReplyCountAlias, Comment.comment_id == ReplyCountAlias.parent_comment_id
             )
             .outerjoin(
                 CommentNotificationSetting,
@@ -344,70 +279,124 @@ def get_track_comments(args, track_id, current_user_id=None):
             .limit(limit)
         )
 
-        track_comment_res = []
-        for [track_comment, react_count, is_muted, mentions] in track_comments.all():
-            replies = get_replies(
-                session,
-                track_comment.comment_id,
+        return [
+            _format_comment_response(
+                comment,
+                react_count,
+                is_muted,
+                mentions,
                 current_user_id,
-                artist_id,
-                limit=None,
+                session,
+                include_replies=True,
+                artist_id=artist_id,
             )
-
-            def remove_delete(mention):
-                del mention["is_delete"]
-                return mention
-
-            def filter_mentions(mention):
-                return (
-                    mention["user_id"] is not None and mention["is_delete"] is not True
-                )
-
-            reply_count = len(replies)
-            track_comment_res.append(
-                {
-                    "id": encode_int_id(track_comment.comment_id),
-                    "entity_id": encode_int_id(track_comment.entity_id),
-                    "entity_type": track_comment.entity_type,
-                    "user_id": (
-                        encode_int_id(track_comment.user_id)
-                        if not track_comment.is_delete
-                        else None
-                    ),
-                    "mentions": list(
-                        map(remove_delete, filter(filter_mentions, mentions))
-                    ),
-                    "message": (
-                        track_comment.text
-                        if not track_comment.is_delete
-                        else "[Removed]"
-                    ),
-                    "is_edited": track_comment.is_edited,
-                    "track_timestamp_s": track_comment.track_timestamp_s,
-                    "react_count": react_count,
-                    "reply_count": reply_count,
-                    "is_current_user_reacted": get_is_reacted(
-                        session, current_user_id, track_comment.comment_id
-                    ),
-                    "is_artist_reacted": get_is_reacted(
-                        session, artist_id, track_comment.comment_id
-                    ),
-                    "replies": replies[:3],
-                    "created_at": str(track_comment.created_at),
-                    "updated_at": str(track_comment.updated_at),
-                    "is_tombstone": track_comment.is_delete and reply_count > 0,
-                    "is_muted": is_muted if is_muted is not None else False,
-                }
-            )
-        return track_comment_res
+            for comment, react_count, is_muted, mentions in track_comments.all()
+        ]
 
 
 class GetUserCommentsArgs(TypedDict):
     sort_method: str
     offset: int
     limit: int
-    target_user_id: int
+    user_id: int
     current_user_id: int
+
+
+def _get_base_comments_query(session, current_user_id=None):
+    """Base query builder for comments with common functionality"""
+    mentioned_users = (
+        session.query(
+            CommentMention.comment_id,
+            CommentMention.user_id,
+            User.handle,
+            CommentMention.is_delete,
+        )
+        .join(User, CommentMention.user_id == User.user_id)
+        .subquery()
+    )
+
+    react_count_subquery = (
+        session.query(
+            CommentReaction.comment_id,
+            func.count(CommentReaction.comment_id).label("react_count"),
+        )
+        .filter(CommentReaction.is_delete == False)
+        .group_by(CommentReaction.comment_id)
+        .subquery()
+    )
+
+    muted_by_karma = (
+        session.query(MutedUser.muted_user_id)
+        .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
+        .filter(MutedUser.is_delete == False)
+        .group_by(MutedUser.muted_user_id)
+        .having(func.sum(AggregateUser.follower_count) >= COMMENT_KARMA_THRESHOLD)
+        .subquery()
+    )
+
+    return {
+        "mentioned_users": mentioned_users,
+        "react_count_subquery": react_count_subquery,
+        "muted_by_karma": muted_by_karma,
+    }
+
+
+def _format_comment_response(
+    comment,
+    react_count,
+    is_muted,
+    mentions,
+    current_user_id,
+    session,
+    include_replies=False,
+    artist_id=None,
+):
+    """Common formatter for comment responses"""
+
+    def remove_delete(mention):
+        del mention["is_delete"]
+        return mention
+
+    def filter_mentions(mention):
+        return mention["user_id"] is not None and mention["is_delete"] is not True
+
+    response = {
+        "id": encode_int_id(comment.comment_id),
+        "entity_id": encode_int_id(comment.entity_id),
+        "entity_type": comment.entity_type,
+        "user_id": encode_int_id(comment.user_id) if not comment.is_delete else None,
+        "mentions": list(map(remove_delete, filter(filter_mentions, mentions))),
+        "message": comment.text if not comment.is_delete else "[Removed]",
+        "is_edited": comment.is_edited,
+        "track_timestamp_s": comment.track_timestamp_s,
+        "react_count": react_count,
+        "is_current_user_reacted": get_is_reacted(
+            session, current_user_id, comment.comment_id
+        ),
+        "created_at": str(comment.created_at),
+        "updated_at": str(comment.updated_at),
+        "is_muted": is_muted if is_muted is not None else False,
+    }
+
+    if include_replies:
+        replies = get_replies(
+            session, comment.comment_id, current_user_id, artist_id, limit=None
+        )
+        reply_count = len(replies)
+        response.update(
+            {
+                "reply_count": reply_count,
+                "replies": replies[:3],
+                "is_tombstone": comment.is_delete and reply_count > 0,
+                "is_artist_reacted": (
+                    get_is_reacted(session, artist_id, comment.comment_id)
+                    if artist_id
+                    else False
+                ),
+            }
+        )
+
+    return response
 
 
 def get_user_comments(args: GetUserCommentsArgs):
@@ -415,33 +404,19 @@ def get_user_comments(args: GetUserCommentsArgs):
         args, default_limit=COMMENT_ROOT_DEFAULT_LIMIT
     )
 
-    user_id = args["target_user_id"]
+    user_id = args["user_id"]
     current_user_id = args["current_user_id"]
-
-    user_comments = []
     db = get_db_read_replica()
+    CommentThreadAlias = aliased(CommentThread)
 
     with db.scoped_session() as session:
-        mentioned_users = (
-            session.query(
-                CommentMention.comment_id,
-                CommentMention.user_id,
-                User.handle,
-                CommentMention.is_delete,
-            )
-            .join(User, CommentMention.user_id == User.user_id)
-            .subquery()
-        )
+        base_query = _get_base_comments_query(session, current_user_id)
+        mentioned_users = base_query["mentioned_users"]
+        react_count_subquery = base_query["react_count_subquery"]
+        muted_by_karma = base_query["muted_by_karma"]
 
-        react_count_subquery = (
-            session.query(
-                CommentReaction.comment_id,
-                func.count(CommentReaction.comment_id).label("react_count"),
-            )
-            .filter(CommentReaction.is_delete == False)
-            .group_by(CommentReaction.comment_id)
-            .subquery()
-        )
+        # For user comments, we always sort by newest
+        sort_method_order_by = desc(Comment.created_at)
 
         user_comments = (
             session.query(
@@ -462,12 +437,27 @@ def get_user_comments(args: GetUserCommentsArgs):
                 ).label("mentions"),
             )
             .outerjoin(
-                mentioned_users,
-                Comment.comment_id == mentioned_users.c.comment_id,
+                CommentThreadAlias, Comment.comment_id == CommentThreadAlias.comment_id
+            )
+            .outerjoin(CommentReport, Comment.comment_id == CommentReport.comment_id)
+            .outerjoin(AggregateUser, AggregateUser.user_id == CommentReport.user_id)
+            .outerjoin(
+                mentioned_users, Comment.comment_id == mentioned_users.c.comment_id
             )
             .outerjoin(
                 react_count_subquery,
                 Comment.comment_id == react_count_subquery.c.comment_id,
+            )
+            .outerjoin(
+                MutedUser,
+                and_(
+                    MutedUser.muted_user_id == Comment.user_id,
+                    or_(
+                        MutedUser.user_id == current_user_id,
+                        MutedUser.muted_user_id.in_(muted_by_karma),
+                    ),
+                    current_user_id != Comment.user_id,  # show comment to comment owner
+                ),
             )
             .outerjoin(
                 CommentNotificationSetting,
@@ -484,53 +474,43 @@ def get_user_comments(args: GetUserCommentsArgs):
                 Comment.is_delete == False,
                 Comment.is_visible == True,
                 Comment.entity_type == "Track",
+                or_(
+                    CommentReport.comment_id == None,
+                    and_(
+                        CommentReport.user_id != current_user_id,
+                    ),
+                    CommentReport.is_delete == True,
+                ),
+                or_(
+                    MutedUser.muted_user_id == None,
+                    MutedUser.is_delete == True,
+                ),  # Exclude muted users' comments
             )
-            .order_by(desc(Comment.created_at))
+            # Ensure that the combined follower count of all users who reported the comment is below the threshold.
+            .having(
+                func.coalesce(func.sum(AggregateUser.follower_count), 0)
+                < COMMENT_KARMA_THRESHOLD,
+            )
+            .order_by(
+                sort_method_order_by,
+                desc(func.sum(AggregateUser.follower_count)),  # karma
+            )
             .offset(offset)
             .limit(limit)
         ).all()
 
-        user_comments_res = []
-        for [user_comment, react_count, is_muted, mentions] in user_comments:
-
-            def remove_delete(mention):
-                del mention["is_delete"]
-                return mention
-
-            def filter_mentions(mention):
-                return (
-                    mention["user_id"] is not None and mention["is_delete"] is not True
-                )
-
-            user_comments_res.append(
-                {
-                    "id": encode_int_id(user_comment.comment_id),
-                    "user_id": (
-                        encode_int_id(user_comment.user_id)
-                        if not user_comment.is_delete
-                        else None
-                    ),
-                    "entity_id": encode_int_id(user_comment.entity_id),
-                    "entity_type": user_comment.entity_type,
-                    "mentions": list(
-                        map(remove_delete, filter(filter_mentions, mentions))
-                    ),
-                    "message": (
-                        user_comment.text if not user_comment.is_delete else "[Removed]"
-                    ),
-                    "is_edited": user_comment.is_edited,
-                    "track_timestamp_s": user_comment.track_timestamp_s,
-                    "react_count": react_count,
-                    "is_current_user_reacted": get_is_reacted(
-                        session, current_user_id, user_comment.comment_id
-                    ),
-                    "created_at": str(user_comment.created_at),
-                    "updated_at": str(user_comment.updated_at),
-                    "is_muted": is_muted if is_muted is not None else False,
-                }
+        return [
+            _format_comment_response(
+                comment,
+                react_count,
+                is_muted,
+                mentions,
+                current_user_id,
+                session,
+                include_replies=False,  # User comments don't include nested replies
             )
-
-        return user_comments_res
+            for comment, react_count, is_muted, mentions in user_comments
+        ]
 
 
 def get_muted_users(current_user_id):
