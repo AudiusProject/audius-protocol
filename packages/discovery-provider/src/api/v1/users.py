@@ -1346,6 +1346,8 @@ class UserSearchResult(Resource):
         args = user_search_parser.parse_args()
         query = args.get("query")
         genres = args.get("genre")
+        limit = format_limit(args)
+        offset = format_offset(args)
         is_verified = parse_bool_param(args.get("is_verified"))
         sort_method = args.get("sort_method")
         search_args = {
@@ -1354,8 +1356,8 @@ class UserSearchResult(Resource):
             "is_auto_complete": False,
             "current_user_id": None,
             "with_users": True,
-            "limit": 10,
-            "offset": 0,
+            "limit": limit,
+            "offset": offset,
             "only_verified": is_verified,
             "genres": genres,
             "sort_method": sort_method,
