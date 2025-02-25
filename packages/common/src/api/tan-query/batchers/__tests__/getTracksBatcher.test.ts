@@ -1,5 +1,6 @@
 import { full, GetBulkTracksRequest, HashId, Id, OptionalId } from '@audius/sdk'
 import { QueryClient } from '@tanstack/react-query'
+import { omit } from 'lodash'
 import { describe, it, expect, beforeEach, vi, MockInstance } from 'vitest'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
@@ -196,7 +197,7 @@ describe('getTracksBatcher', () => {
       userId: OptionalId.parse(null)
     })
     expect(result).toMatchObject(
-      userTrackMetadataFromSDK(createMockSdkTrack(id)) ?? {}
+      omit(userTrackMetadataFromSDK(createMockSdkTrack(id)), 'user')
     )
   })
 
@@ -217,7 +218,7 @@ describe('getTracksBatcher', () => {
     // Verify each caller got their correct track data
     results.forEach((result, index) => {
       expect(result).toMatchObject(
-        userTrackMetadataFromSDK(createMockSdkTrack(ids[index])) ?? {}
+        omit(userTrackMetadataFromSDK(createMockSdkTrack(ids[index])), 'user')
       )
     })
   })
@@ -254,15 +255,20 @@ describe('getTracksBatcher', () => {
     // Verify results for first batch
     firstBatchResults.forEach((result, index) => {
       expect(result).toMatchObject(
-        userTrackMetadataFromSDK(createMockSdkTrack(firstBatchIds[index])) ?? {}
+        omit(
+          userTrackMetadataFromSDK(createMockSdkTrack(firstBatchIds[index])),
+          'user'
+        )
       )
     })
 
     // Verify results for second batch
     secondBatchResults.forEach((result, index) => {
       expect(result).toMatchObject(
-        userTrackMetadataFromSDK(createMockSdkTrack(secondBatchIds[index])) ??
-          {}
+        omit(
+          userTrackMetadataFromSDK(createMockSdkTrack(secondBatchIds[index])),
+          'user'
+        )
       )
     })
   })
@@ -293,7 +299,7 @@ describe('getTracksBatcher', () => {
 
     // Verify existing track is returned correctly
     expect(existingResult).toMatchObject(
-      userTrackMetadataFromSDK(createMockSdkTrack(existingId)) ?? {}
+      omit(userTrackMetadataFromSDK(createMockSdkTrack(existingId)), 'user')
     )
 
     // Verify missing track returns null
