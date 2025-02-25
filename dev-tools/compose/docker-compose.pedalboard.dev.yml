@@ -25,6 +25,8 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.dev
     volumes:
       - ${PROJECT_ROOT}:/app
+    ports: 
+      - 6003:6003
 
   trending-challenge-rewards:
     extends:
