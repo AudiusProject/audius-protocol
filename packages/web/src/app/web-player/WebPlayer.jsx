@@ -30,7 +30,6 @@ import { Pages as SignOnPages } from 'common/store/pages/signon/types'
 import AnimatedSwitch from 'components/animated-switch/AnimatedSwitch'
 import AppRedirectListener from 'components/app-redirect-popover/AppRedirectListener'
 import { AppRedirectPopover } from 'components/app-redirect-popover/components/AppRedirectPopover'
-import { AirdropAppBanner } from 'components/banner/AirdropAppBanner'
 import { AppBannerWrapper } from 'components/banner/AppBannerWrapper'
 import { DownloadAppBanner } from 'components/banner/DownloadAppBanner'
 // import { TermsOfServiceUpdateBanner } from 'components/banner/TermsOfServiceUpdateBanner'
@@ -462,7 +461,6 @@ class WebPlayer extends Component {
       <div className={styles.root}>
         <AppBannerWrapper>
           <DownloadAppBanner />
-          <AirdropAppBanner />
 
           {/* Product Announcement Banners */}
           {/* <TermsOfServiceUpdateBanner /> */}
