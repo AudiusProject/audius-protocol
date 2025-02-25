@@ -27,7 +27,7 @@ export const relayTransaction = async (
   let nonce = undefined
   let submit = undefined
   try {
-    if (config.environment === "dev") {
+    if (config.environment === "dev" || config.environment === "stage") {
       const coreHealth = await getCoreIndexerHealth()
       logger.info({ coreHealth }, "core health from redis")
       const receipt = await coreRelay(logger, requestId, validatedRelayRequest)
