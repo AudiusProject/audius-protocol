@@ -406,7 +406,7 @@ class PlaylistSearchResult(Resource):
         include_purchaseable = parse_bool_param(args.get("includePurchaseable"))
         has_downloads = parse_bool_param(args.get("has_downloads"))
         sort_method = args.get("sort_method")
-        limit = format_limit(args)
+        limit = format_limit(args, 500, 10)
         offset = format_offset(args)
         search_args = {
             "query": query,
