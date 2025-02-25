@@ -337,7 +337,6 @@ class TotalPlaysMetric(Resource):
         responses={200: "Success", 500: "Server error"},
     )
     @ns.marshal_with(total_plays_response)
-    @cache(ttl_sec=3 * 60 * 60)
     def get(self):
         """Gets the total number of plays across all tracks"""
         total_plays = get_total_plays()
