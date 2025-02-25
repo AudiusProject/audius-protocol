@@ -4,16 +4,55 @@ import {
   actionLogForUser,
   getUser,
   getUserScore,
+  sql,
   type ActionRow,
   type TrackDetails,
   type UserDetails
 } from './actionLog'
 import { logger } from 'hono/logger'
 import { config } from './config'
+import { SolanaUtils } from '@audius/sdk'
+import bn from 'bn.js'
 
 const app = new Hono()
 
 app.use(logger())
+
+app.post('/attestation/:handle', async (c) => {
+  const handle = c.req.param('handle').toLowerCase()
+  const { challengeId, challengeSpecifier, amount } = await c.req.json()
+
+  const users =
+    await sql`select user_id, wallet from users where handle_lc = ${handle}`
+  const user = users[0]
+  if (!user) return c.text(`handle not found: ${handle}`, 404)
+
+  // TODO: check score
+
+  try {
+    const bnAmount = SolanaUtils.uiAudioToBNWaudio(amount)
+    const identifier = SolanaUtils.constructTransferId(
+      challengeId,
+      challengeSpecifier
+    )
+    const toSignStr = SolanaUtils.constructAttestation(
+      user.wallet,
+      bnAmount,
+      identifier
+    )
+    const { signature, recoveryId } = SolanaUtils.signBytes(
+      Buffer.from(toSignStr),
+      config.privateSignerAddress
+    )
+    const result = new bn(Uint8Array.of(...signature, recoveryId)).toString(
+      'hex'
+    )
+
+    return c.json({ result })
+  } catch (error) {
+    console.log(`Something went wrong: ${error}`)
+  }
+})
 
 app.get('/', async (c) => {
   console.log(c.req.query())

@@ -2,7 +2,7 @@ import 'dotenv/config'
 
 import postgres from 'postgres'
 
-const sql = postgres(process.env.discoveryDbUrl || '')
+export const sql = postgres(process.env.discoveryDbUrl || '')
 
 //
 // User Details
