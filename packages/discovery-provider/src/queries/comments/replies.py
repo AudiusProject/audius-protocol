@@ -1,5 +1,6 @@
 import logging
 
+from src.api.v1.helpers import format_limit, format_offset
 from src.models.comments.comment import Comment
 from src.models.tracks.track import Track
 from src.queries.comments.utils import (
@@ -11,27 +12,6 @@ from src.queries.comments.utils import (
 from src.utils.db_session import get_db_read_replica
 
 logger = logging.getLogger(__name__)
-
-
-# Define these functions locally to break the circular import
-def format_limit(args, max_limit=100, default_limit=COMMENT_REPLIES_DEFAULT_LIMIT):
-    """
-    Returns the limit from the args, bounded by max_limit and default_limit if not present
-    """
-    if "limit" in args and args["limit"] is not None:
-        limit = min(args["limit"], max_limit)
-    else:
-        limit = default_limit
-    return limit
-
-
-def format_offset(args, max_offset=100000):
-    """
-    Returns the offset from the args, bounded by max_offset
-    """
-    if "offset" in args and args["offset"] is not None:
-        return min(args["offset"], max_offset)
-    return 0
 
 
 def get_replies(
