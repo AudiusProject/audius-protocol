@@ -91,7 +91,7 @@ export type AppTabScreenParamList = {
   TagSearch: { query: string }
   TopSupporters: { userId: ID; source: TipSource }
   NotificationUsers: {
-    id: string // uuid
+    notification: any
     notificationType: NotificationType
     count: number
   }

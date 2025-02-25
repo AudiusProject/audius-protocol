@@ -1,16 +1,15 @@
-import { memo, useCallback, useContext, useEffect, useState } from 'react'
+import { memo, useCallback, useEffect, useState } from 'react'
 
 import { useSelectTierInfo } from '@audius/common/hooks'
-import { accountSelectors, relatedArtistsUIActions } from '@audius/common/store'
+import { accountSelectors } from '@audius/common/store'
 import { css } from '@emotion/native'
 import type { Animated } from 'react-native'
 import { LayoutAnimation } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
 import { Box, Divider, Flex, useTheme } from '@audius/harmony-native'
 import { ProfilePicture } from 'app/components/core'
-import { ScreenContext } from 'app/components/core/Screen/ScreenContextProvider'
 import { OnlineOnly } from 'app/components/offline-placeholder/OnlineOnly'
 import { zIndex } from 'app/utils/zIndex'
 
@@ -22,13 +21,13 @@ import { TipAudioButton } from '../TipAudioButton'
 import { UploadTrackButton } from '../UploadTrackButton'
 import { useSelectProfile } from '../selectors'
 
+import { Bio } from './Bio'
 import { CollapsedSection } from './CollapsedSection'
 import { ExpandHeaderToggleButton } from './ExpandHeaderToggleButton'
-import { ExpandedSection } from './ExpandedSection'
-import { TopSupporters } from './TopSupporters'
+import { ProfileInfoTiles } from './ProfileInfoTiles'
+import { SocialsAndSites } from './SocialsAndSites'
 
 const getUserId = accountSelectors.getUserId
-const { fetchRelatedArtists } = relatedArtistsUIActions
 
 type ProfileHeaderProps = {
   scrollY: Animated.Value
@@ -36,13 +35,11 @@ type ProfileHeaderProps = {
 
 // Memoized since material-top-tabs triggers unecessary rerenders
 export const ProfileHeader = memo((props: ProfileHeaderProps) => {
-  const dispatch = useDispatch()
   const { scrollY } = props
   const accountId = useSelector(getUserId)
   const [hasUserFollowed, setHasUserFollowed] = useToggle(false)
   const [isExpanded, setIsExpanded] = useToggle(false)
   const [isExpandable, setIsExpandable] = useState(false)
-  const { isPrimaryContentReady } = useContext(ScreenContext)
 
   const {
     user_id: userId,
@@ -91,11 +88,6 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
     }
   }, [shouldExpand, isExpandable, setIsExpandable])
 
-  useEffect(() => {
-    if (!userId || !isPrimaryContentReady) return
-    dispatch(fetchRelatedArtists({ artistId: userId }))
-  }, [dispatch, userId, isPrimaryContentReady])
-
   const handleFollow = useCallback(() => {
     if (!doesCurrentUserFollow) {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
@@ -142,7 +134,11 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
         <OnlineOnly>
           <ProfileMetrics />
           {isExpanded ? (
-            <ExpandedSection />
+            <>
+              <Bio />
+              <SocialsAndSites />
+              <ProfileInfoTiles />
+            </>
           ) : (
             <CollapsedSection
               isExpandable={isExpandable}
@@ -159,8 +155,9 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
           {!hasUserFollowed ? null : (
             <ArtistRecommendations onClose={handleCloseArtistRecs} />
           )}
-          {isOwner ? <UploadTrackButton /> : <TipAudioButton />}
-          <TopSupporters />
+          <Flex pointerEvents='box-none' mt='s'>
+            {isOwner ? <UploadTrackButton /> : <TipAudioButton />}
+          </Flex>
         </OnlineOnly>
       </Flex>
     </>

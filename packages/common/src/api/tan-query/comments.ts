@@ -37,6 +37,7 @@ import { toast } from '~/store/ui/toast/slice'
 import { Nullable } from '~/utils'
 
 import { QUERY_KEYS } from './queryKeys'
+import { useCurrentUserId } from './useCurrentUserId'
 
 type CommentOrReply = Comment | ReplyComment
 
@@ -68,6 +69,72 @@ const messages = {
  * QUERIES
  *
  */
+export const useUserComments = (
+  userId: ID | null,
+  pageSize = COMMENT_ROOT_PAGE_SIZE
+) => {
+  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const { data: currentUserId } = useCurrentUserId()
+  const isMutating = useIsMutating()
+  const queryClient = useQueryClient()
+  const dispatch = useDispatch()
+
+  const queryRes = useInfiniteQuery({
+    enabled: !!userId && userId !== 0 && isMutating === 0,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage: ID[], pages) => {
+      if (lastPage?.length < pageSize) return undefined
+      return (pages.length ?? 0) * pageSize
+    },
+    queryKey: [QUERY_KEYS.userCommentList, userId],
+    queryFn: async ({ pageParam }): Promise<ID[]> => {
+      const sdk = await audiusSdk()
+      const commentsRes = await sdk.users.userComments({
+        id: Id.parse(userId),
+        userId: currentUserId?.toString() ?? undefined,
+        offset: pageParam,
+        limit: pageSize
+      })
+
+      const commentList = transformAndCleanList(
+        commentsRes.data,
+        commentFromSDK
+      )
+
+      // Populate individual comment cache
+      commentList.forEach((comment) => {
+        queryClient.setQueryData<CommentOrReply>(
+          getCommentQueryKey(comment.id),
+          comment
+        )
+        comment?.replies?.forEach?.((reply) =>
+          queryClient.setQueryData<CommentOrReply>(
+            getCommentQueryKey(reply.id),
+            reply
+          )
+        )
+      })
+      // For the comment list cache, we only store the ids of the comments (organized by sort method)
+      return commentList.map((comment) => comment.id)
+    }
+  })
+
+  const { error } = queryRes
+
+  useEffect(() => {
+    if (error) {
+      reportToSentry({
+        error,
+        name: 'Comments',
+        feature: Feature.Comments
+      })
+      dispatch(toast({ content: messages.loadError('comments') }))
+    }
+  }, [error, dispatch, reportToSentry])
+
+  return { ...queryRes, data: queryRes.data?.pages?.flat() ?? [] }
+}
+
 export type GetCommentsByTrackArgs = {
   trackId: ID
   userId: ID | null
@@ -192,7 +259,7 @@ export const useGetCommentById = (commentId: ID) => {
   return queryRes
 }
 
-const COMMENT_COUNT_POLL_INTERVAL = 10 * 1000 // 5 secs
+const COMMENT_COUNT_POLL_INTERVAL = 10 * 1000 // 10 secs
 
 export type TrackCommentCount = {
   previousValue: number
@@ -438,6 +505,8 @@ export const usePostComment = () => {
       args.newId = newId
       const newComment: Comment = {
         id: newId,
+        entityId: Id.parse(trackId),
+        entityType: 'Track',
         userId,
         message: body,
         mentions,
@@ -866,7 +935,7 @@ export const useReportComment = () => {
               replies: prevData.replies?.filter(
                 (reply: ReplyComment) => reply.id !== commentId
               ),
-              replyCount: prevData.replyCount - 1
+              replyCount: prevData.replyCount ? prevData.replyCount - 1 : 0
             } as Comment
           }
         )
@@ -972,7 +1041,7 @@ export const useMuteUser = () => {
                   // Subtract how many replies were removed from total reply count
                   // NOTE: remember that not all replies by the user may be showing due to pagination
                   rootComment.replyCount =
-                    rootComment.replyCount -
+                    (rootComment.replyCount ?? 0) -
                     (prevReplyCount - rootComment.replies.length)
                 }
 
@@ -1027,7 +1096,7 @@ export const useGetTrackCommentNotificationSetting = (
   return useQuery({
     queryKey: getTrackCommentNotificationSettingQueryKey(trackId),
     queryFn: async () => {
-      if (!currentUserId) return
+      if (!currentUserId) return null
       const sdk = await audiusSdk()
       return await sdk.tracks.trackCommentNotificationSetting({
         trackId: Id.parse(trackId),

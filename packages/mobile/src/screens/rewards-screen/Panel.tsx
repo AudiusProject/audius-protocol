@@ -2,6 +2,7 @@ import { useFormattedProgressLabel } from '@audius/common/hooks'
 import type { OptimisticUserChallenge } from '@audius/common/models'
 import type { ChallengeRewardsInfo } from '@audius/common/utils'
 import { isNewChallenge } from '@audius/common/utils'
+import { Platform } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
 import {
@@ -33,6 +34,7 @@ type PanelProps = {
 export const Panel = ({
   id,
   onPress,
+  shortTitle,
   title,
   shortDescription,
   description,
@@ -94,7 +96,7 @@ export const Panel = ({
         </Flex>
         <Flex ph='unit5' gap='s'>
           <Text variant='heading' size='s'>
-            {title}
+            {shortTitle ?? title}
           </Text>
           <Text numberOfLines={2}>
             {shortDescription || description(challenge)}
@@ -106,7 +108,15 @@ export const Panel = ({
                   <IconCheck fill={neutralLight4} size='s' />
                 ) : null}
                 <Flex row alignItems='center'>
-                  <Text variant='label' size='l' color='subdued'>
+                  <Text
+                    variant='label'
+                    size='l'
+                    color='subdued'
+                    // iOS has a bug where emojis are not vertically aligned with the text
+                    style={{
+                      lineHeight: Platform.OS === 'ios' ? 0 : undefined
+                    }}
+                  >
                     {formattedProgressLabel}
                   </Text>
                 </Flex>

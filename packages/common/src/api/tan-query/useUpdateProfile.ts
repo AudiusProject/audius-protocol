@@ -1,6 +1,5 @@
 import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { merge } from 'lodash'
 
 import { userMetadataToSdk } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
@@ -12,7 +11,6 @@ import { squashNewLines } from '~/utils/formatUtil'
 import { QUERY_KEYS } from './queryKeys'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getUserQueryKey } from './useUser'
-import { getUserByHandleQueryKey } from './useUserByHandle'
 
 export type MutationContext = {
   previousMetadata: UserMetadata | undefined
@@ -27,25 +25,6 @@ export const useUpdateProfile = () => {
     mutationFn: async (metadata: WriteableUserMetadata) => {
       const sdk = await audiusSdk()
       metadata.bio = squashNewLines(metadata.bio ?? null)
-
-      // Get existing metadata and combine with it
-      if (metadata.metadata_multihash) {
-        try {
-          const response = await sdk.full.cidData.getMetadata({
-            metadataId: metadata.metadata_multihash
-          })
-          if (response?.data?.data) {
-            const collectibles = metadata.collectibles
-            Object.assign(metadata, merge(response.data.data, metadata))
-            metadata.collectibles = collectibles
-          }
-        } catch (e) {
-          // Although we failed to fetch the existing user metadata, this should only
-          // happen if the user's account data is unavailable across the whole network.
-          // In favor of availability, we write anyway.
-          console.error(e)
-        }
-      }
 
       // For base64 images (coming from native), convert to a blob
       if (metadata.updatedCoverPhoto?.type === 'base64') {
@@ -110,17 +89,6 @@ export const useUpdateProfile = () => {
           ...previousMetadata,
           ...metadata
         })
-
-        // Also update user by handle if it exists
-        if (previousMetadata.handle) {
-          queryClient.setQueryData(
-            getUserByHandleQueryKey(previousMetadata.handle),
-            (old: any) => ({
-              ...old,
-              ...metadata
-            })
-          )
-        }
       }
 
       return { previousMetadata }
@@ -132,14 +100,6 @@ export const useUpdateProfile = () => {
           ...context.previousMetadata,
           ...metadata
         })
-
-        // Roll back user by handle data
-        if (context.previousMetadata.handle) {
-          queryClient.setQueryData(
-            getUserByHandleQueryKey(context.previousMetadata.handle),
-            context.previousMetadata
-          )
-        }
       }
 
       reportToSentry({

@@ -22,14 +22,17 @@ const { fetchUserSocials } = cacheUsersActions
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: spacing(3),
     alignItems: 'center'
   },
   socials: {
     flexDirection: 'row',
+    gap: spacing(3),
     flex: 4
   },
-  socialsCentered: {
-    justifyContent: 'center'
+  socialsWithTier: {
+    justifyContent: 'flex-end'
   }
 }))
 
@@ -100,23 +103,19 @@ export const ProfileSocials = () => {
       <Fragment key={type}>
         <SocialLink showText={socialsCount === 1} />
         {index === socialLinks.length - 1 ? null : (
-          <Divider
-            orientation='vertical'
-            mv='xs'
-            mh={socialsCount === 2 ? 's' : 'xs'}
-          />
+          <Divider orientation='vertical' mv='xs' />
         )}
       </Fragment>
     ))
   }
   return (
     <View pointerEvents='box-none' style={styles.root}>
-      {tier !== 'none' ? <ProfileTierTile interactive={false} /> : null}
+      <ProfileTierTile interactive={false} />
       <Animated.View
         pointerEvents='box-none'
         style={[
           styles.socials,
-          tier !== 'none' ? styles.socialsCentered : null,
+          tier !== 'none' ? styles.socialsWithTier : null,
           { opacity }
         ]}
       >

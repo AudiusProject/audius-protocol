@@ -84,7 +84,7 @@ services:
       - discovery
 
   discovery-provider-elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.1
     environment:
       discovery.type: single-node
       xpack.security.enabled: false
@@ -152,12 +152,10 @@ services:
     healthcheck:
       test: [ 'CMD-SHELL', 'pgrep pg_migrate || curl -f http://localhost:5000/health_check || exit 1' ]
       interval: 5s
-      timeout: 10s
-      retries: 180
+      timeout: 30s
+      retries: 120
     depends_on:
       db:
-        condition: service_healthy
-      poa-ganache:
         condition: service_healthy
       eth-ganache:
         condition: service_healthy

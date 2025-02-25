@@ -59,7 +59,9 @@ export const SocialLink = (props: SocialLinkProps) => {
 
   if (text === null || text === '') return null
 
-  const iconButtonElement = <Icon color={isActive ? 'active' : 'default'} />
+  const iconButtonElement = (
+    <Icon size='l' color={isActive ? 'active' : 'default'} />
+  )
 
   if (showText)
     return (

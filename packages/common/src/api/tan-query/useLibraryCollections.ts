@@ -5,12 +5,12 @@ import { useDispatch } from 'react-redux'
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { transformAndCleanList } from '~/adapters/utils'
 import { useAudiusQueryContext } from '~/audius-query'
-import { CollectionMetadata } from '~/models/Collection'
 import { ID } from '~/models/Identifiers'
 import { CollectionType } from '~/store/saved-collections/types'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
+import { useCollections } from './useCollections'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeCollectionData } from './utils/primeCollectionData'
 
@@ -62,7 +62,7 @@ export const useLibraryCollections = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  return useInfiniteQuery({
+  const { data: collectionIds, ...queryResult } = useInfiniteQuery({
     queryKey: getLibraryCollectionsQueryKey({
       currentUserId,
       collectionType,
@@ -73,10 +73,7 @@ export const useLibraryCollections = (
       pageSize
     }),
     initialPageParam: 0,
-    getNextPageParam: (
-      lastPage: CollectionMetadata[],
-      pages: CollectionMetadata[][]
-    ) => {
+    getNextPageParam: (lastPage: ID[], pages: ID[][]) => {
       if (lastPage?.length < pageSize) return undefined
       return pages.length * pageSize
     },
@@ -108,11 +105,18 @@ export const useLibraryCollections = (
         dispatch
       })
 
-      return collections
+      return collections.map((collection) => collection.playlist_id)
     },
     select: (data) => data.pages.flat(),
     staleTime: options?.staleTime ?? Infinity,
     gcTime: Infinity,
     enabled: options?.enabled !== false && !!currentUserId
   })
+
+  const { data: collections } = useCollections(collectionIds)
+
+  return {
+    data: collections,
+    ...queryResult
+  }
 }

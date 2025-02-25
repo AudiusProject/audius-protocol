@@ -60,6 +60,7 @@ export type ChallengesParamList = {
 
 export type MobileChallengeConfig = {
   icon?: ImageSourcePropType
+  shortTitle?: string
   title?: string
   description?: (amount?: OptimisticUserChallenge) => string
   shortDescription?: string

@@ -29,7 +29,7 @@ export const ClaimableRewardNotification = (
   const navigation = useNavigation()
 
   const handlePress = useCallback(() => {
-    navigation.navigate('AudioScreen')
+    navigation.navigate('RewardsScreen')
   }, [navigation])
 
   return (

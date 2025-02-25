@@ -11,9 +11,11 @@ import { formatNumberCommas } from './formatUtil'
 
 export type ChallengeRewardsInfo = {
   id: ChallengeRewardID
+  shortTitle?: string
   title: string
   description: (amount: OptimisticUserChallenge | undefined) => string
   fullDescription?: (amount: OptimisticUserChallenge | undefined) => string
+  optionalDescription?: string
   progressLabel?: string
   remainingLabel?: string
   completedLabel?: string
@@ -243,17 +245,17 @@ export const challengeRewardsConfig: Record<
     id: ChallengeName.AudioMatchingSell,
     title: 'Sell to Earn',
     description: (_) =>
-      'Receive 1 additional $AUDIO for each dollar earned from sales.',
+      'Receive 5 additional $AUDIO for each dollar earned from sales.',
     fullDescription: () =>
-      'Receive 1 additional $AUDIO for each dollar earned from sales.',
+      'Receive 5 additional $AUDIO for each dollar earned from sales.',
     progressLabel: 'No Recent Activity',
     panelButtonText: 'View Details'
   },
   [ChallengeName.AudioMatchingBuy]: {
     id: ChallengeName.AudioMatchingBuy,
     title: 'Spend to Earn',
-    description: (_) => 'Earn 1 $AUDIO for each dollar you spend on Audius.',
-    fullDescription: () => 'Earn 1 $AUDIO for each dollar you spend on Audius.',
+    description: (_) => 'Earn 5 $AUDIO for each dollar you spend on Audius.',
+    fullDescription: () => 'Earn 5 $AUDIO for each dollar you spend on Audius.',
     progressLabel: 'No Recent Activity',
     panelButtonText: 'View Details'
   },
@@ -307,9 +309,14 @@ export const challengeRewardsConfig: Record<
     id: 'trending-underground'
   },
   o: {
-    title: 'Airdrop - Februrary 2025',
-    description: () => 'Claim your $AUDIO before it expires!',
-    fullDescription: () => 'Claim your $AUDIO before it expires!',
+    shortTitle: 'Airdrop 2: Artists',
+    title: 'Airdrop 2: Artist Appreciation',
+    description: () =>
+      `We're thrilled to reward our talented artist community for driving Audius' growth and success!`,
+    fullDescription: () =>
+      `We're thrilled to reward our talented artist community for driving Audius' growth and success!`,
+    optionalDescription:
+      '\n\nClaim your tokens before they expire on 05/13/25!',
     panelButtonText: '',
     id: ChallengeName.OneShot,
     remainingLabel: 'Ineligible',
@@ -335,9 +342,17 @@ export const makeOptimisticChallengeSortComparator = (
     }
     if (
       userChallenge1?.challenge_id &&
-      isNewChallenge(userChallenge1?.challenge_id)
+      isNewChallenge(userChallenge1?.challenge_id) &&
+      userChallenge1?.state !== 'disbursed'
     ) {
       return -1
+    }
+    if (
+      userChallenge2?.challenge_id &&
+      isNewChallenge(userChallenge2?.challenge_id) &&
+      userChallenge2?.state !== 'disbursed'
+    ) {
+      return 1
     }
     if (userChallenge1?.state === 'disbursed') {
       return 1
@@ -397,3 +412,76 @@ const newChallengeIds: ChallengeRewardID[] = [
 
 export const isNewChallenge = (challengeId: ChallengeRewardID) =>
   newChallengeIds.includes(challengeId)
+
+const DEFAULT_STATUS_LABELS = {
+  COMPLETE: 'Complete',
+  REWARD_PENDING: 'Reward Pending',
+  READY_TO_CLAIM: 'Ready to Claim',
+  IN_PROGRESS: 'In Progress',
+  AVAILABLE: 'Available',
+  INCOMPLETE: 'Incomplete'
+} as const
+
+export const getChallengeStatusLabel = (
+  challenge: OptimisticUserChallenge | undefined,
+  challengeId: ChallengeRewardID
+): string => {
+  if (!challenge) return DEFAULT_STATUS_LABELS.AVAILABLE
+
+  // Handle special aggregate challenges first
+  switch (challengeId) {
+    case ChallengeName.ListenStreakEndless:
+      return `Day ${challenge.current_step_count}`
+
+    case ChallengeName.AudioMatchingBuy:
+      if (challenge.state === 'inactive') return 'No Recent Purchases'
+      if (challenge.state === 'completed' && challenge.cooldown_days) {
+        return DEFAULT_STATUS_LABELS.REWARD_PENDING
+      }
+      if (challenge.claimableAmount > 0) {
+        return DEFAULT_STATUS_LABELS.READY_TO_CLAIM
+      }
+      return 'No Recent Activity'
+  }
+
+  // Handle claimable state for non-aggregate rewards
+  if (challenge.claimableAmount > 0) {
+    return DEFAULT_STATUS_LABELS.READY_TO_CLAIM
+  }
+
+  // Handle disbursed state - 2nd clause is for aggregate challenges
+  if (
+    challenge.state === 'disbursed' ||
+    (challenge.state === 'completed' &&
+      challenge.current_step_count === challenge.max_steps)
+  ) {
+    return DEFAULT_STATUS_LABELS.COMPLETE
+  }
+
+  // Handle completed with cooldown state
+  if (challenge.state === 'completed' && challenge.cooldown_days) {
+    return DEFAULT_STATUS_LABELS.REWARD_PENDING
+  }
+
+  // Handle remaining challenge-specific states
+  switch (challengeId) {
+    case ChallengeName.OneShot:
+      return 'Ineligible'
+
+    case ChallengeName.Referrals:
+    case ChallengeName.ReferralsVerified:
+      return `${challenge.current_step_count ?? 0}/${challenge.max_steps ?? 0} Invites Remaining`
+
+    case ChallengeName.ProfileCompletion:
+      return `${challenge.current_step_count ?? 0}/7 Complete`
+
+    case ChallengeName.TrackUpload:
+      return `${challenge.current_step_count ?? 0}/3 Uploaded`
+
+    default:
+      if (challenge.state === 'in_progress') {
+        return DEFAULT_STATUS_LABELS.IN_PROGRESS
+      }
+      return DEFAULT_STATUS_LABELS.AVAILABLE
+  }
+}

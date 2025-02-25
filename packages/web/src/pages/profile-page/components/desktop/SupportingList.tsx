@@ -70,11 +70,7 @@ export const SupportingList = () => {
       />
       {isLoading ? (
         <Flex column gap='m'>
-          {Array(profile?.supporting_count)
-            .fill(null)
-            .map((_, index) => (
-              <Skeleton key={index} h={122} borderRadius='m' />
-            ))}
+          <Skeleton border='strong' h={122} borderRadius='m' />
           {/* Spacer to account for the gap between the last tile and the see more button */}
           <Box h={16} />
         </Flex>

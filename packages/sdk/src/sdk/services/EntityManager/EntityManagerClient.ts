@@ -172,16 +172,13 @@ export class EntityManagerClient implements EntityManagerService {
     confirmationTimeout?: number
     confirmationPollingInterval?: number
   }) {
-    this.logger.info('Confirming write')
+    this.logger.info(`Confirming write ${blockHash} ${blockNumber}`)
     const confirmBlock = async () => {
       const endpoint = await this.discoveryNodeSelector.getSelectedEndpoint()
+      const url = `${endpoint}/block_confirmation?blocknumber=${blockNumber}&blockhash=${blockHash}`
       const {
         data: { block_passed }
-      } = await (
-        await fetch(
-          `${endpoint}/block_confirmation?blocknumber=${blockNumber}&blockhash=${blockHash}`
-        )
-      ).json()
+      } = await (await fetch(url)).json()
 
       return block_passed
         ? BlockConfirmation.CONFIRMED

@@ -50,11 +50,14 @@ export const CreateAssociatedWalletsSchema = z.record(
   })
 )
 
-const CollectiblesMetadataSchema = z
-  .object({
-    order: z.array(z.string())
-  })
-  .catchall(z.object({}))
+const CollectiblesMetadataSchema = z.union([
+  z
+    .object({
+      order: z.array(z.string())
+    })
+    .catchall(z.object({})),
+  z.null()
+])
 
 const PlaylistIdentifierSchema = z.object({
   type: z.literal('playlist'),
@@ -124,8 +127,6 @@ export const UpdateProfileSchema = z
         artistPickTrackId: z.optional(HashId),
         allowAiAttribution: z.optional(z.boolean()),
         playlistLibrary: z.optional(PlaylistLibrarySchema),
-        collectibles: z.optional(CollectiblesMetadataSchema),
-        collectiblesOrderUnset: z.optional(z.boolean()),
         twitterHandle: z.optional(z.string()),
         instagramHandle: z.optional(z.string()),
         tiktokHandle: z.optional(z.string())
@@ -274,3 +275,10 @@ export type AddAssociatedWalletRequest = z.input<
 export type RemoveAssociatedWalletRequest = z.input<
   typeof RemoveAssociatedWalletSchema
 >
+
+export const UpdateCollectiblesSchema = z.object({
+  userId: HashId,
+  collectibles: CollectiblesMetadataSchema
+})
+
+export type UpdateCollectiblesRequest = z.input<typeof UpdateCollectiblesSchema>

@@ -15,7 +15,7 @@ export const SendIcon = ({ disabled = false, onClick }: SendIconProps) => {
       size='2xl'
       onClick={onClick}
       css={{
-        cursor: 'pointer',
+        padding: 0,
         pointerEvents: disabled ? 'none' : 'all',
         opacity: disabled ? 0.5 : 1,
         path: {

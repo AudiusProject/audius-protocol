@@ -81,4 +81,5 @@ export type Env = {
   WORMHOLE_ADDRESS: Nullable<string>
   WORMHOLE_RPC_HOSTS: Nullable<string>
   EMAIL_ENCRYPTION_UUID?: number
+  EMAIL_ENCRYPTION_PUBLIC_KEY?: string
 }

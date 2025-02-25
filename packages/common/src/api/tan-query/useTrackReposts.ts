@@ -5,11 +5,11 @@ import { useDispatch } from 'react-redux'
 import { userMetadataListFromSDK } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
-import { User } from '~/models/User'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
+import { useUsers } from './useUsers'
 import { primeUserData } from './utils/primeUserData'
 
 const DEFAULT_PAGE_SIZE = 20
@@ -39,10 +39,10 @@ export const useTrackReposts = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  return useInfiniteQuery({
+  const { data: userIds, ...queryResult } = useInfiniteQuery({
     queryKey: getTrackRepostsQueryKey({ trackId, pageSize }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: User[], allPages) => {
+    getNextPageParam: (lastPage: ID[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -56,10 +56,17 @@ export const useTrackReposts = (
       })
       const users = userMetadataListFromSDK(data)
       primeUserData({ users, queryClient, dispatch })
-      return users
+      return users.map((user) => user.user_id)
     },
     select: (data) => data.pages.flat(),
     ...options,
     enabled: options?.enabled !== false && !!trackId
   })
+
+  const { data: users } = useUsers(userIds)
+
+  return {
+    data: users,
+    ...queryResult
+  }
 }

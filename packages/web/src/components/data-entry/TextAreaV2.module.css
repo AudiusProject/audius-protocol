@@ -69,7 +69,8 @@
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-gutter: stable;
-  padding: var(--harmony-unit-2) var(--harmony-unit-4);
+  padding: var(--harmony-unit-2) var(--harmony-unit-2) var(--harmony-unit-2)
+    var(--harmony-unit-4);
 }
 
 .characterCount {
@@ -94,7 +95,7 @@
 
 textarea::selection {
   background: var(--harmony-s-500);
-  color: var(--harmony-static-white);
+  color: var(--harmony-white);
 }
 
 textarea.transparentTextArea {

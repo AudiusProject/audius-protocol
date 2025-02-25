@@ -11,7 +11,7 @@ import { UseLineupQueryData } from './utils/useLineupQuery'
  */
 export type QueryOptions = Pick<
   DefinedInitialDataOptions<any>,
-  'staleTime' | 'enabled'
+  'staleTime' | 'enabled' | 'placeholderData'
 >
 
 export type LineupQueryData = UseLineupQueryData &

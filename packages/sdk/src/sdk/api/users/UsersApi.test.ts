@@ -73,7 +73,6 @@ const audiusWalletClient = createAppWalletClient({ apiKey: '' })
 const logger = new Logger()
 const discoveryNodeSelector = new DiscoveryNodeSelector()
 const storageNodeSelector = new StorageNodeSelector({
-  audiusWalletClient,
   discoveryNodeSelector,
   logger
 })
@@ -667,6 +666,44 @@ describe('UsersApi', () => {
           userId: '7eP5n'
           // Missing wallet object
         } as any)
+      }).rejects.toThrow()
+    })
+  })
+
+  describe('updateCollectibles', () => {
+    it('updates the user collectibles if valid metadata is provided', async () => {
+      const result = await users.updateCollectibles({
+        userId: '7eP5n',
+        collectibles: {
+          order: ['collection1'],
+          collection1: {}
+        }
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('allows empty collectibles metadata', async () => {
+      const result = await users.updateCollectibles({
+        userId: '7eP5n',
+        collectibles: null
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('throws an error if invalid metadata is provided', async () => {
+      await expect(async () => {
+        await users.updateCollectibles({
+          userId: '7eP5n',
+          collectibles: {} as any // Invalid collectibles metadata
+        })
       }).rejects.toThrow()
     })
   })

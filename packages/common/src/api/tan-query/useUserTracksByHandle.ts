@@ -9,6 +9,7 @@ import { getUserId } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
+import { useTracks } from './useTracks'
 import { primeTrackData } from './utils/primeTrackData'
 
 type GetTracksByUserHandleArgs = {
@@ -46,7 +47,7 @@ export const useUserTracksByHandle = (
 
   const { handle, filterTracks = 'public', sort = 'date', limit, offset } = args
 
-  return useQuery({
+  const { data: trackIds } = useQuery({
     queryKey: getUserTracksByHandleQueryKey(args),
     queryFn: async () => {
       const sdk = await audiusSdk()
@@ -62,9 +63,11 @@ export const useUserTracksByHandle = (
       const tracks = transformAndCleanList(data, userTrackMetadataFromSDK)
       primeTrackData({ tracks, queryClient, dispatch })
 
-      return tracks
+      return tracks.map((track) => track.track_id)
     },
     ...options,
     enabled: options?.enabled !== false && !!handle
   })
+
+  return useTracks(trackIds)
 }

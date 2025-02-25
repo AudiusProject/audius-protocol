@@ -1,10 +1,10 @@
 import {
   buyUSDCSagas,
   castSagas,
+  cacheSagas,
   chatSagas,
   reachabilitySagas,
   remoteConfigSagas,
-  relatedArtistsSagas,
   deletePlaylistConfirmationModalUISagas as deletePlaylistConfirmationModalSagas,
   duplicateAddConfirmationModalUISagas as duplicateAddConfirmationModalSagas,
   mobileOverflowMenuUISagas as overflowMenuSagas,
@@ -77,7 +77,6 @@ import collectionsSagas from 'app/store/cache/collections/sagas'
 import accountSagas from './account/sagas'
 import mobileChatSagas from './chat/sagas'
 import initKeyboardEvents from './keyboard/sagas'
-import notificationsSagas from './notifications/sagas'
 import oauthSagas from './oauth/sagas'
 import offlineDownloadSagas from './offline-downloads/sagas'
 import rateCtaSagas from './rate-cta/sagas'
@@ -102,6 +101,7 @@ export default function* rootSaga() {
     ...playlistLibrarySagas(),
 
     // Cache
+    ...cacheSagas(),
     ...coreCacheSagas(),
     ...collectionsSagas(),
     ...tracksSagas(),
@@ -136,7 +136,6 @@ export default function* rootSaga() {
     ...walletSagas(),
 
     ...modalsSagas(),
-    ...notificationsSagas(),
 
     // Pages
     ...trackPageSagas(),
@@ -175,7 +174,6 @@ export default function* rootSaga() {
 
     // Application
     ...addToCollectionSagas(),
-    ...relatedArtistsSagas(),
     ...changePasswordSagas(),
     ...smartCollectionPageSagas(),
     ...overflowMenuSagas(),

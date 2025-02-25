@@ -27,7 +27,7 @@
 
 .toast :global(.ant-tooltip-inner) {
   padding: 8px 14px;
-  color: var(--harmony-static-white);
+  color: var(--harmony-white);
   font-size: 12px;
   font-weight: 600;
   text-align: center;

@@ -30,7 +30,6 @@ import { Pages as SignOnPages } from 'common/store/pages/signon/types'
 import AnimatedSwitch from 'components/animated-switch/AnimatedSwitch'
 import AppRedirectListener from 'components/app-redirect-popover/AppRedirectListener'
 import { AppRedirectPopover } from 'components/app-redirect-popover/components/AppRedirectPopover'
-import { AirdropAppBanner } from 'components/banner/AirdropAppBanner'
 import { AppBannerWrapper } from 'components/banner/AppBannerWrapper'
 import { DownloadAppBanner } from 'components/banner/DownloadAppBanner'
 // import { TermsOfServiceUpdateBanner } from 'components/banner/TermsOfServiceUpdateBanner'
@@ -56,6 +55,7 @@ import { AudioPage } from 'pages/audio-page/AudioPage'
 import { ChatPageProvider } from 'pages/chat-page/ChatPageProvider'
 import { CollectiblesPlaylistPage } from 'pages/collectibles-playlist-page'
 import CollectionPage from 'pages/collection-page/CollectionPage'
+import CommentHistoryPage from 'pages/comment-history/CommentHistoryPage'
 import { DashboardPage } from 'pages/dashboard-page/DashboardPage'
 import { DeactivateAccountPage } from 'pages/deactivate-account-page/DeactivateAccountPage'
 import { EditCollectionPage } from 'pages/edit-collection-page'
@@ -174,6 +174,7 @@ const {
   publicSiteRoutes,
   CHAT_PAGE,
   PROFILE_PAGE_AI_ATTRIBUTED_TRACKS,
+  PROFILE_PAGE_COMMENTS,
   EXPLORE_PREMIUM_TRACKS_PAGE,
   PAYMENTS_PAGE,
   WITHDRAWALS_PAGE,
@@ -462,7 +463,6 @@ class WebPlayer extends Component {
       <div className={styles.root}>
         <AppBannerWrapper>
           <DownloadAppBanner />
-          <AirdropAppBanner />
 
           {/* Product Announcement Banners */}
           {/* <TermsOfServiceUpdateBanner /> */}
@@ -911,6 +911,11 @@ class WebPlayer extends Component {
                       containerRef={this.props.mainContentRef.current}
                     />
                   )}
+                />
+                <Route
+                  exact
+                  path={PROFILE_PAGE_COMMENTS}
+                  component={CommentHistoryPage}
                 />
                 <Route
                   exact

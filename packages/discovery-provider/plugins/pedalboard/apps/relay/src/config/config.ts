@@ -39,8 +39,8 @@ const readDotEnv = () => {
 }
 
 const defaultCoreEndpoint = (env: string): string => {
-  if (env === 'dev') return 'audiusd-1:50051'
-  return 'core:50051'
+  if (env === 'dev') return 'http://audiusd-1:50051'
+  return 'http://core:50051'
 }
 
 export const readConfig = (): Config => {

@@ -1,6 +1,6 @@
 {
   "name": "root",
-  "version": "1.5.121",
+  "version": "1.5.123",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
@@ -23,6 +23,9 @@
     "turbo-link": "turbo login && turbo link",
     "validate-ci-config": "circleci config pack .circleci/src > .circleci/continue_config.yml && circleci config validate .circleci/continue_config.yml",
     "verify": "turbo run verify",
+    "CORE=======================================": "",
+    "buf:generate": "buf generate buf.build/audiusd/protocol:main --include-imports && npm run buf:generate:postinstall",
+    "buf:generate:postinstall": "cd packages/discovery-provider/src/tasks/core && ./fix-proto-imports.sh",
     "WEB========================================": "",
     "web:dev": "npm run start:dev -w @audius/web",
     "web:prod": "npm run start:prod -w @audius/web",
@@ -111,7 +114,8 @@
     "express": "^4.19.2",
     "pg": "8.8.0",
     "pino": "^9.1.0",
-    "react-native-google-cast": "4.6.2"
+    "react-native-google-cast": "4.6.2",
+    "elliptic": "6.6.1"
   },
   "overrides": {
     "@types/prop-types": "15.7.5",
@@ -121,7 +125,8 @@
     "moment": "2.24.0",
     "react-native-svg": "15.10.1",
     "redux": "4.1.1",
-    "webpack": "5.88.2"
+    "webpack": "5.88.2",
+    "elliptic": "6.6.1"
   },
   "packageManager": "npm@9.6.7"
 }

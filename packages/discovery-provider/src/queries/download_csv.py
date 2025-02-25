@@ -15,6 +15,7 @@ from src.models.users.usdc_transactions_history import (
 )
 from src.models.users.user import User
 from src.models.users.user_bank import USDCUserBankAccount
+from src.models.users.user_pubkey import UserPubkey
 from src.solana.constants import USDC_DECIMALS
 from src.utils.config import shared_config
 from src.utils.csv_writer import write_csv_string
@@ -93,6 +94,7 @@ def get_purchases_or_sales(
                     EncryptedEmail.encrypted_email.label("encrypted_email"),
                     EmailAccess.encrypted_key.label("encrypted_key"),
                     EmailAccess.is_initial.label("is_initial"),
+                    UserPubkey.pubkey_base64.label("pubkey_base64"),
                 )
                 .join(User, User.user_id == USDCPurchase.buyer_user_id)
                 .outerjoin(
@@ -102,6 +104,10 @@ def get_purchases_or_sales(
                 .outerjoin(
                     EmailAccess,
                     email_access_condition,
+                )
+                .outerjoin(
+                    UserPubkey,
+                    UserPubkey.user_id == USDCPurchase.buyer_user_id,
                 )
                 .filter(USDCPurchase.seller_user_id == user_id)
                 .filter(User.is_current == True)
@@ -266,6 +272,9 @@ def format_sale_for_download(
         )
         fields_with_underscores["is_initial"] = (
             result.is_initial if hasattr(result, "is_initial") else None
+        )
+        fields_with_underscores["pubkey_base64"] = (
+            result.pubkey_base64 if hasattr(result, "pubkey_base64") else None
         )
         return fields_with_underscores
 

@@ -38,6 +38,12 @@ export interface ChallengeRewardNotificationActionData {
      * @memberof ChallengeRewardNotificationActionData
      */
     challengeId: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ChallengeRewardNotificationActionData
+     */
+    listenStreak?: number;
 }
 
 /**
@@ -65,6 +71,7 @@ export function ChallengeRewardNotificationActionDataFromJSONTyped(json: any, ig
         'amount': json['amount'],
         'specifier': json['specifier'],
         'challengeId': json['challenge_id'],
+        'listenStreak': !exists(json, 'listen_streak') ? undefined : json['listen_streak'],
     };
 }
 
@@ -80,6 +87,7 @@ export function ChallengeRewardNotificationActionDataToJSON(value?: ChallengeRew
         'amount': value.amount,
         'specifier': value.specifier,
         'challenge_id': value.challengeId,
+        'listen_streak': value.listenStreak,
     };
 }
 

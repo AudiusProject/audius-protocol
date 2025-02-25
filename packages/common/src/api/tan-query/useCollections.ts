@@ -1,52 +1,57 @@
-import { OptionalId } from '@audius/sdk'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMemo } from 'react'
+
+import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
 import { useDispatch } from 'react-redux'
 
-import { userCollectionMetadataFromSDK } from '~/adapters/collection'
-import { transformAndCleanList } from '~/adapters/utils'
-import { useAudiusQueryContext } from '~/audius-query'
-import { ID } from '~/models/Identifiers'
-import { removeNullable } from '~/utils'
+import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
+import { ID } from '~/models'
+import { UserCollectionMetadata } from '~/models/Collection'
 
+import { getCollectionsBatcher } from './batchers/getCollectionsBatcher'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
-import { primeCollectionData } from './utils/primeCollectionData'
+import { useCurrentUserId } from './useCurrentUserId'
+import { combineQueryResults } from './utils/combineQueryResults'
 
-export const getCollectionsQueryKey = (
-  collectionIds: ID[] | null | undefined
-) => [QUERY_KEYS.collections, collectionIds]
+export const getCollectionQueryKey = (collectionId: ID | null | undefined) => [
+  QUERY_KEYS.collection,
+  collectionId
+]
 
 export const useCollections = (
   collectionIds: ID[] | null | undefined,
   options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
+  const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  return useQuery({
-    queryKey: getCollectionsQueryKey(collectionIds),
-    queryFn: async () => {
-      const encodedIds = collectionIds
-        ?.map((id) => OptionalId.parse(id))
-        .filter(removeNullable)
-      if (!encodedIds || encodedIds.length === 0) return []
-      const sdk = await audiusSdk()
-      const { data } = await sdk.full.playlists.getBulkPlaylists({
-        id: encodedIds
-      })
-
-      const collections = transformAndCleanList(
-        data,
-        userCollectionMetadataFromSDK
-      )
-
-      primeCollectionData({ collections, queryClient, dispatch })
-      const collectionsMap = keyBy(collections, 'playlist_id')
-      return collectionIds?.map((id) => collectionsMap[id])
-    },
-    ...options,
-    enabled: options?.enabled !== false && !!collectionIds
+  const { data: collections, ...queryResults } = useQueries({
+    queries: (collectionIds ?? []).map((collectionId) => ({
+      queryKey: getCollectionQueryKey(collectionId),
+      queryFn: async () => {
+        const sdk = await audiusSdk()
+        const batchGetCollections = getCollectionsBatcher({
+          sdk,
+          currentUserId,
+          queryClient,
+          dispatch
+        })
+        return await batchGetCollections.fetch(collectionId)
+      },
+      ...options,
+      enabled: options?.enabled !== false && !!collectionId
+    })),
+    combine: combineQueryResults<UserCollectionMetadata[]>
   })
+
+  const byId = useMemo(() => keyBy(collections, 'playlist_id'), [collections])
+
+  return {
+    data: collections,
+    byId,
+    ...queryResults
+  }
 }

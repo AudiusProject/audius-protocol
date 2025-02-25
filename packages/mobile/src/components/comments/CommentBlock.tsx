@@ -16,7 +16,7 @@ import type { GestureResponderEvent } from 'react-native'
 import { TouchableOpacity } from 'react-native'
 import Animated, { FadeIn } from 'react-native-reanimated'
 
-import { Box, Flex, Text } from '@audius/harmony-native'
+import { Flex, Text } from '@audius/harmony-native'
 import { make, track as trackEvent } from 'app/services/analytics'
 
 import { ProfilePicture } from '../core/ProfilePicture'
@@ -97,76 +97,69 @@ export const CommentBlockInternal = (
           {...profilePicLinkProps}
           onPress={handlePressProfilePic}
         >
-          {isLoadingUser ? (
-            <Skeleton
-              width={32}
-              height={32}
-              style={{ borderRadius: 100, flexShrink: 0 }}
-            />
-          ) : (
-            <ProfilePicture
-              style={{ width: 32, height: 32, flexShrink: 0 }}
-              userId={userId}
-            />
-          )}
+          <ProfilePicture
+            style={{ width: 32, height: 32, flexShrink: 0 }}
+            userId={userId}
+            borderWidth='thin'
+          />
         </TouchableOpacity>
         <Flex
-          gap='xs'
+          gap='s'
           w='100%'
           alignItems='flex-start'
           style={{ flexShrink: 1 }}
         >
-          <Box style={{ position: 'absolute', top: 0, right: 0 }}>
-            {userId !== undefined ? (
-              <CommentBadge
-                isArtist={isCommentByArtist}
-                commentUserId={userId}
-              />
-            ) : null}
-          </Box>
-          {isPinned || isArtistReacted ? (
-            <Flex direction='row' justifyContent='space-between' w='100%'>
-              <ArtistPick isLiked={isArtistReacted} isPinned={isPinned} />
-            </Flex>
-          ) : null}
-          {!isTombstone ? (
-            <Flex direction='row' gap='s' alignItems='center' w='65%'>
-              {isLoadingUser ? <Skeleton width={80} height={18} /> : null}
-              {userId !== undefined && !isLoadingUser ? (
-                <UserLink
-                  userId={userId}
-                  strength='strong'
-                  onPress={closeDrawer}
-                  lineHeight='single'
-                  textLinkStyle={{ lineHeight: 20 }}
+          <Flex gap='2xs'>
+            <Flex row justifyContent='space-between' w='100%'>
+              {isPinned || isArtistReacted ? (
+                <ArtistPick isLiked={isArtistReacted} isPinned={isPinned} />
+              ) : null}
+              {!isTombstone ? (
+                <Flex direction='row' gap='s' alignItems='center'>
+                  {isLoadingUser ? <Skeleton width={80} height={18} /> : null}
+                  {userId !== undefined && !isLoadingUser ? (
+                    <UserLink
+                      userId={userId}
+                      strength='strong'
+                      onPress={closeDrawer}
+                      lineHeight='single'
+                      textLinkStyle={{ lineHeight: 20 }}
+                    />
+                  ) : null}
+                  <Flex direction='row' gap='xs' alignItems='center' h='100%'>
+                    <Timestamp time={dayjs.utc(createdAt).toDate()} />
+                    {trackTimestampS !== undefined ? (
+                      <>
+                        <Text color='subdued' size='s'>
+                          •
+                        </Text>
+
+                        <TimestampLink
+                          size='s'
+                          timestampSeconds={trackTimestampS}
+                          onPress={handlePressTimestamp}
+                        />
+                      </>
+                    ) : null}
+                  </Flex>
+                </Flex>
+              ) : null}
+              {userId !== undefined ? (
+                <CommentBadge
+                  isArtist={isCommentByArtist}
+                  commentUserId={userId}
                 />
               ) : null}
-              <Flex direction='row' gap='xs' alignItems='center' h='100%'>
-                <Timestamp time={dayjs.utc(createdAt).toDate()} />
-                {trackTimestampS !== undefined ? (
-                  <>
-                    <Text color='subdued' size='s'>
-                      •
-                    </Text>
-
-                    <TimestampLink
-                      size='s'
-                      timestampSeconds={trackTimestampS}
-                      onPress={handlePressTimestamp}
-                    />
-                  </>
-                ) : null}
-              </Flex>
             </Flex>
-          ) : null}
-          <CommentText
-            isEdited={isEdited && !isTombstone}
-            isPreview={isPreview}
-            commentId={commentId}
-            mentions={mentions}
-          >
-            {message}
-          </CommentText>
+            <CommentText
+              isEdited={isEdited && !isTombstone}
+              isPreview={isPreview}
+              commentId={commentId}
+              mentions={mentions}
+            >
+              {message}
+            </CommentText>
+          </Flex>
           {!isPreview ? (
             <CommentActionBar
               comment={comment}

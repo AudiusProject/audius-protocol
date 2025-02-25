@@ -1,7 +1,8 @@
+import { useFeatureFlag } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
-import { Flex } from '@audius/harmony'
-import cn from 'classnames'
+import { Box, Flex, Text } from '@audius/harmony'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { AiGeneratedCallout } from 'components/ai-generated-button/AiGeneratedCallout'
@@ -11,15 +12,17 @@ import { TipAudioButton } from 'components/tipping/tip-audio/TipAudioButton'
 import UploadChip from 'components/upload/UploadChip'
 import { Type } from 'pages/profile-page/components/SocialLink'
 import { ProfileTopTags } from 'pages/profile-page/components/desktop/ProfileTopTags'
+import { zIndex } from 'utils/zIndex'
 
 import SocialLinkInput from '../SocialLinkInput'
 
 import { ProfileBio } from './ProfileBio'
 import { ProfileMutuals } from './ProfileMutuals'
-import styles from './ProfilePage.module.css'
+import { RecentComments } from './RecentComments'
 import { RelatedArtists } from './RelatedArtists'
 import { SupportingList } from './SupportingList'
 import { TopSupporters } from './TopSupporters'
+import { PROFILE_LEFT_COLUMN_WIDTH_PX } from './constants'
 const { getUserId } = accountSelectors
 
 const messages = {
@@ -32,7 +35,7 @@ const messages = {
 }
 
 type ProfileLeftNavProps = {
-  userId: ID
+  userId: ID | null
   handle: string
   isArtist: boolean
   created: string
@@ -91,90 +94,117 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
   } = props
 
   const accountUserId = useSelector(getUserId)
+  const recentCommentsFlag = useFeatureFlag(FeatureFlags.RECENT_COMMENTS)
+  const isRecentCommentsEnabled =
+    recentCommentsFlag.isLoaded && recentCommentsFlag.isEnabled
 
   if (editMode) {
     return (
-      <div className={styles.edit}>
-        <div className={styles.editLabel}>{messages.aboutYou}</div>
-        <div className={styles.editField}>
-          <TextArea
-            className={styles.descriptionInput}
-            size='small'
-            grows
-            placeholder={messages.description}
-            defaultValue={bio || ''}
-            onChange={onUpdateBio}
-          />
-        </div>
-        <div className={styles.editField}>
-          <Input
-            className={styles.locationInput}
-            characterLimit={30}
-            size='small'
-            placeholder={messages.location}
-            defaultValue={location || ''}
-            onChange={onUpdateLocation}
-          />
-        </div>
-        <div className={cn(styles.editLabel, styles.section)}>
-          {messages.socialHandles}
-        </div>
-        <div className={styles.editField}>
-          <SocialLinkInput
-            defaultValue={twitterHandle}
-            isDisabled={!!twitterVerified}
-            className={styles.twitterInput}
-            type={Type.TWITTER}
-            onChange={onUpdateTwitterHandle}
-          />
-        </div>
-        <div className={styles.editField}>
-          <SocialLinkInput
-            defaultValue={instagramHandle}
-            className={styles.instagramInput}
-            isDisabled={!!instagramVerified}
-            type={Type.INSTAGRAM}
-            onChange={onUpdateInstagramHandle}
-          />
-        </div>
-        <div className={styles.editField}>
-          <SocialLinkInput
-            defaultValue={tikTokHandle}
-            className={styles.tikTokInput}
-            isDisabled={!!tikTokVerified}
-            type={Type.TIKTOK}
-            onChange={onUpdateTikTokHandle}
-          />
-        </div>
-        <div className={cn(styles.editLabel, styles.section)}>
-          {messages.website}
-        </div>
-        <div className={styles.editField}>
-          <SocialLinkInput
-            defaultValue={website}
-            className={styles.websiteInput}
-            type={Type.WEBSITE}
-            onChange={onUpdateWebsite}
-          />
-        </div>
-        <div className={cn(styles.editLabel, styles.section)}>
-          {messages.donate}
-        </div>
-        <div className={styles.editField}>
-          <SocialLinkInput
-            defaultValue={donation}
-            className={styles.donationInput}
-            type={Type.DONATION}
-            onChange={onUpdateDonation}
-            textLimitMinusLinks={32}
-          />
-        </div>
-      </div>
+      <Box
+        css={{
+          position: 'relative',
+          flexShrink: 0,
+          zIndex: zIndex.PROFILE_EDITABLE_COMPONENTS
+        }}
+        w={PROFILE_LEFT_COLUMN_WIDTH_PX}
+      >
+        <Flex
+          backgroundColor='accent'
+          borderRadius='m'
+          shadow='far'
+          column
+          gap='s'
+          p='m'
+          w='100%'
+          css={{ position: 'absolute', top: 0, left: 0, textAlign: 'left' }}
+        >
+          <Flex column gap='s'>
+            <Text variant='title' color='white'>
+              {messages.aboutYou}
+            </Text>
+
+            <TextArea
+              // Ofsetting some internal padding weirdness on
+              // this component
+              css={{ marginBottom: -5 }}
+              size='small'
+              grows
+              placeholder={messages.description}
+              defaultValue={bio || ''}
+              onChange={onUpdateBio}
+            />
+            <Input
+              css={(theme) => ({
+                '& > input': {
+                  paddingLeft: theme.spacing.s
+                }
+              })}
+              characterLimit={30}
+              size='small'
+              placeholder={messages.location}
+              defaultValue={location || ''}
+              onChange={onUpdateLocation}
+            />
+          </Flex>
+
+          <Flex column gap='s'>
+            <Text variant='title' color='white'>
+              {messages.socialHandles}
+            </Text>
+            <SocialLinkInput
+              defaultValue={twitterHandle}
+              isDisabled={!!twitterVerified}
+              type={Type.TWITTER}
+              onChange={onUpdateTwitterHandle}
+            />
+            <SocialLinkInput
+              defaultValue={instagramHandle}
+              isDisabled={!!instagramVerified}
+              type={Type.INSTAGRAM}
+              onChange={onUpdateInstagramHandle}
+            />
+            <SocialLinkInput
+              defaultValue={tikTokHandle}
+              isDisabled={!!tikTokVerified}
+              type={Type.TIKTOK}
+              onChange={onUpdateTikTokHandle}
+            />
+          </Flex>
+          <Flex column gap='s'>
+            <Text variant='title' color='white'>
+              {messages.website}
+            </Text>
+            <SocialLinkInput
+              defaultValue={website}
+              type={Type.WEBSITE}
+              onChange={onUpdateWebsite}
+            />
+            <Text variant='title' color='white'>
+              {messages.donate}
+            </Text>
+            <SocialLinkInput
+              defaultValue={donation}
+              type={Type.DONATION}
+              onChange={onUpdateDonation}
+              textLimitMinusLinks={32}
+            />
+          </Flex>
+        </Flex>
+      </Box>
     )
-  } else if (!loading && !isDeactivated) {
+  } else if (userId && !loading && !isDeactivated) {
     const showUploadChip = isOwner && !isArtist
     return (
-      <Flex column gap='2xl' mr='xl'>
+      <Flex
+        column
+        gap='2xl'
+        w={PROFILE_LEFT_COLUMN_WIDTH_PX}
+        css={{
+          flexShrink: 0,
+          textAlign: 'left',
+          zIndex: zIndex.PROFILE_EDITABLE_COMPONENTS
+        }}
+      >
         <ProfileBio
           userId={userId}
           handle={handle}
@@ -189,6 +219,7 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
         />
         {accountUserId !== userId ? <TipAudioButton /> : null}
         {allowAiAttribution ? <AiGeneratedCallout handle={handle} /> : null}
+        {isRecentCommentsEnabled ? <RecentComments userId={userId} /> : null}
         <SupportingList />
         <TopSupporters />
         <ProfileMutuals />

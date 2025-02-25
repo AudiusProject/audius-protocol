@@ -13,7 +13,6 @@ import { TrackMetadataForUpload } from '~/store/upload'
 
 import { QUERY_KEYS } from './queryKeys'
 import { getTrackQueryKey } from './useTrack'
-import { getTrackByPermalinkQueryKey } from './useTrackByPermalink'
 import { handleStemUpdates } from './utils/handleStemUpdates'
 import { primeTrackData } from './utils/primeTrackData'
 
@@ -82,8 +81,9 @@ export const useUpdateTrack = () => {
     },
     onMutate: async ({ trackId, metadata }): Promise<MutationContext> => {
       // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.track, trackId] })
-      await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.collection] })
+      await queryClient.cancelQueries({
+        queryKey: getTrackQueryKey(trackId)
+      })
 
       // Snapshot the previous values
       const previousTrack = queryClient.getQueryData<UserTrackMetadata>([
@@ -101,48 +101,6 @@ export const useUpdateTrack = () => {
         })
       }
 
-      // Optimistically update trackByPermalink
-      if (previousTrack) {
-        queryClient.setQueryData(
-          getTrackByPermalinkQueryKey(previousTrack.permalink),
-          (old: any) => ({
-            ...old,
-            ...metadata
-            // TODO: add optimistic update for artwork
-          })
-        )
-        queryClient.setQueryData(
-          getTrackByPermalinkQueryKey(metadata.permalink),
-          (old: any) => ({
-            ...previousTrack,
-            ...old,
-            ...metadata
-          })
-        )
-      }
-
-      // Optimistically update all collections that contain this track
-      queryClient.setQueriesData(
-        { queryKey: [QUERY_KEYS.collection] },
-        (oldData: any) => {
-          if (!oldData?.tracks?.some((track: any) => track.id === trackId)) {
-            return oldData
-          }
-
-          return {
-            ...oldData,
-            tracks: oldData.tracks.map((track: any) =>
-              track.id === trackId
-                ? {
-                    ...track,
-                    ...metadata
-                  }
-                : track
-            )
-          }
-        }
-      )
-
       // Return context with the previous track and metadata
       return { previousTrack }
     },
@@ -155,10 +113,6 @@ export const useUpdateTrack = () => {
       if (context?.previousTrack) {
         queryClient.setQueryData(
           getTrackQueryKey(trackId),
-          context.previousTrack
-        )
-        queryClient.setQueryData(
-          getTrackByPermalinkQueryKey(context.previousTrack.permalink),
           context.previousTrack
         )
       }

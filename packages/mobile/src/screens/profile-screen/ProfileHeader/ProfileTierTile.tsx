@@ -6,9 +6,10 @@ import type { ViewStyle, StyleProp } from 'react-native'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
+import { Paper } from '@audius/harmony-native'
 import { IconAudioBadge, TierText } from 'app/components/audio-rewards'
 import { MODAL_NAME } from 'app/components/audio-rewards/TiersExplainerDrawer'
-import { Tile, Text } from 'app/components/core'
+import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 import { useSelectProfile } from '../selectors'
@@ -19,8 +20,7 @@ const messages = {
 }
 
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
-  root: { marginRight: spacing(3) },
-  tile: { height: 50 },
+  tile: { height: 64 },
   content: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -83,21 +83,20 @@ export const ProfileTierTile = (props: ProfileTierTileProps) => {
 
   if (interactive) {
     return (
-      <Tile
-        styles={{
-          root: [styles.root, style],
-          tile: styles.tile,
-          content: styles.content
-        }}
+      <Paper
+        h={64}
+        style={[styles.content, styles.tile]}
+        border='default'
+        shadow='near'
         onPress={handlePress}
       >
         {content}
-      </Tile>
+      </Paper>
     )
   }
 
   return (
-    <View pointerEvents='none' style={[styles.root, styles.viewContent, style]}>
+    <View pointerEvents='none' style={[styles.viewContent, style]}>
       {content}
     </View>
   )

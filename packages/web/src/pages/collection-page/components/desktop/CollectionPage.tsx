@@ -19,7 +19,7 @@ import {
   PurchaseableContentType
 } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
-import { Flex, Paper, Text } from '@audius/harmony'
+import { Divider, Flex, Paper, Text } from '@audius/harmony'
 
 import {
   CollectiblesPlaylistTableColumn,
@@ -27,7 +27,6 @@ import {
 } from 'components/collectibles-playlist-table/CollectiblesPlaylistTable'
 import { CollectionDogEar } from 'components/collection'
 import { CollectionHeader } from 'components/collection/desktop/CollectionHeader'
-import { Divider } from 'components/divider'
 import Page from 'components/page/Page'
 import { SuggestedTracks } from 'components/suggested-tracks'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
@@ -162,7 +161,7 @@ const CollectionPage = ({
   const { status, metadata, user } = collection
 
   // TODO: Consider dynamic lineups, esp. for caching improvement.
-  const [dataSource, playingIndex] =
+  const [dataSource, activeIndex] =
     tracks.status === Status.SUCCESS
       ? getFilteredData(tracks.entries)
       : [[], -1]
@@ -345,15 +344,15 @@ const CollectionPage = ({
               loading={isNftPlaylist ? collectionLoading : tracksLoading}
               userId={userId}
               playing={playing}
-              playingIndex={playingIndex}
+              activeIndex={activeIndex}
               data={dataSource}
               onClickRow={onClickRow}
               onClickFavorite={onClickSave}
               onClickRemove={isOwner ? onClickRemove : undefined}
               onClickRepost={onClickRepostTrack}
               onClickPurchase={openPurchaseModal}
-              onReorderTracks={onReorderTracks}
-              onSortTracks={onSortTracks}
+              onReorder={onReorderTracks}
+              onSort={onSortTracks}
               isReorderable={
                 userId !== null && userId === playlistOwnerId && allowReordering
               }
@@ -372,10 +371,10 @@ const CollectionPage = ({
       </Paper>
 
       {!collectionLoading && isOwner && !isAlbum && !isNftPlaylist ? (
-        <>
-          <Divider variant='default' className={styles.tileDivider} />
+        <Flex column gap='2xl' pv='2xl' w='100%' css={{ minWidth: 774 }}>
+          <Divider />
           <SuggestedTracks collectionId={playlistId} />
-        </>
+        </Flex>
       ) : null}
     </Page>
   )

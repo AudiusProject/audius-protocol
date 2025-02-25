@@ -309,6 +309,9 @@ class ChallengeManager:
             logger.debug(
                 f"ChallengeManager: Updated challenges from event [{event_type}]: [{to_update}]"
             )
+            # Flush before bulk adding so trigger has updated data
+            session.flush()
+
             # Only add the new ones
             session.add_all(new_user_challenges)
 

@@ -14,8 +14,13 @@ type DescriptionContent =
   | {
       description?: never
       renderDescription: () => ReactNode
+      optionalDescription?: never
     }
-  | { description: ReactNode; renderDescription?: never }
+  | {
+      description: ReactNode
+      renderDescription?: never
+      optionalDescription?: ReactNode
+    }
 
 type ChallengeDescriptionProps = {
   /** Indicates if the challenge has a cooldown period */
@@ -29,6 +34,7 @@ type ChallengeDescriptionProps = {
 export const ChallengeDescription = ({
   description,
   renderDescription,
+  optionalDescription,
   isCooldownChallenge = true
 }: ChallengeDescriptionProps) => {
   const styles = useStyles()
@@ -40,6 +46,7 @@ export const ChallengeDescription = ({
         <Flex gap='m' mb='l'>
           <Text variant='body' size='l'>
             {description}
+            {optionalDescription}
           </Text>
           {isCooldownChallenge ? (
             <Text variant='body' color='subdued'>

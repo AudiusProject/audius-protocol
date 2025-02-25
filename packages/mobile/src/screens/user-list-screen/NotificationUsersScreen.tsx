@@ -13,16 +13,16 @@ import { useRoute } from 'app/hooks/useRoute'
 import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
 const { getUserList } = notificationsUserListSelectors
-const { setNotificationId } = notificationsUserListActions
+const { setNotification } = notificationsUserListActions
 
 export const NotificationUsersScreen = () => {
   const { params } = useRoute<'NotificationUsers'>()
-  const { notificationType, count, id } = params
+  const { notificationType, count, notification } = params
   const dispatch = useDispatch()
 
   const handleSetNotificationId = useCallback(() => {
-    dispatch(setNotificationId(id))
-  }, [dispatch, id])
+    dispatch(setNotification(notification))
+  }, [dispatch, notification])
 
   const getTitle = useCallback(() => {
     if (notificationType === NotificationType.Follow) {

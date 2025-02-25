@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { FixedDecimal } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 import numeral from 'numeral'
 
@@ -36,6 +38,8 @@ export const formatCount = (count: number) => {
 }
 
 /**
+ * @deprecated Use the relevant currency shorthand, eg. `AUDIO(amount).toShorthand()` from {@link FixedDecimal} instead
+ *
  * The format any currency should be:
  * - show 0 if 0
  * - don't show decimal places if input is a round number
@@ -142,6 +146,8 @@ export const pluralize = (
 ) => `${message}${(count ?? 0) !== 1 || pluralizeAnyway ? suffix : ''}`
 
 /**
+ * @deprecated Use `wAUDIO().toLocaleString()` from {@link FixedDecimal} instead
+ *
  * Format a $AUDIO string with commas and decimals
  * @param amount The $AUDIO amount
  * @param decimals Number of decimal places to display
@@ -157,7 +163,9 @@ export const formatAudio = (amount: string, decimals?: number) => {
 }
 
 // Wei -> Audio
-
+/**
+ * @deprecated Use `AUDIO(wei).trunc().toFixed()` from {@link FixedDecimal} instead
+ */
 export const formatWeiToAudioString = (wei: BNWei) => {
   const aud = wei.div(WEI_DIVISOR)
   return aud.toString()
@@ -174,6 +182,9 @@ export const formatNumberCommas = (num: number | string) => {
   )
 }
 
+/**
+ * @deprecated Use `USDC().toLocaleString()` from {@link FixedDecimal} instead
+ */
 export const formatPrice = (num: number) => {
   return formatNumberCommas((num / 100).toFixed(2))
 }
@@ -202,6 +213,9 @@ export const checkOnlyWeiFloat = (number: string) => {
   return true
 }
 
+/**
+ * @deprecated Use `AUDIO()` from {@link FixedDecimal} instead
+ */
 export const convertFloatToWei = (number: string) => {
   const nums = number.split('.')
   if (nums.length !== 2) return null
@@ -217,6 +231,9 @@ export const checkWeiNumber = (number: string) => {
 }
 
 // Audio -> Wei
+/**
+ * @deprecated Use `AUDIO()` from {@link FixedDecimal} instead
+ */
 export const parseWeiNumber = (number: string) => {
   if (checkOnlyNumeric(number)) {
     return new BN(number).mul(WEI_DIVISOR)
@@ -233,6 +250,9 @@ type FormatOptions = {
   excludeCommas?: boolean
 }
 
+/**
+ * @deprecated Use `FixedDecimal().toLocaleString()` instead
+ */
 export const formatNumberString = (
   number?: string,
   options?: FormatOptions

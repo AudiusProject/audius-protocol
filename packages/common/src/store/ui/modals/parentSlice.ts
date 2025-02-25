@@ -10,7 +10,7 @@ import {
 export const initialState: BasicModalsState = {
   TiersExplainer: { isOpen: false },
   TrendingRewardsExplainer: { isOpen: false },
-  ChallengeRewardsExplainer: { isOpen: false },
+  ChallengeRewards: { isOpen: false },
   ClaimAllRewards: { isOpen: false },
   LinkSocialRewardsExplainer: { isOpen: false },
   APIRewardsExplainer: { isOpen: false },
@@ -74,7 +74,9 @@ export const initialState: BasicModalsState = {
   ArtistPick: { isOpen: false },
   PayoutWallet: { isOpen: false },
   EditTrackFormOverflowMenu: { isOpen: false },
-  ExternalWalletSignUp: { isOpen: false }
+  ExternalWalletSignUp: { isOpen: false },
+  Announcement: { isOpen: false },
+  Notification: { isOpen: false }
 }
 
 const slice = createSlice({

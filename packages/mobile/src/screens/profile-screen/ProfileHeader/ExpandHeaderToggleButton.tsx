@@ -27,7 +27,7 @@ export const ExpandHeaderToggleButton = (
     <PlainButton
       variant='subdued'
       fullWidth={false}
-      style={{ alignSelf: 'center' }}
+      style={{ alignSelf: 'center', paddingVertical: spacing(2) }}
       iconRight={IconCaretDown}
       styles={{
         icon: isExpanded ? { transform: [{ rotate: '180deg' }] } : undefined

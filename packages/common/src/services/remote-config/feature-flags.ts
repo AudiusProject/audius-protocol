@@ -25,7 +25,8 @@ export enum FeatureFlags {
   FAST_REFERRAL = 'fast_referral',
   REACT_QUERY_SYNC = 'react_query_sync',
   TRACK_REPLACE_DOWNLOADS = 'track_replace_downloads',
-  ONE_SHOT = 'one_shot'
+  CLAIM_ALL_REWARDS_TILE = 'claim_all_rewards_tile',
+  RECENT_COMMENTS = 'recent_comments'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -66,5 +67,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.FAST_REFERRAL]: false,
   [FeatureFlags.REACT_QUERY_SYNC]: false,
   [FeatureFlags.TRACK_REPLACE_DOWNLOADS]: false,
-  [FeatureFlags.ONE_SHOT]: false
+  [FeatureFlags.CLAIM_ALL_REWARDS_TILE]: true,
+  [FeatureFlags.RECENT_COMMENTS]: false
 }
