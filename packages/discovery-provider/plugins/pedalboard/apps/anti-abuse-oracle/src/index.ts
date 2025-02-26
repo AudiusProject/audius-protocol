@@ -4,6 +4,7 @@ import { logger } from './logger'
 import { knex } from 'knex'
 import { SolanaUtils } from '@audius/sdk'
 import bn from 'bn.js'
+import cors from 'cors'
 
 // Initialize Knex
 const db = knex({
@@ -16,6 +17,7 @@ const main = async () => {
 
   const app = express()
   app.use(express.json())
+  app.use(cors())
   app.post('/attestation/:handle', async (req, res) => {
     const {
       body: { challengeId, challengeSpecifier, amount },
