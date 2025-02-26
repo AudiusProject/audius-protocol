@@ -22,7 +22,7 @@ class GetUserCommentsArgs(TypedDict):
     current_user_id: int
 
 
-def get_user_comments(args: GetUserCommentsArgs):
+def get_user_comments(args: GetUserCommentsArgs, include_related=True):
     """
     Get comments made by a specific user
 
@@ -33,6 +33,7 @@ def get_user_comments(args: GetUserCommentsArgs):
             - sort_method: How to sort the comments (defaults to newest)
             - offset: Pagination offset
             - limit: Pagination limit
+        include_related: Whether to include related users and tracks in the response
 
     Returns:
         Dictionary with comments list and related users and tracks
@@ -75,16 +76,23 @@ def get_user_comments(args: GetUserCommentsArgs):
             artist_id=None,
         )
 
-        # Fetch related entities
-        related_users, related_tracks = fetch_related_entities(
-            session, user_ids, track_ids, current_user_id
-        )
+        # Prepare the response
+        if include_related:
+            # Fetch related entities
+            related_users, related_tracks = fetch_related_entities(
+                session, user_ids, track_ids, current_user_id
+            )
 
-        # Return the restructured response
-        return {
-            "data": formatted_comments,
-            "related": {
-                "users": related_users,
-                "tracks": related_tracks,
-            },
-        }
+            # Return the restructured response with related entities
+            response = {
+                "data": formatted_comments,
+                "related": {
+                    "users": related_users,
+                    "tracks": related_tracks,
+                },
+            }
+        else:
+            # Return just the data without related entities
+            response = {"data": formatted_comments}
+
+        return response

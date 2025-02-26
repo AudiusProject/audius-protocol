@@ -65,6 +65,7 @@ models/PlaylistTracksResponse.ts
 models/PlaylistsResponse.ts
 models/ProfilePicture.ts
 models/PurchasersResponse.ts
+models/Related.ts
 models/RelatedArtistResponse.ts
 models/RemixParent.ts
 models/RemixedTrackAggregate.ts

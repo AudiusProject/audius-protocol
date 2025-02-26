@@ -14,6 +14,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { Related } from './Related';
+import {
+    RelatedFromJSON,
+    RelatedFromJSONTyped,
+    RelatedToJSON,
+} from './Related';
 import type { ReplyComment } from './ReplyComment';
 import {
     ReplyCommentFromJSON,
@@ -33,6 +39,12 @@ export interface CommentResponse {
      * @memberof CommentResponse
      */
     data?: Array<ReplyComment>;
+    /**
+     * 
+     * @type {Related}
+     * @memberof CommentResponse
+     */
+    related?: Related;
 }
 
 /**
@@ -55,6 +67,7 @@ export function CommentResponseFromJSONTyped(json: any, ignoreDiscriminator: boo
     return {
         
         'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(ReplyCommentFromJSON)),
+        'related': !exists(json, 'related') ? undefined : RelatedFromJSON(json['related']),
     };
 }
 
@@ -68,6 +81,7 @@ export function CommentResponseToJSON(value?: CommentResponse | null): any {
     return {
         
         'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(ReplyCommentToJSON)),
+        'related': RelatedToJSON(value.related),
     };
 }
 

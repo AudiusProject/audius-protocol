@@ -38,6 +38,8 @@ import { Nullable } from '~/utils'
 
 import { QUERY_KEYS } from './queryKeys'
 import { useCurrentUserId } from './useCurrentUserId'
+import { primeTrackData } from './utils/primeTrackData'
+import { primeUserData } from './utils/primeUserData'
 
 type CommentOrReply = Comment | ReplyComment
 
@@ -188,6 +190,19 @@ export const useGetCommentsByTrackId = ({
         commentsRes.data,
         commentFromSDK
       )
+
+      if (commentsRes.related?.users && commentsRes.related?.tracks) {
+        primeUserData({
+          users: commentsRes.related.users,
+          queryClient,
+          dispatch
+        })
+        primeTrackData({
+          tracks: commentsRes.related.tracks,
+          queryClient,
+          dispatch
+        })
+      }
 
       // Populate individual comment cache
       commentList.forEach((comment) => {

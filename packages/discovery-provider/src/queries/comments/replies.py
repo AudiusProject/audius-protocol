@@ -86,7 +86,7 @@ def get_replies(
     ]
 
 
-def get_paginated_replies(args, comment_id, current_user_id=None):
+def get_paginated_replies(args, comment_id, current_user_id=None, include_related=True):
     """
     Get paginated replies to a comment (API endpoint handler)
 
@@ -96,6 +96,7 @@ def get_paginated_replies(args, comment_id, current_user_id=None):
             - limit: Pagination limit
         comment_id: ID of the comment to get replies for
         current_user_id: ID of the user making the request
+        include_related: Whether to include related users and tracks in the response
 
     Returns:
         Dictionary with replies list and related users and tracks
@@ -141,16 +142,23 @@ def get_paginated_replies(args, comment_id, current_user_id=None):
             artist_id=artist_id,
         )
 
-        # Fetch related entities
-        related_users, related_tracks = fetch_related_entities(
-            session, user_ids, track_ids, current_user_id
-        )
+        # Prepare the response
+        if include_related:
+            # Fetch related entities
+            related_users, related_tracks = fetch_related_entities(
+                session, user_ids, track_ids, current_user_id
+            )
 
-        # Return the restructured response
-        return {
-            "data": formatted_replies,
-            "related": {
-                "users": related_users,
-                "tracks": related_tracks,
-            },
-        }
+            # Return the restructured response with related entities
+            response = {
+                "data": formatted_replies,
+                "related": {
+                    "users": related_users,
+                    "tracks": related_tracks,
+                },
+            }
+        else:
+            # Return just the data without related entities
+            response = {"data": formatted_replies}
+
+        return response

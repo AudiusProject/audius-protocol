@@ -55,6 +55,7 @@ export * from './PlaylistTracksResponse';
 export * from './PlaylistsResponse';
 export * from './ProfilePicture';
 export * from './PurchasersResponse';
+export * from './Related';
 export * from './RelatedArtistResponse';
 export * from './RemixParent';
 export * from './RemixedTrackAggregate';

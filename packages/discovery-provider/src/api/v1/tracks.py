@@ -19,6 +19,7 @@ from src.api.v1.helpers import (
     decode_ids_array,
     decode_with_abort,
     extend_blob_info,
+    extend_related,
     extend_track,
     extend_user,
     format_limit,
@@ -28,8 +29,8 @@ from src.api.v1.helpers import (
     get_default_max,
     get_encoded_track_id,
     make_full_response,
+    make_full_response_with_related,
     make_response,
-    make_response_v2,
     pagination_parser,
     pagination_with_current_user_parser,
     parse_bool_param,
@@ -39,10 +40,7 @@ from src.api.v1.helpers import (
     trending_parser,
     trending_parser_paginated,
 )
-from src.api.v1.models.comments import (
-    base_comment_model,
-    comment_notification_setting_model,
-)
+from src.api.v1.models.comments import comment_model, comment_notification_setting_model
 from src.api.v1.models.users import user_model, user_model_full
 from src.queries.comments import get_track_comments
 from src.queries.generate_unpopulated_trending_tracks import (
@@ -470,9 +468,6 @@ class TrackInspect(Resource):
 
 
 # Comments
-track_comments_response = make_response_v2(
-    "track_comments_response", ns, fields.List(fields.Nested(base_comment_model))
-)
 
 track_comments_parser = pagination_with_current_user_parser.copy()
 track_comments_parser.add_argument(
@@ -482,6 +477,11 @@ track_comments_parser.add_argument(
     choices=("top", "newest", "timestamp"),
     type=str,
     description="The sort method",
+)
+
+
+track_comments_response = make_response(
+    "track_comments_response", ns, fields.List(fields.Nested(comment_model))
 )
 
 
@@ -505,7 +505,44 @@ class TrackComments(Resource):
         args = track_comments_parser.parse_args()
         decoded_id = decode_with_abort(track_id, ns)
         current_user_id = args.get("user_id")
-        track_comments = get_track_comments(args, decoded_id, current_user_id)
+        track_comments = get_track_comments(
+            args, decoded_id, current_user_id, include_related=False
+        )
+
+        return success_response(track_comments)
+
+
+track_comments_response_full = make_full_response_with_related(
+    "track_comments_response_full", full_ns, fields.List(fields.Nested(comment_model))
+)
+
+
+@full_ns.route("/<string:track_id>/comments")
+class FullTrackComments(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Track Comments""",
+        description="""Get a list of comments for a track""",
+        params={"track_id": "A Track ID"},
+        responses={
+            200: "Success",
+            400: "Bad request",
+            500: "Server error",
+        },
+    )
+    @full_ns.expect(track_comments_parser)
+    @full_ns.marshal_with(track_comments_response_full)
+    @cache(ttl_sec=5)
+    def get(self, track_id):
+        args = track_comments_parser.parse_args()
+        decoded_id = decode_with_abort(track_id, full_ns)
+        current_user_id = args.get("user_id")
+        track_comments = get_track_comments(
+            args, decoded_id, current_user_id, include_related=True
+        )
+        track_comments["related"] = extend_related(
+            track_comments["related"], current_user_id
+        )
         return success_response(track_comments)
 
 

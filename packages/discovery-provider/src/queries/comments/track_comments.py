@@ -14,7 +14,7 @@ from src.utils.db_session import get_db_read_replica
 logger = logging.getLogger(__name__)
 
 
-def get_track_comments(args, track_id, current_user_id=None):
+def get_track_comments(args, track_id, current_user_id=None, include_related=True):
     """
     Get comments for a specific track
 
@@ -25,6 +25,7 @@ def get_track_comments(args, track_id, current_user_id=None):
             - limit: Pagination limit
         track_id: ID of the track to get comments for
         current_user_id: ID of the user making the request
+        include_related: Whether to include related users and tracks in the response
 
     Returns:
         Dictionary with comments list and related users and tracks
@@ -72,22 +73,27 @@ def get_track_comments(args, track_id, current_user_id=None):
             artist_id=artist_id,
         )
 
-        # Fetch related entities
-        related_users, related_tracks = fetch_related_entities(
-            session, user_ids, track_ids, current_user_id
-        )
-
-        # Return the restructured response
-        response = {
-            "data": formatted_comments,
-            "related": {
-                "users": related_users,
-                "tracks": related_tracks,
-            },
-        }
-
         # For backward compatibility with tests
         if "test_get_tombstone_comments" in str(args):
             return formatted_comments
+
+        # Prepare the response
+        if include_related:
+            # Fetch related entities
+            related_users, related_tracks = fetch_related_entities(
+                session, user_ids, track_ids, current_user_id
+            )
+
+            # Return the restructured response with related entities
+            response = {
+                "data": formatted_comments,
+                "related": {
+                    "users": related_users,
+                    "tracks": related_tracks,
+                },
+            }
+        else:
+            # Return just the data without related entities
+            response = {"data": formatted_comments}
 
         return response

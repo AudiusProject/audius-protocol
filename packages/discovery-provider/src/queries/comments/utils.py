@@ -2,20 +2,15 @@ import logging
 
 from sqlalchemy import func
 
-from src.api.v1.helpers import extend_track, extend_user
 from src.models.comments.comment_mention import CommentMention
 from src.models.comments.comment_notification_setting import CommentNotificationSetting
 from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_report import COMMENT_KARMA_THRESHOLD
 from src.models.moderation.muted_user import MutedUser
-from src.models.tracks.track import Track
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.user import User
-from src.queries.query_helpers import (
-    add_users_to_tracks,
-    populate_track_metadata,
-    populate_user_metadata,
-)
+from src.queries.get_tracks import get_tracks
+from src.queries.get_users import get_users
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import encode_int_id
 
@@ -580,45 +575,15 @@ def fetch_related_entities(session, user_ids, track_ids, current_user_id):
     Returns:
         Tuple of (related_users, related_tracks)
     """
-    # Fetch all users in a single query
-    users_query = session.query(User).filter(
-        User.user_id.in_(list(user_ids)) if user_ids else False
+
+    users = get_users({"id": user_ids, "current_user_id": current_user_id})
+    tracks = get_tracks(
+        {
+            "id": track_ids,
+            "current_user_id": current_user_id,
+            "with_users": True,
+            "skip_unlisted_filter": True,
+        }
     )
-    users = users_query.all()
 
-    # Convert to dict and populate metadata in batch
-    user_dicts = [user.get_attributes_dict() for user in users]
-    if user_dicts:
-        user_dicts = populate_user_metadata(
-            session,
-            [user["user_id"] for user in user_dicts],
-            user_dicts,
-            current_user_id,
-        )
-
-    # Create extended user objects
-    related_users = [extend_user(user, current_user_id) for user in user_dicts]
-
-    # Fetch all tracks in a single query
-    tracks_query = session.query(Track).filter(
-        Track.track_id.in_(list(track_ids)) if track_ids else False
-    )
-    tracks = tracks_query.all()
-
-    # Convert to dict and populate metadata in batch
-    track_dicts = [track.get_attributes_dict() for track in tracks]
-    if track_dicts:
-        track_dicts = populate_track_metadata(
-            session,
-            [track["track_id"] for track in track_dicts],
-            track_dicts,
-            current_user_id,
-        )
-
-        # Add users to tracks in batch
-        track_dicts = add_users_to_tracks(session, track_dicts, current_user_id)
-
-    # Create extended track objects
-    related_tracks = [extend_track(track, session) for track in track_dicts]
-
-    return related_users, related_tracks
+    return users, tracks

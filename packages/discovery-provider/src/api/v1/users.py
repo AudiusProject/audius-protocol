@@ -22,6 +22,7 @@ from src.api.v1.helpers import (
     extend_feed_item,
     extend_playlist,
     extend_purchase,
+    extend_related,
     extend_supporter,
     extend_supporting,
     extend_track,
@@ -40,8 +41,8 @@ from src.api.v1.helpers import (
     get_current_user_id,
     get_default_max,
     make_full_response,
+    make_full_response_with_related,
     make_response,
-    make_response_v2,
     pagination_parser,
     pagination_with_current_user_parser,
     parse_bool_param,
@@ -65,7 +66,7 @@ from src.api.v1.models.activities import (
     track_activity_full_model,
     track_activity_model,
 )
-from src.api.v1.models.comments import base_comment_model
+from src.api.v1.models.comments import comment_model
 from src.api.v1.models.common import favorite
 from src.api.v1.models.developer_apps import authorized_app, developer_app
 from src.api.v1.models.extensions.fields import NestedOneOf
@@ -3197,8 +3198,8 @@ class UserEmailKey(Resource):
 
 
 # Comments
-user_comments_response = make_response_v2(
-    "user_comments_response", ns, fields.List(fields.Nested(base_comment_model))
+user_comments_response = make_response(
+    "user_comments_response", ns, fields.List(fields.Nested(comment_model))
 )
 
 
@@ -3227,6 +3228,44 @@ class UserComments(Resource):
             "user_id": user_id,
             "current_user_id": current_user_id,
         }
-        user_comments = get_user_comments(args)
+        user_comments = get_user_comments(args, include_related=False)
+
+        return success_response(user_comments)
+
+
+user_comments_response_full = make_full_response_with_related(
+    "user_comments_response_full", full_ns, fields.List(fields.Nested(comment_model))
+)
+
+
+@full_ns.route("/<string:id>/comments")
+class FullUserComments(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""User Comments""",
+        description="""Get user comment history""",
+        params={"id": "A User ID"},
+        responses={
+            200: "Success",
+            400: "Bad request",
+            500: "Server error",
+        },
+    )
+    @full_ns.expect(pagination_with_current_user_parser)
+    @full_ns.marshal_with(user_comments_response_full)
+    @cache(ttl_sec=5)
+    def get(self, id):
+        args = pagination_with_current_user_parser.parse_args()
+        user_id = decode_with_abort(id, full_ns)
+        current_user_id = get_current_user_id(args)
+        args = {
+            **args,
+            "user_id": user_id,
+            "current_user_id": current_user_id,
+        }
+        user_comments = get_user_comments(args, include_related=True)
+        user_comments["related"] = extend_related(
+            user_comments["related"], current_user_id
+        )
 
         return success_response(user_comments)
