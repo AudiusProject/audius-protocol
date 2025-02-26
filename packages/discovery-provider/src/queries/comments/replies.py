@@ -7,6 +7,8 @@ from src.queries.comments.utils import (
     COMMENT_REPLIES_DEFAULT_LIMIT,
     _format_comment_response,
     build_comments_query,
+    fetch_related_entities,
+    format_comments,
     get_base_comments_query,
 )
 from src.utils.db_session import get_db_read_replica
@@ -78,7 +80,6 @@ def get_replies(
             mentions,
             current_user_id,
             session,
-            include_replies=False,
             artist_id=artist_id,
         )
         for reply, react_count, mentions in replies
@@ -97,18 +98,59 @@ def get_paginated_replies(args, comment_id, current_user_id=None):
         current_user_id: ID of the user making the request
 
     Returns:
-        List of reply objects with metadata
+        Dictionary with replies list and related users and tracks
     """
     offset, limit = format_offset(args), format_limit(args)
     db = get_db_read_replica()
+
     with db.scoped_session() as session:
-        replies = get_replies(
-            session,
-            comment_id,
-            current_user_id,
-            artist_id=None,
-            offset=offset,
-            limit=limit,
+        # Get base query components
+        base_query = get_base_comments_query(session, current_user_id)
+
+        # Try to find the artist_id if not provided
+        track_query = (
+            session.query(Track)
+            .join(Comment, Track.track_id == Comment.entity_id)
+            .filter(Comment.comment_id == comment_id)
+            .first()
+        )
+        artist_id = track_query.owner_id if track_query else None
+
+        # Build the query using the shared utility function
+        query = build_comments_query(
+            session=session,
+            query_type="replies",
+            base_query=base_query,
+            current_user_id=current_user_id,
+            artist_id=artist_id,
+            parent_comment_id=comment_id,
         )
 
-    return replies
+        # Apply pagination
+        query = query.offset(offset).limit(limit)
+
+        # Execute the query
+        replies_query_results = query.all()
+
+        # Format comments and collect user/track IDs
+        formatted_replies, user_ids, track_ids = format_comments(
+            session=session,
+            comments=replies_query_results,
+            current_user_id=current_user_id,
+            include_replies=False,
+            artist_id=artist_id,
+        )
+
+        # Fetch related entities
+        related_users, related_tracks = fetch_related_entities(
+            session, user_ids, track_ids, current_user_id
+        )
+
+        # Return the restructured response
+        return {
+            "data": formatted_replies,
+            "related": {
+                "users": related_users,
+                "tracks": related_tracks,
+            },
+        }
