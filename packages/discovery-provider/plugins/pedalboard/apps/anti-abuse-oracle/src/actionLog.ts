@@ -79,7 +79,66 @@ export async function getUserScore(userId: number) {
     following_count > 6 as "followingCount",
     (select count(*) > 0 from plays where user_id = ${userId}) as "hasPlays"
   from aggregate_user
-  where user_id = ${userId}`
+  where user_id = ${userId}
+  `
+  if (!rows.length) return
+  return rows[0]
+}
+
+export async function getUserNormalizedScore(userId: number) {
+  const rows = await sql`
+WITH scoped_users as (
+select * from users
+where user_id = ${userId} 
+order by created_at desc limit 100
+),
+play_activity AS (
+    SELECT user_id, 
+          COUNT(DISTINCT date_trunc('hour', plays.created_at)) AS play_count
+    FROM plays
+    WHERE user_id IS NOT NULL
+    AND user_id in (select user_id from scoped_users)
+    GROUP BY user_id
+),
+fast_challenge_completion AS (
+    SELECT users.user_id, 
+          handle_lc, 
+          users.created_at, 
+          COUNT(*) AS challenge_count, 
+          ARRAY_AGG(user_challenges.challenge_id) AS challenge_ids
+    FROM users
+    LEFT JOIN user_challenges ON users.user_id = user_challenges.user_id
+    WHERE user_challenges.is_complete
+      AND user_challenges.completed_at - users.created_at <= INTERVAL '3 minutes'
+      AND user_challenges.challenge_id != 'm'
+    AND users.user_id in (select user_id from scoped_users)
+    GROUP BY users.user_id, users.handle_lc, users.created_at
+    ORDER BY users.created_at DESC
+),
+aggregate_scores AS (
+    SELECT 
+        users.handle_lc,
+        users.created_at,
+        COALESCE(play_activity.play_count, 0) AS play_count,
+        COALESCE(fast_challenge_completion.challenge_count, 0) AS challenge_count,
+        (COALESCE(play_activity.play_count, 0)) - (COALESCE(fast_challenge_completion.challenge_count, 0) * 3) AS overall_score
+    FROM users
+    LEFT JOIN play_activity ON users.user_id = play_activity.user_id
+    LEFT JOIN fast_challenge_completion ON users.user_id = fast_challenge_completion.user_id
+    WHERE users.handle_lc IS NOT NULL
+    AND users.user_id in (select user_id from scoped_users)
+    ORDER BY users.created_at DESC
+)
+SELECT 
+	a.handle_lc,
+ 	a.created_at as "timestamp",
+    a.play_count,
+    a.challenge_count,
+    a.overall_score,
+    (a.overall_score + 15)::float / NULLIF(100, 0)::float AS normalized_score
+FROM aggregate_scores a
+ORDER BY normalized_score asc
+  `
   if (!rows.length) return
   return rows[0]
 }
@@ -157,6 +216,21 @@ with separate_actions as (
     limit ${limit}
   )
 
+-- user sign up
+union all
+  (
+    select
+      created_at,
+      'sign up',
+      'user',
+      json_build_object(
+      )
+    from
+      users
+    where user_id = ${userId}
+    order by created_at desc
+    limit ${limit}
+  )
 
 -- repost track
 union all
@@ -286,7 +360,25 @@ union all
     limit ${limit}
   )
 
+-- challenge
+union all
+  (
+    select
+      completed_at as created_at,
+      'challenge',
+      challenge_id,
+      json_build_object(
+          'amount', amount
+        )
+    from user_challenges
+    where user_id = ${userId}
+    and is_complete
+    order by completed_at desc
+    limit ${limit}
+  )
+
 )
+
 select * from separate_actions order by timestamp desc;
 `
 }

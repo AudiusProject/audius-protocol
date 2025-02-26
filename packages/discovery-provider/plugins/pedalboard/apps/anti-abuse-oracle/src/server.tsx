@@ -3,8 +3,10 @@ import { Hono } from 'hono'
 import {
   actionLogForUser,
   getUser,
+  getUserNormalizedScore,
   getUserScore,
   recentTips,
+  recentUsers,
   sql,
   type ActionRow,
   type TrackDetails,
@@ -66,6 +68,7 @@ app.post('/attestation/:handle', async (c) => {
 
 app.get('/', async (c) => {
   const tips = await recentTips()
+  const users = await recentUsers()
 
   let lastDate = ''
   function dateHeader(timestamp: Date) {
@@ -128,6 +131,9 @@ app.get('/user', async (c) => {
   const user = await getUser(idOrHandle)
   if (!user) return c.text(`user id not found: ${idOrHandle}`, 404)
   const signals = await getUserScore(user.id)
+  const normalizedScore = (await getUserNormalizedScore(user.id))!
+    .normalized_score
+
   if (!signals) return c.text(`user id not found: ${idOrHandle}`, 404)
 
   const signalArray = Object.values(signals)
@@ -169,7 +175,7 @@ app.get('/user', async (c) => {
             </div>
             <div class='flex gap-2 mt-2 items-center'>
               <div class='badge badge-xl badge-neutral'>
-                {(score * 100).toFixed(0)}%
+                {(Math.min(normalizedScore, 1) * 100).toFixed(0)}%
               </div>
               {Object.entries(signals).map(([name, ok]) => (
                 <div
