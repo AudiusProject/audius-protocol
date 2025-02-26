@@ -274,7 +274,7 @@ export const challengeRewardsConfig: Record<
     panelButtonText: 'See More',
     id: 'trending-underground'
   },
-  o: {
+  [ChallengeName.OneShot]: {
     shortTitle: 'Airdrop 2: Artists',
     title: 'Airdrop 2: Artist Appreciation',
     description: () =>
@@ -287,6 +287,14 @@ export const challengeRewardsConfig: Record<
     id: ChallengeName.OneShot,
     remainingLabel: 'Ineligible',
     progressLabel: 'Ready to Claim'
+  },
+  [ChallengeName.FirstWeeklyComment]: {
+    shortTitle: 'first comment of the week',
+    title: 'First comment of the week',
+    description: () => 'Your first comment every week will earn $AUDIO.',
+    fullDescription: () => 'Your first comment every week will earn $AUDIO.',
+    panelButtonText: 'Comment on a Track',
+    id: ChallengeName.FirstWeeklyComment
   }
 }
 

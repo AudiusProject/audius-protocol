@@ -178,7 +178,7 @@ def create_comment(params: ManageEntityParameters):
         params.block_number,
         params.block_datetime,
         user_id,
-        {"comment_id": comment_id},
+        {"created_at": params.block_datetime.timestamp()},
     )
 
     if (
