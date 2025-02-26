@@ -11,8 +11,8 @@
     "start": "npm run preview"
   },
   "dependencies": {
-    "@audius/harmony": "latest",
-    "@audius/sdk": "^6.0.0",
+    "@audius/harmony": "^0.3.5",
+    "@audius/sdk": "^8.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
@@ -23,6 +23,7 @@
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "@vitejs/plugin-react": "^4.0.3",
+    "esbuild-plugin-react-virtualized": "^1.0.4",
     "eslint": "8.56.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
