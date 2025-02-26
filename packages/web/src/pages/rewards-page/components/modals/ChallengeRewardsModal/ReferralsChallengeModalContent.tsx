@@ -11,22 +11,18 @@ import {
   getChallengeStatusLabel
 } from '@audius/common/utils'
 import { Button, Flex, Text, IconLink } from '@audius/harmony'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import Toast from 'components/toast/Toast'
-import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement, MountPlacement } from 'components/types'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
-import { push as pushRoute } from 'utils/navigation'
 
 import { ChallengeRewardsLayout } from './ChallengeRewardsLayout'
 import { ClaimButton } from './ClaimButton'
 import { CooldownSummaryTable } from './CooldownSummaryTable'
 import { ProgressDescription } from './ProgressDescription'
 import { ProgressReward } from './ProgressReward'
-import styles from './styles.module.css'
 import { type ReferralsChallengeProps } from './types'
 
 const { getOptimisticUserChallenges } = challengesSelectors
