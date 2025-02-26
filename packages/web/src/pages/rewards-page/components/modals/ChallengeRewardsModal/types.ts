@@ -27,9 +27,14 @@ export type ListenStreakChallengeProps = BaseChallengeContentProps & {
   challengeName: ChallengeName.ListenStreakEndless
 }
 
+export type ReferralsChallengeProps = BaseChallengeContentProps & {
+  challengeName: ChallengeName.Referrals | ChallengeName.ReferralsVerified
+}
+
 export type ChallengeContentProps =
   | AudioMatchingChallengeProps
   | ListenStreakChallengeProps
+  | ReferralsChallengeProps
   | DefaultChallengeProps
 
 export type ChallengeContentComponent =

@@ -97,19 +97,6 @@ export const ListenStreakChallengeModalContent = ({
           </Flex>
         ) : null}
       </Flex>
-      {userChallenge.claimableAmount ? (
-        <Flex
-          backgroundColor='surface1'
-          ph='xl'
-          pv='m'
-          borderRadius='s'
-          border='default'
-          justifyContent='space-between'
-        >
-          <Text variant='title'>{messages.readyToClaim}</Text>
-          <Text variant='title'>{userChallenge?.claimableAmount}</Text>
-        </Flex>
-      ) : null}
     </Flex>
   ) : null
 

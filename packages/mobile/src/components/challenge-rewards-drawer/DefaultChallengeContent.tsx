@@ -32,7 +32,6 @@ export const DefaultChallengeContent = ({
   const config = challengeRewardsConfig[challengeName] ?? {
     fullDescription: () => '',
     completedLabel: '',
-    isVerifiedChallenge: false,
     progressLabel: ''
   }
   const { fullDescription } = config

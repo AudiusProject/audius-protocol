@@ -59,9 +59,6 @@ export enum ChallengeName {
 
 export type ChallengeRewardID =
   | 'track-upload'
-  | 'referrals'
-  | 'ref-v'
-  | 'referred'
   | 'mobile-install'
   | 'connect-verified'
   | 'listen-streak'

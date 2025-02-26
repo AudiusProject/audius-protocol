@@ -4,6 +4,7 @@ import { AudioMatchingRewardsModalContent } from './AudioMatchingRewardsModalCon
 import { DefaultChallengeContent } from './DefaultChallengeContent'
 import { ListenStreakChallengeModalContent } from './ListenStreakChallengeModalContent'
 import { OneShotChallengeModalContent } from './OneShotChallengeModalContent'
+import { ReferralsChallengeModalContent } from './ReferralsChallengeModalContent'
 import {
   type ChallengeContentMap,
   type ChallengeContentComponent
@@ -18,6 +19,10 @@ export const challengeContentRegistry: ChallengeContentMap = {
     ListenStreakChallengeModalContent as ChallengeContentComponent,
   [ChallengeName.OneShot]:
     OneShotChallengeModalContent as ChallengeContentComponent,
+  [ChallengeName.Referrals]:
+    ReferralsChallengeModalContent as ChallengeContentComponent,
+  [ChallengeName.ReferralsVerified]:
+    ReferralsChallengeModalContent as ChallengeContentComponent,
   default: DefaultChallengeContent as ChallengeContentComponent
 }
 
