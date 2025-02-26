@@ -315,7 +315,7 @@ export const ProfileInfoTiles = () => {
     user_id !== accountId && current_user_followee_follow_count > 0
 
   const { data: recentComments = [], isLoading: loadingComments } =
-    useUserComments(user_id, 1)
+    useUserComments({ userId: user_id, pageSize: 1 })
 
   // Only animate if comments are not immediately visible
   const [useAnimation] = useState(loadingComments)
