@@ -37,6 +37,8 @@ type PurchaseContentPageProps = Pick<
   metadata: PurchaseableContentMetadata
 }
 
+const AUDIO_MATCHING_REWARDS_MULTIPLIER = 5
+
 export const PurchaseContentPage = (props: PurchaseContentPageProps) => {
   const { price, purchaseSummaryValues, stage, isUnlocking, metadata } = props
   const payExtraAmountPresetValues = usePayExtraPresets()
@@ -123,7 +125,7 @@ export const PurchaseContentPage = (props: PurchaseContentPageProps) => {
           metadata={metadata}
           owner={metadata.user}
           disabled={isLinkDisabled}
-          earnAmount={USDC(price / 100)
+          earnAmount={USDC((price * AUDIO_MATCHING_REWARDS_MULTIPLIER) / 100)
             .round()
             .toShorthand()}
         />
