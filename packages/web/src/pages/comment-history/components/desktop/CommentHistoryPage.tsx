@@ -191,7 +191,7 @@ export const CommentHistoryPage = ({ title }: CommentHistoryPageProps) => {
     fetchNextPage,
     isPending,
     isFetchingNextPage
-  } = useUserComments(user?.user_id ?? null, 'commentHistoryPage')
+  } = useUserComments({ userId: user?.user_id ?? null })
 
   const renderHeader = () => <Header showBackButton primary={title} />
   const getScrollParent = useCallback(

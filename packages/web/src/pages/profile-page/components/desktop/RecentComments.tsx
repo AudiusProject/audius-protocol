@@ -83,7 +83,7 @@ const CommentListItem = ({ id }: { id: number }) => {
 export const RecentComments = ({ userId }: { userId: number }) => {
   const dispatch = useDispatch()
   const { data: user } = useUser(userId)
-  const { data: commentIds = [] } = useUserComments(userId, 'profilePage', 3)
+  const { data: commentIds = [] } = useUserComments({ userId, pageSize: 3 })
   const onClickViewAll = useCallback(() => {
     if (user?.handle) {
       dispatch(push(fullCommentHistoryPage(user.handle)))
