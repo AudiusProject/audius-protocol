@@ -19,7 +19,6 @@ import {
 
 import SignOnPageState from 'common/store/pages/signon/types'
 import { SearchAiBarState } from 'common/store/search-ai-bar/types'
-import { SearchBarState } from 'common/store/search-bar/types'
 import { EmbedModalState } from 'components/embed-modal/store/types'
 import { FirstUploadModalState } from 'components/first-upload-modal/store/slice'
 import { PasswordResetState } from 'components/password-reset/store/types'
@@ -44,7 +43,6 @@ export type AppState = CommonState & {
   // These belong in CommonState but are here until we move them to the @audius/common package:
   backend: BackendState
 
-  searchBar: SearchBarState
   searchAiBar: SearchAiBarState
   signOn: SignOnPageState
 

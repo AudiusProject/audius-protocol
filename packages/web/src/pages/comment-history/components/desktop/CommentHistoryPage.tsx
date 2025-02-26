@@ -89,11 +89,11 @@ const UserComment = ({ commentId }: { commentId: number }) => {
       <Flex column w='100%' gap='s' alignItems='flex-start'>
         <Flex column gap='xs' w='100%'>
           <Flex>
-            <Text variant='body' size='s'>
+            <Text variant='body' size='s' textAlign='left'>
               {track ? (
                 <>
                   <TrackLink isActive trackId={track?.track_id} />
-                  {messages.by}
+                  <Text>{messages.by}</Text>
                   <UserLink isActive userId={track?.owner_id} />
                 </>
               ) : (
@@ -129,14 +129,17 @@ const UserComment = ({ commentId }: { commentId: number }) => {
           </Flex>
         </Flex>
         <Flex gap='l' alignItems='center' onClick={goToTrackPage}>
-          <Flex alignItems='center' gap='xs'>
-            <IconButton
-              icon={IconHeart}
-              color={isCurrentUserReacted ? 'active' : 'subdued'}
-              aria-label='Heart comment'
-            />
-            <Text> {reactCount || ''}</Text>
-          </Flex>
+          {reactCount > 0 ? (
+            <Flex alignItems='center' gap='xs'>
+              <IconButton
+                icon={IconHeart}
+                color={isCurrentUserReacted ? 'active' : 'subdued'}
+                aria-label='Heart comment'
+                css={{ pointerEvents: 'none' }}
+              />
+              <Text> {reactCount || ''}</Text>
+            </Flex>
+          ) : null}
           <TextLink variant='subdued'>{messages.view}</TextLink>
         </Flex>
       </Flex>
@@ -188,7 +191,7 @@ export const CommentHistoryPage = ({ title }: CommentHistoryPageProps) => {
     fetchNextPage,
     isPending,
     isFetchingNextPage
-  } = useUserComments(user?.user_id ?? null)
+  } = useUserComments({ userId: user?.user_id ?? null })
 
   const renderHeader = () => <Header showBackButton primary={title} />
   const getScrollParent = useCallback(

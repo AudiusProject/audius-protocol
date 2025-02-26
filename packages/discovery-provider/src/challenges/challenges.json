@@ -10,15 +10,6 @@
     "cooldown_days": 7
   },
   {
-    "id": "l",
-    "type": "numeric",
-    "amount": 1,
-    "active": false,
-    "step_count": 7,
-    "starting_block": 116023891,
-    "weekly_pool": 25000
-  },
-  {
     "id": "e",
     "type": "aggregate",
     "amount": 1,
@@ -129,7 +120,7 @@
     "id": "b",
     "name": "AUDIO_MATCHING_BUYER",
     "type": "aggregate",
-    "amount": 1,
+    "amount": 5,
     "active": true,
     "step_count": 2147483647,
     "starting_block": 220157041,
@@ -140,7 +131,7 @@
     "id": "s",
     "name": "AUDIO_MATCHING_SELLER",
     "type": "aggregate",
-    "amount": 1,
+    "amount": 5,
     "active": true,
     "step_count": 2147483647,
     "starting_block": 220157041,
@@ -157,5 +148,16 @@
     "starting_block": 0,
     "weekly_pool": 2147483647,
     "cooldown_days": 0
+  },
+  {
+    "id": "c",
+    "name": "FIRST_WEEKLY_COMMENT",
+    "type": "aggregate",
+    "amount": 1,
+    "active": false,
+    "step_count": 2147483647,
+    "starting_block": 0,
+    "weekly_pool": 2147483647,
+    "cooldown_days": 7
   }
 ]

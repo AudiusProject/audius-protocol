@@ -123,6 +123,7 @@ from src.tasks.entity_manager.utils import (
 )
 from src.utils import helpers
 from src.utils.config import shared_config
+from src.utils.core import is_indexing_core_em
 from src.utils.indexing_errors import IndexingError
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.structured_logger import StructuredLogger
@@ -1576,7 +1577,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
 
 
 def get_entity_manager_events_tx(update_task, tx_receipt: TxReceipt):
-    if environment == "dev":
+    if is_indexing_core_em():
         return [tx_receipt]
     return getattr(
         update_task.entity_manager_contract.events, MANAGE_ENTITY_EVENT_TYPE
