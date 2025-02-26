@@ -29,6 +29,7 @@ from src.api.v1.helpers import (
     get_encoded_track_id,
     make_full_response,
     make_response,
+    make_response_v2,
     pagination_parser,
     pagination_with_current_user_parser,
     parse_bool_param,
@@ -469,7 +470,7 @@ class TrackInspect(Resource):
 
 
 # Comments
-track_comments_response = make_response(
+track_comments_response = make_response_v2(
     "track_comments_response", ns, fields.List(fields.Nested(base_comment_model))
 )
 

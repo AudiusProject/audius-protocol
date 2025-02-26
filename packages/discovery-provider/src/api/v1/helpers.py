@@ -9,7 +9,7 @@ from flask_restx import fields, inputs, reqparse
 
 from src import api_helpers
 from src.api.v1.models.common import full_response
-from src.api.v1.models.tracks import track
+from src.api.v1.models.tracks import track as track_model
 from src.api.v1.models.users import user_model
 from src.models.rewards.challenge import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
@@ -645,7 +645,7 @@ def make_response_v2(name, namespace, modelType):
             "data": modelType,
             "related": {
                 "users": fields.List(fields.Nested(user_model)),
-                "tracks": fields.List(fields.Nested(track)),
+                "tracks": fields.List(fields.Nested(track_model)),
             },
         },
     )

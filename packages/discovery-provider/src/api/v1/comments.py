@@ -5,6 +5,7 @@ from flask_restx import Namespace, Resource, fields
 from src.api.v1.helpers import (
     decode_with_abort,
     make_response,
+    make_response_v2,
     pagination_with_current_user_parser,
     success_response,
 )
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 ns = Namespace("comments", description="Comment related operations")
 
-comment_response = make_response(
+comment_response = make_response_v2(
     "comment_response", ns, fields.Nested(reply_comment_model, as_list=True)
 )
 
