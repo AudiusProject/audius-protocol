@@ -299,6 +299,12 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
       buttonInfo: {
         iconRight: IconCheck
       }
+    },
+    [ChallengeName.FirstWeeklyComment]: {
+      icon: undefined,
+      buttonInfo: {
+        iconRight: IconCheck
+      }
     }
   }
 
