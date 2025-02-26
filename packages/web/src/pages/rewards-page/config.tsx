@@ -215,7 +215,8 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
   'verified-upload': {},
   'trending-underground': {},
   tut: {},
-  [ChallengeName.OneShot]: {}
+  [ChallengeName.OneShot]: {},
+  [ChallengeName.FirstWeeklyComment]: {}
 }
 
 export const getChallengeConfig = (id: ChallengeRewardID) => ({
