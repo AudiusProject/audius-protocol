@@ -61,7 +61,13 @@ export const ChallengeRewardsLayout = ({
       {isMobile ? (
         <>
           {description}
-          <Paper column shadow='flat' w='100%'>
+          <Paper
+            column
+            shadow='flat'
+            w='100%'
+            border='default'
+            borderRadius='s'
+          >
             <Flex justifyContent='center'>{rewardContent}</Flex>
             {progressContent}
           </Paper>
@@ -69,7 +75,13 @@ export const ChallengeRewardsLayout = ({
         </>
       ) : (
         <>
-          <Paper shadow='flat' w='100%' direction='column' gap='s'>
+          <Paper
+            shadow='flat'
+            w='100%'
+            direction='column'
+            gap='s'
+            borderRadius='s'
+          >
             <Flex justifyContent='space-between' w='100%'>
               {description}
               {rewardContent}
