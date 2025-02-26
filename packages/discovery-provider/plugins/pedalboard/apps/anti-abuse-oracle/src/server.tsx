@@ -14,6 +14,14 @@ import { config } from './config'
 import { SolanaUtils, Utils } from '@audius/sdk'
 import bn from 'bn.js'
 
+let CONTENT_NODE = 'https://creatornode2.audius.co'
+let FRONTEND = 'https://audius.co'
+
+if (config.environment == 'stage') {
+  CONTENT_NODE = 'https://creatornode10.staging.audius.co'
+  FRONTEND = 'https://staging.audius.co'
+}
+
 const app = new Hono()
 
 app.use(logger())
@@ -91,14 +99,18 @@ app.get('/user', async (c) => {
 
   const rows = await actionLogForUser(user.id)
   return c.html(
-    <Layout>
+    <Layout title={user.handle + ` | AAO`}>
       <div class='px-16 py-8'>
         <div class='flex gap-4 items-center'>
           <Image img={user.img} size={100} />
           <div>
             <div class='text-2xl font-bold'>{user.name}</div>
             <div class='flex gap-4 items-end'>
-              <div>{user.handle}</div>
+              <div>
+                <a href={`${FRONTEND}/${user.handle}`} target='_blank'>
+                  {user.handle}
+                </a>
+              </div>
               <div>{user.id}</div>
               <div>{Utils.encodeHashId(user.id)}</div>
             </div>
@@ -181,7 +193,7 @@ function Image({ img, size }: { img: string; size?: number }) {
     )
   return (
     <img
-      src={`https://creatornode2.audius.co/content/${img}/150x150.jpg`}
+      src={`${CONTENT_NODE}/content/${img}/150x150.jpg`}
       width={size}
       height={size}
     />
@@ -189,6 +201,7 @@ function Image({ img, size }: { img: string; size?: number }) {
 }
 
 type LayoutProps = {
+  title?: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   children: any
 }
@@ -196,6 +209,7 @@ function Layout(props: LayoutProps) {
   return (
     <html lang='en'>
       <head>
+        <title>{props.title || 'AAO'}</title>
         <meta charset='utf-8' />
         <meta name='viewport' content='width=device-width, initial-scale=1' />
         <meta name='color-scheme' content='light' />
