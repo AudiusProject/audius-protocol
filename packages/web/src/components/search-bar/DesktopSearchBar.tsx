@@ -1,4 +1,4 @@
-import { useCallback, useState, useRef, useEffect } from 'react'
+import { useCallback, useState, useRef, useEffect, useMemo } from 'react'
 
 import { useSearchAutocomplete } from '@audius/common/src/api/tan-query/useSearchAutocomplete'
 import { route } from '@audius/common/utils'
@@ -28,6 +28,19 @@ const { SEARCH_PAGE } = route
 const DEFAULT_LIMIT = 3
 const DEBOUNCE_MS = 400
 
+const messages = {
+  viewMoreResults: 'View More Results',
+  noResults: 'No Results',
+  searchPlaceholder: 'Search',
+  clearSearch: 'Clear search',
+  categories: {
+    profiles: 'Profiles',
+    tracks: 'Tracks',
+    playlists: 'Playlists',
+    albums: 'Albums'
+  }
+}
+
 const ViewMoreButton = ({ query }: { query: string }) => (
   <Flex
     as={Link}
@@ -42,7 +55,7 @@ const ViewMoreButton = ({ query }: { query: string }) => (
     }}
   >
     <Text variant='label' size='s' color='subdued' className={styles.primary}>
-      View More Results
+      {messages.viewMoreResults}
     </Text>
     <IconArrowRight size='s' color='subdued' className={styles.iconArrow} />
   </Flex>
@@ -51,7 +64,7 @@ const ViewMoreButton = ({ query }: { query: string }) => (
 const NoResults = () => (
   <Flex alignItems='center' ph='l' pv='m'>
     <Text variant='label' size='s' color='subdued'>
-      No Results
+      {messages.noResults}
     </Text>
   </Flex>
 )
@@ -124,7 +137,7 @@ export const DesktopSearchBar = () => {
           size='2xs'
           color='subdued'
           onClick={handleClear}
-          aria-label='Clear search'
+          aria-label={messages.clearSearch}
         />
       )
     }
@@ -134,64 +147,75 @@ export const DesktopSearchBar = () => {
     }
   }
 
-  const options = data
-    ? [
-        {
-          label: 'Profiles',
-          options: data.users.map((user) => ({
-            label: <UserResult user={user} />,
-            value: user.user_id
-          }))
-        },
-        {
-          label: 'Tracks',
-          options: data.tracks.map((track) => ({
-            label: <TrackResult track={track} />,
-            value: track.track_id
-          }))
-        },
-        {
-          label: 'Playlists',
-          options: data.playlists.map((playlist) => ({
-            label: <CollectionResult collection={playlist} />,
-            value: playlist.playlist_id
-          }))
-        },
-        {
-          label: 'Albums',
-          options: data.albums.map((album) => ({
-            label: <CollectionResult collection={album} />,
-            value: album.playlist_id
-          }))
-        }
-      ].filter((group) => group.options.length > 0)
-    : []
+  const options = useMemo(() => {
+    if (!data) return []
+
+    const baseOptions = [
+      {
+        label: messages.categories.profiles,
+        options: data.users.map((user) => ({
+          label: <UserResult user={user} />,
+          value: user.user_id
+        }))
+      },
+      {
+        label: messages.categories.tracks,
+        options: data.tracks.map((track) => ({
+          label: <TrackResult track={track} />,
+          value: track.track_id
+        }))
+      },
+      {
+        label: messages.categories.playlists,
+        options: data.playlists.map((playlist) => ({
+          label: <CollectionResult collection={playlist} />,
+          value: playlist.playlist_id
+        }))
+      },
+      {
+        label: messages.categories.albums,
+        options: data.albums.map((album) => ({
+          label: <CollectionResult collection={album} />,
+          value: album.playlist_id
+        }))
+      }
+    ].filter((group) => group.options.length > 0)
+
+    const hasNoResults = inputValue && baseOptions.length === 0
+    const hasResults = baseOptions.length > 0
+
+    if (hasResults && inputValue) {
+      baseOptions.push({
+        options: [
+          {
+            label: <ViewMoreButton query={inputValue} />,
+            // @ts-expect-error
+            value: 'viewMore'
+          }
+        ]
+      })
+    } else if (hasNoResults) {
+      baseOptions.push({
+        options: [
+          {
+            label: <NoResults />,
+            // @ts-expect-error
+            value: 'no-results'
+          }
+        ]
+      })
+    }
+
+    return baseOptions
+  }, [data, inputValue])
 
   const showResults = !isSearchPage && !!(data || isLoading)
-  const hasNoResults = data && inputValue && options.length === 0
-  const hasResults = data && options.length > 0
-
-  if (hasResults && inputValue) {
-    options.push({
-      options: [
-        {
-          label: <ViewMoreButton query={inputValue} />,
-          // @ts-expect-error
-          value: 'viewMore'
-        }
-      ]
-    })
-  } else if (hasNoResults) {
-    options.push({
-      options: [
-        {
-          label: <NoResults />,
-          // @ts-expect-error
-          value: 'no-results'
-        }
-      ]
-    })
-  }
+  // Calculate hasNoResults for the dropdown class name
+  const hasNoResults =
+    data &&
+    inputValue &&
+    options.length === 1 &&
+    String(options[0].options?.[0]?.value) === 'no-results'
 
   const [isFocused, setIsFocused] = useState(false)
 
@@ -238,7 +262,7 @@ export const DesktopSearchBar = () => {
         <Input
           inputMode='search'
           ref={inputRef}
-          placeholder='Search'
+          placeholder={messages.searchPlaceholder}
           name='search'
           autoComplete='off'
           type='search'
