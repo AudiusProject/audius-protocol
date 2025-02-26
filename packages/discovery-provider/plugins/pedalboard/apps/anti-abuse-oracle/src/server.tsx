@@ -4,6 +4,7 @@ import {
   actionLogForUser,
   getUser,
   getUserScore,
+  recentTips,
   sql,
   type ActionRow,
   type TrackDetails,
@@ -64,9 +65,60 @@ app.post('/attestation/:handle', async (c) => {
 })
 
 app.get('/', async (c) => {
+  const tips = await recentTips()
+
+  let lastDate = ''
+  function dateHeader(timestamp: Date) {
+    const d = timestamp.toDateString()
+    if (d != lastDate) {
+      lastDate = d
+      return (
+        <>
+          <tr>
+            <td colspan={4}>
+              <div class='text-xl font-bold pt-2'>{d}</div>
+            </td>
+          </tr>
+          <tr>
+            <th>Timestamp</th>
+            <th>Sender</th>
+            <th>Receiver</th>
+            <th>Amount</th>
+          </tr>
+        </>
+      )
+    }
+    return null
+  }
+
   return c.html(
-    <Layout>
-      <h1>Home</h1>
+    <Layout container>
+      <h1 class='text-4xl font-bold mt-8'>Recent Tips</h1>
+      <table class='table'>
+        <tbody>
+          {tips.map((tip) => (
+            <>
+              {dateHeader(tip.timestamp)}
+              <tr>
+                <td>{tip.timestamp.toLocaleTimeString()}</td>
+                <td>
+                  <a href={`/user?q=${encodeURIComponent(tip.sender.handle)}`}>
+                    {tip.sender.handle}
+                  </a>
+                </td>
+                <td>
+                  <a
+                    href={`/user?q=${encodeURIComponent(tip.receiver.handle)}`}
+                  >
+                    {tip.receiver.handle}
+                  </a>
+                </td>
+                <td class='text-right'>{tip.amount / 100_000_000}</td>
+              </tr>
+            </>
+          ))}
+        </tbody>
+      </table>
     </Layout>
   )
 })
@@ -113,6 +165,7 @@ app.get('/user', async (c) => {
               </div>
               <div>{user.id}</div>
               <div>{Utils.encodeHashId(user.id)}</div>
+              {user.isVerified && <div class='badge'>Verified</div>}
             </div>
             <div class='flex gap-2 mt-2 items-center'>
               <div class='badge badge-xl badge-neutral'>
@@ -202,6 +255,7 @@ function Image({ img, size }: { img: string; size?: number }) {
 
 type LayoutProps = {
   title?: string
+  container?: boolean
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   children: any
 }
@@ -237,7 +291,9 @@ function Layout(props: LayoutProps) {
                 />
               </form>
             </div>
-            <div>{props.children}</div>
+            <div class={props.container ? 'container mx-auto' : ''}>
+              {props.children}
+            </div>
           </body>
         </main>
       </body>

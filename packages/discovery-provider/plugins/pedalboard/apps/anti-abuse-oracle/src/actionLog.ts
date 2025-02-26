@@ -5,6 +5,31 @@ import { Utils } from '@audius/sdk'
 
 export const sql = postgres(process.env.discoveryDbUrl || '')
 
+type TipRow = {
+  sender: UserDetails
+  receiver: UserDetails
+  amount: number
+  timestamp: Date
+}
+
+export async function recentTips() {
+  const tips = await sql<TipRow[]>`
+    select
+      (
+        ${sql.unsafe(buildUserDetails)}
+        where user_id = sender_user_id
+      ) as sender,
+      (
+        ${sql.unsafe(buildUserDetails)}
+        where user_id = receiver_user_id
+      ) as receiver,
+      amount,
+      created_at as "timestamp"
+    from user_tips
+    order by slot desc limit 1000;`
+  return tips
+}
+
 //
 // User Details
 //
@@ -13,19 +38,21 @@ export type UserDetails = {
   handle: string
   name: string
   img: string
+  isVerified: boolean
 
   amount?: number
 }
 
-// const buildUserDetails = `
-// select json_build_object(
-//   'id', user_id,
-//   'handle', handle,
-//   'name', name,
-//   'img', profile_picture_sizes
-// ) as user
-// from users
-// `
+const buildUserDetails = `
+select json_build_object(
+  'id', user_id,
+  'handle', handle,
+  'name', name,
+  'isVerified', is_verified,
+  'img', profile_picture_sizes
+) as user
+from users
+`
 
 export async function getUser(idOrHandle: string) {
   // try decode id
@@ -33,13 +60,7 @@ export async function getUser(idOrHandle: string) {
   // try find handle
   const userId = Utils.decodeHashId(idOrHandle) || parseInt(idOrHandle)
   const rows = await sql`
-  select json_build_object(
-    'id', user_id,
-    'handle', handle,
-    'name', name,
-    'img', profile_picture_sizes
-  ) as user
-  from users
+  ${sql.unsafe(buildUserDetails)}
   where
     ${userId ? sql`user_id = ${userId}` : sql`handle_lc = ${idOrHandle.toLowerCase()}`}
   LIMIT 1
@@ -109,7 +130,7 @@ export type ActionRow = {
   timestamp: Date
   verb: string
   target: string
-  details: Record<string, string | number>
+  details: Record<string, string | number | boolean>
 }
 
 export async function actionLogForUser(userId: number) {
@@ -125,13 +146,7 @@ with separate_actions as (
       'follow' as "verb",
       'user' as "target",
       (
-        select json_build_object(
-          'id', user_id,
-          'handle', handle,
-          'name', name,
-          'img', profile_picture_sizes
-        )
-        from users
+        ${sql.unsafe(buildUserDetails)}
         where users.user_id = follows.followee_user_id
       ) as "details"
     from
