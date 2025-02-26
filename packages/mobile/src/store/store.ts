@@ -112,7 +112,6 @@ const rootReducer = combineReducers({
   backend,
   signOn: signOnReducer as unknown as SignOnPageReducer,
   searchBar,
-
   drawers,
   keyboard,
   oauth,
