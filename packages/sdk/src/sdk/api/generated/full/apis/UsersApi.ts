@@ -47,6 +47,7 @@ import type {
   TransactionHistoryCountResponse,
   TransactionHistoryResponse,
   UserAccountResponseFull,
+  UserCommentsResponseFull,
   UserFeedResponse,
 } from '../models';
 import {
@@ -112,6 +113,8 @@ import {
     TransactionHistoryResponseToJSON,
     UserAccountResponseFullFromJSON,
     UserAccountResponseFullToJSON,
+    UserCommentsResponseFullFromJSON,
+    UserCommentsResponseFullToJSON,
     UserFeedResponseFromJSON,
     UserFeedResponseToJSON,
 } from '../models';
@@ -498,6 +501,13 @@ export interface GetUsersTrackHistoryRequest {
     sortDirection?: GetUsersTrackHistorySortDirectionEnum;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
+}
+
+export interface UserCommentsRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
 }
 
 /**
@@ -2727,6 +2737,49 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getUsersTrackHistory(params: GetUsersTrackHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<HistoryResponseFull> {
         const response = await this.getUsersTrackHistoryRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Get user comment history
+     */
+    async userCommentsRaw(params: UserCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserCommentsResponseFull>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling userComments.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/comments`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => UserCommentsResponseFullFromJSON(jsonValue));
+    }
+
+    /**
+     * Get user comment history
+     */
+    async userComments(params: UserCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserCommentsResponseFull> {
+        const response = await this.userCommentsRaw(params, initOverrides);
         return await response.value();
     }
 

@@ -20,12 +20,6 @@ import {
     CommentFromJSONTyped,
     CommentToJSON,
 } from './Comment';
-import type { Related } from './Related';
-import {
-    RelatedFromJSON,
-    RelatedFromJSONTyped,
-    RelatedToJSON,
-} from './Related';
 
 /**
  * 
@@ -39,12 +33,6 @@ export interface TrackCommentsResponse {
      * @memberof TrackCommentsResponse
      */
     data?: Array<Comment>;
-    /**
-     * 
-     * @type {Related}
-     * @memberof TrackCommentsResponse
-     */
-    related?: Related;
 }
 
 /**
@@ -67,7 +55,6 @@ export function TrackCommentsResponseFromJSONTyped(json: any, ignoreDiscriminato
     return {
         
         'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(CommentFromJSON)),
-        'related': !exists(json, 'related') ? undefined : RelatedFromJSON(json['related']),
     };
 }
 
@@ -81,7 +68,6 @@ export function TrackCommentsResponseToJSON(value?: TrackCommentsResponse | null
     return {
         
         'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(CommentToJSON)),
-        'related': RelatedToJSON(value.related),
     };
 }
 

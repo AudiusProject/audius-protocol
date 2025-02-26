@@ -42,7 +42,9 @@ class CommentReplies(Resource):
         args = pagination_with_current_user_parser.parse_args()
         decoded_id = decode_with_abort(comment_id, ns)
         current_user_id = args.get("user_id")
-        comment_replies = get_paginated_replies(args, decoded_id, current_user_id)
+        comment_replies = get_paginated_replies(
+            args, decoded_id, current_user_id, include_related=False
+        )
         return success_response(comment_replies)
 
 
@@ -67,7 +69,9 @@ class FullCommentReplies(Resource):
         args = pagination_with_current_user_parser.parse_args()
         decoded_id = decode_with_abort(comment_id, full_ns)
         current_user_id = args.get("user_id")
-        comment_replies = get_paginated_replies(args, decoded_id, current_user_id)
+        comment_replies = get_paginated_replies(
+            args, decoded_id, current_user_id, include_related=True
+        )
         comment_replies["related"] = extend_related(
             comment_replies["related"], current_user_id
         )
