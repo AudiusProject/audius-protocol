@@ -434,7 +434,7 @@ export const getChallengeStatusLabel = (
       return `Day ${challenge.current_step_count}`
 
     case ChallengeName.AudioMatchingBuy:
-      if (challenge.state === 'inactive') return 'No Recent Purchases'
+    case ChallengeName.AudioMatchingSell:
       if (challenge.state === 'completed' && challenge.cooldown_days) {
         return DEFAULT_STATUS_LABELS.REWARD_PENDING
       }
