@@ -40,13 +40,10 @@ const { getOptimisticUserChallenges } = challengesSelectors
 
 const validRewardIds: Set<ChallengeRewardID> = new Set([
   'track-upload',
-  'referrals',
-  'ref-v',
   'mobile-install',
   'connect-verified',
   'listen-streak',
   'profile-completion',
-  'referred',
   'send-first-tip',
   'first-playlist',
   ChallengeName.AudioMatchingBuy, // $AUDIO matching buyer
