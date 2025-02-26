@@ -40,13 +40,10 @@ const { getOptimisticUserChallenges } = challengesSelectors
 
 const validRewardIds: Set<ChallengeRewardID> = new Set([
   'track-upload',
-  'referrals',
-  'ref-v',
   'mobile-install',
   'connect-verified',
   'listen-streak',
   'profile-completion',
-  'referred',
   'send-first-tip',
   'first-playlist',
   ChallengeName.AudioMatchingBuy, // $AUDIO matching buyer
@@ -131,7 +128,6 @@ export const ChallengeRewardsTile = () => {
   // The referred challenge only needs a tile if the user was referred
   const hideReferredTile = !userChallenges.referred?.is_complete
   const rewardIds = useRewardIds({
-    referred: hideReferredTile,
     [ChallengeName.Referred]: hideReferredTile
   })
 

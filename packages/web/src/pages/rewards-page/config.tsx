@@ -97,11 +97,8 @@ type WebChallengeInfo = {
 }
 
 const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
-  referrals: {},
   [ChallengeName.Referrals]: {},
-  'ref-v': {},
   [ChallengeName.ReferralsVerified]: {},
-  referred: {},
   [ChallengeName.Referred]: {},
   'connect-verified': {
     modalButtonInfo: {
@@ -125,7 +122,6 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
     }
   },
   [ChallengeName.ListenStreakEndless]: {
-    icon: <i className='emoji large fire' />,
     modalButtonInfo: {
       incomplete: linkButtonMap.trendingTracks,
       inProgress: linkButtonMap.trendingTracks,
