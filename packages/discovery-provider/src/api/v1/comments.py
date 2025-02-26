@@ -30,7 +30,7 @@ reply_response = make_response(
 class CommentReplies(Resource):
     @record_metrics
     @ns.doc(
-        id="""Get Comment Replies""",
+        id="""Comment Replies""",
         description="Gets replies to a parent comment",
         params={"comment_id": "A Comment ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
@@ -57,7 +57,7 @@ full_reply_response = make_full_response_with_related(
 class FullCommentReplies(Resource):
     @record_metrics
     @full_ns.doc(
-        id="""Get Comment Replies""",
+        id="""Comment Replies""",
         description="Gets replies to a parent comment",
         params={"comment_id": "A Comment ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},

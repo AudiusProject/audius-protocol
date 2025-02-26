@@ -38,8 +38,7 @@ import { Nullable } from '~/utils'
 
 import { QUERY_KEYS } from './queryKeys'
 import { useCurrentUserId } from './useCurrentUserId'
-import { primeTrackData } from './utils/primeTrackData'
-import { primeUserData } from './utils/primeUserData'
+import { primeRelatedData } from './utils/primeRelatedData'
 
 type CommentOrReply = Comment | ReplyComment
 
@@ -94,7 +93,7 @@ export const useUserComments = ({
     queryKey: [QUERY_KEYS.userCommentList, userId, pageSize],
     queryFn: async ({ pageParam }): Promise<ID[]> => {
       const sdk = await audiusSdk()
-      const commentsRes = await sdk.users.userComments({
+      const commentsRes = await sdk.full.users.userComments({
         id: Id.parse(userId),
         userId: currentUserId?.toString() ?? undefined,
         offset: pageParam,
@@ -105,6 +104,8 @@ export const useUserComments = ({
         commentsRes.data,
         commentFromSDK
       )
+
+      primeRelatedData({ related: commentsRes.related, queryClient, dispatch })
 
       // Populate individual comment cache
       commentList.forEach((comment) => {
@@ -177,7 +178,7 @@ export const useGetCommentsByTrackId = ({
     queryKey: getTrackCommentListQueryKey({ trackId, sortMethod, pageSize }),
     queryFn: async ({ pageParam }): Promise<ID[]> => {
       const sdk = await audiusSdk()
-      const commentsRes = await sdk.tracks.trackComments({
+      const commentsRes = await sdk.full.tracks.trackComments({
         trackId: Id.parse(trackId),
         offset: pageParam,
         limit: pageSize,
@@ -191,18 +192,7 @@ export const useGetCommentsByTrackId = ({
         commentFromSDK
       )
 
-      if (commentsRes.related?.users && commentsRes.related?.tracks) {
-        primeUserData({
-          users: commentsRes.related.users,
-          queryClient,
-          dispatch
-        })
-        primeTrackData({
-          tracks: commentsRes.related.tracks,
-          queryClient,
-          dispatch
-        })
-      }
+      primeRelatedData({ related: commentsRes.related, queryClient, dispatch })
 
       // Populate individual comment cache
       commentList.forEach((comment) => {
@@ -427,7 +417,7 @@ export const useGetCommentRepliesById = ({
     },
     queryFn: async ({ pageParam }): Promise<ReplyComment[]> => {
       const sdk = await audiusSdk()
-      const commentsRes = await sdk.comments.getCommentReplies({
+      const commentsRes = await sdk.full.comments.commentReplies({
         commentId: Id.parse(commentId),
         userId: currentUserId?.toString(),
         limit: pageSize,
@@ -437,6 +427,9 @@ export const useGetCommentRepliesById = ({
         commentsRes.data,
         replyCommentFromSDK
       )
+
+      primeRelatedData({ related: commentsRes.related, queryClient, dispatch })
+
       // Add the replies to our parent comment replies list
       queryClient.setQueryData(
         getCommentQueryKey(commentId),
