@@ -1,4 +1,3 @@
-import logging
 from datetime import datetime
 from typing import Dict, List, Optional, cast
 
@@ -18,9 +17,7 @@ from src.utils.config import shared_config
 
 env = shared_config["discprov"]["env"]
 
-# Define milestone steps and their corresponding amounts
 PLAY_MILESTONES = {250: "25", 1000: "100", 10000: "1000"}
-# Track the final milestone for completion status
 FINAL_MILESTONE = max(PLAY_MILESTONES.keys())
 
 if env == "stage" or env == "dev":
@@ -75,10 +72,8 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
         )
 
         completed_milestones = []
-        # Find which milestone each completed challenge represents
         for challenge in completed_challenges:
             step_count = challenge.current_step_count
-            # Find which milestone this corresponds to
             for milestone in sorted(PLAY_MILESTONES.keys()):
                 if step_count is not None and step_count >= milestone:
                     if milestone not in completed_milestones:
@@ -102,22 +97,14 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
         if event != ChallengeEvent.track_played:
             return
 
-        # Process each user challenge
         for user_challenge in user_challenges:
             user_id = user_challenge.user_id
-
-            # Get the user's play count for 2025
             play_count = self.get_user_play_count_2025(session, user_id)
-
-            # Get completed milestones
             completed_milestones = self._get_completed_milestones(session, user_id)
-
-            # Determine which milestone this challenge is for
             sorted_milestones = sorted(PLAY_MILESTONES.keys())
             milestone = None
 
             if not completed_milestones:
-                # First challenge - must be milestone 1
                 milestone = sorted_milestones[0]
             else:
                 # Find the next milestone after the highest completed one
@@ -133,10 +120,8 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
             if milestone is None:
                 continue
 
-            # Update the challenge progress
             user_challenge.current_step_count = play_count
 
-            # If the play count has reached the milestone, mark as complete
             if play_count >= milestone:
                 user_challenge.amount = int(PLAY_MILESTONES[milestone])
                 user_challenge.is_complete = True
@@ -150,7 +135,6 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
 
         Simple temporal specifier without embedding milestone logic.
         """
-        # Get already completed milestones
         completed_milestones = self._get_completed_milestones(session, user_id)
 
         # If user has already completed the final milestone, don't create a new challenge
@@ -159,8 +143,6 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
 
         # For simplicity, just use timestamp for uniqueness
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-
-        # Return the specifier with just the user ID and timestamp
         return f"{hex(user_id)[2:]}_{timestamp}"
 
     def should_create_new_challenge(
@@ -175,7 +157,6 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
         3. The user hasn't reached the final milestone yet
         4. The user doesn't already have 3 completed challenges
         """
-        # Only create challenges in response to track_played events
         if event != ChallengeEvent.track_played:
             return False
 
@@ -184,7 +165,6 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
         if play_count <= 0:
             return False
 
-        # Get already completed milestones
         completed_milestones = self._get_completed_milestones(session, user_id)
 
         # If they've already completed the final milestone, don't create more challenges
@@ -201,11 +181,9 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
             .count()
         )
 
-        # If user already has all (3) challenges, don't create more
         if total_challenges >= len(PLAY_MILESTONES):
             return False
 
-        # Determine next milestone
         sorted_milestones = sorted(PLAY_MILESTONES.keys())
         next_milestone = None
 
@@ -229,11 +207,9 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
         """
         Determine if a challenge should be shown to the user
         """
-        # Show the challenge to all users
         return True
 
 
-# Create the challenge manager instance
 play_count_milestones_challenge_manager = ChallengeManager(
     "pc", PlayCountMilestonesUpdater()
 )
