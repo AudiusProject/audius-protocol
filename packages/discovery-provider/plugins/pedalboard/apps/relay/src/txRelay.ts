@@ -27,18 +27,21 @@ export const relayTransaction = async (
   let nonce = undefined
   let submit = undefined
   try {
-    if (config.environment === "dev") {
+    try {
       const coreHealth = await getCoreIndexerHealth()
-      logger.info({ coreHealth }, "core health from redis")
-      const receipt = await coreRelay(logger, requestId, validatedRelayRequest)
       const indexingEntityManager = coreHealth?.indexing_entity_manager
-      logger.info({ indexingEntityManager }, "indexing em")
       if (indexingEntityManager) {
+        const receipt = await coreRelay(logger, requestId, validatedRelayRequest)
         logger.info({ receipt }, "sending back")
         res.send({ receipt })
         next()
         return
+      } else {
+        // fire and forget but still send
+        coreRelay(logger, requestId, validatedRelayRequest)
       }
+    } catch (error) {
+      logger.error({ error }, 'error in core relay process')
     }
 
     const senderWallet = wallets.selectNextWallet()

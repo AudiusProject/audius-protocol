@@ -74,7 +74,7 @@ def setup_challenges(session):
     session.flush()
     session.add(user)
     session.flush()
-    session.query(Challenge).filter(Challenge.id == "l").update(
+    session.query(Challenge).filter(Challenge.id == "e").update(
         {"active": True, "starting_block": BLOCK_NUMBER}
     )
 

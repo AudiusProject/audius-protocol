@@ -127,7 +127,6 @@ def get_challenge_type_map(
         }
     # Temporary change to map old challenge ids to new ones
     challenge_type_map_global["profile-completion"] = challenge_type_map_global["p"]
-    challenge_type_map_global["listen-streak"] = challenge_type_map_global["l"]
     challenge_type_map_global["track-upload"] = challenge_type_map_global["u"]
     challenge_type_map_global["referrals"] = challenge_type_map_global["r"]
     challenge_type_map_global["ref-v"] = challenge_type_map_global["rv"]

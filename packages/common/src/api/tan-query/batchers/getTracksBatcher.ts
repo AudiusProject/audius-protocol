@@ -7,6 +7,7 @@ import { transformAndCleanList } from '~/adapters/utils'
 import { TrackMetadata } from '~/models'
 import { ID } from '~/models/Identifiers'
 
+import { TQTrack } from '../models'
 import { primeTrackData } from '../utils/primeTrackData'
 
 import { contextCacheResolver } from './contextCacheResolver'
@@ -33,7 +34,7 @@ export const getTracksBatcher = memoize(
           skipQueryData: true
         })
 
-        const tqTracks: TrackMetadata[] = tracks.map((t) => ({
+        const tqTracks: TQTrack[] = tracks.map((t) => ({
           ...omit(t, 'user')
         }))
         return tqTracks
