@@ -1,4 +1,5 @@
 import {
+  notificationsSelectors,
   UserListSagaFactory,
   notificationsUserListActions,
   notificationsUserListSelectors,
@@ -9,12 +10,12 @@ import { call, put, select } from 'typed-redux-saga'
 import { fetchUsers as retrieveUsers } from 'common/store/cache/users/sagas'
 
 import { watchRepostsError } from './errorSagas'
-const { getUserIds, getNotification, getUserList } =
-  notificationsUserListSelectors
+const { getUserIds, getId, getUserList } = notificationsUserListSelectors
 const { getNotificationError } = notificationsUserListActions
+const { getNotificationById } = notificationsSelectors
 
 function* errorDispatcher(error: Error) {
-  const id = yield* select(getNotification)
+  const id = yield* select(getId)
   if (id) {
     yield* put(getNotificationError(id, error.message))
   }
@@ -23,7 +24,10 @@ function* errorDispatcher(error: Error) {
 function* fetchUsers(currentPage: number, pageSize: number) {
   const emptyUsers = { userIds: [], hasMore: false }
 
-  const notification = yield* select(getNotification)
+  const notificationId = yield* select(getId)
+  if (!notificationId) return emptyUsers
+
+  const notification = yield* select(getNotificationById, notificationId)
   if (!notification) return emptyUsers
 
   if (!('userIds' in notification)) return emptyUsers

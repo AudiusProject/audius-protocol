@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { useAppContext } from '~/context/appContext'
+import { useAppContext } from '~/context'
 
 import {
   AllRemoteConfigKeys,

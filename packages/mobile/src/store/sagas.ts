@@ -77,6 +77,7 @@ import collectionsSagas from 'app/store/cache/collections/sagas'
 import accountSagas from './account/sagas'
 import mobileChatSagas from './chat/sagas'
 import initKeyboardEvents from './keyboard/sagas'
+import notificationsSagas from './notifications/sagas'
 import oauthSagas from './oauth/sagas'
 import offlineDownloadSagas from './offline-downloads/sagas'
 import rateCtaSagas from './rate-cta/sagas'
@@ -136,6 +137,7 @@ export default function* rootSaga() {
     ...walletSagas(),
 
     ...modalsSagas(),
+    ...notificationsSagas(),
 
     // Pages
     ...trackPageSagas(),

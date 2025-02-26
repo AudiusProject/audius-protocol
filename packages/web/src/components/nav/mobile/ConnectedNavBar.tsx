@@ -4,6 +4,7 @@ import { useChallengeCooldownSchedule } from '@audius/common/hooks'
 import { Name, Status } from '@audius/common/models'
 import {
   accountSelectors,
+  notificationsSelectors,
   searchResultsPageSelectors
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -24,6 +25,7 @@ import NavBar from './NavBar'
 
 const { NOTIFICATION_PAGE, SETTINGS_PAGE, REWARDS_PAGE } = route
 const { getSearchStatus } = searchResultsPageSelectors
+const { getNotificationUnviewedCount } = notificationsSelectors
 const { getHasAccount, getAccountStatus } = accountSelectors
 
 type ConnectedNavBarProps = ReturnType<typeof mapStateToProps> &
@@ -36,6 +38,7 @@ const ConnectedNavBar = ({
   accountStatus,
   history,
   searchStatus,
+  notificationCount,
   goBack
 }: ConnectedNavBarProps) => {
   const { setStackReset, setSlideDirection } = useContext(RouterContext)
@@ -81,6 +84,7 @@ const ConnectedNavBar = ({
       isSignedIn={hasAccount}
       isLoading={accountStatus === Status.LOADING}
       signUp={signUp}
+      notificationCount={notificationCount}
       rewardsCount={rewardsCount}
       goToNotificationPage={goToNotificationPage}
       goToSettingsPage={goToSettingsPage}
@@ -97,7 +101,8 @@ function mapStateToProps(state: AppState) {
   return {
     hasAccount: getHasAccount(state),
     accountStatus: getAccountStatus(state),
-    searchStatus: getSearchStatus(state)
+    searchStatus: getSearchStatus(state),
+    notificationCount: getNotificationUnviewedCount(state)
   }
 }
 

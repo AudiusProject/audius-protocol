@@ -31,6 +31,7 @@ import coreCacheSagas from 'common/store/cache/sagas'
 import tracksSagas from 'common/store/cache/tracks/sagas'
 import usersSagas from 'common/store/cache/users/sagas'
 import changePasswordSagas from 'common/store/change-password/sagas'
+import notificationSagas from 'common/store/notifications/sagas'
 import aiSagas from 'common/store/pages/ai/sagas'
 import rewardsPageSagas from 'common/store/pages/audio-rewards/sagas'
 import transactionsPageSagas from 'common/store/pages/audio-transactions/sagas'
@@ -96,6 +97,8 @@ import routingSagas from 'store/routing/sagas'
 import signOutSagas from 'store/sign-out/sagas'
 import tokenDashboardSagas from 'store/token-dashboard/sagas'
 
+import notificationSagasWeb from './notifications/sagas'
+
 export default function* rootSaga() {
   const sagas = ([] as (() => Generator<any, void, any>)[]).concat(
     // Config
@@ -125,6 +128,8 @@ export default function* rootSaga() {
     exploreCollectionsPageSagas(),
     feedPageSagas(),
     historySagas(),
+    notificationSagas(),
+    notificationSagasWeb(),
     passwordResetSagas(),
     profileSagas(),
     reactionSagas(),

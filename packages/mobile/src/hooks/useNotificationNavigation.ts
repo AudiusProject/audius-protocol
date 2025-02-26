@@ -53,13 +53,15 @@ import {
   PushNotificationType,
   Entity,
   Achievement,
-  tippingActions
+  tippingActions,
+  notificationsUserListActions
 } from '@audius/common/store'
 import type { AppState } from '@audius/web/src/store/types'
 import { useDispatch, useStore } from 'react-redux'
 
 import { useNavigation } from './useNavigation'
 
+const { setNotificationId } = notificationsUserListActions
 const { beginTip } = tippingActions
 
 /**
@@ -85,13 +87,14 @@ export const useNotificationNavigation = () => {
         | FavoritePushNotification
     ) => {
       if ('userIds' in notification) {
-        const { type, userIds } = notification
+        const { id, type, userIds } = notification
         const firstUserId = userIds[0]
         const isMultiUser = userIds.length > 1
 
         if (isMultiUser) {
+          dispatch(setNotificationId(id))
           navigation.navigate('NotificationUsers', {
-            notification,
+            id,
             notificationType: type,
             count: userIds.length
           })
@@ -103,7 +106,7 @@ export const useNotificationNavigation = () => {
         navigation.navigate('Profile', { id: notification.initiator })
       }
     },
-    [navigation]
+    [dispatch, navigation]
   )
 
   const userIdHandler = useCallback(

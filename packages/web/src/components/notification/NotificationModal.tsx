@@ -1,23 +1,28 @@
-import { useAnnouncementModal } from '@audius/common/store'
+import { AnnouncementNotification } from '@audius/common/store'
 import { Modal, Scrollbar, IconClose as IconRemove } from '@audius/harmony'
 
 import { MarkdownViewer } from 'components/markdown-viewer'
 
-import styles from './AnnouncementModal.module.css'
 import { IconAnnouncement } from './Notification/components/icons'
+import styles from './NotificationModal.module.css'
+
+type NotificationModalProps = {
+  isOpen?: boolean
+  onClose: () => void
+  notification: AnnouncementNotification | null
+}
 
 /** The NotificationModal is a modal that renders the
  * full notification with markdown */
-export const AnnouncementModal = () => {
-  const { isOpen, data, onClose } = useAnnouncementModal()
-  const { announcementNotification } = data
+export const NotificationModal = (props: NotificationModalProps) => {
+  const { isOpen, onClose, notification } = props
 
-  if (!announcementNotification) return null
+  if (!notification) return null
 
   return (
     <Modal
       bodyClassName={styles.modalContainer}
-      isOpen={isOpen}
+      isOpen={!!isOpen}
       showDismissButton
       onClose={onClose}
     >
@@ -28,15 +33,13 @@ export const AnnouncementModal = () => {
           <div className={styles.title}>
             <MarkdownViewer
               className={styles.titleMarkdown}
-              markdown={announcementNotification.title}
+              markdown={notification.title}
             />
           </div>
         </div>
         <Scrollbar className={styles.scrollContent}>
           <div className={styles.body}>
-            <MarkdownViewer
-              markdown={announcementNotification.longDescription ?? ''}
-            />
+            <MarkdownViewer markdown={notification.longDescription ?? ''} />
           </div>
         </Scrollbar>
       </div>

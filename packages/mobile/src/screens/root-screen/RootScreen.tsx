@@ -36,7 +36,6 @@ import { ResetPasswordModalScreen } from '../reset-password-screen'
 import { SignOnStack } from '../sign-on-screen'
 
 import { StatusBar } from './StatusBar'
-import { useResetNotificationBadgeCount } from './useResetNotificationBadgeCount'
 
 const { getAccountStatus } = accountSelectors
 const { fetchMoreChats, fetchUnreadMessagesCount, connect, disconnect } =
@@ -80,8 +79,6 @@ export const RootScreen = () => {
     () => dispatch(enterForeground()),
     () => dispatch(enterBackground())
   )
-
-  useResetNotificationBadgeCount()
 
   useEffect(() => {
     if (

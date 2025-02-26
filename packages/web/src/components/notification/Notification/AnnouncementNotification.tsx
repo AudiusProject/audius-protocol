@@ -1,14 +1,13 @@
 import { useCallback } from 'react'
 
 import { Name } from '@audius/common/models'
-import {
-  AnnouncementNotification as AnnouncementNotificationType,
-  useAnnouncementModal
-} from '@audius/common/store'
+import { AnnouncementNotification as AnnouncementNotificationType } from '@audius/common/store'
 import cn from 'classnames'
+import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { MarkdownViewer } from 'components/markdown-viewer'
+import { openNotificationModal } from 'store/application/ui/notifications/notificationsUISlice'
 
 import styles from './AnnouncementNotification.module.css'
 import { NotificationBody } from './components/NotificationBody'
@@ -31,21 +30,21 @@ export const AnnouncementNotification = (
   props: AnnouncementNotificationProps
 ) => {
   const { notification } = props
-  const { title, shortDescription, longDescription, timeLabel, isViewed } =
+  const { id, title, shortDescription, longDescription, timeLabel, isViewed } =
     notification
+  const dispatch = useDispatch()
   const record = useRecord()
-  const { onOpen } = useAnnouncementModal()
 
-  const handleOpenAnnouncementModal = useCallback(() => {
-    onOpen({ announcementNotification: notification })
-  }, [notification, onOpen])
+  const handleOpenNotificationModal = useCallback(() => {
+    dispatch(openNotificationModal({ modalNotificationId: id }))
+  }, [dispatch, id])
 
   const handleClick = useCallback(() => {
-    handleOpenAnnouncementModal()
+    handleOpenNotificationModal()
     record(
       make(Name.NOTIFICATIONS_CLICK_TILE, { kind: 'announcement', link_to: '' })
     )
-  }, [handleOpenAnnouncementModal, record])
+  }, [handleOpenNotificationModal, record])
 
   return (
     <NotificationTile
@@ -67,7 +66,7 @@ export const AnnouncementNotification = (
         {longDescription ? (
           <button
             className={cn(notificationBodyStyles.root, styles.readMore)}
-            onClick={handleOpenAnnouncementModal}
+            onClick={handleOpenNotificationModal}
           >
             {messages.readMore}
           </button>

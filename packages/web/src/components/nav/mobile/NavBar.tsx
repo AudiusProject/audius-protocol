@@ -1,6 +1,5 @@
 import { useState, useContext, useCallback, useEffect } from 'react'
 
-import { useNotificationUnreadCount } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import { formatCount, route } from '@audius/common/utils'
 import {
@@ -40,6 +39,7 @@ interface NavBarProps {
   isLoading: boolean
   isSignedIn: boolean
   searchStatus: Status
+  notificationCount: number
   rewardsCount: number
   signUp: () => void
   goToNotificationPage: () => void
@@ -59,6 +59,7 @@ const NavBar = ({
   isLoading,
   isSignedIn,
   searchStatus,
+  notificationCount,
   rewardsCount,
   search,
   signUp,
@@ -72,7 +73,6 @@ const NavBar = ({
 }: NavBarProps) => {
   const { history } = useHistoryContext()
   const { leftElement, centerElement, rightElement } = useContext(NavContext)!
-  const { data: notificationCount = 0 } = useNotificationUnreadCount()
 
   const [isSearching, setIsSearching] = useState(false)
   const [searchValue, setSearchValue] = useState('')
