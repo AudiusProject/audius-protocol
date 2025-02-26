@@ -60,7 +60,6 @@ export const initialState: BasicModalsState = {
   EarlyReleaseConfirmation: { isOpen: false },
   PublishConfirmation: { isOpen: false },
   HideContentConfirmation: { isOpen: false },
-  RecentUserComments: { isOpen: false },
   ReplaceTrackConfirmation: { isOpen: false },
   ReplaceTrackProgress: { isOpen: false },
   WithdrawUSDCModal: { isOpen: false },

@@ -42,7 +42,8 @@ export const CommentBlockInternal = (
   }
 ) => {
   const { comment, isPreview, parentCommentId } = props
-  const { artistId, track, closeDrawer } = useCurrentCommentSection()
+  const { artistId, track, navigation, closeDrawer } =
+    useCurrentCommentSection()
   const {
     id: commentId,
     message,
@@ -156,6 +157,9 @@ export const CommentBlockInternal = (
               isPreview={isPreview}
               commentId={commentId}
               mentions={mentions}
+              trackDuration={track.duration}
+              navigation={navigation}
+              onCloseDrawer={closeDrawer}
             >
               {message}
             </CommentText>

@@ -11,11 +11,7 @@ import {
 import { useFeatureFlag } from '@audius/common/hooks'
 import type { UserMetadata } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import {
-  accountSelectors,
-  useRecentUserCommentsModal,
-  useReplaceTrackProgressModal
-} from '@audius/common/store'
+import { accountSelectors } from '@audius/common/store'
 import { Platform, View, ScrollView } from 'react-native'
 import Animated, {
   FadeIn,
@@ -35,6 +31,7 @@ import {
   useTheme,
   Paper
 } from '@audius/harmony-native'
+import { RecentUserCommentsDrawer } from 'app/components/comments/RecentUserCommentsDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import {
   ProfilePictureList,
@@ -324,7 +321,15 @@ export const ProfileInfoTiles = () => {
   const { isEnabled: isRecentCommentsEnabled } = useFeatureFlag(
     FeatureFlags.RECENT_COMMENTS
   )
-  const { onOpen: openRecentUserComments } = useRecentUserCommentsModal()
+
+  const [isRecentCommentsDrawerOpen, setIsRecentCommentsDrawerOpen] =
+    useState(false)
+  const onCloseRecentCommentsDrawer = useCallback(() => {
+    setIsRecentCommentsDrawerOpen(false)
+  }, [])
+  const onOpenRecentCommentsDrawer = useCallback(() => {
+    setIsRecentCommentsDrawerOpen(true)
+  }, [])
 
   const accountId = useSelector(getUserId)
 
@@ -340,10 +345,6 @@ export const ProfileInfoTiles = () => {
   const {
     motion: { expressive: animation }
   } = useTheme()
-
-  const handlePressRecentComments = useCallback(() => {
-    openRecentUserComments({ userId: user_id })
-  }, [openRecentUserComments, user_id])
 
   const layoutAnimation = useMemo(() => {
     return useAnimation
@@ -362,60 +363,68 @@ export const ProfileInfoTiles = () => {
   }, [animation, useAnimation])
 
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      style={styles.rootScrollView}
-      contentContainerStyle={styles.rootScrollViewContent}
-    >
-      <ProfileTierTile />
-      <LayoutAnimationConfig skipEntering={!useAnimation}>
-        {isRecentCommentsEnabled && recentComments.length > 0 && (
-          <Animated.View entering={fadeInAnimation}>
-            <ProfileInfoTile
-              onPress={handlePressRecentComments}
-              icon={IconMessage}
-              title={messages.comments}
-              content={
-                <Text variant='body' size='s' color='subdued'>
-                  {messages.viewAll}
-                </Text>
-              }
-            />
-          </Animated.View>
-        )}
-        <Animated.View
-          style={styles.staticTilesContainer}
-          layout={layoutAnimation}
-        >
-          {hasAiAttribution ? (
-            <ProfileInfoTile
-              screen='AiGeneratedTracks'
-              icon={IconRobot}
-              title={messages.aiGeneratedTracks}
-              content={
-                <Text variant='body' size='s' color='subdued'>
-                  {messages.viewAll}
-                </Text>
-              }
-            />
-          ) : null}
-          {supporting_count > 0 ? (
-            <SupportedUsersTile userId={user_id} count={supporting_count} />
-          ) : null}
-          {hasMutuals ? (
-            <MutualsTile
-              userId={user_id}
-              count={current_user_followee_follow_count}
-            />
-          ) : null}
-          {supporter_count > 0 ? (
-            <SupportersTile userId={user_id} count={supporter_count} />
-          ) : null}
+    <>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.rootScrollView}
+        contentContainerStyle={styles.rootScrollViewContent}
+      >
+        <ProfileTierTile />
+        <LayoutAnimationConfig skipEntering={!useAnimation}>
+          {isRecentCommentsEnabled && recentComments.length > 0 && (
+            <Animated.View entering={fadeInAnimation}>
+              <ProfileInfoTile
+                onPress={onOpenRecentCommentsDrawer}
+                icon={IconMessage}
+                title={messages.comments}
+                content={
+                  <Text variant='body' size='s' color='subdued'>
+                    {messages.viewAll}
+                  </Text>
+                }
+              />
+            </Animated.View>
+          )}
+          <Animated.View
+            style={styles.staticTilesContainer}
+            layout={layoutAnimation}
+          >
+            {hasAiAttribution ? (
+              <ProfileInfoTile
+                screen='AiGeneratedTracks'
+                icon={IconRobot}
+                title={messages.aiGeneratedTracks}
+                content={
+                  <Text variant='body' size='s' color='subdued'>
+                    {messages.viewAll}
+                  </Text>
+                }
+              />
+            ) : null}
+            {supporting_count > 0 ? (
+              <SupportedUsersTile userId={user_id} count={supporting_count} />
+            ) : null}
+            {hasMutuals ? (
+              <MutualsTile
+                userId={user_id}
+                count={current_user_followee_follow_count}
+              />
+            ) : null}
+            {supporter_count > 0 ? (
+              <SupportersTile userId={user_id} count={supporter_count} />
+            ) : null}
 
-          <RelatedArtistsTile userId={user_id} />
-        </Animated.View>
-      </LayoutAnimationConfig>
-    </ScrollView>
+            <RelatedArtistsTile userId={user_id} />
+          </Animated.View>
+        </LayoutAnimationConfig>
+      </ScrollView>
+      {isRecentCommentsDrawerOpen && (
+        <RecentUserCommentsDrawer
+          userId={user_id}
+          onClose={onCloseRecentCommentsDrawer}
+        />
+      )}
+    </>
   )
 }

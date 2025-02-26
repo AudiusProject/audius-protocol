@@ -19,7 +19,6 @@ import { notificationModalReducer } from './notification-modal'
 import parentReducer, { initialState } from './parentSlice'
 import { premiumContentPurchaseModalReducer } from './premium-content-purchase-modal'
 import { publishConfirmationModalReducer } from './publish-confirmation-modal'
-import { recentUserCommentsModalReducer } from './recent-user-comments-modal'
 import { replaceTrackConfirmationModalReducer } from './replace-track-confirmation-modal'
 import { replaceTrackProgressModalReducer } from './replace-track-progress-modal'
 import { BaseModalState, Modals, ModalsState } from './types'
@@ -69,7 +68,6 @@ const combinedReducers = combineReducers({
   DeleteTrackConfirmation: deleteTrackConfirmationModalReducer,
   ReplaceTrackConfirmation: replaceTrackConfirmationModalReducer,
   ReplaceTrackProgress: replaceTrackProgressModalReducer,
-  RecentUserComments: recentUserCommentsModalReducer,
   PublishConfirmation: publishConfirmationModalReducer,
   HideContentConfirmation: hideContentConfirmationModalReducer,
   ExternalWalletSignUp: externalWalletSignUpModalReducer,

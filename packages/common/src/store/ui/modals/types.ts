@@ -17,7 +17,6 @@ import { InboxUnavailableModalState } from './inbox-unavailable-modal'
 import { LeavingAudiusModalState } from './leaving-audius-modal'
 import { PremiumContentPurchaseModalState } from './premium-content-purchase-modal'
 import { PublishConfirmationModalState } from './publish-confirmation-modal'
-import { RecentUserCommentsModalState } from './recent-user-comments-modal'
 import { ReplaceTrackConfirmationModalState } from './replace-track-confirmation-modal'
 import { ReplaceTrackProgressModalState } from './replace-track-progress-modal'
 import { UploadConfirmationModalState } from './upload-confirmation-modal'
@@ -38,7 +37,6 @@ export type CreateChatModalState = {
 }
 
 export type Modals =
-  | 'RecentUserComments'
   | 'TiersExplainer'
   | 'TrendingRewardsExplainer'
   | 'ChallengeRewards'
@@ -135,7 +133,6 @@ export type StatefulModalsState = {
   PublishConfirmation: PublishConfirmationModalState
   HideContentConfirmation: HideContentConfirmationModalState
   DeleteTrackConfirmation: DeleteTrackConfirmationModalState
-  RecentUserComments: RecentUserCommentsModalState
   ReplaceTrackConfirmation: ReplaceTrackConfirmationModalState
   ReplaceTrackProgress: ReplaceTrackProgressModalState
   Announcement: AnnouncementModalState
