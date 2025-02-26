@@ -23,8 +23,6 @@ const messages = {
   title: 'Recent Comments'
 }
 
-const PAGE_SIZE = 10
-
 // const useStyles = makeStyles(({ spacing, typography, palette }) => ({}))
 
 const RecentUserCommentsDrawerContent = ({ userId }: { userId: ID }) => {
@@ -40,7 +38,7 @@ const RecentUserCommentsDrawerContent = ({ userId }: { userId: ID }) => {
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage
-  } = useUserComments(userId)
+  } = useUserComments({ userId })
   console.log('commentIds', commentIds)
 
   const handleEndReached = useCallback(() => {
