@@ -43,6 +43,7 @@ from src.api.v1.models.comments import (
     comment_notification_setting_model,
 )
 from src.api.v1.models.users import user_model, user_model_full
+from src.queries.comments import get_track_comments
 from src.queries.generate_unpopulated_trending_tracks import (
     TRENDING_TRACKS_LIMIT,
     TRENDING_TRACKS_TTL_SEC,
@@ -503,7 +504,7 @@ class TrackComments(Resource):
         args = track_comments_parser.parse_args()
         decoded_id = decode_with_abort(track_id, ns)
         current_user_id = args.get("user_id")
-        track_comments = get_track_comment_count(decoded_id, current_user_id)
+        track_comments = get_track_comments(args, decoded_id, current_user_id)
         return success_response(track_comments)
 
 

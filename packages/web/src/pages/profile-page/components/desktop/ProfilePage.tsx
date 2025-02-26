@@ -39,7 +39,6 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 
-import { MAX_PAGE_WIDTH_PX } from 'common/utils/layout'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
 import { ConfirmationModal } from 'components/confirmation-modal'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
@@ -47,6 +46,7 @@ import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
 import Mask from 'components/mask/Mask'
 import NavBanner, { EmptyNavBanner } from 'components/nav-banner/NavBanner'
+import { FlushPageContainer } from 'components/page/FlushPageContainer'
 import Page from 'components/page/Page'
 import ProfilePicture from 'components/profile-picture/ProfilePicture'
 import { ProfileCompletionHeroCard } from 'components/profile-progress/components/ProfileCompletionHeroCard'
@@ -600,104 +600,101 @@ const ProfilePage = ({
           w='100%'
           css={{ position: 'absolute', top: 0 }}
         >
-          <Flex
-            alignItems='center'
-            columnGap={PROFILE_COLUMN_GAP}
-            h={PROFILE_LOCKUP_HEIGHT_PX}
-            css={{ maxWidth: MAX_PAGE_WIDTH_PX }}
-            flex='1 1 100%'
-          >
+          <FlushPageContainer>
             <Flex
-              css={{
-                flexShrink: 0,
-                zIndex: zIndex.PROFILE_EDITABLE_COMPONENTS
-              }}
-              w={PROFILE_LEFT_COLUMN_WIDTH_PX}
-              justifyContent='center'
-            >
-              <ProfilePicture
-                userId={userId}
-                updatedProfilePicture={
-                  updatedProfilePicture ? updatedProfilePicture.url : ''
-                }
-                error={
-                  updatedProfilePicture ? updatedProfilePicture.error : false
-                }
-                profilePictureSizes={isDeactivated ? null : profilePictureSizes}
-                loading={status === Status.LOADING}
-                editMode={editMode}
-                hasProfilePicture={hasProfilePicture}
-                onDrop={updateProfilePicture}
-              />
-            </Flex>
-            <Flex
-              column
+              alignItems='center'
+              columnGap={PROFILE_COLUMN_GAP}
+              h={PROFILE_LOCKUP_HEIGHT_PX}
               flex='1 1 100%'
-              css={{
-                position: 'relative',
-                textAlign: 'left',
-                userSelect: 'none'
-              }}
-              className={styles.nameWrapper}
             >
-              <BadgeArtist
-                className={cn(styles.badgeArtist, {
-                  [styles.hide]:
-                    !isArtist || status === Status.LOADING || isDeactivated
-                })}
-              />
-              {!isDeactivated && userId && (
-                <>
-                  <EditableName
-                    className={editMode ? styles.editableName : styles.name}
-                    name={name}
-                    editable={editMode}
-                    verified={verified}
-                    onChange={updateName}
-                    userId={userId}
-                  />
-                  <Flex alignItems='center' columnGap='s'>
-                    <Text shadow='emphasis' variant='title' color='staticWhite'>
-                      {handle}
-                    </Text>
-                    <FollowsYouBadge userId={userId} />
-                  </Flex>
-                </>
-              )}
+              <Flex
+                css={{
+                  flexShrink: 0,
+                  zIndex: zIndex.PROFILE_EDITABLE_COMPONENTS
+                }}
+                w={PROFILE_LEFT_COLUMN_WIDTH_PX}
+                justifyContent='center'
+              >
+                <ProfilePicture
+                  userId={userId}
+                  updatedProfilePicture={
+                    updatedProfilePicture ? updatedProfilePicture.url : ''
+                  }
+                  error={
+                    updatedProfilePicture ? updatedProfilePicture.error : false
+                  }
+                  profilePictureSizes={
+                    isDeactivated ? null : profilePictureSizes
+                  }
+                  loading={status === Status.LOADING}
+                  editMode={editMode}
+                  hasProfilePicture={hasProfilePicture}
+                  onDrop={updateProfilePicture}
+                />
+              </Flex>
+              <Flex
+                column
+                flex='1 1 100%'
+                css={{
+                  position: 'relative',
+                  textAlign: 'left',
+                  userSelect: 'none'
+                }}
+                className={styles.nameWrapper}
+              >
+                <BadgeArtist
+                  className={cn(styles.badgeArtist, {
+                    [styles.hide]:
+                      !isArtist || status === Status.LOADING || isDeactivated
+                  })}
+                />
+                {!isDeactivated && userId && (
+                  <>
+                    <EditableName
+                      className={editMode ? styles.editableName : styles.name}
+                      name={name}
+                      editable={editMode}
+                      verified={verified}
+                      onChange={updateName}
+                      userId={userId}
+                    />
+                    <Flex alignItems='center' columnGap='s'>
+                      <Text
+                        shadow='emphasis'
+                        variant='title'
+                        color='staticWhite'
+                      >
+                        {handle}
+                      </Text>
+                      <FollowsYouBadge userId={userId} />
+                    </Flex>
+                  </>
+                )}
+              </Flex>
             </Flex>
-          </Flex>
+          </FlushPageContainer>
         </Flex>
 
         {!profile || profile.is_deactivated ? (
           <Box>
             <EmptyStatBanner />
             <EmptyNavBanner />
-            <Flex
-              w='100%'
-              mh='auto'
-              css={{ maxWidth: MAX_PAGE_WIDTH_PX }}
-              columnGap={PROFILE_COLUMN_GAP}
-            >
-              <LeftColumnSpacer />
-              {status === Status.SUCCESS && <DeactivatedProfileTombstone />}
-            </Flex>
+            <FlushPageContainer>
+              <Flex flex='1 1 100%' mh='auto' columnGap={PROFILE_COLUMN_GAP}>
+                <LeftColumnSpacer />
+                {status === Status.SUCCESS && <DeactivatedProfileTombstone />}
+              </Flex>
+            </FlushPageContainer>
           </Box>
         ) : (
           <Mask show={editMode} zIndex={zIndex.PROFILE_EDIT_MASK}>
             {/* StatBanner */}
-            <Flex
+            <FlushPageContainer
               h='unit14'
-              justifyContent='center'
-              w='100%'
               backgroundColor='surface1'
               borderBottom='default'
             >
-              <Flex
-                flex='1 1 100%'
-                h='100%'
-                css={{ maxWidth: MAX_PAGE_WIDTH_PX }}
-                columnGap={PROFILE_COLUMN_GAP}
-              >
+              <Flex flex='1 1 100%' h='100%' columnGap={PROFILE_COLUMN_GAP}>
                 <LeftColumnSpacer />
                 <StatBanner
                   mode={mode}
@@ -726,20 +723,14 @@ const ProfilePage = ({
                   onMute={onMute}
                 />
               </Flex>
-            </Flex>
+            </FlushPageContainer>
             {/* NavBanner */}
-            <Flex
-              h='unit14'
-              justifyContent='center'
-              w='100%'
-              backgroundColor='white'
-            >
+            <FlushPageContainer h='unit14' backgroundColor='white'>
               <Flex
                 flex='1 1 100%'
                 h='unit12'
                 alignSelf='flex-end'
                 justifyContent='flex-start'
-                css={{ maxWidth: MAX_PAGE_WIDTH_PX }}
                 columnGap={PROFILE_COLUMN_GAP}
               >
                 <LeftColumnSpacer />
@@ -753,14 +744,10 @@ const ProfilePage = ({
                   onSortByPopular={onSortByPopular}
                 />
               </Flex>
-            </Flex>
+            </FlushPageContainer>
             {/* Left side and Tab Content */}
-            <Flex w='100%' justifyContent='center' pt='2xl'>
-              <Flex
-                flex='1 1 100%'
-                columnGap={PROFILE_COLUMN_GAP}
-                css={{ maxWidth: MAX_PAGE_WIDTH_PX }}
-              >
+            <FlushPageContainer pt='2xl'>
+              <Flex flex='1 1 100%' columnGap={PROFILE_COLUMN_GAP}>
                 <ProfileLeftNav
                   userId={userId}
                   isDeactivated={isDeactivated}
@@ -791,7 +778,7 @@ const ProfilePage = ({
                 />
                 <Box flex='1 1 100%'>{body}</Box>
               </Flex>
-            </Flex>
+            </FlushPageContainer>
           </Mask>
         )}
       </Box>

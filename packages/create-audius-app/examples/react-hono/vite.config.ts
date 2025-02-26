@@ -4,6 +4,7 @@ import { UserConfig, defineConfig } from 'vite'
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js'
+import fixReactVirtualized from 'esbuild-plugin-react-virtualized'
 import path from 'path'
 
 export default defineConfig(({ mode }) => {
@@ -26,7 +27,8 @@ export default defineConfig(({ mode }) => {
             NodeGlobalsPolyfillPlugin({
               buffer: true,
               process: true
-            })
+            }),
+            fixReactVirtualized
           ]
         }
       },
@@ -67,7 +69,8 @@ export default defineConfig(({ mode }) => {
           NodeGlobalsPolyfillPlugin({
             buffer: true,
             process: true
-          })
+          }),
+          fixReactVirtualized
         ]
       }
     },

@@ -17,6 +17,8 @@ const messages = {
   orContinueGuest: 'Or, continue as a guest.'
 }
 
+const AUDIO_MATCHING_REWARDS_MULTIPLIER = 5
+
 type GuestCheckoutProps = {
   metadata: PurchaseableContentMetadata
   price: number
@@ -55,7 +57,7 @@ export const GuestCheckoutPage = (props: GuestCheckoutProps) => {
           showLabel={false}
           metadata={metadata}
           owner={metadata.user}
-          earnAmount={USDC(price / 100)
+          earnAmount={USDC((price * AUDIO_MATCHING_REWARDS_MULTIPLIER) / 100)
             .round()
             .toShorthand()}
         />

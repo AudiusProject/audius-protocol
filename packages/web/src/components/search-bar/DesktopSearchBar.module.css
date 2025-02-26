@@ -146,17 +146,6 @@
   border-radius: 0px 0px 4px 4px;
 }
 
-.searchBox :global(.ant-select-item-option) .allResultsOption {
-  border-radius: 0px 0px 4px 4px;
-  padding-bottom: 2px;
-}
-
-.searchBox
-  :global(.ant-select-item-option.ant-select-item-option-active)
-  .allResultsOption {
-  border-top: 1px solid var(--harmony-s-400) !important;
-}
-
 .searchBox
   :global(
     .ant-select-dropdown-menu
@@ -179,6 +168,14 @@
   line-height: 14px;
   text-transform: uppercase;
   padding: 0;
+}
+
+.searchBoxEmpty :global(.ant-select-item-group) {
+  height: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 .customHr {
@@ -236,39 +233,6 @@
   color: var(--harmony-white);
 }
 
-.allResultsOptionWrapper {
-  margin: 0 auto;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.allResultsOption span {
-  cursor: pointer;
-  margin-right: 6px;
-  color: var(--harmony-neutral);
-  font-size: var(--harmony-font-xs);
-  font-weight: var(--harmony-font-medium);
-}
-
-:global(.ant-select-item-option.ant-select-item-option-active)
-  .allResultsOption
-  > div
-  > div
-  > span {
-  color: var(--harmony-white);
-}
-
-:global(.ant-select-item-option.ant-select-item-option-active)
-  .allResultsOption
-  > div
-  > div
-  > .iconArrow
-  path {
-  fill: var(--harmony-white);
-}
-
 .searchBox
   :global(
     .ant-select-item-option.ant-select-item-option-active
@@ -291,16 +255,6 @@
   .noResultsOption
   span {
   color: var(--harmony-white);
-}
-
-/* Overrides for special items.
-* TODO: Don't make this !important?
-*/
-.allResultsOption,
-.searchBox :global(.ant-select-item-option) .allResultsOption {
-  height: 29px !important;
-  line-height: 24px;
-  border-top: 1px solid rgba(133, 129, 153, 0.1) !important;
 }
 
 /* Do not display the dummy search item used to let the user arrow back up to the search bar. */
@@ -373,4 +327,13 @@
 .tagSearchPopup:hover path,
 .focused path {
   fill: var(--harmony-white);
+}
+
+:global(.ant-select-item-option-active) .primary,
+:global(.ant-select-item-option-active) .secondary {
+  color: var(--harmony-static-white);
+}
+
+:global(.ant-select-item-option-active) .iconArrow path {
+  fill: var(--harmony-static-white);
 }
