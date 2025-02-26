@@ -1,4 +1,7 @@
+import { useMemo } from 'react'
+
 import { useQueries, useQueryClient } from '@tanstack/react-query'
+import { keyBy } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
@@ -26,7 +29,7 @@ export const useUsers = (
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
 
-  return useQueries({
+  const { data: users, ...queryResults } = useQueries({
     queries: (userIds ?? []).map((userId) => ({
       queryKey: getUserQueryKey(userId),
       queryFn: async () => {
@@ -44,4 +47,15 @@ export const useUsers = (
     })),
     combine: combineQueryResults<UserMetadata[]>
   })
+
+  const byId = useMemo(() => {
+    const byId = keyBy(users, 'user_id')
+    return byId
+  }, [users])
+
+  return {
+    data: users,
+    byId,
+    ...queryResults
+  }
 }

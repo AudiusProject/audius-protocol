@@ -23,3 +23,4 @@ class ChallengeEvent(str, enum.Enum):
     audio_matching_buyer = "audio_matching_buyer"
     audio_matching_seller = "audio_matching_seller"
     one_shot = "one_shot"
+    first_weekly_comment = "first_weekly_comment"

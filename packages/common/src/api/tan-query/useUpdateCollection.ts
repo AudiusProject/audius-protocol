@@ -15,11 +15,7 @@ import { renameAccountPlaylist } from '~/store/account/slice'
 import { EditCollectionValues } from '~/store/cache/collections/types'
 import { updatePlaylistArtwork } from '~/utils/updatePlaylistArtwork'
 
-import {
-  getCollectionByPermalinkQueryKey,
-  getCollectionQueryKey,
-  useCurrentUserId
-} from '..'
+import { getCollectionQueryKey, useCurrentUserId } from '..'
 
 import { primeCollectionData } from './utils/primeCollectionData'
 
@@ -149,18 +145,6 @@ export const useUpdateCollection = () => {
         { generateImage: generatePlaylistArtwork }
       )) as EditCollectionValues
 
-      // Optimistically update collectionByPermalink
-      if (previousCollection) {
-        queryClient.setQueryData(
-          getCollectionByPermalinkQueryKey(previousCollection.permalink),
-          (old: any) => ({
-            ...old,
-            ...metadata
-            // TODO: add optimistic update for artwork
-          })
-        )
-      }
-
       if (previousCollection) {
         primeCollectionData({
           collections: [{ ...previousCollection, ...metadata }],
@@ -188,12 +172,6 @@ export const useUpdateCollection = () => {
       if (context?.previousCollection) {
         queryClient.setQueryData(
           getCollectionQueryKey(collectionId),
-          context.previousCollection
-        )
-        queryClient.setQueryData(
-          getCollectionByPermalinkQueryKey(
-            context.previousCollection.permalink
-          ),
           context.previousCollection
         )
       }

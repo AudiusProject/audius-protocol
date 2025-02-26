@@ -1,6 +1,7 @@
 import {
   buyUSDCSagas,
   castSagas,
+  cacheSagas,
   chatSagas,
   reachabilitySagas,
   remoteConfigSagas,
@@ -98,6 +99,7 @@ export default function* rootSaga() {
     ...playlistLibrarySagas(),
 
     // Cache
+    ...cacheSagas(),
     ...coreCacheSagas(),
     ...collectionsSagas(),
     ...tracksSagas(),

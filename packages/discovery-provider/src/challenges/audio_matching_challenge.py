@@ -1,9 +1,18 @@
-from typing import Dict, Optional, Tuple
+import logging
+from typing import Dict, List, Optional, Tuple
 
 from sqlalchemy.orm.session import Session
 
-from src.challenges.challenge import ChallengeManager, ChallengeUpdater
+from src.challenges.challenge import (
+    ChallengeManager,
+    ChallengeUpdater,
+    FullEventMetadata,
+)
+from src.models.rewards.challenge import Challenge
+from src.models.rewards.user_challenge import UserChallenge
 from src.models.users.user import User
+
+logger = logging.getLogger(__name__)
 
 
 def generate_audio_matching_specifier(user_id: int, extra: Dict) -> str:
@@ -25,6 +34,39 @@ def does_user_exist_with_verification_status(
     return bool(user)
 
 
+def get_challenge_amount(session: Session, challenge_id: str) -> Optional[int]:
+    """Get the amount from the Challenge model for a given challenge_id"""
+    challenge = session.query(Challenge).filter(Challenge.id == challenge_id).first()
+    if not challenge:
+        return None
+    return int(challenge.amount)
+
+
+def update_audio_matching_user_challenges(
+    session: Session,
+    event: str,
+    user_challenges: List[UserChallenge],
+    step_count: Optional[int],
+    event_metadatas: List[FullEventMetadata],
+    starting_block: Optional[int],
+):
+    """
+    Shared implementation for updating audio matching user challenges.
+    Updates the challenge amount based on metadata and marks challenges as complete.
+    """
+    challenge_id = user_challenges[0].challenge_id
+    challenge_amount = get_challenge_amount(session, challenge_id)
+
+    if not challenge_amount:
+        return
+
+    for idx, user_challenge in enumerate(user_challenges):
+        metadata = event_metadatas[idx]
+        if metadata and "amount" in metadata["extra"]:
+            user_challenge.amount = challenge_amount * metadata["extra"]["amount"]
+            user_challenge.is_complete = True
+
+
 class AudioMatchingBuyerChallengeUpdater(ChallengeUpdater):
     def generate_specifier(self, session: Session, user_id: int, extra: Dict) -> str:
         return generate_audio_matching_specifier(user_id, extra)
@@ -36,6 +78,19 @@ class AudioMatchingBuyerChallengeUpdater(ChallengeUpdater):
 
     def should_show_challenge_for_user(self, session: Session, user_id: int) -> bool:
         return True
+
+    def update_user_challenges(
+        self,
+        session: Session,
+        event: str,
+        user_challenges: List[UserChallenge],
+        step_count: Optional[int],
+        event_metadatas: List[FullEventMetadata],
+        starting_block: Optional[int],
+    ):
+        update_audio_matching_user_challenges(
+            session, event, user_challenges, step_count, event_metadatas, starting_block
+        )
 
 
 class AudioMatchingSellerChallengeUpdater(ChallengeUpdater):
@@ -49,6 +104,19 @@ class AudioMatchingSellerChallengeUpdater(ChallengeUpdater):
 
     def should_show_challenge_for_user(self, session: Session, user_id: int) -> bool:
         return does_user_exist_with_verification_status(session, user_id, True)
+
+    def update_user_challenges(
+        self,
+        session: Session,
+        event: str,
+        user_challenges: List[UserChallenge],
+        step_count: Optional[int],
+        event_metadatas: List[FullEventMetadata],
+        starting_block: Optional[int],
+    ):
+        update_audio_matching_user_challenges(
+            session, event, user_challenges, step_count, event_metadatas, starting_block
+        )
 
 
 audio_matching_buyer_challenge_manager = ChallengeManager(

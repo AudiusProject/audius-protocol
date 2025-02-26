@@ -6,13 +6,14 @@ import {
   User
 } from '@audius/common/models'
 import { NestedNonNullable } from '@audius/common/utils'
-import { Button, IconUser } from '@audius/harmony'
+import { Button, IconUser, Box } from '@audius/harmony'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import Lineup, { LineupProps } from 'components/lineup/Lineup'
 import { EmptyNavBanner } from 'components/nav-banner/NavBanner'
+import { FlushPageContainer } from 'components/page/FlushPageContainer'
 import Page from 'components/page/Page'
 import { EmptyStatBanner } from 'components/stat-banner/StatBanner'
 import UserBadges from 'components/user-badges/UserBadges'
@@ -166,10 +167,12 @@ const DeletedPage = g(
           <EmptyStatBanner />
           <EmptyNavBanner />
         </div>
-        <div className={styles.contentWrapper}>
-          {renderTile()}
-          {renderLineup()}
-        </div>
+        <FlushPageContainer>
+          <Box pt={320} pb={100} css={{ position: 'relative' }}>
+            {renderTile()}
+            {renderLineup()}
+          </Box>
+        </FlushPageContainer>
       </Page>
     )
   }

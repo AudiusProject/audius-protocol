@@ -296,6 +296,10 @@ sale_json_model = ns.model(
             description="Whether this is an initial encryption from the backfill",
             allow_null=True,
         ),
+        "pubkey_base64": fields.String(
+            description="Base64 encoded public key of the buyer",
+            allow_null=True,
+        ),
     },
 )
 

@@ -123,14 +123,14 @@ def test_audio_matching_challenge(app):
             .all()
         )
         assert len(buyer_challenges) == 1
-        assert buyer_challenges[0][0] == AMOUNT_FIVE
+        assert buyer_challenges[0][0] == AMOUNT_FIVE * 5
         seller_challenges = (
             session.query(UserChallenge.amount)
             .filter(UserChallenge.user_id == seller_verified.user_id)
             .all()
         )
         assert len(seller_challenges) == 1
-        assert seller_challenges[0][0] == AMOUNT_FIVE
+        assert seller_challenges[0][0] == AMOUNT_FIVE * 5
 
         # Test: unverified sellers don't get challenges
         bus.dispatch(

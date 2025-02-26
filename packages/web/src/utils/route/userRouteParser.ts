@@ -1,4 +1,5 @@
 import { ID } from '@audius/common/models'
+import { PROFILE_PAGE_COMMENTS } from '@audius/common/src/utils/route'
 import { ProfilePageTabRoute } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { OptionalHashId } from '@audius/sdk'
@@ -35,6 +36,15 @@ export const parseUserRoute = (route: string): UserRouteParams => {
   })
   if (profilePageMatch) {
     const { handle } = profilePageMatch.params
+    return { handle, userId: null, tab: null }
+  }
+
+  const commentHistoryMatch = matchPath<{ handle: string }>(route, {
+    path: PROFILE_PAGE_COMMENTS,
+    exact: true
+  })
+  if (commentHistoryMatch) {
+    const { handle } = commentHistoryMatch.params
     return { handle, userId: null, tab: null }
   }
 
