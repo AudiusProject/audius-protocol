@@ -11,7 +11,11 @@ import {
 import { useFeatureFlag } from '@audius/common/hooks'
 import type { UserMetadata } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { accountSelectors } from '@audius/common/store'
+import {
+  accountSelectors,
+  useRecentUserCommentsModal,
+  useReplaceTrackProgressModal
+} from '@audius/common/store'
 import { Platform, View, ScrollView } from 'react-native'
 import Animated, {
   FadeIn,
@@ -86,23 +90,35 @@ const messages = {
 }
 
 type ProfileInfoTileProps = {
-  screen: string
   icon: ComponentType<SvgProps>
   title: string
   content: React.ReactNode
   showCount?: boolean
-}
+} & (
+  | {
+      screen: string
+      onPress?: never
+    }
+  | {
+      screen?: never
+      onPress: () => void
+    }
+)
 
 const ProfileInfoTile = (props: ProfileInfoTileProps) => {
-  const { screen, icon: Icon, title, content } = props
+  const { screen, icon: Icon, title, content, onPress } = props
   const styles = useInfoTileStyles()
   const { neutral } = useThemePalette()
   const navigation = useNavigation()
   const { user_id } = useSelectProfile(['user_id'])
 
   const handlePress = useCallback(() => {
-    navigation.navigate(screen, { userId: user_id })
-  }, [navigation, screen, user_id])
+    if (onPress) {
+      onPress()
+    } else {
+      navigation.navigate(screen, { userId: user_id })
+    }
+  }, [navigation, screen, user_id, onPress])
 
   return (
     <Paper
@@ -308,6 +324,7 @@ export const ProfileInfoTiles = () => {
   const { isEnabled: isRecentCommentsEnabled } = useFeatureFlag(
     FeatureFlags.RECENT_COMMENTS
   )
+  const { onOpen: openRecentUserComments } = useRecentUserCommentsModal()
 
   const accountId = useSelector(getUserId)
 
@@ -323,6 +340,10 @@ export const ProfileInfoTiles = () => {
   const {
     motion: { expressive: animation }
   } = useTheme()
+
+  const handlePressRecentComments = useCallback(() => {
+    openRecentUserComments({ userId: user_id })
+  }, [openRecentUserComments, user_id])
 
   const layoutAnimation = useMemo(() => {
     return useAnimation
@@ -352,9 +373,7 @@ export const ProfileInfoTiles = () => {
         {isRecentCommentsEnabled && recentComments.length > 0 && (
           <Animated.View entering={fadeInAnimation}>
             <ProfileInfoTile
-              // TODO: This should open the recent comments drawer when pressed
-              // https://linear.app/audius/issue/C-5797/implement-comment-history-drawer-on-mobile
-              screen='RecentComments'
+              onPress={handlePressRecentComments}
               icon={IconMessage}
               title={messages.comments}
               content={
