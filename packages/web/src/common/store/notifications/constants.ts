@@ -1,0 +1,1 @@
+export const NOTIFICATION_LIMIT_DEFAULT = 20

@@ -1,7 +1,7 @@
 import { MouseEventHandler, useCallback } from 'react'
 
 import { Name, User } from '@audius/common/models'
-import { Notification, useNotificationModal } from '@audius/common/store'
+import { Notification } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
@@ -10,6 +10,7 @@ import { make, useRecord } from 'common/store/analytics/actions'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { closeNotificationPanel } from 'store/application/ui/notifications/notificationsUISlice'
 import { push } from 'utils/navigation'
 
 import styles from './UserNameLink.module.css'
@@ -36,13 +37,16 @@ export const UserNameLink = (props: UserNameLinkProps) => {
   const { handle, user_id, name, is_deactivated } = user
 
   const profileLink = profilePage(handle)
-  const { onClose } = useNotificationModal()
+
+  const handleNavigateAway = useCallback(() => {
+    dispatch(closeNotificationPanel())
+  }, [dispatch])
 
   const handleClick: MouseEventHandler = useCallback(
     (event) => {
       event.stopPropagation()
       event.preventDefault()
-      onClose()
+      handleNavigateAway()
       dispatch(push(profilePage(handle)))
       record(
         make(Name.NOTIFICATIONS_CLICK_TILE, {
@@ -51,7 +55,7 @@ export const UserNameLink = (props: UserNameLinkProps) => {
         })
       )
     },
-    [onClose, dispatch, handle, record, type, profileLink]
+    [dispatch, handle, record, type, profileLink, handleNavigateAway]
   )
 
   const rootClassName = cn(styles.root, className)
@@ -81,7 +85,11 @@ export const UserNameLink = (props: UserNameLinkProps) => {
 
   if (!isMobile) {
     userNameElement = (
-      <ArtistPopover handle={handle} component='span' onNavigateAway={onClose}>
+      <ArtistPopover
+        handle={handle}
+        component='span'
+        onNavigateAway={handleNavigateAway}
+      >
         {userNameElement}
       </ArtistPopover>
     )

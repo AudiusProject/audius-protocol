@@ -1,13 +1,13 @@
 import { MouseEventHandler, useCallback } from 'react'
 
 import { SquareSizes, User } from '@audius/common/models'
-import { useNotificationModal } from '@audius/common/store'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useProfilePicture } from 'hooks/useProfilePicture'
+import { closeNotificationPanel } from 'store/application/ui/notifications/notificationsUISlice'
 import { push } from 'utils/navigation'
 
 import styles from './ProfilePicture.module.css'
@@ -32,7 +32,6 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
   } = props
   const { user_id, handle } = user
   const dispatch = useDispatch()
-  const { onClose } = useNotificationModal()
   const profilePicture = useProfilePicture({
     userId: user_id,
     size: SquareSizes.SIZE_150_BY_150
@@ -50,6 +49,10 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
     [stopPropagation, disableClick, dispatch, handle]
   )
 
+  const handleNavigateAway = useCallback(() => {
+    dispatch(closeNotificationPanel())
+  }, [dispatch])
+
   const profilePictureElement = (
     <DynamicImage
       onClick={handleClick}
@@ -66,7 +69,7 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
     <ArtistPopover
       handle={user.handle}
       component='span'
-      onNavigateAway={onClose}
+      onNavigateAway={handleNavigateAway}
     >
       {profilePictureElement}
     </ArtistPopover>
