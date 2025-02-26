@@ -1,4 +1,8 @@
-import { challengesSelectors } from '@audius/common/store'
+import {
+  audioRewardsPageSelectors,
+  challengesSelectors,
+  ClaimStatus
+} from '@audius/common/store'
 import {
   formatNumberCommas,
   challengeRewardsConfig,
@@ -17,6 +21,8 @@ import { ProgressReward } from './ProgressReward'
 import { type ListenStreakChallengeProps } from './types'
 
 const { getOptimisticUserChallenges } = challengesSelectors
+const { getUndisbursedUserChallenges, getClaimStatus } =
+  audioRewardsPageSelectors
 
 const messages = {
   rewardSubtext: '$AUDIO/day',
@@ -36,7 +42,11 @@ export const ListenStreakChallengeModalContent = ({
   const isMobile = useIsMobile()
   const { fullDescription } = challengeRewardsConfig[challengeName]
   const userChallenge = useSelector(getOptimisticUserChallenges)[challengeName]
-
+  const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
+  const claimStatus = useSelector(getClaimStatus)
+  const claimInProgress =
+    claimStatus === ClaimStatus.CLAIMING ||
+    claimStatus === ClaimStatus.WAITING_FOR_RETRY
   const progressDescription = (
     <ProgressDescription
       description={<Text variant='body'>{fullDescription?.(challenge)}</Text>}
@@ -116,7 +126,8 @@ export const ListenStreakChallengeModalContent = ({
       actions={
         <ClaimButton
           challenge={challenge}
-          claimInProgress={false}
+          claimInProgress={claimInProgress}
+          undisbursedChallenges={undisbursedUserChallenges}
           onClose={onNavigateAway}
         />
       }

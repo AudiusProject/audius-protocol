@@ -1,7 +1,11 @@
 import { useCallback } from 'react'
 
 import { ChallengeName } from '@audius/common/models'
-import { challengesSelectors } from '@audius/common/store'
+import {
+  audioRewardsPageSelectors,
+  challengesSelectors,
+  ClaimStatus
+} from '@audius/common/store'
 import {
   challengeRewardsConfig,
   getChallengeStatusLabel,
@@ -29,6 +33,8 @@ import { type AudioMatchingChallengeProps } from './types'
 const { EXPLORE_PREMIUM_TRACKS_PAGE, UPLOAD_PAGE } = route
 
 const { getOptimisticUserChallenges } = challengesSelectors
+const { getUndisbursedUserChallenges, getClaimStatus } =
+  audioRewardsPageSelectors
 
 const messages = {
   rewardMapping: {
@@ -70,6 +76,11 @@ export const AudioMatchingRewardsModalContent = ({
   const navigateToPage = useNavigateToPage()
   const { fullDescription } = challengeRewardsConfig[challengeName]
   const userChallenge = useSelector(getOptimisticUserChallenges)[challengeName]
+  const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
+  const claimStatus = useSelector(getClaimStatus)
+  const claimInProgress =
+    claimStatus === ClaimStatus.CLAIMING ||
+    claimStatus === ClaimStatus.WAITING_FOR_RETRY
 
   const statusLabel = userChallenge
     ? getChallengeStatusLabel(userChallenge, challengeName)
@@ -134,7 +145,8 @@ export const AudioMatchingRewardsModalContent = ({
         challenge?.claimableAmount ? (
           <ClaimButton
             challenge={challenge}
-            claimInProgress={false}
+            undisbursedChallenges={undisbursedUserChallenges}
+            claimInProgress={claimInProgress}
             onClose={onNavigateAway}
           />
         ) : (
