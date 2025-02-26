@@ -501,7 +501,6 @@ class TrackComments(Resource):
     @ns.marshal_with(track_comments_response)
     @cache(ttl_sec=5)
     def get(self, track_id):
-        print("dylanxxxx getting comments?")
         args = track_comments_parser.parse_args()
         decoded_id = decode_with_abort(track_id, ns)
         current_user_id = args.get("user_id")
