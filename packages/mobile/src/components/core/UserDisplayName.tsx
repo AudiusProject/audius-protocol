@@ -3,7 +3,7 @@ import type { ID } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
-import type { FlexProps, TextProps } from '@audius/harmony-native'
+import type { TextProps } from '@audius/harmony-native'
 import {
   Flex,
   IconVerified,
@@ -18,7 +18,6 @@ const { getUser } = cacheUsersSelectors
 
 type UserDisplayProps = TextProps & {
   userId: ID
-  containerProps?: FlexProps
 }
 
 export const UserDisplayName = (props: UserDisplayProps) => {
@@ -45,7 +44,7 @@ export const UserDisplayName = (props: UserDisplayProps) => {
       {isVerified ? (
         <IconVerified height={badgeSize} width={badgeSize} />
       ) : null}
-      <IconAudioBadge tier={tier} height={badgeSize} width={badgeSize} />
+      <IconAudioBadge tier={tier} height={fontSize} width={fontSize} />
     </Flex>
   )
 }
