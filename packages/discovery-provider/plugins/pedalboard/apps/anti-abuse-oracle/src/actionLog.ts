@@ -1,6 +1,7 @@
 import 'dotenv/config'
 
 import postgres from 'postgres'
+import { Utils } from '@audius/sdk'
 
 export const sql = postgres(process.env.discoveryDbUrl || '')
 
@@ -8,7 +9,7 @@ export const sql = postgres(process.env.discoveryDbUrl || '')
 // User Details
 //
 export type UserDetails = {
-  id: string
+  id: number
   handle: string
   name: string
   img: string
@@ -26,7 +27,11 @@ export type UserDetails = {
 // from users
 // `
 
-export async function getUser(userId: number) {
+export async function getUser(idOrHandle: string) {
+  // try decode id
+  // try parse int
+  // try find handle
+  const userId = Utils.decodeHashId(idOrHandle) || parseInt(idOrHandle)
   const rows = await sql`
   select json_build_object(
     'id', user_id,
@@ -35,7 +40,9 @@ export async function getUser(userId: number) {
     'img', profile_picture_sizes
   ) as user
   from users
-  where user_id = ${userId}
+  where
+    ${userId ? sql`user_id = ${userId}` : sql`handle_lc = ${idOrHandle.toLowerCase()}`}
+  LIMIT 1
   `
   if (!rows.length) return
   return rows[0].user as UserDetails

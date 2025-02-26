@@ -11,7 +11,7 @@ import {
 } from './actionLog'
 import { logger } from 'hono/logger'
 import { config } from './config'
-import { SolanaUtils } from '@audius/sdk'
+import { SolanaUtils, Utils } from '@audius/sdk'
 import bn from 'bn.js'
 
 const app = new Hono()
@@ -51,17 +51,24 @@ app.post('/attestation/:handle', async (c) => {
     return c.json({ result })
   } catch (error) {
     console.log(`Something went wrong: ${error}`)
+    return c.text(`Something went wrong`, 500)
   }
 })
 
 app.get('/', async (c) => {
-  console.log(c.req.query())
-  const userId = parseInt(c.req.query('id') || '1')
-  const user = await getUser(userId)
-  if (!user) return c.text(`user id not found: ${c.req.query('id')}`, 404)
-  const signals = await getUserScore(userId)
-  if (!user || !signals)
-    return c.text(`user id not found: ${c.req.query('id')}`, 404)
+  return c.html(
+    <Layout>
+      <h1>Home</h1>
+    </Layout>
+  )
+})
+
+app.get('/user', async (c) => {
+  const idOrHandle = c.req.query('q') || '1'
+  const user = await getUser(idOrHandle)
+  if (!user) return c.text(`user id not found: ${idOrHandle}`, 404)
+  const signals = await getUserScore(user.id)
+  if (!signals) return c.text(`user id not found: ${idOrHandle}`, 404)
 
   const signalArray = Object.values(signals)
   const score = signalArray.filter(Boolean).length / signalArray.length
@@ -82,16 +89,18 @@ app.get('/', async (c) => {
     return null
   }
 
-  const rows = await actionLogForUser(userId)
+  const rows = await actionLogForUser(user.id)
   return c.html(
     <Layout>
       <div class='px-16 py-8'>
         <div class='flex gap-4 items-center'>
           <Image img={user.img} size={100} />
           <div>
-            <div>
-              <span class='text-2xl font-bold mr-2'>{user.name}</span>
-              <span>{user.handle}</span>
+            <div class='text-2xl font-bold'>{user.name}</div>
+            <div class='flex gap-4 items-end'>
+              <div>{user.handle}</div>
+              <div>{user.id}</div>
+              <div>{Utils.encodeHashId(user.id)}</div>
             </div>
             <div class='flex gap-2 mt-2 items-center'>
               <div class='badge badge-xl badge-neutral'>
@@ -200,6 +209,20 @@ function Layout(props: LayoutProps) {
       <body>
         <main>
           <body>
+            <div className='navbar bg-base-100 shadow-sm px-8 gap-4'>
+              <div class='font-bold'>
+                <a href='/'>AAO</a>
+              </div>
+              <form action='/user'>
+                <input
+                  name='q'
+                  type='search'
+                  class='input'
+                  autocomplete={'off'}
+                  placeholder='Search ID or Handle'
+                />
+              </form>
+            </div>
             <div>{props.children}</div>
           </body>
         </main>
