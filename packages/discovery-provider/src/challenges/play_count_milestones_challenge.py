@@ -16,7 +16,6 @@ from src.models.social.play import Play
 from src.models.tracks.track import Track
 from src.utils.config import shared_config
 
-logger = logging.getLogger(__name__)
 env = shared_config["discprov"]["env"]
 
 # Define milestone steps and their corresponding amounts
@@ -85,9 +84,6 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
                     if milestone not in completed_milestones:
                         completed_milestones.append(milestone)
 
-        logger.info(
-            f"play_count_milestone_challenge.py | Found completed milestones: {completed_milestones} for user {user_id} from {len(completed_challenges)} completed challenges"
-        )
         return completed_milestones
 
     def update_user_challenges(
@@ -112,9 +108,6 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
 
             # Get the user's play count for 2025
             play_count = self.get_user_play_count_2025(session, user_id)
-            logger.info(
-                f"play_count_milestone_challenge.py | User {user_id} has {play_count} plays in 2025"
-            )
 
             # Get completed milestones
             completed_milestones = self._get_completed_milestones(session, user_id)
@@ -138,14 +131,7 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
                     milestone = FINAL_MILESTONE
 
             if milestone is None:
-                logger.warning(
-                    f"play_count_milestone_challenge.py | Could not determine milestone for challenge: {user_challenge.id}"
-                )
                 continue
-
-            logger.info(
-                f"play_count_milestone_challenge.py | Challenge is for milestone {milestone}, user has {play_count} plays"
-            )
 
             # Update the challenge progress
             user_challenge.current_step_count = play_count
@@ -154,9 +140,6 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
             if play_count >= milestone:
                 user_challenge.amount = int(PLAY_MILESTONES[milestone])
                 user_challenge.is_complete = True
-                logger.info(
-                    f"play_count_milestone_challenge.py | User {user_id} completed milestone {milestone} with {play_count} plays"
-                )
 
     def generate_specifier(self, session: Session, user_id: int, extra: Dict) -> str:
         """
@@ -169,15 +152,9 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
         """
         # Get already completed milestones
         completed_milestones = self._get_completed_milestones(session, user_id)
-        logger.info(
-            f"play_count_milestone_challenge.py | User {user_id} has completed milestones: {completed_milestones}"
-        )
 
         # If user has already completed the final milestone, don't create a new challenge
         if FINAL_MILESTONE in completed_milestones:
-            logger.info(
-                f"play_count_milestone_challenge.py | User {user_id} has already completed final milestone {FINAL_MILESTONE}"
-            )
             return f"{hex(user_id)[2:]}_dummy_{datetime.now().strftime('%Y%m%d%H%M%S')}"
 
         # For simplicity, just use timestamp for uniqueness
@@ -200,17 +177,11 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
         """
         # Only create challenges in response to track_played events
         if event != ChallengeEvent.track_played:
-            logger.info(
-                f"play_count_milestone_challenge.py | Not creating challenge for event {event}, expecting {ChallengeEvent.track_played}"
-            )
             return False
 
         # Only proceed if they've played tracks in 2025
         play_count = self.get_user_play_count_2025(session, user_id)
         if play_count <= 0:
-            logger.info(
-                f"play_count_milestone_challenge.py | User {user_id} has no plays in 2025"
-            )
             return False
 
         # Get already completed milestones
@@ -218,9 +189,6 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
 
         # If they've already completed the final milestone, don't create more challenges
         if FINAL_MILESTONE in completed_milestones:
-            logger.info(
-                f"play_count_milestone_challenge.py | User {user_id} has already completed final milestone {FINAL_MILESTONE}"
-            )
             return False
 
         # Count total challenges (completed or not) to ensure we don't create more than 3
@@ -235,9 +203,6 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
 
         # If user already has all (3) challenges, don't create more
         if total_challenges >= len(PLAY_MILESTONES):
-            logger.info(
-                f"play_count_milestone_challenge.py | User {user_id} already has {total_challenges} challenges, not creating more"
-            )
             return False
 
         # Determine next milestone
@@ -256,14 +221,8 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
 
         # If there's no next milestone or they haven't reached it yet, don't create a challenge
         if next_milestone is None or play_count < next_milestone:
-            logger.info(
-                f"play_count_milestone_challenge.py | User {user_id} has not reached next milestone with {play_count} plays"
-            )
             return False
 
-        logger.info(
-            f"play_count_milestone_challenge.py | User {user_id} has reached milestone {next_milestone} with {play_count} plays"
-        )
         return True
 
     def should_show_challenge_for_user(self, session: Session, user_id: int) -> bool:
