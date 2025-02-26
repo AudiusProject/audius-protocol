@@ -18,7 +18,8 @@ import { MobileInstallContent } from './MobileInstallContent'
 import { ProfileChecks } from './ProfileChecks'
 import { type DefaultChallengeProps } from './types'
 
-const { getClaimStatus } = audioRewardsPageSelectors
+const { getClaimStatus, getUndisbursedUserChallenges } =
+  audioRewardsPageSelectors
 
 const messages = {
   audio: '$AUDIO',
@@ -38,6 +39,7 @@ export const DefaultChallengeContent = ({
   const claimInProgress =
     claimStatus === ClaimStatus.CLAIMING ||
     claimStatus === ClaimStatus.WAITING_FOR_RETRY
+  const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
 
   const config = challengeRewardsConfig[challengeName as ChallengeName] ?? {
     fullDescription: () => '',
@@ -169,6 +171,7 @@ export const DefaultChallengeContent = ({
           <ClaimButton
             challenge={challenge}
             claimInProgress={claimInProgress}
+            undisbursedChallenges={undisbursedUserChallenges}
             onClose={onNavigateAway}
           />
         )
