@@ -40,7 +40,6 @@ def _get_top_genre_users(session, args):
     )
     users = add_query_pagination(top_users_query, limit, offset).all()
     users = helpers.query_result_to_list(users)
-    print(users, limit, offset)
     user_ids = list(map(lambda user: user["user_id"], users))
 
     if with_users:
