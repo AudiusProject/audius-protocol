@@ -2,7 +2,7 @@ import { Connection } from '@solana/web3.js'
 
 import { config } from '../config'
 
-const normalizeEp = (ep: string): string => {
+export const normalizeEp = (ep: string): string => {
   if (ep.startsWith('http')) {
     return ep
   } else {
