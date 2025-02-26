@@ -476,15 +476,9 @@ def format_comments(
         artist_id: ID of the track owner (for track comments and replies)
 
     Returns:
-        Tuple of (formatted_comments, user_ids, track_ids)
-        where user_ids and track_ids are sets of IDs that need to be fetched
+        List of formatted comments
     """
     from src.queries.comments.replies import get_replies
-    from src.utils.helpers import decode_string_id
-
-    # Collect all user IDs and track IDs from comments and their replies
-    user_ids = set()
-    track_ids = set()
 
     # Pre-fetch all replies if needed
     replies_map = {}
@@ -498,7 +492,7 @@ def format_comments(
             )
             replies_map[comment.comment_id] = replies
 
-    # Format comments and collect IDs
+    # Format comments
     formatted_comments = []
     for comment_data in comments:
         # Handle different tuple structures from different queries
@@ -507,14 +501,6 @@ def format_comments(
             is_muted = None
         else:  # track or user comments query
             comment, react_count, is_muted, mentions = comment_data
-
-        # Add user ID from the main comment
-        if not comment.is_delete and comment.user_id:
-            user_ids.add(comment.user_id)
-
-        # Add track ID from the main comment
-        if comment.entity_type == "Track":
-            track_ids.add(comment.entity_id)
 
         # Get replies for this comment if they exist and if we need to include replies
         comment_replies = (
@@ -533,13 +519,44 @@ def format_comments(
             replies=comment_replies,
         )
 
-        # If we have replies, collect their IDs too
+        # If we have replies, remove related field from replies if it exists
         if comment_replies:
             for reply in comment_replies:
-                # Remove related field from replies if it exists
                 if "related" in reply:
                     del reply["related"]
 
+        formatted_comments.append(formatted_comment)
+
+    return formatted_comments
+
+
+def extract_ids_from_comments(formatted_comments):
+    """
+    Extract user and track IDs from a list of formatted comments.
+
+    Args:
+        formatted_comments: List of formatted comments
+
+    Returns:
+        Tuple of (user_ids, track_ids) where both are sets of IDs
+    """
+    from src.utils.helpers import decode_string_id
+
+    user_ids = set()
+    track_ids = set()
+
+    for comment in formatted_comments:
+        # Add user ID from the main comment
+        if comment.get("user_id"):
+            user_ids.add(decode_string_id(comment["user_id"]))
+
+        # Add track ID from the main comment
+        if comment.get("entity_type") == "Track" and comment.get("entity_id"):
+            track_ids.add(decode_string_id(comment["entity_id"]))
+
+        # If we have replies, collect their IDs too
+        if comment.get("replies"):
+            for reply in comment["replies"]:
                 # Extract IDs from reply
                 reply_user_id = (
                     decode_string_id(reply["user_id"]) if reply.get("user_id") else None
@@ -557,25 +574,25 @@ def format_comments(
                 if reply.get("entity_type") == "Track" and reply_entity_id:
                     track_ids.add(reply_entity_id)
 
-        formatted_comments.append(formatted_comment)
-
-    return formatted_comments, user_ids, track_ids
+    return user_ids, track_ids
 
 
-def fetch_related_entities(session, user_ids, track_ids, current_user_id):
+def fetch_related_entities(session, formatted_comments, current_user_id):
     """
-    Fetch and format related users and tracks based on their IDs.
+    Extract IDs from formatted comments and fetch related users and tracks.
 
     Args:
         session: Database session
-        user_ids: Set of user IDs to fetch
-        track_ids: Set of track IDs to fetch
+        formatted_comments: List of formatted comments
         current_user_id: ID of the user making the request
 
     Returns:
         Tuple of (related_users, related_tracks)
     """
+    # Extract user and track IDs from the formatted comments
+    user_ids, track_ids = extract_ids_from_comments(formatted_comments)
 
+    # Fetch the related entities TODO: use session
     users = get_users({"id": user_ids, "current_user_id": current_user_id})
     tracks = get_tracks(
         {

@@ -134,7 +134,7 @@ def get_paginated_replies(args, comment_id, current_user_id=None, include_relate
         replies_query_results = query.all()
 
         # Format comments and collect user/track IDs
-        formatted_replies, user_ids, track_ids = format_comments(
+        formatted_replies = format_comments(
             session=session,
             comments=replies_query_results,
             current_user_id=current_user_id,
@@ -146,7 +146,7 @@ def get_paginated_replies(args, comment_id, current_user_id=None, include_relate
         if include_related:
             # Fetch related entities
             related_users, related_tracks = fetch_related_entities(
-                session, user_ids, track_ids, current_user_id
+                session, formatted_replies, current_user_id
             )
 
             # Return the restructured response with related entities

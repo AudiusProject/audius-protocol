@@ -65,7 +65,7 @@ def get_track_comments(args, track_id, current_user_id=None, include_related=Tru
         track_comments = query.all()
 
         # Format comments and collect user/track IDs
-        formatted_comments, user_ids, track_ids = format_comments(
+        formatted_comments = format_comments(
             session=session,
             comments=track_comments,
             current_user_id=current_user_id,
@@ -81,7 +81,7 @@ def get_track_comments(args, track_id, current_user_id=None, include_related=Tru
         if include_related:
             # Fetch related entities
             related_users, related_tracks = fetch_related_entities(
-                session, user_ids, track_ids, current_user_id
+                session, formatted_comments, current_user_id
             )
 
             # Return the restructured response with related entities
