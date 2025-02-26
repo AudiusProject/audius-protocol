@@ -1,5 +1,6 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
+import { getUserHandle } from '@audius/common/src/store/account/selectors'
 import {
   audioRewardsPageSelectors,
   challengesSelectors,
@@ -8,7 +9,8 @@ import {
 import {
   formatNumberCommas,
   challengeRewardsConfig,
-  getChallengeStatusLabel
+  getChallengeStatusLabel,
+  fillString
 } from '@audius/common/utils'
 import { Button, Flex, Text, IconLink } from '@audius/harmony'
 import { useSelector } from 'react-redux'
@@ -44,9 +46,15 @@ const messages = {
 }
 
 export const InviteLink = () => {
+  const userHandle = useSelector(getUserHandle)
+  const inviteLink = useMemo(
+    () => (userHandle ? fillString(messages.inviteLink, userHandle) : ''),
+    [userHandle]
+  )
+
   const handleClick = useCallback(() => {
     copyToClipboard(inviteLink)
-  }, [])
+  }, [inviteLink])
 
   return (
     <Toast
