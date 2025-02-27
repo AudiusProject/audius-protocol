@@ -383,7 +383,6 @@ def build_comments_query(
             Track,
             and_(
                 Comment.entity_id == Track.track_id,
-                Track.is_current == True,
                 Track.is_unlisted == False,
             ),
         )
