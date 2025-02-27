@@ -136,8 +136,8 @@ app.get('/user', async (c) => {
 
   if (!signals) return c.text(`user id not found: ${idOrHandle}`, 404)
 
-  const signalArray = Object.values(signals)
-  const score = signalArray.filter(Boolean).length / signalArray.length
+  // const signalArray = Object.values(signals)
+  // const score = signalArray.filter(Boolean).length / signalArray.length
 
   let lastDate = ''
   function dateHeader(timestamp: Date) {
@@ -307,7 +307,9 @@ function renderDetails(row: ActionRow) {
         <div class='flex gap-2'>
           {/* <Image img={user.img} /> */}
           {user.amount && <div>${user.amount / 100_000_000}</div>}
-          <div class='font-bold'>{user.handle}</div>
+          <div class='font-bold'>
+            <a href={`/user?q=${user.handle}`}>{user.handle}</a>
+          </div>
         </div>
       )
     }
