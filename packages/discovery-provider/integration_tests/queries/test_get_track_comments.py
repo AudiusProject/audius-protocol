@@ -61,11 +61,7 @@ def test_get_comments_default(app):
     with app.app_context():
         db = get_db()
         populate_mock_db(db, test_entities)
-        response = get_track_comments({"sort_method": "newest"}, 1)
-
-        # Check that the response has the expected structure
-        assert "data" in response
-        assert "related" in response
+        response = get_track_comments({"sort_method": "newest"}, 1, None, False)
 
         # Get the comments from the data field
         comments = response["data"]
@@ -617,7 +613,7 @@ def test_get_track_comments_related_field(app):
         db = get_db()
         populate_mock_db(db, entities)
 
-        response = get_track_comments({"sort_method": "newest"}, 1)
+        response = get_track_comments({"sort_method": "newest"}, 1, None, True)
 
         # Check that the response has the expected structure
         assert "data" in response
@@ -637,13 +633,11 @@ def test_get_track_comments_related_field(app):
         user_id = decode_string_id(comments[0]["user_id"])
         found_user = False
         for user in users:
-            if decode_string_id(user["id"]) == user_id:
+            if user["user_id"] == user_id:
                 found_user = True
                 # Check for full user object fields
                 assert user["handle"] == "user1"
-                assert "id" in user
                 assert "user_id" in user
-                assert "erc_wallet" in user
                 assert user["name"] == "User One"
                 assert user["is_verified"] == True
                 break
@@ -657,14 +651,13 @@ def test_get_track_comments_related_field(app):
         entity_id = decode_string_id(comments[0]["entity_id"])
         found_track = False
         for track in tracks:
-            if decode_string_id(track["id"]) == entity_id:
+            if track["track_id"] == entity_id:
                 found_track = True
                 # Check for full track object fields
                 assert track["title"] == "Test Track"
-                assert "id" in track
-                assert "user_id" in track
+                assert "owner_id" in track
                 assert "user" in track
-                assert decode_string_id(track["user_id"]) == 10  # Artist ID
+                assert track["owner_id"] == 10  # Artist ID
                 break
         assert found_track, "Track not found in related tracks"
 
@@ -725,7 +718,7 @@ def test_get_comment_replies_related_field(app):
         populate_mock_db(db, entities)
 
         response = get_paginated_replies(
-            {"limit": 10, "offset": 0, "sort_method": "newest"}, 1
+            {"limit": 10, "offset": 0, "sort_method": "newest"}, 1, None, True
         )
 
         # Check that the response has the expected structure
@@ -746,13 +739,11 @@ def test_get_comment_replies_related_field(app):
         user_id = decode_string_id(replies[0]["user_id"])
         found_user = False
         for user in users:
-            if decode_string_id(user["id"]) == user_id:
+            if user["user_id"] == user_id:
                 found_user = True
                 # Check for full user object fields
                 assert user["handle"] == "user2"
-                assert "id" in user
                 assert "user_id" in user
-                assert "erc_wallet" in user
                 assert user["name"] == "User Two"
                 assert user["is_verified"] == False
                 break
@@ -766,14 +757,14 @@ def test_get_comment_replies_related_field(app):
         entity_id = decode_string_id(replies[0]["entity_id"])
         found_track = False
         for track in tracks:
-            if decode_string_id(track["id"]) == entity_id:
+            if track["track_id"] == entity_id:
                 found_track = True
                 # Check for full track object fields
                 assert track["title"] == "Test Track"
-                assert "id" in track
-                assert "user_id" in track
+                assert "track_id" in track
+                assert "owner_id" in track
                 assert "user" in track
-                assert decode_string_id(track["user_id"]) == 10  # Artist ID
+                assert track["owner_id"] == 10  # Artist ID
                 break
         assert found_track, "Track not found in related tracks"
 

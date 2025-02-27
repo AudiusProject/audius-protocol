@@ -86,7 +86,9 @@ def get_replies(
     ]
 
 
-def get_paginated_replies(args, comment_id, current_user_id=None, include_related=True):
+def get_paginated_replies(
+    args, comment_id, current_user_id=None, include_related=False
+):
     """
     Get paginated replies to a comment (API endpoint handler)
 

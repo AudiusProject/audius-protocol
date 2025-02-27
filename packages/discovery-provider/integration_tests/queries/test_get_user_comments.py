@@ -87,7 +87,6 @@ def test_get_user_comments_default(app):
 
         # Check that the response has the expected structure
         assert "data" in response
-        assert "related" in response
 
         # Get the comments from the data field
         comments = response["data"]
@@ -408,13 +407,11 @@ def test_get_user_comments_related_field(app):
         user_id = decode_string_id(comments[0]["user_id"])
         found_user = False
         for user in users:
-            if decode_string_id(user["id"]) == user_id:
+            if user["user_id"] == user_id:
                 found_user = True
                 # Check for full user object fields
                 assert user["handle"] == "user1"
-                assert "id" in user
                 assert "user_id" in user
-                assert "erc_wallet" in user
                 break
         assert found_user, "Comment author not found in related users"
 
@@ -426,14 +423,13 @@ def test_get_user_comments_related_field(app):
         entity_id = decode_string_id(comments[0]["entity_id"])
         found_track = False
         for track in tracks:
-            if decode_string_id(track["id"]) == entity_id:
+            if track["track_id"] == entity_id:
                 found_track = True
                 # Check for full track object fields
                 assert track["title"] == f"Track {entity_id}"
-                assert "id" in track
-                assert "user_id" in track
+                assert "owner_id" in track
                 assert "user" in track
-                assert decode_string_id(track["user_id"]) == 10  # Artist ID
+                assert track["owner_id"] == 10  # Artist ID
                 break
         assert found_track, "Track not found in related tracks"
 

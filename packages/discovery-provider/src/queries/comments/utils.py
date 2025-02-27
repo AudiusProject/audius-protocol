@@ -9,8 +9,7 @@ from src.models.comments.comment_report import COMMENT_KARMA_THRESHOLD
 from src.models.moderation.muted_user import MutedUser
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.user import User
-from src.queries.get_tracks import get_tracks
-from src.queries.get_users import get_users
+from src.queries.query_helpers import get_tracks, get_users
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import encode_int_id
 
@@ -574,7 +573,7 @@ def extract_ids_from_comments(formatted_comments):
                 if reply.get("entity_type") == "Track" and reply_entity_id:
                     track_ids.add(reply_entity_id)
 
-    return user_ids, track_ids
+    return list(user_ids), list(track_ids)
 
 
 def fetch_related_entities(session, formatted_comments, current_user_id):
@@ -592,15 +591,8 @@ def fetch_related_entities(session, formatted_comments, current_user_id):
     # Extract user and track IDs from the formatted comments
     user_ids, track_ids = extract_ids_from_comments(formatted_comments)
 
-    # Fetch the related entities TODO: use session
-    users = get_users({"id": user_ids, "current_user_id": current_user_id})
-    tracks = get_tracks(
-        {
-            "id": track_ids,
-            "current_user_id": current_user_id,
-            "with_users": True,
-            "skip_unlisted_filter": True,
-        }
-    )
+    # Fetch the related entities
+    users = get_users(session, user_ids, current_user_id)
+    tracks = get_tracks(session, track_ids, current_user_id)
 
     return users, tracks

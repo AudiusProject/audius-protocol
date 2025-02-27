@@ -14,7 +14,7 @@ from src.utils.db_session import get_db_read_replica
 logger = logging.getLogger(__name__)
 
 
-def get_track_comments(args, track_id, current_user_id=None, include_related=True):
+def get_track_comments(args, track_id, current_user_id=None, include_related=False):
     """
     Get comments for a specific track
 
@@ -72,10 +72,6 @@ def get_track_comments(args, track_id, current_user_id=None, include_related=Tru
             include_replies=True,
             artist_id=artist_id,
         )
-
-        # For backward compatibility with tests
-        if "test_get_tombstone_comments" in str(args):
-            return formatted_comments
 
         # Prepare the response
         if include_related:
