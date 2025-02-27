@@ -14,6 +14,7 @@ import {
   BottomSheetFlatList,
   BottomSheetModal
 } from '@gorhom/bottom-sheet'
+import Animated, { FadeIn } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import {
@@ -54,17 +55,9 @@ const CommentItem = ({ commentId }: { commentId: ID }) => {
   const { data: commentData, isLoading } = useGetCommentById(commentId)
   const comment = commentData as Comment | ReplyComment | undefined
   const { data: track, isLoading: isTrackLoading } = useTrack(
-    OptionalHashId.parse(comment?.entityId),
-    {
-      enabled: !!comment?.entityId
-    }
+    OptionalHashId.parse(comment?.entityId)
   )
-  const { data: artist, isLoading: isArtistLoading } = useUser(
-    track?.owner_id,
-    {
-      enabled: !!track?.owner_id
-    }
-  )
+  const { data: artist, isLoading: isArtistLoading } = useUser(track?.owner_id)
   const { data: commenter } = useUser(userId)
 
   const handlePressView = useCallback(() => {
@@ -84,89 +77,99 @@ const CommentItem = ({ commentId }: { commentId: ID }) => {
   }
 
   return (
-    <Flex row gap='l' ph='l' pv='m' alignItems='flex-start' w='100%'>
-      <ProfilePicture
-        size='medium'
-        style={{ flexShrink: 0 }}
-        userId={userId}
-        borderWidth='thin'
-      />
-      <Flex gap='s' flex={1}>
-        <Flex gap='xs' style={{ flex: 1 }}>
-          {/* Track / artist name */}
-          <Flex row w='100%' style={{ flexShrink: 1 }}>
-            <Text
-              style={{ flexShrink: 3 }}
-              variant='body'
-              size='s'
-              color='subdued'
-              ellipses
-              numberOfLines={1}
-            >
-              {track.title}
-            </Text>
-            <Text variant='body' size='s' color='subdued' flexShrink={0}>
-              {messages.by}
-            </Text>
-            <Text
-              style={{ flexShrink: 1 }}
-              variant='body'
-              size='s'
-              color='subdued'
-              ellipses
-              numberOfLines={1}
-            >
-              {artist.name}
-            </Text>
-          </Flex>
-          {/* Commenter name, badges, date */}
-          <Flex row gap='s' alignItems='center'>
-            <Flex row gap='xs' alignItems='center'>
+    <Animated.View style={{ width: '100%' }} entering={FadeIn.duration(500)}>
+      <Flex row gap='s' ph='l' pv='m' alignItems='flex-start' w='100%'>
+        <ProfilePicture
+          size='medium'
+          style={{ flexShrink: 0 }}
+          userId={userId}
+          borderWidth='thin'
+        />
+        <Flex gap='s' flex={1}>
+          <Flex style={{ flex: 1 }}>
+            {/* Track / artist name */}
+            <Flex row w='100%' style={{ flexShrink: 1 }}>
+              <Text
+                style={{ flexShrink: 3 }}
+                variant='body'
+                size='s'
+                color='subdued'
+                ellipses
+                lineHeight='single'
+                numberOfLines={1}
+              >
+                {track.title}
+              </Text>
               <Text
                 variant='body'
-                size='l'
-                strength='strong'
+                lineHeight='single'
+                size='s'
+                color='subdued'
+                flexShrink={0}
+              >
+                {messages.by}
+              </Text>
+              <Text
+                style={{ flexShrink: 1 }}
+                variant='body'
+                lineHeight='single'
+                size='s'
+                color='subdued'
                 ellipses
                 numberOfLines={1}
               >
-                {commenter?.name}
+                {artist.name}
               </Text>
-              <Flex row gap='2xs'>
-                <UserBadgesV2 userId={userId} badgeSize='xs' />
+            </Flex>
+            {/* Commenter name, badges, date */}
+            <Flex row gap='s' alignItems='center'>
+              <Flex row gap='xs' alignItems='center'>
+                <Text
+                  variant='body'
+                  size='l'
+                  strength='strong'
+                  ellipses
+                  numberOfLines={1}
+                >
+                  {commenter?.name}
+                </Text>
+                <Flex row gap='2xs'>
+                  <UserBadgesV2 userId={userId} badgeSize='xs' />
+                </Flex>
               </Flex>
+              <Timestamp time={dayjs.utc(comment.createdAt).toDate()} />
             </Flex>
-            <Timestamp time={dayjs.utc(comment.createdAt).toDate()} />
+            {/* Comment text */}
+            <CommentText
+              isEdited={false}
+              isPreview={true}
+              commentId={commentId}
+              mentions={[]}
+              renderTimestamps={false}
+              trackDuration={track.duration}
+              navigation={navigation}
+              onCloseDrawer={onClose}
+            >
+              {comment.message}
+            </CommentText>
           </Flex>
-          {/* Comment text */}
-          <CommentText
-            isEdited={false}
-            isPreview={true}
-            commentId={commentId}
-            mentions={[]}
-            renderTimestamps={false}
-            trackDuration={track.duration}
-            navigation={navigation}
-            onCloseDrawer={onClose}
-          >
-            {comment.message}
-          </CommentText>
-        </Flex>
-        {/* Reactions and view button */}
-        <Flex row gap='l'>
-          {comment.reactCount > 0 && (
-            <Flex row gap='xs'>
-              <IconHeart size='l' color='subdued' />
-              <Text variant='body' size='m'>
-                {comment.reactCount}
-              </Text>
-            </Flex>
-          )}
-          <TextLink variant='subdued' onPress={handlePressView}>
-            {messages.view}
-          </TextLink>
+          {/* Reactions and view button */}
+          <Flex row gap='l'>
+            {comment.reactCount > 0 && (
+              <Flex row gap='xs'>
+                <IconHeart size='l' color='subdued' />
+                <Text variant='body' size='m'>
+                  {comment.reactCount}
+                </Text>
+              </Flex>
+            )}
+            <TextLink variant='subdued' onPress={handlePressView}>
+              {messages.view}
+            </TextLink>
+          </Flex>
         </Flex>
       </Flex>
-    </Flex>
+    </Animated.View>
   )
 }
 
@@ -189,11 +192,11 @@ const RecentUserCommentsDrawerContent = () => {
   // Loading state
   if (isLoading) {
     return (
-      <>
+      <Flex pv='m'>
         <CommentSkeleton />
         <CommentSkeleton />
         <CommentSkeleton />
-      </>
+      </Flex>
     )
   }
 
