@@ -1,0 +1,126 @@
+import { Id } from '@audius/sdk'
+import {
+  InfiniteData,
+  useMutation,
+  useQueryClient
+} from '@tanstack/react-query'
+import { cloneDeep } from 'lodash'
+import { useDispatch } from 'react-redux'
+
+import { useAudiusQueryContext } from '~/audius-query'
+import { Comment, Feature, ID } from '~/models'
+import { toast } from '~/store/ui/toast/slice'
+
+import { PostCommentArgs } from './types'
+import {
+  addCommentCount,
+  getCommentQueryKey,
+  getTrackCommentListQueryKey,
+  subtractCommentCount
+} from './utils'
+
+export const usePostComment = () => {
+  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const dispatch = useDispatch()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (args: PostCommentArgs) => {
+      const sdk = await audiusSdk()
+      return await sdk.comments.postComment({
+        ...args,
+        mentions: args.mentions?.map((mention) => mention.userId) ?? [],
+        entityId: args.trackId,
+        commentId: args.newId
+      })
+    },
+    onMutate: async (args: PostCommentArgs) => {
+      const {
+        userId,
+        body,
+        trackId,
+        parentCommentId,
+        trackTimestampS,
+        currentSort,
+        mentions
+      } = args
+      const isReply = parentCommentId !== undefined
+      // This executes before the mutationFn is called, and the reference to comment is the same in both
+      // therefore, this sets the id that will be posted to the server
+      const sdk = await audiusSdk()
+      const newId = await sdk.comments.generateCommentId()
+      // hack alert: there is no way to send context from onMutate to mutationFn so we hack it into the args
+      args.newId = newId
+      const newComment: Comment = {
+        id: newId,
+        entityId: Id.parse(trackId),
+        entityType: 'Track',
+        userId,
+        message: body,
+        mentions,
+        isEdited: false,
+        trackTimestampS,
+        reactCount: 0,
+        replyCount: 0,
+        replies: undefined,
+        createdAt: new Date().toISOString(),
+        updatedAt: undefined
+      }
+      // If a root comment, update the sort data
+      if (isReply) {
+        // Update the parent comment replies list
+        queryClient.setQueryData<Comment | undefined>(
+          getCommentQueryKey(parentCommentId),
+          (comment) =>
+            ({
+              ...comment,
+              replyCount: (comment?.replyCount ?? 0) + 1,
+              replies: [...(comment?.replies ?? []), newComment]
+            }) as Comment
+        )
+      } else {
+        queryClient.setQueryData<InfiniteData<ID[]>>(
+          getTrackCommentListQueryKey({ trackId, sortMethod: currentSort }),
+          (prevData) => {
+            // NOTE: The prevData here should never be undefined so the backup object should never be used
+            // If it is undefined then the query key might be incorrect
+            const newState = cloneDeep(prevData) ?? {
+              pages: [[]],
+              pageParams: [0]
+            }
+
+            newState.pages[0].unshift(newId)
+            return newState
+          }
+        )
+      }
+      // Update the individual comment cache
+      queryClient.setQueryData(getCommentQueryKey(newId), newComment)
+
+      // Add to the comment count
+      addCommentCount(dispatch, queryClient, trackId)
+    },
+    onError: (error: Error, args) => {
+      const { trackId, currentSort } = args
+      reportToSentry({
+        error,
+        additionalInfo: args,
+        name: 'Comments',
+        feature: Feature.Comments
+      })
+      // Undo comment count change
+      subtractCommentCount(dispatch, queryClient, trackId)
+      // Toast generic error message
+      toast({
+        content: 'There was an error posting that comment. Please try again'
+      })
+      // TODO: avoid hard reset here?
+      queryClient.resetQueries({
+        queryKey: getTrackCommentListQueryKey({
+          trackId,
+          sortMethod: currentSort
+        })
+      })
+    }
+  })
+}

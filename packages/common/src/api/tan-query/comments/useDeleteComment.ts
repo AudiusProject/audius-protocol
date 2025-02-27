@@ -1,0 +1,110 @@
+import {
+  InfiniteData,
+  useMutation,
+  useQueryClient
+} from '@tanstack/react-query'
+import { cloneDeep } from 'lodash'
+import { useDispatch } from 'react-redux'
+
+import { useAudiusQueryContext } from '~/audius-query'
+import { Comment, Feature, ID, ReplyComment } from '~/models'
+import { toast } from '~/store/ui/toast/slice'
+
+import { CommentOrReply, DeleteCommentArgs, messages } from './types'
+import {
+  getCommentQueryKey,
+  getTrackCommentListQueryKey,
+  subtractCommentCount
+} from './utils'
+
+export const useDeleteComment = () => {
+  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const queryClient = useQueryClient()
+  const dispatch = useDispatch()
+  return useMutation({
+    mutationFn: async ({ commentId, userId }: DeleteCommentArgs) => {
+      const commentData = { userId, entityId: commentId }
+      const sdk = await audiusSdk()
+      return await sdk.comments.deleteComment(commentData)
+    },
+    onMutate: ({ commentId, trackId, currentSort, parentCommentId }) => {
+      // Subtract from the comment count
+      subtractCommentCount(dispatch, queryClient, trackId)
+      // If reply, filter it from the parent's list of replies
+      if (parentCommentId) {
+        queryClient.setQueryData<Comment>(
+          getCommentQueryKey(parentCommentId),
+          (prev) =>
+            ({
+              ...prev,
+              replies: (prev?.replies ?? []).filter(
+                (reply: ReplyComment) => reply.id !== commentId
+              ),
+              replyCount: (prev?.replyCount ?? 0) - 1
+            }) as Comment
+        )
+      } else {
+        const existingCommentData = queryClient.getQueryData<
+          CommentOrReply | undefined
+        >(getCommentQueryKey(commentId))
+        const hasReplies =
+          existingCommentData &&
+          'replies' in existingCommentData &&
+          (existingCommentData?.replies?.length ?? 0) > 0
+
+        if (hasReplies) {
+          queryClient.setQueryData<Comment>(
+            getCommentQueryKey(commentId),
+            (prevCommentData) =>
+              ({
+                ...prevCommentData,
+                isTombstone: true,
+                userId: undefined,
+                message: '[Removed]'
+                // Intentionally undoing the userId
+              }) as Comment & { userId?: undefined }
+          )
+        } else {
+          // If not a reply & has no replies, remove from the sort list
+          queryClient.setQueryData<InfiniteData<ID[]>>(
+            ['trackCommentList', trackId, currentSort],
+            (prevCommentData) => {
+              const newCommentData = cloneDeep(prevCommentData)
+              if (!newCommentData) return
+              // Filter out the comment from its current page
+              newCommentData.pages = newCommentData.pages.map((page: ID[]) =>
+                page.filter((id: ID) => id !== commentId)
+              )
+              return newCommentData
+            }
+          )
+          // Remove the individual comment
+          queryClient.removeQueries({
+            queryKey: getCommentQueryKey(commentId),
+            exact: true
+          })
+        }
+      }
+    },
+
+    onError: (error: Error, args) => {
+      const { trackId, currentSort } = args
+      reportToSentry({
+        error,
+        additionalInfo: args,
+        name: 'Comments',
+        feature: Feature.Comments
+      })
+      // Toast standard error message
+      dispatch(toast({ content: messages.mutationError('deleting') }))
+      // Since this mutation handles sort data, its difficult to undo the optimistic update so we just re-load everything
+      // TODO: avoid hard reset here by checking if cache changed?
+      queryClient.resetQueries({
+        queryKey: getTrackCommentListQueryKey({
+          trackId,
+          sortMethod: currentSort
+        })
+      })
+    }
+  })
+}
