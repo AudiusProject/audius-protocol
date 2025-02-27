@@ -22,7 +22,6 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
-import { HashId } from '@audius/sdk'
 import dayjs from 'dayjs'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useNavigate } from 'react-router-dom-v5-compat'
@@ -67,7 +66,7 @@ const UserComment = ({ commentId }: { commentId: number }) => {
   } = comment
 
   const { isPending: isUserPending } = useUser(userId)
-  const { data: track } = useTrack(HashId.parse(entityId))
+  const { data: track } = useTrack(entityId)
   const createdAtDate = useMemo(
     () => dayjs.utc(createdAt).toDate(),
     [createdAt]

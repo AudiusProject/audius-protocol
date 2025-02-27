@@ -1,4 +1,3 @@
-import { Id } from '@audius/sdk'
 import {
   InfiniteData,
   useMutation,
@@ -53,7 +52,7 @@ export const usePostComment = () => {
       args.newId = newId
       const newComment: Comment = {
         id: newId,
-        entityId: Id.parse(trackId),
+        entityId: trackId,
         entityType: 'Track',
         userId,
         message: body,
