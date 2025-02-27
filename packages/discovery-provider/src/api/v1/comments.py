@@ -9,6 +9,7 @@ from src.api.v1.helpers import (
     make_response,
     pagination_with_current_user_parser,
     success_response,
+    success_response_with_related,
 )
 from src.api.v1.models.comments import reply_comment_model
 from src.queries.comments import get_paginated_replies
@@ -45,7 +46,7 @@ class CommentReplies(Resource):
         comment_replies = get_paginated_replies(
             args, decoded_id, current_user_id, include_related=False
         )
-        return success_response(comment_replies)
+        return success_response(comment_replies["data"])
 
 
 full_reply_response = make_full_response_with_related(
@@ -72,11 +73,12 @@ class FullCommentReplies(Resource):
         comment_replies = get_paginated_replies(
             args, decoded_id, current_user_id, include_related=True
         )
+
         comment_replies["related"] = extend_related(
             comment_replies["related"], current_user_id
         )
 
-        return success_response(comment_replies)
+        return success_response_with_related(comment_replies)
 
 
 unclaimed_id_response = make_response("unclaimed_id_response", ns, fields.String())

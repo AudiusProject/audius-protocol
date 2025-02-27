@@ -616,7 +616,7 @@ def extend_related(related, current_user_id=None):
     if not related:
         return related
 
-    result = {}
+    result = {"users": [], "tracks": []}
 
     if "users" in related and related["users"]:
         result["users"] = [
@@ -1159,6 +1159,10 @@ notifications_parser.add_argument(
 
 def success_response(entity):
     return api_helpers.success_response(entity, status=200, to_json=False)
+
+
+def success_response_with_related(entity):
+    return api_helpers.success_response_with_related(entity, status=200, to_json=False)
 
 
 def error_response(error):

@@ -36,6 +36,7 @@ from src.api.v1.helpers import (
     parse_bool_param,
     stem_from_track,
     success_response,
+    success_response_with_related,
     track_search_parser,
     trending_parser,
     trending_parser_paginated,
@@ -509,7 +510,7 @@ class TrackComments(Resource):
             args, decoded_id, current_user_id, include_related=False
         )
 
-        return success_response(track_comments)
+        return success_response(track_comments["data"])
 
 
 track_comments_response_full = make_full_response_with_related(
@@ -543,7 +544,7 @@ class FullTrackComments(Resource):
         track_comments["related"] = extend_related(
             track_comments["related"], current_user_id
         )
-        return success_response(track_comments)
+        return success_response_with_related(track_comments)
 
 
 track_comment_notification_setting_response = make_response(

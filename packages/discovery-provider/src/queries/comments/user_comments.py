@@ -22,7 +22,7 @@ class GetUserCommentsArgs(TypedDict):
     current_user_id: int
 
 
-def get_user_comments(args: GetUserCommentsArgs, include_related=True):
+def get_user_comments(args: GetUserCommentsArgs, include_related=False):
     """
     Get comments made by a specific user
 

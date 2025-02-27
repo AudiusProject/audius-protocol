@@ -47,6 +47,7 @@ from src.api.v1.helpers import (
     pagination_with_current_user_parser,
     parse_bool_param,
     success_response,
+    success_response_with_related,
     track_history_parser,
     user_albums_route_parser,
     user_collections_library_parser,
@@ -3230,7 +3231,7 @@ class UserComments(Resource):
         }
         user_comments = get_user_comments(args, include_related=False)
 
-        return success_response(user_comments)
+        return success_response(user_comments["data"])
 
 
 user_comments_response_full = make_full_response_with_related(
@@ -3268,4 +3269,4 @@ class FullUserComments(Resource):
             user_comments["related"], current_user_id
         )
 
-        return success_response(user_comments)
+        return success_response_with_related(user_comments)

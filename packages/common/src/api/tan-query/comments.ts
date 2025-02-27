@@ -43,7 +43,7 @@ import { primeRelatedData } from './utils/primeRelatedData'
 type CommentOrReply = Comment | ReplyComment
 
 const COMMENT_ROOT_PAGE_SIZE = 15
-const COMMENT_REPLIES_PAGE_SIZE = 3
+const COMMENT_REPLIES_PAGE_SIZE = 15
 
 const messages = {
   loadError: (type: 'comments' | 'replies') =>
@@ -405,7 +405,7 @@ export const useGetCommentRepliesById = ({
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
-  const startingLimit = pageSize // comments will load in with 3 already so we don't start pagination at 0
+  const startingLimit = 3 // comments will load in with 3 already so we don't start pagination at 0
 
   const queryRes = useInfiniteQuery({
     queryKey: getCommentRepliesQueryKey({ commentId, pageSize }),
@@ -417,18 +417,19 @@ export const useGetCommentRepliesById = ({
     },
     queryFn: async ({ pageParam }): Promise<ReplyComment[]> => {
       const sdk = await audiusSdk()
-      const commentsRes = await sdk.full.comments.commentReplies({
+      const response = await sdk.full.comments.commentReplies({
         commentId: Id.parse(commentId),
         userId: currentUserId?.toString(),
         limit: pageSize,
         offset: pageParam
       })
+
       const replyList = transformAndCleanList(
-        commentsRes.data,
+        response.data,
         replyCommentFromSDK
       )
 
-      primeRelatedData({ related: commentsRes.related, queryClient, dispatch })
+      primeRelatedData({ related: response.related, queryClient, dispatch })
 
       // Add the replies to our parent comment replies list
       queryClient.setQueryData(
