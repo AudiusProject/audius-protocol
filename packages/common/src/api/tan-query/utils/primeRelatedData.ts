@@ -1,10 +1,11 @@
+import { full } from '@audius/sdk'
 import { QueryClient } from '@tanstack/react-query'
 import { AnyAction, Dispatch } from 'redux'
 
 import {
-  userMetadataListFromSDK,
   transformAndCleanList,
-  userTrackMetadataFromSDK
+  userTrackMetadataFromSDK,
+  userMetadataFromSDK
 } from '~/adapters'
 
 import { primeTrackData } from './primeTrackData'
@@ -21,7 +22,7 @@ export const primeRelatedData = ({
   forceReplace = false,
   skipQueryData = false
 }: {
-  related: { users?: any[]; tracks?: any[] } | undefined
+  related: full.Related | undefined
   queryClient: QueryClient
   dispatch: Dispatch<AnyAction>
   forceReplace?: boolean
@@ -34,7 +35,7 @@ export const primeRelatedData = ({
   // Prime user data if available
   if (users && users.length > 0) {
     primeUserData({
-      users: userMetadataListFromSDK(users),
+      users: transformAndCleanList(users, userMetadataFromSDK),
       queryClient,
       dispatch,
       forceReplace,
