@@ -10,4 +10,10 @@ plays_metric = ns.model(
     },
 )
 
+total_plays_metric = {
+    "total": fields.Integer(
+        required=True, description="Total number of plays across all tracks"
+    )
+}
+
 genre_metric = ns.model("genre", {"name": fields.String, "count": fields.Integer})

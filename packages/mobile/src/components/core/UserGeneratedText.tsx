@@ -15,7 +15,7 @@ import {
 import type { CommentMention } from '@audius/sdk'
 import { HashId, ResolveApi } from '@audius/sdk'
 import { css } from '@emotion/native'
-import type { NavigationProp } from '@react-navigation/native'
+import type { NavigationProp, ParamListBase } from '@react-navigation/native'
 import type { To } from '@react-navigation/native/lib/typescript/src/useLinkTo'
 import type { Match } from 'autolinker/dist/es2015'
 import { View } from 'react-native'
@@ -63,7 +63,7 @@ export type UserGeneratedTextProps = Omit<TextProps, 'children'> &
     // Suffix to append after the text. Used for "edited" text in comments
     suffix?: ReactNode
 
-    navigation?: NavigationProp<ReactNavigation.RootParamList>
+    navigation?: NavigationProp<ParamListBase>
   }
 
 const Link = ({
@@ -73,7 +73,7 @@ const Link = ({
   ...other
 }: TextLinkProps & {
   url: string
-  navigation?: NavigationProp<ReactNavigation.RootParamList>
+  navigation?: NavigationProp<ParamListBase>
 }) => {
   const [unfurledContent, setUnfurledContent] = useState<string>()
   const [to, setTo] = useState<To<any> | undefined>(undefined)

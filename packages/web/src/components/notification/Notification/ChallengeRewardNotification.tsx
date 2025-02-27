@@ -94,8 +94,6 @@ export const ChallengeRewardNotification = (
         }
         return messages.streakMaintenance(amountEarned)
       }
-      case 'referred':
-        return messages.amountEarned(amount) + messages.referredText
       default:
         return messages.amountEarned(amount) + messages.challengeCompleteText
     }

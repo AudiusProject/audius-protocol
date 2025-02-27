@@ -5,13 +5,10 @@ import { useRemoteVar } from 'hooks/useRemoteConfig'
 
 const validRewardIds: Set<ChallengeRewardID> = new Set([
   'track-upload',
-  'referrals',
-  'ref-v',
   'mobile-install',
   'connect-verified',
   'listen-streak',
   'profile-completion',
-  'referred',
   'send-first-tip',
   'first-playlist',
   ChallengeName.AudioMatchingSell, // $AUDIO matching seller
@@ -27,7 +24,8 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
   ChallengeName.TrackUpload,
   ChallengeName.ListenStreak,
   ChallengeName.OneShot,
-  ChallengeName.ListenStreakEndless
+  ChallengeName.ListenStreakEndless,
+  ChallengeName.FirstWeeklyComment
 ])
 
 /** Pulls rewards from remoteconfig */

@@ -17,6 +17,7 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
     variant = 'default',
     isActive,
     isExternal = false,
+    ellipses = false,
     onClick,
     textVariant,
     showUnderline,
@@ -46,6 +47,10 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
     active: color.primary.primary
   }
 
+  const ellipsisStyles = {
+    display: 'block'
+  }
+
   const hoverStyles = {
     textDecoration: noUnderlineOnHover ? 'none' : 'underline',
     color: variantHoverColors[variant],
@@ -72,9 +77,11 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
         }),
         ':hover': hoverStyles,
         ...(isActive && { ...hoverStyles, textDecoration: 'none' }),
-        ...(showUnderline && hoverStyles)
+        ...(showUnderline && hoverStyles),
+        ...(ellipses && { ...ellipsisStyles })
       }}
       variant={textVariant}
+      ellipses={ellipses}
       {...other}
     >
       {asChild ? (

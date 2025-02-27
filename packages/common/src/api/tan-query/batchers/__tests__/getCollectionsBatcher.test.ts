@@ -6,6 +6,7 @@ import {
   OptionalId
 } from '@audius/sdk'
 import { QueryClient } from '@tanstack/react-query'
+import { omit } from 'lodash'
 import { describe, it, expect, beforeEach, vi, MockInstance } from 'vitest'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
@@ -147,9 +148,13 @@ describe('getCollectionsBatcher', () => {
       id: [Id.parse(id)],
       userId: OptionalId.parse(null)
     })
-    expect(result).toMatchObject(
-      userCollectionMetadataFromSDK(createMockSdkCollection(id)) ?? {}
-    )
+    expect(result).toMatchObject({
+      ...(omit(
+        userCollectionMetadataFromSDK(createMockSdkCollection(id)),
+        'user',
+        'tracks'
+      ) ?? {})
+    })
   })
 
   it('batches multiple collection requests and returns correct results to each caller', async () => {
@@ -168,9 +173,13 @@ describe('getCollectionsBatcher', () => {
 
     // Verify each caller got their correct collection data
     results.forEach((result, index) => {
-      expect(result).toMatchObject(
-        userCollectionMetadataFromSDK(createMockSdkCollection(ids[index])) ?? {}
-      )
+      expect(result).toMatchObject({
+        ...(omit(
+          userCollectionMetadataFromSDK(createMockSdkCollection(ids[index])),
+          'user',
+          'tracks'
+        ) ?? {})
+      })
     })
   })
 
@@ -205,20 +214,28 @@ describe('getCollectionsBatcher', () => {
 
     // Verify results for first batch
     firstBatchResults.forEach((result, index) => {
-      expect(result).toMatchObject(
-        userCollectionMetadataFromSDK(
-          createMockSdkCollection(firstBatchIds[index])
-        ) ?? {}
-      )
+      expect(result).toMatchObject({
+        ...(omit(
+          userCollectionMetadataFromSDK(
+            createMockSdkCollection(firstBatchIds[index])
+          ),
+          'user',
+          'tracks'
+        ) ?? {})
+      })
     })
 
     // Verify results for second batch
     secondBatchResults.forEach((result, index) => {
-      expect(result).toMatchObject(
-        userCollectionMetadataFromSDK(
-          createMockSdkCollection(secondBatchIds[index])
-        ) ?? {}
-      )
+      expect(result).toMatchObject({
+        ...(omit(
+          userCollectionMetadataFromSDK(
+            createMockSdkCollection(secondBatchIds[index])
+          ),
+          'user',
+          'tracks'
+        ) ?? {})
+      })
     })
   })
 
@@ -249,9 +266,13 @@ describe('getCollectionsBatcher', () => {
     ])
 
     // Verify existing collection is returned correctly
-    expect(existingResult).toMatchObject(
-      userCollectionMetadataFromSDK(createMockSdkCollection(existingId)) ?? {}
-    )
+    expect(existingResult).toMatchObject({
+      ...(omit(
+        userCollectionMetadataFromSDK(createMockSdkCollection(existingId)),
+        'user',
+        'tracks'
+      ) ?? {})
+    })
 
     // Verify missing collection returns null
     expect(missingResult).toBeNull()

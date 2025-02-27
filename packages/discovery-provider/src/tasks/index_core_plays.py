@@ -35,12 +35,8 @@ def index_core_plays(
     session: Session,
     challenge_bus: ChallengeEventBus,
     latest_indexed_slot: int,
-    indexing_plays: bool,
     block: BlockResponse,
 ) -> Optional[int]:
-    if not indexing_plays:
-        return None
-
     indexed_slot: Optional[int] = None
     for tx in block.transaction_responses:
         indexed_slot = index_core_play(
