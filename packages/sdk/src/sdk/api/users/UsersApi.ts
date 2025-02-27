@@ -228,7 +228,7 @@ export class UsersApi extends GeneratedUsersApi {
         )
     ])
 
-    const updatedMetadata = {
+    const updatedMetadata = snakecaseKeys({
       ...metadata,
       ...(profilePictureResp
         ? {
@@ -239,7 +239,7 @@ export class UsersApi extends GeneratedUsersApi {
       ...(coverArtResp
         ? { coverPhoto: coverArtResp?.id, coverPhotoSizes: coverArtResp?.id }
         : {})
-    }
+    })
 
     const cid = (await generateMetadataCidV1(updatedMetadata)).toString()
 
@@ -251,7 +251,7 @@ export class UsersApi extends GeneratedUsersApi {
       action: Action.UPDATE,
       metadata: JSON.stringify({
         cid,
-        data: snakecaseKeys(updatedMetadata)
+        data: updatedMetadata
       }),
       ...advancedOptions
     })
