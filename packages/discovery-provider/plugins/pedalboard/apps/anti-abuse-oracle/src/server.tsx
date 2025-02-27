@@ -3,14 +3,15 @@ import { Hono } from 'hono'
 import {
   actionLogForUser,
   getUser,
+  getRecentUsers,
   getUserNormalizedScore,
   getUserScore,
   recentTips,
-  recentUsers,
   sql,
   type ActionRow,
   type TrackDetails,
-  type UserDetails
+  type UserDetails,
+  getAAOAttestation
 } from './actionLog'
 import { logger } from 'hono/logger'
 import { config } from './config'
@@ -68,7 +69,6 @@ app.post('/attestation/:handle', async (c) => {
 
 app.get('/', async (c) => {
   const tips = await recentTips()
-  const users = await recentUsers()
 
   let lastDate = ''
   function dateHeader(timestamp: Date) {
@@ -132,7 +132,7 @@ app.get('/user', async (c) => {
   if (!user) return c.text(`user id not found: ${idOrHandle}`, 404)
   const signals = await getUserScore(user.id)
   const normalizedScore = (await getUserNormalizedScore(user.id))!
-    .normalized_score
+    .normalized_score // ts-ignore
 
   if (!signals) return c.text(`user id not found: ${idOrHandle}`, 404)
 
@@ -175,7 +175,7 @@ app.get('/user', async (c) => {
             </div>
             <div class='flex gap-2 mt-2 items-center'>
               <div class='badge badge-xl badge-neutral'>
-                {(Math.min(normalizedScore, 1) * 100).toFixed(0)}%
+                {(normalizedScore * 100).toFixed(0)}%
               </div>
               {Object.entries(signals).map(([name, ok]) => (
                 <div
@@ -206,6 +206,85 @@ app.get('/user', async (c) => {
           padding: 10px;
         }
       `}</style>
+    </Layout>
+  )
+})
+
+app.get('/recent-users', async (c) => {
+  const recentUsers = await getRecentUsers()
+  const userScores = recentUsers
+    ? await Promise.all(
+        recentUsers.map(async (user) => {
+          const [userScore, flagged] = await Promise.all([
+            getUserNormalizedScore(user.id),
+            getAAOAttestation(user.handle)
+          ])
+          return {
+            ...userScore,
+            flagged
+          }
+        })
+      )
+    : []
+  console.log('asdf userScores: ', userScores)
+  let lastDate = ''
+  function dateHeader(timestamp: Date) {
+    const d = timestamp.toDateString()
+    if (d != lastDate) {
+      lastDate = d
+      return (
+        <>
+          <tr>
+            <td colspan={4}>
+              <div class='text-xl font-bold pt-2'>{d}</div>
+            </td>
+          </tr>
+          <tr>
+            <th>Timestamp</th>
+            <th>Handle</th>
+            <th>Overall Score</th>
+            <th>Normalized Score</th>
+          </tr>
+        </>
+      )
+    }
+    return null
+  }
+
+  return c.html(
+    <Layout container>
+      <h1 class='text-4xl font-bold mt-8'>Recent Users</h1>
+      <table class='table'>
+        <tbody>
+          {userScores.map((userScore) => (
+            <>
+              {dateHeader(userScore.timestamp)}
+              <tr
+                className={
+                  userScore.overall_score < 0
+                    ? 'bg-red-50'
+                    : userScore.flagged
+                      ? 'bg-blue-50'
+                      : userScore.flagged && userScore.overall_score < 0
+                        ? 'bg-purple-50'
+                        : ''
+                }
+              >
+                <td>{userScore.timestamp.toLocaleTimeString()}</td>
+                <td>
+                  <a
+                    href={`/user?q=${encodeURIComponent(userScore.handle_lc)}`}
+                  >
+                    {userScore.handle_lc}
+                  </a>
+                </td>
+                <td>{userScore.overall_score}</td>
+                <td>{userScore.normalized_score}</td>
+              </tr>
+            </>
+          ))}
+        </tbody>
+      </table>
     </Layout>
   )
 })
@@ -296,6 +375,9 @@ function Layout(props: LayoutProps) {
                   placeholder='Search ID or Handle'
                 />
               </form>
+              <a href='/recent-users' class='btn'>
+                Recent Users
+              </a>
             </div>
             <div class={props.container ? 'container mx-auto' : ''}>
               {props.children}

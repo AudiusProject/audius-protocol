@@ -2,6 +2,7 @@ import 'dotenv/config'
 
 import postgres from 'postgres'
 import { Utils } from '@audius/sdk'
+import fetch from 'node-fetch'
 
 export const sql = postgres(process.env.discoveryDbUrl || '')
 
@@ -54,19 +55,29 @@ select json_build_object(
 from users
 `
 
-export async function getUser(idOrHandle: string) {
+export async function getUser(handle: string) {
   // try decode id
   // try parse int
   // try find handle
-  const userId = Utils.decodeHashId(idOrHandle) || parseInt(idOrHandle)
   const rows = await sql`
   ${sql.unsafe(buildUserDetails)}
   where
-    ${userId ? sql`user_id = ${userId}` : sql`handle_lc = ${idOrHandle.toLowerCase()}`}
+  handle_lc = ${handle.toLowerCase()}
   LIMIT 1
   `
   if (!rows.length) return
   return rows[0].user as UserDetails
+}
+
+export async function getRecentUsers() {
+  const rows = await sql`
+  ${sql.unsafe(buildUserDetails)}
+  where handle_lc is not null
+  order by created_at desc
+  LIMIT 10 OFFSET 1000
+  `
+  if (!rows.length) return
+  return rows.map((row) => row.user as UserDetails)
 }
 
 export async function getUserScore(userId: number) {
@@ -90,11 +101,12 @@ export async function getUserNormalizedScore(userId: number) {
 WITH scoped_users as (
 select * from users
 where user_id = ${userId} 
-order by created_at desc limit 100
+order by created_at desc 
+limit 100
 ),
 play_activity AS (
     SELECT user_id, 
-          COUNT(DISTINCT date_trunc('hour', plays.created_at)) AS play_count
+          COUNT(DISTINCT date_trunc('minute', plays.created_at)) AS play_count
     FROM plays
     WHERE user_id IS NOT NULL
     AND user_id in (select user_id from scoped_users)
@@ -135,14 +147,40 @@ SELECT
     a.play_count,
     a.challenge_count,
     a.overall_score,
-    (a.overall_score + 15)::float / NULLIF(100, 0)::float AS normalized_score
+    least((a.overall_score + 15)::float / NULLIF(100, 0), 1)::float AS normalized_score
 FROM aggregate_scores a
 ORDER BY normalized_score asc
   `
-  if (!rows.length) return
-  return rows[0]
+  return rows[0] as {
+    handle_lc: string
+    timestamp: Date
+    play_count: number
+    challenge_count: number
+    overall_score: number
+    normalized_score: number
+  }
 }
 
+export async function getAAOAttestation(handle: string) {
+  const url = `https://antiabuseoracle.audius.co/abuse/${handle}`
+  try {
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error(`Error fetching attestation: ${response.statusText}`)
+    }
+    const data = await response.json()
+    const flagged = data.some(
+      (item: { trigger: boolean; action: string; rule: number }) =>
+        item.trigger === true &&
+        item.action === 'fail' &&
+        item.rule in [0, 0, 1, 2, 2, 3, 4, 8, 10, 11, 12, 13, 16, 18]
+    )
+    return flagged
+  } catch (error) {
+    console.error('Error fetching AAO attestation:', error, handle)
+    throw error
+  }
+}
 //
 // TrackDetails
 //
