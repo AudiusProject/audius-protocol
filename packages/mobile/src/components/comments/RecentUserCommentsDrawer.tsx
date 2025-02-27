@@ -144,7 +144,7 @@ const CommentItem = ({ commentId }: { commentId: ID }) => {
               isEdited={false}
               isPreview={true}
               commentId={commentId}
-              mentions={[]}
+              mentions={comment.mentions ?? []}
               renderTimestamps={false}
               trackDuration={track.duration}
               navigation={navigation}
