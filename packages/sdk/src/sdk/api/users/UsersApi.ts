@@ -251,7 +251,7 @@ export class UsersApi extends GeneratedUsersApi {
       action: Action.UPDATE,
       metadata: JSON.stringify({
         cid,
-        data: updatedMetadata
+        data: snakecaseKeys(updatedMetadata)
       }),
       ...advancedOptions
     })
