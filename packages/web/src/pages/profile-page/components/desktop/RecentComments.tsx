@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import { useGetCommentById, useUserComments } from '@audius/common/api'
-import { Comment } from '@audius/common/models'
+import { Comment, Name } from '@audius/common/models'
 import { useTrack } from '@audius/common/src/api/tan-query/useTrack'
 import { useUser } from '@audius/common/src/api/tan-query/useUser'
 import {
@@ -19,6 +19,7 @@ import { OptionalHashId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
 import { TrackLink } from 'components/link'
+import { make, track as trackEvent } from 'services/analytics'
 import { push } from 'utils/navigation'
 import { fullCommentHistoryPage } from 'utils/route'
 
@@ -40,13 +41,26 @@ const CommentListItem = ({ id }: { id: number }) => {
     enabled: !!comment?.entityId
   })
 
-  if (!comment) return null
+  const trackCommentItemClick = useCallback(() => {
+    if (comment && comment.userId) {
+      trackEvent(
+        make({
+          eventName: Name.RECENT_COMMENTS_CLICK,
+          commentId: comment.id,
+          userId: comment.userId
+        })
+      )
+    }
+  }, [comment])
 
   const handleClick = () => {
     if (track) {
+      trackCommentItemClick()
       dispatch(push(track.permalink))
     }
   }
+
+  if (!comment) return null
 
   return (
     <Flex
@@ -59,17 +73,20 @@ const CommentListItem = ({ id }: { id: number }) => {
       onMouseEnter={() => setIsHovered(true)}
     >
       <Flex column gap='2xs' w='100%'>
-        {track ? (
-          <TrackLink
-            size='s'
-            variant='subdued'
-            showUnderline={isHovered}
-            trackId={track?.track_id}
-            ellipses
-          />
-        ) : (
-          <Skeleton w='80%' h={theme.typography.lineHeight.m} />
-        )}
+        <Flex w='100%' css={{ minWidth: 0 }}>
+          {track ? (
+            <TrackLink
+              size='s'
+              variant='subdued'
+              showUnderline={isHovered}
+              trackId={track?.track_id}
+              ellipses
+              onClick={trackCommentItemClick}
+            />
+          ) : (
+            <Skeleton w='80%' h={theme.typography.lineHeight.m} />
+          )}
+        </Flex>
 
         <Text variant='body' size='s' ellipses>
           {comment.message}

@@ -7,7 +7,7 @@ import {
   useUserByParams,
   useUserComments
 } from '@audius/common/api'
-import { Comment } from '@audius/common/models'
+import { Comment, Name } from '@audius/common/models'
 import { profilePage } from '@audius/common/src/utils/route'
 import {
   Box,
@@ -35,6 +35,7 @@ import { TrackLink, UserLink } from 'components/link'
 import Page from 'components/page/Page'
 import { useMainContentRef } from 'pages/MainContentContext'
 import { useProfileParams } from 'pages/profile-page/useProfileParams'
+import { make, track as trackEvent } from 'services/analytics'
 import { fullCommentHistoryPage } from 'utils/route'
 
 import { CommentText } from './CommentText'
@@ -66,18 +67,32 @@ const UserComment = ({ commentId }: { commentId: number }) => {
     isCurrentUserReacted
   } = comment
 
+  const trackId = HashId.parse(entityId)
   const { isPending: isUserPending } = useUser(userId)
-  const { data: track } = useTrack(HashId.parse(entityId))
+  const { data: track } = useTrack(trackId)
   const createdAtDate = useMemo(
     () => dayjs.utc(createdAt).toDate(),
     [createdAt]
   )
 
+  const trackUserCommentClick = useCallback(() => {
+    if (userId) {
+      trackEvent(
+        make({
+          eventName: Name.COMMENTS_HISTORY_CLICK,
+          commentId: id,
+          userId
+        })
+      )
+    }
+  }, [id, userId])
+
   const goToTrackPage = useCallback(() => {
     if (track) {
+      trackUserCommentClick()
       navigate(track.permalink)
     }
-  }, [track, navigate])
+  }, [track, trackUserCommentClick, navigate])
 
   if (!comment) return null
 
@@ -92,9 +107,17 @@ const UserComment = ({ commentId }: { commentId: number }) => {
             <Text variant='body' size='s' textAlign='left'>
               {track ? (
                 <>
-                  <TrackLink isActive trackId={track?.track_id} />
+                  <TrackLink
+                    isActive
+                    trackId={track?.track_id}
+                    onClick={trackUserCommentClick}
+                  />
                   <Text>{messages.by}</Text>
-                  <UserLink isActive userId={track?.owner_id} />
+                  <UserLink
+                    isActive
+                    userId={track?.owner_id}
+                    onClick={trackUserCommentClick}
+                  />
                 </>
               ) : (
                 <Skeleton w={180} h={20} />
@@ -111,6 +134,7 @@ const UserComment = ({ commentId }: { commentId: number }) => {
                     popover
                     size='l'
                     strength='strong'
+                    onClick={trackUserCommentClick}
                   />
                 ) : null}
                 <Flex gap='xs' alignItems='flex-end' h='100%'>
