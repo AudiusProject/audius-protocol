@@ -126,7 +126,7 @@ const CommentItem = ({ commentId }: { commentId: ID }) => {
               <Flex row gap='xs' alignItems='center'>
                 <Text
                   variant='body'
-                  size='l'
+                  size='m'
                   strength='strong'
                   ellipses
                   numberOfLines={1}
