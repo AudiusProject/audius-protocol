@@ -6,14 +6,20 @@ import { useDispatch } from 'react-redux'
 
 import { replyCommentFromSDK, transformAndCleanList } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
-import { Comment, Feature, ReplyComment } from '~/models'
+import { Comment, Feature, ID, ReplyComment } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
 import { useCurrentUserId } from '../useCurrentUserId'
 import { primeRelatedData } from '../utils/primeRelatedData'
 
-import { COMMENT_REPLIES_PAGE_SIZE, GetRepliesArgs, messages } from './types'
+import { COMMENT_REPLIES_PAGE_SIZE, messages } from './types'
 import { getCommentQueryKey, getCommentRepliesQueryKey } from './utils'
+
+export type GetRepliesArgs = {
+  commentId: ID
+  enabled?: boolean
+  pageSize?: number
+}
 
 export const useCommentReplies = ({
   commentId,

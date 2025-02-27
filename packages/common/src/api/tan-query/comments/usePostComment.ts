@@ -1,3 +1,4 @@
+import { CommentMention, EntityType } from '@audius/sdk'
 import {
   InfiniteData,
   useMutation,
@@ -10,13 +11,24 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { Comment, Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
-import { PostCommentArgs } from './types'
 import {
   addCommentCount,
   getCommentQueryKey,
   getTrackCommentListQueryKey,
   subtractCommentCount
 } from './utils'
+
+export type PostCommentArgs = {
+  userId: ID
+  trackId: ID
+  entityType?: EntityType
+  body: string
+  currentSort: any
+  parentCommentId?: ID
+  trackTimestampS?: number
+  mentions?: CommentMention[]
+  newId?: ID
+}
 
 export const usePostComment = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()

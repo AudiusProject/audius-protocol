@@ -3,11 +3,17 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
-import { Feature } from '~/models'
+import { Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
-import { UpdateTrackCommentNotificationSettingArgs, messages } from './types'
+import { messages } from './types'
 import { getTrackCommentNotificationSettingQueryKey } from './utils'
+
+export type UpdateTrackCommentNotificationSettingArgs = {
+  userId: ID
+  trackId: ID
+  action: EntityManagerAction.MUTE | EntityManagerAction.UNMUTE
+}
 
 export const useUpdateTrackCommentNotificationSetting = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()

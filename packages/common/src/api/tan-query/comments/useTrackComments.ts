@@ -15,13 +15,15 @@ import { toast } from '~/store/ui/toast/slice'
 
 import { primeRelatedData } from '../utils/primeRelatedData'
 
-import {
-  COMMENT_ROOT_PAGE_SIZE,
-  CommentOrReply,
-  GetCommentsByTrackArgs,
-  messages
-} from './types'
+import { COMMENT_ROOT_PAGE_SIZE, CommentOrReply, messages } from './types'
 import { getCommentQueryKey, getTrackCommentListQueryKey } from './utils'
+
+export type GetCommentsByTrackArgs = {
+  trackId: ID
+  userId: ID | null
+  sortMethod: any
+  pageSize?: number
+}
 
 export const useTrackComments = ({
   trackId,

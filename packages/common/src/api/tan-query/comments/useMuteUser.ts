@@ -10,8 +10,16 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { Comment, Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
-import { MuteUserArgs, messages } from './types'
+import { messages } from './types'
 import { getCommentQueryKey, getTrackCommentCountQueryKey } from './utils'
+
+export type MuteUserArgs = {
+  mutedUserId: ID
+  userId: ID
+  isMuted: boolean
+  trackId?: ID
+  currentSort?: any
+}
 
 export const useMuteUser = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()

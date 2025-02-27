@@ -10,12 +10,20 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { Comment, Feature, ID, ReplyComment } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
-import { ReportCommentArgs, messages } from './types'
+import { messages } from './types'
 import {
   getCommentQueryKey,
   getTrackCommentListQueryKey,
   subtractCommentCount
 } from './utils'
+
+export type ReportCommentArgs = {
+  commentId: ID
+  parentCommentId?: ID
+  userId: ID
+  trackId: ID
+  currentSort: any
+}
 
 export const useReportComment = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()

@@ -1,13 +1,23 @@
-import { EntityType } from '@audius/sdk'
+import { EntityType, CommentMention } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
-import { Feature } from '~/models'
+import { Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
-import { CommentOrReply, EditCommentArgs, messages } from './types'
+import { CommentOrReply, messages } from './types'
 import { getCommentQueryKey } from './utils'
+
+export type EditCommentArgs = {
+  commentId: ID
+  userId: ID
+  newMessage: string
+  mentions?: CommentMention[]
+  trackId: ID
+  currentSort: any
+  entityType?: EntityType
+}
 
 export const useEditComment = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()

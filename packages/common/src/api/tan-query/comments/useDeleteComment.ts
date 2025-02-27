@@ -10,12 +10,20 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { Comment, Feature, ID, ReplyComment } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
-import { CommentOrReply, DeleteCommentArgs, messages } from './types'
+import { CommentOrReply, messages } from './types'
 import {
   getCommentQueryKey,
   getTrackCommentListQueryKey,
   subtractCommentCount
 } from './utils'
+
+export type DeleteCommentArgs = {
+  commentId: ID
+  userId: ID
+  trackId: ID // track id
+  currentSort: any
+  parentCommentId?: ID
+}
 
 export const useDeleteComment = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()

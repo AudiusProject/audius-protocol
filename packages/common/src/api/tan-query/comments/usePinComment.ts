@@ -10,9 +10,19 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { Feature, ID } from '~/models'
 import { setPinnedCommentId } from '~/store/cache/tracks/actions'
 import { toast } from '~/store/ui/toast/slice'
+import { Nullable } from '~/utils'
 
-import { PinCommentArgs, messages } from './types'
+import { messages } from './types'
 import { getTrackCommentListQueryKey } from './utils'
+
+export type PinCommentArgs = {
+  commentId: ID
+  userId: ID
+  isPinned: boolean
+  trackId: ID
+  currentSort: any
+  previousPinnedCommentId?: Nullable<ID>
+}
 
 export const usePinComment = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
