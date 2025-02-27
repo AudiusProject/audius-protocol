@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 
 import {
-  useGetCommentById,
+  useComment,
   useTrack,
   useUser,
   useUserComments
@@ -52,7 +52,7 @@ const messages = {
 
 const CommentItem = ({ commentId }: { commentId: ID }) => {
   const { userId, onClose, navigation } = useRecentUserCommentsDrawer()
-  const { data: commentData, isLoading } = useGetCommentById(commentId)
+  const { data: commentData, isLoading } = useComment(commentId)
   const comment = commentData as Comment | ReplyComment | undefined
   const { data: track, isLoading: isTrackLoading } = useTrack(
     OptionalHashId.parse(comment?.entityId)

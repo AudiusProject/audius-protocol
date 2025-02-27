@@ -23,7 +23,7 @@ import {
 } from './types'
 import { getCommentQueryKey, getTrackCommentListQueryKey } from './utils'
 
-export const useGetCommentsByTrackId = ({
+export const useTrackComments = ({
   trackId,
   userId,
   sortMethod,

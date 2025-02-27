@@ -9,21 +9,22 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { Comment, Feature, ReplyComment } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
+import { useCurrentUserId } from '../useCurrentUserId'
 import { primeRelatedData } from '../utils/primeRelatedData'
 
 import { COMMENT_REPLIES_PAGE_SIZE, GetRepliesArgs, messages } from './types'
 import { getCommentQueryKey, getCommentRepliesQueryKey } from './utils'
 
-export const useGetCommentRepliesById = ({
+export const useCommentReplies = ({
   commentId,
   enabled,
-  currentUserId,
   pageSize = COMMENT_REPLIES_PAGE_SIZE
 }: GetRepliesArgs) => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const startingLimit = 3 // comments will load in with 3 already so we don't start pagination at 0
+  const { data: currentUserId } = useCurrentUserId()
 
   const queryRes = useInfiniteQuery({
     queryKey: getCommentRepliesQueryKey({ commentId, pageSize }),

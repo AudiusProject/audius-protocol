@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
 import {
-  useGetCommentById,
+  useComment,
   useTrack,
   useUser,
   useUserByParams,
@@ -50,7 +50,7 @@ const messages = {
 }
 
 const UserComment = ({ commentId }: { commentId: number }) => {
-  const res = useGetCommentById(commentId)
+  const res = useComment(commentId)
   const comment = res.data as Comment
   const navigate = useNavigate()
 

@@ -111,7 +111,6 @@ export type GetCommentsByTrackArgs = {
 
 export type GetRepliesArgs = {
   commentId: ID
-  currentUserId?: Nullable<ID>
   enabled?: boolean
   pageSize?: number
 }

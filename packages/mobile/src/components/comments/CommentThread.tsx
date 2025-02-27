@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { useGetCommentById, useGetCommentRepliesById } from '@audius/common/api'
+import { useComment, useCommentReplies } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import {
@@ -38,14 +38,13 @@ export const CommentThread = (props: CommentThreadProps) => {
   const { commentId } = props
   const { motion } = useTheme()
   const { entityId } = useCurrentCommentSection()
-  const { data: rootCommentData } = useGetCommentById(commentId)
+  const { data: rootCommentData } = useComment(commentId)
   const rootComment = rootCommentData as Comment // We can safely assume that this is a parent comment
 
   const [hiddenReplies, setHiddenReplies] = useState<{
     [parentCommentId: number]: boolean
   }>({})
 
-  const { currentUserId } = useCurrentCommentSection()
   const toggleReplies = (commentId: ID) => {
     const newHiddenReplies = { ...hiddenReplies }
     newHiddenReplies[commentId] = !newHiddenReplies[commentId]
@@ -62,9 +61,8 @@ export const CommentThread = (props: CommentThreadProps) => {
     )
   }
   const [hasRequestedMore, setHasRequestedMore] = useState(false)
-  const { isFetching: isFetchingReplies } = useGetCommentRepliesById({
+  const { isFetching: isFetchingReplies } = useCommentReplies({
     commentId,
-    currentUserId,
     enabled: hasRequestedMore
   })
 
