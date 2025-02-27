@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react'
 
-import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import { Name, type ID } from '@audius/common/models'
 import {
@@ -8,6 +7,7 @@ import {
   timestampRegex
 } from '@audius/common/utils'
 import type { CommentMention } from '@audius/sdk'
+import type { NavigationProp, ParamListBase } from '@react-navigation/native'
 import type { GestureResponderEvent } from 'react-native'
 import { useToggle } from 'react-use'
 
@@ -26,17 +26,26 @@ export type CommentTextProps = {
   isEdited?: boolean
   isPreview?: boolean
   commentId: ID
+  trackDuration: number
+  renderTimestamps?: boolean
+  onCloseDrawer?: () => void
+  navigation?: NavigationProp<ParamListBase>
 }
 
 export const CommentText = (props: CommentTextProps) => {
-  const { children, isEdited, isPreview, mentions, commentId } = props
+  const {
+    children,
+    isEdited,
+    isPreview,
+    mentions,
+    commentId,
+    trackDuration,
+    onCloseDrawer,
+    renderTimestamps = true,
+    navigation
+  } = props
   const [isOverflowing, setIsOverflowing] = useState(false)
   const [isExpanded, toggleIsExpanded] = useToggle(false)
-  const {
-    track: { duration },
-    navigation,
-    closeDrawer
-  } = useCurrentCommentSection()
 
   const onTextLayout = useCallback(
     (e) => {
@@ -67,9 +76,9 @@ export const CommentText = (props: CommentTextProps) => {
           })
         )
       }
-      closeDrawer?.()
+      onCloseDrawer?.()
     },
-    [closeDrawer, commentId]
+    [onCloseDrawer, commentId]
   )
 
   const handlePressTimestamp = useCallback(
@@ -114,7 +123,8 @@ export const CommentText = (props: CommentTextProps) => {
               if (matches.length === 0) return null
 
               const timestampSeconds = getDurationFromTimestampMatch(matches[0])
-              const showLink = timestampSeconds <= duration
+              const showLink =
+                renderTimestamps && timestampSeconds <= trackDuration
 
               return showLink ? (
                 <TimestampLink

@@ -5,7 +5,8 @@ import {
   TrackCommentsSortMethodEnum as CommentSortMethod,
   EntityManagerAction,
   EntityType,
-  Id
+  Id,
+  OptionalId
 } from '@audius/sdk'
 import {
   InfiniteData,
@@ -94,7 +95,7 @@ export const useUserComments = ({
       const sdk = await audiusSdk()
       const commentsRes = await sdk.users.userComments({
         id: Id.parse(userId),
-        userId: currentUserId?.toString() ?? undefined,
+        userId: OptionalId.parse(currentUserId),
         offset: pageParam,
         limit: pageSize
       })
