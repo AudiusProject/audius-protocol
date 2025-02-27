@@ -236,6 +236,7 @@ def build_comments_query(
     )
     from src.models.comments.comment_thread import CommentThread
     from src.models.moderation.muted_user import MutedUser
+    from src.models.tracks.track import Track
     from src.models.users.aggregate_user import AggregateUser
 
     mentioned_users = base_query["mentioned_users"]
@@ -376,6 +377,17 @@ def build_comments_query(
             Comment.is_visible == True,
             Comment.entity_type == "Track",
         )
+
+        # Join with Track and filter out unlisted tracks
+        query = query.join(
+            Track,
+            and_(
+                Comment.entity_id == Track.track_id,
+                Track.is_current == True,
+                Track.is_unlisted == False,
+            ),
+        )
+
         query = query.group_by(
             Comment.comment_id,
             react_count_subquery.c.react_count,
