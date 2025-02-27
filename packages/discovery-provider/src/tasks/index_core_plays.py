@@ -8,6 +8,7 @@ from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.social.play import Play
+from src.models.tracks.track import Track
 from src.tasks.core.gen.protocol_pb2 import BlockResponse, SignedTransaction
 
 
@@ -25,9 +26,11 @@ class PlayInfo(TypedDict):
 
 
 class PlayChallengeInfo(TypedDict):
+    slot: int
     user_id: int
     created_at: datetime
-    slot: int
+    track_id: int
+    listener_id: Optional[int]
 
 
 def index_core_plays(
@@ -106,6 +109,8 @@ def index_core_play(
                     "slot": slot,
                     "user_id": user_id,
                     "created_at": timestamp,
+                    "track_id": track_id,
+                    "listener_id": user_id,
                 }
             )
 
@@ -116,6 +121,8 @@ def index_core_play(
         session.execute(Play.__table__.insert().values(plays))
         logger.debug("index_core_plays.py | Dispatching listen events")
         listen_dispatch_start = time.time()
+
+        # Process all events - both listener and track owner events
         for event in challenge_bus_events:
             created_at = event.get("created_at")
             if not created_at:
@@ -123,6 +130,8 @@ def index_core_play(
                     f"index_core_plays.py | Skipping event due to created_at for event: {event}"
                 )
                 continue
+
+            # Dispatch track_listen events (for the listener)
             challenge_bus.dispatch(
                 ChallengeEvent.track_listen,
                 event["slot"],
@@ -130,6 +139,31 @@ def index_core_play(
                 event["user_id"],
                 {"created_at": created_at.timestamp()},
             )
+
+            # Get the track owner ID for the track_played event
+            track = (
+                session.query(Track)
+                .filter(
+                    Track.track_id == event["track_id"],
+                    Track.is_current == True,
+                    Track.is_delete == False,
+                )
+                .first()
+            )
+
+            # Dispatch track_played events (for the track owner)
+            if track:
+                challenge_bus.dispatch(
+                    ChallengeEvent.track_played,
+                    event["slot"],
+                    created_at,
+                    track.owner_id,  # This is the track owner's ID
+                    {
+                        "created_at": created_at.timestamp(),
+                        "listener_id": event["listener_id"],
+                    },
+                )
+
         listen_dispatch_end = time.time()
         listen_dispatch_diff = listen_dispatch_end - listen_dispatch_start
         logger.debug(f"dispatched listen events in {listen_dispatch_diff}")
