@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 
 import {
   CommentMention,
-  TrackCommentsSortMethodEnum as CommentSortMethod,
+  GetTrackCommentsSortMethodEnum as CommentSortMethod,
   EntityManagerAction,
   EntityType,
   Id,
@@ -39,11 +39,12 @@ import { Nullable } from '~/utils'
 
 import { QUERY_KEYS } from './queryKeys'
 import { useCurrentUserId } from './useCurrentUserId'
+import { primeRelatedData } from './utils/primeRelatedData'
 
 type CommentOrReply = Comment | ReplyComment
 
 const COMMENT_ROOT_PAGE_SIZE = 15
-const COMMENT_REPLIES_PAGE_SIZE = 3
+const COMMENT_REPLIES_PAGE_SIZE = 15
 
 const messages = {
   loadError: (type: 'comments' | 'replies') =>
@@ -93,7 +94,7 @@ export const useUserComments = ({
     queryKey: [QUERY_KEYS.userCommentList, userId, pageSize],
     queryFn: async ({ pageParam }): Promise<ID[]> => {
       const sdk = await audiusSdk()
-      const commentsRes = await sdk.users.userComments({
+      const commentsRes = await sdk.full.users.getUserComments({
         id: Id.parse(userId),
         userId: OptionalId.parse(currentUserId),
         offset: pageParam,
@@ -104,6 +105,8 @@ export const useUserComments = ({
         commentsRes.data,
         commentFromSDK
       )
+
+      primeRelatedData({ related: commentsRes.related, queryClient, dispatch })
 
       // Populate individual comment cache
       commentList.forEach((comment) => {
@@ -176,7 +179,7 @@ export const useGetCommentsByTrackId = ({
     queryKey: getTrackCommentListQueryKey({ trackId, sortMethod, pageSize }),
     queryFn: async ({ pageParam }): Promise<ID[]> => {
       const sdk = await audiusSdk()
-      const commentsRes = await sdk.tracks.trackComments({
+      const commentsRes = await sdk.full.tracks.getTrackComments({
         trackId: Id.parse(trackId),
         offset: pageParam,
         limit: pageSize,
@@ -189,6 +192,8 @@ export const useGetCommentsByTrackId = ({
         commentsRes.data,
         commentFromSDK
       )
+
+      primeRelatedData({ related: commentsRes.related, queryClient, dispatch })
 
       // Populate individual comment cache
       commentList.forEach((comment) => {
@@ -336,7 +341,7 @@ export const useTrackCommentCount = (
     enabled: !!trackId,
     queryFn: async () => {
       const sdk = await audiusSdk()
-      const res = await sdk.tracks.trackCommentCount({
+      const res = await sdk.tracks.getTrackCommentCount({
         trackId: Id.parse(trackId as ID), // Its safe to cast to ID because we only enable the query with !!trackId above
         userId: userId?.toString() ?? undefined // userId can be undefined if not logged in
       })
@@ -401,7 +406,7 @@ export const useGetCommentRepliesById = ({
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
-  const startingLimit = pageSize // comments will load in with 3 already so we don't start pagination at 0
+  const startingLimit = 3 // comments will load in with 3 already so we don't start pagination at 0
 
   const queryRes = useInfiniteQuery({
     queryKey: getCommentRepliesQueryKey({ commentId, pageSize }),
@@ -413,16 +418,20 @@ export const useGetCommentRepliesById = ({
     },
     queryFn: async ({ pageParam }): Promise<ReplyComment[]> => {
       const sdk = await audiusSdk()
-      const commentsRes = await sdk.comments.getCommentReplies({
+      const response = await sdk.full.comments.getCommentReplies({
         commentId: Id.parse(commentId),
         userId: currentUserId?.toString(),
         limit: pageSize,
         offset: pageParam
       })
+
       const replyList = transformAndCleanList(
-        commentsRes.data,
+        response.data,
         replyCommentFromSDK
       )
+
+      primeRelatedData({ related: response.related, queryClient, dispatch })
+
       // Add the replies to our parent comment replies list
       queryClient.setQueryData(
         getCommentQueryKey(commentId),
@@ -1102,7 +1111,7 @@ export const useGetTrackCommentNotificationSetting = (
     queryFn: async () => {
       if (!currentUserId) return null
       const sdk = await audiusSdk()
-      return await sdk.tracks.trackCommentNotificationSetting({
+      return await sdk.tracks.getTrackCommentNotificationSetting({
         trackId: Id.parse(trackId),
         userId: Id.parse(currentUserId)
       })

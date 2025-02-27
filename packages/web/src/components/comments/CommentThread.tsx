@@ -23,12 +23,11 @@ export const CommentThread = ({ commentId }: { commentId: ID }) => {
 
   const { currentUserId, entityId } = useCurrentCommentSection()
   const [hasRequestedMore, setHasRequestedMore] = useState(false)
-  const { fetchNextPage: loadMoreReplies, isFetching: isFetchingReplies } =
-    useGetCommentRepliesById({
-      commentId,
-      currentUserId,
-      enabled: hasRequestedMore
-    })
+  const { isFetching: isFetchingReplies } = useGetCommentRepliesById({
+    commentId,
+    currentUserId,
+    enabled: hasRequestedMore
+  })
 
   const [hiddenReplies, setHiddenReplies] = useState<{
     [parentCommentId: string]: boolean
@@ -51,20 +50,7 @@ export const CommentThread = ({ commentId }: { commentId: ID }) => {
   }
 
   const handleLoadMoreReplies = () => {
-    if (hasRequestedMore) {
-      loadMoreReplies()
-
-      track(
-        make({
-          eventName: Name.COMMENTS_LOAD_MORE_REPLIES,
-          commentId,
-          trackId: entityId
-        })
-      )
-    } else {
-      // Since we have
-      setHasRequestedMore(true)
-    }
+    setHasRequestedMore(true)
   }
 
   // Combine the replies from the root comment and the additional loaded replies

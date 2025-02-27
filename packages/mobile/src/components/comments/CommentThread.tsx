@@ -62,28 +62,14 @@ export const CommentThread = (props: CommentThreadProps) => {
     )
   }
   const [hasRequestedMore, setHasRequestedMore] = useState(false)
-  const { fetchNextPage: loadMoreReplies, isFetching: isFetchingReplies } =
-    useGetCommentRepliesById({
-      commentId,
-      currentUserId,
-      enabled: hasRequestedMore
-    })
+  const { isFetching: isFetchingReplies } = useGetCommentRepliesById({
+    commentId,
+    currentUserId,
+    enabled: hasRequestedMore
+  })
 
   const handleLoadMoreReplies = () => {
-    if (hasRequestedMore) {
-      loadMoreReplies()
-      track(
-        make({
-          eventName: Name.COMMENTS_LOAD_MORE_REPLIES,
-          commentId,
-          trackId: entityId
-        })
-      )
-    } else {
-      // If hasLoadedMore is false, this is the first time the user is requesting more replies
-      // In this case audius-query will automatically fetch the first page of replies, no need to trigger via loadMore()
-      setHasRequestedMore(true)
-    }
+    setHasRequestedMore(true)
   }
 
   const [repliesHeight, setRepliesHeight] = useState<number | null>(null)

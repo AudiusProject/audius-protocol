@@ -1,6 +1,7 @@
 .openapi-generator-ignore
 apis/ChallengesApi.ts
 apis/CidDataApi.ts
+apis/CommentsApi.ts
 apis/NotificationsApi.ts
 apis/PlaylistsApi.ts
 apis/ReactionsApi.ts
@@ -38,6 +39,8 @@ models/ClaimableRewardNotificationActionData.ts
 models/CollectionActivityFull.ts
 models/CollectionActivityFullWithoutTracks.ts
 models/CollectionLibraryResponseFull.ts
+models/Comment.ts
+models/CommentMention.ts
 models/CommentMentionNotification.ts
 models/CommentMentionNotificationAction.ts
 models/CommentMentionNotificationActionData.ts
@@ -47,6 +50,7 @@ models/CommentNotificationActionData.ts
 models/CommentReactionNotification.ts
 models/CommentReactionNotificationAction.ts
 models/CommentReactionNotificationActionData.ts
+models/CommentRepliesResponse.ts
 models/CommentThreadNotification.ts
 models/CommentThreadNotificationAction.ts
 models/CommentThreadNotificationActionData.ts
@@ -144,6 +148,7 @@ models/Reactions.ts
 models/ReceiveTipNotification.ts
 models/ReceiveTipNotificationAction.ts
 models/ReceiveTipNotificationActionData.ts
+models/Related.ts
 models/RelatedArtistResponseFull.ts
 models/RemixNotification.ts
 models/RemixNotificationAction.ts
@@ -153,6 +158,7 @@ models/RemixersCountResponse.ts
 models/RemixesResponse.ts
 models/RemixesResponseFull.ts
 models/RemixingResponse.ts
+models/ReplyComment.ts
 models/Repost.ts
 models/RepostNotification.ts
 models/RepostNotificationAction.ts
@@ -204,6 +210,7 @@ models/TrackAddedToPurchasedAlbumNotification.ts
 models/TrackAddedToPurchasedAlbumNotificationAction.ts
 models/TrackAddedToPurchasedAlbumNotificationActionData.ts
 models/TrackArtworkFull.ts
+models/TrackCommentsResponseFull.ts
 models/TrackFavoritesResponseFull.ts
 models/TrackFeedItem.ts
 models/TrackFull.ts
@@ -235,6 +242,7 @@ models/UsdcPurchaseSellerNotification.ts
 models/UsdcPurchaseSellerNotificationAction.ts
 models/UsdcPurchaseSellerNotificationActionData.ts
 models/UserAccountResponseFull.ts
+models/UserCommentsResponseFull.ts
 models/UserFeedItem.ts
 models/UserFeedResponse.ts
 models/UserFull.ts
