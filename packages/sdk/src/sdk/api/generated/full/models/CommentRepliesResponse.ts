@@ -36,69 +36,69 @@ import {
 /**
  * 
  * @export
- * @interface CommentResponse
+ * @interface CommentRepliesResponse
  */
-export interface CommentResponse {
+export interface CommentRepliesResponse {
     /**
      * 
      * @type {number}
-     * @memberof CommentResponse
+     * @memberof CommentRepliesResponse
      */
     latestChainBlock: number;
     /**
      * 
      * @type {number}
-     * @memberof CommentResponse
+     * @memberof CommentRepliesResponse
      */
     latestIndexedBlock: number;
     /**
      * 
      * @type {number}
-     * @memberof CommentResponse
+     * @memberof CommentRepliesResponse
      */
     latestChainSlotPlays: number;
     /**
      * 
      * @type {number}
-     * @memberof CommentResponse
+     * @memberof CommentRepliesResponse
      */
     latestIndexedSlotPlays: number;
     /**
      * 
      * @type {string}
-     * @memberof CommentResponse
+     * @memberof CommentRepliesResponse
      */
     signature: string;
     /**
      * 
      * @type {string}
-     * @memberof CommentResponse
+     * @memberof CommentRepliesResponse
      */
     timestamp: string;
     /**
      * 
      * @type {VersionMetadata}
-     * @memberof CommentResponse
+     * @memberof CommentRepliesResponse
      */
     version: VersionMetadata;
     /**
      * 
      * @type {Array<ReplyComment>}
-     * @memberof CommentResponse
+     * @memberof CommentRepliesResponse
      */
     data?: Array<ReplyComment>;
     /**
      * 
      * @type {Related}
-     * @memberof CommentResponse
+     * @memberof CommentRepliesResponse
      */
     related?: Related;
 }
 
 /**
- * Check if a given object implements the CommentResponse interface.
+ * Check if a given object implements the CommentRepliesResponse interface.
  */
-export function instanceOfCommentResponse(value: object): value is CommentResponse {
+export function instanceOfCommentRepliesResponse(value: object): value is CommentRepliesResponse {
     let isInstance = true;
     isInstance = isInstance && "latestChainBlock" in value && value["latestChainBlock"] !== undefined;
     isInstance = isInstance && "latestIndexedBlock" in value && value["latestIndexedBlock"] !== undefined;
@@ -111,11 +111,11 @@ export function instanceOfCommentResponse(value: object): value is CommentRespon
     return isInstance;
 }
 
-export function CommentResponseFromJSON(json: any): CommentResponse {
-    return CommentResponseFromJSONTyped(json, false);
+export function CommentRepliesResponseFromJSON(json: any): CommentRepliesResponse {
+    return CommentRepliesResponseFromJSONTyped(json, false);
 }
 
-export function CommentResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): CommentResponse {
+export function CommentRepliesResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): CommentRepliesResponse {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -133,7 +133,7 @@ export function CommentResponseFromJSONTyped(json: any, ignoreDiscriminator: boo
     };
 }
 
-export function CommentResponseToJSON(value?: CommentResponse | null): any {
+export function CommentRepliesResponseToJSON(value?: CommentRepliesResponse | null): any {
     if (value === undefined) {
         return undefined;
     }

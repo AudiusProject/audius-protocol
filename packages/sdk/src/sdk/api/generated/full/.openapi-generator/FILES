@@ -50,7 +50,7 @@ models/CommentNotificationActionData.ts
 models/CommentReactionNotification.ts
 models/CommentReactionNotificationAction.ts
 models/CommentReactionNotificationActionData.ts
-models/CommentResponse.ts
+models/CommentRepliesResponse.ts
 models/CommentThreadNotification.ts
 models/CommentThreadNotificationAction.ts
 models/CommentThreadNotificationActionData.ts

@@ -387,9 +387,8 @@ def test_get_user_comments_related_field(app):
             "user_id": 1,
             "current_user_id": 2,
             "sort_method": "newest",
-            "include_related": True,
         }
-        response = get_user_comments(args)
+        response = get_user_comments(args, include_related=True)
 
         # Check that the response has the expected structure
         assert "data" in response

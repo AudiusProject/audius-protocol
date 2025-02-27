@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 
 import {
   CommentMention,
-  TrackCommentsSortMethodEnum as CommentSortMethod,
+  GetTrackCommentsSortMethodEnum as CommentSortMethod,
   EntityManagerAction,
   EntityType,
   Id
@@ -93,7 +93,7 @@ export const useUserComments = ({
     queryKey: [QUERY_KEYS.userCommentList, userId, pageSize],
     queryFn: async ({ pageParam }): Promise<ID[]> => {
       const sdk = await audiusSdk()
-      const commentsRes = await sdk.full.users.userComments({
+      const commentsRes = await sdk.full.users.getUserComments({
         id: Id.parse(userId),
         userId: currentUserId?.toString() ?? undefined,
         offset: pageParam,
@@ -178,7 +178,7 @@ export const useGetCommentsByTrackId = ({
     queryKey: getTrackCommentListQueryKey({ trackId, sortMethod, pageSize }),
     queryFn: async ({ pageParam }): Promise<ID[]> => {
       const sdk = await audiusSdk()
-      const commentsRes = await sdk.full.tracks.trackComments({
+      const commentsRes = await sdk.full.tracks.getTrackComments({
         trackId: Id.parse(trackId),
         offset: pageParam,
         limit: pageSize,
@@ -340,7 +340,7 @@ export const useTrackCommentCount = (
     enabled: !!trackId,
     queryFn: async () => {
       const sdk = await audiusSdk()
-      const res = await sdk.tracks.trackCommentCount({
+      const res = await sdk.tracks.getTrackCommentCount({
         trackId: Id.parse(trackId as ID), // Its safe to cast to ID because we only enable the query with !!trackId above
         userId: userId?.toString() ?? undefined // userId can be undefined if not logged in
       })
@@ -417,7 +417,7 @@ export const useGetCommentRepliesById = ({
     },
     queryFn: async ({ pageParam }): Promise<ReplyComment[]> => {
       const sdk = await audiusSdk()
-      const response = await sdk.full.comments.commentReplies({
+      const response = await sdk.full.comments.getCommentReplies({
         commentId: Id.parse(commentId),
         userId: currentUserId?.toString(),
         limit: pageSize,
@@ -1110,7 +1110,7 @@ export const useGetTrackCommentNotificationSetting = (
     queryFn: async () => {
       if (!currentUserId) return null
       const sdk = await audiusSdk()
-      return await sdk.tracks.trackCommentNotificationSetting({
+      return await sdk.tracks.getTrackCommentNotificationSetting({
         trackId: Id.parse(trackId),
         userId: Id.parse(currentUserId)
       })

@@ -3208,7 +3208,7 @@ user_comments_response = make_response(
 class UserComments(Resource):
     @record_metrics
     @ns.doc(
-        id="""User Comments""",
+        id="""Get User Comments""",
         description="""Get user comment history""",
         params={"id": "A User ID"},
         responses={
@@ -3243,7 +3243,7 @@ user_comments_response_full = make_full_response_with_related(
 class FullUserComments(Resource):
     @record_metrics
     @ns.doc(
-        id="""User Comments""",
+        id="""Get User Comments""",
         description="""Get user comment history""",
         params={"id": "A User ID"},
         responses={

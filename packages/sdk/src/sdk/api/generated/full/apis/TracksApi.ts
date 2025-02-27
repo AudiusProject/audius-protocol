@@ -116,6 +116,14 @@ export interface GetTrackRequest {
     userId?: string;
 }
 
+export interface GetTrackCommentsRequest {
+    trackId: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+    sortMethod?: GetTrackCommentsSortMethodEnum;
+}
+
 export interface GetTrackRemixParentsRequest {
     trackId: string;
     offset?: number;
@@ -218,14 +226,6 @@ export interface GetUsersFromRepostsRequest {
     offset?: number;
     limit?: number;
     userId?: string;
-}
-
-export interface TrackCommentsRequest {
-    trackId: string;
-    offset?: number;
-    limit?: number;
-    userId?: string;
-    sortMethod?: TrackCommentsSortMethodEnum;
 }
 
 /**
@@ -609,6 +609,53 @@ export class TracksApi extends runtime.BaseAPI {
      */
     async getTrack(params: GetTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTrackResponse> {
         const response = await this.getTrackRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Get a list of comments for a track
+     */
+    async getTrackCommentsRaw(params: GetTrackCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackCommentsResponseFull>> {
+        if (params.trackId === null || params.trackId === undefined) {
+            throw new runtime.RequiredError('trackId','Required parameter params.trackId was null or undefined when calling getTrackComments.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/{track_id}/comments`.replace(`{${"track_id"}}`, encodeURIComponent(String(params.trackId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TrackCommentsResponseFullFromJSON(jsonValue));
+    }
+
+    /**
+     * Get a list of comments for a track
+     */
+    async getTrackComments(params: GetTrackCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackCommentsResponseFull> {
+        const response = await this.getTrackCommentsRaw(params, initOverrides);
         return await response.value();
     }
 
@@ -1253,53 +1300,6 @@ export class TracksApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
-     * @hidden
-     * Get a list of comments for a track
-     */
-    async trackCommentsRaw(params: TrackCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackCommentsResponseFull>> {
-        if (params.trackId === null || params.trackId === undefined) {
-            throw new runtime.RequiredError('trackId','Required parameter params.trackId was null or undefined when calling trackComments.');
-        }
-
-        const queryParameters: any = {};
-
-        if (params.offset !== undefined) {
-            queryParameters['offset'] = params.offset;
-        }
-
-        if (params.limit !== undefined) {
-            queryParameters['limit'] = params.limit;
-        }
-
-        if (params.userId !== undefined) {
-            queryParameters['user_id'] = params.userId;
-        }
-
-        if (params.sortMethod !== undefined) {
-            queryParameters['sort_method'] = params.sortMethod;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        const response = await this.request({
-            path: `/tracks/{track_id}/comments`.replace(`{${"track_id"}}`, encodeURIComponent(String(params.trackId))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => TrackCommentsResponseFullFromJSON(jsonValue));
-    }
-
-    /**
-     * Get a list of comments for a track
-     */
-    async trackComments(params: TrackCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackCommentsResponseFull> {
-        const response = await this.trackCommentsRaw(params, initOverrides);
-        return await response.value();
-    }
-
 }
 
 /**
@@ -1331,6 +1331,15 @@ export const GetRecommendedTracksWithVersionTimeEnum = {
     AllTime: 'allTime'
 } as const;
 export type GetRecommendedTracksWithVersionTimeEnum = typeof GetRecommendedTracksWithVersionTimeEnum[keyof typeof GetRecommendedTracksWithVersionTimeEnum];
+/**
+ * @export
+ */
+export const GetTrackCommentsSortMethodEnum = {
+    Top: 'top',
+    Newest: 'newest',
+    Timestamp: 'timestamp'
+} as const;
+export type GetTrackCommentsSortMethodEnum = typeof GetTrackCommentsSortMethodEnum[keyof typeof GetTrackCommentsSortMethodEnum];
 /**
  * @export
  */
@@ -1380,12 +1389,3 @@ export const GetUnderTheRadarTracksFilterEnum = {
     Original: 'original'
 } as const;
 export type GetUnderTheRadarTracksFilterEnum = typeof GetUnderTheRadarTracksFilterEnum[keyof typeof GetUnderTheRadarTracksFilterEnum];
-/**
- * @export
- */
-export const TrackCommentsSortMethodEnum = {
-    Top: 'top',
-    Newest: 'newest',
-    Timestamp: 'timestamp'
-} as const;
-export type TrackCommentsSortMethodEnum = typeof TrackCommentsSortMethodEnum[keyof typeof TrackCommentsSortMethodEnum];

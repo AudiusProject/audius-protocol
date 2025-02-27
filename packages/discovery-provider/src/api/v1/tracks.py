@@ -490,7 +490,7 @@ track_comments_response = make_response(
 class TrackComments(Resource):
     @record_metrics
     @ns.doc(
-        id="""Track Comments""",
+        id="""Get Track Comments""",
         description="""Get a list of comments for a track""",
         params={"track_id": "A Track ID"},
         responses={
@@ -522,7 +522,7 @@ track_comments_response_full = make_full_response_with_related(
 class FullTrackComments(Resource):
     @record_metrics
     @ns.doc(
-        id="""Track Comments""",
+        id="""Get Track Comments""",
         description="""Get a list of comments for a track""",
         params={"track_id": "A Track ID"},
         responses={
@@ -569,7 +569,7 @@ track_comment_count_response = make_response(
 class TrackCommentCount(Resource):
     @record_metrics
     @ns.doc(
-        id="""Track Comment Count""",
+        id="""Get Track Comment Count""",
         description="""Get the comment count for a track""",
         params={"track_id": "A Track ID"},
         responses={
@@ -593,7 +593,7 @@ class TrackCommentCount(Resource):
 class TrackCommentNotificationSetting(Resource):
     @record_metrics
     @ns.doc(
-        id="""Track Comment Notification Setting""",
+        id="""Get Track Comment Notification Setting""",
         description="""Get the comment notification setting for a track""",
         params={"track_id": "A Track ID"},
         responses={

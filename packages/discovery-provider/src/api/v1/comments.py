@@ -23,7 +23,7 @@ ns = Namespace("comments", description="Comment related operations")
 full_ns = Namespace("comments", description="Full comment operations")
 
 reply_response = make_response(
-    "comment_response", ns, fields.Nested(reply_comment_model, as_list=True)
+    "comment_replies_response", ns, fields.Nested(reply_comment_model, as_list=True)
 )
 
 
@@ -31,7 +31,7 @@ reply_response = make_response(
 class CommentReplies(Resource):
     @record_metrics
     @ns.doc(
-        id="""Comment Replies""",
+        id="""Get Comment Replies""",
         description="Gets replies to a parent comment",
         params={"comment_id": "A Comment ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
@@ -50,7 +50,9 @@ class CommentReplies(Resource):
 
 
 full_reply_response = make_full_response_with_related(
-    "comment_response", full_ns, fields.Nested(reply_comment_model, as_list=True)
+    "comment_replies_response",
+    full_ns,
+    fields.Nested(reply_comment_model, as_list=True),
 )
 
 
@@ -58,7 +60,7 @@ full_reply_response = make_full_response_with_related(
 class FullCommentReplies(Resource):
     @record_metrics
     @full_ns.doc(
-        id="""Comment Replies""",
+        id="""Get Comment Replies""",
         description="Gets replies to a parent comment",
         params={"comment_id": "A Comment ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},

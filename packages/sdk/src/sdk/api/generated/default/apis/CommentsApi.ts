@@ -16,17 +16,17 @@
 
 import * as runtime from '../runtime';
 import type {
-  CommentResponse,
+  CommentRepliesResponse,
   UnclaimedIdResponse,
 } from '../models';
 import {
-    CommentResponseFromJSON,
-    CommentResponseToJSON,
+    CommentRepliesResponseFromJSON,
+    CommentRepliesResponseToJSON,
     UnclaimedIdResponseFromJSON,
     UnclaimedIdResponseToJSON,
 } from '../models';
 
-export interface CommentRepliesRequest {
+export interface GetCommentRepliesRequest {
     commentId: string;
     offset?: number;
     limit?: number;
@@ -42,9 +42,9 @@ export class CommentsApi extends runtime.BaseAPI {
      * @hidden
      * Gets replies to a parent comment
      */
-    async commentRepliesRaw(params: CommentRepliesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CommentResponse>> {
+    async getCommentRepliesRaw(params: GetCommentRepliesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CommentRepliesResponse>> {
         if (params.commentId === null || params.commentId === undefined) {
-            throw new runtime.RequiredError('commentId','Required parameter params.commentId was null or undefined when calling commentReplies.');
+            throw new runtime.RequiredError('commentId','Required parameter params.commentId was null or undefined when calling getCommentReplies.');
         }
 
         const queryParameters: any = {};
@@ -70,14 +70,14 @@ export class CommentsApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => CommentResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => CommentRepliesResponseFromJSON(jsonValue));
     }
 
     /**
      * Gets replies to a parent comment
      */
-    async commentReplies(params: CommentRepliesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CommentResponse> {
-        const response = await this.commentRepliesRaw(params, initOverrides);
+    async getCommentReplies(params: GetCommentRepliesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CommentRepliesResponse> {
+        const response = await this.getCommentRepliesRaw(params, initOverrides);
         return await response.value();
     }
 

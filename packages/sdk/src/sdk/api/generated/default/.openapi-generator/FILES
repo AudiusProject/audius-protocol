@@ -25,7 +25,7 @@ models/CollectionActivity.ts
 models/Comment.ts
 models/CommentMention.ts
 models/CommentNotificationSetting.ts
-models/CommentResponse.ts
+models/CommentRepliesResponse.ts
 models/ConnectedWallets.ts
 models/ConnectedWalletsResponse.ts
 models/CoverPhoto.ts
