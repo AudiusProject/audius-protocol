@@ -5,7 +5,9 @@ import type { StyleProp, ViewStyle } from 'react-native'
 
 import type { IconButtonProps } from '@audius/harmony-native'
 import {
+  IconDonate,
   IconInstagram,
+  IconLink,
   IconTikTok,
   IconTwitter,
   Text
@@ -17,6 +19,9 @@ import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
 
 import { useSelectProfile } from '../selectors'
+
+const prependProtocol = (url: Nullable<string>) =>
+  !url?.match(/^https?:\/\//i) ? `https://${url}` : url
 
 const useStyles = makeStyles(({ spacing }) => ({
   iconSkeleton: {
@@ -60,7 +65,7 @@ export const SocialLink = (props: SocialLinkProps) => {
   if (text === null || text === '') return null
 
   const iconButtonElement = (
-    <Icon size='l' color={isActive ? 'active' : 'default'} />
+    <Icon height={28} width={28} color={isActive ? 'active' : 'default'} />
   )
 
   if (showText)
@@ -171,6 +176,32 @@ export const TikTokSocialLink = (props: TikTokSocialLinkProps) => {
         handle: sanitizedHandle,
         tikTokHandle: tiktok_handle as string
       })}
+      {...props}
+    />
+  )
+}
+
+export const WebsiteSocialLink = (props: Partial<SocialLinkProps>) => {
+  const { website } = useSelectProfile(['website'])
+
+  return (
+    <SocialLink
+      url={prependProtocol(website)}
+      text={website}
+      icon={IconLink}
+      {...props}
+    />
+  )
+}
+
+export const DonationSocialLink = (props: Partial<SocialLinkProps>) => {
+  const { donation } = useSelectProfile(['donation'])
+
+  return (
+    <SocialLink
+      url={prependProtocol(donation)}
+      text={donation}
+      icon={IconDonate}
       {...props}
     />
   )

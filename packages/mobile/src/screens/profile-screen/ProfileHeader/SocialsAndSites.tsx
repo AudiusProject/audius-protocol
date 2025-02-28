@@ -1,16 +1,13 @@
 import { View } from 'react-native'
-import type { Nullable } from '~/utils'
 
-import { IconDonate, IconLink } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 
-import { useSelectProfile } from '../selectors'
-
 import {
+  DonationSocialLink,
   InstagramSocialLink,
-  SocialLink,
   TikTokSocialLink,
-  TwitterSocialLink
+  TwitterSocialLink,
+  WebsiteSocialLink
 } from './SocialLink'
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
@@ -29,35 +26,16 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   }
 }))
 
-// adds https to urls that don't include http protocol
-const prependProtocol = (url: Nullable<string>) =>
-  !url?.match(/^https?:\/\//i) ? `https://${url}` : url
-
 export const SocialsAndSites = () => {
   const styles = useStyles()
-  const { website, donation } = useSelectProfile(['website', 'donation'])
 
   return (
     <View pointerEvents='box-none' style={styles.sites}>
       <TwitterSocialLink showText style={styles.site} />
       <InstagramSocialLink showText style={styles.site} />
       <TikTokSocialLink showText style={styles.site} />
-      <SocialLink
-        url={prependProtocol(website)}
-        text={website}
-        icon={IconLink}
-        showText
-        style={styles.site}
-        hyperlink
-      />
-      <SocialLink
-        url={prependProtocol(donation)}
-        text={donation}
-        icon={IconDonate}
-        showText
-        style={styles.site}
-        hyperlink
-      />
+      <WebsiteSocialLink showText style={styles.site} />
+      <DonationSocialLink showText style={styles.site} />
     </View>
   )
 }

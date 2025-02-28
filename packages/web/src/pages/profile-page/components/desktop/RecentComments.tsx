@@ -1,9 +1,12 @@
-import { useCallback, useState } from 'react'
+import { ComponentProps, useCallback, useState } from 'react'
 
-import { useGetCommentById, useUserComments } from '@audius/common/api'
-import { Comment, Name } from '@audius/common/models'
-import { useTrack } from '@audius/common/src/api/tan-query/useTrack'
-import { useUser } from '@audius/common/src/api/tan-query/useUser'
+import {
+  useUserComments,
+  useTrack,
+  useUser,
+  CommentOrReply
+} from '@audius/common/api'
+import { Name } from '@audius/common/models'
 import {
   Flex,
   IconMessage,
@@ -15,7 +18,7 @@ import {
   useTheme,
   Box
 } from '@audius/harmony'
-import { OptionalHashId } from '@audius/sdk'
+import { animated, useSpring, useTrail } from '@react-spring/web'
 import { useDispatch } from 'react-redux'
 
 import { TrackLink } from 'components/link'
@@ -26,20 +29,25 @@ import { fullCommentHistoryPage } from 'utils/route'
 import { ProfilePageNavSectionItem } from './ProfilePageNavSectionItem'
 import { ProfilePageNavSectionTitle } from './ProfilePageNavSectionTitle'
 
+const AnimatedFlex = animated(Flex)
+const AnimatedBox = animated(Box)
+
 const messages = {
   recentComments: 'Recent Comments',
   viewAll: 'View All'
 }
 
-const CommentListItem = ({ id }: { id: number }) => {
+const CommentListItem = ({
+  comment,
+  style
+}: {
+  comment: CommentOrReply
+  style: ComponentProps<typeof AnimatedFlex>['style']
+}) => {
   const dispatch = useDispatch()
-  const { data } = useGetCommentById(id)
   const theme = useTheme()
-  const comment = data as Comment | undefined
   const [isHovered, setIsHovered] = useState(false)
-  const { data: track } = useTrack(OptionalHashId.parse(comment?.entityId), {
-    enabled: !!comment?.entityId
-  })
+  const { data: track } = useTrack(comment?.entityId)
 
   const trackCommentItemClick = useCallback(() => {
     if (comment && comment.userId) {
@@ -63,7 +71,8 @@ const CommentListItem = ({ id }: { id: number }) => {
   if (!comment) return null
 
   return (
-    <Flex
+    <AnimatedFlex
+      style={style}
       column
       gap='m'
       w='100%'
@@ -94,21 +103,58 @@ const CommentListItem = ({ id }: { id: number }) => {
         </Text>
       </Flex>
       <Divider orientation='horizontal' />
-    </Flex>
+    </AnimatedFlex>
   )
 }
 
 export const RecentComments = ({ userId }: { userId: number }) => {
   const dispatch = useDispatch()
   const { data: user } = useUser(userId)
-  const { data: commentIds = [] } = useUserComments({ userId, pageSize: 3 })
+  const { data: comments = [], isLoading } = useUserComments({
+    userId,
+    pageSize: 3
+  })
+
+  // Only animate if comments are not immediately visible
+  const [shouldAnimate] = useState(isLoading)
+
   const onClickViewAll = useCallback(() => {
     if (user?.handle) {
       dispatch(push(fullCommentHistoryPage(user.handle)))
     }
   }, [dispatch, user?.handle])
 
-  if (commentIds.length === 0) return null
+  const { spring } = useTheme()
+
+  // Main container animation - fade in and expand from top
+  const containerSpring = useSpring({
+    from: shouldAnimate
+      ? { opacity: 0, height: 0, transform: 'translateY(-20px)' }
+      : { opacity: 1, height: 'auto', transform: 'translateY(0)' },
+    to: { opacity: 1, height: 'auto', transform: 'translateY(0)' },
+    config: spring.standard
+  })
+
+  // Trail animation for comment items - staggered fade in
+  const trail = useTrail(comments.length, {
+    from: shouldAnimate
+      ? { opacity: 0, transform: 'translateY(-10px)' }
+      : { opacity: 1, transform: 'translateY(0)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    config: spring.fast
+  })
+
+  // View all button animation
+  const viewAllSpring = useSpring({
+    from: shouldAnimate
+      ? { opacity: 0, transform: 'translateY(-5px)' }
+      : { opacity: 1, transform: 'translateY(0)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    config: spring.standard,
+    delay: shouldAnimate ? 300 : 0 // Only delay on initial render
+  })
+
+  if (comments.length === 0) return null
 
   return (
     <ProfilePageNavSectionItem>
@@ -116,7 +162,8 @@ export const RecentComments = ({ userId }: { userId: number }) => {
         title={messages.recentComments}
         Icon={IconMessage}
       />
-      <Flex
+      <AnimatedFlex
+        style={containerSpring}
         alignItems='flex-start'
         w='100%'
         column
@@ -126,15 +173,19 @@ export const RecentComments = ({ userId }: { userId: number }) => {
         p='l'
         backgroundColor='surface1'
       >
-        {commentIds.map((id) => (
-          <CommentListItem key={id} id={id} />
+        {trail.map((style, index) => (
+          <CommentListItem
+            key={comments[index].id}
+            comment={comments[index]}
+            style={style}
+          />
         ))}
-        <Box w='100%' onClick={onClickViewAll}>
+        <AnimatedBox style={viewAllSpring} w='100%' onClick={onClickViewAll}>
           <PlainButton variant='subdued' iconRight={IconArrowRight}>
             {messages.viewAll}
           </PlainButton>
-        </Box>
-      </Flex>
+        </AnimatedBox>
+      </AnimatedFlex>
     </ProfilePageNavSectionItem>
   )
 }

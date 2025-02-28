@@ -347,27 +347,27 @@ export const ProfileInfoTiles = () => {
     useUserComments({ userId: user_id, pageSize: 1 })
 
   // Only animate if comments are not immediately visible
-  const [useAnimation] = useState(loadingComments)
+  const [shouldAnimate] = useState(loadingComments)
 
   const {
     motion: { expressive: animation }
   } = useTheme()
 
   const layoutAnimation = useMemo(() => {
-    return useAnimation
+    return shouldAnimate
       ? LinearTransition.duration(animation.duration).easing(
           animation.easing.factory()
         )
       : undefined
-  }, [animation, useAnimation])
+  }, [animation, shouldAnimate])
 
   const fadeInAnimation = useMemo(() => {
-    return useAnimation
+    return shouldAnimate
       ? FadeIn.withInitialValues({ opacity: 0 })
           .duration(animation.duration)
           .delay(animation.duration)
       : undefined
-  }, [animation, useAnimation])
+  }, [animation, shouldAnimate])
 
   return (
     <>
@@ -378,7 +378,7 @@ export const ProfileInfoTiles = () => {
         contentContainerStyle={styles.rootScrollViewContent}
       >
         <ProfileTierTile />
-        <LayoutAnimationConfig skipEntering={!useAnimation}>
+        <LayoutAnimationConfig skipEntering={!shouldAnimate}>
           {isRecentCommentsEnabled && recentComments.length > 0 && (
             <Animated.View entering={fadeInAnimation}>
               <ProfileInfoTile
