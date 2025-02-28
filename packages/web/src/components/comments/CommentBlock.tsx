@@ -167,6 +167,7 @@ const CommentBlockInternal = (
               isPreview={isPreview}
               mentions={mentions}
               commentId={commentId}
+              duration={track.duration}
             >
               {message}
             </CommentText>

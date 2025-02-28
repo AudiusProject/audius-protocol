@@ -3,7 +3,6 @@ import { useCallback, useMemo } from 'react'
 import {
   useGetCommentById,
   useTrack,
-  useUser,
   useUserByParams,
   useUserComments
 } from '@audius/common/api'
@@ -13,7 +12,6 @@ import {
   Box,
   Button,
   Flex,
-  IconButton,
   IconHeart,
   IconMessage,
   LoadingSpinner,
@@ -22,13 +20,13 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
-import { HashId } from '@audius/sdk'
 import dayjs from 'dayjs'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useNavigate } from 'react-router-dom-v5-compat'
 
 import { Avatar } from 'components/avatar'
 import { CommentBlockSkeletons } from 'components/comments/CommentSkeletons'
+import { CommentText } from 'components/comments/CommentText'
 import { Timestamp } from 'components/comments/Timestamp'
 import { Header } from 'components/header/desktop/Header'
 import { TrackLink, UserLink } from 'components/link'
@@ -37,8 +35,6 @@ import { useMainContentRef } from 'pages/MainContentContext'
 import { useProfileParams } from 'pages/profile-page/useProfileParams'
 import { make, track as trackEvent } from 'services/analytics'
 import { fullCommentHistoryPage } from 'utils/route'
-
-import { CommentText } from './CommentText'
 
 const messages = {
   description: (userName: string | null) =>
@@ -67,9 +63,7 @@ const UserComment = ({ commentId }: { commentId: number }) => {
     isCurrentUserReacted
   } = comment
 
-  const trackId = HashId.parse(entityId)
-  const { isPending: isUserPending } = useUser(userId)
-  const { data: track } = useTrack(trackId)
+  const { data: track } = useTrack(entityId)
   const createdAtDate = useMemo(
     () => dayjs.utc(createdAt).toDate(),
     [createdAt]
@@ -94,74 +88,45 @@ const UserComment = ({ commentId }: { commentId: number }) => {
     }
   }, [track, trackUserCommentClick, navigate])
 
-  if (!comment) return null
+  if (!comment || !userId) return null
 
   return (
     <Flex w='100%' gap='l'>
-      <Box>
-        <Avatar userId={userId} size='medium' popover alignSelf='flex-start' />
-      </Box>
+      <Avatar userId={userId} size='medium' popover alignSelf='flex-start' />
       <Flex column w='100%' gap='s' alignItems='flex-start'>
         <Flex column gap='xs' w='100%'>
-          <Flex>
-            <Text variant='body' size='s' textAlign='left'>
-              {track ? (
-                <>
-                  <TrackLink
-                    isActive
-                    trackId={track?.track_id}
-                    onClick={trackUserCommentClick}
-                  />
-                  <Text>{messages.by}</Text>
-                  <UserLink
-                    isActive
-                    userId={track?.owner_id}
-                    onClick={trackUserCommentClick}
-                  />
-                </>
-              ) : (
-                <Skeleton w={180} h={20} />
-              )}
-            </Text>
+          <Text variant='body' size='s' textAlign='left' color='subdued'>
+            {track ? (
+              <>
+                <TrackLink variant='visible' trackId={track?.track_id} />
+                {messages.by}
+                <UserLink variant='visible' userId={track?.owner_id} />
+              </>
+            ) : (
+              <Skeleton w={180} h={20} />
+            )}
+          </Text>
+          <Flex gap='s' alignItems='center'>
+            <UserLink userId={userId} popover size='l' strength='strong' />
+            <Timestamp time={createdAtDate} />
           </Flex>
-          <Flex column>
-            <Flex justifyContent='space-between'>
-              <Flex gap='s' alignItems='center'>
-                {isUserPending ? <Skeleton w={80} h={18} /> : null}
-                {userId !== undefined ? (
-                  <UserLink
-                    userId={userId}
-                    popover
-                    size='l'
-                    strength='strong'
-                    onClick={trackUserCommentClick}
-                  />
-                ) : null}
-                <Flex gap='xs' alignItems='flex-end' h='100%'>
-                  <Timestamp time={createdAtDate} />
-                </Flex>
-              </Flex>
-            </Flex>
-            <CommentText
-              isEdited={isEdited}
-              isPreview={false}
-              mentions={mentions}
-              commentId={id}
-            >
-              {message}
-            </CommentText>
-          </Flex>
+          <CommentText
+            isEdited={isEdited}
+            mentions={mentions}
+            commentId={id}
+            isPreview
+          >
+            {message}
+          </CommentText>
         </Flex>
         <Flex gap='l' alignItems='center' onClick={goToTrackPage}>
           {reactCount > 0 ? (
             <Flex alignItems='center' gap='xs'>
-              <IconButton
-                icon={IconHeart}
+              <IconHeart
                 color={isCurrentUserReacted ? 'active' : 'subdued'}
                 aria-label='Heart comment'
-                css={{ pointerEvents: 'none' }}
               />
-              <Text> {reactCount || ''}</Text>
+              {reactCount > 0 ? <Text>{reactCount}</Text> : null}
             </Flex>
           ) : null}
           <TextLink variant='subdued'>{messages.view}</TextLink>
@@ -258,7 +223,7 @@ export const CommentHistoryPage = ({ title }: CommentHistoryPageProps) => {
                 )}
                 {isFetchingNextPage ? (
                   <Flex justifyContent='center' mt='l'>
-                    <LoadingSpinner css={{ width: 20, height: 20 }} />
+                    <LoadingSpinner h={20} w={20} />
                   </Flex>
                 ) : null}
               </>
