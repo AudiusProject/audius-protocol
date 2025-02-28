@@ -26,7 +26,12 @@ export const primeTrackData = ({
   forceReplace?: boolean
   skipQueryData?: boolean
 }) => {
-  const entries = primeTrackDataInternal({ tracks, queryClient, skipQueryData })
+  const entries = primeTrackDataInternal({
+    tracks,
+    queryClient,
+    forceReplace,
+    skipQueryData
+  })
   if (!forceReplace) {
     dispatch(addEntries(entries, false, undefined, 'react-query'))
   } else {
@@ -52,10 +57,12 @@ export const primeTrackData = ({
 export const primeTrackDataInternal = ({
   tracks,
   queryClient,
+  forceReplace = false,
   skipQueryData = false
 }: {
   tracks: (UserTrackMetadata | TrackMetadata)[]
   queryClient: QueryClient
+  forceReplace?: boolean
   skipQueryData?: boolean
 }): EntriesByKind => {
   // Set up entries for Redux
@@ -72,8 +79,9 @@ export const primeTrackDataInternal = ({
 
     // Prime track data only if it doesn't exist and skipQueryData is false
     if (
-      !skipQueryData &&
-      !queryClient.getQueryData(getTrackQueryKey(track.track_id))
+      forceReplace ||
+      (!skipQueryData &&
+        !queryClient.getQueryData(getTrackQueryKey(track.track_id)))
     ) {
       const tqTrack: TrackMetadata = {
         ...omit(track, 'user')
@@ -87,7 +95,8 @@ export const primeTrackDataInternal = ({
       const userEntries = primeUserDataInternal({
         users: [user],
         queryClient,
-        skipQueryData
+        skipQueryData,
+        forceReplace
       })
 
       // Merge user entries
