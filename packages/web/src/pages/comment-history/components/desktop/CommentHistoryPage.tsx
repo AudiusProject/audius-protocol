@@ -96,7 +96,11 @@ const UserComment = ({ comment }: { comment: CommentOrReply }) => {
           <Text variant='body' size='s' textAlign='left' color='subdued'>
             {track ? (
               <>
-                <TrackLink variant='visible' trackId={track?.track_id} />
+                <TrackLink
+                  variant='visible'
+                  trackId={track?.track_id}
+                  onClick={trackUserCommentClick}
+                />
                 {messages.by}
                 <UserLink variant='visible' userId={track?.owner_id} />
               </>
