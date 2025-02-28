@@ -174,9 +174,11 @@ app.get('/user', async (c) => {
               {user.isVerified && <div class='badge'>Verified</div>}
             </div>
             <div class='flex gap-2 mt-2 items-center'>
-              <div class='badge badge-xl badge-neutral'>
+              <div
+                className={`badge badge-xl ${normalizedScore < 0.15 ? 'badge-error' : 'badge-neutral'}`}
+              >
                 {(normalizedScore * 100).toFixed(0)}%
-              </div>
+              </div>{' '}
               {Object.entries(signals).map(([name, ok]) => (
                 <div
                   class={`badge badge-soft badge-${ok ? 'success' : 'error'}`}
@@ -211,7 +213,9 @@ app.get('/user', async (c) => {
 })
 
 app.get('/recent-users', async (c) => {
-  const recentUsers = await getRecentUsers()
+  const page = parseInt(c.req.query('page') || '1')
+  console.log('asdf page: ', c.req.query(), page)
+  const recentUsers = await getRecentUsers(page)
   const userScores = recentUsers
     ? await Promise.all(
         recentUsers.map(async (user) => {
@@ -226,7 +230,7 @@ app.get('/recent-users', async (c) => {
         })
       )
     : []
-  console.log('asdf userScores: ', userScores)
+
   let lastDate = ''
   function dateHeader(timestamp: Date) {
     const d = timestamp.toDateString()
@@ -261,12 +265,12 @@ app.get('/recent-users', async (c) => {
               {dateHeader(userScore.timestamp)}
               <tr
                 className={
-                  userScore.overall_score < 0
-                    ? 'bg-red-50'
-                    : userScore.flagged
-                      ? 'bg-blue-50'
-                      : userScore.flagged && userScore.overall_score < 0
-                        ? 'bg-purple-50'
+                  userScore?.flagged && userScore.overall_score
+                    ? 'bg-purple-100'
+                    : userScore.overall_score < 0
+                      ? 'bg-red-100'
+                      : userScore?.flagged
+                        ? 'bg-blue-100'
                         : ''
                 }
               >
@@ -285,6 +289,22 @@ app.get('/recent-users', async (c) => {
           ))}
         </tbody>
       </table>
+
+      <div class='flex'>
+        <a
+          href={`/recent-users?page=${encodeURIComponent(page - 1)}`}
+          class='flex items-center justify-center px-3 h-8 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+        >
+          Previous
+        </a>
+
+        <a
+          href={`/recent-users?page=${encodeURIComponent(page + 1)}`}
+          class='flex items-center justify-center px-3 h-8 ms-3 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+        >
+          Next
+        </a>
+      </div>
     </Layout>
   )
 })

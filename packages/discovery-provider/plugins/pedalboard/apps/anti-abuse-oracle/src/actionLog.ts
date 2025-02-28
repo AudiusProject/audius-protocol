@@ -69,12 +69,12 @@ export async function getUser(handle: string) {
   return rows[0].user as UserDetails
 }
 
-export async function getRecentUsers() {
+export async function getRecentUsers(page: number) {
   const rows = await sql`
   ${sql.unsafe(buildUserDetails)}
   where handle_lc is not null
   order by created_at desc
-  LIMIT 10 OFFSET 1000
+  LIMIT 10 OFFSET ${page * 10}
   `
   if (!rows.length) return
   return rows.map((row) => row.user as UserDetails)
@@ -122,7 +122,7 @@ fast_challenge_completion AS (
     LEFT JOIN user_challenges ON users.user_id = user_challenges.user_id
     WHERE user_challenges.is_complete
       AND user_challenges.completed_at - users.created_at <= INTERVAL '3 minutes'
-      AND user_challenges.challenge_id != 'm'
+      AND user_challenges.challenge_id not in ('m', 'b')
     AND users.user_id in (select user_id from scoped_users)
     GROUP BY users.user_id, users.handle_lc, users.created_at
     ORDER BY users.created_at DESC
@@ -133,10 +133,18 @@ aggregate_scores AS (
         users.created_at,
         COALESCE(play_activity.play_count, 0) AS play_count,
         COALESCE(fast_challenge_completion.challenge_count, 0) AS challenge_count,
-        (COALESCE(play_activity.play_count, 0)) - (COALESCE(fast_challenge_completion.challenge_count, 0) * 3) AS overall_score
+        COALESCE(aggregate_user.following_count, 0) AS following_count,
+        COALESCE(aggregate_user.follower_count, 0) AS follower_count,
+        (
+          COALESCE(play_activity.play_count, 0)
+          - (COALESCE(fast_challenge_completion.challenge_count, 0) * 3)
+          + COALESCE(aggregate_user.follower_count, 0)
+          - CASE WHEN COALESCE(aggregate_user.following_count, 0) < 5 THEN 1 ELSE 0 END
+        ) AS overall_score
     FROM users
     LEFT JOIN play_activity ON users.user_id = play_activity.user_id
     LEFT JOIN fast_challenge_completion ON users.user_id = fast_challenge_completion.user_id
+    LEFT JOIN aggregate_user ON aggregate_user.user_id = users.user_id
     WHERE users.handle_lc IS NOT NULL
     AND users.user_id in (select user_id from scoped_users)
     ORDER BY users.created_at DESC
@@ -178,7 +186,6 @@ export async function getAAOAttestation(handle: string) {
     return flagged
   } catch (error) {
     console.error('Error fetching AAO attestation:', error, handle)
-    throw error
   }
 }
 //
@@ -403,7 +410,7 @@ union all
   (
     select
       completed_at as created_at,
-      'challenge',
+      'completed challenge',
       challenge_id,
       json_build_object(
           'amount', amount
@@ -412,6 +419,22 @@ union all
     where user_id = ${userId}
     and is_complete
     order by completed_at desc
+    limit ${limit}
+  )
+
+-- challenge_disbursements
+union all
+  (
+    select
+      created_at,
+      'disbursed challenge',
+      challenge_id,
+      json_build_object(
+          'amount', amount
+        )
+    from challenge_disbursements
+    where user_id = ${userId}
+    order by created_At desc
     limit ${limit}
   )
 
