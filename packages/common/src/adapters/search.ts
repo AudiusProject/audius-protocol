@@ -11,7 +11,7 @@ import { userTrackMetadataFromSDK } from './track'
 import { userMetadataFromSDK } from './user'
 import { transformAndCleanList } from './utils'
 
-type SearchResults = {
+export type SearchResults = {
   tracks: UserTrackMetadata[]
   saved_tracks: UserTrackMetadata[]
   users: UserMetadata[]

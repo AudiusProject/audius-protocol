@@ -1,10 +1,17 @@
 import { Id, OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  QueryKey,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
-import { supporterMetadataListFromSDK } from '~/models/Tipping'
+import {
+  SupporterMetadata,
+  supporterMetadataListFromSDK
+} from '~/models/Tipping'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
@@ -33,14 +40,23 @@ export const useSupporters = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  return useInfiniteQuery({
+  return useInfiniteQuery<
+    SupporterMetadata[],
+    Error,
+    SupporterMetadata[],
+    QueryKey,
+    number
+  >({
     queryKey: getSupportersQueryKey(userId, pageSize),
     initialPageParam: 0,
-    getNextPageParam: (lastPage, allPages) => {
+    getNextPageParam: (
+      lastPage: SupporterMetadata[],
+      allPages: SupporterMetadata[][]
+    ) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
-    queryFn: async ({ pageParam }) => {
+    queryFn: async ({ pageParam }): Promise<SupporterMetadata[]> => {
       const sdk = await audiusSdk()
       const { data } = await sdk.full.users.getSupporters({
         id: Id.parse(userId),
