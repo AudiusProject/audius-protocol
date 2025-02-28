@@ -214,7 +214,6 @@ app.get('/user', async (c) => {
 
 app.get('/recent-users', async (c) => {
   const page = parseInt(c.req.query('page') || '1')
-  console.log('asdf page: ', c.req.query(), page)
   const recentUsers = await getRecentUsers(page)
   const userScores = recentUsers
     ? await Promise.all(
@@ -246,6 +245,10 @@ app.get('/recent-users', async (c) => {
           <tr>
             <th>Timestamp</th>
             <th>Handle</th>
+            <th>Listen Activity</th>
+            <th>Follower Count</th>
+            <th>Following Count</th>
+            <th>Fast Challenges</th>
             <th>Overall Score</th>
             <th>Normalized Score</th>
           </tr>
@@ -265,7 +268,7 @@ app.get('/recent-users', async (c) => {
               {dateHeader(userScore.timestamp)}
               <tr
                 className={
-                  userScore?.flagged && userScore.overall_score
+                  userScore?.flagged && userScore.overall_score < 0
                     ? 'bg-purple-100'
                     : userScore.overall_score < 0
                       ? 'bg-red-100'
@@ -282,6 +285,10 @@ app.get('/recent-users', async (c) => {
                     {userScore.handle_lc}
                   </a>
                 </td>
+                <td>{userScore.play_count}</td>
+                <td>{userScore.follower_count}</td>
+                <td>{userScore.following_count}</td>
+                <td>{userScore.challenge_count}</td>
                 <td>{userScore.overall_score}</td>
                 <td>{userScore.normalized_score}</td>
               </tr>

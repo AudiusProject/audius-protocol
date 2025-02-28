@@ -74,7 +74,7 @@ export async function getRecentUsers(page: number) {
   ${sql.unsafe(buildUserDetails)}
   where handle_lc is not null
   order by created_at desc
-  LIMIT 10 OFFSET ${page * 10}
+  LIMIT 10 OFFSET ${(page + 27) * 10}
   `
   if (!rows.length) return
   return rows.map((row) => row.user as UserDetails)
@@ -137,7 +137,7 @@ aggregate_scores AS (
         COALESCE(aggregate_user.follower_count, 0) AS follower_count,
         (
           COALESCE(play_activity.play_count, 0)
-          - (COALESCE(fast_challenge_completion.challenge_count, 0) * 3)
+          - (COALESCE(fast_challenge_completion.challenge_count, 0))
           + COALESCE(aggregate_user.follower_count, 0)
           - CASE WHEN COALESCE(aggregate_user.following_count, 0) < 5 THEN 1 ELSE 0 END
         ) AS overall_score
@@ -153,7 +153,9 @@ SELECT
 	a.handle_lc,
  	a.created_at as "timestamp",
     a.play_count,
+    a.follower_count, 
     a.challenge_count,
+    a.following_count,
     a.overall_score,
     least((a.overall_score + 15)::float / NULLIF(100, 0), 1)::float AS normalized_score
 FROM aggregate_scores a
@@ -163,7 +165,9 @@ ORDER BY normalized_score asc
     handle_lc: string
     timestamp: Date
     play_count: number
+    follower_count: number
     challenge_count: number
+    following_count: number
     overall_score: number
     normalized_score: number
   }
