@@ -170,7 +170,7 @@ export const RecentComments = ({ userId }: { userId: number }) => {
         gap='m'
         borderRadius='m'
         shadow='mid'
-        p='m'
+        p='l'
         backgroundColor='surface1'
       >
         {trail.map((style, index) => (
