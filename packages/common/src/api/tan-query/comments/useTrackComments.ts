@@ -14,6 +14,7 @@ import { Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
 import { QueryOptions } from '../types'
+import { useCurrentUserId } from '../useCurrentUserId'
 import { primeCommentData } from '../utils/primeCommentData'
 import { primeRelatedData } from '../utils/primeRelatedData'
 
@@ -23,7 +24,6 @@ import { getTrackCommentListQueryKey } from './utils'
 
 export type GetCommentsByTrackArgs = {
   trackId: ID
-  userId: ID | null
   sortMethod: any
   pageSize?: number
 }
@@ -31,7 +31,6 @@ export type GetCommentsByTrackArgs = {
 export const useTrackComments = (
   {
     trackId,
-    userId,
     sortMethod,
     pageSize = COMMENT_ROOT_PAGE_SIZE
   }: GetCommentsByTrackArgs,
@@ -41,6 +40,7 @@ export const useTrackComments = (
   const isMutating = useIsMutating()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
+  const { data: currentUserId } = useCurrentUserId()
 
   const queryRes = useInfiniteQuery({
     initialPageParam: 0,
@@ -56,8 +56,7 @@ export const useTrackComments = (
         offset: pageParam,
         limit: pageSize,
         sortMethod,
-        // TODO: why is this toString instead of encode
-        userId: userId?.toString() ?? undefined
+        userId: currentUserId?.toString()
       })
 
       const commentList = transformAndCleanList(
