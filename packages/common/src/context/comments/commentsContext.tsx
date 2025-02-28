@@ -15,7 +15,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import {
   useGetTrackById,
-  useGetCommentsByTrackId,
+  useTrackComments,
   QUERY_KEYS,
   useTrackCommentCount,
   resetPreviousCommentCount
@@ -133,7 +133,7 @@ export function CommentSectionProvider<NavigationProp>(
     hasNextPage,
     fetchNextPage: loadMorePages,
     isFetchingNextPage: isLoadingMorePages
-  } = useGetCommentsByTrackId({
+  } = useTrackComments({
     trackId: entityId,
     sortMethod: currentSort,
     userId: currentUserId

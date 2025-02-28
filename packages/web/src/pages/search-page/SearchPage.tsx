@@ -1,6 +1,6 @@
 import { useContext, useEffect } from 'react'
 
-import { SearchCategory } from '@audius/common/src/api/search'
+import { SearchCategory } from '@audius/common/api'
 import { Flex, useTheme } from '@audius/harmony'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
