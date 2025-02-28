@@ -126,6 +126,7 @@ export function CommentSectionProvider<NavigationProp>(
   }
 
   const currentUserId = useSelector(getUserId)
+
   const {
     data: commentIds = [],
     status,
@@ -135,9 +136,9 @@ export function CommentSectionProvider<NavigationProp>(
     isFetchingNextPage: isLoadingMorePages
   } = useTrackComments({
     trackId: entityId,
-    sortMethod: currentSort,
-    userId: currentUserId
+    sortMethod: currentSort
   })
+
   const queryClient = useQueryClient()
   // hard refreshes all data
   const resetComments = useCallback(() => {
