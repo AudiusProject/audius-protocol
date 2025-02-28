@@ -2,10 +2,10 @@ import { Fragment, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 
 import { useSelectTierInfo } from '@audius/common/hooks'
 import { cacheUsersActions } from '@audius/common/store'
-import { View, Animated } from 'react-native'
+import { Animated } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { Divider } from '@audius/harmony-native'
+import { Divider, Flex } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 
 import { useSelectProfile } from '../selectors'
@@ -21,12 +21,6 @@ import {
 const { fetchUserSocials } = cacheUsersActions
 
 const useStyles = makeStyles(({ spacing }) => ({
-  root: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: spacing(3),
-    alignItems: 'center'
-  },
   socials: {
     flexDirection: 'row',
     gap: spacing(3),
@@ -85,6 +79,7 @@ export const ProfileSocials = () => {
   const styles = useStyles()
 
   const { tier } = useSelectTierInfo(user_id)
+  // const tier = 'none'
 
   // Need to start opacity at 1 so skeleton is visible.
   const opacity = useRef(new Animated.Value(1)).current
@@ -118,7 +113,13 @@ export const ProfileSocials = () => {
     ))
   }
   return (
-    <View pointerEvents='box-none' style={styles.root}>
+    <Flex
+      row
+      justifyContent='space-between'
+      alignItems='center'
+      pointerEvents='box-none'
+      pv='m'
+    >
       <ProfileTierTile interactive={false} />
       <Animated.View
         pointerEvents='box-none'
@@ -130,6 +131,6 @@ export const ProfileSocials = () => {
       >
         {renderSocialLinks()}
       </Animated.View>
-    </View>
+    </Flex>
   )
 }

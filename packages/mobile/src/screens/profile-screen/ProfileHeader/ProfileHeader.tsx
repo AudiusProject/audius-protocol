@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, useState } from 'react'
 
+import { useUserComments } from '@audius/common/api'
 import { useSelectTierInfo } from '@audius/common/hooks'
 import { accountSelectors } from '@audius/common/store'
 import { css } from '@emotion/native'
@@ -105,6 +106,9 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
   }, [isExpanded, setIsExpanded])
 
+  // Preload user comments
+  useUserComments({ userId, pageSize: 1 })
+
   const { spacing } = useTheme()
 
   return (
@@ -127,7 +131,7 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
         backgroundColor='white'
         pv='s'
         ph='m'
-        gap='s'
+        style={{ gap: 9 }}
         borderBottom='default'
       >
         <ProfileInfo onFollow={handleFollow} />

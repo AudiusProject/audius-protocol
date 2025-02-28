@@ -253,7 +253,6 @@ export const RecentUserCommentsDrawer = ({
       ref={bottomSheetModalRef}
       snapPoints={['66%', '100%']}
       topInset={insets.top}
-      bottomInset={insets.bottom}
       style={{
         borderTopRightRadius: COMMENT_DRAWER_BORDER_RADIUS,
         borderTopLeftRadius: COMMENT_DRAWER_BORDER_RADIUS,
