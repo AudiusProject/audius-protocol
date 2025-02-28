@@ -61,6 +61,10 @@ export const useUnfavoriteTrack = () => {
       )
       if (!previousTrack) throw new Error('Track not found')
 
+      // Don't allow unfavoriting your own track
+      if (previousTrack.owner_id === currentUserId)
+        throw new Error('Cannot unfavorite your own track')
+
       // Don't allow unfavoriting if not already favorited
       if (!previousTrack.has_current_user_saved)
         throw new Error('Track not favorited')

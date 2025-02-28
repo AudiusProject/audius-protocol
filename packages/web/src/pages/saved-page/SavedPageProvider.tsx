@@ -319,22 +319,6 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
     }
   }
 
-  onClickSave = (record: TrackRecord) => {
-    if (!record.has_current_user_saved) {
-      this.props.saveTrack(record.track_id)
-    } else {
-      this.props.unsaveTrack(record.track_id)
-    }
-  }
-
-  onSave = (isSaved: boolean, trackId: ID) => {
-    if (!isSaved) {
-      this.props.saveTrack(trackId)
-    } else {
-      this.props.unsaveTrack(trackId)
-    }
-  }
-
   onClickTrackName = (record: TrackRecord) => {
     this.props.goToRoute(record.permalink)
   }
@@ -483,14 +467,12 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
     const mobileProps = {
       playlistUpdates: this.props.playlistUpdates,
       updatePlaylistLastViewedAt: this.props.updatePlaylistLastViewedAt,
-      onSave: this.onSave,
       onTogglePlay: this.onTogglePlay
     }
 
     const desktopProps = {
       hasReachedEnd: this.props.hasReachedEnd,
       onClickRow: this.onClickRow,
-      onClickSave: this.onClickSave,
       onClickTrackName: this.onClickTrackName,
       onClickArtistName: this.onClickArtistName,
       onClickRepost: this.onClickRepost,

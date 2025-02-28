@@ -1,5 +1,6 @@
-import { ChangeEvent, useMemo } from 'react'
+import { ChangeEvent, useCallback, useMemo } from 'react'
 
+import { useFavoriteTrack, useUnfavoriteTrack } from '@audius/common/api'
 import {
   Variant,
   Status,
@@ -9,7 +10,8 @@ import {
   User,
   isContentUSDCPurchaseGated,
   ModalSource,
-  Track
+  Track,
+  FavoriteSource
 } from '@audius/common/models'
 import {
   CollectionTrack,
@@ -149,7 +151,6 @@ const CollectionPage = ({
   onPlay,
   onPreview,
   onClickRow,
-  onClickSave,
   onClickRepostTrack,
   onSortTracks,
   onReorderTracks,
@@ -232,6 +233,23 @@ const CollectionPage = ({
     },
     [openPremiumContentModal]
   )
+
+  const { mutate: favoriteTrack } = useFavoriteTrack()
+  const { mutate: unfavoriteTrack } = useUnfavoriteTrack()
+  const toggleSaveTrack = useCallback((track: Track) => {
+    if (track.has_current_user_saved) {
+      unfavoriteTrack({
+        trackId: track.track_id,
+        source: FavoriteSource.COLLECTION_PAGE
+      })
+    } else {
+      favoriteTrack({
+        trackId: track.track_id,
+        source: FavoriteSource.COLLECTION_PAGE
+      })
+    }
+  }, [])
+
   const isPlayable = !areAllTracksDeleted && numTracks > 0
 
   const topSection = (
@@ -347,7 +365,7 @@ const CollectionPage = ({
               activeIndex={activeIndex}
               data={dataSource}
               onClickRow={onClickRow}
-              onClickFavorite={onClickSave}
+              onClickFavorite={toggleSaveTrack}
               onClickRemove={isOwner ? onClickRemove : undefined}
               onClickRepost={onClickRepostTrack}
               onClickPurchase={openPurchaseModal}
