@@ -76,6 +76,7 @@ const CommentListItem = ({ id }: { id: number }) => {
         <Flex w='100%' css={{ minWidth: 0 }}>
           {track ? (
             <TrackLink
+              css={{ display: 'block' }}
               size='s'
               variant='subdued'
               showUnderline={isHovered}

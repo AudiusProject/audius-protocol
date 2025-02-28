@@ -559,6 +559,7 @@ export enum Name {
   // Recent Comments
   RECENT_COMMENTS_CLICK = 'Recent Comments: Click',
   COMMENTS_HISTORY_CLICK = 'Comments History: Click',
+  COMMENTS_HISTORY_DRAWER_OPEN = 'Comments History: Drawer Open',
 
   // Track Replace
   TRACK_REPLACE_DOWNLOAD = 'Track Replace: Download',
@@ -2706,6 +2707,11 @@ export type CommentsHistoryClick = {
   userId: ID
 }
 
+export type CommentsHistoryDrawerOpen = {
+  eventName: Name.COMMENTS_HISTORY_DRAWER_OPEN
+  userId: ID
+}
+
 export type RecentCommentsClick = {
   eventName: Name.RECENT_COMMENTS_CLICK
   commentId: ID
@@ -3093,6 +3099,7 @@ export type AllTrackingEvents =
   | CommentsOpenAuthModal
   | CommentsOpenInstallAppModal
   | CommentsHistoryClick
+  | CommentsHistoryDrawerOpen
   | RecentCommentsClick
   | TrackReplaceDownload
   | TrackReplacePreview
