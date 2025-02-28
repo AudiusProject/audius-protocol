@@ -1,14 +1,10 @@
 import { memo, useCallback } from 'react'
 
-import { useToggleSaveTrack } from '@audius/common/api'
 import {
-  FavoriteSource,
   ID,
-  OverflowAction,
-  OverflowSource,
-  PurchaseableContentType,
   RepostSource,
-  ModalSource
+  ModalSource,
+  isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -18,17 +14,22 @@ import {
   mobileOverflowMenuUIActions,
   tracksSocialActions,
   usePremiumContentPurchaseModal,
-  cacheTracksSelectors
+  cacheTracksSelectors,
+  OverflowAction,
+  PurchaseableContentType,
+  OverflowSource
 } from '@audius/common/store'
-import { isContentUSDCPurchaseGated } from '@audius/common/utils'
-import { push } from 'connected-react-router'
 import { connect, useDispatch } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { TrackListItemProps } from 'components/track/mobile/TrackListItem'
+import TrackListItem, {
+  TrackItemAction,
+  TrackListItemProps
+} from 'components/track/mobile/TrackListItem'
 import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
 import { AppState } from 'store/types'
+import { push } from 'utils/navigation'
 
 const { setLockedContentId } = gatedContentActions
 
@@ -118,11 +119,6 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
     hasStreamAccess,
     openLockedContentModal
   ])
-
-  const toggleSaveTrack = useToggleSaveTrack({
-    trackId,
-    source: FavoriteSource.TRACK_LIST
-  })
 
   return (
     <TrackListItem

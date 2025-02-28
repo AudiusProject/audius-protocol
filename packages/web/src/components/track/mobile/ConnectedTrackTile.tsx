@@ -1,13 +1,7 @@
-import { memo, useCallback } from 'react'
+import { memo } from 'react'
 
-import { useToggleSaveTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
-import {
-  ShareSource,
-  RepostSource,
-  FavoriteSource,
-  ID
-} from '@audius/common/models'
+import { ShareSource, RepostSource, ID } from '@audius/common/models'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -130,18 +124,6 @@ const ConnectedTrackTile = ({
   const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(trackWithFallback)
   const loading = isLoading || isFetchingNFTAccess
-
-  const toggleSaveTrack = useToggleSaveTrack({
-    trackId: track_id,
-    source: FavoriteSource.TILE
-  })
-
-  const toggleSave = useCallback(
-    (_trackId: ID) => {
-      toggleSaveTrack()
-    },
-    [toggleSaveTrack]
-  )
 
   const toggleRepost = (trackId: ID) => {
     if (has_current_user_reposted) {
@@ -277,7 +259,6 @@ const ConnectedTrackTile = ({
       isLoading={loading}
       isPlaying={uid === playingUid && isPlaying}
       isBuffering={isBuffering}
-      toggleSave={toggleSave}
       onShare={onShare}
       onClickOverflow={onClickOverflow}
       renderOverflow={renderOverflowMenu}

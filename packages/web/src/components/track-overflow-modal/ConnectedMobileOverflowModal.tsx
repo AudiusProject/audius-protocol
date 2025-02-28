@@ -343,14 +343,6 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
     onClose: () =>
       dispatch(setVisibility({ modal: 'Overflow', visible: false })),
     // Tracks
-    shareTrack: (trackId: ID) =>
-      dispatch(
-        requestOpenShareModal({
-          type: 'track',
-          trackId,
-          source: ShareSource.OVERFLOW
-        })
-      ),
     repostTrack: (trackId: ID) =>
       dispatch(repostTrack(trackId, RepostSource.OVERFLOW)),
     unrepostTrack: (trackId: ID) =>

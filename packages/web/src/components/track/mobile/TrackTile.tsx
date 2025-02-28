@@ -5,9 +5,11 @@ import {
   ModalSource,
   isContentUSDCPurchaseGated,
   ID,
-  AccessConditions
+  AccessConditions,
+  FavoriteSource
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import { useToggleSaveTrack } from '@audius/common/src/api/tan-query/useToggleSaveTrack'
 import {
   usePremiumContentPurchaseModal,
   gatedContentActions,
@@ -39,7 +41,6 @@ const { getGatedContentStatusMap } = gatedContentSelectors
 
 type ExtraProps = {
   permalink: string
-  toggleSave: (trackId: ID) => void
   toggleRepost: (trackId: ID) => void
   onShare: (trackId: ID) => void
   isOwner: boolean
@@ -77,7 +78,6 @@ const TrackTile = (props: CombinedProps) => {
     index,
     showSkeleton,
     hasLoaded,
-    toggleSave,
     toggleRepost,
     onShare,
     onClickOverflow,
@@ -107,6 +107,11 @@ const TrackTile = (props: CombinedProps) => {
     isTrending
   } = props
 
+  const toggleSaveTrack = useToggleSaveTrack({
+    trackId: id as number,
+    source: FavoriteSource.TILE
+  })
+
   const dispatch = useDispatch()
   const [, setModalVisibility] = useModalState('LockedContent')
   const { onOpen: openPremiumContentPurchaseModal } =
@@ -115,7 +120,6 @@ const TrackTile = (props: CombinedProps) => {
   const trackId = isStreamGated ? id : null
   const gatedTrackStatus = trackId ? gatedTrackStatusMap[trackId] : undefined
   const isPurchase = isContentUSDCPurchaseGated(streamConditions)
-  const onToggleSave = useCallback(() => toggleSave(id), [toggleSave, id])
 
   const onToggleRepost = useCallback(() => toggleRepost(id), [toggleRepost, id])
 
@@ -305,7 +309,7 @@ const TrackTile = (props: CombinedProps) => {
             hasSaved={props.hasCurrentUserSaved}
             hasReposted={props.hasCurrentUserReposted}
             toggleRepost={onToggleRepost}
-            toggleSave={onToggleSave}
+            toggleSave={toggleSaveTrack}
             onShare={onClickShare}
             onClickOverflow={onClickOverflowMenu}
             renderOverflow={renderOverflow}
