@@ -239,7 +239,7 @@ export function CommentSectionProvider<NavigationProp>(
         entityType,
         commentCount: commentCountData?.currentValue ?? track.comment_count,
         isCommentCountLoading,
-        commentIds,
+        commentIds: commentIds.map((comment) => comment.id),
         commentSectionLoading,
         isEntityOwner: currentUserId === owner_id,
         isLoadingMorePages,

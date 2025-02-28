@@ -6,26 +6,26 @@ import { useDispatch } from 'react-redux'
 
 import { replyCommentFromSDK, transformAndCleanList } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
-import { Comment, Feature, ID, ReplyComment } from '~/models'
+import { Comment, Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
+import { QueryOptions } from '../types'
 import { useCurrentUserId } from '../useCurrentUserId'
 import { primeRelatedData } from '../utils/primeRelatedData'
 
 import { COMMENT_REPLIES_PAGE_SIZE, messages } from './types'
+import { useComments } from './useComments'
 import { getCommentQueryKey, getCommentRepliesQueryKey } from './utils'
 
 export type GetRepliesArgs = {
   commentId: ID
-  enabled?: boolean
   pageSize?: number
 }
 
-export const useCommentReplies = ({
-  commentId,
-  enabled,
-  pageSize = COMMENT_REPLIES_PAGE_SIZE
-}: GetRepliesArgs) => {
+export const useCommentReplies = (
+  { commentId, pageSize = COMMENT_REPLIES_PAGE_SIZE }: GetRepliesArgs,
+  options?: QueryOptions
+) => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
@@ -34,13 +34,12 @@ export const useCommentReplies = ({
 
   const queryRes = useInfiniteQuery({
     queryKey: getCommentRepliesQueryKey({ commentId, pageSize }),
-    enabled: !!enabled,
     initialPageParam: startingLimit,
-    getNextPageParam: (lastPage: ReplyComment[], pages) => {
+    getNextPageParam: (lastPage: ID[], pages) => {
       if (lastPage?.length < pageSize) return undefined
       return (pages.length ?? pageSize) * pageSize + startingLimit
     },
-    queryFn: async ({ pageParam }): Promise<ReplyComment[]> => {
+    queryFn: async ({ pageParam }): Promise<ID[]> => {
       const sdk = await audiusSdk()
       const response = await sdk.full.comments.getCommentReplies({
         commentId: Id.parse(commentId),
@@ -69,13 +68,14 @@ export const useCommentReplies = ({
       replyList.forEach((comment) => {
         queryClient.setQueryData(getCommentQueryKey(comment.id), comment)
       })
-      return replyList
+      // Return just the IDs for the infinite query
+      return replyList.map((reply) => reply.id)
     },
-    staleTime: Infinity,
-    gcTime: 1
+    select: (data) => data.pages.flat(),
+    ...options
   })
 
-  const { error } = queryRes
+  const { error, data: replyIds } = queryRes
 
   useEffect(() => {
     if (error) {
@@ -88,5 +88,7 @@ export const useCommentReplies = ({
     }
   }, [error, dispatch, reportToSentry])
 
-  return { ...queryRes, data: queryRes.data?.pages?.flat() ?? [] }
+  const { data: replies } = useComments(replyIds)
+
+  return { ...queryRes, data: replies }
 }

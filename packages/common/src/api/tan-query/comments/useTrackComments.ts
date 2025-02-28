@@ -13,9 +13,11 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
+import { QueryOptions } from '../types'
 import { primeRelatedData } from '../utils/primeRelatedData'
 
 import { COMMENT_ROOT_PAGE_SIZE, CommentOrReply, messages } from './types'
+import { useComments } from './useComments'
 import { getCommentQueryKey, getTrackCommentListQueryKey } from './utils'
 
 export type GetCommentsByTrackArgs = {
@@ -25,19 +27,21 @@ export type GetCommentsByTrackArgs = {
   pageSize?: number
 }
 
-export const useTrackComments = ({
-  trackId,
-  userId,
-  sortMethod,
-  pageSize = COMMENT_ROOT_PAGE_SIZE
-}: GetCommentsByTrackArgs) => {
+export const useTrackComments = (
+  {
+    trackId,
+    userId,
+    sortMethod,
+    pageSize = COMMENT_ROOT_PAGE_SIZE
+  }: GetCommentsByTrackArgs,
+  options?: QueryOptions
+) => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const isMutating = useIsMutating()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
   const queryRes = useInfiniteQuery({
-    enabled: !!trackId && trackId !== 0 && isMutating === 0,
     initialPageParam: 0,
     getNextPageParam: (lastPage: ID[], pages) => {
       if (lastPage?.length < pageSize) return undefined
@@ -78,11 +82,12 @@ export const useTrackComments = ({
       // For the comment list cache, we only store the ids of the comments (organized by sort method)
       return commentList.map((comment) => comment.id)
     },
-    staleTime: Infinity, // Stale time is set to infinity so that we never reload data thats currently shown on screen (because sorting could have changed)
-    gcTime: 0 // Cache time is set to 1 so that the data is cleared any time we leave the page viewing it or change sorts
+    select: (data) => data.pages.flat(),
+    ...options,
+    enabled: isMutating === 0 && options?.enabled !== false
   })
 
-  const { error } = queryRes
+  const { error, data: commentIds } = queryRes
 
   useEffect(() => {
     if (error) {
@@ -95,5 +100,7 @@ export const useTrackComments = ({
     }
   }, [error, dispatch, reportToSentry])
 
-  return { ...queryRes, data: queryRes.data?.pages?.flat() ?? [] }
+  const { data: comments } = useComments(commentIds)
+
+  return { ...queryRes, data: comments }
 }

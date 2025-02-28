@@ -1,12 +1,11 @@
 import { useCallback, useState } from 'react'
 
 import {
-  useComment,
   useUserComments,
   useTrack,
-  useUser
+  useUser,
+  CommentOrReply
 } from '@audius/common/api'
-import { Comment } from '@audius/common/models'
 import {
   Flex,
   IconMessage,
@@ -32,11 +31,9 @@ const messages = {
   viewAll: 'View All'
 }
 
-const CommentListItem = ({ id }: { id: number }) => {
+const CommentListItem = ({ comment }: { comment: CommentOrReply }) => {
   const dispatch = useDispatch()
-  const { data } = useComment(id)
   const theme = useTheme()
-  const comment = data as Comment | undefined
   const [isHovered, setIsHovered] = useState(false)
   const { data: track } = useTrack(comment?.entityId)
 
@@ -83,14 +80,14 @@ const CommentListItem = ({ id }: { id: number }) => {
 export const RecentComments = ({ userId }: { userId: number }) => {
   const dispatch = useDispatch()
   const { data: user } = useUser(userId)
-  const { data: commentIds = [] } = useUserComments({ userId, pageSize: 3 })
+  const { data: comments = [] } = useUserComments({ userId, pageSize: 3 })
   const onClickViewAll = useCallback(() => {
     if (user?.handle) {
       dispatch(push(fullCommentHistoryPage(user.handle)))
     }
   }, [dispatch, user?.handle])
 
-  if (commentIds.length === 0) return null
+  if (comments.length === 0) return null
 
   return (
     <ProfilePageNavSectionItem>
@@ -108,8 +105,8 @@ export const RecentComments = ({ userId }: { userId: number }) => {
         p='m'
         backgroundColor='surface1'
       >
-        {commentIds.map((id) => (
-          <CommentListItem key={id} id={id} />
+        {comments.map((comment) => (
+          <CommentListItem key={comment.id} comment={comment} />
         ))}
         <Box w='100%' onClick={onClickViewAll}>
           <PlainButton variant='subdued' iconRight={IconArrowRight}>

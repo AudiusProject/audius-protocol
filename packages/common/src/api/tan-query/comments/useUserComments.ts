@@ -13,19 +13,24 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
+import { QueryOptions } from '../types'
 import { useCurrentUserId } from '../useCurrentUserId'
 import { primeRelatedData } from '../utils/primeRelatedData'
 
 import { COMMENT_ROOT_PAGE_SIZE, CommentOrReply, messages } from './types'
+import { useComments } from './useComments'
 import { getCommentQueryKey } from './utils'
 
-export const useUserComments = ({
-  userId,
-  pageSize = COMMENT_ROOT_PAGE_SIZE
-}: {
-  userId: ID | null
-  pageSize?: number
-}) => {
+export const useUserComments = (
+  {
+    userId,
+    pageSize = COMMENT_ROOT_PAGE_SIZE
+  }: {
+    userId: ID | null
+    pageSize?: number
+  },
+  options?: QueryOptions
+) => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const isMutating = useIsMutating()
@@ -33,7 +38,6 @@ export const useUserComments = ({
   const dispatch = useDispatch()
 
   const queryRes = useInfiniteQuery({
-    enabled: !!userId && userId !== 0 && isMutating === 0,
     initialPageParam: 0,
     getNextPageParam: (lastPage: ID[], pages) => {
       if (lastPage?.length < pageSize) return undefined
@@ -71,10 +75,13 @@ export const useUserComments = ({
       })
       // For the comment list cache, we only store the ids of the comments (organized by sort method)
       return commentList.map((comment) => comment.id)
-    }
+    },
+    select: (data) => data.pages.flat(),
+    ...options,
+    enabled: isMutating === 0 && options?.enabled !== false
   })
 
-  const { error } = queryRes
+  const { error, data: commentIds } = queryRes
 
   useEffect(() => {
     if (error) {
@@ -87,5 +94,7 @@ export const useUserComments = ({
     }
   }, [error, dispatch, reportToSentry])
 
-  return { ...queryRes, data: queryRes.data?.pages?.flat() ?? [] }
+  const { data: comments } = useComments(commentIds)
+
+  return { ...queryRes, data: comments }
 }
