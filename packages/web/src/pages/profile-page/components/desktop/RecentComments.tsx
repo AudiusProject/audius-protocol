@@ -1,12 +1,12 @@
-import { useCallback, useState } from 'react'
+import { ComponentProps, useCallback, useState } from 'react'
 
 import {
-  useComment,
   useUserComments,
   useTrack,
-  useUser
+  useUser,
+  CommentOrReply
 } from '@audius/common/api'
-import { Comment, Name } from '@audius/common/models'
+import { Name } from '@audius/common/models'
 import {
   Flex,
   IconMessage,
@@ -37,11 +37,15 @@ const messages = {
   viewAll: 'View All'
 }
 
-const CommentListItem = ({ id, style }: { id: number; style?: object }) => {
+const CommentListItem = ({
+  comment,
+  style
+}: {
+  comment: CommentOrReply
+  style: ComponentProps<typeof AnimatedFlex>['style']
+}) => {
   const dispatch = useDispatch()
-  const { data } = useComment(id)
   const theme = useTheme()
-  const comment = data as Comment | undefined
   const [isHovered, setIsHovered] = useState(false)
   const { data: track } = useTrack(comment?.entityId)
 
@@ -106,7 +110,7 @@ const CommentListItem = ({ id, style }: { id: number; style?: object }) => {
 export const RecentComments = ({ userId }: { userId: number }) => {
   const dispatch = useDispatch()
   const { data: user } = useUser(userId)
-  const { data: commentIds = [], isLoading } = useUserComments({
+  const { data: comments = [], isLoading } = useUserComments({
     userId,
     pageSize: 3
   })
@@ -132,7 +136,7 @@ export const RecentComments = ({ userId }: { userId: number }) => {
   })
 
   // Trail animation for comment items - staggered fade in
-  const trail = useTrail(commentIds.length, {
+  const trail = useTrail(comments.length, {
     from: shouldAnimate
       ? { opacity: 0, transform: 'translateY(-10px)' }
       : { opacity: 1, transform: 'translateY(0)' },
@@ -150,7 +154,7 @@ export const RecentComments = ({ userId }: { userId: number }) => {
     delay: shouldAnimate ? 300 : 0 // Only delay on initial render
   })
 
-  if (commentIds.length === 0) return null
+  if (comments.length === 0) return null
 
   return (
     <ProfilePageNavSectionItem>
@@ -171,8 +175,8 @@ export const RecentComments = ({ userId }: { userId: number }) => {
       >
         {trail.map((style, index) => (
           <CommentListItem
-            key={commentIds[index]}
-            id={commentIds[index]}
+            key={comments[index].id}
+            comment={comments[index]}
             style={style}
           />
         ))}

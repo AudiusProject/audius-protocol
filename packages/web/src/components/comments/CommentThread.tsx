@@ -23,10 +23,10 @@ export const CommentThread = ({ commentId }: { commentId: ID }) => {
 
   const { entityId } = useCurrentCommentSection()
   const [hasRequestedMore, setHasRequestedMore] = useState(false)
-  const { isFetching: isFetchingReplies } = useCommentReplies({
-    commentId,
-    enabled: hasRequestedMore
-  })
+  const { isFetching: isFetchingReplies } = useCommentReplies(
+    { commentId },
+    { enabled: hasRequestedMore }
+  )
 
   const [hiddenReplies, setHiddenReplies] = useState<{
     [parentCommentId: string]: boolean

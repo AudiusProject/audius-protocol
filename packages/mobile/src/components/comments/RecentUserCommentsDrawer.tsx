@@ -1,17 +1,8 @@
 import { useCallback, useEffect, useRef } from 'react'
 
-import {
-  useComment,
-  useTrack,
-  useUser,
-  useUserComments
-} from '@audius/common/api'
-import {
-  type ID,
-  type Comment,
-  type ReplyComment,
-  Name
-} from '@audius/common/models'
+import type { CommentOrReply } from '@audius/common/api'
+import { useTrack, useUser, useUserComments } from '@audius/common/api'
+import { Name, type ID } from '@audius/common/models'
 import { dayjs } from '@audius/common/utils'
 import {
   BottomSheetBackdrop,
@@ -55,10 +46,8 @@ const messages = {
   view: 'View'
 }
 
-const CommentItem = ({ commentId }: { commentId: ID }) => {
+const CommentItem = ({ comment }: { comment: CommentOrReply }) => {
   const { userId, onClose, navigation } = useRecentUserCommentsDrawer()
-  const { data: commentData, isLoading } = useComment(commentId)
-  const comment = commentData as Comment | ReplyComment | undefined
   const { data: track, isLoading: isTrackLoading } = useTrack(comment?.entityId)
   const { data: artist, isLoading: isArtistLoading } = useUser(track?.owner_id)
   const { data: commenter } = useUser(userId)
@@ -84,7 +73,7 @@ const CommentItem = ({ commentId }: { commentId: ID }) => {
     onClose()
   }, [navigation, track?.track_id, onClose, trackUserCommentClick])
 
-  if (isLoading || isTrackLoading || isArtistLoading) {
+  if (isTrackLoading || isArtistLoading) {
     return <CommentSkeleton />
   }
 
@@ -159,7 +148,7 @@ const CommentItem = ({ commentId }: { commentId: ID }) => {
             <CommentText
               isEdited={false}
               isPreview={true}
-              commentId={commentId}
+              commentId={comment.id}
               mentions={comment.mentions ?? []}
               renderTimestamps={false}
               trackDuration={track.duration}
@@ -192,7 +181,7 @@ const CommentItem = ({ commentId }: { commentId: ID }) => {
 const RecentUserCommentsDrawerContent = () => {
   const { userId } = useRecentUserCommentsDrawer()
   const {
-    data: commentIds,
+    data: comments,
     isLoading,
     hasNextPage,
     isFetchingNextPage,
@@ -217,7 +206,7 @@ const RecentUserCommentsDrawerContent = () => {
   }
 
   // Empty state
-  if (!commentIds || !commentIds.length) {
+  if (!comments || !comments.length) {
     return (
       <Flex p='l'>
         <NoComments />
@@ -227,8 +216,8 @@ const RecentUserCommentsDrawerContent = () => {
 
   return (
     <BottomSheetFlatList
-      data={commentIds}
-      keyExtractor={(id) => id.toString()}
+      data={comments}
+      keyExtractor={(comment) => comment.id.toString()}
       ListHeaderComponent={<Box h='l' />}
       ListFooterComponent={
         <>
@@ -245,7 +234,7 @@ const RecentUserCommentsDrawerContent = () => {
       scrollEventsHandlersHook={useScrollEventsHandlers}
       onEndReached={handleEndReached}
       onEndReachedThreshold={0.3}
-      renderItem={({ item: id }) => <CommentItem commentId={id} />}
+      renderItem={({ item: comment }) => <CommentItem comment={comment} />}
     />
   )
 }

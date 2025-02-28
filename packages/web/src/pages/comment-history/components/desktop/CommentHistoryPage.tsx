@@ -1,13 +1,13 @@
 import { useCallback, useMemo } from 'react'
 
 import {
-  useComment,
+  CommentOrReply,
   useTrack,
   useUser,
   useUserByParams,
   useUserComments
 } from '@audius/common/api'
-import { Comment, Name } from '@audius/common/models'
+import { Name } from '@audius/common/models'
 import { profilePage } from '@audius/common/src/utils/route'
 import {
   Box,
@@ -49,9 +49,7 @@ const messages = {
   backToProfile: 'Back To Profile'
 }
 
-const UserComment = ({ commentId }: { commentId: number }) => {
-  const res = useComment(commentId)
-  const comment = res.data as Comment
+const UserComment = ({ comment }: { comment: CommentOrReply }) => {
   const navigate = useNavigate()
 
   const {
@@ -208,7 +206,7 @@ export const CommentHistoryPage = ({ title }: CommentHistoryPageProps) => {
   const { data: user } = useUserByParams(profileParams ?? {})
 
   const {
-    data: commentIds,
+    data: comments = [],
     hasNextPage,
     fetchNextPage,
     isPending,
@@ -247,11 +245,11 @@ export const CommentHistoryPage = ({ title }: CommentHistoryPageProps) => {
               <CommentBlockSkeletons />
             ) : (
               <>
-                {commentIds.length === 0 ? (
+                {comments.length === 0 ? (
                   <NoComments handle={user?.handle} />
                 ) : (
-                  commentIds.map((id) => (
-                    <UserComment key={id} commentId={id} />
+                  comments.map((comment) => (
+                    <UserComment key={comment.id} comment={comment} />
                   ))
                 )}
                 {isFetchingNextPage ? (

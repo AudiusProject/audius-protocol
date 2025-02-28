@@ -61,11 +61,10 @@ export const CommentThread = (props: CommentThreadProps) => {
     )
   }
   const [hasRequestedMore, setHasRequestedMore] = useState(false)
-  const { isFetching: isFetchingReplies } = useCommentReplies({
-    commentId,
-    enabled: hasRequestedMore
-  })
-
+  const { isFetching: isFetchingReplies } = useCommentReplies(
+    { commentId },
+    { enabled: hasRequestedMore }
+  )
   const handleLoadMoreReplies = () => {
     setHasRequestedMore(true)
   }

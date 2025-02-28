@@ -13,31 +13,36 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
+import { QueryOptions } from '../types'
+import { useCurrentUserId } from '../useCurrentUserId'
+import { primeCommentData } from '../utils/primeCommentData'
 import { primeRelatedData } from '../utils/primeRelatedData'
 
-import { COMMENT_ROOT_PAGE_SIZE, CommentOrReply, messages } from './types'
-import { getCommentQueryKey, getTrackCommentListQueryKey } from './utils'
+import { COMMENT_ROOT_PAGE_SIZE, messages } from './types'
+import { useComments } from './useComments'
+import { getTrackCommentListQueryKey } from './utils'
 
 export type GetCommentsByTrackArgs = {
   trackId: ID
-  userId: ID | null
   sortMethod: any
   pageSize?: number
 }
 
-export const useTrackComments = ({
-  trackId,
-  userId,
-  sortMethod,
-  pageSize = COMMENT_ROOT_PAGE_SIZE
-}: GetCommentsByTrackArgs) => {
+export const useTrackComments = (
+  {
+    trackId,
+    sortMethod,
+    pageSize = COMMENT_ROOT_PAGE_SIZE
+  }: GetCommentsByTrackArgs,
+  options?: QueryOptions
+) => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const isMutating = useIsMutating()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
+  const { data: currentUserId } = useCurrentUserId()
 
   const queryRes = useInfiniteQuery({
-    enabled: !!trackId && trackId !== 0 && isMutating === 0,
     initialPageParam: 0,
     getNextPageParam: (lastPage: ID[], pages) => {
       if (lastPage?.length < pageSize) return undefined
@@ -51,8 +56,7 @@ export const useTrackComments = ({
         offset: pageParam,
         limit: pageSize,
         sortMethod,
-        // TODO: why is this toString instead of encode
-        userId: userId?.toString() ?? undefined
+        userId: currentUserId?.toString()
       })
 
       const commentList = transformAndCleanList(
@@ -62,27 +66,18 @@ export const useTrackComments = ({
 
       primeRelatedData({ related: commentsRes.related, queryClient, dispatch })
 
-      // Populate individual comment cache
-      commentList.forEach((comment) => {
-        queryClient.setQueryData<CommentOrReply>(
-          getCommentQueryKey(comment.id),
-          comment
-        )
-        comment?.replies?.forEach?.((reply) =>
-          queryClient.setQueryData<CommentOrReply>(
-            getCommentQueryKey(reply.id),
-            reply
-          )
-        )
-      })
-      // For the comment list cache, we only store the ids of the comments (organized by sort method)
+      // Prime comment data in the cache
+      primeCommentData({ comments: commentList, queryClient })
+
+      // Return just the IDs for the infinite query
       return commentList.map((comment) => comment.id)
     },
-    staleTime: Infinity, // Stale time is set to infinity so that we never reload data thats currently shown on screen (because sorting could have changed)
-    gcTime: 0 // Cache time is set to 1 so that the data is cleared any time we leave the page viewing it or change sorts
+    select: (data) => data.pages.flat(),
+    ...options,
+    enabled: isMutating === 0 && options?.enabled !== false
   })
 
-  const { error } = queryRes
+  const { error, data: commentIds } = queryRes
 
   useEffect(() => {
     if (error) {
@@ -95,5 +90,7 @@ export const useTrackComments = ({
     }
   }, [error, dispatch, reportToSentry])
 
-  return { ...queryRes, data: queryRes.data?.pages?.flat() ?? [] }
+  const { data: comments } = useComments(commentIds)
+
+  return { ...queryRes, data: comments }
 }
