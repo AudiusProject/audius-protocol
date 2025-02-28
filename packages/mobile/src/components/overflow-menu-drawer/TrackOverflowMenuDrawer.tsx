@@ -1,5 +1,6 @@
 import { useCallback, useContext } from 'react'
 
+import { useToggleSaveTrack } from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -48,8 +49,7 @@ const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 const { requestOpen: openAddToCollectionModal } = addToCollectionUIActions
 const { followUser, unfollowUser } = usersSocialActions
 const { setTrackPosition, clearTrackPosition } = playbackPositionActions
-const { repostTrack, undoRepostTrack, saveTrack, unsaveTrack } =
-  tracksSocialActions
+const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
@@ -92,6 +92,11 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
   const user = useSelector((state: CommonState) =>
     getUser(state, { id: track?.owner_id })
   )
+
+  const toggleSaveTrack = useToggleSaveTrack({
+    trackId: id,
+    source: FavoriteSource.OVERFLOW
+  })
 
   const handlePurchasePress = useCallback(() => {
     if (track?.track_id) {
@@ -143,10 +148,8 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
       dispatch(repostTrack(id, RepostSource.OVERFLOW)),
     [OverflowAction.UNREPOST]: () =>
       dispatch(undoRepostTrack(id, RepostSource.OVERFLOW)),
-    [OverflowAction.FAVORITE]: () =>
-      dispatch(saveTrack(id, FavoriteSource.OVERFLOW)),
-    [OverflowAction.UNFAVORITE]: () =>
-      dispatch(unsaveTrack(id, FavoriteSource.OVERFLOW)),
+    [OverflowAction.FAVORITE]: () => toggleSaveTrack(),
+    [OverflowAction.UNFAVORITE]: () => toggleSaveTrack(),
     [OverflowAction.SHARE]: () =>
       dispatch(
         requestOpenShareModal({

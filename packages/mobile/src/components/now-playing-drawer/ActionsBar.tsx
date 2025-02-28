@@ -1,5 +1,6 @@
 import { useCallback, useLayoutEffect } from 'react'
 
+import { useToggleSaveTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   RepostSource,
@@ -50,8 +51,7 @@ import { RepostButton } from './RepostButton'
 const { makeGetCurrent } = playerSelectors
 const { getUserId } = accountSelectors
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
-const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
-  tracksSocialActions
+const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { updateMethod } = castActions
 const { getMethod: getCastMethod, getIsCasting } = castSelectors
 const { getTrackPosition } = playbackPositionSelectors
@@ -147,17 +147,10 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     }
   }, [castMethod, dispatch])
 
-  const handleFavorite = useCallback(() => {
-    if (track) {
-      if (track.has_current_user_saved) {
-        dispatch(unsaveTrack(track.track_id, FavoriteSource.NOW_PLAYING))
-      } else if (isOwner) {
-        toast({ content: messages.favoriteProhibited })
-      } else {
-        dispatch(saveTrack(track.track_id, FavoriteSource.NOW_PLAYING))
-      }
-    }
-  }, [dispatch, isOwner, toast, track])
+  const handleFavorite = useToggleSaveTrack({
+    trackId: track?.track_id,
+    source: FavoriteSource.NOW_PLAYING
+  })
 
   const handleRepost = useCallback(() => {
     if (track) {

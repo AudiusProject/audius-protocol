@@ -1,5 +1,3 @@
-import { useCallback } from 'react'
-
 import { useToggleSaveTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import { FavoriteSource, SquareSizes } from '@audius/common/models'
@@ -149,16 +147,10 @@ export const PlayBar = (props: PlayBarProps) => {
       'usdc_purchase' in track.stream_conditions &&
       !hasStreamAccess)
 
-  const toggleSaveTrack = useToggleSaveTrack({
-    trackId: track?.track_id as number,
+  const onPressFavoriteButton = useToggleSaveTrack({
+    trackId: track?.track_id,
     source: FavoriteSource.PLAYBAR
   })
-
-  const onPressFavoriteButton = useCallback(() => {
-    if (track) {
-      toggleSaveTrack()
-    }
-  }, [track, toggleSaveTrack])
 
   const renderFavoriteButton = () => {
     return (

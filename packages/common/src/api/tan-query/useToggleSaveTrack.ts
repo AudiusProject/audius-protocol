@@ -7,7 +7,7 @@ import { useTrack } from './useTrack'
 import { useUnfavoriteTrack } from './useUnfavoriteTrack'
 
 type ToggleSaveTrackArgs = {
-  trackId: ID
+  trackId: ID | null | undefined
   source: string
 }
 
@@ -23,6 +23,9 @@ export const useToggleSaveTrack = ({
   })
 
   return useCallback(() => {
+    if (!trackId) {
+      return
+    }
     if (isSaved) {
       unfavoriteTrack({ trackId, source })
     } else {

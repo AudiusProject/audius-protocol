@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react'
 
+import { useToggleSaveTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,
@@ -88,8 +89,7 @@ const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
-const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
-  tracksSocialActions
+const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { tracksActions } = trackPageLineupActions
 const { getUserId } = accountSelectors
 const { getIsReachable } = reachabilitySelectors
@@ -371,15 +371,10 @@ export const TrackScreenDetailsTile = ({
     )
   }, [openCommentDrawer, trackId, navigation, uid])
 
-  const handlePressSave = () => {
-    if (!isOwner) {
-      if (hasSaved) {
-        dispatch(unsaveTrack(trackId, FavoriteSource.TRACK_PAGE))
-      } else {
-        dispatch(saveTrack(trackId, FavoriteSource.TRACK_PAGE))
-      }
-    }
-  }
+  const handlePressSave = useToggleSaveTrack({
+    trackId,
+    source: FavoriteSource.TRACK_PAGE
+  })
 
   const handlePressRepost = () => {
     if (!isOwner) {
