@@ -6,7 +6,7 @@ import {
   useTrack,
   useUser
 } from '@audius/common/api'
-import { Comment } from '@audius/common/models'
+import { Comment, Name } from '@audius/common/models'
 import {
   Flex,
   IconMessage,
@@ -21,6 +21,7 @@ import {
 import { useDispatch } from 'react-redux'
 
 import { TrackLink } from 'components/link'
+import { make, track as trackEvent } from 'services/analytics'
 import { push } from 'utils/navigation'
 import { fullCommentHistoryPage } from 'utils/route'
 
@@ -40,13 +41,26 @@ const CommentListItem = ({ id }: { id: number }) => {
   const [isHovered, setIsHovered] = useState(false)
   const { data: track } = useTrack(comment?.entityId)
 
-  if (!comment) return null
+  const trackCommentItemClick = useCallback(() => {
+    if (comment && comment.userId) {
+      trackEvent(
+        make({
+          eventName: Name.RECENT_COMMENTS_CLICK,
+          commentId: comment.id,
+          userId: comment.userId
+        })
+      )
+    }
+  }, [comment])
 
   const handleClick = () => {
     if (track) {
+      trackCommentItemClick()
       dispatch(push(track.permalink))
     }
   }
+
+  if (!comment) return null
 
   return (
     <Flex
@@ -59,17 +73,21 @@ const CommentListItem = ({ id }: { id: number }) => {
       onMouseEnter={() => setIsHovered(true)}
     >
       <Flex column gap='2xs' w='100%'>
-        {track ? (
-          <TrackLink
-            size='s'
-            variant='subdued'
-            showUnderline={isHovered}
-            trackId={track?.track_id}
-            ellipses
-          />
-        ) : (
-          <Skeleton w='80%' h={theme.typography.lineHeight.m} />
-        )}
+        <Flex w='100%' css={{ minWidth: 0 }}>
+          {track ? (
+            <TrackLink
+              css={{ display: 'block' }}
+              size='s'
+              variant='subdued'
+              showUnderline={isHovered}
+              trackId={track?.track_id}
+              ellipses
+              onClick={trackCommentItemClick}
+            />
+          ) : (
+            <Skeleton w='80%' h={theme.typography.lineHeight.m} />
+          )}
+        </Flex>
 
         <Text variant='body' size='s' ellipses>
           {comment.message}
