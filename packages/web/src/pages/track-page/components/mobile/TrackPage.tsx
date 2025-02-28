@@ -1,7 +1,14 @@
 import { useEffect, useContext } from 'react'
 
+import { useToggleSaveTrack } from '@audius/common/api'
 import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
-import { ID, LineupState, Track, User } from '@audius/common/models'
+import {
+  ID,
+  LineupState,
+  Track,
+  User,
+  FavoriteSource
+} from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   trackPageLineupActions,
@@ -61,7 +68,6 @@ export type OwnProps = {
     overflowActions: OverflowAction[]
   ) => void
 
-  onSaveTrack: (isSaved: boolean, trackId: ID) => void
   // Tracks Lineup Props
   tracks: LineupState<Track>
   currentQueueItem: QueueItem
@@ -88,7 +94,6 @@ const TrackPage = ({
   onHeroPlay,
   onHeroShare,
   goToAllRemixesPage,
-  onSaveTrack,
   onHeroRepost,
   onClickMobileOverflow,
 
@@ -131,12 +136,14 @@ const TrackPage = ({
 
   const loading = !heroTrack || isFetchingNFTAccess
 
+  const toggleSaveTrack = useToggleSaveTrack({
+    trackId: heroTrack?.track_id,
+    source: FavoriteSource.TRACK_PAGE
+  })
+
   const onPlay = () => onHeroPlay({ isPlaying: heroPlaying })
   const onPreview = () =>
     onHeroPlay({ isPlaying: heroPlaying, isPreview: true })
-  const onSave = isOwner
-    ? () => {}
-    : () => heroTrack && onSaveTrack(isSaved, heroTrack.track_id)
   const onRepost = isOwner
     ? () => {}
     : () => heroTrack && onHeroRepost(isReposted, heroTrack.track_id)
@@ -202,7 +209,7 @@ const TrackPage = ({
           onClickMobileOverflow={onClickMobileOverflow}
           onPlay={onPlay}
           onPreview={onPreview}
-          onSave={onSave}
+          onSave={toggleSaveTrack}
           onShare={onShare}
           onRepost={onRepost}
           isUnlisted={defaults.isUnlisted}
