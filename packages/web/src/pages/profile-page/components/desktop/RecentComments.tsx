@@ -16,6 +16,7 @@ import {
   Box
 } from '@audius/harmony'
 import { OptionalHashId } from '@audius/sdk'
+import { animated, useSpring, useTrail } from '@react-spring/web'
 import { useDispatch } from 'react-redux'
 
 import { TrackLink } from 'components/link'
@@ -25,12 +26,15 @@ import { fullCommentHistoryPage } from 'utils/route'
 import { ProfilePageNavSectionItem } from './ProfilePageNavSectionItem'
 import { ProfilePageNavSectionTitle } from './ProfilePageNavSectionTitle'
 
+const AnimatedFlex = animated(Flex)
+const AnimatedBox = animated(Box)
+
 const messages = {
   recentComments: 'Recent Comments',
   viewAll: 'View All'
 }
 
-const CommentListItem = ({ id }: { id: number }) => {
+const CommentListItem = ({ id, style }: { id: number; style?: object }) => {
   const dispatch = useDispatch()
   const { data } = useGetCommentById(id)
   const theme = useTheme()
@@ -49,7 +53,8 @@ const CommentListItem = ({ id }: { id: number }) => {
   }
 
   return (
-    <Flex
+    <AnimatedFlex
+      style={style}
       column
       gap='m'
       w='100%'
@@ -76,7 +81,7 @@ const CommentListItem = ({ id }: { id: number }) => {
         </Text>
       </Flex>
       <Divider orientation='horizontal' />
-    </Flex>
+    </AnimatedFlex>
   )
 }
 
@@ -90,6 +95,30 @@ export const RecentComments = ({ userId }: { userId: number }) => {
     }
   }, [dispatch, user?.handle])
 
+  const { spring } = useTheme()
+
+  // Main container animation - fade in and expand from top
+  const containerSpring = useSpring({
+    from: { opacity: 0, height: 0, transform: 'translateY(-20px)' },
+    to: { opacity: 1, height: 'auto', transform: 'translateY(0)' },
+    config: spring.standard
+  })
+
+  // Trail animation for comment items - staggered fade in
+  const trail = useTrail(commentIds.length, {
+    from: { opacity: 0, transform: 'translateY(-10px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    config: spring.fast
+  })
+
+  // View all button animation
+  const viewAllSpring = useSpring({
+    from: { opacity: 0, transform: 'translateY(-5px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    config: spring.standard,
+    delay: 300 // Delay even more to appear after comments
+  })
+
   if (commentIds.length === 0) return null
 
   return (
@@ -98,7 +127,8 @@ export const RecentComments = ({ userId }: { userId: number }) => {
         title={messages.recentComments}
         Icon={IconMessage}
       />
-      <Flex
+      <AnimatedFlex
+        style={containerSpring}
         alignItems='flex-start'
         w='100%'
         column
@@ -108,15 +138,19 @@ export const RecentComments = ({ userId }: { userId: number }) => {
         p='m'
         backgroundColor='surface1'
       >
-        {commentIds.map((id) => (
-          <CommentListItem key={id} id={id} />
+        {trail.map((style, index) => (
+          <CommentListItem
+            key={commentIds[index]}
+            id={commentIds[index]}
+            style={style}
+          />
         ))}
-        <Box w='100%' onClick={onClickViewAll}>
+        <AnimatedBox style={viewAllSpring} w='100%' onClick={onClickViewAll}>
           <PlainButton variant='subdued' iconRight={IconArrowRight}>
             {messages.viewAll}
           </PlainButton>
-        </Box>
-      </Flex>
+        </AnimatedBox>
+      </AnimatedFlex>
     </ProfilePageNavSectionItem>
   )
 }
