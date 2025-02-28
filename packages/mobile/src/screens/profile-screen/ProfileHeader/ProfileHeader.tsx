@@ -1,7 +1,8 @@
 import { memo, useCallback, useEffect, useState } from 'react'
 
 import { useUserComments } from '@audius/common/api'
-import { useSelectTierInfo } from '@audius/common/hooks'
+import { useFeatureFlag, useSelectTierInfo } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { css } from '@emotion/native'
 import type { Animated } from 'react-native'
@@ -66,6 +67,7 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
     'allow_ai_attribution'
   ])
 
+  const { data: comments } = useUserComments({ userId, pageSize: 1 })
   const { tier = 'none' } = useSelectTierInfo(userId)
   const hasTier = tier !== 'none'
   const isOwner = userId === accountId
@@ -75,13 +77,18 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
       Boolean
     ).length > 1
   const isSupporting = supportingCount > 0
+
+  const { isEnabled: isRecentCommentsEnabled } = useFeatureFlag(
+    FeatureFlags.RECENT_COMMENTS
+  )
   // Note: we also if the profile bio is longer than 3 lines, but that's handled in the Bio component.
   const shouldExpand =
     hasTier ||
     hasMutuals ||
     hasMultipleSocials ||
     isSupporting ||
-    allow_ai_attribution
+    allow_ai_attribution ||
+    (comments && comments?.length > 0 && isRecentCommentsEnabled)
 
   useEffect(() => {
     if (!isExpandable && shouldExpand) {
@@ -105,9 +112,6 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
     setIsExpanded(!isExpanded)
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
   }, [isExpanded, setIsExpanded])
-
-  // Preload user comments
-  useUserComments({ userId, pageSize: 1 })
 
   const { spacing } = useTheme()
 
