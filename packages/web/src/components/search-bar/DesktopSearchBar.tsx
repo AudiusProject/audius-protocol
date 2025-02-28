@@ -1,6 +1,6 @@
 import { useCallback, useState, useRef, useEffect, useMemo } from 'react'
 
-import { useSearchAutocomplete } from '@audius/common/src/api/tan-query/useSearchAutocomplete'
+import { useSearchAutocomplete } from '@audius/common/api'
 import { route } from '@audius/common/utils'
 import {
   IconSearch,

@@ -1,9 +1,12 @@
 import { useCallback, useState } from 'react'
 
-import { useGetCommentById, useUserComments } from '@audius/common/api'
+import {
+  useComment,
+  useUserComments,
+  useTrack,
+  useUser
+} from '@audius/common/api'
 import { Comment, Name } from '@audius/common/models'
-import { useTrack } from '@audius/common/src/api/tan-query/useTrack'
-import { useUser } from '@audius/common/src/api/tan-query/useUser'
 import {
   Flex,
   IconMessage,
@@ -15,7 +18,6 @@ import {
   useTheme,
   Box
 } from '@audius/harmony'
-import { OptionalHashId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
 import { TrackLink } from 'components/link'
@@ -33,13 +35,11 @@ const messages = {
 
 const CommentListItem = ({ id }: { id: number }) => {
   const dispatch = useDispatch()
-  const { data } = useGetCommentById(id)
+  const { data } = useComment(id)
   const theme = useTheme()
   const comment = data as Comment | undefined
   const [isHovered, setIsHovered] = useState(false)
-  const { data: track } = useTrack(OptionalHashId.parse(comment?.entityId), {
-    enabled: !!comment?.entityId
-  })
+  const { data: track } = useTrack(comment?.entityId)
 
   const trackCommentItemClick = useCallback(() => {
     if (comment && comment.userId) {

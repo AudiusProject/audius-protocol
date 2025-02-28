@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useGetCommentById, useGetUserById } from '@audius/common/api'
+import { useComment, useGetUserById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import {
   Name,
@@ -181,7 +181,7 @@ export const CommentBlockInternal = (
 // This is an extra component wrapper because the comment data coming back from aquery could be undefined
 // There's no way to return early in the above component due to rules of hooks ordering
 export const CommentBlock = (props: CommentBlockProps) => {
-  const { data: comment } = useGetCommentById(props.commentId)
+  const { data: comment } = useComment(props.commentId)
   if (!comment || !('id' in comment)) return null
   return <CommentBlockInternal {...props} comment={comment} />
 }

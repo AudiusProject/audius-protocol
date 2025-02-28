@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 
 import {
-  useGetCommentById,
+  useComment,
   useTrack,
   useUser,
   useUserComments
@@ -13,7 +13,6 @@ import {
   Name
 } from '@audius/common/models'
 import { dayjs } from '@audius/common/utils'
-import { OptionalHashId } from '@audius/sdk'
 import {
   BottomSheetBackdrop,
   BottomSheetFlatList,
@@ -58,11 +57,9 @@ const messages = {
 
 const CommentItem = ({ commentId }: { commentId: ID }) => {
   const { userId, onClose, navigation } = useRecentUserCommentsDrawer()
-  const { data: commentData, isLoading } = useGetCommentById(commentId)
+  const { data: commentData, isLoading } = useComment(commentId)
   const comment = commentData as Comment | ReplyComment | undefined
-  const { data: track, isLoading: isTrackLoading } = useTrack(
-    OptionalHashId.parse(comment?.entityId)
-  )
+  const { data: track, isLoading: isTrackLoading } = useTrack(comment?.entityId)
   const { data: artist, isLoading: isArtistLoading } = useUser(track?.owner_id)
   const { data: commenter } = useUser(userId)
 
