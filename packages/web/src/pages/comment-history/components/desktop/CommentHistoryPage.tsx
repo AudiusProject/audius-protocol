@@ -6,7 +6,7 @@ import {
   useUserByParams,
   useUserComments
 } from '@audius/common/api'
-import { Comment } from '@audius/common/models'
+import { Comment, Name } from '@audius/common/models'
 import { profilePage } from '@audius/common/src/utils/route'
 import {
   Box,
@@ -20,7 +20,6 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
-import { HashId } from '@audius/sdk'
 import dayjs from 'dayjs'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useNavigate } from 'react-router-dom-v5-compat'
@@ -34,6 +33,7 @@ import { TrackLink, UserLink } from 'components/link'
 import Page from 'components/page/Page'
 import { useMainContentRef } from 'pages/MainContentContext'
 import { useProfileParams } from 'pages/profile-page/useProfileParams'
+import { make, track as trackEvent } from 'services/analytics'
 import { fullCommentHistoryPage } from 'utils/route'
 
 const messages = {
@@ -63,17 +63,30 @@ const UserComment = ({ commentId }: { commentId: number }) => {
     isCurrentUserReacted
   } = comment
 
-  const { data: track } = useTrack(HashId.parse(entityId))
+  const { data: track } = useTrack(entityId)
   const createdAtDate = useMemo(
     () => dayjs.utc(createdAt).toDate(),
     [createdAt]
   )
 
+  const trackUserCommentClick = useCallback(() => {
+    if (userId) {
+      trackEvent(
+        make({
+          eventName: Name.COMMENTS_HISTORY_CLICK,
+          commentId: id,
+          userId
+        })
+      )
+    }
+  }, [id, userId])
+
   const goToTrackPage = useCallback(() => {
     if (track) {
+      trackUserCommentClick()
       navigate(track.permalink)
     }
-  }, [track, navigate])
+  }, [track, trackUserCommentClick, navigate])
 
   if (!comment || !userId) return null
 
