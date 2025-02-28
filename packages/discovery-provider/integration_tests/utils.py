@@ -395,6 +395,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 is_available=user_meta.get("is_available", True),
                 is_deactivated=user_meta.get("is_deactivated", False),
                 allow_ai_attribution=user_meta.get("allow_ai_attribution", False),
+                is_verified=user_meta.get("is_verified", False),
                 metadata_multihash=user_meta.get("metadata_multihash", "fake_cid"),
             )
             user_bank = UserBankAccount(

@@ -83,8 +83,13 @@ def test_get_user_comments_default(app):
             "current_user_id": 2,
             "sort_method": "newest",
         }
-        comments = get_user_comments(args)
+        response = get_user_comments(args)
 
+        # Check that the response has the expected structure
+        assert "data" in response
+
+        # Get the comments from the data field
+        comments = response["data"]
         assert len(comments) == COMMENT_ROOT_DEFAULT_LIMIT
         for comment in comments:
             # Verify these are User 1's comments
@@ -115,8 +120,10 @@ def test_get_user_comments_pagination(app):
             "limit": 5,
             "offset": 5,
         }
-        comments = get_user_comments(args)
+        response = get_user_comments(args)
 
+        # Get the comments from the data field
+        comments = response["data"]
         assert len(comments) == 5
         # Since we're ordering by created_at DESC, we should get comments 14-10
         comment_ids = [decode_string_id(comment["id"]) for comment in comments]
@@ -134,8 +141,10 @@ def test_get_user_comments_different_users(app):
             "user_id": 2,
             "current_user_id": 1,
         }
-        comments = get_user_comments(args)
+        response = get_user_comments(args)
 
+        # Get the comments from the data field
+        comments = response["data"]
         assert len(comments) == 10  # User 2 has 10 comments
         for comment in comments:
             # Verify these are User 2's comments
@@ -185,8 +194,10 @@ def test_get_user_comments_deleted(app):
             "user_id": 1,
             "current_user_id": 10,
         }
-        comments = get_user_comments(args)
+        response = get_user_comments(args)
 
+        # Get the comments from the data field
+        comments = response["data"]
         # Only the normal comment should be returned
         assert len(comments) == 1
         assert decode_string_id(comments[0]["id"]) == 1
@@ -234,8 +245,10 @@ def test_get_user_comments_muted(app):
             "user_id": 2,
             "current_user_id": 10,
         }
-        comments = get_user_comments(args)
+        response = get_user_comments(args)
 
+        # Get the comments from the data field
+        comments = response["data"]
         # User 2's comment should not be visible to user 10
         assert len(comments) == 0
 
@@ -244,7 +257,10 @@ def test_get_user_comments_muted(app):
             "user_id": 1,
             "current_user_id": 10,
         }
-        comments = get_user_comments(args)
+        response = get_user_comments(args)
+
+        # Get the comments from the data field
+        comments = response["data"]
         assert len(comments) == 1
 
 
@@ -297,7 +313,10 @@ def test_get_user_comments_reported(app):
             "user_id": 1,
             "current_user_id": 20,  # A different user viewing
         }
-        comments = get_user_comments(args)
+        response = get_user_comments(args)
+
+        # Get the comments from the data field
+        comments = response["data"]
 
         # Only the normal comment should be returned, not the heavily reported one
         assert len(comments) == 1
@@ -341,7 +360,10 @@ def test_get_user_comments_edited(app):
             "user_id": 1,
             "current_user_id": 10,
         }
-        comments = get_user_comments(args)
+        response = get_user_comments(args)
+
+        # Get the comments from the data field
+        comments = response["data"]
 
         assert len(comments) == 2
 
@@ -352,3 +374,65 @@ def test_get_user_comments_edited(app):
         # Find the normal comment
         normal_comment = next(c for c in comments if decode_string_id(c["id"]) == 1)
         assert normal_comment["is_edited"] == False
+
+
+def test_get_user_comments_related_field(app):
+    """Test that the related field is included in the response and contains the expected user and track information"""
+    with app.app_context():
+        db = get_db()
+        populate_mock_db(db, test_entities)
+
+        # Get User 1's comments
+        args = {
+            "user_id": 1,
+            "current_user_id": 2,
+            "sort_method": "newest",
+        }
+        response = get_user_comments(args, include_related=True)
+
+        # Check that the response has the expected structure
+        assert "data" in response
+        assert "related" in response
+        assert "users" in response["related"]
+        assert "tracks" in response["related"]
+
+        # Get the comments from the data field
+        comments = response["data"]
+
+        # Check that the related field contains the expected users
+        users = response["related"]["users"]
+        assert len(users) >= 1  # At least the comment author
+
+        # Find the comment author in the related users
+        user_id = decode_string_id(comments[0]["user_id"])
+        found_user = False
+        for user in users:
+            if user["user_id"] == user_id:
+                found_user = True
+                # Check for full user object fields
+                assert user["handle"] == "user1"
+                assert "user_id" in user
+                break
+        assert found_user, "Comment author not found in related users"
+
+        # Check that the related field contains the expected tracks
+        tracks = response["related"]["tracks"]
+        assert len(tracks) >= 1  # At least one track
+
+        # Find a track in the related tracks
+        entity_id = decode_string_id(comments[0]["entity_id"])
+        found_track = False
+        for track in tracks:
+            if track["track_id"] == entity_id:
+                found_track = True
+                # Check for full track object fields
+                assert track["title"] == f"Track {entity_id}"
+                assert "owner_id" in track
+                assert "user" in track
+                assert track["owner_id"] == 10  # Artist ID
+                break
+        assert found_track, "Track not found in related tracks"
+
+        # Check that comments don't have their own related field
+        for comment in comments:
+            assert "related" not in comment

@@ -4,8 +4,9 @@ from typing import TypedDict
 from src.api.v1.helpers import format_limit, format_offset
 from src.queries.comments.utils import (
     COMMENT_ROOT_DEFAULT_LIMIT,
-    _format_comment_response,
     build_comments_query,
+    fetch_related_entities,
+    format_comments,
     get_base_comments_query,
 )
 from src.utils.db_session import get_db_read_replica
@@ -21,7 +22,7 @@ class GetUserCommentsArgs(TypedDict):
     current_user_id: int
 
 
-def get_user_comments(args: GetUserCommentsArgs):
+def get_user_comments(args: GetUserCommentsArgs, include_related=False):
     """
     Get comments made by a specific user
 
@@ -32,9 +33,10 @@ def get_user_comments(args: GetUserCommentsArgs):
             - sort_method: How to sort the comments (defaults to newest)
             - offset: Pagination offset
             - limit: Pagination limit
+        include_related: Whether to include related users and tracks in the response
 
     Returns:
-        List of comment objects with metadata
+        Dictionary with comments list and related users and tracks
     """
     offset, limit = format_offset(args), format_limit(
         args, default_limit=COMMENT_ROOT_DEFAULT_LIMIT
@@ -65,16 +67,32 @@ def get_user_comments(args: GetUserCommentsArgs):
         # Execute the query
         user_comments = query.all()
 
-        # Format the results
-        return [
-            _format_comment_response(
-                comment,
-                react_count,
-                is_muted,
-                mentions,
-                current_user_id,
-                session,
-                include_replies=False,  # User comments don't include nested replies
+        # Format comments and collect user/track IDs
+        formatted_comments = format_comments(
+            session=session,
+            comments=user_comments,
+            current_user_id=current_user_id,
+            include_replies=False,
+            artist_id=None,
+        )
+
+        # Prepare the response
+        if include_related:
+            # Fetch related entities
+            related_users, related_tracks = fetch_related_entities(
+                session, formatted_comments, current_user_id
             )
-            for comment, react_count, is_muted, mentions in user_comments
-        ]
+
+            # Return the restructured response with related entities
+            response = {
+                "data": formatted_comments,
+                "related": {
+                    "users": related_users,
+                    "tracks": related_tracks,
+                },
+            }
+        else:
+            # Return just the data without related entities
+            response = {"data": formatted_comments}
+
+        return response

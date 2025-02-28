@@ -9,6 +9,7 @@ from src.models.comments.comment_report import COMMENT_KARMA_THRESHOLD
 from src.models.moderation.muted_user import MutedUser
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.user import User
+from src.queries.query_helpers import get_tracks, get_users
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import encode_int_id
 
@@ -81,8 +82,8 @@ def _format_comment_response(
     mentions,
     current_user_id,
     session,
-    include_replies=False,
     artist_id=None,
+    replies=None,
 ):
     """Common formatter for comment responses"""
 
@@ -111,12 +112,8 @@ def _format_comment_response(
         "is_muted": is_muted if is_muted is not None else False,
     }
 
-    if include_replies:
-        from src.queries.comments.replies import get_replies
-
-        replies = get_replies(
-            session, comment.comment_id, current_user_id, artist_id, limit=None
-        )
+    # Check if we need to include replies (either explicitly provided or need to fetch them)
+    if replies is not None:
         reply_count = len(replies)
         response.update(
             {
@@ -128,6 +125,24 @@ def _format_comment_response(
                     if artist_id
                     else False
                 ),
+            }
+        )
+    # Even if no replies are provided, we need to set is_tombstone for deleted comments
+    elif comment.is_delete:
+        # Check if this comment has any replies in the database
+        from src.models.comments.comment_thread import CommentThread
+
+        reply_count = (
+            session.query(CommentThread)
+            .filter(CommentThread.parent_comment_id == comment.comment_id)
+            .count()
+        )
+
+        response.update(
+            {
+                "reply_count": reply_count,
+                "replies": [],
+                "is_tombstone": reply_count > 0,
             }
         )
 
@@ -444,3 +459,140 @@ def build_comments_query(
         )
 
     return query
+
+
+def format_comments(
+    session, comments, current_user_id, include_replies=False, artist_id=None
+):
+    """
+    Format a list of comments, optionally including their replies.
+
+    Args:
+        session: Database session
+        comments: List of comment query results (tuples from the database)
+        current_user_id: ID of the user making the request
+        include_replies: Whether to include replies in the response
+        artist_id: ID of the track owner (for track comments and replies)
+
+    Returns:
+        List of formatted comments
+    """
+    from src.queries.comments.replies import get_replies
+
+    # Pre-fetch all replies if needed
+    replies_map = {}
+    if include_replies:
+        for comment_data in comments:
+            comment = comment_data[0]  # First element is always the comment
+            # For tombstone comments (deleted with replies), we need to fetch replies
+            # even if the comment is deleted
+            replies = get_replies(
+                session, comment.comment_id, current_user_id, artist_id, limit=None
+            )
+            replies_map[comment.comment_id] = replies
+
+    # Format comments
+    formatted_comments = []
+    for comment_data in comments:
+        # Handle different tuple structures from different queries
+        if len(comment_data) == 3:  # replies query
+            comment, react_count, mentions = comment_data
+            is_muted = None
+        else:  # track or user comments query
+            comment, react_count, is_muted, mentions = comment_data
+
+        # Get replies for this comment if they exist and if we need to include replies
+        comment_replies = (
+            replies_map.get(comment.comment_id) if include_replies else None
+        )
+
+        # Format the comment with pre-fetched replies
+        formatted_comment = _format_comment_response(
+            comment,
+            react_count,
+            is_muted,
+            mentions,
+            current_user_id,
+            session,
+            artist_id=artist_id,
+            replies=comment_replies,
+        )
+
+        # If we have replies, remove related field from replies if it exists
+        if comment_replies:
+            for reply in comment_replies:
+                if "related" in reply:
+                    del reply["related"]
+
+        formatted_comments.append(formatted_comment)
+
+    return formatted_comments
+
+
+def extract_ids_from_comments(formatted_comments):
+    """
+    Extract user and track IDs from a list of formatted comments.
+
+    Args:
+        formatted_comments: List of formatted comments
+
+    Returns:
+        Tuple of (user_ids, track_ids) where both are sets of IDs
+    """
+    from src.utils.helpers import decode_string_id
+
+    user_ids = set()
+    track_ids = set()
+
+    for comment in formatted_comments:
+        # Add user ID from the main comment
+        if comment.get("user_id"):
+            user_ids.add(decode_string_id(comment["user_id"]))
+
+        # Add track ID from the main comment
+        if comment.get("entity_type") == "Track" and comment.get("entity_id"):
+            track_ids.add(decode_string_id(comment["entity_id"]))
+
+        # If we have replies, collect their IDs too
+        if comment.get("replies"):
+            for reply in comment["replies"]:
+                # Extract IDs from reply
+                reply_user_id = (
+                    decode_string_id(reply["user_id"]) if reply.get("user_id") else None
+                )
+                reply_entity_id = (
+                    decode_string_id(reply["entity_id"])
+                    if reply.get("entity_id")
+                    else None
+                )
+
+                # Add to our collections
+                if reply_user_id:
+                    user_ids.add(reply_user_id)
+
+                if reply.get("entity_type") == "Track" and reply_entity_id:
+                    track_ids.add(reply_entity_id)
+
+    return list(user_ids), list(track_ids)
+
+
+def fetch_related_entities(session, formatted_comments, current_user_id):
+    """
+    Extract IDs from formatted comments and fetch related users and tracks.
+
+    Args:
+        session: Database session
+        formatted_comments: List of formatted comments
+        current_user_id: ID of the user making the request
+
+    Returns:
+        Tuple of (related_users, related_tracks)
+    """
+    # Extract user and track IDs from the formatted comments
+    user_ids, track_ids = extract_ids_from_comments(formatted_comments)
+
+    # Fetch the related entities
+    users = get_users(session, user_ids, current_user_id)
+    tracks = get_tracks(session, track_ids, current_user_id)
+
+    return users, tracks
