@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import { useToggleSaveTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,
@@ -34,7 +35,7 @@ import { isDarkMode, isMatrix } from 'utils/theme/theme'
 import styles from './PlayBar.module.css'
 const { makeGetCurrent } = queueSelectors
 const { getPreviewing, getBuffering, getCounter, getPlaying } = playerSelectors
-const { recordListen, saveTrack, unsaveTrack } = tracksSocialActions
+const { recordListen } = tracksSocialActions
 const { pause, play } = queueActions
 
 const SEEK_INTERVAL = 200
@@ -57,14 +58,38 @@ const PlayBar = ({
   isBuffering,
   play,
   pause,
-  save,
-  unsave,
-  onClickInfo
+  onClickInfo,
+  recordListen
 }: PlayBarProps) => {
   const { uid, track, user, collectible } = currentQueueItem
 
-  const [percentComplete, setPercentComplete] = useState(0)
+  const track_id = track?.track_id
+  const title = track?.title ?? ''
+  const is_verified = user?.is_verified
+  const has_current_user_saved = track?.has_current_user_saved
+  const preview_user_id = track?.preview_user_id
+  const streamConditions = track?.stream_conditions
+  const handle = user?.handle
+  const name = user?.name ?? ''
+  const _co_sign = track && '_co_sign' in track ? track._co_sign : null
+
+  const { isFetchingNFTAccess, hasStreamAccess } = useGatedContentAccess(
+    currentQueueItem.track
+  )
+
+  const [timeElapsed, setTimeElapsed] = useState(0)
   const record = useRecord()
+  const image = useTrackCoverArt(
+    track_id,
+    collectible,
+    SquareSizes.SIZE_150_BY_150,
+    ''
+  )
+
+  const toggleSaveTrack = useToggleSaveTrack({
+    trackId: track_id as number,
+    source: FavoriteSource.PLAYBAR
+  })
 
   useEffect(() => {
     const seekInterval = setInterval(async () => {
@@ -77,27 +102,16 @@ const PlayBar = ({
 
       const position = Math.min(pos, duration)
       const percent = (position / duration) * 100
-      if (percent) setPercentComplete(percent)
+      if (percent) setTimeElapsed(percent)
     }, SEEK_INTERVAL)
     return () => clearInterval(seekInterval)
-  })
+  }, [])
 
-  const image =
-    (useTrackCoverArt({
-      trackId: track ? track.track_id : undefined,
-      size: SquareSizes.SIZE_150_BY_150,
-      defaultImage: ''
-    }) ||
-      collectible?.imageUrl) ??
-    collectible?.frameUrl ??
-    collectible?.gifUrl
-
-  const { hasStreamAccess } = useGatedContentAccess(track)
   const isPreviewing = useSelector(getPreviewing)
   const shouldShowPreviewLock =
     isPreviewing ||
-    (track?.stream_conditions &&
-      'usdc_purchase' in track.stream_conditions &&
+    (streamConditions &&
+      'usdc_purchase' in streamConditions &&
       !hasStreamAccess)
 
   if (((!uid || !track) && !collectible) || !user) return null
@@ -116,14 +130,12 @@ const PlayBar = ({
   }
 
   const {
-    title,
-    track_id,
-    has_current_user_saved,
-    _co_sign,
+    title: displayTitle,
+    track_id: displayTrackId,
+    has_current_user_saved: displayHasCurrentUserSaved,
+    _co_sign: displayCoSign,
     is_unlisted: isUnlisted
   } = getDisplayInfo()
-
-  const { name } = user
 
   let playButtonStatus
   if (isBuffering) {
@@ -156,14 +168,14 @@ const PlayBar = ({
 
   const toggleFavorite = () => {
     if (track && track_id && typeof track_id === 'number') {
-      has_current_user_saved ? unsave(track_id) : save(track_id)
+      toggleSaveTrack()
     }
   }
 
   return (
     <>
       <div className={styles.playBar}>
-        <TrackingBar percentComplete={percentComplete} />
+        <TrackingBar percentComplete={timeElapsed} />
         <div className={styles.controls}>
           {shouldShowPreviewLock || isUnlisted ? null : (
             <FavoriteButton
@@ -171,19 +183,19 @@ const PlayBar = ({
               onClick={toggleFavorite}
               isDarkMode={isDarkMode()}
               isMatrixMode={isMatrix()}
-              isActive={has_current_user_saved}
+              isActive={displayHasCurrentUserSaved}
               className={styles.favorite}
             />
           )}
           <div className={styles.info} onClick={onClickInfo}>
-            {_co_sign ? (
+            {displayCoSign ? (
               <CoSign
                 className={styles.artwork}
                 size={Size.TINY}
-                hasFavorited={_co_sign.has_remix_author_saved}
-                hasReposted={_co_sign.has_remix_author_reposted}
-                coSignName={_co_sign.user.name}
-                userId={_co_sign.user.user_id}
+                hasFavorited={displayCoSign.has_remix_author_saved}
+                hasReposted={displayCoSign.has_remix_author_reposted}
+                coSignName={displayCoSign.user.name}
+                userId={displayCoSign.user.user_id}
               >
                 <div
                   className={styles.image}
@@ -212,7 +224,7 @@ const PlayBar = ({
                 ) : null}
               </div>
             )}
-            <div className={styles.title}>{title}</div>
+            <div className={styles.title}>{displayTitle}</div>
             <div className={styles.separator}>•</div>
             <div className={styles.artist}>{name}</div>
             {shouldShowPreviewLock ? (
@@ -260,9 +272,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     pause: () => {
       dispatch(pause({}))
     },
-    save: (trackId: ID) => dispatch(saveTrack(trackId, FavoriteSource.PLAYBAR)),
-    unsave: (trackId: ID) =>
-      dispatch(unsaveTrack(trackId, FavoriteSource.PLAYBAR)),
     recordListen: (trackId: ID) => dispatch(recordListen(trackId))
   }
 }

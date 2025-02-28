@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 
-import { useGetTrackById } from '@audius/common/api'
+import { useGetTrackById, useToggleSaveTrack } from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -34,8 +34,7 @@ import { albumPage } from 'utils/route'
 
 const { profilePage } = route
 const { requestOpen: openAddToCollection } = addToCollectionUIActions
-const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack, shareTrack } =
-  tracksSocialActions
+const { repostTrack, undoRepostTrack, shareTrack } = tracksSocialActions
 const { getCollectionId } = collectionPageSelectors
 const { addTrackToPlaylist } = cacheCollectionsActions
 const { deleteTrack } = cacheTracksActions
@@ -120,6 +119,7 @@ const TrackMenu = ({
   isUnlisted,
   extraMenuItems = [],
   ddexApp = null,
+  isFavorited,
   ...props
 }: TrackMenuProps) => {
   const { trackPermalink, goToRoute } = props
@@ -130,6 +130,11 @@ const TrackMenu = ({
     useDeleteTrackConfirmationModal()
 
   const { data: track } = useGetTrackById({ id: props.trackId })
+
+  const toggleSaveTrack = useToggleSaveTrack({
+    trackId: props.trackId,
+    source: FavoriteSource.OVERFLOW
+  })
 
   const onDeleteTrack = (trackId: Nullable<number>) => {
     if (!trackId) return
@@ -156,20 +161,15 @@ const TrackMenu = ({
       handle,
       includeRepost,
       includeShare,
-      isFavorited,
-      isReposted,
       openAddToCollectionModal,
       openEmbedModal,
       repostTrack,
-      saveTrack,
-      setArtistPick,
       shareTrack,
       trackId,
       trackTitle,
       trackPermalink,
       genre,
       undoRepostTrack,
-      unsaveTrack,
       unsetArtistPick
     } = props
 
@@ -188,12 +188,12 @@ const TrackMenu = ({
     }
 
     const repostMenuItem = {
-      text: isReposted ? messages.undoRepost : messages.repost,
+      text: props.isReposted ? messages.undoRepost : messages.repost,
       // Set timeout so the menu has time to close before we propagate the change.
       onClick: () =>
         setTimeout(() => {
-          isReposted ? undoRepostTrack(trackId) : repostTrack(trackId)
-          toast(isReposted ? messages.unreposted : messages.reposted)
+          props.isReposted ? undoRepostTrack(trackId) : repostTrack(trackId)
+          toast(props.isReposted ? messages.unreposted : messages.reposted)
         }, 0)
     }
 
@@ -202,7 +202,7 @@ const TrackMenu = ({
       // Set timeout so the menu has time to close before we propagate the change.
       onClick: () =>
         setTimeout(() => {
-          isFavorited ? unsaveTrack(trackId) : saveTrack(trackId)
+          toggleSaveTrack()
         }, 0)
     }
 
@@ -279,7 +279,7 @@ const TrackMenu = ({
       text: isArtistPick ? messages.unsetArtistPick : messages.setArtistPick,
       onClick: isArtistPick
         ? () => unsetArtistPick()
-        : () => setArtistPick(trackId)
+        : () => props.setArtistPick(trackId)
     }
 
     const deleteTrackMenuItem = {
@@ -370,10 +370,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(addTrackToPlaylist(trackId, playlistId)),
     shareTrack: (trackId: ID) =>
       dispatch(shareTrack(trackId, ShareSource.OVERFLOW)),
-    saveTrack: (trackId: ID) =>
-      dispatch(saveTrack(trackId, FavoriteSource.OVERFLOW)),
-    unsaveTrack: (trackId: ID) =>
-      dispatch(unsaveTrack(trackId, FavoriteSource.OVERFLOW)),
     repostTrack: (trackId: ID) =>
       dispatch(repostTrack(trackId, RepostSource.OVERFLOW)),
     undoRepostTrack: (trackId: ID) =>

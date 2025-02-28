@@ -1,5 +1,6 @@
-import { memo } from 'react'
+import { memo, useCallback } from 'react'
 
+import { useToggleSaveTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,
@@ -39,8 +40,7 @@ const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
 const { getTrack } = cacheTracksSelectors
 const { getUserFromTrack } = cacheUsersSelectors
-const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
-  tracksSocialActions
+const { repostTrack, undoRepostTrack } = tracksSocialActions
 const getUserId = accountSelectors.getUserId
 
 type OwnProps = Omit<
@@ -82,8 +82,6 @@ const ConnectedTrackTile = ({
   isLoading,
   hasLoaded,
   currentUserId,
-  saveTrack,
-  unsaveTrack,
   repostTrack,
   unrepostTrack,
   shareTrack,
@@ -133,13 +131,17 @@ const ConnectedTrackTile = ({
     useGatedContentAccess(trackWithFallback)
   const loading = isLoading || isFetchingNFTAccess
 
-  const toggleSave = (trackId: ID) => {
-    if (has_current_user_saved) {
-      unsaveTrack(trackId)
-    } else {
-      saveTrack(trackId, isFeed)
-    }
-  }
+  const toggleSaveTrack = useToggleSaveTrack({
+    trackId: track_id,
+    source: FavoriteSource.TILE
+  })
+
+  const toggleSave = useCallback(
+    (_trackId: ID) => {
+      toggleSaveTrack()
+    },
+    [toggleSaveTrack]
+  )
 
   const toggleRepost = (trackId: ID) => {
     if (has_current_user_reposted) {
@@ -319,10 +321,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
           source: ShareSource.TILE
         })
       ),
-    saveTrack: (trackId: ID, isFeed: boolean) =>
-      dispatch(saveTrack(trackId, FavoriteSource.TILE, isFeed)),
-    unsaveTrack: (trackId: ID) =>
-      dispatch(unsaveTrack(trackId, FavoriteSource.TILE)),
     repostTrack: (trackId: ID, isFeed: boolean) =>
       dispatch(repostTrack(trackId, RepostSource.TILE, isFeed)),
     unrepostTrack: (trackId: ID) =>

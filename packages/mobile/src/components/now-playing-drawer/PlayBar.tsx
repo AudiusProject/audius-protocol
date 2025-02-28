@@ -1,16 +1,13 @@
 import { useCallback } from 'react'
 
+import { useToggleSaveTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import { FavoriteSource, SquareSizes } from '@audius/common/models'
 import type { Track, User } from '@audius/common/models'
-import {
-  accountSelectors,
-  tracksSocialActions,
-  playerSelectors
-} from '@audius/common/store'
+import { accountSelectors, playerSelectors } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import { TouchableOpacity, Animated, View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import { IconLock } from '@audius/harmony-native'
 import { FavoriteButton } from 'app/components/favorite-button'
@@ -26,7 +23,6 @@ import { PlayButton } from './PlayButton'
 import { TrackingBar } from './TrackingBar'
 import { NOW_PLAYING_HEIGHT, PLAY_BAR_HEIGHT } from './constants'
 const { getUserId } = accountSelectors
-const { saveTrack, unsaveTrack } = tracksSocialActions
 const { getPreviewing } = playerSelectors
 
 const messages = {
@@ -140,11 +136,10 @@ type PlayBarProps = {
 }
 
 export const PlayBar = (props: PlayBarProps) => {
-  const { duration, track, user, onPress, translationAnim, mediaKey } = props
+  const { track, user, onPress, translationAnim, mediaKey, duration } = props
   const styles = useStyles()
-  const dispatch = useDispatch()
   const accountUserId = useSelector(getUserId)
-  const staticWhite = useColor('white')
+  const neutral = useColor('neutral')
 
   const { hasStreamAccess } = useGatedContentAccess(track)
   const isPreviewing = useSelector(getPreviewing)
@@ -154,15 +149,16 @@ export const PlayBar = (props: PlayBarProps) => {
       'usdc_purchase' in track.stream_conditions &&
       !hasStreamAccess)
 
+  const toggleSaveTrack = useToggleSaveTrack({
+    trackId: track?.track_id as number,
+    source: FavoriteSource.PLAYBAR
+  })
+
   const onPressFavoriteButton = useCallback(() => {
     if (track) {
-      if (track.has_current_user_saved) {
-        dispatch(unsaveTrack(track.track_id, FavoriteSource.PLAYBAR))
-      } else {
-        dispatch(saveTrack(track.track_id, FavoriteSource.PLAYBAR))
-      }
+      toggleSaveTrack()
     }
-  }, [dispatch, track])
+  }, [track, toggleSaveTrack])
 
   const renderFavoriteButton = () => {
     return (
@@ -207,7 +203,7 @@ export const PlayBar = (props: PlayBarProps) => {
             <View style={styles.artworkContainer}>
               {shouldShowPreviewLock ? (
                 <View style={styles.lockOverlay}>
-                  <IconLock fill={staticWhite} width={10} height={10} />
+                  <IconLock fill={neutral} width={10} height={10} />
                 </View>
               ) : null}
               <TrackImage

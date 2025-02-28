@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, MouseEvent, useRef } from 'react'
 
+import { useToggleSaveTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,
@@ -43,8 +44,7 @@ const { getUid, getPlaying, getBuffering } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { getTrack } = cacheTracksSelectors
 const { getUserFromTrack } = cacheUsersSelectors
-const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
-  tracksSocialActions
+const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { getUserHandle } = accountSelectors
 const { setLockedContentId } = gatedContentActions
 
@@ -83,8 +83,6 @@ const ConnectedTrackTile = ({
   hasLoaded,
   containerClassName,
   userHandle,
-  saveTrack,
-  unsaveTrack,
   repostTrack,
   undoRepostTrack,
   shareTrack,
@@ -131,6 +129,11 @@ const ConnectedTrackTile = ({
   const dispatch = useDispatch()
   const [, setLockedContentVisibility] = useModalState('LockedContent')
   const menuRef = useRef<HTMLDivElement>(null)
+
+  const toggleSaveTrack = useToggleSaveTrack({
+    trackId,
+    source: FavoriteSource.TILE
+  })
 
   useEffect(() => {
     if (!loading && hasLoaded) {
@@ -209,12 +212,8 @@ const ConnectedTrackTile = ({
   )
 
   const onClickFavorite = useCallback(() => {
-    if (isFavorited) {
-      unsaveTrack(trackId)
-    } else {
-      saveTrack(trackId, isFeed)
-    }
-  }, [isFavorited, unsaveTrack, trackId, saveTrack, isFeed])
+    toggleSaveTrack()
+  }, [toggleSaveTrack])
 
   const onClickRepost = useCallback(() => {
     if (isReposted) {
@@ -364,11 +363,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     repostTrack: (trackId: ID, isFeed: boolean) =>
       dispatch(repostTrack(trackId, RepostSource.TILE, isFeed)),
     undoRepostTrack: (trackId: ID) =>
-      dispatch(undoRepostTrack(trackId, RepostSource.TILE)),
-    saveTrack: (trackId: ID, isFeed: boolean) =>
-      dispatch(saveTrack(trackId, FavoriteSource.TILE, isFeed)),
-    unsaveTrack: (trackId: ID) =>
-      dispatch(unsaveTrack(trackId, FavoriteSource.TILE))
+      dispatch(undoRepostTrack(trackId, RepostSource.TILE))
   }
 }
 
