@@ -17,11 +17,9 @@ import { Link, UserGeneratedText } from 'app/components/core'
 import { make } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
+import { prependProtocol } from 'app/utils/prependProtocol'
 
 import { useSelectProfile } from '../selectors'
-
-const prependProtocol = (url: Nullable<string>) =>
-  !url?.match(/^https?:\/\//i) ? `https://${url}` : url
 
 const useStyles = makeStyles(({ spacing }) => ({
   iconSkeleton: {
