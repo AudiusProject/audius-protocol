@@ -14,11 +14,12 @@ import { Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
 import { QueryOptions } from '../types'
+import { primeCommentData } from '../utils/primeCommentData'
 import { primeRelatedData } from '../utils/primeRelatedData'
 
-import { COMMENT_ROOT_PAGE_SIZE, CommentOrReply, messages } from './types'
+import { COMMENT_ROOT_PAGE_SIZE, messages } from './types'
 import { useComments } from './useComments'
-import { getCommentQueryKey, getTrackCommentListQueryKey } from './utils'
+import { getTrackCommentListQueryKey } from './utils'
 
 export type GetCommentsByTrackArgs = {
   trackId: ID
@@ -66,20 +67,10 @@ export const useTrackComments = (
 
       primeRelatedData({ related: commentsRes.related, queryClient, dispatch })
 
-      // Populate individual comment cache
-      commentList.forEach((comment) => {
-        queryClient.setQueryData<CommentOrReply>(
-          getCommentQueryKey(comment.id),
-          comment
-        )
-        comment?.replies?.forEach?.((reply) =>
-          queryClient.setQueryData<CommentOrReply>(
-            getCommentQueryKey(reply.id),
-            reply
-          )
-        )
-      })
-      // For the comment list cache, we only store the ids of the comments (organized by sort method)
+      // Prime comment data in the cache
+      primeCommentData({ comments: commentList, queryClient })
+
+      // Return just the IDs for the infinite query
       return commentList.map((comment) => comment.id)
     },
     select: (data) => data.pages.flat(),

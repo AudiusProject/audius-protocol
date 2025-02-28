@@ -11,6 +11,7 @@ import { toast } from '~/store/ui/toast/slice'
 
 import { QueryOptions } from '../types'
 import { useCurrentUserId } from '../useCurrentUserId'
+import { primeCommentData } from '../utils/primeCommentData'
 import { primeRelatedData } from '../utils/primeRelatedData'
 
 import { COMMENT_REPLIES_PAGE_SIZE, messages } from './types'
@@ -48,28 +49,26 @@ export const useCommentReplies = (
         offset: pageParam
       })
 
-      const replyList = transformAndCleanList(
-        response.data,
-        replyCommentFromSDK
-      )
+      const replies = transformAndCleanList(response.data, replyCommentFromSDK)
 
       primeRelatedData({ related: response.related, queryClient, dispatch })
 
+      // Update the parent comment with the new replies and prime the reply data
       // Add the replies to our parent comment replies list
       queryClient.setQueryData(
         getCommentQueryKey(commentId),
         (comment: Comment | undefined) =>
           ({
             ...comment,
-            replies: [...(comment?.replies ?? []), ...replyList]
+            replies: [...(comment?.replies ?? []), ...replies]
           }) as Comment
       )
-      // Put each reply into their individual comment cache
-      replyList.forEach((comment) => {
-        queryClient.setQueryData(getCommentQueryKey(comment.id), comment)
-      })
+
+      // Prime each reply in the cache
+      primeCommentData({ comments: replies, queryClient })
+
       // Return just the IDs for the infinite query
-      return replyList.map((reply) => reply.id)
+      return replies.map((reply) => reply.id)
     },
     select: (data) => data.pages.flat(),
     ...options
