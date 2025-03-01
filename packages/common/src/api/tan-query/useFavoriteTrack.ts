@@ -9,6 +9,7 @@ import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
 import { Track } from '~/models/Track'
 import { accountActions } from '~/store/account'
+import { tracksSocialActions } from '~/store/social'
 
 import { useCurrentUserId } from './useCurrentUserId'
 import { getTrackQueryKey } from './useTrack'
@@ -148,6 +149,9 @@ export const useFavoriteTrack = () => {
           })
         }
       }
+
+      // Dispatch the saveTrackSucceeded action
+      dispatch(tracksSocialActions.saveTrackSucceeded(trackId))
     },
     onError: (error, { trackId }, context) => {
       if (!context) return
