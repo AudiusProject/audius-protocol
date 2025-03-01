@@ -1,6 +1,9 @@
 import { Queue } from 'bullmq'
 import { readConfig } from '../config'
 import { STEMS_ARCHIVE_QUEUE_NAME } from '../constants'
+import { removeTempFiles } from '../workers/createStemsArchive'
+import { logger } from '../logger'
+
 export interface StemsArchiveJobData {
   jobId: string
   trackId: number
@@ -50,7 +53,9 @@ export const getStemsArchiveQueue = () => {
           url: config.redisUrl
         },
         defaultJobOptions: {
-          removeOnComplete: true,
+          // TODO: Need some kind of scheduled cleanup
+          // for orphaned files/jobs
+          removeOnComplete: false,
           removeOnFail: false
         }
       }
@@ -83,8 +88,8 @@ export const getOrCreateStemsArchiveJob = async (
     { ...data, jobId },
     {
       jobId,
-      // TODO
-      attempts: 1,
+      // TODO: Make this configurable
+      attempts: 3,
       backoff: {
         type: 'exponential',
         delay: 1000
@@ -116,5 +121,15 @@ export const getStemsArchiveJob = async (
     progress,
     ...(failedReason && { failedReason }),
     ...(returnvalue && { returnvalue })
+  }
+}
+
+export const cleanupStemsArchive = async (jobId: string) => {
+  try {
+    await removeTempFiles(jobId)
+    logger.info({ jobId }, 'Successfully cleaned up stems archive')
+  } catch (error) {
+    logger.error({ error, jobId }, 'Failed to clean up stems archive')
+    throw error
   }
 }

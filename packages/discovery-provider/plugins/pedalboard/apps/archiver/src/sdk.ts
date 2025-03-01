@@ -1,4 +1,4 @@
-import { AudiusSdk, DiscoveryNodeSelector, sdk } from '@audius/sdk'
+import { AudiusSdk, sdk } from '@audius/sdk'
 import { readConfig } from './config'
 
 // TODO: This doesn't seem to work correctly on staging with an allowlist

@@ -9,6 +9,7 @@ import { createReadStream } from 'fs'
 import { stat } from 'fs/promises'
 import { basename } from 'path'
 import { HashId } from '@audius/sdk'
+import { cleanupStemsArchiveJob } from '../workers/createStemsArchive'
 
 const router = express.Router()
 
@@ -60,8 +61,8 @@ router.get('/job/:jobId', async (req, res) => {
 })
 
 router.get('/download/:jobId', async (req, res) => {
+  const { jobId } = req.params
   try {
-    const { jobId } = req.params
     const job = await getStemsArchiveJob(jobId)
 
     if (!job) {
@@ -85,6 +86,18 @@ router.get('/download/:jobId', async (req, res) => {
     res.setHeader('Content-Type', 'application/zip')
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
     res.setHeader('Content-Length', stats.size)
+
+    // Set up cleanup after download finishes
+    res.on('finish', async () => {
+      try {
+        await cleanupStemsArchiveJob(jobId)
+      } catch (error) {
+        logger.error(
+          { error, jobId },
+          'Failed to clean up stems archive after download'
+        )
+      }
+    })
 
     createReadStream(outputFile)
       .on('error', (error) => {
