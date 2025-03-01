@@ -8,13 +8,15 @@ import { logger } from '../logger'
 import { createReadStream } from 'fs'
 import { stat } from 'fs/promises'
 import { basename } from 'path'
+import { HashId } from '@audius/sdk'
 
 const router = express.Router()
 
 router.post('/:trackId', async (req, res) => {
   try {
-    const { trackId } = req.params
-    const userId = req.query.userId as string
+    const { trackId: trackIdString } = req.params
+    const trackId = HashId.parse(trackIdString)
+    const userId = HashId.parse(req.query.user_id)
     const messageHeader = req.header(MESSAGE_HEADER)
     const signatureHeader = req.header(SIGNATURE_HEADER)
 
@@ -25,8 +27,8 @@ router.post('/:trackId', async (req, res) => {
     }
 
     const jobId = await getOrCreateStemsArchiveJob({
-      trackId: parseInt(trackId),
-      userId: parseInt(userId),
+      trackId,
+      userId: userId,
       messageHeader,
       signatureHeader
     })

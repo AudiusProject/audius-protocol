@@ -1,15 +1,17 @@
 import { Queue } from 'bullmq'
 import { readConfig } from '../config'
-import { URL } from 'url'
-
+import { STEMS_ARCHIVE_QUEUE_NAME } from '../constants'
 export interface StemsArchiveJobData {
+  jobId: string
   trackId: number
   userId: number
   messageHeader: string
   signatureHeader: string
 }
 
-export interface StemsArchiveJobResult {}
+export interface StemsArchiveJobResult {
+  outputFile: string
+}
 
 export interface JobStatus {
   id: string
@@ -24,8 +26,6 @@ export interface JobStatus {
   failedReason?: string
   returnvalue?: StemsArchiveJobResult
 }
-
-const QUEUE_NAME = 'stems-archive'
 
 export const generateJobId = ({
   userId,
@@ -43,42 +43,54 @@ let queue: Queue<StemsArchiveJobData, StemsArchiveJobResult> | null = null
 export const getStemsArchiveQueue = () => {
   if (!queue) {
     const config = readConfig()
-    queue = new Queue<StemsArchiveJobData, StemsArchiveJobResult>(QUEUE_NAME, {
-      connection: {
-        host: new URL(config.redisUrl).hostname,
-        port: parseInt(new URL(config.redisUrl).port)
-      },
-      defaultJobOptions: {
-        removeOnComplete: true,
-        removeOnFail: false
+    queue = new Queue<StemsArchiveJobData, StemsArchiveJobResult>(
+      STEMS_ARCHIVE_QUEUE_NAME,
+      {
+        connection: {
+          url: config.redisUrl
+        },
+        defaultJobOptions: {
+          removeOnComplete: true,
+          removeOnFail: false
+        }
       }
-    })
+    )
   }
   return queue
 }
 
 export const getOrCreateStemsArchiveJob = async (
-  data: StemsArchiveJobData
+  data: Omit<StemsArchiveJobData, 'jobId'>
 ): Promise<string> => {
   const queue = getStemsArchiveQueue()
-
   const jobId = generateJobId(data)
 
   // Check if job already exists
   const existingJob = await queue.getJob(jobId)
   if (existingJob) {
-    return jobId
+    // Check if the existing job failed
+    const state = await existingJob.getState()
+    if (state !== 'failed') {
+      return jobId
+    }
+    // If job failed, remove it so we can create a new one
+    await existingJob.remove()
   }
 
-  // Create new job if it doesn't exist
-  await queue.add(QUEUE_NAME, data, {
-    jobId,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 1000
+  // Create new job
+  await queue.add(
+    STEMS_ARCHIVE_QUEUE_NAME,
+    { ...data, jobId },
+    {
+      jobId,
+      // TODO
+      attempts: 1,
+      backoff: {
+        type: 'exponential',
+        delay: 1000
+      }
     }
-  })
+  )
 
   return jobId
 }
