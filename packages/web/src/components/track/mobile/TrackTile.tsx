@@ -1,5 +1,6 @@
 import { useCallback, useEffect, ReactNode } from 'react'
 
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import {
   ModalSource,
@@ -9,7 +10,6 @@ import {
   FavoriteSource
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { useToggleSaveTrack } from '@audius/common/src/api/tan-query/useToggleSaveTrack'
 import {
   usePremiumContentPurchaseModal,
   gatedContentActions,
@@ -107,7 +107,7 @@ const TrackTile = (props: CombinedProps) => {
     isTrending
   } = props
 
-  const toggleSaveTrack = useToggleSaveTrack({
+  const toggleSaveTrack = useToggleFavoriteTrack({
     trackId: id as number,
     source: FavoriteSource.TILE
   })
