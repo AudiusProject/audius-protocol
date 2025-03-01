@@ -5,6 +5,7 @@ import IconAllTimeSVG from '../assets/icons/AllTime.svg'
 import IconAppearanceSVG from '../assets/icons/Appearance.svg'
 import IconArrowLeftSVG from '../assets/icons/ArrowLeft.svg'
 import IconArrowRightSVG from '../assets/icons/ArrowRight.svg'
+import IconArrowRotateSVG from '../assets/icons/ArrowRotate.svg'
 import IconArrowUpToLineSVG from '../assets/icons/ArrowUpToLine.svg'
 import IconBlogSVG from '../assets/icons/Blog.svg'
 import IconBoxHeartSVG from '../assets/icons/BoxHeart.svg'
@@ -251,6 +252,7 @@ export const IconPencil = IconPencilSVG as IconComponent
 export const IconPin = IconPinSVG as IconComponent
 export const IconUser = IconUserSVG as IconComponent
 export const IconUserArrowRotate = IconUserArrowRotateSVG as IconComponent
+export const IconArrowRotate = IconArrowRotateSVG as IconComponent
 export const IconCollectible = IconCollectibleSVG as IconComponent
 export const IconPlay = IconPlaySVG as IconComponent
 export const IconUserFollow = IconUserFollowSVG as IconComponent

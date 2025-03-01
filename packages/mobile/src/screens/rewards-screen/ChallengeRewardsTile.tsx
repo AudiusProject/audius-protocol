@@ -59,7 +59,8 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
   ChallengeName.ReferralsVerified,
   ChallengeName.Referred,
   ChallengeName.TrackUpload,
-  ChallengeName.OneShot
+  ChallengeName.OneShot,
+  ChallengeName.FirstWeeklyComment
 ])
 
 type ClaimableSummaryTableItem = SummaryTableItem & {
@@ -98,6 +99,7 @@ const useRewardIds = (
   const rewardsString = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)
   if (rewardsString === null) return []
   const rewards = rewardsString.split(',') as ChallengeRewardID[]
+  console.log('REED rewards', rewards)
   const filteredRewards: ChallengeRewardID[] = rewards.filter(
     (reward) => validRewardIds.has(reward) && !hideConfig[reward]
   )
@@ -130,6 +132,7 @@ export const ChallengeRewardsTile = () => {
   const rewardIds = useRewardIds({
     [ChallengeName.Referred]: hideReferredTile
   })
+  console.log('REED', rewardIds)
 
   useEffect(() => {
     if (!userChallengesLoading && !haveChallengesLoaded) {

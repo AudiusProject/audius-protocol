@@ -289,8 +289,8 @@ export const challengeRewardsConfig: Record<
     progressLabel: 'Ready to Claim'
   },
   [ChallengeName.FirstWeeklyComment]: {
-    shortTitle: 'first comment of the week',
-    title: 'First comment of the week',
+    shortTitle: 'First Comment of the Week',
+    title: 'First Comment of the Week',
     description: () => 'Your first comment every week will earn $AUDIO.',
     fullDescription: () => 'Your first comment every week will earn $AUDIO.',
     panelButtonText: 'Comment on a Track',
@@ -416,6 +416,10 @@ export const getChallengeStatusLabel = (
         return DEFAULT_STATUS_LABELS.READY_TO_CLAIM
       }
       return 'No Recent Activity'
+    case ChallengeName.FirstWeeklyComment:
+      if (challenge.disbursed_amount && !challenge.claimableAmount) {
+        return 'Resets Friday'
+      }
   }
 
   // Handle claimable state for non-aggregate rewards
