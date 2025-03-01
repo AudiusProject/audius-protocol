@@ -10,25 +10,17 @@ import {
   IconNotificationOn as IconNotification,
   Popup,
   Flex,
-  Text
+  Text,
+  LoadingSpinner
 } from '@audius/harmony'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useSelector } from 'react-redux'
 
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { getIsOpen as getIsUserListOpen } from 'store/application/ui/userListModal/selectors'
 import zIndex from 'utils/zIndex'
 
 import { EmptyNotifications } from './EmptyNotifications'
 import { Notification } from './Notification'
-import styles from './NotificationPanel.module.css'
-
-const scrollbarId = 'notificationsPanelScroll'
-
-const getScrollParent = () => {
-  const scrollbarElement = window.document.getElementById(scrollbarId)
-  return scrollbarElement || null
-}
 
 const messages = {
   title: 'Notifications'
@@ -99,11 +91,11 @@ export const NotificationPanel = ({
       checkIfClickInside={handleCheckClickInside}
       onClose={onClose}
       transformOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      shadow='emphasis'
+      shadow='far'
       zIndex={zIndex.NAVIGATOR_POPUP}
     >
       <Flex
-        backgroundColor='white'
+        backgroundColor='default'
         column
         borderRadius='m'
         w={428}
@@ -120,32 +112,42 @@ export const NotificationPanel = ({
           p='s'
           gap='s'
         >
-          <IconNotification color='staticWhite' size='xl' />
+          <IconNotification color='white' size='xl' />
           <Text
             variant='label'
             size='xl'
             strength='strong'
-            color='staticWhite'
+            color='white'
             lineHeight='single'
           >
             {messages.title}
           </Text>
         </Flex>
-        <Scrollbar className={styles.scrollContent} id={scrollbarId}>
+
+        <Scrollbar css={{ maxHeight: 'calc(100vh - 333px)' }}>
           <InfiniteScroll
             loadMore={handleLoadMore}
-            hasMore={hasNextPage}
+            hasMore={hasNextPage || isPending}
             initialLoad={isPending}
             useWindow={false}
             threshold={SCROLL_THRESHOLD}
             loader={
               <LoadingSpinner
                 key='loading-spinner'
-                className={styles.spinner}
+                size='xl'
+                alignSelf='center'
+                mv='xl'
               />
             }
-            getScrollParent={getScrollParent}
-            className={styles.content}
+            getScrollParent={() => panelRef.current}
+            css={(theme) => ({
+              display: 'flex',
+              flexDirection: 'column',
+              gap: theme.spacing.s,
+              padding: theme.spacing.l,
+              paddingTop: theme.spacing.xl,
+              listStyleType: 'none'
+            })}
             element='ul'
           >
             {userHasNoNotifications ? (
