@@ -16,9 +16,11 @@
     "@pedalboard/logger": "*",
     "@pedalboard/storage": "*",
     "body-parser": "^1.19.0",
+    "bullmq": "5.41.7",
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "redis": "4.6.11"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.0",

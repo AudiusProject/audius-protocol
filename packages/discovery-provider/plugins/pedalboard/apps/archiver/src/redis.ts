@@ -1,4 +1,4 @@
-import { createClient, RedisClientType } from 'redis'
+import { createClient, RedisClientType } from '@redis/client'
 
 import { readConfig } from './config'
 
