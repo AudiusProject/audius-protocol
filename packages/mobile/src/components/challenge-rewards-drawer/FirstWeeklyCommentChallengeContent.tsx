@@ -88,12 +88,7 @@ export const FirstWeeklyCommentChallengeContent = ({
           borderTop='default'
           pv='l'
         >
-          <Text
-            variant='label'
-            size='l'
-            textTransform='uppercase'
-            color='subdued'
-          >
+          <Text variant='label' size='l' color='subdued'>
             {messages.totalClaimed(
               formatNumberCommas(challenge.disbursed_amount)
             )}
