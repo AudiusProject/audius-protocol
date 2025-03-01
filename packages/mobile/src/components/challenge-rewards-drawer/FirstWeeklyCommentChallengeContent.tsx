@@ -31,7 +31,7 @@ const messages = {
 
 export const FirstWeeklyCommentChallengeContent = ({
   aaoErrorCode,
-  challenge: c,
+  challenge,
   challengeName,
   claimStatus,
   onClaim,
@@ -42,13 +42,11 @@ export const FirstWeeklyCommentChallengeContent = ({
     claimStatus === ClaimStatus.CLAIMING ||
     claimStatus === ClaimStatus.WAITING_FOR_RETRY
   const claimError = claimStatus === ClaimStatus.ERROR
-  const challenge = { ...c, disbursed_amount: 20 }
 
   const description = challenge ? config.description(challenge) : ''
   const statusText = challenge
     ? getChallengeStatusLabel(challenge, challengeName)
     : ''
-  console.log('REED', { challenge })
 
   const statusLabel = (
     <Flex
