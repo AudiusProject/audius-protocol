@@ -1,13 +1,13 @@
 import { useCallback, useMemo } from 'react'
 
 import {
-  useGetCommentById,
+  CommentOrReply,
   useTrack,
   useUser,
   useUserByParams,
   useUserComments
 } from '@audius/common/api'
-import { Comment } from '@audius/common/models'
+import { Name } from '@audius/common/models'
 import { profilePage } from '@audius/common/src/utils/route'
 import {
   Box,
@@ -22,7 +22,6 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
-import { HashId } from '@audius/sdk'
 import dayjs from 'dayjs'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useNavigate } from 'react-router-dom-v5-compat'
@@ -35,6 +34,7 @@ import { TrackLink, UserLink } from 'components/link'
 import Page from 'components/page/Page'
 import { useMainContentRef } from 'pages/MainContentContext'
 import { useProfileParams } from 'pages/profile-page/useProfileParams'
+import { make, track as trackEvent } from 'services/analytics'
 import { fullCommentHistoryPage } from 'utils/route'
 
 import { CommentText } from './CommentText'
@@ -49,9 +49,7 @@ const messages = {
   backToProfile: 'Back To Profile'
 }
 
-const UserComment = ({ commentId }: { commentId: number }) => {
-  const res = useGetCommentById(commentId)
-  const comment = res.data as Comment
+const UserComment = ({ comment }: { comment: CommentOrReply }) => {
   const navigate = useNavigate()
 
   const {
@@ -67,17 +65,30 @@ const UserComment = ({ commentId }: { commentId: number }) => {
   } = comment
 
   const { isPending: isUserPending } = useUser(userId)
-  const { data: track } = useTrack(HashId.parse(entityId))
+  const { data: track } = useTrack(entityId)
   const createdAtDate = useMemo(
     () => dayjs.utc(createdAt).toDate(),
     [createdAt]
   )
 
+  const trackUserCommentClick = useCallback(() => {
+    if (userId) {
+      trackEvent(
+        make({
+          eventName: Name.COMMENTS_HISTORY_CLICK,
+          commentId: id,
+          userId
+        })
+      )
+    }
+  }, [id, userId])
+
   const goToTrackPage = useCallback(() => {
     if (track) {
+      trackUserCommentClick()
       navigate(track.permalink)
     }
-  }, [track, navigate])
+  }, [track, trackUserCommentClick, navigate])
 
   if (!comment) return null
 
@@ -92,9 +103,17 @@ const UserComment = ({ commentId }: { commentId: number }) => {
             <Text variant='body' size='s' textAlign='left'>
               {track ? (
                 <>
-                  <TrackLink isActive trackId={track?.track_id} />
+                  <TrackLink
+                    isActive
+                    trackId={track?.track_id}
+                    onClick={trackUserCommentClick}
+                  />
                   <Text>{messages.by}</Text>
-                  <UserLink isActive userId={track?.owner_id} />
+                  <UserLink
+                    isActive
+                    userId={track?.owner_id}
+                    onClick={trackUserCommentClick}
+                  />
                 </>
               ) : (
                 <Skeleton w={180} h={20} />
@@ -111,6 +130,7 @@ const UserComment = ({ commentId }: { commentId: number }) => {
                     popover
                     size='l'
                     strength='strong'
+                    onClick={trackUserCommentClick}
                   />
                 ) : null}
                 <Flex gap='xs' alignItems='flex-end' h='100%'>
@@ -186,7 +206,7 @@ export const CommentHistoryPage = ({ title }: CommentHistoryPageProps) => {
   const { data: user } = useUserByParams(profileParams ?? {})
 
   const {
-    data: commentIds,
+    data: comments = [],
     hasNextPage,
     fetchNextPage,
     isPending,
@@ -225,11 +245,11 @@ export const CommentHistoryPage = ({ title }: CommentHistoryPageProps) => {
               <CommentBlockSkeletons />
             ) : (
               <>
-                {commentIds.length === 0 ? (
+                {comments.length === 0 ? (
                   <NoComments handle={user?.handle} />
                 ) : (
-                  commentIds.map((id) => (
-                    <UserComment key={id} commentId={id} />
+                  comments.map((comment) => (
+                    <UserComment key={comment.id} comment={comment} />
                   ))
                 )}
                 {isFetchingNextPage ? (

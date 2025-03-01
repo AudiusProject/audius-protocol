@@ -556,6 +556,11 @@ export enum Name {
   COMMENTS_OPEN_AUTH_MODAL = 'Comments: Open Auth Modal',
   COMMENTS_OPEN_INSTALL_APP_MODAL = 'Comments: Open Install App Modal',
 
+  // Recent Comments
+  RECENT_COMMENTS_CLICK = 'Recent Comments: Click',
+  COMMENTS_HISTORY_CLICK = 'Comments History: Click',
+  COMMENTS_HISTORY_DRAWER_OPEN = 'Comments History: Drawer Open',
+
   // Track Replace
   TRACK_REPLACE_DOWNLOAD = 'Track Replace: Download',
   TRACK_REPLACE_PREVIEW = 'Track Replace: Preview',
@@ -2696,6 +2701,23 @@ export type CommentsOpenInstallAppModal = {
   trackId: ID
 }
 
+export type CommentsHistoryClick = {
+  eventName: Name.COMMENTS_HISTORY_CLICK
+  commentId: ID
+  userId: ID
+}
+
+export type CommentsHistoryDrawerOpen = {
+  eventName: Name.COMMENTS_HISTORY_DRAWER_OPEN
+  userId: ID
+}
+
+export type RecentCommentsClick = {
+  eventName: Name.RECENT_COMMENTS_CLICK
+  commentId: ID
+  userId: ID
+}
+
 export type TrackReplaceDownload = {
   eventName: Name.TRACK_REPLACE_DOWNLOAD
   trackId?: ID
@@ -3076,6 +3098,9 @@ export type AllTrackingEvents =
   | CommentsCloseCommentDrawer
   | CommentsOpenAuthModal
   | CommentsOpenInstallAppModal
+  | CommentsHistoryClick
+  | CommentsHistoryDrawerOpen
+  | RecentCommentsClick
   | TrackReplaceDownload
   | TrackReplacePreview
   | TrackReplaceReplace
