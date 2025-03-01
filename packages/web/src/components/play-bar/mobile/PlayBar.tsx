@@ -58,38 +58,12 @@ const PlayBar = ({
   isBuffering,
   play,
   pause,
-  onClickInfo,
-  recordListen
+  onClickInfo
 }: PlayBarProps) => {
   const { uid, track, user, collectible } = currentQueueItem
 
-  const track_id = track?.track_id
-  const title = track?.title ?? ''
-  const is_verified = user?.is_verified
-  const has_current_user_saved = track?.has_current_user_saved
-  const preview_user_id = track?.preview_user_id
-  const streamConditions = track?.stream_conditions
-  const handle = user?.handle
-  const name = user?.name ?? ''
-  const _co_sign = track && '_co_sign' in track ? track._co_sign : null
-
-  const { isFetchingNFTAccess, hasStreamAccess } = useGatedContentAccess(
-    currentQueueItem.track
-  )
-
-  const [timeElapsed, setTimeElapsed] = useState(0)
+  const [percentComplete, setPercentComplete] = useState(0)
   const record = useRecord()
-  const image = useTrackCoverArt(
-    track_id,
-    collectible,
-    SquareSizes.SIZE_150_BY_150,
-    ''
-  )
-
-  const toggleSaveTrack = useToggleSaveTrack({
-    trackId: track_id as number,
-    source: FavoriteSource.PLAYBAR
-  })
 
   useEffect(() => {
     const seekInterval = setInterval(async () => {
@@ -102,17 +76,33 @@ const PlayBar = ({
 
       const position = Math.min(pos, duration)
       const percent = (position / duration) * 100
-      if (percent) setTimeElapsed(percent)
+      if (percent) setPercentComplete(percent)
     }, SEEK_INTERVAL)
     return () => clearInterval(seekInterval)
-  }, [])
+  })
 
+  const image =
+    (useTrackCoverArt({
+      trackId: track ? track.track_id : undefined,
+      size: SquareSizes.SIZE_150_BY_150,
+      defaultImage: ''
+    }) ||
+      collectible?.imageUrl) ??
+    collectible?.frameUrl ??
+    collectible?.gifUrl
+
+  const { hasStreamAccess } = useGatedContentAccess(track)
   const isPreviewing = useSelector(getPreviewing)
   const shouldShowPreviewLock =
     isPreviewing ||
-    (streamConditions &&
-      'usdc_purchase' in streamConditions &&
+    (track?.stream_conditions &&
+      'usdc_purchase' in track.stream_conditions &&
       !hasStreamAccess)
+
+  const toggleFavorite = useToggleSaveTrack({
+    trackId: track?.track_id,
+    source: FavoriteSource.PLAYBAR
+  })
 
   if (((!uid || !track) && !collectible) || !user) return null
 
@@ -130,12 +120,14 @@ const PlayBar = ({
   }
 
   const {
-    title: displayTitle,
-    track_id: displayTrackId,
-    has_current_user_saved: displayHasCurrentUserSaved,
-    _co_sign: displayCoSign,
+    title,
+    track_id,
+    has_current_user_saved,
+    _co_sign,
     is_unlisted: isUnlisted
   } = getDisplayInfo()
+
+  const { name } = user
 
   let playButtonStatus
   if (isBuffering) {
@@ -166,16 +158,10 @@ const PlayBar = ({
     }
   }
 
-  const toggleFavorite = () => {
-    if (track && track_id && typeof track_id === 'number') {
-      toggleSaveTrack()
-    }
-  }
-
   return (
     <>
       <div className={styles.playBar}>
-        <TrackingBar percentComplete={timeElapsed} />
+        <TrackingBar percentComplete={percentComplete} />
         <div className={styles.controls}>
           {shouldShowPreviewLock || isUnlisted ? null : (
             <FavoriteButton
@@ -183,19 +169,19 @@ const PlayBar = ({
               onClick={toggleFavorite}
               isDarkMode={isDarkMode()}
               isMatrixMode={isMatrix()}
-              isActive={displayHasCurrentUserSaved}
+              isActive={has_current_user_saved}
               className={styles.favorite}
             />
           )}
           <div className={styles.info} onClick={onClickInfo}>
-            {displayCoSign ? (
+            {_co_sign ? (
               <CoSign
                 className={styles.artwork}
                 size={Size.TINY}
-                hasFavorited={displayCoSign.has_remix_author_saved}
-                hasReposted={displayCoSign.has_remix_author_reposted}
-                coSignName={displayCoSign.user.name}
-                userId={displayCoSign.user.user_id}
+                hasFavorited={_co_sign.has_remix_author_saved}
+                hasReposted={_co_sign.has_remix_author_reposted}
+                coSignName={_co_sign.user.name}
+                userId={_co_sign.user.user_id}
               >
                 <div
                   className={styles.image}
@@ -224,7 +210,7 @@ const PlayBar = ({
                 ) : null}
               </div>
             )}
-            <div className={styles.title}>{displayTitle}</div>
+            <div className={styles.title}>{title}</div>
             <div className={styles.separator}>•</div>
             <div className={styles.artist}>{name}</div>
             {shouldShowPreviewLock ? (

@@ -236,19 +236,22 @@ const CollectionPage = ({
 
   const { mutate: favoriteTrack } = useFavoriteTrack()
   const { mutate: unfavoriteTrack } = useUnfavoriteTrack()
-  const toggleSaveTrack = useCallback((track: Track) => {
-    if (track.has_current_user_saved) {
-      unfavoriteTrack({
-        trackId: track.track_id,
-        source: FavoriteSource.COLLECTION_PAGE
-      })
-    } else {
-      favoriteTrack({
-        trackId: track.track_id,
-        source: FavoriteSource.COLLECTION_PAGE
-      })
-    }
-  }, [])
+  const toggleSaveTrack = useCallback(
+    (track: Track) => {
+      if (track.has_current_user_saved) {
+        unfavoriteTrack({
+          trackId: track.track_id,
+          source: FavoriteSource.COLLECTION_PAGE
+        })
+      } else {
+        favoriteTrack({
+          trackId: track.track_id,
+          source: FavoriteSource.COLLECTION_PAGE
+        })
+      }
+    },
+    [favoriteTrack, unfavoriteTrack]
+  )
 
   const isPlayable = !areAllTracksDeleted && numTracks > 0
 
