@@ -28,7 +28,7 @@ async function downloadStemFile(
   jobId: string
 ): Promise<string> {
   const config = readConfig()
-  logger.info({ url, filename, jobId }, 'Downloading stem file')
+  logger.info({ jobId, url, filename }, 'Downloading stem file')
   // Create job-specific temp directory
   const jobTempDir = path.join(config.archiverTmpDir, jobId)
   if (!fs.existsSync(jobTempDir)) {
@@ -98,6 +98,7 @@ async function createArchive({
   return outputPath
 }
 
+// TODO: Progress would be nice
 export const startStemsArchiveWorker = () => {
   const config = readConfig()
   const worker = new Worker<StemsArchiveJobData, StemsArchiveJobResult>(
@@ -109,7 +110,10 @@ export const startStemsArchiveWorker = () => {
       try {
         const sdk = getAudiusSdk()
         const parsedTrackId = Id.parse(trackId)
-        logger.info({ trackId, userId }, 'Starting stems archive creation job')
+        logger.info(
+          { jobId, trackId, userId },
+          'Starting stems archive creation job'
+        )
 
         const { data: track } = await sdk.tracks.getTrack({
           trackId: parsedTrackId
@@ -119,7 +123,7 @@ export const startStemsArchiveWorker = () => {
           throw new Error('Track details not found')
         }
 
-        logger.info({ trackId, userId }, 'Getting track stems')
+        logger.info({ jobId, trackId, userId }, 'Getting track stems')
         const { data: stems = [] } = await sdk.tracks.getTrackStems({
           trackId: parsedTrackId
         })
@@ -128,10 +132,12 @@ export const startStemsArchiveWorker = () => {
           throw new Error('No stems found for track')
         }
 
-        logger.info({ trackId, userId, stems }, 'Downloading stems')
+        logger.info({ jobId, trackId, userId, stems }, 'Downloading stems')
         // Download each stem
         const downloadedFiles = await Promise.all(
           stems.map(async (stem) => {
+            // TODO: Is it using the headers correctly?
+            // Test with a gated track
             const downloadUrl = await sdk.tracks.getTrackDownloadUrl({
               trackId: stem.id,
               userId: userId ? Id.parse(userId) : undefined,
@@ -141,13 +147,13 @@ export const startStemsArchiveWorker = () => {
               original: true
             })
 
-            const filename = `${stem.id}_${stem.category}_${stem.origFilename}`
+            const filename = stem.origFilename
             return downloadStemFile(downloadUrl, filename, jobId)
           })
         )
 
         logger.info(
-          { trackId, userId, files: downloadedFiles },
+          { jobId, trackId, userId, files: downloadedFiles },
           'Successfully downloaded all stems'
         )
 
@@ -166,14 +172,14 @@ export const startStemsArchiveWorker = () => {
         }
 
         logger.info(
-          { trackId, userId, outputFile },
+          { jobId, trackId, userId, outputFile },
           'Successfully created stems archive'
         )
 
         return { outputFile }
       } catch (error) {
         logger.error(
-          { error: `${error}`, trackId, userId },
+          { error: `${error}`, jobId, trackId, userId },
           'Failed to create stems archive'
         )
         throw error
@@ -183,7 +189,7 @@ export const startStemsArchiveWorker = () => {
       connection: {
         url: config.redisUrl
       },
-      concurrency: 5
+      concurrency: config.concurrentJobs
     }
   )
 
@@ -204,7 +210,7 @@ export const startStemsArchiveWorker = () => {
 export const cleanupStemsArchiveJob = async (jobId: string) => {
   const queue = getStemsArchiveQueue()
   try {
-    await removeTempFiles(jobId)
+    throw new Error('Test error')
   } catch (error) {
     // TODO: Proper logging
     logger.error(

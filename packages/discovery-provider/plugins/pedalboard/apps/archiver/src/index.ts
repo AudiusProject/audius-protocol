@@ -1,11 +1,14 @@
 import cors from 'cors'
 import express from 'express'
-import { log } from '@pedalboard/logger'
 
 import { readConfig } from './config'
 import stemsRouter from './routes/stems'
 import { startStemsArchiveWorker } from './workers/createStemsArchive'
-
+import { createCleanupOrphanedFilesWorker } from './workers/cleanupOrphanedFiles'
+import { scheduleCleanupOrphanedFilesJob } from './jobs/cleanupOrphanedFiles'
+import { getStemsArchiveQueue } from './jobs/createStemsArchive'
+import { getCleanupOrphanedFilesQueue } from './jobs/cleanupOrphanedFiles'
+import { logger } from './logger'
 // Basic health check endpoint
 const health = (_req: express.Request, res: express.Response) => {
   res.json({ status: 'healthy' })
@@ -14,8 +17,20 @@ const health = (_req: express.Request, res: express.Response) => {
 const main = async () => {
   const config = readConfig()
 
-  // Start the worker
-  const worker = startStemsArchiveWorker()
+  // Clear queues before starting
+  try {
+    await getStemsArchiveQueue().obliterate()
+    await getCleanupOrphanedFilesQueue().obliterate()
+  } catch (error) {
+    logger.error({ error }, 'Error clearing queues')
+  }
+
+  // Start the workers
+  const stemsWorker = startStemsArchiveWorker()
+  const cleanupWorker = createCleanupOrphanedFilesWorker()
+
+  // Schedule the cleanup job
+  await scheduleCleanupOrphanedFilesJob()
 
   // Initialize express app
   const app = express()
@@ -27,13 +42,15 @@ const main = async () => {
 
   // Start the server
   app.listen(config.serverPort, config.serverHost, () => {
-    log(`Server initialized on ${config.serverHost}:${config.serverPort}`)
+    logger.info(
+      `Server initialized on ${config.serverHost}:${config.serverPort}`
+    )
   })
 
   // Graceful shutdown
   const shutdown = async () => {
-    log('Shutting down gracefully...')
-    await worker.close()
+    logger.info('Shutting down gracefully...')
+    await Promise.all([stemsWorker.close(), cleanupWorker.close()])
     process.exit(0)
   }
 
@@ -42,7 +59,10 @@ const main = async () => {
 }
 
 process.on('unhandledRejection', (reason, promise) => {
-  log(`Unhandled promise rejection: ${reason}, promise: ${promise}`)
+  logger.error(`Unhandled promise rejection: ${reason}, promise: ${promise}`)
 })
 
-main().catch(log)
+main().catch((error) => {
+  logger.error({ error }, 'Error starting archiver')
+  process.exit(1)
+})

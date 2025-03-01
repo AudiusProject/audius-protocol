@@ -10,5 +10,6 @@ const formatters = {
 // set config for logger here
 export const logger = pino({
   name: `archiver`,
-  formatters
+  formatters,
+  errorKey: 'error'
 })

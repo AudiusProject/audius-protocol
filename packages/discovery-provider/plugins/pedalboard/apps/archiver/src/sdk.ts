@@ -1,26 +1,45 @@
-import { AudiusSdk, sdk } from '@audius/sdk'
-import { readConfig } from './config'
+import {
+  AudiusSdk,
+  sdk,
+  getDefaultDiscoveryNodeSelectorConfig,
+  developmentConfig,
+  stagingConfig,
+  productionConfig,
+  DiscoveryNodeSelector
+} from '@audius/sdk'
+import { readConfig, Environment } from './config'
 
-// TODO: This doesn't seem to work correctly on staging with an allowlist
-// due to SDK using the production config as a default for merging
-// const makeDiscoveryNodeSelector = (allowlist?: string[]) =>
-//   new DiscoveryNodeSelector({
-//     allowlist: allowlist ? new Set(allowlist) : undefined
-//   })
+const makeDiscoveryNodeSelector = (
+  environment: Environment,
+  allowlist?: string[]
+) => {
+  const config =
+    environment === 'production'
+      ? productionConfig
+      : environment === 'staging'
+        ? stagingConfig
+        : developmentConfig
+  return new DiscoveryNodeSelector({
+    ...getDefaultDiscoveryNodeSelectorConfig(config),
+    allowlist: allowlist ? new Set(allowlist) : undefined
+  })
+}
 
 let audiusSdk: AudiusSdk | undefined = undefined
 
 export const getAudiusSdk = () => {
   if (audiusSdk === undefined) {
     const config = readConfig()
+    // TODO: CN selector with allowlist?
     audiusSdk = sdk({
       appName: 'audius-client',
-      environment: config.environment
-      //   services: {
-      //     discoveryNodeSelector: makeDiscoveryNodeSelector(
-      //       config.discoveryNodeAllowlist
-      //     )
-      //   }
+      environment: config.environment,
+      services: {
+        discoveryNodeSelector: makeDiscoveryNodeSelector(
+          config.environment,
+          config.discoveryNodeAllowlist
+        )
+      }
     })
   }
   return audiusSdk

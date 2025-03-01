@@ -53,9 +53,11 @@ export const getStemsArchiveQueue = () => {
           url: config.redisUrl
         },
         defaultJobOptions: {
-          // TODO: Need some kind of scheduled cleanup
-          // for orphaned files/jobs
-          removeOnComplete: false,
+          // Automatically remove jobs that haven't been downloaded after the orphan period
+          removeOnComplete: {
+            age: config.orphanedJobsLifetimeSeconds
+          },
+          // Don't remove failed jobs, they will be cleaned up by the worker
           removeOnFail: false
         }
       }
@@ -67,6 +69,7 @@ export const getStemsArchiveQueue = () => {
 export const getOrCreateStemsArchiveJob = async (
   data: Omit<StemsArchiveJobData, 'jobId'>
 ): Promise<string> => {
+  const config = readConfig()
   const queue = getStemsArchiveQueue()
   const jobId = generateJobId(data)
 
@@ -88,8 +91,7 @@ export const getOrCreateStemsArchiveJob = async (
     { ...data, jobId },
     {
       jobId,
-      // TODO: Make this configurable
-      attempts: 3,
+      attempts: config.maxStemsArchiveAttempts,
       backoff: {
         type: 'exponential',
         delay: 1000
