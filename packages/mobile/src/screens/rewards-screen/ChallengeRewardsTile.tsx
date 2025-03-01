@@ -59,7 +59,8 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
   ChallengeName.ReferralsVerified,
   ChallengeName.Referred,
   ChallengeName.TrackUpload,
-  ChallengeName.OneShot
+  ChallengeName.OneShot,
+  ChallengeName.FirstWeeklyComment
 ])
 
 type ClaimableSummaryTableItem = SummaryTableItem & {
