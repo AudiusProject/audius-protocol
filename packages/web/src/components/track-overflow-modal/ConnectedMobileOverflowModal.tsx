@@ -1,4 +1,4 @@
-import { useToggleSaveTrack } from '@audius/common/api'
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import {
   FavoriteSource,
   ID,
@@ -110,7 +110,7 @@ const ConnectedMobileOverflowModal = ({
   )
   const navigate = useNavigate()
 
-  const toggleSaveTrack = useToggleSaveTrack({
+  const toggleSaveTrack = useToggleFavoriteTrack({
     trackId: id as number,
     source: FavoriteSource.OVERFLOW
   })

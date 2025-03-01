@@ -1,6 +1,6 @@
 import { useCallback, useContext } from 'react'
 
-import { useToggleSaveTrack } from '@audius/common/api'
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -93,7 +93,7 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     getUser(state, { id: track?.owner_id })
   )
 
-  const toggleSaveTrack = useToggleSaveTrack({
+  const toggleSaveTrack = useToggleFavoriteTrack({
     trackId: id,
     source: FavoriteSource.OVERFLOW
   })

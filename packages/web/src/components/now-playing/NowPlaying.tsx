@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { useToggleSaveTrack } from '@audius/common/api'
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,
@@ -255,7 +255,7 @@ const NowPlaying = g(
       }
     }
 
-    const toggleSaveTrack = useToggleSaveTrack({
+    const toggleSaveTrack = useToggleFavoriteTrack({
       trackId: track_id as number,
       source: FavoriteSource.NOW_PLAYING
     })

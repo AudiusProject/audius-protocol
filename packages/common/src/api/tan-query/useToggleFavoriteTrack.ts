@@ -6,15 +6,15 @@ import { useFavoriteTrack } from './useFavoriteTrack'
 import { useTrack } from './useTrack'
 import { useUnfavoriteTrack } from './useUnfavoriteTrack'
 
-type ToggleSaveTrackArgs = {
+type ToggleFavoriteTrackArgs = {
   trackId: ID | null | undefined
   source: string
 }
 
-export const useToggleSaveTrack = ({
+export const useToggleFavoriteTrack = ({
   trackId,
   source
-}: ToggleSaveTrackArgs) => {
+}: ToggleFavoriteTrackArgs) => {
   const { mutate: favoriteTrack } = useFavoriteTrack()
   const { mutate: unfavoriteTrack } = useUnfavoriteTrack()
 

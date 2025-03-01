@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useToggleSaveTrack } from '@audius/common/api'
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -215,7 +215,7 @@ export const TrackTileComponent = ({
     )
   }, [dispatch, track_id])
 
-  const handlePressSave = useToggleSaveTrack({
+  const handlePressSave = useToggleFavoriteTrack({
     trackId: track_id as number,
     source: FavoriteSource.TILE
   })

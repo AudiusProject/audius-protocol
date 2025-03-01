@@ -1,4 +1,4 @@
-import { useToggleSaveTrack } from '@audius/common/api'
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import { FavoriteSource, SquareSizes } from '@audius/common/models'
 import type { Track, User } from '@audius/common/models'
@@ -147,7 +147,7 @@ export const PlayBar = (props: PlayBarProps) => {
       'usdc_purchase' in track.stream_conditions &&
       !hasStreamAccess)
 
-  const onPressFavoriteButton = useToggleSaveTrack({
+  const onPressFavoriteButton = useToggleFavoriteTrack({
     trackId: track?.track_id,
     source: FavoriteSource.PLAYBAR
   })

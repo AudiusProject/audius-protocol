@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { useToggleSaveTrack } from '@audius/common/api'
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,
@@ -99,7 +99,7 @@ const PlayBar = ({
       'usdc_purchase' in track.stream_conditions &&
       !hasStreamAccess)
 
-  const toggleFavorite = useToggleSaveTrack({
+  const toggleFavorite = useToggleFavoriteTrack({
     trackId: track?.track_id,
     source: FavoriteSource.PLAYBAR
   })

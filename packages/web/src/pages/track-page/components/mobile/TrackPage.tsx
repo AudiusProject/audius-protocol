@@ -1,6 +1,6 @@
 import { useEffect, useContext } from 'react'
 
-import { useToggleSaveTrack } from '@audius/common/api'
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
 import {
   ID,
@@ -136,7 +136,7 @@ const TrackPage = ({
 
   const loading = !heroTrack || isFetchingNFTAccess
 
-  const toggleSaveTrack = useToggleSaveTrack({
+  const toggleSaveTrack = useToggleFavoriteTrack({
     trackId: heroTrack?.track_id,
     source: FavoriteSource.TRACK_PAGE
   })

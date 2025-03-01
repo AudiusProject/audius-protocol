@@ -1,4 +1,4 @@
-import { useToggleSaveTrack } from '@audius/common/api'
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import { FavoriteSource } from '@audius/common/models'
 import { modalsSelectors, playerSelectors } from '@audius/common/store'
 import cn from 'classnames'
@@ -33,7 +33,7 @@ const PlayBarProvider = ({
   addToCollectionOpen
 }: PlayBarProviderProps) => {
   const isMobile = useIsMobile()
-  const toggleSaveTrack = useToggleSaveTrack({
+  const toggleSaveTrack = useToggleFavoriteTrack({
     trackId: playingTrackId,
     source: FavoriteSource.PLAYBAR
   })

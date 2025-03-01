@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 
-import { useGetTrackById, useToggleSaveTrack } from '@audius/common/api'
+import { useGetTrackById, useToggleFavoriteTrack } from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -131,7 +131,7 @@ const TrackMenu = ({
 
   const { data: track } = useGetTrackById({ id: props.trackId })
 
-  const toggleSaveTrack = useToggleSaveTrack({
+  const toggleSaveTrack = useToggleFavoriteTrack({
     trackId: props.trackId,
     source: FavoriteSource.OVERFLOW
   })

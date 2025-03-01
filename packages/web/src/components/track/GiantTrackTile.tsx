@@ -1,6 +1,6 @@
 import { Suspense, lazy, useCallback, useState } from 'react'
 
-import { useToggleSaveTrack } from '@audius/common/api'
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import {
   isContentUSDCPurchaseGated,
   ID,
@@ -188,7 +188,7 @@ export const GiantTrackTile = ({
     () => setArtworkLoading(false),
     [setArtworkLoading]
   )
-  const toggleSaveTrack = useToggleSaveTrack({
+  const toggleSaveTrack = useToggleFavoriteTrack({
     trackId,
     source: FavoriteSource.TRACK_PAGE
   })

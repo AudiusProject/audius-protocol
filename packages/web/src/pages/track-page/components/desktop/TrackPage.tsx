@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react'
 
-import { useToggleSaveTrack } from '@audius/common/api'
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
 import {
   ID,
@@ -123,7 +123,7 @@ const TrackPage = ({
 
   const hasMoreByTracks = tracks?.entries?.length > 1 // note: the first in the list is always the track for this page
 
-  const toggleSaveTrack = useToggleSaveTrack({
+  const toggleSaveTrack = useToggleFavoriteTrack({
     trackId: heroTrack?.track_id,
     source: FavoriteSource.TRACK_PAGE
   })

@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 
-import { useToggleSaveTrack } from '@audius/common/api'
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,
@@ -371,7 +371,7 @@ export const TrackScreenDetailsTile = ({
     )
   }, [openCommentDrawer, trackId, navigation, uid])
 
-  const handlePressSave = useToggleSaveTrack({
+  const handlePressSave = useToggleFavoriteTrack({
     trackId,
     source: FavoriteSource.TRACK_PAGE
   })

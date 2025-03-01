@@ -1,6 +1,6 @@
 import { useCallback, useLayoutEffect } from 'react'
 
-import { useToggleSaveTrack } from '@audius/common/api'
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   RepostSource,
@@ -147,7 +147,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     }
   }, [castMethod, dispatch])
 
-  const handleFavorite = useToggleSaveTrack({
+  const handleFavorite = useToggleFavoriteTrack({
     trackId: track?.track_id,
     source: FavoriteSource.NOW_PLAYING
   })
