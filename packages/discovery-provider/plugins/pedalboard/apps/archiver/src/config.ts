@@ -41,7 +41,7 @@ export const readConfig = (): Config => {
     archiver_concurrent_jobs: num({ default: 5 }),
     archiver_tmp_dir: str({ default: '/tmp/audius-archiver' }),
     archiver_cleanup_orphaned_files_interval_seconds: num({
-      default: 10
+      default: 60
     }),
     archiver_orphaned_jobs_lifetime_seconds: num({ default: 60 * 60 }),
     archiver_max_stems_archive_attempts: num({ default: 3 })

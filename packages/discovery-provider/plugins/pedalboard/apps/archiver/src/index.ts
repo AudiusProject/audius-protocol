@@ -9,7 +9,9 @@ import { scheduleCleanupOrphanedFilesJob } from './jobs/cleanupOrphanedFiles'
 import { getStemsArchiveQueue } from './jobs/createStemsArchive'
 import { getCleanupOrphanedFilesQueue } from './jobs/cleanupOrphanedFiles'
 import { logger } from './logger'
+
 // Basic health check endpoint
+// TODO: Actual healthcheck metrics
 const health = (_req: express.Request, res: express.Response) => {
   res.json({ status: 'healthy' })
 }

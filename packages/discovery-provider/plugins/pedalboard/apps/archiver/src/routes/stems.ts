@@ -41,6 +41,8 @@ router.post('/:trackId', async (req, res) => {
   }
 })
 
+// TODO: Add delete route for track or job
+
 router.get('/job/:jobId', async (req, res) => {
   try {
     const { jobId } = req.params
@@ -60,6 +62,8 @@ router.get('/job/:jobId', async (req, res) => {
   }
 })
 
+// TODO: If we want, recover signer in original request
+// and verify same user here. Only get one download per request anyway, so maybe not a big deal.
 router.get('/download/:jobId', async (req, res) => {
   const { jobId } = req.params
   try {
@@ -99,12 +103,24 @@ router.get('/download/:jobId', async (req, res) => {
       }
     })
 
-    createReadStream(outputFile)
+    // Handle errors on the response stream
+    res.on('error', (error) => {
+      logger.error({ error, jobId }, 'Error in response stream')
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Failed to stream archive file' })
+      }
+    })
+
+    const fileStream = createReadStream(outputFile)
+    fileStream
       .on('error', (error) => {
         logger.error({ error, jobId }, 'Failed to stream archive file')
         if (!res.headersSent) {
           res.status(500).json({ error: 'Failed to stream archive file' })
         }
+      })
+      .on('end', () => {
+        res.end()
       })
       .pipe(res)
   } catch (error) {
