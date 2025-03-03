@@ -9,14 +9,23 @@ import {
 } from '@audius/sdk'
 import { readConfig, Environment } from './config'
 
+const environmentToSdkEnvironment: Record<
+  Environment,
+  'development' | 'staging' | 'production'
+> = {
+  dev: 'development',
+  stage: 'staging',
+  prod: 'production'
+}
+
 const makeDiscoveryNodeSelector = (
   environment: Environment,
   allowlist?: string[]
 ) => {
   const config =
-    environment === 'production'
+    environment === 'prod'
       ? productionConfig
-      : environment === 'staging'
+      : environment === 'stage'
         ? stagingConfig
         : developmentConfig
   return new DiscoveryNodeSelector({
@@ -33,7 +42,7 @@ export const getAudiusSdk = () => {
     // TODO: CN selector with allowlist?
     audiusSdk = sdk({
       appName: 'audius-client',
-      environment: config.environment,
+      environment: environmentToSdkEnvironment[config.environment],
       services: {
         discoveryNodeSelector: makeDiscoveryNodeSelector(
           config.environment,

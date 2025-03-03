@@ -1,6 +1,6 @@
 import { cleanEnv, str, num } from 'envalid'
 
-export type Environment = 'development' | 'staging' | 'production'
+export type Environment = 'dev' | 'stage' | 'prod'
 
 export type Config = {
   environment: Environment
@@ -24,7 +24,7 @@ export const readConfig = (): Config => {
 
   const env = cleanEnv(process.env, {
     audius_discprov_env: str<Environment>({
-      default: 'development'
+      default: 'dev'
     }),
     audius_discprov_url: str({
       default: 'http://audius-protocol-discovery-provider-1'

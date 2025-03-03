@@ -179,3 +179,13 @@ services:
     restart: always
     profiles:
       - pedalboard
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://127.0.0.1:6003/archive/health_check']
+      interval: 1s
+      timeout: 1s
+      retries: 120
+    depends_on:
+      db:
+        condition: service_healthy
+      discovery-provider-redis:
+        condition: service_healthy
