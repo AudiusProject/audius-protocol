@@ -18,11 +18,11 @@ from src.utils.config import shared_config
 env = shared_config["discprov"]["env"]
 
 PLAY_MILESTONES = {250: "25", 1000: "100", 10000: "1000"}
-FINAL_MILESTONE = max(PLAY_MILESTONES.keys())
 
 if env == "stage" or env == "dev":
     PLAY_MILESTONES = {1: "1", 2: "2", 3: "3"}
-    FINAL_MILESTONE = max(PLAY_MILESTONES.keys())
+
+FINAL_MILESTONE = max(PLAY_MILESTONES.keys())
 
 
 class PlayCountMilestonesUpdater(ChallengeUpdater):
@@ -37,7 +37,7 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
     Each milestone is a separate challenge that is marked as complete when reached.
     """
 
-    def get_user_play_count_2025(self, session: Session, user_id: int) -> int:
+    def _get_user_play_count_2025(self, session: Session, user_id: int) -> int:
         """Get the total play count for an artist's tracks in 2025"""
         start_date = datetime(2025, 1, 1)
         end_date = datetime(2026, 1, 1)
@@ -59,8 +59,10 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
 
         return cast(int, play_count)
 
-    def _get_completed_milestones(self, session: Session, user_id: int) -> List[int]:
-        """Get the list of milestones that the user has already completed"""
+    def _get_max_completed_milestone(
+        self, session: Session, user_id: int
+    ) -> Optional[int]:
+        """Get the highest milestone that the user has already completed"""
         completed_challenges = (
             session.query(UserChallenge)
             .filter(
@@ -70,16 +72,18 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
             )
             .all()
         )
-
-        completed_milestones = []
-        for challenge in completed_challenges:
-            step_count = challenge.current_step_count
-            for milestone in sorted(PLAY_MILESTONES.keys()):
-                if step_count is not None and step_count >= milestone:
-                    if milestone not in completed_milestones:
-                        completed_milestones.append(milestone)
-
-        return completed_milestones
+        if not completed_challenges:
+            return None
+        max_step_count = max(
+            challenge.current_step_count
+            for challenge in completed_challenges
+            if challenge.current_step_count is not None
+        )
+        sorted_milestones = sorted(PLAY_MILESTONES.keys())
+        for milestone in reversed(sorted_milestones):
+            if max_step_count >= milestone:
+                return milestone
+        return None
 
     def update_user_challenges(
         self,
@@ -94,22 +98,20 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
         Update user challenges based on their play count milestones.
         This method is called by the ChallengeManager when processing events.
         """
-        if event != ChallengeEvent.track_played:
-            return
-
         for user_challenge in user_challenges:
             user_id = user_challenge.user_id
-            play_count = self.get_user_play_count_2025(session, user_id)
-            completed_milestones = self._get_completed_milestones(session, user_id)
+            play_count = self._get_user_play_count_2025(session, user_id)
+            max_completed_milestone = self._get_max_completed_milestone(
+                session, user_id
+            )
             sorted_milestones = sorted(PLAY_MILESTONES.keys())
             milestone = None
 
-            if not completed_milestones:
+            if max_completed_milestone is None:
                 milestone = sorted_milestones[0]
             else:
                 # Find the next milestone after the highest completed one
-                highest_completed = max(completed_milestones)
-                next_index = sorted_milestones.index(highest_completed) + 1
+                next_index = sorted_milestones.index(max_completed_milestone) + 1
                 if next_index < len(sorted_milestones):
                     milestone = sorted_milestones[next_index]
                 else:
@@ -135,14 +137,16 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
 
         Simple temporal specifier without embedding milestone logic.
         """
-        completed_milestones = self._get_completed_milestones(session, user_id)
-
-        # If user has already completed the final milestone, don't create a new challenge
-        if FINAL_MILESTONE in completed_milestones:
-            return f"{hex(user_id)[2:]}_dummy_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        max_completed_milestone = self._get_max_completed_milestone(session, user_id)
 
         # For simplicity, just use timestamp for uniqueness
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        key = f"{hex(user_id)[2:]}"
+
+        # If user has already completed the final milestone, don't create a new challenge
+        if max_completed_milestone == FINAL_MILESTONE:
+            return f"{key}_dummy_{timestamp}"
+
         return f"{hex(user_id)[2:]}_{timestamp}"
 
     def should_create_new_challenge(
@@ -157,18 +161,15 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
         3. The user hasn't reached the final milestone yet
         4. The user doesn't already have 3 completed challenges
         """
-        if event != ChallengeEvent.track_played:
-            return False
-
         # Only proceed if they've played tracks in 2025
-        play_count = self.get_user_play_count_2025(session, user_id)
+        play_count = self._get_user_play_count_2025(session, user_id)
         if play_count <= 0:
             return False
 
-        completed_milestones = self._get_completed_milestones(session, user_id)
+        max_completed_milestone = self._get_max_completed_milestone(session, user_id)
 
         # If they've already completed the final milestone, don't create more challenges
-        if FINAL_MILESTONE in completed_milestones:
+        if max_completed_milestone == FINAL_MILESTONE:
             return False
 
         # Count total challenges (completed or not) to ensure we don't create more than 3
@@ -187,13 +188,12 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
         sorted_milestones = sorted(PLAY_MILESTONES.keys())
         next_milestone = None
 
-        if not completed_milestones:
+        if max_completed_milestone is None:
             # If no milestones completed yet, first milestone is next
             next_milestone = sorted_milestones[0]
         else:
             # Find the next milestone after the highest one they've completed
-            highest_completed = max(completed_milestones)
-            next_index = sorted_milestones.index(highest_completed) + 1
+            next_index = sorted_milestones.index(max_completed_milestone) + 1
             if next_index < len(sorted_milestones):
                 next_milestone = sorted_milestones[next_index]
 
@@ -201,12 +201,6 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
         if next_milestone is None or play_count < next_milestone:
             return False
 
-        return True
-
-    def should_show_challenge_for_user(self, session: Session, user_id: int) -> bool:
-        """
-        Determine if a challenge should be shown to the user
-        """
         return True
 
 
