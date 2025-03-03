@@ -97,9 +97,15 @@ type WebChallengeInfo = {
 }
 
 const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
-  [ChallengeName.Referrals]: {},
-  [ChallengeName.ReferralsVerified]: {},
-  [ChallengeName.Referred]: {},
+  [ChallengeName.Referrals]: {
+    icon: <i className='emoji large incoming-envelope' />
+  },
+  [ChallengeName.ReferralsVerified]: {
+    icon: <i className='emoji large incoming-envelope' />
+  },
+  [ChallengeName.Referred]: {
+    icon: <i className='emoji large incoming-envelope' />
+  },
   'connect-verified': {
     modalButtonInfo: {
       incomplete: linkButtonMap.verifyAccount,
@@ -122,6 +128,7 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
     }
   },
   [ChallengeName.ListenStreakEndless]: {
+    icon: <i className='emoji large fire' />,
     modalButtonInfo: {
       incomplete: linkButtonMap.trendingTracks,
       inProgress: linkButtonMap.trendingTracks,
@@ -216,7 +223,9 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
   'trending-underground': {},
   tut: {},
   [ChallengeName.OneShot]: {},
-  [ChallengeName.FirstWeeklyComment]: {}
+  [ChallengeName.FirstWeeklyComment]: {
+    icon: <i className='emoji large speech-balloon' />
+  }
 }
 
 export const getChallengeConfig = (id: ChallengeRewardID) => ({
