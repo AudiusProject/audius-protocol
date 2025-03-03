@@ -32,7 +32,7 @@ def run_side_effects(
         if block_number % 100 == 0:
             # Check the last block's timestamp for updating the trending challenge
             [should_update, date] = should_trending_challenge_update(
-                session, int(block_time)
+                session, block_time
             )
             if should_update and date is not None:
                 enqueue_trending_challenges(session, web3, redis, challenge_bus, date)
