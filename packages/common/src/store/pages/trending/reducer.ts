@@ -75,7 +75,9 @@ const reducer =
         lastFetchedTrendingGenre: null,
         trendingWeek: makeInitialState(TRENDING_WEEK_PREFIX),
         trendingMonth: makeInitialState(TRENDING_MONTH_PREFIX),
-        trendingAllTime: makeInitialState(TRENDING_ALL_TIME_PREFIX)
+        trendingAllTime: makeInitialState(TRENDING_ALL_TIME_PREFIX),
+        trendingGenre: null,
+        trendingTimeRange: TimeRange.WEEK
       }
 
       if (history) {
@@ -116,9 +118,26 @@ const reducer =
       return { ...state, trendingAllTime }
     }
 
-    const matchingReduceFunction = actionsMap[action.type]
-    if (!matchingReduceFunction) return state
-    return matchingReduceFunction(state, action as TrendingPageAction)
+    // Handle each action type separately
+    switch (action.type) {
+      case SET_TRENDING_GENRE:
+        return actionsMap[SET_TRENDING_GENRE](
+          state,
+          action as SetTrendingGenreAction
+        )
+      case SET_TRENDING_TIME_RANGE:
+        return actionsMap[SET_TRENDING_TIME_RANGE](
+          state,
+          action as SetTrendingTimeRangeAction
+        )
+      case SET_LAST_FETCHED_TRENDING_GENRE:
+        return actionsMap[SET_LAST_FETCHED_TRENDING_GENRE](
+          state,
+          action as SetLastFetchedTrendingGenreAction
+        )
+      default:
+        return state
+    }
   }
 
 export default reducer
