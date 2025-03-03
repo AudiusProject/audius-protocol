@@ -88,7 +88,7 @@ const linkButtonMap: Record<LinkButtonType, LinkButtonInfo> = {
 }
 
 type WebChallengeInfo = {
-  icon?: ReactNode
+  icon: ReactNode
   modalButtonInfo?: {
     incomplete: LinkButtonInfo | null
     inProgress: LinkButtonInfo | null
@@ -97,10 +97,17 @@ type WebChallengeInfo = {
 }
 
 const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
-  [ChallengeName.Referrals]: {},
-  [ChallengeName.ReferralsVerified]: {},
-  [ChallengeName.Referred]: {},
+  [ChallengeName.Referrals]: {
+    icon: <i className='emoji large incoming-envelope' />
+  },
+  [ChallengeName.ReferralsVerified]: {
+    icon: <i className='emoji large incoming-envelope' />
+  },
+  [ChallengeName.Referred]: {
+    icon: <i className='emoji large love-letter' />
+  },
   'connect-verified': {
+    icon: <i className='emoji large link-symbol' />,
     modalButtonInfo: {
       incomplete: linkButtonMap.verifyAccount,
       inProgress: linkButtonMap.verifyAccount,
@@ -108,6 +115,7 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
     }
   },
   [ChallengeName.ConnectVerified]: {
+    icon: <i className='emoji large link-symbol' />,
     modalButtonInfo: {
       incomplete: linkButtonMap.verifyAccount,
       inProgress: linkButtonMap.verifyAccount,
@@ -115,6 +123,7 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
     }
   },
   'listen-streak': {
+    icon: <i className='emoji large headphone' />,
     modalButtonInfo: {
       incomplete: linkButtonMap.trendingTracks,
       inProgress: linkButtonMap.trendingTracks,
@@ -122,6 +131,7 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
     }
   },
   [ChallengeName.ListenStreakEndless]: {
+    icon: <i className='emoji large fire' />,
     modalButtonInfo: {
       incomplete: linkButtonMap.trendingTracks,
       inProgress: linkButtonMap.trendingTracks,
@@ -129,15 +139,21 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
     }
   },
   [ChallengeName.ListenStreak]: {
+    icon: <i className='emoji large headphone' />,
     modalButtonInfo: {
       incomplete: linkButtonMap.trendingTracks,
       inProgress: linkButtonMap.trendingTracks,
       complete: linkButtonMap.trendingTracks
     }
   },
-  'mobile-install': {},
-  [ChallengeName.MobileInstall]: {},
+  'mobile-install': {
+    icon: <i className='emoji large mobile-phone-with-arrow' />
+  },
+  [ChallengeName.MobileInstall]: {
+    icon: <i className='emoji large mobile-phone-with-arrow' />
+  },
   'profile-completion': {
+    icon: <i className='emoji large ballot-box-tick' />,
     modalButtonInfo: {
       incomplete: linkButtonMap.profile,
       inProgress: linkButtonMap.profile,
@@ -145,6 +161,7 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
     }
   },
   [ChallengeName.ProfileCompletion]: {
+    icon: <i className='emoji large ballot-box-tick' />,
     modalButtonInfo: {
       incomplete: linkButtonMap.profile,
       inProgress: linkButtonMap.profile,
@@ -152,6 +169,7 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
     }
   },
   'track-upload': {
+    icon: <i className='emoji large multiple-musical-notes' />,
     modalButtonInfo: {
       incomplete: linkButtonMap.trackUpload,
       inProgress: linkButtonMap.trackUpload,
@@ -159,6 +177,7 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
     }
   },
   [ChallengeName.TrackUpload]: {
+    icon: <i className='emoji large multiple-musical-notes' />,
     modalButtonInfo: {
       incomplete: linkButtonMap.trackUpload,
       inProgress: linkButtonMap.trackUpload,
@@ -166,6 +185,7 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
     }
   },
   'send-first-tip': {
+    icon: <i className='emoji large money-wings' />,
     modalButtonInfo: {
       incomplete: linkButtonMap.sendFirstTip,
       inProgress: linkButtonMap.sendFirstTip,
@@ -173,6 +193,7 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
     }
   },
   [ChallengeName.FirstTip]: {
+    icon: <i className='emoji large money-wings' />,
     modalButtonInfo: {
       incomplete: linkButtonMap.sendFirstTip,
       inProgress: linkButtonMap.sendFirstTip,
@@ -180,6 +201,7 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
     }
   },
   'first-playlist': {
+    icon: <i className='emoji large treble-clef' />,
     modalButtonInfo: {
       incomplete: linkButtonMap.firstPlaylist,
       inProgress: linkButtonMap.firstPlaylist,
@@ -187,6 +209,7 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
     }
   },
   [ChallengeName.FirstPlaylist]: {
+    icon: <i className='emoji large treble-clef' />,
     modalButtonInfo: {
       incomplete: linkButtonMap.firstPlaylist,
       inProgress: linkButtonMap.firstPlaylist,
@@ -194,6 +217,7 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
     }
   },
   [ChallengeName.AudioMatchingSell]: {
+    icon: <i className='emoji large cart' />,
     modalButtonInfo: {
       incomplete: linkButtonMap[ChallengeName.AudioMatchingSell],
       inProgress: linkButtonMap[ChallengeName.AudioMatchingSell],
@@ -201,22 +225,43 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
     }
   },
   [ChallengeName.AudioMatchingBuy]: {
+    icon: <i className='emoji large cart' />,
     modalButtonInfo: {
       incomplete: linkButtonMap[ChallengeName.AudioMatchingBuy],
       inProgress: linkButtonMap[ChallengeName.AudioMatchingBuy],
       complete: linkButtonMap[ChallengeName.AudioMatchingBuy]
     }
   },
-  'trending-playlist': {},
-  tp: {},
-  'trending-track': {},
-  tt: {},
-  'top-api': {},
-  'verified-upload': {},
-  'trending-underground': {},
-  tut: {},
-  [ChallengeName.OneShot]: {},
-  [ChallengeName.FirstWeeklyComment]: {}
+  'trending-playlist': {
+    icon: <i className='emoji large arrow-curve-up' />
+  },
+  tp: {
+    icon: <i className='emoji large arrow-curve-up' />
+  },
+  'trending-track': {
+    icon: <i className='emoji large chart-increasing' />
+  },
+  tt: {
+    icon: <i className='emoji large arrow-curve-up' />
+  },
+  'top-api': {
+    icon: <i className='emoji large gear' />
+  },
+  'verified-upload': {
+    icon: <i className='emoji large white-heavy-check-mark' />
+  },
+  'trending-underground': {
+    icon: <i className='emoji large chart-bar' />
+  },
+  tut: {
+    icon: <i className='emoji large chart-bar' />
+  },
+  [ChallengeName.OneShot]: {
+    icon: <i className='emoji large parachute' />
+  },
+  [ChallengeName.FirstWeeklyComment]: {
+    icon: <i className='emoji large speech-balloon' />
+  }
 }
 
 export const getChallengeConfig = (id: ChallengeRewardID) => ({
