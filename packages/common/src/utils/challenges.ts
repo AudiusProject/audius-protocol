@@ -417,7 +417,11 @@ export const getChallengeStatusLabel = (
       }
       return 'No Recent Activity'
     case ChallengeName.FirstWeeklyComment:
-      if (challenge.disbursed_amount && !challenge.claimableAmount) {
+      if (
+        challenge.disbursed_amount &&
+        !challenge.claimableAmount &&
+        !challenge.undisbursedSpecifiers.length
+      ) {
         return 'Resets Friday'
       }
   }
@@ -437,7 +441,10 @@ export const getChallengeStatusLabel = (
   }
 
   // Handle completed with cooldown state
-  if (challenge.state === 'completed' && challenge.cooldown_days) {
+  if (
+    (challenge.state === 'completed' || challenge.state === 'in_progress') &&
+    challenge.cooldown_days
+  ) {
     return DEFAULT_STATUS_LABELS.REWARD_PENDING
   }
 

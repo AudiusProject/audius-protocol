@@ -20,7 +20,7 @@ const messages = {
   completeLabel: 'COMPLETE',
   claimReward: 'Claim This Reward',
   readyToClaim: 'Ready to Claim',
-  pendingRewards: 'Pending Reward',
+  pendingRewards: 'Reward Pending',
   viewDetails: 'View Details',
   new: 'New!'
 }

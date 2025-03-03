@@ -16,7 +16,7 @@ export const messages = {
   claimAllRewards: 'Claim All Rewards',
   moreInfo: 'More Info',
   readyToClaim: 'Ready to Claim',
-  pendingRewards: 'Pending Reward',
+  pendingRewards: 'Reward Pending',
   totalUpcomingRewards: 'Total Upcoming Rewards',
   totalReadyToClaim: 'Ready To Claim',
   pending: 'Pending',
