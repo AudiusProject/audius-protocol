@@ -50,7 +50,7 @@ router.get('/job/:jobId', async (req, res) => {
       return res.status(404).json({ error: 'Job not found' })
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // Don't return the job returnvalue to the client, that's used internally
     const { returnvalue: _, ...rest } = job
 
     res.status(200).json(rest)

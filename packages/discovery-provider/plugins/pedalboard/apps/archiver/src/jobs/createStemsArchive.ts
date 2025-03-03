@@ -1,4 +1,4 @@
-import { Queue } from 'bullmq'
+import { JobState, Queue } from 'bullmq'
 import { readConfig } from '../config'
 import { STEMS_ARCHIVE_QUEUE_NAME } from '../constants'
 import { removeTempFiles } from '../workers/createStemsArchive'
@@ -18,13 +18,7 @@ export interface StemsArchiveJobResult {
 
 export interface JobStatus {
   id: string
-  state:
-    | 'completed'
-    | 'failed'
-    | 'active'
-    | 'waiting'
-    | 'delayed'
-    | 'prioritized'
+  state: JobState | 'unknown'
   progress?: number
   failedReason?: string
   returnvalue?: StemsArchiveJobResult
@@ -121,7 +115,7 @@ export const getStemsArchiveJob = async (
 
   return {
     id: jobId,
-    state: state as JobStatus['state'],
+    state,
     progress,
     ...(failedReason && { failedReason }),
     ...(returnvalue && { returnvalue })

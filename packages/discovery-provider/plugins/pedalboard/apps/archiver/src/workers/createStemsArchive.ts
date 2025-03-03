@@ -69,7 +69,7 @@ async function createArchive({
 
   const output = fs.createWriteStream(outputPath)
   const archive = archiver('zip', {
-    zlib: { level: 9 } // Maximum compression
+    zlib: { level: 6 }
   })
 
   // Listen for archive errors
@@ -135,8 +135,6 @@ export const startStemsArchiveWorker = () => {
         // Download each stem
         const downloadedFiles = await Promise.all(
           stems.map(async (stem) => {
-            // TODO: Is it using the headers correctly?
-            // Test with a gated track
             const downloadUrl = await sdk.tracks.getTrackDownloadUrl({
               trackId: stem.id,
               userId: userId ? Id.parse(userId) : undefined,
