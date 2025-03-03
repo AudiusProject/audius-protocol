@@ -10,11 +10,11 @@ import { getIsFavoritesDownloadsEnabled } from '../selectors'
 import { addOfflineEntries } from '../slice'
 
 export function* watchSaveTrackSaga() {
-  yield* takeEvery(tracksSocialActions.SAVE_TRACK, downloadSavedTrack)
+  yield* takeEvery(tracksSocialActions.SAVE_TRACK_SUCCEEDED, downloadSavedTrack)
 }
 
 function* downloadSavedTrack(
-  action: ReturnType<typeof tracksSocialActions.saveTrack>
+  action: ReturnType<typeof tracksSocialActions.saveTrackSucceeded>
 ) {
   const { trackId } = action
   const isFavoritesDownloadEnabled = yield* select(
