@@ -9,7 +9,6 @@ from src.challenges.challenge import (
     ChallengeUpdater,
     FullEventMetadata,
 )
-from src.challenges.challenge_event import ChallengeEvent
 from src.models.rewards.user_challenge import UserChallenge
 from src.models.social.play import Play
 from src.models.tracks.track import Track
