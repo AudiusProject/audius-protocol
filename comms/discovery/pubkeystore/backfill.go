@@ -35,13 +35,14 @@ func StartPubkeyBackfill(config *config.DiscoveryConfig) {
 		for _, id := range ids {
 			_, err := RecoverUserPublicKeyBase64(ctx, id)
 			if err != nil {
-				slog.Debug("pubkey backfill: failed to recover", "user_id", id, "err", err)
+				slog.Debug("pubkey backfill: chain recovery failed", "user_id", id, "err", err)
+
+				err = recoverFromPeers(config, id)
+				if err != nil {
+					slog.Debug("pubkey backfill: peer recovery failed", "user_id", id, "err", err)
+				}
 			}
 
-			err = recoverFromPeers(config, id)
-			if err != nil {
-				slog.Debug("pubkey backfill: peer recovery failed", "user_id", id, "err", err)
-			}
 		}
 
 		time.Sleep(time.Minute * 8)
