@@ -77,18 +77,18 @@
   {
     "id": "tt",
     "type": "trending",
-    "amount": 100,
+    "amount": 1000,
     "active": true,
     "starting_block": 25346436,
-    "weekly_pool": 10000
+    "weekly_pool": 100000
   },
   {
     "id": "tut",
     "type": "trending",
-    "amount": 100,
+    "amount": 1000,
     "active": true,
     "starting_block": 25346436,
-    "weekly_pool": 10000
+    "weekly_pool": 100000
   },
   {
     "id": "tp",
