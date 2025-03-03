@@ -9,18 +9,14 @@ import {
   musicConfettiActions
 } from '@audius/common/store'
 import { getAAOErrorEmojis } from '@audius/common/utils'
-import { ModalContent, IconCopy, Button } from '@audius/harmony'
+import { ModalContent } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import ModalDrawer from 'components/modal-drawer/ModalDrawer'
-import Toast from 'components/toast/Toast'
 import { ToastContext } from 'components/toast/ToastContext'
-import Tooltip from 'components/tooltip/Tooltip'
-import { ComponentPlacement, MountPlacement } from 'components/types'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { getChallengeConfig } from 'pages/rewards-page/config'
-import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import { CLAIM_REWARD_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 
 import { getChallengeContent } from './challengeContentRegistry'
@@ -32,18 +28,8 @@ const { getAAOErrorCode, getChallengeRewardsModalType, getClaimStatus } =
 const { resetAndCancelClaimReward } = audioRewardsPageActions
 const { getOptimisticUserChallenges } = challengesSelectors
 
-const inviteLink = getCopyableLink('/signup?rf=%0')
-
 const messages = {
   close: 'Close',
-  audio: '$AUDIO',
-  everyDollarSpent: ' Every Dollar Spent',
-  copyLabel: 'Copy to Clipboard',
-  copiedLabel: 'Copied to Clipboard',
-  inviteLabel: 'Copy Invite to Clipboard',
-  inviteLink,
-  qrText: 'Download the App',
-  qrSubtext: 'Scan This QR Code with Your Phone Camera',
   rewardClaimed: 'Reward claimed successfully!',
   rewardAlreadyClaimed: 'Reward already claimed!',
   claimError:
@@ -85,43 +71,6 @@ const messages = {
   complete: 'Complete',
   incomplete: 'Incomplete',
   ineligible: 'Ineligible'
-}
-
-type InviteLinkProps = {
-  className?: string
-  inviteLink: string
-}
-
-export const InviteLink = ({ className, inviteLink }: InviteLinkProps) => {
-  const wm = useWithMobileStyle(styles.mobile)
-
-  const onButtonClick = useCallback(() => {
-    copyToClipboard(inviteLink)
-  }, [inviteLink])
-
-  return (
-    <Tooltip text={messages.copyLabel} placement={'top'} mount={'parent'}>
-      <div className={wm(styles.toastContainer, { [className!]: !!className })}>
-        <Toast
-          text={messages.copiedLabel}
-          delay={2000}
-          placement={ComponentPlacement.TOP}
-          mount={MountPlacement.PARENT}
-        >
-          <div className={wm(styles.inviteButtonContainer)}>
-            <Button
-              variant='primary'
-              iconRight={IconCopy}
-              onClick={onButtonClick}
-              fullWidth
-            >
-              {messages.inviteLabel}
-            </Button>
-          </div>
-        </Toast>
-      </div>
-    </Tooltip>
-  )
 }
 
 const getErrorMessage = (aaoErrorCode?: number) => {
@@ -186,16 +135,11 @@ export const ChallengeRewardsModal = () => {
     dispatch(resetAndCancelClaimReward())
   }, [dispatch, setOpen])
 
-  const { title, icon } = getChallengeConfig(modalType)
+  const { title } = getChallengeConfig(modalType)
 
   return (
     <ModalDrawer
-      title={
-        <>
-          {icon}
-          {title}
-        </>
-      }
+      title={<>{title}</>}
       showTitleHeader
       isOpen={isOpen}
       onClose={onClose}

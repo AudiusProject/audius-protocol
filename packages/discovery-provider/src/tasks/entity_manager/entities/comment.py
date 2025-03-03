@@ -173,13 +173,15 @@ def create_comment(params: ManageEntityParameters):
     )
 
     params.add_record(comment_id, comment_record, EntityType.COMMENT)
-    challenge_bus.dispatch(
-        ChallengeEvent.first_weekly_comment,
-        params.block_number,
-        params.block_datetime,
-        user_id,
-        {"comment_id": comment_id},
-    )
+
+    with challenge_bus.use_scoped_dispatch_queue():
+        challenge_bus.dispatch(
+            ChallengeEvent.first_weekly_comment,
+            params.block_number,
+            params.block_datetime,
+            user_id,
+            {"created_at": params.block_datetime.timestamp()},
+        )
 
     if (
         not is_reply

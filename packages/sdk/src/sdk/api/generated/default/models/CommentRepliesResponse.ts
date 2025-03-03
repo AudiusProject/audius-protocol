@@ -24,31 +24,31 @@ import {
 /**
  * 
  * @export
- * @interface CommentResponse
+ * @interface CommentRepliesResponse
  */
-export interface CommentResponse {
+export interface CommentRepliesResponse {
     /**
      * 
      * @type {Array<ReplyComment>}
-     * @memberof CommentResponse
+     * @memberof CommentRepliesResponse
      */
     data?: Array<ReplyComment>;
 }
 
 /**
- * Check if a given object implements the CommentResponse interface.
+ * Check if a given object implements the CommentRepliesResponse interface.
  */
-export function instanceOfCommentResponse(value: object): value is CommentResponse {
+export function instanceOfCommentRepliesResponse(value: object): value is CommentRepliesResponse {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function CommentResponseFromJSON(json: any): CommentResponse {
-    return CommentResponseFromJSONTyped(json, false);
+export function CommentRepliesResponseFromJSON(json: any): CommentRepliesResponse {
+    return CommentRepliesResponseFromJSONTyped(json, false);
 }
 
-export function CommentResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): CommentResponse {
+export function CommentRepliesResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): CommentRepliesResponse {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -58,7 +58,7 @@ export function CommentResponseFromJSONTyped(json: any, ignoreDiscriminator: boo
     };
 }
 
-export function CommentResponseToJSON(value?: CommentResponse | null): any {
+export function CommentRepliesResponseToJSON(value?: CommentRepliesResponse | null): any {
     if (value === undefined) {
         return undefined;
     }

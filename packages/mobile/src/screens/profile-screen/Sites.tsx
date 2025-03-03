@@ -3,6 +3,7 @@ import { View, Text } from 'react-native'
 import { IconDonate, IconLink } from '@audius/harmony-native'
 import { Link } from 'app/components/core'
 import { makeStyles } from 'app/styles'
+import { prependProtocol } from 'app/utils/prependProtocol'
 import { useThemeColors } from 'app/utils/theme'
 
 import { useSelectProfile } from './selectors'
@@ -28,9 +29,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     letterSpacing: 0.5
   }
 }))
-
-const prependProtocol = (url?: string) =>
-  !url?.match(/^https?:\/\//i) ? `https://${url}` : url
 
 export const Sites = () => {
   const styles = useStyles()

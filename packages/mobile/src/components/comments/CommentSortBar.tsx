@@ -1,5 +1,5 @@
 import { useCurrentCommentSection } from '@audius/common/context'
-import { TrackCommentsSortMethodEnum } from '@audius/sdk'
+import { GetTrackCommentsSortMethodEnum } from '@audius/sdk'
 
 import { Flex, SelectablePill } from '@audius/harmony-native'
 
@@ -16,20 +16,20 @@ export const CommentSortBar = () => {
       <SelectablePill
         type='radio'
         label={messages.top}
-        isSelected={currentSort === TrackCommentsSortMethodEnum.Top}
-        onPress={() => setCurrentSort(TrackCommentsSortMethodEnum.Top)}
+        isSelected={currentSort === GetTrackCommentsSortMethodEnum.Top}
+        onPress={() => setCurrentSort(GetTrackCommentsSortMethodEnum.Top)}
       />
       <SelectablePill
         type='radio'
         label={messages.newest}
-        isSelected={currentSort === TrackCommentsSortMethodEnum.Newest}
-        onPress={() => setCurrentSort(TrackCommentsSortMethodEnum.Newest)}
+        isSelected={currentSort === GetTrackCommentsSortMethodEnum.Newest}
+        onPress={() => setCurrentSort(GetTrackCommentsSortMethodEnum.Newest)}
       />
       <SelectablePill
         type='radio'
         label={messages.timestamp}
-        isSelected={currentSort === TrackCommentsSortMethodEnum.Timestamp}
-        onPress={() => setCurrentSort(TrackCommentsSortMethodEnum.Timestamp)}
+        isSelected={currentSort === GetTrackCommentsSortMethodEnum.Timestamp}
+        onPress={() => setCurrentSort(GetTrackCommentsSortMethodEnum.Timestamp)}
       />
     </Flex>
   )

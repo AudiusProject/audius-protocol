@@ -1,6 +1,5 @@
 import { useCallback, useContext } from 'react'
 
-import { clearSearch } from '@audius/web/src/common/store/search-bar/actions'
 import type { ParamListBase, RouteProp } from '@react-navigation/core'
 import type {
   NativeStackNavigationOptions,
@@ -8,7 +7,6 @@ import type {
 } from '@react-navigation/native-stack'
 import { CardStyleInterpolators } from '@react-navigation/stack'
 import { Text, View } from 'react-native'
-import { useDispatch } from 'react-redux'
 
 import {
   IconAudiusLogoHorizontal,
@@ -58,16 +56,14 @@ export const useAppScreenOptions = (
   const styles = useStyles()
   const navigation = useNavigation()
   const { drawerHelpers } = useContext(AppDrawerContext)
-  const dispatch = useDispatch()
 
   const handleOpenLeftNavDrawer = useCallback(() => {
     drawerHelpers?.openDrawer()
   }, [drawerHelpers])
 
   const handlePressSearch = useCallback(() => {
-    dispatch(clearSearch())
     navigation.navigate('Search', { autoFocus: true })
-  }, [dispatch, navigation])
+  }, [navigation])
 
   const screenOptions: (options: Options) => NativeStackNavigationOptions =
     useCallback(

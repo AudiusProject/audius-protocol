@@ -241,6 +241,7 @@ const TrackPage = ({
       <FlushPageContainer>
         <Flex
           direction='column'
+          w='100%'
           pt={200}
           pb={60}
           css={{ position: 'relative' }}
