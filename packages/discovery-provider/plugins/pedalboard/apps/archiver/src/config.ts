@@ -4,16 +4,20 @@ export type Environment = 'dev' | 'stage' | 'prod'
 
 export type Config = {
   environment: Environment
+  /** How often the job to cleanup orphaned files should run (default: 60 seconds) */
   cleanupOrphanedFilesIntervalSeconds: number
+  /** How long to keep completed jobs that have not been downloaded (default: 1 hour) */
   orphanedJobsLifetimeSeconds: number
+  /** How many concurrent archive jobs to run (default: 5) */
   concurrentJobs: number
+  /** How many attempts to make to create a stems archive (default: 3) */
   maxStemsArchiveAttempts: number
+  /** List of discovery nodes to use for fetching track info and downloading tracks (default: undefined, will use SDK defaults) */
   discoveryNodeAllowlist: string[] | undefined
-  discoveryDbConnectionString: string
-  discoveryProviderUrl: string
   redisUrl: string
   serverHost: string
   serverPort: number
+  /** Temporary directory for storing stems archive files (default: '/tmp/audius-archiver') */
   archiverTmpDir: string
 }
 
@@ -25,13 +29,6 @@ export const readConfig = (): Config => {
   const env = cleanEnv(process.env, {
     audius_discprov_env: str<Environment>({
       default: 'dev'
-    }),
-    audius_discprov_url: str({
-      default: 'http://audius-protocol-discovery-provider-1'
-    }),
-    audius_db_url: str({
-      default:
-        'postgresql+psycopg2://postgres:postgres@db:5432/discovery_provider_1'
     }),
     audius_redis_url: str({
       default: 'redis://audius-protocol-discovery-provider-redis-1:6379/0'
@@ -52,8 +49,6 @@ export const readConfig = (): Config => {
     concurrentJobs: env.archiver_concurrent_jobs,
     discoveryNodeAllowlist:
       process.env.archiver_discovery_node_allowlist?.split(',') ?? undefined,
-    discoveryDbConnectionString: env.audius_db_url,
-    discoveryProviderUrl: env.audius_discprov_url,
     redisUrl: env.audius_redis_url,
     serverHost: env.archiver_server_host,
     serverPort: env.archiver_server_port,

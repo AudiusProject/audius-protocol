@@ -39,7 +39,6 @@ let audiusSdk: AudiusSdk | undefined = undefined
 export const getAudiusSdk = () => {
   if (audiusSdk === undefined) {
     const config = readConfig()
-    // TODO: CN selector with allowlist?
     audiusSdk = sdk({
       appName: 'audius-client',
       environment: environmentToSdkEnvironment[config.environment],

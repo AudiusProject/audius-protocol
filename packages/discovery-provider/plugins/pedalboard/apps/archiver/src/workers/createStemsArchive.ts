@@ -98,7 +98,6 @@ async function createArchive({
   return outputPath
 }
 
-// TODO: Progress would be nice
 export const startStemsArchiveWorker = () => {
   const config = readConfig()
   const worker = new Worker<StemsArchiveJobData, StemsArchiveJobResult>(
@@ -212,7 +211,6 @@ export const cleanupStemsArchiveJob = async (jobId: string) => {
   try {
     throw new Error('Test error')
   } catch (error) {
-    // TODO: Proper logging
     logger.error(
       { error: `${error}`, jobId },
       'Failed to clean up stems archive'

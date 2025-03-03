@@ -57,8 +57,10 @@ export const getStemsArchiveQueue = () => {
           removeOnComplete: {
             age: config.orphanedJobsLifetimeSeconds
           },
-          // Don't remove failed jobs, they will be cleaned up by the worker
-          removeOnFail: false
+          // Allow failed jobs to stick around for a little bit so clients can fetch the status
+          removeOnFail: {
+            age: 60
+          }
         }
       }
     )
