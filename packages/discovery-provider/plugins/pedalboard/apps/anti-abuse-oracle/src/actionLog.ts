@@ -2,8 +2,12 @@ import 'dotenv/config'
 
 import postgres from 'postgres'
 import fetch from 'node-fetch'
+import { useFingerprintDeviceCount } from './identity'
 
 export const sql = postgres(process.env.discoveryDbUrl || '')
+
+const MIN_SCORE = -100
+const MAX_SCORE = 300
 
 type TipRow = {
   sender: UserDetails
@@ -139,13 +143,7 @@ aggregate_scores AS (
         COALESCE(play_activity.play_count, 0) AS play_count,
         COALESCE(fast_challenge_completion.challenge_count, 0) AS challenge_count,
         COALESCE(aggregate_user.following_count, 0) AS following_count,
-        COALESCE(aggregate_user.follower_count, 0) AS follower_count,
-        (
-          COALESCE(play_activity.play_count, 0)
-          - (COALESCE(fast_challenge_completion.challenge_count, 0))
-          + COALESCE(aggregate_user.follower_count, 0)
-          - CASE WHEN COALESCE(aggregate_user.following_count, 0) < 5 THEN 1 ELSE 0 END
-        ) AS overall_score
+        COALESCE(aggregate_user.follower_count, 0) AS follower_count
     FROM users
     LEFT JOIN play_activity ON users.user_id = play_activity.user_id
     LEFT JOIN fast_challenge_completion ON users.user_id = fast_challenge_completion.user_id
@@ -160,21 +158,46 @@ SELECT
     a.play_count,
     a.follower_count,
     a.challenge_count,
-    a.following_count,
-    a.overall_score,
-    least((a.overall_score + 15)::float / NULLIF(100, 0), 1)::float AS normalized_score
+    a.following_count
 FROM aggregate_scores a
-ORDER BY normalized_score asc
   `
-  return rows[0] as {
-    handle_lc: string
-    timestamp: Date
-    play_count: number
-    follower_count: number
-    challenge_count: number
-    following_count: number
-    overall_score: number
-    normalized_score: number
+  const {
+    handle_lc,
+    timestamp,
+    play_count,
+    follower_count,
+    challenge_count,
+    following_count
+  } = rows[0]
+
+  // Convert values to numbers
+  const playCount = Number(play_count)
+  const followerCount = Number(follower_count)
+  const challengeCount = Number(challenge_count)
+  const followingCount = Number(following_count)
+
+  const numberOfUserWithFingerprint = (await useFingerprintDeviceCount(userId))!
+
+  const overallScore =
+    playCount +
+    followerCount -
+    challengeCount -
+    (followingCount < 5 ? -1 : 0) -
+    numberOfUserWithFingerprint
+  const normalizedScore = Math.min(
+    (overallScore - MIN_SCORE) / (MAX_SCORE - MIN_SCORE),
+    1
+  )
+  return {
+    handleLowerCase: handle_lc,
+    timestamp,
+    playCount: play_count,
+    followerCount: follower_count,
+    challengeCount: challenge_count,
+    followingCount: following_count,
+    fingerprintCount: numberOfUserWithFingerprint,
+    overallScore,
+    normalizedScore
   }
 }
 

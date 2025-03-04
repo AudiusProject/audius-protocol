@@ -29,3 +29,22 @@ export async function userFingerprints(userId: number) {
 
   return rows
 }
+
+export async function useFingerprintDeviceCount(userId: number) {
+  const rows = await sql`
+    SELECT
+        MAX("userCount") AS "maxUserCount"
+    FROM (
+        SELECT
+            "visitorId",
+            COUNT(DISTINCT "userId") AS "userCount"
+        FROM "Fingerprints"
+        WHERE "visitorId" IN (
+            SELECT "visitorId" FROM "Fingerprints" WHERE "userId" = ${userId}
+        )
+        GROUP BY "visitorId"
+    ) t;
+  `
+  console.log('asdf rows: ', rows)
+  return rows[0].maxUserCount ?? 0
+}

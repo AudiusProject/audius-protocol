@@ -161,8 +161,7 @@ app.get('/attestation/ui/user', async (c) => {
   const user = await getUser(idOrHandle)
   if (!user) return c.text(`user id not found: ${idOrHandle}`, 404)
   const signals = await getUserScore(user.id)
-  const normalizedScore = (await getUserNormalizedScore(user.id))!
-    .normalized_score // ts-ignore
+  const userScore = (await getUserNormalizedScore(user.id))!
 
   if (!signals) return c.text(`user id not found: ${idOrHandle}`, 404)
 
@@ -207,9 +206,9 @@ app.get('/attestation/ui/user', async (c) => {
             </div>
             <div class='flex gap-2 mt-2 items-center'>
               <div
-                className={`badge badge-xl ${normalizedScore < 0.15 ? 'badge-error' : 'badge-neutral'}`}
+                className={`badge badge-xl ${userScore.overallScore < 0 ? 'badge-error' : 'badge-neutral'}`}
               >
-                {(normalizedScore * 100).toFixed(0)}%
+                {(userScore.normalizedScore * 100).toFixed(0)}%
               </div>{' '}
               {Object.entries(signals).map(([name, ok]) => (
                 <div
@@ -221,6 +220,29 @@ app.get('/attestation/ui/user', async (c) => {
             </div>
           </div>
         </div>
+        <h2 class='text-xl font-bold mt-4'>Score Breakdown</h2>
+        <table>
+          <thead>
+            <tr>
+              <th class='text-left'>Play Count</th>
+              <th class='text-left'>Follower Count</th>
+              <th class='text-left'>Fast Challenge Count</th>
+              <th class='text-left'>Following Count</th>
+              <th class='text-left'>Fingerprint Count</th>
+              <th class='text-left'>Overall Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{userScore.playCount}</td>
+              <td>{userScore.followerCount}</td>
+              <td>{userScore.challengeCount}</td>
+              <td>{userScore.followingCount}</td>
+              <td>{userScore.fingerprintCount}</td>
+              <td>{userScore.overallScore}</td>
+            </tr>
+          </tbody>
+        </table>
 
         <h2 class='text-xl font-bold mt-4'>Fingerprints</h2>
         <table>
@@ -332,9 +354,9 @@ app.get('/attestation/ui/recent-users', async (c) => {
               {dateHeader(userScore.timestamp)}
               <tr
                 className={
-                  userScore?.flagged && userScore.overall_score < 0
+                  userScore?.flagged && userScore.overallScore < 0
                     ? 'bg-purple-100'
-                    : userScore.overall_score < 0
+                    : userScore.overallScore < 0
                       ? 'bg-red-100'
                       : userScore?.flagged
                         ? 'bg-blue-100'
@@ -344,17 +366,17 @@ app.get('/attestation/ui/recent-users', async (c) => {
                 <td>{userScore.timestamp.toLocaleTimeString()}</td>
                 <td>
                   <a
-                    href={`/attestation/ui/user?q=${encodeURIComponent(userScore.handle_lc)}`}
+                    href={`/attestation/ui/user?q=${encodeURIComponent(userScore.handleLowerCase)}`}
                   >
-                    {userScore.handle_lc}
+                    {userScore.handleLowerCase}
                   </a>
                 </td>
-                <td>{userScore.play_count}</td>
-                <td>{userScore.follower_count}</td>
-                <td>{userScore.following_count}</td>
-                <td>{userScore.challenge_count}</td>
-                <td>{userScore.overall_score}</td>
-                <td>{userScore.normalized_score}</td>
+                <td>{userScore.playCount}</td>
+                <td>{userScore.followerCount}</td>
+                <td>{userScore.followingCount}</td>
+                <td>{userScore.challengeCount}</td>
+                <td>{userScore.overallScore}</td>
+                <td>{userScore.normalizedScore}</td>
               </tr>
             </>
           ))}
@@ -459,7 +481,7 @@ function Layout(props: LayoutProps) {
               <div class='font-bold'>
                 <a href='/attestation/ui'>AAO</a>
               </div>
-              <form action='/user'>
+              <form action='/attestation/ui/user'>
                 <input
                   name='q'
                   type='search'
