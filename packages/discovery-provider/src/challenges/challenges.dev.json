@@ -159,5 +159,16 @@
     "starting_block": 0,
     "weekly_pool": 2147483647,
     "cooldown_days": 0
+  },
+  {
+    "id": "pc",
+    "name": "PLAY_COUNT_MILESTONES_2025",
+    "type": "aggregate",
+    "amount": 1,
+    "active": true,
+    "step_count": 2147483647,
+    "starting_block": 0,
+    "weekly_pool": 2147483647,
+    "cooldown_days": 0
   }
 ]
