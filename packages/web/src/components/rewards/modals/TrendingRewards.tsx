@@ -11,7 +11,9 @@ import { route } from '@audius/common/utils'
 import {
   SegmentedControl,
   IconArrowRight as IconArrow,
-  Button
+  Button,
+  Text,
+  Flex
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
@@ -235,12 +237,14 @@ const TrendingRewardsModal = () => {
       isOpen={isOpen}
       onClose={() => setOpen(false)}
       title={
-        <h2 className={styles.titleHeader}>
+        <Flex alignItems='flex-end' justifyContent='center' gap='xs'>
           <i
             className={`emoji large ${styles.titleIcon} ${textMap[modalType].icon}`}
           />
-          {textMap[modalType].modalTitle}
-        </h2>
+          <Text variant='heading' color='staticWhite'>
+            {textMap[modalType].modalTitle}
+          </Text>
+        </Flex>
       }
       allowScroll
       showTitleHeader
