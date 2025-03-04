@@ -20,6 +20,7 @@ import { config } from './config'
 import { SolanaUtils, Utils } from '@audius/sdk'
 import bn from 'bn.js'
 import { userFingerprints } from './identity'
+import { cors } from 'hono/cors'
 
 let CONTENT_NODE = 'https://creatornode2.audius.co'
 let FRONTEND = 'https://audius.co'
@@ -45,8 +46,9 @@ if (!AAO_AUTH_PASSWORD) {
 const app = new Hono()
 
 app.use(logger())
+app.use('/attestation/*', cors())
 
-app.all('/attestation/:handle', async (c) => {
+app.post('/attestation/:handle', async (c) => {
   const handle = c.req.param('handle').toLowerCase()
   const { challengeId, challengeSpecifier, amount } = await c.req.json()
 

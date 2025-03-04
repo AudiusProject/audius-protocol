@@ -2,7 +2,7 @@ import 'dotenv/config'
 
 import postgres from 'postgres'
 
-export const sql = postgres(process.env.identityDbUrl || '')
+export const sql = postgres(process.env.IDENTITY_DB_URL || '')
 
 type FingerprintCount = {
   fingerprint: string
