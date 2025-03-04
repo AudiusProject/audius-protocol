@@ -1,5 +1,6 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
+import { basicAuth } from 'hono/basic-auth'
 import {
   actionLogForUser,
   getUser,
@@ -24,6 +25,19 @@ let FRONTEND = 'https://audius.co'
 if (config.environment == 'stage') {
   CONTENT_NODE = 'https://creatornode10.staging.audius.co'
   FRONTEND = 'https://staging.audius.co'
+}
+
+let { AAO_AUTH_USER, AAO_AUTH_PASSWORD } = process.env
+if (!AAO_AUTH_USER) {
+  AAO_AUTH_USER = 'test'
+  console.warn('AAO_AUTH_USER not set.  Falling back to: ', AAO_AUTH_USER)
+}
+if (!AAO_AUTH_PASSWORD) {
+  AAO_AUTH_PASSWORD = 'test'
+  console.warn(
+    'AAO_AUTH_PASSWORD not set.  Falling back to: ',
+    AAO_AUTH_PASSWORD
+  )
 }
 
 const app = new Hono()
@@ -67,7 +81,19 @@ app.post('/attestation/:handle', async (c) => {
   }
 })
 
-app.get('/', async (c) => {
+//
+// UI
+//
+
+app.use(
+  '/attestation/ui/*',
+  basicAuth({
+    username: AAO_AUTH_USER,
+    password: AAO_AUTH_PASSWORD
+  })
+)
+
+app.get('/attestation/ui', async (c) => {
   const tips = await recentTips()
 
   let lastDate = ''
@@ -105,13 +131,15 @@ app.get('/', async (c) => {
               <tr>
                 <td>{tip.timestamp.toLocaleTimeString()}</td>
                 <td>
-                  <a href={`/user?q=${encodeURIComponent(tip.sender.handle)}`}>
+                  <a
+                    href={`/attestation/ui/user?q=${encodeURIComponent(tip.sender.handle)}`}
+                  >
                     {tip.sender.handle}
                   </a>
                 </td>
                 <td>
                   <a
-                    href={`/user?q=${encodeURIComponent(tip.receiver.handle)}`}
+                    href={`/attestation/ui/user?q=${encodeURIComponent(tip.receiver.handle)}`}
                   >
                     {tip.receiver.handle}
                   </a>
@@ -126,7 +154,7 @@ app.get('/', async (c) => {
   )
 })
 
-app.get('/user', async (c) => {
+app.get('/attestation/ui/user', async (c) => {
   const idOrHandle = c.req.query('q') || '1'
   const user = await getUser(idOrHandle)
   if (!user) return c.text(`user id not found: ${idOrHandle}`, 404)
@@ -212,7 +240,7 @@ app.get('/user', async (c) => {
   )
 })
 
-app.get('/recent-users', async (c) => {
+app.get('/attestation/ui/recent-users', async (c) => {
   const page = parseInt(c.req.query('page') || '1')
   const recentUsers = await getRecentUsers(page)
   const userScores = recentUsers
@@ -280,7 +308,7 @@ app.get('/recent-users', async (c) => {
                 <td>{userScore.timestamp.toLocaleTimeString()}</td>
                 <td>
                   <a
-                    href={`/user?q=${encodeURIComponent(userScore.handle_lc)}`}
+                    href={`/attestation/ui/user?q=${encodeURIComponent(userScore.handle_lc)}`}
                   >
                     {userScore.handle_lc}
                   </a>
@@ -299,14 +327,14 @@ app.get('/recent-users', async (c) => {
 
       <div class='flex'>
         <a
-          href={`/recent-users?page=${encodeURIComponent(page - 1)}`}
+          href={`/attestation/ui/recent-users?page=${encodeURIComponent(page - 1)}`}
           class='flex items-center justify-center px-3 h-8 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
         >
           Previous
         </a>
 
         <a
-          href={`/recent-users?page=${encodeURIComponent(page + 1)}`}
+          href={`/attestation/ui/recent-users?page=${encodeURIComponent(page + 1)}`}
           class='flex items-center justify-center px-3 h-8 ms-3 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
         >
           Next
@@ -335,7 +363,7 @@ function renderDetails(row: ActionRow) {
           {/* <Image img={user.img} /> */}
           {user.amount && <div>${user.amount / 100_000_000}</div>}
           <div class='font-bold'>
-            <a href={`/user?q=${user.handle}`}>{user.handle}</a>
+            <a href={`/attestation/ui/user?q=${user.handle}`}>{user.handle}</a>
           </div>
         </div>
       )
@@ -393,7 +421,7 @@ function Layout(props: LayoutProps) {
           <body>
             <div className='navbar bg-base-100 shadow-sm px-8 gap-4'>
               <div class='font-bold'>
-                <a href='/'>AAO</a>
+                <a href='/attestation/ui'>AAO</a>
               </div>
               <form action='/user'>
                 <input
@@ -404,7 +432,7 @@ function Layout(props: LayoutProps) {
                   placeholder='Search ID or Handle'
                 />
               </form>
-              <a href='/recent-users' class='btn'>
+              <a href='/attestation/ui/recent-users' class='btn'>
                 Recent Users
               </a>
             </div>

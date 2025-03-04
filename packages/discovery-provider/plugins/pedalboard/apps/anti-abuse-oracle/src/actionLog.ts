@@ -1,7 +1,6 @@
 import 'dotenv/config'
 
 import postgres from 'postgres'
-import { Utils } from '@audius/sdk'
 import fetch from 'node-fetch'
 
 export const sql = postgres(process.env.discoveryDbUrl || '')
@@ -100,12 +99,12 @@ export async function getUserNormalizedScore(userId: number) {
   const rows = await sql`
 WITH scoped_users as (
 select * from users
-where user_id = ${userId} 
-order by created_at desc 
+where user_id = ${userId}
+order by created_at desc
 limit 100
 ),
 play_activity AS (
-    SELECT user_id, 
+    SELECT user_id,
           COUNT(DISTINCT date_trunc('minute', plays.created_at)) AS play_count
     FROM plays
     WHERE user_id IS NOT NULL
@@ -113,10 +112,10 @@ play_activity AS (
     GROUP BY user_id
 ),
 fast_challenge_completion AS (
-    SELECT users.user_id, 
-          handle_lc, 
-          users.created_at, 
-          COUNT(*) AS challenge_count, 
+    SELECT users.user_id,
+          handle_lc,
+          users.created_at,
+          COUNT(*) AS challenge_count,
           ARRAY_AGG(user_challenges.challenge_id) AS challenge_ids
     FROM users
     LEFT JOIN user_challenges ON users.user_id = user_challenges.user_id
@@ -128,7 +127,7 @@ fast_challenge_completion AS (
     ORDER BY users.created_at DESC
 ),
 aggregate_scores AS (
-    SELECT 
+    SELECT
         users.handle_lc,
         users.created_at,
         COALESCE(play_activity.play_count, 0) AS play_count,
@@ -149,11 +148,11 @@ aggregate_scores AS (
     AND users.user_id in (select user_id from scoped_users)
     ORDER BY users.created_at DESC
 )
-SELECT 
+SELECT
 	a.handle_lc,
  	a.created_at as "timestamp",
     a.play_count,
-    a.follower_count, 
+    a.follower_count,
     a.challenge_count,
     a.following_count,
     a.overall_score,
