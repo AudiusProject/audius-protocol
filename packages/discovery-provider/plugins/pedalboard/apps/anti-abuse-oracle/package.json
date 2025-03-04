@@ -5,24 +5,28 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist",
-    "dev": "ts-node-dev --respawn ./src/index.ts",
+    "dev": "ts-node-dev --respawn ./src/server.tsx",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "tsc --noEmit && eslint \"src/**/*.ts*\"",
-    "start": "node ./dist/index.js",
+    "start": "node ./dist/server.js",
     "test": "jest --detectOpenHandles"
   },
   "jest": {
     "preset": "jest-presets/jest/node"
   },
   "dependencies": {
+    "@audius/sdk": "5.0.0",
+    "@hono/node-server": "^1.13.7",
     "@pedalboard/basekit": "*",
     "@pedalboard/logger": "*",
     "@pedalboard/storage": "*",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
     "express": "^4.17.1",
+    "hono": "^4.6.17",
     "morgan": "^1.10.0",
-    "@audius/sdk": "5.0.0"
+    "postgres": "^3.4.5"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.0",
