@@ -46,7 +46,7 @@ const app = new Hono()
 
 app.use(logger())
 
-app.post('/attestation/:handle', async (c) => {
+app.all('/attestation/:handle', async (c) => {
   const handle = c.req.param('handle').toLowerCase()
   const { challengeId, challengeSpecifier, amount } = await c.req.json()
 
