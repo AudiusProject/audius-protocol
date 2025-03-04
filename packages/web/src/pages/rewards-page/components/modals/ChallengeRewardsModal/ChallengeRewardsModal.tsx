@@ -33,7 +33,7 @@ const messages = {
   rewardClaimed: 'Reward claimed successfully!',
   rewardAlreadyClaimed: 'Reward already claimed!',
   claimError:
-    'Something has gone wrong, not all your rewards were claimed. Please try again or contact support@audius.co.',
+    'Something went wrong while claiming your rewards. Please try again and contact support@audius.co.',
   claimErrorAAO:
     'Your account is unable to claim rewards at this time. Please try again later or contact support@audius.co. ',
   claimableAmountLabel: (amount: number) => `Claim $${amount} AUDIO`,
@@ -100,7 +100,9 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
 
   const errorContent =
     claimStatus === ClaimStatus.ERROR ? (
-      <Text>{getErrorMessage(aaoErrorCode)}</Text>
+      <Text size='s' color='danger'>
+        {getErrorMessage(aaoErrorCode)}
+      </Text>
     ) : null
 
   useEffect(() => {
