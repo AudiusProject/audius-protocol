@@ -1,12 +1,7 @@
 import { memo } from 'react'
 
 import { useGatedContentAccess } from '@audius/common/hooks'
-import {
-  ShareSource,
-  RepostSource,
-  FavoriteSource,
-  ID
-} from '@audius/common/models'
+import { ShareSource, RepostSource, ID } from '@audius/common/models'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -39,8 +34,7 @@ const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
 const { getTrack } = cacheTracksSelectors
 const { getUserFromTrack } = cacheUsersSelectors
-const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
-  tracksSocialActions
+const { repostTrack, undoRepostTrack } = tracksSocialActions
 const getUserId = accountSelectors.getUserId
 
 type OwnProps = Omit<
@@ -82,8 +76,6 @@ const ConnectedTrackTile = ({
   isLoading,
   hasLoaded,
   currentUserId,
-  saveTrack,
-  unsaveTrack,
   repostTrack,
   unrepostTrack,
   shareTrack,
@@ -132,14 +124,6 @@ const ConnectedTrackTile = ({
   const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(trackWithFallback)
   const loading = isLoading || isFetchingNFTAccess
-
-  const toggleSave = (trackId: ID) => {
-    if (has_current_user_saved) {
-      unsaveTrack(trackId)
-    } else {
-      saveTrack(trackId, isFeed)
-    }
-  }
 
   const toggleRepost = (trackId: ID) => {
     if (has_current_user_reposted) {
@@ -275,7 +259,6 @@ const ConnectedTrackTile = ({
       isLoading={loading}
       isPlaying={uid === playingUid && isPlaying}
       isBuffering={isBuffering}
-      toggleSave={toggleSave}
       onShare={onShare}
       onClickOverflow={onClickOverflow}
       renderOverflow={renderOverflowMenu}
@@ -319,10 +302,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
           source: ShareSource.TILE
         })
       ),
-    saveTrack: (trackId: ID, isFeed: boolean) =>
-      dispatch(saveTrack(trackId, FavoriteSource.TILE, isFeed)),
-    unsaveTrack: (trackId: ID) =>
-      dispatch(unsaveTrack(trackId, FavoriteSource.TILE)),
     repostTrack: (trackId: ID, isFeed: boolean) =>
       dispatch(repostTrack(trackId, RepostSource.TILE, isFeed)),
     unrepostTrack: (trackId: ID) =>

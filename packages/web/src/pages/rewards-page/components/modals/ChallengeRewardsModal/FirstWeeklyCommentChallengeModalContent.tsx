@@ -35,10 +35,15 @@ export const FirstWeeklyCommentChallengeModalContent = ({
   const isMobile = useIsMobile()
   const userChallenge = useSelector(getOptimisticUserChallenges)[challengeName]
   const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
+
   const claimStatus = useSelector(getClaimStatus)
   const claimInProgress =
     claimStatus === ClaimStatus.CLAIMING ||
     claimStatus === ClaimStatus.WAITING_FOR_RETRY
+  const shouldShowResetIcon =
+    userChallenge?.disbursed_amount &&
+    !userChallenge?.claimableAmount &&
+    !userChallenge?.undisbursedSpecifiers?.length
 
   // Following the pattern from mobile implementation
   const modifiedChallenge = challenge
@@ -62,13 +67,14 @@ export const FirstWeeklyCommentChallengeModalContent = ({
         pv='l'
         gap='s'
         w='100%'
-        justifyContent={isMobile ? 'center' : 'flex-start'}
+        justifyContent={
+          isMobile || !userChallenge.disbursed_amount ? 'center' : 'flex-start'
+        }
         alignItems='center'
       >
         {userChallenge?.claimableAmount ? (
           <IconCheck size='s' color='subdued' />
-        ) : userChallenge?.disbursed_amount &&
-          !userChallenge?.claimableAmount ? (
+        ) : shouldShowResetIcon ? (
           <IconArrowRotate size='s' color='subdued' />
         ) : null}
         <Text variant='label' size='l' color='subdued'>
