@@ -247,14 +247,15 @@ def index_core(self):
                 block=block,
             )
 
-            run_side_effects(
-                logger=logger,
-                block=block,
-                session=session,
-                web3=web3,
-                redis=redis,
-                challenge_bus=challenge_bus,
-            )
+            if indexing_entity_manager:
+                run_side_effects(
+                    logger=logger,
+                    block=block,
+                    session=session,
+                    web3=web3,
+                    redis=redis,
+                    challenge_bus=challenge_bus,
+                )
 
             # get block parenthash, in none case also use None
             # this would be the case in solana cutover where the previous
