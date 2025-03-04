@@ -56,7 +56,7 @@ export const ArtistPopover = ({
 }: ArtistPopoverProps) => {
   const [isPopupVisible, setIsPopupVisible] = useState(false)
   const creator = useSelector((state: CommonState) =>
-    getUser(state, { handle: handle.toLowerCase() })
+    getUser(state, { handle: handle?.toLowerCase() })
   )
   const userId = useSelector(getUserId)
 

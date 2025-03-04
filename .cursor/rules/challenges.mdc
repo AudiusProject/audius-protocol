@@ -1,0 +1,601 @@
+---
+description: These rules are helpful when adding a new challenge or editing an existing challenge
+globs: 
+alwaysApply: false
+---
+# Adding New Challenges to Audius
+
+This guide will walk you through the process of creating and implementing a new challenge in the Audius protocol. Challenges are tasks that users can complete to earn $AUDIO tokens as rewards.
+
+## Table of Contents
+
+1. [Overview of the Challenge System](#overview-of-the-challenge-system)
+2. [Challenge Types](#challenge-types)
+3. [Step-by-Step Guide to Adding a New Challenge](#step-by-step-guide-to-adding-a-new-challenge)
+4. [Database Models](#database-models)
+5. [Challenge Event Processing](#challenge-event-processing)
+6. [Frontend Integration](#frontend-integration)
+7. [Challenge Reward Modals](#challenge-reward-modals)
+8. [Challenge Specifiers](#challenge-specifiers)
+9. [Examples](#examples)
+
+## Overview of the Challenge System
+
+The Audius challenge system consists of several key components:
+
+- **Challenge Configuration**: Defined in `challenges.json`
+- **Challenge Manager**: Handles lifecycle management of challenges (`challenge.py`)
+- **Challenge Updater**: Implements challenge-specific logic (`ChallengeUpdater` class)
+- **Challenge Event Bus**: Routes events to appropriate challenge managers
+- **Database Models**: Store challenge definitions and user progress
+- **Frontend Components**: Display challenges and allow users to claim rewards
+
+The challenge system is designed to be extensible, allowing for different types of challenges with varying completion criteria and reward amounts.
+
+## Challenge Types
+
+Audius supports several types of challenges, each with different behaviors:
+
+### Boolean Challenges
+
+Boolean challenges are simple yes/no challenges that are either completed or not. They don't track intermediate progress.
+
+Examples:
+
+- Mobile install challenge
+- Connect verified challenge
+
+**When to use**: Simple one-time actions that don't require tracking steps.
+
+### Numeric Challenges
+
+Numeric challenges track progress through multiple steps before completion.
+
+Examples:
+
+- Profile completion challenge (requires completing 7 steps)
+- Listen streak challenge (requires listening for multiple days)
+
+**When to use**: Multi-step challenges where users need to make progress over time.
+
+### Aggregate Challenges
+
+Aggregate challenges can be completed multiple times, with each completion providing a reward. They are created in a completed state, ready to be claimed.
+
+Examples:
+
+- Audio matching challenges (buyer/seller)
+- Referral challenges
+
+**When to use**: Actions that can be repeatedly rewarded, often with a cap on total rewards.
+
+### Trending Challenges
+
+Trending challenges are specialized challenges related to trending content.
+
+Examples:
+
+- Trending track challenge
+- Trending playlist challenge
+
+**When to use**: When you want to reward content that achieves trending status.
+
+## Step-by-Step Guide to Adding a New Challenge
+
+### 1. Define the Challenge in challenges.json
+
+Add your challenge to `packages/discovery-provider/src/challenges/challenges.json`:
+
+```json
+{
+  "id": "xyz", // Short identifier for the challenge
+  "name": "MY_CHALLENGE_NAME", // Optional descriptive name
+  "type": "boolean", // Challenge type: boolean, numeric, aggregate, or trending
+  "amount": 5, // Base reward amount
+  "active": true, // Whether the challenge is active
+  "step_count": 1, // For numeric challenges, number of steps to complete
+  "starting_block": 0, // Block number from which to start counting events
+  "weekly_pool": 25000, // Weekly reward pool limit
+  "cooldown_days": 7 // Optional cooldown period between claims
+}
+```
+
+### 2. Create a Challenge Updater Class
+
+Create a new file in `packages/discovery-provider/src/challenges/` for your challenge implementation. For example, `my_challenge.py`:
+
+```python
+from typing import List, Optional, Dict
+
+from sqlalchemy.orm.session import Session
+
+from src.challenges.challenge import (
+    ChallengeManager,
+    ChallengeUpdater,
+    FullEventMetadata,
+)
+from src.models.rewards.user_challenge import UserChallenge
+
+class MyChallengeUpdater(ChallengeUpdater):
+    def update_user_challenges(
+        self,
+        session: Session,
+        event: str,
+        user_challenges: List[UserChallenge],
+        step_count: Optional[int],
+        event_metadatas: List[FullEventMetadata],
+        starting_block: Optional[int],
+    ):
+        # Implement your challenge update logic here
+        for user_challenge in user_challenges:
+            # For boolean challenges, simply mark as complete
+            # For numeric challenges, increment step count and check if complete
+            # For aggregate challenges, they are created already complete
+
+            # Example for a boolean challenge:
+            user_challenge.is_complete = True
+
+            # Example for a numeric challenge:
+            # if not user_challenge.current_step_count:
+            #     user_challenge.current_step_count = 0
+            # user_challenge.current_step_count += 1
+            # if user_challenge.current_step_count >= step_count:
+            #     user_challenge.is_complete = True
+
+    # Optional: Override other methods as needed
+    def generate_specifier(self, session: Session, user_id: int, extra: Dict) -> str:
+        """Create a unique identifier for this challenge instance"""
+        # Default implementation uses the user_id as hex
+        # You can customize this, for example:
+        # return f"{hex(user_id)[2:]}:{hex(extra.get('some_id', 0))[2:]}"
+        return super().generate_specifier(session, user_id, extra)
+
+    def should_create_new_challenge(
+        self, session: Session, event: str, user_id: int, extra: Dict
+    ) -> bool:
+        """Determine if a new challenge should be created for this event"""
+        # For aggregate challenges, you might want to limit based on certain criteria
+        return True
+
+    def should_show_challenge_for_user(self, session: Session, user_id: int) -> bool:
+        """Determine if this challenge should be shown to the user"""
+        # You might want to hide challenges for certain users
+        return True
+
+# Create the challenge manager instance
+my_challenge_manager = ChallengeManager("xyz", MyChallengeUpdater())
+```
+
+### 3. Register with the Challenge Event Bus
+
+Update `packages/discovery-provider/src/challenges/challenge_event_bus.py` to register your challenge manager and handle relevant events:
+
+```python
+from src.challenges.my_challenge import my_challenge_manager
+
+# In the setup_challenge_bus function:
+def setup_challenge_bus():
+    redis = get_redis()
+    bus = ChallengeEventBus(redis)
+
+    # Register existing managers
+    # ...
+
+    # Register your new challenge manager
+    bus.register_listener(ChallengeEvent.MY_EVENT, my_challenge_manager)
+
+    return bus
+```
+
+### 4. Define Your Challenge Event
+
+If you need a new event type, add it to `packages/discovery-provider/src/challenges/challenge_event.py`:
+
+```python
+class ChallengeEvent(str, Enum):
+    # Existing events...
+    MY_EVENT = "MY_EVENT"
+```
+
+### 5. Create Additional Database Tables (if needed)
+
+If your challenge needs to track additional data, create a new model in `packages/discovery-provider/src/models/rewards/`:
+
+```python
+from sqlalchemy import Boolean, Column, Integer
+
+from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
+
+class MyChallengeData(Base, RepresentableMixin):
+    __tablename__ = "my_challenge_data"
+
+    user_id = Column(
+        Integer,
+        primary_key=True,
+    )
+    # Add your challenge-specific fields
+    some_field = Column(Boolean, nullable=False)
+    # ...
+```
+
+### 6. Update Frontend Configuration (if needed)
+
+Add your challenge to the frontend configuration in `packages/web/src/pages/rewards-page/config.tsx`:
+
+```tsx
+// Add your challenge to the challenges map
+export const getChallengeConfig = () => ({
+  challenges: {
+    // Existing challenges...
+    [ChallengeName.MY_CHALLENGE]: {
+      title: 'My Challenge',
+      icon: <YourIcon />,
+      description: 'Complete this task to earn $AUDIO',
+      progressLabel: 'Progress',
+      remainingLabel: 'Remaining',
+      buttonText: 'View Details'
+      // ...
+    }
+  }
+})
+```
+
+## Database Models
+
+The challenge system uses several database models:
+
+### Challenge Model
+
+`packages/discovery-provider/src/models/rewards/challenge.py` defines the Challenge table, which stores the basic configuration for each challenge type:
+
+- `id`: Unique identifier for the challenge
+- `type`: Challenge type (boolean, numeric, aggregate, trending)
+- `amount`: Base reward amount
+- `active`: Whether the challenge is active
+- `step_count`: For numeric challenges, number of steps to complete
+- `starting_block`: Block number from which to start counting events
+- `weekly_pool`: Weekly reward pool limit
+- `cooldown_days`: Optional cooldown period between claims
+
+### UserChallenge Model
+
+`packages/discovery-provider/src/models/rewards/user_challenge.py` tracks user progress on challenges:
+
+- `challenge_id`: Foreign key to the Challenge table
+- `user_id`: The user completing the challenge
+- `specifier`: Unique identifier for this specific challenge instance
+- `is_complete`: Whether the challenge has been completed
+- `current_step_count`: For numeric challenges, the current step
+- `completed_blocknumber`: Block number when completed
+- `completed_at`: Timestamp of completion
+- `amount`: Reward amount for this specific completion
+
+## Frontend Integration
+
+The frontend displays challenges on the Rewards page. The key components are:
+
+- `RewardsPage.tsx`: Main container for the rewards UI
+- `ChallengeRewardsTile.tsx`: Displays available challenges
+- `config.tsx`: Configuration for challenge display
+- `messages.tsx`: Text content for challenge UI
+
+## Challenge Reward Modals
+
+The Audius platform uses modals to display details about challenges and allow users to claim rewards. These modals are an essential part of the user experience for the challenge system.
+
+### Modal Components
+
+Key components involved in challenge reward modals:
+
+- `ChallengeRewardsModal.tsx`: The main modal component that displays challenge details
+- `challengeContentRegistry.ts`: Registry that maps challenge types to specific content components
+- `DefaultChallengeContent.tsx`: Default content displayed for most challenges
+- Specialized content components for specific challenge types:
+  - `AudioMatchingRewardsModalContent.tsx`
+  - `ListenStreakChallengeModalContent.tsx`
+  - `OneShotChallengeModalContent.tsx`
+
+### Implementing a Custom Modal Content
+
+For specialized challenges, you may want to create a custom modal content component:
+
+1. Create a new component in `packages/web/src/pages/rewards-page/components/modals/ChallengeRewardsModal/`
+2. Register it in `challengeContentRegistry.ts`:
+
+```typescript
+export const challengeContentRegistry: ChallengeContentMap = {
+  // Existing mappings
+  [ChallengeName.MY_CHALLENGE]:
+    MyCustomChallengeContent as ChallengeContentComponent,
+  default: DefaultChallengeContent as ChallengeContentComponent
+}
+```
+
+### Configuring Challenge UI
+
+Update the challenge configuration in `packages/web/src/pages/rewards-page/config.tsx` to customize how your challenge appears:
+
+```typescript
+const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
+  // Existing challenges
+  [ChallengeName.MY_CHALLENGE]: {
+    icon: <MyCustomIcon />,
+    modalButtonInfo: {
+      incomplete: linkButtonMap.myCustomAction,
+      inProgress: linkButtonMap.myCustomAction,
+      complete: null // No button when complete
+    }
+  }
+}
+```
+
+## Challenge Specifiers
+
+Challenge specifiers are unique identifiers that link a specific user to a particular challenge instance. They play a critical role in the challenge system by allowing the platform to track individual challenge attempts and completions.
+
+### Purpose of Specifiers
+
+- **Uniquely identify challenge instances**: A specifier serves as a composite key that differentiates between different attempts or instances of the same challenge type
+- **Enable challenge claiming**: When users claim rewards, the specifier is used to identify which specific challenge instance is being claimed
+- **Support multiple completions**: For aggregate challenges that can be completed multiple times, specifiers allow tracking each completion separately
+
+### Structure of Specifiers
+
+Specifiers are string values typically formatted in one of the following patterns, depending on the challenge type:
+
+1. **Basic specifier**: `"{user_id_hex}"` - For simple challenges that only require the user ID
+2. **Composite specifiers**: `"{user_id_hex}:{some_other_id_hex}"` - For challenges that need additional context
+3. **Temporal specifiers**: `"{user_id_hex}_{date}"` - For time-based challenges like listen streaks
+
+The basic implementation in the `ChallengeUpdater` base class is:
+
+```python
+def generate_specifier(self, session: Session, user_id: int, extra: Dict) -> str:
+    """Optional method to provide a custom specifier for a challenge, given a user_id"""
+    return hex(user_id)[2:]
+```
+
+### Specifier Examples by Challenge Type
+
+Different challenge types use different specifier formats:
+
+#### Audio Matching Challenge Specifiers
+
+Audio matching specifiers include both the user ID and the track ID that was purchased:
+
+```python
+def generate_audio_matching_specifier(user_id: int, extra: Dict) -> str:
+    return f"{hex(user_id)[2:]}:{hex(extra['track_id'])[2:]}"
+```
+
+#### Referral Challenge Specifiers
+
+Referral specifiers include both the referrer's user ID and the referred user's ID:
+
+```python
+def generate_referral_specifier(user_id: int, extra: Dict) -> str:
+    return f"{hex(user_id)[2:]}:{hex(extra['referred_user_id'])[2:]}"
+```
+
+#### Listen Streak Challenge Specifiers
+
+Listen streak challenges have a time-based component in their specifiers:
+
+```python
+def generate_specifier(self, session: Session, user_id: int, extra: Dict) -> str:
+    # First check if there's an existing streak to update
+    recent_challenge = self._get_current_listen_streak(session, user_id, extra)
+    if recent_challenge is not None:
+        return recent_challenge.specifier
+
+    # Otherwise, create a new specifier with date information
+    created_at = datetime.fromtimestamp(extra["created_at"])
+    formatted_date = created_at.strftime("%Y%m%d")
+    return f"{hex(user_id)[2:]}_{formatted_date}"
+```
+
+#### Trending Challenge Specifiers
+
+Trending challenges use week and rank information instead of user IDs:
+
+```python
+def generate_specifier(self, session: Session, user_id: int, extra: Dict) -> str:
+    return f"{extra['week']}:{extra['rank']}"
+```
+
+### Specifiers in the Frontend
+
+On the frontend side, the SDK provides type definitions for different specifier formats:
+
+```typescript
+const DefaultSpecifier = z.object({
+  challengeId: z.enum([
+    ChallengeId.COMPLETE_PROFILE,
+    ChallengeId.CONNECT_VERIFIED_ACCOUNT
+    // ...other challenge IDs
+  ]),
+  userId: HashId
+})
+
+const ReferralSpecifier = z.object({
+  challengeId: z.enum([ChallengeId.REFERRALS, ChallengeId.VERIFIED_REFERRALS]),
+  userId: HashId,
+  referredUserId: HashId
+})
+
+const AudioMatchSpecifier = z.object({
+  challengeId: z.enum([
+    ChallengeId.AUDIO_MATCHING_BUYER,
+    ChallengeId.AUDIO_MATCHING_SELLER
+  ]),
+  userId: HashId,
+  contentId: HashId
+})
+```
+
+### Database Storage
+
+In the database, specifiers are stored in the `user_challenges` table:
+
+```python
+class UserChallenge(Base, RepresentableMixin):
+    """Represents user progress through a particular challenge."""
+
+    __tablename__ = "user_challenges"
+
+    challenge_id = Column(
+        ForeignKey("challenges.id"), primary_key=True, nullable=False, index=True
+    )
+    user_id = Column(Integer, nullable=False)
+    specifier = Column(String, primary_key=True, nullable=False)
+    # ...other fields
+```
+
+Note that the `specifier` column is part of the primary key along with `challenge_id`, making each challenge instance uniquely identifiable.
+
+### When Implementing a New Challenge
+
+When implementing a new challenge, consider:
+
+1. What information needs to be encoded in the specifier to uniquely identify each challenge instance
+2. Whether your challenge can be completed multiple times (requiring distinct specifiers for each attempt)
+3. Whether temporal information needs to be included for time-based challenges
+
+Properly designed specifiers are essential for the challenge system to work correctly, especially for challenges that can be completed multiple times or that have unique constraints on completion.
+
+## Challenge Event Processing
+
+The challenge system uses an event-based architecture:
+
+1. Events are dispatched to the Challenge Event Bus
+2. The bus routes events to the appropriate challenge managers
+3. Challenge managers create and update UserChallenge records
+4. SQL triggers in `handle_user_challenges.sql` and `handle_challenge_disbursements.sql` create notifications when challenges are completed
+
+### Dispatching Challenge Events
+
+Events are dispatched to the challenge system using the `challenge_event_bus.dispatch` method. These dispatches typically occur in transaction indexers or API endpoints when relevant user actions are detected.
+
+A common pattern for dispatching events is seen in `index_payment_router.py`, which handles audio purchases:
+
+```python
+from src.challenges.challenge_event import ChallengeEvent
+from src.challenges.challenge_event_bus import challenge_event_bus
+
+# Dispatch events for audio matching challenges when a track is purchased
+challenge_event_bus.dispatch(
+    ChallengeEvent.audio_matching_buyer,  # The event type
+    slot,                                 # Block slot/number
+    timestamp,                            # Event timestamp
+    sender_user_id,                       # User ID performing the action
+    {                                     # Extra metadata
+        "track_id": purchase_metadata["id"],
+        "amount": amount                   # Amount of the purchase
+    },
+)
+
+# Also dispatch an event for the seller
+challenge_event_bus.dispatch(
+    ChallengeEvent.audio_matching_seller,
+    slot,
+    timestamp,
+    purchase_metadata["content_owner_id"],  # Seller's user ID
+    {
+        "track_id": purchase_metadata["id"],
+        "sender_user_id": sender_user_id,
+        "amount": amount
+    },
+)
+```
+
+### When to Dispatch Events
+
+Events should be dispatched at the following points:
+
+1. When a user completes an action that could satisfy a challenge
+2. During indexing of blockchain transactions that relate to challenges
+3. In API endpoints that track user actions (like mobile logins)
+
+All events go through the Challenge Event Bus, which:
+
+1. Routes events to appropriate challenge managers
+2. Manages the queue of events for processing
+3. Ensures events are processed in order
+
+## Examples
+
+### Simple Boolean Challenge: Mobile Install
+
+```python
+# mobile_install_challenge.py
+class MobileInstallChallengeUpdater(ChallengeUpdater):
+    def update_user_challenges(
+        self,
+        session: Session,
+        event: str,
+        user_challenges: List[UserChallenge],
+        step_count: Optional[int],
+        event_metadatas: List[FullEventMetadata],
+        starting_block: Optional[int],
+    ):
+        # We only fire the event if the user logged in on mobile
+        for user_challenge in user_challenges:
+            user_challenge.is_complete = True
+
+mobile_install_challenge_manager = ChallengeManager(
+    "m", MobileInstallChallengeUpdater()
+)
+```
+
+### Aggregate Challenge: Audio Matching
+
+```python
+# audio_matching_challenge.py
+def update_audio_matching_user_challenges(
+    session: Session,
+    event: str,
+    user_challenges: List[UserChallenge],
+    step_count: Optional[int],
+    event_metadatas: List[FullEventMetadata],
+    starting_block: Optional[int],
+):
+    challenge_id = user_challenges[0].challenge_id
+    challenge_amount = get_challenge_amount(session, challenge_id)
+
+    if not challenge_amount:
+        return
+
+    for idx, user_challenge in enumerate(user_challenges):
+        metadata = event_metadatas[idx]
+        if metadata and "amount" in metadata["extra"]:
+            user_challenge.amount = challenge_amount * metadata["extra"]["amount"]
+            user_challenge.is_complete = True
+
+class AudioMatchingBuyerChallengeUpdater(ChallengeUpdater):
+    def generate_specifier(self, session: Session, user_id: int, extra: Dict) -> str:
+        return generate_audio_matching_specifier(user_id, extra)
+
+    def should_create_new_challenge(
+        self, session, event: str, user_id: int, extra: Dict
+    ) -> bool:
+        return True
+
+    def should_show_challenge_for_user(self, session: Session, user_id: int) -> bool:
+        return True
+
+    def update_user_challenges(
+        self,
+        session: Session,
+        event: str,
+        user_challenges: List[UserChallenge],
+        step_count: Optional[int],
+        event_metadatas: List[FullEventMetadata],
+        starting_block: Optional[int],
+    ):
+        update_audio_matching_user_challenges(
+            session, event, user_challenges, step_count, event_metadatas, starting_block
+        )
+```
+
+By following this guide, you can add new challenges to the Audius protocol that incentivize user behaviors and reward engagement.

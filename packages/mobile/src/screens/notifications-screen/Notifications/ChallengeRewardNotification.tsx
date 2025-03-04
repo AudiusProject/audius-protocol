@@ -84,8 +84,6 @@ export const ChallengeRewardNotification = (
           return messages.streakMilestone(amountEarned, listenStreak ?? 0)
         }
         return messages.streakMaintenance(amountEarned)
-      case 'referred':
-        return `${messages.amountEarned(amount)} ${messages.referredText}`
       default:
         return `${messages.amountEarned(amount)} ${messages.challengeCompleteText}`
     }

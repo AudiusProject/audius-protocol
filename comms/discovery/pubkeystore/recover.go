@@ -82,8 +82,7 @@ func RecoverUserPublicKeyBase64(ctx context.Context, userId int) (string, error)
 	conn := db.Conn
 
 	// first check a "pubkey cache" for a hit
-	// see: https://github.com/AudiusProject/audius-docker-compose/blob/nats/discovery-provider/clusterizer/src/recover.ts#L65
-	if got, err := getPubkey(userId); err == nil {
+	if got, err := GetPubkey(userId); err == nil {
 		return got, nil
 	}
 

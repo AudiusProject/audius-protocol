@@ -4,7 +4,7 @@ import { fillString, formatNumberCommas } from '~/utils'
 const messages = {
   completeLabel: 'COMPLETE',
   readyToClaim: 'Ready to Claim',
-  pendingRewards: 'Pending Reward',
+  pendingRewards: 'Reward Pending',
   day: (day: number) => `Day ${day} ${day > 0 ? '🔥' : ''}`
 }
 

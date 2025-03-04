@@ -27,17 +27,6 @@ export const challengeRewardsConfig: Record<
   ChallengeRewardID,
   ChallengeRewardsInfo
 > = {
-  referrals: {
-    id: 'referrals',
-    title: 'Invite Your Friends!',
-    description: (challenge) =>
-      `Earn ${challenge?.amount} $AUDIO for you and your friend.`,
-    fullDescription: (challenge) =>
-      `Invite your Friends! You’ll earn ${challenge?.amount} $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)`,
-    progressLabel: '%0/%1 Invites Accepted',
-    remainingLabel: '%0/%1 Invites Remain',
-    panelButtonText: 'Invite Your Friends'
-  },
   [ChallengeName.Referrals]: {
     id: ChallengeName.Referrals,
     title: 'Invite Your Friends!',
@@ -45,21 +34,9 @@ export const challengeRewardsConfig: Record<
       `Earn ${challenge?.amount} $AUDIO for you and your friend.`,
     fullDescription: (challenge) =>
       `Invite your Friends! You’ll earn ${challenge?.amount} $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)`,
-    progressLabel: '%0/%1 Invites Accepted',
-    remainingLabel: '%0/%1 Invites Remain',
+    progressLabel: '%0 Invites Accepted',
+    remainingLabel: '%0 Invites Remain',
     panelButtonText: 'Invite Your Friends'
-  },
-  'ref-v': {
-    id: 'ref-v',
-    title: 'Invite your Fans',
-    description: (challenge) =>
-      `Earn up to ${formatNumberCommas(challenge?.totalAmount ?? '')} $AUDIO`,
-    fullDescription: (challenge) =>
-      `Invite your fans! You’ll earn ${challenge?.amount} $AUDIO for each fan who joins with your link (and they’ll get an $AUDIO too)`,
-    progressLabel: '%0/%1 Invites Accepted',
-    remainingLabel: '%0/%1 Invites Remain',
-    panelButtonText: 'Invite your Fans',
-    isVerifiedChallenge: true
   },
   [ChallengeName.ReferralsVerified]: {
     id: ChallengeName.ReferralsVerified,
@@ -68,20 +45,9 @@ export const challengeRewardsConfig: Record<
       `Earn up to ${formatNumberCommas(challenge?.totalAmount ?? '')} $AUDIO`,
     fullDescription: (challenge) =>
       `Invite your fans! You’ll earn ${challenge?.amount} $AUDIO for each fan who joins with your link (and they’ll get an $AUDIO too)`,
-    progressLabel: '%0/%1 Invites Accepted',
-    remainingLabel: '%0/%1 Invites Remain',
-    panelButtonText: 'Invite your Fans',
-    isVerifiedChallenge: true
-  },
-  referred: {
-    id: 'referred',
-    title: 'You Accepted An Invite',
-    description: (challenge) =>
-      `You earned ${challenge?.totalAmount ?? ''} $AUDIO for being invited.`,
-    fullDescription: (challenge) =>
-      `You earned ${challenge?.totalAmount ?? ''} $AUDIO for being invited.`,
-    progressLabel: 'Not Earned',
-    panelButtonText: 'More Info'
+    progressLabel: '%0 Invites Accepted',
+    remainingLabel: '%0 Invites Remain',
+    panelButtonText: 'Invite your Fans'
   },
   [ChallengeName.Referred]: {
     id: ChallengeName.Referred,
@@ -308,7 +274,7 @@ export const challengeRewardsConfig: Record<
     panelButtonText: 'See More',
     id: 'trending-underground'
   },
-  o: {
+  [ChallengeName.OneShot]: {
     shortTitle: 'Airdrop 2: Artists',
     title: 'Airdrop 2: Artist Appreciation',
     description: () =>
@@ -321,6 +287,14 @@ export const challengeRewardsConfig: Record<
     id: ChallengeName.OneShot,
     remainingLabel: 'Ineligible',
     progressLabel: 'Ready to Claim'
+  },
+  [ChallengeName.FirstWeeklyComment]: {
+    shortTitle: 'First Comment of the Week',
+    title: 'First Comment of the Week',
+    description: () => 'Your first comment every week will earn $AUDIO.',
+    fullDescription: () => 'Your first comment every week will earn $AUDIO.',
+    panelButtonText: 'Comment on a Track',
+    id: ChallengeName.FirstWeeklyComment
   }
 }
 
@@ -429,12 +403,17 @@ export const getChallengeStatusLabel = (
   if (!challenge) return DEFAULT_STATUS_LABELS.AVAILABLE
 
   // Handle special aggregate challenges first
+  const shouldShowReset =
+    challenge.disbursed_amount &&
+    !challenge.claimableAmount &&
+    !challenge.undisbursedSpecifiers.length
+
   switch (challengeId) {
     case ChallengeName.ListenStreakEndless:
       return `Day ${challenge.current_step_count}`
 
     case ChallengeName.AudioMatchingBuy:
-      if (challenge.state === 'inactive') return 'No Recent Purchases'
+    case ChallengeName.AudioMatchingSell:
       if (challenge.state === 'completed' && challenge.cooldown_days) {
         return DEFAULT_STATUS_LABELS.REWARD_PENDING
       }
@@ -442,6 +421,11 @@ export const getChallengeStatusLabel = (
         return DEFAULT_STATUS_LABELS.READY_TO_CLAIM
       }
       return 'No Recent Activity'
+    case ChallengeName.FirstWeeklyComment:
+      if (shouldShowReset) {
+        return 'Resets Friday'
+      }
+      return DEFAULT_STATUS_LABELS.AVAILABLE
   }
 
   // Handle claimable state for non-aggregate rewards
@@ -450,16 +434,19 @@ export const getChallengeStatusLabel = (
   }
 
   // Handle disbursed state - 2nd clause is for aggregate challenges
-  if (
+  const shouldShowComplete =
     challenge.state === 'disbursed' ||
     (challenge.state === 'completed' &&
       challenge.current_step_count === challenge.max_steps)
-  ) {
+  if (shouldShowComplete) {
     return DEFAULT_STATUS_LABELS.COMPLETE
   }
 
   // Handle completed with cooldown state
-  if (challenge.state === 'completed' && challenge.cooldown_days) {
+  if (
+    (challenge.state === 'completed' || challenge.state === 'in_progress') &&
+    challenge.cooldown_days
+  ) {
     return DEFAULT_STATUS_LABELS.REWARD_PENDING
   }
 
@@ -470,7 +457,7 @@ export const getChallengeStatusLabel = (
 
     case ChallengeName.Referrals:
     case ChallengeName.ReferralsVerified:
-      return `${challenge.current_step_count ?? 0}/${challenge.max_steps ?? 0} Invites Remaining`
+      return `${(challenge?.max_steps ?? 0) - (challenge?.current_step_count ?? 0)} Invites Remaining`
 
     case ChallengeName.ProfileCompletion:
       return `${challenge.current_step_count ?? 0}/7 Complete`

@@ -492,14 +492,6 @@ class CollectionPage extends Component<
     }
   }
 
-  onClickSave = (record: CollectionPageTrackRecord) => {
-    if (!record.has_current_user_saved) {
-      this.props.saveTrack(record.track_id)
-    } else {
-      this.props.unsaveTrack(record.track_id)
-    }
-  }
-
   onClickRepostTrack = (record: CollectionPageTrackRecord) => {
     if (!record.has_current_user_reposted) {
       this.props.repostTrack(record.track_id)
@@ -792,7 +784,6 @@ class CollectionPage extends Component<
       onHeroTrackSave: this.onHeroTrackSave,
       onHeroTrackRepost: this.onHeroTrackRepost,
       onClickRow: this.onClickRow,
-      onClickSave: this.onClickSave,
       onClickRepostTrack: this.onClickRepostTrack,
       onClickPurchaseTrack: this.onClickPurchaseTrack,
       onSortTracks: this.onSortTracks,

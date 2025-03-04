@@ -16,12 +16,12 @@
 
 import * as runtime from '../runtime';
 import type {
-  CommentResponse,
+  CommentRepliesResponse,
   UnclaimedIdResponse,
 } from '../models';
 import {
-    CommentResponseFromJSON,
-    CommentResponseToJSON,
+    CommentRepliesResponseFromJSON,
+    CommentRepliesResponseToJSON,
     UnclaimedIdResponseFromJSON,
     UnclaimedIdResponseToJSON,
 } from '../models';
@@ -42,7 +42,7 @@ export class CommentsApi extends runtime.BaseAPI {
      * @hidden
      * Gets replies to a parent comment
      */
-    async getCommentRepliesRaw(params: GetCommentRepliesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CommentResponse>> {
+    async getCommentRepliesRaw(params: GetCommentRepliesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CommentRepliesResponse>> {
         if (params.commentId === null || params.commentId === undefined) {
             throw new runtime.RequiredError('commentId','Required parameter params.commentId was null or undefined when calling getCommentReplies.');
         }
@@ -70,13 +70,13 @@ export class CommentsApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => CommentResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => CommentRepliesResponseFromJSON(jsonValue));
     }
 
     /**
      * Gets replies to a parent comment
      */
-    async getCommentReplies(params: GetCommentRepliesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CommentResponse> {
+    async getCommentReplies(params: GetCommentRepliesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CommentRepliesResponse> {
         const response = await this.getCommentRepliesRaw(params, initOverrides);
         return await response.value();
     }

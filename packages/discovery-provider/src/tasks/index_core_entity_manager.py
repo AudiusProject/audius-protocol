@@ -89,3 +89,19 @@ def index_core_entity_manager(
         logger.error(f"entity manager error in core blocks {e}", exc_info=True)
         # raise error so we don't index this block
         raise e
+
+
+# copied from index_nethermind.py due to circular import
+def get_latest_acdc_block(session: Session) -> Block:
+    """
+    Gets the latest block in the database.
+    This block necessarily has `is_current` set to True.
+    """
+    latest_database_block_query = session.query(Block).filter(Block.is_current == True)
+    latest_database_block_results = latest_database_block_query.all()
+    assert (
+        len(latest_database_block_results) == 1
+    ), "Expected a single row with is_current=True"
+    latest_database_block = latest_database_block_results[0]
+
+    return latest_database_block

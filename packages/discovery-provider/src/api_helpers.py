@@ -1,6 +1,7 @@
 import datetime
 import json
 import logging
+import os
 
 # pylint: disable=no-name-in-module
 from eth_account.messages import encode_defunct
@@ -49,6 +50,18 @@ def success_response(
     return response, status
 
 
+# Create a response dict with metadata, data, signature, and timestamp
+def success_response_with_related(
+    response_entity=None, status=200, to_json=True, sign_response=True, extras={}
+):
+    starting_response_dictionary = response_entity
+    response_dictionary = response_dict_with_metadata(
+        starting_response_dictionary, sign_response
+    )
+    response = jsonify(response_dictionary) if to_json else response_dictionary
+    return response, status
+
+
 # Create a response dict with metadata fields of success, latest_indexed_block, latest_chain_block,
 # version, and owner_wallet
 def response_dict_with_metadata(response_dictionary, sign_response):
@@ -79,6 +92,10 @@ def response_dict_with_metadata(response_dictionary, sign_response):
 
     response_dictionary["version"] = disc_prov_version
     response_dictionary["signer"] = shared_config["delegate"]["owner_wallet"]
+
+    oracle_pubkey = os.getenv("oracle_wallet")
+    if oracle_pubkey:
+        response_dictionary["walletPubkey"] = oracle_pubkey
 
     if sign_response:
         # generate timestamp with format HH:MM:SS.sssZ

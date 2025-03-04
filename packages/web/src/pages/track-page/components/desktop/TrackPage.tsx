@@ -1,7 +1,14 @@
 import { useCallback, useRef } from 'react'
 
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
-import { ID, LineupState, Track, User } from '@audius/common/models'
+import {
+  ID,
+  LineupState,
+  Track,
+  User,
+  FavoriteSource
+} from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { trackPageLineupActions, QueueItem } from '@audius/common/store'
 import { Box, Flex, Text } from '@audius/harmony'
@@ -58,7 +65,6 @@ export type OwnProps = {
   onFollow: () => void
   onUnfollow: () => void
 
-  onSaveTrack: (isSaved: boolean, trackId: ID) => void
   makePublic: (trackId: ID) => void
   // Tracks Lineup Props
   tracks: LineupState<Track>
@@ -86,7 +92,6 @@ const TrackPage = ({
   goToAllRemixesPage,
   onHeroShare,
   onHeroRepost,
-  onSaveTrack,
   onFollow,
   onUnfollow,
   makePublic,
@@ -118,13 +123,15 @@ const TrackPage = ({
 
   const hasMoreByTracks = tracks?.entries?.length > 1 // note: the first in the list is always the track for this page
 
+  const toggleSaveTrack = useToggleFavoriteTrack({
+    trackId: heroTrack?.track_id,
+    source: FavoriteSource.TRACK_PAGE
+  })
+
   const onPlay = () => onHeroPlay({ isPlaying: heroPlaying })
   const onPreview = () =>
     onHeroPlay({ isPlaying: heroPlaying, isPreview: true })
 
-  const onSave = isOwner
-    ? () => {}
-    : () => heroTrack && onSaveTrack(isSaved, heroTrack.track_id)
   const onShare = () => (heroTrack ? onHeroShare(heroTrack.track_id) : null)
   const onRepost = () =>
     heroTrack ? onHeroRepost(isReposted, heroTrack.track_id) : null
@@ -187,7 +194,7 @@ const TrackPage = ({
       onPreview={onPreview}
       onShare={onShare}
       onRepost={onRepost}
-      onSave={onSave}
+      onSave={toggleSaveTrack}
       following={following}
       onFollow={onFollow}
       onUnfollow={onUnfollow}
@@ -241,6 +248,7 @@ const TrackPage = ({
       <FlushPageContainer>
         <Flex
           direction='column'
+          w='100%'
           pt={200}
           pb={60}
           css={{ position: 'relative' }}

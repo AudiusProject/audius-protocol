@@ -54,6 +54,12 @@ export type TextLinkProps = Omit<TextProps, 'variant' | 'onClick' | 'color'> &
     isExternal?: boolean
 
     /**
+     * Whether or not to apply text ellipsis styling.
+     * This will make the link block displayed which may affect how it flows in certain flex containers
+     */
+    ellipses?: boolean
+
+    /**
      * Whether or not to apply styling to inner svgs.
      * Some text links may include an icon that you wish to style similarly to the text
      * (e.g. hover change colors/animations)

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,
@@ -73,8 +74,7 @@ const { getBuffering, getCounter, getPlaying, getPlaybackRate, getSeek } =
 const { seek, reset } = playerActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
-const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
-  tracksSocialActions
+const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { next, pause, play, previous, repeat, shuffle } = queueActions
 const getUserId = accountSelectors.getUserId
 const { getGatedContentStatusMap } = gatedContentSelectors
@@ -128,8 +128,6 @@ const NowPlaying = g(
     repeat,
     share,
     shuffle,
-    save,
-    unsave,
     repost,
     undoRepost,
     clickOverflow,
@@ -257,11 +255,16 @@ const NowPlaying = g(
       }
     }
 
+    const toggleSaveTrack = useToggleFavoriteTrack({
+      trackId: track_id as number,
+      source: FavoriteSource.NOW_PLAYING
+    })
+
     const toggleFavorite = useCallback(() => {
       if (track && track_id && typeof track_id !== 'string') {
-        has_current_user_saved ? unsave(track_id) : save(track_id)
+        toggleSaveTrack()
       }
-    }, [track, track_id, has_current_user_saved, unsave, save])
+    }, [track, track_id, toggleSaveTrack])
 
     const toggleRepost = useCallback(() => {
       if (track && track_id && typeof track_id !== 'string') {
@@ -612,10 +615,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
           source: ShareSource.NOW_PLAYING
         })
       ),
-    save: (trackId: ID) =>
-      dispatch(saveTrack(trackId, FavoriteSource.NOW_PLAYING)),
-    unsave: (trackId: ID) =>
-      dispatch(unsaveTrack(trackId, FavoriteSource.NOW_PLAYING)),
     repost: (trackId: ID) =>
       dispatch(repostTrack(trackId, RepostSource.NOW_PLAYING)),
     undoRepost: (trackId: ID) =>

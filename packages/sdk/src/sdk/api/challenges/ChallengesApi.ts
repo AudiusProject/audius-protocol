@@ -64,7 +64,7 @@ export class ChallengesApi extends GeneratedChallengesApi {
       case ChallengeId.COMPLETE_PROFILE:
       case ChallengeId.CONNECT_VERIFIED_ACCOUNT:
       case ChallengeId.CREATE_FIRST_PLAYLIST:
-      case ChallengeId.LISTEN_STREAK:
+      case ChallengeId.LISTEN_STREAK_ENDLESS:
       case ChallengeId.MOBILE_INSTALL:
       case ChallengeId.SEND_FIRST_TIP:
       case ChallengeId.TRACK_UPLOADS:

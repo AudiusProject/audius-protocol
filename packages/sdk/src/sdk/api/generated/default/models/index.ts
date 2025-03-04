@@ -15,7 +15,7 @@ export * from './CollectionActivity';
 export * from './Comment';
 export * from './CommentMention';
 export * from './CommentNotificationSetting';
-export * from './CommentResponse';
+export * from './CommentRepliesResponse';
 export * from './ConnectedWallets';
 export * from './ConnectedWalletsResponse';
 export * from './CoverPhoto';

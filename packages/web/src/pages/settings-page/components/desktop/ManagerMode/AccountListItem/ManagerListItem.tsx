@@ -1,9 +1,9 @@
 import { useCallback, useMemo } from 'react'
 
+import { useRemoveManager } from '@audius/common/api'
 import { useAppContext } from '@audius/common/context'
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { Name, UserManagerMetadata } from '@audius/common/models'
-import { useRemoveManager } from '@audius/common/src/api/account'
 import { accountSelectors, chatSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {

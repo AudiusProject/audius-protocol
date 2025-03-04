@@ -35,6 +35,7 @@ type Config = {
   serverHost: string
   serverPort: number
   solanaEndpoints: string[]
+  listenRpcUrl: string
   rewardsManagerProgramId: string
   rewardsManagerAccountAddress: string
   claimableTokenProgramId: string
@@ -79,6 +80,9 @@ const readConfig = (): Config => {
       default: 'redis://audius-protocol-discovery-provider-redis-1:6379/00'
     }),
     audius_solana_endpoint: str({
+      default: 'http://solana-test-validator:8899'
+    }),
+    audius_solana_listen_rpc_url: str({
       default: 'http://solana-test-validator:8899'
     }),
     audius_solana_track_listen_count_address: str({
@@ -161,6 +165,7 @@ const readConfig = (): Config => {
     serverHost: env.solana_relay_server_host,
     serverPort: env.solana_relay_server_port,
     solanaEndpoints: env.audius_solana_endpoint.split(','),
+    listenRpcUrl: env.audius_solana_listen_rpc_url,
     rewardsManagerProgramId: env.audius_solana_rewards_manager_program_address,
     rewardsManagerAccountAddress: env.audius_solana_rewards_manager_account,
     claimableTokenProgramId: env.audius_solana_user_bank_program_address,
