@@ -403,6 +403,11 @@ export const getChallengeStatusLabel = (
   if (!challenge) return DEFAULT_STATUS_LABELS.AVAILABLE
 
   // Handle special aggregate challenges first
+  const shouldShowReset =
+    challenge.disbursed_amount &&
+    !challenge.claimableAmount &&
+    !challenge.undisbursedSpecifiers.length
+
   switch (challengeId) {
     case ChallengeName.ListenStreakEndless:
       return `Day ${challenge.current_step_count}`
@@ -417,9 +422,10 @@ export const getChallengeStatusLabel = (
       }
       return 'No Recent Activity'
     case ChallengeName.FirstWeeklyComment:
-      if (challenge.disbursed_amount && !challenge.claimableAmount) {
+      if (shouldShowReset) {
         return 'Resets Friday'
       }
+      return DEFAULT_STATUS_LABELS.AVAILABLE
   }
 
   // Handle claimable state for non-aggregate rewards
@@ -428,16 +434,19 @@ export const getChallengeStatusLabel = (
   }
 
   // Handle disbursed state - 2nd clause is for aggregate challenges
-  if (
+  const shouldShowComplete =
     challenge.state === 'disbursed' ||
     (challenge.state === 'completed' &&
       challenge.current_step_count === challenge.max_steps)
-  ) {
+  if (shouldShowComplete) {
     return DEFAULT_STATUS_LABELS.COMPLETE
   }
 
   // Handle completed with cooldown state
-  if (challenge.state === 'completed' && challenge.cooldown_days) {
+  if (
+    (challenge.state === 'completed' || challenge.state === 'in_progress') &&
+    challenge.cooldown_days
+  ) {
     return DEFAULT_STATUS_LABELS.REWARD_PENDING
   }
 
