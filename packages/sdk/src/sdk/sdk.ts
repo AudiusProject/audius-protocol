@@ -136,8 +136,8 @@ const initializeServices = (config: SdkConfig) => {
     config.environment === 'development'
       ? developmentConfig
       : config.environment === 'staging'
-        ? stagingConfig
-        : productionConfig
+      ? stagingConfig
+      : productionConfig
 
   const defaultLogger = new Logger({
     logLevel: config.environment !== 'production' ? 'debug' : undefined
@@ -235,6 +235,14 @@ const initializeServices = (config: SdkConfig) => {
           middleware
         })
       )
+
+  const archiverService = config.services?.archiverService
+    ? config.services.archiverService.withMiddleware(
+        addRequestSignatureMiddleware({
+          services: { audiusWalletClient, logger }
+        })
+      )
+    : undefined
 
   const emailEncryptionService =
     config.services?.emailEncryptionService ??
@@ -386,6 +394,7 @@ const initializeServices = (config: SdkConfig) => {
     serviceProviderFactoryClient,
     ethRewardsManagerClient,
     emailEncryptionService,
+    archiverService,
     logger
   }
   return services

@@ -221,6 +221,12 @@ services:
       service: verified-notifications
     <<: *common
 
+  archiver:
+    extends:
+      file: docker-compose.pedalboard.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
+      service: archiver
+    <<: *common
+
   # Blockchain
 
   eth-ganache:

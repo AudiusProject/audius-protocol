@@ -76,7 +76,8 @@ export const initialState: BasicModalsState = {
   EditTrackFormOverflowMenu: { isOpen: false },
   ExternalWalletSignUp: { isOpen: false },
   Announcement: { isOpen: false },
-  Notification: { isOpen: false }
+  Notification: { isOpen: false },
+  DownloadTrackArchive: { isOpen: false }
 }
 
 const slice = createSlice({
