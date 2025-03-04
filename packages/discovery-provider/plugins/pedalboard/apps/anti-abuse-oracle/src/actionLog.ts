@@ -55,17 +55,23 @@ from users
 `
 
 export async function getUser(handle: string) {
-  // try decode id
-  // try parse int
-  // try find handle
   const rows = await sql`
   ${sql.unsafe(buildUserDetails)}
   where
-  handle_lc = ${handle.toLowerCase()}
+    handle_lc = ${handle.toLowerCase()}
   LIMIT 1
   `
   if (!rows.length) return
   return rows[0].user as UserDetails
+}
+
+export async function queryUsers({ ids }: { ids: number[] }) {
+  const rows = await sql`
+  ${sql.unsafe(buildUserDetails)}
+  where
+    user_id in ${sql(ids)}
+  `
+  return rows.map((r) => r.user) as UserDetails[]
 }
 
 export async function getRecentUsers(page: number) {

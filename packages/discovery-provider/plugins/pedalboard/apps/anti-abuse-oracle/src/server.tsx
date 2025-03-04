@@ -12,12 +12,14 @@ import {
   type ActionRow,
   type TrackDetails,
   type UserDetails,
-  getAAOAttestation
+  getAAOAttestation,
+  queryUsers
 } from './actionLog'
 import { logger } from 'hono/logger'
 import { config } from './config'
 import { SolanaUtils, Utils } from '@audius/sdk'
 import bn from 'bn.js'
+import { userFingerprints } from './identity'
 
 let CONTENT_NODE = 'https://creatornode2.audius.co'
 let FRONTEND = 'https://audius.co'
@@ -164,8 +166,10 @@ app.get('/attestation/ui/user', async (c) => {
 
   if (!signals) return c.text(`user id not found: ${idOrHandle}`, 404)
 
-  // const signalArray = Object.values(signals)
-  // const score = signalArray.filter(Boolean).length / signalArray.length
+  const fingerprints = await userFingerprints(user.id)
+  const fingerprintUsers = await queryUsers({
+    ids: fingerprints.flatMap((f) => f.userIds)
+  })
 
   let lastDate = ''
   function dateHeader(timestamp: Date) {
@@ -175,7 +179,7 @@ app.get('/attestation/ui/user', async (c) => {
       return (
         <tr>
           <td colspan={4}>
-            <div class='text-xl font-bold pt-2'>{d}</div>
+            <div class='font-bold pt-2'>{d}</div>
           </td>
         </tr>
       )
@@ -217,6 +221,38 @@ app.get('/attestation/ui/user', async (c) => {
             </div>
           </div>
         </div>
+
+        <h2 class='text-xl font-bold mt-4'>Fingerprints</h2>
+        <table>
+          <thead>
+            <tr>
+              <th class='text-left'>Fingerprint</th>
+              <th class='text-left'>User Count</th>
+              <th class='text-left'>Users</th>
+            </tr>
+          </thead>
+          <tbody>
+            {fingerprints.map((f) => (
+              <tr>
+                <td>{f.fingerprint}</td>
+                <td>{f.userCount}</td>
+                <td class='flex gap-2'>
+                  {f.userIds
+                    .slice(0, 20)
+                    .map((id) => fingerprintUsers.find((u) => u.id == id))
+                    .filter(Boolean)
+                    .map((u) => (
+                      <a href={`/attestation/ui/user?q=${u!.handle}`}>
+                        {u!.handle}
+                      </a>
+                    ))}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <h2 class='text-xl font-bold mt-4'>Actions</h2>
         <table>
           {rows.map((r) => (
             <>
@@ -232,7 +268,7 @@ app.get('/attestation/ui/user', async (c) => {
         </table>
       </div>
       <style>{`
-        td {
+        th, td {
           padding: 10px;
         }
       `}</style>
