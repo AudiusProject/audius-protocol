@@ -13,7 +13,8 @@ export const FlushPageContainer = (props: FlexProps) => {
       {...flexProps}
     >
       <Flex
-        flex='1 1 100%'
+        flex='1'
+        w='100%'
         justifyContent='center'
         css={{ maxWidth: MAX_PAGE_WIDTH_PX }}
       >
