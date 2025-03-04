@@ -6,7 +6,7 @@ import {
 } from '@audius/common/models'
 import { audioRewardsPageActions } from '@audius/common/store'
 import { getClaimableChallengeSpecifiers } from '@audius/common/utils'
-import { Button, IconCheck } from '@audius/harmony'
+import { Button, IconArrowRight } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 const { claimChallengeReward } = audioRewardsPageActions
@@ -65,7 +65,7 @@ export const ClaimButton = ({
     <Button
       variant='primary'
       isLoading={claimInProgress}
-      iconRight={IconCheck}
+      iconRight={IconArrowRight}
       onClick={onClaimRewardClicked}
       fullWidth
     >

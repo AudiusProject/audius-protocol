@@ -9,7 +9,7 @@ import {
   musicConfettiActions
 } from '@audius/common/store'
 import { getAAOErrorEmojis } from '@audius/common/utils'
-import { ModalContent } from '@audius/harmony'
+import { ModalContent, Text } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -100,7 +100,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
 
   const errorContent =
     claimStatus === ClaimStatus.ERROR ? (
-      <div className={styles.claimError}>{getErrorMessage(aaoErrorCode)}</div>
+      <Text>{getErrorMessage(aaoErrorCode)}</Text>
     ) : null
 
   useEffect(() => {

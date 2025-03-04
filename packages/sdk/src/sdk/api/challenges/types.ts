@@ -22,7 +22,8 @@ export enum ChallengeId {
   TRENDING_TRACK = 'tt',
   TRENDING_PLAYLIST = 'tp',
   TRENDING_UNDERGROUND_TRACK = 'tut',
-  ONE_SHOT = 'o'
+  ONE_SHOT = 'o',
+  FIRST_WEEKLY_COMMENT = 'c'
 }
 
 const DefaultSpecifier = z.object({
