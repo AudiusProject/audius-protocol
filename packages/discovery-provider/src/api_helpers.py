@@ -93,6 +93,7 @@ def response_dict_with_metadata(response_dictionary, sign_response):
 
     response_dictionary["version"] = disc_prov_version
     response_dictionary["signer"] = shared_config["delegate"]["owner_wallet"]
+    response_dictionary["antiAbuseWalletPubkey"] = os.getenv("anti_abuse_wallet_pubkey")
 
     oracle_pubkey = os.getenv("oracle_wallet")
     if oracle_pubkey:
