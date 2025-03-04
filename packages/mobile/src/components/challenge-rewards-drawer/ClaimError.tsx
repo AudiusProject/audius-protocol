@@ -1,8 +1,6 @@
 import { getAAOErrorEmojis } from '@audius/common/utils'
 
-import { Text } from 'app/components/core'
-
-import { useStyles } from './styles'
+import { Text } from '@audius/harmony-native'
 
 const messages = {
   claimErrorMessage:
@@ -13,13 +11,10 @@ const messages = {
 
 /** Renders a generic error message for failed challenge claims */
 export const ClaimError = ({ aaoErrorCode }: { aaoErrorCode?: number }) => {
-  const styles = useStyles()
   return aaoErrorCode === undefined ? (
-    <Text style={styles.claimRewardsError} weight='bold'>
-      {messages.claimErrorMessage}
-    </Text>
+    <Text>{messages.claimErrorMessage}</Text>
   ) : (
-    <Text style={styles.claimRewardsError} weight='bold'>
+    <Text>
       {messages.claimErrorMessageAAO}
       {getAAOErrorEmojis(aaoErrorCode)}
     </Text>
