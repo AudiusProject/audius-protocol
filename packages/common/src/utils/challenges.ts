@@ -380,6 +380,7 @@ export const getClaimableChallengeSpecifiers = (
 
 const newChallengeIds: ChallengeRewardID[] = [
   ChallengeName.ListenStreakEndless,
+  ChallengeName.FirstWeeklyComment,
   ChallengeName.AudioMatchingSell,
   ChallengeName.AudioMatchingBuy
 ]

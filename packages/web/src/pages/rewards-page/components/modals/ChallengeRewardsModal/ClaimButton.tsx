@@ -13,7 +13,7 @@ const { claimChallengeReward } = audioRewardsPageActions
 
 const messages = {
   close: 'Close',
-  claimableAmountLabel: (amount: number) => `Claim $${amount} $AUDIO`
+  claimableAmountLabel: (amount: number) => `Claim ${amount} $AUDIO`
 }
 
 type ClaimButtonProps = {
