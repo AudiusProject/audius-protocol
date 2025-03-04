@@ -15,6 +15,7 @@ from src.queries.get_sol_plays import get_sol_play_health_info
 # pylint: disable=R0401
 from src.utils import helpers, web3_provider
 from src.utils.config import shared_config
+from src.utils.helpers import generate_signature
 from src.utils.redis_connection import get_redis
 from src.utils.redis_constants import most_recent_indexed_block_redis_key
 
@@ -106,30 +107,6 @@ def response_dict_with_metadata(response_dictionary, sign_response):
         response_dictionary["signature"] = signature
 
     return response_dictionary
-
-
-# Generate signature and timestamp using data
-def generate_signature(data):
-    # convert sorted dictionary to string with no white spaces
-    to_sign_str = json.dumps(
-        data,
-        sort_keys=True,
-        ensure_ascii=False,
-        separators=(",", ":"),
-        cls=DateTimeEncoder,
-    )
-
-    # generate hash for if data contains unicode chars
-    to_sign_hash = Web3.keccak(text=to_sign_str).hex()
-
-    # generate SignableMessage for sign_message()
-    encoded_to_sign = encode_defunct(hexstr=to_sign_hash)
-
-    # sign to get signature
-    signed_message = w3.eth.account.sign_message(
-        encoded_to_sign, private_key=shared_config["delegate"]["private_key"]
-    )
-    return signed_message.signature.hex()
 
 
 # Accepts raw data with timestamp key and relevant fields, converts data to hash, and recovers the wallet

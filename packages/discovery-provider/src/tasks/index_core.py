@@ -5,6 +5,7 @@ from typing import Optional, TypedDict, cast
 
 from redis import Redis
 from sqlalchemy import desc
+from web3 import Web3
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.core.core_indexed_blocks import CoreIndexedBlocks
@@ -24,6 +25,7 @@ from src.tasks.index_core_entity_manager import (
     index_core_entity_manager,
 )
 from src.tasks.index_core_plays import index_core_plays
+from src.tasks.index_core_side_effects import run_side_effects
 from src.utils.config import shared_config
 from src.utils.core import (
     core_health_check_cache_key,
@@ -126,6 +128,7 @@ def index_core(self):
     redis: Redis = index_core.redis
     db: SessionManager = index_core.db
     challenge_bus: ChallengeEventBus = index_core.challenge_event_bus
+    web3: Web3 = index_core.web3
 
     update_lock = redis.lock(index_core_lock_key, blocking_timeout=25, timeout=600)
     have_lock = False
@@ -238,11 +241,21 @@ def index_core(self):
             indexed_em_block = index_core_entity_manager(
                 logger=logger,
                 update_task=self,
-                web3=self.web3,
+                web3=web3,
                 session=session,
                 indexing_entity_manager=indexing_entity_manager,
                 block=block,
             )
+
+            if indexing_entity_manager:
+                run_side_effects(
+                    logger=logger,
+                    block=block,
+                    session=session,
+                    web3=web3,
+                    redis=redis,
+                    challenge_bus=challenge_bus,
+                )
 
             # get block parenthash, in none case also use None
             # this would be the case in solana cutover where the previous
