@@ -139,7 +139,9 @@ class PlayCountMilestonesUpdater(ChallengeUpdater):
         max_completed_milestone = self._get_max_completed_milestone(session, user_id)
 
         # For simplicity, just use timestamp for uniqueness
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        timestamp = datetime.now().strftime("%Y%m%d")
+        if env == "stage" or env == "dev":
+            timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         key = f"{hex(user_id)[2:]}"
 
         # If user has already completed the final milestone, don't create a new challenge
