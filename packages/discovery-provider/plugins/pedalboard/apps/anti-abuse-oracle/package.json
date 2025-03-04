@@ -26,7 +26,8 @@
     "express": "^4.17.1",
     "hono": "^4.6.17",
     "morgan": "^1.10.0",
-    "postgres": "^3.4.5"
+    "postgres": "^3.4.5",
+    "cross-fetch": "4.0.0"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.0",

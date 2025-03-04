@@ -1,7 +1,7 @@
 import 'dotenv/config'
 
 import postgres from 'postgres'
-import fetch from 'node-fetch'
+import fetch from 'cross-fetch'
 import { useFingerprintDeviceCount } from './identity'
 
 export const sql = postgres(process.env.discoveryDbUrl || '')
