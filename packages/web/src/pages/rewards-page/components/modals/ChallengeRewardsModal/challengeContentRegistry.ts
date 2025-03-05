@@ -5,6 +5,7 @@ import { DefaultChallengeContent } from './DefaultChallengeContent'
 import { FirstWeeklyCommentChallengeModalContent } from './FirstWeeklyCommentChallengeModalContent'
 import { ListenStreakChallengeModalContent } from './ListenStreakChallengeModalContent'
 import { OneShotChallengeModalContent } from './OneShotChallengeModalContent'
+import { PlayCountMilestoneContent } from './PlayCountMilestoneContent'
 import { ReferralsChallengeModalContent } from './ReferralsChallengeModalContent'
 import {
   type ChallengeContentMap,
@@ -26,6 +27,12 @@ export const challengeContentRegistry: ChallengeContentMap = {
     ReferralsChallengeModalContent as ChallengeContentComponent,
   [ChallengeName.ReferralsVerified]:
     ReferralsChallengeModalContent as ChallengeContentComponent,
+  [ChallengeName.PlayCount250]:
+    PlayCountMilestoneContent as ChallengeContentComponent,
+  [ChallengeName.PlayCount1000]:
+    PlayCountMilestoneContent as ChallengeContentComponent,
+  [ChallengeName.PlayCount10000]:
+    PlayCountMilestoneContent as ChallengeContentComponent,
   default: DefaultChallengeContent as ChallengeContentComponent
 }
 

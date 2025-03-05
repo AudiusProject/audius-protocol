@@ -295,6 +295,39 @@ export const challengeRewardsConfig: Record<
     fullDescription: () => 'Your first comment every week will earn $AUDIO.',
     panelButtonText: 'Comment on a Track',
     id: ChallengeName.FirstWeeklyComment
+  },
+  [ChallengeName.PlayCount250]: {
+    id: ChallengeName.PlayCount250,
+    title: '250 Plays',
+    description: () =>
+      `Hit 250 plays across all of your tracks in 2025 to earn an $AUDIO Reward`,
+    fullDescription: () =>
+      `Hit 250 plays across all of your tracks in 2025 to earn an $AUDIO Reward`,
+    progressLabel: '%0 Plays',
+    remainingLabel: '%0 Plays',
+    panelButtonText: 'More Info'
+  },
+  [ChallengeName.PlayCount1000]: {
+    id: ChallengeName.PlayCount1000,
+    title: '1,000 Plays',
+    description: () =>
+      `Hit 1,000 plays across all of your tracks in 2025 to earn an $AUDIO Reward`,
+    fullDescription: () =>
+      `Hit 1,000 plays across all of your tracks in 2025 to earn an $AUDIO Reward`,
+    progressLabel: '%0 Plays',
+    remainingLabel: '%0 Plays',
+    panelButtonText: 'More Info'
+  },
+  [ChallengeName.PlayCount10000]: {
+    id: ChallengeName.PlayCount10000,
+    title: '10,000 Plays',
+    description: () =>
+      `Hit 10,000 plays across all of your tracks in 2025 to earn an $AUDIO Reward`,
+    fullDescription: () =>
+      `Hit 10,000 plays across all of your tracks in 2025 to earn an $AUDIO Reward`,
+    progressLabel: '%0 Plays',
+    remainingLabel: '%0 Plays',
+    panelButtonText: 'More Info'
   }
 }
 
@@ -381,7 +414,10 @@ export const getClaimableChallengeSpecifiers = (
 const newChallengeIds: ChallengeRewardID[] = [
   ChallengeName.ListenStreakEndless,
   ChallengeName.AudioMatchingSell,
-  ChallengeName.AudioMatchingBuy
+  ChallengeName.AudioMatchingBuy,
+  ChallengeName.PlayCount250,
+  ChallengeName.PlayCount1000,
+  ChallengeName.PlayCount10000
 ]
 
 export const isNewChallenge = (challengeId: ChallengeRewardID) =>
