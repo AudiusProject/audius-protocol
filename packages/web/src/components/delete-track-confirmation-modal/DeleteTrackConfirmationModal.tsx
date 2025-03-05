@@ -13,7 +13,7 @@ const messages = {
 export const DeleteTrackConfirmationModal = () => {
   const { data, isOpen, onClose } = useDeleteTrackConfirmationModal()
   const { trackId, onSuccess, onCancel } = data
-  const { mutate: deleteTrack } = useDeleteTrack()
+  const { mutateAsync: deleteTrack } = useDeleteTrack()
 
   const handleConfirm = useCallback(() => {
     deleteTrack(
@@ -21,10 +21,10 @@ export const DeleteTrackConfirmationModal = () => {
       {
         onSuccess: () => {
           onSuccess?.()
-          onClose()
         }
       }
     )
+    onClose()
   }, [trackId, deleteTrack, onSuccess, onClose])
 
   const handleCancel = useCallback(() => {

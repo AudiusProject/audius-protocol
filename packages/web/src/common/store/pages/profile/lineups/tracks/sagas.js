@@ -80,7 +80,7 @@ function* watchSetArtistPick() {
   })
 }
 
-function* watchDeleteTrack() {
+function* watchDeleteTrackRequested() {
   yield takeEvery(DELETE_TRACK_SUCCEEDED, function* (action) {
     const { trackId } = action
     const accountHandle = yield select(getUserHandle)
@@ -102,7 +102,7 @@ export default function sagas() {
   const trackSagas = new TracksSagas().getSagas()
   return trackSagas.concat([
     watchSetArtistPick,
-    watchDeleteTrack,
+    watchDeleteTrackRequested,
     watchUploadTracksSaga
   ])
 }

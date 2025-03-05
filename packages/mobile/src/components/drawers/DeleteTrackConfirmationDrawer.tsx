@@ -23,7 +23,7 @@ export const DeleteTrackConfirmationDrawer = () => {
   const { trackId } = data
   const navigation = useNavigation()
 
-  const { mutate: deleteTrack } = useDeleteTrack()
+  const { mutateAsync: deleteTrack } = useDeleteTrack()
 
   const handleConfirm = useCallback(() => {
     deleteTrack({

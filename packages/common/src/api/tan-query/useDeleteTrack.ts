@@ -10,7 +10,7 @@ import { ID } from '~/models/Identifiers'
 import { Track } from '~/models/Track'
 import { UserMetadata } from '~/models/User'
 import { getWalletAddresses } from '~/store/account/selectors'
-import { deleteTrackSucceeded } from '~/store/cache/tracks/actions'
+import { deleteTrackRequested } from '~/store/cache/tracks/actions'
 
 import { getCurrentUserQueryKey } from './useCurrentUser'
 import { useCurrentUserId } from './useCurrentUserId'
@@ -63,6 +63,9 @@ export const useDeleteTrack = () => {
       )
       if (!previousTrack) throw new Error('Track not found')
 
+      // Triggers removal from profile lineup
+      dispatch(deleteTrackRequested(trackId))
+
       // Before deleting, check if the track is set as the artist pick & update if so
       if (currentUser.artist_pick_track_id === trackId) {
         const updatedCurrentUser: UserMetadata = {
@@ -77,10 +80,10 @@ export const useDeleteTrack = () => {
           forceReplace: true
         })
 
-        queryClient.setQueryData(getCurrentUserQueryKey(currentUserWallet), {
-          ...currentUser,
-          artist_pick_track_id: null
-        })
+        queryClient.setQueryData(
+          getCurrentUserQueryKey(currentUserWallet),
+          updatedCurrentUser
+        )
       }
 
       // Optimistic update in cache
@@ -109,8 +112,6 @@ export const useDeleteTrack = () => {
     },
     onSuccess: async (_, { trackId }) => {
       const track = queryClient.getQueryData<Track>(getTrackQueryKey(trackId))
-
-      dispatch(deleteTrackSucceeded(trackId))
 
       if (track?.stem_of) {
         trackEvent({
