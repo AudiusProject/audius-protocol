@@ -1,4 +1,5 @@
 import React from 'react'
+import type { ReactNode } from 'react'
 
 import { ScrollView } from 'react-native-gesture-handler'
 
@@ -15,7 +16,7 @@ const messages = {
 
 type ChallengeRewardsLayoutProps = {
   /** The description component or content */
-  description: React.ReactNode
+  description: ReactNode
   /** Optional additional description */
   optionalDescription?: string
   /** The amount of $AUDIO that is rewarded */
@@ -29,15 +30,13 @@ type ChallengeRewardsLayoutProps = {
   /** Maximum progress value */
   progressMax?: number | null
   /** Status label component */
-  statusLabel: React.ReactNode
+  statusLabel: ReactNode
   /** Additional content to render */
-  additionalContent?: React.ReactNode
+  additionalContent?: ReactNode
   /** Error content to display */
-  errorContent?: React.ReactNode
-  /** Whether a claim is in progress */
-  claimInProgress?: boolean
+  errorContent?: ReactNode
   /** The claim button or other action component */
-  actions: React.ReactNode
+  actions: ReactNode
   /** Whether this is a cooldown challenge */
   isCooldownChallenge?: boolean
 }
@@ -53,7 +52,6 @@ export const ChallengeRewardsLayout = ({
   statusLabel,
   additionalContent,
   errorContent,
-  claimInProgress,
   actions,
   isCooldownChallenge
 }: ChallengeRewardsLayoutProps) => {
