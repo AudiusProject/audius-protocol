@@ -161,14 +161,36 @@
     "cooldown_days": 0
   },
   {
-    "id": "pc",
-    "name": "PLAY_COUNT_MILESTONES_2025",
-    "type": "aggregate",
-    "amount": 1,
+    "id": "p1",
+    "name": "PLAY_COUNT_250_MILESTONE_2025",
+    "type": "numeric",
+    "amount": 25,
     "active": true,
-    "step_count": 2147483647,
+    "step_count": 250,
     "starting_block": 0,
-    "weekly_pool": 2147483647,
+    "weekly_pool": 25000,
+    "cooldown_days": 0
+  },
+  {
+    "id": "p2",
+    "name": "PLAY_COUNT_1000_MILESTONE_2025",
+    "type": "numeric",
+    "amount": 100,
+    "active": true,
+    "step_count": 1000,
+    "starting_block": 0,
+    "weekly_pool": 25000,
+    "cooldown_days": 0
+  },
+  {
+    "id": "p3",
+    "name": "PLAY_COUNT_10000_MILESTONE_2025",
+    "type": "numeric",
+    "amount": 1000,
+    "active": true,
+    "step_count": 10000,
+    "starting_block": 0,
+    "weekly_pool": 25000,
     "cooldown_days": 0
   }
 ]
