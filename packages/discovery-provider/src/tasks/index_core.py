@@ -35,6 +35,8 @@ from src.utils.core import (
 from src.utils.redis_constants import (
     latest_block_hash_redis_key,
     latest_block_redis_key,
+    most_recent_indexed_block_hash_redis_key,
+    most_recent_indexed_block_redis_key,
 )
 from src.utils.session_manager import SessionManager
 
@@ -145,6 +147,27 @@ def update_latest_block_redis(
         )
         redis.set(
             latest_block_hash_redis_key,
+            block_hash,
+            ex=default_indexing_interval_seconds,
+        )
+    except Exception as e:
+        logger.error(f"couldn't update latest redis block: {e}")
+
+
+def update_latest_indexed_block_redis(
+    logger: LoggerAdapter, core: CoreClient, redis: Redis, latest_indexed_block: int
+):
+    try:
+        block = core.get_block(latest_indexed_block)
+        block_number = block.height
+        block_hash = block.blockhash
+        redis.set(
+            most_recent_indexed_block_redis_key,
+            block_number,
+            ex=default_indexing_interval_seconds,
+        )
+        redis.set(
+            most_recent_indexed_block_hash_redis_key,
             block_hash,
             ex=default_indexing_interval_seconds,
         )
@@ -332,6 +355,12 @@ def index_core(self):
 
         # after session has been committed, update health checks and other things
         if block_indexed:
+            update_latest_indexed_block_redis(
+                logger=logger,
+                core=core,
+                redis=redis,
+                latest_indexed_block=block_indexed.height,
+            )
             update_core_health(
                 redis=redis,
                 latest_indexed_block=block_indexed,
