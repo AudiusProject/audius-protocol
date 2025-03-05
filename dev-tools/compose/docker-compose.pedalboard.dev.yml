@@ -16,11 +16,11 @@ services:
     volumes:
       - ${PROJECT_ROOT}:/app
 
-  anti-abuse:
+  anti-abuse-oracle:
     user: ${DOCKER_UID:-root}:${DOCKER_GID:-root}
     extends:
       file: docker-compose.pedalboard.prod.yml
-      service: anti-abuse
+      service: anti-abuse-oracle
     build:
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.dev
     volumes:

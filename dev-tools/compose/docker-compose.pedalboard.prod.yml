@@ -17,8 +17,8 @@ services:
     profiles:
       - pedalboard
 
-  anti-abuse:
-    container_name: anti-abuse
+  anti-abuse-oracle:
+    container_name: anti-abuse-oracle
     build:
       context: ${PROJECT_ROOT}
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.prod
@@ -27,7 +27,7 @@ services:
     restart: always
     profiles:
       - pedalboard
-    
+
   trending-challenge-rewards:
     container_name: trending-challenge-rewards
     build:
@@ -69,7 +69,7 @@ services:
     profiles:
       - discovery
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://127.0.0.1:6001/relay/health']
+      test: [ 'CMD', 'curl', '-f', 'http://127.0.0.1:6001/relay/health' ]
       interval: 1s
       timeout: 1s
       retries: 120
@@ -103,7 +103,7 @@ services:
       mode: replicated
       replicas: '${DISCOVERY_PROVIDER_REPLICAS}'
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://127.0.0.1:6002/solana/health_check']
+      test: [ 'CMD', 'curl', '-f', 'http://127.0.0.1:6002/solana/health_check' ]
       interval: 1s
       timeout: 1s
       retries: 120
