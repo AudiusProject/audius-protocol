@@ -209,10 +209,10 @@ services:
       service: mri
     <<: *common
 
-  anti-abuse-oracle:
+  anti-abuse:
     extends:
       file: docker-compose.pedalboard.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
-      service: anti-abuse-oracle
+      service: anti-abuse
     <<: *common
 
   verified-notifications:
