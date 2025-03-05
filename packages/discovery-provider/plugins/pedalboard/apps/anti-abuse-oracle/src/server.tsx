@@ -55,9 +55,13 @@ app.post('/attestation/:handle', async (c) => {
   const users =
     await sql`select user_id, wallet from users where handle_lc = ${handle}`
   const user = users[0]
-  if (!user) return c.text(`handle not found: ${handle}`, 404)
+  if (!user) return c.json({ error: `handle not found: ${handle}` }, 404)
 
-  // TODO: check score
+  // pass / fail
+  const userScore = await getUserNormalizedScore(user.id)
+  if (userScore.overallScore < 0) {
+    return c.json({ error: 'denied' }, 400)
+  }
 
   try {
     const bnAmount = SolanaUtils.uiAudioToBNWaudio(amount)
@@ -81,7 +85,7 @@ app.post('/attestation/:handle', async (c) => {
     return c.json({ result })
   } catch (error) {
     console.log(`Something went wrong: ${error}`)
-    return c.text(`Something went wrong`, 500)
+    return c.json({ error: `Something went wrong` }, 500)
   }
 })
 
