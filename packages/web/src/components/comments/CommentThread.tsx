@@ -9,7 +9,6 @@ import {
   Flex,
   IconCaretDown,
   IconCaretUp,
-  LoadingSpinner,
   PlainButton
 } from '@audius/harmony'
 
@@ -112,11 +111,9 @@ export const CommentThread = ({ commentId }: { commentId: ID }) => {
                   variant='subdued'
                   css={{ width: 'max-content' }}
                   disabled={isFetchingReplies}
+                  isLoading={isFetchingReplies}
                 >
                   {messages.showMoreReplies}
-                  {isFetchingReplies ? (
-                    <LoadingSpinner css={{ width: 20, height: 20 }} />
-                  ) : null}
                 </PlainButton>
               ) : null}
             </Flex>

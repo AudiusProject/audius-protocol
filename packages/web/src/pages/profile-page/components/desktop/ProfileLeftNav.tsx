@@ -218,12 +218,12 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
           tikTokHandle={tikTokHandle}
         />
         {accountUserId !== userId ? <TipAudioButton /> : null}
-        {allowAiAttribution ? <AiGeneratedCallout handle={handle} /> : null}
         {isRecentCommentsEnabled ? <RecentComments userId={userId} /> : null}
         <SupportingList />
         <TopSupporters />
         <ProfileMutuals />
         <RelatedArtists />
+        {allowAiAttribution ? <AiGeneratedCallout handle={handle} /> : null}
         {isArtist ? <ProfileTopTags /> : null}
         {showUploadChip ? (
           <UploadChip type='track' variant='nav' source='nav' />

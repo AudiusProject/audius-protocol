@@ -71,6 +71,8 @@ export const useCommentReplies = (
       return replies.map((reply) => reply.id)
     },
     select: (data) => data.pages.flat(),
+    staleTime: Infinity,
+    gcTime: 1,
     ...options
   })
 
@@ -87,7 +89,29 @@ export const useCommentReplies = (
     }
   }, [error, dispatch, reportToSentry])
 
-  const { data: replies } = useComments(replyIds)
+  const commentsQuery = useComments(replyIds)
+  const { data: replies } = commentsQuery
 
-  return { ...queryRes, data: replies }
+  // Merge the loading states from both queries
+  const isLoading = queryRes.isLoading || commentsQuery.isLoading
+  const isPending = queryRes.isPending || commentsQuery.isPending
+  const isFetching = queryRes.isFetching || commentsQuery.isFetching
+  const isSuccess = queryRes.isSuccess && commentsQuery.isSuccess
+
+  // Determine the overall status based on both queries
+  let status = queryRes.status
+  if (queryRes.status === 'success' && commentsQuery.status !== 'success') {
+    status = commentsQuery.status
+  }
+
+  return {
+    ...queryRes,
+    data: replies,
+    replyIds,
+    isLoading,
+    isPending,
+    isFetching,
+    isSuccess,
+    status
+  }
 }

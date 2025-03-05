@@ -271,6 +271,9 @@ const RelatedArtistsTile = ({ userId }: { userId: number }) => {
     pageSize: MAX_CARD_PROFILE_PICTURES
   })
 
+  if (relatedArtists.length === 0) {
+    return null
+  }
   return (
     <ProfileInfoTile
       screen='RelatedArtists'
@@ -397,18 +400,6 @@ export const ProfileInfoTiles = () => {
             style={styles.staticTilesContainer}
             layout={layoutAnimation}
           >
-            {hasAiAttribution ? (
-              <ProfileInfoTile
-                screen='AiGeneratedTracks'
-                icon={IconRobot}
-                title={messages.aiGeneratedTracks}
-                content={
-                  <Text variant='body' size='s' color='subdued'>
-                    {messages.viewAll}
-                  </Text>
-                }
-              />
-            ) : null}
             {supporting_count > 0 ? (
               <SupportedUsersTile userId={user_id} count={supporting_count} />
             ) : null}
@@ -423,6 +414,18 @@ export const ProfileInfoTiles = () => {
             ) : null}
 
             <RelatedArtistsTile userId={user_id} />
+            {hasAiAttribution ? (
+              <ProfileInfoTile
+                screen='AiGeneratedTracks'
+                icon={IconRobot}
+                title={messages.aiGeneratedTracks}
+                content={
+                  <Text variant='body' size='s' color='subdued'>
+                    {messages.viewAll}
+                  </Text>
+                }
+              />
+            ) : null}
           </Animated.View>
         </LayoutAnimationConfig>
       </ScrollView>

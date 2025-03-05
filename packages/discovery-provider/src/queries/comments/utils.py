@@ -384,6 +384,7 @@ def build_comments_query(
             and_(
                 Comment.entity_id == Track.track_id,
                 Track.is_unlisted == False,
+                Track.is_delete == False,  # Filter out comments on deleted tracks
             ),
         )
 
