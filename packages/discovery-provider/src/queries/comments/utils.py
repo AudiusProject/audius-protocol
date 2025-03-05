@@ -202,6 +202,7 @@ def build_comments_query(
     entity_id=None,
     user_id=None,
     parent_comment_id=None,
+    parent_comment_ids=None,  # New parameter for batch fetching replies
     pinned_comment_id=None,
     sort_method="newest",
 ):
@@ -210,13 +211,14 @@ def build_comments_query(
 
     Args:
         session: Database session
-        query_type: Type of query ('track', 'user', or 'replies')
+        query_type: Type of query ('track', 'user', 'replies', or 'batch_replies')
         base_query: Base query components from get_base_comments_query
         current_user_id: ID of the user making the request
         artist_id: ID of the track owner (for track comments and replies)
         entity_id: ID of the entity (track) to get comments for
         user_id: ID of the user whose comments to retrieve (for user comments)
         parent_comment_id: ID of the parent comment (for replies)
+        parent_comment_ids: List of parent comment IDs (for batch_replies)
         pinned_comment_id: ID of the pinned comment (for track comments)
         sort_method: How to sort the comments (top, newest, timestamp)
 
@@ -259,7 +261,7 @@ def build_comments_query(
 
     # Start building the query
     if query_type == "replies":
-        # For replies, we use a simpler query structure
+        # For replies to a single parent comment
         query = session.query(
             Comment,
             func.count(CommentReaction.comment_id).label("react_count"),
@@ -279,6 +281,33 @@ def build_comments_query(
         )
         query = query.outerjoin(
             CommentReaction, Comment.comment_id == CommentReaction.comment_id
+        )
+    elif query_type == "batch_replies":
+        # For fetching replies to multiple parent comments at once
+        query = session.query(
+            Comment,
+            func.count(CommentReaction.comment_id).label("react_count"),
+            func.array_agg(
+                func.json_build_object(
+                    "user_id",
+                    mentioned_users.c.user_id,
+                    "handle",
+                    mentioned_users.c.handle,
+                    "is_delete",
+                    mentioned_users.c.is_delete,
+                )
+            ).label("mentions"),
+            CommentThread.parent_comment_id,  # Include parent_comment_id to map replies
+        )
+        query = query.join(
+            CommentThread, Comment.comment_id == CommentThread.comment_id
+        )
+        query = query.outerjoin(
+            CommentReaction,
+            and_(
+                Comment.comment_id == CommentReaction.comment_id,
+                CommentReaction.is_delete == False,
+            ),
         )
     else:
         # For track and user comments
@@ -313,7 +342,7 @@ def build_comments_query(
     )
 
     # Add query-specific joins
-    if query_type != "replies":
+    if query_type not in ["replies", "batch_replies"]:
         query = query.outerjoin(
             react_count_subquery,
             Comment.comment_id == react_count_subquery.c.comment_id,
@@ -394,12 +423,19 @@ def build_comments_query(
             CommentNotificationSetting.is_muted,
         )
     elif query_type == "replies":
-        # For replies
+        # For replies to a single parent comment
         query = query.filter(
             CommentThread.parent_comment_id == parent_comment_id,
             Comment.is_delete == False,  # Don't show deleted replies
         )
         query = query.group_by(Comment.comment_id)
+    elif query_type == "batch_replies":
+        # For fetching replies to multiple parent comments at once
+        query = query.filter(
+            CommentThread.parent_comment_id.in_(parent_comment_ids),
+            Comment.is_delete == False,  # Don't show deleted replies
+        )
+        query = query.group_by(Comment.comment_id, CommentThread.parent_comment_id)
 
     # Common filters for all query types
     query = query.filter(
@@ -437,7 +473,7 @@ def build_comments_query(
         )
 
     # Add karma threshold for track and user comments
-    if query_type != "replies":
+    if query_type not in ["replies", "batch_replies"]:
         query = query.having(
             func.coalesce(func.sum(AggregateUser.follower_count), 0)
             < COMMENT_KARMA_THRESHOLD,
@@ -461,7 +497,7 @@ def build_comments_query(
             desc(func.sum(AggregateUser.follower_count)),  # karma
             desc(Comment.created_at),
         )
-    elif query_type == "replies":
+    elif query_type in ["replies", "batch_replies"]:
         query = query.order_by(asc(Comment.created_at))
     else:
         query = query.order_by(
@@ -489,22 +525,55 @@ def format_comments(
     Returns:
         List of formatted comments
     """
-    from src.queries.comments.replies import get_replies
-
-    # Pre-fetch all replies if needed
-    replies_map = {}
-    if include_replies:
+    # If we don't need to include replies, just format the comments directly
+    if not include_replies:
+        formatted_comments = []
         for comment_data in comments:
-            comment = comment_data[0]  # First element is always the comment
-            # For tombstone comments (deleted with replies), we need to fetch replies
-            # even if the comment is deleted
-            replies = get_replies(
-                session, comment.comment_id, current_user_id, artist_id, limit=None
-            )
-            replies_map[comment.comment_id] = replies
+            # Handle different tuple structures from different queries
+            if len(comment_data) == 3:  # replies query
+                comment, react_count, mentions = comment_data
+                is_muted = None
+            else:  # track or user comments query
+                comment, react_count, is_muted, mentions = comment_data
 
-    # Format comments
-    formatted_comments = []
+            # Format the comment without replies
+            formatted_comment = _format_comment_response(
+                comment,
+                react_count,
+                is_muted,
+                mentions,
+                current_user_id,
+                session,
+                artist_id=artist_id,
+                replies=None,
+            )
+            formatted_comments.append(formatted_comment)
+        return formatted_comments
+
+    # Extract all parent comment IDs for which we need to fetch replies
+    parent_comment_ids = [comment_data[0].comment_id for comment_data in comments]
+
+    if not parent_comment_ids:
+        return []
+
+    # Create a mapping of comment_id to its position in the original list
+    # This is important to maintain the original order
+    comment_position_map = {
+        comment_data[0].comment_id: idx for idx, comment_data in enumerate(comments)
+    }
+
+    # Initialize the formatted comments list with None placeholders
+    formatted_comments = [None] * len(comments)
+
+    # Use our helper function to fetch all replies in a single query
+    replies_map = get_comment_replies(
+        session=session,
+        parent_comment_ids=parent_comment_ids,
+        current_user_id=current_user_id,
+        artist_id=artist_id,
+    )
+
+    # Now format the main comments with their replies
     for comment_data in comments:
         # Handle different tuple structures from different queries
         if len(comment_data) == 3:  # replies query
@@ -513,12 +582,10 @@ def format_comments(
         else:  # track or user comments query
             comment, react_count, is_muted, mentions = comment_data
 
-        # Get replies for this comment if they exist and if we need to include replies
-        comment_replies = (
-            replies_map.get(comment.comment_id) if include_replies else None
-        )
+        # Get replies for this comment
+        comment_replies = replies_map.get(comment.comment_id, [])
 
-        # Format the comment with pre-fetched replies
+        # Format the comment with its replies
         formatted_comment = _format_comment_response(
             comment,
             react_count,
@@ -530,13 +597,9 @@ def format_comments(
             replies=comment_replies,
         )
 
-        # If we have replies, remove related field from replies if it exists
-        if comment_replies:
-            for reply in comment_replies:
-                if "related" in reply:
-                    del reply["related"]
-
-        formatted_comments.append(formatted_comment)
+        # Add to the formatted comments list at the correct position
+        position = comment_position_map[comment.comment_id]
+        formatted_comments[position] = formatted_comment
 
     return formatted_comments
 
@@ -608,3 +671,105 @@ def fetch_related_entities(session, formatted_comments, current_user_id):
     tracks = get_tracks(session, track_ids, current_user_id)
 
     return users, tracks
+
+
+def get_comment_replies(
+    session,
+    parent_comment_ids,
+    current_user_id,
+    artist_id=None,
+    offset=None,
+    limit=None,
+):
+    """
+    Fetch replies for one or more parent comments.
+
+    Args:
+        session: Database session
+        parent_comment_ids: Single parent comment ID or list of parent comment IDs
+        current_user_id: ID of the user making the request
+        artist_id: ID of the track owner (optional)
+        offset: Pagination offset (optional)
+        limit: Pagination limit (optional)
+
+    Returns:
+        If parent_comment_ids is a list, returns a dict mapping parent_comment_id to list of formatted replies
+        If parent_comment_ids is a single ID, returns a list of formatted replies
+    """
+    from src.utils.helpers import encode_int_id
+
+    # Handle single parent_comment_id case
+    single_parent = not isinstance(parent_comment_ids, list)
+    if single_parent:
+        parent_comment_ids = [parent_comment_ids]
+
+    # Get base query components
+    base_query = get_base_comments_query(session, current_user_id)
+
+    # Build the query using batch_replies query type
+    replies_query = build_comments_query(
+        session=session,
+        query_type="batch_replies",
+        base_query=base_query,
+        current_user_id=current_user_id,
+        artist_id=artist_id,
+        parent_comment_ids=parent_comment_ids,
+    )
+
+    # Apply pagination if provided
+    if offset is not None:
+        replies_query = replies_query.offset(offset)
+    if limit is not None:
+        replies_query = replies_query.limit(limit)
+
+    # Execute the query
+    replies_results = replies_query.all()
+
+    # Process the results and organize replies by parent_comment_id
+    replies_map = {}
+    for reply_data in replies_results:
+        reply, react_count, mentions, parent_id = reply_data
+
+        # Format the reply
+        formatted_reply = {
+            "id": encode_int_id(reply.comment_id),
+            "entity_id": encode_int_id(reply.entity_id),
+            "entity_type": reply.entity_type,
+            "user_id": encode_int_id(reply.user_id) if not reply.is_delete else None,
+            "mentions": list(
+                map(
+                    lambda m: {k: v for k, v in m.items() if k != "is_delete"},
+                    [
+                        m
+                        for m in mentions
+                        if m["user_id"] is not None and m["is_delete"] is not True
+                    ],
+                )
+            ),
+            "message": reply.text if not reply.is_delete else "[Removed]",
+            "is_edited": reply.is_edited,
+            "track_timestamp_s": reply.track_timestamp_s,
+            "react_count": react_count,
+            "is_current_user_reacted": get_is_reacted(
+                session, current_user_id, reply.comment_id
+            ),
+            "created_at": str(reply.created_at),
+            "updated_at": str(reply.updated_at),
+            "is_muted": False,  # Replies don't have mute status
+            "is_artist_reacted": (
+                get_is_reacted(session, artist_id, reply.comment_id)
+                if artist_id
+                else False
+            ),
+        }
+
+        # Add to the replies map
+        if parent_id not in replies_map:
+            replies_map[parent_id] = []
+        replies_map[parent_id].append(formatted_reply)
+
+    # Return the appropriate structure based on input
+    if single_parent:
+        return replies_map.get(parent_comment_ids[0], [])
+    else:
+        return replies_map
