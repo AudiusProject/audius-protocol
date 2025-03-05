@@ -52,7 +52,6 @@ export const VipDiscordModal = () => {
       title={modalTitle}
       dismissOnClickOutside
       showDismissButton
-      useGradientTitle={false}
       contentHorizontalPadding={24}
     >
       <div className={wm(styles.modalContainer)}>

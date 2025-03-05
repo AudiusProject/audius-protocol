@@ -146,7 +146,6 @@ export const ChallengeRewardsModal = () => {
       isOpen={isOpen}
       onClose={onClose}
       isFullscreen={true}
-      useGradientTitle={false}
       titleClassName={wm(styles.title)}
       headerContainerClassName={styles.header}
       showDismissButton
