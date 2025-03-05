@@ -32,6 +32,13 @@ type NotificationPanelProps = {
   onClose: () => void
 }
 
+const scrollbarId = 'notificationsPanelScroll'
+
+const getScrollParent = () => {
+  const scrollbarElement = window.document.getElementById(scrollbarId)
+  return scrollbarElement || null
+}
+
 // The threshold of distance from the bottom of the scroll container in the
 // notification panel before requesting `loadMore` for more notifications
 const SCROLL_THRESHOLD = 1000
@@ -51,7 +58,7 @@ export const NotificationPanel = ({
     isPending,
     isError,
     isFetchingNextPage
-  } = useNotifications({ enabled: isOpen })
+  } = useNotifications()
 
   const handleLoadMore = useCallback(() => {
     if (!isFetchingNextPage) {
@@ -124,10 +131,10 @@ export const NotificationPanel = ({
           </Text>
         </Flex>
 
-        <Scrollbar css={{ maxHeight: 'calc(100vh - 333px)' }}>
+        <Scrollbar css={{ maxHeight: 'calc(100vh - 333px)' }} id={scrollbarId}>
           <InfiniteScroll
             loadMore={handleLoadMore}
-            hasMore={hasNextPage || isPending}
+            hasMore={hasNextPage}
             initialLoad={isPending}
             useWindow={false}
             threshold={SCROLL_THRESHOLD}
@@ -139,7 +146,7 @@ export const NotificationPanel = ({
                 mv='xl'
               />
             }
-            getScrollParent={() => panelRef.current}
+            getScrollParent={getScrollParent}
             css={(theme) => ({
               display: 'flex',
               flexDirection: 'column',
