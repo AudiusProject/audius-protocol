@@ -228,7 +228,6 @@ cosign_notification = ns.clone(
 create_playlist_notification_action_data = ns.model(
     "create_playlist_notification_action_data",
     {
-        "playlist_data": fields.String(),
         "is_album": fields.Boolean(required=True),
         "playlist_id": fields.List(fields.String(required=True), required=True),
     },
@@ -236,7 +235,6 @@ create_playlist_notification_action_data = ns.model(
 create_track_notification_action_data = ns.model(
     "create_track_notification_action_data",
     {
-        "track_data": fields.String(),
         "track_id": fields.String(required=True),
     },
 )
