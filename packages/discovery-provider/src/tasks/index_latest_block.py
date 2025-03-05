@@ -1,5 +1,6 @@
 from src.tasks.celery_app import celery
 from src.utils import helpers, web3_provider
+from src.utils.core import is_indexing_core_em
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
     latest_block_hash_redis_key,
@@ -31,5 +32,9 @@ def update_latest_block_redis(final_poa_block):
 @celery.task(name="index_latest_block", bind=True)
 @save_duration_metric(metric_group="celery_task")
 def update_task(self):
+    # index_core.py sets the redis keys now
+    if is_indexing_core_em():
+        return
+
     final_poa_block = helpers.get_final_poa_block()
     update_latest_block_redis(final_poa_block)
