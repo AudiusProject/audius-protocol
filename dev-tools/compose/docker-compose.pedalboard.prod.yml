@@ -17,8 +17,8 @@ services:
     profiles:
       - pedalboard
 
-  anti-abuse-oracle:
-    container_name: anti-abuse-oracle
+  anti-abuse:
+    container_name: anti-abuse
     build:
       context: ${PROJECT_ROOT}
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.prod
