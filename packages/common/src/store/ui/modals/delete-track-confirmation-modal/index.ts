@@ -1,8 +1,11 @@
+import { ID } from '~/models/Identifiers'
+
 import { createModal } from '../createModal'
 
 export type DeleteTrackConfirmationModalState = {
-  confirmCallback: () => void
-  cancelCallback?: () => void
+  trackId: ID
+  onSuccess?: () => void
+  onCancel?: () => void
 }
 
 const deleteTrackConfirmationModal =
@@ -10,8 +13,9 @@ const deleteTrackConfirmationModal =
     reducerPath: 'DeleteTrackConfirmation',
     initialState: {
       isOpen: false,
-      confirmCallback: () => {},
-      cancelCallback: () => {}
+      trackId: 0,
+      onSuccess: () => {},
+      onCancel: () => {}
     },
     sliceSelector: (state) => state.ui.modals
   })

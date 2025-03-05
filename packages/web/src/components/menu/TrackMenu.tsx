@@ -1,10 +1,6 @@
 import { useContext } from 'react'
 
-import {
-  useGetTrackById,
-  useToggleFavoriteTrack,
-  useDeleteTrack
-} from '@audius/common/api'
+import { useGetTrackById, useToggleFavoriteTrack } from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -138,18 +134,11 @@ const TrackMenu = ({
     source: FavoriteSource.OVERFLOW
   })
 
-  const { mutate: deleteTrack } = useDeleteTrack()
-
   const onDeleteTrack = (trackId: Nullable<number>) => {
     if (!trackId) return
 
     openDeleteTrackConfirmation({
-      confirmCallback: () => {
-        deleteTrack({
-          trackId,
-          source: 'track_menu'
-        })
-      }
+      trackId
     })
   }
 

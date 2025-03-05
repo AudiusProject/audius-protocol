@@ -540,8 +540,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
           source: ShareSource.PAGE
         })
       ),
-    deleteTrack: (trackId: ID) =>
-      dispatch(cacheTrackActions.deleteTrack(trackId)),
     repostTrack: (trackId: ID) =>
       dispatch(
         socialTracksActions.repostTrack(trackId, RepostSource.TRACK_PAGE)
