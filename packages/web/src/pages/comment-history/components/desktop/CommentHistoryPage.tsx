@@ -40,7 +40,7 @@ const messages = {
   description: (userName: string | null) =>
     `Comment History${userName ? ` for ${userName}` : ''}`,
   by: ' by ',
-  view: 'View',
+  view: 'View Track',
   nothingToDisplay: 'Nothing to Display',
   noComments: "This user hasn't left any comments yet!",
   backToProfile: 'Back To Profile'
@@ -102,7 +102,7 @@ const UserComment = ({ comment }: { comment: CommentOrReply }) => {
                   onClick={trackUserCommentClick}
                 />
                 {messages.by}
-                <UserLink variant='visible' userId={track?.owner_id} />
+                <UserLink variant='visible' userId={track?.owner_id} popover />
               </>
             ) : (
               <Skeleton w={180} h={20} />
@@ -112,12 +112,7 @@ const UserComment = ({ comment }: { comment: CommentOrReply }) => {
             <UserLink userId={userId} popover size='l' strength='strong' />
             <Timestamp time={createdAtDate} />
           </Flex>
-          <CommentText
-            isEdited={isEdited}
-            mentions={mentions}
-            commentId={id}
-            isPreview
-          >
+          <CommentText isEdited={isEdited} mentions={mentions} commentId={id}>
             {message}
           </CommentText>
         </Flex>

@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
@@ -21,6 +21,7 @@ export const useComments = (
   options?: QueryOptions
 ) => {
   const queryClient = useQueryClient()
+  const [hasInitialized, setHasInitialized] = useState(false)
 
   const { data: comments, ...queryResults } = useQueries({
     queries: (commentIds ?? []).map((commentId) => ({
@@ -35,6 +36,18 @@ export const useComments = (
     combine: combineQueryResults<CommentOrReply[]>
   })
 
+  useEffect(() => {
+    if (commentIds?.length) {
+      setHasInitialized(true)
+    }
+  }, [commentIds?.length])
+
+  const isPending =
+    !hasInitialized || commentIds?.length === 0 || queryResults.isPending
+
+  const isLoading =
+    !hasInitialized || commentIds?.length === 0 || queryResults.isLoading
+
   const byId = useMemo(() => {
     const byId = keyBy(comments, 'id')
     return byId
@@ -43,6 +56,8 @@ export const useComments = (
   return {
     data: comments,
     byId,
-    ...queryResults
+    ...queryResults,
+    isPending,
+    isLoading
   }
 }
