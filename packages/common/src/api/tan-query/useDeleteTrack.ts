@@ -83,7 +83,7 @@ export const useDeleteTrack = () => {
         })
       }
 
-      // Mark the track as deleted in the cache
+      // Optimistic update in cache
       primeTrackData({
         tracks: [
           {
@@ -96,7 +96,6 @@ export const useDeleteTrack = () => {
         forceReplace: true
       })
 
-      // Track analytics event
       trackEvent({
         eventName: Name.DELETE,
         properties: {
@@ -109,13 +108,10 @@ export const useDeleteTrack = () => {
       return { previousTrack, previousUser: currentUser }
     },
     onSuccess: async (_, { trackId }) => {
-      // Get the track data
       const track = queryClient.getQueryData<Track>(getTrackQueryKey(trackId))
 
-      // Dispatch the deleteTrackSucceeded action to maintain compatibility with existing Redux flows
       dispatch(deleteTrackSucceeded(trackId))
 
-      // Handle stem delete event if applicable
       if (track?.stem_of) {
         trackEvent({
           eventName: Name.STEM_DELETE,
@@ -142,7 +138,6 @@ export const useDeleteTrack = () => {
         forceReplace: true
       })
 
-      // If we updated the user's artist pick, revert that too
       if (context.previousUser?.artist_pick_track_id === trackId) {
         primeUserData({
           users: [
