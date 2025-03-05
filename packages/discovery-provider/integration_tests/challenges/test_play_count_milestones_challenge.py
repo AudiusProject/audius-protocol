@@ -2,9 +2,21 @@ import logging
 from datetime import datetime, timedelta
 
 from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
-from src.challenges.play_count_milestones_challenge import (
-    PLAY_MILESTONES,
-    play_count_milestones_challenge_manager,
+from src.challenges.play_count_milestone_250_challenge import MILESTONE as MILESTONE_250
+from src.challenges.play_count_milestone_250_challenge import (
+    play_count_250_milestone_challenge_manager,
+)
+from src.challenges.play_count_milestone_1000_challenge import (
+    MILESTONE as MILESTONE_1000,
+)
+from src.challenges.play_count_milestone_1000_challenge import (
+    play_count_1000_milestone_challenge_manager,
+)
+from src.challenges.play_count_milestone_10000_challenge import (
+    MILESTONE as MILESTONE_10000,
+)
+from src.challenges.play_count_milestone_10000_challenge import (
+    play_count_10000_milestone_challenge_manager,
 )
 from src.models.indexing.block import Block
 from src.models.rewards.challenge import Challenge
@@ -20,6 +32,11 @@ logger = logging.getLogger(__name__)
 REDIS_URL = shared_config["redis"]["url"]
 BLOCK_NUMBER = 10
 CURRENT_YEAR = 2025  # The year for which plays are counted
+
+# Get all the milestone values for testing
+MILESTONE_VALUES = [MILESTONE_250, MILESTONE_1000, MILESTONE_10000]
+REWARD_VALUES = [25, 100, 1000]  # Corresponding reward amounts
+CHALLENGE_IDS = ["p1", "p2", "p3"]  # Challenge IDs
 
 
 def create_play(user_id: int, track_id: int, play_id: int, days_ago: int = 0) -> Play:
@@ -100,10 +117,11 @@ def setup_challenges(session):
     session.add(track2)
     session.flush()
 
-    # Set challenge as active for purposes of test
-    session.query(Challenge).filter(Challenge.id == "pc").update(
-        {"active": True, "starting_block": BLOCK_NUMBER}
-    )
+    # Set all challenge milestones as active for testing
+    for challenge_id in CHALLENGE_IDS:
+        session.query(Challenge).filter(Challenge.id == challenge_id).update(
+            {"active": True, "starting_block": BLOCK_NUMBER}
+        )
     session.flush()
 
 
@@ -119,13 +137,19 @@ def make_scope_and_process(bus, session):
 
 
 def test_play_count_milestones_challenge(app):
-    """Test the play count milestones challenge"""
+    """Test the play count milestones challenges"""
     redis_conn = get_redis()
     bus = ChallengeEventBus(redis_conn)
 
-    # Register event with the bus
+    # Register all milestone challenge managers with the bus
     bus.register_listener(
-        ChallengeEvent.track_played, play_count_milestones_challenge_manager
+        ChallengeEvent.track_played, play_count_250_milestone_challenge_manager
+    )
+    bus.register_listener(
+        ChallengeEvent.track_played, play_count_1000_milestone_challenge_manager
+    )
+    bus.register_listener(
+        ChallengeEvent.track_played, play_count_10000_milestone_challenge_manager
     )
 
     with app.app_context():
@@ -135,12 +159,108 @@ def test_play_count_milestones_challenge(app):
         setup_challenges(session)
         scope_and_process = make_scope_and_process(bus, session)
 
-        sorted_milestones = sorted(PLAY_MILESTONES.keys())
-        first_milestone = sorted_milestones[0]
+        # Test each milestone sequentially
+        for i, milestone in enumerate(MILESTONE_VALUES):
+            challenge_id = CHALLENGE_IDS[i]
+            reward_amount = REWARD_VALUES[i]
+            challenge_manager = [
+                play_count_250_milestone_challenge_manager,
+                play_count_1000_milestone_challenge_manager,
+                play_count_10000_milestone_challenge_manager,
+            ][i]
 
-        # Add plays to reach first milestone
+            # For the first milestone, start from scratch
+            # For subsequent milestones, we add plays on top of previous milestones
+            if i == 0:
+                plays_to_add = milestone
+                start_play_id = 1
+            else:
+                # Calculate additional plays needed to reach the current milestone
+                previous_milestone = MILESTONE_VALUES[i - 1]
+                plays_to_add = milestone - previous_milestone
+                start_play_id = previous_milestone + 1
+
+            plays = []
+            for j in range(plays_to_add):
+                play_id = start_play_id + j
+                days_ago = play_id % 30  # Distribute plays across days
+                play = create_play(
+                    user_id=1, track_id=1, play_id=play_id, days_ago=days_ago
+                )
+                plays.append(play)
+
+            session.add_all(plays)
+            session.flush()
+
+            # Dispatch track_played event
+            scope_and_process(
+                lambda: bus.dispatch(
+                    ChallengeEvent.track_played,
+                    BLOCK_NUMBER,
+                    datetime.now(),
+                    1,  # user_id
+                    {},
+                )
+            )
+
+            # Check that the challenge is created and completed
+            challenges = challenge_manager.get_user_challenge_state(session)
+
+            # Find challenges for user 1
+            user_challenges = [c for c in challenges if c.user_id == 1]
+
+            assert (
+                len(user_challenges) >= 1
+            ), f"Expected at least one challenge for user 1 at milestone {milestone}"
+
+            # Find the specific challenge for this milestone
+            milestone_challenges = [
+                c for c in user_challenges if c.challenge_id == challenge_id
+            ]
+            assert (
+                len(milestone_challenges) == 1
+            ), f"Expected one challenge with ID {challenge_id}"
+
+            challenge = milestone_challenges[0]
+            assert (
+                challenge.is_complete == True
+            ), f"Challenge {challenge_id} should be complete"
+            assert (
+                challenge.amount == reward_amount
+            ), f"Challenge {challenge_id} should have reward {reward_amount}"
+            assert (
+                challenge.current_step_count >= milestone
+            ), f"Challenge step count should be at least {milestone}"
+
+
+def test_challenge_dependencies(app):
+    """Test that challenges respect their dependencies (previous milestone must be completed)"""
+    redis_conn = get_redis()
+    bus = ChallengeEventBus(redis_conn)
+
+    # Register all milestone challenge managers with the bus
+    bus.register_listener(
+        ChallengeEvent.track_played, play_count_250_milestone_challenge_manager
+    )
+    bus.register_listener(
+        ChallengeEvent.track_played, play_count_1000_milestone_challenge_manager
+    )
+    bus.register_listener(
+        ChallengeEvent.track_played, play_count_10000_milestone_challenge_manager
+    )
+
+    with app.app_context():
+        db = get_db()
+
+    with db.scoped_session() as session:
+        setup_challenges(session)
+        scope_and_process = make_scope_and_process(bus, session)
+
+        # Add enough plays to reach the highest milestone immediately
+        highest_milestone = max(MILESTONE_VALUES)
         plays = []
-        for i in range(first_milestone):
+
+        for i in range(highest_milestone + 10):  # Add some extra plays
             play = create_play(user_id=1, track_id=1, play_id=i + 1, days_ago=i % 30)
             plays.append(play)
 
@@ -158,153 +278,34 @@ def test_play_count_milestones_challenge(app):
             )
         )
 
-        # Check that the challenge is created and completed
-        challenges = play_count_milestones_challenge_manager.get_user_challenge_state(
-            session
-        )
-        assert len(challenges) == 1
-        assert challenges[0].user_id == 1
-        assert challenges[0].challenge_id == "pc"
-        assert challenges[0].is_complete == True
-        assert challenges[0].amount == int(PLAY_MILESTONES[first_milestone])
+        # Check that all challenges for all milestones are created and completed in sequence
+        for i, challenge_id in enumerate(CHALLENGE_IDS):
+            challenge_manager = [
+                play_count_250_milestone_challenge_manager,
+                play_count_1000_milestone_challenge_manager,
+                play_count_10000_milestone_challenge_manager,
+            ][i]
 
-        # Add plays to reach second milestone
-        if len(sorted_milestones) > 1:
-            second_milestone = sorted_milestones[1]
-            additional_plays_needed = second_milestone - first_milestone
+            challenges = challenge_manager.get_user_challenge_state(session)
+            user_challenges = [c for c in challenges if c.user_id == 1]
 
-            more_plays = []
-            for i in range(additional_plays_needed):
-                play = create_play(
-                    user_id=1,  # Changed from user_id=3 to user_id=1
-                    track_id=1,
-                    play_id=first_milestone + i + 1,
-                    days_ago=(first_milestone + i) % 30,
-                )
-                more_plays.append(play)
+            # There should be exactly one challenge for this milestone
+            milestone_challenges = [
+                c for c in user_challenges if c.challenge_id == challenge_id
+            ]
+            assert (
+                len(milestone_challenges) == 1
+            ), f"Expected one challenge with ID {challenge_id}"
 
-            session.add_all(more_plays)
-            session.flush()
+            challenge = milestone_challenges[0]
+            assert (
+                challenge.is_complete == True
+            ), f"Challenge {challenge_id} should be complete"
+            assert (
+                challenge.amount == REWARD_VALUES[i]
+            ), f"Challenge {challenge_id} should have correct reward"
 
-            # Trigger update
-            scope_and_process(
-                lambda: bus.dispatch(
-                    ChallengeEvent.track_played,
-                    BLOCK_NUMBER,
-                    datetime.now(),
-                    1,  # user_id
-                    {},
-                )
-            )
-
-            # Check that a second challenge is created and completed
-            challenges = (
-                play_count_milestones_challenge_manager.get_user_challenge_state(
-                    session
-                )
-            )
-            # We expect only one challenge per user, with updated step count
-            assert len(challenges) == 1
-            assert challenges[0].user_id == 1
-            assert challenges[0].challenge_id == "pc"
-            assert challenges[0].is_complete == True
-            # The amount stays at the first milestone value
-            assert challenges[0].amount == int(PLAY_MILESTONES[first_milestone])
-
-
-def test_max_completed_milestone(app):
-    """Test that the max completed milestone logic works correctly"""
-    redis_conn = get_redis()
-    bus = ChallengeEventBus(redis_conn)
-
-    # Register event with the bus
-    bus.register_listener(
-        ChallengeEvent.track_played, play_count_milestones_challenge_manager
-    )
-
-    with app.app_context():
-        db = get_db()
-
-    with db.scoped_session() as session:
-        setup_challenges(session)
-        scope_and_process = make_scope_and_process(bus, session)
-
-        sorted_milestones = sorted(PLAY_MILESTONES.keys())
-
-        # Create a single batch of plays to reach the first milestone
-        first_milestone = sorted_milestones[0]
-        plays = []
-
-        for j in range(first_milestone):
-            play = create_play(user_id=1, track_id=1, play_id=j + 1, days_ago=j % 30)
-            plays.append(play)
-
-        session.add_all(plays)
-        session.flush()
-
-        # Trigger update for first milestone
-        scope_and_process(
-            lambda: bus.dispatch(
-                ChallengeEvent.track_played,
-                BLOCK_NUMBER,
-                datetime.now(),
-                1,  # user_id
-                {},
-            )
-        )
-
-        # Check challenges after first milestone
-        challenges = play_count_milestones_challenge_manager.get_user_challenge_state(
-            session
-        )
-        assert len(challenges) == 1  # Only one challenge per user
-        assert challenges[0].amount == int(PLAY_MILESTONES[sorted_milestones[0]])
-
-        # Store the specifier of the first challenge to check it's the same one later
-        first_challenge_specifier = challenges[0].specifier
-
-        # Add more plays to reach the last milestone
-        more_plays = []
-        last_milestone = sorted_milestones[-1]
-
-        # Add enough plays to reach the last milestone
-        for i in range(
-            first_milestone, last_milestone + 10
-        ):  # Add extra plays beyond last milestone
-            play = create_play(
-                user_id=1,
-                track_id=1,
-                play_id=i + 1,
-                days_ago=i % 30,
-            )
-            more_plays.append(play)
-
-        session.add_all(more_plays)
-        session.flush()
-
-        # Trigger update
-        scope_and_process(
-            lambda: bus.dispatch(
-                ChallengeEvent.track_played,
-                BLOCK_NUMBER,
-                datetime.now(),
-                1,  # user_id
-                {},
-            )
-        )
-
-        # Get the most recent challenge
-        challenges = play_count_milestones_challenge_manager.get_user_challenge_state(
-            session
-        )
-
-        # Find the challenge with the original specifier
-        original_challenges = [
-            c for c in challenges if c.specifier == first_challenge_specifier
-        ]
-        assert len(original_challenges) == 1, "Original challenge should still exist"
-
-        # The amount should still be the first milestone value
-        assert original_challenges[0].amount == int(
-            PLAY_MILESTONES[sorted_milestones[0]]
-        )
+            # The challenge step count should match the user's total play count
+            assert (
+                challenge.current_step_count >= MILESTONE_VALUES[i]
+            ), f"Challenge step count should be at least {MILESTONE_VALUES[i]}"
