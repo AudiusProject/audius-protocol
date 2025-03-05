@@ -22,7 +22,7 @@ export const ChatBlastSubHeader = ({ chat }: { chat: ChatBlast }) => {
       backgroundColor='white'
       justifyContent='center'
       pb='s'
-      style={css({ zIndex: zIndex.ONE })}
+      style={css({ zIndex: zIndex.CHAT_BLAST_SUBHEADER })}
     >
       {decodedId ? (
         <Flex row gap='xs'>

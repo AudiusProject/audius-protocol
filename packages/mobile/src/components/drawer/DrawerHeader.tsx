@@ -24,7 +24,7 @@ export const useStyles = makeStyles(({ spacing }) => ({
     justifyContent: 'center',
     paddingVertical: spacing(2),
     paddingHorizontal: spacing(8),
-    zIndex: zIndex.ONE
+    zIndex: zIndex.DRAWER_HEADER
   },
 
   dismissContainer: {
