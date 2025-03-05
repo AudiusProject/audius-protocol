@@ -1,6 +1,10 @@
 import { useContext } from 'react'
 
-import { useGetTrackById, useToggleFavoriteTrack } from '@audius/common/api'
+import {
+  useGetTrackById,
+  useToggleFavoriteTrack,
+  useDeleteTrack
+} from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -11,7 +15,6 @@ import {
 import {
   accountSelectors,
   cacheCollectionsActions,
-  cacheTracksActions,
   collectionPageSelectors,
   tracksSocialActions,
   addToCollectionUIActions,
@@ -37,7 +40,6 @@ const { requestOpen: openAddToCollection } = addToCollectionUIActions
 const { repostTrack, undoRepostTrack, shareTrack } = tracksSocialActions
 const { getCollectionId } = collectionPageSelectors
 const { addTrackToPlaylist } = cacheCollectionsActions
-const { deleteTrack } = cacheTracksActions
 const { getAccountOwnedPlaylists, getUserId } = accountSelectors
 const { clearTrackPosition, setTrackPosition } = playbackPositionActions
 const { getUserTrackPositions } = playbackPositionSelectors
@@ -136,11 +138,17 @@ const TrackMenu = ({
     source: FavoriteSource.OVERFLOW
   })
 
+  const { mutate: deleteTrack } = useDeleteTrack()
+
   const onDeleteTrack = (trackId: Nullable<number>) => {
     if (!trackId) return
+
     openDeleteTrackConfirmation({
       confirmCallback: () => {
-        dispatch(deleteTrack(trackId))
+        deleteTrack({
+          trackId,
+          source: 'track_menu'
+        })
       }
     })
   }
