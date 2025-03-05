@@ -50,7 +50,7 @@ docker-tag-images:
             crm
             mri
             verified-notifications
-            anti-abuse-oracle
+            anti-abuse
           )
           identity=(
             identity-service
