@@ -356,12 +356,13 @@ def index_core(self):
 
         # after session has been committed, update health checks and other things
         if block_indexed:
-            update_latest_indexed_block_redis(
-                logger=logger,
-                core=core,
-                redis=redis,
-                latest_indexed_block=block_indexed.height,
-            )
+            if indexing_entity_manager:
+                update_latest_indexed_block_redis(
+                    logger=logger,
+                    core=core,
+                    redis=redis,
+                    latest_indexed_block=block_indexed.height,
+                )
             update_core_health(
                 redis=redis,
                 latest_indexed_block=block_indexed,
