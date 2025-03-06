@@ -14,6 +14,7 @@ import {
   playerSelectors,
   queueSelectors
 } from '@audius/common/store'
+import { css } from '@emotion/react'
 import cn from 'classnames'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch, useSelector } from 'react-redux'
@@ -364,51 +365,44 @@ export const TanQueryLineup = ({
       >
         <div
           ref={scrollContainer}
-          style={{
-            display: 'flex',
-            flexDirection: 'column'
-          }}
-          className={cn({
-            [tileContainerStyles!]: !!tileContainerStyles
+          className={cn(lineupStyle, {
+            [lineupContainerStyles!]: !!lineupContainerStyles
           })}
         >
-          {tiles.length === 0 ? (
-            isFetching || isInitialLoad ? (
-              renderSkeletons(initialPageSize ?? pageSize)
-            ) : (
-              emptyElement
-            )
-          ) : (
-            <InfiniteScroll
-              aria-label={ariaLabel}
-              pageStart={0}
-              loadMore={loadNextPage}
-              hasMore={hasNextPage && shouldLoadMore}
-              useWindow={isMobile}
-              initialLoad={false}
-              getScrollParent={() => {
-                if (internalScrollParent?.id === 'mainContent') {
-                  return document.getElementById('mainContent')
-                }
-                return internalScrollParent
-              }}
-              element='ol'
-              threshold={loadMoreThreshold}
-              className={cn({
-                [tileContainerStyles!]: !!tileContainerStyles
-              })}
-            >
-              {tiles.map((tile: any, index: number) => (
-                <li key={index} className={cn({ [tileStyles!]: !!tileStyles })}>
-                  {tile}
-                </li>
-              ))}
-              {isFetching &&
-                shouldLoadMore &&
-                hasNextPage &&
-                renderSkeletons(pageSize)}
-            </InfiniteScroll>
-          )}
+          <InfiniteScroll
+            aria-label={ariaLabel}
+            pageStart={0}
+            loadMore={loadNextPage}
+            hasMore={hasNextPage && shouldLoadMore}
+            useWindow={isMobile}
+            initialLoad={false}
+            getScrollParent={() => {
+              if (internalScrollParent?.id === 'mainContent') {
+                return document.getElementById('mainContent')
+              }
+              return internalScrollParent
+            }}
+            element='ol'
+            threshold={loadMoreThreshold}
+            className={cn({
+              [tileContainerStyles!]: !!tileContainerStyles
+            })}
+          >
+            {tiles.length === 0
+              ? isFetching || isInitialLoad
+                ? renderSkeletons(initialPageSize ?? pageSize)
+                : emptyElement
+              : null}
+            {tiles.map((tile: any, index: number) => (
+              <li key={index} className={cn({ [tileStyles!]: !!tileStyles })}>
+                {tile}
+              </li>
+            ))}
+            {isFetching &&
+              shouldLoadMore &&
+              hasNextPage &&
+              renderSkeletons(pageSize)}
+          </InfiniteScroll>
         </div>
       </div>
       {!hasNextPage && endOfLineup ? endOfLineup : null}
