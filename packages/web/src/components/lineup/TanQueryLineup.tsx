@@ -14,7 +14,6 @@ import {
   playerSelectors,
   queueSelectors
 } from '@audius/common/store'
-import { css } from '@emotion/react'
 import cn from 'classnames'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch, useSelector } from 'react-redux'
