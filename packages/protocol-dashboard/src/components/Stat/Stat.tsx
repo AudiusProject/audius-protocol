@@ -1,10 +1,9 @@
 import React, { ReactNode } from 'react'
 
-import { Text, TextProps } from '@audius/harmony'
+import { Flex, Text, TextProps } from '@audius/harmony'
 
 import Error from 'components/Error'
 import Loading from 'components/Loading'
-import Paper from 'components/Paper'
 
 import styles from './Stat.module.css'
 
@@ -18,7 +17,7 @@ type StatProps = OwnProps & TextProps
 
 const Stat: React.FC<StatProps> = ({ stat, label, error, ...textProps }) => {
   return (
-    <Paper className={styles.container}>
+    <Flex className={styles.container}>
       {error ? (
         <div className={styles.status}>
           <Error />
@@ -32,7 +31,7 @@ const Stat: React.FC<StatProps> = ({ stat, label, error, ...textProps }) => {
           <Loading className={styles.loading} />
         </div>
       )}
-    </Paper>
+    </Flex>
   )
 }
 

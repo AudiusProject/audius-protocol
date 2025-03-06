@@ -81,6 +81,7 @@ const ProfileInfo = ({
                 target='_blank'
                 rel='noreferrer'
                 href={`${AUDIUS_DAPP_URL}/${audiusProfile?.handle}`}
+                css={{ all: 'unset' }}
               >
                 {messages.viewOnAudius}
               </a>
