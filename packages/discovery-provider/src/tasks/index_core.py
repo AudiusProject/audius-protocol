@@ -267,12 +267,13 @@ def index_core(self):
                 },
             )
 
-            update_latest_block_redis(
-                logger=logger,
-                core=core,
-                redis=redis,
-                latest_block=core_node_info.current_height,
-            )
+            if indexing_entity_manager:
+                update_latest_block_redis(
+                    logger=logger,
+                    core=core,
+                    redis=redis,
+                    latest_block=core_node_info.current_height,
+                )
 
             logger.debug("indexing block")
 
