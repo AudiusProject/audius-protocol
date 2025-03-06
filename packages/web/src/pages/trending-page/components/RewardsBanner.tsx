@@ -5,36 +5,36 @@ import {
   TrendingRewardsModalType
 } from '@audius/common/store'
 import {
-  IconArrowRight as IconArrow,
+  IconCaretRight,
   IconCrown,
+  Flex,
+  Text,
   useTheme
 } from '@audius/harmony'
-import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { useIsMobile } from 'hooks/useIsMobile'
 
-import styles from './RewardsBanner.module.css'
 const { setTrendingRewardsModalType } = audioRewardsPageActions
 
 const messages = {
-  rewards: '$AUDIO REWARDS',
-  tracksDescription: 'TOP 5 TRACKS EACH WEEK WIN $AUDIO',
-  playlistsDescription: 'TOP 5 PLAYLISTS EACH WEEK WIN $AUDIO',
-  undergroundDescription: 'TOP 5 TRACKS EACH WEEK WIN $AUDIO',
   learnMore: 'LEARN MORE'
 }
 
 const messageMap = {
   tracks: {
-    description: messages.tracksDescription
+    title: 'Global Trending: Weekly Top 5',
+    description:
+      'Artists Trending on Friday at 12 PM PT Automatically Earn Tokens!'
   },
   playlists: {
-    description: messages.playlistsDescription
+    title: 'Trending Playlists: Weekly Top 5',
+    description: 'Playlists Trending on Friday at 12 PM PT Earn Tokens!'
   },
   underground: {
-    description: messages.undergroundDescription
+    title: 'Underground Trending: Weekly Top 5',
+    description: 'Artists Trending on Friday at 12 PM PT Earn Tokens!'
   }
 }
 
@@ -57,31 +57,83 @@ const useHandleBannerClick = () => {
 
 const RewardsBanner = ({ bannerType }: RewardsBannerProps) => {
   const isMobile = useIsMobile()
-  const mobileStyle = { [styles.mobile]: isMobile }
   const onClick = useHandleBannerClick()
-  const { spacing } = useTheme()
+  const { spacing, motion, color } = useTheme()
 
   return (
-    <div
-      className={cn(cn(styles.container, mobileStyle))}
+    <Flex
+      borderRadius='m'
+      w='100%'
+      direction={isMobile ? 'column' : 'row'}
+      alignItems='center'
       onClick={() => onClick(bannerType)}
+      css={{
+        padding: '9px 34px',
+        background: color.special.gradient,
+        color: color.text.staticWhite,
+        transition: motion.expressive,
+        cursor: 'pointer',
+        transform: 'scale3d(1, 1, 1)',
+        '&:hover': {
+          transform: 'scale3d(1.01, 1.01, 1.01)'
+        },
+        '&:active': {
+          transform: 'scale3d(0.99, 0.99, 0.99)'
+        },
+        '& path': {
+          fill: color.text.staticWhite
+        }
+      }}
     >
-      <div className={cn(styles.rewardsText, mobileStyle)}>
-        <div className={styles.iconCrown}>
-          <IconCrown />
-        </div>
-        {messages.rewards}
-      </div>
-      <span className={styles.descriptionText}>
-        {messageMap[bannerType].description}
-      </span>
+      <Flex
+        direction={isMobile ? 'column' : 'row'}
+        css={{
+          marginRight: isMobile ? 'unset' : 'auto',
+          marginBottom: isMobile ? spacing.s : 0,
+          width: isMobile ? '100%' : 'auto'
+        }}
+        alignItems={isMobile ? 'flex-start' : 'center'}
+        gap='l'
+      >
+        <Flex
+          alignItems='center'
+          css={{
+            marginBottom: isMobile ? spacing.xs : 0
+          }}
+          gap='s'
+        >
+          <IconCrown size='l' />
+          <Text variant='title' color='staticWhite'>
+            {messageMap[bannerType].title}
+          </Text>
+        </Flex>
+        <Text
+          variant='body'
+          size='l'
+          strength='weak'
+          css={{
+            marginLeft: isMobile ? 0 : spacing.s,
+            marginTop: isMobile ? spacing.xs : 0,
+            whiteSpace: 'nowrap'
+          }}
+        >
+          {messageMap[bannerType].description}
+        </Text>
+      </Flex>
       {!isMobile && (
-        <div className={styles.learnMore}>
-          {messages.learnMore}
-          <IconArrow size='s' css={{ marginLeft: spacing.xs }} />
-        </div>
+        <Flex
+          css={{
+            marginLeft: 'auto'
+          }}
+          alignItems='center'
+        >
+          <Text variant='label' size='l' strength='strong'>
+            {messages.learnMore}
+          </Text>
+          <IconCaretRight size='s' css={{ marginLeft: spacing.xs }} />
+        </Flex>
       )}
-    </div>
+    </Flex>
   )
 }
 
