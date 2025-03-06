@@ -90,7 +90,7 @@ const RewardsBanner = ({ bannerType }: RewardsBannerProps) => {
       <Flex
         direction={isMobile ? 'column' : 'row'}
         w='100%'
-        alignItems='flex-start'
+        alignItems={isMobile ? 'flex-start' : 'center'}
         gap={isMobile ? undefined : 'l'}
       >
         <Flex alignItems='center' mb={isMobile ? 'xs' : undefined} gap='s'>
