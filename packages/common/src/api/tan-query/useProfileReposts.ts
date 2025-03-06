@@ -101,9 +101,14 @@ export const useProfileReposts = (
 
   const lineupData = useLineupQuery({
     queryData,
+    queryKey: getProfileRepostsQueryKey({
+      handle,
+      pageSize
+    }),
     lineupActions: feedActions,
     lineupSelector: profilePageSelectors.getProfileFeedLineup,
-    playbackSource: PlaybackSource.TRACK_TILE
+    playbackSource: PlaybackSource.TRACK_TILE,
+    pageSize
   })
 
   return {
