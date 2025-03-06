@@ -16,6 +16,7 @@ def test_get_unread_notification_count(app):
 
         test_entities = {
             "users": [{"user_id": i + 1} for i in range(5)],
+            "plays": [{"user_id": i + 1} for i in range(5)],
             "tracks": [{"track_id": 1, "owner_id": 1}],
             "playlists": [{"playlist_id": 1, "playlist_owner_id": 1}],
             "notification_seens": [
