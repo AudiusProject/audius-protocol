@@ -9,7 +9,8 @@ import {
   IconCrown,
   Flex,
   Text,
-  useTheme
+  useTheme,
+  PlainButton
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
@@ -19,7 +20,7 @@ import { useIsMobile } from 'hooks/useIsMobile'
 const { setTrendingRewardsModalType } = audioRewardsPageActions
 
 const messages = {
-  learnMore: 'LEARN MORE'
+  learnMore: 'Learn More'
 }
 
 const messageMap = {
@@ -67,9 +68,10 @@ const RewardsBanner = ({ bannerType }: RewardsBannerProps) => {
       direction={isMobile ? 'column' : 'row'}
       alignItems='center'
       onClick={() => onClick(bannerType)}
+      pv='m'
+      ph='2xl'
       css={{
-        padding: '9px 34px',
-        background: color.special.gradient,
+        background: 'linear-gradient(315deg, #5B23E1 0%, #A22FEB 100%)',
         color: color.text.staticWhite,
         transition: motion.expressive,
         cursor: 'pointer',
@@ -87,32 +89,22 @@ const RewardsBanner = ({ bannerType }: RewardsBannerProps) => {
     >
       <Flex
         direction={isMobile ? 'column' : 'row'}
-        css={{
-          marginRight: isMobile ? 'unset' : 'auto',
-          marginBottom: isMobile ? spacing.s : 0,
-          width: isMobile ? '100%' : 'auto'
-        }}
-        alignItems={isMobile ? 'flex-start' : 'center'}
+        w='100%'
+        alignItems='flex-start'
         gap={isMobile ? undefined : 'l'}
       >
-        <Flex
-          alignItems='center'
-          css={{
-            marginBottom: isMobile ? spacing.xs : 0
-          }}
-          gap='s'
-        >
+        <Flex alignItems='center' mb={isMobile ? 'xs' : undefined} gap='s'>
           <IconCrown size='l' />
-          <Text variant='title' color='staticWhite'>
+          <Text variant='title' size='l' color='staticWhite'>
             {messageMap[bannerType].title}
           </Text>
         </Flex>
         <Text
           variant='body'
           size='l'
-          strength={isMobile ? 'strong' : 'weak'}
+          strength='strong'
           css={{
-            marginLeft: isMobile ? 0 : spacing.s,
+            opacity: 0.8,
             marginTop: isMobile ? spacing.xs : 0,
             whiteSpace: isMobile ? 'normal' : 'nowrap'
           }}
@@ -121,17 +113,9 @@ const RewardsBanner = ({ bannerType }: RewardsBannerProps) => {
         </Text>
       </Flex>
       {!isMobile && (
-        <Flex
-          css={{
-            marginLeft: 'auto'
-          }}
-          alignItems='center'
-        >
-          <Text variant='label' size='l' strength='strong'>
-            {messages.learnMore}
-          </Text>
-          <IconCaretRight size='s' css={{ marginLeft: spacing.xs }} />
-        </Flex>
+        <PlainButton variant='inverted' size='large' iconRight={IconCaretRight}>
+          {messages.learnMore}
+        </PlainButton>
       )}
     </Flex>
   )
