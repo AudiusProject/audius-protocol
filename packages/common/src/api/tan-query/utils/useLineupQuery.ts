@@ -74,13 +74,13 @@ export const useLineupQuery = ({
   const { data } = queryData
   const prevQueryKey = usePrevious(queryKey)
   const hasQueryKeyChanged = !isEqual(prevQueryKey, queryKey)
+  // On a cache hit, we need to manually load the cached data into the lineup since the queryFn won't run.
   useEffect(() => {
     if (hasQueryKeyChanged) {
       dispatch(lineupActions.reset())
-      // If we have a cache hit, we already have data cached.
-      // Normally we call fetchLineupMetadatas inside the queryFn, but on a cache hit it will not run
-      // so we need to call it here
-      // NOTE: this loads all previously loaded pages into the first page of the lineup
+      // NOTE: This squashes all previously cached pages into the first page of the lineup.
+      // This means the first page may have more entries than the pageSize.
+      // If this causes issues we can slice the data back into pages, but this seems more inefficient.
       if (data?.length && data?.length > 0) {
         dispatch(
           lineupActions.fetchLineupMetadatas(0, data.length, false, {
