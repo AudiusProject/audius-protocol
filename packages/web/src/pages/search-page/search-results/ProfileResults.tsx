@@ -53,7 +53,7 @@ const ProfileResultsSkeletons = ({
 }
 
 export const ProfileResultsTiles = (props: ProfileResultsProps) => {
-  const { limit, skeletonCount = 12, queryData } = props
+  const { limit, skeletonCount = 10, queryData } = props
   const { data = [], isFetching, isInitialLoading } = queryData
   const ids = data?.map((user) => user.user_id)
   const { query } = useSearchParams()
@@ -170,7 +170,7 @@ export const ProfileResultsPage = () => {
         {showNoResultsTile ? (
           <NoResultsTile />
         ) : (
-          <ProfileResultsTiles queryData={queryData} skeletonCount={12} />
+          <ProfileResultsTiles queryData={queryData} skeletonCount={10} />
         )}
       </Flex>
     </InfiniteScroll>

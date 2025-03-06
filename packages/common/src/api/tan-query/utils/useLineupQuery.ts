@@ -14,6 +14,7 @@ import {
   Status,
   Track,
   UID,
+  UserTrackMetadata,
   combineStatuses
 } from '~/models'
 import { CommonState } from '~/store/commonStore'
@@ -30,16 +31,18 @@ export const useLineupQuery = ({
   queryKey,
   lineupActions,
   lineupSelector,
-  playbackSource
+  playbackSource,
+  pageSize
 }: {
   // Lineup related props
-  queryData: Omit<UseInfiniteQueryResult, 'data'>
+  queryData: UseInfiniteQueryResult<UserTrackMetadata[]>
   queryKey: QueryKey
   lineupActions: LineupActions
   lineupSelector: Selector<
     CommonState,
     LineupState<LineupTrack | Track | Collection>
   >
+  pageSize: number
   playbackSource: PlaybackSource
 }) => {
   const lineup = useSelector(lineupSelector)
@@ -68,14 +71,25 @@ export const useLineupQuery = ({
     lineup.status
   ])
 
+  const { data } = queryData
   const prevQueryKey = usePrevious(queryKey)
-  const hasChanged = !isEqual(prevQueryKey, queryKey)
+  const hasQueryKeyChanged = !isEqual(prevQueryKey, queryKey)
   useEffect(() => {
-    if (hasChanged) {
-      console.log(' reset lineup?')
+    if (hasQueryKeyChanged) {
       dispatch(lineupActions.reset())
+      // If we have a cache hit, we already have data cached.
+      // Normally we call fetchLineupMetadatas inside the queryFn, but on a cache hit it will not run
+      // so we need to call it here
+      // NOTE: this loads all previously loaded pages into the first page of the lineup
+      if (data?.length && data?.length > 0) {
+        dispatch(
+          lineupActions.fetchLineupMetadatas(0, data.length, false, {
+            tracks: data
+          })
+        )
+      }
     }
-  }, [dispatch, lineupActions, hasChanged])
+  }, [dispatch, lineupActions, data, pageSize, hasQueryKeyChanged])
 
   return {
     status,

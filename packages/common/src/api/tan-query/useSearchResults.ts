@@ -109,8 +109,6 @@ const useSearchQueryProps = (
   const dispatch = useDispatch()
 
   return {
-    gcTime: 0,
-    staleTime: 0,
     initialPageParam: 0,
     queryKey: getSearchResultsQueryKey(queryKeyArgs),
     queryFn: async ({
@@ -324,7 +322,8 @@ export const useSearchAllResults = (
 
   // The tracks need to be in a lineup
   const tracksLineupData = useLineupQuery({
-    queryData,
+    queryData: { ...queryData, data: queryData?.data?.tracks },
+    pageSize,
     queryKey: queryProps.queryKey,
     lineupActions: searchResultsPageTracksLineupActions,
     lineupSelector: getSearchTracksLineup,
@@ -364,6 +363,7 @@ export const useSearchTrackResults = (
 
   const lineupData = useLineupQuery({
     queryData,
+    pageSize,
     queryKey: queryProps.queryKey,
     lineupActions: searchResultsPageTracksLineupActions,
     lineupSelector: getSearchTracksLineup,

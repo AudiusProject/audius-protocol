@@ -260,8 +260,6 @@ export const TanQueryLineup = ({
         ? lineup.entries.slice(0, maxEntries)
         : lineup.entries
 
-  console.log({ lineupEntries })
-
   let tiles = lineupEntries
     .map((entry: any, index: number) => {
       if (entry.kind === Kind.TRACKS || entry.track_id) {
@@ -356,7 +354,6 @@ export const TanQueryLineup = ({
     tiles = delineateByTime(tiles, isMobile)
   }
 
-  console.log('tiles', tiles)
   return (
     <>
       <div
@@ -371,6 +368,9 @@ export const TanQueryLineup = ({
             display: 'flex',
             flexDirection: 'column'
           }}
+          className={cn({
+            [tileContainerStyles!]: !!tileContainerStyles
+          })}
         >
           {tiles.length === 0 ? (
             isFetching || isInitialLoad ? (
@@ -382,9 +382,6 @@ export const TanQueryLineup = ({
             <InfiniteScroll
               aria-label={ariaLabel}
               pageStart={0}
-              className={cn({
-                [tileContainerStyles!]: !!tileContainerStyles
-              })}
               loadMore={loadNextPage}
               hasMore={hasNextPage && shouldLoadMore}
               useWindow={isMobile}
@@ -397,13 +394,19 @@ export const TanQueryLineup = ({
               }}
               element='ol'
               threshold={loadMoreThreshold}
+              className={cn({
+                [tileContainerStyles!]: !!tileContainerStyles
+              })}
             >
               {tiles.map((tile: any, index: number) => (
                 <li key={index} className={cn({ [tileStyles!]: !!tileStyles })}>
                   {tile}
                 </li>
               ))}
-              {isFetching && shouldLoadMore && renderSkeletons(pageSize)}
+              {isFetching &&
+                shouldLoadMore &&
+                hasNextPage &&
+                renderSkeletons(pageSize)}
             </InfiniteScroll>
           )}
         </div>

@@ -172,7 +172,7 @@ export const AlbumResultsPage = () => {
         {showNoResultsTile ? (
           <NoResultsTile />
         ) : (
-          <AlbumResults queryData={queryData} skeletonCount={12} />
+          <AlbumResults queryData={queryData} skeletonCount={10} />
         )}
       </Flex>
     </InfiniteScroll>
