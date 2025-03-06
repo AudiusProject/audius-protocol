@@ -1,6 +1,7 @@
 import { Mood, OptionalId } from '@audius/sdk'
 import {
   InfiniteData,
+  UseInfiniteQueryResult,
   useInfiniteQuery,
   useQueryClient
 } from '@tanstack/react-query'
@@ -320,9 +321,16 @@ export const useSearchAllResults = (
     }
   })
 
+  const tracksQueryData = {
+    ...queryData,
+    data: queryData?.data?.tracks as UserTrackMetadata[]
+    // The cast here is not great but some of the types (e.g. fetchNextPage) are typed differently.
+    // useLineupQuery only really cares about is how the data is typed
+  } as unknown as UseInfiniteQueryResult<UserTrackMetadata[]>
+
   // The tracks need to be in a lineup
   const tracksLineupData = useLineupQuery({
-    queryData: { ...queryData, data: queryData?.data?.tracks },
+    queryData: tracksQueryData,
     pageSize,
     queryKey: queryProps.queryKey,
     lineupActions: searchResultsPageTracksLineupActions,
