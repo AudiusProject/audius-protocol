@@ -13,7 +13,6 @@ export enum ChallengeId {
   REFERRED = 'rd',
   MOBILE_INSTALL = 'm',
   CONNECT_VERIFIED_ACCOUNT = 'v',
-  LISTEN_STREAK = 'l',
   LISTEN_STREAK_ENDLESS = 'e',
   COMPLETE_PROFILE = 'p',
   SEND_FIRST_TIP = 'ft',
@@ -23,7 +22,8 @@ export enum ChallengeId {
   TRENDING_TRACK = 'tt',
   TRENDING_PLAYLIST = 'tp',
   TRENDING_UNDERGROUND_TRACK = 'tut',
-  ONE_SHOT = 'o'
+  ONE_SHOT = 'o',
+  FIRST_WEEKLY_COMMENT = 'c'
 }
 
 const DefaultSpecifier = z.object({
@@ -32,7 +32,7 @@ const DefaultSpecifier = z.object({
     ChallengeId.COMPLETE_PROFILE,
     ChallengeId.CONNECT_VERIFIED_ACCOUNT,
     ChallengeId.CREATE_FIRST_PLAYLIST,
-    ChallengeId.LISTEN_STREAK,
+    ChallengeId.LISTEN_STREAK_ENDLESS,
     ChallengeId.MOBILE_INSTALL,
     ChallengeId.REFERRED,
     ChallengeId.SEND_FIRST_TIP,

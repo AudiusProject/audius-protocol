@@ -1,12 +1,6 @@
 import { Component } from 'react'
 
-import {
-  Name,
-  RepostSource,
-  FavoriteSource,
-  PlaybackSource,
-  Kind
-} from '@audius/common/models'
+import { Name, RepostSource, PlaybackSource, Kind } from '@audius/common/models'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -57,8 +51,7 @@ const {
 
 const { seek, reset } = playerActions
 const { getTheme } = themeSelectors
-const { repostTrack, undoRepostTrack, saveTrack, unsaveTrack } =
-  tracksSocialActions
+const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { play, pause, next, previous, repeat, shuffle } = queueActions
 const { getLineupEntries } = lineupSelectors
 const { getUserId } = accountSelectors
@@ -189,14 +182,6 @@ class PlayBar extends Component {
     }
   }
 
-  onToggleFavorite = (favorited, trackId) => {
-    if (trackId) {
-      favorited
-        ? this.props.unsaveTrack(trackId)
-        : this.props.saveTrack(trackId)
-    }
-  }
-
   onToggleRepost = (reposted, trackId) => {
     if (trackId) {
       reposted
@@ -298,7 +283,8 @@ class PlayBar extends Component {
       isBuffering,
       playbackRate,
       userId,
-      theme
+      theme,
+      toggleSaveTrack
     } = this.props
     const { mediaKey } = this.state
 
@@ -445,7 +431,7 @@ class PlayBar extends Component {
               uid={uid}
               isOwner={isOwner}
               onToggleRepost={this.onToggleRepost}
-              onToggleFavorite={this.onToggleFavorite}
+              onToggleFavorite={toggleSaveTrack}
             />
           </div>
         </div>
@@ -528,9 +514,6 @@ const mapDispatchToProps = (dispatch) => ({
     dispatch(repostTrack(trackId, RepostSource.PLAYBAR)),
   undoRepostTrack: (trackId) =>
     dispatch(undoRepostTrack(trackId, RepostSource.PLAYBAR)),
-  saveTrack: (trackId) => dispatch(saveTrack(trackId, FavoriteSource.PLAYBAR)),
-  unsaveTrack: (trackId) =>
-    dispatch(unsaveTrack(trackId, FavoriteSource.PLAYBAR)),
   goToRoute: (route) => dispatch(push(route)),
   record: (event) => dispatch(event)
 })

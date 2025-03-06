@@ -65,7 +65,7 @@ export const stagingConfig: SdkServicesConfig = {
     ],
     "antiAbuseOracleNodes": {
       "endpoints": [
-        "https://antiabuseoracle.staging.audius.co"
+        "https://discoveryprovider.staging.audius.co"
       ],
       "registeredAddresses": [
         "0x00b6462e955dA5841b6D9e1E2529B830F00f31Bf",

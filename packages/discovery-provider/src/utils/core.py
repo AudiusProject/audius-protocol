@@ -1,0 +1,48 @@
+import json
+import logging
+from typing import Optional, TypedDict
+
+from src.utils.redis_connection import get_redis
+
+logger = logging.getLogger(__name__)
+
+
+class CoreHealth(TypedDict):
+    indexing_plays: bool
+    indexing_entity_manager: bool
+    latest_chain_block: int
+    latest_indexed_block: int
+    chain_id: str
+
+
+core_health_check_cache_key = "core:indexer:health"
+core_listens_health_check_cache_key = "core:indexer:health:listens"
+core_em_health_check_cache_key = "core:indexer:health:em"
+
+
+def get_core_health() -> Optional[CoreHealth]:
+    redis = get_redis()
+    try:
+        core_health = redis.get(core_health_check_cache_key)
+        if core_health:
+            return json.loads(core_health)
+        return None
+    except Exception as e:
+        logger.error(f"get_health.py | could not get core health {e}")
+        return None
+
+
+# TODO: cache response to avoid excessive redis calls
+def is_indexing_core_em() -> Optional[bool]:
+    core_health = get_core_health()
+    if core_health:
+        return core_health.get("indexing_entity_manager")
+    return None
+
+
+# TODO: cache response to avoid excessive redis calls
+def is_indexing_core_plays() -> Optional[bool]:
+    core_health = get_core_health()
+    if core_health:
+        return core_health.get("indexing_plays")
+    return None

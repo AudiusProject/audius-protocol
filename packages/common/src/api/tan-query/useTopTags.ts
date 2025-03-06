@@ -1,5 +1,5 @@
 import { Id } from '@audius/sdk'
-import { useQuery } from '@tanstack/react-query'
+import { QueryKey, useQuery } from '@tanstack/react-query'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
@@ -23,7 +23,7 @@ export const useTopTags = (
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
 
-  return useQuery({
+  return useQuery<string[], Error, string[], QueryKey>({
     queryKey: getTopTagsQueryKey(userId),
     queryFn: async () => {
       try {

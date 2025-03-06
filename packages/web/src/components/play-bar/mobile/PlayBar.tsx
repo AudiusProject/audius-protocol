@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,
@@ -34,7 +35,7 @@ import { isDarkMode, isMatrix } from 'utils/theme/theme'
 import styles from './PlayBar.module.css'
 const { makeGetCurrent } = queueSelectors
 const { getPreviewing, getBuffering, getCounter, getPlaying } = playerSelectors
-const { recordListen, saveTrack, unsaveTrack } = tracksSocialActions
+const { recordListen } = tracksSocialActions
 const { pause, play } = queueActions
 
 const SEEK_INTERVAL = 200
@@ -57,8 +58,6 @@ const PlayBar = ({
   isBuffering,
   play,
   pause,
-  save,
-  unsave,
   onClickInfo
 }: PlayBarProps) => {
   const { uid, track, user, collectible } = currentQueueItem
@@ -99,6 +98,11 @@ const PlayBar = ({
     (track?.stream_conditions &&
       'usdc_purchase' in track.stream_conditions &&
       !hasStreamAccess)
+
+  const toggleFavorite = useToggleFavoriteTrack({
+    trackId: track?.track_id,
+    source: FavoriteSource.PLAYBAR
+  })
 
   if (((!uid || !track) && !collectible) || !user) return null
 
@@ -151,12 +155,6 @@ const PlayBar = ({
           source: PlaybackSource.PLAYBAR
         })
       )
-    }
-  }
-
-  const toggleFavorite = () => {
-    if (track && track_id && typeof track_id === 'number') {
-      has_current_user_saved ? unsave(track_id) : save(track_id)
     }
   }
 
@@ -260,9 +258,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     pause: () => {
       dispatch(pause({}))
     },
-    save: (trackId: ID) => dispatch(saveTrack(trackId, FavoriteSource.PLAYBAR)),
-    unsave: (trackId: ID) =>
-      dispatch(unsaveTrack(trackId, FavoriteSource.PLAYBAR)),
     recordListen: (trackId: ID) => dispatch(recordListen(trackId))
   }
 }

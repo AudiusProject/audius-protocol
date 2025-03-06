@@ -117,14 +117,8 @@ export const RewardPanel = ({
           />
         </Flex>
         <Flex column h='100%' gap='l' ph='xl' pv='unit9'>
-          <Flex
-            column
-            alignItems='flex-start'
-            justifyContent='space-between'
-            w='100%'
-            gap='s'
-          >
-            <Text variant='heading' size='s'>
+          <Flex column alignItems='flex-start' w='100%' gap='s'>
+            <Text variant='heading' size='s' textAlign='left'>
               {title}
             </Text>
             <Flex css={{ minHeight: 40 }}>

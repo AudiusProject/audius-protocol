@@ -68,7 +68,7 @@ const CreateChatModal = lazy(
 )
 
 const TrendingRewardsModal = lazy(
-  () => import('components/rewards/modals/TrendingRewards')
+  () => import('components/rewards/modals/TrendingRewardsModal')
 )
 
 const InboxSettingsModal = lazy(

@@ -7,6 +7,7 @@ import {
 } from '@audius/common/models'
 import {
   cacheUsersSelectors,
+  shareModalUIActions,
   collectionsSocialActions as socialActions
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -18,6 +19,8 @@ import { Dispatch } from 'redux'
 import * as embedModalActions from 'components/embed-modal/store/actions'
 import { AppState } from 'store/types'
 import { push } from 'utils/navigation'
+
+const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { getUser } = cacheUsersSelectors
 const { profilePage, collectionPage } = route
 
@@ -98,7 +101,7 @@ const CollectionMenu = ({
       text: 'Share',
       onClick: () => {
         shareCollection(playlistId)
-        if (onShare) onShare()
+        onShare?.()
       }
     }
 
@@ -200,7 +203,13 @@ function mapDispatchToProps(dispatch: Dispatch) {
   return {
     goToRoute: (route: string) => dispatch(push(route)),
     shareCollection: (playlistId: PlaylistId) =>
-      dispatch(socialActions.shareCollection(playlistId, ShareSource.OVERFLOW)),
+      dispatch(
+        requestOpenShareModal({
+          type: 'collection',
+          collectionId: playlistId,
+          source: ShareSource.OVERFLOW
+        })
+      ),
     saveCollection: (playlistId: PlaylistId) =>
       dispatch(
         socialActions.saveCollection(playlistId, FavoriteSource.OVERFLOW)

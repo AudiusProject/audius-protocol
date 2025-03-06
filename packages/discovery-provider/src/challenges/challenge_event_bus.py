@@ -15,12 +15,17 @@ from src.challenges.challenge import ChallengeManager, EventMetadata
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.connect_verified_challenge import connect_verified_challenge_manager
 from src.challenges.first_playlist_challenge import first_playlist_challenge_manager
-from src.challenges.listen_streak_challenge import listen_streak_challenge_manager
+from src.challenges.first_weekly_comment_challenge import (
+    first_weekly_comment_challenge_manager,
+)
 from src.challenges.listen_streak_endless_challenge import (
     listen_streak_endless_challenge_manager,
 )
 from src.challenges.mobile_install_challenge import mobile_install_challenge_manager
 from src.challenges.one_shot_challenge import one_shot_challenge_manager
+from src.challenges.play_count_milestones_challenge import (
+    play_count_milestones_challenge_manager,
+)
 from src.challenges.profile_challenge import profile_challenge_manager
 from src.challenges.referral_challenge import (
     referral_challenge_manager,
@@ -242,10 +247,13 @@ def setup_challenge_bus():
     bus.register_listener(ChallengeEvent.repost, profile_challenge_manager)
     bus.register_listener(ChallengeEvent.follow, profile_challenge_manager)
     bus.register_listener(ChallengeEvent.favorite, profile_challenge_manager)
-    # listen_streak_challenge_manager listeners
-    bus.register_listener(ChallengeEvent.track_listen, listen_streak_challenge_manager)
+    # listen_streak_endless_challenge_manager listeners
     bus.register_listener(
         ChallengeEvent.track_listen, listen_streak_endless_challenge_manager
+    )
+    # Play count milestones challenge manager listener
+    bus.register_listener(
+        ChallengeEvent.track_played, play_count_milestones_challenge_manager
     )
     # track_upload_challenge_manager listeners
     bus.register_listener(ChallengeEvent.track_upload, track_upload_challenge_manager)
@@ -283,5 +291,7 @@ def setup_challenge_bus():
         ChallengeEvent.audio_matching_seller, audio_matching_seller_challenge_manager
     )
     bus.register_listener(ChallengeEvent.one_shot, one_shot_challenge_manager)
-
+    bus.register_listener(
+        ChallengeEvent.first_weekly_comment, first_weekly_comment_challenge_manager
+    )
     return bus

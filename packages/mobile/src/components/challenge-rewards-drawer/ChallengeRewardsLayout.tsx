@@ -95,8 +95,8 @@ export const ChallengeRewardsLayout = ({
         </Flex>
       </ScrollView>
       <Flex w='100%' ph='l' pv='m' gap='l'>
-        {actions}
         {errorContent}
+        {actions}
       </Flex>
     </>
   )

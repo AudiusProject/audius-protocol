@@ -1,5 +1,9 @@
 import { Id, full } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  QueryKey,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { trackActivityFromSDK, transformAndCleanList } from '~/adapters'
@@ -50,7 +54,13 @@ export const useTrackHistory = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const queryData = useInfiniteQuery({
+  const queryData = useInfiniteQuery<
+    UserTrackMetadata[],
+    Error,
+    UserTrackMetadata[],
+    QueryKey,
+    number
+  >({
     initialPageParam: 0,
     getNextPageParam: (lastPage: UserTrackMetadata[], allPages) => {
       if (lastPage.length < pageSize) return undefined

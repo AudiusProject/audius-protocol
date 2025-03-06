@@ -2,11 +2,12 @@ import { useMemo } from 'react'
 
 import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 import { TrackMetadata } from '~/models/Track'
+import { CommonState } from '~/store'
 
 import { getTracksBatcher } from './batchers/getTracksBatcher'
 import { QUERY_KEYS } from './queryKeys'
@@ -50,9 +51,16 @@ export const useTracks = (
 
   const byId = useMemo(() => keyBy(tracks, 'track_id'), [tracks])
 
+  const isSavedToRedux = useSelector((state: CommonState) =>
+    trackIds?.every((trackId) => !!state.tracks.entries[trackId])
+  )
+
   return {
-    data: tracks,
+    data: isSavedToRedux ? tracks : undefined,
     byId,
-    ...queryResults
+    ...queryResults,
+    isPending: queryResults.isPending || !isSavedToRedux,
+    isLoading: queryResults.isLoading || !isSavedToRedux,
+    isSuccess: queryResults.isSuccess && isSavedToRedux
   }
 }

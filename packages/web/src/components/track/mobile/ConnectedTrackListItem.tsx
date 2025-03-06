@@ -1,45 +1,43 @@
 import { memo, useCallback } from 'react'
 
 import {
-  RepostSource,
-  FavoriteSource,
   ID,
-  isContentUSDCPurchaseGated,
-  ModalSource
+  RepostSource,
+  ModalSource,
+  isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import {
   accountSelectors,
   cacheUsersSelectors,
-  tracksSocialActions,
   gatedContentActions,
-  mobileOverflowMenuUIActions,
-  OverflowAction,
-  OverflowSource,
-  PurchaseableContentType,
   gatedContentSelectors,
+  mobileOverflowMenuUIActions,
+  tracksSocialActions,
   usePremiumContentPurchaseModal,
-  cacheTracksSelectors
+  cacheTracksSelectors,
+  OverflowAction,
+  PurchaseableContentType,
+  OverflowSource
 } from '@audius/common/store'
 import { connect, useDispatch } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { useModalState } from 'common/hooks/useModalState'
+import TrackListItem, {
+  TrackItemAction,
+  TrackListItemProps
+} from 'components/track/mobile/TrackListItem'
 import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
 import { AppState } from 'store/types'
 import { push } from 'utils/navigation'
 
-import TrackListItem, {
-  TrackItemAction,
-  TrackListItemProps
-} from './TrackListItem'
 const { setLockedContentId } = gatedContentActions
 
 const { getGatedContentStatusMap } = gatedContentSelectors
 
 const { open } = mobileOverflowMenuUIActions
 const { getUserFromTrack } = cacheUsersSelectors
-const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
-  tracksSocialActions
+const { repostTrack, undoRepostTrack } = tracksSocialActions
 const getUserId = accountSelectors.getUserId
 const { getTrack } = cacheTracksSelectors
 
@@ -146,10 +144,6 @@ function mapStateToProps(state: AppState, ownProps: OwnProps) {
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
     goToRoute: (route: string) => dispatch(push(route)),
-    saveTrack: (trackId: ID) =>
-      dispatch(saveTrack(trackId, FavoriteSource.TRACK_LIST)),
-    unsaveTrack: (trackId: ID) =>
-      dispatch(unsaveTrack(trackId, FavoriteSource.TRACK_LIST)),
     repostTrack: (trackId: ID) =>
       dispatch(repostTrack(trackId, RepostSource.TRACK_LIST)),
     unrepostTrack: (trackId: ID) =>

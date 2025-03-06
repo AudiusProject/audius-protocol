@@ -1,0 +1,1 @@
+export const COMMENT_DRAWER_BORDER_RADIUS = 40

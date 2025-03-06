@@ -1,4 +1,16 @@
-import { Kind, Status, ID, UID, Lineup, User } from '@audius/common/models'
+import { useCallback } from 'react'
+
+import { useFavoriteTrack, useUnfavoriteTrack } from '@audius/common/api'
+import {
+  Kind,
+  Status,
+  ID,
+  UID,
+  Lineup,
+  User,
+  FavoriteSource,
+  Track
+} from '@audius/common/models'
 import {
   savedPageSelectors,
   LibraryCategory,
@@ -70,7 +82,6 @@ export type SavedPageProps = {
   ) => [SavedPageTrack[], number]
   fetchMoreTracks: (offset?: number, limit?: number) => void
   onClickRow: (record: TrackRecord) => void
-  onClickSave: (record: TrackRecord) => void
   onClickRepost: (record: TrackRecord) => void
   onPlay: () => void
   onSortTracks: (sorters: any) => void
@@ -115,12 +126,30 @@ const SavedPage = ({
   filterText,
   onChangeTab,
   onClickRow,
-  onClickSave,
   onClickRepost,
   onSortTracks
 }: SavedPageProps) => {
   const mainContentRef = useMainContentRef()
   const initFetch = useSelector(getInitialFetchStatus)
+
+  const { mutate: favoriteTrack } = useFavoriteTrack()
+  const { mutate: unfavoriteTrack } = useUnfavoriteTrack()
+  const toggleSaveTrack = useCallback(
+    (track: Track) => {
+      if (track.has_current_user_saved) {
+        unfavoriteTrack({
+          trackId: track.track_id,
+          source: FavoriteSource.LIBRARY_PAGE
+        })
+      } else {
+        favoriteTrack({
+          trackId: track.track_id,
+          source: FavoriteSource.LIBRARY_PAGE
+        })
+      }
+    },
+    [favoriteTrack, unfavoriteTrack]
+  )
 
   const emptyTracksHeader = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
@@ -239,7 +268,7 @@ const SavedPage = ({
           isVirtualized
           key='favorites'
           loading={tracksLoading || initFetch}
-          onClickFavorite={onClickSave}
+          onClickFavorite={toggleSaveTrack}
           onClickRepost={onClickRepost}
           onClickRow={onClickRow}
           onSort={allTracksFetched ? onSortTracks : onSortChange}

@@ -70,6 +70,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   tierAndSocials: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: spacing(3)
   },
   tier: {
@@ -80,9 +81,9 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   },
   socialLinks: {
     flexDirection: 'row',
-    alignSelf: 'center',
-    justifyContent: 'space-around',
-    flex: 4
+    justifyContent: 'flex-end',
+    flex: 4,
+    gap: spacing(3)
   },
   socialLink: {
     height: spacing(8),
@@ -117,7 +118,7 @@ const BioSkeleton = () => {
   }
 
   const elements = useMemo(
-    () => times(random(5, 15), () => random(20, 100)),
+    () => times(random(5, 10), () => random(20, 100)),
     []
   )
 

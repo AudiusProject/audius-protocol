@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { useGetCommentById, useGetCommentRepliesById } from '@audius/common/api'
+import { useComment, useCommentReplies } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import { Comment, ID, Name, ReplyComment } from '@audius/common/models'
@@ -9,7 +9,6 @@ import {
   Flex,
   IconCaretDown,
   IconCaretUp,
-  LoadingSpinner,
   PlainButton
 } from '@audius/harmony'
 
@@ -18,17 +17,15 @@ import { track, make } from 'services/analytics'
 import { CommentBlock } from './CommentBlock'
 
 export const CommentThread = ({ commentId }: { commentId: ID }) => {
-  const { data: rootCommentData } = useGetCommentById(commentId)
+  const { data: rootCommentData } = useComment(commentId)
   const rootComment = rootCommentData as Comment // We can safely assume that this is a parent comment
 
-  const { currentUserId, entityId } = useCurrentCommentSection()
+  const { entityId } = useCurrentCommentSection()
   const [hasRequestedMore, setHasRequestedMore] = useState(false)
-  const { fetchNextPage: loadMoreReplies, isFetching: isFetchingReplies } =
-    useGetCommentRepliesById({
-      commentId,
-      currentUserId,
-      enabled: hasRequestedMore
-    })
+  const { isFetching: isFetchingReplies } = useCommentReplies(
+    { commentId },
+    { enabled: hasRequestedMore }
+  )
 
   const [hiddenReplies, setHiddenReplies] = useState<{
     [parentCommentId: string]: boolean
@@ -51,20 +48,7 @@ export const CommentThread = ({ commentId }: { commentId: ID }) => {
   }
 
   const handleLoadMoreReplies = () => {
-    if (hasRequestedMore) {
-      loadMoreReplies()
-
-      track(
-        make({
-          eventName: Name.COMMENTS_LOAD_MORE_REPLIES,
-          commentId,
-          trackId: entityId
-        })
-      )
-    } else {
-      // Since we have
-      setHasRequestedMore(true)
-    }
+    setHasRequestedMore(true)
   }
 
   // Combine the replies from the root comment and the additional loaded replies
@@ -127,11 +111,9 @@ export const CommentThread = ({ commentId }: { commentId: ID }) => {
                   variant='subdued'
                   css={{ width: 'max-content' }}
                   disabled={isFetchingReplies}
+                  isLoading={isFetchingReplies}
                 >
                   {messages.showMoreReplies}
-                  {isFetchingReplies ? (
-                    <LoadingSpinner css={{ width: 20, height: 20 }} />
-                  ) : null}
                 </PlainButton>
               ) : null}
             </Flex>

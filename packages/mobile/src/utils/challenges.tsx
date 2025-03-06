@@ -126,20 +126,11 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
     [ChallengeName.ProfileCompletion]: {
       icon: BallotBoxTick
     },
-    referrals: {
-      icon: IncomingEnvelope
-    },
     [ChallengeName.Referrals]: {
-      icon: IncomingEnvelope
-    },
-    'ref-v': {
       icon: IncomingEnvelope
     },
     [ChallengeName.ReferralsVerified]: {
       icon: IncomingEnvelope
-    },
-    referred: {
-      icon: LoveLetter
     },
     [ChallengeName.Referred]: {
       icon: LoveLetter
@@ -304,6 +295,12 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
       }
     },
     [ChallengeName.ListenStreakEndless]: {
+      icon: undefined,
+      buttonInfo: {
+        iconRight: IconCheck
+      }
+    },
+    [ChallengeName.FirstWeeklyComment]: {
       icon: undefined,
       buttonInfo: {
         iconRight: IconCheck

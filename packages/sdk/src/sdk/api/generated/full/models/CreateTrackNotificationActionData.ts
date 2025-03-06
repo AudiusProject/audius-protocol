@@ -25,12 +25,6 @@ export interface CreateTrackNotificationActionData {
      * @type {string}
      * @memberof CreateTrackNotificationActionData
      */
-    trackData?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof CreateTrackNotificationActionData
-     */
     trackId: string;
 }
 
@@ -54,7 +48,6 @@ export function CreateTrackNotificationActionDataFromJSONTyped(json: any, ignore
     }
     return {
         
-        'trackData': !exists(json, 'track_data') ? undefined : json['track_data'],
         'trackId': json['track_id'],
     };
 }
@@ -68,7 +61,6 @@ export function CreateTrackNotificationActionDataToJSON(value?: CreateTrackNotif
     }
     return {
         
-        'track_data': value.trackData,
         'track_id': value.trackId,
     };
 }

@@ -1,5 +1,5 @@
 import { Id } from '@audius/sdk'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { InfiniteData, QueryKey, useInfiniteQuery } from '@tanstack/react-query'
 
 import { notificationFromSDK, transformAndCleanList } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
@@ -23,7 +23,7 @@ const USER_INITIAL_LOAD_COUNT = 9
 
 type PageParam = {
   timestamp: number
-  groupId: string
+  groupId: string | undefined
 } | null
 
 type EntityIds = {
@@ -171,7 +171,13 @@ export const useNotifications = (options?: QueryOptions) => {
   const validTypes = useNotificationValidTypes()
   const pageSize = DEFAULT_LIMIT
 
-  const query = useInfiniteQuery({
+  const query = useInfiniteQuery<
+    Notification[],
+    Error,
+    InfiniteData<Notification[]>,
+    QueryKey,
+    PageParam
+  >({
     queryKey: getNotificationsQueryKey({
       currentUserId,
       pageSize
@@ -219,10 +225,16 @@ export const useNotifications = (options?: QueryOptions) => {
 
   // Check if the latest page's entity data is still loading
   const isLatestPagePending =
-    usersQuery.isPending || tracksQuery.isPending || collectionsQuery.isPending
+    query.isPending ||
+    usersQuery.isPending ||
+    tracksQuery.isPending ||
+    collectionsQuery.isPending
 
   const isLatestPageLoading =
-    usersQuery.isLoading || tracksQuery.isLoading || collectionsQuery.isLoading
+    query.isLoading ||
+    usersQuery.isLoading ||
+    tracksQuery.isLoading ||
+    collectionsQuery.isLoading
 
   const isError =
     query.isError ||
@@ -238,8 +250,8 @@ export const useNotifications = (options?: QueryOptions) => {
 
   return {
     ...query,
-    isPending: query.isPending || isLatestPagePending,
-    isLoading: query.isLoading || isLatestPageLoading,
+    isPending: isLatestPagePending,
+    isLoading: isLatestPageLoading,
     isError,
     notifications
   }

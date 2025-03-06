@@ -9,7 +9,6 @@ import { combineReducers, Reducer } from 'redux'
 import backend from 'common/store/backend/reducer'
 import signOnReducer from 'common/store/pages/signon/reducer'
 import searchAiBar from 'common/store/search-ai-bar/reducer'
-import searchBar from 'common/store/search-bar/reducer'
 import embedModal from 'components/embed-modal/store/reducers'
 import firstUploadModal from 'components/first-upload-modal/store/slice'
 import passwordReset from 'components/password-reset/store/reducer'
@@ -34,7 +33,6 @@ const createRootReducer = (routerReducer: Reducer) => {
     // These also belong in common store reducers but are here until we move them to the @audius/common package.
     backend,
     signOn: signOnReducer,
-    searchBar,
     searchAiBar,
 
     // (End common store)

@@ -39,6 +39,7 @@ import { CommentDrawerHeader } from './CommentDrawerHeader'
 import { CommentSkeleton } from './CommentSkeleton'
 import { CommentThread } from './CommentThread'
 import { NoComments } from './NoComments'
+import { COMMENT_DRAWER_BORDER_RADIUS } from './constants'
 import { useGestureEventsHandlers } from './useGestureEventHandlers'
 import { useScrollEventsHandlers } from './useScrollEventHandlers'
 
@@ -196,8 +197,6 @@ const CommentDrawerContent = (props: {
   )
 }
 
-const BORDER_RADIUS = 40
-
 export type CommentDrawerData = {
   entityId: number
   navigation: NativeStackNavigationProp<ParamListBase>
@@ -297,8 +296,8 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
         snapPoints={['66%', '100%']}
         topInset={insets.top}
         style={{
-          borderTopRightRadius: BORDER_RADIUS,
-          borderTopLeftRadius: BORDER_RADIUS,
+          borderTopRightRadius: COMMENT_DRAWER_BORDER_RADIUS,
+          borderTopLeftRadius: COMMENT_DRAWER_BORDER_RADIUS,
           overflow: 'hidden'
         }}
         backgroundStyle={{ backgroundColor: color.background.white }}

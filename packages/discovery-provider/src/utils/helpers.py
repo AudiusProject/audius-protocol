@@ -14,6 +14,9 @@ from typing import List, Optional, TypedDict, cast
 import base58
 import psutil
 import requests
+
+# pylint: disable=no-name-in-module
+from eth_account.messages import encode_defunct
 from flask import g, request
 from hashids import Hashids
 from jsonformatter import JsonFormatter
@@ -23,9 +26,11 @@ from solders.pubkey import Pubkey
 from solders.transaction_status import UiTransactionStatusMeta
 from sqlalchemy import inspect
 from web3 import Web3
+from web3.auto import w3
 
 from src import exceptions
 from src.solana.solana_helpers import MEMO_PROGRAM_ID, MEMO_V2_PROGRAM_ID
+from src.utils.config import shared_config
 
 from . import multihash
 
@@ -631,3 +636,28 @@ def get_final_poa_block() -> int:
 
 def format_total_audio_balance(balance: str) -> int:
     return int(int(balance) / 1e18)
+
+
+# Generate signature and timestamp using data
+# copied from src/api_helpers.py because of circular imports
+def generate_signature(data):
+    # convert sorted dictionary to string with no white spaces
+    to_sign_str = json.dumps(
+        data,
+        sort_keys=True,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        cls=DateTimeEncoder,
+    )
+
+    # generate hash for if data contains unicode chars
+    to_sign_hash = Web3.keccak(text=to_sign_str).hex()
+
+    # generate SignableMessage for sign_message()
+    encoded_to_sign = encode_defunct(hexstr=to_sign_hash)
+
+    # sign to get signature
+    signed_message = w3.eth.account.sign_message(
+        encoded_to_sign, private_key=shared_config["delegate"]["private_key"]
+    )
+    return signed_message.signature.hex()

@@ -2,11 +2,12 @@ import { useMemo } from 'react'
 
 import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
 import { ID } from '~/models'
 import { UserCollectionMetadata } from '~/models/Collection'
+import { CommonState } from '~/store'
 
 import { getCollectionsBatcher } from './batchers/getCollectionsBatcher'
 import { QUERY_KEYS } from './queryKeys'
@@ -49,9 +50,18 @@ export const useCollections = (
 
   const byId = useMemo(() => keyBy(collections, 'playlist_id'), [collections])
 
+  const isSavedToRedux = useSelector((state: CommonState) =>
+    collectionIds?.every(
+      (collectionId) => !!state.collections.entries[collectionId]
+    )
+  )
+
   return {
-    data: collections,
+    data: isSavedToRedux ? collections : undefined,
     byId,
-    ...queryResults
+    ...queryResults,
+    isPending: queryResults.isPending || !isSavedToRedux,
+    isLoading: queryResults.isLoading || !isSavedToRedux,
+    isSuccess: queryResults.isSuccess && isSavedToRedux
   }
 }

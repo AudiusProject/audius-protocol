@@ -19,7 +19,8 @@ import {
   TipsApi as TipsApiFull,
   TransactionsApi as TransactionsApiFull,
   NotificationsApi as NotificationsApiFull,
-  CidDataApi as CidDataApiFull
+  CidDataApi as CidDataApiFull,
+  CommentsApi as CommentsApiFull
 } from './api/generated/full'
 import { GrantsApi } from './api/grants/GrantsApi'
 import { NotificationsApi } from './api/notifications/NotificationsApi'
@@ -513,7 +514,8 @@ const initializeApis = ({
     tips: new TipsApiFull(generatedApiClientConfigFull),
     transactions: new TransactionsApiFull(generatedApiClientConfigFull),
     notifications: new NotificationsApiFull(generatedApiClientConfigFull),
-    cidData: new CidDataApiFull(generatedApiClientConfigFull)
+    cidData: new CidDataApiFull(generatedApiClientConfigFull),
+    comments: new CommentsApiFull(generatedApiClientConfigFull)
   }
 
   return {

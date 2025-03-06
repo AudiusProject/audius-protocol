@@ -2,11 +2,12 @@ import { useMemo } from 'react'
 
 import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 import { UserMetadata } from '~/models/User'
+import { CommonState } from '~/store'
 
 import { getUsersBatcher } from './batchers/getUsersBatcher'
 import { QUERY_KEYS } from './queryKeys'
@@ -48,14 +49,17 @@ export const useUsers = (
     combine: combineQueryResults<UserMetadata[]>
   })
 
-  const byId = useMemo(() => {
-    const byId = keyBy(users, 'user_id')
-    return byId
-  }, [users])
+  const byId = useMemo(() => keyBy(users, 'user_id'), [users])
+
+  const isSavedToRedux = useSelector((state: CommonState) =>
+    userIds?.every((userId) => !!state.users.entries[userId])
+  )
 
   return {
-    data: users,
+    data: isSavedToRedux ? users : undefined,
     byId,
-    ...queryResults
+    ...queryResults,
+    isPending: queryResults.isPending || !isSavedToRedux,
+    isLoading: queryResults.isLoading || !isSavedToRedux
   }
 }

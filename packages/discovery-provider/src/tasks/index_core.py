@@ -1,10 +1,12 @@
 import json
 import logging
 from datetime import datetime
+from logging import LoggerAdapter
 from typing import Optional, TypedDict, cast
 
 from redis import Redis
 from sqlalchemy import desc
+from web3 import Web3
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.core.core_indexed_blocks import CoreIndexedBlocks
@@ -13,27 +15,39 @@ from src.tasks.celery_app import celery
 from src.tasks.core.core_client import CoreClient, get_core_instance
 from src.tasks.core.gen.protocol_pb2 import BlockResponse
 from src.tasks.index_core_cutovers import (
-    get_core_cutover,
-    get_core_cutover_chain_id,
+    get_em_core_cutover,
+    get_em_core_cutovers_chain_id,
+    get_em_cutover,
+    get_plays_core_cutover,
     get_sol_cutover,
 )
-from src.tasks.index_core_entity_manager import index_core_entity_manager
+from src.tasks.index_core_entity_manager import (
+    get_latest_acdc_block,
+    index_core_entity_manager,
+)
 from src.tasks.index_core_plays import index_core_plays
+from src.tasks.index_core_side_effects import run_side_effects
 from src.utils.config import shared_config
+from src.utils.core import (
+    core_health_check_cache_key,
+    core_listens_health_check_cache_key,
+)
+from src.utils.redis_constants import (
+    latest_block_hash_redis_key,
+    latest_block_redis_key,
+    most_recent_indexed_block_hash_redis_key,
+    most_recent_indexed_block_redis_key,
+)
 from src.utils.session_manager import SessionManager
 
 root_logger = logging.getLogger(__name__)
 
 index_core_lock_key = "index_core_lock"
 
-CORE_INDEXER_MINIMUM_TIME_SECS = 1
-CORE_INDEXER_ERROR_SLEEP_SECS = 5
-
-core_health_check_cache_key = "core:indexer:health"
-core_listens_health_check_cache_key = "core:indexer:health:listens"
-core_em_health_check_cache_key = "core:indexer:health:em"
-
 environment = shared_config["discprov"]["env"]
+default_indexing_interval_seconds = int(
+    shared_config["discprov"]["block_processing_interval_sec"]
+)
 
 
 class CoreListensTxInfo(TypedDict):
@@ -104,11 +118,14 @@ def update_core_listens_health(
 
 
 def update_core_health(
-    redis: Redis, latest_indexed_block: BlockResponse, indexing_plays: bool
+    redis: Redis,
+    latest_indexed_block: BlockResponse,
+    indexing_plays: bool,
+    indexing_em: bool,
 ):
     health: CoreHealth = {
         "chain_id": latest_indexed_block.chainid,
-        "indexing_entity_manager": environment == "dev",
+        "indexing_entity_manager": indexing_em,
         "indexing_plays": indexing_plays,
         "latest_chain_block": latest_indexed_block.current_height,
         "latest_indexed_block": latest_indexed_block.height,
@@ -116,11 +133,54 @@ def update_core_health(
     redis.set(core_health_check_cache_key, json.dumps(health))
 
 
+def update_latest_block_redis(
+    logger: LoggerAdapter, core: CoreClient, redis: Redis, latest_block: int
+):
+    try:
+        block = core.get_block(latest_block)
+        block_number = block.height
+        block_hash = block.blockhash
+        redis.set(
+            latest_block_redis_key,
+            block_number,
+            ex=default_indexing_interval_seconds,
+        )
+        redis.set(
+            latest_block_hash_redis_key,
+            block_hash,
+            ex=default_indexing_interval_seconds,
+        )
+    except Exception as e:
+        logger.error(f"couldn't update latest redis block: {e}")
+
+
+def update_latest_indexed_block_redis(
+    logger: LoggerAdapter, core: CoreClient, redis: Redis, latest_indexed_block: int
+):
+    try:
+        block = core.get_block(latest_indexed_block)
+        block_number = block.height
+        block_hash = block.blockhash
+        redis.set(
+            most_recent_indexed_block_redis_key,
+            block_number,
+            ex=default_indexing_interval_seconds,
+        )
+        redis.set(
+            most_recent_indexed_block_hash_redis_key,
+            block_hash,
+            ex=default_indexing_interval_seconds,
+        )
+    except Exception as e:
+        logger.error(f"couldn't update latest redis block: {e}")
+
+
 @celery.task(name="index_core", bind=True)
 def index_core(self):
     redis: Redis = index_core.redis
     db: SessionManager = index_core.db
     challenge_bus: ChallengeEventBus = index_core.challenge_event_bus
+    web3: Web3 = index_core.web3
 
     update_lock = redis.lock(index_core_lock_key, blocking_timeout=25, timeout=600)
     have_lock = False
@@ -135,18 +195,15 @@ def index_core(self):
 
         # state that gets populated as indexing job goes on
         # used for updating health check and other things
-        indexing_plays = False
-        core_plays_cutover = 0
-        sol_plays_cutover = 0
         block_indexed: Optional[BlockResponse] = None
+        indexing_entity_manager = False
 
         # execute all of indexing in one db session
         with db.scoped_session() as session:
             # gather initialization data for indexer
-            # TODO: cache this across celery messages
-            sol_plays_cutover = get_sol_cutover()
-            core_plays_cutover = get_core_cutover()
-            core_plays_cutover_chain_id = get_core_cutover_chain_id()
+            acdc_em_cutover = get_em_cutover()
+            core_em_cutover = get_em_core_cutover()
+            core_em_cutover_chain_id = get_em_core_cutovers_chain_id()
 
             core_node_info = core.get_node_info()
 
@@ -176,23 +233,26 @@ def index_core(self):
             if latest_slot_record and latest_slot_record.slot:
                 latest_indexed_slot = cast(int, latest_slot_record.slot)
 
-            # do some checks to see if we should be indexing or not
-            on_cutover_chain = core_plays_cutover_chain_id == core_chain_id
+            # do some checks to see if we should be indexing em or not
+            latest_acdc_block = get_latest_acdc_block(session)
+            latest_acdc_block_height = latest_acdc_block.number
+            past_acdc_cutover = latest_acdc_block_height >= acdc_em_cutover
+
+            on_cutover_chain = core_em_cutover_chain_id == core_chain_id
             on_cutover_chain_and_passed_cutover = (
-                on_cutover_chain and latest_core_block_height >= core_plays_cutover
+                on_cutover_chain and latest_core_block_height >= core_em_cutover
             )
-            past_core_plays_cutover = (
+            past_core_em_cutover = (
                 on_cutover_chain_and_passed_cutover or not on_cutover_chain
             )
-            if on_cutover_chain and not past_core_plays_cutover:
-                return
-
-            past_sol_plays_cutover = sol_plays_cutover <= latest_indexed_slot
-            if not past_sol_plays_cutover:
-                return
-
-            indexing_plays = past_sol_plays_cutover and past_core_plays_cutover
-            indexing_entity_manager = environment == "dev"
+            correct_env = environment == "dev" or environment == "stage"
+            if (
+                on_cutover_chain
+                and past_core_em_cutover
+                and past_acdc_cutover
+                and correct_env
+            ):
+                indexing_entity_manager = True
 
             next_block = latest_indexed_block_height + 1
 
@@ -206,6 +266,14 @@ def index_core(self):
                     "latest_chain_block": latest_core_block_height,
                 },
             )
+
+            if indexing_entity_manager:
+                update_latest_block_redis(
+                    logger=logger,
+                    core=core,
+                    redis=redis,
+                    latest_block=core_node_info.current_height,
+                )
 
             logger.debug("indexing block")
 
@@ -227,18 +295,27 @@ def index_core(self):
                 session=session,
                 challenge_bus=challenge_bus,
                 latest_indexed_slot=latest_indexed_slot,
-                indexing_plays=indexing_plays,
                 block=block,
             )
 
             indexed_em_block = index_core_entity_manager(
                 logger=logger,
                 update_task=self,
-                web3=self.web3,
+                web3=web3,
                 session=session,
                 indexing_entity_manager=indexing_entity_manager,
                 block=block,
             )
+
+            if indexing_entity_manager:
+                run_side_effects(
+                    logger=logger,
+                    block=block,
+                    session=session,
+                    web3=web3,
+                    redis=redis,
+                    challenge_bus=challenge_bus,
+                )
 
             # get block parenthash, in none case also use None
             # this would be the case in solana cutover where the previous
@@ -279,16 +356,24 @@ def index_core(self):
 
         # after session has been committed, update health checks and other things
         if block_indexed:
+            if indexing_entity_manager:
+                update_latest_indexed_block_redis(
+                    logger=logger,
+                    core=core,
+                    redis=redis,
+                    latest_indexed_block=block_indexed.height,
+                )
             update_core_health(
                 redis=redis,
                 latest_indexed_block=block_indexed,
-                indexing_plays=indexing_plays,
+                indexing_plays=True,
+                indexing_em=indexing_entity_manager,
             )
             update_core_listens_health(
                 redis=redis,
                 latest_indexed_block=block_indexed,
-                core_plays_cutover=core_plays_cutover,
-                sol_plays_cutover=sol_plays_cutover,
+                core_plays_cutover=get_plays_core_cutover(),
+                sol_plays_cutover=get_sol_cutover(),
             )
 
     except Exception as e:
