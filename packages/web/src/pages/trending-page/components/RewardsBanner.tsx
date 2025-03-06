@@ -26,8 +26,7 @@ const messages = {
 const messageMap = {
   tracks: {
     title: 'Global Trending: Weekly Top 5',
-    description:
-      'Artists Trending on Friday at 12 PM PT Automatically Earn Tokens!'
+    description: 'Artists Trending on Friday at 12 PM PT Earn Tokens!'
   },
   playlists: {
     title: 'Trending Playlists: Weekly Top 5',
