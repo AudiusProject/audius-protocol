@@ -801,7 +801,7 @@ pagination_with_current_user_parser.add_argument(
     "user_id", required=False, description="The user ID of the user making the request"
 )
 
-search_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+search_parser = pagination_parser.copy()
 search_parser.add_argument("query", required=False, description="The search query")
 search_parser.add_argument(
     "genre",
