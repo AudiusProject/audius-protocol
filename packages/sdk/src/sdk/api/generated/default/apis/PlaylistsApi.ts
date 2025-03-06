@@ -65,6 +65,8 @@ export interface GetTrendingPlaylistsRequest {
 }
 
 export interface SearchPlaylistsRequest {
+    offset?: number;
+    limit?: number;
     query?: string;
     genre?: Array<string>;
     sortMethod?: SearchPlaylistsSortMethodEnum;
@@ -290,6 +292,14 @@ export class PlaylistsApi extends runtime.BaseAPI {
      */
     async searchPlaylistsRaw(params: SearchPlaylistsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PlaylistSearchResult>> {
         const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
 
         if (params.query !== undefined) {
             queryParameters['query'] = params.query;
