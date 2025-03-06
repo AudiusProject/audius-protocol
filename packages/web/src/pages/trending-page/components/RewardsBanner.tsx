@@ -93,7 +93,7 @@ const RewardsBanner = ({ bannerType }: RewardsBannerProps) => {
           width: isMobile ? '100%' : 'auto'
         }}
         alignItems={isMobile ? 'flex-start' : 'center'}
-        gap='l'
+        gap={isMobile ? undefined : 'l'}
       >
         <Flex
           alignItems='center'
@@ -110,11 +110,11 @@ const RewardsBanner = ({ bannerType }: RewardsBannerProps) => {
         <Text
           variant='body'
           size='l'
-          strength='weak'
+          strength={isMobile ? 'strong' : 'weak'}
           css={{
             marginLeft: isMobile ? 0 : spacing.s,
             marginTop: isMobile ? spacing.xs : 0,
-            whiteSpace: 'nowrap'
+            whiteSpace: isMobile ? 'normal' : 'nowrap'
           }}
         >
           {messageMap[bannerType].description}
