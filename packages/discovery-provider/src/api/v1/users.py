@@ -1346,7 +1346,7 @@ class UserSearchResult(Resource):
         args = user_search_parser.parse_args()
         query = args.get("query")
         genres = args.get("genre")
-        limit = format_limit(args, 500, 10)
+        limit = format_limit(args, 50, 10)
         offset = format_offset(args)
         is_verified = parse_bool_param(args.get("is_verified"))
         sort_method = args.get("sort_method")
