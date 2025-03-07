@@ -46,6 +46,8 @@ import {
   UpdatePlaylistMetadataSchema
 } from './types'
 
+const now = () => Math.round(new Date().getTime() / 1000)
+
 export class PlaylistsApi extends GeneratedPlaylistsApi {
   private readonly trackUploadHelper: TrackUploadHelper
 
@@ -130,7 +132,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     // Parse inputs
     await parseParams('addTrackToPlaylist', AddTrackToPlaylistSchema)(params)
 
-    const currentBlock = await this.entityManager.getCurrentBlock()
+    const timestamp = now()
 
     return await this.fetchAndUpdatePlaylist(
       {
@@ -142,7 +144,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
             ...(playlist.playlistContents ?? []),
             {
               trackId: params.trackId,
-              timestamp: currentBlock.timestamp
+              timestamp
             }
           ]
         })
@@ -480,7 +482,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     )
 
     const playlistId = await this.trackUploadHelper.generateId('playlist')
-    const currentBlock = await this.entityManager.getCurrentBlock()
+    const timestamp = now()
 
     // Update metadata to include track ids and cover art cid
     const updatedMetadata = {
@@ -488,7 +490,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       isPrivate: false,
       playlistContents: trackIds.map((trackId) => ({
         trackId,
-        timestamp: currentBlock.timestamp
+        timestamp
       })),
       playlistImageSizesMultihash: coverArtResponse.id
     }
@@ -595,14 +597,14 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       ))
 
     const playlistId = providedPlaylistId || (await this.generatePlaylistId())
-    const currentBlock = await this.entityManager.getCurrentBlock()
+    const timestamp = now()
 
     // Update metadata to include track ids
     const updatedMetadata = {
       ...metadata,
       playlistContents: (trackIds ?? []).map((trackId) => ({
         trackId,
-        timestamp: currentBlock.timestamp
+        timestamp
       })),
       playlistImageSizesMultihash: coverArtResponse?.id ?? metadata.coverArtCid
     }
