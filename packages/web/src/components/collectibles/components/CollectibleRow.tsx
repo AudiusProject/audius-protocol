@@ -5,7 +5,9 @@ import { formatDateWithTimezoneOffset } from '@audius/common/utils'
 import {
   IconRemove as IconHide,
   IconDrag,
-  IconMultiselectAdd as IconShow
+  IconMultiselectAdd as IconShow,
+  Pill,
+  Text
 } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -67,7 +69,7 @@ export const VisibleCollectibleRow = (props) => {
   return (
     <div className={styles.editRow} ref={forwardRef} {...otherProps}>
       <Tooltip text={collectibleMessages.hideCollectible}>
-        <IconHide onClick={onHideClick} />
+        <IconHide color='danger' onClick={onHideClick} />
       </Tooltip>
       <div className={styles.verticalDivider} />
       {(frameUrl ?? gifUrl) ? (
@@ -91,16 +93,14 @@ export const VisibleCollectibleRow = (props) => {
       ) : (
         <div className={styles.editMediaEmpty} />
       )}
-      <div className={styles.editRowTitle}>{name}</div>
+      <div className={styles.editRowTitle}>
+        <Text variant='title'>{name}</Text>
+      </div>
       <div>
         {isOwned ? (
-          <span className={cn(styles.owned, styles.editStamp)}>
-            {collectibleMessages.owned}
-          </span>
+          <Pill variant='active'>{collectibleMessages.owned}</Pill>
         ) : (
-          <span className={cn(styles.created, styles.editStamp)}>
-            {collectibleMessages.created}
-          </span>
+          <Pill>{collectibleMessages.created}</Pill>
         )}
       </div>
       {dateCreated && <div>{formatDateWithTimezoneOffset(dateCreated)}</div>}
@@ -152,16 +152,14 @@ export const HiddenCollectibleRow = (props: HiddenCollectibleRowProps) => {
       ) : (
         <div className={styles.editMediaEmpty} />
       )}
-      <div className={styles.editRowTitle}>{name}</div>
+      <div className={styles.editRowTitle}>
+        <Text variant='title'>{name}</Text>
+      </div>
       <div>
         {isOwned ? (
-          <span className={cn(styles.owned, styles.editStamp)}>
-            {collectibleMessages.owned}
-          </span>
+          <Pill variant='active'>{collectibleMessages.owned}</Pill>
         ) : (
-          <span className={cn(styles.created, styles.editStamp)}>
-            {collectibleMessages.created}
-          </span>
+          <Pill>{collectibleMessages.created}</Pill>
         )}
       </div>
       {dateCreated && <div>{formatDateWithTimezoneOffset(dateCreated)}</div>}
