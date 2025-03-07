@@ -1,12 +1,17 @@
 import React, { useMemo } from 'react'
 
 import { ChallengeName } from '@audius/common/models'
-import { challengesSelectors } from '@audius/common/store'
+import { challengesSelectors, ClaimStatus } from '@audius/common/store'
+import {
+  getChallengeStatusLabel,
+  formatNumberCommas
+} from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
-import { Button, Flex, Text } from '@audius/harmony-native'
+import { Button, Flex, Text, IconArrowRight } from '@audius/harmony-native'
 
 import { ChallengeRewardsLayout } from './ChallengeRewardsLayout'
+import { ClaimError } from './ClaimError'
 import { CooldownSummaryTable } from './CooldownSummaryTable'
 import type { ChallengeContentProps } from './types'
 
@@ -21,15 +26,17 @@ const messages = {
     'Hit 10,000 plays across all of your tracks in 2025 to earn an $AUDIO Reward',
   progressLabel: 'PLAYS',
   audio: '$AUDIO',
-  close: 'Close'
+  close: 'Close',
+  claiming: 'Claiming',
+  claimAudio: (amount: string) => `Claim ${amount} $AUDIO`
 }
 
 export const PlayCountMilestoneContent = (props: ChallengeContentProps) => {
-  const { challengeName, onClose } = props
+  const { challengeName, onClose, onClaim, claimStatus, aaoErrorCode } = props
   const userChallenges = useSelector(getOptimisticUserChallenges)
   const optimisticChallenge = userChallenges[challengeName]
 
-  const { description, targetPlays, currentPlays, isComplete } = useMemo(() => {
+  const { description, targetPlays, currentPlays } = useMemo(() => {
     let description = ''
 
     switch (challengeName) {
@@ -57,12 +64,22 @@ export const PlayCountMilestoneContent = (props: ChallengeContentProps) => {
 
     const currentPlays = optimisticChallenge?.current_step_count || 0
 
-    const isComplete =
-      optimisticChallenge?.state === 'completed' ||
-      optimisticChallenge?.state === 'disbursed'
-
-    return { description, targetPlays, currentPlays, isComplete }
+    return { description, targetPlays, currentPlays }
   }, [challengeName, optimisticChallenge])
+
+  const statusText = optimisticChallenge
+    ? getChallengeStatusLabel(optimisticChallenge, challengeName)
+    : ''
+
+  const isClaimable =
+    optimisticChallenge?.claimableAmount &&
+    optimisticChallenge.claimableAmount > 0
+
+  const claimInProgress =
+    claimStatus === ClaimStatus.CLAIMING ||
+    claimStatus === ClaimStatus.WAITING_FOR_RETRY
+
+  const claimError = claimStatus === ClaimStatus.ERROR
 
   const statusLabel = (
     <Flex
@@ -74,9 +91,7 @@ export const PlayCountMilestoneContent = (props: ChallengeContentProps) => {
     >
       <Flex w='100%' alignItems='center' justifyContent='center' pv='l'>
         <Text variant='label' size='l' color='subdued'>
-          {isComplete
-            ? 'COMPLETE!'
-            : `${currentPlays} ${messages.progressLabel}`}
+          {statusText}
         </Text>
       </Flex>
     </Flex>
@@ -86,11 +101,26 @@ export const PlayCountMilestoneContent = (props: ChallengeContentProps) => {
     <CooldownSummaryTable challengeId={challengeName} />
   ) : null
 
-  const actions = (
-    <Button variant='secondary' onPress={onClose} fullWidth>
-      {messages.close}
-    </Button>
-  )
+  const actions =
+    isClaimable && onClaim ? (
+      <Button
+        variant='primary'
+        isLoading={claimInProgress}
+        onPress={onClaim}
+        iconRight={IconArrowRight}
+        fullWidth
+      >
+        {claimInProgress
+          ? messages.claiming
+          : messages.claimAudio(
+              formatNumberCommas(optimisticChallenge.claimableAmount)
+            )}
+      </Button>
+    ) : (
+      <Button variant='secondary' onPress={onClose} fullWidth>
+        {messages.close}
+      </Button>
+    )
 
   return (
     <ChallengeRewardsLayout
@@ -103,8 +133,10 @@ export const PlayCountMilestoneContent = (props: ChallengeContentProps) => {
       statusLabel={statusLabel}
       actions={actions}
       additionalContent={additionalContent}
-      errorContent={null}
-      claimInProgress={false}
+      errorContent={
+        claimError ? <ClaimError aaoErrorCode={aaoErrorCode} /> : null
+      }
+      claimInProgress={claimInProgress}
       isCooldownChallenge={!!optimisticChallenge?.cooldown_days}
     />
   )

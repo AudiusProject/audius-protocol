@@ -1,15 +1,23 @@
 import React, { useMemo } from 'react'
 
 import { ChallengeName } from '@audius/common/models'
-import { challengesSelectors } from '@audius/common/store'
-import { Box, Button, Flex, Text } from '@audius/harmony'
+import {
+  challengesSelectors,
+  audioRewardsPageSelectors,
+  ClaimStatus
+} from '@audius/common/store'
+import { getChallengeStatusLabel } from '@audius/common/utils'
+import { Box, Flex, Text } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import { ChallengeRewardsLayout } from './ChallengeRewardsLayout'
+import { ClaimButton } from './ClaimButton'
 import { CooldownSummaryTable } from './CooldownSummaryTable'
 import { ChallengeContentProps } from './types'
 
 const { getOptimisticUserChallenges } = challengesSelectors
+const { getUndisbursedUserChallenges, getClaimStatus } =
+  audioRewardsPageSelectors
 
 const messages = {
   title250: '250 PLAYS',
@@ -32,8 +40,13 @@ export const PlayCountMilestoneContent = ({
 }: ChallengeContentProps) => {
   const userChallenges = useSelector(getOptimisticUserChallenges)
   const challenge = userChallenges[challengeName]
+  const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
+  const claimStatus = useSelector(getClaimStatus)
+  const claimInProgress =
+    claimStatus === ClaimStatus.CLAIMING ||
+    claimStatus === ClaimStatus.WAITING_FOR_RETRY
 
-  const { description, targetPlays, currentPlays, isComplete } = useMemo(() => {
+  const { description, targetPlays, currentPlays } = useMemo(() => {
     let description = ''
 
     switch (challengeName) {
@@ -61,11 +74,12 @@ export const PlayCountMilestoneContent = ({
 
     const currentPlays = challenge?.current_step_count || 0
 
-    const isComplete =
-      challenge?.state === 'completed' || challenge?.state === 'disbursed'
-
-    return { description, targetPlays, currentPlays, isComplete }
+    return { description, targetPlays, currentPlays }
   }, [challengeName, challenge])
+
+  const statusText = challenge
+    ? getChallengeStatusLabel(challenge, challengeName)
+    : ''
 
   const descriptionContent = (
     <Box>
@@ -79,9 +93,7 @@ export const PlayCountMilestoneContent = ({
     <Flex w='100%' ph='xl' borderRadius='s' backgroundColor='surface1'>
       <Flex alignItems='center' justifyContent='center' pv='l'>
         <Text variant='label' size='l' color='subdued'>
-          {isComplete
-            ? 'COMPLETE!'
-            : `${currentPlays} ${messages.progressLabel}`}
+          {statusText}
         </Text>
       </Flex>
     </Flex>
@@ -92,9 +104,12 @@ export const PlayCountMilestoneContent = ({
   ) : null
 
   const actions = (
-    <Button variant='secondary' fullWidth onClick={onNavigateAway}>
-      {messages.close}
-    </Button>
+    <ClaimButton
+      challenge={challenge}
+      claimInProgress={claimInProgress}
+      onClose={onNavigateAway}
+      undisbursedChallenges={undisbursedUserChallenges}
+    />
   )
 
   return (
