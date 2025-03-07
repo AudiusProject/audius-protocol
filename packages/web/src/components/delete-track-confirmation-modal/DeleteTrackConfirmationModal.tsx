@@ -16,6 +16,7 @@ export const DeleteTrackConfirmationModal = () => {
   const { mutateAsync: deleteTrack } = useDeleteTrack()
 
   const handleConfirm = useCallback(() => {
+    if (!trackId) return
     deleteTrack({ trackId, source: 'delete_track_confirmation_modal' })
     onClose()
   }, [trackId, deleteTrack, onClose])

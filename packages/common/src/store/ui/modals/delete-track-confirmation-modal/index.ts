@@ -3,7 +3,7 @@ import { ID } from '~/models/Identifiers'
 import { createModal } from '../createModal'
 
 export type DeleteTrackConfirmationModalState = {
-  trackId: ID
+  trackId: ID | null
 }
 
 const deleteTrackConfirmationModal =
@@ -11,7 +11,7 @@ const deleteTrackConfirmationModal =
     reducerPath: 'DeleteTrackConfirmation',
     initialState: {
       isOpen: false,
-      trackId: 0
+      trackId: null
     },
     sliceSelector: (state) => state.ui.modals
   })
