@@ -15,8 +15,9 @@ export const UserListItemSkeleton = ({ tag }: Props) => {
       direction='row'
       alignItems='center'
       justifyContent='space-between'
-      p='l'
+      p='m'
       w='100%'
+      h={97}
     >
       <Flex direction='row' gap='s' flex={1}>
         <Skeleton w={74} h={74} borderRadius='circle' />

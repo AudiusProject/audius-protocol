@@ -134,7 +134,7 @@ export const UserListV2 = ({
     [dispatch, beforeClickArtistName]
   )
 
-  const showSkeletons = isLoading
+  const showSkeletons = isLoading || isFetchingNextPage
 
   // Determine the tag for skeleton items based on whether we're showing support info
   let skeletonTag: string | undefined
