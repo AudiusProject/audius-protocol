@@ -156,6 +156,8 @@ export const UserListV2 = ({
     ...(showSkeletons ? currentSkeletonData : [])
   ]
 
+  console.log('display length', displayData.length)
+
   return (
     <Flex h='100%' column>
       <InfiniteScroll
@@ -182,6 +184,7 @@ export const UserListV2 = ({
               justifyContent='space-between'
               borderBottom='strong'
               p='m'
+              key={user.user_id}
             >
               <ArtistChip
                 user={user}
