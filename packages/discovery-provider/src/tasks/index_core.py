@@ -1,10 +1,12 @@
 import json
 import logging
 from datetime import datetime
+from logging import LoggerAdapter
 from typing import Optional, TypedDict, cast
 
 from redis import Redis
 from sqlalchemy import desc
+from web3 import Web3
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.core.core_indexed_blocks import CoreIndexedBlocks
@@ -24,10 +26,17 @@ from src.tasks.index_core_entity_manager import (
     index_core_entity_manager,
 )
 from src.tasks.index_core_plays import index_core_plays
+from src.tasks.index_core_side_effects import run_side_effects
 from src.utils.config import shared_config
 from src.utils.core import (
     core_health_check_cache_key,
     core_listens_health_check_cache_key,
+)
+from src.utils.redis_constants import (
+    latest_block_hash_redis_key,
+    latest_block_redis_key,
+    most_recent_indexed_block_hash_redis_key,
+    most_recent_indexed_block_redis_key,
 )
 from src.utils.session_manager import SessionManager
 
@@ -36,6 +45,9 @@ root_logger = logging.getLogger(__name__)
 index_core_lock_key = "index_core_lock"
 
 environment = shared_config["discprov"]["env"]
+default_indexing_interval_seconds = int(
+    shared_config["discprov"]["block_processing_interval_sec"]
+)
 
 
 class CoreListensTxInfo(TypedDict):
@@ -121,11 +133,54 @@ def update_core_health(
     redis.set(core_health_check_cache_key, json.dumps(health))
 
 
+def update_latest_block_redis(
+    logger: LoggerAdapter, core: CoreClient, redis: Redis, latest_block: int
+):
+    try:
+        block = core.get_block(latest_block)
+        block_number = block.height
+        block_hash = block.blockhash
+        redis.set(
+            latest_block_redis_key,
+            block_number,
+            ex=default_indexing_interval_seconds,
+        )
+        redis.set(
+            latest_block_hash_redis_key,
+            block_hash,
+            ex=default_indexing_interval_seconds,
+        )
+    except Exception as e:
+        logger.error(f"couldn't update latest redis block: {e}")
+
+
+def update_latest_indexed_block_redis(
+    logger: LoggerAdapter, core: CoreClient, redis: Redis, latest_indexed_block: int
+):
+    try:
+        block = core.get_block(latest_indexed_block)
+        block_number = block.height
+        block_hash = block.blockhash
+        redis.set(
+            most_recent_indexed_block_redis_key,
+            block_number,
+            ex=default_indexing_interval_seconds,
+        )
+        redis.set(
+            most_recent_indexed_block_hash_redis_key,
+            block_hash,
+            ex=default_indexing_interval_seconds,
+        )
+    except Exception as e:
+        logger.error(f"couldn't update latest redis block: {e}")
+
+
 @celery.task(name="index_core", bind=True)
 def index_core(self):
     redis: Redis = index_core.redis
     db: SessionManager = index_core.db
     challenge_bus: ChallengeEventBus = index_core.challenge_event_bus
+    web3: Web3 = index_core.web3
 
     update_lock = redis.lock(index_core_lock_key, blocking_timeout=25, timeout=600)
     have_lock = False
@@ -212,6 +267,14 @@ def index_core(self):
                 },
             )
 
+            if indexing_entity_manager:
+                update_latest_block_redis(
+                    logger=logger,
+                    core=core,
+                    redis=redis,
+                    latest_block=core_node_info.current_height,
+                )
+
             logger.debug("indexing block")
 
             block = core.get_block(next_block)
@@ -238,11 +301,21 @@ def index_core(self):
             indexed_em_block = index_core_entity_manager(
                 logger=logger,
                 update_task=self,
-                web3=self.web3,
+                web3=web3,
                 session=session,
                 indexing_entity_manager=indexing_entity_manager,
                 block=block,
             )
+
+            if indexing_entity_manager:
+                run_side_effects(
+                    logger=logger,
+                    block=block,
+                    session=session,
+                    web3=web3,
+                    redis=redis,
+                    challenge_bus=challenge_bus,
+                )
 
             # get block parenthash, in none case also use None
             # this would be the case in solana cutover where the previous
@@ -283,6 +356,13 @@ def index_core(self):
 
         # after session has been committed, update health checks and other things
         if block_indexed:
+            if indexing_entity_manager:
+                update_latest_indexed_block_redis(
+                    logger=logger,
+                    core=core,
+                    redis=redis,
+                    latest_indexed_block=block_indexed.height,
+                )
             update_core_health(
                 redis=redis,
                 latest_indexed_block=block_indexed,

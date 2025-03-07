@@ -15,6 +15,8 @@ from src.api.v1.helpers import (
     extend_track,
     extend_user,
     filter_hidden_tracks,
+    format_limit,
+    format_offset,
     full_trending_parser,
     get_current_user_id,
     get_default_max,
@@ -404,14 +406,16 @@ class PlaylistSearchResult(Resource):
         include_purchaseable = parse_bool_param(args.get("includePurchaseable"))
         has_downloads = parse_bool_param(args.get("has_downloads"))
         sort_method = args.get("sort_method")
+        limit = format_limit(args, 50, 10)
+        offset = format_offset(args)
         search_args = {
             "query": query,
             "kind": SearchKind.playlists.name,
             "is_auto_complete": False,
             "current_user_id": None,
             "with_users": True,
-            "limit": 10,
-            "offset": 0,
+            "limit": limit,
+            "offset": offset,
             "genres": genres,
             "moods": moods,
             "include_purchaseable": include_purchaseable,

@@ -413,6 +413,7 @@ export const getClaimableChallengeSpecifiers = (
 
 const newChallengeIds: ChallengeRewardID[] = [
   ChallengeName.ListenStreakEndless,
+  ChallengeName.FirstWeeklyComment,
   ChallengeName.AudioMatchingSell,
   ChallengeName.AudioMatchingBuy,
   ChallengeName.PlayCount250,
@@ -461,7 +462,6 @@ export const getChallengeStatusLabel = (
       if (shouldShowReset) {
         return 'Resets Friday'
       }
-      return DEFAULT_STATUS_LABELS.AVAILABLE
   }
 
   // Handle claimable state for non-aggregate rewards

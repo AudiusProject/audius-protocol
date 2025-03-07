@@ -6,23 +6,18 @@ import {
 } from 'react'
 
 import { Notification, useNotificationModal } from '@audius/common/store'
-import cn from 'classnames'
-
-import styles from './NotificationTile.module.css'
+import { Paper } from '@audius/harmony'
 
 type NotificationTileProps = {
   notification: Notification
   children: ReactNode
   onClick?: ReactEventHandler
-  // When `true` disable :active and :hover transforms
-  disabled?: boolean
   // When `true` do not close notification panel onClick
   disableClosePanel?: boolean
 }
 
 export const NotificationTile = (props: NotificationTileProps) => {
-  const { notification, onClick, children, disabled, disableClosePanel } = props
-  const { isViewed } = notification
+  const { onClick, children, disableClosePanel } = props
   const { onClose } = useNotificationModal()
 
   const handleClick: MouseEventHandler = useCallback(
@@ -36,16 +31,8 @@ export const NotificationTile = (props: NotificationTileProps) => {
   )
 
   return (
-    <div
-      className={cn(styles.root, {
-        [styles.read]: isViewed,
-        [styles.active]: !disabled
-      })}
-      tabIndex={0}
-      role='button'
-      onClick={handleClick}
-    >
+    <Paper column shadow='flat' p='l' onClick={handleClick}>
       {children}
-    </div>
+    </Paper>
   )
 }

@@ -128,7 +128,8 @@ export function CommentSectionProvider<NavigationProp>(
   const currentUserId = useSelector(getUserId)
 
   const {
-    data: commentIds = [],
+    data: comments = [],
+    commentIds,
     status,
     isFetching,
     hasNextPage,
@@ -170,10 +171,10 @@ export function CommentSectionProvider<NavigationProp>(
       make({
         eventName: Name.COMMENTS_LOAD_MORE_COMMENTS,
         trackId: entityId,
-        offset: commentIds.length
+        offset: comments.length
       })
     )
-  }, [commentIds.length, entityId, loadMorePages, make, trackEvent])
+  }, [comments.length, entityId, loadMorePages, make, trackEvent])
 
   const handleResetComments = useCallback(() => {
     resetComments()
@@ -240,7 +241,7 @@ export function CommentSectionProvider<NavigationProp>(
         entityType,
         commentCount: commentCountData?.currentValue ?? track.comment_count,
         isCommentCountLoading,
-        commentIds: commentIds.map((comment) => comment.id),
+        commentIds,
         commentSectionLoading,
         isEntityOwner: currentUserId === owner_id,
         isLoadingMorePages,

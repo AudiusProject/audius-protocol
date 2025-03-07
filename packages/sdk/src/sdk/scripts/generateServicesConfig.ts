@@ -117,7 +117,7 @@ const stagingConfig: SdkServicesConfig = {
     discoveryNodes: [],
     storageNodes: [],
     antiAbuseOracleNodes: {
-      endpoints: ['https://antiabuseoracle.staging.audius.co'],
+      endpoints: ['https://discoveryprovider.staging.audius.co'],
       registeredAddresses: []
     },
     identityService: 'https://identityservice.staging.audius.co'

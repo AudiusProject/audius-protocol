@@ -107,7 +107,6 @@ const AudioBreakdownModal = () => {
       isFullscreen={true}
       showTitleHeader
       showDismissButton
-      useGradientTitle={false}
     >
       <AudioBreakdownBody />
     </ModalDrawer>

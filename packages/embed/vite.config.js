@@ -1,7 +1,8 @@
-import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill'
 import react from '@vitejs/plugin-react'
+import fixReactVirtualized from 'esbuild-plugin-react-virtualized'
 import process from 'process/browser'
 import { defineConfig, loadEnv } from 'vite'
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import svgr from 'vite-plugin-svgr'
 
 export default defineConfig(({ command, mode }) => {
@@ -15,7 +16,7 @@ export default defineConfig(({ command, mode }) => {
       outDir: 'build',
       sourcemap: true,
       commonjsOptions: {
-        include: [/libs\/dist\/web-libs/, /node_modules/]
+        include: [/node_modules/]
       }
     },
     define: {
@@ -24,16 +25,11 @@ export default defineConfig(({ command, mode }) => {
       'process.env': env
     },
     optimizeDeps: {
-      include: ['@audius/sdk-legacy/dist/web-libs', '@audius/fetch-nft'],
       esbuildOptions: {
         define: {
           global: 'globalThis'
         },
-        plugins: [
-          NodeGlobalsPolyfillPlugin({
-            buffer: true
-          })
-        ]
+        plugins: [fixReactVirtualized]
       }
     },
     plugins: [
@@ -58,6 +54,14 @@ export default defineConfig(({ command, mode }) => {
         babel: {
           plugins: ['@emotion/babel-plugin']
         }
+      }),
+      nodePolyfills({
+        exclude: ['fs'],
+        globals: {
+          Buffer: true,
+          process: true
+        },
+        protocolImports: true
       })
     ],
     resolve: {

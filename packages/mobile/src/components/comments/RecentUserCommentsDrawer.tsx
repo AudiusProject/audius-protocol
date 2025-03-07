@@ -136,7 +136,6 @@ const CommentItem = ({ comment }: { comment: CommentOrReply }) => {
             </Flex>
             <CommentText
               isEdited={isEdited}
-              isPreview={true}
               commentId={comment.id}
               mentions={comment.mentions ?? []}
               renderTimestamps={false}
@@ -171,7 +170,7 @@ const RecentUserCommentsDrawerContent = () => {
   const { userId } = useRecentUserCommentsDrawer()
   const {
     data: comments,
-    isLoading,
+    isPending,
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage
@@ -184,7 +183,7 @@ const RecentUserCommentsDrawerContent = () => {
   }, [fetchNextPage, hasNextPage])
 
   // Loading state
-  if (isLoading) {
+  if (isPending) {
     return (
       <Flex pv='m'>
         <CommentSkeleton />
