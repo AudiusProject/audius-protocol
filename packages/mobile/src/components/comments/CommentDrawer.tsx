@@ -95,7 +95,7 @@ const CommentDrawerAutocompleteContent = ({
     pageSize: 6,
     userId: currentUserId
   })
-  const userList = query !== '' ? (searchData as any)?.users : followersData
+  const userList = query !== '' ? searchData : followersData
   const isUserListPending = query !== '' ? searchLoading : followerDataPending
 
   // Loading state

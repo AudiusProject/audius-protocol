@@ -186,12 +186,9 @@ const useSearchQueryProps = (
       const { tracks, playlists, albums, users } = searchResultsFromSDK(data)
 
       const primeSearchSlice = <
-        T extends
-          | UserTrackMetadata[]
-          | UserMetadata[]
-          | UserCollectionMetadata[]
+        T extends UserTrackMetadata | UserMetadata | UserCollectionMetadata
       >(
-        data: T,
+        data: T[],
         category: SearchCategory
       ) => {
         queryClient.setQueryData(
@@ -200,11 +197,11 @@ const useSearchQueryProps = (
             category
           }),
           (queryData: InfiniteData<T[]>): InfiniteData<T[]> => {
-            const prevPages = (queryData?.pages as unknown as T[]) ?? []
+            const prevPages = (queryData?.pages as T[][]) ?? []
             const currentIndex = pageParam % pageSize
             prevPages[currentIndex] = data
             return {
-              pages: prevPages as unknown as T[][],
+              pages: prevPages as T[][],
               pageParams: [pageParam]
             }
           }
