@@ -17,7 +17,6 @@ def test_get_notifications(app):
 
         test_entities = {
             "users": [{"user_id": i + 1} for i in range(200)],
-            "plays": [{"user_id": i + 1} for i in range(200)],
             "tracks": [{"track_id": i, "owner_id": 1} for i in range(60)],
             "notification_seens": [
                 {"user_id": 1, "seen_at": times[i]} for i in range(0, 100, 3)
