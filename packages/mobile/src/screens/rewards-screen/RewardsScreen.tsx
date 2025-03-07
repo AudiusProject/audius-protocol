@@ -1,8 +1,10 @@
-import { useCallback, useEffect } from 'react'
+import type { ReactElement } from 'react'
+import React, { useCallback, useEffect } from 'react'
 
-import type { StringWei } from '@audius/common/models'
+import type { StringWei, BadgeTier } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import {
+  badgeTiers,
   tokenDashboardPageActions,
   walletSelectors,
   walletActions,
@@ -10,6 +12,8 @@ import {
   vipDiscordModalActions
 } from '@audius/common/store'
 import type { CommonState } from '@audius/common/store'
+import type { Nullable } from '@audius/common/utils'
+import { formatNumberCommas } from '@audius/common/utils'
 import { useFocusEffect } from '@react-navigation/native'
 import { Linking } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
@@ -20,13 +24,14 @@ import {
   Flex,
   IconCrown,
   IconDiscord,
+  IconValidationCheck,
   Paper,
-  Text
+  Text,
+  IconTokenBronze,
+  IconTokenGold,
+  IconTokenPlatinum,
+  IconTokenSilver
 } from '@audius/harmony-native'
-import Bronze from 'app/assets/images/tokenBadgeBronze108.png'
-import Gold from 'app/assets/images/tokenBadgeGold108.png'
-import Platinum from 'app/assets/images/tokenBadgePlatinum108.png'
-import Silver from 'app/assets/images/tokenBadgeSilver108.png'
 import {
   ScrollView,
   Screen,
@@ -41,8 +46,124 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { ChallengeRewardsTile } from './ChallengeRewardsTile'
 import { ClaimAllRewardsTile } from './ClaimAllRewardsTile'
-import { Tier } from './Tier'
 import { TrendingRewardsTile } from './TrendingRewardsTile'
+
+// Define features and featureMessages
+const features = [
+  'balance',
+  'hqStreaming',
+  'unlimitedUploads',
+  'uploadOnMobile',
+  'offlineListening',
+  'gatedContent',
+  'directMessaging',
+  'nftGallery',
+  'messageBlasts',
+  'flairBadges',
+  'customDiscordRole',
+  'customThemes'
+] as const
+
+type FeatureKey = (typeof features)[number]
+
+const featureMessages: Record<FeatureKey, string> = {
+  balance: '$AUDIO Balance',
+  hqStreaming: 'HQ Streaming',
+  unlimitedUploads: 'Unlimited Uploads',
+  uploadOnMobile: 'Upload on Mobile',
+  offlineListening: 'Offline Listening',
+  gatedContent: 'Gated Content',
+  directMessaging: 'Direct Messaging',
+  nftGallery: 'NFT Collectibles Gallery',
+  messageBlasts: 'Message Blasts',
+  flairBadges: 'Flair Badges',
+  customDiscordRole: 'Custom Discord Role',
+  customThemes: 'App Themes'
+}
+
+const tierFeatureMap: Record<BadgeTier, Record<FeatureKey, boolean>> = {
+  none: {
+    balance: true,
+    hqStreaming: true,
+    unlimitedUploads: true,
+    uploadOnMobile: true,
+    offlineListening: true,
+    gatedContent: true,
+    directMessaging: true,
+    nftGallery: true,
+    messageBlasts: false,
+    flairBadges: false,
+    customDiscordRole: false,
+    customThemes: false
+  },
+  bronze: {
+    balance: true,
+    hqStreaming: true,
+    unlimitedUploads: true,
+    uploadOnMobile: true,
+    offlineListening: true,
+    gatedContent: true,
+    directMessaging: true,
+    nftGallery: true,
+    messageBlasts: true,
+    flairBadges: true,
+    customDiscordRole: true,
+    customThemes: false
+  },
+  silver: {
+    balance: true,
+    hqStreaming: true,
+    unlimitedUploads: true,
+    uploadOnMobile: true,
+    offlineListening: true,
+    gatedContent: true,
+    directMessaging: true,
+    nftGallery: true,
+    messageBlasts: true,
+    flairBadges: true,
+    customDiscordRole: true,
+    customThemes: false
+  },
+  gold: {
+    balance: true,
+    hqStreaming: true,
+    unlimitedUploads: true,
+    uploadOnMobile: true,
+    offlineListening: true,
+    gatedContent: true,
+    directMessaging: true,
+    nftGallery: true,
+    messageBlasts: true,
+    flairBadges: true,
+    customDiscordRole: true,
+    customThemes: true
+  },
+  platinum: {
+    balance: true,
+    hqStreaming: true,
+    unlimitedUploads: true,
+    uploadOnMobile: true,
+    offlineListening: true,
+    gatedContent: true,
+    directMessaging: true,
+    nftGallery: true,
+    messageBlasts: true,
+    flairBadges: true,
+    customDiscordRole: true,
+    customThemes: true
+  }
+}
+
+type AudioTiers = Exclude<BadgeTier, 'none'>
+
+const audioTierMapSvg: {
+  [tier in AudioTiers]: Nullable<ReactElement>
+} = {
+  bronze: <IconTokenBronze size='l' />,
+  silver: <IconTokenSilver size='l' />,
+  gold: <IconTokenGold size='l' />,
+  platinum: <IconTokenPlatinum size='l' />
+}
 
 const { getBalance } = walletActions
 const { getTotalBalanceLoadDidFail } = walletSelectors
@@ -60,7 +181,7 @@ const messages = {
     'Keep $AUDIO in your wallet to enjoy perks and exclusive features.',
   launchDiscord: 'Launch the VIP Discord',
   what: 'What is $AUDIO',
-  learnMore: 'Learn More'
+  learnMore: 'LEARN MORE'
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
@@ -115,7 +236,7 @@ export const RewardsScreen = () => {
     useSelector((state: CommonState) => state.wallet.totalBalance) ??
     ('0' as StringWei)
   const balanceLoadDidFail = useSelector(getTotalBalanceLoadDidFail)
-  const { tierNumber } = getTierAndNumberForBalance(totalBalanceWei)
+  const { tier } = getTierAndNumberForBalance(totalBalanceWei)
 
   useFocusEffect(
     useCallback(() => {
@@ -172,40 +293,107 @@ export const RewardsScreen = () => {
             {messages.vipTiersBody}
           </Text>
         </Flex>
-        <Tier
-          tierNumber={1}
-          title='bronze'
-          gradientColors={['rgba(141, 48, 8, 0.5)', 'rgb(182, 97, 11)']}
-          minAmount={10}
-          imageSource={Bronze}
-          isCurrentTier={tierNumber === 1}
-        />
-        <Tier
-          tierNumber={2}
-          title='silver'
-          gradientColors={['rgba(179, 182, 185, 0.5)', 'rgb(189, 189, 189)']}
-          minAmount={100}
-          imageSource={Silver}
-          isCurrentTier={tierNumber === 2}
-        />
-        <Tier
-          tierNumber={3}
-          title='gold'
-          gradientColors={['rgb(236, 173, 11)', 'rgb(236, 173, 11)']}
-          minAmount={1000}
-          imageSource={Gold}
-          isCurrentTier={tierNumber === 3}
-          unlocks={['matrix']}
-        />
-        <Tier
-          tierNumber={4}
-          title='platinum'
-          gradientColors={['rgb(179, 236, 249)', 'rgb(87, 194, 215)']}
-          minAmount={10000}
-          imageSource={Platinum}
-          isCurrentTier={tierNumber === 4}
-          unlocks={['matrix']}
-        />
+
+        <Paper
+          shadow='mid'
+          border='strong'
+          style={{
+            width: '100%',
+            overflow: 'hidden',
+            borderRadius: 8
+          }}
+        >
+          {/* Current tier header */}
+          <LinearGradient
+            colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
+            start={{ x: 1, y: 1 }}
+            end={{ x: 0, y: 0 }}
+            style={{ padding: 12 }}
+          >
+            <Flex justifyContent='center' alignItems='center'>
+              <Text variant='label' size='s' color='white'>
+                CURRENT TIER
+              </Text>
+            </Flex>
+          </LinearGradient>
+
+          {/* Tier icon and name */}
+          <Flex direction='column' alignItems='center' gap='s' pv='l' ph='l'>
+            {tier === 'none' ? (
+              <Text variant='title' size='l'>
+                No Tier
+              </Text>
+            ) : (
+              <>
+                {audioTierMapSvg[tier as AudioTiers]}
+                <GradientText
+                  style={{
+                    fontSize: 24,
+                    fontWeight: 'bold',
+                    textTransform: 'capitalize'
+                  }}
+                >
+                  {tier}
+                </GradientText>
+              </>
+            )}
+          </Flex>
+
+          {/* Feature rows */}
+          {features.map((feature) => {
+            const isAvailable = tierFeatureMap[tier][feature]
+            let content: React.ReactNode = null
+
+            if (feature === 'balance') {
+              if (tier === 'none') {
+                return null
+              }
+              const minAudio = badgeTiers
+                .find((b) => b.tier === tier)
+                ?.minAudio.toString()
+              if (!minAudio) return null
+
+              content = (
+                <Text variant='label' size='m'>
+                  {`${formatNumberCommas(minAudio)}+`}
+                </Text>
+              )
+            } else if (isAvailable) {
+              content = (
+                <Flex direction='row' alignItems='center' gap='s'>
+                  <IconValidationCheck />
+                  {feature === 'customDiscordRole' ? (
+                    <Button
+                      size='small'
+                      variant='secondary'
+                      iconLeft={IconDiscord}
+                      onPress={onPressLaunchDiscord}
+                    />
+                  ) : null}
+                </Flex>
+              )
+            } else {
+              // No content for unavailable features - empty circle was removed in mobile web
+              return null
+            }
+
+            return (
+              <Flex
+                key={feature}
+                direction='row'
+                justifyContent='space-between'
+                alignItems='center'
+                pv='m'
+                ph='m'
+                borderTop='default'
+              >
+                <Text variant='body'>{featureMessages[feature]}</Text>
+                {content}
+              </Flex>
+            )
+          })}
+        </Paper>
+
         <Flex gap='l' w='100%'>
           <Button
             variant='secondary'
@@ -218,6 +406,7 @@ export const RewardsScreen = () => {
             variant='secondary'
             iconLeft={IconDiscord}
             onPress={onPressLaunchDiscord}
+            fullWidth
           >
             {messages.launchDiscord}
           </Button>

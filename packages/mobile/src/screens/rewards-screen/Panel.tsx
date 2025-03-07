@@ -5,13 +5,7 @@ import { isNewChallenge } from '@audius/common/utils'
 import { Platform } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
-import {
-  IconCheck,
-  Text,
-  Flex,
-  useTheme,
-  IconSparkles
-} from '@audius/harmony-native'
+import { Flex, IconCheck, IconSparkles, Text } from '@audius/harmony-native'
 import { ProgressBar } from 'app/components/progress-bar'
 import type { MobileChallengeConfig } from 'app/utils/challenges'
 import { useThemeColors } from 'app/utils/theme'
@@ -42,7 +36,6 @@ export const Panel = ({
   remainingLabel,
   challenge
 }: PanelProps) => {
-  const { spacing } = useTheme()
   const { neutralLight4 } = useThemeColors()
 
   const maxStepCount = challenge?.max_steps ?? 0
@@ -63,8 +56,8 @@ export const Panel = ({
   })
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
-      <Flex border='default' borderRadius='l' pb='unit10'>
-        <Flex row justifyContent='flex-end' m='s' h={spacing.unit6}>
+      <Flex border='default' borderRadius='l' pv='unit10'>
+        <Flex row justifyContent='flex-end' m='s'>
           {needsDisbursement ? (
             <Flex
               row

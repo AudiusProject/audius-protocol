@@ -227,30 +227,30 @@ export const challengeRewardsConfig: Record<
   },
   'trending-playlist': {
     id: 'trending-playlist',
-    title: 'Top 5 Trending Playlists',
-    description: () => 'Winners are selected every Friday at Noon PT!',
+    title: 'Trending Playlists Weekly Top 5',
+    description: () => 'Top 5 winners are selected every Friday at Noon PT!',
     panelButtonText: 'See More'
   },
   tp: {
     id: 'trending-playlist',
-    title: 'Top 5 Trending Playlists',
-    description: () => 'Winners are selected every Friday at Noon PT!',
+    title: 'Trending Playlists Weekly Top 5',
+    description: () => 'Top 5 winners are selected every Friday at Noon PT!',
     panelButtonText: 'See More'
   },
   'trending-track': {
-    title: 'Top 5 Trending Tracks',
-    description: () => 'Winners are selected every Friday at Noon PT!',
+    title: 'Global Trending Weekly Top 5',
+    description: () => 'Top 5 winners are selected every Friday at Noon PT!',
     panelButtonText: 'See More',
     id: 'trending-track'
   },
   tt: {
-    title: 'Top 5 Trending Tracks',
-    description: () => 'Winners are selected every Friday at Noon PT!',
+    title: 'Global Trending Weekly Top 5',
+    description: () => 'Top 5 winners are selected every Friday at Noon PT!',
     panelButtonText: 'See More',
     id: 'trending-track'
   },
   'top-api': {
-    title: 'Top 10 API Apps',
+    title: 'API Apps: Monthly Top 10 ',
     description: () => 'The top 10 Audius API apps each month win.',
     panelButtonText: 'More Info',
     id: 'top-api'
@@ -263,14 +263,14 @@ export const challengeRewardsConfig: Record<
     id: 'verified-upload'
   },
   'trending-underground': {
-    title: 'Top 5 Underground Trending',
-    description: () => 'Winners are selected every Friday at Noon PT!',
+    title: 'Underground Trending Weekly Top 5',
+    description: () => 'Top 5 winners are selected every Friday at Noon PT!',
     panelButtonText: 'See More',
     id: 'trending-underground'
   },
   tut: {
-    title: 'Top 5 Underground Trending',
-    description: () => 'Winners are selected every Friday at Noon PT!',
+    title: 'Underground Trending Weekly Top 5',
+    description: () => 'Top 5 winners are selected every Friday at Noon PT!',
     panelButtonText: 'See More',
     id: 'trending-underground'
   },

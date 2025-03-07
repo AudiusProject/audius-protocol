@@ -29,10 +29,9 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
 
 const useStyles = makeStyles(({ typography }) => ({
   tileHeader: {
-    fontFamily: typography.fontByWeight.heavy,
     fontSize: typography.fontSize.xxl,
-    textTransform: 'uppercase',
-    textAlign: 'center'
+    textAlign: 'center',
+    fontFamily: typography.fontByWeight.bold
   }
 }))
 
