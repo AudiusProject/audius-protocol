@@ -100,6 +100,7 @@ const NowPlayingDrawer = ({
       y: initialTranslation()
     },
     config: wobble,
+    immediate: true,
     onFrame(frame: any) {
       setCurrentTranslation(frame.y)
     }
@@ -375,6 +376,7 @@ const NowPlayingDrawer = ({
         id='now-playing-drawer'
         {...bind()}
         style={{
+          visibility: isPlaying ? 'visible' : 'hidden',
           bottom: `-${DEFAULT_HEIGHT}px`,
           // @ts-ignore
           transform: drawerSlideProps.y.interpolate(interpY)

@@ -11,7 +11,6 @@ import {
 import {
   accountSelectors,
   cacheCollectionsActions,
-  cacheTracksActions,
   collectionPageSelectors,
   tracksSocialActions,
   addToCollectionUIActions,
@@ -41,7 +40,6 @@ const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
   tracksSocialActions
 const { getCollectionId } = collectionPageSelectors
 const { addTrackToPlaylist } = cacheCollectionsActions
-const { deleteTrack } = cacheTracksActions
 const { getAccountOwnedPlaylists, getUserId } = accountSelectors
 const { clearTrackPosition, setTrackPosition } = playbackPositionActions
 const { getUserTrackPositions } = playbackPositionSelectors
@@ -142,10 +140,9 @@ const TrackMenu = ({
 
   const onDeleteTrack = (trackId: Nullable<number>) => {
     if (!trackId) return
+
     openDeleteTrackConfirmation({
-      confirmCallback: () => {
-        dispatch(deleteTrack(trackId))
-      }
+      trackId
     })
   }
 

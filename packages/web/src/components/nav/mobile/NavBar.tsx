@@ -166,7 +166,7 @@ const NavBar = ({
     )
   } else if (leftElement === LeftPreset.NOTIFICATION && isSignedIn) {
     left = (
-      <>
+      <Flex gap='s'>
         <Flex>
           <IconButton
             aria-label='notifications'
@@ -225,7 +225,7 @@ const NavBar = ({
             </Flex>
           )}
         </Flex>
-      </>
+      </Flex>
     )
   } else if (leftElement === LeftPreset.SETTINGS && isSignedIn) {
     left = (

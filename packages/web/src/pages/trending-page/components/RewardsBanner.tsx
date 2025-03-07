@@ -5,36 +5,37 @@ import {
   TrendingRewardsModalType
 } from '@audius/common/store'
 import {
-  IconArrowRight as IconArrow,
+  IconCaretRight,
   IconCrown,
-  useTheme
+  Flex,
+  Text,
+  useTheme,
+  PlainButton,
+  Paper
 } from '@audius/harmony'
-import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { useIsMobile } from 'hooks/useIsMobile'
 
-import styles from './RewardsBanner.module.css'
 const { setTrendingRewardsModalType } = audioRewardsPageActions
 
 const messages = {
-  rewards: '$AUDIO REWARDS',
-  tracksDescription: 'TOP 5 TRACKS EACH WEEK WIN $AUDIO',
-  playlistsDescription: 'TOP 5 PLAYLISTS EACH WEEK WIN $AUDIO',
-  undergroundDescription: 'TOP 5 TRACKS EACH WEEK WIN $AUDIO',
-  learnMore: 'LEARN MORE'
+  learnMore: 'Learn More'
 }
 
 const messageMap = {
   tracks: {
-    description: messages.tracksDescription
+    title: 'Global Trending: Weekly Top 5',
+    description: 'Artists Trending on Friday at 12 PM PT Earn Tokens!'
   },
   playlists: {
-    description: messages.playlistsDescription
+    title: 'Trending Playlists: Weekly Top 5',
+    description: 'Playlists Trending on Friday at 12 PM PT Earn Tokens!'
   },
   underground: {
-    description: messages.undergroundDescription
+    title: 'Underground Trending: Weekly Top 5',
+    description: 'Artists Trending on Friday at 12 PM PT Earn Tokens!'
   }
 }
 
@@ -57,31 +58,68 @@ const useHandleBannerClick = () => {
 
 const RewardsBanner = ({ bannerType }: RewardsBannerProps) => {
   const isMobile = useIsMobile()
-  const mobileStyle = { [styles.mobile]: isMobile }
   const onClick = useHandleBannerClick()
-  const { spacing } = useTheme()
+  const { spacing, color } = useTheme()
 
   return (
-    <div
-      className={cn(cn(styles.container, mobileStyle))}
+    <Paper
+      w='100%'
+      direction={isMobile ? 'column' : 'row'}
+      alignItems='center'
       onClick={() => onClick(bannerType)}
+      pv='m'
+      ph='2xl'
+      css={{
+        background: color.special.gradient
+      }}
     >
-      <div className={cn(styles.rewardsText, mobileStyle)}>
-        <div className={styles.iconCrown}>
-          <IconCrown />
-        </div>
-        {messages.rewards}
-      </div>
-      <span className={styles.descriptionText}>
-        {messageMap[bannerType].description}
-      </span>
+      <Flex
+        direction={isMobile ? 'column' : 'row'}
+        w='100%'
+        alignItems={isMobile ? 'flex-start' : 'center'}
+        gap={isMobile ? undefined : 'l'}
+        mr='m'
+        css={{
+          '@media (max-width: 1300px)': {
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            gap: 'unset'
+          }
+        }}
+      >
+        <Flex alignItems='center' mb={isMobile ? 'xs' : undefined} gap='s'>
+          <IconCrown size='l' color='staticWhite' />
+          <Text variant='title' size='l' color='staticWhite'>
+            {messageMap[bannerType].title}
+          </Text>
+        </Flex>
+        <Text
+          variant='body'
+          size='l'
+          strength='strong'
+          color='staticWhite'
+          css={{
+            opacity: 0.8,
+            marginTop: isMobile ? spacing.xs : 0,
+            whiteSpace: isMobile ? 'normal' : 'nowrap'
+          }}
+        >
+          {messageMap[bannerType].description}
+        </Text>
+      </Flex>
       {!isMobile && (
-        <div className={styles.learnMore}>
+        <PlainButton
+          css={{
+            pointerEvents: 'none'
+          }}
+          variant='inverted'
+          size='large'
+          iconRight={IconCaretRight}
+        >
           {messages.learnMore}
-          <IconArrow size='s' css={{ marginLeft: spacing.xs }} />
-        </div>
+        </PlainButton>
       )}
-    </div>
+    </Paper>
   )
 }
 

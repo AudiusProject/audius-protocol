@@ -30,7 +30,7 @@ export const useTracks = (
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
 
-  const { data: tracks, ...queryResults } = useQueries({
+  const queryResults = useQueries({
     queries: (trackIds ?? []).map((trackId) => ({
       queryKey: getTrackQueryKey(trackId),
       queryFn: async () => {
@@ -49,18 +49,23 @@ export const useTracks = (
     combine: combineQueryResults<TrackMetadata[]>
   })
 
+  const { data: tracks } = queryResults
+
   const byId = useMemo(() => keyBy(tracks, 'track_id'), [tracks])
 
   const isSavedToRedux = useSelector((state: CommonState) =>
     trackIds?.every((trackId) => !!state.tracks.entries[trackId])
   )
 
-  return {
-    data: isSavedToRedux ? tracks : undefined,
-    byId,
+  const results = {
     ...queryResults,
+    data: isSavedToRedux ? tracks : undefined,
     isPending: queryResults.isPending || !isSavedToRedux,
-    isLoading: queryResults.isLoading || !isSavedToRedux,
-    isSuccess: queryResults.isSuccess && isSavedToRedux
+    isLoading: queryResults.isLoading || !isSavedToRedux
+  } as typeof queryResults
+
+  return {
+    ...results,
+    byId
   }
 }

@@ -29,7 +29,7 @@ export const useCollections = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const { data: collections, ...queryResults } = useQueries({
+  const queriesResults = useQueries({
     queries: (collectionIds ?? []).map((collectionId) => ({
       queryKey: getCollectionQueryKey(collectionId),
       queryFn: async () => {
@@ -48,6 +48,8 @@ export const useCollections = (
     combine: combineQueryResults<UserCollectionMetadata[]>
   })
 
+  const { data: collections } = queriesResults
+
   const byId = useMemo(() => keyBy(collections, 'playlist_id'), [collections])
 
   const isSavedToRedux = useSelector((state: CommonState) =>
@@ -56,12 +58,15 @@ export const useCollections = (
     )
   )
 
-  return {
+  const results = {
+    ...queriesResults,
     data: isSavedToRedux ? collections : undefined,
-    byId,
-    ...queryResults,
-    isPending: queryResults.isPending || !isSavedToRedux,
-    isLoading: queryResults.isLoading || !isSavedToRedux,
-    isSuccess: queryResults.isSuccess && isSavedToRedux
+    isPending: queriesResults.isPending || !isSavedToRedux,
+    isLoading: queriesResults.isLoading || !isSavedToRedux
+  } as typeof queriesResults
+
+  return {
+    ...results,
+    byId
   }
 }
