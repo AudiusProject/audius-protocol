@@ -141,14 +141,13 @@ export const NowPlayingArtworkTile = () => {
             image={collectibleImage ?? trackCoverArtImage}
           >
             <IconButton
+              activeColor='active'
+              ripple
               css={{
                 position: 'absolute',
                 bottom: spacing.unit2,
                 right: spacing.unit2,
-                backgroundColor: color.background.white,
-                '&:hover path': {
-                  fill: color.primary.primary
-                }
+                backgroundColor: color.background.white
               }}
               aria-label={messages.showVisualizer}
               onClick={handleShowVisualizer}
