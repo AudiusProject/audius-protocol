@@ -391,12 +391,15 @@ export const TanQueryLineup = ({
               ? isFetching || isInitialLoad
                 ? renderSkeletons(initialPageSize ?? pageSize)
                 : emptyElement
-              : null}
-            {tiles.map((tile: any, index: number) => (
-              <li key={index} className={cn({ [tileStyles!]: !!tileStyles })}>
-                {tile}
-              </li>
-            ))}
+              : tiles.map((tile: any, index: number) => (
+                  <li
+                    key={index}
+                    className={cn({ [tileStyles!]: !!tileStyles })}
+                  >
+                    {tile}
+                  </li>
+                ))}
+
             {isFetching &&
               shouldLoadMore &&
               hasNextPage &&
