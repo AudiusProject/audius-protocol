@@ -16,6 +16,7 @@ def test_get_save_notifications(app):
 
         test_entities = {
             "users": [{"user_id": i + 1} for i in range(10)],
+            "plays": [{"user_id": i + 1} for i in range(10)],
             "tracks": [{"track_id": 1, "owner_id": 1}],
             "playlists": [{"playlist_id": 1, "playlist_owner_id": 1}],
         }

@@ -20,6 +20,7 @@ import { config } from './config'
 import { SolanaUtils, Utils } from '@audius/sdk'
 import bn from 'bn.js'
 import { userFingerprints } from './identity'
+import { cors } from 'hono/cors'
 
 let CONTENT_NODE = 'https://creatornode2.audius.co'
 let FRONTEND = 'https://audius.co'
@@ -45,17 +46,22 @@ if (!AAO_AUTH_PASSWORD) {
 const app = new Hono()
 
 app.use(logger())
+app.use('/attestation/*', cors())
 
-app.all('/attestation/:handle', async (c) => {
+app.post('/attestation/:handle', async (c) => {
   const handle = c.req.param('handle').toLowerCase()
   const { challengeId, challengeSpecifier, amount } = await c.req.json()
 
   const users =
     await sql`select user_id, wallet from users where handle_lc = ${handle}`
   const user = users[0]
-  if (!user) return c.text(`handle not found: ${handle}`, 404)
+  if (!user) return c.json({ error: `handle not found: ${handle}` }, 404)
 
-  // TODO: check score
+  // pass / fail
+  const userScore = await getUserNormalizedScore(user.id)
+  if (userScore.overallScore < 0) {
+    return c.json({ error: 'denied' }, 400)
+  }
 
   try {
     const bnAmount = SolanaUtils.uiAudioToBNWaudio(amount)
@@ -79,7 +85,7 @@ app.all('/attestation/:handle', async (c) => {
     return c.json({ result })
   } catch (error) {
     console.log(`Something went wrong: ${error}`)
-    return c.text(`Something went wrong`, 500)
+    return c.json({ error: `Something went wrong` }, 500)
   }
 })
 

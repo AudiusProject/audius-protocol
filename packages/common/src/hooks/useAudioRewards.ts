@@ -1,5 +1,9 @@
 import { ChallengeName, OptimisticUserChallenge } from '~/models'
-import { fillString, formatNumberCommas } from '~/utils'
+import {
+  fillString,
+  formatNumberCommas,
+  getChallengeStatusLabel
+} from '~/utils'
 
 const messages = {
   completeLabel: 'COMPLETE',
@@ -75,6 +79,12 @@ export const useFormattedProgressLabel = ({
       challenge?.disbursed_amount > 0
     ) {
       label = messages.completeLabel
+    } else if (
+      challenge?.challenge_id === ChallengeName.FirstWeeklyComment ||
+      challenge?.challenge_id === ChallengeName.AudioMatchingBuy ||
+      challenge?.challenge_id === ChallengeName.AudioMatchingSell
+    ) {
+      label = getChallengeStatusLabel(challenge, challenge?.challenge_id)
     } else {
       // Count down
       label = fillString(

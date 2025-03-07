@@ -12,24 +12,24 @@ import {
   SegmentedControl,
   IconArrowRight as IconArrow,
   Button,
+  IconTrending,
   Text,
+  Paper,
+  LoadingSpinner,
+  Box,
   Flex
 } from '@audius/harmony'
-import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { TwitterTweetEmbed } from 'react-twitter-embed'
 
 import { useModalState } from 'common/hooks/useModalState'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { TextLink } from 'components/link'
 import ModalDrawer from 'components/modal-drawer/ModalDrawer'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
-import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { useSelector } from 'utils/reducer'
 import { getTheme, isDarkMode } from 'utils/theme/theme'
-
-import styles from './TrendingRewards.module.css'
 
 const { TRENDING_PAGE, TRENDING_PLAYLISTS_PAGE, TRENDING_UNDERGROUND_PAGE } =
   route
@@ -42,11 +42,11 @@ const messages = {
   undergroundTitle: 'Top 5 Tracks Each Week Receive 1000 $AUDIO',
   winners: 'Winners are selected every Friday at Noon PT!',
   lastWeek: "LAST WEEK'S WINNERS",
-  tracks: 'TRACKS',
-  topTracks: 'TOP TRACKS',
-  playlists: 'PLAYLISTS',
-  topPlaylists: 'TOP PLAYLISTS',
-  underground: 'UNDERGROUND',
+  tracks: 'Tracks',
+  topTracks: 'Top Tracks',
+  playlists: 'Playlists',
+  topPlaylists: 'Top Playlists',
+  underground: 'Underground',
   terms: 'Terms and Conditions Apply',
   tracksModalTitle: 'Top 5 Trending Tracks',
   playlistsModalTitle: 'Top 5 Trending Playlists',
@@ -127,16 +127,9 @@ const shouldUseDarkTwitter = () => {
   return theme === Theme.MATRIX || isDarkMode()
 }
 
-const TrendingRewardsBody = ({
-  dismissModal
-}: {
-  dismissModal: () => void
-}) => {
+const TrendingRewardsModal = () => {
+  const [isOpen, setOpen] = useModalState('TrendingRewardsExplainer')
   const [modalType, setModalType] = useRewardsType()
-
-  const onClickToS = useCallback(() => {
-    window.open(TOS_URL, '_blank')
-  }, [])
 
   const isMobile = useIsMobile()
   const tabOptions = [
@@ -159,10 +152,8 @@ const TrendingRewardsBody = ({
   const onButtonClick = useCallback(() => {
     const page = TRENDING_PAGES[modalType]
     navigate(page)
-    dismissModal()
-  }, [navigate, modalType, dismissModal])
-
-  const wm = useWithMobileStyle(styles.mobile)
+    setOpen(false)
+  }, [navigate, modalType, setOpen])
 
   // If we change type, show the spinner again
   const [showSpinner, setShowSpinner] = useState(true)
@@ -173,28 +164,60 @@ const TrendingRewardsBody = ({
   const tweetId = useTweetId(modalType)
 
   return (
-    <div className={styles.scrollContainer}>
-      <div className={wm(styles.container)}>
-        <div className={styles.sliderContainer}>
-          <SegmentedControl
-            options={tabOptions}
-            selected={modalType}
-            onSelectOption={(option) =>
-              setModalType(option as TrendingRewardsModalType)
-            }
-            textClassName={cn(styles.slider, styles.compactSlider)}
-            activeTextClassName={styles.activeSlider}
-            key={`rewards-slider-${tabOptions.length}`}
-          />
-        </div>
-        <div className={styles.titles}>
-          <span className={styles.title}>{textMap[modalType].title}</span>
-          <span className={styles.subtitle}>{messages.winners}</span>
-        </div>
-        <div className={styles.insetRegion}>
-          <span className={styles.lastWeek}>{messages.lastWeek}</span>
-          <div className={styles.embedWrapper}>
-            {showSpinner && <LoadingSpinner className={styles.spinner} />}
+    <ModalDrawer
+      newModal
+      size='medium'
+      isOpen={isOpen}
+      onClose={() => setOpen(false)}
+      title={textMap[modalType].modalTitle}
+      icon={<IconTrending />}
+    >
+      <Flex column gap='2xl' alignItems='center' w='100%'>
+        <SegmentedControl
+          options={tabOptions}
+          selected={modalType}
+          onSelectOption={(option) =>
+            setModalType(option as TrendingRewardsModalType)
+          }
+        />
+        <Flex column gap='s' alignItems='center'>
+          <Text variant='heading' color='accent'>
+            {textMap[modalType].title}
+          </Text>
+          <Text variant='body' size='l'>
+            {messages.winners}
+          </Text>
+        </Flex>
+        <Paper
+          column
+          css={{ backgroundColor: '#F3F0F7' }}
+          shadow='inset'
+          w='100%'
+          p='xl'
+          gap='l'
+          alignItems='center'
+        >
+          <Text
+            variant='heading'
+            strength='strong'
+            color='heading'
+            textAlign='center'
+          >
+            {messages.lastWeek}
+          </Text>
+          <Box w={isMobile ? 300 : 500} h={isMobile ? 330 : 360}>
+            {showSpinner && (
+              <Box
+                css={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)'
+                }}
+              >
+                <LoadingSpinner />
+              </Box>
+            )}
             <TwitterTweetEmbed
               // Refresh it when we toggle
               key={`twitter-${modalType}`}
@@ -205,52 +228,28 @@ const TrendingRewardsBody = ({
                 cards: 'none',
                 conversation: 'none',
                 hide_thread: true,
-                width: 554,
-                height: 390
+                width: isMobile ? 300 : 500,
+                height: isMobile ? 330 : 360
               }}
             />
-          </div>
-        </div>
-        <Button
-          variant='primary'
-          onClick={onButtonClick}
-          className={styles.button}
-          iconRight={IconArrow}
-          fullWidth={isMobile}
-        >
-          {textMap[modalType][isMobile ? 'buttonMobile' : 'button']}
-        </Button>
-        <span onClick={onClickToS} className={styles.terms}>
-          {messages.terms}
-        </span>
-      </div>
-    </div>
-  )
-}
-
-const TrendingRewardsModal = () => {
-  const [isOpen, setOpen] = useModalState('TrendingRewardsExplainer')
-  const [modalType] = useRewardsType()
-
-  return (
-    <ModalDrawer
-      isOpen={isOpen}
-      onClose={() => setOpen(false)}
-      title={
-        <Flex alignItems='flex-end' justifyContent='center' gap='xs'>
-          <i
-            className={`emoji large ${styles.titleIcon} ${textMap[modalType].icon}`}
-          />
-          <Text variant='heading' color='staticWhite'>
-            {textMap[modalType].modalTitle}
-          </Text>
+          </Box>
+        </Paper>
+        <Flex column w='100%' gap='l'>
+          <Button
+            variant='primary'
+            onClick={onButtonClick}
+            iconRight={IconArrow}
+            fullWidth
+          >
+            {textMap[modalType][isMobile ? 'buttonMobile' : 'button']}
+          </Button>
+          <Box alignSelf='center'>
+            <TextLink isExternal to={TOS_URL}>
+              {messages.terms}
+            </TextLink>
+          </Box>
         </Flex>
-      }
-      allowScroll
-      showTitleHeader
-      showDismissButton
-    >
-      <TrendingRewardsBody dismissModal={() => setOpen(false)} />
+      </Flex>
     </ModalDrawer>
   )
 }

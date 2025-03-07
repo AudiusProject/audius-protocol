@@ -68,7 +68,7 @@ export const useUserComments = (
     },
     select: (data) => data.pages.flat(),
     ...options,
-    enabled: isMutating === 0 && options?.enabled !== false
+    enabled: isMutating === 0 && options?.enabled !== false && !!userId
   })
 
   const { error, data: commentIds } = queryRes
@@ -84,7 +84,29 @@ export const useUserComments = (
     }
   }, [error, dispatch, reportToSentry])
 
-  const { data: comments } = useComments(commentIds)
+  const commentsQuery = useComments(commentIds)
+  const { data: comments } = commentsQuery
 
-  return { ...queryRes, data: comments }
+  // Merge the loading states from both queries
+  const isLoading = queryRes.isLoading || commentsQuery.isLoading
+  const isPending = queryRes.isPending || commentsQuery.isPending
+  const isFetching = queryRes.isFetching || commentsQuery.isFetching
+  const isSuccess = queryRes.isSuccess && commentsQuery.isSuccess
+
+  // Determine the overall status based on both queries
+  let status = queryRes.status
+  if (queryRes.status === 'success' && commentsQuery.status !== 'success') {
+    status = commentsQuery.status
+  }
+
+  return {
+    ...queryRes,
+    data: comments,
+    commentIds,
+    isLoading,
+    isPending,
+    isFetching,
+    isSuccess,
+    status
+  }
 }

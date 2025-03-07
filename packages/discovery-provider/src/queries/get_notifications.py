@@ -32,6 +32,16 @@ WITH user_seen as (
   WHERE
     user_id =  :user_id
   AND is_current
+),
+distinct_specifiers as (
+    SELECT DISTINCT(specifier::int)
+    FROM notification 
+    WHERE :user_id = ANY(user_ids)
+    AND type = ANY(ARRAY['save', 'follow', 'repost'])
+),
+shadowbanned as (
+    SELECT get_shadowbanned_users(array_agg(specifier)) as specifier
+    FROM distinct_specifiers
 )
 SELECT
     n.type,
@@ -69,6 +79,13 @@ WHERE
         (n.timestamp = :timestamp_offset AND n.group_id < :group_id_offset)
     )
   )
+AND (
+    CASE 
+        WHEN type = ANY(ARRAY['save', 'follow', 'repost'])
+        THEN specifier::int NOT IN (SELECT specifier FROM shadowbanned)
+        ELSE TRUE  -- Allow all other types
+    END
+    )
 GROUP BY
   n.type, n.group_id, user_seen.seen_at, user_seen.prev_seen_at
 ORDER BY
@@ -93,6 +110,16 @@ WITH user_created_at as (
   WHERE
     user_id = :user_id
   AND is_current
+),
+distinct_specifiers as (
+    SELECT DISTINCT(specifier::int)
+    FROM notification 
+    WHERE :user_id = ANY(user_ids)
+    AND type = ANY(ARRAY['save', 'follow', 'repost'])
+),
+shadowbanned as (
+    SELECT get_shadowbanned_users(array_agg(specifier)) as specifier
+    FROM distinct_specifiers
 )
 SELECT
     count(*)
@@ -113,6 +140,13 @@ FROM (
         ORDER BY seen_at desc
         LIMIT 1
     ), '2016-01-01'::timestamp)
+  AND (
+    CASE 
+        WHEN type = ANY(ARRAY['save', 'follow', 'repost'])
+        THEN specifier::int NOT IN (SELECT specifier FROM shadowbanned)
+        ELSE TRUE  -- Allow all other types
+    END
+    )
   GROUP BY
     n.type, n.group_id
 ) user_notifications;

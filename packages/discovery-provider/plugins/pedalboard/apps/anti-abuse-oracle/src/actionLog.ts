@@ -4,7 +4,7 @@ import postgres from 'postgres'
 import fetch from 'cross-fetch'
 import { useFingerprintDeviceCount } from './identity'
 
-export const sql = postgres(process.env.discoveryDbUrl || '')
+export const sql = postgres(process.env.audius_db_url || '')
 
 const MIN_SCORE = -100
 const MAX_SCORE = 300
