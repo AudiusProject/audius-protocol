@@ -27,6 +27,7 @@ import { useCollections } from '../useCollections'
 import { useTracks } from '../useTracks'
 import { useUsers } from '../useUsers'
 
+import { combineQueryStatuses } from './combineQueryStatuses'
 import { loadNextPage } from './infiniteQueryLoadNextPage'
 
 /**
@@ -68,11 +69,6 @@ export const useLineupQuery = ({
     dispatch(lineupActions.updateLineupOrder(orderedIds))
   }
 
-  const status = combineStatuses([
-    queryData.isFetching ? Status.LOADING : Status.SUCCESS,
-    lineup.status
-  ])
-
   const [lineupTrackIds, lineupCollectionIds] = useMemo(() => {
     const [tracks, collections] = partition(
       lineup.entries,
@@ -84,8 +80,9 @@ export const useLineupQuery = ({
     ]
   }, [lineup.entries])
 
-  const { byId: tracksById } = useTracks(lineupTrackIds)
-  const { byId: collectionsById } = useCollections(lineupCollectionIds)
+  const { byId: tracksById, ...tracksQuery } = useTracks(lineupTrackIds)
+  const { byId: collectionsById, ...collectionsQuery } =
+    useCollections(lineupCollectionIds)
   const userIds = useMemo(() => {
     const userIds = lineup.entries.map((entry) =>
       entry.kind === Kind.TRACKS
@@ -122,6 +119,17 @@ export const useLineupQuery = ({
     })
     return newEntries
   }, [lineup.entries, tracksById, collectionsById, usersById])
+
+  const combinedQueryStatus = combineQueryStatuses([
+    queryData,
+    tracksQuery,
+    collectionsQuery
+  ])
+
+  const status = combineStatuses([
+    combinedQueryStatus.isFetching ? Status.LOADING : Status.SUCCESS,
+    lineup.status
+  ])
 
   return {
     status,
