@@ -93,9 +93,14 @@ export const useTrendingPlaylists = (
 
   const lineupData = useLineupQuery({
     queryData,
+    queryKey: getTrendingPlaylistsQueryKey({
+      pageSize,
+      time
+    }),
     lineupActions: trendingPlaylistsPageLineupActions,
     lineupSelector: trendingPlaylistsPageLineupSelectors.getLineup,
-    playbackSource: PlaybackSource.PLAYLIST_TILE_TRACK
+    playbackSource: PlaybackSource.PLAYLIST_TILE_TRACK,
+    pageSize
   })
 
   return {

@@ -176,9 +176,16 @@ export const useTrending = (
   }
   const lineupData = useLineupQuery({
     queryData: infiniteQueryData,
+    queryKey: getTrendingQueryKey({
+      timeRange,
+      genre,
+      initialPageSize,
+      loadMorePageSize
+    }),
     lineupActions,
     lineupSelector,
-    playbackSource: PlaybackSource.TRACK_TILE_LINEUP // TODO: shouldn't this be more specific?
+    playbackSource: PlaybackSource.TRACK_TILE_LINEUP,
+    pageSize: loadMorePageSize
   })
 
   return { ...infiniteQueryData, ...lineupData }

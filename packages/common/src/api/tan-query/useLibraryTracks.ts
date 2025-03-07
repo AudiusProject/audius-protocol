@@ -121,9 +121,18 @@ export const useLibraryTracks = (
 
   const lineupData = useLineupQuery({
     queryData,
+    queryKey: getLibraryTracksQueryKey({
+      currentUserId,
+      category,
+      sortMethod,
+      sortDirection,
+      query,
+      pageSize
+    }),
     lineupActions: savedPageTracksLineupActions,
     lineupSelector: savedPageSelectors.getSavedTracksLineup,
-    playbackSource: PlaybackSource.TRACK_TILE
+    playbackSource: PlaybackSource.TRACK_TILE,
+    pageSize
   })
 
   return {

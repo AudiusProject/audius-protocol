@@ -122,9 +122,16 @@ export const useTrackHistory = (
 
   const lineupData = useLineupQuery({
     queryData,
+    queryKey: getTrackHistoryQueryKey({
+      pageSize,
+      query,
+      sortMethod,
+      sortDirection
+    }),
     lineupActions: historyPageTracksLineupActions,
     lineupSelector: historyPageSelectors.getHistoryTracksLineup,
-    playbackSource: PlaybackSource.HISTORY_PAGE
+    playbackSource: PlaybackSource.HISTORY_PAGE,
+    pageSize
   })
 
   return {

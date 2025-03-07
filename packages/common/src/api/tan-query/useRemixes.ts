@@ -90,9 +90,14 @@ export const useRemixes = (
 
   const lineupData = useLineupQuery({
     queryData,
+    queryKey: getRemixesQueryKey({
+      trackId,
+      pageSize
+    }),
     lineupActions: remixesPageLineupActions,
     lineupSelector: remixesPageSelectors.getLineup,
-    playbackSource: PlaybackSource.TRACK_TILE
+    playbackSource: PlaybackSource.TRACK_TILE,
+    pageSize
   })
 
   return {
