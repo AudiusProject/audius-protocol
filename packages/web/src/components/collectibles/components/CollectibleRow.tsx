@@ -6,7 +6,6 @@ import {
   IconRemove as IconHide,
   IconDrag,
   IconMultiselectAdd as IconShow,
-  Pill,
   Text
 } from '@audius/harmony'
 import cn from 'classnames'
@@ -30,7 +29,7 @@ export const VisibleCollectibleRow = (props) => {
     handleProps,
     ...otherProps
   } = props
-  const { name, isOwned, dateCreated, mediaType, frameUrl, gifUrl, videoUrl } =
+  const { name, dateCreated, mediaType, frameUrl, gifUrl, videoUrl } =
     collectible
 
   const dragRef = useRef<HTMLDivElement>(null)
@@ -96,13 +95,6 @@ export const VisibleCollectibleRow = (props) => {
       <div className={styles.editRowTitle}>
         <Text variant='title'>{name}</Text>
       </div>
-      <div>
-        {isOwned ? (
-          <Pill variant='active'>{collectibleMessages.owned}</Pill>
-        ) : (
-          <Pill>{collectibleMessages.created}</Pill>
-        )}
-      </div>
       {dateCreated && <div>{formatDateWithTimezoneOffset(dateCreated)}</div>}
       <div className={styles.verticalDivider} />
       <div className={styles.drag} ref={dragRef} {...handleProps}>
@@ -119,7 +111,7 @@ type HiddenCollectibleRowProps = {
 
 export const HiddenCollectibleRow = (props: HiddenCollectibleRowProps) => {
   const { collectible, onShowClick } = props
-  const { name, isOwned, dateCreated, mediaType, frameUrl, gifUrl, videoUrl } =
+  const { name, dateCreated, mediaType, frameUrl, gifUrl, videoUrl } =
     collectible
 
   return (
@@ -154,13 +146,6 @@ export const HiddenCollectibleRow = (props: HiddenCollectibleRowProps) => {
       )}
       <div className={styles.editRowTitle}>
         <Text variant='title'>{name}</Text>
-      </div>
-      <div>
-        {isOwned ? (
-          <Pill variant='active'>{collectibleMessages.owned}</Pill>
-        ) : (
-          <Pill>{collectibleMessages.created}</Pill>
-        )}
       </div>
       {dateCreated && <div>{formatDateWithTimezoneOffset(dateCreated)}</div>}
     </div>
