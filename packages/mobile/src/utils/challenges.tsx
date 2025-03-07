@@ -305,6 +305,24 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
       buttonInfo: {
         iconRight: IconCheck
       }
+    },
+    [ChallengeName.PlayCount250]: {
+      icon: ChartIncreasing,
+      buttonInfo: {
+        iconRight: IconCheck
+      }
+    },
+    [ChallengeName.PlayCount1000]: {
+      icon: ChartIncreasing,
+      buttonInfo: {
+        iconRight: IconCheck
+      }
+    },
+    [ChallengeName.PlayCount10000]: {
+      icon: ChartIncreasing,
+      buttonInfo: {
+        iconRight: IconCheck
+      }
     }
   }
 
