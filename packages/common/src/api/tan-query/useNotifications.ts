@@ -17,6 +17,7 @@ import { useCurrentUserId } from './useCurrentUserId'
 import { useNotificationValidTypes } from './useNotificationValidTypes'
 import { useTracks } from './useTracks'
 import { useUsers } from './useUsers'
+import { combineQueryStatuses } from './utils/combineQueryStatuses'
 
 const DEFAULT_LIMIT = 20
 const USER_INITIAL_LOAD_COUNT = 9
@@ -223,36 +224,23 @@ export const useNotifications = (options?: QueryOptions) => {
   const tracksQuery = useTracks(Array.from(trackIds))
   const collectionsQuery = useCollections(Array.from(collectionIds))
 
-  // Check if the latest page's entity data is still loading
-  const isLatestPagePending =
-    query.isPending ||
-    usersQuery.isPending ||
-    tracksQuery.isPending ||
-    collectionsQuery.isPending
-
-  const isLatestPageLoading =
-    query.isLoading ||
-    usersQuery.isLoading ||
-    tracksQuery.isLoading ||
-    collectionsQuery.isLoading
-
-  const isError =
-    query.isError ||
-    usersQuery.isError ||
-    tracksQuery.isError ||
-    collectionsQuery.isError
+  // Use combineQueryStatuses to merge the status properties from all queries
+  const statusResults = combineQueryStatuses([
+    query,
+    usersQuery,
+    tracksQuery,
+    collectionsQuery
+  ])
 
   // Return all pages except the last one if it's still loading entity data
   const notifications = query.data?.pages.slice(0, -1).flat() ?? []
-  if (!isLatestPagePending && lastPage) {
+  if (!statusResults.isPending && lastPage) {
     notifications.push(...lastPage)
   }
 
   return {
     ...query,
-    isPending: isLatestPagePending,
-    isLoading: isLatestPageLoading,
-    isError,
+    ...statusResults,
     notifications
   }
 }
