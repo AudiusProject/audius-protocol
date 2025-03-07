@@ -48,6 +48,7 @@ export const primeUserDataInternal = ({
         !queryClient.getQueryData(getUserQueryKey(user.user_id)))
     ) {
       queryClient.setQueryData(getUserQueryKey(user.user_id), user)
+      // TODO: update the current user query data
     }
 
     entries[Kind.USERS][user.user_id] = user

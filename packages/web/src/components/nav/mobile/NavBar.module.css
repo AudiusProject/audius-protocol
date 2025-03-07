@@ -27,6 +27,7 @@
   margin-right: auto;
   position: relative;
   opacity: 1;
+  margin-left: var(--harmony-spacing-s);
   transition: opacity 0.3s ease-in-out;
 }
 

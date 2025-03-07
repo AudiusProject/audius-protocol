@@ -23,7 +23,7 @@ export const useComments = (
   const queryClient = useQueryClient()
   const [hasInitialized, setHasInitialized] = useState(false)
 
-  const { data: comments, ...queryResults } = useQueries({
+  const queryResults = useQueries({
     queries: (commentIds ?? []).map((commentId) => ({
       queryKey: getCommentQueryKey(commentId),
       queryFn: async (): Promise<CommentOrReply | {}> => {
@@ -42,6 +42,8 @@ export const useComments = (
     }
   }, [commentIds?.length])
 
+  const { data: comments } = queryResults
+
   const isPending =
     !hasInitialized || commentIds?.length === 0 || queryResults.isPending
 
@@ -53,11 +55,14 @@ export const useComments = (
     return byId
   }, [comments])
 
-  return {
-    data: comments,
-    byId,
+  const results = {
     ...queryResults,
     isPending,
     isLoading
+  } as typeof queryResults
+
+  return {
+    byId,
+    ...results
   }
 }
