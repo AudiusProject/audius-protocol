@@ -347,23 +347,8 @@
   line-height: 28px;
 }
 
-.editModal {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: var(--harmony-font-s);
-  font-weight: var(--harmony-font-bold);
-  margin: 0 24px;
-}
-
-.editModalBody {
-  width: 100%;
-  max-width: 620px;
-}
-
 .editListSection {
   width: 100%;
-  margin-top: 32px;
 }
 
 .editListHeader {
@@ -417,9 +402,7 @@
 
 .editRowTitle {
   flex-grow: 1;
-  font-size: var(--harmony-font-m);
   width: 260px;
-  line-height: 20px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -448,7 +431,7 @@
 }
 
 .editTableContainer {
-  max-height: 20vh;
+  max-height: 550px;
   overflow-y: auto;
 }
 

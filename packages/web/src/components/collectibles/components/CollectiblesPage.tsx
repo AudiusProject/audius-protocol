@@ -23,7 +23,6 @@ import {
 } from '@audius/common/store'
 import { getHash, route } from '@audius/common/utils'
 import {
-  Button as HarmonyButton,
   Modal,
   IconKebabHorizontal,
   IconPencil,
@@ -32,7 +31,10 @@ import {
   PopupMenuItem,
   Button,
   Flex,
-  Box
+  ModalHeader,
+  ModalTitle,
+  ModalContent,
+  Text
 } from '@audius/harmony'
 import cn from 'classnames'
 import { chunk } from 'lodash'
@@ -714,104 +716,111 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
       </div>
 
       <Modal
-        title={collectibleMessages.sortCollectibles}
         isOpen={isEditingPreferences}
         onClose={() => setIsEditingPreferences(false)}
-        showTitleHeader
-        showDismissButton
-        bodyClassName={cn(styles.modalBody, styles.editModalBody)}
-        headerContainerClassName={styles.modalHeader}
-        titleClassName={styles.modalTitle}
-        allowScroll
+        size='large'
       >
-        <div className={styles.editModal}>
-          {getVisibleCollectibles().length > 0 && (
-            <div className={styles.editListSection}>
-              <DragDropContext onDragEnd={onDragEnd}>
+        <ModalHeader>
+          <ModalTitle title={collectibleMessages.sortCollectibles} />
+        </ModalHeader>
+        <ModalContent>
+          <Flex gap='m' h={600}>
+            {getVisibleCollectibles().length > 0 && (
+              <div className={styles.editListSection}>
+                <DragDropContext onDragEnd={onDragEnd}>
+                  <div className={styles.editListHeader}>
+                    <Text variant='title' size='l'>
+                      {collectibleMessages.visibleCollectibles}
+                    </Text>
+                  </div>
+
+                  <div
+                    className={cn(
+                      styles.editTableContainer,
+                      editTableContainerClass,
+                      {
+                        [styles.tableTopShadow]: showVisibleTableTopShadow,
+                        [styles.tableBottomShadow]:
+                          showVisibleTableBottomShadow,
+                        [styles.tableVerticalShadow]:
+                          showVisibleTableTopShadow &&
+                          showVisibleTableBottomShadow
+                      }
+                    )}
+                    ref={visibleTableRef}
+                  >
+                    <Droppable droppableId={VISIBLE_COLLECTIBLES_DROPPABLE_ID}>
+                      {(provided) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.droppableProps}
+                        >
+                          {getVisibleCollectibles().map((c, index) => (
+                            <Draggable
+                              key={c.id}
+                              draggableId={c.id}
+                              index={index}
+                            >
+                              {(provided, snapshot) => (
+                                <VisibleCollectibleRow
+                                  {...provided.draggableProps}
+                                  handleProps={provided.dragHandleProps}
+                                  forwardRef={provided.innerRef}
+                                  isDragging={snapshot.isDragging}
+                                  collectible={c}
+                                  onHideClick={handleHideCollectible(c.id)}
+                                />
+                              )}
+                            </Draggable>
+                          ))}
+
+                          {provided.placeholder}
+                        </div>
+                      )}
+                    </Droppable>
+                  </div>
+                </DragDropContext>
+              </div>
+            )}
+
+            {getHiddenCollectibles().length > 0 && (
+              <div className={styles.editListSection}>
                 <div className={styles.editListHeader}>
-                  {collectibleMessages.visibleCollectibles}
+                  <Text variant='title' size='l'>
+                    {collectibleMessages.hiddenCollectibles}
+                  </Text>
                 </div>
 
                 <div
-                  className={cn(
-                    styles.editTableContainer,
-                    editTableContainerClass,
-                    {
-                      [styles.tableTopShadow]: showVisibleTableTopShadow,
-                      [styles.tableBottomShadow]: showVisibleTableBottomShadow,
-                      [styles.tableVerticalShadow]:
-                        showVisibleTableTopShadow &&
-                        showVisibleTableBottomShadow
-                    }
-                  )}
-                  ref={visibleTableRef}
+                  className={cn(styles.editTableContainer, {
+                    [styles.tableTopShadow]: showHiddenTableTopShadow,
+                    [styles.tableBottomShadow]: showHiddenTableBottomShadow,
+                    [styles.tableVerticalShadow]:
+                      showHiddenTableTopShadow && showHiddenTableBottomShadow
+                  })}
+                  ref={hiddenTableRef}
                 >
-                  <Droppable droppableId={VISIBLE_COLLECTIBLES_DROPPABLE_ID}>
-                    {(provided) => (
-                      <div ref={provided.innerRef} {...provided.droppableProps}>
-                        {getVisibleCollectibles().map((c, index) => (
-                          <Draggable
-                            key={c.id}
-                            draggableId={c.id}
-                            index={index}
-                          >
-                            {(provided, snapshot) => (
-                              <VisibleCollectibleRow
-                                {...provided.draggableProps}
-                                handleProps={provided.dragHandleProps}
-                                forwardRef={provided.innerRef}
-                                isDragging={snapshot.isDragging}
-                                collectible={c}
-                                onHideClick={handleHideCollectible(c.id)}
-                              />
-                            )}
-                          </Draggable>
-                        ))}
-
-                        {provided.placeholder}
-                      </div>
-                    )}
-                  </Droppable>
+                  {getHiddenCollectibles().map((c) => (
+                    <HiddenCollectibleRow
+                      key={c.id}
+                      collectible={c}
+                      onShowClick={handleShowCollectible(c.id)}
+                    />
+                  ))}
                 </div>
-              </DragDropContext>
-            </div>
-          )}
-
-          {getHiddenCollectibles().length > 0 && (
-            <div className={styles.editListSection}>
-              <div className={styles.editListHeader}>
-                {collectibleMessages.hiddenCollectibles}
               </div>
-
-              <div
-                className={cn(styles.editTableContainer, {
-                  [styles.tableTopShadow]: showHiddenTableTopShadow,
-                  [styles.tableBottomShadow]: showHiddenTableBottomShadow,
-                  [styles.tableVerticalShadow]:
-                    showHiddenTableTopShadow && showHiddenTableBottomShadow
-                })}
-                ref={hiddenTableRef}
-              >
-                {getHiddenCollectibles().map((c) => (
-                  <HiddenCollectibleRow
-                    key={c.id}
-                    collectible={c}
-                    onShowClick={handleShowCollectible(c.id)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-          <Box m='l'>
-            <HarmonyButton
-              variant='primary'
-              onClick={handleDoneClick}
-              disabled={isUpdatingUserCollectibles}
-            >
-              Done
-            </HarmonyButton>
-          </Box>
-        </div>
+            )}
+          </Flex>
+        </ModalContent>
+        <Flex justifyContent='center' pb='xl'>
+          <Button
+            variant='primary'
+            onClick={handleDoneClick}
+            disabled={isUpdatingUserCollectibles}
+          >
+            Done
+          </Button>
+        </Flex>
       </Modal>
 
       <Modal
@@ -854,9 +863,9 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
                   </div>
                 </div>
               </Toast>
-              <HarmonyButton variant='primary' onClick={closeEmbedModal}>
+              <Button variant='primary' onClick={closeEmbedModal}>
                 {collectibleMessages.done}
-              </HarmonyButton>
+              </Button>
             </div>
           </div>
         </div>
