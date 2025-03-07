@@ -1,8 +1,14 @@
 import { RefObject } from 'react'
 
+import {
+  getRelatedArtistsQueryKey,
+  useRelatedArtists
+} from '@audius/common/api'
 import { ID, User } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
+import { MAX_PROFILE_RELATED_ARTISTS } from '@audius/common/utils'
 import { Popup } from '@audius/harmony'
+import { useQueryClient } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 
 import { useMainContentRef } from 'pages/MainContentContext'
@@ -29,6 +35,32 @@ export const ArtistRecommendationsPopup = (props: Props) => {
     getUser(state, { id: artistId })
   )
 
+  // Get the related artists which should be available in the query cache
+  const queryClient = useQueryClient()
+  const relatedArtistsData = queryClient.getQueryData<{
+    pages: User[][]
+    pageParams: number[]
+  }>(
+    getRelatedArtistsQueryKey({
+      artistId,
+      pageSize: MAX_PROFILE_RELATED_ARTISTS
+    })
+  )
+  const relatedArtists = relatedArtistsData?.pages.flat()
+
+  // Query for suggested artists only if there are related artists in the first place
+  const { data: suggestedArtists = [], isLoading } = useRelatedArtists(
+    {
+      artistId,
+      filterFollowed: true,
+      pageSize: 7
+    },
+    { enabled: isVisible && relatedArtists && relatedArtists.length > 0 }
+  )
+
+  // Only show popup if we have artists to recommend
+  const shouldShowPopup = isVisible && !isLoading && suggestedArtists.length > 0
+
   if (!user) return null
   const { name } = user
 
@@ -36,7 +68,7 @@ export const ArtistRecommendationsPopup = (props: Props) => {
     <Popup
       anchorRef={anchorRef}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-      isVisible={isVisible}
+      isVisible={shouldShowPopup}
       zIndex={zIndex.FOLLOW_RECOMMENDATIONS_POPUP}
       onClose={onClose}
       className={styles.popup}
