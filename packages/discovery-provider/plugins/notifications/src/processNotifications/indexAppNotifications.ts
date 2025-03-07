@@ -162,6 +162,32 @@ export class AppNotificationsProcessor {
       blocknumber,
       blockhash
     }
+
+    // Filter out notifications triggered by shadowbanned users
+    try {
+      const usersTriggeringNotifications = notifications
+        .filter((notification) =>
+          ['follow', 'repost', 'save'].includes(notification.type)
+        )
+        .map((notification) => Number(notification.specifier))
+
+      const res = await this.dnDB.raw('SELECT get_shadowbanned_users(?)', [
+        usersTriggeringNotifications
+      ])
+      const shadowBannedUsers = res.rows.map((row) =>
+        String(row.get_shadowbanned_users)
+      )
+      logger.info(
+        `Skipping notifications triggered by users: ${shadowBannedUsers}`
+      )
+
+      notifications = notifications.filter(
+        (notification) => !shadowBannedUsers.includes(notification.specifier)
+      )
+    } catch (error) {
+      logger.error('Error shadow banning users:', error)
+    }
+
     const mappedNotifications = mapNotifications(
       notifications,
       this.dnDB,
