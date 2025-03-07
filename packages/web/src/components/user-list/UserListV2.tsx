@@ -4,20 +4,18 @@ import { useCurrentUserId } from '@audius/common/api'
 import { ID, User, FollowSource } from '@audius/common/models'
 import { profilePageActions, usersSocialActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { FollowButton } from '@audius/harmony'
-import cn from 'classnames'
+import { Flex, FollowButton } from '@audius/harmony'
 import { range } from 'lodash'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch } from 'react-redux'
 
 import ArtistChip from 'components/artist/ArtistChip'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { MountPlacement } from 'components/types'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { push } from 'utils/navigation'
 
-import styles from './UserListV2.module.css'
+import { UserListItemSkeleton } from './UserListItemSkeleton'
 
 const { profilePage } = route
 const { setNotificationSubscription } = profilePageActions
@@ -27,26 +25,22 @@ const SCROLL_THRESHOLD = 400
 type SkeletonItem = {
   _loading: true
   user_id: string
+  tag?: string
 }
-
-const skeletonData: SkeletonItem[] = range(6).map((index) => ({
-  _loading: true,
-  user_id: `skeleton ${index}`
-}))
 
 type UserListV2Props = {
   /**
    * The list of users to display
    */
-  data: User[]
+  data: User[] | undefined
   /**
    * Whether there are more users to load
    */
-  hasMore: boolean
+  hasNextPage: boolean
   /**
    * Whether we're loading more users
    */
-  isLoadingMore: boolean
+  isFetchingNextPage: boolean
   /**
    * Whether we're loading the initial data
    */
@@ -54,7 +48,7 @@ type UserListV2Props = {
   /**
    * Function to load more users
    */
-  loadMore: () => void
+  fetchNextPage: () => void
   /**
    * Callback when a user navigates away
    */
@@ -87,10 +81,10 @@ type UserListV2Props = {
 
 export const UserListV2 = ({
   data,
-  hasMore,
-  isLoadingMore,
+  hasNextPage,
+  isFetchingNextPage,
   isLoading,
-  loadMore,
+  fetchNextPage,
   onNavigateAway,
   afterFollow,
   afterUnfollow,
@@ -102,6 +96,12 @@ export const UserListV2 = ({
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
   const { data: currentUserId } = useCurrentUserId()
+
+  const handleLoadMore = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage()
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
   const handleFollow = useCallback(
     (userId: ID) => {
@@ -134,31 +134,54 @@ export const UserListV2 = ({
     [dispatch, beforeClickArtistName]
   )
 
-  const showSkeletons = hasMore || isLoading
-  const displayData = [...data, ...(showSkeletons ? skeletonData : [])]
+  const showSkeletons = isLoading
+
+  // Determine the tag for skeleton items based on whether we're showing support info
+  let skeletonTag: string | undefined
+  if (showSupportFor) {
+    skeletonTag = 'TOP SUPPORTERS'
+  } else if (showSupportFrom) {
+    skeletonTag = 'SUPPORTING'
+  }
+
+  // Create skeleton data with the appropriate tag
+  const currentSkeletonData: SkeletonItem[] = range(6).map((index) => ({
+    _loading: true,
+    user_id: `skeleton ${index}`,
+    tag: skeletonTag
+  }))
+
+  const displayData = [
+    ...(data ?? []),
+    ...(showSkeletons ? currentSkeletonData : [])
+  ]
 
   return (
-    <div className={styles.content}>
+    <Flex h='100%' column>
       <InfiniteScroll
         pageStart={0}
-        loadMore={loadMore}
-        hasMore={hasMore}
-        useWindow={!getScrollParent}
+        loadMore={handleLoadMore}
+        hasMore={hasNextPage}
+        useWindow={false}
         initialLoad={false}
         threshold={SCROLL_THRESHOLD}
         getScrollParent={getScrollParent}
+        css={(theme) => ({
+          display: 'flex',
+          flexDirection: 'column',
+          gap: theme.spacing.s,
+          padding: theme.spacing.s
+        })}
       >
-        {displayData.map((user, index) =>
+        {displayData.map((user) =>
           '_loading' in user ? (
-            <div key={user.user_id} className={styles.userContainer}>
-              <span>Loading...</span>
-            </div>
+            <UserListItemSkeleton key={user.user_id} tag={user.tag} />
           ) : (
-            <div
-              key={user.user_id}
-              className={cn(styles.userContainer, {
-                [styles.notLastUser]: index !== data.length - 1
-              })}
+            <Flex
+              alignItems='center'
+              justifyContent='space-between'
+              borderBottom='strong'
+              p='m'
             >
               <ArtistChip
                 user={user}
@@ -178,18 +201,10 @@ export const UserListV2 = ({
                   fullWidth={false}
                 />
               )}
-            </div>
+            </Flex>
           )
         )}
-        {!getScrollParent && isLoadingMore && <div className={styles.spacer} />}
-        <div
-          className={cn(styles.loadingAnimation, {
-            [styles.show]: isLoadingMore
-          })}
-        >
-          <LoadingSpinner className={styles.spinner} />
-        </div>
       </InfiniteScroll>
-    </div>
+    </Flex>
   )
 }

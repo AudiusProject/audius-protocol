@@ -1,3 +1,5 @@
+import { useRef } from 'react'
+
 import {
   Modal,
   Scrollbar,
@@ -52,6 +54,7 @@ const UserListModalV2 = () => {
   const userListType = useSelector(getUserListType)
   const isOpen = useSelector(getIsOpen)
   const onClose = () => dispatch(setVisibility(false))
+  const scrollParentRef = useRef<HTMLElement>()
 
   const match = useRouteMatch<{ audience_type: string }>(
     '/messages/:audience_type'
@@ -76,7 +79,12 @@ const UserListModalV2 = () => {
         }
       case UserListType.FOLLOWER:
         return {
-          component: <FollowersUserList onClose={onClose} />,
+          component: (
+            <FollowersUserList
+              onClose={onClose}
+              getScrollParent={() => scrollParentRef.current || null}
+            />
+          ),
           title: (
             <div className={styles.titleContainer}>
               <IconUser className={styles.icon} />
@@ -185,7 +193,14 @@ const UserListModalV2 = () => {
       headerContainerClassName={styles.modalHeader}
       showDismissButton
     >
-      <Scrollbar className={styles.scrollable}>{component}</Scrollbar>
+      <Scrollbar
+        className={styles.scrollable}
+        containerRef={(containerRef) => {
+          scrollParentRef.current = containerRef
+        }}
+      >
+        {component}
+      </Scrollbar>
       {!isChatBlastPath &&
       (userListType === UserListType.FOLLOWER ||
         userListType === UserListType.SUPPORTER) ? (
