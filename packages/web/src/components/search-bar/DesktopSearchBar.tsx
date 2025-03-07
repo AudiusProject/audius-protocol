@@ -17,7 +17,7 @@ import type { InputRef } from 'antd/lib/input'
 import cn from 'classnames'
 import { Link, useHistory, useLocation, matchPath } from 'react-router-dom'
 import { useSearchParams } from 'react-router-dom-v5-compat'
-import { useDebounce } from 'react-use'
+import { useDebounce, usePrevious } from 'react-use'
 
 import { searchResultsPage } from 'utils/route'
 
@@ -93,16 +93,12 @@ export const DesktopSearchBar = () => {
     { query: debouncedValue, limit: DEFAULT_LIMIT },
     { enabled: !isSearchPage }
   )
-
+  const previousDebouncedValue = usePrevious(debouncedValue)
   useEffect(() => {
-    if (isSearchPage) {
-      if (debouncedValue) {
-        setSearchParams({ query: debouncedValue })
-      } else {
-        setSearchParams({})
-      }
+    if (isSearchPage && debouncedValue !== previousDebouncedValue) {
+      setSearchParams({ query: debouncedValue })
     }
-  }, [debouncedValue, isSearchPage, setSearchParams])
+  }, [debouncedValue, isSearchPage, setSearchParams, previousDebouncedValue])
 
   const handleSearch = useCallback((value: string) => {
     setInputValue(value)
