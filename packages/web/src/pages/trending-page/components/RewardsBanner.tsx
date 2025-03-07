@@ -79,6 +79,13 @@ const RewardsBanner = ({ bannerType }: RewardsBannerProps) => {
         alignItems={isMobile ? 'flex-start' : 'center'}
         gap={isMobile ? undefined : 'l'}
         mr='m'
+        css={{
+          '@media (max-width: 1300px)': {
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            gap: 'unset'
+          }
+        }}
       >
         <Flex alignItems='center' mb={isMobile ? 'xs' : undefined} gap='s'>
           <IconCrown size='l' color='staticWhite' />
