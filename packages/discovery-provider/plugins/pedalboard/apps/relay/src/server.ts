@@ -37,7 +37,7 @@ app.post(
   incomingRequestLogger,
   validator,
   // rateLimiterMiddleware,
-  // antiAbuseMiddleware,
+  antiAbuseMiddleware,
   relayTransaction,
   outgoingRequestLogger
 )
