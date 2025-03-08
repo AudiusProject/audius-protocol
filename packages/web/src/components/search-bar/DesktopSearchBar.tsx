@@ -96,9 +96,17 @@ export const DesktopSearchBar = () => {
   const previousDebouncedValue = usePrevious(debouncedValue)
   useEffect(() => {
     if (isSearchPage && debouncedValue !== previousDebouncedValue) {
-      setSearchParams({ query: debouncedValue })
+      const newParams = new URLSearchParams(searchParams)
+      newParams.set('query', debouncedValue)
+      setSearchParams(newParams)
     }
-  }, [debouncedValue, isSearchPage, setSearchParams, previousDebouncedValue])
+  }, [
+    debouncedValue,
+    isSearchPage,
+    setSearchParams,
+    previousDebouncedValue,
+    searchParams
+  ])
 
   const handleSearch = useCallback((value: string) => {
     setInputValue(value)
@@ -116,7 +124,9 @@ export const DesktopSearchBar = () => {
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       if (event.key === 'Enter') {
         if (isSearchPage) {
-          setSearchParams({ query: inputValue })
+          const newParams = new URLSearchParams(searchParams)
+          newParams.set('query', inputValue)
+          setSearchParams(newParams)
         } else {
           history.push(searchResultsPage('all', inputValue))
         }
