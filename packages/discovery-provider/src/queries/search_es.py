@@ -581,15 +581,6 @@ def track_dsl(
                     "should": [
                         *base_match(search_str),
                         {
-                            "wildcard": {
-                                "title": {
-                                    "value": "*" + search_str + "*",
-                                    "boost": 0.01,
-                                    "case_insensitive": True,
-                                }
-                            }
-                        },
-                        {
                             "multi_match": {
                                 "query": search_str,
                                 "fields": ["title.searchable", "user.name.searchable"],
@@ -831,16 +822,6 @@ def user_dsl(
                                 "boost": len(search_str) * 0.5,
                             }
                         },
-                        # Original wildcard matching
-                        {
-                            "wildcard": {
-                                "name": {
-                                    "value": "*" + search_str + "*",
-                                    "boost": 0.01,
-                                    "case_insensitive": True,
-                                }
-                            }
-                        },
                         {
                             "match": {
                                 "name.searchable": {
@@ -1041,15 +1022,6 @@ def base_playlist_dsl(
                 "bool": {
                     "should": [
                         *base_match(search_str, boost=len(search_str)),
-                        {
-                            "wildcard": {
-                                "playlist_name": {
-                                    "value": "*" + search_str + "*",
-                                    "boost": 0.01,
-                                    "case_insensitive": True,
-                                }
-                            }
-                        },
                         {
                             "multi_match": {
                                 "query": search_str,
