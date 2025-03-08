@@ -7,6 +7,7 @@ import {
   SolflareWalletAdapter
 } from '@solana/wallet-adapter-wallets'
 
+import { audiusChain } from 'services/audius-sdk/wagmi'
 import zIndex from 'utils/zIndex'
 
 // 1. Get projectId from https://cloud.reown.com
@@ -21,7 +22,11 @@ const metadata = {
 }
 
 // 3. Set the networks
-const networks: [AppKitNetwork, ...AppKitNetwork[]] = [mainnet, solana]
+const networks: [AppKitNetwork, ...AppKitNetwork[]] = [
+  mainnet,
+  solana,
+  audiusChain
+]
 
 // 4. Create Wagmi Adapter
 export const wagmiAdapter = new WagmiAdapter({
