@@ -44,7 +44,7 @@ export const useTracks = (
         return await batchGetTracks.fetch(trackId)
       },
       ...options,
-      enabled: options?.enabled !== false && !!trackId
+      enabled: options?.enabled !== false && !!trackId && trackId > 0
     })),
     combine: combineQueryResults<TrackMetadata[]>
   })
