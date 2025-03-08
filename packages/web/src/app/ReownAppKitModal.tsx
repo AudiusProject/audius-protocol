@@ -8,6 +8,7 @@ import {
 } from '@solana/wallet-adapter-wallets'
 
 import { audiusChain } from 'services/audius-sdk/wagmi'
+import { env } from 'services/env'
 import zIndex from 'utils/zIndex'
 
 // 1. Get projectId from https://cloud.reown.com
@@ -17,7 +18,7 @@ const projectId = '24a90db08b835b7539f7f7f06d4d2374'
 const metadata = {
   name: 'Audius',
   description: 'Artists Deserve More',
-  url: 'https://audius.co', // TODO: pull from env?
+  url: env.AUDIUS_URL,
   icons: ['https://assets.reown.com/reown-profile-pic.png'] // TODO: Add our own icon?
 }
 
