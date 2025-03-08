@@ -4,9 +4,11 @@ import { useDispatch, useStore } from 'react-redux'
 
 import { fileToSdk, trackMetadataForUploadToSdk } from '~/adapters/track'
 import { useAudiusQueryContext } from '~/audius-query'
+import { useFeatureFlag } from '~/hooks/useFeatureFlag'
 import { Track, UserTrackMetadata } from '~/models'
 import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
+import { FeatureFlags } from '~/services/remote-config'
 import { CommonState } from '~/store/commonStore'
 import { stemsUploadSelectors } from '~/store/stems-upload'
 import { TrackMetadataForUpload } from '~/store/upload'
@@ -14,9 +16,12 @@ import { squashNewLines } from '~/utils/formatUtil'
 import { formatMusicalKey } from '~/utils/musicalKeys'
 
 import { QUERY_KEYS } from './queryKeys'
+import { useCurrentUser } from './useCurrentUser'
 import { useDeleteTrack } from './useDeleteTrack'
+import { useGetOrCreateUserBank } from './useGetOrCreateUserBank'
 import { getTrackQueryKey } from './useTrack'
-import { handleStemUpdates } from './utils/handleStemUpdates'
+import { handleStemUpdates } from './utils'
+import { addPremiumMetadata } from './utils/addPremiumMetadata'
 import { primeTrackData } from './utils/primeTrackData'
 const { getCurrentUploads } = stemsUploadSelectors
 
@@ -36,7 +41,14 @@ export const useUpdateTrack = () => {
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const store = useStore()
+  const { data: currentUser } = useCurrentUser()
   const { mutate: deleteTrack } = useDeleteTrack()
+  const { data: userBank } = useGetOrCreateUserBank(
+    currentUser?.erc_wallet ?? currentUser?.wallet
+  )
+  const { isEnabled: isUsdcPurchaseEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES
+  )
 
   return useMutation({
     mutationFn: async ({
@@ -47,13 +59,13 @@ export const useUpdateTrack = () => {
     }: UpdateTrackParams) => {
       const sdk = await audiusSdk()
 
-      const previousMetadata = queryClient.getQueryData<Track>([
+      const previousMetadata = queryClient.getQueryData<UserTrackMetadata>([
         QUERY_KEYS.track,
         trackId
       ])
 
       // Create a mutable copy of metadata
-      const updatedMetadata = {
+      let updatedMetadata = {
         ...metadata
       } as Partial<Track>
 
@@ -74,21 +86,27 @@ export const useUpdateTrack = () => {
         updatedMetadata._is_publishing = true
       }
 
+      // Add premium metadata if needed
+      const userWallet = currentUser?.erc_wallet || currentUser?.wallet
+      if (userWallet && isUsdcPurchaseEnabled) {
+        updatedMetadata = await addPremiumMetadata(
+          updatedMetadata,
+          userWallet,
+          userBank
+        )
+      }
+
       // Format musical key
       if (updatedMetadata.musical_key) {
         updatedMetadata.musical_key =
           formatMusicalKey(updatedMetadata.musical_key) ?? null
 
-        // Set custom musical key flag if it's changed
-        if (
-          previousMetadata &&
-          updatedMetadata.musical_key !== previousMetadata.musical_key
-        ) {
-          updatedMetadata.is_custom_musical_key = true
-        } else if (previousMetadata) {
-          updatedMetadata.is_custom_musical_key = (
-            previousMetadata as any
-          ).is_custom_musical_key
+        // Set custom musical key flag if it's changed or was already set
+        if (previousMetadata) {
+          updatedMetadata.is_custom_musical_key =
+            previousMetadata.is_custom_musical_key ||
+            (!!updatedMetadata.musical_key &&
+              updatedMetadata.musical_key !== previousMetadata.musical_key)
         }
       }
 
@@ -96,13 +114,12 @@ export const useUpdateTrack = () => {
       if (updatedMetadata.bpm) {
         updatedMetadata.bpm = Number(updatedMetadata.bpm)
 
-        // Set custom BPM flag if it's changed
-        if (previousMetadata && updatedMetadata.bpm !== previousMetadata.bpm) {
-          updatedMetadata.is_custom_bpm = true
-        } else if (previousMetadata) {
-          updatedMetadata.is_custom_bpm = (
-            previousMetadata as any
-          ).is_custom_bpm
+        // Set custom BPM flag if it's changed or was already set
+        if (previousMetadata) {
+          updatedMetadata.is_custom_bpm =
+            previousMetadata.is_custom_bpm ||
+            (!!updatedMetadata.bpm &&
+              updatedMetadata.bpm !== previousMetadata.bpm)
         }
       }
 
