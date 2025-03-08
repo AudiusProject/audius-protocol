@@ -47,7 +47,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
     const buttonCss: CSSObject = {
       background: 'transparent',
       border: 'none',
-      borderRadius: '50%',
+      borderRadius: cornerRadius.circle,
       padding: ripple ? spacing.xs : 0,
       overflow: 'unset',
       svg: {
@@ -83,10 +83,6 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
       },
       '&:active': {
         backgroundColor: color.neutral.n150
-      },
-      '&:focus-visible': {
-        border: `1px solid ${color.secondary.secondary}`,
-        borderRadius: cornerRadius.s
       }
     }
 

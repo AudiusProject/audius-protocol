@@ -4,7 +4,7 @@ import { AnyAction, Dispatch } from 'redux'
 import { SetRequired } from 'type-fest'
 
 import { Kind } from '~/models'
-import { TrackMetadata, UserTrackMetadata } from '~/models/Track'
+import { Track, TrackMetadata, UserTrackMetadata } from '~/models/Track'
 import { User } from '~/models/User'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
@@ -20,7 +20,7 @@ export const primeTrackData = ({
   forceReplace = false,
   skipQueryData = false
 }: {
-  tracks: (UserTrackMetadata | TrackMetadata)[]
+  tracks: (UserTrackMetadata | Track)[]
   queryClient: QueryClient
   dispatch: Dispatch<AnyAction>
   forceReplace?: boolean
@@ -60,7 +60,7 @@ export const primeTrackDataInternal = ({
   forceReplace = false,
   skipQueryData = false
 }: {
-  tracks: (UserTrackMetadata | TrackMetadata)[]
+  tracks: (UserTrackMetadata | Track)[]
   queryClient: QueryClient
   forceReplace?: boolean
   skipQueryData?: boolean

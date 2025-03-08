@@ -14,10 +14,10 @@ import { squashNewLines } from '~/utils/formatUtil'
 import { formatMusicalKey } from '~/utils/musicalKeys'
 
 import { QUERY_KEYS } from './queryKeys'
+import { useDeleteTrack } from './useDeleteTrack'
 import { getTrackQueryKey } from './useTrack'
 import { handleStemUpdates } from './utils/handleStemUpdates'
 import { primeTrackData } from './utils/primeTrackData'
-
 const { getCurrentUploads } = stemsUploadSelectors
 
 type MutationContext = {
@@ -36,6 +36,7 @@ export const useUpdateTrack = () => {
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const store = useStore()
+  const { mutate: deleteTrack } = useDeleteTrack()
 
   return useMutation({
     mutationFn: async ({
@@ -138,6 +139,7 @@ export const useUpdateTrack = () => {
           updatedMetadata,
           previousMetadata as any,
           inProgressStemUploads,
+          (trackId: ID) => deleteTrack({ trackId }),
           dispatch
         )
       }

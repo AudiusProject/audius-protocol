@@ -1,9 +1,9 @@
 import { Track } from '@audius/sdk'
 import { Dispatch } from 'redux'
 
+import { ID } from '~/models/Identifiers'
 import { StemUploadWithFile } from '~/models/Stems'
 import { Stem } from '~/models/Track'
-import { deleteTrack } from '~/store/cache/tracks/actions'
 import { stemsUploadActions } from '~/store/stems-upload'
 import { TrackMetadataForUpload } from '~/store/upload'
 import { uuid } from '~/utils/uid'
@@ -26,6 +26,7 @@ export const handleStemUpdates = (
   metadata: Partial<TrackMetadataForUpload>,
   currentTrack: TrackWithStems,
   inProgressStemUploads: any[] = [],
+  deleteTrack: (trackId: ID) => void,
   dispatch: Dispatch
 ) => {
   if (!metadata.stems) return
@@ -69,6 +70,6 @@ export const handleStemUpdates = (
 
   // Handle stem removals
   removedStems.forEach((stem) => {
-    dispatch(deleteTrack(stem.track_id))
+    deleteTrack(stem.track_id)
   })
 }

@@ -11,7 +11,6 @@ import {
 import {
   accountSelectors,
   cacheCollectionsActions,
-  cacheTracksActions,
   collectionPageSelectors,
   tracksSocialActions,
   addToCollectionUIActions,
@@ -19,7 +18,8 @@ import {
   playbackPositionSelectors,
   CommonState,
   artistPickModalActions,
-  useDeleteTrackConfirmationModal
+  useDeleteTrackConfirmationModal,
+  shareModalUIActions
 } from '@audius/common/store'
 import { Genre, Nullable, route } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/harmony'
@@ -32,12 +32,14 @@ import { AppState } from 'store/types'
 import { push } from 'utils/navigation'
 import { albumPage } from 'utils/route'
 
+const { requestOpen: requestOpenShareModal } = shareModalUIActions
+
 const { profilePage } = route
 const { requestOpen: openAddToCollection } = addToCollectionUIActions
-const { repostTrack, undoRepostTrack, shareTrack } = tracksSocialActions
+const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
+  tracksSocialActions
 const { getCollectionId } = collectionPageSelectors
 const { addTrackToPlaylist } = cacheCollectionsActions
-const { deleteTrack } = cacheTracksActions
 const { getAccountOwnedPlaylists, getUserId } = accountSelectors
 const { clearTrackPosition, setTrackPosition } = playbackPositionActions
 const { getUserTrackPositions } = playbackPositionSelectors
@@ -138,10 +140,9 @@ const TrackMenu = ({
 
   const onDeleteTrack = (trackId: Nullable<number>) => {
     if (!trackId) return
+
     openDeleteTrackConfirmation({
-      confirmCallback: () => {
-        dispatch(deleteTrack(trackId))
-      }
+      trackId
     })
   }
 
@@ -179,12 +180,7 @@ const TrackMenu = ({
 
     const shareMenuItem = {
       text: messages.share,
-      onClick: () => {
-        if (trackId) {
-          shareTrack(trackId)
-          toast(messages.copiedToClipboard)
-        }
-      }
+      onClick: () => shareTrack(trackId)
     }
 
     const repostMenuItem = {
@@ -369,7 +365,17 @@ function mapDispatchToProps(dispatch: Dispatch) {
     addTrackToPlaylist: (trackId: ID, playlistId: ID) =>
       dispatch(addTrackToPlaylist(trackId, playlistId)),
     shareTrack: (trackId: ID) =>
-      dispatch(shareTrack(trackId, ShareSource.OVERFLOW)),
+      dispatch(
+        requestOpenShareModal({
+          type: 'track',
+          trackId,
+          source: ShareSource.OVERFLOW
+        })
+      ),
+    saveTrack: (trackId: ID) =>
+      dispatch(saveTrack(trackId, FavoriteSource.OVERFLOW)),
+    unsaveTrack: (trackId: ID) =>
+      dispatch(unsaveTrack(trackId, FavoriteSource.OVERFLOW)),
     repostTrack: (trackId: ID) =>
       dispatch(repostTrack(trackId, RepostSource.OVERFLOW)),
     undoRepostTrack: (trackId: ID) =>

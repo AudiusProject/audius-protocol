@@ -30,7 +30,7 @@ export const useUsers = (
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
 
-  const { data: users, ...queryResults } = useQueries({
+  const queryResults = useQueries({
     queries: (userIds ?? []).map((userId) => ({
       queryKey: getUserQueryKey(userId),
       queryFn: async () => {
@@ -48,6 +48,7 @@ export const useUsers = (
     })),
     combine: combineQueryResults<UserMetadata[]>
   })
+  const { data: users } = queryResults
 
   const byId = useMemo(() => keyBy(users, 'user_id'), [users])
 
@@ -55,11 +56,15 @@ export const useUsers = (
     userIds?.every((userId) => !!state.users.entries[userId])
   )
 
-  return {
-    data: isSavedToRedux ? users : undefined,
-    byId,
+  const results = {
     ...queryResults,
+    data: isSavedToRedux ? users : undefined,
     isPending: queryResults.isPending || !isSavedToRedux,
     isLoading: queryResults.isLoading || !isSavedToRedux
+  } as typeof queryResults
+
+  return {
+    ...results,
+    byId
   }
 }
