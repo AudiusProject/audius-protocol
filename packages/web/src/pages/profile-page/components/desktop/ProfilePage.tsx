@@ -348,11 +348,21 @@ const ProfilePage = ({
         {status === Status.SUCCESS ? (
           artistTracks.status === Status.SUCCESS &&
           artistTracks.entries.length === 0 ? (
-            <EmptyTab
-              isOwner={isOwner}
-              name={profile.name}
-              text={'uploaded any tracks'}
-            />
+            <>
+              {isOwner ? (
+                <UploadChip
+                  key='upload-chip'
+                  type='track'
+                  variant='tile'
+                  source='profile'
+                />
+              ) : null}
+              <EmptyTab
+                isOwner={isOwner}
+                name={profile.name}
+                text={'uploaded any tracks'}
+              />
+            </>
           ) : (
             <Lineup
               {...getLineupProps(artistTracks)}
