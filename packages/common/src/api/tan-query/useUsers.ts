@@ -44,7 +44,7 @@ export const useUsers = (
         return await batchGetUsers.fetch(userId)
       },
       ...options,
-      enabled: options?.enabled !== false && !!userId
+      enabled: options?.enabled !== false && !!userId && userId > 0
     })),
     combine: combineQueryResults<UserMetadata[]>
   })
