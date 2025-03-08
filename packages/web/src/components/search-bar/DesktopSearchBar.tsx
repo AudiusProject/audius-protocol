@@ -125,14 +125,21 @@ export const DesktopSearchBar = () => {
       if (event.key === 'Enter') {
         if (isSearchPage) {
           const newParams = new URLSearchParams(searchParams)
-          newParams.set('query', inputValue)
+          newParams.set('query', debouncedValue)
           setSearchParams(newParams)
         } else {
           history.push(searchResultsPage('all', inputValue))
         }
       }
     },
-    [history, inputValue, isSearchPage, setSearchParams]
+    [
+      debouncedValue,
+      history,
+      inputValue,
+      isSearchPage,
+      searchParams,
+      setSearchParams
+    ]
   )
 
   const renderSuffix = () => {
