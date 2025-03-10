@@ -3,6 +3,8 @@ from typing import List
 
 from sqlalchemy import asc, tuple_
 
+from src.challenges.challenge_event import ChallengeEvent
+from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.notifications.notification import Notification
 from src.models.social.repost import Repost
 from src.models.social.save import Save
@@ -17,6 +19,7 @@ def create_tastemaker_group_id(user_id, repost_item_id):
 def index_tastemaker_notifications(
     db: SessionManager,
     top_trending_tracks: List[Track],
+    challenge_event_bus: ChallengeEventBus,
     tastemaker_notification_threshold=10,
 ):
     with db.scoped_session() as session:
@@ -51,6 +54,23 @@ def index_tastemaker_notifications(
             )
             tastemaker_notifications.extend(tastemaker_notifications_to_add)
 
+        with challenge_event_bus.use_scoped_dispatch_queue():
+            for notification in tastemaker_notifications:
+                challenge_event_bus.dispatch(
+                    ChallengeEvent.tastemaker,
+                    notification.slot,
+                    notification.timestamp,
+                    notification.user_ids[0],
+                    {
+                        "tastemaker_item_id": notification.data["tastemaker_item_id"],
+                        "tastemaker_item_type": notification.data[
+                            "tastemaker_item_type"
+                        ],
+                        "tastemaker_item_owner_id": notification.data[
+                            "tastemaker_item_owner_id"
+                        ],
+                    },
+                )
         session.bulk_save_objects(
             [notification for notification in tastemaker_notifications]
         )
