@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.play_count_milestone_250_challenge import MILESTONE as MILESTONE_250
@@ -20,7 +20,7 @@ from src.challenges.play_count_milestone_10000_challenge import (
 )
 from src.models.indexing.block import Block
 from src.models.rewards.challenge import Challenge
-from src.models.social.play import Play
+from src.models.social.aggregate_monthly_plays import AggregateMonthlyPlay
 from src.models.tracks.track import Track
 from src.models.users.user import User
 from src.utils.config import shared_config
@@ -37,22 +37,6 @@ CURRENT_YEAR = 2025  # The starting year from which plays are counted onwards
 MILESTONE_VALUES = [MILESTONE_250, MILESTONE_1000, MILESTONE_10000]
 REWARD_VALUES = [25, 100, 1000]  # Corresponding reward amounts
 CHALLENGE_IDS = ["p1", "p2", "p3"]  # Challenge IDs
-
-
-def create_play(user_id: int, track_id: int, play_id: int, days_ago: int = 0) -> Play:
-    """Create a play record with the specified parameters"""
-    played_at = datetime(CURRENT_YEAR, 1, 1) + timedelta(days=days_ago)
-
-    return Play(
-        id=play_id,
-        play_item_id=track_id,
-        user_id=user_id,  # User who played the track
-        source=None,
-        slot=1,
-        signature=None,
-        created_at=played_at,
-        updated_at=played_at,
-    )
 
 
 def create_track(user_id: int, track_id: int) -> Track:
@@ -173,23 +157,52 @@ def test_play_count_milestones_challenge(app):
             # For subsequent milestones, we add plays on top of previous milestones
             if i == 0:
                 plays_to_add = milestone
-                start_play_id = 1
             else:
                 # Calculate additional plays needed to reach the current milestone
                 previous_milestone = MILESTONE_VALUES[i - 1]
                 plays_to_add = milestone - previous_milestone
-                start_play_id = previous_milestone + 1
 
-            plays = []
-            for j in range(plays_to_add):
-                play_id = start_play_id + j
-                days_ago = play_id % 30  # Distribute plays across days
-                play = create_play(
-                    user_id=1, track_id=1, play_id=play_id, days_ago=days_ago
+            # Create an aggregate monthly play for each month to simulate a distributed play count
+            # We'll create 5 months with even distribution to reach the target milestone
+            months_to_use = 5
+            plays_per_month = plays_to_add // months_to_use
+            remainder = plays_to_add % months_to_use
+
+            aggregate_plays = []
+            for month in range(months_to_use):
+                play_date = datetime(
+                    CURRENT_YEAR, 1 + month, 1
+                ).date()  # First day of each month
+
+                # Add extra plays to the first month if there's a remainder
+                count = plays_per_month
+                if month == 0:
+                    count += remainder
+
+                # Check if an aggregate play for this month already exists
+                existing_play = (
+                    session.query(AggregateMonthlyPlay)
+                    .filter(
+                        AggregateMonthlyPlay.play_item_id == 1,
+                        AggregateMonthlyPlay.timestamp == play_date,
+                        AggregateMonthlyPlay.country == "",
+                    )
+                    .first()
                 )
-                plays.append(play)
 
-            session.add_all(plays)
+                if existing_play:
+                    # Update existing record
+                    existing_play.count += count
+                else:
+                    # Create new record
+                    aggregate_plays.append(
+                        AggregateMonthlyPlay(
+                            play_item_id=1, timestamp=play_date, country="", count=count
+                        )
+                    )
+
+            if aggregate_plays:
+                session.add_all(aggregate_plays)
             session.flush()
 
             # Dispatch track_played event
@@ -258,13 +271,30 @@ def test_challenge_dependencies(app):
 
         # Add enough plays to reach the highest milestone immediately
         highest_milestone = max(MILESTONE_VALUES)
-        plays = []
 
-        for i in range(highest_milestone + 10):  # Add some extra plays
-            play = create_play(user_id=1, track_id=1, play_id=i + 1, days_ago=i % 30)
-            plays.append(play)
+        # Create aggregate monthly plays distributed over 12 months
+        months_to_use = 12
+        plays_per_month = highest_milestone // months_to_use
+        remainder = highest_milestone % months_to_use
 
-        session.add_all(plays)
+        aggregate_plays = []
+        for month in range(months_to_use):
+            play_date = datetime(
+                CURRENT_YEAR, 1 + month % 12, 1
+            ).date()  # First day of each month
+
+            # Add extra plays to the first month if there's a remainder
+            count = plays_per_month
+            if month == 0:
+                count += remainder + 10  # Add some extra plays
+
+            aggregate_plays.append(
+                AggregateMonthlyPlay(
+                    play_item_id=1, timestamp=play_date, country="", count=count
+                )
+            )
+
+        session.add_all(aggregate_plays)
         session.flush()
 
         # Dispatch track_played event
