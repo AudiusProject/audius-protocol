@@ -1,7 +1,12 @@
 import { ReactElement, useCallback, useEffect, useMemo } from 'react'
 
 import { useSelectTierInfo } from '@audius/common/hooks'
-import { BadgeTier } from '@audius/common/models'
+import {
+  AudioTiers,
+  BadgeTier,
+  featureMessages,
+  tierFeatureMap
+} from '@audius/common/models'
 import {
   accountSelectors,
   badgeTiers,
@@ -42,20 +47,7 @@ const messages = {
   currentTier: 'CURRENT TIER',
   tierLevel: (amount: string) => `${Number(amount).toLocaleString()}+`,
   updateRole: 'Update Role',
-  features: {
-    balance: '$AUDIO Balance',
-    hqStreaming: 'HQ Streaming',
-    unlimitedUploads: 'Unlimited Uploads',
-    uploadOnMobile: 'Upload On Mobile',
-    offlineListening: 'Offline Listening',
-    gatedContent: 'Gated Content',
-    directMessaging: 'Direct Messaging',
-    nftGallery: 'NFT Collectibles Gallery',
-    messageBlasts: 'Message Blasts',
-    flairBadges: 'Flair Badges',
-    customDiscordRole: 'Custom Discord Role',
-    customThemes: 'Custom App Themes'
-  },
+  features: featureMessages,
   learnMore: 'Learn more',
   launchDiscord: 'Launch the VIP Discord',
   refreshDiscordRole: 'Refresh Discord role',
@@ -63,8 +55,6 @@ const messages = {
 }
 
 const BADGE_SIZE = 24
-
-type AudioTiers = Exclude<BadgeTier, 'none'>
 
 // Tiers as they are listed here, in order
 const tiers: AudioTiers[] = ['bronze', 'silver', 'gold', 'platinum']
@@ -161,82 +151,6 @@ const TierBox = ({ tier, message }: { tier: BadgeTier; message?: string }) => {
       </Text>
     </Flex>
   )
-}
-
-const tierFeatureMap: Record<
-  AudioTiers | 'none',
-  Record<keyof typeof messages.features, boolean>
-> = {
-  none: {
-    balance: true,
-    hqStreaming: true,
-    unlimitedUploads: true,
-    uploadOnMobile: true,
-    offlineListening: true,
-    gatedContent: true,
-    directMessaging: true,
-    nftGallery: true,
-    messageBlasts: false,
-    flairBadges: false,
-    customDiscordRole: false,
-    customThemes: false
-  },
-  bronze: {
-    balance: true,
-    hqStreaming: true,
-    unlimitedUploads: true,
-    uploadOnMobile: true,
-    offlineListening: true,
-    gatedContent: true,
-    directMessaging: true,
-    nftGallery: true,
-    messageBlasts: true,
-    flairBadges: true,
-    customDiscordRole: true,
-    customThemes: false
-  },
-  silver: {
-    balance: true,
-    hqStreaming: true,
-    unlimitedUploads: true,
-    uploadOnMobile: true,
-    offlineListening: true,
-    gatedContent: true,
-    directMessaging: true,
-    nftGallery: true,
-    messageBlasts: true,
-    flairBadges: true,
-    customDiscordRole: true,
-    customThemes: false
-  },
-  gold: {
-    balance: true,
-    hqStreaming: true,
-    unlimitedUploads: true,
-    uploadOnMobile: true,
-    offlineListening: true,
-    gatedContent: true,
-    directMessaging: true,
-    nftGallery: true,
-    messageBlasts: true,
-    flairBadges: true,
-    customDiscordRole: true,
-    customThemes: true
-  },
-  platinum: {
-    balance: true,
-    hqStreaming: true,
-    unlimitedUploads: true,
-    uploadOnMobile: true,
-    offlineListening: true,
-    gatedContent: true,
-    directMessaging: true,
-    nftGallery: true,
-    messageBlasts: true,
-    flairBadges: true,
-    customDiscordRole: true,
-    customThemes: true
-  }
 }
 
 const TierColumn = ({

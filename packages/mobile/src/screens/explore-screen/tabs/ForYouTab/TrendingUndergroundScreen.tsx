@@ -26,7 +26,7 @@ export const TrendingUndergroundScreen = () => {
       <ScreenContent>
         <Lineup
           lineup={lineup}
-          header={<RewardsBanner type='underground' />}
+          header={<RewardsBanner bannerType='underground' />}
           actions={trendingUndergroundPageLineupActions}
           rankIconCount={5}
           isTrending

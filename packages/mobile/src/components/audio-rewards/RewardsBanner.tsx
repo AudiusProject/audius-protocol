@@ -1,23 +1,29 @@
 import { useCallback } from 'react'
 
 import { audioRewardsPageActions, modalsActions } from '@audius/common/store'
-import { Text, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch } from 'react-redux'
 
-import { IconCrown } from '@audius/harmony-native'
+import { IconCrown, Flex, Text } from '@audius/harmony-native'
 import { Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 const { setVisibility } = modalsActions
 const { setTrendingRewardsModalType } = audioRewardsPageActions
 
-const messages = {
-  rewards: '$audio rewards',
-  tracks: 'top 5 tracks each week win $audio',
-  playlists: 'top 5 playlists each week win $audio',
-  underground: 'top 5 tracks each week win $audio',
-  learnMore: 'learn more'
+const messageMap = {
+  tracks: {
+    title: 'Global Trending: Weekly Top 5',
+    description: 'Artists trending Fridays at 12PM PT win tokens!'
+  },
+  playlists: {
+    title: 'Trending Playlists: Weekly Top 5',
+    description: 'Playlists trending Fridays at 12PM PT win tokens!'
+  },
+  underground: {
+    title: 'Underground Trending: Weekly Top 5',
+    description: 'Artists trending Fridays at 12PM PT win tokens!'
+  }
 }
 
 const useStyles = makeStyles(({ typography, palette, spacing }) => ({
@@ -30,50 +36,31 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   },
   tileContent: {
     marginVertical: spacing(2),
+    paddingHorizontal: spacing(4),
     alignItems: 'center'
-  },
-  iconCrown: {
-    fill: palette.staticWhite,
-    height: 22,
-    width: 22,
-    marginRight: spacing(1)
-  },
-  title: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing(1)
-  },
-  titleText: {
-    fontSize: 20,
-    fontFamily: typography.fontByWeight.heavy,
-    color: palette.staticWhite,
-    textTransform: 'uppercase'
-  },
-  descriptionText: {
-    ...typography.h2,
-    marginBottom: 0,
-    color: palette.staticWhite,
-    textTransform: 'uppercase'
   }
 }))
 
 type RewardsBannerProps = {
-  type: 'tracks' | 'playlists' | 'underground'
+  bannerType?: 'tracks' | 'playlists' | 'underground'
 }
 
 export const RewardsBanner = (props: RewardsBannerProps) => {
-  const { type } = props
+  const { bannerType = 'tracks' } = props
   const styles = useStyles()
   const dispatch = useDispatch()
   const { pageHeaderGradientColor1, pageHeaderGradientColor2 } =
     useThemeColors()
 
   const handlePress = useCallback(() => {
-    dispatch(setTrendingRewardsModalType({ modalType: type }))
+    dispatch(setTrendingRewardsModalType({ modalType: bannerType }))
     dispatch(
       setVisibility({ modal: 'TrendingRewardsExplainer', visible: true })
     )
-  }, [dispatch, type])
+  }, [dispatch, bannerType])
+
+  // Get message content safely
+  const messageContent = messageMap[bannerType] || messageMap.tracks
 
   return (
     <Tile
@@ -88,16 +75,23 @@ export const RewardsBanner = (props: RewardsBannerProps) => {
       }}
       onPress={handlePress}
     >
-      <View style={styles.title}>
-        <IconCrown
-          style={styles.iconCrown}
-          fill={styles.iconCrown.fill}
-          height={styles.iconCrown.height}
-          width={styles.iconCrown.width}
-        />
-        <Text style={styles.titleText}>{messages.rewards}</Text>
-      </View>
-      <Text style={styles.descriptionText}>{messages[type]}</Text>
+      <Flex direction='column' alignItems='center' w='100%'>
+        <Flex direction='row' alignItems='center' mb='xs'>
+          <IconCrown size='s' color='staticWhite' style={{ marginRight: 8 }} />
+          <Text variant='title' size='s' color='staticWhite'>
+            {messageContent.title}
+          </Text>
+        </Flex>
+        <Text
+          variant='body'
+          size='s'
+          strength='strong'
+          color='staticWhite'
+          style={{ opacity: 0.8, textAlign: 'center' }}
+        >
+          {messageContent.description}
+        </Text>
+      </Flex>
     </Tile>
   )
 }

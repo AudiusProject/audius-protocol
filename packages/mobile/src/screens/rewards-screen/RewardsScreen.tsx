@@ -1,23 +1,19 @@
-import { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect } from 'react'
 
+import type { StringWei } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import {
   tokenDashboardPageActions,
   walletSelectors,
   walletActions
 } from '@audius/common/store'
+import type { CommonState } from '@audius/common/store'
 import { useFocusEffect } from '@react-navigation/native'
 import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Flex, IconCrown } from '@audius/harmony-native'
-import {
-  ScrollView,
-  Screen,
-  Text,
-  Tile,
-  ScreenContent
-} from 'app/components/core'
+import { IconCrown, Flex, Text } from '@audius/harmony-native'
+import { ScrollView, Screen, Tile, ScreenContent } from 'app/components/core'
 import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
@@ -25,13 +21,15 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { ChallengeRewardsTile } from './ChallengeRewardsTile'
 import { ClaimAllRewardsTile } from './ClaimAllRewardsTile'
+import { TiersTile } from './TiersTile'
+import { TrendingRewardsTile } from './TrendingRewardsTile'
 
 const { getBalance } = walletActions
 const { getTotalBalanceLoadDidFail } = walletSelectors
 const { fetchAssociatedWallets } = tokenDashboardPageActions
 
 const messages = {
-  title: '$AUDIO & Rewards',
+  title: 'Rewards & Perks',
   rewards: 'Earn Rewards',
   rewardsBody1: 'Complete tasks to earn $AUDIO tokens!'
 }
@@ -41,9 +39,25 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     height: '100%',
     padding: spacing(3)
   },
+  tile: {
+    borderRadius: 6,
+    paddingVertical: spacing(8),
+    paddingHorizontal: spacing(4)
+  },
   tileRoot: {
     margin: spacing(3),
     padding: spacing(3)
+  },
+  tileHeader: {
+    fontFamily: typography.fontByWeight.bold,
+    fontSize: typography.fontSize.xxl
+  },
+  tileSubheader: {
+    fontFamily: typography.fontByWeight.demiBold,
+    fontSize: typography.fontSize.medium,
+    lineHeight: spacing(5),
+    textAlign: 'center',
+    marginBottom: spacing(6)
   },
   tileContent: {
     justifyContent: 'center',
@@ -68,6 +82,9 @@ export const RewardsScreen = () => {
     StringKeys.AUDIO_FEATURES_DEGRADED_TEXT
   )
 
+  const totalBalanceWei =
+    useSelector((state: CommonState) => state.wallet.totalBalance) ??
+    ('0' as StringWei)
   const balanceLoadDidFail = useSelector(getTotalBalanceLoadDidFail)
 
   useFocusEffect(
@@ -116,6 +133,8 @@ export const RewardsScreen = () => {
             {audioFeaturesDegradedText ? renderNoticeTile() : null}
             <ClaimAllRewardsTile />
             <ChallengeRewardsTile />
+            <TrendingRewardsTile />
+            <TiersTile totalBalanceWei={totalBalanceWei} />
           </Flex>
         </ScrollView>
       </ScreenContent>

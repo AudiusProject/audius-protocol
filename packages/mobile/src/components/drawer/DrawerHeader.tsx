@@ -7,7 +7,7 @@ import type { IconComponent } from '@audius/harmony-native'
 import { Flex, IconClose, spacing } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
-
+import { zIndex } from 'app/utils/zIndex'
 type DrawerHeaderProps = {
   onClose: () => void
   title?: ReactNode
@@ -23,7 +23,8 @@ export const useStyles = makeStyles(({ spacing }) => ({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: spacing(2),
-    paddingHorizontal: spacing(8)
+    paddingHorizontal: spacing(8),
+    zIndex: zIndex.DRAWER_HEADER
   },
 
   dismissContainer: {

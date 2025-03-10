@@ -22,7 +22,6 @@ export const RewardPanel = ({
     <Paper
       onClick={onClickButton}
       ph='s'
-      h={144}
       flex={`0 0 calc(50% - ${spacing.unit4}px)`}
       direction='column'
       m='s'
@@ -31,6 +30,7 @@ export const RewardPanel = ({
       css={{
         minWidth: '336px'
       }}
+      pv='unit10'
     >
       <Flex direction='column' justifyContent='center' h='100%' gap='xl'>
         <Flex
