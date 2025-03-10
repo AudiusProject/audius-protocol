@@ -73,7 +73,6 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   yield* waitForWrite()
   const userId = yield* call(ensureLoggedIn)
   const isNative = yield* getContext('isNativeMobile')
-  const sdk = yield* getSDK()
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
 
   let playlist = yield* select(getCollection, { id: playlistId })
