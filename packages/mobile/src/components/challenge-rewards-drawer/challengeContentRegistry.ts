@@ -6,6 +6,7 @@ import { AudioMatchingChallengeContent } from './AudioMatchingChallengeContent'
 import { DefaultChallengeContent } from './DefaultChallengeContent'
 import { FirstWeeklyCommentChallengeContent } from './FirstWeeklyCommentChallengeContent'
 import { ListenStreakEndlessChallengeContent } from './ListenStreakEndlessChallengeContent'
+import { PlayCountMilestoneContent } from './PlayCountMilestoneContent'
 import { ProfileCompletionChallengeContent } from './ProfileCompletionChallengeContent'
 import { ReferralChallengeContent } from './ReferralChallengeContent'
 import type { ChallengeContentProps } from './types'
@@ -23,6 +24,9 @@ export const challengeContentRegistry: ChallengeContentMap = {
   [ChallengeName.ProfileCompletion]: ProfileCompletionChallengeContent,
   [ChallengeName.Referrals]: ReferralChallengeContent,
   [ChallengeName.FirstWeeklyComment]: FirstWeeklyCommentChallengeContent,
+  [ChallengeName.PlayCount250]: PlayCountMilestoneContent,
+  [ChallengeName.PlayCount1000]: PlayCountMilestoneContent,
+  [ChallengeName.PlayCount10000]: PlayCountMilestoneContent,
   default: DefaultChallengeContent
 }
 
