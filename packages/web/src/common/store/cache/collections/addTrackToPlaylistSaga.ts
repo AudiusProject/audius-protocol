@@ -53,6 +53,12 @@ type AddTrackToPlaylistAction = ReturnType<
   typeof cacheCollectionsActions.addTrackToPlaylist
 >
 
+// Returns current timestamp in seconds, which is the expected
+// format for client-generated playlist entry timestamps
+const getCurrentTimestamp = () => {
+  return Math.floor(Date.now() / 1000)
+}
+
 /** ADD TRACK TO PLAYLIST */
 
 export function* watchAddTrackToPlaylist() {
@@ -85,10 +91,6 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   yield* put(
     cacheActions.subscribe(Kind.TRACKS, [{ uid: trackUid, id: action.trackId }])
   )
-  const { timestamp: currentBlockTimestamp } = yield* call([
-    sdk.services.entityManager,
-    sdk.services.entityManager.getCurrentBlock
-  ])
 
   playlist.playlist_contents = {
     track_ids: playlist.playlist_contents.track_ids.concat({
@@ -99,7 +101,7 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
       // Represents user-facing timestamp when the user added the track to the playlist.
       // This is needed to disambiguate between tracks added at the same time/potentiall in
       // the same block.
-      metadata_time: currentBlockTimestamp,
+      metadata_time: getCurrentTimestamp(),
       uid: trackUid
     })
   }

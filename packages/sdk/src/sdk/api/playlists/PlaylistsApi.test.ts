@@ -1,7 +1,6 @@
 import fs from 'fs'
 import path from 'path'
 
-import type { GetBlockReturnType } from 'viem'
 import { describe, it, beforeAll, expect, vitest } from 'vitest'
 
 import { createAppWalletClient } from '../../services'
@@ -77,14 +76,6 @@ vitest
       blockHash: 'a',
       blockNumber: 1
     } as any
-  })
-
-vitest
-  .spyOn(EntityManagerClient.prototype, 'getCurrentBlock')
-  .mockImplementation(async () => {
-    return {
-      timestamp: 1
-    } as GetBlockReturnType & { timestamp: number }
   })
 
 vitest
