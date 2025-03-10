@@ -1,0 +1,5 @@
+{
+    "watch": ["dist"],
+    "exec": "clear && node dist/index.js"
+  }
+  
