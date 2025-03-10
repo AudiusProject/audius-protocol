@@ -5,7 +5,7 @@ from integration_tests.utils import populate_mock_db
 from src.models.comments.comment_report import COMMENT_KARMA_THRESHOLD
 from src.queries.comments import (
     COMMENT_ROOT_DEFAULT_LIMIT,
-    get_paginated_replies,
+    get_replies,
     get_track_comments,
 )
 from src.utils.db_session import get_db
@@ -166,9 +166,7 @@ def test_get_comments_replies(app):
     with app.app_context():
         db = get_db()
         populate_mock_db(db, test_entities)
-        response = get_paginated_replies(
-            {"limit": 2, "offset": 2, "sort_method": "newest"}, 10
-        )
+        response = get_replies({"limit": 2, "offset": 2, "sort_method": "newest"}, 10)
         replies = response["data"]
         for reply in replies:
             assert 103 <= decode_string_id(reply["id"]) <= 105
@@ -324,7 +322,7 @@ def test_get_comment_replies_from_muted_user_by_track_owner(app):
         populate_mock_db(db, entities)
 
         # the person who muted the user should not see the comment
-        response = get_paginated_replies(
+        response = get_replies(
             {"limit": 10, "offset": 0, "sort_method": "newest"}, 1, current_user_id=10
         )
         replies = response["data"]
@@ -332,14 +330,14 @@ def test_get_comment_replies_from_muted_user_by_track_owner(app):
 
         # to a third party user, there should be no comment replies
         # because the track owner muted the user
-        response = get_paginated_replies(
+        response = get_replies(
             {"limit": 10, "offset": 0, "sort_method": "newest"}, 1, current_user_id=2
         )
         replies = response["data"]
         assert len(replies) == 0
 
         # the muted user should see their own comment
-        response = get_paginated_replies(
+        response = get_replies(
             {"limit": 10, "offset": 0, "sort_method": "newest"}, 1, current_user_id=1
         )
         replies = response["data"]
@@ -381,21 +379,21 @@ def test_get_comment_replies_from_muted_user_by_other_user(app):
         populate_mock_db(db, entities)
 
         # the person who muted the user should not see the comment
-        response = get_paginated_replies(
+        response = get_replies(
             {"limit": 10, "offset": 0, "sort_method": "newest"}, 1, current_user_id=9
         )
         replies = response["data"]
         assert len(replies) == 0
 
         # to a third party user, they should still see the comment replies
-        response = get_paginated_replies(
+        response = get_replies(
             {"limit": 10, "offset": 0, "sort_method": "newest"}, 1, current_user_id=2
         )
         replies = response["data"]
         assert len(replies) == 1
 
         # the muted user should see their own comment
-        response = get_paginated_replies(
+        response = get_replies(
             {"limit": 10, "offset": 0, "sort_method": "newest"}, 1, current_user_id=1
         )
         replies = response["data"]
@@ -717,7 +715,7 @@ def test_get_comment_replies_related_field(app):
         db = get_db()
         populate_mock_db(db, entities)
 
-        response = get_paginated_replies(
+        response = get_replies(
             {"limit": 10, "offset": 0, "sort_method": "newest"}, 1, None, True
         )
 
