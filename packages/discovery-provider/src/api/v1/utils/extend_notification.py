@@ -245,9 +245,9 @@ def extend_create(action: NotificationAction):
     else:
         playlist_data: CreatePlaylistNotification = action["data"]  # type: ignore
         notification["data"]["is_album"] = playlist_data["is_album"]
-        notification["data"]["playlist_id"] = (
-            encode_int_id(playlist_data["playlist_id"]),
-        )  # TODO: Make this not a tuple!!
+        notification["data"]["playlist_id"] = [
+            encode_int_id(playlist_data["playlist_id"])
+        ]
     return notification
 
 
