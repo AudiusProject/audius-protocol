@@ -6,7 +6,7 @@ import {
   User
 } from '@audius/common/models'
 import { NestedNonNullable } from '@audius/common/utils'
-import { Button, IconUser, Box } from '@audius/harmony'
+import { Button, IconUser, Flex } from '@audius/harmony'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
@@ -168,10 +168,16 @@ const DeletedPage = g(
           <EmptyNavBanner />
         </div>
         <FlushPageContainer>
-          <Box pt={320} pb={100} css={{ position: 'relative' }}>
+          <Flex
+            column
+            w='100%'
+            pt={320}
+            pb={100}
+            css={{ position: 'relative' }}
+          >
             {renderTile()}
             {renderLineup()}
-          </Box>
+          </Flex>
         </FlushPageContainer>
       </Page>
     )
