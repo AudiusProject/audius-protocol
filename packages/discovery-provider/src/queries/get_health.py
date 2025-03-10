@@ -26,9 +26,8 @@ from src.tasks.index_core import (
     core_health_check_cache_key,
     core_listens_health_check_cache_key,
 )
-from src.utils import (
+from src.utils import (  # elasticdsl,
     db_session,
-    elasticdsl,
     get_all_nodes,
     helpers,
     redis_connection,
@@ -447,15 +446,15 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     health_results["relay"] = relay_health
 
     # Elasticsearch health
-    esclient = elasticdsl.get_esclient()
-    if esclient:
-        health_results["elasticsearch"] = get_elasticsearch_health_info(
-            esclient,
-            latest_indexed_block_num,
-            verbose,
-        )
-        if health_results["elasticsearch"]["status"] != "green":
-            errors.append("unhealthy elasticsearch")
+    # esclient = elasticdsl.get_esclient()
+    # if esclient:
+    #     health_results["elasticsearch"] = get_elasticsearch_health_info(
+    #         esclient,
+    #         latest_indexed_block_num,
+    #         verbose,
+    #     )
+    #     if health_results["elasticsearch"]["status"] != "green":
+    #         errors.append("unhealthy elasticsearch")
 
     if verbose:
         # DB connections check
