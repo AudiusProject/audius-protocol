@@ -237,25 +237,25 @@ const LockedGatedContentSection = ({
         chain === Chain.Eth ? IconLogoCircleETH : IconLogoCircleSOL
       return (
         <Text variant='body' strength='strong'>
-          <div className={styles.collectibleGatedDescription}>
+          <Flex className={styles.collectibleGatedDescription}>
             {messages.unlockCollectibleGatedContent}
-          </div>
-          <div
+          </Flex>
+          <Flex
             className={styles.gatedContentSectionCollection}
             onClick={goToCollection}
           >
             {imageUrl && (
-              <div className={styles.collectionIconsContainer}>
+              <Flex className={styles.collectionIconsContainer}>
                 <img
                   src={imageUrl}
                   alt={`${name} nft collection`}
                   className={styles.collectibleImage}
                 />
                 <ChainIcon css={{ position: 'relative', left: -spacing.s }} />
-              </div>
+              </Flex>
             )}
             <span>{name}</span>
-          </div>
+          </Flex>
         </Text>
       )
     }
@@ -383,9 +383,9 @@ const LockedGatedContentSection = ({
         </Flex>
         {renderLockedDescription()}
       </Flex>
-      <div className={cn(styles.gatedContentSectionButton, buttonClassName)}>
+      <Flex className={cn(styles.gatedContentSectionButton, buttonClassName)}>
         {renderButton()}
-      </div>
+      </Flex>
     </Flex>
   )
 }
@@ -684,7 +684,9 @@ export const GatedContentSection = ({
 
   if (hasStreamAccess) {
     return (
-      <div className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
+      <Flex
+        className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}
+      >
         <UnlockedGatedContentSection
           contentType={contentType}
           streamConditions={streamConditions}
@@ -695,13 +697,15 @@ export const GatedContentSection = ({
           className={className}
           trackOwner={trackOwner}
         />
-      </div>
+      </Flex>
     )
   }
 
   if (gatedContentStatus === 'UNLOCKING') {
     return (
-      <div className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
+      <Flex
+        className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}
+      >
         <UnlockingGatedContentSection
           contentType={contentType}
           streamConditions={streamConditions}
@@ -711,12 +715,12 @@ export const GatedContentSection = ({
           isOwner={isOwner}
           className={className}
         />
-      </div>
+      </Flex>
     )
   }
 
   return (
-    <div className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
+    <Flex className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
       <LockedGatedContentSection
         contentId={contentId}
         contentType={contentType}
@@ -730,6 +734,6 @@ export const GatedContentSection = ({
         buttonClassName={buttonClassName}
         source={source}
       />
-    </div>
+    </Flex>
   )
 }
