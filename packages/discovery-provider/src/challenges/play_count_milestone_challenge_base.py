@@ -23,9 +23,8 @@ class PlayCountMilestoneUpdaterBase(ChallengeUpdater):
     PREVIOUS_MILESTONE_CHALLENGE_ID = ""
 
     def _get_user_play_count_2025(self, session: Session, user_id: int) -> int:
-        """Get the total play count for an artist's tracks in 2025"""
+        """Get the total play count for an artist's tracks in 2025 and beyond"""
         start_date = datetime(2025, 1, 1)
-        end_date = datetime(2026, 1, 1)
 
         play_count = (
             session.query(func.count(Play.id))
@@ -38,7 +37,7 @@ class PlayCountMilestoneUpdaterBase(ChallengeUpdater):
                     Track.is_delete == False,
                 ),
             )
-            .filter(and_(Play.created_at >= start_date, Play.created_at < end_date))
+            .filter(Play.created_at >= start_date)
             .scalar()
         )
 

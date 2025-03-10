@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 REDIS_URL = shared_config["redis"]["url"]
 BLOCK_NUMBER = 10
-CURRENT_YEAR = 2025  # The year for which plays are counted
+CURRENT_YEAR = 2025  # The starting year from which plays are counted onwards
 
 # Get all the milestone values for testing
 MILESTONE_VALUES = [MILESTONE_250, MILESTONE_1000, MILESTONE_10000]
