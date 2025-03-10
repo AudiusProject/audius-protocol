@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
@@ -29,6 +29,13 @@ export const useUsers = (
   const dispatch = useDispatch()
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
+  const [hasInitialized, setHasInitialized] = useState(false)
+
+  useEffect(() => {
+    if (userIds?.length) {
+      setHasInitialized(true)
+    }
+  }, [userIds?.length])
 
   const queryResults = useQueries({
     queries: (userIds ?? []).map((userId) => ({
@@ -56,11 +63,16 @@ export const useUsers = (
     userIds?.every((userId) => !!state.users.entries[userId])
   )
 
+  const isPending = queryResults.isPending || !isSavedToRedux || !hasInitialized
+  const isLoading = queryResults.isLoading || !isSavedToRedux || !hasInitialized
+
+  console.log('query loading', queryResults.data?.length, isPending, isLoading)
+
   const results = {
     ...queryResults,
-    data: isSavedToRedux ? users : undefined,
-    isPending: queryResults.isPending || !isSavedToRedux,
-    isLoading: queryResults.isLoading || !isSavedToRedux
+    data: !isPending ? users : undefined,
+    isPending,
+    isLoading
   } as typeof queryResults
 
   return {
