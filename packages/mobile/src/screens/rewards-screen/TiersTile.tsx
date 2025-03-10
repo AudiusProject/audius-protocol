@@ -1,7 +1,12 @@
 import type { ReactElement } from 'react'
 import React from 'react'
 
-import type { StringWei } from '@audius/common/models'
+import type { StringWei, AudioTiers } from '@audius/common/models'
+import {
+  featureMessages,
+  features,
+  tierFeatureMap
+} from '@audius/common/models'
 import {
   badgeTiers,
   getTierAndNumberForBalance,
@@ -27,13 +32,6 @@ import {
 } from '@audius/harmony-native'
 import { GradientText } from 'app/components/core'
 import { useThemeColors } from 'app/utils/theme'
-
-import {
-  featureMessages,
-  features,
-  tierFeatureMap,
-  type AudioTiers
-} from './tiers'
 
 const audioTierMapSvg: {
   [tier in AudioTiers]: Nullable<ReactElement>
