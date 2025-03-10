@@ -1,12 +1,12 @@
 from datetime import datetime
 from typing import Dict, List, Optional, cast
 
-from sqlalchemy import and_, func
+from sqlalchemy import func
 from sqlalchemy.orm.session import Session
 
 from src.challenges.challenge import ChallengeUpdater, FullEventMetadata
 from src.models.rewards.user_challenge import UserChallenge
-from src.models.social.play import Play
+from src.models.social.aggregate_monthly_plays import AggregateMonthlyPlay
 from src.models.tracks.track import Track
 
 
@@ -27,21 +27,21 @@ class PlayCountMilestoneUpdaterBase(ChallengeUpdater):
         start_date = datetime(2025, 1, 1)
 
         play_count = (
-            session.query(func.count(Play.id))
-            .join(
-                Track,
-                and_(
-                    Track.track_id == Play.play_item_id,
-                    Track.owner_id == user_id,
-                    Track.is_current == True,
-                    Track.is_delete == False,
-                ),
+            session.query(func.sum(AggregateMonthlyPlay.count))
+            .filter(
+                AggregateMonthlyPlay.play_item_id.in_(
+                    session.query(Track.track_id).filter(
+                        Track.owner_id == user_id,
+                        Track.is_current == True,
+                        Track.is_delete == False,
+                    )
+                )
             )
-            .filter(Play.created_at >= start_date)
+            .filter(AggregateMonthlyPlay.timestamp >= start_date)
             .scalar()
         )
 
-        return cast(int, play_count)
+        return cast(int, play_count or 0)
 
     def update_user_challenges(
         self,
