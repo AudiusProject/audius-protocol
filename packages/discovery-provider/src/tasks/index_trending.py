@@ -178,7 +178,9 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
     top_trending_tracks = get_top_trending_to_notify(db)
 
     index_trending_notifications(db, timestamp, top_trending_tracks)
-    index_tastemaker_notifications(db, top_trending_tracks)
+    index_tastemaker_notifications(
+        db, top_trending_tracks, index_trending_task.challenge_event_bus
+    )
     index_trending_underground_notifications(db, timestamp)
 
 

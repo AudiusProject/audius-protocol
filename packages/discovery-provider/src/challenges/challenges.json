@@ -192,5 +192,16 @@
     "starting_block": 0,
     "weekly_pool": 2147483647,
     "cooldown_days": 0
+  },
+  {
+    "id": "t",
+    "name": "TASTEMAKER",
+    "type": "aggregate",
+    "amount": 100,
+    "active": false,
+    "step_count": 2147483647,
+    "starting_block": 0,
+    "weekly_pool": 2147483647,
+    "cooldown_days": 7
   }
 ]
