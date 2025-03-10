@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
-import { useQueries, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -15,6 +15,7 @@ import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getUserQueryKey } from './useUser'
 import { combineQueryResults } from './utils/combineQueryResults'
+import { useQueries } from './utils/useQueries'
 
 export const getUsersQueryKey = (userIds: ID[] | null | undefined) => [
   QUERY_KEYS.users,
@@ -29,16 +30,9 @@ export const useUsers = (
   const dispatch = useDispatch()
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
-  const [hasInitialized, setHasInitialized] = useState(false)
-
-  useEffect(() => {
-    if (userIds?.length) {
-      setHasInitialized(true)
-    }
-  }, [userIds?.length])
 
   const queryResults = useQueries({
-    queries: (userIds ?? []).map((userId) => ({
+    queries: userIds?.map((userId) => ({
       queryKey: getUserQueryKey(userId),
       queryFn: async () => {
         const sdk = await audiusSdk()
@@ -63,17 +57,12 @@ export const useUsers = (
     userIds?.every((userId) => !!state.users.entries[userId])
   )
 
-  const isPending = queryResults.isPending || !isSavedToRedux || !hasInitialized
-  const isLoading = queryResults.isLoading || !isSavedToRedux || !hasInitialized
-
-  console.log('query loading', queryResults.data?.length, isPending, isLoading)
-
   const results = {
     ...queryResults,
-    data: !isPending ? users : undefined,
-    isPending,
-    isLoading
-  } as typeof queryResults
+    data: isSavedToRedux ? users : undefined,
+    isPending: queryResults.isPending || !isSavedToRedux,
+    isLoading: queryResults.isLoading || !isSavedToRedux
+  }
 
   return {
     ...results,

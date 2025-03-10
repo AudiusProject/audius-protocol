@@ -28,9 +28,9 @@ type PageParam = {
 } | null
 
 type EntityIds = {
-  userIds: Set<ID>
-  trackIds: Set<ID>
-  collectionIds: Set<ID>
+  userIds: ID[]
+  trackIds: ID[]
+  collectionIds: ID[]
 }
 
 const collectEntityIds = (notifications: Notification[]): EntityIds => {
@@ -150,7 +150,11 @@ const collectEntityIds = (notifications: Notification[]): EntityIds => {
     }
   })
 
-  return { userIds, trackIds, collectionIds }
+  return {
+    userIds: Array.from(userIds),
+    trackIds: Array.from(trackIds),
+    collectionIds: Array.from(collectionIds)
+  }
 }
 
 export const getNotificationsQueryKey = ({
@@ -213,18 +217,13 @@ export const useNotifications = (options?: QueryOptions) => {
   const lastPage = query.data?.pages[query.data.pages.length - 1]
   const { userIds, trackIds, collectionIds } = lastPage
     ? collectEntityIds(lastPage)
-    : {
-        userIds: new Set<ID>(),
-        trackIds: new Set<ID>(),
-        collectionIds: new Set<ID>()
-      }
+    : { userIds: undefined, trackIds: undefined, collectionIds: undefined }
 
   // Pre-fetch related entities
-  const usersQuery = useUsers(Array.from(userIds))
-  const tracksQuery = useTracks(Array.from(trackIds))
-  const collectionsQuery = useCollections(Array.from(collectionIds))
+  const usersQuery = useUsers(userIds)
+  const tracksQuery = useTracks(trackIds)
+  const collectionsQuery = useCollections(collectionIds)
 
-  // Use combineQueryStatuses to merge the status properties from all queries
   const statusResults = combineQueryStatuses([
     query,
     usersQuery,
