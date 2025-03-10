@@ -10,7 +10,4 @@ export type UserImage = Pick<
   | 'profile_picture_cids'
 >
 
-export type UserMultihash = Pick<
-  User,
-  'metadata_multihash' | 'creator_node_endpoint'
->
+export type UserMultihash = Pick<User, 'creator_node_endpoint'>

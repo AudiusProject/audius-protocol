@@ -368,13 +368,11 @@ def test_index_valid_user(app, mocker):
                 "user_id": 1,
                 "handle": "user-1",
                 "wallet": "user1wallet",
-                "metadata_multihash": "QmCreateUser1",
             },
             {
                 "user_id": 2,
                 "handle": "user-1",
                 "wallet": "User2Wallet",
-                "metadata_multihash": "QmCreateUser2",
             },
         ],
         "tracks": [
@@ -1254,7 +1252,6 @@ def test_index_empty_bio(app, mocker):
                 "user_id": 2,
                 "handle": "user-1",
                 "wallet": "User2Wallet",
-                "metadata_multihash": "QmCreateUser2",
             },
         ],
         "cid_datas": [

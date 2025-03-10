@@ -52,7 +52,6 @@ export type UserMetadata = {
   website: Nullable<string>
   donation: Nullable<string>
   location: Nullable<string>
-  metadata_multihash: Nullable<CID>
   name: string
   playlist_count: number
   profile_picture_cids?: Nullable<ProfilePictureSizesCids>
@@ -121,10 +120,7 @@ export type UserImage = Pick<
   | 'profile_picture_cids'
 >
 
-export type UserMultihash = Pick<
-  User,
-  'metadata_multihash' | 'creator_node_endpoint'
->
+export type UserMultihash = Pick<User, 'creator_node_endpoint'>
 
 export type TwitterUser = {
   verified: boolean

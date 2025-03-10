@@ -371,12 +371,6 @@ export interface UserFull {
     profilePictureLegacy?: string;
     /**
      * 
-     * @type {string}
-     * @memberof UserFull
-     */
-    metadataMultihash?: string;
-    /**
-     * 
      * @type {boolean}
      * @memberof UserFull
      */
@@ -504,7 +498,6 @@ export function UserFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'profilePictureSizes': !exists(json, 'profile_picture_sizes') ? undefined : json['profile_picture_sizes'],
         'profilePictureCids': !exists(json, 'profile_picture_cids') ? undefined : ProfilePictureFromJSON(json['profile_picture_cids']),
         'profilePictureLegacy': !exists(json, 'profile_picture_legacy') ? undefined : json['profile_picture_legacy'],
-        'metadataMultihash': !exists(json, 'metadata_multihash') ? undefined : json['metadata_multihash'],
         'hasCollectibles': json['has_collectibles'],
         'playlistLibrary': !exists(json, 'playlist_library') ? undefined : PlaylistLibraryFromJSON(json['playlist_library']),
         'allowAiAttribution': json['allow_ai_attribution'],
@@ -573,7 +566,6 @@ export function UserFullToJSON(value?: UserFull | null): any {
         'profile_picture_sizes': value.profilePictureSizes,
         'profile_picture_cids': ProfilePictureToJSON(value.profilePictureCids),
         'profile_picture_legacy': value.profilePictureLegacy,
-        'metadata_multihash': value.metadataMultihash,
         'has_collectibles': value.hasCollectibles,
         'playlist_library': PlaylistLibraryToJSON(value.playlistLibrary),
         'allow_ai_attribution': value.allowAiAttribution,

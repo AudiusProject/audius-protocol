@@ -1,4 +1,3 @@
-import json
 import logging
 import re
 from typing import Dict, TypedDict, Union
@@ -14,7 +13,6 @@ from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
-from src.models.indexing.cid_data import CIDData
 from src.models.tracks.track import Track
 from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.collectibles import Collectibles
@@ -30,8 +28,6 @@ from src.tasks.entity_manager.utils import (
     EntityType,
     ManageEntityParameters,
     copy_record,
-    generate_metadata_cid_v1,
-    get_metadata_type_and_format,
     parse_metadata,
     validate_signer,
 )
@@ -180,11 +176,7 @@ def validate_user_handle(handle: Union[str, None]):
     return handle
 
 
-def create_user(
-    params: ManageEntityParameters,
-    cid_type: Dict[str, str],
-    cid_metadata: Dict[str, Dict],
-):
+def create_user(params: ManageEntityParameters):
     validate_user_tx(params)
 
     user_id = params.user_id
@@ -205,7 +197,7 @@ def create_user(
         # for single tx signup
         # TODO move metadata parsing and saving after v2 upgrade
         # Override with Update User to parse metadata
-        user_metadata, metadata_cid = parse_metadata(
+        user_metadata, _ = parse_metadata(
             params.metadata, Action.UPDATE, EntityType.USER
         )
     except Exception:
@@ -221,10 +213,6 @@ def create_user(
         )
 
         user_record = update_user_metadata(user_record, user_metadata, params)
-        metadata_type, _ = get_metadata_type_and_format(params.entity_type)
-        cid_type[metadata_cid] = metadata_type
-        cid_metadata[metadata_cid] = user_metadata
-        user_record.metadata_multihash = metadata_cid
 
     user_record.is_storage_v2 = True
 
@@ -233,11 +221,7 @@ def create_user(
     return user_record
 
 
-def update_user(
-    params: ManageEntityParameters,
-    cid_type: Dict[str, str],
-    cid_metadata: Dict[str, Dict],
-):
+def update_user(params: ManageEntityParameters):
     validate_user_tx(params)
 
     user_id = params.user_id
@@ -262,14 +246,6 @@ def update_user(
     )
 
     user_record = update_user_metadata(user_record, params.metadata, params)
-
-    updated_metadata, updated_metadata_cid = merge_metadata(
-        params, user_record, cid_metadata
-    )
-    metadata_type, _ = get_metadata_type_and_format(params.entity_type)
-    cid_type[updated_metadata_cid] = metadata_type
-    cid_metadata[updated_metadata_cid] = updated_metadata
-    user_record.metadata_multihash = updated_metadata_cid
 
     user_record = validate_user_record(user_record)
     params.add_record(user_id, user_record)
@@ -338,37 +314,6 @@ def update_user_metadata(
         )
 
     return user_record
-
-
-# get previous CIDData and merge new metadata into it
-# this is to support fields (collectibles, associated_wallets) which aren't being indexed yet
-# once those are indexed and backfilled this can be removed
-def merge_metadata(
-    params: ManageEntityParameters, record: User, cid_metadata: Dict[str, Dict]
-):
-    cid = record.metadata_multihash
-
-    # Check for previous metadata in cid_metadata in case multiple tx are in the same block
-    if cid in cid_metadata:
-        prev_cid_metadata = cid_metadata[cid]
-    else:
-        prev_cid_data_record = (
-            params.session.query(CIDData)
-            .filter_by(
-                cid=record.metadata_multihash,
-            )
-            .first()
-        )
-        prev_cid_metadata = (
-            dict(prev_cid_data_record.data) if prev_cid_data_record else {}
-        )
-    # merge previous and current metadata
-    updated_metadata = prev_cid_metadata | params.metadata
-
-    # generate a cid
-    updated_metadata_cid = str(generate_metadata_cid_v1(json.dumps(updated_metadata)))
-
-    return updated_metadata, updated_metadata_cid
 
 
 class UserEventMetadata(TypedDict, total=False):

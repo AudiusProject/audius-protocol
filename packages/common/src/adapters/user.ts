@@ -90,7 +90,6 @@ export const userMetadataFromSDK = (
     cover_photo_sizes: input.coverPhotoSizes ?? null,
     creator_node_endpoint: input.creatorNodeEndpoint ?? null,
     location: input.location ?? null,
-    metadata_multihash: input.metadataMultihash ?? null,
     profile_picture_sizes: input.profilePictureSizes ?? null
   }
 
@@ -159,13 +158,7 @@ export const userMetadataToSdk = (
   input: WriteableUserMetadata & Pick<AccountUserMetadata, 'playlist_library'>
 ): UpdateProfileRequest['metadata'] => ({
   ...camelcaseKeys(
-    pick(input, [
-      'name',
-      'handle',
-      'metadata_multihash',
-      'is_deactivated',
-      'allow_ai_attribution'
-    ])
+    pick(input, ['name', 'handle', 'is_deactivated', 'allow_ai_attribution'])
   ),
   bio: input.bio ?? undefined,
   website: input.website ?? undefined,
