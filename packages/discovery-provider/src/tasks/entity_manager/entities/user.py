@@ -329,30 +329,6 @@ def update_user_metadata(
         if user_record.verified_with_tiktok:
             user_record.tiktok_handle = user_record.handle
 
-    if "collectibles" in metadata:
-        # Dual-write for collectibles data to support legacy indexing
-        # TODO: Remove after clients updated to use new transactions
-        # https://linear.app/audius/issue/PAY-3894/remove-collection-and-other-cid-metadata-indexing
-        collectibles = Collectibles(
-            user_id=user_record.user_id,
-            data=metadata["collectibles"],
-            blockhash=params.event_blockhash,
-            blocknumber=params.block_number,
-        )
-
-        # We can just add_record here. Outer EM logic will take care
-        # of deleting previous record if it exists
-        params.add_record(user_record.user_id, collectibles, EntityType.COLLECTIBLES)
-
-        if (
-            metadata["collectibles"]
-            and isinstance(metadata["collectibles"], dict)
-            and metadata["collectibles"].items()
-        ):
-            user_record.has_collectibles = True
-        else:
-            user_record.has_collectibles = False
-
     if "events" in metadata and metadata["events"]:
         update_user_events(user_record, metadata["events"], challenge_event_bus, params)
 
