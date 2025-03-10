@@ -85,9 +85,14 @@ export const useAiTracks = (
 
   const lineupData = useLineupQuery({
     queryData,
+    queryKey: getAiTracksQueryKey({
+      handle,
+      pageSize
+    }),
     lineupActions: aiPageLineupActions,
     lineupSelector: aiPageSelectors.getLineup,
-    playbackSource: PlaybackSource.TRACK_TILE
+    playbackSource: PlaybackSource.TRACK_TILE,
+    pageSize
   })
 
   return {

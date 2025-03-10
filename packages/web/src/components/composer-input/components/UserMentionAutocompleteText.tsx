@@ -2,8 +2,8 @@ import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 
 import {
   SearchCategory,
-  useGetFollowers,
-  useGetSearchResults
+  useFollowers,
+  useSearchUserResults
 } from '@audius/common/api'
 import { Status, UserMetadata } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
@@ -43,10 +43,11 @@ export const UserMentionAutocompleteText = (
   const searchText = text.slice(1)
   const accountStatus = useSelector(getAccountStatus)
   const currentUserId = useSelector(getUserId)
-  const { data: followersData, status: followerStatus } = useGetFollowers({
-    userId: currentUserId,
-    limit: 6
-  })
+  const {
+    data: followersData,
+    isPending: followerDataPending,
+    isSuccess: followersDataSuccess
+  } = useFollowers({ pageSize: 6, userId: currentUserId })
   const optionRefs = useRef<HTMLButtonElement[]>([])
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -59,17 +60,18 @@ export const UserMentionAutocompleteText = (
     disableAnalytics: true
   }
 
-  const { data: searchUserData, status: searchStatus } = useGetSearchResults(
-    params,
-    {
-      debounce: 500,
-      disabled:
-        accountStatus === Status.LOADING || accountStatus === Status.IDLE
-    }
-  )
+  const {
+    data: searchData,
+    isLoading,
+    isSuccess
+  } = useSearchUserResults(params, {
+    enabled: accountStatus !== Status.LOADING && accountStatus !== Status.IDLE
+  })
 
-  const userList = searchText !== '' ? searchUserData?.users : followersData
-  const userListStatus = searchText !== '' ? searchStatus : followerStatus
+  const userList = searchText !== '' ? searchData : followersData
+  const userListLoadSuccess =
+    searchText !== '' ? isSuccess : followersDataSuccess
+  const isUserListPending = searchText !== '' ? isLoading : followerDataPending
 
   const options = useMemo(
     () => userList?.map((user) => ({ value: String(user.user_id) })) ?? [],
@@ -77,10 +79,16 @@ export const UserMentionAutocompleteText = (
   )
 
   useEffect(() => {
-    if (userList && userListStatus === Status.SUCCESS) {
+    if (userList && userListLoadSuccess) {
       onResultsLoaded?.(userList)
     }
-  }, [userList, onResultsLoaded, userListStatus, searchText, followerStatus])
+  }, [
+    userList,
+    onResultsLoaded,
+    searchText,
+    followersData,
+    userListLoadSuccess
+  ])
 
   const handleClose = useCallback(() => {
     setIsOpen(false)
@@ -97,7 +105,7 @@ export const UserMentionAutocompleteText = (
   )
 
   const renderContent = () => {
-    if (userListStatus === Status.IDLE || userListStatus === Status.LOADING) {
+    if (isUserListPending) {
       return (
         <Flex justifyContent='center' alignItems='center' p='m' w='100%'>
           <LoadingSpinner css={{ height: 32 }} />

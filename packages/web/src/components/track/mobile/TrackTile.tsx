@@ -178,7 +178,7 @@ const TrackTile = (props: CombinedProps) => {
 
   useEffect(() => {
     if (!showSkeleton) {
-      hasLoaded(index)
+      hasLoaded?.(index)
     }
   }, [hasLoaded, index, showSkeleton])
 

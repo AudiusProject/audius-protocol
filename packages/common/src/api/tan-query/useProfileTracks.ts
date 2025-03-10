@@ -98,9 +98,16 @@ export const useProfileTracks = (
 
   const lineupData = useLineupQuery({
     queryData,
+    queryKey: getProfileTracksQueryKey({
+      handle,
+      pageSize,
+      sort,
+      getUnlisted
+    }),
     lineupActions: profilePageTracksLineupActions,
     lineupSelector: profilePageSelectors.getProfileTracksLineup,
-    playbackSource: PlaybackSource.TRACK_TILE
+    playbackSource: PlaybackSource.TRACK_TILE,
+    pageSize
   })
 
   return {

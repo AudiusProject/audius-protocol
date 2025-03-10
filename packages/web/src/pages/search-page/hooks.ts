@@ -1,15 +1,9 @@
 import { useCallback, useContext, useMemo } from 'react'
 
-import {
-  SearchCategory,
-  useGetSearchResults as useGetSearchResultsApi
-} from '@audius/common/api'
-import { Status } from '@audius/common/models'
-import { SearchSortMethod, accountSelectors } from '@audius/common/store'
+import { SearchSortMethod } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Genre, Mood } from '@audius/sdk'
 import { intersection, isEmpty } from 'lodash'
-import { useSelector } from 'react-redux'
 import { generatePath, useRouteMatch } from 'react-router-dom'
 import { useSearchParams as useParams } from 'react-router-dom-v5-compat'
 
@@ -18,50 +12,10 @@ import { RouterContext } from 'components/animated-switch/RouterContextProvider'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { categories } from './categories'
-import { CategoryKey, CategoryView, SearchResultsType } from './types'
-import { ALL_RESULTS_LIMIT, urlSearchParamsToObject } from './utils'
+import { CategoryKey, CategoryView } from './types'
+import { urlSearchParamsToObject } from './utils'
 
 const { SEARCH_BASE_ROUTE, SEARCH_PAGE } = route
-const { getAccountStatus, getUserId } = accountSelectors
-
-export const useGetSearchResults = <C extends SearchCategory>(
-  category: C
-): SearchResultsType<C> => {
-  const { query, ...filters } = useSearchParams()
-
-  const accountStatus = useSelector(getAccountStatus)
-  const currentUserId = useSelector(getUserId)
-
-  const params = {
-    query: query || '',
-    ...filters,
-    category,
-    currentUserId,
-    limit: category === 'all' ? ALL_RESULTS_LIMIT : undefined,
-    offset: 0
-  }
-
-  // TODO: Properly type data when `shallow` is true
-  const { data, status } = useGetSearchResultsApi(params, {
-    // We pass shallow here because the top level search results don't care
-    // about the actual entities, just the ids. The nested componets pull
-    // the entities from the cache. This prevents unnecessary re-renders at the top
-    shallow: true,
-    debounce: 500,
-    // Only search when the account has finished loading,
-    // or if the user is not logged in
-    disabled: accountStatus === Status.LOADING || accountStatus === Status.IDLE
-  })
-
-  if (category === 'all') {
-    return { data: data as any, status } as SearchResultsType<C>
-  } else {
-    return {
-      data: data?.[category as Exclude<C, 'all'>] as any,
-      status
-    } as SearchResultsType<C>
-  }
-}
 
 export const useShowSearchResults = () => {
   const { query, genre, mood, isPremium, hasDownloads, isVerified, bpm, key } =
