@@ -9,7 +9,8 @@ const onDemandRun = async (app: App<SharedData>) => {
   // Run on demand only if runNow is true
   const { runNow } = app.viewAppData()
   if (runNow) {
-    await announceTopFiveTrending(app)
+    // Uncomment to also announce to slack
+    // await announceTopFiveTrending(app)
     await disburseTrendingRewards(app)
   }
 }
