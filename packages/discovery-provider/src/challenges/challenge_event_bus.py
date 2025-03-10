@@ -23,8 +23,14 @@ from src.challenges.listen_streak_endless_challenge import (
 )
 from src.challenges.mobile_install_challenge import mobile_install_challenge_manager
 from src.challenges.one_shot_challenge import one_shot_challenge_manager
-from src.challenges.play_count_milestones_challenge import (
-    play_count_milestones_challenge_manager,
+from src.challenges.play_count_milestone_250_challenge import (
+    play_count_250_milestone_challenge_manager,
+)
+from src.challenges.play_count_milestone_1000_challenge import (
+    play_count_1000_milestone_challenge_manager,
+)
+from src.challenges.play_count_milestone_10000_challenge import (
+    play_count_10000_milestone_challenge_manager,
 )
 from src.challenges.profile_challenge import profile_challenge_manager
 from src.challenges.referral_challenge import (
@@ -251,9 +257,15 @@ def setup_challenge_bus():
     bus.register_listener(
         ChallengeEvent.track_listen, listen_streak_endless_challenge_manager
     )
-    # Play count milestones challenge manager listener
+    # Play count milestones challenge manager listeners
     bus.register_listener(
-        ChallengeEvent.track_played, play_count_milestones_challenge_manager
+        ChallengeEvent.track_played, play_count_250_milestone_challenge_manager
+    )
+    bus.register_listener(
+        ChallengeEvent.track_played, play_count_1000_milestone_challenge_manager
+    )
+    bus.register_listener(
+        ChallengeEvent.track_played, play_count_10000_milestone_challenge_manager
     )
     # track_upload_challenge_manager listeners
     bus.register_listener(ChallengeEvent.track_upload, track_upload_challenge_manager)

@@ -227,30 +227,30 @@ export const challengeRewardsConfig: Record<
   },
   'trending-playlist': {
     id: 'trending-playlist',
-    title: 'Top 5 Trending Playlists',
-    description: () => 'Winners are selected every Friday at Noon PT!',
+    title: 'Trending Playlists Weekly Top 5',
+    description: () => 'Top 5 winners are selected every Friday at Noon PT!',
     panelButtonText: 'See More'
   },
   tp: {
     id: 'trending-playlist',
-    title: 'Top 5 Trending Playlists',
-    description: () => 'Winners are selected every Friday at Noon PT!',
+    title: 'Trending Playlists Weekly Top 5',
+    description: () => 'Top 5 winners are selected every Friday at Noon PT!',
     panelButtonText: 'See More'
   },
   'trending-track': {
-    title: 'Top 5 Trending Tracks',
-    description: () => 'Winners are selected every Friday at Noon PT!',
+    title: 'Global Trending Weekly Top 5',
+    description: () => 'Top 5 winners are selected every Friday at Noon PT!',
     panelButtonText: 'See More',
     id: 'trending-track'
   },
   tt: {
-    title: 'Top 5 Trending Tracks',
-    description: () => 'Winners are selected every Friday at Noon PT!',
+    title: 'Global Trending Weekly Top 5',
+    description: () => 'Top 5 winners are selected every Friday at Noon PT!',
     panelButtonText: 'See More',
     id: 'trending-track'
   },
   'top-api': {
-    title: 'Top 10 API Apps',
+    title: 'API Apps: Monthly Top 10 ',
     description: () => 'The top 10 Audius API apps each month win.',
     panelButtonText: 'More Info',
     id: 'top-api'
@@ -263,14 +263,14 @@ export const challengeRewardsConfig: Record<
     id: 'verified-upload'
   },
   'trending-underground': {
-    title: 'Top 5 Underground Trending',
-    description: () => 'Winners are selected every Friday at Noon PT!',
+    title: 'Underground Trending Weekly Top 5',
+    description: () => 'Top 5 winners are selected every Friday at Noon PT!',
     panelButtonText: 'See More',
     id: 'trending-underground'
   },
   tut: {
-    title: 'Top 5 Underground Trending',
-    description: () => 'Winners are selected every Friday at Noon PT!',
+    title: 'Underground Trending Weekly Top 5',
+    description: () => 'Top 5 winners are selected every Friday at Noon PT!',
     panelButtonText: 'See More',
     id: 'trending-underground'
   },
@@ -295,6 +295,39 @@ export const challengeRewardsConfig: Record<
     fullDescription: () => 'Your first comment every week will earn $AUDIO.',
     panelButtonText: 'Comment on a Track',
     id: ChallengeName.FirstWeeklyComment
+  },
+  [ChallengeName.PlayCount250]: {
+    id: ChallengeName.PlayCount250,
+    title: '250 Plays',
+    description: () =>
+      `Hit 250 plays across all of your tracks in 2025 to earn an $AUDIO Reward`,
+    fullDescription: () =>
+      `Hit 250 plays across all of your tracks in 2025 to earn an $AUDIO Reward`,
+    progressLabel: '%0 Plays',
+    remainingLabel: '%0 Plays',
+    panelButtonText: 'More Info'
+  },
+  [ChallengeName.PlayCount1000]: {
+    id: ChallengeName.PlayCount1000,
+    title: '1,000 Plays',
+    description: () =>
+      `Hit 1,000 plays across all of your tracks in 2025 to earn an $AUDIO Reward`,
+    fullDescription: () =>
+      `Hit 1,000 plays across all of your tracks in 2025 to earn an $AUDIO Reward`,
+    progressLabel: '%0 Plays',
+    remainingLabel: '%0 Plays',
+    panelButtonText: 'More Info'
+  },
+  [ChallengeName.PlayCount10000]: {
+    id: ChallengeName.PlayCount10000,
+    title: '10,000 Plays',
+    description: () =>
+      `Hit 10,000 plays across all of your tracks in 2025 to earn an $AUDIO Reward`,
+    fullDescription: () =>
+      `Hit 10,000 plays across all of your tracks in 2025 to earn an $AUDIO Reward`,
+    progressLabel: '%0 Plays',
+    remainingLabel: '%0 Plays',
+    panelButtonText: 'More Info'
   }
 }
 
@@ -382,7 +415,10 @@ const newChallengeIds: ChallengeRewardID[] = [
   ChallengeName.ListenStreakEndless,
   ChallengeName.FirstWeeklyComment,
   ChallengeName.AudioMatchingSell,
-  ChallengeName.AudioMatchingBuy
+  ChallengeName.AudioMatchingBuy,
+  ChallengeName.PlayCount250,
+  ChallengeName.PlayCount1000,
+  ChallengeName.PlayCount10000
 ]
 
 export const isNewChallenge = (challengeId: ChallengeRewardID) =>

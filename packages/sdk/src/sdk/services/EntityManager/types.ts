@@ -44,7 +44,6 @@ export type EntityManagerService = {
     confirmationTimeout?: number
     confirmationPollingInterval?: number
   }) => Promise<boolean>
-  getCurrentBlock: () => Promise<{ timestamp: number }>
 }
 
 export enum Action {

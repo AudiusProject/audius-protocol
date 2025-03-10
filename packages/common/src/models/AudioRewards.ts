@@ -55,7 +55,10 @@ export enum ChallengeName {
   ListenStreak = 'l',
   ListenStreakEndless = 'e',
   OneShot = 'o',
-  FirstWeeklyComment = 'c'
+  FirstWeeklyComment = 'c',
+  PlayCount250 = 'p1',
+  PlayCount1000 = 'p2',
+  PlayCount10000 = 'p3'
 }
 
 export type ChallengeRewardID =
@@ -89,6 +92,9 @@ export type ChallengeRewardID =
   | ChallengeName.ListenStreakEndless
   | ChallengeName.OneShot
   | ChallengeName.FirstWeeklyComment
+  | ChallengeName.PlayCount250
+  | ChallengeName.PlayCount1000
+  | ChallengeName.PlayCount10000
 
 export enum FailureReason {
   // The attestation requires the user to fill out a captcha
