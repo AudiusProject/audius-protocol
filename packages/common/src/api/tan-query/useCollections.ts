@@ -59,15 +59,11 @@ export const useCollections = (
     )
   )
 
-  const results = {
+  return {
     ...queriesResults,
     data: isSavedToRedux ? collections : undefined,
     isPending: queriesResults.isPending || !isSavedToRedux,
-    isLoading: queriesResults.isLoading || !isSavedToRedux
-  } as typeof queriesResults
-
-  return {
-    ...results,
+    isLoading: queriesResults.isLoading || !isSavedToRedux,
     byId
   }
 }

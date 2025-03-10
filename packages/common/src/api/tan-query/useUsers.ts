@@ -57,15 +57,11 @@ export const useUsers = (
     userIds?.every((userId) => !!state.users.entries[userId])
   )
 
-  const results = {
+  return {
     ...queryResults,
     data: isSavedToRedux ? users : undefined,
     isPending: queryResults.isPending || !isSavedToRedux,
-    isLoading: queryResults.isLoading || !isSavedToRedux
-  }
-
-  return {
-    ...results,
+    isLoading: queryResults.isLoading || !isSavedToRedux,
     byId
   }
 }

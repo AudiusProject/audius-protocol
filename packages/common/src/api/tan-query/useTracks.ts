@@ -58,15 +58,11 @@ export const useTracks = (
     trackIds?.every((trackId) => !!state.tracks.entries[trackId])
   )
 
-  const results = {
+  return {
     ...queryResults,
     data: isSavedToRedux ? tracks : undefined,
     isPending: queryResults.isPending || !isSavedToRedux,
-    isLoading: queryResults.isLoading || !isSavedToRedux
-  }
-
-  return {
-    ...results,
+    isLoading: queryResults.isLoading || !isSavedToRedux,
     byId
   }
 }
