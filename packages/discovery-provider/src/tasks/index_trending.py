@@ -8,7 +8,6 @@ from sqlalchemy import bindparam, text
 from sqlalchemy.orm.session import Session
 from web3 import Web3
 
-from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.core.core_indexed_blocks import CoreIndexedBlocks
 from src.models.indexing.block import Block
 from src.models.notifications.notification import Notification
