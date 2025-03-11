@@ -107,6 +107,7 @@ def test_aggregate_counters(app):
                 supporting_count=0,
                 dominant_genre=None,
                 dominant_genre_count=0,
+                score=0,
             ),
         )
 
@@ -125,6 +126,7 @@ def test_aggregate_counters(app):
                 supporting_count=0,
                 dominant_genre=None,
                 dominant_genre_count=0,
+                score=0,
             ),
         )
 
@@ -259,6 +261,7 @@ def test_aggregate_track_count_updates(app):
                 supporting_count=0,
                 dominant_genre=None,
                 dominant_genre_count=0,
+                score=0,
             ),
         )
         compare_rows(
@@ -276,6 +279,7 @@ def test_aggregate_track_count_updates(app):
                 supporting_count=0,
                 dominant_genre=None,
                 dominant_genre_count=0,
+                score=0,
             ),
         )
 
