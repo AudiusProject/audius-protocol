@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { useCurrentUserId } from '@audius/common/api'
 import { ID, User, FollowSource } from '@audius/common/models'
@@ -22,12 +22,6 @@ const { setNotificationSubscription } = profilePageActions
 
 const SCROLL_THRESHOLD = 400
 
-type SkeletonItem = {
-  _loading: true
-  user_id: string
-  tag?: string
-}
-
 type UserListV2Props = {
   /**
    * The list of users to display
@@ -44,7 +38,7 @@ type UserListV2Props = {
   /**
    * Whether we're loading the initial data
    */
-  isLoading: boolean
+  isPending: boolean
   /**
    * Function to load more users
    */
@@ -83,7 +77,7 @@ export const UserListV2 = ({
   data,
   hasNextPage,
   isFetchingNextPage,
-  isLoading,
+  isPending,
   fetchNextPage,
   onNavigateAway,
   afterFollow,
@@ -134,27 +128,28 @@ export const UserListV2 = ({
     [dispatch, beforeClickArtistName]
   )
 
-  const showSkeletons = isLoading || isFetchingNextPage
+  const showSkeletons = isPending || isFetchingNextPage
 
-  // Determine the tag for skeleton items based on whether we're showing support info
-  let skeletonTag: string | undefined
-  if (showSupportFor) {
-    skeletonTag = 'TOP SUPPORTERS'
-  } else if (showSupportFrom) {
-    skeletonTag = 'SUPPORTING'
-  }
+  const skeletonData = useMemo(() => {
+    // Determine the tag for skeleton items based on whether we're showing support info
+    let skeletonTag: string | undefined
+    if (showSupportFor) {
+      skeletonTag = 'TOP SUPPORTERS'
+    } else if (showSupportFrom) {
+      skeletonTag = 'SUPPORTING'
+    }
+
+    return range(15).map((index) => ({
+      _loading: true,
+      user_id: `skeleton ${index}`,
+      tag: skeletonTag
+    }))
+  }, [showSupportFor, showSupportFrom])
 
   // Create skeleton data with the appropriate tag
-  const currentSkeletonData: SkeletonItem[] = range(8).map((index) => ({
-    _loading: true,
-    user_id: `skeleton ${index}`,
-    tag: skeletonTag
-  }))
-
-  const displayData = [
-    ...(data ?? []),
-    ...(showSkeletons ? currentSkeletonData : [])
-  ]
+  const displayData = useMemo(() => {
+    return [...(data ?? []), ...(showSkeletons ? skeletonData : [])]
+  }, [data, showSkeletons, skeletonData])
 
   return (
     <Flex h='100%' column>

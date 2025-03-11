@@ -1,11 +1,10 @@
-import { memo } from 'react'
+import { memo, useCallback, useMemo } from 'react'
 
-import type { User } from '@audius/common/models'
+import type { User, UserMetadata } from '@audius/common/models'
 import { range } from 'lodash'
 import type { ListRenderItem } from 'react-native'
-import { View } from 'react-native'
 
-import { Divider } from '@audius/harmony-native'
+import { Divider, Flex } from '@audius/harmony-native'
 import { FlatList } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { makeStyles } from 'app/styles'
@@ -39,13 +38,6 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
   emptySpinner: {
     marginTop: spacing(4)
-  },
-  footer: {
-    height: spacing(8),
-    marginBottom: spacing(4)
-  },
-  list: {
-    height: '100%'
   }
 }))
 
@@ -53,19 +45,19 @@ type UserListV2Props = {
   /**
    * The list of users to display
    */
-  data: User[]
+  data?: UserMetadata[]
   /**
    * Whether we're loading more users
    */
-  isLoadingMore: boolean
+  isFetchingNextPage: boolean
   /**
    * Whether we're loading the initial data
    */
-  isLoading: boolean
+  isPending: boolean
   /**
    * Function to load more users
    */
-  loadMore: () => void
+  fetchNextPage: () => void
   /**
    * Tag for the UserListItem component
    */
@@ -73,36 +65,43 @@ type UserListV2Props = {
 }
 
 export const UserListV2 = (props: UserListV2Props) => {
-  const { data, isLoadingMore, isLoading, loadMore, tag } = props
+  const { data = [], isFetchingNextPage, isPending, fetchNextPage, tag } = props
   const styles = useStyles()
 
   const isEmpty = data.length === 0
 
-  const displayData = [...data, ...(isLoading ? skeletonData : [])]
+  const displayData = useMemo(() => {
+    return [...data, ...(isPending ? skeletonData : [])]
+  }, [data, isPending])
 
-  const renderItem: ListRenderItem<User | SkeletonItem> = ({ item }) =>
-    '_loading' in item ? (
-      <UserListItemSkeleton tag={tag} />
-    ) : (
-      <MemoizedUserListItem user={item} tag={tag} />
-    )
+  const renderItem: ListRenderItem<User | SkeletonItem> = useCallback(
+    ({ item }) =>
+      '_loading' in item ? (
+        <UserListItemSkeleton tag={tag} />
+      ) : (
+        <MemoizedUserListItem user={item} tag={tag} />
+      ),
+    [tag]
+  )
 
   const loadingSpinner = (
     <LoadingSpinner style={[styles.spinner, isEmpty && styles.emptySpinner]} />
   )
 
-  const footer = <View style={styles.footer} />
+  const footer = <Flex h='2xl' mb='l' />
 
   return (
     <FlatList
-      style={styles.list}
+      style={{ height: '100%' }}
       data={displayData}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
       ItemSeparatorComponent={Divider}
-      onEndReached={loadMore}
+      onEndReached={fetchNextPage}
       onEndReachedThreshold={3}
-      ListFooterComponent={isLoadingMore || isLoading ? loadingSpinner : footer}
+      ListFooterComponent={
+        isFetchingNextPage || isPending ? loadingSpinner : footer
+      }
     />
   )
 }
