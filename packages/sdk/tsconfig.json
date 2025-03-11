@@ -18,5 +18,5 @@
     "noPropertyAccessFromIndexSignature": false
   },
   "exclude": ["dist"],
-  "include": ["src/**/*", "scripts/generateServicesConfig.ts"]
+  "include": ["src/**/*", "scripts/**/*"]
 }

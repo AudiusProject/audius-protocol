@@ -14,8 +14,8 @@ npm run sdk:claim-rewards -- user --handle <handle>
 
 ```bash
 npm run sdk:verify-user -- \
-  --handle kesh.digital \
-  --socialHandle KESH \
-  --platform instagram \
+  --handle <handle> \
+  --socialHandle <social-handle> \
+  --platform <instagram|twitter|tiktok> \
   --privateKey <verifier-key>
 ```
