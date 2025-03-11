@@ -24,7 +24,8 @@ import {
   Flex,
   Button,
   IconPencil,
-  FollowButton
+  FollowButton,
+  Text
 } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -476,7 +477,9 @@ const ProfileHeader = ({
           <ArtistRecommendationsDropdown
             isVisible={areArtistRecommendationsVisible}
             renderHeader={() => (
-              <p>Here are some accounts that vibe well with {name}</p>
+              <Flex ml='m'>
+                <Text>Here are some accounts that vibe well with {name}</Text>
+              </Flex>
             )}
             artistId={userId}
             onClose={onCloseArtistRecommendations}

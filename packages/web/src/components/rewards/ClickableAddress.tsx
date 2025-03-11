@@ -1,9 +1,8 @@
-import { ReactNode, useCallback } from 'react'
+import { ReactNode, useCallback, useContext } from 'react'
 
 import { IconCopy } from '@audius/harmony'
-import cn from 'classnames'
 
-import Toast from 'components/toast/Toast'
+import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement, MountPlacement } from 'components/types'
 import { copyToClipboard } from 'utils/clipboardUtil'
@@ -30,9 +29,11 @@ const ClickableAddress = ({
   label,
   isCompact = false
 }: DisplayAddressProps) => {
+  const { toast } = useContext(ToastContext)
   const onClickAddress = useCallback(() => {
     copyToClipboard(address)
-  }, [address])
+    toast(messages.copied)
+  }, [address, toast])
 
   return (
     <Tooltip
@@ -40,27 +41,19 @@ const ClickableAddress = ({
       placement={ComponentPlacement.TOP}
       mount={MountPlacement.PARENT}
     >
-      <div className={cn(styles.toastContainer, { [className!]: !!className })}>
-        <Toast
-          text={messages.copied}
-          delay={2000}
-          overlayClassName={styles.toast}
-          placement={ComponentPlacement.TOP}
-          mount={MountPlacement.PARENT}
-        >
-          <PurpleBox
-            label={label ?? messages.yourAddr}
-            className={styles.container}
-            onClick={onClickAddress}
-            isCompact={isCompact}
-            text={
-              <div className={styles.addressContainer}>
-                <div className={styles.address}>{address}</div>
-                <IconCopy className={styles.icon} />
-              </div>
-            }
-          />
-        </Toast>
+      <div className={className}>
+        <PurpleBox
+          label={label ?? messages.yourAddr}
+          className={styles.container}
+          onClick={onClickAddress}
+          isCompact={isCompact}
+          text={
+            <div className={styles.addressContainer}>
+              <div className={styles.address}>{address}</div>
+              <IconCopy className={styles.icon} />
+            </div>
+          }
+        />
       </div>
     </Tooltip>
   )

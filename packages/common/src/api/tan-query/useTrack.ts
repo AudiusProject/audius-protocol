@@ -22,6 +22,7 @@ export const useTrack = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
+  const validTrackId = !!trackId && trackId > 0
 
   return useQuery<TQTrack | null>({
     queryKey: getTrackQueryKey(trackId),
@@ -36,6 +37,6 @@ export const useTrack = (
       return await batchGetTracks.fetch(trackId!)
     },
     ...options,
-    enabled: options?.enabled !== false && !!trackId
+    enabled: options?.enabled !== false && validTrackId
   })
 }

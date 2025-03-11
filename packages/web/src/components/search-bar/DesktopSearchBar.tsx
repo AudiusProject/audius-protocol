@@ -17,7 +17,7 @@ import type { InputRef } from 'antd/lib/input'
 import cn from 'classnames'
 import { Link, useHistory, useLocation, matchPath } from 'react-router-dom'
 import { useSearchParams } from 'react-router-dom-v5-compat'
-import { useDebounce } from 'react-use'
+import { useDebounce, usePrevious } from 'react-use'
 
 import { searchResultsPage } from 'utils/route'
 
@@ -93,16 +93,20 @@ export const DesktopSearchBar = () => {
     { query: debouncedValue, limit: DEFAULT_LIMIT },
     { enabled: !isSearchPage }
   )
-
+  const previousDebouncedValue = usePrevious(debouncedValue)
   useEffect(() => {
-    if (isSearchPage) {
-      if (debouncedValue) {
-        setSearchParams({ query: debouncedValue })
-      } else {
-        setSearchParams({})
-      }
+    if (isSearchPage && debouncedValue !== previousDebouncedValue) {
+      const newParams = new URLSearchParams(searchParams)
+      newParams.set('query', debouncedValue)
+      setSearchParams(newParams)
     }
-  }, [debouncedValue, isSearchPage, setSearchParams])
+  }, [
+    debouncedValue,
+    isSearchPage,
+    setSearchParams,
+    previousDebouncedValue,
+    searchParams
+  ])
 
   const handleSearch = useCallback((value: string) => {
     setInputValue(value)
@@ -120,13 +124,22 @@ export const DesktopSearchBar = () => {
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       if (event.key === 'Enter') {
         if (isSearchPage) {
-          setSearchParams({ query: inputValue })
+          const newParams = new URLSearchParams(searchParams)
+          newParams.set('query', debouncedValue)
+          setSearchParams(newParams)
         } else {
           history.push(searchResultsPage('all', inputValue))
         }
       }
     },
-    [history, inputValue, isSearchPage, setSearchParams]
+    [
+      debouncedValue,
+      history,
+      inputValue,
+      isSearchPage,
+      searchParams,
+      setSearchParams
+    ]
   )
 
   const renderSuffix = () => {

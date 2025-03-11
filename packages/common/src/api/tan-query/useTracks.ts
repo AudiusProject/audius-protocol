@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { useQueries, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -15,6 +15,7 @@ import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getTrackQueryKey } from './useTrack'
 import { combineQueryResults } from './utils/combineQueryResults'
+import { useQueries } from './utils/useQueries'
 
 export const getTracksQueryKey = (trackIds: ID[] | null | undefined) => [
   QUERY_KEYS.tracks,
@@ -31,7 +32,7 @@ export const useTracks = (
   const { data: currentUserId } = useCurrentUserId()
 
   const queryResults = useQueries({
-    queries: (trackIds ?? []).map((trackId) => ({
+    queries: trackIds?.map((trackId) => ({
       queryKey: getTrackQueryKey(trackId),
       queryFn: async () => {
         const sdk = await audiusSdk()
@@ -44,7 +45,7 @@ export const useTracks = (
         return await batchGetTracks.fetch(trackId)
       },
       ...options,
-      enabled: options?.enabled !== false && !!trackId
+      enabled: options?.enabled !== false && !!trackId && trackId > 0
     })),
     combine: combineQueryResults<TrackMetadata[]>
   })
@@ -57,15 +58,11 @@ export const useTracks = (
     trackIds?.every((trackId) => !!state.tracks.entries[trackId])
   )
 
-  const results = {
+  return {
     ...queryResults,
     data: isSavedToRedux ? tracks : undefined,
     isPending: queryResults.isPending || !isSavedToRedux,
-    isLoading: queryResults.isLoading || !isSavedToRedux
-  } as typeof queryResults
-
-  return {
-    ...results,
+    isLoading: queryResults.isLoading || !isSavedToRedux,
     byId
   }
 }

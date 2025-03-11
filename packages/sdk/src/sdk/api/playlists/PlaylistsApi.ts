@@ -46,6 +46,12 @@ import {
   UpdatePlaylistMetadataSchema
 } from './types'
 
+// Returns current timestamp in seconds, which is the expected
+// format for client-generated playlist entry timestamps
+const getCurrentTimestamp = () => {
+  return Math.floor(Date.now() / 1000)
+}
+
 export class PlaylistsApi extends GeneratedPlaylistsApi {
   private readonly trackUploadHelper: TrackUploadHelper
 
@@ -130,8 +136,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     // Parse inputs
     await parseParams('addTrackToPlaylist', AddTrackToPlaylistSchema)(params)
 
-    const currentBlock = await this.entityManager.getCurrentBlock()
-
     return await this.fetchAndUpdatePlaylist(
       {
         userId: params.userId,
@@ -142,7 +146,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
             ...(playlist.playlistContents ?? []),
             {
               trackId: params.trackId,
-              timestamp: currentBlock.timestamp
+              timestamp: getCurrentTimestamp()
             }
           ]
         })
@@ -480,7 +484,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     )
 
     const playlistId = await this.trackUploadHelper.generateId('playlist')
-    const currentBlock = await this.entityManager.getCurrentBlock()
+    const timestamp = getCurrentTimestamp()
 
     // Update metadata to include track ids and cover art cid
     const updatedMetadata = {
@@ -488,7 +492,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       isPrivate: false,
       playlistContents: trackIds.map((trackId) => ({
         trackId,
-        timestamp: currentBlock.timestamp
+        timestamp
       })),
       playlistImageSizesMultihash: coverArtResponse.id
     }
@@ -595,14 +599,14 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       ))
 
     const playlistId = providedPlaylistId || (await this.generatePlaylistId())
-    const currentBlock = await this.entityManager.getCurrentBlock()
+    const timestamp = getCurrentTimestamp()
 
     // Update metadata to include track ids
     const updatedMetadata = {
       ...metadata,
       playlistContents: (trackIds ?? []).map((trackId) => ({
         trackId,
-        timestamp: currentBlock.timestamp
+        timestamp
       })),
       playlistImageSizesMultihash: coverArtResponse?.id ?? metadata.coverArtCid
     }
