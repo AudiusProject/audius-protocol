@@ -15,7 +15,8 @@ begin
 
     -- update aggregate_monthly_plays
     insert into aggregate_monthly_plays (play_item_id, timestamp, country, count)
-    values (new.play_item_id, new.created_at, coalesce(new.country, ''), 0) on conflict do nothing;
+    values (new.play_item_id, date_trunc('month', new.created_at), coalesce(new.country, ''), 0)
+    on conflict do nothing;
 
     update aggregate_monthly_plays
         set count = count + 1
