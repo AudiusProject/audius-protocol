@@ -20,12 +20,8 @@ def index_core_entity_manager(
     update_task: DatabaseTask,
     web3: Web3,
     session: Session,
-    indexing_entity_manager: bool,
     block: BlockResponse,
 ) -> Optional[int]:
-    if not indexing_entity_manager:
-        return None
-
     tx_receipts: List[TxReceipt] = []
     for tx_res in block.transaction_responses:
         tx = tx_res.transaction
@@ -91,7 +87,6 @@ def index_core_entity_manager(
         raise e
 
 
-# copied from index_nethermind.py due to circular import
 def get_latest_acdc_block(session: Session) -> Block:
     """
     Gets the latest block in the database.
