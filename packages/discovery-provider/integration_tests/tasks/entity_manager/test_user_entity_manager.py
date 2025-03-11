@@ -12,7 +12,6 @@ from web3.datastructures import AttributeDict
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db, populate_mock_db_blocks
 from src.challenges.challenge_event import ChallengeEvent
-from src.models.indexing.cid_data import CIDData
 from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.collectibles import Collectibles
 from src.models.users.user import User
@@ -368,13 +367,11 @@ def test_index_valid_user(app, mocker):
                 "user_id": 1,
                 "handle": "user-1",
                 "wallet": "user1wallet",
-                "metadata_multihash": "QmCreateUser1",
             },
             {
                 "user_id": 2,
                 "handle": "user-1",
                 "wallet": "User2Wallet",
-                "metadata_multihash": "QmCreateUser2",
             },
         ],
         "tracks": [
@@ -398,18 +395,6 @@ def test_index_valid_user(app, mocker):
             {
                 "user_id": USER_ID_OFFSET,
                 "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
-            },
-        ],
-        "cid_datas": [
-            {
-                "cid": "QmCreateUser1",
-                "type": "user",
-                "data": {},
-            },
-            {
-                "cid": "QmCreateUser2",
-                "type": "user",
-                "data": {},
             },
         ],
     }
@@ -462,9 +447,6 @@ def test_index_valid_user(app, mocker):
         )
         assert user_3.name == "Isaac"
         assert user_3.handle == "isaac"
-
-        all_cid: List[CIDData] = session.query(CIDData).all()
-        assert len(all_cid) == 6
 
         calls = [
             mock.call.dispatch(
@@ -1254,16 +1236,8 @@ def test_index_empty_bio(app, mocker):
                 "user_id": 2,
                 "handle": "user-1",
                 "wallet": "User2Wallet",
-                "metadata_multihash": "QmCreateUser2",
             },
-        ],
-        "cid_datas": [
-            {
-                "cid": "QmCreateUser2",
-                "type": "user",
-                "data": {},
-            },
-        ],
+        ]
     }
 
     populate_mock_db(db, entities)

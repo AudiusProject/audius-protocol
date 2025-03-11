@@ -83,7 +83,7 @@ export async function getRecentUsers(page: number) {
   ${sql.unsafe(buildUserDetails)}
   where handle_lc is not null
   order by created_at desc
-  LIMIT 10 OFFSET ${(page + 27) * 10}
+  LIMIT 10 OFFSET ${page * 10}
   `
   if (!rows.length) return
   return rows.map((row) => row.user as UserDetails)
@@ -181,7 +181,7 @@ FROM aggregate_scores a
   const overallScore =
     playCount +
     followerCount -
-    challengeCount -
+    challengeCount +
     (followingCount < 5 ? -1 : 0) -
     numberOfUserWithFingerprint
   const normalizedScore = Math.min(

@@ -327,6 +327,8 @@ immutable_fields = {
     "created_at",
     "updated_at",
     "slot",
+    # TODO: Remove from immutable_user_fields when we drop the column
+    # https://linear.app/audius/issue/PAY-4018/drop-usersmetadata-multihash
     "metadata_multihash",
     "is_current",
     "is_delete",
