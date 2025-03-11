@@ -24,6 +24,7 @@ import { TextLink, UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { TrackTileProps, TrackTileSize } from 'components/track/types'
 import UserBadges from 'components/user-badges/UserBadges'
+import { useRepostTrackWeb } from 'hooks/useRepost'
 import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
 
 import { TrackDogEar } from '../TrackDogEar'
@@ -40,7 +41,6 @@ const { getGatedContentStatusMap } = gatedContentSelectors
 type ExtraProps = {
   permalink: string
   toggleSave: (trackId: ID) => void
-  toggleRepost: (trackId: ID) => void
   onShare: (trackId: ID) => void
   isOwner: boolean
   darkMode: boolean
@@ -77,7 +77,6 @@ const TrackTile = (props: CombinedProps) => {
     index,
     showSkeleton,
     toggleSave,
-    toggleRepost,
     onShare,
     onClickOverflow,
     togglePlay,
@@ -117,8 +116,11 @@ const TrackTile = (props: CombinedProps) => {
   const isPurchase = isContentUSDCPurchaseGated(streamConditions)
   const onToggleSave = useCallback(() => toggleSave(id), [toggleSave, id])
 
-  const onToggleRepost = useCallback(() => toggleRepost(id), [toggleRepost, id])
-
+  const handleRepostTrack = useRepostTrackWeb()
+  const onClickRepost = useCallback(
+    () => handleRepostTrack({ trackId: id as ID }),
+    [handleRepostTrack, id]
+  )
   const onClickShare = useCallback(() => onShare(id), [onShare, id])
 
   const onClickOverflowMenu = useCallback(
@@ -304,7 +306,7 @@ const TrackTile = (props: CombinedProps) => {
           <BottomButtons
             hasSaved={props.hasCurrentUserSaved}
             hasReposted={props.hasCurrentUserReposted}
-            toggleRepost={onToggleRepost}
+            toggleRepost={onClickRepost}
             toggleSave={onToggleSave}
             onShare={onClickShare}
             onClickOverflow={onClickOverflowMenu}
