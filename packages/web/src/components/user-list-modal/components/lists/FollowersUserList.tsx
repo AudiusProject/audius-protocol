@@ -14,22 +14,8 @@ export const FollowersUserList = ({
   getScrollParent
 }: FollowersUserListProps) => {
   const userId = useSelector(followersUserListSelectors.getId)
-  const {
-    data,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-    isLoading,
-    isPending
-  } = useFollowers({ userId })
-
-  console.log(
-    data && data?.length > 0,
-    isLoading,
-    isPending,
-    isFetchingNextPage,
-    hasNextPage
-  )
+  const { data, hasNextPage, isFetchingNextPage, fetchNextPage, isLoading } =
+    useFollowers({ userId })
 
   return (
     <UserListV2

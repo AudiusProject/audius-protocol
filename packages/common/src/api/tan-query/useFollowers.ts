@@ -64,8 +64,6 @@ export const useFollowers = (
 
   const { data: users, ...usersQuery } = useUsers(userIds)
 
-  // console.log('users', { userIds, users: users?.length })
-
   const statuses = combineQueryStatuses([queryResult, usersQuery])
 
   return {

@@ -145,7 +145,7 @@ export const UserListV2 = ({
   }
 
   // Create skeleton data with the appropriate tag
-  const currentSkeletonData: SkeletonItem[] = range(6).map((index) => ({
+  const currentSkeletonData: SkeletonItem[] = range(8).map((index) => ({
     _loading: true,
     user_id: `skeleton ${index}`,
     tag: skeletonTag
@@ -155,8 +155,6 @@ export const UserListV2 = ({
     ...(data ?? []),
     ...(showSkeletons ? currentSkeletonData : [])
   ]
-
-  console.log('display length', displayData.length)
 
   return (
     <Flex h='100%' column>
