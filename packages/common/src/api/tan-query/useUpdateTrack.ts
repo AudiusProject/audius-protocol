@@ -5,9 +5,9 @@ import { useDispatch } from 'react-redux'
 import { fileToSdk, trackMetadataForUploadToSdk } from '~/adapters/track'
 import { useAudiusQueryContext } from '~/audius-query'
 import { useFeatureFlag } from '~/hooks/useFeatureFlag'
-import { Track, UserTrackMetadata } from '~/models'
 import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
+import { Track, UserTrackMetadata } from '~/models/Track'
 import { FeatureFlags } from '~/services/remote-config'
 import { trackRemixEvent } from '~/store/cache/tracks/actions'
 import { TrackMetadataForUpload } from '~/store/upload'
@@ -27,7 +27,6 @@ type MutationContext = {
 
 export type UpdateTrackParams = {
   trackId: ID
-  userId: ID
   metadata: Partial<Track & TrackMetadataForUpload>
   coverArtFile?: File
 }
@@ -48,7 +47,6 @@ export const useUpdateTrack = () => {
   return useMutation({
     mutationFn: async ({
       trackId,
-      userId,
       metadata,
       coverArtFile
     }: UpdateTrackParams) => {
@@ -136,7 +134,7 @@ export const useUpdateTrack = () => {
           ? fileToSdk(coverArtFile, 'cover_art')
           : undefined,
         trackId: Id.parse(trackId),
-        userId: Id.parse(userId),
+        userId: Id.parse(currentUser?.user_id),
         metadata: sdkMetadata,
         generatePreview: generatePreview || undefined
       })
@@ -224,11 +222,7 @@ export const useUpdateTrack = () => {
       // Return context with the previous track and metadata
       return { previousTrack }
     },
-    onError: (
-      error,
-      { trackId, userId, metadata },
-      context?: MutationContext
-    ) => {
+    onError: (error, { trackId, metadata }, context?: MutationContext) => {
       // If the mutation fails, roll back track data
       if (context?.previousTrack) {
         queryClient.setQueryData(
@@ -258,7 +252,7 @@ export const useUpdateTrack = () => {
         error,
         additionalInfo: {
           trackId,
-          userId,
+          userId: currentUser?.user_id,
           metadata
         },
         feature: Feature.Edit,

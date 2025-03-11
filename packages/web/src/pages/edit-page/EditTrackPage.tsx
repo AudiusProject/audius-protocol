@@ -1,6 +1,10 @@
 import { createContext } from 'react'
 
-import { useGetCurrentUserId, useGetTrackByPermalink } from '@audius/common/api'
+import {
+  useGetCurrentUserId,
+  useGetTrackByPermalink,
+  useUpdateTrack
+} from '@audius/common/api'
 import {
   SquareSizes,
   Status,
@@ -11,7 +15,6 @@ import {
 } from '@audius/common/models'
 import {
   TrackMetadataForUpload,
-  cacheTracksActions,
   cacheTracksSelectors,
   uploadActions,
   useReplaceTrackConfirmationModal,
@@ -32,7 +35,6 @@ import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { push } from 'utils/navigation'
 
-const { editTrack } = cacheTracksActions
 const { getStems } = cacheTracksSelectors
 const { updateTrackAudio } = uploadActions
 
@@ -55,6 +57,7 @@ export const EditTrackPage = (props: EditPageProps) => {
   const { onOpen: openReplaceTrackConfirmation } =
     useReplaceTrackConfirmationModal()
   const { onOpen: openReplaceTrackProgress } = useReplaceTrackProgressModal()
+  const { mutate: updateTrack } = useUpdateTrack()
 
   const { data: currentUserId } = useGetCurrentUserId({})
   const permalink = `/${handle}/${slug}`
@@ -96,7 +99,10 @@ export const EditTrackPage = (props: EditPageProps) => {
         }
       })
     } else {
-      dispatch(editTrack(trackId, metadata))
+      updateTrack({
+        trackId,
+        metadata: metadata as Partial<Track & TrackMetadataForUpload>
+      })
       dispatch(push(metadata.permalink))
     }
   }
