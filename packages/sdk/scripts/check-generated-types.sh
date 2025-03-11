@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 npm run gen:dev
-cd ./src/sdk/api/generated
+cd ./src/api/generated
 
 # Check if there are any changes generated
 if [ -z "$(git status . --porcelain)" ]; then 

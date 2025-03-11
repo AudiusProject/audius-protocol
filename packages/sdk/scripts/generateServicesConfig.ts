@@ -1,7 +1,7 @@
 import { promises } from 'fs'
 import path from 'path'
 
-import type { SdkServicesConfig } from '../config/types'
+import type { SdkServicesConfig } from '../src/config/types'
 import {
   EthRewardsManagerClient,
   getDefaultEthRewardsManagerConfig,
@@ -9,7 +9,7 @@ import {
   getDefaultServiceTypeManagerConfig,
   ServiceProviderFactoryClient,
   ServiceTypeManagerClient
-} from '../services/Ethereum'
+} from '../src/services/Ethereum'
 
 const { writeFile } = promises
 

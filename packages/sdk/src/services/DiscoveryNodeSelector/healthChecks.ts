@@ -1,6 +1,6 @@
 import semver from 'semver'
 
-import type { CommsResponse } from '../../../sdk/api/chats/serverTypes'
+import type { CommsResponse } from '../../api/chats/serverTypes'
 import fetch from '../../utils/fetch'
 
 import {

@@ -3,7 +3,7 @@ import {
   FullPlaylistWithScoreResponse,
   GetBestNewReleasesWindowEnum,
   FullPlaylistWithScore
-} from '@audius/sdk/src/sdk/api/generated/full'
+} from '@audius/sdk/src/api/generated/full'
 
 import {
   trackActivityFromSDK,

@@ -1,6 +1,6 @@
-import { developmentConfig } from '@audius/sdk/src/sdk/config/development'
-import { productionConfig } from '@audius/sdk/src/sdk/config/production'
-import { stagingConfig } from '@audius/sdk/src/sdk/config/staging'
+import { developmentConfig } from '@audius/sdk/src/config/development'
+import { productionConfig } from '@audius/sdk/src/config/production'
+import { stagingConfig } from '@audius/sdk/src/config/staging'
 
 import { discoveryNodeAllowlist } from './constants'
 
