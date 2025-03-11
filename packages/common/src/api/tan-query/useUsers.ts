@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { useQueries, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -15,6 +15,7 @@ import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getUserQueryKey } from './useUser'
 import { combineQueryResults } from './utils/combineQueryResults'
+import { useQueries } from './utils/useQueries'
 
 export const getUsersQueryKey = (userIds: ID[] | null | undefined) => [
   QUERY_KEYS.users,
@@ -31,7 +32,7 @@ export const useUsers = (
   const { data: currentUserId } = useCurrentUserId()
 
   const queryResults = useQueries({
-    queries: (userIds ?? []).map((userId) => ({
+    queries: userIds?.map((userId) => ({
       queryKey: getUserQueryKey(userId),
       queryFn: async () => {
         const sdk = await audiusSdk()
@@ -56,15 +57,11 @@ export const useUsers = (
     userIds?.every((userId) => !!state.users.entries[userId])
   )
 
-  const results = {
+  return {
     ...queryResults,
     data: isSavedToRedux ? users : undefined,
     isPending: queryResults.isPending || !isSavedToRedux,
-    isLoading: queryResults.isLoading || !isSavedToRedux
-  } as typeof queryResults
-
-  return {
-    ...results,
+    isLoading: queryResults.isLoading || !isSavedToRedux,
     byId
   }
 }

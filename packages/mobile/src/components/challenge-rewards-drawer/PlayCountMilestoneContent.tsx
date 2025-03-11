@@ -136,7 +136,6 @@ export const PlayCountMilestoneContent = (props: ChallengeContentProps) => {
       errorContent={
         claimError ? <ClaimError aaoErrorCode={aaoErrorCode} /> : null
       }
-      claimInProgress={claimInProgress}
       isCooldownChallenge={!!optimisticChallenge?.cooldown_days}
     />
   )

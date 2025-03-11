@@ -58,7 +58,7 @@ app.post('/attestation/:handle', async (c) => {
   if (!user) return c.json({ error: `handle not found: ${handle}` }, 404)
 
   // pass / fail
-  const userScore = await getUserNormalizedScore(user.id)
+  const userScore = await getUserNormalizedScore(user.user_id)
   if (userScore.overallScore < 0) {
     return c.json({ error: 'denied' }, 400)
   }
