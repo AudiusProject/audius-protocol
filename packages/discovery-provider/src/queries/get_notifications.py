@@ -32,16 +32,6 @@ WITH user_seen as (
   WHERE
     user_id =  :user_id
   AND is_current
-),
-distinct_specifiers as (
-    SELECT DISTINCT(specifier::int)
-    FROM notification 
-    WHERE :user_id = ANY(user_ids)
-    AND type = ANY(ARRAY['save', 'follow', 'repost'])
-),
-shadowbanned as (
-    SELECT get_shadowbanned_users(array_agg(specifier)) as specifier
-    FROM distinct_specifiers
 )
 SELECT
     n.type,
@@ -109,16 +99,6 @@ WITH user_created_at as (
   WHERE
     user_id = :user_id
   AND is_current
-),
-distinct_specifiers as (
-    SELECT DISTINCT(specifier::int)
-    FROM notification 
-    WHERE :user_id = ANY(user_ids)
-    AND type = ANY(ARRAY['save', 'follow', 'repost'])
-),
-shadowbanned as (
-    SELECT get_shadowbanned_users(array_agg(specifier)) as specifier
-    FROM distinct_specifiers
 )
 SELECT
     count(*)
