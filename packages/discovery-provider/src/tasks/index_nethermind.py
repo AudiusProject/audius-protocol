@@ -539,8 +539,7 @@ def index_nethermind(self):
     try:
         with db.scoped_session() as session:
             latest_database_block = get_latest_database_block(session)
-            correct_env = environment == "dev" or environment == "stage"
-            if latest_database_block.number >= get_em_cutover() and correct_env:
+            if latest_database_block.number >= get_em_cutover():
                 logger.info(
                     f"Reached EM cutover block, not requeueing index_nethermind {get_em_cutover()}"
                 )
