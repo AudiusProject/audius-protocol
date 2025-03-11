@@ -362,7 +362,7 @@ export const productionConfig: SdkServicesConfig = {
     ],
     "antiAbuseOracleNodes": {
       "endpoints": [
-        "https://antiabuseoracle.audius.co",
+        "https://discoveryprovider.audius.co",
         "https://audius-oracle.creatorseed.com",
         "https://oracle.audius.endl.net"
       ],
