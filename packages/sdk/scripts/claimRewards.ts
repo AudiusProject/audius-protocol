@@ -47,9 +47,9 @@ const audiusSdk = () => {
 }
 
 program
-  .command('claim-rewards')
+  .command('user')
   .description('Claim rewards for a user')
-  .option('-u, --handle <handle>', 'The handle to claim rewards for')
+  .option('-h, --handle <handle>', 'The handle to claim rewards for')
   .action(async (args) => {
     const sdk = audiusSdk()
 
