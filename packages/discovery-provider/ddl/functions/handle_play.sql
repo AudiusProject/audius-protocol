@@ -5,11 +5,24 @@ declare
     owner_user_id int;
 begin
 
+    -- update aggregate_plays
     insert into aggregate_plays (play_item_id, count) values (new.play_item_id, 0) on conflict do nothing;
 
     update aggregate_plays
         set count = count + 1 
         where play_item_id = new.play_item_id
+        returning count into new_listen_count;
+
+    -- update aggregate_monthly_plays
+    insert into aggregate_monthly_plays (play_item_id, timestamp, country, count)
+    values (new.play_item_id, date_trunc('month', new.created_at), coalesce(new.country, ''), 0)
+    on conflict do nothing;
+
+    update aggregate_monthly_plays
+        set count = count + 1
+        where play_item_id = new.play_item_id
+        and timestamp = date_trunc('month', new.created_at)
+        and country = coalesce(new.country, '')
         returning count into new_listen_count;
 
     select new_listen_count 
