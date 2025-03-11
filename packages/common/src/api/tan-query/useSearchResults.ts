@@ -249,17 +249,15 @@ const useSearchQueryProps = (
         }
       }))
 
-      // Track results need to also prep the lineup
-      if (formattedTracks.length > 0) {
-        dispatch(
-          searchResultsPageTracksLineupActions.fetchLineupMetadatas(
-            pageParam,
-            pageSize,
-            false,
-            { tracks: formattedTracks }
-          )
+      // Send our results to the lineup
+      dispatch(
+        searchResultsPageTracksLineupActions.fetchLineupMetadatas(
+          pageParam,
+          pageSize,
+          false,
+          { tracks: formattedTracks }
         )
-      }
+      )
       return {
         tracks: formattedTracks,
         users,
