@@ -2,7 +2,7 @@ import { Id } from '@audius/sdk'
 import {
   GetUserLibraryTracksSortMethodEnum,
   GetUserLibraryTracksSortDirectionEnum
-} from '@audius/sdk/src/sdk/api/generated/full/apis/UsersApi'
+} from '@audius/sdk/src/api/generated/full/apis/UsersApi'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 

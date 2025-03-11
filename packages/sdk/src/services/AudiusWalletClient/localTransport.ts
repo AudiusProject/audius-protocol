@@ -10,11 +10,9 @@ export const localTransport = () => {
     method: string
     params?: unknown[] | object
   }) => {
-    console.error('Local transport in use. RPC methods are not implemented.', {
-      method,
-      params
-    })
-    throw new Error(`Method '${method}' not implemented on local transport.`)
+    throw new Error(
+      `Method '${method}' not implemented on local transport with params ${params}.`
+    )
   }
   return { request }
 }

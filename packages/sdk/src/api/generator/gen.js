@@ -9,7 +9,7 @@ const commander = require('commander')
 
 const program = new commander.Command()
 
-const OUT_DIR = 'src/sdk/api/generator/out'
+const OUT_DIR = 'src/api/generator/out'
 
 const SWAGGER_JSON_PATH = path.join(OUT_DIR, 'swagger.json')
 
@@ -17,8 +17,8 @@ const OPEN_API_JSON_PATH = path.join(OUT_DIR, 'openapi.json')
 
 const PROCESSED_JSON_PATH = path.join(OUT_DIR, 'processed.json')
 
-const TEMPLATES_DIR = 'src/sdk/api/generator/templates'
-const GENERATED_DIR = 'src/sdk/api/generated'
+const TEMPLATES_DIR = 'src/api/generator/templates'
+const GENERATED_DIR = 'src/api/generated'
 
 const spawnOpenAPIGenerator = async (openApiGeneratorArgs) => {
   console.info('Running OpenAPI Generator:')

@@ -4,7 +4,7 @@ import {
   userTrackMetadataFromSDK
 } from '@audius/common/adapters'
 import type { full } from '@audius/sdk'
-import { FullPlaylistResponseFromJSON } from '@audius/sdk/src/sdk/api/generated/full/models/FullPlaylistResponse'
+import { FullPlaylistResponseFromJSON } from '@audius/sdk/src/api/generated/full/models/FullPlaylistResponse'
 import type { PageContextServer } from 'vike/types'
 
 import { getDiscoveryNode } from '../getDiscoveryNode'

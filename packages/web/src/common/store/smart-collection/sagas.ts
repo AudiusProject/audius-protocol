@@ -17,7 +17,7 @@ import {
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { full, Id } from '@audius/sdk'
-import { GetBestNewReleasesWindowEnum } from '@audius/sdk/src/sdk/api/generated/full'
+import { GetBestNewReleasesWindowEnum } from '@audius/sdk/src/api/generated/full'
 import { takeEvery, put, call, select } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'

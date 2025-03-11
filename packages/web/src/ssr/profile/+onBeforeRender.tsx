@@ -1,5 +1,5 @@
 import { userMetadataFromSDK } from '@audius/common/adapters'
-import { FullUserResponseFromJSON } from '@audius/sdk/src/sdk/api/generated/full/models/FullUserResponse'
+import { FullUserResponseFromJSON } from '@audius/sdk/src/api/generated/full/models/FullUserResponse'
 import type { PageContextServer } from 'vike/types'
 
 import { getDiscoveryNode } from '../getDiscoveryNode'

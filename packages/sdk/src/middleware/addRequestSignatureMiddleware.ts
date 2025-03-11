@@ -34,6 +34,12 @@ export const addRequestSignatureMiddleware = ({
     return mutex.runExclusive(async () => {
       const { audiusWalletClient, logger } = services
       try {
+        if (
+          audiusWalletClient.account.address ===
+          '0x0000000000000000000000000000000000000000'
+        ) {
+          return { message: null, signature: null }
+        }
         const [currentAddress] = await audiusWalletClient.getAddresses()
         const currentTimestamp = new Date().getTime()
         const isExpired =

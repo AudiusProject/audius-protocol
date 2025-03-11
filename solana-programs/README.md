@@ -92,7 +92,7 @@ Then, run:
 ./scripts/init-dev-fixtures.sh
 ```
 
-NOTE: The Reward Manager Lookup Table is not included in this script. To recreate the Reward Manager lookup table, see packages/libs/src/sdk/scripts/manageRewardsLookupTable.ts. You'll then have to export it to a file using the same commands found in the init-dev-fixtures.sh script
+NOTE: The Reward Manager Lookup Table is not included in this script. To recreate the Reward Manager lookup table, see packages/libs/src/scripts/manageRewardsLookupTable.ts. You'll then have to export it to a file using the same commands found in the init-dev-fixtures.sh script
 
 ## Adding a new program to the solana-test-validator
 
