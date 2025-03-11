@@ -51,10 +51,6 @@ from src.utils.redis_constants import (
     trending_tracks_last_completion_redis_key,
     user_balances_refresh_last_completion_redis_key,
 )
-from src.utils.web3_provider import get_web3
-
-LOCAL_RPC = "http://chain:8545"
-
 
 logger = logging.getLogger(__name__)
 MONITORS = monitors.MONITORS
@@ -133,34 +129,6 @@ def _is_relay_healthy(relay_health_res):
     is_healthy = relay_status == "up"
     relay_health_res["is_unhealthy"] = not is_healthy
     return is_healthy
-
-
-def _get_chain_health():
-    try:
-        health_res = requests.get(LOCAL_RPC + "/health", timeout=1)
-        chain_res = health_res.json()
-
-        web3 = get_web3(LOCAL_RPC)
-        latest_block = web3.eth.get_block("latest")
-        chain_res["block_number"] = latest_block.number
-        chain_res["hash"] = latest_block.hash.hex()
-        chain_res["chain_id"] = web3.eth.chain_id
-        get_signers_data = '{"method":"clique_getSigners","params":[]}'
-        signers_response = requests.post(LOCAL_RPC, data=get_signers_data)
-        signers_response_dict = signers_response.json()["result"]
-        chain_res["signers"] = signers_response_dict
-        get_snapshot_data = '{"method":"clique_getSnapshot","params":[]}'
-        snapshot_response = requests.post(LOCAL_RPC, data=get_snapshot_data)
-        snapshot_response_dict = snapshot_response.json()["result"]
-        chain_res["snapshot"] = snapshot_response_dict
-        return chain_res
-    except Exception as e:
-        # We use ganache locally in development, which doesn't have /health endpoint
-        # Don't log the error to prevent red herrings. Things will still work.
-        # TODO: Remove this check when we use nethermind in development
-        if shared_config["discprov"]["env"] != "dev":
-            logging.error("issue with chain health %s", exc_info=e)
-        pass
 
 
 class GetHealthArgs(TypedDict):
@@ -437,8 +405,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     else:
         health_results["meets_min_requirements"] = True
 
-    health_results["chain_health"] = _get_chain_health()
-
     relay_health = _get_relay_health()
     if not _is_relay_healthy(relay_health):
         errors.append("relay unhealthy")
@@ -509,14 +475,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     delist_statuses_ok = get_delist_statuses_ok()
     if not delist_statuses_ok:
         errors.append("unhealthy delist statuses")
-
-    chain_health = health_results["chain_health"]
-    if chain_health and chain_health["status"] == "Unhealthy":
-        errors.append("unhealthy chain")
-
-    is_dev = shared_config["discprov"]["env"] == "dev"
-    if not is_dev and not chain_health:
-        errors.append("no chain response")
 
     if verbose:
         api_healthy, reason = is_api_healthy(url)
