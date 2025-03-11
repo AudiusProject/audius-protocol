@@ -1,6 +1,6 @@
 import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useDispatch, useStore } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { fileToSdk, trackMetadataForUploadToSdk } from '~/adapters/track'
 import { useAudiusQueryContext } from '~/audius-query'
@@ -9,21 +9,17 @@ import { Track, UserTrackMetadata } from '~/models'
 import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
 import { FeatureFlags } from '~/services/remote-config'
-import { CommonState } from '~/store/commonStore'
-import { stemsUploadSelectors } from '~/store/stems-upload'
 import { TrackMetadataForUpload } from '~/store/upload'
 import { squashNewLines } from '~/utils/formatUtil'
 import { formatMusicalKey } from '~/utils/musicalKeys'
 
 import { QUERY_KEYS } from './queryKeys'
 import { useCurrentUser } from './useCurrentUser'
-import { useDeleteTrack } from './useDeleteTrack'
 import { useGetOrCreateUserBank } from './useGetOrCreateUserBank'
 import { getTrackQueryKey } from './useTrack'
-import { handleStemUpdates } from './utils'
+import { useUpdateStems } from './useUpdateStems'
 import { addPremiumMetadata } from './utils/addPremiumMetadata'
 import { primeTrackData } from './utils/primeTrackData'
-const { getCurrentUploads } = stemsUploadSelectors
 
 type MutationContext = {
   previousTrack: Track | undefined
@@ -32,7 +28,7 @@ type MutationContext = {
 export type UpdateTrackParams = {
   trackId: ID
   userId: ID
-  metadata: Partial<Track>
+  metadata: Partial<Track & TrackMetadataForUpload>
   coverArtFile?: File
 }
 
@@ -40,9 +36,8 @@ export const useUpdateTrack = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
-  const store = useStore()
   const { data: currentUser } = useCurrentUser()
-  const { mutate: deleteTrack } = useDeleteTrack()
+  const { mutate: updateStems } = useUpdateStems()
   const { data: userBank } = useGetOrCreateUserBank(
     currentUser?.erc_wallet ?? currentUser?.wallet
   )
@@ -59,7 +54,7 @@ export const useUpdateTrack = () => {
     }: UpdateTrackParams) => {
       const sdk = await audiusSdk()
 
-      const previousMetadata = queryClient.getQueryData<UserTrackMetadata>([
+      const previousMetadata = queryClient.getQueryData<Track>([
         QUERY_KEYS.track,
         trackId
       ])
@@ -67,7 +62,7 @@ export const useUpdateTrack = () => {
       // Create a mutable copy of metadata
       let updatedMetadata = {
         ...metadata
-      } as Partial<Track>
+      } as Track & TrackMetadataForUpload
 
       // Apply squashNewLines to description
       if (updatedMetadata.description) {
@@ -146,20 +141,12 @@ export const useUpdateTrack = () => {
         generatePreview: generatePreview || undefined
       })
 
-      // TODO: migrate stem uploads to use tan-query
-      const inProgressStemUploads = getCurrentUploads(
-        store.getState() as CommonState,
-        trackId
-      )
-      if (previousMetadata) {
-        handleStemUpdates(
-          updatedMetadata,
-          previousMetadata as any,
-          inProgressStemUploads,
-          (trackId: ID) => deleteTrack({ trackId }),
-          dispatch
-        )
-      }
+      // Upload/delete stems
+      updateStems({
+        trackId,
+        existingStems: previousMetadata?._stems,
+        updatedStems: updatedMetadata.stems
+      })
 
       // Handle remix event tracking
       const isNewRemix =
