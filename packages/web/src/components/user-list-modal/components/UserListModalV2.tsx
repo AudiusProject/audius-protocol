@@ -21,7 +21,10 @@ import {
   getIsOpen
 } from 'store/application/ui/userListModal/selectors'
 import { setVisibility } from 'store/application/ui/userListModal/slice'
-import { UserListType } from 'store/application/ui/userListModal/types'
+import {
+  UserListType,
+  v2UserListTypes
+} from 'store/application/ui/userListModal/types'
 
 import styles from './UserListModal.module.css'
 import { FavoritesUserList } from './lists/FavoritesUserList'
@@ -182,39 +185,42 @@ const UserListModalV2 = () => {
 
   const { component, title } = getUserList()
 
-  return (
-    <Modal
-      title={title}
-      isOpen={isOpen}
-      onClose={onClose}
-      showTitleHeader
-      bodyClassName={styles.modalBody}
-      titleClassName={styles.modalTitle}
-      headerContainerClassName={styles.modalHeader}
-      showDismissButton
-    >
-      <Scrollbar
-        className={styles.scrollable}
-        containerRef={(containerRef) => {
-          scrollParentRef.current = containerRef
-        }}
+  if (v2UserListTypes.includes(userListType)) {
+    return (
+      <Modal
+        title={title}
+        isOpen={isOpen}
+        onClose={onClose}
+        showTitleHeader
+        bodyClassName={styles.modalBody}
+        titleClassName={styles.modalTitle}
+        headerContainerClassName={styles.modalHeader}
+        showDismissButton
       >
-        {component}
-      </Scrollbar>
-      {!isChatBlastPath &&
-      (userListType === UserListType.FOLLOWER ||
-        userListType === UserListType.SUPPORTER) ? (
-        <ChatBlastWithAudienceCTA
-          audience={
-            userListType === UserListType.FOLLOWER
-              ? ChatBlastAudience.FOLLOWERS
-              : ChatBlastAudience.TIPPERS
-          }
-          onClick={onClose}
-        />
-      ) : null}
-    </Modal>
-  )
+        <Scrollbar
+          className={styles.scrollable}
+          containerRef={(containerRef) => {
+            scrollParentRef.current = containerRef
+          }}
+        >
+          {component}
+        </Scrollbar>
+        {!isChatBlastPath &&
+        (userListType === UserListType.FOLLOWER ||
+          userListType === UserListType.SUPPORTER) ? (
+          <ChatBlastWithAudienceCTA
+            audience={
+              userListType === UserListType.FOLLOWER
+                ? ChatBlastAudience.FOLLOWERS
+                : ChatBlastAudience.TIPPERS
+            }
+            onClick={onClose}
+          />
+        ) : null}
+      </Modal>
+    )
+  }
+  return null
 }
 
 export default UserListModalV2

@@ -46,7 +46,8 @@ import { UploadConfirmationModal } from 'components/upload-confirmation-modal'
 import { USDCPurchaseDetailsModal } from 'components/usdc-purchase-details-modal/USDCPurchaseDetailsModal'
 import { USDCTransactionDetailsModal } from 'components/usdc-transaction-details-modal/USDCTransactionDetailsModal'
 import TierExplainerModal from 'components/user-badges/TierExplainerModal'
-import UserListModal from 'components/user-list-modal/components/UserListModalV2'
+import ConnectedUserListModal from 'components/user-list-modal/ConnectedUserListModal'
+import UserListModalV2 from 'components/user-list-modal/components/UserListModalV2'
 import { WaitForDownloadModal } from 'components/wait-for-download-modal/WaitForDownloadModal'
 import { WelcomeModal } from 'components/welcome-modal/WelcomeModal'
 import { WithdrawUSDCModal } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
@@ -153,7 +154,8 @@ const Modals = () => {
       ) : (
         <>
           <EmbedModal />
-          <UserListModal />
+          <ConnectedUserListModal />
+          <UserListModalV2 />
           <AppCTAModal />
           {/* dev-mode hot-key modals */}
           <ConfirmerPreview />
