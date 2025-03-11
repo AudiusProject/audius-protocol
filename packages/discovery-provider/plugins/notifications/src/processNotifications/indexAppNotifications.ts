@@ -193,7 +193,6 @@ export class AppNotificationsProcessor {
       this.dnDB,
       this.identityDB
     )
-
     for (const notification of mappedNotifications) {
       const isEnabled = this.getIsPushNotificationEnabled(
         notification.notification.type
