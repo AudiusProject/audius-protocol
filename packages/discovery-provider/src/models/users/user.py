@@ -38,6 +38,8 @@ class User(Base, RepresentableMixin):
     bio = Column(String)
     location = Column(String)
     is_storage_v2 = Column(Boolean, nullable=False, server_default=text("false"))
+    # Deprecated: Will be removed (https://linear.app/audius/issue/PAY-4018/drop-usersmetadata-multihash)
+    metadata_multihash = Column(String)
     creator_node_endpoint = Column(String)
     is_verified = Column(Boolean, nullable=False, server_default=text("false"))
     verified_with_twitter = Column(
