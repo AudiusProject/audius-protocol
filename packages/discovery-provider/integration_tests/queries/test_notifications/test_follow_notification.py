@@ -16,7 +16,6 @@ def test_get_notifications(app):
 
         test_entities = {
             "users": [{"user_id": i + 1} for i in range(4)],
-            "plays": [{"user_id": i + 1} for i in range(4)],
             "follows": [
                 {"follower_user_id": i + 2, "followee_user_id": i + 1, "created_at": t2}
                 for i in range(3)
@@ -87,7 +86,6 @@ def test_get_many_notifications(app):
 
         test_entities = {
             "users": [{"user_id": i + 1} for i in range(20)],
-            "plays": [{"user_id": i + 1} for i in range(20)],
             "follows": [
                 {"follower_user_id": i + 2, "followee_user_id": 1, "created_at": t1}
                 for i in range(4)

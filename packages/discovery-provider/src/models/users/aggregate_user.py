@@ -19,3 +19,4 @@ class AggregateUser(Base, RepresentableMixin):
     supporting_count = Column(Integer, nullable=False, server_default=text("0"))
     dominant_genre = Column(String, nullable=True)
     dominant_genre_count = Column(Integer, nullable=False, server_default=text("0"))
+    score = Column(BigInteger, nullable=False, server_default=text("0"))
