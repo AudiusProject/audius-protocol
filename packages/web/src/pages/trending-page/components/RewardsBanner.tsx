@@ -27,15 +27,15 @@ const messages = {
 const messageMap = {
   tracks: {
     title: 'Global Trending: Weekly Top 5',
-    description: 'Artists Trending on Friday at 12 PM PT Earn Tokens!'
+    description: 'Artists trending Fridays at 12PM PT win tokens!'
   },
   playlists: {
     title: 'Trending Playlists: Weekly Top 5',
-    description: 'Playlists Trending on Friday at 12 PM PT Earn Tokens!'
+    description: 'Playlists trending Fridays at 12PM PT win tokens!'
   },
   underground: {
     title: 'Underground Trending: Weekly Top 5',
-    description: 'Artists Trending on Friday at 12 PM PT Earn Tokens!'
+    description: 'Artists trending Fridays at 12PM PT win tokens!'
   }
 }
 

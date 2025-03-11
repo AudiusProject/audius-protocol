@@ -261,6 +261,15 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
   },
   [ChallengeName.FirstWeeklyComment]: {
     icon: <i className='emoji large speech-balloon' />
+  },
+  [ChallengeName.PlayCount250]: {
+    icon: <i className='emoji large play-pause' />
+  },
+  [ChallengeName.PlayCount1000]: {
+    icon: <i className='emoji large play-pause' />
+  },
+  [ChallengeName.PlayCount10000]: {
+    icon: <i className='emoji large play-pause' />
   }
 }
 

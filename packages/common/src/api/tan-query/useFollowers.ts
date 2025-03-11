@@ -10,6 +10,7 @@ import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { useUsers } from './useUsers'
+import { combineQueryStatuses } from './utils'
 import { primeUserData } from './utils/primeUserData'
 
 const DEFAULT_PAGE_SIZE = 15
@@ -61,10 +62,13 @@ export const useFollowers = (
     enabled: options?.enabled !== false && !!userId
   })
 
-  const { data: users } = useUsers(userIds)
+  const { data: users, ...usersQuery } = useUsers(userIds)
+
+  const statuses = combineQueryStatuses([queryResult, usersQuery])
 
   return {
     data: users,
-    ...queryResult
+    ...queryResult,
+    ...statuses
   }
 }

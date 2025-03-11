@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 
+import { useRelatedArtists } from '@audius/common/api'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 
@@ -24,18 +25,29 @@ const fast = {
 export const ArtistRecommendationsDropdown = (
   props: ArtistRecommendationsDropdownProps
 ) => {
-  const { isVisible } = props
+  const { isVisible, artistId } = props
   const childRef = useRef<HTMLDivElement | null>(null)
+
+  const { data: suggestedArtists = [], isLoading } = useRelatedArtists({
+    artistId,
+    filterFollowed: true,
+    pageSize: 7
+  })
+
+  const shouldShowDropdown =
+    isVisible && !isLoading && suggestedArtists.length > 0
 
   const rect = childRef.current?.getBoundingClientRect()
   const childHeight = rect ? rect.bottom - rect.top : 0
 
   const spring = useSpring({
-    opacity: isVisible ? 1 : 0,
-    height: isVisible ? `${childHeight}px` : '0',
+    opacity: shouldShowDropdown ? 1 : 0,
+    height: shouldShowDropdown ? `${childHeight}px` : '0',
     from: { opacity: 0, height: `${childHeight}px` },
     config: fast
   })
+
+  if (!shouldShowDropdown) return null
 
   return (
     <animated.div className={styles.dropdown} style={spring}>

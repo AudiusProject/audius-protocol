@@ -12,25 +12,18 @@ const messages = {
 
 export const DeleteTrackConfirmationModal = () => {
   const { data, isOpen, onClose } = useDeleteTrackConfirmationModal()
-  const { trackId, onSuccess, onCancel } = data
+  const { trackId } = data
   const { mutateAsync: deleteTrack } = useDeleteTrack()
 
   const handleConfirm = useCallback(() => {
-    deleteTrack(
-      { trackId, source: 'delete_track_confirmation_modal' },
-      {
-        onSuccess: () => {
-          onSuccess?.()
-        }
-      }
-    )
+    if (!trackId) return
+    deleteTrack({ trackId, source: 'delete_track_confirmation_modal' })
     onClose()
-  }, [trackId, deleteTrack, onSuccess, onClose])
+  }, [trackId, deleteTrack, onClose])
 
   const handleCancel = useCallback(() => {
-    onCancel?.()
     onClose()
-  }, [onCancel, onClose])
+  }, [onClose])
 
   return (
     <DeleteConfirmationModal

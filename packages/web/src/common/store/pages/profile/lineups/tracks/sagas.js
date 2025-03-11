@@ -20,7 +20,7 @@ import { watchUploadTracksSaga } from './watchUploadTracksSaga'
 const { SET_ARTIST_PICK } = tracksSocialActions
 const { getProfileTracksLineup, getTrackSource } = profilePageSelectors
 const { getTrack } = cacheTracksSelectors
-const { DELETE_TRACK_SUCCEEDED } = cacheTracksActions
+const { DELETE_TRACK_REQUESTED } = cacheTracksActions
 const { getUserId, getUserHandle } = accountSelectors
 const PREFIX = tracksActions.prefix
 
@@ -81,7 +81,7 @@ function* watchSetArtistPick() {
 }
 
 function* watchDeleteTrackRequested() {
-  yield takeEvery(DELETE_TRACK_SUCCEEDED, function* (action) {
+  yield takeEvery(DELETE_TRACK_REQUESTED, function* (action) {
     const { trackId } = action
     const accountHandle = yield select(getUserHandle)
     const lineup = yield select((state) =>
