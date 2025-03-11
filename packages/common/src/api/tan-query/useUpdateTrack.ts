@@ -9,6 +9,7 @@ import { Track, UserTrackMetadata } from '~/models'
 import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
 import { FeatureFlags } from '~/services/remote-config'
+import { trackRemixEvent } from '~/store/cache/tracks/actions'
 import { TrackMetadataForUpload } from '~/store/upload'
 import { squashNewLines } from '~/utils/formatUtil'
 import { formatMusicalKey } from '~/utils/musicalKeys'
@@ -20,7 +21,6 @@ import { getTrackQueryKey } from './useTrack'
 import { useUpdateStems } from './useUpdateStems'
 import { addPremiumMetadata } from './utils/addPremiumMetadata'
 import { primeTrackData } from './utils/primeTrackData'
-
 type MutationContext = {
   previousTrack: Track | undefined
 }
@@ -153,9 +153,8 @@ export const useUpdateTrack = () => {
         updatedMetadata?.remix_of?.tracks?.[0]?.parent_track_id &&
         previousMetadata?.remix_of?.tracks?.[0]?.parent_track_id !==
           updatedMetadata?.remix_of?.tracks?.[0]?.parent_track_id
-
       if (isNewRemix) {
-        // TODO: Implement remix event tracking similar to trackNewRemixEvent saga
+        dispatch(trackRemixEvent(updatedMetadata))
       }
 
       // If the track was unlisted and is now public, mark it as no longer publishing
@@ -265,10 +264,6 @@ export const useUpdateTrack = () => {
         feature: Feature.Edit,
         name: 'Edit Track'
       })
-    },
-    onSettled: (_, __, { trackId }) => {
-      // Always refetch after error or success to ensure cache is in sync with server
-      // queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.track, trackId] })
     }
   })
 }
