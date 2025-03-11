@@ -29,6 +29,7 @@ from src.tasks.index_core_plays import index_core_plays
 from src.tasks.index_core_side_effects import run_side_effects
 from src.utils.config import shared_config
 from src.utils.core import (
+    CoreHealth,
     core_health_check_cache_key,
     core_listens_health_check_cache_key,
 )
@@ -69,14 +70,6 @@ class CoreListensHealth(TypedDict):
     sol_slot_cutover: int
     core_block_cutover: int
     tx_info: CoreListensTxInfoHealth
-
-
-class CoreHealth(TypedDict):
-    indexing_plays: bool
-    indexing_entity_manager: bool
-    latest_chain_block: int
-    latest_indexed_block: int
-    chain_id: str
 
 
 class IndexingResult(TypedDict):
@@ -128,6 +121,7 @@ def update_core_health(
         "indexing_entity_manager": indexing_em,
         "indexing_plays": indexing_plays,
         "latest_chain_block": latest_indexed_block.current_height,
+        "latest_chain_block_ts": latest_indexed_block.timestamp.seconds,
         "latest_indexed_block": latest_indexed_block.height,
     }
     redis.set(core_health_check_cache_key, json.dumps(health))
