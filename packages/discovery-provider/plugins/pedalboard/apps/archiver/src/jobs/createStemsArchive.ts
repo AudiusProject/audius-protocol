@@ -10,6 +10,7 @@ export interface StemsArchiveJobData {
   userId: number
   messageHeader: string
   signatureHeader: string
+  includeParentTrack: boolean
 }
 
 export interface StemsArchiveJobResult {

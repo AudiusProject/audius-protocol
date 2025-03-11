@@ -103,8 +103,14 @@ export const startStemsArchiveWorker = () => {
   const worker = new Worker<StemsArchiveJobData, StemsArchiveJobResult>(
     STEMS_ARCHIVE_QUEUE_NAME,
     async (job: Job<StemsArchiveJobData>): Promise<StemsArchiveJobResult> => {
-      const { jobId, trackId, userId, messageHeader, signatureHeader } =
-        job.data
+      const {
+        jobId,
+        trackId,
+        userId,
+        messageHeader,
+        signatureHeader,
+        includeParentTrack
+      } = job.data
 
       try {
         const sdk = getAudiusSdk()
@@ -132,9 +138,17 @@ export const startStemsArchiveWorker = () => {
         }
 
         logger.info({ jobId, trackId, userId, stems }, 'Downloading stems')
+
+        const filesToDownload = includeParentTrack
+          ? [
+              ...stems,
+              { ...track, origFilename: track.origFilename ?? track.title }
+            ]
+          : stems
+
         // Download each stem
         const downloadedFiles = await Promise.all(
-          stems.map(async (stem) => {
+          filesToDownload.map(async (stem) => {
             const downloadUrl = await sdk.tracks.getTrackDownloadUrl({
               trackId: stem.id,
               userId: userId ? Id.parse(userId) : undefined,
@@ -158,7 +172,7 @@ export const startStemsArchiveWorker = () => {
         const outputFile = await createArchive({
           files: downloadedFiles,
           jobId,
-          archiveName: `${track.title} - stems.zip`
+          archiveName: `${track.title}.zip`
         })
 
         // Clean up temp files except the output archive

@@ -8,20 +8,22 @@ import { logger } from '../logger'
 import { createReadStream } from 'fs'
 import { stat } from 'fs/promises'
 import { basename } from 'path'
-import { HashId } from '@audius/sdk'
+import { OptionalHashId } from '@audius/sdk'
 import { cleanupStemsArchiveJob } from '../workers/createStemsArchive'
-
+import { queryParamToBoolean } from './utils'
 const router = express.Router()
 
 router.post('/:trackId', async (req, res) => {
   try {
     const { trackId: trackIdString } = req.params
-    const trackId = HashId.parse(trackIdString)
-    const userId = HashId.parse(req.query.user_id)
+    const trackId = OptionalHashId.parse(trackIdString)
+    const userId = OptionalHashId.parse(req.query.user_id)
     const messageHeader = req.header(MESSAGE_HEADER)
     const signatureHeader = req.header(SIGNATURE_HEADER)
+    const includeParentTrack = queryParamToBoolean(req.query.include_parent)
 
-    if (!userId || !messageHeader || !signatureHeader) {
+    console.log(req.query)
+    if (!userId || !trackId || !messageHeader || !signatureHeader) {
       return res.status(400).json({
         error: 'Missing required parameters'
       })
@@ -31,7 +33,8 @@ router.post('/:trackId', async (req, res) => {
       trackId,
       userId: userId,
       messageHeader,
-      signatureHeader
+      signatureHeader,
+      includeParentTrack
     })
 
     res.status(200).json({ jobId })
