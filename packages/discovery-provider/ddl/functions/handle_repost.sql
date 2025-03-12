@@ -153,7 +153,8 @@ begin
 	-- notify followees of the reposter who have reposted the same content
 	-- within the last month
 	if new.is_delete is false
-	and new.is_repost_of_repost is true then
+	and new.is_repost_of_repost is true
+  and is_shadowbanned = false then
 	with
 	    followee_repost_of_repost_ids as (
 	        select user_id
@@ -205,7 +206,7 @@ begin
 	end if;
 
     -- create a notification for remix cosign
-    if new.is_delete is false and new.repost_type = 'track' and track_remix_of is not null then
+    if new.is_delete is false and new.repost_type = 'track' and track_remix_of is not null and is_shadowbanned = false then
       select
         case when tracks.owner_id = new.user_id then TRUE else FALSE end as boolean into is_remix_cosign
         from tracks
