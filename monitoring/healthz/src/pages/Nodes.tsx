@@ -120,8 +120,6 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
   const totalCoreBlocks = consoleHealth?.totalBlocks
   const totalCoreTxs = consoleHealth?.totalBlocks
 
-  console.log({ consoleHealth })
-
   // API response doesn't include isRegistered
   if (sp.isRegistered !== false) {
     sp.isRegistered = true
