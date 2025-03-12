@@ -11,6 +11,7 @@ class CoreHealth(TypedDict):
     indexing_plays: bool
     indexing_entity_manager: bool
     latest_chain_block: int
+    latest_chain_block_ts: int
     latest_indexed_block: int
     chain_id: str
 
