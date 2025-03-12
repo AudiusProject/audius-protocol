@@ -11,11 +11,6 @@ type SpaceState = {
   queue: string[] // Array of tokens in order of request
 }
 
-/** A Promise that can be cancelled */
-type CancellablePromise<T> = Promise<T> & {
-  cancel: () => void
-}
-
 export enum SpaceManagerErrorCode {
   ALREADY_ALLOCATED = 'ALREADY_ALLOCATED',
   EXCEEDS_MAXIMUM = 'EXCEEDS_MAXIMUM',
@@ -95,25 +90,26 @@ export function createSpaceManager(options: SpaceManagerOptions) {
 
   /** Wait for space to be available. Requires a timeout to prevent stalling
    * the queue.
-   * @returns A promise that resolves when space is available and can be cancelled
+   * @returns A promise that resolves when space is available
    */
   const waitForSpace = ({
     token,
     bytes,
-    timeoutSeconds
+    timeoutSeconds,
+    signal
   }: {
     token: string
     bytes: number
     timeoutSeconds: number
-  }): CancellablePromise<void> => {
-    let isCancelled = false
+    signal?: AbortSignal
+  }): Promise<void> => {
     const shouldContinue = true
 
     const claimSpacePromise = (async () => {
       try {
         while (shouldContinue) {
           // Check if cancelled
-          if (isCancelled) {
+          if (signal?.aborted) {
             throw new SpaceManagerError(
               'Space claim cancelled',
               SpaceManagerErrorCode.CANCELLED
@@ -143,24 +139,14 @@ export function createSpaceManager(options: SpaceManagerOptions) {
       }, timeoutSeconds * 1000)
     })
 
-    const cancel = () => {
-      isCancelled = true
-    }
-
-    // Create a promise that we can attach the cancel method to
-    const promise = (async () => {
+    return (async () => {
       try {
         await Promise.race([claimSpacePromise, timeoutPromise])
       } catch (error) {
         await removeFromQueue(token)
         throw error
       }
-    })() as CancellablePromise<void>
-
-    // Attach the cancel method
-    promise.cancel = cancel
-
-    return promise
+    })()
   }
 
   const releaseSpace = async (token: string): Promise<number> => {

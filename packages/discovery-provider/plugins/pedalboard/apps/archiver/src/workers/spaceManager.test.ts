@@ -111,11 +111,15 @@ describe('SpaceManager', () => {
       // First claim most of the space
       await spaceManager.claimSpace({ token: 'test1', bytes: 800 })
 
+      // Create abort controller for cancellation
+      const controller = new AbortController()
+
       // Start waiting for space
       const waitPromise = spaceManager.waitForSpace({
         token: 'test2',
         bytes: 300,
-        timeoutSeconds: 5
+        timeoutSeconds: 5,
+        signal: controller.signal
       })
 
       // Verify token is in queue
@@ -123,7 +127,7 @@ describe('SpaceManager', () => {
       expect(stats.queue).toContain('test2')
 
       // Cancel the wait and expect it to reject with CANCELLED
-      waitPromise.cancel()
+      controller.abort()
       await expect(waitPromise).rejects.toThrow(
         new SpaceManagerError(
           'Space claim cancelled',
@@ -140,11 +144,15 @@ describe('SpaceManager', () => {
       // First claim most of the space
       await spaceManager.claimSpace({ token: 'test1', bytes: 800 })
 
+      // Create abort controller for cancellation
+      const controller = new AbortController()
+
       // Start waiting for space
       const waitPromise = spaceManager.waitForSpace({
         token: 'test2',
         bytes: 300,
-        timeoutSeconds: 5
+        timeoutSeconds: 5,
+        signal: controller.signal
       })
 
       // Release space to allow the wait to complete
@@ -157,8 +165,8 @@ describe('SpaceManager', () => {
       const stats = await spaceManager.getStats()
       expect(stats.allocations).toContainEqual(['test2', 300])
 
-      // Cancel after completion should not throw or affect the allocation
-      waitPromise.cancel()
+      // Cancel after completion should not affect the allocation
+      controller.abort()
       const statsAfterCancel = await spaceManager.getStats()
       expect(statsAfterCancel.allocations).toContainEqual(['test2', 300])
     })
@@ -167,11 +175,15 @@ describe('SpaceManager', () => {
       // First claim most of the space
       await spaceManager.claimSpace({ token: 'test1', bytes: 800 })
 
+      // Create abort controller for cancellation
+      const test2Controller = new AbortController()
+
       // Start waiting for space with test2
       const test2Promise = spaceManager.waitForSpace({
         token: 'test2',
         bytes: 300,
-        timeoutSeconds: 5
+        timeoutSeconds: 5,
+        signal: test2Controller.signal
       })
 
       // Queue test3 behind test2
@@ -186,7 +198,7 @@ describe('SpaceManager', () => {
       expect(stats.queue).toEqual(['test2', 'test3'])
 
       // Cancel test2's wait and expect it to reject
-      test2Promise.cancel()
+      test2Controller.abort()
       await expect(test2Promise).rejects.toThrow(
         new SpaceManagerError(
           'Space claim cancelled',

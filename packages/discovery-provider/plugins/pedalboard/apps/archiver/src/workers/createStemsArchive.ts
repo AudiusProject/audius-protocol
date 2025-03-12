@@ -13,6 +13,7 @@ import * as path from 'path'
 import fetch from 'node-fetch'
 import { STEMS_ARCHIVE_QUEUE_NAME } from '../constants'
 import archiver from 'archiver'
+import { createSpaceManager } from './spaceManager'
 
 export async function removeTempFiles(jobId: string) {
   const config = readConfig()
@@ -22,20 +23,17 @@ export async function removeTempFiles(jobId: string) {
   }
 }
 
-async function waitForDiskSpace(jobId: string, requiredSizeBytes: number) {
-  const config = readConfig()
-  const jobTempDir = path.join(config.archiverTmpDir, jobId)
-  const availableSpace = fs.statSync(jobTempDir).size
-  if (availableSpace < requiredSizeBytes) {
-    throw new Error('Insufficient disk space')
-  }
-}
-
-async function downloadStemFile(
-  url: string,
-  filename: string,
+async function downloadStemFile({
+  url,
+  filename,
+  jobId,
+  signal
+}: {
+  url: string
+  filename: string
   jobId: string
-): Promise<string> {
+  signal?: AbortSignal
+}): Promise<string> {
   const config = readConfig()
   logger.info({ jobId, url, filename }, 'Downloading stem file')
   // Create job-specific temp directory
@@ -45,16 +43,22 @@ async function downloadStemFile(
   }
 
   const filePath = path.join(jobTempDir, filename)
-  const response = await fetch(url)
+  const { ok, body, statusText } = await fetch(url, {
+    signal
+  })
 
-  if (!response.ok) {
-    throw new Error(`Failed to download stem: ${response.statusText}`)
+  if (!ok) {
+    throw new Error(`Failed to download stem: ${statusText}`)
+  }
+
+  if (!body) {
+    throw new Error('Response body is null')
   }
 
   const fileStream = fs.createWriteStream(filePath)
   await new Promise((resolve, reject) => {
-    response.body.pipe(fileStream)
-    response.body.on('error', reject)
+    body.pipe(fileStream)
+    body.on('error', reject)
     fileStream.on('finish', resolve)
   })
 
@@ -64,11 +68,13 @@ async function downloadStemFile(
 async function createArchive({
   files,
   jobId,
-  archiveName
+  archiveName,
+  signal
 }: {
   files: string[]
   jobId: string
   archiveName: string
+  signal?: AbortSignal
 }): Promise<string> {
   const config = readConfig()
   const jobTempDir = path.join(config.archiverTmpDir, jobId)
@@ -81,37 +87,53 @@ async function createArchive({
     zlib: { level: 6 }
   })
 
-  // Listen for archive errors
-  archive.on('error', (error: Error) => {
-    throw error
-  })
+  try {
+    // Set up cancellation handler
+    if (signal) {
+      signal.addEventListener('abort', () => {
+        archive.abort()
+      })
+    }
 
-  // Pipe archive data to the output file
-  archive.pipe(output)
+    // Listen for archive errors
+    archive.on('error', (error: Error) => {
+      throw error
+    })
 
-  // Add each file to the archive with a flattened filename
-  for (const file of files) {
-    const filename = path.basename(file)
-    archive.file(file, { name: filename })
+    // Pipe archive data to the output file
+    archive.pipe(output)
+
+    // Add each file to the archive with a flattened filename
+    for (const file of files) {
+      const filename = path.basename(file)
+      archive.file(file, { name: filename })
+    }
+
+    // Wait for the output stream to finish
+    // Archiver docs recommend attaching these listeners before calling finalize
+    const finishPromise = new Promise((resolve, reject) => {
+      output.on('close', resolve)
+      output.on('error', reject)
+    })
+
+    // Finalize the archive
+    await archive.finalize()
+    await finishPromise
+
+    return outputPath
+  } finally {
+    output.destroy()
+    archive.destroy()
   }
-
-  // Wait for the output stream to finish
-  // Archiver docs recommend attaching these listeners before calling finalize
-  const finishPromise = new Promise((resolve, reject) => {
-    output.on('close', resolve)
-    output.on('error', reject)
-  })
-
-  // Finalize the archive
-  await archive.finalize()
-
-  await finishPromise
-
-  return outputPath
 }
 
 export const startStemsArchiveWorker = () => {
   const config = readConfig()
+  const spaceManager = createSpaceManager({
+    maxSpaceBytes: config.maxDiskSpaceBytes
+  })
+  const abortControllers = new Map<string, AbortController>()
+
   const worker = new Worker<StemsArchiveJobData, StemsArchiveJobResult>(
     STEMS_ARCHIVE_QUEUE_NAME,
     async (job: Job<StemsArchiveJobData>): Promise<StemsArchiveJobResult> => {
@@ -124,6 +146,9 @@ export const startStemsArchiveWorker = () => {
         includeParentTrack
       } = job.data
 
+      const abortController = new AbortController()
+      abortControllers.set(jobId, abortController)
+
       try {
         const sdk = getAudiusSdk()
         const parsedTrackId = Id.parse(trackId)
@@ -132,18 +157,28 @@ export const startStemsArchiveWorker = () => {
           'Starting stems archive creation job'
         )
 
-        const { data: track } = await sdk.tracks.getTrack({
-          trackId: parsedTrackId
-        })
+        const { data: track } = await sdk.tracks.getTrack(
+          {
+            trackId: parsedTrackId
+          },
+          {
+            signal: abortController.signal
+          }
+        )
 
         if (!track) {
           throw new Error('Track details not found')
         }
 
         logger.info({ jobId, trackId, userId }, 'Getting track stems')
-        const { data: stems = [] } = await sdk.tracks.getTrackStems({
-          trackId: parsedTrackId
-        })
+        const { data: stems = [] } = await sdk.tracks.getTrackStems(
+          {
+            trackId: parsedTrackId
+          },
+          {
+            signal: abortController.signal
+          }
+        )
 
         if (stems.length === 0) {
           throw new Error('No stems found for track')
@@ -161,10 +196,15 @@ export const startStemsArchiveWorker = () => {
         // Check file sizes before downloading
         const fileSizes = await Promise.all(
           filesToDownload.map(async (file) => {
-            const inspection = await sdk.tracks.inspectTrack({
-              trackId: file.id,
-              original: true
-            })
+            const inspection = await sdk.tracks.inspectTrack(
+              {
+                trackId: file.id,
+                original: true
+              },
+              {
+                signal: abortController.signal
+              }
+            )
             if (!inspection.data?.size) {
               throw new Error(`File size not found for ${file.id}`)
             }
@@ -177,6 +217,13 @@ export const startStemsArchiveWorker = () => {
           { jobId, trackId, userId, totalSizeBytes },
           'Calculated required disk space'
         )
+
+        await spaceManager.waitForSpace({
+          token: jobId,
+          bytes: totalSizeBytes,
+          timeoutSeconds: config.maxDiskSpaceWaitSeconds,
+          signal: abortController.signal
+        })
 
         // Download each stem
         const downloadedFiles = await Promise.all(
@@ -191,7 +238,12 @@ export const startStemsArchiveWorker = () => {
             })
 
             const filename = stem.origFilename
-            return downloadStemFile(downloadUrl, filename, jobId)
+            return downloadStemFile({
+              url: downloadUrl,
+              filename,
+              jobId,
+              signal: abortController.signal
+            })
           })
         )
 
@@ -204,7 +256,8 @@ export const startStemsArchiveWorker = () => {
         const outputFile = await createArchive({
           files: downloadedFiles,
           jobId,
-          archiveName: `${track.title}.zip`
+          archiveName: `${track.title}.zip`,
+          signal: abortController.signal
         })
 
         // Clean up temp files except the output archive
@@ -235,6 +288,13 @@ export const startStemsArchiveWorker = () => {
       concurrency: config.concurrentJobs
     }
   )
+
+  // Abort all active jobs when the worker is closing
+  worker.on('closing', () => {
+    for (const abortController of abortControllers.values()) {
+      abortController.abort()
+    }
+  })
 
   worker.on('completed', (job) => {
     logger.info({ jobId: job.id }, 'Stems archive job completed successfully')

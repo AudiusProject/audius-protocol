@@ -46,9 +46,9 @@ export const createCleanupOrphanedFilesWorker = () => {
   const worker = new Worker<CleanupOrphanedFilesJobData>(
     CLEANUP_ORPHANED_FILES_QUEUE_NAME,
     async (job: Job<CleanupOrphanedFilesJobData>) => {
-      logger.info({ jobId: job.id }, 'Starting orphaned files cleanup')
+      logger.debug({ jobId: job.id }, 'Starting orphaned files cleanup')
       await cleanupOrphanedFiles()
-      logger.info({ jobId: job.id }, 'Completed orphaned files cleanup')
+      logger.debug({ jobId: job.id }, 'Completed orphaned files cleanup')
     },
     {
       connection: {

@@ -21,17 +21,19 @@
     "archiver": "7.0.1",
     "bullmq": "5.41.7",
     "cors": "2.8.5",
-    "express": "4.17.1"
+    "express": "4.17.1",
+    "node-fetch": "2.7.0"
   },
   "devDependencies": {
     "@types/archiver": "6.0.3",
     "@types/cors": "2.8.10",
     "@types/express": "4.17.12",
-    "@types/node": "15.12.2",
+    "@types/node": "18.19.79",
     "esbuild": "0.14.38",
     "esbuild-register": "3.3.2",
     "eslint": "8.56.0",
     "eslint-config-custom-server": "*",
+    "ts-node": "10.9.2",
     "tsconfig": "*",
     "typescript": "5.0.4",
     "vitest": "0.34.6"
