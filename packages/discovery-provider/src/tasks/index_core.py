@@ -267,8 +267,7 @@ def index_core(self):
                 logger=logger,
                 block=block,
                 session=session,
-                web3=web3,
-                redis=redis,
+                core=core,
                 challenge_bus=challenge_bus,
             )
 
