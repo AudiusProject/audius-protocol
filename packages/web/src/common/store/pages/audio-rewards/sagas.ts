@@ -529,7 +529,8 @@ function* fetchUserChallengesAsync() {
     const { data = [] } = yield* call(
       [sdk.challenges, sdk.challenges.getUndisbursedChallenges],
       {
-        userId: Id.parse(currentUserId)
+        userId: Id.parse(currentUserId),
+        limit: 500
       }
     )
     const undisbursedChallenges = data.map(undisbursedUserChallengeFromSDK)

@@ -20,6 +20,7 @@ def test_remix_track_notifications(app):
 
         test_entities = {
             "users": [{"user_id": i + 1} for i in range(4)],
+            "plays": [{"user_id": i + 1} for i in range(4)],
             "tracks": [{"track_id": 1, "owner_id": 1}],
         }
 

@@ -73,9 +73,13 @@ export const useTrendingUnderground = (
 
   const lineupData = useLineupQuery({
     queryData,
+    queryKey: getTrendingUndergroundQueryKey({
+      pageSize
+    }),
     lineupActions: trendingUndergroundPageLineupActions,
     lineupSelector: trendingUndergroundPageLineupSelectors.getLineup,
-    playbackSource: PlaybackSource.TRACK_TILE
+    playbackSource: PlaybackSource.TRACK_TILE,
+    pageSize
   })
 
   return {

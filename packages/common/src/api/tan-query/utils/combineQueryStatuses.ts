@@ -1,6 +1,29 @@
 import { QueryObserverResult } from '@tanstack/react-query'
 import { sumBy } from 'lodash'
 
+type QueryObserverStatusResult = Pick<
+  QueryObserverResult,
+  | 'isPending'
+  | 'isError'
+  | 'isFetching'
+  | 'isLoading'
+  | 'isSuccess'
+  | 'isFetched'
+  | 'isFetchedAfterMount'
+  | 'isPlaceholderData'
+  | 'isStale'
+  | 'error'
+  | 'errorUpdatedAt'
+  | 'dataUpdatedAt'
+  | 'failureCount'
+  | 'errorUpdateCount'
+  | 'fetchStatus'
+  | 'isLoadingError'
+  | 'isPaused'
+  | 'isRefetchError'
+  | 'isRefetching'
+>
+
 /**
  * Combines multiple query statuses into a single status result
  * This is a lightweight version of combineQueryResults that only focuses on status properties
@@ -9,7 +32,7 @@ import { sumBy } from 'lodash'
  * @param queries Array of query results to combine
  * @returns An object with combined status information
  */
-export const combineQueryStatuses = (queries: QueryObserverResult[]) => {
+export const combineQueryStatuses = (queries: QueryObserverStatusResult[]) => {
   const isPending = queries.some((query) => query.isPending)
   const isError = queries.some((query) => query.isError)
   const isFetching = queries.some((query) => query.isFetching)
