@@ -241,6 +241,9 @@ export const Lineup = ({
   ListFooterComponent,
   onPressItem,
   itemStyles,
+  initialPageSize,
+  pageSize,
+  tanQuery,
   ...listProps
 }: LineupProps) => {
   const dispatch = useDispatch()
@@ -287,6 +290,12 @@ export const Lineup = ({
 
   const handleLoadMore = useCallback(
     (reset?: boolean) => {
+      if (tanQuery && loadMore) {
+        loadMore(0, 0, true)
+      } else if (tanQuery && !loadMore) {
+        return
+      }
+
       const {
         deleted = 0,
         nullCount = 0,
@@ -339,17 +348,20 @@ export const Lineup = ({
       }
     },
     [
-      actions,
-      countOrDefault,
-      dispatch,
-      fetchPayload,
-      includeLineupStatus,
-      itemCounts,
-      limit,
+      tanQuery,
+      loadMore,
       lineup,
       lineupLength,
-      loadMore,
+      countOrDefault,
       pageItemCount,
+      limit,
+      includeLineupStatus,
+      itemCounts.initial,
+      itemCounts.loadMore,
+      itemCounts.minimum,
+      dispatch,
+      actions,
+      fetchPayload,
       extraFetchOptions
     ]
   )
@@ -421,10 +433,25 @@ export const Lineup = ({
   const sections: Section[] = useMemo(() => {
     const { deleted, entries, hasMore, isMetadataLoading, page } = lineup
 
-    const items = entries.slice(start, count)
+    // Apply offset and maxEntries to the lineup entries
+    const items =
+      pageSize !== undefined
+        ? entries.slice(start, start + pageSize)
+        : entries.slice(start)
+
     const itemDisplayCount = page <= 1 ? itemCounts.initial : pageItemCount
 
     const getSkeletonCount = () => {
+      if (tanQuery && !loadMore && items.length > 0) return 0
+
+      // Lineups like Feed load a different number of items on the first page
+      if (initialPageSize && page === 0) {
+        return initialPageSize
+      }
+      if (pageSize) {
+        return count ? Math.min(count - items.length, pageSize) : pageSize
+      }
+
       const shouldCalculateSkeletons =
         inView &&
         items.length < limit &&
@@ -482,16 +509,20 @@ export const Lineup = ({
 
     return [{ delineate: false, data }]
   }, [
-    inView,
-    count,
-    countOrDefault,
-    delineate,
-    itemCounts,
     lineup,
-    pageItemCount,
-    leadingElementId,
+    pageSize,
     start,
-    limit
+    itemCounts.initial,
+    pageItemCount,
+    delineate,
+    leadingElementId,
+    tanQuery,
+    loadMore,
+    initialPageSize,
+    inView,
+    limit,
+    countOrDefault,
+    count
   ])
 
   const areSectionsEmpty = sections.every(

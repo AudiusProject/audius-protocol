@@ -1444,7 +1444,8 @@ export enum PlaybackSource {
   PASSIVE = 'passive',
   EMBED_PLAYER = 'embed player',
   CHAT_TRACK = 'chat_track',
-  CHAT_PLAYLIST_TRACK = 'chat_playlist_track'
+  CHAT_PLAYLIST_TRACK = 'chat_playlist_track',
+  SEARCH_PAGE = 'search page'
 }
 
 type PlaybackPlay = {

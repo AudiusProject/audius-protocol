@@ -165,6 +165,9 @@ export type LineupProps = {
    * Styles to apply to the items, can be used to override the padding for example
    */
   itemStyles?: ViewStyle
+  pageSize?: number
+  initialPageSize?: number
+  tanQuery?: boolean
 } & Pick<
   SectionListProps<unknown>,
   | 'showsVerticalScrollIndicator'
