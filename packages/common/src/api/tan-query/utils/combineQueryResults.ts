@@ -14,11 +14,11 @@ export const combineQueryResults = <T>(
   queries: UseQueryResult<T, Error>[]
 ): UseQueryResult<T, Error> => {
   const isPending = queries.some((query) => query.isPending)
-  const isError = queries.some((query) => query.isError)
   const isFetching = queries.some((query) => query.isFetching)
   const isLoading = queries.some((query) => query.isLoading)
   const isSuccess = queries.every((query) => query.isSuccess)
   const isFetched = queries.every((query) => query.isFetched)
+  const isError = queries.some((query) => query.isError)
   const isFetchedAfterMount = queries.every(
     (query) => query.isFetchedAfterMount
   )

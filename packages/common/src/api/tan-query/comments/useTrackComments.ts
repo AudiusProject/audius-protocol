@@ -80,7 +80,7 @@ export const useTrackComments = (
     enabled: isMutating === 0 && options?.enabled !== false && !!trackId
   })
 
-  const { error, data: commentIds = [] } = queryRes
+  const { error, data: commentIds } = queryRes
 
   useEffect(() => {
     if (error) {

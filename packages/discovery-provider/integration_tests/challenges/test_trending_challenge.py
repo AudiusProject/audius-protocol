@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime, timedelta
 
+from google.protobuf.timestamp_pb2 import Timestamp
 from sqlalchemy.sql.expression import or_
 
 from integration_tests.utils import populate_mock_db
@@ -15,6 +16,7 @@ from src.models.rewards.challenge import Challenge
 from src.models.rewards.user_challenge import UserChallenge
 from src.models.tracks.trending_result import TrendingResult
 from src.tasks.calculate_trending_challenges import enqueue_trending_challenges
+from src.tasks.core.gen.protocol_pb2 import BlockResponse, NodeInfoResponse
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.config import shared_config
@@ -36,6 +38,16 @@ class MockEth:
 class MockWeb3:
     def __init__(self):
         self.eth = MockEth()
+
+
+class MockCore:
+    def get_node_info(self) -> NodeInfoResponse:
+        return NodeInfoResponse(chainid="audius-devnet")
+
+    def get_block(self, height: int) -> BlockResponse:
+        timestamp = Timestamp()
+        timestamp.FromDatetime(datetime.now())
+        return BlockResponse(timestamp=timestamp)
 
 
 def test_trending_challenge_should_update(app):
@@ -294,8 +306,8 @@ def test_trending_challenge_job(app):
             strategy.update_track_score_query(session)
 
         session.commit()
-        web3 = MockWeb3()
-        enqueue_trending_challenges(session, web3, redis_conn, bus, trending_date)
+        core = MockCore()
+        enqueue_trending_challenges(session, core, bus, trending_date)
 
     with db.scoped_session() as session:
         session.query(Challenge).filter(

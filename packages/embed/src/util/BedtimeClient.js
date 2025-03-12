@@ -47,9 +47,11 @@ export const getTrackStreamEndpoint = (trackId, isPurchaseable) =>
     isPurchaseable ? '&preview=true' : ''
   }`
 
-export const getCollectiblesJson = async (cid) => {
-  const url = `${discoveryEndpoint}/v1/full/cid_data/${cid}`
-  return (await (await fetch(url)).json())?.data?.data
+export const getCollectiblesJson = async (hashId) => {
+  const { data: collectibles } = await audiusSdk.users.getUserCollectibles({
+    id: hashId
+  })
+  return collectibles.data
 }
 
 window.audiusSdk = audiusSdk
