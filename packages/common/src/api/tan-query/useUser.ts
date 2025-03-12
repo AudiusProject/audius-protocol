@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -25,6 +27,9 @@ export const useUser = <TResult = UserMetadata>(
   const currentUserId = useSelector(getUserId)
   const validUserId = !!userId && userId > 0
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const select = useMemo(() => options?.select, [])
+
   return useQuery({
     queryKey: getUserQueryKey(userId),
     queryFn: async () => {
@@ -38,6 +43,7 @@ export const useUser = <TResult = UserMetadata>(
       return await batchGetUsers.fetch(userId!)
     },
     ...options,
+    select,
     enabled: options?.enabled !== false && validUserId
   })
 }

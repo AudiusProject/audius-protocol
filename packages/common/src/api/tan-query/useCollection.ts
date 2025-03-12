@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
@@ -25,6 +27,9 @@ export const useCollection = <TResult = TQCollection>(
   const dispatch = useDispatch()
   const validCollectionId = !!collectionId && collectionId > 0
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const select = useMemo(() => options?.select, [])
+
   return useQuery({
     queryKey: getCollectionQueryKey(collectionId),
     queryFn: async () => {
@@ -38,6 +43,7 @@ export const useCollection = <TResult = TQCollection>(
       return await batchGetCollections.fetch(collectionId!)
     },
     ...options,
+    select,
     enabled: options?.enabled !== false && validCollectionId
   })
 }

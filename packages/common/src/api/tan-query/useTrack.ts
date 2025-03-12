@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
@@ -24,6 +26,9 @@ export const useTrack = <TResult = TQTrack>(
   const { data: currentUserId } = useCurrentUserId()
   const validTrackId = !!trackId && trackId > 0
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const select = useMemo(() => options?.select, [])
+
   return useQuery({
     queryKey: getTrackQueryKey(trackId),
     queryFn: async () => {
@@ -37,6 +42,7 @@ export const useTrack = <TResult = TQTrack>(
       return await batchGetTracks.fetch(trackId!)
     },
     ...options,
+    select,
     enabled: options?.enabled !== false && validTrackId
   })
 }
