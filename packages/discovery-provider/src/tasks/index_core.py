@@ -14,17 +14,8 @@ from src.models.social.play import Play
 from src.tasks.celery_app import celery
 from src.tasks.core.core_client import CoreClient, get_core_instance
 from src.tasks.core.gen.protocol_pb2 import BlockResponse
-from src.tasks.index_core_cutovers import (
-    get_em_core_cutover,
-    get_em_core_cutovers_chain_id,
-    get_em_cutover,
-    get_plays_core_cutover,
-    get_sol_cutover,
-)
-from src.tasks.index_core_entity_manager import (
-    get_latest_acdc_block,
-    index_core_entity_manager,
-)
+from src.tasks.index_core_cutovers import get_plays_core_cutover, get_sol_cutover
+from src.tasks.index_core_entity_manager import index_core_entity_manager
 from src.tasks.index_core_plays import index_core_plays
 from src.tasks.index_core_side_effects import run_side_effects
 from src.utils.config import shared_config
@@ -190,15 +181,9 @@ def index_core(self):
         # state that gets populated as indexing job goes on
         # used for updating health check and other things
         block_indexed: Optional[BlockResponse] = None
-        indexing_entity_manager = False
 
         # execute all of indexing in one db session
         with db.scoped_session() as session:
-            # gather initialization data for indexer
-            acdc_em_cutover = get_em_cutover()
-            core_em_cutover = get_em_core_cutover()
-            core_em_cutover_chain_id = get_em_core_cutovers_chain_id()
-
             core_node_info = core.get_node_info()
 
             latest_core_block_height = core_node_info.current_height
@@ -227,21 +212,6 @@ def index_core(self):
             if latest_slot_record and latest_slot_record.slot:
                 latest_indexed_slot = cast(int, latest_slot_record.slot)
 
-            # do some checks to see if we should be indexing em or not
-            latest_acdc_block = get_latest_acdc_block(session)
-            latest_acdc_block_height = latest_acdc_block.number
-            past_acdc_cutover = latest_acdc_block_height >= acdc_em_cutover
-
-            on_cutover_chain = core_em_cutover_chain_id == core_chain_id
-            on_cutover_chain_and_passed_cutover = (
-                on_cutover_chain and latest_core_block_height >= core_em_cutover
-            )
-            past_core_em_cutover = (
-                on_cutover_chain_and_passed_cutover or not on_cutover_chain
-            )
-            if on_cutover_chain and past_core_em_cutover and past_acdc_cutover:
-                indexing_entity_manager = True
-
             next_block = latest_indexed_block_height + 1
 
             logger = logging.LoggerAdapter(
@@ -255,13 +225,12 @@ def index_core(self):
                 },
             )
 
-            if indexing_entity_manager:
-                update_latest_block_redis(
-                    logger=logger,
-                    core=core,
-                    redis=redis,
-                    latest_block=core_node_info.current_height,
-                )
+            update_latest_block_redis(
+                logger=logger,
+                core=core,
+                redis=redis,
+                latest_block=core_node_info.current_height,
+            )
 
             logger.debug("indexing block")
 
@@ -291,19 +260,16 @@ def index_core(self):
                 update_task=self,
                 web3=web3,
                 session=session,
-                indexing_entity_manager=indexing_entity_manager,
                 block=block,
             )
 
-            if indexing_entity_manager:
-                run_side_effects(
-                    logger=logger,
-                    block=block,
-                    session=session,
-                    web3=web3,
-                    redis=redis,
-                    challenge_bus=challenge_bus,
-                )
+            run_side_effects(
+                logger=logger,
+                block=block,
+                session=session,
+                core=core,
+                challenge_bus=challenge_bus,
+            )
 
             # get block parenthash, in none case also use None
             # this would be the case in solana cutover where the previous
@@ -344,18 +310,17 @@ def index_core(self):
 
         # after session has been committed, update health checks and other things
         if block_indexed:
-            if indexing_entity_manager:
-                update_latest_indexed_block_redis(
-                    logger=logger,
-                    core=core,
-                    redis=redis,
-                    latest_indexed_block=block_indexed.height,
-                )
+            update_latest_indexed_block_redis(
+                logger=logger,
+                core=core,
+                redis=redis,
+                latest_indexed_block=block_indexed.height,
+            )
             update_core_health(
                 redis=redis,
                 latest_indexed_block=block_indexed,
                 indexing_plays=True,
-                indexing_em=indexing_entity_manager,
+                indexing_em=True,
             )
             update_core_listens_health(
                 redis=redis,
