@@ -3,6 +3,7 @@ declare
   new_follower_count int;
   milestone integer;
   delta int;
+  is_shadowbanned boolean;
 begin
   insert into aggregate_user (user_id) values (new.followee_user_id) on conflict do nothing;
   insert into aggregate_user (user_id) values (new.follower_user_id) on conflict do nothing;
@@ -25,7 +26,8 @@ begin
 
   -- create a milestone if applicable
   select new_follower_count into milestone where new_follower_count in (10, 25, 50, 100, 250, 500, 1000, 5000, 10000, 20000, 50000, 100000, 1000000);
-  if milestone is not null and new.is_delete is false then
+  select score < 0 into is_shadowbanned from aggregate_user where user_id = new.follower_user_id;
+  if milestone is not null and new.is_delete is false and is_shadowbanned = false then
       insert into milestones 
         (id, name, threshold, blocknumber, slot, timestamp)
       values
@@ -48,7 +50,7 @@ begin
 
   begin
     -- create a notification for the followee
-    if new.is_delete is false then
+    if new.is_delete is false and is_shadowbanned = false then
       insert into notification
       (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
       values
