@@ -14,9 +14,9 @@ export const getTrackQueryKey = (trackId: ID | null | undefined) => [
   trackId
 ]
 
-export const useTrack = (
+export const useTrack = <TResult = TQTrack>(
   trackId: ID | null | undefined,
-  options?: QueryOptions
+  options?: QueryOptions<TQTrack, TResult>
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
@@ -24,7 +24,7 @@ export const useTrack = (
   const { data: currentUserId } = useCurrentUserId()
   const validTrackId = !!trackId && trackId > 0
 
-  return useQuery<TQTrack | null>({
+  return useQuery({
     queryKey: getTrackQueryKey(trackId),
     queryFn: async () => {
       const sdk = await audiusSdk()

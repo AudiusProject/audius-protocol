@@ -15,9 +15,9 @@ export const getCollectionQueryKey = (collectionId: ID | null | undefined) => [
   collectionId
 ]
 
-export const useCollection = (
+export const useCollection = <TResult = TQCollection>(
   collectionId: ID | null | undefined,
-  options?: QueryOptions
+  options?: QueryOptions<TQCollection, TResult>
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
@@ -25,7 +25,7 @@ export const useCollection = (
   const dispatch = useDispatch()
   const validCollectionId = !!collectionId && collectionId > 0
 
-  return useQuery<TQCollection | null>({
+  return useQuery({
     queryKey: getCollectionQueryKey(collectionId),
     queryFn: async () => {
       const sdk = await audiusSdk()

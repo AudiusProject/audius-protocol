@@ -15,9 +15,9 @@ export const getUserQueryKey = (userId: ID | null | undefined) => [
   userId
 ]
 
-export const useUser = (
+export const useUser = <TResult = UserMetadata>(
   userId: ID | null | undefined,
-  options?: QueryOptions
+  options?: QueryOptions<UserMetadata, TResult>
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const dispatch = useDispatch()
@@ -25,7 +25,7 @@ export const useUser = (
   const currentUserId = useSelector(getUserId)
   const validUserId = !!userId && userId > 0
 
-  return useQuery<UserMetadata | null>({
+  return useQuery({
     queryKey: getUserQueryKey(userId),
     queryFn: async () => {
       const sdk = await audiusSdk()
