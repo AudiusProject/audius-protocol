@@ -26,7 +26,7 @@ type MutationContext = {
 }
 
 export type UpdateTrackParams = {
-  trackId: ID
+  trackId: ID | null | undefined
   metadata: Partial<Track & TrackMetadataForUpload>
   coverArtFile?: File
 }
@@ -50,6 +50,10 @@ export const useUpdateTrack = () => {
       metadata,
       coverArtFile
     }: UpdateTrackParams) => {
+      if (!trackId) {
+        throw new Error('Track ID is required')
+      }
+
       const sdk = await audiusSdk()
 
       const previousMetadata = queryClient.getQueryData<Track>([
