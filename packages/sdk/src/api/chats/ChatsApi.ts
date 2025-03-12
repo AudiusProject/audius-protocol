@@ -3,7 +3,7 @@ import EventEmitter from 'events'
 import * as secp from '@noble/secp256k1'
 import { base64 } from '@scure/base'
 import WebSocket from 'isomorphic-ws'
-import { uniqBy } from 'lodash'
+import { uniqBy } from 'lodash-es'
 import type TypedEmitter from 'typed-emitter'
 import { ulid } from 'ulid'
 

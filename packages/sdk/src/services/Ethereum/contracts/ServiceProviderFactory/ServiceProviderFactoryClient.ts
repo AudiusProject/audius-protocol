@@ -1,5 +1,5 @@
 import { ServiceProviderFactory } from '@audius/eth'
-import { range } from 'lodash'
+import { range } from 'lodash-es'
 
 import { EthereumContract } from '../EthereumContract'
 

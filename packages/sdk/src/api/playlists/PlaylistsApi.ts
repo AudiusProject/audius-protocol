@@ -1,4 +1,4 @@
-import { pick } from 'lodash'
+import { pick } from 'lodash-es'
 import snakecaseKeys from 'snakecase-keys'
 import type { z } from 'zod'
 
