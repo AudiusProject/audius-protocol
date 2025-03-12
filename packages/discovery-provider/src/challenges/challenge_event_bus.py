@@ -167,7 +167,7 @@ class ChallengeEventBus:
                 logger.warning(f"ChallengeEventBus: error enqueuing to Redis: {e}")
         self._in_memory_queue.clear()
 
-    def process_events(self, session: Session, max_events=1000) -> Tuple[int, bool]:
+    def process_events(self, session: Session, max_events=1) -> Tuple[int, bool]:
         """Dequeues `max_events` from Redis queue and processes them, forwarding to listening ChallengeManagers.
         Returns (num_processed_events, did_error).
         Will return -1 as num_processed_events if an error prevented any events from
