@@ -113,15 +113,20 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
   const path = isContent ? '/health_check' : '/health_check?enforce_block_diff=true&healthy_block_diff=250&plays_count_max_drift=720'
   const { data, error: dataError } = useSWR(sp.endpoint + path, fetcher)
   const { data: metrics } = useSWR(sp.endpoint + '/internal/metrics', fetcher)
+  const { data: consoleHealth } = useSWR(sp.endpoint + "/console/health_check", fetcher)
 
   const health = data?.data
+  const coreHealthy = consoleHealth?.healthy
+  const totalCoreBlocks = consoleHealth?.totalBlocks
+  const totalCoreTxs = consoleHealth?.totalBlocks
 
-  console.log({ health })
+  console.log({ consoleHealth })
 
   // API response doesn't include isRegistered
   if (sp.isRegistered !== false) {
     sp.isRegistered = true
   }
+  const coreHealth = health?.core?.health
 
   if (!health) {
     let healthStatus = 'loading'
@@ -209,8 +214,6 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
   const autoUpgradeEnabled =
     health.auto_upgrade_enabled || health.autoUpgradeEnabled
   const audiusdManaged = health.audius_d_managed || health.isAudiusdManaged
-  const chainDescription: string =
-    health.chain_health?.entries['node-health'].description
 
   const StorageProgressBar = ({ progress, max }: { progress: number, max: number }) => {
     const progressPercent = (progress / Math.max(progress, max)) * 100
@@ -233,6 +236,7 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
     healthStatus = 'Unhealthy'
     healthStatusClass = 'is-unhealthy'
   }
+
 
   return (
     <tr className={healthStatusClass}>
@@ -338,15 +342,15 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
       {!isContent && (<td className="whitespace-nowrap px-3 py-5 text-sm">{health.chain_health?.status}</td>)}
       {!isContent &&
         <td className="whitespace-nowrap px-3 py-5 text-sm">
-          <a href={sp.endpoint + "/core/grpc/block/" + health.latest_indexed_block_num} target="_blank" className="text-sm text-gray-900 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400">
-            {health.latest_indexed_block_num}
+          <a href={sp.endpoint + "/core/grpc/block/" + totalCoreBlocks} target="_blank" className="text-sm text-gray-900 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400">
+            {totalCoreBlocks}
           </a>
         </td>
       }
       {!isContent &&
         <td className="whitespace-nowrap px-3 py-5 text-sm">
-          <a href={sp.endpoint + "/core/grpc/block/" + health.latest_indexed_block_num} target="_blank" className="text-sm text-gray-900 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400">
-            {health.latest_indexed_block_num}
+          <a href={sp.endpoint + "/core/grpc/block/" + coreHealth.latest_indexed_block} target="_blank" className="text-sm text-gray-900 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400">
+            {coreHealth.latest_indexed_block}
           </a>
         </td>
       }
