@@ -6,6 +6,7 @@ from src.models.comments.comment_notification_setting import CommentNotification
 from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_report import CommentReport
 from src.models.comments.comment_thread import CommentThread
+from src.models.core.core_indexed_blocks import CoreIndexedBlocks
 from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
@@ -215,13 +216,25 @@ def populate_mock_db(db, entities, block_offset=None):
                 {"is_current": False}
             )
             if not max_block:
+                blockhash = hex(i)
+                parenthash = "0x01"
+
                 block = Block(
-                    blockhash=hex(i),
+                    blockhash=blockhash,
                     number=i,
-                    parenthash="0x01",
+                    parenthash=parenthash,
                     is_current=(i == block_offset + num_blocks - 1),
                 )
                 session.add(block)
+
+                core_block = CoreIndexedBlocks(
+                    blockhash=blockhash,
+                    parenthash=parenthash,
+                    chain_id="audius-devnet",
+                    height=i,
+                )
+                session.add(core_block)
+
                 session.flush()
 
         for i, aggregate_user_meta in enumerate(aggregate_user):
