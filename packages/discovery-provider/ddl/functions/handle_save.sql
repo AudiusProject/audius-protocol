@@ -12,6 +12,7 @@ declare
   entity_type text;
   is_purchased boolean default false;
   is_containing_album_purchased boolean default false;
+  is_shadowbanned boolean;
 begin
 
   insert into aggregate_user (user_id) values (new.user_id) on conflict do nothing;
@@ -125,7 +126,9 @@ begin
 
   -- create a milestone if applicable
   select new_val into milestone where new_val in (10,25,50,100,250,500,1000,2500,5000,10000,25000,50000,100000,250000,500000,1000000);
-  if new.is_delete = false and milestone is not null then
+  select score < 0 into is_shadowbanned from aggregate_user where user_id = new.user_id;
+
+  if new.is_delete = false and milestone is not null and is_shadowbanned = false then
     insert into milestones 
       (id, name, threshold, blocknumber, slot, timestamp)
     values
@@ -166,7 +169,7 @@ begin
   begin
     -- create a notification for the saved content's owner
     -- skip notification for purchased content as the purchase triggers its own notification
-    if new.is_delete is false and is_purchased is false then
+    if new.is_delete is false and is_purchased is false and is_shadowbanned = false then
       insert into notification
         (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
         values
@@ -188,6 +191,7 @@ begin
     and new.is_save_of_repost is true
     -- skip notification for tracks contained within a purchased album
     -- the favorite of the album itself will still trigger this notification
+    and is_shadowbanned = false
     and is_containing_album_purchased is false then
     with
         followee_save_repost_ids as (
@@ -242,7 +246,7 @@ begin
     end if;
 
     -- create a notification for remix cosign
-    if new.is_delete is false and new.save_type = 'track' and track_remix_of is not null then
+    if new.is_delete is false and new.save_type = 'track' and track_remix_of is not null and is_shadowbanned = false then
       select
         case when tracks.owner_id = new.user_id then TRUE else FALSE end as boolean into is_remix_cosign
         from tracks 

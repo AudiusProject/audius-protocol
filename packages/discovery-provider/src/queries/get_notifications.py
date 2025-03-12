@@ -55,8 +55,6 @@ SELECT
     max(n.timestamp) as latest_timestamp
 FROM
     notification n
-LEFT JOIN aggregate_user au 
-    ON (n.type IN ('save', 'follow', 'repost') AND n.specifier::BIGINT = au.user_id)
 LEFT JOIN user_seen on
   user_seen.seen_at >= n.timestamp and user_seen.prev_seen_at < n.timestamp
 WHERE
@@ -71,10 +69,6 @@ WHERE
         (n.timestamp = :timestamp_offset AND n.group_id < :group_id_offset)
     )
   )
-    AND (
-        n.type NOT IN ('save', 'follow', 'repost') 
-        OR (n.type IN ('save', 'follow', 'repost') AND au.score >= 0)
-    )
 GROUP BY
   n.type, n.group_id, user_seen.seen_at, user_seen.prev_seen_at
 ORDER BY
@@ -106,8 +100,6 @@ FROM (
    select n.type, n.group_id
    from
        notification n
-LEFT JOIN aggregate_user au 
-    ON (n.type IN ('save', 'follow', 'repost') AND n.specifier::BIGINT = au.user_id)
   WHERE
     ((ARRAY[:user_id] && n.user_ids) OR (n.type = 'announcement' AND n.timestamp > (SELECT created_at FROM user_created_at))) AND
     (:valid_types is NOT NULL AND n.type in :valid_types) AND
@@ -121,10 +113,6 @@ LEFT JOIN aggregate_user au
         ORDER BY seen_at desc
         LIMIT 1
     ), '2016-01-01'::timestamp)
-    AND (
-    n.type NOT IN ('save', 'follow', 'repost') 
-    OR (n.type IN ('save', 'follow', 'repost') AND au.score >= 0)
-    )
   GROUP BY
     n.type, n.group_id
 ) user_notifications;
