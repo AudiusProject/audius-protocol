@@ -22,6 +22,15 @@ export async function removeTempFiles(jobId: string) {
   }
 }
 
+async function waitForDiskSpace(jobId: string, requiredSizeBytes: number) {
+  const config = readConfig()
+  const jobTempDir = path.join(config.archiverTmpDir, jobId)
+  const availableSpace = fs.statSync(jobTempDir).size
+  if (availableSpace < requiredSizeBytes) {
+    throw new Error('Insufficient disk space')
+  }
+}
+
 async function downloadStemFile(
   url: string,
   filename: string,
@@ -86,14 +95,17 @@ async function createArchive({
     archive.file(file, { name: filename })
   }
 
-  // Finalize the archive
-  await archive.finalize()
-
   // Wait for the output stream to finish
-  await new Promise((resolve, reject) => {
+  // Archiver docs recommend attaching these listeners before calling finalize
+  const finishPromise = new Promise((resolve, reject) => {
     output.on('close', resolve)
     output.on('error', reject)
   })
+
+  // Finalize the archive
+  await archive.finalize()
+
+  await finishPromise
 
   return outputPath
 }
@@ -145,6 +157,26 @@ export const startStemsArchiveWorker = () => {
               { ...track, origFilename: track.origFilename ?? track.title }
             ]
           : stems
+
+        // Check file sizes before downloading
+        const fileSizes = await Promise.all(
+          filesToDownload.map(async (file) => {
+            const inspection = await sdk.tracks.inspectTrack({
+              trackId: file.id,
+              original: true
+            })
+            if (!inspection.data?.size) {
+              throw new Error(`File size not found for ${file.id}`)
+            }
+            return inspection.data.size
+          })
+        )
+
+        const totalSizeBytes = fileSizes.reduce((sum, size) => sum + size, 0)
+        logger.info(
+          { jobId, trackId, userId, totalSizeBytes },
+          'Calculated required disk space'
+        )
 
         // Download each stem
         const downloadedFiles = await Promise.all(

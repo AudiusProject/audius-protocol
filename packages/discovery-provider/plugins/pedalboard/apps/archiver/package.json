@@ -9,7 +9,9 @@
     "dev": "ts-node-dev --respawn ./src/index.ts",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "tsc --noEmit && eslint \"src/**/*.ts*\"",
-    "start": "node ./dist/index.js"
+    "start": "node ./dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@audius/sdk": "*",
@@ -25,15 +27,13 @@
     "@types/archiver": "6.0.3",
     "@types/cors": "2.8.10",
     "@types/express": "4.17.12",
-    "@types/jest": "26.0.22",
     "@types/node": "15.12.2",
     "esbuild": "0.14.38",
     "esbuild-register": "3.3.2",
     "eslint": "8.56.0",
     "eslint-config-custom-server": "*",
-    "jest": "26.6.3",
-    "jest-presets": "*",
     "tsconfig": "*",
-    "typescript": "5.0.4"
+    "typescript": "5.0.4",
+    "vitest": "0.34.6"
   }
 }
