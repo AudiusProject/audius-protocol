@@ -299,7 +299,6 @@ def configure_celery(celery, test_config=None):
     celery.conf.update(
         imports=[
             "src.tasks.index_metrics",
-            "src.tasks.index_aggregate_monthly_plays",
             "src.tasks.index_hourly_play_counts",
             "src.tasks.vacuum_db",
             "src.tasks.update_clique_signers",
@@ -379,10 +378,6 @@ def configure_celery(celery, test_config=None):
             "index_user_listening_history": {
                 "task": "index_user_listening_history",
                 "schedule": timedelta(seconds=5),
-            },
-            "index_aggregate_monthly_plays": {
-                "task": "index_aggregate_monthly_plays",
-                "schedule": timedelta(minutes=5),
             },
             "prune_plays": {
                 "task": "prune_plays",

@@ -236,6 +236,17 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         redis=redis, plays_count_max_drift=plays_count_max_drift
     )
     indexing_plays_with_core = core_health and core_health.get("indexing_plays")
+    latest_block_ts = 0
+    if core_health:
+        latest_chain_block_ts = core_health.get("latest_chain_block_ts") or 0
+        latest_block_ts = int(latest_chain_block_ts)
+
+    current_ts = int(time.time())  # Current UTC time in seconds
+
+    # Check if the latest block timestamp is older than 60 seconds
+    core_stuck = (current_ts - latest_block_ts) > 60
+    if core_stuck:
+        errors.append("unhealthy core: no new blocks in at least a minute")
 
     play_health_info = get_play_health_info(redis, plays_count_max_drift)
     if indexing_plays_with_core:
