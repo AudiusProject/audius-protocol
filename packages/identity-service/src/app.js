@@ -315,8 +315,20 @@ class App {
       prefix: 'authLimiter',
       max: config.get('rateLimitingAuthLimit')
     })
+    const otpRequestRateLimiter = getRateLimiter({
+      prefix: 'otpLimiter',
+      max: config.get('rateLimitingOtpLimit'),
+      keyGenerator: (req) => {
+        return `${req.query.email}:::${req.query.lookupKey}`
+      },
+      skip: (req) => {
+        return !req.query.otp || req.query.otp === ''
+      }
+    })
     // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
     this.express.use('/authentication/', authRequestRateLimiter)
+    this.express.use('/authentication', otpRequestRateLimiter)
+    this.express.use('/otp/', otpRequestRateLimiter)
 
     const twitterRequestRateLimiter = getRateLimiter({
       prefix: 'twitterLimiter',
