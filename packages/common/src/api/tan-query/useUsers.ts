@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { useQueryClient, UseQueryResult } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -48,10 +48,7 @@ export const useUsers = (
       enabled: options?.enabled !== false && !!userId && userId > 0
     })),
     combine: combineQueryResults<UserMetadata[]>
-  }) as UseQueryResult<UserMetadata[]> & {
-    byId: Record<ID, UserMetadata>
-  }
-
+  })
   const { data: users } = queryResults
 
   const byId = useMemo(() => keyBy(users, 'user_id'), [users])
@@ -60,10 +57,11 @@ export const useUsers = (
     userIds?.every((userId) => !!state.users.entries[userId])
   )
 
-  queryResults.data = isSavedToRedux ? users : undefined
-  queryResults.isPending = queryResults.isPending || !isSavedToRedux
-  queryResults.isLoading = queryResults.isLoading || !isSavedToRedux
-  queryResults.byId = byId
-
-  return queryResults
+  return {
+    ...queryResults,
+    data: isSavedToRedux ? users : undefined,
+    isPending: queryResults.isPending || !isSavedToRedux,
+    isLoading: queryResults.isLoading || !isSavedToRedux,
+    byId
+  }
 }

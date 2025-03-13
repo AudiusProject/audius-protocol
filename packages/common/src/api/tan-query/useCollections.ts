@@ -1,15 +1,15 @@
 import { useMemo } from 'react'
 
-import { useQueryClient, UseQueryResult } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
 import { ID } from '~/models'
+import { UserCollectionMetadata } from '~/models/Collection'
 import { CommonState } from '~/store'
 
 import { getCollectionsBatcher } from './batchers/getCollectionsBatcher'
-import { TQCollection } from './models'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
@@ -46,10 +46,8 @@ export const useCollections = (
       ...options,
       enabled: options?.enabled !== false && !!collectionId && collectionId > 0
     })),
-    combine: combineQueryResults<TQCollection[]>
-  }) as UseQueryResult<TQCollection[]> & {
-    byId: Record<ID, TQCollection>
-  }
+    combine: combineQueryResults<UserCollectionMetadata[]>
+  })
 
   const { data: collections } = queriesResults
 
@@ -61,10 +59,11 @@ export const useCollections = (
     )
   )
 
-  queriesResults.data = isSavedToRedux ? collections : undefined
-  queriesResults.isPending = queriesResults.isPending || !isSavedToRedux
-  queriesResults.isLoading = queriesResults.isLoading || !isSavedToRedux
-  queriesResults.byId = byId
-
-  return queriesResults
+  return {
+    ...queriesResults,
+    data: isSavedToRedux ? collections : undefined,
+    isPending: queriesResults.isPending || !isSavedToRedux,
+    isLoading: queriesResults.isLoading || !isSavedToRedux,
+    byId
+  }
 }

@@ -3,6 +3,7 @@ import { useContext, useEffect, ReactNode, useCallback, useState } from 'react'
 import { useFeaturedPlaylists, useFeaturedProfiles } from '@audius/common/api'
 import {
   Variant as CollectionVariant,
+  UserCollection,
   SmartCollection,
   User,
   Variant
@@ -226,7 +227,7 @@ const ExplorePage = ({ pageTitle, description }: ExplorePageProps) => {
           containerClassName={styles.lineupContainer}
           cards={
             !isLoadingPlaylists
-              ? playlists.map((playlist) => (
+              ? playlists.map((playlist: UserCollection) => (
                   <CollectionCard
                     key={playlist.playlist_id}
                     id={playlist.playlist_id}
