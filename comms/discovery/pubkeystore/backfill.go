@@ -1,7 +1,6 @@
 package pubkeystore
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -15,7 +14,6 @@ import (
 )
 
 func StartPubkeyBackfill(config *config.DiscoveryConfig) {
-	ctx := context.Background()
 
 	sql := `
 	select user_id
@@ -30,19 +28,14 @@ func StartPubkeyBackfill(config *config.DiscoveryConfig) {
 		ids := []int{}
 		err := db.Conn.Select(&ids, sql)
 		if err != nil {
+			slog.Info("pubkey backfill: query error", err)
 			break
 		}
 		for _, id := range ids {
-			_, err := RecoverUserPublicKeyBase64(ctx, id)
+			err = recoverFromPeers(config, id)
 			if err != nil {
-				slog.Debug("pubkey backfill: chain recovery failed", "user_id", id, "err", err)
-
-				err = recoverFromPeers(config, id)
-				if err != nil {
-					slog.Debug("pubkey backfill: peer recovery failed", "user_id", id, "err", err)
-				}
+				slog.Info("pubkey backfill: peer recovery failed", "user_id", id, "err", err)
 			}
-
 		}
 
 		time.Sleep(time.Minute * 8)
