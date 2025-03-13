@@ -272,7 +272,7 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
     icon: <i className='emoji large play-pause' />
   },
   [ChallengeName.Tastemaker]: {
-    icon: <i className='emoji large crown' />
+    icon: <i className='emoji large smiling-face-licking-lips' />
   }
 }
 
