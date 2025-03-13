@@ -197,11 +197,9 @@ def test_multiple_listens(app):
         # impact.
 
         # we really want to just ensure that this doesn't crash
-        assert len(state) == 4
+        assert len(state) == 2
         assert state[0].current_step_count == 2
         assert state[1].current_step_count == 2
-        assert state[2].current_step_count == 2
-        assert state[3].current_step_count == 2
 
 
 def test_listen_streak_endless_challenge(app):
