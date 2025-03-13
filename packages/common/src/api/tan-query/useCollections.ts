@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { useQueryClient } from '@tanstack/react-query'
+import { useQueryClient, UseQueryResult } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -46,7 +46,9 @@ export const useCollections = (
       enabled: options?.enabled !== false && !!collectionId && collectionId > 0
     })),
     combine: combineQueryResults<TQCollection[]>
-  })
+  }) as UseQueryResult<TQCollection[]> & {
+    byId: Record<ID, TQCollection>
+  }
 
   const { data: collections } = queriesResults
 
@@ -58,11 +60,10 @@ export const useCollections = (
     )
   )
 
-  return {
-    ...queriesResults,
-    data: isSavedToRedux ? collections : undefined,
-    isPending: queriesResults.isPending || !isSavedToRedux,
-    isLoading: queriesResults.isLoading || !isSavedToRedux,
-    byId
-  }
+  queriesResults.data = isSavedToRedux ? collections : undefined
+  queriesResults.isPending = queriesResults.isPending || !isSavedToRedux
+  queriesResults.isLoading = queriesResults.isLoading || !isSavedToRedux
+  queriesResults.byId = byId
+
+  return queriesResults
 }

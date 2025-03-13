@@ -122,9 +122,14 @@ export const useFeed = (
 
   const lineupData = useLineupQuery({
     queryData,
+    queryKey: getFeedQueryKey({
+      userId,
+      filter
+    }),
     lineupActions: feedPageLineupActions,
     lineupSelector: feedPageSelectors.getDiscoverFeedLineup,
-    playbackSource: PlaybackSource.TRACK_TILE_LINEUP // TODO: shouldn't this be more specific?
+    playbackSource: PlaybackSource.TRACK_TILE_LINEUP,
+    pageSize: loadMorePageSize
   })
 
   return {
