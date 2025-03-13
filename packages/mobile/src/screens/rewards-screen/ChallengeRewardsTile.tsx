@@ -153,7 +153,6 @@ export const ChallengeRewardsTile = () => {
     dispatch(setVisibility({ modal: 'ChallengeRewards', visible: true }))
   }
 
-  console.log('rewardIds', rewardIds)
   const rewardsPanels = rewardIds
     // Filter out challenges that DN didn't return
     .map((id) => userChallenges[id]?.challenge_id)
