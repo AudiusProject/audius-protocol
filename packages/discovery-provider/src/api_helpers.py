@@ -3,11 +3,12 @@ import json
 import logging
 import os
 
+from eth_account import Account
+
 # pylint: disable=no-name-in-module
 from eth_account.messages import encode_defunct
 from flask import jsonify
 from web3 import Web3
-from web3.auto import w3
 
 from src.queries.get_health import get_latest_chain_block_set_if_nx
 from src.queries.get_sol_plays import get_sol_play_health_info
@@ -132,8 +133,6 @@ def recover_wallet(data, signature):
     to_recover_hash = Web3.keccak(text=json_dump).hex()
 
     encoded_to_recover = encode_defunct(hexstr=to_recover_hash)
-    recovered_wallet = w3.eth.account.recover_message(
-        encoded_to_recover, signature=signature
-    )
+    recovered_wallet = Account.recover_message(encoded_to_recover, signature=signature)
 
     return recovered_wallet

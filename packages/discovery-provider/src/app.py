@@ -109,11 +109,10 @@ def create_app(test_config=None):
 
 def create_celery(test_config=None):
     # pylint: disable=W0603
-    global web3endpoint, web3, abi_values, eth_abi_values, eth_web3
+    global web3endpoint, abi_values, eth_abi_values, eth_web3
     global trusted_notifier_manager
     global solana_client_manager
 
-    web3 = web3_provider.get_web3()
     abi_values = helpers.load_abi_values()
     # Initialize eth_web3 with MultiProvider
     # We use multiprovider to allow for multiple web3 providers and additional resiliency.
