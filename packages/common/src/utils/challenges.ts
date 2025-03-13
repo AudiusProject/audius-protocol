@@ -383,7 +383,7 @@ export const makeOptimisticChallengeSortComparator = (
   }
 }
 
-const isPlayCountChallenge = (
+export const isPlayCountChallenge = (
   id: ChallengeRewardID
 ): id is
   | ChallengeName.PlayCount250

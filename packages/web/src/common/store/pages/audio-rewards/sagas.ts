@@ -31,7 +31,12 @@ import {
   CommonStoreContext,
   getSDK
 } from '@audius/common/store'
-import { isResponseError, route, waitForValue } from '@audius/common/utils'
+import {
+  isResponseError,
+  route,
+  waitForValue,
+  isPlayCountChallenge
+} from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
 import {
   Id,
@@ -526,7 +531,45 @@ function* fetchUserChallengesAsync() {
       }
     )
 
-    const userChallenges = challengesData.map(userChallengeFromSDK)
+    // Fetch monthly play counts from 2025
+    const { data: monthlyPlays = {} } = yield* call(
+      [sdk.users, sdk.users.getUserMonthlyTrackListens],
+      {
+        id: Id.parse(currentUserId),
+        startTime: '2025-01-01',
+        // Making the end time one year from the current date since the challenge is technically never ending
+        endTime: new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+          .toISOString()
+          .split('T')[0]
+      }
+    )
+
+    const totalPlaysOnOwnedTracks = Object.values(monthlyPlays).reduce(
+      (sum, month) => sum + (month.totalListens || 0),
+      0
+    )
+
+    let userChallenges = challengesData.map(userChallengeFromSDK)
+
+    // Only update play count milestone challenges if they exist and there are plays
+    if (
+      userChallenges.some((challenge) =>
+        isPlayCountChallenge(challenge.challenge_id)
+      )
+    ) {
+      userChallenges = userChallenges.map((challenge) => {
+        if (isPlayCountChallenge(challenge.challenge_id)) {
+          return {
+            ...challenge,
+            current_step_count: Math.max(
+              challenge.current_step_count,
+              totalPlaysOnOwnedTracks
+            )
+          }
+        }
+        return challenge
+      })
+    }
 
     const { data = [] } = yield* call(
       [sdk.challenges, sdk.challenges.getUndisbursedChallenges],
