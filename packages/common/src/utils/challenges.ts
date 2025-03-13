@@ -328,6 +328,16 @@ export const challengeRewardsConfig: Record<
     progressLabel: '%0 Plays',
     remainingLabel: '%0 Plays',
     panelButtonText: 'More Info'
+  },
+  [ChallengeName.Tastemaker]: {
+    id: ChallengeName.Tastemaker,
+    title: 'Tastemaker',
+    description: () =>
+      `Discover and interact with a new track before it hits trending to earn an $AUDIO reward.`,
+    fullDescription: () =>
+      `Discover and interact with a new track before it hits trending to earn an $AUDIO reward.`,
+    progressLabel: 'Active',
+    panelButtonText: 'More Info'
   }
 }
 
@@ -443,7 +453,8 @@ const newChallengeIds: ChallengeRewardID[] = [
   ChallengeName.AudioMatchingBuy,
   ChallengeName.PlayCount250,
   ChallengeName.PlayCount1000,
-  ChallengeName.PlayCount10000
+  ChallengeName.PlayCount10000,
+  ChallengeName.Tastemaker
 ]
 
 export const isNewChallenge = (challengeId: ChallengeRewardID) =>

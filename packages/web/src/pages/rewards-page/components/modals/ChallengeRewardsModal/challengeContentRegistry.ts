@@ -7,6 +7,7 @@ import { ListenStreakChallengeModalContent } from './ListenStreakChallengeModalC
 import { OneShotChallengeModalContent } from './OneShotChallengeModalContent'
 import { PlayCountMilestoneContent } from './PlayCountMilestoneContent'
 import { ReferralsChallengeModalContent } from './ReferralsChallengeModalContent'
+import { TastemakerChallengeModalContent } from './TastemakerChallengeModalContent'
 import {
   type ChallengeContentMap,
   type ChallengeContentComponent
@@ -33,6 +34,8 @@ export const challengeContentRegistry: ChallengeContentMap = {
     PlayCountMilestoneContent as ChallengeContentComponent,
   [ChallengeName.PlayCount10000]:
     PlayCountMilestoneContent as ChallengeContentComponent,
+  [ChallengeName.Tastemaker]:
+    TastemakerChallengeModalContent as ChallengeContentComponent,
   default: DefaultChallengeContent as ChallengeContentComponent
 }
 

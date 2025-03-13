@@ -20,7 +20,7 @@ class TastemakerChallengeUpdater(ChallengeUpdater):
         Format: {user_id}:{tastemaker_item_type}:{tastemaker_item_id}
         """
         item_type = "p" if extra["tastemaker_item_type"] == "playlist" else "t"
-        return f"{user_id}:{item_type}:{extra['tastemaker_item_id']}"
+        return f"{hex(user_id)[2:]}:{item_type}:{hex(extra['tastemaker_item_id'])[2:]}"
 
 
 tastemaker_challenge_manager = ChallengeManager("t", TastemakerChallengeUpdater())

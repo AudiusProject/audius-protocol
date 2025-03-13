@@ -270,6 +270,9 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
   },
   [ChallengeName.PlayCount10000]: {
     icon: <i className='emoji large play-pause' />
+  },
+  [ChallengeName.Tastemaker]: {
+    icon: <i className='emoji large crown' />
   }
 }
 

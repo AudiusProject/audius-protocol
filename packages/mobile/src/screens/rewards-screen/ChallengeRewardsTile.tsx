@@ -63,7 +63,8 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
   ChallengeName.FirstWeeklyComment,
   ChallengeName.PlayCount250,
   ChallengeName.PlayCount1000,
-  ChallengeName.PlayCount10000
+  ChallengeName.PlayCount10000,
+  ChallengeName.Tastemaker
 ])
 
 type ClaimableSummaryTableItem = SummaryTableItem & {
@@ -152,6 +153,7 @@ export const ChallengeRewardsTile = () => {
     dispatch(setVisibility({ modal: 'ChallengeRewards', visible: true }))
   }
 
+  console.log('rewardIds', rewardIds)
   const rewardsPanels = rewardIds
     // Filter out challenges that DN didn't return
     .map((id) => userChallenges[id]?.challenge_id)

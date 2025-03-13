@@ -36,7 +36,7 @@ export const ChallengeRewardsLayout = ({
   additionalContent,
   errorContent,
   amount,
-  rewardSubtext,
+  rewardSubtext = '$AUDIO',
   progressStatusLabel,
   progressValue,
   progressMax
