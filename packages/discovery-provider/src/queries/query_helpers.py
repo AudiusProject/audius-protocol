@@ -456,7 +456,7 @@ def populate_track_metadata(
         .filter(
             Event.entity_type == EventEntityType.TRACK,
             Event.entity_id.in_(track_ids),
-            Event.is_deleted == False
+            Event.is_deleted == False,
         )
         .all()
     )
@@ -467,7 +467,7 @@ def populate_track_metadata(
         track_id = event.entity_id
         if track_id not in event_dict:
             event_dict[track_id] = []
-            
+
         event_data = {
             "event_id": event.event_id,
             "event_type": event.event_type,
@@ -477,7 +477,7 @@ def populate_track_metadata(
             "is_deleted": event.is_deleted,
             "end_date": event.end_date,
             "created_at": event.created_at,
-            "updated_at": event.updated_at
+            "updated_at": event.updated_at,
         }
         event_dict[track_id].append(event_data)
 

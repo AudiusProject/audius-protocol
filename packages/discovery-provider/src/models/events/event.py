@@ -17,12 +17,15 @@ from src.models.model_utils import RepresentableMixin
 
 class EventType(str, enum.Enum):
     """Enum for event types"""
+
     REMIX_CONTEST = "remix_contest"
     LIVE_EVENT = "live_event"
     NEW_RELEASE = "new_release"
 
+
 class EventEntityType(str, enum.Enum):
     """Enum for event entity types"""
+
     TRACK = "track"
     COLLECTION = "collection"
     USER = "user"
@@ -33,9 +36,10 @@ class Event(Base, RepresentableMixin):
 
     Table storing events in the Audius ecosystem.
     """
+
     __tablename__ = "events"
 
-    id = Column(Integer, primary_key=True)
+    event_id = Column(Integer, primary_key=True)
     event_type = Column(Enum(EventType), nullable=False, index=True)
     user_id = Column(Integer, nullable=False)
     entity_type = Column(Enum(EventEntityType), nullable=True, index=True)

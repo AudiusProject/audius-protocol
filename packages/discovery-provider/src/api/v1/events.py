@@ -1,5 +1,6 @@
 from flask import Blueprint
 from flask_restx import Namespace, Resource, fields
+
 from src.api.v1.helpers import (
     format_limit,
     format_offset,
@@ -25,9 +26,8 @@ events_parser.add_argument(
     description="The sort method",
 )
 
-events_response = make_response(
-    'events_response', ns, fields.Nested(event_model)
-)
+events_response = make_response("events_response", ns, fields.Nested(event_model))
+
 
 @ns.route("/")
 class EventList(Resource):
@@ -47,10 +47,11 @@ class EventList(Resource):
             "offset": format_offset(request_args),
         }
         events = get_events(args)
-        return make_response("events", ns, events) 
+        return make_response("events", ns, events)
 
 
 unclaimed_id_response = make_response("unclaimed_id_response", ns, fields.String())
+
 
 @ns.route("/unclaimed_id")
 class GetUnclaimedEventId(Resource):
