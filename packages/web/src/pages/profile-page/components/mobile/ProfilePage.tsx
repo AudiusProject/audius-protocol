@@ -31,7 +31,6 @@ import CollectiblesPage from 'components/collectibles/components/CollectiblesPag
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import Lineup from 'components/lineup/Lineup'
 import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
-import { LineupVariant } from 'components/lineup/types'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, {
   LeftPreset,
