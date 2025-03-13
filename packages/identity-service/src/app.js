@@ -328,7 +328,6 @@ class App {
     // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
     this.express.use('/authentication/', authRequestRateLimiter)
     this.express.use('/authentication', otpRequestRateLimiter)
-    this.express.use('/otp/', otpRequestRateLimiter)
 
     const twitterRequestRateLimiter = getRateLimiter({
       prefix: 'twitterLimiter',
