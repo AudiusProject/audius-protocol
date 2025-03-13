@@ -223,6 +223,8 @@ export const createStemsArchiveWorker = (
     } else if (abortControllers.has(jobId)) {
       const abortController = abortControllers.get(jobId)
       abortController?.abort()
+    } else {
+      logger.info({ jobId }, 'Stems archive job not found')
     }
   }
 

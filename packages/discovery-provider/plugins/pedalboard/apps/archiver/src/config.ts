@@ -21,11 +21,11 @@ export type Config = {
   serverPort: number
   /** Temporary directory for storing stems archive files (default: '/tmp/audius-archiver') */
   archiverTmpDir: string
-  /** Maximum disk space to use for processing archives (default: 32GB) */
+  /** Maximum disk space to use for processing archives. NOTE: This limit will not affect temporary space used to zip files, so the actual used space may exceed it temporarily until the source files for the zip are deleted. (default: 32GB) */
   maxDiskSpaceBytes: number
   /** Maximum time to wait for disk space to be available (default: 60 seconds) */
   maxDiskSpaceWaitSeconds: number
-  /** Log level to use for the archiver (default: 'warn') */
+  /** Log level to use for the archiver (default: 'info') */
   logLevel: LogLevel
 }
 
@@ -49,7 +49,7 @@ export const readConfig = (): Config => {
       default: 10
     }),
     archiver_orphaned_jobs_lifetime_seconds: num({ default: 60 * 10 }),
-    archiver_log_level: str<LogLevel>({ default: 'warn' }),
+    archiver_log_level: str<LogLevel>({ default: 'info' }),
     archiver_max_stems_archive_attempts: num({ default: 3 }),
     archiver_max_disk_space_bytes: num({ default: 32 * 1024 * 1024 * 1024 }), // 32GB
     archiver_max_disk_space_wait_seconds: num({ default: 60 })

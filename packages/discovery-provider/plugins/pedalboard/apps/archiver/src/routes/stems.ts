@@ -1,6 +1,7 @@
 import express from 'express'
 import { MESSAGE_HEADER, SIGNATURE_HEADER } from '../constants'
 import {
+  JobStatus,
   getOrCreateStemsArchiveJob,
   getStemsArchiveJob
 } from '../jobs/createStemsArchive'
@@ -10,6 +11,12 @@ import { stat } from 'fs/promises'
 import { basename } from 'path'
 import { OptionalHashId } from '@audius/sdk'
 import { queryParamToBoolean } from './utils'
+
+const removeInternalStatusFields = (jobStatus: JobStatus) => {
+  // Don't return the job returnvalue to the client, that's used internally
+  const { returnvalue: _, ...rest } = jobStatus
+  return rest
+}
 
 export const stemsRouter = ({
   removeStemsArchiveJob,
@@ -35,7 +42,7 @@ export const stemsRouter = ({
         })
       }
 
-      const jobId = await getOrCreateStemsArchiveJob({
+      const jobStatus = await getOrCreateStemsArchiveJob({
         trackId,
         userId: userId,
         messageHeader,
@@ -43,7 +50,7 @@ export const stemsRouter = ({
         includeParentTrack
       })
 
-      res.status(200).json({ jobId })
+      res.status(200).json(removeInternalStatusFields(jobStatus))
     } catch (error) {
       logger.error({ error }, 'Failed to create stems archive job')
       res.status(500).json({ error: 'Internal server error' })
@@ -59,10 +66,7 @@ export const stemsRouter = ({
         return res.status(404).json({ error: 'Job not found' })
       }
 
-      // Don't return the job returnvalue to the client, that's used internally
-      const { returnvalue: _, ...rest } = job
-
-      res.status(200).json(rest)
+      res.status(200).json(removeInternalStatusFields(job))
     } catch (error) {
       logger.error({ error }, 'Failed to get stems archive job')
       res.status(500).json({ error: 'Internal server error' })
