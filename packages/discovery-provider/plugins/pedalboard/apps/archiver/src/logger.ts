@@ -9,6 +9,7 @@ const formatters = {
 
 // set config for logger here
 export const logger = pino({
+  level: 'debug',
   name: `archiver`,
   formatters,
   errorKey: 'error'

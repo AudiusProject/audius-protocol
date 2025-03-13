@@ -197,3 +197,5 @@ export function createSpaceManager(options: SpaceManagerOptions) {
     getStats
   }
 }
+
+export type SpaceManager = ReturnType<typeof createSpaceManager>

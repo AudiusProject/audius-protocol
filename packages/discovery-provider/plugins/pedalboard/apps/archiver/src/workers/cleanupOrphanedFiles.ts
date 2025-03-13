@@ -6,7 +6,13 @@ import path from 'path'
 import fs from 'fs/promises'
 import { getStemsArchiveQueue } from '../jobs/createStemsArchive'
 import { CLEANUP_ORPHANED_FILES_QUEUE_NAME } from '../constants'
-const cleanupOrphanedFiles = async () => {
+import { SpaceManager } from './spaceManager'
+
+const cleanupOrphanedFiles = async ({
+  spaceManager
+}: {
+  spaceManager: SpaceManager
+}) => {
   const config = readConfig()
   const tempDir = path.join(config.archiverTmpDir)
 
@@ -26,6 +32,7 @@ const cleanupOrphanedFiles = async () => {
         if (!jobIds.has(file)) {
           await fs.rm(filePath, { recursive: true, force: true })
           logger.info({ file }, 'Deleted orphaned job directory')
+          await spaceManager.releaseSpace(file)
         }
       } catch (error) {
         logger.error(
@@ -40,14 +47,18 @@ const cleanupOrphanedFiles = async () => {
   }
 }
 
-export const createCleanupOrphanedFilesWorker = () => {
+export const createCleanupOrphanedFilesWorker = ({
+  spaceManager
+}: {
+  spaceManager: SpaceManager
+}) => {
   const config = readConfig()
 
   const worker = new Worker<CleanupOrphanedFilesJobData>(
     CLEANUP_ORPHANED_FILES_QUEUE_NAME,
     async (job: Job<CleanupOrphanedFilesJobData>) => {
       logger.debug({ jobId: job.id }, 'Starting orphaned files cleanup')
-      await cleanupOrphanedFiles()
+      await cleanupOrphanedFiles({ spaceManager })
       logger.debug({ jobId: job.id }, 'Completed orphaned files cleanup')
     },
     {

@@ -4,9 +4,9 @@ export type Environment = 'dev' | 'stage' | 'prod'
 
 export type Config = {
   environment: Environment
-  /** How often the job to cleanup orphaned files should run (default: 60 seconds) */
+  /** How often the job to cleanup orphaned files should run (default: 10 seconds) */
   cleanupOrphanedFilesIntervalSeconds: number
-  /** How long to keep completed jobs that have not been downloaded (default: 1 hour) */
+  /** How long to keep completed jobs that have not been downloaded (default: 10 minutes) */
   orphanedJobsLifetimeSeconds: number
   /** How many concurrent archive jobs to run (default: 5) */
   concurrentJobs: number
@@ -44,7 +44,7 @@ export const readConfig = (): Config => {
     archiver_cleanup_orphaned_files_interval_seconds: num({
       default: 10
     }),
-    archiver_orphaned_jobs_lifetime_seconds: num({ default: 60 * 60 }),
+    archiver_orphaned_jobs_lifetime_seconds: num({ default: 60 * 10 }),
     archiver_max_stems_archive_attempts: num({ default: 3 }),
     archiver_max_disk_space_bytes: num({ default: 32 * 1024 * 1024 * 1024 }), // 32GB
     archiver_max_disk_space_wait_seconds: num({ default: 60 })

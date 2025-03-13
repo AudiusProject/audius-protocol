@@ -1,4 +1,4 @@
-import { Worker, Job } from 'bullmq'
+import { Worker, Job, UnrecoverableError } from 'bullmq'
 import { readConfig } from '../config'
 import { logger } from '../logger'
 import {
@@ -8,18 +8,26 @@ import {
 } from '../jobs/createStemsArchive'
 import { getAudiusSdk } from '../sdk'
 import { Id } from '@audius/sdk'
-import * as fs from 'fs'
+import fs from 'fs/promises'
+import fsSync from 'fs'
 import * as path from 'path'
 import fetch from 'node-fetch'
 import { STEMS_ARCHIVE_QUEUE_NAME } from '../constants'
 import archiver from 'archiver'
-import { createSpaceManager } from './spaceManager'
+import { SpaceManager } from './spaceManager'
+
+async function fileExists(path: string) {
+  return await fs.access(path).then(
+    () => true,
+    () => false
+  )
+}
 
 export async function removeTempFiles(jobId: string) {
   const config = readConfig()
   const jobTempDir = path.join(config.archiverTmpDir, jobId)
-  if (fs.existsSync(jobTempDir)) {
-    fs.rmSync(jobTempDir, { recursive: true })
+  if (await fileExists(jobTempDir)) {
+    await fs.rm(jobTempDir, { recursive: true, force: true })
   }
 }
 
@@ -38,8 +46,8 @@ async function downloadStemFile({
   logger.info({ jobId, url, filename }, 'Downloading stem file')
   // Create job-specific temp directory
   const jobTempDir = path.join(config.archiverTmpDir, jobId)
-  if (!fs.existsSync(jobTempDir)) {
-    fs.mkdirSync(jobTempDir, { recursive: true })
+  if (!(await fileExists(jobTempDir))) {
+    await fs.mkdir(jobTempDir, { recursive: true })
   }
 
   const filePath = path.join(jobTempDir, filename)
@@ -55,7 +63,7 @@ async function downloadStemFile({
     throw new Error('Response body is null')
   }
 
-  const fileStream = fs.createWriteStream(filePath)
+  const fileStream = fsSync.createWriteStream(filePath)
   await new Promise((resolve, reject) => {
     body.pipe(fileStream)
     body.on('error', reject)
@@ -82,7 +90,7 @@ async function createArchive({
 
   logger.info({ jobId, outputPath }, 'Creating archive')
 
-  const output = fs.createWriteStream(outputPath)
+  const output = fsSync.createWriteStream(outputPath)
   const archive = archiver('zip', {
     zlib: { level: 6 }
   })
@@ -127,11 +135,14 @@ async function createArchive({
   }
 }
 
-export const startStemsArchiveWorker = () => {
+// TODO: Implement the testability suggestions on the right
+
+export const startStemsArchiveWorker = ({
+  spaceManager
+}: {
+  spaceManager: SpaceManager
+}) => {
   const config = readConfig()
-  const spaceManager = createSpaceManager({
-    maxSpaceBytes: config.maxDiskSpaceBytes
-  })
   const abortControllers = new Map<string, AbortController>()
 
   const worker = new Worker<StemsArchiveJobData, StemsArchiveJobResult>(
@@ -170,7 +181,7 @@ export const startStemsArchiveWorker = () => {
           throw new Error('Track details not found')
         }
 
-        logger.info({ jobId, trackId, userId }, 'Getting track stems')
+        logger.debug({ jobId, trackId, userId }, 'Getting track stems')
         const { data: stems = [] } = await sdk.tracks.getTrackStems(
           {
             trackId: parsedTrackId
@@ -184,14 +195,17 @@ export const startStemsArchiveWorker = () => {
           throw new Error('No stems found for track')
         }
 
-        logger.info({ jobId, trackId, userId, stems }, 'Downloading stems')
-
         const filesToDownload = includeParentTrack
           ? [
               ...stems,
               { ...track, origFilename: track.origFilename ?? track.title }
             ]
           : stems
+
+        logger.debug(
+          { jobId, trackId, userId, filesToDownload },
+          'Getting file sizes'
+        )
 
         // Check file sizes before downloading
         const fileSizes = await Promise.all(
@@ -213,10 +227,12 @@ export const startStemsArchiveWorker = () => {
         )
 
         const totalSizeBytes = fileSizes.reduce((sum, size) => sum + size, 0)
-        logger.info(
+        logger.debug(
           { jobId, trackId, userId, totalSizeBytes },
           'Calculated required disk space'
         )
+
+        logger.debug({ jobId, trackId, userId, stems }, 'Downloading stems')
 
         await spaceManager.waitForSpace({
           token: jobId,
@@ -262,8 +278,8 @@ export const startStemsArchiveWorker = () => {
 
         // Clean up temp files except the output archive
         for (const file of downloadedFiles) {
-          if (file !== outputFile && fs.existsSync(file)) {
-            fs.unlinkSync(file)
+          if (file !== outputFile && (await fileExists(file))) {
+            await fs.unlink(file)
           }
         }
 
@@ -274,11 +290,18 @@ export const startStemsArchiveWorker = () => {
 
         return { outputFile }
       } catch (error) {
+        if (abortController.signal.aborted) {
+          logger.debug({ jobId }, 'Job aborted')
+          throw new UnrecoverableError('Job aborted')
+        }
+
         logger.error(
           { error: `${error}`, jobId, trackId, userId },
           'Failed to create stems archive'
         )
         throw error
+      } finally {
+        abortControllers.delete(jobId)
       }
     },
     {
@@ -288,6 +311,29 @@ export const startStemsArchiveWorker = () => {
       concurrency: config.concurrentJobs
     }
   )
+
+  const cancelStemsArchiveJob = async (jobId: string) => {
+    if (abortControllers.has(jobId)) {
+      const abortController = abortControllers.get(jobId)
+      abortController?.abort()
+    }
+  }
+
+  const removeStemsArchiveJob = async (jobId: string) => {
+    const queue = getStemsArchiveQueue()
+    try {
+      await removeTempFiles(jobId)
+      await spaceManager.releaseSpace(jobId)
+    } catch (error) {
+      logger.error(
+        { error: `${error}`, jobId },
+        'Failed to clean up stems archive'
+      )
+      throw error
+    } finally {
+      await queue.remove(jobId)
+    }
+  }
 
   // Abort all active jobs when the worker is closing
   worker.on('closing', () => {
@@ -300,27 +346,12 @@ export const startStemsArchiveWorker = () => {
     logger.info({ jobId: job.id }, 'Stems archive job completed successfully')
   })
 
-  worker.on('failed', (job, error) => {
+  worker.on('failed', async (job, error) => {
     logger.error({ jobId: job?.id, error }, 'Stems archive job failed')
     if (job?.data.jobId) {
-      removeTempFiles(job.data.jobId)
+      await removeStemsArchiveJob(job.data.jobId)
     }
   })
 
-  return worker
-}
-
-export const cleanupStemsArchiveJob = async (jobId: string) => {
-  const queue = getStemsArchiveQueue()
-  try {
-    throw new Error('Test error')
-  } catch (error) {
-    logger.error(
-      { error: `${error}`, jobId },
-      'Failed to clean up stems archive'
-    )
-    throw error
-  } finally {
-    queue.remove(jobId)
-  }
+  return { worker, removeStemsArchiveJob, cancelStemsArchiveJob }
 }

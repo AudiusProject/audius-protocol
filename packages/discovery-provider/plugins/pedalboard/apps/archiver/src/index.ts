@@ -2,13 +2,14 @@ import cors from 'cors'
 import express from 'express'
 
 import { readConfig } from './config'
-import stemsRouter from './routes/stems'
+import { stemsRouter } from './routes/stems'
 import { startStemsArchiveWorker } from './workers/createStemsArchive'
 import { createCleanupOrphanedFilesWorker } from './workers/cleanupOrphanedFiles'
 import { scheduleCleanupOrphanedFilesJob } from './jobs/cleanupOrphanedFiles'
 import { getStemsArchiveQueue } from './jobs/createStemsArchive'
 import { getCleanupOrphanedFilesQueue } from './jobs/cleanupOrphanedFiles'
 import { logger } from './logger'
+import { createSpaceManager } from './workers/spaceManager'
 // Basic health check endpoint
 const health = (_req: express.Request, res: express.Response) => {
   res.json({ status: 'healthy' })
@@ -19,15 +20,22 @@ const main = async () => {
 
   // Clear queues before starting
   try {
-    await getStemsArchiveQueue().obliterate()
-    await getCleanupOrphanedFilesQueue().obliterate()
+    await getStemsArchiveQueue().obliterate({ force: true })
+    await getCleanupOrphanedFilesQueue().obliterate({ force: true })
   } catch (error) {
     logger.error({ error }, 'Error clearing queues')
   }
 
   // Start the workers
-  const stemsWorker = startStemsArchiveWorker()
-  const cleanupWorker = createCleanupOrphanedFilesWorker()
+  const spaceManager = createSpaceManager({
+    maxSpaceBytes: config.maxDiskSpaceBytes
+  })
+  const {
+    worker: stemsWorker,
+    removeStemsArchiveJob,
+    cancelStemsArchiveJob
+  } = startStemsArchiveWorker({ spaceManager })
+  const cleanupWorker = createCleanupOrphanedFilesWorker({ spaceManager })
 
   // Schedule the cleanup job
   await scheduleCleanupOrphanedFilesJob()
@@ -38,7 +46,10 @@ const main = async () => {
 
   // Add routes
   app.get('/archive/health_check', health)
-  app.use('/archive/stems', stemsRouter)
+  app.use(
+    '/archive/stems',
+    stemsRouter({ removeStemsArchiveJob, cancelStemsArchiveJob })
+  )
 
   // Start the server
   app.listen(config.serverPort, config.serverHost, () => {
