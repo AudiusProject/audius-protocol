@@ -114,13 +114,17 @@ def _get_query_insights():
 
 
 def _get_relay_health():
-    relay_plugin = os.getenv(
-        "audius_relay_host",
-        "http://relay:6001/relay",
-    )
-    relay_health = requests.get(relay_plugin + "/health")
-    relay_res = relay_health.json()
-    return relay_res
+    try:
+        relay_plugin = os.getenv(
+            "audius_relay_host",
+            "http://relay:6001/relay",
+        )
+        relay_health = requests.get(relay_plugin + "/health")
+        relay_res = relay_health.json()
+        return relay_res
+    except Exception as e:
+        logger.error(f"relay not reachable {e}")
+        return None
 
 
 def _is_relay_healthy(relay_health_res):
@@ -229,7 +233,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     # Check if the latest block timestamp is older than 60 seconds
     core_stuck = (current_ts - latest_block_ts) > 60
     if core_stuck:
-        errors.append("unhealthy core: no new blocks in at least a minute")
+        errors.append("no new blocks in at least a minute")
 
     play_health_info = core_listens_health
     latest_indexed_block_num = -1
@@ -449,7 +453,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         errors.append("unhealthy block diff")
     if unhealthy_challenges:
         errors.append("unhealthy challenges")
-    if play_health_info is not None and play_health_info["is_unhealthy"]:
+    if play_health_info and play_health_info.get("is_unhealthy"):
         errors.append("unhealthy plays")
     if not user_bank_health_info["is_healthy"]:
         errors.append("unhealthy user_bank indexer")
@@ -471,10 +475,11 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         if not api_healthy:
             errors.append(f"api unhealthy: {reason}")
 
+    play_health_unhealthy = play_health_info and play_health_info.get("is_unhealthy")
     is_unhealthy = not bypass_errors and (
         unhealthy_blocks
         or unhealthy_challenges
-        or play_health_info["is_unhealthy"]
+        or play_health_unhealthy
         or not delist_statuses_ok
         or (
             health_results.get("elasticsearch") != None
