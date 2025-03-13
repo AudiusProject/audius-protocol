@@ -231,11 +231,12 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     if core_stuck:
         errors.append("unhealthy core: no new blocks in at least a minute")
 
-    play_health_info = get_play_health_info(redis, plays_count_max_drift)
-
     play_health_info = core_listens_health
-    latest_indexed_block_num = core_health.get("latest_indexed_block") or -1
-    latest_block_num = core_health.get("latest_chain_block") or -1
+    latest_indexed_block_num = -1
+    latest_block_num = -1
+    if core_health:
+        latest_indexed_block_num = core_health.get("latest_indexed_block") or -1
+        latest_block_num = core_health.get("latest_chain_block") or -1
 
     user_bank_health_info = get_solana_indexer_status(
         redis, redis_keys.solana.user_bank, user_bank_max_drift
@@ -448,7 +449,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         errors.append("unhealthy block diff")
     if unhealthy_challenges:
         errors.append("unhealthy challenges")
-    if play_health_info["is_unhealthy"]:
+    if play_health_info is not None and play_health_info["is_unhealthy"]:
         errors.append("unhealthy plays")
     if not user_bank_health_info["is_healthy"]:
         errors.append("unhealthy user_bank indexer")

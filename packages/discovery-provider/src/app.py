@@ -3,7 +3,6 @@ from __future__ import absolute_import
 import ast
 import datetime
 import logging
-import os
 import time
 from collections import defaultdict
 from typing import Any, Dict
@@ -127,21 +126,6 @@ def create_celery(test_config=None):
 
     # Initialize Solana web3 provider
     solana_client_manager = SolanaClientManager(shared_config["solana"]["endpoint"])
-
-    global entity_manager
-    global contract_addresses
-    # pylint: enable=W0603
-
-    try:
-        (
-            entity_manager,
-            contract_addresses,
-        ) = init_contracts()
-    except:
-        # init_contracts will fail when poa-gateway points to nethermind
-        # only swallow exception in stage
-        if os.getenv("audius_discprov_env") != "stage":
-            raise Exception("Failed to init POA contracts")
 
     return create(test_config, mode="celery")
 
@@ -480,13 +464,6 @@ def configure_celery(celery, test_config=None):
 
     logger.info("Redis instance connected!")
 
-    # Initialize entity manager
-    entity_manager_contract_abi = abi_values[ENTITY_MANAGER_CONTRACT_NAME]["abi"]
-    entity_manager_contract = web3.eth.contract(
-        address=contract_addresses[ENTITY_MANAGER],
-        abi=entity_manager_contract_abi,
-    )
-
     # Initialize custom task context with database object
     class WrappedDatabaseTask(DatabaseTask):
         def __init__(self, *args, **kwargs):
@@ -504,7 +481,7 @@ def configure_celery(celery, test_config=None):
                 solana_client_manager=solana_client_manager,
                 challenge_event_bus=setup_challenge_bus(),
                 eth_manager=eth_manager,
-                entity_manager_contract=entity_manager_contract,
+                entity_manager_contract=None,
             )
 
     # Subclassing celery task with discovery provider context
