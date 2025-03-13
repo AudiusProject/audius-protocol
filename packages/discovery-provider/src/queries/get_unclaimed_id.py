@@ -73,9 +73,7 @@ def get_unclaimed_id(type):
                 random_id = random.randint(EVENT_ID_OFFSET, MAX_POSTGRES_ID)
 
                 is_claimed = (
-                    session.query(Event.event_id).filter(
-                        Event.event_id == random_id
-                    )
+                    session.query(Event.event_id).filter(Event.event_id == random_id)
                 ).first()
 
             if not is_claimed:

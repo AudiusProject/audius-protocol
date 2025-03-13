@@ -284,6 +284,7 @@ event_metadata_format = {
     "end_date": None,
 }
 
+
 class PlaylistMetadata(TypedDict):
     playlist_contents: Optional[Any]
     playlist_name: Optional[str]

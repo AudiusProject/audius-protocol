@@ -2,10 +2,10 @@ from flask_restx import fields
 
 from .access_gate import access_gate, extended_access_gate
 from .common import favorite, ns, repost
+from .events import event_model
 from .extensions.fields import NestedOneOf
 from .extensions.models import WildcardModel
 from .users import user_model, user_model_full
-from .events import event_model
 
 track_artwork = ns.model(
     "track_artwork",
