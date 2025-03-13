@@ -1,15 +1,15 @@
 import { useMemo } from 'react'
 
-import { useQueryClient } from '@tanstack/react-query'
+import { useQueryClient, UseQueryResult } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
 import { ID } from '~/models'
-import { UserCollectionMetadata } from '~/models/Collection'
 import { CommonState } from '~/store'
 
 import { getCollectionsBatcher } from './batchers/getCollectionsBatcher'
+import { TQCollection } from './models'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
@@ -46,7 +46,7 @@ export const useCollections = (
       ...options,
       enabled: options?.enabled !== false && !!collectionId && collectionId > 0
     })),
-    combine: combineQueryResults<UserCollectionMetadata[]>
+    combine: combineQueryResults<TQCollection[]>
   })
 
   const { data: collections } = queriesResults
@@ -65,5 +65,7 @@ export const useCollections = (
   // @ts-ignore important to maintain queryResults for tan-query object observers
   queriesResults.byId = byId
 
-  return queriesResults
+  return queriesResults as UseQueryResult<TQCollection[]> & {
+    byId: Record<ID, TQCollection>
+  }
 }

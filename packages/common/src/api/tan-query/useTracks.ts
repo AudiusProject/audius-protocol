@@ -1,15 +1,15 @@
 import { useMemo } from 'react'
 
-import { useQueryClient } from '@tanstack/react-query'
+import { useQueryClient, UseQueryResult } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
-import { TrackMetadata } from '~/models/Track'
 import { CommonState } from '~/store'
 
 import { getTracksBatcher } from './batchers/getTracksBatcher'
+import { TQTrack } from './models'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
@@ -47,7 +47,7 @@ export const useTracks = (
       ...options,
       enabled: options?.enabled !== false && !!trackId && trackId > 0
     })),
-    combine: combineQueryResults<TrackMetadata[]>
+    combine: combineQueryResults<TQTrack[]>
   })
 
   const { data: tracks } = queryResults
@@ -64,5 +64,7 @@ export const useTracks = (
   // @ts-ignore important to maintain queryResults for tan-query object observers
   queryResults.byId = byId
 
-  return queryResults
+  return queryResults as UseQueryResult<TQTrack[]> & {
+    byId: Record<ID, TQTrack>
+  }
 }

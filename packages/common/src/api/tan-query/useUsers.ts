@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { useQueryClient } from '@tanstack/react-query'
+import { useQueryClient, UseQueryResult } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -63,5 +63,7 @@ export const useUsers = (
   // @ts-ignore important to maintain queryResults for tan-query object observers
   queryResults.byId = byId
 
-  return queryResults
+  return queryResults as UseQueryResult<UserMetadata[]> & {
+    byId: Record<ID, UserMetadata>
+  }
 }
