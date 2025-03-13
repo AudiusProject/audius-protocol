@@ -24,7 +24,7 @@ from src.queries.get_underground_trending import (
 )
 from src.tasks.celery_app import celery
 from src.tasks.core.core_client import get_core_instance
-from src.tasks.index_tastemaker_notifications import index_tastemaker_notifications
+from src.tasks.index_tastemaker import index_tastemaker
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.config import shared_config
@@ -178,7 +178,7 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
     top_trending_tracks = get_top_trending_to_notify(db)
 
     index_trending_notifications(db, timestamp, top_trending_tracks)
-    index_tastemaker_notifications(db, top_trending_tracks)
+    index_tastemaker(db, top_trending_tracks, index_trending_task.challenge_event_bus)
     index_trending_underground_notifications(db, timestamp)
 
 
