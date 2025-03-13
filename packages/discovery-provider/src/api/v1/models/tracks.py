@@ -5,6 +5,7 @@ from .common import favorite, ns, repost
 from .extensions.fields import NestedOneOf
 from .extensions.models import WildcardModel
 from .users import user_model, user_model_full
+from .events import event_model
 
 track_artwork = ns.model(
     "track_artwork",
@@ -205,6 +206,7 @@ track_full = ns.clone(
         "is_custom_musical_key": fields.Boolean,
         "audio_analysis_error_count": fields.Integer,
         "comments_disabled": fields.Boolean,
+        "events": fields.List(fields.Nested(event_model), required=True),
         # DDEX fields
         "ddex_release_ids": fields.Raw(allow_null=True),
         "artists": fields.List(fields.Raw, allow_null=True),

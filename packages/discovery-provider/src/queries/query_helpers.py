@@ -18,6 +18,7 @@ from src.gated_content.signature import (
     GatedContentSignature,
     get_gated_content_signature,
 )
+from src.models.events.event import Event, EventEntityType
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
@@ -449,6 +450,37 @@ def populate_track_metadata(
 
     remixes = get_track_remix_metadata(session, tracks, current_user_id)
 
+    # Get events for all tracks
+    events = (
+        session.query(Event)
+        .filter(
+            Event.entity_type == EventEntityType.TRACK,
+            Event.entity_id.in_(track_ids),
+            Event.is_deleted == False
+        )
+        .all()
+    )
+
+    # Build dict of track_id -> list of events
+    event_dict = {}
+    for event in events:
+        track_id = event.entity_id
+        if track_id not in event_dict:
+            event_dict[track_id] = []
+            
+        event_data = {
+            "event_id": event.event_id,
+            "event_type": event.event_type,
+            "user_id": event.user_id,
+            "entity_type": event.entity_type,
+            "entity_id": event.entity_id,
+            "is_deleted": event.is_deleted,
+            "end_date": event.end_date,
+            "created_at": event.created_at,
+            "updated_at": event.updated_at
+        }
+        event_dict[track_id].append(event_data)
+
     user_reposted_track_dict = {}
     user_saved_track_dict = {}
     followee_track_repost_dict = {}
@@ -624,6 +656,9 @@ def populate_track_metadata(
 
         # Add album backlink
         track["album_backlink"] = album_backlink_dict.get(track_id)
+
+        # Add events
+        track["events"] = event_dict.get(track_id, [])
 
     return tracks
 
