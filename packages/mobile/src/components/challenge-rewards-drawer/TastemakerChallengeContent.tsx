@@ -13,6 +13,7 @@ import { getChallengeConfig } from 'app/utils/challenges'
 
 import { ChallengeRewardsLayout } from './ChallengeRewardsLayout'
 import { ClaimError } from './ClaimError'
+import { CooldownSummaryTable } from './CooldownSummaryTable'
 import type { ChallengeContentProps } from './types'
 
 const messages = {
@@ -113,6 +114,11 @@ export const TastemakerChallengeContent = ({
       amount={challenge?.amount ?? 0}
       statusLabel={statusLabel}
       actions={actions}
+      additionalContent={
+        challenge?.cooldown_days ? (
+          <CooldownSummaryTable challengeId={challenge.challenge_id} />
+        ) : null
+      }
       errorContent={
         claimError ? <ClaimError aaoErrorCode={aaoErrorCode} /> : null
       }
