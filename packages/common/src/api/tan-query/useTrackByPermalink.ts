@@ -1,5 +1,6 @@
 import { Id } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { pick } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
@@ -8,7 +9,7 @@ import { getUserId } from '~/store/account/selectors'
 
 import { TQTrack } from './models'
 import { QUERY_KEYS } from './queryKeys'
-import { SelectableQueryOptions } from './types'
+import { QueryOptions, SelectableQueryOptions } from './types'
 import { useTrack } from './useTrack'
 import { primeTrackData } from './utils/primeTrackData'
 
@@ -24,6 +25,12 @@ export const useTrackByPermalink = <TResult = TQTrack>(
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
+
+  const simpleOptions = pick(options, [
+    'enabled',
+    'staleTime',
+    'placeholderData'
+  ]) as QueryOptions
 
   const { data: trackId } = useQuery({
     queryKey: getTrackByPermalinkQueryKey(permalink),
@@ -46,8 +53,8 @@ export const useTrackByPermalink = <TResult = TQTrack>(
 
       return track?.track_id
     },
-    staleTime: (options as any)?.staleTime ?? Infinity,
-    enabled: options?.enabled !== false && !!permalink
+    staleTime: simpleOptions?.staleTime ?? Infinity,
+    enabled: simpleOptions?.enabled !== false && !!permalink
   })
 
   return useTrack(trackId, options)

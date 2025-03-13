@@ -79,7 +79,7 @@ export const useAiTracks = (
 
       return processedTracks
     },
-    ...(options as any),
+    ...options,
     enabled: options?.enabled !== false && !!handle
   })
 

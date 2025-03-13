@@ -11,7 +11,6 @@ import {
 } from '~/store/pages'
 import { makeUid } from '~/utils/uid'
 
-import { TQTrack } from './models'
 import { QueryOptions } from './types'
 import { useTrack } from './useTrack'
 import { useTrackByPermalink } from './useTrackByPermalink'
@@ -26,7 +25,7 @@ type TrackParams = { handle?: string; slug?: string; trackId?: ID | null }
  */
 export const useTrackByParams = (
   params: TrackParams | null,
-  options?: Omit<QueryOptions<TQTrack>, 'select'>
+  options?: QueryOptions
 ) => {
   const { handle, slug, trackId: id } = params ?? {}
   const permalink = handle ? `/${handle}/${slug}` : null

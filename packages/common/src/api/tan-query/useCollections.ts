@@ -42,7 +42,7 @@ export const useCollections = (
         })
         return await batchGetCollections.fetch(collectionId)
       },
-      ...(options as any),
+      ...options,
       enabled: options?.enabled !== false && !!collectionId && collectionId > 0
     })),
     combine: combineQueryResults<TQCollection[]>

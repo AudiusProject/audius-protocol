@@ -1,12 +1,14 @@
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import { pick } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { userMetadataFromSDK } from '~/adapters'
 import { transformAndCleanList } from '~/adapters/utils'
 import { useAudiusQueryContext } from '~/audius-query'
+import { UserMetadata } from '~/models'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryOptions, SelectableQueryOptions } from './types'
 import { useUsers } from './useUsers'
 import { primeUserData } from './utils/primeUserData'
 
@@ -22,14 +24,20 @@ export const getTopArtistsInGenreQueryKey = (
   pageSize: number
 ) => [QUERY_KEYS.topArtistsInGenre, genre, pageSize]
 
-export const useTopArtistsInGenre = (
+export const useTopArtistsInGenre = <TResult = UserMetadata[]>(
   args: UseTopArtistsInGenreArgs,
-  options?: Omit<QueryOptions<any>, 'select'>
+  options?: SelectableQueryOptions<UserMetadata[], TResult>
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const { genre, pageSize = ARTISTS_PER_GENRE_PAGE_SIZE } = args
+
+  const simpleOptions = pick(options, [
+    'enabled',
+    'staleTime',
+    'placeholderData'
+  ]) as QueryOptions
 
   const { data: userIds, ...queryResult } = useInfiniteQuery<
     number[],
@@ -54,8 +62,8 @@ export const useTopArtistsInGenre = (
       return users.map((user) => user.user_id)
     },
     select: (data) => data.pages.flat(),
-    ...(options as any),
-    enabled: options?.enabled !== false && !!genre
+    ...simpleOptions,
+    enabled: simpleOptions?.enabled !== false && !!genre
   })
 
   const { data: users } = useUsers(userIds, {
