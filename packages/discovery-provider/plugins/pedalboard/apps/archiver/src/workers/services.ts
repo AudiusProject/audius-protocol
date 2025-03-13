@@ -23,7 +23,8 @@ export type WorkerServices = {
 export const createDefaultWorkerServices = (): WorkerServices => {
   const config = readConfig()
   const spaceManager = createSpaceManager({
-    maxSpaceBytes: config.maxDiskSpaceBytes
+    maxSpaceBytes: config.maxDiskSpaceBytes,
+    logger
   })
   const sdk = getAudiusSdk()
   return {

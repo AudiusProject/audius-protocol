@@ -1,8 +1,8 @@
 import { Mutex } from 'async-mutex'
-import { logger } from '../logger'
-
+import { Logger } from '../logger'
 type SpaceManagerOptions = {
   maxSpaceBytes: number
+  logger: Logger
 }
 
 type SpaceState = {
@@ -30,6 +30,7 @@ export class SpaceManagerError extends Error {
 }
 
 export function createSpaceManager(options: SpaceManagerOptions) {
+  const { logger } = options
   const mutex = new Mutex()
   const state: SpaceState = {
     usedSpace: 0,

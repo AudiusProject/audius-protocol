@@ -35,7 +35,6 @@ export const stemsRouter = ({
       const signatureHeader = req.header(SIGNATURE_HEADER)
       const includeParentTrack = queryParamToBoolean(req.query.include_parent)
 
-      console.log(req.query)
       if (!userId || !trackId || !messageHeader || !signatureHeader) {
         return res.status(400).json({
           error: 'Missing required parameters'
@@ -50,7 +49,7 @@ export const stemsRouter = ({
         includeParentTrack
       })
 
-      res.status(201).json(removeInternalStatusFields(jobStatus))
+      res.status(200).json(removeInternalStatusFields(jobStatus))
     } catch (error) {
       logger.error({ error }, 'Failed to create stems archive job')
       res.status(500).json({ error: 'Internal server error' })

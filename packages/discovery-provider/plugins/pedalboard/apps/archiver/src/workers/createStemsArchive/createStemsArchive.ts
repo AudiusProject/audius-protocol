@@ -5,7 +5,11 @@ import {
   getStemsArchiveQueue
 } from '../../jobs/createStemsArchive'
 import { OptionalId } from '@audius/sdk'
-import { STEMS_ARCHIVE_QUEUE_NAME } from '../../constants'
+import {
+  MESSAGE_HEADER,
+  SIGNATURE_HEADER,
+  STEMS_ARCHIVE_QUEUE_NAME
+} from '../../constants'
 import path from 'path'
 import { WorkerServices } from '../services'
 import { createUtils } from './utils'
@@ -36,6 +40,7 @@ export const createStemsArchiveWorker = (services: WorkerServices) => {
       signatureHeader,
       includeParentTrack
     } = job.data
+
     const logger = workerLogger.child({
       jobId,
       trackId,
@@ -45,6 +50,14 @@ export const createStemsArchiveWorker = (services: WorkerServices) => {
 
     const abortController = new AbortController()
     abortControllers.set(jobId, abortController)
+
+    const sdkRequestInit = {
+      signal: abortController.signal,
+      headers: {
+        [MESSAGE_HEADER]: messageHeader,
+        [SIGNATURE_HEADER]: signatureHeader
+      }
+    }
 
     try {
       logger.info('Starting stems archive creation job')
@@ -69,9 +82,7 @@ export const createStemsArchiveWorker = (services: WorkerServices) => {
         {
           trackId: hashedTrackId
         },
-        {
-          signal: abortController.signal
-        }
+        sdkRequestInit
       )
 
       if (!track) {
@@ -83,9 +94,7 @@ export const createStemsArchiveWorker = (services: WorkerServices) => {
         {
           trackId: hashedTrackId
         },
-        {
-          signal: abortController.signal
-        }
+        sdkRequestInit
       )
 
       if (stems.length === 0) {
@@ -109,9 +118,7 @@ export const createStemsArchiveWorker = (services: WorkerServices) => {
               trackId: file.id,
               original: true
             },
-            {
-              signal: abortController.signal
-            }
+            sdkRequestInit
           )
           if (!inspection.data?.size) {
             throw new Error(`File size not found for ${file.id}`)

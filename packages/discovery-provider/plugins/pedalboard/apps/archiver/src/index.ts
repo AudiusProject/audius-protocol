@@ -8,7 +8,7 @@ import { startCleanupOrphanedFilesWorker } from './workers/cleanupOrphanedFiles'
 import { scheduleCleanupOrphanedFilesJob } from './jobs/cleanupOrphanedFiles'
 import { getStemsArchiveQueue } from './jobs/createStemsArchive'
 import { getCleanupOrphanedFilesQueue } from './jobs/cleanupOrphanedFiles'
-import { logger } from './logger'
+import { logger, httpLogger } from './logger'
 import { createDefaultWorkerServices } from './workers/services'
 // Basic health check endpoint
 const health = (_req: express.Request, res: express.Response) => {
@@ -44,6 +44,7 @@ const main = async () => {
 
   // Add routes
   app.get('/archive/health_check', health)
+  app.use(httpLogger)
   app.use(
     '/archive/stems',
     stemsRouter({ removeStemsArchiveJob, cancelStemsArchiveJob })

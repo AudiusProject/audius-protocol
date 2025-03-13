@@ -1,4 +1,5 @@
 import pino from 'pino'
+import pinoHttp from 'pino-http'
 import { readConfig } from './config'
 
 const formatters = {
@@ -18,5 +19,7 @@ export const logger = pino({
   formatters,
   errorKey: 'error'
 })
+
+export const httpLogger = pinoHttp({ logger })
 
 export type Logger = typeof logger

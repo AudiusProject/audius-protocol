@@ -23,7 +23,8 @@
     "cors": "2.8.5",
     "envalid": "8.0.0",
     "express": "4.17.1",
-    "node-fetch": "2.7.0"
+    "node-fetch": "2.7.0",
+    "pino-http": "10.4.0"
   },
   "devDependencies": {
     "@types/archiver": "6.0.3",
