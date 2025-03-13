@@ -55,43 +55,62 @@ func setPubkey(userId int, pubkeyBase64 string) error {
 	return err
 }
 
+var lastHost = ""
+
 func recoverFromPeers(discoveryConfig *config.DiscoveryConfig, id int) error {
-	idEncoded, err := misc.EncodeHashId(id)
-	if err != nil {
-		return err
+
+	// first try lastHost to reduce searching
+	if lastHost != "" {
+		err := recoverFromPeer(lastHost, id)
+		if err == nil {
+			return nil
+		}
 	}
+
 	for _, peer := range discoveryConfig.Peers() {
 		if strings.EqualFold(peer.Wallet, discoveryConfig.MyWallet) {
 			continue
 		}
 
-		host := strings.TrimRight(peer.Host, "/")
-		if host == "" {
-			continue
+		err := recoverFromPeer(peer.Host, id)
+		if err == nil {
+			lastHost = peer.Host
+			return nil
 		}
-
-		resp, err := http.Get(host + "/comms/pubkey/" + idEncoded + "/cached")
-		if err != nil {
-			continue
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			continue
-		}
-
-		var result struct {
-			Data string `json:"data"`
-		}
-		err = json.NewDecoder(resp.Body).Decode(&result)
-		if err != nil {
-			slog.Debug("failed to decode response from peer", "peer", peer.Host, "err", err)
-			continue
-		}
-
-		setPubkey(id, result.Data)
-		return nil
 	}
 
 	return errors.New("failed")
+}
+
+func recoverFromPeer(host string, id int) error {
+	idEncoded, err := misc.EncodeHashId(id)
+	if err != nil {
+		return err
+	}
+
+	host = strings.TrimRight(host, "/")
+	if host == "" {
+		return errors.New("invalid host")
+	}
+
+	resp, err := http.Get(host + "/comms/pubkey/" + idEncoded + "/cached")
+	if err != nil {
+		return errors.New("get failed")
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("get failed")
+	}
+
+	var result struct {
+		Data string `json:"data"`
+	}
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		slog.Info("failed to decode response from peer", "peer", host, "err", err)
+		return err
+	}
+
+	return setPubkey(id, result.Data)
 }
