@@ -47,7 +47,9 @@ export const useCollections = (
       enabled: options?.enabled !== false && !!collectionId && collectionId > 0
     })),
     combine: combineQueryResults<TQCollection[]>
-  })
+  }) as UseQueryResult<TQCollection[]> & {
+    byId: Record<ID, TQCollection>
+  }
 
   const { data: collections } = queriesResults
 
@@ -62,10 +64,7 @@ export const useCollections = (
   queriesResults.data = isSavedToRedux ? collections : undefined
   queriesResults.isPending = queriesResults.isPending || !isSavedToRedux
   queriesResults.isLoading = queriesResults.isLoading || !isSavedToRedux
-  // @ts-ignore important to maintain queryResults for tan-query object observers
   queriesResults.byId = byId
 
-  return queriesResults as UseQueryResult<TQCollection[]> & {
-    byId: Record<ID, TQCollection>
-  }
+  return queriesResults
 }

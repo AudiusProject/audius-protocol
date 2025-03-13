@@ -48,7 +48,9 @@ export const useTracks = (
       enabled: options?.enabled !== false && !!trackId && trackId > 0
     })),
     combine: combineQueryResults<TQTrack[]>
-  })
+  }) as UseQueryResult<TQTrack[]> & {
+    byId: Record<ID, TQTrack>
+  }
 
   const { data: tracks } = queryResults
 
@@ -61,10 +63,7 @@ export const useTracks = (
   queryResults.data = isSavedToRedux ? tracks : undefined
   queryResults.isPending = queryResults.isPending || !isSavedToRedux
   queryResults.isLoading = queryResults.isLoading || !isSavedToRedux
-  // @ts-ignore important to maintain queryResults for tan-query object observers
   queryResults.byId = byId
 
-  return queryResults as UseQueryResult<TQTrack[]> & {
-    byId: Record<ID, TQTrack>
-  }
+  return queryResults
 }

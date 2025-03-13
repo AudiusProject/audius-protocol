@@ -48,7 +48,10 @@ export const useUsers = (
       enabled: options?.enabled !== false && !!userId && userId > 0
     })),
     combine: combineQueryResults<UserMetadata[]>
-  })
+  }) as UseQueryResult<UserMetadata[]> & {
+    byId: Record<ID, UserMetadata>
+  }
+
   const { data: users } = queryResults
 
   const byId = useMemo(() => keyBy(users, 'user_id'), [users])
@@ -60,10 +63,7 @@ export const useUsers = (
   queryResults.data = isSavedToRedux ? users : undefined
   queryResults.isPending = queryResults.isPending || !isSavedToRedux
   queryResults.isLoading = queryResults.isLoading || !isSavedToRedux
-  // @ts-ignore important to maintain queryResults for tan-query object observers
   queryResults.byId = byId
 
-  return queryResults as UseQueryResult<UserMetadata[]> & {
-    byId: Record<ID, UserMetadata>
-  }
+  return queryResults
 }
