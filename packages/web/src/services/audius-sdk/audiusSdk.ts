@@ -1,4 +1,10 @@
-import { AudiusSdk, sdk, Configuration, SolanaRelay } from '@audius/sdk'
+import {
+  AudiusSdk,
+  sdk,
+  Configuration,
+  SolanaRelay,
+  ArchiverService
+} from '@audius/sdk'
 import { createWalletClient, custom } from 'viem'
 import { mainnet } from 'viem/chains'
 import { getHttpRpcClient } from 'viem/utils'
@@ -40,6 +46,20 @@ export const initSdk = async (opts?: { ignoreCachedUserWallet?: boolean }) => {
     })
   )
 
+  const archiverService = new ArchiverService(
+    new Configuration({
+      basePath: '/archive',
+      middleware: [
+        {
+          pre: async (context) => {
+            const endpoint = env.ARCHIVE_ENDPOINT
+            const url = `${endpoint}${context.url}`
+            return { url, init: context.init }
+          }
+        }
+      ]
+    })
+  )
   // Overrides some DN configuration from optimizely
   const discoveryNodeSelector = await discoveryNodeSelectorService.getInstance()
 
@@ -76,7 +96,8 @@ export const initSdk = async (opts?: { ignoreCachedUserWallet?: boolean }) => {
       discoveryNodeSelector,
       solanaRelay,
       audiusWalletClient,
-      ethWalletClient
+      ethWalletClient,
+      archiverService
     }
   })
   console.debug('[audiusSdk] SDK initted.')

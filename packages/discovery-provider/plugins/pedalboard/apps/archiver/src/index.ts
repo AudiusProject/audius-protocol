@@ -1,0 +1,70 @@
+import cors from 'cors'
+import express from 'express'
+
+import { readConfig } from './config'
+import stemsRouter from './routes/stems'
+import { startStemsArchiveWorker } from './workers/createStemsArchive'
+import { createCleanupOrphanedFilesWorker } from './workers/cleanupOrphanedFiles'
+import { scheduleCleanupOrphanedFilesJob } from './jobs/cleanupOrphanedFiles'
+import { getStemsArchiveQueue } from './jobs/createStemsArchive'
+import { getCleanupOrphanedFilesQueue } from './jobs/cleanupOrphanedFiles'
+import { logger } from './logger'
+
+// Basic health check endpoint
+// TODO: Actual healthcheck metrics
+const health = (_req: express.Request, res: express.Response) => {
+  res.json({ status: 'healthy' })
+}
+
+const main = async () => {
+  const config = readConfig()
+
+  // Clear queues before starting
+  try {
+    await getStemsArchiveQueue().obliterate()
+    await getCleanupOrphanedFilesQueue().obliterate()
+  } catch (error) {
+    logger.error({ error }, 'Error clearing queues')
+  }
+
+  // Start the workers
+  const stemsWorker = startStemsArchiveWorker()
+  const cleanupWorker = createCleanupOrphanedFilesWorker()
+
+  // Schedule the cleanup job
+  await scheduleCleanupOrphanedFilesJob()
+
+  // Initialize express app
+  const app = express()
+  app.use(cors())
+
+  // Add routes
+  app.get('/archive/health_check', health)
+  app.use('/archive/stems', stemsRouter)
+
+  // Start the server
+  app.listen(config.serverPort, config.serverHost, () => {
+    logger.info(
+      `Server initialized on ${config.serverHost}:${config.serverPort}`
+    )
+  })
+
+  // Graceful shutdown
+  const shutdown = async () => {
+    logger.info('Shutting down gracefully...')
+    await Promise.all([stemsWorker.close(), cleanupWorker.close()])
+    process.exit(0)
+  }
+
+  process.on('SIGTERM', shutdown)
+  process.on('SIGINT', shutdown)
+}
+
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error(`Unhandled promise rejection: ${reason}, promise: ${promise}`)
+})
+
+main().catch((error) => {
+  logger.error({ error }, 'Error starting archiver')
+  process.exit(1)
+})
