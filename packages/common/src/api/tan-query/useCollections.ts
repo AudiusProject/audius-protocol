@@ -59,11 +59,11 @@ export const useCollections = (
     )
   )
 
-  return {
-    ...queriesResults,
-    data: isSavedToRedux ? collections : undefined,
-    isPending: queriesResults.isPending || !isSavedToRedux,
-    isLoading: queriesResults.isLoading || !isSavedToRedux,
-    byId
-  }
+  queriesResults.data = isSavedToRedux ? collections : undefined
+  queriesResults.isPending = queriesResults.isPending || !isSavedToRedux
+  queriesResults.isLoading = queriesResults.isLoading || !isSavedToRedux
+  // @ts-ignore important to maintain queryResults for tan-query object observers
+  queriesResults.byId = byId
+
+  return queriesResults
 }

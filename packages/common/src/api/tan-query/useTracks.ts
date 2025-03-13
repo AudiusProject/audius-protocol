@@ -58,11 +58,11 @@ export const useTracks = (
     trackIds?.every((trackId) => !!state.tracks.entries[trackId])
   )
 
-  return {
-    ...queryResults,
-    data: isSavedToRedux ? tracks : undefined,
-    isPending: queryResults.isPending || !isSavedToRedux,
-    isLoading: queryResults.isLoading || !isSavedToRedux,
-    byId
-  }
+  queryResults.data = isSavedToRedux ? tracks : undefined
+  queryResults.isPending = queryResults.isPending || !isSavedToRedux
+  queryResults.isLoading = queryResults.isLoading || !isSavedToRedux
+  // @ts-ignore important to maintain queryResults for tan-query object observers
+  queryResults.byId = byId
+
+  return queryResults
 }

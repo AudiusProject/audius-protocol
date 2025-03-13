@@ -57,11 +57,11 @@ export const useUsers = (
     userIds?.every((userId) => !!state.users.entries[userId])
   )
 
-  return {
-    ...queryResults,
-    data: isSavedToRedux ? users : undefined,
-    isPending: queryResults.isPending || !isSavedToRedux,
-    isLoading: queryResults.isLoading || !isSavedToRedux,
-    byId
-  }
+  queryResults.data = isSavedToRedux ? users : undefined
+  queryResults.isPending = queryResults.isPending || !isSavedToRedux
+  queryResults.isLoading = queryResults.isLoading || !isSavedToRedux
+  // @ts-ignore important to maintain queryResults for tan-query object observers
+  queryResults.byId = byId
+
+  return queryResults
 }
