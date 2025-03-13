@@ -89,7 +89,6 @@ class PlayCountMilestoneUpdaterBase(ChallengeUpdater):
         event: str,
         user_id: int,
         extra: Dict,
-        step_count: Optional[int] = None,
     ) -> bool:
         """
         Determine if a new challenge should be created for the user.
