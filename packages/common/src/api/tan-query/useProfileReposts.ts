@@ -55,8 +55,10 @@ export const useProfileReposts = (
       const sdk = await audiusSdk()
       if (!handle) return []
 
+      // If the @ is still at the beginning of the handle, trim it off
+      const handleNoAt = handle.startsWith('@') ? handle.substring(1) : handle
       const { data: repostsSDKData } = await sdk.full.users.getRepostsByHandle({
-        handle,
+        handle: handleNoAt,
         userId: currentUserId ? Id.parse(currentUserId) : undefined,
         limit: pageSize,
         offset: pageParam
@@ -94,6 +96,9 @@ export const useProfileReposts = (
       )
 
       return reposts
+    },
+    select: (data) => {
+      return data?.pages?.flat()
     },
     ...options,
     enabled: options?.enabled !== false && !!handle
