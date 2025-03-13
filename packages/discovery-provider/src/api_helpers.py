@@ -13,7 +13,7 @@ from src.queries.get_health import get_latest_chain_block_set_if_nx
 from src.queries.get_sol_plays import get_sol_play_health_info
 
 # pylint: disable=R0401
-from src.utils import helpers, web3_provider
+from src.utils import helpers
 from src.utils.config import shared_config
 from src.utils.core import get_core_health, is_indexing_core_plays
 from src.utils.helpers import generate_signature
@@ -21,7 +21,6 @@ from src.utils.redis_connection import get_redis
 from src.utils.redis_constants import most_recent_indexed_block_redis_key
 
 redis_conn = get_redis()
-web3_connection = web3_provider.get_web3()
 logger = logging.getLogger(__name__)
 disc_prov_version = helpers.get_discovery_provider_version()
 
@@ -71,9 +70,7 @@ def response_dict_with_metadata(response_dictionary, sign_response):
 
     # Include block difference information
     latest_indexed_block = redis_conn.get(most_recent_indexed_block_redis_key)
-    latest_chain_block, _ = get_latest_chain_block_set_if_nx(
-        redis_conn, web3_connection
-    )
+    latest_chain_block, _ = get_latest_chain_block_set_if_nx(redis_conn)
     response_dictionary["latest_indexed_block"] = (
         int(latest_indexed_block) if latest_indexed_block else None
     )
