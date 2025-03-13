@@ -22,7 +22,7 @@ export const getCollectionQueryKey = (collectionId: ID | null | undefined) => [
 
 export const useCollections = (
   collectionIds: ID[] | null | undefined,
-  options?: Omit<QueryOptions<TQCollection>, 'select'>
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()

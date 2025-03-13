@@ -10,7 +10,7 @@ import {
 } from '~/store/pages'
 
 import { TQCollection } from './models'
-import { QueryOptions } from './types'
+import { SelectableQueryOptions } from './types'
 import { useCollection } from './useCollection'
 import { useCollectionByPermalink } from './useCollectionByPermalink'
 
@@ -30,7 +30,7 @@ export const useCollectionByParams = <
   TResult extends { playlist_id: ID } = TQCollection
 >(
   params: CollectionParams,
-  options?: QueryOptions<TQCollection, TResult>
+  options?: SelectableQueryOptions<TQCollection, TResult>
 ) => {
   const dispatch = useDispatch()
 

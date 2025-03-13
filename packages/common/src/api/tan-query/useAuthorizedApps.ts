@@ -6,7 +6,7 @@ import { ID } from '~/models'
 import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
 export const getAuthorizedAppsQueryKey = (userId: Nullable<ID>) => [
@@ -15,7 +15,7 @@ export const getAuthorizedAppsQueryKey = (userId: Nullable<ID>) => [
 ]
 
 export const useAuthorizedApps = <TResult = AuthorizedApp[]>(
-  options?: QueryOptions<AuthorizedApp[], TResult>
+  options?: SelectableQueryOptions<AuthorizedApp[], TResult>
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: userId } = useCurrentUserId()

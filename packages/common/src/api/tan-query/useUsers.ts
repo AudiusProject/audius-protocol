@@ -23,7 +23,7 @@ export const getUsersQueryKey = (userIds: ID[] | null | undefined) => [
 
 export const useUsers = (
   userIds: ID[] | null | undefined,
-  options?: Omit<QueryOptions<UserMetadata[]>, 'select'>
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const dispatch = useDispatch()

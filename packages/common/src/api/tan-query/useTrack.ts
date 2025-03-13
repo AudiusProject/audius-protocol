@@ -9,7 +9,7 @@ import { ID } from '~/models/Identifiers'
 import { getTracksBatcher } from './batchers/getTracksBatcher'
 import { TQTrack } from './models'
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 export const getTrackQueryKey = (trackId: ID | null | undefined) => [
   QUERY_KEYS.track,
@@ -18,7 +18,7 @@ export const getTrackQueryKey = (trackId: ID | null | undefined) => [
 
 export const useTrack = <TResult = TQTrack>(
   trackId: ID | null | undefined,
-  options?: QueryOptions<TQTrack, TResult>
+  options?: SelectableQueryOptions<TQTrack, TResult>
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()

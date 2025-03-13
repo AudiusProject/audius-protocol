@@ -4,7 +4,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { SelectableQueryOptions } from './types'
 
 const STATIC_EXPLORE_CONTENT_URL =
   'https://download.audius.co/static-resources/explore-content.json'
@@ -22,7 +22,7 @@ export type ExploreContent = {
 export const getExploreContentQueryKey = () => [QUERY_KEYS.exploreContent]
 
 export const useExploreContent = <TResult = ExploreContent>(
-  options?: QueryOptions<ExploreContent, TResult>
+  options?: SelectableQueryOptions<ExploreContent, TResult>
 ) => {
   const { env } = useAudiusQueryContext()
   const exploreContentUrl =

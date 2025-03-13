@@ -8,7 +8,7 @@ import { getUserId } from '~/store/account/selectors'
 
 import { TQCollection } from './models'
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { SelectableQueryOptions } from './types'
 import { useCollection } from './useCollection'
 import { primeCollectionData } from './utils/primeCollectionData'
 
@@ -32,7 +32,7 @@ export const playlistPermalinkToHandleAndSlug = (permalink: string) => {
 
 export const useCollectionByPermalink = <TResult = TQCollection>(
   permalink: string | undefined | null,
-  options?: QueryOptions<TQCollection, TResult>
+  options?: SelectableQueryOptions<TQCollection, TResult>
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()

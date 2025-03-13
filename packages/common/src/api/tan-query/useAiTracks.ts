@@ -9,7 +9,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { UserTrack } from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
 import { aiPageLineupActions, aiPageSelectors } from '~/store/pages'
-import { setHandle } from '~/store/pages/ai/slice'
+import { fetchAiUser } from '~/store/pages/ai/slice'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
@@ -39,7 +39,7 @@ export const useAiTracks = (
   const dispatch = useDispatch()
 
   useEffect(() => {
-    dispatch(setHandle({ handle }))
+    dispatch(fetchAiUser({ handle }))
   }, [dispatch, handle])
 
   const queryData = useInfiniteQuery({
@@ -79,7 +79,7 @@ export const useAiTracks = (
 
       return processedTracks
     },
-    ...options,
+    ...(options as any),
     enabled: options?.enabled !== false && !!handle
   })
 

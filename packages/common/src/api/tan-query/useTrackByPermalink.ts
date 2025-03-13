@@ -8,7 +8,7 @@ import { getUserId } from '~/store/account/selectors'
 
 import { TQTrack } from './models'
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { SelectableQueryOptions } from './types'
 import { useTrack } from './useTrack'
 import { primeTrackData } from './utils/primeTrackData'
 
@@ -18,7 +18,7 @@ export const getTrackByPermalinkQueryKey = (
 
 export const useTrackByPermalink = <TResult = TQTrack>(
   permalink: string | undefined | null,
-  options?: QueryOptions<TQTrack, TResult>
+  options?: SelectableQueryOptions<TQTrack, TResult>
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()

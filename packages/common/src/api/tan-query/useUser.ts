@@ -10,7 +10,7 @@ import { getUserId } from '~/store/account/selectors'
 
 import { getUsersBatcher } from './batchers/getUsersBatcher'
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { SelectableQueryOptions } from './types'
 
 export const getUserQueryKey = (userId: ID | null | undefined) => [
   QUERY_KEYS.user,
@@ -19,7 +19,7 @@ export const getUserQueryKey = (userId: ID | null | undefined) => [
 
 export const useUser = <TResult = UserMetadata>(
   userId: ID | null | undefined,
-  options?: QueryOptions<UserMetadata, TResult>
+  options?: SelectableQueryOptions<UserMetadata, TResult>
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const dispatch = useDispatch()

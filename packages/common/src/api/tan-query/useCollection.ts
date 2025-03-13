@@ -9,7 +9,7 @@ import { ID } from '~/models'
 import { getCollectionsBatcher } from './batchers/getCollectionsBatcher'
 import { TQCollection } from './models'
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
 export const getCollectionQueryKey = (collectionId: ID | null | undefined) => [
@@ -19,7 +19,7 @@ export const getCollectionQueryKey = (collectionId: ID | null | undefined) => [
 
 export const useCollection = <TResult = TQCollection>(
   collectionId: ID | null | undefined,
-  options?: QueryOptions<TQCollection, TResult>
+  options?: SelectableQueryOptions<TQCollection, TResult>
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()

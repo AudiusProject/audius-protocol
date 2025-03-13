@@ -4,7 +4,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { AudiusQueryContextType } from '~/audius-query/AudiusQueryContext'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { SelectableQueryOptions } from './types'
 
 export const fetchEmailInUse = async (
   email: string | null | undefined,
@@ -24,7 +24,10 @@ export const getEmailInUseQueryKey = (email: string | null | undefined) => [
  */
 export const useEmailInUse = <TResult = { exists: boolean; isGuest: boolean }>(
   email: string | null | undefined,
-  options?: QueryOptions<{ exists: boolean; isGuest: boolean }, TResult>
+  options?: SelectableQueryOptions<
+    { exists: boolean; isGuest: boolean },
+    TResult
+  >
 ) => {
   const context = useAudiusQueryContext()
 

@@ -80,9 +80,9 @@ export const getHandleReservedStatusQueryKey = (
 /**
  * Hook to check if a handle is reserved on social media platforms
  */
-export const useHandleReservedStatus = <TResult = string>(
+export const useHandleReservedStatus = (
   handle: string | null | undefined,
-  options?: QueryOptions<string, TResult>
+  options?: QueryOptions
 ) => {
   const context = useAudiusQueryContext()
 

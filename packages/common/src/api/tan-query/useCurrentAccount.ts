@@ -9,7 +9,7 @@ import { AccountUserMetadata } from '~/models/User'
 import { getWalletAddresses } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
 export const getCurrentAccountQueryKey = (
@@ -22,7 +22,10 @@ export const getCurrentAccountQueryKey = (
 export const useCurrentAccount = <
   TResult = AccountUserMetadata | null | undefined
 >(
-  options?: QueryOptions<AccountUserMetadata | null | undefined, TResult>
+  options?: SelectableQueryOptions<
+    AccountUserMetadata | null | undefined,
+    TResult
+  >
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { currentUser } = useSelector(getWalletAddresses)

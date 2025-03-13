@@ -8,7 +8,7 @@ import { ID } from '~/models/Identifiers'
 import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
 export const DEVELOPER_APP_DESCRIPTION_MAX_LENGTH = 128
@@ -74,7 +74,7 @@ export const getDeveloperAppsQueryKey = (userId: Nullable<ID>) => [
 ]
 
 export const useDeveloperApps = <TResult = DeveloperApp[]>(
-  options?: QueryOptions<SDKDeveloperApp[], TResult>
+  options?: SelectableQueryOptions<SDKDeveloperApp[], TResult>
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: userId } = useCurrentUserId()
