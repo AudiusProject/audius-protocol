@@ -4,7 +4,7 @@ import {
   StemsArchiveJobResult,
   getStemsArchiveQueue
 } from '../../jobs/createStemsArchive'
-import { Id } from '@audius/sdk'
+import { OptionalId } from '@audius/sdk'
 import { STEMS_ARCHIVE_QUEUE_NAME } from '../../constants'
 import path from 'path'
 import { StemsArchiveWorkerServices } from './services'
@@ -40,15 +40,30 @@ export const createStemsArchiveWorker = (
     abortControllers.set(jobId, abortController)
 
     try {
-      const parsedTrackId = Id.parse(trackId)
       logger.info(
         { jobId, trackId, userId },
         'Starting stems archive creation job'
       )
 
+      const hashedTrackId = OptionalId.parse(trackId)
+      const hashedUserId = OptionalId.parse(userId)
+
+      if (!hashedTrackId) {
+        throw new UnrecoverableError(`Failed to encode track Id: ${trackId}`)
+      }
+      if (!hashedUserId) {
+        throw new UnrecoverableError(`No userID provided`)
+      }
+      if (!signatureHeader) {
+        throw new UnrecoverableError(`Missing signature header`)
+      }
+      if (!messageHeader) {
+        throw new UnrecoverableError(`Missing message header`)
+      }
+
       const { data: track } = await sdk.tracks.getTrack(
         {
-          trackId: parsedTrackId
+          trackId: hashedTrackId
         },
         {
           signal: abortController.signal
@@ -62,7 +77,7 @@ export const createStemsArchiveWorker = (
       logger.debug({ jobId, trackId, userId }, 'Getting track stems')
       const { data: stems = [] } = await sdk.tracks.getTrackStems(
         {
-          trackId: parsedTrackId
+          trackId: hashedTrackId
         },
         {
           signal: abortController.signal
@@ -130,7 +145,7 @@ export const createStemsArchiveWorker = (
         filesToDownload.map(async (stem) => {
           const downloadUrl = await sdk.tracks.getTrackDownloadUrl({
             trackId: stem.id,
-            userId: userId ? Id.parse(userId) : undefined,
+            userId: hashedUserId,
             userSignature: signatureHeader,
             userData: messageHeader,
             filename: stem.origFilename,
@@ -183,10 +198,6 @@ export const createStemsArchiveWorker = (
         throw new UnrecoverableError('Job aborted')
       }
 
-      logger.error(
-        { error: `${error}`, jobId, trackId, userId },
-        'Failed to create stems archive'
-      )
       throw error
     } finally {
       abortControllers.delete(jobId)

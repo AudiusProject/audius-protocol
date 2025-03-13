@@ -50,7 +50,7 @@ export const stemsRouter = ({
         includeParentTrack
       })
 
-      res.status(200).json(removeInternalStatusFields(jobStatus))
+      res.status(201).json(removeInternalStatusFields(jobStatus))
     } catch (error) {
       logger.error({ error }, 'Failed to create stems archive job')
       res.status(500).json({ error: 'Internal server error' })
