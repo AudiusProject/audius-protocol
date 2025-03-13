@@ -33,7 +33,7 @@ export const FeaturedPlaylists = () => {
       expandText={messages.exploreMorePlaylists}
       onExpand={() => setIsExpanded(true)}
     >
-      {playlists?.map((playlist: UserCollection) => {
+      {playlists?.map((playlist) => {
         return (
           <CollectionArtCard
             key={playlist.playlist_id}
