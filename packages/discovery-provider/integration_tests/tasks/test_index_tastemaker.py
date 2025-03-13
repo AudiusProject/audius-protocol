@@ -6,12 +6,9 @@ from sqlalchemy import asc
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.tastemaker_challenge import tastemaker_challenge_manager
-from src.models.indexing.block import Block
 from src.models.notifications.notification import Notification
-from src.models.rewards.challenge import Challenge
 from src.models.rewards.user_challenge import UserChallenge
-from src.models.users.user import User
-from src.tasks.index_tastemaker_notifications import index_tastemaker_notifications
+from src.tasks.index_tastemaker import index_tastemaker
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
@@ -22,7 +19,7 @@ REDIS_URL = shared_config["redis"]["url"]
 BASE_TIME = datetime(2023, 1, 1, 0, 0)
 
 
-def test_index_tastemaker_notification_no_tastemakers(app):
+def test_index_tastemaker_no_tastemakers(app):
     redis_conn = get_redis()
     bus = ChallengeEventBus(redis_conn)
     bus.register_listener(ChallengeEvent.tastemaker, tastemaker_challenge_manager)
@@ -38,7 +35,7 @@ def test_index_tastemaker_notification_no_tastemakers(app):
         populate_mock_db(db, entities)
 
         with bus.use_scoped_dispatch_queue():
-            index_tastemaker_notifications(
+            index_tastemaker(
                 db=db,
                 top_trending_tracks=entities["tracks"],
                 challenge_event_bus=bus,
@@ -60,7 +57,7 @@ def test_index_tastemaker_notification_no_tastemakers(app):
         assert len(challenges) == 0
 
 
-def test_index_tastemaker_notification_no_trending(app):
+def test_index_tastemaker_no_trending(app):
     redis_conn = get_redis()
     bus = ChallengeEventBus(redis_conn)
     bus.register_listener(ChallengeEvent.tastemaker, tastemaker_challenge_manager)
@@ -92,7 +89,7 @@ def test_index_tastemaker_notification_no_trending(app):
         populate_mock_db(db, entities)
 
         with bus.use_scoped_dispatch_queue():
-            index_tastemaker_notifications(
+            index_tastemaker(
                 db=db,
                 top_trending_tracks=[],
                 challenge_event_bus=bus,
@@ -114,7 +111,7 @@ def test_index_tastemaker_notification_no_trending(app):
         assert len(challenges) == 0
 
 
-def test_index_tastemaker_notification_sends_one_notif_for_both_fav_and_repost(app):
+def test_index_tastemaker_sends_one_notif_for_both_fav_and_repost(app):
     with app.app_context():
         db = get_db()
 
@@ -152,7 +149,7 @@ def test_index_tastemaker_notification_sends_one_notif_for_both_fav_and_repost(a
         populate_mock_db(db, entities)
 
         with bus.use_scoped_dispatch_queue():
-            index_tastemaker_notifications(
+            index_tastemaker(
                 db=db,
                 top_trending_tracks=entities["tracks"],
                 challenge_event_bus=bus,
@@ -211,7 +208,7 @@ def test_index_tastemaker_notification_sends_one_notif_for_both_fav_and_repost(a
         assert challenges[1].completed_at is not None
 
 
-def test_index_tastemaker_notification(app):
+def test_index_tastemaker(app):
     redis_conn = get_redis()
     bus = ChallengeEventBus(redis_conn)
     bus.register_listener(ChallengeEvent.tastemaker, tastemaker_challenge_manager)
@@ -231,7 +228,7 @@ def test_index_tastemaker_notification(app):
         populate_mock_db(db, entities)
 
         with bus.use_scoped_dispatch_queue():
-            index_tastemaker_notifications(
+            index_tastemaker(
                 db=db,
                 top_trending_tracks=entities["tracks"],
                 challenge_event_bus=bus,
@@ -273,7 +270,7 @@ def test_index_tastemaker_notification(app):
             assert challenges[i].completed_at is not None
 
 
-def test_index_tastemaker_notification_duplicate_insert(app):
+def test_index_tastemaker_duplicate_insert(app):
     redis_conn = get_redis()
     bus = ChallengeEventBus(redis_conn)
     bus.register_listener(ChallengeEvent.tastemaker, tastemaker_challenge_manager)
@@ -329,7 +326,7 @@ def test_index_tastemaker_notification_duplicate_insert(app):
         populate_mock_db(db, entities)
 
         with bus.use_scoped_dispatch_queue():
-            index_tastemaker_notifications(
+            index_tastemaker(
                 db=db,
                 challenge_event_bus=bus,
                 top_trending_tracks=entities["tracks"],

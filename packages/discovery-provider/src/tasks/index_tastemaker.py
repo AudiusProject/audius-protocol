@@ -17,7 +17,7 @@ def create_tastemaker_group_id(user_id, repost_item_id):
     return f"tastemaker_user_id:{user_id}:tastemaker_item_id:{repost_item_id}"
 
 
-def index_tastemaker_notifications(
+def index_tastemaker(
     db: SessionManager,
     top_trending_tracks: List[Track],
     challenge_event_bus: ChallengeEventBus,
