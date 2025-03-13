@@ -1,15 +1,15 @@
 import { useMemo } from 'react'
 
-import { useQueryClient, UseQueryResult } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
+import { TrackMetadata } from '~/models/Track'
 import { CommonState } from '~/store'
 
 import { getTracksBatcher } from './batchers/getTracksBatcher'
-import { TQTrack } from './models'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
@@ -47,10 +47,8 @@ export const useTracks = (
       ...options,
       enabled: options?.enabled !== false && !!trackId && trackId > 0
     })),
-    combine: combineQueryResults<TQTrack[]>
-  }) as UseQueryResult<TQTrack[]> & {
-    byId: Record<ID, TQTrack>
-  }
+    combine: combineQueryResults<TrackMetadata[]>
+  })
 
   const { data: tracks } = queryResults
 
@@ -60,10 +58,11 @@ export const useTracks = (
     trackIds?.every((trackId) => !!state.tracks.entries[trackId])
   )
 
-  queryResults.data = isSavedToRedux ? tracks : undefined
-  queryResults.isPending = queryResults.isPending || !isSavedToRedux
-  queryResults.isLoading = queryResults.isLoading || !isSavedToRedux
-  queryResults.byId = byId
-
-  return queryResults
+  return {
+    ...queryResults,
+    data: isSavedToRedux ? tracks : undefined,
+    isPending: queryResults.isPending || !isSavedToRedux,
+    isLoading: queryResults.isLoading || !isSavedToRedux,
+    byId
+  }
 }
