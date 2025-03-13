@@ -1,4 +1,3 @@
-import { TQCollection } from './models'
 import { QueryOptions } from './types'
 import { useCollections } from './useCollections'
 import { useExploreContent } from './useExploreContent'
@@ -7,10 +6,7 @@ type Args = {
   limit?: number
 }
 
-export const useFeaturedPlaylists = (
-  args?: Args,
-  options?: Omit<QueryOptions<TQCollection[]>, 'select'>
-) => {
+export const useFeaturedPlaylists = (args?: Args, options?: QueryOptions) => {
   const { data: exploreContent } = useExploreContent()
   const { limit } = args ?? {}
 

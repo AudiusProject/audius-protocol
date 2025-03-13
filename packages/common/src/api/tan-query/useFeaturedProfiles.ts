@@ -6,10 +6,7 @@ type Args = {
   limit?: number
 }
 
-export const useFeaturedProfiles = (
-  args?: Args,
-  options?: Omit<QueryOptions<any>, 'select'>
-) => {
+export const useFeaturedProfiles = (args?: Args, options?: QueryOptions) => {
   const { data: exploreContent } = useExploreContent(options)
   const { limit } = args ?? {}
   return useUsers(exploreContent?.featuredProfiles.slice(0, limit), {
