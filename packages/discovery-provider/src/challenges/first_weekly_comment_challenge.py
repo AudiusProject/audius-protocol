@@ -24,7 +24,7 @@ class FirstWeeklyCommentChallengeUpdater(ChallengeUpdater):
         """
         date = datetime.fromtimestamp(extra["created_at"])
         year, week_number, _ = date.isocalendar()
-        specifier = f"{user_id}:{year}{week_number:02d}"
+        specifier = f"{hex(user_id)[2:]}:{year}{week_number:02d}"
         return specifier
 
     def should_create_new_challenge(
