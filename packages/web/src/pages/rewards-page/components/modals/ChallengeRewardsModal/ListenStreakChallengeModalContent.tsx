@@ -76,6 +76,7 @@ export const ListenStreakChallengeModalContent = ({
           justifyContent={isMobile ? 'center' : 'flex-start'}
           alignItems='center'
         >
+          <IconHeadphones size='m' color='subdued' />
           <Text variant='label' size='l' color='subdued'>
             {getChallengeStatusLabel(userChallenge, challengeName)}
           </Text>

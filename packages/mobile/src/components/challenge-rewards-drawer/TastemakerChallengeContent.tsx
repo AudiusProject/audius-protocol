@@ -24,7 +24,7 @@ const messages = {
 
 export const TastemakerChallengeContent = ({
   aaoErrorCode,
-  challenge: c,
+  challenge,
   challengeName,
   claimStatus,
   onClaim,
@@ -35,10 +35,6 @@ export const TastemakerChallengeContent = ({
     claimStatus === ClaimStatus.CLAIMING ||
     claimStatus === ClaimStatus.WAITING_FOR_RETRY
   const claimError = claimStatus === ClaimStatus.ERROR
-  const challenge = {
-    ...c,
-    disbursed_amount: 100
-  }
 
   const description = challenge ? config.description(challenge) : ''
   const statusText = challenge
