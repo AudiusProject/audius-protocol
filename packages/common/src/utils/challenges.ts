@@ -33,7 +33,7 @@ export const challengeRewardsConfig: Record<
     description: (challenge) =>
       `Earn ${challenge?.amount} $AUDIO for you and your friend.`,
     fullDescription: (challenge) =>
-      `Invite your Friends! You’ll earn ${challenge?.amount} $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)`,
+      `Invite your Friends! You'll earn ${challenge?.amount} $AUDIO for each friend who joins with your link (and they'll get an $AUDIO too)`,
     progressLabel: '%0 Invites Accepted',
     remainingLabel: '%0 Invites Remain',
     panelButtonText: 'Invite Your Friends'
@@ -44,7 +44,7 @@ export const challengeRewardsConfig: Record<
     description: (challenge) =>
       `Earn up to ${formatNumberCommas(challenge?.totalAmount ?? '')} $AUDIO`,
     fullDescription: (challenge) =>
-      `Invite your fans! You’ll earn ${challenge?.amount} $AUDIO for each fan who joins with your link (and they’ll get an $AUDIO too)`,
+      `Invite your fans! You'll earn ${challenge?.amount} $AUDIO for each fan who joins with your link (and they'll get an $AUDIO too)`,
     progressLabel: '%0 Invites Accepted',
     remainingLabel: '%0 Invites Remain',
     panelButtonText: 'Invite your Fans'
@@ -334,6 +334,28 @@ export const challengeRewardsConfig: Record<
 export const makeOptimisticChallengeSortComparator = (
   userChallenges: Partial<Record<ChallengeRewardID, OptimisticUserChallenge>>
 ): ((id1: ChallengeRewardID, id2: ChallengeRewardID) => number) => {
+  const playCountOrder = [
+    ChallengeName.PlayCount250,
+    ChallengeName.PlayCount1000,
+    ChallengeName.PlayCount10000
+  ]
+
+  const getSortKey = (challenge: OptimisticUserChallenge) => {
+    if (challenge.claimableAmount > 0) {
+      return 0
+    }
+    if (
+      isNewChallenge(challenge.challenge_id) &&
+      challenge.state !== 'disbursed'
+    ) {
+      return 1
+    }
+    if (challenge.state === 'disbursed') {
+      return 2
+    }
+    return 3
+  }
+
   return (id1, id2) => {
     const userChallenge1 = userChallenges[id1]
     const userChallenge2 = userChallenges[id2]
@@ -341,34 +363,37 @@ export const makeOptimisticChallengeSortComparator = (
     if (!userChallenge1 || !userChallenge2) {
       return 0
     }
-    if (userChallenge1?.claimableAmount > 0) {
+
+    const sortKey1 = getSortKey(userChallenge1)
+    const sortKey2 = getSortKey(userChallenge2)
+
+    if (sortKey1 < sortKey2) {
       return -1
     }
-    if (userChallenge2?.claimableAmount > 0) {
+    if (sortKey1 > sortKey2) {
       return 1
     }
-    if (
-      userChallenge1?.challenge_id &&
-      isNewChallenge(userChallenge1?.challenge_id) &&
-      userChallenge1?.state !== 'disbursed'
-    ) {
-      return -1
+
+    // If sort keys are equal, check if both are play count challenges
+    if (isPlayCountChallenge(id1) && isPlayCountChallenge(id2)) {
+      return playCountOrder.indexOf(id1) - playCountOrder.indexOf(id2)
     }
-    if (
-      userChallenge2?.challenge_id &&
-      isNewChallenge(userChallenge2?.challenge_id) &&
-      userChallenge2?.state !== 'disbursed'
-    ) {
-      return 1
-    }
-    if (userChallenge1?.state === 'disbursed') {
-      return 1
-    }
-    if (userChallenge2?.state === 'disbursed') {
-      return -1
-    }
+
     return 0
   }
+}
+
+const isPlayCountChallenge = (
+  id: ChallengeRewardID
+): id is
+  | ChallengeName.PlayCount250
+  | ChallengeName.PlayCount1000
+  | ChallengeName.PlayCount10000 => {
+  return (
+    id === ChallengeName.PlayCount250 ||
+    id === ChallengeName.PlayCount1000 ||
+    id === ChallengeName.PlayCount10000
+  )
 }
 
 export const isAudioMatchingChallenge = (
