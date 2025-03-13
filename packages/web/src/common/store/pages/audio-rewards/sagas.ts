@@ -8,7 +8,8 @@ import {
   StringWei,
   SpecifierWithAmount,
   Name,
-  Feature
+  Feature,
+  ChallengeName
 } from '@audius/common/models'
 import {
   IntKeys,
@@ -87,6 +88,7 @@ const {
   setUserChallengeCurrentStepCount,
   resetUserChallengeCurrentStepCount,
   updateOptimisticListenStreak,
+  updateOptimisticPlayCount,
   setUndisbursedChallenges
 } = audioRewardsPageActions
 const fetchAccountSucceeded = accountActions.fetchAccountSucceeded
@@ -657,6 +659,37 @@ function* watchUpdateOptimisticListenStreak() {
   })
 }
 
+/**
+ * Updates the play count challenges optimistically when a user plays their own track
+ * All three play count challenges (p1, p2, p3) will show the same play count value
+ */
+function* watchUpdateOptimisticPlayCount() {
+  yield* takeEvery(updateOptimisticPlayCount.type, function* () {
+    // Define array of play count milestone challenge IDs
+    const playCountChallengeIds = [
+      ChallengeName.PlayCount250,
+      ChallengeName.PlayCount1000,
+      ChallengeName.PlayCount10000
+    ]
+
+    // Iterate through each challenge ID
+    for (const challengeId of playCountChallengeIds) {
+      // Get the challenge
+      const challenge = yield* select(getUserChallenge, { challengeId })
+
+      // If the challenge exists, increment its step count
+      if (challenge) {
+        yield* put(
+          setUserChallengeCurrentStepCount({
+            challengeId,
+            stepCount: challenge.current_step_count + 1
+          })
+        )
+      }
+    }
+  })
+}
+
 function* watchUpdateHCaptchaScore() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const sdk = yield* getSDK()
@@ -729,7 +762,8 @@ const sagas = () => {
     watchSetHCaptchaStatus,
     watchUpdateHCaptchaScore,
     userChallengePollingDaemon,
-    watchUpdateOptimisticListenStreak
+    watchUpdateOptimisticListenStreak,
+    watchUpdateOptimisticPlayCount
   ]
   return sagas
 }

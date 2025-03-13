@@ -166,7 +166,7 @@
     "type": "numeric",
     "amount": 25,
     "active": true,
-    "step_count": 1,
+    "step_count": 250,
     "starting_block": 0,
     "weekly_pool": 2147483647,
     "cooldown_days": 7
@@ -177,7 +177,7 @@
     "type": "numeric",
     "amount": 100,
     "active": true,
-    "step_count": 5,
+    "step_count": 1000,
     "starting_block": 0,
     "weekly_pool": 2147483647,
     "cooldown_days": 7
@@ -188,7 +188,7 @@
     "type": "numeric",
     "amount": 1000,
     "active": true,
-    "step_count": 10,
+    "step_count": 10000,
     "starting_block": 0,
     "weekly_pool": 2147483647,
     "cooldown_days": 7
