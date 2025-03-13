@@ -26,14 +26,9 @@ REDIS_URL = shared_config["redis"]["url"]
 BLOCK_NUMBER = 10
 CURRENT_YEAR = 2025  # The starting year from which plays are counted onwards
 
-MILESTONE_250 = 2
-MILESTONE_1000 = 3
-MILESTONE_10000 = 4
-
-# Get all the milestone values for testing
-MILESTONE_VALUES = [MILESTONE_250, MILESTONE_1000, MILESTONE_10000]
-REWARD_VALUES = [25, 100, 1000]  # Corresponding reward amounts
+# Challenge IDs for play count milestones
 CHALLENGE_IDS = ["p1", "p2", "p3"]  # Challenge IDs
+REWARD_VALUES = [25, 100, 1000]  # Corresponding reward amounts
 
 
 def create_track(user_id: int, track_id: int) -> Track:
@@ -104,6 +99,17 @@ def setup_challenges(session):
             {"active": True, "starting_block": BLOCK_NUMBER}
         )
     session.flush()
+
+    # Get milestone values from the database
+    milestone_challenges = (
+        session.query(Challenge).filter(Challenge.id.in_(CHALLENGE_IDS)).all()
+    )
+    milestone_map = {
+        challenge.id: challenge.step_count for challenge in milestone_challenges
+    }
+
+    global MILESTONE_VALUES
+    MILESTONE_VALUES = [milestone_map["p1"], milestone_map["p2"], milestone_map["p3"]]
 
 
 def make_scope_and_process(bus, session):
