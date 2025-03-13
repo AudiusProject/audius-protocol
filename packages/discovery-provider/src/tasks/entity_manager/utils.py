@@ -17,6 +17,7 @@ from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_report import CommentReport
 from src.models.comments.comment_thread import CommentThread
 from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
+from src.models.events.event import Event
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.indexing.cid_data import CIDData
@@ -43,6 +44,7 @@ from src.tasks.metadata import (
     collectibles_metadata_format,
     comment_metadata_format,
     encrypted_email_metadata_format,
+    event_metadata_format,
     playlist_metadata_format,
     remove_associated_wallet_metadata_format,
     track_comment_notification_setting_format,
@@ -60,6 +62,7 @@ PLAYLIST_ID_OFFSET = 400_000
 TRACK_ID_OFFSET = 2_000_000
 USER_ID_OFFSET = 3_000_000
 COMMENT_ID_OFFSET = 4_000_000
+EVENT_ID_OFFSET = 5_000_000
 # limits
 CHARACTER_LIMIT_USER_BIO = 256
 CHARACTER_LIMIT_DESCRIPTION = 1000
@@ -130,6 +133,7 @@ class EntityType(str, Enum):
     ENCRYPTED_EMAIL = "EncryptedEmail"
     EMAIL_ACCESS = "EmailAccess"
     COLLECTIBLES = "Collectibles"
+    EVENT = "Event"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -167,6 +171,7 @@ class RecordDict(TypedDict):
     Grant: Dict[Tuple, List[Grant]]
     Comment: Dict[int, List[Comment]]
     CommentReaction: Dict[Tuple, List[CommentReaction]]
+    Event: Dict[int, List[Event]]
 
 
 class ExistingRecordDict(TypedDict):
@@ -192,6 +197,7 @@ class ExistingRecordDict(TypedDict):
     CommentMention: Dict[Tuple, CommentMention]
     CommentThread: Dict[Tuple, CommentThread]
     MutedUser: Dict[Tuple, MutedUser]
+    Event: Dict[int, Event]
 
 
 class EntitiesToFetchDict(TypedDict):
@@ -221,6 +227,7 @@ class EntitiesToFetchDict(TypedDict):
     CommentReport: Set[Tuple]
     EncryptedEmail: Set[int]
     EmailAccess: Set[Tuple[int, int, int]]  # (email_owner_id, receiving_id, grantor_id)
+    Event: Set[int]
 
 
 MANAGE_ENTITY_EVENT_TYPE = "ManageEntity"
@@ -392,6 +399,9 @@ def get_metadata_type_and_format(entity_type, action=None):
     elif entity_type == EntityType.COLLECTIBLES:
         metadata_type = "collectibles"
         metadata_format = collectibles_metadata_format
+    elif entity_type == EntityType.EVENT:
+        metadata_type = "event"
+        metadata_format = event_metadata_format
     else:
         raise IndexingValidationError(f"Unknown metadata type ${entity_type}")
     return metadata_type, metadata_format
@@ -475,6 +485,7 @@ def copy_record(
         CommentReaction,
         CommentMention,
         MutedUser,
+        Event,
     ],
     block_number: int,
     event_blockhash: str,

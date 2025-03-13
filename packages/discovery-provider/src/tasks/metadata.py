@@ -276,6 +276,13 @@ collectibles_metadata_format = {
     "collectibles": None,
 }
 
+event_metadata_format = {
+    "event_type": None,
+    "entity_type": None,
+    "entity_id": None,
+    "is_deleted": None,
+    "end_date": None,
+}
 
 class PlaylistMetadata(TypedDict):
     playlist_contents: Optional[Any]

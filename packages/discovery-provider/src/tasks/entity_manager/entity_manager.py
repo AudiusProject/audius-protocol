@@ -69,6 +69,11 @@ from src.tasks.entity_manager.entities.email import (
     create_encrypted_email,
     grant_email_access,
 )
+from src.tasks.entity_manager.entities.event import (
+    create_event,
+    update_event,
+    delete_event,
+)
 from src.tasks.entity_manager.entities.grant import (
     approve_grant,
     create_grant,
@@ -464,6 +469,21 @@ def entity_manager_update(
                         params.action == Action.CREATE or params.action == Action.UPDATE
                     ) and params.entity_type == EntityType.COLLECTIBLES:
                         update_user_collectibles(params)
+                    elif (
+                        params.action == Action.CREATE
+                        and params.entity_type == EntityType.EVENT
+                    ):
+                        create_event(params)
+                    elif (
+                        params.action == Action.UPDATE
+                        and params.entity_type == EntityType.EVENT
+                    ):
+                        update_event(params)
+                    elif (
+                        params.action == Action.DELETE
+                        and params.entity_type == EntityType.EVENT
+                    ):
+                        delete_event(params)
 
                     logger.debug("process transaction")  # log event context
                 except IndexingValidationError as e:

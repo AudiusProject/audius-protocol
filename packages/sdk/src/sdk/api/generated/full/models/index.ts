@@ -54,6 +54,7 @@ export * from './CreateNotificationActionData';
 export * from './CreatePlaylistNotificationActionData';
 export * from './CreateTrackNotificationActionData';
 export * from './DataAndType';
+export * from './Event';
 export * from './Favorite';
 export * from './FieldVisibility';
 export * from './FollowGate';
