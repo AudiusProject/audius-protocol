@@ -1,4 +1,4 @@
-import { Id } from '@audius/sdk'
+import { AuthorizedApp, Id } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
 import { useAudiusQueryContext } from '~/audius-query'
@@ -14,7 +14,9 @@ export const getAuthorizedAppsQueryKey = (userId: Nullable<ID>) => [
   userId
 ]
 
-export const useAuthorizedApps = (options?: QueryOptions) => {
+export const useAuthorizedApps = <TResult = AuthorizedApp[]>(
+  options?: QueryOptions<AuthorizedApp[], TResult>
+) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: userId } = useCurrentUserId()
 

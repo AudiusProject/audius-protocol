@@ -22,9 +22,9 @@ export const getEmailInUseQueryKey = (email: string | null | undefined) => [
 /**
  * Hook to check if an email is already registered
  */
-export const useEmailInUse = (
+export const useEmailInUse = <TResult = { exists: boolean; isGuest: boolean }>(
   email: string | null | undefined,
-  options?: QueryOptions
+  options?: QueryOptions<{ exists: boolean; isGuest: boolean }, TResult>
 ) => {
   const context = useAudiusQueryContext()
 

@@ -6,6 +6,7 @@ import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { useAudiusQueryContext } from '~/audius-query'
 import { getUserId } from '~/store/account/selectors'
 
+import { TQTrack } from './models'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useTrack } from './useTrack'
@@ -15,9 +16,9 @@ export const getTrackByPermalinkQueryKey = (
   permalink: string | undefined | null
 ) => [QUERY_KEYS.trackByPermalink, permalink]
 
-export const useTrackByPermalink = (
+export const useTrackByPermalink = <TResult = TQTrack>(
   permalink: string | undefined | null,
-  options?: QueryOptions
+  options?: QueryOptions<TQTrack, TResult>
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
@@ -45,9 +46,9 @@ export const useTrackByPermalink = (
 
       return track?.track_id
     },
-    staleTime: options?.staleTime ?? Infinity,
+    staleTime: (options as any)?.staleTime ?? Infinity,
     enabled: options?.enabled !== false && !!permalink
   })
 
-  return useTrack(trackId)
+  return useTrack(trackId, options)
 }

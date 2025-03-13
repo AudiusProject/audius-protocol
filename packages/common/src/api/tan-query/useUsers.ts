@@ -16,7 +16,6 @@ import { useCurrentUserId } from './useCurrentUserId'
 import { getUserQueryKey } from './useUser'
 import { combineQueryResults } from './utils/combineQueryResults'
 import { useQueries } from './utils/useQueries'
-
 export const getUsersQueryKey = (userIds: ID[] | null | undefined) => [
   QUERY_KEYS.users,
   userIds
@@ -24,7 +23,7 @@ export const getUsersQueryKey = (userIds: ID[] | null | undefined) => [
 
 export const useUsers = (
   userIds: ID[] | null | undefined,
-  options?: QueryOptions
+  options?: Omit<QueryOptions<UserMetadata[]>, 'select'>
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const dispatch = useDispatch()
@@ -44,7 +43,7 @@ export const useUsers = (
         })
         return await batchGetUsers.fetch(userId)
       },
-      ...options,
+      ...(options as any),
       enabled: options?.enabled !== false && !!userId && userId > 0
     })),
     combine: combineQueryResults<UserMetadata[]>

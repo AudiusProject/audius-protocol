@@ -1,4 +1,4 @@
-import { Id } from '@audius/sdk'
+import { Id, DeveloperApp as SDKDeveloperApp } from '@audius/sdk'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { cloneDeep } from 'lodash'
 import { z } from 'zod'
@@ -73,7 +73,9 @@ export const getDeveloperAppsQueryKey = (userId: Nullable<ID>) => [
   userId
 ]
 
-export const useDeveloperApps = (options?: QueryOptions) => {
+export const useDeveloperApps = <TResult = DeveloperApp[]>(
+  options?: QueryOptions<SDKDeveloperApp[], TResult>
+) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: userId } = useCurrentUserId()
 

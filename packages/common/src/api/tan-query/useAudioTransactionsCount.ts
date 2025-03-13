@@ -14,7 +14,9 @@ export const getAudioTransactionsCountQueryKey = (userId: Nullable<ID>) => [
   userId
 ]
 
-export const useAudioTransactionsCount = (options?: QueryOptions) => {
+export const useAudioTransactionsCount = <TResult = number>(
+  options?: QueryOptions<number, TResult>
+) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: userId } = useCurrentUserId()
 

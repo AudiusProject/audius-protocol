@@ -9,6 +9,7 @@ import {
   CollectionsPageType
 } from '~/store/pages'
 
+import { TQCollection } from './models'
 import { QueryOptions } from './types'
 import { useCollection } from './useCollection'
 import { useCollectionByPermalink } from './useCollectionByPermalink'
@@ -25,9 +26,11 @@ type CollectionParams =
  * @param params The collection params - either {collectionId}, {handle, slug, type}, or {permalink}
  * @returns The collection data or null if not found
  */
-export const useCollectionByParams = (
+export const useCollectionByParams = <
+  TResult extends { playlist_id: ID } = TQCollection
+>(
   params: CollectionParams,
-  options?: QueryOptions
+  options?: QueryOptions<TQCollection, TResult>
 ) => {
   const dispatch = useDispatch()
 
@@ -51,7 +54,13 @@ export const useCollectionByParams = (
   useEffect(() => {
     if (isSuccess && collectionIdResult) {
       dispatch(
-        collectionPageActions.fetchCollectionSucceeded(collectionIdResult)
+        collectionPageActions.fetchCollectionSucceeded(
+          collectionIdResult,
+          // @ts-ignore no uid
+          undefined,
+          undefined,
+          undefined
+        )
       )
 
       dispatch(

@@ -6,6 +6,7 @@ import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { useAudiusQueryContext } from '~/audius-query'
 import { getUserId } from '~/store/account/selectors'
 
+import { TQCollection } from './models'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCollection } from './useCollection'
@@ -29,16 +30,16 @@ export const playlistPermalinkToHandleAndSlug = (permalink: string) => {
   return { handle, slug }
 }
 
-export const useCollectionByPermalink = (
+export const useCollectionByPermalink = <TResult = TQCollection>(
   permalink: string | undefined | null,
-  options?: QueryOptions
+  options?: QueryOptions<TQCollection, TResult>
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
 
-  const { data: collectionId } = useQuery({
+  const { data: collectionId } = useQuery<number | undefined>({
     queryKey: getCollectionByPermalinkQueryKey(permalink),
     queryFn: async () => {
       const { handle, slug } = playlistPermalinkToHandleAndSlug(permalink!)
@@ -64,9 +65,9 @@ export const useCollectionByPermalink = (
 
       return collection?.playlist_id
     },
-    staleTime: options?.staleTime ?? STALE_TIME,
-    enabled: options?.enabled !== false && !!permalink
+    staleTime: (options as any)?.staleTime ?? STALE_TIME,
+    enabled: (options as any)?.enabled !== false && !!permalink
   })
 
-  return useCollection(collectionId)
+  return useCollection(collectionId, options)
 }

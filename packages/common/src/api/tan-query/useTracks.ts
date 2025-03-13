@@ -10,6 +10,7 @@ import { TrackMetadata } from '~/models/Track'
 import { CommonState } from '~/store'
 
 import { getTracksBatcher } from './batchers/getTracksBatcher'
+import { TQTrack } from './models'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
@@ -24,7 +25,7 @@ export const getTracksQueryKey = (trackIds: ID[] | null | undefined) => [
 
 export const useTracks = (
   trackIds: ID[] | null | undefined,
-  options?: QueryOptions
+  options?: Omit<QueryOptions<TQTrack[]>, 'select'>
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const dispatch = useDispatch()
@@ -44,7 +45,7 @@ export const useTracks = (
         })
         return await batchGetTracks.fetch(trackId)
       },
-      ...options,
+      ...(options as any),
       enabled: options?.enabled !== false && !!trackId && trackId > 0
     })),
     combine: combineQueryResults<TrackMetadata[]>

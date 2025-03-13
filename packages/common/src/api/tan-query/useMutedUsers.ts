@@ -17,7 +17,7 @@ export const getMutedUsersQueryKey = (currentUserId: ID | null | undefined) => [
   currentUserId
 ]
 
-export const useMutedUsers = (options?: QueryOptions) => {
+export const useMutedUsers = (options?: Omit<QueryOptions<ID[]>, 'select'>) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()

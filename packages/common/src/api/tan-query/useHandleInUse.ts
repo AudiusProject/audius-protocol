@@ -35,9 +35,9 @@ export const getHandleInUseQueryKey = (handle: string | null | undefined) => [
 /**
  * Hook to check if a handle is already in use
  */
-export const useHandleInUse = (
+export const useHandleInUse = <TResult = boolean>(
   handle: string | null | undefined,
-  options?: QueryOptions
+  options?: QueryOptions<boolean, TResult>
 ) => {
   const context = useAudiusQueryContext()
 

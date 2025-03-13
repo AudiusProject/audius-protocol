@@ -14,9 +14,16 @@ type ExploreContentResponse = {
   featuredProfiles: string[]
 }
 
+export type ExploreContent = {
+  featuredPlaylists: ID[]
+  featuredProfiles: ID[]
+}
+
 export const getExploreContentQueryKey = () => [QUERY_KEYS.exploreContent]
 
-export const useExploreContent = (options?: QueryOptions) => {
+export const useExploreContent = <TResult = ExploreContent>(
+  options?: QueryOptions<ExploreContent, TResult>
+) => {
   const { env } = useAudiusQueryContext()
   const exploreContentUrl =
     env.EXPLORE_CONTENT_URL ?? STATIC_EXPLORE_CONTENT_URL

@@ -19,7 +19,11 @@ export const getCurrentAccountQueryKey = (
 /**
  * Hook to get the currently logged in user's account
  */
-export const useCurrentAccount = (options?: QueryOptions) => {
+export const useCurrentAccount = <
+  TResult = AccountUserMetadata | null | undefined
+>(
+  options?: QueryOptions<AccountUserMetadata | null | undefined, TResult>
+) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { currentUser } = useSelector(getWalletAddresses)
   const { data: currentUserId } = useCurrentUserId()

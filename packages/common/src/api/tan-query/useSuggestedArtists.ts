@@ -8,7 +8,9 @@ import { useUsers } from './useUsers'
 
 export const getSuggestedArtistsQueryKey = () => [QUERY_KEYS.suggestedArtists]
 
-export const useSuggestedArtists = (options?: QueryOptions) => {
+export const useSuggestedArtists = (
+  options?: Omit<QueryOptions<any>, 'select'>
+) => {
   const { env, fetch } = useAudiusQueryContext()
 
   const { data: suggestedIds } = useQuery<number[]>({

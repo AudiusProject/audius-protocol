@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 
 import { ID } from '~/models/Identifiers'
+import { UserMetadata } from '~/models/User'
 import { profilePageActions } from '~/store/pages'
 
 import { QueryOptions } from './types'
@@ -20,7 +21,10 @@ type UserParams = { userId?: ID } | { handle?: string }
  * @param options Optional configuration for the query
  * @returns The user data or null if not found
  */
-export const useUserByParams = (params: UserParams, options?: QueryOptions) => {
+export const useUserByParams = (
+  params: UserParams,
+  options?: Omit<QueryOptions<UserMetadata>, 'select'>
+) => {
   const userId = 'userId' in params ? params.userId : null
   const handle = 'handle' in params ? params.handle : null
   const dispatch = useDispatch()

@@ -12,12 +12,20 @@ export type UseRemixedTracksArgs = {
   userId: ID | null | undefined
 }
 
+export type RemixedTrack = {
+  trackId: number
+  title: string
+  remixCount: number
+}
+
 export const getRemixedTracksQueryKey = ({ userId }: UseRemixedTracksArgs) => [
   QUERY_KEYS.remixedTracks,
   userId
 ]
 
-export const useRemixedTracks = (options?: QueryOptions) => {
+export const useRemixedTracks = <TResult = RemixedTrack[]>(
+  options?: QueryOptions<RemixedTrack[], TResult>
+) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
 
