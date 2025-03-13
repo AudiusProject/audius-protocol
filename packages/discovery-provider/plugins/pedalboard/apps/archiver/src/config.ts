@@ -1,4 +1,6 @@
+import 'dotenv/config'
 import { cleanEnv, str, num } from 'envalid'
+import { LogLevel } from './logger'
 
 export type Environment = 'dev' | 'stage' | 'prod'
 
@@ -23,6 +25,8 @@ export type Config = {
   maxDiskSpaceBytes: number
   /** Maximum time to wait for disk space to be available (default: 60 seconds) */
   maxDiskSpaceWaitSeconds: number
+  /** Log level to use for the archiver (default: 'warn') */
+  logLevel: LogLevel
 }
 
 let config: Config | null = null
@@ -45,6 +49,7 @@ export const readConfig = (): Config => {
       default: 10
     }),
     archiver_orphaned_jobs_lifetime_seconds: num({ default: 60 * 10 }),
+    archiver_log_level: str<LogLevel>({ default: 'warn' }),
     archiver_max_stems_archive_attempts: num({ default: 3 }),
     archiver_max_disk_space_bytes: num({ default: 32 * 1024 * 1024 * 1024 }), // 32GB
     archiver_max_disk_space_wait_seconds: num({ default: 60 })
@@ -64,7 +69,8 @@ export const readConfig = (): Config => {
     orphanedJobsLifetimeSeconds: env.archiver_orphaned_jobs_lifetime_seconds,
     maxStemsArchiveAttempts: env.archiver_max_stems_archive_attempts,
     maxDiskSpaceBytes: env.archiver_max_disk_space_bytes,
-    maxDiskSpaceWaitSeconds: env.archiver_max_disk_space_wait_seconds
+    maxDiskSpaceWaitSeconds: env.archiver_max_disk_space_wait_seconds,
+    logLevel: env.archiver_log_level
   }
   return config
 }

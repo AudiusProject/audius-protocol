@@ -1,4 +1,5 @@
 import pino from 'pino'
+import { readConfig } from './config'
 
 const formatters = {
   level(label: string) {
@@ -7,10 +8,15 @@ const formatters = {
   }
 }
 
+export type LogLevel = pino.LevelWithSilent
+
+const { logLevel } = readConfig()
 // set config for logger here
 export const logger = pino({
-  level: 'debug',
+  level: logLevel,
   name: `archiver`,
   formatters,
   errorKey: 'error'
 })
+
+export type Logger = typeof logger
