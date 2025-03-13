@@ -551,7 +551,12 @@ function* fetchUserChallengesAsync() {
 
     let userChallenges = challengesData.map(userChallengeFromSDK)
 
-    if (totalPlaysOnOwnedTracks > 0) {
+    // Only update play count milestone challenges if they exist and there are plays
+    if (
+      userChallenges.some((challenge) =>
+        isPlayCountChallenge(challenge.challenge_id)
+      )
+    ) {
       userChallenges = userChallenges.map((challenge) => {
         if (isPlayCountChallenge(challenge.challenge_id)) {
           return {
