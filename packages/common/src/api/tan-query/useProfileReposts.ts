@@ -19,6 +19,7 @@ import {
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
+import { primeUserData } from './utils'
 import { primeCollectionData } from './utils/primeCollectionData'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -72,6 +73,13 @@ export const useProfileReposts = (
         (activity) => repostActivityFromSDK(activity)?.item
       )
 
+      primeUserData({
+        users: reposts
+          .filter((item): item is UserTrackMetadata => 'track_id' in item)
+          .map((item) => item.user),
+        queryClient,
+        dispatch
+      })
       primeTrackData({
         tracks: reposts.filter(
           (item): item is UserTrackMetadata => 'track_id' in item
