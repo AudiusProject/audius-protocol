@@ -2,18 +2,11 @@ import logging
 from datetime import datetime
 
 from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
-from src.challenges.play_count_milestone_250_challenge import MILESTONE as MILESTONE_250
 from src.challenges.play_count_milestone_250_challenge import (
     play_count_250_milestone_challenge_manager,
 )
 from src.challenges.play_count_milestone_1000_challenge import (
-    MILESTONE as MILESTONE_1000,
-)
-from src.challenges.play_count_milestone_1000_challenge import (
     play_count_1000_milestone_challenge_manager,
-)
-from src.challenges.play_count_milestone_10000_challenge import (
-    MILESTONE as MILESTONE_10000,
 )
 from src.challenges.play_count_milestone_10000_challenge import (
     play_count_10000_milestone_challenge_manager,
@@ -32,6 +25,10 @@ logger = logging.getLogger(__name__)
 REDIS_URL = shared_config["redis"]["url"]
 BLOCK_NUMBER = 10
 CURRENT_YEAR = 2025  # The starting year from which plays are counted onwards
+
+MILESTONE_250 = 2
+MILESTONE_1000 = 3
+MILESTONE_10000 = 4
 
 # Get all the milestone values for testing
 MILESTONE_VALUES = [MILESTONE_250, MILESTONE_1000, MILESTONE_10000]

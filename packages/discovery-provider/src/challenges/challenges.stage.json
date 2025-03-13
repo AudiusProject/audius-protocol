@@ -166,7 +166,7 @@
     "type": "numeric",
     "amount": 25,
     "active": true,
-    "step_count": 1,
+    "step_count": 2,
     "starting_block": 0,
     "weekly_pool": 2147483647,
     "cooldown_days": 7

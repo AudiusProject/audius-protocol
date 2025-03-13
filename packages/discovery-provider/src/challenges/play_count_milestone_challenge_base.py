@@ -17,7 +17,6 @@ class PlayCountMilestoneUpdaterBase(ChallengeUpdater):
     """
 
     # To be overridden by subclasses
-    MILESTONE = 0
     REWARD_AMOUNT = 0
     CHALLENGE_ID = ""
     PREVIOUS_MILESTONE_CHALLENGE_ID = ""
@@ -56,25 +55,41 @@ class PlayCountMilestoneUpdaterBase(ChallengeUpdater):
         Update user challenges based on their play count milestone.
         This method is called by the ChallengeManager when processing events.
         """
+
+        if not step_count:
+            return
+
         for user_challenge in user_challenges:
             user_id = user_challenge.user_id
             play_count = self._get_user_play_count_2025(session, user_id)
 
             user_challenge.current_step_count = play_count
 
-            if play_count >= self.MILESTONE:
+            if play_count >= step_count:
                 user_challenge.amount = self.REWARD_AMOUNT
                 user_challenge.is_complete = True
 
     def generate_specifier(self, session: Session, user_id: int, extra: Dict) -> str:
         """
         Generate a unique specifier for the user's challenge.
-        Format: hex_user_id_MILESTONE
+        Format: hex_user_id_milestone
         """
-        return f"{hex(user_id)[2:]}_{self.MILESTONE}"
+
+        milestone = "250"
+        if self.CHALLENGE_ID == "p2":
+            milestone = "1000"
+        elif self.CHALLENGE_ID == "p3":
+            milestone = "10000"
+
+        return f"{hex(user_id)[2:]}_{milestone}"
 
     def should_create_new_challenge(
-        self, session: Session, event: str, user_id: int, extra: Dict
+        self,
+        session: Session,
+        event: str,
+        user_id: int,
+        extra: Dict,
+        step_count: Optional[int] = None,
     ) -> bool:
         """
         Determine if a new challenge should be created for the user.
