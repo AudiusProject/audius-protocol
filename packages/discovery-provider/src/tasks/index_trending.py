@@ -469,6 +469,10 @@ def get_should_update_trending(
     """
     with db.scoped_session() as session:
         current_datetime = None
+        current_db_block = (
+            session.query(Block.number).filter(Block.is_current == True).first()
+        )
+        current_db_block_number = current_db_block[0]
 
         if is_indexing_core_em():
             core = get_core_instance()
@@ -488,11 +492,6 @@ def get_should_update_trending(
                     current_datetime = block.timestamp.ToDatetime()
 
         else:
-            current_db_block = (
-                session.query(Block.number).filter(Block.is_current == True).first()
-            )
-            current_db_block_number = current_db_block[0]
-
             current_block = get_adjusted_block(web3, current_db_block_number)
             current_timestamp = current_block["timestamp"]
             current_datetime = datetime.fromtimestamp(current_timestamp)
