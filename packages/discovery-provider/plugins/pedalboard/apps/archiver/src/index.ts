@@ -4,13 +4,12 @@ import express from 'express'
 import { readConfig } from './config'
 import { stemsRouter } from './routes/stems'
 import { startStemsArchiveWorker } from './workers/createStemsArchive/createStemsArchive'
-import { createCleanupOrphanedFilesWorker } from './workers/cleanupOrphanedFiles'
+import { startCleanupOrphanedFilesWorker } from './workers/cleanupOrphanedFiles'
 import { scheduleCleanupOrphanedFilesJob } from './jobs/cleanupOrphanedFiles'
 import { getStemsArchiveQueue } from './jobs/createStemsArchive'
 import { getCleanupOrphanedFilesQueue } from './jobs/cleanupOrphanedFiles'
 import { logger } from './logger'
-import { createSpaceManager } from './workers/spaceManager'
-import { createDefaultStemsArchiveWorkerServices } from './workers/createStemsArchive/services'
+import { createDefaultWorkerServices } from './workers/services'
 // Basic health check endpoint
 const health = (_req: express.Request, res: express.Response) => {
   res.json({ status: 'healthy' })
@@ -28,15 +27,13 @@ const main = async () => {
   }
 
   // Start the workers
-  const spaceManager = createSpaceManager({
-    maxSpaceBytes: config.maxDiskSpaceBytes
-  })
+  const services = createDefaultWorkerServices()
   const {
     worker: stemsWorker,
     removeStemsArchiveJob,
     cancelStemsArchiveJob
-  } = startStemsArchiveWorker(createDefaultStemsArchiveWorkerServices())
-  const cleanupWorker = createCleanupOrphanedFilesWorker({ spaceManager })
+  } = startStemsArchiveWorker(services)
+  const cleanupWorker = startCleanupOrphanedFilesWorker(services)
 
   // Schedule the cleanup job
   await scheduleCleanupOrphanedFilesJob()

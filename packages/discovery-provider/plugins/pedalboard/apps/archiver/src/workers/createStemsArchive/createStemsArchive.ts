@@ -7,7 +7,7 @@ import {
 import { OptionalId } from '@audius/sdk'
 import { STEMS_ARCHIVE_QUEUE_NAME } from '../../constants'
 import path from 'path'
-import { StemsArchiveWorkerServices } from './services'
+import { WorkerServices } from '../services'
 import { createUtils } from './utils'
 
 type StemsArchiveWorkerListener = WorkerListener<
@@ -15,10 +15,11 @@ type StemsArchiveWorkerListener = WorkerListener<
   StemsArchiveJobResult
 >
 
-export const createStemsArchiveWorker = (
-  services: StemsArchiveWorkerServices
-) => {
-  const { config, spaceManager, fs, logger, sdk } = services
+export const createStemsArchiveWorker = (services: WorkerServices) => {
+  const { config, spaceManager, fs, sdk } = services
+  const workerLogger = services.logger.child({
+    worker: 'createStemsArchive'
+  })
   const { createArchive, downloadFile, fileExists, removeTempFiles } =
     createUtils(services)
 
@@ -35,15 +36,18 @@ export const createStemsArchiveWorker = (
       signatureHeader,
       includeParentTrack
     } = job.data
+    const logger = workerLogger.child({
+      jobId,
+      trackId,
+      userId,
+      includeParentTrack
+    })
 
     const abortController = new AbortController()
     abortControllers.set(jobId, abortController)
 
     try {
-      logger.info(
-        { jobId, trackId, userId },
-        'Starting stems archive creation job'
-      )
+      logger.info('Starting stems archive creation job')
 
       const hashedTrackId = OptionalId.parse(trackId)
       const hashedUserId = OptionalId.parse(userId)
@@ -74,7 +78,7 @@ export const createStemsArchiveWorker = (
         throw new Error('Track details not found')
       }
 
-      logger.debug({ jobId, trackId, userId }, 'Getting track stems')
+      logger.debug('Getting track stems')
       const { data: stems = [] } = await sdk.tracks.getTrackStems(
         {
           trackId: hashedTrackId
@@ -95,10 +99,7 @@ export const createStemsArchiveWorker = (
           ]
         : stems
 
-      logger.debug(
-        { jobId, trackId, userId, filesToDownload },
-        'Getting file sizes'
-      )
+      logger.debug({ files: filesToDownload }, 'Getting file sizes')
 
       // Check file sizes before downloading
       const fileSizes = await Promise.all(
@@ -120,12 +121,9 @@ export const createStemsArchiveWorker = (
       )
 
       const totalSizeBytes = fileSizes.reduce((sum, size) => sum + size, 0)
-      logger.debug(
-        { jobId, trackId, userId, totalSizeBytes },
-        'Calculated required disk space'
-      )
+      logger.debug({ totalSizeBytes }, 'Calculated required disk space')
 
-      logger.debug({ jobId, trackId, userId, stems }, 'Downloading stems')
+      logger.debug({ stems }, 'Downloading stems')
 
       await spaceManager.waitForSpace({
         token: jobId,
@@ -162,15 +160,12 @@ export const createStemsArchiveWorker = (
         })
       )
 
-      logger.info(
-        { jobId, trackId, userId, files: downloadedFiles },
+      logger.debug(
+        { files: downloadedFiles },
         'Successfully downloaded all stems'
       )
 
-      logger.debug(
-        { jobId, trackId, userId, downloadedFiles },
-        'Creating archive'
-      )
+      logger.debug({ files: downloadedFiles }, 'Creating archive')
       // Create archive from downloaded files
       const outputFile = await createArchive({
         files: downloadedFiles,
@@ -186,15 +181,20 @@ export const createStemsArchiveWorker = (
         }
       }
 
-      logger.info(
-        { jobId, trackId, userId, outputFile },
-        'Successfully created stems archive'
-      )
+      logger.info({ outputFile }, 'Successfully created stems archive')
 
       return { outputFile }
     } catch (error) {
+      try {
+        logger.info('Job failed, cleaning up temp files')
+        await removeTempFiles(jobId)
+        await spaceManager.releaseSpace(jobId)
+      } catch (error) {
+        logger.error({ error }, 'Error cleaning up while handling job failure')
+      }
+
       if (abortController.signal.aborted) {
-        logger.debug({ jobId }, 'Job aborted')
+        logger.info('Job aborted')
         throw new UnrecoverableError('Job aborted')
       }
 
@@ -205,17 +205,14 @@ export const createStemsArchiveWorker = (
   }
 
   const removeStemsArchiveJob = async (jobId: string) => {
-    logger.info({ jobId }, 'Removing stems archive job')
+    workerLogger.info({ jobId }, 'Removing stems archive job')
     const queue = getStemsArchiveQueue()
     try {
       await removeTempFiles(jobId)
       await spaceManager.releaseSpace(jobId)
-      logger.info({ jobId }, 'Removed stems archive job')
+      workerLogger.info({ jobId }, 'Removed stems archive job')
     } catch (error) {
-      logger.error(
-        { error: `${error}`, jobId },
-        'Failed to clean up stems archive'
-      )
+      workerLogger.error({ error, jobId }, 'Failed to clean up stems archive')
       throw error
     } finally {
       await queue.remove(jobId)
@@ -223,7 +220,7 @@ export const createStemsArchiveWorker = (
   }
 
   const cancelStemsArchiveJob = async (jobId: string) => {
-    logger.info({ jobId }, 'Cancelling stems archive job')
+    workerLogger.info({ jobId }, 'Cancelling stems archive job')
     const job = await getStemsArchiveQueue().getJob(jobId)
     if (job && (await job.isCompleted())) {
       try {
@@ -235,46 +232,30 @@ export const createStemsArchiveWorker = (
       const abortController = abortControllers.get(jobId)
       abortController?.abort()
     } else {
-      logger.info({ jobId }, 'Stems archive job not found')
+      workerLogger.info({ jobId }, 'Stems archive job not found')
     }
   }
 
   // Abort all active jobs when the worker is closing
   const onClosing: StemsArchiveWorkerListener['closing'] = () => {
+    workerLogger.info('Worker closing, aborting all active jobs')
     for (const abortController of abortControllers.values()) {
       abortController.abort()
-    }
-  }
-
-  const onCompleted: StemsArchiveWorkerListener['completed'] = (job) => {
-    logger.info({ jobId: job.id }, 'Stems archive job completed successfully')
-  }
-
-  const onFailed: StemsArchiveWorkerListener['failed'] = async (job, error) => {
-    logger.error({ jobId: job?.id, error }, 'Stems archive job failed')
-    if (job?.data.jobId) {
-      await removeStemsArchiveJob(job.data.jobId)
     }
   }
 
   return {
     processJob,
     onClosing,
-    onCompleted,
-    onFailed,
     removeStemsArchiveJob,
     cancelStemsArchiveJob
   }
 }
 
-export const startStemsArchiveWorker = (
-  services: StemsArchiveWorkerServices
-) => {
+export const startStemsArchiveWorker = (services: WorkerServices) => {
   const {
     processJob,
     onClosing,
-    onCompleted,
-    onFailed,
     removeStemsArchiveJob,
     cancelStemsArchiveJob
   } = createStemsArchiveWorker(services)
@@ -291,8 +272,6 @@ export const startStemsArchiveWorker = (
   )
 
   worker.on('closing', onClosing)
-  worker.on('completed', onCompleted)
-  worker.on('failed', onFailed)
 
   return { worker, removeStemsArchiveJob, cancelStemsArchiveJob }
 }

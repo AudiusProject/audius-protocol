@@ -1,6 +1,6 @@
-import { StemsArchiveWorkerServices } from './services'
+import { WorkerServices } from '../services'
 
-export const createUtils = (services: StemsArchiveWorkerServices) => {
+export const createUtils = (services: WorkerServices) => {
   const { archiver, config, fetch, fs, fsSync, path, logger } = services
   const fileExists = async (path: string) => {
     return await fs.access(path).then(
