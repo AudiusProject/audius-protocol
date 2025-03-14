@@ -1,6 +1,8 @@
 package pubkeystore
 
 import (
+	"crypto/ecdsa"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -10,6 +12,7 @@ import (
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/misc"
+	"github.com/ethereum/go-ethereum/crypto"
 	"golang.org/x/exp/slog"
 )
 
@@ -32,7 +35,7 @@ func StartPubkeyBackfill(config *config.DiscoveryConfig) {
 			break
 		}
 		for _, id := range ids {
-			err = recoverFromPeers(config, id)
+			_, err = RecoverFromPeers(config, id)
 			if err != nil {
 				slog.Info("pubkey backfill: peer recovery failed", "user_id", id, "err", err)
 			}
@@ -55,15 +58,32 @@ func setPubkey(userId int, pubkeyBase64 string) error {
 	return err
 }
 
+func SetPubkeyForWallet(wallet string, pubkey *ecdsa.PublicKey) error {
+	var userId int
+	err := db.Conn.Get(&userId, `select user_id from users where wallet = lower($1)`, wallet)
+	if err != nil {
+		slog.Info("failed to find user for wallet", "wallet", wallet)
+		return err
+	}
+	if userId == 0 {
+		slog.Info("failed to find user for wallet", "wallet", wallet)
+		return errors.New("failed to find user_id for wallet")
+	}
+
+	pubkeyBytes := crypto.FromECDSAPub(pubkey)
+	pubkeyBase64 := base64.StdEncoding.EncodeToString(pubkeyBytes)
+	return setPubkey(userId, pubkeyBase64)
+}
+
 var lastHost = ""
 
-func recoverFromPeers(discoveryConfig *config.DiscoveryConfig, id int) error {
+func RecoverFromPeers(discoveryConfig *config.DiscoveryConfig, id int) (string, error) {
 
 	// first try lastHost to reduce searching
 	if lastHost != "" {
-		err := recoverFromPeer(lastHost, id)
+		pk, err := recoverFromPeer(lastHost, id)
 		if err == nil {
-			return nil
+			return pk, nil
 		}
 	}
 
@@ -72,35 +92,35 @@ func recoverFromPeers(discoveryConfig *config.DiscoveryConfig, id int) error {
 			continue
 		}
 
-		err := recoverFromPeer(peer.Host, id)
+		pk, err := recoverFromPeer(peer.Host, id)
 		if err == nil {
 			lastHost = peer.Host
-			return nil
+			return pk, nil
 		}
 	}
 
-	return errors.New("failed")
+	return "", errors.New("failed")
 }
 
-func recoverFromPeer(host string, id int) error {
+func recoverFromPeer(host string, id int) (string, error) {
 	idEncoded, err := misc.EncodeHashId(id)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	host = strings.TrimRight(host, "/")
 	if host == "" {
-		return errors.New("invalid host")
+		return "", errors.New("invalid host")
 	}
 
 	resp, err := http.Get(host + "/comms/pubkey/" + idEncoded + "/cached")
 	if err != nil {
-		return errors.New("get failed")
+		return "", errors.New("get failed")
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return errors.New("get failed")
+		return "", errors.New("get failed")
 	}
 
 	var result struct {
@@ -109,8 +129,13 @@ func recoverFromPeer(host string, id int) error {
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		slog.Info("failed to decode response from peer", "peer", host, "err", err)
-		return err
+		return "", err
 	}
 
-	return setPubkey(id, result.Data)
+	err = setPubkey(id, result.Data)
+	if err != nil {
+		return "", err
+	}
+
+	return result.Data, nil
 }
