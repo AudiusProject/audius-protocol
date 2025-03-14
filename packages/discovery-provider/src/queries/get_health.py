@@ -207,6 +207,16 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         if latest_indexed_block_hash_bytes is not None:
             latest_indexed_block_hash = latest_indexed_block_hash_bytes.decode("utf-8")
 
+    core_health: CoreHealth = get_core_health(redis=redis)
+    core_listens_health = get_core_listens_health(
+        redis=redis, plays_count_max_drift=plays_count_max_drift
+    )
+
+    latest_block_ts = 0
+    if core_health:
+        latest_chain_block_ts = core_health.get("latest_chain_block_ts") or 0
+        latest_block_ts = int(latest_chain_block_ts)
+
     # fetch latest db state if:
     # we explicitly don't want to use redis cache or
     # value from redis cache is None
@@ -219,15 +229,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         latest_indexed_block_num = db_block_state["number"] or 0
         latest_indexed_block_hash = db_block_state["blockhash"]
 
-    core_health: CoreHealth = get_core_health(redis=redis)
-    core_listens_health = get_core_listens_health(
-        redis=redis, plays_count_max_drift=plays_count_max_drift
-    )
-    latest_block_ts = 0
-    if core_health:
-        latest_chain_block_ts = core_health.get("latest_chain_block_ts") or 0
-        latest_block_ts = int(latest_chain_block_ts)
-
     current_ts = int(time.time())  # Current UTC time in seconds
 
     # Check if the latest block timestamp is older than 60 seconds
@@ -239,8 +240,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     latest_indexed_block_num = -1
     latest_block_num = -1
     if core_health:
-        latest_indexed_block_num = core_health.get("latest_indexed_block") or -1
-        latest_block_num = core_health.get("latest_chain_block") or -1
+        latest_indexed_block_num = core_health.get("latest_indexed_block") or 0
+        latest_block_num = core_health.get("latest_chain_block") or 0
 
     user_bank_health_info = get_solana_indexer_status(
         redis, redis_keys.solana.user_bank, user_bank_max_drift

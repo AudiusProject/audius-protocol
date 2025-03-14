@@ -2,11 +2,11 @@ import json
 import os
 from datetime import datetime, timezone
 from time import time
-from unittest.mock import patch
 
 from src.models.indexing.block import Block
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.queries.get_health import get_health
+from src.utils.core import CoreHealth, core_health_check_cache_key
 from src.utils.redis_constants import (
     TRACK_DELIST_DISCREPANCIES_KEY,
     TRACK_DELIST_DISCREPANCIES_TIMESTAMP_KEY,
@@ -26,6 +26,10 @@ from src.utils.redis_constants import (
     most_recent_indexed_block_redis_key,
     oldest_unarchived_play_key,
 )
+
+
+def cache_core_health_vars(redis_mock, health: CoreHealth):
+    redis_mock.set(core_health_check_cache_key, json.dumps(health))
 
 
 # Cache values as expected in redis
@@ -89,6 +93,17 @@ def test_get_health(redis_mock, db_mock, mock_requests):
     cache_play_health_vars(redis_mock)
     cache_trusted_notifier_discrepancies_vars(redis_mock)
 
+    cache_core_health_vars(
+        redis_mock=redis_mock,
+        health={
+            "chain_id": "audius-devnet",
+            "indexing_entity_manager": True,
+            "indexing_plays": True,
+            "latest_chain_block": 2,
+            "latest_indexed_block": 1,
+        },
+    )
+
     # Set up db state
     with db_mock.scoped_session() as session:
         Block.__table__.create(db_mock._engine)
@@ -107,11 +122,8 @@ def test_get_health(redis_mock, db_mock, mock_requests):
     assert error == False
 
     assert health_results["web"]["blocknumber"] == 2
-    assert health_results["web"]["blockhash"] == "0x02"
     assert health_results["db"]["number"] == 1
-    assert health_results["db"]["blockhash"] == "0x01"
     assert health_results["block_difference"] == 1
-    assert health_results["plays"]["tx_info"]["slot_diff"] == 3
 
     assert "maximum_healthy_block_difference" in health_results
     assert "version" in health_results
@@ -123,6 +135,17 @@ def test_get_health_using_redis(redis_mock, db_mock, mock_requests):
 
     cache_play_health_vars(redis_mock)
     cache_trusted_notifier_discrepancies_vars(redis_mock)
+
+    cache_core_health_vars(
+        redis_mock=redis_mock,
+        health={
+            "chain_id": "audius-devnet",
+            "indexing_entity_manager": True,
+            "indexing_plays": True,
+            "latest_chain_block": 3,
+            "latest_indexed_block": 2,
+        },
+    )
 
     # Set up redis state
     redis_mock.set(latest_block_redis_key, "3")
@@ -148,9 +171,7 @@ def test_get_health_using_redis(redis_mock, db_mock, mock_requests):
     assert error == False
 
     assert health_results["web"]["blocknumber"] == 3
-    assert health_results["web"]["blockhash"] == "0x3"
     assert health_results["db"]["number"] == 2
-    assert health_results["db"]["blockhash"] == "0x02"
     assert health_results["block_difference"] == 1
 
     assert "maximum_healthy_block_difference" in health_results
@@ -163,6 +184,17 @@ def test_get_health_partial_redis(redis_mock, db_mock, mock_requests):
 
     cache_play_health_vars(redis_mock)
     cache_trusted_notifier_discrepancies_vars(redis_mock)
+
+    cache_core_health_vars(
+        redis_mock=redis_mock,
+        health={
+            "chain_id": "audius-devnet",
+            "indexing_entity_manager": True,
+            "indexing_plays": True,
+            "latest_chain_block": 2,
+            "latest_indexed_block": 1,
+        },
+    )
 
     # Set up redis state
     redis_mock.set(latest_block_redis_key, "3")
@@ -186,9 +218,7 @@ def test_get_health_partial_redis(redis_mock, db_mock, mock_requests):
     assert error == False
 
     assert health_results["web"]["blocknumber"] == 2
-    assert health_results["web"]["blockhash"] == "0x02"
     assert health_results["db"]["number"] == 1
-    assert health_results["db"]["blockhash"] == "0x01"
     assert health_results["block_difference"] == 1
 
     assert "maximum_healthy_block_difference" in health_results
@@ -201,6 +231,16 @@ def test_get_health_with_invalid_db_state(redis_mock, db_mock, mock_requests):
 
     cache_play_health_vars(redis_mock)
     cache_trusted_notifier_discrepancies_vars(redis_mock)
+
+    cache_core_health_vars(
+        redis_mock=redis_mock,
+        health={
+            "chain_id": "audius-devnet",
+            "indexing_entity_manager": True,
+            "indexing_plays": True,
+            "latest_chain_block": 2,
+        },
+    )
 
     # Set up db state
     with db_mock.scoped_session() as session:
@@ -220,9 +260,7 @@ def test_get_health_with_invalid_db_state(redis_mock, db_mock, mock_requests):
     assert error == False
 
     assert health_results["web"]["blocknumber"] == 2
-    assert health_results["web"]["blockhash"] == "0x02"
     assert health_results["db"]["number"] == 0
-    assert health_results["db"]["blockhash"] == "0x01"
     assert health_results["block_difference"] == 2
 
     assert "maximum_healthy_block_difference" in health_results
@@ -242,6 +280,17 @@ def test_get_health_skip_redis(redis_mock, db_mock, mock_requests):
     redis_mock.set(most_recent_indexed_block_redis_key, "2")
     redis_mock.set(most_recent_indexed_block_hash_redis_key, "0x02")
 
+    cache_core_health_vars(
+        redis_mock=redis_mock,
+        health={
+            "chain_id": "audius-devnet",
+            "indexing_entity_manager": True,
+            "indexing_plays": True,
+            "latest_chain_block": 2,
+            "latest_indexed_block": 1,
+        },
+    )
+
     # Set up db state
     with db_mock.scoped_session() as session:
         Block.__table__.create(db_mock._engine)
@@ -260,9 +309,7 @@ def test_get_health_skip_redis(redis_mock, db_mock, mock_requests):
     assert error == False
 
     assert health_results["web"]["blocknumber"] == 2
-    assert health_results["web"]["blockhash"] == "0x02"
     assert health_results["db"]["number"] == 1
-    assert health_results["db"]["blockhash"] == "0x01"
     assert health_results["block_difference"] == 1
 
     assert "maximum_healthy_block_difference" in health_results
@@ -270,44 +317,21 @@ def test_get_health_skip_redis(redis_mock, db_mock, mock_requests):
     assert "service" in health_results
 
 
-@patch("src.utils.helpers.get_final_poa_block", return_value=5)
-def test_get_health_skip_redis_with_final_poa_block(
-    _, redis_mock, db_mock, mock_requests
-):
-    """Tests that the health check takes note of the latest chain block correctly"""
-
-    cache_play_health_vars(redis_mock)
-    cache_trusted_notifier_discrepancies_vars(redis_mock)
-
-    # Set up db state
-    with db_mock.scoped_session() as session:
-        Block.__table__.create(db_mock._engine)
-        session.add(
-            Block(
-                blockhash="0x06",
-                number=6,
-                parenthash="0x05",
-                is_current=True,
-            )
-        )
-
-    args = {}
-    health_results, error = get_health(args, use_redis_cache=False)
-
-    assert error == False
-
-    assert health_results["web"]["blocknumber"] == 7
-    assert health_results["web"]["blockhash"] == "0x06"
-    assert health_results["db"]["number"] == 6
-    assert health_results["db"]["blockhash"] == "0x06"
-    assert health_results["block_difference"] == 1
-
-
 def test_get_health_unhealthy_block_difference(redis_mock, db_mock, mock_requests):
     """Tests that the health check an unhealthy block difference"""
 
     cache_play_health_vars(redis_mock)
     cache_trusted_notifier_discrepancies_vars(redis_mock)
+    cache_core_health_vars(
+        redis_mock=redis_mock,
+        health={
+            "chain_id": "audius-devnet",
+            "indexing_entity_manager": True,
+            "indexing_plays": True,
+            "latest_chain_block": 50,
+            "latest_indexed_block": 1,
+        },
+    )
 
     # Set up db state
     with db_mock.scoped_session() as session:
@@ -327,9 +351,7 @@ def test_get_health_unhealthy_block_difference(redis_mock, db_mock, mock_request
     assert error == True
 
     assert health_results["web"]["blocknumber"] == 50
-    assert health_results["web"]["blockhash"] == "0x50"
     assert health_results["db"]["number"] == 1
-    assert health_results["db"]["blockhash"] == "0x01"
     assert health_results["block_difference"] == 49
 
     assert "maximum_healthy_block_difference" in health_results
@@ -403,6 +425,17 @@ def test_get_health_verbose(redis_mock, db_mock, get_monitors_mock, mock_request
     cache_play_health_vars(redis_mock)
     cache_trusted_notifier_discrepancies_vars(redis_mock)
 
+    cache_core_health_vars(
+        redis_mock=redis_mock,
+        health={
+            "chain_id": "audius-devnet",
+            "indexing_entity_manager": True,
+            "indexing_plays": True,
+            "latest_chain_block": 2,
+            "latest_indexed_block": 1,
+        },
+    )
+
     # Set up db state
     with db_mock.scoped_session() as session:
         Block.__table__.create(db_mock._engine)
@@ -422,9 +455,7 @@ def test_get_health_verbose(redis_mock, db_mock, get_monitors_mock, mock_request
     assert error == False
 
     assert health_results["web"]["blocknumber"] == 2
-    assert health_results["web"]["blockhash"] == "0x02"
     assert health_results["db"]["number"] == 1
-    assert health_results["db"]["blockhash"] == "0x01"
     assert health_results["block_difference"] == 1
 
     assert health_results["db_connections"]["database_connections"] == 2
