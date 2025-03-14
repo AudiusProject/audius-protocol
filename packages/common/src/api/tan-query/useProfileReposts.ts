@@ -19,6 +19,7 @@ import {
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
+import { primeUserData } from './utils'
 import { primeCollectionData } from './utils/primeCollectionData'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -55,8 +56,10 @@ export const useProfileReposts = (
       const sdk = await audiusSdk()
       if (!handle) return []
 
+      // If the @ is still at the beginning of the handle, trim it off
+      const handleNoAt = handle.startsWith('@') ? handle.substring(1) : handle
       const { data: repostsSDKData } = await sdk.full.users.getRepostsByHandle({
-        handle,
+        handle: handleNoAt,
         userId: currentUserId ? Id.parse(currentUserId) : undefined,
         limit: pageSize,
         offset: pageParam
@@ -70,6 +73,13 @@ export const useProfileReposts = (
         (activity) => repostActivityFromSDK(activity)?.item
       )
 
+      primeUserData({
+        users: reposts
+          .filter((item): item is UserTrackMetadata => 'track_id' in item)
+          .map((item) => item.user),
+        queryClient,
+        dispatch
+      })
       primeTrackData({
         tracks: reposts.filter(
           (item): item is UserTrackMetadata => 'track_id' in item
@@ -94,6 +104,9 @@ export const useProfileReposts = (
       )
 
       return reposts
+    },
+    select: (data) => {
+      return data?.pages?.flat()
     },
     ...options,
     enabled: options?.enabled !== false && !!handle
