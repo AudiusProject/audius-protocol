@@ -59,7 +59,6 @@ export const useCollections = (
   )
 
   return {
-    ...queriesResults,
     data: isSavedToRedux ? collections : undefined,
     isPending: queriesResults.isPending || !isSavedToRedux,
     isLoading: queriesResults.isLoading || !isSavedToRedux,

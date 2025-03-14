@@ -57,7 +57,6 @@ export const useUsers = (
   )
 
   return {
-    ...queryResults,
     data: isSavedToRedux ? users : undefined,
     isPending: queryResults.isPending || !isSavedToRedux,
     isLoading: queryResults.isLoading || !isSavedToRedux,

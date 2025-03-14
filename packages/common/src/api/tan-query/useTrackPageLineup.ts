@@ -3,7 +3,8 @@ import {
   useInfiniteQuery,
   useQueryClient,
   QueryKey,
-  InfiniteData
+  InfiniteData,
+  UseInfiniteQueryResult
 } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
@@ -18,7 +19,6 @@ import { tracksActions } from '~/store/pages/track/lineup/actions'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
-import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
 
@@ -205,19 +205,27 @@ export const useTrackPageLineup = (
     enabled: options?.enabled !== false && !!ownerHandle && !!trackId
   })
 
+  const indices = queryData.data?.pages?.[0]?.indices
+  const queryDataWithFlatData = queryData as unknown as UseInfiniteQueryResult<
+    UserTrackMetadata[],
+    Error
+  >
+  queryDataWithFlatData.data = queryData.data?.pages
+    .map((page) => page.tracks)
+    .flat()
+
   const lineupData = useLineupQuery({
-    queryData,
+    queryData: queryDataWithFlatData,
+    queryKey: getTrackPageLineupQueryKey(trackId, ownerHandle),
     lineupActions: tracksActions,
     lineupSelector: trackPageSelectors.getLineup,
-    playbackSource: PlaybackSource.TRACK_TILE
+    playbackSource: PlaybackSource.TRACK_TILE,
+    pageSize
   })
 
   return {
-    ...queryData,
     ...lineupData,
-    loadNextPage: loadNextPage(queryData),
-    pageSize,
-    indices: queryData.data?.pages?.[0]?.indices,
+    indices,
     hasNextPage: false // Override hasNextPage to always be false
   }
 }

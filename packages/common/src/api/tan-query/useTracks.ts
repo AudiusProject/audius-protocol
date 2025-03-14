@@ -59,7 +59,6 @@ export const useTracks = (
   )
 
   return {
-    ...queryResults,
     data: isSavedToRedux ? tracks : undefined,
     isPending: queryResults.isPending || !isSavedToRedux,
     isLoading: queryResults.isLoading || !isSavedToRedux,

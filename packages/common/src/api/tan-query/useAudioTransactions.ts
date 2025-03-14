@@ -98,8 +98,12 @@ export const useAudioTransactions = (
 
   useUsers(userIds, { enabled: !!userIds?.length })
 
-  return {
-    ...query,
-    data: query.data?.pages.flat() ?? []
+  // avoid spreading all query props which causes extra renders
+  const queryWithTransactions = query as typeof query & {
+    transactions: TransactionDetails[]
   }
+  queryWithTransactions.transactions =
+    queryWithTransactions.data?.pages.flat() ?? []
+
+  return queryWithTransactions
 }
