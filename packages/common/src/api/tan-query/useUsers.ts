@@ -58,8 +58,11 @@ export const useUsers = (
 
   return {
     data: isSavedToRedux ? users : undefined,
+    byId,
+    status: isSavedToRedux ? queryResults.status : 'pending',
     isPending: queryResults.isPending || !isSavedToRedux,
     isLoading: queryResults.isLoading || !isSavedToRedux,
-    byId
+    isFetching: queryResults.isFetching,
+    isSuccess: queryResults.isSuccess
   }
 }

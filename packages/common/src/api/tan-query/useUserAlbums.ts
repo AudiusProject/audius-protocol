@@ -41,7 +41,7 @@ export const useUserAlbums = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const { data: collectionIds } = useInfiniteQuery({
+  const queryRes = useInfiniteQuery({
     queryKey: getUserAlbumsQueryKey(params),
     initialPageParam: 0,
     getNextPageParam: (lastPage: ID[], allPages) => {
@@ -75,5 +75,14 @@ export const useUserAlbums = (
     enabled: options?.enabled !== false && !!userId
   })
 
-  return useCollections(collectionIds)
+  const { data: collections } = useCollections(queryRes.data)
+
+  return {
+    data: collections,
+    isPending: queryRes.isPending,
+    isLoading: queryRes.isLoading,
+    hasNextPage: queryRes.hasNextPage,
+    isFetchingNextPage: queryRes.isFetchingNextPage,
+    fetchNextPage: queryRes.fetchNextPage
+  }
 }

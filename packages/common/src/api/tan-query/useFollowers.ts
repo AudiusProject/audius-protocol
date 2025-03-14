@@ -37,7 +37,7 @@ export const useFollowers = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const { data: userIds } = useInfiniteQuery({
+  const queryRes = useInfiniteQuery({
     queryKey: getFollowersQueryKey({ userId, pageSize }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: ID[], allPages) => {
@@ -61,5 +61,15 @@ export const useFollowers = (
     enabled: options?.enabled !== false && !!userId
   })
 
-  return useUsers(userIds)
+  const { data: users } = useUsers(queryRes.data)
+
+  return {
+    data: users,
+    isPending: queryRes.isPending,
+    isLoading: queryRes.isLoading,
+    isSuccess: queryRes.isSuccess,
+    hasNextPage: queryRes.hasNextPage,
+    isFetchingNextPage: queryRes.isFetchingNextPage,
+    fetchNextPage: queryRes.fetchNextPage
+  }
 }

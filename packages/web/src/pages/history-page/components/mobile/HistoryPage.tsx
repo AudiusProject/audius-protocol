@@ -1,6 +1,7 @@
 import { useEffect, useContext, useMemo } from 'react'
 
 import { useTrackHistory } from '@audius/common/api'
+import { UserTrackMetadata } from '@audius/common/models'
 import { route } from '@audius/common/utils'
 import { Button } from '@audius/harmony'
 import { Link } from 'react-router-dom'
@@ -52,7 +53,7 @@ export const HistoryPage = ({ title, description }: HistoryPageProps) => {
     return data.map((track, index) => {
       const lineupTrack = {
         ...lineup.entries[index],
-        ...track
+        ...(track as UserTrackMetadata)
       }
 
       const isActive = lineupTrack.uid === playingUid

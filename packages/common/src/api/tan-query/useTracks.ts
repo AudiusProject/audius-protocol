@@ -60,8 +60,11 @@ export const useTracks = (
 
   return {
     data: isSavedToRedux ? tracks : undefined,
+    byId,
+    status: isSavedToRedux ? queryResults.status : 'pending',
     isPending: queryResults.isPending || !isSavedToRedux,
     isLoading: queryResults.isLoading || !isSavedToRedux,
-    byId
+    isFetching: queryResults.isFetching,
+    isSuccess: queryResults.isSuccess
   }
 }

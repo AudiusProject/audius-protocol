@@ -317,18 +317,14 @@ export const useSearchAllResults = (
   })
 
   const tracksQueryData = {
-    fetchNextPage: queryData.fetchNextPage,
-    hasNextPage: queryData.hasNextPage,
-    isLoading: queryData.isLoading,
-    isPending: queryData.isPending,
-    isError: queryData.isError,
+    ...queryData,
     data: queryData?.data?.tracks as UserTrackMetadata[]
     // The cast here is not great but some of the types (e.g. fetchNextPage) are typed differently.
     // useLineupQuery only really cares about is how the data is typed
   } as unknown as UseInfiniteQueryResult<UserTrackMetadata[]>
 
   // The tracks need to be in a lineup
-  return useLineupQuery({
+  const tracksLineupData = useLineupQuery({
     queryData: tracksQueryData,
     pageSize,
     queryKey: queryProps.queryKey,
@@ -336,6 +332,13 @@ export const useSearchAllResults = (
     lineupSelector: getSearchTracksLineup,
     playbackSource: PlaybackSource.SEARCH_PAGE
   })
+
+  return {
+    // TODO: avoid spreading all queryData props
+    ...tracksLineupData,
+    ...queryData,
+    status: tracksLineupData.status
+  }
 }
 
 export const useSearchTrackResults = (

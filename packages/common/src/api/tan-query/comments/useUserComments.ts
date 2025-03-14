@@ -84,5 +84,14 @@ export const useUserComments = (
     }
   }, [error, dispatch, reportToSentry])
 
-  return useComments(commentIds)
+  const { data: comments } = useComments(commentIds)
+
+  return {
+    data: comments,
+    isPending: queryRes.isPending,
+    isLoading: queryRes.isLoading,
+    hasNextPage: queryRes.hasNextPage,
+    isFetchingNextPage: queryRes.isFetchingNextPage,
+    fetchNextPage: queryRes.fetchNextPage
+  }
 }

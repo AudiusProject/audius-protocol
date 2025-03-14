@@ -122,7 +122,9 @@ export const useLineupQuery = ({
     hasNextPage: queryData.hasNextPage,
     isLoading: queryData.isLoading,
     isPending: queryData.isPending,
-    isError: queryData.isError
+    isError: queryData.isError,
+    isFetching: queryData.isFetching,
+    isSuccess: queryData.isSuccess
   }
 }
 

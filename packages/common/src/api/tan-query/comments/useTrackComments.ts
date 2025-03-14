@@ -92,5 +92,17 @@ export const useTrackComments = (
     }
   }, [error, dispatch, reportToSentry])
 
-  return useComments(commentIds)
+  const { data: comments } = useComments(commentIds)
+
+  return {
+    commentIds,
+    data: comments,
+    isPending: queryRes.isPending,
+    isLoading: queryRes.isLoading,
+    isFetching: queryRes.isFetching,
+    status: queryRes.status,
+    hasNextPage: queryRes.hasNextPage,
+    isFetchingNextPage: queryRes.isFetchingNextPage,
+    fetchNextPage: queryRes.fetchNextPage
+  }
 }
