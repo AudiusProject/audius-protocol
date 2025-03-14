@@ -1,4 +1,4 @@
-from src.models.indexing.block import Block
+from src.models.core.core_indexed_blocks import CoreIndexedBlocks
 from src.queries.get_block_confirmation import get_block_confirmation
 
 
@@ -9,29 +9,31 @@ def test_get_block_confirmation(web3_mock, redis_mock, db_mock):
     blockhash, blocknumber = "0x01", 1
     latest_blockhash, latest_blocknumber = "0x02", 2
     with db_mock.scoped_session() as session:
-        Block.__table__.create(db_mock._engine)
+        # Create the core_indexed_blocks table in the test database
+        CoreIndexedBlocks.__table__.create(db_mock._engine)
+
         session.add(
-            Block(
+            CoreIndexedBlocks(
                 blockhash="0x00",
-                number=0,
+                height=0,
                 parenthash=None,
-                is_current=False,
+                chain_id="1",
             )
         )
         session.add(
-            Block(
+            CoreIndexedBlocks(
                 blockhash=blockhash,
-                number=blocknumber,
+                height=blocknumber,
                 parenthash="0x00",
-                is_current=False,
+                chain_id="1",
             )
         )
         session.add(
-            Block(
+            CoreIndexedBlocks(
                 blockhash=latest_blockhash,
-                number=latest_blocknumber,
+                height=latest_blocknumber,
                 parenthash=blockhash,
-                is_current=True,
+                chain_id="1",
             )
         )
 
