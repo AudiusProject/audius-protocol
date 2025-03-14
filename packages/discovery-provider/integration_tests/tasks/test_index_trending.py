@@ -29,7 +29,7 @@ class MockCore:
         return NodeInfoResponse(chainid="audius-devnet")
 
     def get_block(self, *args) -> BlockResponse:
-        if len(args) == 2:
+        if len(args) >= 1:
             hours_diff = args[0]
             datetime_val = BASE_TIME + timedelta(minutes=hours_diff)
             ts = Timestamp()
