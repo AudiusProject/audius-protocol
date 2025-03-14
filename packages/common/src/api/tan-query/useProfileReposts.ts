@@ -73,13 +73,6 @@ export const useProfileReposts = (
         (activity) => repostActivityFromSDK(activity)?.item
       )
 
-      primeUserData({
-        users: reposts
-          .filter((item): item is UserTrackMetadata => 'track_id' in item)
-          .map((item) => item.user),
-        queryClient,
-        dispatch
-      })
       primeTrackData({
         tracks: reposts.filter(
           (item): item is UserTrackMetadata => 'track_id' in item

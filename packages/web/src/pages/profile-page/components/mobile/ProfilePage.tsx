@@ -1,6 +1,10 @@
 import { useEffect, useContext } from 'react'
 
-import { useProfileReposts, useUserCollectibles } from '@audius/common/api'
+import {
+  useProfileReposts,
+  useProfileTracks,
+  useUserCollectibles
+} from '@audius/common/api'
 import {
   Status,
   Collection,
@@ -31,12 +35,14 @@ import CollectiblesPage from 'components/collectibles/components/CollectiblesPag
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import Lineup from 'components/lineup/Lineup'
 import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
+import { LineupVariant } from 'components/lineup/types'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, {
   LeftPreset,
   CenterPreset
 } from 'components/nav/mobile/NavContext'
 import TextElement, { Type } from 'components/nav/mobile/TextElement'
+import UploadChip from 'components/upload/UploadChip'
 import TierExplainerDrawer from 'components/user-badges/TierExplainerDrawer'
 import useTabs, { TabHeader } from 'hooks/useTabs/useTabs'
 import { getUserPageSEOFields } from 'utils/seo'
@@ -248,6 +254,28 @@ const RepostsTab = ({
   return <TanQueryLineup lineupQueryData={queryData} actions={feedActions} />
 }
 
+const TracksTab = ({
+  profile,
+  handle
+}: {
+  profile: User
+  handle: string
+  isOwner: boolean
+}) => {
+  const queryData = useProfileTracks({
+    handle
+  })
+
+  return (
+    <TanQueryLineup
+      lineupQueryData={queryData}
+      leadingElementId={profile.artist_pick_track_id}
+      pageSize={queryData.pageSize}
+      actions={tracksActions}
+    />
+  )
+}
+
 const ProfilePage = g(
   ({
     accountUserId,
@@ -421,15 +449,7 @@ const ProfilePage = g(
                 }
               />
             ) : (
-              <Lineup
-                {...getLineupProps(artistTracks)}
-                leadingElementId={profile.artist_pick_track_id}
-                limit={profile.track_count}
-                loadMore={loadMoreArtistTracks}
-                playTrack={playArtistTrack}
-                pauseTrack={pauseArtistTrack}
-                actions={tracksActions}
-              />
+              <TracksTab profile={profile} handle={handle} isOwner={isOwner} />
             )}
           </div>,
           <div className={styles.cardLineupContainer} key='artistAlbums'>
@@ -471,14 +491,7 @@ const ProfilePage = g(
                 }
               />
             ) : (
-              <Lineup
-                {...getLineupProps(userFeed)}
-                count={profile.repost_count}
-                loadMore={loadMoreUserFeed}
-                playTrack={playUserFeedTrack}
-                pauseTrack={pauseUserFeedTrack}
-                actions={feedActions}
-              />
+              <RepostsTab isOwner={isOwner} profile={profile} handle={handle} />
             )}
           </div>,
           <div className={styles.cardLineupContainer} key='playlists'>
