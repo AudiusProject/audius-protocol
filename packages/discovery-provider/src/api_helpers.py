@@ -16,7 +16,7 @@ from src.queries.get_sol_plays import get_sol_play_health_info
 # pylint: disable=R0401
 from src.utils import helpers
 from src.utils.config import shared_config
-from src.utils.core import get_core_health, is_indexing_core_plays
+from src.utils.core import get_core_health
 from src.utils.helpers import generate_signature
 from src.utils.redis_connection import get_redis
 from src.utils.redis_constants import most_recent_indexed_block_redis_key
@@ -90,15 +90,14 @@ def response_dict_with_metadata(response_dictionary, sign_response):
         play_chain_tx["slot"] if play_chain_tx else None
     )
 
-    if is_indexing_core_plays():
-        core_health = get_core_health()
-        if core_health:
-            response_dictionary["latest_indexed_slot_plays"] = core_health.get(
-                "latest_indexed_block"
-            )
-            response_dictionary["latest_chain_slot_plays"] = core_health.get(
-                "latest_chain_block"
-            )
+    core_health = get_core_health()
+    if core_health:
+        response_dictionary["latest_indexed_slot_plays"] = core_health.get(
+            "latest_indexed_block"
+        )
+        response_dictionary["latest_chain_slot_plays"] = core_health.get(
+            "latest_chain_block"
+        )
 
     response_dictionary["version"] = disc_prov_version
     response_dictionary["signer"] = shared_config["delegate"]["owner_wallet"]

@@ -443,7 +443,9 @@ def find_min_block_above_timestamp(
     """
     curr_block_number = block_number
     block = core.get_block(block_number)
-    while block.timestamp.ToDatetime() > min_timestamp:
+    greater_than_min = block.timestamp.ToDatetime() > min_timestamp
+    logger.error(f"BLOCK {greater_than_min} {min_timestamp} {block}")
+    while greater_than_min:
         prev_block = core.get_block(curr_block_number - 1)
         prev_timestamp = prev_block.timestamp.ToDatetime()
         if prev_timestamp >= min_timestamp:
@@ -456,7 +458,7 @@ def find_min_block_above_timestamp(
 
 
 def get_should_update_trending(
-    db: SessionManager, redis: Redis, interval_seconds: int
+    db: SessionManager, core: CoreClient, redis: Redis, interval_seconds: int
 ) -> Tuple[Optional[int], Optional[int]]:
     """
     Checks if the trending job should re-run based off the last trending run's timestamp and
@@ -472,7 +474,6 @@ def get_should_update_trending(
         )
         current_db_block_number = current_db_block[0]
 
-        core = get_core_instance()
         node_info = core.get_node_info()
         core_chain_id = node_info.chainid
 
@@ -527,8 +528,9 @@ def index_trending_task(self):
     try:
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
+            core = get_core_instance()
             min_block, min_timestamp = get_should_update_trending(
-                db, redis, UPDATE_TRENDING_DURATION_DIFF_SEC
+                db, core, redis, UPDATE_TRENDING_DURATION_DIFF_SEC
             )
             if min_block is not None and min_timestamp is not None:
                 index_trending(self, db, redis, min_timestamp)
