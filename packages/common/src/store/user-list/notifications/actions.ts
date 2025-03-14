@@ -8,8 +8,3 @@ export const setNotification = createCustomAction(
   SET_NOTIFICATION,
   (notification: any) => ({ notification })
 )
-
-export const getNotificationError = createCustomAction(
-  GET_NOTIFICATION_ERROR,
-  (id: string, error: string) => ({ id, error })
-)

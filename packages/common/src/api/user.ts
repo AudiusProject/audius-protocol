@@ -344,7 +344,10 @@ const userApi = createApi({
           id: Id.parse(userId)
         })
 
-        return data
+        return data?.map((sale) => ({
+          ...sale,
+          contentId: parseInt(sale.contentId)
+        }))
       },
       options: {}
     },

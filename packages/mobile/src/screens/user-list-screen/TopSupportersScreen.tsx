@@ -1,6 +1,7 @@
+<<<<<<< HEAD
 import { useCallback } from 'react'
 
-import { useGetCurrentUserId } from '@audius/common/api'
+import { useCurrentUserId, useGetCurrentUserId, useSupporters } from '@audius/common/api'
 import {
   cacheUsersSelectors,
   topSupportersUserListActions,
@@ -10,71 +11,38 @@ import { ChatBlastAudience } from '@audius/sdk'
 import { css } from '@emotion/native'
 import { Platform, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
+=======
+import { useCurrentUserId, useSupporters } from '@audius/common/api'
+import { ChatBlastAudience } from '@audius/sdk'
+import { css } from '@emotion/native'
+>>>>>>> d81215120c ([C-5652] Migrate all user-lists to tan-query (#11025))
 
 import { Box, IconTrophy } from '@audius/harmony-native'
-import { Text } from 'app/components/core'
 import { useRoute } from 'app/hooks/useRoute'
-import { makeStyles } from 'app/styles'
 
 import { ChatBlastWithAudienceCTA } from '../chat-screen/ChatBlastWithAudienceCTA'
 
-import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
-const { setTopSupporters } = topSupportersUserListActions
-const { getUserList, getId: getSupportersId } = topSupportersUserListSelectors
-const { getUser } = cacheUsersSelectors
+import { UserListV2 } from './UserListV2'
 
 const messages = {
   title: 'Tip Supporters',
   titleAlt: 'Top Supporters'
 }
 
-const useStyles = makeStyles(({ spacing }) => ({
-  titleNameContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: -spacing(3)
-  },
-  titleName: {
-    maxWidth: 120
-  }
-}))
-
 export const TopSupportersScreen = () => {
-  const styles = useStyles()
   const { params } = useRoute<'TopSupporters'>()
-  const { userId, source } = params
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const supportersId = useSelector(getSupportersId)
-  const supportersUser = useSelector((state) =>
-    getUser(state, { id: supportersId })
-  )
-  const baseTitle = Platform.OS === 'ios' ? messages.titleAlt : messages.title
-  const dispatch = useDispatch()
-
-  const handleSetSupporters = useCallback(() => {
-    dispatch(setTopSupporters(userId))
-  }, [dispatch, userId])
-
-  const title =
-    source === 'feed' && supportersUser ? (
-      <View style={styles.titleNameContainer}>
-        <Text variant='h3' style={styles.titleName} numberOfLines={1}>
-          {supportersUser.name}
-        </Text>
-        <Text variant='h3'>&apos;s&nbsp;{baseTitle}</Text>
-      </View>
-    ) : (
-      baseTitle
-    )
+  const { userId } = params
+  const { data: currentUserId } = useCurrentUserId()
+  const query = useSupporters({ userId })
 
   return (
-    <UserListScreen title={title} titleIcon={IconTrophy}>
+    <UserListScreen title={messages.title} titleIcon={IconTrophy}>
       <>
-        <UserList
-          userSelector={getUserList}
+        <UserListV2
+          {...query}
+          data={query.data?.map((supporter) => supporter.sender)}
           tag='TOP SUPPORTERS'
-          setUserList={handleSetSupporters}
         />
         {currentUserId === userId ? (
           <Box

@@ -1,14 +1,7 @@
-import { UserListStoreState } from '~/store/user-list/types'
-
-import { ID } from '../../../models'
-
-export type TopSupportersOwnState = {
-  id: ID | null
-}
+import { ID } from '~/models/Identifiers'
 
 export type TopSupportersPageState = {
-  topSupportersPage: TopSupportersOwnState
-  userList: UserListStoreState
+  id: ID | null
 }
 
 export const TOP_SUPPORTERS_USER_LIST_TAG = 'TOP SUPPORTERS'

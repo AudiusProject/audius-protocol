@@ -5,12 +5,10 @@ import { formatCount } from '~/utils/formatUtil'
 const getBaseState = (state: CommonState) => state.ui.userList.notifications
 
 export const getNotification = (state: CommonState) =>
-  getBaseState(state).notificationUsersPage.notification
-export const getUserList = (state: CommonState) => getBaseState(state).userList
-export const getUserIds = (state: CommonState) =>
-  getBaseState(state).userList.userIds
+  getBaseState(state).notification
 
 const defaultTitle = 'Users'
+
 export const getPageTitle = (state: CommonState) => {
   const notification = getNotification(state)
   if (!notification) return defaultTitle

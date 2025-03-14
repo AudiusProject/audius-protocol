@@ -19,6 +19,7 @@ export const usePurchasersAudience = ({
   contentId?: ID
   contentType?: 'track' | 'album'
 }) => {
+  console.log({ contentId, contentType })
   const { data: currentUserId } = useGetCurrentUserId({})
   const { data: salesAggregate } = useGetSalesAggegrate({
     userId: currentUserId!
@@ -33,11 +34,11 @@ export const usePurchasersAudience = ({
   )
 
   const { data: tracks } = useGetTracksByIds({
-    ids: trackAggregates?.map((sale) => parseInt(sale.contentId)) ?? [],
+    ids: trackAggregates?.map((sale) => sale.contentId) ?? [],
     currentUserId
   })
   const { data: albums } = useGetPlaylistsByIds({
-    ids: albumAggregates?.map((sale) => parseInt(sale.contentId)) ?? [],
+    ids: albumAggregates?.map((sale) => sale.contentId) ?? [],
     currentUserId
   })
   const tracksById = useMemo(() => keyBy(tracks, 'track_id'), [tracks])

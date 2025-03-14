@@ -1,14 +1,8 @@
 import { useEffect, useContext } from 'react'
 
-import {
-  favoritesUserListSelectors,
-  FAVORITES_USER_LIST_TAG as USER_LIST_TAG
-} from '@audius/common/store'
-
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
-import { UserList } from 'components/user-list/UserList'
-const { getUserList } = favoritesUserListSelectors
+import { FavoritesUserList } from 'components/user-list/lists/FavoritesUserList'
 
 const messages = {
   title: 'Favorites'
@@ -25,7 +19,7 @@ const FavoritesPage = () => {
 
   return (
     <MobilePageContainer fullHeight>
-      <UserList stateSelector={getUserList} tag={USER_LIST_TAG} />
+      <FavoritesUserList />
     </MobilePageContainer>
   )
 }

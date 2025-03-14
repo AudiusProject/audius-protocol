@@ -4,7 +4,7 @@ import { useCurrentUserId } from '@audius/common/api'
 import { ID, User, FollowSource } from '@audius/common/models'
 import { profilePageActions, usersSocialActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { Flex, FollowButton } from '@audius/harmony'
+import { Flex, FollowButton, useScrollbarRef } from '@audius/harmony'
 import { range } from 'lodash'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch } from 'react-redux'
@@ -42,27 +42,11 @@ type UserListV2Props = {
   /**
    * Function to load more users
    */
-  fetchNextPage: () => void
-  /**
-   * Callback when a user navigates away
-   */
-  onNavigateAway?: () => void
-  /**
-   * Callback after following a user
-   */
-  afterFollow?: () => void
-  /**
-   * Callback after unfollowing a user
-   */
-  afterUnfollow?: () => void
+  fetchNextPage?: () => void
   /**
    * Optional callback before clicking artist name
    */
   beforeClickArtistName?: () => void
-  /**
-   * Optional function to get scroll parent element
-   */
-  getScrollParent?: () => HTMLElement | null
   /**
    * Optional user ID to show support for (used in top supporters list)
    */
@@ -79,30 +63,26 @@ export const UserListV2 = ({
   isFetchingNextPage,
   isPending,
   fetchNextPage,
-  onNavigateAway,
-  afterFollow,
-  afterUnfollow,
   beforeClickArtistName,
-  getScrollParent,
   showSupportFor,
   showSupportFrom
 }: UserListV2Props) => {
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
   const { data: currentUserId } = useCurrentUserId()
+  const scrollRef = useScrollbarRef()
 
   const handleLoadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage()
+      fetchNextPage?.()
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
   const handleFollow = useCallback(
     (userId: ID) => {
       dispatch(usersSocialActions.followUser(userId, FollowSource.USER_LIST))
-      afterFollow?.()
     },
-    [dispatch, afterFollow]
+    [dispatch]
   )
 
   const handleUnfollow = useCallback(
@@ -115,9 +95,8 @@ export const UserListV2 = ({
         )
         dispatch(setNotificationSubscription(userId, false, false))
       }
-      afterUnfollow?.()
     },
-    [dispatch, isMobile, afterUnfollow]
+    [dispatch, isMobile]
   )
 
   const handleClickArtistName = useCallback(
@@ -160,7 +139,7 @@ export const UserListV2 = ({
         useWindow={false}
         initialLoad={false}
         threshold={SCROLL_THRESHOLD}
-        getScrollParent={getScrollParent}
+        getScrollParent={scrollRef ? () => scrollRef?.current : undefined}
         css={(theme) => ({
           display: 'flex',
           flexDirection: 'column',
@@ -182,7 +161,6 @@ export const UserListV2 = ({
               <ArtistChip
                 user={user}
                 onClickArtistName={() => handleClickArtistName(user.handle)}
-                onNavigateAway={onNavigateAway}
                 showPopover={!isMobile}
                 popoverMount={MountPlacement.BODY}
                 showSupportFor={showSupportFor}

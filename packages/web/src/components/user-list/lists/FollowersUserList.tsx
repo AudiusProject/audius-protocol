@@ -4,17 +4,9 @@ import { useSelector } from 'react-redux'
 
 import { UserListV2 } from 'components/user-list/UserListV2'
 
-type FollowersUserListProps = {
-  getScrollParent: () => HTMLElement | null
-  onClose: () => void
-}
-
-export const FollowersUserList = ({
-  onClose,
-  getScrollParent
-}: FollowersUserListProps) => {
+export const FollowersUserList = () => {
   const userId = useSelector(followersUserListSelectors.getId)
-  const { data, hasNextPage, isFetchingNextPage, fetchNextPage, isLoading } =
+  const { data, hasNextPage, isFetchingNextPage, fetchNextPage, isPending } =
     useFollowers({ userId })
 
   return (
@@ -22,12 +14,8 @@ export const FollowersUserList = ({
       data={data}
       hasNextPage={hasNextPage}
       isFetchingNextPage={isFetchingNextPage}
-      isPending={isLoading}
+      isPending={isPending}
       fetchNextPage={fetchNextPage}
-      onNavigateAway={onClose}
-      afterFollow={onClose}
-      afterUnfollow={onClose}
-      getScrollParent={getScrollParent}
     />
   )
 }

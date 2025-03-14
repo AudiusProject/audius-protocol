@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux'
 import { userMetadataListFromSDK } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
+import { PurchaseableContentType } from '~/store'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
@@ -15,8 +16,8 @@ import { primeUserData } from './utils/primeUserData'
 const PAGE_SIZE = 20
 
 export type UsePurchasersArgs = {
-  contentId?: ID | null | undefined
-  contentType?: string | undefined
+  contentId?: ID | undefined
+  contentType?: PurchaseableContentType | undefined
   pageSize?: number
 }
 

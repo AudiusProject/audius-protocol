@@ -1,5 +1,6 @@
 import { HTMLAttributes, ReactNode } from 'react'
 
+import { IconComponent } from '../icon'
 import { ScrollbarProps } from '../scrollbar'
 
 export enum Anchor {
@@ -138,6 +139,7 @@ export type ModalHeaderProps = HTMLAttributes<HTMLDivElement> & {
 export type ModalTitleProps = Omit<HTMLAttributes<HTMLDivElement>, 'title'> & {
   subtitleClassName?: string
   icon?: ReactNode
+  Icon?: IconComponent
   iconClassName?: string
   title: ReactNode
   titleClassName?: string

@@ -1,50 +1,40 @@
-.user {
-  padding: 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  cursor: pointer;
-}
-.user:hover {
-  background: var(--harmony-n-25);
-}
-.user:active {
-  background: var(--harmony-n-50);
-}
-.user.notLastUser {
-  border-bottom: 1px solid var(--harmony-n-150);
-}
-
 .content {
-  width: 100%;
-  background-color: var(--harmony-white);
+  height: 100%;
+  position: relative;
 }
 
-.loadingAnimation {
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
-  display: none;
-  margin: 24px 0;
-}
-.loadingAnimation.show {
-  opacity: 1;
-  display: block;
-}
-.loadingAnimation > div {
+.userContainer {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  padding: var(--unit-2);
 }
-.loadingAnimation svg {
-  max-height: 24px;
-  max-width: 24px;
-}
-.loadingAnimation g path {
-  stroke: var(--harmony-n-500) !important;
+
+.notLastUser {
+  border-bottom: 1px solid var(--neutral-light-8);
 }
 
 .spacer {
+  height: var(--unit-32);
+}
+
+.loadingAnimation {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  opacity: 0;
+  transition: opacity 0.1s ease-in-out;
   display: flex;
-  height: 100px;
+  justify-content: center;
+  padding: var(--unit-4);
+}
+
+.loadingAnimation.show {
+  opacity: 1;
+}
+
+.spinner {
+  height: var(--unit-8);
+  width: var(--unit-8);
 }

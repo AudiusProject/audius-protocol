@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
 
 import { useGetCurrentUserId } from '@audius/common/api'
-import { User } from '@audius/common/models'
+import { ID, User } from '@audius/common/models'
+import { PurchaseableContentType } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
@@ -43,6 +44,7 @@ export type UserProfileListProps = {
   disablePopover?: boolean
   stopPropagation?: boolean
   userListType?: UserListType
+  userListEntityId?: ID
   userListEntityType?: UserListEntityType
   profilePictureClassname?: string
 }
@@ -55,17 +57,17 @@ export const UserProfilePictureList = ({
   disablePopover = false,
   stopPropagation = false,
   userListType,
+  userListEntityId,
   userListEntityType,
   profilePictureClassname
 }: UserProfileListProps) => {
   const dispatch = useDispatch()
-  const showUserListModal = totalUserCount > limit
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const showUserListModal = true // totalUserCount > limit
   /**
    * We add a +1 because the remaining users count includes
    * the tile that has the +N itself.
    */
-  const remainingUsersCount = totalUserCount - limit + 1
+  const remainingUsersCount = 2 // totalUserCount - limit + 1
   /**
    * If the total user count is greater than the limit, then
    * we slice at limit -1 to exclude the tile with the +N, since
@@ -77,16 +79,17 @@ export const UserProfilePictureList = ({
   const lastUser = users[limit - 1]
 
   useEffect(() => {
+    console.log('userListType', userListType, userListEntityType, users.length)
     if (
       userListType &&
-      currentUserId &&
       userListEntityType &&
+      userListEntityId &&
       users.length > 0
     ) {
       dispatch(
         setUserListUsers({
           userListType,
-          id: currentUserId,
+          id: userListEntityId,
           entityType: userListEntityType
         })
       )
@@ -95,9 +98,9 @@ export const UserProfilePictureList = ({
     userListType,
     disableProfileClick,
     dispatch,
-    currentUserId,
     userListEntityType,
-    users.length
+    users.length,
+    userListEntityId
   ])
 
   const handleClick = () => {

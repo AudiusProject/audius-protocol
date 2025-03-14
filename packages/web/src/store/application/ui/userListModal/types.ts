@@ -24,4 +24,4 @@ export type UserListModalState = {
   entityType: UserListEntityType
 }
 
-export const v2UserListTypes = [UserListType.FOLLOWER]
+export const v2UserListTypes = [UserListType.FOLLOWER, UserListType.FAVORITE]

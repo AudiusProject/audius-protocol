@@ -1,14 +1,7 @@
-import { UserListStoreState } from '~/store/user-list/types'
-
-import { ID } from '../../../models'
-
-export type MutualsOwnState = {
-  id: ID | null
-}
+import { ID } from '~/models/Identifiers'
 
 export type MutualsPageState = {
-  followingPage: MutualsOwnState
-  userList: UserListStoreState
+  id: ID | null
 }
 
 export const MUTUALS_USER_LIST_TAG = 'MUTUALS'

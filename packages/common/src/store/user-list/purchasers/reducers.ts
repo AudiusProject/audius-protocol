@@ -1,39 +1,26 @@
-import { combineReducers } from 'redux'
 import { createReducer, ActionType } from 'typesafe-actions'
 
-import { UserListReducerFactory } from '../reducer'
-
 import * as actions from './actions'
-import { PurchasersOwnState, PURCHASERS_USER_LIST_TAG } from './types'
+import { PurchasersPageState } from './types'
 
 type PurchasersActions = ActionType<typeof actions>
 
-const userListReducer = UserListReducerFactory.createReducer({
-  tag: PURCHASERS_USER_LIST_TAG,
-  pageSize: 15
-})
-
 const initialState = {
-  id: null,
-  contentType: undefined,
-  contentId: undefined
+  contentId: null,
+  contentType: null
 }
 
-const purchasersPageReducer = createReducer<
-  PurchasersOwnState,
-  PurchasersActions
->(initialState, {
-  [actions.SET_PURCHASERS](state, action) {
-    return {
-      ...state,
-      id: action.id,
-      contentType: action.contentType,
-      contentId: action.contentId
+const purchasersReducer = createReducer<PurchasersPageState, PurchasersActions>(
+  initialState,
+  {
+    [actions.SET_PURCHASERS](state, action) {
+      return {
+        ...state,
+        contentId: action.contentId,
+        contentType: action.contentType
+      }
     }
   }
-})
+)
 
-export default combineReducers({
-  purchasersPage: purchasersPageReducer,
-  userList: userListReducer
-})
+export default purchasersReducer
