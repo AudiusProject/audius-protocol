@@ -409,7 +409,6 @@ export const makeOptimisticChallengeSortComparator = (
   }
 }
 
-// Assuming isPlayCountChallenge is defined elsewhere as in original v2
 export const isPlayCountChallenge = (
   id: ChallengeRewardID
 ): id is
