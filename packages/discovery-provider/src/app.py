@@ -481,7 +481,6 @@ def configure_celery(celery, test_config=None):
                 solana_client_manager=solana_client_manager,
                 challenge_event_bus=setup_challenge_bus(),
                 eth_manager=eth_manager,
-                entity_manager_contract=None,
             )
 
     # Subclassing celery task with discovery provider context

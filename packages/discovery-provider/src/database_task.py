@@ -1,6 +1,5 @@
 from celery import Task
 from redis import Redis
-from web3.contract import Contract
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.utils.eth_manager import EthManager
@@ -22,7 +21,6 @@ class DatabaseTask(Task):
         solana_client_manager=None,
         challenge_event_bus=None,
         eth_manager=None,
-        entity_manager_contract=None,
     ):
         self._db = db
         self._db_read_replica = db_read_replica
@@ -36,7 +34,6 @@ class DatabaseTask(Task):
         self._solana_client_manager = solana_client_manager
         self._challenge_event_bus = challenge_event_bus
         self._eth_manager = eth_manager
-        self._entity_manager_contract = entity_manager_contract
 
     @property
     def abi_values(self):
@@ -85,7 +82,3 @@ class DatabaseTask(Task):
     @property
     def eth_manager(self) -> EthManager:
         return self._eth_manager
-
-    @property
-    def entity_manager_contract(self) -> Contract:
-        return self._entity_manager_contract
