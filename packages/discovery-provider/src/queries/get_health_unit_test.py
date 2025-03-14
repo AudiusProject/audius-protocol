@@ -2,9 +2,7 @@ import json
 import os
 from datetime import datetime, timezone
 from time import time
-from unittest.mock import MagicMock, patch
-
-from hexbytes import HexBytes
+from unittest.mock import patch
 
 from src.models.indexing.block import Block
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
@@ -85,19 +83,11 @@ def cache_trusted_notifier_discrepancies_vars(redis_mock):
     redis_mock.set(TRACK_DELIST_DISCREPANCIES_KEY, "[]")
 
 
-def test_get_health(web3_mock, redis_mock, db_mock, mock_requests):
+def test_get_health(redis_mock, db_mock, mock_requests):
     """Tests that the health check returns db data"""
-
-    # Set up web3 eth
-    def get_block(_u1, _u2):  # unused
-        block = MagicMock()
-        block.number = 2
-        block.hash = HexBytes(b"\x02")
-        return block
 
     cache_play_health_vars(redis_mock)
     cache_trusted_notifier_discrepancies_vars(redis_mock)
-    web3_mock.eth.get_block = get_block
 
     # Set up db state
     with db_mock.scoped_session() as session:
@@ -128,19 +118,11 @@ def test_get_health(web3_mock, redis_mock, db_mock, mock_requests):
     assert "service" in health_results
 
 
-def test_get_health_using_redis(web3_mock, redis_mock, db_mock, mock_requests):
+def test_get_health_using_redis(redis_mock, db_mock, mock_requests):
     """Tests that the health check returns redis data first"""
-
-    # Set up web3 eth
-    def get_block(_u1, _u2):  # unused
-        block = MagicMock()
-        block.number = 2
-        block.hash = HexBytes(b"\x02")
-        return block
 
     cache_play_health_vars(redis_mock)
     cache_trusted_notifier_discrepancies_vars(redis_mock)
-    web3_mock.eth.get_block = get_block
 
     # Set up redis state
     redis_mock.set(latest_block_redis_key, "3")
@@ -176,19 +158,11 @@ def test_get_health_using_redis(web3_mock, redis_mock, db_mock, mock_requests):
     assert "service" in health_results
 
 
-def test_get_health_partial_redis(web3_mock, redis_mock, db_mock, mock_requests):
+def test_get_health_partial_redis(redis_mock, db_mock, mock_requests):
     """Tests that the health check returns db data if redis data is only partial"""
-
-    # Set up web3 eth
-    def get_block(_u1, _u2):  # unused
-        block = MagicMock()
-        block.number = 2
-        block.hash = HexBytes(b"\x02")
-        return block
 
     cache_play_health_vars(redis_mock)
     cache_trusted_notifier_discrepancies_vars(redis_mock)
-    web3_mock.eth.get_block = get_block
 
     # Set up redis state
     redis_mock.set(latest_block_redis_key, "3")
@@ -222,21 +196,11 @@ def test_get_health_partial_redis(web3_mock, redis_mock, db_mock, mock_requests)
     assert "service" in health_results
 
 
-def test_get_health_with_invalid_db_state(
-    web3_mock, redis_mock, db_mock, mock_requests
-):
+def test_get_health_with_invalid_db_state(redis_mock, db_mock, mock_requests):
     """Tests that the health check can handle an invalid block in the db"""
-
-    # Set up web3 eth
-    def get_block(_u1, _u2):  # unused
-        block = MagicMock()
-        block.number = 2
-        block.hash = HexBytes(b"\x02")
-        return block
 
     cache_play_health_vars(redis_mock)
     cache_trusted_notifier_discrepancies_vars(redis_mock)
-    web3_mock.eth.get_block = get_block
 
     # Set up db state
     with db_mock.scoped_session() as session:
@@ -266,19 +230,11 @@ def test_get_health_with_invalid_db_state(
     assert "service" in health_results
 
 
-def test_get_health_skip_redis(web3_mock, redis_mock, db_mock, mock_requests):
+def test_get_health_skip_redis(redis_mock, db_mock, mock_requests):
     """Tests that the health check skips returning redis data first if explicitly disabled"""
-
-    # Set up web3 eth
-    def get_block(_u1, _u2):  # unused
-        block = MagicMock()
-        block.number = 2
-        block.hash = HexBytes(b"\x02")
-        return block
 
     cache_play_health_vars(redis_mock)
     cache_trusted_notifier_discrepancies_vars(redis_mock)
-    web3_mock.eth.get_block = get_block
 
     # Set up redis state
     redis_mock.set(latest_block_redis_key, "3")
@@ -316,20 +272,12 @@ def test_get_health_skip_redis(web3_mock, redis_mock, db_mock, mock_requests):
 
 @patch("src.utils.helpers.get_final_poa_block", return_value=5)
 def test_get_health_skip_redis_with_final_poa_block(
-    _, web3_mock, redis_mock, db_mock, mock_requests
+    _, redis_mock, db_mock, mock_requests
 ):
     """Tests that the health check takes note of the latest chain block correctly"""
 
-    # Set up web3 eth
-    def get_block(_u1, _u2):  # unused
-        block = MagicMock()
-        block.number = 2
-        block.hash = HexBytes(b"\x06")
-        return block
-
     cache_play_health_vars(redis_mock)
     cache_trusted_notifier_discrepancies_vars(redis_mock)
-    web3_mock.eth.get_block = get_block
 
     # Set up db state
     with db_mock.scoped_session() as session:
@@ -355,21 +303,11 @@ def test_get_health_skip_redis_with_final_poa_block(
     assert health_results["block_difference"] == 1
 
 
-def test_get_health_unhealthy_block_difference(
-    web3_mock, redis_mock, db_mock, mock_requests
-):
+def test_get_health_unhealthy_block_difference(redis_mock, db_mock, mock_requests):
     """Tests that the health check an unhealthy block difference"""
-
-    # Set up web3 eth
-    def get_block(_u1, _u2):  # unused
-        block = MagicMock()
-        block.number = 50
-        block.hash = HexBytes(b"\x50")
-        return block
 
     cache_play_health_vars(redis_mock)
     cache_trusted_notifier_discrepancies_vars(redis_mock)
-    web3_mock.eth.get_block = get_block
 
     # Set up db state
     with db_mock.scoped_session() as session:
@@ -400,7 +338,7 @@ def test_get_health_unhealthy_block_difference(
 
 
 def test_get_health_with_monitors(
-    web3_mock, redis_mock, db_mock, get_monitors_mock, mock_requests
+    redis_mock, db_mock, get_monitors_mock, mock_requests
 ):
     """Tests that the health check returns monitor data"""
     get_monitors_mock.return_value = {
@@ -413,14 +351,6 @@ def test_get_health_with_monitors(
         "transferred_bytes_per_sec": 7340.780857447676,
     }
 
-    # Set up web3 eth
-    def get_block(_u1, _u2):  # unused
-        block = MagicMock()
-        block.number = 2
-        block.hash = HexBytes(b"\x02")
-        return block
-
-    web3_mock.eth.get_block = get_block
     cache_play_health_vars(redis_mock)
     cache_trusted_notifier_discrepancies_vars(redis_mock)
 
@@ -449,9 +379,7 @@ def test_get_health_with_monitors(
     assert health_results["number_of_cpus"] == os.cpu_count()
 
 
-def test_get_health_verbose(
-    web3_mock, redis_mock, db_mock, get_monitors_mock, mock_requests
-):
+def test_get_health_verbose(redis_mock, db_mock, get_monitors_mock, mock_requests):
     """Tests that the health check returns verbose db stats"""
     get_monitors_mock.return_value = {
         "database_connections": 2,
@@ -472,16 +400,8 @@ def test_get_health_verbose(
         ],
     }
 
-    # Set up web3 eth
-    def get_block(_u1, _u2):  # unused
-        block = MagicMock()
-        block.number = 2
-        block.hash = HexBytes(b"\x02")
-        return block
-
     cache_play_health_vars(redis_mock)
     cache_trusted_notifier_discrepancies_vars(redis_mock)
-    web3_mock.eth.get_block = get_block
 
     # Set up db state
     with db_mock.scoped_session() as session:
@@ -525,21 +445,11 @@ def test_get_health_verbose(
     assert "service" in health_results
 
 
-def test_get_health_challenge_events_max_drift(
-    web3_mock, redis_mock, db_mock, mock_requests
-):
+def test_get_health_challenge_events_max_drift(redis_mock, db_mock, mock_requests):
     """Tests that the health check honors an unhealthy challenge events drift"""
-
-    # Set up web3 eth
-    def get_block(_u1, _u2):  # unused
-        block = MagicMock()
-        block.number = 50
-        block.hash = HexBytes(b"\x50")
-        return block
 
     cache_play_health_vars(redis_mock)
     cache_trusted_notifier_discrepancies_vars(redis_mock)
-    web3_mock.eth.get_block = get_block
 
     # Set up redis state
     redis_mock.set(challenges_last_processed_event_redis_key, int(time() - 50))
