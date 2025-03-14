@@ -66,7 +66,8 @@ export const FavoriteNotification = (props: FavoriteNotificationProps) => {
           setUserListUsers({
             userListType: UserListType.NOTIFICATION,
             entityType: entityToUserListEntity[entityType],
-            id: id as unknown as number
+            id: id as unknown as number,
+            entity: notification
           })
         )
         if (isMobile) {
@@ -78,7 +79,15 @@ export const FavoriteNotification = (props: FavoriteNotificationProps) => {
         handleGoToEntity(event)
       }
     },
-    [isMultiUser, dispatch, entityType, id, handleGoToEntity, isMobile]
+    [
+      isMultiUser,
+      notification,
+      dispatch,
+      entityType,
+      id,
+      isMobile,
+      handleGoToEntity
+    ]
   )
 
   if (!users || !firstUser || !entity) return null

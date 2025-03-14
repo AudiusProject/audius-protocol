@@ -16,8 +16,8 @@ const purchasersReducer = createReducer<PurchasersPageState, PurchasersActions>(
     [actions.SET_PURCHASERS](state, action) {
       return {
         ...state,
-        contentId: action.contentId,
-        contentType: action.contentType
+        contentId: action.contentId ?? null,
+        contentType: action.contentType ?? null
       }
     }
   }

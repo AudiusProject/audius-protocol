@@ -14,6 +14,7 @@ export const NotificationsUserList = () => {
   return (
     <UserListV2
       data={data}
+      count={userIds?.length}
       isPending={isPending}
       hasNextPage={false}
       isFetchingNextPage={false}

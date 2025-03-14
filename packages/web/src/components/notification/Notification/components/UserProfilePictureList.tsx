@@ -1,8 +1,6 @@
 import { useEffect } from 'react'
 
-import { useGetCurrentUserId } from '@audius/common/api'
 import { ID, User } from '@audius/common/models'
-import { PurchaseableContentType } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
@@ -79,7 +77,6 @@ export const UserProfilePictureList = ({
   const lastUser = users[limit - 1]
 
   useEffect(() => {
-    console.log('userListType', userListType, userListEntityType, users.length)
     if (
       userListType &&
       userListEntityType &&

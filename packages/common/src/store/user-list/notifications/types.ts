@@ -1,7 +1,23 @@
-import { FollowNotification } from '~/store/notifications'
+import {
+  CommentMentionNotification,
+  CommentNotification,
+  CommentReactionNotification,
+  CommentThreadNotification,
+  FavoriteNotification,
+  FollowNotification,
+  RepostNotification
+} from '~/store/notifications'
 
 export type NotificationUsersPageState = {
-  notification: FollowNotification | null
+  notification:
+    | FollowNotification
+    | FavoriteNotification
+    | RepostNotification
+    | CommentNotification
+    | CommentThreadNotification
+    | CommentMentionNotification
+    | CommentReactionNotification
+    | null
 }
 
 export const NOTIFICATIONS_USER_LIST_TAG = 'NOTIFICATION'

@@ -5,30 +5,10 @@ import { ID } from '@audius/common/models'
 import {
   cacheUsersSelectors,
   profilePageSelectors,
-  topSupportersUserListSelectors,
-  supportingUserListSelectors,
-  repostsUserListSelectors,
   notificationsUserListSelectors,
-  mutualsUserListSelectors,
-  followingUserListSelectors,
-  followersUserListSelectors,
-  favoritesUserListSelectors,
-  relatedArtistsUserListSelectors,
-  TOP_SUPPORTERS_USER_LIST_TAG as SUPPORTER_TAG,
-  SUPPORTING_USER_LIST_TAG as SUPPORTING_TAG,
-  REPOSTS_USER_LIST_TAG as REPOST_TAG,
-  NOTIFICATIONS_USER_LIST_TAG as NOTIFICATION_TAG,
-  MUTUALS_USER_LIST_TAG as MUTUALS_TAG,
-  FOLLOWING_USER_LIST_TAG as FOLLOWING_TAG,
-  FOLLOWERS_USER_LIST_TAG as FOLLOWER_TAG,
   FAVORITES_USER_LIST_TAG as FAVORITES_TAG,
-  RELATED_ARTISTS_USER_LIST_TAG as RELATED_ARTISTS_TAG,
-  PURCHASERS_USER_LIST_TAG as PURCHASERS_TAG,
-  REMIXERS_USER_LIST_TAG as REMIXERS_TAG,
   UserListStoreState,
-  CommonState,
-  purchasersUserListSelectors,
-  remixersUserListSelectors
+  CommonState
 } from '@audius/common/store'
 import {
   Modal,

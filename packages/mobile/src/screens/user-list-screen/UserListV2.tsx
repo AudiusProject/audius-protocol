@@ -19,11 +19,6 @@ type SkeletonItem = {
   user_id: string
 }
 
-const skeletonData: SkeletonItem[] = range(6).map((index) => ({
-  _loading: true,
-  user_id: `skeleton ${index}`
-}))
-
 // Currently there is a lot of complex data that can change in users.
 // This is a nearly static list, with only follow/unfollow actions
 // The follow/unfollow action is handled by the follow button
@@ -46,6 +41,7 @@ type UserListV2Props = {
    * The list of users to display
    */
   data?: UserMetadata[]
+  count?: number
   /**
    * Whether we're loading more users
    */
@@ -57,7 +53,7 @@ type UserListV2Props = {
   /**
    * Function to load more users
    */
-  fetchNextPage: () => void
+  fetchNextPage?: () => void
   /**
    * Tag for the UserListItem component
    */
@@ -65,14 +61,30 @@ type UserListV2Props = {
 }
 
 export const UserListV2 = (props: UserListV2Props) => {
-  const { data = [], isFetchingNextPage, isPending, fetchNextPage, tag } = props
+  const {
+    data = [],
+    count,
+    isFetchingNextPage,
+    isPending,
+    fetchNextPage,
+    tag
+  } = props
   const styles = useStyles()
 
   const isEmpty = data.length === 0
 
+  const skeletonData: SkeletonItem[] = useMemo(
+    () =>
+      range(count ?? 6).map((index) => ({
+        _loading: true,
+        user_id: `skeleton ${index}`
+      })),
+    [count]
+  )
+
   const displayData = useMemo(() => {
     return [...data, ...(isPending ? skeletonData : [])]
-  }, [data, isPending])
+  }, [data, isPending, skeletonData])
 
   const renderItem: ListRenderItem<User | SkeletonItem> = useCallback(
     ({ item }) =>

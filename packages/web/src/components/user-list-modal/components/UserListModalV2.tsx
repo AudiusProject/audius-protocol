@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import { notificationsUserListSelectors } from '@audius/common/store'
 import {
@@ -28,16 +28,14 @@ import { RelatedArtistsUserList } from 'components/user-list/lists/RelatedArtist
 import { RemixersUserList } from 'components/user-list/lists/RemixersUserList'
 import { RepostsUserList } from 'components/user-list/lists/RepostsUserList'
 import { SupportingUserList } from 'components/user-list/lists/SupportingUserList'
+import { TopSupportersUserList } from 'components/user-list/lists/TopSupportersUserList'
 import { ChatBlastWithAudienceCTA } from 'pages/chat-page/components/ChatBlastWithAudienceCTA'
 import {
   getUserListType,
   getIsOpen
 } from 'store/application/ui/userListModal/selectors'
 import { setVisibility } from 'store/application/ui/userListModal/slice'
-import {
-  UserListType,
-  v2UserListTypes
-} from 'store/application/ui/userListModal/types'
+import { UserListType } from 'store/application/ui/userListModal/types'
 
 import { FollowersUserList } from '../../user-list/lists/FollowersUserList'
 const { getPageTitle } = notificationsUserListSelectors
@@ -111,6 +109,12 @@ const UserListModalV2 = () => {
           component: <NotificationsUserList />,
           icon: IconTrophy,
           title: notificationTitle
+        }
+      case UserListType.SUPPORTER:
+        return {
+          component: <TopSupportersUserList />,
+          icon: IconTrophy,
+          title: messages.topSupporters
         }
       case UserListType.SUPPORTING:
         return {

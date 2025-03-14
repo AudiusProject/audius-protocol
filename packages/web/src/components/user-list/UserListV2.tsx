@@ -27,6 +27,7 @@ type UserListV2Props = {
    * The list of users to display
    */
   data: User[] | undefined
+  count?: number
   /**
    * Whether there are more users to load
    */
@@ -59,6 +60,7 @@ type UserListV2Props = {
 
 export const UserListV2 = ({
   data,
+  count,
   hasNextPage,
   isFetchingNextPage,
   isPending,
@@ -118,12 +120,12 @@ export const UserListV2 = ({
       skeletonTag = 'SUPPORTING'
     }
 
-    return range(15).map((index) => ({
+    return range(count ?? 15).map((index) => ({
       _loading: true,
       user_id: `skeleton ${index}`,
       tag: skeletonTag
     }))
-  }, [showSupportFor, showSupportFrom])
+  }, [count, showSupportFor, showSupportFrom])
 
   // Create skeleton data with the appropriate tag
   const displayData = useMemo(() => {

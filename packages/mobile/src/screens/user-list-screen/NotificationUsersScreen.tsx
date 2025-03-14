@@ -1,42 +1,42 @@
-import { useCallback } from 'react'
-
-import {
-  NotificationType,
-  notificationsUserListActions,
-  notificationsUserListSelectors
-} from '@audius/common/store'
+import { useUsers } from '@audius/common/api'
+import { NotificationType } from '@audius/common/store'
+import type { Notification } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
-import { useDispatch } from 'react-redux'
 
 import { useRoute } from 'app/hooks/useRoute'
 
-import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
-const { getUserList } = notificationsUserListSelectors
-const { setNotification } = notificationsUserListActions
+import { UserListV2 } from './UserListV2'
+
+export const getTitle = (notification: Notification) => {
+  if (!('userIds' in notification)) return 'Users'
+  const count = notification.userIds.length
+  if (notification.type === NotificationType.Follow)
+    return `${formatCount(count)} New Followers`
+  if (
+    notification.type === NotificationType.Comment ||
+    notification.type === NotificationType.CommentThread ||
+    notification.type === NotificationType.CommentMention ||
+    notification.type === NotificationType.CommentReaction
+  )
+    return `${formatCount(count)} Commenters`
+  return `${formatCount(count)} ${notification.type.toLowerCase()}s`
+}
 
 export const NotificationUsersScreen = () => {
   const { params } = useRoute<'NotificationUsers'>()
-  const { notificationType, count, notification } = params
-  const dispatch = useDispatch()
-
-  const handleSetNotificationId = useCallback(() => {
-    dispatch(setNotification(notification))
-  }, [dispatch, notification])
-
-  const getTitle = useCallback(() => {
-    if (notificationType === NotificationType.Follow) {
-      return `${formatCount(count)} New Followers`
-    }
-    return `${formatCount(count)} ${notificationType}s`
-  }, [notificationType, count])
+  const { notification } = params
+  const { userIds } = notification
+  const { data, isPending } = useUsers(userIds)
 
   return (
-    <UserListScreen title={getTitle()}>
-      <UserList
-        userSelector={getUserList}
+    <UserListScreen title={getTitle(notification)}>
+      <UserListV2
+        data={data}
+        count={userIds?.length}
+        isPending={isPending}
         tag='NOTIFICATION'
-        setUserList={handleSetNotificationId}
+        isFetchingNextPage={false}
       />
     </UserListScreen>
   )

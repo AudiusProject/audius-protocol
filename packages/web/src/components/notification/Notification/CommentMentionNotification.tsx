@@ -72,7 +72,8 @@ export const CommentMentionNotification = (
           setUserListUsers({
             userListType: UserListType.NOTIFICATION,
             entityType: entityToUserListEntity[entityType],
-            id: id as unknown as number
+            id: id as unknown as number,
+            entity: notification
           })
         )
         if (isMobile) {
@@ -93,7 +94,7 @@ export const CommentMentionNotification = (
     },
     [
       isMultiUser,
-      notification.entityId,
+      notification,
       dispatch,
       entityType,
       id,
