@@ -449,8 +449,6 @@ export const getClaimableChallengeSpecifiers = (
 const newChallengeIds: ChallengeRewardID[] = [
   ChallengeName.ListenStreakEndless,
   ChallengeName.FirstWeeklyComment,
-  ChallengeName.AudioMatchingSell,
-  ChallengeName.AudioMatchingBuy,
   ChallengeName.PlayCount250,
   ChallengeName.PlayCount1000,
   ChallengeName.PlayCount10000,
@@ -536,6 +534,10 @@ export const getChallengeStatusLabel = (
 
     case ChallengeName.TrackUpload:
       return `${challenge.current_step_count ?? 0}/3 Uploaded`
+
+    // Special-case as this is an infinite aggregate challenge (will always be in-progress)
+    case ChallengeName.Tastemaker:
+      return DEFAULT_STATUS_LABELS.AVAILABLE
 
     default:
       if (challenge.state === 'in_progress') {
