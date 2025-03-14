@@ -10,7 +10,7 @@ const defaultFieldVisibility: FieldVisibility = {
   remixes: true
 }
 
-export const getTrackWithFallback = (track: Track | null) => {
+export const getTrackWithFallback = (track: Track | null | undefined) => {
   return (
     track || {
       track_id: -1,
@@ -79,7 +79,7 @@ export const getCollectionWithFallback = (collection: Collection | null) => {
   )
 }
 
-export const getUserWithFallback = (user: User | null) => {
+export const getUserWithFallback = (user: User | null | undefined) => {
   return (
     user || {
       artist_pick_track_id: -1,
