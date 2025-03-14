@@ -1,8 +1,11 @@
-import { QueryOptions } from './types'
+import { SelectableQueryOptions } from './types'
 import { useSuggestedArtists } from './useSuggestedArtists'
 import { useTopArtistsInGenre } from './useTopArtistsInGenre'
 
-export const useTopArtists = (genre: string, options?: QueryOptions) => {
+export const useTopArtists = (
+  genre: string,
+  options?: SelectableQueryOptions<number[]>
+) => {
   const { data: suggestedArtists, isPending: isSuggestedPending } =
     useSuggestedArtists({
       ...options,

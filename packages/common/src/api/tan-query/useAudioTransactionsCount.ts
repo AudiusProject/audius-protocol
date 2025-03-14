@@ -6,7 +6,7 @@ import { ID } from '~/models'
 import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
 export const getAudioTransactionsCountQueryKey = (userId: Nullable<ID>) => [
@@ -14,7 +14,9 @@ export const getAudioTransactionsCountQueryKey = (userId: Nullable<ID>) => [
   userId
 ]
 
-export const useAudioTransactionsCount = (options?: QueryOptions) => {
+export const useAudioTransactionsCount = <TResult = number>(
+  options?: SelectableQueryOptions<number, TResult>
+) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: userId } = useCurrentUserId()
 
