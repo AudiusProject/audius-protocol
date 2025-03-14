@@ -11,7 +11,8 @@ import {
   relatedArtistsUserListActions,
   RepostType,
   remixersUserListActions,
-  purchasersUserListActions
+  purchasersUserListActions,
+  PurchaseableContentType
 } from '@audius/common/store'
 import { takeEvery, put } from 'redux-saga/effects'
 
@@ -71,7 +72,16 @@ function* watchSetUsers() {
           yield put(remixersUserListActions.setRemixers(id))
           break
         case UserListType.PURCHASER:
-          yield put(purchasersUserListActions.setPurchasers(id))
+          yield put(
+            purchasersUserListActions.setPurchasers(
+              entityType === UserListEntityType.USER ? undefined : id,
+              entityType === UserListEntityType.TRACK
+                ? PurchaseableContentType.TRACK
+                : entityType === UserListEntityType.COLLECTION
+                  ? PurchaseableContentType.ALBUM
+                  : undefined
+            )
+          )
           break
         default:
           break

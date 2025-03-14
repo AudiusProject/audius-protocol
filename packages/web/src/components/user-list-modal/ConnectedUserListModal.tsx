@@ -19,17 +19,14 @@ const ConnectedUserListModal = ({
   isOpen,
   onClose
 }: ConnectedUserListModalProps) => {
-  if (v2UserListTypes.includes(userListType)) {
-    return null
-  }
-
-  return (
-    <UserListModal
-      userListType={userListType}
-      isOpen={isOpen}
-      onClose={onClose}
-    />
-  )
+  return null
+  // return (
+  //   <UserListModal
+  //     userListType={userListType}
+  //     isOpen={isOpen}
+  //     onClose={onClose}
+  //   />
+  // )
 }
 
 function mapStateToProps(state: AppState) {

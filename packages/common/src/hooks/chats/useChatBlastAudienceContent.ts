@@ -8,8 +8,11 @@ import {
   useGetPlaylistById,
   useGetPurchasersCount,
   useGetRemixersCount,
-  useGetTrackById
+  useGetTrackById,
+  useRemixers,
+  useRemixersCount
 } from '~/api'
+import { PurchaseableContentType } from '~/store/purchase-content'
 import {
   getChatBlastAudienceDescription,
   getChatBlastCTA,
@@ -53,14 +56,12 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
       disabled: audience !== ChatBlastAudience.CUSTOMERS || !currentUserId
     }
   )
-  const { data: remixersCount } = useGetRemixersCount(
-    {
-      userId: currentUserId!,
-      trackId: decodedContentId
-    },
-    {
-      disabled: audience !== ChatBlastAudience.REMIXERS || !currentUserId
-    }
+
+  console.log({ decodedContentId, audience })
+
+  const { data: remixersCount } = useRemixersCount(
+    { trackId: decodedContentId },
+    { enabled: audience === ChatBlastAudience.REMIXERS }
   )
 
   const audienceCount = useMemo(() => {
@@ -106,6 +107,8 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
     chatBlastAudienceDescription,
     chatBlastCTA,
     contentTitle,
-    audienceCount
+    audienceCount,
+    audienceContentId: decodedContentId,
+    audienceContentType
   }
 }

@@ -1,16 +1,19 @@
-import { ChatBlast, ChatBlastAudience } from '@audius/sdk'
+import { ChatBlast, ChatBlastAudience, OptionalHashId } from '@audius/sdk'
 
 import {
+  useCurrentUserId,
   useGetCurrentUserId,
   useGetFollowers,
-  useGetPurchasers,
   useGetRemixers,
+  usePurchasers,
+  useRemixers,
   useSupporters
 } from '~/api'
 import { UserMetadata } from '~/models'
+import { PurchaseableContentType } from '~/store/purchase-content'
 
 export const useAudienceUsers = (chat: ChatBlast, limit?: number) => {
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useCurrentUserId()
 
   const { data: followers } = useGetFollowers({
     userId: currentUserId!,
@@ -20,19 +23,22 @@ export const useAudienceUsers = (chat: ChatBlast, limit?: number) => {
     { userId: currentUserId, pageSize: limit },
     { enabled: chat.audience === ChatBlastAudience.TIPPERS }
   )
-  const { data: purchasers } = useGetPurchasers({
-    userId: currentUserId!,
-    contentId: chat.audience_content_id
-      ? parseInt(chat.audience_content_id)
-      : undefined,
-    contentType: chat.audience_content_type,
-    limit
-  })
-  const { data: remixers } = useGetRemixers({
-    userId: currentUserId!,
-    trackId: chat.audience_content_id,
-    limit
-  })
+  const { data: purchasers } = usePurchasers(
+    {
+      contentId: OptionalHashId.parse(chat.audience_content_id),
+      contentType: chat.audience_content_type as PurchaseableContentType,
+      pageSize: limit
+    },
+    { enabled: chat.audience === ChatBlastAudience.CUSTOMERS }
+  )
+  const { data: remixers } = useRemixers(
+    {
+      userId: currentUserId,
+      trackId: OptionalHashId.parse(chat.audience_content_id),
+      pageSize: limit
+    },
+    { enabled: chat.audience === ChatBlastAudience.REMIXERS }
+  )
 
   let users: UserMetadata[] = []
   switch (chat.audience) {
