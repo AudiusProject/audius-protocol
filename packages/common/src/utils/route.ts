@@ -362,8 +362,8 @@ export const staticRoutes = new Set([
   CHATS_PAGE
 ])
 
-export const profilePage = (handle: string) => {
-  return `/${encodeUrlName(handle)}`
+export const profilePage = (handle: string | null | undefined) => {
+  return `/${encodeUrlName(handle ?? '')}`
 }
 
 export const collectionPage = (

@@ -1,5 +1,6 @@
 import { DragEvent, ReactNode, useCallback } from 'react'
 
+import { useTrack, useUser } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { Slot } from '@radix-ui/react-slot'
 import cn from 'classnames'
@@ -8,7 +9,6 @@ import { useDispatch } from 'react-redux'
 import { DragDropKind, drag, drop } from 'store/dragndrop/slice'
 
 import styles from './Draggable.module.css'
-
 const isFirefox = () => navigator.userAgent.includes('Firefox')
 
 const messages = {
@@ -47,6 +47,9 @@ export const Draggable = (props: DraggableProps) => {
     ...other
   } = props
   const dispatch = useDispatch()
+  const { data: track } = useTrack(id)
+  const { data: user } = useUser(track?.owner_id)
+  const isOwner = 
 
   const handleDragStart = useCallback(
     (e: DragEvent) => {

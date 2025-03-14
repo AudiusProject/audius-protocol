@@ -49,7 +49,9 @@ export const getTrackWithFallback = (track: Track | null | undefined) => {
   )
 }
 
-export const getCollectionWithFallback = (collection: Collection | null) => {
+export const getCollectionWithFallback = (
+  collection: Collection | null | undefined
+) => {
   return (
     collection || {
       playlist_id: -1,

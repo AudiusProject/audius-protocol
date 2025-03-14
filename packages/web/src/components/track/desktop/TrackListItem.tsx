@@ -1,14 +1,14 @@
 import { memo, MouseEvent, useRef } from 'react'
 
-import { useGetCurrentUserId } from '@audius/common/api'
+import { useGetCurrentUserId, useUser } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ID,
   isContentUSDCPurchaseGated,
   Track,
+  TrackMetadata,
   UID
 } from '@audius/common/models'
-import { EnhancedCollectionTrack } from '@audius/common/store'
 import { Genre, formatSeconds, route } from '@audius/common/utils'
 import { IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
@@ -41,7 +41,7 @@ type TrackListItemProps = {
   togglePlay: (uid: UID, id: ID) => void
   goToRoute: (route: string) => void
   artistHandle: string
-  track?: EnhancedCollectionTrack
+  track?: TrackMetadata
   forceSkeleton?: boolean
   isLastTrack?: boolean
 }
@@ -66,6 +66,7 @@ const TrackListItem = ({
   const isPrivate = track?.is_unlisted
   const isPremium = isContentUSDCPurchaseGated(track?.stream_conditions)
   const { hasStreamAccess } = useGatedContentAccess(track as Track)
+  const { data: user } = useUser(track?.owner_id)
 
   if (forceSkeleton) {
     return (
@@ -82,12 +83,12 @@ const TrackListItem = ({
 
   if (!track) return null
 
-  const deleted = track.is_delete || !!track.user?.is_deactivated
+  const deleted = track.is_delete || !!user?.is_deactivated
   const strings = makeStrings({ deleted })
 
   const onClickArtistName = (e: MouseEvent) => {
     e.stopPropagation()
-    if (goToRoute) goToRoute(profilePage(track.user.handle))
+    if (goToRoute) goToRoute(profilePage(user?.handle))
   }
 
   const onClickTrackName = (e: MouseEvent) => {
@@ -122,7 +123,7 @@ const TrackListItem = ({
   })
 
   const menu: Omit<TrackMenuProps, 'children'> = {
-    handle: track.user.handle,
+    handle: user?.handle,
     includeAddToPlaylist: !isPrivate || isOwner,
     includeAddToAlbum: isOwner && !track?.ddex_app,
     includeArtistPick: false,
@@ -131,11 +132,11 @@ const TrackListItem = ({
     includeRepost: true,
     includeShare: false,
     includeTrackPage: true,
-    isArtistPick: track.user.artist_pick_track_id === track.track_id,
+    isArtistPick: user?.artist_pick_track_id === track.track_id,
     isDeleted: deleted,
     isFavorited: track.has_current_user_saved,
     isOwner: false,
-    isOwnerDeactivated: !!track.user?.is_deactivated,
+    isOwnerDeactivated: !!user?.is_deactivated,
     isReposted: track.has_current_user_reposted,
     trackId: track.track_id,
     trackTitle: track.title,
@@ -184,12 +185,10 @@ const TrackListItem = ({
           {!isAlbum ? (
             <div className={styles.artistName} onClick={onClickArtistName}>
               <div className={styles.by}>{strings.by}</div>
-              {track.user.is_deactivated ? (
-                `${track.user.name} [Deactivated]`
+              {!user || user?.is_deactivated ? (
+                `${user?.name} [Deactivated]`
               ) : (
-                <ArtistPopover handle={track.user.handle}>
-                  {track.user.name}
-                </ArtistPopover>
+                <ArtistPopover handle={user?.handle}>{user.name}</ArtistPopover>
               )}
             </div>
           ) : null}
