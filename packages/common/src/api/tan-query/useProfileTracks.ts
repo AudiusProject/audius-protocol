@@ -95,9 +95,6 @@ export const useProfileTracks = (
     },
     select: (data) => data?.pages.flat(),
     ...options,
-    select: (data) => {
-      return data?.pages?.flat()
-    },
     enabled: options?.enabled !== false && !!handle
   })
 
