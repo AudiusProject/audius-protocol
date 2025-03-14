@@ -8,7 +8,8 @@ import {
   RepostSource,
   LineupTrack,
   UserTrackMetadata,
-  Kind
+  Kind,
+  LineupEntry
 } from '@audius/common/models'
 import {
   playerSelectors,
@@ -77,11 +78,18 @@ export const TrackTableLineup = ({
   const entries = useMemo(() => {
     if (lineup.entries.length === 0 || !tracks || tracks.length === 0) return []
 
+    const entries = (lineup.entries as LineupEntry<LineupTrack>[]).map(
+      (entry) => {
+        const track = tracks.find((track) => track.track_id === entry.id)
+        return {
+          ...entry,
+          ...track
+        }
+      }
+    )
     return hasNextPage
-      ? (lineup.entries as LineupTrack[]).concat(
-          new Array(pageSize).fill({ kind: Kind.EMPTY })
-        )
-      : (lineup.entries as LineupTrack[])
+      ? entries.concat(new Array(pageSize).fill({ kind: Kind.EMPTY }))
+      : entries
   }, [lineup.entries, tracks, hasNextPage, pageSize])
 
   // Get the active index by finding the current track in the data
