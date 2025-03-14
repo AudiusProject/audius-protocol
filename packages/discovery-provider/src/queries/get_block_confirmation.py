@@ -1,6 +1,6 @@
 from sqlalchemy import desc
 
-from src.models.indexing.core_indexed_block import CoreIndexedBlock
+from src.models.core.core_indexed_blocks import CoreIndexedBlocks
 from src.utils import db_session, helpers
 
 
@@ -10,14 +10,14 @@ def get_block_confirmation(blockhash, blocknumber):
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
         blockhash_query = (
-            session.query(CoreIndexedBlock)
-            .filter(CoreIndexedBlock.blockhash == blockhash)
+            session.query(CoreIndexedBlocks)
+            .filter(CoreIndexedBlocks.blockhash == blockhash)
             .all()
         )
 
         latest_block_query = (
-            session.query(CoreIndexedBlock)
-            .order_by(desc(CoreIndexedBlock.height))
+            session.query(CoreIndexedBlocks)
+            .order_by(desc(CoreIndexedBlocks.height))
             .first()
         )
 
