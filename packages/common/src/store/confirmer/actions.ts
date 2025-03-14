@@ -54,7 +54,7 @@ const validateConfirmationOptions = ({
  * Additionally, calls within a confirm group can be further categorized using
  * an `operationId`. Using the `confirmationOptions` param object, the requester can specify that calls of a particular `operationId`
  * may be parallelized or squashed (where only the last call is necessary to resolve)
- * for performance gains. The requester may also specfify to only invoke the success callback of the
+ * for performance gains. The requester may also specify to only invoke the success callback of the
  * last call of a particular `operationId` to resolve.
  *
  * TODO:
