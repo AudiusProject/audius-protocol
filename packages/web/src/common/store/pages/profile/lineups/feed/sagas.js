@@ -24,7 +24,7 @@ class FeedSagas extends LineupSagas {
       feedActions,
       getProfileFeedLineup,
       function* (action) {
-        return action.payload.reposts
+        return action.payload.items
       },
       undefined,
       undefined,

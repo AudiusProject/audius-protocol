@@ -83,7 +83,7 @@ export const useLineupQuery = ({
       if (lineupData?.length) {
         dispatch(
           lineupActions.fetchLineupMetadatas(0, lineupData.length, false, {
-            tracks: lineupData
+            items: lineupData
           })
         )
       }
