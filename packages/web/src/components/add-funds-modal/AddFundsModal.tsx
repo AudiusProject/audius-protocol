@@ -84,7 +84,6 @@ export const AddFundsModal = () => {
       isOpen={isOpen}
       onClosed={handleClosed}
       bodyClassName={styles.modal}
-      useGradientTitle={false}
       dismissOnClickOutside={!inProgress}
       isFullscreen={false}
     >

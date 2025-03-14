@@ -1,6 +1,6 @@
 import { useCreateUserbankIfNeeded } from '@audius/common/hooks'
 import { WalletAddress, SolanaWalletAddress } from '@audius/common/models'
-import { Button, IconSolana as LogoSol } from '@audius/harmony'
+import { Button, IconSolana as LogoSol, Text } from '@audius/harmony'
 import cn from 'classnames'
 
 import ClickableAddress from 'components/rewards/ClickableAddress'
@@ -60,7 +60,9 @@ const ReceiveBody = ({ wallet, solWallet }: ReceiveBodyProps) => {
         <div className={styles.iconSolContainer}>
           <LogoSol className={styles.iconSolHeader} />
         </div>
-        <span>{messages.clickableSPLAddressTitle}</span>
+        <Text variant='label' color='white'>
+          {messages.clickableSPLAddressTitle}
+        </Text>
       </div>
     )
   }

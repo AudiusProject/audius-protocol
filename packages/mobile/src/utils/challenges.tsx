@@ -30,6 +30,7 @@ import MultipleMusicalNotes from 'app/assets/images/emojis/multiple-musical-note
 import Parachute from 'app/assets/images/emojis/parachute.png'
 import ArrowUp from 'app/assets/images/emojis/right-arrow-curving-up.png'
 import TrebleClef from 'app/assets/images/emojis/treble-clef.png'
+import Trophy from 'app/assets/images/emojis/trophy.png'
 import type { SummaryTableItem } from 'app/components/summary-table/SummaryTable'
 
 export const messages = {
@@ -302,6 +303,30 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
     },
     [ChallengeName.FirstWeeklyComment]: {
       icon: undefined,
+      buttonInfo: {
+        iconRight: IconCheck
+      }
+    },
+    [ChallengeName.PlayCount250]: {
+      icon: ChartIncreasing,
+      buttonInfo: {
+        iconRight: IconCheck
+      }
+    },
+    [ChallengeName.PlayCount1000]: {
+      icon: ChartIncreasing,
+      buttonInfo: {
+        iconRight: IconCheck
+      }
+    },
+    [ChallengeName.PlayCount10000]: {
+      icon: ChartIncreasing,
+      buttonInfo: {
+        iconRight: IconCheck
+      }
+    },
+    [ChallengeName.Tastemaker]: {
+      icon: Trophy,
       buttonInfo: {
         iconRight: IconCheck
       }

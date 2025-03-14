@@ -1,18 +1,11 @@
 import { View } from 'react-native'
 
-import { Text, useTheme } from '@audius/harmony-native'
+import { Text } from '@audius/harmony-native'
 import { UserGeneratedText } from 'app/components/core'
-import { makeStyles } from 'app/styles'
 
 import { useSelectProfile } from '../selectors'
 
 const MAX_BIO_LINES = 2
-
-const useStyles = makeStyles(({ spacing }) => ({
-  root: {
-    marginBottom: spacing(2)
-  }
-}))
 
 export type BioProps = {
   isExpandable?: boolean
@@ -24,8 +17,6 @@ export const Bio = (props: BioProps) => {
   const { isExpandable, setIsExpandable, numberOfLines } = props
   const profile = useSelectProfile(['bio'])
   const { bio } = profile
-  const styles = useStyles()
-  const { spacing } = useTheme()
 
   if (!bio) return null
 
@@ -42,7 +33,6 @@ export const Bio = (props: BioProps) => {
           }}
           variant='body'
           size='s'
-          style={{ marginBottom: spacing.s }}
           // only set number of lines after we determine that the text should be truncated
           // this allows us to let the parent component know whether we have met one of
           // the conditions to make the bio section expansible.
@@ -60,7 +50,6 @@ export const Bio = (props: BioProps) => {
       variant='body'
       size='s'
       source='profile page'
-      style={styles.root}
       allowPointerEventsToPassThrough
     >
       {bio}

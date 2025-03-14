@@ -7,6 +7,7 @@ const config = require('./config')
 const registryAddress = config.get('registryAddress')
 const entityManagerAddress = config.get('entityManagerAddress')
 const web3ProviderUrl = config.get('web3Provider')
+const Web3 = require('web3')
 
 // Fixed address of the SPL token program
 const SOLANA_TOKEN_ADDRESS = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
@@ -20,18 +21,11 @@ class AudiusLibsWrapper {
   async init() {
     let web3Config
     if (config.get('environment') !== 'development') {
-      const dataWeb3 = await AudiusLibs.Utils.configureWeb3(
-        web3ProviderUrl,
-        null,
-        false
-      )
-      if (!dataWeb3) throw new Error('Web3 incorrectly configured')
-
       web3Config = {
         registryAddress,
         useExternalWeb3: true,
         externalWeb3Config: {
-          web3: dataWeb3,
+          web3: new Web3(web3ProviderUrl),
           // this is a stopgap since libs external web3 init requires an ownerWallet
           // this is never actually used in the service's libs calls
           ownerWallet: config.get('relayerPublicKey')

@@ -4,7 +4,7 @@ import { AnyAction, Dispatch } from 'redux'
 import { SetRequired } from 'type-fest'
 
 import { Kind } from '~/models'
-import { UserCollectionMetadata } from '~/models/Collection'
+import { CollectionMetadata, UserCollectionMetadata } from '~/models/Collection'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
@@ -21,7 +21,7 @@ export const primeCollectionData = ({
   forceReplace = false,
   skipQueryData = false
 }: {
-  collections: UserCollectionMetadata[]
+  collections: (UserCollectionMetadata | CollectionMetadata)[]
   queryClient: QueryClient
   dispatch: Dispatch<AnyAction>
   forceReplace?: boolean
@@ -30,6 +30,7 @@ export const primeCollectionData = ({
   const entries = primeCollectionDataInternal({
     collections,
     queryClient,
+    forceReplace,
     skipQueryData
   })
   if (!forceReplace) {
@@ -57,10 +58,12 @@ export const primeCollectionData = ({
 export const primeCollectionDataInternal = ({
   collections,
   queryClient,
+  forceReplace = false,
   skipQueryData = false
 }: {
-  collections: UserCollectionMetadata[]
+  collections: (UserCollectionMetadata | CollectionMetadata)[]
   queryClient: QueryClient
+  forceReplace?: boolean
   skipQueryData?: boolean
 }): EntriesByKind => {
   // Set up entries for Redux
@@ -76,13 +79,16 @@ export const primeCollectionDataInternal = ({
 
     // Prime collection data only if it doesn't exist and skipQueryData is false
     if (
-      !skipQueryData &&
-      !queryClient.getQueryData(getCollectionQueryKey(collection.playlist_id))
+      forceReplace ||
+      (!skipQueryData &&
+        !queryClient.getQueryData(
+          getCollectionQueryKey(collection.playlist_id)
+        ))
     ) {
-      const tqCollection: TQCollection = {
+      const tqCollection = {
         ...omit(collection, ['tracks', 'user']),
         trackIds: collection.tracks?.map((t) => t.track_id) ?? []
-      }
+      } as TQCollection
       queryClient.setQueryData(
         getCollectionQueryKey(collection.playlist_id),
         tqCollection
@@ -90,11 +96,12 @@ export const primeCollectionDataInternal = ({
     }
 
     // Prime user data from collection owner
-    if (collection.user) {
+    if ('user' in collection) {
       const userEntries = primeUserDataInternal({
         users: [collection.user],
         queryClient,
-        skipQueryData
+        skipQueryData,
+        forceReplace
       })
 
       // Merge user entries
@@ -109,7 +116,8 @@ export const primeCollectionDataInternal = ({
       const trackEntries = primeTrackDataInternal({
         tracks: collection.tracks,
         queryClient,
-        skipQueryData
+        skipQueryData,
+        forceReplace
       })
 
       // Merge track and user entries

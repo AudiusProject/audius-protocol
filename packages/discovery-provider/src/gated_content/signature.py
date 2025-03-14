@@ -4,8 +4,8 @@ from typing import Optional, TypedDict
 
 from typing_extensions import NotRequired
 
-from src.api_helpers import generate_signature
 from src.gated_content.types import GatedContentType
+from src.utils.helpers import generate_signature
 
 
 class GatedContentSignatureArgs(TypedDict):

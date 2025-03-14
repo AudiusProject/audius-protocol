@@ -6,10 +6,8 @@ from sqlalchemy.orm.session import Session
 
 from src.challenges.challenge import ChallengeManager, ChallengeUpdater
 from src.models.rewards.user_challenge import UserChallenge
-from src.utils.config import shared_config
 
 logger = logging.getLogger(__name__)
-env = shared_config["discprov"]["env"]
 
 
 class FirstWeeklyCommentChallengeUpdater(ChallengeUpdater):
@@ -26,11 +24,7 @@ class FirstWeeklyCommentChallengeUpdater(ChallengeUpdater):
         """
         date = datetime.fromtimestamp(extra["created_at"])
         year, week_number, _ = date.isocalendar()
-        specifier = f"{user_id}:{year}{week_number:02d}"
-        if env == "stage":
-            formatted_date = date.strftime("%Y%m%d%H%M")
-            specifier = f"{user_id}:{year}{week_number:02d}_{formatted_date}"
-
+        specifier = f"{hex(user_id)[2:]}:{year}{week_number:02d}"
         return specifier
 
     def should_create_new_challenge(

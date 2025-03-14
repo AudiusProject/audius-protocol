@@ -376,6 +376,73 @@ def test_get_user_comments_edited(app):
         assert normal_comment["is_edited"] == False
 
 
+def test_get_user_comments_unlisted_tracks(app):
+    """Test that comments on unlisted tracks are not returned"""
+    entities = {
+        "comments": [
+            {
+                "comment_id": 1,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "text": "Comment on public track",
+                "created_at": datetime(2022, 1, 1),
+                "updated_at": datetime(2022, 1, 1),
+            },
+            {
+                "comment_id": 2,
+                "user_id": 1,
+                "entity_id": 2,
+                "entity_type": "Track",
+                "text": "Comment on unlisted track",
+                "created_at": datetime(2022, 1, 2),
+                "updated_at": datetime(2022, 1, 2),
+            },
+        ],
+        "tracks": [
+            {
+                "track_id": 1,
+                "owner_id": 10,
+                "is_current": True,
+                "is_unlisted": False,
+                "title": "Public Track",
+            },
+            {
+                "track_id": 2,
+                "owner_id": 10,
+                "is_current": True,
+                "is_unlisted": True,
+                "title": "Unlisted Track",
+            },
+        ],
+        "users": [
+            {"user_id": 1, "handle": "user1"},
+            {"user_id": 10, "handle": "artist"},
+        ],
+    }
+
+    with app.app_context():
+        db = get_db()
+        populate_mock_db(db, entities)
+
+        args = {
+            "user_id": 1,
+            "current_user_id": 10,
+        }
+        response = get_user_comments(args)
+
+        # Get the comments from the data field
+        comments = response["data"]
+
+        # Only the comment on the public track should be returned
+        assert len(comments) == 1
+        assert decode_string_id(comments[0]["id"]) == 1
+
+        # Verify the comment on the unlisted track is not included
+        unlisted_comments = [c for c in comments if decode_string_id(c["id"]) == 2]
+        assert len(unlisted_comments) == 0
+
+
 def test_get_user_comments_related_field(app):
     """Test that the related field is included in the response and contains the expected user and track information"""
     with app.app_context():
@@ -436,3 +503,70 @@ def test_get_user_comments_related_field(app):
         # Check that comments don't have their own related field
         for comment in comments:
             assert "related" not in comment
+
+
+def test_get_user_comments_deleted_tracks(app):
+    """Test that comments on deleted tracks are not returned"""
+    entities = {
+        "comments": [
+            {
+                "comment_id": 1,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "text": "Comment on active track",
+                "created_at": datetime(2022, 1, 1),
+                "updated_at": datetime(2022, 1, 1),
+            },
+            {
+                "comment_id": 2,
+                "user_id": 1,
+                "entity_id": 2,
+                "entity_type": "Track",
+                "text": "Comment on deleted track",
+                "created_at": datetime(2022, 1, 2),
+                "updated_at": datetime(2022, 1, 2),
+            },
+        ],
+        "tracks": [
+            {
+                "track_id": 1,
+                "owner_id": 10,
+                "is_current": True,
+                "is_delete": False,
+                "title": "Active Track",
+            },
+            {
+                "track_id": 2,
+                "owner_id": 10,
+                "is_current": True,
+                "is_delete": True,
+                "title": "Deleted Track",
+            },
+        ],
+        "users": [
+            {"user_id": 1, "handle": "user1"},
+            {"user_id": 10, "handle": "artist"},
+        ],
+    }
+
+    with app.app_context():
+        db = get_db()
+        populate_mock_db(db, entities)
+
+        args = {
+            "user_id": 1,
+            "current_user_id": 10,
+        }
+        response = get_user_comments(args)
+
+        # Get the comments from the data field
+        comments = response["data"]
+
+        # Only the comment on the active track should be returned
+        assert len(comments) == 1
+        assert decode_string_id(comments[0]["id"]) == 1
+
+        # Verify the comment on the deleted track is not included
+        deleted_track_comments = [c for c in comments if decode_string_id(c["id"]) == 2]
+        assert len(deleted_track_comments) == 0

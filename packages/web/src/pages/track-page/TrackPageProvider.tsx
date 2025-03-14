@@ -4,7 +4,6 @@ import {
   Name,
   ShareSource,
   RepostSource,
-  FavoriteSource,
   FollowSource,
   PlaybackSource,
   FavoriteType,
@@ -144,8 +143,8 @@ class TrackPageProvider extends Component<
       this.goToProfilePage(user.handle)
     }
     if (!this.context.isMobile) {
-      // On componentDidUpdate we try to reparse the URL because if you’re on a track page
-      // and go to another track page, the component doesn’t remount but we need to
+      // On componentDidUpdate we try to reparse the URL because if you're on a track page
+      // and go to another track page, the component doesn't remount but we need to
       // trigger a re-fetch based on the URL. On mobile, separate page provider components are
       // used so this is a non-issue.
       if (pathname !== this.state.pathname) {
@@ -316,15 +315,6 @@ class TrackPageProvider extends Component<
     shareTrack(trackId)
   }
 
-  onSaveTrack = (isSaved: boolean, trackId: ID) => {
-    const { saveTrack, unsaveTrack } = this.props
-    if (isSaved) {
-      unsaveTrack(trackId)
-    } else {
-      saveTrack(trackId)
-    }
-  }
-
   onFollow = () => {
     const { onFollow, track } = this.props
     if (track) onFollow(track.owner_id)
@@ -450,7 +440,6 @@ class TrackPageProvider extends Component<
       goToAllRemixesPage: this.goToAllRemixesPage,
       onHeroRepost: this.onHeroRepost,
       onHeroShare: this.onHeroShare,
-      onSaveTrack: this.onSaveTrack,
       onClickMobileOverflow: this.props.clickOverflow,
       onConfirmUnfollow: this.props.onConfirmUnfollow,
       goToFavoritesPage: this.goToFavoritesPage,
@@ -551,16 +540,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
           source: ShareSource.PAGE
         })
       ),
-    saveTrack: (trackId: ID) =>
-      dispatch(
-        socialTracksActions.saveTrack(trackId, FavoriteSource.TRACK_PAGE)
-      ),
-    unsaveTrack: (trackId: ID) =>
-      dispatch(
-        socialTracksActions.unsaveTrack(trackId, FavoriteSource.TRACK_PAGE)
-      ),
-    deleteTrack: (trackId: ID) =>
-      dispatch(cacheTrackActions.deleteTrack(trackId)),
     repostTrack: (trackId: ID) =>
       dispatch(
         socialTracksActions.repostTrack(trackId, RepostSource.TRACK_PAGE)

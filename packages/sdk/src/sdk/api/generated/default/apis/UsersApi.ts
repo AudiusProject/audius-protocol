@@ -352,6 +352,8 @@ export interface GetUserTracksRemixedRequest {
 }
 
 export interface SearchUsersRequest {
+    offset?: number;
+    limit?: number;
     query?: string;
     genre?: Array<string>;
     sortMethod?: SearchUsersSortMethodEnum;
@@ -1861,6 +1863,14 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async searchUsersRaw(params: SearchUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserSearch>> {
         const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
 
         if (params.query !== undefined) {
             queryParameters['query'] = params.query;

@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
+import type { LineupQueryData } from '@audius/common/api'
 import {
   Name,
   PlaybackSource,
@@ -9,7 +10,6 @@ import {
   UserTrackMetadata,
   Kind
 } from '@audius/common/models'
-import type { LineupQueryData } from '@audius/common/src/api/tan-query/types'
 import {
   playerSelectors,
   queueSelectors,

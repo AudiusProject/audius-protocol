@@ -23,6 +23,7 @@ export const useUser = (
   const dispatch = useDispatch()
   const queryClient = useQueryClient()
   const currentUserId = useSelector(getUserId)
+  const validUserId = !!userId && userId > 0
 
   return useQuery<UserMetadata | null>({
     queryKey: getUserQueryKey(userId),
@@ -37,6 +38,6 @@ export const useUser = (
       return await batchGetUsers.fetch(userId!)
     },
     ...options,
-    enabled: options?.enabled !== false && !!userId
+    enabled: options?.enabled !== false && validUserId
   })
 }

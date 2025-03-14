@@ -1,19 +1,17 @@
 import { useCallback, useMemo } from 'react'
 
 import {
-  useGetCommentById,
+  CommentOrReply,
   useTrack,
-  useUser,
   useUserByParams,
   useUserComments
 } from '@audius/common/api'
-import { Comment } from '@audius/common/models'
+import { Name } from '@audius/common/models'
 import { profilePage } from '@audius/common/src/utils/route'
 import {
   Box,
   Button,
   Flex,
-  IconButton,
   IconHeart,
   IconMessage,
   LoadingSpinner,
@@ -22,36 +20,33 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
-import { HashId } from '@audius/sdk'
 import dayjs from 'dayjs'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useNavigate } from 'react-router-dom-v5-compat'
 
 import { Avatar } from 'components/avatar'
 import { CommentBlockSkeletons } from 'components/comments/CommentSkeletons'
+import { CommentText } from 'components/comments/CommentText'
 import { Timestamp } from 'components/comments/Timestamp'
 import { Header } from 'components/header/desktop/Header'
 import { TrackLink, UserLink } from 'components/link'
 import Page from 'components/page/Page'
 import { useMainContentRef } from 'pages/MainContentContext'
 import { useProfileParams } from 'pages/profile-page/useProfileParams'
+import { make, track as trackEvent } from 'services/analytics'
 import { fullCommentHistoryPage } from 'utils/route'
-
-import { CommentText } from './CommentText'
 
 const messages = {
   description: (userName: string | null) =>
     `Comment History${userName ? ` for ${userName}` : ''}`,
   by: ' by ',
-  view: 'View',
+  view: 'View Track',
   nothingToDisplay: 'Nothing to Display',
   noComments: "This user hasn't left any comments yet!",
   backToProfile: 'Back To Profile'
 }
 
-const UserComment = ({ commentId }: { commentId: number }) => {
-  const res = useGetCommentById(commentId)
-  const comment = res.data as Comment
+const UserComment = ({ comment }: { comment: CommentOrReply }) => {
   const navigate = useNavigate()
 
   const {
@@ -66,78 +61,69 @@ const UserComment = ({ commentId }: { commentId: number }) => {
     isCurrentUserReacted
   } = comment
 
-  const { isPending: isUserPending } = useUser(userId)
-  const { data: track } = useTrack(HashId.parse(entityId))
+  const { data: track } = useTrack(entityId)
   const createdAtDate = useMemo(
     () => dayjs.utc(createdAt).toDate(),
     [createdAt]
   )
 
+  const trackUserCommentClick = useCallback(() => {
+    if (userId) {
+      trackEvent(
+        make({
+          eventName: Name.COMMENTS_HISTORY_CLICK,
+          commentId: id,
+          userId
+        })
+      )
+    }
+  }, [id, userId])
+
   const goToTrackPage = useCallback(() => {
     if (track) {
+      trackUserCommentClick()
       navigate(track.permalink)
     }
-  }, [track, navigate])
+  }, [track, trackUserCommentClick, navigate])
 
-  if (!comment) return null
+  if (!comment || !userId) return null
 
   return (
     <Flex w='100%' gap='l'>
-      <Box>
-        <Avatar userId={userId} size='medium' popover alignSelf='flex-start' />
-      </Box>
+      <Avatar userId={userId} size='medium' popover alignSelf='flex-start' />
       <Flex column w='100%' gap='s' alignItems='flex-start'>
         <Flex column gap='xs' w='100%'>
-          <Flex>
-            <Text variant='body' size='s' textAlign='left'>
-              {track ? (
-                <>
-                  <TrackLink isActive trackId={track?.track_id} />
-                  <Text>{messages.by}</Text>
-                  <UserLink isActive userId={track?.owner_id} />
-                </>
-              ) : (
-                <Skeleton w={180} h={20} />
-              )}
-            </Text>
+          <Text variant='body' size='s' textAlign='left' color='subdued'>
+            {track ? (
+              <>
+                <TrackLink
+                  variant='visible'
+                  trackId={track?.track_id}
+                  onClick={trackUserCommentClick}
+                />
+                {messages.by}
+                <UserLink variant='visible' userId={track?.owner_id} popover />
+              </>
+            ) : (
+              <Skeleton w={180} h={20} />
+            )}
+          </Text>
+          <Flex gap='s' alignItems='center'>
+            <UserLink userId={userId} popover size='l' strength='strong' />
+            <Timestamp time={createdAtDate} />
           </Flex>
-          <Flex column>
-            <Flex justifyContent='space-between'>
-              <Flex gap='s' alignItems='center'>
-                {isUserPending ? <Skeleton w={80} h={18} /> : null}
-                {userId !== undefined ? (
-                  <UserLink
-                    userId={userId}
-                    popover
-                    size='l'
-                    strength='strong'
-                  />
-                ) : null}
-                <Flex gap='xs' alignItems='flex-end' h='100%'>
-                  <Timestamp time={createdAtDate} />
-                </Flex>
-              </Flex>
-            </Flex>
-            <CommentText
-              isEdited={isEdited}
-              isPreview={false}
-              mentions={mentions}
-              commentId={id}
-            >
-              {message}
-            </CommentText>
-          </Flex>
+          <CommentText isEdited={isEdited} mentions={mentions} commentId={id}>
+            {message}
+          </CommentText>
         </Flex>
         <Flex gap='l' alignItems='center' onClick={goToTrackPage}>
           {reactCount > 0 ? (
             <Flex alignItems='center' gap='xs'>
-              <IconButton
-                icon={IconHeart}
+              <IconHeart
                 color={isCurrentUserReacted ? 'active' : 'subdued'}
                 aria-label='Heart comment'
-                css={{ pointerEvents: 'none' }}
               />
-              <Text> {reactCount || ''}</Text>
+              {reactCount > 0 ? <Text>{reactCount}</Text> : null}
             </Flex>
           ) : null}
           <TextLink variant='subdued'>{messages.view}</TextLink>
@@ -186,7 +172,7 @@ export const CommentHistoryPage = ({ title }: CommentHistoryPageProps) => {
   const { data: user } = useUserByParams(profileParams ?? {})
 
   const {
-    data: commentIds,
+    data: comments = [],
     hasNextPage,
     fetchNextPage,
     isPending,
@@ -225,16 +211,16 @@ export const CommentHistoryPage = ({ title }: CommentHistoryPageProps) => {
               <CommentBlockSkeletons />
             ) : (
               <>
-                {commentIds.length === 0 ? (
+                {comments.length === 0 ? (
                   <NoComments handle={user?.handle} />
                 ) : (
-                  commentIds.map((id) => (
-                    <UserComment key={id} commentId={id} />
+                  comments.map((comment) => (
+                    <UserComment key={comment.id} comment={comment} />
                   ))
                 )}
                 {isFetchingNextPage ? (
                   <Flex justifyContent='center' mt='l'>
-                    <LoadingSpinner css={{ width: 20, height: 20 }} />
+                    <LoadingSpinner h={20} w={20} />
                   </Flex>
                 ) : null}
               </>

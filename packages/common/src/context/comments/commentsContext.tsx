@@ -15,7 +15,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import {
   useGetTrackById,
-  useGetCommentsByTrackId,
+  useTrackComments,
   QUERY_KEYS,
   useTrackCommentCount,
   resetPreviousCommentCount
@@ -126,18 +126,20 @@ export function CommentSectionProvider<NavigationProp>(
   }
 
   const currentUserId = useSelector(getUserId)
+
   const {
-    data: commentIds = [],
+    data: comments = [],
+    commentIds = [],
     status,
     isFetching,
     hasNextPage,
     fetchNextPage: loadMorePages,
     isFetchingNextPage: isLoadingMorePages
-  } = useGetCommentsByTrackId({
+  } = useTrackComments({
     trackId: entityId,
-    sortMethod: currentSort,
-    userId: currentUserId
+    sortMethod: currentSort
   })
+
   const queryClient = useQueryClient()
   // hard refreshes all data
   const resetComments = useCallback(() => {
@@ -169,10 +171,10 @@ export function CommentSectionProvider<NavigationProp>(
       make({
         eventName: Name.COMMENTS_LOAD_MORE_COMMENTS,
         trackId: entityId,
-        offset: commentIds.length
+        offset: comments.length
       })
     )
-  }, [commentIds.length, entityId, loadMorePages, make, trackEvent])
+  }, [comments.length, entityId, loadMorePages, make, trackEvent])
 
   const handleResetComments = useCallback(() => {
     resetComments()

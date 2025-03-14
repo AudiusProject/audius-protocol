@@ -6,11 +6,11 @@ import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants
 import { removeOfflineItems } from '../slice'
 
 export function* watchUnsaveTrackSaga() {
-  yield* takeEvery(tracksSocialActions.UNSAVE_TRACK, removeSavedTrack)
+  yield* takeEvery(tracksSocialActions.UNSAVE_TRACK_SUCCEEDED, removeSavedTrack)
 }
 
 function* removeSavedTrack(
-  action: ReturnType<typeof tracksSocialActions.saveTrack>
+  action: ReturnType<typeof tracksSocialActions.unsaveTrackSucceeded>
 ) {
   const { trackId } = action
   yield* put(

@@ -298,10 +298,7 @@ def configure_celery(celery, test_config=None):
     # Update celery configuration
     celery.conf.update(
         imports=[
-            "src.tasks.index_nethermind",
-            "src.tasks.index_latest_block",
             "src.tasks.index_metrics",
-            "src.tasks.index_aggregate_monthly_plays",
             "src.tasks.index_hourly_play_counts",
             "src.tasks.vacuum_db",
             "src.tasks.update_clique_signers",
@@ -382,10 +379,6 @@ def configure_celery(celery, test_config=None):
                 "task": "index_user_listening_history",
                 "schedule": timedelta(seconds=5),
             },
-            "index_aggregate_monthly_plays": {
-                "task": "index_aggregate_monthly_plays",
-                "schedule": timedelta(minutes=5),
-            },
             "prune_plays": {
                 "task": "prune_plays",
                 "schedule": timedelta(seconds=30),
@@ -413,10 +406,6 @@ def configure_celery(celery, test_config=None):
             "update_aggregates": {
                 "task": "update_aggregates",
                 "schedule": timedelta(minutes=10),
-            },
-            "index_latest_block": {
-                "task": "index_latest_block",
-                "schedule": timedelta(seconds=5),
             },
             "publish_scheduled_releases": {
                 "task": "publish_scheduled_releases",
@@ -461,7 +450,6 @@ def configure_celery(celery, test_config=None):
 
     # Clear existing locks used in tasks if present
     redis_inst.delete(eth_indexing_last_scanned_block_key)
-    redis_inst.delete("index_nethermind_lock")
     redis_inst.delete("network_peers_lock")
     redis_inst.delete("update_metrics_lock")
     redis_inst.delete("update_play_count_lock")
@@ -533,7 +521,6 @@ def configure_celery(celery, test_config=None):
     # Start tasks that should fire upon startup
     celery.send_task("cache_current_nodes")
     celery.send_task("cache_entity_counts")
-    celery.send_task("index_nethermind", queue="index_nethermind")
     celery.send_task("index_rewards_manager", queue="index_sol")
     celery.send_task("index_user_bank", queue="index_sol")
     celery.send_task("index_payment_router", queue="index_sol")

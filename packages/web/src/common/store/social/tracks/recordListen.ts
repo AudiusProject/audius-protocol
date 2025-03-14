@@ -12,7 +12,8 @@ import { call, put, select, takeEvery } from 'typed-redux-saga'
 import { make } from 'common/store/analytics/actions'
 import { waitForWrite } from 'utils/sagaHelpers'
 
-const { updateOptimisticListenStreak } = audioRewardsPageActions
+const { updateOptimisticListenStreak, updateOptimisticPlayCount } =
+  audioRewardsPageActions
 const { getTrack } = cacheTracksSelectors
 const { getUserId } = accountSelectors
 
@@ -39,6 +40,11 @@ function* recordListen(action: { trackId: number }) {
 
   // Optimistically update the listen streak if applicable
   yield* put(updateOptimisticListenStreak())
+
+  // Optimistically update the play count if the user is playing their own track
+  if (userId === track.owner_id) {
+    yield* put(updateOptimisticPlayCount())
+  }
 }
 
 export function* watchRecordListen() {

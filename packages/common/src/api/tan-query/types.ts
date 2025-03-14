@@ -11,7 +11,7 @@ import { UseLineupQueryData } from './utils/useLineupQuery'
  */
 export type QueryOptions = Pick<
   DefinedInitialDataOptions<any>,
-  'staleTime' | 'enabled' | 'placeholderData'
+  'staleTime' | 'enabled' | 'placeholderData' | 'select'
 >
 
 export type LineupQueryData = UseLineupQueryData &
@@ -19,3 +19,10 @@ export type LineupQueryData = UseLineupQueryData &
     loadNextPage: ReturnType<typeof loadNextPage>
     pageSize?: number
   }
+
+export type FlatUseInfiniteQueryResult<T> = Omit<
+  UseInfiniteQueryResult,
+  'data' // These types get invalidated by the select modifier changing the output shape
+> & {
+  data: T[]
+}

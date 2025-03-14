@@ -1,9 +1,10 @@
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import {
-  ShareSource,
-  RepostSource,
   FavoriteSource,
-  FollowSource,
   ID,
+  RepostSource,
+  ShareSource,
+  FollowSource,
   ModalSource
 } from '@audius/common/models'
 import {
@@ -19,12 +20,11 @@ import {
   deletePlaylistConfirmationModalUIActions,
   mobileOverflowMenuUISelectors,
   shareModalUIActions,
-  OverflowSource,
   modalsSelectors,
   modalsActions,
-  Notification,
-  PurchaseableContentType,
-  usePremiumContentPurchaseModal
+  usePremiumContentPurchaseModal,
+  OverflowSource,
+  PurchaseableContentType
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { connect } from 'react-redux'
@@ -48,8 +48,7 @@ const { requestOpen: openDeletePlaylist } =
   deletePlaylistConfirmationModalUIActions
 const { requestOpen: openAddToCollection } = addToCollectionUIActions
 const { followUser, unfollowUser } = usersSocialActions
-const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
-  tracksSocialActions
+const { repostTrack, undoRepostTrack } = tracksSocialActions
 const {
   repostCollection,
   saveCollection,
@@ -88,8 +87,6 @@ const ConnectedMobileOverflowModal = ({
   shareCollection,
   repostTrack,
   unrepostTrack,
-  saveTrack,
-  unsaveTrack,
   repostCollection,
   unrepostCollection,
   saveCollection,
@@ -112,6 +109,12 @@ const ConnectedMobileOverflowModal = ({
     [openPremiumContentModal]
   )
   const navigate = useNavigate()
+
+  const toggleSaveTrack = useToggleFavoriteTrack({
+    trackId: id as number,
+    source: FavoriteSource.OVERFLOW
+  })
+
   // Create callbacks
   const {
     onRepost,
@@ -157,8 +160,8 @@ const ConnectedMobileOverflowModal = ({
         return {
           onRepost: () => repostTrack(id as ID),
           onUnrepost: () => unrepostTrack(id as ID),
-          onFavorite: () => saveTrack(id as ID),
-          onUnfavorite: () => unsaveTrack(id as ID),
+          onFavorite: () => toggleSaveTrack(),
+          onUnfavorite: () => toggleSaveTrack(),
           onAddToAlbum: () => addToCollection('album', id as ID, title),
           onAddToPlaylist: () => addToCollection('playlist', id as ID, title),
           onVisitCollectiblePage: () => {
@@ -344,10 +347,6 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
       dispatch(repostTrack(trackId, RepostSource.OVERFLOW)),
     unrepostTrack: (trackId: ID) =>
       dispatch(undoRepostTrack(trackId, RepostSource.OVERFLOW)),
-    saveTrack: (trackId: ID) =>
-      dispatch(saveTrack(trackId, FavoriteSource.OVERFLOW)),
-    unsaveTrack: (trackId: ID) =>
-      dispatch(unsaveTrack(trackId, FavoriteSource.OVERFLOW)),
 
     // Collections
     shareCollection: (collectionId: ID) =>

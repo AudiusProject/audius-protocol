@@ -23,6 +23,7 @@ export const useCollection = (
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
+  const validCollectionId = !!collectionId && collectionId > 0
 
   return useQuery<TQCollection | null>({
     queryKey: getCollectionQueryKey(collectionId),
@@ -37,6 +38,6 @@ export const useCollection = (
       return await batchGetCollections.fetch(collectionId!)
     },
     ...options,
-    enabled: options?.enabled !== false && !!collectionId
+    enabled: options?.enabled !== false && validCollectionId
   })
 }

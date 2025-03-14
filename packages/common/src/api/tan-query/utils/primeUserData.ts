@@ -8,7 +8,6 @@ import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
 import { getUserQueryKey } from '../useUser'
-import { getUserByHandleQueryKey } from '../useUserByHandle'
 
 export const primeUserData = ({
   users,
@@ -30,10 +29,12 @@ export const primeUserData = ({
 export const primeUserDataInternal = ({
   users,
   queryClient,
+  forceReplace = false,
   skipQueryData = false
 }: {
   users: User[]
   queryClient: QueryClient
+  forceReplace?: boolean
   skipQueryData?: boolean
 }): EntriesByKind => {
   const entries: SetRequired<EntriesByKind, Kind.USERS> = {
@@ -41,23 +42,13 @@ export const primeUserDataInternal = ({
   }
 
   users.forEach((user) => {
-    // Prime user by ID
     if (
-      !skipQueryData &&
-      !queryClient.getQueryData(getUserQueryKey(user.user_id))
+      forceReplace ||
+      (!skipQueryData &&
+        !queryClient.getQueryData(getUserQueryKey(user.user_id)))
     ) {
       queryClient.setQueryData(getUserQueryKey(user.user_id), user)
-    }
-    // Prime user by handle
-    if (
-      !skipQueryData &&
-      user.handle &&
-      !queryClient.getQueryData(getUserByHandleQueryKey(user.handle))
-    ) {
-      queryClient.setQueryData(
-        getUserByHandleQueryKey(user.handle),
-        user?.user_id
-      )
+      // TODO: update the current user query data
     }
 
     entries[Kind.USERS][user.user_id] = user

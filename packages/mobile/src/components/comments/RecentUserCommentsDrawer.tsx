@@ -1,14 +1,9 @@
 import { useCallback, useEffect, useRef } from 'react'
 
-import {
-  useGetCommentById,
-  useTrack,
-  useUser,
-  useUserComments
-} from '@audius/common/api'
-import type { ID, Comment, ReplyComment } from '@audius/common/models'
+import type { CommentOrReply } from '@audius/common/api'
+import { useTrack, useUser, useUserComments } from '@audius/common/api'
+import { Name, type ID } from '@audius/common/models'
 import { dayjs } from '@audius/common/utils'
-import { OptionalHashId } from '@audius/sdk'
 import {
   BottomSheetBackdrop,
   BottomSheetFlatList,
@@ -28,9 +23,10 @@ import {
 } from '@audius/harmony-native'
 import { LoadingSpinner } from 'app/harmony-native/components/LoadingSpinner/LoadingSpinner'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { make, track as trackEvent } from 'app/services/analytics'
 
 import { ProfilePicture } from '../core/ProfilePicture'
-import { UserBadgesV2 } from '../user-badges/UserBadgesV2'
+import { UserLink } from '../user-link'
 
 import { CommentSkeleton } from './CommentSkeleton'
 import { CommentText } from './CommentText'
@@ -47,34 +43,44 @@ import { useScrollEventsHandlers } from './useScrollEventHandlers'
 const messages = {
   title: 'Recent Comments',
   by: ' by ',
-  view: 'View'
+  view: 'View Track'
 }
 
-const CommentItem = ({ commentId }: { commentId: ID }) => {
+const CommentItem = ({ comment }: { comment: CommentOrReply }) => {
   const { userId, onClose, navigation } = useRecentUserCommentsDrawer()
-  const { data: commentData, isLoading } = useGetCommentById(commentId)
-  const comment = commentData as Comment | ReplyComment | undefined
-  const { data: track, isLoading: isTrackLoading } = useTrack(
-    OptionalHashId.parse(comment?.entityId)
-  )
+  const { data: track, isLoading: isTrackLoading } = useTrack(comment?.entityId)
   const { data: artist, isLoading: isArtistLoading } = useUser(track?.owner_id)
-  const { data: commenter } = useUser(userId)
+
+  const trackUserCommentClick = useCallback(() => {
+    if (comment) {
+      trackEvent(
+        make({
+          eventName: Name.COMMENTS_HISTORY_CLICK,
+          commentId: comment.id,
+          userId
+        })
+      )
+    }
+  }, [comment, userId])
 
   const handlePressView = useCallback(() => {
     if (track?.track_id) {
+      trackUserCommentClick()
       // @ts-ignore (bad types on useNavigation)
       navigation.push('Track', { id: track.track_id })
     }
     onClose()
-  }, [navigation, track?.track_id, onClose])
+  }, [navigation, track?.track_id, onClose, trackUserCommentClick])
 
-  if (isLoading || isTrackLoading || isArtistLoading) {
+  if (isTrackLoading || isArtistLoading) {
     return <CommentSkeleton />
   }
 
   if (!comment || !track || !artist) {
     return null
   }
+
+  const { isEdited } = comment
 
   return (
     <Animated.View style={{ width: '100%' }} entering={FadeIn.duration(500)}>
@@ -86,64 +92,51 @@ const CommentItem = ({ commentId }: { commentId: ID }) => {
           borderWidth='thin'
         />
         <Flex gap='s' flex={1}>
-          <Flex style={{ flex: 1 }}>
-            {/* Track / artist name */}
-            <Flex row w='100%' style={{ flexShrink: 1 }}>
-              <Text
-                style={{ flexShrink: 3 }}
-                variant='body'
-                size='s'
-                color='subdued'
-                ellipses
-                lineHeight='single'
-                numberOfLines={1}
-              >
-                {track.title}
-              </Text>
-              <Text
-                variant='body'
-                lineHeight='single'
-                size='s'
-                color='subdued'
-                flexShrink={0}
-              >
-                {messages.by}
-              </Text>
-              <Text
-                style={{ flexShrink: 1 }}
-                variant='body'
-                lineHeight='single'
-                size='s'
-                color='subdued'
-                ellipses
-                numberOfLines={1}
-              >
-                {artist.name}
-              </Text>
-            </Flex>
-            {/* Commenter name, badges, date */}
-            <Flex row gap='s' alignItems='center'>
-              <Flex row gap='xs' alignItems='center'>
+          <Flex flex={1}>
+            <Flex gap='xs'>
+              {/* Track / artist name */}
+              <Flex row w='100%' style={{ flexShrink: 1 }}>
+                <Text
+                  style={{ flexShrink: 3 }}
+                  variant='body'
+                  size='s'
+                  color='subdued'
+                  ellipses
+                  lineHeight='single'
+                  numberOfLines={1}
+                >
+                  {track.title}
+                </Text>
                 <Text
                   variant='body'
-                  size='m'
-                  strength='strong'
+                  lineHeight='single'
+                  size='s'
+                  color='subdued'
+                  flexShrink={0}
+                >
+                  {messages.by}
+                </Text>
+                <Text
+                  style={{ flexShrink: 1 }}
+                  variant='body'
+                  lineHeight='single'
+                  size='s'
+                  color='subdued'
                   ellipses
                   numberOfLines={1}
                 >
-                  {commenter?.name}
+                  {artist.name}
                 </Text>
-                <Flex row gap='2xs'>
-                  <UserBadgesV2 userId={userId} badgeSize='xs' />
-                </Flex>
               </Flex>
-              <Timestamp time={dayjs.utc(comment.createdAt).toDate()} />
+              {/* Commenter name, badges, date */}
+              <Flex row gap='s' alignItems='center'>
+                <UserLink strength='strong' userId={userId} />
+                <Timestamp time={dayjs.utc(comment.createdAt).toDate()} />
+              </Flex>
             </Flex>
-            {/* Comment text */}
             <CommentText
-              isEdited={false}
-              isPreview={true}
-              commentId={commentId}
+              isEdited={isEdited}
+              commentId={comment.id}
               mentions={comment.mentions ?? []}
               renderTimestamps={false}
               trackDuration={track.duration}
@@ -154,16 +147,16 @@ const CommentItem = ({ commentId }: { commentId: ID }) => {
             </CommentText>
           </Flex>
           {/* Reactions and view button */}
-          <Flex row gap='l'>
+          <Flex row gap='l' alignItems='center'>
             {comment.reactCount > 0 && (
-              <Flex row gap='xs'>
+              <Flex row gap='xs' alignItems='center'>
                 <IconHeart size='l' color='subdued' />
-                <Text variant='body' size='m'>
+                <Text variant='body' size='s'>
                   {comment.reactCount}
                 </Text>
               </Flex>
             )}
-            <TextLink variant='subdued' onPress={handlePressView}>
+            <TextLink variant='subdued' size='s' onPress={handlePressView}>
               {messages.view}
             </TextLink>
           </Flex>
@@ -176,8 +169,8 @@ const CommentItem = ({ commentId }: { commentId: ID }) => {
 const RecentUserCommentsDrawerContent = () => {
   const { userId } = useRecentUserCommentsDrawer()
   const {
-    data: commentIds,
-    isLoading,
+    data: comments,
+    isPending,
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage
@@ -190,7 +183,7 @@ const RecentUserCommentsDrawerContent = () => {
   }, [fetchNextPage, hasNextPage])
 
   // Loading state
-  if (isLoading) {
+  if (isPending) {
     return (
       <Flex pv='m'>
         <CommentSkeleton />
@@ -201,7 +194,7 @@ const RecentUserCommentsDrawerContent = () => {
   }
 
   // Empty state
-  if (!commentIds || !commentIds.length) {
+  if (!comments || !comments.length) {
     return (
       <Flex p='l'>
         <NoComments />
@@ -211,8 +204,8 @@ const RecentUserCommentsDrawerContent = () => {
 
   return (
     <BottomSheetFlatList
-      data={commentIds}
-      keyExtractor={(id) => id.toString()}
+      data={comments}
+      keyExtractor={(comment) => comment.id.toString()}
       ListHeaderComponent={<Box h='l' />}
       ListFooterComponent={
         <>
@@ -229,7 +222,7 @@ const RecentUserCommentsDrawerContent = () => {
       scrollEventsHandlersHook={useScrollEventsHandlers}
       onEndReached={handleEndReached}
       onEndReachedThreshold={0.3}
-      renderItem={({ item: id }) => <CommentItem commentId={id} />}
+      renderItem={({ item: comment }) => <CommentItem comment={comment} />}
     />
   )
 }
@@ -259,7 +252,6 @@ export const RecentUserCommentsDrawer = ({
       ref={bottomSheetModalRef}
       snapPoints={['66%', '100%']}
       topInset={insets.top}
-      bottomInset={insets.bottom}
       style={{
         borderTopRightRadius: COMMENT_DRAWER_BORDER_RADIUS,
         borderTopLeftRadius: COMMENT_DRAWER_BORDER_RADIUS,

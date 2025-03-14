@@ -7,7 +7,7 @@ import {
   CommonState
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
-import { IconTwitter as IconTwitterBird } from '@audius/harmony'
+import { Box, IconTwitter as IconTwitterBird } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -118,11 +118,13 @@ export const TwitterShareButton = (props: TwitterShareButtonProps) => {
   }
 
   return (
-    <button className={cn(styles.root, className)} onClick={handleClick}>
-      <IconTwitterBird
-        className={cn(styles.icon, { [styles.hideText]: hideText })}
-      />
-      {!hideText ? messages.share : null}
-    </button>
+    <Box>
+      <button className={cn(styles.root, className)} onClick={handleClick}>
+        <IconTwitterBird
+          className={cn(styles.icon, { [styles.hideText]: hideText })}
+        />
+        {!hideText ? messages.share : null}
+      </button>
+    </Box>
   )
 }

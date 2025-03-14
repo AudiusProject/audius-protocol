@@ -33,7 +33,7 @@ export const challengeRewardsConfig: Record<
     description: (challenge) =>
       `Earn ${challenge?.amount} $AUDIO for you and your friend.`,
     fullDescription: (challenge) =>
-      `Invite your Friends! You’ll earn ${challenge?.amount} $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)`,
+      `Invite your Friends! You'll earn ${challenge?.amount} $AUDIO for each friend who joins with your link (and they'll get an $AUDIO too)`,
     progressLabel: '%0 Invites Accepted',
     remainingLabel: '%0 Invites Remain',
     panelButtonText: 'Invite Your Friends'
@@ -44,7 +44,7 @@ export const challengeRewardsConfig: Record<
     description: (challenge) =>
       `Earn up to ${formatNumberCommas(challenge?.totalAmount ?? '')} $AUDIO`,
     fullDescription: (challenge) =>
-      `Invite your fans! You’ll earn ${challenge?.amount} $AUDIO for each fan who joins with your link (and they’ll get an $AUDIO too)`,
+      `Invite your fans! You'll earn ${challenge?.amount} $AUDIO for each fan who joins with your link (and they'll get an $AUDIO too)`,
     progressLabel: '%0 Invites Accepted',
     remainingLabel: '%0 Invites Remain',
     panelButtonText: 'Invite your Fans'
@@ -227,30 +227,30 @@ export const challengeRewardsConfig: Record<
   },
   'trending-playlist': {
     id: 'trending-playlist',
-    title: 'Top 5 Trending Playlists',
-    description: () => 'Winners are selected every Friday at Noon PT!',
+    title: 'Trending Playlists Weekly Top 5',
+    description: () => 'Top 5 winners are selected every Friday at Noon PT!',
     panelButtonText: 'See More'
   },
   tp: {
     id: 'trending-playlist',
-    title: 'Top 5 Trending Playlists',
-    description: () => 'Winners are selected every Friday at Noon PT!',
+    title: 'Trending Playlists Weekly Top 5',
+    description: () => 'Top 5 winners are selected every Friday at Noon PT!',
     panelButtonText: 'See More'
   },
   'trending-track': {
-    title: 'Top 5 Trending Tracks',
-    description: () => 'Winners are selected every Friday at Noon PT!',
+    title: 'Global Trending Weekly Top 5',
+    description: () => 'Top 5 winners are selected every Friday at Noon PT!',
     panelButtonText: 'See More',
     id: 'trending-track'
   },
   tt: {
-    title: 'Top 5 Trending Tracks',
-    description: () => 'Winners are selected every Friday at Noon PT!',
+    title: 'Global Trending Weekly Top 5',
+    description: () => 'Top 5 winners are selected every Friday at Noon PT!',
     panelButtonText: 'See More',
     id: 'trending-track'
   },
   'top-api': {
-    title: 'Top 10 API Apps',
+    title: 'API Apps: Monthly Top 10 ',
     description: () => 'The top 10 Audius API apps each month win.',
     panelButtonText: 'More Info',
     id: 'top-api'
@@ -263,14 +263,14 @@ export const challengeRewardsConfig: Record<
     id: 'verified-upload'
   },
   'trending-underground': {
-    title: 'Top 5 Underground Trending',
-    description: () => 'Winners are selected every Friday at Noon PT!',
+    title: 'Underground Trending Weekly Top 5',
+    description: () => 'Top 5 winners are selected every Friday at Noon PT!',
     panelButtonText: 'See More',
     id: 'trending-underground'
   },
   tut: {
-    title: 'Top 5 Underground Trending',
-    description: () => 'Winners are selected every Friday at Noon PT!',
+    title: 'Underground Trending Weekly Top 5',
+    description: () => 'Top 5 winners are selected every Friday at Noon PT!',
     panelButtonText: 'See More',
     id: 'trending-underground'
   },
@@ -289,18 +289,83 @@ export const challengeRewardsConfig: Record<
     progressLabel: 'Ready to Claim'
   },
   [ChallengeName.FirstWeeklyComment]: {
-    shortTitle: 'first comment of the week',
-    title: 'First comment of the week',
+    shortTitle: 'First Comment of the Week',
+    title: 'First Comment of the Week',
     description: () => 'Your first comment every week will earn $AUDIO.',
     fullDescription: () => 'Your first comment every week will earn $AUDIO.',
     panelButtonText: 'Comment on a Track',
     id: ChallengeName.FirstWeeklyComment
+  },
+  [ChallengeName.PlayCount250]: {
+    id: ChallengeName.PlayCount250,
+    title: '250 Plays',
+    description: () =>
+      `Hit 250 plays across all of your tracks in 2025 to earn an $AUDIO Reward`,
+    fullDescription: () =>
+      `Hit 250 plays across all of your tracks in 2025 to earn an $AUDIO Reward`,
+    progressLabel: '%0 Plays',
+    remainingLabel: '%0 Plays',
+    panelButtonText: 'More Info'
+  },
+  [ChallengeName.PlayCount1000]: {
+    id: ChallengeName.PlayCount1000,
+    title: '1,000 Plays',
+    description: () =>
+      `Hit 1,000 plays across all of your tracks in 2025 to earn an $AUDIO Reward`,
+    fullDescription: () =>
+      `Hit 1,000 plays across all of your tracks in 2025 to earn an $AUDIO Reward`,
+    progressLabel: '%0 Plays',
+    remainingLabel: '%0 Plays',
+    panelButtonText: 'More Info'
+  },
+  [ChallengeName.PlayCount10000]: {
+    id: ChallengeName.PlayCount10000,
+    title: '10,000 Plays',
+    description: () =>
+      `Hit 10,000 plays across all of your tracks in 2025 to earn an $AUDIO Reward`,
+    fullDescription: () =>
+      `Hit 10,000 plays across all of your tracks in 2025 to earn an $AUDIO Reward`,
+    progressLabel: '%0 Plays',
+    remainingLabel: '%0 Plays',
+    panelButtonText: 'More Info'
+  },
+  [ChallengeName.Tastemaker]: {
+    id: ChallengeName.Tastemaker,
+    title: 'Tastemaker',
+    description: () =>
+      `Discover and interact with a new track before it hits trending to earn an $AUDIO reward.`,
+    fullDescription: () =>
+      `Discover and interact with a new track before it hits trending to earn an $AUDIO reward.`,
+    progressLabel: 'Active',
+    panelButtonText: 'More Info'
   }
 }
 
 export const makeOptimisticChallengeSortComparator = (
   userChallenges: Partial<Record<ChallengeRewardID, OptimisticUserChallenge>>
 ): ((id1: ChallengeRewardID, id2: ChallengeRewardID) => number) => {
+  const playCountOrder = [
+    ChallengeName.PlayCount250,
+    ChallengeName.PlayCount1000,
+    ChallengeName.PlayCount10000
+  ]
+
+  const getSortKey = (challenge: OptimisticUserChallenge) => {
+    if (challenge.claimableAmount > 0) {
+      return 0
+    }
+    if (
+      isNewChallenge(challenge.challenge_id) &&
+      challenge.state !== 'disbursed'
+    ) {
+      return 1
+    }
+    if (challenge.state === 'disbursed') {
+      return 2
+    }
+    return 3
+  }
+
   return (id1, id2) => {
     const userChallenge1 = userChallenges[id1]
     const userChallenge2 = userChallenges[id2]
@@ -308,34 +373,37 @@ export const makeOptimisticChallengeSortComparator = (
     if (!userChallenge1 || !userChallenge2) {
       return 0
     }
-    if (userChallenge1?.claimableAmount > 0) {
+
+    const sortKey1 = getSortKey(userChallenge1)
+    const sortKey2 = getSortKey(userChallenge2)
+
+    if (sortKey1 < sortKey2) {
       return -1
     }
-    if (userChallenge2?.claimableAmount > 0) {
+    if (sortKey1 > sortKey2) {
       return 1
     }
-    if (
-      userChallenge1?.challenge_id &&
-      isNewChallenge(userChallenge1?.challenge_id) &&
-      userChallenge1?.state !== 'disbursed'
-    ) {
-      return -1
+
+    // If sort keys are equal, check if both are play count challenges
+    if (isPlayCountChallenge(id1) && isPlayCountChallenge(id2)) {
+      return playCountOrder.indexOf(id1) - playCountOrder.indexOf(id2)
     }
-    if (
-      userChallenge2?.challenge_id &&
-      isNewChallenge(userChallenge2?.challenge_id) &&
-      userChallenge2?.state !== 'disbursed'
-    ) {
-      return 1
-    }
-    if (userChallenge1?.state === 'disbursed') {
-      return 1
-    }
-    if (userChallenge2?.state === 'disbursed') {
-      return -1
-    }
+
     return 0
   }
+}
+
+export const isPlayCountChallenge = (
+  id: ChallengeRewardID
+): id is
+  | ChallengeName.PlayCount250
+  | ChallengeName.PlayCount1000
+  | ChallengeName.PlayCount10000 => {
+  return (
+    id === ChallengeName.PlayCount250 ||
+    id === ChallengeName.PlayCount1000 ||
+    id === ChallengeName.PlayCount10000
+  )
 }
 
 export const isAudioMatchingChallenge = (
@@ -380,8 +448,13 @@ export const getClaimableChallengeSpecifiers = (
 
 const newChallengeIds: ChallengeRewardID[] = [
   ChallengeName.ListenStreakEndless,
+  ChallengeName.FirstWeeklyComment,
   ChallengeName.AudioMatchingSell,
-  ChallengeName.AudioMatchingBuy
+  ChallengeName.AudioMatchingBuy,
+  ChallengeName.PlayCount250,
+  ChallengeName.PlayCount1000,
+  ChallengeName.PlayCount10000,
+  ChallengeName.Tastemaker
 ]
 
 export const isNewChallenge = (challengeId: ChallengeRewardID) =>
@@ -403,6 +476,11 @@ export const getChallengeStatusLabel = (
   if (!challenge) return DEFAULT_STATUS_LABELS.AVAILABLE
 
   // Handle special aggregate challenges first
+  const shouldShowReset =
+    challenge.disbursed_amount &&
+    !challenge.claimableAmount &&
+    !challenge.undisbursedSpecifiers.length
+
   switch (challengeId) {
     case ChallengeName.ListenStreakEndless:
       return `Day ${challenge.current_step_count}`
@@ -416,6 +494,10 @@ export const getChallengeStatusLabel = (
         return DEFAULT_STATUS_LABELS.READY_TO_CLAIM
       }
       return 'No Recent Activity'
+    case ChallengeName.FirstWeeklyComment:
+      if (shouldShowReset) {
+        return 'Resets Friday'
+      }
   }
 
   // Handle claimable state for non-aggregate rewards
@@ -424,16 +506,19 @@ export const getChallengeStatusLabel = (
   }
 
   // Handle disbursed state - 2nd clause is for aggregate challenges
-  if (
+  const shouldShowComplete =
     challenge.state === 'disbursed' ||
     (challenge.state === 'completed' &&
       challenge.current_step_count === challenge.max_steps)
-  ) {
+  if (shouldShowComplete) {
     return DEFAULT_STATUS_LABELS.COMPLETE
   }
 
   // Handle completed with cooldown state
-  if (challenge.state === 'completed' && challenge.cooldown_days) {
+  if (
+    (challenge.state === 'completed' || challenge.state === 'in_progress') &&
+    challenge.cooldown_days
+  ) {
     return DEFAULT_STATUS_LABELS.REWARD_PENDING
   }
 

@@ -9,7 +9,7 @@ import {
   useUserComments
 } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
-import type { UserMetadata } from '@audius/common/models'
+import { Name, type UserMetadata } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { Platform, View, ScrollView } from 'react-native'
@@ -37,6 +37,7 @@ import {
   ProfilePictureList,
   ProfilePictureListSkeleton
 } from 'app/screens/notifications-screen/Notification'
+import { make, track as trackEvent } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import type { SvgProps } from 'app/types/svg'
 import { useThemePalette } from 'app/utils/theme'
@@ -270,6 +271,9 @@ const RelatedArtistsTile = ({ userId }: { userId: number }) => {
     pageSize: MAX_CARD_PROFILE_PICTURES
   })
 
+  if (relatedArtists.length === 0) {
+    return null
+  }
   return (
     <ProfileInfoTile
       screen='RelatedArtists'
@@ -329,7 +333,13 @@ export const ProfileInfoTiles = () => {
   }, [])
   const onOpenRecentCommentsDrawer = useCallback(() => {
     setIsRecentCommentsDrawerOpen(true)
-  }, [])
+    trackEvent(
+      make({
+        eventName: Name.COMMENTS_HISTORY_DRAWER_OPEN,
+        userId: user_id
+      })
+    )
+  }, [user_id])
 
   const accountId = useSelector(getUserId)
 
@@ -340,27 +350,27 @@ export const ProfileInfoTiles = () => {
     useUserComments({ userId: user_id, pageSize: 1 })
 
   // Only animate if comments are not immediately visible
-  const [useAnimation] = useState(loadingComments)
+  const [shouldAnimate] = useState(loadingComments)
 
   const {
     motion: { expressive: animation }
   } = useTheme()
 
   const layoutAnimation = useMemo(() => {
-    return useAnimation
+    return shouldAnimate
       ? LinearTransition.duration(animation.duration).easing(
           animation.easing.factory()
         )
       : undefined
-  }, [animation, useAnimation])
+  }, [animation, shouldAnimate])
 
   const fadeInAnimation = useMemo(() => {
-    return useAnimation
+    return shouldAnimate
       ? FadeIn.withInitialValues({ opacity: 0 })
           .duration(animation.duration)
           .delay(animation.duration)
       : undefined
-  }, [animation, useAnimation])
+  }, [animation, shouldAnimate])
 
   return (
     <>
@@ -371,7 +381,7 @@ export const ProfileInfoTiles = () => {
         contentContainerStyle={styles.rootScrollViewContent}
       >
         <ProfileTierTile />
-        <LayoutAnimationConfig skipEntering={!useAnimation}>
+        <LayoutAnimationConfig skipEntering={!shouldAnimate}>
           {isRecentCommentsEnabled && recentComments.length > 0 && (
             <Animated.View entering={fadeInAnimation}>
               <ProfileInfoTile
@@ -390,18 +400,6 @@ export const ProfileInfoTiles = () => {
             style={styles.staticTilesContainer}
             layout={layoutAnimation}
           >
-            {hasAiAttribution ? (
-              <ProfileInfoTile
-                screen='AiGeneratedTracks'
-                icon={IconRobot}
-                title={messages.aiGeneratedTracks}
-                content={
-                  <Text variant='body' size='s' color='subdued'>
-                    {messages.viewAll}
-                  </Text>
-                }
-              />
-            ) : null}
             {supporting_count > 0 ? (
               <SupportedUsersTile userId={user_id} count={supporting_count} />
             ) : null}
@@ -416,6 +414,18 @@ export const ProfileInfoTiles = () => {
             ) : null}
 
             <RelatedArtistsTile userId={user_id} />
+            {hasAiAttribution ? (
+              <ProfileInfoTile
+                screen='AiGeneratedTracks'
+                icon={IconRobot}
+                title={messages.aiGeneratedTracks}
+                content={
+                  <Text variant='body' size='s' color='subdued'>
+                    {messages.viewAll}
+                  </Text>
+                }
+              />
+            ) : null}
           </Animated.View>
         </LayoutAnimationConfig>
       </ScrollView>

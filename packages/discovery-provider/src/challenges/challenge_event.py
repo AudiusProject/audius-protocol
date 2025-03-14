@@ -10,6 +10,10 @@ class ChallengeEvent(str, enum.Enum):
     follow = "follow"
     favorite = "favorite"
     track_listen = "track_listen"
+    track_played = (
+        "track_played"  # Fired for the track owner when anyone listens to their track
+    )
+
     track_upload = "track_upload"
     referral_signup = "referral_signup"  # Fired for the referring user
     referred_signup = "referred_signup"  # Fired for the new user
@@ -24,3 +28,4 @@ class ChallengeEvent(str, enum.Enum):
     audio_matching_seller = "audio_matching_seller"
     one_shot = "one_shot"
     first_weekly_comment = "first_weekly_comment"
+    tastemaker = "tastemaker"

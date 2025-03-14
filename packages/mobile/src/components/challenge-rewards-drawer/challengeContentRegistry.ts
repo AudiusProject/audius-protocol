@@ -4,9 +4,12 @@ import { ChallengeName } from '@audius/common/models'
 
 import { AudioMatchingChallengeContent } from './AudioMatchingChallengeContent'
 import { DefaultChallengeContent } from './DefaultChallengeContent'
+import { FirstWeeklyCommentChallengeContent } from './FirstWeeklyCommentChallengeContent'
 import { ListenStreakEndlessChallengeContent } from './ListenStreakEndlessChallengeContent'
+import { PlayCountMilestoneContent } from './PlayCountMilestoneContent'
 import { ProfileCompletionChallengeContent } from './ProfileCompletionChallengeContent'
 import { ReferralChallengeContent } from './ReferralChallengeContent'
+import { TastemakerChallengeContent } from './TastemakerChallengeContent'
 import type { ChallengeContentProps } from './types'
 
 type ChallengeContentComponent = ComponentType<ChallengeContentProps>
@@ -21,6 +24,11 @@ export const challengeContentRegistry: ChallengeContentMap = {
   [ChallengeName.ListenStreakEndless]: ListenStreakEndlessChallengeContent,
   [ChallengeName.ProfileCompletion]: ProfileCompletionChallengeContent,
   [ChallengeName.Referrals]: ReferralChallengeContent,
+  [ChallengeName.FirstWeeklyComment]: FirstWeeklyCommentChallengeContent,
+  [ChallengeName.PlayCount250]: PlayCountMilestoneContent,
+  [ChallengeName.PlayCount1000]: PlayCountMilestoneContent,
+  [ChallengeName.PlayCount10000]: PlayCountMilestoneContent,
+  [ChallengeName.Tastemaker]: TastemakerChallengeContent,
   default: DefaultChallengeContent
 }
 
