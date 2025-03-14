@@ -110,7 +110,7 @@ export interface TanQueryLineupProps {
 
   /** Function triggered on click of tile */
   onClickTile?: (trackId: ID) => void
-  pageSize: number
+  pageSize?: number
   initialPageSize?: number
   loadMoreThreshold?: number
 
@@ -157,7 +157,7 @@ export const TanQueryLineup = ({
   numPlaylistSkeletonRows,
   isTrending = false,
   onClickTile,
-  pageSize,
+  pageSize: propsPageSize,
   initialPageSize,
   scrollParent: externalScrollParent,
   loadMoreThreshold = DEFAULT_LOAD_MORE_THRESHOLD,
@@ -166,6 +166,7 @@ export const TanQueryLineup = ({
   maxEntries
 }: TanQueryLineupProps) => {
   const dispatch = useDispatch()
+  const pageSize = propsPageSize ?? lineupQueryData.pageSize
   const {
     lineup = defaultLineup,
     play,

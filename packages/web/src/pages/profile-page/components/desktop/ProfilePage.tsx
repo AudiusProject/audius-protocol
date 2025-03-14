@@ -3,6 +3,7 @@ import { useCallback, memo, ReactNode, useEffect, useState } from 'react'
 import {
   useCurrentUserId,
   useGetMutedUsers,
+  useProfileReposts,
   useUserCollectibles
 } from '@audius/common/api'
 import { useMuteUser } from '@audius/common/context'
@@ -43,6 +44,7 @@ import CollectiblesPage from 'components/collectibles/components/CollectiblesPag
 import { ConfirmationModal } from 'components/confirmation-modal'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
 import Lineup from 'components/lineup/Lineup'
+import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import { LineupVariant } from 'components/lineup/types'
 import Mask from 'components/mask/Mask'
 import NavBanner, { EmptyNavBanner } from 'components/nav-banner/NavBanner'
@@ -185,6 +187,44 @@ export type ProfilePageProps = {
   onCloseUnblockUserConfirmationModal: () => void
   onCloseMuteUserConfirmationModal: () => void
   onCloseUnmuteUserConfirmationModal: () => void
+}
+
+const RepostsTab = ({
+  isOwner,
+  profile,
+  handle
+}: {
+  isOwner: boolean
+  profile: User
+  handle: string
+}) => {
+  const queryData = useProfileReposts({
+    handle
+  })
+
+  const emptyTab = (
+    <EmptyTab
+      isOwner={isOwner}
+      name={profile.name}
+      text={'reposted anything'}
+    />
+  )
+
+  return (
+    <div className={styles.tiles}>
+      {profile.repost_count === 0 ? (
+        emptyTab
+      ) : (
+        <TanQueryLineup
+          lineupQueryData={queryData}
+          emptyElement={emptyTab}
+          actions={feedActions}
+          pageSize={queryData.pageSize}
+          variant={LineupVariant.CONDENSED}
+        />
+      )}
+    </div>
+  )
 }
 
 const LeftColumnSpacer = () => (
@@ -395,13 +435,7 @@ const ProfilePage = ({
               text={'reposted anything'}
             />
           ) : (
-            <Lineup
-              {...getLineupProps(userFeed)}
-              loadMore={loadMoreUserFeed}
-              playTrack={playUserFeedTrack}
-              pauseTrack={pauseUserFeedTrack}
-              actions={feedActions}
-            />
+            <RepostsTab isOwner={isOwner} profile={profile} handle={handle} />
           )
         ) : null}
       </Box>

@@ -9,6 +9,7 @@ import { ListenStreakEndlessChallengeContent } from './ListenStreakEndlessChalle
 import { PlayCountMilestoneContent } from './PlayCountMilestoneContent'
 import { ProfileCompletionChallengeContent } from './ProfileCompletionChallengeContent'
 import { ReferralChallengeContent } from './ReferralChallengeContent'
+import { TastemakerChallengeContent } from './TastemakerChallengeContent'
 import type { ChallengeContentProps } from './types'
 
 type ChallengeContentComponent = ComponentType<ChallengeContentProps>
@@ -27,6 +28,7 @@ export const challengeContentRegistry: ChallengeContentMap = {
   [ChallengeName.PlayCount250]: PlayCountMilestoneContent,
   [ChallengeName.PlayCount1000]: PlayCountMilestoneContent,
   [ChallengeName.PlayCount10000]: PlayCountMilestoneContent,
+  [ChallengeName.Tastemaker]: TastemakerChallengeContent,
   default: DefaultChallengeContent
 }
 

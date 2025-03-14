@@ -41,7 +41,7 @@ def test_index_tastemaker_no_tastemakers(app):
                 challenge_event_bus=bus,
                 tastemaker_notification_threshold=2,
             )
-        bus.process_events(session)
+        bus.process_events(session, 10)
 
         notifications = (
             session.query(Notification)
@@ -95,7 +95,7 @@ def test_index_tastemaker_no_trending(app):
                 challenge_event_bus=bus,
                 tastemaker_notification_threshold=1,
             )
-        bus.process_events(session)
+        bus.process_events(session, 10)
 
         notifications = (
             session.query(Notification)
@@ -155,7 +155,7 @@ def test_index_tastemaker_sends_one_notif_for_both_fav_and_repost(app):
                 challenge_event_bus=bus,
                 tastemaker_notification_threshold=2,
             )
-        bus.process_events(session)
+        bus.process_events(session, 10)
 
         notifications = (
             session.query(Notification)
@@ -234,7 +234,7 @@ def test_index_tastemaker(app):
                 challenge_event_bus=bus,
                 tastemaker_notification_threshold=4,
             )
-        bus.process_events(session)
+        bus.process_events(session, 10)
 
         notifications = (
             session.query(Notification)
@@ -332,7 +332,7 @@ def test_index_tastemaker_duplicate_insert(app):
                 top_trending_tracks=entities["tracks"],
                 tastemaker_notification_threshold=4,
             )
-        bus.process_events(session)
+        bus.process_events(session, 10)
 
         notifications = (
             session.query(Notification)

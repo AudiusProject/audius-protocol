@@ -1,6 +1,6 @@
 import { useEffect, useContext } from 'react'
 
-import { useUserCollectibles } from '@audius/common/api'
+import { useProfileReposts, useUserCollectibles } from '@audius/common/api'
 import {
   Status,
   Collection,
@@ -30,6 +30,7 @@ import cn from 'classnames'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import Lineup from 'components/lineup/Lineup'
+import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, {
   LeftPreset,
@@ -215,6 +216,37 @@ const g = withNullGuard((props: ProfilePageProps) => {
     return { ...props, profile }
   }
 })
+
+const RepostsTab = ({
+  isOwner,
+  profile,
+  handle
+}: {
+  isOwner: boolean
+  profile: User
+  handle: string
+}) => {
+  const queryData = useProfileReposts({
+    handle
+  })
+
+  if (profile.repost_count === 0) {
+    return (
+      <EmptyTab
+        message={
+          <>
+            {isOwner
+              ? "You haven't reposted anything yet"
+              : `${profile.name} hasn't reposted anything yet`}
+            <i className={cn('emoji', 'face-with-monocle', styles.emoji)} />
+          </>
+        }
+      />
+    )
+  }
+
+  return <TanQueryLineup lineupQueryData={queryData} actions={feedActions} />
+}
 
 const ProfilePage = g(
   ({
@@ -419,14 +451,7 @@ const ProfilePage = g(
                 }
               />
             ) : (
-              <Lineup
-                {...getLineupProps(userFeed)}
-                count={profile.repost_count}
-                loadMore={loadMoreUserFeed}
-                playTrack={playUserFeedTrack}
-                pauseTrack={pauseUserFeedTrack}
-                actions={feedActions}
-              />
+              <RepostsTab isOwner={isOwner} profile={profile} handle={handle} />
             )}
           </div>
         ]
