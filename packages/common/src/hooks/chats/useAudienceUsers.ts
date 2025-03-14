@@ -2,9 +2,7 @@ import { ChatBlast, ChatBlastAudience, OptionalHashId } from '@audius/sdk'
 
 import {
   useCurrentUserId,
-  useGetCurrentUserId,
   useGetFollowers,
-  useGetRemixers,
   usePurchasers,
   useRemixers,
   useSupporters

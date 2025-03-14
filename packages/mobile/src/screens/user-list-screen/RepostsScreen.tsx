@@ -4,8 +4,8 @@ import { RepostType } from '@audius/common/store'
 import { IconRepost } from '@audius/harmony-native'
 import { useRoute } from 'app/hooks/useRoute'
 
-import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
+import { UserListV2 } from './UserListV2'
 
 const messages = {
   title: 'Reposts'
@@ -25,11 +25,18 @@ export const RepostsScreen = () => {
     { enabled: repostType === RepostType.COLLECTION }
   )
 
-  const query = repostType === RepostType.TRACK ? trackQuery : collectionQuery
+  const { data, isFetchingNextPage, isPending, fetchNextPage } =
+    repostType === RepostType.TRACK ? trackQuery : collectionQuery
 
   return (
     <UserListScreen title={messages.title} titleIcon={IconRepost}>
-      <UserList {...query} tag='REPOSTS' />
+      <UserListV2
+        data={data}
+        isFetchingNextPage={isFetchingNextPage}
+        isPending={isPending}
+        fetchNextPage={fetchNextPage}
+        tag='REPOSTS'
+      />
     </UserListScreen>
   )
 }

@@ -1,21 +1,6 @@
-<<<<<<< HEAD
-import { useCallback } from 'react'
-
-import { useCurrentUserId, useGetCurrentUserId, useSupporters } from '@audius/common/api'
-import {
-  cacheUsersSelectors,
-  topSupportersUserListActions,
-  topSupportersUserListSelectors
-} from '@audius/common/store'
-import { ChatBlastAudience } from '@audius/sdk'
-import { css } from '@emotion/native'
-import { Platform, View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
-=======
 import { useCurrentUserId, useSupporters } from '@audius/common/api'
 import { ChatBlastAudience } from '@audius/sdk'
 import { css } from '@emotion/native'
->>>>>>> d81215120c ([C-5652] Migrate all user-lists to tan-query (#11025))
 
 import { Box, IconTrophy } from '@audius/harmony-native'
 import { useRoute } from 'app/hooks/useRoute'
@@ -34,14 +19,18 @@ export const TopSupportersScreen = () => {
   const { params } = useRoute<'TopSupporters'>()
   const { userId } = params
   const { data: currentUserId } = useCurrentUserId()
-  const query = useSupporters({ userId })
+  const { data, isFetchingNextPage, isPending, fetchNextPage } = useSupporters({
+    userId
+  })
 
   return (
     <UserListScreen title={messages.title} titleIcon={IconTrophy}>
       <>
         <UserListV2
-          {...query}
-          data={query.data?.map((supporter) => supporter.sender)}
+          data={data?.map((supporter) => supporter.sender)}
+          isFetchingNextPage={isFetchingNextPage}
+          isPending={isPending}
+          fetchNextPage={fetchNextPage}
           tag='TOP SUPPORTERS'
         />
         {currentUserId === userId ? (

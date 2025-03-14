@@ -19,7 +19,6 @@ export const usePurchasersAudience = ({
   contentId?: ID
   contentType?: 'track' | 'album'
 }) => {
-  console.log({ contentId, contentType })
   const { data: currentUserId } = useGetCurrentUserId({})
   const { data: salesAggregate } = useGetSalesAggegrate({
     userId: currentUserId!

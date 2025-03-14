@@ -7,12 +7,9 @@ import {
   useGetCurrentUserId,
   useGetPlaylistById,
   useGetPurchasersCount,
-  useGetRemixersCount,
   useGetTrackById,
-  useRemixers,
   useRemixersCount
 } from '~/api'
-import { PurchaseableContentType } from '~/store/purchase-content'
 import {
   getChatBlastAudienceDescription,
   getChatBlastCTA,
@@ -56,8 +53,6 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
       disabled: audience !== ChatBlastAudience.CUSTOMERS || !currentUserId
     }
   )
-
-  console.log({ decodedContentId, audience })
 
   const { data: remixersCount } = useRemixersCount(
     { trackId: decodedContentId },
