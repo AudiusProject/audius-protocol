@@ -7,8 +7,10 @@ import {
   ClaimStatus
 } from '@audius/common/store'
 import { getChallengeStatusLabel } from '@audius/common/utils'
-import { Box, Flex, Text } from '@audius/harmony'
+import { Box, Flex, Text, IconCheck } from '@audius/harmony'
 import { useSelector } from 'react-redux'
+
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import { ChallengeRewardsLayout } from './ChallengeRewardsLayout'
 import { ClaimButton } from './ClaimButton'
@@ -38,6 +40,7 @@ export const PlayCountMilestoneContent = ({
   onNavigateAway,
   errorContent
 }: ChallengeContentProps) => {
+  const isMobile = useIsMobile()
   const userChallenges = useSelector(getOptimisticUserChallenges)
   const challenge = userChallenges[challengeName]
   const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
@@ -81,6 +84,9 @@ export const PlayCountMilestoneContent = ({
     ? getChallengeStatusLabel(challenge, challengeName)
     : ''
 
+  const isClaimable =
+    challenge?.claimableAmount && challenge.claimableAmount > 0
+
   const descriptionContent = (
     <Box>
       <Text variant='body' strength='default'>
@@ -90,8 +96,15 @@ export const PlayCountMilestoneContent = ({
   )
 
   const progressStatusLabel = (
-    <Flex w='100%' ph='xl' borderRadius='s' backgroundColor='surface1'>
-      <Flex alignItems='center' justifyContent='center' pv='l'>
+    <Flex
+      ph='xl'
+      backgroundColor='surface1'
+      border='default'
+      borderRadius='s'
+      column={isMobile}
+    >
+      <Flex pv='l' gap='s' w='100%' justifyContent='center' alignItems='center'>
+        {isClaimable ? <IconCheck size='s' color='subdued' /> : null}
         <Text variant='label' size='l' color='subdued'>
           {statusText}
         </Text>

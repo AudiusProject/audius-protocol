@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
-import { UserTrack } from '~/models'
+import { UserTrackMetadata } from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
 import {
   profilePageSelectors,
@@ -55,7 +55,7 @@ export const useProfileTracks = (
   const queryData = useInfiniteQuery({
     queryKey: getProfileTracksQueryKey({ handle, pageSize, sort, getUnlisted }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: UserTrack[], allPages) => {
+    getNextPageParam: (lastPage: UserTrackMetadata[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -95,6 +95,9 @@ export const useProfileTracks = (
     },
     select: (data) => data?.pages.flat(),
     ...options,
+    select: (data) => {
+      return data?.pages?.flat()
+    },
     enabled: options?.enabled !== false && !!handle
   })
 

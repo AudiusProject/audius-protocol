@@ -22,7 +22,7 @@ type ChallengeRewardsLayoutProps = {
   /** The amount of $AUDIO that is rewarded */
   amount?: number | null
   /** The reward subtext (e.g. "$AUDIO") */
-  rewardSubtext: string
+  rewardSubtext?: string
   /** Whether to show the progress bar */
   showProgressBar?: boolean
   /** Current progress value */
@@ -45,7 +45,7 @@ export const ChallengeRewardsLayout = ({
   description,
   optionalDescription,
   amount,
-  rewardSubtext,
+  rewardSubtext = '$AUDIO',
   showProgressBar,
   progressValue,
   progressMax,
