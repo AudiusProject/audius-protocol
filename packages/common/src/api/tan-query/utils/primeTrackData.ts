@@ -79,11 +79,7 @@ const setDefaultFolloweeSaves = <T extends TrackMetadata>(track: T) => {
  * This method should *always* be called before a track is cached.
  */
 export const reformat = <T extends TrackMetadata>(track: T): Track => {
-  const t = track
-  const withoutUser = omit(t, 'user')
-  // audius-query denormalization expects track.user to contain the id of the owner.
-  const withUserIdAsUser = { ...withoutUser, user: t.owner_id }
-  const withCosign = setIsCoSigned(withUserIdAsUser)
+  const withCosign = setIsCoSigned(track)
   const withFieldVisibility = setFieldVisibility(withCosign)
 
   const withDefaultSaves = setDefaultFolloweeSaves(withFieldVisibility)
