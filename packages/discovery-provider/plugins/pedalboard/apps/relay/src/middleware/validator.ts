@@ -201,6 +201,19 @@ export const retrieveUser = async (
       chainId: config.acdcChainId!
     })
 
+    try {
+      const pubkey = AudiusABIDecoder.recoverPubKey({
+        encodedAbi: encodedABI,
+        entityManagerAddress: contractAddress,
+        chainId: config.acdcChainId!
+      })
+      const pubkeyBuffer = Buffer.from(pubkey.replace('0x', ''), 'hex')
+      const pubkeyBase64 = pubkeyBuffer.toString('base64')
+      console.log('todo... write to user_pubkeys table', pubkeyBase64)
+    } catch (e) {
+      console.log('failed to recover pubkey', e)
+    }
+
     query = query.where('wallet', '=', recoveredAddress)
     addedWalletClause = true
   }
