@@ -98,8 +98,7 @@ export const useProfileReposts = (
       // Update lineup when new data arrives
       dispatch(
         feedActions.fetchLineupMetadatas(pageParam, pageSize, false, {
-          reposts,
-          handle
+          items: reposts
         })
       )
 
