@@ -30,18 +30,6 @@ def db_mock(monkeypatch):
     return db
 
 
-# Test fixture to mock a web3 provider
-@pytest.fixture()
-def web3_mock(monkeypatch):
-    web3 = MagicMock()
-
-    def get_web3():
-        return web3
-
-    monkeypatch.setattr(src.utils.web3_provider, "get_web3", get_web3)
-    return web3
-
-
 # Test fixture to mock a redis connection
 @pytest.fixture()
 def redis_mock(monkeypatch):

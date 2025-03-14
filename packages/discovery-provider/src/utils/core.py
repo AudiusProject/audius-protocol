@@ -31,19 +31,3 @@ def get_core_health() -> Optional[CoreHealth]:
     except Exception as e:
         logger.error(f"get_health.py | could not get core health {e}")
         return None
-
-
-# TODO: cache response to avoid excessive redis calls
-def is_indexing_core_em() -> Optional[bool]:
-    core_health = get_core_health()
-    if core_health:
-        return core_health.get("indexing_entity_manager")
-    return None
-
-
-# TODO: cache response to avoid excessive redis calls
-def is_indexing_core_plays() -> Optional[bool]:
-    core_health = get_core_health()
-    if core_health:
-        return core_health.get("indexing_plays")
-    return None

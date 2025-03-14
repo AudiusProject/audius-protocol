@@ -17,6 +17,7 @@
     "install-hooks": "mookme init --only-hook --skip-types-selection",
     "lint:fix": "turbo run lint:fix",
     "lint": "turbo run lint",
+    "lint:discovery": "cd packages/discovery-provider && ./scripts/lint.sh",
     "patch-package": "bash ./scripts/patch-package.sh",
     "postinstall": "bash ./scripts/postinstall.sh",
     "preinstall": "bash ./scripts/preinstall.sh",

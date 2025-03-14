@@ -1,9 +1,10 @@
 from datetime import datetime, timedelta
 
-from web3.types import BlockData
+from google.protobuf.timestamp_pb2 import Timestamp
 
 from integration_tests.utils import populate_mock_db
 from src.models.notifications.notification import Notification
+from src.tasks.core.gen.protocol_pb2 import BlockResponse, NodeInfoResponse
 from src.tasks.index_trending import (
     find_min_block_above_timestamp,
     floor_time,
@@ -20,22 +21,21 @@ REDIS_URL = shared_config["redis"]["url"]
 BASE_TIME = datetime(2012, 3, 16, 0, 0)
 
 
-class MockEth:
-    def __init__(self, return_block: BlockData):
+class MockCore:
+    def __init__(self, return_block: BlockResponse):
         self.return_block = return_block
 
-    def get_block(self, *args):
-        if len(args) == 2:
+    def get_node_info(self) -> NodeInfoResponse:
+        return NodeInfoResponse(chainid="audius-devnet")
+
+    def get_block(self, *args) -> BlockResponse:
+        if len(args) >= 1:
             hours_diff = args[0]
             datetime_val = BASE_TIME + timedelta(minutes=hours_diff)
-            return {"timestamp": int(datetime_val.timestamp()), "number": hours_diff}
-
+            ts = Timestamp()
+            ts.FromDatetime(datetime_val)
+            return BlockResponse(timestamp=ts, height=hours_diff)
         return self.return_block
-
-
-class MockWeb3:
-    def __init__(self, return_block):
-        self.eth = MockEth(return_block)
 
 
 def test_floor_time_60():
@@ -66,13 +66,14 @@ def test_floor_time_15():
 
 def test_get_should_update_trending_hour_updates(app):
     last_trending_date = int(BASE_TIME.timestamp())
-    last_block_date = int(datetime(2012, 3, 16, 1, 5).timestamp())
+    last_block_date = Timestamp()
+    last_block_date.FromDatetime(datetime(2012, 3, 16, 1, 5))
 
     redis_conn = get_redis()
     set_last_trending_datetime(redis_conn, last_trending_date)
     with app.app_context():
         db = get_db()
-    web3 = MockWeb3({"timestamp": last_block_date})
+    core = MockCore(BlockResponse(timestamp=last_block_date))
 
     # Add some users to the db so we have blocks
     entities = {
@@ -80,7 +81,7 @@ def test_get_should_update_trending_hour_updates(app):
     }
     populate_mock_db(db, entities)
 
-    _, min_datetime = get_should_update_trending(db, web3, redis_conn, 60 * 60)
+    _, min_datetime = get_should_update_trending(db, core, redis_conn, 60 * 60)
     assert min_datetime != None
     # Result is rounded
     assert datetime.fromtimestamp(min_datetime) == datetime(2012, 3, 16, 1, 0)
@@ -88,13 +89,14 @@ def test_get_should_update_trending_hour_updates(app):
 
 def test_get_should_update_trending_less_than_hour_no_update(app):
     last_trending_date = int(BASE_TIME.timestamp())
-    last_block_date = int(datetime(2012, 3, 16, 0, 1).timestamp())
+    last_block_date = Timestamp()
+    last_block_date.FromDatetime(datetime(2012, 3, 16, 0, 1))
 
     redis_conn = get_redis()
     set_last_trending_datetime(redis_conn, last_trending_date)
     with app.app_context():
         db = get_db()
-    web3 = MockWeb3({"timestamp": last_block_date})
+    core = MockCore(BlockResponse(timestamp=last_block_date))
 
     # Add some users to the db so we have blocks
     entities = {
@@ -102,20 +104,21 @@ def test_get_should_update_trending_less_than_hour_no_update(app):
     }
     populate_mock_db(db, entities)
 
-    min_block, min_datetime = get_should_update_trending(db, web3, redis_conn, 60 * 60)
+    min_block, min_datetime = get_should_update_trending(db, core, redis_conn, 60 * 60)
     assert min_block == None
     assert min_datetime == None
 
 
 def test_get_should_update_trending_fifteen_minutes(app):
     last_trending_date = int(BASE_TIME.timestamp())
-    last_block_date = int(datetime(2012, 3, 16, 0, 16).timestamp())
+    last_block_date = Timestamp()
+    last_block_date.FromDatetime(datetime(2012, 3, 16, 0, 16))
 
     redis_conn = get_redis()
     set_last_trending_datetime(redis_conn, last_trending_date)
     with app.app_context():
         db = get_db()
-    web3 = MockWeb3({"timestamp": last_block_date})
+    core = MockCore(BlockResponse(timestamp=last_block_date))
 
     # Add some users to the db so we have blocks
     entities = {
@@ -123,7 +126,7 @@ def test_get_should_update_trending_fifteen_minutes(app):
     }
     populate_mock_db(db, entities)
 
-    _, min_datetime = get_should_update_trending(db, web3, redis_conn, 60 * 15)
+    _, min_datetime = get_should_update_trending(db, core, redis_conn, 60 * 15)
     assert min_datetime != None
     # Result is rounded
     assert datetime.fromtimestamp(min_datetime) == datetime(2012, 3, 16, 0, 15)
@@ -131,13 +134,14 @@ def test_get_should_update_trending_fifteen_minutes(app):
 
 def test_get_should_update_trending_less_fifteen_minutes_no_update(app):
     last_trending_date = int(BASE_TIME.timestamp())
-    last_block_date = int(datetime(2012, 3, 16, 0, 14).timestamp())
+    last_block_date = Timestamp()
+    last_block_date.FromDatetime(datetime(2012, 3, 16, 0, 14))
 
     redis_conn = get_redis()
     set_last_trending_datetime(redis_conn, last_trending_date)
     with app.app_context():
         db = get_db()
-    web3 = MockWeb3({"timestamp": last_block_date})
+    core = MockCore(BlockResponse(timestamp=last_block_date))
 
     # Add some users to the db so we have blocks
     entities = {
@@ -145,7 +149,7 @@ def test_get_should_update_trending_less_fifteen_minutes_no_update(app):
     }
     populate_mock_db(db, entities)
 
-    min_block, min_datetime = get_should_update_trending(db, web3, redis_conn, 60 * 15)
+    min_block, min_datetime = get_should_update_trending(db, core, redis_conn, 60 * 15)
     assert min_block == None
     assert min_datetime == None
 
@@ -168,10 +172,10 @@ def test_find_min_block_above_timestamp(app):
 
     block_number = 100
     min_timestamp = BASE_TIME + timedelta(minutes=20)
-    web3 = MockWeb3({})
+    core = MockCore(BlockResponse())
 
-    min_block = find_min_block_above_timestamp(block_number, min_timestamp, web3)
-    assert min_block["number"] == 20
+    min_block = find_min_block_above_timestamp(block_number, min_timestamp, core)
+    assert min_block.height == 20
 
 
 def test_index_trending(app, mocker):

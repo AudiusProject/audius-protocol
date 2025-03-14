@@ -617,12 +617,6 @@ def get_account_index(instruction: CompiledInstruction, index: int):
     return instruction.accounts[index]
 
 
-# get block number with a final POA block offset
-def get_adjusted_block(web3: Web3, block_number: int):
-    nethermind_block_number = block_number - get_final_poa_block()
-    return web3.eth.get_block(nethermind_block_number, True)
-
-
 def get_final_poa_block() -> int:
     final_poa_block = None
 
