@@ -1,11 +1,11 @@
-import { Id } from '@audius/sdk'
+import { Id, SalesAggregate } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
 export const getSalesAggregateQueryKey = (userId: ID | null | undefined) => [
@@ -13,7 +13,11 @@ export const getSalesAggregateQueryKey = (userId: ID | null | undefined) => [
   userId
 ]
 
-export const useSalesAggregate = (options?: QueryOptions) => {
+export const useSalesAggregate = <
+  TResult = SalesAggregate[] | null | undefined
+>(
+  options?: SelectableQueryOptions<SalesAggregate[] | null | undefined, TResult>
+) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
 

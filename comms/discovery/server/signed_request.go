@@ -10,6 +10,7 @@ import (
 
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/db/queries"
+	"comms.audius.co/discovery/pubkeystore"
 	"comms.audius.co/shared/signing"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/labstack/echo/v4"
@@ -103,6 +104,16 @@ func recoverSigningWallet(signatureHex string, signedData []byte) (string, error
 	if err != nil {
 		return "", err
 	}
+
 	wallet := crypto.PubkeyToAddress(*pubkey).Hex()
+
+	// seed the user pubkey if missing
+	err = pubkeystore.SetPubkeyForWallet(wallet, pubkey)
+	if err != nil {
+		slog.Warn("failed to SetPubkeyForWallet", "wallet", wallet, "err", err)
+	} else {
+		slog.Info("SetPubkeyForWallet OK", "wallet", wallet)
+	}
+
 	return wallet, nil
 }

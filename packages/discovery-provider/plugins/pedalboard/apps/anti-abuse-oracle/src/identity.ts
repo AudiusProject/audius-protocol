@@ -45,6 +45,5 @@ export async function useFingerprintDeviceCount(userId: number) {
         GROUP BY "visitorId"
     ) t;
   `
-  console.log('asdf rows: ', rows)
   return rows[0].maxUserCount ?? 0
 }

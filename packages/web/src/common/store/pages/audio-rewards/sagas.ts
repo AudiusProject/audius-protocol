@@ -8,7 +8,8 @@ import {
   StringWei,
   SpecifierWithAmount,
   Name,
-  Feature
+  Feature,
+  ChallengeName
 } from '@audius/common/models'
 import {
   IntKeys,
@@ -30,7 +31,12 @@ import {
   CommonStoreContext,
   getSDK
 } from '@audius/common/store'
-import { isResponseError, route, waitForValue } from '@audius/common/utils'
+import {
+  isResponseError,
+  route,
+  waitForValue,
+  isPlayCountChallenge
+} from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
 import {
   Id,
@@ -87,6 +93,7 @@ const {
   setUserChallengeCurrentStepCount,
   resetUserChallengeCurrentStepCount,
   updateOptimisticListenStreak,
+  updateOptimisticPlayCount,
   setUndisbursedChallenges
 } = audioRewardsPageActions
 const fetchAccountSucceeded = accountActions.fetchAccountSucceeded
@@ -524,12 +531,51 @@ function* fetchUserChallengesAsync() {
       }
     )
 
-    const userChallenges = challengesData.map(userChallengeFromSDK)
+    // Fetch monthly play counts from 2025
+    const { data: monthlyPlays = {} } = yield* call(
+      [sdk.users, sdk.users.getUserMonthlyTrackListens],
+      {
+        id: Id.parse(currentUserId),
+        startTime: '2025-01-01',
+        // Making the end time one year from the current date since the challenge is technically never ending
+        endTime: new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+          .toISOString()
+          .split('T')[0]
+      }
+    )
+
+    const totalPlaysOnOwnedTracks = Object.values(monthlyPlays).reduce(
+      (sum, month) => sum + (month.totalListens || 0),
+      0
+    )
+
+    let userChallenges = challengesData.map(userChallengeFromSDK)
+
+    // Only update play count milestone challenges if they exist and there are plays
+    if (
+      userChallenges.some((challenge) =>
+        isPlayCountChallenge(challenge.challenge_id)
+      )
+    ) {
+      userChallenges = userChallenges.map((challenge) => {
+        if (isPlayCountChallenge(challenge.challenge_id)) {
+          return {
+            ...challenge,
+            current_step_count: Math.max(
+              challenge.current_step_count,
+              totalPlaysOnOwnedTracks
+            )
+          }
+        }
+        return challenge
+      })
+    }
 
     const { data = [] } = yield* call(
       [sdk.challenges, sdk.challenges.getUndisbursedChallenges],
       {
-        userId: Id.parse(currentUserId)
+        userId: Id.parse(currentUserId),
+        limit: 500
       }
     )
     const undisbursedChallenges = data.map(undisbursedUserChallengeFromSDK)
@@ -657,6 +703,37 @@ function* watchUpdateOptimisticListenStreak() {
   })
 }
 
+/**
+ * Updates the play count challenges optimistically when a user plays their own track
+ * All three play count challenges (p1, p2, p3) will show the same play count value
+ */
+function* watchUpdateOptimisticPlayCount() {
+  yield* takeEvery(updateOptimisticPlayCount.type, function* () {
+    // Define array of play count milestone challenge IDs
+    const playCountChallengeIds = [
+      ChallengeName.PlayCount250,
+      ChallengeName.PlayCount1000,
+      ChallengeName.PlayCount10000
+    ]
+
+    // Iterate through each challenge ID
+    for (const challengeId of playCountChallengeIds) {
+      // Get the challenge
+      const challenge = yield* select(getUserChallenge, { challengeId })
+
+      // If the challenge exists, increment its step count
+      if (challenge) {
+        yield* put(
+          setUserChallengeCurrentStepCount({
+            challengeId,
+            stepCount: challenge.current_step_count + 1
+          })
+        )
+      }
+    }
+  })
+}
+
 function* watchUpdateHCaptchaScore() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const sdk = yield* getSDK()
@@ -729,7 +806,8 @@ const sagas = () => {
     watchSetHCaptchaStatus,
     watchUpdateHCaptchaScore,
     userChallengePollingDaemon,
-    watchUpdateOptimisticListenStreak
+    watchUpdateOptimisticListenStreak,
+    watchUpdateOptimisticPlayCount
   ]
   return sagas
 }

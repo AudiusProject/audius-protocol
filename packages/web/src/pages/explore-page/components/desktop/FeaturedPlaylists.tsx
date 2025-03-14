@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { useFeaturedPlaylists } from '@audius/common/api'
-import { UserCollection } from '@audius/common/models'
+import { TQCollection } from '@audius/common/src/api/tan-query/models'
 import { Flex, LoadingSpinner } from '@audius/harmony'
 
 import { CollectionArtCard } from './CollectionArtCard'
@@ -23,7 +23,7 @@ export const FeaturedPlaylists = () => {
     isFetching
   } = useFeaturedPlaylists(
     { limit: isExpanded ? EXPANDED_LIMIT : INITIAL_LIMIT },
-    { placeholderData: (prev: UserCollection[]) => prev }
+    { placeholderData: (prev: TQCollection[]) => prev }
   )
 
   return (
@@ -33,7 +33,7 @@ export const FeaturedPlaylists = () => {
       expandText={messages.exploreMorePlaylists}
       onExpand={() => setIsExpanded(true)}
     >
-      {playlists?.map((playlist: UserCollection) => {
+      {playlists?.map((playlist) => {
         return (
           <CollectionArtCard
             key={playlist.playlist_id}
