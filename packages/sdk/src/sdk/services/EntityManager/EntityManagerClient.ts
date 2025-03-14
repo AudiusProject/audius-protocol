@@ -4,7 +4,6 @@ import {
   type Hex,
   type TypedDataDefinition
 } from 'viem'
-import type { TransactionReceipt } from 'web3-core'
 
 import * as runtime from '../../api/generated/default/runtime'
 import { productionConfig } from '../../config/production'
@@ -24,6 +23,7 @@ import {
   BlockConfirmation,
   EntityManagerConfig,
   EntityManagerService,
+  EntityManagerTransactionReceipt,
   ManageEntityOptions
 } from './types'
 
@@ -62,9 +62,7 @@ export class EntityManagerClient implements EntityManagerService {
     metadata = '',
     confirmationTimeout = CONFIRMATION_TIMEOUT,
     skipConfirmation = false
-  }: ManageEntityOptions): Promise<
-    Pick<TransactionReceipt, 'blockHash' | 'blockNumber'>
-  > {
+  }: ManageEntityOptions): Promise<EntityManagerTransactionReceipt> {
     const nonce = await getNonce()
 
     const typedData: TypedDataDefinition<EntityManagerTypes, 'ManageEntity'> = {
