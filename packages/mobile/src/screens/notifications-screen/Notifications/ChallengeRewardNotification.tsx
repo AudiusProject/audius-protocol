@@ -22,8 +22,6 @@ import {
   NotificationTwitterButton
 } from '../Notification'
 
-import { IconStreakFire } from './ListenStreakReminderNotification'
-
 const formatNumber = (amount: BNAudio) => {
   return formatNumberCommas(Number(amount.toString()))
 }
