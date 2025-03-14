@@ -4,8 +4,8 @@ import { RELATED_ARTISTS_USER_LIST_TAG } from '@audius/common/store'
 import { IconUserGroup } from '@audius/harmony-native'
 import { useProfileRoute } from 'app/hooks/useRoute'
 
+import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
-import { UserListV2 } from './UserListV2'
 
 const messages = {
   title: 'Related Artists'
@@ -19,7 +19,7 @@ export const RelatedArtistsScreen = () => {
 
   return (
     <UserListScreen title={messages.title} titleIcon={IconUserGroup}>
-      <UserListV2
+      <UserList
         data={data}
         isFetchingNextPage={isFetchingNextPage}
         isPending={isPending}

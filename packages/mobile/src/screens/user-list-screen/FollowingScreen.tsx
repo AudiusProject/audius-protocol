@@ -3,8 +3,8 @@ import { useFollowing } from '@audius/common/api'
 import { IconUserList } from '@audius/harmony-native'
 import { useProfileRoute } from 'app/hooks/useRoute'
 
+import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
-import { UserListV2 } from './UserListV2'
 
 const messages = {
   title: 'Following'
@@ -19,7 +19,7 @@ export const FollowingScreen = () => {
 
   return (
     <UserListScreen title={messages.title} titleIcon={IconUserList}>
-      <UserListV2
+      <UserList
         data={data}
         isFetchingNextPage={isFetchingNextPage}
         isPending={isPending}

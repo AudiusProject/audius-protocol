@@ -5,8 +5,8 @@ import { formatCount } from '@audius/common/utils'
 
 import { useRoute } from 'app/hooks/useRoute'
 
+import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
-import { UserListV2 } from './UserListV2'
 
 export const getTitle = (notification: Notification) => {
   if (!('userIds' in notification)) return 'Users'
@@ -31,7 +31,7 @@ export const NotificationUsersScreen = () => {
 
   return (
     <UserListScreen title={getTitle(notification)}>
-      <UserListV2
+      <UserList
         data={data}
         count={userIds?.length}
         isPending={isPending}

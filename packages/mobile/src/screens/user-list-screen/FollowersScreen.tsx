@@ -6,8 +6,8 @@ import { useProfileRoute } from 'app/hooks/useRoute'
 
 import { ChatBlastWithAudienceCTA } from '../chat-screen/ChatBlastWithAudienceCTA'
 
+import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
-import { UserListV2 } from './UserListV2'
 
 const messages = {
   title: 'Followers'
@@ -25,7 +25,7 @@ export const FollowersScreen = () => {
   return (
     <UserListScreen title={messages.title} titleIcon={IconUserFollowers}>
       <>
-        <UserListV2
+        <UserList
           data={data}
           isFetchingNextPage={isFetchingNextPage}
           isPending={isPending}

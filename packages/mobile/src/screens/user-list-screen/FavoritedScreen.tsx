@@ -4,8 +4,8 @@ import { FavoriteType } from '@audius/common/models'
 import { IconHeart } from '@audius/harmony-native'
 import { useRoute } from 'app/hooks/useRoute'
 
+import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
-import { UserListV2 } from './UserListV2'
 
 const messages = {
   title: 'Favorites'
@@ -30,7 +30,7 @@ export const FavoritedScreen = () => {
 
   return (
     <UserListScreen title={messages.title} titleIcon={IconHeart}>
-      <UserListV2
+      <UserList
         data={data}
         isFetchingNextPage={isFetchingNextPage}
         isPending={isPending}

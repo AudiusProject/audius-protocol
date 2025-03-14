@@ -3,7 +3,7 @@ import { purchasersUserListSelectors } from '@audius/common/store'
 
 import { useSelector } from 'common/hooks/useSelector'
 
-import { UserListV2 } from '../UserListV2'
+import { UserList } from '../UserList'
 
 const { getContentId, getContentType } = purchasersUserListSelectors
 
@@ -15,7 +15,7 @@ export const PurchasersUserList = () => {
     usePurchasers({ contentId, contentType })
 
   return (
-    <UserListV2
+    <UserList
       data={data}
       isPending={isPending}
       hasNextPage={hasNextPage}

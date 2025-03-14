@@ -3,7 +3,7 @@ import { FavoriteType } from '@audius/common/models'
 import { favoritesUserListSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
-import { UserListV2 } from '../UserListV2'
+import { UserList } from '../UserList'
 
 export const FavoritesUserList = () => {
   const entityId = useSelector(favoritesUserListSelectors.getId)
@@ -23,7 +23,7 @@ export const FavoritesUserList = () => {
     entityType === FavoriteType.TRACK ? trackQuery : collectionQuery
 
   return (
-    <UserListV2
+    <UserList
       data={data}
       hasNextPage={hasNextPage}
       isFetchingNextPage={isFetchingNextPage}

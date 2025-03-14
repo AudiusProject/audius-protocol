@@ -1,5 +1,4 @@
 import { ID } from '@audius/common/models'
-import { PurchaseableContentType } from '@audius/common/store'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { UserListModalState, UserListType, UserListEntityType } from './types'

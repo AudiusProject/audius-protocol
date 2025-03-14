@@ -2,7 +2,7 @@ import { useTrackReposts, useCollectionReposts } from '@audius/common/api'
 import { repostsUserListSelectors, RepostType } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
-import { UserListV2 } from '../UserListV2'
+import { UserList } from '../UserList'
 
 export const RepostsUserList = () => {
   const entityId = useSelector(repostsUserListSelectors.getId)
@@ -22,7 +22,7 @@ export const RepostsUserList = () => {
     entityType === RepostType.TRACK ? trackQuery : collectionQuery
 
   return (
-    <UserListV2
+    <UserList
       data={data}
       hasNextPage={hasNextPage}
       isFetchingNextPage={isFetchingNextPage}

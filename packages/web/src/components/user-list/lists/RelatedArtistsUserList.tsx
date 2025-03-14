@@ -2,7 +2,7 @@ import { useRelatedArtists } from '@audius/common/api'
 import { relatedArtistsUserListSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
-import { UserListV2 } from '../UserListV2'
+import { UserList } from '../UserList'
 
 export const RelatedArtistsUserList = () => {
   const userId = useSelector(relatedArtistsUserListSelectors.getId)
@@ -10,7 +10,7 @@ export const RelatedArtistsUserList = () => {
     useRelatedArtists({ artistId: userId })
 
   return (
-    <UserListV2
+    <UserList
       data={data}
       hasNextPage={hasNextPage}
       isFetchingNextPage={isFetchingNextPage}

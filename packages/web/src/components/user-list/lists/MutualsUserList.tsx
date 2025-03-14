@@ -2,7 +2,7 @@ import { useMutualFollowers } from '@audius/common/api'
 import { mutualsUserListSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
-import { UserListV2 } from '../UserListV2'
+import { UserList } from '../UserList'
 
 export const MutualsUserList = () => {
   const userId = useSelector(mutualsUserListSelectors.getId)
@@ -10,7 +10,7 @@ export const MutualsUserList = () => {
     useMutualFollowers({ userId })
 
   return (
-    <UserListV2
+    <UserList
       data={data}
       hasNextPage={hasNextPage}
       isFetchingNextPage={isFetchingNextPage}

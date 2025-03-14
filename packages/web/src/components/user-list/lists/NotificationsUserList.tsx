@@ -2,7 +2,7 @@ import { useUsers } from '@audius/common/api'
 import { notificationsUserListSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
-import { UserListV2 } from 'components/user-list/UserListV2'
+import { UserList } from 'components/user-list/UserList'
 
 const { getNotification } = notificationsUserListSelectors
 
@@ -12,7 +12,7 @@ export const NotificationsUserList = () => {
   const { data, isPending } = useUsers(userIds)
 
   return (
-    <UserListV2
+    <UserList
       data={data}
       count={userIds?.length}
       isPending={isPending}

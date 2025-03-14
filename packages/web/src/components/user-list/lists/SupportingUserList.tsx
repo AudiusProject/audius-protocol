@@ -2,7 +2,7 @@ import { useSupportedUsers } from '@audius/common/api'
 import { supportingUserListSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
-import { UserListV2 } from '../UserListV2'
+import { UserList } from '../UserList'
 
 export const SupportingUserList = () => {
   const userId = useSelector(supportingUserListSelectors.getId)
@@ -10,7 +10,7 @@ export const SupportingUserList = () => {
     useSupportedUsers({ userId })
 
   return (
-    <UserListV2
+    <UserList
       data={data?.map((supporter) => supporter.receiver)}
       hasNextPage={hasNextPage}
       isFetchingNextPage={isFetchingNextPage}

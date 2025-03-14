@@ -2,7 +2,7 @@ import { useSupporters } from '@audius/common/api'
 import { topSupportersUserListSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
-import { UserListV2 } from '../UserListV2'
+import { UserList } from '../UserList'
 
 export const TopSupportersUserList = () => {
   const userId = useSelector(topSupportersUserListSelectors.getId)
@@ -12,7 +12,7 @@ export const TopSupportersUserList = () => {
   if (!userId) return null
 
   return (
-    <UserListV2
+    <UserList
       data={data?.map((supporter) => supporter.sender)}
       hasNextPage={hasNextPage}
       isFetchingNextPage={isFetchingNextPage}

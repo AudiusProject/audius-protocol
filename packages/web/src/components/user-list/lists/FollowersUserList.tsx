@@ -2,7 +2,7 @@ import { useFollowers } from '@audius/common/api'
 import { followersUserListSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
-import { UserListV2 } from 'components/user-list/UserListV2'
+import { UserList } from 'components/user-list/UserList'
 
 export const FollowersUserList = () => {
   const userId = useSelector(followersUserListSelectors.getId)
@@ -10,7 +10,7 @@ export const FollowersUserList = () => {
     useFollowers({ userId })
 
   return (
-    <UserListV2
+    <UserList
       data={data}
       hasNextPage={hasNextPage}
       isFetchingNextPage={isFetchingNextPage}

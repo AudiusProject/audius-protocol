@@ -2,7 +2,7 @@ import { useRemixers } from '@audius/common/api'
 import { remixersUserListSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
-import { UserListV2 } from '../UserListV2'
+import { UserList } from '../UserList'
 
 export const RemixersUserList = () => {
   const userId = useSelector(remixersUserListSelectors.getId)
@@ -10,7 +10,7 @@ export const RemixersUserList = () => {
     useRemixers({ userId })
 
   return (
-    <UserListV2
+    <UserList
       data={data}
       hasNextPage={hasNextPage}
       isFetchingNextPage={isFetchingNextPage}
