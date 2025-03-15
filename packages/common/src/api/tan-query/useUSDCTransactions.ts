@@ -1,5 +1,3 @@
-import { useCallback } from 'react'
-
 import { full, Id } from '@audius/sdk'
 import { useInfiniteQuery } from '@tanstack/react-query'
 
@@ -76,7 +74,7 @@ export const useUSDCTransactions = (
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
 
-  const query = useInfiniteQuery({
+  return useInfiniteQuery({
     queryKey: getUSDCTransactionsQueryKey(currentUserId, {
       pageSize,
       sortMethod,
@@ -103,26 +101,9 @@ export const useUSDCTransactions = (
       })
       return data.map((transaction) => parseTransaction({ transaction }))
     },
-    select: (data) => ({
-      pages: data.pages,
-      pageParams: data.pageParams,
-      items: data.pages.flat()
-    }),
+    select: (data) => data.pages.flat(),
     refetchInterval: 5000, // Poll every 5 seconds
     ...options,
     enabled: options?.enabled !== false && !!currentUserId
   })
-
-  const fetchNextPage = useCallback(async () => {
-    if (query.hasNextPage) {
-      await query.fetchNextPage()
-    }
-  }, [query])
-
-  return {
-    ...query,
-    data: query.data?.items ?? [],
-    fetchNextPage,
-    hasMore: query.hasNextPage
-  }
 }

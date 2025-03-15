@@ -59,6 +59,7 @@ export const AllResults = () => {
           <ProfileResultsTiles
             skeletonCount={5}
             limit={5}
+            // TODO: avoid spreading all queryData props
             queryData={{ ...queryData, data: data?.users ?? [] }}
           />
         </Flex>

@@ -6,7 +6,7 @@ import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
-import { UserTrack } from '~/models'
+import { UserTrackMetadata } from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
 import {
   remixesPageLineupActions,
@@ -17,7 +17,6 @@ import {
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
-import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
 
@@ -44,14 +43,14 @@ export const useRemixes = (
 
   useEffect(() => {
     if (trackId) {
-      dispatch(remixesPageActions.setTrackId({ trackId }))
+      dispatch(remixesPageActions.fetchTrackSucceeded({ trackId }))
     }
   }, [dispatch, trackId])
 
   const queryData = useInfiniteQuery({
     queryKey: getRemixesQueryKey({ trackId, pageSize }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: UserTrack[], allPages) => {
+    getNextPageParam: (lastPage: UserTrackMetadata[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -84,11 +83,12 @@ export const useRemixes = (
 
       return processedTracks
     },
+    select: (data) => data.pages.flat(),
     ...options,
     enabled: options?.enabled !== false && !!trackId
   })
 
-  const lineupData = useLineupQuery({
+  return useLineupQuery({
     queryData,
     queryKey: getRemixesQueryKey({
       trackId,
@@ -99,11 +99,4 @@ export const useRemixes = (
     playbackSource: PlaybackSource.TRACK_TILE,
     pageSize
   })
-
-  return {
-    ...queryData,
-    ...lineupData,
-    loadNextPage: loadNextPage(queryData),
-    pageSize
-  }
 }

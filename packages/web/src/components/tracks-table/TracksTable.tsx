@@ -3,6 +3,7 @@ import { MouseEvent, useCallback, useMemo, useRef } from 'react'
 import { useGatedContentAccessMap } from '@audius/common/hooks'
 import {
   ModalSource,
+  Track,
   UID,
   UserTrack,
   isContentCollectibleGated,
@@ -87,6 +88,7 @@ export type TracksTableColumn =
   | 'comments'
 
 type TracksTableProps = {
+  data: Track[]
   disabledTrackEdit?: boolean
   isAlbumPage?: boolean
   shouldShowGatedType?: boolean

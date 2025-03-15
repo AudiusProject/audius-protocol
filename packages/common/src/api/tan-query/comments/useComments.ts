@@ -43,13 +43,11 @@ export const useComments = (
     return byId
   }, [comments])
 
-  const results = {
-    ...queryResults
-  } as typeof queryResults
-
   return {
+    data: comments,
     byId,
     commentIds: commentIds ?? [],
-    ...results
+    isPending: queryResults.isPending,
+    isLoading: queryResults.isLoading
   }
 }

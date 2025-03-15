@@ -99,7 +99,7 @@ export const useProfileTracks = (
     enabled: options?.enabled !== false && !!handle
   })
 
-  const lineupData = useLineupQuery({
+  return useLineupQuery({
     queryData,
     queryKey: getProfileTracksQueryKey({
       handle,
@@ -112,10 +112,4 @@ export const useProfileTracks = (
     playbackSource: PlaybackSource.TRACK_TILE,
     pageSize
   })
-
-  return {
-    ...queryData,
-    ...lineupData,
-    pageSize
-  }
 }

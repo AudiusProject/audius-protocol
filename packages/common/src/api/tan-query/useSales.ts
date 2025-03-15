@@ -1,5 +1,9 @@
 import { full, Id } from '@audius/sdk'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  UseInfiniteQueryResult,
+  useInfiniteQuery
+} from '@tanstack/react-query'
 
 import { purchaseFromSDK } from '~/adapters/purchase'
 import { useAudiusQueryContext } from '~/audius-query'
@@ -81,5 +85,11 @@ export const useSales = (args: GetSalesListArgs, options?: QueryOptions) => {
   useTracks(trackIdsToFetch)
   useCollections(collectionIdsToFetch)
 
-  return { ...queryResult, data: queryResult.data?.pages.flat() }
+  const queryResultsWithSales = queryResult as UseInfiniteQueryResult<
+    InfiniteData<USDCPurchaseDetails[], unknown>,
+    Error
+  > & { sales: USDCPurchaseDetails[] }
+  queryResultsWithSales.sales = queryResult.data?.pages.flat() ?? []
+
+  return queryResultsWithSales
 }

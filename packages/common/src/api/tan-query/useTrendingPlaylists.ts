@@ -8,6 +8,7 @@ import {
 } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
 import { PlaybackSource } from '~/models/Analytics'
+import { UserCollectionMetadata } from '~/models/Collection'
 import {
   trendingPlaylistsPageLineupActions,
   trendingPlaylistsPageLineupSelectors
@@ -49,7 +50,7 @@ export const useTrendingPlaylists = (
   const queryData = useInfiniteQuery({
     queryKey: getTrendingPlaylistsQueryKey({ pageSize, time }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage, allPages) => {
+    getNextPageParam: (lastPage: UserCollectionMetadata[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -87,11 +88,12 @@ export const useTrendingPlaylists = (
 
       return processedPlaylists
     },
+    select: (data) => data?.pages.flat(),
     ...options,
     enabled: options?.enabled !== false
   })
 
-  const lineupData = useLineupQuery({
+  return useLineupQuery({
     queryData,
     queryKey: getTrendingPlaylistsQueryKey({
       pageSize,
@@ -102,10 +104,4 @@ export const useTrendingPlaylists = (
     playbackSource: PlaybackSource.PLAYLIST_TILE_TRACK,
     pageSize
   })
-
-  return {
-    ...queryData,
-    ...lineupData,
-    pageSize
-  }
 }
