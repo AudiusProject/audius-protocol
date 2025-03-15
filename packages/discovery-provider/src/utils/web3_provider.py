@@ -31,7 +31,7 @@ def get_web3(web3endpoint=None):
     else:
         local_rpc = os.getenv("audius_web3_localhost")
         local_web3 = Web3(HTTPProvider(local_rpc))
-        return local_web3
+        web3 = local_web3
 
     web3.strict_bytes_type_checking = False
     # required middleware for POA
