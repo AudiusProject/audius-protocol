@@ -68,6 +68,11 @@ from src.tasks.entity_manager.entities.email import (
     create_encrypted_email,
     grant_email_access,
 )
+from src.tasks.entity_manager.entities.event import (
+    create_event,
+    delete_event,
+    update_event,
+)
 from src.tasks.entity_manager.entities.grant import (
     approve_grant,
     create_grant,
@@ -465,6 +470,21 @@ def entity_manager_update(
                         params.action == Action.CREATE or params.action == Action.UPDATE
                     ) and params.entity_type == EntityType.COLLECTIBLES:
                         update_user_collectibles(params)
+                    elif (
+                        params.action == Action.CREATE
+                        and params.entity_type == EntityType.EVENT
+                    ):
+                        create_event(params)
+                    elif (
+                        params.action == Action.UPDATE
+                        and params.entity_type == EntityType.EVENT
+                    ):
+                        update_event(params)
+                    elif (
+                        params.action == Action.DELETE
+                        and params.entity_type == EntityType.EVENT
+                    ):
+                        delete_event(params)
 
                     logger.debug("process transaction")  # log event context
                 except IndexingValidationError as e:
@@ -644,6 +664,8 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                     )
             if entity_type == EntityType.PLAYLIST:
                 entities_to_fetch[EntityType.PLAYLIST_ROUTE].add(entity_id)
+            if entity_type == EntityType.EVENT:
+                entities_to_fetch[EntityType.EVENT].add(entity_id)
             if entity_type == EntityType.COMMENT:
                 if (
                     action == Action.CREATE
