@@ -78,7 +78,6 @@ export const queryTopFiveTrending = async (
   discoveryDb: Knex,
   week: string
 ): Promise<TrendingResults[][]> => {
-  // 2023-06-09
   const tracks = await discoveryDb<TrendingResults>(Table.TrendingResults)
     .where('type', '=', TrendingTypes.Tracks)
     .where('week', '=', week)
