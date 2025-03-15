@@ -73,14 +73,11 @@ def is_dst(zonename, dt):
 def get_is_valid_timestamp(dt: datetime):
     isFriday = dt.weekday() == 4
 
-    # Check timestamp to be between 12pm and 3pm PT
+    # Check timestamp to be after 12pm PT
     add_hr = is_dst("America/Los_Angeles", dt)
     min = 19 if add_hr else 20
-    max = 22 if add_hr else 23
 
-    isWithinHourMargin = dt.hour >= min and dt.hour < max
-
-    return isFriday and isWithinHourMargin
+    return isFriday and dt.hour >= min
 
 
 def should_trending_challenge_update(
