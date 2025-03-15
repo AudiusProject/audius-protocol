@@ -1,0 +1,374 @@
+# Audius Protocol Cursor Rules
+# This file defines project-wide rules for the Cursor IDE to enhance development experience.
+# Feel free to contribute by adding or modifying rules as needed.
+
+# Version Control
+# Last Review: February 5, 2024
+# Next Review: May 5, 2024
+# Version: 1.0.0
+#
+# Changelog:
+# - 1.0.0 (2024-02-05): Initial creation
+#   * Added base TypeScript/JavaScript rules
+#   * Added package-specific rules for all major packages
+#   * Added code intelligence features
+#   * Added performance and git integration settings
+#   * Added code generation and review rules
+#
+# Review Schedule:
+# - Quarterly reviews (February, May, August, November)
+# - Additional reviews after major Cursor updates
+# - Ad-hoc reviews when new packages are added
+#
+# To contribute:
+# 1. Add your changes
+# 2. Update the changelog
+# 3. Increment version number (major.minor.patch)
+# 4. Update the last review date
+
+[*.{ts,tsx,js,jsx}]
+# TypeScript/JavaScript specific rules
+indent_style = space
+indent_size = 2
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+max_line_length = 100
+
+# Code Intelligence
+[intelligence]
+# Enable smart code completion and suggestions
+enable_copilot = true
+enable_type_hints = true
+enable_parameter_hints = true
+enable_auto_imports = true
+enable_quick_fixes = true
+enable_reference_finding = true
+enable_definition_finding = true
+enable_implementation_finding = true
+
+# Monorepo package directories
+[packages/*/src/**]
+# Source code organization rules
+group_imports = true
+sort_imports = true
+prefer_const = true
+no_duplicate_imports = true
+# Import grouping order
+import_groups = [
+    "react",
+    "external",
+    "internal",
+    "components",
+    "hooks",
+    "utils",
+    "styles",
+    "assets",
+    "types"
+]
+
+# Web application specific rules
+[packages/web/src/**]
+# React component organization
+component_order = [
+    "imports",
+    "types",
+    "constants",
+    "hooks",
+    "component",
+    "styles",
+    "exports"
+]
+# Enable React specific features
+enable_jsx_close_tag = true
+enable_react_prop_types = true
+enable_react_hooks_suggestions = true
+
+# Mobile application specific rules
+[packages/mobile/src/**]
+# React Native component organization
+component_order = [
+    "imports",
+    "types",
+    "constants",
+    "hooks",
+    "component",
+    "styles",
+    "exports"
+]
+# Enable React Native specific features
+enable_react_native_snippets = true
+enable_platform_specific_code = true
+
+# Common package rules
+[packages/common/src/**]
+# Shared utilities and types
+strict_null_checks = true
+no_implicit_any = true
+isolatedModules = true
+enable_circular_dependency_detection = true
+
+# Test files
+[**/*.test.{ts,tsx,js,jsx}]
+# Test file organization
+test_pattern = "*.test.{ts,tsx,js,jsx}"
+test_directory = "__tests__"
+enable_test_snippets = true
+enable_test_coverage_hints = true
+
+# Configuration files
+[*.json]
+indent_style = space
+indent_size = 2
+enable_json_schema_validation = true
+
+# Documentation
+[*.md]
+trim_trailing_whitespace = false
+max_line_length = off
+enable_markdown_preview = true
+enable_markdown_lint = true
+
+# Ignore patterns
+[ignore]
+patterns = [
+    "node_modules",
+    "build",
+    "dist",
+    "coverage",
+    ".git",
+    "*.log",
+    ".cache",
+    ".DS_Store",
+    "*.min.js",
+    "yarn-error.log"
+]
+
+# Editor settings
+[editor]
+tab_width = 2
+rulers = [100]
+word_wrap = true
+format_on_save = true
+show_minimap = false
+enable_breadcrumbs = true
+enable_error_lens = true
+enable_git_lens = true
+enable_bracket_pair_colorization = true
+enable_semantic_highlighting = true
+
+# Search settings
+[search]
+exclude_patterns = [
+    "**/node_modules/**",
+    "**/build/**",
+    "**/dist/**",
+    "**/.git/**",
+    "**/coverage/**"
+]
+include_hidden = false
+enable_fuzzy_search = true
+enable_symbol_search = true
+enable_workspace_search = true
+
+# Typescript specific settings
+[typescript]
+strict = true
+esModuleInterop = true
+allowJs = true
+skipLibCheck = true
+forceConsistentCasingInFileNames = true
+enable_strict_function_types = true
+enable_strict_null_checks = true
+enable_strict_property_initialization = true
+enable_no_implicit_any = true
+
+# Package management
+[package]
+package_manager = "yarn"
+monorepo = true
+workspaces = ["packages/*"]
+enable_dependency_warnings = true
+enable_outdated_dependencies_warning = true
+
+# Git integration
+[git]
+enable_inline_blame = true
+enable_change_markers = true
+enable_staged_hunks = true
+enable_commit_signing = true
+
+# Performance
+[performance]
+enable_lazy_loading = true
+enable_code_folding = true
+max_file_size_limit = 5000000  # 5MB
+enable_file_watcher = true
+
+# SDK Package Rules
+[packages/sdk/src/**]
+# SDK specific rules
+enable_api_documentation = true
+enable_type_exports = true
+enable_documentation_generation = true
+strict_null_checks = true
+no_implicit_any = true
+enable_circular_dependency_detection = true
+
+# Protocol Dashboard Rules
+[packages/protocol-dashboard/src/**]
+# Dashboard specific rules
+component_order = [
+    "imports",
+    "types",
+    "constants",
+    "hooks",
+    "component",
+    "styles",
+    "exports"
+]
+enable_jsx_close_tag = true
+enable_react_prop_types = true
+enable_react_hooks_suggestions = true
+enable_chart_snippets = true
+enable_dashboard_components = true
+
+# tRPC Server Rules
+[packages/trpc-server/src/**]
+# tRPC specific rules
+enable_procedure_suggestions = true
+enable_router_suggestions = true
+enable_middleware_suggestions = true
+strict_null_checks = true
+no_implicit_any = true
+enable_circular_dependency_detection = true
+
+# Identity Service Rules
+[packages/identity-service/src/**]
+# Identity service specific rules
+enable_auth_patterns = true
+enable_security_checks = true
+strict_null_checks = true
+no_implicit_any = true
+enable_circular_dependency_detection = true
+
+# Discovery Provider Rules
+[packages/discovery-provider/src/**]
+# Discovery provider specific rules
+enable_indexing_patterns = true
+enable_query_optimization = true
+strict_null_checks = true
+no_implicit_any = true
+enable_circular_dependency_detection = true
+
+# Embed Package Rules
+[packages/embed/src/**]
+# Embed specific rules
+component_order = [
+    "imports",
+    "types",
+    "constants",
+    "hooks",
+    "component",
+    "styles",
+    "exports"
+]
+enable_jsx_close_tag = true
+enable_iframe_patterns = true
+enable_embed_snippets = true
+
+# ETH Package Rules
+[packages/eth/src/**]
+# Ethereum specific rules
+enable_contract_patterns = true
+enable_web3_suggestions = true
+strict_null_checks = true
+no_implicit_any = true
+enable_circular_dependency_detection = true
+
+# ES Indexer Rules
+[packages/es-indexer/src/**]
+# Elasticsearch indexer specific rules
+enable_indexing_patterns = true
+enable_query_optimization = true
+strict_null_checks = true
+no_implicit_any = true
+enable_circular_dependency_detection = true
+
+# Create Audius App Rules
+[packages/create-audius-app/src/**]
+# Template and scaffolding specific rules
+enable_template_suggestions = true
+enable_scaffolding_patterns = true
+strict_null_checks = true
+no_implicit_any = true
+
+# DDEX Frontend Rules
+[packages/ddex-frontend/src/**]
+component_order = [
+    "imports",
+    "types",
+    "constants",
+    "hooks",
+    "component",
+    "styles",
+    "exports"
+]
+enable_jsx_close_tag = true
+enable_react_prop_types = true
+enable_react_hooks_suggestions = true
+
+# Harmony Package Rules
+[packages/harmony/src/**]
+# Harmony specific rules
+enable_blockchain_patterns = true
+enable_web3_suggestions = true
+strict_null_checks = true
+no_implicit_any = true
+enable_circular_dependency_detection = true
+
+# Code Generation
+[code_generation]
+# Prefer simple, maintainable solutions
+prefer_readability = true
+prefer_explicit_over_implicit = true
+max_suggested_lines = 50
+enable_inline_documentation = true
+enable_type_inference = true
+
+# Error Handling
+[error_handling]
+prefer_typed_errors = true
+enable_error_boundary_suggestions = true
+enable_try_catch_suggestions = true
+enable_error_recovery_patterns = true
+
+# Security
+[security]
+enable_security_lint = true
+enable_dependency_audit = true
+enable_injection_prevention = true
+enable_auth_pattern_checking = true
+
+# Accessibility
+[accessibility]
+enable_a11y_suggestions = true
+enable_aria_role_validation = true
+enable_contrast_checking = true
+enable_keyboard_navigation = true
+
+# Debug Helpers
+[debug]
+enable_debug_snippets = true
+enable_console_patterns = true
+enable_performance_suggestions = true
+max_log_length = 120
+
+# Code Review
+[code_review]
+enable_complexity_warnings = true
+enable_duplicate_code_detection = true
+enable_best_practice_suggestions = true
+max_function_length = 50
+max_file_length = 500 
