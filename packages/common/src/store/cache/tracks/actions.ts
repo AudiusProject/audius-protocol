@@ -1,4 +1,4 @@
-import { TrackMetadataForUpload } from '~/store'
+import { TrackMetadataForUpload, TrackWithRemix } from '~/store'
 import { Nullable } from '~/utils'
 
 import { ID } from '../../../models'
@@ -17,6 +17,8 @@ export const INCREMENT_TRACK_COMMENT_COUNT =
 export const SET_TRACK_COMMENT_COUNT = 'CACHE/TRACKS/SET_TRACK_COMMENT_COUNT'
 
 export const SET_PINNED_COMMENT_ID = 'CACHE/TRACKS/SET_PINNED_COMMENT_ID'
+
+export const TRACK_REMIX_EVENT = 'CACHE/TRACKS/TRACK_REMIX_EVENT'
 
 export function editTrack(trackId: ID, formFields: TrackMetadataForUpload) {
   return { type: EDIT_TRACK, trackId, formFields }
@@ -61,4 +63,9 @@ export const setPinnedCommentId = (trackId: ID, commentId: Nullable<ID>) => ({
   type: SET_PINNED_COMMENT_ID,
   trackId,
   commentId
+})
+
+export const trackRemixEvent = (track: TrackWithRemix) => ({
+  type: TRACK_REMIX_EVENT,
+  track
 })

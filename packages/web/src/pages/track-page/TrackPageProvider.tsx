@@ -14,7 +14,6 @@ import {
 } from '@audius/common/models'
 import {
   accountSelectors,
-  cacheTracksActions as cacheTrackActions,
   lineupSelectors,
   trackPageLineupActions,
   trackPageActions,
@@ -548,8 +547,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(
         socialTracksActions.undoRepostTrack(trackId, RepostSource.TRACK_PAGE)
       ),
-    editTrack: (trackId: ID, formFields: any) =>
-      dispatch(cacheTrackActions.editTrack(trackId, formFields)),
     onFollow: (userId: ID) =>
       dispatch(socialUsersActions.followUser(userId, FollowSource.TRACK_PAGE)),
     onUnfollow: (userId: ID) =>
