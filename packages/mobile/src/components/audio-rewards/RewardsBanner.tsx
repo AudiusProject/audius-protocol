@@ -4,8 +4,7 @@ import { audioRewardsPageActions, modalsActions } from '@audius/common/store'
 import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch } from 'react-redux'
 
-import { IconCrown, Flex, Text, Paper } from '@audius/harmony-native'
-import { useThemeColors } from 'app/utils/theme'
+import { IconCrown, Flex, Text, Paper, useTheme } from '@audius/harmony-native'
 const { setVisibility } = modalsActions
 const { setTrendingRewardsModalType } = audioRewardsPageActions
 
@@ -31,8 +30,7 @@ type RewardsBannerProps = {
 export const RewardsBanner = (props: RewardsBannerProps) => {
   const { bannerType = 'tracks' } = props
   const dispatch = useDispatch()
-  const { pageHeaderGradientColor1, pageHeaderGradientColor2 } =
-    useThemeColors()
+  const { color } = useTheme()
 
   const handlePress = useCallback(() => {
     dispatch(setTrendingRewardsModalType({ modalType: bannerType }))
@@ -47,9 +45,9 @@ export const RewardsBanner = (props: RewardsBannerProps) => {
   return (
     <Paper m='l' mb={0} onPress={handlePress}>
       <LinearGradient
-        colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
-        start={{ x: 1, y: 1 }}
-        end={{ x: 0, y: 0 }}
+        colors={color.special.gradient.colors}
+        start={color.special.gradient.end}
+        end={color.special.gradient.start}
         style={{ width: '100%', borderRadius: 8 }}
       >
         <Flex direction='column' alignItems='center' style={{ padding: 16 }}>
