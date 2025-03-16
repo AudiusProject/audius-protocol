@@ -4,9 +4,7 @@ import { audioRewardsPageActions, modalsActions } from '@audius/common/store'
 import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch } from 'react-redux'
 
-import { IconCrown, Flex, Text } from '@audius/harmony-native'
-import { Tile } from 'app/components/core'
-import { makeStyles } from 'app/styles'
+import { IconCrown, Flex, Text, Paper } from '@audius/harmony-native'
 import { useThemeColors } from 'app/utils/theme'
 const { setVisibility } = modalsActions
 const { setTrendingRewardsModalType } = audioRewardsPageActions
@@ -26,28 +24,12 @@ const messageMap = {
   }
 }
 
-const useStyles = makeStyles(({ typography, palette, spacing }) => ({
-  root: {
-    marginTop: spacing(3),
-    marginHorizontal: spacing(3)
-  },
-  tile: {
-    borderWidth: 0
-  },
-  tileContent: {
-    marginVertical: spacing(2),
-    paddingHorizontal: spacing(4),
-    alignItems: 'center'
-  }
-}))
-
 type RewardsBannerProps = {
   bannerType?: 'tracks' | 'playlists' | 'underground'
 }
 
 export const RewardsBanner = (props: RewardsBannerProps) => {
   const { bannerType = 'tracks' } = props
-  const styles = useStyles()
   const dispatch = useDispatch()
   const { pageHeaderGradientColor1, pageHeaderGradientColor2 } =
     useThemeColors()
@@ -63,35 +45,32 @@ export const RewardsBanner = (props: RewardsBannerProps) => {
   const messageContent = messageMap[bannerType] || messageMap.tracks
 
   return (
-    <Tile
-      as={LinearGradient}
-      colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
-      start={{ x: 1, y: 1 }}
-      end={{ x: 0, y: 0 }}
-      styles={{
-        root: styles.root,
-        tile: styles.tile,
-        content: styles.tileContent
-      }}
-      onPress={handlePress}
-    >
-      <Flex direction='column' alignItems='center' w='100%'>
-        <Flex direction='row' alignItems='center' mb='xs'>
-          <IconCrown size='s' color='staticWhite' style={{ marginRight: 8 }} />
-          <Text variant='title' size='s' color='staticWhite'>
-            {messageContent.title}
+    <Paper m='l' mb={0} onPress={handlePress}>
+      <LinearGradient
+        colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
+        start={{ x: 1, y: 1 }}
+        end={{ x: 0, y: 0 }}
+        style={{ width: '100%', borderRadius: 8 }}
+      >
+        <Flex direction='column' alignItems='center' style={{ padding: 16 }}>
+          <Flex direction='row' alignItems='center' gap='xs'>
+            <IconCrown size='s' color='staticWhite' />
+            <Text variant='title' size='s' color='staticWhite'>
+              {messageContent.title}
+            </Text>
+          </Flex>
+          <Text
+            variant='body'
+            size='s'
+            strength='strong'
+            color='staticWhite'
+            textAlign='center'
+            style={{ opacity: 0.8 }}
+          >
+            {messageContent.description}
           </Text>
         </Flex>
-        <Text
-          variant='body'
-          size='s'
-          strength='strong'
-          color='staticWhite'
-          style={{ opacity: 0.8, textAlign: 'center' }}
-        >
-          {messageContent.description}
-        </Text>
-      </Flex>
-    </Tile>
+      </LinearGradient>
+    </Paper>
   )
 }
