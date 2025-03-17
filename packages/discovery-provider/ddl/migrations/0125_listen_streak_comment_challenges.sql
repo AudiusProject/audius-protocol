@@ -9,8 +9,7 @@ alter table user_challenges disable trigger on_user_challenge;
 if exists (select * from "blocks" where "blockhash" = 'fb1699f4b3f7b4cc6dba054d8d8f88ffb34a41bbb882254144302c9c7565ab15') then
 delete from user_challenges where challenge_id = 'e' or challenge_id = 'c' and created_at < '2025-03-15';
 
-insert into user_challenges (challenge_id, user_id, specifier, is_complete, current_step_count, completed_blocknumber, amount, created_at, completed_at)
-select * from temp_listen_streak_comment_challenges;
+insert into user_challenges select * from temp_listen_streak_comment_challenges;
 
 -- re-enable trigger
 alter table user_challenges enable trigger on_user_challenge;
