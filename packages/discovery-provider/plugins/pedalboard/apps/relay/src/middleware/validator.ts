@@ -82,6 +82,26 @@ export const validator = async (
   let isAnonymousAllowed = false
   const isSenderVerifier = senderAddress === config.verifierAddress
 
+  //
+  // test pubkey recover
+  try {
+    const pubkey = AudiusABIDecoder.recoverPubKey({
+      encodedAbi: encodedABI,
+      entityManagerAddress: contractAddress,
+      chainId: config.acdcChainId!
+    })
+    const pubkeyBuffer = Buffer.from(pubkey.replace('0x', ''), 'hex')
+    const pubkeyBase64 = pubkeyBuffer.toString('base64')
+    response.header('pubkey', pubkey)
+    response.header('pubkey-base64', pubkeyBase64)
+    // todo: write to user_pubkeys table
+  } catch (e) {
+    console.log('failed to recover pubkey', e)
+    response.header('pubkey-error', `${e}`)
+  }
+  //
+  //
+
   const user = await retrieveUser(
     contractRegistryKey,
     contractAddress,
@@ -200,19 +220,6 @@ export const retrieveUser = async (
       entityManagerAddress: contractAddress,
       chainId: config.acdcChainId!
     })
-
-    try {
-      const pubkey = AudiusABIDecoder.recoverPubKey({
-        encodedAbi: encodedABI,
-        entityManagerAddress: contractAddress,
-        chainId: config.acdcChainId!
-      })
-      const pubkeyBuffer = Buffer.from(pubkey.replace('0x', ''), 'hex')
-      const pubkeyBase64 = pubkeyBuffer.toString('base64')
-      console.log('todo... write to user_pubkeys table', pubkeyBase64)
-    } catch (e) {
-      console.log('failed to recover pubkey', e)
-    }
 
     query = query.where('wallet', '=', recoveredAddress)
     addedWalletClause = true
