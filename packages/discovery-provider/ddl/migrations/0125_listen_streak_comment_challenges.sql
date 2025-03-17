@@ -20,7 +20,8 @@ SELECT
     amount::integer,
     created_at::timestamptz,
     completed_at::timestamp
-from temp_listen_streak_comment_challenges;
+FROM temp_listen_streak_comment_challenges
+ON CONFLICT (challenge_id, specifier) DO NOTHING;
 
 -- re-enable trigger
 alter table user_challenges enable trigger on_user_challenge;
