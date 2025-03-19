@@ -55,6 +55,8 @@ const { getUsers } = cacheUsersSelectors
 const { beginTip } = tippingActions
 const { getGatedContentStatusMap } = gatedContentSelectors
 
+const BUY_BUTTON_WIDTH = 250
+
 const getMessages = (contentType: PurchaseableContentType) => ({
   howToUnlock: 'HOW TO UNLOCK',
   payToUnlock: 'PAY TO UNLOCK',
@@ -368,7 +370,7 @@ const LockedGatedContentSection = ({
         </Flex>
         {renderLockedDescription()}
       </Flex>
-      <Flex w={250}>{renderButton()}</Flex>
+      <Flex w={BUY_BUTTON_WIDTH}>{renderButton()}</Flex>
     </Flex>
   )
 }
