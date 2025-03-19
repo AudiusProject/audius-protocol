@@ -6,7 +6,6 @@ import logging
 import os
 from typing import Optional
 
-import requests
 from web3 import HTTPProvider, Web3
 from web3.middleware import geth_poa_middleware
 
@@ -27,26 +26,8 @@ def get_web3(web3endpoint=None):
     if web3:
         return web3
 
-    if web3endpoint:
-        web3 = Web3(HTTPProvider(web3endpoint))
-    else:
-        local_rpc = os.getenv("audius_web3_localhost")
-        local_web3 = Web3(HTTPProvider(local_rpc))
-        gateway_web3 = Web3(HTTPProvider(os.getenv("audius_web3_host")))
-        # attempt local rpc, check if healthy
-        try:
-            block_diff = abs(
-                local_web3.eth.get_block_number() - gateway_web3.eth.get_block_number()
-            )
-            resp = requests.get(local_rpc + "/health")
-            if resp.status_code == 200 and block_diff < GATEWAY_FALLBACK_BLOCKDIFF:
-                web3 = local_web3
-                logger.info("web3_provider.py | using local RPC")
-            else:
-                raise Exception("local RPC unhealthy or unreachable")
-        except Exception as e:
-            logger.warn(e)
-            web3 = gateway_web3
+    local_rpc = os.getenv("audius_web3_localhost")
+    web3 = Web3(HTTPProvider(local_rpc))
 
     web3.strict_bytes_type_checking = False
     # required middleware for POA
