@@ -363,10 +363,6 @@ def configure_celery(celery, test_config=None):
                 "task": "cache_trending_playlists",
                 "schedule": timedelta(minutes=30),
             },
-            "index_challenges": {
-                "task": "index_challenges",
-                "schedule": timedelta(seconds=5),
-            },
             "index_eth": {
                 "task": "index_eth",
                 "schedule": timedelta(seconds=30),
@@ -524,4 +520,5 @@ def configure_celery(celery, test_config=None):
     celery.send_task("index_rewards_manager", queue="index_sol")
     celery.send_task("index_user_bank", queue="index_sol")
     celery.send_task("index_payment_router", queue="index_sol")
+    celery.send_task("index_challenges", queue="index_challenges")
     celery.send_task("index_core", queue="index_core")
