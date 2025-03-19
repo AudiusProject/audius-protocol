@@ -337,7 +337,10 @@ def index_core(self):
             return
 
         if have_lock:
-            update_lock.release()
+            try:
+                update_lock.release()
+            except Exception as e:
+                logger.error(f"couldn't release lock {e}")
         if not block_indexed:
             celery.send_task("index_core", countdown=0.5, queue="index_core")
         else:
