@@ -261,7 +261,15 @@ const configureLibsWithAccount = async ({
     identityServiceConfig: AudiusLibs.configIdentityService(
       identityServiceEndpoint!
     ),
-    discoveryProviderConfig: {},
+    discoveryProviderConfig: {
+      whitelist: new Set([
+        'https://discoveryprovider.audius.co',
+        'https://discoveryprovider2.audius.co',
+        'https://discoveryprovider3.audius.co',
+        'https://audius-dn1.tikilabs.com',
+        'https://dn1.monophonic.digital'
+      ])
+    },
     isServer: false,
     isDebug: !IS_PRODUCTION && !IS_STAGING
   }
