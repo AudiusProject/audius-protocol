@@ -128,4 +128,7 @@ def create_engagement_notifications(self):
         logger.error(f"ERROR caching node info {e}")
     finally:
         if have_lock:
-            update_lock.release()
+            try:
+                update_lock.release()
+            except Exception as e:
+                logger.error(f"could not release lock {e}")
