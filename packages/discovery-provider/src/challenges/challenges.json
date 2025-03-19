@@ -169,7 +169,7 @@
     "step_count": 250,
     "starting_block": 0,
     "weekly_pool": 2147483647,
-    "cooldown_days": 0
+    "cooldown_days": 7
   },
   {
     "id": "p2",
@@ -180,7 +180,7 @@
     "step_count": 1000,
     "starting_block": 0,
     "weekly_pool": 2147483647,
-    "cooldown_days": 0
+    "cooldown_days": 7
   },
   {
     "id": "p3",
@@ -191,7 +191,7 @@
     "step_count": 10000,
     "starting_block": 0,
     "weekly_pool": 2147483647,
-    "cooldown_days": 0
+    "cooldown_days": 7
   },
   {
     "id": "t",
