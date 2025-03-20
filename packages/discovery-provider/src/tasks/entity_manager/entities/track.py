@@ -711,6 +711,17 @@ def download_track(params: ManageEntityParameters):
     session = params.session
 
     has_metadata = isinstance(params.metadata, dict)
+
+    existing_track_download = (
+        session.query(TrackDownload)
+        .filter_by(
+            parent_track_id=parent_track_id, track_id=track_id, txhash=params.txhash
+        )
+        .first()
+    )
+    if existing_track_download:
+        return
+
     record = TrackDownload(
         txhash=params.txhash,
         blocknumber=params.block_number,
