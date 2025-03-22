@@ -10,7 +10,6 @@ import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { useDashboardWalletUser } from 'hooks/useDashboardWalletUsers'
 import Audius from 'services/Audius'
 import { GetPendingDecreaseStakeRequestResponse } from 'services/Audius/service-provider/types'
-import { getUserProfile } from 'services/SelfId'
 import { useAccountUser } from 'store/account/hooks'
 import { AppState } from 'store/types'
 import {
@@ -24,6 +23,7 @@ import {
   User
 } from 'types'
 import getActiveStake, { getTotalActiveDelegatedStake } from 'utils/activeStake'
+import { getRandomDefaultImage } from 'utils/identicon'
 
 import {
   fetchContentNodes,
@@ -306,12 +306,12 @@ export function fetchUserProfile(
   wallet: Address
 ): ThunkAction<void, AppState, Audius, Action<string>> {
   return async (dispatch, getState, aud) => {
-    const profile = await getUserProfile(wallet)
+    const profile = { image: getRandomDefaultImage(wallet) }
     dispatch(
       setUserProfile({
         wallet,
         image: profile.image,
-        name: profile.name
+        name: wallet
       })
     )
   }
