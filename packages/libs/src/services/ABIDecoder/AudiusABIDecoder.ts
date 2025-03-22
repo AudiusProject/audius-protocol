@@ -106,4 +106,30 @@ export class AudiusABIDecoder {
       throw new Error('subjectSig is not present in decoded abi')
     return sigUtil.recoverTypedSignature({ data, sig })
   }
+
+  static recoverPubKey({
+    encodedAbi,
+    chainId,
+    entityManagerAddress
+  }: {
+    encodedAbi: string
+    chainId: string
+    entityManagerAddress: string
+  }): string {
+    const decodedAbi = this.decodeAbi('EntityManager', encodedAbi)
+    const data = generators.getManageEntityData(
+      chainId,
+      entityManagerAddress,
+      decodedAbi.get('userId'),
+      decodedAbi.get('entityType'),
+      decodedAbi.get('entityId'),
+      decodedAbi.get('action'),
+      decodedAbi.get('metadata'),
+      decodedAbi.get('nonce')
+    )
+    const sig = decodedAbi.get('subjectSig')
+    if (sig === undefined)
+      throw new Error('subjectSig is not present in decoded abi')
+    return sigUtil.extractPublicKey({ data, sig })
+  }
 }
