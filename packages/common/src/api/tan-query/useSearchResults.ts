@@ -333,7 +333,12 @@ export const useSearchAllResults = (
     playbackSource: PlaybackSource.SEARCH_PAGE
   })
 
-  return { ...queryData, ...tracksLineupData }
+  return {
+    // TODO: avoid spreading all queryData props
+    ...tracksLineupData,
+    ...queryData,
+    status: tracksLineupData.status
+  }
 }
 
 export const useSearchTrackResults = (
@@ -457,5 +462,10 @@ export const useSearchPlaylistResults = (
     }
   }) as FlatUseInfiniteQueryResult<UserCollectionMetadata>
 
-  return { ...queryData, loadNextPage: loadNextPage(queryData) }
+  const queryDataWithLoadNextPage = queryData as typeof queryData & {
+    loadNextPage: () => void
+  }
+  queryDataWithLoadNextPage.loadNextPage = loadNextPage(queryData)
+
+  return queryDataWithLoadNextPage
 }

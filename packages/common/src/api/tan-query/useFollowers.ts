@@ -10,7 +10,6 @@ import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { useUsers } from './useUsers'
-import { combineQueryStatuses } from './utils'
 import { primeUserData } from './utils/primeUserData'
 
 const DEFAULT_PAGE_SIZE = 15
@@ -38,7 +37,7 @@ export const useFollowers = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const { data: userIds, ...queryResult } = useInfiniteQuery({
+  const queryRes = useInfiniteQuery({
     queryKey: getFollowersQueryKey({ userId, pageSize }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: ID[], allPages) => {
@@ -62,13 +61,15 @@ export const useFollowers = (
     enabled: options?.enabled !== false && !!userId
   })
 
-  const { data: users, ...usersQuery } = useUsers(userIds)
-
-  const statuses = combineQueryStatuses([queryResult, usersQuery])
+  const { data: users } = useUsers(queryRes.data)
 
   return {
     data: users,
-    ...queryResult,
-    ...statuses
+    isPending: queryRes.isPending,
+    isLoading: queryRes.isLoading,
+    isSuccess: queryRes.isSuccess,
+    hasNextPage: queryRes.hasNextPage,
+    isFetchingNextPage: queryRes.isFetchingNextPage,
+    fetchNextPage: queryRes.fetchNextPage
   }
 }

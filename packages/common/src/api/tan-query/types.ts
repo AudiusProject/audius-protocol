@@ -21,7 +21,15 @@ export type SelectableQueryOptions<TData, TResult = TData> = Omit<
 >
 
 export type LineupQueryData = UseLineupQueryData &
-  Omit<UseInfiniteQueryResult, 'status'> & {
+  Pick<
+    UseInfiniteQueryResult,
+    | 'data'
+    | 'hasNextPage'
+    | 'isInitialLoading'
+    | 'isLoading'
+    | 'isPending'
+    | 'isError'
+  > & {
     loadNextPage: ReturnType<typeof loadNextPage>
     pageSize?: number
   }

@@ -43,7 +43,7 @@ export const usePurchasers = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const { data: userIds, ...queryResult } = useInfiniteQuery({
+  const { data: userIds } = useInfiniteQuery({
     queryKey: getPurchasersQueryKey(args),
     initialPageParam: 0,
     getNextPageParam: (lastPage: ID[], allPages) => {
@@ -70,10 +70,5 @@ export const usePurchasers = (
     enabled: options?.enabled !== false && !!currentUserId
   })
 
-  const { data: users } = useUsers(userIds)
-
-  return {
-    data: users,
-    ...queryResult
-  }
+  return useUsers(userIds)
 }

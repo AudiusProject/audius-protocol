@@ -120,7 +120,7 @@ export const useTrackHistory = (
     enabled: options?.enabled !== false && !!currentUserId
   })
 
-  const lineupData = useLineupQuery({
+  return useLineupQuery({
     queryData,
     queryKey: getTrackHistoryQueryKey({
       pageSize,
@@ -133,10 +133,4 @@ export const useTrackHistory = (
     playbackSource: PlaybackSource.HISTORY_PAGE,
     pageSize
   })
-
-  return {
-    ...queryData,
-    ...lineupData,
-    pageSize
-  }
 }
