@@ -24,6 +24,11 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.prod
       args:
         app_name: anti-abuse-oracle
+        TURBO_TEAM: '${TURBO_TEAM}'
+        TURBO_TOKEN: '${TURBO_TOKEN}'
+    environment:
+      IDENTITY_DB_URL: 'postgresql://postgres:postgres@db:5432/identity_service'
+      private_signer_address: '${AAO_WALLET_PRIVATE_KEY}'
     restart: always
     profiles:
       - pedalboard
