@@ -193,7 +193,7 @@ export const createStemsArchiveWorker = (services: WorkerServices) => {
       return { outputFile }
     } catch (error) {
       try {
-        logger.info('Job failed, cleaning up temp files')
+        logger.error({ error }, 'Job failed, cleaning up temp files')
         await removeTempFiles(jobId)
         await spaceManager.releaseSpace(jobId)
       } catch (error) {

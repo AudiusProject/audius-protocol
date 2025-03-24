@@ -42,7 +42,7 @@ export const readConfig = (): Config => {
       default: 'redis://audius-protocol-discovery-provider-redis-1:6379/0'
     }),
     archiver_server_host: str({ default: '0.0.0.0' }),
-    archiver_server_port: num({ default: 6003 }),
+    archiver_server_port: num({ default: 6004 }),
     archiver_concurrent_jobs: num({ default: 5 }),
     archiver_tmp_dir: str({ default: '/tmp/audius-archiver' }),
     archiver_cleanup_orphaned_files_interval_seconds: num({
