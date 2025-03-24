@@ -448,9 +448,6 @@ def find_min_block_above_timestamp(
     while greater_than_min:
         prev_block = core.get_block(curr_block_number - 1)
         prev_timestamp = prev_block.timestamp.ToDatetime()
-        logger.error(
-            f"BLOCK PREV {prev_timestamp >= min_timestamp} {prev_timestamp} {min_timestamp}"
-        )
         if prev_timestamp >= min_timestamp:
             block = prev_block
             curr_block_number -= 1
