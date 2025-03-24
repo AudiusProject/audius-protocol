@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { useProxySelector } from '@audius/common/hooks'
+import { useUsers } from '@audius/common/api'
 import { Status, statusIsNotFinalized } from '@audius/common/models'
 import type { User } from '@audius/common/models'
 import {
   accountSelectors,
-  cacheUsersSelectors,
   chatActions,
   chatSelectors,
   searchUsersModalActions,
@@ -40,7 +39,6 @@ import { ChatUserListItem } from './ChatUserListItem'
 const { getUserId } = accountSelectors
 const { searchUsers } = searchUsersModalActions
 const { getUserList } = searchUsersModalSelectors
-const { getUsers } = cacheUsersSelectors
 const { fetchBlockees, fetchBlockers, fetchPermissions } = chatActions
 const { getUserList: getChatsUserList } = chatSelectors
 const { getUserList: getFollowersUserList } = followersUserListSelectors
@@ -218,14 +216,7 @@ export const ChatUserListScreen = () => {
     ? queryUserList
     : defaultUserList
 
-  const users = useProxySelector(
-    (state) => {
-      const ids = userIds
-      const users = getUsers(state, { ids })
-      return ids.map((id) => users[id])
-    },
-    [userIds]
-  )
+  const { data: users } = useUsers(userIds)
 
   useEffect(() => {
     dispatch(fetchBlockees())

@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
+import { useUsers } from '@audius/common/api'
 import {
   Name,
   FollowSource,
@@ -14,7 +15,6 @@ import {
   User
 } from '@audius/common/models'
 import {
-  cacheUsersSelectors,
   usersSocialActions as socialActions,
   tippingActions,
   usePremiumContentPurchaseModal,
@@ -45,13 +45,11 @@ import { UserLink } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { make, track } from 'services/analytics'
-import { AppState } from 'store/types'
 
 import { LockedStatusBadge } from '../locked-status-badge'
 
 import styles from './GiantTrackTile.module.css'
 
-const { getUsers } = cacheUsersSelectors
 const { beginTip } = tippingActions
 const { getGatedContentStatusMap } = gatedContentSelectors
 
@@ -627,14 +625,12 @@ export const GatedContentSection = ({
     isTipGated ||
     isContentCollectibleGated(streamConditions) ||
     isUSDCPurchaseGated
-  const users = useSelector<AppState, { [id: ID]: User }>((state) =>
-    getUsers(state, {
-      ids: [
-        isFollowGated ? streamConditions.follow_user_id : null,
-        isTipGated ? streamConditions.tip_user_id : null,
-        isUSDCPurchaseGated ? ownerId : null
-      ].filter(removeNullable)
-    })
+  const { byId: users } = useUsers(
+    [
+      isFollowGated ? streamConditions.follow_user_id : null,
+      isTipGated ? streamConditions.tip_user_id : null,
+      isUSDCPurchaseGated ? ownerId : null
+    ].filter(removeNullable)
   )
   const followee = isFollowGated ? users[streamConditions.follow_user_id] : null
   const trackOwner =
