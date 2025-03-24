@@ -10,7 +10,10 @@ import requests
 from elasticsearch import Elasticsearch
 from redis import Redis
 
-from src.challenges.tastemaker_challenge import get_tastemaker_challenge_start_block
+from src.challenges.tastemaker_challenge import (
+    get_tastemaker_challenge_start_block,
+    get_tastemaker_challenge_start_chain_id,
+)
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 from src.models.indexing.block import Block
 from src.monitors import monitor_names, monitors
@@ -698,8 +701,12 @@ def get_core_tastemaker_challenge_health(
 ):
     latest_block_num, _ = get_latest_chain_block_set_if_nx(redis)
     tastemaker_challenge_start_block = get_tastemaker_challenge_start_block()
+    tastemaker_challenge_start_block_chain_id = (
+        get_tastemaker_challenge_start_chain_id()
+    )
     return {
         "tastemaker_challenge_start_block": tastemaker_challenge_start_block,
+        "tastemaker_challenge_start_block_chain_id": tastemaker_challenge_start_block_chain_id,
         "is_running": latest_block_num is not None
         and latest_block_num > tastemaker_challenge_start_block,
     }
