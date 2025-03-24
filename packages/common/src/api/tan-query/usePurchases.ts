@@ -1,9 +1,7 @@
+import { useMemo } from 'react'
+
 import { full, Id } from '@audius/sdk'
-import {
-  InfiniteData,
-  useInfiniteQuery,
-  UseInfiniteQueryResult
-} from '@tanstack/react-query'
+import { useInfiniteQuery } from '@tanstack/react-query'
 
 import { purchaseFromSDK } from '~/adapters/purchase'
 import { useAudiusQueryContext } from '~/audius-query'
@@ -72,30 +70,32 @@ export const usePurchases = (
 
       return data.map(purchaseFromSDK)
     },
+    select: (data) => data.pages.flat(),
     ...options,
     enabled: options?.enabled !== false && !!userId
   })
 
-  const pages = queryResult.data?.pages
-  const lastPage = pages?.[pages.length - 1]
-  const userIdsToFetch = lastPage?.map(({ buyerUserId }) => buyerUserId)
-  const trackIdsToFetch = lastPage
-    ?.filter(({ contentType }) => contentType === USDCContentPurchaseType.TRACK)
-    .map(({ contentId }) => contentId)
-  const collectionIdsToFetch = lastPage
-    ?.filter(({ contentType }) => contentType === USDCContentPurchaseType.ALBUM)
-    .map(({ contentId }) => contentId)
+  const { userIdsToFetch, trackIdsToFetch, collectionIdsToFetch } = useMemo(
+    () => ({
+      userIdsToFetch: queryResult.data?.map(({ buyerUserId }) => buyerUserId),
+      trackIdsToFetch: queryResult.data
+        ?.filter(
+          ({ contentType }) => contentType === USDCContentPurchaseType.TRACK
+        )
+        .map(({ contentId }) => contentId),
+      collectionIdsToFetch: queryResult.data
+        ?.filter(
+          ({ contentType }) => contentType === USDCContentPurchaseType.ALBUM
+        )
+        .map(({ contentId }) => contentId)
+    }),
+    [queryResult.data]
+  )
 
   // Call the hooks dropping results to pre-fetch the data
   useUsers(userIdsToFetch)
   useTracks(trackIdsToFetch)
   useCollections(collectionIdsToFetch)
 
-  const resultWithPurchases = queryResult as UseInfiniteQueryResult<
-    InfiniteData<USDCPurchaseDetails[], unknown>,
-    Error
-  > & { purchases: USDCPurchaseDetails[] }
-  resultWithPurchases.purchases = queryResult.data?.pages.flat() ?? []
-
-  return resultWithPurchases
+  return queryResult
 }

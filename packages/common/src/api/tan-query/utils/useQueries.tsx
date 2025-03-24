@@ -28,7 +28,6 @@ export function useQueries<T extends Array<any>>(
       queries: (queries ?? [
         {
           queryKey: ['never-resolves'],
-          // TODO: find out if this correctly returns pending status. Also try enabled: false
           queryFn: () => new Promise(() => {})
         }
       ]) as readonly [...QueriesOptions<T>],
