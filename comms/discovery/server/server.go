@@ -183,9 +183,12 @@ func (s *ChatServer) getPubkey(c echo.Context) error {
 		return c.String(400, "bad id parameter: "+err.Error())
 	}
 
-	pubkey, err := pubkeystore.RecoverUserPublicKeyBase64(c.Request().Context(), id)
+	pubkey, err := pubkeystore.GetPubkey(id)
 	if err != nil {
-		return err
+		pubkey, err = pubkeystore.RecoverFromPeers(s.config, id)
+		if err != nil {
+			return err
+		}
 	}
 
 	return c.JSON(200, map[string]interface{}{

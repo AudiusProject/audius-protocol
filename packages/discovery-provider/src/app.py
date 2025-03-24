@@ -3,7 +3,6 @@ from __future__ import absolute_import
 import ast
 import datetime
 import logging
-import os
 import time
 from collections import defaultdict
 from typing import Any, Dict
@@ -109,11 +108,10 @@ def create_app(test_config=None):
 
 def create_celery(test_config=None):
     # pylint: disable=W0603
-    global web3endpoint, web3, abi_values, eth_abi_values, eth_web3
+    global web3endpoint, abi_values, eth_abi_values, eth_web3
     global trusted_notifier_manager
     global solana_client_manager
 
-    web3 = web3_provider.get_web3()
     abi_values = helpers.load_abi_values()
     # Initialize eth_web3 with MultiProvider
     # We use multiprovider to allow for multiple web3 providers and additional resiliency.
@@ -128,21 +126,6 @@ def create_celery(test_config=None):
 
     # Initialize Solana web3 provider
     solana_client_manager = SolanaClientManager(shared_config["solana"]["endpoint"])
-
-    global entity_manager
-    global contract_addresses
-    # pylint: enable=W0603
-
-    try:
-        (
-            entity_manager,
-            contract_addresses,
-        ) = init_contracts()
-    except:
-        # init_contracts will fail when poa-gateway points to nethermind
-        # only swallow exception in stage
-        if os.getenv("audius_discprov_env") != "stage":
-            raise Exception("Failed to init POA contracts")
 
     return create(test_config, mode="celery")
 
@@ -298,10 +281,7 @@ def configure_celery(celery, test_config=None):
     # Update celery configuration
     celery.conf.update(
         imports=[
-            "src.tasks.index_nethermind",
-            "src.tasks.index_latest_block",
             "src.tasks.index_metrics",
-            "src.tasks.index_aggregate_monthly_plays",
             "src.tasks.index_hourly_play_counts",
             "src.tasks.vacuum_db",
             "src.tasks.update_clique_signers",
@@ -366,10 +346,6 @@ def configure_celery(celery, test_config=None):
                 "task": "cache_trending_playlists",
                 "schedule": timedelta(minutes=30),
             },
-            "index_challenges": {
-                "task": "index_challenges",
-                "schedule": timedelta(seconds=5),
-            },
             "index_eth": {
                 "task": "index_eth",
                 "schedule": timedelta(seconds=30),
@@ -381,10 +357,6 @@ def configure_celery(celery, test_config=None):
             "index_user_listening_history": {
                 "task": "index_user_listening_history",
                 "schedule": timedelta(seconds=5),
-            },
-            "index_aggregate_monthly_plays": {
-                "task": "index_aggregate_monthly_plays",
-                "schedule": timedelta(minutes=5),
             },
             "prune_plays": {
                 "task": "prune_plays",
@@ -413,10 +385,6 @@ def configure_celery(celery, test_config=None):
             "update_aggregates": {
                 "task": "update_aggregates",
                 "schedule": timedelta(minutes=10),
-            },
-            "index_latest_block": {
-                "task": "index_latest_block",
-                "schedule": timedelta(seconds=5),
             },
             "publish_scheduled_releases": {
                 "task": "publish_scheduled_releases",
@@ -461,7 +429,6 @@ def configure_celery(celery, test_config=None):
 
     # Clear existing locks used in tasks if present
     redis_inst.delete(eth_indexing_last_scanned_block_key)
-    redis_inst.delete("index_nethermind_lock")
     redis_inst.delete("network_peers_lock")
     redis_inst.delete("update_metrics_lock")
     redis_inst.delete("update_play_count_lock")
@@ -493,13 +460,6 @@ def configure_celery(celery, test_config=None):
 
     logger.info("Redis instance connected!")
 
-    # Initialize entity manager
-    entity_manager_contract_abi = abi_values[ENTITY_MANAGER_CONTRACT_NAME]["abi"]
-    entity_manager_contract = web3.eth.contract(
-        address=contract_addresses[ENTITY_MANAGER],
-        abi=entity_manager_contract_abi,
-    )
-
     # Initialize custom task context with database object
     class WrappedDatabaseTask(DatabaseTask):
         def __init__(self, *args, **kwargs):
@@ -517,7 +477,6 @@ def configure_celery(celery, test_config=None):
                 solana_client_manager=solana_client_manager,
                 challenge_event_bus=setup_challenge_bus(),
                 eth_manager=eth_manager,
-                entity_manager_contract=entity_manager_contract,
             )
 
     # Subclassing celery task with discovery provider context
@@ -533,8 +492,8 @@ def configure_celery(celery, test_config=None):
     # Start tasks that should fire upon startup
     celery.send_task("cache_current_nodes")
     celery.send_task("cache_entity_counts")
-    celery.send_task("index_nethermind", queue="index_nethermind")
     celery.send_task("index_rewards_manager", queue="index_sol")
     celery.send_task("index_user_bank", queue="index_sol")
     celery.send_task("index_payment_router", queue="index_sol")
+    celery.send_task("index_challenges", queue="index_challenges")
     celery.send_task("index_core", queue="index_core")

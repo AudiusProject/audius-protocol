@@ -31,6 +31,7 @@ import {
 } from '@audius/common/store'
 import { Uid, makeUid, waitForAccount, Nullable } from '@audius/common/utils'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
+import { PREFIX as SEARCH_PREFIX } from '~/store/pages/search-results/lineup/tracks/actions'
 
 import { make } from 'common/store/analytics/actions'
 import { getRecommendedTracks } from 'common/store/recommendation/sagas'
@@ -302,6 +303,9 @@ function* fetchLineupTracks(currentTrack: Track) {
 
   const lineupEntry = lineupRegistry[source]
   if (!lineupEntry) return
+
+  // NOTE: SPECIAL CASE - For tan-query search we don't want this behavior
+  if (lineupEntry.actions.prefix === SEARCH_PREFIX) return
 
   const currentProfileUserHandle = yield* select(getProfileUserHandle)
 

@@ -8,8 +8,9 @@ import { UseInfiniteQueryResult } from '@tanstack/react-query'
  * @param queryData
  * @returns
  */
-export const loadNextPage = (queryData: UseInfiniteQueryResult) => () => {
-  if (!queryData.isFetching && queryData.hasNextPage) {
-    queryData.fetchNextPage()
+export const loadNextPage =
+  (queryData: Omit<UseInfiniteQueryResult, 'data'>) => () => {
+    if (!queryData.isFetching && queryData.hasNextPage) {
+      queryData.fetchNextPage()
+    }
   }
-}

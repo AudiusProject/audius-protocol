@@ -6,13 +6,8 @@ from src.utils.config import shared_config
 
 env = shared_config["discprov"]["env"]
 
-# Milestone for this challenge
-MILESTONE = 250
+# Reward amount for this challenge
 REWARD_AMOUNT = 25
-
-# For testing environments, use smaller numbers
-if env == "stage" or env == "dev":
-    MILESTONE = 1
 
 
 class PlayCount250MilestoneUpdater(PlayCountMilestoneUpdaterBase):
@@ -21,7 +16,6 @@ class PlayCount250MilestoneUpdater(PlayCountMilestoneUpdaterBase):
     Rewards 25 AUDIO upon completion.
     """
 
-    MILESTONE = MILESTONE
     REWARD_AMOUNT = REWARD_AMOUNT
     CHALLENGE_ID = "p1"
     PREVIOUS_MILESTONE_CHALLENGE_ID = ""  # First milestone, no previous one

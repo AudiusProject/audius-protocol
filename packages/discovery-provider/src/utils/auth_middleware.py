@@ -1,13 +1,14 @@
 import functools
 import logging
 
+from eth_account import Account
 from eth_account.messages import encode_defunct
 from flask.globals import request
 from flask_restx import reqparse
 from flask_restx.errors import abort
 
 from src.models.users.user import User
-from src.utils import db_session, web3_provider
+from src.utils import db_session
 
 logger = logging.getLogger(__name__)
 
@@ -19,11 +20,8 @@ def recover_authority_from_signature_headers() -> tuple[int | None, str | None]:
     message = request.headers.get(MESSAGE_HEADER)
     signature = request.headers.get(SIGNATURE_HEADER)
     if message and signature:
-        web3 = web3_provider.get_web3()
         encoded_to_recover = encode_defunct(text=message)
-        wallet = web3.eth.account.recover_message(
-            encoded_to_recover, signature=signature
-        )
+        wallet = Account.recover_message(encoded_to_recover, signature=signature)
         wallet_lower = wallet.lower()
         db = db_session.get_db_read_replica()
         with db.scoped_session() as session:

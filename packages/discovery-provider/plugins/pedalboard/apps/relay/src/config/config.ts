@@ -43,6 +43,12 @@ const defaultCoreEndpoint = (env: string): string => {
   return 'http://core:50051'
 }
 
+export const chainId = (config: Config): string => {
+  if (config.environment == "stage") return "1056801"
+  if (config.environment == "dev") return "1337"
+  return "31524"
+}
+
 export const readConfig = (): Config => {
   if (config !== null) {
     return config

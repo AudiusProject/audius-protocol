@@ -5,11 +5,17 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
 export type UseRemixedTracksArgs = {
   userId: ID | null | undefined
+}
+
+export type RemixedTrack = {
+  trackId: number
+  title: string
+  remixCount: number
 }
 
 export const getRemixedTracksQueryKey = ({ userId }: UseRemixedTracksArgs) => [
@@ -17,7 +23,9 @@ export const getRemixedTracksQueryKey = ({ userId }: UseRemixedTracksArgs) => [
   userId
 ]
 
-export const useRemixedTracks = (options?: QueryOptions) => {
+export const useRemixedTracks = <TResult = RemixedTrack[]>(
+  options?: SelectableQueryOptions<RemixedTrack[], TResult>
+) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
 

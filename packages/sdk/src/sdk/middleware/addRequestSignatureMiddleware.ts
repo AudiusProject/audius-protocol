@@ -70,6 +70,15 @@ export const addRequestSignatureMiddleware = ({
 
   return {
     pre: async (context: RequestContext): Promise<FetchParams> => {
+      // If request already has a signature, skip adding it
+      const existingHeaders = context.init.headers as Record<string, string>
+      if (
+        existingHeaders[MESSAGE_HEADER] &&
+        existingHeaders[SIGNATURE_HEADER]
+      ) {
+        return context
+      }
+
       const { message, signature } = await getSignature()
 
       // Return the updated request with the signature in the headers

@@ -1,13 +1,12 @@
 from logging import LoggerAdapter
 
-from redis import Redis
 from sqlalchemy.orm.session import Session
-from web3 import Web3
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
 from src.tasks.calculate_trending_challenges import enqueue_trending_challenges
 from src.tasks.celery_app import celery
+from src.tasks.core.core_client import CoreClient
 from src.tasks.core.gen.protocol_pb2 import BlockResponse
 
 
@@ -15,8 +14,7 @@ def run_side_effects(
     logger: LoggerAdapter,
     block: BlockResponse,
     session: Session,
-    web3: Web3,
-    redis: Redis,
+    core: CoreClient,
     challenge_bus: ChallengeEventBus,
 ):
     block_number = block.height
@@ -35,7 +33,7 @@ def run_side_effects(
                 session, block_time
             )
             if should_update and date is not None:
-                enqueue_trending_challenges(session, web3, redis, challenge_bus, date)
+                enqueue_trending_challenges(session, core, challenge_bus, date)
 
     except Exception as e:
         # Do not throw error, as this should not stop indexing

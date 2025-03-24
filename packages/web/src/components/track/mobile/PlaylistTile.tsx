@@ -194,7 +194,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
 
   useEffect(() => {
     if (!showSkeleton) {
-      hasLoaded(index)
+      hasLoaded?.(index)
     }
   }, [hasLoaded, index, showSkeleton])
 

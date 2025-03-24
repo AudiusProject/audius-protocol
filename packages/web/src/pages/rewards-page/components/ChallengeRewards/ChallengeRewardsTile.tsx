@@ -92,7 +92,7 @@ export const ChallengeRewardsTile = ({
   const wm = useWithMobileStyle(styles.mobile)
 
   return (
-    <Flex direction='column' gap='l'>
+    <Flex column gap='l'>
       {isClaimAllRewardsEnabled ? <ClaimAllRewardsPanel /> : null}
       <Tile className={wm(styles.rewardsTile, className)}>
         <Text variant='display' size='s' className={wm(styles.title)}>

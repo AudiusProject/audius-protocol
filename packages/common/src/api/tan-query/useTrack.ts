@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
@@ -7,16 +9,16 @@ import { ID } from '~/models/Identifiers'
 import { getTracksBatcher } from './batchers/getTracksBatcher'
 import { TQTrack } from './models'
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 export const getTrackQueryKey = (trackId: ID | null | undefined) => [
   QUERY_KEYS.track,
   trackId
 ]
 
-export const useTrack = (
+export const useTrack = <TResult = TQTrack>(
   trackId: ID | null | undefined,
-  options?: QueryOptions
+  options?: SelectableQueryOptions<TQTrack, TResult>
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
@@ -24,7 +26,10 @@ export const useTrack = (
   const { data: currentUserId } = useCurrentUserId()
   const validTrackId = !!trackId && trackId > 0
 
-  return useQuery<TQTrack | null>({
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const select = useMemo(() => options?.select, [])
+
+  return useQuery({
     queryKey: getTrackQueryKey(trackId),
     queryFn: async () => {
       const sdk = await audiusSdk()
@@ -37,6 +42,7 @@ export const useTrack = (
       return await batchGetTracks.fetch(trackId!)
     },
     ...options,
+    select,
     enabled: options?.enabled !== false && validTrackId
   })
 }

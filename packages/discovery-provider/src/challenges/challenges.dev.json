@@ -166,7 +166,7 @@
     "type": "numeric",
     "amount": 25,
     "active": true,
-    "step_count": 1,
+    "step_count": 2,
     "starting_block": 0,
     "weekly_pool": 2147483647,
     "cooldown_days": 0
@@ -177,7 +177,7 @@
     "type": "numeric",
     "amount": 100,
     "active": true,
-    "step_count": 2,
+    "step_count": 3,
     "starting_block": 0,
     "weekly_pool": 2147483647,
     "cooldown_days": 0
@@ -188,7 +188,18 @@
     "type": "numeric",
     "amount": 1000,
     "active": true,
-    "step_count": 3,
+    "step_count": 4,
+    "starting_block": 0,
+    "weekly_pool": 2147483647,
+    "cooldown_days": 0
+  },
+  {
+    "id": "t",
+    "name": "TASTEMAKER",
+    "type": "aggregate",
+    "amount": 100,
+    "active": true,
+    "step_count": 2147483647,
     "starting_block": 0,
     "weekly_pool": 2147483647,
     "cooldown_days": 0

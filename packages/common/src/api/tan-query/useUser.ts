@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -8,16 +10,16 @@ import { getUserId } from '~/store/account/selectors'
 
 import { getUsersBatcher } from './batchers/getUsersBatcher'
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { SelectableQueryOptions } from './types'
 
 export const getUserQueryKey = (userId: ID | null | undefined) => [
   QUERY_KEYS.user,
   userId
 ]
 
-export const useUser = (
+export const useUser = <TResult = UserMetadata>(
   userId: ID | null | undefined,
-  options?: QueryOptions
+  options?: SelectableQueryOptions<UserMetadata, TResult>
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const dispatch = useDispatch()
@@ -25,7 +27,10 @@ export const useUser = (
   const currentUserId = useSelector(getUserId)
   const validUserId = !!userId && userId > 0
 
-  return useQuery<UserMetadata | null>({
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const select = useMemo(() => options?.select, [])
+
+  return useQuery({
     queryKey: getUserQueryKey(userId),
     queryFn: async () => {
       const sdk = await audiusSdk()
@@ -38,6 +43,7 @@ export const useUser = (
       return await batchGetUsers.fetch(userId!)
     },
     ...options,
+    select,
     enabled: options?.enabled !== false && validUserId
   })
 }

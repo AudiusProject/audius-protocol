@@ -19,7 +19,7 @@ from src.models.users.aggregate_user import AggregateUser
 from src.models.users.user_balance_change import UserBalanceChange
 from src.queries import response_name_constants as const
 from src.queries.get_prev_track_entries import get_prev_track_entries
-from src.utils import helpers, web3_provider
+from src.tasks.core.core_client import get_core_instance
 from src.utils.config import shared_config
 from src.utils.db_session import get_db_read_replica
 from src.utils.structured_logger import StructuredLogger, log_duration
@@ -813,9 +813,9 @@ def notifications():
         track_added_to_playlist_notifications = []
         track_ids = []
 
-        web3 = web3_provider.get_web3()
-        min_block = helpers.get_adjusted_block(web3, min_block_number)
-        max_block = helpers.get_adjusted_block(web3, max_block_number)
+        core = get_core_instance()
+        min_block = core.get_block(min_block_number)
+        max_block = core.get_block(max_block_number)
 
         for entry in playlist_track_added_results:
             # Get the track_ids from entry["playlist_contents"]
@@ -829,8 +829,8 @@ def notifications():
                 track_timestamp = track["time"]
                 # We know that this track was added to the playlist at this specific update
                 if (
-                    min_block.timestamp < track_timestamp
-                    and track_timestamp <= max_block.timestamp
+                    min_block.timestamp.ToDatetime().second < track_timestamp
+                    and track_timestamp <= max_block.timestamp.ToDatetime().second
                 ):
                     track_ids.append(track_id)
                     track_added_to_playlist_notification = {
