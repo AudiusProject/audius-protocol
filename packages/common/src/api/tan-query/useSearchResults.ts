@@ -255,7 +255,7 @@ const useSearchQueryProps = (
           pageParam,
           pageSize,
           false,
-          { tracks: formattedTracks }
+          { items: formattedTracks }
         )
       )
       return {

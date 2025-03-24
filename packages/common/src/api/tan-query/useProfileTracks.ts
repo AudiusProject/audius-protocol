@@ -62,9 +62,10 @@ export const useProfileTracks = (
     queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
       if (!handle) return []
-
+      // If the @ is still at the beginning of the handle, trim it off
+      const handleNoAt = handle.startsWith('@') ? handle.substring(1) : handle
       const { data: tracks } = await sdk.full.users.getTracksByUserHandle({
-        handle,
+        handle: handleNoAt,
         userId: currentUserId ? Id.parse(currentUserId) : undefined,
         limit: pageSize,
         offset: pageParam,
@@ -86,16 +87,14 @@ export const useProfileTracks = (
           pageParam,
           pageSize,
           false,
-          { tracks: processedTracks, handle }
+          { items: processedTracks, handle }
         )
       )
 
       return processedTracks
     },
+    select: (data) => data?.pages.flat(),
     ...options,
-    select: (data) => {
-      return data?.pages?.flat()
-    },
     enabled: options?.enabled !== false && !!handle
   })
 

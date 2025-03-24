@@ -11,6 +11,7 @@ import { EntriesByKind } from '~/store/cache/types'
 
 import { getTrackQueryKey } from '../useTrack'
 
+import { formatTrackData } from './formatTrackData'
 import { primeUserDataInternal } from './primeUserData'
 
 /**
@@ -103,7 +104,7 @@ export const primeTrackData = ({
   forceReplace?: boolean
   skipQueryData?: boolean
 }) => {
-  const formattedTracks = tracks.map((track) => reformat(track))
+  const formattedTracks = tracks.map((track) => formatTrackData(track))
   const entries = primeTrackDataInternal({
     tracks: formattedTracks,
     queryClient,
