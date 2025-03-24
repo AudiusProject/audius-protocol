@@ -2,6 +2,7 @@ import logging
 from logging import LoggerAdapter
 from typing import List, Optional
 
+from eth_utils import to_bytes
 from sqlalchemy.orm.session import Session
 from web3 import Web3
 from web3.datastructures import AttributeDict
@@ -46,7 +47,7 @@ def index_core_entity_manager(
                     "_nonce": manage_entity_tx.nonce,
                 }
             ),
-            "transactionHash": web3.to_bytes(text=tx_hash),
+            "transactionHash": to_bytes(text=tx_hash),
         }
 
         # suppress typechecker as this is what tests do

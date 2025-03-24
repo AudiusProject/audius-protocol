@@ -2,6 +2,7 @@ import base64
 import json
 from typing import Optional
 
+from eth_account import Account
 from eth_account.messages import encode_defunct
 from flask import Response, request
 from flask_restx import Namespace, Resource, fields, inputs, reqparse
@@ -194,7 +195,6 @@ from src.queries.query_helpers import (
     SortDirection,
 )
 from src.queries.search_queries import SearchKind, search
-from src.utils import web3_provider
 from src.utils.auth_middleware import auth_middleware
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import decode_string_id, encode_int_id
@@ -2307,13 +2307,10 @@ class GetTokenVerification(Resource):
         base64_payload = token_parts[1]
         message = f"{base64_header}.{base64_payload}"
 
-        # 3. Recover message from signature
-        web3 = web3_provider.get_web3()
-
         wallet = None
         encoded_message = encode_defunct(text=message)
         try:
-            wallet = web3.eth.account.recover_message(
+            wallet = Account.recover_message(
                 encoded_message,
                 signature=signature,
             )

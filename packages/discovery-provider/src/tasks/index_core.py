@@ -144,8 +144,10 @@ def update_latest_indexed_block_redis(
 ):
     try:
         block = core.get_block(latest_indexed_block)
+
         block_number = block.height
         block_hash = block.blockhash
+
         redis.set(
             most_recent_indexed_block_redis_key,
             block_number,
@@ -156,6 +158,7 @@ def update_latest_indexed_block_redis(
             block_hash,
             ex=default_indexing_interval_seconds,
         )
+
     except Exception as e:
         logger.error(f"couldn't update latest redis block: {e}")
 

@@ -4,6 +4,7 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Dict, List, Set, Tuple, cast
 
+from eth_utils import to_hex
 from sqlalchemy import and_, func, literal_column, or_
 from sqlalchemy.orm.session import Session
 from web3.types import TxReceipt
@@ -108,7 +109,6 @@ from src.tasks.entity_manager.entities.user import (
     verify_user,
 )
 from src.tasks.entity_manager.utils import (
-    MANAGE_ENTITY_EVENT_TYPE,
     Action,
     EntitiesToFetchDict,
     EntityType,
@@ -123,7 +123,6 @@ from src.tasks.entity_manager.utils import (
 )
 from src.utils import helpers
 from src.utils.config import shared_config
-from src.utils.core import is_indexing_core_em
 from src.utils.indexing_errors import IndexingError
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.structured_logger import StructuredLogger
@@ -225,7 +224,7 @@ def entity_manager_update(
 
         # process in tx order and populate records_to_save
         for tx_receipt in entity_manager_txs:
-            txhash = update_task.web3.to_hex(tx_receipt["transactionHash"])
+            txhash = to_hex(tx_receipt["transactionHash"])
             entity_manager_event_tx = get_entity_manager_events_tx(
                 update_task, tx_receipt
             )
@@ -1577,11 +1576,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
 
 
 def get_entity_manager_events_tx(update_task, tx_receipt: TxReceipt):
-    if is_indexing_core_em():
-        return [tx_receipt]
-    return getattr(
-        update_task.entity_manager_contract.events, MANAGE_ENTITY_EVENT_TYPE
-    )().process_receipt(tx_receipt)
+    return [tx_receipt]
 
 
 def create_and_raise_indexing_error(err, redis, session):
