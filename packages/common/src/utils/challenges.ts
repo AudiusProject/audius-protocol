@@ -350,22 +350,6 @@ export const makeOptimisticChallengeSortComparator = (
     ChallengeName.PlayCount10000
   ]
 
-  const getSortKey = (challenge: OptimisticUserChallenge) => {
-    if (challenge.claimableAmount > 0) {
-      return 0
-    }
-    if (
-      isNewChallenge(challenge.challenge_id) &&
-      challenge.state !== 'disbursed'
-    ) {
-      return 1
-    }
-    if (challenge.state === 'disbursed') {
-      return 2
-    }
-    return 3
-  }
-
   return (id1, id2) => {
     const userChallenge1 = userChallenges[id1]
     const userChallenge2 = userChallenges[id2]
@@ -374,17 +358,49 @@ export const makeOptimisticChallengeSortComparator = (
       return 0
     }
 
-    const sortKey1 = getSortKey(userChallenge1)
-    const sortKey2 = getSortKey(userChallenge2)
-
-    if (sortKey1 < sortKey2) {
+    // Priority 1: Claimable challenges come first
+    if (
+      userChallenge1.claimableAmount > 0 &&
+      userChallenge2.claimableAmount <= 0
+    ) {
       return -1
     }
-    if (sortKey1 > sortKey2) {
+    if (
+      userChallenge2.claimableAmount > 0 &&
+      userChallenge1.claimableAmount <= 0
+    ) {
       return 1
     }
 
-    // If sort keys are equal, check if both are play count challenges
+    // Priority 2: New and not disbursed challenges come next
+    const isNewAndNotDisbursed = (userChallenge: OptimisticUserChallenge) =>
+      isNewChallenge(userChallenge.challenge_id) &&
+      userChallenge.state !== 'disbursed'
+
+    const isNew1 = isNewAndNotDisbursed(userChallenge1)
+    const isNew2 = isNewAndNotDisbursed(userChallenge2)
+    if (isNew1 && !isNew2) {
+      return -1
+    }
+    if (isNew2 && !isNew1) {
+      return 1
+    }
+
+    // Priority 3: Non-disbursed come before disbursed
+    if (
+      userChallenge1.state !== 'disbursed' &&
+      userChallenge2.state === 'disbursed'
+    ) {
+      return -1
+    }
+    if (
+      userChallenge2.state !== 'disbursed' &&
+      userChallenge1.state === 'disbursed'
+    ) {
+      return 1
+    }
+
+    // Order play count challenges
     if (isPlayCountChallenge(id1) && isPlayCountChallenge(id2)) {
       return playCountOrder.indexOf(id1) - playCountOrder.indexOf(id2)
     }
@@ -449,8 +465,6 @@ export const getClaimableChallengeSpecifiers = (
 const newChallengeIds: ChallengeRewardID[] = [
   ChallengeName.ListenStreakEndless,
   ChallengeName.FirstWeeklyComment,
-  ChallengeName.AudioMatchingSell,
-  ChallengeName.AudioMatchingBuy,
   ChallengeName.PlayCount250,
   ChallengeName.PlayCount1000,
   ChallengeName.PlayCount10000,
@@ -536,6 +550,10 @@ export const getChallengeStatusLabel = (
 
     case ChallengeName.TrackUpload:
       return `${challenge.current_step_count ?? 0}/3 Uploaded`
+
+    // Special-case as this is an infinite aggregate challenge (will always be in-progress)
+    case ChallengeName.Tastemaker:
+      return DEFAULT_STATUS_LABELS.AVAILABLE
 
     default:
       if (challenge.state === 'in_progress') {

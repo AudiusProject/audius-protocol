@@ -231,8 +231,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
 
     current_ts = int(time.time())  # Current UTC time in seconds
 
-    # Check if the latest block timestamp is older than 60 seconds
-    core_stuck = (current_ts - latest_block_ts) > 60
+    core_stuck = (current_ts - latest_block_ts) > 180
     if core_stuck:
         errors.append("no new blocks in at least a minute")
 

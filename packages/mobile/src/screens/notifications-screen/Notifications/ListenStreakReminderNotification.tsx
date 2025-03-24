@@ -5,8 +5,11 @@ import { ChallengeName, Name } from '@audius/common/models'
 import type { ListenStreakReminderNotification as ListenStreakReminderNotificationType } from '@audius/common/store'
 import { audioRewardsPageActions, modalsActions } from '@audius/common/store'
 import { make, useRecord } from 'common/store/analytics/actions'
-import { Text } from 'react-native'
+import { Image } from 'react-native'
 import { useDispatch } from 'react-redux'
+
+import { IconAudiusLogo } from '@audius/harmony-native'
+import Fire from 'app/assets/images/emojis/fire.png'
 
 import {
   NotificationTile,
@@ -17,10 +20,6 @@ import {
 
 const { setChallengeRewardsModalType } = audioRewardsPageActions
 const { setVisibility } = modalsActions
-
-export const IconStreakFire = () => {
-  return <Text style={{ fontSize: 32 }}>🔥</Text>
-}
 
 type ListenStreakReminderNotificationProps = {
   notification: ListenStreakReminderNotificationType
@@ -46,7 +45,10 @@ export const ListenStreakReminderNotification = (
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
-      <NotificationHeader icon={IconStreakFire}>
+      <NotificationHeader
+        icon={IconAudiusLogo}
+        emoji={<Image source={Fire} style={{ width: 32, height: 32 }} />}
+      >
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationText>{messages.body(notification.streak)}</NotificationText>
