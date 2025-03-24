@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react'
 
+import { useUser } from '@audius/common/api'
 import {
   CommentSectionProvider,
   useCurrentCommentSection,
@@ -16,23 +17,18 @@ import {
   type ID,
   type ReplyComment
 } from '@audius/common/models'
-import { cacheUsersSelectors } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 import { Portal } from '@gorhom/portal'
-import { useSelector } from 'react-redux'
 
 import { Hint, IconButton, IconKebabHorizontal } from '@audius/harmony-native'
 import { useToast } from 'app/hooks/useToast'
 import { track as trackEvent, make } from 'app/services/analytics'
-import type { AppState } from 'app/store'
 
 import {
   ActionDrawerWithoutRedux,
   type ActionDrawerRow
 } from '../action-drawer'
 import { ConfirmationDrawerWithoutRedux } from '../drawers'
-
-const { getUser } = cacheUsersSelectors
 
 type CommentOverflowMenuProps = {
   comment: Comment | ReplyComment
@@ -52,9 +48,9 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   const isMuted = 'isMuted' in comment ? comment.isMuted : false
   const isParentComment = 'replyCount' in comment
 
-  const userDisplayName = useSelector(
-    (state: AppState) => getUser(state, { id: Number(userId) })?.name
-  )
+  const { data: userDisplayName } = useUser(userId, {
+    select: (user) => user?.name
+  })
 
   const { toast } = useToast()
 

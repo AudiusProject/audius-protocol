@@ -1,8 +1,8 @@
+import { useUser } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
 import { ShareSource, FollowSource } from '@audius/common/models'
-import type { CommonState, OverflowActionCallbacks } from '@audius/common/store'
+import type { OverflowActionCallbacks } from '@audius/common/store'
 import {
-  cacheUsersSelectors,
   usersSocialActions,
   mobileOverflowMenuUISelectors,
   shareModalUIActions,
@@ -13,7 +13,6 @@ import { useDispatch, useSelector } from 'react-redux'
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { followUser, unfollowUser } = usersSocialActions
-const { getUser } = cacheUsersSelectors
 
 type Props = {
   render: (callbacks: OverflowActionCallbacks) => JSX.Element
@@ -23,7 +22,7 @@ const ProfileOverflowMenuDrawer = ({ render }: Props) => {
   const dispatch = useDispatch()
   const { id: modalId } = useSelector(getMobileOverflowModal)
   const id = modalId as ID
-  const user = useSelector((state: CommonState) => getUser(state, { id }))
+  const { data: user } = useUser(id)
 
   if (!user) {
     return null

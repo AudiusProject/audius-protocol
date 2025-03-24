@@ -1,10 +1,9 @@
 import { useCallback } from 'react'
 
+import { useUser } from '@audius/common/api'
 import { SquareSizes, type ID } from '@audius/common/models'
-import { cacheUsersSelectors } from '@audius/common/store'
 import { formatCount, pluralize } from '@audius/common/utils'
 import type { GestureResponderEvent } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import {
   Avatar,
@@ -19,8 +18,6 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { useProfilePicture } from '../image/UserImage'
 import { UserLink } from '../user-link'
 
-const { getUser } = cacheUsersSelectors
-
 const messages = {
   follower: 'Follower'
 }
@@ -32,7 +29,7 @@ type UserCardProps = PaperProps & {
 export const UserCard = (props: UserCardProps) => {
   const { userId, onPress, noNavigation, ...other } = props
 
-  const user = useSelector((state) => getUser(state, { id: userId }))
+  const { data: user } = useUser(userId)
   const navigation = useNavigation()
 
   const handlePress = useCallback(
@@ -50,7 +47,7 @@ export const UserCard = (props: UserCardProps) => {
     size: SquareSizes.SIZE_480_BY_480
   })
 
-  if (user === null || source === undefined) return null
+  if (!user || source === undefined) return null
 
   const { handle, follower_count } = user
 

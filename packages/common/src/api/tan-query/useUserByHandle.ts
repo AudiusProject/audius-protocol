@@ -31,7 +31,7 @@ export const useUserByHandle = (
       if (!handle) return null
       const sdk = await audiusSdk()
       const { data } = await sdk.full.users.getUserByHandle({
-        handle,
+        handle: handle.toLowerCase(),
         userId: OptionalId.parse(currentUserId)
       })
       const user = userMetadataListFromSDK(data)[0]

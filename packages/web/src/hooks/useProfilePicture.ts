@@ -1,12 +1,9 @@
+import { useUser } from '@audius/common/api'
 import { imageProfilePicEmpty as profilePicEmpty } from '@audius/common/assets'
 import { useImageSize } from '@audius/common/hooks'
 import { SquareSizes, ID } from '@audius/common/models'
-import { cacheUsersSelectors } from '@audius/common/store'
 
 import { preload } from 'utils/image'
-import { useSelector } from 'utils/reducer'
-
-const { getUser } = cacheUsersSelectors
 
 export const useProfilePicture = ({
   userId,
@@ -17,7 +14,7 @@ export const useProfilePicture = ({
   size: SquareSizes
   defaultImage?: string
 }) => {
-  const user = useSelector((state) => getUser(state, { id: userId }))
+  const { data: user } = useUser(userId)
 
   const profilePicture = user?.profile_picture
   const image = useImageSize({

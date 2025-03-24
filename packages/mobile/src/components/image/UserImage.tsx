@@ -1,16 +1,13 @@
+import { useUser } from '@audius/common/api'
 import { useImageSize } from '@audius/common/hooks'
 import type { SquareSizes, ID } from '@audius/common/models'
-import { cacheUsersSelectors } from '@audius/common/store'
 import { Image } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import { FastImage } from '@audius/harmony-native'
 import type { FastImageProps } from '@audius/harmony-native'
 import profilePicEmpty from 'app/assets/images/imageProfilePicEmpty2X.png'
 
 import { primitiveToImageSource } from './primitiveToImageSource'
-
-const { getUser } = cacheUsersSelectors
 
 type UseUserImageOptions = {
   userId?: ID
@@ -25,7 +22,7 @@ export const useProfilePicture = ({
   size: SquareSizes
   defaultImage?: string
 }) => {
-  const user = useSelector((state) => getUser(state, { id: userId }))
+  const { data: user } = useUser(userId)
 
   const profilePicture = user?.profile_picture
   const image = useImageSize({

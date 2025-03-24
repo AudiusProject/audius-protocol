@@ -1,6 +1,6 @@
+import { useCurrentUserId, useUser } from '@audius/common/api'
 import { imageProfilePicEmptyNew } from '@audius/common/assets'
 import { SquareSizes, ID } from '@audius/common/models'
-import { accountSelectors, cacheUsersSelectors } from '@audius/common/store'
 import { Maybe, Nullable } from '@audius/common/utils'
 import {
   Avatar as HarmonyAvatar,
@@ -10,11 +10,6 @@ import {
 import { UserLink } from 'components/link'
 import { MountPlacement } from 'components/types'
 import { useProfilePicture } from 'hooks/useProfilePicture'
-import { useSelector } from 'utils/reducer'
-
-const { getUserId } = accountSelectors
-
-const { getUser } = cacheUsersSelectors
 
 const messages = {
   goTo: 'Go to',
@@ -47,13 +42,16 @@ export const Avatar = (props: AvatarProps) => {
 
   const image = userId ? profileImage : imageProfilePicEmptyNew
 
-  const userName = useSelector((state) => {
-    const user = getUser(state, { id: userId })
-    const currentUserId = getUserId(state)
-    return user?.user_id === currentUserId ? messages.your : user?.name
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: user } = useUser(userId, {
+    select: (user) => ({
+      id: user?.user_id,
+      name: user?.name
+    })
   })
+  const displayName = user?.id === currentUserId ? messages.your : user?.name
 
-  const label = `${messages.goTo} ${userName} ${messages.profile}`
+  const label = `${messages.goTo} ${displayName} ${messages.profile}`
 
   if (ariaHidden) {
     return <HarmonyAvatar src={image} {...other} />

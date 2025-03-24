@@ -1,7 +1,6 @@
+import { useUser } from '@audius/common/api'
 import { useSelectTierInfo } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
-import { cacheUsersSelectors } from '@audius/common/store'
-import { useSelector } from 'react-redux'
 
 import type { TextProps } from '@audius/harmony-native'
 import {
@@ -14,8 +13,6 @@ import {
 
 import { IconAudioBadge } from './IconAudioBadge'
 
-const { getUser } = cacheUsersSelectors
-
 type UserDisplayProps = TextProps & {
   userId: ID
 }
@@ -23,9 +20,9 @@ type UserDisplayProps = TextProps & {
 export const UserDisplayName = (props: UserDisplayProps) => {
   const { userId, variant = 'title', size = 's', style, ...other } = props
   const { tier, isVerified } = useSelectTierInfo(userId)
-  const displayName = useSelector(
-    (state) => getUser(state, { id: userId })?.name
-  )
+  const { data: displayName } = useUser(userId, {
+    select: (user) => user?.name
+  })
   const { typography } = useTheme()
   const fontSize = typography.size[variantStylesMap[variant].fontSize[size]]
   const badgeSize = fontSize - 2

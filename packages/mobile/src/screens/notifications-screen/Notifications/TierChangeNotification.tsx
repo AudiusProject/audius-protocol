@@ -1,9 +1,8 @@
 import { useCallback } from 'react'
 
+import { useUser } from '@audius/common/api'
 import type { TierChangeNotification as TierChangeNotificationType } from '@audius/common/store'
-import { cacheUsersSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { useSelector } from 'react-redux'
 
 import {
   IconTokenBronze,
@@ -21,7 +20,6 @@ import {
   NotificationText,
   NotificationTwitterButton
 } from '../Notification'
-const { getUser } = cacheUsersSelectors
 
 const messages = {
   unlocked: 'Tier Unlocked',
@@ -72,7 +70,7 @@ export const TierChangeNotification = (props: TierChangeNotificationProps) => {
   const { notification } = props
   const { tier, userId } = notification
   const navigation = useNotificationNavigation()
-  const user = useSelector((state) => getUser(state, { id: userId }))
+  const { data: user } = useUser(userId)
   const { icon, label, amount, twitterIcon } = tierInfoMap[tier]
 
   const handlePress = useCallback(() => {
