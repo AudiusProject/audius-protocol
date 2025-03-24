@@ -12,8 +12,10 @@ import (
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/misc"
+	"github.com/AudiusProject/audiusd/pkg/core/gen/core_proto"
 	"github.com/ethereum/go-ethereum/crypto"
 	"golang.org/x/exp/slog"
+	"google.golang.org/protobuf/proto"
 )
 
 func StartPubkeyBackfill(config *config.DiscoveryConfig) {
@@ -28,10 +30,17 @@ func StartPubkeyBackfill(config *config.DiscoveryConfig) {
 		// space it out a bit
 		time.Sleep(time.Minute * 2)
 
-		ids := []int{}
-		err := db.Conn.Select(&ids, sql)
+		// visit core_transactions table
+		err := recoverPubkeysFromCoreTransactions()
 		if err != nil {
-			slog.Info("pubkey backfill: query error", err)
+			slog.Info("pubkey backfill: recoverPubkeysFromCoreTransactions failed", "err", err)
+		}
+
+		// fetch missing from peers
+		ids := []int{}
+		err = db.Conn.Select(&ids, sql)
+		if err != nil {
+			slog.Info("pubkey backfill: query error", "err", err)
 			break
 		}
 		for _, id := range ids {
@@ -45,6 +54,60 @@ func StartPubkeyBackfill(config *config.DiscoveryConfig) {
 
 	}
 
+}
+
+func recoverPubkeysFromCoreTransactions() error {
+	checkpointName := "user_pubkeys_core_transactions"
+	startBlock := 0
+	db.Conn.Get(&startBlock, "select last_checkpoint from indexing_checkpoints where tablename = $1", checkpointName)
+
+	var txs []CoreTransaction
+	err := db.Conn.Select(&txs, "SELECT block_id, tx_hash, transaction FROM core_transactions WHERE block_id > $1 ORDER BY block_id asc limit 10000", startBlock)
+	if err != nil {
+		return err
+	}
+
+	slog.Info("starting pubkey recover from core_transaction", "block", startBlock, "size", len(txs))
+
+	worked := 0
+	for _, ct := range txs {
+		startBlock = ct.BlockID
+
+		var signedTx core_proto.SignedTransaction
+		if err := proto.Unmarshal(ct.Transaction, &signedTx); err != nil {
+			slog.Info("proto unmarshal failed", "err", err)
+			continue
+		}
+
+		switch signedTx.GetTransaction().(type) {
+		case *core_proto.SignedTransaction_ManageEntity:
+			em := signedTx.GetManageEntity()
+			wallet, pubkey, err := recoverPubkeyFromCoreTx(em)
+			if err != nil {
+				slog.Info("failed to recover pubkey", "err", err, "block_id", ct.BlockID, "tx_hash", ct.TxHash)
+				continue
+			}
+
+			err = SetPubkeyForWallet(wallet, pubkey)
+			if err != nil {
+				slog.Info("SetPubkeyForWallet failed", "signer", em.Signer, "err", err)
+				continue
+			}
+			worked++
+		default:
+		}
+
+	}
+
+	slog.Info("Updating checkpoint", "name", checkpointName, "checkpoint", startBlock, "tried", len(txs), "ok", worked)
+
+	_, err = db.Conn.Exec(`
+		insert into indexing_checkpoints values ($1, $2)
+		on conflict (tablename) do update set last_checkpoint = excluded.last_checkpoint
+		`,
+		checkpointName, startBlock)
+
+	return err
 }
 
 func GetPubkey(userId int) (string, error) {
@@ -62,12 +125,10 @@ func SetPubkeyForWallet(wallet string, pubkey *ecdsa.PublicKey) error {
 	var userId int
 	err := db.Conn.Get(&userId, `select user_id from users where wallet = lower($1)`, wallet)
 	if err != nil {
-		slog.Info("failed to find user for wallet", "wallet", wallet)
-		return err
+		return errors.New("failed to find user_id for wallet: " + wallet)
 	}
 	if userId == 0 {
-		slog.Info("failed to find user for wallet", "wallet", wallet)
-		return errors.New("failed to find user_id for wallet")
+		return errors.New("failed to find user_id for wallet: " + wallet)
 	}
 
 	pubkeyBytes := crypto.FromECDSAPub(pubkey)
