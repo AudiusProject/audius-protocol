@@ -1,14 +1,11 @@
 import { MouseEvent, Ref, forwardRef, useCallback } from 'react'
 
+import { useCollection, useCurrentUserId } from '@audius/common/api'
 import {
   ID,
   SquareSizes,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import {
-  accountSelectors,
-  cacheCollectionsSelectors
-} from '@audius/common/store'
 import { formatCount, formatReleaseDate } from '@audius/common/utils'
 import { Flex, Skeleton, Text } from '@audius/harmony'
 import IconHeart from '@audius/harmony/src/assets/icons/Heart.svg'
@@ -18,13 +15,9 @@ import { useLinkClickHandler } from 'react-router-dom-v5-compat'
 import { Card, CardProps, CardFooter, CardContent } from 'components/card'
 import { TextLink, UserLink } from 'components/link'
 import { LockedStatusBadge } from 'components/locked-status-badge'
-import { useSelector } from 'utils/reducer'
 
 import { CollectionDogEar } from './CollectionDogEar'
 import { CollectionImage } from './CollectionImage'
-
-const { getCollection } = cacheCollectionsSelectors
-const { getUserId } = accountSelectors
 
 const messages = {
   repost: 'Reposts',
@@ -60,8 +53,8 @@ export const CollectionCard = forwardRef(
       ...other
     } = props
 
-    const collection = useSelector((state) => getCollection(state, { id }))
-    const accountId = useSelector(getUserId)
+    const { data: currentUserId } = useCurrentUserId()
+    const { data: collection } = useCollection(id)
 
     const handleNavigate = useLinkClickHandler<HTMLDivElement>(
       collection?.permalink ?? ''
@@ -106,7 +99,7 @@ export const CollectionCard = forwardRef(
       release_date: releaseDate
     } = collection
 
-    const isOwner = accountId === playlist_owner_id
+    const isOwner = currentUserId === playlist_owner_id
     const isPurchase = isContentUSDCPurchaseGated(stream_conditions)
 
     return (

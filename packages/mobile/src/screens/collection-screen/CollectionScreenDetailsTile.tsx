@@ -1,6 +1,10 @@
 import { useCallback, useEffect } from 'react'
 
-import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
+import {
+  useCollection,
+  useGetCurrentUserId,
+  useGetPlaylistById
+} from '@audius/common/api'
 import {
   Name,
   PlaybackSource,
@@ -104,12 +108,13 @@ const selectIsQueued = createSelector(
 const useRefetchLineupOnTrackAdd = (
   collectionId: ID | SmartCollectionVariant
 ) => {
-  const trackCount = useSelector((state) =>
-    typeof collectionId !== 'number'
-      ? 0
-      : getCollection(state, { id: collectionId })?.playlist_contents.track_ids
-          .length
-  )
+  const numericCollectionId =
+    typeof collectionId === 'number' ? collectionId : undefined
+  const { data: collectionTrackCount } = useCollection(numericCollectionId, {
+    select: (collection) => collection.playlist_contents.track_ids.length
+  })
+
+  const trackCount = collectionId ? collectionTrackCount : 0
 
   const previousTrackCount = usePrevious(trackCount)
   const dispatch = useDispatch()

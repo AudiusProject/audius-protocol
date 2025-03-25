@@ -1,18 +1,15 @@
 import { useCallback } from 'react'
 
-import { FollowSource, Collection, User } from '@audius/common/models'
-import {
-  collectionPageSelectors,
-  usersSocialActions,
-  CommonState
-} from '@audius/common/store'
+import { useCollection, useUser } from '@audius/common/api'
+import { FollowSource } from '@audius/common/models'
+import { usersSocialActions } from '@audius/common/store'
 import { IconButton, IconKebabHorizontal } from '@audius/harmony'
-import { useDispatch, useSelector } from 'react-redux'
+import { pick } from 'lodash'
+import { useDispatch } from 'react-redux'
 
 import { CollectionMenuProps } from 'components/menu/CollectionMenu'
 import Menu from 'components/menu/Menu'
 
-const { getCollection, getUser } = collectionPageSelectors
 const { followUser, unfollowUser } = usersSocialActions
 
 const messages = {
@@ -29,6 +26,20 @@ type OverflowMenuButtonProps = {
 export const OverflowMenuButton = (props: OverflowMenuButtonProps) => {
   const { collectionId, isOwner } = props
   const dispatch = useDispatch()
+  const { data: partialCollection } = useCollection(collectionId, {
+    select: (collection) =>
+      pick(
+        collection,
+        'is_album',
+        'playlist_name',
+        'is_private',
+        'is_stream_gated',
+        'playlist_owner_id',
+        'has_current_user_saved',
+        'permalink',
+        'access'
+      )
+  })
   const {
     is_album,
     playlist_name,
@@ -38,19 +49,16 @@ export const OverflowMenuButton = (props: OverflowMenuButtonProps) => {
     has_current_user_saved,
     permalink,
     access
-  } =
-    (useSelector((state: CommonState) =>
-      getCollection(state, { id: collectionId })
-    ) as Collection) ?? {}
+  } = partialCollection ?? {}
 
-  const owner = useSelector(getUser) as User
+  const { data: owner } = useUser(playlist_owner_id)
   const isFollowing = owner?.does_current_user_follow
   const hasStreamAccess = access?.stream
 
   const handleFollow = useCallback(() => {
-    if (isFollowing) {
+    if (isFollowing && playlist_owner_id) {
       dispatch(unfollowUser(playlist_owner_id, FollowSource.COLLECTION_PAGE))
-    } else {
+    } else if (playlist_owner_id) {
       dispatch(followUser(playlist_owner_id, FollowSource.COLLECTION_PAGE))
     }
   }, [isFollowing, dispatch, playlist_owner_id])

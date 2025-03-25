@@ -1,11 +1,8 @@
+import { useCollection } from '@audius/common/api'
 import { ID } from '@audius/common/models'
-import { cacheCollectionsSelectors } from '@audius/common/store'
-
-import { useSelector } from 'utils/reducer'
+import { pick } from 'lodash'
 
 import { TextLink, TextLinkProps } from './TextLink'
-
-const { getCollection } = cacheCollectionsSelectors
 
 type CollectionLinkProps = Omit<TextLinkProps, 'to'> & {
   collectionId: ID
@@ -15,14 +12,15 @@ export const CollectionLink = ({
   collectionId,
   ...props
 }: CollectionLinkProps) => {
-  const collection = useSelector((state) =>
-    getCollection(state, { id: collectionId })
-  )
-  if (!collection) return null
+  const { data: partialCollection } = useCollection(collectionId, {
+    select: (collection) => pick(collection, 'playlist_name', 'permalink')
+  })
+  const { playlist_name, permalink } = partialCollection ?? {}
+  if (!partialCollection) return null
 
   return (
-    <TextLink to={collection.permalink} {...props}>
-      {collection.playlist_name}
+    <TextLink to={permalink} {...props}>
+      {playlist_name}
     </TextLink>
   )
 }

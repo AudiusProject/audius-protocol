@@ -1,12 +1,8 @@
 import { useState } from 'react'
 
+import { useCollection, useUser } from '@audius/common/api'
 import { ID, SquareSizes } from '@audius/common/models'
-import {
-  cacheCollectionsSelectors,
-  cacheUsersSelectors
-} from '@audius/common/store'
 import { Flex } from '@audius/harmony'
-import { useSelector } from 'react-redux'
 
 import { CollectionImage } from 'components/collection/CollectionImage'
 import { CollectionLink } from 'components/link/CollectionLink'
@@ -15,7 +11,6 @@ import PerspectiveCard from 'components/perspective-card/PerspectiveCard'
 import { FavoriteStats } from 'components/stats/FavoriteStats'
 import { RepostStats } from 'components/stats/RepostStats'
 import { UserListEntityType } from 'store/application/ui/userListModal/types'
-import { AppState } from 'store/types'
 
 type CollectionArtCardProps = {
   id: ID
@@ -24,16 +19,12 @@ type CollectionArtCardProps = {
 export const CollectionArtCard = ({ id }: CollectionArtCardProps) => {
   const [isPerspectiveDisabled, setIsPerspectiveDisabled] = useState(false)
 
-  const collection = useSelector((state: AppState) =>
-    cacheCollectionsSelectors.getCollection(state, { id })
-  )
-  const user = useSelector((state: AppState) =>
-    cacheUsersSelectors.getUserFromCollection(state, { id })
-  )
+  const { data: partialCollection } = useCollection(id)
+  const { data: user } = useUser(partialCollection?.playlist_owner_id)
 
-  if (!collection || !user) return null
+  if (!partialCollection || !user) return null
 
-  const { playlist_id, playlist_name } = collection
+  const { playlist_id, playlist_name } = partialCollection ?? {}
   const { user_id } = user
 
   return (

@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
+import { useCollection, useUser } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,
@@ -16,7 +17,6 @@ import type {
 } from '@audius/common/models'
 import {
   accountSelectors,
-  collectionPageSelectors,
   collectionsSocialActions,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
@@ -30,7 +30,6 @@ import {
   useEarlyReleaseConfirmationModal
 } from '@audius/common/store'
 import { encodeUrlName, removeNullable } from '@audius/common/utils'
-import type { Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Divider, type ImageProps } from '@audius/harmony-native'
@@ -61,7 +60,6 @@ const {
   undoRepostCollection,
   unsaveCollection
 } = collectionsSocialActions
-const { getCollection, getUser } = collectionPageSelectors
 const getUserId = accountSelectors.getUserId
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -79,13 +77,8 @@ export const CollectionScreen = () => {
   // params is incorrectly typed and can sometimes be undefined
   const { id = null, searchCollection, collectionType } = params ?? {}
 
-  const cachedCollection = useSelector((state) =>
-    getCollection(state, { id })
-  ) as Nullable<Collection>
-
-  const cachedUser = useSelector((state) =>
-    getUser(state, { id: cachedCollection?.playlist_owner_id })
-  )
+  const { data: cachedCollection } = useCollection(id)
+  const { data: cachedUser } = useUser(cachedCollection?.playlist_owner_id)
 
   const collection = cachedCollection ?? searchCollection
   const user = cachedUser ?? searchCollection?.user

@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
+import { useCollection, useUser } from '@audius/common/api'
 import { useProxySelector } from '@audius/common/hooks'
 import {
   ShareSource,
@@ -13,7 +14,6 @@ import type { Collection, Track, User } from '@audius/common/models'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
-  cacheUsersSelectors,
   collectionsSocialActions,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
@@ -44,24 +44,20 @@ const {
   undoRepostCollection,
   unsaveCollection
 } = collectionsSocialActions
-const { getUserFromCollection } = cacheUsersSelectors
-const { getCollection, getTracksFromCollection } = cacheCollectionsSelectors
+const { getTracksFromCollection } = cacheCollectionsSelectors
 const getUserId = accountSelectors.getUserId
 
 export const CollectionTile = (props: LineupItemProps) => {
   const {
     uid,
+    id,
     collection: collectionOverride,
     tracks: tracksOverride,
     source = LineupTileSource.LINEUP_COLLECTION
   } = props
 
-  const collection = useProxySelector(
-    (state) => {
-      return collectionOverride ?? getCollection(state, { uid })
-    },
-    [collectionOverride, uid]
-  )
+  const { data: cachedCollection } = useCollection(id)
+  const collection = collectionOverride ?? cachedCollection
 
   const tracks = useProxySelector(
     (state) => {
@@ -70,10 +66,7 @@ export const CollectionTile = (props: LineupItemProps) => {
     [tracksOverride, uid]
   )
 
-  const user = useProxySelector(
-    (state) => getUserFromCollection(state, { uid }),
-    [uid]
-  )
+  const { data: user } = useUser(collection?.playlist_owner_id)
 
   if (!collection || !tracks || !user) {
     console.warn(

@@ -1,22 +1,19 @@
 import { useCallback } from 'react'
 
+import { useCollection } from '@audius/common/api'
 import { ID } from '@audius/common/models'
-import {
-  cacheCollectionsActions,
-  cacheCollectionsSelectors
-} from '@audius/common/store'
+import { cacheCollectionsActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
+import { pick } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { useLastLocation } from 'react-router-last-location'
 import { SetRequired } from 'type-fest'
 
-import { useSelector } from 'common/hooks/useSelector'
 import { DeleteConfirmationModal } from 'components/delete-confirmation'
 import { DeleteConfirmationModalProps } from 'components/delete-confirmation/DeleteConfirmationModal'
 
 const { FEED_PAGE } = route
-const { getCollection } = cacheCollectionsSelectors
 const { deletePlaylist } = cacheCollectionsActions
 
 const messages = {
@@ -45,10 +42,10 @@ export const DeleteCollectionConfirmationModal = (
   const history = useHistory()
   const lastLocation = useLastLocation()
   const { collectionId, visible, onCancel, onDelete } = props
-  const collection = useSelector((state) =>
-    getCollection(state, { id: collectionId })
-  )
-  const { is_album, permalink } = collection ?? {}
+  const { data: partialCollection } = useCollection(collectionId, {
+    select: (collection) => pick(collection, 'is_album', 'permalink')
+  })
+  const { is_album, permalink } = partialCollection ?? {}
   const dispatch = useDispatch()
 
   const handleDelete = useCallback(() => {
