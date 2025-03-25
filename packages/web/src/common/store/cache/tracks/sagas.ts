@@ -9,7 +9,6 @@ import {
   Track,
   Collection,
   ID,
-  Remix,
   StemUploadWithFile
 } from '@audius/common/models'
 import {
@@ -24,7 +23,8 @@ import {
   TrackMetadataForUpload,
   stemsUploadActions,
   stemsUploadSelectors,
-  getSDK
+  getSDK,
+  TrackWithRemix
 } from '@audius/common/store'
 import {
   formatMusicalKey,
@@ -80,8 +80,10 @@ function* watchAdd() {
   )
 }
 
-type TrackWithRemix = Pick<Track, 'track_id' | 'title'> & {
-  remix_of: { tracks: Pick<Remix, 'parent_track_id'>[] } | null
+function* trackNewRemixEventAsync(
+  action: ReturnType<typeof trackActions.trackRemixEvent>
+) {
+  yield* call(trackNewRemixEvent, action.track)
 }
 
 export function* trackNewRemixEvent(track: TrackWithRemix) {
@@ -299,8 +301,12 @@ function* watchEditTrack() {
   yield* takeEvery(trackActions.EDIT_TRACK, editTrackAsync)
 }
 
+function* watchTrackRemixEvent() {
+  yield* takeEvery(trackActions.TRACK_REMIX_EVENT, trackNewRemixEventAsync)
+}
+
 const sagas = () => {
-  return [watchAdd, watchEditTrack]
+  return [watchAdd, watchEditTrack, watchTrackRemixEvent]
 }
 
 export default sagas
