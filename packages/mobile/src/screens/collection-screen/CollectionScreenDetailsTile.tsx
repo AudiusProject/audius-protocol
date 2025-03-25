@@ -77,7 +77,7 @@ import { useFetchCollectionLineup } from './useFetchCollectionLineup'
 const { getPlaying, getPreviewing, getUid, getCurrentTrack } = playerSelectors
 const { getIsReachable } = reachabilitySelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
-const { getCollection, getCollectionTracks } = cacheCollectionsSelectors
+const { getCollectionTracks } = cacheCollectionsSelectors
 const { getTracks } = cacheTracksSelectors
 const { resetCollection, fetchCollection } = collectionPageActions
 

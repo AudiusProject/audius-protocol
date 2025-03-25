@@ -405,7 +405,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
             </View>
             <Text numberOfLines={1} style={styles.artistName}>
               {name}
-              <UserBadges user={user} badgeSize={12} hideName />
+              <UserBadges user={user!} badgeSize={12} hideName />
             </Text>
           </View>
           {isUnlisted ? (
