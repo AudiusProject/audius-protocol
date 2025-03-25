@@ -1,4 +1,3 @@
-from flask import Blueprint
 from flask_restx import Namespace, Resource, fields
 
 from src.api.v1.helpers import (
@@ -14,7 +13,6 @@ from src.queries.get_unclaimed_id import get_unclaimed_id
 from src.utils.redis_cache import cache
 
 ns = Namespace("events", description="Events related operations")
-bp = Blueprint("events", __name__)
 
 events_parser = pagination_with_current_user_parser.copy()
 events_parser.add_argument(

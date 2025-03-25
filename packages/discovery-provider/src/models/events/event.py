@@ -10,6 +10,7 @@ from sqlalchemy import (
     String,
     text,
 )
+from sqlalchemy.dialects.postgresql import JSONB
 
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
@@ -43,7 +44,8 @@ class Event(Base, RepresentableMixin):
     event_type = Column(Enum(EventType), nullable=False, index=True)
     user_id = Column(Integer, nullable=False)
     entity_type = Column(Enum(EventEntityType), nullable=True, index=True)
-    entity_id = Column(Integer, nullable=True)
+    entity_id = Column(Integer, nullable=True, index=True)
+    event_data = Column(JSONB(), nullable=False)
     is_deleted = Column(Boolean, default=False)
     end_date = Column(DateTime, nullable=True)
     created_at = Column(

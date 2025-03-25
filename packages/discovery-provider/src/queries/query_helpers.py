@@ -474,6 +474,7 @@ def populate_track_metadata(
             "user_id": event.user_id,
             "entity_type": event.entity_type,
             "entity_id": event.entity_id,
+            "event_data": event.event_data,
             "is_deleted": event.is_deleted,
             "end_date": event.end_date,
             "created_at": event.created_at,

@@ -282,6 +282,7 @@ event_metadata_format = {
     "entity_id": None,
     "is_deleted": None,
     "end_date": None,
+    "event_data": None,
 }
 
 

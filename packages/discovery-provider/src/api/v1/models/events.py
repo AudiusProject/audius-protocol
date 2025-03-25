@@ -17,5 +17,6 @@ event_model = ns.model(
         "is_deleted": fields.Integer(required=False),
         "created_at": fields.DateTime(required=True),
         "updated_at": fields.DateTime(required=True),
+        "event_data": fields.Raw(required=True),
     },
 )

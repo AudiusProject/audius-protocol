@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS events (
     entity_id INTEGER DEFAULT NULL,
     end_date TIMESTAMP DEFAULT NULL,
     is_deleted BOOLEAN DEFAULT FALSE,
-    metadata JSONB DEFAULT NULL,
+    event_data JSONB DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     txhash TEXT NOT NULL,
@@ -34,5 +34,8 @@ CREATE INDEX IF NOT EXISTS idx_events_event_type ON public.events USING btree (e
 
 -- Add index for event entity type for efficient lookups
 CREATE INDEX IF NOT EXISTS idx_events_entity_type ON public.events USING btree (entity_type);
+
+-- Add index for event entity type for efficient lookups
+CREATE INDEX IF NOT EXISTS idx_events_entity_id ON public.events USING btree (entity_id);
 
 commit; 

@@ -9,7 +9,6 @@ from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.users.aggregate_user import AggregateUser
 from src.tasks.entity_manager.utils import (
     COMMENT_ID_OFFSET,
-    EVENT_ID_OFFSET,
     PLAYLIST_ID_OFFSET,
     TRACK_ID_OFFSET,
     USER_ID_OFFSET,
@@ -70,7 +69,7 @@ def get_unclaimed_id(type):
                 ).first()
 
             if type == "event":
-                random_id = random.randint(EVENT_ID_OFFSET, MAX_POSTGRES_ID)
+                random_id = random.randint(1, MAX_POSTGRES_ID)
 
                 is_claimed = (
                     session.query(Event.event_id).filter(Event.event_id == random_id)

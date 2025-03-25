@@ -74,6 +74,12 @@ export interface Event {
      * @memberof Event
      */
     updatedAt: Date;
+    /**
+     * 
+     * @type {object}
+     * @memberof Event
+     */
+    eventData: object;
 }
 
 
@@ -108,6 +114,7 @@ export function instanceOfEvent(value: object): value is Event {
     isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
     isInstance = isInstance && "createdAt" in value && value["createdAt"] !== undefined;
     isInstance = isInstance && "updatedAt" in value && value["updatedAt"] !== undefined;
+    isInstance = isInstance && "eventData" in value && value["eventData"] !== undefined;
 
     return isInstance;
 }
@@ -131,6 +138,7 @@ export function EventFromJSONTyped(json: any, ignoreDiscriminator: boolean): Eve
         'isDeleted': !exists(json, 'is_deleted') ? undefined : json['is_deleted'],
         'createdAt': (new Date(json['created_at'])),
         'updatedAt': (new Date(json['updated_at'])),
+        'eventData': json['event_data'],
     };
 }
 
@@ -152,6 +160,7 @@ export function EventToJSON(value?: Event | null): any {
         'is_deleted': value.isDeleted,
         'created_at': (value.createdAt.toISOString()),
         'updated_at': (value.updatedAt.toISOString()),
+        'event_data': value.eventData,
     };
 }
 

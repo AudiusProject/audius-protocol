@@ -7,20 +7,20 @@ import {
   Action
 } from '../../services/EntityManager/types'
 import { decodeHashId } from '../../utils/hashId'
+import { parseParams } from '../../utils/parseParams'
 import {
   Configuration,
   EventsApi as GeneratedEventsApi
 } from '../generated/default'
 
-type EventMetadata = {
-  userId: number
-  eventId: number
-  eventType?: string
-  entityType?: string
-  entityId?: number
-  isDeleted?: boolean
-  endDate?: string // ISO format date string
-}
+import {
+  CreateEventRequest,
+  CreateEventSchema,
+  UpdateEventRequest,
+  UpdateEventSchema,
+  DeleteEventRequest,
+  DeleteEventSchema
+} from './types'
 
 export class EventsApi extends GeneratedEventsApi {
   constructor(
@@ -41,16 +41,25 @@ export class EventsApi extends GeneratedEventsApi {
     return decodeHashId(unclaimedId)!
   }
 
-  async createEvent(metadata: EventMetadata) {
+  /**
+   * Create an event
+   */
+  async createEvent(params: CreateEventRequest) {
+    // Parse inputs
+    const parsedParameters = await parseParams(
+      'createEvent',
+      CreateEventSchema
+    )(params)
+
     const {
       userId,
       eventId,
       eventType,
       entityType,
       entityId: eventEntityId,
-      isDeleted,
-      endDate
-    } = metadata
+      endDate,
+      eventData
+    } = parsedParameters
     const entityId = eventId ?? (await this.generateEventId())
 
     const response = await this.entityManager.manageEntity({
@@ -64,8 +73,8 @@ export class EventsApi extends GeneratedEventsApi {
           eventType,
           entityType,
           entityId: eventEntityId,
-          isDeleted,
-          endDate
+          endDate,
+          eventData
         })
       })
     })
@@ -73,8 +82,17 @@ export class EventsApi extends GeneratedEventsApi {
     return response
   }
 
-  async updateEvent(metadata: EventMetadata) {
-    const { userId, eventId, isDeleted, endDate } = metadata
+  /**
+   * Update an event
+   */
+  async updateEvent(params: UpdateEventRequest) {
+    // Parse inputs
+    const parsedParameters = await parseParams(
+      'updateEvent',
+      UpdateEventSchema
+    )(params)
+
+    const { userId, eventId, endDate, eventData } = parsedParameters
     const response = await this.entityManager.manageEntity({
       entityId: eventId,
       userId,
@@ -82,18 +100,24 @@ export class EventsApi extends GeneratedEventsApi {
       action: Action.UPDATE,
       metadata: JSON.stringify({
         cid: '',
-        data: snakecaseKeys({
-          isDeleted,
-          endDate
-        })
+        data: snakecaseKeys({ endDate, eventData })
       })
     })
     this.logger.info('Successfully updated the event')
     return response
   }
 
-  async deleteEvent(metadata: EventMetadata) {
-    const { userId, eventId } = metadata
+  /**
+   * Delete an event
+   */
+  async deleteEvent(params: DeleteEventRequest) {
+    // Parse inputs
+    const parsedParameters = await parseParams(
+      'deleteEvent',
+      DeleteEventSchema
+    )(params)
+
+    const { userId, eventId } = parsedParameters
 
     const response = await this.entityManager.manageEntity({
       entityId: eventId,
