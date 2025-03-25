@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAudiusQueryContext } from '~/audius-query'
 import { type Chain } from '~/models'
 
-import { QUERY_KEYS } from './queryKeys'
+import { getConnectedWalletsQueryKey } from './useConnectedWallets'
 import { useCurrentUserId } from './useCurrentUserId'
 
 export type RemoveConnectedWalletParams = {
@@ -26,7 +26,7 @@ export const useRemoveConnectedWallet = () => {
     },
     onSettled: async () => {
       return await queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.connectedWallets]
+        queryKey: getConnectedWalletsQueryKey({ userId: currentUserId })
       })
     },
     onError: (error) => {

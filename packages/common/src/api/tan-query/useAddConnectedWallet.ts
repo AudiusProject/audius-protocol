@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAudiusQueryContext } from '~/audius-query'
 import { type Chain } from '~/models'
 
-import { QUERY_KEYS } from './queryKeys'
+import { getConnectedWalletsQueryKey } from './useConnectedWallets'
 import { useCurrentUserId } from './useCurrentUserId'
 
 type ConnectedWallet = { address: string; chain: Chain; isPending?: boolean }
@@ -31,7 +31,7 @@ export const useAddConnectedWallet = () => {
       // Cache old state
       const previousAssociatedWallets = queryClient.getQueryData<
         ConnectedWallet[]
-      >([QUERY_KEYS.connectedWallets])
+      >(getConnectedWalletsQueryKey({ userId: currentUserId }))
 
       if (!previousAssociatedWallets) {
         return { previousAssociatedWallets: [] }
@@ -39,7 +39,7 @@ export const useAddConnectedWallet = () => {
 
       // Optimistically add the new wallet
       queryClient.setQueryData(
-        [QUERY_KEYS.connectedWallets],
+        getConnectedWalletsQueryKey({ userId: currentUserId }),
         (old: ConnectedWallet[]) => [
           ...old,
           { ...params.wallet, isPending: true }
@@ -50,12 +50,12 @@ export const useAddConnectedWallet = () => {
     },
     onSettled: async () => {
       return await queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.connectedWallets]
+        queryKey: getConnectedWalletsQueryKey({ userId: currentUserId })
       })
     },
     onError: (error, _newWallet, context) => {
       queryClient.setQueryData(
-        [QUERY_KEYS.connectedWallets],
+        getConnectedWalletsQueryKey({ userId: currentUserId }),
         context?.previousAssociatedWallets
       )
       reportToSentry({
