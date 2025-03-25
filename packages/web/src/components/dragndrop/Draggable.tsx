@@ -1,6 +1,5 @@
 import { DragEvent, ReactNode, useCallback } from 'react'
 
-import { useTrack, useUser } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { Slot } from '@radix-ui/react-slot'
 import cn from 'classnames'
@@ -47,9 +46,6 @@ export const Draggable = (props: DraggableProps) => {
     ...other
   } = props
   const dispatch = useDispatch()
-  const { data: track } = useTrack(id)
-  const { data: user } = useUser(track?.owner_id)
-  const isOwner = 
 
   const handleDragStart = useCallback(
     (e: DragEvent) => {

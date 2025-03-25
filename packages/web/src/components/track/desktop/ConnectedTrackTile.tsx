@@ -35,6 +35,7 @@ import { TrackTileSize } from '../types'
 
 import styles from './ConnectedTrackTile.module.css'
 import TrackTile from './TrackTile'
+
 const { getUid, getPlaying, getBuffering } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { repostTrack, undoRepostTrack } = tracksSocialActions
@@ -74,8 +75,10 @@ const ConnectedTrackTile = ({
   onClick
 }: ConnectedTrackTileProps) => {
   const dispatch = useDispatch()
-  const { data: track } = useTrack(id)
-  const { data: user } = useUser(track?.owner_id)
+  const { data: track, isPending } = useTrack(id)
+  const { data: user } = useUser(track?.owner_id, {
+    enabled: track?.owner_id !== undefined
+  })
   const playingUid = useSelector(getUid)
   const isBuffering = useSelector(getBuffering)
   const isPlaying = useSelector(getPlaying)
@@ -142,7 +145,7 @@ const ConnectedTrackTile = ({
 
   const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(trackWithFallback)
-  const loading = isLoading || isFetchingNFTAccess
+  const loading = isLoading || isFetchingNFTAccess || isPending
 
   const [, setLockedContentVisibility] = useModalState('LockedContent')
   const menuRef = useRef<HTMLDivElement>(null)

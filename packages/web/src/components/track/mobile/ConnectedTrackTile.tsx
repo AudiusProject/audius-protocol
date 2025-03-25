@@ -1,11 +1,10 @@
 import { memo } from 'react'
 
+import { useTrack, useUser } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import { ShareSource, RepostSource, ID } from '@audius/common/models'
 import {
   accountSelectors,
-  cacheTracksSelectors,
-  cacheUsersSelectors,
   tracksSocialActions,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
@@ -16,8 +15,7 @@ import {
 } from '@audius/common/store'
 import { Genre } from '@audius/common/utils'
 import { Box, IconButton, IconKebabHorizontal } from '@audius/harmony'
-import { connect } from 'react-redux'
-import { Dispatch } from 'redux'
+import { useSelector, useDispatch } from 'react-redux'
 
 import Menu from 'components/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
@@ -28,18 +26,16 @@ import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 import { getTrackWithFallback, getUserWithFallback } from '../helpers'
 
 import TrackTile from './TrackTile'
+
 const { getUid, getPlaying, getBuffering } = playerSelectors
 const { getTheme } = themeSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
-const { getTrack } = cacheTracksSelectors
-const { getUserFromTrack } = cacheUsersSelectors
 const { repostTrack, undoRepostTrack } = tracksSocialActions
 const getUserId = accountSelectors.getUserId
 
-type OwnProps = Omit<
+type ConnectedTrackTileProps = Omit<
   TrackTileProps,
-  | 'id'
   | 'title'
   | 'userId'
   | 'genre'
@@ -57,30 +53,16 @@ type OwnProps = Omit<
   | 'isPlaying'
 >
 
-type ConnectedTrackTileProps = OwnProps &
-  ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps>
-
 const ConnectedTrackTile = ({
   uid,
+  id,
   index,
   size,
-  track,
-  user,
   ordered,
   trackTileStyles,
   togglePlay,
-  isBuffering,
-  isPlaying,
-  playingUid,
   isLoading,
   hasLoaded,
-  currentUserId,
-  repostTrack,
-  unrepostTrack,
-  shareTrack,
-  clickOverflow,
-  darkMode,
   isTrending,
   isActive,
   variant,
@@ -88,6 +70,46 @@ const ConnectedTrackTile = ({
   isFeed = false,
   source
 }: ConnectedTrackTileProps) => {
+  const dispatch = useDispatch()
+
+  // Move mapStateToProps selectors into component using useSelector
+  const { data: track } = useTrack(id)
+  const { data: user } = useUser(track?.owner_id, {
+    enabled: !!track?.owner_id
+  })
+  const playingUid = useSelector(getUid)
+  const isBuffering = useSelector(getBuffering)
+  const isPlaying = useSelector(getPlaying)
+  const currentUserId = useSelector(getUserId)
+  const darkMode = useSelector((state: AppState) =>
+    shouldShowDark(getTheme(state))
+  )
+
+  // Move mapDispatchToProps functions into component
+  const shareTrack = (trackId: ID) => {
+    dispatch(
+      requestOpenShareModal({
+        type: 'track',
+        trackId,
+        source: ShareSource.TILE
+      })
+    )
+  }
+
+  const handleRepostTrack = (trackId: ID, isFeed: boolean) => {
+    dispatch(repostTrack(trackId, RepostSource.TILE, isFeed))
+  }
+
+  const handleUnrepostTrack = (trackId: ID) => {
+    dispatch(undoRepostTrack(trackId, RepostSource.TILE))
+  }
+
+  const clickOverflow = (trackId: ID, overflowActions: OverflowAction[]) => {
+    dispatch(
+      open({ source: OverflowSource.TRACKS, id: trackId, overflowActions })
+    )
+  }
+
   const trackWithFallback = getTrackWithFallback(track)
   const {
     is_delete,
@@ -127,9 +149,9 @@ const ConnectedTrackTile = ({
 
   const toggleRepost = (trackId: ID) => {
     if (has_current_user_reposted) {
-      unrepostTrack(trackId)
+      handleUnrepostTrack(trackId)
     } else {
-      repostTrack(trackId, isFeed)
+      handleRepostTrack(trackId, isFeed)
     }
   }
 
@@ -279,41 +301,4 @@ const ConnectedTrackTile = ({
   )
 }
 
-function mapStateToProps(state: AppState, ownProps: OwnProps) {
-  return {
-    track: getTrack(state, { uid: ownProps.uid }),
-    user: getUserFromTrack(state, { uid: ownProps.uid }),
-    playingUid: getUid(state),
-    isBuffering: getBuffering(state),
-    isPlaying: getPlaying(state),
-
-    currentUserId: getUserId(state),
-    darkMode: shouldShowDark(getTheme(state))
-  }
-}
-
-function mapDispatchToProps(dispatch: Dispatch) {
-  return {
-    shareTrack: (trackId: ID) =>
-      dispatch(
-        requestOpenShareModal({
-          type: 'track',
-          trackId,
-          source: ShareSource.TILE
-        })
-      ),
-    repostTrack: (trackId: ID, isFeed: boolean) =>
-      dispatch(repostTrack(trackId, RepostSource.TILE, isFeed)),
-    unrepostTrack: (trackId: ID) =>
-      dispatch(undoRepostTrack(trackId, RepostSource.TILE)),
-    clickOverflow: (trackId: ID, overflowActions: OverflowAction[]) =>
-      dispatch(
-        open({ source: OverflowSource.TRACKS, id: trackId, overflowActions })
-      )
-  }
-}
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(memo(ConnectedTrackTile))
+export default memo(ConnectedTrackTile)

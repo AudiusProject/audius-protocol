@@ -1,6 +1,12 @@
 import { memo, useCallback, useMemo, MouseEvent } from 'react'
 
 import {
+  useCollection,
+  useCurrentUserId,
+  useTracks,
+  useUser
+} from '@audius/common/api'
+import {
   Name,
   ShareSource,
   RepostSource,
@@ -26,8 +32,7 @@ import {
   playerSelectors
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { connect } from 'react-redux'
-import { Dispatch } from 'redux'
+import { useSelector, useDispatch } from 'react-redux'
 
 import { useRecord, make } from 'common/store/analytics/actions'
 import { PlaylistTileProps } from 'components/track/types'
@@ -45,19 +50,17 @@ const { setRepost } = repostsUserListActions
 const { getTheme } = themeSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
-const { getUserFromCollection } = cacheUsersSelectors
 const {
   saveCollection,
   unsaveCollection,
   repostCollection,
   undoRepostCollection
 } = collectionsSocialActions
-const { getCollection, getTracksFromCollection } = cacheCollectionsSelectors
+const { getTracksFromCollection } = cacheCollectionsSelectors
 const getUserId = accountSelectors.getUserId
 
 type OwnProps = Omit<
   PlaylistTileProps,
-  | 'id'
   | 'userId'
   | 'duration'
   | 'artistName'
@@ -80,71 +83,151 @@ type OwnProps = Omit<
   | 'playlistTitle'
   | 'artistIsVerified'
   | 'goToRoute'
->
-
-type ConnectedPlaylistTileProps = OwnProps &
-  ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps>
+> & {
+  collection?: any
+  user?: any
+  tracks?: Track[]
+}
 
 const ConnectedPlaylistTile = ({
   uid,
+  id,
   index,
   size,
-  collection: nullableCollection,
-  user: nullableUser,
-  tracks,
+  collection: collectionProp,
+  user: userProp,
+  tracks: tracksProp,
   playTrack,
   pauseTrack,
-  playingUid,
-  isBuffering,
-  isPlaying,
-  goToRoute,
   isLoading,
   numLoadingSkeletonRows,
   hasLoaded,
   playingTrackId,
   uploading,
-  unsaveCollection,
-  saveCollection,
-  shareCollection,
-  unrepostCollection,
-  repostCollection,
-  setRepostPlaylistId,
-  setFavoritePlaylistId,
-  clickOverflow,
-  currentUserId,
-  darkMode,
   isTrending,
   variant,
   containerClassName,
   isFeed = false,
   source
-}: ConnectedPlaylistTileProps) => {
-  const collection = getCollectionWithFallback(nullableCollection)
-  const user = getUserWithFallback(nullableUser)
+}: OwnProps) => {
+  const dispatch = useDispatch()
+
+  // Move mapStateToProps selectors into component
+  const { data: collectionWithoutFallback } = useCollection(id)
+  const collection = getCollectionWithFallback(collectionWithoutFallback)
+  const { data: tracks } = useTracks(collectionWithoutFallback?.trackIds, {
+    enabled: !!collectionWithoutFallback?.trackIds
+  })
+  const { data: user } = useUser(collection?.playlist_owner_id, {
+    enabled: !!collection?.playlist_owner_id
+  })
+  const { data: currentUserId } = useCurrentUserId()
+  const playingUid = useSelector(getUid)
+  const isBuffering = useSelector(getBuffering)
+  const isPlaying = useSelector(getPlaying)
+  const darkMode = useSelector((state: AppState) =>
+    shouldShowDark(getTheme(state))
+  )
+
+  // Move mapDispatchToProps into component
+  const goToRoute = useCallback(
+    (route: string) => {
+      dispatch(push(route))
+    },
+    [dispatch]
+  )
+
+  const shareCollection = useCallback(
+    (collectionId: ID) => {
+      dispatch(
+        requestOpenShareModal({
+          type: 'collection',
+          collectionId,
+          source: ShareSource.TILE
+        })
+      )
+    },
+    [dispatch]
+  )
+
+  const handleSaveCollection = useCallback(
+    (collectionId: ID, isFeed: boolean) => {
+      dispatch(saveCollection(collectionId, FavoriteSource.TILE, isFeed))
+    },
+    [dispatch]
+  )
+
+  const handleUnsaveCollection = useCallback(
+    (collectionId: ID) => {
+      dispatch(unsaveCollection(collectionId, FavoriteSource.TILE))
+    },
+    [dispatch]
+  )
+
+  const handleRepostCollection = useCallback(
+    (collectionId: ID, isFeed: boolean) => {
+      dispatch(repostCollection(collectionId, RepostSource.TILE, isFeed))
+    },
+    [dispatch]
+  )
+
+  const handleUnrepostCollection = useCallback(
+    (collectionId: ID) => {
+      dispatch(undoRepostCollection(collectionId, RepostSource.TILE))
+    },
+    [dispatch]
+  )
+
+  const clickOverflow = useCallback(
+    (collectionId: ID, overflowActions: OverflowAction[]) => {
+      dispatch(
+        open({
+          source: OverflowSource.COLLECTIONS,
+          id: collectionId,
+          overflowActions
+        })
+      )
+    },
+    [dispatch]
+  )
+
+  const setRepostPlaylistId = useCallback(
+    (collectionId: ID) => {
+      dispatch(setRepost(collectionId, RepostType.COLLECTION))
+    },
+    [dispatch]
+  )
+
+  const setFavoritePlaylistId = useCallback(
+    (collectionId: ID) => {
+      dispatch(setFavorite(collectionId, FavoriteType.PLAYLIST))
+    },
+    [dispatch]
+  )
+
   const record = useRecord()
   const isActive = useMemo(() => {
-    return tracks.some((track) => track.uid === playingUid)
+    return tracks?.some((track) => track.uid === playingUid) ?? false
   }, [tracks, playingUid])
-  const hasStreamAccess = !!collection.access?.stream
+  const hasStreamAccess = !!collection?.access?.stream
 
   const isOwner = collection.playlist_owner_id === currentUserId
 
   const toggleSave = useCallback(() => {
     if (collection.has_current_user_saved) {
-      unsaveCollection(collection.playlist_id)
+      handleUnsaveCollection(collection.playlist_id)
     } else {
-      saveCollection(collection.playlist_id, isFeed)
+      handleSaveCollection(collection.playlist_id, isFeed)
     }
-  }, [collection, unsaveCollection, saveCollection, isFeed])
+  }, [collection, handleUnsaveCollection, handleSaveCollection, isFeed])
 
   const toggleRepost = useCallback(() => {
     if (collection.has_current_user_reposted) {
-      unrepostCollection(collection.playlist_id)
+      handleUnrepostCollection(collection.playlist_id)
     } else {
-      repostCollection(collection.playlist_id, isFeed)
+      handleRepostCollection(collection.playlist_id, isFeed)
     }
-  }, [collection, unrepostCollection, repostCollection, isFeed])
+  }, [collection, handleUnrepostCollection, handleRepostCollection, isFeed])
 
   const getRoute = useCallback(() => {
     return collectionPage(
@@ -328,57 +411,4 @@ const ConnectedPlaylistTile = ({
   )
 }
 
-function mapStateToProps(state: AppState, ownProps: OwnProps) {
-  return {
-    collection:
-      ownProps.collection ?? getCollection(state, { uid: ownProps.uid }),
-    tracks:
-      ownProps.tracks ?? getTracksFromCollection(state, { uid: ownProps.uid }),
-    user: getUserFromCollection(state, { uid: ownProps.uid }),
-    playingUid: getUid(state),
-    isBuffering: getBuffering(state),
-    isPlaying: getPlaying(state),
-
-    currentUserId: getUserId(state),
-    darkMode: shouldShowDark(getTheme(state))
-  }
-}
-
-function mapDispatchToProps(dispatch: Dispatch) {
-  return {
-    goToRoute: (route: string) => dispatch(push(route)),
-    shareCollection: (collectionId: ID) =>
-      dispatch(
-        requestOpenShareModal({
-          type: 'collection',
-          collectionId,
-          source: ShareSource.TILE
-        })
-      ),
-    saveCollection: (collectionId: ID, isFeed: boolean) =>
-      dispatch(saveCollection(collectionId, FavoriteSource.TILE, isFeed)),
-    unsaveCollection: (collectionId: ID) =>
-      dispatch(unsaveCollection(collectionId, FavoriteSource.TILE)),
-    repostCollection: (collectionId: ID, isFeed: boolean) =>
-      dispatch(repostCollection(collectionId, RepostSource.TILE, isFeed)),
-    unrepostCollection: (collectionId: ID) =>
-      dispatch(undoRepostCollection(collectionId, RepostSource.TILE)),
-    clickOverflow: (collectionId: ID, overflowActions: OverflowAction[]) =>
-      dispatch(
-        open({
-          source: OverflowSource.COLLECTIONS,
-          id: collectionId,
-          overflowActions
-        })
-      ),
-    setRepostPlaylistId: (collectionId: ID) =>
-      dispatch(setRepost(collectionId, RepostType.COLLECTION)),
-    setFavoritePlaylistId: (collectionId: ID) =>
-      dispatch(setFavorite(collectionId, FavoriteType.PLAYLIST))
-  }
-}
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(memo(ConnectedPlaylistTile))
+export default memo(ConnectedPlaylistTile)
