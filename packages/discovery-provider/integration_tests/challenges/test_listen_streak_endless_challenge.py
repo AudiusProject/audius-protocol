@@ -21,7 +21,7 @@ REDIS_URL = shared_config["redis"]["url"]
 BLOCK_NUMBER = 10
 
 
-def create_play_day_offset(day_offset: int, hour_offset: int = 0) -> Play:
+def create_play_with_offset(day_offset: int, hour_offset: int = 0) -> Play:
     delta = timedelta(hours=hour_offset) + timedelta(days=day_offset)
 
     return Play(
@@ -42,7 +42,7 @@ def dispatch_play(
     bus: ChallengeEventBus,
     hour_offset: int = 0,
 ):
-    play = create_play_day_offset(day_offset, hour_offset)
+    play = create_play_with_offset(day_offset, hour_offset)
     session.add(play)
     session.flush()
     bus.dispatch(
