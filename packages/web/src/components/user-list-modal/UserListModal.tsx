@@ -154,7 +154,7 @@ export const UserListModal = () => {
   const { component, title, Icon } = getUserList()
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} css={{ width: 560 }}>
       <ModalHeader>
         <ModalTitle title={title} Icon={Icon} />
       </ModalHeader>

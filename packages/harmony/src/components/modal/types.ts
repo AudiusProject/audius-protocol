@@ -125,6 +125,7 @@ export type ModalProps = {
    * (only small currently implemented)
    */
   size?: 'small' | 'medium' | 'large'
+  className?: string
 }
 
 export type ModalContentProps = ScrollbarProps

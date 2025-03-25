@@ -15,18 +15,20 @@ export const FavoritedScreen = () => {
   const { params } = useRoute<'Favorited'>()
   const { id, favoriteType } = params
 
-  const trackQuery = useTrackFavorites(
+  const trackFavoritesQuery = useTrackFavorites(
     { trackId: id },
     { enabled: favoriteType === FavoriteType.TRACK }
   )
 
-  const collectionQuery = useCollectionFavorites(
+  const collectionFavoritesQuery = useCollectionFavorites(
     { collectionId: id },
     { enabled: favoriteType === FavoriteType.PLAYLIST }
   )
 
   const { data, isFetchingNextPage, isPending, fetchNextPage } =
-    favoriteType === FavoriteType.TRACK ? trackQuery : collectionQuery
+    favoriteType === FavoriteType.TRACK
+      ? trackFavoritesQuery
+      : collectionFavoritesQuery
 
   return (
     <UserListScreen title={messages.title} titleIcon={IconHeart}>

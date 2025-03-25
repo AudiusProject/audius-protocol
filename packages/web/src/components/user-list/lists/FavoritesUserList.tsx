@@ -9,18 +9,20 @@ export const FavoritesUserList = () => {
   const entityId = useSelector(favoritesUserListSelectors.getId)
   const entityType = useSelector(favoritesUserListSelectors.getFavoriteType)
 
-  const trackQuery = useTrackFavorites(
+  const trackFavoritesQuery = useTrackFavorites(
     { trackId: entityId },
     { enabled: entityType === FavoriteType.TRACK }
   )
 
-  const collectionQuery = useCollectionFavorites(
+  const collectionFavoritesQuery = useCollectionFavorites(
     { collectionId: entityId },
     { enabled: entityType === FavoriteType.PLAYLIST }
   )
 
   const { data, hasNextPage, isFetchingNextPage, fetchNextPage, isPending } =
-    entityType === FavoriteType.TRACK ? trackQuery : collectionQuery
+    entityType === FavoriteType.TRACK
+      ? trackFavoritesQuery
+      : collectionFavoritesQuery
 
   return (
     <UserList
