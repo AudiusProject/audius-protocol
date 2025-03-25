@@ -345,7 +345,7 @@ def test_multiple_listen_streak_challenges(app):
         assert state[3].current_step_count == 2 and state[3].is_complete == False
 
 
-def test_timewindow(app):
+def test_16_to_48_hour_timewindow(app):
     redis_conn = get_redis()
     bus = ChallengeEventBus(redis_conn)
     # Register events with the bus
@@ -405,53 +405,67 @@ def test_timewindow(app):
         assert len(state) == 1
         assert state[0].current_step_count == 4 and state[0].is_complete == False
 
-        # Complete the streak
-        scope_and_process(lambda: dp_day(5))
-        scope_and_process(lambda: dp_day(6))
-        scope_and_process(lambda: dp_day(7))
-        state = listen_streak_endless_challenge_manager.get_user_challenge_state(
-            session
-        )
-        assert len(state) == 1
-        assert state[0].current_step_count == 7 and state[0].is_complete == True
-
-        # Now test the 1-day user_challenge rows
-        # 15 hours after the last play that updated the streak
-        scope_and_process(lambda: dp_hour(7, 15))
-        state = listen_streak_endless_challenge_manager.get_user_challenge_state(
-            session
-        )
-        assert len(state) == 1
-        assert state[0].current_step_count == 7 and state[0].is_complete == True
-
-        # 16 hours after the last play that updated the streak
-        scope_and_process(lambda: dp_hour(7, 16))
+        # 48 hours after the last play that updated the streak
+        scope_and_process(lambda: dp_hour(5, 7))
         state = listen_streak_endless_challenge_manager.get_user_challenge_state(
             session
         )
         assert len(state) == 2
-        assert state[0].current_step_count == 7 and state[0].is_complete == True
-        assert state[1].current_step_count == 1 and state[1].is_complete == True
+        assert state[0].current_step_count == 4 and state[0].is_complete == False
+        assert state[1].current_step_count == 1 and state[1].is_complete == False
 
-        # 47 hours after the last play that updated the streak
-        scope_and_process(lambda: dp_hour(9, 15))
+        # Start and complete a new streak
+        scope_and_process(lambda: dp_day(10))
+        scope_and_process(lambda: dp_day(11))
+        scope_and_process(lambda: dp_day(12))
+        scope_and_process(lambda: dp_day(13))
+        scope_and_process(lambda: dp_day(14))
+        scope_and_process(lambda: dp_day(15))
+        scope_and_process(lambda: dp_day(16))
         state = listen_streak_endless_challenge_manager.get_user_challenge_state(
             session
         )
         assert len(state) == 3
-        assert state[0].current_step_count == 7 and state[0].is_complete == True
-        assert state[1].current_step_count == 1 and state[1].is_complete == True
-        assert state[2].current_step_count == 1 and state[2].is_complete == True
+        assert state[2].current_step_count == 7 and state[2].is_complete == True
 
-        # 48 hours after the last play that updated the streak - should break the streak
-        scope_and_process(lambda: dp_hour(11, 15))
+        # Now test the 1-day user_challenge rows
+        # 15 hours after the last play that updated the streak
+        scope_and_process(lambda: dp_hour(16, 15))
         state = listen_streak_endless_challenge_manager.get_user_challenge_state(
             session
         )
-        assert state[0].current_step_count == 7 and state[0].is_complete == True
-        assert state[1].current_step_count == 1 and state[1].is_complete == True
-        assert state[2].current_step_count == 1 and state[2].is_complete == True
-        assert state[3].current_step_count == 1 and state[3].is_complete == False
+        assert len(state) == 3
+        assert state[2].current_step_count == 7 and state[2].is_complete == True
+
+        # 16 hours after the last play that updated the streak
+        scope_and_process(lambda: dp_hour(16, 16))
+        state = listen_streak_endless_challenge_manager.get_user_challenge_state(
+            session
+        )
+        assert len(state) == 4
+        assert state[2].current_step_count == 7 and state[2].is_complete == True
+        assert state[3].current_step_count == 1 and state[3].is_complete == True
+
+        # 47 hours after the last play that updated the streak
+        scope_and_process(lambda: dp_hour(18, 15))
+        state = listen_streak_endless_challenge_manager.get_user_challenge_state(
+            session
+        )
+        assert len(state) == 5
+        assert state[2].current_step_count == 7 and state[2].is_complete == True
+        assert state[3].current_step_count == 1 and state[3].is_complete == True
+        assert state[4].current_step_count == 1 and state[4].is_complete == True
+
+        # 48 hours after the last play that updated the streak - should break the streak
+        scope_and_process(lambda: dp_hour(20, 15))
+        state = listen_streak_endless_challenge_manager.get_user_challenge_state(
+            session
+        )
+        assert len(state) == 6
+        assert state[2].current_step_count == 7 and state[2].is_complete == True
+        assert state[3].current_step_count == 1 and state[3].is_complete == True
+        assert state[4].current_step_count == 1 and state[4].is_complete == True
+        assert state[5].current_step_count == 1 and state[5].is_complete == False
 
 
 def test_multiple_listens_in_one_day(app):
