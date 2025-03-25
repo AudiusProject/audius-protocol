@@ -1,11 +1,10 @@
+import { useTrack } from '@audius/common/api'
 import { useIsTrackUnlockable } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
-import { cacheTracksSelectors } from '@audius/common/store'
 import { Flex, Skeleton } from '@audius/harmony'
 
 import { EntityRank } from 'components/lineup/EntityRank'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { useSelector } from 'utils/reducer'
 
 import { TrackAccessTypeLabel } from './TrackAccessTypeLabel'
 import { TrackLockedStatusBadge } from './TrackLockedStatusBadge'
@@ -16,8 +15,6 @@ import {
   SavesMetric
 } from './TrackTileMetrics'
 import { TrackTileSize } from './types'
-
-const { getTrack } = cacheTracksSelectors
 
 type TrackTileStatsProps = {
   trackId: ID
@@ -33,9 +30,14 @@ export const TrackTileStats = (props: TrackTileStatsProps) => {
   const isUnlockable = useIsTrackUnlockable(trackId)
   const isMobile = useIsMobile()
 
-  const isUnlisted = useSelector((state) => {
-    return getTrack(state, { id: trackId })?.is_unlisted
+  const { data: track } = useTrack(trackId, {
+    select: (track) => {
+      return {
+        isUnlisted: track?.is_unlisted
+      }
+    }
   })
+  const isUnlisted = track?.isUnlisted
 
   if (isLoading) {
     return (

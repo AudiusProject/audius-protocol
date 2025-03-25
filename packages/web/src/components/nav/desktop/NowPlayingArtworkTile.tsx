@@ -1,12 +1,8 @@
 import { CSSProperties, MouseEvent, ReactNode, useCallback } from 'react'
 
+import { useCurrentUserId, useTrack } from '@audius/common/api'
 import { SquareSizes } from '@audius/common/models'
-import {
-  accountSelectors,
-  cacheTracksSelectors,
-  playerSelectors,
-  CommonState
-} from '@audius/common/store'
+import { playerSelectors, CommonState } from '@audius/common/store'
 import {
   IconWaveForm as IconVisualizer,
   IconButton,
@@ -29,8 +25,6 @@ import { openVisualizer } from 'pages/visualizer/store/slice'
 import { fullTrackPage } from 'utils/route'
 
 const { getTrackId, getCollectible } = playerSelectors
-const { getTrack } = cacheTracksSelectors
-const { getUserId } = accountSelectors
 
 const messages = {
   viewTrack: 'View currently playing track',
@@ -79,21 +73,19 @@ export const NowPlayingArtworkTile = () => {
   const { pathname } = location
   const { color, spacing } = useTheme()
 
+  const { data: currentUserId } = useCurrentUserId()
   const trackId = useSelector(getTrackId)
-  const track = useSelector((state: CommonState) =>
-    getTrack(state, { id: trackId })
-  )
-  const isStreamGated = !!track?.is_stream_gated
-
-  const isOwner = useSelector((state: CommonState) => {
-    const ownerId = getTrack(state, { id: trackId })?.owner_id
-    const accountId = getUserId(state)
-    return Boolean(ownerId && accountId && ownerId === accountId)
+  const { data: track } = useTrack(trackId, {
+    select: (track) => {
+      const isStreamGated = !!track?.is_stream_gated
+      const permalink = track?.permalink
+      const isOwner = Boolean(
+        track?.owner_id && currentUserId && track.owner_id === currentUserId
+      )
+      return { title: track?.title, isStreamGated, permalink, isOwner }
+    }
   })
-
-  const permalink = useSelector((state: CommonState) => {
-    return getTrack(state, { id: trackId })?.permalink
-  })
+  const { isStreamGated, permalink, isOwner } = track ?? {}
 
   const collectibleImage = useSelector((state: CommonState) => {
     const collectible = getCollectible(state)

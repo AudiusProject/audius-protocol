@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 
+import { useTrack } from '@audius/common/api'
 import {
   useCurrentStems,
   useFileSizes,
@@ -14,9 +15,7 @@ import {
   StemCategory
 } from '@audius/common/models'
 import {
-  cacheTracksSelectors,
   usePremiumContentPurchaseModal,
-  CommonState,
   useWaitForDownloadModal,
   toastActions,
   PurchaseableContentType
@@ -31,7 +30,7 @@ import {
   IconCaretDown,
   IconLockUnlocked
 } from '@audius/harmony'
-import { shallowEqual, useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
@@ -45,7 +44,6 @@ import { audiusSdk } from 'services/audius-sdk'
 
 import { DownloadRow } from './DownloadRow'
 
-const { getTrack } = cacheTracksSelectors
 const { toast } = toastActions
 
 const ORIGINAL_TRACK_INDEX = 1
@@ -69,10 +67,15 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
   const dispatch = useDispatch()
   const record = useRecord()
   const isMobile = useIsMobile()
-  const track = useSelector(
-    (state: CommonState) => getTrack(state, { id: trackId }),
-    shallowEqual
-  )
+  const { data: track } = useTrack(trackId, {
+    select: (track) => {
+      return {
+        is_downloadable: track?.is_downloadable,
+        access: track?.access
+      }
+    }
+  })
+
   const { stemTracks } = useCurrentStems({ trackId })
   const { uploadingTracks: uploadingStems } = useUploadingStems({ trackId })
   const {

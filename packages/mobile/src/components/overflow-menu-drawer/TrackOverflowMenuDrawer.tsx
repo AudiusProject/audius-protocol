@@ -1,6 +1,6 @@
 import { useCallback, useContext } from 'react'
 
-import { useToggleFavoriteTrack } from '@audius/common/api'
+import { useToggleFavoriteTrack, useTrack } from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -13,7 +13,6 @@ import {
   accountSelectors,
   cacheCollectionsActions,
   cacheCollectionsSelectors,
-  cacheTracksSelectors,
   cacheUsersSelectors,
   collectionPageLineupActions as tracksActions,
   tracksSocialActions,
@@ -51,7 +50,6 @@ const { followUser, unfollowUser } = usersSocialActions
 const { setTrackPosition, clearTrackPosition } = playbackPositionActions
 const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { getUser } = cacheUsersSelectors
-const { getTrack } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
 const { removeTrackFromPlaylist } = cacheCollectionsActions
 
@@ -79,7 +77,7 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
 
   const { open } = useCommentDrawer()
 
-  const track = useSelector((state: CommonState) => getTrack(state, { id }))
+  const { data: track } = useTrack(id)
   const playlist = useSelector((state: CommonState) =>
     getCollection(state, { id: contextPlaylistId })
   )

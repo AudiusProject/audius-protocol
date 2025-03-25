@@ -1,5 +1,6 @@
 import { Suspense, useCallback } from 'react'
 
+import { useTrack } from '@audius/common/api'
 import {
   SquareSizes,
   isContentCollectibleGated,
@@ -9,12 +10,7 @@ import {
   Remix,
   AccessConditions
 } from '@audius/common/models'
-import {
-  CommonState,
-  OverflowAction,
-  PurchaseableContentType,
-  cacheTracksSelectors
-} from '@audius/common/store'
+import { OverflowAction, PurchaseableContentType } from '@audius/common/store'
 import { Nullable, formatReleaseDate } from '@audius/common/utils'
 import {
   Flex,
@@ -33,7 +29,7 @@ import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
 import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
 import cn from 'classnames'
 import dayjs from 'dayjs'
-import { shallowEqual, useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import CoSign from 'components/co-sign/CoSign'
 import HoverInfo from 'components/co-sign/HoverInfo'
@@ -185,11 +181,20 @@ const TrackHeader = ({
   goToFavoritesPage,
   goToRepostsPage
 }: TrackHeaderProps) => {
-  const { getTrack } = cacheTracksSelectors
-  const track = useSelector(
-    (state: CommonState) => getTrack(state, { id: trackId }),
-    shallowEqual
-  )
+  const { data: track } = useTrack(trackId, {
+    select: (track) => {
+      return {
+        is_downloadable: track?.is_downloadable,
+        access: track?.access,
+        album_backlink: track?.album_backlink,
+        release_date: track?.release_date,
+        ddex_app: track?.ddex_app,
+        permalink: track?.permalink,
+        _stems: track?._stems
+      }
+    }
+  })
+
   const dispatch = useDispatch()
   const hasDownloadableAssets =
     track?.is_downloadable || (track?._stems?.length ?? 0) > 0

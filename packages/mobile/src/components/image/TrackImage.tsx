@@ -1,9 +1,7 @@
+import { useTrack } from '@audius/common/api'
 import { useImageSize } from '@audius/common/hooks'
 import type { SquareSizes, ID } from '@audius/common/models'
-import {
-  cacheTracksSelectors,
-  reachabilitySelectors
-} from '@audius/common/store'
+import { reachabilitySelectors } from '@audius/common/store'
 import type { Maybe } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
@@ -20,7 +18,6 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { primitiveToImageSource } from './primitiveToImageSource'
 
-const { getTrack } = cacheTracksSelectors
 const { getIsReachable } = reachabilitySelectors
 
 const useLocalTrackImageUri = (trackId: Maybe<ID>) => {
@@ -47,9 +44,14 @@ export const useTrackImage = ({
   trackId?: ID
   size: SquareSizes
 }) => {
-  const artwork = useSelector(
-    (state) => getTrack(state, { id: trackId })?.artwork
-  )
+  const { data: track } = useTrack(trackId, {
+    select: (track) => {
+      return {
+        artwork: track.artwork
+      }
+    }
+  })
+  const artwork = track?.artwork
   const image = useImageSize({
     artwork,
     targetSize: size,

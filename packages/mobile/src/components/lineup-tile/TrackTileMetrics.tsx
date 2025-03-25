@@ -1,18 +1,18 @@
 import { useCallback } from 'react'
 
+import { useTrack } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
 import { FavoriteType, Name } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import type { CommonState, LineupBaseActions } from '@audius/common/store'
+import type { LineupBaseActions } from '@audius/common/store'
 import {
   repostsUserListActions,
   favoritesUserListActions,
-  RepostType,
-  cacheTracksSelectors
+  RepostType
 } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { IconRepost, IconHeart, IconMessage } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -24,7 +24,6 @@ import { VanityMetric } from './VanityMetrics'
 
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
-const { getTrack } = cacheTracksSelectors
 
 type RepostsMetricProps = {
   trackId: ID
@@ -33,9 +32,14 @@ type RepostsMetricProps = {
 export const RepostsMetric = (props: RepostsMetricProps) => {
   const { trackId } = props
 
-  const repostCount = useSelector((state: CommonState) => {
-    return getTrack(state, { id: trackId })?.repost_count
+  const { data: track } = useTrack(trackId, {
+    select: (track) => {
+      return {
+        repostCount: track.repost_count
+      }
+    }
   })
+  const repostCount = track?.repostCount
 
   const dispatch = useDispatch()
   const navigation = useNavigation()
@@ -63,9 +67,14 @@ type SavesMetricProps = {
 
 export const SavesMetric = (props: SavesMetricProps) => {
   const { trackId } = props
-  const saveCount = useSelector((state: CommonState) => {
-    return getTrack(state, { id: trackId })?.save_count
+  const { data: track } = useTrack(trackId, {
+    select: (track) => {
+      return {
+        saveCount: track.save_count
+      }
+    }
   })
+  const saveCount = track?.saveCount
 
   const dispatch = useDispatch()
   const navigation = useNavigation()
@@ -98,12 +107,15 @@ export const CommentMetric = (props: CommentMetricProps) => {
   const { open } = useCommentDrawer()
   const navigation = useNavigation()
   const { isEnabled } = useFeatureFlag(FeatureFlags.COMMENTS_ENABLED)
-  const commentCount = useSelector((state: CommonState) => {
-    return getTrack(state, { id: trackId })?.comment_count
+  const { data: track } = useTrack(trackId, {
+    select: (track) => {
+      return {
+        commentCount: track.comment_count,
+        commentsDisabled: track.comments_disabled
+      }
+    }
   })
-  const commentsDisabled = useSelector((state: CommonState) => {
-    return getTrack(state, { id: trackId })?.comments_disabled
-  })
+  const { commentCount, commentsDisabled } = track ?? {}
 
   const handlePress = useCallback(() => {
     open({
@@ -138,9 +150,14 @@ type PlayMetricProps = {
 
 export const PlayMetric = (props: PlayMetricProps) => {
   const { trackId } = props
-  const playCount = useSelector((state: CommonState) => {
-    return getTrack(state, { id: trackId })?.play_count
+  const { data: track } = useTrack(trackId, {
+    select: (track) => {
+      return {
+        playCount: track.play_count
+      }
+    }
   })
+  const playCount = track?.playCount
   if (!playCount || playCount === 0) return null
 
   return <VanityMetric disabled>{formatCount(playCount)} Plays</VanityMetric>

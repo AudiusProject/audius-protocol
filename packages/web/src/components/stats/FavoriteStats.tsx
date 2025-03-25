@@ -1,13 +1,10 @@
 import { useCallback } from 'react'
 
+import { useTrack, useCollection } from '@audius/common/api'
 import { ID } from '@audius/common/models'
-import {
-  cacheCollectionsSelectors,
-  cacheTracksSelectors
-} from '@audius/common/store'
 import { formatCount, pluralize } from '@audius/common/utils'
 import { IconHeart, PlainButton, PlainButtonProps } from '@audius/harmony'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import {
   setUsers,
@@ -17,10 +14,6 @@ import {
   UserListType,
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
-import { AppState } from 'store/types'
-
-const { getCollection } = cacheCollectionsSelectors
-const { getTrack } = cacheTracksSelectors
 
 const messages = {
   favorite: 'Favorite'
@@ -40,15 +33,21 @@ export const FavoriteStats = ({
 }: FavoriteStatsProps) => {
   const dispatch = useDispatch()
 
-  const favoriteCount = useSelector((state: AppState) => {
-    if (entityType === UserListEntityType.COLLECTION) {
-      return getCollection(state, { id })?.save_count ?? 0
+  const { data: collection } = useCollection(id, {
+    enabled: entityType === UserListEntityType.COLLECTION,
+    select: (collection) => {
+      return {
+        save_count: collection?.save_count
+      }
     }
-    if (entityType === UserListEntityType.TRACK) {
-      return getTrack(state, { id })?.save_count ?? 0
-    }
-    return 0
   })
+  const { data: track } = useTrack(id, {
+    enabled: entityType === UserListEntityType.TRACK,
+    select: (track) => {
+      return { save_count: track?.save_count }
+    }
+  })
+  const favoriteCount = collection?.save_count ?? track?.save_count ?? 0
 
   const handleClick = useCallback(() => {
     dispatch(
