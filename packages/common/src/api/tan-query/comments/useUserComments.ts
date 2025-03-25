@@ -15,7 +15,6 @@ import { toast } from '~/store/ui/toast/slice'
 
 import { QueryOptions } from '../types'
 import { useCurrentUserId } from '../useCurrentUserId'
-import { combineQueryStatuses } from '../utils/combineQueryStatuses'
 import { primeCommentData } from '../utils/primeCommentData'
 import { primeRelatedData } from '../utils/primeRelatedData'
 
@@ -85,15 +84,14 @@ export const useUserComments = (
     }
   }, [error, dispatch, reportToSentry])
 
-  const commentsQuery = useComments(commentIds)
-  const { data: comments } = commentsQuery
-
-  const statusResults = combineQueryStatuses([queryRes, commentsQuery])
+  const { data: comments } = useComments(commentIds)
 
   return {
-    ...queryRes,
     data: comments,
-    commentIds,
-    ...statusResults
+    isPending: queryRes.isPending,
+    isLoading: queryRes.isLoading,
+    hasNextPage: queryRes.hasNextPage,
+    isFetchingNextPage: queryRes.isFetchingNextPage,
+    fetchNextPage: queryRes.fetchNextPage
   }
 }

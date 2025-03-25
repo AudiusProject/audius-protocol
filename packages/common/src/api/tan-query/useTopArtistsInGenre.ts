@@ -5,10 +5,9 @@ import { useDispatch } from 'react-redux'
 import { userMetadataFromSDK } from '~/adapters'
 import { transformAndCleanList } from '~/adapters/utils'
 import { useAudiusQueryContext } from '~/audius-query'
-import { UserMetadata } from '~/models'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions, SelectableQueryOptions } from './types'
+import { QueryOptions } from './types'
 import { useUsers } from './useUsers'
 import { primeUserData } from './utils/primeUserData'
 
@@ -24,9 +23,9 @@ export const getTopArtistsInGenreQueryKey = (
   pageSize: number
 ) => [QUERY_KEYS.topArtistsInGenre, genre, pageSize]
 
-export const useTopArtistsInGenre = <TResult = UserMetadata[]>(
+export const useTopArtistsInGenre = (
   args: UseTopArtistsInGenreArgs,
-  options?: SelectableQueryOptions<UserMetadata[], TResult>
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
@@ -39,11 +38,7 @@ export const useTopArtistsInGenre = <TResult = UserMetadata[]>(
     'placeholderData'
   ]) as QueryOptions
 
-  const { data: userIds, ...queryResult } = useInfiniteQuery<
-    number[],
-    Error,
-    number[]
-  >({
+  const { data: userIds } = useInfiniteQuery({
     queryKey: getTopArtistsInGenreQueryKey(genre, pageSize),
     initialPageParam: 0,
     getNextPageParam: (lastPage: number[], allPages: number[][]) => {
@@ -66,13 +61,5 @@ export const useTopArtistsInGenre = <TResult = UserMetadata[]>(
     enabled: simpleOptions?.enabled !== false && !!genre
   })
 
-  const { data: users } = useUsers(userIds, {
-    ...options,
-    enabled: options?.enabled !== false && !!userIds
-  })
-
-  return {
-    data: users,
-    ...queryResult
-  }
+  return useUsers(userIds)
 }

@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 
+import { useTrackByParams, useUser } from '@audius/common/api'
 import { useFeatureFlag, useProxySelector } from '@audius/common/hooks'
 import { trackPageMessages } from '@audius/common/messages'
 import { Status } from '@audius/common/models'
@@ -31,7 +32,7 @@ import { TrackScreenRemixes } from './TrackScreenRemixes'
 import { TrackScreenSkeleton } from './TrackScreenSkeleton'
 const { fetchTrack } = trackPageActions
 const { tracksActions } = trackPageLineupActions
-const { getLineup, getRemixParentTrack, getTrack, getUser } = trackPageSelectors
+const { getLineup, getRemixParentTrack } = trackPageSelectors
 const { getIsReachable } = reachabilitySelectors
 
 const messages = {
@@ -50,14 +51,10 @@ export const TrackScreen = () => {
 
   const { searchTrack, id, canBeUnlisted = true, handle, slug } = params ?? {}
 
-  const cachedTrack = useSelector((state) => getTrack(state, params))
-
+  const { data: cachedTrack } = useTrackByParams(params)
   const track = cachedTrack?.track_id ? cachedTrack : searchTrack
 
-  const cachedUser = useSelector((state) =>
-    getUser(state, { id: track?.owner_id })
-  )
-
+  const { data: cachedUser } = useUser(track?.owner_id)
   const user = cachedUser ?? searchTrack?.user
 
   const lineup = useSelector(getLineup)

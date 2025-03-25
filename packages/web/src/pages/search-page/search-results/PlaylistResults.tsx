@@ -30,7 +30,10 @@ const messages = {
 type PlaylistResultsProps = {
   limit?: number
   skeletonCount?: number
-  queryData: Omit<FlatUseInfiniteQueryResult<UserCollectionMetadata>, 'status'>
+  queryData: Pick<
+    FlatUseInfiniteQueryResult<UserCollectionMetadata>,
+    'data' | 'isFetching' | 'isInitialLoading'
+  >
 }
 
 const PlaylistResultsSkeletons = ({

@@ -4,8 +4,8 @@ import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
-import { UserTrack } from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
+import { UserTrackMetadata } from '~/models/Track'
 import {
   premiumTracksPageLineupActions,
   premiumTracksPageLineupSelectors
@@ -40,7 +40,7 @@ export const usePremiumTracks = (
   const queryData = useInfiniteQuery({
     queryKey: getPremiumTracksQueryKey(pageSize),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: UserTrack[], allPages) => {
+    getNextPageParam: (lastPage: UserTrackMetadata[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -74,20 +74,17 @@ export const usePremiumTracks = (
 
       return processedTracks
     },
+    select: (data) => data.pages.flat(),
     ...options,
     enabled: options?.enabled !== false
   })
 
-  const lineupData = useLineupQuery({
+  return useLineupQuery({
     queryData,
+    queryKey: getPremiumTracksQueryKey(pageSize),
     lineupActions: premiumTracksPageLineupActions,
     lineupSelector: premiumTracksPageLineupSelectors.getLineup,
-    playbackSource: PlaybackSource.TRACK_TILE
-  })
-
-  return {
-    ...queryData,
-    ...lineupData,
+    playbackSource: PlaybackSource.TRACK_TILE,
     pageSize
-  }
+  })
 }

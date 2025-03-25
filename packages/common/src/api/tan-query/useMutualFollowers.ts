@@ -33,7 +33,7 @@ export const useMutualFollowers = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const { data: userIds, ...queryResult } = useInfiniteQuery({
+  const { data: userIds } = useInfiniteQuery({
     queryKey: getMutualFollowersQueryKey({ userId, pageSize }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: ID[], allPages) => {
@@ -57,10 +57,5 @@ export const useMutualFollowers = (
     enabled: options?.enabled !== false && !!userId && !!currentUserId
   })
 
-  const { data: users } = useUsers(userIds)
-
-  return {
-    data: users,
-    ...queryResult
-  }
+  return useUsers(userIds)
 }

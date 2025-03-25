@@ -10,6 +10,10 @@ import requests
 from elasticsearch import Elasticsearch
 from redis import Redis
 
+from src.challenges.tastemaker_challenge import (
+    get_tastemaker_challenge_start_block,
+    get_tastemaker_challenge_start_chain_id,
+)
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 from src.models.indexing.block import Block
 from src.monitors import monitor_names, monitors
@@ -211,6 +215,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     core_listens_health = get_core_listens_health(
         redis=redis, plays_count_max_drift=plays_count_max_drift
     )
+    core_tastemaker_challenge_health = get_core_tastemaker_challenge_health(redis=redis)
 
     latest_block_ts = 0
     if core_health:
@@ -333,6 +338,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "trending_tracks_age_sec": trending_tracks_age_sec,
         "trending_playlists_age_sec": trending_playlists_age_sec,
         "challenge_last_event_age_sec": challenge_events_age_sec,
+        "tastemaker_challenge": core_tastemaker_challenge_health,
         "user_balances_age_sec": user_balances_age_sec,
         "num_users_in_lazy_balance_refresh_queue": num_users_in_lazy_balance_refresh_queue,
         "num_users_in_immediate_balance_refresh_queue": num_users_in_immediate_balance_refresh_queue,
@@ -688,6 +694,22 @@ def get_core_listens_health(redis: Redis, plays_count_max_drift: Optional[int]):
     except Exception as e:
         logger.error(f"get_health.py | could not get core listens health {e}")
         return None
+
+
+def get_core_tastemaker_challenge_health(
+    redis: Redis,
+):
+    latest_block_num, _ = get_latest_chain_block_set_if_nx(redis)
+    tastemaker_challenge_start_block = get_tastemaker_challenge_start_block()
+    tastemaker_challenge_start_block_chain_id = (
+        get_tastemaker_challenge_start_chain_id()
+    )
+    return {
+        "tastemaker_challenge_start_block": tastemaker_challenge_start_block,
+        "tastemaker_challenge_start_block_chain_id": tastemaker_challenge_start_block_chain_id,
+        "is_running": latest_block_num is not None
+        and latest_block_num > tastemaker_challenge_start_block,
+    }
 
 
 def get_core_health(redis: Redis):

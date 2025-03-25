@@ -26,8 +26,8 @@ const messages = {
 export type RemixesPageProps = {
   title: string
   count: number | null
-  originalTrack: Track | null
-  user: User | null
+  originalTrack: Pick<Track, 'track_id' | 'permalink' | 'title'> | undefined
+  user: User | undefined
   getLineupProps: () => LineupProps
   goToTrackPage: () => void
   goToArtistPage: () => void
