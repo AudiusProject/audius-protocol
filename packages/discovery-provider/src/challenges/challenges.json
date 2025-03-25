@@ -198,7 +198,7 @@
     "name": "TASTEMAKER",
     "type": "aggregate",
     "amount": 100,
-    "active": false,
+    "active": true,
     "step_count": 2147483647,
     "starting_block": 0,
     "weekly_pool": 2147483647,
