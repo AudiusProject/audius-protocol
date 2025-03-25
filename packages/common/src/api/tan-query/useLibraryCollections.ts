@@ -62,7 +62,7 @@ export const useLibraryCollections = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const { data: collectionIds, ...queryResult } = useInfiniteQuery({
+  const { data: collectionIds } = useInfiniteQuery({
     queryKey: getLibraryCollectionsQueryKey({
       currentUserId,
       collectionType,
@@ -113,10 +113,5 @@ export const useLibraryCollections = (
     enabled: options?.enabled !== false && !!currentUserId
   })
 
-  const { data: collections } = useCollections(collectionIds)
-
-  return {
-    data: collections,
-    ...queryResult
-  }
+  return useCollections(collectionIds)
 }
