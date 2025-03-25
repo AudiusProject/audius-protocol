@@ -266,6 +266,8 @@ def push(ctx, services, prod):
         for service in services:
             base_tag = f"{protocol_dir.name}-{service}"
 
+            print(f"BASE TAG {base_tag}")
+
             subprocess.run(
                 ["docker", "tag", base_tag, f"audius/{service}:{git_commit}"],
                 check=True,
