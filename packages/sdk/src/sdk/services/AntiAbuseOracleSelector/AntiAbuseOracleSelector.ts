@@ -96,7 +96,7 @@ export class AntiAbuseOracleSelector implements AntiAbuseOracleSelectorService {
     const response = await fetch(`${endpoint}/health_check`)
     if (response.ok) {
       const json: AntiAbuseOracleHealthCheckResponse = await response.json()
-      const wallet = json.walletPubkey
+      const wallet = json.walletPubkey ?? json.antiAbuseWalletPubkey
       if (!this.registeredAddresses.includes(wallet)) {
         throw new Error(`Not registered: ${wallet}`)
       }

@@ -36,6 +36,7 @@ from src.queries import response_name_constants
 from src.queries.get_authorization import is_authorized_request
 from src.queries.get_balances import get_balances
 from src.queries.get_track_comment_count import get_tracks_comment_count
+from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.trending_strategies.trending_type_and_version import TrendingVersion
 from src.utils import helpers, redis_connection
@@ -1469,6 +1470,19 @@ def get_genre_list(genre):
     if genre == "Electronic":
         genre_list = genre_list + electronic_sub_genres
     return genre_list
+
+
+def get_users(session, user_ids, current_user_id=None):
+    users = get_unpopulated_users(session, user_ids)
+    return populate_user_metadata(session, user_ids, users, current_user_id)
+
+
+def get_tracks(session, track_ids, current_user_id=None):
+    tracks = get_unpopulated_tracks(session, track_ids)
+    populated_tracks = populate_track_metadata(
+        session, track_ids, tracks, current_user_id
+    )
+    return add_users_to_tracks(session, populated_tracks, current_user_id)
 
 
 def get_users_by_id(session, user_ids, current_user_id=None, use_request_context=True):

@@ -12,6 +12,8 @@ reply_comment_model = ns.model(
     "reply_comment",
     {
         "id": fields.String(required=True),
+        "entity_id": fields.String(required=True),
+        "entity_type": fields.String(required=True),
         "user_id": fields.String(required=True),
         "message": fields.String(required=True),
         "mentions": fields.List(
@@ -30,10 +32,12 @@ reply_comment_model = ns.model(
 
 
 # A top level comment, including an array of replies
-base_comment_model = ns.model(
+comment_model = ns.model(
     "comment",
     {
         "id": fields.String(required=True),
+        "entity_id": fields.String(required=True),
+        "entity_type": fields.String(required=True),
         "user_id": fields.String(required=False),
         "message": fields.String(required=True),
         "mentions": fields.List(
@@ -53,7 +57,6 @@ base_comment_model = ns.model(
         "replies": fields.List(fields.Nested(reply_comment_model), require=True),
     },
 )
-
 
 comment_notification_setting_model = ns.model(
     "comment_notification_setting",

@@ -1,13 +1,9 @@
 import {
-  createPublicClient,
   encodeFunctionData,
   decodeFunctionData,
-  http,
   type Hex,
-  type PublicClient,
   type TypedDataDefinition
 } from 'viem'
-import type { TransactionReceipt } from 'web3-core'
 
 import * as runtime from '../../api/generated/default/runtime'
 import { productionConfig } from '../../config/production'
@@ -27,6 +23,7 @@ import {
   BlockConfirmation,
   EntityManagerConfig,
   EntityManagerService,
+  EntityManagerTransactionReceipt,
   ManageEntityOptions
 } from './types'
 
@@ -42,8 +39,6 @@ export class EntityManagerClient implements EntityManagerService {
   private readonly chainId: number
   private readonly contractAddress: string
 
-  private publicClient: PublicClient | undefined
-
   constructor(config_: EntityManagerConfig) {
     const config = mergeConfigWithDefaults(
       config_,
@@ -54,16 +49,6 @@ export class EntityManagerClient implements EntityManagerService {
     this.chainId = config.chainId
     this.contractAddress = config.contractAddress
     this.logger = config.logger.createPrefixedLogger('[entity-manager]')
-  }
-
-  private async getClient() {
-    if (!this.publicClient) {
-      const web3Provider = `${await this.discoveryNodeSelector.getSelectedEndpoint()}/chain`
-      this.publicClient = createPublicClient({
-        transport: http(web3Provider)
-      })
-    }
-    return this.publicClient
   }
 
   /**
@@ -77,9 +62,7 @@ export class EntityManagerClient implements EntityManagerService {
     metadata = '',
     confirmationTimeout = CONFIRMATION_TIMEOUT,
     skipConfirmation = false
-  }: ManageEntityOptions): Promise<
-    Pick<TransactionReceipt, 'blockHash' | 'blockNumber'>
-  > {
+  }: ManageEntityOptions): Promise<EntityManagerTransactionReceipt> {
     const nonce = await getNonce()
 
     const typedData: TypedDataDefinition<EntityManagerTypes, 'ManageEntity'> = {
@@ -211,18 +194,6 @@ export class EntityManagerClient implements EntityManagerService {
    */
   public async decodeManageEntity(data: Hex) {
     return decodeFunctionData({ abi: EntityManager.abi, data })
-  }
-
-  /**
-   * Gets the current block
-   * @returns The current block
-   */
-  public async getCurrentBlock() {
-    const client = await this.getClient()
-    const currentBlockNumber = await client.getBlockNumber()
-    const block = await client.getBlock({ blockNumber: currentBlockNumber })
-    // TODO: Make this not need to be cast to number
-    return { ...block, timestamp: Number(block.timestamp) }
   }
 
   /**

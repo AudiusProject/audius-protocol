@@ -391,17 +391,12 @@ def search_tags_es(args: dict):
 
 
 def mdsl_limit_offset(mdsl, limit, offset):
-    # add size and limit with some over-fetching
-    # for sake of reorder_users
-    index_name = ""
+    # add size and limit to the elasticsearch query
     for dsl in mdsl:
         if "index" in dsl:
-            index_name = dsl["index"]
             continue
         dsl["size"] = limit
         dsl["from"] = offset
-        if index_name == ES_USERS:
-            dsl["size"] = limit + 5
 
 
 def finalize_response(
@@ -580,15 +575,6 @@ def track_dsl(
                 "bool": {
                     "should": [
                         *base_match(search_str),
-                        {
-                            "wildcard": {
-                                "title": {
-                                    "value": "*" + search_str + "*",
-                                    "boost": 0.01,
-                                    "case_insensitive": True,
-                                }
-                            }
-                        },
                         {
                             "multi_match": {
                                 "query": search_str,
@@ -831,16 +817,6 @@ def user_dsl(
                                 "boost": len(search_str) * 0.5,
                             }
                         },
-                        # Original wildcard matching
-                        {
-                            "wildcard": {
-                                "name": {
-                                    "value": "*" + search_str + "*",
-                                    "boost": 0.01,
-                                    "case_insensitive": True,
-                                }
-                            }
-                        },
                         {
                             "match": {
                                 "name.searchable": {
@@ -1041,15 +1017,6 @@ def base_playlist_dsl(
                 "bool": {
                     "should": [
                         *base_match(search_str, boost=len(search_str)),
-                        {
-                            "wildcard": {
-                                "playlist_name": {
-                                    "value": "*" + search_str + "*",
-                                    "boost": 0.01,
-                                    "case_insensitive": True,
-                                }
-                            }
-                        },
                         {
                             "multi_match": {
                                 "query": search_str,
@@ -1317,28 +1284,18 @@ def album_dsl(
 
 
 def reorder_users(users):
-    """Filters out users with copy cat names.
-    e.g. if a verified deadmau5 is in the result set
-    filter out all non-verified users with same name.
-
+    """
     Moves users without profile pictures to the end.
     """
-    reserved = set()
-    for user in users:
-        if user["is_verified"]:
-            reserved.add(lower_ascii_name(user["name"]))
-
-    filtered = []
+    users_with_photos = []
     users_without_photos = []
     for user in users:
-        if not user["is_verified"] and lower_ascii_name(user["name"]) in reserved:
-            continue
         if user["profile_picture_sizes"] or user["profile_picture"]:
-            filtered.append(user)
+            users_with_photos.append(user)
         else:
             users_without_photos.append(user)
 
-    return filtered + users_without_photos
+    return users_with_photos + users_without_photos
 
 
 def lower_ascii_name(name):

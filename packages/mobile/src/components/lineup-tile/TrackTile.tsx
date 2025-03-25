@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -41,8 +42,7 @@ import { LineupTile } from './LineupTile'
 const { getUid } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
-const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
-  tracksSocialActions
+const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { getUserFromTrack } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const { getUserId } = accountSelectors
@@ -101,9 +101,7 @@ export const TrackTileComponent = ({
   const {
     duration,
     field_visibility,
-    is_unlisted,
     has_current_user_reposted,
-    has_current_user_saved,
     title,
     track_id,
     genre,
@@ -217,16 +215,10 @@ export const TrackTileComponent = ({
     )
   }, [dispatch, track_id])
 
-  const handlePressSave = useCallback(() => {
-    if (track_id === undefined) {
-      return
-    }
-    if (has_current_user_saved) {
-      dispatch(unsaveTrack(track_id, FavoriteSource.TILE))
-    } else {
-      dispatch(saveTrack(track_id, FavoriteSource.TILE))
-    }
-  }, [track_id, dispatch, has_current_user_saved])
+  const handlePressSave = useToggleFavoriteTrack({
+    trackId: track_id as number,
+    source: FavoriteSource.TILE
+  })
 
   const handlePressRepost = useCallback(() => {
     if (track_id === undefined) {
@@ -264,7 +256,7 @@ export const TrackTileComponent = ({
       id={track_id}
       uid={lineupTileProps.uid}
       renderImage={renderImage}
-      isUnlisted={is_unlisted}
+      isUnlisted={isUnlisted}
       onPress={handlePress}
       onPressOverflow={handlePressOverflow}
       onPressRepost={handlePressRepost}

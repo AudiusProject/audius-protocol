@@ -2,6 +2,7 @@ import base64
 import json
 from typing import Optional
 
+from eth_account import Account
 from eth_account.messages import encode_defunct
 from flask import Response, request
 from flask_restx import Namespace, Resource, fields, inputs, reqparse
@@ -22,6 +23,7 @@ from src.api.v1.helpers import (
     extend_feed_item,
     extend_playlist,
     extend_purchase,
+    extend_related,
     extend_supporter,
     extend_supporting,
     extend_track,
@@ -40,11 +42,13 @@ from src.api.v1.helpers import (
     get_current_user_id,
     get_default_max,
     make_full_response,
+    make_full_response_with_related,
     make_response,
     pagination_parser,
     pagination_with_current_user_parser,
     parse_bool_param,
     success_response,
+    success_response_with_related,
     track_history_parser,
     user_albums_route_parser,
     user_collections_library_parser,
@@ -64,7 +68,7 @@ from src.api.v1.models.activities import (
     track_activity_full_model,
     track_activity_model,
 )
-from src.api.v1.models.comments import comment_mention, reply_comment_model
+from src.api.v1.models.comments import comment_model
 from src.api.v1.models.common import favorite
 from src.api.v1.models.developer_apps import authorized_app, developer_app
 from src.api.v1.models.extensions.fields import NestedOneOf
@@ -103,6 +107,7 @@ from src.api.v1.playlists import get_tracks_for_playlist
 from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.exceptions import PermissionError
 from src.models.users.email import EmailAccess
+from src.queries.comments import get_muted_users, get_user_comments
 from src.queries.download_csv import (
     DownloadPurchasesArgs,
     DownloadSalesArgs,
@@ -121,7 +126,6 @@ from src.queries.get_collection_library import (
     GetCollectionLibraryArgs,
     get_collection_library,
 )
-from src.queries.get_comments import get_muted_users, get_user_comments
 from src.queries.get_developer_apps import (
     get_developer_apps_by_user,
     get_developer_apps_with_grant_for_user,
@@ -191,7 +195,6 @@ from src.queries.query_helpers import (
     SortDirection,
 )
 from src.queries.search_queries import SearchKind, search
-from src.utils import web3_provider
 from src.utils.auth_middleware import auth_middleware
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import decode_string_id, encode_int_id
@@ -1343,6 +1346,8 @@ class UserSearchResult(Resource):
         args = user_search_parser.parse_args()
         query = args.get("query")
         genres = args.get("genre")
+        limit = format_limit(args, 50, 10)
+        offset = format_offset(args)
         is_verified = parse_bool_param(args.get("is_verified"))
         sort_method = args.get("sort_method")
         search_args = {
@@ -1351,8 +1356,8 @@ class UserSearchResult(Resource):
             "is_auto_complete": False,
             "current_user_id": None,
             "with_users": True,
-            "limit": 10,
-            "offset": 0,
+            "limit": limit,
+            "offset": offset,
             "only_verified": is_verified,
             "genres": genres,
             "sort_method": sort_method,
@@ -1642,8 +1647,8 @@ class FullMutualFollowers(Resource):
         offset = get_default_max(args.get("offset"), 0)
         current_user_id = get_current_user_id(args)
         args = {
-            "follower_user_id": current_user_id,
-            "followee_user_id": decoded_id,
+            "my_id": current_user_id,
+            "other_user_id": decoded_id,
             "limit": limit,
             "offset": offset,
         }
@@ -2301,13 +2306,10 @@ class GetTokenVerification(Resource):
         base64_payload = token_parts[1]
         message = f"{base64_header}.{base64_payload}"
 
-        # 3. Recover message from signature
-        web3 = web3_provider.get_web3()
-
         wallet = None
         encoded_message = encode_defunct(text=message)
         try:
-            wallet = web3.eth.account.recover_message(
+            wallet = Account.recover_message(
                 encoded_message,
                 signature=signature,
             )
@@ -3195,31 +3197,8 @@ class UserEmailKey(Resource):
 
 
 # Comments
-user_comment_model = ns.model(
-    "comment",
-    {
-        "id": fields.String(required=True),
-        "user_id": fields.String(required=False),
-        "message": fields.String(required=True),
-        "mentions": fields.List(
-            fields.Nested(comment_mention),
-            required=False,
-        ),
-        "track_timestamp_s": fields.Integer(required=False),
-        "react_count": fields.Integer(required=True),
-        "is_edited": fields.Boolean(required=True),
-        "is_current_user_reacted": fields.Boolean(required=False),
-        "is_artist_reacted": fields.Boolean(required=False),
-        "is_tombstone": fields.Boolean(required=False),
-        "is_muted": fields.Boolean(required=False),
-        "created_at": fields.String(required=True),
-        "updated_at": fields.String(required=False),
-        "reply_count": fields.Integer(required=False),
-        "replies": fields.List(fields.Nested(reply_comment_model), require=False),
-    },
-)
 user_comments_response = make_response(
-    "user_comments_response", ns, fields.List(fields.Nested(user_comment_model))
+    "user_comments_response", ns, fields.List(fields.Nested(comment_model))
 )
 
 
@@ -3227,7 +3206,7 @@ user_comments_response = make_response(
 class UserComments(Resource):
     @record_metrics
     @ns.doc(
-        id="""User Comments""",
+        id="""Get User Comments""",
         description="""Get user comment history""",
         params={"id": "A User ID"},
         responses={
@@ -3241,13 +3220,51 @@ class UserComments(Resource):
     @cache(ttl_sec=5)
     def get(self, id):
         args = pagination_with_current_user_parser.parse_args()
-        decoded_id = decode_with_abort(id, ns)
+        user_id = decode_with_abort(id, ns)
         current_user_id = get_current_user_id(args)
         args = {
             **args,
-            "target_user_id": decoded_id,
+            "user_id": user_id,
             "current_user_id": current_user_id,
         }
-        user_comments = get_user_comments(args)
+        user_comments = get_user_comments(args, include_related=False)
 
-        return success_response(user_comments)
+        return success_response(user_comments["data"])
+
+
+user_comments_response_full = make_full_response_with_related(
+    "user_comments_response_full", full_ns, fields.List(fields.Nested(comment_model))
+)
+
+
+@full_ns.route("/<string:id>/comments")
+class FullUserComments(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get User Comments""",
+        description="""Get user comment history""",
+        params={"id": "A User ID"},
+        responses={
+            200: "Success",
+            400: "Bad request",
+            500: "Server error",
+        },
+    )
+    @full_ns.expect(pagination_with_current_user_parser)
+    @full_ns.marshal_with(user_comments_response_full)
+    @cache(ttl_sec=5)
+    def get(self, id):
+        args = pagination_with_current_user_parser.parse_args()
+        user_id = decode_with_abort(id, full_ns)
+        current_user_id = get_current_user_id(args)
+        args = {
+            **args,
+            "user_id": user_id,
+            "current_user_id": current_user_id,
+        }
+        user_comments = get_user_comments(args, include_related=True)
+        user_comments["related"] = extend_related(
+            user_comments["related"], current_user_id
+        )
+
+        return success_response_with_related(user_comments)

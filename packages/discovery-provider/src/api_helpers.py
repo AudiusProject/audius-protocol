@@ -1,24 +1,27 @@
 import datetime
 import json
 import logging
+import os
+
+from eth_account import Account
 
 # pylint: disable=no-name-in-module
 from eth_account.messages import encode_defunct
 from flask import jsonify
 from web3 import Web3
-from web3.auto import w3
 
 from src.queries.get_health import get_latest_chain_block_set_if_nx
 from src.queries.get_sol_plays import get_sol_play_health_info
 
 # pylint: disable=R0401
-from src.utils import helpers, web3_provider
+from src.utils import helpers
 from src.utils.config import shared_config
+from src.utils.core import get_core_health
+from src.utils.helpers import generate_signature
 from src.utils.redis_connection import get_redis
 from src.utils.redis_constants import most_recent_indexed_block_redis_key
 
 redis_conn = get_redis()
-web3_connection = web3_provider.get_web3()
 logger = logging.getLogger(__name__)
 disc_prov_version = helpers.get_discovery_provider_version()
 
@@ -49,6 +52,18 @@ def success_response(
     return response, status
 
 
+# Create a response dict with metadata, data, signature, and timestamp
+def success_response_with_related(
+    response_entity=None, status=200, to_json=True, sign_response=True, extras={}
+):
+    starting_response_dictionary = response_entity
+    response_dictionary = response_dict_with_metadata(
+        starting_response_dictionary, sign_response
+    )
+    response = jsonify(response_dictionary) if to_json else response_dictionary
+    return response, status
+
+
 # Create a response dict with metadata fields of success, latest_indexed_block, latest_chain_block,
 # version, and owner_wallet
 def response_dict_with_metadata(response_dictionary, sign_response):
@@ -56,9 +71,7 @@ def response_dict_with_metadata(response_dictionary, sign_response):
 
     # Include block difference information
     latest_indexed_block = redis_conn.get(most_recent_indexed_block_redis_key)
-    latest_chain_block, _ = get_latest_chain_block_set_if_nx(
-        redis_conn, web3_connection
-    )
+    latest_chain_block, _ = get_latest_chain_block_set_if_nx(redis_conn)
     response_dictionary["latest_indexed_block"] = (
         int(latest_indexed_block) if latest_indexed_block else None
     )
@@ -77,8 +90,22 @@ def response_dict_with_metadata(response_dictionary, sign_response):
         play_chain_tx["slot"] if play_chain_tx else None
     )
 
+    core_health = get_core_health()
+    if core_health:
+        response_dictionary["latest_indexed_slot_plays"] = core_health.get(
+            "latest_indexed_block"
+        )
+        response_dictionary["latest_chain_slot_plays"] = core_health.get(
+            "latest_chain_block"
+        )
+
     response_dictionary["version"] = disc_prov_version
     response_dictionary["signer"] = shared_config["delegate"]["owner_wallet"]
+    response_dictionary["antiAbuseWalletPubkey"] = os.getenv("anti_abuse_wallet_pubkey")
+
+    oracle_pubkey = os.getenv("oracle_wallet")
+    if oracle_pubkey:
+        response_dictionary["walletPubkey"] = oracle_pubkey
 
     if sign_response:
         # generate timestamp with format HH:MM:SS.sssZ
@@ -89,30 +116,6 @@ def response_dict_with_metadata(response_dictionary, sign_response):
         response_dictionary["signature"] = signature
 
     return response_dictionary
-
-
-# Generate signature and timestamp using data
-def generate_signature(data):
-    # convert sorted dictionary to string with no white spaces
-    to_sign_str = json.dumps(
-        data,
-        sort_keys=True,
-        ensure_ascii=False,
-        separators=(",", ":"),
-        cls=DateTimeEncoder,
-    )
-
-    # generate hash for if data contains unicode chars
-    to_sign_hash = Web3.keccak(text=to_sign_str).hex()
-
-    # generate SignableMessage for sign_message()
-    encoded_to_sign = encode_defunct(hexstr=to_sign_hash)
-
-    # sign to get signature
-    signed_message = w3.eth.account.sign_message(
-        encoded_to_sign, private_key=shared_config["delegate"]["private_key"]
-    )
-    return signed_message.signature.hex()
 
 
 # Accepts raw data with timestamp key and relevant fields, converts data to hash, and recovers the wallet
@@ -129,8 +132,6 @@ def recover_wallet(data, signature):
     to_recover_hash = Web3.keccak(text=json_dump).hex()
 
     encoded_to_recover = encode_defunct(hexstr=to_recover_hash)
-    recovered_wallet = w3.eth.account.recover_message(
-        encoded_to_recover, signature=signature
-    )
+    recovered_wallet = Account.recover_message(encoded_to_recover, signature=signature)
 
     return recovered_wallet

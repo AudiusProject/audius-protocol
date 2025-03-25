@@ -10,6 +10,10 @@ import requests
 from elasticsearch import Elasticsearch
 from redis import Redis
 
+from src.challenges.tastemaker_challenge import (
+    get_tastemaker_challenge_start_block,
+    get_tastemaker_challenge_start_chain_id,
+)
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 from src.models.indexing.block import Block
 from src.monitors import monitor_names, monitors
@@ -26,13 +30,11 @@ from src.tasks.index_core import (
     core_health_check_cache_key,
     core_listens_health_check_cache_key,
 )
-from src.utils import (
+from src.utils import (  # elasticdsl,
     db_session,
-    elasticdsl,
     get_all_nodes,
     helpers,
     redis_connection,
-    web3_provider,
 )
 from src.utils.config import shared_config
 from src.utils.elasticdsl import ES_INDEXES
@@ -52,10 +54,6 @@ from src.utils.redis_constants import (
     trending_tracks_last_completion_redis_key,
     user_balances_refresh_last_completion_redis_key,
 )
-from src.utils.web3_provider import get_web3
-
-LOCAL_RPC = "http://chain:8545"
-
 
 logger = logging.getLogger(__name__)
 MONITORS = monitors.MONITORS
@@ -120,13 +118,17 @@ def _get_query_insights():
 
 
 def _get_relay_health():
-    relay_plugin = os.getenv(
-        "audius_relay_host",
-        "http://relay:6001/relay",
-    )
-    relay_health = requests.get(relay_plugin + "/health")
-    relay_res = relay_health.json()
-    return relay_res
+    try:
+        relay_plugin = os.getenv(
+            "audius_relay_host",
+            "http://relay:6001/relay",
+        )
+        relay_health = requests.get(relay_plugin + "/health")
+        relay_res = relay_health.json()
+        return relay_res
+    except Exception as e:
+        logger.error(f"relay not reachable {e}")
+        return None
 
 
 def _is_relay_healthy(relay_health_res):
@@ -134,34 +136,6 @@ def _is_relay_healthy(relay_health_res):
     is_healthy = relay_status == "up"
     relay_health_res["is_unhealthy"] = not is_healthy
     return is_healthy
-
-
-def _get_chain_health():
-    try:
-        health_res = requests.get(LOCAL_RPC + "/health", timeout=1)
-        chain_res = health_res.json()
-
-        web3 = get_web3(LOCAL_RPC)
-        latest_block = web3.eth.get_block("latest")
-        chain_res["block_number"] = latest_block.number
-        chain_res["hash"] = latest_block.hash.hex()
-        chain_res["chain_id"] = web3.eth.chain_id
-        get_signers_data = '{"method":"clique_getSigners","params":[]}'
-        signers_response = requests.post(LOCAL_RPC, data=get_signers_data)
-        signers_response_dict = signers_response.json()["result"]
-        chain_res["signers"] = signers_response_dict
-        get_snapshot_data = '{"method":"clique_getSnapshot","params":[]}'
-        snapshot_response = requests.post(LOCAL_RPC, data=get_snapshot_data)
-        snapshot_response_dict = snapshot_response.json()["result"]
-        chain_res["snapshot"] = snapshot_response_dict
-        return chain_res
-    except Exception as e:
-        # We use ganache locally in development, which doesn't have /health endpoint
-        # Don't log the error to prevent red herrings. Things will still work.
-        # TODO: Remove this check when we use nethermind in development
-        if shared_config["discprov"]["env"] != "dev":
-            logging.error("issue with chain health %s", exc_info=e)
-        pass
 
 
 class GetHealthArgs(TypedDict):
@@ -198,7 +172,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     Returns a tuple of health results and a boolean indicating an error
     """
     redis = redis_connection.get_redis()
-    web3 = web3_provider.get_web3()
 
     bypass_errors = args.get("bypass_errors")
     verbose = args.get("verbose")
@@ -227,11 +200,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     latest_indexed_block_hash: Optional[str] = None
 
     if use_redis_cache:
-        # get latest blockchain state from redis cache, or fallback to chain if None
-        latest_block_num, latest_block_hash = get_latest_chain_block_set_if_nx(
-            redis, web3
-        )
-
         # get latest db state from redis cache
         latest_indexed_block_num = redis.get(most_recent_indexed_block_redis_key)
         if latest_indexed_block_num is not None:
@@ -242,15 +210,17 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         )
         if latest_indexed_block_hash_bytes is not None:
             latest_indexed_block_hash = latest_indexed_block_hash_bytes.decode("utf-8")
-    else:
-        # Get latest blockchain state from web3
-        try:
-            final_poa_block = helpers.get_final_poa_block()
-            latest_block = web3.eth.get_block("latest", True)
-            latest_block_num = latest_block.number + (final_poa_block or 0)
-            latest_block_hash = latest_block.hash.hex()
-        except Exception as e:
-            logger.error(f"Could not get latest block from chain: {e}")
+
+    core_health: CoreHealth = get_core_health(redis=redis)
+    core_listens_health = get_core_listens_health(
+        redis=redis, plays_count_max_drift=plays_count_max_drift
+    )
+    core_tastemaker_challenge_health = get_core_tastemaker_challenge_health(redis=redis)
+
+    latest_block_ts = 0
+    if core_health:
+        latest_chain_block_ts = core_health.get("latest_chain_block_ts") or 0
+        latest_block_ts = int(latest_chain_block_ts)
 
     # fetch latest db state if:
     # we explicitly don't want to use redis cache or
@@ -264,22 +234,18 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         latest_indexed_block_num = db_block_state["number"] or 0
         latest_indexed_block_hash = db_block_state["blockhash"]
 
-    core_health: CoreHealth = get_core_health(redis=redis)
-    core_listens_health = get_core_listens_health(
-        redis=redis, plays_count_max_drift=plays_count_max_drift
-    )
-    indexing_plays_with_core = core_health and core_health.get("indexing_plays")
+    current_ts = int(time.time())  # Current UTC time in seconds
 
-    play_health_info = get_play_health_info(redis, plays_count_max_drift)
-    if indexing_plays_with_core:
-        play_health_info = core_listens_health
+    core_stuck = (current_ts - latest_block_ts) > 180
+    if core_stuck:
+        errors.append("no new blocks in at least a minute")
 
-    indexing_entity_manager_with_core = core_health and core_health.get(
-        "indexing_entity_manager"
-    )
-    if indexing_entity_manager_with_core:
-        latest_indexed_block_num = core_health.get("latest_indexed_block") or -1
-        latest_block_num = core_health.get("latest_chain_block") or -1
+    play_health_info = core_listens_health
+    latest_indexed_block_num = -1
+    latest_block_num = -1
+    if core_health:
+        latest_indexed_block_num = core_health.get("latest_indexed_block") or 0
+        latest_block_num = core_health.get("latest_chain_block") or 0
 
     user_bank_health_info = get_solana_indexer_status(
         redis, redis_keys.solana.user_bank, user_bank_max_drift
@@ -372,6 +338,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "trending_tracks_age_sec": trending_tracks_age_sec,
         "trending_playlists_age_sec": trending_playlists_age_sec,
         "challenge_last_event_age_sec": challenge_events_age_sec,
+        "tastemaker_challenge": core_tastemaker_challenge_health,
         "user_balances_age_sec": user_balances_age_sec,
         "num_users_in_lazy_balance_refresh_queue": num_users_in_lazy_balance_refresh_queue,
         "num_users_in_immediate_balance_refresh_queue": num_users_in_immediate_balance_refresh_queue,
@@ -438,8 +405,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     else:
         health_results["meets_min_requirements"] = True
 
-    health_results["chain_health"] = _get_chain_health()
-
     relay_health = _get_relay_health()
     if not _is_relay_healthy(relay_health):
         errors.append("relay unhealthy")
@@ -447,15 +412,15 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     health_results["relay"] = relay_health
 
     # Elasticsearch health
-    esclient = elasticdsl.get_esclient()
-    if esclient:
-        health_results["elasticsearch"] = get_elasticsearch_health_info(
-            esclient,
-            latest_indexed_block_num,
-            verbose,
-        )
-        if health_results["elasticsearch"]["status"] != "green":
-            errors.append("unhealthy elasticsearch")
+    # esclient = elasticdsl.get_esclient()
+    # if esclient:
+    #     health_results["elasticsearch"] = get_elasticsearch_health_info(
+    #         esclient,
+    #         latest_indexed_block_num,
+    #         verbose,
+    #     )
+    #     if health_results["elasticsearch"]["status"] != "green":
+    #         errors.append("unhealthy elasticsearch")
 
     if verbose:
         # DB connections check
@@ -494,7 +459,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         errors.append("unhealthy block diff")
     if unhealthy_challenges:
         errors.append("unhealthy challenges")
-    if play_health_info["is_unhealthy"]:
+    if play_health_info and play_health_info.get("is_unhealthy"):
         errors.append("unhealthy plays")
     if not user_bank_health_info["is_healthy"]:
         errors.append("unhealthy user_bank indexer")
@@ -511,23 +476,16 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     if not delist_statuses_ok:
         errors.append("unhealthy delist statuses")
 
-    chain_health = health_results["chain_health"]
-    if chain_health and chain_health["status"] == "Unhealthy":
-        errors.append("unhealthy chain")
-
-    is_dev = shared_config["discprov"]["env"] == "dev"
-    if not is_dev and not chain_health:
-        errors.append("no chain response")
-
     if verbose:
         api_healthy, reason = is_api_healthy(url)
         if not api_healthy:
             errors.append(f"api unhealthy: {reason}")
 
+    play_health_unhealthy = play_health_info and play_health_info.get("is_unhealthy")
     is_unhealthy = not bypass_errors and (
         unhealthy_blocks
         or unhealthy_challenges
-        or play_health_info["is_unhealthy"]
+        or play_health_unhealthy
         or not delist_statuses_ok
         or (
             health_results.get("elasticsearch") != None
@@ -738,6 +696,22 @@ def get_core_listens_health(redis: Redis, plays_count_max_drift: Optional[int]):
         return None
 
 
+def get_core_tastemaker_challenge_health(
+    redis: Redis,
+):
+    latest_block_num, _ = get_latest_chain_block_set_if_nx(redis)
+    tastemaker_challenge_start_block = get_tastemaker_challenge_start_block()
+    tastemaker_challenge_start_block_chain_id = (
+        get_tastemaker_challenge_start_chain_id()
+    )
+    return {
+        "tastemaker_challenge_start_block": tastemaker_challenge_start_block,
+        "tastemaker_challenge_start_block_chain_id": tastemaker_challenge_start_block_chain_id,
+        "is_running": latest_block_num is not None
+        and latest_block_num > tastemaker_challenge_start_block,
+    }
+
+
 def get_core_health(redis: Redis):
     try:
         core_health = redis.get(core_health_check_cache_key)
@@ -749,7 +723,7 @@ def get_core_health(redis: Redis):
         return None
 
 
-def get_latest_chain_block_set_if_nx(redis=None, web3=None):
+def get_latest_chain_block_set_if_nx(redis=None):
     """
     Retrieves the latest block number and blockhash from redis if the keys exist.
     Otherwise it sets these values in redis by querying web3 and returns them
@@ -763,14 +737,8 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None):
     latest_block_num = None
     latest_block_hash = None
 
-    if redis is None or web3 is None:
+    if redis is None:
         raise Exception("Invalid arguments for get_latest_chain_block_set_if_nx")
-
-    # also check for 'eth' attribute in web3 which means it's initialized and connected to a provider
-    if not hasattr(web3, "eth"):
-        raise Exception(
-            "Invalid web3 argument for get_latest_chain_block_set_if_nx, web3 is not initialized"
-        )
 
     stored_latest_block_num = redis.get(latest_block_redis_key)
     if stored_latest_block_num is not None:
@@ -779,32 +747,6 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None):
     stored_latest_blockhash = redis.get(latest_block_hash_redis_key)
     if stored_latest_blockhash is not None:
         latest_block_hash = stored_latest_blockhash.decode("utf-8")
-
-    if latest_block_num is None or latest_block_hash is None:
-        try:
-            final_poa_block = helpers.get_final_poa_block()
-            latest_block = web3.eth.get_block("latest", True)
-            latest_block_num = latest_block.number + (final_poa_block or 0)
-            latest_block_hash = latest_block.hash.hex()
-
-            # if we had attempted to use redis cache and the values weren't there, set the values now
-            # ex sets expiration time and nx only sets if key doesn't exist in redis
-            redis.set(
-                latest_block_redis_key,
-                latest_block_num,
-                ex=default_indexing_interval_seconds,
-                nx=True,
-            )
-            redis.set(
-                latest_block_hash_redis_key,
-                latest_block_hash,
-                ex=default_indexing_interval_seconds,
-                nx=True,
-            )
-        except Exception as e:
-            logger.error(
-                f"Could not set values in redis for get_latest_chain_block_set_if_nx: {e}"
-            )
 
     return latest_block_num, latest_block_hash
 

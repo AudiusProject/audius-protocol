@@ -8,10 +8,11 @@ import {
   formatNumberCommas,
   stringWeiToAudioBN
 } from '@audius/common/utils'
-import { Platform } from 'react-native'
+import { Platform, Image } from 'react-native'
 
 import { IconAudiusLogo } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
+import { getChallengeConfig } from 'app/utils/challenges'
 
 import {
   NotificationTile,
@@ -20,8 +21,6 @@ import {
   NotificationTitle,
   NotificationTwitterButton
 } from '../Notification'
-
-import { IconStreakFire } from './ListenStreakReminderNotification'
 
 const formatNumber = (amount: BNAudio) => {
   return formatNumberCommas(Number(amount.toString()))
@@ -61,6 +60,7 @@ export const ChallengeRewardNotification = (
       : challengeId
 
   const info = challengeRewardsConfig[mappedChallengeRewardsConfigKey]
+  const icon = getChallengeConfig(challengeId)?.icon
   const amount = stringWeiToAudioBN(notification.amount)
   const navigation = useNotificationNavigation()
 
@@ -84,8 +84,6 @@ export const ChallengeRewardNotification = (
           return messages.streakMilestone(amountEarned, listenStreak ?? 0)
         }
         return messages.streakMaintenance(amountEarned)
-      case 'referred':
-        return `${messages.amountEarned(amount)} ${messages.referredText}`
       default:
         return `${messages.amountEarned(amount)} ${messages.challengeCompleteText}`
     }
@@ -98,8 +96,8 @@ export const ChallengeRewardNotification = (
       <NotificationHeader
         icon={IconAudiusLogo}
         emoji={
-          challengeId === ChallengeName.ListenStreakEndless ? (
-            <IconStreakFire />
+          icon ? (
+            <Image source={icon} style={{ width: 32, height: 32 }} />
           ) : undefined
         }
       >

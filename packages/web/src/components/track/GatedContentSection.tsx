@@ -1,6 +1,5 @@
 import { useCallback, useEffect } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
 import {
   Name,
   FollowSource,
@@ -14,7 +13,6 @@ import {
   AccessConditions,
   User
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   cacheUsersSelectors,
   usersSocialActions as socialActions,
@@ -56,6 +54,8 @@ import styles from './GiantTrackTile.module.css'
 const { getUsers } = cacheUsersSelectors
 const { beginTip } = tippingActions
 const { getGatedContentStatusMap } = gatedContentSelectors
+
+const BUY_BUTTON_WIDTH = 250
 
 const getMessages = (contentType: PurchaseableContentType) => ({
   howToUnlock: 'HOW TO UNLOCK',
@@ -135,10 +135,6 @@ const LockedGatedContentSection = ({
   const [searchParams] = useSearchParams()
   const openCheckout = searchParams.get('checkout') === 'true'
 
-  const { isEnabled: isGuestCheckoutEnabled } = useFeatureFlag(
-    FeatureFlags.GUEST_CHECKOUT
-  )
-
   const handlePurchase = useRequiresAccountCallback(() => {
     if (lockedContentModalVisibility) {
       setLockedContentModalVisibility(false)
@@ -175,17 +171,12 @@ const LockedGatedContentSection = ({
 
   useEffect(() => {
     if (openCheckout && isUSDCPurchaseGated) {
-      if (isGuestCheckoutEnabled) {
-        handlePurchaseViaGuestCheckout()
-      } else {
-        handlePurchase()
-      }
+      handlePurchaseViaGuestCheckout()
     }
   }, [
     openCheckout,
     handlePurchase,
     isUSDCPurchaseGated,
-    isGuestCheckoutEnabled,
     handlePurchaseViaGuestCheckout
   ])
 
@@ -237,25 +228,25 @@ const LockedGatedContentSection = ({
         chain === Chain.Eth ? IconLogoCircleETH : IconLogoCircleSOL
       return (
         <Text variant='body' strength='strong'>
-          <div className={styles.collectibleGatedDescription}>
+          <Flex className={styles.collectibleGatedDescription}>
             {messages.unlockCollectibleGatedContent}
-          </div>
-          <div
+          </Flex>
+          <Flex
             className={styles.gatedContentSectionCollection}
             onClick={goToCollection}
           >
             {imageUrl && (
-              <div className={styles.collectionIconsContainer}>
+              <Flex className={styles.collectionIconsContainer}>
                 <img
                   src={imageUrl}
                   alt={`${name} nft collection`}
                   className={styles.collectibleImage}
                 />
                 <ChainIcon css={{ position: 'relative', left: -spacing.s }} />
-              </div>
+              </Flex>
             )}
             <span>{name}</span>
-          </div>
+          </Flex>
         </Text>
       )
     }
@@ -350,11 +341,7 @@ const LockedGatedContentSection = ({
                 contentType
               })
             )
-            if (isGuestCheckoutEnabled) {
-              handlePurchaseViaGuestCheckout()
-            } else {
-              handlePurchase()
-            }
+            handlePurchaseViaGuestCheckout()
           }}
           fullWidth
         >
@@ -370,7 +357,7 @@ const LockedGatedContentSection = ({
   }
 
   return (
-    <Flex className={className} justifyContent='space-between'>
+    <Flex w='100%' justifyContent='space-between'>
       <Flex gap='s' direction='column'>
         <Flex alignItems='center' gap='s'>
           <LockedStatusBadge
@@ -383,9 +370,7 @@ const LockedGatedContentSection = ({
         </Flex>
         {renderLockedDescription()}
       </Flex>
-      <div className={cn(styles.gatedContentSectionButton, buttonClassName)}>
-        {renderButton()}
-      </div>
+      <Flex w={BUY_BUTTON_WIDTH}>{renderButton()}</Flex>
     </Flex>
   )
 }
@@ -571,7 +556,7 @@ const UnlockedGatedContentSection = ({
   }
 
   return (
-    <div className={className}>
+    <Flex className={className}>
       <Text
         variant='label'
         size='l'
@@ -599,7 +584,7 @@ const UnlockedGatedContentSection = ({
       >
         {renderUnlockedDescription()}
       </Text>
-    </div>
+    </Flex>
   )
 }
 
@@ -684,7 +669,9 @@ export const GatedContentSection = ({
 
   if (hasStreamAccess) {
     return (
-      <div className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
+      <Flex
+        className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}
+      >
         <UnlockedGatedContentSection
           contentType={contentType}
           streamConditions={streamConditions}
@@ -695,13 +682,15 @@ export const GatedContentSection = ({
           className={className}
           trackOwner={trackOwner}
         />
-      </div>
+      </Flex>
     )
   }
 
   if (gatedContentStatus === 'UNLOCKING') {
     return (
-      <div className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
+      <Flex
+        className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}
+      >
         <UnlockingGatedContentSection
           contentType={contentType}
           streamConditions={streamConditions}
@@ -711,12 +700,12 @@ export const GatedContentSection = ({
           isOwner={isOwner}
           className={className}
         />
-      </div>
+      </Flex>
     )
   }
 
   return (
-    <div className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
+    <Flex className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
       <LockedGatedContentSection
         contentId={contentId}
         contentType={contentType}
@@ -730,6 +719,6 @@ export const GatedContentSection = ({
         buttonClassName={buttonClassName}
         source={source}
       />
-    </div>
+    </Flex>
   )
 }

@@ -1,5 +1,10 @@
 import { Id } from '@audius/sdk'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  QueryKey,
+  useInfiniteQuery,
+  UseInfiniteQueryResult
+} from '@tanstack/react-query'
 
 import { notificationFromSDK, transformAndCleanList } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
@@ -23,13 +28,13 @@ const USER_INITIAL_LOAD_COUNT = 9
 
 type PageParam = {
   timestamp: number
-  groupId: string
+  groupId: string | undefined
 } | null
 
 type EntityIds = {
-  userIds: Set<ID>
-  trackIds: Set<ID>
-  collectionIds: Set<ID>
+  userIds: ID[]
+  trackIds: ID[]
+  collectionIds: ID[]
 }
 
 const collectEntityIds = (notifications: Notification[]): EntityIds => {
@@ -149,7 +154,11 @@ const collectEntityIds = (notifications: Notification[]): EntityIds => {
     }
   })
 
-  return { userIds, trackIds, collectionIds }
+  return {
+    userIds: Array.from(userIds),
+    trackIds: Array.from(trackIds),
+    collectionIds: Array.from(collectionIds)
+  }
 }
 
 export const getNotificationsQueryKey = ({
@@ -171,7 +180,13 @@ export const useNotifications = (options?: QueryOptions) => {
   const validTypes = useNotificationValidTypes()
   const pageSize = DEFAULT_LIMIT
 
-  const query = useInfiniteQuery({
+  const query = useInfiniteQuery<
+    Notification[],
+    Error,
+    InfiniteData<Notification[]>,
+    QueryKey,
+    PageParam
+  >({
     queryKey: getNotificationsQueryKey({
       currentUserId,
       pageSize
@@ -206,41 +221,30 @@ export const useNotifications = (options?: QueryOptions) => {
   const lastPage = query.data?.pages[query.data.pages.length - 1]
   const { userIds, trackIds, collectionIds } = lastPage
     ? collectEntityIds(lastPage)
-    : {
-        userIds: new Set<ID>(),
-        trackIds: new Set<ID>(),
-        collectionIds: new Set<ID>()
-      }
+    : { userIds: undefined, trackIds: undefined, collectionIds: undefined }
 
   // Pre-fetch related entities
-  const usersQuery = useUsers(Array.from(userIds))
-  const tracksQuery = useTracks(Array.from(trackIds))
-  const collectionsQuery = useCollections(Array.from(collectionIds))
-
-  // Check if the latest page's entity data is still loading
-  const isLatestPagePending =
-    usersQuery.isPending || tracksQuery.isPending || collectionsQuery.isPending
-
-  const isLatestPageLoading =
-    usersQuery.isLoading || tracksQuery.isLoading || collectionsQuery.isLoading
-
-  const isError =
-    query.isError ||
-    usersQuery.isError ||
-    tracksQuery.isError ||
-    collectionsQuery.isError
+  const { isPending: isUsersPending } = useUsers(userIds)
+  const { isPending: isTracksPending } = useTracks(trackIds)
+  const { isPending: isCollectionsPending } = useCollections(collectionIds)
 
   // Return all pages except the last one if it's still loading entity data
   const notifications = query.data?.pages.slice(0, -1).flat() ?? []
-  if (!isLatestPagePending && lastPage) {
+  if (
+    !query.isPending &&
+    !isUsersPending &&
+    !isTracksPending &&
+    !isCollectionsPending &&
+    lastPage
+  ) {
     notifications.push(...lastPage)
   }
 
-  return {
-    ...query,
-    isPending: query.isPending || isLatestPagePending,
-    isLoading: query.isLoading || isLatestPageLoading,
-    isError,
-    notifications
-  }
+  const queryResults = query as UseInfiniteQueryResult<
+    InfiniteData<Notification[], unknown>,
+    Error
+  > & { notifications: Notification[] }
+  queryResults.notifications = notifications
+
+  return queryResults
 }

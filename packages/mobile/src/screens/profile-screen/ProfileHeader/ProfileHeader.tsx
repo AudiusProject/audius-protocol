@@ -1,6 +1,8 @@
 import { memo, useCallback, useEffect, useState } from 'react'
 
-import { useSelectTierInfo } from '@audius/common/hooks'
+import { useUserComments } from '@audius/common/api'
+import { useFeatureFlag, useSelectTierInfo } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { css } from '@emotion/native'
 import type { Animated } from 'react-native'
@@ -65,6 +67,7 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
     'allow_ai_attribution'
   ])
 
+  const { data: comments } = useUserComments({ userId, pageSize: 1 })
   const { tier = 'none' } = useSelectTierInfo(userId)
   const hasTier = tier !== 'none'
   const isOwner = userId === accountId
@@ -74,13 +77,18 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
       Boolean
     ).length > 1
   const isSupporting = supportingCount > 0
+
+  const { isEnabled: isRecentCommentsEnabled } = useFeatureFlag(
+    FeatureFlags.RECENT_COMMENTS
+  )
   // Note: we also if the profile bio is longer than 3 lines, but that's handled in the Bio component.
   const shouldExpand =
     hasTier ||
     hasMutuals ||
     hasMultipleSocials ||
     isSupporting ||
-    allow_ai_attribution
+    allow_ai_attribution ||
+    (comments && comments?.length > 0 && isRecentCommentsEnabled)
 
   useEffect(() => {
     if (!isExpandable && shouldExpand) {
@@ -127,7 +135,7 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
         backgroundColor='white'
         pv='s'
         ph='m'
-        gap='s'
+        style={{ gap: 9 }}
         borderBottom='default'
       >
         <ProfileInfo onFollow={handleFollow} />
@@ -155,7 +163,7 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
           {!hasUserFollowed ? null : (
             <ArtistRecommendations onClose={handleCloseArtistRecs} />
           )}
-          <Flex pointerEvents='box-none' mt='xs'>
+          <Flex pointerEvents='box-none' mt='s'>
             {isOwner ? <UploadTrackButton /> : <TipAudioButton />}
           </Flex>
         </OnlineOnly>

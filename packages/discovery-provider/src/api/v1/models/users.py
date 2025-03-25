@@ -111,7 +111,6 @@ user_model_full = ns.clone(
         "profile_picture_sizes": fields.String,
         "profile_picture_cids": fields.Nested(profile_picture, allow_null=True),
         "profile_picture_legacy": fields.String,
-        "metadata_multihash": fields.String,
         "has_collectibles": fields.Boolean(required=True),
         "playlist_library": fields.Nested(playlist_library, allow_null=True),
         "allow_ai_attribution": fields.Boolean(required=True),
@@ -294,6 +293,10 @@ sale_json_model = ns.model(
         ),
         "is_initial": fields.Boolean(
             description="Whether this is an initial encryption from the backfill",
+            allow_null=True,
+        ),
+        "pubkey_base64": fields.String(
+            description="Base64 encoded public key of the buyer",
             allow_null=True,
         ),
     },

@@ -14,7 +14,6 @@ import { useEffectOnce } from 'react-use'
 import { PersistGate } from 'redux-persist/integration/react'
 
 import { CommentDrawerProvider } from 'app/components/comments/CommentDrawerContext'
-import HCaptcha from 'app/components/hcaptcha'
 import NavigationContainer from 'app/components/navigation-container'
 import { NotificationReminder } from 'app/components/notification-reminder/NotificationReminder'
 import OAuthWebView from 'app/components/oauth/OAuthWebView'
@@ -55,10 +54,6 @@ if (Platform.OS === 'android') {
 // Increment the session count when the App.tsx code is first run
 incrementSessionCount()
 
-const Modals = () => {
-  return <HCaptcha />
-}
-
 const App = () => {
   useEffectOnce(() => {
     subscribeToNetworkStatusUpdates()
@@ -90,7 +85,6 @@ const App = () => {
                                 <Airplay />
                                 <RootScreen />
                                 <Drawers />
-                                <Modals />
                                 <OAuthWebView />
                                 <NotificationReminder />
                                 <RateCtaReminder />

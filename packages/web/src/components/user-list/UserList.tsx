@@ -88,6 +88,7 @@ export const UserList = ({
     .map((id) => usersMap[id])
     .filter(Boolean)
     .filter((u) => !u.is_deactivated)
+    .filter((u) => !!u.handle)
 
   const handleFollow = (userId: ID) => {
     dispatch(socialActions.followUser(userId, FollowSource.USER_LIST))

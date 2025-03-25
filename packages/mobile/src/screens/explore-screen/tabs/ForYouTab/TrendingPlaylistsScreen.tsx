@@ -26,7 +26,7 @@ export const TrendingPlaylistsScreen = () => {
       <ScreenContent>
         <Lineup
           lineup={lineup}
-          header={<RewardsBanner type='playlists' />}
+          header={<RewardsBanner bannerType='playlists' />}
           actions={trendingPlaylistsPageLineupActions}
           rankIconCount={5}
           isTrending

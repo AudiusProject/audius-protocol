@@ -6,11 +6,11 @@ import { Platform } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
 import {
-  IconCheck,
-  Text,
   Flex,
-  useTheme,
-  IconSparkles
+  IconCheck,
+  IconSparkles,
+  Text,
+  useTheme
 } from '@audius/harmony-native'
 import { ProgressBar } from 'app/components/progress-bar'
 import type { MobileChallengeConfig } from 'app/utils/challenges'
@@ -20,7 +20,7 @@ const messages = {
   completeLabel: 'COMPLETE',
   claimReward: 'Claim This Reward',
   readyToClaim: 'Ready to Claim',
-  pendingRewards: 'Pending Reward',
+  pendingRewards: 'Reward Pending',
   viewDetails: 'View Details',
   new: 'New!'
 }
@@ -42,8 +42,8 @@ export const Panel = ({
   remainingLabel,
   challenge
 }: PanelProps) => {
-  const { spacing } = useTheme()
   const { neutralLight4 } = useThemeColors()
+  const { spacing } = useTheme()
 
   const maxStepCount = challenge?.max_steps ?? 0
   const hasDisbursed = challenge?.state === 'disbursed'

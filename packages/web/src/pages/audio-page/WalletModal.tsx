@@ -304,7 +304,6 @@ const WalletModal = () => {
         showDismissButton={allowDismiss}
         dismissOnClickOutside={allowDismiss}
         contentHorizontalPadding={24}
-        useGradientTitle={false}
       >
         <div
           className={wm(styles.modalContainer, {

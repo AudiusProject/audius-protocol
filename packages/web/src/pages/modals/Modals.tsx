@@ -47,6 +47,7 @@ import { USDCPurchaseDetailsModal } from 'components/usdc-purchase-details-modal
 import { USDCTransactionDetailsModal } from 'components/usdc-transaction-details-modal/USDCTransactionDetailsModal'
 import TierExplainerModal from 'components/user-badges/TierExplainerModal'
 import ConnectedUserListModal from 'components/user-list-modal/ConnectedUserListModal'
+import UserListModalV2 from 'components/user-list-modal/components/UserListModalV2'
 import { WaitForDownloadModal } from 'components/wait-for-download-modal/WaitForDownloadModal'
 import { WelcomeModal } from 'components/welcome-modal/WelcomeModal'
 import { WithdrawUSDCModal } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
@@ -69,7 +70,7 @@ const CreateChatModal = lazy(
 )
 
 const TrendingRewardsModal = lazy(
-  () => import('components/rewards/modals/TrendingRewards')
+  () => import('components/rewards/modals/TrendingRewardsModal')
 )
 
 const InboxSettingsModal = lazy(
@@ -106,7 +107,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   LockedContent: LockedContentModal,
   APIRewardsExplainer: TopAPIModal,
   TrendingRewardsExplainer: TrendingRewardsModal,
-  ChallengeRewardsExplainer: ChallengeRewardsModal,
+  ChallengeRewards: ChallengeRewardsModal,
   ClaimAllRewards: ClaimAllRewardsModal,
   TransferAudioMobileWarning: TransferAudioMobileDrawer,
   BrowserPushPermissionConfirmation: BrowserPushConfirmationModal,
@@ -156,6 +157,7 @@ const Modals = () => {
         <>
           <EmbedModal />
           <ConnectedUserListModal />
+          <UserListModalV2 />
           <AppCTAModal />
           {/* dev-mode hot-key modals */}
           <ConfirmerPreview />

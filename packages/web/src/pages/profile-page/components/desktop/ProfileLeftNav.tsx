@@ -1,4 +1,6 @@
+import { useFeatureFlag } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { Box, Flex, Text } from '@audius/harmony'
 
@@ -16,6 +18,7 @@ import SocialLinkInput from '../SocialLinkInput'
 
 import { ProfileBio } from './ProfileBio'
 import { ProfileMutuals } from './ProfileMutuals'
+import { RecentComments } from './RecentComments'
 import { RelatedArtists } from './RelatedArtists'
 import { SupportingList } from './SupportingList'
 import { TopSupporters } from './TopSupporters'
@@ -91,6 +94,9 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
   } = props
 
   const accountUserId = useSelector(getUserId)
+  const recentCommentsFlag = useFeatureFlag(FeatureFlags.RECENT_COMMENTS)
+  const isRecentCommentsEnabled =
+    recentCommentsFlag.isLoaded && recentCommentsFlag.isEnabled
 
   if (editMode) {
     return (
@@ -212,11 +218,12 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
           tikTokHandle={tikTokHandle}
         />
         {accountUserId !== userId ? <TipAudioButton /> : null}
-        {allowAiAttribution ? <AiGeneratedCallout handle={handle} /> : null}
+        {isRecentCommentsEnabled ? <RecentComments userId={userId} /> : null}
         <SupportingList />
         <TopSupporters />
         <ProfileMutuals />
         <RelatedArtists />
+        {allowAiAttribution ? <AiGeneratedCallout handle={handle} /> : null}
         {isArtist ? <ProfileTopTags /> : null}
         {showUploadChip ? (
           <UploadChip type='track' variant='nav' source='nav' />

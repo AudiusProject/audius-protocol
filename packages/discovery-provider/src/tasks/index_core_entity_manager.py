@@ -2,6 +2,7 @@ import logging
 from logging import LoggerAdapter
 from typing import List, Optional
 
+from eth_utils import to_bytes
 from sqlalchemy.orm.session import Session
 from web3 import Web3
 from web3.datastructures import AttributeDict
@@ -20,12 +21,8 @@ def index_core_entity_manager(
     update_task: DatabaseTask,
     web3: Web3,
     session: Session,
-    indexing_entity_manager: bool,
     block: BlockResponse,
 ) -> Optional[int]:
-    if not indexing_entity_manager:
-        return None
-
     tx_receipts: List[TxReceipt] = []
     for tx_res in block.transaction_responses:
         tx = tx_res.transaction
@@ -50,7 +47,7 @@ def index_core_entity_manager(
                     "_nonce": manage_entity_tx.nonce,
                 }
             ),
-            "transactionHash": web3.to_bytes(text=tx_hash),
+            "transactionHash": to_bytes(text=tx_hash),
         }
 
         # suppress typechecker as this is what tests do
@@ -89,3 +86,18 @@ def index_core_entity_manager(
         logger.error(f"entity manager error in core blocks {e}", exc_info=True)
         # raise error so we don't index this block
         raise e
+
+
+def get_latest_acdc_block(session: Session) -> Block:
+    """
+    Gets the latest block in the database.
+    This block necessarily has `is_current` set to True.
+    """
+    latest_database_block_query = session.query(Block).filter(Block.is_current == True)
+    latest_database_block_results = latest_database_block_query.all()
+    assert (
+        len(latest_database_block_results) == 1
+    ), "Expected a single row with is_current=True"
+    latest_database_block = latest_database_block_results[0]
+
+    return latest_database_block

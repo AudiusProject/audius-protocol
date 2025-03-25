@@ -67,6 +67,7 @@ func NewServer(discoveryConfig *config.DiscoveryConfig, proc *rpcz.RPCProcessor)
 	unfurlHeaders := unfurlist.WithExtraHeaders(map[string]string{"User-Agent": "twitterbot"})
 	g.GET("/unfurl", echo.WrapHandler(unfurlist.New(unfurlBlocklist, unfurlHeaders)))
 	g.GET("/pubkey/:id", s.getPubkey)
+	g.GET("/pubkey/:id/cached", s.getCachedPubkey)
 	g.GET("/chats", s.getChats)
 	g.GET("/chats/ws", s.chatWebsocket)
 	g.GET("/chats/:id", s.getChat)
@@ -182,13 +183,31 @@ func (s *ChatServer) getPubkey(c echo.Context) error {
 		return c.String(400, "bad id parameter: "+err.Error())
 	}
 
-	pubkey, err := pubkeystore.RecoverUserPublicKeyBase64(c.Request().Context(), id)
+	pubkey, err := pubkeystore.GetPubkey(id)
 	if err != nil {
-		return err
+		pubkey, err = pubkeystore.RecoverFromPeers(s.config, id)
+		if err != nil {
+			return err
+		}
 	}
 
 	return c.JSON(200, map[string]interface{}{
 		"data": pubkey,
+	})
+}
+
+func (s *ChatServer) getCachedPubkey(c echo.Context) error {
+	id, err := misc.DecodeHashId(c.Param("id"))
+	if err != nil {
+		return c.String(400, "bad id parameter: "+err.Error())
+	}
+
+	hit, err := pubkeystore.GetPubkey(id)
+	if err != nil {
+		return c.String(404, "not found")
+	}
+	return c.JSON(200, map[string]interface{}{
+		"data": hit,
 	})
 }
 

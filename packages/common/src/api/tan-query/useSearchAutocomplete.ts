@@ -1,12 +1,9 @@
 import { OptionalId } from '@audius/sdk'
-import { useQuery } from '@tanstack/react-query'
+import { QueryKey, useQuery } from '@tanstack/react-query'
 
-import { searchResultsFromSDK } from '~/adapters/search'
+import { SearchResults, searchResultsFromSDK } from '~/adapters/search'
 import { useAudiusQueryContext } from '~/audius-query'
 import { useFeatureFlag } from '~/hooks/useFeatureFlag'
-import { UserCollectionMetadata } from '~/models/Collection'
-import { UserTrackMetadata } from '~/models/Track'
-import { User } from '~/models/User'
 import { FeatureFlags } from '~/services/remote-config'
 
 import { QUERY_KEYS } from './queryKeys'
@@ -18,23 +15,6 @@ const DEFAULT_LIMIT = 3
 type UseSearchAutocompleteArgs = {
   query: string
   limit?: number
-}
-
-type SearchResults = {
-  tracks: UserTrackMetadata[]
-  albums: UserCollectionMetadata[]
-  playlists: UserCollectionMetadata[]
-  users: User[]
-}
-
-const limitAutocompleteResults = (results: SearchResults): SearchResults => {
-  const { tracks, albums, playlists, users } = results
-  return {
-    tracks: tracks.slice(0, DEFAULT_LIMIT),
-    albums: albums.slice(0, DEFAULT_LIMIT),
-    playlists: playlists.slice(0, DEFAULT_LIMIT),
-    users: users.slice(0, DEFAULT_LIMIT)
-  }
 }
 
 export const getSearchAutocompleteQueryKey = ({
@@ -52,7 +32,7 @@ export const useSearchAutocomplete = (
     FeatureFlags.USDC_PURCHASES
   )
 
-  return useQuery({
+  return useQuery<SearchResults, Error, SearchResults, QueryKey>({
     queryKey: getSearchAutocompleteQueryKey({ query, limit }),
     queryFn: async () => {
       const sdk = await audiusSdk()
@@ -60,11 +40,10 @@ export const useSearchAutocomplete = (
         userId: OptionalId.parse(currentUserId),
         query,
         limit,
-        offset: 0,
         includePurchaseable: isUSDCEnabled
       })
 
-      return limitAutocompleteResults(searchResultsFromSDK(data))
+      return searchResultsFromSDK(data)
     },
     placeholderData: (prev) => (query === '' ? undefined : prev),
     ...options,

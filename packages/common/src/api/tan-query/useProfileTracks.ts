@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
-import { UserTrack } from '~/models'
+import { UserTrackMetadata } from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
 import {
   profilePageSelectors,
@@ -55,16 +55,17 @@ export const useProfileTracks = (
   const queryData = useInfiniteQuery({
     queryKey: getProfileTracksQueryKey({ handle, pageSize, sort, getUnlisted }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: UserTrack[], allPages) => {
+    getNextPageParam: (lastPage: UserTrackMetadata[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
     queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
       if (!handle) return []
-
+      // If the @ is still at the beginning of the handle, trim it off
+      const handleNoAt = handle.startsWith('@') ? handle.substring(1) : handle
       const { data: tracks } = await sdk.full.users.getTracksByUserHandle({
-        handle,
+        handle: handleNoAt,
         userId: currentUserId ? Id.parse(currentUserId) : undefined,
         limit: pageSize,
         offset: pageParam,
@@ -86,26 +87,28 @@ export const useProfileTracks = (
           pageParam,
           pageSize,
           false,
-          { tracks: processedTracks, handle }
+          { items: processedTracks, handle }
         )
       )
 
       return processedTracks
     },
+    select: (data) => data?.pages.flat(),
     ...options,
     enabled: options?.enabled !== false && !!handle
   })
 
-  const lineupData = useLineupQuery({
+  return useLineupQuery({
     queryData,
+    queryKey: getProfileTracksQueryKey({
+      handle,
+      pageSize,
+      sort,
+      getUnlisted
+    }),
     lineupActions: profilePageTracksLineupActions,
     lineupSelector: profilePageSelectors.getProfileTracksLineup,
-    playbackSource: PlaybackSource.TRACK_TILE
-  })
-
-  return {
-    ...queryData,
-    ...lineupData,
+    playbackSource: PlaybackSource.TRACK_TILE,
     pageSize
-  }
+  })
 }

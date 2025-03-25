@@ -6,7 +6,7 @@ import {
   challengeRewardsConfig,
   getChallengeStatusLabel
 } from '@audius/common/utils'
-import { Button, Flex, IconVerified, Text, IconCheck } from '@audius/harmony'
+import { Button, Flex, IconCheck, Text } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { push as pushRoute } from 'utils/navigation'
@@ -18,11 +18,11 @@ import { MobileInstallContent } from './MobileInstallContent'
 import { ProfileChecks } from './ProfileChecks'
 import { type DefaultChallengeProps } from './types'
 
-const { getClaimStatus } = audioRewardsPageSelectors
+const { getClaimStatus, getUndisbursedUserChallenges } =
+  audioRewardsPageSelectors
 
 const messages = {
   audio: '$AUDIO',
-  verifiedChallenge: 'VERIFIED CHALLENGE',
   cooldownDescription:
     'Note: There is a 7 day waiting period from completion until you can claim your reward.'
 }
@@ -38,13 +38,13 @@ export const DefaultChallengeContent = ({
   const claimInProgress =
     claimStatus === ClaimStatus.CLAIMING ||
     claimStatus === ClaimStatus.WAITING_FOR_RETRY
+  const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
 
   const config = challengeRewardsConfig[challengeName as ChallengeName] ?? {
     fullDescription: () => '',
-    completedLabel: '',
-    isVerifiedChallenge: false
+    completedLabel: ''
   }
-  const { fullDescription, completedLabel, isVerifiedChallenge } = config
+  const { fullDescription, completedLabel } = config
 
   const isProgressBarVisible =
     challenge &&
@@ -54,12 +54,6 @@ export const DefaultChallengeContent = ({
 
   const progressDescription = (
     <Flex column gap='m' w='100%'>
-      {isVerifiedChallenge ? (
-        <Flex gap='s'>
-          <IconVerified />
-          {messages.verifiedChallenge}
-        </Flex>
-      ) : null}
       <Text variant='body'>{fullDescription?.(challenge)}</Text>
       {challenge?.cooldown_days ? (
         <Text variant='body' color='subdued'>
@@ -169,6 +163,7 @@ export const DefaultChallengeContent = ({
           <ClaimButton
             challenge={challenge}
             claimInProgress={claimInProgress}
+            undisbursedChallenges={undisbursedUserChallenges}
             onClose={onNavigateAway}
           />
         )

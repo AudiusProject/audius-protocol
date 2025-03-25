@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 
-import { useGetTrackById } from '@audius/common/api'
+import { useGetTrackById, useToggleFavoriteTrack } from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -11,7 +11,6 @@ import {
 import {
   accountSelectors,
   cacheCollectionsActions,
-  cacheTracksActions,
   collectionPageSelectors,
   tracksSocialActions,
   addToCollectionUIActions,
@@ -19,7 +18,8 @@ import {
   playbackPositionSelectors,
   CommonState,
   artistPickModalActions,
-  useDeleteTrackConfirmationModal
+  useDeleteTrackConfirmationModal,
+  shareModalUIActions
 } from '@audius/common/store'
 import { Genre, Nullable, route } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/harmony'
@@ -32,13 +32,14 @@ import { AppState } from 'store/types'
 import { push } from 'utils/navigation'
 import { albumPage } from 'utils/route'
 
+const { requestOpen: requestOpenShareModal } = shareModalUIActions
+
 const { profilePage } = route
 const { requestOpen: openAddToCollection } = addToCollectionUIActions
-const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack, shareTrack } =
+const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
   tracksSocialActions
 const { getCollectionId } = collectionPageSelectors
 const { addTrackToPlaylist } = cacheCollectionsActions
-const { deleteTrack } = cacheTracksActions
 const { getAccountOwnedPlaylists, getUserId } = accountSelectors
 const { clearTrackPosition, setTrackPosition } = playbackPositionActions
 const { getUserTrackPositions } = playbackPositionSelectors
@@ -120,6 +121,7 @@ const TrackMenu = ({
   isUnlisted,
   extraMenuItems = [],
   ddexApp = null,
+  isFavorited,
   ...props
 }: TrackMenuProps) => {
   const { trackPermalink, goToRoute } = props
@@ -131,12 +133,16 @@ const TrackMenu = ({
 
   const { data: track } = useGetTrackById({ id: props.trackId })
 
+  const toggleSaveTrack = useToggleFavoriteTrack({
+    trackId: props.trackId,
+    source: FavoriteSource.OVERFLOW
+  })
+
   const onDeleteTrack = (trackId: Nullable<number>) => {
     if (!trackId) return
+
     openDeleteTrackConfirmation({
-      confirmCallback: () => {
-        dispatch(deleteTrack(trackId))
-      }
+      trackId
     })
   }
 
@@ -156,20 +162,15 @@ const TrackMenu = ({
       handle,
       includeRepost,
       includeShare,
-      isFavorited,
-      isReposted,
       openAddToCollectionModal,
       openEmbedModal,
       repostTrack,
-      saveTrack,
-      setArtistPick,
       shareTrack,
       trackId,
       trackTitle,
       trackPermalink,
       genre,
       undoRepostTrack,
-      unsaveTrack,
       unsetArtistPick
     } = props
 
@@ -179,21 +180,16 @@ const TrackMenu = ({
 
     const shareMenuItem = {
       text: messages.share,
-      onClick: () => {
-        if (trackId) {
-          shareTrack(trackId)
-          toast(messages.copiedToClipboard)
-        }
-      }
+      onClick: () => shareTrack(trackId)
     }
 
     const repostMenuItem = {
-      text: isReposted ? messages.undoRepost : messages.repost,
+      text: props.isReposted ? messages.undoRepost : messages.repost,
       // Set timeout so the menu has time to close before we propagate the change.
       onClick: () =>
         setTimeout(() => {
-          isReposted ? undoRepostTrack(trackId) : repostTrack(trackId)
-          toast(isReposted ? messages.unreposted : messages.reposted)
+          props.isReposted ? undoRepostTrack(trackId) : repostTrack(trackId)
+          toast(props.isReposted ? messages.unreposted : messages.reposted)
         }, 0)
     }
 
@@ -202,7 +198,7 @@ const TrackMenu = ({
       // Set timeout so the menu has time to close before we propagate the change.
       onClick: () =>
         setTimeout(() => {
-          isFavorited ? unsaveTrack(trackId) : saveTrack(trackId)
+          toggleSaveTrack()
         }, 0)
     }
 
@@ -279,7 +275,7 @@ const TrackMenu = ({
       text: isArtistPick ? messages.unsetArtistPick : messages.setArtistPick,
       onClick: isArtistPick
         ? () => unsetArtistPick()
-        : () => setArtistPick(trackId)
+        : () => props.setArtistPick(trackId)
     }
 
     const deleteTrackMenuItem = {
@@ -369,7 +365,13 @@ function mapDispatchToProps(dispatch: Dispatch) {
     addTrackToPlaylist: (trackId: ID, playlistId: ID) =>
       dispatch(addTrackToPlaylist(trackId, playlistId)),
     shareTrack: (trackId: ID) =>
-      dispatch(shareTrack(trackId, ShareSource.OVERFLOW)),
+      dispatch(
+        requestOpenShareModal({
+          type: 'track',
+          trackId,
+          source: ShareSource.OVERFLOW
+        })
+      ),
     saveTrack: (trackId: ID) =>
       dispatch(saveTrack(trackId, FavoriteSource.OVERFLOW)),
     unsaveTrack: (trackId: ID) =>

@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux'
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
 import { PlaybackSource } from '~/models/Analytics'
+import { UserTrackMetadata } from '~/models/Track'
 import {
   trendingUndergroundPageLineupActions,
   trendingUndergroundPageLineupSelectors
@@ -38,7 +39,7 @@ export const useTrendingUnderground = (
   const queryData = useInfiniteQuery({
     queryKey: getTrendingUndergroundQueryKey({ pageSize }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage, allPages) => {
+    getNextPageParam: (lastPage: UserTrackMetadata[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -67,20 +68,19 @@ export const useTrendingUnderground = (
 
       return tracks
     },
+    select: (data) => data?.pages.flat(),
     ...options,
     enabled: options?.enabled !== false
   })
 
-  const lineupData = useLineupQuery({
+  return useLineupQuery({
     queryData,
+    queryKey: getTrendingUndergroundQueryKey({
+      pageSize
+    }),
     lineupActions: trendingUndergroundPageLineupActions,
     lineupSelector: trendingUndergroundPageLineupSelectors.getLineup,
-    playbackSource: PlaybackSource.TRACK_TILE
-  })
-
-  return {
-    ...queryData,
-    ...lineupData,
+    playbackSource: PlaybackSource.TRACK_TILE,
     pageSize
-  }
+  })
 }

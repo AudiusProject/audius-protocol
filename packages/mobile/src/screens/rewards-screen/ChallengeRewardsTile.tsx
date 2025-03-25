@@ -40,13 +40,10 @@ const { getOptimisticUserChallenges } = challengesSelectors
 
 const validRewardIds: Set<ChallengeRewardID> = new Set([
   'track-upload',
-  'referrals',
-  'ref-v',
   'mobile-install',
   'connect-verified',
   'listen-streak',
   'profile-completion',
-  'referred',
   'send-first-tip',
   'first-playlist',
   ChallengeName.AudioMatchingBuy, // $AUDIO matching buyer
@@ -62,7 +59,12 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
   ChallengeName.ReferralsVerified,
   ChallengeName.Referred,
   ChallengeName.TrackUpload,
-  ChallengeName.OneShot
+  ChallengeName.OneShot,
+  ChallengeName.FirstWeeklyComment,
+  ChallengeName.PlayCount250,
+  ChallengeName.PlayCount1000,
+  ChallengeName.PlayCount10000,
+  ChallengeName.Tastemaker
 ])
 
 type ClaimableSummaryTableItem = SummaryTableItem & {
@@ -131,7 +133,6 @@ export const ChallengeRewardsTile = () => {
   // The referred challenge only needs a tile if the user was referred
   const hideReferredTile = !userChallenges.referred?.is_complete
   const rewardIds = useRewardIds({
-    referred: hideReferredTile,
     [ChallengeName.Referred]: hideReferredTile
   })
 
@@ -149,9 +150,7 @@ export const ChallengeRewardsTile = () => {
 
   const openModal = (modalType: ChallengeRewardsModalType) => {
     dispatch(setChallengeRewardsModalType({ modalType }))
-    dispatch(
-      setVisibility({ modal: 'ChallengeRewardsExplainer', visible: true })
-    )
+    dispatch(setVisibility({ modal: 'ChallengeRewards', visible: true }))
   }
 
   const rewardsPanels = rewardIds

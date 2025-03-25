@@ -55,7 +55,6 @@ export const ChallengeRewardsTile = ({
   // The referred challenge only needs a tile if the user was referred
   const hideReferredTile = !userChallenges.referred?.is_complete
   const rewardIds = useRewardIds({
-    referred: hideReferredTile,
     [ChallengeName.Referred]: hideReferredTile
   })
 
@@ -72,7 +71,7 @@ export const ChallengeRewardsTile = ({
 
   const openModal = (modalType: ChallengeRewardsModalType) => {
     dispatch(setChallengeRewardsModalType({ modalType }))
-    setVisibility('ChallengeRewardsExplainer')(true)
+    setVisibility('ChallengeRewards')(true)
   }
 
   const rewardIdsSorted = useMemo(
@@ -93,7 +92,7 @@ export const ChallengeRewardsTile = ({
   const wm = useWithMobileStyle(styles.mobile)
 
   return (
-    <Flex direction='column' gap='l'>
+    <Flex column gap='l'>
       {isClaimAllRewardsEnabled ? <ClaimAllRewardsPanel /> : null}
       <Tile className={wm(styles.rewardsTile, className)}>
         <Text variant='display' size='s' className={wm(styles.title)}>

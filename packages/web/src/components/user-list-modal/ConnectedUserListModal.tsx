@@ -6,6 +6,7 @@ import {
   getIsOpen
 } from 'store/application/ui/userListModal/selectors'
 import { setVisibility } from 'store/application/ui/userListModal/slice'
+import { v2UserListTypes } from 'store/application/ui/userListModal/types'
 import { AppState } from 'store/types'
 
 import UserListModal from './components/UserListModal'
@@ -18,6 +19,10 @@ const ConnectedUserListModal = ({
   isOpen,
   onClose
 }: ConnectedUserListModalProps) => {
+  if (v2UserListTypes.includes(userListType)) {
+    return null
+  }
+
   return (
     <UserListModal
       userListType={userListType}

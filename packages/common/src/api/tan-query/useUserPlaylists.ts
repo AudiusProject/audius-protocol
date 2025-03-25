@@ -41,7 +41,7 @@ export const useUserPlaylists = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const { data: collectionIds, ...queryResult } = useInfiniteQuery({
+  const queryRes = useInfiniteQuery({
     queryKey: getUserPlaylistsQueryKey(params),
     initialPageParam: 0,
     getNextPageParam: (lastPage: ID[], allPages) => {
@@ -75,10 +75,14 @@ export const useUserPlaylists = (
     enabled: options?.enabled !== false && !!userId
   })
 
-  const { data: collections } = useCollections(collectionIds)
+  const { data: collections } = useCollections(queryRes.data)
 
   return {
     data: collections,
-    ...queryResult
+    isPending: queryRes.isPending,
+    isLoading: queryRes.isLoading,
+    hasNextPage: queryRes.hasNextPage,
+    isFetchingNextPage: queryRes.isFetchingNextPage,
+    fetchNextPage: queryRes.fetchNextPage
   }
 }

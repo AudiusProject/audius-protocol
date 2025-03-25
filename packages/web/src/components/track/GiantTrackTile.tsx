@@ -1,15 +1,15 @@
 import { Suspense, lazy, useCallback, useState } from 'react'
 
+import { useToggleFavoriteTrack, useTrack } from '@audius/common/api'
 import {
   isContentUSDCPurchaseGated,
   ID,
   FieldVisibility,
   Remix,
-  AccessConditions
+  AccessConditions,
+  FavoriteSource
 } from '@audius/common/models'
 import {
-  cacheTracksSelectors,
-  CommonState,
   PurchaseableContentType,
   useEarlyReleaseConfirmationModal,
   usePublishConfirmationModal
@@ -34,7 +34,6 @@ import IconTrending from '@audius/harmony/src/assets/icons/Trending.svg'
 import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
 import cn from 'classnames'
 import dayjs from 'dayjs'
-import { shallowEqual, useSelector } from 'react-redux'
 
 import { UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
@@ -61,8 +60,6 @@ const DownloadSection = lazy(() =>
     default: module.DownloadSection
   }))
 )
-
-const { getTrack } = cacheTracksSelectors
 
 const BUTTON_COLLAPSE_WIDTHS = {
   first: 1095,
@@ -186,19 +183,30 @@ export const GiantTrackTile = ({
     () => setArtworkLoading(false),
     [setArtworkLoading]
   )
+  const toggleSaveTrack = useToggleFavoriteTrack({
+    trackId,
+    source: FavoriteSource.TRACK_PAGE
+  })
+
   const isLongFormContent =
     genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
-  const track = useSelector(
-    (state: CommonState) => getTrack(state, { id: trackId }),
-    shallowEqual
-  )
-  const hasDownloadableAssets =
-    track?.is_downloadable || (track?._stems?.length ?? 0) > 0
+  const { data: partialTrack } = useTrack(trackId, {
+    select: (track) => {
+      return {
+        is_downloadable: track?.is_downloadable,
+        _stems: track?._stems,
+        preview_cid: track?.preview_cid
+      }
+    }
+  })
+  const { is_downloadable, _stems, preview_cid } = partialTrack ?? {}
+
+  const hasDownloadableAssets = is_downloadable || (_stems?.length ?? 0) > 0
   // Preview button is shown for USDC-gated tracks if user does not have access
   // or is the owner
   const showPreview =
-    isUSDCPurchaseGated && (isOwner || !hasStreamAccess) && track?.preview_cid
+    isUSDCPurchaseGated && (isOwner || !hasStreamAccess) && preview_cid
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
   const shouldShowScheduledRelease =
@@ -332,7 +340,7 @@ export const GiantTrackTile = ({
                 variant={isSaved ? 'primary' : 'secondary'}
                 widthToHideText={BUTTON_COLLAPSE_WIDTHS.third}
                 iconLeft={IconHeart}
-                onClick={onSave}
+                onClick={toggleSaveTrack}
               >
                 {isSaved ? 'favorited' : 'favorite'}
               </Button>

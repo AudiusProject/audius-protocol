@@ -386,7 +386,6 @@ def test_get_playlists_sorting(app, test_entities):
                 GetPlaylistsArgs(user_id=1, sort_method="popular"),
             )
             assert len(playlists_popular) > 0
-            print([playlist["playlist_id"] for playlist in playlists_popular])
             # Most saved should be first (playlist 1 has 3 saves)
             assert playlists_popular[0]["playlist_id"] == 1
             # Second most saved should be second (playlist 2 has 1 save)

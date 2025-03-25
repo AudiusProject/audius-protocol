@@ -1,6 +1,7 @@
 import {
   DefinedInitialDataOptions,
-  UseInfiniteQueryResult
+  UseInfiniteQueryResult,
+  UseQueryOptions
 } from '@tanstack/react-query'
 
 import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
@@ -14,8 +15,28 @@ export type QueryOptions = Pick<
   'staleTime' | 'enabled' | 'placeholderData'
 >
 
+export type SelectableQueryOptions<TData, TResult = TData> = Omit<
+  UseQueryOptions<TData, Error, TResult>,
+  'queryKey' | 'queryFn'
+>
+
 export type LineupQueryData = UseLineupQueryData &
-  Omit<UseInfiniteQueryResult, 'status'> & {
+  Pick<
+    UseInfiniteQueryResult,
+    | 'data'
+    | 'hasNextPage'
+    | 'isInitialLoading'
+    | 'isLoading'
+    | 'isPending'
+    | 'isError'
+  > & {
     loadNextPage: ReturnType<typeof loadNextPage>
     pageSize?: number
   }
+
+export type FlatUseInfiniteQueryResult<T> = Omit<
+  UseInfiniteQueryResult,
+  'data' // These types get invalidated by the select modifier changing the output shape
+> & {
+  data: T[]
+}

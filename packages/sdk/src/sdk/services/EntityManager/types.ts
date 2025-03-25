@@ -1,8 +1,11 @@
-import type { TransactionReceipt } from 'web3-core'
-
 import type { AudiusWalletClient } from '../AudiusWalletClient'
 import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 import type { LoggerService } from '../Logger'
+
+export type EntityManagerTransactionReceipt = {
+  blockHash: string
+  blockNumber: number
+}
 
 export type EntityManagerConfigInternal = {
   /**
@@ -37,14 +40,13 @@ export type EntityManagerConfig = Partial<EntityManagerConfigInternal> & {
 export type EntityManagerService = {
   manageEntity: (
     options: ManageEntityOptions
-  ) => Promise<Pick<TransactionReceipt, 'blockHash' | 'blockNumber'>>
+  ) => Promise<EntityManagerTransactionReceipt>
   confirmWrite: (options: {
     blockHash: string
     blockNumber: number
     confirmationTimeout?: number
     confirmationPollingInterval?: number
   }) => Promise<boolean>
-  getCurrentBlock: () => Promise<{ timestamp: number }>
 }
 
 export enum Action {

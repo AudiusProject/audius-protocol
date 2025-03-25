@@ -113,6 +113,7 @@ export const useLibraryTracks = (
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
+    select: (data) => data.pages.flat(),
     initialPageParam: 0,
     staleTime: config?.staleTime ?? Infinity,
     gcTime: Infinity,
@@ -121,13 +122,21 @@ export const useLibraryTracks = (
 
   const lineupData = useLineupQuery({
     queryData,
+    queryKey: getLibraryTracksQueryKey({
+      currentUserId,
+      category,
+      sortMethod,
+      sortDirection,
+      query,
+      pageSize
+    }),
     lineupActions: savedPageTracksLineupActions,
     lineupSelector: savedPageSelectors.getSavedTracksLineup,
-    playbackSource: PlaybackSource.TRACK_TILE
+    playbackSource: PlaybackSource.TRACK_TILE,
+    pageSize
   })
 
   return {
-    ...queryData,
     ...lineupData,
     loadNextPage: loadNextPage(queryData),
     pageSize

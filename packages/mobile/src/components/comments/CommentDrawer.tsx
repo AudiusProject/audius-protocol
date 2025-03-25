@@ -2,14 +2,13 @@ import type { RefObject } from 'react'
 import React, { useCallback, useRef, useState } from 'react'
 
 import type { SearchCategory } from '@audius/common/api'
-import { useGetSearchResults, useGetFollowers } from '@audius/common/api'
+import { useFollowers, useSearchUserResults } from '@audius/common/api'
 import type { ReplyingAndEditingState } from '@audius/common/context'
 import {
   CommentSectionProvider,
   useCurrentCommentSection
 } from '@audius/common/context'
 import type { ID, UserMetadata } from '@audius/common/models'
-import { Status } from '@audius/common/models'
 import type { LineupBaseActions, playerActions } from '@audius/common/store'
 import { accountSelectors } from '@audius/common/store'
 import type {
@@ -25,7 +24,7 @@ import {
 import type { ParamListBase } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import type { TouchableOpacityProps } from 'react-native'
-import { Platform, TouchableOpacity } from 'react-native'
+import { TouchableOpacity } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
@@ -40,6 +39,7 @@ import { CommentDrawerHeader } from './CommentDrawerHeader'
 import { CommentSkeleton } from './CommentSkeleton'
 import { CommentThread } from './CommentThread'
 import { NoComments } from './NoComments'
+import { COMMENT_DRAWER_BORDER_RADIUS } from './constants'
 import { useGestureEventsHandlers } from './useGestureEventHandlers'
 import { useScrollEventsHandlers } from './useScrollEventHandlers'
 
@@ -89,19 +89,17 @@ const CommentDrawerAutocompleteContent = ({
     offset: 0
   }
 
-  const { data: searchData, status: searchStatus } = useGetSearchResults(
-    params,
-    { debounce: 500 }
-  )
-  const { data: followersData, status: followersStatus } = useGetFollowers({
-    userId: currentUserId,
-    limit: 6
+  const { data: searchData, isLoading: searchLoading } =
+    useSearchUserResults(params)
+  const { data: followersData, isPending: followerDataPending } = useFollowers({
+    pageSize: 6,
+    userId: currentUserId
   })
-  const userList = query !== '' ? searchData?.users : followersData
-  const userListStatus = query !== '' ? searchStatus : followersStatus
+  const userList = query !== '' ? searchData : followersData
+  const isUserListPending = query !== '' ? searchLoading : followerDataPending
 
   // Loading state
-  if (userListStatus === Status.LOADING || userListStatus === Status.IDLE) {
+  if (isUserListPending) {
     return (
       <Flex p='l' alignItems='center'>
         <LoadingSpinner style={{ height: 24 }} />
@@ -128,7 +126,10 @@ const CommentDrawerAutocompleteContent = ({
       keyboardShouldPersistTaps='handled'
       renderItem={({ item }) => (
         <Box ph='l'>
-          <UserListItem user={item} onPress={() => onSelect(item)} />
+          <UserListItem
+            user={item as UserMetadata}
+            onPress={() => onSelect(item as UserMetadata)}
+          />
         </Box>
       )}
     />
@@ -195,8 +196,6 @@ const CommentDrawerContent = (props: {
     />
   )
 }
-
-const BORDER_RADIUS = 40
 
 export type CommentDrawerData = {
   entityId: number
@@ -275,16 +274,14 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
         </BottomSheetFooter>
       </GestureDetector>
     ),
+    // intentionally excluding insets.bottom because it causes a rerender
+    // when the keyboard is opened on android, causing the keyboard to close
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
-      gesture,
-      insets.bottom,
       entityId,
-      replyingAndEditingState,
-      uid,
-      actions,
       onAutoCompleteChange,
       setAutocompleteHandler,
-      autoFocusInput
+      replyingAndEditingState
     ]
   )
 
@@ -299,8 +296,8 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
         snapPoints={['66%', '100%']}
         topInset={insets.top}
         style={{
-          borderTopRightRadius: BORDER_RADIUS,
-          borderTopLeftRadius: BORDER_RADIUS,
+          borderTopRightRadius: COMMENT_DRAWER_BORDER_RADIUS,
+          borderTopLeftRadius: COMMENT_DRAWER_BORDER_RADIUS,
           overflow: 'hidden'
         }}
         backgroundStyle={{ backgroundColor: color.background.white }}
@@ -316,9 +313,7 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
         )}
         footerComponent={renderFooterComponent}
         onDismiss={handleCloseDrawer}
-        android_keyboardInputMode='adjustPan'
-        keyboardBehavior={Platform.OS === 'android' ? 'extend' : 'fillParent'}
-        keyboardBlurBehavior='restore'
+        android_keyboardInputMode='adjustResize'
       >
         <CommentSectionProvider
           entityId={entityId}

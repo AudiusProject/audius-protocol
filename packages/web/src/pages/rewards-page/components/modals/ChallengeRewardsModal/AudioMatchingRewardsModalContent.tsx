@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import { ChallengeName } from '@audius/common/models'
-import { challengesSelectors } from '@audius/common/store'
+import { audioRewardsPageSelectors, ClaimStatus } from '@audius/common/store'
 import {
   challengeRewardsConfig,
   getChallengeStatusLabel,
@@ -28,7 +28,8 @@ import { type AudioMatchingChallengeProps } from './types'
 
 const { EXPLORE_PREMIUM_TRACKS_PAGE, UPLOAD_PAGE } = route
 
-const { getOptimisticUserChallenges } = challengesSelectors
+const { getUndisbursedUserChallenges, getClaimStatus } =
+  audioRewardsPageSelectors
 
 const messages = {
   rewardMapping: {
@@ -69,27 +70,30 @@ export const AudioMatchingRewardsModalContent = ({
 }: AudioMatchingChallengeProps) => {
   const navigateToPage = useNavigateToPage()
   const { fullDescription } = challengeRewardsConfig[challengeName]
-  const userChallenge = useSelector(getOptimisticUserChallenges)[challengeName]
+  const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
+  const claimStatus = useSelector(getClaimStatus)
+  const claimInProgress =
+    claimStatus === ClaimStatus.CLAIMING ||
+    claimStatus === ClaimStatus.WAITING_FOR_RETRY
 
-  const statusLabel = userChallenge
-    ? getChallengeStatusLabel(userChallenge, challengeName)
-    : null
-
-  const progressStatusLabel =
-    userChallenge && userChallenge?.disbursed_amount > 0 ? (
-      <Flex
-        alignItems='center'
-        justifyContent='center'
-        ph='xl'
-        pv='l'
-        borderTop='strong'
-        backgroundColor='surface2'
-      >
-        <Text variant='label' size='l' strength='strong'>
-          {statusLabel}
+  const progressStatusLabel = (
+    <Flex
+      alignItems='center'
+      border='strong'
+      w='100%'
+      justifyContent='center'
+      ph='xl'
+      pv='unit5'
+      borderRadius='s'
+      backgroundColor='surface1'
+    >
+      <Flex alignItems='center' gap='s'>
+        <Text variant='label' size='l' strength='strong' color='subdued'>
+          {getChallengeStatusLabel(challenge, challengeName)}
         </Text>
       </Flex>
-    ) : null
+    </Flex>
+  )
 
   const progressDescription = (
     <ProgressDescription
@@ -134,7 +138,8 @@ export const AudioMatchingRewardsModalContent = ({
         challenge?.claimableAmount ? (
           <ClaimButton
             challenge={challenge}
-            claimInProgress={false}
+            undisbursedChallenges={undisbursedUserChallenges}
+            claimInProgress={claimInProgress}
             onClose={onNavigateAway}
           />
         ) : (

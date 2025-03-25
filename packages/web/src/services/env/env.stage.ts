@@ -1,7 +1,7 @@
 import { Env } from '@audius/common/services'
 
 export const env: Env = {
-  AAO_ENDPOINT: 'https://antiabuseoracle.staging.audius.co',
+  AAO_ENDPOINT: 'https://discoveryprovider.staging.audius.co',
   AMPLITUDE_API_KEY: '72a58ce4ad1f9bafcba0b92bedb6c33d',
   AMPLITUDE_PROXY: 'https://gain2.audius.co/2/httpapi',
   API_KEY: '2dc52ec9a4c31790cab6653de0c637f680faa993',
@@ -86,5 +86,7 @@ export const env: Env = {
   WEB3_PROVIDER_URL: 'https://poa-gateway.staging.audius.co',
   WORMHOLE_ADDRESS: '0xf6f45e4d836da1d4ecd43bb1074620bfb0b7e0d7',
   WORMHOLE_RPC_HOSTS: null,
-  EMAIL_ENCRYPTION_UUID: 469591815
+  EMAIL_ENCRYPTION_UUID: 469591815,
+  EMAIL_ENCRYPTION_PUBLIC_KEY:
+    'BEWe4ZtUe5647jNJN2UgP2lJTG/H38jZShCopDBqEx6rcQzlDPNZRdI9+OHzx2tICTu/BYXGz+TgNEQXT6m9WEQ='
 }

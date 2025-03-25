@@ -6,10 +6,10 @@ import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
-import { UserTrack } from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
+import { UserTrackMetadata } from '~/models/Track'
 import { aiPageLineupActions, aiPageSelectors } from '~/store/pages'
-import { setHandle } from '~/store/pages/ai/slice'
+import { fetchAiUser } from '~/store/pages/ai/slice'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
@@ -39,13 +39,13 @@ export const useAiTracks = (
   const dispatch = useDispatch()
 
   useEffect(() => {
-    dispatch(setHandle({ handle }))
+    dispatch(fetchAiUser({ handle }))
   }, [dispatch, handle])
 
   const queryData = useInfiniteQuery({
     queryKey: getAiTracksQueryKey({ handle, pageSize }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: UserTrack[], allPages) => {
+    getNextPageParam: (lastPage: UserTrackMetadata[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -79,20 +79,20 @@ export const useAiTracks = (
 
       return processedTracks
     },
+    select: (data) => data?.pages.flat(),
     ...options,
     enabled: options?.enabled !== false && !!handle
   })
 
-  const lineupData = useLineupQuery({
+  return useLineupQuery({
     queryData,
+    queryKey: getAiTracksQueryKey({
+      handle,
+      pageSize
+    }),
     lineupActions: aiPageLineupActions,
     lineupSelector: aiPageSelectors.getLineup,
-    playbackSource: PlaybackSource.TRACK_TILE
-  })
-
-  return {
-    ...queryData,
-    ...lineupData,
+    playbackSource: PlaybackSource.TRACK_TILE,
     pageSize
-  }
+  })
 }

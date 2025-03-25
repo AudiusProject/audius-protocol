@@ -51,7 +51,6 @@ export const AnnouncementNotification = (
     <NotificationTile
       notification={notification}
       onClick={longDescription ? handleClick : undefined}
-      disabled={!longDescription}
       disableClosePanel
     >
       <NotificationHeader icon={<IconAnnouncement />}>

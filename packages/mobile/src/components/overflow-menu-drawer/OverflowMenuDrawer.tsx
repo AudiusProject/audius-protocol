@@ -1,8 +1,8 @@
+import { useTrack } from '@audius/common/api'
 import {
   mobileOverflowMenuUISelectors,
   OverflowAction,
-  OverflowSource,
-  cacheTracksSelectors
+  OverflowSource
 } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
@@ -14,7 +14,6 @@ import CollectionOverflowMenuDrawer from './CollectionOverflowMenuDrawer'
 import ProfileOverflowMenuDrawer from './ProfileOverflowMenuDrawer'
 import TrackOverflowMenuDrawer from './TrackOverflowMenuDrawer'
 
-const { getTrack } = cacheTracksSelectors
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 
 const overflowRowConfig = (
@@ -71,15 +70,16 @@ const overflowRowConfig = (
 export const OverflowMenuDrawer = () => {
   const overflowMenu = useSelector(getMobileOverflowModal)
 
-  const commentCount = useSelector(
-    (state) =>
-      getTrack(state, {
-        id:
-          overflowMenu.id !== null && overflowMenu !== undefined
-            ? +overflowMenu.id
-            : undefined
-      })?.comment_count
-  )
+  const id =
+    overflowMenu.id !== null && overflowMenu !== undefined
+      ? +overflowMenu.id
+      : undefined
+
+  const { data: commentCount } = useTrack(id, {
+    select: (track) => {
+      return track.comment_count
+    }
+  })
 
   if (!overflowMenu?.id) {
     return <></>

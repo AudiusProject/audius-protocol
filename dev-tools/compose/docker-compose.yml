@@ -209,10 +209,22 @@ services:
       service: mri
     <<: *common
 
+  anti-abuse:
+    extends:
+      file: docker-compose.pedalboard.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
+      service: anti-abuse
+    <<: *common
+
   verified-notifications:
     extends:
       file: docker-compose.pedalboard.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
       service: verified-notifications
+    <<: *common
+
+  archiver:
+    extends:
+      file: docker-compose.pedalboard.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
+      service: archiver
     <<: *common
 
   # Blockchain

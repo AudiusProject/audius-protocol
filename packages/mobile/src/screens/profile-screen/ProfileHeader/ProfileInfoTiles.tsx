@@ -1,16 +1,23 @@
 import type { ComponentType } from 'react'
-import { useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 
 import {
   useMutualFollowers,
+  useRelatedArtists,
   useSupportedUsers,
-  useSupporters
+  useSupporters,
+  useUserComments
 } from '@audius/common/api'
-import type { UserMetadata } from '@audius/common/models'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { Name, type UserMetadata } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
-import { MAX_PROFILE_TOP_SUPPORTERS } from '@audius/common/utils'
-import type { ViewStyle } from 'react-native'
-import { View, ScrollView } from 'react-native'
+import { Platform, View, ScrollView } from 'react-native'
+import Animated, {
+  FadeIn,
+  LayoutAnimationConfig,
+  LinearTransition
+} from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 
 import {
@@ -19,14 +26,18 @@ import {
   IconUserGroup,
   Text,
   IconTrophy,
-  IconTipping
+  IconTipping,
+  IconMessage,
+  useTheme,
+  Paper
 } from '@audius/harmony-native'
-import { Tile } from 'app/components/core'
+import { RecentUserCommentsDrawer } from 'app/components/comments/RecentUserCommentsDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import {
   ProfilePictureList,
   ProfilePictureListSkeleton
 } from 'app/screens/notifications-screen/Notification'
+import { make, track as trackEvent } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import type { SvgProps } from 'app/types/svg'
 import { useThemePalette } from 'app/utils/theme'
@@ -67,29 +78,75 @@ const useInfoTileStyles = makeStyles(({ spacing }) => ({
 
 const messages = {
   aiGeneratedTracks: 'AI Generated Tracks',
+  comments: 'Comments',
   mutuals: 'Mutuals',
   relatedArtists: 'Related Artists',
   viewAll: 'View All',
   tipSupporters: 'Tip Supporters',
+  topSupporters: 'Top Supporters',
   supportedUsers: 'Supporting'
 }
 
 type ProfileInfoTileProps = {
-  style?: ViewStyle
-  screen: string
   icon: ComponentType<SvgProps>
   title: string
   content: React.ReactNode
+  showCount?: boolean
+} & (
+  | {
+      screen: string
+      onPress?: never
+    }
+  | {
+      screen?: never
+      onPress: () => void
+    }
+)
+
+const ProfileInfoTile = (props: ProfileInfoTileProps) => {
+  const { screen, icon: Icon, title, content, onPress } = props
+  const styles = useInfoTileStyles()
+  const { neutral } = useThemePalette()
+  const navigation = useNavigation()
+  const { user_id } = useSelectProfile(['user_id'])
+
+  const handlePress = useCallback(() => {
+    if (onPress) {
+      onPress()
+    } else {
+      navigation.navigate(screen, { userId: user_id })
+    }
+  }, [navigation, screen, user_id, onPress])
+
+  return (
+    <Paper
+      h={64}
+      style={styles.tileContent}
+      border='default'
+      shadow='near'
+      onPress={handlePress}
+    >
+      <View style={styles.title}>
+        <Icon height={20} width={20} fill={neutral} />
+        <Text variant='title' size='s'>
+          {title}
+        </Text>
+      </View>
+      <View style={styles.content}>{content}</View>
+    </Paper>
+  )
 }
 
 const UserListWithCount = ({
   users,
   count,
-  loading = false
+  loading = false,
+  showCount = true
 }: {
   users: UserMetadata[]
   loading?: boolean
   count: number
+  showCount?: boolean
 }) => {
   const styles = useInfoTileStyles()
   return (
@@ -115,23 +172,19 @@ const UserListWithCount = ({
           }}
         />
       )}
-      <Text variant='body' size='s' strength='strong' color='subdued'>
-        {count}
-      </Text>
+      {showCount && (
+        <Text variant='body' size='s' strength='strong' color='subdued'>
+          {count}
+        </Text>
+      )}
     </View>
   )
 }
 
-const MutualsTile = ({
-  user_id,
-  count
-}: {
-  user_id: number
-  count: number
-}) => {
+const MutualsTile = ({ userId, count }: { userId: number; count: number }) => {
   const { data: mutuals = [], isLoading } = useMutualFollowers({
-    userId: user_id,
-    pageSize: MAX_PROFILE_TOP_SUPPORTERS
+    userId,
+    pageSize: MAX_CARD_PROFILE_PICTURES
   })
 
   return (
@@ -147,15 +200,15 @@ const MutualsTile = ({
 }
 
 const SupportersTile = ({
-  user_id,
+  userId,
   count
 }: {
-  user_id: number
+  userId: number
   count: number
 }) => {
   const { data: supporterRecords = [], isLoading } = useSupporters({
-    userId: user_id,
-    pageSize: MAX_PROFILE_TOP_SUPPORTERS
+    userId,
+    pageSize: MAX_CARD_PROFILE_PICTURES
   })
 
   const supporters = useMemo(() => {
@@ -166,7 +219,9 @@ const SupportersTile = ({
     <ProfileInfoTile
       screen='TopSupporters'
       icon={IconTrophy}
-      title={messages.tipSupporters}
+      title={
+        Platform.OS === 'ios' ? messages.topSupporters : messages.tipSupporters
+      }
       content={
         <UserListWithCount
           users={supporters}
@@ -179,15 +234,15 @@ const SupportersTile = ({
 }
 
 const SupportedUsersTile = ({
-  user_id,
+  userId,
   count
 }: {
-  user_id: number
+  userId: number
   count: number
 }) => {
   const { data: supportedUserRecords = [], isLoading } = useSupportedUsers({
-    userId: user_id,
-    pageSize: MAX_PROFILE_TOP_SUPPORTERS
+    userId,
+    pageSize: MAX_CARD_PROFILE_PICTURES
   })
 
   const supportedUsers = useMemo(() => {
@@ -210,34 +265,29 @@ const SupportedUsersTile = ({
   )
 }
 
-const ProfileInfoTile = (props: ProfileInfoTileProps) => {
-  const { style, screen, icon: Icon, title, content } = props
-  const styles = useInfoTileStyles()
-  const { neutral } = useThemePalette()
-  const navigation = useNavigation()
-  const { user_id } = useSelectProfile(['user_id'])
+const RelatedArtistsTile = ({ userId }: { userId: number }) => {
+  const { data: relatedArtists = [], isLoading } = useRelatedArtists({
+    artistId: userId,
+    pageSize: MAX_CARD_PROFILE_PICTURES
+  })
 
-  const handlePress = useCallback(() => {
-    navigation.navigate(screen, { userId: user_id })
-  }, [navigation, screen, user_id])
-
+  if (relatedArtists.length === 0) {
+    return null
+  }
   return (
-    <Tile
-      styles={{
-        root: style,
-        tile: styles.tile,
-        content: styles.tileContent
-      }}
-      onPress={handlePress}
-    >
-      <View style={styles.title}>
-        <Icon height={20} width={20} fill={neutral} />
-        <Text variant='title' size='s'>
-          {title}
-        </Text>
-      </View>
-      <View style={styles.content}>{content}</View>
-    </Tile>
+    <ProfileInfoTile
+      screen='RelatedArtists'
+      icon={IconUserGroup}
+      title={messages.relatedArtists}
+      content={
+        <UserListWithCount
+          users={relatedArtists}
+          count={isLoading ? MAX_CARD_PROFILE_PICTURES : relatedArtists.length}
+          loading={isLoading}
+          showCount={false}
+        />
+      }
+    />
   )
 }
 
@@ -246,9 +296,13 @@ const useStyles = makeStyles(({ spacing }) => ({
     marginHorizontal: spacing(-3)
   },
   rootScrollViewContent: {
-    gap: spacing(2),
+    gap: spacing(3),
     paddingVertical: spacing(2),
     paddingHorizontal: spacing(3)
+  },
+  staticTilesContainer: {
+    flexDirection: 'row',
+    gap: spacing(3)
   }
 }))
 
@@ -268,54 +322,119 @@ export const ProfileInfoTiles = () => {
     'allow_ai_attribution'
   ])
 
+  const { isEnabled: isRecentCommentsEnabled } = useFeatureFlag(
+    FeatureFlags.RECENT_COMMENTS
+  )
+
+  const [isRecentCommentsDrawerOpen, setIsRecentCommentsDrawerOpen] =
+    useState(false)
+  const onCloseRecentCommentsDrawer = useCallback(() => {
+    setIsRecentCommentsDrawerOpen(false)
+  }, [])
+  const onOpenRecentCommentsDrawer = useCallback(() => {
+    setIsRecentCommentsDrawerOpen(true)
+    trackEvent(
+      make({
+        eventName: Name.COMMENTS_HISTORY_DRAWER_OPEN,
+        userId: user_id
+      })
+    )
+  }, [user_id])
+
   const accountId = useSelector(getUserId)
 
   const hasMutuals =
     user_id !== accountId && current_user_followee_follow_count > 0
 
-  return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      style={styles.rootScrollView}
-      contentContainerStyle={styles.rootScrollViewContent}
-    >
-      <ProfileTierTile />
-      {hasAiAttribution ? (
-        <ProfileInfoTile
-          screen='AiGeneratedTracks'
-          icon={IconRobot}
-          title={messages.aiGeneratedTracks}
-          content={
-            <Text variant='body' size='s' color='subdued'>
-              {messages.viewAll}
-            </Text>
-          }
-        />
-      ) : null}
-      {supporting_count > 0 ? (
-        <SupportedUsersTile user_id={user_id} count={supporting_count} />
-      ) : null}
-      {hasMutuals ? (
-        <MutualsTile
-          user_id={user_id}
-          count={current_user_followee_follow_count}
-        />
-      ) : null}
-      {supporter_count > 0 ? (
-        <SupportersTile user_id={user_id} count={supporter_count} />
-      ) : null}
+  const { data: recentComments = [], isLoading: loadingComments } =
+    useUserComments({ userId: user_id, pageSize: 1 })
 
-      <ProfileInfoTile
-        screen='RelatedArtists'
-        icon={IconUserGroup}
-        title={messages.relatedArtists}
-        content={
-          <Text variant='body' size='s' color='subdued'>
-            {messages.viewAll}
-          </Text>
-        }
-      />
-    </ScrollView>
+  // Only animate if comments are not immediately visible
+  const [shouldAnimate] = useState(loadingComments)
+
+  const {
+    motion: { expressive: animation }
+  } = useTheme()
+
+  const layoutAnimation = useMemo(() => {
+    return shouldAnimate
+      ? LinearTransition.duration(animation.duration).easing(
+          animation.easing.factory()
+        )
+      : undefined
+  }, [animation, shouldAnimate])
+
+  const fadeInAnimation = useMemo(() => {
+    return shouldAnimate
+      ? FadeIn.withInitialValues({ opacity: 0 })
+          .duration(animation.duration)
+          .delay(animation.duration)
+      : undefined
+  }, [animation, shouldAnimate])
+
+  return (
+    <>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.rootScrollView}
+        contentContainerStyle={styles.rootScrollViewContent}
+      >
+        <ProfileTierTile />
+        <LayoutAnimationConfig skipEntering={!shouldAnimate}>
+          {isRecentCommentsEnabled && recentComments.length > 0 && (
+            <Animated.View entering={fadeInAnimation}>
+              <ProfileInfoTile
+                onPress={onOpenRecentCommentsDrawer}
+                icon={IconMessage}
+                title={messages.comments}
+                content={
+                  <Text variant='body' size='s' color='subdued'>
+                    {messages.viewAll}
+                  </Text>
+                }
+              />
+            </Animated.View>
+          )}
+          <Animated.View
+            style={styles.staticTilesContainer}
+            layout={layoutAnimation}
+          >
+            {supporting_count > 0 ? (
+              <SupportedUsersTile userId={user_id} count={supporting_count} />
+            ) : null}
+            {hasMutuals ? (
+              <MutualsTile
+                userId={user_id}
+                count={current_user_followee_follow_count}
+              />
+            ) : null}
+            {supporter_count > 0 ? (
+              <SupportersTile userId={user_id} count={supporter_count} />
+            ) : null}
+
+            <RelatedArtistsTile userId={user_id} />
+            {hasAiAttribution ? (
+              <ProfileInfoTile
+                screen='AiGeneratedTracks'
+                icon={IconRobot}
+                title={messages.aiGeneratedTracks}
+                content={
+                  <Text variant='body' size='s' color='subdued'>
+                    {messages.viewAll}
+                  </Text>
+                }
+              />
+            ) : null}
+          </Animated.View>
+        </LayoutAnimationConfig>
+      </ScrollView>
+      {isRecentCommentsDrawerOpen && (
+        <RecentUserCommentsDrawer
+          userId={user_id}
+          onClose={onCloseRecentCommentsDrawer}
+        />
+      )}
+    </>
   )
 }

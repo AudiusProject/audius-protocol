@@ -5,10 +5,13 @@ from datetime import datetime
 from typing import Dict, Union, cast
 
 import requests
-from flask_restx import inputs, reqparse
+from flask_restx import fields, inputs, reqparse
 
 from src import api_helpers
-from src.api.v1.models.common import full_response
+from src.api.v1.models.common import full_response, ns
+from src.api.v1.models.tracks import track as track_model
+from src.api.v1.models.tracks import track_full as track_model_full
+from src.api.v1.models.users import user_model, user_model_full
 from src.models.rewards.challenge import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
 from src.queries.get_extended_purchase_gate import get_legacy_purchase_gate
@@ -600,6 +603,32 @@ def extend_feed_item(item):
     return None
 
 
+def extend_related(related, current_user_id=None):
+    """Extends the related object containing users and tracks.
+
+    Args:
+        related: A dictionary containing 'users' and 'tracks' lists
+        current_user_id: The ID of the current user making the request
+
+    Returns:
+        The extended related object with extended users and tracks
+    """
+    if not related:
+        return related
+
+    result = {"users": [], "tracks": []}
+
+    if "users" in related and related["users"]:
+        result["users"] = [
+            extend_user(user, current_user_id) for user in related["users"]
+        ]
+
+    if "tracks" in related and related["tracks"]:
+        result["tracks"] = list(map(extend_track, related["tracks"]))
+
+    return result
+
+
 def abort_bad_path_param(param, namespace):
     namespace.abort(400, f"Oh no! Bad path parameter {param}.")
 
@@ -630,14 +659,38 @@ def decode_with_abort(identifier: str, namespace) -> int:
 def make_response(name, namespace, modelType):
     return namespace.model(
         name,
-        {
-            "data": modelType,
-        },
+        {"data": modelType},
     )
+
+
+related_model = ns.model(
+    "related",
+    {
+        "users": fields.List(fields.Nested(user_model)),
+        "tracks": fields.List(fields.Nested(track_model)),
+    },
+)
 
 
 def make_full_response(name, namespace, modelType):
     return namespace.clone(name, full_response, {"data": modelType})
+
+
+related_model_full = ns.model(
+    "related",
+    {
+        "users": fields.List(fields.Nested(user_model_full)),
+        "tracks": fields.List(fields.Nested(track_model_full)),
+    },
+)
+
+
+def make_full_response_with_related(name, namespace, modelType):
+    return namespace.clone(
+        name,
+        full_response,
+        {"data": modelType, "related": fields.Nested(related_model_full)},
+    )
 
 
 def to_dict(multi_dict):
@@ -748,7 +801,7 @@ pagination_with_current_user_parser.add_argument(
     "user_id", required=False, description="The user ID of the user making the request"
 )
 
-search_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+search_parser = pagination_parser.copy()
 search_parser.add_argument("query", required=False, description="The search query")
 search_parser.add_argument(
     "genre",
@@ -1106,6 +1159,10 @@ notifications_parser.add_argument(
 
 def success_response(entity):
     return api_helpers.success_response(entity, status=200, to_json=False)
+
+
+def success_response_with_related(entity):
+    return api_helpers.success_response_with_related(entity, status=200, to_json=False)
 
 
 def error_response(error):

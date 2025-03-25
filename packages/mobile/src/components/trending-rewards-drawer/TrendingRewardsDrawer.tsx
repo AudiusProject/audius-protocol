@@ -4,7 +4,8 @@ import { Theme } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import {
   audioRewardsPageSelectors,
-  audioRewardsPageActions
+  audioRewardsPageActions,
+  modalsActions
 } from '@audius/common/store'
 import type { TrendingRewardsModalType } from '@audius/common/store'
 import type { ImageStyle } from 'react-native'
@@ -26,14 +27,15 @@ import { useThemeVariant } from 'app/utils/theme'
 import { AppDrawer, useDrawerState } from '../drawer/AppDrawer'
 const { getTrendingRewardsModalType } = audioRewardsPageSelectors
 const { setTrendingRewardsModalType } = audioRewardsPageActions
+const { setVisibility } = modalsActions
 
 const TRENDING_REWARDS_DRAWER_NAME = 'TrendingRewardsExplainer'
 const TOS_URL = 'https://blog.audius.co/article/audio-rewards'
 
 const messages = {
-  tracksTitle: 'Top 5 Tracks Each Week Receive 100 $AUDIO',
+  tracksTitle: 'Top 5 Tracks Each Week Receive 1000 $AUDIO',
   playlistTitle: 'Top 5 Playlists Each Week Receive 100 $AUDIO',
-  undergroundTitle: 'Top 5 Tracks Each Week Receive 100 $AUDIO',
+  undergroundTitle: 'Top 5 Tracks Each Week Receive 1000 $AUDIO',
   winners: 'Winners are selected every Friday at Noon PT!',
   lastWeek: "LAST WEEK'S WINNERS",
   tracks: 'Tracks',
@@ -158,6 +160,7 @@ const useIsDark = () => {
 }
 
 export const TrendingRewardsDrawer = (titleIcon) => {
+  const dispatch = useDispatch()
   const navigation = useNavigation<AppScreenParamList>()
   const { onClose } = useDrawerState(TRENDING_REWARDS_DRAWER_NAME)
   const styles = useStyles()
@@ -165,6 +168,12 @@ export const TrendingRewardsDrawer = (titleIcon) => {
   const isDark = useIsDark()
 
   const tweetId = useTweetId(modalType)
+
+  const handleClose = useCallback(() => {
+    dispatch(
+      setVisibility({ modal: TRENDING_REWARDS_DRAWER_NAME, visible: 'closing' })
+    )
+  }, [dispatch])
 
   const tabOptions = [
     {
@@ -205,6 +214,7 @@ export const TrendingRewardsDrawer = (titleIcon) => {
       isFullscreen
       isGestureSupported={false}
       titleIcon={titleIcon}
+      onClose={handleClose}
     >
       <View style={styles.content}>
         <View style={styles.modalTitleContainer}>

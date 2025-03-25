@@ -72,7 +72,7 @@ const productionConfig: SdkServicesConfig = {
     storageNodes: [],
     antiAbuseOracleNodes: {
       endpoints: [
-        'https://antiabuseoracle.audius.co',
+        'https://discoveryprovider.audius.co',
         'https://audius-oracle.creatorseed.com',
         'https://oracle.audius.endl.net'
       ],
@@ -117,7 +117,7 @@ const stagingConfig: SdkServicesConfig = {
     discoveryNodes: [],
     storageNodes: [],
     antiAbuseOracleNodes: {
-      endpoints: ['https://antiabuseoracle.staging.audius.co'],
+      endpoints: ['https://discoveryprovider.staging.audius.co'],
       registeredAddresses: []
     },
     identityService: 'https://identityservice.staging.audius.co'
@@ -195,7 +195,7 @@ const developmentConfig: SdkServicesConfig = {
       'GNHKVSmHvoRBt1JJCxz7RSMfzDQGDGhGEjmhHyxb3K5J'
   },
   ethereum: {
-    rpcEndpoint: 'https://audius-protocol-eth-ganache-1',
+    rpcEndpoint: 'http://audius-protocol-eth-ganache-1',
     addresses: {
       ethRewardsManagerAddress: '0x',
       serviceProviderFactoryAddress: '0x',

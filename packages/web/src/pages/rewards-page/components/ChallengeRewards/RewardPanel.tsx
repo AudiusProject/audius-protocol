@@ -70,7 +70,10 @@ export const RewardPanel = ({
   })
 
   const challenge = userChallenges[id]
-  const hasDisbursed = challenge?.state === 'disbursed'
+  const hasDisbursed =
+    challenge?.state === 'disbursed' ||
+    (challenge?.challenge_id === ChallengeName.OneShot &&
+      challenge?.disbursed_amount > 0)
   const needsDisbursement = Boolean(challenge && challenge.claimableAmount > 0)
   const shouldShowProgressBar =
     challenge &&
@@ -117,14 +120,8 @@ export const RewardPanel = ({
           />
         </Flex>
         <Flex column h='100%' gap='l' ph='xl' pv='unit9'>
-          <Flex
-            column
-            alignItems='flex-start'
-            justifyContent='space-between'
-            w='100%'
-            gap='s'
-          >
-            <Text variant='heading' size='s'>
+          <Flex column alignItems='flex-start' w='100%' gap='s'>
+            <Text variant='heading' size='s' textAlign='left'>
               {title}
             </Text>
             <Flex css={{ minHeight: 40 }}>

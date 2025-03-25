@@ -116,19 +116,20 @@ export const useFeed = (
 
       return feed
     },
+    select: (data) => data?.pages.flat(),
     ...options,
     enabled: userId !== null
   })
 
-  const lineupData = useLineupQuery({
+  return useLineupQuery({
     queryData,
+    queryKey: getFeedQueryKey({
+      userId,
+      filter
+    }),
     lineupActions: feedPageLineupActions,
     lineupSelector: feedPageSelectors.getDiscoverFeedLineup,
-    playbackSource: PlaybackSource.TRACK_TILE_LINEUP // TODO: shouldn't this be more specific?
+    playbackSource: PlaybackSource.TRACK_TILE_LINEUP,
+    pageSize: loadMorePageSize
   })
-
-  return {
-    ...queryData,
-    ...lineupData
-  }
 }
