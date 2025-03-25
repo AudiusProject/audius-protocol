@@ -38,7 +38,7 @@ type RepostsMetricProps = {
 
 export const RepostsMetric = (props: RepostsMetricProps) => {
   const { trackId, size } = props
-  const { data: track } = useTrack(trackId, {
+  const { data: partialTrack } = useTrack(trackId, {
     select: (track) => {
       return {
         repostCount: track?.repost_count,
@@ -46,7 +46,7 @@ export const RepostsMetric = (props: RepostsMetricProps) => {
       }
     }
   })
-  const { repostCount, followeeReposts } = track ?? {}
+  const { repostCount, followeeReposts } = partialTrack ?? {}
 
   const isMobile = useIsMobile()
   const dispatch = useDispatch()
@@ -112,14 +112,11 @@ type SavesMetricProps = {
 
 export const SavesMetric = (props: SavesMetricProps) => {
   const { trackId } = props
-  const { data: track } = useTrack(trackId, {
+  const { data: saveCount } = useTrack(trackId, {
     select: (track) => {
-      return {
-        saveCount: track?.save_count
-      }
+      return track.save_count
     }
   })
-  const { saveCount } = track ?? {}
   const isMobile = useIsMobile()
   const dispatch = useDispatch()
 
@@ -157,7 +154,7 @@ type CommentMetricProps = {
 export const CommentMetric = (props: CommentMetricProps) => {
   const { trackId, size } = props
   const isMobile = useIsMobile()
-  const { data: track } = useTrack(trackId, {
+  const { data: partialTrack } = useTrack(trackId, {
     select: (track) => {
       return {
         commentCount: track?.comment_count,
@@ -166,7 +163,7 @@ export const CommentMetric = (props: CommentMetricProps) => {
       }
     }
   })
-  const { commentCount = 0, permalink, commentsDisabled } = track ?? {}
+  const { commentCount = 0, permalink, commentsDisabled } = partialTrack ?? {}
 
   const handleClick = useCallback(() => {
     trackEvent(
@@ -201,14 +198,11 @@ type PlayMetricProps = {
 
 export const PlayMetric = (props: PlayMetricProps) => {
   const { trackId } = props
-  const { data: track } = useTrack(trackId, {
+  const { data: playCount } = useTrack(trackId, {
     select: (track) => {
-      return {
-        playCount: track?.play_count
-      }
+      return track.play_count
     }
   })
-  const { playCount } = track ?? {}
 
   if (!playCount) return null
 

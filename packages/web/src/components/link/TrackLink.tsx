@@ -8,16 +8,17 @@ type TrackLinkProps = Omit<TextLinkProps, 'to'> & {
 }
 
 export const TrackLink = ({ trackId, ...props }: TrackLinkProps) => {
-  const { data: track } = useTrack(trackId, {
+  const { data: partialTrack } = useTrack(trackId, {
     select: (track) => {
       return { title: track?.title, permalink: track?.permalink }
     }
   })
-  if (!track) return null
+  if (!partialTrack) return null
+  const { title, permalink } = partialTrack
 
   return (
-    <TextLink to={track.permalink} {...props}>
-      {track.title}
+    <TextLink to={permalink} {...props}>
+      {title}
     </TextLink>
   )
 }

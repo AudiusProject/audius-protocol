@@ -75,14 +75,11 @@ export const OverflowMenuDrawer = () => {
       ? +overflowMenu.id
       : undefined
 
-  const { data: track } = useTrack(id, {
+  const { data: commentCount } = useTrack(id, {
     select: (track) => {
-      return {
-        commentCount: track.comment_count
-      }
+      return track.comment_count
     }
   })
-  const commentCount = track?.commentCount
 
   if (!overflowMenu?.id) {
     return <></>

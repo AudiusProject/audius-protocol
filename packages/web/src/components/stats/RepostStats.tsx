@@ -33,19 +33,19 @@ export const RepostStats = ({
 }: RepostStatsProps) => {
   const dispatch = useDispatch()
 
-  const { data: collection } = useCollection(id, {
+  const { data: collectionRepostCount } = useCollection(id, {
     enabled: entityType === UserListEntityType.COLLECTION,
     select: (collection) => {
-      return { repost_count: collection?.repost_count }
+      return collection?.repost_count
     }
   })
-  const { data: track } = useTrack(id, {
+  const { data: trackRepostCount } = useTrack(id, {
     enabled: entityType === UserListEntityType.TRACK,
     select: (track) => {
-      return { repost_count: track?.repost_count }
+      return track?.repost_count
     }
   })
-  const repostCount = collection?.repost_count ?? track?.repost_count ?? 0
+  const repostCount = collectionRepostCount ?? trackRepostCount ?? 0
 
   const handleClick = useCallback(() => {
     dispatch(

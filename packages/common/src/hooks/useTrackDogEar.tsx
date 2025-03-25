@@ -13,7 +13,7 @@ import { useGatedTrackAccess } from './useGatedContent'
 
 export const useTrackDogEar = (trackId: ID, hideUnlocked = false) => {
   const { data: currentUserId } = useCurrentUserId()
-  const { data: track } = useTrack(trackId, {
+  const { data: partialTrack } = useTrack(trackId, {
     select: (track) => {
       return {
         streamConditions: track.stream_conditions,
@@ -22,7 +22,7 @@ export const useTrackDogEar = (trackId: ID, hideUnlocked = false) => {
       }
     }
   })
-  const { streamConditions, downloadConditions, isOwner } = track ?? {}
+  const { streamConditions, downloadConditions, isOwner } = partialTrack ?? {}
 
   const { hasStreamAccess, hasDownloadAccess } = useGatedTrackAccess(trackId)
 

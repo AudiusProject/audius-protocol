@@ -30,14 +30,11 @@ export const TrackTileStats = (props: TrackTileStatsProps) => {
 
   const isUnlockable = useIsTrackUnlockable(trackId)
 
-  const { data: track } = useTrack(trackId, {
+  const { data: isUnlisted } = useTrack(trackId, {
     select: (track) => {
-      return {
-        isUnlisted: track.is_unlisted
-      }
+      return track.is_unlisted
     }
   })
-  const isUnlisted = track?.isUnlisted
 
   return (
     <Flex row justifyContent='space-between' alignItems='center' p='s' h={32}>

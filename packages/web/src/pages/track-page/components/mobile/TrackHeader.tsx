@@ -181,11 +181,10 @@ const TrackHeader = ({
   goToFavoritesPage,
   goToRepostsPage
 }: TrackHeaderProps) => {
-  const { data: track } = useTrack(trackId, {
+  const { data: partialTrack } = useTrack(trackId, {
     select: (track) => {
       return {
         is_downloadable: track?.is_downloadable,
-        access: track?.access,
         album_backlink: track?.album_backlink,
         release_date: track?.release_date,
         ddex_app: track?.ddex_app,
@@ -194,10 +193,17 @@ const TrackHeader = ({
       }
     }
   })
+  const {
+    is_downloadable,
+    album_backlink,
+    release_date,
+    ddex_app,
+    permalink,
+    _stems
+  } = partialTrack ?? {}
 
   const dispatch = useDispatch()
-  const hasDownloadableAssets =
-    track?.is_downloadable || (track?._stems?.length ?? 0) > 0
+  const hasDownloadableAssets = is_downloadable || (_stems?.length ?? 0) > 0
 
   const showSocials = !isUnlisted && hasStreamAccess
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
@@ -207,9 +213,9 @@ const TrackHeader = ({
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
   const showListenCount = isOwner || (!isStreamGated && !isUnlisted)
-  const albumInfo = track?.album_backlink
+  const albumInfo = album_backlink
   const shouldShowScheduledRelease =
-    track?.release_date && dayjs(track.release_date).isAfter(dayjs())
+    release_date && dayjs(release_date).isAfter(dayjs())
 
   const image = useTrackCoverArt({
     trackId,
@@ -233,7 +239,7 @@ const TrackHeader = ({
         : isSaved
           ? OverflowAction.UNFAVORITE
           : OverflowAction.FAVORITE,
-      isOwner && !track?.ddex_app ? OverflowAction.ADD_TO_ALBUM : null,
+      isOwner && !ddex_app ? OverflowAction.ADD_TO_ALBUM : null,
       isOwner || !isUnlisted ? OverflowAction.ADD_TO_PLAYLIST : null,
       albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       isFollowing
@@ -270,8 +276,8 @@ const TrackHeader = ({
   }, [goToRepostsPage, trackId])
 
   const onClickComments = useCallback(() => {
-    dispatch(pushRoute(`${track?.permalink}/comments`))
-  }, [dispatch, track?.permalink])
+    dispatch(pushRoute(`${permalink}/comments`))
+  }, [dispatch, permalink])
 
   const imageElement = coSign ? (
     <CoSign

@@ -67,7 +67,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
   const dispatch = useDispatch()
   const record = useRecord()
   const isMobile = useIsMobile()
-  const { data: track } = useTrack(trackId, {
+  const { data: partialTrack } = useTrack(trackId, {
     select: (track) => {
       return {
         is_downloadable: track?.is_downloadable,
@@ -75,6 +75,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
       }
     }
   })
+  const { is_downloadable, access } = partialTrack ?? {}
 
   const { stemTracks } = useCurrentStems({ trackId })
   const { uploadingTracks: uploadingStems } = useUploadingStems({ trackId })
@@ -88,7 +89,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
 
   const downloadQuality = DownloadQuality.ORIGINAL
   const shouldHideDownload =
-    !track?.access.download && !shouldDisplayDownloadFollowGated
+    !access?.download && !shouldDisplayDownloadFollowGated
   const formattedPrice = price ? USDC(price / 100).toLocaleString() : undefined
   const [expanded, setExpanded] = useState(false)
   const [lockedContentModalVisibility, setLockedContentModalVisibility] =
@@ -119,7 +120,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
       if (isMobile && shouldDisplayDownloadFollowGated) {
         // On mobile, show a toast instead of a tooltip
         dispatch(toast({ content: messages.followToDownload }))
-      } else if (track && track.access.download) {
+      } else if (partialTrack && partialTrack.access.download) {
         openWaitForDownloadModal({
           parentTrackId,
           trackIds,
@@ -152,7 +153,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
       openWaitForDownloadModal,
       record,
       shouldDisplayDownloadFollowGated,
-      track
+      partialTrack
     ]
   )
 
@@ -240,7 +241,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
         ) : null}
         <Expandable expanded={expanded} id='downloads-section'>
           <Box>
-            {track?.is_downloadable ? (
+            {is_downloadable ? (
               <DownloadRow
                 trackId={trackId}
                 parentTrackId={trackId}
@@ -260,7 +261,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 size={fileSizes[s.id]?.[downloadQuality]}
                 index={
                   i +
-                  (track?.is_downloadable
+                  (is_downloadable
                     ? STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK
                     : STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK)
                 }
@@ -275,7 +276,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 index={
                   i +
                   stemTracks.length +
-                  (track?.is_downloadable
+                  (is_downloadable
                     ? STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK
                     : STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK)
                 }

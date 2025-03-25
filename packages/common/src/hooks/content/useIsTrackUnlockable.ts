@@ -7,14 +7,11 @@ import {
 } from '~/models'
 
 export const useIsTrackUnlockable = (trackId: ID) => {
-  const { data: track } = useTrack(trackId, {
+  const { data: streamConditions } = useTrack(trackId, {
     select: (track) => {
-      return {
-        streamConditions: track.stream_conditions
-      }
+      return track.stream_conditions
     }
   })
-  const streamConditions = track?.streamConditions
 
   const isPurchaseable = isContentUSDCPurchaseGated(streamConditions)
   const isCollectibleGated = isContentCollectibleGated(streamConditions)

@@ -44,14 +44,11 @@ export const useTrackImage = ({
   trackId?: ID
   size: SquareSizes
 }) => {
-  const { data: track } = useTrack(trackId, {
+  const { data: artwork } = useTrack(trackId, {
     select: (track) => {
-      return {
-        artwork: track.artwork
-      }
+      return track.artwork
     }
   })
-  const artwork = track?.artwork
   const image = useImageSize({
     artwork,
     targetSize: size,

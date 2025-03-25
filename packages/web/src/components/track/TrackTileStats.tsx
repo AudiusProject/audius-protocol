@@ -30,14 +30,11 @@ export const TrackTileStats = (props: TrackTileStatsProps) => {
   const isUnlockable = useIsTrackUnlockable(trackId)
   const isMobile = useIsMobile()
 
-  const { data: track } = useTrack(trackId, {
+  const { data: isUnlisted } = useTrack(trackId, {
     select: (track) => {
-      return {
-        isUnlisted: track?.is_unlisted
-      }
+      return track.is_unlisted
     }
   })
-  const isUnlisted = track?.isUnlisted
 
   if (isLoading) {
     return (

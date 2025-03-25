@@ -56,7 +56,7 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
     isDeleted
   } = props
   const { data: currentUserId } = useCurrentUserId()
-  const { data: track } = useTrack(trackId, {
+  const { data: partialTrack } = useTrack(trackId, {
     select: (track) => {
       return {
         ownerId: track?.owner_id,
@@ -64,7 +64,7 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
       }
     }
   })
-  const { ownerId, albumBacklink } = track ?? {}
+  const { ownerId, albumBacklink } = partialTrack ?? {}
   const { data: user } = useUser(ownerId)
   const dispatch = useDispatch()
   const { onOpen: openPremiumContentPurchaseModal } =

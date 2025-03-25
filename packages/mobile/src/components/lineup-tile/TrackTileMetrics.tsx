@@ -32,14 +32,11 @@ type RepostsMetricProps = {
 export const RepostsMetric = (props: RepostsMetricProps) => {
   const { trackId } = props
 
-  const { data: track } = useTrack(trackId, {
+  const { data: repostCount } = useTrack(trackId, {
     select: (track) => {
-      return {
-        repostCount: track.repost_count
-      }
+      return track.repost_count
     }
   })
-  const repostCount = track?.repostCount
 
   const dispatch = useDispatch()
   const navigation = useNavigation()
@@ -67,14 +64,11 @@ type SavesMetricProps = {
 
 export const SavesMetric = (props: SavesMetricProps) => {
   const { trackId } = props
-  const { data: track } = useTrack(trackId, {
+  const { data: saveCount } = useTrack(trackId, {
     select: (track) => {
-      return {
-        saveCount: track.save_count
-      }
+      return track.save_count
     }
   })
-  const saveCount = track?.saveCount
 
   const dispatch = useDispatch()
   const navigation = useNavigation()
@@ -107,7 +101,7 @@ export const CommentMetric = (props: CommentMetricProps) => {
   const { open } = useCommentDrawer()
   const navigation = useNavigation()
   const { isEnabled } = useFeatureFlag(FeatureFlags.COMMENTS_ENABLED)
-  const { data: track } = useTrack(trackId, {
+  const { data: partialTrack } = useTrack(trackId, {
     select: (track) => {
       return {
         commentCount: track.comment_count,
@@ -115,7 +109,7 @@ export const CommentMetric = (props: CommentMetricProps) => {
       }
     }
   })
-  const { commentCount, commentsDisabled } = track ?? {}
+  const { commentCount, commentsDisabled } = partialTrack ?? {}
 
   const handlePress = useCallback(() => {
     open({
@@ -150,14 +144,11 @@ type PlayMetricProps = {
 
 export const PlayMetric = (props: PlayMetricProps) => {
   const { trackId } = props
-  const { data: track } = useTrack(trackId, {
+  const { data: playCount } = useTrack(trackId, {
     select: (track) => {
-      return {
-        playCount: track.play_count
-      }
+      return track.play_count
     }
   })
-  const playCount = track?.playCount
   if (!playCount || playCount === 0) return null
 
   return <VanityMetric disabled>{formatCount(playCount)} Plays</VanityMetric>

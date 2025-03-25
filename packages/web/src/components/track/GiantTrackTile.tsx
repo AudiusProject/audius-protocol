@@ -191,7 +191,7 @@ export const GiantTrackTile = ({
   const isLongFormContent =
     genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
-  const { data: track } = useTrack(trackId, {
+  const { data: partialTrack } = useTrack(trackId, {
     select: (track) => {
       return {
         is_downloadable: track?.is_downloadable,
@@ -200,13 +200,13 @@ export const GiantTrackTile = ({
       }
     }
   })
+  const { is_downloadable, _stems, preview_cid } = partialTrack ?? {}
 
-  const hasDownloadableAssets =
-    track?.is_downloadable || (track?._stems?.length ?? 0) > 0
+  const hasDownloadableAssets = is_downloadable || (_stems?.length ?? 0) > 0
   // Preview button is shown for USDC-gated tracks if user does not have access
   // or is the owner
   const showPreview =
-    isUSDCPurchaseGated && (isOwner || !hasStreamAccess) && track?.preview_cid
+    isUSDCPurchaseGated && (isOwner || !hasStreamAccess) && preview_cid
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
   const shouldShowScheduledRelease =

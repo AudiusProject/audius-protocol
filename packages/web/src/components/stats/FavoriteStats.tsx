@@ -33,21 +33,19 @@ export const FavoriteStats = ({
 }: FavoriteStatsProps) => {
   const dispatch = useDispatch()
 
-  const { data: collection } = useCollection(id, {
+  const { data: collectionSaveCount } = useCollection(id, {
     enabled: entityType === UserListEntityType.COLLECTION,
     select: (collection) => {
-      return {
-        save_count: collection?.save_count
-      }
+      return collection?.save_count
     }
   })
-  const { data: track } = useTrack(id, {
+  const { data: trackSaveCount } = useTrack(id, {
     enabled: entityType === UserListEntityType.TRACK,
     select: (track) => {
-      return { save_count: track?.save_count }
+      return track?.save_count
     }
   })
-  const favoriteCount = collection?.save_count ?? track?.save_count ?? 0
+  const favoriteCount = collectionSaveCount ?? trackSaveCount ?? 0
 
   const handleClick = useCallback(() => {
     dispatch(

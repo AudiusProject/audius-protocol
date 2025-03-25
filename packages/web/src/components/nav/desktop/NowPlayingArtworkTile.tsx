@@ -75,17 +75,19 @@ export const NowPlayingArtworkTile = () => {
 
   const { data: currentUserId } = useCurrentUserId()
   const trackId = useSelector(getTrackId)
-  const { data: track } = useTrack(trackId, {
+  const { data: partialTrack } = useTrack(trackId, {
     select: (track) => {
-      const isStreamGated = !!track?.is_stream_gated
-      const permalink = track?.permalink
-      const isOwner = Boolean(
-        track?.owner_id && currentUserId && track.owner_id === currentUserId
-      )
-      return { title: track?.title, isStreamGated, permalink, isOwner }
+      return {
+        title: track?.title,
+        isStreamGated: !!track?.is_stream_gated,
+        permalink: track?.permalink,
+        isOwner: Boolean(
+          track?.owner_id && currentUserId && track.owner_id === currentUserId
+        )
+      }
     }
   })
-  const { isStreamGated, permalink, isOwner } = track ?? {}
+  const { title, isStreamGated, permalink, isOwner } = partialTrack ?? {}
 
   const collectibleImage = useSelector((state: CommonState) => {
     const collectible = getCollectible(state)
@@ -170,7 +172,7 @@ export const NowPlayingArtworkTile = () => {
     content
   ) : (
     <Draggable
-      text={track?.title}
+      text={title}
       kind='track'
       id={trackId}
       isOwner={isOwner}

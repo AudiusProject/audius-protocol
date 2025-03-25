@@ -214,16 +214,14 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
 
   const draggingKind = useSelector(selectDraggingKind)
   const draggingId = useSelector(selectDraggingId)
-  const { data: track } = useTrack(draggingId as ID, {
+  const { data: isUnlisted } = useTrack(draggingId as ID, {
     enabled: typeof draggingId === 'number',
     select: (track) => {
-      return {
-        is_unlisted: track?.is_unlisted
-      }
+      return track.is_unlisted
     }
   })
   const hiddenTrackCheck =
-    !!track && !!collection && track?.is_unlisted && !collection?.is_private
+    !!isUnlisted && !!collection && isUnlisted && !collection?.is_private
 
   const isDisabled =
     (draggingKind === 'track' && !isOwned) ||

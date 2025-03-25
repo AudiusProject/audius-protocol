@@ -22,7 +22,7 @@ const ConnectedRemixCard = ({
   trackId,
   goToRoute
 }: ConnectedRemixCardProps) => {
-  const { data: track } = useTrack(trackId, {
+  const { data: partialTrack } = useTrack(trackId, {
     select: (track) => {
       return {
         permalink: track?.permalink,
@@ -31,7 +31,7 @@ const ConnectedRemixCard = ({
       }
     }
   })
-  const { data: user } = useUser(track?.owner_id, {
+  const { data: partialUser } = useUser(partialTrack?.owner_id, {
     select: (user) => {
       return {
         handle: user?.handle,
@@ -41,7 +41,7 @@ const ConnectedRemixCard = ({
     }
   })
   const profilePictureImage = useProfilePicture({
-    userId: user?.user_id,
+    userId: partialUser?.user_id,
     size: SquareSizes.SIZE_150_BY_150
   })
   const coverArtImage = useTrackCoverArt({
@@ -49,24 +49,24 @@ const ConnectedRemixCard = ({
     size: SquareSizes.SIZE_480_BY_480
   })
   const goToTrackPage = useCallback(() => {
-    goToRoute(track?.permalink ?? '')
-  }, [goToRoute, track])
+    goToRoute(partialTrack?.permalink ?? '')
+  }, [goToRoute, partialTrack])
   const goToArtistPage = useCallback(() => {
-    goToRoute(profilePage(user?.handle ?? ''))
-  }, [goToRoute, user])
+    goToRoute(profilePage(partialUser?.handle ?? ''))
+  }, [goToRoute, partialUser])
 
-  if (!track || !user) return null
+  if (!partialTrack || !partialUser) return null
 
   return (
     <RemixCard
       profilePictureImage={profilePictureImage}
       coverArtImage={coverArtImage}
-      coSign={track?._co_sign}
-      artistName={user?.name}
-      artistHandle={user?.handle}
+      coSign={partialTrack?._co_sign}
+      artistName={partialUser?.name}
+      artistHandle={partialUser?.handle}
       onClick={goToTrackPage}
       onClickArtistName={goToArtistPage}
-      userId={user?.user_id}
+      userId={partialUser?.user_id}
     />
   )
 }
