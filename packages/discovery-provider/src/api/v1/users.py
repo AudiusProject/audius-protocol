@@ -1647,8 +1647,8 @@ class FullMutualFollowers(Resource):
         offset = get_default_max(args.get("offset"), 0)
         current_user_id = get_current_user_id(args)
         args = {
-            "follower_user_id": current_user_id,
-            "followee_user_id": decoded_id,
+            "my_id": current_user_id,
+            "other_user_id": decoded_id,
             "limit": limit,
             "offset": offset,
         }
