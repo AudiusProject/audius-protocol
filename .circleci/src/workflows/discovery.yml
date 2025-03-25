@@ -6,7 +6,7 @@ jobs:
       service: discovery-provider discovery-provider-openresty discovery-provider-notifications trending-challenge-rewards staking relay solana-relay crm mri comms es-indexer verified-notifications anti-abuse
       filters:
         branches:
-          only: main
+          only: as/fix-ci-push
 
   - lint-discovery-provider:
       name: lint-discovery-provider
