@@ -18,10 +18,10 @@ logger = logging.getLogger(__name__)
 env = shared_config["discprov"]["env"]
 
 NUM_DAYS_IN_STREAK = 7
-NUM_HOURS_UNTIL_NEXT_STREAK = 16
-NUM_HOURS_UNTIL_BROKEN_STREAK = 48
-next_streak_timedelta = timedelta(hours=NUM_HOURS_UNTIL_NEXT_STREAK)
-broken_streak_timedelta = timedelta(hours=NUM_HOURS_UNTIL_BROKEN_STREAK)
+RANGE_START_HOURS = 16
+RANGE_END_HOURS = 48
+next_streak_timedelta = timedelta(hours=RANGE_START_HOURS)
+broken_streak_timedelta = timedelta(hours=RANGE_END_HOURS)
 
 
 def get_listen_streak_override(session: Session, user_id: int) -> Optional[int]:
