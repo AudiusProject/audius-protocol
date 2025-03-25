@@ -3,6 +3,7 @@ import { CommonState } from '~/store/commonStore'
 
 import { Kind, ID, UID, Status, Track, StemTrack } from '../../../models'
 
+/** @deprecated Use useTrack instead */
 export const getTrack = (
   state: CommonState,
   props: { id?: ID | null; uid?: UID | null; permalink?: string | null }
@@ -22,6 +23,7 @@ export const getTrack = (
 export const getStatus = (state: CommonState, props: { id?: ID | null }) =>
   (props.id && state.tracks.statuses[props.id]) || null
 
+/** @deprecated Use useTracks instead */
 export const getTracks = (
   state: CommonState,
   props: {

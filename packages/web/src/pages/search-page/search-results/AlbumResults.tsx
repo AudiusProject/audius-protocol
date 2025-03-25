@@ -27,7 +27,10 @@ const messages = {
 }
 
 type AlbumResultsProps = {
-  queryData: Omit<FlatUseInfiniteQueryResult<UserCollectionMetadata>, 'status'>
+  queryData: Pick<
+    FlatUseInfiniteQueryResult<UserCollectionMetadata>,
+    'data' | 'isFetching' | 'isInitialLoading'
+  >
   limit?: number
   skeletonCount?: number
 }

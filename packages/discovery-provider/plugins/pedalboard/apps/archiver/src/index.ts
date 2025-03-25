@@ -10,6 +10,7 @@ import { getStemsArchiveQueue } from './jobs/createStemsArchive'
 import { getCleanupOrphanedFilesQueue } from './jobs/cleanupOrphanedFiles'
 import { logger, httpLogger } from './logger'
 import { createDefaultWorkerServices } from './workers/services'
+import { ensureTempDirectory } from './workers/ensureTempDirectory'
 // Basic health check endpoint
 const health = (_req: express.Request, res: express.Response) => {
   res.json({ status: 'healthy' })
@@ -28,6 +29,10 @@ const main = async () => {
 
   // Start the workers
   const services = createDefaultWorkerServices()
+
+  // Ensure the temp directory exists
+  await ensureTempDirectory(services)
+
   const {
     worker: stemsWorker,
     removeStemsArchiveJob,

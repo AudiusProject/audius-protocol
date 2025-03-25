@@ -1,11 +1,7 @@
+import { useTrack } from '@audius/common/api'
 import { useIsTrackUnlockable } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
-import {
-  cacheTracksSelectors,
-  type CommonState,
-  type LineupBaseActions
-} from '@audius/common/store'
-import { useSelector } from 'react-redux'
+import { type LineupBaseActions } from '@audius/common/store'
 
 import { Flex } from '@audius/harmony-native'
 
@@ -21,8 +17,6 @@ import {
   SavesMetric
 } from './TrackTileMetrics'
 
-const { getTrack } = cacheTracksSelectors
-
 type TrackTileStatsProps = {
   trackId: ID
   isTrending?: boolean
@@ -36,8 +30,10 @@ export const TrackTileStats = (props: TrackTileStatsProps) => {
 
   const isUnlockable = useIsTrackUnlockable(trackId)
 
-  const isUnlisted = useSelector((state: CommonState) => {
-    return getTrack(state, { id: trackId })?.is_unlisted
+  const { data: isUnlisted } = useTrack(trackId, {
+    select: (track) => {
+      return track.is_unlisted
+    }
   })
 
   return (
