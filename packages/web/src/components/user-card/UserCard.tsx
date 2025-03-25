@@ -1,7 +1,7 @@
 import { useCallback, MouseEvent } from 'react'
 
+import { useUser } from '@audius/common/api'
 import { ID, SquareSizes } from '@audius/common/models'
-import { cacheUsersSelectors } from '@audius/common/store'
 import { formatCount, route } from '@audius/common/utils'
 import { Box, Skeleton, Text } from '@audius/harmony'
 import { useLinkClickHandler } from 'react-router-dom-v5-compat'
@@ -9,10 +9,8 @@ import { useLinkClickHandler } from 'react-router-dom-v5-compat'
 import { Avatar } from 'components/avatar'
 import { Card, CardProps, CardFooter, CardContent } from 'components/card'
 import { UserLink } from 'components/link'
-import { useSelector } from 'utils/reducer'
 
 const { profilePage } = route
-const { getUser } = cacheUsersSelectors
 
 const messages = {
   followers: (count: number) => (count === 1 ? 'Follower' : 'Followers')
@@ -34,7 +32,7 @@ export type UserCardProps = Omit<CardProps, 'id'> & {
 export const UserCard = (props: UserCardProps) => {
   const { id, loading, size, onClick, onUserLinkClick, ...other } = props
 
-  const user = useSelector((state) => getUser(state, { id }))
+  const { data: user } = useUser(id)
 
   const handleNavigate = useLinkClickHandler<HTMLDivElement>(
     profilePage(user?.handle ?? '')

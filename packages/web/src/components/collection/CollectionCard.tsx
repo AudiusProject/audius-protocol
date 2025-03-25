@@ -1,14 +1,12 @@
 import { MouseEvent, Ref, forwardRef, useCallback } from 'react'
 
+import { useCollection } from '@audius/common/api'
 import {
   ID,
   SquareSizes,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import {
-  accountSelectors,
-  cacheCollectionsSelectors
-} from '@audius/common/store'
+import { accountSelectors } from '@audius/common/store'
 import { formatCount, formatReleaseDate } from '@audius/common/utils'
 import { Flex, Skeleton, Text } from '@audius/harmony'
 import IconHeart from '@audius/harmony/src/assets/icons/Heart.svg'
@@ -23,7 +21,6 @@ import { useSelector } from 'utils/reducer'
 import { CollectionDogEar } from './CollectionDogEar'
 import { CollectionImage } from './CollectionImage'
 
-const { getCollection } = cacheCollectionsSelectors
 const { getUserId } = accountSelectors
 
 const messages = {
@@ -60,7 +57,7 @@ export const CollectionCard = forwardRef(
       ...other
     } = props
 
-    const collection = useSelector((state) => getCollection(state, { id }))
+    const { data: collection } = useCollection(id)
     const accountId = useSelector(getUserId)
 
     const handleNavigate = useLinkClickHandler<HTMLDivElement>(
