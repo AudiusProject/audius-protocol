@@ -1,26 +1,18 @@
+import { useTrack, useUser } from '@audius/common/api'
 import { useDownloadableContentAccess } from '@audius/common/hooks'
 import {
   ID,
   StemCategory,
   stemCategoryFriendlyNames
 } from '@audius/common/models'
-import {
-  cacheTracksSelectors,
-  cacheUsersSelectors,
-  CommonState
-} from '@audius/common/store'
 import { getFilename, formatBytes } from '@audius/common/utils'
 import { Flex, IconButton, IconReceive, Text } from '@audius/harmony'
-import { shallowEqual, useSelector } from 'react-redux'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Tooltip from 'components/tooltip/Tooltip'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import styles from './DownloadRow.module.css'
-
-const { getTrack } = cacheTracksSelectors
-const { getUser } = cacheUsersSelectors
 
 const messages = {
   fullTrack: 'Full Track',
@@ -52,14 +44,9 @@ export const DownloadRow = ({
   isLoading
 }: DownloadRowProps) => {
   const isMobile = useIsMobile()
-  const track = useSelector(
-    (state: CommonState) => getTrack(state, { id: trackId }),
-    shallowEqual
-  )
-  const user = useSelector(
-    (state: CommonState) => getUser(state, { id: track?.owner_id }),
-    shallowEqual
-  )
+  const { data: track } = useTrack(trackId)
+  const { data: user } = useUser(track?.owner_id)
+
   const downloadableContentAccess = useDownloadableContentAccess({
     trackId: parentTrackId ?? trackId ?? 0
   })

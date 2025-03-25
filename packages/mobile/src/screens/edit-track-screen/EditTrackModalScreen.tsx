@@ -1,9 +1,10 @@
 import { useCallback } from 'react'
 
+import { useTrack } from '@audius/common/api'
 import { SquareSizes } from '@audius/common/models'
 import type { TrackMetadataForUpload } from '@audius/common/store'
-import { cacheTracksActions, cacheTracksSelectors } from '@audius/common/store'
-import { useDispatch, useSelector } from 'react-redux'
+import { cacheTracksActions } from '@audius/common/store'
+import { useDispatch } from 'react-redux'
 
 import { ModalScreen } from 'app/components/core'
 import { useTrackImage } from 'app/components/image/TrackImage'
@@ -15,7 +16,6 @@ import { UploadFileContextProvider } from '../upload-screen/screens/UploadFileCo
 
 import { EditTrackScreen } from './EditTrackScreen'
 
-const { getTrack } = cacheTracksSelectors
 const { editTrack } = cacheTracksActions
 
 const messages = {
@@ -29,7 +29,7 @@ export const EditTrackModalScreen = () => {
   const dispatch = useDispatch()
   const navigation = useNavigation()
 
-  const track = useSelector((state) => getTrack(state, { id }))
+  const { data: track } = useTrack(id)
 
   const trackImage = useTrackImage({
     trackId: track?.track_id,
