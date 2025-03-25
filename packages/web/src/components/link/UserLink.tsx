@@ -36,13 +36,13 @@ export const UserLink = (props: UserLinkProps) => {
     ...other
   } = props
   const { spacing } = useTheme()
-  const { data: user } = useUser(userId, {
+  const { data: partialUser } = useUser(userId, {
     select: (user) => ({
       handle: user?.handle,
       name: user?.name
     })
   })
-  const { handle, name } = user ?? {}
+  const { handle, name } = partialUser ?? {}
   const url = handle ? profilePage(handle) : ''
 
   const textLink = (

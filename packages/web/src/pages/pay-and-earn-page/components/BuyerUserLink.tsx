@@ -9,13 +9,13 @@ type BuyerUserLinkProps = {
 }
 
 export const BuyerUserLink = ({ userId }: BuyerUserLinkProps) => {
-  const { data: user } = useUser(userId, {
+  const { data: partialUser } = useUser(userId, {
     select: (user) => ({
       handle: user?.handle,
       name: user?.name
     })
   })
-  const isGuestUser = !user?.handle && !user?.name
+  const isGuestUser = !partialUser?.handle && !partialUser?.name
 
   if (isGuestUser) {
     return (

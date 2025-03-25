@@ -72,13 +72,13 @@ export const SaleModalContent = ({
   const { canCreateChat } = useSelector((state: CommonState) =>
     getCanCreateChat(state, { userId: purchaseDetails.buyerUserId })
   )
-  const { data: user } = useUser(purchaseDetails.buyerUserId, {
+  const { data: partialUser } = useUser(purchaseDetails.buyerUserId, {
     select: (user) => ({
       handle: user?.handle,
       name: user?.name
     })
   })
-  const isGuestUser = !user?.handle && !user?.name
+  const isGuestUser = !partialUser?.handle && !partialUser?.name
 
   const handleClickMessageBuyer = useCallback(() => {
     onClose()

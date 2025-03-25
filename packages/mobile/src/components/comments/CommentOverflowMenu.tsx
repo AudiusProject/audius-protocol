@@ -48,7 +48,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   const isMuted = 'isMuted' in comment ? comment.isMuted : false
   const isParentComment = 'replyCount' in comment
 
-  const { data: userDisplayName } = useUser(userId, {
+  const { data: userName } = useUser(userId, {
     select: (user) => user?.name
   })
 
@@ -262,7 +262,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
             onClosed={() => setIsFlagAndHideConfirmationVisible(false)}
             messages={{
               header: messages.popups.flagAndHide.title,
-              description: messages.popups.flagAndHide.body(userDisplayName),
+              description: messages.popups.flagAndHide.body(userName),
               confirm: messages.popups.flagAndHide.confirm
             }}
             onConfirm={handleFlagComment}
@@ -276,7 +276,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
             onClosed={() => setIsFlagAndRemoveConfirmationVisible(false)}
             messages={{
               header: messages.popups.flagAndRemove.title,
-              description: messages.popups.flagAndRemove.body(userDisplayName),
+              description: messages.popups.flagAndRemove.body(userName),
               confirm: messages.popups.flagAndRemove.confirm
             }}
             onConfirm={handleFlagAndRemoveComment}
@@ -307,7 +307,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
               header: messages.popups.delete.title,
               description: isCommentOwner
                 ? messages.popups.delete.body
-                : messages.popups.artistDelete.body(userDisplayName),
+                : messages.popups.artistDelete.body(userName),
               confirm: messages.popups.delete.confirm
             }}
             onConfirm={handleDeleteComment}
@@ -321,7 +321,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
             onClosed={() => setIsMuteUserConfirmationVisible(false)}
             messages={{
               header: messages.popups.muteUser.title,
-              description: messages.popups.muteUser.body(userDisplayName),
+              description: messages.popups.muteUser.body(userName),
               confirm: messages.popups.muteUser.confirm
             }}
             onConfirm={handleMuteUser}

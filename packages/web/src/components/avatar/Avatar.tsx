@@ -43,13 +43,14 @@ export const Avatar = (props: AvatarProps) => {
   const image = userId ? profileImage : imageProfilePicEmptyNew
 
   const { data: currentUserId } = useCurrentUserId()
-  const { data: user } = useUser(userId, {
+  const { data: partialUser } = useUser(userId, {
     select: (user) => ({
       id: user?.user_id,
       name: user?.name
     })
   })
-  const displayName = user?.id === currentUserId ? messages.your : user?.name
+  const displayName =
+    partialUser?.id === currentUserId ? messages.your : partialUser?.name
 
   const label = `${messages.goTo} ${displayName} ${messages.profile}`
 

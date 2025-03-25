@@ -20,7 +20,7 @@ type UserDisplayProps = TextProps & {
 export const UserDisplayName = (props: UserDisplayProps) => {
   const { userId, variant = 'title', size = 's', style, ...other } = props
   const { tier, isVerified } = useSelectTierInfo(userId)
-  const { data: displayName } = useUser(userId, {
+  const { data: userName } = useUser(userId, {
     select: (user) => user?.name
   })
   const { typography } = useTheme()
@@ -36,7 +36,7 @@ export const UserDisplayName = (props: UserDisplayProps) => {
       ph={isVerified ? 'xl' : 'l'}
     >
       <Text ellipses variant={variant} size={size} {...other} numberOfLines={1}>
-        {displayName}
+        {userName}
       </Text>
       {isVerified ? (
         <IconVerified height={badgeSize} width={badgeSize} />
