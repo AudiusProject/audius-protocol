@@ -67,12 +67,11 @@ export const CommentMentionNotification = (
 
   const handleClick: MouseEventHandler = useCallback(
     (event) => {
-      if (isMultiUser) {
+      if (!isMultiUser) {
         dispatch(
           setUserListUsers({
             userListType: UserListType.NOTIFICATION,
             entityType: entityToUserListEntity[entityType],
-            id: id as unknown as number,
             entity: notification
           })
         )

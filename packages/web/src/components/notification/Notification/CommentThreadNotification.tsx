@@ -72,7 +72,6 @@ export const CommentThreadNotification = (
           setUserListUsers({
             userListType: UserListType.NOTIFICATION,
             entityType: entityToUserListEntity[entityType],
-            id: id as unknown as number,
             entity: notification
           })
         )

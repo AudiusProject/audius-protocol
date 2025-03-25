@@ -138,6 +138,9 @@ export type ModalHeaderProps = HTMLAttributes<HTMLDivElement> & {
 
 export type ModalTitleProps = Omit<HTMLAttributes<HTMLDivElement>, 'title'> & {
   subtitleClassName?: string
+  /**
+   * @deprecated use Icon prop instead
+   */
   icon?: ReactNode
   Icon?: IconComponent
   iconClassName?: string

@@ -39,9 +39,11 @@ export const CommentBadge = ({
     supporterUserId: commentUserId
   })
 
+  const isTopSupporter = supporter?.rank === 1
+
   const badgeType = isArtist
     ? 'artist'
-    : supporter?.rank === 1
+    : isTopSupporter
       ? 'topSupporter'
       : supporter
         ? 'tipSupporter'

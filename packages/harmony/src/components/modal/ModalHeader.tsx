@@ -86,7 +86,7 @@ export const ModalTitle = forwardRef<HTMLDivElement, ModalTitleProps>(
           {icon == null ? null : (
             <div className={cn(styles.icon, iconClassName)}>{icon}</div>
           )}
-          {Icon ? <Icon /> : null}
+          {Icon ? <Icon className={styles.icon} /> : null}
           <h2 id={titleId} className={cn(styles.title, titleClassName)}>
             {title}
           </h2>

@@ -37,7 +37,7 @@ import {
 import { setVisibility } from 'store/application/ui/userListModal/slice'
 import { UserListType } from 'store/application/ui/userListModal/types'
 
-import { FollowersUserList } from '../../user-list/lists/FollowersUserList'
+import { FollowersUserList } from '../user-list/lists/FollowersUserList'
 const { getPageTitle } = notificationsUserListSelectors
 
 const messages = {
@@ -53,7 +53,7 @@ const messages = {
   remixers: 'Remixers'
 }
 
-const UserListModalV2 = () => {
+export const UserListModal = () => {
   const dispatch = useDispatch()
   const userListType = useSelector(getUserListType)
   const isOpen = useSelector(getIsOpen)
@@ -174,5 +174,3 @@ const UserListModalV2 = () => {
     </Modal>
   )
 }
-
-export default UserListModalV2

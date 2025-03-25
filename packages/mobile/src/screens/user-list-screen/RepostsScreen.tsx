@@ -15,18 +15,18 @@ export const RepostsScreen = () => {
   const { params } = useRoute<'Reposts'>()
   const { id, repostType } = params
 
-  const trackQuery = useTrackReposts(
+  const trackRepostsQuery = useTrackReposts(
     { trackId: id },
     { enabled: repostType === RepostType.TRACK }
   )
 
-  const collectionQuery = useCollectionReposts(
+  const collectionRepostsQuery = useCollectionReposts(
     { collectionId: id },
     { enabled: repostType === RepostType.COLLECTION }
   )
 
   const { data, isFetchingNextPage, isPending, fetchNextPage } =
-    repostType === RepostType.TRACK ? trackQuery : collectionQuery
+    repostType === RepostType.TRACK ? trackRepostsQuery : collectionRepostsQuery
 
   return (
     <UserListScreen title={messages.title} titleIcon={IconRepost}>

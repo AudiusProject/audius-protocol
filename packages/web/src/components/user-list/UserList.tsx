@@ -21,12 +21,16 @@ const { profilePage } = route
 const { setNotificationSubscription } = profilePageActions
 
 const SCROLL_THRESHOLD = 400
+const DEFAULT_SKELETON_COUNT = 10
 
 type UserListProps = {
   /**
    * The list of users to display
    */
   data: User[] | undefined
+  /**
+   * If the number of users is known, use this prop to display the correct number of skeletons
+   */
   count?: number
   /**
    * Whether there are more users to load
@@ -45,10 +49,6 @@ type UserListProps = {
    */
   fetchNextPage?: () => void
   /**
-   * Optional callback before clicking artist name
-   */
-  beforeClickArtistName?: () => void
-  /**
    * Optional user ID to show support for (used in top supporters list)
    */
   showSupportFor?: ID
@@ -65,7 +65,6 @@ export const UserList = ({
   isFetchingNextPage,
   isPending,
   fetchNextPage,
-  beforeClickArtistName,
   showSupportFor,
   showSupportFrom
 }: UserListProps) => {
@@ -103,10 +102,9 @@ export const UserList = ({
 
   const handleClickArtistName = useCallback(
     (handle: string) => {
-      beforeClickArtistName?.()
       dispatch(push(profilePage(handle)))
     },
-    [dispatch, beforeClickArtistName]
+    [dispatch]
   )
 
   const showSkeletons = isPending || isFetchingNextPage
@@ -120,7 +118,7 @@ export const UserList = ({
       skeletonTag = 'SUPPORTING'
     }
 
-    return range(count ?? 15).map((index) => ({
+    return range(count ?? DEFAULT_SKELETON_COUNT).map((index) => ({
       _loading: true,
       user_id: `skeleton ${index}`,
       tag: skeletonTag

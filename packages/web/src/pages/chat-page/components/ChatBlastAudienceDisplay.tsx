@@ -21,7 +21,7 @@ import {
   UserListType
 } from 'store/application/ui/userListModal/types'
 
-const USER_LIST_LIMIT = 1
+const USER_LIST_LIMIT = 10
 
 const messages = {
   title: 'Send a Message Blast',

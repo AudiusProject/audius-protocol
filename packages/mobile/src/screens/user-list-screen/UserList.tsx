@@ -13,6 +13,7 @@ import { UserListItem } from './UserListItem'
 import { UserListItemSkeleton } from './UserListItemSkeleton'
 
 const keyExtractor = (item: User | SkeletonItem) => item.user_id.toString()
+const DEFAULT_SKELETON_COUNT = 10
 
 type SkeletonItem = {
   _loading: true
@@ -75,7 +76,7 @@ export const UserList = (props: UserListProps) => {
 
   const skeletonData: SkeletonItem[] = useMemo(
     () =>
-      range(count ?? 6).map((index) => ({
+      range(count ?? DEFAULT_SKELETON_COUNT).map((index) => ({
         _loading: true,
         user_id: `skeleton ${index}`
       })),
