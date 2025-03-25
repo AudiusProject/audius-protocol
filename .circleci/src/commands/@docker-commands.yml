@@ -3,6 +3,9 @@ docker-login:
     - run:
         name: Docker login
         command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+    - run:
+        name: Docker whoami
+        command: cat /home/circleci/.docker/config.json
 
 docker-logout:
   steps:
