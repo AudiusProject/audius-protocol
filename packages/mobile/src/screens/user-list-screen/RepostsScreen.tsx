@@ -1,4 +1,9 @@
-import { useTrackReposts, useCollectionReposts } from '@audius/common/api'
+import {
+  useTrackReposts,
+  useCollectionReposts,
+  useCollection,
+  useTrack
+} from '@audius/common/api'
 import { RepostType } from '@audius/common/store'
 
 import { IconRepost } from '@audius/harmony-native'
@@ -14,6 +19,16 @@ const messages = {
 export const RepostsScreen = () => {
   const { params } = useRoute<'Reposts'>()
   const { id, repostType } = params
+
+  const { data: trackRepostCount } = useTrack(id, {
+    select: (track) => track.repost_count,
+    enabled: repostType === RepostType.TRACK
+  })
+
+  const { data: collectionRepostCount } = useCollection(id, {
+    select: (collection) => collection.repost_count,
+    enabled: repostType === RepostType.COLLECTION
+  })
 
   const trackRepostsQuery = useTrackReposts(
     { trackId: id },
@@ -32,6 +47,11 @@ export const RepostsScreen = () => {
     <UserListScreen title={messages.title} titleIcon={IconRepost}>
       <UserList
         data={data}
+        totalCount={
+          repostType === RepostType.TRACK
+            ? trackRepostCount
+            : collectionRepostCount
+        }
         isFetchingNextPage={isFetchingNextPage}
         isPending={isPending}
         fetchNextPage={fetchNextPage}

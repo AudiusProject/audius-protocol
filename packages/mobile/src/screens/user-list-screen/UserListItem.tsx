@@ -1,18 +1,18 @@
 import { useCallback } from 'react'
 
 import { useUser } from '@audius/common/api'
-import type { ID, User } from '@audius/common/models'
+import type { ID } from '@audius/common/models'
 import { FollowSource } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 import { pick } from 'lodash'
-import { Pressable, View, Animated } from 'react-native'
+import { Pressable, Animated } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { IconUser } from '@audius/harmony-native'
-import { Text, ProfilePicture } from 'app/components/core'
+import { Text, IconUser, Flex } from '@audius/harmony-native'
+import { ProfilePicture } from 'app/components/core'
 import { FollowButton, FollowsYouBadge } from 'app/components/user'
-import UserBadges from 'app/components/user-badges'
+import { UserLink } from 'app/components/user-link'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useColorAnimation } from 'app/hooks/usePressColorAnimation'
 import { makeStyles } from 'app/styles'
@@ -28,36 +28,10 @@ const messages = {
     followerCount === 1 ? 'Follower' : 'Followers'
 }
 
-const useStyles = makeStyles(({ spacing, palette }) => ({
+const useStyles = makeStyles(({ spacing }) => ({
   root: {
-    padding: spacing(4)
-  },
-  infoRoot: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: spacing(2)
-  },
-  userInfo: {
-    marginLeft: spacing(2),
-    flex: 1
-  },
-  userStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center'
-  },
-  followerStats: {
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
-  userIcon: {
-    color: palette.neutralLight4
-  },
-  displayName: {
-    marginBottom: spacing(1)
-  },
-  handle: {
-    marginBottom: spacing(2)
+    padding: spacing(4),
+    gap: spacing(4)
   }
 }))
 
@@ -69,9 +43,9 @@ type UserListItemProps = {
 export const UserListItem = (props: UserListItemProps) => {
   const { tag, userId } = props
   const { data: user } = useUser(userId, {
-    select: (user) => pick(user, ['handle', 'name', 'follower_count'])
+    select: (user) => pick(user, ['handle', 'follower_count'])
   })
-  const { handle, name, follower_count = 0 } = user ?? {}
+  const { handle, follower_count = 0 } = user ?? {}
   const currentUserId = useSelector(getUserId)
   const styles = useStyles()
   const navigation = useNavigation()
@@ -93,35 +67,31 @@ export const UserListItem = (props: UserListItemProps) => {
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
       >
-        <View style={styles.infoRoot}>
+        <Flex row gap='s'>
           <ProfilePicture userId={userId} size='large' />
-          <View style={styles.userInfo}>
-            <Text variant='h3' style={styles.displayName}>
-              {name}
-              <UserBadges user={user} badgeSize={10} hideName />
-            </Text>
-            <Text variant='body' style={styles.handle}>
-              @{handle}
-            </Text>
-            <View style={styles.userStats}>
-              <View style={styles.followerStats}>
-                <IconUser height={15} width={15} fill={styles.userIcon.color} />
-                <Text variant='body' color='neutralLight4'>
-                  {' '}
-                  <Text color='inherit' weight='bold' fontSize='small'>
-                    {formatCount(follower_count)}{' '}
-                  </Text>
+          <Flex gap='s'>
+            <Flex>
+              <UserLink userId={userId} strength='strong' />
+              <Text size='s'>@{handle}</Text>
+            </Flex>
+            <Flex row justifyContent='space-between' alignItems='center'>
+              <Flex row gap='xs' alignItems='center'>
+                <IconUser color='subdued' size='s' />
+                <Text size='s' color='subdued'>
+                  <Text strength='strong' color='inherit'>
+                    {formatCount(follower_count)}
+                  </Text>{' '}
                   {messages.followers(follower_count)}
                 </Text>
-              </View>
+              </Flex>
               <FollowsYouBadge userId={userId} />
-            </View>
+            </Flex>
             {tag === 'SUPPORTING' ? <SupportingInfo userId={userId} /> : null}
             {tag === 'TOP SUPPORTERS' ? (
               <SupporterInfo userId={userId} />
             ) : null}
-          </View>
-        </View>
+          </Flex>
+        </Flex>
         {currentUserId !== userId ? (
           <FollowButton
             variant='pill'

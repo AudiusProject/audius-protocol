@@ -1,4 +1,3 @@
-import { useUsers } from '@audius/common/api'
 import { NotificationType } from '@audius/common/store'
 import type { Notification } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
@@ -27,14 +26,13 @@ export const NotificationUsersScreen = () => {
   const { params } = useRoute<'NotificationUsers'>()
   const { notification } = params
   const { userIds } = notification
-  const { data, isPending } = useUsers(userIds)
 
   return (
     <UserListScreen title={getTitle(notification)}>
       <UserList
-        data={data}
+        data={userIds}
         totalCount={userIds?.length}
-        isPending={isPending}
+        isPending={false}
         tag='NOTIFICATION'
         isFetchingNextPage={false}
       />

@@ -6,6 +6,7 @@ import { UserList } from '../UserList'
 
 export const MutualsUserList = () => {
   const userId = useSelector(mutualsUserListSelectors.getId)
+
   const { data, hasNextPage, isFetchingNextPage, fetchNextPage, isPending } =
     useMutualFollowers({ userId })
 

@@ -5,7 +5,8 @@ import {
   useGetFollowers,
   usePurchasers,
   useRemixers,
-  useSupporters
+  useSupporters,
+  useUsers
 } from '~/api'
 import { UserMetadata } from '~/models'
 import { PurchaseableContentType } from '~/store/purchase-content'
@@ -29,6 +30,7 @@ export const useAudienceUsers = (chat: ChatBlast, limit?: number) => {
     },
     { enabled: chat.audience === ChatBlastAudience.CUSTOMERS }
   )
+
   const { data: remixers } = useRemixers(
     {
       userId: currentUserId,
@@ -37,6 +39,9 @@ export const useAudienceUsers = (chat: ChatBlast, limit?: number) => {
     },
     { enabled: chat.audience === ChatBlastAudience.REMIXERS }
   )
+
+  const { data: purchasersUsers } = useUsers(purchasers)
+  const { data: remixersUsers } = useUsers(remixers)
 
   let users: UserMetadata[] = []
   switch (chat.audience) {
@@ -47,10 +52,10 @@ export const useAudienceUsers = (chat: ChatBlast, limit?: number) => {
       users = supporters?.map((supporter) => supporter.sender) ?? []
       break
     case ChatBlastAudience.CUSTOMERS:
-      users = purchasers ?? []
+      users = purchasersUsers ?? []
       break
     case ChatBlastAudience.REMIXERS:
-      users = remixers ?? []
+      users = remixersUsers ?? []
       break
   }
 

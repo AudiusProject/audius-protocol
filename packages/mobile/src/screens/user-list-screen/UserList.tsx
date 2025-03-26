@@ -1,5 +1,6 @@
 import { memo, useCallback, useMemo } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import type { ID, User } from '@audius/common/models'
 import { range } from 'lodash'
 import type { ListRenderItem } from 'react-native'
@@ -11,6 +12,10 @@ import { makeStyles } from 'app/styles'
 
 import { UserListItem } from './UserListItem'
 import { UserListItemSkeleton } from './UserListItemSkeleton'
+
+const FOLLOW_BUTTON_HEIGHT = 32
+const USER_LIST_ITEM_HEIGHT = 154
+const SPECIAL_USER_LIST_ITEM_HEIGHT = 171
 
 const keyExtractor = (item: { user_id: ID } | SkeletonItem) =>
   item.user_id.toString()
@@ -74,6 +79,7 @@ export const UserList = (props: UserListProps) => {
     fetchNextPage,
     tag
   } = props
+  const { data: currentUserId } = useCurrentUserId()
   const styles = useStyles()
 
   const isEmpty = data.length === 0
@@ -108,6 +114,27 @@ export const UserList = (props: UserListProps) => {
     [tag]
   )
 
+  const getItemLayout = useCallback(
+    (data: typeof displayData, index: number) => {
+      const hasFollowButton = data?.[index].user_id !== currentUserId
+      const baseHeight =
+        tag === 'SUPPORTING' || tag === 'TOP SUPPORTERS'
+          ? SPECIAL_USER_LIST_ITEM_HEIGHT
+          : USER_LIST_ITEM_HEIGHT
+
+      const height = hasFollowButton
+        ? baseHeight
+        : baseHeight - FOLLOW_BUTTON_HEIGHT
+
+      return {
+        length: height,
+        offset: height * index,
+        index
+      }
+    },
+    [currentUserId, tag]
+  )
+
   const loadingSpinner = (
     <LoadingSpinner style={[styles.spinner, isEmpty && styles.emptySpinner]} />
   )
@@ -118,6 +145,7 @@ export const UserList = (props: UserListProps) => {
     <FlatList
       style={{ height: '100%' }}
       data={displayData}
+      getItemLayout={getItemLayout}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
       ItemSeparatorComponent={Divider}

@@ -1,4 +1,4 @@
-import { useFollowing } from '@audius/common/api'
+import { useFollowing, useUser } from '@audius/common/api'
 
 import { IconUserList } from '@audius/harmony-native'
 import { useProfileRoute } from 'app/hooks/useRoute'
@@ -13,6 +13,9 @@ const messages = {
 export const FollowingScreen = () => {
   const { params } = useProfileRoute<'Following'>()
   const { userId } = params
+  const { data: followerCount } = useUser(userId, {
+    select: (user) => user.followee_count
+  })
   const { data, isFetchingNextPage, isPending, fetchNextPage } = useFollowing({
     userId
   })
@@ -21,6 +24,7 @@ export const FollowingScreen = () => {
     <UserListScreen title={messages.title} titleIcon={IconUserList}>
       <UserList
         data={data}
+        totalCount={followerCount}
         isFetchingNextPage={isFetchingNextPage}
         isPending={isPending}
         fetchNextPage={fetchNextPage}

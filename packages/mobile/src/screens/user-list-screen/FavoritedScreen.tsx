@@ -1,7 +1,6 @@
 import {
   useTrackFavorites,
   useCollectionFavorites,
-  useUser,
   useCollection,
   useTrack
 } from '@audius/common/api'

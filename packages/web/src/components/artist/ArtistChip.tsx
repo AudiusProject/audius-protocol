@@ -1,7 +1,7 @@
 import { ComponentPropsWithoutRef } from 'react'
 
 import { useUser } from '@audius/common/api'
-import { SquareSizes, ID, User } from '@audius/common/models'
+import { SquareSizes, ID } from '@audius/common/models'
 import cn from 'classnames'
 import { pick } from 'lodash'
 
@@ -45,6 +45,7 @@ const ArtistIdentifier = ({
           <UserBadges userId={userId} className={cn(styles.badge)} inline />
         </div>
       </ArtistPopover>
+      useUser,
       <ArtistPopover
         handle={handle}
         mouseEnterDelay={0.3}
@@ -65,7 +66,7 @@ const ArtistIdentifier = ({
   )
 }
 
-type ArtistChipProps = {
+export type ArtistChipProps = {
   userId: ID
   onClickArtistName?: () => void
   showPopover?: boolean

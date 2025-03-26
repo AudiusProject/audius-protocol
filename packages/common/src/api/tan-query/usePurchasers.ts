@@ -10,7 +10,6 @@ import { PurchaseableContentType } from '~/store'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
-import { useUsers } from './useUsers'
 import { primeUserData } from './utils/primeUserData'
 
 const PAGE_SIZE = 20
@@ -44,7 +43,7 @@ export const usePurchasers = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const { data: userIds } = useInfiniteQuery({
+  return useInfiniteQuery({
     queryKey: getPurchasersQueryKey(args),
     initialPageParam: 0,
     getNextPageParam: (lastPage: ID[], allPages) => {
@@ -70,6 +69,4 @@ export const usePurchasers = (
     ...options,
     enabled: options?.enabled !== false && !!currentUserId
   })
-
-  return useUsers(userIds)
 }

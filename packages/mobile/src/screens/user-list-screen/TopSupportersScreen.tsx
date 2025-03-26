@@ -1,4 +1,4 @@
-import { useCurrentUserId, useSupporters } from '@audius/common/api'
+import { useCurrentUserId, useSupporters, useUser } from '@audius/common/api'
 import { ChatBlastAudience } from '@audius/sdk'
 import { css } from '@emotion/native'
 
@@ -18,6 +18,11 @@ const messages = {
 export const TopSupportersScreen = () => {
   const { params } = useRoute<'TopSupporters'>()
   const { userId } = params
+
+  const { data: supporterCount } = useUser(userId, {
+    select: (user) => user.supporter_count
+  })
+
   const { data: currentUserId } = useCurrentUserId()
   const { data, isFetchingNextPage, isPending, fetchNextPage } = useSupporters({
     userId
@@ -27,7 +32,8 @@ export const TopSupportersScreen = () => {
     <UserListScreen title={messages.title} titleIcon={IconTrophy}>
       <>
         <UserList
-          data={data?.map((supporter) => supporter.sender)}
+          data={data?.map((supporter) => supporter.sender.user_id)}
+          totalCount={supporterCount}
           isFetchingNextPage={isFetchingNextPage}
           isPending={isPending}
           fetchNextPage={fetchNextPage}

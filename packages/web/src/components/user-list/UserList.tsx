@@ -2,21 +2,14 @@ import { useCallback, useMemo } from 'react'
 
 import { useCurrentUserId } from '@audius/common/api'
 import { ID, FollowSource } from '@audius/common/models'
-import { route } from '@audius/common/utils'
 import { Flex, useScrollbarRef } from '@audius/harmony'
 import { range } from 'lodash'
 import InfiniteScroll from 'react-infinite-scroller'
-import { useDispatch } from 'react-redux'
 
-import ArtistChip from 'components/artist/ArtistChip'
 import { FollowButton } from 'components/follow-button/FollowButton'
-import { MountPlacement } from 'components/types'
-import { useIsMobile } from 'hooks/useIsMobile'
-import { push } from 'utils/navigation'
 
+import { UserListArtistChip } from './UserListArtistChip'
 import { UserListItemSkeleton } from './UserListItemSkeleton'
-
-const { profilePage } = route
 
 const SCROLL_THRESHOLD = 400
 const DEFAULT_SKELETON_COUNT = 10
@@ -66,8 +59,6 @@ export const UserList = ({
   showSupportFor,
   showSupportFrom
 }: UserListProps) => {
-  const dispatch = useDispatch()
-  const isMobile = useIsMobile()
   const { data: currentUserId } = useCurrentUserId()
   const scrollRef = useScrollbarRef()
 
@@ -76,13 +67,6 @@ export const UserList = ({
       fetchNextPage?.()
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage])
-
-  const handleClickArtistName = useCallback(
-    (handle: string) => {
-      dispatch(push(profilePage(handle)))
-    },
-    [dispatch]
-  )
 
   const showSkeletons = isPending || isFetchingNextPage
   const loadedCount = data?.length ?? 0
@@ -131,11 +115,8 @@ export const UserList = ({
             p='m'
             key={userId}
           >
-            <ArtistChip
+            <UserListArtistChip
               userId={userId}
-              onClickArtistName={() => handleClickArtistName(user.handle)}
-              showPopover={!isMobile}
-              popoverMount={MountPlacement.BODY}
               showSupportFor={showSupportFor}
               showSupportFrom={showSupportFrom}
             />
