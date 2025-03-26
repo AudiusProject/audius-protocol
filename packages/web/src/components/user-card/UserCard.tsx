@@ -4,12 +4,12 @@ import { useUser } from '@audius/common/api'
 import { ID, SquareSizes } from '@audius/common/models'
 import { formatCount, route } from '@audius/common/utils'
 import { Box, Skeleton, Text } from '@audius/harmony'
+import { pick } from 'lodash'
 import { useLinkClickHandler } from 'react-router-dom-v5-compat'
 
 import { Avatar } from 'components/avatar'
 import { Card, CardProps, CardFooter, CardContent } from 'components/card'
 import { UserLink } from 'components/link'
-
 const { profilePage } = route
 
 const messages = {
@@ -32,7 +32,10 @@ export type UserCardProps = Omit<CardProps, 'id'> & {
 export const UserCard = (props: UserCardProps) => {
   const { id, loading, size, onClick, onUserLinkClick, ...other } = props
 
-  const { data: user } = useUser(id)
+  const { data: user } = useUser(id, {
+    select: (user) => pick(user, 'handle', 'follower_count')
+  })
+  const { handle, follower_count } = user ?? {}
 
   const handleNavigate = useLinkClickHandler<HTMLDivElement>(
     profilePage(user?.handle ?? '')
@@ -46,7 +49,7 @@ export const UserCard = (props: UserCardProps) => {
     [onClick, handleNavigate]
   )
 
-  if (!user || loading) {
+  if (!handle || !follower_count || loading) {
     return (
       <Card size={size} {...other}>
         <Box p='l' pb='s'>
@@ -66,8 +69,6 @@ export const UserCard = (props: UserCardProps) => {
       </Card>
     )
   }
-
-  const { handle, follower_count } = user
 
   return (
     <Card size={size} onClick={handleClick} {...other}>
