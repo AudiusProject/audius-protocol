@@ -4,7 +4,6 @@ import {
   useCollection,
   useCollectionTracksWithUid,
   useCurrentUserId,
-  useTracks,
   useUser
 } from '@audius/common/api'
 import {

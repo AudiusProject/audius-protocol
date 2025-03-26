@@ -11,8 +11,6 @@ import {
 import {
   useCollection,
   useUser,
-  useTracks,
-  useCollectionTrackWithUid,
   useCollectionTracksWithUid
 } from '@audius/common/api'
 import {
@@ -27,16 +25,14 @@ import {
   isContentUSDCPurchaseGated,
   ModalSource
 } from '@audius/common/models'
-import { TQCollection } from '@audius/common/src/api/tan-query/models'
 import {
   collectionsSocialActions,
   shareModalUIActions,
   playerSelectors,
   usePremiumContentPurchaseModal,
-  PurchaseableContentType,
-  EnhancedCollectionTrack
+  PurchaseableContentType
 } from '@audius/common/store'
-import { Uid, route } from '@audius/common/utils'
+import { route } from '@audius/common/utils'
 import { Text, IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
 import { LocationState } from 'history'

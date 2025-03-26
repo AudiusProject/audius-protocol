@@ -85,13 +85,14 @@ export const ChatMessageTrack = ({
     }
   }, [track, uid, onSuccess, onEmpty, dispatch])
 
-  return track && uid ? (
+  return track && uid && trackId ? (
     // You may wonder why we use the mobile web track tile here.
     // It's simply because the chat track tile uses the same design as mobile web.
     <MobileTrackTile
       containerClassName={className}
       index={0}
       togglePlay={togglePlay}
+      id={trackId}
       uid={uid}
       isLoading={status === Status.LOADING || status === Status.IDLE}
       hasLoaded={() => {}}

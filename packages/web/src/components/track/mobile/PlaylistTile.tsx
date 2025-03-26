@@ -4,7 +4,6 @@ import { CollectionTrackWithUid, useUser } from '@audius/common/api'
 import {
   ID,
   UID,
-  LineupTrack,
   AccessConditions,
   ModalSource,
   isContentUSDCPurchaseGated

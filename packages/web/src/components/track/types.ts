@@ -10,7 +10,6 @@ import {
   Repost,
   Remix,
   AccessConditions,
-  LineupTrack,
   ModalSource,
   FieldVisibility
 } from '@audius/common/models'

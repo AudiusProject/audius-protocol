@@ -10,7 +10,6 @@ import {
   ID,
   isContentUSDCPurchaseGated,
   Track,
-  TrackMetadata,
   UID
 } from '@audius/common/models'
 import { Genre, formatSeconds, route } from '@audius/common/utils'
