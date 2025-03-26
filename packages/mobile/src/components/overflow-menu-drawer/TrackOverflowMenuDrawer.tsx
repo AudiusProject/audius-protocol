@@ -1,6 +1,7 @@
 import { useCallback, useContext } from 'react'
 
 import {
+  useCollection,
   useToggleFavoriteTrack,
   useTrack,
   useFollowUser,
@@ -17,7 +18,6 @@ import type { ID } from '@audius/common/models'
 import {
   accountSelectors,
   cacheCollectionsActions,
-  cacheCollectionsSelectors,
   cacheUsersSelectors,
   collectionPageLineupActions as tracksActions,
   tracksSocialActions,
@@ -53,7 +53,6 @@ const { requestOpen: openAddToCollectionModal } = addToCollectionUIActions
 const { setTrackPosition, clearTrackPosition } = playbackPositionActions
 const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { getUser } = cacheUsersSelectors
-const { getCollection } = cacheCollectionsSelectors
 const { removeTrackFromPlaylist } = cacheCollectionsActions
 
 type Props = {
@@ -83,12 +82,10 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
   const { open } = useCommentDrawer()
 
   const { data: track } = useTrack(id)
-  const playlist = useSelector((state: CommonState) =>
-    getCollection(state, { id: contextPlaylistId })
-  )
-  const playlistTrackInfo = playlist?.playlist_contents.track_ids.find(
-    (t) => t.track === track?.track_id
-  )
+  const { data: track_ids } = useCollection(contextPlaylistId, {
+    select: (collection) => collection.playlist_contents.track_ids
+  })
+  const playlistTrackInfo = track_ids?.find((t) => t.track === track?.track_id)
 
   const albumInfo = track?.album_backlink
 
@@ -166,12 +163,12 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     [OverflowAction.ADD_TO_PLAYLIST]: () =>
       dispatch(openAddToCollectionModal('playlist', id, title, is_unlisted)),
     [OverflowAction.REMOVE_FROM_PLAYLIST]: () => {
-      if (playlist && playlistTrackInfo) {
+      if (contextPlaylistId && playlistTrackInfo) {
         const { metadata_time, time } = playlistTrackInfo
         dispatch(
           removeTrackFromPlaylist(
             track.track_id,
-            playlist.playlist_id,
+            contextPlaylistId,
             metadata_time ?? time
           )
         )
