@@ -40,10 +40,10 @@ export const UserLink = (props: UserLinkProps) => {
   const { data } = useUser(userId, {
     select: (user) => {
       const { handle, name } = user ?? {}
-      return { url: handle ? profilePage(handle) : '', handle, name }
+      return { url: profilePage(handle), handle, name }
     }
   })
-  const { url, handle, name: userName } = data ?? {}
+  const { url = '', handle, name: userName } = data ?? {}
 
   const textLink = (
     <TextLink
