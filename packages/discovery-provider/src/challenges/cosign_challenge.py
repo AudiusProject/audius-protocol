@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime
 from typing import Dict
 
 from sqlalchemy.orm.session import Session
@@ -11,10 +10,9 @@ logger = logging.getLogger(__name__)
 
 
 class CosignChallengeUpdater(ChallengeUpdater):
-    """First weekly comment challenge
-
+    """
     This challenge is completed when a verifier user cosigns a remix.
-    The specifier is the trac .
+    The specifier is the track ID.
     """
 
     def generate_specifier(self, session: Session, user_id: int, extra: Dict) -> str:

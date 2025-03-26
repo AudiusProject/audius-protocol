@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from sqlalchemy.orm.session import Session
 
@@ -24,9 +24,7 @@ def dispatch_cosign(
     track_id: int = 1,
     track_owner_id: int = 1,
 ):
-    """Dispatch a comment event with the given day offset"""
-
-    # Dispatch the first_weekly_comment event
+    """Dispatch a cosign event"""
     bus.dispatch(
         ChallengeEvent.cosign,
         BLOCK_NUMBER,
@@ -54,28 +52,11 @@ def setup_challenges(session):
         updated_at=datetime.now(),
     )
 
-    # Add a second user for multi-user tests
-    user2 = User(
-        blockhash="0x1",
-        blocknumber=BLOCK_NUMBER,
-        txhash="xyz",
-        user_id=2,
-        is_current=True,
-        handle="TestHandle2",
-        handle_lc="testhandle2",
-        wallet="0x2",
-        is_verified=False,
-        name="test_name2",
-        created_at=datetime.now(),
-        updated_at=datetime.now(),
-    )
-
     session.add(block)
     session.flush()
     session.add(user)
-    session.add(user2)
     session.flush()
-    session.query(Challenge).filter(Challenge.id == "c").update(
+    session.query(Challenge).filter(Challenge.id == "cs").update(
         {"active": True, "starting_block": BLOCK_NUMBER}
     )
 
@@ -92,7 +73,7 @@ def make_scope_and_process(bus, session):
 
 
 def test_cosign_challenge(app):
-    """Test that the first weekly comment challenge works correctly"""
+    """Test that the cosign challenge works correctly"""
     redis_conn = get_redis()
     bus = ChallengeEventBus(redis_conn)
     # Register events with the bus
@@ -104,13 +85,11 @@ def test_cosign_challenge(app):
     with db.scoped_session() as session:
         setup_challenges(session)
 
-        # wrapped dispatch comment
         def dc(track_id=1, user_id=1):
             return dispatch_cosign(session, bus, track_id, user_id)
 
         scope_and_process = make_scope_and_process(bus, session)
 
-        # Make a comment in the first week
         scope_and_process(lambda: dc(0, 1))
 
         # Check that the challenge is completed
