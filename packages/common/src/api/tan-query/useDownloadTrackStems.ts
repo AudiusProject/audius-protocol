@@ -26,6 +26,7 @@ export const useDownloadTrackStems = ({ trackId }: { trackId: ID }) => {
       return await archiver.createStemsArchive({
         trackId: Id.parse(trackId),
         userId: Id.parse(currentUserId),
+        // TODO: Does this need to be conditional based on presence of downloadable parent?
         includeParent: true
       })
     },
