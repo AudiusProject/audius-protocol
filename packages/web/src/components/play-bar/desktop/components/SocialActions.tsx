@@ -1,11 +1,10 @@
+import { useTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import { ModalSource, Theme, ID, UID } from '@audius/common/models'
 import {
-  cacheTracksSelectors,
   themeSelectors,
   usePremiumContentPurchaseModal,
   gatedContentSelectors,
-  CommonState,
   PurchaseableContentType
 } from '@audius/common/store'
 import { Flex } from '@audius/harmony'
@@ -22,7 +21,6 @@ import styles from './SocialActions.module.css'
 
 const { getTheme } = themeSelectors
 const { getGatedContentStatusMap } = gatedContentSelectors
-const { getTrack } = cacheTracksSelectors
 
 type SocialActionsProps = {
   trackId: ID
@@ -46,9 +44,7 @@ export const SocialActions = ({
   onToggleRepost,
   onToggleFavorite
 }: SocialActionsProps) => {
-  const track = useSelector((state: CommonState) =>
-    getTrack(state, { id: trackId })
-  )
+  const { data: track } = useTrack(trackId)
   const isFavoriteAndRepostDisabled = !uid || isOwner
   const favorited = track?.has_current_user_saved ?? false
   const reposted = track?.has_current_user_reposted ?? false

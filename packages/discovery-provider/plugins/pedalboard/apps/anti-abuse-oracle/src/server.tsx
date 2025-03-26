@@ -102,7 +102,20 @@ app.use(
 )
 
 app.get('/attestation/ui', async (c) => {
-  const tips = await recentTips()
+  const page = parseInt(c.req.query('page') || '1')
+  const recentUsers = await getRecentUsers(page)
+  const userScores = recentUsers
+    ? await Promise.all(
+        recentUsers.map(async (user) => {
+          const [userScore] = await Promise.all([
+            getUserNormalizedScore(user.id)
+          ])
+          return {
+            ...userScore
+          }
+        })
+      )
+    : []
 
   let lastDate = ''
   function dateHeader(timestamp: Date) {
@@ -118,9 +131,13 @@ app.get('/attestation/ui', async (c) => {
           </tr>
           <tr>
             <th>Timestamp</th>
-            <th>Sender</th>
-            <th>Receiver</th>
-            <th>Amount</th>
+            <th>Handle</th>
+            <th>Listen Activity</th>
+            <th>Follower Count</th>
+            <th>Following Count</th>
+            <th>Fast Challenges</th>
+            <th>Overall Score</th>
+            <th>Normalized Score</th>
           </tr>
         </>
       )
@@ -130,34 +147,48 @@ app.get('/attestation/ui', async (c) => {
 
   return c.html(
     <Layout container>
-      <h1 class='text-4xl font-bold mt-8'>Recent Tips</h1>
+      <h1 class='text-4xl font-bold mt-8'>Recent Users</h1>
       <table class='table'>
         <tbody>
-          {tips.map((tip) => (
+          {userScores.map((userScore) => (
             <>
-              {dateHeader(tip.timestamp)}
-              <tr>
-                <td>{tip.timestamp.toLocaleTimeString()}</td>
+              {dateHeader(userScore.timestamp)}
+              <tr className={userScore.overallScore < 0 ? 'bg-red-100' : ''}>
+                <td>{userScore.timestamp.toLocaleTimeString()}</td>
                 <td>
                   <a
-                    href={`/attestation/ui/user?q=${encodeURIComponent(tip.sender.handle)}`}
+                    href={`/attestation/ui/user?q=${encodeURIComponent(userScore.handleLowerCase)}`}
                   >
-                    {tip.sender.handle}
+                    {userScore.handleLowerCase}
                   </a>
                 </td>
-                <td>
-                  <a
-                    href={`/attestation/ui/user?q=${encodeURIComponent(tip.receiver.handle)}`}
-                  >
-                    {tip.receiver.handle}
-                  </a>
-                </td>
-                <td class='text-right'>{tip.amount / 100_000_000}</td>
+                <td>{userScore.playCount}</td>
+                <td>{userScore.followerCount}</td>
+                <td>{userScore.followingCount}</td>
+                <td>{userScore.challengeCount}</td>
+                <td>{userScore.overallScore}</td>
+                <td>{userScore.normalizedScore}</td>
               </tr>
             </>
           ))}
         </tbody>
       </table>
+
+      <div class='flex'>
+        <a
+          href={`/attestation/ui?page=${encodeURIComponent(page - 1)}`}
+          class='flex items-center justify-center px-3 h-8 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+        >
+          Previous
+        </a>
+
+        <a
+          href={`/attestation/ui?page=${encodeURIComponent(page + 1)}`}
+          class='flex items-center justify-center px-3 h-8 ms-3 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+        >
+          Next
+        </a>
+      </div>
     </Layout>
   )
 })
@@ -240,12 +271,36 @@ app.get('/attestation/ui/user', async (c) => {
           </thead>
           <tbody>
             <tr>
-              <td>{userScore.playCount}</td>
-              <td>{userScore.followerCount}</td>
-              <td>{userScore.challengeCount}</td>
-              <td>{userScore.followingCount}</td>
-              <td>{userScore.fingerprintCount}</td>
-              <td>{userScore.overallScore}</td>
+              <td class={userScore.playCount > 0 ? 'text-green-500' : ''}>
+                {userScore.playCount}
+              </td>
+              <td class={userScore.followerCount > 0 ? 'text-green-500' : ''}>
+                {userScore.followerCount}
+              </td>
+              <td class={userScore.challengeCount > 0 ? 'text-red-500' : ''}>
+                {userScore.challengeCount}
+              </td>
+              <td
+                class={
+                  userScore.followingCount < 5
+                    ? 'text-red-500'
+                    : 'text-green-500'
+                }
+              >
+                {userScore.followingCount}
+              </td>
+              <td class={userScore.fingerprintCount > 0 ? 'text-red-500' : ''}>
+                {userScore.fingerprintCount}
+              </td>
+              <td
+                class={
+                  userScore.overallScore >= 0
+                    ? 'text-green-500'
+                    : 'text-red-500'
+                }
+              >
+                {userScore.overallScore}
+              </td>
             </tr>
           </tbody>
         </table>
@@ -304,23 +359,8 @@ app.get('/attestation/ui/user', async (c) => {
   )
 })
 
-app.get('/attestation/ui/recent-users', async (c) => {
-  const page = parseInt(c.req.query('page') || '1')
-  const recentUsers = await getRecentUsers(page)
-  const userScores = recentUsers
-    ? await Promise.all(
-        recentUsers.map(async (user) => {
-          const [userScore, flagged] = await Promise.all([
-            getUserNormalizedScore(user.id),
-            getAAOAttestation(user.handle)
-          ])
-          return {
-            ...userScore,
-            flagged
-          }
-        })
-      )
-    : []
+app.get('/attestation/ui/recent-tips', async (c) => {
+  const tips = await recentTips()
 
   let lastDate = ''
   function dateHeader(timestamp: Date) {
@@ -336,13 +376,9 @@ app.get('/attestation/ui/recent-users', async (c) => {
           </tr>
           <tr>
             <th>Timestamp</th>
-            <th>Handle</th>
-            <th>Listen Activity</th>
-            <th>Follower Count</th>
-            <th>Following Count</th>
-            <th>Fast Challenges</th>
-            <th>Overall Score</th>
-            <th>Normalized Score</th>
+            <th>Sender</th>
+            <th>Receiver</th>
+            <th>Amount</th>
           </tr>
         </>
       )
@@ -352,58 +388,34 @@ app.get('/attestation/ui/recent-users', async (c) => {
 
   return c.html(
     <Layout container>
-      <h1 class='text-4xl font-bold mt-8'>Recent Users</h1>
+      <h1 class='text-4xl font-bold mt-8'>Recent Tips</h1>
       <table class='table'>
         <tbody>
-          {userScores.map((userScore) => (
+          {tips.map((tip) => (
             <>
-              {dateHeader(userScore.timestamp)}
-              <tr
-                className={
-                  userScore?.flagged && userScore.overallScore < 0
-                    ? 'bg-purple-100'
-                    : userScore.overallScore < 0
-                      ? 'bg-red-100'
-                      : userScore?.flagged
-                        ? 'bg-blue-100'
-                        : ''
-                }
-              >
-                <td>{userScore.timestamp.toLocaleTimeString()}</td>
+              {dateHeader(tip.timestamp)}
+              <tr>
+                <td>{tip.timestamp.toLocaleTimeString()}</td>
                 <td>
                   <a
-                    href={`/attestation/ui/user?q=${encodeURIComponent(userScore.handleLowerCase)}`}
+                    href={`/attestation/ui/user?q=${encodeURIComponent(tip.sender.handle)}`}
                   >
-                    {userScore.handleLowerCase}
+                    {tip.sender.handle}
                   </a>
                 </td>
-                <td>{userScore.playCount}</td>
-                <td>{userScore.followerCount}</td>
-                <td>{userScore.followingCount}</td>
-                <td>{userScore.challengeCount}</td>
-                <td>{userScore.overallScore}</td>
-                <td>{userScore.normalizedScore}</td>
+                <td>
+                  <a
+                    href={`/attestation/ui/user?q=${encodeURIComponent(tip.receiver.handle)}`}
+                  >
+                    {tip.receiver.handle}
+                  </a>
+                </td>
+                <td class='text-right'>{tip.amount / 100_000_000}</td>
               </tr>
             </>
           ))}
         </tbody>
       </table>
-
-      <div class='flex'>
-        <a
-          href={`/attestation/ui/recent-users?page=${encodeURIComponent(page - 1)}`}
-          class='flex items-center justify-center px-3 h-8 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
-        >
-          Previous
-        </a>
-
-        <a
-          href={`/attestation/ui/recent-users?page=${encodeURIComponent(page + 1)}`}
-          class='flex items-center justify-center px-3 h-8 ms-3 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
-        >
-          Next
-        </a>
-      </div>
     </Layout>
   )
 })
@@ -496,8 +508,8 @@ function Layout(props: LayoutProps) {
                   placeholder='Search ID or Handle'
                 />
               </form>
-              <a href='/attestation/ui/recent-users' class='btn'>
-                Recent Users
+              <a href='/attestation/ui/recent-tips' class='btn'>
+                Recent Tips
               </a>
             </div>
             <div class={props.container ? 'container mx-auto' : ''}>

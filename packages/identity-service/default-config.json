@@ -29,6 +29,7 @@
   "blacklisterPublicKey": "0xcccc36bE44D106C6aC14199A2Ed6a29fDa25d5Ae",
   "rateLimitingReqLimit": 50000,
   "rateLimitingAuthLimit": 5000,
+  "rateLimitingOtpLimit": 10,
   "rateLimitingTwitterLimit": 5000,
   "rateLimitingTikTokLimit": 5000,
   "rateLimitingListensPerTrackPerHour": 10,

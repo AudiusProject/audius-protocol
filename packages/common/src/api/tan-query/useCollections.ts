@@ -15,7 +15,6 @@ import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { combineQueryResults } from './utils/combineQueryResults'
 import { useQueries } from './utils/useQueries'
-
 export const getCollectionQueryKey = (collectionId: ID | null | undefined) => [
   QUERY_KEYS.collection,
   collectionId
@@ -60,10 +59,12 @@ export const useCollections = (
   )
 
   return {
-    ...queriesResults,
     data: isSavedToRedux ? collections : undefined,
+    byId,
+    status: isSavedToRedux ? queriesResults.status : 'pending',
     isPending: queriesResults.isPending || !isSavedToRedux,
     isLoading: queriesResults.isLoading || !isSavedToRedux,
-    byId
+    isFetching: queriesResults.isFetching,
+    isSuccess: queriesResults.isSuccess
   }
 }

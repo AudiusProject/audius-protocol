@@ -3,25 +3,25 @@ import json
 import logging
 import os
 
+from eth_account import Account
+
 # pylint: disable=no-name-in-module
 from eth_account.messages import encode_defunct
 from flask import jsonify
 from web3 import Web3
-from web3.auto import w3
 
 from src.queries.get_health import get_latest_chain_block_set_if_nx
 from src.queries.get_sol_plays import get_sol_play_health_info
 
 # pylint: disable=R0401
-from src.utils import helpers, web3_provider
+from src.utils import helpers
 from src.utils.config import shared_config
-from src.utils.core import get_core_health, is_indexing_core_plays
+from src.utils.core import get_core_health
 from src.utils.helpers import generate_signature
 from src.utils.redis_connection import get_redis
 from src.utils.redis_constants import most_recent_indexed_block_redis_key
 
 redis_conn = get_redis()
-web3_connection = web3_provider.get_web3()
 logger = logging.getLogger(__name__)
 disc_prov_version = helpers.get_discovery_provider_version()
 
@@ -71,9 +71,7 @@ def response_dict_with_metadata(response_dictionary, sign_response):
 
     # Include block difference information
     latest_indexed_block = redis_conn.get(most_recent_indexed_block_redis_key)
-    latest_chain_block, _ = get_latest_chain_block_set_if_nx(
-        redis_conn, web3_connection
-    )
+    latest_chain_block, _ = get_latest_chain_block_set_if_nx(redis_conn)
     response_dictionary["latest_indexed_block"] = (
         int(latest_indexed_block) if latest_indexed_block else None
     )
@@ -92,15 +90,14 @@ def response_dict_with_metadata(response_dictionary, sign_response):
         play_chain_tx["slot"] if play_chain_tx else None
     )
 
-    if is_indexing_core_plays():
-        core_health = get_core_health()
-        if core_health:
-            response_dictionary["latest_indexed_slot_plays"] = core_health.get(
-                "latest_indexed_block"
-            )
-            response_dictionary["latest_chain_slot_plays"] = core_health.get(
-                "latest_chain_block"
-            )
+    core_health = get_core_health()
+    if core_health:
+        response_dictionary["latest_indexed_slot_plays"] = core_health.get(
+            "latest_indexed_block"
+        )
+        response_dictionary["latest_chain_slot_plays"] = core_health.get(
+            "latest_chain_block"
+        )
 
     response_dictionary["version"] = disc_prov_version
     response_dictionary["signer"] = shared_config["delegate"]["owner_wallet"]
@@ -135,8 +132,6 @@ def recover_wallet(data, signature):
     to_recover_hash = Web3.keccak(text=json_dump).hex()
 
     encoded_to_recover = encode_defunct(hexstr=to_recover_hash)
-    recovered_wallet = w3.eth.account.recover_message(
-        encoded_to_recover, signature=signature
-    )
+    recovered_wallet = Account.recover_message(encoded_to_recover, signature=signature)
 
     return recovered_wallet

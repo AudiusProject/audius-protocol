@@ -1,6 +1,11 @@
 import { useCallback, useContext } from 'react'
 
-import { useToggleFavoriteTrack } from '@audius/common/api'
+import {
+  useToggleFavoriteTrack,
+  useTrack,
+  useFollowUser,
+  useUnfollowUser
+} from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -13,11 +18,9 @@ import {
   accountSelectors,
   cacheCollectionsActions,
   cacheCollectionsSelectors,
-  cacheTracksSelectors,
   cacheUsersSelectors,
   collectionPageLineupActions as tracksActions,
   tracksSocialActions,
-  usersSocialActions,
   addToCollectionUIActions,
   mobileOverflowMenuUISelectors,
   shareModalUIActions,
@@ -47,11 +50,9 @@ const { getUserId } = accountSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 const { requestOpen: openAddToCollectionModal } = addToCollectionUIActions
-const { followUser, unfollowUser } = usersSocialActions
 const { setTrackPosition, clearTrackPosition } = playbackPositionActions
 const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { getUser } = cacheUsersSelectors
-const { getTrack } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
 const { removeTrackFromPlaylist } = cacheCollectionsActions
 
@@ -76,10 +77,12 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
   const currentQueueItem = useSelector(makeGetCurrent())
+  const { mutate: followUser } = useFollowUser()
+  const { mutate: unfollowUser } = useUnfollowUser()
 
   const { open } = useCommentDrawer()
 
-  const track = useSelector((state: CommonState) => getTrack(state, { id }))
+  const { data: track } = useTrack(id)
   const playlist = useSelector((state: CommonState) =>
     getCollection(state, { id: contextPlaylistId })
   )
@@ -191,9 +194,9 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
       navigation?.push('Profile', { handle })
     },
     [OverflowAction.FOLLOW_ARTIST]: () =>
-      dispatch(followUser(owner_id, FollowSource.OVERFLOW)),
+      followUser({ followeeUserId: owner_id, source: FollowSource.OVERFLOW }),
     [OverflowAction.UNFOLLOW_ARTIST]: () =>
-      dispatch(unfollowUser(owner_id, FollowSource.OVERFLOW)),
+      unfollowUser({ followeeUserId: owner_id, source: FollowSource.OVERFLOW }),
     [OverflowAction.EDIT_TRACK]: () => {
       navigation?.push('EditTrack', { id })
     },

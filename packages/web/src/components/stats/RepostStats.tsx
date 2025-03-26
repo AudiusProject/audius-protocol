@@ -1,13 +1,10 @@
 import { useCallback } from 'react'
 
+import { useCollection, useTrack } from '@audius/common/api'
 import { ID } from '@audius/common/models'
-import {
-  cacheCollectionsSelectors,
-  cacheTracksSelectors
-} from '@audius/common/store'
 import { formatCount, pluralize } from '@audius/common/utils'
 import { IconRepost, PlainButton, PlainButtonProps } from '@audius/harmony'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import {
   setUsers,
@@ -17,10 +14,6 @@ import {
   UserListType,
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
-import { AppState } from 'store/types'
-
-const { getCollection } = cacheCollectionsSelectors
-const { getTrack } = cacheTracksSelectors
 
 const messages = {
   repost: 'Repost'
@@ -40,15 +33,19 @@ export const RepostStats = ({
 }: RepostStatsProps) => {
   const dispatch = useDispatch()
 
-  const repostCount = useSelector((state: AppState) => {
-    if (entityType === UserListEntityType.COLLECTION) {
-      return getCollection(state, { id })?.repost_count ?? 0
+  const { data: collectionRepostCount } = useCollection(id, {
+    enabled: entityType === UserListEntityType.COLLECTION,
+    select: (collection) => {
+      return collection?.repost_count
     }
-    if (entityType === UserListEntityType.TRACK) {
-      return getTrack(state, { id })?.repost_count ?? 0
-    }
-    return 0
   })
+  const { data: trackRepostCount } = useTrack(id, {
+    enabled: entityType === UserListEntityType.TRACK,
+    select: (track) => {
+      return track?.repost_count
+    }
+  })
+  const repostCount = collectionRepostCount ?? trackRepostCount ?? 0
 
   const handleClick = useCallback(() => {
     dispatch(

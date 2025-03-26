@@ -1,8 +1,8 @@
 import { useCallback } from 'react'
 
+import { useTrack } from '@audius/common/api'
 import { FavoriteType, ID, Name } from '@audius/common/models'
 import {
-  cacheTracksSelectors,
   favoritesUserListActions,
   repostsUserListActions,
   RepostType
@@ -25,13 +25,11 @@ import {
   UserListType
 } from 'store/application/ui/userListModal/types'
 import { push } from 'utils/navigation'
-import { useSelector } from 'utils/reducer'
 
 const { REPOSTING_USERS_ROUTE, FAVORITING_USERS_ROUTE } = route
 
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
-const { getTrack } = cacheTracksSelectors
 
 type RepostsMetricProps = {
   trackId: ID
@@ -40,13 +38,15 @@ type RepostsMetricProps = {
 
 export const RepostsMetric = (props: RepostsMetricProps) => {
   const { trackId, size } = props
-
-  const repostCount = useSelector((state) => {
-    return getTrack(state, { id: trackId })?.repost_count
+  const { data: partialTrack } = useTrack(trackId, {
+    select: (track) => {
+      return {
+        repostCount: track?.repost_count,
+        followeeReposts: track?.followee_reposts
+      }
+    }
   })
-  const followeeReposts = useSelector((state) => {
-    return getTrack(state, { id: trackId })?.followee_reposts
-  })
+  const { repostCount, followeeReposts } = partialTrack ?? {}
 
   const isMobile = useIsMobile()
   const dispatch = useDispatch()
@@ -112,8 +112,10 @@ type SavesMetricProps = {
 
 export const SavesMetric = (props: SavesMetricProps) => {
   const { trackId } = props
-  const saveCount = useSelector((state) => {
-    return getTrack(state, { id: trackId })?.save_count
+  const { data: saveCount } = useTrack(trackId, {
+    select: (track) => {
+      return track.save_count
+    }
   })
   const isMobile = useIsMobile()
   const dispatch = useDispatch()
@@ -152,17 +154,16 @@ type CommentMetricProps = {
 export const CommentMetric = (props: CommentMetricProps) => {
   const { trackId, size } = props
   const isMobile = useIsMobile()
-  const commentCount = useSelector((state) => {
-    return getTrack(state, { id: trackId })?.comment_count ?? 0
+  const { data: partialTrack } = useTrack(trackId, {
+    select: (track) => {
+      return {
+        commentCount: track?.comment_count,
+        permalink: track?.permalink,
+        commentsDisabled: track?.comments_disabled
+      }
+    }
   })
-
-  const permalink = useSelector((state) => {
-    return getTrack(state, { id: trackId })?.permalink
-  })
-
-  const commentsDisabled = useSelector((state) => {
-    return getTrack(state, { id: trackId })?.comments_disabled
-  })
+  const { commentCount = 0, permalink, commentsDisabled } = partialTrack ?? {}
 
   const handleClick = useCallback(() => {
     trackEvent(
@@ -197,8 +198,10 @@ type PlayMetricProps = {
 
 export const PlayMetric = (props: PlayMetricProps) => {
   const { trackId } = props
-  const playCount = useSelector((state) => {
-    return getTrack(state, { id: trackId })?.play_count ?? 0
+  const { data: playCount } = useTrack(trackId, {
+    select: (track) => {
+      return track.play_count
+    }
   })
 
   if (!playCount) return null

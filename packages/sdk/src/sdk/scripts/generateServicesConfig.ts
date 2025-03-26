@@ -195,7 +195,7 @@ const developmentConfig: SdkServicesConfig = {
       'GNHKVSmHvoRBt1JJCxz7RSMfzDQGDGhGEjmhHyxb3K5J'
   },
   ethereum: {
-    rpcEndpoint: 'https://audius-protocol-eth-ganache-1',
+    rpcEndpoint: 'http://audius-protocol-eth-ganache-1',
     addresses: {
       ethRewardsManagerAddress: '0x',
       serviceProviderFactoryAddress: '0x',

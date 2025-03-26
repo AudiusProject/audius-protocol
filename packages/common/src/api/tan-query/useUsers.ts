@@ -16,7 +16,6 @@ import { useCurrentUserId } from './useCurrentUserId'
 import { getUserQueryKey } from './useUser'
 import { combineQueryResults } from './utils/combineQueryResults'
 import { useQueries } from './utils/useQueries'
-
 export const getUsersQueryKey = (userIds: ID[] | null | undefined) => [
   QUERY_KEYS.users,
   userIds
@@ -58,10 +57,12 @@ export const useUsers = (
   )
 
   return {
-    ...queryResults,
     data: isSavedToRedux ? users : undefined,
+    byId,
+    status: isSavedToRedux ? queryResults.status : 'pending',
     isPending: queryResults.isPending || !isSavedToRedux,
     isLoading: queryResults.isLoading || !isSavedToRedux,
-    byId
+    isFetching: queryResults.isFetching,
+    isSuccess: queryResults.isSuccess
   }
 }

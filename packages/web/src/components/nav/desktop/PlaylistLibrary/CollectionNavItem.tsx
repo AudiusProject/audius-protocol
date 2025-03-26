@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 
+import { useTrack } from '@audius/common/api'
 import {
   FavoriteSource,
   ID,
@@ -11,7 +12,6 @@ import {
 import {
   cacheCollectionsActions,
   cacheCollectionsSelectors,
-  cacheTracksSelectors,
   collectionsSocialActions,
   playlistLibraryActions,
   shareModalUIActions
@@ -51,7 +51,6 @@ import { usePlaylistPlayingStatus } from './usePlaylistPlayingStatus'
 
 const { addTrackToPlaylist } = cacheCollectionsActions
 const { getCollection } = cacheCollectionsSelectors
-const { getTrack } = cacheTracksSelectors
 const { reorder } = playlistLibraryActions
 const { requestOpen } = shareModalUIActions
 const { unsaveCollection, unsaveSmartCollection } = collectionsSocialActions
@@ -215,11 +214,14 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
 
   const draggingKind = useSelector(selectDraggingKind)
   const draggingId = useSelector(selectDraggingId)
-  const track = useSelector((state) =>
-    getTrack(state, { id: typeof draggingId === 'string' ? null : draggingId })
-  )
+  const { data: isUnlisted } = useTrack(draggingId as ID, {
+    enabled: typeof draggingId === 'number',
+    select: (track) => {
+      return track.is_unlisted
+    }
+  })
   const hiddenTrackCheck =
-    !!track && !!collection && track?.is_unlisted && !collection?.is_private
+    !!isUnlisted && !!collection && isUnlisted && !collection?.is_private
 
   const isDisabled =
     (draggingKind === 'track' && !isOwned) ||

@@ -1,6 +1,5 @@
 import { useCallback, useEffect } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
 import {
   Name,
   FollowSource,
@@ -14,7 +13,6 @@ import {
   AccessConditions,
   User
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   cacheUsersSelectors,
   usersSocialActions as socialActions,
@@ -56,6 +54,8 @@ import styles from './GiantTrackTile.module.css'
 const { getUsers } = cacheUsersSelectors
 const { beginTip } = tippingActions
 const { getGatedContentStatusMap } = gatedContentSelectors
+
+const BUY_BUTTON_WIDTH = 250
 
 const getMessages = (contentType: PurchaseableContentType) => ({
   howToUnlock: 'HOW TO UNLOCK',
@@ -135,10 +135,6 @@ const LockedGatedContentSection = ({
   const [searchParams] = useSearchParams()
   const openCheckout = searchParams.get('checkout') === 'true'
 
-  const { isEnabled: isGuestCheckoutEnabled } = useFeatureFlag(
-    FeatureFlags.GUEST_CHECKOUT
-  )
-
   const handlePurchase = useRequiresAccountCallback(() => {
     if (lockedContentModalVisibility) {
       setLockedContentModalVisibility(false)
@@ -175,17 +171,12 @@ const LockedGatedContentSection = ({
 
   useEffect(() => {
     if (openCheckout && isUSDCPurchaseGated) {
-      if (isGuestCheckoutEnabled) {
-        handlePurchaseViaGuestCheckout()
-      } else {
-        handlePurchase()
-      }
+      handlePurchaseViaGuestCheckout()
     }
   }, [
     openCheckout,
     handlePurchase,
     isUSDCPurchaseGated,
-    isGuestCheckoutEnabled,
     handlePurchaseViaGuestCheckout
   ])
 
@@ -350,11 +341,7 @@ const LockedGatedContentSection = ({
                 contentType
               })
             )
-            if (isGuestCheckoutEnabled) {
-              handlePurchaseViaGuestCheckout()
-            } else {
-              handlePurchase()
-            }
+            handlePurchaseViaGuestCheckout()
           }}
           fullWidth
         >
@@ -370,7 +357,7 @@ const LockedGatedContentSection = ({
   }
 
   return (
-    <Flex className={className} justifyContent='space-between'>
+    <Flex w='100%' justifyContent='space-between'>
       <Flex gap='s' direction='column'>
         <Flex alignItems='center' gap='s'>
           <LockedStatusBadge
@@ -383,9 +370,7 @@ const LockedGatedContentSection = ({
         </Flex>
         {renderLockedDescription()}
       </Flex>
-      <Flex className={cn(styles.gatedContentSectionButton, buttonClassName)}>
-        {renderButton()}
-      </Flex>
+      <Flex w={BUY_BUTTON_WIDTH}>{renderButton()}</Flex>
     </Flex>
   )
 }
@@ -571,7 +556,7 @@ const UnlockedGatedContentSection = ({
   }
 
   return (
-    <div className={className}>
+    <Flex className={className}>
       <Text
         variant='label'
         size='l'
@@ -599,7 +584,7 @@ const UnlockedGatedContentSection = ({
       >
         {renderUnlockedDescription()}
       </Text>
-    </div>
+    </Flex>
   )
 }
 

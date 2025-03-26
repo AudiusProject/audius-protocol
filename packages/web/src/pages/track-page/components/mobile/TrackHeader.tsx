@@ -1,5 +1,6 @@
 import { Suspense, useCallback } from 'react'
 
+import { useTrack } from '@audius/common/api'
 import {
   SquareSizes,
   isContentCollectibleGated,
@@ -9,12 +10,7 @@ import {
   Remix,
   AccessConditions
 } from '@audius/common/models'
-import {
-  CommonState,
-  OverflowAction,
-  PurchaseableContentType,
-  cacheTracksSelectors
-} from '@audius/common/store'
+import { OverflowAction, PurchaseableContentType } from '@audius/common/store'
 import { Nullable, formatReleaseDate } from '@audius/common/utils'
 import {
   Flex,
@@ -33,7 +29,7 @@ import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
 import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
 import cn from 'classnames'
 import dayjs from 'dayjs'
-import { shallowEqual, useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import CoSign from 'components/co-sign/CoSign'
 import HoverInfo from 'components/co-sign/HoverInfo'
@@ -185,14 +181,29 @@ const TrackHeader = ({
   goToFavoritesPage,
   goToRepostsPage
 }: TrackHeaderProps) => {
-  const { getTrack } = cacheTracksSelectors
-  const track = useSelector(
-    (state: CommonState) => getTrack(state, { id: trackId }),
-    shallowEqual
-  )
+  const { data: partialTrack } = useTrack(trackId, {
+    select: (track) => {
+      return {
+        is_downloadable: track?.is_downloadable,
+        album_backlink: track?.album_backlink,
+        release_date: track?.release_date,
+        ddex_app: track?.ddex_app,
+        permalink: track?.permalink,
+        _stems: track?._stems
+      }
+    }
+  })
+  const {
+    is_downloadable,
+    album_backlink,
+    release_date,
+    ddex_app,
+    permalink,
+    _stems
+  } = partialTrack ?? {}
+
   const dispatch = useDispatch()
-  const hasDownloadableAssets =
-    track?.is_downloadable || (track?._stems?.length ?? 0) > 0
+  const hasDownloadableAssets = is_downloadable || (_stems?.length ?? 0) > 0
 
   const showSocials = !isUnlisted && hasStreamAccess
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
@@ -202,9 +213,9 @@ const TrackHeader = ({
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
   const showListenCount = isOwner || (!isStreamGated && !isUnlisted)
-  const albumInfo = track?.album_backlink
+  const albumInfo = album_backlink
   const shouldShowScheduledRelease =
-    track?.release_date && dayjs(track.release_date).isAfter(dayjs())
+    release_date && dayjs(release_date).isAfter(dayjs())
 
   const image = useTrackCoverArt({
     trackId,
@@ -228,7 +239,7 @@ const TrackHeader = ({
         : isSaved
           ? OverflowAction.UNFAVORITE
           : OverflowAction.FAVORITE,
-      isOwner && !track?.ddex_app ? OverflowAction.ADD_TO_ALBUM : null,
+      isOwner && !ddex_app ? OverflowAction.ADD_TO_ALBUM : null,
       isOwner || !isUnlisted ? OverflowAction.ADD_TO_PLAYLIST : null,
       albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       isFollowing
@@ -265,8 +276,8 @@ const TrackHeader = ({
   }, [goToRepostsPage, trackId])
 
   const onClickComments = useCallback(() => {
-    dispatch(pushRoute(`${track?.permalink}/comments`))
-  }, [dispatch, track?.permalink])
+    dispatch(pushRoute(`${permalink}/comments`))
+  }, [dispatch, permalink])
 
   const imageElement = coSign ? (
     <CoSign

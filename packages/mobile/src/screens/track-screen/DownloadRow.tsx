@@ -1,16 +1,12 @@
+import { useTrack, useUser } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
 import { stemCategoryFriendlyNames } from '@audius/common/models'
-import type { CommonState } from '@audius/common/store'
-import { cacheTracksSelectors, cacheUsersSelectors } from '@audius/common/store'
 import { getFilename } from '@audius/common/utils'
 import { css } from '@emotion/native'
-import { useSelector } from 'react-redux'
 
 import { Flex, Text, IconReceive, Box } from '@audius/harmony-native'
 import { PlainButton } from 'app/harmony-native/components/Button/PlainButton/PlainButton'
 
-const { getTrack } = cacheTracksSelectors
-const { getUser } = cacheUsersSelectors
 const messages = {
   fullTrack: 'Full Track'
 }
@@ -28,12 +24,8 @@ export const DownloadRow = ({
   index,
   onDownload
 }: DownloadRowProps) => {
-  const track = useSelector((state: CommonState) =>
-    getTrack(state, { id: trackId })
-  )
-  const user = useSelector((state: CommonState) =>
-    getUser(state, { id: track?.owner_id })
-  )
+  const { data: track } = useTrack(trackId)
+  const { data: user } = useUser(track?.owner_id)
 
   return (
     <Flex

@@ -173,7 +173,7 @@ export const TanQueryLineup = ({
     play,
     pause,
     hasNextPage,
-    isLoading = true,
+    isPending = true,
     isPlaying = false,
     isFetching = true,
     isError = false
@@ -228,16 +228,12 @@ export const TanQueryLineup = ({
     tileSize = TrackTileSize.SMALL
   }
 
-  // Memoize lineup style
-  const lineupStyle = useMemo(() => {
-    if (variant === LineupVariant.MAIN || variant === LineupVariant.PLAYLIST) {
-      return styles.main
-    } else {
-      return styles.section
-    }
-  }, [variant])
+  // Determine lineup style
+  const lineupStyle =
+    variant === LineupVariant.MAIN || variant === LineupVariant.PLAYLIST
+      ? styles.main
+      : styles.section
 
-  // Callbacks
   const togglePlay = useCallback(
     (uid: UID, trackId: ID, source?: PlaybackSource) => {
       if (uid !== playingUid || (uid === playingUid && !isPlaying)) {
@@ -261,7 +257,7 @@ export const TanQueryLineup = ({
     [playingUid, isPlaying, play, dispatch, pause]
   )
 
-  // Apply offset and maxEntries to the lineup entries
+  // Trim lineup based on start & maxEntry props
   const lineupEntries = useMemo(() => {
     if (pageSize !== undefined && start !== undefined) {
       return lineup.entries.slice(start, start + pageSize)
@@ -271,7 +267,6 @@ export const TanQueryLineup = ({
     return lineup.entries
   }, [lineup.entries, pageSize, start, maxEntries])
 
-  // Memoize the skeleton renderer function
   const renderSkeletons = useCallback(
     (skeletonCount: number | undefined) => {
       // This means no skeletons are desired
@@ -309,7 +304,7 @@ export const TanQueryLineup = ({
     [TrackTile, numPlaylistSkeletonRows, ordered, tileSize, tileStyles]
   )
 
-  // Memoize tiles generation
+  // Determine how to render our tiles
   const tiles = useMemo(() => {
     if (isError) {
       return []
@@ -393,7 +388,7 @@ export const TanQueryLineup = ({
     PlaylistTile
   ])
 
-  const isInitialLoad = (isFetching && tiles.length === 0) || isLoading
+  const isInitialLoad = (isFetching && tiles.length === 0) || isPending
 
   return (
     <>

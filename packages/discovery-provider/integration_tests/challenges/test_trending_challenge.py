@@ -47,7 +47,7 @@ class MockCore:
     def get_block(self, height: int) -> BlockResponse:
         timestamp = Timestamp()
         timestamp.FromDatetime(datetime.now())
-        return BlockResponse(timestamp=timestamp)
+        return BlockResponse(timestamp=timestamp, height=height)
 
 
 def test_trending_challenge_should_update(app):
@@ -317,7 +317,7 @@ def test_trending_challenge_job(app):
                 Challenge.id == "tut",
             )
         ).update({"active": True, "starting_block": BLOCK_NUMBER})
-        bus.process_events(session)
+        bus.process_events(session, 1000)
         session.flush()
         trending_tracks = (
             session.query(TrendingResult)

@@ -39,6 +39,7 @@ from src.challenges.referral_challenge import (
     verified_referral_challenge_manager,
 )
 from src.challenges.send_first_tip_challenge import send_first_tip_challenge_manager
+from src.challenges.tastemaker_challenge import tastemaker_challenge_manager
 from src.challenges.track_upload_challenge import track_upload_challenge_manager
 from src.challenges.trending_challenge import (
     trending_playlist_challenge_manager,
@@ -167,7 +168,7 @@ class ChallengeEventBus:
                 logger.warning(f"ChallengeEventBus: error enqueuing to Redis: {e}")
         self._in_memory_queue.clear()
 
-    def process_events(self, session: Session, max_events=1000) -> Tuple[int, bool]:
+    def process_events(self, session: Session, max_events=1) -> Tuple[int, bool]:
         """Dequeues `max_events` from Redis queue and processes them, forwarding to listening ChallengeManagers.
         Returns (num_processed_events, did_error).
         Will return -1 as num_processed_events if an error prevented any events from
@@ -306,4 +307,5 @@ def setup_challenge_bus():
     bus.register_listener(
         ChallengeEvent.first_weekly_comment, first_weekly_comment_challenge_manager
     )
+    bus.register_listener(ChallengeEvent.tastemaker, tastemaker_challenge_manager)
     return bus
