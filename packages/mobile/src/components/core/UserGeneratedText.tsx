@@ -135,20 +135,22 @@ const HandleLink = ({
   onPress,
   ...other
 }: Omit<TextLinkProps, 'to'> & { handle: string }) => {
-  const { data: user } = useUserByHandle(handle.replace('@', ''))
+  const { data: userId } = useUserByHandle(handle.replace('@', ''), {
+    select: (user) => user.user_id
+  })
 
   const handlePress = useCallback(
     (e: GestureResponderEvent) => {
-      onPress?.(e, 'mention', user?.user_id)
+      onPress?.(e, 'mention', userId)
     },
-    [onPress, user]
+    [onPress, userId]
   )
 
-  return user ? (
+  return userId ? (
     <TextLink
       {...other}
       onPress={handlePress}
-      to={{ screen: 'Profile', params: { id: user.user_id } }}
+      to={{ screen: 'Profile', params: { id: userId } }}
     >
       {handle}
     </TextLink>

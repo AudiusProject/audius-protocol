@@ -3,6 +3,7 @@ import { useImageSize } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
 import { SquareSizes, WidthSizes } from '@audius/common/models'
 import { BlurView } from '@react-native-community/blur'
+import { pick } from 'lodash'
 import { Animated, StyleSheet } from 'react-native'
 
 import type { FastImageProps } from '@audius/harmony-native'
@@ -53,8 +54,11 @@ export const useCoverPhoto = ({
           : SquareSizes.SIZE_1000_BY_1000,
       defaultImage: ''
     })
-  const { data: user } = useUser(userId)
-  const coverPhoto = user?.cover_photo
+  const { data: partialUser } = useUser(userId, {
+    select: (user) => pick(user, 'cover_photo', 'updatedCoverPhoto')
+  })
+  const { cover_photo, updatedCoverPhoto } = partialUser ?? {}
+  const coverPhoto = cover_photo
   const image = useImageSize({
     artwork: coverPhoto,
     targetSize: size,
@@ -67,9 +71,9 @@ export const useCoverPhoto = ({
   const isDefaultCover = image === ''
   const shouldBlur = isDefaultCover && !isDefaultProfile
 
-  if (user?.updatedCoverPhoto && !shouldBlur) {
+  if (updatedCoverPhoto && !shouldBlur) {
     return {
-      source: primitiveToImageSource(user.updatedCoverPhoto.url),
+      source: primitiveToImageSource(updatedCoverPhoto.url),
       shouldBlur
     }
   }

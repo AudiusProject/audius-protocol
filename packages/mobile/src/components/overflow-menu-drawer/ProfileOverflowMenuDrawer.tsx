@@ -7,8 +7,8 @@ import {
   shareModalUIActions,
   OverflowAction
 } from '@audius/common/store'
+import { pick } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
-
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 
@@ -20,14 +20,13 @@ const ProfileOverflowMenuDrawer = ({ render }: Props) => {
   const dispatch = useDispatch()
   const { id: modalId } = useSelector(getMobileOverflowModal)
   const id = modalId as ID
-  const { data: user } = useUser(id)
+  const { data: partialUser } = useUser(id, {
+    select: (user) => pick(user, 'handle', 'name')
+  })
   const { mutate: followUser } = useFollowUser()
   const { mutate: unfollowUser } = useUnfollowUser()
 
-  if (!user) {
-    return null
-  }
-  const { handle, name } = user
+  const { handle, name } = partialUser ?? {}
 
   if (!id || !handle || !name) {
     return null

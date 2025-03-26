@@ -1,6 +1,7 @@
 import { useUser } from '@audius/common/api'
 import { useImageSize } from '@audius/common/hooks'
 import type { SquareSizes, ID } from '@audius/common/models'
+import { pick } from 'lodash'
 import { Image } from 'react-native'
 
 import { FastImage } from '@audius/harmony-native'
@@ -22,11 +23,13 @@ export const useProfilePicture = ({
   size: SquareSizes
   defaultImage?: string
 }) => {
-  const { data: user } = useUser(userId)
+  const { data: partialUser } = useUser(userId, {
+    select: (user) => pick(user, 'profile_picture', 'updatedProfilePicture')
+  })
 
-  const profilePicture = user?.profile_picture
+  const { profile_picture, updatedProfilePicture } = partialUser ?? {}
   const image = useImageSize({
-    artwork: profilePicture,
+    artwork: profile_picture,
     targetSize: size,
     defaultImage: '',
     preloadImageFn: async (url: string) => {
@@ -41,9 +44,9 @@ export const useProfilePicture = ({
     }
   }
 
-  if (user?.updatedProfilePicture) {
+  if (updatedProfilePicture) {
     return {
-      source: primitiveToImageSource(user.updatedProfilePicture.url),
+      source: primitiveToImageSource(updatedProfilePicture.url),
       isFallbackImage: false
     }
   }

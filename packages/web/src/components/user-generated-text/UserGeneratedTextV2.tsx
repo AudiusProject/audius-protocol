@@ -161,18 +161,20 @@ const HandleLink = ({
 }: Omit<TextLinkProps, 'to'> & {
   handle: string
 }) => {
-  const { data: user } = useUserByHandle(handle.replace('@', ''))
+  const { data: userId } = useUserByHandle(handle.replace('@', ''), {
+    select: (user) => user.user_id
+  })
 
   const handleClick = useCallback(
     (e: MouseEvent<HTMLAnchorElement>) => {
-      other.onClick?.(e, 'mention', user?.user_id)
+      other.onClick?.(e, 'mention', userId)
     },
-    [other, user]
+    [other, userId]
   )
 
-  return user ? (
-    <ArtistPopover handle={user.handle} component='span'>
-      <TextLink {...other} to={profilePage(user.handle)} onClick={handleClick}>
+  return userId ? (
+    <ArtistPopover handle={handle} component='span'>
+      <TextLink {...other} to={profilePage(handle)} onClick={handleClick}>
         {handle}
       </TextLink>
     </ArtistPopover>

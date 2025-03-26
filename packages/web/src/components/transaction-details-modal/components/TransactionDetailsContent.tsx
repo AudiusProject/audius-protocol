@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { useUsers } from '@audius/common/api'
+import { useUser } from '@audius/common/api'
 import { ChallengeRewardID, SolanaWalletAddress } from '@audius/common/models'
 import {
   TransactionType,
@@ -21,6 +21,7 @@ import {
   IconLogoLinkByStripe as LogoStripeLink
 } from '@audius/harmony'
 import cn from 'classnames'
+import { pick } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { useSetVisibility } from 'common/hooks/useModalState'
@@ -74,21 +75,23 @@ type UserDetailsProps = {
 const UserDetails = ({ userId }: UserDetailsProps) => {
   const setVisibility = useSetVisibility()
   const dispatch = useDispatch()
-  const { byId: usersMap } = useUsers([userId])
-  const isLoading = Object.keys(usersMap).length === 0
+  const { data: user, isPending } = useUser(userId, {
+    select: (user) => pick(user, 'handle', 'name')
+  })
+  const { handle, name } = user ?? {}
   return (
     <>
-      {isLoading ? (
+      {isPending || !handle ? (
         <LoadingSpinner className={styles.spinnerSmall} />
       ) : (
         <div
           className={styles.name}
           onClick={() => {
             setVisibility('TransactionDetails')(false)
-            dispatch(push(profilePage(usersMap[userId].handle)))
+            dispatch(push(profilePage(handle)))
           }}
         >
-          <span>{usersMap[userId].name}</span>
+          <span>{name}</span>
           <UserBadges userId={userId} className={styles.badge} inline />
         </div>
       )}

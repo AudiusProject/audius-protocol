@@ -70,14 +70,16 @@ export const TierChangeNotification = (props: TierChangeNotificationProps) => {
   const { notification } = props
   const { tier, userId } = notification
   const navigation = useNotificationNavigation()
-  const { data: user } = useUser(userId)
+  const { data: handle } = useUser(userId, {
+    select: (user) => user.handle
+  })
   const { icon, label, amount, twitterIcon } = tierInfoMap[tier]
 
   const handlePress = useCallback(() => {
     navigation.navigate(notification)
   }, [navigation, notification])
 
-  if (!user) return null
+  if (!handle) return null
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
@@ -89,7 +91,7 @@ export const TierChangeNotification = (props: TierChangeNotificationProps) => {
       <NotificationText>{messages.congrats(label, amount)}</NotificationText>
       <NotificationTwitterButton
         type='static'
-        url={`${env.AUDIUS_URL}${route.profilePage(user.handle)}`}
+        url={`${env.AUDIUS_URL}${route.profilePage(handle)}`}
         shareText={messages.twitterShareText(label, twitterIcon)}
       />
     </NotificationTile>
