@@ -1,14 +1,11 @@
 import type { ReactNode } from 'react'
 
+import { useUser } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
-import { cacheUsersSelectors } from '@audius/common/store'
 import { TouchableOpacity } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import type { IconComponent } from '@audius/harmony-native'
 import { DEFAULT_HIT_SLOP, Flex, Text } from '@audius/harmony-native'
-
-const { getUser } = cacheUsersSelectors
 
 type VanityMetricProps = {
   icon?: IconComponent
@@ -38,7 +35,9 @@ export const VanityMetric = (props: VanityMetricProps) => {
 
 export const UserName = (props: { userId: ID }) => {
   const { userId } = props
-  const userName = useSelector((state) => getUser(state, { id: userId })?.name)
+  const { data: userName } = useUser(userId, {
+    select: (user) => user?.name
+  })
 
   return <Text>{userName}</Text>
 }

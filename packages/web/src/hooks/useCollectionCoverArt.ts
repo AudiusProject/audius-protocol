@@ -1,13 +1,10 @@
+import { useCollection } from '@audius/common/api'
 import { imageBlank as imageEmpty } from '@audius/common/assets'
 import { useImageSize } from '@audius/common/hooks'
 import { SquareSizes, ID } from '@audius/common/models'
-import { CommonState, cacheCollectionsSelectors } from '@audius/common/store'
 import { Maybe } from '@audius/common/utils'
-import { useSelector } from 'react-redux'
 
 import { preload } from 'utils/image'
-
-const { getCollection } = cacheCollectionsSelectors
 
 export const useCollectionCoverArt = ({
   collectionId,
@@ -18,9 +15,9 @@ export const useCollectionCoverArt = ({
   size: SquareSizes
   defaultImage?: string
 }) => {
-  const artwork = useSelector(
-    (state: CommonState) => getCollection(state, { id: collectionId })?.artwork
-  )
+  const { data: artwork } = useCollection(collectionId, {
+    select: (collection) => collection.artwork
+  })
   const image = useImageSize({
     artwork,
     targetSize: size,
