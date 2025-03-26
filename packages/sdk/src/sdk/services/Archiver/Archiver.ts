@@ -16,16 +16,19 @@ type GetStemsArchiveJobStatusResponse = {
 export class ArchiverService extends BaseAPI {
   public async createStemsArchive({
     trackId,
-    userId
+    userId,
+    includeParent
   }: {
     trackId: string
     userId: string
+    includeParent?: boolean
   }) {
     const response = await this.request({
       method: 'POST',
       path: `/stems/${trackId}`,
       query: {
-        user_id: userId
+        user_id: userId,
+        include_parent: !!includeParent
       },
       headers: {}
     })

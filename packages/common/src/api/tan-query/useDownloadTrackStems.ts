@@ -25,7 +25,8 @@ export const useDownloadTrackStems = ({ trackId }: { trackId: ID }) => {
       }
       return await archiver.createStemsArchive({
         trackId: Id.parse(trackId),
-        userId: Id.parse(currentUserId)
+        userId: Id.parse(currentUserId),
+        includeParent: true
       })
     },
     onSuccess: async (response) => {
