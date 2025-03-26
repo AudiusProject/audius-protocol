@@ -407,6 +407,95 @@ def test_index_valid_social_features(app, mocker):
     bus_mock.assert_has_calls(calls, any_order=True)
 
 
+def test_index_cosign(app, mocker):
+    "Tests cosign dispatches cosign challenge event"
+    bus_mock = mocker.patch(
+        "src.challenges.challenge_event_bus.ChallengeEventBus", autospec=True
+    )
+
+    # setup db and mocked txs
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        update_task = UpdateTask(web3, challenge_event_bus=bus_mock)
+
+    tx_receipts = {
+        "CosignTrack": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 2,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Repost",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
+    entities = {
+        "users": [
+            {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
+            {"user_id": 2, "handle": "user-2", "wallet": "user2wallet"},
+        ],
+        "tracks": [
+            {"track_id": 1, "owner_id": 1},
+            {
+                "track_id": 2,
+                "owner_id": 2,
+                "remix_of": {"tracks": [{"parent_track_id": 1}]},
+            },
+        ],
+        "remixes": [
+            {
+                "parent_track_id": 1,
+                "child_track_id": 2,
+            },
+        ],
+    }
+
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        # index transactions
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=1,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
+            block_hash=hex(0),
+        )
+
+        # Verify cosign
+        all_reposts: List[Repost] = session.query(Repost).all()
+        assert len(all_reposts) == 1
+
+    calls = [
+        mock.call.dispatch(
+            ChallengeEvent.cosign, 1, BLOCK_DATETIME, 2, {"track_id": 2}
+        ),
+    ]
+    bus_mock.assert_has_calls(calls, any_order=True)
+
+
 def test_index_invalid_social_features(app, mocker):
     "Tests valid batch of social create/update/delete actions"
 
