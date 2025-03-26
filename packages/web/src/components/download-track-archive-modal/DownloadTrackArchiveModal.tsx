@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react'
 
 import {
+  useCancelStemsArchiveJob,
   useDownloadTrackStems,
   useGetStemsArchiveJobStatus
 } from '@audius/common/api'
@@ -37,13 +38,16 @@ export const DownloadTrackArchiveModal = () => {
   const {
     data: { trackId },
     isOpen,
-    onClose
+    onClose,
+    onClosed
   } = useDownloadTrackArchiveModal()
 
-  const { mutate: downloadTrackStems, data: { jobId } = {} } =
+  const { mutate: downloadTrackStems, data: { id: jobId } = {} } =
     useDownloadTrackStems({
       trackId
     })
+
+  const { mutate: cancelStemsArchiveJob } = useCancelStemsArchiveJob()
 
   const { data: jobState } = useGetStemsArchiveJobStatus({
     jobId
@@ -52,8 +56,10 @@ export const DownloadTrackArchiveModal = () => {
   const hasError = jobState?.state === 'failed'
 
   useEffect(() => {
-    downloadTrackStems()
-  })
+    if (isOpen) {
+      downloadTrackStems()
+    }
+  }, [isOpen, downloadTrackStems, trackId])
 
   useEffect(() => {
     if (jobState?.state === 'completed') {
@@ -63,11 +69,19 @@ export const DownloadTrackArchiveModal = () => {
   }, [jobState, onClose, jobId])
 
   const handleClose = useCallback(() => {
+    if (jobId) {
+      cancelStemsArchiveJob({ jobId })
+    }
     onClose()
-  }, [onClose])
+  }, [onClose, jobId, cancelStemsArchiveJob])
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} size='small'>
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      onClosed={onClosed}
+      size='small'
+    >
       <ModalHeader>
         <Flex alignSelf='center' gap='s'>
           <Text variant='label' size='xl' strength='strong'>

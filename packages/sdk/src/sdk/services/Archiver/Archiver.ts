@@ -1,9 +1,5 @@
 import { BaseAPI, JSONApiResponse } from '../../api/generated/default'
 
-type CreateStemsArchiveResponse = {
-  jobId: string
-}
-
 type GetStemsArchiveJobStatusResponse = {
   id: string
   state:
@@ -33,7 +29,9 @@ export class ArchiverService extends BaseAPI {
       },
       headers: {}
     })
-    return new JSONApiResponse<CreateStemsArchiveResponse>(response).value()
+    return new JSONApiResponse<GetStemsArchiveJobStatusResponse>(
+      response
+    ).value()
   }
 
   public async getStemsArchiveJobStatus({ jobId }: { jobId: string }) {
@@ -45,5 +43,14 @@ export class ArchiverService extends BaseAPI {
     return new JSONApiResponse<GetStemsArchiveJobStatusResponse>(
       response
     ).value()
+  }
+
+  public async cancelStemsArchiveJob({ jobId }: { jobId: string }) {
+    const response = await this.request({
+      method: 'DELETE',
+      path: `/stems/job/${jobId}`,
+      headers: {}
+    })
+    return new JSONApiResponse<void>(response).value()
   }
 }

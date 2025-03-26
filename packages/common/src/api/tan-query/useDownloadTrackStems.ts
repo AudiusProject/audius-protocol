@@ -28,10 +28,29 @@ export const useDownloadTrackStems = ({ trackId }: { trackId: ID }) => {
         userId: Id.parse(currentUserId)
       })
     },
-    onSuccess: async ({ jobId }) => {
-      queryClient.setQueryData([QUERY_KEYS.downloadTrackStems, trackId], {
-        jobId
-      })
+    onSuccess: async (response) => {
+      queryClient.setQueryData(
+        [QUERY_KEYS.downloadTrackStems, trackId],
+        response
+      )
+      queryClient.setQueryData(
+        [QUERY_KEYS.stemsArchiveJob, response.id],
+        response
+      )
+    }
+  })
+}
+
+export const useCancelStemsArchiveJob = () => {
+  const { audiusSdk } = useAudiusQueryContext()
+  return useMutation({
+    mutationFn: async ({ jobId }: { jobId: string }) => {
+      const sdk = await audiusSdk()
+      const archiver = sdk.services.archiverService
+      if (!archiver) {
+        throw new Error('Archiver service not configured')
+      }
+      await archiver.cancelStemsArchiveJob({ jobId })
     }
   })
 }
