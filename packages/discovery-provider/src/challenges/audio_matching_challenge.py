@@ -54,6 +54,9 @@ def update_audio_matching_user_challenges(
     Shared implementation for updating audio matching user challenges.
     Updates the challenge amount based on metadata and marks challenges as complete.
     """
+    if not user_challenges:
+        return
+
     challenge_id = user_challenges[0].challenge_id
     challenge_amount = get_challenge_amount(session, challenge_id)
 
