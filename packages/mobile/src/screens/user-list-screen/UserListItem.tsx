@@ -1,9 +1,11 @@
 import { useCallback } from 'react'
 
-import type { User } from '@audius/common/models'
+import { useUser } from '@audius/common/api'
+import type { ID, User } from '@audius/common/models'
 import { FollowSource } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
+import { pick } from 'lodash'
 import { Pressable, View, Animated } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -18,6 +20,7 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { SupporterInfo } from './SupporterInfo'
 import { SupportingInfo } from './SupportingInfo'
+
 const getUserId = accountSelectors.getUserId
 
 const messages = {
@@ -60,12 +63,15 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 
 type UserListItemProps = {
   tag: string
-  user: User
+  userId: ID
 }
 
 export const UserListItem = (props: UserListItemProps) => {
-  const { tag, user } = props
-  const { user_id, handle, name, follower_count } = user
+  const { tag, userId } = props
+  const { data: user } = useUser(userId, {
+    select: (user) => pick(user, ['handle', 'name', 'follower_count'])
+  })
+  const { handle, name, follower_count = 0 } = user ?? {}
   const currentUserId = useSelector(getUserId)
   const styles = useStyles()
   const navigation = useNavigation()
@@ -88,7 +94,7 @@ export const UserListItem = (props: UserListItemProps) => {
         onPressOut={handlePressOut}
       >
         <View style={styles.infoRoot}>
-          <ProfilePicture userId={user.user_id} size='large' />
+          <ProfilePicture userId={userId} size='large' />
           <View style={styles.userInfo}>
             <Text variant='h3' style={styles.displayName}>
               {name}
@@ -108,16 +114,18 @@ export const UserListItem = (props: UserListItemProps) => {
                   {messages.followers(follower_count)}
                 </Text>
               </View>
-              <FollowsYouBadge userId={user.user_id} />
+              <FollowsYouBadge userId={userId} />
             </View>
-            {tag === 'SUPPORTING' ? <SupportingInfo user={user} /> : null}
-            {tag === 'TOP SUPPORTERS' ? <SupporterInfo user={user} /> : null}
+            {tag === 'SUPPORTING' ? <SupportingInfo userId={userId} /> : null}
+            {tag === 'TOP SUPPORTERS' ? (
+              <SupporterInfo userId={userId} />
+            ) : null}
           </View>
         </View>
-        {currentUserId !== user_id ? (
+        {currentUserId !== userId ? (
           <FollowButton
             variant='pill'
-            userId={user.user_id}
+            userId={userId}
             followSource={FollowSource.USER_LIST}
           />
         ) : null}

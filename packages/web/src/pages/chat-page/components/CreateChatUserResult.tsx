@@ -159,7 +159,7 @@ export const CreateChatUserResult = (props: UserResultComposeProps) => {
     <div className={styles.root}>
       <ArtistChip
         className={styles.artistChip}
-        user={user}
+        userId={user.user_id}
         showPopover={false}
         showSupportFor={currentUserId ?? undefined}
         customChips={canCreateChat ? null : renderCustomChip(callToAction)}

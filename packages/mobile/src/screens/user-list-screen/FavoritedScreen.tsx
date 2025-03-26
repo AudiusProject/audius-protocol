@@ -1,4 +1,10 @@
-import { useTrackFavorites, useCollectionFavorites } from '@audius/common/api'
+import {
+  useTrackFavorites,
+  useCollectionFavorites,
+  useUser,
+  useCollection,
+  useTrack
+} from '@audius/common/api'
 import { FavoriteType } from '@audius/common/models'
 
 import { IconHeart } from '@audius/harmony-native'
@@ -14,6 +20,16 @@ const messages = {
 export const FavoritedScreen = () => {
   const { params } = useRoute<'Favorited'>()
   const { id, favoriteType } = params
+
+  const { data: followerCount } = useTrack(id, {
+    select: (track) => track.save_count,
+    enabled: favoriteType === FavoriteType.TRACK
+  })
+
+  const { data: collectionCount } = useCollection(id, {
+    select: (collection) => collection.save_count,
+    enabled: favoriteType === FavoriteType.PLAYLIST
+  })
 
   const trackFavoritesQuery = useTrackFavorites(
     { trackId: id },
@@ -34,6 +50,9 @@ export const FavoritedScreen = () => {
     <UserListScreen title={messages.title} titleIcon={IconHeart}>
       <UserList
         data={data}
+        totalCount={
+          favoriteType === FavoriteType.TRACK ? followerCount : collectionCount
+        }
         isFetchingNextPage={isFetchingNextPage}
         isPending={isPending}
         fetchNextPage={fetchNextPage}
@@ -42,3 +61,4 @@ export const FavoritedScreen = () => {
     </UserListScreen>
   )
 }
+//

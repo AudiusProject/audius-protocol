@@ -1,24 +1,22 @@
 import { useCallback, useMemo } from 'react'
 
 import { useCurrentUserId } from '@audius/common/api'
-import { ID, User, FollowSource } from '@audius/common/models'
-import { profilePageActions, usersSocialActions } from '@audius/common/store'
+import { ID, FollowSource } from '@audius/common/models'
 import { route } from '@audius/common/utils'
-import { Flex, FollowButton, useScrollbarRef } from '@audius/harmony'
+import { Flex, useScrollbarRef } from '@audius/harmony'
 import { range } from 'lodash'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch } from 'react-redux'
 
 import ArtistChip from 'components/artist/ArtistChip'
+import { FollowButton } from 'components/follow-button/FollowButton'
 import { MountPlacement } from 'components/types'
-import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { push } from 'utils/navigation'
 
 import { UserListItemSkeleton } from './UserListItemSkeleton'
 
 const { profilePage } = route
-const { setNotificationSubscription } = profilePageActions
 
 const SCROLL_THRESHOLD = 400
 const DEFAULT_SKELETON_COUNT = 10
@@ -27,11 +25,11 @@ type UserListProps = {
   /**
    * The list of users to display
    */
-  data: User[] | undefined
+  data: ID[] | undefined
   /**
    * If the number of users is known, use this prop to display the correct number of skeletons
    */
-  count?: number
+  totalCount?: number
   /**
    * Whether there are more users to load
    */
@@ -60,7 +58,7 @@ type UserListProps = {
 
 export const UserList = ({
   data,
-  count,
+  totalCount,
   hasNextPage,
   isFetchingNextPage,
   isPending,
@@ -79,27 +77,6 @@ export const UserList = ({
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
-  const handleFollow = useCallback(
-    (userId: ID) => {
-      dispatch(usersSocialActions.followUser(userId, FollowSource.USER_LIST))
-    },
-    [dispatch]
-  )
-
-  const handleUnfollow = useCallback(
-    (userId: ID) => {
-      if (isMobile) {
-        dispatch(unfollowConfirmationActions.setOpen(userId))
-      } else {
-        dispatch(
-          usersSocialActions.unfollowUser(userId, FollowSource.USER_LIST)
-        )
-        dispatch(setNotificationSubscription(userId, false, false))
-      }
-    },
-    [dispatch, isMobile]
-  )
-
   const handleClickArtistName = useCallback(
     (handle: string) => {
       dispatch(push(profilePage(handle)))
@@ -108,6 +85,7 @@ export const UserList = ({
   )
 
   const showSkeletons = isPending || isFetchingNextPage
+  const loadedCount = data?.length ?? 0
 
   const skeletonData = useMemo(() => {
     // Determine the tag for skeleton items based on whether we're showing support info
@@ -118,17 +96,15 @@ export const UserList = ({
       skeletonTag = 'SUPPORTING'
     }
 
-    return range(count ?? DEFAULT_SKELETON_COUNT).map((index) => ({
-      _loading: true,
-      user_id: `skeleton ${index}`,
+    const skeletonCount = totalCount
+      ? Math.min(totalCount - loadedCount, DEFAULT_SKELETON_COUNT)
+      : DEFAULT_SKELETON_COUNT
+
+    return range(skeletonCount).map((index) => ({
+      key: `skeleton ${index}`,
       tag: skeletonTag
     }))
-  }, [count, showSupportFor, showSupportFrom])
-
-  // Create skeleton data with the appropriate tag
-  const displayData = useMemo(() => {
-    return [...(data ?? []), ...(showSkeletons ? skeletonData : [])]
-  }, [data, showSkeletons, skeletonData])
+  }, [totalCount, showSupportFor, showSupportFrom, loadedCount])
 
   return (
     <Flex h='100%' column>
@@ -147,37 +123,37 @@ export const UserList = ({
           padding: theme.spacing.s
         })}
       >
-        {displayData.map((user) =>
-          '_loading' in user ? (
-            <UserListItemSkeleton key={user.user_id} tag={user.tag} />
-          ) : (
-            <Flex
-              alignItems='center'
-              justifyContent='space-between'
-              borderBottom='strong'
-              p='m'
-              key={user.user_id}
-            >
-              <ArtistChip
-                user={user}
-                onClickArtistName={() => handleClickArtistName(user.handle)}
-                showPopover={!isMobile}
-                popoverMount={MountPlacement.BODY}
-                showSupportFor={showSupportFor}
-                showSupportFrom={showSupportFrom}
+        {data?.map((userId) => (
+          <Flex
+            alignItems='center'
+            justifyContent='space-between'
+            borderBottom='strong'
+            p='m'
+            key={userId}
+          >
+            <ArtistChip
+              userId={userId}
+              onClickArtistName={() => handleClickArtistName(user.handle)}
+              showPopover={!isMobile}
+              popoverMount={MountPlacement.BODY}
+              showSupportFor={showSupportFor}
+              showSupportFrom={showSupportFrom}
+            />
+            {userId !== currentUserId && (
+              <FollowButton
+                size='small'
+                fullWidth={false}
+                source={FollowSource.USER_LIST}
+                userId={userId}
               />
-              {user.user_id !== currentUserId && (
-                <FollowButton
-                  size='small'
-                  isFollowing={user.does_current_user_follow}
-                  onFollow={() => handleFollow(user.user_id)}
-                  onUnfollow={() => handleUnfollow(user.user_id)}
-                  fullWidth={false}
-                />
-              )}
-            </Flex>
-          )
-        )}
+            )}
+          </Flex>
+        ))}
+        {showSkeletons
+          ? skeletonData.map((skeleton) => (
+              <UserListItemSkeleton key={skeleton.key} tag={skeleton.tag} />
+            ))
+          : null}
       </InfiniteScroll>
     </Flex>
   )

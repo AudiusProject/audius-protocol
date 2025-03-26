@@ -240,10 +240,7 @@ export const useNotifications = (options?: QueryOptions) => {
     notifications.push(...lastPage)
   }
 
-  const queryResults = query as UseInfiniteQueryResult<
-    InfiniteData<Notification[], unknown>,
-    Error
-  > & { notifications: Notification[] }
+  const queryResults = query as typeof query & { notifications: Notification[] }
   queryResults.notifications = notifications
 
   return queryResults

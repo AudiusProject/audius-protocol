@@ -1,6 +1,6 @@
 import { memo, useCallback, useMemo } from 'react'
 
-import type { User, UserMetadata } from '@audius/common/models'
+import type { ID, User } from '@audius/common/models'
 import { range } from 'lodash'
 import type { ListRenderItem } from 'react-native'
 
@@ -12,7 +12,8 @@ import { makeStyles } from 'app/styles'
 import { UserListItem } from './UserListItem'
 import { UserListItemSkeleton } from './UserListItemSkeleton'
 
-const keyExtractor = (item: User | SkeletonItem) => item.user_id.toString()
+const keyExtractor = (item: { user_id: ID } | SkeletonItem) =>
+  item.user_id.toString()
 const DEFAULT_SKELETON_COUNT = 10
 
 type SkeletonItem = {
@@ -41,8 +42,11 @@ type UserListProps = {
   /**
    * The list of users to display
    */
-  data?: UserMetadata[]
-  count?: number
+  data?: ID[]
+  /**
+   * If the number of users is known, use this prop to display the correct number of skeletons
+   */
+  totalCount?: number
   /**
    * Whether we're loading more users
    */
@@ -64,7 +68,7 @@ type UserListProps = {
 export const UserList = (props: UserListProps) => {
   const {
     data = [],
-    count,
+    totalCount,
     isFetchingNextPage,
     isPending,
     fetchNextPage,
@@ -74,25 +78,32 @@ export const UserList = (props: UserListProps) => {
 
   const isEmpty = data.length === 0
 
-  const skeletonData: SkeletonItem[] = useMemo(
-    () =>
-      range(count ?? DEFAULT_SKELETON_COUNT).map((index) => ({
-        _loading: true,
-        user_id: `skeleton ${index}`
-      })),
-    [count]
-  )
+  const skeletonData: SkeletonItem[] = useMemo(() => {
+    const loadedCount = data.length
+
+    const skeletonCount = totalCount
+      ? Math.min(totalCount - loadedCount, DEFAULT_SKELETON_COUNT)
+      : DEFAULT_SKELETON_COUNT
+
+    return range(skeletonCount).map((index) => ({
+      _loading: true,
+      user_id: `skeleton ${index}`
+    }))
+  }, [totalCount, data])
 
   const displayData = useMemo(() => {
-    return [...data, ...(isPending ? skeletonData : [])]
-  }, [data, isPending, skeletonData])
+    return [
+      ...data.map((id) => ({ user_id: id })),
+      ...(isPending || isFetchingNextPage ? skeletonData : [])
+    ]
+  }, [data, isPending, isFetchingNextPage, skeletonData])
 
   const renderItem: ListRenderItem<User | SkeletonItem> = useCallback(
     ({ item }) =>
       '_loading' in item ? (
         <UserListItemSkeleton tag={tag} />
       ) : (
-        <MemoizedUserListItem user={item} tag={tag} />
+        <MemoizedUserListItem userId={item.user_id} tag={tag} />
       ),
     [tag]
   )

@@ -162,7 +162,7 @@ const useDefaultUserList = (
 
   const userIds =
     defaultUserList === 'followers'
-      ? (followersQuery.data?.map((user) => user.user_id) ?? [])
+      ? (followersQuery.users?.map((user) => user.user_id) ?? [])
       : chatsUserList.userIds
 
   const hasMore =

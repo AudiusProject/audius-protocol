@@ -33,7 +33,7 @@ export const NotificationUsersScreen = () => {
     <UserListScreen title={getTitle(notification)}>
       <UserList
         data={data}
-        count={userIds?.length}
+        totalCount={userIds?.length}
         isPending={isPending}
         tag='NOTIFICATION'
         isFetchingNextPage={false}

@@ -1,7 +1,9 @@
 import { ComponentPropsWithoutRef } from 'react'
 
+import { useUser } from '@audius/common/api'
 import { SquareSizes, ID, User } from '@audius/common/models'
 import cn from 'classnames'
+import { pick } from 'lodash'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -64,7 +66,7 @@ const ArtistIdentifier = ({
 }
 
 type ArtistChipProps = {
-  user: User
+  userId: ID
   onClickArtistName?: () => void
   showPopover?: boolean
   showFollowsYou?: boolean
@@ -75,8 +77,9 @@ type ArtistChipProps = {
   customChips?: React.ReactNode
   onNavigateAway?: () => void
 }
+
 const ArtistChip = ({
-  user,
+  userId,
   onClickArtistName,
   showPopover = true,
   showFollowsYou = true,
@@ -87,12 +90,18 @@ const ArtistChip = ({
   customChips = null,
   onNavigateAway
 }: ArtistChipProps) => {
-  const { user_id: userId, name, handle, follower_count: followers } = user
+  const { data: user } = useUser(userId, {
+    select: (user) => pick(user, ['name', 'handle', 'follower_count'])
+  })
 
   const profilePicture = useProfilePicture({
     userId,
     size: SquareSizes.SIZE_150_BY_150
   })
+
+  if (!user) return null
+
+  const { name, handle, follower_count } = user
 
   return (
     <div
@@ -147,17 +156,14 @@ const ArtistChip = ({
             <ArtistChipFollowers
               showFollowsYou={showFollowsYou}
               userId={userId}
-              followerCount={followers}
+              followerCount={follower_count}
             />
             {showSupportFor ? (
-              <ArtistChipSupportFor
-                artistId={user.user_id}
-                userId={showSupportFor}
-              />
+              <ArtistChipSupportFor artistId={userId} userId={showSupportFor} />
             ) : null}
             {showSupportFrom ? (
               <ArtistChipSupportFrom
-                artistId={user.user_id}
+                artistId={userId}
                 userId={showSupportFrom}
               />
             ) : null}
