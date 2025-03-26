@@ -1,12 +1,11 @@
 import { useEffect, useState, useCallback } from 'react'
 
-import { useGetCurrentUserId } from '@audius/common/api'
+import { useGetCurrentUserId, useUsers } from '@audius/common/api'
 import { ID, FollowSource } from '@audius/common/models'
 import {
   TOP_SUPPORTERS_USER_LIST_TAG,
   SUPPORTING_USER_LIST_TAG,
   accountSelectors,
-  cacheUsersSelectors,
   profilePageActions,
   usersSocialActions as socialActions,
   userListActions,
@@ -33,7 +32,6 @@ import styles from './UserList.module.css'
 const { profilePage } = route
 const { makeGetOptimisticUserIdsIfNeeded } = userListSelectors
 const { loadMore, reset } = userListActions
-const { getUsers } = cacheUsersSelectors
 const { setNotificationSubscription } = profilePageActions
 const { getHasAccount } = accountSelectors
 
@@ -81,9 +79,7 @@ export const UserList = ({
     tag
   })
   const optimisticUserIds = useSelector(getOptimisticUserIds)
-  const usersMap = useSelector((state: AppState) =>
-    getUsers(state, { ids: optimisticUserIds })
-  )
+  const { byId: usersMap } = useUsers(optimisticUserIds)
   const users = optimisticUserIds
     .map((id) => usersMap[id])
     .filter(Boolean)

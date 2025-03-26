@@ -1,13 +1,13 @@
 import { useCallback } from 'react'
 
+import { useUser } from '@audius/common/api'
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { USDCPurchaseDetails } from '@audius/common/models'
 import {
   chatSelectors,
   chatActions,
   useInboxUnavailableModal,
-  type CommonState,
-  cacheUsersSelectors
+  type CommonState
 } from '@audius/common/store'
 import { makeSolanaTransactionLink } from '@audius/common/utils'
 import {
@@ -36,7 +36,6 @@ import styles from './styles.module.css'
 
 const { getCanCreateChat } = chatSelectors
 const { createChat } = chatActions
-const { getIsGuestUser } = cacheUsersSelectors
 
 const messages = {
   by: 'Purchased By',
@@ -73,9 +72,13 @@ export const SaleModalContent = ({
   const { canCreateChat } = useSelector((state: CommonState) =>
     getCanCreateChat(state, { userId: purchaseDetails.buyerUserId })
   )
-  const isGuestUser = useSelector((state: CommonState) =>
-    getIsGuestUser(state, { id: purchaseDetails.buyerUserId })
-  )
+  const { data: partialUser } = useUser(purchaseDetails.buyerUserId, {
+    select: (user) => ({
+      handle: user?.handle,
+      name: user?.name
+    })
+  })
+  const isGuestUser = !partialUser?.handle && !partialUser?.name
 
   const handleClickMessageBuyer = useCallback(() => {
     onClose()

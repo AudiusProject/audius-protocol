@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
-import { UserMetadata } from '~/models/User'
+import { User } from '~/models/User'
 import { getUserId } from '~/store/account/selectors'
 
 import { getUsersBatcher } from './batchers/getUsersBatcher'
@@ -17,9 +17,9 @@ export const getUserQueryKey = (userId: ID | null | undefined) => [
   userId
 ]
 
-export const useUser = <TResult = UserMetadata>(
+export const useUser = <TResult = User>(
   userId: ID | null | undefined,
-  options?: SelectableQueryOptions<UserMetadata, TResult>
+  options?: SelectableQueryOptions<User, TResult>
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const dispatch = useDispatch()
