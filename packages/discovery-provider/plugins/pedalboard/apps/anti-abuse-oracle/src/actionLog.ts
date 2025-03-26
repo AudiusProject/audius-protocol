@@ -145,13 +145,12 @@ aggregate_scores AS (
         COALESCE(aggregate_user.following_count, 0) AS following_count,
         COALESCE(aggregate_user.follower_count, 0) AS follower_count,
         COALESCE(aggregate_user.score, 0) AS shadowban_score,
-        anti_abuse_users.is_allowed,
-        anti_abuse_users.is_blocked 
+        anti_abuse_blocked_users.is_blocked 
     FROM users
     LEFT JOIN play_activity ON users.user_id = play_activity.user_id
     LEFT JOIN fast_challenge_completion ON users.user_id = fast_challenge_completion.user_id
     LEFT JOIN aggregate_user ON aggregate_user.user_id = users.user_id
-    LEFT JOIN anti_abuse_users ON anti_abuse_users.handle = users.handle_lc
+    LEFT JOIN anti_abuse_blocked_users ON anti_abuse_blocked_users.handle_lc = users.handle_lc
     WHERE users.handle_lc IS NOT NULL
     AND users.user_id in (select user_id from scoped_users)
     ORDER BY users.created_at DESC
@@ -164,7 +163,6 @@ SELECT
     a.challenge_count,
     a.following_count,
     a.shadowban_score,
-    a.is_allowed,
     a.is_blocked
 FROM aggregate_scores a
   `
@@ -176,7 +174,6 @@ FROM aggregate_scores a
     challenge_count,
     following_count,
     shadowban_score,
-    is_allowed,
     is_blocked
   } = rows[0]
 
@@ -197,11 +194,12 @@ FROM aggregate_scores a
     numberOfUserWithFingerprint
 
   // override score
-  if (is_blocked) {
+  if (is_blocked === true) {
     overallScore = -1
-  } else if (is_allowed) {
+  } else if (is_blocked === false) {
     overallScore = 1
   }
+
   const normalizedScore = Math.min(
     (overallScore - MIN_SCORE) / (MAX_SCORE - MIN_SCORE),
     1
@@ -214,7 +212,6 @@ FROM aggregate_scores a
     challengeCount: challenge_count,
     followingCount: following_count,
     fingerprintCount: numberOfUserWithFingerprint,
-    isAllowed: is_allowed,
     isBlocked: is_blocked,
     shadowbanScore,
     overallScore,

@@ -45,16 +45,18 @@ if (!AAO_AUTH_PASSWORD) {
 async function ensureTableExists() {
   try {
     await sql`
-      CREATE TABLE IF NOT EXISTS anti_abuse_users (
-        handle VARCHAR(255) PRIMARY KEY,
-        is_allowed BOOLEAN NOT NULL DEFAULT FALSE,
+      CREATE TABLE IF NOT EXISTS anti_abuse_blocked_users (
+        handle_lc VARCHAR(255) PRIMARY KEY,
         is_blocked BOOLEAN NOT NULL DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `
   } catch (error) {
-    console.error('Error ensuring anti_abuse_users table exists:', error)
+    console.error(
+      'Error ensuring anti_abuse_blocked_users table exists:',
+      error
+    )
     process.exit(1) // Exit the process if table creation fails
   }
 }
@@ -81,22 +83,19 @@ app.post(
 
     try {
       await sql`
-      INSERT INTO anti_abuse_users (
-        handle,
-        is_allowed,
+      INSERT INTO anti_abuse_blocked_users (
+        handle_lc,
         is_blocked,
         created_at,
         updated_at
       ) VALUES (
         ${handle.toLowerCase()},
-        FALSE, -- is_allowed
         TRUE,  -- is_blocked
         CURRENT_TIMESTAMP,
         CURRENT_TIMESTAMP
       )
-      ON CONFLICT (handle)
+      ON CONFLICT (handle_lc)
       DO UPDATE SET
-        is_allowed = EXCLUDED.is_allowed,
         is_blocked = EXCLUDED.is_blocked,
         updated_at = CURRENT_TIMESTAMP;
     `
@@ -124,22 +123,19 @@ app.post(
 
     try {
       await sql`
-      INSERT INTO anti_abuse_users (
-        handle,
-        is_allowed,
+      INSERT INTO anti_abuse_blocked_users (
+        handle_lc,
         is_blocked,
         created_at,
         updated_at
       ) VALUES (
         ${handle.toLocaleLowerCase()},
-        TRUE, -- is_allowed
         FALSE,  -- is_blocked
         CURRENT_TIMESTAMP,
         CURRENT_TIMESTAMP
       )
-      ON CONFLICT (handle)
+      ON CONFLICT (handle_lc)
       DO UPDATE SET
-        is_allowed = EXCLUDED.is_allowed,
         is_blocked = EXCLUDED.is_blocked,
         updated_at = CURRENT_TIMESTAMP;
     `
@@ -274,7 +270,7 @@ app.get('/attestation/ui', async (c) => {
                 <td>
                   {userScore.isBlocked
                     ? 'Blocked'
-                    : userScore.isAllowed
+                    : userScore.isBlocked === false
                       ? 'Allowed'
                       : ''}
                 </td>
@@ -424,14 +420,14 @@ app.get('/attestation/ui/user', async (c) => {
               class={`${
                 userScore.isBlocked
                   ? 'text-red-500'
-                  : userScore.isAllowed
+                  : userScore.isBlocked === false
                     ? 'text-green-500'
                     : ''
               }`}
             >
               {userScore.isBlocked
                 ? 'Blocked'
-                : userScore.isAllowed
+                : userScore.isBlocked === false
                   ? 'Allowed'
                   : 'N/A'}
             </td>
