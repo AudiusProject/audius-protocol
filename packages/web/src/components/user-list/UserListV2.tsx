@@ -110,9 +110,10 @@ export const UserListV2 = ({
       if (isMobile) {
         dispatch(unfollowConfirmationActions.setOpen(userId))
       } else {
-        dispatch(
-          usersSocialActions.unfollowUser(userId, FollowSource.USER_LIST)
-        )
+        // TODO: this will be fixed in a follow up pr addressing user-lists
+        // dispatch(
+        //   usersSocialActions.unfollowUser(userId, FollowSource.USER_LIST)
+        // )
         dispatch(setNotificationSubscription(userId, false, false))
       }
       afterUnfollow?.()
