@@ -244,7 +244,7 @@ export const TanQueryLineup = ({
         play(uid)
         dispatch(
           make(Name.PLAYBACK_PLAY, {
-            id: `${trackId}`,
+            id: trackId,
             source: source || PlaybackSource.TRACK_TILE
           })
         )
@@ -252,7 +252,7 @@ export const TanQueryLineup = ({
         pause()
         dispatch(
           make(Name.PLAYBACK_PAUSE, {
-            id: `${trackId}`,
+            id: trackId,
             source: source || PlaybackSource.TRACK_TILE
           })
         )

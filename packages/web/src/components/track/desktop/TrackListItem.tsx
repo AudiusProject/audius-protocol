@@ -1,6 +1,10 @@
 import { memo, MouseEvent, useRef } from 'react'
 
-import { useCurrentUserId, useUser } from '@audius/common/api'
+import {
+  CollectionTrackWithUid,
+  useCurrentUserId,
+  useUser
+} from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ID,
@@ -41,25 +45,25 @@ type TrackListItemProps = {
   togglePlay: (uid: UID, id: ID) => void
   goToRoute: (route: string) => void
   artistHandle: string
-  track?: TrackMetadata
   forceSkeleton?: boolean
   isLastTrack?: boolean
-}
+} & ({ track?: CollectionTrackWithUid } | { isLoading: true }) // either a track must be passed or loading must be true
 
-const TrackListItem = ({
-  track,
-  active,
-  disableActions,
-  playing,
-  index,
-  size,
-  goToRoute,
-  togglePlay,
-  isLoading,
-  isAlbum,
-  isLastTrack,
-  forceSkeleton = false
-}: TrackListItemProps) => {
+const TrackListItem = (props: TrackListItemProps) => {
+  const {
+    active,
+    disableActions,
+    playing,
+    index,
+    size,
+    goToRoute,
+    togglePlay,
+    isLoading,
+    isAlbum,
+    isLastTrack,
+    forceSkeleton = false
+  } = props
+  const track = 'track' in props ? props.track : null
   const menuRef = useRef<HTMLDivElement>(null)
   const { data: currentUserId } = useCurrentUserId()
   const isOwner = track?.owner_id === currentUserId
@@ -123,7 +127,7 @@ const TrackListItem = ({
   })
 
   const menu: Omit<TrackMenuProps, 'children'> = {
-    handle: user?.handle,
+    handle: user?.handle ?? '',
     includeAddToPlaylist: !isPrivate || isOwner,
     includeAddToAlbum: isOwner && !track?.ddex_app,
     includeArtistPick: false,

@@ -2,6 +2,7 @@ import { memo, useCallback, useMemo, MouseEvent } from 'react'
 
 import {
   useCollection,
+  useCollectionTracksWithUid,
   useCurrentUserId,
   useTracks,
   useUser
@@ -17,9 +18,6 @@ import {
   Track
 } from '@audius/common/models'
 import {
-  accountSelectors,
-  cacheCollectionsSelectors,
-  cacheUsersSelectors,
   collectionsSocialActions,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
@@ -40,7 +38,7 @@ import { AppState } from 'store/types'
 import { push } from 'utils/navigation'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
-import { getCollectionWithFallback, getUserWithFallback } from '../helpers'
+import { getCollectionWithFallback } from '../helpers'
 
 import PlaylistTile from './PlaylistTile'
 const { REPOSTING_USERS_ROUTE, FAVORITING_USERS_ROUTE, collectionPage } = route
@@ -56,8 +54,6 @@ const {
   repostCollection,
   undoRepostCollection
 } = collectionsSocialActions
-const { getTracksFromCollection } = cacheCollectionsSelectors
-const getUserId = accountSelectors.getUserId
 
 type OwnProps = Omit<
   PlaylistTileProps,
@@ -94,9 +90,6 @@ const ConnectedPlaylistTile = ({
   id,
   index,
   size,
-  collection: collectionProp,
-  user: userProp,
-  tracks: tracksProp,
   playTrack,
   pauseTrack,
   isLoading,
@@ -115,9 +108,7 @@ const ConnectedPlaylistTile = ({
   // Move mapStateToProps selectors into component
   const { data: collectionWithoutFallback } = useCollection(id)
   const collection = getCollectionWithFallback(collectionWithoutFallback)
-  const { data: tracks } = useTracks(collectionWithoutFallback?.trackIds, {
-    enabled: !!collectionWithoutFallback?.trackIds
-  })
+  const tracks = useCollectionTracksWithUid(collectionWithoutFallback, uid)
   const { data: user } = useUser(collection?.playlist_owner_id, {
     enabled: !!collection?.playlist_owner_id
   })
@@ -231,7 +222,7 @@ const ConnectedPlaylistTile = ({
 
   const getRoute = useCallback(() => {
     return collectionPage(
-      user.handle,
+      user?.handle,
       collection.playlist_name,
       collection.playlist_id,
       collection.permalink,
@@ -363,9 +354,9 @@ const ConnectedPlaylistTile = ({
       contentTitle={collection.is_album ? 'album' : 'playlist'}
       playlistTitle={collection.playlist_name}
       permalink={collection.permalink}
-      artistHandle={user.handle}
-      artistName={user.name}
-      artistIsVerified={user.is_verified}
+      artistHandle={user?.handle ?? ''}
+      artistName={user?.name ?? ''}
+      artistIsVerified={user?.is_verified ?? false}
       ownerId={collection.playlist_owner_id}
       duration={tracks.reduce(
         (duration: number, track: Track) => duration + track.duration,

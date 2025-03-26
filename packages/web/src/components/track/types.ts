@@ -1,5 +1,6 @@
 import { MouseEvent, ReactNode } from 'react'
 
+import { CollectionTrackWithUid } from '@audius/common/api'
 import {
   PlaybackSource,
   Collection,
@@ -90,7 +91,7 @@ export type PlaylistTileProps = TileProps & {
   artistIsVerified: boolean
   activeTrackUid: UID | null
   saveCount: number
-  tracks: LineupTrack[]
+  tracks: CollectionTrackWithUid[]
   trackCount: number
   collection?: Nullable<Collection>
   showArtworkIcon?: boolean

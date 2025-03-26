@@ -1,5 +1,6 @@
 import { useEffect, MouseEvent, useCallback } from 'react'
 
+import { CollectionTrackWithUid, useUser } from '@audius/common/api'
 import {
   ID,
   UID,
@@ -39,7 +40,7 @@ const { setLockedContentId } = gatedContentActions
 
 type TrackItemProps = {
   index: number
-  track?: LineupTrack
+  track?: CollectionTrackWithUid
   isAlbum: boolean
   active: boolean
   deleted?: boolean
@@ -57,6 +58,7 @@ const messages = {
 
 const TrackItem = (props: TrackItemProps) => {
   const { active, deleted, index, isAlbum, track, forceSkeleton } = props
+  const { data: trackOwner } = useUser(track?.owner_id)
   return (
     <>
       <div className={styles.trackItemDivider}></div>
@@ -75,7 +77,7 @@ const TrackItem = (props: TrackItemProps) => {
             {!isAlbum ? (
               <div className={styles.byArtist}>
                 {' '}
-                {`${messages.by} ${track.user.name}`}{' '}
+                {`${messages.by} ${trackOwner?.name}`}{' '}
               </div>
             ) : null}
             {deleted ? (
@@ -90,7 +92,7 @@ const TrackItem = (props: TrackItemProps) => {
 
 type TrackListProps = {
   activeTrackUid: UID | null
-  tracks: LineupTrack[]
+  tracks: CollectionTrackWithUid[]
   goToCollectionPage: (e: MouseEvent<HTMLElement>) => void
   isLoading?: boolean
   isAlbum: boolean

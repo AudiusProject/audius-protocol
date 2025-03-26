@@ -8,7 +8,13 @@ import {
   useRef
 } from 'react'
 
-import { useCollection, useUser, useTracks } from '@audius/common/api'
+import {
+  useCollection,
+  useUser,
+  useTracks,
+  useCollectionTrackWithUid,
+  useCollectionTracksWithUid
+} from '@audius/common/api'
 import {
   Name,
   ShareSource,
@@ -21,14 +27,16 @@ import {
   isContentUSDCPurchaseGated,
   ModalSource
 } from '@audius/common/models'
+import { TQCollection } from '@audius/common/src/api/tan-query/models'
 import {
   collectionsSocialActions,
   shareModalUIActions,
   playerSelectors,
   usePremiumContentPurchaseModal,
-  PurchaseableContentType
+  PurchaseableContentType,
+  EnhancedCollectionTrack
 } from '@audius/common/store'
-import { route } from '@audius/common/utils'
+import { Uid, route } from '@audius/common/utils'
 import { Text, IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
 import { LocationState } from 'history'
@@ -84,6 +92,7 @@ type PlaylistTileProps = {
 }
 
 const ConnectedPlaylistTile = ({
+  uid,
   id: collectionId,
   ordered,
   index,
@@ -104,10 +113,7 @@ const ConnectedPlaylistTile = ({
   const dispatch = useDispatch()
 
   const { data: collection } = useCollection(collectionId)
-  const { data: tracksData } = useTracks(
-    collection?.playlist_contents?.track_ids?.map((track) => track.track)
-  )
-  const tracks = useMemo(() => tracksData ?? [], [tracksData])
+  const tracks = useCollectionTracksWithUid(collection, uid)
   const { data: user } = useUser(collection?.playlist_owner_id)
   const { handle: userHandle } = user ?? {}
 
@@ -396,7 +402,7 @@ const ConnectedPlaylistTile = ({
 
   const renderTrackList = useCallback(() => {
     const showSkeletons = !!(
-      !tracks.length &&
+      !tracks?.length &&
       isLoading &&
       numLoadingSkeletonRows
     )
@@ -418,7 +424,7 @@ const ConnectedPlaylistTile = ({
         />
       ))
     }
-    return tracks.map((track, i) => (
+    return tracks?.map((track, i) => (
       <Draggable
         key={`${track.title}+${i}`}
         text={track.title}
@@ -496,10 +502,12 @@ const ConnectedPlaylistTile = ({
       onTogglePlay={onTogglePlay}
       key={`${index}-${title}`}
       TileTrackContainer={TileTrackContainer}
-      duration={tracks.reduce(
-        (duration: number, track: Track) => duration + track.duration,
-        0
-      )}
+      duration={
+        tracks?.reduce(
+          (duration: number, track: Track) => duration + track.duration,
+          0
+        ) ?? 0
+      }
       containerClassName={cn(styles.container, {
         [containerClassName!]: !!containerClassName,
         [styles.loading]: isLoading,
@@ -509,7 +517,7 @@ const ConnectedPlaylistTile = ({
       })}
       tileClassName={cn(styles.trackTile)}
       tracksContainerClassName={cn(styles.tracksContainer)}
-      trackList={trackList}
+      trackList={trackList ?? []}
       trackCount={trackCount}
       isTrending={isTrending}
       href={href}
