@@ -36,7 +36,6 @@ export const useDownloadTrackStems = ({ trackId }: { trackId: ID }) => {
   })
 }
 
-// TODO: Caching messes this up on subsequent tries
 export const useGetStemsArchiveJobStatus = (
   { jobId }: { jobId?: string },
   options?: QueryOptions
@@ -67,7 +66,7 @@ export const useGetStemsArchiveJobStatus = (
       return 1000
     },
     staleTime: 0,
-    // TODO: stale/gc time?
+    gcTime: 0,
     enabled: !!jobId,
     ...options
   })

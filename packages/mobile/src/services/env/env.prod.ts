@@ -7,6 +7,7 @@ export const env: Env = {
   AMPLITUDE_PROXY: 'https://gain2.audius.co/2/httpapi',
   API_KEY: '8acf5eb7436ea403ee536a7334faa5e9ada4b50f',
   APP_NAME: 'audius-client',
+  ARCHIVE_ENDPOINT: 'https://discoveryprovider.audius.co',
   AUDIUS_URL: 'https://audius.co',
   BITSKI_CALLBACK_URL: 'https://audius.co/bitski-callback.html',
   BITSKI_CLIENT_ID: '661ce11a-3e0f-4659-b365-795ad2111f42',

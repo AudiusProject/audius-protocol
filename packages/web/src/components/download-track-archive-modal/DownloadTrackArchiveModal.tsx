@@ -53,13 +53,13 @@ export const DownloadTrackArchiveModal = () => {
 
   useEffect(() => {
     downloadTrackStems()
-  }, [downloadTrackStems])
+  })
 
   useEffect(() => {
     if (jobState?.state === 'completed') {
       triggerDownload(`${env.ARCHIVE_ENDPOINT}/archive/stems/download/${jobId}`)
+      onClose()
     }
-    onClose()
   }, [jobState, onClose, jobId])
 
   const handleClose = useCallback(() => {

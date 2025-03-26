@@ -6,7 +6,7 @@ export type TrackDownloadConfig = {
   audiusBackend: AudiusBackend
 }
 
-export type DownloadFile = { url: string; filename?: string }
+export type DownloadFile = { url: string; filename: string }
 
 export type DownloadTrackArgs = {
   files: DownloadFile[]
