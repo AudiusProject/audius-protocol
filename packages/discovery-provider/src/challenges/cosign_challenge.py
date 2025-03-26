@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class CosignChallengeUpdater(ChallengeUpdater):
     """
-    This challenge is completed when a verifier user cosigns a remix.
+    This challenge is completed when a verified user cosigns a remix.
     The specifier is the track ID.
     """
 

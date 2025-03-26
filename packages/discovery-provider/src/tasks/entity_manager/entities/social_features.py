@@ -101,6 +101,7 @@ def create_social_record(params: ManageEntityParameters):
             challenge_event, params.block_number, params.block_datetime, params.user_id
         )
 
+    # dispatch verified cosign challenge
     if (
         params.action in [Action.SAVE, Action.REPOST]
         and params.entity_type == EntityType.TRACK
@@ -113,7 +114,12 @@ def create_social_record(params: ManageEntityParameters):
             .first()
         )
         remixer = params.existing_records[EntityType.TRACK][params.entity_id].owner_id
-        if remixed_track and remixed_track.owner_id == params.user_id:
+        cosigner = params.existing_records[EntityType.USER][params.user_id]
+        if (
+            remixed_track
+            and remixed_track.owner_id == params.user_id
+            and cosigner.is_verified
+        ):
             params.challenge_bus.dispatch(
                 ChallengeEvent.cosign,
                 params.block_number,
