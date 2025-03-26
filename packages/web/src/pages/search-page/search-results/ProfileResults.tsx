@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import { useSearchUserResults } from '@audius/common/api'
-import { Kind, Name } from '@audius/common/models'
+import { Kind, Name, UserMetadata } from '@audius/common/models'
 import { searchActions } from '@audius/common/store'
 import { Box, Flex, Text, useTheme } from '@audius/harmony'
 import { range } from 'lodash'
@@ -25,11 +25,9 @@ const messages = {
 }
 
 type ProfileResultsProps = {
-  // the 'status' type was conflicting with the data we pass from useSearchAllResults - but we don't use it at all here so no need to worry about it
-  queryData: Pick<
-    ReturnType<typeof useSearchUserResults>,
-    'data' | 'isFetching' | 'isInitialLoading'
-  >
+  isFetching: boolean
+  isPending: boolean
+  data: UserMetadata[]
   limit?: number
   skeletonCount?: number
 }
@@ -56,8 +54,7 @@ const ProfileResultsSkeletons = ({
 }
 
 export const ProfileResultsTiles = (props: ProfileResultsProps) => {
-  const { limit, skeletonCount = 10, queryData } = props
-  const { data = [], isFetching, isInitialLoading } = queryData
+  const { limit, skeletonCount = 10, data, isFetching, isPending } = props
   const ids = data?.map((user) => user.user_id)
   const { query } = useSearchParams()
 
@@ -92,9 +89,7 @@ export const ProfileResultsTiles = (props: ProfileResultsProps) => {
 
   // Only show pagination skeletons when we're not loading the first page & still under the limit
   const shouldShowMoreSkeletons =
-    isFetching &&
-    !isInitialLoading &&
-    (limit === undefined || data?.length < limit)
+    isFetching && !isPending && (limit === undefined || data?.length < limit)
 
   return (
     <Box

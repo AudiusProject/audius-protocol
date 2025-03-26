@@ -20,6 +20,7 @@ export const NoResultsTile = () => {
       gap={isMobile ? 's' : 'l'}
       alignItems='center'
       w={isMobile ? 'auto' : '100%'}
+      style={{ gridColumn: '1 / -1' }}
     >
       <IconSearch color='default' size={isMobile ? 'l' : '2xl'} />
       <Text

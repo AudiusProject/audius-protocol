@@ -6,9 +6,15 @@ import {
   Kind,
   ID,
   UID,
-  ModalSource
+  ModalSource,
+  TrackMetadata,
+  Lineup,
+  Status,
+  Collection,
+  LineupTrack,
+  Track,
+  UserTrackMetadata
 } from '@audius/common/models'
-import { LineupQueryData } from '@audius/common/src/api/tan-query/types'
 import {
   LineupBaseActions,
   playerSelectors,
@@ -40,7 +46,17 @@ const { makeGetCurrent } = queueSelectors
 
 export interface TanQueryLineupProps {
   /** Query data should be fetched one component above and passed through here */
-  lineupQueryData: LineupQueryData
+  data: UserTrackMetadata[] | TrackMetadata[] | undefined
+  isFetching: boolean
+  isPending: boolean
+  isError: boolean
+  hasNextPage: boolean
+  loadNextPage: () => void
+  play: (uid: UID) => void
+  pause: () => void
+  isPlaying: boolean
+
+  lineup: Lineup<LineupTrack | Track | Collection>
 
   'aria-label'?: string
 
@@ -126,6 +142,7 @@ export interface TanQueryLineupProps {
 }
 
 const defaultLineup = {
+  status: Status.IDLE,
   entries: [] as any[],
   order: {},
   total: 0,
@@ -145,7 +162,6 @@ const DEFAULT_LOAD_MORE_THRESHOLD = 500 // px
  * is controlled by injecting tiles conforming to `Track/Playlist/SkeletonProps interfaces.
  */
 export const TanQueryLineup = ({
-  lineupQueryData,
   'aria-label': ariaLabel,
   variant = LineupVariant.MAIN,
   ordered = false,
@@ -158,30 +174,25 @@ export const TanQueryLineup = ({
   numPlaylistSkeletonRows,
   isTrending = false,
   onClickTile,
-  pageSize: propsPageSize,
   initialPageSize,
   scrollParent: externalScrollParent,
   loadMoreThreshold = DEFAULT_LOAD_MORE_THRESHOLD,
   start,
   shouldLoadMore = true,
+  data,
+  pageSize,
+  lineup = defaultLineup,
+  play,
+  pause,
+  loadNextPage,
+  hasNextPage,
+  isPending = true,
+  isPlaying = false,
+  isFetching = true,
+  isError = false,
   maxEntries
 }: TanQueryLineupProps) => {
   const dispatch = useDispatch()
-  const pageSize = propsPageSize ?? lineupQueryData.pageSize
-  const {
-    lineup = defaultLineup,
-    play,
-    pause,
-    hasNextPage,
-    isPending = true,
-    isPlaying = false,
-    isFetching = true,
-    isError = false
-  } = lineupQueryData
-
-  const loadNextPage = useCallback(() => {
-    lineupQueryData.loadNextPage()
-  }, [lineupQueryData])
 
   const getCurrentQueueItem = useMemo(() => makeGetCurrent(), [])
   const currentQueueItem = useSelector(getCurrentQueueItem)
@@ -322,7 +333,7 @@ export const TanQueryLineup = ({
             statSize,
             containerClassName,
             uid: entry.uid,
-            isLoading: lineupQueryData.data?.[index] === undefined,
+            isLoading: data?.[index] === undefined,
             isTrending,
             onClick: onClickTile,
             source: ModalSource.LineUpTrackTile,
@@ -342,7 +353,7 @@ export const TanQueryLineup = ({
             pauseTrack: pause,
             playingTrackId,
             togglePlay,
-            isLoading: lineupQueryData.data?.[index] === undefined,
+            isLoading: data?.[index] === undefined,
             numLoadingSkeletonRows: numPlaylistSkeletonRows,
             isTrending,
             source: ModalSource.LineUpCollectionTile,
@@ -362,25 +373,25 @@ export const TanQueryLineup = ({
 
     return result
   }, [
-    lineupEntries,
     isError,
-    delineate,
     isMobile,
+    isTrending,
+    isBuffering,
+    lineupEntries,
+    delineate,
     ordered,
     togglePlay,
     tileSize,
     statSize,
     containerClassName,
-    lineupQueryData.data,
-    isTrending,
+    data,
     onClickTile,
-    isBuffering,
     playingSource,
+    TrackTile,
     play,
     pause,
     playingTrackId,
     numPlaylistSkeletonRows,
-    TrackTile,
     PlaylistTile
   ])
 

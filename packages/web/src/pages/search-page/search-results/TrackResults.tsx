@@ -1,10 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import {
-  LineupQueryData,
-  SEARCH_PAGE_SIZE,
-  useSearchTrackResults
-} from '@audius/common/api'
+import { SEARCH_PAGE_SIZE, useSearchTrackResults } from '@audius/common/api'
 import { Kind, Name } from '@audius/common/models'
 import {
   searchResultsPageTracksLineupActions,
@@ -38,7 +34,9 @@ const messages = {
 }
 
 type TrackResultsProps = {
-  queryData: LineupQueryData
+  isPending: boolean
+  isFetching: boolean
+  isError: boolean
   viewLayout?: ViewLayout
   category?: SearchKind
   count?: number
@@ -48,8 +46,10 @@ export const TrackResults = (props: TrackResultsProps) => {
   const {
     category = SearchKind.TRACKS,
     viewLayout = 'list',
-    queryData,
-    count
+    count,
+    isPending,
+    isFetching,
+    isError
   } = props
 
   const mainContentRef = useMainContentRef()
@@ -85,10 +85,22 @@ export const TrackResults = (props: TrackResultsProps) => {
     [dispatch, searchParams]
   )
 
+  const { data, hasNextPage, loadNextPage, isPlaying, play, pause, lineup } =
+    useSearchTrackResults(searchParams)
+
   return (
     <TanQueryLineup
+      data={data}
+      lineup={lineup}
       pageSize={SEARCH_PAGE_SIZE}
-      lineupQueryData={queryData}
+      isFetching={isFetching}
+      isPending={isPending}
+      isError={isError}
+      hasNextPage={hasNextPage}
+      loadNextPage={loadNextPage}
+      isPlaying={isPlaying}
+      play={play}
+      pause={pause}
       variant={viewLayout === 'grid' ? LineupVariant.GRID : LineupVariant.MAIN}
       scrollParent={mainContentRef.current}
       actions={searchResultsPageTracksLineupActions}

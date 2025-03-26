@@ -14,7 +14,7 @@ class SearchPageResultsSagas extends LineupSagas<Track> {
       tracksActions.prefix,
       tracksActions,
       getSearchTracksLineup,
-      ({ payload }) => payload?.tracks
+      ({ payload }) => payload?.items
     )
   }
 }

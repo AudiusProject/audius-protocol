@@ -31,7 +31,7 @@ export const AllResults = () => {
     ...filters
   })
 
-  const { data, isLoading } = queryData
+  const { data, isLoading, isPending, isError } = queryData
 
   const isResultsEmpty =
     data &&
@@ -59,7 +59,9 @@ export const AllResults = () => {
           <ProfileResultsTiles
             skeletonCount={5}
             limit={5}
-            queryData={{ ...queryData, data: data?.users ?? [] }}
+            data={data?.users ?? []}
+            isFetching={isLoading}
+            isPending={isPending}
           />
         </Flex>
       ) : null}
@@ -73,7 +75,9 @@ export const AllResults = () => {
             count={12}
             viewLayout='grid'
             category={SearchKind.ALL}
-            queryData={{ ...queryData, data: queryData?.data?.tracks }}
+            isFetching={isLoading}
+            isPending={isPending}
+            isError={isError}
           />
         </Flex>
       ) : null}
@@ -84,9 +88,10 @@ export const AllResults = () => {
             {messages.albums}
           </Text>
           <AlbumResults
+            data={data?.albums ?? []}
+            isFetching={isLoading}
+            isPending={isPending}
             skeletonCount={5}
-            limit={5}
-            queryData={{ ...queryData, data: data?.albums ?? [] }}
           />
         </Flex>
       ) : null}
@@ -99,7 +104,9 @@ export const AllResults = () => {
           <PlaylistResults
             skeletonCount={5}
             limit={5}
-            queryData={{ ...queryData, data: data?.playlists ?? [] }}
+            data={data?.playlists ?? []}
+            isFetching={isLoading}
+            isPending={isPending}
           />
         </Flex>
       ) : null}

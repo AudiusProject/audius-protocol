@@ -1,7 +1,6 @@
 import { Mood, OptionalId } from '@audius/sdk'
 import {
   InfiniteData,
-  UseInfiniteQueryResult,
   useInfiniteQuery,
   useQueryClient
 } from '@tanstack/react-query'
@@ -16,7 +15,8 @@ import {
   SearchSource,
   UserMetadata,
   UserCollectionMetadata,
-  UserTrackMetadata
+  UserTrackMetadata,
+  Track
 } from '~/models'
 import { FeatureFlags } from '~/services'
 import { SearchKind, SearchSortMethod } from '~/store'
@@ -85,7 +85,7 @@ export const getSearchResultsQueryKey = ({
 
 export const SEARCH_PAGE_SIZE = 12
 
-const useSearchQueryProps = (
+const useSearchQueryProps = <T>(
   {
     query = '',
     category,
@@ -114,8 +114,9 @@ const useSearchQueryProps = (
     queryKey: getSearchResultsQueryKey(queryKeyArgs),
     queryFn: async ({
       pageParam
-      // unfortunately tanquery was having type issues with pageParam here
-    }: any): Promise<{
+    }: {
+      pageParam: number
+    }): Promise<{
       tracks: UserTrackMetadata[]
       users: UserMetadata[]
       albums: UserCollectionMetadata[]
@@ -265,7 +266,7 @@ const useSearchQueryProps = (
         playlists
       }
     },
-    select: (data: InfiniteData<any[]>) => {
+    select: (data: InfiniteData<T[]>) => {
       return data?.pages?.flat()
     },
     ...options,
@@ -278,7 +279,12 @@ export const useSearchAllResults = (
   options?: QueryOptions
 ) => {
   const { pageSize = SEARCH_PAGE_SIZE } = searchArgs
-  const queryProps = useSearchQueryProps(
+  const queryProps = useSearchQueryProps<{
+    tracks: UserTrackMetadata[]
+    users: UserMetadata[]
+    albums: UserCollectionMetadata[]
+    playlists: UserCollectionMetadata[]
+  }>(
     {
       ...searchArgs,
       category: 'all'
@@ -286,7 +292,7 @@ export const useSearchAllResults = (
     options
   )
 
-  const queryData = useInfiniteQuery({
+  return useInfiniteQuery({
     ...queryProps,
     getNextPageParam: (
       _lastPage: {
@@ -315,30 +321,6 @@ export const useSearchAllResults = (
       )
     }
   })
-
-  const tracksQueryData = {
-    ...queryData,
-    data: queryData?.data?.tracks as UserTrackMetadata[]
-    // The cast here is not great but some of the types (e.g. fetchNextPage) are typed differently.
-    // useLineupQuery only really cares about is how the data is typed
-  } as unknown as UseInfiniteQueryResult<UserTrackMetadata[]>
-
-  // The tracks need to be in a lineup
-  const tracksLineupData = useLineupQuery({
-    queryData: tracksQueryData,
-    pageSize,
-    queryKey: queryProps.queryKey,
-    lineupActions: searchResultsPageTracksLineupActions,
-    lineupSelector: getSearchTracksLineup,
-    playbackSource: PlaybackSource.SEARCH_PAGE
-  })
-
-  return {
-    ...tracksLineupData,
-    data: queryData.data,
-    isLoading: queryData.isLoading,
-    isInitialLoading: queryData.isInitialLoading
-  }
 }
 
 export const useSearchTrackResults = (
@@ -346,7 +328,7 @@ export const useSearchTrackResults = (
   options?: QueryOptions
 ) => {
   const { pageSize = SEARCH_PAGE_SIZE } = searchArgs
-  const queryProps = useSearchQueryProps(
+  const queryProps = useSearchQueryProps<UserTrackMetadata>(
     {
       ...searchArgs,
       category: 'tracks'
@@ -384,7 +366,7 @@ export const useSearchUserResults = (
   options?: QueryOptions
 ) => {
   const { pageSize = SEARCH_PAGE_SIZE } = searchArgs
-  const queryProps = useSearchQueryProps(
+  const queryProps = useSearchQueryProps<UserMetadata>(
     {
       ...searchArgs,
       category: 'users'
@@ -417,7 +399,7 @@ export const useSearchAlbumResults = (
   options?: QueryOptions
 ) => {
   const { pageSize = SEARCH_PAGE_SIZE } = searchArgs
-  const queryProps = useSearchQueryProps(
+  const queryProps = useSearchQueryProps<UserCollectionMetadata>(
     {
       ...searchArgs,
       category: 'albums'
@@ -435,7 +417,7 @@ export const useSearchAlbumResults = (
       const data = await queryProps.queryFn({ pageParam })
       return data.albums
     }
-  }) as FlatUseInfiniteQueryResult<UserCollectionMetadata>
+  })
 
   const queryDataWithLoadNextPage = queryData as typeof queryData & {
     loadNextPage: () => void
@@ -450,7 +432,7 @@ export const useSearchPlaylistResults = (
   options?: QueryOptions
 ) => {
   const { pageSize = SEARCH_PAGE_SIZE } = searchArgs
-  const queryProps = useSearchQueryProps(
+  const queryProps = useSearchQueryProps<UserCollectionMetadata>(
     {
       ...searchArgs,
       category: 'playlists'
@@ -468,7 +450,7 @@ export const useSearchPlaylistResults = (
       const data = await queryProps.queryFn({ pageParam })
       return data.playlists
     }
-  }) as FlatUseInfiniteQueryResult<UserCollectionMetadata>
+  })
 
   const queryDataWithLoadNextPage = queryData as typeof queryData & {
     loadNextPage: () => void
