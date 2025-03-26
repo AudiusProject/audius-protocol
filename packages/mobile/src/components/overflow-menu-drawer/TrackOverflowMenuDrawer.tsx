@@ -1,6 +1,11 @@
 import { useCallback, useContext } from 'react'
 
-import { useToggleFavoriteTrack, useTrack } from '@audius/common/api'
+import {
+  useToggleFavoriteTrack,
+  useTrack,
+  useFollowUser,
+  useUnfollowUser
+} from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -16,7 +21,6 @@ import {
   cacheUsersSelectors,
   collectionPageLineupActions as tracksActions,
   tracksSocialActions,
-  usersSocialActions,
   addToCollectionUIActions,
   mobileOverflowMenuUISelectors,
   shareModalUIActions,
@@ -46,7 +50,6 @@ const { getUserId } = accountSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 const { requestOpen: openAddToCollectionModal } = addToCollectionUIActions
-const { followUser, unfollowUser } = usersSocialActions
 const { setTrackPosition, clearTrackPosition } = playbackPositionActions
 const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { getUser } = cacheUsersSelectors
@@ -74,6 +77,8 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
   const currentQueueItem = useSelector(makeGetCurrent())
+  const { mutate: followUser } = useFollowUser()
+  const { mutate: unfollowUser } = useUnfollowUser()
 
   const { open } = useCommentDrawer()
 
@@ -189,9 +194,9 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
       navigation?.push('Profile', { handle })
     },
     [OverflowAction.FOLLOW_ARTIST]: () =>
-      dispatch(followUser(owner_id, FollowSource.OVERFLOW)),
+      followUser({ followeeUserId: owner_id, source: FollowSource.OVERFLOW }),
     [OverflowAction.UNFOLLOW_ARTIST]: () =>
-      dispatch(unfollowUser(owner_id, FollowSource.OVERFLOW)),
+      unfollowUser({ followeeUserId: owner_id, source: FollowSource.OVERFLOW }),
     [OverflowAction.EDIT_TRACK]: () => {
       navigation?.push('EditTrack', { id })
     },
