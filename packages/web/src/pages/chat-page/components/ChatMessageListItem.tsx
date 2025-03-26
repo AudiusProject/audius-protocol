@@ -1,10 +1,10 @@
 import { useCallback, useRef, useState } from 'react'
 
-import { useProxySelector, useCanSendMessage } from '@audius/common/hooks'
+import { useUsers } from '@audius/common/api'
+import { useCanSendMessage } from '@audius/common/hooks'
 import { Status, ChatMessageWithExtras } from '@audius/common/models'
 import {
   accountSelectors,
-  cacheUsersSelectors,
   chatActions,
   chatSelectors,
   ReactionTypes
@@ -59,12 +59,8 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
 
   // Selectors
   const userId = useSelector(getUserId)
-  const reactionUsers = useProxySelector(
-    (state) =>
-      cacheUsersSelectors.getUsers(state, {
-        ids: message.reactions?.map((r) => HashId.parse(r.user_id))
-      }),
-    [message]
+  const { byId: reactionUsers } = useUsers(
+    message.reactions?.map((r) => HashId.parse(r.user_id))
   )
   const chat = useSelector((state) => getChat(state, chatId ?? ''))
 

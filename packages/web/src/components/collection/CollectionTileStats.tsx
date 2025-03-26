@@ -1,18 +1,15 @@
+import { useCollection } from '@audius/common/api'
 import { useIsCollectionUnlockable } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
-import { cacheCollectionsSelectors } from '@audius/common/store'
 import { Flex, Skeleton } from '@audius/harmony'
 
 import { EntityRank } from 'components/lineup/EntityRank'
 import { TrackTileSize } from 'components/track/types'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { useSelector } from 'utils/reducer'
 
 import { CollectionAccessTypeLabel } from './CollectionAccessTypeLabel'
 import { CollectionLockedStatusBadge } from './CollectionLockedStatusBadge'
 import { RepostsMetric, SavesMetric } from './CollectionTileMetrics'
-
-const { getCollection } = cacheCollectionsSelectors
 
 type CollectionTileStatsProps = {
   collectionId: ID
@@ -28,8 +25,8 @@ export const CollectionTileStats = (props: CollectionTileStatsProps) => {
   const isMobile = useIsMobile()
   const isUnlockable = useIsCollectionUnlockable(collectionId)
 
-  const isPrivate = useSelector((state) => {
-    return getCollection(state, { id: collectionId })?.is_private
+  const { data: isPrivate } = useCollection(collectionId, {
+    select: (collection) => collection.is_private
   })
 
   if (isLoading) {

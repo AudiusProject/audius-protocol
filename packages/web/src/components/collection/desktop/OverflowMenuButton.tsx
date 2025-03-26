@@ -1,15 +1,17 @@
 import { useCallback } from 'react'
 
-import { useFollowUser, useUnfollowUser } from '@audius/common/api'
-import { FollowSource, Collection, User } from '@audius/common/models'
-import { collectionPageSelectors, CommonState } from '@audius/common/store'
+import {
+  useCollection,
+  useUser,
+  useFollowUser,
+  useUnfollowUser
+} from '@audius/common/api'
+import { FollowSource } from '@audius/common/models'
 import { IconButton, IconKebabHorizontal } from '@audius/harmony'
-import { useSelector } from 'react-redux'
+import { pick } from 'lodash'
 
 import { CollectionMenuProps } from 'components/menu/CollectionMenu'
 import Menu from 'components/menu/Menu'
-
-const { getCollection, getUser } = collectionPageSelectors
 
 const messages = {
   follow: 'Follow User',
@@ -26,6 +28,20 @@ export const OverflowMenuButton = (props: OverflowMenuButtonProps) => {
   const { collectionId, isOwner } = props
   const { mutate: followUser } = useFollowUser()
   const { mutate: unfollowUser } = useUnfollowUser()
+  const { data: partialCollection } = useCollection(collectionId, {
+    select: (collection) =>
+      pick(
+        collection,
+        'is_album',
+        'playlist_name',
+        'is_private',
+        'is_stream_gated',
+        'playlist_owner_id',
+        'has_current_user_saved',
+        'permalink',
+        'access'
+      )
+  })
   const {
     is_album,
     playlist_name,
@@ -35,12 +51,9 @@ export const OverflowMenuButton = (props: OverflowMenuButtonProps) => {
     has_current_user_saved,
     permalink,
     access
-  } =
-    (useSelector((state: CommonState) =>
-      getCollection(state, { id: collectionId })
-    ) as Collection) ?? {}
+  } = partialCollection ?? {}
 
-  const owner = useSelector(getUser) as User
+  const { data: owner } = useUser(playlist_owner_id)
   const isFollowing = owner?.does_current_user_follow
   const hasStreamAccess = access?.stream
 

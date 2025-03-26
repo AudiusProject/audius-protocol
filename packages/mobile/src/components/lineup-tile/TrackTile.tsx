@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useToggleFavoriteTrack } from '@audius/common/api'
+import { useToggleFavoriteTrack, useTrack, useUser } from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -12,8 +12,6 @@ import {
 import type { Track, User } from '@audius/common/models'
 import {
   accountSelectors,
-  cacheTracksSelectors,
-  cacheUsersSelectors,
   tracksSocialActions,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
@@ -43,17 +41,15 @@ const { getUid } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 const { repostTrack, undoRepostTrack } = tracksSocialActions
-const { getUserFromTrack } = cacheUsersSelectors
-const { getTrack } = cacheTracksSelectors
 const { getUserId } = accountSelectors
 const { getTrackPosition } = playbackPositionSelectors
 
 export const TrackTile = (props: LineupItemProps) => {
-  const { uid } = props
+  const { id } = props
 
-  const track = useSelector((state) => getTrack(state, { uid }))
+  const { data: track } = useTrack(id)
 
-  const user = useSelector((state) => getUserFromTrack(state, { uid }))
+  const { data: user } = useUser(track?.owner_id)
 
   if (!track || !user) {
     console.warn('Track or user missing for TrackTile, preventing render')

@@ -1,13 +1,9 @@
-import { useGetCurrentUserId } from '@audius/common/api'
-import { Collection } from '@audius/common/models'
-import { collectionPageSelectors, CommonState } from '@audius/common/store'
+import { useCollection, useGetCurrentUserId } from '@audius/common/api'
 import { Flex, IconKebabHorizontal } from '@audius/harmony'
-import { useSelector } from 'react-redux'
+import { pick } from 'lodash'
 
 import { CollectionMenuProps } from 'components/menu/CollectionMenu'
 import Menu from 'components/menu/Menu'
-
-const { getCollection } = collectionPageSelectors
 
 type OverflowMenuButtonProps = {
   collectionId: number
@@ -18,15 +14,24 @@ export const CollectionsTableOverflowMenuButton = (
 ) => {
   const { collectionId } = props
   const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: partialCollection } = useCollection(collectionId, {
+    select: (collection) =>
+      pick(
+        collection,
+        'is_album',
+        'playlist_owner_id',
+        'is_private',
+        'is_stream_gated',
+        'permalink'
+      )
+  })
   const {
     is_album: isAlbum,
     playlist_owner_id: playlistOwnerId,
     is_private: isPrivate,
     is_stream_gated: isStreamGated,
     permalink
-  } = (useSelector((state: CommonState) =>
-    getCollection(state, { id: collectionId })
-  ) as Collection) ?? {}
+  } = partialCollection ?? {}
 
   const overflowMenu = {
     type: isAlbum ? 'album' : 'playlist',

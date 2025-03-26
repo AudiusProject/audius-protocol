@@ -1,10 +1,7 @@
 import { useCallback } from 'react'
 
-import {
-  cacheUsersSelectors,
-  chatActions,
-  chatSelectors
-} from '@audius/common/store'
+import { useUser } from '@audius/common/api'
+import { chatActions, chatSelectors } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { IconMessageSlash, Hint } from '@audius/harmony-native'
@@ -14,7 +11,6 @@ import { EventNames } from 'app/types/analytics'
 
 import { ConfirmationDrawer } from '../drawers'
 
-const { getUser } = cacheUsersSelectors
 const { getDoesBlockUser, getCanCreateChat } = chatSelectors
 const { blockUser, unblockUser, createChat } = chatActions
 
@@ -43,7 +39,7 @@ export const BlockMessagesDrawer = () => {
   const dispatch = useDispatch()
   const { data } = useDrawer('BlockMessages')
   const { userId, shouldOpenChat, isReportAbuse } = data
-  const user = useSelector((state) => getUser(state, { id: userId }))
+  const { data: user } = useUser(userId)
   // Assuming blockees have already been fetched in ProfileActionsDrawer.
   const doesBlockUser = useSelector((state) => getDoesBlockUser(state, userId))
   const { canCreateChat } = useSelector((state) =>

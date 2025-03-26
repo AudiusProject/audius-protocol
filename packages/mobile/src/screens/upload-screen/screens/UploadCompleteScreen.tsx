@@ -195,6 +195,7 @@ export const UploadCompleteScreen = () => {
         </Tile>
         {accountUser && uploadedTrack ? (
           <TrackTileComponent
+            id={uploadedTrack.track_id}
             uid={''}
             index={0}
             togglePlay={() => {}}

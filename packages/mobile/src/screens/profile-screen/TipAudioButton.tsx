@@ -1,15 +1,15 @@
 import { useCallback } from 'react'
 
-import { cacheUsersSelectors, tippingActions } from '@audius/common/store'
+import { useUser } from '@audius/common/api'
+import { tippingActions } from '@audius/common/store'
 import { Platform } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { IconTokenGold, Button } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { useSelectProfile } from './selectors'
 const { beginTip } = tippingActions
-const { getUser } = cacheUsersSelectors
 
 const messages = {
   title: 'Tip $AUDIO',
@@ -22,12 +22,14 @@ const messages = {
 export const TipAudioButton = () => {
   const navigation = useNavigation()
   const { user_id } = useSelectProfile(['user_id'])
-  const user = useSelector((state) => getUser(state, { id: user_id }))
+  const { data: user } = useUser(user_id)
   const dispatch = useDispatch()
 
   const handlePress = useCallback(() => {
-    dispatch(beginTip({ user, source: 'profile' }))
-    navigation.navigate('TipArtist')
+    if (user) {
+      dispatch(beginTip({ user, source: 'profile' }))
+      navigation.navigate('TipArtist')
+    }
   }, [dispatch, user, navigation])
 
   return (

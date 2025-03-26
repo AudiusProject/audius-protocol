@@ -1,14 +1,12 @@
 import { useCallback } from 'react'
 
+import { useCollection } from '@audius/common/api'
 import { SquareSizes } from '@audius/common/models'
 import { AlbumSchema, PlaylistSchema } from '@audius/common/schemas'
 import type { EditCollectionValues } from '@audius/common/store'
-import {
-  cacheCollectionsActions,
-  cacheCollectionsSelectors
-} from '@audius/common/store'
+import { cacheCollectionsActions } from '@audius/common/store'
 import { Formik } from 'formik'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { ModalScreen } from 'app/components/core'
@@ -20,14 +18,11 @@ import { isImageUriSource } from 'app/utils/image'
 import { EditCollectionNavigator } from './EditCollectionNavigator'
 
 const { editPlaylist } = cacheCollectionsActions
-const { getCollection } = cacheCollectionsSelectors
 
 export const EditCollectionScreen = () => {
   const { params } = useRoute<'EditCollection'>()
   const navigation = useNavigation()
-  const playlist = useSelector((state) =>
-    getCollection(state, { id: params.id })
-  )
+  const { data: playlist } = useCollection(params.id)
   const dispatch = useDispatch()
 
   const trackImage = useCollectionImage({
