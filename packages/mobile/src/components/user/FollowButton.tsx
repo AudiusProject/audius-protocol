@@ -1,15 +1,11 @@
 import { useCallback } from 'react'
 
-import { useUser } from '@audius/common/api'
+import { useFollowUser, useUnfollowUser, useUser } from '@audius/common/api'
 import type { FollowSource, ID } from '@audius/common/models'
-import { usersSocialActions } from '@audius/common/store'
 import type { GestureResponderEvent } from 'react-native'
-import { useDispatch } from 'react-redux'
 
 import { FollowButton as HarmonyFollowButton } from '@audius/harmony-native'
 import type { FollowButtonProps as HarmonyFollowButtonProps } from '@audius/harmony-native'
-
-const { followUser, unfollowUser } = usersSocialActions
 
 type FollowButtonsProps = Partial<HarmonyFollowButtonProps> & {
   userId: ID
@@ -23,20 +19,21 @@ export const FollowButton = (props: FollowButtonsProps) => {
     select: (user) => user?.does_current_user_follow
   })
 
-  const dispatch = useDispatch()
+  const { mutate: followUser } = useFollowUser()
+  const { mutate: unfollowUser } = useUnfollowUser()
 
   const handlePress = useCallback(
     (event: GestureResponderEvent) => {
       onPress?.(event)
       requestAnimationFrame(() => {
         if (isFollowing) {
-          dispatch(unfollowUser(userId, followSource))
+          unfollowUser({ followeeUserId: userId, source: followSource })
         } else {
-          dispatch(followUser(userId, followSource))
+          followUser({ followeeUserId: userId, source: followSource })
         }
       })
     },
-    [onPress, dispatch, isFollowing, userId, followSource]
+    [onPress, isFollowing, userId, followSource, followUser, unfollowUser]
   )
 
   return (

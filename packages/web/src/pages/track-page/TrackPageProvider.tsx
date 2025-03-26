@@ -21,7 +21,6 @@ import {
   trackPageSelectors,
   queueSelectors,
   tracksSocialActions as socialTracksActions,
-  usersSocialActions as socialUsersActions,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
   OverflowAction,
@@ -91,7 +90,22 @@ type OwnProps = {
 type mapStateProps = ReturnType<typeof makeMapStateToProps>
 type TrackPageProviderProps = OwnProps &
   ReturnType<mapStateProps> &
-  ReturnType<typeof mapDispatchToProps>
+  ReturnType<typeof mapDispatchToProps> & {
+    onFollow: ({
+      followeeUserId,
+      source
+    }: {
+      followeeUserId: ID
+      source: FollowSource
+    }) => void
+    onUnfollow: ({
+      followeeUserId,
+      source
+    }: {
+      followeeUserId: ID
+      source: FollowSource
+    }) => void
+  }
 
 type TrackPageProviderState = {
   pathname: string
@@ -315,22 +329,6 @@ class TrackPageProvider extends Component<
     shareTrack(trackId)
   }
 
-  onFollow = () => {
-    const { onFollow, track } = this.props
-    if (track) onFollow(track.owner_id)
-  }
-
-  onUnfollow = () => {
-    const { onUnfollow, onConfirmUnfollow, track } = this.props
-    if (track) {
-      if (this.context.isMobile) {
-        onConfirmUnfollow(track.owner_id)
-      } else {
-        onUnfollow(track.owner_id)
-      }
-    }
-  }
-
   goToProfilePage = (handle: string) => {
     this.props.goToRoute(profilePage(handle))
   }
@@ -363,8 +361,10 @@ class TrackPageProvider extends Component<
       playing,
       previewing,
       buffering,
+      pause,
       userId,
-      pause
+      onFollow,
+      onUnfollow
     } = this.props
     const heroPlaying =
       playing &&
@@ -382,8 +382,8 @@ class TrackPageProvider extends Component<
 
     const desktopProps = {
       // Follow Props
-      onFollow: this.onFollow,
-      onUnfollow: this.onUnfollow,
+      onFollow,
+      onUnfollow,
       makePublic: this.props.makeTrackPublic
     }
     const releaseDate = track ? track.release_date || track.created_at : ''
@@ -550,12 +550,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
       ),
     editTrack: (trackId: ID, formFields: any) =>
       dispatch(cacheTrackActions.editTrack(trackId, formFields)),
-    onFollow: (userId: ID) =>
-      dispatch(socialUsersActions.followUser(userId, FollowSource.TRACK_PAGE)),
-    onUnfollow: (userId: ID) =>
-      dispatch(
-        socialUsersActions.unfollowUser(userId, FollowSource.TRACK_PAGE)
-      ),
     onConfirmUnfollow: (userId: ID) =>
       dispatch(unfollowConfirmationActions.setOpen(userId)),
     clickOverflow: (trackId: ID, overflowActions: OverflowAction[]) =>

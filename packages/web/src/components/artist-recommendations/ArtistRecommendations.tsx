@@ -1,8 +1,11 @@
 import { forwardRef, ReactNode, useCallback, useEffect, useState } from 'react'
 
-import { useRelatedArtists } from '@audius/common/api'
+import {
+  useRelatedArtists,
+  useFollowUser,
+  useUnfollowUser
+} from '@audius/common/api'
 import { Name, FollowSource, SquareSizes, ID } from '@audius/common/models'
-import { usersSocialActions as socialActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { FollowButton, IconButton, IconClose } from '@audius/harmony'
 import cn from 'classnames'
@@ -122,6 +125,9 @@ export const ArtistRecommendations = forwardRef<
   const dispatch = useDispatch()
   const [hasFollowedAll, setHasFollowedAll] = useState(false)
 
+  const { mutate: followUser } = useFollowUser()
+  const { mutate: unfollowUser } = useUnfollowUser()
+
   const { data: suggestedArtists = [] } = useRelatedArtists({
     artistId,
     filterFollowed: true,
@@ -131,27 +137,23 @@ export const ArtistRecommendations = forwardRef<
   // Follow/Unfollow listeners
   const handleFollowAll = useCallback(() => {
     suggestedArtists.forEach((a) => {
-      dispatch(
-        socialActions.followUser(
-          a.user_id,
-          FollowSource.ARTIST_RECOMMENDATIONS_POPUP
-        )
-      )
+      followUser({
+        followeeUserId: a.user_id,
+        source: FollowSource.ARTIST_RECOMMENDATIONS_POPUP
+      })
     })
     setHasFollowedAll(true)
-  }, [dispatch, suggestedArtists])
+  }, [followUser, suggestedArtists])
 
   const handleUnfollowAll = useCallback(() => {
     suggestedArtists.forEach((a) => {
-      dispatch(
-        socialActions.unfollowUser(
-          a.user_id,
-          FollowSource.ARTIST_RECOMMENDATIONS_POPUP
-        )
-      )
+      unfollowUser({
+        followeeUserId: a.user_id,
+        source: FollowSource.ARTIST_RECOMMENDATIONS_POPUP
+      })
     })
     setHasFollowedAll(false)
-  }, [dispatch, suggestedArtists])
+  }, [suggestedArtists, unfollowUser])
 
   // Navigate to profile pages on artist links
   const onArtistNameClicked = useCallback(
