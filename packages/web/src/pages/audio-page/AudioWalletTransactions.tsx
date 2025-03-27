@@ -1,14 +1,15 @@
-import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 
-import { statusIsNotFinalized } from '@audius/common/models'
 import {
-  audioTransactionsPageActions,
-  audioTransactionsPageSelectors,
-  TransactionDetails,
+  DEFAULT_AUDIO_TRANSACTIONS_BATCH_SIZE,
+  useAudioTransactions,
+  useAudioTransactionsCount
+} from '@audius/common/api'
+import {
   transactionDetailsActions,
-  TransactionType
+  TransactionDetails
 } from '@audius/common/store'
-import { Flex, IconCaretRight } from '@audius/harmony'
+import { Flex, IconCaretRight, Paper, PlainButton, Text } from '@audius/harmony'
 import { full } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
@@ -16,108 +17,90 @@ import { useSetVisibility } from 'common/hooks/useModalState'
 import { AudioTransactionsTable } from 'components/audio-transactions-table'
 import EmptyTable from 'components/tracks-table/EmptyTable'
 import { useMainContentRef } from 'pages/MainContentContext'
-import { useSelector } from 'utils/reducer'
 
-import styles from './AudioWalletTransactions.module.css'
-const {
-  fetchAudioTransactions,
-  fetchAudioTransactionMetadata,
-  fetchAudioTransactionsCount
-} = audioTransactionsPageActions
-const {
-  getAudioTransactions,
-  getAudioTransactionsStatus,
-  getAudioTransactionsCount,
-  getAudioTransactionsCountStatus
-} = audioTransactionsPageSelectors
 const { fetchTransactionDetailsSucceeded } = transactionDetailsActions
 
 const messages = {
   pageTitle: 'Audio Transactions History',
   pageDescription: 'View your transactions history',
-  emptyTableText: 'You don’t have any $AUDIO transactions yet.',
-  emptyTableSecondaryText: 'Once you have, this is where you’ll find them!',
+  emptyTableText: "You don't have any $AUDIO transactions yet.",
+  emptyTableSecondaryText: "Once you have, this is where you'll find them!",
   headerText: '$AUDIO Transactions',
   disclaimer:
     'Transactions history does not include balances from linked wallets',
   moreInfo: 'More Info'
 }
 
-const AUDIO_TRANSACTIONS_BATCH_SIZE = 50
+const AUDIO_TRANSACTIONS_SHOW_MORE_LIMIT = 5
 
 const Disclaimer = () => {
   const setVisibility = useSetVisibility()
   return (
-    <Flex className={styles.container} shadow='mid'>
-      <span className={styles.disclaimerMessage}>{messages.disclaimer}</span>
-      <div
-        className={styles.moreInfoContainer}
+    <Paper
+      shadow='mid'
+      ph='xl'
+      pv='l'
+      alignItems='center'
+      justifyContent='space-between'
+    >
+      <Text size='l' strength='strong'>
+        {messages.disclaimer}
+      </Text>
+      <PlainButton
+        variant='subdued'
+        iconRight={IconCaretRight}
         onClick={() => setVisibility('AudioBreakdown')(true)}
       >
-        <span className={styles.moreInfo}>{messages.moreInfo}</span>
-        <IconCaretRight color='subdued' className={styles.iconCaretRight} />
-      </div>
-    </Flex>
+        {messages.moreInfo}
+      </PlainButton>
+    </Paper>
   )
 }
 
 export const AudioWalletTransactions = () => {
-  const [offset, setOffset] = useState(0)
-  const [limit, setLimit] = useState(AUDIO_TRANSACTIONS_BATCH_SIZE)
+  const [page, setPage] = useState(0)
   const [sortMethod, setSortMethod] =
-    useState<full.GetAudioTransactionHistorySortMethodEnum>(
-      full.GetAudioTransactionHistorySortMethodEnum.Date
+    useState<full.GetAudioTransactionsSortMethodEnum>(
+      full.GetAudioTransactionsSortMethodEnum.Date
     )
   const [sortDirection, setSortDirection] =
-    useState<full.GetAudioTransactionHistorySortDirectionEnum>(
-      full.GetAudioTransactionHistorySortDirectionEnum.Desc
+    useState<full.GetAudioTransactionsSortDirectionEnum>(
+      full.GetAudioTransactionsSortDirectionEnum.Desc
     )
   const mainContentRef = useMainContentRef()
   const dispatch = useDispatch()
   const setVisibility = useSetVisibility()
 
-  const audioTransactions: (TransactionDetails | {})[] =
-    useSelector(getAudioTransactions)
-  const audioTransactionsStatus = useSelector(getAudioTransactionsStatus)
-  const audioTransactionsCount: number = useSelector(getAudioTransactionsCount)
-  const audioTransactionsCountStatus = useSelector(
-    getAudioTransactionsCountStatus
-  )
-
-  useEffect(() => {
-    dispatch(fetchAudioTransactionsCount())
-  }, [dispatch])
-
-  useLayoutEffect(() => {
-    dispatch(
-      fetchAudioTransactions({ offset, limit, sortMethod, sortDirection })
+  const { data: audioTransactions = [], isPending: isTransactionsLoading } =
+    useAudioTransactions(
+      {
+        page,
+        sortMethod,
+        sortDirection
+      },
+      { refetchOnMount: 'always' }
     )
-  }, [dispatch, offset, limit, sortMethod, sortDirection])
+
+  const { data: audioTransactionsCount = 0, isPending: isCountLoading } =
+    useAudioTransactionsCount()
 
   // Defaults: sort method = date, sort direction = desc
   const onSort = useCallback(
     (sortMethodInner: string, sortDirectionInner: string) => {
       const sortMethodRes =
         sortMethodInner === 'type'
-          ? full.GetAudioTransactionHistorySortMethodEnum.TransactionType
-          : full.GetAudioTransactionHistorySortMethodEnum.Date
+          ? full.GetAudioTransactionsSortMethodEnum.TransactionType
+          : full.GetAudioTransactionsSortMethodEnum.Date
       setSortMethod(sortMethodRes)
       const sortDirectionRes =
         sortDirectionInner === 'asc'
-          ? full.GetAudioTransactionHistorySortDirectionEnum.Asc
-          : full.GetAudioTransactionHistorySortDirectionEnum.Desc
+          ? full.GetAudioTransactionsSortDirectionEnum.Asc
+          : full.GetAudioTransactionsSortDirectionEnum.Desc
       setSortDirection(sortDirectionRes)
-      setOffset(0)
+      // Reset page when sorting changes
+      setPage(0)
     },
     [setSortMethod, setSortDirection]
-  )
-
-  const fetchMore = useCallback(
-    (offset: number, limit: number) => {
-      setOffset(offset)
-      setLimit(limit)
-    },
-    [setOffset, setLimit]
   )
 
   const onClickRow = useCallback(
@@ -128,25 +111,20 @@ export const AudioWalletTransactions = () => {
           transactionDetails: txDetails
         })
       )
-      if (txDetails.transactionType === TransactionType.PURCHASE) {
-        dispatch(
-          fetchAudioTransactionMetadata({
-            txDetails
-          })
-        )
-      }
       setVisibility('TransactionDetails')(true)
     },
     [dispatch, setVisibility]
   )
 
-  const tableLoading =
-    statusIsNotFinalized(audioTransactionsStatus) ||
-    statusIsNotFinalized(audioTransactionsCountStatus)
+  const handleFetchPage = useCallback((newPage: number) => {
+    setPage(newPage)
+  }, [])
+
+  const tableLoading = isTransactionsLoading || isCountLoading
   const isEmpty = audioTransactions.length === 0
 
   return (
-    <div className={styles.bodyWrapper}>
+    <Flex column gap='2xl'>
       <Disclaimer />
       {isEmpty && !tableLoading ? (
         <EmptyTable
@@ -155,18 +133,18 @@ export const AudioWalletTransactions = () => {
         />
       ) : (
         <AudioTransactionsTable
-          key='audioTransactions'
           data={audioTransactions}
           loading={tableLoading}
           onSort={onSort}
           onClickRow={onClickRow}
-          fetchMore={fetchMore}
-          isVirtualized={false}
+          fetchPage={handleFetchPage}
+          pageSize={DEFAULT_AUDIO_TRANSACTIONS_BATCH_SIZE}
+          isPaginated
+          showMoreLimit={AUDIO_TRANSACTIONS_SHOW_MORE_LIMIT}
           totalRowCount={audioTransactionsCount}
           scrollRef={mainContentRef}
-          fetchBatchSize={AUDIO_TRANSACTIONS_BATCH_SIZE}
         />
       )}
-    </div>
+    </Flex>
   )
 }
