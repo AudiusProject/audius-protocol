@@ -129,6 +129,6 @@ export const useFetchCollectionLineup = (
   ])
 
   // Fetch the lineup based on reachability
-  useReachabilityEffect(fetchLineup, fetchLineupOffline)
+  useReachabilityEffect(fetchLineup, fetchLineupOffline, false)
   useHasCollectionChanged(collectionId as number, fetchLineup)
 }

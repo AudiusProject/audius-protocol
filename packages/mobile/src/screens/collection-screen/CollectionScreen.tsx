@@ -1,5 +1,6 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
+import { useUser } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,
@@ -16,7 +17,6 @@ import type {
 } from '@audius/common/models'
 import {
   accountSelectors,
-  collectionPageSelectors,
   collectionsSocialActions,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
@@ -27,10 +27,11 @@ import {
   RepostType,
   usePublishConfirmationModal,
   cacheCollectionsActions,
-  useEarlyReleaseConfirmationModal
+  useEarlyReleaseConfirmationModal,
+  collectionPageActions,
+  cacheCollectionsSelectors
 } from '@audius/common/store'
 import { encodeUrlName, removeNullable } from '@audius/common/utils'
-import type { Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Divider, type ImageProps } from '@audius/harmony-native'
@@ -40,6 +41,7 @@ import {
   VirtualizedScrollView
 } from 'app/components/core'
 import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
+import { useIsScreenReady } from 'app/components/core/Screen/hooks/useIsScreenReady'
 import { CollectionImage } from 'app/components/image/CollectionImage'
 import { SuggestedTracks } from 'app/components/suggested-tracks'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -61,7 +63,7 @@ const {
   undoRepostCollection,
   unsaveCollection
 } = collectionsSocialActions
-const { getCollection, getUser } = collectionPageSelectors
+const { getCollection } = cacheCollectionsSelectors
 const getUserId = accountSelectors.getUserId
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -75,25 +77,42 @@ const useStyles = makeStyles(({ spacing }) => ({
  */
 export const CollectionScreen = () => {
   const { params } = useRoute<'Collection'>()
+  const dispatch = useDispatch()
 
   // params is incorrectly typed and can sometimes be undefined
-  const { id = null, searchCollection, collectionType } = params ?? {}
+  const {
+    id = null,
+    searchCollection,
+    slug,
+    collectionType,
+    handle
+  } = params ?? {}
+
+  const permalink =
+    handle && collectionType && slug
+      ? `/${handle}/${collectionType}/${slug}`
+      : undefined
 
   const cachedCollection = useSelector((state) =>
-    getCollection(state, { id })
-  ) as Nullable<Collection>
-
-  const cachedUser = useSelector((state) =>
-    getUser(state, { id: cachedCollection?.playlist_owner_id })
+    getCollection(state, { id, permalink })
   )
+  const { data: cachedUser } = useUser(cachedCollection?.playlist_owner_id)
 
   const collection = cachedCollection ?? searchCollection
+  const hasCollection = !!collection
   const user = cachedUser ?? searchCollection?.user
+
+  const isScreenReady = useIsScreenReady()
+
+  useEffect(() => {
+    if (isScreenReady) {
+      dispatch(collectionPageActions.fetchCollection(id, permalink, true, true))
+    }
+  }, [dispatch, id, isScreenReady, permalink, hasCollection])
 
   if (!collection || !user) {
     return <CollectionScreenSkeleton collectionType={collectionType} />
   }
-
   return <CollectionScreenComponent collection={collection} user={user} />
 }
 
@@ -101,6 +120,7 @@ type CollectionScreenComponentProps = {
   collection: Collection | SearchPlaylist
   user: User | SearchUser
 }
+
 const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
   const styles = useStyles()
   const dispatch = useDispatch()
@@ -282,6 +302,7 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
               hasSaved={has_current_user_saved}
               isAlbum={is_album}
               collectionId={playlist_id}
+              collection={collection}
               isPublishing={_is_publishing ?? false}
               isDeleted={is_delete}
               onPressEdit={handlePressEdit}
