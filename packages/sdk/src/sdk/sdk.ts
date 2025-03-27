@@ -184,7 +184,6 @@ const initializeServices = (config: SdkConfig) => {
     config.services?.storageNodeSelector ??
     new StorageNodeSelector({
       ...getDefaultStorageNodeSelectorConfig(servicesConfig),
-      discoveryNodeSelector,
       logger
     })
 
@@ -402,23 +401,23 @@ const initializeApis = ({
 }) => {
   const middleware = [
     addAppInfoMiddleware({ apiKey, appName, services }),
-    addRequestSignatureMiddleware({ services }),
-    services.discoveryNodeSelector.createMiddleware()
+    addRequestSignatureMiddleware({ services })
   ]
-  const generatedApiClientConfig = new Configuration({
+  const apiClientConfig = new Configuration({
     fetchApi: fetch,
-    middleware
+    middleware,
+    basePath: 'https://api.staging.audius.co/v1'
   })
-
-  const noBasePathConfig = new Configuration({
+  const apiClientConfigWithDiscoveryNodeSelector = new Configuration({
     fetchApi: fetch,
-    basePath: '',
-    middleware
+    middleware: [
+      ...middleware,
+      services.discoveryNodeSelector.createMiddleware()
+    ]
   })
 
   const tracks = new TracksApi(
-    generatedApiClientConfig,
-    services.discoveryNodeSelector,
+    apiClientConfig,
     services.storage,
     services.entityManager,
     services.logger,
@@ -428,7 +427,7 @@ const initializeApis = ({
     services.solanaClient
   )
   const users = new UsersApi(
-    generatedApiClientConfig,
+    apiClientConfig,
     services.storage,
     services.entityManager,
     services.logger,
@@ -437,7 +436,7 @@ const initializeApis = ({
     services.emailEncryptionService
   )
   const albums = new AlbumsApi(
-    generatedApiClientConfig,
+    apiClientConfig,
     services.storage,
     services.entityManager,
     services.logger,
@@ -447,45 +446,40 @@ const initializeApis = ({
     services.solanaClient
   )
   const playlists = new PlaylistsApi(
-    generatedApiClientConfig,
+    apiClientConfig,
     services.storage,
     services.entityManager,
     services.logger
   )
   const comments = new CommentsApi(
-    generatedApiClientConfig,
+    apiClientConfig,
     services.entityManager,
     services.logger
   )
-  const tips = new TipsApi(generatedApiClientConfig)
-  const resolveApi = new ResolveApi(generatedApiClientConfig)
+  const tips = new TipsApi(apiClientConfig)
+  const resolveApi = new ResolveApi(apiClientConfig)
   const resolve = resolveApi.resolve.bind(resolveApi)
 
   const chats = new ChatsApi(
-    noBasePathConfig,
+    apiClientConfig,
     services.audiusWalletClient,
-    services.discoveryNodeSelector,
     services.logger
   )
 
-  const grants = new GrantsApi(
-    generatedApiClientConfig,
-    services.entityManager,
-    users
-  )
+  const grants = new GrantsApi(apiClientConfig, services.entityManager, users)
 
   const developerApps = new DeveloperAppsApi(
-    generatedApiClientConfig,
+    apiClientConfig,
     services.entityManager
   )
 
   const dashboardWalletUsers = new DashboardWalletUsersApi(
-    generatedApiClientConfig,
+    apiClientConfig,
     services.entityManager
   )
 
   const challenges = new ChallengesApi(
-    generatedApiClientConfig,
+    apiClientConfigWithDiscoveryNodeSelector,
     users,
     services.discoveryNodeSelector,
     services.rewardManagerClient,
@@ -496,7 +490,7 @@ const initializeApis = ({
   )
 
   const notifications = new NotificationsApi(
-    generatedApiClientConfig,
+    apiClientConfig,
     services.entityManager
   )
 
