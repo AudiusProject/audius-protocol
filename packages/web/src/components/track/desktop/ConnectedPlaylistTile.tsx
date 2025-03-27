@@ -26,7 +26,6 @@ import {
   isContentUSDCPurchaseGated,
   ModalSource
 } from '@audius/common/models'
-import { useCurrentUser } from '@audius/common/src/api/tan-query/useCurrentUser'
 import {
   collectionsSocialActions,
   shareModalUIActions,
@@ -54,7 +53,7 @@ import { push as pushRoute } from 'utils/navigation'
 import { fullCollectionPage, fullTrackPage } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
-import { getCollectionWithFallback, getUserWithFallback } from '../helpers'
+import { getCollectionWithFallback } from '../helpers'
 
 import styles from './ConnectedPlaylistTile.module.css'
 import PlaylistTile from './PlaylistTile'

@@ -23,7 +23,6 @@ import Skeleton from 'components/skeleton/Skeleton'
 import { TablePlayButton } from 'components/table/components/TablePlayButton'
 import { isDescendantElementOf } from 'utils/domUtils'
 
-import { getUserWithFallback } from '../helpers'
 import { TrackTileSize } from '../types'
 
 import styles from './TrackListItem.module.css'
