@@ -8,6 +8,7 @@ import type { CommonState } from '~/store/commonStore'
 import { Kind } from '../../../models'
 import type { ID, UID, User } from '../../../models'
 
+/** @deprecated use useUser instead */
 export const getUser = (
   state: CommonState,
   props: { handle?: string | null; id?: ID | null; uid?: UID | null }
@@ -21,19 +22,13 @@ export const getUser = (
   })
 }
 
-export const getIsGuestUser = (
-  state: CommonState,
-  props: { id?: ID | null }
-) => {
-  const user = getUser(state, props)
-  return !user?.handle && !user?.name
-}
-
+/** @deprecated use useUserByHandle instead */
 export const getUserByHandle = (
   state: CommonState,
   props: { handle: string }
 ) => state.users.handles[props.handle] || null
 
+/** @deprecated use useUsers instead */
 export const getUsers = (
   state: CommonState,
   props?: {

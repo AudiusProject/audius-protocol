@@ -1,10 +1,7 @@
+import { useCollection } from '@audius/common/api'
 import { useImageSize } from '@audius/common/hooks'
 import type { SquareSizes, ID } from '@audius/common/models'
-import type { CommonState } from '@audius/common/store'
-import {
-  cacheCollectionsSelectors,
-  reachabilitySelectors
-} from '@audius/common/store'
+import { reachabilitySelectors } from '@audius/common/store'
 import type { Maybe } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
@@ -19,7 +16,6 @@ import { useThemeColors } from 'app/utils/theme'
 import { primitiveToImageSource } from './primitiveToImageSource'
 
 const { getIsReachable } = reachabilitySelectors
-const { getCollection } = cacheCollectionsSelectors
 
 const useLocalCollectionImageUri = (collectionId: Maybe<ID>) => {
   const collectionImageUri = useSelector((state) => {
@@ -50,9 +46,9 @@ export const useCollectionImage = ({
   collectionId: Maybe<ID>
   size: SquareSizes
 }) => {
-  const artwork = useSelector(
-    (state: CommonState) => getCollection(state, { id: collectionId })?.artwork
-  )
+  const { data: artwork } = useCollection(collectionId, {
+    select: (collection) => collection.artwork
+  })
   const image = useImageSize({
     artwork,
     targetSize: size,

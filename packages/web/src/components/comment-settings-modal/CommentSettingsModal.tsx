@@ -111,7 +111,7 @@ const MutedUser = (props: { user: any }) => {
   return (
     <>
       <ArtistChip
-        user={user}
+        userId={user.user_id}
         onClickArtistName={() => {
           onClickArtistName(user.handle)
         }}

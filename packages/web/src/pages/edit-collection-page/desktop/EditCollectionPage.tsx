@@ -1,13 +1,16 @@
+import { useCollectionByPermalink } from '@audius/common/api'
 import {
-  useGetCurrentUserId,
-  useGetPlaylistByPermalink
-} from '@audius/common/api'
-import { Name, SquareSizes, Status } from '@audius/common/models'
+  Name,
+  SquareSizes,
+  Status,
+  UserTrackMetadata
+} from '@audius/common/models'
 import { CollectionValues } from '@audius/common/schemas'
+import { useTracks } from '@audius/common/src/api/tan-query/useTracks'
+import { useUsers } from '@audius/common/src/api/tan-query/useUsers'
 import {
   EditCollectionValues,
-  cacheCollectionsActions,
-  cacheCollectionsSelectors
+  cacheCollectionsActions
 } from '@audius/common/store'
 import { isEqual } from 'lodash'
 import { useDispatch } from 'react-redux'
@@ -24,12 +27,10 @@ import { useIsUnauthorizedForHandleRedirect } from 'hooks/useManagedAccountNotAl
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { track } from 'services/analytics'
 import { replace } from 'utils/navigation'
-import { useSelector } from 'utils/reducer'
 
 import { getEditablePlaylistContents, updatePlaylistContents } from '../utils'
 
 const { editPlaylist } = cacheCollectionsActions
-const { getCollection } = cacheCollectionsSelectors
 
 type EditCollectionPageParams = {
   handle: string
@@ -50,23 +51,18 @@ export const EditCollectionPage = () => {
   useRequiresAccount()
   useIsUnauthorizedForHandleRedirect(handle)
 
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: apiCollection, status } = useGetPlaylistByPermalink(
-    {
-      permalink,
-      currentUserId
-    },
-    { disabled: !currentUserId, force: true }
-  )
+  const { data: collection } = useCollectionByPermalink(permalink)
 
-  const localCollection = useSelector((state) =>
-    getCollection(state, { permalink })
-  )
-
-  const collection = status === Status.ERROR ? localCollection : apiCollection
-
-  const { playlist_id, tracks, description, playlist_contents } =
+  const { playlist_id, trackIds, description, playlist_contents } =
     collection ?? {}
+
+  const { data: tracks } = useTracks(trackIds)
+  const { data: users } = useUsers(tracks?.map((t) => t.owner_id))
+
+  const tracksWithUsers: UserTrackMetadata[] = tracks?.map((t) => ({
+    ...t,
+    user: users?.find((u) => u.user_id === t.owner_id)
+  })) as UserTrackMetadata[]
 
   const artworkUrl = useCollectionCoverArt({
     collectionId: playlist_id,
@@ -78,10 +74,10 @@ export const EditCollectionPage = () => {
     description: description ?? undefined,
     artwork: { url: artworkUrl! },
     tracks:
-      tracks && playlist_contents
+      tracksWithUsers && playlist_contents
         ? getEditablePlaylistContents({
             playlist_contents,
-            tracks
+            tracks: tracksWithUsers
           })
         : [],
     isUpload: false

@@ -1,12 +1,10 @@
+import { useUser } from '@audius/common/api'
 import { imageProfilePicEmpty as profilePicEmpty } from '@audius/common/assets'
 import { useImageSize } from '@audius/common/hooks'
 import { SquareSizes, ID } from '@audius/common/models'
-import { cacheUsersSelectors } from '@audius/common/store'
+import { pick } from 'lodash'
 
 import { preload } from 'utils/image'
-import { useSelector } from 'utils/reducer'
-
-const { getUser } = cacheUsersSelectors
 
 export const useProfilePicture = ({
   userId,
@@ -17,18 +15,20 @@ export const useProfilePicture = ({
   size: SquareSizes
   defaultImage?: string
 }) => {
-  const user = useSelector((state) => getUser(state, { id: userId }))
+  const { data: partialUser } = useUser(userId, {
+    select: (user) => pick(user, 'profile_picture', 'updatedProfilePicture')
+  })
+  const { profile_picture, updatedProfilePicture } = partialUser ?? {}
 
-  const profilePicture = user?.profile_picture
   const image = useImageSize({
-    artwork: profilePicture,
+    artwork: profile_picture,
     targetSize: size,
     defaultImage: defaultImage ?? profilePicEmpty,
     preloadImageFn: preload
   })
 
-  if (user?.updatedProfilePicture) {
-    return user.updatedProfilePicture.url
+  if (updatedProfilePicture) {
+    return updatedProfilePicture.url
   }
   return image
 }

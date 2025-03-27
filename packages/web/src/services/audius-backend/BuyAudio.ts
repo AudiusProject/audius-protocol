@@ -84,7 +84,14 @@ export const pollForAudioBalanceChange = async ({
   maxRetryCount?: number
 }) => {
   let retries = 0
-  let tokenAccountInfo = await getAudioAccountInfo({ tokenAccount })
+  let tokenAccountInfo
+  try {
+    tokenAccountInfo = await getAudioAccountInfo({ tokenAccount })
+  } catch (e) {
+    console.error('Failed to get AUDIO balance before polling', e)
+    tokenAccountInfo = null
+  }
+
   while (
     (!tokenAccountInfo || tokenAccountInfo.amount === initialBalance) &&
     retries++ < maxRetryCount
@@ -99,7 +106,12 @@ export const pollForAudioBalanceChange = async ({
       )
     }
     await delay(retryDelayMs)
-    tokenAccountInfo = await getAudioAccountInfo({ tokenAccount })
+    try {
+      tokenAccountInfo = await getAudioAccountInfo({ tokenAccount })
+    } catch (e) {
+      console.error('Failed to get AUDIO balance while polling', e)
+      tokenAccountInfo = null
+    }
   }
   if (tokenAccountInfo && tokenAccountInfo.amount !== initialBalance) {
     console.debug(

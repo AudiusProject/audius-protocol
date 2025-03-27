@@ -1,5 +1,5 @@
+import { useUser } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
-import { cacheUsersSelectors } from '@audius/common/store'
 import type { StyleProp, TextStyle } from 'react-native'
 import { Pressable } from 'react-native'
 import Animated, {
@@ -8,15 +8,12 @@ import Animated, {
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
-import { useSelector } from 'react-redux'
 
 import type { IconSize, TextLinkProps } from '@audius/harmony-native'
 import { Flex, TextLink, useTheme } from '@audius/harmony-native'
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
 
 import { UserBadgesV2 } from '../user-badges/UserBadgesV2'
-
-const { getUser } = cacheUsersSelectors
 
 const AnimatedFlex = Animated.createAnimatedComponent(Flex)
 
@@ -30,7 +27,9 @@ type UserLinkProps = Omit<TextLinkProps<ParamList>, 'to' | 'children'> & {
 
 export const UserLink = (props: UserLinkProps) => {
   const { userId, badgeSize = 's', style, textLinkStyle, ...other } = props
-  const userName = useSelector((state) => getUser(state, { id: userId })?.name)
+  const { data: userName } = useUser(userId, {
+    select: (user) => user?.name
+  })
 
   const { motion } = useTheme()
   const animatedPressed = useSharedValue(0)

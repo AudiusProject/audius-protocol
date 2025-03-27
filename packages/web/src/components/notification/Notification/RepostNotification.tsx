@@ -67,7 +67,8 @@ export const RepostNotification = (props: RepostNotificationProps) => {
           setUserListUsers({
             userListType: UserListType.NOTIFICATION,
             entityType: entityToUserListEntity[entityType],
-            id: id as unknown as number
+            id: id as unknown as number,
+            entity: notification
           })
         )
         if (isMobile) {
@@ -79,7 +80,15 @@ export const RepostNotification = (props: RepostNotificationProps) => {
         handleGoToEntity(event)
       }
     },
-    [isMultiUser, dispatch, entityType, id, handleGoToEntity, isMobile]
+    [
+      isMultiUser,
+      notification,
+      dispatch,
+      entityType,
+      id,
+      isMobile,
+      handleGoToEntity
+    ]
   )
 
   if (!users || !firstUser || !entity) return null

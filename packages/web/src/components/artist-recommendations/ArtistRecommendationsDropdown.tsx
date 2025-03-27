@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 
-import { useRelatedArtists } from '@audius/common/api'
+import { useRelatedArtistsUsers } from '@audius/common/api'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 
@@ -28,7 +28,7 @@ export const ArtistRecommendationsDropdown = (
   const { isVisible, artistId } = props
   const childRef = useRef<HTMLDivElement | null>(null)
 
-  const { data: suggestedArtists = [], isLoading } = useRelatedArtists({
+  const { data: suggestedArtists = [], isLoading } = useRelatedArtistsUsers({
     artistId,
     filterFollowed: true,
     pageSize: 7

@@ -12,7 +12,6 @@ import {
   type ActionRow,
   type TrackDetails,
   type UserDetails,
-  getAAOAttestation,
   queryUsers
 } from './actionLog'
 import { logger } from 'hono/logger'
@@ -43,10 +42,110 @@ if (!AAO_AUTH_PASSWORD) {
   )
 }
 
+async function ensureTableExists() {
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS anti_abuse_blocked_users (
+        handle_lc VARCHAR(255) PRIMARY KEY,
+        is_blocked BOOLEAN NOT NULL DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `
+  } catch (error) {
+    console.error(
+      'Error ensuring anti_abuse_blocked_users table exists:',
+      error
+    )
+    process.exit(1) // Exit the process if table creation fails
+  }
+}
+
+ensureTableExists()
+
 const app = new Hono()
 
 app.use(logger())
 app.use('/attestation/*', cors())
+
+app.post(
+  '/attestation/block-user',
+  basicAuth({
+    username: AAO_AUTH_USER,
+    password: AAO_AUTH_PASSWORD
+  }),
+  async (c) => {
+    const formData = await c.req.parseBody()
+    const handle = formData.handle as string
+    if (!handle) {
+      return c.text('Handle is required', 400)
+    }
+
+    try {
+      await sql`
+      INSERT INTO anti_abuse_blocked_users (
+        handle_lc,
+        is_blocked,
+        created_at,
+        updated_at
+      ) VALUES (
+        ${handle.toLowerCase()},
+        TRUE,  -- is_blocked
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+      )
+      ON CONFLICT (handle_lc)
+      DO UPDATE SET
+        is_blocked = EXCLUDED.is_blocked,
+        updated_at = CURRENT_TIMESTAMP;
+    `
+      return c.redirect(`/attestation/ui/user?q=${encodeURIComponent(handle)}`)
+    } catch (error) {
+      console.error('Error blocking user:', error)
+      return c.text('Failed to block user', 500)
+    }
+  }
+)
+
+app.post(
+  '/attestation/unblock-user',
+  basicAuth({
+    username: AAO_AUTH_USER,
+    password: AAO_AUTH_PASSWORD
+  }),
+  async (c) => {
+    const formData = await c.req.parseBody()
+
+    const handle = formData.handle as string
+    if (!handle) {
+      return c.text('Handle is required', 400)
+    }
+
+    try {
+      await sql`
+      INSERT INTO anti_abuse_blocked_users (
+        handle_lc,
+        is_blocked,
+        created_at,
+        updated_at
+      ) VALUES (
+        ${handle.toLocaleLowerCase()},
+        FALSE,  -- is_blocked
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+      )
+      ON CONFLICT (handle_lc)
+      DO UPDATE SET
+        is_blocked = EXCLUDED.is_blocked,
+        updated_at = CURRENT_TIMESTAMP;
+    `
+      return c.redirect(`/attestation/ui/user?q=${encodeURIComponent(handle)}`)
+    } catch (error) {
+      console.error('Error unblocking user:', error)
+      return c.text('Failed to block user', 500)
+    }
+  }
+)
 
 app.post('/attestation/:handle', async (c) => {
   const handle = c.req.param('handle').toLowerCase()
@@ -102,7 +201,7 @@ app.use(
 )
 
 app.get('/attestation/ui', async (c) => {
-  const page = parseInt(c.req.query('page') || '1')
+  const page = parseInt(c.req.query('page') || '0')
   const recentUsers = await getRecentUsers(page)
   const userScores = recentUsers
     ? await Promise.all(
@@ -136,8 +235,9 @@ app.get('/attestation/ui', async (c) => {
             <th>Follower Count</th>
             <th>Following Count</th>
             <th>Fast Challenges</th>
+            <th>Fingerprint</th>
+            <th>Override</th>
             <th>Overall Score</th>
-            <th>Normalized Score</th>
           </tr>
         </>
       )
@@ -166,8 +266,15 @@ app.get('/attestation/ui', async (c) => {
                 <td>{userScore.followerCount}</td>
                 <td>{userScore.followingCount}</td>
                 <td>{userScore.challengeCount}</td>
+                <td>{userScore.fingerprintCount}</td>
+                <td>
+                  {userScore.isBlocked
+                    ? 'Blocked'
+                    : userScore.isBlocked === false
+                      ? 'Allowed'
+                      : ''}
+                </td>
                 <td>{userScore.overallScore}</td>
-                <td>{userScore.normalizedScore}</td>
               </tr>
             </>
           ))}
@@ -243,7 +350,7 @@ app.get('/attestation/ui/user', async (c) => {
             </div>
             <div class='flex gap-2 mt-2 items-center'>
               <div
-                className={`badge badge-xl ${userScore.overallScore < 0 ? 'badge-error' : 'badge-neutral'}`}
+                className={`badge badge-xl ${userScore.overallScore < 0 ? 'badge-error' : 'badge-success'}`}
               >
                 {(userScore.normalizedScore * 100).toFixed(0)}%
               </div>{' '}
@@ -265,8 +372,6 @@ app.get('/attestation/ui/user', async (c) => {
               <th class='text-left'>Follower Count</th>
               <th class='text-left'>Fast Challenge Count</th>
               <th class='text-left'>Following Count</th>
-              <th class='text-left'>Fingerprint Count</th>
-              <th class='text-left'>Overall Score</th>
             </tr>
           </thead>
           <tbody>
@@ -289,19 +394,83 @@ app.get('/attestation/ui/user', async (c) => {
               >
                 {userScore.followingCount}
               </td>
-              <td class={userScore.fingerprintCount > 0 ? 'text-red-500' : ''}>
-                {userScore.fingerprintCount}
-              </td>
               <td
                 class={
-                  userScore.overallScore >= 0
-                    ? 'text-green-500'
-                    : 'text-red-500'
+                  userScore.shadowbanScore < 0
+                    ? 'text-red-500'
+                    : 'text-green-500'
                 }
-              >
-                {userScore.overallScore}
-              </td>
+              >{`${userScore.shadowbanScore < 0 ? 'Shadowbanned' : 'Not shadowbanned'} from notifications.`}</td>
             </tr>
+          </tbody>
+        </table>
+        <table>
+          <thead>
+            <tr>
+              <th class='text-left border-left'>Fingerprint Count</th>
+              <th class='text-left'>Override</th>
+              <th class='text-left'>Overall Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            <td class={userScore.fingerprintCount > 0 ? 'text-red-500' : ''}>
+              {userScore.fingerprintCount}
+            </td>
+            <td
+              class={`${
+                userScore.isBlocked
+                  ? 'text-red-500'
+                  : userScore.isBlocked === false
+                    ? 'text-green-500'
+                    : ''
+              }`}
+            >
+              {userScore.isBlocked
+                ? 'Blocked'
+                : userScore.isBlocked === false
+                  ? 'Allowed'
+                  : 'N/A'}
+            </td>
+            <td
+              class={
+                userScore.overallScore >= 0 ? 'text-green-500' : 'text-red-500'
+              }
+            >
+              {userScore.overallScore}
+            </td>
+            <td
+              class={`
+                ${userScore.overallScore < 0 ? 'text-red-500' : 'text-green-500'} flex items-center gap-4
+              `}
+            >
+              {`${userScore.overallScore < 0 ? 'Blocked' : 'Not blocked'} from claiming and DMs.`}
+
+              {userScore.overallScore < 0 ? (
+                <form method='post' action='/attestation/unblock-user'>
+                  <input type='hidden' name='handle' value={user.handle} />
+                  <button
+                    type='submit'
+                    class={
+                      'bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full text-xs cursor-pointer'
+                    }
+                  >
+                    Unblock
+                  </button>
+                </form>
+              ) : (
+                <form method='post' action='/attestation/block-user'>
+                  <input type='hidden' name='handle' value={user.handle} />
+                  <button
+                    type='submit'
+                    class={
+                      'bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full text-xs cursor-pointer'
+                    }
+                  >
+                    Block
+                  </button>
+                </form>
+              )}
+            </td>
           </tbody>
         </table>
 
@@ -505,12 +674,9 @@ function Layout(props: LayoutProps) {
                   type='search'
                   class='input'
                   autocomplete={'off'}
-                  placeholder='Search ID or Handle'
+                  placeholder='Search user handle'
                 />
               </form>
-              <a href='/attestation/ui/recent-tips' class='btn'>
-                Recent Tips
-              </a>
             </div>
             <div class={props.container ? 'container mx-auto' : ''}>
               {props.children}
