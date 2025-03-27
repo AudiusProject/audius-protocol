@@ -1,12 +1,12 @@
 import { useCallback } from 'react'
 
+import { useCollection } from '@audius/common/api'
 import {
   cacheCollectionsActions,
-  cacheCollectionsSelectors,
   duplicateAddConfirmationModalUISelectors
 } from '@audius/common/store'
 import { fillString } from '@audius/common/utils'
-import { capitalize } from 'lodash'
+import { capitalize, pick } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -19,7 +19,6 @@ import { useDrawerState } from '../drawer'
 import Drawer from '../drawer/Drawer'
 const { getPlaylistId, getTrackId } = duplicateAddConfirmationModalUISelectors
 const { addTrackToPlaylist } = cacheCollectionsActions
-const { getCollection } = cacheCollectionsSelectors
 
 const getMessages = (collectionType: 'album' | 'playlist') => ({
   drawerTitle: 'Already Added',
@@ -59,15 +58,15 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 export const DuplicateAddConfirmationDrawer = () => {
   const playlistId = useSelector(getPlaylistId)
   const trackId = useSelector(getTrackId)
-  const playlist = useSelector((state) =>
-    getCollection(state, { id: playlistId })
-  )
+  const { data: partialPlaylist } = useCollection(playlistId, {
+    select: (collection) => pick(collection, 'is_album', 'playlist_name')
+  })
   const dispatch = useDispatch()
   const styles = useStyles()
   const { toast } = useToast()
   const { isOpen, onClose } = useDrawerState('DuplicateAddConfirmation')
 
-  const messages = getMessages(playlist?.is_album ? 'album' : 'playlist')
+  const messages = getMessages(partialPlaylist?.is_album ? 'album' : 'playlist')
 
   const handleAdd = useCallback(() => {
     if (playlistId && trackId) {
@@ -93,7 +92,7 @@ export const DuplicateAddConfirmationDrawer = () => {
         <Text style={styles.body} fontSize='large' weight='medium'>
           {fillString(
             messages.drawerBody,
-            playlist ? ` "${playlist.playlist_name}"` : ''
+            partialPlaylist ? ` "${partialPlaylist.playlist_name}"` : ''
           )}
         </Text>
         <View style={styles.buttonContainer}>

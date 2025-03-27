@@ -35,7 +35,7 @@ export const useRemixers = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const { data: userIds, ...queryResult } = useInfiniteQuery({
+  const { data: userIds } = useInfiniteQuery({
     queryKey: getRemixersQueryKey({ userId, trackId, pageSize }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: ID[], allPages) => {
@@ -60,10 +60,5 @@ export const useRemixers = (
     enabled: options?.enabled !== false && !!userId
   })
 
-  const { data: users } = useUsers(userIds)
-
-  return {
-    data: users,
-    ...queryResult
-  }
+  return useUsers(userIds)
 }

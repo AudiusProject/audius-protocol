@@ -3,7 +3,6 @@ import { ComponentType, PureComponent, RefObject } from 'react'
 import {
   Name,
   ShareSource,
-  FollowSource,
   CreatePlaylistSource,
   Status,
   ID,
@@ -26,7 +25,6 @@ import {
   chatSelectors,
   ChatPermissionAction,
   queueSelectors,
-  usersSocialActions as socialActions,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
   OverflowAction,
@@ -239,24 +237,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       // Close artist recommendations when the profile changes
       this.setState({ areArtistRecommendationsVisible: false })
     }
-  }
-
-  onFollow = () => {
-    const {
-      profile: { profile }
-    } = this.props
-    if (!profile) return
-    this.props.onFollow(profile.user_id)
-    this.setState({ areArtistRecommendationsVisible: true })
-  }
-
-  onUnfollow = () => {
-    const {
-      profile: { profile }
-    } = this.props
-    if (!profile) return
-    const userId = profile.user_id
-    this.props.onUnfollow(userId)
   }
 
   onCloseArtistRecommendations = () => {
@@ -859,8 +839,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       refreshProfile: this.refreshProfile,
       setFollowingUserId,
       setFollowersUserId,
-      onFollow: this.onFollow,
-      onUnfollow: this.onUnfollow,
       onShare: this.onShare,
       onEdit: this.onEdit,
       onSave: this.onSave,
@@ -1017,10 +995,6 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
     replaceRoute: (route: string) => dispatch(replace(route)),
     updateCollectionOrder: (mode: CollectionSortMode) =>
       dispatch(profileActions.updateCollectionSortMode(mode, handleLower)),
-    onFollow: (userId: ID) =>
-      dispatch(socialActions.followUser(userId, FollowSource.PROFILE_PAGE)),
-    onUnfollow: (userId: ID) =>
-      dispatch(socialActions.unfollowUser(userId, FollowSource.PROFILE_PAGE)),
     onShare: (userId: ID) =>
       dispatch(
         requestOpenShareModal({

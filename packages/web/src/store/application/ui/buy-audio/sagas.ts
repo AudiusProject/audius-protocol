@@ -718,10 +718,18 @@ function* swapStep({
   const tokenAccount = yield* call(getAudioAccount, {
     rootAccount: rootAccount.publicKey
   })
-  const beforeSwapAudioAccountInfo = yield* call(getAudioAccountInfo, {
-    tokenAccount
-  })
-  const beforeSwapAudioBalance = beforeSwapAudioAccountInfo?.amount ?? BigInt(0)
+  let beforeSwapAudioBalance = BigInt(0)
+  try {
+    const beforeSwapAudioAccountInfo = yield* call(getAudioAccountInfo, {
+      tokenAccount
+    })
+    beforeSwapAudioBalance = beforeSwapAudioAccountInfo?.amount ?? BigInt(0)
+  } catch (e) {
+    console.error(
+      'Failed to get AUDIO balance before swap, using 0 balance:',
+      e
+    )
+  }
 
   // Swap the SOL for AUDIO
   yield* put(swapStarted())
@@ -1200,9 +1208,14 @@ function* recoverPurchaseIfNecessary() {
       const tokenAccount = yield* call(getAudioAccount, {
         rootAccount: rootAccount.publicKey
       })
-      const audioAccountInfo = yield* call(getAudioAccountInfo, {
-        tokenAccount
-      })
+      let audioAccountInfo
+      try {
+        audioAccountInfo = yield* call(getAudioAccountInfo, {
+          tokenAccount
+        })
+      } catch (e) {
+        audioAccountInfo = null
+      }
       const audioBalance = audioAccountInfo?.amount ?? BigInt(0)
 
       // If the user's root wallet has $AUDIO, that usually indicates a failed transfer

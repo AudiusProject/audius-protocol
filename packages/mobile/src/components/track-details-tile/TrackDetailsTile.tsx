@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react'
 import { useMemo } from 'react'
 
+import { useTrack, useUser } from '@audius/common/api'
 import {
   SquareSizes,
   GatedContentType,
@@ -8,11 +9,9 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
-import { cacheTracksSelectors, cacheUsersSelectors } from '@audius/common/store'
 import type { ColorValue } from 'react-native'
 import { View } from 'react-native'
 import type { SvgProps } from 'react-native-svg'
-import { useSelector } from 'react-redux'
 
 import {
   Flex,
@@ -29,9 +28,6 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { TrackImage } from '../image/TrackImage'
 import { TrackDogEar } from '../track/TrackDogEar'
-
-const { getUser } = cacheUsersSelectors
-const { getTrack } = cacheTracksSelectors
 
 const messages = {
   collectibleGated: 'COLLECTIBLE GATED',
@@ -93,8 +89,8 @@ export const TrackDetailsTile = ({
 }: TrackDetailsTileProps) => {
   const styles = useStyles()
   const { accentBlue, specialLightGreen } = useThemeColors()
-  const track = useSelector((state) => getTrack(state, { id: trackId }))
-  const owner = useSelector((state) => getUser(state, { id: track?.owner_id }))
+  const { data: track } = useTrack(trackId)
+  const { data: owner } = useUser(track?.owner_id)
   const isCollectibleGated = isContentCollectibleGated(track?.stream_conditions)
   const isUSDCPurchaseGated =
     useIsUSDCEnabled() && isContentUSDCPurchaseGated(track?.stream_conditions)

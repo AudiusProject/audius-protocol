@@ -1,14 +1,15 @@
 import { useCallback } from 'react'
 
+import { useCollection } from '@audius/common/api'
 import { FavoriteType, ID } from '@audius/common/models'
 import {
-  cacheCollectionsSelectors,
   favoritesUserListActions,
   repostsUserListActions,
   RepostType
 } from '@audius/common/store'
 import { formatCount, route, pluralize } from '@audius/common/utils'
 import { Text, Flex, IconRepost, IconHeart } from '@audius/harmony'
+import { pick } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { AvatarList } from 'components/avatar'
@@ -24,14 +25,11 @@ import {
   UserListType
 } from 'store/application/ui/userListModal/types'
 import { push } from 'utils/navigation'
-import { useSelector } from 'utils/reducer'
 
 const { REPOSTING_USERS_ROUTE, FAVORITING_USERS_ROUTE } = route
 
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
-
-const { getCollection } = cacheCollectionsSelectors
 
 type RepostsMetricProps = {
   collectionId: ID
@@ -40,17 +38,11 @@ type RepostsMetricProps = {
 
 export const RepostsMetric = (props: RepostsMetricProps) => {
   const { collectionId, size } = props
-  const repostCount = useSelector((state) => {
-    return getCollection(state, { id: collectionId })?.repost_count
+  const { data: partialCollection } = useCollection(collectionId, {
+    select: (collection) =>
+      pick(collection, 'repost_count', 'followee_reposts', 'is_album')
   })
-
-  const followeeReposts = useSelector((state) => {
-    return getCollection(state, { id: collectionId })?.followee_reposts
-  })
-
-  const isAlbum = useSelector((state) => {
-    return getCollection(state, { id: collectionId })?.is_album
-  })
+  const { repost_count, followee_reposts, is_album } = partialCollection ?? {}
 
   const isMobile = useIsMobile()
   const dispatch = useDispatch()
@@ -71,22 +63,22 @@ export const RepostsMetric = (props: RepostsMetricProps) => {
     }
   }, [dispatch, isMobile, collectionId])
 
-  if (repostCount === undefined || followeeReposts === undefined) return null
+  if (repost_count === undefined || followee_reposts === undefined) return null
 
-  if (repostCount === 0)
+  if (repost_count === 0)
     return (
       <VanityMetric disabled>
         <IconRepost size='s' color='subdued' />
         <Text>
-          Be the first to repost this {isAlbum ? 'album' : 'playlist'}
+          Be the first to repost this {is_album ? 'album' : 'playlist'}
         </Text>
       </VanityMetric>
     )
 
   const renderName = () => {
-    const [{ user_id }] = followeeReposts
+    const [{ user_id }] = followee_reposts
 
-    const remainingCount = repostCount - 1
+    const remainingCount = repost_count - 1
     const remainingText =
       remainingCount > 0
         ? ` + ${formatCount(remainingCount)} ${pluralize(
@@ -107,14 +99,14 @@ export const RepostsMetric = (props: RepostsMetricProps) => {
 
   return (
     <VanityMetric onClick={handleClick}>
-      {isLargeSize && followeeReposts.length >= 3 ? (
-        <AvatarList users={followeeReposts.map(({ user_id }) => user_id)} />
+      {isLargeSize && followee_reposts.length >= 3 ? (
+        <AvatarList users={followee_reposts.map(({ user_id }) => user_id)} />
       ) : null}
       <Flex gap='xs'>
         <IconRepost size='s' color='subdued' />
-        {isLargeSize && followeeReposts.length > 0
+        {isLargeSize && followee_reposts.length > 0
           ? renderName()
-          : formatCount(repostCount)}
+          : formatCount(repost_count)}
       </Flex>
     </VanityMetric>
   )
@@ -126,8 +118,8 @@ type SavesMetricProps = {
 
 export const SavesMetric = (props: SavesMetricProps) => {
   const { collectionId } = props
-  const saveCount = useSelector((state) => {
-    return getCollection(state, { id: collectionId })?.save_count
+  const { data: save_count } = useCollection(collectionId, {
+    select: (collection) => collection.save_count
   })
 
   const isMobile = useIsMobile()
@@ -149,12 +141,12 @@ export const SavesMetric = (props: SavesMetricProps) => {
     }
   }, [dispatch, isMobile, collectionId])
 
-  if (!saveCount) return null
+  if (save_count === undefined) return null
 
   return (
     <VanityMetric onClick={handleClick}>
       <IconHeart size='s' color='subdued' />
-      {formatCount(saveCount)}
+      {formatCount(save_count)}
     </VanityMetric>
   )
 }

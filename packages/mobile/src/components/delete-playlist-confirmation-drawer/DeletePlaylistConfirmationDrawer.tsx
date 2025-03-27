@@ -1,8 +1,8 @@
 import { useCallback } from 'react'
 
+import { useCollection } from '@audius/common/api'
 import {
   cacheCollectionsActions,
-  cacheCollectionsSelectors,
   deletePlaylistConfirmationModalUISelectors
 } from '@audius/common/store'
 import { fillString } from '@audius/common/utils'
@@ -14,7 +14,6 @@ import { useDrawerState } from '../drawer'
 import { ConfirmationDrawer } from '../drawers'
 const { getPlaylistId } = deletePlaylistConfirmationModalUISelectors
 const { deletePlaylist } = cacheCollectionsActions
-const { getCollection } = cacheCollectionsSelectors
 
 const messages = {
   header: 'Delete Playlist?',
@@ -27,9 +26,9 @@ const modalName = 'DeletePlaylistConfirmation'
 
 export const DeletePlaylistConfirmationDrawer = () => {
   const playlistId = useSelector(getPlaylistId)
-  const playlist = useSelector((state) =>
-    getCollection(state, { id: playlistId })
-  )
+  const { data: playlistName } = useCollection(playlistId, {
+    select: (collection) => collection.playlist_name
+  })
   const dispatch = useDispatch()
   const navigation = useNavigation()
   const { onClose } = useDrawerState(modalName)
@@ -42,12 +41,9 @@ export const DeletePlaylistConfirmationDrawer = () => {
     onClose()
   }, [dispatch, playlistId, navigation, onClose])
 
-  if (!playlist) return null
+  if (!playlistId || !playlistName) return null
 
-  messages.description = fillString(
-    messages.description,
-    playlist.playlist_name
-  )
+  messages.description = fillString(messages.description, playlistName)
 
   return (
     <ConfirmationDrawer

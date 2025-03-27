@@ -386,6 +386,8 @@ export const TanQueryLineup = ({
 
   const isInitialLoad = (isFetching && tiles.length === 0) || isPending
 
+  const isEmptyResults = tiles.length === 0 && !isFetching && !isInitialLoad
+
   return (
     <>
       <div
@@ -410,8 +412,9 @@ export const TanQueryLineup = ({
             getScrollParent={getScrollParent}
             element='ol'
             threshold={loadMoreThreshold}
+            // Render empty results as full width instead of a tile taking up one grid space
             className={cn({
-              [tileContainerStyles!]: !!tileContainerStyles
+              [tileContainerStyles!]: !!tileContainerStyles && !isEmptyResults
             })}
           >
             {tiles.length === 0
