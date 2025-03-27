@@ -20,8 +20,6 @@ export const env: Env = {
   COINFLOW_APP_ID: '9JBW2RHC7JNJN8ZQ',
   COINFLOW_MERCHANT_ID: 'audius',
   COINFLOW_PARTNER_ID: 'AUDIUS',
-  EAGER_DISCOVERY_NODES:
-    'https://discoveryprovider.staging.audius.co,https://discoveryprovider2.staging.audius.co,https://discoveryprovider3.staging.audius.co',
   ENTITY_MANAGER_ADDRESS: '0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64',
   ENVIRONMENT: 'staging',
   ETH_BRIDGE_ADDRESS: null,

@@ -29,7 +29,7 @@ import {
   ExtendedPaymentSplit,
   instanceOfExtendedPurchaseGate
 } from '../generated/default'
-import { BASE_PATH, RequiredError } from '../generated/default/runtime'
+import { RequiredError } from '../generated/default/runtime'
 
 import { TrackUploadHelper } from './TrackUploadHelper'
 import {
