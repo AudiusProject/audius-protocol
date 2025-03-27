@@ -25,15 +25,13 @@ class PinnedCommentChallengeUpdater(ChallengeUpdater):
     ) -> bool:
         """Only create the challenge if the artist is verified and the comment
         doesn't belong to the artist themselves."""
-        # Check if the artist (track owner) is verified
-        artist_is_verified = extra.get("artist_is_verified", False)
 
         # Check if the comment belongs to a different user than the track owner
         comment_user_id = user_id
         track_owner_id = extra.get("track_owner_id")
 
         # Only create challenge if artist is verified and comment is from another user
-        return artist_is_verified and comment_user_id != track_owner_id
+        return comment_user_id != track_owner_id
 
     def update_user_challenges(
         self,
