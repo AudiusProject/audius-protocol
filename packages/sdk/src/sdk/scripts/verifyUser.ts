@@ -14,12 +14,11 @@ program
   .option('--privateKey <privateKey>', 'The private key to use for the request')
   .option(
     '-p, --platform <platform>',
-    'The platform to verify (twitter, instagram, tiktok)'
+    'The platform to verify (twitter, instagram, tiktok, manual)'
   )
   .action(async (args) => {
     if (
       !args.handle ||
-      !args.socialHandle ||
       !args.platform ||
       !args.privateKey
     ) {
@@ -28,7 +27,11 @@ program
       )
       process.exit(1)
     }
-    if (!['twitter', 'instagram', 'tiktok'].includes(args.platform)) {
+    if (args.platform !== 'manual' && !args.socialHandle) {
+      console.error('Missing required arguments: socialHandle is required for non-manual verification')
+      process.exit(1)
+    }
+    if (!['twitter', 'instagram', 'tiktok', 'manual'].includes(args.platform)) {
       console.error('Invalid platform:', args.platform)
       process.exit(1)
     }
