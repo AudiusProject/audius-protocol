@@ -181,7 +181,7 @@ const LabelWithCount = (props: {
       <Text variant='title' size='l'>
         {label}
       </Text>
-      {isSelected && count ? (
+      {isSelected && count !== undefined ? (
         <Text variant='title' size='l' color='subdued'>
           ({formatNumberCommas(count)})
         </Text>
@@ -235,7 +235,7 @@ const TipSupportersMessageField = () => {
       <Flex direction='column' gap='xs' css={{ cursor: 'pointer' }}>
         <LabelWithCount
           label={messages.supporters.label}
-          count={user?.supporter_count ?? 0}
+          count={user?.supporter_count}
           isSelected={selected}
         />
         {selected ? (
@@ -301,9 +301,10 @@ const RemixCreatorsMessageField = () => {
     name: 'remixed_track_id',
     type: 'select'
   })
+
   const { isDisabled, remixersCount, remixedTracksOptions } =
     useRemixersAudience({
-      remixedTrackId: remixedTrackField.value?.contentId
+      remixedTrackId: remixedTrackField.value
     })
   const isSelected = targetAudience === ChatBlastAudience.REMIXERS
 
@@ -319,7 +320,7 @@ const RemixCreatorsMessageField = () => {
       <Flex direction='column' gap='xs' css={{ cursor: 'pointer' }}>
         <LabelWithCount
           label={messages.remixCreators.label}
-          count={remixersCount ?? 0}
+          count={remixersCount}
           isSelected={isSelected}
         />
         {isSelected ? (

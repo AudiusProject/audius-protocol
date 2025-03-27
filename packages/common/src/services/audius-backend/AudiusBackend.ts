@@ -51,6 +51,7 @@ import {
   Nullable,
   isNullOrUndefined
 } from '../../utils'
+import type { DiscoveryNodeSelectorService } from '../sdk/discovery-node-selector'
 
 import { MintName } from './solana'
 import { MonitoringCallbacks } from './types'
@@ -127,6 +128,7 @@ type AudiusBackendParams = {
   ethProviderUrls: Maybe<string[]>
   ethRegistryAddress: Maybe<string>
   ethTokenAddress: Maybe<string>
+  discoveryNodeSelectorService: DiscoveryNodeSelectorService
   getFeatureEnabled: (
     flag: FeatureFlags,
     fallbackFlag?: FeatureFlags

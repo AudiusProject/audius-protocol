@@ -6,7 +6,6 @@ export const env: Env = {
   AMPLITUDE_API_KEY: '72a58ce4ad1f9bafcba0b92bedb6c33d',
   AMPLITUDE_PROXY: 'https://gain2.audius.co/2/httpapi',
   API_KEY: '2dc52ec9a4c31790cab6653de0c637f680faa993',
-  API_SERVER_URL: 'https://api.staging.audius.co',
   APP_NAME: 'audius-client',
   AUDIUS_URL: 'https://staging.audius.co',
   BITSKI_CALLBACK_URL: 'https://staging.audius.co/bitski-callback.html',
@@ -22,6 +21,8 @@ export const env: Env = {
   COINFLOW_APP_ID: '9JBW2RHC7JNJN8ZQ',
   COINFLOW_MERCHANT_ID: 'audius',
   COINFLOW_PARTNER_ID: 'AUDIUS',
+  EAGER_DISCOVERY_NODES:
+    'https://discoveryprovider.staging.audius.co,https://discoveryprovider2.staging.audius.co,https://discoveryprovider3.staging.audius.co',
   ENTITY_MANAGER_ADDRESS: '0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64',
   ENVIRONMENT: 'staging',
   ETH_BRIDGE_ADDRESS: null,
