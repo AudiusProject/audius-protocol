@@ -475,8 +475,6 @@ export const getClaimableChallengeSpecifiers = (
 const newChallengeIds: ChallengeRewardID[] = [
   ChallengeName.ListenStreakEndless,
   ChallengeName.FirstWeeklyComment,
-  ChallengeName.AudioMatchingSell,
-  ChallengeName.AudioMatchingBuy,
   ChallengeName.PlayCount250,
   ChallengeName.PlayCount1000,
   ChallengeName.PlayCount10000,
