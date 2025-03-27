@@ -756,7 +756,6 @@ def pin_comment(params: ManageEntityParameters):
                         "track_id": track_id,
                         "comment_id": comment_id,
                         "track_owner_id": track_owner_id,
-                        "artist_is_verified": artist_is_verified,
                     },
                 )
 
