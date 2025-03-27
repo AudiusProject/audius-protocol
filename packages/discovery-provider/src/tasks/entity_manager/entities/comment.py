@@ -12,6 +12,7 @@ from src.models.moderation.muted_user import MutedUser
 from src.models.notifications.notification import Notification
 from src.models.tracks.track import Track
 from src.models.users.aggregate_user import AggregateUser
+from src.queries.query_helpers import get_users_by_id
 from src.tasks.entity_manager.utils import (
     COMMENT_BODY_LIMIT,
     Action,
@@ -720,6 +721,7 @@ def pin_comment(params: ManageEntityParameters):
     comment_id = params.entity_id
     track_id = params.metadata["entity_id"]
     existing_track = params.existing_records[EntityType.TRACK.value][track_id]
+    existing_comment = params.existing_records[EntityType.COMMENT.value][comment_id]
 
     track = copy_record(
         existing_track,
@@ -730,6 +732,34 @@ def pin_comment(params: ManageEntityParameters):
     )
 
     track.pinned_comment_id = comment_id
+
+    # Get the comment user_id (commenter)
+    comment_user_id = existing_comment.user_id
+    # Get the track owner_id (artist)
+    track_owner_id = track.owner_id
+
+    # Check if the track owner is verified
+    users = get_users_by_id(params.session, [track_owner_id], current_user_id=None)
+
+    if users and len(users) > 0:
+        artist_is_verified = users[0].get("is_verified", False)
+
+        # Only dispatch the event if the artist is verified and the comment
+        # belongs to a different user than the track owner
+        if artist_is_verified and comment_user_id != track_owner_id:
+            # Dispatch challenge event for the comment author
+            params.challenge_bus.dispatch(
+                ChallengeEvent.pinned_comment,
+                params.block_number,
+                params.block_datetime,
+                comment_user_id,
+                {
+                    "track_id": track_id,
+                    "comment_id": comment_id,
+                    "track_owner_id": track_owner_id,
+                    "artist_is_verified": artist_is_verified,
+                },
+            )
 
     params.add_record(track_id, track, EntityType.TRACK)
 

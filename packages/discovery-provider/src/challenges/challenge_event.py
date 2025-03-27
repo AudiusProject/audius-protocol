@@ -29,3 +29,4 @@ class ChallengeEvent(str, enum.Enum):
     one_shot = "one_shot"
     first_weekly_comment = "first_weekly_comment"
     tastemaker = "tastemaker"
+    pinned_comment = "pinned_comment"

@@ -338,6 +338,16 @@ export const challengeRewardsConfig: Record<
       `Discover and interact with a new track before it hits trending to earn an $AUDIO reward.`,
     progressLabel: 'Active',
     panelButtonText: 'More Info'
+  },
+  [ChallengeName.CommentPin]: {
+    id: ChallengeName.CommentPin,
+    title: 'Pinned Comment',
+    description: () =>
+      'Leave a comment that gets pinned by a verified artist to earn an $AUDIO reward.',
+    fullDescription: () =>
+      'Leave a comment that gets pinned by a verified artist to earn an $AUDIO reward.',
+    progressLabel: 'Not Earned',
+    panelButtonText: 'Comment on a Track'
   }
 }
 
@@ -465,10 +475,13 @@ export const getClaimableChallengeSpecifiers = (
 const newChallengeIds: ChallengeRewardID[] = [
   ChallengeName.ListenStreakEndless,
   ChallengeName.FirstWeeklyComment,
+  ChallengeName.AudioMatchingSell,
+  ChallengeName.AudioMatchingBuy,
   ChallengeName.PlayCount250,
   ChallengeName.PlayCount1000,
   ChallengeName.PlayCount10000,
-  ChallengeName.Tastemaker
+  ChallengeName.Tastemaker,
+  ChallengeName.CommentPin
 ]
 
 export const isNewChallenge = (challengeId: ChallengeRewardID) =>
@@ -553,6 +566,15 @@ export const getChallengeStatusLabel = (
 
     // Special-case as this is an infinite aggregate challenge (will always be in-progress)
     case ChallengeName.Tastemaker:
+      return DEFAULT_STATUS_LABELS.AVAILABLE
+
+    case ChallengeName.CommentPin:
+      if (challenge.state === 'completed' && challenge.cooldown_days) {
+        return DEFAULT_STATUS_LABELS.REWARD_PENDING
+      }
+      if (challenge.claimableAmount > 0) {
+        return DEFAULT_STATUS_LABELS.READY_TO_CLAIM
+      }
       return DEFAULT_STATUS_LABELS.AVAILABLE
 
     default:
