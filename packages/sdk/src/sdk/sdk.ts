@@ -191,7 +191,6 @@ const initializeServices = (config: SdkConfig) => {
     config.services?.entityManager ??
     new EntityManagerClient({
       ...getDefaultEntityManagerConfig(servicesConfig),
-      discoveryNodeSelector,
       audiusWalletClient,
       logger
     })
