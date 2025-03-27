@@ -55,7 +55,7 @@ const ProfileResultsSkeletons = ({
 
 export const ProfileResultsTiles = (props: ProfileResultsProps) => {
   const { limit, skeletonCount = 10, data, isFetching, isPending } = props
-  const ids = data?.map((user) => user.user_id)
+  const ids = data?.map((user) => user.user_id) ?? []
   const { query } = useSearchParams()
 
   const isMobile = useIsMobile()
