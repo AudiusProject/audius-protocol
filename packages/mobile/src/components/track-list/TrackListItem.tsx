@@ -192,7 +192,8 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   } = props
 
   const { data: contextPlaylist } = useCollection(contextPlaylistId)
-  const trackId = id ?? parseInt(getIdFromKindId(uid ?? '').split(':')[1])
+  const trackId =
+    id ?? (uid ? parseInt(getIdFromKindId(uid).split(':')[1]) : undefined)
   const { data: track } = useTrack(trackId)
   const { data: user } = useUser(track?.owner_id)
 
