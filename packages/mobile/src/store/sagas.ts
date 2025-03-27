@@ -57,17 +57,6 @@ import socialSagas from 'common/store/social/sagas'
 import tippingSagas from 'common/store/tipping/sagas'
 import reactionSagas from 'common/store/ui/reactions/sagas'
 import uploadSagas from 'common/store/upload/sagas'
-import favoritePageSagas from 'common/store/user-list/favorites/sagas'
-import followersPageSagas from 'common/store/user-list/followers/sagas'
-import followingPageSagas from 'common/store/user-list/following/sagas'
-import mutualsPageSagas from 'common/store/user-list/mutuals/sagas'
-import notificationUsersPageSagas from 'common/store/user-list/notifications/sagas'
-import purchasersPageSagas from 'common/store/user-list/purchasers/sagas'
-import relatedArtistsPageSagas from 'common/store/user-list/related-artists/sagas'
-import remixersPageSagas from 'common/store/user-list/remixers/sagas'
-import repostPageSagas from 'common/store/user-list/reposts/sagas'
-import supportingPageSagas from 'common/store/user-list/supporting/sagas'
-import topSupportersPageSagas from 'common/store/user-list/top-supporters/sagas'
 import walletSagas from 'common/store/wallet/sagas'
 import { all, spawn } from 'typed-redux-saga'
 
@@ -149,22 +138,11 @@ export default function* rootSaga() {
     ...profileSagas(),
     ...reactionSagas(),
     ...socialSagas(),
-    ...favoritePageSagas(),
-    ...followersPageSagas(),
-    ...followingPageSagas(),
-    ...mutualsPageSagas(),
-    ...notificationUsersPageSagas(),
-    ...relatedArtistsPageSagas(),
-    ...repostPageSagas(),
-    ...supportingPageSagas(),
-    ...topSupportersPageSagas(),
     ...historySagas(),
     ...rewardsPageSagas(),
     ...settingsSagas(),
     ...aiSagas(),
     ...premiumTracksSagas(),
-    ...purchasersPageSagas(),
-    ...remixersPageSagas(),
 
     // Cast
     ...castSagas(),

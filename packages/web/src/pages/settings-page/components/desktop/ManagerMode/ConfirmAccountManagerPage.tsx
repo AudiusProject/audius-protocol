@@ -82,7 +82,7 @@ export const ConfirmAccountManagerPage = (
           {messages.description}
         </Text>
         <Box pv='l' ph='xl'>
-          <ArtistChip user={manager} />
+          <ArtistChip userId={manager.user_id} />
         </Box>
         <Hint icon={IconError}>
           {sharedMessages.accountManagersExplanation}

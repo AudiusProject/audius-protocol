@@ -3,7 +3,8 @@ import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import {
   SearchCategory,
   useFollowers,
-  useSearchUserResults
+  useSearchUserResults,
+  useUsers
 } from '@audius/common/api'
 import { Status, UserMetadata } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
@@ -44,10 +45,11 @@ export const UserMentionAutocompleteText = (
   const accountStatus = useSelector(getAccountStatus)
   const currentUserId = useSelector(getUserId)
   const {
-    data: followersData,
+    data: followerIds,
     isPending: followerDataPending,
     isSuccess: followersDataSuccess
   } = useFollowers({ pageSize: 6, userId: currentUserId })
+  const { data: followers } = useUsers(followerIds)
   const optionRefs = useRef<HTMLButtonElement[]>([])
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -68,7 +70,7 @@ export const UserMentionAutocompleteText = (
     enabled: accountStatus !== Status.LOADING && accountStatus !== Status.IDLE
   })
 
-  const userList = searchText !== '' ? searchData : followersData
+  const userList = searchText !== '' ? searchData : followers
   const userListLoadSuccess =
     searchText !== '' ? isSuccess : followersDataSuccess
   const isUserListPending = searchText !== '' ? isLoading : followerDataPending
@@ -82,13 +84,7 @@ export const UserMentionAutocompleteText = (
     if (userList && userListLoadSuccess) {
       onResultsLoaded?.(userList)
     }
-  }, [
-    userList,
-    onResultsLoaded,
-    searchText,
-    followersData,
-    userListLoadSuccess
-  ])
+  }, [userList, onResultsLoaded, searchText, userListLoadSuccess])
 
   const handleClose = useCallback(() => {
     setIsOpen(false)

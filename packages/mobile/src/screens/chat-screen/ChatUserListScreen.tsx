@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { useUsers } from '@audius/common/api'
+import { useFollowers, useUsers } from '@audius/common/api'
 import { Status, statusIsNotFinalized } from '@audius/common/models'
 import type { User } from '@audius/common/models'
 import {
@@ -8,11 +8,7 @@ import {
   chatActions,
   chatSelectors,
   searchUsersModalActions,
-  searchUsersModalSelectors,
-  userListActions,
-  followersUserListActions,
-  followersUserListSelectors,
-  FOLLOWERS_USER_LIST_TAG
+  searchUsersModalSelectors
 } from '@audius/common/store'
 import type { CreateChatModalState } from '@audius/common/store'
 import { View, Image } from 'react-native'
@@ -41,7 +37,6 @@ const { searchUsers } = searchUsersModalActions
 const { getUserList } = searchUsersModalSelectors
 const { fetchBlockees, fetchBlockers, fetchPermissions } = chatActions
 const { getUserList: getChatsUserList } = chatSelectors
-const { getUserList: getFollowersUserList } = followersUserListSelectors
 
 const DEBOUNCE_MS = 150
 
@@ -155,31 +150,41 @@ const ListEmpty = () => {
 const useDefaultUserList = (
   defaultUserList: CreateChatModalState['defaultUserList']
 ) => {
-  const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
-  const followersUserList = useSelector(getFollowersUserList)
+  const followersQuery = useFollowers(
+    { userId: currentUserId },
+    { enabled: defaultUserList === 'followers' }
+  )
   const chatsUserList = useSelector(getChatsUserList)
 
-  const { hasMore, loading, userIds } =
-    defaultUserList === 'chats' ? chatsUserList : followersUserList
+  const userIds =
+    defaultUserList === 'followers'
+      ? (followersQuery.users?.map((user) => user.user_id) ?? [])
+      : chatsUserList.userIds
 
-  const loadMore = useCallback(() => {
-    if (currentUserId) {
-      dispatch(followersUserListActions.setFollowers(currentUserId))
-      dispatch(userListActions.loadMore(FOLLOWERS_USER_LIST_TAG))
-    }
-  }, [dispatch, currentUserId])
+  const hasMore =
+    defaultUserList === 'followers'
+      ? followersQuery.hasNextPage
+      : chatsUserList.hasMore
 
-  useEffect(() => {
-    loadMore()
-  }, [loadMore])
+  const loadMore =
+    defaultUserList === 'followers' ? followersQuery.fetchNextPage : undefined
+
+  // Emulating Status behavior for consistency below. UserList has a legacy
+  // pattern with errorSagas and doesn't use Status directly
+  const status =
+    defaultUserList === 'followers'
+      ? followersQuery.isPending || followersQuery.isFetchingNextPage
+        ? Status.LOADING
+        : Status.SUCCESS
+      : chatsUserList.loading
+        ? Status.LOADING
+        : Status.SUCCESS
 
   return {
     hasMore,
     loadMore,
-    // Emulating Status behavior for consistency below. UserList has a legacy
-    // pattern with errorSagas and doesn't use Status directly
-    status: loading ? Status.LOADING : Status.SUCCESS,
+    status,
     userIds
   }
 }
@@ -244,7 +249,7 @@ export const ChatUserListScreen = () => {
 
   const handleLoadMore = useCallback(() => {
     if (status !== Status.LOADING && hasMore) {
-      loadMore()
+      loadMore?.()
     }
   }, [status, loadMore, hasMore])
 

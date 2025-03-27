@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useRelatedArtists } from '@audius/common/api'
+import { useRelatedArtistsUsers } from '@audius/common/api'
 import { User } from '@audius/common/models'
 import { profilePageSelectors } from '@audius/common/store'
 import { MAX_PROFILE_RELATED_ARTISTS } from '@audius/common/utils'
@@ -31,7 +31,7 @@ export const RelatedArtists = () => {
 
   const artistId = profile?.user_id
 
-  const { data: relatedArtists } = useRelatedArtists({
+  const { data: relatedArtists } = useRelatedArtistsUsers({
     artistId,
     pageSize: MAX_PROFILE_RELATED_ARTISTS
   })

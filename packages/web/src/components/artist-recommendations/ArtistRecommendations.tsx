@@ -1,7 +1,7 @@
 import { forwardRef, ReactNode, useCallback, useEffect, useState } from 'react'
 
 import {
-  useRelatedArtists,
+  useRelatedArtistsUsers,
   useFollowUser,
   useUnfollowUser
 } from '@audius/common/api'
@@ -128,7 +128,7 @@ export const ArtistRecommendations = forwardRef<
   const { mutate: followUser } = useFollowUser()
   const { mutate: unfollowUser } = useUnfollowUser()
 
-  const { data: suggestedArtists = [] } = useRelatedArtists({
+  const { data: suggestedArtists = [] } = useRelatedArtistsUsers({
     artistId,
     filterFollowed: true,
     pageSize: 7

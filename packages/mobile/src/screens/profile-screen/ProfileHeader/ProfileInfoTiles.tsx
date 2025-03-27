@@ -3,13 +3,15 @@ import { useState, useMemo, useCallback } from 'react'
 
 import {
   useMutualFollowers,
-  useRelatedArtists,
+  useRelatedArtistsUsers,
   useSupportedUsers,
   useSupporters,
-  useUserComments
+  useUserComments,
+  useUsers
 } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
-import { Name, type UserMetadata } from '@audius/common/models'
+import type { UserMetadata } from '@audius/common/models'
+import { Name } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { Platform, View, ScrollView } from 'react-native'
@@ -187,13 +189,15 @@ const MutualsTile = ({ userId, count }: { userId: number; count: number }) => {
     pageSize: MAX_CARD_PROFILE_PICTURES
   })
 
+  const { data: users = [] } = useUsers(mutuals)
+
   return (
     <ProfileInfoTile
       screen='Mutuals'
       icon={IconUserFollowing}
       title={messages.mutuals}
       content={
-        <UserListWithCount users={mutuals} count={count} loading={isLoading} />
+        <UserListWithCount users={users} count={count} loading={isLoading} />
       }
     />
   )
@@ -266,7 +270,7 @@ const SupportedUsersTile = ({
 }
 
 const RelatedArtistsTile = ({ userId }: { userId: number }) => {
-  const { data: relatedArtists = [], isLoading } = useRelatedArtists({
+  const { data: relatedArtists = [], isLoading } = useRelatedArtistsUsers({
     artistId: userId,
     pageSize: MAX_CARD_PROFILE_PICTURES
   })
