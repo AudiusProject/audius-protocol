@@ -89,7 +89,7 @@ def test_pinned_comment_challenge(app):
         session.flush()
 
         # Set challenge as active for purpose of test
-        session.query(Challenge).filter(Challenge.id == "pc").update(
+        session.query(Challenge).filter(Challenge.id == "cp").update(
             {"active": True, "starting_block": BLOCK_NUMBER}
         )
 
@@ -115,7 +115,7 @@ def test_pinned_comment_challenge(app):
             .all()
         )
         assert len(commenter_challenges) == 1
-        assert commenter_challenges[0].challenge_id == "pc"
+        assert commenter_challenges[0].challenge_id == "cp"
         assert commenter_challenges[0].is_complete == True
 
         # Test 2: Comment pinned by unverified artist - should not create a challenge

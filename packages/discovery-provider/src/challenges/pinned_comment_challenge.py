@@ -13,19 +13,12 @@ from src.models.rewards.user_challenge import UserChallenge
 logger = logging.getLogger(__name__)
 
 
-def generate_pinned_comment_specifier(user_id: int, track_id: int) -> str:
-    """Generate a unique specifier for a pinned comment challenge.
-    The specifier combines the user ID and track ID to ensure rewards are only given once per track.
-    """
-    return f"{hex(user_id)[2:]}:{hex(track_id)[2:]}"
-
-
 class PinnedCommentChallengeUpdater(ChallengeUpdater):
     """Challenge updater for rewarding users whose comments are pinned by verified artists."""
 
     def generate_specifier(self, session: Session, user_id: int, extra: Dict) -> str:
         """Generate a unique specifier for this challenge instance."""
-        return generate_pinned_comment_specifier(user_id, extra["track_id"])
+        return f"{hex(user_id)[2:]}:{hex(extra['track_id'])[2:]}"
 
     def should_create_new_challenge(
         self, session: Session, event: str, user_id: int, extra: Dict

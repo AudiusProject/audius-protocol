@@ -9,15 +9,15 @@ This guide will walk you through the process of creating and implementing a new 
 
 ## Table of Contents
 
-1. [Overview of the Challenge System](#overview-of-the-challenge-system)
-2. [Challenge Types](#challenge-types)
-3. [Step-by-Step Guide to Adding a New Challenge](#step-by-step-guide-to-adding-a-new-challenge)
-4. [Database Models](#database-models)
-5. [Challenge Event Processing](#challenge-event-processing)
-6. [Frontend Integration](#frontend-integration)
-7. [Challenge Reward Modals](#challenge-reward-modals)
-8. [Challenge Specifiers](#challenge-specifiers)
-9. [Examples](#examples)
+1. [Overview of the Challenge System](mdc:#overview-of-the-challenge-system)
+2. [Challenge Types](mdc:#challenge-types)
+3. [Step-by-Step Guide to Adding a New Challenge](mdc:#step-by-step-guide-to-adding-a-new-challenge)
+4. [Database Models](mdc:#database-models)
+5. [Challenge Event Processing](mdc:#challenge-event-processing)
+6. [Frontend Integration](mdc:#frontend-integration)
+7. [Challenge Reward Modals](mdc:#challenge-reward-modals)
+8. [Challenge Specifiers](mdc:#challenge-specifiers)
+9. [Examples](mdc:#examples)
 
 ## Overview of the Challenge System
 
