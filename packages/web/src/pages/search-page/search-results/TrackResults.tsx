@@ -131,7 +131,7 @@ export const TrackResultsPage = () => {
   const isMobile = useIsMobile()
   const { color } = useTheme()
   const searchParams = useSearchParams()
-  const queryData = useSearchTrackResults(searchParams)
+  const { isPending, isFetching, isError } = useSearchTrackResults(searchParams)
 
   const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
 
@@ -152,11 +152,20 @@ export const TrackResultsPage = () => {
           />
         </Flex>
       </Flex>
-      <TrackResults viewLayout={tracksLayout} queryData={queryData} />
+      <TrackResults
+        viewLayout={tracksLayout}
+        isPending={isPending}
+        isFetching={isFetching}
+        isError={isError}
+      />
     </Flex>
   ) : (
     <Flex p='m' css={{ backgroundColor: color.background.default }}>
-      <TrackResults queryData={queryData} />
+      <TrackResults
+        isPending={isPending}
+        isFetching={isFetching}
+        isError={isError}
+      />
     </Flex>
   )
 }

@@ -15,8 +15,7 @@ import {
   SearchSource,
   UserMetadata,
   UserCollectionMetadata,
-  UserTrackMetadata,
-  Track
+  UserTrackMetadata
 } from '~/models'
 import { FeatureFlags } from '~/services'
 import { SearchKind, SearchSortMethod } from '~/store'

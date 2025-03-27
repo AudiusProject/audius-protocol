@@ -13,7 +13,9 @@ import {
   Collection,
   LineupTrack,
   Track,
-  UserTrackMetadata
+  UserTrackMetadata,
+  UserCollectionMetadata,
+  CollectionMetadata
 } from '@audius/common/models'
 import {
   LineupBaseActions,
@@ -46,7 +48,14 @@ const { makeGetCurrent } = queueSelectors
 
 export interface TanQueryLineupProps {
   /** Query data should be fetched one component above and passed through here */
-  data: UserTrackMetadata[] | TrackMetadata[] | undefined
+  data:
+    | (
+        | UserTrackMetadata
+        | TrackMetadata
+        | UserCollectionMetadata
+        | CollectionMetadata
+      )[]
+    | undefined
   isFetching: boolean
   isPending: boolean
   isError: boolean

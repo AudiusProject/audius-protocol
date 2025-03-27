@@ -137,8 +137,13 @@ export const ProfileResultsPage = () => {
   }, [isMobile, mainContentRef])
 
   const searchParams = useSearchParams()
-  const queryData = useSearchUserResults(searchParams)
-  const { data: ids, isLoading, hasNextPage, loadNextPage } = queryData
+  const {
+    data: ids,
+    isLoading,
+    hasNextPage,
+    loadNextPage,
+    isPending
+  } = useSearchUserResults(searchParams)
 
   const isResultsEmpty = ids?.length === 0
   const showNoResultsTile = !isLoading && isResultsEmpty
@@ -168,7 +173,12 @@ export const ProfileResultsPage = () => {
         {showNoResultsTile ? (
           <NoResultsTile />
         ) : (
-          <ProfileResultsTiles queryData={queryData} skeletonCount={10} />
+          <ProfileResultsTiles
+            isFetching={isLoading}
+            isPending={isPending}
+            data={ids}
+            skeletonCount={10}
+          />
         )}
       </Flex>
     </InfiniteScroll>
