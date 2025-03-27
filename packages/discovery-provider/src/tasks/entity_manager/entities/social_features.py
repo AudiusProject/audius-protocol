@@ -8,6 +8,8 @@ from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
 from src.models.social.subscription import Subscription
+from src.models.tracks.remix import Remix
+from src.models.tracks.track import Track
 from src.tasks.entity_manager.utils import (
     Action,
     EntityType,
@@ -98,6 +100,33 @@ def create_social_record(params: ManageEntityParameters):
         params.challenge_bus.dispatch(
             challenge_event, params.block_number, params.block_datetime, params.user_id
         )
+
+    # dispatch verified cosign challenge
+    if (
+        params.action in [Action.SAVE, Action.REPOST]
+        and params.entity_type == EntityType.TRACK
+        and params.existing_records[EntityType.TRACK][params.entity_id].remix_of
+    ):
+        remixed_track = (
+            params.session.query(Track)
+            .join(Remix, Remix.parent_track_id == Track.track_id)
+            .filter(Remix.child_track_id == params.entity_id)
+            .first()
+        )
+        remixer = params.existing_records[EntityType.TRACK][params.entity_id].owner_id
+        cosigner = params.existing_records[EntityType.USER][params.user_id]
+        if (
+            remixed_track
+            and remixed_track.owner_id == params.user_id
+            and cosigner.is_verified
+        ):
+            params.challenge_bus.dispatch(
+                ChallengeEvent.cosign,
+                params.block_number,
+                params.block_datetime,
+                remixer,
+                {"track_id": params.entity_id},
+            )
 
 
 def get_attribute_from_record_metadata(params, attribute):

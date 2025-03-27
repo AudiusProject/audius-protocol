@@ -308,4 +308,6 @@ def setup_challenge_bus():
         ChallengeEvent.first_weekly_comment, first_weekly_comment_challenge_manager
     )
     bus.register_listener(ChallengeEvent.tastemaker, tastemaker_challenge_manager)
+    bus.register_listener(ChallengeEvent.cosign, tastemaker_challenge_manager)
+
     return bus
