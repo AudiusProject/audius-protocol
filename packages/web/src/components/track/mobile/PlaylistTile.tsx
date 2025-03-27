@@ -57,7 +57,10 @@ const messages = {
 
 const TrackItem = (props: TrackItemProps) => {
   const { active, deleted, index, isAlbum, track, forceSkeleton } = props
-  const { data: trackOwner } = useUser(track?.owner_id)
+  const { data: trackOwnerName } = useUser(track?.owner_id, {
+    select: (user) => user?.name
+  })
+
   return (
     <>
       <div className={styles.trackItemDivider}></div>
@@ -76,7 +79,7 @@ const TrackItem = (props: TrackItemProps) => {
             {!isAlbum ? (
               <div className={styles.byArtist}>
                 {' '}
-                {`${messages.by} ${trackOwner?.name}`}{' '}
+                {`${messages.by} ${trackOwnerName}`}{' '}
               </div>
             ) : null}
             {deleted ? (

@@ -1,4 +1,5 @@
 import { Collection, FieldVisibility, Track, User } from '@audius/common/models'
+import { TQCollection } from '@audius/common/src/api/tan-query/models'
 import { Genre } from '@audius/common/utils'
 
 const defaultFieldVisibility: FieldVisibility = {
@@ -50,46 +51,44 @@ export const getTrackWithFallback = (track: Track | null | undefined) => {
 }
 
 export const getCollectionWithFallback = (
-  collection: Collection | null | undefined
+  collection: Partial<TQCollection> | Collection | null | undefined
 ) => {
-  return (
-    collection || {
-      playlist_id: -1,
-      playlist_name: '',
-      repost_count: 0,
-      save_count: 0,
-      track_ids: [],
-      track_count: 0,
-      followee_reposts: [],
-      followee_saves: [],
-      has_current_user_reposted: false,
-      has_current_user_saved: false,
-      is_private: true,
-      is_album: false,
-      is_delete: false,
-      permalink: '',
-      activity_timestamp: '',
-      _co_sign: undefined,
-      playlist_owner_id: -1,
-      is_stream_gated: false,
-      stream_conditions: null,
-      access: {
-        stream: false,
-        download: false
-      }
-    }
-  )
+  return {
+    playlist_id: -1,
+    playlist_name: '',
+    repost_count: 0,
+    save_count: 0,
+    track_ids: [],
+    track_count: 0,
+    followee_reposts: [],
+    followee_saves: [],
+    has_current_user_reposted: false,
+    has_current_user_saved: false,
+    is_private: true,
+    is_album: false,
+    is_delete: false,
+    permalink: '',
+    activity_timestamp: '',
+    _co_sign: undefined,
+    playlist_owner_id: -1,
+    is_stream_gated: false,
+    stream_conditions: null,
+    access: {
+      stream: false,
+      download: false
+    },
+    ...collection
+  }
 }
 
-export const getUserWithFallback = (user: User | null | undefined) => {
-  return (
-    user || {
-      artist_pick_track_id: -1,
-      name: '',
-      handle: '',
-      is_verified: false,
-      is_deactivated: false,
-      user_id: -1
-    }
-  )
+export const getUserWithFallback = (user: Partial<User> | null | undefined) => {
+  return {
+    artist_pick_track_id: -1,
+    name: '',
+    handle: '',
+    is_verified: false,
+    is_deactivated: false,
+    user_id: -1,
+    ...user
+  }
 }

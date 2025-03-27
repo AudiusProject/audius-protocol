@@ -11,7 +11,8 @@ import {
 import {
   useCollection,
   useUser,
-  useCollectionTracksWithUid
+  useCollectionTracksWithUid,
+  useCurrentUserId
 } from '@audius/common/api'
 import {
   Name,
@@ -25,6 +26,7 @@ import {
   isContentUSDCPurchaseGated,
   ModalSource
 } from '@audius/common/models'
+import { useCurrentUser } from '@audius/common/src/api/tan-query/useCurrentUser'
 import {
   collectionsSocialActions,
   shareModalUIActions,
@@ -108,10 +110,53 @@ const ConnectedPlaylistTile = ({
 }: PlaylistTileProps) => {
   const dispatch = useDispatch()
 
-  const { data: collection } = useCollection(collectionId)
-  const tracks = useCollectionTracksWithUid(collection, uid)
-  const { data: user } = useUser(collection?.playlist_owner_id)
-  const { handle: userHandle } = user ?? {}
+  const { data: partialCollection } = useCollection(collectionId, {
+    select: (collection) => ({
+      playlist_contents: collection?.playlist_contents,
+      trackIds: collection?.trackIds,
+      playlist_owner_id: collection?.playlist_owner_id,
+      is_album: collection?.is_album,
+      playlist_name: collection?.playlist_name,
+      playlist_id: collection?.playlist_id,
+      is_private: collection?.is_private,
+      has_current_user_reposted: collection?.has_current_user_reposted,
+      has_current_user_saved: collection?.has_current_user_saved,
+      track_count: collection?.track_count,
+      permalink: collection?.permalink,
+      is_stream_gated: collection?.is_stream_gated,
+      stream_conditions: collection?.stream_conditions,
+      access: collection?.access
+    })
+  })
+  const {
+    is_album: isAlbum,
+    playlist_name: title,
+    playlist_id: id,
+    is_private: isUnlisted,
+    has_current_user_reposted: isReposted,
+    has_current_user_saved: isFavorited,
+    track_count: trackCount,
+    permalink,
+    is_stream_gated: isStreamGated,
+    stream_conditions: streamConditions,
+    access,
+    playlist_owner_id
+  } = getCollectionWithFallback(partialCollection)
+
+  const tracks = useCollectionTracksWithUid(partialCollection, uid)
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: partialUser } = useUser(playlist_owner_id, {
+    select: (user) => ({
+      is_deactivated: user?.is_deactivated,
+      handle: user?.handle,
+      user_id: user?.user_id
+    })
+  })
+  const {
+    is_deactivated: isOwnerDeactivated,
+    handle = '',
+    user_id
+  } = partialUser ?? {}
 
   const playingUid = useSelector(getUid)
   const isBuffering = useSelector(getBuffering)
@@ -158,26 +203,7 @@ const ConnectedPlaylistTile = ({
     [dispatch]
   )
 
-  const {
-    is_album: isAlbum,
-    playlist_name: title,
-    playlist_id: id,
-    is_private: isUnlisted,
-    has_current_user_reposted: isReposted,
-    has_current_user_saved: isFavorited,
-    track_count: trackCount,
-    permalink,
-    is_stream_gated: isStreamGated,
-    stream_conditions: streamConditions,
-    access
-  } = getCollectionWithFallback(collection)
-
-  const {
-    user_id,
-    handle,
-    is_deactivated: isOwnerDeactivated
-  } = getUserWithFallback(user)
-  const isOwner = handle === userHandle
+  const isOwner = currentUserId === user_id
 
   const menuRef = useRef<HTMLDivElement>(null)
 

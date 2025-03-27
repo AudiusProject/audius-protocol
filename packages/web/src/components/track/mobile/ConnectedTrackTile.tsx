@@ -1,10 +1,9 @@
 import { memo } from 'react'
 
-import { useTrack, useUser } from '@audius/common/api'
+import { useCurrentUserId, useTrack, useUser } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import { ShareSource, RepostSource, ID } from '@audius/common/models'
 import {
-  accountSelectors,
   tracksSocialActions,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
@@ -32,7 +31,6 @@ const { getTheme } = themeSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
 const { repostTrack, undoRepostTrack } = tracksSocialActions
-const getUserId = accountSelectors.getUserId
 
 type ConnectedTrackTileProps = Omit<
   TrackTileProps,
@@ -72,20 +70,26 @@ const ConnectedTrackTile = ({
 }: ConnectedTrackTileProps) => {
   const dispatch = useDispatch()
 
-  // Move mapStateToProps selectors into component using useSelector
   const { data: track } = useTrack(id)
-  const { data: user } = useUser(track?.owner_id, {
-    enabled: !!track?.owner_id
+  const { data: partialUser } = useUser(track?.owner_id, {
+    select: (user) => ({
+      user_id: user?.user_id,
+      handle: user?.handle,
+      name: user?.name,
+      is_verified: user?.is_verified,
+      is_deactivated: user?.is_deactivated
+    })
   })
+  const { user_id, handle, name, is_verified, is_deactivated } =
+    getUserWithFallback(partialUser) ?? {}
   const playingUid = useSelector(getUid)
   const isBuffering = useSelector(getBuffering)
   const isPlaying = useSelector(getPlaying)
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const darkMode = useSelector((state: AppState) =>
     shouldShowDark(getTheme(state))
   )
 
-  // Move mapDispatchToProps functions into component
   const shareTrack = (trackId: ID) => {
     dispatch(
       requestOpenShareModal({
@@ -139,8 +143,6 @@ const ConnectedTrackTile = ({
     album_backlink
   } = trackWithFallback
 
-  const { user_id, handle, name, is_verified } = getUserWithFallback(user)
-
   const isOwner = user_id === currentUserId
 
   const { isFetchingNFTAccess, hasStreamAccess } =
@@ -175,7 +177,7 @@ const ConnectedTrackTile = ({
       includeRepost: hasStreamAccess,
       includeShare: true,
       includeTrackPage: true,
-      isDeleted: is_delete || user?.is_deactivated,
+      isDeleted: is_delete || is_deactivated,
       isFavorited: has_current_user_saved,
       isOwner,
       isReposted: has_current_user_reposted,
@@ -240,7 +242,7 @@ const ConnectedTrackTile = ({
     clickOverflow(trackId, overflowActions)
   }
 
-  if (is_delete || user?.is_deactivated) return null
+  if (is_delete || is_deactivated) return null
 
   return (
     <TrackTile

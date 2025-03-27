@@ -104,13 +104,17 @@ const ConnectedPlaylistTile = ({
 }: OwnProps) => {
   const dispatch = useDispatch()
 
-  // Move mapStateToProps selectors into component
   const { data: collectionWithoutFallback } = useCollection(id)
   const collection = getCollectionWithFallback(collectionWithoutFallback)
   const tracks = useCollectionTracksWithUid(collectionWithoutFallback, uid)
-  const { data: user } = useUser(collection?.playlist_owner_id, {
-    enabled: !!collection?.playlist_owner_id
+  const { data: partialUser } = useUser(collection?.playlist_owner_id, {
+    select: (user) => ({
+      handle: user?.handle,
+      name: user?.name,
+      is_verified: user?.is_verified
+    })
   })
+  const { handle, name, is_verified } = partialUser ?? {}
   const { data: currentUserId } = useCurrentUserId()
   const playingUid = useSelector(getUid)
   const isBuffering = useSelector(getBuffering)
@@ -119,7 +123,6 @@ const ConnectedPlaylistTile = ({
     shouldShowDark(getTheme(state))
   )
 
-  // Move mapDispatchToProps into component
   const goToRoute = useCallback(
     (route: string) => {
       dispatch(push(route))
@@ -221,13 +224,19 @@ const ConnectedPlaylistTile = ({
 
   const getRoute = useCallback(() => {
     return collectionPage(
-      user?.handle,
+      handle,
       collection.playlist_name,
       collection.playlist_id,
       collection.permalink,
       collection.is_album
     )
-  }, [collection, user])
+  }, [
+    collection.is_album,
+    collection.permalink,
+    collection.playlist_id,
+    collection.playlist_name,
+    handle
+  ])
 
   const goToCollectionPage = useCallback(
     (e: MouseEvent<HTMLElement>) => {
@@ -353,9 +362,9 @@ const ConnectedPlaylistTile = ({
       contentTitle={collection.is_album ? 'album' : 'playlist'}
       playlistTitle={collection.playlist_name}
       permalink={collection.permalink}
-      artistHandle={user?.handle ?? ''}
-      artistName={user?.name ?? ''}
-      artistIsVerified={user?.is_verified ?? false}
+      artistHandle={handle ?? ''}
+      artistName={name ?? ''}
+      artistIsVerified={is_verified ?? false}
       ownerId={collection.playlist_owner_id}
       duration={tracks.reduce(
         (duration: number, track: Track) => duration + track.duration,

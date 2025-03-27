@@ -1,6 +1,11 @@
 import { memo, useCallback, useEffect, MouseEvent, useRef } from 'react'
 
-import { useToggleFavoriteTrack, useTrack, useUser } from '@audius/common/api'
+import {
+  useCurrentUserId,
+  useToggleFavoriteTrack,
+  useTrack,
+  useUser
+} from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,
@@ -75,14 +80,27 @@ const ConnectedTrackTile = ({
   onClick
 }: ConnectedTrackTileProps) => {
   const dispatch = useDispatch()
+  const { data: currentUserId } = useCurrentUserId()
   const { data: track, isPending } = useTrack(id)
-  const { data: user } = useUser(track?.owner_id, {
-    enabled: track?.owner_id !== undefined
+  const { data: partialUser } = useUser(track?.owner_id, {
+    select: (user) => ({
+      handle: user?.handle,
+      name: user?.name,
+      is_verified: user?.is_verified,
+      is_deactivated: user?.is_deactivated,
+      artist_pick_track_id: user?.artist_pick_track_id
+    })
   })
+  const {
+    user_id,
+    name,
+    handle,
+    is_deactivated: isOwnerDeactivated,
+    artist_pick_track_id
+  } = getUserWithFallback(partialUser)
   const playingUid = useSelector(getUid)
   const isBuffering = useSelector(getBuffering)
   const isPlaying = useSelector(getPlaying)
-  const { handle: userHandle } = user ?? {}
 
   const shareTrack = useCallback(
     (trackId: ID) => {
@@ -128,18 +146,10 @@ const ConnectedTrackTile = ({
     ddex_app: ddexApp
   } = trackWithFallback
 
-  const {
-    user_id,
-    name,
-    handle,
-    is_deactivated: isOwnerDeactivated,
-    artist_pick_track_id
-  } = getUserWithFallback(user)
-
   const isActive = uid === playingUid
   const isTrackBuffering = isActive && isBuffering
   const isTrackPlaying = isActive && isPlaying
-  const isOwner = handle === userHandle
+  const isOwner = currentUserId === user_id
   const hasPreview = !!track?.preview_cid
   const isArtistPick = artist_pick_track_id === trackId
 
@@ -183,8 +193,8 @@ const ConnectedTrackTile = ({
       handle,
       includeAddToPlaylist: !isUnlisted || isOwner,
       includeAddToAlbum: isOwner && !ddexApp,
-      includeArtistPick: handle === userHandle,
-      includeEdit: handle === userHandle,
+      includeArtistPick: isOwner,
+      includeEdit: isOwner,
       ddexApp: track?.ddex_app,
       includeEmbed: !(isUnlisted || isStreamGated),
       includeFavorite: hasStreamAccess,
@@ -293,7 +303,7 @@ const ConnectedTrackTile = ({
     ]
   )
 
-  if (is_delete || user?.is_deactivated) return null
+  if (is_delete || isOwnerDeactivated) return null
 
   const order = ordered && index !== undefined ? index + 1 : undefined
   const artwork = renderImage()

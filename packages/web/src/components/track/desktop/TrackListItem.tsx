@@ -23,6 +23,7 @@ import Skeleton from 'components/skeleton/Skeleton'
 import { TablePlayButton } from 'components/table/components/TablePlayButton'
 import { isDescendantElementOf } from 'utils/domUtils'
 
+import { getUserWithFallback } from '../helpers'
 import { TrackTileSize } from '../types'
 
 import styles from './TrackListItem.module.css'
@@ -69,7 +70,20 @@ const TrackListItem = (props: TrackListItemProps) => {
   const isPrivate = track?.is_unlisted
   const isPremium = isContentUSDCPurchaseGated(track?.stream_conditions)
   const { hasStreamAccess } = useGatedContentAccess(track as Track)
-  const { data: user } = useUser(track?.owner_id)
+  const { data: partialUser } = useUser(track?.owner_id, {
+    select: (user) => ({
+      is_deactivated: user?.is_deactivated,
+      handle: user?.handle,
+      name: user?.name,
+      artist_pick_track_id: user?.artist_pick_track_id
+    })
+  })
+  const {
+    is_deactivated: isOwnerDeactivated = false,
+    handle: userHandle,
+    name: userName,
+    artist_pick_track_id: artistPickTrackId
+  } = partialUser ?? {}
 
   if (forceSkeleton) {
     return (
@@ -86,12 +100,12 @@ const TrackListItem = (props: TrackListItemProps) => {
 
   if (!track) return null
 
-  const deleted = track.is_delete || !!user?.is_deactivated
+  const deleted = track.is_delete || isOwnerDeactivated
   const strings = makeStrings({ deleted })
 
   const onClickArtistName = (e: MouseEvent) => {
     e.stopPropagation()
-    if (goToRoute) goToRoute(profilePage(user?.handle))
+    if (goToRoute) goToRoute(profilePage(userHandle))
   }
 
   const onClickTrackName = (e: MouseEvent) => {
@@ -126,7 +140,7 @@ const TrackListItem = (props: TrackListItemProps) => {
   })
 
   const menu: Omit<TrackMenuProps, 'children'> = {
-    handle: user?.handle ?? '',
+    handle: userHandle ?? '',
     includeAddToPlaylist: !isPrivate || isOwner,
     includeAddToAlbum: isOwner && !track?.ddex_app,
     includeArtistPick: false,
@@ -135,11 +149,11 @@ const TrackListItem = (props: TrackListItemProps) => {
     includeRepost: true,
     includeShare: false,
     includeTrackPage: true,
-    isArtistPick: user?.artist_pick_track_id === track.track_id,
+    isArtistPick: artistPickTrackId === track.track_id,
     isDeleted: deleted,
     isFavorited: track.has_current_user_saved,
     isOwner: false,
-    isOwnerDeactivated: !!user?.is_deactivated,
+    isOwnerDeactivated,
     isReposted: track.has_current_user_reposted,
     trackId: track.track_id,
     trackTitle: track.title,
@@ -188,10 +202,10 @@ const TrackListItem = (props: TrackListItemProps) => {
           {!isAlbum ? (
             <div className={styles.artistName} onClick={onClickArtistName}>
               <div className={styles.by}>{strings.by}</div>
-              {!user || user?.is_deactivated ? (
-                `${user?.name} [Deactivated]`
+              {!isOwnerDeactivated ? (
+                `${userName} [Deactivated]`
               ) : (
-                <ArtistPopover handle={user?.handle}>{user.name}</ArtistPopover>
+                <ArtistPopover handle={userHandle}>{userName}</ArtistPopover>
               )}
             </div>
           ) : null}
