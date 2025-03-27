@@ -53,8 +53,8 @@ class TastemakerChallengeUpdater(ChallengeUpdater):
         item_type = "p" if extra["tastemaker_item_type"] == "playlist" else "t"
         return f"{hex(user_id)[2:]}:{item_type}:{hex(extra['tastemaker_item_id'])[2:]}"
 
-    def should_update_challenge(
-        self, session: Session, user_id: int, tastemaker_item_id: int
+    def should_create_new_challenge(
+        self, session: Session, event: str, user_id: int, extra: Dict
     ) -> bool:
         block = (
             session.query(CoreIndexedBlocks)
