@@ -109,6 +109,7 @@ export const sdk = (config: SdkConfig) => {
 
   // Initialize APIs
   const apis = initializeApis({
+    config,
     apiKey,
     appName,
     services
@@ -390,14 +391,23 @@ const initializeServices = (config: SdkConfig) => {
 }
 
 const initializeApis = ({
+  config,
   apiKey,
   appName,
   services
 }: {
+  config: SdkConfig
   apiKey?: string
   appName?: string
   services: ServicesContainer
 }) => {
+  const basePath =
+    config.environment === 'development'
+      ? developmentConfig.network.apiEndpoint
+      : config.environment === 'staging'
+        ? stagingConfig.network.apiEndpoint
+        : productionConfig.network.apiEndpoint
+
   const middleware = [
     addAppInfoMiddleware({ apiKey, appName, services }),
     addRequestSignatureMiddleware({ services })
@@ -405,7 +415,7 @@ const initializeApis = ({
   const apiClientConfig = new Configuration({
     fetchApi: fetch,
     middleware,
-    basePath: 'https://api.staging.audius.co/v1'
+    basePath: `${basePath}/v1`
   })
   const apiClientConfigWithDiscoveryNodeSelector = new Configuration({
     fetchApi: fetch,
@@ -460,7 +470,11 @@ const initializeApis = ({
   const resolve = resolveApi.resolve.bind(resolveApi)
 
   const chats = new ChatsApi(
-    apiClientConfig,
+    new Configuration({
+      basePath, // comms is not a v1 API
+      fetchApi: fetch,
+      middleware
+    }),
     services.audiusWalletClient,
     services.logger
   )
@@ -494,6 +508,7 @@ const initializeApis = ({
   )
 
   const generatedApiClientConfigFull = new ConfigurationFull({
+    basePath: `${basePath}/v1/full`,
     fetchApi: fetch,
     middleware
   })
