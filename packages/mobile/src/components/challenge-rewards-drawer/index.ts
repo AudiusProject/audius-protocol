@@ -1,7 +1,6 @@
 export { AudioMatchingChallengeContent } from './AudioMatchingChallengeContent'
 export { ChallengeRewardsDrawer } from './ChallengeRewardsDrawer'
 export { ChallengeRewardsLayout } from './ChallengeRewardsLayout'
-export { CommentPinChallengeContent } from './CommentPinChallengeContent'
 export { DefaultChallengeContent } from './DefaultChallengeContent'
 export { ListenStreakEndlessChallengeContent } from './ListenStreakEndlessChallengeContent'
 export { TastemakerChallengeContent } from './TastemakerChallengeContent'

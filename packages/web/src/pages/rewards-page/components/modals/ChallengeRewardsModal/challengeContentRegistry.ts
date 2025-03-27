@@ -1,7 +1,6 @@
 import { ChallengeName } from '@audius/common/models'
 
 import { AudioMatchingRewardsModalContent } from './AudioMatchingRewardsModalContent'
-import { CommentPinChallengeModalContent } from './CommentPinChallengeModalContent'
 import { DefaultChallengeContent } from './DefaultChallengeContent'
 import { FirstWeeklyCommentChallengeModalContent } from './FirstWeeklyCommentChallengeModalContent'
 import { ListenStreakChallengeModalContent } from './ListenStreakChallengeModalContent'
@@ -38,7 +37,7 @@ export const challengeContentRegistry: ChallengeContentMap = {
   [ChallengeName.Tastemaker]:
     TastemakerChallengeModalContent as ChallengeContentComponent,
   [ChallengeName.CommentPin]:
-    CommentPinChallengeModalContent as ChallengeContentComponent,
+    DefaultChallengeContent as ChallengeContentComponent,
   default: DefaultChallengeContent as ChallengeContentComponent
 }
 
