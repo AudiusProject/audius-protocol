@@ -113,6 +113,7 @@ export const useLibraryTracks = (
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
+    select: (data) => data.pages.flat(),
     initialPageParam: 0,
     staleTime: config?.staleTime ?? Infinity,
     gcTime: Infinity,
@@ -136,7 +137,6 @@ export const useLibraryTracks = (
   })
 
   return {
-    ...queryData,
     ...lineupData,
     loadNextPage: loadNextPage(queryData),
     pageSize

@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 
-import { useGetCurrentUserId } from '@audius/common/api'
-import { User } from '@audius/common/models'
+import { ID, User } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
@@ -43,6 +42,7 @@ export type UserProfileListProps = {
   disablePopover?: boolean
   stopPropagation?: boolean
   userListType?: UserListType
+  userListEntityId?: ID
   userListEntityType?: UserListEntityType
   profilePictureClassname?: string
 }
@@ -55,12 +55,12 @@ export const UserProfilePictureList = ({
   disablePopover = false,
   stopPropagation = false,
   userListType,
+  userListEntityId,
   userListEntityType,
   profilePictureClassname
 }: UserProfileListProps) => {
   const dispatch = useDispatch()
-  const showUserListModal = totalUserCount > limit
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const showUserListModal = true // totalUserCount > limit
   /**
    * We add a +1 because the remaining users count includes
    * the tile that has the +N itself.
@@ -79,14 +79,14 @@ export const UserProfilePictureList = ({
   useEffect(() => {
     if (
       userListType &&
-      currentUserId &&
       userListEntityType &&
+      userListEntityId &&
       users.length > 0
     ) {
       dispatch(
         setUserListUsers({
           userListType,
-          id: currentUserId,
+          id: userListEntityId,
           entityType: userListEntityType
         })
       )
@@ -95,9 +95,9 @@ export const UserProfilePictureList = ({
     userListType,
     disableProfileClick,
     dispatch,
-    currentUserId,
     userListEntityType,
-    users.length
+    users.length,
+    userListEntityId
   ])
 
   const handleClick = () => {

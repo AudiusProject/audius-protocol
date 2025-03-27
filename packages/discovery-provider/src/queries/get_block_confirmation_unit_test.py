@@ -2,7 +2,7 @@ from src.models.core.core_indexed_blocks import CoreIndexedBlocks
 from src.queries.get_block_confirmation import get_block_confirmation
 
 
-def test_get_block_confirmation(web3_mock, redis_mock, db_mock):
+def test_get_block_confirmation(redis_mock, db_mock):
     """Tests confirmation of block given a blockhash and a blocknumber"""
 
     # Set up db state

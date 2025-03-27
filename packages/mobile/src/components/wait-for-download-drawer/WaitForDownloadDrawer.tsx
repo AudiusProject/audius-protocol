@@ -1,10 +1,8 @@
 import { useCallback, useEffect } from 'react'
 
+import { useTrack, useUser } from '@audius/common/api'
 import { DownloadQuality } from '@audius/common/models'
-import type { CommonState } from '@audius/common/store'
 import {
-  cacheTracksSelectors,
-  cacheUsersSelectors,
   tracksSocialActions,
   useWaitForDownloadModal,
   downloadsSelectors
@@ -26,8 +24,6 @@ import {
 import Drawer from 'app/components/drawer'
 
 import LoadingSpinner from '../loading-spinner'
-const { getTrack } = cacheTracksSelectors
-const { getUser } = cacheUsersSelectors
 const { getDownloadError } = downloadsSelectors
 
 const messages = {
@@ -49,12 +45,8 @@ export const WaitForDownloadDrawer = () => {
   const downloadError = useSelector(getDownloadError)
 
   const { spacing } = useTheme()
-  const track = useSelector((state: CommonState) =>
-    getTrack(state, { id: parentTrackId ?? trackIds[0] })
-  )
-  const user = useSelector((state: CommonState) =>
-    getUser(state, { id: track?.owner_id })
-  )
+  const { data: track } = useTrack(parentTrackId ?? trackIds[0])
+  const { data: user } = useUser(track?.owner_id)
   const trackName =
     !parentTrackId &&
     user &&

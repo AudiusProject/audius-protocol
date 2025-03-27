@@ -83,7 +83,7 @@ export const useLineupQuery = ({
       if (lineupData?.length) {
         dispatch(
           lineupActions.fetchLineupMetadatas(0, lineupData.length, false, {
-            tracks: lineupData
+            items: lineupData
           })
         )
       }
@@ -113,7 +113,18 @@ export const useLineupQuery = ({
     pause,
     updateLineupOrder,
     isPlaying,
-    loadNextPage: loadNextPage(queryData)
+    pageSize,
+    // pass through specific queryData props
+    //   this avoids spreading all queryData props which causes extra renders
+    loadNextPage: loadNextPage(queryData),
+    data: queryData.data,
+    isInitialLoading: queryData.isInitialLoading,
+    hasNextPage: queryData.hasNextPage,
+    isLoading: queryData.isLoading,
+    isPending: queryData.isPending,
+    isError: queryData.isError,
+    isFetching: queryData.isFetching,
+    isSuccess: queryData.isSuccess
   }
 }
 

@@ -26,7 +26,10 @@ const messages = {
 
 type ProfileResultsProps = {
   // the 'status' type was conflicting with the data we pass from useSearchAllResults - but we don't use it at all here so no need to worry about it
-  queryData: Omit<ReturnType<typeof useSearchUserResults>, 'status'>
+  queryData: Pick<
+    ReturnType<typeof useSearchUserResults>,
+    'data' | 'isFetching' | 'isInitialLoading'
+  >
   limit?: number
   skeletonCount?: number
 }

@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useCallback, useMemo } from 'react'
+import { useRef, useCallback, useMemo } from 'react'
 
 import {
   Name,
@@ -14,6 +14,7 @@ import {
   playerSelectors,
   queueSelectors
 } from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
 import cn from 'classnames'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch, useSelector } from 'react-redux'
@@ -57,7 +58,7 @@ export interface TanQueryLineupProps {
    * Indicator if a track should be displayed differently (ie. artist pick)
    * The leadingElementId is displayed at the top of the lineup
    */
-  leadingElementId?: ID
+  leadingElementId?: Nullable<ID>
 
   /**
    * JSX Element that can be used to delineate the leading element from the rest
@@ -171,13 +172,16 @@ export const TanQueryLineup = ({
     lineup = defaultLineup,
     play,
     pause,
-    loadNextPage,
     hasNextPage,
-    isLoading = true,
+    isPending = true,
     isPlaying = false,
     isFetching = true,
     isError = false
   } = lineupQueryData
+
+  const loadNextPage = useCallback(() => {
+    lineupQueryData.loadNextPage()
+  }, [lineupQueryData])
 
   const getCurrentQueueItem = useMemo(() => makeGetCurrent(), [])
   const currentQueueItem = useSelector(getCurrentQueueItem)
@@ -190,27 +194,44 @@ export const TanQueryLineup = ({
   const isMobile = useIsMobile()
   const scrollContainer = useRef<HTMLDivElement>(null)
 
-  const TrackTile =
-    isMobile || variant === LineupVariant.SECTION
-      ? TrackTileMobile
-      : TrackTileDesktop
-  const PlaylistTile = isMobile ? PlaylistTileMobile : PlaylistTileDesktop
-  // State hooks
-  const [internalScrollParent, setInternalScrollParent] =
-    useState<HTMLElement | null>(externalScrollParent || null)
+  // Memoize component selection based on device type
+  const { TrackTile, PlaylistTile } = {
+    TrackTile:
+      isMobile || variant === LineupVariant.SECTION
+        ? TrackTileMobile
+        : TrackTileDesktop,
+    PlaylistTile: isMobile ? PlaylistTileMobile : PlaylistTileDesktop
+  }
 
-  // Effects
-  useEffect(() => {
-    if (
-      externalScrollParent &&
-      !internalScrollParent &&
-      externalScrollParent !== internalScrollParent
-    ) {
-      setInternalScrollParent(externalScrollParent)
+  // Memoized scroll parent callback
+  const getScrollParent = useCallback(() => {
+    if (externalScrollParent) {
+      return externalScrollParent
     }
-  }, [externalScrollParent, internalScrollParent, lineup.hasMore, loadNextPage])
+    return document.getElementById('mainContent')
+  }, [externalScrollParent])
 
-  // Callbacks
+  // Determine tile size and styles based on variant
+  let tileSize: TrackTileSize = TrackTileSize.LARGE // Default value
+  let statSize = 'large'
+  let containerClassName: string | undefined
+
+  if (variant === LineupVariant.MAIN || variant === LineupVariant.PLAYLIST) {
+    tileSize = TrackTileSize.LARGE
+  } else if (variant === LineupVariant.GRID) {
+    tileSize = TrackTileSize.SMALL
+    statSize = 'small'
+    containerClassName = styles.searchTrackTileContainer
+  } else if (variant === LineupVariant.CONDENSED) {
+    tileSize = TrackTileSize.SMALL
+  }
+
+  // Determine lineup style
+  const lineupStyle =
+    variant === LineupVariant.MAIN || variant === LineupVariant.PLAYLIST
+      ? styles.main
+      : styles.section
+
   const togglePlay = useCallback(
     (uid: UID, trackId: ID, source?: PlaybackSource) => {
       if (uid !== playingUid || (uid === playingUid && !isPlaying)) {
@@ -234,126 +255,138 @@ export const TanQueryLineup = ({
     [playingUid, isPlaying, play, dispatch, pause]
   )
 
-  // Render logic
-  let tileSize: TrackTileSize
-  let lineupStyle = {}
-  let containerClassName: string | undefined
-  let statSize = 'large'
+  // Trim lineup based on start & maxEntry props
+  const lineupEntries = useMemo(() => {
+    if (pageSize !== undefined && start !== undefined) {
+      return lineup.entries.slice(start, start + pageSize)
+    } else if (maxEntries !== undefined) {
+      return lineup.entries.slice(0, maxEntries)
+    }
+    return lineup.entries
+  }, [lineup.entries, pageSize, start, maxEntries])
 
-  if (variant === LineupVariant.MAIN || variant === LineupVariant.PLAYLIST) {
-    tileSize = TrackTileSize.LARGE
-    lineupStyle = styles.main
-  } else if (variant === LineupVariant.GRID) {
-    tileSize = TrackTileSize.SMALL
-    lineupStyle = styles.section
-    statSize = 'small'
-    containerClassName = styles.searchTrackTileContainer
-  } else if (variant === LineupVariant.CONDENSED) {
-    tileSize = TrackTileSize.SMALL
-    lineupStyle = styles.section
-  }
-
-  // Apply offset and maxEntries to the lineup entries
-  const lineupEntries =
-    pageSize !== undefined && start !== undefined
-      ? lineup.entries.slice(start, start + pageSize)
-      : maxEntries !== undefined
-        ? lineup.entries.slice(0, maxEntries)
-        : lineup.entries
-
-  let tiles = lineupEntries
-    .map((entry: any, index: number) => {
-      if (entry.kind === Kind.TRACKS || entry.track_id) {
-        if (entry._marked_deleted) return null
-
-        const trackProps: TrackTileProps = {
-          ...entry,
-          index,
-          ordered,
-          togglePlay,
-          size: tileSize,
-          statSize,
-          containerClassName,
-          uid: entry.uid,
-          isLoading: lineupQueryData.data?.[index] === undefined,
-          isTrending,
-          onClick: onClickTile,
-          source: ModalSource.LineUpTrackTile,
-          isBuffering,
-          playingSource
-        }
-        // @ts-ignore - TODO: these types werent enforced before - something smelly here
-        return <TrackTile {...trackProps} key={index} />
-      } else if (entry.kind === Kind.COLLECTIONS || entry.playlist_id) {
-        const playlistProps: PlaylistTileProps = {
-          ...entry,
-          index,
-          uid: entry.uid,
-          size: tileSize,
-          ordered,
-          playTrack: play,
-          pauseTrack: pause,
-          playingTrackId,
-          togglePlay,
-          isLoading: lineupQueryData.data?.[index] === undefined,
-          numLoadingSkeletonRows: numPlaylistSkeletonRows,
-          isTrending,
-          source: ModalSource.LineUpCollectionTile,
-          isBuffering,
-          playingSource
-        }
-        // @ts-ignore - TODO: these types werent enforced before - something smelly here
-        return <PlaylistTile {...playlistProps} key={index} />
+  const renderSkeletons = useCallback(
+    (skeletonCount: number | undefined) => {
+      // This means no skeletons are desired
+      if (!skeletonCount) {
+        return <></>
       }
-      return null
-    })
-    .filter(Boolean)
 
-  // Renders TrackTile skeletons based on the number of tiles to render
-  // NOTE: We don't know if the tiles will be a track or a playlist - we default to showing track skeletons
-  const renderSkeletons = (skeletonCount: number | undefined) => {
-    const skeletonTileProps = (index: number) => ({
-      index: tiles.length + index,
-      size: tileSize,
-      ordered,
-      isLoading: true,
-      numLoadingSkeletonRows: numPlaylistSkeletonRows
-    })
+      const skeletonTileProps = (index: number) => ({
+        index,
+        size: tileSize,
+        ordered,
+        isLoading: true,
+        numLoadingSkeletonRows: numPlaylistSkeletonRows
+      })
 
-    // This means no skeletons are desired
-    if (!skeletonCount) {
-      return <></>
+      return (
+        <>
+          {Array(skeletonCount)
+            .fill(null)
+            .map((_, index) => {
+              return (
+                <li
+                  key={index}
+                  className={cn({ [tileStyles!]: !!tileStyles })}
+                  css={{ listStyle: 'none' }}
+                >
+                  {/* @ts-ignore - TODO: these types werent being enforced before */}
+                  <TrackTile {...skeletonTileProps(index)} key={index} />
+                </li>
+              )
+            })}
+        </>
+      )
+    },
+    [TrackTile, numPlaylistSkeletonRows, ordered, tileSize, tileStyles]
+  )
+
+  // Determine how to render our tiles
+  const tiles = useMemo(() => {
+    if (isError) {
+      return []
     }
 
-    return (
-      <>
-        {Array(skeletonCount)
-          .fill(null)
-          .map((_, index) => {
-            return (
-              <li
-                key={index}
-                className={cn({ [tileStyles!]: !!tileStyles })}
-                css={{ listStyle: 'none' }}
-              >
-                {/* @ts-ignore - TODO: these types werent being enforced before */}
-                <TrackTile {...skeletonTileProps(index)} key={index} />
-              </li>
-            )
-          })}
-      </>
-    )
-  }
+    let result = lineupEntries
+      .map((entry: any, index: number) => {
+        if (entry.kind === Kind.TRACKS || entry.track_id) {
+          if (entry._marked_deleted) return null
 
-  const isInitialLoad = (isFetching && tiles.length === 0) || isLoading
+          const trackProps: TrackTileProps = {
+            ...entry,
+            index,
+            ordered,
+            togglePlay,
+            size: tileSize,
+            statSize,
+            containerClassName,
+            uid: entry.uid,
+            isLoading: lineupQueryData.data?.[index] === undefined,
+            isTrending,
+            onClick: onClickTile,
+            source: ModalSource.LineUpTrackTile,
+            isBuffering,
+            playingSource
+          }
+          // @ts-ignore - TODO: these types werent enforced before - something smelly here
+          return <TrackTile {...trackProps} key={entry.uid || index} />
+        } else if (entry.kind === Kind.COLLECTIONS || entry.playlist_id) {
+          const playlistProps: PlaylistTileProps = {
+            ...entry,
+            index,
+            uid: entry.uid,
+            size: tileSize,
+            ordered,
+            playTrack: play,
+            pauseTrack: pause,
+            playingTrackId,
+            togglePlay,
+            isLoading: lineupQueryData.data?.[index] === undefined,
+            numLoadingSkeletonRows: numPlaylistSkeletonRows,
+            isTrending,
+            source: ModalSource.LineUpCollectionTile,
+            isBuffering,
+            playingSource
+          }
+          // @ts-ignore - TODO: these types werent enforced before - something smelly here
+          return <PlaylistTile {...playlistProps} key={entry.uid || index} />
+        }
+        return null
+      })
+      .filter(Boolean)
 
-  if (isError) {
-    tiles = []
-  }
+    if (delineate) {
+      result = delineateByTime(result, isMobile)
+    }
 
-  if (delineate) {
-    tiles = delineateByTime(tiles, isMobile)
-  }
+    return result
+  }, [
+    lineupEntries,
+    isError,
+    delineate,
+    isMobile,
+    ordered,
+    togglePlay,
+    tileSize,
+    statSize,
+    containerClassName,
+    lineupQueryData.data,
+    isTrending,
+    onClickTile,
+    isBuffering,
+    playingSource,
+    play,
+    pause,
+    playingTrackId,
+    numPlaylistSkeletonRows,
+    TrackTile,
+    PlaylistTile
+  ])
+
+  const isInitialLoad = (isFetching && tiles.length === 0) || isPending
+
+  const isEmptyResults = tiles.length === 0 && !isFetching && !isInitialLoad
 
   return (
     <>
@@ -376,16 +409,12 @@ export const TanQueryLineup = ({
             hasMore={hasNextPage && shouldLoadMore}
             useWindow={isMobile}
             initialLoad={false}
-            getScrollParent={() => {
-              if (internalScrollParent?.id === 'mainContent') {
-                return document.getElementById('mainContent')
-              }
-              return internalScrollParent
-            }}
+            getScrollParent={getScrollParent}
             element='ol'
             threshold={loadMoreThreshold}
+            // Render empty results as full width instead of a tile taking up one grid space
             className={cn({
-              [tileContainerStyles!]: !!tileContainerStyles
+              [tileContainerStyles!]: !!tileContainerStyles && !isEmptyResults
             })}
           >
             {tiles.length === 0

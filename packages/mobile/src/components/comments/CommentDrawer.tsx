@@ -91,10 +91,12 @@ const CommentDrawerAutocompleteContent = ({
 
   const { data: searchData, isLoading: searchLoading } =
     useSearchUserResults(params)
-  const { data: followersData, isPending: followerDataPending } = useFollowers({
-    pageSize: 6,
-    userId: currentUserId
-  })
+  const { users: followersData, isPending: followerDataPending } = useFollowers(
+    {
+      pageSize: 6,
+      userId: currentUserId
+    }
+  )
   const userList = query !== '' ? searchData : followersData
   const isUserListPending = query !== '' ? searchLoading : followerDataPending
 

@@ -1,16 +1,18 @@
 import { useCallback } from 'react'
 
-import type { User } from '@audius/common/models'
+import { useUser } from '@audius/common/api'
+import type { ID } from '@audius/common/models'
 import { FollowSource } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
-import { Pressable, View, Animated } from 'react-native'
+import { pick } from 'lodash'
+import { Pressable, Animated } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { IconUser } from '@audius/harmony-native'
-import { Text, ProfilePicture } from 'app/components/core'
+import { Text, IconUser, Flex } from '@audius/harmony-native'
+import { ProfilePicture } from 'app/components/core'
 import { FollowButton, FollowsYouBadge } from 'app/components/user'
-import UserBadges from 'app/components/user-badges'
+import { UserLink } from 'app/components/user-link'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useColorAnimation } from 'app/hooks/usePressColorAnimation'
 import { makeStyles } from 'app/styles'
@@ -18,6 +20,7 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { SupporterInfo } from './SupporterInfo'
 import { SupportingInfo } from './SupportingInfo'
+
 const getUserId = accountSelectors.getUserId
 
 const messages = {
@@ -25,47 +28,24 @@ const messages = {
     followerCount === 1 ? 'Follower' : 'Followers'
 }
 
-const useStyles = makeStyles(({ spacing, palette }) => ({
+const useStyles = makeStyles(({ spacing }) => ({
   root: {
-    padding: spacing(4)
-  },
-  infoRoot: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: spacing(2)
-  },
-  userInfo: {
-    marginLeft: spacing(2),
-    flex: 1
-  },
-  userStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center'
-  },
-  followerStats: {
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
-  userIcon: {
-    color: palette.neutralLight4
-  },
-  displayName: {
-    marginBottom: spacing(1)
-  },
-  handle: {
-    marginBottom: spacing(2)
+    padding: spacing(4),
+    gap: spacing(4)
   }
 }))
 
 type UserListItemProps = {
   tag: string
-  user: User
+  userId: ID
 }
 
 export const UserListItem = (props: UserListItemProps) => {
-  const { tag, user } = props
-  const { user_id, handle, name, follower_count } = user
+  const { tag, userId } = props
+  const { data: user } = useUser(userId, {
+    select: (user) => pick(user, ['handle', 'follower_count'])
+  })
+  const { handle, follower_count = 0 } = user ?? {}
   const currentUserId = useSelector(getUserId)
   const styles = useStyles()
   const navigation = useNavigation()
@@ -87,37 +67,35 @@ export const UserListItem = (props: UserListItemProps) => {
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
       >
-        <View style={styles.infoRoot}>
-          <ProfilePicture userId={user.user_id} size='large' />
-          <View style={styles.userInfo}>
-            <Text variant='h3' style={styles.displayName}>
-              {name}
-              <UserBadges user={user} badgeSize={10} hideName />
-            </Text>
-            <Text variant='body' style={styles.handle}>
-              @{handle}
-            </Text>
-            <View style={styles.userStats}>
-              <View style={styles.followerStats}>
-                <IconUser height={15} width={15} fill={styles.userIcon.color} />
-                <Text variant='body' color='neutralLight4'>
-                  {' '}
-                  <Text color='inherit' weight='bold' fontSize='small'>
-                    {formatCount(follower_count)}{' '}
-                  </Text>
+        <Flex row gap='s'>
+          <ProfilePicture userId={userId} size='large' />
+          <Flex gap='s'>
+            <Flex>
+              <UserLink userId={userId} strength='strong' />
+              <Text size='s'>@{handle}</Text>
+            </Flex>
+            <Flex row justifyContent='space-between' alignItems='center'>
+              <Flex row gap='xs' alignItems='center'>
+                <IconUser color='subdued' size='s' />
+                <Text size='s' color='subdued'>
+                  <Text strength='strong' color='inherit'>
+                    {formatCount(follower_count)}
+                  </Text>{' '}
                   {messages.followers(follower_count)}
                 </Text>
-              </View>
-              <FollowsYouBadge userId={user.user_id} />
-            </View>
-            {tag === 'SUPPORTING' ? <SupportingInfo user={user} /> : null}
-            {tag === 'TOP SUPPORTERS' ? <SupporterInfo user={user} /> : null}
-          </View>
-        </View>
-        {currentUserId !== user_id ? (
+              </Flex>
+              <FollowsYouBadge userId={userId} />
+            </Flex>
+            {tag === 'SUPPORTING' ? <SupportingInfo userId={userId} /> : null}
+            {tag === 'TOP SUPPORTERS' ? (
+              <SupporterInfo userId={userId} />
+            ) : null}
+          </Flex>
+        </Flex>
+        {currentUserId !== userId ? (
           <FollowButton
             variant='pill'
-            userId={user.user_id}
+            userId={userId}
             followSource={FollowSource.USER_LIST}
           />
         ) : null}

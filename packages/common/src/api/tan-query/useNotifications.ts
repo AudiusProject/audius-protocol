@@ -17,7 +17,6 @@ import { useCurrentUserId } from './useCurrentUserId'
 import { useNotificationValidTypes } from './useNotificationValidTypes'
 import { useTracks } from './useTracks'
 import { useUsers } from './useUsers'
-import { combineQueryStatuses } from './utils/combineQueryStatuses'
 
 const DEFAULT_LIMIT = 20
 const USER_INITIAL_LOAD_COUNT = 9
@@ -220,26 +219,24 @@ export const useNotifications = (options?: QueryOptions) => {
     : { userIds: undefined, trackIds: undefined, collectionIds: undefined }
 
   // Pre-fetch related entities
-  const usersQuery = useUsers(userIds)
-  const tracksQuery = useTracks(trackIds)
-  const collectionsQuery = useCollections(collectionIds)
-
-  const statusResults = combineQueryStatuses([
-    query,
-    usersQuery,
-    tracksQuery,
-    collectionsQuery
-  ])
+  const { isPending: isUsersPending } = useUsers(userIds)
+  const { isPending: isTracksPending } = useTracks(trackIds)
+  const { isPending: isCollectionsPending } = useCollections(collectionIds)
 
   // Return all pages except the last one if it's still loading entity data
   const notifications = query.data?.pages.slice(0, -1).flat() ?? []
-  if (!statusResults.isPending && lastPage) {
+  if (
+    !query.isPending &&
+    !isUsersPending &&
+    !isTracksPending &&
+    !isCollectionsPending &&
+    lastPage
+  ) {
     notifications.push(...lastPage)
   }
 
-  return {
-    ...query,
-    ...statusResults,
-    notifications
-  }
+  const queryResults = query as typeof query & { notifications: Notification[] }
+  queryResults.notifications = notifications
+
+  return queryResults
 }

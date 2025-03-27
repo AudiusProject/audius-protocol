@@ -6,7 +6,6 @@ from typing import List, Optional, Tuple
 from redis import Redis
 from sqlalchemy import bindparam, text
 from sqlalchemy.orm.session import Session
-from web3 import Web3
 
 from src.models.core.core_indexed_blocks import CoreIndexedBlocks
 from src.models.indexing.block import Block
@@ -23,14 +22,12 @@ from src.queries.get_underground_trending import (
     make_underground_trending_cache_key,
 )
 from src.tasks.celery_app import celery
-from src.tasks.core.core_client import get_core_instance
+from src.tasks.core.core_client import CoreClient, get_core_instance
 from src.tasks.index_tastemaker import index_tastemaker
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.config import shared_config
-from src.utils.core import is_indexing_core_em
 from src.utils.hardcoded_data import genre_allowlist
-from src.utils.helpers import get_adjusted_block
 from src.utils.prometheus_metric import (
     PrometheusMetric,
     PrometheusMetricNames,
@@ -39,7 +36,6 @@ from src.utils.prometheus_metric import (
 from src.utils.redis_cache import set_json_cached_key
 from src.utils.redis_constants import trending_tracks_last_completion_redis_key
 from src.utils.session_manager import SessionManager
-from src.utils.web3_provider import get_web3
 
 logger = logging.getLogger(__name__)
 time_ranges = ["week", "month", "year"]
@@ -436,7 +432,9 @@ def floor_time(dt: datetime, interval_seconds: int):
     return dt + timedelta(0, rounding - seconds, -dt.microsecond)
 
 
-def find_min_block_above_timestamp(block_number: int, min_timestamp: datetime, web3):
+def find_min_block_above_timestamp(
+    block_number: int, min_timestamp: datetime, core: CoreClient
+):
     """
     finds the minimum block number above a timestamp
     This is needed to ensure consistency across discovery nodes on the timestamp/blocknumber
@@ -444,10 +442,12 @@ def find_min_block_above_timestamp(block_number: int, min_timestamp: datetime, w
     returns a tuple of the blocknumber and timestamp
     """
     curr_block_number = block_number
-    block = get_adjusted_block(web3, block_number)
-    while datetime.fromtimestamp(block["timestamp"]) > min_timestamp:
-        prev_block = get_adjusted_block(web3, curr_block_number - 1)
-        prev_timestamp = datetime.fromtimestamp(prev_block["timestamp"])
+    block = core.get_block(block_number)
+    block_ts = block.timestamp.ToDatetime()
+    greater_than_min = block_ts > min_timestamp
+    while greater_than_min:
+        prev_block = core.get_block(curr_block_number - 1)
+        prev_timestamp = prev_block.timestamp.ToDatetime()
         if prev_timestamp >= min_timestamp:
             block = prev_block
             curr_block_number -= 1
@@ -458,7 +458,7 @@ def find_min_block_above_timestamp(block_number: int, min_timestamp: datetime, w
 
 
 def get_should_update_trending(
-    db: SessionManager, web3: Web3, redis: Redis, interval_seconds: int
+    db: SessionManager, core: CoreClient, redis: Redis, interval_seconds: int
 ) -> Tuple[Optional[int], Optional[int]]:
     """
     Checks if the trending job should re-run based off the last trending run's timestamp and
@@ -469,33 +469,25 @@ def get_should_update_trending(
     """
     with db.scoped_session() as session:
         current_datetime = None
-
         current_db_block = (
             session.query(Block.number).filter(Block.is_current == True).first()
         )
         current_db_block_number = current_db_block[0]
 
-        if is_indexing_core_em():
-            core = get_core_instance()
-            node_info = core.get_node_info()
-            core_chain_id = node_info.chainid
+        node_info = core.get_node_info()
+        core_chain_id = node_info.chainid
 
-            latest_indexed_block: Optional[CoreIndexedBlocks] = (
-                session.query(CoreIndexedBlocks)
-                .filter(CoreIndexedBlocks.chain_id == core_chain_id)
-                .order_by(CoreIndexedBlocks.height.desc())
-                .first()
-            )
+        latest_indexed_block: Optional[CoreIndexedBlocks] = (
+            session.query(CoreIndexedBlocks)
+            .filter(CoreIndexedBlocks.chain_id == core_chain_id)
+            .order_by(CoreIndexedBlocks.height.desc())
+            .first()
+        )
 
-            if latest_indexed_block:
-                block = core.get_block(int(latest_indexed_block.height))
-                if block:
-                    current_datetime = block.timestamp.ToDatetime()
-
-        else:
-            current_block = get_adjusted_block(web3, current_db_block_number)
-            current_timestamp = current_block["timestamp"]
-            current_datetime = datetime.fromtimestamp(current_timestamp)
+        if latest_indexed_block:
+            block = core.get_block(int(latest_indexed_block.height))
+            if block:
+                current_datetime = block.timestamp.ToDatetime()
 
         if not current_datetime:
             logger.error("no timestamp")
@@ -508,7 +500,7 @@ def get_should_update_trending(
         if not last_trending_datetime:
             # Base case where there is no previous trending calculation in redis
             min_block = find_min_block_above_timestamp(
-                current_db_block_number, min_block_datetime, web3
+                current_db_block_number, min_block_datetime, core
             )
             return min_block, int(min_block_datetime.timestamp())
 
@@ -516,7 +508,7 @@ def get_should_update_trending(
         duration_since_last_index = current_datetime - last_trending_datetime
         if duration_since_last_index.total_seconds() >= interval_seconds:
             min_block = find_min_block_above_timestamp(
-                current_db_block_number, min_block_datetime, web3
+                current_db_block_number, min_block_datetime, core
             )
 
             return min_block, int(min_block_datetime.timestamp())
@@ -530,15 +522,15 @@ def index_trending_task(self):
     """Caches all trending combination of time-range and genre (including no genre)."""
     db = index_trending_task.db
     redis = index_trending_task.redis
-    web3 = get_web3()
     have_lock = False
     timeout = 60 * 60 * 2
     update_lock = redis.lock("index_trending_lock", timeout=timeout)
     try:
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
+            core = get_core_instance()
             min_block, min_timestamp = get_should_update_trending(
-                db, web3, redis, UPDATE_TRENDING_DURATION_DIFF_SEC
+                db, core, redis, UPDATE_TRENDING_DURATION_DIFF_SEC
             )
             if min_block is not None and min_timestamp is not None:
                 index_trending(self, db, redis, min_timestamp)

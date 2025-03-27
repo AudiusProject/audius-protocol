@@ -67,7 +67,7 @@ export const FindAccountManagerPage = (props: FindAccountManagerPageProps) => {
           })}
         >
           <ArtistChip
-            user={user as any}
+            userId={user.user_id}
             showPopover={false}
             onClickArtistName={() => {
               setPageState({

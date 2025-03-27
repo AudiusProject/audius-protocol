@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 
+import { useCollection, useTrack } from '@audius/common/api'
 import {
   FavoriteSource,
   ID,
@@ -10,8 +11,6 @@ import {
 } from '@audius/common/models'
 import {
   cacheCollectionsActions,
-  cacheCollectionsSelectors,
-  cacheTracksSelectors,
   collectionsSocialActions,
   playlistLibraryActions,
   shareModalUIActions
@@ -27,6 +26,7 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
+import { pick } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { useLocation, useNavigate } from 'react-router-dom-v5-compat'
 import { useToggle } from 'react-use'
@@ -50,8 +50,6 @@ import { PlaylistUpdateDot } from './PlaylistUpdateDot'
 import { usePlaylistPlayingStatus } from './usePlaylistPlayingStatus'
 
 const { addTrackToPlaylist } = cacheCollectionsActions
-const { getCollection } = cacheCollectionsSelectors
-const { getTrack } = cacheTracksSelectors
 const { reorder } = playlistLibraryActions
 const { requestOpen } = shareModalUIActions
 const { unsaveCollection, unsaveSmartCollection } = collectionsSocialActions
@@ -96,8 +94,12 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
 
   const { spacing } = useTheme()
 
-  const collection = useSelector((state) =>
-    getCollection(state, { id: typeof id === 'string' ? null : id })
+  const { data: partialCollection } = useCollection(
+    typeof id === 'number' ? id : null,
+    {
+      select: (collection) =>
+        pick(collection, 'is_album', 'playlist_name', 'permalink', 'is_private')
+    }
   )
 
   const accountCollection = useSelector((state) =>
@@ -106,7 +108,7 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
       : null
   )
 
-  const { permalink } = collection ?? accountCollection ?? {}
+  const { permalink } = partialCollection ?? accountCollection ?? {}
 
   const [isDeleteConfirmationOpen, toggleDeleteConfirmationOpen] =
     useToggle(false)
@@ -156,12 +158,12 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
     } else {
       dispatch(
         unsaveSmartCollection(
-          collection?.playlist_name ?? id,
+          partialCollection?.playlist_name ?? id,
           FavoriteSource.NAVIGATOR
         )
       )
     }
-  }, [id, collection, dispatch])
+  }, [id, dispatch, partialCollection])
 
   const kebabItems: PopupMenuItem[] = isOwned
     ? [
@@ -215,11 +217,17 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
 
   const draggingKind = useSelector(selectDraggingKind)
   const draggingId = useSelector(selectDraggingId)
-  const track = useSelector((state) =>
-    getTrack(state, { id: typeof draggingId === 'string' ? null : draggingId })
-  )
+  const { data: isUnlisted } = useTrack(draggingId as ID, {
+    enabled: typeof draggingId === 'number',
+    select: (track) => {
+      return track.is_unlisted
+    }
+  })
   const hiddenTrackCheck =
-    !!track && !!collection && track?.is_unlisted && !collection?.is_private
+    !!isUnlisted &&
+    !!partialCollection &&
+    isUnlisted &&
+    !partialCollection?.is_private
 
   const isDisabled =
     (draggingKind === 'track' && !isOwned) ||

@@ -63,7 +63,7 @@ export const useGatedCollectionAccess = (collectionId: ID) => {
 
 // Returns whether user has access to given track.
 export const useGatedContentAccess = (
-  content: Nullable<Partial<Track | Collection>>
+  content: Nullable<Partial<Track | Collection>> | undefined
 ) => {
   const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
   const hasAccount = useSelector(getHasAccount)

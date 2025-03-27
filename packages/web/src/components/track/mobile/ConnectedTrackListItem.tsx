@@ -1,5 +1,6 @@
 import { memo, useCallback } from 'react'
 
+import { useCurrentUserId, useTrack, useUser } from '@audius/common/api'
 import {
   ID,
   RepostSource,
@@ -7,14 +8,11 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import {
-  accountSelectors,
-  cacheUsersSelectors,
   gatedContentActions,
   gatedContentSelectors,
   mobileOverflowMenuUIActions,
   tracksSocialActions,
   usePremiumContentPurchaseModal,
-  cacheTracksSelectors,
   OverflowAction,
   PurchaseableContentType,
   OverflowSource
@@ -36,10 +34,7 @@ const { setLockedContentId } = gatedContentActions
 const { getGatedContentStatusMap } = gatedContentSelectors
 
 const { open } = mobileOverflowMenuUIActions
-const { getUserFromTrack } = cacheUsersSelectors
 const { repostTrack, undoRepostTrack } = tracksSocialActions
-const getUserId = accountSelectors.getUserId
-const { getTrack } = cacheTracksSelectors
 
 type OwnProps = TrackListItemProps
 type StateProps = ReturnType<typeof mapStateToProps>
@@ -50,7 +45,6 @@ type ConnectedTrackListItemProps = OwnProps & StateProps & DispatchProps
 const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
   const {
     clickOverflow,
-    currentUserId,
     ddexApp,
     hasStreamAccess,
     isUnlisted,
@@ -59,10 +53,19 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
     isSaved,
     streamConditions,
     trackId,
-    isDeleted,
-    user,
-    albumBacklink
+    isDeleted
   } = props
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: partialTrack } = useTrack(trackId, {
+    select: (track) => {
+      return {
+        ownerId: track?.owner_id,
+        albumBacklink: track?.album_backlink
+      }
+    }
+  })
+  const { ownerId, albumBacklink } = partialTrack ?? {}
+  const { data: user } = useUser(ownerId)
   const dispatch = useDispatch()
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
@@ -134,10 +137,7 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
 function mapStateToProps(state: AppState, ownProps: OwnProps) {
   const id = ownProps.trackId
   return {
-    user: getUserFromTrack(state, { id: ownProps.trackId }),
-    currentUserId: getUserId(state),
-    gatedContentStatus: id ? getGatedContentStatusMap(state)[id] : undefined,
-    albumBacklink: getTrack(state, { id: ownProps.trackId })?.album_backlink
+    gatedContentStatus: id ? getGatedContentStatusMap(state)[id] : undefined
   }
 }
 

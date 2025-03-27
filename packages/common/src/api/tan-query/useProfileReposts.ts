@@ -96,8 +96,7 @@ export const useProfileReposts = (
       // Update lineup when new data arrives
       dispatch(
         feedActions.fetchLineupMetadatas(pageParam, pageSize, false, {
-          reposts,
-          handle
+          items: reposts
         })
       )
 
@@ -110,7 +109,7 @@ export const useProfileReposts = (
     enabled: options?.enabled !== false && !!handle
   })
 
-  const lineupData = useLineupQuery({
+  return useLineupQuery({
     queryData,
     queryKey: getProfileRepostsQueryKey({
       handle,
@@ -121,10 +120,4 @@ export const useProfileReposts = (
     playbackSource: PlaybackSource.TRACK_TILE,
     pageSize
   })
-
-  return {
-    ...queryData,
-    ...lineupData,
-    pageSize
-  }
 }

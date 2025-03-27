@@ -255,7 +255,7 @@ const useSearchQueryProps = (
           pageParam,
           pageSize,
           false,
-          { tracks: formattedTracks }
+          { items: formattedTracks }
         )
       )
       return {
@@ -333,7 +333,12 @@ export const useSearchAllResults = (
     playbackSource: PlaybackSource.SEARCH_PAGE
   })
 
-  return { ...queryData, ...tracksLineupData }
+  return {
+    ...tracksLineupData,
+    data: queryData.data,
+    isLoading: queryData.isLoading,
+    isInitialLoading: queryData.isInitialLoading
+  }
 }
 
 export const useSearchTrackResults = (
@@ -364,7 +369,7 @@ export const useSearchTrackResults = (
     }
   })
 
-  const lineupData = useLineupQuery({
+  return useLineupQuery({
     queryData,
     pageSize,
     queryKey: queryProps.queryKey,
@@ -372,8 +377,6 @@ export const useSearchTrackResults = (
     lineupSelector: getSearchTracksLineup,
     playbackSource: PlaybackSource.SEARCH_PAGE
   })
-
-  return { ...queryData, ...lineupData }
 }
 
 export const useSearchUserResults = (
@@ -401,7 +404,12 @@ export const useSearchUserResults = (
     }
   }) as FlatUseInfiniteQueryResult<UserMetadata>
 
-  return { ...queryData, loadNextPage: loadNextPage(queryData) }
+  const queryDataWithLoadNextPage = queryData as typeof queryData & {
+    loadNextPage: () => void
+  }
+  queryDataWithLoadNextPage.loadNextPage = loadNextPage(queryData)
+
+  return queryDataWithLoadNextPage
 }
 
 export const useSearchAlbumResults = (
@@ -429,7 +437,12 @@ export const useSearchAlbumResults = (
     }
   }) as FlatUseInfiniteQueryResult<UserCollectionMetadata>
 
-  return { ...queryData, loadNextPage: loadNextPage(queryData) }
+  const queryDataWithLoadNextPage = queryData as typeof queryData & {
+    loadNextPage: () => void
+  }
+  queryDataWithLoadNextPage.loadNextPage = loadNextPage(queryData)
+
+  return queryDataWithLoadNextPage
 }
 
 export const useSearchPlaylistResults = (
@@ -457,5 +470,10 @@ export const useSearchPlaylistResults = (
     }
   }) as FlatUseInfiniteQueryResult<UserCollectionMetadata>
 
-  return { ...queryData, loadNextPage: loadNextPage(queryData) }
+  const queryDataWithLoadNextPage = queryData as typeof queryData & {
+    loadNextPage: () => void
+  }
+  queryDataWithLoadNextPage.loadNextPage = loadNextPage(queryData)
+
+  return queryDataWithLoadNextPage
 }

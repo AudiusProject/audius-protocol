@@ -6,8 +6,8 @@ import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
-import { UserTrack } from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
+import { UserTrackMetadata } from '~/models/Track'
 import { aiPageLineupActions, aiPageSelectors } from '~/store/pages'
 import { fetchAiUser } from '~/store/pages/ai/slice'
 
@@ -45,7 +45,7 @@ export const useAiTracks = (
   const queryData = useInfiniteQuery({
     queryKey: getAiTracksQueryKey({ handle, pageSize }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: UserTrack[], allPages) => {
+    getNextPageParam: (lastPage: UserTrackMetadata[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -79,11 +79,12 @@ export const useAiTracks = (
 
       return processedTracks
     },
+    select: (data) => data?.pages.flat(),
     ...options,
     enabled: options?.enabled !== false && !!handle
   })
 
-  const lineupData = useLineupQuery({
+  return useLineupQuery({
     queryData,
     queryKey: getAiTracksQueryKey({
       handle,
@@ -94,10 +95,4 @@ export const useAiTracks = (
     playbackSource: PlaybackSource.TRACK_TILE,
     pageSize
   })
-
-  return {
-    ...queryData,
-    ...lineupData,
-    pageSize
-  }
 }

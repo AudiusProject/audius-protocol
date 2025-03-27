@@ -1,30 +1,24 @@
 import { MouseEvent, Ref, forwardRef, useCallback } from 'react'
 
+import { useCollection, useCurrentUserId } from '@audius/common/api'
 import {
   ID,
   SquareSizes,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import {
-  accountSelectors,
-  cacheCollectionsSelectors
-} from '@audius/common/store'
 import { formatCount, formatReleaseDate } from '@audius/common/utils'
 import { Flex, Skeleton, Text } from '@audius/harmony'
 import IconHeart from '@audius/harmony/src/assets/icons/Heart.svg'
 import IconRepost from '@audius/harmony/src/assets/icons/Repost.svg'
+import { pick } from 'lodash'
 import { useLinkClickHandler } from 'react-router-dom-v5-compat'
 
 import { Card, CardProps, CardFooter, CardContent } from 'components/card'
 import { TextLink, UserLink } from 'components/link'
 import { LockedStatusBadge } from 'components/locked-status-badge'
-import { useSelector } from 'utils/reducer'
 
 import { CollectionDogEar } from './CollectionDogEar'
 import { CollectionImage } from './CollectionImage'
-
-const { getCollection } = cacheCollectionsSelectors
-const { getUserId } = accountSelectors
 
 const messages = {
   repost: 'Reposts',
@@ -60,12 +54,38 @@ export const CollectionCard = forwardRef(
       ...other
     } = props
 
-    const collection = useSelector((state) => getCollection(state, { id }))
-    const accountId = useSelector(getUserId)
+    const { data: currentUserId } = useCurrentUserId()
+    const { data: partialCollection, isPending } = useCollection(id, {
+      select: (collection) =>
+        pick(
+          collection,
+          'playlist_name',
+          'permalink',
+          'playlist_owner_id',
+          'repost_count',
+          'save_count',
+          'is_private',
+          'access',
+          'stream_conditions',
+          'is_scheduled_release',
+          'release_date'
+        )
+    })
 
-    const handleNavigate = useLinkClickHandler<HTMLDivElement>(
-      collection?.permalink ?? ''
-    )
+    const {
+      playlist_name,
+      permalink,
+      playlist_owner_id,
+      repost_count,
+      save_count,
+      is_private: isPrivate,
+      access,
+      stream_conditions,
+      is_scheduled_release: isScheduledRelease,
+      release_date: releaseDate
+    } = partialCollection ?? {}
+
+    const handleNavigate = useLinkClickHandler<HTMLDivElement>(permalink ?? '')
 
     const handleClick = useCallback(
       (e: MouseEvent<HTMLDivElement>) => {
@@ -76,7 +96,7 @@ export const CollectionCard = forwardRef(
       [noNavigation, handleNavigate, onClick]
     )
 
-    if (!collection || loading) {
+    if (isPending || loading) {
       return (
         <Card size={size} {...other}>
           <Flex direction='column' p='s' gap='s'>
@@ -93,20 +113,7 @@ export const CollectionCard = forwardRef(
       )
     }
 
-    const {
-      playlist_name,
-      permalink,
-      playlist_owner_id,
-      repost_count,
-      save_count,
-      is_private: isPrivate,
-      access,
-      stream_conditions,
-      is_scheduled_release: isScheduledRelease,
-      release_date: releaseDate
-    } = collection
-
-    const isOwner = accountId === playlist_owner_id
+    const isOwner = currentUserId === playlist_owner_id
     const isPurchase = isContentUSDCPurchaseGated(stream_conditions)
 
     return (
@@ -128,7 +135,7 @@ export const CollectionCard = forwardRef(
               <Text ellipses>{playlist_name}</Text>
             </TextLink>
             <Flex justifyContent='center'>
-              <UserLink userId={playlist_owner_id} popover />
+              <UserLink userId={playlist_owner_id!} popover />
             </Flex>
           </CardContent>
         </Flex>
@@ -150,7 +157,7 @@ export const CollectionCard = forwardRef(
               <Flex gap='xs' alignItems='center'>
                 <IconRepost size='s' color='subdued' title={messages.repost} />
                 <Text variant='label' color='subdued'>
-                  {formatCount(repost_count)}
+                  {formatCount(repost_count!)}
                 </Text>
               </Flex>
               <Flex gap='xs' alignItems='center'>
@@ -160,13 +167,13 @@ export const CollectionCard = forwardRef(
                   title={messages.favorites}
                 />
                 <Text variant='label' color='subdued'>
-                  {formatCount(save_count)}
+                  {formatCount(save_count!)}
                 </Text>
               </Flex>
             </>
           )}
           {isPurchase && !isOwner ? (
-            <LockedStatusBadge variant='premium' locked={!access.stream} />
+            <LockedStatusBadge variant='premium' locked={!access?.stream} />
           ) : null}
         </CardFooter>
       </Card>
