@@ -452,7 +452,12 @@ def test_index_cosign(app, mocker):
 
     entities = {
         "users": [
-            {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
+            {
+                "user_id": 1,
+                "handle": "user-1",
+                "wallet": "user1wallet",
+                "is_verified": True,
+            },
             {"user_id": 2, "handle": "user-2", "wallet": "user2wallet"},
         ],
         "tracks": [
