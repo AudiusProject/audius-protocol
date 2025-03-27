@@ -45,7 +45,6 @@ const ArtistIdentifier = ({
           <UserBadges userId={userId} className={cn(styles.badge)} inline />
         </div>
       </ArtistPopover>
-      useUser,
       <ArtistPopover
         handle={handle}
         mouseEnterDelay={0.3}
