@@ -19,7 +19,7 @@ import {
   playerSelectors,
   playbackPositionSelectors
 } from '@audius/common/store'
-import { Genre, removeNullable } from '@audius/common/utils'
+import { Genre, getIdFromKindId, removeNullable } from '@audius/common/utils'
 import type {
   NativeSyntheticEvent,
   NativeTouchEvent,
@@ -192,7 +192,8 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   } = props
 
   const { data: contextPlaylist } = useCollection(contextPlaylistId)
-  const { data: track } = useTrack(id)
+  const trackId = id ?? parseInt(getIdFromKindId(uid ?? '').split(':')[1])
+  const { data: track } = useTrack(trackId)
   const { data: user } = useUser(track?.owner_id)
 
   const {
@@ -405,7 +406,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
             </View>
             <Text numberOfLines={1} style={styles.artistName}>
               {name}
-              <UserBadges user={user!} badgeSize={12} hideName />
+              {user ? <UserBadges user={user} badgeSize={12} hideName /> : null}
             </Text>
           </View>
           {isUnlisted ? (
