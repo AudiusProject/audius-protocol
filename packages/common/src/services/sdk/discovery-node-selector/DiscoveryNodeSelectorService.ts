@@ -19,6 +19,7 @@ type DiscoveryNodeSelectorConfig = {
   remoteConfigInstance: RemoteConfigInstance
   initialSelectedNode?: string
   onChange?: (endpoint: string) => void
+  skipReselect?: boolean
 }
 
 export class DiscoveryNodeSelectorService {
@@ -27,14 +28,22 @@ export class DiscoveryNodeSelectorService {
   private discoveryNodeSelectorPromise: Promise<DiscoveryNodeSelector> | null
   private initialSelectedNode: string | undefined
   private onChange: ((endpoint: string) => void) | undefined
+  private skipReselect: boolean
 
   constructor(config: DiscoveryNodeSelectorConfig) {
-    const { env, remoteConfigInstance, initialSelectedNode, onChange } = config
+    const {
+      env,
+      remoteConfigInstance,
+      initialSelectedNode,
+      onChange,
+      skipReselect
+    } = config
     this.env = env
     this.remoteConfigInstance = remoteConfigInstance
     this.discoveryNodeSelectorPromise = null
     this.initialSelectedNode = initialSelectedNode
     this.onChange = onChange
+    this.skipReselect = skipReselect ?? false
   }
 
   private async makeDiscoveryNodeSelector() {
@@ -73,6 +82,10 @@ export class DiscoveryNodeSelectorService {
       requestTimeout,
       initialSelectedNode: this.initialSelectedNode
     })
+    if (this.skipReselect) {
+      // no-op reselection logic
+      dnSelector.reselectIfNecessary = () => Promise.resolve(null)
+    }
     if (this.onChange) {
       dnSelector.addEventListener('change', this.onChange)
     }

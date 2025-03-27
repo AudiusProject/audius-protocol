@@ -6,8 +6,9 @@ export type Env = {
   AAO_ENDPOINT: string
   AMPLITUDE_API_KEY: Nullable<string>
   AMPLITUDE_PROXY: Nullable<string>
-  APP_NAME: string
+  API_SERVER_URL: Nullable<string>
   API_KEY: string
+  APP_NAME: string
   AUDIUS_URL: string
   BITSKI_CALLBACK_URL: string
   BITSKI_CLIENT_ID: string
@@ -20,7 +21,6 @@ export type Env = {
   COINFLOW_PARTNER_ID: string
   COGNITO_KEY: Nullable<string>
   COGNITO_TEMPLATE_ID: Nullable<string>
-  EAGER_DISCOVERY_NODES: string
   ENTITY_MANAGER_ADDRESS: string
   ENVIRONMENT: Environment
   ETH_BRIDGE_ADDRESS: Nullable<string>

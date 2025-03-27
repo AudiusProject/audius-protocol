@@ -6,6 +6,7 @@ export const env: Env = {
   AMPLITUDE_API_KEY: '86760558b8bb1b3aae61656efd4ddacb',
   AMPLITUDE_PROXY: 'https://gain2.audius.co/2/httpapi',
   API_KEY: '8acf5eb7436ea403ee536a7334faa5e9ada4b50f',
+  API_SERVER_URL: null,
   APP_NAME: 'audius-client',
   AUDIUS_URL: 'https://audius.co',
   BITSKI_CALLBACK_URL: 'https://audius.co/bitski-callback.html',
@@ -21,8 +22,6 @@ export const env: Env = {
   COINFLOW_APP_ID: '9JBW2RHC7JNJN8ZQ',
   COINFLOW_MERCHANT_ID: 'tikilabs',
   COINFLOW_PARTNER_ID: 'AUDIUS',
-  EAGER_DISCOVERY_NODES:
-    'https://discoveryprovider.audius.co,https://discoveryprovider2.audius.co,https://discoveryprovider3.audius.co',
   ENTITY_MANAGER_ADDRESS: '0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64',
   ENVIRONMENT: 'production',
   ETH_BRIDGE_ADDRESS: '0x98f3c9e6E3fAce36bAAd05FE09d375Ef1464288B',

@@ -66,9 +66,25 @@ const updateCachedDiscoveryNode = (endpoint: string) => {
   )
 }
 
-export const discoveryNodeSelectorService = new DiscoveryNodeSelectorService({
-  env,
-  remoteConfigInstance,
-  initialSelectedNode: getCachedDiscoveryNode(),
-  onChange: updateCachedDiscoveryNode
-})
+const getSelectorService = () => {
+  // If API server url is set, use it as the initial selected node and skip reselecting
+  // Pass env, remote config, etc. in so that getting all still works for features like rewards.
+  if (env.API_SERVER_URL) {
+    const service = new DiscoveryNodeSelectorService({
+      env,
+      remoteConfigInstance,
+      initialSelectedNode: env.API_SERVER_URL,
+      skipReselect: true
+    })
+    updateCachedDiscoveryNode(env.API_SERVER_URL)
+    return service
+  }
+  return new DiscoveryNodeSelectorService({
+    env,
+    remoteConfigInstance,
+    initialSelectedNode: getCachedDiscoveryNode(),
+    onChange: updateCachedDiscoveryNode
+  })
+}
+
+export const discoveryNodeSelectorService = getSelectorService()
