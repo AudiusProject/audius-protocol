@@ -5,7 +5,8 @@ import {
   useCurrentStems,
   useFileSizes,
   useDownloadableContentAccess,
-  useUploadingStems
+  useUploadingStems,
+  useFeatureFlag
 } from '@audius/common/hooks'
 import {
   Name,
@@ -14,6 +15,7 @@ import {
   ID,
   StemCategory
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   usePremiumContentPurchaseModal,
   useWaitForDownloadModal,
@@ -88,6 +90,10 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     shouldDisplayDownloadFollowGated,
     shouldDisplayOwnerPremiumDownloads
   } = useDownloadableContentAccess({ trackId })
+
+  const { isEnabled: isDownloadAllTrackFilesEnabled } = useFeatureFlag(
+    FeatureFlags.DOWNLOAD_ALL_TRACK_FILES
+  )
 
   const downloadQuality = DownloadQuality.ORIGINAL
   const shouldHideDownload =
@@ -164,9 +170,10 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
 
   const handleDownloadAll = useRequiresAccountCallback(() => {
     openDownloadTrackArchiveModal({
-      trackId
+      trackId,
+      fileCount: stemTracks.length + 1
     })
-  }, [trackId])
+  }, [trackId, stemTracks])
 
   return (
     <Box border='default' borderRadius='m' css={{ overflow: 'hidden' }}>
@@ -278,25 +285,27 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 }
               />
             ))}
-            <Flex
-              p='l'
-              borderTop='default'
-              direction='row'
-              alignItems='center'
-              justifyContent='center'
-              w='100%'
-              gap='xs'
-              role='row'
-            >
-              <Button
-                variant='secondary'
-                size='small'
-                iconLeft={IconReceive}
-                onClick={handleDownloadAll}
+            {shouldHideDownload || !isDownloadAllTrackFilesEnabled ? null : (
+              <Flex
+                p='l'
+                borderTop='default'
+                direction='row'
+                alignItems='center'
+                justifyContent='center'
+                w='100%'
+                gap='xs'
+                role='row'
               >
-                {messages.downloadAll}
-              </Button>
-            </Flex>
+                <Button
+                  variant='secondary'
+                  size='small'
+                  iconLeft={IconReceive}
+                  onClick={handleDownloadAll}
+                >
+                  {messages.downloadAll}
+                </Button>
+              </Flex>
+            )}
             {uploadingStems.map((s, i) => (
               <DownloadRow
                 key={`uploading-stem-${i}`}

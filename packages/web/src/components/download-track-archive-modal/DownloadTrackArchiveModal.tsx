@@ -12,15 +12,22 @@ import {
   ModalHeader,
   Text,
   Flex,
-  LoadingSpinner
+  LoadingSpinner,
+  IconFolder,
+  ModalTitle,
+  IconReceive,
+  Hint,
+  IconError,
+  TextLink
 } from '@audius/harmony'
 
 import { env } from 'services/env'
 
 const messages = {
-  title: 'Downloading Track Files',
-  creatingArchive: 'Creating archive, this may take a minute...',
-  error: 'Something went wrong, please try again.'
+  title: 'Preparing Download',
+  zippingFiles: (count: number) => `Zipping files (${count})`,
+  error: 'Something went wrong. Please check your connection and try again.',
+  tryAgain: 'Try again.'
 }
 
 const triggerDownload = (url: string) => {
@@ -36,16 +43,20 @@ const triggerDownload = (url: string) => {
 
 export const DownloadTrackArchiveModal = () => {
   const {
-    data: { trackId },
+    data: { trackId, fileCount },
     isOpen,
     onClose,
     onClosed
   } = useDownloadTrackArchiveModal()
 
-  const { mutate: downloadTrackStems, data: { id: jobId } = {} } =
-    useDownloadTrackStems({
-      trackId
-    })
+  const {
+    mutate: downloadTrackStems,
+    isError: initiateDownloadFailed,
+    isPending: isStartingDownload,
+    data: { id: jobId } = {}
+  } = useDownloadTrackStems({
+    trackId
+  })
 
   const { mutate: cancelStemsArchiveJob } = useCancelStemsArchiveJob()
 
@@ -53,7 +64,9 @@ export const DownloadTrackArchiveModal = () => {
     jobId
   })
 
-  const hasError = jobState?.state === 'failed'
+  const hasError =
+    !isStartingDownload &&
+    (initiateDownloadFailed || jobState?.state === 'failed')
 
   useEffect(() => {
     if (isOpen) {
@@ -75,19 +88,20 @@ export const DownloadTrackArchiveModal = () => {
     onClose()
   }, [onClose, jobId, cancelStemsArchiveJob])
 
+  const handleRetry = useCallback(() => {
+    downloadTrackStems()
+  }, [downloadTrackStems])
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
       onClosed={onClosed}
+      dismissOnClickOutside={false}
       size='small'
     >
       <ModalHeader>
-        <Flex alignSelf='center' gap='s'>
-          <Text variant='label' size='xl' strength='strong'>
-            {messages.title}
-          </Text>
-        </Flex>
+        <ModalTitle title={messages.title} Icon={IconReceive} />
       </ModalHeader>
       <ModalContent>
         <Flex
@@ -96,15 +110,26 @@ export const DownloadTrackArchiveModal = () => {
           direction='column'
           gap='xl'
         >
-          <Text variant='body' size='l'>
-            {messages.creatingArchive}
-          </Text>
-          {hasError ? (
-            <Text variant='body' color='danger'>
-              {messages.error}
+          <Flex alignItems='center' gap='l'>
+            <IconFolder color='default' size='l' />
+            <Text variant='body' size='l' strength='strong'>
+              {messages.zippingFiles(fileCount)}
             </Text>
+          </Flex>
+          {hasError ? (
+            <Hint
+              icon={IconError}
+              border='strong'
+              actions={
+                <TextLink variant='visible' onClick={handleRetry}>
+                  {messages.tryAgain}
+                </TextLink>
+              }
+            >
+              {messages.error}
+            </Hint>
           ) : (
-            <LoadingSpinner />
+            <LoadingSpinner size='l' />
           )}
         </Flex>
       </ModalContent>
