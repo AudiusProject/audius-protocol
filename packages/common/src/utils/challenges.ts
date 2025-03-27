@@ -568,15 +568,6 @@ export const getChallengeStatusLabel = (
     case ChallengeName.Tastemaker:
       return DEFAULT_STATUS_LABELS.AVAILABLE
 
-    case ChallengeName.CommentPin:
-      if (challenge.state === 'completed' && challenge.cooldown_days) {
-        return DEFAULT_STATUS_LABELS.REWARD_PENDING
-      }
-      if (challenge.claimableAmount > 0) {
-        return DEFAULT_STATUS_LABELS.READY_TO_CLAIM
-      }
-      return DEFAULT_STATUS_LABELS.AVAILABLE
-
     default:
       if (challenge.state === 'in_progress') {
         return DEFAULT_STATUS_LABELS.IN_PROGRESS
