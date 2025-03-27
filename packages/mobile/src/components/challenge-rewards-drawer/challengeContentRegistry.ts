@@ -29,7 +29,6 @@ export const challengeContentRegistry: ChallengeContentMap = {
   [ChallengeName.PlayCount1000]: PlayCountMilestoneContent,
   [ChallengeName.PlayCount10000]: PlayCountMilestoneContent,
   [ChallengeName.Tastemaker]: TastemakerChallengeContent,
-  [ChallengeName.CommentPin]: DefaultChallengeContent,
   default: DefaultChallengeContent
 }
 

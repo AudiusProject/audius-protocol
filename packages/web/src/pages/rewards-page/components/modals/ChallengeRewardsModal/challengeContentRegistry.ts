@@ -36,8 +36,6 @@ export const challengeContentRegistry: ChallengeContentMap = {
     PlayCountMilestoneContent as ChallengeContentComponent,
   [ChallengeName.Tastemaker]:
     TastemakerChallengeModalContent as ChallengeContentComponent,
-  [ChallengeName.CommentPin]:
-    DefaultChallengeContent as ChallengeContentComponent,
   default: DefaultChallengeContent as ChallengeContentComponent
 }
 
