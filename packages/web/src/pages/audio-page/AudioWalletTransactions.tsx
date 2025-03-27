@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import {
+  DEFAULT_AUDIO_TRANSACTIONS_BATCH_SIZE,
   useAudioTransactions,
   useAudioTransactionsCount
 } from '@audius/common/api'
@@ -8,7 +9,7 @@ import {
   transactionDetailsActions,
   TransactionDetails
 } from '@audius/common/store'
-import { Flex, IconCaretRight } from '@audius/harmony'
+import { Flex, IconCaretRight, Paper, PlainButton, Text } from '@audius/harmony'
 import { full } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
@@ -17,7 +18,6 @@ import { AudioTransactionsTable } from 'components/audio-transactions-table'
 import EmptyTable from 'components/tracks-table/EmptyTable'
 import { useMainContentRef } from 'pages/MainContentContext'
 
-import styles from './AudioWalletTransactions.module.css'
 const { fetchTransactionDetailsSucceeded } = transactionDetailsActions
 
 const messages = {
@@ -31,25 +31,34 @@ const messages = {
   moreInfo: 'More Info'
 }
 
-const AUDIO_TRANSACTIONS_BATCH_SIZE = 50
+const AUDIO_TRANSACTIONS_SHOW_MORE_LIMIT = 5
 
 const Disclaimer = () => {
   const setVisibility = useSetVisibility()
   return (
-    <Flex className={styles.container} shadow='mid'>
-      <span className={styles.disclaimerMessage}>{messages.disclaimer}</span>
-      <div
-        className={styles.moreInfoContainer}
+    <Paper
+      shadow='mid'
+      ph='xl'
+      pv='l'
+      alignItems='center'
+      justifyContent='space-between'
+    >
+      <Text size='l' strength='strong'>
+        {messages.disclaimer}
+      </Text>
+      <PlainButton
+        variant='subdued'
+        iconRight={IconCaretRight}
         onClick={() => setVisibility('AudioBreakdown')(true)}
       >
-        <span className={styles.moreInfo}>{messages.moreInfo}</span>
-        <IconCaretRight color='subdued' className={styles.iconCaretRight} />
-      </div>
-    </Flex>
+        {messages.moreInfo}
+      </PlainButton>
+    </Paper>
   )
 }
 
 export const AudioWalletTransactions = () => {
+  const [page, setPage] = useState(0)
   const [sortMethod, setSortMethod] =
     useState<full.GetAudioTransactionsSortMethodEnum>(
       full.GetAudioTransactionsSortMethodEnum.Date
@@ -62,17 +71,15 @@ export const AudioWalletTransactions = () => {
   const dispatch = useDispatch()
   const setVisibility = useSetVisibility()
 
-  const {
-    data: audioTransactionsData,
-    fetchNextPage,
-    isPending: isTransactionsLoading
-  } = useAudioTransactions({
-    limit: AUDIO_TRANSACTIONS_BATCH_SIZE,
-    sortMethod,
-    sortDirection
-  })
-
-  const audioTransactions = audioTransactionsData ?? []
+  const { data: audioTransactions = [], isPending: isTransactionsLoading } =
+    useAudioTransactions(
+      {
+        page,
+        sortMethod,
+        sortDirection
+      },
+      { refetchOnMount: 'always' }
+    )
 
   const { data: audioTransactionsCount = 0, isPending: isCountLoading } =
     useAudioTransactionsCount()
@@ -90,6 +97,8 @@ export const AudioWalletTransactions = () => {
           ? full.GetAudioTransactionsSortDirectionEnum.Asc
           : full.GetAudioTransactionsSortDirectionEnum.Desc
       setSortDirection(sortDirectionRes)
+      // Reset page when sorting changes
+      setPage(0)
     },
     [setSortMethod, setSortDirection]
   )
@@ -107,11 +116,15 @@ export const AudioWalletTransactions = () => {
     [dispatch, setVisibility]
   )
 
+  const handleFetchPage = useCallback((newPage: number) => {
+    setPage(newPage)
+  }, [])
+
   const tableLoading = isTransactionsLoading || isCountLoading
   const isEmpty = audioTransactions.length === 0
 
   return (
-    <div className={styles.bodyWrapper}>
+    <Flex column gap='2xl'>
       <Disclaimer />
       {isEmpty && !tableLoading ? (
         <EmptyTable
@@ -120,18 +133,18 @@ export const AudioWalletTransactions = () => {
         />
       ) : (
         <AudioTransactionsTable
-          key='audioTransactions'
           data={audioTransactions}
           loading={tableLoading}
           onSort={onSort}
           onClickRow={onClickRow}
-          fetchMore={() => fetchNextPage()}
-          isVirtualized={false}
+          fetchPage={handleFetchPage}
+          pageSize={DEFAULT_AUDIO_TRANSACTIONS_BATCH_SIZE}
+          isPaginated
+          showMoreLimit={AUDIO_TRANSACTIONS_SHOW_MORE_LIMIT}
           totalRowCount={audioTransactionsCount}
           scrollRef={mainContentRef}
-          fetchBatchSize={AUDIO_TRANSACTIONS_BATCH_SIZE}
         />
       )}
-    </div>
+    </Flex>
   )
 }
