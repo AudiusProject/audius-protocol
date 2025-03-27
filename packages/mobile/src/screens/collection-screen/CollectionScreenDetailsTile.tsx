@@ -1,10 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
-import {
-  useCollection,
-  useGetCurrentUserId,
-  useGetPlaylistById
-} from '@audius/common/api'
+import { useCollection } from '@audius/common/api'
 import {
   Name,
   PlaybackSource,
@@ -15,7 +11,9 @@ import type {
   SmartCollectionVariant,
   ID,
   UID,
-  AccessConditions
+  AccessConditions,
+  SearchPlaylist,
+  Collection
 } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import {
@@ -168,6 +166,7 @@ type CollectionScreenDetailsTileProps = {
   isPublishing?: boolean
   isDeleted?: boolean
   collectionId: number | SmartCollectionVariant
+  collection?: Collection | SearchPlaylist
   hasStreamAccess?: boolean
   streamConditions?: Nullable<AccessConditions>
 } & Omit<
@@ -194,6 +193,7 @@ const recordPlay = (id: Maybe<number>, play = true) => {
 export const CollectionScreenDetailsTile = ({
   description,
   collectionId,
+  collection,
   isAlbum,
   isPublishing,
   renderImage,
@@ -230,17 +230,6 @@ export const CollectionScreenDetailsTile = ({
 
   const isReachable = useSelector(getIsReachable)
 
-  const { data: currentUserId } = useGetCurrentUserId({})
-  // Since we're supporting SmartCollections, need to explicitly check that
-  // collectionId is a number before fetching the playlist. -1 is a placeholder,
-  // the request should not go out as the hook is disabled in that case.
-  const { data: collection } = useGetPlaylistById(
-    {
-      playlistId: typeof collectionId === 'number' ? collectionId : -1,
-      currentUserId
-    },
-    { disabled: typeof collectionId !== 'number' }
-  )
   const {
     is_stream_gated: isStreamGated,
     is_scheduled_release: isScheduledRelease,
