@@ -106,6 +106,8 @@ export type SearchPlaylist = CollectionImage & {
   has_current_user_reposted: undefined
   has_current_user_saved: undefined
   is_delete: boolean
+  is_stream_gated: boolean
+  is_scheduled_release: boolean
   is_private: boolean
   updated_at: string
   tracks: []
