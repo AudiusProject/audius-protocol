@@ -204,17 +204,37 @@ const messages = {
   unmuteUser: commentsMessages.popups.unmuteUser
 }
 const RepostsTab = ({ handle }: { handle: string }) => {
-  const queryData = useProfileReposts({
+  const {
+    data,
+    isPending,
+    isFetching,
+    isError,
+    pageSize,
+    hasNextPage,
+    loadNextPage,
+    play,
+    pause,
+    lineup,
+    isPlaying
+  } = useProfileReposts({
     handle
   })
-
   return (
     <div className={styles.tiles}>
       <TanQueryLineup
-        lineupQueryData={queryData}
-        actions={feedActions}
-        pageSize={queryData.pageSize}
+        data={data}
+        isPending={isPending}
+        isFetching={isFetching}
+        isError={isError}
+        pageSize={pageSize}
+        hasNextPage={hasNextPage}
+        loadNextPage={loadNextPage}
+        play={play}
+        pause={pause}
         variant={LineupVariant.CONDENSED}
+        actions={feedActions}
+        lineup={lineup}
+        isPlaying={isPlaying}
       />
     </div>
   )
@@ -229,7 +249,19 @@ const TracksTab = ({
   handle: string
   isOwner: boolean
 }) => {
-  const queryData = useProfileTracks({
+  const {
+    data,
+    isPending,
+    isFetching,
+    isError,
+    pageSize,
+    hasNextPage,
+    loadNextPage,
+    play,
+    pause,
+    lineup,
+    isPlaying
+  } = useProfileTracks({
     handle
   })
 
@@ -245,9 +277,17 @@ const TracksTab = ({
   return (
     <TanQueryLineup
       extraPrecedingElement={trackUploadChip}
-      lineupQueryData={queryData}
-      leadingElementId={profile.artist_pick_track_id}
-      pageSize={queryData.pageSize}
+      data={data}
+      isPending={isPending}
+      isFetching={isFetching}
+      isError={isError}
+      pageSize={pageSize}
+      hasNextPage={hasNextPage}
+      loadNextPage={loadNextPage}
+      play={play}
+      pause={pause}
+      lineup={lineup}
+      isPlaying={isPlaying}
       actions={tracksActions}
       variant={LineupVariant.CONDENSED}
     />
