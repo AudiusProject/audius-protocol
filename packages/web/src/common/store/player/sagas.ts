@@ -1,7 +1,7 @@
+import { queryTrack } from '@audius/common/api'
 import { Kind, type Track, Feature } from '@audius/common/models'
 import {
   accountSelectors,
-  cacheTracksSelectors,
   cacheActions,
   queueActions,
   reachabilitySelectors,
@@ -40,7 +40,6 @@ import errorSagas from './errorSagas'
 const { getUserId } = accountSelectors
 const { setTrackPosition } = playbackPositionActions
 const { getTrackPosition } = playbackPositionSelectors
-const { getTrack } = cacheTracksSelectors
 const {
   play,
   playSucceeded,
@@ -104,7 +103,7 @@ export function* watchPlay() {
 
     if (trackId) {
       // Load and set end action.
-      const track = yield* select(getTrack, { id: trackId })
+      const track = yield* queryTrack(trackId)
 
       const isReachable = yield* select(getIsReachable)
 
@@ -252,7 +251,7 @@ export function* watchPlay() {
     }
 
     // Play if user has access to track.
-    const track = yield* select(getTrack, { id: trackId })
+    const track = yield* queryTrack(trackId)
     const { shouldSkip, shouldPreview } = calculatePlayerBehavior(
       track,
       playerBehavior
@@ -351,7 +350,7 @@ export function* watchSeek() {
     audioPlayer.seek(seconds)
 
     if (trackId) {
-      const track = yield* select(getTrack, { id: trackId })
+      const track = yield* queryTrack(trackId)
       const currentUserId = yield* select(getUserId)
       const isLongFormContent =
         track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
@@ -432,7 +431,7 @@ export function* handleAudioErrors() {
     const trackId = yield* select(getTrackId)
     if (trackId) {
       // Retry from a different mirror if we can
-      const track = yield* select(getTrack, { id: trackId })
+      const track = yield* queryTrack(trackId)
       const playerBehavior = yield* select(getPlayerBehavior)
       const retries = yield* select(getPlaybackRetryCount)
       const { shouldPreview } = calculatePlayerBehavior(track, playerBehavior)

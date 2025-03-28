@@ -1,3 +1,4 @@
+import { queryUser } from '@audius/common/api'
 import { Name, Kind, ID, UserMetadata } from '@audius/common/models'
 import {
   accountSelectors,
@@ -22,7 +23,7 @@ import { waitForWrite } from 'utils/sagaHelpers'
 import errorSagas from './errorSagas'
 
 const { profilePage } = route
-const { getUsers, getUser } = cacheUsersSelectors
+const { getUsers } = cacheUsersSelectors
 const { setNotificationSubscription } = profilePageActions
 const { getUserId, getIsGuestAccount } = accountSelectors
 
@@ -336,7 +337,7 @@ export function* watchShareUser() {
     function* (action: ReturnType<typeof socialActions.shareUser>) {
       const { userId, source } = action
 
-      const user = yield* select(getUser, { id: userId })
+      const user = yield* queryUser(userId)
       if (!user) return
 
       const link = profilePage(user.handle)
