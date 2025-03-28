@@ -14,7 +14,12 @@ import {
   userCollectionMetadataFromSDK,
   userTrackMetadataFromSDK
 } from '~/adapters'
-import { queryCollection, queryTrack, getUserCollectiblesQueryKey } from '~/api'
+import {
+  queryCollection,
+  queryTrack,
+  getUserCollectiblesQueryKey,
+  queryAllTracks
+} from '~/api'
 import {
   Chain,
   Collectible,
@@ -32,7 +37,7 @@ import {
 import { User } from '~/models/User'
 import { IntKeys } from '~/services/remote-config'
 import { accountSelectors } from '~/store/account'
-import { cacheActions, cacheTracksSelectors } from '~/store/cache'
+import { cacheActions } from '~/store/cache'
 import { collectiblesActions } from '~/store/collectibles'
 import { getContext } from '~/store/effects'
 import { musicConfettiActions } from '~/store/music-confetti'
@@ -67,7 +72,6 @@ const { getNftAccessSignatureMap, getFolloweeIds, getTippedUserIds } =
   gatedContentSelectors
 
 const { getAccountUser, getUserId } = accountSelectors
-const { getTracks } = cacheTracksSelectors
 
 function* hasNotFetchedAllCollectibles(account: User) {
   const { collectibleList, solanaCollectibleList } = account
@@ -385,7 +389,7 @@ function* updateGatedContentAccess(
   if (yield* call(hasNotFetchedAllCollectibles, account)) return
 
   // halt if no tracks in cache and no added tracks
-  const cachedTracks = yield* select(getTracks, {})
+  const cachedTracks = yield* queryAllTracks()
   const newlyUpdatedTracks = areTracksUpdated ? action.entries : []
   if (!Object.keys(cachedTracks).length && !newlyUpdatedTracks.length) return
 
@@ -606,7 +610,7 @@ function* updateSpecialAccessTracks(
 
   const statusMap: { [id: ID]: GatedContentStatus } = {}
   const tracksToPoll: Set<ID> = new Set()
-  const cachedTracks = yield* select(getTracks, {})
+  const cachedTracks = yield* queryAllTracks()
 
   Object.keys(cachedTracks).forEach((trackId) => {
     const id = parseInt(trackId)
@@ -661,7 +665,7 @@ function* handleRevokeFollowGatedAccess(
 
   const statusMap: { [id: ID]: GatedContentStatus } = {}
   const revokeAccessMap: { [id: ID]: 'stream' | 'download' } = {}
-  const cachedTracks = yield* select(getTracks, {})
+  const cachedTracks = yield* queryAllTracks()
 
   Object.keys(cachedTracks).forEach((trackId) => {
     const id = parseInt(trackId)

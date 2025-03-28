@@ -4,7 +4,6 @@ import { queryUser } from '@audius/common/src/api/tan-query/saga-utils'
 import {
   accountSelectors,
   accountActions,
-  cacheTracksSelectors,
   cacheActions,
   tracksSocialActions as socialActions,
   getContext,
@@ -40,7 +39,6 @@ import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import watchTrackErrors from './errorSagas'
 import { watchRecordListen } from './recordListen'
-const { getTracks } = cacheTracksSelectors
 const { getUserId, getUserHandle, getIsGuestAccount } = accountSelectors
 const { getNftAccessSignatureMap } = gatedContentSelectors
 const { incrementTrackSaveCount, decrementTrackSaveCount } = accountActions
@@ -230,8 +228,8 @@ export function* undoRepostTrackAsync(
 
   yield* call(confirmUndoRepostTrack, action.trackId, user)
 
-  const tracks = yield* select(getTracks, { ids: [action.trackId] })
-  const track = tracks[action.trackId]
+  const track = yield* queryTrack(action.trackId)
+  if (!track) return
 
   const eagerlyUpdatedMetadata: Partial<Track> = {
     has_current_user_reposted: false,
@@ -319,8 +317,8 @@ export function* saveTrackAsync(
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
-  const tracks = yield* select(getTracks, { ids: [action.trackId] })
-  const track = tracks[action.trackId]
+  const track = yield* queryTrack(action.trackId)
+  if (!track) return
 
   if (track.has_current_user_saved) return
 
@@ -471,8 +469,8 @@ export function* unsaveTrackAsync(
 
   yield* call(confirmUnsaveTrack, action.trackId, user)
 
-  const tracks = yield* select(getTracks, { ids: [action.trackId] })
-  const track = tracks[action.trackId]
+  const track = yield* queryTrack(action.trackId)
+  if (!track) return
 
   if (track) {
     const eagerlyUpdatedMetadata: Partial<Track> = {

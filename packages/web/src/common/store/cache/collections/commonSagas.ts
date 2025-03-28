@@ -109,11 +109,11 @@ function* editPlaylistAsync(
 
   let playlist: Collection = { ...formFields }
   const playlistTracks = yield* select(getCollectionTracks, { id: playlistId })
-  const updatedTracks = yield* all(
+  const updatedTracks = (yield* all(
     formFields.playlist_contents.track_ids.map(({ track }) =>
       call(queryTrack, track)
     )
-  ).filter(removeNullable)
+  )).filter(removeNullable)
 
   // If the collection is a newly premium album, this will populate the premium metadata (price/splits/etc)
   if (

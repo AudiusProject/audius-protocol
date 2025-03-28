@@ -14,7 +14,6 @@ import {
 import {
   accountActions,
   accountSelectors,
-  cacheCollectionsSelectors,
   cacheActions,
   savedPageActions,
   LibraryCategory,
@@ -49,7 +48,6 @@ import watchCollectionErrors from './errorSagas'
 const { updatedPlaylistViewed } = playlistUpdatesActions
 const { update: updatePlaylistLibrary } = playlistLibraryActions
 const { removeFromPlaylistLibrary } = playlistLibraryHelpers
-const { getCollections } = cacheCollectionsSelectors
 const { addLocalCollection, removeLocalCollection } = savedPageActions
 const { getPlaylistLibrary, getUserId, getIsGuestAccount } = accountSelectors
 const { collectionPage } = route
@@ -79,10 +77,7 @@ export function* repostCollectionAsync(
 
   let collection = action.metadata
   if (!collection) {
-    const collections = yield* select(getCollections, {
-      ids: [action.collectionId]
-    })
-    collection = collections[action.collectionId]
+    collection = yield* queryCollection(action.collectionId)
   }
 
   if (collection.playlist_owner_id === userId) {
@@ -203,10 +198,8 @@ export function* undoRepostCollectionAsync(
 
   yield* call(adjustUserField, { user, fieldName: 'repost_count', delta: -1 })
 
-  const collections = yield* select(getCollections, {
-    ids: [action.collectionId]
-  })
-  const collection = collections[action.collectionId]
+  const collection = yield* queryCollection(action.collectionId)
+  if (!collection) return
 
   yield* put(
     removeLocalCollection({
@@ -350,10 +343,8 @@ export function* saveCollectionAsync(
     return
   }
 
-  const collections = yield* select(getCollections, {
-    ids: [action.collectionId]
-  })
-  const collection = collections[action.collectionId]
+  const collection = yield* queryCollection(action.collectionId)
+  if (!collection) return
   const user = yield* queryUser(collection.playlist_owner_id)
   if (!user) return
 
@@ -513,10 +504,8 @@ export function* unsaveCollectionAsync(
 ) {
   yield* call(waitForWrite)
 
-  const collections = yield* select(getCollections, {
-    ids: [action.collectionId]
-  })
-  const collection = collections[action.collectionId]
+  const collection = yield* queryCollection(action.collectionId)
+  if (!collection) return
 
   yield* put(
     removeLocalCollection({
