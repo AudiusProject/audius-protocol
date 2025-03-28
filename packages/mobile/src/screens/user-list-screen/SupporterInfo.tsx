@@ -1,4 +1,4 @@
-import type { User } from '@audius/common/models'
+import type { ID } from '@audius/common/models'
 import {
   tippingSelectors,
   topSupportersUserListSelectors
@@ -33,7 +33,7 @@ const useStyles = makeStyles(({ spacing, typography }) => ({
 }))
 
 type SupporterInfoProps = {
-  user: User
+  userId: ID
 }
 
 export const SupporterInfo = (props: SupporterInfoProps) => {
@@ -44,7 +44,7 @@ export const SupporterInfo = (props: SupporterInfoProps) => {
   const supportersForUser = supportersId
     ? (supportersMap[supportersId] ?? null)
     : null
-  const supporter = supportersForUser?.[props.user.user_id] ?? null
+  const supporter = supportersForUser?.[props.userId] ?? null
 
   if (!supporter) return null
 

@@ -214,5 +214,14 @@
     "starting_block": 0,
     "weekly_pool": 2147483647,
     "cooldown_days": 7
+  },
+  {
+    "id": "cs",
+    "type": "aggregate",
+    "amount": 1000,
+    "active": false,
+    "step_count": 2147483647,
+    "starting_block": 95017582,
+    "weekly_pool": 50000
   }
 ]

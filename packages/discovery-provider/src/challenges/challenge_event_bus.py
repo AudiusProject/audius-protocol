@@ -14,6 +14,7 @@ from src.challenges.audio_matching_challenge import (
 from src.challenges.challenge import ChallengeManager, EventMetadata
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.connect_verified_challenge import connect_verified_challenge_manager
+from src.challenges.cosign_challenge import cosign_challenge_manager
 from src.challenges.first_playlist_challenge import first_playlist_challenge_manager
 from src.challenges.first_weekly_comment_challenge import (
     first_weekly_comment_challenge_manager,
@@ -184,9 +185,9 @@ class ChallengeEventBus:
             events_dicts = list(map(self._json_to_event, events_json))
             # Consolidate event types for processing
             # map of {"event_type": [{ user_id: number, block_number: number, extra: {} }]}}
-            event_user_dict: DefaultDict[
-                ChallengeEvent, List[EventMetadata]
-            ] = defaultdict(lambda: [])
+            event_user_dict: DefaultDict[ChallengeEvent, List[EventMetadata]] = (
+                defaultdict(lambda: [])
+            )
             for event_dict in events_dicts:
                 event_type = event_dict["event"]
                 event_user_dict[event_type].append(
@@ -312,4 +313,6 @@ def setup_challenge_bus():
     bus.register_listener(
         ChallengeEvent.pinned_comment, pinned_comment_challenge_manager
     )
+    bus.register_listener(ChallengeEvent.cosign, cosign_challenge_manager)
+
     return bus

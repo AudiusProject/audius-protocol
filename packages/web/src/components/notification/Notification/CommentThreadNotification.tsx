@@ -72,7 +72,7 @@ export const CommentThreadNotification = (
           setUserListUsers({
             userListType: UserListType.NOTIFICATION,
             entityType: entityToUserListEntity[entityType],
-            id: id as unknown as number
+            entity: notification
           })
         )
         if (isMobile) {
@@ -94,12 +94,12 @@ export const CommentThreadNotification = (
     },
     [
       isMultiUser,
+      notification,
       dispatch,
       entityType,
       id,
       isMobile,
-      handleGoToEntity,
-      notification.entityId
+      handleGoToEntity
     ]
   )
 

@@ -30,3 +30,4 @@ class ChallengeEvent(str, enum.Enum):
     first_weekly_comment = "first_weekly_comment"
     tastemaker = "tastemaker"
     pinned_comment = "pinned_comment"
+    cosign = "cosign"

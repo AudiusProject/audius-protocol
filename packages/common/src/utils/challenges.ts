@@ -540,10 +540,7 @@ export const getChallengeStatusLabel = (
   }
 
   // Handle completed with cooldown state
-  if (
-    (challenge.state === 'completed' || challenge.state === 'in_progress') &&
-    challenge.cooldown_days
-  ) {
+  if (challenge.state === 'completed' && challenge.cooldown_days) {
     return DEFAULT_STATUS_LABELS.REWARD_PENDING
   }
 
