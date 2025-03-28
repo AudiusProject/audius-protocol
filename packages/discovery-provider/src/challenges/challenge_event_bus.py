@@ -24,6 +24,7 @@ from src.challenges.listen_streak_endless_challenge import (
 )
 from src.challenges.mobile_install_challenge import mobile_install_challenge_manager
 from src.challenges.one_shot_challenge import one_shot_challenge_manager
+from src.challenges.pinned_comment_challenge import pinned_comment_challenge_manager
 from src.challenges.play_count_milestone_250_challenge import (
     play_count_250_milestone_challenge_manager,
 )
@@ -309,6 +310,9 @@ def setup_challenge_bus():
         ChallengeEvent.first_weekly_comment, first_weekly_comment_challenge_manager
     )
     bus.register_listener(ChallengeEvent.tastemaker, tastemaker_challenge_manager)
+    bus.register_listener(
+        ChallengeEvent.pinned_comment, pinned_comment_challenge_manager
+    )
     bus.register_listener(ChallengeEvent.cosign, cosign_challenge_manager)
 
     return bus

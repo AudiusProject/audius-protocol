@@ -43,7 +43,7 @@ export const usePinComment = () => {
       if (isPinned) {
         // Loop through the sort list and move the newly pinned comment
         queryClient.setQueryData<InfiniteData<ID[]>>(
-          ['trackCommentList', trackId, currentSort],
+          getTrackCommentListQueryKey({ trackId, sortMethod: currentSort }),
           (prevCommentData) => {
             const newCommentData = cloneDeep(prevCommentData) ?? {
               pages: [],
@@ -55,7 +55,11 @@ export const usePinComment = () => {
               page.filter((id: ID) => id !== commentId)
             )
             // Insert our pinned comment id at the top of page 0
-            commentPages[0].unshift(commentId)
+            if (commentPages.length > 0 && Array.isArray(commentPages[0])) {
+              commentPages[0].unshift(commentId)
+            } else if (commentPages.length === 0) {
+              commentPages.push([commentId])
+            }
             newCommentData.pages = commentPages
             return newCommentData
           }

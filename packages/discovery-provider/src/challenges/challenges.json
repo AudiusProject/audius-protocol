@@ -205,6 +205,17 @@
     "cooldown_days": 7
   },
   {
+    "id": "cp",
+    "name": "COMMENT_PIN",
+    "type": "aggregate",
+    "amount": 10,
+    "active": false,
+    "step_count": 1,
+    "starting_block": 0,
+    "weekly_pool": 2147483647,
+    "cooldown_days": 7
+  },
+  {
     "id": "cs",
     "type": "aggregate",
     "amount": 1000,
