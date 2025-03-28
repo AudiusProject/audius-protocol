@@ -57,6 +57,7 @@
   bottom: var(--harmony-spacing-2xl);
   right: 0;
   left: 0;
+  text-align: center;
   z-index: 4;
 }
 

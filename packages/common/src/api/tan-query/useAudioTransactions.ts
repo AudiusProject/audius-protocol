@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
 import { full, Id } from '@audius/sdk'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 
 import { audioTransactionFromSdk } from '~/adapters/audioTransactions'
 import { useAudiusQueryContext } from '~/audius-query'
@@ -18,15 +18,17 @@ import { useCurrentUserId } from './useCurrentUserId'
 import { useUsers } from './useUsers'
 
 type GetAudioTransactionsArgs = {
+  page?: number
   pageSize?: number
   sortMethod?: full.GetAudioTransactionsSortMethodEnum
   sortDirection?: full.GetAudioTransactionsSortDirectionEnum
 }
 
-const AUDIO_TRANSACTIONS_BATCH_SIZE = 50
+export const DEFAULT_AUDIO_TRANSACTIONS_BATCH_SIZE = 50
 
 export const getAudioTransactionsQueryKey = ({
   userId,
+  page,
   sortMethod,
   sortDirection,
   pageSize
@@ -34,6 +36,7 @@ export const getAudioTransactionsQueryKey = ({
   QUERY_KEYS.audioTransactions,
   userId,
   {
+    page,
     sortMethod,
     sortDirection,
     pageSize
@@ -47,25 +50,27 @@ export const useAudioTransactions = (
   const { audiusSdk } = useAudiusQueryContext()
   const { data: userId } = useCurrentUserId()
   const {
-    pageSize = AUDIO_TRANSACTIONS_BATCH_SIZE,
+    page = 0,
+    pageSize = DEFAULT_AUDIO_TRANSACTIONS_BATCH_SIZE,
     sortMethod,
     sortDirection
   } = args
 
-  const queryResults = useInfiniteQuery({
+  const queryResults = useQuery({
     queryKey: getAudioTransactionsQueryKey({
       userId,
+      page,
       sortMethod,
       sortDirection,
       pageSize
     }),
-    queryFn: async ({ pageParam }) => {
+    queryFn: async () => {
       if (!userId) return []
 
       const sdk = await audiusSdk()
       const response = await sdk.full.users.getAudioTransactions({
         id: Id.parse(userId),
-        offset: pageParam,
+        offset: page * pageSize,
         limit: pageSize,
         sortMethod,
         sortDirection
@@ -73,15 +78,8 @@ export const useAudioTransactions = (
 
       if (!response?.data) return []
 
-      const txDetails = response.data.map(audioTransactionFromSdk)
-      return txDetails
+      return response.data.map(audioTransactionFromSdk)
     },
-    initialPageParam: 0,
-    getNextPageParam: (lastPage, allPages) => {
-      if (lastPage?.length < pageSize) return undefined
-      return allPages.length * pageSize
-    },
-    select: (data) => data.pages.flat(),
     ...options,
     enabled: options?.enabled !== false && !!userId
   })

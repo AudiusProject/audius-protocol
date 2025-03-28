@@ -69,6 +69,7 @@ const productionConfig: SdkServicesConfig = {
   network: {
     minVersion: '',
     discoveryNodes: [],
+    apiEndpoint: 'https://api.audius.co',
     storageNodes: [],
     antiAbuseOracleNodes: {
       endpoints: [
@@ -114,6 +115,7 @@ const productionConfig: SdkServicesConfig = {
 const stagingConfig: SdkServicesConfig = {
   network: {
     minVersion: '',
+    apiEndpoint: 'https://api.staging.audius.co',
     discoveryNodes: [],
     storageNodes: [],
     antiAbuseOracleNodes: {
@@ -156,6 +158,7 @@ const stagingConfig: SdkServicesConfig = {
 const developmentConfig: SdkServicesConfig = {
   network: {
     minVersion: '0.0.0',
+    apiEndpoint: 'https://audius-protocol-discovery-provider-1',
     discoveryNodes: [
       {
         delegateOwnerWallet:

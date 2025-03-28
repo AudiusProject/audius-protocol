@@ -383,7 +383,6 @@ export const SettingsPage = () => {
     <Page
       title={messages.title}
       description={messages.description}
-      containerClassName={styles.settingsPageContainer}
       contentClassName={styles.settingsPageContent}
       header={header}
     >

@@ -21,7 +21,6 @@ import {
   getDefaultClaimableTokensConfig,
   EmailEncryptionService
 } from '../../services'
-import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { EntityManagerClient } from '../../services/EntityManager'
 import { Logger } from '../../services/Logger'
 import { SolanaClient } from '../../services/Solana/programs/SolanaClient'
@@ -71,9 +70,8 @@ let users: UsersApi
 
 const audiusWalletClient = createAppWalletClient({ apiKey: '' })
 const logger = new Logger()
-const discoveryNodeSelector = new DiscoveryNodeSelector()
 const storageNodeSelector = new StorageNodeSelector({
-  discoveryNodeSelector,
+  endpoint: 'https://discoveryprovider.audius.co',
   logger
 })
 const solanaRelay = new SolanaRelay()
@@ -101,7 +99,7 @@ describe('UsersApi', () => {
       }),
       new EntityManagerClient({
         audiusWalletClient,
-        discoveryNodeSelector: new DiscoveryNodeSelector()
+        endpoint: 'https://discoveryprovider.audius.co'
       }),
       new Logger(),
       claimableTokens,

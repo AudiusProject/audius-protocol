@@ -8,7 +8,6 @@ import type TypedEmitter from 'typed-emitter'
 import { ulid } from 'ulid'
 
 import type { AudiusWalletClient } from '../../services/AudiusWalletClient'
-import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector/types'
 import type { LoggerService } from '../../services/Logger'
 import type { EventEmitterTarget } from '../../utils/EventEmitterTarget'
 import { CryptoUtils } from '../../utils/crypto'
@@ -102,7 +101,6 @@ export class ChatsApi
   constructor(
     config: Configuration,
     private readonly audiusWalletClient: AudiusWalletClient,
-    private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService,
     private readonly logger: LoggerService
   ) {
     super(config)
@@ -114,14 +112,8 @@ export class ChatsApi
       this.eventEmitter
     )
 
-    // Listen for discovery node selection changes and reinit websocket
-    this.discoveryNodeSelectorService.addEventListener('change', (endpoint) => {
-      if (this.websocket) {
-        this.websocket.close()
-        this.createWebsocket(endpoint).then((ws) => {
-          this.websocket = ws
-        })
-      }
+    this.createWebsocket(this.configuration.basePath).then((ws) => {
+      this.websocket = ws
     })
 
     this.logger = logger.createPrefixedLogger('[chats-api]')
@@ -134,13 +126,14 @@ export class ChatsApi
    * @param params.currentUserId the user to listen for chat events for
    */
   public async listen() {
-    const endpoint =
-      await this.discoveryNodeSelectorService.getSelectedEndpoint()
-    if (endpoint) {
-      this.websocket = await this.createWebsocket(endpoint)
-    } else {
-      throw new Error('No services available to listen to')
-    }
+    this.websocket = await this.createWebsocket(this.configuration.basePath)
+  }
+
+  /**
+   * Gets the active websocket
+   */
+  public async getWebsocket() {
+    return this.websocket
   }
 
   /**

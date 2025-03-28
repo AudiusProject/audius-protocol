@@ -11,7 +11,6 @@ import fetch, { Headers } from '../../utils/fetch'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { getNonce } from '../../utils/signatureSchemas'
 import type { AudiusWalletClient } from '../AudiusWalletClient'
-import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 import type { LoggerService } from '../Logger'
 
 import {
@@ -32,23 +31,23 @@ const CONFIRMATION_POLLING_INTERVAL = 2000
 const CONFIRMATION_TIMEOUT = 45000
 
 export class EntityManagerClient implements EntityManagerService {
-  private readonly discoveryNodeSelector: DiscoveryNodeSelectorService
   private readonly audiusWalletClient: AudiusWalletClient
   private readonly logger: LoggerService
 
   private readonly chainId: number
   private readonly contractAddress: string
+  private readonly endpoint: string
 
   constructor(config_: EntityManagerConfig) {
     const config = mergeConfigWithDefaults(
       config_,
       getDefaultEntityManagerConfig(productionConfig)
     )
-    this.discoveryNodeSelector = config.discoveryNodeSelector
     this.audiusWalletClient = config.audiusWalletClient
     this.chainId = config.chainId
     this.contractAddress = config.contractAddress
     this.logger = config.logger.createPrefixedLogger('[entity-manager]')
+    this.endpoint = config.endpoint
   }
 
   /**
@@ -85,7 +84,7 @@ export class EntityManagerClient implements EntityManagerService {
     const [senderAddress] = await this.audiusWalletClient.getAddresses()
     const signature = await this.audiusWalletClient.signTypedData(typedData)
 
-    const url = `${await this.discoveryNodeSelector.getSelectedEndpoint()}/relay`
+    const url = `${this.endpoint}/relay`
     this.logger.info(`Making relay request to ${url}`)
     const response = await fetch(url, {
       method: 'POST',
@@ -157,8 +156,7 @@ export class EntityManagerClient implements EntityManagerService {
   }) {
     this.logger.info(`Confirming write ${blockHash} ${blockNumber}`)
     const confirmBlock = async () => {
-      const endpoint = await this.discoveryNodeSelector.getSelectedEndpoint()
-      const url = `${endpoint}/block_confirmation?blocknumber=${blockNumber}&blockhash=${blockHash}`
+      const url = `${this.endpoint}/block_confirmation?blocknumber=${blockNumber}&blockhash=${blockHash}`
       const {
         data: { block_passed }
       } = await (await fetch(url)).json()

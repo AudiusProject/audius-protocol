@@ -7,6 +7,7 @@ import type { SdkServicesConfig } from './types'
 export const stagingConfig: SdkServicesConfig = {
   "network": {
     "minVersion": "0.6.0",
+    "apiEndpoint": "https://api.staging.audius.co",
     "discoveryNodes": [
       {
         "endpoint": "https://discoveryprovider.staging.audius.co",

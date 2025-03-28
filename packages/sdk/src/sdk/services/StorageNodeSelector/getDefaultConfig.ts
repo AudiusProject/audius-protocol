@@ -7,5 +7,6 @@ export const getDefaultStorageNodeSelectorConfig = (
   config: SdkServicesConfig
 ): StorageNodeSelectorConfigInternal => ({
   bootstrapNodes: config.network.storageNodes,
+  endpoint: config.network.apiEndpoint,
   logger: new Logger()
 })

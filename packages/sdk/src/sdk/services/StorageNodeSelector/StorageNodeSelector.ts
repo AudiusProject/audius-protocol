@@ -2,7 +2,6 @@ import { productionConfig } from '../../config/production'
 import fetch from '../../utils/fetch'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { RendezvousHash } from '../../utils/rendezvous'
-import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 import type { HealthCheckResponseData } from '../DiscoveryNodeSelector/healthCheckTypes'
 import type { LoggerService } from '../Logger'
 
@@ -15,26 +14,19 @@ import type {
   StorageNodeSelectorService
 } from './types'
 
-const DISCOVERY_RESPONSE_TIMEOUT = 15000
-
 export class StorageNodeSelector implements StorageNodeSelectorService {
   private readonly config: StorageNodeSelectorConfigInternal
   private readonly logger: LoggerService
   private nodes: StorageNode[]
   private orderedNodes?: string[] // endpoints (lowercase)
   private selectedNode?: string | null
-  private selectedDiscoveryNode?: string | null
   private selectionState: 'healthy_only' | 'failed_all'
-  private readonly discoveryNodeSelector?: DiscoveryNodeSelectorService
-  private readonly initialDiscoveryFetchPromise: Promise<void>
-  private resolveInitialDiscoveryFetchPromise: () => void = () => {}
 
   constructor(config: StorageNodeSelectorConfig) {
     this.config = mergeConfigWithDefaults(
       config,
       getDefaultStorageNodeSelectorConfig(productionConfig)
     )
-    this.discoveryNodeSelector = config.discoveryNodeSelector
 
     this.logger = this.config.logger.createPrefixedLogger(
       '[storage-node-selector]'
@@ -42,28 +34,11 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
     this.nodes = this.config.bootstrapNodes ?? []
     this.selectionState = 'healthy_only'
 
-    this.discoveryNodeSelector?.addEventListener(
-      'change',
-      this.onChangeDiscoveryNode.bind(this)
-    )
-
-    this.checkIfDiscoveryNodeAlreadyAvailable()
-    this.initialDiscoveryFetchPromise = new Promise((resolve) => {
-      this.resolveInitialDiscoveryFetchPromise = resolve
-    })
+    this.updateAvailableStorageNodes(this.config.endpoint)
   }
 
-  private async checkIfDiscoveryNodeAlreadyAvailable() {
-    const endpoint = await this.discoveryNodeSelector?.getSelectedEndpoint()
-    if (endpoint) {
-      this.onChangeDiscoveryNode(endpoint)
-    }
-  }
-
-  private async onChangeDiscoveryNode(endpoint: string) {
-    this.logger.info('Updating list of available content nodes')
-    if (this.selectedDiscoveryNode === endpoint) return
-    this.selectedDiscoveryNode = endpoint
+  private async updateAvailableStorageNodes(endpoint: string) {
+    this.logger.info('Updating list of available storage nodes')
     const healthCheckEndpoint = `${endpoint}/health_check`
     const discoveryHealthCheckResponse = await fetch(healthCheckEndpoint)
     if (!discoveryHealthCheckResponse.ok) {
@@ -86,26 +61,11 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
 
     this.nodes = contentNodes
     this.selectionState = 'healthy_only'
-    this.resolveInitialDiscoveryFetchPromise()
   }
 
   public async getSelectedNode(forceReselect = false) {
     if (this.selectedNode && !forceReselect) {
       return this.selectedNode
-    }
-
-    // If we don't have any nodes, wait for a
-    // discovery response to come back first
-    if (!this.nodes.length) {
-      await Promise.race([
-        this.initialDiscoveryFetchPromise,
-        new Promise<void>((resolve) =>
-          setTimeout(() => {
-            this.logger.warn('List of storage nodes could not be fetched')
-            resolve()
-          }, DISCOVERY_RESPONSE_TIMEOUT)
-        )
-      ])
     }
 
     return await this.select()

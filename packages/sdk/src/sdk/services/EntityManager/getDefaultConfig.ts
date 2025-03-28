@@ -8,7 +8,6 @@ export const getDefaultEntityManagerConfig = (
 ): EntityManagerConfigInternal => ({
   contractAddress: config.acdc.entityManagerContractAddress,
   chainId: config.acdc.chainId,
-  identityServiceUrl: config.network.identityService,
-  useDiscoveryRelay: true,
+  endpoint: config.network.apiEndpoint,
   logger: new Logger()
 })

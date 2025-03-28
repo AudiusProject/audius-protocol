@@ -12,7 +12,7 @@ import { UseLineupQueryData } from './utils/useLineupQuery'
  */
 export type QueryOptions = Pick<
   DefinedInitialDataOptions<any>,
-  'staleTime' | 'enabled' | 'placeholderData'
+  'staleTime' | 'enabled' | 'placeholderData' | 'refetchOnMount'
 >
 
 export type SelectableQueryOptions<TData, TResult = TData> = Omit<

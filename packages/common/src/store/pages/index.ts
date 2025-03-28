@@ -125,11 +125,6 @@ export {
   default as audioRewardsPageReducer,
   actions as audioRewardsPageActions
 } from './audio-rewards/slice'
-export * as audioTransactionsPageSelectors from './audio-transactions/selectors'
-export {
-  default as audioTransactionsPageReducer,
-  actions as audioTransactionsPageActions
-} from './audio-transactions/slice'
 export * from './audio-rewards/types'
 export * from './deactivate-account'
 

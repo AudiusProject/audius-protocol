@@ -8,7 +8,6 @@ import type {
   PaymentRouterClient,
   SolanaRelayService
 } from '../../services'
-import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector'
 import {
   Action,
   EntityType,
@@ -30,7 +29,7 @@ import {
   ExtendedPaymentSplit,
   instanceOfExtendedPurchaseGate
 } from '../generated/default'
-import { BASE_PATH, RequiredError } from '../generated/default/runtime'
+import { RequiredError } from '../generated/default/runtime'
 
 import { TrackUploadHelper } from './TrackUploadHelper'
 import {
@@ -64,7 +63,6 @@ export class TracksApi extends GeneratedTracksApi {
 
   constructor(
     configuration: Configuration,
-    private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService,
     private readonly storage: StorageService,
     private readonly entityManager: EntityManagerService,
     private readonly logger: LoggerService,
@@ -110,9 +108,8 @@ export class TracksApi extends GeneratedTracksApi {
       `{${'track_id'}}`,
       encodeURIComponent(String(params.trackId))
     )
-    const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
     const queryString = queryParams.toString()
-    return `${host}${BASE_PATH}${path}${queryString ? '?' + queryString : ''}`
+    return `${this.configuration.basePath}${path}${queryString ? '?' + queryString : ''}`
   }
 
   /**
@@ -141,9 +138,8 @@ export class TracksApi extends GeneratedTracksApi {
       `{${'track_id'}}`,
       encodeURIComponent(String(params.trackId))
     )
-    const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
     const queryString = queryParams.toString()
-    return `${host}${BASE_PATH}${path}${queryString ? '?' + queryString : ''}`
+    return `${this.configuration.basePath}${path}${queryString ? '?' + queryString : ''}`
   }
 
   /** @hidden
