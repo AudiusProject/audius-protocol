@@ -1,19 +1,11 @@
-import { useCallback } from 'react'
-
-import {
-  mutualsUserListActions,
-  mutualsUserListSelectors,
-  MUTUALS_USER_LIST_TAG
-} from '@audius/common/store'
-import { useDispatch } from 'react-redux'
+import { useMutualFollowers } from '@audius/common/api'
+import { MUTUALS_USER_LIST_TAG } from '@audius/common/store'
 
 import { IconUserFollowing } from '@audius/harmony-native'
 import { useProfileRoute } from 'app/hooks/useRoute'
 
 import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
-const { getUserList } = mutualsUserListSelectors
-const { setMutuals } = mutualsUserListActions
 
 const messages = {
   title: 'Mutuals'
@@ -22,18 +14,17 @@ const messages = {
 export const MutualsScreen = () => {
   const { params } = useProfileRoute<'Mutuals'>()
   const { userId } = params
-  const dispatch = useDispatch()
-
-  const handleSetMutals = useCallback(() => {
-    dispatch(setMutuals(userId))
-  }, [dispatch, userId])
+  const { data, isFetchingNextPage, isPending, fetchNextPage } =
+    useMutualFollowers({ userId })
 
   return (
     <UserListScreen title={messages.title} titleIcon={IconUserFollowing}>
       <UserList
-        userSelector={getUserList}
+        data={data}
+        isFetchingNextPage={isFetchingNextPage}
+        isPending={isPending}
+        fetchNextPage={fetchNextPage}
         tag={MUTUALS_USER_LIST_TAG}
-        setUserList={handleSetMutals}
       />
     </UserListScreen>
   )

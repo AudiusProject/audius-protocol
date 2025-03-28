@@ -1,5 +1,6 @@
 import { useContext } from 'react'
 
+import { useCollection } from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -7,7 +8,6 @@ import {
 } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
 import {
-  cacheCollectionsSelectors,
   cacheUsersSelectors,
   collectionsSocialActions,
   deletePlaylistConfirmationModalUIActions,
@@ -17,6 +17,7 @@ import {
   cacheCollectionsActions
 } from '@audius/common/store'
 import type { OverflowActionCallbacks } from '@audius/common/store'
+import { pick } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -36,7 +37,6 @@ const {
 } = collectionsSocialActions
 const { publishPlaylist } = cacheCollectionsActions
 const { getUser } = cacheUsersSelectors
-const { getCollection } = cacheCollectionsSelectors
 
 type Props = {
   render: (callbacks: OverflowActionCallbacks) => JSX.Element
@@ -49,20 +49,21 @@ const CollectionOverflowMenuDrawer = ({ render }: Props) => {
   const { id: modalId } = useSelector(getMobileOverflowModal)
   const id = modalId as ID
 
-  const playlist = useSelector((state) => getCollection(state, { id }))
+  const { data: partialPlaylist } = useCollection(id, {
+    select: (collection) =>
+      pick(collection, 'playlist_name', 'is_album', 'playlist_owner_id')
+  })
+  const { playlist_name, is_album, playlist_owner_id } = partialPlaylist ?? {}
   const isCollectionMarkedForDownload = useSelector(
     getIsCollectionMarkedForDownload(id)
   )
   const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
 
-  const user = useSelector((state) =>
-    getUser(state, { id: playlist?.playlist_owner_id })
-  )
+  const user = useSelector((state) => getUser(state, { id: playlist_owner_id }))
 
-  if (!playlist || !user) {
+  if (!partialPlaylist || !user) {
     return null
   }
-  const { playlist_name, is_album } = playlist
   const { handle } = user
 
   if (!id || !handle || !playlist_name || is_album === undefined) {

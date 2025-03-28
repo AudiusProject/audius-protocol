@@ -13,6 +13,7 @@ import { Cell, Row } from 'react-table'
 
 import { AudioTransactionIcon } from 'components/audio-transaction-icon'
 import { Table } from 'components/table'
+import { TableProps } from 'components/table/Table'
 import Tooltip from 'components/tooltip/Tooltip'
 
 import styles from './AudioTransactionsTable.module.css'
@@ -43,19 +44,13 @@ type AudioTransactionsTableColumn =
   | 'spacer'
   | 'spacer2'
 
-type AudioTransactionsTableProps = {
+type AudioTransactionsTableProps = Omit<
+  TableProps,
+  'columns' | 'data' | 'onClickRow'
+> & {
   columns?: AudioTransactionsTableColumn[]
   data: (TransactionDetails | {})[]
-  isVirtualized?: boolean
-  loading?: boolean
   onClickRow?: (txDetails: TransactionDetails, index: number) => void
-  onSort: (sortMethod: string, sortDirection: string) => void
-  fetchMore: (offset: number, limit: number) => void
-  tableClassName?: string
-  wrapperClassName?: string
-  totalRowCount: number
-  scrollRef?: React.MutableRefObject<HTMLDivElement | undefined>
-  fetchBatchSize: number
 }
 
 const defaultColumns: AudioTransactionsTableColumn[] = [
@@ -184,17 +179,8 @@ const tableColumnMap = {
 
 export const AudioTransactionsTable = ({
   columns = defaultColumns,
-  data,
-  isVirtualized = false,
-  loading = false,
   onClickRow,
-  onSort,
-  fetchMore,
-  tableClassName,
-  wrapperClassName,
-  totalRowCount,
-  scrollRef,
-  fetchBatchSize
+  ...other
 }: AudioTransactionsTableProps) => {
   const tableColumns = useMemo(
     () => columns.map((id) => tableColumnMap[id]),
@@ -212,24 +198,12 @@ export const AudioTransactionsTable = ({
     [onClickRow]
   )
 
-  const getRowClassName = useCallback(() => '', [])
-
   return (
     <Table
-      wrapperClassName={wrapperClassName}
-      tableClassName={tableClassName}
-      getRowClassName={getRowClassName}
       columns={tableColumns}
-      data={data}
-      loading={loading}
       onClickRow={handleClickRow}
-      onSort={onSort}
       isEmptyRow={isEmptyRow}
-      fetchMore={fetchMore}
-      isVirtualized={isVirtualized}
-      totalRowCount={totalRowCount}
-      scrollRef={scrollRef}
-      fetchBatchSize={fetchBatchSize}
+      {...other}
     />
   )
 }

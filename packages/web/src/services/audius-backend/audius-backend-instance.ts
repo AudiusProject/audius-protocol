@@ -1,7 +1,6 @@
 import { audiusBackend } from '@audius/common/services'
 
 import { track } from 'services/analytics'
-import { discoveryNodeSelectorService } from 'services/audius-sdk/discoveryNodeSelector'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { monitoringCallbacks } from 'services/serviceMonitoring'
@@ -23,7 +22,6 @@ export const audiusBackendInstance = audiusBackend({
   ethTokenAddress: env.ETH_TOKEN_ADDRESS,
   getFeatureEnabled,
   getHostUrl: () => window.location.origin,
-  discoveryNodeSelectorService,
   identityServiceUrl: env.IDENTITY_SERVICE,
   generalAdmissionUrl: env.GENERAL_ADMISSION,
   isElectron: isElectron(),

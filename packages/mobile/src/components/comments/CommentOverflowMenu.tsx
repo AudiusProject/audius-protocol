@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react'
 
+import { useUser } from '@audius/common/api'
 import {
   CommentSectionProvider,
   useCurrentCommentSection,
@@ -16,23 +17,18 @@ import {
   type ID,
   type ReplyComment
 } from '@audius/common/models'
-import { cacheUsersSelectors } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 import { Portal } from '@gorhom/portal'
-import { useSelector } from 'react-redux'
 
 import { Hint, IconButton, IconKebabHorizontal } from '@audius/harmony-native'
 import { useToast } from 'app/hooks/useToast'
 import { track as trackEvent, make } from 'app/services/analytics'
-import type { AppState } from 'app/store'
 
 import {
   ActionDrawerWithoutRedux,
   type ActionDrawerRow
 } from '../action-drawer'
 import { ConfirmationDrawerWithoutRedux } from '../drawers'
-
-const { getUser } = cacheUsersSelectors
 
 type CommentOverflowMenuProps = {
   comment: Comment | ReplyComment
@@ -52,9 +48,9 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   const isMuted = 'isMuted' in comment ? comment.isMuted : false
   const isParentComment = 'replyCount' in comment
 
-  const userDisplayName = useSelector(
-    (state: AppState) => getUser(state, { id: Number(userId) })?.name
-  )
+  const { data: userName } = useUser(userId, {
+    select: (user) => user?.name
+  })
 
   const { toast } = useToast()
 
@@ -266,7 +262,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
             onClosed={() => setIsFlagAndHideConfirmationVisible(false)}
             messages={{
               header: messages.popups.flagAndHide.title,
-              description: messages.popups.flagAndHide.body(userDisplayName),
+              description: messages.popups.flagAndHide.body(userName),
               confirm: messages.popups.flagAndHide.confirm
             }}
             onConfirm={handleFlagComment}
@@ -280,7 +276,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
             onClosed={() => setIsFlagAndRemoveConfirmationVisible(false)}
             messages={{
               header: messages.popups.flagAndRemove.title,
-              description: messages.popups.flagAndRemove.body(userDisplayName),
+              description: messages.popups.flagAndRemove.body(userName),
               confirm: messages.popups.flagAndRemove.confirm
             }}
             onConfirm={handleFlagAndRemoveComment}
@@ -311,7 +307,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
               header: messages.popups.delete.title,
               description: isCommentOwner
                 ? messages.popups.delete.body
-                : messages.popups.artistDelete.body(userDisplayName),
+                : messages.popups.artistDelete.body(userName),
               confirm: messages.popups.delete.confirm
             }}
             onConfirm={handleDeleteComment}
@@ -325,7 +321,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
             onClosed={() => setIsMuteUserConfirmationVisible(false)}
             messages={{
               header: messages.popups.muteUser.title,
-              description: messages.popups.muteUser.body(userDisplayName),
+              description: messages.popups.muteUser.body(userName),
               confirm: messages.popups.muteUser.confirm
             }}
             onConfirm={handleMuteUser}

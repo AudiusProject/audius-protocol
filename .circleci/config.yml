@@ -241,7 +241,6 @@ jobs:
                 exit 1
               fi
 
-              contentEndpoints=($(fetchEndpoints "https://api.staging.audius.co/content"))
               discoveryEndpoints=($(fetchEndpoints "https://api.staging.audius.co/discovery"))
               slack_message=""
 
@@ -262,7 +261,6 @@ jobs:
                 done
               }
 
-              compareVersions "${contentEndpoints[@]}"
               compareVersions "${discoveryEndpoints[@]}"
 
               # Send Slack message if any node is behind or if the API Gateway is down

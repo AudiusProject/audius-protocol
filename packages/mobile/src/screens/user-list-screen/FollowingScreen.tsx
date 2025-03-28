@@ -1,18 +1,10 @@
-import { useCallback } from 'react'
-
-import {
-  followingUserListActions,
-  followingUserListSelectors
-} from '@audius/common/store'
-import { useDispatch } from 'react-redux'
+import { useFollowing, useUser } from '@audius/common/api'
 
 import { IconUserList } from '@audius/harmony-native'
 import { useProfileRoute } from 'app/hooks/useRoute'
 
 import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
-const { setFollowing } = followingUserListActions
-const { getUserList } = followingUserListSelectors
 
 const messages = {
   title: 'Following'
@@ -21,18 +13,22 @@ const messages = {
 export const FollowingScreen = () => {
   const { params } = useProfileRoute<'Following'>()
   const { userId } = params
-  const dispatch = useDispatch()
-
-  const handleSetFollowing = useCallback(() => {
-    dispatch(setFollowing(userId))
-  }, [dispatch, userId])
+  const { data: followerCount } = useUser(userId, {
+    select: (user) => user.followee_count
+  })
+  const { data, isFetchingNextPage, isPending, fetchNextPage } = useFollowing({
+    userId
+  })
 
   return (
     <UserListScreen title={messages.title} titleIcon={IconUserList}>
       <UserList
-        userSelector={getUserList}
+        data={data}
+        totalCount={followerCount}
+        isFetchingNextPage={isFetchingNextPage}
+        isPending={isPending}
+        fetchNextPage={fetchNextPage}
         tag='FOLLOWING'
-        setUserList={handleSetFollowing}
       />
     </UserListScreen>
   )

@@ -1,12 +1,8 @@
 import { useEffect, useState } from 'react'
 
+import { useUser } from '@audius/common/api'
+import { ChallengeRewardID, SolanaWalletAddress } from '@audius/common/models'
 import {
-  ChallengeRewardID,
-  SolanaWalletAddress,
-  User
-} from '@audius/common/models'
-import {
-  cacheUsersSelectors,
   TransactionType,
   TransactionMethod,
   TransactionDetails
@@ -25,7 +21,8 @@ import {
   IconLogoLinkByStripe as LogoStripeLink
 } from '@audius/harmony'
 import cn from 'classnames'
-import { useSelector, useDispatch } from 'react-redux'
+import { pick } from 'lodash'
+import { useDispatch } from 'react-redux'
 
 import { useSetVisibility } from 'common/hooks/useModalState'
 import { AudioTransactionIcon } from 'components/audio-transaction-icon'
@@ -34,7 +31,6 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import UserBadges from 'components/user-badges/UserBadges'
 import { getChallengeConfig } from 'pages/rewards-page/config'
 import { isValidSolAddress } from 'services/solana/solana'
-import { AppState } from 'store/types'
 import { push } from 'utils/navigation'
 
 import { Block, BlockContainer } from './Block'
@@ -42,7 +38,6 @@ import styles from './TransactionDetailsContent.module.css'
 import { TransactionPurchaseMetadata } from './TransactionPurchaseMetadata'
 
 const { profilePage } = route
-const { getUsers } = cacheUsersSelectors
 
 const messages = {
   transaction: 'Transaction',
@@ -80,23 +75,23 @@ type UserDetailsProps = {
 const UserDetails = ({ userId }: UserDetailsProps) => {
   const setVisibility = useSetVisibility()
   const dispatch = useDispatch()
-  const usersMap = useSelector<AppState, { [id: number]: User }>((state) =>
-    getUsers(state, { ids: [userId] })
-  )
-  const isLoading = Object.keys(usersMap).length === 0
+  const { data: user, isPending } = useUser(userId, {
+    select: (user) => pick(user, 'handle', 'name')
+  })
+  const { handle, name } = user ?? {}
   return (
     <>
-      {isLoading ? (
+      {isPending || !handle ? (
         <LoadingSpinner className={styles.spinnerSmall} />
       ) : (
         <div
           className={styles.name}
           onClick={() => {
             setVisibility('TransactionDetails')(false)
-            dispatch(push(profilePage(usersMap[userId].handle)))
+            dispatch(push(profilePage(handle)))
           }}
         >
-          <span>{usersMap[userId].name}</span>
+          <span>{name}</span>
           <UserBadges userId={userId} className={styles.badge} inline />
         </div>
       )}
