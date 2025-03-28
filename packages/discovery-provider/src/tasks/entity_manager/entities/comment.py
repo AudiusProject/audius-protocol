@@ -12,6 +12,7 @@ from src.models.moderation.muted_user import MutedUser
 from src.models.notifications.notification import Notification
 from src.models.tracks.track import Track
 from src.models.users.aggregate_user import AggregateUser
+from src.models.users.user import User
 from src.tasks.entity_manager.utils import (
     COMMENT_BODY_LIMIT,
     Action,
@@ -720,6 +721,7 @@ def pin_comment(params: ManageEntityParameters):
     comment_id = params.entity_id
     track_id = params.metadata["entity_id"]
     existing_track = params.existing_records[EntityType.TRACK.value][track_id]
+    existing_comment = params.existing_records[EntityType.COMMENT.value][comment_id]
 
     track = copy_record(
         existing_track,
@@ -730,6 +732,32 @@ def pin_comment(params: ManageEntityParameters):
     )
 
     track.pinned_comment_id = comment_id
+
+    comment_user_id = existing_comment.user_id
+    track_owner_id = track.owner_id
+
+    # Only dispatch the event if the comment belongs to a different user than the track owner
+    if comment_user_id != track_owner_id:
+        artist_is_verified = (
+            params.session.query(User.is_verified)
+            .filter(User.user_id == track_owner_id, User.is_current == True)
+            .scalar()
+            or False
+        )
+
+        if artist_is_verified:
+            with params.challenge_bus.use_scoped_dispatch_queue():
+                params.challenge_bus.dispatch(
+                    ChallengeEvent.pinned_comment,
+                    params.block_number,
+                    params.block_datetime,
+                    comment_user_id,
+                    {
+                        "track_id": track_id,
+                        "comment_id": comment_id,
+                        "track_owner_id": track_owner_id,
+                    },
+                )
 
     params.add_record(track_id, track, EntityType.TRACK)
 

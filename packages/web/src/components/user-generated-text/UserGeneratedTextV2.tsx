@@ -8,10 +8,9 @@ import {
   MouseEvent
 } from 'react'
 
-import { useGetUserByHandle, useGetUsersByIds } from '@audius/common/api'
+import { useGetUsersByIds, useUserByHandle } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { profilePage } from '@audius/common/src/utils/route'
-import { accountSelectors } from '@audius/common/store'
 import {
   formatTrackName,
   formatCollectionName,
@@ -29,7 +28,6 @@ import {
   OptionalHashId
 } from '@audius/sdk'
 import { omit } from 'lodash'
-import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
@@ -43,8 +41,6 @@ const {
   instanceOfPlaylistResponse,
   instanceOfUserResponse
 } = ResolveApi
-
-const { getUserId } = accountSelectors
 
 type Matcher = {
   pattern: RegExp
@@ -165,22 +161,20 @@ const HandleLink = ({
 }: Omit<TextLinkProps, 'to'> & {
   handle: string
 }) => {
-  const currentUserId = useSelector(getUserId)
-  const { data: user } = useGetUserByHandle({
-    handle: handle.replace('@', ''),
-    currentUserId
+  const { data: userId } = useUserByHandle(handle.replace('@', ''), {
+    select: (user) => user.user_id
   })
 
   const handleClick = useCallback(
     (e: MouseEvent<HTMLAnchorElement>) => {
-      other.onClick?.(e, 'mention', user?.user_id)
+      other.onClick?.(e, 'mention', userId)
     },
-    [other, user]
+    [other, userId]
   )
 
-  return user ? (
-    <ArtistPopover handle={user.handle} component='span'>
-      <TextLink {...other} to={profilePage(user.handle)} onClick={handleClick}>
+  return userId ? (
+    <ArtistPopover handle={handle} component='span'>
+      <TextLink {...other} to={profilePage(handle)} onClick={handleClick}>
         {handle}
       </TextLink>
     </ArtistPopover>

@@ -85,16 +85,12 @@ export const useNotificationNavigation = () => {
         | FavoritePushNotification
     ) => {
       if ('userIds' in notification) {
-        const { type, userIds } = notification
+        const { userIds } = notification
         const firstUserId = userIds[0]
         const isMultiUser = userIds.length > 1
 
-        if (isMultiUser) {
-          navigation.navigate('NotificationUsers', {
-            notification,
-            notificationType: type,
-            count: userIds.length
-          })
+        if (!isMultiUser) {
+          navigation.navigate('NotificationUsers', { notification })
         } else if (firstUserId) {
           navigation.navigate('Profile', { id: firstUserId })
         }
@@ -129,8 +125,11 @@ export const useNotificationNavigation = () => {
         | CommentThreadNotification
         | CommentReactionNotification
     ) => {
-      const { entityType, entityId, type } = notification
-      if (entityType === Entity.Track) {
+      const { entityType, entityId, type, userIds } = notification
+      const isMultiUser = userIds.length > 1
+      if (isMultiUser) {
+        navigation.navigate('NotificationUsers', { notification })
+      } else if (entityType === Entity.Track) {
         navigation.navigate('Track', {
           id: entityId,
           canBeUnlisted: false,

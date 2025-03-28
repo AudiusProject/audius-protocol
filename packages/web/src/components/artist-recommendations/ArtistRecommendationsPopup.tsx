@@ -2,7 +2,7 @@ import { RefObject } from 'react'
 
 import {
   getRelatedArtistsQueryKey,
-  useRelatedArtists
+  useRelatedArtistsUsers
 } from '@audius/common/api'
 import { ID, User } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
@@ -49,7 +49,7 @@ export const ArtistRecommendationsPopup = (props: Props) => {
   const relatedArtists = relatedArtistsData?.pages.flat()
 
   // Query for suggested artists only if there are related artists in the first place
-  const { data: suggestedArtists = [], isLoading } = useRelatedArtists(
+  const { data: suggestedArtists = [], isLoading } = useRelatedArtistsUsers(
     {
       artistId,
       filterFollowed: true,

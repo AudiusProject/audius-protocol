@@ -29,7 +29,6 @@ import musicConfettiReducer, {
 import { HistoryPageState, SavedPageState } from './pages'
 import ai from './pages/ai/slice'
 import audioRewardsSlice from './pages/audio-rewards/slice'
-import audioTransactionsSlice from './pages/audio-transactions/slice'
 import { chatReducer } from './pages/chat'
 import collection from './pages/collection/reducer'
 import { CollectionsPageState } from './pages/collection/types'
@@ -216,7 +215,6 @@ export const reducers = (storage: Storage, history?: History) => ({
   pages: combineReducers({
     ai,
     audioRewards: audioRewardsSlice.reducer,
-    audioTransactions: audioTransactionsSlice.reducer,
     chat: chatReducer,
     collection,
     deactivateAccount: deactivateAccountReducer,
@@ -335,7 +333,6 @@ export type CommonState = {
   pages: {
     ai: ReturnType<typeof ai>
     audioRewards: ReturnType<typeof audioRewardsSlice.reducer>
-    audioTransactions: ReturnType<typeof audioTransactionsSlice.reducer>
     chat: ReturnType<typeof chatReducer>
     collection: CollectionsPageState
     deactivateAccount: DeactivateAccountState

@@ -64,7 +64,8 @@ export const useFollowers = (
   const { data: users } = useUsers(queryRes.data)
 
   return {
-    data: users,
+    users,
+    data: queryRes.data,
     isPending: queryRes.isPending,
     isLoading: queryRes.isLoading,
     isSuccess: queryRes.isSuccess,

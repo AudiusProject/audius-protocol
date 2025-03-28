@@ -1,10 +1,5 @@
 import { Id } from '@audius/sdk'
-import {
-  InfiniteData,
-  QueryKey,
-  useInfiniteQuery,
-  UseInfiniteQueryResult
-} from '@tanstack/react-query'
+import { InfiniteData, QueryKey, useInfiniteQuery } from '@tanstack/react-query'
 
 import { notificationFromSDK, transformAndCleanList } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
@@ -240,10 +235,7 @@ export const useNotifications = (options?: QueryOptions) => {
     notifications.push(...lastPage)
   }
 
-  const queryResults = query as UseInfiniteQueryResult<
-    InfiniteData<Notification[], unknown>,
-    Error
-  > & { notifications: Notification[] }
+  const queryResults = query as typeof query & { notifications: Notification[] }
   queryResults.notifications = notifications
 
   return queryResults

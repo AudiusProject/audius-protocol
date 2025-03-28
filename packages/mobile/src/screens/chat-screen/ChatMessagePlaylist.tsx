@@ -148,6 +148,7 @@ export const ChatMessagePlaylist = ({
   return collection && uid ? (
     <CollectionTile
       index={0}
+      id={collection.playlist_id}
       togglePlay={togglePlay}
       uid={uid}
       collection={collection}

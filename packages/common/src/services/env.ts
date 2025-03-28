@@ -20,7 +20,6 @@ export type Env = {
   COINFLOW_PARTNER_ID: string
   COGNITO_KEY: Nullable<string>
   COGNITO_TEMPLATE_ID: Nullable<string>
-  EAGER_DISCOVERY_NODES: string
   ENTITY_MANAGER_ADDRESS: string
   ENVIRONMENT: Environment
   ETH_BRIDGE_ADDRESS: Nullable<string>

@@ -16,6 +16,7 @@ import { Status, Kind } from '../../../models'
 
 import type { EnhancedCollectionTrack } from './types'
 
+/** @deprecated Use useCollection instead */
 export const getCollection = (
   state: CommonState,
   props: { id?: ID | null; uid?: UID | null; permalink?: string | null }
@@ -32,6 +33,7 @@ export const getCollection = (
 export const getStatus = (state: CommonState, props: { id: ID }) =>
   state.collections.statuses[props.id] || null
 
+/** @deprecated Use useCollections instead */
 export const getCollections = (
   state: CommonState,
   props?: {
@@ -114,32 +116,6 @@ export const getCollectionTracksWithUsers = (
       return { ...track, user }
     })
     .filter(removeNullable)
-}
-
-const getCollectionTracksMap = (state: CommonState, { id }: { id?: ID }) => {
-  const collection = getCollection(state, { id })
-  const collectionTrackIds = collection?.playlist_contents.track_ids.map(
-    (track_id) => track_id.track // track === actual track id, oof
-  )
-  return getTracks(state, { ids: collectionTrackIds })
-}
-
-export const getIsCollectionEmpty = (
-  state: CommonState,
-  { id }: { id?: ID }
-) => {
-  const collectionTracks = getCollectionTracksMap(state, { id })
-
-  return Object.values(collectionTracks).length === 0
-}
-
-export const getCollectionHasHiddenTracks = (
-  state: CommonState,
-  { id }: { id?: ID }
-) => {
-  const collectionTracks = getCollectionTracksMap(state, { id })
-
-  return Object.values(collectionTracks)?.some((track) => track.is_unlisted)
 }
 
 export const getStatuses = (state: CommonState, props: { ids: ID[] }) => {

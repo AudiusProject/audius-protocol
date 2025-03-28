@@ -1,7 +1,7 @@
 import { Fragment, useCallback, useState } from 'react'
 
 import {
-  useRelatedArtists,
+  useRelatedArtistsUsers,
   useFollowUser,
   useUnfollowUser
 } from '@audius/common/api'
@@ -46,7 +46,7 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
   const { mutate: followUser } = useFollowUser()
   const { mutate: unfollowUser } = useUnfollowUser()
 
-  const { data: suggestedArtists = [], isPending } = useRelatedArtists({
+  const { data: suggestedArtists = [], isPending } = useRelatedArtistsUsers({
     artistId: user_id,
     filterFollowed: true,
     pageSize: 7

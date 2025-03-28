@@ -333,6 +333,12 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
       buttonInfo: {
         iconRight: IconCheck
       }
+    },
+    [ChallengeName.CommentPin]: {
+      icon: SpeechBalloon,
+      buttonInfo: {
+        iconRight: IconCheck
+      }
     }
   }
 

@@ -9,7 +9,6 @@ import { ID } from '~/models/Identifiers'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
-import { useUsers } from './useUsers'
 import { primeUserData } from './utils/primeUserData'
 
 const DEFAULT_PAGE_SIZE = 20
@@ -37,7 +36,7 @@ export const useFollowing = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const { data: userIds } = useInfiniteQuery({
+  return useInfiniteQuery({
     queryKey: getFollowingQueryKey({ userId, pageSize }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: ID[], allPages) => {
@@ -60,6 +59,4 @@ export const useFollowing = (
     ...options,
     enabled: options?.enabled !== false && !!userId
   })
-
-  return useUsers(userIds)
 }

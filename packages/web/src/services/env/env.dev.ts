@@ -19,7 +19,6 @@ export const env: Env = {
   COINFLOW_PARTNER_ID: 'AUDIUS',
   COGNITO_KEY: 'sandbox_publishable_key_e61e1acfe63bd1760827b68d4f00245b',
   COGNITO_TEMPLATE_ID: 'flwtmp_7ZUYaBUFLeNhJw',
-  EAGER_DISCOVERY_NODES: 'http://audius-protocol-discovery-provider-1',
   ENTITY_MANAGER_ADDRESS: '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B',
   ENVIRONMENT: 'development',
   ETH_BRIDGE_ADDRESS: null,

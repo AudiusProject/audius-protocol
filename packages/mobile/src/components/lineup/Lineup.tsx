@@ -158,6 +158,7 @@ const LineupTileView = memo(function LineupTileView({
       >
         <TrackOrCollectionTile
           {...item}
+          id={item.id}
           index={index}
           isTrending={isTrending}
           togglePlay={togglePlay}
