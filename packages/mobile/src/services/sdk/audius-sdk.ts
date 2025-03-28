@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events'
 
 import type { AudiusSdk } from '@audius/sdk'
-import { Configuration, SolanaRelay, sdk } from '@audius/sdk'
+import { Configuration, SolanaRelay, sdk, ArchiverService } from '@audius/sdk'
 
 import { env } from 'app/services/env'
 
@@ -36,6 +36,21 @@ const initSdk = async () => {
     })
   )
 
+  const archiverService = new ArchiverService(
+    new Configuration({
+      basePath: '/archive',
+      middleware: [
+        {
+          pre: async (context) => {
+            const endpoint = env.ARCHIVE_ENDPOINT
+            const url = `${endpoint}${context.url}`
+            return { url, init: context.init }
+          }
+        }
+      ]
+    })
+  )
+
   // Overrides some DN configuration from optimizely
   const discoveryNodeSelector = await discoveryNodeSelectorService.getInstance()
   const audiusWalletClient = await getAudiusWalletClient()
@@ -47,7 +62,8 @@ const initSdk = async () => {
     services: {
       discoveryNodeSelector,
       solanaRelay,
-      audiusWalletClient
+      audiusWalletClient,
+      archiverService
     }
   })
   sdkInstance = audiusSdk

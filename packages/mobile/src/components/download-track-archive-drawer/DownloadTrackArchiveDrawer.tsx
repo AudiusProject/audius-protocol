@@ -1,122 +1,115 @@
 import { useCallback, useEffect } from 'react'
 
-import { useTrack, useUser } from '@audius/common/api'
-import { DownloadQuality } from '@audius/common/models'
 import {
-  tracksSocialActions,
-  useWaitForDownloadModal,
-  downloadsSelectors
-} from '@audius/common/store'
-import { getFilename } from '@audius/common/utils'
-import { css } from '@emotion/native'
-import { useDispatch, useSelector } from 'react-redux'
+  useCancelStemsArchiveJob,
+  useDownloadTrackStems,
+  useGetStemsArchiveJobStatus
+} from '@audius/common/api'
+import { useDownloadTrackArchiveModal } from '@audius/common/store'
 
 import {
-  Divider,
   Flex,
   Hint,
   IconError,
+  IconFolder,
   IconReceive,
   Text,
-  TextLink,
-  useTheme
+  TextLink
 } from '@audius/harmony-native'
 import Drawer from 'app/components/drawer'
 
+import { HarmonyModalHeader } from '../core/HarmonyModalHeader'
 import LoadingSpinner from '../loading-spinner'
-const { getDownloadError } = downloadsSelectors
 
 const messages = {
-  title: 'Downloading...',
-  somethingWrong:
-    'Something went wrong. Please check your connection and storage and try again.',
+  title: 'Preparing Download',
+  zippingFiles: (count: number) => `Zipping files (${count})`,
+  error: 'Something went wrong. Please check your connection and try again.',
   tryAgain: 'Try again.'
 }
 
-export const WaitForDownloadDrawer = () => {
-  const dispatch = useDispatch()
+export const DownloadTrackArchiveDrawer = () => {
   const {
-    data: { parentTrackId, trackIds, quality },
+    data: { trackId, fileCount },
     isOpen,
     onClose,
     onClosed
-  } = useWaitForDownloadModal()
+  } = useDownloadTrackArchiveModal()
 
-  const downloadError = useSelector(getDownloadError)
+  const {
+    mutate: downloadTrackStems,
+    isError: initiateDownloadFailed,
+    error: initiateDownloadError,
+    isPending: isStartingDownload,
+    data: { id: jobId } = {}
+  } = useDownloadTrackStems({
+    trackId
+  })
 
-  const { spacing } = useTheme()
-  const { data: track } = useTrack(parentTrackId ?? trackIds[0])
-  const { data: user } = useUser(track?.owner_id)
-  const trackName =
-    !parentTrackId &&
-    user &&
-    track?.orig_filename &&
-    track?.orig_filename?.length > 0
-      ? getFilename({
-          track,
-          user,
-          isOriginal: quality === DownloadQuality.ORIGINAL
-        })
-      : track?.title
+  if (initiateDownloadError) {
+    console.error(initiateDownloadError)
+  }
 
-  const handleClosed = useCallback(() => {
-    dispatch(tracksSocialActions.cancelDownloads())
-    onClosed()
-  }, [onClosed, dispatch])
+  const { mutate: cancelStemsArchiveJob } = useCancelStemsArchiveJob()
 
-  const performDownload = useCallback(() => {
-    dispatch(
-      tracksSocialActions.downloadTrack({
-        trackIds,
-        parentTrackId,
-        original: quality === DownloadQuality.ORIGINAL
-      })
-    )
-  }, [parentTrackId, trackIds, quality, dispatch])
+  const { data: jobState } = useGetStemsArchiveJobStatus({
+    jobId
+  })
+
+  const hasError =
+    !isStartingDownload &&
+    (initiateDownloadFailed || jobState?.state === 'failed')
 
   useEffect(() => {
-    performDownload()
-  }, [performDownload])
+    if (isOpen) {
+      downloadTrackStems()
+    }
+  }, [isOpen, downloadTrackStems, trackId])
+
+  useEffect(() => {
+    if (jobState?.state === 'completed') {
+      // TODO: Native version of this
+      // triggerDownload(`${env.ARCHIVE_ENDPOINT}/archive/stems/download/${jobId}`)
+      onClose()
+    }
+  }, [jobState, onClose, jobId])
+
+  const handleClose = useCallback(() => {
+    if (jobId) {
+      cancelStemsArchiveJob({ jobId })
+    }
+    onClose()
+  }, [onClose, jobId, cancelStemsArchiveJob])
+
+  const handleRetry = useCallback(() => {
+    downloadTrackStems()
+  }, [downloadTrackStems])
 
   return (
-    <Drawer isOpen={isOpen} onClose={onClose} onClosed={handleClosed}>
-      <Flex p='xl' gap='xl' alignItems='center'>
-        <Flex direction='row' gap='s' justifyContent='center'>
-          <IconReceive color='default' />
-          <Text
-            variant='label'
-            strength='strong'
-            size='xl'
-            color='default'
-            style={css({ textTransform: 'uppercase' })}
-          >
-            {messages.title}
-          </Text>
-        </Flex>
-        <Flex style={css({ width: '100%' })}>
-          <Divider orientation='horizontal' />
-        </Flex>
-        <Flex>
-          <Text variant='body' size='l' strength='strong'>
-            {trackName}
-          </Text>
-        </Flex>
-        <Flex ph='l'>
-          {downloadError ? (
+    <Drawer isOpen={isOpen} onClose={handleClose} onClosed={onClosed}>
+      <Flex ph='l' pv='xl' gap='xl'>
+        <HarmonyModalHeader icon={IconReceive} title={messages.title} />
+        <Flex justifyContent='center' alignItems='center' gap='xl'>
+          <Flex row alignItems='center' gap='l'>
+            <IconFolder color='default' size='l' />
+            <Text variant='body' size='l' strength='strong'>
+              {messages.zippingFiles(fileCount)}
+            </Text>
+          </Flex>
+          {hasError ? (
             <Hint
               icon={IconError}
+              border='strong'
               actions={
-                <TextLink variant='visible' onPress={performDownload}>
+                <TextLink variant='visible' onPress={handleRetry}>
                   {messages.tryAgain}
                 </TextLink>
               }
             >
-              {messages.somethingWrong}
+              {messages.error}
             </Hint>
           ) : (
-            <LoadingSpinner
-              style={{ width: spacing.unit7, height: spacing.unit7 }}
-            />
+            <LoadingSpinner />
           )}
         </Flex>
       </Flex>
