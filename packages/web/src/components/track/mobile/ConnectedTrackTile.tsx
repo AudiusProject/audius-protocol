@@ -1,11 +1,11 @@
 import { memo } from 'react'
 
+import { useUser } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import { ShareSource, RepostSource, ID } from '@audius/common/models'
 import {
   accountSelectors,
   cacheTracksSelectors,
-  cacheUsersSelectors,
   tracksSocialActions,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
@@ -33,7 +33,6 @@ const { getTheme } = themeSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
 const { getTrack } = cacheTracksSelectors
-const { getUserFromTrack } = cacheUsersSelectors
 const { repostTrack, undoRepostTrack } = tracksSocialActions
 const getUserId = accountSelectors.getUserId
 
@@ -66,7 +65,6 @@ const ConnectedTrackTile = ({
   index,
   size,
   track,
-  user,
   ordered,
   trackTileStyles,
   togglePlay,
@@ -117,13 +115,14 @@ const ConnectedTrackTile = ({
     album_backlink
   } = trackWithFallback
 
+  const { data: user, isPending: isUserPending } = useUser(track?.owner_id)
   const { user_id, handle, name, is_verified } = getUserWithFallback(user)
 
   const isOwner = user_id === currentUserId
 
   const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(trackWithFallback)
-  const loading = isLoading || isFetchingNFTAccess
+  const loading = isLoading || isFetchingNFTAccess || isUserPending
 
   const toggleRepost = (trackId: ID) => {
     if (has_current_user_reposted) {
@@ -228,7 +227,7 @@ const ConnectedTrackTile = ({
       userId={user_id}
       index={index}
       key={`${index}`}
-      showSkeleton={isLoading}
+      showSkeleton={loading}
       hasLoaded={hasLoaded}
       ordered={ordered}
       title={title}
@@ -282,11 +281,9 @@ const ConnectedTrackTile = ({
 function mapStateToProps(state: AppState, ownProps: OwnProps) {
   return {
     track: getTrack(state, { uid: ownProps.uid }),
-    user: getUserFromTrack(state, { uid: ownProps.uid }),
     playingUid: getUid(state),
     isBuffering: getBuffering(state),
     isPlaying: getPlaying(state),
-
     currentUserId: getUserId(state),
     darkMode: shouldShowDark(getTheme(state))
   }
