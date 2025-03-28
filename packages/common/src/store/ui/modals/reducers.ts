@@ -6,6 +6,7 @@ import { announcementModalReducer } from './announcement-modal'
 import { artistPickModalReducer } from './artist-pick-modal'
 import { coinflowOnrampModalReducer } from './coinflow-onramp-modal'
 import { coinflowWithdrawModalReducer } from './coinflow-withdraw-modal'
+import { connectedWalletsModalReducer } from './connected-wallets-modal'
 import { chatBlastModalReducer } from './create-chat-blast-modal'
 import { createChatModalReducer } from './create-chat-modal'
 import { deleteTrackConfirmationModalReducer } from './delete-track-confirmation-modal'
@@ -71,6 +72,7 @@ const combinedReducers = combineReducers({
   PublishConfirmation: publishConfirmationModalReducer,
   HideContentConfirmation: hideContentConfirmationModalReducer,
   ExternalWalletSignUp: externalWalletSignUpModalReducer,
+  ConnectedWallets: connectedWalletsModalReducer,
   Announcement: announcementModalReducer,
   Notification: notificationModalReducer
 })

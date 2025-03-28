@@ -19,6 +19,7 @@ import {
 } from '@audius/harmony'
 import type { AudiusSdk } from '@audius/sdk'
 import { metaMask } from '@wagmi/connectors'
+import { getChainId } from '@wagmi/core'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAccount, useConnect, useSwitchChain } from 'wagmi'
 
@@ -83,30 +84,46 @@ export const ExternalWalletSignUpModal = () => {
         throw new Error('No wallet connected')
       }
 
+      console.debug('Connected to wallet', wallet)
+
       // Ensure we're on the Audius chain
       await switchChainAsync({ chainId: audiusChain.id })
+      console.debug('Switching to Audius chain')
 
       // For some reason, a delay is needed to ensure the chain ID switches.
       // I couldn't find the part of the wagmiConfig state that changes.
       // This is partially voodoo magic, a setTimeout would also work here.
       // Without this delay, new users without the network added will get a ConnectorChainMismatchError
-      let unsubscribe = () => {}
-      await new Promise<void>((resolve) => {
-        unsubscribe = wagmiConfig.subscribe(
-          (state) => state,
-          () => {
-            resolve()
-          }
-        )
-      })
-      unsubscribe()
+
+      const chainId = getChainId(wagmiConfig)
+
+      console.debug('Chain ID', chainId)
+
+      if (chainId !== audiusChain.id) {
+        let unsubscribe = () => {}
+        await new Promise<void>((resolve) => {
+          unsubscribe = wagmiConfig.subscribe(
+            (state) => state,
+            () => {
+              console.debug('State change event received')
+              resolve()
+            }
+          )
+        })
+        unsubscribe()
+      }
+      console.debug('Switched to Audius chain')
 
       // Reinit SDK with the connected wallet
       const sdk = await initSdk({ ignoreCachedUserWallet: true })
 
+      console.debug('SDK reinitialized')
+
       // Check that the user doesn't already exist.
       // If they do, log them in.
       const userExists = await doesUserExist(sdk, wallet)
+
+      console.debug('User exists?', userExists)
       if (userExists) {
         dispatch(
           accountActions.fetchAccount({ shouldMarkAccountAsLoading: true })

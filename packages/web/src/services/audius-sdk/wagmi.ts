@@ -2,12 +2,14 @@ import { metaMask, walletConnect } from '@wagmi/connectors'
 import { type Chain } from 'viem'
 import { createConfig, http } from 'wagmi'
 
+import { env } from 'services/env'
+
 export const audiusChain = {
-  id: 1056801,
+  id: parseInt(env.WEB3_NETWORK_ID),
   name: 'Audius',
   nativeCurrency: { name: '-', symbol: '-', decimals: 18 },
   rpcUrls: {
-    default: { http: ['https://discoveryprovider.staging.audius.co/chain'] }
+    default: { http: [`${env.EAGER_DISCOVERY_NODES.split(',')[0]}/chain`] }
   }
 } as const satisfies Chain
 

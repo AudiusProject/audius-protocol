@@ -43,7 +43,6 @@ const {
 } = walletActions
 const { getAccountBalance, getFreezeUntilTime } = walletSelectors
 const {
-  fetchAssociatedWallets,
   transferEthAudioToSolWAudio,
   setCanRecipientReceiveWAudio,
   inputSendData
@@ -180,7 +179,7 @@ function* sendAsync({
 }
 
 function* getWalletBalanceAndWallets() {
-  yield* all([put(getBalance()), put(fetchAssociatedWallets())])
+  yield* all([put(getBalance())])
 }
 
 function* fetchBalanceAsync() {

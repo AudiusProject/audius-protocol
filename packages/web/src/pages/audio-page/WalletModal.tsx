@@ -16,14 +16,7 @@ import {
   TokenDashboardPageModalState
 } from '@audius/common/store'
 import { stringWeiToBN, weiToString, Nullable } from '@audius/common/utils'
-import {
-  IconReceive,
-  IconSend,
-  IconWallet,
-  Modal,
-  ModalHeader,
-  ModalTitle
-} from '@audius/harmony'
+import { IconReceive, IconSend } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { useAsync } from 'react-use'
@@ -34,23 +27,16 @@ import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { useSelector } from 'utils/reducer'
 
 import styles from './WalletModal.module.css'
-import ConnectWalletsBody from './components/ConnectWalletsBody'
 import ErrorBody from './components/ErrorBody'
 import MigrationModalBody from './components/MigrationModalBody'
 import ReceiveBody from './components/ReceiveBody'
-import RemoveWalletBody from './components/RemoveWalletBody'
 import SendInputBody from './components/SendInputBody'
 import SendInputConfirmation from './components/SendInputConfirmation'
 import SendInputSuccess from './components/SendInputSuccess'
 import SendingModalBody from './components/SendingModalBody'
 const { getAccountBalance } = walletSelectors
-const {
-  getAssociatedWallets,
-  getModalState,
-  getModalVisible,
-  getRemoveWallet,
-  getSendData
-} = tokenDashboardPageSelectors
+const { getModalState, getModalVisible, getSendData } =
+  tokenDashboardPageSelectors
 const { confirmSend, inputSendData, setModalVisibility } =
   tokenDashboardPageActions
 const getAccountUser = accountSelectors.getAccountUser
@@ -83,11 +69,6 @@ export const TitleWrapper = ({
 }
 
 const titlesMap = {
-  CONNECT_WALLETS: {
-    ADD_WALLET: () => messages.connectedWallets,
-    REMOVE_WALLET: () => messages.removeWallets,
-    ERROR: () => messages.sendError
-  },
   RECEIVE: {
     KEY_DISPLAY: () => {
       return (
@@ -127,8 +108,6 @@ const titlesMap = {
 const getTitle = (state: TokenDashboardPageModalState) => {
   if (!state?.stage) return ''
   switch (state.stage) {
-    case 'CONNECT_WALLETS':
-      return titlesMap.CONNECT_WALLETS[state.flowState.stage]()
     case 'RECEIVE':
       return titlesMap.RECEIVE[state.flowState.stage]()
     case 'SEND':
@@ -197,18 +176,6 @@ const ModalContent = ({
   let ret: Nullable<JSX.Element> = null
 
   switch (modalState.stage) {
-    case 'CONNECT_WALLETS': {
-      const claimStage = modalState.flowState
-      switch (claimStage.stage) {
-        case 'ADD_WALLET':
-          ret = <ConnectWalletsBody onClose={onClose} />
-          break
-        case 'REMOVE_WALLET':
-          ret = <RemoveWalletBody />
-          break
-      }
-      break
-    }
     case 'RECEIVE': {
       ret = <ReceiveBody wallet={wallet} solWallet={solWallet} />
       break
@@ -283,10 +250,6 @@ const shouldAllowDismiss = (
       modalState.stage === 'SEND' && modalState.flowState.stage === 'SENDING'
     ) &&
     !(
-      modalState.stage === 'CONNECT_WALLETS' &&
-      modalState.flowState.stage === 'REMOVE_WALLET'
-    ) &&
-    !(
       modalState.stage === 'SEND' &&
       modalState.flowState.stage === 'AWAITING_CONVERTING_ETH_AUDIO_TO_SOL'
     )
@@ -320,38 +283,9 @@ const WalletModal = () => {
     dispatch(confirmSend())
   }
 
-  const { status } = useSelector(getAssociatedWallets)
-  const removeWallets = useSelector(getRemoveWallet)
-  const isWalletConfirming =
-    removeWallets.status === 'Confirming' ||
-    status === 'Connecting' ||
-    status === 'Confirming'
-  const allowDismiss = !isWalletConfirming && shouldAllowDismiss(modalState)
+  const allowDismiss = shouldAllowDismiss(modalState)
 
   const wm = useWithMobileStyle(styles.mobile)
-
-  if (modalState?.stage === 'CONNECT_WALLETS') {
-    return (
-      <Modal
-        size='small'
-        isOpen={modalVisible}
-        // Disable because web3Modal mounts outside of this component
-        // and selecting a provider will close this modal
-        dismissOnClickOutside={false}
-        onClose={onClose}
-      >
-        <ModalHeader onClose={onClose}>
-          <ModalTitle title={getTitle(modalState)} icon={<IconWallet />} />
-        </ModalHeader>
-        <ModalContent
-          modalState={modalState}
-          onInputSendData={onInputSendData}
-          onConfirmSend={onConfirmSend}
-          onClose={onClose}
-        />
-      </Modal>
-    )
-  }
 
   return (
     <>
