@@ -1,5 +1,5 @@
 import { Id } from '@audius/sdk'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useTypedQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
@@ -41,7 +41,7 @@ export const useUserTracksByHandle = (
   options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
 

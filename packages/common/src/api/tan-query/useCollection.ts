@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useTypedQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
@@ -12,10 +12,8 @@ import { QUERY_KEYS } from './queryKeys'
 import { SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
-export const getCollectionQueryKey = (collectionId: ID | null | undefined) => [
-  QUERY_KEYS.collection,
-  collectionId
-]
+export const getCollectionQueryKey = (collectionId: ID | null | undefined) =>
+  [QUERY_KEYS.collection, collectionId] as const
 
 export const useCollection = <TResult = TQCollection>(
   collectionId: ID | null | undefined,
@@ -23,7 +21,7 @@ export const useCollection = <TResult = TQCollection>(
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
   const validCollectionId = !!collectionId && collectionId > 0
 

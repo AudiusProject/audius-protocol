@@ -4,7 +4,7 @@ import { Id, OptionalId } from '@audius/sdk'
 import {
   useInfiniteQuery,
   useIsMutating,
-  useQueryClient
+  useTypedQueryClient
 } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
@@ -34,7 +34,7 @@ export const useUserComments = (
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const isMutating = useIsMutating()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
 
   const queryRes = useInfiniteQuery({

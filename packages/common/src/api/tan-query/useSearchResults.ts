@@ -2,7 +2,7 @@ import { Mood, OptionalId } from '@audius/sdk'
 import {
   InfiniteData,
   useInfiniteQuery,
-  useQueryClient
+  useTypedQueryClient
 } from '@tanstack/react-query'
 import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
@@ -105,7 +105,7 @@ const useSearchQueryProps = <T>(
     ...filters
   }
   const { audiusSdk, getFeatureEnabled, analytics } = useAudiusQueryContext()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
 
   return {

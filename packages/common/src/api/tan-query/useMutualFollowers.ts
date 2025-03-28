@@ -1,5 +1,5 @@
 import { Id, OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
@@ -8,6 +8,7 @@ import { ID } from '~/models'
 import { getUserId } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
+import { useTypedQueryClient } from './typedQueryClient'
 import { QueryOptions } from './types'
 import { primeUserData } from './utils/primeUserData'
 
@@ -21,7 +22,8 @@ type UseMutualFollowersArgs = {
 export const getMutualFollowersQueryKey = ({
   userId,
   pageSize
-}: UseMutualFollowersArgs) => [QUERY_KEYS.mutualFollowers, userId, { pageSize }]
+}: UseMutualFollowersArgs) =>
+  [QUERY_KEYS.mutualFollowers, userId, { pageSize }] as const
 
 export const useMutualFollowers = (
   { userId, pageSize = DEFAULT_PAGE_SIZE }: UseMutualFollowersArgs,
@@ -29,7 +31,7 @@ export const useMutualFollowers = (
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const currentUserId = useSelector(getUserId)
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
 
   return useInfiniteQuery({

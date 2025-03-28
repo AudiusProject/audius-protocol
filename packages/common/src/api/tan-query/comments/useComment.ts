@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useTypedQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
@@ -12,7 +12,7 @@ import { getCommentQueryKey } from './utils'
 
 export const useComment = (commentId: ID) => {
   const { reportToSentry } = useAudiusQueryContext()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
 
   const queryRes = useQuery({

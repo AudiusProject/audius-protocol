@@ -3,7 +3,7 @@ import {
   GetUserLibraryTracksSortMethodEnum,
   GetUserLibraryTracksSortDirectionEnum
 } from '@audius/sdk/src/sdk/api/generated/full/apis/UsersApi'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useTypedQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
@@ -66,7 +66,7 @@ export const useLibraryTracks = (
 ) => {
   const { data: currentUserId } = useCurrentUserId()
   const { audiusSdk } = useAudiusQueryContext()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
 
   const queryData = useInfiniteQuery({

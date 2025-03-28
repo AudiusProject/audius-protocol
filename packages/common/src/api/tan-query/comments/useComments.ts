@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { useQueryClient } from '@tanstack/react-query'
+import { useTypedQueryClient } from '@audius/api'
 import { keyBy } from 'lodash'
 
 import { ID } from '~/models/Identifiers'
@@ -21,7 +21,7 @@ export const useComments = (
   commentIds: ID[] | null | undefined,
   options?: QueryOptions
 ) => {
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
 
   const queryResults = useQueries({
     queries: commentIds?.map((commentId) => ({

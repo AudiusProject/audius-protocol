@@ -1,9 +1,5 @@
 import { Id, OptionalId } from '@audius/sdk'
-import {
-  QueryKey,
-  useInfiniteQuery,
-  useQueryClient
-} from '@tanstack/react-query'
+import { QueryKey, useInfiniteQuery } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
@@ -14,6 +10,7 @@ import {
 } from '~/models/Tipping'
 
 import { QUERY_KEYS } from './queryKeys'
+import { useTypedQueryClient } from './typedQueryClient'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getSupporterQueryKey } from './useSupporter'
@@ -29,7 +26,7 @@ type UseSupportersArgs = {
 export const getSupportersQueryKey = (
   userId: ID | null | undefined,
   pageSize: number
-) => [QUERY_KEYS.supporters, userId, pageSize]
+) => [QUERY_KEYS.supporters, userId, pageSize] as const
 
 export const useSupporters = (
   { userId, pageSize = DEFAULT_PAGE_SIZE }: UseSupportersArgs,
@@ -37,7 +34,7 @@ export const useSupporters = (
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
 
   return useInfiniteQuery<

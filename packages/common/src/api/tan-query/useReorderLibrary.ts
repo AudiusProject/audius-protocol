@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useTypedQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAppContext } from '~/context/appContext'
@@ -37,7 +37,7 @@ type ReorderLibraryResult = {
 export const useReorderLibrary = () => {
   const { data: currentUserId } = useCurrentUserId()
   const { data: playlistLibrary } = usePlaylistLibrary()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
   const { mutateAsync: updatePlaylistLibrary } = useUpdatePlaylistLibrary()
   const {

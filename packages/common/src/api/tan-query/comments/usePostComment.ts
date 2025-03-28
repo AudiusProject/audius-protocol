@@ -2,7 +2,7 @@ import { CommentMention, EntityType } from '@audius/sdk'
 import {
   InfiniteData,
   useMutation,
-  useQueryClient
+  useTypedQueryClient
 } from '@tanstack/react-query'
 import { cloneDeep } from 'lodash'
 import { useDispatch } from 'react-redux'
@@ -33,7 +33,7 @@ export type PostCommentArgs = {
 export const usePostComment = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const dispatch = useDispatch()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
 
   return useMutation({
     mutationFn: async (args: PostCommentArgs) => {

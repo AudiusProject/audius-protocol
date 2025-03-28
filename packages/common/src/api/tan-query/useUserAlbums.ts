@@ -1,5 +1,5 @@
 import { full, Id, OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useTypedQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
@@ -38,7 +38,7 @@ export const useUserAlbums = (
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const { userId, pageSize = 10, sortMethod = 'recent' } = params
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
 
   const queryRes = useInfiniteQuery({

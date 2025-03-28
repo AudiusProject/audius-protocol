@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
 import { Id, OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
@@ -15,6 +15,7 @@ import {
 } from '~/store/pages'
 
 import { QUERY_KEYS } from './queryKeys'
+import { useTypedQueryClient } from './typedQueryClient'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
@@ -30,7 +31,7 @@ export type UseRemixesArgs = {
 export const getRemixesQueryKey = ({
   trackId,
   pageSize = DEFAULT_PAGE_SIZE
-}: UseRemixesArgs) => [QUERY_KEYS.remixes, trackId, { pageSize }]
+}: UseRemixesArgs) => [QUERY_KEYS.remixes, trackId, { pageSize }] as const
 
 export const useRemixes = (
   { trackId, pageSize = DEFAULT_PAGE_SIZE }: UseRemixesArgs,
@@ -38,7 +39,7 @@ export const useRemixes = (
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
 
   useEffect(() => {

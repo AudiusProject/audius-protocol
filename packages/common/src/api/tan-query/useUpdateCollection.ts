@@ -1,5 +1,5 @@
 import { Id } from '@audius/sdk'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useTypedQueryClient } from '@tanstack/react-query'
 import BN from 'bn.js'
 import { isEqual } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
@@ -37,7 +37,7 @@ export const useUpdateCollection = () => {
     audiusSdk,
     imageUtils: { generatePlaylistArtwork }
   } = useAudiusQueryContext()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const account = useSelector(getAccountUser)
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()

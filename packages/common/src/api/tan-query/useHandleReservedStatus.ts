@@ -75,7 +75,7 @@ export const fetchHandleReservedStatus = async (
 
 export const getHandleReservedStatusQueryKey = (
   handle: string | null | undefined
-) => [QUERY_KEYS.handleReservedStatus, handle]
+) => [QUERY_KEYS.handleReservedStatus, handle] as const
 
 /**
  * Hook to check if a handle is reserved on social media platforms

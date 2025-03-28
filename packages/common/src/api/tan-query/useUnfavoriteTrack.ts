@@ -1,5 +1,5 @@
 import { Id } from '@audius/sdk'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useTypedQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
@@ -25,7 +25,7 @@ export type UnfavoriteTrackArgs = {
 
 export const useUnfavoriteTrack = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
   const { data: currentUser } = useUser(currentUserId)

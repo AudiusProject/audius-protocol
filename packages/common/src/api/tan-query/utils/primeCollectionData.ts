@@ -1,4 +1,3 @@
-import { QueryClient } from '@tanstack/react-query'
 import { omit } from 'lodash'
 import { AnyAction, Dispatch } from 'redux'
 import { SetRequired } from 'type-fest'
@@ -9,6 +8,7 @@ import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
 import { TQCollection } from '../models'
+import { TypedQueryClient } from '../typedQueryClient'
 import { getCollectionQueryKey } from '../useCollection'
 
 import { primeTrackDataInternal } from './primeTrackData'
@@ -22,7 +22,7 @@ export const primeCollectionData = ({
   skipQueryData = false
 }: {
   collections: (UserCollectionMetadata | CollectionMetadata)[]
-  queryClient: QueryClient
+  queryClient: TypedQueryClient
   dispatch: Dispatch<AnyAction>
   forceReplace?: boolean
   skipQueryData?: boolean
@@ -62,7 +62,7 @@ export const primeCollectionDataInternal = ({
   skipQueryData = false
 }: {
   collections: (UserCollectionMetadata | CollectionMetadata)[]
-  queryClient: QueryClient
+  queryClient: TypedQueryClient
   forceReplace?: boolean
   skipQueryData?: boolean
 }): EntriesByKind => {

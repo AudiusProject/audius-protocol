@@ -1,5 +1,5 @@
 import { Id } from '@audius/sdk'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useTypedQueryClient } from '@tanstack/react-query'
 
 import { userMetadataToSdk } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
@@ -8,7 +8,6 @@ import { UserMetadata, WriteableUserMetadata } from '~/models/User'
 import { dataURLtoFile } from '~/utils'
 import { squashNewLines } from '~/utils/formatUtil'
 
-import { QUERY_KEYS } from './queryKeys'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getUserQueryKey } from './useUser'
 
@@ -18,7 +17,7 @@ export type MutationContext = {
 
 export const useUpdateProfile = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const { data: currentUserId } = useCurrentUserId()
 
   return useMutation({
@@ -75,7 +74,7 @@ export const useUpdateProfile = () => {
     onMutate: async (metadata): Promise<MutationContext> => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({
-        queryKey: [QUERY_KEYS.user, currentUserId]
+        queryKey: getUserQueryKey(currentUserId)
       })
 
       // Snapshot the previous values
@@ -114,7 +113,7 @@ export const useUpdateProfile = () => {
     onSettled: (_, __) => {
       // Always refetch after error or success to ensure cache is in sync with server
       // queryClient.invalidateQueries({
-      //   queryKey: [QUERY_KEYS.user, currentUserId]
+      //   queryKey: getUserQueryKey(currentUserId)
       // })
     }
   })

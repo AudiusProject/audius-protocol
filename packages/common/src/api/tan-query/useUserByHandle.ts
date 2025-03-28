@@ -1,5 +1,5 @@
 import { OptionalId } from '@audius/sdk'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useTypedQueryClient } from '@tanstack/react-query'
 import { omit } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -24,7 +24,7 @@ export const useUserByHandle = <TResult = User>(
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
 
   const { data: userId } = useQuery({

@@ -1,5 +1,5 @@
 import { Id, OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
@@ -7,6 +7,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
+import { useTypedQueryClient } from './typedQueryClient'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils/primeUserData'
@@ -18,10 +19,8 @@ type UseFollowingArgs = {
   pageSize?: number
 }
 
-export const getFollowingQueryKey = ({
-  userId,
-  pageSize
-}: UseFollowingArgs) => [QUERY_KEYS.following, userId, { pageSize }]
+export const getFollowingQueryKey = ({ userId, pageSize }: UseFollowingArgs) =>
+  [QUERY_KEYS.following, userId, { pageSize }] as const
 
 /**
  * Hook to fetch following for a user with infinite query support.
@@ -33,7 +32,7 @@ export const useFollowing = (
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
 
   return useInfiniteQuery({

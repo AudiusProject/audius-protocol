@@ -1,4 +1,3 @@
-import { QueryClient } from '@tanstack/react-query'
 import { AnyAction, Dispatch } from 'redux'
 import { SetRequired } from 'type-fest'
 
@@ -7,6 +6,7 @@ import { User } from '~/models/User'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
+import { TypedQueryClient } from '../typedQueryClient'
 import { getUserQueryKey } from '../useUser'
 
 export const primeUserData = ({
@@ -17,7 +17,7 @@ export const primeUserData = ({
   skipQueryData = false
 }: {
   users: User[]
-  queryClient: QueryClient
+  queryClient: TypedQueryClient
   dispatch: Dispatch<AnyAction>
   forceReplace?: boolean
   skipQueryData?: boolean
@@ -33,7 +33,7 @@ export const primeUserDataInternal = ({
   skipQueryData = false
 }: {
   users: User[]
-  queryClient: QueryClient
+  queryClient: TypedQueryClient
   forceReplace?: boolean
   skipQueryData?: boolean
 }): EntriesByKind => {

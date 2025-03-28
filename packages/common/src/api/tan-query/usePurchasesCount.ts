@@ -11,9 +11,8 @@ export type UsePurchasesCountArgs = {
   userId: ID | null | undefined
 }
 
-export const getPurchasesCountQueryKey = ({
-  userId
-}: UsePurchasesCountArgs) => [QUERY_KEYS.purchasesCount, userId]
+export const getPurchasesCountQueryKey = ({ userId }: UsePurchasesCountArgs) =>
+  [QUERY_KEYS.purchasesCount, userId] as const
 
 export const usePurchasesCount = (
   { userId }: UsePurchasesCountArgs,

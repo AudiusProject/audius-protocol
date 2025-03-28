@@ -1,5 +1,5 @@
 import { Id } from '@audius/sdk'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { pick } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -9,20 +9,21 @@ import { getUserId } from '~/store/account/selectors'
 
 import { TQTrack } from './models'
 import { QUERY_KEYS } from './queryKeys'
+import { useTypedQueryClient } from './typedQueryClient'
 import { QueryOptions, SelectableQueryOptions } from './types'
 import { useTrack } from './useTrack'
 import { primeTrackData } from './utils/primeTrackData'
 
 export const getTrackByPermalinkQueryKey = (
   permalink: string | undefined | null
-) => [QUERY_KEYS.trackByPermalink, permalink]
+) => [QUERY_KEYS.trackByPermalink, permalink] as const
 
 export const useTrackByPermalink = <TResult = TQTrack>(
   permalink: string | undefined | null,
   options?: SelectableQueryOptions<TQTrack, TResult>
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
 

@@ -18,7 +18,7 @@ import { useNotificationValidTypes } from './useNotificationValidTypes'
 
 export const getNotificationUnreadCountQueryKey = (
   currentUserId: ID | null | undefined
-) => [QUERY_KEYS.notificationUnreadCount, currentUserId]
+) => [QUERY_KEYS.notificationUnreadCount, currentUserId] as const
 
 /**
  * Hook that returns the number of unread notifications for the current user.

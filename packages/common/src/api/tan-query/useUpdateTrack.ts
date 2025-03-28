@@ -1,5 +1,5 @@
 import { Id, Track } from '@audius/sdk'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useTypedQueryClient } from '@tanstack/react-query'
 import { useDispatch, useStore } from 'react-redux'
 
 import { fileToSdk, trackMetadataForUploadToSdk } from '~/adapters/track'
@@ -31,7 +31,7 @@ export type UpdateTrackParams = {
 
 export const useUpdateTrack = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
   const store = useStore()
   const { mutate: deleteTrack } = useDeleteTrack()
@@ -149,7 +149,7 @@ export const useUpdateTrack = () => {
     },
     onSettled: (_, __, { trackId }) => {
       // Always refetch after error or success to ensure cache is in sync with server
-      // queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.track, trackId] })
+      // queryClient.invalidateQueries({ queryKey: getTrackQueryKey(trackId) })
     }
   })
 }

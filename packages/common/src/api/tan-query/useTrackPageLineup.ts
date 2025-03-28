@@ -1,7 +1,6 @@
 import { Id, OptionalId } from '@audius/sdk'
 import {
   useInfiniteQuery,
-  useQueryClient,
   QueryKey,
   InfiniteData,
   UseInfiniteQueryResult
@@ -17,17 +16,17 @@ import { trackPageSelectors } from '~/store/pages'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
 
 import { QUERY_KEYS } from './queryKeys'
+import { useTypedQueryClient } from './typedQueryClient'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
-
 const DEFAULT_PAGE_SIZE = 6
 
 export const getTrackPageLineupQueryKey = (
   trackId: ID | null | undefined,
   ownerHandle: string | null | undefined
-) => [QUERY_KEYS.trackPageLineup, trackId, ownerHandle]
+) => [QUERY_KEYS.trackPageLineup, trackId, ownerHandle] as const
 
 type UseTrackPageLineupArgs = {
   trackId: ID | null | undefined
@@ -58,7 +57,7 @@ export const useTrackPageLineup = (
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
 
   const queryData = useInfiniteQuery<

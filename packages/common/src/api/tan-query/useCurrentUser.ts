@@ -11,7 +11,7 @@ import { SelectableQueryOptions } from './types'
 
 export const getCurrentUserQueryKey = (
   currentUser: string | null | undefined
-) => [QUERY_KEYS.accountUser, currentUser]
+) => [QUERY_KEYS.accountUser, currentUser] as const
 
 /**
  * Hook to get the currently logged in user's data

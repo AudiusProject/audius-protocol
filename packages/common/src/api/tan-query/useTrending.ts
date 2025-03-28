@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
 import { OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useTypedQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
@@ -58,7 +58,7 @@ export const useTrending = (
   options?: QueryOptions
 ) => {
   const { audiusSdk, remoteConfigInstance } = useAudiusQueryContext()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const { data: currentUserId } = useCurrentUserId()
   const dispatch = useDispatch()
 

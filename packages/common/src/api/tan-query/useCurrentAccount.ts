@@ -14,7 +14,7 @@ import { useCurrentUserId } from './useCurrentUserId'
 
 export const getCurrentAccountQueryKey = (
   currentUserId: ID | null | undefined
-) => [QUERY_KEYS.accountUser, currentUserId]
+) => [QUERY_KEYS.accountUser, currentUserId] as const
 
 /**
  * Hook to get the currently logged in user's account

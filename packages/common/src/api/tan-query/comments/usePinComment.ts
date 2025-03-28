@@ -1,7 +1,7 @@
 import {
   InfiniteData,
   useMutation,
-  useQueryClient
+  useTypedQueryClient
 } from '@tanstack/react-query'
 import { cloneDeep } from 'lodash'
 import { useDispatch } from 'react-redux'
@@ -26,7 +26,7 @@ export type PinCommentArgs = {
 
 export const usePinComment = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
   return useMutation({
     mutationFn: async (args: PinCommentArgs) => {

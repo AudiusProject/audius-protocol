@@ -1,5 +1,5 @@
 import { Id, full } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useTypedQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userFeedItemFromSDK } from '~/adapters'
@@ -52,7 +52,7 @@ export const useFeed = (
   options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
 
   const queryData = useInfiniteQuery({

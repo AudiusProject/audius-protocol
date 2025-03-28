@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
 import { OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
@@ -12,6 +12,7 @@ import { aiPageLineupActions, aiPageSelectors } from '~/store/pages'
 import { fetchAiUser } from '~/store/pages/ai/slice'
 
 import { QUERY_KEYS } from './queryKeys'
+import { useTypedQueryClient } from './typedQueryClient'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
@@ -27,7 +28,7 @@ type UseAiTracksArgs = {
 export const getAiTracksQueryKey = ({
   handle,
   pageSize = DEFAULT_PAGE_SIZE
-}: UseAiTracksArgs) => [QUERY_KEYS.aiTracks, handle, { pageSize }]
+}: UseAiTracksArgs) => [QUERY_KEYS.aiTracks, handle, { pageSize }] as const
 
 export const useAiTracks = (
   { handle, pageSize = DEFAULT_PAGE_SIZE }: UseAiTracksArgs,
@@ -35,7 +36,7 @@ export const useAiTracks = (
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
 
   useEffect(() => {

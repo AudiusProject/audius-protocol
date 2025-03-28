@@ -1,5 +1,5 @@
 import { Id } from '@audius/sdk'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { pick } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -9,6 +9,7 @@ import { getUserId } from '~/store/account/selectors'
 
 import { TQCollection } from './models'
 import { QUERY_KEYS } from './queryKeys'
+import { useTypedQueryClient } from './typedQueryClient'
 import { QueryOptions, SelectableQueryOptions } from './types'
 import { useCollection } from './useCollection'
 import { primeCollectionData } from './utils/primeCollectionData'
@@ -17,7 +18,7 @@ const STALE_TIME = Infinity
 
 export const getCollectionByPermalinkQueryKey = (
   permalink: string | undefined | null
-) => [QUERY_KEYS.collectionByPermalink, permalink]
+) => [QUERY_KEYS.collectionByPermalink, permalink] as const
 
 export const playlistPermalinkToHandleAndSlug = (permalink: string) => {
   const splitPermalink = permalink.split('/')
@@ -36,7 +37,7 @@ export const useCollectionByPermalink = <TResult = TQCollection>(
   options?: SelectableQueryOptions<TQCollection, TResult>
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
 

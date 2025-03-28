@@ -1,5 +1,9 @@
 import { AudiusSdk } from '@audius/sdk'
-import { useQueryClient, useMutation, QueryClient } from '@tanstack/react-query'
+import {
+  useTypedQueryClient,
+  useMutation,
+  QueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from 'redux'
 
@@ -16,7 +20,7 @@ import { updateUser } from './useUpdateUser'
 
 export const useUpdatePlaylistLibrary = () => {
   const { data: currentUserId } = useCurrentUserId()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
   const { audiusSdk } = useAudiusQueryContext()
   return useMutation({

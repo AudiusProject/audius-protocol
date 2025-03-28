@@ -1,4 +1,3 @@
-import { QueryClient } from '@tanstack/react-query'
 import { omit } from 'lodash'
 import { AnyAction, Dispatch } from 'redux'
 import { SetRequired } from 'type-fest'
@@ -9,6 +8,7 @@ import { User } from '~/models/User'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
+import { TypedQueryClient } from '../typedQueryClient'
 import { getTrackQueryKey } from '../useTrack'
 
 import { formatTrackData } from './formatTrackData'
@@ -99,7 +99,7 @@ export const primeTrackData = ({
   skipQueryData = false
 }: {
   tracks: (UserTrackMetadata | Track)[]
-  queryClient: QueryClient
+  queryClient: TypedQueryClient
   dispatch: Dispatch<AnyAction>
   forceReplace?: boolean
   skipQueryData?: boolean
@@ -140,7 +140,7 @@ export const primeTrackDataInternal = ({
   skipQueryData = false
 }: {
   tracks: (UserTrackMetadata | Track)[]
-  queryClient: QueryClient
+  queryClient: TypedQueryClient
   forceReplace?: boolean
   skipQueryData?: boolean
 }): EntriesByKind => {

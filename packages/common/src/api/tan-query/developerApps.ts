@@ -1,5 +1,5 @@
 import { Id, DeveloperApp as SDKDeveloperApp } from '@audius/sdk'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation } from '@tanstack/react-query'
 import { cloneDeep } from 'lodash'
 import { z } from 'zod'
 
@@ -8,6 +8,7 @@ import { ID } from '~/models/Identifiers'
 import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
+import { useTypedQueryClient } from './typedQueryClient'
 import { SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
@@ -122,7 +123,7 @@ export const useAddDeveloperApp = () => {
 
 export const useEditDeveloperApp = () => {
   const { audiusSdk } = useAudiusQueryContext()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
 
   return useMutation({
     mutationFn: async (args: UseEditDeveloperAppArgs) => {
@@ -148,7 +149,7 @@ export const useEditDeveloperApp = () => {
       })
 
       const previousApps: DeveloperApp[] =
-        queryClient.getQueryData([QUERY_KEYS.developerApps, userId]) ?? []
+        queryClient.getQueryData(getDeveloperAppsQueryKey(userId)) ?? []
       const appIndex = previousApps.findIndex(
         (app) => app.apiKey === editedApp.apiKey
       )
@@ -175,7 +176,7 @@ export const useEditDeveloperApp = () => {
 
 export const useDeleteDeveloperApp = () => {
   const { audiusSdk } = useAudiusQueryContext()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
 
   return useMutation({
     mutationFn: async (args: UseDeleteDeveloperAppArgs) => {
@@ -195,7 +196,7 @@ export const useDeleteDeveloperApp = () => {
       })
 
       const previousApps: DeveloperApp[] | undefined = queryClient.getQueryData(
-        [QUERY_KEYS.developerApps, userId]
+        getDeveloperAppsQueryKey(userId)
       )
 
       if (previousApps === undefined) {

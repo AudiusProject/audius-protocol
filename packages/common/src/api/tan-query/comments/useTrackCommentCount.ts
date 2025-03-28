@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
 import { Id } from '@audius/sdk'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useTypedQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 import { usePrevious } from 'react-use'
 
@@ -22,7 +22,7 @@ export const useTrackCommentCount = (
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const dispatch = useDispatch()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const queryData = useQuery({
     queryKey: getTrackCommentCountQueryKey(trackId),
     enabled: !!trackId,

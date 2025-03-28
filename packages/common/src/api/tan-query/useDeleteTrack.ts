@@ -1,5 +1,5 @@
 import { Id } from '@audius/sdk'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
@@ -12,6 +12,7 @@ import { UserMetadata } from '~/models/User'
 import { getWalletAddresses } from '~/store/account/selectors'
 import { deleteTrackRequested } from '~/store/cache/tracks/actions'
 
+import { useTypedQueryClient } from './typedQueryClient'
 import { getCurrentUserQueryKey } from './useCurrentUser'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getTrackQueryKey } from './useTrack'
@@ -31,7 +32,7 @@ type MutationContext = {
 
 export const useDeleteTrack = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
   const { currentUser: currentUserWallet } = useSelector(getWalletAddresses)
@@ -58,9 +59,7 @@ export const useDeleteTrack = () => {
       }
 
       // Snapshot the previous values
-      const previousTrack = queryClient.getQueryData<Track>(
-        getTrackQueryKey(trackId)
-      )
+      const previousTrack = queryClient.getQueryData(getTrackQueryKey(trackId))
       if (!previousTrack) throw new Error('Track not found')
 
       // Triggers removal from profile lineup
@@ -111,7 +110,7 @@ export const useDeleteTrack = () => {
       return { previousTrack, previousUser: currentUser }
     },
     onSuccess: async (_, { trackId }) => {
-      const track = queryClient.getQueryData<Track>(getTrackQueryKey(trackId))
+      const track = queryClient.getQueryData(getTrackQueryKey(trackId))
 
       if (track?.stem_of) {
         trackEvent({

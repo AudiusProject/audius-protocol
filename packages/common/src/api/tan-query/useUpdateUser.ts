@@ -1,5 +1,5 @@
 import { AudiusSdk, OptionalId } from '@audius/sdk'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useTypedQueryClient } from '@tanstack/react-query'
 
 import { userMetadataToSdk } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
@@ -25,7 +25,7 @@ export type UpdateUserParams = {
 
 export const useUpdateUser = () => {
   const { audiusSdk } = useAudiusQueryContext()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
 
   return useMutation({
     mutationFn: async ({
