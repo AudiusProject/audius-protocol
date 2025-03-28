@@ -49,7 +49,8 @@ const messages = {
   purchased: 'purchased',
   followToDownload: 'Must follow artist to download.',
   purchaseableIsOwner: (price: string) =>
-    `Fans can unlock & download these files for a one time purchase of ${price}`
+    `Fans can unlock & download these files for a one time purchase of ${price}`,
+  downloadAll: 'Download All'
 }
 
 export const DownloadSection = ({ trackId }: { trackId: ID }) => {
@@ -238,9 +239,19 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
           />
         ))}
         {isDownloadAllTrackFilesEnabled && !shouldHideDownload ? (
-          <Flex alignItems='center' justifyContent='center' p='l'>
-            <Button variant='primary' size='small' onPress={handleDownloadAll}>
-              Download all track files
+          <Flex
+            borderTop='default'
+            direction='row'
+            alignItems='center'
+            justifyContent='center'
+            p='l'
+          >
+            <Button
+              variant='secondary'
+              size='small'
+              onPress={handleDownloadAll}
+            >
+              {messages.downloadAll}
             </Button>
           </Flex>
         ) : null}
