@@ -1,6 +1,10 @@
 import { memo, useCallback, useEffect, MouseEvent, useRef } from 'react'
 
-import { useToggleFavoriteTrack } from '@audius/common/api'
+import {
+  useCurrentUserId,
+  useToggleFavoriteTrack,
+  useUser
+} from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,
@@ -10,9 +14,7 @@ import {
   UID
 } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheTracksSelectors,
-  cacheUsersSelectors,
   tracksSocialActions,
   shareModalUIActions,
   playerSelectors,
@@ -43,9 +45,7 @@ import TrackTile from './TrackTile'
 const { getUid, getPlaying, getBuffering } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { getTrack } = cacheTracksSelectors
-const { getUserFromTrack } = cacheUsersSelectors
 const { repostTrack, undoRepostTrack } = tracksSocialActions
-const { getUserHandle } = accountSelectors
 const { setLockedContentId } = gatedContentActions
 
 type OwnProps = {
@@ -73,7 +73,6 @@ const ConnectedTrackTile = ({
   index,
   size,
   track,
-  user,
   ordered,
   togglePlay,
   isBuffering,
@@ -82,7 +81,6 @@ const ConnectedTrackTile = ({
   isLoading,
   hasLoaded,
   containerClassName,
-  userHandle,
   repostTrack,
   undoRepostTrack,
   shareTrack,
@@ -107,6 +105,8 @@ const ConnectedTrackTile = ({
     ddex_app: ddexApp
   } = trackWithFallback
 
+  const { data: user, isPending: isUserPending } = useUser(track?.owner_id)
+  const { data: currentUserId } = useCurrentUserId()
   const {
     user_id,
     name,
@@ -118,13 +118,13 @@ const ConnectedTrackTile = ({
   const isActive = uid === playingUid
   const isTrackBuffering = isActive && isBuffering
   const isTrackPlaying = isActive && isPlaying
-  const isOwner = handle === userHandle
+  const isOwner = user_id === currentUserId
   const hasPreview = !!track?.preview_cid
   const isArtistPick = artist_pick_track_id === trackId
 
   const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(trackWithFallback)
-  const loading = isLoading || isFetchingNFTAccess
+  const loading = isLoading || isFetchingNFTAccess || isUserPending
 
   const dispatch = useDispatch()
   const [, setLockedContentVisibility] = useModalState('LockedContent')
@@ -163,8 +163,8 @@ const ConnectedTrackTile = ({
       handle,
       includeAddToPlaylist: !isUnlisted || isOwner,
       includeAddToAlbum: isOwner && !ddexApp,
-      includeArtistPick: handle === userHandle,
-      includeEdit: handle === userHandle,
+      includeArtistPick: isOwner,
+      includeEdit: isOwner,
       ddexApp: track?.ddex_app,
       includeEmbed: !(isUnlisted || isStreamGated),
       includeFavorite: hasStreamAccess,
@@ -342,11 +342,9 @@ const ConnectedTrackTile = ({
 function mapStateToProps(state: AppState, ownProps: OwnProps) {
   return {
     track: getTrack(state, { uid: ownProps.uid }),
-    user: getUserFromTrack(state, { uid: ownProps.uid }),
     playingUid: getUid(state),
     isBuffering: getBuffering(state),
-    isPlaying: getPlaying(state),
-    userHandle: getUserHandle(state)
+    isPlaying: getPlaying(state)
   }
 }
 
