@@ -1,6 +1,6 @@
 import { MouseEvent, ReactNode, useCallback } from 'react'
 
-import { useGetPlaylistById, useGetTrackById } from '@audius/common/api'
+import { useCollection, useTrack } from '@audius/common/api'
 import { AccessConditions, ID } from '@audius/common/models'
 import { gatedContentSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
@@ -49,15 +49,22 @@ type EntityDetails = {
 }
 
 const useTrackEntityDetails = (id: ID): EntityDetails => {
-  const { data: track } = useGetTrackById({ id }, { disabled: id === -1 })
+  const { data: partialTrack } = useTrack(id, {
+    select: (track) => ({
+      isUnlisted: track?.is_unlisted,
+      stream_conditions: track?.stream_conditions,
+      has_current_user_saved: track?.has_current_user_saved,
+      has_current_user_reposted: track?.has_current_user_reposted
+    })
+  })
 
   const {
     stream_conditions: streamConditions,
     has_current_user_saved: isFavorited,
-    has_current_user_reposted: isReposted
-  } = track ?? {}
+    has_current_user_reposted: isReposted,
+    isUnlisted
+  } = partialTrack ?? {}
 
-  const isUnlisted = track?.is_unlisted
   return {
     streamConditions: streamConditions ?? null,
     isUnlisted: isUnlisted ?? false,
@@ -67,18 +74,21 @@ const useTrackEntityDetails = (id: ID): EntityDetails => {
 }
 
 const useCollectionEntityDetails = (id: ID): EntityDetails => {
-  const { data: collection } = useGetPlaylistById(
-    { playlistId: id },
-    { disabled: id === -1 }
-  )
-
+  const { data: partialCollection } = useCollection(id, {
+    select: (collection) => ({
+      is_private: collection?.is_private,
+      stream_conditions: collection?.stream_conditions,
+      has_current_user_saved: collection?.has_current_user_saved,
+      has_current_user_reposted: collection?.has_current_user_reposted
+    })
+  })
   const {
     stream_conditions: streamConditions,
     has_current_user_saved: isFavorited,
-    has_current_user_reposted: isReposted
-  } = collection ?? {}
+    has_current_user_reposted: isReposted,
+    is_private: isUnlisted
+  } = partialCollection ?? {}
 
-  const isUnlisted = collection?.is_private
   return {
     streamConditions: streamConditions ?? null,
     isUnlisted: isUnlisted ?? false,

@@ -29,7 +29,7 @@ enum Placement {
 
 type ArtistPopoverProps = {
   mount?: MountPlacement
-  handle: string
+  handle: string | undefined
   placement?: Placement
   children: ReactNode
   mouseEnterDelay?: number

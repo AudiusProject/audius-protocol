@@ -9,6 +9,12 @@ import {
 } from 'react'
 
 import {
+  useCollection,
+  useUser,
+  useCollectionTracksWithUid,
+  useCurrentUserId
+} from '@audius/common/api'
+import {
   Name,
   ShareSource,
   RepostSource,
@@ -21,9 +27,6 @@ import {
   ModalSource
 } from '@audius/common/models'
 import {
-  accountSelectors,
-  cacheCollectionsSelectors,
-  cacheUsersSelectors,
   collectionsSocialActions,
   shareModalUIActions,
   playerSelectors,
@@ -35,8 +38,7 @@ import { Text, IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
 import { LocationState } from 'history'
 import { range } from 'lodash'
-import { connect } from 'react-redux'
-import { Dispatch } from 'redux'
+import { useSelector, useDispatch } from 'react-redux'
 
 import { TrackEvent, make } from 'common/store/analytics/actions'
 import { Draggable } from 'components/dragndrop'
@@ -46,32 +48,29 @@ import Menu from 'components/menu/Menu'
 import { CollectionArtwork } from 'components/track/Artwork'
 import { TrackTileSize } from 'components/track/types'
 import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
-import { AppState } from 'store/types'
 import { isDescendantElementOf } from 'utils/domUtils'
 import { push as pushRoute } from 'utils/navigation'
 import { fullCollectionPage, fullTrackPage } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
-import { getCollectionWithFallback, getUserWithFallback } from '../helpers'
+import { getCollectionWithFallback } from '../helpers'
 
 import styles from './ConnectedPlaylistTile.module.css'
 import PlaylistTile from './PlaylistTile'
 import TrackListItem from './TrackListItem'
 const { getUid, getBuffering, getPlaying } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
-const { getUserFromCollection } = cacheUsersSelectors
 const {
   saveCollection,
   unsaveCollection,
   repostCollection,
   undoRepostCollection
 } = collectionsSocialActions
-const { getCollection, getTracksFromCollection } = cacheCollectionsSelectors
-const getUserHandle = accountSelectors.getUserHandle
 const { collectionPage } = route
 
-type OwnProps = {
+type PlaylistTileProps = {
   uid: UID
+  id: ID
   ordered: boolean
   index: number
   size: TrackTileSize
@@ -89,41 +88,45 @@ type OwnProps = {
   source?: ModalSource
 }
 
-type ConnectedPlaylistTileProps = OwnProps &
-  ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps>
-
 const ConnectedPlaylistTile = ({
+  uid,
+  id: collectionId,
   ordered,
   index,
   size,
-  collection,
-  userHandle,
   containerClassName,
-  user,
-  tracks,
   togglePlay,
   playTrack,
   pauseTrack,
-  playingUid,
-  isBuffering,
-  isPlaying,
-  goToRoute,
-  record,
   playingTrackId,
   isLoading,
   numLoadingSkeletonRows,
   isUploading,
   hasLoaded,
-  shareCollection,
-  repostCollection,
-  undoRepostCollection,
-  saveCollection,
-  unsaveCollection,
   isTrending,
   isFeed = false,
   source
-}: ConnectedPlaylistTileProps) => {
+}: PlaylistTileProps) => {
+  const dispatch = useDispatch()
+
+  const { data: partialCollection } = useCollection(collectionId, {
+    select: (collection) => ({
+      playlist_contents: collection?.playlist_contents,
+      trackIds: collection?.trackIds,
+      playlist_owner_id: collection?.playlist_owner_id,
+      is_album: collection?.is_album,
+      playlist_name: collection?.playlist_name,
+      playlist_id: collection?.playlist_id,
+      is_private: collection?.is_private,
+      has_current_user_reposted: collection?.has_current_user_reposted,
+      has_current_user_saved: collection?.has_current_user_saved,
+      track_count: collection?.track_count,
+      permalink: collection?.permalink,
+      is_stream_gated: collection?.is_stream_gated,
+      stream_conditions: collection?.stream_conditions,
+      access: collection?.access
+    })
+  })
   const {
     is_album: isAlbum,
     playlist_name: title,
@@ -135,15 +138,71 @@ const ConnectedPlaylistTile = ({
     permalink,
     is_stream_gated: isStreamGated,
     stream_conditions: streamConditions,
-    access
-  } = getCollectionWithFallback(collection)
+    access,
+    playlist_owner_id
+  } = getCollectionWithFallback(partialCollection)
 
+  const tracks = useCollectionTracksWithUid(partialCollection, uid)
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: partialUser } = useUser(playlist_owner_id, {
+    select: (user) => ({
+      is_deactivated: user?.is_deactivated,
+      handle: user?.handle,
+      user_id: user?.user_id
+    })
+  })
   const {
-    user_id,
-    handle,
-    is_deactivated: isOwnerDeactivated
-  } = getUserWithFallback(user)
-  const isOwner = handle === userHandle
+    is_deactivated: isOwnerDeactivated,
+    handle = '',
+    user_id
+  } = partialUser ?? {}
+
+  const playingUid = useSelector(getUid)
+  const isBuffering = useSelector(getBuffering)
+  const isPlaying = useSelector(getPlaying)
+
+  const goToRoute = useCallback(
+    (route: string, state?: LocationState) => dispatch(pushRoute(route, state)),
+    [dispatch]
+  )
+
+  const record = useCallback((event: TrackEvent) => dispatch(event), [dispatch])
+
+  const shareCollection = useCallback(
+    (id: ID) =>
+      dispatch(
+        requestOpenShareModal({
+          type: 'collection',
+          collectionId: id,
+          source: ShareSource.TILE
+        })
+      ),
+    [dispatch]
+  )
+
+  const handleRepostCollection = useCallback(
+    (id: ID, isFeed: boolean) =>
+      dispatch(repostCollection(id, RepostSource.TILE, isFeed)),
+    [dispatch]
+  )
+
+  const handleUndoRepostCollection = useCallback(
+    (id: ID) => dispatch(undoRepostCollection(id, RepostSource.TILE)),
+    [dispatch]
+  )
+
+  const handleSaveCollection = useCallback(
+    (id: ID, isFeed: boolean) =>
+      dispatch(saveCollection(id, FavoriteSource.TILE, isFeed)),
+    [dispatch]
+  )
+
+  const handleUnsaveCollection = useCallback(
+    (id: ID) => dispatch(unsaveCollection(id, FavoriteSource.TILE)),
+    [dispatch]
+  )
+
+  const isOwner = currentUserId === user_id
 
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -307,19 +366,25 @@ const ConnectedPlaylistTile = ({
 
   const onClickFavorite = useCallback(() => {
     if (isFavorited) {
-      unsaveCollection(id)
+      handleUnsaveCollection(id)
     } else {
-      saveCollection(id, isFeed)
+      handleSaveCollection(id, isFeed)
     }
-  }, [saveCollection, unsaveCollection, id, isFavorited, isFeed])
+  }, [handleSaveCollection, handleUnsaveCollection, id, isFavorited, isFeed])
 
   const onClickRepost = useCallback(() => {
     if (isReposted) {
-      undoRepostCollection(id)
+      handleUndoRepostCollection(id)
     } else {
-      repostCollection(id, isFeed)
+      handleRepostCollection(id, isFeed)
     }
-  }, [repostCollection, undoRepostCollection, id, isReposted, isFeed])
+  }, [
+    handleRepostCollection,
+    handleUndoRepostCollection,
+    id,
+    isReposted,
+    isFeed
+  ])
 
   const onClickShare = useCallback(() => {
     shareCollection(id)
@@ -358,7 +423,7 @@ const ConnectedPlaylistTile = ({
 
   const renderTrackList = useCallback(() => {
     const showSkeletons = !!(
-      !tracks.length &&
+      !tracks?.length &&
       isLoading &&
       numLoadingSkeletonRows
     )
@@ -380,13 +445,12 @@ const ConnectedPlaylistTile = ({
         />
       ))
     }
-    return tracks.map((track, i) => (
+    return tracks?.map((track, i) => (
       <Draggable
         key={`${track.title}+${i}`}
         text={track.title}
         kind='track'
         id={track.track_id}
-        isOwner={track.user.handle === userHandle}
         link={fullTrackPage(track.permalink)}
       >
         <TrackListItem
@@ -410,7 +474,6 @@ const ConnectedPlaylistTile = ({
     tracks,
     isLoading,
     isAlbum,
-    userHandle,
     playingUid,
     size,
     disableActions,
@@ -460,10 +523,12 @@ const ConnectedPlaylistTile = ({
       onTogglePlay={onTogglePlay}
       key={`${index}-${title}`}
       TileTrackContainer={TileTrackContainer}
-      duration={tracks.reduce(
-        (duration: number, track: Track) => duration + track.duration,
-        0
-      )}
+      duration={
+        tracks?.reduce(
+          (duration: number, track: Track) => duration + track.duration,
+          0
+        ) ?? 0
+      }
       containerClassName={cn(styles.container, {
         [containerClassName!]: !!containerClassName,
         [styles.loading]: isLoading,
@@ -473,7 +538,7 @@ const ConnectedPlaylistTile = ({
       })}
       tileClassName={cn(styles.trackTile)}
       tracksContainerClassName={cn(styles.tracksContainer)}
-      trackList={trackList}
+      trackList={trackList ?? []}
       trackCount={trackCount}
       isTrending={isTrending}
       href={href}
@@ -485,43 +550,4 @@ const ConnectedPlaylistTile = ({
   )
 }
 
-function mapStateToProps(state: AppState, ownProps: OwnProps) {
-  return {
-    collection: getCollection(state, { uid: ownProps.uid }),
-    tracks: getTracksFromCollection(state, { uid: ownProps.uid }),
-    user: getUserFromCollection(state, { uid: ownProps.uid }),
-    userHandle: getUserHandle(state),
-    playingUid: getUid(state),
-    isBuffering: getBuffering(state),
-    isPlaying: getPlaying(state)
-  }
-}
-
-function mapDispatchToProps(dispatch: Dispatch) {
-  return {
-    goToRoute: (route: string, state?: LocationState) =>
-      dispatch(pushRoute(route, state)),
-    record: (event: TrackEvent) => dispatch(event),
-    shareCollection: (id: ID) =>
-      dispatch(
-        requestOpenShareModal({
-          type: 'collection',
-          collectionId: id,
-          source: ShareSource.TILE
-        })
-      ),
-    repostCollection: (id: ID, isFeed: boolean) =>
-      dispatch(repostCollection(id, RepostSource.TILE, isFeed)),
-    undoRepostCollection: (id: ID) =>
-      dispatch(undoRepostCollection(id, RepostSource.TILE)),
-    saveCollection: (id: ID, isFeed: boolean) =>
-      dispatch(saveCollection(id, FavoriteSource.TILE, isFeed)),
-    unsaveCollection: (id: ID) =>
-      dispatch(unsaveCollection(id, FavoriteSource.TILE))
-  }
-}
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(memo(ConnectedPlaylistTile))
+export default memo(ConnectedPlaylistTile)

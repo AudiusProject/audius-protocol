@@ -1,6 +1,6 @@
 import { MouseEventHandler, ReactNode, useCallback } from 'react'
 
-import { useGetPlaylistById, useGetTrackById } from '@audius/common/api'
+import { useCollection, useTrack } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import {
   usePublishConfirmationModal,
@@ -58,11 +58,17 @@ const TrackOwnerActionButtons = ({
   contentId,
   ...rest
 }: OwnerActionButtonProps) => {
-  const { data: track } = useGetTrackById({ id: contentId })
+  const { data: partialTrack } = useTrack(contentId, {
+    select: (track) => ({
+      isUnlisted: track?.is_unlisted ?? false,
+      permalink: track?.permalink
+    })
+  })
+  const { isUnlisted = false, permalink } = partialTrack ?? {}
   return (
     <BaseOwnerActionButtons
-      isUnlisted={track?.is_unlisted ?? false}
-      permalink={track?.permalink}
+      isUnlisted={isUnlisted}
+      permalink={permalink}
       contentId={contentId}
       {...rest}
     />
@@ -73,11 +79,17 @@ const CollectionOwnerActionButtons = ({
   contentId,
   ...rest
 }: OwnerActionButtonProps) => {
-  const { data: collection } = useGetPlaylistById({ playlistId: contentId })
+  const { data: partialCollection } = useCollection(contentId, {
+    select: (collection) => ({
+      isUnlisted: collection?.is_private ?? false,
+      permalink: collection?.permalink
+    })
+  })
+  const { isUnlisted = false, permalink } = partialCollection ?? {}
   return (
     <BaseOwnerActionButtons
-      isUnlisted={collection?.is_private ?? false}
-      permalink={collection?.permalink}
+      isUnlisted={isUnlisted}
+      permalink={permalink}
       contentId={contentId}
       {...rest}
     />

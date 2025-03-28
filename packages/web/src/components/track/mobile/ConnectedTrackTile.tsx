@@ -1,11 +1,9 @@
 import { memo } from 'react'
 
+import { useCurrentUserId, useTrack, useUser } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import { ShareSource, RepostSource, ID } from '@audius/common/models'
 import {
-  accountSelectors,
-  cacheTracksSelectors,
-  cacheUsersSelectors,
   tracksSocialActions,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
@@ -16,8 +14,7 @@ import {
 } from '@audius/common/store'
 import { Genre } from '@audius/common/utils'
 import { Box, IconButton, IconKebabHorizontal } from '@audius/harmony'
-import { connect } from 'react-redux'
-import { Dispatch } from 'redux'
+import { useSelector, useDispatch } from 'react-redux'
 
 import Menu from 'components/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
@@ -28,18 +25,15 @@ import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 import { getTrackWithFallback, getUserWithFallback } from '../helpers'
 
 import TrackTile from './TrackTile'
+
 const { getUid, getPlaying, getBuffering } = playerSelectors
 const { getTheme } = themeSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
-const { getTrack } = cacheTracksSelectors
-const { getUserFromTrack } = cacheUsersSelectors
 const { repostTrack, undoRepostTrack } = tracksSocialActions
-const getUserId = accountSelectors.getUserId
 
-type OwnProps = Omit<
+type ConnectedTrackTileProps = Omit<
   TrackTileProps,
-  | 'id'
   | 'title'
   | 'userId'
   | 'genre'
@@ -57,30 +51,16 @@ type OwnProps = Omit<
   | 'isPlaying'
 >
 
-type ConnectedTrackTileProps = OwnProps &
-  ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps>
-
 const ConnectedTrackTile = ({
   uid,
+  id,
   index,
   size,
-  track,
-  user,
   ordered,
   trackTileStyles,
   togglePlay,
-  isBuffering,
-  isPlaying,
-  playingUid,
   isLoading,
   hasLoaded,
-  currentUserId,
-  repostTrack,
-  unrepostTrack,
-  shareTrack,
-  clickOverflow,
-  darkMode,
   isTrending,
   isActive,
   variant,
@@ -88,6 +68,52 @@ const ConnectedTrackTile = ({
   isFeed = false,
   source
 }: ConnectedTrackTileProps) => {
+  const dispatch = useDispatch()
+
+  const { data: track } = useTrack(id)
+  const { data: partialUser } = useUser(track?.owner_id, {
+    select: (user) => ({
+      user_id: user?.user_id,
+      handle: user?.handle,
+      name: user?.name,
+      is_verified: user?.is_verified,
+      is_deactivated: user?.is_deactivated
+    })
+  })
+  const { user_id, handle, name, is_verified, is_deactivated } =
+    getUserWithFallback(partialUser) ?? {}
+  const playingUid = useSelector(getUid)
+  const isBuffering = useSelector(getBuffering)
+  const isPlaying = useSelector(getPlaying)
+  const { data: currentUserId } = useCurrentUserId()
+  const darkMode = useSelector((state: AppState) =>
+    shouldShowDark(getTheme(state))
+  )
+
+  const shareTrack = (trackId: ID) => {
+    dispatch(
+      requestOpenShareModal({
+        type: 'track',
+        trackId,
+        source: ShareSource.TILE
+      })
+    )
+  }
+
+  const handleRepostTrack = (trackId: ID, isFeed: boolean) => {
+    dispatch(repostTrack(trackId, RepostSource.TILE, isFeed))
+  }
+
+  const handleUnrepostTrack = (trackId: ID) => {
+    dispatch(undoRepostTrack(trackId, RepostSource.TILE))
+  }
+
+  const clickOverflow = (trackId: ID, overflowActions: OverflowAction[]) => {
+    dispatch(
+      open({ source: OverflowSource.TRACKS, id: trackId, overflowActions })
+    )
+  }
+
   const trackWithFallback = getTrackWithFallback(track)
   const {
     is_delete,
@@ -117,8 +143,6 @@ const ConnectedTrackTile = ({
     album_backlink
   } = trackWithFallback
 
-  const { user_id, handle, name, is_verified } = getUserWithFallback(user)
-
   const isOwner = user_id === currentUserId
 
   const { isFetchingNFTAccess, hasStreamAccess } =
@@ -127,9 +151,9 @@ const ConnectedTrackTile = ({
 
   const toggleRepost = (trackId: ID) => {
     if (has_current_user_reposted) {
-      unrepostTrack(trackId)
+      handleUnrepostTrack(trackId)
     } else {
-      repostTrack(trackId, isFeed)
+      handleRepostTrack(trackId, isFeed)
     }
   }
 
@@ -153,7 +177,7 @@ const ConnectedTrackTile = ({
       includeRepost: hasStreamAccess,
       includeShare: true,
       includeTrackPage: true,
-      isDeleted: is_delete || user?.is_deactivated,
+      isDeleted: is_delete || is_deactivated,
       isFavorited: has_current_user_saved,
       isOwner,
       isReposted: has_current_user_reposted,
@@ -218,7 +242,7 @@ const ConnectedTrackTile = ({
     clickOverflow(trackId, overflowActions)
   }
 
-  if (is_delete || user?.is_deactivated) return null
+  if (is_delete || is_deactivated) return null
 
   return (
     <TrackTile
@@ -279,41 +303,4 @@ const ConnectedTrackTile = ({
   )
 }
 
-function mapStateToProps(state: AppState, ownProps: OwnProps) {
-  return {
-    track: getTrack(state, { uid: ownProps.uid }),
-    user: getUserFromTrack(state, { uid: ownProps.uid }),
-    playingUid: getUid(state),
-    isBuffering: getBuffering(state),
-    isPlaying: getPlaying(state),
-
-    currentUserId: getUserId(state),
-    darkMode: shouldShowDark(getTheme(state))
-  }
-}
-
-function mapDispatchToProps(dispatch: Dispatch) {
-  return {
-    shareTrack: (trackId: ID) =>
-      dispatch(
-        requestOpenShareModal({
-          type: 'track',
-          trackId,
-          source: ShareSource.TILE
-        })
-      ),
-    repostTrack: (trackId: ID, isFeed: boolean) =>
-      dispatch(repostTrack(trackId, RepostSource.TILE, isFeed)),
-    unrepostTrack: (trackId: ID) =>
-      dispatch(undoRepostTrack(trackId, RepostSource.TILE)),
-    clickOverflow: (trackId: ID, overflowActions: OverflowAction[]) =>
-      dispatch(
-        open({ source: OverflowSource.TRACKS, id: trackId, overflowActions })
-      )
-  }
-}
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(memo(ConnectedTrackTile))
+export default memo(ConnectedTrackTile)

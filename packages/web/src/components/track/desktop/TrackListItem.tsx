@@ -1,6 +1,10 @@
 import { memo, MouseEvent, useRef } from 'react'
 
-import { useGetCurrentUserId } from '@audius/common/api'
+import {
+  CollectionTrackWithUid,
+  useCurrentUserId,
+  useUser
+} from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ID,
@@ -8,7 +12,6 @@ import {
   Track,
   UID
 } from '@audius/common/models'
-import { EnhancedCollectionTrack } from '@audius/common/store'
 import { Genre, formatSeconds, route } from '@audius/common/utils'
 import { IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
@@ -41,31 +44,45 @@ type TrackListItemProps = {
   togglePlay: (uid: UID, id: ID) => void
   goToRoute: (route: string) => void
   artistHandle: string
-  track?: EnhancedCollectionTrack
   forceSkeleton?: boolean
   isLastTrack?: boolean
-}
+} & ({ track?: CollectionTrackWithUid } | { isLoading: true }) // either a track must be passed or loading must be true
 
-const TrackListItem = ({
-  track,
-  active,
-  disableActions,
-  playing,
-  index,
-  size,
-  goToRoute,
-  togglePlay,
-  isLoading,
-  isAlbum,
-  isLastTrack,
-  forceSkeleton = false
-}: TrackListItemProps) => {
+const TrackListItem = (props: TrackListItemProps) => {
+  const {
+    active,
+    disableActions,
+    playing,
+    index,
+    size,
+    goToRoute,
+    togglePlay,
+    isLoading,
+    isAlbum,
+    isLastTrack,
+    forceSkeleton = false
+  } = props
+  const track = 'track' in props ? props.track : null
   const menuRef = useRef<HTMLDivElement>(null)
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useCurrentUserId()
   const isOwner = track?.owner_id === currentUserId
   const isPrivate = track?.is_unlisted
   const isPremium = isContentUSDCPurchaseGated(track?.stream_conditions)
   const { hasStreamAccess } = useGatedContentAccess(track as Track)
+  const { data: partialUser } = useUser(track?.owner_id, {
+    select: (user) => ({
+      is_deactivated: user?.is_deactivated,
+      handle: user?.handle,
+      name: user?.name,
+      artist_pick_track_id: user?.artist_pick_track_id
+    })
+  })
+  const {
+    is_deactivated: isOwnerDeactivated = false,
+    handle: userHandle,
+    name: userName,
+    artist_pick_track_id: artistPickTrackId
+  } = partialUser ?? {}
 
   if (forceSkeleton) {
     return (
@@ -82,12 +99,12 @@ const TrackListItem = ({
 
   if (!track) return null
 
-  const deleted = track.is_delete || !!track.user?.is_deactivated
+  const deleted = track.is_delete || isOwnerDeactivated
   const strings = makeStrings({ deleted })
 
   const onClickArtistName = (e: MouseEvent) => {
     e.stopPropagation()
-    if (goToRoute) goToRoute(profilePage(track.user.handle))
+    if (goToRoute) goToRoute(profilePage(userHandle))
   }
 
   const onClickTrackName = (e: MouseEvent) => {
@@ -122,7 +139,7 @@ const TrackListItem = ({
   })
 
   const menu: Omit<TrackMenuProps, 'children'> = {
-    handle: track.user.handle,
+    handle: userHandle ?? '',
     includeAddToPlaylist: !isPrivate || isOwner,
     includeAddToAlbum: isOwner && !track?.ddex_app,
     includeArtistPick: false,
@@ -131,11 +148,11 @@ const TrackListItem = ({
     includeRepost: true,
     includeShare: false,
     includeTrackPage: true,
-    isArtistPick: track.user.artist_pick_track_id === track.track_id,
+    isArtistPick: artistPickTrackId === track.track_id,
     isDeleted: deleted,
     isFavorited: track.has_current_user_saved,
     isOwner: false,
-    isOwnerDeactivated: !!track.user?.is_deactivated,
+    isOwnerDeactivated,
     isReposted: track.has_current_user_reposted,
     trackId: track.track_id,
     trackTitle: track.title,
@@ -184,12 +201,10 @@ const TrackListItem = ({
           {!isAlbum ? (
             <div className={styles.artistName} onClick={onClickArtistName}>
               <div className={styles.by}>{strings.by}</div>
-              {track.user.is_deactivated ? (
-                `${track.user.name} [Deactivated]`
+              {!isOwnerDeactivated ? (
+                `${userName} [Deactivated]`
               ) : (
-                <ArtistPopover handle={track.user.handle}>
-                  {track.user.name}
-                </ArtistPopover>
+                <ArtistPopover handle={userHandle}>{userName}</ArtistPopover>
               )}
             </div>
           ) : null}

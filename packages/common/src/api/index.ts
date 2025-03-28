@@ -74,3 +74,5 @@ export * from './tan-query/useAudioTransactionsCount'
 
 // Saga fetch utils, remove when migration is complete
 export * from './tan-query/saga-utils'
+export * from './tan-query/useTracks'
+export * from './tan-query/useCollectionTracksWithUid'

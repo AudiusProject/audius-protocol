@@ -129,6 +129,7 @@ export const ChatMessagePlaylist = ({
       containerClassName={className}
       index={0}
       uid={uid}
+      id={collectionId}
       collection={collection}
       tracks={tracksWithUids}
       playTrack={playTrack}
