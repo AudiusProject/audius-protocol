@@ -43,7 +43,7 @@ export const UserLink = (props: UserLinkProps) => {
       return { url: profilePage(handle), handle, name }
     }
   })
-  const { url = '/', handle, name: userName } = partialUser ?? {}
+  const { url = '/', handle, name } = partialUser ?? {}
 
   if (!userId) {
     return null
