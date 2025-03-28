@@ -91,7 +91,9 @@ export const AdvancedWalletDetails = () => {
   const [publicKey, setPublicKey] = useState<Nullable<string>>(null)
   const [encodedPrivateKey, setEncodedPrivateKey] =
     useState<Nullable<string>>(null)
-  const { solanaWalletService } = useAudiusQueryContext()
+  const { solanaWalletService, authService } = useAudiusQueryContext()
+  const [ethAddress, setEthAddress] = useState<Nullable<string>>(null)
+  const [ethPrivKey, setEthPrivKey] = useState<Nullable<string>>(null)
 
   useEffect(() => {
     const fetchKeypair = async () => {
@@ -100,11 +102,16 @@ export const AdvancedWalletDetails = () => {
         setPublicKey(keypair.publicKey.toString())
         setEncodedPrivateKey(pkg.encode(keypair.secretKey))
       }
+      const ethKey = authService.getWallet()
+      if (ethKey) {
+        setEthAddress(ethKey.getAddressString())
+        setEthPrivKey(ethKey.getPrivateKeyString())
+      }
     }
     fetchKeypair()
   }, [solanaWalletService])
 
-  if (!publicKey || !encodedPrivateKey) {
+  if (!publicKey || !encodedPrivateKey || !ethAddress || !ethPrivKey) {
     return null
   }
 
@@ -113,8 +120,10 @@ export const AdvancedWalletDetails = () => {
       <Text variant='heading' size='s'>
         {messages.advancedWalletDetails}
       </Text>
-      <Key label={messages.address} value={publicKey} />
-      <Key label={messages.privateKey} value={encodedPrivateKey} isPrivate />
+      <Key label={`SOL ${messages.address}`} value={publicKey} />
+      <Key label={`SOL ${messages.privateKey}`} value={encodedPrivateKey} isPrivate />
+      <Key label={`ETH ${messages.address}`} value={ethAddress} />
+      <Key label={`ETH ${messages.privateKey}`} value={ethPrivKey} isPrivate />
     </Flex>
   )
 }
