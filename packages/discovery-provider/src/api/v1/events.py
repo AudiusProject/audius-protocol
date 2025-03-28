@@ -1,6 +1,9 @@
 from flask_restx import Namespace, Resource, fields
 
 from src.api.v1.helpers import (
+    abort_not_found,
+    current_user_parser,
+    decode_ids_array,
     format_limit,
     format_offset,
     make_response,
@@ -8,11 +11,43 @@ from src.api.v1.helpers import (
     success_response,
 )
 from src.api.v1.models.events import event_model
-from src.queries.get_events import get_events
+from src.queries.get_events import get_events, get_events_by_id
 from src.queries.get_unclaimed_id import get_unclaimed_id
 from src.utils.redis_cache import cache
 
 ns = Namespace("events", description="Events related operations")
+
+events_response = make_response(
+    "events_response", ns, fields.List(fields.Nested(event_model))
+)
+
+bulk_events_parser = current_user_parser.copy()
+bulk_events_parser.add_argument(
+    "id",
+    required=False,
+    action="append",
+    description="The ID of the event(s) to retrieve",
+)
+
+
+@ns.route("")
+class BulkEvents(Resource):
+    @ns.doc(
+        id="Get Bulk Events",
+        description="Get a list of events by ID",
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(bulk_events_parser)
+    @ns.marshal_with(events_response)
+    @cache(ttl=5)
+    def get(self):
+        args = bulk_events_parser.parse_args()
+        ids = decode_ids_array(args.get("id"))
+        events = get_events_by_id({"id": ids})
+        if not events:
+            abort_not_found(ids, ns)
+        return success_response(events)
+
 
 events_parser = pagination_with_current_user_parser.copy()
 events_parser.add_argument(
@@ -24,13 +59,11 @@ events_parser.add_argument(
     description="The sort method",
 )
 
-events_response = make_response("events_response", ns, fields.Nested(event_model))
 
-
-@ns.route("/")
+@ns.route("/all")
 class EventList(Resource):
     @ns.doc(
-        id="Get Events",
+        id="Get All Events",
         description="Get all events",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
@@ -39,13 +72,14 @@ class EventList(Resource):
     @cache(ttl=5)
     def get(self):
         """Get all events"""
-        request_args = events_parser.parse_args()
-        args = {
-            "limit": format_limit(request_args, default_limit=25),
-            "offset": format_offset(request_args),
-        }
-        events = get_events(args)
-        return make_response("events", ns, events)
+        args = events_parser.parse_args()
+        events = get_events(
+            {
+                "limit": format_limit(args, default_limit=25),
+                "offset": format_offset(args),
+            }
+        )
+        return success_response(events)
 
 
 unclaimed_id_response = make_response("unclaimed_id_response", ns, fields.String())

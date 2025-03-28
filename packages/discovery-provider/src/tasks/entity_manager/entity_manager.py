@@ -19,6 +19,7 @@ from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_report import CommentReport
 from src.models.comments.comment_thread import CommentThread
 from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
+from src.models.events.event import Event, EventEntityType
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.indexing.revert_block import RevertBlock
@@ -665,6 +666,30 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                 entities_to_fetch[EntityType.PLAYLIST_ROUTE].add(entity_id)
             if entity_type == EntityType.EVENT:
                 entities_to_fetch[EntityType.EVENT].add(entity_id)
+                entities_to_fetch[EntityType.USER].add(user_id)
+
+                if action != Action.DELETE:
+                    try:
+                        json_metadata = json.loads(metadata)
+                    except Exception as e:
+                        logger.error(
+                            f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}"
+                        )
+                        # skip invalid metadata
+                        continue
+
+                    event_user_id = json_metadata.get("data", {}).get("user_id")
+                    entities_to_fetch[EntityType.USER].add(event_user_id)
+
+                    event_entity_type = json_metadata.get("data", {}).get("entity_type")
+                    # TODO: Update this to fetch the proper entity based on the entity_type in metadata
+                    if event_entity_type == EventEntityType.track:
+                        event_entity_id = json_metadata.get("data", {}).get("entity_id")
+                        entities_to_fetch[EntityType.TRACK].add(event_entity_id)
+                    elif event_entity_type == EventEntityType.user:
+                        event_entity_id = json_metadata.get("data", {}).get("entity_id")
+                        entities_to_fetch[EntityType.USER].add(event_entity_id)
+
             if entity_type == EntityType.COMMENT:
                 if (
                     action == Action.CREATE
@@ -1323,6 +1348,19 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         existing_entities_in_json[EntityType.DASHBOARD_WALLET_USER] = {
             dashboard_wallet_json["wallet"].lower(): dashboard_wallet_json
             for _, dashboard_wallet_json in dashboard_wallets
+        }
+
+    if entities_to_fetch["Event"]:
+        events: List[Tuple[Event, dict]] = (
+            session.query(Event, literal_column(f"row_to_json({Event.__tablename__})"))
+            .filter(Event.event_id.in_(entities_to_fetch["Event"]))
+            .all()
+        )
+        existing_entities[EntityType.EVENT] = {
+            event.event_id: event for event, _ in events
+        }
+        existing_entities_in_json[EntityType.EVENT] = {
+            event_json["event_id"]: event_json for _, event_json in events
         }
 
     if entities_to_fetch["Comment"]:

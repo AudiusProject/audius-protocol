@@ -454,7 +454,7 @@ def populate_track_metadata(
     events = (
         session.query(Event)
         .filter(
-            Event.entity_type == EventEntityType.TRACK,
+            Event.entity_type == EventEntityType.track,
             Event.entity_id.in_(track_ids),
             Event.is_deleted == False,
         )

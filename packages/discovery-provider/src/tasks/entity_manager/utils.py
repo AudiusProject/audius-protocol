@@ -606,27 +606,27 @@ def get_address_from_signature(signature):
     return app_address.lower()
 
 
-def parse_release_date(release_date_str):
+def parse_date_str(date_str):
     # try various time formats
-    if not release_date_str:
+    if not date_str:
         return None
 
     try:
-        return datetime.strptime(
-            release_date_str, "%a %b %d %Y %H:%M:%S GMT%z"
-        ).astimezone(timezone.utc)
-    except ValueError:
-        pass
-
-    try:
-        return datetime.strptime(release_date_str, "%Y-%m-%dT%H:%M:%S.%fZ").astimezone(
+        return datetime.strptime(date_str, "%a %b %d %Y %H:%M:%S GMT%z").astimezone(
             timezone.utc
         )
     except ValueError:
         pass
 
     try:
-        return datetime.fromtimestamp(int(release_date_str)).astimezone(timezone.utc)
+        return datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S.%fZ").astimezone(
+            timezone.utc
+        )
+    except ValueError:
+        pass
+
+    try:
+        return datetime.fromtimestamp(int(date_str)).astimezone(timezone.utc)
     except (ValueError, TypeError):
         pass
 

@@ -1,7 +1,5 @@
-from datetime import datetime
-
 from src.exceptions import IndexingValidationError
-from src.models.events.event import Event
+from src.models.events.event import Event, EventEntityType, EventType
 from src.tasks.entity_manager.utils import (
     EntityType,
     ManageEntityParameters,
@@ -23,20 +21,20 @@ def validate_create_event_tx(params: ManageEntityParameters):
         )
 
     # Check if all required fields are present
-    required_fields = ["event_type", "entity_id", "entity_type", "end_date", "user_id"]
+    required_fields = ["event_type", "entity_id", "entity_type", "end_date"]
     for field in required_fields:
         if field not in metadata:
             raise IndexingValidationError(f"Missing required field: {field}")
 
-    # Validate end_date is in the future
-    if metadata["end_date"] > datetime.now():
-        raise IndexingValidationError("end_date must be in the future")
+    # TODO: Validate end_date is in the future
+    # if datetime.fromisoformat(metadata["end_date"]) > datetime.now():
+    #     raise IndexingValidationError("end_date must be in the future")
 
     # Validate entity_type is valid
     valid_entity_types = [
-        EntityType.TRACK.value,
-        EntityType.PLAYLIST.value,
-        EntityType.USER.value,
+        EventEntityType.track.value,
+        # EventEntityType.playlist.value,
+        # EventEntityType.user.value,
     ]
     if (
         params.metadata.get("entity_type")
@@ -47,48 +45,61 @@ def validate_create_event_tx(params: ManageEntityParameters):
         )
 
     # Validate entity type is correct and entity exists
-    if params.metadata["entity_type"] == EntityType.TRACK.value:
-        if not params.existing_records[EntityType.TRACK.value].get(
-            metadata["entity_id"]
-        ):
-            raise IndexingValidationError(
-                f"Track with id {metadata['entity_id']} does not exist"
-            )
-    elif params.metadata["entity_type"] == EntityType.PLAYLIST.value:
-        if not params.existing_records[EntityType.PLAYLIST.value].get(
-            metadata["entity_id"]
-        ):
-            raise IndexingValidationError(
-                f"Playlist with id {metadata['entity_id']} does not exist"
-            )
-    elif params.metadata["entity_type"] == EntityType.USER.value:
-        if not params.existing_records[EntityType.USER.value].get(
-            metadata["entity_id"]
-        ):
-            raise IndexingValidationError(
-                f"User with id {metadata['entity_id']} does not exist"
-            )
-    else:
+
+    # TODO: Update this to validate that the entity_type is correct
+    if (
+        params.metadata["entity_id"]
+        and params.metadata["entity_type"] == EventEntityType.track.value
+        and params.metadata["entity_id"]
+        not in params.existing_records[EntityType.TRACK.value]
+    ):
         raise IndexingValidationError(
-            f"Invalid entity_type: {params.metadata['entity_type']}"
+            f"Track {params.metadata['entity_id']} does not exist"
         )
 
-    if not params.existing_records[EntityType.USER.value].get(params.user_id):
-        raise IndexingValidationError(f"User with id {params.user_id} does not exist")
+    # if params.metadata["entity_type"] == EventEntityType.track.value:
+    #     if not params.existing_records[EventEntityType.track.value].get(
+    #         metadata["entity_id"]
+    #     ):
+    #         raise IndexingValidationError(
+    #             f"Track with id {metadata['entity_id']} does not exist"
+    #         )
+    # elif params.metadata["entity_type"] == EventEntityType.playlist.value:
+    #     if not params.existing_records[EventEntityType.playlist.value].get(
+    #         metadata["entity_id"]
+    #     ):
+    #         raise IndexingValidationError(
+    #             f"Playlist with id {metadata['entity_id']} does not exist"
+    #         )
+    # elif params.metadata["entity_type"] == EventEntityType.user.value:
+    #     if not params.existing_records[EventEntityType.user.value].get(
+    #         metadata["entity_id"]
+    #     ):
+    #         raise IndexingValidationError(
+    #             f"User with id {metadata['entity_id']} does not exist"
+    #         )
+    # else:
+    #     raise IndexingValidationError(
+    #         f"Invalid entity_type: {params.metadata['entity_type']}"
+    #     )
 
-    # Validate remix competition rules
-    if metadata["event_type"] == "remix_competition":
+    # Validate user exists
+    if params.user_id not in params.existing_records[EntityType.USER.value]:
+        raise IndexingValidationError(f"User {params.user_id} does not exist")
+
+    # Validate remix contest rules
+    if metadata["event_type"] == EventType.remix_contest:
         if not metadata["entity_id"] or not metadata["entity_type"]:
             raise IndexingValidationError(
                 "For remix competitions, entity_id and entity_type must be provided"
             )
         if any(
             event.entity_id == metadata["entity_id"]
-            and event.event_type == "remix_competition"
+            and event.event_type == EventType.remix_contest
             for event in params.existing_records[EntityType.EVENT.value].values()
         ):
             raise IndexingValidationError(
-                f"An existing remix competition for entity_id {metadata['entity_id']} already exists"
+                f"An existing remix contest for entity_id {metadata['entity_id']} already exists"
             )
 
 
@@ -112,14 +123,14 @@ def create_event(params: ManageEntityParameters):
         blocknumber=params.block_number,
     )
 
-    params.session.add(event_record)
+    params.add_record(event_id, event_record, EntityType.EVENT)
 
 
 def validate_update_event_tx(params: ManageEntityParameters):
     validate_signer(params)
     event_id = params.entity_id
     user_id = params.user_id
-    existing_event = params.existing_records[EntityType.EVENT.value].get(event_id)
+    existing_event = params.existing_records[EntityType.EVENT.value][event_id]
 
     if not existing_event:
         raise IndexingValidationError(
@@ -130,8 +141,9 @@ def validate_update_event_tx(params: ManageEntityParameters):
         raise IndexingValidationError(f"Only event owner can update event {event_id}")
 
     # Validate end_date is not in the past
-    if params.metadata.get("end_date") and params.metadata["end_date"] < datetime.now():
-        raise IndexingValidationError("end_date cannot be in the past")
+    # TODO: Fix this to make sure that the end_date is in the future
+    # if params.metadata.get("end_date") and params.metadata["end_date"] < datetime.now():
+    #     raise IndexingValidationError("end_date cannot be in the past")
 
 
 def update_event(params: ManageEntityParameters):
@@ -157,7 +169,7 @@ def validate_delete_event_tx(params: ManageEntityParameters):
     validate_signer(params)
     event_id = params.entity_id
     user_id = params.user_id
-    existing_event = params.existing_records[EntityType.EVENT.value][params.entity_id]
+    existing_event = params.existing_records[EntityType.EVENT.value][event_id]
 
     if not existing_event:
         raise IndexingValidationError(
@@ -172,9 +184,9 @@ def delete_event(params: ManageEntityParameters):
     validate_delete_event_tx(params)
     event_id = params.entity_id
     existing_event = params.existing_records[EntityType.EVENT.value][event_id]
-    if params.entity_id in params.new_records[EntityType.EVENT.value]:
-        existing_event = params.new_records[EntityType.EVENT.value][params.entity_id][
-            -1
-        ]
 
+    existing_event.txhash = params.txhash
+    existing_event.blockhash = params.event_blockhash
+    existing_event.blocknumber = params.block_number
+    existing_event.updated_at = params.block_datetime
     existing_event.is_deleted = True

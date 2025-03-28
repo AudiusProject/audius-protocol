@@ -29,10 +29,10 @@ import {
 export interface EventsResponse {
     /**
      * 
-     * @type {Event}
+     * @type {Array<Event>}
      * @memberof EventsResponse
      */
-    data?: Event;
+    data?: Array<Event>;
 }
 
 /**
@@ -54,7 +54,7 @@ export function EventsResponseFromJSONTyped(json: any, ignoreDiscriminator: bool
     }
     return {
         
-        'data': !exists(json, 'data') ? undefined : EventFromJSON(json['data']),
+        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(EventFromJSON)),
     };
 }
 
@@ -67,7 +67,7 @@ export function EventsResponseToJSON(value?: EventsResponse | null): any {
     }
     return {
         
-        'data': EventToJSON(value.data),
+        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(EventToJSON)),
     };
 }
 

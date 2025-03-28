@@ -22,10 +22,10 @@ import { exists, mapValues } from '../runtime';
 export interface Event {
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof Event
      */
-    eventId: number;
+    eventId: string;
     /**
      * 
      * @type {string}
@@ -34,10 +34,10 @@ export interface Event {
     eventType: EventEventTypeEnum;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof Event
      */
-    userId: number;
+    userId: string;
     /**
      * 
      * @type {string}
@@ -46,34 +46,34 @@ export interface Event {
     entityType?: EventEntityTypeEnum;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof Event
      */
-    entityId?: number;
+    entityId?: string;
     /**
      * 
-     * @type {Date}
+     * @type {string}
      * @memberof Event
      */
-    endDate?: Date;
+    endDate?: string;
     /**
      * 
-     * @type {number}
+     * @type {boolean}
      * @memberof Event
      */
-    isDeleted?: number;
+    isDeleted?: boolean;
     /**
      * 
-     * @type {Date}
+     * @type {string}
      * @memberof Event
      */
-    createdAt: Date;
+    createdAt: string;
     /**
      * 
-     * @type {Date}
+     * @type {string}
      * @memberof Event
      */
-    updatedAt: Date;
+    updatedAt: string;
     /**
      * 
      * @type {object}
@@ -134,10 +134,10 @@ export function EventFromJSONTyped(json: any, ignoreDiscriminator: boolean): Eve
         'userId': json['user_id'],
         'entityType': !exists(json, 'entity_type') ? undefined : json['entity_type'],
         'entityId': !exists(json, 'entity_id') ? undefined : json['entity_id'],
-        'endDate': !exists(json, 'end_date') ? undefined : (new Date(json['end_date'])),
+        'endDate': !exists(json, 'end_date') ? undefined : json['end_date'],
         'isDeleted': !exists(json, 'is_deleted') ? undefined : json['is_deleted'],
-        'createdAt': (new Date(json['created_at'])),
-        'updatedAt': (new Date(json['updated_at'])),
+        'createdAt': json['created_at'],
+        'updatedAt': json['updated_at'],
         'eventData': json['event_data'],
     };
 }
@@ -156,10 +156,10 @@ export function EventToJSON(value?: Event | null): any {
         'user_id': value.userId,
         'entity_type': value.entityType,
         'entity_id': value.entityId,
-        'end_date': value.endDate === undefined ? undefined : (value.endDate.toISOString()),
+        'end_date': value.endDate,
         'is_deleted': value.isDeleted,
-        'created_at': (value.createdAt.toISOString()),
-        'updated_at': (value.updatedAt.toISOString()),
+        'created_at': value.createdAt,
+        'updated_at': value.updatedAt,
         'event_data': value.eventData,
     };
 }

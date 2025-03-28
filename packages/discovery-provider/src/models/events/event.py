@@ -19,17 +19,17 @@ from src.models.model_utils import RepresentableMixin
 class EventType(str, enum.Enum):
     """Enum for event types"""
 
-    REMIX_CONTEST = "remix_contest"
-    LIVE_EVENT = "live_event"
-    NEW_RELEASE = "new_release"
+    remix_contest = "remix_contest"
+    live_event = "live_event"
+    new_release = "new_release"
 
 
 class EventEntityType(str, enum.Enum):
     """Enum for event entity types"""
 
-    TRACK = "track"
-    COLLECTION = "collection"
-    USER = "user"
+    track = "track"
+    collection = "collection"
+    user = "user"
 
 
 class Event(Base, RepresentableMixin):

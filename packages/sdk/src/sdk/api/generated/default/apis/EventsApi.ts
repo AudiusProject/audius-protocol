@@ -26,11 +26,16 @@ import {
     UnclaimedIdResponseToJSON,
 } from '../models';
 
-export interface GetEventsRequest {
+export interface GetAllEventsRequest {
     offset?: number;
     limit?: number;
     userId?: string;
-    sortMethod?: GetEventsSortMethodEnum;
+    sortMethod?: GetAllEventsSortMethodEnum;
+}
+
+export interface GetBulkEventsRequest {
+    userId?: string;
+    id?: Array<string>;
 }
 
 /**
@@ -43,7 +48,7 @@ export class EventsApi extends runtime.BaseAPI {
      * Get all events
      * Get all events
      */
-    async getEventsRaw(params: GetEventsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EventsResponse>> {
+    async getAllEventsRaw(params: GetAllEventsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EventsResponse>> {
         const queryParameters: any = {};
 
         if (params.offset !== undefined) {
@@ -65,7 +70,7 @@ export class EventsApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/events/`,
+            path: `/events/all`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -78,8 +83,43 @@ export class EventsApi extends runtime.BaseAPI {
      * Get all events
      * Get all events
      */
-    async getEvents(params: GetEventsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EventsResponse> {
-        const response = await this.getEventsRaw(params, initOverrides);
+    async getAllEvents(params: GetAllEventsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EventsResponse> {
+        const response = await this.getAllEventsRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Get a list of events by ID
+     */
+    async getBulkEventsRaw(params: GetBulkEventsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EventsResponse>> {
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.id) {
+            queryParameters['id'] = params.id;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/events`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => EventsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get a list of events by ID
+     */
+    async getBulkEvents(params: GetBulkEventsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EventsResponse> {
+        const response = await this.getBulkEventsRaw(params, initOverrides);
         return await response.value();
     }
 
@@ -115,8 +155,8 @@ export class EventsApi extends runtime.BaseAPI {
 /**
  * @export
  */
-export const GetEventsSortMethodEnum = {
+export const GetAllEventsSortMethodEnum = {
     Newest: 'newest',
     Timestamp: 'timestamp'
 } as const;
-export type GetEventsSortMethodEnum = typeof GetEventsSortMethodEnum[keyof typeof GetEventsSortMethodEnum];
+export type GetAllEventsSortMethodEnum = typeof GetAllEventsSortMethodEnum[keyof typeof GetAllEventsSortMethodEnum];
