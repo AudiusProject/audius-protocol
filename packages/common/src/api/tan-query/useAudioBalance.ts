@@ -1,4 +1,4 @@
-import { AUDIO, wAUDIO } from '@audius/fixed-decimal'
+import { AUDIO, AudioWei, wAUDIO } from '@audius/fixed-decimal'
 import type { AudiusSdk } from '@audius/sdk'
 import { getAccount, getAssociatedTokenAddressSync } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
@@ -11,8 +11,11 @@ import type { Env } from '~/services'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
+import { useConnectedWallets } from './useConnectedWallets'
+import { useCurrentUserId } from './useCurrentUserId'
+import { useUser } from './useUser'
 
-type UseWalletBalanceParams = {
+type UseWalletAudioBalanceParams = {
   /** Ethereum or Solana wallet address */
   address: string
   chain: Chain
@@ -20,20 +23,20 @@ type UseWalletBalanceParams = {
   includeStaked?: boolean
 }
 
-export const getAudioBalanceQueryKey = ({
+export const getWalletAudioBalanceQueryKey = ({
   address,
   includeStaked,
   chain
-}: UseWalletBalanceParams) => [
+}: UseWalletAudioBalanceParams) => [
   QUERY_KEYS.audioBalance,
   chain,
   address,
   includeStaked
 ]
 
-const fetchAudioBalance = async (
+const fetchWalletAudioBalance = async (
   { sdk, env }: { sdk: AudiusSdk; env: Env },
-  { address, includeStaked, chain }: UseWalletBalanceParams
+  { address, includeStaked, chain }: UseWalletAudioBalanceParams
 ) => {
   if (chain === Chain.Eth) {
     const checksumWallet = getAddress(address)
@@ -70,17 +73,17 @@ const fetchAudioBalance = async (
 /**
  * Query function for getting the AUDIO balance of an Ethereum or Solana wallet.
  */
-export const useAudioBalance = (
-  { address, includeStaked, chain }: UseWalletBalanceParams,
+export const useWalletAudioBalance = (
+  { address, includeStaked, chain }: UseWalletAudioBalanceParams,
   options?: QueryOptions
 ) => {
   const { audiusSdk, env } = useAudiusQueryContext()
 
   return useQuery({
-    queryKey: getAudioBalanceQueryKey({ address, includeStaked, chain }),
+    queryKey: getWalletAudioBalanceQueryKey({ address, includeStaked, chain }),
     queryFn: async () => {
       const sdk = await audiusSdk()
-      return await fetchAudioBalance(
+      return await fetchWalletAudioBalance(
         { sdk, env },
         { address, includeStaked, chain }
       )
@@ -97,21 +100,21 @@ type UseAudioBalancesParams = {
 /**
  * Query function for getting the AUDIO balance of several Ethereum or Solana wallets.
  */
-export const useAudioBalances = (
+export const useWalletAudioBalances = (
   params: UseAudioBalancesParams,
-  options?: QueryOptions
+  options?: QueryOptions<AudioWei>
 ) => {
   const { audiusSdk, env } = useAudiusQueryContext()
   return useQueries({
     queries: params.wallets.map(({ address, chain }) => ({
-      queryKey: getAudioBalanceQueryKey({
+      queryKey: getWalletAudioBalanceQueryKey({
         address,
         chain,
         includeStaked: true
       }),
       queryFn: async () => {
         const sdk = await audiusSdk()
-        return await fetchAudioBalance(
+        return await fetchWalletAudioBalance(
           { sdk, env },
           {
             address,
@@ -123,4 +126,53 @@ export const useAudioBalances = (
       ...options
     }))
   })
+}
+
+/**
+ * Hook for getting the AUDIO balance of the current user, including connected wallets.
+ */
+export const useAudioBalance = () => {
+  // Get account balances
+  const { data: currentUserId } = useCurrentUserId()
+  const { data, isFetched: isUserFetched } = useUser(currentUserId)
+  const accountBalances = useWalletAudioBalances(
+    {
+      wallets: [
+        // Include their Hedgehog/auth account wallet
+        ...(data?.erc_wallet
+          ? [{ address: data.erc_wallet, chain: Chain.Eth }]
+          : []),
+        // Include their user bank account
+        ...(data?.spl_wallet
+          ? [{ address: data.spl_wallet, chain: Chain.Sol }]
+          : [])
+      ]
+    },
+    { enabled: isUserFetched }
+  )
+  let accountBalance = BigInt(0)
+  for (const balanceRes of accountBalances) {
+    accountBalance += balanceRes?.data ?? BigInt(0)
+  }
+
+  // Get linked/connected wallets balances
+  const { data: connectedWallets, isFetched: isConnectedWalletsFetched } =
+    useConnectedWallets()
+  const connectedWalletsBalances = useWalletAudioBalances(
+    {
+      wallets: connectedWallets!
+    },
+    { enabled: isConnectedWalletsFetched }
+  )
+  let connectedWalletsBalance = BigInt(0)
+  for (const balanceRes of connectedWalletsBalances) {
+    connectedWalletsBalance += balanceRes?.data ?? BigInt(0)
+  }
+
+  // Together they are the total balance
+  const totalBalance = accountBalance + connectedWalletsBalance
+
+  // Call prime balance data
+
+  return { accountBalance, connectedWalletsBalance, totalBalance }
 }

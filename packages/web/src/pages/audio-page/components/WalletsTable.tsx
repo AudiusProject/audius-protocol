@@ -2,7 +2,7 @@ import { useCallback, useContext, useMemo, type ReactNode } from 'react'
 
 import {
   useConnectedWallets,
-  useAudioBalance,
+  useWalletAudioBalance,
   useWalletCollectibles
 } from '@audius/common/api'
 import { Chain } from '@audius/common/models'
@@ -85,11 +85,12 @@ export const WalletTableRow = ({
     [copyAddressToClipboard, onRemove, address, chain]
   )
 
-  const { data: audioBalance, isPending: isBalancePending } = useAudioBalance({
-    chain,
-    address,
-    includeStaked: true
-  })
+  const { data: audioBalance, isPending: isBalancePending } =
+    useWalletAudioBalance({
+      chain,
+      address,
+      includeStaked: true
+    })
 
   const { data: collectibles, isPending: isCollectiblesPending } =
     useWalletCollectibles({ address, chain })
@@ -168,9 +169,9 @@ const WalletsTable = ({
   const isMobile = useIsMobile()
   const wm = useWithMobileStyle(styles.mobile)
 
-  const { data: associatedWallets } = useConnectedWallets()
+  const { data: connectedWallets } = useConnectedWallets()
 
-  const numConnectedWallets = associatedWallets?.length ?? 0
+  const numConnectedWallets = connectedWallets?.length ?? 0
   return (
     <div
       className={wm(styles.container, {
@@ -191,7 +192,7 @@ const WalletsTable = ({
           {messages.audio}
         </Text>
       </div>
-      {associatedWallets?.map(renderWallet)}
+      {connectedWallets?.map(renderWallet)}
     </div>
   )
 }

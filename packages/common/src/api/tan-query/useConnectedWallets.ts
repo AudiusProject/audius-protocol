@@ -1,5 +1,5 @@
 import { Id } from '@audius/sdk'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
 import { Chain, type ID } from '~/models'
@@ -7,6 +7,13 @@ import { Chain, type ID } from '~/models'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
+import { getUserCollectiblesQueryKey } from './useUserCollectibles'
+
+export type ConnectedWallet = {
+  address: string
+  chain: Chain
+  isPending?: boolean
+}
 
 export const getConnectedWalletsQueryKey = ({
   userId
@@ -26,7 +33,7 @@ export const useConnectedWallets = (options?: QueryOptions) => {
         id: Id.parse(currentUserId)
       })
       return data?.ercWallets
-        ?.map((address) => ({
+        ?.map<ConnectedWallet>((address) => ({
           address,
           chain: Chain.Eth
         }))
@@ -38,5 +45,96 @@ export const useConnectedWallets = (options?: QueryOptions) => {
         )
     },
     ...options
+  })
+}
+
+type AddConnectedWalletParams = {
+  wallet: ConnectedWallet
+  signature: string
+}
+
+export const useAddConnectedWallet = () => {
+  const queryClient = useQueryClient()
+  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const { data: currentUserId } = useCurrentUserId()
+  return useMutation({
+    mutationFn: async ({ wallet, signature }: AddConnectedWalletParams) => {
+      const sdk = await audiusSdk()
+      await sdk.users.addAssociatedWallet({
+        userId: Id.parse(currentUserId),
+        wallet,
+        signature
+      })
+    },
+    onMutate: async (params) => {
+      // Cache old state
+      const previousAssociatedWallets = queryClient.getQueryData<
+        ConnectedWallet[]
+      >(getConnectedWalletsQueryKey({ userId: currentUserId }))
+
+      if (!previousAssociatedWallets) {
+        return { previousAssociatedWallets: [] }
+      }
+
+      // Optimistically add the new wallet
+      queryClient.setQueryData(
+        getConnectedWalletsQueryKey({ userId: currentUserId }),
+        (old: ConnectedWallet[]) => [
+          ...old,
+          { ...params.wallet, isPending: true }
+        ]
+      )
+
+      return { previousAssociatedWallets }
+    },
+    onSettled: async () => {
+      return await queryClient.invalidateQueries({
+        queryKey: getConnectedWalletsQueryKey({ userId: currentUserId })
+      })
+    },
+    onError: (error, _newWallet, context) => {
+      queryClient.setQueryData(
+        getConnectedWalletsQueryKey({ userId: currentUserId }),
+        context?.previousAssociatedWallets
+      )
+      reportToSentry({
+        error,
+        name: 'Add Connected Wallet'
+      })
+    }
+  })
+}
+
+export type RemoveConnectedWalletParams = {
+  wallet: { address: string; chain: Chain }
+}
+
+export const useRemoveConnectedWallet = () => {
+  const queryClient = useQueryClient()
+  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const { data: currentUserId } = useCurrentUserId()
+  return useMutation({
+    mutationFn: async ({ wallet }: RemoveConnectedWalletParams) => {
+      const sdk = await audiusSdk()
+      const response = await sdk.users.removeAssociatedWallet({
+        userId: Id.parse(currentUserId),
+        wallet
+      })
+      return response
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: getConnectedWalletsQueryKey({ userId: currentUserId })
+      })
+      queryClient.invalidateQueries({
+        queryKey: getUserCollectiblesQueryKey({ userId: currentUserId })
+      })
+    },
+    onError: (error) => {
+      reportToSentry({
+        error,
+        name: 'Remove Connected Wallet'
+      })
+    }
   })
 }

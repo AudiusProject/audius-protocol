@@ -168,7 +168,7 @@ export const ConnectedWalletsModal = () => {
     analytics: { track, make }
   } = useAppContext()
   const dispatch = useDispatch()
-  const { isOpen, onClose } = useConnectedWalletsModal()
+  const { isOpen, onClose, onClosed } = useConnectedWalletsModal()
   const { connectWallet, isWalletConnecting } = useConnectWallet()
   const { signMessageAgnostic } = useSignMessageAgnostic()
 
@@ -316,6 +316,7 @@ export const ConnectedWalletsModal = () => {
       size='small'
       isOpen={isOpen}
       onClose={onClose}
+      onClosed={onClosed}
       dismissOnClickOutside={!isWalletConnecting}
     >
       <ModalHeader>

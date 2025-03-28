@@ -1,4 +1,4 @@
-import { useAudioBalances, useConnectedWallets } from '@audius/common/api'
+import { useWalletAudioBalances, useConnectedWallets } from '@audius/common/api'
 import { BNWei } from '@audius/common/models'
 import { walletSelectors } from '@audius/common/store'
 import { IconInfo } from '@audius/harmony'
@@ -35,7 +35,7 @@ const AudioBreakdownBody = () => {
 
   const { data: connectedWallets, isPending: isConnectedWalletsPending } =
     useConnectedWallets()
-  const balances = useAudioBalances(
+  const balances = useWalletAudioBalances(
     {
       wallets: connectedWallets ?? [],
       includeStaked: true
