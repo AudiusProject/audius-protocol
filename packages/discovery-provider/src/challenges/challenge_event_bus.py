@@ -14,6 +14,7 @@ from src.challenges.audio_matching_challenge import (
 from src.challenges.challenge import ChallengeManager, EventMetadata
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.connect_verified_challenge import connect_verified_challenge_manager
+from src.challenges.cosign_challenge import cosign_challenge_manager
 from src.challenges.first_playlist_challenge import first_playlist_challenge_manager
 from src.challenges.first_weekly_comment_challenge import (
     first_weekly_comment_challenge_manager,
@@ -308,6 +309,6 @@ def setup_challenge_bus():
         ChallengeEvent.first_weekly_comment, first_weekly_comment_challenge_manager
     )
     bus.register_listener(ChallengeEvent.tastemaker, tastemaker_challenge_manager)
-    bus.register_listener(ChallengeEvent.cosign, tastemaker_challenge_manager)
+    bus.register_listener(ChallengeEvent.cosign, cosign_challenge_manager)
 
     return bus

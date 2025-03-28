@@ -41,4 +41,4 @@ class CosignChallengeUpdater(ChallengeUpdater):
         return existing_challenge is None
 
 
-cosign_challenge_manager = ChallengeManager("c", CosignChallengeUpdater())
+cosign_challenge_manager = ChallengeManager("cs", CosignChallengeUpdater())
