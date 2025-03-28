@@ -114,7 +114,8 @@ const useSearchQueryProps = <T>(
     queryFn: async ({
       pageParam
     }: {
-      pageParam: number
+      // Typing as number here breaks mobile ts specifically for some reason
+      pageParam: any
     }): Promise<{
       tracks: UserTrackMetadata[]
       users: UserMetadata[]
