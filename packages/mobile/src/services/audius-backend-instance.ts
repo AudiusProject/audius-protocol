@@ -8,7 +8,6 @@ import { reportToSentry } from 'app/utils/reportToSentry'
 import { monitoringCallbacks } from './monitoringCallbacks'
 import { getFeatureEnabled } from './remote-config'
 import { remoteConfigInstance } from './remote-config/remote-config-instance'
-import { discoveryNodeSelectorService } from './sdk/discoveryNodeSelector'
 
 /**
  * audiusBackend initialized for a mobile environment
@@ -21,7 +20,6 @@ export const audiusBackendInstance = audiusBackend({
   ethProviderUrls: (env.ETH_PROVIDER_URL || '').split(','),
   ethRegistryAddress: env.ETH_REGISTRY_ADDRESS,
   ethTokenAddress: env.ETH_TOKEN_ADDRESS,
-  discoveryNodeSelectorService,
   getFeatureEnabled,
   getHostUrl: () => {
     return `${env.PUBLIC_PROTOCOL}//${env.PUBLIC_HOSTNAME}`

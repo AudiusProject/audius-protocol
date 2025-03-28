@@ -13,7 +13,6 @@ import {
 
 import { developmentConfig } from '../../config/development'
 import { createAppWalletClient } from '../AudiusWalletClient'
-import { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'
 
 import { EntityManagerClient } from './EntityManagerClient'
 import { getDefaultEntityManagerConfig } from './getDefaultConfig'
@@ -25,19 +24,12 @@ const discoveryNode = 'https://discovery-provider.audius.co'
 
 vitest.mock('../DiscoveryNodeSelector')
 
-vitest
-  .spyOn(DiscoveryNodeSelector.prototype, 'getSelectedEndpoint')
-  .mockImplementation(async () => discoveryNode)
-
 const audiusWalletClient = createAppWalletClient({ apiKey: userWallet }).extend(
   () => ({
     signTypedData: async () =>
       '0xcfe7a6974bd1691c0a298e119318337c54bf58175f8a9a6aeeaf3b0346c6105265c83de64ab81da28266c4b5b4ff68d81d9e266f9163d7ebd5b2a52d46e275941c' as Hex
   })
 )
-const discoveryNodeSelector = new DiscoveryNodeSelector({
-  initialSelectedNode: discoveryNode
-})
 
 const mswHandlers = [
   rest.post(`${discoveryNode}/relay`, (_req, res, ctx) => {
@@ -78,7 +70,7 @@ const server = setupServer(...mswHandlers)
 const entityManager = new EntityManagerClient({
   ...getDefaultEntityManagerConfig(developmentConfig),
   audiusWalletClient,
-  discoveryNodeSelector
+  endpoint: discoveryNode
 })
 
 describe('EntityManager', () => {
