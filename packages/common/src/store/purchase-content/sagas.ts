@@ -17,6 +17,7 @@ import nacl, { BoxKeyPair } from 'tweetnacl'
 import { call, put, race, select, take, takeEvery } from 'typed-redux-saga'
 
 import { userTrackMetadataFromSDK } from '~/adapters'
+import { queryCollection, queryTrack, queryUser } from '~/api'
 import { isPurchaseableAlbum, PurchaseableContentMetadata } from '~/hooks'
 import { Collection, Kind } from '~/models'
 import { FavoriteSource, Name } from '~/models/Analytics'
@@ -44,9 +45,6 @@ import {
   getOrCreateUSDCUserBank,
   pollForTokenAccountInfo
 } from '~/store/buy-usdc/utils'
-import { getCollection } from '~/store/cache/collections/selectors'
-import { getTrack } from '~/store/cache/tracks/selectors'
-import { getUser } from '~/store/cache/users/selectors'
 import { getContext } from '~/store/effects'
 import { getPreviewing, getTrackId } from '~/store/player/selectors'
 import { stop } from '~/store/player/slice'
@@ -114,8 +112,8 @@ const deserializeKeyPair = (value: string): BoxKeyPair => {
 function* getContentInfo({ contentId, contentType }: GetPurchaseConfigArgs) {
   const metadata =
     contentType === PurchaseableContentType.ALBUM
-      ? yield* select(getCollection, { id: contentId })
-      : yield* select(getTrack, { id: contentId })
+      ? yield* queryCollection(contentId)
+      : yield* queryTrack(contentId)
   const purchaseConditions =
     metadata?.stream_conditions ??
     (metadata && 'download_conditions' in metadata
@@ -132,7 +130,7 @@ function* getContentInfo({ contentId, contentType }: GetPurchaseConfigArgs) {
   }
   const isAlbum = 'playlist_id' in metadata
   const artistId = isAlbum ? metadata.playlist_owner_id : metadata.owner_id
-  const artistInfo = yield* select(getUser, { id: artistId })
+  const artistInfo = yield* queryUser(artistId)
   if (!artistInfo) {
     throw new Error('Failed to retrieve content owner')
   }

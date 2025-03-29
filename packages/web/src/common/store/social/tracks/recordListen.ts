@@ -1,7 +1,7 @@
+import { queryTrack } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import {
   accountSelectors,
-  cacheTracksSelectors,
   audioRewardsPageActions,
   tracksSocialActions,
   getContext,
@@ -14,7 +14,6 @@ import { waitForWrite } from 'utils/sagaHelpers'
 
 const { updateOptimisticListenStreak, updateOptimisticPlayCount } =
   audioRewardsPageActions
-const { getTrack } = cacheTracksSelectors
 const { getUserId } = accountSelectors
 
 function* recordListen(action: { trackId: number }) {
@@ -24,7 +23,7 @@ function* recordListen(action: { trackId: number }) {
   yield* call(waitForWrite)
   const sdk = yield* getSDK()
   const userId = yield* select(getUserId)
-  const track = yield* select(getTrack, { id: trackId })
+  const track = yield* queryTrack(trackId)
   if (!userId || !track) return
 
   if (userId === track.owner_id && (track.listenCount ?? 0) > 10) {

@@ -2,6 +2,7 @@ import {
   playlistMetadataForCreateWithSDK,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
+import { queryCollection, queryTrack, queryUser } from '@audius/common/api'
 import {
   Name,
   Kind,
@@ -15,11 +16,8 @@ import {
   accountActions,
   accountSelectors,
   cacheCollectionsActions,
-  cacheCollectionsSelectors,
-  cacheTracksSelectors,
   cacheActions,
   reformatCollection,
-  cacheUsersSelectors,
   savedPageActions,
   LibraryCategory,
   confirmerActions,
@@ -37,12 +35,9 @@ import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 const { addLocalCollection } = savedPageActions
-const { getUser } = cacheUsersSelectors
 
 const { requestConfirmation } = confirmerActions
 const { getUserId, getAccountUser } = accountSelectors
-const { getTrack } = cacheTracksSelectors
-const { getCollection } = cacheCollectionsSelectors
 const { collectionPage } = route
 
 export function* createPlaylistSaga() {
@@ -75,13 +70,18 @@ function* createPlaylistWorker(
   ])
   if (!collectionId) return
 
-  const initTrack = yield* select(getTrack, { id: initTrackId })
+  const initTrack = yield* queryTrack(initTrackId)
 
   if (initTrack) {
     collection.cover_art_sizes = initTrack.cover_art_sizes
   }
 
-  yield* call(optimisticallySavePlaylist, collectionId, collection, initTrack)
+  yield* call(
+    optimisticallySavePlaylist,
+    collectionId,
+    collection,
+    initTrack as Track
+  )
   yield* put(
     cacheCollectionsActions.createPlaylistRequested(
       collectionId,
@@ -94,7 +94,7 @@ function* createPlaylistWorker(
     collectionId,
     userId,
     collection,
-    initTrack,
+    initTrack as Track,
     source,
     isAlbum
   )
@@ -113,7 +113,7 @@ function* optimisticallySavePlaylist(
     ...formFields
   }
 
-  const initTrackOwner = yield* select(getUser, { id: initTrack?.owner_id })
+  const initTrackOwner = yield* queryUser(initTrack?.owner_id)
 
   playlist.playlist_owner_id = user_id
   playlist.is_private = true
@@ -233,7 +233,7 @@ function* createAndConfirmPlaylist(
       )
     }
 
-    const optimisticPlaylist = yield* select(getCollection, { id: playlistId })
+    const optimisticPlaylist = yield* queryCollection(playlistId)
 
     const reformattedPlaylist = {
       ...reformatCollection({

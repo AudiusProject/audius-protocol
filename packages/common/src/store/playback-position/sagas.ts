@@ -1,8 +1,8 @@
 import { call, delay, put, select, takeEvery } from 'typed-redux-saga'
 
+import { queryTrack } from '~/api'
 import { AudioPlayer } from '~/services/audio-player'
 import { getUserId } from '~/store/account/selectors'
-import { getTrack } from '~/store/cache/tracks/selectors'
 import { getContext } from '~/store/effects'
 import { getPlaying, getTrackId } from '~/store/player/selectors'
 import { isLongFormContent } from '~/utils/isLongFormContent'
@@ -103,7 +103,7 @@ function* savePlaybackPositionWorker() {
   while (!isNativeMobile) {
     const trackId = yield* select(getTrackId)
     const userId = yield* select(getUserId)
-    const track = yield* select(getTrack, { id: trackId })
+    const track = yield* queryTrack(trackId)
     const playing = yield* select(getPlaying)
 
     if (userId && trackId && isLongFormContent(track) && playing) {

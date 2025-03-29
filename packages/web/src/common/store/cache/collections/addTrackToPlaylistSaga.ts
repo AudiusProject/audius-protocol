@@ -2,6 +2,7 @@ import {
   fileToSdk,
   playlistMetadataForUpdateWithSDK
 } from '@audius/common/adapters'
+import { queryCollection, queryTrack } from '@audius/common/api'
 import {
   Name,
   Kind,
@@ -12,7 +13,6 @@ import {
 import {
   cacheCollectionsActions,
   cacheCollectionsSelectors,
-  cacheTracksSelectors,
   cacheActions,
   PlaylistOperations,
   reformatCollection,
@@ -38,8 +38,7 @@ import { waitForWrite } from 'utils/sagaHelpers'
 import { optimisticUpdateCollection } from './utils/optimisticUpdateCollection'
 import { retrieveCollection } from './utils/retrieveCollections'
 
-const { getCollection, getCollectionTracks } = cacheCollectionsSelectors
-const { getTrack } = cacheTracksSelectors
+const { getCollectionTracks } = cacheCollectionsSelectors
 const { setOptimisticChallengeCompleted } = audioRewardsPageActions
 
 const { toast } = toastActions
@@ -75,9 +74,9 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   const isNative = yield* getContext('isNativeMobile')
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
 
-  let playlist = yield* select(getCollection, { id: playlistId })
+  const playlist = yield* queryCollection(playlistId)
   const playlistTracks = yield* select(getCollectionTracks, { id: playlistId })
-  const track = yield* select(getTrack, { id: trackId })
+  const track = yield* queryTrack(trackId)
 
   if (!playlist || !playlistTracks || !track) return
 
@@ -113,7 +112,7 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
     yield* call(optimisticUpdateCollection, playlist)
   }
 
-  playlist = yield* call(
+  const updatedPlaylist = yield* call(
     updatePlaylistArtwork,
     playlist,
     playlistTracks,
@@ -124,7 +123,7 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   )
 
   // Optimistic update #2 to show updated artwork
-  yield* call(optimisticUpdateCollection, playlist)
+  yield* call(optimisticUpdateCollection, updatedPlaylist)
 
   yield* call(
     confirmAddTrackToPlaylist,
@@ -132,7 +131,7 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
     action.playlistId,
     action.trackId,
     count,
-    playlist
+    updatedPlaylist
   )
 
   yield* put(
@@ -196,7 +195,7 @@ function* confirmAddTrackToPlaylist(
           playlistId: confirmedPlaylistId
         })
 
-        const playlist = yield* select(getCollection, { id: playlistId })
+        const playlist = yield* queryCollection(playlistId)
         if (!playlist) return
 
         const formattedCollection = reformatCollection({

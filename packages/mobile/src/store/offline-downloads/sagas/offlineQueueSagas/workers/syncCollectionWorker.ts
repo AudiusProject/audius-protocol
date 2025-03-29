@@ -3,12 +3,9 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
+import { queryCollection } from '@audius/common/api'
 import type { ID, DownloadReason } from '@audius/common/models'
-import {
-  accountSelectors,
-  cacheCollectionsSelectors,
-  getSDK
-} from '@audius/common/store'
+import { accountSelectors, getSDK } from '@audius/common/store'
 import { OptionalId, Id } from '@audius/sdk'
 import { difference } from 'lodash'
 import moment from 'moment'
@@ -40,7 +37,6 @@ import { shouldAbortJob } from '../../utils/shouldAbortJob'
 import { shouldCancelJob } from '../../utils/shouldCancelJob'
 
 const { getUserId } = accountSelectors
-const { getCollection } = cacheCollectionsSelectors
 
 const isTrackFavoriteReason = (downloadReason: DownloadReason) =>
   downloadReason.is_from_favorites &&
@@ -154,7 +150,7 @@ function* syncFavoritesCollection() {
 
 function* syncCollection(collectionId: ID) {
   const currentUserId = yield* select(getUserId)
-  const currentCollection = yield* select(getCollection, { id: collectionId })
+  const currentCollection = yield* queryCollection(collectionId)
   if (!currentCollection || !currentUserId) return CollectionSyncStatus.ERROR
 
   const sdk = yield* getSDK()

@@ -1,3 +1,4 @@
+import { queryAllTracks, queryAllUsers } from '@audius/common/api'
 import {
   Name,
   Kind,
@@ -14,7 +15,6 @@ import {
   accountSelectors,
   cacheTracksSelectors,
   cacheActions,
-  cacheUsersSelectors,
   lineupActions as baseLineupActions,
   premiumTracksPageLineupActions,
   queueActions,
@@ -43,11 +43,9 @@ import {
 import { getToQueue } from 'common/store/queue/sagas'
 import { isPreview } from 'common/utils/isPreview'
 import { AppState } from 'store/types'
-
 const { getSource, getUid, getPositions, getPlayerBehavior } = queueSelectors
 const { getUid: getCurrentPlayerTrackUid, getPlaying } = playerSelectors
-const { getUsers } = cacheUsersSelectors
-const { getTrack, getTracks } = cacheTracksSelectors
+const { getTrack } = cacheTracksSelectors
 const { getUserId } = accountSelectors
 
 const getEntryId = <T>(entry: LineupEntry<T>) => `${entry.kind}:${entry.id}`
@@ -60,8 +58,8 @@ function* filterDeletes<T extends Track | Collection>(
   removeDeleted: boolean,
   lineupPrefix: string
 ) {
-  const tracks = yield* select(getTracks, {})
-  const users = yield* select(getUsers)
+  const tracks = yield* queryAllTracks()
+  const users = yield* queryAllUsers()
   const remoteConfig = yield* getContext('remoteConfigInstance')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   yield* call(remoteConfig.waitForRemoteConfig)
