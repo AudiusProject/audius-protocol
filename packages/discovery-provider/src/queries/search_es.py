@@ -571,6 +571,20 @@ def track_dsl(
         "must": [
             {"term": {"is_unlisted": {"value": False}}},
             {"term": {"is_delete": False}},
+        ],
+        "must_not": [
+            {"exists": {"field": "stem_of"}},
+            {"term": {"user.is_deactivated": {"value": True}}},
+        ],
+        "should": [
+            {"term": {"user.is_verified": {"value": True}}},
+        ],
+        "filter": [],
+    }
+
+    # search_str might be empty for searches by other qualities (tag, moood, etc)
+    if search_str:
+        dsl["must"].append(
             {
                 "bool": {
                     "should": [
@@ -623,18 +637,11 @@ def track_dsl(
                     ],
                     "minimum_should_match": 1,
                 }
-            },
-        ],
-        "must_not": [
-            {"exists": {"field": "stem_of"}},
-            {"term": {"user.is_deactivated": {"value": True}}},
-        ],
-        "should": [
+            }
+        )
+        dsl["should"].append(
             *base_match(search_str, operator="and", boost=len(search_str)),
-            {"term": {"user.is_verified": {"value": True}}},
-        ],
-        "filter": [],
-    }
+        )
 
     if tag_search:
         dsl["must"].append(
@@ -798,6 +805,16 @@ def user_dsl(
     dsl = {
         "must": [
             {"term": {"is_deactivated": {"value": False}}},
+        ],
+        "must_not": [],
+        "should": [
+            {"term": {"is_verified": {"value": True, "boost": 5}}},
+        ],
+    }
+
+    # search_str might be empty for searches by other qualities (tag, moood, etc)
+    if search_str:
+        dsl["must"].append(
             {
                 "bool": {
                     "should": [
@@ -869,10 +886,9 @@ def user_dsl(
                     ],
                     "minimum_should_match": 1,
                 }
-            },
-        ],
-        "must_not": [],
-        "should": [
+            }
+        )
+        dsl["should"].append(
             *base_match(
                 search_str,
                 operator="and",
@@ -887,9 +903,7 @@ def user_dsl(
                     }
                 }
             },
-            {"term": {"is_verified": {"value": True, "boost": 5}}},
-        ],
-    }
+        )
 
     if tag_search:
         dsl["must"].append(
@@ -1013,6 +1027,37 @@ def base_playlist_dsl(
 ):
     dsl = {
         "must": [
+            {"term": {"is_private": {"value": False}}},
+            {"term": {"is_delete": False}},
+            {"term": {"is_album": {"value": is_album}}},
+        ],
+        "must_not": [
+            {"term": {"user.is_deactivated": {"value": True}}},
+        ],
+        "should": [
+            {"term": {"user.is_verified": {"value": True, "boost": 3}}},
+        ],
+    }
+
+    query = {
+        "query": {
+            "function_score": {
+                "functions": [
+                    {
+                        "field_value_factor": {
+                            "field": "repost_count",
+                            "factor": 1000,
+                            "modifier": "ln2p",
+                        },
+                    }
+                ],
+                "boost_mode": "multiply",
+            }
+        }
+    }
+
+    if search_str:
+        dsl["must"].append(
             {
                 "bool": {
                     "should": [
@@ -1055,36 +1100,11 @@ def base_playlist_dsl(
                     ],
                     "minimum_should_match": 1,
                 }
-            },
-            {"term": {"is_private": {"value": False}}},
-            {"term": {"is_delete": False}},
-            {"term": {"is_album": {"value": is_album}}},
-        ],
-        "must_not": [
-            {"term": {"user.is_deactivated": {"value": True}}},
-        ],
-        "should": [
-            *base_match(search_str, operator="and", boost=len(search_str) * 10),
-            {"term": {"user.is_verified": {"value": True, "boost": 3}}},
-        ],
-    }
-
-    query = {
-        "query": {
-            "function_score": {
-                "functions": [
-                    {
-                        "field_value_factor": {
-                            "field": "repost_count",
-                            "factor": 1000,
-                            "modifier": "ln2p",
-                        },
-                    }
-                ],
-                "boost_mode": "multiply",
             }
-        }
-    }
+        )
+        dsl["should"].append(
+            *base_match(search_str, operator="and", boost=len(search_str) * 10)
+        )
 
     if tag_search:
         dsl["must"].append(
