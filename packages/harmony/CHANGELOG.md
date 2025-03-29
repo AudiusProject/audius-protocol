@@ -1,5 +1,17 @@
 # @audius/harmony
 
+## 0.4.0
+
+### Minor Changes
+
+- d11f31c: Add X icon
+
+### Patch Changes
+
+- 4cbd971: Add isActive and activeColor to IconButton
+- 23ea12e: Add isSingleLine prop to TextLink component
+- ecba6fe: Revert TextLink display change
+
 ## 0.3.5
 
 ### Patch Changes
