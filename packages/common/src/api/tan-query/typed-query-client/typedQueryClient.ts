@@ -1,6 +1,12 @@
-import { QueryClient, QueryKey, QueryFilters } from '@tanstack/react-query'
+import { useContext } from 'react'
 
-import { useTypedQueryClient } from './TypedQueryClientProvider'
+import {
+  QueryClient,
+  QueryKey,
+  QueryFilters,
+  QueryClientContext
+} from '@tanstack/react-query'
+
 import { TypedQueryKey, QueryKeyData } from './typedQueryKeys'
 
 // This merges the QueryClient type (minus our overridden methods) with our TypedQueryClient
@@ -12,17 +18,29 @@ export type TypedQueryClient = TypedQueryClientImpl &
  * methods for getting and setting query data based on query keys
  */
 export class TypedQueryClientImpl {
-  private queryClient: QueryClient
+  private readonly _queryClient: QueryClient
 
   constructor(queryClient: QueryClient) {
-    this.queryClient = queryClient
+    this._queryClient = queryClient
+
+    // Store a reference to this instance
+    const instance = this
 
     // Create a proxy to forward all methods from queryClient except our overrides
     return new Proxy(this, {
       get: (target, prop, receiver) => {
         // If we have the property explicitly defined on our class, use our implementation
-        if (prop in target && prop !== 'queryClient') {
-          return Reflect.get(target, prop, receiver)
+        if (prop in target && prop !== '_queryClient') {
+          const value = Reflect.get(target, prop, receiver)
+
+          // If it's a method, we need to ensure it accesses the correct queryClient
+          if (typeof value === 'function') {
+            return function (...args: any[]) {
+              // Force the context to be the original instance with _queryClient
+              return value.apply(instance, args)
+            }
+          }
+          return value
         }
 
         // Otherwise forward to the original queryClient
@@ -44,7 +62,7 @@ export class TypedQueryClientImpl {
   getQueryData<TData, K extends TypedQueryKey = TypedQueryKey>(
     queryKey: K
   ): QueryKeyData<TData, K> | undefined {
-    return this.queryClient.getQueryData(queryKey) as QueryKeyData<TData, K>
+    return this._queryClient.getQueryData(queryKey) as QueryKeyData<TData, K>
   }
 
   /**
@@ -58,7 +76,7 @@ export class TypedQueryClientImpl {
           oldData: QueryKeyData<TData, K> | undefined
         ) => QueryKeyData<TData, K>)
   ): QueryKeyData<TData, K> {
-    return this.queryClient.setQueryData(queryKey, updater) as QueryKeyData<
+    return this._queryClient.setQueryData(queryKey, updater) as QueryKeyData<
       TData,
       K
     >
@@ -70,7 +88,7 @@ export class TypedQueryClientImpl {
   getQueriesData<TData, K extends TypedQueryKey = TypedQueryKey>(
     filters: QueryFilters
   ): [QueryKey, QueryKeyData<TData, K>][] {
-    return this.queryClient.getQueriesData(filters) as [
+    return this._queryClient.getQueriesData(filters) as [
       QueryKey,
       QueryKeyData<TData, K>
     ][]
@@ -80,8 +98,16 @@ export class TypedQueryClientImpl {
    * Access to the original QueryClient for other methods
    */
   get original(): QueryClient {
-    return this.queryClient
+    return this._queryClient
   }
+}
+
+/**
+ * Hook to get the typed query client from the context
+ */
+export const useTypedQueryClient = () => {
+  const queryClient = useContext(QueryClientContext)
+  return queryClient as unknown as TypedQueryClient
 }
 
 /**
@@ -101,5 +127,5 @@ export function useTypedQueryData<
 export function createTypedQueryClient(
   queryClient: QueryClient
 ): TypedQueryClient {
-  return new TypedQueryClientImpl(queryClient) as unknown as TypedQueryClient
+  return new TypedQueryClientImpl(queryClient) as TypedQueryClient
 }

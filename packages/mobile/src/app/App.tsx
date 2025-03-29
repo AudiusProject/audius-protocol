@@ -1,6 +1,8 @@
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { PortalProvider, PortalHost } from '@gorhom/portal'
 import * as Sentry from '@sentry/react-native'
+import type { QueryClient } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { Platform, UIManager } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import {
@@ -28,8 +30,6 @@ import {
   forceRefreshConnectivity,
   subscribeToNetworkStatusUpdates
 } from 'app/utils/reachability'
-
-import { TypedQueryClientProvider } from '../../../common/src/api'
 
 import { AppContextProvider } from './AppContextProvider'
 import { AudiusQueryProvider } from './AudiusQueryProvider'
@@ -70,7 +70,7 @@ const App = () => {
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
         <Provider store={store}>
           <AudiusQueryProvider>
-            <TypedQueryClientProvider client={queryClient}>
+            <QueryClientProvider client={queryClient as unknown as QueryClient}>
               <PersistGate loading={null} persistor={persistor}>
                 <ThemeProvider>
                   <WalletConnectProvider>
@@ -100,7 +100,7 @@ const App = () => {
                   </WalletConnectProvider>
                 </ThemeProvider>
               </PersistGate>
-            </TypedQueryClientProvider>
+            </QueryClientProvider>
           </AudiusQueryProvider>
         </Provider>
       </SafeAreaProvider>

@@ -1,6 +1,6 @@
 import { ReactNode, useState } from 'react'
 
-import { TypedQueryClientProvider } from '@audius/common/api'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Provider as ReduxProvider } from 'react-redux'
 import { Router } from 'react-router-dom'
@@ -57,7 +57,7 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
 
   return (
     <WagmiProvider config={wagmiConfig}>
-      <TypedQueryClientProvider client={queryClient}>
+      <QueryClientProvider client={queryClient as unknown as QueryClient}>
         <ReduxProvider store={store}>
           <Router history={storeHistory}>
             <CompatRouter>
@@ -86,7 +86,7 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
           </Router>
         </ReduxProvider>
         <ReactQueryDevtools />
-      </TypedQueryClientProvider>
+      </QueryClientProvider>
     </WagmiProvider>
   )
 }
