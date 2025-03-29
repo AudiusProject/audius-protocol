@@ -639,7 +639,7 @@ def track_dsl(
                 }
             }
         )
-        dsl["should"].append(
+        dsl["should"].extend(
             *base_match(search_str, operator="and", boost=len(search_str)),
         )
 
@@ -888,21 +888,23 @@ def user_dsl(
                 }
             }
         )
-        dsl["should"].append(
-            *base_match(
-                search_str,
-                operator="and",
-                extra_fields=["name"],
-                boost=len(search_str) * 24,
-            ),
-            {
-                "term": {
-                    "name": {
-                        "value": search_str,
-                        "boost": (len(search_str) * 0.2) ** 2,
+        dsl["should"].extend(
+            [
+                *base_match(
+                    search_str,
+                    operator="and",
+                    extra_fields=["name"],
+                    boost=len(search_str) * 24,
+                ),
+                {
+                    "term": {
+                        "name": {
+                            "value": search_str,
+                            "boost": (len(search_str) * 0.2) ** 2,
+                        }
                     }
-                }
-            },
+                },
+            ]
         )
 
     if tag_search:
@@ -1102,7 +1104,7 @@ def base_playlist_dsl(
                 }
             }
         )
-        dsl["should"].append(
+        dsl["should"].extend(
             *base_match(search_str, operator="and", boost=len(search_str) * 10)
         )
 
