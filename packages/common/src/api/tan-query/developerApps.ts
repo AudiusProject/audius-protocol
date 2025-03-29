@@ -8,7 +8,7 @@ import { ID } from '~/models/Identifiers'
 import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
-import { useTypedQueryClient } from './typedQueryClient'
+import { useTypedQueryClient } from './typed-query-client'
 import { SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 

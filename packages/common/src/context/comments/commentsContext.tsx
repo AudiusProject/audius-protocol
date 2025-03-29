@@ -10,7 +10,6 @@ import {
   EntityType,
   GetTrackCommentsSortMethodEnum as CommentSortMethod
 } from '@audius/sdk'
-import { useTypedQueryClient } from '@audius/api'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
@@ -18,7 +17,8 @@ import {
   useTrackComments,
   QUERY_KEYS,
   useTrackCommentCount,
-  resetPreviousCommentCount
+  resetPreviousCommentCount,
+  useTypedQueryClient
 } from '~/api'
 import { useGatedContentAccess } from '~/hooks'
 import {

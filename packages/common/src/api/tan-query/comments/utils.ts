@@ -1,10 +1,10 @@
-import { QueryClient } from '@tanstack/react-query'
 import { Dispatch } from 'redux'
 
 import { ID } from '~/models'
 import { incrementTrackCommentCount } from '~/store/cache/tracks/actions'
 
 import { QUERY_KEYS } from '../queryKeys'
+import { TypedQueryClient } from '../typed-query-client'
 
 import { TrackCommentCount } from './types'
 
@@ -36,7 +36,7 @@ export const getTrackCommentNotificationSettingQueryKey = (trackId: ID) =>
   [QUERY_KEYS.trackCommentNotificationSetting, trackId] as const
 
 export const setPreviousCommentCount = (
-  queryClient: QueryClient,
+  queryClient: TypedQueryClient,
   trackId: ID,
   // If not provided, we will use the current value to set the previous value (aka reset)
   updaterFn?: (prevData: TrackCommentCount | undefined) => TrackCommentCount
@@ -55,13 +55,13 @@ export const setPreviousCommentCount = (
 
 // Quick wrapper around setPreviousCommentCount to pass undefined as  (which will prompt it to just use the current value)
 export const resetPreviousCommentCount = (
-  queryClient: QueryClient,
+  queryClient: TypedQueryClient,
   trackId: ID
 ) => setPreviousCommentCount(queryClient, trackId)
 
 export const addCommentCount = (
   dispatch: Dispatch,
-  queryClient: QueryClient,
+  queryClient: TypedQueryClient,
   trackId: ID
 ) => {
   // Increment the track comment count
@@ -74,7 +74,7 @@ export const addCommentCount = (
 
 export const subtractCommentCount = (
   dispatch: Dispatch,
-  queryClient: QueryClient,
+  queryClient: TypedQueryClient,
   trackId: ID
 ) => {
   // Increment the track comment count

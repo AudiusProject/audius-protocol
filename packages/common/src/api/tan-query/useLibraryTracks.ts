@@ -3,7 +3,7 @@ import {
   GetUserLibraryTracksSortMethodEnum,
   GetUserLibraryTracksSortDirectionEnum
 } from '@audius/sdk/src/sdk/api/generated/full/apis/UsersApi'
-import { useInfiniteQuery, useTypedQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
@@ -19,6 +19,7 @@ import { removeNullable } from '~/utils'
 import { userTrackMetadataFromSDK } from '../../adapters/track'
 
 import { QUERY_KEYS } from './queryKeys'
+import { useTypedQueryClient } from './typed-query-client'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { loadNextPage } from './utils/infiniteQueryLoadNextPage'

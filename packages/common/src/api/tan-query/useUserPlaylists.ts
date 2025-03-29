@@ -1,5 +1,5 @@
 import { Id, OptionalId, full } from '@audius/sdk'
-import { useInfiniteQuery, useTypedQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
@@ -8,6 +8,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
+import { useTypedQueryClient } from './typed-query-client'
 import { QueryOptions } from './types'
 import { useCollections } from './useCollections'
 import { useCurrentUserId } from './useCurrentUserId'

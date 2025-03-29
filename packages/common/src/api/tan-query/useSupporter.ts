@@ -10,7 +10,7 @@ import {
 } from '~/models/Tipping'
 
 import { QUERY_KEYS } from './queryKeys'
-import { useTypedQueryClient } from './typedQueryClient'
+import { useTypedQueryClient } from './typed-query-client'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils/primeUserData'

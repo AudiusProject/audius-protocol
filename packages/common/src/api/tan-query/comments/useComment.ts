@@ -1,11 +1,13 @@
 import { useEffect } from 'react'
 
-import { useQuery, useTypedQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
+
+import { useTypedQueryClient } from '../typed-query-client'
 
 import { CommentOrReply, messages } from './types'
 import { getCommentQueryKey } from './utils'

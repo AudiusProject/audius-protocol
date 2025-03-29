@@ -8,7 +8,7 @@ import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
 import { TQCollection } from '../models'
-import { TypedQueryClient } from '../typedQueryClient'
+import { TypedQueryClient } from '../typed-query-client'
 import { getCollectionQueryKey } from '../useCollection'
 
 import { primeTrackDataInternal } from './primeTrackData'

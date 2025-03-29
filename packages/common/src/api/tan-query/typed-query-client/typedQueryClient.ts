@@ -1,10 +1,6 @@
-import {
-  QueryClient,
-  QueryKey,
-  QueryFilters,
-  useTypedQueryClient as useTanQueryClient
-} from '@tanstack/react-query'
+import { QueryClient, QueryKey, QueryFilters } from '@tanstack/react-query'
 
+import { useTypedQueryClient } from './TypedQueryClientProvider'
 import { TypedQueryKey, QueryKeyData } from './typedQueryKeys'
 
 // This merges the QueryClient type (minus our overridden methods) with our TypedQueryClient
@@ -45,35 +41,38 @@ export class TypedQueryClientImpl {
   /**
    * Gets query data with proper typing based on the query key
    */
-  getQueryData<K extends TypedQueryKey>(
+  getQueryData<TData, K extends TypedQueryKey = TypedQueryKey>(
     queryKey: K
-  ): QueryKeyData<K> | undefined {
-    return this.queryClient.getQueryData(queryKey) as
-      | QueryKeyData<K>
-      | undefined
+  ): QueryKeyData<TData, K> | undefined {
+    return this.queryClient.getQueryData(queryKey) as QueryKeyData<TData, K>
   }
 
   /**
    * Sets query data with proper typing based on the query key
    */
-  setQueryData<K extends TypedQueryKey>(
+  setQueryData<TData, K extends TypedQueryKey = TypedQueryKey>(
     queryKey: K,
     updater:
-      | QueryKeyData<K>
-      | ((oldData: QueryKeyData<K> | undefined) => QueryKeyData<K>)
-  ): QueryKeyData<K> {
-    return this.queryClient.setQueryData(queryKey, updater) as QueryKeyData<K>
+      | QueryKeyData<TData, K>
+      | ((
+          oldData: QueryKeyData<TData, K> | undefined
+        ) => QueryKeyData<TData, K>)
+  ): QueryKeyData<TData, K> {
+    return this.queryClient.setQueryData(queryKey, updater) as QueryKeyData<
+      TData,
+      K
+    >
   }
 
   /**
    * Gets multiple queries data with proper typing based on query key pattern
    */
-  getQueriesData<K extends TypedQueryKey>(
+  getQueriesData<TData, K extends TypedQueryKey = TypedQueryKey>(
     filters: QueryFilters
-  ): [QueryKey, QueryKeyData<K>][] {
+  ): [QueryKey, QueryKeyData<TData, K>][] {
     return this.queryClient.getQueriesData(filters) as [
       QueryKey,
-      QueryKeyData<K>
+      QueryKeyData<TData, K>
     ][]
   }
 
@@ -86,21 +85,14 @@ export class TypedQueryClientImpl {
 }
 
 /**
- * Hook to get the typed query client
- */
-export function useTypedQueryClient(): TypedQueryClient {
-  const queryClient = useTanQueryClient()
-  return new TypedQueryClientImpl(queryClient) as unknown as TypedQueryClient
-}
-
-/**
  * Hook to directly get typed query data for a specific query key
  */
-export function useTypedQueryData<K extends TypedQueryKey>(
-  queryKey: K
-): QueryKeyData<K> | undefined {
+export function useTypedQueryData<
+  TData = unknown,
+  K extends TypedQueryKey = TypedQueryKey
+>(queryKey: K): QueryKeyData<TData, K> | undefined {
   const typedClient = useTypedQueryClient()
-  return typedClient.getQueryData(queryKey)
+  return typedClient.getQueryData<TData, K>(queryKey)
 }
 
 /**

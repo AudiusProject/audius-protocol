@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
 
-import { useTypedQueryClient } from '@audius/api'
 import { keyBy } from 'lodash'
 
 import { ID } from '~/models/Identifiers'
 
+import { useTypedQueryClient } from '../typed-query-client'
 import { QueryOptions } from '../types'
 import { combineQueryResults } from '../utils/combineQueryResults'
 import { useQueries } from '../utils/useQueries'

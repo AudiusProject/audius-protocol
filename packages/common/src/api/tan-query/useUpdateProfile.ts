@@ -1,5 +1,5 @@
 import { Id } from '@audius/sdk'
-import { useMutation, useTypedQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 
 import { userMetadataToSdk } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
@@ -8,6 +8,7 @@ import { UserMetadata, WriteableUserMetadata } from '~/models/User'
 import { dataURLtoFile } from '~/utils'
 import { squashNewLines } from '~/utils/formatUtil'
 
+import { useTypedQueryClient } from './typed-query-client'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getUserQueryKey } from './useUser'
 

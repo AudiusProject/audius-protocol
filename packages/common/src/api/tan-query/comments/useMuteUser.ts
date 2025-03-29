@@ -1,14 +1,12 @@
-import {
-  InfiniteData,
-  useMutation,
-  useTypedQueryClient
-} from '@tanstack/react-query'
+import { InfiniteData, useMutation } from '@tanstack/react-query'
 import { cloneDeep } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { Comment, Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
+
+import { useTypedQueryClient } from '../typed-query-client'
 
 import { messages } from './types'
 import { getCommentQueryKey, getTrackCommentCountQueryKey } from './utils'

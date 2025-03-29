@@ -1,4 +1,4 @@
-import { useMutation, useTypedQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAppContext } from '~/context/appContext'
@@ -13,6 +13,7 @@ import { playlistLibraryHelpers } from '~/store/playlist-library'
 import { saveCollection } from '~/store/social/collections/actions'
 import { toast } from '~/store/ui/toast/slice'
 
+import { useTypedQueryClient } from './typed-query-client'
 import { getCurrentAccountQueryKey } from './useCurrentAccount'
 import { useCurrentUserId } from './useCurrentUserId'
 import { usePlaylistLibrary } from './usePlaylistLibrary'

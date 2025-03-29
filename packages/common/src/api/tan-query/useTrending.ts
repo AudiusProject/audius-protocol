@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
 import { OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useTypedQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
@@ -23,6 +23,7 @@ import {
 import { Genre } from '~/utils/genres'
 
 import { QUERY_KEYS } from './queryKeys'
+import { useTypedQueryClient } from './typed-query-client'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'

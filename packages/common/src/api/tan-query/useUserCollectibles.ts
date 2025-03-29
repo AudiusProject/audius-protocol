@@ -1,16 +1,12 @@
 import { Id } from '@audius/sdk'
-import {
-  useMutation,
-  useQuery,
-  useTypedQueryClient
-} from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { CollectiblesMetadata, ID } from '~/models'
 
 import { QUERY_KEYS } from './queryKeys'
+import { useTypedQueryClient } from './typed-query-client'
 import { QueryOptions } from './types'
-
 export type GetUserCollectiblesArgs = {
   userId: ID | null
 }

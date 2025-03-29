@@ -5,10 +5,10 @@ import { ID } from '~/models/Identifiers'
 import { TrendingIds } from '~/models/Trending'
 import { User } from '~/models/User'
 
-import { CommentOrReply } from './comments/types'
-import { DeveloperApp } from './developerApps'
-import { TQTrack, TQCollection } from './models'
-import { QUERY_KEYS } from './queryKeys'
+import { CommentOrReply, TrackCommentCount } from '../comments/types'
+import { DeveloperApp } from '../developerApps'
+import { TQTrack, TQCollection } from '../models'
+import { QUERY_KEYS } from '../queryKeys'
 
 // We're creating a registry of typed query keys and their associated data types
 // This will allow us to have type-safe access to query data
@@ -48,34 +48,8 @@ export type TypedQueryKey =
   | [typeof QUERY_KEYS.trackByPermalink, string | null | undefined]
   | [typeof QUERY_KEYS.collectionByPermalink, string | null | undefined]
   | [typeof QUERY_KEYS.trendingIds, { genre?: string }]
-  | [
-      typeof QUERY_KEYS.trending,
-      {
-        timeRange: string
-        genre?: string
-        initialPageSize?: number
-        loadMorePageSize?: number
-      }
-    ]
-  | [typeof QUERY_KEYS.trendingPlaylists, { pageSize?: number; time?: string }]
-  | [
-      typeof QUERY_KEYS.notifications,
-      ID | null | undefined,
-      { pageSize: number }
-    ]
   | [typeof QUERY_KEYS.notificationUnreadCount, ID | null | undefined]
-  | [
-      typeof QUERY_KEYS.search,
-      string,
-      string,
-      { sortMethod?: string; pageSize?: number }
-    ]
-  | [typeof QUERY_KEYS.searchAutocomplete, string, { limit?: number }]
-  | [
-      typeof QUERY_KEYS.mutualFollowers,
-      ID | null | undefined,
-      { pageSize?: number }
-    ]
+  | [typeof QUERY_KEYS.relatedArtists, ID]
   | QueryKey // Fallback for other query keys
 
 /**
@@ -107,13 +81,13 @@ export interface QueryKeyTypeMap {
   [QUERY_KEYS.userByHandle]: ID
   [QUERY_KEYS.trackByPermalink]: ID
   [QUERY_KEYS.collectionByPermalink]: ID
-  [QUERY_KEYS.comment]: CommentOrReply
   [QUERY_KEYS.commentReplies]: CommentOrReply[]
-  [QUERY_KEYS.trackCommentList]: any[] // Track comments
-  [QUERY_KEYS.trackCommentCount]: number
+  [QUERY_KEYS.trackCommentList]: InfiniteData<ID[]> | null // Track comments
+  [QUERY_KEYS.trackCommentCount]: TrackCommentCount
   [QUERY_KEYS.remixes]: TQTrack[]
   [QUERY_KEYS.profileTracks]: TQTrack[]
   [QUERY_KEYS.profileReposts]: (TQTrack | TQCollection)[]
+  [QUERY_KEYS.relatedArtists]: InfiniteData<User[]>
   // Add more mappings here based on your actual data types
 }
 
@@ -121,5 +95,9 @@ export interface QueryKeyTypeMap {
  * Utility type to extract the data type from a query key
  * Given a TypedQueryKey, this returns the corresponding data type
  */
-export type QueryKeyData<K extends TypedQueryKey> =
-  K[0] extends keyof QueryKeyTypeMap ? QueryKeyTypeMap[K[0]] : unknown
+export type QueryKeyData<
+  TData = unknown,
+  K extends TypedQueryKey = TypedQueryKey
+> =
+  | (K[0] extends keyof QueryKeyTypeMap ? QueryKeyTypeMap[K[0]] : TData)
+  | undefined

@@ -1,9 +1,5 @@
 import { Id, full } from '@audius/sdk'
-import {
-  QueryKey,
-  useInfiniteQuery,
-  useTypedQueryClient
-} from '@tanstack/react-query'
+import { QueryKey, useInfiniteQuery } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { trackActivityFromSDK, transformAndCleanList } from '~/adapters'
@@ -16,6 +12,7 @@ import {
 } from '~/store/pages'
 
 import { QUERY_KEYS } from './queryKeys'
+import { useTypedQueryClient } from './typed-query-client'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'

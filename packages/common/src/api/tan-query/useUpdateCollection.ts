@@ -1,5 +1,5 @@
 import { Id } from '@audius/sdk'
-import { useMutation, useTypedQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import BN from 'bn.js'
 import { isEqual } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
@@ -15,8 +15,9 @@ import { renameAccountPlaylist } from '~/store/account/slice'
 import { EditCollectionValues } from '~/store/cache/collections/types'
 import { updatePlaylistArtwork } from '~/utils/updatePlaylistArtwork'
 
-import { getCollectionQueryKey, useCurrentUserId } from '..'
+import { getCollectionQueryKey, useTypedQueryClient } from '..'
 
+import { useCurrentUserId } from './useCurrentUserId'
 import { primeCollectionData } from './utils/primeCollectionData'
 
 type MutationContext = {
@@ -170,7 +171,7 @@ export const useUpdateCollection = () => {
     onError: (_err, { collectionId }, context?: MutationContext) => {
       // If the mutation fails, roll back collection data
       if (context?.previousCollection) {
-        queryClient.setQueryData(
+        queryClient.setQueryData<Collection>(
           getCollectionQueryKey(collectionId),
           context.previousCollection
         )

@@ -1,13 +1,14 @@
 import { AudiusSdk, OptionalId } from '@audius/sdk'
-import { useMutation, useTypedQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 
 import { userMetadataToSdk } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 import { PlaylistLibrary } from '~/models/PlaylistLibrary'
-import { UserMetadata } from '~/models/User'
+import { User, UserMetadata } from '~/models/User'
 
 import { QUERY_KEYS } from './queryKeys'
+import { useTypedQueryClient } from './typed-query-client'
 import { getCurrentUserQueryKey } from './useCurrentUser'
 import { getUserQueryKey } from './useUser'
 
@@ -62,10 +63,14 @@ export const useUpdateUser = () => {
         .find(([_, data]) => data?.user_id === userId)?.[1]
 
       // Optimistically update user
-      queryClient.setQueryData(getUserQueryKey(userId), (old: any) => ({
-        ...old,
-        ...metadata
-      }))
+      queryClient.setQueryData(
+        getUserQueryKey(userId),
+        (old) =>
+          ({
+            ...old,
+            ...metadata
+          }) as User
+      )
 
       // Optimistically update accountUser queries if they match the user
       queryClient.setQueriesData(

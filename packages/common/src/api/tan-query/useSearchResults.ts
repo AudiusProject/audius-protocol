@@ -1,9 +1,5 @@
 import { Mood, OptionalId } from '@audius/sdk'
-import {
-  InfiniteData,
-  useInfiniteQuery,
-  useTypedQueryClient
-} from '@tanstack/react-query'
+import { InfiniteData, useInfiniteQuery } from '@tanstack/react-query'
 import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -23,10 +19,10 @@ import { tracksActions as searchResultsPageTracksLineupActions } from '~/store/p
 import { getSearchTracksLineup } from '~/store/pages/search-results/selectors'
 import { Genre, formatMusicalKey } from '~/utils'
 
-import { useCurrentUserId } from '..'
-
 import { QUERY_KEYS } from './queryKeys'
+import { useTypedQueryClient } from './typed-query-client'
 import { FlatUseInfiniteQueryResult, QueryOptions } from './types'
+import { useCurrentUserId } from './useCurrentUserId'
 import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
 import { primeCollectionData } from './utils/primeCollectionData'
 import { primeTrackData } from './utils/primeTrackData'

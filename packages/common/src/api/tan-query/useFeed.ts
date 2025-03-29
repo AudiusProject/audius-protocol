@@ -15,7 +15,7 @@ import { feedPageSelectors, feedPageLineupActions } from '~/store/pages'
 import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
-import { useTypedQueryClient } from './typedQueryClient'
+import { useTypedQueryClient } from './typed-query-client'
 import { QueryOptions } from './types'
 import { primeCollectionData } from './utils/primeCollectionData'
 import { primeTrackData } from './utils/primeTrackData'

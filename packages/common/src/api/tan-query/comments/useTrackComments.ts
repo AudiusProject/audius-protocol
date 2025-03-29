@@ -9,7 +9,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
-import { useTypedQueryClient } from '../typedQueryClient'
+import { useTypedQueryClient } from '../typed-query-client'
 import { QueryOptions } from '../types'
 import { useCurrentUserId } from '../useCurrentUserId'
 import { primeCommentData } from '../utils/primeCommentData'

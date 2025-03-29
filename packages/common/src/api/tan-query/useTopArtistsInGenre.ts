@@ -7,7 +7,7 @@ import { transformAndCleanList } from '~/adapters/utils'
 import { useAudiusQueryContext } from '~/audius-query'
 
 import { QUERY_KEYS } from './queryKeys'
-import { useTypedQueryClient } from './typedQueryClient'
+import { useTypedQueryClient } from './typed-query-client'
 import { QueryOptions } from './types'
 import { useUsers } from './useUsers'
 import { primeUserData } from './utils/primeUserData'

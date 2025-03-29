@@ -12,7 +12,7 @@ import { UserMetadata } from '~/models/User'
 import { getWalletAddresses } from '~/store/account/selectors'
 import { deleteTrackRequested } from '~/store/cache/tracks/actions'
 
-import { useTypedQueryClient } from './typedQueryClient'
+import { useTypedQueryClient } from './typed-query-client'
 import { getCurrentUserQueryKey } from './useCurrentUser'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getTrackQueryKey } from './useTrack'

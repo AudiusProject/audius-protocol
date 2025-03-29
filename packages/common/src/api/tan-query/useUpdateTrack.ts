@@ -1,5 +1,5 @@
 import { Id, Track } from '@audius/sdk'
-import { useMutation, useTypedQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useDispatch, useStore } from 'react-redux'
 
 import { fileToSdk, trackMetadataForUploadToSdk } from '~/adapters/track'
@@ -12,6 +12,7 @@ import { stemsUploadSelectors } from '~/store/stems-upload'
 import { TrackMetadataForUpload } from '~/store/upload'
 
 import { QUERY_KEYS } from './queryKeys'
+import { useTypedQueryClient } from './typed-query-client'
 import { useDeleteTrack } from './useDeleteTrack'
 import { getTrackQueryKey } from './useTrack'
 import { handleStemUpdates } from './utils/handleStemUpdates'

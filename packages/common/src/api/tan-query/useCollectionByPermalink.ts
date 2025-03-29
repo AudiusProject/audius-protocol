@@ -9,7 +9,7 @@ import { getUserId } from '~/store/account/selectors'
 
 import { TQCollection } from './models'
 import { QUERY_KEYS } from './queryKeys'
-import { useTypedQueryClient } from './typedQueryClient'
+import { useTypedQueryClient } from './typed-query-client'
 import { QueryOptions, SelectableQueryOptions } from './types'
 import { useCollection } from './useCollection'
 import { primeCollectionData } from './utils/primeCollectionData'

@@ -1,8 +1,4 @@
-import {
-  InfiniteData,
-  useMutation,
-  useTypedQueryClient
-} from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { cloneDeep } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -11,6 +7,8 @@ import { Feature, ID } from '~/models'
 import { setPinnedCommentId } from '~/store/cache/tracks/actions'
 import { toast } from '~/store/ui/toast/slice'
 import { Nullable } from '~/utils'
+
+import { useTypedQueryClient } from '../typed-query-client'
 
 import { messages } from './types'
 import { getTrackCommentListQueryKey } from './utils'
@@ -42,7 +40,7 @@ export const usePinComment = () => {
     onMutate: ({ commentId, isPinned, trackId, currentSort }) => {
       if (isPinned) {
         // Loop through the sort list and move the newly pinned comment
-        queryClient.setQueryData<InfiniteData<ID[]>>(
+        queryClient.setQueryData(
           getTrackCommentListQueryKey({ trackId, sortMethod: currentSort }),
           (prevCommentData) => {
             const newCommentData = cloneDeep(prevCommentData) ?? {

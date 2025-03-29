@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 
-import { useTypedQueryClient } from '@audius/api'
 import { keyBy } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -11,6 +10,7 @@ import { CommonState } from '~/store'
 
 import { getCollectionsBatcher } from './batchers/getCollectionsBatcher'
 import { QUERY_KEYS } from './queryKeys'
+import { useTypedQueryClient } from './typed-query-client'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { combineQueryResults } from './utils/combineQueryResults'

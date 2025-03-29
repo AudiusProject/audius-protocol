@@ -1,5 +1,5 @@
 import { OptionalId } from '@audius/sdk'
-import { useQuery, useTypedQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { omit } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -8,6 +8,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { User } from '~/models/User'
 
 import { QUERY_KEYS } from './queryKeys'
+import { useTypedQueryClient } from './typed-query-client'
 import { QueryOptions, SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { useUser } from './useUser'

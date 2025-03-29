@@ -8,7 +8,7 @@ import { User } from '~/models/User'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
-import { TypedQueryClient } from '../typedQueryClient'
+import { TypedQueryClient } from '../typed-query-client'
 import { getTrackQueryKey } from '../useTrack'
 
 import { formatTrackData } from './formatTrackData'

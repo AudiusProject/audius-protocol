@@ -1,12 +1,9 @@
 import { useQueries as useTanQueries } from '@tanstack/react-query'
-import type {
-  QueriesOptions,
-  QueryClient,
-  UseQueryResult
-} from '@tanstack/react-query'
+import type { QueriesOptions, UseQueryResult } from '@tanstack/react-query'
+
+import { TypedQueryClient } from '../typed-query-client'
 
 import { combineQueryResults } from './combineQueryResults'
-
 type UseQueriesConfig<
   T extends Array<any>,
   TCombinedResult = UseQueryResult<T, Error>
@@ -21,7 +18,7 @@ type UseQueriesConfig<
  */
 export function useQueries<T extends Array<any>>(
   { queries, ...options }: UseQueriesConfig<T>,
-  queryClient?: QueryClient
+  queryClient?: TypedQueryClient
 ) {
   return useTanQueries(
     {

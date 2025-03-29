@@ -8,7 +8,7 @@ import { ID } from '~/models'
 import { getUserId } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
-import { useTypedQueryClient } from './typedQueryClient'
+import { useTypedQueryClient } from './typed-query-client'
 import { QueryOptions } from './types'
 import { primeUserData } from './utils/primeUserData'
 

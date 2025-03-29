@@ -1,12 +1,14 @@
 import { EntityManagerAction, EntityType } from '@audius/sdk'
-import { useMutation, useTypedQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
-import { messages } from './types'
+import { useTypedQueryClient } from '../typed-query-client'
+
+import { CommentOrReply, messages } from './types'
 import { getCommentQueryKey } from './utils'
 
 export type UpdateCommentNotificationSettingArgs = {
@@ -31,15 +33,18 @@ export const useUpdateCommentNotificationSetting = () => {
       })
     },
     onMutate: ({ commentId, action }) => {
-      queryClient.setQueryData(getCommentQueryKey(commentId), (prevData) => {
-        if (prevData) {
-          return {
-            ...prevData,
-            isMuted: action === EntityManagerAction.MUTE
+      queryClient.setQueryData(
+        getCommentQueryKey(commentId),
+        (prevData: CommentOrReply | undefined) => {
+          if (prevData) {
+            return {
+              ...prevData,
+              isMuted: action === EntityManagerAction.MUTE
+            }
           }
+          return { isMuted: action === EntityManagerAction.MUTE }
         }
-        return { isMuted: action === EntityManagerAction.MUTE }
-      })
+      )
     },
     onError: (error: Error, args) => {
       const { commentId } = args

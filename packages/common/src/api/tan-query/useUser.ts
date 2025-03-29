@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { useQuery, useTypedQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
@@ -10,6 +10,7 @@ import { getUserId } from '~/store/account/selectors'
 
 import { getUsersBatcher } from './batchers/getUsersBatcher'
 import { QUERY_KEYS } from './queryKeys'
+import { useTypedQueryClient } from './typed-query-client'
 import { SelectableQueryOptions } from './types'
 
 export const getUserQueryKey = (userId: ID | null | undefined) =>

@@ -1,5 +1,5 @@
 import { Id } from '@audius/sdk'
-import { useMutation, useTypedQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
@@ -13,6 +13,7 @@ import { update } from '~/store/cache/actions'
 import { removeFolloweeId } from '~/store/gated-content/slice'
 import { revokeFollowGatedAccess } from '~/store/tipping/slice'
 
+import { useTypedQueryClient } from './typed-query-client'
 import { getCurrentAccountQueryKey } from './useCurrentAccount'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getUserQueryKey } from './useUser'

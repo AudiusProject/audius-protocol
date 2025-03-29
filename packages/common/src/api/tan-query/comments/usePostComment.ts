@@ -1,15 +1,13 @@
 import { CommentMention, EntityType } from '@audius/sdk'
-import {
-  InfiniteData,
-  useMutation,
-  useTypedQueryClient
-} from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { cloneDeep } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { Comment, Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
+
+import { useTypedQueryClient } from '../typed-query-client'
 
 import {
   addCommentCount,
@@ -90,7 +88,7 @@ export const usePostComment = () => {
             }) as Comment
         )
       } else {
-        queryClient.setQueryData<InfiniteData<ID[]>>(
+        queryClient.setQueryData(
           getTrackCommentListQueryKey({ trackId, sortMethod: currentSort }),
           (prevData) => {
             // NOTE: The prevData here should never be undefined so the backup object should never be used

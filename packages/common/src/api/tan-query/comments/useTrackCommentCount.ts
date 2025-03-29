@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
 import { Id } from '@audius/sdk'
-import { useQuery, useTypedQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 import { usePrevious } from 'react-use'
 
@@ -9,6 +9,8 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models'
 import { setTrackCommentCount } from '~/store/cache/tracks/actions'
 import { Nullable } from '~/utils'
+
+import { useTypedQueryClient } from '../typed-query-client'
 
 import { TrackCommentCount } from './types'
 import { getTrackCommentCountQueryKey } from './utils'

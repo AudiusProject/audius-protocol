@@ -9,7 +9,7 @@ import { getUserId } from '~/store/account/selectors'
 
 import { TQTrack } from './models'
 import { QUERY_KEYS } from './queryKeys'
-import { useTypedQueryClient } from './typedQueryClient'
+import { useTypedQueryClient } from './typed-query-client'
 import { QueryOptions, SelectableQueryOptions } from './types'
 import { useTrack } from './useTrack'
 import { primeTrackData } from './utils/primeTrackData'

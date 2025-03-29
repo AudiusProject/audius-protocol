@@ -7,7 +7,7 @@ import {
   userMetadataFromSDK
 } from '~/adapters'
 
-import { TypedQueryClient } from '../typedQueryClient'
+import { TypedQueryClient } from '../typed-query-client'
 
 import { primeTrackData } from './primeTrackData'
 import { primeUserData } from './primeUserData'

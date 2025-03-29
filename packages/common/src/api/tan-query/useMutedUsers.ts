@@ -1,5 +1,5 @@
 import { Id } from '@audius/sdk'
-import { useQuery, useTypedQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { pick } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -9,6 +9,7 @@ import { ID } from '~/models/Identifiers'
 import { UserMetadata } from '~/models/User'
 
 import { QUERY_KEYS } from './queryKeys'
+import { useTypedQueryClient } from './typed-query-client'
 import { QueryOptions, SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { useUsers } from './useUsers'

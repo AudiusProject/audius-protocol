@@ -1,11 +1,11 @@
 import { ReactElement, ReactNode } from 'react'
 
+import { TypedQueryClientProvider } from '@audius/common/api'
 import {
   AudiusQueryContext,
   AudiusQueryContextType
 } from '@audius/common/audius-query'
 import { ThemeProvider } from '@audius/harmony'
-import { QueryClientProvider } from '@tanstack/react-query'
 import { render, RenderOptions } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import { Router } from 'react-router-dom'
@@ -56,7 +56,7 @@ const TestProviders =
     const { reduxState } = options ?? {}
     return (
       <HistoryContextProvider>
-        <QueryClientProvider client={queryClient}>
+        <TypedQueryClientProvider client={queryClient}>
           <AudiusQueryContext.Provider value={audiusQueryContext}>
             <ThemeProvider theme='day'>
               <ReduxProvider initialStoreState={reduxState}>
@@ -74,7 +74,7 @@ const TestProviders =
               </ReduxProvider>
             </ThemeProvider>
           </AudiusQueryContext.Provider>
-        </QueryClientProvider>
+        </TypedQueryClientProvider>
       </HistoryContextProvider>
     )
   }

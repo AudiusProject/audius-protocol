@@ -1,5 +1,5 @@
 import { Id } from '@audius/sdk'
-import { useMutation, useTypedQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
@@ -11,6 +11,7 @@ import { Track } from '~/models/Track'
 import { accountActions } from '~/store/account'
 import { tracksSocialActions } from '~/store/social'
 
+import { useTypedQueryClient } from './typed-query-client'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getTrackQueryKey } from './useTrack'
 import { useUser } from './useUser'

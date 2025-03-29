@@ -1,6 +1,6 @@
 import { Id } from '@audius/sdk'
 import { Action } from '@reduxjs/toolkit'
-import { useMutation, useTypedQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
@@ -12,6 +12,7 @@ import { ID } from '~/models/Identifiers'
 import { UserMetadata } from '~/models/User'
 import { update } from '~/store/cache/actions'
 
+import { useTypedQueryClient } from './typed-query-client'
 import { getCurrentAccountQueryKey } from './useCurrentAccount'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getUserQueryKey } from './useUser'
