@@ -1,5 +1,15 @@
 # create-audius-app
 
+## 2.0.0
+
+### Major Changes
+
+- 8db0cdb: Fix issues with harmony upgrade
+
+### Minor Changes
+
+- 749589c: Remove package-lock files to ensure installs are up to date for newly generated projects
+
 ## 1.0.9
 
 ### Patch Changes
