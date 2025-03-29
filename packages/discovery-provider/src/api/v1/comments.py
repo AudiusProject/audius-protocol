@@ -12,7 +12,7 @@ from src.api.v1.helpers import (
     success_response_with_related,
 )
 from src.api.v1.models.comments import reply_comment_model
-from src.queries.comments import get_paginated_replies
+from src.queries.comments import get_replies
 from src.queries.get_unclaimed_id import get_unclaimed_id
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
@@ -43,7 +43,7 @@ class CommentReplies(Resource):
         args = pagination_with_current_user_parser.parse_args()
         decoded_id = decode_with_abort(comment_id, ns)
         current_user_id = args.get("user_id")
-        comment_replies = get_paginated_replies(
+        comment_replies = get_replies(
             args, decoded_id, current_user_id, include_related=False
         )
         return success_response(comment_replies["data"])
@@ -72,7 +72,7 @@ class FullCommentReplies(Resource):
         args = pagination_with_current_user_parser.parse_args()
         decoded_id = decode_with_abort(comment_id, full_ns)
         current_user_id = args.get("user_id")
-        comment_replies = get_paginated_replies(
+        comment_replies = get_replies(
             args, decoded_id, current_user_id, include_related=True
         )
 
