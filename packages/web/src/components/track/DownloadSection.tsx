@@ -5,7 +5,8 @@ import {
   useCurrentStems,
   useFileSizes,
   useDownloadableContentAccess,
-  useUploadingStems
+  useUploadingStems,
+  useFeatureFlag
 } from '@audius/common/hooks'
 import {
   Name,
@@ -14,11 +15,13 @@ import {
   ID,
   StemCategory
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   usePremiumContentPurchaseModal,
   useWaitForDownloadModal,
   toastActions,
-  PurchaseableContentType
+  PurchaseableContentType,
+  useDownloadTrackArchiveModal
 } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import {
@@ -56,7 +59,8 @@ const messages = {
   purchased: 'purchased',
   followToDownload: 'Must follow artist to download.',
   purchaseableIsOwner: (price: string) =>
-    `Fans can unlock & download these files for a one time purchase of ${price}`
+    `Fans can unlock & download these files for a one time purchase of ${price}`,
+  downloadAll: 'Download All'
 }
 
 type DownloadSectionProps = {
@@ -87,6 +91,10 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     shouldDisplayOwnerPremiumDownloads
   } = useDownloadableContentAccess({ trackId })
 
+  const { isEnabled: isDownloadAllTrackFilesEnabled } = useFeatureFlag(
+    FeatureFlags.DOWNLOAD_ALL_TRACK_FILES
+  )
+
   const downloadQuality = DownloadQuality.ORIGINAL
   const shouldHideDownload =
     !access?.download && !shouldDisplayDownloadFollowGated
@@ -96,6 +104,9 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     useModalState('LockedContent')
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
+
+  const { onOpen: openDownloadTrackArchiveModal } =
+    useDownloadTrackArchiveModal()
   const fileSizes = useFileSizes({
     audiusSdk,
     trackIds: [trackId, ...stemTracks.map((s) => s.id)],
@@ -156,6 +167,13 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
       partialTrack
     ]
   )
+
+  const handleDownloadAll = useRequiresAccountCallback(() => {
+    openDownloadTrackArchiveModal({
+      trackId,
+      fileCount: stemTracks.length + 1
+    })
+  }, [trackId, stemTracks])
 
   return (
     <Box border='default' borderRadius='m' css={{ overflow: 'hidden' }}>
@@ -267,6 +285,27 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 }
               />
             ))}
+            {shouldHideDownload || !isDownloadAllTrackFilesEnabled ? null : (
+              <Flex
+                p='l'
+                borderTop='default'
+                direction='row'
+                alignItems='center'
+                justifyContent='center'
+                w='100%'
+                gap='xs'
+                role='row'
+              >
+                <Button
+                  variant='secondary'
+                  size='small'
+                  iconLeft={IconReceive}
+                  onClick={handleDownloadAll}
+                >
+                  {messages.downloadAll}
+                </Button>
+              </Flex>
+            )}
             {uploadingStems.map((s, i) => (
               <DownloadRow
                 key={`uploading-stem-${i}`}
