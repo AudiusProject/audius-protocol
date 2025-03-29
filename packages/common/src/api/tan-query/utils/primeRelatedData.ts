@@ -1,5 +1,4 @@
 import { full } from '@audius/sdk'
-import { QueryClient } from '@tanstack/react-query'
 import { AnyAction, Dispatch } from 'redux'
 
 import {
@@ -7,6 +6,8 @@ import {
   userTrackMetadataFromSDK,
   userMetadataFromSDK
 } from '~/adapters'
+
+import { TypedQueryClient } from '../typedQueryClient'
 
 import { primeTrackData } from './primeTrackData'
 import { primeUserData } from './primeUserData'
@@ -23,7 +24,7 @@ export const primeRelatedData = ({
   skipQueryData = false
 }: {
   related: full.Related | undefined
-  queryClient: QueryClient
+  queryClient: TypedQueryClient
   dispatch: Dispatch<AnyAction>
   forceReplace?: boolean
   skipQueryData?: boolean

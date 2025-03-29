@@ -1,8 +1,11 @@
-import { QueryKey } from '@tanstack/react-query'
+import { InfiniteData, QueryKey } from '@tanstack/react-query'
 
+import { Favorite } from '~/models'
 import { ID } from '~/models/Identifiers'
+import { TrendingIds } from '~/models/Trending'
 import { User } from '~/models/User'
 
+import { CommentOrReply } from './comments/types'
 import { DeveloperApp } from './developerApps'
 import { TQTrack, TQCollection } from './models'
 import { QUERY_KEYS } from './queryKeys'
@@ -27,8 +30,52 @@ export type TypedQueryKey =
   | [typeof QUERY_KEYS.collections, ID[] | null | undefined]
   | [typeof QUERY_KEYS.authorizedApps, ID | null | undefined]
   | [typeof QUERY_KEYS.developerApps, ID | null | undefined]
-  | [typeof QUERY_KEYS.followers, { userId: ID; pageSize?: number }]
-  | [typeof QUERY_KEYS.following, { userId: ID; pageSize?: number }]
+  | [typeof QUERY_KEYS.followers, ID | null | undefined, { pageSize?: number }]
+  | [typeof QUERY_KEYS.following, ID | null | undefined, { pageSize?: number }]
+  | [typeof QUERY_KEYS.comment, ID]
+  | [typeof QUERY_KEYS.commentReplies, ID]
+  | [typeof QUERY_KEYS.trackCommentList, ID]
+  | [typeof QUERY_KEYS.trackCommentCount, ID]
+  | [typeof QUERY_KEYS.remixes, ID]
+  | [typeof QUERY_KEYS.profileTracks, ID]
+  | [typeof QUERY_KEYS.profileReposts, ID]
+  | [typeof QUERY_KEYS.accountUser, ID]
+  | [typeof QUERY_KEYS.favoritedTracks, ID]
+  | [typeof QUERY_KEYS.libraryTracks, ID]
+  | [typeof QUERY_KEYS.libraryCollections, ID]
+  | [typeof QUERY_KEYS.feed, ID]
+  | [typeof QUERY_KEYS.userByHandle, string | null | undefined]
+  | [typeof QUERY_KEYS.trackByPermalink, string | null | undefined]
+  | [typeof QUERY_KEYS.collectionByPermalink, string | null | undefined]
+  | [typeof QUERY_KEYS.trendingIds, { genre?: string }]
+  | [
+      typeof QUERY_KEYS.trending,
+      {
+        timeRange: string
+        genre?: string
+        initialPageSize?: number
+        loadMorePageSize?: number
+      }
+    ]
+  | [typeof QUERY_KEYS.trendingPlaylists, { pageSize?: number; time?: string }]
+  | [
+      typeof QUERY_KEYS.notifications,
+      ID | null | undefined,
+      { pageSize: number }
+    ]
+  | [typeof QUERY_KEYS.notificationUnreadCount, ID | null | undefined]
+  | [
+      typeof QUERY_KEYS.search,
+      string,
+      string,
+      { sortMethod?: string; pageSize?: number }
+    ]
+  | [typeof QUERY_KEYS.searchAutocomplete, string, { limit?: number }]
+  | [
+      typeof QUERY_KEYS.mutualFollowers,
+      ID | null | undefined,
+      { pageSize?: number }
+    ]
   | QueryKey // Fallback for other query keys
 
 /**
@@ -44,6 +91,29 @@ export interface QueryKeyTypeMap {
   [QUERY_KEYS.collections]: TQCollection[]
   [QUERY_KEYS.developerApps]: DeveloperApp[]
   [QUERY_KEYS.authorizedApps]: DeveloperApp[]
+  [QUERY_KEYS.followers]: ID[]
+  [QUERY_KEYS.following]: ID[]
+  [QUERY_KEYS.trending]: TQTrack[]
+  [QUERY_KEYS.trendingPlaylists]: TQCollection[]
+  [QUERY_KEYS.trendingUnderground]: TQTrack[]
+  [QUERY_KEYS.trendingIds]: TrendingIds
+  [QUERY_KEYS.notifications]: InfiniteData<Notification[]>
+  [QUERY_KEYS.notificationUnreadCount]: number
+  [QUERY_KEYS.favorites]: ID[] // user_ids
+  [QUERY_KEYS.favoritedTracks]: Favorite[]
+  [QUERY_KEYS.libraryTracks]: TQTrack[]
+  [QUERY_KEYS.libraryCollections]: TQCollection[]
+  [QUERY_KEYS.feed]: (TQTrack | TQCollection)[]
+  [QUERY_KEYS.userByHandle]: ID
+  [QUERY_KEYS.trackByPermalink]: ID
+  [QUERY_KEYS.collectionByPermalink]: ID
+  [QUERY_KEYS.comment]: CommentOrReply
+  [QUERY_KEYS.commentReplies]: CommentOrReply[]
+  [QUERY_KEYS.trackCommentList]: any[] // Track comments
+  [QUERY_KEYS.trackCommentCount]: number
+  [QUERY_KEYS.remixes]: TQTrack[]
+  [QUERY_KEYS.profileTracks]: TQTrack[]
+  [QUERY_KEYS.profileReposts]: (TQTrack | TQCollection)[]
   // Add more mappings here based on your actual data types
 }
 
