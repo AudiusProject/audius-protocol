@@ -1,5 +1,5 @@
 import { AudiusSdk } from '@audius/sdk'
-import { useQueryClient, useMutation, QueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from 'redux'
 
@@ -10,13 +10,14 @@ import { AccountUserMetadata } from '~/models/User'
 import { accountActions } from '~/store/account'
 import { removePlaylistLibraryDuplicates } from '~/store/playlist-library/helpers'
 
+import { TypedQueryClient, useTypedQueryClient } from './typed-query-client'
 import { getCurrentAccountQueryKey } from './useCurrentAccount'
 import { useCurrentUserId } from './useCurrentUserId'
 import { updateUser } from './useUpdateUser'
 
 export const useUpdatePlaylistLibrary = () => {
   const { data: currentUserId } = useCurrentUserId()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
   const { audiusSdk } = useAudiusQueryContext()
   return useMutation({
@@ -37,7 +38,7 @@ export const updatePlaylistLibrary = async (
   audiusSdk: AudiusSdk,
   userId: ID | null | undefined,
   playlistLibrary: PlaylistLibrary,
-  queryClient: QueryClient,
+  queryClient: TypedQueryClient,
   dispatch: Dispatch<any>
 ) => {
   if (!userId) return

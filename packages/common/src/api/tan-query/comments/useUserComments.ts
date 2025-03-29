@@ -1,11 +1,7 @@
 import { useEffect } from 'react'
 
 import { Id, OptionalId } from '@audius/sdk'
-import {
-  useInfiniteQuery,
-  useIsMutating,
-  useQueryClient
-} from '@tanstack/react-query'
+import { useInfiniteQuery, useIsMutating } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { commentFromSDK, transformAndCleanList } from '~/adapters'
@@ -13,6 +9,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
+import { useTypedQueryClient } from '../typed-query-client'
 import { QueryOptions } from '../types'
 import { useCurrentUserId } from '../useCurrentUserId'
 import { primeCommentData } from '../utils/primeCommentData'
@@ -34,7 +31,7 @@ export const useUserComments = (
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const isMutating = useIsMutating()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
 
   const queryRes = useInfiniteQuery({

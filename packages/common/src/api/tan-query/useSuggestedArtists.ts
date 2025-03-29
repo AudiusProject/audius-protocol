@@ -6,7 +6,8 @@ import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useUsers } from './useUsers'
 
-export const getSuggestedArtistsQueryKey = () => [QUERY_KEYS.suggestedArtists]
+export const getSuggestedArtistsQueryKey = () =>
+  [QUERY_KEYS.suggestedArtists] as const
 
 export const useSuggestedArtists = (options?: QueryOptions) => {
   const { env, fetch } = useAudiusQueryContext()

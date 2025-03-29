@@ -20,7 +20,7 @@ type UseSearchAutocompleteArgs = {
 export const getSearchAutocompleteQueryKey = ({
   query,
   limit = DEFAULT_LIMIT
-}: UseSearchAutocompleteArgs) => [QUERY_KEYS.search, query, { limit }]
+}: UseSearchAutocompleteArgs) => [QUERY_KEYS.search, query, { limit }] as const
 
 export const useSearchAutocomplete = (
   { query, limit = DEFAULT_LIMIT }: UseSearchAutocompleteArgs,

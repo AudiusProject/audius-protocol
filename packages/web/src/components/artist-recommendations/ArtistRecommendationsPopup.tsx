@@ -2,13 +2,13 @@ import { RefObject } from 'react'
 
 import {
   getRelatedArtistsQueryKey,
-  useRelatedArtistsUsers
+  useRelatedArtistsUsers,
+  useTypedQueryClient
 } from '@audius/common/api'
 import { ID, User } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { MAX_PROFILE_RELATED_ARTISTS } from '@audius/common/utils'
 import { Popup } from '@audius/harmony'
-import { useQueryClient } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 
 import { useMainContentRef } from 'pages/MainContentContext'
@@ -36,11 +36,8 @@ export const ArtistRecommendationsPopup = (props: Props) => {
   )
 
   // Get the related artists which should be available in the query cache
-  const queryClient = useQueryClient()
-  const relatedArtistsData = queryClient.getQueryData<{
-    pages: User[][]
-    pageParams: number[]
-  }>(
+  const queryClient = useTypedQueryClient()
+  const relatedArtistsData = queryClient.getQueryData(
     getRelatedArtistsQueryKey({
       artistId,
       pageSize: MAX_PROFILE_RELATED_ARTISTS

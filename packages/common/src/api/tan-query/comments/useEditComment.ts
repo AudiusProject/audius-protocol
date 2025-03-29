@@ -1,10 +1,12 @@
 import { EntityType, CommentMention } from '@audius/sdk'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
+
+import { useTypedQueryClient } from '../typed-query-client'
 
 import { CommentOrReply, messages } from './types'
 import { getCommentQueryKey } from './utils'
@@ -21,7 +23,7 @@ export type EditCommentArgs = {
 
 export const useEditComment = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
   return useMutation({
     mutationFn: async ({
@@ -44,10 +46,9 @@ export const useEditComment = () => {
       await sdk.comments.editComment(commentData)
     },
     onMutate: ({ commentId, newMessage, mentions }) => {
-      const prevComment = queryClient.getQueryData<CommentOrReply | undefined>([
-        'comment',
-        commentId
-      ])
+      const prevComment = queryClient.getQueryData<CommentOrReply>(
+        getCommentQueryKey(commentId)
+      )
       queryClient.setQueryData(
         getCommentQueryKey(commentId),
         (prevData: CommentOrReply | undefined) =>

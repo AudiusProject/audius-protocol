@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 
-import { useQueryClient } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -11,6 +10,7 @@ import { CommonState } from '~/store'
 
 import { getUsersBatcher } from './batchers/getUsersBatcher'
 import { QUERY_KEYS } from './queryKeys'
+import { useTypedQueryClient } from './typed-query-client'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getUserQueryKey } from './useUser'
@@ -27,7 +27,7 @@ export const useUsers = (
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const dispatch = useDispatch()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const { data: currentUserId } = useCurrentUserId()
 
   const queryResults = useQueries({

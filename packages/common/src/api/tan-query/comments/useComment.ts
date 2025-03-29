@@ -1,18 +1,20 @@
 import { useEffect } from 'react'
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
+import { useTypedQueryClient } from '../typed-query-client'
+
 import { CommentOrReply, messages } from './types'
 import { getCommentQueryKey } from './utils'
 
 export const useComment = (commentId: ID) => {
   const { reportToSentry } = useAudiusQueryContext()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
 
   const queryRes = useQuery({

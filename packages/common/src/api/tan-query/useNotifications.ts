@@ -162,7 +162,7 @@ export const getNotificationsQueryKey = ({
 }: {
   currentUserId: ID | null | undefined
   pageSize: number
-}) => [QUERY_KEYS.notifications, currentUserId, { pageSize }]
+}) => [QUERY_KEYS.notifications, currentUserId, { pageSize }] as const
 
 /**
  * Hook that returns paginated notifications for the current user.

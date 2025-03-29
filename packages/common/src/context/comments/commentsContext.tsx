@@ -10,7 +10,6 @@ import {
   EntityType,
   GetTrackCommentsSortMethodEnum as CommentSortMethod
 } from '@audius/sdk'
-import { useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
@@ -18,7 +17,8 @@ import {
   useTrackComments,
   QUERY_KEYS,
   useTrackCommentCount,
-  resetPreviousCommentCount
+  resetPreviousCommentCount,
+  useTypedQueryClient
 } from '~/api'
 import { useGatedContentAccess } from '~/hooks'
 import {
@@ -140,7 +140,7 @@ export function CommentSectionProvider<NavigationProp>(
     sortMethod: currentSort
   })
 
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   // hard refreshes all data
   const resetComments = useCallback(() => {
     // Reset our comment count since we're reloading comments again - aka can hide the "new comments" button

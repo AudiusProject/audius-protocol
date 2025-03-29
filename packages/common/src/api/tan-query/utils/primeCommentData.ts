@@ -1,10 +1,8 @@
-import { QueryClient } from '@tanstack/react-query'
-
 import { ReplyComment } from '~/models'
 
 import { CommentOrReply } from '../comments/types'
 import { getCommentQueryKey } from '../comments/utils'
-
+import { TypedQueryClient } from '../typed-query-client'
 /**
  * Primes the comment data in the query cache
  */
@@ -13,7 +11,7 @@ export const primeCommentData = ({
   queryClient
 }: {
   comments: CommentOrReply[]
-  queryClient: QueryClient
+  queryClient: TypedQueryClient
 }) => {
   // Populate individual comment cache
   comments.forEach((comment) => {
@@ -26,10 +24,7 @@ export const primeCommentData = ({
     // Prime any replies if they exist
     if ('replies' in comment && comment.replies) {
       comment.replies.forEach((reply: ReplyComment) =>
-        queryClient.setQueryData<CommentOrReply>(
-          getCommentQueryKey(reply.id),
-          reply
-        )
+        queryClient.setQueryData(getCommentQueryKey(reply.id), reply)
       )
     }
   })

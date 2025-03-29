@@ -1,9 +1,11 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
+
+import { useTypedQueryClient } from '../typed-query-client'
 
 import { CommentOrReply, messages } from './types'
 import { getCommentQueryKey } from './utils'
@@ -19,7 +21,7 @@ export type ReactToCommentArgs = {
 
 export const useReactToComment = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
   return useMutation({
     mutationFn: async ({

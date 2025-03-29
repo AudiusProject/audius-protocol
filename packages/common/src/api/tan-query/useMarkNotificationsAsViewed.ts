@@ -1,8 +1,9 @@
 import { Id } from '@audius/sdk'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
 
+import { useTypedQueryClient } from './typed-query-client'
 import { useCurrentUserId } from './useCurrentUserId'
 import {
   getNotificationUnreadCountQueryKey,
@@ -15,7 +16,7 @@ import {
 export const useMarkNotificationsAsViewed = () => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const { data: unreadCount } = useNotificationUnreadCount()
 
   return useMutation({

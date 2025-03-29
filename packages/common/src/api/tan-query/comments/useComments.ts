@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
 
-import { useQueryClient } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
 
 import { ID } from '~/models/Identifiers'
 
+import { useTypedQueryClient } from '../typed-query-client'
 import { QueryOptions } from '../types'
 import { combineQueryResults } from '../utils/combineQueryResults'
 import { useQueries } from '../utils/useQueries'
@@ -21,7 +21,7 @@ export const useComments = (
   commentIds: ID[] | null | undefined,
   options?: QueryOptions
 ) => {
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
 
   const queryResults = useQueries({
     queries: commentIds?.map((commentId) => ({

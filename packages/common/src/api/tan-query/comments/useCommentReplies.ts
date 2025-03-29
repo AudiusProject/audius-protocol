@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
 import { Id } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { replyCommentFromSDK, transformAndCleanList } from '~/adapters'
@@ -9,6 +9,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { Comment, Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
+import { useTypedQueryClient } from '../typed-query-client'
 import { QueryOptions } from '../types'
 import { useCurrentUserId } from '../useCurrentUserId'
 import { primeCommentData } from '../utils/primeCommentData'
@@ -28,7 +29,7 @@ export const useCommentReplies = (
   options?: QueryOptions
 ) => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
   const startingLimit = 3 // comments will load in with 3 already so we don't start pagination at 0
   const { data: currentUserId } = useCurrentUserId()

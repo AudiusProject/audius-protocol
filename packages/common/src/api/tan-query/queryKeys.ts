@@ -1,3 +1,11 @@
+/**
+ * Query keys for the TanStack Query library
+ *
+ * Each key should only hold values of a single type
+ *
+ * If you need to hold multiple types, use a union type or a separate key for each type
+ * Types are registered in typedQueryKeys.ts
+ */
 export const QUERY_KEYS = {
   aiTracks: 'aiTracks',
   accountUser: 'accountUser',

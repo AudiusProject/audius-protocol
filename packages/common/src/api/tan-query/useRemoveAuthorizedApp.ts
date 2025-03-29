@@ -1,5 +1,5 @@
 import { Id } from '@audius/sdk'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { cloneDeep } from 'lodash'
 
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
@@ -7,6 +7,7 @@ import { ID } from '~/models'
 
 import { DeveloperApp } from './developerApps'
 import { QUERY_KEYS } from './queryKeys'
+import { useTypedQueryClient } from './typed-query-client'
 
 export type UseRemoveAuthorizedAppArgs = {
   apiKey: string
@@ -20,7 +21,7 @@ export const getRemoveAuthorizedAppQueryKey = (userId: ID) => [
 
 export const useRemoveAuthorizedApp = () => {
   const { audiusSdk } = useAudiusQueryContext()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
 
   return useMutation({
     mutationFn: async (args: UseRemoveAuthorizedAppArgs) => {

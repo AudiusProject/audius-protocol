@@ -1,14 +1,12 @@
-import {
-  InfiniteData,
-  useMutation,
-  useQueryClient
-} from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { cloneDeep } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { Comment, Feature, ID, ReplyComment } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
+
+import { useTypedQueryClient } from '../typed-query-client'
 
 import { messages } from './types'
 import {
@@ -27,7 +25,7 @@ export type ReportCommentArgs = {
 
 export const useReportComment = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
   return useMutation({
     mutationFn: async ({ userId, commentId }: ReportCommentArgs) => {
@@ -39,7 +37,7 @@ export const useReportComment = () => {
       if (parentCommentId) {
         queryClient.setQueryData<Comment>(
           getCommentQueryKey(parentCommentId),
-          (prevData: Comment | undefined) => {
+          (prevData) => {
             if (!prevData) return
             return {
               ...prevData,
@@ -51,7 +49,7 @@ export const useReportComment = () => {
           }
         )
       } else {
-        queryClient.setQueryData<InfiniteData<ID[]>>(
+        queryClient.setQueryData(
           getTrackCommentListQueryKey({
             trackId,
             sortMethod: currentSort

@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAppContext } from '~/context/appContext'
@@ -13,6 +13,7 @@ import { AccountUserMetadata } from '~/models/User'
 import { playlistLibraryHelpers } from '~/store/playlist-library'
 import { saveCollection } from '~/store/social/collections/actions'
 
+import { useTypedQueryClient } from './typed-query-client'
 import { getCurrentAccountQueryKey } from './useCurrentAccount'
 import { useCurrentUserId } from './useCurrentUserId'
 import { usePlaylistLibrary } from './usePlaylistLibrary'
@@ -37,7 +38,7 @@ type ReorderLibraryResult = {
 export const useReorderLibrary = () => {
   const { data: currentUserId } = useCurrentUserId()
   const { data: playlistLibrary } = usePlaylistLibrary()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const dispatch = useDispatch()
   const { mutateAsync: updatePlaylistLibrary } = useUpdatePlaylistLibrary()
   const {

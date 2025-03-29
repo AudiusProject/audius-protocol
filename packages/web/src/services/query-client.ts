@@ -1,8 +1,9 @@
+import { createTypedQueryClient } from '@audius/common/api'
 import { QueryClient } from '@tanstack/react-query'
 
 import { env } from './env'
 
-export const queryClient = new QueryClient({
+const untypedQueryClient = new QueryClient({
   defaultOptions: {
     queries: {
       gcTime: 1000 * 60 * 5, // 5 minutes
@@ -15,3 +16,5 @@ export const queryClient = new QueryClient({
     }
   }
 })
+
+export const queryClient = createTypedQueryClient(untypedQueryClient)

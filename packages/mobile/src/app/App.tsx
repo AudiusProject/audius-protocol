@@ -1,6 +1,7 @@
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { PortalProvider, PortalHost } from '@gorhom/portal'
 import * as Sentry from '@sentry/react-native'
+import type { QueryClient } from '@tanstack/react-query'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { Platform, UIManager } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
@@ -69,7 +70,7 @@ const App = () => {
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
         <Provider store={store}>
           <AudiusQueryProvider>
-            <QueryClientProvider client={queryClient}>
+            <QueryClientProvider client={queryClient as unknown as QueryClient}>
               <PersistGate loading={null} persistor={persistor}>
                 <ThemeProvider>
                   <WalletConnectProvider>

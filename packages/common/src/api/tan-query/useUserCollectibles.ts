@@ -1,19 +1,19 @@
 import { Id } from '@audius/sdk'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { CollectiblesMetadata, ID } from '~/models'
 
 import { QUERY_KEYS } from './queryKeys'
+import { useTypedQueryClient } from './typed-query-client'
 import { QueryOptions } from './types'
-
 export type GetUserCollectiblesArgs = {
   userId: ID | null
 }
 
 export const getUserCollectiblesQueryKey = ({
   userId
-}: GetUserCollectiblesArgs) => [QUERY_KEYS.userCollectibles, userId]
+}: GetUserCollectiblesArgs) => [QUERY_KEYS.userCollectibles, userId] as const
 
 /** Returns the user's known/ordered collectibles list if they have been set */
 export const useUserCollectibles = (
@@ -51,7 +51,7 @@ type MutationContext = {
 
 export const useUpdateUserCollectibles = () => {
   const context = useAudiusQueryContext()
-  const queryClient = useQueryClient()
+  const queryClient = useTypedQueryClient()
   const { audiusSdk } = context
 
   return useMutation({

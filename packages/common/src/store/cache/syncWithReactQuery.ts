@@ -1,4 +1,6 @@
-import type { QueryClient } from '@tanstack/react-query'
+import { TQCollection, TQTrack } from '~/api/tan-query/models'
+import { TypedQueryClient } from '~/api/tan-query/typed-query-client'
+import { User } from '~/models/User'
 
 import { getCollectionQueryKey } from '../../api/tan-query/useCollection'
 import { getTrackQueryKey } from '../../api/tan-query/useTrack'
@@ -8,7 +10,7 @@ import { Kind } from '../../models/Kind'
 import type { EntriesByKind } from './types'
 
 export const syncWithReactQuery = (
-  queryClient: QueryClient,
+  queryClient: TypedQueryClient,
   entriesByKind: EntriesByKind
 ) => {
   Object.entries(entriesByKind).forEach(([kind, entries]) => {
@@ -17,13 +19,16 @@ export const syncWithReactQuery = (
       const parsedId = parseInt(id, 10)
       switch (kind as Kind) {
         case Kind.USERS:
-          queryClient.setQueryData(getUserQueryKey(parsedId), entry)
+          queryClient.setQueryData(getUserQueryKey(parsedId), entry as User)
           break
         case Kind.TRACKS:
-          queryClient.setQueryData(getTrackQueryKey(parsedId), entry)
+          queryClient.setQueryData(getTrackQueryKey(parsedId), entry as TQTrack)
           break
         case Kind.COLLECTIONS:
-          queryClient.setQueryData(getCollectionQueryKey(parsedId), entry)
+          queryClient.setQueryData(
+            getCollectionQueryKey(parsedId),
+            entry as TQCollection
+          )
           break
       }
     })

@@ -19,7 +19,8 @@ export type ExploreContent = {
   featuredProfiles: ID[]
 }
 
-export const getExploreContentQueryKey = () => [QUERY_KEYS.exploreContent]
+export const getExploreContentQueryKey = () =>
+  [QUERY_KEYS.exploreContent] as const
 
 export const useExploreContent = <TResult = ExploreContent>(
   options?: SelectableQueryOptions<ExploreContent, TResult>
