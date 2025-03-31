@@ -1,6 +1,7 @@
 import { Suspense, lazy, useCallback, useState } from 'react'
 
 import { useToggleFavoriteTrack, useTrack } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
   isContentUSDCPurchaseGated,
   ID,
@@ -9,12 +10,13 @@ import {
   AccessConditions,
   FavoriteSource
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   PurchaseableContentType,
   useEarlyReleaseConfirmationModal,
   usePublishConfirmationModal
 } from '@audius/common/store'
-import { Genre, Nullable, formatReleaseDate } from '@audius/common/utils'
+import { Genre, Nullable, formatReleaseDate, route } from '@audius/common/utils'
 import {
   Text,
   Box,
@@ -26,7 +28,8 @@ import {
   IconRocket,
   Button,
   MusicBadge,
-  Paper
+  Paper,
+  IconCloudUpload
 } from '@audius/harmony'
 import IconCalendarMonth from '@audius/harmony/src/assets/icons/CalendarMonth.svg'
 import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
@@ -43,6 +46,7 @@ import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement } from 'components/types'
 import { UserGeneratedText } from 'components/user-generated-text'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
 
 import { AiTrackSection } from './AiTrackSection'
 import { CardTitle } from './CardTitle'
@@ -54,6 +58,8 @@ import { PlayPauseButton } from './PlayPauseButton'
 import { TrackDogEar } from './TrackDogEar'
 import { TrackMetadataList } from './TrackMetadataList'
 import { TrackStats } from './TrackStats'
+
+const { UPLOAD_PAGE } = route
 
 const DownloadSection = lazy(() =>
   import('./DownloadSection').then((module) => ({
@@ -83,7 +89,10 @@ const messages = {
   actionGroupLabel: 'track actions',
   hidden: 'hidden',
   releases: (releaseDate: string) =>
-    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
+    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`,
+  remixContest: 'Contest Deadline',
+  submitRemix: 'Upload Submission',
+  deadline: (deadline: string) => `${deadline} at ${dayjs().format('h:mm A')}`
 }
 
 type GiantTrackTileProps = {
@@ -178,6 +187,7 @@ export const GiantTrackTile = ({
   ddexApp,
   scrollToCommentSection
 }: GiantTrackTileProps) => {
+  const navigate = useNavigateToPage()
   const [artworkLoading, setArtworkLoading] = useState(false)
   const onArtworkLoad = useCallback(
     () => setArtworkLoading(false),
@@ -187,6 +197,12 @@ export const GiantTrackTile = ({
     trackId,
     source: FavoriteSource.TRACK_PAGE
   })
+
+  const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
+    FeatureFlags.REMIX_CONTEST
+  )
+
+  const isRemixContest = isRemixContestEnabled && !isOwner
 
   const isLongFormContent =
     genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
@@ -381,7 +397,7 @@ export const GiantTrackTile = ({
     const shouldShow = !isUnlisted || fieldVisibility.tags
     if (!shouldShow || !tags) return null
     return (
-      <Flex pt='m' wrap='wrap' gap='s'>
+      <Flex wrap='wrap' gap='s'>
         {tags
           .split(',')
           .filter((t) => t)
@@ -393,6 +409,42 @@ export const GiantTrackTile = ({
       </Flex>
     )
   }
+
+  const goToUploadWithRemix = useCallback(() => {
+    if (!trackId) return
+    const state = {
+      initialMetadata: {
+        is_remix: true,
+        remix_of: {
+          tracks: [{ parent_track_id: trackId }]
+        }
+      }
+    }
+    navigate(UPLOAD_PAGE, state)
+  }, [trackId, navigate])
+
+  const renderSubmitRemixContestSection = useCallback(() => {
+    if (!isRemixContest) return null
+    const remixContestDeadline = dayjs().add(1, 'week').format('MMM D, YYYY')
+    return (
+      <Flex row gap='m'>
+        <Flex gap='xs' alignItems='center'>
+          <Text variant='label' color='accent'>
+            {messages.remixContest}
+          </Text>
+          <Text>{messages.deadline(remixContestDeadline)}</Text>
+        </Flex>
+        <Button
+          variant='primary'
+          size='small'
+          onClick={goToUploadWithRemix}
+          iconLeft={IconCloudUpload}
+        >
+          {messages.submitRemix}
+        </Button>
+      </Flex>
+    )
+  }, [isRemixContest, goToUploadWithRemix])
 
   const isLoading = loading || artworkLoading
 
@@ -595,22 +647,19 @@ export const GiantTrackTile = ({
         backgroundColor='surface1'
         borderTop='default'
         className={cn(fadeIn)}
+        gap='m'
       >
         <TrackMetadataList trackId={trackId} />
         {description ? (
-          <UserGeneratedText
-            tag='h3'
-            size='s'
-            lineHeight='multi'
-            css={(theme) => ({ paddingTop: theme.spacing.m })}
-          >
+          <UserGeneratedText tag='h3' size='s' lineHeight='multi'>
             {description}
           </UserGeneratedText>
         ) : null}
 
         {renderTags()}
+        {renderSubmitRemixContestSection()}
         {hasDownloadableAssets ? (
-          <Box pt='l' w='100%'>
+          <Box w='100%'>
             <Suspense>
               <DownloadSection trackId={trackId} />
             </Suspense>

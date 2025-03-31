@@ -1,6 +1,10 @@
 import { useCallback, useMemo } from 'react'
 
-import { TrackFormState, TrackForUpload } from '@audius/common/store'
+import {
+  TrackFormState,
+  TrackForUpload,
+  TrackMetadataForUpload
+} from '@audius/common/store'
 import moment from 'moment'
 
 import { EditTrackForm } from 'components/edit-track/EditTrackForm'
@@ -9,6 +13,7 @@ import { TrackEditFormValues } from 'components/edit-track/types'
 type UploadTrackFormProps = {
   formState: TrackFormState
   onContinue: (formState: TrackFormState) => void
+  initialMetadata?: Partial<TrackMetadataForUpload>
 }
 
 const defaultHiddenFields = {
@@ -21,7 +26,7 @@ const defaultHiddenFields = {
 }
 
 export const UploadTrackForm = (props: UploadTrackFormProps) => {
-  const { formState, onContinue } = props
+  const { formState, onContinue, initialMetadata } = props
   const { tracks } = formState
 
   const initialValues: TrackEditFormValues = useMemo(
@@ -30,19 +35,23 @@ export const UploadTrackForm = (props: UploadTrackFormProps) => {
       tracks: tracks as TrackForUpload[],
       trackMetadatas: tracks.map((track) => ({
         ...track.metadata,
-        description: '',
-        releaseDate: new Date(moment().toString()),
-        tags: '',
+        ...initialMetadata,
+        description: initialMetadata?.description ?? '',
+        releaseDate: initialMetadata?.release_date
+          ? new Date(initialMetadata.release_date)
+          : new Date(moment().toString()),
+        tags: initialMetadata?.tags ?? '',
         field_visibility: {
           ...defaultHiddenFields,
+          ...initialMetadata?.field_visibility,
           remixes: true
         },
-        stems: [],
-        isrc: '',
-        iswc: ''
+        stems: initialMetadata?.stems ?? [],
+        isrc: initialMetadata?.isrc ?? '',
+        iswc: initialMetadata?.iswc ?? ''
       }))
     }),
-    [tracks]
+    [tracks, initialMetadata]
   )
 
   const onSubmit = useCallback(

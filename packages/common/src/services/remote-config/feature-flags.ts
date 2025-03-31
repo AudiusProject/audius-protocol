@@ -26,7 +26,8 @@ export enum FeatureFlags {
   REACT_QUERY_SYNC = 'react_query_sync',
   TRACK_REPLACE_DOWNLOADS = 'track_replace_downloads',
   CLAIM_ALL_REWARDS_TILE = 'claim_all_rewards_tile',
-  RECENT_COMMENTS = 'recent_comments'
+  RECENT_COMMENTS = 'recent_comments',
+  REMIX_CONTEST = 'remix_contest'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -68,5 +69,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.REACT_QUERY_SYNC]: false,
   [FeatureFlags.TRACK_REPLACE_DOWNLOADS]: false,
   [FeatureFlags.CLAIM_ALL_REWARDS_TILE]: true,
-  [FeatureFlags.RECENT_COMMENTS]: false
+  [FeatureFlags.RECENT_COMMENTS]: false,
+  [FeatureFlags.REMIX_CONTEST]: false
 }
