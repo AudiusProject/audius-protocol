@@ -48,14 +48,7 @@ const { makeGetCurrent } = queueSelectors
 
 export interface TanQueryLineupProps {
   /** Query data should be fetched one component above and passed through here */
-  data:
-    | (
-        | UserTrackMetadata
-        | TrackMetadata
-        | UserCollectionMetadata
-        | CollectionMetadata
-      )[]
-    | undefined
+  data: ID[] | undefined
   isFetching: boolean
   isPending: boolean
   isError: boolean

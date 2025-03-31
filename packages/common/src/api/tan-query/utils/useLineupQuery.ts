@@ -27,9 +27,7 @@ import { loadNextPage } from './infiniteQueryLoadNextPage'
 /**
  * Helper to provide stitch together tan-query data and easily provide lineup methods as part of our query hooks
  */
-export const useLineupQuery = <
-  T extends UserTrackMetadata | UserCollectionMetadata
->({
+export const useLineupQuery = ({
   queryData,
   queryKey,
   lineupActions,
@@ -38,7 +36,7 @@ export const useLineupQuery = <
   pageSize
 }: {
   // Lineup related props
-  queryData: UseInfiniteQueryResult<T[]>
+  queryData: UseInfiniteQueryResult<ID[]>
   queryKey: QueryKey
   lineupActions: LineupActions
   lineupSelector: Selector<
@@ -80,13 +78,13 @@ export const useLineupQuery = <
       // NOTE: This squashes all previously cached pages into the first page of the lineup.
       // This means the first page may have more entries than the pageSize.
       // If this causes issues we can slice the data back into pages, but this seems more inefficient.
-      if (lineupData?.length) {
-        dispatch(
-          lineupActions.fetchLineupMetadatas(0, lineupData.length, false, {
-            items: lineupData
-          })
-        )
-      }
+      // if (lineupData?.length) {
+      //   dispatch(
+      //     lineupActions.fetchLineupMetadatas(0, lineupData.length, false, {
+      //       items: lineupData
+      //     })
+      //   )
+      // }
     }
   }, [dispatch, lineupActions, lineupData, hasQueryKeyChanged])
 

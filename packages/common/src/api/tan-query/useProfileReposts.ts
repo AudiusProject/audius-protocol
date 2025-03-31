@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux'
 
 import { repostActivityFromSDK, transformAndCleanList } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
-import { UserTrackMetadata, UserCollectionMetadata } from '~/models'
+import { UserTrackMetadata, UserCollectionMetadata, ID } from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
 import {
   profilePageSelectors,
@@ -43,10 +43,7 @@ export const useProfileReposts = (
   const queryData = useInfiniteQuery({
     queryKey: getProfileRepostsQueryKey({ handle, pageSize }),
     initialPageParam: 0,
-    getNextPageParam: (
-      lastPage: (UserTrackMetadata | UserCollectionMetadata)[],
-      allPages
-    ) => {
+    getNextPageParam: (lastPage: ID[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -100,7 +97,8 @@ export const useProfileReposts = (
         })
       )
 
-      return reposts
+      // Return only ids
+      return reposts.map((t) => ('track_id' in t ? t.track_id : t.playlist_id))
     },
     select: (data) => {
       return data?.pages?.flat()
