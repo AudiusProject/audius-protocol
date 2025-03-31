@@ -13,6 +13,7 @@ export * from './user'
 export * from './tan-query/comments'
 export * from './tan-query/queryKeys'
 export * from './tan-query/useCurrentUserId'
+export * from './tan-query/useDownloadTrackStems'
 export * from './tan-query/useTrackHistory'
 export * from './tan-query/useFeaturedPlaylists'
 export * from './tan-query/useFeaturedProfiles'
@@ -74,3 +75,4 @@ export * from './tan-query/useAudioTransactionsCount'
 
 // Saga fetch utils, remove when migration is complete
 export * from './tan-query/saga-utils'
+export * from './tan-query/useCollectionTracksWithUid'

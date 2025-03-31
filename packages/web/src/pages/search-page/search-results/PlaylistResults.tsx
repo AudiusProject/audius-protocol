@@ -1,9 +1,6 @@
 import { useCallback } from 'react'
 
-import {
-  FlatUseInfiniteQueryResult,
-  useSearchPlaylistResults
-} from '@audius/common/api'
+import { useSearchPlaylistResults } from '@audius/common/api'
 import { Kind, Name, UserCollectionMetadata } from '@audius/common/models'
 import { searchActions } from '@audius/common/store'
 import { Box, Flex, Text, useTheme } from '@audius/harmony'
@@ -30,10 +27,9 @@ const messages = {
 type PlaylistResultsProps = {
   limit?: number
   skeletonCount?: number
-  queryData: Pick<
-    FlatUseInfiniteQueryResult<UserCollectionMetadata>,
-    'data' | 'isFetching' | 'isInitialLoading'
-  >
+  data: UserCollectionMetadata[]
+  isFetching: boolean
+  isPending: boolean
 }
 
 const PlaylistResultsSkeletons = ({
@@ -58,8 +54,7 @@ const PlaylistResultsSkeletons = ({
 }
 
 export const PlaylistResults = (props: PlaylistResultsProps) => {
-  const { limit, skeletonCount = 10, queryData } = props
-  const { data = [], isFetching, isInitialLoading } = queryData
+  const { limit, skeletonCount = 10, data, isFetching, isPending } = props
 
   const searchParams = useSearchParams()
   const { query } = searchParams
@@ -96,9 +91,7 @@ export const PlaylistResults = (props: PlaylistResultsProps) => {
 
   // Only show pagination skeletons when we're not loading the first page & still under the limit
   const shouldShowMoreSkeletons =
-    isFetching &&
-    !isInitialLoading &&
-    (limit === undefined || data?.length < limit)
+    isFetching && !isPending && (limit === undefined || data?.length < limit)
 
   return (
     <Box
@@ -147,10 +140,16 @@ export const PlaylistResultsPage = () => {
 
   const searchParams = useSearchParams()
   const queryData = useSearchPlaylistResults(searchParams)
-  const { data: playlists, isLoading, hasNextPage, loadNextPage } = queryData
+  const {
+    data: playlists,
+    isFetching,
+    hasNextPage,
+    loadNextPage,
+    isPending
+  } = queryData
 
   const isResultsEmpty = playlists?.length === 0
-  const showNoResultsTile = !isLoading && isResultsEmpty
+  const showNoResultsTile = !isFetching && isResultsEmpty
 
   return (
     <InfiniteScroll
@@ -177,7 +176,12 @@ export const PlaylistResultsPage = () => {
         {showNoResultsTile ? (
           <NoResultsTile />
         ) : (
-          <PlaylistResults queryData={queryData} skeletonCount={10} />
+          <PlaylistResults
+            data={playlists ?? []}
+            isFetching={isFetching}
+            isPending={isPending}
+            skeletonCount={10}
+          />
         )}
       </Flex>
     </InfiniteScroll>

@@ -26,7 +26,7 @@ export const UserListArtistChip = (props: ArtistChipProps) => {
 
   return (
     <ArtistChip
-      userId={userId}
+      {...props}
       onClickArtistName={handleClickArtistName}
       showPopover={!isMobile}
       popoverMount={MountPlacement.BODY}

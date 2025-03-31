@@ -229,7 +229,19 @@ const RepostsTab = ({
   profile: User
   handle: string
 }) => {
-  const queryData = useProfileReposts({
+  const {
+    data,
+    isPending,
+    isFetching,
+    isError,
+    pageSize,
+    hasNextPage,
+    loadNextPage,
+    play,
+    pause,
+    lineup,
+    isPlaying
+  } = useProfileReposts({
     handle
   })
 
@@ -248,7 +260,22 @@ const RepostsTab = ({
     )
   }
 
-  return <TanQueryLineup lineupQueryData={queryData} actions={feedActions} />
+  return (
+    <TanQueryLineup
+      data={data}
+      lineup={lineup}
+      isPlaying={isPlaying}
+      actions={feedActions}
+      isPending={isPending}
+      isFetching={isFetching}
+      isError={isError}
+      pageSize={pageSize}
+      hasNextPage={hasNextPage}
+      loadNextPage={loadNextPage}
+      play={play}
+      pause={pause}
+    />
+  )
 }
 
 const TracksTab = ({
@@ -259,16 +286,37 @@ const TracksTab = ({
   handle: string
   isOwner: boolean
 }) => {
-  const queryData = useProfileTracks({
+  const {
+    data,
+    isPending,
+    isFetching,
+    isError,
+    pageSize,
+    hasNextPage,
+    loadNextPage,
+    play,
+    pause,
+    lineup,
+    isPlaying
+  } = useProfileTracks({
     handle
   })
 
   return (
     <TanQueryLineup
-      lineupQueryData={queryData}
+      data={data}
+      isPending={isPending}
+      isFetching={isFetching}
+      isError={isError}
+      pageSize={pageSize}
+      hasNextPage={hasNextPage}
+      loadNextPage={loadNextPage}
+      play={play}
+      pause={pause}
       leadingElementId={profile.artist_pick_track_id}
-      pageSize={queryData.pageSize}
       actions={tracksActions}
+      isPlaying={isPlaying}
+      lineup={lineup}
     />
   )
 }
@@ -283,7 +331,6 @@ const ProfilePage = g(
     bio,
     location,
     status,
-    collectionStatus,
     isArtist,
     isOwner,
     verified,

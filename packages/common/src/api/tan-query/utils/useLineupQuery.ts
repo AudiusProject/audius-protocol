@@ -27,7 +27,9 @@ import { loadNextPage } from './infiniteQueryLoadNextPage'
 /**
  * Helper to provide stitch together tan-query data and easily provide lineup methods as part of our query hooks
  */
-export const useLineupQuery = ({
+export const useLineupQuery = <
+  T extends UserTrackMetadata | UserCollectionMetadata
+>({
   queryData,
   queryKey,
   lineupActions,
@@ -36,9 +38,7 @@ export const useLineupQuery = ({
   pageSize
 }: {
   // Lineup related props
-  queryData: UseInfiniteQueryResult<
-    (UserTrackMetadata | UserCollectionMetadata)[]
-  >
+  queryData: UseInfiniteQueryResult<T[]>
   queryKey: QueryKey
   lineupActions: LineupActions
   lineupSelector: Selector<

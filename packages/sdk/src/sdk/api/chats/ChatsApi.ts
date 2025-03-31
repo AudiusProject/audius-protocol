@@ -84,10 +84,6 @@ export class ChatsApi
    * An event emitter that's used for consumers to listen for chat events
    */
   private readonly eventEmitter: TypedEmitter<ChatEvents>
-  /**
-   * The websocket currently in use
-   */
-  private websocket: WebSocket | undefined
 
   /**
    * Proxy to the event emitter addListener
@@ -112,10 +108,6 @@ export class ChatsApi
       this.eventEmitter
     )
 
-    this.createWebsocket(this.configuration.basePath).then((ws) => {
-      this.websocket = ws
-    })
-
     this.logger = logger.createPrefixedLogger('[chats-api]')
   }
 
@@ -126,14 +118,7 @@ export class ChatsApi
    * @param params.currentUserId the user to listen for chat events for
    */
   public async listen() {
-    this.websocket = await this.createWebsocket(this.configuration.basePath)
-  }
-
-  /**
-   * Gets the active websocket
-   */
-  public async getWebsocket() {
-    return this.websocket
+    await this.createWebsocket(this.configuration.basePath)
   }
 
   /**

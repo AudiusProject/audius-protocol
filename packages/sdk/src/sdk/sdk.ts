@@ -235,6 +235,14 @@ const initializeServices = (config: SdkConfig) => {
         })
       )
 
+  const archiverService = config.services?.archiverService
+    ? config.services.archiverService.withMiddleware(
+        addRequestSignatureMiddleware({
+          services: { audiusWalletClient, logger }
+        })
+      )
+    : undefined
+
   const emailEncryptionService =
     config.services?.emailEncryptionService ??
     new EmailEncryptionService(
@@ -385,6 +393,7 @@ const initializeServices = (config: SdkConfig) => {
     serviceProviderFactoryClient,
     ethRewardsManagerClient,
     emailEncryptionService,
+    archiverService,
     logger
   }
   return services
