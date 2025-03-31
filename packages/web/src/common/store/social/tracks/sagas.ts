@@ -1,6 +1,5 @@
-import { queryTrack } from '@audius/common/api'
+import { queryTrack, queryUser } from '@audius/common/api'
 import { Name, Kind, ID, Track, User } from '@audius/common/models'
-import { queryUser } from '@audius/common/src/api/tan-query/saga-utils'
 import {
   accountSelectors,
   accountActions,
