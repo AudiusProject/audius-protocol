@@ -26,16 +26,14 @@ CREATE TABLE IF NOT EXISTS events (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     txhash TEXT NOT NULL,
     blockhash TEXT NOT NULL,
-    blocknumber integer REFERENCES blocks(number) ON DELETE CASCADE
+    blocknumber integer REFERENCES blocks(number)
 );
 
--- Add index for event type for efficient lookups
+-- Add index for event type, entity type, entity id, created at, and end date for efficient lookups
 CREATE INDEX IF NOT EXISTS idx_events_event_type ON public.events USING btree (event_type);
-
--- Add index for event entity type for efficient lookups
 CREATE INDEX IF NOT EXISTS idx_events_entity_type ON public.events USING btree (entity_type);
-
--- Add index for event entity type for efficient lookups
 CREATE INDEX IF NOT EXISTS idx_events_entity_id ON public.events USING btree (entity_id);
+CREATE INDEX IF NOT EXISTS idx_events_created_at ON public.events USING btree (created_at);
+CREATE INDEX IF NOT EXISTS idx_events_end_date ON public.events USING btree (end_date);
 
 commit; 
