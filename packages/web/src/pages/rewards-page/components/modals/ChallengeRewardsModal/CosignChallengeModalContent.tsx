@@ -8,7 +8,7 @@ import {
   challengeRewardsConfig,
   getChallengeStatusLabel
 } from '@audius/common/utils'
-import { Flex, IconArrowRotate, IconCheck, Text } from '@audius/harmony'
+import { Flex, IconCheck, Text } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import { useIsMobile } from 'hooks/useIsMobile'
@@ -24,7 +24,8 @@ const { getUndisbursedUserChallenges, getClaimStatus } =
 
 const messages = {
   rewardSubtext: '$AUDIO',
-  totalClaimed: (amount: string) => `${amount} $AUDIO Claimed`
+  totalClaimed: (amount: string) =>
+    `${formatNumberCommas(amount)} $AUDIO Claimed`
 }
 
 export const CosignChallengeModalContent = ({
@@ -93,7 +94,7 @@ export const CosignChallengeModalContent = ({
       ) : null}
     </Flex>
   ) : null
-  console.log('asdf progressStatusLabel: ', progressStatusLabel)
+
   return (
     <ChallengeRewardsLayout
       description={

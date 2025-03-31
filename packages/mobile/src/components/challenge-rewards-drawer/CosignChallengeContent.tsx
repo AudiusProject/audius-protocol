@@ -24,7 +24,8 @@ import type { ChallengeContentProps } from './types'
 
 const messages = {
   rewardMapping: '$AUDIO/Week',
-  totalClaimed: (amount: string) => `${amount} $AUDIO Claimed`,
+  totalClaimed: (amount: string) =>
+    `${formatNumberCommas(amount)} $AUDIO Claimed`,
   claimAudio: (amount: string) => `Claim ${amount} $AUDIO`,
   close: 'Close'
 }
