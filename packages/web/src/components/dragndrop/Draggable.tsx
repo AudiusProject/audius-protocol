@@ -8,7 +8,6 @@ import { useDispatch } from 'react-redux'
 import { DragDropKind, drag, drop } from 'store/dragndrop/slice'
 
 import styles from './Draggable.module.css'
-
 const isFirefox = () => navigator.userAgent.includes('Firefox')
 
 const messages = {

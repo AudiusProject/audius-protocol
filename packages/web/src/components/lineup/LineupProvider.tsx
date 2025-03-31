@@ -523,6 +523,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
             statSize,
             containerClassName,
             uid: entry.uid,
+            id: entry.id,
             isLoading: !this.canLoad(index),
             hasLoaded: this.hasLoaded,
             isTrending,
