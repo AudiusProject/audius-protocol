@@ -121,9 +121,8 @@ export class Wormhole {
       `Attest and complete transfer for eth to sol for reciept ${ethTxReceipt}`
     ]
     try {
-      const receipt = await this.ethWeb3Manager.web3.eth.getTransactionReceipt(
-        ethTxReceipt
-      )
+      const receipt =
+        await this.ethWeb3Manager.web3.eth.getTransactionReceipt(ethTxReceipt)
       const sequence = this.wormholeSDK.parseSequenceFromLogEth(
         receipt as unknown as ContractReceipt,
         this.ethBridgeAddress

@@ -1,10 +1,8 @@
 import {
-  FavoriteType,
-  Favorite,
-  UserTrackMetadata,
-  User
-} from '@audius/common/models'
-import { makeActivity, APIActivityV2 } from '@audius/common/services'
+  trackActivityFromSDK,
+  transformAndCleanList
+} from '@audius/common/adapters'
+import { FavoriteType, Favorite, User } from '@audius/common/models'
 import {
   accountSelectors,
   savedPageTracksLineupActions as tracksActions,
@@ -13,13 +11,8 @@ import {
   getContext,
   LibraryCategoryType
 } from '@audius/common/store'
-import {
-  decodeHashId,
-  encodeHashId,
-  removeNullable,
-  waitForValue,
-  Nullable
-} from '@audius/common/utils'
+import { waitForValue, Nullable } from '@audius/common/utils'
+import { full, HashId, Id } from '@audius/sdk'
 import { call, fork, put, select, takeLatest } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
@@ -28,7 +21,7 @@ import { waitForRead } from 'utils/sagaHelpers'
 import tracksSagas from './lineups/sagas'
 
 const { getTrackSaves } = savedPageSelectors
-const { getAccountUser } = accountSelectors
+const { getAccountUser, getTrackSaveCount } = accountSelectors
 
 function* fetchLineupMetadatas(offset: number, limit: number) {
   const isNativeMobile = yield* getContext('isNativeMobile')
@@ -64,23 +57,27 @@ function* sendLibraryRequest({
   const audiusSdk = yield* getContext('audiusSdk')
   const sdk = yield* call(audiusSdk)
 
-  const savedTracksResponse = (yield* call(
-    [sdk.full.users, sdk.full.users.getUserLibraryTracks as any],
+  const savedTracksResponse = yield* call(
+    [sdk.full.users, sdk.full.users.getUserLibraryTracks],
     {
-      id: encodeHashId(userId),
-      userId: encodeHashId(userId),
+      id: Id.parse(userId),
+      userId: Id.parse(userId),
       offset,
       limit,
       query,
-      sortMethod,
-      sortDirection,
+      sortMethod: sortMethod as full.GetUserLibraryTracksSortMethodEnum,
+      sortDirection:
+        sortDirection as full.GetUserLibraryTracksSortDirectionEnum,
       type: category
     }
-  )) as any
-  const savedTracksResponseData = savedTracksResponse.data as APIActivityV2[]
-  const tracks = savedTracksResponse.data
-    ?.map(makeActivity)
-    .filter(removeNullable) as UserTrackMetadata[]
+  )
+
+  const savedTracksResponseData = savedTracksResponse.data ?? []
+  const tracks = transformAndCleanList(
+    savedTracksResponse.data,
+    (activity: full.ActivityFull) => trackActivityFromSDK(activity)?.item
+  )
+
   if (!tracks) {
     throw new Error('Something went wrong with library tracks request.')
   }
@@ -89,7 +86,7 @@ function* sendLibraryRequest({
     .filter((save) => Boolean(save.timestamp && save.item))
     .map((save) => ({
       created_at: save.timestamp!,
-      save_item_id: decodeHashId(save.item!.id!),
+      save_item_id: HashId.parse(save.item!.id!),
       save_type: FavoriteType.TRACK,
       user_id: userId
     })) as Favorite[]
@@ -101,16 +98,16 @@ function* sendLibraryRequest({
 }
 
 function prepareParams({
-  account,
+  account: { userId, trackSaveCount },
   params
 }: {
-  account: User
+  account: { userId: number; trackSaveCount: number }
   params: ReturnType<typeof actions.fetchSaves>
 }) {
   return {
-    userId: account.user_id,
+    userId,
     offset: params.offset ?? 0,
-    limit: params.limit ?? account.track_save_count,
+    limit: params.limit ?? trackSaveCount,
     query: params.query,
     sortMethod: params.sortMethod || 'added_date',
     sortDirection: params.sortDirection || 'desc',
@@ -128,9 +125,16 @@ function* watchFetchSaves() {
     actions.FETCH_SAVES,
     function* (rawParams: ReturnType<typeof actions.fetchSaves>) {
       yield* waitForRead()
-      const account: User = yield* call(waitForValue, getAccountUser)
+      const { user_id: userId }: User = yield* call(
+        waitForValue,
+        getAccountUser
+      )
+      const trackSaveCount = yield* select(getTrackSaveCount)
       const saves = yield* select(getTrackSaves)
-      const params = prepareParams({ account, params: rawParams })
+      const params = prepareParams({
+        account: { userId, trackSaveCount },
+        params: rawParams
+      })
       const { query, sortDirection, sortMethod, offset, limit, category } =
         params
       const isSameParams =
@@ -153,7 +157,7 @@ function* watchFetchSaves() {
 
           yield* processAndCacheTracks(tracks)
 
-          const fullSaves = Array(account.track_save_count)
+          const fullSaves = Array(trackSaveCount)
             .fill(0)
             .map((_) => ({})) as Favorite[]
 
@@ -176,8 +180,18 @@ function* watchFetchMoreSaves() {
     actions.FETCH_MORE_SAVES,
     function* (rawParams: ReturnType<typeof actions.fetchMoreSaves>) {
       yield* waitForRead()
-      const account = yield* call(waitForValue, getAccountUser)
-      const params = prepareParams({ account, params: rawParams })
+      const { user_id, trackSaveCount } = yield* call(
+        waitForValue,
+        getAccountUser
+      )
+      const params = prepareParams({
+        account: {
+          userId: user_id,
+          trackSaveCount
+        },
+        params: rawParams
+      })
+
       const { limit, offset } = params
 
       try {

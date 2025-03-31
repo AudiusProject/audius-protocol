@@ -7,19 +7,17 @@ import {
   ID,
   TrackMetadata,
   Track,
-  UserTrackMetadata,
-  Id,
-  OptionalId
+  UserTrackMetadata
 } from '@audius/common/models'
 import {
   accountSelectors,
   cacheTracksActions,
   cacheTracksSelectors,
   cacheSelectors,
-  getContext,
   CommonState,
   getSDK
 } from '@audius/common/store'
+import { Id, OptionalId } from '@audius/sdk'
 import { call, put, select, spawn } from 'typed-redux-saga'
 
 import { retrieve } from 'common/store/cache/sagas'
@@ -102,23 +100,25 @@ export function* retrieveTrackByHandleAndSlug({
     getEntriesTimestamp: function* (ids: ID[]) {
       const selected = yield* select(
         (state: CommonState, ids: ID[]) =>
-          ids.reduce((acc, id) => {
-            acc[id] = getEntryTimestamp(state, { kind: Kind.TRACKS, id })
-            return acc
-          }, {} as { [id: number]: number | null }),
+          ids.reduce(
+            (acc, id) => {
+              acc[id] = getEntryTimestamp(state, { kind: Kind.TRACKS, id })
+              return acc
+            },
+            {} as { [id: number]: number | null }
+          ),
         ids
       )
       return selected
     },
     onBeforeAddToCache: function* (tracks: TrackMetadata[]) {
-      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       yield* addUsersFromTracks(tracks)
       const [track] = tracks
       const isLegacyPermalink = track.permalink !== permalink
       if (isLegacyPermalink) {
         yield* put(setPermalink(permalink, track.track_id))
       }
-      return tracks.map((track) => reformat(track, audiusBackendInstance))
+      return tracks.map((track) => reformat(track))
     }
   })) as { entries: { [permalink: string]: Track } }
 
@@ -179,10 +179,13 @@ export function* retrieveTracks({
     getEntriesTimestamp: function* (ids: ID[]) {
       const selected = yield* select(
         (state: CommonState, ids: ID[]) =>
-          ids.reduce((acc, id) => {
-            acc[id] = getEntryTimestamp(state, { kind: Kind.TRACKS, id })
-            return acc
-          }, {} as { [id: number]: number | null }),
+          ids.reduce(
+            (acc, id) => {
+              acc[id] = getEntryTimestamp(state, { kind: Kind.TRACKS, id })
+              return acc
+            },
+            {} as { [id: number]: number | null }
+          ),
         ids
       )
       return selected
@@ -237,9 +240,8 @@ export function* retrieveTracks({
     shouldSetLoading: true,
     deleteExistingEntry: false,
     onBeforeAddToCache: function* <T extends TrackMetadata>(tracks: T[]) {
-      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       yield* addUsersFromTracks(tracks)
-      return tracks.map((track) => reformat(track, audiusBackendInstance))
+      return tracks.map((track) => reformat(track))
     }
   })
 

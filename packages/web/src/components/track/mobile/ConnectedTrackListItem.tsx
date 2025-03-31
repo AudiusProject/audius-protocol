@@ -1,46 +1,40 @@
 import { memo, useCallback } from 'react'
 
+import { useCurrentUserId, useTrack, useUser } from '@audius/common/api'
 import {
-  RepostSource,
-  FavoriteSource,
   ID,
-  isContentUSDCPurchaseGated,
-  ModalSource
+  RepostSource,
+  ModalSource,
+  isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import { trpc } from '@audius/common/services'
 import {
-  accountSelectors,
-  cacheUsersSelectors,
-  tracksSocialActions,
   gatedContentActions,
-  mobileOverflowMenuUIActions,
-  OverflowAction,
-  OverflowSource,
-  PurchaseableContentType,
   gatedContentSelectors,
-  usePremiumContentPurchaseModal
+  mobileOverflowMenuUIActions,
+  tracksSocialActions,
+  usePremiumContentPurchaseModal,
+  OverflowAction,
+  PurchaseableContentType,
+  OverflowSource
 } from '@audius/common/store'
-import { push as pushRoute } from 'connected-react-router'
 import { connect, useDispatch } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
-import { AppState } from 'store/types'
-
 import TrackListItem, {
   TrackItemAction,
   TrackListItemProps
-} from './TrackListItem'
+} from 'components/track/mobile/TrackListItem'
+import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
+import { AppState } from 'store/types'
+import { push } from 'utils/navigation'
+
 const { setLockedContentId } = gatedContentActions
 
 const { getGatedContentStatusMap } = gatedContentSelectors
 
 const { open } = mobileOverflowMenuUIActions
-const { getUserFromTrack } = cacheUsersSelectors
-const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
-  tracksSocialActions
-const getUserId = accountSelectors.getUserId
+const { repostTrack, undoRepostTrack } = tracksSocialActions
 
 type OwnProps = TrackListItemProps
 type StateProps = ReturnType<typeof mapStateToProps>
@@ -51,7 +45,6 @@ type ConnectedTrackListItemProps = OwnProps & StateProps & DispatchProps
 const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
   const {
     clickOverflow,
-    currentUserId,
     ddexApp,
     hasStreamAccess,
     isUnlisted,
@@ -60,13 +53,19 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
     isSaved,
     streamConditions,
     trackId,
-    isDeleted,
-    user
+    isDeleted
   } = props
-  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId },
-    { enabled: !!trackId }
-  )
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: partialTrack } = useTrack(trackId, {
+    select: (track) => {
+      return {
+        ownerId: track?.owner_id,
+        albumBacklink: track?.album_backlink
+      }
+    }
+  })
+  const { ownerId, albumBacklink } = partialTrack ?? {}
+  const { data: user } = useUser(ownerId)
   const dispatch = useDispatch()
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
@@ -85,26 +84,26 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
       isLocked || isUnlisted
         ? null
         : isReposted
-        ? OverflowAction.UNREPOST
-        : OverflowAction.REPOST,
+          ? OverflowAction.UNREPOST
+          : OverflowAction.REPOST,
       isLocked || isUnlisted
         ? null
         : isSaved
-        ? OverflowAction.UNFAVORITE
-        : OverflowAction.FAVORITE,
+          ? OverflowAction.UNFAVORITE
+          : OverflowAction.FAVORITE,
       user?.user_id === currentUserId && !ddexApp
         ? OverflowAction.ADD_TO_ALBUM
         : null,
       !isUnlisted || isOwner ? OverflowAction.ADD_TO_PLAYLIST : null,
       OverflowAction.VIEW_TRACK_PAGE,
-      albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
+      albumBacklink ? OverflowAction.VIEW_ALBUM_PAGE : null,
       OverflowAction.VIEW_ARTIST_PAGE
     ].filter(Boolean) as OverflowAction[]
     clickOverflow(trackId, overflowActions)
   }
 
   const isPurchase = isContentUSDCPurchaseGated(streamConditions)
-  const onClickGatedUnlockPill = useAuthenticatedClickCallback(() => {
+  const onClickGatedUnlockPill = useRequiresAccountOnClick(() => {
     if (isPurchase && trackId) {
       openPremiumContentPurchaseModal(
         {
@@ -138,19 +137,13 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
 function mapStateToProps(state: AppState, ownProps: OwnProps) {
   const id = ownProps.trackId
   return {
-    user: getUserFromTrack(state, { id: ownProps.trackId }),
-    currentUserId: getUserId(state),
     gatedContentStatus: id ? getGatedContentStatusMap(state)[id] : undefined
   }
 }
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
-    saveTrack: (trackId: ID) =>
-      dispatch(saveTrack(trackId, FavoriteSource.TRACK_LIST)),
-    unsaveTrack: (trackId: ID) =>
-      dispatch(unsaveTrack(trackId, FavoriteSource.TRACK_LIST)),
+    goToRoute: (route: string) => dispatch(push(route)),
     repostTrack: (trackId: ID) =>
       dispatch(repostTrack(trackId, RepostSource.TRACK_LIST)),
     unrepostTrack: (trackId: ID) =>

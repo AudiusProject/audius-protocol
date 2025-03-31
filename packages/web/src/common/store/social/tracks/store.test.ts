@@ -17,11 +17,15 @@ import { waitForWrite } from 'utils/sagaHelpers'
 
 import { watchRecordListen } from './recordListen'
 
-const repostingUser = { repost_count: 0 }
-const saveUser = { handle: 'saveUser' }
+const repostingUser = { repost_count: 0, handle: 'handle', name: 'name' }
+const saveUser = { handle: 'saveUser', name: 'name' }
+
+const mockAudiusSdk = {}
+
 const defaultProviders: StaticProvider[] = [
   [matchers.call.fn(waitForWrite), undefined],
-  [matchers.call.fn(waitForBackendSetup), undefined]
+  [matchers.call.fn(waitForBackendSetup), undefined],
+  [matchers.getContext('audiusSdk'), async () => mockAudiusSdk]
 ]
 
 describe('repost', () => {
@@ -303,11 +307,10 @@ describe('recordListen', () => {
       )
       .provide([
         ...defaultProviders,
-        [matchers.getContext('audiusBackendInstance'), audiusBackendInstance],
-        [matchers.call.fn(audiusBackendInstance.recordTrackListen), true]
+        [matchers.getContext('audiusBackendInstance'), audiusBackendInstance]
       ])
       .dispatch(actions.recordListen(1))
-      .call(audiusBackendInstance.recordTrackListen, 1)
+      .call.fn(audiusBackendInstance.recordTrackListen)
       .silentRun()
   })
 

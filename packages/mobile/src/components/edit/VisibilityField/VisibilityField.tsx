@@ -23,8 +23,8 @@ export const VisibilityField = () => {
     isScheduledRelease && isHidden
       ? messages.scheduled(releaseDate)
       : isHidden
-      ? messages.hidden
-      : messages.public
+        ? messages.hidden
+        : messages.public
 
   return (
     <ContextualMenu

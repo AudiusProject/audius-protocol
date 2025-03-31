@@ -13,8 +13,8 @@ const { setUnreachable, setReachable } = reachabilityActions
 // Property values borrowed from
 // https://github.com/react-native-community/react-native-netinfo
 export const REACHABILITY_LONG_TIMEOUT = 10 * 1000 // 10s
-export const REACHABILITY_SHORT_TIMEOUT = 5 * 1000 // 5s
-export const REACHABILITY_REQUEST_TIMEOUT = 15 * 1000 // 15s
+const REACHABILITY_SHORT_TIMEOUT = 5 * 1000 // 5s
+const REACHABILITY_REQUEST_TIMEOUT = 15 * 1000 // 15s
 
 // Check that a response from REACHABILITY_URL is valid
 const isResponseValid = (response: Response | undefined) =>

@@ -59,7 +59,7 @@ module.exports = function (app) {
       }
 
       const walletFromSignature = recoverPersonalSignature({
-        data: data,
+        data,
         sig: signature
       })
       const existingUser = await models.User.findOne({
@@ -86,8 +86,8 @@ module.exports = function (app) {
       const email = existingUser.email
       const recoveryParams = {
         warning: 'RECOVERY_DO_NOT_SHARE',
-        login: login,
-        email: email
+        login,
+        email
       }
       const recoveryLink = WEBSITE_HOST + toQueryStr(recoveryParams)
       const copyrightYear = new Date().getFullYear().toString()

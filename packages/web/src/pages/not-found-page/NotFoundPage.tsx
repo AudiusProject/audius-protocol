@@ -5,7 +5,7 @@ import { route } from '@audius/common/utils'
 import { Button } from '@audius/harmony'
 import { useTheme } from '@emotion/react'
 import cn from 'classnames'
-import Lottie from 'react-lottie'
+import Lottie from 'lottie-react'
 import { Link } from 'react-router-dom'
 
 import notFoundAnimation from 'assets/animations/404.json'
@@ -38,12 +38,6 @@ export const NotFoundPage = () => {
     record(make(Name.NOT_FOUND_PAGE, {}))
   }, [record])
 
-  const animationOptions = {
-    loop: true,
-    autoplay: true,
-    animationData: notFoundAnimation
-  }
-
   const navContext = useContext(NavContext)!
   useEffect(() => {
     if (isMobile) {
@@ -74,7 +68,7 @@ export const NotFoundPage = () => {
         <div className={styles.contentWrapper}>
           <div className={styles.mainContent}>
             <div className={styles.animation}>
-              <Lottie options={animationOptions} />
+              <Lottie loop autoplay animationData={notFoundAnimation} />
             </div>
             <div className={styles.textWrapper}>
               <h1 className={styles.mainText}>

@@ -6,7 +6,8 @@
   border: 1px solid #fafafa;
   border-radius: 4px;
   background-color: var(--harmony-white);
-  box-shadow: 0 2px 5px -2px rgba(133, 129, 153, 0.1),
+  box-shadow:
+    0 2px 5px -2px rgba(133, 129, 153, 0.1),
     0 16px 20px -5px rgba(133, 129, 153, 0.15);
   display: inline-flex;
   align-items: stretch;

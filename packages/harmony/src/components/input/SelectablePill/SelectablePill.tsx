@@ -2,9 +2,9 @@ import { ComponentProps } from 'react'
 
 import { CSSObject, useTheme } from '@emotion/react'
 
-import { HiddenInput } from 'components/common/HiddenInput'
-import { useRadioGroup } from 'components/radio-group/useRadioGroup'
-import { Text } from 'components/text'
+import { HiddenInput } from '~harmony/components/common/HiddenInput'
+import { useRadioGroup } from '~harmony/components/radio-group/useRadioGroup'
+import { Text } from '~harmony/components/text'
 
 import type { SelectablePillProps } from './types'
 
@@ -28,7 +28,7 @@ export const SelectablePill = (props: SelectablePillProps) => {
   const { disabled, type } = other
   const isSelected =
     type === 'checkbox' || type === 'radio'
-      ? other.checked ?? isSelectedProp
+      ? (other.checked ?? isSelectedProp)
       : isSelectedProp
 
   const theme = useTheme()
@@ -39,8 +39,6 @@ export const SelectablePill = (props: SelectablePillProps) => {
     color: theme.color.static.white,
     border: `1px solid ${theme.color.secondary.secondary}`,
     ...(size === 'large' && {
-      backgroundColor: theme.color.secondary.s100,
-      border: `1px solid ${theme.color.secondary.s200}`,
       boxShadow: 'none'
     })
   }
@@ -49,7 +47,6 @@ export const SelectablePill = (props: SelectablePillProps) => {
     backgroundColor: theme.color.secondary.s400,
     color: theme.color.static.white,
     border: `1px solid ${theme.color.secondary.s400}`,
-
     ...(size === 'large' && {
       boxShadow: 'none'
     })

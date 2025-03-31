@@ -1,7 +1,7 @@
+import { OptionalId } from '@audius/sdk'
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 
 import { transformAndCleanList, userMetadataFromSDK } from '~/adapters'
-import { OptionalId } from '~/models'
 import { accountSelectors } from '~/store/account'
 import { processAndCacheUsers } from '~/store/cache/users/utils'
 import { SearchKind } from '~/store/pages/search-results/types'

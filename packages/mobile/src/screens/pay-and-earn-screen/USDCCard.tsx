@@ -1,15 +1,9 @@
 import { useCallback } from 'react'
 
 import { useUSDCBalance } from '@audius/common/hooks'
-import type { BNUSDC } from '@audius/common/models'
 import { useAddFundsModal } from '@audius/common/store'
-import {
-  formatCurrencyBalance,
-  formatUSDCWeiToFloorCentsNumber
-} from '@audius/common/utils'
+import { USDC } from '@audius/fixed-decimal'
 import { css } from '@emotion/native'
-import BN from 'bn.js'
-import { TouchableOpacity } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
 import {
@@ -17,14 +11,14 @@ import {
   IconQuestionCircle,
   Flex,
   Button,
-  Paper
+  Paper,
+  PlainButton
 } from '@audius/harmony-native'
 import LogoUSDCInverted from 'app/assets/images/logoUSDCInverted.svg'
 import { useLink } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
-import { useColor } from 'app/utils/theme'
 
 const LEARN_MORE_LINK =
   'https://support.audius.co/help/Understanding-USDC-on-Audius'
@@ -52,12 +46,8 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 export const USDCCard = () => {
   const styles = useStyles()
-  const white = useColor('staticWhite')
   const { data: balance } = useUSDCBalance()
-  const balanceCents = formatUSDCWeiToFloorCentsNumber(
-    (balance ?? new BN(0)) as BNUSDC
-  )
-  const usdcBalanceFormatted = formatCurrencyBalance(balanceCents / 100)
+  const usdcBalanceFormatted = USDC(balance ?? 0).toLocaleString()
 
   const { onPress: onLearnMorePress } = useLink(LEARN_MORE_LINK)
 
@@ -104,18 +94,14 @@ export const USDCCard = () => {
         <Text variant='body' color='staticWhite'>
           {messages.buyAndSell}
         </Text>
-        <TouchableOpacity onPress={onLearnMorePress}>
-          <Flex direction='row' alignItems='center' gap='xs'>
-            <IconQuestionCircle
-              height={spacing(4)}
-              width={spacing(4)}
-              fill={white}
-            />
-            <Text variant='body' size='s' strength='strong' color='staticWhite'>
-              {messages.learnMore}
-            </Text>
-          </Flex>
-        </TouchableOpacity>
+        <PlainButton
+          style={{ alignSelf: 'flex-start' }}
+          variant='inverted'
+          onPress={onLearnMorePress}
+          iconLeft={IconQuestionCircle}
+        >
+          {messages.learnMore}
+        </PlainButton>
       </LinearGradient>
       <Flex
         p='xl'

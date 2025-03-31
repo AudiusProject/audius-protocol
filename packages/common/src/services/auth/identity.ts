@@ -1,78 +1,92 @@
-import { SetAuthFn } from '@audius/hedgehog'
+import { AudiusWalletClient } from '@audius/sdk'
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
-import sigUtil from 'eth-sig-util'
 
+import { TwitterUser } from '~/models'
 import { uuid } from '~/utils/uid'
 
 import { AuthHeaders } from './types'
 
-type Data = Record<string, unknown>
-type SetAuthFnParams = Parameters<SetAuthFn>[0]
+export type RecoveryInfoParams = {
+  login: string
+  host: string
+}
 
 export type IdentityRequestError = AxiosError
 
+type CreateStripeSessionRequest = {
+  destinationWallet: string
+  amount: string
+  destinationCurrency: 'sol' | 'usdc'
+}
+
+type CreateStripeSessionResponse = {
+  id: string
+  client_secret: string
+  status: string
+}
+
+enum TransactionMetadataType {
+  PURCHASE_SOL_AUDIO_SWAP = 'PURCHASE_SOL_AUDIO_SWAP'
+}
+
+type InAppAudioPurchaseMetadata = {
+  discriminator: TransactionMetadataType.PURCHASE_SOL_AUDIO_SWAP
+  usd: string
+  sol: string
+  audio: string
+  purchaseTransactionId: string
+  setupTransactionId?: string
+  swapTransactionId: string
+  cleanupTransactionId?: string
+}
+
 export type IdentityServiceConfig = {
   identityServiceEndpoint: string
+  getAudiusWalletClient: (opts?: {
+    ignoreCachedUserWallet?: boolean
+  }) => Promise<AudiusWalletClient>
 }
 
 export class IdentityService {
   identityServiceEndpoint: string
+  getAudiusWalletClient: (opts?: {
+    ignoreCachedUserWallet?: boolean
+  }) => Promise<AudiusWalletClient>
 
-  constructor({ identityServiceEndpoint }: IdentityServiceConfig) {
+  constructor({
+    identityServiceEndpoint,
+    getAudiusWalletClient: audiusWalletClient
+  }: IdentityServiceConfig) {
     this.identityServiceEndpoint = identityServiceEndpoint
+    this.getAudiusWalletClient = audiusWalletClient
   }
 
-  /* ------- HEDGEHOG AUTH ------- */
-
-  async getFn(params: {
-    lookupKey: string
-    username: string
-    visitorId?: string
-    otp?: string
-  }): Promise<{ iv: string; cipherText: string }> {
-    return await this._makeRequest({
-      url: '/authentication',
-      method: 'get',
-      params
+  // #region: Internal Functions
+  private async _getSignatureHeaders() {
+    const audiusWalletClient = await this.getAudiusWalletClient({
+      ignoreCachedUserWallet: false
     })
-  }
-
-  async setAuthFn(obj: SetAuthFnParams) {
-    // get wallet from hedgehog and set as owner wallet
-    const ownerWallet = obj.wallet
-    // delete wallet object so it's not passed to identity
-    // @ts-ignore
-    delete obj.wallet
-
-    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
-    const data = `Click sign to authenticate with identity service: ${unixTs}`
-    const signature = sigUtil.personalSign(ownerWallet.getPrivateKey(), {
-      data
-    })
-    const headers = {
-      [AuthHeaders.Message]: data,
-      [AuthHeaders.Signature]: signature
+    const [currentAddress] = await audiusWalletClient.getAddresses()
+    if (!currentAddress) {
+      throw new Error('User is not authenticated')
     }
 
-    return await this._makeRequest({
-      url: '/authentication',
-      method: 'post',
-      headers,
-      data: obj
+    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
+    const message = `Click sign to authenticate with identity service: ${unixTs}`
+    const signature = await audiusWalletClient.signMessage({
+      message
     })
+
+    return {
+      [AuthHeaders.Message]: message,
+      [AuthHeaders.Signature]: signature
+    }
   }
 
-  async setUserFn(obj: Data & { token?: string }) {
-    return await this._makeRequest({
-      url: '/user',
-      method: 'post',
-      data: obj
-    })
-  }
-
-  /* ------- INTERNAL FUNCTIONS ------- */
-
-  async _makeRequest<T = unknown>(axiosRequestObj: AxiosRequestConfig) {
+  // TODO: Use regular `fetch` and same request patterns as SDK
+  // Likely this means extending BaseAPI and using request sig middleware
+  // But calling code needs to update to follow SDK patterns as well
+  private async _makeRequest<T = unknown>(axiosRequestObj: AxiosRequestConfig) {
     axiosRequestObj.baseURL =
       axiosRequestObj.baseURL || this.identityServiceEndpoint
 
@@ -102,5 +116,189 @@ export class IdentityService {
       }
       throw error
     }
+  }
+
+  // #region: Public Functions
+
+  async sendRecoveryInfo(args: RecoveryInfoParams) {
+    // This endpoint takes data/signature as body params
+    const { [AuthHeaders.Message]: data, [AuthHeaders.Signature]: signature } =
+      await this._getSignatureHeaders()
+    return await this._makeRequest<{ status: true }>({
+      url: '/recovery',
+      method: 'post',
+      data: { ...args, data, signature }
+    })
+  }
+
+  async lookupTwitterHandle(handle: string): Promise<TwitterUser> {
+    if (handle) {
+      return await this._makeRequest({
+        url: '/twitter/handle_lookup',
+        method: 'get',
+        params: { handle }
+      })
+    } else {
+      throw new Error('No handle passed into function lookupTwitterHandle')
+    }
+  }
+
+  async associateTwitterUser(
+    uuid: string,
+    userId: number,
+    handle: string,
+    blockNumber?: number
+  ) {
+    return await this._makeRequest({
+      url: '/twitter/associate',
+      method: 'post',
+      data: {
+        uuid,
+        userId,
+        handle,
+        blockNumber
+      }
+    })
+  }
+
+  async associateInstagramUser(
+    uuid: string,
+    userId: number,
+    handle: string,
+    blockNumber?: number
+  ) {
+    return await this._makeRequest({
+      url: '/instagram/associate',
+      method: 'post',
+      data: {
+        uuid,
+        userId,
+        handle,
+        blockNumber
+      }
+    })
+  }
+
+  async associateTikTokUser(
+    uuid: string,
+    userId: number,
+    handle: string,
+    blockNumber?: number
+  ) {
+    return await this._makeRequest({
+      url: '/tiktok/associate',
+      method: 'post',
+      data: {
+        uuid,
+        userId,
+        handle,
+        blockNumber
+      }
+    })
+  }
+
+  /**
+   * Check if an email address has been previously registered.
+   */
+  async checkIfEmailRegistered(email: string) {
+    return await this._makeRequest<{ exists: boolean; isGuest: boolean }>({
+      url: '/users/check',
+      method: 'get',
+      params: {
+        email
+      }
+    })
+  }
+
+  /**
+   * Get the user's email used for notifications and display.
+   */
+  async getUserEmail() {
+    const headers = await this._getSignatureHeaders()
+
+    const res = await this._makeRequest<{ email: string | undefined | null }>({
+      url: '/user/email',
+      method: 'get',
+      headers
+    })
+
+    if (!res.email) {
+      throw new Error('No email found')
+    }
+    return res.email
+  }
+
+  /**
+   * Change the user's email used for notifications and display.
+   */
+  async changeEmail({ email, otp }: { email: string; otp?: string }) {
+    const headers = await this._getSignatureHeaders()
+
+    return await this._makeRequest({
+      url: '/user/email',
+      method: 'PUT',
+      headers,
+      data: { email, otp }
+    })
+  }
+
+  async createStripeSession(
+    data: CreateStripeSessionRequest
+  ): Promise<CreateStripeSessionResponse> {
+    const headers = await this._getSignatureHeaders()
+
+    return await this._makeRequest({
+      url: '/stripe/session',
+      method: 'post',
+      data,
+      headers
+    })
+  }
+
+  async recordIP() {
+    const headers = await this._getSignatureHeaders()
+
+    return await this._makeRequest({
+      url: '/record_ip',
+      method: 'post',
+      headers
+    })
+  }
+
+  async getUserBankTransactionMetadata(transactionId: string) {
+    const headers = await this._getSignatureHeaders()
+
+    const metadatas = await this._makeRequest<
+      Array<{ metadata: InAppAudioPurchaseMetadata }>
+    >({
+      url: `/transaction_metadata?id=${transactionId}`,
+      method: 'get',
+      headers
+    })
+    return metadatas[0]?.metadata ?? null
+  }
+
+  async saveUserBankTransactionMetadata(data: {
+    transactionSignature: string
+    metadata: InAppAudioPurchaseMetadata
+  }) {
+    const headers = await this._getSignatureHeaders()
+
+    return await this._makeRequest({
+      url: '/transaction_metadata',
+      method: 'post',
+      data,
+      headers
+    })
+  }
+
+  async createPlaidLinkToken() {
+    const headers = await this._getSignatureHeaders()
+
+    return await this._makeRequest<{ linkToken: string }>({
+      url: '/create_link_token',
+      method: 'get',
+      headers
+    })
   }
 }

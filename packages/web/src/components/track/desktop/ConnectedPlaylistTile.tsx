@@ -33,7 +33,6 @@ import {
 import { route } from '@audius/common/utils'
 import { Text, IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
 import { LocationState } from 'history'
 import { range } from 'lodash'
 import { connect } from 'react-redux'
@@ -46,17 +45,10 @@ import { OwnProps as CollectionkMenuProps } from 'components/menu/CollectionMenu
 import Menu from 'components/menu/Menu'
 import { CollectionArtwork } from 'components/track/Artwork'
 import { TrackTileSize } from 'components/track/types'
-import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
-import {
-  setUsers,
-  setVisibility
-} from 'store/application/ui/userListModal/slice'
-import {
-  UserListType,
-  UserListEntityType
-} from 'store/application/ui/userListModal/types'
+import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
 import { AppState } from 'store/types'
 import { isDescendantElementOf } from 'utils/domUtils'
+import { push as pushRoute } from 'utils/navigation'
 import { fullCollectionPage, fullTrackPage } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
@@ -65,8 +57,6 @@ import { getCollectionWithFallback, getUserWithFallback } from '../helpers'
 import styles from './ConnectedPlaylistTile.module.css'
 import PlaylistTile from './PlaylistTile'
 import TrackListItem from './TrackListItem'
-import Stats from './stats/Stats'
-import { Flavor } from './stats/StatsText'
 const { getUid, getBuffering, getPlaying } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { getUserFromCollection } = cacheUsersSelectors
@@ -95,7 +85,6 @@ type OwnProps = {
   hasLoaded: (index: number) => void
   numLoadingSkeletonRows?: number
   isTrending: boolean
-  showRankIcon: boolean
   isFeed: boolean
   source?: ModalSource
 }
@@ -126,16 +115,12 @@ const ConnectedPlaylistTile = ({
   numLoadingSkeletonRows,
   isUploading,
   hasLoaded,
-  setRepostUsers,
-  setFavoriteUsers,
-  setModalVisibility,
   shareCollection,
   repostCollection,
   undoRepostCollection,
   saveCollection,
   unsaveCollection,
   isTrending,
-  showRankIcon,
   isFeed = false,
   source
 }: ConnectedPlaylistTileProps) => {
@@ -144,11 +129,6 @@ const ConnectedPlaylistTile = ({
     playlist_name: title,
     playlist_id: id,
     is_private: isUnlisted,
-    _cover_art_sizes: coverArtSizes,
-    repost_count: repostCount,
-    save_count: saveCount,
-    followee_reposts: followeeReposts,
-    followee_saves: followeeSaves,
     has_current_user_reposted: isReposted,
     has_current_user_saved: isFavorited,
     track_count: trackCount,
@@ -264,7 +244,6 @@ const ConnectedPlaylistTile = ({
   const renderImage = useCallback(() => {
     const artworkProps = {
       id,
-      coverArtSizes,
       size: 'large',
       isBuffering: isBuffering && isActive,
       isPlaying: isPlaylistPlaying,
@@ -273,7 +252,7 @@ const ConnectedPlaylistTile = ({
       showSkeleton: isLoading
     }
     return <CollectionArtwork {...artworkProps} />
-  }, [id, coverArtSizes, isActive, isBuffering, isPlaylistPlaying, isLoading])
+  }, [id, isActive, isBuffering, isPlaylistPlaying, isLoading])
 
   const renderOverflowMenu = () => {
     const menu: Omit<CollectionkMenuProps, 'children'> = {
@@ -326,42 +305,6 @@ const ConnectedPlaylistTile = ({
     </Text>
   )
 
-  const onClickStatFavorite = useCallback(() => {
-    setFavoriteUsers(id!)
-    setModalVisibility()
-  }, [setFavoriteUsers, id, setModalVisibility])
-
-  const onClickStatRepost = useCallback(() => {
-    setRepostUsers(id!)
-    setModalVisibility()
-  }, [setRepostUsers, id, setModalVisibility])
-
-  const renderStats = () => {
-    const contentTitle = isAlbum ? 'album' : 'playlist'
-    const sz = 'large'
-    return (
-      <div className={cn(styles.socialInfo)}>
-        <Stats
-          hideImage={size === TrackTileSize.SMALL}
-          count={repostCount}
-          followeeActions={followeeReposts}
-          contentTitle={contentTitle}
-          size={sz}
-          onClick={onClickStatRepost}
-          flavor={Flavor.REPOST}
-        />
-        <Stats
-          count={saveCount}
-          followeeActions={followeeSaves}
-          contentTitle={contentTitle}
-          size={sz}
-          onClick={onClickStatFavorite}
-          flavor={Flavor.FAVORITE}
-        />
-      </div>
-    )
-  }
-
   const onClickFavorite = useCallback(() => {
     if (isFavorited) {
       unsaveCollection(id)
@@ -384,7 +327,7 @@ const ConnectedPlaylistTile = ({
 
   const hasStreamAccess = !!access?.stream
 
-  const onClickGatedUnlockPill = useAuthenticatedClickCallback(() => {
+  const onClickGatedUnlockPill = useRequiresAccountOnClick(() => {
     const isPurchase = isContentUSDCPurchaseGated(streamConditions)
     if (isPurchase && id) {
       openPremiumContentPurchaseModal(
@@ -479,7 +422,6 @@ const ConnectedPlaylistTile = ({
   ])
 
   const artwork = renderImage()
-  const stats = renderStats()
   const rightActions = renderOverflowMenu()
   const trackList = renderTrackList()
 
@@ -504,13 +446,11 @@ const ConnectedPlaylistTile = ({
       isDarkMode={isDarkMode()}
       isMatrixMode={isMatrix()}
       isActive={isActive}
-      isUnlisted={isUnlisted}
       isPlaying={isPlaylistPlaying}
       artwork={artwork}
       rightActions={rightActions}
       title={title}
       userName={userName}
-      stats={stats}
       header={header}
       onClickTitle={onClickTitle}
       onClickRepost={onClickRepost}
@@ -536,7 +476,6 @@ const ConnectedPlaylistTile = ({
       trackList={trackList}
       trackCount={trackCount}
       isTrending={isTrending}
-      showRankIcon={showRankIcon}
       href={href}
       hasStreamAccess={hasStreamAccess}
       streamConditions={isStreamGated ? streamConditions : null}
@@ -578,25 +517,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     saveCollection: (id: ID, isFeed: boolean) =>
       dispatch(saveCollection(id, FavoriteSource.TILE, isFeed)),
     unsaveCollection: (id: ID) =>
-      dispatch(unsaveCollection(id, FavoriteSource.TILE)),
-
-    setRepostUsers: (trackID: ID) =>
-      dispatch(
-        setUsers({
-          userListType: UserListType.REPOST,
-          entityType: UserListEntityType.COLLECTION,
-          id: trackID
-        })
-      ),
-    setFavoriteUsers: (trackID: ID) =>
-      dispatch(
-        setUsers({
-          userListType: UserListType.FAVORITE,
-          entityType: UserListEntityType.COLLECTION,
-          id: trackID
-        })
-      ),
-    setModalVisibility: () => dispatch(setVisibility(true))
+      dispatch(unsaveCollection(id, FavoriteSource.TILE))
   }
 }
 

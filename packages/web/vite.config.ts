@@ -4,6 +4,7 @@ import path from 'path'
 
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill'
 import react from '@vitejs/plugin-react-swc'
+import fixReactVirtualized from 'esbuild-plugin-react-virtualized'
 import { visualizer } from 'rollup-plugin-visualizer'
 import vike from 'vike/plugin'
 import { defineConfig, loadEnv } from 'vite'
@@ -84,7 +85,8 @@ export default defineConfig(async ({ mode }) => {
         plugins: [
           NodeGlobalsPolyfillPlugin({
             buffer: true
-          })
+          }),
+          fixReactVirtualized
         ]
       }
     },
@@ -158,9 +160,12 @@ export default defineConfig(async ({ mode }) => {
         utils: '/src/utils',
         ssr: '/src/ssr',
         '~': path.resolve(__dirname, '../../packages/common/src'),
+        '~harmony': path.resolve(__dirname, '../../packages/harmony/src'),
         test: '/src/test',
         '@audius/common/src': path.resolve(__dirname, '../common/src'),
-        os: require.resolve('os-browserify'),
+        '@audius/harmony/src': path.resolve(__dirname, '../harmony/src'),
+        '@audius/harmony/dist': path.resolve(__dirname, '../harmony/dist'),
+        '@audius/harmony': path.resolve(__dirname, '../harmony/src'),
         path: require.resolve('path-browserify'),
         url: require.resolve('url'),
         zlib: require.resolve('browserify-zlib'),

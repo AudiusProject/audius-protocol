@@ -62,7 +62,6 @@ type CollapsibleTabNavigatorProps = {
    * Function that renders the collapsible header
    */
   renderHeader: () => ReactNode
-
   /**
    * Animated value to capture scrolling. If unset, an
    * animated value is created.
@@ -85,7 +84,7 @@ export const CollapsibleTabNavigator = ({
 }: CollapsibleTabNavigatorProps) => {
   const collapsibleOptions = useMemo(
     () => ({ renderHeader, disableSnap: true, animatedValue, headerHeight }),
-    [renderHeader, animatedValue, headerHeight]
+    [animatedValue, headerHeight, renderHeader]
   )
 
   return (
@@ -93,7 +92,7 @@ export const CollapsibleTabNavigator = ({
       collapsibleOptions={collapsibleOptions}
       initialRouteName={initialScreenName}
       tabBar={tabBar}
-      screenOptions={screenOptions}
+      screenOptions={{ ...screenOptions, lazy: false }}
     >
       {children}
     </Tab.Navigator>
@@ -134,7 +133,9 @@ export const collapsibleTabScreen = (config: TabScreenConfig) => {
       name={name}
       options={{
         tabBarLabel: label ?? name,
-        tabBarIcon: ({ color }) => <Icon fill={color} />
+        tabBarIcon: ({ color }) => (
+          <Icon style={{ marginTop: 6 }} fill={color} />
+        )
       }}
       initialParams={initialParams}
     >

@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import {
   PropsWithChildren,
   createContext,
@@ -9,14 +8,14 @@ import {
 
 import {
   EntityType,
-  TrackCommentsSortMethodEnum as CommentSortMethod
+  GetTrackCommentsSortMethodEnum as CommentSortMethod
 } from '@audius/sdk'
 import { useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
   useGetTrackById,
-  useGetCommentsByTrackId,
+  useTrackComments,
   QUERY_KEYS,
   useTrackCommentCount,
   resetPreviousCommentCount
@@ -30,9 +29,8 @@ import {
   UserTrackMetadata,
   Name
 } from '~/models'
+import { LineupBaseActions, playerActions } from '~/store'
 import { getUserId } from '~/store/account/selectors'
-import { tracksActions } from '~/store/pages/track/lineup/actions'
-import { getLineup } from '~/store/pages/track/selectors'
 import { seek } from '~/store/player/slice'
 import { PurchaseableContentType } from '~/store/purchase-content/types'
 import { usePremiumContentPurchaseModal } from '~/store/ui/modals/premium-content-purchase-modal'
@@ -53,6 +51,14 @@ type CommentSectionProviderProps<NavigationProp> = {
   ) => void
   navigation?: NavigationProp
   closeDrawer?: () => void
+  uid?: string
+  /** Object containing lineup/player actions such as play, togglePlay, setPage
+   *  Typically these are lineup actions -
+   *  but playerActions are used when the comments were opened from NowPlaying.
+   *  In that scenario the comments are always for the currently playing track,
+   *  so it doesnt need to worry about changing lineups
+   */
+  lineupActions?: LineupBaseActions | typeof playerActions
 }
 
 export type ReplyingAndEditingState = {
@@ -79,7 +85,7 @@ type CommentSectionContextType<NavigationProp> = {
   loadMorePages: () => void
   hasNewComments: boolean
   isCommentCountLoading: boolean
-} & CommentSectionProviderProps<NavigationProp>
+} & Omit<CommentSectionProviderProps<NavigationProp>, 'lineupActions' | 'uid'>
 
 export const CommentSectionContext = createContext<
   CommentSectionContextType<any> | undefined
@@ -95,7 +101,9 @@ export function CommentSectionProvider<NavigationProp>(
     replyingAndEditingState,
     setReplyingAndEditingState,
     navigation,
-    closeDrawer
+    closeDrawer,
+    uid: lineupUid,
+    lineupActions
   } = props
   const { data: track } = useGetTrackById({ id: entityId })
   const {
@@ -118,18 +126,20 @@ export function CommentSectionProvider<NavigationProp>(
   }
 
   const currentUserId = useSelector(getUserId)
+
   const {
-    data: commentIds = [],
+    data: comments = [],
+    commentIds = [],
     status,
     isFetching,
     hasNextPage,
     fetchNextPage: loadMorePages,
     isFetchingNextPage: isLoadingMorePages
-  } = useGetCommentsByTrackId({
+  } = useTrackComments({
     trackId: entityId,
-    sortMethod: currentSort,
-    userId: currentUserId
+    sortMethod: currentSort
   })
+
   const queryClient = useQueryClient()
   // hard refreshes all data
   const resetComments = useCallback(() => {
@@ -150,8 +160,6 @@ export function CommentSectionProvider<NavigationProp>(
 
   const dispatch = useDispatch()
 
-  const lineup = useSelector(getLineup)
-
   const { hasStreamAccess } = useGatedContentAccess(track!)
 
   const { onOpen: openPremiumContentPurchaseModal } =
@@ -163,10 +171,10 @@ export function CommentSectionProvider<NavigationProp>(
       make({
         eventName: Name.COMMENTS_LOAD_MORE_COMMENTS,
         trackId: entityId,
-        offset: commentIds.length
+        offset: comments.length
       })
     )
-  }, [commentIds.length, entityId, loadMorePages, make, trackEvent])
+  }, [comments.length, entityId, loadMorePages, make, trackEvent])
 
   const handleResetComments = useCallback(() => {
     resetComments()
@@ -182,7 +190,9 @@ export function CommentSectionProvider<NavigationProp>(
 
   const playTrack = useCallback(
     (timestampSeconds?: number) => {
-      const uid = lineup?.entries?.[0]?.uid
+      if (lineupUid === undefined || lineupActions === undefined) {
+        return
+      }
 
       // If a timestamp is provided, we should seek to that timestamp
       if (timestampSeconds !== undefined) {
@@ -196,24 +206,25 @@ export function CommentSectionProvider<NavigationProp>(
             }
           )
         } else {
-          dispatch(tracksActions.play(uid))
+          dispatch(lineupActions.play(lineupUid))
           setTimeout(() => dispatch(seek({ seconds: timestampSeconds })), 100)
         }
       } else {
-        dispatch(tracksActions.play(uid))
+        dispatch(lineupActions.play(lineupUid))
       }
     },
     [
       dispatch,
       hasStreamAccess,
-      lineup?.entries,
+      lineupActions,
+      lineupUid,
       openPremiumContentPurchaseModal,
       track
     ]
   )
 
   const commentSectionLoading =
-    (status === 'loading' || isFetching) && !isLoadingMorePages
+    (status === 'pending' || isFetching) && !isLoadingMorePages
 
   if (!track) {
     return null

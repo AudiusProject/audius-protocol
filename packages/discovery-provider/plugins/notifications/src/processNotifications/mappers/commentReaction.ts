@@ -74,10 +74,13 @@ export class CommentReaction extends BaseNotification<CommentReactionNotificatio
         this.entityUserId
       ])
       .then((rows) =>
-        rows.reduce((acc, row) => {
-          acc[row.user_id] = row
-          return acc
-        }, {} as Record<number, UserRow>)
+        rows.reduce(
+          (acc, row) => {
+            acc[row.user_id] = row
+            return acc
+          },
+          {} as Record<number, UserRow>
+        )
       )
 
     if (users[this.receiverUserId]?.is_deactivated) {
@@ -95,8 +98,8 @@ export class CommentReaction extends BaseNotification<CommentReactionNotificatio
       this.entityUserId === this.receiverUserId
         ? 'your'
         : this.entityUserId === this.reacterUserId
-        ? 'their'
-        : `${users[this.entityUserId]?.name}'s`
+          ? 'their'
+          : `${users[this.entityUserId]?.name}'s`
     } ${entityType?.toLowerCase()} ${entityName}`
     if (
       userNotificationSettings.isNotificationTypeBrowserEnabled(

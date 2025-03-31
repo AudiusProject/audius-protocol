@@ -1,5 +1,8 @@
 .historyPageWrapper {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 /* Filter Input in Header */
@@ -14,7 +17,9 @@
   border: 1px solid var(--harmony-n-100) !important;
   box-shadow: 0 2px 5px 0 var(--search-bar-shadow);
   background-color: var(--harmony-n-25);
-  transition: width 0.2s ease-in-out, background 0.04s ease-in-out;
+  transition:
+    width 0.2s ease-in-out,
+    background 0.04s ease-in-out;
   color: var(--harmony-neutral);
   font-size: var(--harmony-font-xs);
   font-weight: var(--harmony-font-medium);
@@ -34,9 +39,9 @@
 
 /* Body Content Wrapper */
 .bodyWrapper {
-  display: flex;
-  flex-direction: column;
-  position: relative;
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 24px;
 }
 
 /* Track Table */
@@ -54,8 +59,19 @@
   width: 40px;
   height: 40px;
   margin: 0 auto;
+  margin-top: 16px;
 }
 
 .spinner g path {
   stroke: var(--harmony-secondary) !important;
+}
+
+.loadingMore {
+  margin: 16px auto;
+  display: flex;
+  justify-content: center;
+}
+
+.historyPageHeader {
+  padding: 0 24px;
 }

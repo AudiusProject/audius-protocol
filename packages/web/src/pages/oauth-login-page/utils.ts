@@ -1,15 +1,11 @@
-import { SquareSizes, UserMetadata } from '@audius/common/models'
-import {
-  getErrorMessage,
-  decodeHashId,
-  encodeHashId
-} from '@audius/common/utils'
-import { CreateGrantRequest } from '@audius/sdk'
+import { UserMetadata } from '@audius/common/models'
+import { getErrorMessage } from '@audius/common/utils'
+import { CreateGrantRequest, HashId, Id, OptionalId } from '@audius/sdk'
 import base64url from 'base64url'
 
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk } from 'services/audius-sdk'
-import { getStorageNodeSelector } from 'services/audius-sdk/storageNodeSelector'
+import { identityService } from 'services/audius-sdk/identity'
 
 import { messages } from './messages'
 
@@ -77,7 +73,7 @@ export const isValidApiKey = (key: string | string[]) => {
   return hexadecimalRegex.test(key)
 }
 
-export const getFormattedAppAddress = ({
+const getFormattedAppAddress = ({
   apiKey,
   includePrefix
 }: {
@@ -117,7 +113,7 @@ export const formOAuthResponse = async ({
   let email: string
   if (!userEmail) {
     try {
-      email = await audiusBackendInstance.getUserEmail()
+      email = await identityService.getUserEmail()
     } catch {
       onError()
       return
@@ -126,48 +122,9 @@ export const formOAuthResponse = async ({
     email = userEmail
   }
 
-  const storageNodeSelector = await getStorageNodeSelector()
-  let profilePicture:
-    | { '150x150': string; '480x480': string; '1000x1000': string }
-    | undefined
-  if (account.profile_picture_sizes) {
-    const storageNode = storageNodeSelector.getNodes(
-      account.profile_picture_sizes
-    )[0]
-    const base = `${storageNode}/content/`
-    profilePicture = {
-      '150x150': `${base}${account.profile_picture_sizes}/150x150.jpg`,
-      '480x480': `${base}${account.profile_picture_sizes}/480x480.jpg`,
-      '1000x1000': `${base}${account.profile_picture_sizes}/1000x1000.jpg`
-    }
-    if (account.profile_picture_cids) {
-      if (account.profile_picture_cids[SquareSizes.SIZE_150_BY_150]) {
-        profilePicture['150x150'] = `${base}${
-          account.profile_picture_cids[SquareSizes.SIZE_150_BY_150]
-        }`
-      }
-      if (account.profile_picture_cids[SquareSizes.SIZE_480_BY_480]) {
-        profilePicture['480x480'] = `${base}${
-          account.profile_picture_cids[SquareSizes.SIZE_480_BY_480]
-        }`
-      }
-      if (account.profile_picture_cids[SquareSizes.SIZE_1000_BY_1000]) {
-        profilePicture['1000x1000'] = `${base}${
-          account.profile_picture_cids[SquareSizes.SIZE_1000_BY_1000]
-        }`
-      }
-    }
-  } else if (account.profile_picture) {
-    const storageNode = storageNodeSelector.getNodes(account.profile_picture)[0]
-    const url = `${storageNode}/content/${account.profile_picture}`
-    profilePicture = {
-      '150x150': url,
-      '480x480': url,
-      '1000x1000': url
-    }
-  }
+  const profilePicture = account.profile_picture
   const timestamp = Math.round(new Date().getTime() / 1000)
-  const userId = encodeHashId(account?.user_id)
+  const userId = OptionalId.parse(account?.user_id)
   const response = {
     userId,
     email,
@@ -188,7 +145,11 @@ export const formOAuthResponse = async ({
   const message = `${header}.${payload}`
   let signedData: { data: string; signature: string }
   try {
-    signedData = await audiusBackendInstance.signDiscoveryNodeRequest(message)
+    const sdk = await audiusSdk()
+    signedData = await audiusBackendInstance.signDiscoveryNodeRequest({
+      sdk,
+      input: message
+    })
   } catch {
     onError()
     return
@@ -233,11 +194,11 @@ export type WriteOnceTx =
   | 'connect_dashboard_wallet'
   | 'disconnect_dashboard_wallet'
 
-export type ConnectDashboardWalletParams = {
+type ConnectDashboardWalletParams = {
   wallet: string
 }
 
-export type DisconnectDashboardWalletParams = {
+type DisconnectDashboardWalletParams = {
   wallet: string
 }
 
@@ -357,7 +318,7 @@ export const handleAuthorizeConnectDashboardWallet = async ({
   window.opener.postMessage(
     {
       state,
-      userId: encodeHashId(account.user_id),
+      userId: Id.parse(account.user_id),
       userHandle: account.handle
     },
     originUrl.origin
@@ -372,8 +333,8 @@ export const handleAuthorizeConnectDashboardWallet = async ({
   try {
     const sdk = await audiusSdk()
     await sdk.dashboardWalletUsers.connectUserToDashboardWallet({
-      userId: encodeHashId(account.user_id),
-      wallet: txParams!.wallet,
+      userId: Id.parse(account.user_id),
+      wallet: txParams!.wallet as `0x${string}`,
       walletSignature
     })
   } catch (e: unknown) {
@@ -404,7 +365,7 @@ export const getIsUserConnectedToDashboardWallet = async ({
   if (!dashboardWalletUser) {
     return false
   }
-  if (userId !== decodeHashId(dashboardWalletUser.id)) {
+  if (userId !== HashId.parse(dashboardWalletUser.id)) {
     return false
   }
   return true
@@ -441,8 +402,8 @@ export const handleAuthorizeDisconnectDashboardWallet = async ({
       return false
     }
     await sdk.dashboardWalletUsers.disconnectUserFromDashboardWallet({
-      wallet: txParams.wallet,
-      userId: encodeHashId(account.user_id)
+      wallet: txParams.wallet as `0x${string}`,
+      userId: Id.parse(account.user_id)
     })
   } catch (e: unknown) {
     const error = getErrorMessage(e)

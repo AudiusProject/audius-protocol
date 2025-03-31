@@ -28,7 +28,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 
 export type LockedStatusBadgeProps = {
   locked: boolean
-  variant?: 'purchase' | 'gated'
+  variant?: 'premium' | 'gated'
   text?: string
   /** Whether the badge is colored when locked */
   coloredWhenLocked?: boolean
@@ -36,15 +36,16 @@ export type LockedStatusBadgeProps = {
 }
 
 /** Renders a small badge with locked or unlocked icon */
-export const LockedStatusBadge = ({
-  locked,
-  variant = 'gated',
-  text,
-  coloredWhenLocked = false,
-  iconSize = 'medium'
-}: LockedStatusBadgeProps) => {
+export const LockedStatusBadge = (props: LockedStatusBadgeProps) => {
+  const {
+    locked,
+    variant = 'gated',
+    text,
+    coloredWhenLocked = false,
+    iconSize = 'medium'
+  } = props
   const styles = useStyles()
-  const staticWhite = useColor('staticWhite')
+  const staticWhite = useColor('white')
   const LockComponent = locked ? IconLock : IconLockUnlocked
   return (
     <View
@@ -52,9 +53,9 @@ export const LockedStatusBadge = ({
         styles.root,
         locked && !coloredWhenLocked
           ? styles.locked
-          : variant === 'purchase'
-          ? styles.premium
-          : null
+          : variant === 'premium'
+            ? styles.premium
+            : null
       ]}
     >
       <LockComponent
@@ -63,7 +64,7 @@ export const LockedStatusBadge = ({
         height={iconSize === 'medium' ? spacing(3.5) : spacing(3)}
       />
       {text ? (
-        <Text fontSize='xs' variant='label' color='staticWhite'>
+        <Text fontSize='xs' variant='label' color='white'>
           {text}
         </Text>
       ) : null}

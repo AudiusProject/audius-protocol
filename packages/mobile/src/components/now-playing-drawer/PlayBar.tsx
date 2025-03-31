@@ -1,32 +1,26 @@
-import { useCallback } from 'react'
-
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import { FavoriteSource, SquareSizes } from '@audius/common/models'
 import type { Track, User } from '@audius/common/models'
-import {
-  accountSelectors,
-  tracksSocialActions,
-  playerSelectors
-} from '@audius/common/store'
+import { accountSelectors, playerSelectors } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import { TouchableOpacity, Animated, View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import { IconLock } from '@audius/harmony-native'
 import { FavoriteButton } from 'app/components/favorite-button'
-import { TrackImage } from 'app/components/image/TrackImage'
 import Text from 'app/components/text'
 import { makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
 import { zIndex } from 'app/utils/zIndex'
 
 import { LockedStatusBadge } from '../core'
+import { TrackImage } from '../image/TrackImage'
 
 import { PlayButton } from './PlayButton'
 import { TrackingBar } from './TrackingBar'
 import { NOW_PLAYING_HEIGHT, PLAY_BAR_HEIGHT } from './constants'
-const { getAccountUser } = accountSelectors
-const { saveTrack, unsaveTrack } = tracksSocialActions
+const { getUserId } = accountSelectors
 const { getPreviewing } = playerSelectors
 
 const messages = {
@@ -140,11 +134,10 @@ type PlayBarProps = {
 }
 
 export const PlayBar = (props: PlayBarProps) => {
-  const { duration, track, user, onPress, translationAnim, mediaKey } = props
+  const { track, user, onPress, translationAnim, mediaKey, duration } = props
   const styles = useStyles()
-  const dispatch = useDispatch()
-  const currentUser = useSelector(getAccountUser)
-  const staticWhite = useColor('staticWhite')
+  const accountUserId = useSelector(getUserId)
+  const neutral = useColor('neutral')
 
   const { hasStreamAccess } = useGatedContentAccess(track)
   const isPreviewing = useSelector(getPreviewing)
@@ -154,22 +147,15 @@ export const PlayBar = (props: PlayBarProps) => {
       'usdc_purchase' in track.stream_conditions &&
       !hasStreamAccess)
 
-  const onPressFavoriteButton = useCallback(() => {
-    if (track) {
-      if (track.has_current_user_saved) {
-        dispatch(unsaveTrack(track.track_id, FavoriteSource.PLAYBAR))
-      } else {
-        dispatch(saveTrack(track.track_id, FavoriteSource.PLAYBAR))
-      }
-    }
-  }, [dispatch, track])
+  const onPressFavoriteButton = useToggleFavoriteTrack({
+    trackId: track?.track_id,
+    source: FavoriteSource.PLAYBAR
+  })
 
   const renderFavoriteButton = () => {
     return (
       <FavoriteButton
-        isDisabled={
-          currentUser?.user_id === track?.owner_id || track?.is_unlisted
-        }
+        isDisabled={accountUserId === track?.owner_id || track?.is_unlisted}
         onPress={onPressFavoriteButton}
         isActive={track?.has_current_user_saved ?? false}
         wrapperStyle={styles.icon}
@@ -209,12 +195,12 @@ export const PlayBar = (props: PlayBarProps) => {
             <View style={styles.artworkContainer}>
               {shouldShowPreviewLock ? (
                 <View style={styles.lockOverlay}>
-                  <IconLock fill={staticWhite} width={10} height={10} />
+                  <IconLock fill={neutral} width={10} height={10} />
                 </View>
               ) : null}
               <TrackImage
+                trackId={track?.track_id}
                 style={styles.artwork}
-                track={track}
                 size={SquareSizes.SIZE_150_BY_150}
               />
             </View>
@@ -237,7 +223,7 @@ export const PlayBar = (props: PlayBarProps) => {
           {shouldShowPreviewLock ? (
             <View>
               <LockedStatusBadge
-                variant='purchase'
+                variant='premium'
                 locked
                 coloredWhenLocked
                 iconSize='small'

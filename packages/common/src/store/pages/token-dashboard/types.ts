@@ -15,26 +15,22 @@ type SendingState =
       stage: 'AWAITING_CONFIRMATION'
       amount: StringWei
       recipientWallet: string
-      chain: Chain
       canRecipientReceiveWAudio: CanReceiveWAudio
     }
   | {
       stage: 'AWAITING_CONVERTING_ETH_AUDIO_TO_SOL'
       amount: StringWei
       recipientWallet: string
-      chain: Chain
     }
   | {
       stage: 'SENDING'
       amount: StringWei
       recipientWallet: WalletAddress
-      chain: Chain
     }
   | {
       stage: 'CONFIRMED_SEND'
       amount: StringWei
       recipientWallet: WalletAddress
-      chain: Chain
     }
   | { stage: 'ERROR'; error: string }
 
@@ -67,7 +63,6 @@ export type ConfirmRemoveWalletAction = PayloadAction<{
 export type InputSendDataAction = PayloadAction<{
   amount: StringWei
   wallet: WalletAddress
-  chain: Chain
 }>
 
 export type AssociatedWalletsState = {

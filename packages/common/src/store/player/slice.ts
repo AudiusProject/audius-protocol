@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { UID, ID, Collectible } from '../../models'
+import { UID, ID, Collectible, Feature } from '../../models'
 import { Maybe, Nullable } from '../../utils'
 
 import { PlaybackRate, PlayerBehavior } from './types'
@@ -37,6 +37,9 @@ export type PlayerState = {
   // Counter to track seek calls for times where we seek to the same position multiple times
   seekCounter: number
 
+  // Counter to track how many different mirrors have been attempted
+  retries: number
+
   playerBehavior?: PlayerBehavior
 }
 
@@ -52,7 +55,8 @@ export const initialState: PlayerState = {
   counter: 0,
   playbackRate: '1x',
   seek: null,
-  seekCounter: 0
+  seekCounter: 0,
+  retries: 0
 }
 
 type PlayPayload = Maybe<{
@@ -60,6 +64,7 @@ type PlayPayload = Maybe<{
   trackId?: ID
   startTime?: number
   playerBehavior?: PlayerBehavior
+  retries?: number
   onEnd?: (...args: any) => any
 }>
 
@@ -109,6 +114,7 @@ type ErrorPayload = {
   error: string
   trackId: ID
   info: string
+  feature?: Feature
 }
 
 type ResetPayload = {
@@ -125,6 +131,7 @@ const slice = createSlice({
   reducers: {
     play: (state, action: PayloadAction<PlayPayload>) => {
       state.playerBehavior = action.payload?.playerBehavior
+      state.retries = action.payload?.retries ?? 0
     },
     playSucceeded: (state, action: PayloadAction<PlaySucceededPayload>) => {
       const { uid, trackId } = action.payload

@@ -26,13 +26,13 @@ import {
   playerSelectors
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { useRecord, make } from 'common/store/analytics/actions'
 import { PlaylistTileProps } from 'components/track/types'
 import { AppState } from 'store/types'
+import { push } from 'utils/navigation'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
 import { getCollectionWithFallback, getUserWithFallback } from '../helpers'
@@ -68,7 +68,6 @@ type OwnProps = Omit<
   | 'saveCount'
   | 'trackCount'
   | 'ownerId'
-  | 'coverArtSizes'
   | 'isActive'
   | 'isPlaying'
   | 'contentTitle'
@@ -115,7 +114,6 @@ const ConnectedPlaylistTile = ({
   clickOverflow,
   currentUserId,
   darkMode,
-  showRankIcon,
   isTrending,
   variant,
   containerClassName,
@@ -286,7 +284,6 @@ const ConnectedPlaylistTile = ({
       artistName={user.name}
       artistIsVerified={user.is_verified}
       ownerId={collection.playlist_owner_id}
-      coverArtSizes={collection._cover_art_sizes}
       duration={tracks.reduce(
         (duration: number, track: Track) => duration + track.duration,
         0
@@ -310,7 +307,7 @@ const ConnectedPlaylistTile = ({
       isPlaying={isActive && isPlaying}
       isLoading={isActive && isBuffering}
       activeTrackUid={playingUid || null}
-      goToRoute={goToRoute}
+      isOwner={isOwner}
       goToCollectionPage={goToCollectionPage}
       toggleSave={toggleSave}
       toggleRepost={toggleRepost}
@@ -318,11 +315,9 @@ const ConnectedPlaylistTile = ({
       onClickOverflow={onClickOverflow}
       makeGoToRepostsPage={makeGoToRepostsPage}
       makeGoToFavoritesPage={makeGoToFavoritesPage}
-      isOwner={isOwner}
       darkMode={darkMode}
       isMatrix={isMatrix()}
       isTrending={isTrending}
-      showRankIcon={showRankIcon}
       variant={variant}
       isUnlisted={collection.is_private}
       isStreamGated={collection.is_stream_gated}
@@ -351,7 +346,7 @@ function mapStateToProps(state: AppState, ownProps: OwnProps) {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
+    goToRoute: (route: string) => dispatch(push(route)),
     shareCollection: (collectionId: ID) =>
       dispatch(
         requestOpenShareModal({

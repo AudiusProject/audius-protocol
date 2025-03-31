@@ -1,4 +1,4 @@
-import type { User } from '@audius/common/models'
+import type { ID } from '@audius/common/models'
 import {
   tippingSelectors,
   supportingUserListSelectors
@@ -10,16 +10,16 @@ const { getId: getSupportingId } = supportingUserListSelectors
 const { getOptimisticSupporting } = tippingSelectors
 
 type SupportingInfoProps = {
-  user: User
+  userId: ID
 }
 
 export const SupportingInfo = (props: SupportingInfoProps) => {
   const supportingMap = useSelector(getOptimisticSupporting)
   const supportingId = useSelector(getSupportingId)
   const supportingForUser = supportingId
-    ? supportingMap[supportingId] ?? null
+    ? (supportingMap[supportingId] ?? null)
     : null
-  const supporting = supportingForUser?.[props.user.user_id] ?? null
+  const supporting = supportingForUser?.[props.userId] ?? null
 
   return supporting ? <Tip amount={supporting.amount} /> : null
 }

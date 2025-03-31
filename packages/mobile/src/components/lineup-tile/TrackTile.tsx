@@ -1,27 +1,22 @@
 import { useCallback } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
+import { useToggleFavoriteTrack, useTrack, useUser } from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
   FavoriteSource,
   PlaybackSource,
-  FavoriteType,
   SquareSizes,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import type { Track, User } from '@audius/common/models'
-import { FeatureFlags, trpc } from '@audius/common/services'
 import {
   accountSelectors,
-  cacheTracksSelectors,
-  cacheUsersSelectors,
   tracksSocialActions,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
   OverflowAction,
   OverflowSource,
-  RepostType,
   playerSelectors,
   playbackPositionSelectors,
   trackPageActions,
@@ -33,31 +28,28 @@ import { useNavigationState } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import type { ImageProps } from '@audius/harmony-native'
-import { TrackImage } from 'app/components/image/TrackImage'
 import type { LineupItemProps } from 'app/components/lineup-tile/types'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import type { TileProps } from '../core'
+import { TrackImage } from '../image/TrackImage'
 
 import { LineupTile } from './LineupTile'
 
 const { getUid } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
-const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
-  tracksSocialActions
-const { getUserFromTrack } = cacheUsersSelectors
-const { getTrack } = cacheTracksSelectors
+const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { getUserId } = accountSelectors
 const { getTrackPosition } = playbackPositionSelectors
 
 export const TrackTile = (props: LineupItemProps) => {
-  const { uid } = props
+  const { id } = props
 
-  const track = useSelector((state) => getTrack(state, { uid }))
+  const { data: track } = useTrack(id)
 
-  const user = useSelector((state) => getUserFromTrack(state, { uid }))
+  const { data: user } = useUser(track?.owner_id)
 
   if (!track || !user) {
     console.warn('Track or user missing for TrackTile, preventing render')
@@ -105,10 +97,7 @@ export const TrackTileComponent = ({
   const {
     duration,
     field_visibility,
-    is_unlisted,
     has_current_user_reposted,
-    has_current_user_saved,
-    play_count,
     title,
     track_id,
     genre,
@@ -117,13 +106,8 @@ export const TrackTileComponent = ({
     ddex_app: ddexApp,
     is_unlisted: isUnlisted,
     _co_sign: coSign,
-    comment_count,
-    comments_disabled
+    album_backlink
   } = track
-
-  const { isEnabled: isCommentsEnabled } = useFeatureFlag(
-    FeatureFlags.COMMENTS_ENABLED
-  )
 
   const { artist_pick_track_id } = user
   const isArtistPick = isOwner && artist_pick_track_id === track_id
@@ -135,23 +119,24 @@ export const TrackTileComponent = ({
 
   const renderImage = useCallback(
     (props: ImageProps) => (
-      <TrackImage track={track} size={SquareSizes.SIZE_150_BY_150} {...props} />
+      <TrackImage
+        trackId={track.track_id}
+        size={SquareSizes.SIZE_150_BY_150}
+        {...props}
+      />
     ),
     [track]
   )
 
-  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId: track_id },
-    { enabled: !!track_id }
-  )
-
   const handlePress = useCallback(() => {
-    togglePlay({
-      uid: lineupTileProps.uid,
-      id: track_id,
-      source: PlaybackSource.TRACK_TILE
-    })
-    onPress?.(track_id)
+    setTimeout(() => {
+      togglePlay({
+        uid: lineupTileProps.uid,
+        id: track_id,
+        source: PlaybackSource.TRACK_TILE
+      })
+      onPress?.(track_id)
+    }, 100)
   }, [togglePlay, lineupTileProps.uid, track_id, onPress])
 
   const handlePressTitle = useCallback(() => {
@@ -175,7 +160,7 @@ export const TrackTileComponent = ({
       isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
-      albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
+      album_backlink ? OverflowAction.VIEW_ALBUM_PAGE : null,
       isLongFormContent
         ? playbackPositionInfo?.status === 'COMPLETED'
           ? OverflowAction.MARK_AS_UNPLAYED
@@ -204,7 +189,7 @@ export const TrackTileComponent = ({
     isOwner,
     ddexApp,
     isUnlisted,
-    albumInfo,
+    album_backlink,
     playbackPositionInfo?.status,
     isArtistPick,
     isOnArtistsTracksTab,
@@ -226,16 +211,10 @@ export const TrackTileComponent = ({
     )
   }, [dispatch, track_id])
 
-  const handlePressSave = useCallback(() => {
-    if (track_id === undefined) {
-      return
-    }
-    if (has_current_user_saved) {
-      dispatch(unsaveTrack(track_id, FavoriteSource.TILE))
-    } else {
-      dispatch(saveTrack(track_id, FavoriteSource.TILE))
-    }
-  }, [track_id, dispatch, has_current_user_saved])
+  const handlePressSave = useToggleFavoriteTrack({
+    trackId: track_id as number,
+    source: FavoriteSource.TILE
+  })
 
   const handlePressRepost = useCallback(() => {
     if (track_id === undefined) {
@@ -261,8 +240,6 @@ export const TrackTileComponent = ({
   }, [navigation, track_id])
 
   const hideShare = !isOwner && field_visibility?.share === false
-  const hidePlays = !isOwner && field_visibility?.play_count === false
-  const hideComments = comments_disabled || !isCommentsEnabled
 
   return (
     <LineupTile
@@ -270,15 +247,12 @@ export const TrackTileComponent = ({
       coSign={coSign}
       duration={duration}
       isPlayingUid={isPlayingUid}
-      favoriteType={FavoriteType.TRACK}
-      repostType={RepostType.TRACK}
       hasPreview={hasPreview}
       hideShare={hideShare}
-      hidePlays={hidePlays}
-      hideComments={hideComments}
       id={track_id}
+      uid={lineupTileProps.uid}
       renderImage={renderImage}
-      isUnlisted={is_unlisted}
+      isUnlisted={isUnlisted}
       onPress={handlePress}
       onPressOverflow={handlePressOverflow}
       onPressRepost={handlePressRepost}
@@ -287,8 +261,6 @@ export const TrackTileComponent = ({
       onPressTitle={handlePressTitle}
       onPressPublish={handlePressPublish}
       onPressEdit={onPressEdit}
-      playCount={play_count}
-      commentCount={comment_count}
       title={title}
       item={track}
       user={user}

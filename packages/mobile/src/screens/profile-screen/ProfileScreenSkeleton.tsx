@@ -1,10 +1,11 @@
-import { memo } from 'react'
+import { useMemo } from 'react'
 
 import { times, random } from 'lodash'
 import { View } from 'react-native'
 
+import { Flex } from '@audius/harmony-native'
 import { LineupTileSkeleton } from 'app/components/lineup-tile'
-import Skeleton from 'app/components/skeleton'
+import Skeleton, { StaticSkeleton } from 'app/components/skeleton'
 import { makeStyles } from 'app/styles'
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -16,8 +17,8 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   },
   profilePicture: {
     position: 'absolute',
-    top: 37,
-    left: 11,
+    top: 52,
+    left: 12,
     zIndex: 101,
 
     height: 82,
@@ -69,6 +70,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   tierAndSocials: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: spacing(3)
   },
   tier: {
@@ -79,9 +81,9 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   },
   socialLinks: {
     flexDirection: 'row',
-    alignSelf: 'center',
-    justifyContent: 'space-around',
-    flex: 4
+    justifyContent: 'flex-end',
+    flex: 4,
+    gap: spacing(3)
   },
   socialLink: {
     height: spacing(8),
@@ -108,30 +110,78 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   }
 }))
 
-const BioSkeleton = memo(() => {
+const BioSkeleton = () => {
   const baseStyle = {
     height: 12,
     marginRight: 4,
     marginBottom: 8
   }
-  const elements = times(random(5, 15), () => random(20, 100))
+
+  const elements = useMemo(
+    () => times(random(5, 10), () => random(20, 100)),
+    []
+  )
+
   return (
     <>
       {elements.map((elementWidth: number, i) => (
-        <Skeleton
-          key={i}
-          noShimmer
-          style={[baseStyle, { width: elementWidth }]}
-        />
+        <StaticSkeleton key={i} style={[baseStyle, { width: elementWidth }]} />
       ))}
     </>
   )
-})
+}
 
-export const ProfileScreenSkeleton = memo(() => {
+export const ExpandableSectionSkeleton = () => {
   const styles = useStyles()
+  return (
+    <Flex column gap='s' backgroundColor='white' p='l'>
+      <Flex row wrap='wrap'>
+        <BioSkeleton />
+      </Flex>
+      <Flex style={styles.tierAndSocials}>
+        <StaticSkeleton style={styles.tier} />
+        <View style={styles.socialLinks}>
+          <StaticSkeleton style={styles.socialLink} />
+          <StaticSkeleton style={styles.socialLink} />
+          <StaticSkeleton style={styles.socialLink} />
+        </View>
+      </Flex>
+      {/* TODO: add tip button and supporters skeletons */}
+    </Flex>
+  )
+}
 
-  const statSkeleton = <Skeleton style={styles.stat} />
+export const ProfileHeaderSkeleton = () => {
+  const styles = useStyles()
+  const statSkeleton = <StaticSkeleton style={styles.stat} />
+
+  return (
+    <Flex backgroundColor='white'>
+      <StaticSkeleton height={96} />
+      <Skeleton style={styles.profilePicture} />
+      <Flex p='l' gap='s' backgroundColor='white'>
+        <Flex row justifyContent='space-between' backgroundColor='white'>
+          <Flex mt='3xl'>
+            <StaticSkeleton style={styles.name} />
+            <StaticSkeleton style={styles.handle} />
+          </Flex>
+          <Flex row gap='s'>
+            <StaticSkeleton height={32} width={32} />
+            <StaticSkeleton height={32} width={120} />
+          </Flex>
+        </Flex>
+        <Flex row>
+          {statSkeleton}
+          {statSkeleton}
+          {statSkeleton}
+        </Flex>
+      </Flex>
+    </Flex>
+  )
+}
+
+export const ProfileTabsSkeleton = () => {
+  const styles = useStyles()
 
   const lineupTile = (
     <View style={styles.lineupTile}>
@@ -140,38 +190,21 @@ export const ProfileScreenSkeleton = memo(() => {
   )
 
   return (
-    <View style={styles.root}>
-      <Skeleton style={styles.coverPhoto} />
-      <Skeleton style={styles.profilePicture} />
-      <View style={styles.header}>
-        <View style={styles.info}>
-          <View>
-            <Skeleton style={styles.name} />
-            <Skeleton style={styles.handle} />
-          </View>
-          <Skeleton style={styles.actionButton} />
-        </View>
-        <View style={styles.stats}>
-          {statSkeleton}
-          {statSkeleton}
-          {statSkeleton}
-        </View>
-        <View style={styles.bio}>
-          <BioSkeleton />
-        </View>
-        <View style={styles.tierAndSocials}>
-          <Skeleton style={styles.tier} />
-          <View style={styles.socialLinks}>
-            <Skeleton style={styles.socialLink} />
-            <Skeleton style={styles.socialLink} />
-            <Skeleton style={styles.socialLink} />
-          </View>
-        </View>
-      </View>
-      <View style={styles.tabs}></View>
+    <>
+      <StaticSkeleton style={styles.tabs} />
       {lineupTile}
       {lineupTile}
       {lineupTile}
-    </View>
+    </>
   )
-})
+}
+
+export const ProfileScreenSkeleton = () => {
+  return (
+    <Flex column h='100%'>
+      <ProfileHeaderSkeleton />
+      <ExpandableSectionSkeleton />
+      <ProfileTabsSkeleton />
+    </Flex>
+  )
+}

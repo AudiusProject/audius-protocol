@@ -5,7 +5,8 @@ import { formatDateWithTimezoneOffset } from '@audius/common/utils'
 import {
   IconRemove as IconHide,
   IconDrag,
-  IconMultiselectAdd as IconShow
+  IconMultiselectAdd as IconShow,
+  Text
 } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -28,7 +29,7 @@ export const VisibleCollectibleRow = (props) => {
     handleProps,
     ...otherProps
   } = props
-  const { name, isOwned, dateCreated, mediaType, frameUrl, gifUrl, videoUrl } =
+  const { name, dateCreated, mediaType, frameUrl, gifUrl, videoUrl } =
     collectible
 
   const dragRef = useRef<HTMLDivElement>(null)
@@ -67,10 +68,10 @@ export const VisibleCollectibleRow = (props) => {
   return (
     <div className={styles.editRow} ref={forwardRef} {...otherProps}>
       <Tooltip text={collectibleMessages.hideCollectible}>
-        <IconHide onClick={onHideClick} />
+        <IconHide color='danger' onClick={onHideClick} />
       </Tooltip>
       <div className={styles.verticalDivider} />
-      {frameUrl ?? gifUrl ? (
+      {(frameUrl ?? gifUrl) ? (
         <div>
           <img
             className={styles.editMedia}
@@ -91,17 +92,8 @@ export const VisibleCollectibleRow = (props) => {
       ) : (
         <div className={styles.editMediaEmpty} />
       )}
-      <div className={styles.editRowTitle}>{name}</div>
-      <div>
-        {isOwned ? (
-          <span className={cn(styles.owned, styles.editStamp)}>
-            {collectibleMessages.owned}
-          </span>
-        ) : (
-          <span className={cn(styles.created, styles.editStamp)}>
-            {collectibleMessages.created}
-          </span>
-        )}
+      <div className={styles.editRowTitle}>
+        <Text variant='title'>{name}</Text>
       </div>
       {dateCreated && <div>{formatDateWithTimezoneOffset(dateCreated)}</div>}
       <div className={styles.verticalDivider} />
@@ -119,7 +111,7 @@ type HiddenCollectibleRowProps = {
 
 export const HiddenCollectibleRow = (props: HiddenCollectibleRowProps) => {
   const { collectible, onShowClick } = props
-  const { name, isOwned, dateCreated, mediaType, frameUrl, gifUrl, videoUrl } =
+  const { name, dateCreated, mediaType, frameUrl, gifUrl, videoUrl } =
     collectible
 
   return (
@@ -131,7 +123,7 @@ export const HiddenCollectibleRow = (props: HiddenCollectibleRowProps) => {
         <IconShow onClick={onShowClick} />
       </Tooltip>
       <div className={styles.verticalDivider} />
-      {frameUrl ?? gifUrl ? (
+      {(frameUrl ?? gifUrl) ? (
         <div>
           <img
             className={styles.editMedia}
@@ -152,17 +144,8 @@ export const HiddenCollectibleRow = (props: HiddenCollectibleRowProps) => {
       ) : (
         <div className={styles.editMediaEmpty} />
       )}
-      <div className={styles.editRowTitle}>{name}</div>
-      <div>
-        {isOwned ? (
-          <span className={cn(styles.owned, styles.editStamp)}>
-            {collectibleMessages.owned}
-          </span>
-        ) : (
-          <span className={cn(styles.created, styles.editStamp)}>
-            {collectibleMessages.created}
-          </span>
-        )}
+      <div className={styles.editRowTitle}>
+        <Text variant='title'>{name}</Text>
       </div>
       {dateCreated && <div>{formatDateWithTimezoneOffset(dateCreated)}</div>}
     </div>

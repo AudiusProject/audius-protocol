@@ -1,57 +1,49 @@
 import { USDC } from '@audius/fixed-decimal'
-import { type AudiusSdk } from '@audius/sdk'
+import { Id, OptionalId, type AudiusSdk } from '@audius/sdk'
 import type { createJupiterApiClient, QuoteResponse } from '@jup-ag/api'
 import { getAccount, getAssociatedTokenAddressSync } from '@solana/spl-token'
 import {
-  PublicKey,
-  VersionedTransaction,
   AddressLookupTableAccount,
+  PublicKey,
+  TransactionInstruction,
   TransactionMessage,
-  TransactionInstruction
+  VersionedTransaction
 } from '@solana/web3.js'
 import BN from 'bn.js'
 import bs58 from 'bs58'
 import { sumBy } from 'lodash'
 import { takeLatest } from 'redux-saga/effects'
 import nacl, { BoxKeyPair } from 'tweetnacl'
-import { call, put, race, select, take } from 'typed-redux-saga'
+import { call, put, race, select, take, takeEvery } from 'typed-redux-saga'
 
 import { userTrackMetadataFromSDK } from '~/adapters'
-import { PurchaseableContentMetadata, isPurchaseableAlbum } from '~/hooks'
-import { Kind } from '~/models'
+import { isPurchaseableAlbum, PurchaseableContentMetadata } from '~/hooks'
+import { Collection, Kind } from '~/models'
 import { FavoriteSource, Name } from '~/models/Analytics'
-import { ErrorLevel } from '~/models/ErrorReporting'
-import { ID, Id, OptionalId } from '~/models/Identifiers'
+import { ErrorLevel, Feature } from '~/models/ErrorReporting'
+import { ID } from '~/models/Identifiers'
 import {
+  PurchaseAccess,
   PurchaseMethod,
-  PurchaseVendor,
-  PurchaseAccess
+  PurchaseVendor
 } from '~/models/PurchaseContent'
-import { isContentUSDCPurchaseGated } from '~/models/Track'
+import { isContentUSDCPurchaseGated, Track } from '~/models/Track'
 import { User } from '~/models/User'
 import { BNUSDC } from '~/models/Wallet'
-import {
-  getRootSolanaAccount,
-  getSolanaConnection,
-  getTokenAccountInfo
-} from '~/services/audius-backend/solana'
 import { FeatureFlags } from '~/services/remote-config/feature-flags'
 import { accountSelectors } from '~/store/account'
 import {
-  buyCryptoCanceled,
-  buyCryptoFailed,
-  buyCryptoSucceeded,
-  buyCryptoViaSol
-} from '~/store/buy-crypto/slice'
-import { BuyCryptoError } from '~/store/buy-crypto/types'
-import {
   buyUSDCFlowFailed,
   buyUSDCFlowSucceeded,
-  onrampOpened,
-  onrampCanceled
+  onrampCanceled,
+  onrampOpened
 } from '~/store/buy-usdc/slice'
 import { BuyUSDCError } from '~/store/buy-usdc/types'
-import { getBuyUSDCRemoteConfig, getUSDCUserBank } from '~/store/buy-usdc/utils'
+import {
+  getBuyUSDCRemoteConfig,
+  getOrCreateUSDCUserBank,
+  pollForTokenAccountInfo
+} from '~/store/buy-usdc/utils'
 import { getCollection } from '~/store/cache/collections/selectors'
 import { getTrack } from '~/store/cache/tracks/selectors'
 import { getUser } from '~/store/cache/users/selectors'
@@ -59,18 +51,16 @@ import { getContext } from '~/store/effects'
 import { getPreviewing, getTrackId } from '~/store/player/selectors'
 import { stop } from '~/store/player/slice'
 import { saveTrack } from '~/store/social/tracks/actions'
-import { OnRampProvider } from '~/store/ui/buy-audio/types'
 import {
   transactionCanceled,
   transactionFailed,
   transactionSucceeded
 } from '~/store/ui/coinflow-modal/slice'
 import {
-  CoinflowPurchaseMetadata,
-  coinflowOnrampModalActions
+  coinflowOnrampModalActions,
+  CoinflowPurchaseMetadata
 } from '~/store/ui/modals/coinflow-onramp-modal'
 import { waitForValue } from '~/utils'
-import { encodeHashId } from '~/utils/hashIds'
 import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
 import { cacheActions } from '../cache'
@@ -82,12 +72,13 @@ import { TOKEN_LISTING_MAP } from '../ui'
 
 import {
   buyUSDC,
+  eagerCreateUserBank,
   purchaseCanceled,
   purchaseConfirmed,
-  purchaseSucceeded,
-  usdcBalanceSufficient,
   purchaseContentFlowFailed,
-  startPurchaseContentFlow
+  purchaseSucceeded,
+  startPurchaseContentFlow,
+  usdcBalanceSufficient
 } from './slice'
 import {
   PurchaseableContentType,
@@ -96,19 +87,7 @@ import {
 } from './types'
 import { getBalanceNeeded } from './utils'
 
-const { getUserId, getAccountUser } = accountSelectors
-
-type RaceStatusResult = {
-  succeeded?:
-    | ReturnType<typeof buyUSDCFlowSucceeded>
-    | ReturnType<typeof buyCryptoSucceeded>
-  failed?:
-    | ReturnType<typeof buyUSDCFlowFailed>
-    | ReturnType<typeof buyCryptoFailed>
-  canceled?:
-    | ReturnType<typeof onrampCanceled>
-    | ReturnType<typeof buyCryptoCanceled>
-}
+const { getUserId, getAccountUser, getWalletAddresses } = accountSelectors
 
 type GetPurchaseConfigArgs = {
   contentId: ID
@@ -356,6 +335,7 @@ function* purchaseTrackWithCoinflow(args: {
   userId: ID
   price: number
   extraAmount?: number
+  guestEmail?: string
   includeNetworkCut?: boolean
 }) {
   const {
@@ -364,17 +344,24 @@ function* purchaseTrackWithCoinflow(args: {
     trackId,
     price,
     extraAmount = 0,
-    includeNetworkCut = false
+    includeNetworkCut = false,
+    guestEmail
   } = args
 
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
+  const solanaWalletService = yield* getContext('solanaWalletService')
+  const wallet = yield* call([
+    solanaWalletService,
+    solanaWalletService.getKeypair
+  ])
+  if (!wallet) {
+    throw new Error('Missing solana root wallet')
+  }
 
   const params = {
     price: args.price,
     extraAmount: args.extraAmount,
-    trackId: encodeHashId(trackId),
-    userId: encodeHashId(userId),
+    trackId: Id.parse(trackId),
+    userId: Id.parse(userId),
     includeNetworkCut
   }
   const mint = 'USDC'
@@ -422,7 +409,8 @@ function* purchaseTrackWithCoinflow(args: {
       amount: Number(USDC(total).toString()),
       serializedTransaction,
       purchaseMetadata,
-      contentId: trackId
+      contentId: trackId,
+      guestEmail
     })
   )
 
@@ -456,6 +444,7 @@ function* purchaseAlbumWithCoinflow(args: {
   price: number
   extraAmount?: number
   includeNetworkCut?: boolean
+  guestEmail?: string
 }) {
   const {
     sdk,
@@ -463,17 +452,23 @@ function* purchaseAlbumWithCoinflow(args: {
     albumId,
     price,
     extraAmount = 0,
-    includeNetworkCut = false
+    includeNetworkCut = false,
+    guestEmail
   } = args
-
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
+  const solanaWalletService = yield* getContext('solanaWalletService')
+  const wallet = yield* call([
+    solanaWalletService,
+    solanaWalletService.getKeypair
+  ])
+  if (!wallet) {
+    throw new Error('Missing solana root wallet')
+  }
 
   const params = {
     price: args.price,
     extraAmount: args.extraAmount,
-    albumId: encodeHashId(albumId),
-    userId: encodeHashId(userId),
+    albumId: Id.parse(albumId),
+    userId: Id.parse(userId),
     includeNetworkCut
   }
 
@@ -522,7 +517,8 @@ function* purchaseAlbumWithCoinflow(args: {
       amount: Number(USDC(total).toString()),
       serializedTransaction,
       purchaseMetadata,
-      contentId: albumId
+      contentId: albumId,
+      guestEmail
     })
   )
 
@@ -550,44 +546,24 @@ type PurchaseUSDCWithStripeArgs = {
 }
 function* purchaseUSDCWithStripe({ amount }: PurchaseUSDCWithStripeArgs) {
   yield* put(buyUSDC())
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  const isBuyUSDCViaSolEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.BUY_USDC_VIA_SOL
-  )
+
   const cents = Math.ceil(amount * 100)
 
-  let result: RaceStatusResult | null = null
-  if (isBuyUSDCViaSolEnabled) {
-    yield* put(
-      buyCryptoViaSol({
-        // expects "friendly" amount, so dollars
-        amount: cents / 100.0,
-        mint: 'usdc',
-        provider: OnRampProvider.STRIPE
-      })
-    )
-    result = yield* race({
-      succeeded: take(buyCryptoSucceeded),
-      failed: take(buyCryptoFailed),
-      canceled: take(buyCryptoCanceled)
+  yield* put(
+    onrampOpened({
+      vendor: PurchaseVendor.STRIPE,
+      purchaseInfo: {
+        desiredAmount: cents
+      }
     })
-  } else {
-    yield* put(
-      onrampOpened({
-        vendor: PurchaseVendor.STRIPE,
-        purchaseInfo: {
-          desiredAmount: cents
-        }
-      })
-    )
+  )
 
-    result = yield* race({
-      succeeded: take(buyUSDCFlowSucceeded),
-      canceled: take(onrampCanceled),
-      failed: take(buyUSDCFlowFailed)
-    })
-  }
+  const result = yield* race({
+    succeeded: take(buyUSDCFlowSucceeded),
+    canceled: take(onrampCanceled),
+    failed: take(buyUSDCFlowFailed)
+  })
+
   // Return early for cancellation
   if (result.canceled) {
     throw new PurchaseContentError(
@@ -602,6 +578,60 @@ function* purchaseUSDCWithStripe({ amount }: PurchaseUSDCWithStripeArgs) {
   yield* put(usdcBalanceSufficient())
 }
 
+/**
+ * Collects and encrypts user's email after a successful purchase
+ * @param metadata The metadata of the purchased content
+ */
+function* collectEmailAfterPurchase({
+  metadata
+}: {
+  metadata: Collection | Track
+}) {
+  try {
+    const audiusSdk = yield* getContext('audiusSdk')
+
+    const sdk = yield* call(audiusSdk)
+    const identityService = yield* getContext('identityService')
+    const isAlbum = 'playlist_id' in metadata
+
+    const purchaserUserId = yield* select(getUserId)
+    const sellerId = isAlbum ? metadata.playlist_owner_id : metadata.owner_id
+
+    const email = yield* call([identityService, identityService.getUserEmail])
+
+    if (!purchaserUserId) {
+      throw new Error('Purchaser user ID not found')
+    }
+
+    if (!email) {
+      console.warn('No email found for user after purchase')
+      return
+    }
+
+    const { data: managers } = yield* call(
+      [sdk.full.users, sdk.full.users.getManagers],
+      {
+        id: Id.parse(sellerId),
+        isApproved: true
+      }
+    )
+
+    const grantees = managers?.map((m) => m.manager.id)
+
+    const { EMAIL_ENCRYPTION_UUID } = yield* getContext('env')
+    yield* call([sdk.users, sdk.users.shareEmail], {
+      emailOwnerUserId: purchaserUserId,
+      receivingUserId: sellerId,
+      email,
+      granteeUserIds: grantees ?? [],
+      initialEmailEncryptionUuid: EMAIL_ENCRYPTION_UUID ?? 0
+    })
+  } catch (error) {
+    // Log error but don't disrupt purchase flow
+    console.error('Failed to process email after purchase:', error)
+  }
+}
+
 function* doStartPurchaseContentFlow({
   payload: {
     extraAmount,
@@ -610,15 +640,23 @@ function* doStartPurchaseContentFlow({
     purchaseVendor,
     purchaseMethodMintAddress,
     contentId,
-    contentType = PurchaseableContentType.TRACK
+    contentType = PurchaseableContentType.TRACK,
+    guestEmail
   }
 }: ReturnType<typeof startPurchaseContentFlow>) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const usdcConfig = yield* call(getBuyUSDCRemoteConfig)
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
   const audiusSdk = yield* getContext('audiusSdk')
   const sdk = yield* call(audiusSdk)
+
+  // wait for guest account creation
+  yield* call(
+    waitForValue,
+    getWalletAddresses,
+    null,
+    (value) => !!value?.currentUser
+  )
 
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isNetworkCutEnabled = yield* call(
@@ -632,6 +670,7 @@ function* doStartPurchaseContentFlow({
   })
 
   const totalAmount = (price + (extraAmount ?? 0)) / 100
+  const purchaserUserId = yield* select(getUserId)
 
   const analyticsInfo = {
     price: price / 100,
@@ -644,7 +683,9 @@ function* doStartPurchaseContentFlow({
     isVerifiedArtist: artistInfo.is_verified,
     totalAmount,
     payExtraAmount: extraAmount ? extraAmount / 100 : 0,
-    payExtraPreset: extraAmountPreset
+    payExtraPreset: extraAmountPreset,
+    buyerUserId: purchaserUserId,
+    isGuest: !!guestEmail
   }
 
   // Record start
@@ -658,20 +699,14 @@ function* doStartPurchaseContentFlow({
 
   try {
     // get user & user bank
-    const purchaserUserId = yield* select(getUserId)
+
     if (!purchaserUserId) {
       throw new Error('Failed to fetch purchasing user id')
     }
-
-    const userBank = yield* call(getUSDCUserBank)
-    const tokenAccountInfo = yield* call(
-      getTokenAccountInfo,
-      audiusBackendInstance,
-      {
-        mint: 'usdc',
-        tokenAccount: userBank
-      }
-    )
+    const userBank = yield* call(getOrCreateUSDCUserBank)
+    const tokenAccountInfo = yield* call(pollForTokenAccountInfo, {
+      tokenAccount: userBank
+    })
 
     // In the case where there is no amount, the token account was probably
     // just created. Just use 0 for initial balance.
@@ -700,16 +735,16 @@ function* doStartPurchaseContentFlow({
         // No balance needed, perform the purchase right away
         if (contentType === PurchaseableContentType.TRACK) {
           yield* call([sdk.tracks, sdk.tracks.purchaseTrack], {
-            userId: encodeHashId(purchaserUserId),
-            trackId: encodeHashId(contentId),
+            userId: Id.parse(purchaserUserId),
+            trackId: Id.parse(contentId),
             price: price / 100.0,
             extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
             includeNetworkCut: isNetworkCutEnabled
           })
         } else {
           yield* call([sdk.albums, sdk.albums.purchaseAlbum], {
-            userId: encodeHashId(purchaserUserId),
-            albumId: encodeHashId(contentId),
+            userId: Id.parse(purchaserUserId),
+            albumId: Id.parse(contentId),
             price: price / 100.0,
             extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
             includeNetworkCut: isNetworkCutEnabled
@@ -746,6 +781,7 @@ function* doStartPurchaseContentFlow({
                 userId: purchaserUserId,
                 price: price / 100.0,
                 extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
+                guestEmail,
                 includeNetworkCut: isNetworkCutEnabled
               })
             } else {
@@ -755,6 +791,7 @@ function* doStartPurchaseContentFlow({
                 userId: purchaserUserId,
                 price: price / 100.0,
                 extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
+                guestEmail,
                 includeNetworkCut: isNetworkCutEnabled
               })
             }
@@ -764,16 +801,16 @@ function* doStartPurchaseContentFlow({
             yield* call(purchaseUSDCWithStripe, { amount: purchaseAmount })
             if (contentType === PurchaseableContentType.TRACK) {
               yield* call([sdk.tracks, sdk.tracks.purchaseTrack], {
-                userId: encodeHashId(purchaserUserId),
-                trackId: encodeHashId(contentId),
+                userId: Id.parse(purchaserUserId),
+                trackId: Id.parse(contentId),
                 price: price / 100.0,
                 extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
                 includeNetworkCut: isNetworkCutEnabled
               })
             } else {
               yield* call([sdk.albums, sdk.albums.purchaseAlbum], {
-                userId: encodeHashId(purchaserUserId),
-                albumId: encodeHashId(contentId),
+                userId: Id.parse(purchaserUserId),
+                albumId: Id.parse(contentId),
                 price: price / 100.0,
                 extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
                 includeNetworkCut: isNetworkCutEnabled
@@ -795,19 +832,25 @@ function* doStartPurchaseContentFlow({
       contentId,
       contentType
     })
+
+    // Collect email after successful purchase
+    yield* call(collectEmailAfterPurchase, { metadata })
+
     // Auto-favorite the purchased item
-    if (contentType === PurchaseableContentType.TRACK) {
-      yield* put(saveTrack(contentId, FavoriteSource.IMPLICIT))
-    }
-    if (contentType === PurchaseableContentType.ALBUM) {
-      yield* put(saveCollection(contentId, FavoriteSource.IMPLICIT))
-      if (
-        'playlist_contents' in metadata &&
-        metadata.playlist_contents.track_ids &&
-        !metadata.is_private
-      ) {
-        for (const track of metadata.playlist_contents.track_ids) {
-          yield* put(saveTrack(track.track, FavoriteSource.IMPLICIT))
+    if (!guestEmail) {
+      if (contentType === PurchaseableContentType.TRACK) {
+        yield* put(saveTrack(contentId, FavoriteSource.IMPLICIT))
+      }
+      if (contentType === PurchaseableContentType.ALBUM) {
+        yield* put(saveCollection(contentId, FavoriteSource.IMPLICIT))
+        if (
+          'playlist_contents' in metadata &&
+          metadata.playlist_contents.track_ids &&
+          !metadata.is_private
+        ) {
+          for (const track of metadata.playlist_contents.track_ids) {
+            yield* put(saveTrack(track.track, FavoriteSource.IMPLICIT))
+          }
         }
       }
     }
@@ -843,9 +886,7 @@ function* doStartPurchaseContentFlow({
     // If we get a known error, pipe it through directly. Otherwise make sure we
     // have a properly contstructed error to put into the slice.
     const error =
-      e instanceof PurchaseContentError ||
-      e instanceof BuyUSDCError ||
-      e instanceof BuyCryptoError
+      e instanceof PurchaseContentError || e instanceof BuyUSDCError
         ? e
         : new PurchaseContentError(PurchaseErrorCode.Unknown, `${e}`)
 
@@ -859,7 +900,8 @@ function* doStartPurchaseContentFlow({
     yield* call(reportToSentry, {
       level: ErrorLevel.Error,
       error,
-      additionalInfo: { contentId, contentType }
+      additionalInfo: { contentId, contentType },
+      feature: Feature.Purchase
     })
     yield* put(purchaseContentFlowFailed({ error }))
     yield* put(updateGatedContentStatus({ contentId, status: 'LOCKED' }))
@@ -913,8 +955,7 @@ function* purchaseWithAnything({
   try {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
-    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-    const connection = yield* call(getSolanaConnection, audiusBackendInstance)
+    const connection = sdk.services.solanaClient.connection
     const getFeatureEnabled = yield* getContext('getFeatureEnabled')
     const isNetworkCutEnabled = yield* call(
       getFeatureEnabled,
@@ -922,15 +963,10 @@ function* purchaseWithAnything({
     )
 
     // Get the USDC user bank
-    const usdcUserBank = yield* call(getUSDCUserBank)
-    const usdcUserBankTokenAccount = yield* call(
-      getTokenAccountInfo,
-      audiusBackendInstance,
-      {
-        mint: 'usdc',
-        tokenAccount: usdcUserBank
-      }
-    )
+    const usdcUserBank = yield* call(getOrCreateUSDCUserBank)
+    const usdcUserBankTokenAccount = yield* call(pollForTokenAccountInfo, {
+      tokenAccount: usdcUserBank
+    })
     if (!usdcUserBankTokenAccount) {
       throw new Error('Failed to fetch USDC user bank token account info')
     }
@@ -1092,8 +1128,8 @@ function* purchaseWithAnything({
           locationMemoInstruction
         }
       } = yield* call([sdk.tracks, sdk.tracks.getPurchaseTrackInstructions], {
-        userId: encodeHashId(purchaserUserId),
-        trackId: encodeHashId(contentId),
+        userId: Id.parse(purchaserUserId),
+        trackId: Id.parse(contentId),
         price: price / 100.0,
         extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
         includeNetworkCut: isNetworkCutEnabled
@@ -1110,8 +1146,8 @@ function* purchaseWithAnything({
           locationMemoInstruction
         }
       } = yield* call([sdk.albums, sdk.albums.getPurchaseAlbumInstructions], {
-        userId: encodeHashId(purchaserUserId),
-        albumId: encodeHashId(contentId),
+        userId: Id.parse(purchaserUserId),
+        albumId: Id.parse(contentId),
         price: price / 100.0,
         extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
         includeNetworkCut: isNetworkCutEnabled
@@ -1160,6 +1196,16 @@ function* watchStartPurchaseContentFlow() {
   yield takeLatest(startPurchaseContentFlow, doStartPurchaseContentFlow)
 }
 
+function* watchEagerCreateUserBank() {
+  yield takeEvery(eagerCreateUserBank, function* () {
+    try {
+      yield* call(getOrCreateUSDCUserBank)
+    } catch (e) {
+      console.error(`eagerCreateUserBank failed: ${e}`)
+    }
+  })
+}
+
 export default function sagas() {
-  return [watchStartPurchaseContentFlow]
+  return [watchStartPurchaseContentFlow, watchEagerCreateUserBank]
 }

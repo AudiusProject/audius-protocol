@@ -2,7 +2,6 @@ import { USDC } from '@audius/fixed-decimal'
 import { TransactionInstruction } from '@solana/web3.js'
 
 import type {
-  AuthService,
   ClaimableTokensClient,
   PaymentRouterClient,
   SolanaRelayService,
@@ -22,10 +21,9 @@ import {
   type Configuration
 } from '../generated/default'
 import { PlaylistsApi } from '../playlists/PlaylistsApi'
+import { PlaylistMetadata } from '../playlists/types'
 
 import {
-  createUpdateAlbumSchema,
-  createUploadAlbumSchema,
   DeleteAlbumRequest,
   DeleteAlbumSchema,
   FavoriteAlbumRequest,
@@ -44,7 +42,11 @@ import {
   UnrepostAlbumRequest,
   UnrepostAlbumSchema,
   UpdateAlbumRequest,
-  UploadAlbumRequest
+  UpdateAlbumSchema,
+  UploadAlbumRequest,
+  UploadAlbumSchema,
+  CreateAlbumRequest,
+  CreateAlbumSchema
 } from './types'
 
 export class AlbumsApi {
@@ -53,7 +55,6 @@ export class AlbumsApi {
     configuration: Configuration,
     storage: StorageService,
     entityManager: EntityManagerService,
-    private auth: AuthService,
     private logger: LoggerService,
     private claimableTokensClient: ClaimableTokensClient,
     private paymentRouterClient: PaymentRouterClient,
@@ -64,7 +65,6 @@ export class AlbumsApi {
       configuration,
       storage,
       entityManager,
-      auth,
       logger
     )
   }
@@ -86,6 +86,44 @@ export class AlbumsApi {
   }
 
   // WRITES
+
+  /** @hidden
+   * Create an album from existing tracks
+   */
+  async createAlbum(
+    params: CreateAlbumRequest,
+    advancedOptions?: AdvancedOptions
+  ) {
+    // Parse inputs
+    const { metadata, ...parsedParameters } = await parseParams(
+      'createAlbum',
+      CreateAlbumSchema
+    )(params)
+
+    const { albumName, ...playlistMetadata } = metadata
+
+    // Call createPlaylistInternal with parsed inputs
+    const response = await this.playlistsApi.createPlaylistInternal<
+      PlaylistMetadata & { isAlbum: boolean }
+    >(
+      {
+        ...parsedParameters,
+        playlistId: parsedParameters.albumId,
+        metadata: {
+          ...playlistMetadata,
+          playlistName: albumName,
+          isAlbum: true
+        }
+      },
+      advancedOptions
+    )
+
+    return {
+      ...response,
+      albumId: response.playlistId
+    }
+  }
+
   /** @hidden
    * Upload an album
    * Uploads the specified tracks and combines them into an album
@@ -96,7 +134,7 @@ export class AlbumsApi {
   ) {
     const { metadata, ...parsedParameters } = await parseParams(
       'uploadAlbum',
-      createUploadAlbumSchema()
+      UploadAlbumSchema
     )(params)
 
     const { albumName, ...playlistMetadata } = metadata
@@ -130,7 +168,7 @@ export class AlbumsApi {
   ) {
     const { albumId, metadata, ...parsedParameters } = await parseParams(
       'updateAlbum',
-      createUpdateAlbumSchema()
+      UpdateAlbumSchema
     )(params)
 
     const { albumName, ...playlistMetadata } = metadata
@@ -406,10 +444,8 @@ export class AlbumsApi {
       })
     } else {
       // Use the authed wallet's userbank and relay
-      const ethWallet = await this.auth.getAddress()
       this.logger.debug(
         `Using userBank ${await this.claimableTokensClient.deriveUserBank({
-          ethWallet,
           mint: 'USDC'
         })} to purchase...`
       )
@@ -420,15 +456,12 @@ export class AlbumsApi {
 
       const transferSecpInstruction =
         await this.claimableTokensClient.createTransferSecpInstruction({
-          ethWallet,
           destination: paymentRouterTokenAccount.address,
           mint,
-          amount: total,
-          auth: this.auth
+          amount: total
         })
       const transferInstruction =
         await this.claimableTokensClient.createTransferInstruction({
-          ethWallet,
           destination: paymentRouterTokenAccount.address,
           mint
         })
@@ -456,6 +489,8 @@ export class AlbumsApi {
         this.solanaClient.connection
       )
     }
-    return this.solanaClient.sendTransaction(transaction)
+    return this.solanaClient.sendTransaction(transaction, {
+      skipPreflight: true
+    })
   }
 }

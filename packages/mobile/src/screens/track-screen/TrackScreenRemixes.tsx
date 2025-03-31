@@ -77,10 +77,6 @@ export const TrackScreenRemixes = (props: TrackScreenRemixesProps) => {
         lineup={remixesLineup}
         actions={remixesPageLineupActions}
         count={Math.min(MAX_REMIXES_TO_DISPLAY, remixTrackIds.length)}
-        itemStyles={{
-          padding: 0,
-          paddingVertical: 12
-        }}
       />
       {remixesCount && remixesCount > MAX_REMIXES_TO_DISPLAY ? (
         <Flex pt='m' alignItems='flex-start'>

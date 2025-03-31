@@ -35,11 +35,13 @@ export const KeySelectField = (props: KeySelectFieldProps) => {
 
   return (
     <Select
+      readOnly
       value={key}
       label={messages.key}
       options={keyOptions}
       error={hasError}
       helperText={hasError ? error : undefined}
+      renderSelectedOptionLabel={(option) => `${option.label} ${scale}`}
       onChange={setValue}
       menuProps={{ PaperProps: { css: { minWidth: 200 } } }}
     >

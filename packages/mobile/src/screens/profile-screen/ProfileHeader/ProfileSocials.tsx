@@ -2,12 +2,11 @@ import { Fragment, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 
 import { useSelectTierInfo } from '@audius/common/hooks'
 import { cacheUsersActions } from '@audius/common/store'
-import { View, Animated } from 'react-native'
+import { Animated } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { Divider } from 'app/components/core'
+import { Divider, Flex } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
-import { spacing } from 'app/styles/spacing'
 
 import { useSelectProfile } from '../selectors'
 
@@ -15,37 +14,39 @@ import { ProfileTierTile } from './ProfileTierTile'
 import {
   InstagramSocialLink,
   TikTokSocialLink,
-  TwitterSocialLink
+  TwitterSocialLink,
+  WebsiteSocialLink
 } from './SocialLink'
 
 const { fetchUserSocials } = cacheUsersActions
 
 const useStyles = makeStyles(({ spacing }) => ({
-  root: {
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
   socials: {
     flexDirection: 'row',
+    gap: spacing(3),
     flex: 4
   },
-  socialsCentered: {
-    justifyContent: 'center'
-  },
-  divider: {
-    marginVertical: spacing(1)
+  socialsWithTier: {
+    justifyContent: 'flex-end'
   }
 }))
 
 export const ProfileSocials = () => {
-  const { handle, user_id, twitter_handle, instagram_handle, tiktok_handle } =
-    useSelectProfile([
-      'handle',
-      'user_id',
-      'twitter_handle',
-      'instagram_handle',
-      'tiktok_handle'
-    ])
+  const {
+    handle,
+    user_id,
+    twitter_handle,
+    instagram_handle,
+    tiktok_handle,
+    website
+  } = useSelectProfile([
+    'handle',
+    'user_id',
+    'twitter_handle',
+    'instagram_handle',
+    'tiktok_handle',
+    'website'
+  ])
 
   const dispatch = useDispatch()
 
@@ -65,10 +66,11 @@ export const ProfileSocials = () => {
         handle: instagram_handle,
         SocialLink: InstagramSocialLink
       },
-      { type: 'tiktok', handle: tiktok_handle, SocialLink: TikTokSocialLink }
+      { type: 'tiktok', handle: tiktok_handle, SocialLink: TikTokSocialLink },
+      { type: 'website', handle: website, SocialLink: WebsiteSocialLink }
     ]
     return links.filter(({ handle }) => !(handle === null || handle === ''))
-  }, [twitter_handle, instagram_handle, tiktok_handle])
+  }, [twitter_handle, instagram_handle, tiktok_handle, website])
 
   const socialsCount = useMemo(() => {
     return socialLinks.filter(({ handle }) => !!handle).length
@@ -77,6 +79,7 @@ export const ProfileSocials = () => {
   const styles = useStyles()
 
   const { tier } = useSelectTierInfo(user_id)
+  // const tier = 'none'
 
   // Need to start opacity at 1 so skeleton is visible.
   const opacity = useRef(new Animated.Value(1)).current
@@ -104,30 +107,30 @@ export const ProfileSocials = () => {
       <Fragment key={type}>
         <SocialLink showText={socialsCount === 1} />
         {index === socialLinks.length - 1 ? null : (
-          <Divider
-            orientation='vertical'
-            style={[
-              styles.divider,
-              { marginHorizontal: spacing(socialsCount === 2 ? 6 : 4) }
-            ]}
-          />
+          <Divider orientation='vertical' />
         )}
       </Fragment>
     ))
   }
   return (
-    <View pointerEvents='box-none' style={styles.root}>
-      {tier !== 'none' ? <ProfileTierTile interactive={false} /> : null}
+    <Flex
+      row
+      justifyContent='space-between'
+      alignItems='center'
+      pointerEvents='box-none'
+      pv='m'
+    >
+      <ProfileTierTile interactive={false} />
       <Animated.View
         pointerEvents='box-none'
         style={[
           styles.socials,
-          tier !== 'none' ? styles.socialsCentered : null,
+          tier !== 'none' ? styles.socialsWithTier : null,
           { opacity }
         ]}
       >
         {renderSocialLinks()}
       </Animated.View>
-    </View>
+    </Flex>
   )
 }

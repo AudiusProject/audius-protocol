@@ -6,9 +6,9 @@ import {
   TrackAddedToPurchasedAlbumNotification as TrackAddedToPurchasedAlbumNotificationType
 } from '@audius/common/store'
 import { Flex, IconStars } from '@audius/harmony'
-import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
+import { push } from 'utils/navigation'
 import { useSelector } from 'utils/reducer'
 
 import { EntityLink } from './components/EntityLink'

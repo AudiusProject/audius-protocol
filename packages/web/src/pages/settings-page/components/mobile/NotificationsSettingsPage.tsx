@@ -1,5 +1,12 @@
-import { EmailFrequency } from '@audius/common/store'
+import { useCallback } from 'react'
+
+import {
+  EmailFrequency,
+  settingsPageActions,
+  settingsPageSelectors
+} from '@audius/common/store'
 import { SegmentedControl } from '@audius/harmony'
+import { useDispatch, useSelector } from 'react-redux'
 
 import GroupableList from 'components/groupable-list/GroupableList'
 import Grouping from 'components/groupable-list/Grouping'
@@ -7,8 +14,10 @@ import Row from 'components/groupable-list/Row'
 import Page from 'components/page/Page'
 
 import styles from './NotificationsSettingsPage.module.css'
-import { SettingsPageProps } from './SettingsPage'
 import settingsPageStyles from './SettingsPage.module.css'
+
+const { getEmailFrequency } = settingsPageSelectors
+const { updateEmailFrequency: updateEmailFrequencyAction } = settingsPageActions
 
 const messages = {
   title: 'Notifications',
@@ -28,10 +37,15 @@ const emailOptions = [
   { key: EmailFrequency.Off, text: 'Off' }
 ]
 
-const NotificationsSettingsPage = ({
-  emailFrequency,
-  updateEmailFrequency
-}: SettingsPageProps) => {
+const NotificationsSettingsPage = () => {
+  const dispatch = useDispatch()
+  const emailFrequency = useSelector(getEmailFrequency)
+  const updateEmailFrequency = useCallback(
+    (frequency: EmailFrequency) => {
+      dispatch(updateEmailFrequencyAction(frequency))
+    },
+    [dispatch]
+  )
   return (
     <Page
       title={messages.title}

@@ -25,19 +25,27 @@ export const isTrackDownload = (encodedABI: string) => {
 
 export const isViewNotification = (encodedABI: string): boolean => {
   const decodedAbi = decodeAbi(encodedABI)
-  return decodedAbi.action === 'View' && decodedAbi.entityType === 'Notification'
+  return (
+    decodedAbi.action === 'View' && decodedAbi.entityType === 'Notification'
+  )
 }
 
 export const isViewPlaylistNotification = (encodedABI: string): boolean => {
   const decodedAbi = decodeAbi(encodedABI)
-  return decodedAbi.action === 'ViewPlaylist' && decodedAbi.entityType === 'Notification'
+  return (
+    decodedAbi.action === 'ViewPlaylist' &&
+    decodedAbi.entityType === 'Notification'
+  )
 }
 
 export const unknownToError = (e: unknown): Error => {
   return e instanceof Error ? e : new Error(String(e))
 }
 
-export const retryPromise = async <T>(task: () => Promise<T>, retries = 64): Promise<T> => {
+export const retryPromise = async <T>(
+  task: () => Promise<T>,
+  retries = 64
+): Promise<T> => {
   let tries = 0
   let error = undefined
   while (tries != retries) {
@@ -55,5 +63,5 @@ export const retryPromise = async <T>(task: () => Promise<T>, retries = 64): Pro
 }
 
 const delay = (ms: number) => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }

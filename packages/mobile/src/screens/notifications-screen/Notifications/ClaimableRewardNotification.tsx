@@ -29,12 +29,12 @@ export const ClaimableRewardNotification = (
   const navigation = useNavigation()
 
   const handlePress = useCallback(() => {
-    navigation.navigate('AudioScreen')
+    navigation.navigate('RewardsScreen')
   }, [navigation])
 
   return (
     <NotificationTile notification={notification}>
-      <NotificationHeader icon={IconTokenGold}>
+      <NotificationHeader icon={() => <IconTokenGold size='xl' />}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationText>{messages.claimableReward}</NotificationText>

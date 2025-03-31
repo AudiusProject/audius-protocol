@@ -31,7 +31,7 @@ const { getShareState } = shareModalUISelectors
 const { shareUser } = usersSocialActions
 const { shareTrack } = tracksSocialActions
 const { shareAudioNftPlaylist, shareCollection } = collectionsSocialActions
-const getAccountUser = accountSelectors.getAccountUser
+const { getUserId } = accountSelectors
 const { setVisibility } = modalsActions
 
 export const ShareModal = () => {
@@ -42,12 +42,12 @@ export const ShareModal = () => {
   const isMobile = useIsMobile()
   const record = useRecord()
   const { content, source } = useSelector(getShareState)
-  const account = useSelector(getAccountUser)
+  const accountUserId = useSelector(getUserId)
   const { onOpen: openCreateChatModal } = useCreateChatModal()
   const isManagerMode = useIsManagedAccount()
 
   const isOwner =
-    content?.type === 'track' && account?.user_id === content.artist.user_id
+    content?.type === 'track' && accountUserId === content.artist.user_id
 
   const handleShareToDirectMessage = useCallback(async () => {
     if (!content) return
@@ -65,7 +65,7 @@ export const ShareModal = () => {
     if (!source || !content) return
     const isPlaylistOwner =
       content.type === 'audioNftPlaylist' &&
-      account?.user_id === content.user.user_id
+      accountUserId === content.user.user_id
     const { twitterText, link, analyticsEvent } = await getTwitterShareText(
       content,
       isPlaylistOwner
@@ -73,7 +73,7 @@ export const ShareModal = () => {
     openTwitterLink(link, twitterText)
     record(make(Name.SHARE_TO_TWITTER, { source, ...analyticsEvent }))
     onClose()
-  }, [source, content, account, record, onClose])
+  }, [source, content, accountUserId, record, onClose])
 
   const handleCopyLink = useCallback(() => {
     if (!source || !content) return

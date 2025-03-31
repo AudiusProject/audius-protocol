@@ -23,7 +23,7 @@ const messages = {
   link: 'Privacy Policy.'
 }
 
-export type CookieBannerProps = ReturnType<typeof mapStateToProps> &
+type CookieBannerProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
 export const CookieBanner = ({ isPlaying, dismiss }: CookieBannerProps) => {

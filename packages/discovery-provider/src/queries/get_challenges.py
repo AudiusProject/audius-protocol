@@ -6,6 +6,7 @@ from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.challenges.listen_streak_endless_challenge import NUM_DAYS_IN_STREAK
 from src.models.rewards.challenge import Challenge, ChallengeType
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
 from src.models.rewards.user_challenge import UserChallenge
@@ -44,34 +45,70 @@ def get_disbursed_amount(disbursements: List[ChallengeDisbursement]) -> int:
 
 
 def rollup_aggregates(
+    event_bus: ChallengeEventBus,
+    session: Session,
     user_challenges: List[UserChallenge],
     parent_challenge: Challenge,
     disbursements: List[ChallengeDisbursement],
 ) -> ChallengeResponse:
+    step_count = parent_challenge.step_count
     num_complete = reduce(
         lambda acc, cur: cast(int, acc) + cur.amount if cur.is_complete else acc,
         user_challenges,
         0,
     )
+    amount = parent_challenge.amount
+    current_step_count = num_complete
 
     # The parent challenge should have a step count, otherwise, we can just
     # say it's complete.
-    if parent_challenge.step_count:
+    if parent_challenge.id == "o":
+        # one shot is a special aggregate that's different for every user
+        # max steps is unique for user so override the parent challenge step count
+        # each step has a value of 1
+        step_count = sum(challenge.amount for challenge in user_challenges)
+        amount = "1"
+        is_complete = True
+    elif parent_challenge.id == "e":
+        # `step_count` should only reflect the _current_ in-progress streak, so we
+        # count only the `step_count` of the most recent "full" 7-day streak user_challenge
+        # row, and sum that with the 1-amount user_challenge rows after that one (if any).
+        sorted_challenges = sorted(
+            user_challenges, key=lambda x: x.created_at, reverse=True
+        )
+        most_recent_challenge = sorted_challenges[0]
+        if most_recent_challenge.is_complete:
+            current_step_count = 0
+            for challenge in sorted_challenges:
+                if challenge.current_step_count is None:
+                    continue
+                current_step_count += challenge.current_step_count
+                if challenge.current_step_count >= NUM_DAYS_IN_STREAK:
+                    break
+        else:
+            current_step_count = most_recent_challenge.current_step_count or 0
+        is_complete = num_complete >= NUM_DAYS_IN_STREAK
+    elif parent_challenge.step_count:
         is_complete = num_complete >= parent_challenge.step_count
     else:
         is_complete = True
+    override_step_count = event_bus.get_manager(
+        parent_challenge.id
+    ).get_override_challenge_step_count(session, user_challenges[0].user_id)
+    if override_step_count is not None:
+        current_step_count = override_step_count
 
     response_dict: ChallengeResponse = {
         "challenge_id": parent_challenge.id,
         "user_id": user_challenges[0].user_id,
         "specifier": "",
         "is_complete": is_complete,
-        "current_step_count": num_complete,
-        "max_steps": parent_challenge.step_count,
+        "current_step_count": current_step_count,
+        "max_steps": step_count,
         "challenge_type": parent_challenge.type,
         "is_active": parent_challenge.active,
         "is_disbursed": False,  # This doesn't indicate anything for aggregate challenges
-        "amount": parent_challenge.amount,
+        "amount": amount,
         "disbursed_amount": get_disbursed_amount(disbursements),
         "cooldown_days": parent_challenge.cooldown_days or 0,
         "metadata": {},
@@ -209,12 +246,9 @@ def get_challenges(
     for i, user_challenge in enumerate(existing_user_challenges):
         parent_challenge = all_challenges_map[user_challenge.challenge_id]
         if parent_challenge.type == ChallengeType.aggregate:
-            # Filter out aggregate user_challenges that aren't complete.
-            # this probably shouldn't even happen (what does it mean?)
-            if user_challenge.is_complete:
-                aggregate_user_challenges_map[user_challenge.challenge_id].append(
-                    user_challenge
-                )
+            aggregate_user_challenges_map[user_challenge.challenge_id].append(
+                user_challenge
+            )
         else:
             # If we're a trending challenge, don't add if the user_challenge is incomplete
             if (
@@ -242,6 +276,8 @@ def get_challenges(
         parent_challenge = all_challenges_map[challenge_id]
         rolled_up.append(
             rollup_aggregates(
+                event_bus,
+                session,
                 challenges,
                 parent_challenge,
                 get_disbursements_by_challenge_id(disbursements, challenge_id),

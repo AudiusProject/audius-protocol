@@ -1,12 +1,13 @@
-import { useCallback, useEffect, MouseEvent, ReactNode } from 'react'
+import { useCallback, useEffect, ReactNode } from 'react'
 
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import {
   ModalSource,
   isContentUSDCPurchaseGated,
   ID,
   AccessConditions,
-  GatedContentStatus
+  FavoriteSource
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -15,39 +16,20 @@ import {
   gatedContentSelectors,
   PurchaseableContentType
 } from '@audius/common/store'
-import {
-  formatCount,
-  Genre,
-  formatLineupTileDuration,
-  Nullable
-} from '@audius/common/utils'
-import {
-  IconVolumeLevel2 as IconVolume,
-  IconCrown,
-  IconTrending,
-  Text,
-  Flex,
-  IconStar,
-  IconMessage
-} from '@audius/harmony'
+import { Genre, formatLineupTileDuration, Nullable } from '@audius/common/utils'
+import { IconVolumeLevel2 as IconVolume, Text, Flex } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
-import FavoriteButton from 'components/alt-button/FavoriteButton'
-import RepostButton from 'components/alt-button/RepostButton'
 import { TextLink, UserLink } from 'components/link'
-import { LockedStatusPill } from 'components/locked-status-pill'
 import Skeleton from 'components/skeleton/Skeleton'
-import { TrackTileProps } from 'components/track/types'
+import { TrackTileProps, TrackTileSize } from 'components/track/types'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
+import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
 
-import { GatedConditionsPill } from '../GatedConditionsPill'
-import { GatedTrackLabel } from '../GatedTrackLabel'
-import { LineupTileLabel } from '../LineupTileLabel'
 import { TrackDogEar } from '../TrackDogEar'
-import { VisibilityLabel } from '../VisibilityLabel'
+import { TrackTileStats } from '../TrackTileStats'
 import { messages } from '../trackTileMessages'
 
 import BottomButtons from './BottomButtons'
@@ -59,12 +41,8 @@ const { getGatedContentStatusMap } = gatedContentSelectors
 
 type ExtraProps = {
   permalink: string
-  toggleSave: (trackId: ID) => void
   toggleRepost: (trackId: ID) => void
   onShare: (trackId: ID) => void
-  makeGoToRepostsPage: (trackId: ID) => (e: MouseEvent<HTMLElement>) => void
-  makeGoToFavoritesPage: (trackId: ID) => (e: MouseEvent<HTMLElement>) => void
-  makeGoToCommentsPage: (trackId: ID) => (e: MouseEvent<HTMLElement>) => void
   isOwner: boolean
   darkMode: boolean
   isMatrix: boolean
@@ -77,67 +55,6 @@ type ExtraProps = {
 }
 
 type CombinedProps = TrackTileProps & ExtraProps
-
-type LockedOrPlaysContentProps = Pick<
-  CombinedProps,
-  | 'trackId'
-  | 'hasStreamAccess'
-  | 'isOwner'
-  | 'isStreamGated'
-  | 'streamConditions'
-  | 'listenCount'
-  | 'variant'
-> & {
-  lockedContentType: 'gated' | 'premium'
-  gatedTrackStatus?: GatedContentStatus
-  onClickGatedUnlockPill: (e: MouseEvent) => void
-}
-
-const renderLockedContentOrPlayCount = ({
-  trackId,
-  hasStreamAccess,
-  isOwner,
-  isStreamGated,
-  streamConditions,
-  gatedTrackStatus,
-  listenCount,
-  onClickGatedUnlockPill,
-  variant,
-  lockedContentType
-}: LockedOrPlaysContentProps) => {
-  if (isStreamGated && streamConditions && !isOwner) {
-    if (
-      !hasStreamAccess &&
-      lockedContentType === 'premium' &&
-      variant === 'readonly' &&
-      trackId
-    ) {
-      return (
-        <GatedConditionsPill
-          streamConditions={streamConditions}
-          unlocking={gatedTrackStatus === 'UNLOCKING'}
-          onClick={onClickGatedUnlockPill}
-          buttonSize='small'
-          contentId={trackId}
-          contentType='track'
-        />
-      )
-    }
-    return (
-      <LockedStatusPill locked={!hasStreamAccess} variant={lockedContentType} />
-    )
-  }
-
-  return (
-    listenCount !== undefined &&
-    listenCount > 0 && (
-      <div className={styles.plays}>
-        {formatCount(listenCount)}
-        {messages.getPlays(listenCount)}
-      </div>
-    )
-  )
-}
 
 const formatCoSign = ({
   hasReposted,
@@ -154,23 +71,6 @@ const formatCoSign = ({
   return messages.reposted
 }
 
-export const RankIcon = ({
-  showCrown,
-  index,
-  isVisible = true
-}: {
-  showCrown: boolean
-  index: number
-  isVisible?: boolean
-  className?: string
-}) => {
-  return isVisible ? (
-    <LineupTileLabel icon={showCrown ? IconCrown : IconTrending} color='accent'>
-      {`${index + 1}`}
-    </LineupTileLabel>
-  ) : null
-}
-
 const TrackTile = (props: CombinedProps) => {
   const {
     id,
@@ -178,7 +78,6 @@ const TrackTile = (props: CombinedProps) => {
     index,
     showSkeleton,
     hasLoaded,
-    toggleSave,
     toggleRepost,
     onShare,
     onClickOverflow,
@@ -188,18 +87,12 @@ const TrackTile = (props: CombinedProps) => {
     isActive,
     isMatrix,
     userId,
-    isArtistPick,
-    isScheduledRelease,
-    releaseDate,
     isOwner,
     isUnlisted,
     isLoading,
     isStreamGated,
-    listenCount,
     streamConditions,
     hasStreamAccess,
-    isTrending,
-    showRankIcon,
     permalink,
     duration,
     genre,
@@ -210,12 +103,14 @@ const TrackTile = (props: CombinedProps) => {
     hasPreview = false,
     title,
     source,
-    renderOverflow
+    renderOverflow,
+    isTrending
   } = props
 
-  const hideShare: boolean = props.fieldVisibility
-    ? props.fieldVisibility.share === false
-    : false
+  const toggleSaveTrack = useToggleFavoriteTrack({
+    trackId: id as number,
+    source: FavoriteSource.TILE
+  })
 
   const dispatch = useDispatch()
   const [, setModalVisibility] = useModalState('LockedContent')
@@ -225,7 +120,6 @@ const TrackTile = (props: CombinedProps) => {
   const trackId = isStreamGated ? id : null
   const gatedTrackStatus = trackId ? gatedTrackStatusMap[trackId] : undefined
   const isPurchase = isContentUSDCPurchaseGated(streamConditions)
-  const onToggleSave = useCallback(() => toggleSave(id), [toggleSave, id])
 
   const onToggleRepost = useCallback(() => toggleRepost(id), [toggleRepost, id])
 
@@ -243,7 +137,7 @@ const TrackTile = (props: CombinedProps) => {
     }
   }, [trackId, dispatch, setModalVisibility])
 
-  const onClickPill = useAuthenticatedClickCallback(() => {
+  const onClickPillRequiresAccount = useRequiresAccountOnClick(() => {
     if (isPurchase && trackId) {
       openPremiumContentPurchaseModal(
         { contentId: trackId, contentType: PurchaseableContentType.TRACK },
@@ -260,9 +154,31 @@ const TrackTile = (props: CombinedProps) => {
     openLockedContentModal
   ])
 
+  const onClickPill = useCallback(() => {
+    if (isPurchase && trackId) {
+      openPremiumContentPurchaseModal(
+        { contentId: trackId, contentType: PurchaseableContentType.TRACK },
+        { source: source ?? ModalSource.TrackTile }
+      )
+    } else if (trackId && !hasStreamAccess) {
+      openLockedContentModal()
+    }
+  }, [
+    isPurchase,
+    trackId,
+    hasStreamAccess,
+    openPremiumContentPurchaseModal,
+    source,
+    openLockedContentModal
+  ])
+
+  const { isEnabled: isGuestCheckoutEnabled } = useFeatureFlag(
+    FeatureFlags.GUEST_CHECKOUT
+  )
+
   useEffect(() => {
     if (!showSkeleton) {
-      hasLoaded(index)
+      hasLoaded?.(index)
     }
   }, [hasLoaded, index, showSkeleton])
 
@@ -290,10 +206,6 @@ const TrackTile = (props: CombinedProps) => {
     hasPreview,
     openLockedContentModal
   ])
-
-  const { isEnabled: isCommentsEnabled } = useFeatureFlag(
-    FeatureFlags.COMMENTS_ENABLED
-  )
 
   const isReadonly = variant === 'readonly'
 
@@ -328,7 +240,6 @@ const TrackTile = (props: CombinedProps) => {
             isPlaying={isPlaying}
             isBuffering={isBuffering}
             showSkeleton={showSkeleton}
-            coverArtSizes={props.coverArtSizes}
             coSign={coSign}
             className={styles.albumArtContainer}
             label={`${title} by ${props.artistName}`}
@@ -378,7 +289,7 @@ const TrackTile = (props: CombinedProps) => {
           <Text variant='body' size='xs' className={styles.coSignText}>
             <div className={styles.name}>
               {coSign.user.name}
-              <UserBadges userId={coSign.user.user_id} badgeSize={8} />
+              <UserBadges userId={coSign.user.user_id} size='4xs' />
             </div>
             {formatCoSign({
               hasReposted: coSign.has_remix_author_reposted,
@@ -386,125 +297,25 @@ const TrackTile = (props: CombinedProps) => {
             })}
           </Text>
         ) : null}
-        <Text variant='body' size='xs' className={styles.statsRow}>
-          <div className={styles.stats}>
-            <RankIcon
-              showCrown={showRankIcon}
-              index={index}
-              isVisible={isTrending && !showSkeleton}
-            />
-            {isArtistPick ? (
-              <LineupTileLabel color='accent' icon={IconStar}>
-                {messages.artistPick}
-              </LineupTileLabel>
-            ) : !isUnlisted && id ? (
-              <GatedTrackLabel trackId={id} />
-            ) : null}
-            <VisibilityLabel
-              releaseDate={releaseDate}
-              isUnlisted={isUnlisted}
-              isScheduledRelease={isScheduledRelease}
-            />
-            {!(
-              props.repostCount ||
-              props.saveCount ||
-              props.commentCount
-            ) ? null : (
-              <>
-                <div
-                  className={cn(styles.statItem, fadeIn, {
-                    [styles.disabledStatItem]: !props.repostCount,
-                    [styles.isHidden]: props.isUnlisted
-                  })}
-                  onClick={
-                    props.repostCount && !isReadonly
-                      ? props.makeGoToRepostsPage(id)
-                      : undefined
-                  }
-                >
-                  <RepostButton
-                    iconMode
-                    isMatrixMode={isMatrix}
-                    isDarkMode={darkMode}
-                    className={styles.repostButton}
-                    wrapperClassName={styles.repostButtonWrapper}
-                  />
-                  {formatCount(props.repostCount)}
-                </div>
-                <div
-                  className={cn(styles.statItem, fadeIn, {
-                    [styles.disabledStatItem]: !props.saveCount,
-                    [styles.isHidden]: props.isUnlisted
-                  })}
-                  onClick={
-                    props.saveCount && !isReadonly
-                      ? props.makeGoToFavoritesPage(id)
-                      : undefined
-                  }
-                >
-                  <FavoriteButton
-                    iconMode
-                    isDarkMode={darkMode}
-                    isMatrixMode={isMatrix}
-                    className={styles.favoriteButton}
-                    wrapperClassName={styles.favoriteButtonWrapper}
-                  />
-                  {formatCount(props.saveCount)}
-                </div>
-                <div
-                  className={cn(styles.statItem, fadeIn, {
-                    [styles.disabledStatItem]: !props.commentCount,
-                    [styles.isHidden]:
-                      !isCommentsEnabled ||
-                      props.isUnlisted ||
-                      props.commentsDisabled
-                  })}
-                  onClick={
-                    props.commentCount && !isReadonly
-                      ? props.makeGoToCommentsPage(id)
-                      : undefined
-                  }
-                >
-                  <IconMessage
-                    className={styles.favoriteButton}
-                    color='subdued'
-                  />
-                  {formatCount(props.commentCount)}
-                </div>
-              </>
-            )}
-          </div>
-          <Text
-            variant='body'
-            size='xs'
-            className={cn(styles.bottomRight, fadeIn)}
-          >
-            {!isLoading
-              ? renderLockedContentOrPlayCount({
-                  trackId: id,
-                  hasStreamAccess,
-                  isOwner,
-                  isStreamGated,
-                  streamConditions,
-                  listenCount,
-                  gatedTrackStatus,
-                  variant,
-                  lockedContentType: isPurchase ? 'premium' : 'gated',
-                  onClickGatedUnlockPill: onClickPill
-                })
-              : null}
-          </Text>
-        </Text>
+        <TrackTileStats
+          trackId={id}
+          isTrending={isTrending}
+          rankIndex={index}
+          size={TrackTileSize.SMALL}
+          isLoading={isLoading}
+        />
         {isReadonly ? null : (
           <BottomButtons
             hasSaved={props.hasCurrentUserSaved}
             hasReposted={props.hasCurrentUserReposted}
             toggleRepost={onToggleRepost}
-            toggleSave={onToggleSave}
+            toggleSave={toggleSaveTrack}
             onShare={onClickShare}
             onClickOverflow={onClickOverflowMenu}
             renderOverflow={renderOverflow}
-            onClickGatedUnlockPill={onClickPill}
+            onClickGatedUnlockPill={
+              isGuestCheckoutEnabled ? onClickPill : onClickPillRequiresAccount
+            }
             isOwner={isOwner}
             readonly={isReadonly}
             isLoading={isLoading}
@@ -512,7 +323,6 @@ const TrackTile = (props: CombinedProps) => {
             hasStreamAccess={hasStreamAccess}
             streamConditions={streamConditions}
             gatedTrackStatus={gatedTrackStatus}
-            isShareHidden={hideShare}
             isDarkMode={darkMode}
             isMatrixMode={isMatrix}
             isTrack

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react'
 
-import { Flex, Text } from 'components'
-import { IconHeart } from 'icons'
+import { Flex, Text } from '~harmony/components'
+import { IconHeart } from '~harmony/icons'
 
 import { SelectablePill } from './SelectablePill'
 

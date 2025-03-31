@@ -13,14 +13,67 @@ import {
 
 const { writeFile } = promises
 
+const productionDiscoveryNodeRPCEarlyAdopters = [
+  'https://audius-discovery-1.altego.net',
+  'https://dn-jpn.audius.metadata.fyi',
+  'https://dn-usa.audius.metadata.fyi',
+  'https://discovery-us-01.audius.openplayer.org',
+  'https://audius-discovery-2.altego.net',
+  'https://dn1.nodeoperator.io',
+  'https://dn2.monophonic.digital',
+  'https://audius-discovery-3.altego.net',
+  'https://dn1.matterlightblooming.xyz',
+  'https://discovery.grassfed.network',
+  'https://audius-discovery-1.cultur3stake.com',
+  'https://audius-discovery-3.cultur3stake.com',
+  'https://audius-discovery-4.cultur3stake.com',
+  'https://audius-discovery-5.cultur3stake.com',
+  'https://audius-discovery-7.cultur3stake.com',
+  'https://audius-discovery-8.cultur3stake.com',
+  'https://audius-discovery-9.cultur3stake.com',
+  'https://audius-discovery-10.cultur3stake.com',
+  'https://discovery-au-02.audius.openplayer.org',
+  'https://disc-lon01.audius.hashbeam.com',
+  'https://blockdaemon-audius-discovery-01.bdnodes.net',
+  'https://blockdaemon-audius-discovery-02.bdnodes.net',
+  'https://blockdaemon-audius-discovery-03.bdnodes.net',
+  'https://blockdaemon-audius-discovery-04.bdnodes.net',
+  'https://blockdaemon-audius-discovery-05.bdnodes.net',
+  'https://blockdaemon-audius-discovery-06.bdnodes.net',
+  'https://blockchange-audius-discovery-01.bdnodes.net',
+  'https://blockchange-audius-discovery-02.bdnodes.net',
+  'https://blockchange-audius-discovery-03.bdnodes.net',
+  'https://audius-discovery-11.cultur3stake.com',
+  'https://audius-discovery-12.cultur3stake.com',
+  'https://audius-discovery-13.cultur3stake.com',
+  'https://audius-discovery-14.cultur3stake.com',
+  'https://audius-discovery-16.cultur3stake.com',
+  'https://audius-discovery-18.cultur3stake.com',
+  'https://audius-discovery-17.cultur3stake.com',
+  'https://audius-discovery-15.cultur3stake.com',
+  'https://audius-discovery-6.cultur3stake.com',
+  'https://audius-discovery-2.cultur3stake.com',
+  'https://blockdaemon-audius-discovery-08.bdnodes.net',
+  'https://audius-metadata-5.figment.io',
+  'https://dn1.stuffisup.com',
+  'https://audius-discovery-1.theblueprint.xyz',
+  'https://audius-discovery-2.theblueprint.xyz',
+  'https://audius-discovery-3.theblueprint.xyz',
+  'https://audius-discovery-4.theblueprint.xyz',
+  'https://audius-nodes.com',
+  'https://blockchange-audius-discovery-04.bdnodes.net',
+  'https://blockchange-audius-discovery-05.bdnodes.net'
+]
+
 const productionConfig: SdkServicesConfig = {
   network: {
     minVersion: '',
     discoveryNodes: [],
+    apiEndpoint: 'https://api.audius.co',
     storageNodes: [],
     antiAbuseOracleNodes: {
       endpoints: [
-        'https://antiabuseoracle.audius.co',
+        'https://discoveryprovider.audius.co',
         'https://audius-oracle.creatorseed.com',
         'https://oracle.audius.endl.net'
       ],
@@ -52,7 +105,9 @@ const productionConfig: SdkServicesConfig = {
       ethRewardsManagerAddress: '0x5aa6B99A2B461bA8E97207740f0A689C5C39C3b0',
       serviceProviderFactoryAddress:
         '0xD17A9bc90c582249e211a4f4b16721e7f65156c8',
-      serviceTypeManagerAddress: '0x9EfB0f4F38aFbb4b0984D00C126E97E21b8417C5'
+      serviceTypeManagerAddress: '0x9EfB0f4F38aFbb4b0984D00C126E97E21b8417C5',
+      audiusTokenAddress: '0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998',
+      audiusWormholeAddress: '0x6E7a1F7339bbB62b23D44797b63e4258d283E095'
     }
   }
 }
@@ -60,10 +115,11 @@ const productionConfig: SdkServicesConfig = {
 const stagingConfig: SdkServicesConfig = {
   network: {
     minVersion: '',
+    apiEndpoint: 'https://api.staging.audius.co',
     discoveryNodes: [],
     storageNodes: [],
     antiAbuseOracleNodes: {
-      endpoints: ['https://antiabuseoracle.staging.audius.co'],
+      endpoints: ['https://discoveryprovider.staging.audius.co'],
       registeredAddresses: []
     },
     identityService: 'https://identityservice.staging.audius.co'
@@ -92,7 +148,9 @@ const stagingConfig: SdkServicesConfig = {
       ethRewardsManagerAddress: '0x563483ccD66a49Ca730275F8cf37Dd3E6Da864f1',
       serviceProviderFactoryAddress:
         '0x377BE01aD31360d0DFB16035A4515954395A8185',
-      serviceTypeManagerAddress: '0x9fd76d2cD48022526F3a164541E6552291F4a862'
+      serviceTypeManagerAddress: '0x9fd76d2cD48022526F3a164541E6552291F4a862',
+      audiusTokenAddress: '0x1376180Ee935AA64A27780F4BE97726Df7B0e2B2',
+      audiusWormholeAddress: '0xf6f45e4d836da1d4ecd43bb1074620bfb0b7e0d7'
     }
   }
 }
@@ -100,6 +158,7 @@ const stagingConfig: SdkServicesConfig = {
 const developmentConfig: SdkServicesConfig = {
   network: {
     minVersion: '0.0.0',
+    apiEndpoint: 'https://audius-protocol-discovery-provider-1',
     discoveryNodes: [
       {
         delegateOwnerWallet:
@@ -139,17 +198,20 @@ const developmentConfig: SdkServicesConfig = {
       'GNHKVSmHvoRBt1JJCxz7RSMfzDQGDGhGEjmhHyxb3K5J'
   },
   ethereum: {
-    rpcEndpoint: 'https://audius-protocol-eth-ganache-1',
+    rpcEndpoint: 'http://audius-protocol-eth-ganache-1',
     addresses: {
       ethRewardsManagerAddress: '0x',
       serviceProviderFactoryAddress: '0x',
-      serviceTypeManagerAddress: '0x'
+      serviceTypeManagerAddress: '0x',
+      audiusTokenAddress: '0xdcB2fC9469808630DD0744b0adf97C0003fC29B2',
+      audiusWormholeAddress: '0xf6f45e4d836da1d4ecd43bb1074620bfb0b7e0d7' // staging repeated, doesn't exist in dev
     }
   }
 }
 
 const generateServicesConfig = async (
-  config: SdkServicesConfig
+  config: SdkServicesConfig,
+  { discoveryNodeBlockList }: { discoveryNodeBlockList?: string[] } = {}
 ): Promise<SdkServicesConfig> => {
   const serviceProviderFactory = new ServiceProviderFactoryClient(
     getDefaultServiceProviderFactoryConfig(config)
@@ -180,13 +242,17 @@ const generateServicesConfig = async (
   const minVersion = await serviceTypeManager.getDiscoveryNodeVersion()
 
   config.network.minVersion = minVersion
-  config.network.discoveryNodes = discoveryNodes.map(
-    ([ownerWallet, endpoint, _blockNumber, delegateOwnerWallet]: any) => ({
+  config.network.discoveryNodes = discoveryNodes
+    .map(([ownerWallet, endpoint, _blockNumber, delegateOwnerWallet]: any) => ({
       endpoint,
       ownerWallet,
       delegateOwnerWallet
-    })
-  )
+    }))
+    .filter((node) =>
+      discoveryNodeBlockList
+        ? !discoveryNodeBlockList.includes(node.endpoint)
+        : true
+    )
   config.network.storageNodes = contentNodes.map(
     ([_ownerWallet, endpoint, _blockNumber, delegateOwnerWallet]: any) => ({
       endpoint,
@@ -201,7 +267,9 @@ const generateServicesConfig = async (
 }
 
 const writeServicesConfig = async () => {
-  const production = await generateServicesConfig(productionConfig)
+  const production = await generateServicesConfig(productionConfig, {
+    discoveryNodeBlockList: productionDiscoveryNodeRPCEarlyAdopters
+  })
   const staging = await generateServicesConfig(stagingConfig)
   const development = developmentConfig
   const config: Record<string, SdkServicesConfig> = {

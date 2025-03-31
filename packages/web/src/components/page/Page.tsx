@@ -7,13 +7,14 @@ import {
   MutableRefObject
 } from 'react'
 
+import { Box, Flex } from '@audius/harmony'
+import { animated, useSpring } from '@react-spring/web'
 import cn from 'classnames'
-// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
-import { animated, useSpring } from 'react-spring'
 
 import { MetaTags, MetaTagsProps } from 'components/meta-tags/MetaTags'
-import SearchBar from 'components/search-bar/ConnectedSearchBar'
+import { DesktopSearchBar } from 'components/search-bar/DesktopSearchBar'
 
+import { FlushPageContainer } from './FlushPageContainer'
 import styles from './Page.module.css'
 
 const HEADER_MARGIN_PX = 32
@@ -27,6 +28,7 @@ const HeaderContainer = (props: HeaderContainerProps) => {
   // Only Safari & Chrome support the CSS
   // frosted glasss effect.
   const [isChromeOrSafari, setIsChromeOrSafari] = useState(false)
+
   useEffect(() => {
     const chromeOrSafari = () => {
       const userAgent = navigator.userAgent.toLowerCase()
@@ -49,14 +51,14 @@ const HeaderContainer = (props: HeaderContainerProps) => {
           // browsers that don't support the
           // backdrop-filter frosted glass effect.
           background: isChromeOrSafari
-            ? 'linear-gradient(180deg, var(--page-header-gradient-1) 0%, var(--page-header-gradient-1) 20%, var(--page-header-gradient-2) 65%)'
-            : 'linear-gradient(180deg, var(--page-header-gradient-1) 0%, var(--page-header-gradient-1) 40%, var(--page-header-gradient-2-alt) 85%)'
+            ? 'linear-gradient(180deg, var(--harmony-n-25) 0%, var(--harmony-n-25) 20%, var(--page-header-gradient-2) 65%)'
+            : 'linear-gradient(180deg, var(--harmony-n-25) 0%, var(--page-n-25) 40%, var(--page-header-gradient-2-alt) 85%)'
         }}
       >
         {cloneElement(header as any, {
           isChromeOrSafari,
           headerContainerRef,
-          topLeftElement: showSearch ? <SearchBar /> : null
+          topLeftElement: showSearch ? <DesktopSearchBar /> : null
         })}
       </div>
       {/* We attach the box shadow as a separate element to
@@ -158,11 +160,27 @@ export const Page = (props: PageProps) => {
           </div>
         </div>
 
-        {scrollableSearch && (
-          <div className={styles.searchWrapper}>
-            <SearchBar />
-          </div>
-        )}
+        {scrollableSearch &&
+          (variant === 'flush' ? (
+            <Box
+              css={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0
+              }}
+            >
+              <FlushPageContainer mt='2xl'>
+                <Flex flex={1} justifyContent='flex-start'>
+                  <DesktopSearchBar />
+                </Flex>
+              </FlushPageContainer>
+            </Box>
+          ) : (
+            <div className={styles.searchWrapper}>
+              <DesktopSearchBar />
+            </div>
+          ))}
       </animated.div>
     </>
   )

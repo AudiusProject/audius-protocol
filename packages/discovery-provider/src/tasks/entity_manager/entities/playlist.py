@@ -341,15 +341,19 @@ def validate_playlist_tx(params: ManageEntityParameters):
                 f"Playlist {playlist_id} description exceeds character limit {CHARACTER_LIMIT_DESCRIPTION}"
             )
         if params.metadata.get("playlist_contents"):
-            if (
-                "playlist_contents" not in params.metadata
-                or "track_ids" not in params.metadata["playlist_contents"]
-            ):
-                raise IndexingValidationError("playlist contents requires track_ids")
-            playlist_track_count = len(
-                params.metadata["playlist_contents"]["track_ids"]
+            # Handle nested dictionary or array formats
+            track_items = (
+                params.metadata["playlist_contents"].get("track_ids")
+                if isinstance(params.metadata["playlist_contents"], dict)
+                else params.metadata["playlist_contents"]
             )
-            if playlist_track_count > PLAYLIST_TRACK_LIMIT:
+
+            if not isinstance(track_items, list):
+                raise IndexingValidationError(
+                    "playlist contents must be a list of tracks"
+                )
+
+            if len(track_items) > PLAYLIST_TRACK_LIMIT:
                 raise IndexingValidationError(
                     f"Playlist {playlist_id} exceeds track limit {PLAYLIST_TRACK_LIMIT}"
                 )
@@ -380,21 +384,27 @@ def create_playlist(params: ManageEntityParameters):
     validate_playlist_tx(params)
 
     playlist_id = params.entity_id
-    tracks = params.metadata["playlist_contents"].get("track_ids", [])
+    tracks = (
+        params.metadata["playlist_contents"].get("track_ids", [])
+        if isinstance(params.metadata["playlist_contents"], dict)
+        else params.metadata["playlist_contents"]
+    )
     tracks_with_index_time = []
     last_added_to = None
 
     created_at = params.block_datetime
     for track in tracks:
-        if "track" not in track or "time" not in track:
+        track_id = track.get("track") or track.get("track_id")
+        track_time = track.get("timestamp") or track.get("time")
+        if not track_id or not track_time:
             raise IndexingValidationError(
                 f"Cannot add {track} to playlist {playlist_id}"
             )
 
         tracks_with_index_time.append(
             {
-                "track": track["track"],
-                "metadata_time": track["time"],
+                "track": track_id,
+                "metadata_time": track_time,
                 "time": params.block_integer_time,
             }
         )
@@ -560,10 +570,35 @@ def process_playlist_contents(
     playlist_record, playlist_metadata, block_integer_time, existing_track_records
 ):
     updated_tracks = []
-    for track in playlist_metadata["playlist_contents"]["track_ids"]:
-        track_id = track["track"]
-        metadata_time = track["time"]
-        index_time = block_integer_time  # default to current block for new tracks
+    # Incoming tracks can be legacy format (dict with track_ids) or new format (array of objects)
+    track_items = (
+        playlist_metadata["playlist_contents"].get("track_ids")
+        if isinstance(playlist_metadata["playlist_contents"], dict)
+        else playlist_metadata["playlist_contents"]
+    )
+
+    if not isinstance(track_items, list):
+        raise IndexingValidationError(
+            f"Invalid playlist_contents format: {playlist_metadata['playlist_contents']}"
+        )
+
+    for track in track_items:
+        # Prefer track_id, use legacy track field otherwise
+        track_id = track.get("track") or track.get("track_id")
+        # Prefer metadata_timestamp if it exists, otherwise use timestamp or the legacy time field
+        metadata_time = (
+            track.get("metadata_timestamp")
+            or track.get("timestamp")
+            or track.get("time")
+        )
+        index_time = (
+            block_integer_time  # default index time to current block for new tracks
+        )
+
+        if not track_id:
+            raise IndexingValidationError(
+                f"Track object missing track/track_id field: {track}"
+            )
 
         track_metadata = existing_track_records.get(track_id)
         if playlist_record.is_album and (
@@ -575,6 +610,7 @@ def process_playlist_contents(
         previous_playlist_tracks = playlist_record.playlist_contents["track_ids"]
         for previous_track in previous_playlist_tracks:
             previous_track_id = previous_track["track"]
+            # prefer metadata_time to check if track was already in playlist
             previous_track_time = (
                 previous_track.get("metadata_time") or previous_track["time"]
             )

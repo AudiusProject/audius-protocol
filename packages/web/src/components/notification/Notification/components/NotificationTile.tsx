@@ -5,50 +5,34 @@ import {
   useCallback
 } from 'react'
 
-import { Notification } from '@audius/common/store'
-import cn from 'classnames'
-import { useDispatch } from 'react-redux'
-
-import { closeNotificationPanel } from 'store/application/ui/notifications/notificationsUISlice'
-
-import styles from './NotificationTile.module.css'
+import { Notification, useNotificationModal } from '@audius/common/store'
+import { Paper } from '@audius/harmony'
 
 type NotificationTileProps = {
   notification: Notification
   children: ReactNode
   onClick?: ReactEventHandler
-  // When `true` disable :active and :hover transforms
-  disabled?: boolean
   // When `true` do not close notification panel onClick
   disableClosePanel?: boolean
 }
 
 export const NotificationTile = (props: NotificationTileProps) => {
-  const { notification, onClick, children, disabled, disableClosePanel } = props
-  const { isViewed } = notification
-  const dispatch = useDispatch()
+  const { onClick, children, disableClosePanel } = props
+  const { onClose } = useNotificationModal()
 
   const handleClick: MouseEventHandler = useCallback(
     (event) => {
       onClick?.(event)
       if (!disableClosePanel) {
-        dispatch(closeNotificationPanel())
+        onClose()
       }
     },
-    [onClick, disableClosePanel, dispatch]
+    [onClick, disableClosePanel, onClose]
   )
 
   return (
-    <div
-      className={cn(styles.root, {
-        [styles.read]: isViewed,
-        [styles.active]: !disabled
-      })}
-      tabIndex={0}
-      role='button'
-      onClick={handleClick}
-    >
+    <Paper column shadow='flat' p='l' onClick={handleClick} border='default'>
       {children}
-    </div>
+    </Paper>
   )
 }

@@ -3,7 +3,7 @@ import { Ref, forwardRef } from 'react'
 import { PasswordInput, PasswordInputProps } from '@audius/harmony'
 import { useField } from 'formik'
 
-export type PasswordFieldProps = PasswordInputProps & {
+type PasswordFieldProps = PasswordInputProps & {
   name: string
 }
 

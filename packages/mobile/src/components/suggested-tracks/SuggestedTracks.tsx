@@ -9,8 +9,14 @@ import { TouchableOpacity } from 'react-native-gesture-handler'
 import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
-import { IconCaretDown, IconRefresh, Button } from '@audius/harmony-native'
-import { Divider, Text, TextButton, Tile } from 'app/components/core'
+import {
+  IconCaretDown,
+  IconRefresh,
+  Button,
+  PlainButton,
+  Divider
+} from '@audius/harmony-native'
+import { Text, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 import { TrackImage } from '../image/TrackImage'
@@ -86,7 +92,7 @@ const SuggestedTrackRow = (props: SuggestedTrackProps) => {
     <View style={styles.suggestedTrack}>
       <View style={styles.trackDetails}>
         <TrackImage
-          track={track}
+          trackId={track.track_id}
           size={SquareSizes.SIZE_150_BY_150}
           style={styles.trackImage}
         />
@@ -201,15 +207,14 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
               </Fragment>
             ))}
           </View>
-          <TextButton
-            variant='neutralLight4'
-            icon={IconRefresh}
-            iconPosition='left'
-            title={messages.refresh}
-            TextProps={{ weight: 'bold' }}
+          <PlainButton
+            variant='subdued'
+            iconLeft={IconRefresh}
             style={styles.refreshButton}
             onPress={onRefresh}
-          />
+          >
+            {messages.refresh}
+          </PlainButton>
         </>
       ) : null}
     </Tile>

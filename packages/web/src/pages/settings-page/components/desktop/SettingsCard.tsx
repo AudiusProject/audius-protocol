@@ -11,7 +11,7 @@ type SettingsCardProps = {
   isFull?: boolean
 }
 
-export const SettingsCard = (props: SettingsCardProps) => {
+const SettingsCard = (props: SettingsCardProps) => {
   const settingsCardStyle = cn(
     styles.settingsCard,
     { [styles.settingsCardFull]: props.isFull },

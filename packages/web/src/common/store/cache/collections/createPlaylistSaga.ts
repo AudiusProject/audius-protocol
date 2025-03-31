@@ -1,6 +1,9 @@
 import {
+  playlistMetadataForCreateWithSDK,
+  userCollectionMetadataFromSDK
+} from '@audius/common/adapters'
+import {
   Name,
-  DefaultSizes,
   Kind,
   CollectionMetadata,
   Collection,
@@ -19,13 +22,13 @@ import {
   cacheUsersSelectors,
   savedPageActions,
   LibraryCategory,
-  getContext,
   confirmerActions,
-  confirmTransaction,
   EditCollectionValues,
-  RequestConfirmationError
+  RequestConfirmationError,
+  getSDK
 } from '@audius/common/store'
 import { makeKindId, Nullable, route } from '@audius/common/utils'
+import { Id, OptionalId } from '@audius/sdk'
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
@@ -33,12 +36,11 @@ import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { waitForWrite } from 'utils/sagaHelpers'
 
-import { getUnclaimedPlaylistId } from './utils/getUnclaimedPlaylistId'
 const { addLocalCollection } = savedPageActions
 const { getUser } = cacheUsersSelectors
 
 const { requestConfirmation } = confirmerActions
-const { getAccountUser } = accountSelectors
+const { getUserId, getAccountUser } = accountSelectors
 const { getTrack } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
 const { collectionPage } = route
@@ -51,11 +53,11 @@ export function* createPlaylistSaga() {
 }
 
 function* createPlaylistWorker(
-  action: ReturnType<
-    | typeof cacheCollectionsActions.createAlbum
-    | typeof cacheCollectionsActions.createPlaylist
-  >
+  action: ReturnType<typeof cacheCollectionsActions.createPlaylist>
 ) {
+  // Return early if this is an album
+  if (action.isAlbum) return
+
   yield* waitForWrite()
   const userId = yield* call(ensureLoggedIn)
   const {
@@ -66,13 +68,16 @@ function* createPlaylistWorker(
     isAlbum = false
   } = action
   const collection = newCollectionMetadata({ ...formFields, is_album: isAlbum })
-  const collectionId = yield* call(getUnclaimedPlaylistId)
+  const sdk = yield* getSDK()
+  const collectionId = yield* call([
+    sdk.playlists,
+    sdk.playlists.generatePlaylistId
+  ])
   if (!collectionId) return
 
   const initTrack = yield* select(getTrack, { id: initTrackId })
 
   if (initTrack) {
-    collection._cover_art_sizes = initTrack._cover_art_sizes
     collection.cover_art_sizes = initTrack.cover_art_sizes
   }
 
@@ -138,12 +143,6 @@ function* optimisticallySavePlaylist(
     undefined,
     playlist.is_album
   )
-  if (playlist.artwork) {
-    playlist._cover_art_sizes = {
-      ...playlist._cover_art_sizes,
-      [DefaultSizes.OVERRIDE]: playlist.artwork.url
-    }
-  }
 
   yield* put(
     cacheActions.add(
@@ -192,8 +191,7 @@ function* createAndConfirmPlaylist(
   source: string,
   isAlbum: boolean
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const { createPlaylist, getPlaylists } = audiusBackendInstance
+  const sdk = yield* getSDK()
 
   const event = make(Name.PLAYLIST_START_CREATE, {
     source,
@@ -204,32 +202,42 @@ function* createAndConfirmPlaylist(
   yield* put(event)
 
   function* confirmPlaylist() {
-    const { blockHash, blockNumber, error } = yield* call(
-      createPlaylist,
-      playlistId,
-      formFields,
-      isAlbum,
-      initTrack ? [initTrack.track_id] : undefined
-    )
-
-    if (error || !playlistId) throw new Error('Unable to create playlist')
-
-    const confirmed = yield* call(confirmTransaction, blockHash, blockNumber)
-    if (!confirmed) {
-      throw new Error(
-        `Could not confirm playlist creation for playlist id ${playlistId}`
-      )
+    const userId = yield* select(getUserId)
+    if (!userId) {
+      throw new Error('No userId set, cannot repost collection')
     }
+
+    yield* call([sdk.playlists, sdk.playlists.createPlaylist], {
+      userId: Id.parse(userId),
+      playlistId: Id.parse(playlistId),
+      trackIds: initTrack ? [Id.parse(initTrack.track_id)] : undefined,
+      metadata: playlistMetadataForCreateWithSDK(formFields)
+    })
 
     // Merge the confirmed playlist with the optimistic playlist, preferring
     // optimistic data in case other unconfirmed edits have been made.
-    const [confirmedPlaylist] = yield* call(getPlaylists, userId, [playlistId])
+    const { data: playlist } = yield* call(
+      [sdk.full.playlists, sdk.full.playlists.getPlaylist],
+      {
+        userId: OptionalId.parse(userId),
+        playlistId: Id.parse(playlistId)
+      }
+    )
+
+    const confirmedPlaylist = playlist?.[0]
+      ? userCollectionMetadataFromSDK(playlist[0])
+      : null
+    if (!confirmedPlaylist) {
+      throw new Error(
+        `Could not find confirmed playlist creation for playlist id ${playlistId}`
+      )
+    }
+
     const optimisticPlaylist = yield* select(getCollection, { id: playlistId })
 
     const reformattedPlaylist = {
       ...reformatCollection({
-        collection: confirmedPlaylist,
-        audiusBackendInstance
+        collection: confirmedPlaylist
       }),
       ...optimisticPlaylist,
       cover_art_cids: confirmedPlaylist.cover_art_cids,

@@ -9,9 +9,9 @@ import { useDispatch } from 'react-redux'
 
 import type { SocialButtonProps } from '@audius/harmony-native'
 import { SocialButton } from '@audius/harmony-native'
-import { env } from 'app/env'
 import { restrictedHandles } from 'app/screens/sign-on-screen/utils/restrictedHandles'
 import { make, track } from 'app/services/analytics'
+import { env } from 'app/services/env'
 import { Provider } from 'app/store/oauth/reducer'
 import { getInstagramProfile } from 'app/store/oauth/sagas'
 import type { InstagramCredentials } from 'app/store/oauth/types'
@@ -43,10 +43,9 @@ const useSetProfileFromInstagram = () => {
   const audiusQueryContext = useAudiusQueryContext()
 
   return async ({ code }: { code: string }) => {
-    const { igUserProfile: profile } = await getInstagramProfile(
-      code,
-      env.IDENTITY_SERVICE
-    )
+    const res = await getInstagramProfile(code, env.IDENTITY_SERVICE)
+
+    const { igUserProfile: profile } = res
     // Update info in redux
     dispatch(
       signOnActions.setInstagramProfile(
@@ -117,40 +116,37 @@ export const SignUpFlowInstagramAuth = ({
     setIsModalOpen(false)
   }
 
-  const handleError = (e: Error) => {
-    onError?.(e)
-  }
-
   const handleResponse = async (
     payload: InstagramCredentials | { error: string }
   ) => {
     setIsModalOpen(false)
-    if (!('error' in payload)) {
-      const { code } = payload
-      if (code) {
-        try {
-          const { requiresReview, isVerified, handle } =
-            await setProfileFromInstagram({
-              code
-            })
-          // keep analytics up to date
-          track(
-            make({
-              eventName: Name.CREATE_ACCOUNT_COMPLETE_INSTAGRAM,
-              page,
-              isVerified,
-              handle: handle || 'unknown'
-            })
-          )
-          onSuccess({ handle, requiresReview, platform: 'instagram' })
-        } catch (e) {
-          handleError(e)
-        }
-      } else {
-        handleError(new Error('No auth code in response from Instagram'))
+    if ('error' in payload) {
+      onError(new Error(payload.error))
+      return
+    }
+
+    const { code } = payload as InstagramCredentials // already handled error - safe to cast
+    if (code) {
+      try {
+        const { requiresReview, isVerified, handle } =
+          await setProfileFromInstagram({
+            code
+          })
+        // keep analytics up to date
+        track(
+          make({
+            eventName: Name.CREATE_ACCOUNT_COMPLETE_INSTAGRAM,
+            page,
+            isVerified,
+            handle: handle || 'unknown'
+          })
+        )
+        onSuccess({ handle, requiresReview, platform: 'instagram' })
+      } catch (e) {
+        onError(e)
       }
     } else {
-      handleError(new Error(payload.error))
+      onError(new Error('No auth code in response from Instagram'))
     }
   }
 

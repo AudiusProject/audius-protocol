@@ -15,9 +15,8 @@
     "mediorum",
     "relay",
     "solana-relay",
-    "ddex-publisher",
-    "ddex-web",
-    "ddex-ingester"
+    "core",
+    "audiusd"
   ]
   exclude_containers = [
     # System containers

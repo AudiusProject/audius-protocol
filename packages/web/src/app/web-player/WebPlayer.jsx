@@ -1,12 +1,13 @@
-import { lazy, Component, Suspense } from 'react'
+import { Component, lazy, Suspense } from 'react'
 
 import {
-  Name,
   Client,
+  Name,
   SmartCollectionVariant,
   Status
 } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
+import { guestRoutes } from '@audius/common/src/utils/route'
 import {
   accountSelectors,
   ExploreCollectionsVariant,
@@ -16,7 +17,7 @@ import { route } from '@audius/common/utils'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { generatePath, matchPath } from 'react-router'
-import { Switch, Route, Redirect, withRouter } from 'react-router-dom'
+import { Redirect, Route, Switch, withRouter } from 'react-router-dom'
 import semver from 'semver'
 
 import { make } from 'common/store/analytics/actions'
@@ -31,6 +32,7 @@ import AppRedirectListener from 'components/app-redirect-popover/AppRedirectList
 import { AppRedirectPopover } from 'components/app-redirect-popover/components/AppRedirectPopover'
 import { AppBannerWrapper } from 'components/banner/AppBannerWrapper'
 import { DownloadAppBanner } from 'components/banner/DownloadAppBanner'
+// import { TermsOfServiceUpdateBanner } from 'components/banner/TermsOfServiceUpdateBanner'
 import { UpdateAppBanner } from 'components/banner/UpdateAppBanner'
 import { Web3ErrorBanner } from 'components/banner/Web3ErrorBanner'
 import { ChatListener } from 'components/chat-listener/ChatListener'
@@ -47,20 +49,19 @@ import DesktopRoute from 'components/routes/DesktopRoute'
 import MobileRoute from 'components/routes/MobileRoute'
 import TrendingGenreSelectionPage from 'components/trending-genre-selection/TrendingGenreSelectionPage'
 import { USDCBalanceFetcher } from 'components/usdc-balance-fetcher/USDCBalanceFetcher'
-import { MainContentContext, MAIN_CONTENT_ID } from 'pages/MainContentContext'
+import { MAIN_CONTENT_ID, MainContentContext } from 'pages/MainContentContext'
 import { AiAttributedTracksPage } from 'pages/ai-attributed-tracks-page'
-import { AudioRewardsPage } from 'pages/audio-rewards-page/AudioRewardsPage'
-import { AudioTransactionsPage } from 'pages/audio-transactions-page'
+import { AudioPage } from 'pages/audio-page/AudioPage'
 import { ChatPageProvider } from 'pages/chat-page/ChatPageProvider'
-import CheckPage from 'pages/check-page/CheckPage'
 import { CollectiblesPlaylistPage } from 'pages/collectibles-playlist-page'
 import CollectionPage from 'pages/collection-page/CollectionPage'
+import CommentHistoryPage from 'pages/comment-history/CommentHistoryPage'
 import { DashboardPage } from 'pages/dashboard-page/DashboardPage'
 import { DeactivateAccountPage } from 'pages/deactivate-account-page/DeactivateAccountPage'
 import { EditCollectionPage } from 'pages/edit-collection-page'
 import EmptyPage from 'pages/empty-page/EmptyPage'
 import ExploreCollectionsPage from 'pages/explore-page/ExploreCollectionsPage'
-import ExplorePage from 'pages/explore-page/ExplorePage'
+import { ExplorePage } from 'pages/explore-page/ExplorePage'
 import FavoritesPage from 'pages/favorites-page/FavoritesPage'
 import { FbSharePage } from 'pages/fb-share-page/FbSharePage'
 import FeedPage from 'pages/feed-page/FeedPage'
@@ -68,7 +69,7 @@ import FollowersPage from 'pages/followers-page/FollowersPage'
 import FollowingPage from 'pages/following-page/FollowingPage'
 import HistoryPage from 'pages/history-page/HistoryPage'
 import { NotFoundPage } from 'pages/not-found-page/NotFoundPage'
-import NotificationUsersPage from 'pages/notification-users-page/NotificationUsersPage'
+import { NotificationUsersPage } from 'pages/notification-users-page/NotificationUsersPage'
 import { PayAndEarnPage } from 'pages/pay-and-earn-page/PayAndEarnPage'
 import { TableType } from 'pages/pay-and-earn-page/types'
 import { PremiumTracksPage } from 'pages/premium-tracks-page/PremiumTracksPage'
@@ -76,8 +77,9 @@ import ProfilePage from 'pages/profile-page/ProfilePage'
 import RemixesPage from 'pages/remixes-page/RemixesPage'
 import RepostsPage from 'pages/reposts-page/RepostsPage'
 import { RequiresUpdate } from 'pages/requires-update/RequiresUpdate'
+import { RewardsPage } from 'pages/rewards-page/RewardsPage'
 import SavedPage from 'pages/saved-page/SavedPage'
-import { SearchPageV2 } from 'pages/search-page-v2/SearchPageV2'
+import { SearchPage } from 'pages/search-page/SearchPage'
 import SettingsPage from 'pages/settings-page/SettingsPage'
 import { SubPage } from 'pages/settings-page/components/mobile/SettingsPage'
 import SmartCollectionPage from 'pages/smart-collection/SmartCollectionPage'
@@ -95,8 +97,8 @@ import { SsrContext } from 'ssr/SsrContext'
 import { setVisibility as setAppModalCTAVisibility } from 'store/application/ui/app-cta-modal/slice'
 import { getShowCookieBanner } from 'store/application/ui/cookieBanner/selectors'
 import {
-  incrementScrollCount as incrementScrollCountAction,
-  decrementScrollCount as decrementScrollCountAction
+  decrementScrollCount as decrementScrollCountAction,
+  incrementScrollCount as incrementScrollCountAction
 } from 'store/application/ui/scrollLock/actions'
 import { getClient } from 'utils/clientUtil'
 import 'utils/redirect'
@@ -123,7 +125,7 @@ const {
   HISTORY_PAGE,
   DASHBOARD_PAGE,
   AUDIO_PAGE,
-  AUDIO_TRANSACTIONS_PAGE,
+  REWARDS_PAGE,
   UPLOAD_PAGE,
   UPLOAD_ALBUM_PAGE,
   UPLOAD_PLAYLIST_PAGE,
@@ -172,6 +174,7 @@ const {
   publicSiteRoutes,
   CHAT_PAGE,
   PROFILE_PAGE_AI_ATTRIBUTED_TRACKS,
+  PROFILE_PAGE_COMMENTS,
   EXPLORE_PREMIUM_TRACKS_PAGE,
   PAYMENTS_PAGE,
   WITHDRAWALS_PAGE,
@@ -184,18 +187,26 @@ const {
   SEARCH_CATEGORY_PAGE_LEGACY,
   SEARCH_BASE_ROUTE,
   EDIT_PLAYLIST_PAGE,
-  EDIT_ALBUM_PAGE
+  EDIT_ALBUM_PAGE,
+  AIRDROP_PAGE
 } = route
 
-const { getHasAccount, getAccountStatus, getUserId, getUserHandle } =
-  accountSelectors
+const {
+  getHasAccount,
+  getAccountStatus,
+  getUserId,
+  getUserHandle,
+  getIsGuestAccount,
+  getIsAccountComplete
+} = accountSelectors
 
 // TODO: do we need to lazy load edit?
 const EditTrackPage = lazy(() => import('pages/edit-page'))
 const UploadPage = lazy(() => import('pages/upload-page'))
+const CheckPage = lazy(() => import('pages/check-page/CheckPage'))
 const Modals = lazy(() => import('pages/modals/Modals'))
-const ConnectedMusicConfetti = lazy(() =>
-  import('components/music-confetti/ConnectedMusicConfetti')
+const ConnectedMusicConfetti = lazy(
+  () => import('components/music-confetti/ConnectedMusicConfetti')
 )
 
 const includeSearch = (search) => {
@@ -342,10 +353,13 @@ class WebPlayer extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    const allowedRoutes = this.props.isGuestAccount
+      ? guestRoutes
+      : authenticatedRoutes
     if (
       !this.props.hasAccount &&
       this.props.accountStatus !== Status.LOADING &&
-      authenticatedRoutes.some((route) => {
+      allowedRoutes.some((route) => {
         const match = matchPath(getPathname(this.props.location), {
           path: route,
           exact: true
@@ -451,7 +465,6 @@ class WebPlayer extends Component {
           <DownloadAppBanner />
 
           {/* Product Announcement Banners */}
-          {/* <DirectMessagesBanner /> */}
           {/* <TermsOfServiceUpdateBanner /> */}
 
           <Web3ErrorBanner />
@@ -691,7 +704,7 @@ class WebPlayer extends Component {
                         }}
                       />
                     ) : (
-                      <SearchPageV2 />
+                      <SearchPage />
                     )
                   }}
                 />
@@ -764,14 +777,15 @@ class WebPlayer extends Component {
                   exact
                   path={AUDIO_PAGE}
                   isMobile={isMobile}
-                  component={AudioRewardsPage}
+                  component={AudioPage}
                 />
                 <Route
                   exact
-                  path={AUDIO_TRANSACTIONS_PAGE}
+                  path={[REWARDS_PAGE, AIRDROP_PAGE]}
                   isMobile={isMobile}
-                  component={AudioTransactionsPage}
+                  component={RewardsPage}
                 />
+
                 <Route
                   exact
                   path={CHAT_PAGE}
@@ -900,6 +914,11 @@ class WebPlayer extends Component {
                 />
                 <Route
                   exact
+                  path={PROFILE_PAGE_COMMENTS}
+                  component={CommentHistoryPage}
+                />
+                <Route
+                  exact
                   path={PROFILE_PAGE_AI_ATTRIBUTED_TRACKS}
                   component={AiAttributedTracksPage}
                 />
@@ -991,7 +1010,9 @@ class WebPlayer extends Component {
                     // just trigger a react router push to the current pathname
                     pathname:
                       getPathname(this.props.history.location) === HOME_PAGE
-                        ? FEED_PAGE
+                        ? this.props.isGuestAccount
+                          ? LIBRARY_PAGE
+                          : FEED_PAGE
                         : getPathname(this.props.history.location),
                     search: includeSearch(this.props.location.search)
                       ? this.props.location.search
@@ -1031,7 +1052,9 @@ const mapStateToProps = (state) => ({
   userHandle: getUserHandle(state),
   accountStatus: getAccountStatus(state),
   signOnStatus: getSignOnStatus(state),
-  showCookieBanner: getShowCookieBanner(state)
+  showCookieBanner: getShowCookieBanner(state),
+  isGuestAccount: getIsGuestAccount(state),
+  isAccountComplete: getIsAccountComplete(state)
 })
 
 const mapDispatchToProps = (dispatch) => ({

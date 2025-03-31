@@ -6,6 +6,7 @@ from src.models.comments.comment_notification_setting import CommentNotification
 from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_report import CommentReport
 from src.models.comments.comment_thread import CommentThread
+from src.models.core.core_indexed_blocks import CoreIndexedBlocks
 from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
@@ -24,6 +25,7 @@ from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.playlists.playlist_track import PlaylistTrack
 from src.models.rewards.challenge import Challenge
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
+from src.models.rewards.listen_streak_challenge import ChallengeListenStreak
 from src.models.rewards.reward_manager import RewardManagerTransaction
 from src.models.rewards.user_challenge import UserChallenge
 from src.models.social.aggregate_monthly_plays import AggregateMonthlyPlay
@@ -43,6 +45,8 @@ from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.associated_wallet import AssociatedWallet, WalletChain
+from src.models.users.collectibles import Collectibles
+from src.models.users.email import EmailAccess, EncryptedEmail
 from src.models.users.supporter_rank_up import SupporterRankUp
 from src.models.users.usdc_purchase import PurchaseAccessType, USDCPurchase
 from src.models.users.usdc_transactions_history import (
@@ -152,6 +156,7 @@ def populate_mock_db(db, entities, block_offset=None):
         stems = entities.get("stems", [])
         challenges = entities.get("challenges", [])
         user_challenges = entities.get("user_challenges", [])
+        challenge_listen_streaks = entities.get("challenge_listen_streaks", [])
         plays = entities.get("plays", [])
         aggregate_plays = entities.get("aggregate_plays", [])
         aggregate_track = entities.get("aggregate_track", [])
@@ -179,6 +184,9 @@ def populate_mock_db(db, entities, block_offset=None):
         track_price_history = entities.get("track_price_history", [])
         album_price_history = entities.get("album_price_history", [])
         user_payout_wallet_history = entities.get("user_payout_wallet_history", [])
+        encrypted_emails = entities.get("encrypted_emails", [])
+        email_access = entities.get("email_access", [])
+        collectibles = entities.get("collectibles", [])
 
         num_blocks = max(
             len(tracks),
@@ -200,6 +208,7 @@ def populate_mock_db(db, entities, block_offset=None):
             len(track_price_history),
             len(album_price_history),
             len(user_payout_wallet_history),
+            len(collectibles),
         )
         for i in range(block_offset, block_offset + num_blocks):
             max_block = session.query(Block).filter(Block.number == i).first()
@@ -207,13 +216,25 @@ def populate_mock_db(db, entities, block_offset=None):
                 {"is_current": False}
             )
             if not max_block:
+                blockhash = hex(i)
+                parenthash = "0x01"
+
                 block = Block(
-                    blockhash=hex(i),
+                    blockhash=blockhash,
                     number=i,
-                    parenthash="0x01",
+                    parenthash=parenthash,
                     is_current=(i == block_offset + num_blocks - 1),
                 )
                 session.add(block)
+
+                core_block = CoreIndexedBlocks(
+                    blockhash=blockhash,
+                    parenthash=parenthash,
+                    chain_id="audius-devnet",
+                    height=i,
+                )
+                session.add(core_block)
+
                 session.flush()
 
         for i, aggregate_user_meta in enumerate(aggregate_user):
@@ -387,7 +408,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 is_available=user_meta.get("is_available", True),
                 is_deactivated=user_meta.get("is_deactivated", False),
                 allow_ai_attribution=user_meta.get("allow_ai_attribution", False),
-                metadata_multihash=user_meta.get("metadata_multihash", "fake_cid"),
+                is_verified=user_meta.get("is_verified", False),
             )
             user_bank = UserBankAccount(
                 signature=f"0x{i}",
@@ -895,5 +916,45 @@ def populate_mock_db(db, entities, block_offset=None):
                 blocknumber=i + block_offset,
             )
             session.add(muted_user_record)
+
+        for i, encrypted_email_meta in enumerate(encrypted_emails):
+            encrypted_email = EncryptedEmail(
+                email_owner_user_id=encrypted_email_meta.get("email_owner_user_id", i),
+                encrypted_email=encrypted_email_meta.get("encrypted_email", ""),
+                created_at=encrypted_email_meta.get("created_at", datetime.now()),
+                updated_at=encrypted_email_meta.get("updated_at", datetime.now()),
+            )
+            session.add(encrypted_email)
+
+        for i, email_access_meta in enumerate(email_access):
+            email_access = EmailAccess(
+                email_owner_user_id=email_access_meta.get("email_owner_user_id", i),
+                receiving_user_id=email_access_meta.get("receiving_user_id", i),
+                grantor_user_id=email_access_meta.get("grantor_user_id", i),
+                encrypted_key=email_access_meta.get("encrypted_key", ""),
+                created_at=email_access_meta.get("created_at", datetime.now()),
+                updated_at=email_access_meta.get("updated_at", datetime.now()),
+            )
+            session.add(email_access)
+        for i, collectible_data in enumerate(collectibles):
+            collectible_data_record = Collectibles(
+                user_id=collectible_data.get("user_id", i),
+                data=collectible_data.get("data", {}),
+                blockhash=collectible_data.get("blockhash", str(i + block_offset)),
+                blocknumber=collectible_data.get("blocknumber", i + block_offset),
+                created_at=collectible_data.get("created_at", datetime.now()),
+                updated_at=collectible_data.get("updated_at", datetime.now()),
+            )
+            session.add(collectible_data_record)
+
+        for i, challenge_listen_streak in enumerate(challenge_listen_streaks):
+            streak = ChallengeListenStreak(
+                user_id=challenge_listen_streak.get("user_id", i),
+                last_listen_date=challenge_listen_streak.get(
+                    "last_listen_date", datetime.now()
+                ),
+                listen_streak=challenge_listen_streak.get("listen_streak", 1),
+            )
+            session.add(streak)
 
         session.commit()

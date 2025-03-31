@@ -23,3 +23,5 @@ export type UserListModalState = {
   isOpen: boolean
   entityType: UserListEntityType
 }
+
+export const v2UserListTypes = [UserListType.FOLLOWER, UserListType.FAVORITE]

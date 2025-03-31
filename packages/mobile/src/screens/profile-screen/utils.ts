@@ -1,3 +1,4 @@
+import { useUserCollectibles } from '@audius/common/api'
 import type { CommonState } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
@@ -20,26 +21,28 @@ export const useShouldShowCollectiblesTab = () => {
     has_collectibles,
     collectibleList,
     solanaCollectibleList,
-    collectibles
+    user_id
   } = useSelectProfile([
     'handle',
     'user_id',
     'has_collectibles',
     'collectibleList',
-    'solanaCollectibleList',
-    'collectibles'
+    'solanaCollectibleList'
   ])
   const isOwner = useSelector((state: CommonState) => getIsOwner(state, handle))
+  const { data: profileCollectibles } = useUserCollectibles({
+    userId: user_id
+  })
 
   const hasCollectibles =
     collectibleList?.length || solanaCollectibleList?.length
-  const hasCollectiblesOrder = Boolean(collectibles?.order?.length)
+  const hasCollectiblesOrder = Boolean(profileCollectibles?.order?.length)
   const didCollectiblesLoadAndWasEmpty =
     hasCollectibles && !hasCollectiblesOrder
 
   if (has_collectibles && !didCollectiblesLoadAndWasEmpty) return true
 
-  const neverSetCollectiblesOrder = !collectibles
+  const neverSetCollectiblesOrder = !profileCollectibles
   const hasVisibleCollectibles =
     hasCollectibles && (neverSetCollectiblesOrder || hasCollectiblesOrder)
 
@@ -48,13 +51,4 @@ export const useShouldShowCollectiblesTab = () => {
   if (hasCollectibles && isOwner) return true
 
   return false
-}
-
-/**
- * Reduces multiple sequential newlines (> 3) into max `\n\n` and
- * trims both leading and trailing newlines
- * @param {string} str
- */
-export const squashNewLines = (str?: string) => {
-  return str ? str.replace(/\n\s*\n\s*\n/g, '\n\n').trim() : ''
 }

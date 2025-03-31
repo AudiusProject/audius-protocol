@@ -37,6 +37,11 @@ export type TextLinkProps = Omit<TextProps, 'variant' | 'onClick' | 'color'> &
     showUnderline?: boolean
 
     /**
+     * When true, hide the underline when the link is active.
+     */
+    noUnderlineOnHover?: boolean
+
+    /**
      * When `true`, render link in active style (e.g. hover color)
      */
     isActive?: boolean
@@ -47,6 +52,12 @@ export type TextLinkProps = Omit<TextProps, 'variant' | 'onClick' | 'color'> &
      * @default false
      */
     isExternal?: boolean
+
+    /**
+     * Whether or not to apply text ellipsis styling.
+     * This will make the link block displayed which may affect how it flows in certain flex containers
+     */
+    ellipses?: boolean
 
     /**
      * Whether or not to apply styling to inner svgs.

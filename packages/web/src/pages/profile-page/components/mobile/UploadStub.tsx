@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from 'react'
 
 import { IconCloudUpload as IconUpload } from '@audius/harmony'
 import cn from 'classnames'
-import Lottie from 'react-lottie'
+import Lottie from 'lottie-react'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 
@@ -53,13 +53,7 @@ const UploadStub = ({
       <div className={styles.screen} />
       {processing || isProcessing ? (
         <div className={styles.animation}>
-          <Lottie
-            options={{
-              loop: true,
-              autoplay: true,
-              animationData: loadingSpinner
-            }}
-          />
+          <Lottie loop autoplay animationData={loadingSpinner} />
         </div>
       ) : (
         <IconUpload className={styles.iconUpload} />

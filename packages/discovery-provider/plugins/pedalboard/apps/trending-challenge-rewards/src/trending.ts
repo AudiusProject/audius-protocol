@@ -21,7 +21,6 @@ export const announceTopFiveTrending = async (
   app: App<SharedData>,
   maybeWeek?: string
 ) => {
-
   const week = maybeWeek || moment().format('YYYY-MM-DD')
 
   console.log('getting top trending for week ', week)
@@ -33,7 +32,11 @@ export const announceTopFiveTrending = async (
 
   const trackHandles = await queryHandles(discoveryDb, identityDb, tracks)
   const playlistHandles = await queryHandles(discoveryDb, identityDb, playlists)
-  const undergroundHandles = await queryHandles(discoveryDb, identityDb, undergroundTracks)
+  const undergroundHandles = await queryHandles(
+    discoveryDb,
+    identityDb,
+    undergroundTracks
+  )
 
   const trackEntries = assembleEntries(trackHandles, tracks)
   const playlistEntries = assembleEntries(playlistHandles, playlists)
@@ -62,12 +65,13 @@ export const announceTopFiveTrending = async (
     undergroundEntries
   )
 
-  const webClient = new WebClient(process.env.SLACK_BOT_TOKEN)
-  await sendTweet(webClient, [
-    trendingTracksTweet,
-    trendingPlaylistTweet,
-    trendingUndergroundTweet
-  ])
+  const { slackBotToken, slackChannel } = app.viewAppData()
+  const webClient = new WebClient(slackBotToken)
+  await sendTweet(
+    webClient,
+    [trendingTracksTweet, trendingPlaylistTweet, trendingUndergroundTweet],
+    slackChannel
+  )
 }
 
 export const queryTopFiveTrending = async (
@@ -164,8 +168,11 @@ export const composeTweet = (
   return '```\n' + `${title} (${week})` + newLine + handles + '```'
 }
 
-const sendTweet = async (slack: WebClient, tweets: string[]) => {
-  const channel = process.env.SLACK_CHANNEL
+const sendTweet = async (
+  slack: WebClient,
+  tweets: string[],
+  channel?: string
+) => {
   if (channel === undefined) throw Error('SLACK_CHANNEL not defined')
   for (const tweet of tweets) {
     await slack.chat.postMessage({

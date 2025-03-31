@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import {
+  GUEST_CHECKOUT,
   PurchaseableContentMetadata,
   isPurchaseableAlbum,
   usePurchaseContentErrorMessage
@@ -10,7 +11,8 @@ import {
   PurchaseContentStage,
   PurchaseContentError,
   tracksSocialActions,
-  collectionsSocialActions
+  collectionsSocialActions,
+  usePremiumContentPurchaseModal
 } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
 import {
@@ -20,12 +22,15 @@ import {
   Text,
   PlainButton,
   IconRepost,
-  Flex
+  Flex,
+  Divider
 } from '@audius/harmony'
+import { useField } from 'formik'
 import { capitalize } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
+import { SignOnLink } from 'components/SignOnLink'
 import { TwitterShareButton } from 'components/twitter-share-button/TwitterShareButton'
 import { fullCollectionPage, fullTrackPage } from 'utils/route'
 
@@ -42,7 +47,11 @@ const messages = {
   shareTwitterText: (contentType: string, title: string, handle: string) =>
     `I bought the ${contentType} ${title} by ${handle} on @Audius! $AUDIO #AudiusPremium`,
   reposted: 'Reposted',
-  repost: 'Repost'
+  repost: 'Repost',
+  finishSigningUp: 'Finish Signing Up',
+  finishSettingUpYourAccount: 'Finish setting up your free Audius account now!',
+  finishSigningUpDescription:
+    'An Audius account will let you easily access your purchases, upload music, interact with others, leave comments, curate playlists, and more! '
 }
 
 const ContentPurchaseError = ({
@@ -58,12 +67,18 @@ const ContentPurchaseError = ({
   )
 }
 
-const getButtonText = (isUnlocking: boolean, amountDue: number) =>
+const getButtonText = (
+  isUnlocking: boolean,
+  amountDue: number,
+  isGuest?: boolean
+) =>
   isUnlocking
     ? messages.purchasing
     : amountDue > 0
-    ? `${messages.buy} $${formatPrice(amountDue)}`
-    : messages.buy
+      ? isGuest
+        ? `Guest Purchase For $${formatPrice(amountDue)}`
+        : `${messages.buy} $${formatPrice(amountDue)}`
+      : messages.buy
 
 type PurchaseContentFormFooterProps = Pick<
   PurchaseContentFormState,
@@ -71,6 +86,7 @@ type PurchaseContentFormFooterProps = Pick<
 > & {
   metadata: PurchaseableContentMetadata
   onViewContentClicked: () => void
+  isGuest?: boolean
 }
 
 export const PurchaseContentFormFooter = ({
@@ -94,6 +110,7 @@ export const PurchaseContentFormFooter = ({
   const dispatch = useDispatch()
   const isPurchased = stage === PurchaseContentStage.FINISH
   const { totalPrice } = purchaseSummaryValues
+  const [{ value: isGuestCheckout }] = useField(GUEST_CHECKOUT)
 
   const handleTwitterShare = useCallback(
     (handle: string) => {
@@ -109,6 +126,7 @@ export const PurchaseContentFormFooter = ({
     },
     [title, isAlbum]
   )
+  const { onClose } = usePremiumContentPurchaseModal()
 
   const onRepost = useCallback(() => {
     dispatch(
@@ -128,54 +146,83 @@ export const PurchaseContentFormFooter = ({
   if (isPurchased) {
     return (
       <Flex direction='column' gap='xl' alignSelf='stretch'>
-        {isHidden ? null : (
-          <Flex gap='l'>
-            <Button
-              type='button'
-              variant={isReposted ? 'primary' : 'secondary'}
-              fullWidth
-              iconLeft={IconRepost}
-              onClick={onRepost}
-              role='log'
-            >
-              {isReposted ? messages.reposted : messages.repost}
-            </Button>
-            {permalink ? (
-              <TwitterShareButton
+        <Flex gap='l'>
+          {isGuestCheckout ? (
+            <Flex direction='column'>
+              <Divider />
+              <Flex mv='xl' direction='column'>
+                <Text variant='title'>
+                  {messages.finishSettingUpYourAccount}
+                </Text>
+                <Text>{messages.finishSigningUpDescription}</Text>
+              </Flex>
+              <Flex gap='s'>
+                <Button fullWidth asChild>
+                  <SignOnLink signUp onClick={onClose}>
+                    {messages.finishSigningUp}
+                  </SignOnLink>
+                </Button>
+                <Button
+                  fullWidth
+                  variant='secondary'
+                  onClick={onViewTrackClicked}
+                >
+                  {messages.viewContent(isAlbum ? 'album' : 'track')}
+                </Button>
+              </Flex>
+            </Flex>
+          ) : (
+            <>
+              <Button
+                type='button'
+                variant={isReposted ? 'primary' : 'secondary'}
                 fullWidth
-                type='dynamic'
-                url={
-                  isAlbum
-                    ? fullCollectionPage(handle, null, null, permalink)
-                    : fullTrackPage(permalink)
-                }
-                shareData={handleTwitterShare}
-                handle={handle}
-              />
-            ) : null}
-          </Flex>
+                iconLeft={IconRepost}
+                onClick={onRepost}
+                role='log'
+              >
+                {isReposted ? messages.reposted : messages.repost}
+              </Button>
+              {!isHidden && permalink ? (
+                <TwitterShareButton
+                  fullWidth
+                  type='dynamic'
+                  url={
+                    isAlbum
+                      ? fullCollectionPage(handle, null, null, permalink)
+                      : fullTrackPage(permalink)
+                  }
+                  shareData={handleTwitterShare}
+                  handle={handle}
+                />
+              ) : null}
+            </>
+          )}
+        </Flex>
+        {isGuestCheckout ? null : (
+          <PlainButton
+            onClick={onViewTrackClicked}
+            iconRight={IconCaretRight}
+            variant='subdued'
+            size='large'
+          >
+            {messages.viewContent(isAlbum ? 'album' : 'track')}
+          </PlainButton>
         )}
-        <PlainButton
-          onClick={onViewTrackClicked}
-          iconRight={IconCaretRight}
-          variant='subdued'
-          size='large'
-        >
-          {messages.viewContent(isAlbum ? 'album' : 'track')}
-        </PlainButton>
       </Flex>
     )
   }
+
   return (
     <>
       <Button
         disabled={isUnlocking}
-        color='lightGreen'
-        type={'submit'}
+        color={'lightGreen'}
+        type='submit'
         isLoading={isUnlocking}
         fullWidth
       >
-        {getButtonText(isUnlocking, totalPrice)}
+        {getButtonText(isUnlocking, totalPrice, isGuestCheckout)}
       </Button>
       {error ? <ContentPurchaseError error={error} /> : null}
     </>

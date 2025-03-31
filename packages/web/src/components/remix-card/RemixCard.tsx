@@ -68,7 +68,7 @@ const RemixCard = ({
             <UserBadges
               className={styles.badges}
               userId={userId}
-              badgeSize={12}
+              size='2xs'
               inline
             />
           </div>

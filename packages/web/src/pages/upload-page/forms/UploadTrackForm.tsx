@@ -1,17 +1,23 @@
 import { useCallback, useMemo } from 'react'
 
-import { TrackForUpload } from '@audius/common/store'
+import { TrackFormState, TrackForUpload } from '@audius/common/store'
 import moment from 'moment'
 
-import { defaultHiddenFields } from 'components/edit/fields/stream-availability/HiddenAvailabilityFields'
 import { EditTrackForm } from 'components/edit-track/EditTrackForm'
 import { TrackEditFormValues } from 'components/edit-track/types'
-
-import { TrackFormState } from '../types'
 
 type UploadTrackFormProps = {
   formState: TrackFormState
   onContinue: (formState: TrackFormState) => void
+}
+
+const defaultHiddenFields = {
+  genre: true,
+  mood: true,
+  tags: true,
+  share: false,
+  play_count: false
+  // REMIXES handled by a separate field
 }
 
 export const UploadTrackForm = (props: UploadTrackFormProps) => {
@@ -43,11 +49,13 @@ export const UploadTrackForm = (props: UploadTrackFormProps) => {
     (values: TrackEditFormValues) => {
       const tracksForUpload = tracks.map((track, i) => {
         const metadata = values.trackMetadatas[i]
-        return { ...track, metadata }
+        const file = (values.tracks[i] as TrackForUpload).file ?? tracks[i].file
+        return { ...track, metadata, file }
       })
+
       onContinue({ ...formState, tracks: tracksForUpload })
     },
-    [formState, onContinue, tracks]
+    [tracks, formState, onContinue]
   )
 
   return <EditTrackForm initialValues={initialValues} onSubmit={onSubmit} />

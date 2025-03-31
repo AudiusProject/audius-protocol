@@ -1,7 +1,7 @@
 import { PasswordInput, PasswordInputProps } from '@audius/harmony'
 import { useField } from 'formik'
 
-export type PasswordFieldProps = PasswordInputProps & {
+type PasswordFieldProps = PasswordInputProps & {
   name: string
   /**
    * Clears out field errors while the input is being changed for a small UX improvement

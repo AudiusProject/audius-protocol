@@ -18,7 +18,7 @@ import { useModalState } from 'common/hooks/useModalState'
 import { ToastContext } from 'components/toast/ToastContext'
 import { getAssociatedTokenAccountOwner } from 'services/solana/solana'
 
-const { getAccountUser } = accountSelectors
+const { getAccountSplWallet } = accountSelectors
 
 const messages = {
   payoutWallet: 'Payout Wallet',
@@ -28,7 +28,7 @@ const messages = {
 }
 
 export const PayoutWalletCard = () => {
-  const user = useSelector(getAccountUser)
+  const accountSplWallet = useSelector(getAccountSplWallet)
   const [, setIsOpen] = useModalState('PayoutWallet')
   const { toast } = useContext(ToastContext)
 
@@ -37,11 +37,9 @@ export const PayoutWalletCard = () => {
   }, [setIsOpen])
 
   const { value: payoutWallet } = useAsync(async () => {
-    if (user?.spl_usdc_payout_wallet) {
+    if (accountSplWallet) {
       try {
-        const owner = await getAssociatedTokenAccountOwner(
-          user.spl_usdc_payout_wallet
-        )
+        const owner = await getAssociatedTokenAccountOwner(accountSplWallet)
         return owner.toBase58()
       } catch (e) {
         toast('Failed to load USDC payout wallet')
@@ -49,7 +47,7 @@ export const PayoutWalletCard = () => {
       }
     }
     return null
-  }, [user?.spl_usdc_payout_wallet])
+  }, [accountSplWallet])
 
   return (
     <Paper direction='column' shadow='far' borderRadius='l' pv='l' ph='xl'>
@@ -73,13 +71,13 @@ export const PayoutWalletCard = () => {
             justifyContent='center'
             alignItems='center'
           >
-            {user?.spl_usdc_payout_wallet ? (
+            {accountSplWallet ? (
               <IconLogoCircleUSDC />
             ) : (
               <IconLogoCircle size='m' />
             )}
             <Text variant='body' size='m' strength='strong'>
-              {user?.spl_usdc_payout_wallet ? (
+              {accountSplWallet ? (
                 payoutWallet ? (
                   shortenSPLAddress(payoutWallet)
                 ) : (

@@ -228,7 +228,6 @@ cosign_notification = ns.clone(
 create_playlist_notification_action_data = ns.model(
     "create_playlist_notification_action_data",
     {
-        "playlist_data": fields.String(),
         "is_album": fields.Boolean(required=True),
         "playlist_id": fields.List(fields.String(required=True), required=True),
     },
@@ -236,7 +235,6 @@ create_playlist_notification_action_data = ns.model(
 create_track_notification_action_data = ns.model(
     "create_track_notification_action_data",
     {
-        "track_data": fields.String(),
         "track_id": fields.String(required=True),
     },
 )
@@ -377,6 +375,7 @@ challenge_reward_notification_action_data = ns.model(
         "amount": fields.String(required=True),
         "specifier": fields.String(required=True),
         "challenge_id": fields.String(required=True),
+        "listen_streak": fields.Integer(required=False),
     },
 )
 challenge_reward_notification_action = ns.clone(
@@ -909,6 +908,31 @@ comment_reaction_notification = ns.clone(
     },
 )
 
+listen_streak_reminder_notification_action_data = ns.model(
+    "listen_streak_reminder_notification_action_data",
+    {
+        "streak": fields.Integer(required=True),
+    },
+)
+listen_streak_reminder_notification_action = ns.clone(
+    "listen_streak_reminder_notification_action",
+    notification_action_base,
+    {
+        "data": fields.Nested(
+            listen_streak_reminder_notification_action_data, required=True
+        )
+    },
+)
+listen_streak_reminder_notification = ns.clone(
+    "listen_streak_reminder_notification",
+    notification_base,
+    {
+        "actions": fields.List(
+            fields.Nested(listen_streak_reminder_notification_action, required=True),
+            required=True,
+        )
+    },
+)
 
 notification = ns.add_model(
     "notification",
@@ -948,6 +972,7 @@ notification = ns.add_model(
             "comment_thread": comment_thread_notification,
             "comment_mention": comment_mention_notification,
             "comment_reaction": comment_reaction_notification,
+            "listen_streak_reminder": listen_streak_reminder_notification,
         },
         discriminator="type",
     ),

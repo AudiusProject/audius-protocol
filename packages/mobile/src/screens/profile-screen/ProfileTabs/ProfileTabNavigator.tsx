@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 
+import { ProfilePageTabs } from '@audius/common/store'
 import type { Animated } from 'react-native'
 
 import {
@@ -33,7 +34,6 @@ type ProfileTabNavigatorProps = {
    * Function that renders the collapsible header
    */
   renderHeader: () => ReactNode
-
   /**
    * Animated value to capture scrolling. If unset, an
    * animated value is created.
@@ -59,7 +59,7 @@ export const ProfileTabNavigator = ({
   const showCollectiblesTab = useShouldShowCollectiblesTab()
 
   const trackScreen = collapsibleTabScreen({
-    name: 'Tracks',
+    name: ProfilePageTabs.TRACKS,
     Icon: IconNote,
     component: TracksTab,
     initialParams,
@@ -69,7 +69,7 @@ export const ProfileTabNavigator = ({
   })
 
   const albumsScreen = collapsibleTabScreen({
-    name: 'Albums',
+    name: ProfilePageTabs.ALBUMS,
     Icon: IconAlbum,
     component: AlbumsTab,
     initialParams,
@@ -79,7 +79,7 @@ export const ProfileTabNavigator = ({
   })
 
   const playlistsScreen = collapsibleTabScreen({
-    name: 'Playlists',
+    name: ProfilePageTabs.PLAYLISTS,
     Icon: IconPlaylists,
     component: PlaylistsTab,
     initialParams,
@@ -89,7 +89,7 @@ export const ProfileTabNavigator = ({
   })
 
   const repostsScreen = collapsibleTabScreen({
-    name: 'Reposts',
+    name: ProfilePageTabs.REPOSTS,
     Icon: IconRepost,
     component: RepostsTab,
     initialParams: isArtist ? { ...initialParams, lazy: true } : initialParams,
@@ -99,7 +99,7 @@ export const ProfileTabNavigator = ({
   })
 
   const collectiblesScreen = collapsibleTabScreen({
-    name: 'Collectibles',
+    name: ProfilePageTabs.COLLECTIBLES,
     Icon: IconCollectible,
     component: CollectiblesTab,
     initialParams,

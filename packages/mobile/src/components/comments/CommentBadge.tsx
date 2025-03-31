@@ -1,7 +1,6 @@
+import { useSupporter } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import type { ID } from '@audius/common/models'
-import { tippingSelectors } from '@audius/common/store'
-import { useSelector } from 'react-redux'
 
 import type { IconComponent } from '@audius/harmony-native'
 import {
@@ -11,8 +10,6 @@ import {
   IconTrophy,
   Text
 } from '@audius/harmony-native'
-
-const { getSupporters } = tippingSelectors
 
 type BadgeType = 'artist' | 'topSupporter' | 'tipSupporter'
 
@@ -37,17 +34,21 @@ export const CommentBadge = ({
   isArtist
 }: CommentBadgeProps) => {
   const { artistId } = useCurrentCommentSection()
-  const supporters = useSelector(getSupporters)
-  const tipSupporterData = supporters?.[artistId]?.[commentUserId]
-  const isTipSupporter = tipSupporterData !== undefined // TODO: how to wire this up?
-  const isTopSupporter = tipSupporterData?.rank === 1 // TODO: how to wire this up?
+  const { data: supporter } = useSupporter({
+    userId: artistId,
+    supporterUserId: commentUserId
+  })
+
+  const isTopSupporter = supporter?.rank === 1
+
   const badgeType = isArtist
     ? 'artist'
     : isTopSupporter
-    ? 'topSupporter'
-    : isTipSupporter
-    ? 'tipSupporter'
-    : null
+      ? 'topSupporter'
+      : supporter
+        ? 'tipSupporter'
+        : null
+
   if (badgeType === null) return null
 
   const Icon = iconMap[badgeType]

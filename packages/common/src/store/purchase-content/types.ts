@@ -1,5 +1,3 @@
-import { BuyCryptoErrorCode } from '~/store/buy-crypto/types'
-
 import { BuyUSDCErrorCode } from '../buy-usdc'
 
 export enum PurchaseableContentType {
@@ -11,6 +9,7 @@ export enum PurchaseContentStage {
   IDLE = 'IDLE',
   START = 'START',
   BUY_USDC = 'BUY_USDC',
+  CONFIRM_GUEST = 'CONFRM_GUEST',
   PURCHASING = 'PURCHASING',
   CONFIRMING_PURCHASE = 'CONFIRMING_PURCHASE',
   CANCELED = 'CANCELED',
@@ -19,6 +18,7 @@ export enum PurchaseContentStage {
 
 export enum PurchaseContentPage {
   PURCHASE = 'purchase',
+  GUEST_CHECKOUT = 'guest-checkout',
   TRANSFER = 'crypto-transfer'
 }
 
@@ -30,13 +30,13 @@ export enum PurchaseErrorCode {
   Unknown = 'Unknown'
 }
 
-export type PurchaseContentErrorCode =
-  | BuyUSDCErrorCode
-  | BuyCryptoErrorCode
-  | PurchaseErrorCode
+export type PurchaseContentErrorCode = BuyUSDCErrorCode | PurchaseErrorCode
 
 export class PurchaseContentError extends Error {
-  constructor(public code: PurchaseContentErrorCode, message: string) {
+  constructor(
+    public code: PurchaseContentErrorCode,
+    message: string
+  ) {
     super(message)
   }
 }

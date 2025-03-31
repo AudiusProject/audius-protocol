@@ -1,6 +1,7 @@
-import { useState, useEffect, memo, useCallback } from 'react'
+import { useEffect, memo, useCallback } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
+import { useImageSize } from '@audius/common/hooks'
 import { Kind } from '@audius/common/models'
 import { cacheUsersActions } from '@audius/common/store'
 import { Tag } from '@audius/harmony'
@@ -11,7 +12,7 @@ import { useDispatch } from 'react-redux'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { TwitterShareButton } from 'components/notification/Notification/components/TwitterShareButton'
 import UserBadges from 'components/user-badges/UserBadges'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { preload } from 'utils/image'
 
 import styles from './SearchBarResult.module.css'
 
@@ -22,27 +23,13 @@ const messages = {
 }
 
 const Image = memo((props) => {
-  const { defaultImage, imageMultihash, size, isUser } = props
-  const [image, setImage] = useState(imageMultihash ? '' : defaultImage)
-  useEffect(() => {
-    if (!imageMultihash) return
-    let isCanceled = false
-    const getImage = async () => {
-      try {
-        const url = await audiusBackendInstance.getImageUrl(
-          imageMultihash,
-          size
-        )
-        if (!isCanceled) setImage(url || defaultImage)
-      } catch (err) {
-        if (!isCanceled) setImage(defaultImage)
-      }
-    }
-    getImage()
-    return () => {
-      isCanceled = true
-    }
-  }, [defaultImage, imageMultihash, size])
+  const { defaultImage, artwork, size, isUser } = props
+  const image = useImageSize({
+    artwork,
+    targetSize: size,
+    defaultImage,
+    preloadImageFn: preload
+  })
   return (
     <DynamicImage
       skeletonClassName={cn({ [styles.userImageContainerSkeleton]: isUser })}
@@ -62,12 +49,11 @@ const SearchBarResult = memo((props) => {
     kind,
     id,
     userId,
-    sizes,
     primary,
     secondary,
-    imageMultihash,
+    artwork,
     size,
-    defaultImage,
+    defaultImage = placeholderArt,
     isVerifiedUser,
     tier,
     allowAiAttribution,
@@ -94,8 +80,7 @@ const SearchBarResult = memo((props) => {
           kind={kind}
           isUser={isUser}
           id={id}
-          sizes={sizes}
-          imageMultihash={imageMultihash}
+          artwork={artwork}
           defaultImage={defaultImage}
           size={size}
         />
@@ -164,10 +149,6 @@ SearchBarResult.propTypes = {
   size: PropTypes.string,
   defaultImage: PropTypes.string,
   isVerifiedUser: PropTypes.bool
-}
-
-SearchBarResult.defaultProps = {
-  imageUrl: placeholderArt
 }
 
 export default SearchBarResult

@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
-import { Name } from '@audius/common/models'
-import { deriveUserBankAddress } from '@audius/common/services'
+import { Name, type SolanaWalletAddress } from '@audius/common/models'
 import { accountSelectors, tippingSelectors } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
 import { IconTwitter, IconCheck, Button } from '@audius/harmony'
@@ -9,7 +8,7 @@ import cn from 'classnames'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { useRecord, make } from 'common/store/analytics/actions'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { audiusSdk } from 'services/audius-sdk'
 import { env } from 'services/env'
 import { openTwitterLink } from 'utils/tweet'
 
@@ -17,7 +16,7 @@ import { ProfileInfo } from '../../profile-info/ProfileInfo'
 
 import styles from './TipAudio.module.css'
 const { getSendTipData } = tippingSelectors
-const getAccountUser = accountSelectors.getAccountUser
+const { getUserId, getAccountERCWallet, getUserHandle } = accountSelectors
 
 const messages = {
   sending: 'SENDING',
@@ -30,13 +29,19 @@ const messages = {
 
 export const TipSent = () => {
   const record = useRecord()
-  const account = useSelector(getAccountUser)
+  const accountUserId = useSelector(getUserId)
+  const accountHandle = useSelector(getUserHandle)
+  const accountErcWallet = useSelector(getAccountERCWallet)
+  if (!accountErcWallet) {
+    throw new Error('Failed to get account ERC wallet')
+  }
   const sendTipData = useSelector(getSendTipData)
   const { user: recipient, amount: sendAmount, source } = sendTipData
 
   const handleShareClick = useCallback(async () => {
     const formattedSendAmount = formatNumberCommas(sendAmount)
-    if (account && recipient) {
+    const sdk = await audiusSdk()
+    if (accountUserId && recipient) {
       let recipientAndAmount = `${recipient.name} ${formattedSendAmount}`
       if (recipient.twitter_handle) {
         recipientAndAmount = `@${recipient.twitter_handle} ${formattedSendAmount}`
@@ -45,19 +50,21 @@ export const TipSent = () => {
       openTwitterLink(`${env.AUDIUS_URL}/${recipient.handle}`, message)
 
       const [senderWallet, recipientWallet] = await Promise.all([
-        deriveUserBankAddress(audiusBackendInstance, {
-          ethAddress: account.erc_wallet
+        sdk.services.claimableTokensClient.deriveUserBank({
+          ethWallet: accountErcWallet,
+          mint: 'wAUDIO'
         }),
-        deriveUserBankAddress(audiusBackendInstance, {
-          ethAddress: recipient.erc_wallet
+        sdk.services.claimableTokensClient.deriveUserBank({
+          ethWallet: recipient.erc_wallet,
+          mint: 'wAUDIO'
         })
       ])
 
       record(
         make(Name.TIP_AUDIO_TWITTER_SHARE, {
-          senderWallet,
-          recipientWallet,
-          senderHandle: account.handle,
+          senderWallet: senderWallet.toBase58() as SolanaWalletAddress,
+          recipientWallet: recipientWallet.toBase58() as SolanaWalletAddress,
+          senderHandle: accountHandle ?? '',
           recipientHandle: recipient.handle,
           amount: sendAmount,
           device: 'web',
@@ -65,7 +72,15 @@ export const TipSent = () => {
         })
       )
     }
-  }, [account, recipient, record, sendAmount, source])
+  }, [
+    sendAmount,
+    accountUserId,
+    recipient,
+    accountErcWallet,
+    record,
+    accountHandle,
+    source
+  ])
 
   const renderSentAudio = () => (
     <div className={styles.modalContentHeader}>

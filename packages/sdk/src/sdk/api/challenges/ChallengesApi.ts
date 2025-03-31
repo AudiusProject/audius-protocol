@@ -64,7 +64,7 @@ export class ChallengesApi extends GeneratedChallengesApi {
       case ChallengeId.COMPLETE_PROFILE:
       case ChallengeId.CONNECT_VERIFIED_ACCOUNT:
       case ChallengeId.CREATE_FIRST_PLAYLIST:
-      case ChallengeId.LISTEN_STREAK:
+      case ChallengeId.LISTEN_STREAK_ENDLESS:
       case ChallengeId.MOBILE_INSTALL:
       case ChallengeId.SEND_FIRST_TIP:
       case ChallengeId.TRACK_UPLOADS:
@@ -162,8 +162,7 @@ export class ChallengesApi extends GeneratedChallengesApi {
     if (instructions.length > 0) {
       const txSoFar = await this.solanaClient.buildTransaction({
         instructions,
-        addressLookupTables: [this.rewardManager.lookupTable],
-        priorityFee: null
+        addressLookupTables: [this.rewardManager.lookupTable]
       })
       // Evaluate instruction adds 145 bytes w/ max disbursement id of 32
       const estimatedEvaluateInstructionSize = 145
@@ -174,9 +173,8 @@ export class ChallengesApi extends GeneratedChallengesApi {
             txSoFar.serialize().byteLength
           }), submitting attestations separately...`
         )
-        const submissionSignature = await this.rewardManager.sendTransaction(
-          txSoFar
-        )
+        const submissionSignature =
+          await this.rewardManager.sendTransaction(txSoFar)
         logger.debug('Confirming attestation submissions...')
         await this.solanaClient.confirmAllTransactions([submissionSignature])
         instructions = []
@@ -197,8 +195,7 @@ export class ChallengesApi extends GeneratedChallengesApi {
     logger.debug('Disbursing...')
     const tx = await this.solanaClient.buildTransaction({
       instructions,
-      addressLookupTables: [this.rewardManager.lookupTable],
-      priorityFee: null
+      addressLookupTables: [this.rewardManager.lookupTable]
     })
     const signature = await this.rewardManager.sendTransaction(tx, {
       skipPreflight: true

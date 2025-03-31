@@ -285,10 +285,9 @@ BEGIN
         ELSE NULL
     END;
 
-    IF iso2_code IS NULL THEN
-        RETURN '';
-    END IF;
-
     RETURN iso2_code;
 END;
 $$ LANGUAGE plpgsql;
+
+
+

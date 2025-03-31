@@ -1,6 +1,8 @@
 import { useState, useContext, useCallback } from 'react'
 
+import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { Name, SquareSizes } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
   Button,
@@ -15,18 +17,21 @@ import {
   useTheme
 } from '@audius/harmony'
 import { debounce } from 'lodash'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import { ToastContext } from 'components/toast/ToastContext'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import SignOutModal from 'pages/settings-page/components/mobile/SignOutModal'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { push } from 'utils/navigation'
 
 import styles from './AccountSettingsPage.module.css'
-import { SettingsPageProps } from './SettingsPage'
 import settingsPageStyles from './SettingsPage.module.css'
+
+const { getUserId, getAccountVerified, getUserHandle, getUserName } =
+  accountSelectors
 
 const {
   ACCOUNT_VERIFICATION_SETTINGS_PAGE,
@@ -36,6 +41,7 @@ const {
 
 const messages = {
   title: 'Account',
+  description: 'Configure your Audius account',
   recoveryTitle: 'Resend Recovery Email',
   recoveryDescription:
     'Store your recovery email safely. This email is the only way to recover your account if you forget your password.',
@@ -126,31 +132,34 @@ const AccountSettingsItem = ({
   )
 }
 
-const AccountSettingsPage = ({
-  title,
-  description,
-  userId,
-  name,
-  handle,
-  profilePictureSizes,
-  goToRoute,
-  isVerified
-}: SettingsPageProps) => {
+const AccountSettingsPage = () => {
+  const dispatch = useDispatch()
+  const { authService, identityService } = useAudiusQueryContext()
+  const userId = useSelector(getUserId) ?? 0
+  const handle = useSelector(getUserHandle) ?? ''
+  const name = useSelector(getUserName) ?? ''
+  const isVerified = useSelector(getAccountVerified)
   const [showModalSignOut, setShowModalSignOut] = useState(false)
   const { toast } = useContext(ToastContext)
 
-  const profilePicture = useUserProfilePicture(
-    userId,
-    profilePictureSizes,
-    SquareSizes.SIZE_480_BY_480
+  const goToRoute = useCallback(
+    (route: string) => dispatch(push(route)),
+    [dispatch]
   )
+
+  const profilePicture = useProfilePicture({
+    userId,
+    size: SquareSizes.SIZE_480_BY_480
+  })
   const record = useRecord()
   const onClickRecover = useCallback(
     () =>
       debounce(
         async () => {
           try {
-            await audiusBackendInstance.sendRecoveryEmail(handle)
+            await identityService.sendRecoveryInfo(
+              await authService.generateRecoveryInfo()
+            )
             toast(messages.emailSent)
             record(make(Name.SETTINGS_RESEND_ACCOUNT_RECOVERY, {}))
           } catch (e) {
@@ -160,7 +169,7 @@ const AccountSettingsPage = ({
         2000,
         { leading: true, trailing: false }
       )(),
-    [handle, toast, record]
+    [authService, identityService, toast, record]
   )
 
   const goToVerificationPage = useCallback(() => {
@@ -177,8 +186,8 @@ const AccountSettingsPage = ({
 
   return (
     <MobilePageContainer
-      title={title}
-      description={description}
+      title={messages.title}
+      description={messages.description}
       containerClassName={settingsPageStyles.pageBackground}
     >
       <div className={settingsPageStyles.bodyContainer}>

@@ -1,71 +1,74 @@
 import { useCallback } from 'react'
 
+import { useTrack, useUser } from '@audius/common/api'
 import { SquareSizes, ID } from '@audius/common/models'
-import { cacheTracksSelectors, cacheUsersSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import RemixCard from 'components/remix-card/RemixCard'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
-import { AppState } from 'store/types'
-import { withNullGuard } from 'utils/withNullGuard'
+import { push as pushRoute } from 'utils/navigation'
 const { profilePage } = route
-const { getTrack } = cacheTracksSelectors
-const { getUserFromTrack } = cacheUsersSelectors
 
 type OwnProps = {
   trackId: ID
 }
 
-type ConnectedRemixCardProps = OwnProps &
-  ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps>
+type ConnectedRemixCardProps = OwnProps & ReturnType<typeof mapDispatchToProps>
 
-const g = withNullGuard(
-  ({ track, user, ...p }: ConnectedRemixCardProps) =>
-    track && user && { ...p, track, user }
-)
-
-const ConnectedRemixCard = g(({ track, user, goToRoute }) => {
-  const profilePictureImage = useUserProfilePicture(
-    user.user_id,
-    user._profile_picture_sizes,
-    SquareSizes.SIZE_150_BY_150
-  )
-  const coverArtImage = useTrackCoverArt(
-    track.track_id,
-    track._cover_art_sizes,
-    SquareSizes.SIZE_480_BY_480
-  )
+const ConnectedRemixCard = ({
+  trackId,
+  goToRoute
+}: ConnectedRemixCardProps) => {
+  const { data: partialTrack } = useTrack(trackId, {
+    select: (track) => {
+      return {
+        permalink: track?.permalink,
+        owner_id: track?.owner_id,
+        _co_sign: track?._co_sign
+      }
+    }
+  })
+  const { data: partialUser } = useUser(partialTrack?.owner_id, {
+    select: (user) => {
+      return {
+        handle: user?.handle,
+        name: user?.name,
+        user_id: user?.user_id
+      }
+    }
+  })
+  const profilePictureImage = useProfilePicture({
+    userId: partialUser?.user_id,
+    size: SquareSizes.SIZE_150_BY_150
+  })
+  const coverArtImage = useTrackCoverArt({
+    trackId,
+    size: SquareSizes.SIZE_480_BY_480
+  })
   const goToTrackPage = useCallback(() => {
-    goToRoute(track.permalink)
-  }, [goToRoute, track])
+    goToRoute(partialTrack?.permalink ?? '')
+  }, [goToRoute, partialTrack])
   const goToArtistPage = useCallback(() => {
-    goToRoute(profilePage(user.handle))
-  }, [goToRoute, user])
+    goToRoute(profilePage(partialUser?.handle ?? ''))
+  }, [goToRoute, partialUser])
+
+  if (!partialTrack || !partialUser) return null
 
   return (
     <RemixCard
       profilePictureImage={profilePictureImage}
       coverArtImage={coverArtImage}
-      coSign={track._co_sign}
-      artistName={user.name}
-      artistHandle={user.handle}
+      coSign={partialTrack?._co_sign}
+      artistName={partialUser?.name}
+      artistHandle={partialUser?.handle}
       onClick={goToTrackPage}
       onClickArtistName={goToArtistPage}
-      userId={user.user_id}
+      userId={partialUser?.user_id}
     />
   )
-})
-
-function mapStateToProps(state: AppState, ownProps: OwnProps) {
-  return {
-    track: getTrack(state, { id: ownProps.trackId }),
-    user: getUserFromTrack(state, { id: ownProps.trackId })
-  }
 }
 
 function mapDispatchToProps(dispatch: Dispatch) {
@@ -74,4 +77,4 @@ function mapDispatchToProps(dispatch: Dispatch) {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ConnectedRemixCard)
+export default connect(() => {}, mapDispatchToProps)(ConnectedRemixCard)

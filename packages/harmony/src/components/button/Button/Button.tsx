@@ -177,16 +177,16 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       ...(isSmallOrXs
         ? smallStyles
         : size === 'large'
-        ? largeStyles
-        : defaultStyles),
+          ? largeStyles
+          : defaultStyles),
 
       ...(variant === 'secondary'
         ? secondaryStyles
         : variant === 'tertiary'
-        ? tertiaryStyles
-        : variant === 'destructive'
-        ? destructiveStyles
-        : primaryStyles),
+          ? tertiaryStyles
+          : variant === 'destructive'
+            ? destructiveStyles
+            : primaryStyles),
 
       '::before': {
         zIndex: -1,
@@ -214,8 +214,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const iconCss = isSmallOrXs
       ? smallIconStyles
       : size === 'large'
-      ? largeIconStyles
-      : defaultIconStyles
+        ? largeIconStyles
+        : defaultIconStyles
 
     const style: CSSCustomProperties =
       variant === 'primary' && !disabled

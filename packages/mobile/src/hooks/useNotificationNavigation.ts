@@ -53,15 +53,13 @@ import {
   PushNotificationType,
   Entity,
   Achievement,
-  tippingActions,
-  notificationsUserListActions
+  tippingActions
 } from '@audius/common/store'
 import type { AppState } from '@audius/web/src/store/types'
 import { useDispatch, useStore } from 'react-redux'
 
 import { useNavigation } from './useNavigation'
 
-const { setNotificationId } = notificationsUserListActions
 const { beginTip } = tippingActions
 
 /**
@@ -87,17 +85,12 @@ export const useNotificationNavigation = () => {
         | FavoritePushNotification
     ) => {
       if ('userIds' in notification) {
-        const { id, type, userIds } = notification
+        const { userIds } = notification
         const firstUserId = userIds[0]
         const isMultiUser = userIds.length > 1
 
-        if (isMultiUser) {
-          dispatch(setNotificationId(id))
-          navigation.navigate('NotificationUsers', {
-            id,
-            notificationType: type,
-            count: userIds.length
-          })
+        if (!isMultiUser) {
+          navigation.navigate('NotificationUsers', { notification })
         } else if (firstUserId) {
           navigation.navigate('Profile', { id: firstUserId })
         }
@@ -106,7 +99,7 @@ export const useNotificationNavigation = () => {
         navigation.navigate('Profile', { id: notification.initiator })
       }
     },
-    [dispatch, navigation]
+    [navigation]
   )
 
   const userIdHandler = useCallback(
@@ -132,8 +125,11 @@ export const useNotificationNavigation = () => {
         | CommentThreadNotification
         | CommentReactionNotification
     ) => {
-      const { entityType, entityId, type } = notification
-      if (entityType === Entity.Track) {
+      const { entityType, entityId, type, userIds } = notification
+      const isMultiUser = userIds.length > 1
+      if (isMultiUser) {
+        navigation.navigate('NotificationUsers', { notification })
+      } else if (entityType === Entity.Track) {
         navigation.navigate('Track', {
           id: entityId,
           canBeUnlisted: false,
@@ -238,7 +234,7 @@ export const useNotificationNavigation = () => {
       [NotificationType.ChallengeReward]: (
         notification: ChallengeRewardNotification
       ) => {
-        navigation.navigate('AudioScreen')
+        navigation.navigate('RewardsScreen')
       },
       [PushNotificationType.FavoriteAlbum]: socialActionHandler,
       [PushNotificationType.FavoritePlaylist]: socialActionHandler,

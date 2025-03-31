@@ -1,9 +1,14 @@
 import {
-  ShareSource,
-  RepostSource,
+  useToggleFavoriteTrack,
+  useFollowUser,
+  useUnfollowUser
+} from '@audius/common/api'
+import {
   FavoriteSource,
-  FollowSource,
   ID,
+  RepostSource,
+  ShareSource,
+  FollowSource,
   ModalSource
 } from '@audius/common/models'
 import {
@@ -13,27 +18,25 @@ import {
   cacheUsersSelectors,
   queueSelectors,
   collectionsSocialActions,
-  tracksSocialActions,
-  usersSocialActions,
   addToCollectionUIActions,
   deletePlaylistConfirmationModalUIActions,
   mobileOverflowMenuUISelectors,
   shareModalUIActions,
-  OverflowSource,
   modalsSelectors,
   modalsActions,
-  Notification,
+  usePremiumContentPurchaseModal,
+  OverflowSource,
   PurchaseableContentType,
-  usePremiumContentPurchaseModal
+  tracksSocialActions
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import { Dispatch } from 'redux'
 
-import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
+import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { AppState } from 'store/types'
+import { push } from 'utils/navigation'
 import { collectibleDetailsPage } from 'utils/route'
 
 import MobileOverflowModal from './components/MobileOverflowModal'
@@ -47,9 +50,7 @@ const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { requestOpen: openDeletePlaylist } =
   deletePlaylistConfirmationModalUIActions
 const { requestOpen: openAddToCollection } = addToCollectionUIActions
-const { followUser, unfollowUser } = usersSocialActions
-const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
-  tracksSocialActions
+const { repostTrack, undoRepostTrack } = tracksSocialActions
 const {
   repostCollection,
   saveCollection,
@@ -88,8 +89,6 @@ const ConnectedMobileOverflowModal = ({
   shareCollection,
   repostTrack,
   unrepostTrack,
-  saveTrack,
-  unsaveTrack,
   repostCollection,
   unrepostCollection,
   saveCollection,
@@ -101,17 +100,23 @@ const ConnectedMobileOverflowModal = ({
   visitArtistPage,
   visitCollectiblePage,
   visitPlaylistPage,
-  follow,
-  unfollow,
   shareUser
 }: ConnectedMobileOverflowModalProps) => {
   const { onOpen: openPremiumContentModal } = usePremiumContentPurchaseModal()
-  const openPurchaseModal = useAuthenticatedCallback(
+  const openPurchaseModal = useRequiresAccountCallback(
     (...args: Parameters<typeof openPremiumContentModal>) =>
       openPremiumContentModal(...args),
     [openPremiumContentModal]
   )
+  const { mutate: followUser } = useFollowUser()
+  const { mutate: unfollowUser } = useUnfollowUser()
   const navigate = useNavigate()
+
+  const toggleSaveTrack = useToggleFavoriteTrack({
+    trackId: id as number,
+    source: FavoriteSource.OVERFLOW
+  })
+
   // Create callbacks
   const {
     onRepost,
@@ -157,8 +162,8 @@ const ConnectedMobileOverflowModal = ({
         return {
           onRepost: () => repostTrack(id as ID),
           onUnrepost: () => unrepostTrack(id as ID),
-          onFavorite: () => saveTrack(id as ID),
-          onUnfavorite: () => unsaveTrack(id as ID),
+          onFavorite: () => toggleSaveTrack(),
+          onUnfavorite: () => toggleSaveTrack(),
           onAddToAlbum: () => addToCollection('album', id as ID, title),
           onAddToPlaylist: () => addToCollection('playlist', id as ID, title),
           onVisitCollectiblePage: () => {
@@ -169,8 +174,16 @@ const ConnectedMobileOverflowModal = ({
               ? console.error(`Permalink missing for track ${id}`)
               : visitTrackPage(permalink),
           onVisitArtistPage: () => visitArtistPage(handle),
-          onFollow: () => follow(ownerId),
-          onUnfollow: () => unfollow(ownerId),
+          onFollow: () =>
+            followUser({
+              followeeUserId: ownerId,
+              source: FollowSource.OVERFLOW
+            }),
+          onUnfollow: () =>
+            unfollowUser({
+              followeeUserId: ownerId,
+              source: FollowSource.OVERFLOW
+            }),
           onPurchase: () =>
             openPurchaseModal(
               {
@@ -211,8 +224,16 @@ const ConnectedMobileOverflowModal = ({
       case OverflowSource.PROFILE: {
         if (!id || !handle || !artistName) return {}
         return {
-          onFollow: () => follow(id as ID),
-          onUnfollow: () => unfollow(id as ID),
+          onFollow: () =>
+            followUser({
+              followeeUserId: id as ID,
+              source: FollowSource.OVERFLOW
+            }),
+          onUnfollow: () =>
+            unfollowUser({
+              followeeUserId: id as ID,
+              source: FollowSource.OVERFLOW
+            }),
           onShare: () => shareUser(id as ID)
         }
       }
@@ -344,10 +365,6 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
       dispatch(repostTrack(trackId, RepostSource.OVERFLOW)),
     unrepostTrack: (trackId: ID) =>
       dispatch(undoRepostTrack(trackId, RepostSource.OVERFLOW)),
-    saveTrack: (trackId: ID) =>
-      dispatch(saveTrack(trackId, FavoriteSource.OVERFLOW)),
-    unsaveTrack: (trackId: ID) =>
-      dispatch(unsaveTrack(trackId, FavoriteSource.OVERFLOW)),
 
     // Collections
     shareCollection: (collectionId: ID) =>
@@ -365,9 +382,6 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
     publishPlaylist: (playlistId: ID) => dispatch(publishPlaylist(playlistId)),
 
     // Users
-    follow: (userId: ID) => dispatch(followUser(userId, FollowSource.OVERFLOW)),
-    unfollow: (userId: ID) =>
-      dispatch(unfollowUser(userId, FollowSource.OVERFLOW)),
     shareUser: (userId: ID) => {
       dispatch(
         requestOpenShareModal({
@@ -383,11 +397,10 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
       trackId: ID,
       title: string
     ) => dispatch(openAddToCollection(collectionType, trackId, title)),
-    visitTrackPage: (permalink: string) => dispatch(pushRoute(permalink)),
-    visitArtistPage: (handle: string) =>
-      dispatch(pushRoute(profilePage(handle))),
+    visitTrackPage: (permalink: string) => dispatch(push(permalink)),
+    visitArtistPage: (handle: string) => dispatch(push(profilePage(handle))),
     visitCollectiblePage: (handle: string, id: string) => {
-      dispatch(pushRoute(collectibleDetailsPage(handle, id)))
+      dispatch(push(collectibleDetailsPage(handle, id)))
     },
     visitPlaylistPage: (
       playlistId: ID,
@@ -397,7 +410,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
       isAlbum: boolean
     ) =>
       dispatch(
-        pushRoute(
+        push(
           collectionPage(handle, playlistTitle, playlistId, permalink, isAlbum)
         )
       )

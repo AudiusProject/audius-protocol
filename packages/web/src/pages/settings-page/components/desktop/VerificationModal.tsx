@@ -1,12 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import {
-  Name,
-  SquareSizes,
-  Status,
-  ID,
-  ProfilePictureSizes
-} from '@audius/common/models'
+import { Name, SquareSizes, Status, ID } from '@audius/common/models'
 import { BooleanKeys } from '@audius/common/services'
 import {
   musicConfettiActions,
@@ -26,8 +20,8 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { TikTokAuthButton } from 'components/tiktok-auth/TikTokAuthButton'
 import { TwitterAuthButton } from 'components/twitter-auth/TwitterAuthButton'
 import UserBadges from 'components/user-badges/UserBadges'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 
 import styles from './VerificationModal.module.css'
 
@@ -115,7 +109,7 @@ const VerifyBody = (props: VerifyBodyProps) => {
             onClick={handleClickTwitter}
             onFailure={props.onFailure}
             onSuccess={props.onTwitterLogin}
-            fullWidth
+            css={{ width: '100%' }}
           >
             {messages.twitterVerify}
           </TwitterAuthButton>
@@ -164,22 +158,14 @@ type SuccessBodyProps = {
   userId: ID
   handle: string
   name: string
-  profilePictureSizes: ProfilePictureSizes | null
   goToRoute: (route: string) => void
 }
 
-const SuccessBody = ({
-  handle,
-  userId,
-  name,
-  profilePictureSizes,
-  goToRoute
-}: SuccessBodyProps) => {
-  const profilePicture = useUserProfilePicture(
+const SuccessBody = ({ handle, userId, name, goToRoute }: SuccessBodyProps) => {
+  const profilePicture = useProfilePicture({
     userId,
-    profilePictureSizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   const onClick = useCallback(() => {
     goToRoute(profilePage(handle))
@@ -204,7 +190,7 @@ const SuccessBody = ({
         {name}
         <UserBadges
           userId={userId}
-          badgeSize={12}
+          size='2xs'
           className={styles.iconVerified}
         />
       </div>
@@ -220,7 +206,6 @@ type VerificationModalProps = {
   userId: ID
   handle: string
   name: string
-  profilePictureSizes: ProfilePictureSizes | null
   isVerified?: boolean
   goToRoute: (route: string) => void
   onInstagramLogin: (uuid: string, profile: InstagramProfile) => void
@@ -342,7 +327,6 @@ const VerificationModal = (props: VerificationModalProps) => {
         userId={props.userId}
         handle={props.handle}
         name={props.name}
-        profilePictureSizes={props.profilePictureSizes}
         goToRoute={props.goToRoute}
       />
     )
@@ -362,7 +346,7 @@ const VerificationModal = (props: VerificationModalProps) => {
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        showDismissButton={canDismiss}
+        showDismissButton
         dismissOnClickOutside={canDismiss}
         showTitleHeader
         title={messages.title}

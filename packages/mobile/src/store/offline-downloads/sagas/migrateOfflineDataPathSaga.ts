@@ -18,7 +18,6 @@ import { EventNames } from 'app/types/analytics'
 
 import { DOWNLOAD_REASON_FAVORITES } from '../constants'
 
-import { getIsOfflineEnabled } from './getIsOfflineEnabled'
 const {
   fs: { dirs, unlink, exists }
 } = ReactNativeBlobUtil
@@ -29,9 +28,6 @@ const legacyDownloadsRoot = path.join(dirs.DocumentDir, 'downloads')
 
 // Move downloads from legacy storage location to the updated path (currently: /Documents -> /Caches)
 export function* migrateOfflineDataPathSaga() {
-  const isOfflineModeEnabled = yield* call(getIsOfflineEnabled)
-  if (!isOfflineModeEnabled) return
-
   const legacyFilesExist = yield* call(exists, legacyDownloadsRoot)
   if (!legacyFilesExist) return
 

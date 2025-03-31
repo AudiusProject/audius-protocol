@@ -8,21 +8,26 @@ import {
   MouseEvent
 } from 'react'
 
-import { useGetUserByHandle, useGetUsersByIds } from '@audius/common/api'
+import { useGetUsersByIds, useUserByHandle } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { profilePage } from '@audius/common/src/utils/route'
-import { accountSelectors } from '@audius/common/store'
 import {
   formatTrackName,
   formatCollectionName,
   formatUserName,
   handleRegex,
-  decodeHashId
+  squashNewLines
 } from '@audius/common/utils'
 import { Text, TextProps } from '@audius/harmony'
-import { CommentMention, ResolveApi, Track, User, Playlist } from '@audius/sdk'
+import {
+  CommentMention,
+  ResolveApi,
+  Track,
+  User,
+  Playlist,
+  OptionalHashId
+} from '@audius/sdk'
 import { omit } from 'lodash'
-import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
@@ -36,8 +41,6 @@ const {
   instanceOfPlaylistResponse,
   instanceOfUserResponse
 } = ResolveApi
-
-const { getUserId } = accountSelectors
 
 type Matcher = {
   pattern: RegExp
@@ -116,19 +119,19 @@ const Link = ({
             other.onClick?.(
               e,
               'track',
-              decodeHashId(unfurledContentObject.track.id) ?? 0
+              OptionalHashId.parse(unfurledContentObject.track.id) ?? 0
             )
           } else if (unfurledContentObject.collection) {
             other.onClick?.(
               e,
               'collection',
-              decodeHashId(unfurledContentObject.collection.id) ?? 0
+              OptionalHashId.parse(unfurledContentObject.collection.id) ?? 0
             )
           } else if (unfurledContentObject.user) {
             other.onClick?.(
               e,
               'user',
-              decodeHashId(unfurledContentObject.user.id) ?? 0
+              OptionalHashId.parse(unfurledContentObject.user.id) ?? 0
             )
           }
         } else {
@@ -158,22 +161,20 @@ const HandleLink = ({
 }: Omit<TextLinkProps, 'to'> & {
   handle: string
 }) => {
-  const currentUserId = useSelector(getUserId)
-  const { data: user } = useGetUserByHandle({
-    handle: handle.replace('@', ''),
-    currentUserId
+  const { data: userId } = useUserByHandle(handle.replace('@', ''), {
+    select: (user) => user.user_id
   })
 
   const handleClick = useCallback(
     (e: MouseEvent<HTMLAnchorElement>) => {
-      other.onClick?.(e, 'mention', user?.user_id)
+      other.onClick?.(e, 'mention', userId)
     },
-    [other, user]
+    [other, userId]
   )
 
-  return user ? (
-    <ArtistPopover handle={user.handle} component='span'>
-      <TextLink {...other} to={profilePage(user.handle)} onClick={handleClick}>
+  return userId ? (
+    <ArtistPopover handle={handle} component='span'>
+      <TextLink {...other} to={profilePage(handle)} onClick={handleClick}>
         {handle}
       </TextLink>
     </ArtistPopover>
@@ -299,6 +300,7 @@ export const UserGeneratedTextV2 = forwardRef(function (
   )
 
   const matchers: Matcher[] = [
+    // link matcher
     {
       pattern:
         /https?:\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])/g,
@@ -324,7 +326,7 @@ export const UserGeneratedTextV2 = forwardRef(function (
   // Function to split the text and insert rendered elements for matched tokens
   const parseText = (text: string) => {
     // Start with the entire text as a single unprocessed string
-    let elements: ReactNode[] = [text]
+    let elements: ReactNode[] = [squashNewLines(text, 10)]
     let key = 0
 
     // Process each matcher sequentially
@@ -381,7 +383,7 @@ export const UserGeneratedTextV2 = forwardRef(function (
       css={{
         '&::selection': {
           backgroundColor: 'var(--harmony-s-500)',
-          color: 'var(--harmony-static-white)'
+          color: 'var(--harmony-white)'
         }
       }}
       ref={ref as ForwardedRef<'p'>}

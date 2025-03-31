@@ -1,4 +1,16 @@
-import { Kind, Status, ID, UID, Lineup, User } from '@audius/common/models'
+import { useCallback } from 'react'
+
+import { useFavoriteTrack, useUnfavoriteTrack } from '@audius/common/api'
+import {
+  Kind,
+  Status,
+  ID,
+  UID,
+  Lineup,
+  User,
+  FavoriteSource,
+  Track
+} from '@audius/common/models'
 import {
   savedPageSelectors,
   LibraryCategory,
@@ -15,12 +27,13 @@ import {
   IconPlaylists,
   IconPause,
   IconPlay,
-  Button
+  Button,
+  IconLibrary
 } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import FilterInput from 'components/filter-input/FilterInput'
-import Header from 'components/header/desktop/Header'
+import { Header } from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 import { dateSorter } from 'components/table'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
@@ -69,7 +82,6 @@ export type SavedPageProps = {
   ) => [SavedPageTrack[], number]
   fetchMoreTracks: (offset?: number, limit?: number) => void
   onClickRow: (record: TrackRecord) => void
-  onClickSave: (record: TrackRecord) => void
   onClickRepost: (record: TrackRecord) => void
   onPlay: () => void
   onSortTracks: (sorters: any) => void
@@ -114,12 +126,30 @@ const SavedPage = ({
   filterText,
   onChangeTab,
   onClickRow,
-  onClickSave,
   onClickRepost,
   onSortTracks
 }: SavedPageProps) => {
   const mainContentRef = useMainContentRef()
   const initFetch = useSelector(getInitialFetchStatus)
+
+  const { mutate: favoriteTrack } = useFavoriteTrack()
+  const { mutate: unfavoriteTrack } = useUnfavoriteTrack()
+  const toggleSaveTrack = useCallback(
+    (track: Track) => {
+      if (track.has_current_user_saved) {
+        unfavoriteTrack({
+          trackId: track.track_id,
+          source: FavoriteSource.LIBRARY_PAGE
+        })
+      } else {
+        favoriteTrack({
+          trackId: track.track_id,
+          source: FavoriteSource.LIBRARY_PAGE
+        })
+      }
+    },
+    [favoriteTrack, unfavoriteTrack]
+  )
 
   const emptyTracksHeader = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
@@ -137,15 +167,15 @@ const SavedPage = ({
   })
 
   const getTracksTableData = (): [SavedPageTrack[], number] => {
-    let [data, playingIndex] = getFilteredData(entries)
+    let [data, activeIndex] = getFilteredData(entries)
     if (!hasReachedEnd) {
       // Add in some empty rows to show user that more are loading in
       data = data.concat(new Array(5).fill({ kind: Kind.EMPTY }))
     }
-    return [data, playingIndex]
+    return [data, activeIndex]
   }
 
-  const [dataSource, playingIndex] =
+  const [dataSource, activeIndex] =
     status === Status.SUCCESS || entries.length
       ? getTracksTableData()
       : [[], -1]
@@ -234,16 +264,16 @@ const SavedPage = ({
           columns={tableColumns}
           data={dataSource}
           defaultSorter={dateSorter('dateSaved')}
-          fetchMoreTracks={fetchMoreTracks}
+          fetchMore={fetchMoreTracks}
           isVirtualized
           key='favorites'
           loading={tracksLoading || initFetch}
-          onClickFavorite={onClickSave}
+          onClickFavorite={toggleSaveTrack}
           onClickRepost={onClickRepost}
           onClickRow={onClickRow}
-          onSortTracks={allTracksFetched ? onSortTracks : onSortChange}
+          onSort={allTracksFetched ? onSortTracks : onSortChange}
           playing={queuedAndPlaying}
-          playingIndex={playingIndex}
+          activeIndex={activeIndex}
           scrollRef={mainContentRef}
           useLocalSort={allTracksFetched}
           fetchBatchSize={50}
@@ -264,6 +294,7 @@ const SavedPage = ({
 
   const header = (
     <Header
+      icon={IconLibrary}
       primary={messages.libraryHeader}
       secondary={isEmpty ? null : playAllButton}
       rightDecorator={<LibraryCategorySelectionMenu currentTab={currentTab} />}

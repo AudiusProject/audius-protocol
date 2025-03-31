@@ -28,26 +28,40 @@ services:
       file: docker-compose.discovery.prod.yml
       service: es-indexer
 
-  trpc:
-    extends:
-      file: docker-compose.discovery.prod.yml
-      service: trpc
-
   discovery-provider-elasticsearch:
     extends:
       file: docker-compose.discovery.prod.yml
       service: discovery-provider-elasticsearch
 
   discovery-provider-openresty:
-    extends:
-      file: docker-compose.discovery.prod.yml
-      service: discovery-provider-openresty
+    image: busybox:1.31.1
+    entrypoint: ['sh', '-c', 'exit 0']
+    profiles:
+      - noop
 
   discovery-provider:
+    user: ${DOCKER_UID:-root}:${DOCKER_GID:-root}
     extends:
       file: docker-compose.discovery.prod.yml
       service: discovery-provider
+    command: bash -c ". /tmp/dev-tools/startup/startup.sh && scripts/start.sh"
     build:
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/Dockerfile.dev
     volumes:
       - ${PROJECT_ROOT}:/app
+
+  healthz:
+    user: ${DOCKER_UID:-root}:${DOCKER_GID:-root}
+    extends:
+      file: docker-compose.discovery.prod.yml
+      service: healthz
+    build:
+      dockerfile: ${PROJECT_ROOT}/monitoring/healthz/Dockerfile
+      context: ${PROJECT_ROOT}/monitoring/healthz
+    ports:
+      - '5173:5173'
+    profiles:
+      - discovery
+    volumes:
+      - ${PROJECT_ROOT}/monitoring/healthz:/app
+      - /app/node_modules

@@ -189,8 +189,8 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
     if not query_results:
         return []
 
-    playlists, activity_timestamp = zip(*query_results)
-    playlists = helpers.query_result_to_list(playlists)
+    playlist_results, activity_timestamp = zip(*query_results)
+    playlists = helpers.query_result_to_list(playlist_results)
     playlist_ids = list(map(lambda playlist: playlist["playlist_id"], playlists))
 
     # Populate playlists
@@ -222,9 +222,15 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
         )
         album_purchases = set([p[0] for p in album_purchases])
 
+    # We don't want to filter any of the user's own playlists in the logic below
+    own_playlist_ids = {
+        p["playlist_id"] for p in playlists if p["playlist_owner_id"] == user_id
+    }
+
     playlists = list(
         filter(
-            lambda playlist: not playlist["is_private"]
+            lambda playlist: playlist["playlist_id"] in own_playlist_ids
+            or not playlist["is_private"]
             or playlist["playlist_id"] in album_purchases,
             playlists,
         )
@@ -242,7 +248,10 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
 
     # exclude playlists with only hidden tracks and empty playlists
     playlists = filter_playlists_with_only_hidden_tracks(
-        session, playlists, playlist_track_ids, ignore_ids=list(album_purchases)
+        session,
+        playlists,
+        playlist_track_ids,
+        ignore_ids=list(album_purchases | own_playlist_ids),
     )
 
     # attach users

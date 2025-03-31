@@ -24,7 +24,7 @@ const meta: Meta<AvatarProps> = {
       control: { type: 'radio' },
       options: ['auto', 'small', 'large']
     },
-    strokeWidth: {
+    borderWidth: {
       description: 'Stroke Width',
       control: { type: 'radio' },
       options: ['thin', 'default']

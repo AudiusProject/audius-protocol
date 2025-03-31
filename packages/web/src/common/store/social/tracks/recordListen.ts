@@ -4,14 +4,16 @@ import {
   cacheTracksSelectors,
   audioRewardsPageActions,
   tracksSocialActions,
-  getContext
+  getContext,
+  getSDK
 } from '@audius/common/store'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { waitForWrite } from 'utils/sagaHelpers'
 
-const { updateOptimisticListenStreak } = audioRewardsPageActions
+const { updateOptimisticListenStreak, updateOptimisticPlayCount } =
+  audioRewardsPageActions
 const { getTrack } = cacheTracksSelectors
 const { getUserId } = accountSelectors
 
@@ -20,6 +22,7 @@ function* recordListen(action: { trackId: number }) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
   yield* call(waitForWrite)
+  const sdk = yield* getSDK()
   const userId = yield* select(getUserId)
   const track = yield* select(getTrack, { id: trackId })
   if (!userId || !track) return
@@ -28,7 +31,7 @@ function* recordListen(action: { trackId: number }) {
     return
   }
 
-  yield* call(audiusBackendInstance.recordTrackListen, trackId)
+  yield* call(audiusBackendInstance.recordTrackListen, { userId, trackId, sdk })
 
   yield* put(make(Name.LISTEN, { trackId }))
   if (track.is_stream_gated) {
@@ -37,6 +40,11 @@ function* recordListen(action: { trackId: number }) {
 
   // Optimistically update the listen streak if applicable
   yield* put(updateOptimisticListenStreak())
+
+  // Optimistically update the play count if the user is playing their own track
+  if (userId === track.owner_id) {
+    yield* put(updateOptimisticPlayCount())
+  }
 }
 
 export function* watchRecordListen() {

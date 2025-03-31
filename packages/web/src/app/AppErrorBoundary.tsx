@@ -23,7 +23,7 @@ export const AppErrorBoundary = ({ children }: AppErrorBoundaryProps) => {
           message: error.message,
           shouldRedirect: true,
           additionalInfo: errorInfo,
-          level: ErrorLevel.Error
+          level: ErrorLevel.Fatal
         })
       )
     },

@@ -8,11 +8,10 @@ import {
   PaymentRouterClient,
   SolanaRelay,
   SolanaRelayWalletAdapter,
+  createAppWalletClient,
   getDefaultPaymentRouterClientConfig
 } from '../../services'
-import { DefaultAuth } from '../../services/Auth/DefaultAuth'
-import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
-import { EntityManager } from '../../services/EntityManager'
+import { EntityManagerClient } from '../../services/EntityManager'
 import { Logger } from '../../services/Logger'
 import {
   ClaimableTokensClient,
@@ -79,7 +78,7 @@ vitest
   .mockImplementation(async () => ({}))
 
 vitest
-  .spyOn(EntityManager.prototype, 'manageEntity')
+  .spyOn(EntityManagerClient.prototype, 'manageEntity')
   .mockImplementation(async () => {
     return {
       blockHash: 'a',
@@ -88,14 +87,14 @@ vitest
   })
 
 describe('TracksApi', () => {
+  // TODO: Move this out of describe
   let tracks: TracksApi
 
-  const auth = new DefaultAuth()
+  // eslint-disable-next-line mocha/no-setup-in-describe
+  const audiusWalletClient = createAppWalletClient({ apiKey: '' })
   const logger = new Logger()
-  const discoveryNodeSelector = new DiscoveryNodeSelector()
   const storageNodeSelector = new StorageNodeSelector({
-    auth,
-    discoveryNodeSelector,
+    endpoint: 'https://discoveryprovider.audius.co',
     logger
   })
 
@@ -103,7 +102,7 @@ describe('TracksApi', () => {
     const solanaWalletAdapter = new SolanaRelayWalletAdapter({
       solanaRelay: new SolanaRelay(
         new Configuration({
-          middleware: [discoveryNodeSelector.createMiddleware()]
+          middleware: []
         })
       )
     })
@@ -112,13 +111,18 @@ describe('TracksApi', () => {
     })
     tracks = new TracksApi(
       new Configuration(),
-      new DiscoveryNodeSelector(),
-      new Storage({ storageNodeSelector, logger: new Logger() }),
-      new EntityManager({ discoveryNodeSelector: new DiscoveryNodeSelector() }),
-      auth,
+      new Storage({
+        storageNodeSelector,
+        logger: new Logger()
+      }),
+      new EntityManagerClient({
+        audiusWalletClient,
+        endpoint: 'https://discoveryprovider.audius.co'
+      }),
       new Logger(),
       new ClaimableTokensClient({
         ...getDefaultClaimableTokensConfig(developmentConfig),
+        audiusWalletClient,
         solanaClient
       }),
       new PaymentRouterClient({
@@ -127,7 +131,7 @@ describe('TracksApi', () => {
       }),
       new SolanaRelay(
         new Configuration({
-          middleware: [discoveryNodeSelector.createMiddleware()]
+          middleware: []
         })
       ),
       solanaClient

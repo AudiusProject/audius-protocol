@@ -9,8 +9,7 @@ import {
   UserCollectionMetadata,
   ID,
   TrackMetadata,
-  LineupTrack,
-  Id
+  LineupTrack
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -19,7 +18,7 @@ import {
   CommonState,
   getSDK
 } from '@audius/common/store'
-import { full } from '@audius/sdk'
+import { Id, full } from '@audius/sdk'
 import { all, call, select } from 'typed-redux-saga'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
@@ -29,7 +28,7 @@ import { waitForRead } from 'utils/sagaHelpers'
 
 import { getFollowIds } from '../../signon/selectors'
 const { getFeedFilter } = feedPageSelectors
-const getAccountUser = accountSelectors.getAccountUser
+const { getUserId } = accountSelectors
 
 type FeedItem = LineupTrack | Collection
 
@@ -47,8 +46,8 @@ function* getTracks({
   limit: number
 }): Generator<any, FeedItem[] | null, any> {
   yield* waitForRead()
-  const currentUser = yield* select(getAccountUser)
-  if (!currentUser) return []
+  const currentUserId = yield* select(getUserId)
+  if (!currentUserId) return []
   const filterEnum: FeedFilter = yield* select(getFeedFilter)
   const sdk = yield* getSDK()
   const filter = filterMap[filterEnum]
@@ -58,7 +57,7 @@ function* getTracks({
   // hint to the API.
   const followeeUserIds = yield* select(getFollowIds)
 
-  const userId = Id.parse(currentUser.user_id)
+  const userId = Id.parse(currentUserId)
   const { data = [] } = yield* call(
     [sdk.full.users, sdk.full.users.getUserFeed],
     {
@@ -74,16 +73,14 @@ function* getTracks({
   const feed = transformAndCleanList(data, userFeedItemFromSDK).map(
     ({ item }) => item
   )
-
   if (feed === null) return null
   const filteredFeed = feed.filter((record) => !record.user.is_deactivated)
   const [tracks, collections] = getTracksAndCollections(filteredFeed)
-  const trackIds = tracks.map((t) => t.track_id)
 
   // Process (e.g. cache and remove entries)
   const [processedTracks, processedCollections] = (yield* all([
     processAndCacheTracks(tracks),
-    processAndCacheCollections(collections, true, trackIds)
+    processAndCacheCollections(collections, false)
   ])) as [LineupTrack[], Collection[]]
   const processedTracksMap = processedTracks.reduce<Record<ID, LineupTrack>>(
     (acc, cur) => ({ ...acc, [cur.track_id]: cur }),

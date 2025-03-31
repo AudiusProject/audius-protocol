@@ -128,6 +128,12 @@ get_undisbursed_challenges_route_parser.add_argument(
     type=int,
     description="Starting blocknumber to retrieve completed undisbursed challenges",
 )
+get_undisbursed_challenges_route_parser.add_argument(
+    "challenge_id",
+    required=False,
+    type=str,
+    description="A challenge ID to filter the undisbursed challenges to a particular challenge",
+)
 
 get_challenges_response = make_response(
     "undisbursed_challenges", ns, fields.List(fields.Nested(undisbursed_challenge))
@@ -157,6 +163,7 @@ class GetUndisbursedChallenges(Resource):
                     "limit": args["limit"],
                     "offset": args["offset"],
                     "completed_blocknumber": args["completed_blocknumber"],
+                    "challenge_id": args["challenge_id"],
                 },
             )
             undisbursed_challenges = list(

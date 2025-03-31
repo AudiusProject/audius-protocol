@@ -1,6 +1,9 @@
 import { memo, useCallback, useEffect, useState } from 'react'
 
-import { useSelectTierInfo } from '@audius/common/hooks'
+import { useUserComments, useFollowUser } from '@audius/common/api'
+import { useFeatureFlag, useSelectTierInfo } from '@audius/common/hooks'
+import { FollowSource } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { css } from '@emotion/native'
 import type { Animated } from 'react-native'
@@ -21,10 +24,12 @@ import { TipAudioButton } from '../TipAudioButton'
 import { UploadTrackButton } from '../UploadTrackButton'
 import { useSelectProfile } from '../selectors'
 
+import { Bio } from './Bio'
 import { CollapsedSection } from './CollapsedSection'
 import { ExpandHeaderToggleButton } from './ExpandHeaderToggleButton'
-import { ExpandedSection } from './ExpandedSection'
-import { TopSupporters } from './TopSupporters'
+import { ProfileInfoTiles } from './ProfileInfoTiles'
+import { SocialsAndSites } from './SocialsAndSites'
+
 const getUserId = accountSelectors.getUserId
 
 type ProfileHeaderProps = {
@@ -38,7 +43,7 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
   const [hasUserFollowed, setHasUserFollowed] = useToggle(false)
   const [isExpanded, setIsExpanded] = useToggle(false)
   const [isExpandable, setIsExpandable] = useState(false)
-
+  const { mutate: followUser } = useFollowUser()
   const {
     user_id: userId,
     does_current_user_follow: doesCurrentUserFollow,
@@ -63,6 +68,7 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
     'allow_ai_attribution'
   ])
 
+  const { data: comments } = useUserComments({ userId, pageSize: 1 })
   const { tier = 'none' } = useSelectTierInfo(userId)
   const hasTier = tier !== 'none'
   const isOwner = userId === accountId
@@ -72,13 +78,18 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
       Boolean
     ).length > 1
   const isSupporting = supportingCount > 0
+
+  const { isEnabled: isRecentCommentsEnabled } = useFeatureFlag(
+    FeatureFlags.RECENT_COMMENTS
+  )
   // Note: we also if the profile bio is longer than 3 lines, but that's handled in the Bio component.
   const shouldExpand =
     hasTier ||
     hasMutuals ||
     hasMultipleSocials ||
     isSupporting ||
-    allow_ai_attribution
+    allow_ai_attribution ||
+    (comments && comments?.length > 0 && isRecentCommentsEnabled)
 
   useEffect(() => {
     if (!isExpandable && shouldExpand) {
@@ -90,8 +101,12 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
     if (!doesCurrentUserFollow) {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
       setHasUserFollowed(true)
+      followUser({
+        followeeUserId: userId,
+        source: FollowSource.PROFILE_PAGE
+      })
     }
-  }, [setHasUserFollowed, doesCurrentUserFollow])
+  }, [setHasUserFollowed, doesCurrentUserFollow, followUser, userId])
 
   const handleCloseArtistRecs = useCallback(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
@@ -125,14 +140,18 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
         backgroundColor='white'
         pv='s'
         ph='m'
-        gap='s'
+        style={{ gap: 9 }}
         borderBottom='default'
       >
         <ProfileInfo onFollow={handleFollow} />
         <OnlineOnly>
           <ProfileMetrics />
           {isExpanded ? (
-            <ExpandedSection />
+            <>
+              <Bio />
+              <SocialsAndSites />
+              <ProfileInfoTiles />
+            </>
           ) : (
             <CollapsedSection
               isExpandable={isExpandable}
@@ -149,8 +168,9 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
           {!hasUserFollowed ? null : (
             <ArtistRecommendations onClose={handleCloseArtistRecs} />
           )}
-          {isOwner ? <UploadTrackButton /> : <TipAudioButton />}
-          <TopSupporters />
+          <Flex pointerEvents='box-none' mt='s'>
+            {isOwner ? <UploadTrackButton /> : <TipAudioButton />}
+          </Flex>
         </OnlineOnly>
       </Flex>
     </>

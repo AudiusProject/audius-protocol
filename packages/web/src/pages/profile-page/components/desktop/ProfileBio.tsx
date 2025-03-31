@@ -1,20 +1,21 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { Name } from '@audius/common/models'
-import { IconCaretDown, IconCaretUp, PlainButton } from '@audius/harmony'
+import { ID, Name } from '@audius/common/models'
+import {
+  Flex,
+  IconCaretDown,
+  IconCaretUp,
+  PlainButton,
+  Text
+} from '@audius/harmony'
 import { ResizeObserver } from '@juggle/resize-observer'
-import cn from 'classnames'
-// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
-import { animated } from 'react-spring'
 import useMeasure from 'react-use-measure'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import { OpacityTransition } from 'components/transition-container/OpacityTransition'
+import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
 import { UserGeneratedText } from 'components/user-generated-text'
 
 import SocialLink, { Type } from '../SocialLink'
-
-import styles from './ProfilePage.module.css'
 
 const messages = {
   seeMore: 'See More',
@@ -22,6 +23,7 @@ const messages = {
 }
 
 type ProfileBioProps = {
+  userId: ID
   handle: string
   bio: string
   location: string
@@ -37,6 +39,7 @@ type ProfileBioProps = {
 const MAX_BIO_SIZE = 16 * 4
 
 export const ProfileBio = ({
+  userId,
   handle,
   bio,
   location,
@@ -135,9 +138,9 @@ export const ProfileBio = ({
     [record, handle]
   )
 
-  const renderCollapsedContent = (_: any, style: object) =>
+  const renderCollapsedContent = () =>
     hasSocial ? (
-      <animated.div className={styles.socialsTruncated} style={style}>
+      <Flex gap='m'>
         {twitterHandle && (
           <SocialLink
             type={Type.TWITTER}
@@ -170,13 +173,13 @@ export const ProfileBio = ({
             iconOnly
           />
         )}
-      </animated.div>
+      </Flex>
     ) : (
       <></>
     )
 
-  const renderExpandedContent = (_: any, style: object) => (
-    <animated.div className={styles.socials} style={style}>
+  const renderExpandedContent = () => (
+    <Flex column gap='m'>
       {twitterHandle && (
         <SocialLink
           type={Type.TWITTER}
@@ -212,41 +215,35 @@ export const ProfileBio = ({
           onClick={onClickDonation}
         />
       )}
-      <div className={styles.location}>{location}</div>
-      <div className={styles.joined}>Joined {created}</div>
-    </animated.div>
+      <Text size='xs'>{location}</Text>
+      <Text size='xs'> Joined {created}</Text>
+    </Flex>
   )
 
   return (
-    <div>
-      <UserGeneratedText
-        size='s'
-        ref={bioRef}
-        className={cn(styles.description, {
-          [styles.truncated]: isCollapsed
-        })}
-        linkSource='profile page'
-      >
-        {bio}
-      </UserGeneratedText>
-      <div>
-        <OpacityTransition
-          render={isCollapsed ? renderCollapsedContent : renderExpandedContent}
-          duration={300}
-        />
-        {isCollapsible ? (
-          <PlainButton
-            iconRight={isCollapsed ? IconCaretDown : IconCaretUp}
-            onClick={handleToggleCollapse}
-            css={(theme) => ({
-              marginTop: theme.spacing.l,
-              paddingLeft: 0
-            })}
-          >
-            {isCollapsed ? messages.seeMore : messages.seeLess}
-          </PlainButton>
-        ) : null}
-      </div>
-    </div>
+    <Flex column gap='l'>
+      <ProfilePageBadge userId={userId} />
+      {bio ? (
+        <UserGeneratedText
+          size='s'
+          ref={bioRef}
+          ellipses
+          maxLines={isCollapsed ? 4 : undefined}
+          linkSource='profile page'
+        >
+          {bio}
+        </UserGeneratedText>
+      ) : null}
+      {isCollapsed ? renderCollapsedContent() : renderExpandedContent()}
+      {isCollapsible ? (
+        <PlainButton
+          iconRight={isCollapsed ? IconCaretDown : IconCaretUp}
+          onClick={handleToggleCollapse}
+          css={{ alignSelf: 'flex-start' }}
+        >
+          {isCollapsed ? messages.seeMore : messages.seeLess}
+        </PlainButton>
+      ) : null}
+    </Flex>
   )
 }

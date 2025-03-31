@@ -24,6 +24,7 @@ import {
 import type { ID, USDCPurchaseConditions } from '@audius/common/models'
 import {
   Name,
+  PurchaseMethod,
   PurchaseVendor,
   statusIsNotFinalized
 } from '@audius/common/models'
@@ -81,7 +82,7 @@ import { usePurchaseSummaryValues } from './hooks/usePurchaseSummaryValues'
 
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
-const { setPurchasePage } = purchaseContentActions
+const { setPurchasePage, eagerCreateUserBank } = purchaseContentActions
 
 const messages = {
   buy: 'Buy',
@@ -218,8 +219,8 @@ const getButtonText = (isUnlocking: boolean, amountDue: number) =>
   isUnlocking
     ? messages.purchasing
     : amountDue > 0
-    ? `${messages.buy} $${formatPrice(amountDue)}`
-    : messages.buy
+      ? `${messages.buy} $${formatPrice(amountDue)}`
+      : messages.buy
 
 // The bulk of the form rendering is in a nested component because we want access
 // to the FormikContext, which can only be used in a component which is a descendant
@@ -248,14 +249,18 @@ const RenderForm = ({
   const { isEnabled: isIOSUSDCPurchaseEnabled } = useFeatureFlag(
     FeatureFlags.IOS_USDC_PURCHASE_ENABLED
   )
-  const { isEnabled: isPayWithAnythingEnabledFlag } = useFeatureFlag(
-    FeatureFlags.PAY_WITH_ANYTHING_ENABLED
-  )
   const isIOSDisabled = Platform.OS === 'ios' && !isIOSUSDCPurchaseEnabled
 
   const { submitForm, resetForm } = useFormikContext()
 
-  useEffect(() => resetForm, [contentId, resetForm])
+  useEffect(() => {
+    resetForm()
+  }, [contentId, resetForm])
+
+  // Pre-create user bank if needed so it's ready by purchase time
+  useEffect(() => {
+    dispatch(eagerCreateUserBank())
+  }, [dispatch])
 
   const {
     usdc_purchase: { price }
@@ -280,7 +285,7 @@ const RenderForm = ({
     isPolling: true,
     commitment: 'confirmed'
   })
-  const { extraAmount } = usePurchaseSummaryValues({
+  const { extraAmount, amountDue } = usePurchaseSummaryValues({
     price,
     currentBalance: balance
   })
@@ -331,7 +336,7 @@ const RenderForm = ({
   }, [setPurchaseVendor, showCoinflow, purchaseVendor])
 
   const stemsPurchaseCount = isContentDownloadGated(content)
-    ? content._stems?.length ?? 0
+    ? (content._stems?.length ?? 0)
     : 0
   const downloadPurchaseCount =
     isContentDownloadGated(content) && content.is_downloadable ? 1 : 0
@@ -377,7 +382,7 @@ const RenderForm = ({
                     isExistingBalanceDisabled={isExistingBalanceDisabled}
                     showExistingBalance={!!(balance && !balance.isZero())}
                     isCoinflowEnabled={showCoinflow}
-                    isPayWithAnythingEnabled={isPayWithAnythingEnabledFlag}
+                    isPayWithAnythingEnabled
                     showVendorChoice={false}
                   />
                 )}
@@ -425,7 +430,12 @@ const RenderForm = ({
           ) : null}
           <Button
             onPress={submitForm}
-            disabled={isUnlocking}
+            disabled={
+              isUnlocking ||
+              (purchaseMethod === PurchaseMethod.CRYPTO &&
+                page === PurchaseContentPage.TRANSFER &&
+                amountDue > 0)
+            }
             variant='primary'
             color='lightGreen'
             isLoading={isUnlocking}
@@ -485,8 +495,8 @@ export const PremiumContentPurchaseDrawer = () => {
   const purchaseConditions = isValidStreamGatedTrack
     ? metadata.stream_conditions
     : isValidDownloadGatedTrack
-    ? metadata.download_conditions
-    : null
+      ? metadata.download_conditions
+      : null
 
   const price = purchaseConditions ? purchaseConditions?.usdc_purchase.price : 0
 

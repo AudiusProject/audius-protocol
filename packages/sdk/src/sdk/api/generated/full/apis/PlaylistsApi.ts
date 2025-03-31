@@ -19,6 +19,7 @@ import type {
   FollowingResponse,
   FullPlaylistResponse,
   FullPlaylistTracksResponse,
+  FullPlaylistWithScoreResponse,
   FullTrendingPlaylistsResponse,
 } from '../models';
 import {
@@ -28,6 +29,8 @@ import {
     FullPlaylistResponseToJSON,
     FullPlaylistTracksResponseFromJSON,
     FullPlaylistTracksResponseToJSON,
+    FullPlaylistWithScoreResponseFromJSON,
+    FullPlaylistWithScoreResponseToJSON,
     FullTrendingPlaylistsResponseFromJSON,
     FullTrendingPlaylistsResponseToJSON,
 } from '../models';
@@ -50,6 +53,15 @@ export interface GetPlaylistByHandleAndSlugRequest {
 
 export interface GetPlaylistTracksRequest {
     playlistId: string;
+}
+
+export interface GetTopPlaylistsRequest {
+    type: GetTopPlaylistsTypeEnum;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+    mood?: string;
+    filter?: string;
 }
 
 export interface GetTrendingPlaylistsRequest {
@@ -223,6 +235,61 @@ export class PlaylistsApi extends runtime.BaseAPI {
      */
     async getPlaylistTracks(params: GetPlaylistTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullPlaylistTracksResponse> {
         const response = await this.getPlaylistTracksRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets top playlists.
+     */
+    async getTopPlaylistsRaw(params: GetTopPlaylistsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullPlaylistWithScoreResponse>> {
+        if (params.type === null || params.type === undefined) {
+            throw new runtime.RequiredError('type','Required parameter params.type was null or undefined when calling getTopPlaylists.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.type !== undefined) {
+            queryParameters['type'] = params.type;
+        }
+
+        if (params.mood !== undefined) {
+            queryParameters['mood'] = params.mood;
+        }
+
+        if (params.filter !== undefined) {
+            queryParameters['filter'] = params.filter;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/playlists/top`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FullPlaylistWithScoreResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets top playlists.
+     */
+    async getTopPlaylists(params: GetTopPlaylistsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullPlaylistWithScoreResponse> {
+        const response = await this.getTopPlaylistsRaw(params, initOverrides);
         return await response.value();
     }
 
@@ -404,6 +471,14 @@ export class PlaylistsApi extends runtime.BaseAPI {
 
 }
 
+/**
+ * @export
+ */
+export const GetTopPlaylistsTypeEnum = {
+    Album: 'album',
+    Playlist: 'playlist'
+} as const;
+export type GetTopPlaylistsTypeEnum = typeof GetTopPlaylistsTypeEnum[keyof typeof GetTopPlaylistsTypeEnum];
 /**
  * @export
  */

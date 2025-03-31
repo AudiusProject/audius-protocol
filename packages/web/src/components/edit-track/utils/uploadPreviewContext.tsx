@@ -4,6 +4,8 @@ import { queueActions, playerSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { useSelector, useDispatch } from 'react-redux'
 
+import { audioPlayer } from 'services/audio-player'
+
 const { getPlaying } = playerSelectors
 const { pause: pauseQueue } = queueActions
 
@@ -46,6 +48,7 @@ export const UploadPreviewContextProvider = (props: {
         preview.currentTime = 0
       }
 
+      trackPreview.volume = audioPlayer?.audio.volume ?? 1.0
       trackPreview.play()
       setPreview(trackPreview)
       setPreviewIndex(trackIdx)

@@ -1,17 +1,16 @@
 import { useMemo } from 'react'
 
-import { ChatBlast, ChatBlastAudience } from '@audius/sdk'
+import { ChatBlast, ChatBlastAudience, OptionalHashId } from '@audius/sdk'
 
 import {
   useGetCurrentUser,
   useGetCurrentUserId,
   useGetPlaylistById,
   useGetPurchasersCount,
-  useGetRemixersCount,
-  useGetTrackById
+  useGetTrackById,
+  useRemixersCount
 } from '~/api'
 import {
-  decodeHashId,
   getChatBlastAudienceDescription,
   getChatBlastCTA,
   getChatBlastSecondaryTitle,
@@ -26,7 +25,7 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
   } = chat
 
   const decodedContentId = audienceContentId
-    ? decodeHashId(audienceContentId) ?? undefined
+    ? OptionalHashId.parse(audienceContentId)
     : undefined
 
   const { data: currentUserId } = useGetCurrentUserId({})
@@ -54,14 +53,10 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
       disabled: audience !== ChatBlastAudience.CUSTOMERS || !currentUserId
     }
   )
-  const { data: remixersCount } = useGetRemixersCount(
-    {
-      userId: currentUserId!,
-      trackId: decodedContentId
-    },
-    {
-      disabled: audience !== ChatBlastAudience.REMIXERS || !currentUserId
-    }
+
+  const { data: remixersCount } = useRemixersCount(
+    { trackId: decodedContentId },
+    { enabled: audience === ChatBlastAudience.REMIXERS }
   )
 
   const audienceCount = useMemo(() => {
@@ -107,6 +102,8 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
     chatBlastAudienceDescription,
     chatBlastCTA,
     contentTitle,
-    audienceCount
+    audienceCount,
+    audienceContentId: decodedContentId,
+    audienceContentType
   }
 }

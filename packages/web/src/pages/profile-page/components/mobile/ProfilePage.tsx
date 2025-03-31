@@ -1,5 +1,10 @@
-import { useEffect, useContext, ReactNode } from 'react'
+import { useEffect, useContext } from 'react'
 
+import {
+  useProfileReposts,
+  useProfileTracks,
+  useUserCollectibles
+} from '@audius/common/api'
 import {
   Status,
   Collection,
@@ -14,8 +19,7 @@ import {
 import {
   profilePageFeedLineupActions as feedActions,
   profilePageTracksLineupActions as tracksActions,
-  ProfilePageTabs,
-  ProfileUser
+  ProfilePageTabs
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -28,10 +32,8 @@ import {
 import cn from 'classnames'
 
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
-import { CollectionCard } from 'components/collection'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
-import CardLineup from 'components/lineup/CardLineup'
-import Lineup from 'components/lineup/Lineup'
+import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, {
   LeftPreset,
@@ -45,11 +47,13 @@ import { withNullGuard } from 'utils/withNullGuard'
 
 import { DeactivatedProfileTombstone } from '../DeactivatedProfileTombstone'
 
+import { AlbumsTab } from './AlbumsTab'
 import EditProfile from './EditProfile'
+import { EmptyTab } from './EmptyTab'
+import { PlaylistsTab } from './PlaylistsTab'
 import ProfileHeader from './ProfileHeader'
 import styles from './ProfilePage.module.css'
 import { ShareUserButton } from './ShareUserButton'
-
 const { profilePage } = route
 
 export type ProfilePageProps = {
@@ -91,10 +95,9 @@ export type ProfilePageProps = {
   stats: Array<{ number: number; title: string; key: string }>
   trackIsActive: boolean
 
-  profile: ProfileUser | null
-  albums: Collection[] | null
-  playlists: Collection[] | null
+  profile: User | null
   status: Status
+  collectionStatus: Status
   goToRoute: (route: string) => void
   artistTracks: LineupState<Track>
   userFeed: LineupState<Track | Collection>
@@ -113,7 +116,6 @@ export type ProfilePageProps = {
   getLineupProps: (lineup: any) => any
   loadMoreArtistTracks: (offset: number, limit: number) => void
   loadMoreUserFeed: (offset: number, limit: number) => void
-  fetchFollowers: () => void
   onFollow: (id: ID) => void
   onConfirmUnfollow: (id: ID) => void
   updateName: (name: string) => void
@@ -138,36 +140,28 @@ export type ProfilePageProps = {
   onCloseArtistRecommendations: () => void
 }
 
-type EmptyTabProps = {
-  message: ReactNode
-}
-
-export const EmptyTab = (props: EmptyTabProps) => {
-  return <div className={styles.emptyTab}>{props.message}</div>
-}
-
 const artistTabs: TabHeader[] = [
   {
     icon: <IconNote />,
-    text: 'Tracks',
+    text: ProfilePageTabs.TRACKS,
     label: ProfilePageTabs.TRACKS,
     to: 'tracks'
   },
   {
     icon: <IconAlbum />,
-    text: 'Albums',
+    text: ProfilePageTabs.ALBUMS,
     label: ProfilePageTabs.ALBUMS,
     to: 'albums'
   },
   {
     icon: <IconPlaylists />,
-    text: 'Playlists',
+    text: ProfilePageTabs.PLAYLISTS,
     label: ProfilePageTabs.PLAYLISTS,
     to: 'playlists'
   },
   {
     icon: <IconReposts className={styles.iconReposts} />,
-    text: 'Reposts',
+    text: ProfilePageTabs.REPOSTS,
     label: ProfilePageTabs.REPOSTS,
     to: 'reposts'
   }
@@ -176,13 +170,13 @@ const artistTabs: TabHeader[] = [
 const userTabs: TabHeader[] = [
   {
     icon: <IconReposts className={styles.iconReposts} />,
-    text: 'Reposts',
+    text: ProfilePageTabs.REPOSTS,
     label: ProfilePageTabs.REPOSTS,
     to: 'reposts'
   },
   {
     icon: <IconPlaylists />,
-    text: 'Playlists',
+    text: ProfilePageTabs.PLAYLISTS,
     label: ProfilePageTabs.PLAYLISTS,
     to: 'playlists'
   }
@@ -190,7 +184,7 @@ const userTabs: TabHeader[] = [
 
 const collectiblesTab = {
   icon: <IconCollectibles />,
-  text: 'Collectibles',
+  text: ProfilePageTabs.COLLECTIBLES,
   label: ProfilePageTabs.COLLECTIBLES,
   to: 'collectibles'
 }
@@ -220,11 +214,112 @@ const getMessages = ({
 })
 
 const g = withNullGuard((props: ProfilePageProps) => {
-  const { profile, albums, playlists } = props
-  if (profile && albums && playlists) {
-    return { ...props, profile, albums, playlists }
+  const { profile } = props
+  if (profile) {
+    return { ...props, profile }
   }
 })
+
+const RepostsTab = ({
+  isOwner,
+  profile,
+  handle
+}: {
+  isOwner: boolean
+  profile: User
+  handle: string
+}) => {
+  const {
+    data,
+    isPending,
+    isFetching,
+    isError,
+    pageSize,
+    hasNextPage,
+    loadNextPage,
+    play,
+    pause,
+    lineup,
+    isPlaying
+  } = useProfileReposts({
+    handle
+  })
+
+  if (profile.repost_count === 0) {
+    return (
+      <EmptyTab
+        message={
+          <>
+            {isOwner
+              ? "You haven't reposted anything yet"
+              : `${profile.name} hasn't reposted anything yet`}
+            <i className={cn('emoji', 'face-with-monocle', styles.emoji)} />
+          </>
+        }
+      />
+    )
+  }
+
+  return (
+    <TanQueryLineup
+      data={data}
+      lineup={lineup}
+      isPlaying={isPlaying}
+      actions={feedActions}
+      isPending={isPending}
+      isFetching={isFetching}
+      isError={isError}
+      pageSize={pageSize}
+      hasNextPage={hasNextPage}
+      loadNextPage={loadNextPage}
+      play={play}
+      pause={pause}
+    />
+  )
+}
+
+const TracksTab = ({
+  profile,
+  handle
+}: {
+  profile: User
+  handle: string
+  isOwner: boolean
+}) => {
+  const {
+    data,
+    isPending,
+    isFetching,
+    isError,
+    pageSize,
+    hasNextPage,
+    loadNextPage,
+    play,
+    pause,
+    lineup,
+    isPlaying
+  } = useProfileTracks({
+    handle
+  })
+
+  return (
+    <TanQueryLineup
+      data={data}
+      isPending={isPending}
+      isFetching={isFetching}
+      isError={isError}
+      pageSize={pageSize}
+      hasNextPage={hasNextPage}
+      loadNextPage={loadNextPage}
+      play={play}
+      pause={pause}
+      leadingElementId={profile.artist_pick_track_id}
+      actions={tracksActions}
+      isPlaying={isPlaying}
+      lineup={lineup}
+    />
+  )
+}
 
 const ProfilePage = g(
   ({
@@ -251,8 +346,6 @@ const ProfilePage = g(
     tikTokVerified,
     website,
     donation,
-    albums,
-    playlists,
     artistTracks,
     userFeed,
     getLineupProps,
@@ -267,8 +360,6 @@ const ProfilePage = g(
     goToRoute,
     following,
     isSubscribed,
-    onFollow,
-    onConfirmUnfollow,
     mode,
     hasMadeEdit,
     onEdit,
@@ -296,6 +387,8 @@ const ProfilePage = g(
     useEffect(() => {
       setHeader(null)
     }, [setHeader])
+
+    const { data: collectibles } = useUserCollectibles({ userId })
 
     const messages = getMessages({ name, isOwner })
     let content
@@ -344,9 +437,9 @@ const ProfilePage = g(
 
     const profileHasCollectibles =
       profile?.collectibleList?.length || profile?.solanaCollectibleList?.length
-    const profileNeverSetCollectiblesOrder = !profile?.collectibles
+    const profileNeverSetCollectiblesOrder = !collectibles
     const profileHasNonEmptyCollectiblesOrder =
-      profile?.collectibles?.order?.length ?? false
+      collectibles?.order?.length ?? false
     const profileHasVisibleImageOrVideoCollectibles =
       profileHasCollectibles &&
       (profileNeverSetCollectiblesOrder || profileHasNonEmptyCollectiblesOrder)
@@ -382,22 +475,7 @@ const ProfilePage = g(
         />
       )
     } else {
-      const playlistCards = (playlists || []).map((playlist) => (
-        <CollectionCard
-          key={playlist.playlist_id}
-          id={playlist.playlist_id}
-          size='xs'
-        />
-      ))
       if (isArtist) {
-        const albumCards = (albums || []).map((album) => (
-          <CollectionCard
-            key={album.playlist_id}
-            id={album.playlist_id}
-            size='xs'
-          />
-        ))
-
         profileTabs = artistTabs
         profileElements = [
           <div className={styles.tracksLineupContainer} key='artistTracks'>
@@ -413,54 +491,14 @@ const ProfilePage = g(
                 }
               />
             ) : (
-              <Lineup
-                {...getLineupProps(artistTracks)}
-                leadingElementId={profile.artist_pick_track_id}
-                limit={profile.track_count}
-                loadMore={loadMoreArtistTracks}
-                playTrack={playArtistTrack}
-                pauseTrack={pauseArtistTrack}
-                actions={tracksActions}
-              />
+              <TracksTab profile={profile} handle={handle} isOwner={isOwner} />
             )}
           </div>,
           <div className={styles.cardLineupContainer} key='artistAlbums'>
-            {(albums || []).length === 0 ? (
-              <EmptyTab
-                message={
-                  <>
-                    {messages.emptyAlbums}
-                    <i
-                      className={cn('emoji', 'face-with-monocle', styles.emoji)}
-                    />
-                  </>
-                }
-              />
-            ) : (
-              <CardLineup
-                cardsClassName={styles.cardLineup}
-                cards={albumCards}
-              />
-            )}
+            <AlbumsTab isOwner={isOwner} profile={profile} userId={userId} />
           </div>,
           <div className={styles.cardLineupContainer} key='artistPlaylists'>
-            {(playlists || []).length === 0 ? (
-              <EmptyTab
-                message={
-                  <>
-                    {messages.emptyPlaylists}
-                    <i
-                      className={cn('emoji', 'face-with-monocle', styles.emoji)}
-                    />
-                  </>
-                }
-              />
-            ) : (
-              <CardLineup
-                cardsClassName={styles.cardLineup}
-                cards={playlistCards}
-              />
-            )}
+            <PlaylistsTab isOwner={isOwner} profile={profile} userId={userId} />
           </div>,
           <div className={styles.tracksLineupContainer} key='artistUsers'>
             {profile.repost_count === 0 ? (
@@ -475,14 +513,7 @@ const ProfilePage = g(
                 }
               />
             ) : (
-              <Lineup
-                {...getLineupProps(userFeed)}
-                count={profile.repost_count}
-                loadMore={loadMoreUserFeed}
-                playTrack={playUserFeedTrack}
-                pauseTrack={pauseUserFeedTrack}
-                actions={feedActions}
-              />
+              <RepostsTab isOwner={isOwner} profile={profile} handle={handle} />
             )}
           </div>
         ]
@@ -502,34 +533,11 @@ const ProfilePage = g(
                 }
               />
             ) : (
-              <Lineup
-                {...getLineupProps(userFeed)}
-                count={profile.repost_count}
-                loadMore={loadMoreUserFeed}
-                playTrack={playUserFeedTrack}
-                pauseTrack={pauseUserFeedTrack}
-                actions={feedActions}
-              />
+              <RepostsTab isOwner={isOwner} profile={profile} handle={handle} />
             )}
           </div>,
           <div className={styles.cardLineupContainer} key='playlists'>
-            {(playlists || []).length === 0 ? (
-              <EmptyTab
-                message={
-                  <>
-                    {messages.emptyPlaylists}
-                    <i
-                      className={cn('emoji', 'face-with-monocle', styles.emoji)}
-                    />
-                  </>
-                }
-              />
-            ) : (
-              <CardLineup
-                cardsClassName={styles.cardLineup}
-                cards={playlistCards}
-              />
-            )}
+            <PlaylistsTab isOwner={isOwner} profile={profile} userId={userId} />
           </div>
         ]
       }
@@ -625,8 +633,6 @@ const ProfilePage = g(
             followers={followers}
             following={following}
             isSubscribed={isSubscribed}
-            onFollow={onFollow}
-            onUnfollow={onConfirmUnfollow}
             goToRoute={goToRoute}
             mode={mode}
             switchToEditMode={onEdit}

@@ -154,7 +154,7 @@ module.exports = function (app) {
 
       try {
         const tikTokObj = await models.TikTokUser.findOne({
-          where: { uuid: uuid }
+          where: { uuid }
         })
         const user = await waitForUser({
           userId,
@@ -188,9 +188,9 @@ module.exports = function (app) {
           try {
             const txProps = {
               contractRegistryKey: 'EntityManager',
-              contractAddress: contractAddress,
-              encodedABI: encodedABI,
-              senderAddress: senderAddress,
+              contractAddress,
+              encodedABI,
+              senderAddress,
               gasLimit: null
             }
             await txRelay.sendTransaction(req, false, txProps, 'tikTokVerified')

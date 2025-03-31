@@ -1,5 +1,6 @@
 from sqlalchemy import func
 
+from src.challenges.challenge_event import ChallengeEvent
 from src.exceptions import IndexingValidationError
 from src.models.comments.comment import Comment
 from src.models.comments.comment_mention import CommentMention
@@ -11,6 +12,7 @@ from src.models.moderation.muted_user import MutedUser
 from src.models.notifications.notification import Notification
 from src.models.tracks.track import Track
 from src.models.users.aggregate_user import AggregateUser
+from src.models.users.user import User
 from src.tasks.entity_manager.utils import (
     COMMENT_BODY_LIMIT,
     Action,
@@ -107,6 +109,7 @@ def validate_write_comment_tx(params: ManageEntityParameters):
 
 def create_comment(params: ManageEntityParameters):
     validate_write_comment_tx(params)
+    challenge_bus = params.challenge_bus
     existing_records = params.existing_records
     metadata = params.metadata
     user_id = params.user_id
@@ -171,6 +174,15 @@ def create_comment(params: ManageEntityParameters):
     )
 
     params.add_record(comment_id, comment_record, EntityType.COMMENT)
+
+    with challenge_bus.use_scoped_dispatch_queue():
+        challenge_bus.dispatch(
+            ChallengeEvent.first_weekly_comment,
+            params.block_number,
+            params.block_datetime,
+            user_id,
+            {"created_at": params.block_datetime.timestamp()},
+        )
 
     if (
         not is_reply
@@ -246,13 +258,18 @@ def create_comment(params: ManageEntityParameters):
                 safe_add_notification(params, mention_notification)
 
     if parent_comment_id:
-        comment_thread = CommentThread(
-            parent_comment_id=parent_comment_id,
-            comment_id=comment_id,
+        # Avoid re-adding stem if it already exists
+        existing_comment_thread = (
+            params.session.query(CommentThread)
+            .filter_by(parent_comment_id=parent_comment_id, comment_id=comment_id)
+            .first()
         )
-        params.add_record(
-            (parent_comment_id, comment_id), comment_thread, EntityType.COMMENT_THREAD
-        )
+        if not existing_comment_thread:
+            comment_thread = CommentThread(
+                parent_comment_id=parent_comment_id,
+                comment_id=comment_id,
+            )
+            params.session.add(comment_thread)
 
         parent_comment_owner_notifications_off = params.session.query(
             params.session.query(CommentNotificationSetting)
@@ -704,6 +721,7 @@ def pin_comment(params: ManageEntityParameters):
     comment_id = params.entity_id
     track_id = params.metadata["entity_id"]
     existing_track = params.existing_records[EntityType.TRACK.value][track_id]
+    existing_comment = params.existing_records[EntityType.COMMENT.value][comment_id]
 
     track = copy_record(
         existing_track,
@@ -714,6 +732,32 @@ def pin_comment(params: ManageEntityParameters):
     )
 
     track.pinned_comment_id = comment_id
+
+    comment_user_id = existing_comment.user_id
+    track_owner_id = track.owner_id
+
+    # Only dispatch the event if the comment belongs to a different user than the track owner
+    if comment_user_id != track_owner_id:
+        artist_is_verified = (
+            params.session.query(User.is_verified)
+            .filter(User.user_id == track_owner_id, User.is_current == True)
+            .scalar()
+            or False
+        )
+
+        if artist_is_verified:
+            with params.challenge_bus.use_scoped_dispatch_queue():
+                params.challenge_bus.dispatch(
+                    ChallengeEvent.pinned_comment,
+                    params.block_number,
+                    params.block_datetime,
+                    comment_user_id,
+                    {
+                        "track_id": track_id,
+                        "comment_id": comment_id,
+                        "track_owner_id": track_owner_id,
+                    },
+                )
 
     params.add_record(track_id, track, EntityType.TRACK)
 

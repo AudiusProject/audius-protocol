@@ -42,12 +42,12 @@ const MAX_COUNT_LOADING_TILES = 18
 
 // The inital multiplier for number of tracks to fetch on lineup load
 // multiplied by the number of tracks that fit the screen height
-export const INITIAL_LOAD_TRACKS_MULTIPLIER = 1.75
-export const INITIAL_PLAYLISTS_MULTIPLER = 1
+export const INITIAL_LOAD_TRACKS_MULTIPLIER = 3
+export const INITIAL_PLAYLISTS_MULTIPLER = 2
 
 // A multiplier for the number of tiles to fill a page to be
 // loaded in on each call (after the intial call)
-const TRACKS_AHEAD_MULTIPLIER = 0.75
+const TRACKS_AHEAD_MULTIPLIER = 2
 
 // Threshold for how far away from the bottom (of the list) the user has to be
 // before fetching more tracks as a percentage of the list height
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     flex: 1
   },
   item: {
-    padding: 12,
+    padding: 16,
     paddingBottom: 0
   }
 })
@@ -139,12 +139,12 @@ const LineupTileView = memo(function LineupTileView({
   item,
   index,
   isTrending,
-  showLeadingElementArtistPick,
   leadingElementId,
   rankIconCount,
   togglePlay,
   onPress,
-  itemStyles
+  itemStyles,
+  actions
 }: LineupTileViewProps) {
   const TrackOrCollectionTile = getLineupTileComponent(item)
 
@@ -158,13 +158,13 @@ const LineupTileView = memo(function LineupTileView({
       >
         <TrackOrCollectionTile
           {...item}
+          id={item.id}
           index={index}
           isTrending={isTrending}
-          showArtistPick={showLeadingElementArtistPick && !!leadingElementId}
-          showRankIcon={index < rankIconCount}
           togglePlay={togglePlay}
           onPress={onPress}
           uid={item.uid}
+          actions={actions}
         />
       </View>
     )
@@ -179,12 +179,12 @@ const LineupItemTile = memo(function LineupItemTile({
   item,
   index,
   isTrending,
-  showLeadingElementArtistPick,
   leadingElementId,
   rankIconCount,
   togglePlay,
   onPress,
-  itemStyles
+  itemStyles,
+  actions
 }: LineupItemTileProps) {
   if (!item) return null
   if ('_loading' in item) {
@@ -197,12 +197,12 @@ const LineupItemTile = memo(function LineupItemTile({
         item={item}
         index={index}
         isTrending={isTrending}
-        showLeadingElementArtistPick={showLeadingElementArtistPick}
         leadingElementId={leadingElementId}
         rankIconCount={rankIconCount}
         togglePlay={togglePlay}
         onPress={onPress}
         itemStyles={itemStyles}
+        actions={actions}
       />
     )
   }
@@ -232,7 +232,6 @@ export const Lineup = ({
   rankIconCount = 0,
   refresh: refreshProp,
   refreshing: refreshingProp = false,
-  showLeadingElementArtistPick = true,
   start = 0,
   variant = LineupVariant.MAIN,
   listKey,
@@ -243,6 +242,9 @@ export const Lineup = ({
   ListFooterComponent,
   onPressItem,
   itemStyles,
+  initialPageSize,
+  pageSize,
+  tanQuery,
   ...listProps
 }: LineupProps) => {
   const dispatch = useDispatch()
@@ -289,6 +291,12 @@ export const Lineup = ({
 
   const handleLoadMore = useCallback(
     (reset?: boolean) => {
+      if (tanQuery && loadMore) {
+        loadMore(0, 0, true)
+      } else if (tanQuery && !loadMore) {
+        return
+      }
+
       const {
         deleted = 0,
         nullCount = 0,
@@ -341,17 +349,20 @@ export const Lineup = ({
       }
     },
     [
-      actions,
-      countOrDefault,
-      dispatch,
-      fetchPayload,
-      includeLineupStatus,
-      itemCounts,
-      limit,
+      tanQuery,
+      loadMore,
       lineup,
       lineupLength,
-      loadMore,
+      countOrDefault,
       pageItemCount,
+      limit,
+      includeLineupStatus,
+      itemCounts.initial,
+      itemCounts.loadMore,
+      itemCounts.minimum,
+      dispatch,
+      actions,
+      fetchPayload,
       extraFetchOptions
     ]
   )
@@ -401,10 +412,10 @@ export const Lineup = ({
           isTrending={isTrending}
           leadingElementId={leadingElementId}
           rankIconCount={rankIconCount}
-          showLeadingElementArtistPick={showLeadingElementArtistPick}
           togglePlay={togglePlay}
           onPress={onPressItem}
           itemStyles={itemStyles}
+          actions={actions}
         />
       )
     },
@@ -412,10 +423,10 @@ export const Lineup = ({
       isTrending,
       leadingElementId,
       rankIconCount,
-      showLeadingElementArtistPick,
       togglePlay,
       onPressItem,
-      itemStyles
+      itemStyles,
+      actions
     ]
   )
 
@@ -423,10 +434,25 @@ export const Lineup = ({
   const sections: Section[] = useMemo(() => {
     const { deleted, entries, hasMore, isMetadataLoading, page } = lineup
 
-    const items = entries.slice(start, count)
+    // Apply offset and maxEntries to the lineup entries
+    const items =
+      pageSize !== undefined
+        ? entries.slice(start, start + pageSize)
+        : entries.slice(start)
+
     const itemDisplayCount = page <= 1 ? itemCounts.initial : pageItemCount
 
     const getSkeletonCount = () => {
+      if (tanQuery && !loadMore && items.length > 0) return 0
+
+      // Lineups like Feed load a different number of items on the first page
+      if (initialPageSize && page === 0) {
+        return initialPageSize
+      }
+      if (pageSize) {
+        return count ? Math.min(count - items.length, pageSize) : pageSize
+      }
+
       const shouldCalculateSkeletons =
         inView &&
         items.length < limit &&
@@ -452,7 +478,7 @@ export const Lineup = ({
     }
 
     const skeletonItems = range(getSkeletonCount()).map(
-      () => ({ _loading: true } as LoadingLineupItem)
+      () => ({ _loading: true }) as LoadingLineupItem
     )
 
     if (delineate) {
@@ -466,7 +492,7 @@ export const Lineup = ({
       return result
     }
 
-    if (leadingElementId && showLeadingElementArtistPick) {
+    if (leadingElementId) {
       const [artistPick, ...restEntries] = [...items, ...skeletonItems]
 
       const result: Section[] = [
@@ -484,17 +510,20 @@ export const Lineup = ({
 
     return [{ delineate: false, data }]
   }, [
-    inView,
-    count,
-    countOrDefault,
-    delineate,
-    itemCounts,
     lineup,
-    pageItemCount,
-    leadingElementId,
-    showLeadingElementArtistPick,
+    pageSize,
     start,
-    limit
+    itemCounts.initial,
+    pageItemCount,
+    delineate,
+    leadingElementId,
+    tanQuery,
+    loadMore,
+    initialPageSize,
+    inView,
+    limit,
+    countOrDefault,
+    count
   ])
 
   const areSectionsEmpty = sections.every(
@@ -556,7 +585,7 @@ export const Lineup = ({
         onEndReachedThreshold={LOAD_MORE_THRESHOLD}
         sections={areSectionsEmpty ? [] : sections}
         stickySectionHeadersEnabled={false}
-        keyExtractor={(item, index) => `${item?.id}  ${index}`}
+        keyExtractor={(item, index) => `${item?.id}-${index}`}
         renderItem={renderItem}
         renderSectionHeader={({ section }) => {
           if (section.delineate) {

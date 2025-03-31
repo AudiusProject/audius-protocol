@@ -13,7 +13,7 @@ export enum ChallengeId {
   REFERRED = 'rd',
   MOBILE_INSTALL = 'm',
   CONNECT_VERIFIED_ACCOUNT = 'v',
-  LISTEN_STREAK = 'l',
+  LISTEN_STREAK_ENDLESS = 'e',
   COMPLETE_PROFILE = 'p',
   SEND_FIRST_TIP = 'ft',
   CREATE_FIRST_PLAYLIST = 'fp',
@@ -22,16 +22,12 @@ export enum ChallengeId {
   TRENDING_TRACK = 'tt',
   TRENDING_PLAYLIST = 'tp',
   TRENDING_UNDERGROUND_TRACK = 'tut',
-  DEPRECATED_TRACK_UPLOADS = 'track-upload',
-  DEPRECATED_REFERRALS = 'referrals',
-  DEPRECATED_VERIFIED_REFERRALS = 'ref-v',
-  DEPRECATED_REFERRED = 'referred',
-  DEPRECATED_MOBILE_INSTALL = 'mobile-install',
-  DEPRECATED_CONNECT_VERIFIED_ACCOUNT = 'connect-verified',
-  DEPRECATED_LISTEN_STREAK = 'listen-streak',
-  DEPRECATED_COMPLETE_PROFILE = 'profile-completion',
-  DEPRECATED_SEND_FIRST_TIP = 'send-first-tip',
-  DEPRECATED_CREATE_FIRST_PLAYLIST = 'first-playlist'
+  ONE_SHOT = 'o',
+  FIRST_WEEKLY_COMMENT = 'c',
+  PLAY_COUNT_250_MILESTONE_2025 = 'p1',
+  PLAY_COUNT_1000_MILESTONE_2025 = 'p2',
+  PLAY_COUNT_10000_MILESTONE_2025 = 'p3',
+  TASTEMAKER = 't'
 }
 
 const DefaultSpecifier = z.object({
@@ -40,11 +36,15 @@ const DefaultSpecifier = z.object({
     ChallengeId.COMPLETE_PROFILE,
     ChallengeId.CONNECT_VERIFIED_ACCOUNT,
     ChallengeId.CREATE_FIRST_PLAYLIST,
-    ChallengeId.LISTEN_STREAK,
+    ChallengeId.LISTEN_STREAK_ENDLESS,
     ChallengeId.MOBILE_INSTALL,
     ChallengeId.REFERRED,
     ChallengeId.SEND_FIRST_TIP,
-    ChallengeId.TRACK_UPLOADS
+    ChallengeId.TRACK_UPLOADS,
+    ChallengeId.PLAY_COUNT_250_MILESTONE_2025,
+    ChallengeId.PLAY_COUNT_1000_MILESTONE_2025,
+    ChallengeId.PLAY_COUNT_10000_MILESTONE_2025,
+    ChallengeId.TASTEMAKER
   ]),
   /** The user ID of the user completing the challenge. */
   userId: HashId

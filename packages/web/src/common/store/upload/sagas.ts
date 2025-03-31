@@ -1,6 +1,14 @@
 import {
+  albumMetadataForSDK,
+  fileToSdk,
+  playlistMetadataForCreateWithSDK,
+  trackMetadataForUploadToSdk,
+  transformAndCleanList,
+  userCollectionMetadataFromSDK
+} from '@audius/common/adapters'
+import {
   Collection,
-  CollectionMetadata,
+  Feature,
   FieldVisibility,
   ID,
   Kind,
@@ -20,24 +28,30 @@ import {
   accountSelectors,
   cacheActions,
   cacheUsersSelectors,
-  confirmTransaction,
   confirmerActions,
   getContext,
   reformatCollection,
   savedPageActions,
-  uploadActions
+  uploadActions,
+  getSDK,
+  cacheTracksActions,
+  replaceTrackProgressModalActions,
+  queueSelectors,
+  queueActions,
+  playerActions
 } from '@audius/common/store'
 import {
   actionChannelDispatcher,
   makeUid,
   waitForAccount
 } from '@audius/common/utils'
-import { EntityManagerAction } from '@audius/sdk'
-import type { ProgressCB } from '@audius/sdk-legacy/dist/services/creatorNode'
-import type {
-  TrackMetadata,
-  UploadTrackMetadata
-} from '@audius/sdk-legacy/dist/utils'
+import {
+  Id,
+  OptionalId,
+  ProgressHandler,
+  AudiusSdk,
+  OptionalHashId
+} from '@audius/sdk'
 import { mapValues } from 'lodash'
 import { Channel, Task, buffers, channel } from 'redux-saga'
 import {
@@ -48,16 +62,17 @@ import {
   put,
   select,
   takeLatest,
-  take
+  take,
+  delay
 } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { prepareStemsForUpload } from 'pages/upload-page/store/utils/stems'
 import * as errorActions from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
+import { push } from 'utils/navigation'
 import { waitForWrite } from 'utils/sagaHelpers'
 
-import { getUnclaimedPlaylistId } from '../cache/collections/utils/getUnclaimedPlaylistId'
 import { trackNewRemixEvent } from '../cache/tracks/sagas'
 import { retrieveTracks } from '../cache/tracks/utils'
 import { adjustUserField } from '../cache/users/sagas'
@@ -70,22 +85,12 @@ import {
 } from './sagaHelpers'
 
 const { updateProgress } = uploadActions
+const { getUserId, getAccountUser } = accountSelectors
 
 type ProgressAction = ReturnType<typeof updateProgress>
 
 const MAX_CONCURRENT_UPLOADS = 6
 const MAX_CONCURRENT_PUBLISHES = 6
-
-/**
- * Convert the track metadata for upload to what libs expects.
- * Only thing that needs to be adjusted is preview start seconds is non-optional, evidently?
- */
-const toUploadTrackMetadata = (
-  trackMetadata: TrackMetadataForUpload
-): UploadTrackMetadata => ({
-  ...trackMetadata,
-  preview_start_seconds: trackMetadata.preview_start_seconds ?? null
-})
 
 /**
  * Combines the metadata for a track and a collection (playlist or album),
@@ -103,7 +108,7 @@ function* combineMetadata(
   if (!metadata.genre)
     metadata.genre = collectionMetadata.trackDetails?.genre ?? ''
   if (!metadata.mood)
-    metadata.mood = collectionMetadata.trackDetails?.mood ?? ''
+    metadata.mood = collectionMetadata.trackDetails?.mood ?? null
   if (!metadata.release_date) {
     metadata.release_date = collectionMetadata.release_date ?? null
     metadata.is_scheduled_release =
@@ -151,7 +156,7 @@ function* combineMetadata(
 }
 
 /**
- * Creates a callback that runs on upload progress in libs/sdk and
+ * Creates a callback that runs on upload progress in sdk and
  * reports that progress to the store via actions.
  */
 const makeOnProgress = (
@@ -159,14 +164,14 @@ const makeOnProgress = (
   stemIndex: number | null,
   progressChannel: Channel<ProgressAction>
 ) => {
-  return (progress: Parameters<ProgressCB>[0]) => {
+  return (progress: Parameters<ProgressHandler>[0]) => {
     const key = 'audio' in progress ? 'audio' : 'art'
     const p =
       'audio' in progress
         ? progress.audio
         : 'art' in progress
-        ? progress.art
-        : null
+          ? progress.art
+          : null
     if (p === null) {
       return
     }
@@ -200,16 +205,18 @@ const makeOnProgress = (
  * Used in cleaning up orphaned stems or tracks of a collection.
  */
 export function* deleteTracks(trackIds: ID[]) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const libs = yield* call(audiusBackendInstance.getAudiusLibsTyped)
-  const userId = yield* select(accountSelectors.getUserId)
+  const sdk = yield* getSDK()
+  const userId = Id.parse(yield* select(accountSelectors.getUserId))
   if (!userId) {
     throw new Error('No user id found during delete. Not signed in?')
   }
 
   yield* all(
     trackIds.map((id) =>
-      call([libs.Track, libs.Track!.deleteTrack], userId, id)
+      call([sdk.tracks, sdk.tracks.deleteTrack], {
+        userId,
+        trackId: Id.parse(id)
+      })
     )
   )
 }
@@ -229,25 +236,39 @@ function* uploadWorker(
     const task = yield* take(uploadQueue)
     const { trackIndex, stemIndex, track } = task
     try {
-      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+      const sdk = yield* getSDK()
       const userId = yield* select(accountSelectors.getUserId)
       if (!userId) {
         throw new Error('No user id found during upload. Not signed in?')
       }
-      const libs = yield* call(audiusBackendInstance.getAudiusLibsTyped)
-      const metadata = toUploadTrackMetadata(track.metadata)
+
+      const coverArtFile =
+        track.metadata.artwork && 'file' in track.metadata.artwork
+          ? (track.metadata.artwork?.file ?? null)
+          : null
+      const metadata = trackMetadataForUploadToSdk(track.metadata)
 
       const updatedMetadata = yield* call(
-        [libs.Track, libs.Track!.uploadTrackV2],
-        userId,
-        track.file as File,
-        (track.metadata.artwork?.file ?? null) as File | null,
-        metadata,
-        makeOnProgress(trackIndex, stemIndex, progressChannel)
+        [sdk.tracks, sdk.tracks.uploadTrackFiles],
+        {
+          userId: Id.parse(userId),
+          trackFile: fileToSdk(track.file, 'audio'),
+          // coverArtFile will be undefined for stem uploads
+          coverArtFile: coverArtFile
+            ? fileToSdk(coverArtFile!, 'cover_art')
+            : undefined,
+          metadata,
+          onProgress: makeOnProgress(trackIndex, stemIndex, progressChannel)
+        }
       )
+
       yield* put(responseChannel, {
         type: 'UPLOADED',
-        payload: { trackIndex, stemIndex, metadata: updatedMetadata }
+        payload: {
+          trackIndex,
+          stemIndex,
+          metadata: updatedMetadata
+        }
       })
     } catch (e) {
       yield* put(responseChannel, {
@@ -275,44 +296,38 @@ function* publishWorker(
 ) {
   while (true) {
     const task = yield* take(publishQueue)
-    const { trackIndex, stemIndex, trackId: presetTrackId, metadata } = task
+    const { trackIndex, stemIndex, metadata } = task
     try {
-      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+      const sdk = yield* getSDK()
       const userId = yield* select(accountSelectors.getUserId)
       if (!userId) {
         throw new Error('No user id found during upload. Not signed in?')
       }
-      const libs = yield* call(audiusBackendInstance.getAudiusLibsTyped)
-      const {
-        trackId: updatedTrackId,
-        txReceipt: { blockHash, blockNumber }
-      } = yield* call(
-        [libs.Track, libs.Track!.writeTrackToChain],
-        userId,
-        metadata,
-        EntityManagerAction.CREATE,
-        presetTrackId
+
+      const { trackId: updatedTrackId } = yield* call(
+        [sdk.tracks, sdk.tracks.writeTrackToChain],
+        Id.parse(userId),
+        metadata
       )
-      const confirmed = yield* call(confirmTransaction, blockHash, blockNumber)
-      if (!confirmed) {
-        throw new Error(
-          `Could not confirm track upload for track id ${updatedTrackId}`
-        )
+
+      const decodedTrackId = OptionalHashId.parse(updatedTrackId)
+
+      if (decodedTrackId) {
+        yield* put(responseChannel, {
+          type: 'PUBLISHED',
+          payload: {
+            trackIndex,
+            stemIndex,
+            trackId: decodedTrackId,
+            metadata
+          }
+        })
       }
-      yield* put(responseChannel, {
-        type: 'PUBLISHED',
-        payload: {
-          trackIndex,
-          stemIndex,
-          trackId: updatedTrackId,
-          metadata: { ...metadata, track_id: updatedTrackId }
-        }
-      })
     } catch (e) {
       yield* put(responseChannel, {
         type: 'ERROR',
         payload: {
-          trackId: presetTrackId,
+          trackId: metadata.trackId!,
           phase: 'publish',
           trackIndex,
           stemIndex,
@@ -322,6 +337,10 @@ function* publishWorker(
     }
   }
 }
+
+type UploadMetadata = Awaited<
+  ReturnType<AudiusSdk['tracks']['uploadTrackFiles']>
+>
 
 /** Queued task for the upload worker. */
 type UploadTask = {
@@ -334,7 +353,7 @@ type UploadTask = {
 type UploadedPayload = {
   trackIndex: number
   stemIndex: number | null
-  metadata: TrackMetadata
+  metadata: UploadMetadata
 }
 
 /** Queued task for the publish worker. */
@@ -342,7 +361,7 @@ type PublishTask = {
   trackIndex: number
   stemIndex: number | null
   trackId: ID
-  metadata: TrackMetadata
+  metadata: UploadMetadata
 }
 
 /** Publish worker success response payload */
@@ -350,14 +369,14 @@ type PublishedPayload = {
   trackIndex: number
   stemIndex: number | null
   trackId: ID
-  metadata: TrackMetadata
+  metadata: UploadMetadata
 }
 
 /** Error response payload (from either worker). */
 type ErrorPayload = {
   trackIndex: number
   stemIndex: number | null
-  trackId: ID
+  trackId?: ID
   phase: 'upload' | 'publish'
   error: unknown
 }
@@ -367,6 +386,10 @@ type UploadTrackResponse =
   | { type: 'UPLOADED'; payload: UploadedPayload }
   | { type: 'PUBLISHED'; payload: PublishedPayload }
   | { type: 'ERROR'; payload: ErrorPayload }
+
+function isTask(worker: unknown): worker is Task {
+  return worker !== null && typeof worker === 'object' && 'isRunning' in worker
+}
 
 /**
  * Spins up workers to handle uploading of tracks and their stems in parallel.
@@ -426,7 +449,10 @@ export function* handleUploads({
     // Report analytics for each track
     yield* put(
       make(Name.TRACK_UPLOAD_TRACK_UPLOADING, {
-        artworkSource: track.metadata.artwork?.source,
+        artworkSource:
+          track.metadata.artwork && 'source' in track.metadata.artwork
+            ? track.metadata.artwork?.source
+            : undefined,
         genre: track.metadata.genre,
         moode: track.metadata.mood,
         size: track.file.size,
@@ -435,22 +461,28 @@ export function* handleUploads({
         downloadable: isContentFollowGated(track.metadata.download_conditions)
           ? 'follow'
           : track.metadata.is_downloadable
-          ? 'yes'
-          : 'no'
+            ? 'yes'
+            : 'no'
       })
     )
 
-    // Process the track's stems
-    const trackStems = prepareStemsForUpload(
-      (track.metadata.stems ?? []) as StemUploadWithFile[],
-      track.metadata.track_id
-    )
-    const stemCount = track.metadata.stems?.length ?? 0
-    pendingStemCount[track.metadata.track_id] = stemCount
-    stems += stemCount
-    for (let j = 0; j < trackStems.length; j++) {
-      const stem = trackStems[j]
-      uploadQueue.put({ trackIndex: i, stemIndex: j, track: stem })
+    if (track.metadata.stems?.length) {
+      // track_id should be created and assigned ahead of time for a track with stems
+      if (!track.metadata.track_id) {
+        throw new Error('Track ID is required on parent track for stems')
+      }
+      // Process the track's stems
+      const trackStems = prepareStemsForUpload(
+        (track.metadata.stems ?? []) as StemUploadWithFile[],
+        track.metadata.track_id
+      )
+      const stemCount = track.metadata.stems?.length ?? 0
+      pendingStemCount[track.metadata.track_id] = stemCount
+      stems += stemCount
+      for (let j = 0; j < trackStems.length; j++) {
+        const stem = trackStems[j]
+        uploadQueue.put({ trackIndex: i, stemIndex: j, track: stem })
+      }
     }
   }
 
@@ -477,7 +509,7 @@ export function* handleUploads({
     )
   }
 
-  const pendingMetadata: TrackMetadata[] = []
+  const pendingMetadata: UploadMetadata[] = []
 
   const errored: ErrorPayload[] = []
   const uploaded: UploadedPayload[] = []
@@ -495,8 +527,10 @@ export function* handleUploads({
       } uploaded`,
       { trackIndex, stemIndex }
     )
-    const trackId = metadata.track_id
-    const stemCount = pendingStemCount[metadata.track_id]
+
+    // We know trackId exists because we generate it in uploadMultipleTracks
+    const trackId = metadata.trackId!
+    const stemCount = pendingStemCount[trackId]
 
     if (isCollection || stemCount > 0) {
       // If parent track of stems or part of collection,
@@ -513,7 +547,7 @@ export function* handleUploads({
         publishQueue.put({
           trackIndex: i,
           stemIndex: null,
-          trackId: pendingMetadata[i].track_id,
+          trackId: pendingMetadata[i].trackId!,
           metadata: pendingMetadata[i]
         })
       }
@@ -566,6 +600,9 @@ export function* handleUploads({
 
     // Trigger upload for parent if last stem
     if (stemIndex !== null) {
+      if (!parentTrackId) {
+        throw new Error('Parent track ID not found for stem')
+      }
       pendingStemCount[parentTrackId] -= 1
       if (
         pendingStemCount[parentTrackId] === 0 &&
@@ -643,7 +680,7 @@ export function* handleUploads({
     // Report to sentry
     const e = error instanceof Error ? error : new Error(String(error))
     yield* call(reportToSentry, {
-      name: 'Upload Worker Failed',
+      name: 'UploadWorker',
       error: e,
       additionalInfo: {
         trackId,
@@ -658,7 +695,8 @@ export function* handleUploads({
         stemCount: stems,
         phase,
         kind
-      }
+      },
+      feature: Feature.Upload
     })
   }
 
@@ -672,20 +710,24 @@ export function* handleUploads({
   while (hasUnprocessedTracks() && !collectionUploadErrored()) {
     const { type, payload } = yield* take(responseChannel)
     if (type === 'UPLOADED') {
-      yield* handleUploaded(payload)
+      yield* call(handleUploaded, payload)
     } else if (type === 'PUBLISHED') {
-      yield* handlePublished(payload)
+      yield* call(handlePublished, payload)
     } else if (type === 'ERROR') {
-      yield* handleWorkerError(payload)
+      yield* call(handleWorkerError, payload)
     }
   }
 
   console.debug('Spinning down workers')
   for (const worker of uploadWorkers) {
-    worker.cancel()
+    if (isTask(worker)) {
+      yield* cancel(worker)
+    }
   }
   for (const worker of publishWorkers) {
-    worker.cancel()
+    if (isTask(worker)) {
+      yield* cancel(worker)
+    }
   }
   yield* call(progressChannel.close)
   yield* cancel(actionDispatcherTask)
@@ -742,12 +784,6 @@ export function* handleUploads({
   }
 
   console.debug('Finished uploads')
-  yield* put(
-    make(Name.TRACK_UPLOAD_COMPLETE_UPLOAD, {
-      kind,
-      trackCount: publishedTrackIds.length
-    })
-  )
   return publishedTrackIds
 }
 
@@ -764,11 +800,10 @@ export function* uploadCollection(
   isAlbum: boolean,
   uploadType: UploadType
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
 
   yield waitForAccount()
-  const account = yield* select(accountSelectors.getAccountUser)
-  const userId = account!.user_id
+  const userId = (yield* select(getUserId))!
   // This field will get replaced
   let albumTrackPrice: number | undefined
 
@@ -784,12 +819,6 @@ export function* uploadCollection(
       getUSDCMetadata,
       collectionMetadata.stream_conditions
     )
-  }
-
-  // First upload album art
-  const { artwork } = collectionMetadata
-  if (artwork && 'file' in artwork) {
-    yield* call(audiusBackendInstance.uploadImage, artwork.file as File)
   }
 
   // Propagate the collection metadata to the tracks
@@ -813,7 +842,10 @@ export function* uploadCollection(
     tracks.map((t) => t.metadata)
   )
 
-  const playlistId = yield* call(getUnclaimedPlaylistId)
+  const playlistId = yield* call([
+    sdk.playlists,
+    sdk.playlists.generatePlaylistId
+  ])
   if (playlistId == null) {
     throw new Error('Failed to get playlist ID')
   }
@@ -823,23 +855,51 @@ export function* uploadCollection(
     confirmerActions.requestConfirmation(
       `${collectionMetadata.playlist_name}_${Date.now()}`,
       function* () {
-        console.debug('Creating playlist')
-        const { blockHash, blockNumber, error } = yield* call(
-          audiusBackendInstance.createPlaylist,
-          playlistId,
-          collectionMetadata as unknown as CollectionMetadata,
-          isAlbum,
-          trackIds,
-          !!collectionMetadata.is_private
-        )
+        try {
+          const { artwork } = collectionMetadata
 
-        if (error) {
+          const coverArtFile =
+            artwork && 'file' in artwork ? (artwork?.file ?? null) : null
+
+          if (isAlbum) {
+            // Create album
+            if (!coverArtFile) {
+              throw new Error('Cover art file is required for albums')
+            }
+
+            yield* call([sdk.albums, sdk.albums.createAlbum], {
+              metadata: albumMetadataForSDK(
+                collectionMetadata as unknown as Collection
+              ),
+              userId: Id.parse(userId),
+              albumId: Id.parse(playlistId),
+              trackIds: trackIds.map((id) => Id.parse(id)),
+              coverArtFile: fileToSdk(coverArtFile, 'cover_art')
+            })
+          } else {
+            // Create playlist
+            yield* call([sdk.playlists, sdk.playlists.createPlaylist], {
+              metadata: playlistMetadataForCreateWithSDK(
+                collectionMetadata as unknown as Collection
+              ),
+              userId: Id.parse(userId),
+              playlistId: Id.parse(playlistId),
+              trackIds: trackIds.map((id) => Id.parse(id)),
+              coverArtFile: coverArtFile
+                ? fileToSdk(coverArtFile!, 'cover_art')
+                : undefined
+            })
+          }
+        } catch (error) {
           console.debug('Caught an error creating playlist')
           if (playlistId) {
             console.debug('Deleting playlist')
             // If we got a playlist ID back, that means we
             // created the playlist but adding tracks to it failed. So we must delete the playlist
-            yield* call(audiusBackendInstance.deletePlaylist, playlistId)
+            yield* call([sdk.playlists, sdk.playlists.deletePlaylist], {
+              userId: Id.parse(userId),
+              playlistId: Id.parse(playlistId)
+            })
             console.debug('Playlist deleted successfully')
           }
           // Throw to trigger the fail callback
@@ -848,18 +908,18 @@ export function* uploadCollection(
             : new Error(`Error creating playlist: ${error}`)
         }
 
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
+        const { data = [] } = yield* call(
+          [sdk.full.playlists, sdk.full.playlists.getPlaylist],
+          {
+            playlistId: Id.parse(playlistId),
+            userId: OptionalId.parse(userId)
+          }
         )
-        if (!confirmed) {
-          throw new Error(`Could not confirm playlist creation`)
-        }
-
-        return (yield* call(audiusBackendInstance.getPlaylists, userId, [
-          playlistId
-        ]))[0]
+        const [collection] = transformAndCleanList(
+          data,
+          userCollectionMetadataFromSDK
+        )
+        return collection
       },
       function* (confirmedPlaylist: Collection) {
         yield* put(
@@ -887,8 +947,7 @@ export function* uploadCollection(
         // Add images to the collection since we're not loading it the traditional way with
         // the `fetchCollections` saga
         confirmedPlaylist = yield* call(reformatCollection, {
-          collection: confirmedPlaylist,
-          audiusBackendInstance
+          collection: confirmedPlaylist
         })
         const uid = yield* makeUid(
           Kind.COLLECTIONS,
@@ -941,7 +1000,12 @@ export function* uploadCollection(
         )
         try {
           yield* all(
-            trackIds.map((id) => audiusBackendInstance.deleteTrack(id))
+            trackIds.map((id) =>
+              sdk.tracks.deleteTrack({
+                userId: Id.parse(userId),
+                trackId: Id.parse(id)
+              })
+            )
           )
           console.debug('Deleted tracks.')
         } catch (err) {
@@ -949,12 +1013,15 @@ export function* uploadCollection(
         }
         // Handle error loses error details, so call reportToSentry explicitly
         yield* call(reportToSentry, {
-          name: 'Upload',
+          name: 'UploadCollection',
           error,
           additionalInfo: {
             trackIds,
-            playlistId
-          }
+            playlistId,
+            isAlbum,
+            collectionMetadata
+          },
+          feature: Feature.Upload
         })
         yield* put(uploadActions.uploadTracksFailed())
         yield* put(
@@ -977,11 +1044,7 @@ export function* uploadMultipleTracks(
   tracks: TrackForUpload[],
   uploadType: UploadType
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const audiusLibs = yield* call([
-    audiusBackendInstance,
-    audiusBackendInstance.getAudiusLibsTyped
-  ])
+  const sdk = yield* getSDK()
 
   // Ensure the user is logged in
   yield* call(waitForAccount)
@@ -990,10 +1053,7 @@ export function* uploadMultipleTracks(
   const tracksWithIds = yield* all(
     tracks.map((track) =>
       call(function* () {
-        const id = yield* call([
-          audiusLibs.Track,
-          audiusLibs.Track!.generateTrackId
-        ])
+        const id = yield* call([sdk.tracks, sdk.tracks.generateTrackId])
         return {
           ...track,
           metadata: {
@@ -1021,7 +1081,7 @@ export function* uploadMultipleTracks(
   }
 
   // Make sure track count changes for this user
-  const account = yield* select(accountSelectors.getAccountUser)
+  const account = yield* select(getAccountUser)
   yield* call(adjustUserField, {
     user: account!,
     fieldName: 'track_count',
@@ -1072,7 +1132,7 @@ export function* uploadMultipleTracks(
   yield* put(cacheActions.setExpired(Kind.USERS, account!.user_id))
 }
 
-export function* uploadTracksAsync(
+function* uploadTracksAsync(
   action: ReturnType<typeof uploadActions.uploadTracks>
 ) {
   yield* call(waitForWrite)
@@ -1123,15 +1183,23 @@ export function* uploadTracksAsync(
     } else {
       yield* call(uploadMultipleTracks, tracks, payload.uploadType)
     }
+    yield* put(
+      make(Name.TRACK_UPLOAD_COMPLETE_UPLOAD, {
+        trackCount: payload.tracks.length,
+        kind
+      })
+    )
   } catch (e) {
     const error = e instanceof Error ? e : new Error(String(e))
     // Handle error loses error details, so call reportToSentry explicitly
     yield* call(reportToSentry, {
       error,
-      name: `Upload: ${error.name}`,
+      name: 'UploadTracks',
       additionalInfo: {
-        kind
-      }
+        kind,
+        tracks: payload.tracks
+      },
+      feature: Feature.Upload
     })
     yield* put(uploadActions.uploadTracksFailed())
     yield* put(
@@ -1144,10 +1212,118 @@ export function* uploadTracksAsync(
   }
 }
 
+function* updateTrackAudioAsync(
+  action: ReturnType<typeof uploadActions.updateTrackAudio>
+) {
+  yield* call(waitForWrite)
+  const payload = action.payload
+
+  try {
+    const tracks = yield* call(retrieveTracks, {
+      trackIds: [payload.trackId]
+    })
+
+    if (!tracks[0]) {
+      throw new Error('Missing track for track audio replace.')
+    }
+    const track = tracks[0]
+    const sdk = yield* getSDK()
+    const userId = yield* select(accountSelectors.getUserId)
+
+    if (!userId) {
+      throw new Error('No user id found during upload. Not signed in?')
+    }
+
+    const metadata = trackMetadataForUploadToSdk({
+      ...track,
+      ...(payload.metadata ?? {})
+    })
+
+    const dispatch = yield* getContext('dispatch')
+    const handleProgressUpdate = (progress: Parameters<ProgressHandler>[0]) => {
+      if (!('audio' in progress)) return
+      const { upload, transcode } = progress.audio
+
+      const uploadVal =
+        transcode === undefined
+          ? (upload?.loaded ?? 0) / (upload?.total ?? 1)
+          : 1
+
+      dispatch(
+        replaceTrackProgressModalActions.set({
+          progress: { upload: uploadVal, transcode: transcode?.decimal ?? 0 },
+          error: false
+        })
+      )
+    }
+
+    yield* put(
+      replaceTrackProgressModalActions.set({
+        progress: { upload: 0, transcode: 0 },
+        error: false
+      })
+    )
+    const updatedMetadata = yield* call(
+      [sdk.tracks, sdk.tracks.uploadTrackFiles],
+      {
+        userId: Id.parse(userId),
+        trackFile: fileToSdk(payload.file, 'audio'),
+        metadata,
+        onProgress: handleProgressUpdate
+      }
+    )
+
+    const newMetadata = {
+      ...payload.metadata,
+      bpm: metadata.isCustomBpm ? track.bpm : null,
+      duration: updatedMetadata.duration,
+      musical_key: metadata.isCustomMusicalKey ? metadata.musicalKey : null,
+      audio_analysis_error_count: 0,
+      orig_filename: updatedMetadata.origFilename || '',
+      orig_file_cid: updatedMetadata.origFileCid,
+      preview_cid: updatedMetadata.previewCid || '',
+      preview_start_seconds: updatedMetadata.previewStartSeconds ?? 0,
+      track_cid: updatedMetadata.trackCid || '',
+      audio_upload_id: updatedMetadata.audioUploadId
+    }
+
+    yield* put(
+      cacheTracksActions.editTrack(
+        track.track_id,
+        newMetadata as TrackMetadataForUpload
+      )
+    )
+
+    // If the track with replaced audio is in the queue, clear it
+    const queueOrder = yield* select(queueSelectors.getOrder)
+    if (queueOrder.map((item) => item.id).includes(track.track_id)) {
+      yield* put(queueActions.clear({}))
+      yield* put(playerActions.stop({}))
+    }
+
+    // Delay to allow the user to see that the track replace upload has finished
+    yield* delay(1500)
+
+    yield* put(replaceTrackProgressModalActions.close())
+    yield* put(push(track.permalink))
+  } catch (e) {
+    yield* put(
+      replaceTrackProgressModalActions.set({
+        progress: { upload: 0, transcode: 0 },
+        error: true
+      })
+    )
+  }
+}
+
 function* watchUploadTracks() {
   yield* takeLatest(uploadActions.UPLOAD_TRACKS, uploadTracksAsync)
 }
 
+function* watchUpdateTrackAudio() {
+  yield* takeLatest(uploadActions.UPDATE_TRACK_AUDIO, updateTrackAudioAsync)
+}
+
 export default function sagas() {
-  return [watchUploadTracks]
+  return [watchUploadTracks, watchUpdateTrackAudio]
 }

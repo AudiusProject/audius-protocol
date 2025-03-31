@@ -28,6 +28,7 @@ export interface GetUndisbursedChallengesRequest {
     limit?: number;
     userId?: string;
     completedBlocknumber?: number;
+    challengeId?: string;
 }
 
 /**
@@ -56,6 +57,10 @@ export class ChallengesApi extends runtime.BaseAPI {
 
         if (params.completedBlocknumber !== undefined) {
             queryParameters['completed_blocknumber'] = params.completedBlocknumber;
+        }
+
+        if (params.challengeId !== undefined) {
+            queryParameters['challenge_id'] = params.challengeId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

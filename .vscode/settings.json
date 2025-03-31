@@ -23,8 +23,7 @@
   },
   "editor.find.addExtraSpaceOnTop": false,
   "eslint.workingDirectories": [
-    { "pattern": "./packages/*/" },
-    { "pattern": "./protocol-dashboard" }
+    { "pattern": "./packages/*/" }
   ],
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit"

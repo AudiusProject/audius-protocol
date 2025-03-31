@@ -2,15 +2,16 @@ import type { ReactNode } from 'react'
 
 import { AudiusQueryContext } from '@audius/common/audius-query'
 
-import { env } from 'app/env'
 import * as analytics from 'app/services/analytics'
-import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
+import { env } from 'app/services/env'
 import {
   getFeatureEnabled,
   remoteConfigInstance
 } from 'app/services/remote-config'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
+import { authService, solanaWalletService } from 'app/services/sdk/auth'
+import { identityService } from 'app/services/sdk/identity'
 import { store } from 'app/store'
 import { reportToSentry } from 'app/utils/reportToSentry'
 
@@ -19,9 +20,11 @@ type AudiusQueryProviderProps = {
 }
 
 export const audiusQueryContext = {
-  apiClient,
   audiusBackend: audiusBackendInstance,
   audiusSdk,
+  authService,
+  identityService,
+  solanaWalletService,
   dispatch: store.dispatch,
   reportToSentry,
   env,

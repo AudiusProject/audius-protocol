@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,
@@ -22,7 +23,7 @@ import { Dispatch } from 'redux'
 import { make, useRecord } from 'common/store/analytics/actions'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import CoSign, { Size } from 'components/co-sign/CoSign'
-import { LockedStatusPill } from 'components/locked-status-pill'
+import { LockedStatusBadge } from 'components/locked-status-badge'
 import PlayButton from 'components/play-bar/PlayButton'
 import TrackingBar from 'components/play-bar/TrackingBar'
 import { PlayButtonStatus } from 'components/play-bar/types'
@@ -34,7 +35,7 @@ import { isDarkMode, isMatrix } from 'utils/theme/theme'
 import styles from './PlayBar.module.css'
 const { makeGetCurrent } = queueSelectors
 const { getPreviewing, getBuffering, getCounter, getPlaying } = playerSelectors
-const { recordListen, saveTrack, unsaveTrack } = tracksSocialActions
+const { recordListen } = tracksSocialActions
 const { pause, play } = queueActions
 
 const SEEK_INTERVAL = 200
@@ -57,8 +58,6 @@ const PlayBar = ({
   isBuffering,
   play,
   pause,
-  save,
-  unsave,
   onClickInfo
 }: PlayBarProps) => {
   const { uid, track, user, collectible } = currentQueueItem
@@ -83,11 +82,11 @@ const PlayBar = ({
   })
 
   const image =
-    (useTrackCoverArt(
-      track ? track.track_id : null,
-      track ? track._cover_art_sizes : null,
-      SquareSizes.SIZE_150_BY_150
-    ) ||
+    (useTrackCoverArt({
+      trackId: track ? track.track_id : undefined,
+      size: SquareSizes.SIZE_150_BY_150,
+      defaultImage: ''
+    }) ||
       collectible?.imageUrl) ??
     collectible?.frameUrl ??
     collectible?.gifUrl
@@ -99,6 +98,11 @@ const PlayBar = ({
     (track?.stream_conditions &&
       'usdc_purchase' in track.stream_conditions &&
       !hasStreamAccess)
+
+  const toggleFavorite = useToggleFavoriteTrack({
+    trackId: track?.track_id,
+    source: FavoriteSource.PLAYBAR
+  })
 
   if (((!uid || !track) && !collectible) || !user) return null
 
@@ -151,12 +155,6 @@ const PlayBar = ({
           source: PlaybackSource.PLAYBAR
         })
       )
-    }
-  }
-
-  const toggleFavorite = () => {
-    if (track && track_id && typeof track_id === 'number') {
-      has_current_user_saved ? unsave(track_id) : save(track_id)
     }
   }
 
@@ -217,7 +215,7 @@ const PlayBar = ({
             <div className={styles.artist}>{name}</div>
             {shouldShowPreviewLock ? (
               <div className={styles.lockPreview}>
-                <LockedStatusPill
+                <LockedStatusBadge
                   locked
                   variant='premium'
                   text={messages.preview}
@@ -260,9 +258,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     pause: () => {
       dispatch(pause({}))
     },
-    save: (trackId: ID) => dispatch(saveTrack(trackId, FavoriteSource.PLAYBAR)),
-    unsave: (trackId: ID) =>
-      dispatch(unsaveTrack(trackId, FavoriteSource.PLAYBAR)),
     recordListen: (trackId: ID) => dispatch(recordListen(trackId))
   }
 }

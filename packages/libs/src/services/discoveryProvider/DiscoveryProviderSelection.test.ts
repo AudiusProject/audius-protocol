@@ -26,7 +26,7 @@ const mockEthContracts = (
     isInRegressedMode: () => {
       return false
     }
-  } as unknown as EthContracts)
+  }) as unknown as EthContracts
 
 describe('DiscoveryProviderSelection', () => {
   beforeEach(() => {

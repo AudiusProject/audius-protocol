@@ -4,12 +4,10 @@ import snakecaseKeys from 'snakecase-keys'
 
 import type {
   EntityManagerService,
-  AuthService,
   ClaimableTokensClient,
   PaymentRouterClient,
   SolanaRelayService
 } from '../../services'
-import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector'
 import {
   Action,
   EntityType,
@@ -18,7 +16,7 @@ import {
 import type { LoggerService } from '../../services/Logger'
 import type { SolanaClient } from '../../services/Solana/programs/SolanaClient'
 import type { StorageService } from '../../services/Storage'
-import { encodeHashId } from '../../utils/hashId'
+import { decodeHashId, encodeHashId } from '../../utils/hashId'
 import { getLocation } from '../../utils/location'
 import { parseParams } from '../../utils/parseParams'
 import { prepareSplits } from '../../utils/preparePaymentSplits'
@@ -26,16 +24,15 @@ import { retry3 } from '../../utils/retry'
 import {
   Configuration,
   StreamTrackRequest,
+  DownloadTrackRequest,
   TracksApi as GeneratedTracksApi,
   ExtendedPaymentSplit,
   instanceOfExtendedPurchaseGate
 } from '../generated/default'
-import { BASE_PATH, RequiredError } from '../generated/default/runtime'
+import { RequiredError } from '../generated/default/runtime'
 
 import { TrackUploadHelper } from './TrackUploadHelper'
 import {
-  createUpdateTrackSchema,
-  createUploadTrackSchema,
   DeleteTrackRequest,
   DeleteTrackSchema,
   RepostTrackRequest,
@@ -53,7 +50,11 @@ import {
   GetPurchaseTrackInstructionsRequest,
   GetPurchaseTrackInstructionsSchema,
   RecordTrackDownloadRequest,
-  RecordTrackDownloadSchema
+  RecordTrackDownloadSchema,
+  UploadTrackFilesRequest,
+  UploadTrackSchema,
+  UpdateTrackSchema,
+  UploadTrackFilesSchema
 } from './types'
 
 // Extend that new class
@@ -62,10 +63,8 @@ export class TracksApi extends GeneratedTracksApi {
 
   constructor(
     configuration: Configuration,
-    private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService,
     private readonly storage: StorageService,
     private readonly entityManager: EntityManagerService,
-    private readonly auth: AuthService,
     private readonly logger: LoggerService,
     private readonly claimableTokensClient: ClaimableTokensClient,
     private readonly paymentRouterClient: PaymentRouterClient,
@@ -88,21 +87,65 @@ export class TracksApi extends GeneratedTracksApi {
       )
     }
 
+    const queryParams = new URLSearchParams()
+    if (params.userId) queryParams.append('user_id', params.userId)
+    if (params.preview !== undefined)
+      queryParams.append('preview', String(params.preview))
+    if (params.userSignature)
+      queryParams.append('user_signature', params.userSignature)
+    if (params.userData) queryParams.append('user_data', params.userData)
+    if (params.nftAccessSignature)
+      queryParams.append('nft_access_signature', params.nftAccessSignature)
+    if (params.skipPlayCount !== undefined)
+      queryParams.append('skip_play_count', String(params.skipPlayCount))
+    if (params.apiKey) queryParams.append('api_key', params.apiKey)
+    if (params.skipCheck !== undefined)
+      queryParams.append('skip_check', String(params.skipCheck))
+    if (params.noRedirect !== undefined)
+      queryParams.append('no_redirect', String(params.noRedirect))
+
     const path = `/tracks/{track_id}/stream`.replace(
       `{${'track_id'}}`,
       encodeURIComponent(String(params.trackId))
     )
-    const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
-    return `${host}${BASE_PATH}${path}`
+    const queryString = queryParams.toString()
+    return `${this.configuration.basePath}${path}${queryString ? '?' + queryString : ''}`
+  }
+
+  /**
+   * Get the url of the track's downloadable file
+   */
+  async getTrackDownloadUrl(params: DownloadTrackRequest): Promise<string> {
+    if (params.trackId === null || params.trackId === undefined) {
+      throw new RequiredError(
+        'trackId',
+        'Required parameter params.trackId was null or undefined when calling getTrack.'
+      )
+    }
+
+    const queryParams = new URLSearchParams()
+    if (params.userId) queryParams.append('user_id', params.userId)
+    if (params.userSignature)
+      queryParams.append('user_signature', params.userSignature)
+    if (params.userData) queryParams.append('user_data', params.userData)
+    if (params.nftAccessSignature)
+      queryParams.append('nft_access_signature', params.nftAccessSignature)
+    if (params.original !== undefined)
+      queryParams.append('original', String(params.original))
+    if (params.filename) queryParams.append('filename', params.filename)
+
+    const path = `/tracks/{track_id}/download`.replace(
+      `{${'track_id'}}`,
+      encodeURIComponent(String(params.trackId))
+    )
+    const queryString = queryParams.toString()
+    return `${this.configuration.basePath}${path}${queryString ? '?' + queryString : ''}`
   }
 
   /** @hidden
-   * Upload a track
+   * Upload track files, does not write to chain
    */
-  async uploadTrack(
-    params: UploadTrackRequest,
-    advancedOptions?: AdvancedOptions
-  ) {
+  async uploadTrackFiles(params: UploadTrackFilesRequest) {
     // Parse inputs
     this.logger.info('Parsing inputs')
     const {
@@ -111,7 +154,7 @@ export class TracksApi extends GeneratedTracksApi {
       coverArtFile,
       metadata: parsedMetadata,
       onProgress
-    } = await parseParams('uploadTrack', createUploadTrackSchema())(params)
+    } = await parseParams('uploadTrackFiles', UploadTrackFilesSchema)(params)
 
     // Transform metadata
     this.logger.info('Transforming metadata')
@@ -123,17 +166,19 @@ export class TracksApi extends GeneratedTracksApi {
     // Upload track audio and cover art to storage node
     this.logger.info('Uploading track audio and cover art')
     const [coverArtResponse, audioResponse] = await Promise.all([
-      retry3(
-        async () =>
-          await this.storage.uploadFile({
-            file: coverArtFile,
-            onProgress,
-            template: 'img_square'
-          }),
-        (e) => {
-          this.logger.info('Retrying uploadTrackCoverArt', e)
-        }
-      ),
+      coverArtFile
+        ? retry3(
+            async () =>
+              await this.storage.uploadFile({
+                file: coverArtFile,
+                onProgress,
+                template: 'img_square'
+              }),
+            (e) => {
+              this.logger.info('Retrying uploadTrackCoverArt', e)
+            }
+          )
+        : Promise.resolve(undefined),
       retry3(
         async () =>
           await this.storage.uploadFile({
@@ -150,34 +195,80 @@ export class TracksApi extends GeneratedTracksApi {
     ])
 
     // Update metadata to include uploaded CIDs
-    const updatedMetadata =
-      this.trackUploadHelper.populateTrackMetadataWithUploadResponse(
-        metadata,
-        audioResponse,
-        coverArtResponse
-      )
+    return this.trackUploadHelper.populateTrackMetadataWithUploadResponse(
+      metadata,
+      audioResponse,
+      coverArtResponse
+    )
+  }
 
+  /** @hidden
+   * Write track upload to chain
+   */
+  async writeTrackToChain(
+    userId: string,
+    metadata: ReturnType<
+      typeof this.trackUploadHelper.populateTrackMetadataWithUploadResponse
+    >,
+    advancedOptions?: AdvancedOptions
+  ) {
     // Write metadata to chain
     this.logger.info('Writing metadata to chain')
-    const trackId = await this.trackUploadHelper.generateId('track')
+
+    const entityId =
+      metadata.trackId || (await this.trackUploadHelper.generateId('track'))
+
+    const decodedUserId = decodeHashId(userId) ?? undefined
+
+    if (!decodedUserId) {
+      throw new Error('writeTrackToChain: userId could not be decoded')
+    }
+
     const response = await this.entityManager.manageEntity({
-      userId,
+      userId: decodedUserId,
       entityType: EntityType.TRACK,
-      entityId: trackId,
+      entityId,
       action: Action.CREATE,
       metadata: JSON.stringify({
         cid: '',
-        data: snakecaseKeys(updatedMetadata)
+        data: {
+          ...snakecaseKeys(metadata),
+          download_conditions:
+            metadata.downloadConditions &&
+            snakecaseKeys(metadata.downloadConditions),
+          stream_conditions:
+            metadata.streamConditions &&
+            snakecaseKeys(metadata.streamConditions),
+          stem_of: metadata.stemOf && snakecaseKeys(metadata.stemOf)
+        }
       }),
-      auth: this.auth,
       ...advancedOptions
     })
 
     this.logger.info('Successfully uploaded track')
     return {
       ...response,
-      trackId: encodeHashId(trackId)
+      trackId: encodeHashId(entityId)!
     }
+  }
+
+  /** @hidden
+   * Upload a track
+   */
+  async uploadTrack(
+    params: UploadTrackRequest,
+    advancedOptions?: AdvancedOptions
+  ) {
+    // Validate inputs
+    await parseParams('uploadTrack', UploadTrackSchema)(params)
+
+    // Upload track files
+    const metadata = await this.uploadTrackFiles(
+      params as UploadTrackFilesRequest
+    )
+
+    // Write track metadata to chain
+    return this.writeTrackToChain(params.userId, metadata, advancedOptions)
   }
 
   /** @hidden
@@ -194,8 +285,8 @@ export class TracksApi extends GeneratedTracksApi {
       coverArtFile,
       metadata: parsedMetadata,
       onProgress,
-      transcodePreview
-    } = await parseParams('updateTrack', createUpdateTrackSchema())(params)
+      generatePreview
+    } = await parseParams('updateTrack', UpdateTrackSchema)(params)
 
     // Transform metadata
     const metadata = this.trackUploadHelper.transformTrackUploadMetadata(
@@ -224,33 +315,28 @@ export class TracksApi extends GeneratedTracksApi {
       ...(coverArtResp ? { coverArtSizes: coverArtResp.id } : {})
     }
 
-    if (transcodePreview) {
-      if (!updatedMetadata.previewStartSeconds) {
+    if (generatePreview) {
+      if (updatedMetadata.previewStartSeconds === undefined) {
         throw new Error('No track preview start time specified')
       }
       if (!updatedMetadata.audioUploadId) {
         throw new Error('Missing required audio_upload_id')
       }
 
-      // Transocde track preview
-      const editFileData = {
-        previewStartSeconds: updatedMetadata.previewStartSeconds!.toString()
-      }
-      const updatePreviewResp = await retry3(
+      // Generate track preview
+      const previewCid = await retry3(
         async () =>
-          await this.storage.editFile({
-            uploadId: updatedMetadata.audioUploadId!,
-            data: editFileData,
-            auth: this.auth
+          await this.storage.generatePreview({
+            cid: updatedMetadata.trackCid!,
+            secondOffset: updatedMetadata.previewStartSeconds!
           }),
         (e) => {
-          this.logger.info('Retrying editFileV2', e)
+          this.logger.info('Retrying generatePreview', e)
         }
       )
 
       // Update metadata to include updated preview CID
-      const previewKey = `320_preview|${updatedMetadata.previewStartSeconds}`
-      updatedMetadata.previewCid = updatePreviewResp.results[previewKey]
+      updatedMetadata.previewCid = previewCid
     }
 
     // Write metadata to chain
@@ -261,9 +347,17 @@ export class TracksApi extends GeneratedTracksApi {
       action: Action.UPDATE,
       metadata: JSON.stringify({
         cid: '',
-        data: snakecaseKeys(updatedMetadata)
+        data: {
+          ...snakecaseKeys(updatedMetadata),
+          download_conditions:
+            updatedMetadata.downloadConditions &&
+            snakecaseKeys(updatedMetadata.downloadConditions),
+          stream_conditions:
+            updatedMetadata.streamConditions &&
+            snakecaseKeys(updatedMetadata.streamConditions),
+          stem_of: metadata.stemOf && snakecaseKeys(metadata.stemOf)
+        }
       }),
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -286,7 +380,6 @@ export class TracksApi extends GeneratedTracksApi {
       entityType: EntityType.TRACK,
       entityId: trackId,
       action: Action.DELETE,
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -310,7 +403,6 @@ export class TracksApi extends GeneratedTracksApi {
       entityId: trackId,
       action: Action.SAVE,
       metadata: metadata && JSON.stringify(snakecaseKeys(metadata)),
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -333,7 +425,6 @@ export class TracksApi extends GeneratedTracksApi {
       entityType: EntityType.TRACK,
       entityId: trackId,
       action: Action.UNSAVE,
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -357,7 +448,6 @@ export class TracksApi extends GeneratedTracksApi {
       entityId: trackId,
       action: Action.REPOST,
       metadata: metadata && JSON.stringify(snakecaseKeys(metadata)),
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -380,7 +470,6 @@ export class TracksApi extends GeneratedTracksApi {
       entityType: EntityType.TRACK,
       entityId: trackId,
       action: Action.UNREPOST,
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -404,7 +493,6 @@ export class TracksApi extends GeneratedTracksApi {
       entityType: EntityType.TRACK,
       entityId: trackId,
       action: Action.DOWNLOAD,
-      auth: this.auth,
       metadata: location
         ? JSON.stringify({
             cid: '',
@@ -590,10 +678,8 @@ export class TracksApi extends GeneratedTracksApi {
       })
     } else {
       // Use the authed wallet's userbank and relay
-      const ethWallet = await this.auth.getAddress()
       this.logger.debug(
         `Using userBank ${await this.claimableTokensClient.deriveUserBank({
-          ethWallet,
           mint: 'USDC'
         })} to purchase...`
       )
@@ -604,15 +690,12 @@ export class TracksApi extends GeneratedTracksApi {
 
       const transferSecpInstruction =
         await this.claimableTokensClient.createTransferSecpInstruction({
-          ethWallet,
           destination: paymentRouterTokenAccount.address,
           mint,
-          amount: total,
-          auth: this.auth
+          amount: total
         })
       const transferInstruction =
         await this.claimableTokensClient.createTransferInstruction({
-          ethWallet,
           destination: paymentRouterTokenAccount.address,
           mint
         })
@@ -640,6 +723,17 @@ export class TracksApi extends GeneratedTracksApi {
         this.solanaClient.connection
       )
     }
-    return this.solanaClient.sendTransaction(transaction)
+    return this.solanaClient.sendTransaction(transaction, {
+      skipPreflight: true
+    })
+  }
+
+  /**
+   * Generates a new track ID
+   *
+   * @hidden
+   */
+  async generateTrackId() {
+    return this.trackUploadHelper.generateId('track')
   }
 }

@@ -1,5 +1,6 @@
 import { ID } from '@audius/common/models'
-import { decodeHashId, route } from '@audius/common/utils'
+import { route } from '@audius/common/utils'
+import { OptionalHashId } from '@audius/sdk'
 import { matchPath } from 'react-router-dom'
 
 const {
@@ -82,8 +83,8 @@ export const parseCollectionRoute = (route: string): CollectionRouteParams => {
     exact: true
   })
   if (collectionIdPageMatch) {
-    const collectionId = decodeHashId(collectionIdPageMatch.params.id)
-    if (collectionId === null) return null
+    const collectionId = OptionalHashId.parse(collectionIdPageMatch.params.id)
+    if (!collectionId) return null
     return { collectionId, handle: null, collectionType: null, title: null }
   }
 

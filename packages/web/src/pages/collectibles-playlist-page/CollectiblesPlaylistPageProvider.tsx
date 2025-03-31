@@ -7,6 +7,7 @@ import {
   ComponentType
 } from 'react'
 
+import { useUserCollectibles } from '@audius/common/api'
 import {
   ShareSource,
   Chain,
@@ -30,7 +31,6 @@ import {
 } from '@audius/common/store'
 import { getHash, formatSeconds, route } from '@audius/common/utils'
 import cn from 'classnames'
-import { push } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 import { matchPath } from 'react-router-dom'
 
@@ -39,6 +39,7 @@ import { AUDIO_NFT_PLAYLIST } from 'common/store/smart-collection/smartCollectio
 import { TablePlayButton } from 'components/table/components/TablePlayButton'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
+import { push } from 'utils/navigation'
 
 import { CollectionPageProps as DesktopCollectionPageProps } from '../collection-page/components/desktop/CollectionPage'
 import { CollectionPageProps as MobileCollectionPageProps } from '../collection-page/components/mobile/CollectionPage'
@@ -112,6 +113,11 @@ export const CollectiblesPlaylistPageProvider = ({
     getUser(state, { handle: routeMatch?.params.handle ?? null })
   )
 
+  const { data: profileCollectibles, isLoading: profileCollectiblesLoading } =
+    useUserCollectibles({
+      userId: user?.user_id ?? null
+    })
+
   const [audioCollectibles, setAudioCollectibles] = useState<Collectible[]>([])
   const firstLoadedCollectible = useRef<Collectible>()
   const hasFetchedCollectibles = useRef(false)
@@ -120,8 +126,8 @@ export const CollectiblesPlaylistPageProvider = ({
 
   useEffect(() => {
     const asyncFn = async (cs: Collectible[]) => {
-      const collectibleIds = Object.keys(user?.collectibles ?? {})
-      const order = user?.collectibles?.order
+      const collectibleIds = Object.keys(profileCollectibles ?? {})
+      const order = profileCollectibles?.order
 
       /**
        * Filter by the user's order if it exists.
@@ -217,7 +223,7 @@ export const CollectiblesPlaylistPageProvider = ({
 
     if (
       user?.collectibleList &&
-      (user?.collectibles || user?.collectiblesOrderUnset) &&
+      !profileCollectiblesLoading &&
       !hasFetchedCollectibles.current
     ) {
       const cs = [
@@ -229,6 +235,8 @@ export const CollectiblesPlaylistPageProvider = ({
     }
   }, [
     user,
+    profileCollectibles,
+    profileCollectiblesLoading,
     setAudioCollectibles,
     hasFetchedCollectibles,
     firstLoadedCollectible,
@@ -328,8 +336,8 @@ export const CollectiblesPlaylistPageProvider = ({
     return currentPlayerItem.uid
       ? currentPlayerItem.uid
       : currentPlayerItem.collectible
-      ? currentPlayerItem.collectible.id
-      : null
+        ? currentPlayerItem.collectible.id
+        : null
   }, [currentPlayerItem])
 
   const formatMetadata = useCallback(
@@ -352,14 +360,14 @@ export const CollectiblesPlaylistPageProvider = ({
   const getFilteredData = useCallback(
     (trackMetadatas: CollectionTrack[]) => {
       const playingUid = getPlayingUid()
-      const playingIndex = entries.findIndex(({ uid }) => uid === playingUid)
+      const activeIndex = entries.findIndex(({ uid }) => uid === playingUid)
       const formattedMetadata = formatMetadata(trackMetadatas)
       const filteredIndex =
-        playingIndex > -1
+        activeIndex > -1
           ? formattedMetadata.findIndex(
               (metadata) => metadata.uid === playingUid
             )
-          : playingIndex
+          : activeIndex
       return [formattedMetadata, filteredIndex] as [
         typeof formattedMetadata,
         number

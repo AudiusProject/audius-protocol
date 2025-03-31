@@ -1,25 +1,23 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
-import { useAppContext } from '@audius/common/context'
-import { SquareSizes, UserCollectionMetadata } from '@audius/common/models'
-import { Nullable, Maybe, route } from '@audius/common/utils'
-import { StorageNodeSelectorService } from '@audius/sdk'
+import {
+  transformAndCleanList,
+  userCollectionMetadataFromSDK
+} from '@audius/common/adapters'
+import { route } from '@audius/common/utils'
+import { Id } from '@audius/sdk'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
-import { useAsyncFn } from 'react-use'
+import { useAsync } from 'react-use'
 
 import { useHistoryContext } from 'app/HistoryProvider'
-import audiusExclusivesPlaylistImg from 'assets/img/publicSite/AudiusExclusivesPlaylistArt.png'
-import audiusWeeklyPlaylistImg from 'assets/img/publicSite/AudiusWeeklyPlaylistArt.png'
-import hotAndNewPlaylistImg from 'assets/img/publicSite/HotAndNewPlaylistArt.jpeg'
 import IconLines from 'assets/img/publicSite/Lines.svg'
-import moombahtonPlaylistImg from 'assets/img/publicSite/MoombahtonPlaylistArt.png'
 import IconListenOnAudius from 'assets/img/publicSite/listen-on-audius.svg'
-import { fetchExploreContent } from 'common/store/pages/explore/sagas'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import useCardWeight from 'hooks/useCardWeight'
 import useHasViewed from 'hooks/useHasViewed'
 import { handleClickRoute } from 'public-site/components/handleClickRoute'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { audiusSdk } from 'services/audius-sdk'
 import { env } from 'services/env'
 
 import styles from './FeaturedContent.module.css'
@@ -37,33 +35,6 @@ type PlaylistTileProps = {
   imageUrl: string | null
   onClick: () => void
 }
-
-const FALLBACK_PLAYLISTS = [
-  {
-    title: 'Audius Exclusives',
-    artist: 'Audius',
-    imageUrl: audiusExclusivesPlaylistImg,
-    link: '/audius/playlist/official-audius-exclusives-1428'
-  },
-  {
-    title: 'MOOMBAHTON COMES TO AUDIUS',
-    artist: 'Moombahton',
-    imageUrl: moombahtonPlaylistImg,
-    link: '/moombahton/playlist/moombahton-comes-to-audius-9601'
-  },
-  {
-    title: 'Hot & New On Audius 🔥',
-    artist: 'Audius',
-    imageUrl: hotAndNewPlaylistImg,
-    link: '/audius/playlist/hot-new-on-audius-%F0%9F%94%A5-4281'
-  },
-  {
-    title: 'Audius Weekly',
-    artist: 'Audius',
-    imageUrl: audiusWeeklyPlaylistImg,
-    link: '/3lau/is-it-love-feat.-yeah-boy-1151'
-  }
-]
 
 const DesktopPlaylistTile = (props: PlaylistTileProps) => {
   const [cardRef, onMove, onLeave, transform] = useCardWeight({
@@ -118,9 +89,7 @@ const MobilePlaylistTile = (props: PlaylistTileProps) => (
     <div
       className={styles.trackImage}
       style={{
-        backgroundImage: `url(${
-          props.imageUrl || audiusExclusivesPlaylistImg
-        })`,
+        backgroundImage: `url(${props.imageUrl})`,
         boxShadow: `0px 8px 16px 0px rgba(0, 0, 0, 0.08), 0px 0px 4px 0px rgba(0, 0, 0, 0.04)`
       }}
     ></div>
@@ -133,36 +102,21 @@ type FeaturedContentProps = {
   setRenderPublicSite: (shouldRender: boolean) => void
 }
 
-const getImageUrl = (
-  cid: Nullable<string>,
-  size: SquareSizes,
-  storageNodeSelector: Maybe<StorageNodeSelectorService>,
-  cidMap: Nullable<{ [key: string]: string }> = null
-) => {
-  if (!storageNodeSelector || !cid) return null
-  const node = storageNodeSelector.getNodes(cid)[0]
-  return cidMap && cidMap[size]
-    ? `${node}/content/${cidMap[size]}`
-    : `${node}/content/${cid}/${size}.jpg`
-}
-
 const FeaturedContent = (props: FeaturedContentProps) => {
   const { history } = useHistoryContext()
-  const { storageNodeSelector } = useAppContext()
-  const [trendingPlaylistsResponse, fetchTrendingPlaylists] =
-    useAsyncFn(async () => {
-      const featuredContent = await fetchExploreContent(env.EXPLORE_CONTENT_URL)
-      const ids = featuredContent.featuredPlaylists
-      const playlists = audiusBackendInstance.getPlaylists(
-        null,
-        ids
-      ) as any as UserCollectionMetadata[]
-      return playlists
-    }, [])
+  const { value: featuredPlaylists, loading } = useAsync(async () => {
+    const response = await fetch(env.EXPLORE_CONTENT_URL)
+    const json = await response.json()
+    const featuredPlaylistIds = json.featuredPlaylists
+      .slice(0, 4)
+      .map((id: string) => Id.parse(parseInt(id)))
+    const sdk = await audiusSdk()
+    const { data } = await sdk.full.playlists.getBulkPlaylists({
+      id: featuredPlaylistIds
+    })
+    return transformAndCleanList(data, userCollectionMetadataFromSDK)
+  }, [])
 
-  useEffect(() => {
-    fetchTrendingPlaylists()
-  }, [fetchTrendingPlaylists])
   // Animate in the title and subtitle text
   const [hasViewed, refInView] = useHasViewed(0.8)
 
@@ -189,45 +143,31 @@ const FeaturedContent = (props: FeaturedContentProps) => {
           </animated.div>
         </div>
         <div className={styles.tracksContainer}>
-          {trendingPlaylistsResponse.value == null ||
-          trendingPlaylistsResponse.value.length < 4
-            ? FALLBACK_PLAYLISTS.map((p) => (
-                <MobilePlaylistTile
-                  key={p.link}
-                  {...p}
-                  onClick={handleClickRoute(
-                    p.link,
-                    props.setRenderPublicSite,
-                    history
-                  )}
-                />
-              ))
-            : trendingPlaylistsResponse.value
-                .slice(0, 4)
-                .map((p) => (
-                  <MobilePlaylistTile
-                    key={p.playlist_id}
-                    title={p.playlist_name}
-                    artist={p.user.name}
-                    imageUrl={getImageUrl(
-                      p.cover_art_sizes,
-                      SquareSizes.SIZE_150_BY_150,
-                      storageNodeSelector,
-                      p.cover_art_cids
-                    )}
-                    onClick={handleClickRoute(
-                      collectionPage(
-                        p.user.handle,
-                        p.playlist_name,
-                        p.playlist_id,
-                        p.permalink,
-                        p.is_album
-                      ),
-                      props.setRenderPublicSite,
-                      history
-                    )}
-                  />
-                ))}
+          {loading ? (
+            <div className={styles.loadingContainer}>
+              <LoadingSpinner />
+            </div>
+          ) : (
+            featuredPlaylists?.map((p) => (
+              <MobilePlaylistTile
+                key={p.playlist_id}
+                title={p.playlist_name}
+                artist={p.user.name}
+                imageUrl={p.artwork['480x480'] ?? null}
+                onClick={handleClickRoute(
+                  collectionPage(
+                    p.user.handle,
+                    p.playlist_name,
+                    p.playlist_id,
+                    p.permalink,
+                    p.is_album
+                  ),
+                  props.setRenderPublicSite,
+                  history
+                )}
+              />
+            ))
+          )}
         </div>
       </div>
     )
@@ -247,45 +187,31 @@ const FeaturedContent = (props: FeaturedContentProps) => {
           <h4 className={styles.subTitle}>{messages.subTitle}</h4>
         </animated.div>
         <div className={styles.tracksContainer}>
-          {trendingPlaylistsResponse.value == null ||
-          trendingPlaylistsResponse.value.length < 4
-            ? FALLBACK_PLAYLISTS.map((p) => (
-                <DesktopPlaylistTile
-                  key={p.title}
-                  {...p}
-                  onClick={handleClickRoute(
-                    p.link,
-                    props.setRenderPublicSite,
-                    history
-                  )}
-                />
-              ))
-            : trendingPlaylistsResponse.value
-                .slice(0, 4)
-                .map((p) => (
-                  <DesktopPlaylistTile
-                    key={p.playlist_id}
-                    title={p.playlist_name}
-                    artist={p.user.name}
-                    imageUrl={getImageUrl(
-                      p.cover_art_sizes,
-                      SquareSizes.SIZE_1000_BY_1000,
-                      storageNodeSelector,
-                      p.cover_art_cids
-                    )}
-                    onClick={handleClickRoute(
-                      collectionPage(
-                        p.user.handle,
-                        p.playlist_name,
-                        p.playlist_id,
-                        p.permalink,
-                        p.is_album
-                      ),
-                      props.setRenderPublicSite,
-                      history
-                    )}
-                  />
-                ))}
+          {loading ? (
+            <div className={styles.loadingContainer}>
+              <LoadingSpinner />
+            </div>
+          ) : (
+            featuredPlaylists?.map((p) => (
+              <DesktopPlaylistTile
+                key={p.playlist_id}
+                title={p.playlist_name}
+                artist={p.user.name}
+                imageUrl={p.artwork['480x480'] ?? null}
+                onClick={handleClickRoute(
+                  collectionPage(
+                    p.user.handle,
+                    p.playlist_name,
+                    p.playlist_id,
+                    p.permalink,
+                    p.is_album
+                  ),
+                  props.setRenderPublicSite,
+                  history
+                )}
+              />
+            ))
+          )}
         </div>
       </div>
       <IconLines className={styles.lines} />

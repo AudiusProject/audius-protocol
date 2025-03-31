@@ -1,7 +1,7 @@
 import { useTheme } from '@emotion/react'
 
-import { IconButton } from 'components/button'
-import { IconPaperAirplane } from 'icons'
+import { IconButton } from '~harmony/components/button'
+import { IconPaperAirplane } from '~harmony/icons'
 
 import { SendIconProps } from './types'
 
@@ -15,7 +15,7 @@ export const SendIcon = ({ disabled = false, onClick }: SendIconProps) => {
       size='2xl'
       onClick={onClick}
       css={{
-        cursor: 'pointer',
+        padding: 0,
         pointerEvents: disabled ? 'none' : 'all',
         opacity: disabled ? 0.5 : 1,
         path: {

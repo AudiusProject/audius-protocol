@@ -3,7 +3,8 @@ import {
   accountSelectors,
   accountSagas as commonAccountSagas,
   settingsPageActions,
-  modalsActions
+  modalsActions,
+  getSDK
 } from '@audius/common/store'
 import { call, getContext, put, select, takeEvery } from 'typed-redux-saga'
 
@@ -30,7 +31,7 @@ const {
   setBrowserNotificationSettingsOn
 } = settingsPageActions
 
-const { getAccountUser } = accountSelectors
+const { getHasAccount, getIsGuestAccount } = accountSelectors
 
 const setBrowerPushPermissionConfirmationModal = setVisibility({
   modal: 'BrowserPushPermissionConfirmation',
@@ -40,12 +41,16 @@ const setBrowerPushPermissionConfirmationModal = setVisibility({
 /**
  * Determine if the push notification modal should appear
  */
-export function* showPushNotificationConfirmation() {
+function* showPushNotificationConfirmation() {
   const isMobile = yield* getContext('isMobile')
-  if (isMobile || isElectron() || !shouldRequestBrowserPermission()) return
+  const isGuest = yield* select(getIsGuestAccount)
+
+  if (isMobile || isElectron() || !shouldRequestBrowserPermission() || isGuest)
+    return
   setHasRequestedBrowserPermission()
-  const account = yield* select(getAccountUser)
-  if (!account) return
+  const hasAccount = yield* select(getHasAccount)
+  if (!hasAccount) return
+  const sdk = yield* getSDK()
   const browserPermission = yield* call(fetchBrowserPushNotificationStatus)
   if (browserPermission === Permission.DEFAULT) {
     yield* put(setBrowerPushPermissionConfirmationModal)
@@ -54,7 +59,7 @@ export function* showPushNotificationConfirmation() {
       const subscription = yield* call(getPushManagerBrowserSubscription)
       const enabled = yield* call(
         audiusBackendInstance.getBrowserPushSubscription,
-        subscription.endpoint
+        { sdk, pushEndpoint: subscription.endpoint }
       )
       if (!enabled) {
         yield* put(setBrowerPushPermissionConfirmationModal)
@@ -64,7 +69,7 @@ export function* showPushNotificationConfirmation() {
         const safariPushBrowser = yield* call(getSafariPushBrowser)
         const enabled = yield* call(
           audiusBackendInstance.getBrowserPushSubscription,
-          safariPushBrowser.deviceToken
+          { sdk, pushEndpoint: safariPushBrowser.deviceToken }
         )
         if (!enabled) {
           yield* put(setBrowerPushPermissionConfirmationModal)
@@ -76,7 +81,7 @@ export function* showPushNotificationConfirmation() {
   }
 }
 
-export function* fetchBrowserPushNotificationStatus() {
+function* fetchBrowserPushNotificationStatus() {
   const isMobile = yield* getContext('isMobile')
   if (isElectron() || isMobile) return
   if (isPushManagerAvailable) {
@@ -88,7 +93,8 @@ export function* fetchBrowserPushNotificationStatus() {
   }
 }
 
-export function* subscribeBrowserPushNotifications() {
+function* subscribeBrowserPushNotifications() {
+  const sdk = yield* getSDK()
   if (isPushManagerAvailable) {
     const pushManagerSubscription = yield* call(
       getPushManagerBrowserSubscription
@@ -97,6 +103,7 @@ export function* subscribeBrowserPushNotifications() {
       yield* put(setBrowserNotificationPermission(Permission.GRANTED))
       yield* put(setBrowserNotificationEnabled(true, false))
       yield call(audiusBackendInstance.updateBrowserNotifications, {
+        sdk,
         subscription: pushManagerSubscription,
         enabled: true
       })
@@ -111,6 +118,7 @@ export function* subscribeBrowserPushNotifications() {
         yield* put(setBrowserNotificationPermission(Permission.GRANTED))
         yield* put(setBrowserNotificationEnabled(true, false))
         yield* call(audiusBackendInstance.updateBrowserNotifications, {
+          sdk,
           subscription,
           enabled: true
         })
@@ -124,18 +132,19 @@ export function* subscribeBrowserPushNotifications() {
   if (isSafariPushAvailable) {
     const safariSubscription = yield* call(getSafariPushBrowser)
     if (safariSubscription.permission === Permission.GRANTED) {
-      yield* call(
-        audiusBackendInstance.registerDeviceToken,
-        safariSubscription.deviceToken,
-        'safari'
-      )
+      yield* call(audiusBackendInstance.registerDeviceToken, {
+        sdk,
+        deviceToken: safariSubscription.deviceToken,
+        deviceType: 'safari'
+      })
       yield* put(setBrowserNotificationEnabled(true, false))
       yield* put(setBrowserNotificationSettingsOn())
     }
   }
 }
 
-export function* unsubscribeBrowserPushNotifications() {
+function* unsubscribeBrowserPushNotifications() {
+  const sdk = yield* getSDK()
   removeHasRequestedBrowserPermission()
   const browserPushSubscriptionStatus = yield* call(
     fetchBrowserPushNotificationStatus
@@ -146,6 +155,7 @@ export function* unsubscribeBrowserPushNotifications() {
   ) {
     const subscription = yield* call(getPushManagerBrowserSubscription)
     yield* call(audiusBackendInstance.disableBrowserNotifications, {
+      sdk,
       subscription
     })
   } else if (
@@ -154,10 +164,10 @@ export function* unsubscribeBrowserPushNotifications() {
   ) {
     const safariSubscription = yield* call(getSafariPushBrowser)
     if (safariSubscription.permission === Permission.GRANTED) {
-      yield* call(
-        audiusBackendInstance.deregisterDeviceToken,
-        safariSubscription.deviceToken
-      )
+      yield* call(audiusBackendInstance.deregisterDeviceToken, {
+        sdk,
+        deviceToken: safariSubscription.deviceToken
+      })
     }
   }
 }

@@ -14,7 +14,6 @@ import LogoUSDC from 'app/assets/images/logoUSDC.svg'
 import { Text, useLink } from 'app/components/core'
 import { useToast } from 'app/hooks/useToast'
 import { make, track, track as trackEvent } from 'app/services/analytics'
-import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import { getUSDCUserBank } from 'app/services/buyCrypto'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
@@ -100,8 +99,7 @@ export const USDCManualTransfer = ({
 
   useCreateUserbankIfNeeded({
     recordAnalytics: track,
-    audiusBackendInstance,
-    mint: 'usdc'
+    mint: 'USDC'
   })
 
   const { value: USDCUserBank } = useAsync(async () => {

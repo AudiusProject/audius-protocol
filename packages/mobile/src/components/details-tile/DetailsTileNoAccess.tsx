@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react'
+import React, { type ReactNode } from 'react'
 import { useCallback } from 'react'
 
+import { useFollowUser } from '@audius/common/api'
 import { useFeatureFlag, useStreamConditionsEntity } from '@audius/common/hooks'
 import {
   FollowSource,
@@ -15,7 +16,6 @@ import type { ID, AccessConditions, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   PurchaseableContentType,
-  usersSocialActions,
   tippingActions,
   usePremiumContentPurchaseModal,
   gatedContentSelectors
@@ -45,7 +45,6 @@ import { spacing } from 'app/styles/spacing'
 import { EventNames } from 'app/types/analytics'
 
 const { getGatedContentStatusMap } = gatedContentSelectors
-const { followUser } = usersSocialActions
 const { beginTip } = tippingActions
 
 const messages = {
@@ -164,9 +163,7 @@ const DetailsTileNoAccessSection = ({
           <LockedStatusBadge
             locked={true}
             variant={
-              isContentUSDCPurchaseGated(streamConditions)
-                ? 'purchase'
-                : 'gated'
+              isContentUSDCPurchaseGated(streamConditions) ? 'premium' : 'gated'
             }
           />
         )}
@@ -202,14 +199,17 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
   const { isEnabled: isUsdcPurchasesEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
   )
-
+  const { mutate: followUser } = useFollowUser()
   const { onPress: handlePressCollection } = useLink(collectionLink)
 
   const handleFollowArtist = useCallback(() => {
     if (followee) {
-      dispatch(followUser(followee.user_id, followSource, trackId))
+      followUser({
+        followeeUserId: followee.user_id,
+        source: followSource
+      })
     }
-  }, [followee, dispatch, followSource, trackId])
+  }, [followee, followUser, followSource])
 
   const handleSendTip = useCallback(() => {
     onClose()
@@ -351,7 +351,7 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
     }
     if (isContentUSDCPurchaseGated(streamConditions)) {
       return (
-        <>
+        <Flex gap='s'>
           <View style={styles.descriptionContainer}>
             <Text style={styles.description}>
               {messages.lockedUSDCPurchase}
@@ -360,7 +360,7 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
           <Button color='lightGreen' onPress={handlePurchasePress} fullWidth>
             {messages.buy(formatPrice(streamConditions.usdc_purchase.price))}
           </Button>
-        </>
+        </Flex>
       )
     }
 

@@ -1,14 +1,7 @@
-import { UserListStoreState } from '~/store/user-list/types'
-
-import { ID } from '../../../models'
-
-export type SupportingOwnState = {
-  id: ID | null
-}
+import { ID } from '~/models/Identifiers'
 
 export type SupportingPageState = {
-  supportingPage: SupportingOwnState
-  userList: UserListStoreState
+  id: ID | null
 }
 
 export const SUPPORTING_USER_LIST_TAG = 'SUPPORTING'

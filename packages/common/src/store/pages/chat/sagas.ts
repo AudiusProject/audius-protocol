@@ -1,5 +1,9 @@
 import {
   ChatBlast,
+  HashId,
+  Id,
+  OptionalHashId,
+  OptionalId,
   type ChatMessage,
   type TypedCommsResponse,
   type UserChat,
@@ -16,18 +20,14 @@ import {
 import { ulid } from 'ulid'
 
 import { Name } from '~/models/Analytics'
+import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
 import { Status } from '~/models/Status'
-import { getAccountUser, getUserId } from '~/store/account/selectors'
+import { getHasAccount, getUserId } from '~/store/account/selectors'
 import * as toastActions from '~/store/ui/toast/slice'
 import dayjs from '~/utils/dayjs'
 
-import {
-  decodeHashId,
-  encodeHashId,
-  makeBlastChatId,
-  removeNullable
-} from '../../../utils'
+import { makeBlastChatId, removeNullable } from '../../../utils'
 import { cacheUsersActions } from '../../cache'
 import { getContext } from '../../effects'
 
@@ -101,7 +101,7 @@ function* fetchUsersForChats(chats: UserChat[]) {
   const userIds = new Set<number>([])
   for (const chat of chats) {
     for (const member of chat.chat_members) {
-      userIds.add(decodeHashId(member.user_id)!)
+      userIds.add(HashId.parse(member.user_id))
     }
   }
   yield* put(
@@ -124,7 +124,8 @@ function* doFetchUnreadMessagesCount() {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       name: 'Chats',
-      error: e as Error
+      error: e as Error,
+      feature: Feature.Chats
     })
   }
 }
@@ -147,7 +148,7 @@ function* doFetchLatestChats() {
     }
     while (hasMoreChats) {
       const response = yield* call([sdk.chats, sdk.chats.getAll], {
-        userId: encodeHashId(currentUserId)!,
+        userId: Id.parse(currentUserId),
         before,
         after: summary?.next_cursor,
         limit: CHAT_PAGE_SIZE
@@ -171,7 +172,8 @@ function* doFetchLatestChats() {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       name: 'Chats',
-      error: e as Error
+      error: e as Error,
+      feature: Feature.Chats
     })
   }
 }
@@ -187,7 +189,7 @@ function* doFetchMoreChats() {
       throw new Error('User not found')
     }
     const response = yield* call([sdk.chats, sdk.chats.getAll], {
-      userId: encodeHashId(currentUserId)!,
+      userId: Id.parse(currentUserId),
       before,
       limit: CHAT_PAGE_SIZE
     })
@@ -198,7 +200,8 @@ function* doFetchMoreChats() {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       name: 'Chats',
-      error: e as Error
+      error: e as Error,
+      feature: Feature.Chats
     })
   }
 }
@@ -265,7 +268,8 @@ function* doFetchLatestMessages(
       error: e as Error,
       additionalInfo: {
         chatId
-      }
+      },
+      feature: Feature.Chats
     })
   }
 }
@@ -326,7 +330,8 @@ function* doFetchMoreMessages(action: ReturnType<typeof fetchMoreMessages>) {
       error: e as Error,
       additionalInfo: {
         chatId
-      }
+      },
+      feature: Feature.Chats
     })
   }
 }
@@ -337,8 +342,8 @@ function* doSetMessageReaction(action: ReturnType<typeof setMessageReaction>) {
   try {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
-    const user = yield* select(getAccountUser)
-    if (!user) {
+    const hasAccount = yield* select(getHasAccount)
+    if (!hasAccount) {
       throw new Error('User not found')
     }
     yield* call([sdk.chats, sdk.chats.react], {
@@ -347,7 +352,7 @@ function* doSetMessageReaction(action: ReturnType<typeof setMessageReaction>) {
       reaction
     })
     const reactionResponse = {
-      user_id: encodeHashId(userId)!,
+      user_id: Id.parse(userId),
       reaction,
       created_at: dayjs().toISOString()
     }
@@ -376,7 +381,8 @@ function* doSetMessageReaction(action: ReturnType<typeof setMessageReaction>) {
         messageId,
         reaction,
         userId
-      }
+      },
+      feature: Feature.Chats
     })
     yield* call(
       track,
@@ -414,8 +420,8 @@ function* doCreateChat(action: ReturnType<typeof createChat>) {
     if (!existingChat) {
       // Create new chat
       yield* call([sdk.chats, sdk.chats.create], {
-        userId: encodeHashId(currentUserId),
-        invitedUserIds: userIds.map((id) => encodeHashId(id))
+        userId: Id.parse(currentUserId),
+        invitedUserIds: userIds.map((id) => Id.parse(id))
       })
 
       const res = yield* call([sdk.chats, sdk.chats.get], { chatId })
@@ -439,7 +445,8 @@ function* doCreateChat(action: ReturnType<typeof createChat>) {
       error: e as Error,
       additionalInfo: {
         userIds
-      }
+      },
+      feature: Feature.Chats
     })
     yield* call(track, make({ eventName: Name.CREATE_CHAT_FAILURE }))
   }
@@ -462,9 +469,7 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
       throw new Error('User not found')
     }
 
-    const encodedContentId = audienceContentId
-      ? encodeHashId(audienceContentId)
-      : undefined
+    const encodedContentId = OptionalId.parse(audienceContentId)
     const chatId = makeBlastChatId({
       audience,
       audienceContentId: encodedContentId,
@@ -517,7 +522,8 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
         audience,
         audienceContentId,
         audienceContentType
-      }
+      },
+      feature: Feature.Chats
     })
 
     yield* call(
@@ -541,21 +547,10 @@ function* doMarkChatAsRead(action: ReturnType<typeof markChatAsRead>) {
     // Use non-optimistic chat here so that the calculation of whether to mark
     // the chat as read or not are consistent with values in backend
     const chat = yield* select((state) => getNonOptimisticChat(state, chatId))
-    if (chat?.is_blast) {
-      return
-    }
-    if (
-      !chat ||
-      !chat?.last_read_at ||
-      dayjs(chat?.last_read_at).isBefore(chat?.last_message_at)
-    ) {
-      yield* call([sdk.chats, sdk.chats.read], { chatId })
-      yield* put(markChatAsReadSucceeded({ chatId }))
-    } else {
-      // Mark the write as 'failed' in this case (just means we already marked this as read somehow)
-      // to delete the optimistic read status
-      yield* put(markChatAsReadFailed({ chatId }))
-    }
+    if (chat?.is_blast) return
+
+    yield* call([sdk.chats, sdk.chats.read], { chatId })
+    yield* put(markChatAsReadSucceeded({ chatId }))
   } catch (e) {
     yield* put(markChatAsReadFailed({ chatId }))
     const reportToSentry = yield* getContext('reportToSentry')
@@ -564,7 +559,8 @@ function* doMarkChatAsRead(action: ReturnType<typeof markChatAsRead>) {
       error: e as Error,
       additionalInfo: {
         chatId
-      }
+      },
+      feature: Feature.Chats
     })
   }
 }
@@ -578,7 +574,7 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
   try {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
-    const currentUserId = encodeHashId(userId)
+    const currentUserId = OptionalId.parse(userId)
     if (!currentUserId) {
       return
     }
@@ -614,7 +610,8 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
           eventName: Name.CHAT_BLAST_MESSAGE_SENT,
           audience: chat.audience,
           audienceContentType: chat.audience_content_type,
-          audienceContentId: decodeHashId(chat.audience_content_id) ?? undefined
+          audienceContentId:
+            OptionalHashId.parse(chat.audience_content_id) ?? undefined
         })
       )
     } else {
@@ -651,7 +648,8 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
       additionalInfo: {
         chatId,
         messageId: messageIdToUse
-      }
+      },
+      feature: Feature.Chats
     })
     yield* call(track, make({ eventName: Name.SEND_MESSAGE_FAILURE }))
   }
@@ -683,7 +681,7 @@ function* doFetchBlockees() {
     yield* put(
       fetchBlockeesSucceeded({
         blockees: data
-          .map((encodedId) => decodeHashId(encodedId))
+          .map((encodedId) => OptionalHashId.parse(encodedId))
           .filter(removeNullable)
       })
     )
@@ -691,7 +689,8 @@ function* doFetchBlockees() {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       name: 'Chats',
-      error: e as Error
+      error: e as Error,
+      feature: Feature.Chats
     })
   }
 }
@@ -704,7 +703,7 @@ function* doFetchBlockers() {
     yield* put(
       fetchBlockersSucceeded({
         blockers: data
-          .map((encodedId) => decodeHashId(encodedId))
+          .map((encodedId) => OptionalHashId.parse(encodedId))
           .filter(removeNullable)
       })
     )
@@ -712,7 +711,8 @@ function* doFetchBlockers() {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       name: 'Chats',
-      error: e as Error
+      error: e as Error,
+      feature: Feature.Chats
     })
   }
 }
@@ -724,7 +724,7 @@ function* doBlockUser(action: ReturnType<typeof blockUser>) {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
     yield* call([sdk.chats, sdk.chats.block], {
-      userId: encodeHashId(userId)
+      userId: Id.parse(userId)
     })
     yield* put(fetchBlockees())
     yield* call(
@@ -735,7 +735,8 @@ function* doBlockUser(action: ReturnType<typeof blockUser>) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       name: 'Chats',
-      error: e as Error
+      error: e as Error,
+      feature: Feature.Chats
     })
     yield* call(
       track,
@@ -749,14 +750,15 @@ function* doUnblockUser(action: ReturnType<typeof unblockUser>) {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
     yield* call([sdk.chats, sdk.chats.unblock], {
-      userId: encodeHashId(action.payload.userId)
+      userId: Id.parse(action.payload.userId)
     })
     yield* put(fetchBlockees())
   } catch (e) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       name: 'Chats',
-      error: e as Error
+      error: e as Error,
+      feature: Feature.Chats
     })
   }
 }
@@ -770,14 +772,14 @@ function* doFetchPermissions(action: ReturnType<typeof fetchPermissions>) {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
     const { data } = yield* call([sdk.chats, sdk.chats.getPermissions], {
-      userIds: action.payload.userIds.map((id) => encodeHashId(id))
+      userIds: action.payload.userIds.map((id) => Id.parse(id))
     })
     yield* put(
       fetchPermissionsSucceeded({
         permissions: data.reduce(
           (acc, p) => ({
             ...acc,
-            [decodeHashId(p.user_id)!]: p
+            [HashId.parse(p.user_id)]: p
           }),
           {} as Record<ID, ValidatedChatPermissions>
         )
@@ -787,7 +789,8 @@ function* doFetchPermissions(action: ReturnType<typeof fetchPermissions>) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       name: 'Chats',
-      error: e as Error
+      error: e as Error,
+      feature: Feature.Chats
     })
   }
 }
@@ -820,7 +823,8 @@ function* doFetchLinkUnfurlMetadata(
         chatId,
         messageId,
         href
-      }
+      },
+      feature: Feature.Chats
     })
   }
 }
@@ -848,7 +852,8 @@ function* doDeleteChat(action: ReturnType<typeof deleteChat>) {
       error: e as Error,
       additionalInfo: {
         chatId
-      }
+      },
+      feature: Feature.Chats
     })
     yield* call(track, make({ eventName: Name.DELETE_CHAT_FAILURE }))
   }
@@ -864,7 +869,8 @@ function* doLogError({ payload: { error } }: ReturnType<typeof logError>) {
     additionalInfo: {
       code,
       url
-    }
+    },
+    feature: Feature.Chats
   })
   yield* call(track, make({ eventName: Name.CHAT_WEBSOCKET_ERROR, code }))
 }

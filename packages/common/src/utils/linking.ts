@@ -25,3 +25,7 @@ export const isAllowedExternalLink = (link: string) => {
 export const makeSolanaTransactionLink = (signature: string) => {
   return `https://solscan.io/tx/${signature}`
 }
+
+export const makeSolanaAccountLink = (account: string) => {
+  return `https://solscan.io/account/${account}`
+}

@@ -133,8 +133,8 @@ export const SummaryTable = ({
           disabled={disableExtraItemsToggle}
         >
           {showExtraItems
-            ? hideExtraItemsCopy ?? messages.hideAdvanced
-            : showExtraItemsCopy ?? messages.showAdvanced}
+            ? (hideExtraItemsCopy ?? messages.hideAdvanced)
+            : (showExtraItemsCopy ?? messages.showAdvanced)}
         </PlainButton>
       </Flex>
     )

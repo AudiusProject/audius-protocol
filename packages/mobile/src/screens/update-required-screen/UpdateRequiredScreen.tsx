@@ -19,8 +19,8 @@ export const UpdateRequiredScreen = () => {
   const url = isSolanaPhone
     ? SOLANA_DAPP_STORE_LINK
     : isAndroid
-    ? ANDROID_PLAY_STORE_LINK
-    : IOS_APP_STORE_LINK
+      ? ANDROID_PLAY_STORE_LINK
+      : IOS_APP_STORE_LINK
 
   return (
     <NewVersionPrompt

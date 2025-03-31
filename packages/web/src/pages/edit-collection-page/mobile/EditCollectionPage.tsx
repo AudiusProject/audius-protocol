@@ -17,7 +17,6 @@ import {
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { IconCamera } from '@audius/harmony'
-import { replace } from 'connected-react-router'
 import { capitalize } from 'lodash'
 import { connect, useDispatch } from 'react-redux'
 import { useHistory, useParams, useRouteMatch } from 'react-router-dom'
@@ -30,13 +29,14 @@ import Grouping from 'components/groupable-list/Grouping'
 import { useTemporaryNavContext } from 'components/nav/mobile/NavContext'
 import TextElement, { Type } from 'components/nav/mobile/TextElement'
 import TrackList from 'components/track/mobile/TrackList'
-import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
+import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useIsUnauthorizedForHandleRedirect } from 'hooks/useManagedAccountNotAllowedRedirect'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import UploadStub from 'pages/profile-page/components/mobile/UploadStub'
 import { track } from 'services/analytics'
 import { AppState } from 'store/types'
 import { resizeImage } from 'utils/imageProcessingUtil'
+import { replace } from 'utils/navigation'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './EditCollectionPage.module.css'
@@ -44,7 +44,7 @@ import RemovePlaylistTrackDrawer from './RemoveCollectionTrackDrawer'
 
 const { editPlaylist, orderPlaylist, removeTrackFromPlaylist } =
   cacheCollectionsActions
-const getAccountUser = accountSelectors.getAccountUser
+const { getHasAccount } = accountSelectors
 
 const getMessages = (collectionType: 'album' | 'playlist') => ({
   editPlaylist: `Edit ${capitalize(collectionType)}`,
@@ -67,8 +67,8 @@ type EditCollectionPageProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
 const g = withNullGuard((props: EditCollectionPageProps) => {
-  const { account } = props
-  if (account) return { ...props, account }
+  const { hasAccount } = props
+  if (hasAccount) return { ...props }
 })
 
 const EditCollectionPage = g(
@@ -126,10 +126,10 @@ const EditCollectionPage = g(
       }
     }, [setReorderedTracks, reorderedTracks, tracks])
 
-    const artworkUrl = useCollectionCoverArt2(
-      playlist_id,
-      SquareSizes.SIZE_1000_BY_1000
-    )
+    const artworkUrl = useCollectionCoverArt({
+      collectionId: playlist_id,
+      size: SquareSizes.SIZE_1000_BY_1000
+    })
 
     const [isProcessingImage, setIsProcessingImage] = useState(false)
     const [didChangeArtwork, setDidChangeArtwork] = useState(false)
@@ -459,7 +459,7 @@ const EditCollectionPage = g(
 
 function mapStateToProps(state: AppState) {
   return {
-    account: getAccountUser(state)
+    hasAccount: getHasAccount(state)
   }
 }
 

@@ -1,5 +1,6 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
+import { useUsers } from '@audius/common/api'
 import {
   Name,
   FollowSource,
@@ -14,26 +15,20 @@ import {
   User
 } from '@audius/common/models'
 import {
-  cacheUsersSelectors,
   usersSocialActions as socialActions,
   tippingActions,
   usePremiumContentPurchaseModal,
   gatedContentSelectors,
   PurchaseableContentType
 } from '@audius/common/store'
-import {
-  formatPrice,
-  removeNullable,
-  Nullable,
-  route
-} from '@audius/common/utils'
+import { formatPrice, removeNullable, Nullable } from '@audius/common/utils'
 import {
   Flex,
   Text,
   IconExternalLink,
   IconCart,
   IconCollectible,
-  IconSpecialAccess,
+  IconSparkles,
   IconLogoCircleETH,
   IconLogoCircleSOL,
   useTheme,
@@ -42,27 +37,23 @@ import {
   IconTipping
 } from '@audius/harmony'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
+import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { UserLink } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import UserBadges from 'components/user-badges/UserBadges'
-import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
-import { emptyStringGuard } from 'pages/track-page/utils'
+import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { make, track } from 'services/analytics'
-import { AppState } from 'store/types'
 
-import { LockedStatusPill } from '../locked-status-pill'
+import { LockedStatusBadge } from '../locked-status-badge'
 
 import styles from './GiantTrackTile.module.css'
-const { profilePage } = route
 
-const { getUsers } = cacheUsersSelectors
 const { beginTip } = tippingActions
 const { getGatedContentStatusMap } = gatedContentSelectors
+
+const BUY_BUTTON_WIDTH = 250
 
 const getMessages = (contentType: PurchaseableContentType) => ({
   howToUnlock: 'HOW TO UNLOCK',
@@ -108,7 +99,6 @@ type GatedContentAccessSectionProps = {
   followee: Nullable<User>
   tippedUser: Nullable<User>
   goToCollection: () => void
-  renderArtist: (entity: User) => JSX.Element
   isOwner: boolean
   className?: string
   buttonClassName?: string
@@ -122,10 +112,9 @@ const LockedGatedContentSection = ({
   followee,
   tippedUser,
   goToCollection,
-  renderArtist,
   className,
   buttonClassName,
-  source: premiumModalSource
+  source
 }: GatedContentAccessSectionProps) => {
   const messages = getMessages(contentType)
   const dispatch = useDispatch()
@@ -141,14 +130,16 @@ const LockedGatedContentSection = ({
     : FollowSource.HOW_TO_UNLOCK_TRACK_PAGE
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
   const { spacing } = useTheme()
+  const [searchParams] = useSearchParams()
+  const openCheckout = searchParams.get('checkout') === 'true'
 
-  const handlePurchase = useAuthenticatedCallback(() => {
+  const handlePurchase = useRequiresAccountCallback(() => {
     if (lockedContentModalVisibility) {
       setLockedContentModalVisibility(false)
     }
     openPremiumContentPurchaseModal(
       { contentId, contentType },
-      { source: premiumModalSource ?? ModalSource.TrackDetails }
+      { source: source ?? ModalSource.TrackDetails }
     )
   }, [
     contentId,
@@ -156,10 +147,38 @@ const LockedGatedContentSection = ({
     lockedContentModalVisibility,
     openPremiumContentPurchaseModal,
     setLockedContentModalVisibility,
-    premiumModalSource
+    source
   ])
 
-  const handleSendTip = useAuthenticatedCallback(() => {
+  const handlePurchaseViaGuestCheckout = useCallback(() => {
+    if (lockedContentModalVisibility) {
+      setLockedContentModalVisibility(false)
+    }
+    openPremiumContentPurchaseModal(
+      { contentId, contentType },
+      { source: source ?? ModalSource.TrackDetails }
+    )
+  }, [
+    contentId,
+    contentType,
+    lockedContentModalVisibility,
+    openPremiumContentPurchaseModal,
+    setLockedContentModalVisibility,
+    source
+  ])
+
+  useEffect(() => {
+    if (openCheckout && isUSDCPurchaseGated) {
+      handlePurchaseViaGuestCheckout()
+    }
+  }, [
+    openCheckout,
+    handlePurchase,
+    isUSDCPurchaseGated,
+    handlePurchaseViaGuestCheckout
+  ])
+
+  const handleSendTip = useRequiresAccountCallback(() => {
     dispatch(
       beginTip({ user: tippedUser, source: tipSource, trackId: contentId })
     )
@@ -176,7 +195,7 @@ const LockedGatedContentSection = ({
     setLockedContentModalVisibility
   ])
 
-  const handleFollow = useAuthenticatedCallback(() => {
+  const handleFollow = useRequiresAccountCallback(() => {
     if (isContentFollowGated(streamConditions)) {
       dispatch(
         socialActions.followUser(
@@ -207,25 +226,25 @@ const LockedGatedContentSection = ({
         chain === Chain.Eth ? IconLogoCircleETH : IconLogoCircleSOL
       return (
         <Text variant='body' strength='strong'>
-          <div className={styles.collectibleGatedDescription}>
+          <Flex className={styles.collectibleGatedDescription}>
             {messages.unlockCollectibleGatedContent}
-          </div>
-          <div
+          </Flex>
+          <Flex
             className={styles.gatedContentSectionCollection}
             onClick={goToCollection}
           >
             {imageUrl && (
-              <div className={styles.collectionIconsContainer}>
+              <Flex className={styles.collectionIconsContainer}>
                 <img
                   src={imageUrl}
                   alt={`${name} nft collection`}
                   className={styles.collectibleImage}
                 />
                 <ChainIcon css={{ position: 'relative', left: -spacing.s }} />
-              </div>
+              </Flex>
             )}
             <span>{name}</span>
-          </div>
+          </Flex>
         </Text>
       )
     }
@@ -320,7 +339,7 @@ const LockedGatedContentSection = ({
                 contentType
               })
             )
-            handlePurchase()
+            handlePurchaseViaGuestCheckout()
           }}
           fullWidth
         >
@@ -336,10 +355,10 @@ const LockedGatedContentSection = ({
   }
 
   return (
-    <Flex className={className} justifyContent='space-between'>
+    <Flex w='100%' justifyContent='space-between'>
       <Flex gap='s' direction='column'>
         <Flex alignItems='center' gap='s'>
-          <LockedStatusPill
+          <LockedStatusBadge
             locked
             variant={isUSDCPurchaseGated ? 'premium' : 'gated'}
           />
@@ -349,9 +368,7 @@ const LockedGatedContentSection = ({
         </Flex>
         {renderLockedDescription()}
       </Flex>
-      <div className={cn(styles.gatedContentSectionButton, buttonClassName)}>
-        {renderButton()}
-      </div>
+      <Flex w={BUY_BUTTON_WIDTH}>{renderButton()}</Flex>
     </Flex>
   )
 }
@@ -362,9 +379,11 @@ const UnlockingGatedContentSection = ({
   followee,
   tippedUser,
   goToCollection,
-  renderArtist,
   className
-}: GatedContentAccessSectionProps) => {
+}: Omit<
+  GatedContentAccessSectionProps,
+  'contentId' | 'buttonClassName' | 'source' | 'trackOwner'
+>) => {
   const messages = getMessages(contentType)
   const renderUnlockingDescription = () => {
     if (isContentCollectibleGated(streamConditions)) {
@@ -393,7 +412,7 @@ const UnlockingGatedContentSection = ({
       return (
         <div>
           <span>{messages.thankYouForSupporting}&nbsp;</span>
-          {renderArtist(tippedUser)}
+          <UserLink userId={tippedUser.user_id} />
           <span className={styles.suffix}>
             {messages.unlockingTipGatedContentSuffix}
           </span>
@@ -445,11 +464,13 @@ const UnlockedGatedContentSection = ({
   followee,
   tippedUser,
   goToCollection,
-  renderArtist,
   isOwner,
   trackOwner,
   className
-}: GatedContentAccessSectionProps) => {
+}: Omit<
+  GatedContentAccessSectionProps,
+  'contentId' | 'buttonClassName' | 'source'
+>) => {
   const messages = getMessages(contentType)
   const renderUnlockedDescription = () => {
     if (isContentCollectibleGated(streamConditions)) {
@@ -498,26 +519,20 @@ const UnlockedGatedContentSection = ({
 
     if (isContentUSDCPurchaseGated(streamConditions)) {
       return isOwner ? (
-        <div>
-          <span>
-            {messages.usersCanPurchase(
-              formatPrice(streamConditions.usdc_purchase.price)
-            )}
-          </span>
-        </div>
+        messages.usersCanPurchase(
+          formatPrice(streamConditions.usdc_purchase.price)
+        )
       ) : (
-        <Flex direction='row' wrap='wrap'>
-          <span>{messages.purchased}&nbsp;</span>
+        <>
+          {messages.purchased}&nbsp;
           {trackOwner ? (
             <>
-              <Flex direction='row'>
-                {messages.thankYouForSupporting}&nbsp;
-                {renderArtist(trackOwner)}
-                {messages.period}
-              </Flex>
+              {messages.thankYouForSupporting}&nbsp;
+              <UserLink userId={trackOwner.user_id} />
+              {messages.period}
             </>
           ) : null}
-        </Flex>
+        </>
       )
     }
 
@@ -527,7 +542,7 @@ const UnlockedGatedContentSection = ({
     return null
   }
 
-  let IconComponent = IconSpecialAccess
+  let IconComponent = IconSparkles
   let gatedConditionTitle = messages.specialAccess
 
   if (isContentCollectibleGated(streamConditions)) {
@@ -539,7 +554,7 @@ const UnlockedGatedContentSection = ({
   }
 
   return (
-    <div className={className}>
+    <Flex className={className}>
       <Text
         variant='label'
         size='l'
@@ -551,7 +566,7 @@ const UnlockedGatedContentSection = ({
         {isOwner ? (
           <IconComponent className={styles.gatedContentIcon} />
         ) : (
-          <LockedStatusPill
+          <LockedStatusBadge
             locked={false}
             variant={
               isContentUSDCPurchaseGated(streamConditions) ? 'premium' : 'gated'
@@ -567,7 +582,7 @@ const UnlockedGatedContentSection = ({
       >
         {renderUnlockedDescription()}
       </Text>
-    </div>
+    </Flex>
   )
 }
 
@@ -599,7 +614,6 @@ export const GatedContentSection = ({
   ownerId,
   source
 }: GatedContentSectionProps) => {
-  const dispatch = useDispatch()
   const gatedContentStatusMap = useSelector(getGatedContentStatusMap)
   const gatedContentStatus = gatedContentStatusMap[contentId] ?? null
 
@@ -611,14 +625,12 @@ export const GatedContentSection = ({
     isTipGated ||
     isContentCollectibleGated(streamConditions) ||
     isUSDCPurchaseGated
-  const users = useSelector<AppState, { [id: ID]: User }>((state) =>
-    getUsers(state, {
-      ids: [
-        isFollowGated ? streamConditions.follow_user_id : null,
-        isTipGated ? streamConditions.tip_user_id : null,
-        isUSDCPurchaseGated ? ownerId : null
-      ].filter(removeNullable)
-    })
+  const { byId: users } = useUsers(
+    [
+      isFollowGated ? streamConditions.follow_user_id : null,
+      isTipGated ? streamConditions.tip_user_id : null,
+      isUSDCPurchaseGated ? ownerId : null
+    ].filter(removeNullable)
   )
   const followee = isFollowGated ? users[streamConditions.follow_user_id] : null
   const trackOwner =
@@ -648,77 +660,48 @@ export const GatedContentSection = ({
     }
   }, [streamConditions])
 
-  const renderArtist = useCallback(
-    (entity: User) => (
-      <ArtistPopover
-        handle={entity.handle}
-        mouseEnterDelay={0.1}
-        component='span'
-      >
-        <Flex gap='xs' alignItems='center'>
-          <h2
-            className={styles.gatedContentOwner}
-            onClick={() =>
-              dispatch(pushRoute(profilePage(emptyStringGuard(entity.handle))))
-            }
-          >
-            {entity.name}
-          </h2>
-          <UserBadges
-            userId={entity.user_id}
-            className={styles.badgeIcon}
-            badgeSize={14}
-            useSVGTiers
-          />
-        </Flex>
-      </ArtistPopover>
-    ),
-    [dispatch]
-  )
-
   if (!streamConditions) return null
   if (!shouldDisplay) return null
 
   if (hasStreamAccess) {
     return (
-      <div className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
+      <Flex
+        className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}
+      >
         <UnlockedGatedContentSection
-          contentId={contentId}
           contentType={contentType}
-          trackOwner={trackOwner}
           streamConditions={streamConditions}
           followee={followee}
           tippedUser={tippedUser}
           goToCollection={handleGoToCollection}
-          renderArtist={renderArtist}
           isOwner={isOwner}
           className={className}
+          trackOwner={trackOwner}
         />
-      </div>
+      </Flex>
     )
   }
 
   if (gatedContentStatus === 'UNLOCKING') {
     return (
-      <div className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
+      <Flex
+        className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}
+      >
         <UnlockingGatedContentSection
-          contentId={contentId}
           contentType={contentType}
-          trackOwner={trackOwner}
           streamConditions={streamConditions}
           followee={followee}
           tippedUser={tippedUser}
           goToCollection={handleGoToCollection}
-          renderArtist={renderArtist}
           isOwner={isOwner}
           className={className}
         />
-      </div>
+      </Flex>
     )
   }
 
   return (
-    <div className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
+    <Flex className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
       <LockedGatedContentSection
         contentId={contentId}
         contentType={contentType}
@@ -727,12 +710,11 @@ export const GatedContentSection = ({
         followee={followee}
         tippedUser={tippedUser}
         goToCollection={handleGoToCollection}
-        renderArtist={renderArtist}
         isOwner={isOwner}
         className={cn(styles.gatedContentSectionLocked, className)}
         buttonClassName={buttonClassName}
         source={source}
       />
-    </div>
+    </Flex>
   )
 }

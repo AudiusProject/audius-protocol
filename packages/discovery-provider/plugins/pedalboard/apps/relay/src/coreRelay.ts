@@ -1,54 +1,117 @@
-import { ethers } from "ethers";
-import { decodeAbi } from "./abi.js";
-import { ProtocolClient } from "./core-sdk/protocol_grpc_pb.js";
-import { ManageEntityLegacy, SendTransactionRequest, SignedTransaction } from "./core-sdk/protocol_pb.js";
-import { ValidatedRelayRequest } from "./types/relay";
-import * as grpc from '@grpc/grpc-js';
-import { error } from "console";
-import { readConfig } from "./config/config.js";
-import pino from "pino";
+import { ethers } from 'ethers'
+import { decodeAbi } from './abi.js'
+import { create } from '@bufbuild/protobuf'
+import { createClient, Client } from '@connectrpc/connect'
+import { createGrpcTransport } from '@connectrpc/connect-node'
+import {
+  Protocol,
+  SignedTransactionSchema,
+  ManageEntityLegacySchema
+} from './core-sdk/protocol_pb'
+import { ValidatedRelayRequest } from './types/relay'
+import { readConfig } from './config/config.js'
+import pino from 'pino'
 
-let client: ProtocolClient | null = null
+let client: Client<typeof Protocol> | null = null
 
-export const coreRelay = async (logger: pino.Logger, requestId: string, request: ValidatedRelayRequest) => {
+type CoreRelayResponse = {
+  status: boolean
+  transactionHash: string
+  transactionIndex: number
+  blockHash: string
+  blockNumber: number
+  from: string
+  to: string
+  contractAddress?: string
+  cumulativeGasUsed: number
+  gasUsed: number
+  effectiveGasPrice: number
+  // logs: Log[]
+  // logsBloom: string
+}
+
+export const coreRelay = async (
+  logger: pino.Logger,
+  requestId: string,
+  request: ValidatedRelayRequest
+): Promise<CoreRelayResponse | null> => {
   try {
     if (client === null) {
       const config = readConfig()
-      client = new ProtocolClient(config.coreEndpoint, grpc.credentials.createInsecure())
+      const transport = createGrpcTransport({
+        baseUrl: config.coreEndpoint,
+        useBinaryFormat: true
+      })
+      client = createClient(Protocol, transport)
     }
 
     const { encodedABI } = request
 
-    const { userId: userIdBig, entityId: entityIdBig, entityType, action, metadata: metadataAny, subjectSig } = decodeAbi(encodedABI)
-    const userId = userIdBig.toNumber()
-    const entityId = entityIdBig.toNumber()
-    const metadata = JSON.stringify(metadataAny)
+    const {
+      userId: userIdBig,
+      entityId: entityIdBig,
+      entityType,
+      action,
+      metadata: metadataAny,
+      subjectSig,
+      nonce: nonceBytes
+    } = decodeAbi(encodedABI)
+
+    const signer = request.senderAddress
+    const userId = BigInt(userIdBig.toString())
+    const entityId = BigInt(entityIdBig.toString())
+    const metadata = metadataAny as string
     const signature = ethers.utils.hexlify(subjectSig)
+    const nonce = ethers.utils.hexlify(nonceBytes)
 
-    const manageEntity = new ManageEntityLegacy()
-    manageEntity.setUserId(userId)
-    manageEntity.setEntityId(entityId)
-    manageEntity.setEntityType(entityType)
-    manageEntity.setAction(action)
-    manageEntity.setMetadata(metadata)
-    manageEntity.setSignature(signature)
-
-    const signedTransaction = new SignedTransaction()
-    signedTransaction.setSignature(signature)
-    signedTransaction.setManageEntity(manageEntity)
-    signedTransaction.setRequestId(requestId)
-
-    const sendRequest = new SendTransactionRequest()
-    sendRequest.setTransaction(signedTransaction)
-
-    client.sendTransaction(sendRequest, (error, res) => {
-      if (error) {
-        logger.error("core relay error:", error)
-        return
-      }
-      logger.info({ tx: res.getTransaction()?.getManageEntity()?.toObject(), txhash: res.getTxhash() }, "core relay success")
+    const manageEntity = create(ManageEntityLegacySchema, {
+      userId,
+      entityId,
+      entityType,
+      action,
+      metadata,
+      signature,
+      signer,
+      nonce
     })
+
+    const signedTransaction = create(SignedTransactionSchema, {
+      signature,
+      transaction: {
+        case: 'manageEntity' as const,
+        value: manageEntity
+      },
+      requestId: requestId
+    })
+
+    const res = await client.sendTransaction({
+      transaction: signedTransaction
+    })
+
+    const { transaction, txhash } = res
+    logger.info(
+      {
+        tx: transaction,
+        txhash: txhash,
+        block: res.blockHeight,
+        blockhash: res.blockHash
+      },
+      'core relay success'
+    )
+    return {
+      status: true,
+      transactionHash: txhash,
+      transactionIndex: 0,
+      blockHash: res.blockHash,
+      blockNumber: Number(res.blockHeight),
+      from: signer || '',
+      to: signer || '',
+      cumulativeGasUsed: 10,
+      gasUsed: 10,
+      effectiveGasPrice: 420
+    }
   } catch (e) {
-    logger.error("core relay failure:", "error", e)
+    logger.error({ err: e }, 'core relay failure:')
+    return null
   }
 }

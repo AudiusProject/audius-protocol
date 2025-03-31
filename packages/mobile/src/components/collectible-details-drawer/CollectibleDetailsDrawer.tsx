@@ -1,9 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
-import {
-  cacheUsersSelectors,
-  collectibleDetailsUISelectors
-} from '@audius/common/store'
+import { useUser } from '@audius/common/api'
+import { collectibleDetailsUISelectors } from '@audius/common/store'
 import { ScrollView, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -18,7 +16,6 @@ import { CollectibleDate } from './CollectibleDate'
 import { CollectibleLink } from './CollectibleLink'
 import { CollectibleMedia } from './CollectibleMedia'
 const { getCollectible, getCollectibleOwnerId } = collectibleDetailsUISelectors
-const { getUser } = cacheUsersSelectors
 
 const MODAL_NAME = 'CollectibleDetails'
 
@@ -34,6 +31,7 @@ export const messages = {
 const useStyles = makeStyles(({ spacing, palette }) => ({
   root: {
     padding: spacing(6),
+    marginTop: spacing(4),
     paddingTop: spacing(2)
   },
   details: {
@@ -84,7 +82,7 @@ export const CollectibleDetailsDrawer = () => {
   const styles = useStyles()
   const collectible = useSelector(getCollectible)
   const ownerId = useSelector(getCollectibleOwnerId)
-  const owner = useSelector((state) => getUser(state, { id: ownerId }))
+  const { data: owner } = useUser(ownerId)
 
   const formattedLink = useMemo(() => {
     const url = collectible?.externalLink

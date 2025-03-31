@@ -116,8 +116,8 @@ export const LineupTileAccessStatus = ({
   const buttonText = isUSDCPurchase
     ? messages.price(formatPrice(streamConditions.usdc_purchase.price))
     : isUnlocking
-    ? messages.unlocking
-    : messages.locked
+      ? messages.unlocking
+      : messages.locked
 
   const showButtonText = !isUSDCPurchase || (!hasStreamAccess && !isUnlocking)
 
@@ -148,17 +148,17 @@ export const LineupTileAccessStatus = ({
         gap='xs'
       >
         {hasStreamAccess ? (
-          <IconLockUnlocked color='staticWhite' size='xs' />
+          <IconLockUnlocked color='white' size='xs' />
         ) : isUnlocking ? (
           <LoadingSpinner
             style={styles.loadingSpinner}
             fill={color.icon.staticWhite}
           />
         ) : (
-          <IconLock color='staticWhite' size='s' />
+          <IconLock color='white' size='s' />
         )}
         {showButtonText ? (
-          <Text color='staticWhite' variant='label' size='m'>
+          <Text color='white' variant='label' size='m'>
             {buttonText}
           </Text>
         ) : null}

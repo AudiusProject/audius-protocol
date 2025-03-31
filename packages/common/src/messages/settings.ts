@@ -12,7 +12,6 @@ export const settingsMessages = {
   lightMode: 'Light',
   autoMode: 'Auto',
   matrixMode: 'Matrix',
-  debugMode: 'Debug',
   signOut: 'Sign Out',
 
   aiGeneratedCardTitle: 'AI Generated music',

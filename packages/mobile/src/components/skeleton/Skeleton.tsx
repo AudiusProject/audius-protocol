@@ -33,7 +33,8 @@ const useStyles = makeStyles(({ palette }) => ({
   }
 }))
 
-const Skeleton = ({ width, height, style, noShimmer }: SkeletonProps) => {
+export const Skeleton = (props: SkeletonProps) => {
+  const { width, height, style, noShimmer } = props
   const styles = useStyles()
   const shimmerPos = useRef(new Animated.Value(0)).current
   const { skeleton, skeletonHighlight } = useThemeColors()
@@ -86,7 +87,5 @@ type StaticSkeletonProps = SkeletonProps
 export const StaticSkeleton = (props: StaticSkeletonProps) => {
   return <Skeleton noShimmer {...props} />
 }
-
-export { Skeleton }
 
 export default Skeleton

@@ -3,6 +3,7 @@ import { CommonState } from '~/store/commonStore'
 
 import { Kind, ID, UID, Status, Track, StemTrack } from '../../../models'
 
+/** @deprecated Use useTrack instead */
 export const getTrack = (
   state: CommonState,
   props: { id?: ID | null; uid?: UID | null; permalink?: string | null }
@@ -22,6 +23,7 @@ export const getTrack = (
 export const getStatus = (state: CommonState, props: { id?: ID | null }) =>
   (props.id && state.tracks.statuses[props.id]) || null
 
+/** @deprecated Use useTracks instead */
 export const getTracks = (
   state: CommonState,
   props: {
@@ -61,10 +63,13 @@ export const getTracks = (
 
 // TODO:
 export const getTracksByUid = (state: CommonState) => {
-  return Object.keys(state.tracks.uids).reduce((entries, uid) => {
-    entries[uid] = getTrack(state, { uid })
-    return entries
-  }, {} as { [uid: string]: Track | null })
+  return Object.keys(state.tracks.uids).reduce(
+    (entries, uid) => {
+      entries[uid] = getTrack(state, { uid })
+      return entries
+    },
+    {} as { [uid: string]: Track | null }
+  )
 }
 
 export const getStatuses = (state: CommonState, props: { ids: ID[] }) => {
@@ -77,12 +82,6 @@ export const getStatuses = (state: CommonState, props: { ids: ID[] }) => {
   })
   return statuses
 }
-
-export const getTrackStreamUrl = (state: CommonState, trackId: ID) =>
-  state.tracks?.streamUrls?.[trackId]
-
-export const getTrackStreamUrls = (state: CommonState) =>
-  state.tracks?.streamUrls
 
 export const getStems = (state: CommonState, trackId?: ID) => {
   if (!trackId) return []

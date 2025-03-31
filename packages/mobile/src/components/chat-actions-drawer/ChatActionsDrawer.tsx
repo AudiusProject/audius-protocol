@@ -1,16 +1,14 @@
 import { useCallback } from 'react'
 
 import { chatSelectors } from '@audius/common/store'
-import { View, TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Text } from 'app/components/core'
-import { NativeDrawer } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import type { AppState } from 'app/store'
 import { setVisibility } from 'app/store/drawers/slice'
-import { makeStyles } from 'app/styles'
+
+import ActionDrawer from '../action-drawer'
 
 const { getDoesBlockUser } = chatSelectors
 
@@ -24,31 +22,7 @@ const messages = {
   deleteConversation: 'Delete Conversation'
 }
 
-const useStyles = makeStyles(({ spacing, typography, palette }) => ({
-  drawer: {
-    marginVertical: spacing(7)
-  },
-  text: {
-    fontSize: 21,
-    lineHeight: spacing(6.5),
-    letterSpacing: 0.233333,
-    fontFamily: typography.fontByWeight.demiBold,
-    color: palette.secondary,
-    paddingVertical: spacing(3)
-  },
-  deleteText: {
-    color: palette.accentRed
-  },
-  row: {
-    alignItems: 'center',
-    width: '100%',
-    borderBottomWidth: 1,
-    borderBottomColor: palette.neutralLight9
-  }
-}))
-
 export const ChatActionsDrawer = () => {
-  const styles = useStyles()
   const dispatch = useDispatch()
   const navigation = useNavigation()
   const { data } = useDrawer('ChatActions')
@@ -105,35 +79,29 @@ export const ChatActionsDrawer = () => {
   }, [chatId, closeDrawer, dispatch])
 
   return (
-    <NativeDrawer drawerName={CHAT_ACTIONS_MODAL_NAME}>
-      <View style={styles.drawer}>
-        <View style={styles.row}>
-          <TouchableOpacity onPress={handleVisitProfilePress}>
-            <Text style={styles.text}>{messages.visitProfile}</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.row}>
-          <TouchableOpacity onPress={handleBlockMessagesPress}>
-            <Text style={styles.text}>
-              {doesBlockUser
-                ? messages.unblockMessages
-                : messages.blockMessages}
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.row}>
-          <TouchableOpacity onPress={handleReportPress}>
-            <Text style={styles.text}>{messages.reportAbuse}</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.row}>
-          <TouchableOpacity onPress={handleDeletePress}>
-            <Text style={[styles.text, styles.deleteText]}>
-              {messages.deleteConversation}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </NativeDrawer>
+    <ActionDrawer
+      drawerName={CHAT_ACTIONS_MODAL_NAME}
+      rows={[
+        {
+          text: messages.visitProfile,
+          callback: handleVisitProfilePress
+        },
+        {
+          text: doesBlockUser
+            ? messages.unblockMessages
+            : messages.blockMessages,
+          callback: handleBlockMessagesPress
+        },
+        {
+          text: messages.reportAbuse,
+          callback: handleReportPress
+        },
+        {
+          text: messages.deleteConversation,
+          callback: handleDeletePress,
+          isDestructive: true
+        }
+      ]}
+    />
   )
 }

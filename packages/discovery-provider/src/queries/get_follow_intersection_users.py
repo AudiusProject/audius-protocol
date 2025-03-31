@@ -1,49 +1,41 @@
-from src.models.social.follow import Follow
-from src.models.users.user import User
-from src.queries import response_name_constants
-from src.queries.query_helpers import (
-    get_current_user_id,
-    paginate_query,
-    populate_user_metadata,
-)
-from src.utils import helpers
+from sqlalchemy.sql import text
+
+from src.queries.get_unpopulated_users import get_unpopulated_users
+from src.queries.query_helpers import populate_user_metadata
 from src.utils.db_session import get_db_read_replica
 
+sql = text(
+    """
+select
+  x.follower_user_id
+from follows x
+join aggregate_user au on x.follower_user_id = au.user_id
+join follows me
+  on me.follower_user_id = :my_id
+  and me.followee_user_id = x.follower_user_id
+  and me.is_delete = false
+where x.followee_user_id = :other_user_id
+  and x.is_delete = false
+order by follower_count desc
+limit :limit
+offset :offset
+"""
+)
 
-def get_follow_intersection_users(followee_user_id, follower_user_id):
+
+def get_follow_intersection_users(args):
     users = []
+    my_id = args.get("my_id")
+
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        query = session.query(User).filter(
-            User.is_current == True,
-            User.user_id.in_(
-                session.query(Follow.follower_user_id)
-                .filter(
-                    Follow.followee_user_id == followee_user_id,
-                    Follow.is_current == True,
-                    Follow.is_delete == False,
-                )
-                .intersect(
-                    session.query(Follow.followee_user_id).filter(
-                        Follow.follower_user_id == follower_user_id,
-                        Follow.is_current == True,
-                        Follow.is_delete == False,
-                    )
-                )
-            ),
-        )
-        users = paginate_query(query).all()
-        users = helpers.query_result_to_list(users)
-        user_ids = [user[response_name_constants.user_id] for user in users]
+        rows = session.execute(sql, args)
+        user_ids = [r[0] for r in rows]
 
-        current_user_id = get_current_user_id(required=False)
+        # get all users for above user_ids
+        users = get_unpopulated_users(session, user_ids)
 
         # bundle peripheral info into user results
-        users = populate_user_metadata(session, user_ids, users, current_user_id)
-
-        # order by follower_count desc
-        users.sort(
-            key=lambda user: user[response_name_constants.follower_count], reverse=True
-        )
+        users = populate_user_metadata(session, user_ids, users, my_id)
 
     return users

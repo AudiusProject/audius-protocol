@@ -1,3 +1,4 @@
+import { imageProfilePicEmpty } from '@audius/common/assets'
 import { Name, SquareSizes } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import {
@@ -23,7 +24,7 @@ import {
   getProfileImageField
 } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import { useSelector } from 'utils/reducer'
 
 import { CoverPhotoBanner } from './CoverPhotoBanner'
@@ -66,11 +67,11 @@ const ProfileImageAvatar = ({
       }}
       isLoading={false}
     >
-      {isEditing && !imageUrl ? (
+      {isEditing && (!imageUrl || imageUrl === imageProfilePicEmpty) ? (
         <IconButton
           aria-label='Upload a profile photo'
           size='l'
-          color='staticWhite'
+          color='white'
           shadow='drop'
           icon={IconCamera}
         />
@@ -95,11 +96,11 @@ export const AccountHeader = (props: AccountHeaderProps) => {
   const { value: displayNameField } = useSelector(getNameField)
   const { value: handleField } = useSelector(getHandleField)
   const isVerified = useSelector(getIsVerified)
-  const userId = useSelector(getUserId) ?? {}
-  const accountProfilePic = useProfilePicture(
-    userId as number,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const userId = useSelector(getUserId)
+  const accountProfilePic = useProfilePicture({
+    userId: userId ?? undefined,
+    size: SquareSizes.SIZE_150_BY_150
+  })
   const accountHandle = useSelector(getUserHandle)
   const accountDisplayName = useSelector(getUserName)
 
@@ -113,7 +114,8 @@ export const AccountHeader = (props: AccountHeaderProps) => {
   const { isMobile } = useMedia()
   const isSmallSize = isEditing || isMobile || size === 'small'
 
-  const savedProfileImage = profileImageField?.url ?? accountProfilePic
+  const savedProfileImage =
+    profileImageField?.url || accountProfilePic || imageProfilePicEmpty
 
   return (
     <Box w='100%'>
@@ -217,7 +219,7 @@ export const AccountHeader = (props: AccountHeaderProps) => {
             variant='heading'
             size={isSmallSize ? 's' : 'xl'}
             strength='strong'
-            color='staticWhite'
+            color='white'
             shadow='emphasis'
             tag='p'
             css={{
@@ -232,7 +234,7 @@ export const AccountHeader = (props: AccountHeaderProps) => {
             <Text
               variant='title'
               size={isSmallSize ? 'm' : 'l'}
-              color='staticWhite'
+              color='white'
               shadow='emphasis'
             >
               @{handle}

@@ -1,8 +1,6 @@
 import { ID, UID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 
-export type CacheType = 'normal' | 'fast' | 'safe-fast'
-
 export type Entry<EntryT extends Metadata = Metadata> = {
   id: ID
   uid?: UID
@@ -11,7 +9,7 @@ export type Entry<EntryT extends Metadata = Metadata> = {
 }
 
 export type EntryMap<EntryT extends Metadata = Metadata> = {
-  [id: string]: Entry<EntryT>
+  [id: string]: EntryT
 }
 
 export type EntriesByKind<EntryT extends Metadata = Metadata> = {
@@ -26,13 +24,4 @@ export type Metadata = {
 export type SubscriberInfo = {
   uid: UID
   id: string | number
-}
-
-export type SubscriptionInfo = SubscriberInfo & {
-  kind: Kind
-}
-
-export type UnsubscribeInfo = {
-  uid: UID
-  id?: string | number
 }

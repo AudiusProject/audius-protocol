@@ -125,8 +125,8 @@ const getConfig = (environment: SdkConfig['environment']) => {
     environment === 'development'
       ? developmentConfig
       : environment === 'staging'
-      ? stagingConfig
-      : productionConfig
+        ? stagingConfig
+        : productionConfig
   return config
 }
 
@@ -289,9 +289,8 @@ const updateLookupTable = async ({
   const connection = sdk.services.solanaClient.connection
 
   const lookupTableAddress = sdk.services.rewardManagerClient.lookupTable
-  const lookupTableAccount = await connection.getAddressLookupTable(
-    lookupTableAddress
-  )
+  const lookupTableAccount =
+    await connection.getAddressLookupTable(lookupTableAddress)
   if (!lookupTableAccount.value) {
     console.warn(
       'Lookup table',

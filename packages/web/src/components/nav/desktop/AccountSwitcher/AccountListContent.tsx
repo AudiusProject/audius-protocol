@@ -1,4 +1,10 @@
-import { ReactNode, useCallback, useMemo } from 'react'
+import {
+  ReactNode,
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useState
+} from 'react'
 
 import { ID, ManagedUserMetadata, UserMetadata } from '@audius/common/models'
 import {
@@ -10,6 +16,8 @@ import {
   useTheme
 } from '@audius/harmony'
 
+import { useMainContentRef } from 'pages/MainContentContext'
+
 import { AccountSwitcherRow } from './AccountSwitcherRow'
 
 const messages = {
@@ -17,7 +25,7 @@ const messages = {
   managedAccounts: 'Managed Accounts'
 }
 
-export type AccountListContentProps = {
+type AccountListContentProps = {
   accounts: ManagedUserMetadata[]
   managerAccount: UserMetadata
   currentUserId: ID
@@ -34,7 +42,9 @@ export const AccountListContent = ({
   navBackElement,
   fullWidth
 }: AccountListContentProps) => {
+  const mainContentRef = useMainContentRef()
   const { spacing } = useTheme()
+  const [contentHeight, setContentHeight] = useState(0)
   // If the current user is one of the managed account, sort it to the top of
   // the list
   const accounts = useMemo(() => {
@@ -46,6 +56,15 @@ export const AccountListContent = ({
     const selectedAccount = withoutSelected.splice(selectedIdx, 1)[0]
     return [selectedAccount, ...withoutSelected]
   }, [accountsProp, currentUserId])
+
+  // Tracking mainContent height so we can ensure the account list
+  // stays well within the viewport
+  useLayoutEffect(() => {
+    if (mainContentRef.current) {
+      const { height } = mainContentRef.current.getBoundingClientRect()
+      setContentHeight(height)
+    }
+  }, [mainContentRef])
 
   const onUserSelected = useCallback(
     (user: UserMetadata) => {
@@ -61,10 +80,8 @@ export const AccountListContent = ({
       w={fullWidth ? '100%' : 360}
       backgroundColor='white'
       css={{
-        // Make sure the popup has at least 24 unites of space from the
-        // top of the page and 16 units from the bottom.
-        maxHeight: `calc(100vh - ${spacing.unit24 + spacing.unit16}px)`,
-        overflow: 'hidden'
+        overflow: 'hidden',
+        maxHeight: `calc(${contentHeight}px - ${spacing.unit12}px)`
       }}
     >
       <Flex

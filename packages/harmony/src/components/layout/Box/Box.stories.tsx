@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
 
-import { shadows } from 'foundations'
+import { shadows } from '~harmony/foundations'
 
 import { Text } from '../../text'
 

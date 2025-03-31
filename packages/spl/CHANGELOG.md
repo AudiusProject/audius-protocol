@@ -1,5 +1,11 @@
 # @audius/spl
 
+## 2.0.1
+
+### Patch Changes
+
+- 9402210: move solana/web3.js to peer deps
+
 ## 2.0.0
 
 ### Major Changes

@@ -32,7 +32,6 @@ export const DownloadAppBanner = () => {
   const [isVisible, setIsVisible] = useState(
     !hasDismissed && isDesktopWeb && !signedIn
   )
-
   const handleClose = useCallback(() => {
     setIsVisible(false)
     localStorage.setItem(MOBILE_BANNER_LOCAL_STORAGE_KEY, 'true')

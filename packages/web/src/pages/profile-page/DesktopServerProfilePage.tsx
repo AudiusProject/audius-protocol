@@ -93,12 +93,12 @@ export const DesktopServerProfilePage = () => {
               variant='display'
               size='s'
               strength='strong'
-              color='staticWhite'
+              color='white'
               css={{ letterSpacing: 0.5 }}
             >
               {name}
             </Text>
-            <Text variant='body' color='staticWhite' strength='strong'>
+            <Text variant='body' color='white' strength='strong'>
               @{handle}
             </Text>
           </Box>

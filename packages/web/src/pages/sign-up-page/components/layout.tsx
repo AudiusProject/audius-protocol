@@ -62,7 +62,7 @@ export const Page = (props: PageProps) => {
 
   const translateAxis =
     transitionAxisConfig[
-      (isGoBack ? transitionBack ?? transition : transition) ?? 'horizontal'
+      (isGoBack ? (transitionBack ?? transition) : transition) ?? 'horizontal'
     ]
 
   const translateStart = isGoBack ? '-100%' : '100%'

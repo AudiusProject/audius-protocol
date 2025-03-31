@@ -43,7 +43,7 @@ export const TransferAudioMobileDrawer = () => {
   return (
     <AppDrawer modalName={TRANSFER_AUDIO_MODAL_NAME}>
       <View style={styles.drawer}>
-        <IconTokenGold style={styles.badge} height={134} width={134} />
+        <IconTokenGold style={styles.badge} size='4xl' />
         <GradientText style={styles.title}>{messages.title}</GradientText>
         <Text style={styles.subtitle}>{messages.subtitle}</Text>
       </View>

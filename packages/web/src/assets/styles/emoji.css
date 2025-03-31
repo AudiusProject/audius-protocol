@@ -130,6 +130,9 @@
 .emoji.slightly-smiling-face {
   background-image: url('../fonts/emojis/slightly-smiling-face.png');
 }
+.emoji.smiling-face-licking-lips {
+  background-image: url('../fonts/emojis/smiling-face-licking-lips.png');
+}
 .emoji.smiling-face-with-horns {
   background-image: url('../fonts/emojis/smiling-face-with-horns.png');
 }
@@ -240,4 +243,10 @@
 }
 .emoji.cart {
   background-image: url('../fonts/emojis/cart.png');
+}
+.emoji.parachute {
+  background-image: url('../fonts/emojis/parachute.png');
+}
+.emoji.play-pause {
+  background-image: url('../fonts/emojis/play-pause.png');
 }

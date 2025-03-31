@@ -45,6 +45,17 @@ export const getYearMonth = (date: Date): string => {
 }
 
 /**
+ * Gets YYYYMMDD from a given date
+ * @returns string date
+ */
+export const getYearMonthDay = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = padToTwoDigits(date.getMonth() + 1)
+  const day = padToTwoDigits(date.getDate())
+  return `${year}${month}${day}`
+}
+
+/**
  * Gets YYMM from a given date
  * @returns string date
  */

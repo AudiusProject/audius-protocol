@@ -1,59 +1,76 @@
-import { createAuthService } from '@audius/common/services'
-import { SignTypedDataVersion } from '@metamask/eth-sig-util'
-import { keccak_256 } from '@noble/hashes/sha3'
-import * as secp from '@noble/secp256k1'
+import {
+  createAuthService,
+  createHedgehogSolanaWalletService
+} from '@audius/common/services'
+import {
+  createHedgehogWalletClient,
+  type AudiusWalletClient
+} from '@audius/sdk'
+import { getAccount, getWalletClient } from '@wagmi/core'
+import { type WalletClient } from 'viem'
 
+import { env } from '../env'
 import { localStorage } from '../local-storage'
 
-import { identityServiceInstance } from './identity'
+import { audiusChain, wagmiConfig } from './wagmi'
+
+export const getAudiusWalletClient = async (opts?: {
+  ignoreCachedUserWallet?: boolean
+}): Promise<AudiusWalletClient> => {
+  const { ignoreCachedUserWallet = false } = opts ?? {}
+  const account = getAccount(wagmiConfig)
+  const user = await localStorage.getAudiusAccountUser()
+
+  // Check that the local storage user's wallet matches the connected external wallet
+  if (
+    ignoreCachedUserWallet ||
+    (user?.wallet?.toLocaleLowerCase() &&
+      user?.wallet?.toLowerCase() === account.address?.toLowerCase())
+  ) {
+    console.debug('[audiusSdk] Initializing SDK with external wallet...', {
+      ignoreCachedUserWallet,
+      userWallet: user?.wallet?.toLowerCase(),
+      externalWallet: account?.address?.toLowerCase()
+    })
+
+    // Wait for the wallet to finish connecting/reconnecting
+    if (
+      wagmiConfig.state.status === 'reconnecting' ||
+      wagmiConfig.state.status === 'connecting'
+    ) {
+      console.debug(
+        `[audiusSdk] Waiting for external wallet to finish ${wagmiConfig.state.status}...`
+      )
+      let unsubscribe: undefined | (() => void)
+      await new Promise<void>((resolve) => {
+        unsubscribe = wagmiConfig.subscribe(
+          (state) => state.status,
+          () => {
+            resolve()
+          }
+        )
+      })
+      console.debug(`[audiusSdk] External wallet ${wagmiConfig.state.status}.`)
+      unsubscribe?.()
+    }
+
+    // If connected, initialize the viem WalletClient. Else fall back to Hedgehog.
+    if (wagmiConfig.state.status === 'connected') {
+      const client = await getWalletClient(wagmiConfig, {
+        chainId: audiusChain.id
+      })
+      return client satisfies WalletClient as unknown as AudiusWalletClient
+    }
+  }
+  console.debug('[audiusSdk] Initializing SDK with Hedgehog...')
+  return createHedgehogWalletClient(authService.hedgehogInstance)
+}
 
 export const authService = createAuthService({
   localStorage,
-  identityService: identityServiceInstance
+  identityServiceEndpoint: env.IDENTITY_SERVICE
 })
-const { hedgehogInstance } = authService
 
-export const sdkAuthAdapter = {
-  sign: async (data: string | Uint8Array) => {
-    await hedgehogInstance.waitUntilReady()
-    return await secp.sign(
-      keccak_256(data),
-      // @ts-ignore private key is private
-      hedgehogInstance.getWallet()?.privateKey,
-      {
-        recovered: true,
-        der: false
-      }
-    )
-  },
-  signTransaction: async (data: any) => {
-    const { signTypedData } = await import('@metamask/eth-sig-util')
-    await hedgehogInstance.waitUntilReady()
-
-    return signTypedData({
-      privateKey: Buffer.from(
-        // @ts-ignore private key is private
-        hedgehogInstance.getWallet()?.privateKey,
-        'hex'
-      ),
-      data: data as any,
-      version: SignTypedDataVersion.V3
-    })
-  },
-  getSharedSecret: async (publicKey: string | Uint8Array) => {
-    await hedgehogInstance.waitUntilReady()
-    return secp.getSharedSecret(
-      // @ts-ignore private key is private
-      hedgehogInstance.getWallet()?.privateKey,
-      publicKey,
-      true
-    )
-  },
-  getAddress: async () => {
-    await hedgehogInstance.waitUntilReady()
-    return hedgehogInstance.wallet?.getAddressString() ?? ''
-  },
-  hashAndSign: async (_data: string) => {
-    return 'Not implemented'
-  }
-}
+export const solanaWalletService = createHedgehogSolanaWalletService(
+  authService.hedgehogInstance
+)

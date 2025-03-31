@@ -1,6 +1,8 @@
-import { ChallengeRewardID, User } from '@audius/common/models'
+import { useEffect, useState } from 'react'
+
+import { useUser } from '@audius/common/api'
+import { ChallengeRewardID, SolanaWalletAddress } from '@audius/common/models'
 import {
-  cacheUsersSelectors,
   TransactionType,
   TransactionMethod,
   TransactionDetails
@@ -9,32 +11,33 @@ import {
   formatAudio,
   formatCapitalizeString,
   isNullOrUndefined,
+  makeSolanaAccountLink,
   makeSolanaTransactionLink,
   route
 } from '@audius/common/utils'
 import {
   IconExternalLink,
+  IconLogoCoinbasePay,
   IconLogoLinkByStripe as LogoStripeLink
 } from '@audius/harmony'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
-import { useSelector, useDispatch } from 'react-redux'
+import { pick } from 'lodash'
+import { useDispatch } from 'react-redux'
 
-import LogoCoinbasePay from 'assets/img/coinbase-pay/LogoCoinbasePay.svg'
 import { useSetVisibility } from 'common/hooks/useModalState'
 import { AudioTransactionIcon } from 'components/audio-transaction-icon'
 import { isChangePositive } from 'components/audio-transactions-table/AudioTransactionsTable'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import UserBadges from 'components/user-badges/UserBadges'
-import { getChallengeConfig } from 'pages/audio-rewards-page/config'
-import { AppState } from 'store/types'
+import { getChallengeConfig } from 'pages/rewards-page/config'
+import { isValidSolAddress } from 'services/solana/solana'
+import { push } from 'utils/navigation'
 
 import { Block, BlockContainer } from './Block'
 import styles from './TransactionDetailsContent.module.css'
 import { TransactionPurchaseMetadata } from './TransactionPurchaseMetadata'
 
 const { profilePage } = route
-const { getUsers } = cacheUsersSelectors
 
 const messages = {
   transaction: 'Transaction',
@@ -72,36 +75,37 @@ type UserDetailsProps = {
 const UserDetails = ({ userId }: UserDetailsProps) => {
   const setVisibility = useSetVisibility()
   const dispatch = useDispatch()
-  const usersMap = useSelector<AppState, { [id: number]: User }>((state) =>
-    getUsers(state, { ids: [userId] })
-  )
-  const isLoading = Object.keys(usersMap).length === 0
+  const { data: user, isPending } = useUser(userId, {
+    select: (user) => pick(user, 'handle', 'name')
+  })
+  const { handle, name } = user ?? {}
   return (
     <>
-      {isLoading ? (
+      {isPending || !handle ? (
         <LoadingSpinner className={styles.spinnerSmall} />
       ) : (
         <div
           className={styles.name}
           onClick={() => {
             setVisibility('TransactionDetails')(false)
-            dispatch(pushRoute(profilePage(usersMap[userId].handle)))
+            dispatch(push(profilePage(handle)))
           }}
         >
-          <span>{usersMap[userId].name}</span>
-          <UserBadges
-            userId={userId}
-            className={styles.badge}
-            badgeSize={14}
-            inline
-          />
+          <span>{name}</span>
+          <UserBadges userId={userId} className={styles.badge} inline />
         </div>
       )}
     </>
   )
 }
 
-const dateAndMetadataBlocks = (transactionDetails: TransactionDetails) => {
+const dateAndMetadataBlocks = ({
+  transactionDetails,
+  isValidSolanaAddress
+}: {
+  transactionDetails: TransactionDetails
+  isValidSolanaAddress: boolean | undefined
+}) => {
   switch (transactionDetails.transactionType) {
     case TransactionType.PURCHASE: {
       return (
@@ -163,7 +167,11 @@ const dateAndMetadataBlocks = (transactionDetails: TransactionDetails) => {
             header={
               <a
                 className={styles.link}
-                href={makeSolanaTransactionLink(transactionDetails.metadata)}
+                href={
+                  isValidSolanaAddress
+                    ? makeSolanaAccountLink(transactionDetails.metadata)
+                    : makeSolanaTransactionLink(transactionDetails.metadata)
+                }
                 target='_blank'
                 title={transactionDetails.metadata}
                 rel='noreferrer'
@@ -190,6 +198,21 @@ export const TransactionDetailsContent = ({
 }: {
   transactionDetails: TransactionDetails
 }) => {
+  const [isValidSolanaAddress, setIsValidSolanaAddress] = useState<
+    undefined | boolean
+  >(undefined)
+  useEffect(() => {
+    if (
+      transactionDetails.metadata &&
+      typeof transactionDetails.metadata === 'string'
+    ) {
+      isValidSolAddress(
+        transactionDetails.metadata as SolanaWalletAddress
+      ).then((isValid) => {
+        setIsValidSolanaAddress(isValid)
+      })
+    }
+  }, [transactionDetails.metadata])
   const isLoading =
     transactionDetails.transactionType === TransactionType.PURCHASE
       ? transactionDetails.metadata === undefined
@@ -217,12 +240,12 @@ export const TransactionDetailsContent = ({
               method={transactionDetails.method}
             />
           </div>
-          {dateAndMetadataBlocks(transactionDetails)}
+          {dateAndMetadataBlocks({ transactionDetails, isValidSolanaAddress })}
 
           {transactionDetails.transactionType === TransactionType.PURCHASE ? (
             <Block className={styles.header} header={messages.method}>
               {transactionDetails.method === TransactionMethod.COINBASE ? (
-                <LogoCoinbasePay
+                <IconLogoCoinbasePay
                   className={styles.coinbaseLogo}
                   width={155}
                   height={20}

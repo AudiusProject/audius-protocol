@@ -4,15 +4,15 @@ import {
   isContentFollowGated,
   isContentTipGated,
   isContentUSDCPurchaseGated,
-  TrackMetadata,
   USDCPurchaseConditions
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
-  getUSDCUserBank,
+  getOrCreateUSDCUserBank,
   getContext,
-  TrackForUpload
+  TrackForUpload,
+  TrackMetadataForUpload
 } from '@audius/common/store'
 import { BN_USDC_CENT_WEI } from '@audius/common/utils'
 import BN from 'bn.js'
@@ -22,7 +22,9 @@ import { make } from 'common/store/analytics/actions'
 const { getAccountUser } = accountSelectors
 
 /** Records gated track uploads. */
-export function* recordGatedTracks(tracks: (TrackForUpload | TrackMetadata)[]) {
+export function* recordGatedTracks(
+  tracks: (TrackForUpload | TrackMetadataForUpload)[]
+) {
   const events = tracks.reduce<ReturnType<typeof make>[]>(
     (out, trackOrMetadata) => {
       const {
@@ -101,7 +103,7 @@ export function* recordGatedTracks(tracks: (TrackForUpload | TrackMetadata)[]) {
 export function* getUSDCMetadata(stream_conditions: USDCPurchaseConditions) {
   const ownerAccount = yield* select(getAccountUser)
   const wallet = ownerAccount?.erc_wallet ?? ownerAccount?.wallet
-  const ownerUserbank = yield* call(getUSDCUserBank, wallet)
+  const ownerUserbank = yield* call(getOrCreateUSDCUserBank, wallet)
   const priceCents = stream_conditions.usdc_purchase.price
   const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
   const conditionsWithMetadata: USDCPurchaseConditions = {
@@ -119,7 +121,9 @@ export function* getUSDCMetadata(stream_conditions: USDCPurchaseConditions) {
  * Adds relevant premium metadata
  * Converts prices to WEI and adds splits for USDC purchasable content.
  */
-export function* addPremiumMetadata<T extends TrackMetadata>(track: T) {
+export function* addPremiumMetadata<T extends TrackMetadataForUpload>(
+  track: T
+) {
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isUsdcPurchaseEnabled = yield* call(
     getFeatureEnabled,

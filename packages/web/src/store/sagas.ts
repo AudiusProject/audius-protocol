@@ -1,12 +1,10 @@
 import {
-  buyCryptoSagas,
   buyUSDCSagas,
+  cacheSagas,
   castSagas,
   chatSagas,
   reachabilitySagas as commonReachabilitySagas,
   remoteConfigSagas,
-  solanaSagas,
-  relatedArtistsSagas,
   deletePlaylistConfirmationModalUISagas as deletePlaylistConfirmationModalSagas,
   duplicateAddConfirmationModalUISagas as duplicateAddConfirmationModalSagas,
   mobileOverflowMenuUISagas as overflowMenuSagas,
@@ -33,14 +31,11 @@ import coreCacheSagas from 'common/store/cache/sagas'
 import tracksSagas from 'common/store/cache/tracks/sagas'
 import usersSagas from 'common/store/cache/users/sagas'
 import changePasswordSagas from 'common/store/change-password/sagas'
-import notificationSagas from 'common/store/notifications/sagas'
 import aiSagas from 'common/store/pages/ai/sagas'
 import rewardsPageSagas from 'common/store/pages/audio-rewards/sagas'
-import transactionsPageSagas from 'common/store/pages/audio-transactions/sagas'
 import collectionSagas from 'common/store/pages/collection/sagas'
 import deactivateAccountSagas from 'common/store/pages/deactivate-account/sagas'
 import exploreCollectionsPageSagas from 'common/store/pages/explore/exploreCollections/sagas'
-import explorePageSagas from 'common/store/pages/explore/sagas'
 import feedPageSagas from 'common/store/pages/feed/sagas'
 import historySagas from 'common/store/pages/history/sagas'
 import premiumTracksSagas from 'common/store/pages/premium-tracks/sagas'
@@ -61,23 +56,11 @@ import recoveryEmailSagas from 'common/store/recovery-email/sagas'
 import remixSettingsSagas from 'common/store/remix-settings/sagas'
 import savedCollectionsSagas from 'common/store/saved-collections/sagas'
 import searchAiBarSagas from 'common/store/search-ai-bar/sagas'
-import searchBarSagas from 'common/store/search-bar/sagas'
 import smartCollectionPageSagas from 'common/store/smart-collection/sagas'
 import socialSagas from 'common/store/social/sagas'
 import tippingSagas from 'common/store/tipping/sagas'
 import reactionSagas from 'common/store/ui/reactions/sagas'
 import uploadSagas from 'common/store/upload/sagas'
-import favoritePageSagas from 'common/store/user-list/favorites/sagas'
-import followersPageSagas from 'common/store/user-list/followers/sagas'
-import followingPageSagas from 'common/store/user-list/following/sagas'
-import mutualsPageSagas from 'common/store/user-list/mutuals/sagas'
-import notificationUsersPageSagas from 'common/store/user-list/notifications/sagas'
-import purchasersPageSagas from 'common/store/user-list/purchasers/sagas'
-import relatedArtistsPageSagas from 'common/store/user-list/related-artists/sagas'
-import remixersPageSagas from 'common/store/user-list/remixers/sagas'
-import repostPageSagas from 'common/store/user-list/reposts/sagas'
-import supportingPageSagas from 'common/store/user-list/supporting/sagas'
-import topSupportersPageSagas from 'common/store/user-list/top-supporters/sagas'
 import walletSagas from 'common/store/wallet/sagas'
 import firstUploadModalSagas from 'components/first-upload-modal/store/sagas'
 import passwordResetSagas from 'components/password-reset/store/sagas'
@@ -100,8 +83,6 @@ import routingSagas from 'store/routing/sagas'
 import signOutSagas from 'store/sign-out/sagas'
 import tokenDashboardSagas from 'store/token-dashboard/sagas'
 
-import notificationSagasWeb from './notifications/sagas'
-
 export default function* rootSaga() {
   const sagas = ([] as (() => Generator<any, void, any>)[]).concat(
     // Config
@@ -109,7 +90,6 @@ export default function* rootSaga() {
     webAnalyticsSagas(),
     backendSagas(),
     confirmerSagas(),
-    searchBarSagas(),
     searchAiBarSagas(),
 
     cookieBannerSagas(),
@@ -129,16 +109,12 @@ export default function* rootSaga() {
     chatSagas(),
     dashboardSagas(),
     exploreCollectionsPageSagas(),
-    explorePageSagas(),
     feedPageSagas(),
     historySagas(),
-    notificationSagas(),
-    notificationSagasWeb(),
     passwordResetSagas(),
     profileSagas(),
     reactionSagas(),
     rewardsPageSagas(),
-    transactionsPageSagas(),
     savedSagas(),
     searchResultsSagas(),
     settingsSagas(),
@@ -154,6 +130,7 @@ export default function* rootSaga() {
     modalsSagas(),
 
     // Cache
+    cacheSagas(),
     coreCacheSagas(),
     collectionsSagas(),
     tracksSagas(),
@@ -174,7 +151,6 @@ export default function* rootSaga() {
 
     // Application
     addToCollectionSagas(),
-    relatedArtistsSagas(),
     buyAudioSagas(),
     changePasswordSagas(),
     chatWebSagas(),
@@ -182,18 +158,9 @@ export default function* rootSaga() {
     deletedSagas(),
     deletePlaylistConfirmationModalSagas(),
     duplicateAddConfirmationModalSagas(),
-    favoritePageSagas(),
     firstUploadModalSagas(),
-    followersPageSagas(),
-    followingPageSagas(),
-    supportingPageSagas(),
-    topSupportersPageSagas(),
-    relatedArtistsPageSagas(),
-    mutualsPageSagas(),
-    notificationUsersPageSagas(),
     remixesSagas(),
     remixSettingsSagas(),
-    repostPageSagas(),
     scrollLockSagas(),
     shareModalSagas(),
     stripeModalSagas(),
@@ -206,22 +173,15 @@ export default function* rootSaga() {
     userListModalSagas(),
     vipDiscordModalSagas(),
     commonReachabilitySagas(),
-    purchasersPageSagas(),
-    remixersPageSagas(),
 
     // Remote config
     remoteConfigSagas(),
 
-    // Solana
-    solanaSagas(),
-
     // Tipping
     tippingSagas(),
-    solanaSagas(),
 
     // Gated content
     gatedContentSagas(),
-    buyCryptoSagas(),
     buyUSDCSagas(),
     purchaseContentSagas(),
     withdrawUSDCSagas(),

@@ -1,15 +1,7 @@
-import { memo, MouseEvent } from 'react'
+import { memo } from 'react'
 
 import { useGatedContentAccess } from '@audius/common/hooks'
-import {
-  ShareSource,
-  RepostSource,
-  FavoriteSource,
-  FavoriteType,
-  ID,
-  Name
-} from '@audius/common/models'
-import { FeatureFlags, trpc } from '@audius/common/services'
+import { ShareSource, RepostSource, ID } from '@audius/common/models'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -20,39 +12,29 @@ import {
   themeSelectors,
   OverflowAction,
   OverflowSource,
-  repostsUserListActions,
-  favoritesUserListActions,
-  RepostType,
   playerSelectors
 } from '@audius/common/store'
-import { Genre, route } from '@audius/common/utils'
+import { Genre } from '@audius/common/utils'
 import { Box, IconButton, IconKebabHorizontal } from '@audius/harmony'
-import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import Menu from 'components/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
 import { TrackTileProps } from 'components/track/types'
-import { useFlag } from 'hooks/useRemoteConfig'
-import { make, track as trackEvent } from 'services/analytics'
 import { AppState } from 'store/types'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
 import { getTrackWithFallback, getUserWithFallback } from '../helpers'
 
 import TrackTile from './TrackTile'
-const { REPOSTING_USERS_ROUTE, FAVORITING_USERS_ROUTE } = route
 const { getUid, getPlaying, getBuffering } = playerSelectors
-const { setFavorite } = favoritesUserListActions
-const { setRepost } = repostsUserListActions
 const { getTheme } = themeSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
 const { getTrack } = cacheTracksSelectors
 const { getUserFromTrack } = cacheUsersSelectors
-const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
-  tracksSocialActions
+const { repostTrack, undoRepostTrack } = tracksSocialActions
 const getUserId = accountSelectors.getUserId
 
 type OwnProps = Omit<
@@ -67,14 +49,12 @@ type OwnProps = Omit<
   | 'repostCount'
   | 'saveCount'
   | 'commentCount'
-  | 'coverArtSizes'
   | 'followeeReposts'
   | 'followeeSaves'
   | 'hasCurrentUserReposted'
   | 'hasCurrentUserSaved'
   | 'artistIsVerified'
   | 'isPlaying'
-  | 'goToRoute'
 >
 
 type ConnectedTrackTileProps = OwnProps &
@@ -89,8 +69,6 @@ const ConnectedTrackTile = ({
   user,
   ordered,
   trackTileStyles,
-  showArtistPick,
-  goToRoute,
   togglePlay,
   isBuffering,
   isPlaying,
@@ -98,17 +76,12 @@ const ConnectedTrackTile = ({
   isLoading,
   hasLoaded,
   currentUserId,
-  saveTrack,
-  unsaveTrack,
   repostTrack,
   unrepostTrack,
   shareTrack,
-  setRepostTrackId,
-  setFavoriteTrackId,
   clickOverflow,
   darkMode,
   isTrending,
-  showRankIcon,
   isActive,
   variant,
   containerClassName,
@@ -134,42 +107,23 @@ const ConnectedTrackTile = ({
     followee_saves,
     has_current_user_reposted,
     has_current_user_saved,
-    _cover_art_sizes,
     activity_timestamp,
-    play_count,
     _co_sign,
     is_scheduled_release: isScheduledRelease,
     release_date: releaseDate,
     duration,
     preview_cid,
-    ddex_app: ddexApp
+    ddex_app: ddexApp,
+    album_backlink
   } = trackWithFallback
 
-  const { artist_pick_track_id, user_id, handle, name, is_verified } =
-    getUserWithFallback(user)
+  const { user_id, handle, name, is_verified } = getUserWithFallback(user)
 
   const isOwner = user_id === currentUserId
-  const isArtistPick = showArtistPick && artist_pick_track_id === track_id
 
-  const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-  )
-  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId: track_id },
-    { enabled: !!track_id }
-  )
   const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(trackWithFallback)
   const loading = isLoading || isFetchingNFTAccess
-
-  const toggleSave = (trackId: ID) => {
-    if (has_current_user_saved) {
-      unsaveTrack(trackId)
-    } else {
-      saveTrack(trackId, isFeed)
-    }
-  }
 
   const toggleRepost = (trackId: ID) => {
     if (has_current_user_reposted) {
@@ -181,32 +135,6 @@ const ConnectedTrackTile = ({
 
   const onShare = (id: ID) => {
     shareTrack(id)
-  }
-
-  const makeGoToRepostsPage = (trackId: ID) => (e: MouseEvent<HTMLElement>) => {
-    e.stopPropagation()
-    setRepostTrackId(trackId)
-    goToRoute(REPOSTING_USERS_ROUTE)
-  }
-
-  const makeGoToFavoritesPage =
-    (trackId: ID) => (e: MouseEvent<HTMLElement>) => {
-      e.stopPropagation()
-      setFavoriteTrackId(trackId)
-      goToRoute(FAVORITING_USERS_ROUTE)
-    }
-
-  const makeGoToCommentsPage = (_: ID) => (e: MouseEvent<HTMLElement>) => {
-    e.stopPropagation()
-    goToRoute(track?.permalink + '?showComments=true')
-
-    trackEvent(
-      make({
-        eventName: Name.COMMENTS_CLICK_COMMENT_STAT,
-        trackId: track_id,
-        source: 'lineup'
-      })
-    )
   }
 
   // We wanted to use mobile track tile on desktop, which means shimming in the desktop overflow
@@ -225,7 +153,6 @@ const ConnectedTrackTile = ({
       includeRepost: hasStreamAccess,
       includeShare: true,
       includeTrackPage: true,
-      isArtistPick,
       isDeleted: is_delete || user?.is_deactivated,
       isFavorited: has_current_user_saved,
       isOwner,
@@ -281,10 +208,10 @@ const ConnectedTrackTile = ({
       favoriteAction,
       addToAlbumAction,
       !is_unlisted || isOwner ? OverflowAction.ADD_TO_PLAYLIST : null,
-      isNewPodcastControlsEnabled && isLongFormContent
+      isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
-      albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
+      album_backlink ? OverflowAction.VIEW_ALBUM_PAGE : null,
       OverflowAction.VIEW_ARTIST_PAGE
     ].filter(Boolean) as OverflowAction[]
 
@@ -315,15 +242,11 @@ const ConnectedTrackTile = ({
       hasCurrentUserReposted={has_current_user_reposted}
       hasCurrentUserSaved={has_current_user_saved}
       duration={duration}
-      coverArtSizes={_cover_art_sizes}
       activityTimestamp={activity_timestamp}
       trackTileStyles={trackTileStyles}
       size={size}
-      listenCount={play_count}
       fieldVisibility={field_visibility}
       coSign={_co_sign}
-      // Artist Pick
-      isArtistPick={isArtistPick}
       // Artist
       artistHandle={handle}
       artistName={name}
@@ -336,15 +259,10 @@ const ConnectedTrackTile = ({
       isLoading={loading}
       isPlaying={uid === playingUid && isPlaying}
       isBuffering={isBuffering}
-      toggleSave={toggleSave}
       onShare={onShare}
       onClickOverflow={onClickOverflow}
       renderOverflow={renderOverflowMenu}
       toggleRepost={toggleRepost}
-      makeGoToRepostsPage={makeGoToRepostsPage}
-      makeGoToFavoritesPage={makeGoToFavoritesPage}
-      makeGoToCommentsPage={makeGoToCommentsPage}
-      goToRoute={goToRoute}
       isOwner={isOwner}
       darkMode={darkMode}
       isMatrix={isMatrix()}
@@ -353,7 +271,6 @@ const ConnectedTrackTile = ({
       isStreamGated={isStreamGated}
       streamConditions={streamConditions}
       hasStreamAccess={hasStreamAccess}
-      showRankIcon={showRankIcon}
       variant={variant}
       isScheduledRelease={isScheduledRelease}
       releaseDate={releaseDate}
@@ -385,10 +302,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
           source: ShareSource.TILE
         })
       ),
-    saveTrack: (trackId: ID, isFeed: boolean) =>
-      dispatch(saveTrack(trackId, FavoriteSource.TILE, isFeed)),
-    unsaveTrack: (trackId: ID) =>
-      dispatch(unsaveTrack(trackId, FavoriteSource.TILE)),
     repostTrack: (trackId: ID, isFeed: boolean) =>
       dispatch(repostTrack(trackId, RepostSource.TILE, isFeed)),
     unrepostTrack: (trackId: ID) =>
@@ -396,12 +309,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     clickOverflow: (trackId: ID, overflowActions: OverflowAction[]) =>
       dispatch(
         open({ source: OverflowSource.TRACKS, id: trackId, overflowActions })
-      ),
-    setRepostTrackId: (trackId: ID) =>
-      dispatch(setRepost(trackId, RepostType.TRACK)),
-    setFavoriteTrackId: (trackId: ID) =>
-      dispatch(setFavorite(trackId, FavoriteType.TRACK)),
-    goToRoute: (route: string) => dispatch(pushRoute(route))
+      )
   }
 }
 

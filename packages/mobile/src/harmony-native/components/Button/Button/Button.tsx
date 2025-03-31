@@ -189,10 +189,10 @@ export const Button = (props: ButtonProps) => {
     variant === 'secondary'
       ? secondaryDynamicStyles
       : variant === 'tertiary'
-      ? tertiaryDynamicStyles
-      : variant === 'destructive'
-      ? destructiveDynamicStyles
-      : primaryDynamicStyles
+        ? tertiaryDynamicStyles
+        : variant === 'destructive'
+          ? destructiveDynamicStyles
+          : primaryDynamicStyles
 
   const buttonStyles: ViewStyle = {
     borderWidth: 0,
@@ -204,10 +204,10 @@ export const Button = (props: ButtonProps) => {
     ...(variant === 'secondary'
       ? secondaryStyles
       : variant === 'tertiary'
-      ? tertiaryStyles
-      : variant === 'destructive'
-      ? destructiveStyles
-      : primaryStyles),
+        ? tertiaryStyles
+        : variant === 'destructive'
+          ? destructiveStyles
+          : primaryStyles),
 
     ...(isSmallOrXs ? smallStyles : defaultStyles),
 
@@ -231,7 +231,7 @@ export const Button = (props: ButtonProps) => {
             [dynamicStyles.default.background, dynamicStyles.press.background]
           )
     }
-  }, [isDisabled, variant, color])
+  }, [isDisabled, variant, color, type])
 
   const textStyles = isSmallOrXs ? smallTextStyles : defaultTextStyles
 
@@ -243,7 +243,7 @@ export const Button = (props: ButtonProps) => {
         [dynamicStyles.default.text, dynamicStyles.press.text]
       )
     }
-  }, [variant])
+  }, [variant, type])
 
   const animatedIconProps = useAnimatedProps(
     () => ({
@@ -256,7 +256,7 @@ export const Button = (props: ButtonProps) => {
               [dynamicStyles.default.icon, dynamicStyles.press.icon]
             )
     }),
-    [variant, isDisabled],
+    [variant, isDisabled, type],
     animatedPropAdapter
   )
 
@@ -264,8 +264,8 @@ export const Button = (props: ButtonProps) => {
     (variant === 'secondary' && !isDisabled) || variant === 'tertiary'
       ? 'default'
       : variant === 'destructive'
-      ? 'danger'
-      : 'staticWhite'
+        ? 'danger'
+        : 'white'
 
   const iconSize: IconProps['size'] = isSmallOrXs ? 's' : 'm'
 

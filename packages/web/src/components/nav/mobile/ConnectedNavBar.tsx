@@ -1,13 +1,12 @@
 import { useCallback, useContext } from 'react'
 
+import { useChallengeCooldownSchedule } from '@audius/common/hooks'
 import { Name, Status } from '@audius/common/models'
 import {
   accountSelectors,
-  notificationsSelectors,
   searchResultsPageSelectors
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { push as pushRoute, goBack } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
@@ -19,13 +18,13 @@ import {
 } from 'components/animated-switch/RouterContextProvider'
 import { AppState } from 'store/types'
 import { getIsIOS } from 'utils/browser'
+import { push, goBack } from 'utils/navigation'
 
 import NavBar from './NavBar'
 
-const { NOTIFICATION_PAGE, SETTINGS_PAGE, AUDIO_PAGE } = route
+const { NOTIFICATION_PAGE, SETTINGS_PAGE, REWARDS_PAGE } = route
 const { getSearchStatus } = searchResultsPageSelectors
-const { getNotificationUnviewedCount } = notificationsSelectors
-const { getAccountUser, getAccountStatus } = accountSelectors
+const { getHasAccount, getAccountStatus } = accountSelectors
 
 type ConnectedNavBarProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps> &
@@ -33,14 +32,16 @@ type ConnectedNavBarProps = ReturnType<typeof mapStateToProps> &
 
 const ConnectedNavBar = ({
   goToRoute,
-  account,
+  hasAccount,
   accountStatus,
   history,
   searchStatus,
-  notificationCount,
   goBack
 }: ConnectedNavBarProps) => {
   const { setStackReset, setSlideDirection } = useContext(RouterContext)
+  const { claimableAmount: rewardsCount } = useChallengeCooldownSchedule({
+    multiple: true
+  })
 
   const search = (query: string) => {
     history.push({
@@ -70,40 +71,39 @@ const ConnectedNavBar = ({
     setStackReset(true)
   }, [setStackReset])
 
-  const goToAudioPage = useCallback(() => {
+  const goToRewardsPage = useCallback(() => {
     setStackReset(true)
-    setImmediate(() => goToRoute(AUDIO_PAGE))
+    setImmediate(() => goToRoute(REWARDS_PAGE))
   }, [goToRoute, setStackReset])
 
   return (
     <NavBar
-      isSignedIn={!!account}
+      isSignedIn={hasAccount}
       isLoading={accountStatus === Status.LOADING}
       signUp={signUp}
-      notificationCount={notificationCount}
+      rewardsCount={rewardsCount}
       goToNotificationPage={goToNotificationPage}
       goToSettingsPage={goToSettingsPage}
       search={search}
       searchStatus={searchStatus}
       goBack={goBack}
       history={history}
-      goToAudioPage={goToAudioPage}
+      goToRewardsPage={goToRewardsPage}
     />
   )
 }
 
 function mapStateToProps(state: AppState) {
   return {
-    account: getAccountUser(state),
+    hasAccount: getHasAccount(state),
     accountStatus: getAccountStatus(state),
-    searchStatus: getSearchStatus(state),
-    notificationCount: getNotificationUnviewedCount(state)
+    searchStatus: getSearchStatus(state)
   }
 }
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
+    goToRoute: (route: string) => dispatch(push(route)),
     goBack: () => dispatch(goBack())
   }
 }

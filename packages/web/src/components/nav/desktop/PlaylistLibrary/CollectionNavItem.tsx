@@ -1,22 +1,34 @@
 import { useCallback, useState } from 'react'
 
+import { useCollection, useTrack } from '@audius/common/api'
 import {
-  Name,
-  ShareSource,
+  FavoriteSource,
   ID,
+  Name,
   PlaylistLibraryID,
-  PlaylistLibraryKind
+  PlaylistLibraryKind,
+  ShareSource
 } from '@audius/common/models'
 import {
   cacheCollectionsActions,
-  cacheCollectionsSelectors,
-  cacheTracksSelectors,
+  collectionsSocialActions,
   playlistLibraryActions,
   shareModalUIActions
 } from '@audius/common/store'
-import { Flex, PopupMenuItem, Text, useTheme } from '@audius/harmony'
+import {
+  Flex,
+  IconHeart,
+  IconPencil,
+  IconShare,
+  IconSpeaker,
+  IconTrash,
+  PopupMenuItem,
+  Text,
+  useTheme
+} from '@audius/harmony'
+import { pick } from 'lodash'
 import { useDispatch } from 'react-redux'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { useLocation, useNavigate } from 'react-router-dom-v5-compat'
 import { useToggle } from 'react-use'
 
 import { make, useRecord } from 'common/store/analytics/actions'
@@ -24,8 +36,8 @@ import { Draggable } from 'components/dragndrop'
 import { DeleteCollectionConfirmationModal } from 'components/edit-collection/DeleteCollectionConfirmationModal'
 import {
   DragDropKind,
-  selectDraggingKind,
-  selectDraggingId
+  selectDraggingId,
+  selectDraggingKind
 } from 'store/dragndrop/slice'
 import { useSelector } from 'utils/reducer'
 import { BASE_URL } from 'utils/route'
@@ -35,18 +47,19 @@ import { LeftNavLink } from '../LeftNavLink'
 
 import { NavItemKebabButton } from './NavItemKebabButton'
 import { PlaylistUpdateDot } from './PlaylistUpdateDot'
+import { usePlaylistPlayingStatus } from './usePlaylistPlayingStatus'
 
-const { getTrack } = cacheTracksSelectors
 const { addTrackToPlaylist } = cacheCollectionsActions
-const { getCollection } = cacheCollectionsSelectors
 const { reorder } = playlistLibraryActions
 const { requestOpen } = shareModalUIActions
+const { unsaveCollection, unsaveSmartCollection } = collectionsSocialActions
 
 const messages = {
   editPlaylistLabel: 'Edit playlist',
   edit: 'Edit',
   share: 'Share',
-  delete: 'Delete'
+  delete: 'Delete',
+  unfavorite: 'Unfavorite'
 }
 
 const acceptedKinds: DragDropKind[] = [
@@ -64,23 +77,38 @@ type CollectionNavItemProps = {
   level: number
   hasUpdate?: boolean
   onClick?: () => void
+  isChild?: boolean
+  exact?: boolean
 }
 
 export const CollectionNavItem = (props: CollectionNavItemProps) => {
-  const { id, name, url, isOwned, level, hasUpdate, onClick } = props
+  const { id, name, url, isOwned, level, hasUpdate, onClick, isChild, exact } =
+    props
   const [isDraggingOver, setIsDraggingOver] = useState(false)
   const [isHovering, setIsHovering] = useState(false)
+  const location = useLocation()
+  const isSelected = location.pathname === url
   const dispatch = useDispatch()
   const record = useRecord()
   const navigate = useNavigate()
 
-  const { spacing, color } = useTheme()
+  const { spacing } = useTheme()
 
-  const collection = useSelector((state) =>
-    getCollection(state, { id: typeof id === 'string' ? null : id })
+  const { data: partialCollection } = useCollection(
+    typeof id === 'number' ? id : null,
+    {
+      select: (collection) =>
+        pick(collection, 'is_album', 'playlist_name', 'permalink', 'is_private')
+    }
   )
 
-  const { permalink } = collection ?? {}
+  const accountCollection = useSelector((state) =>
+    typeof id === 'number' && state.account.collections[id]
+      ? state.account.collections[id]
+      : null
+  )
+
+  const { permalink } = partialCollection ?? accountCollection ?? {}
 
   const [isDeleteConfirmationOpen, toggleDeleteConfirmationOpen] =
     useToggle(false)
@@ -124,14 +152,49 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
     toggleDeleteConfirmationOpen()
   }, [toggleDeleteConfirmationOpen])
 
-  const kebabItems: PopupMenuItem[] = [
-    {
-      text: messages.edit,
-      onClick: handleEdit
-    },
-    { text: messages.share, onClick: handleShare },
-    { text: messages.delete, onClick: handleDelete }
-  ]
+  const handleUnfavorite = useCallback(() => {
+    if (typeof id === 'number') {
+      dispatch(unsaveCollection(id, FavoriteSource.NAVIGATOR))
+    } else {
+      dispatch(
+        unsaveSmartCollection(
+          partialCollection?.playlist_name ?? id,
+          FavoriteSource.NAVIGATOR
+        )
+      )
+    }
+  }, [id, dispatch, partialCollection])
+
+  const kebabItems: PopupMenuItem[] = isOwned
+    ? [
+        {
+          text: messages.edit,
+          onClick: handleEdit,
+          icon: <IconPencil color='default' />
+        },
+        {
+          text: messages.share,
+          onClick: handleShare,
+          icon: <IconShare color='default' />
+        },
+        {
+          text: messages.delete,
+          onClick: handleDelete,
+          icon: <IconTrash color='default' />
+        }
+      ]
+    : [
+        {
+          text: messages.unfavorite,
+          onClick: handleUnfavorite,
+          icon: <IconHeart color='active' />
+        },
+        {
+          text: messages.share,
+          onClick: handleShare,
+          icon: <IconShare color='default' />
+        }
+      ]
 
   const handleDrop = useCallback(
     (draggingId: PlaylistLibraryID, kind: DragDropKind) => {
@@ -154,11 +217,17 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
 
   const draggingKind = useSelector(selectDraggingKind)
   const draggingId = useSelector(selectDraggingId)
-  const track = useSelector((state) =>
-    getTrack(state, { id: typeof draggingId === 'string' ? null : draggingId })
-  )
+  const { data: isUnlisted } = useTrack(draggingId as ID, {
+    enabled: typeof draggingId === 'number',
+    select: (track) => {
+      return track.is_unlisted
+    }
+  })
   const hiddenTrackCheck =
-    !!track && !!collection && track?.is_unlisted && !collection?.is_private
+    !!isUnlisted &&
+    !!partialCollection &&
+    isUnlisted &&
+    !partialCollection?.is_private
 
   const isDisabled =
     (draggingKind === 'track' && !isOwned) ||
@@ -166,9 +235,11 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
     (draggingKind === 'playlist-folder' && level > 0) ||
     hiddenTrackCheck
 
+  const isPlayingFromThisPlaylist = usePlaylistPlayingStatus(id)
+
   if (!name || !url) return null
 
-  const indentAmount = level * spacing.l
+  const indentAmount = level * spacing.m
 
   return (
     <>
@@ -185,7 +256,6 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
           kind='library-playlist'
         >
           <LeftNavLink
-            asChild
             to={url}
             onClick={onClick}
             disabled={isDisabled}
@@ -193,39 +263,46 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
             onDragLeave={handleDragLeave}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
+            textSize='s'
+            variant='compact'
+            css={{
+              '& > div': {
+                marginLeft: indentAmount
+              }
+            }}
+            rightIcon={
+              isPlayingFromThisPlaylist ? (
+                <IconSpeaker size='s' color={isSelected ? 'white' : 'accent'} />
+              ) : null
+            }
+            leftOverride={hasUpdate ? <PlaylistUpdateDot /> : null}
+            isChild={isChild}
+            exact={exact}
           >
             <Flex
               alignItems='center'
               w='100%'
+              h='xl'
               pl={indentAmount}
               gap='xs'
               css={{ position: 'relative' }}
+              justifyContent='space-between'
             >
-              {hasUpdate ? (
-                <div
-                  css={{
-                    position: 'absolute',
-                    left: -spacing.m + indentAmount
-                  }}
-                >
-                  <PlaylistUpdateDot />
-                </div>
-              ) : null}
               <Text
+                variant='body'
                 size='s'
-                css={{
-                  '.droppableLinkActive &': {
-                    color: color.text.accent
-                  }
-                }}
+                css={{ maxWidth: '160px' }}
                 ellipses
               >
                 {name}
               </Text>
               <NavItemKebabButton
-                visible={isOwned && isHovering && !isDraggingOver}
-                aria-label={messages.editPlaylistLabel}
+                visible={isHovering && !isDraggingOver}
+                aria-label={
+                  isOwned ? messages.editPlaylistLabel : messages.unfavorite
+                }
                 items={kebabItems}
+                isSelected={isSelected}
               />
             </Flex>
           </LeftNavLink>

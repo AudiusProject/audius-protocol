@@ -39,6 +39,8 @@ export type AntiAbuseOracleHealthCheckResponse = {
   otherAntiAbuseOracleEndpoints: string[]
   /** The wallet public key address for this AAO. */
   walletPubkey: string
+  /** The wallet public key address for this AAO from a discovery node plugin. */
+  antiAbuseWalletPubkey?: string
   /** Whether the database container is healthy (UP) or unhealthy (DOWN). */
   db: 'UP' | 'DOWN'
   /** The date of the last successful attestation. */

@@ -10,13 +10,8 @@ import {
   Lineup,
   ModalSource
 } from '@audius/common/models'
-import {
-  LineupBaseActions,
-  tippingSelectors,
-  playerSelectors
-} from '@audius/common/store'
+import { LineupBaseActions, playerSelectors } from '@audius/common/store'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
 import InfiniteScroll from 'react-infinite-scroller'
 import { connect } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
@@ -24,7 +19,6 @@ import { Transition } from 'react-spring/renderprops.cjs'
 import { Dispatch } from 'redux'
 
 import { TrackEvent, make } from 'common/store/analytics/actions'
-import { FeedTipTile } from 'components/tipping/feed-tip-tile/FeedTipTile'
 import {
   TrackTileProps,
   PlaylistTileProps,
@@ -33,11 +27,11 @@ import {
 } from 'components/track/types'
 import { SsrContext } from 'ssr/SsrContext'
 import { AppState } from 'store/types'
+import { push } from 'utils/navigation'
 
 import styles from './Lineup.module.css'
 import { delineateByTime, delineateByFeatured } from './delineate'
 import { LineupVariant } from './types'
-const { getShowTip } = tippingSelectors
 const { getPlaying, getUid } = playerSelectors
 
 // The max number of tiles to load
@@ -49,7 +43,7 @@ const MAX_COUNT_LOADING_TILES = 18
 // The inital multiplier for number of tracks to fetch on lineup load
 // multiplied by the number of tracks that fit the browser height
 export const INITIAL_LOAD_TRACKS_MULTIPLIER = 1.75
-export const INITIAL_PLAYLISTS_MULTIPLER = 1
+const INITIAL_PLAYLISTS_MULTIPLER = 1
 
 // A multiplier for the number of tiles to fill a page to be
 // loaded in on each call (after the intial call)
@@ -133,9 +127,9 @@ export interface LineupProviderProps {
   playing: boolean
   playTrack: (uid: UID, trackId?: ID) => void
   pauseTrack: () => void
-  variant: LineupVariant
+  variant?: LineupVariant
   loadMore?: (offset: number, limit: number, overwrite: boolean) => void
-  selfLoad: boolean
+  selfLoad?: boolean
   scrollParent?: HTMLElement | null
   endOfLineup?: JSX.Element
 
@@ -164,12 +158,6 @@ export interface LineupProviderProps {
    * Class name to optionally apply to the leading element
    */
   leadingElementClassName?: string
-
-  /**
-   * Whether to show the artist pick on the leading element.
-   * Defaults to true.
-   */
-  showLeadingElementArtistPick?: boolean
 
   /**
    * Class name to optionally apply to the container after the leading element
@@ -208,12 +196,6 @@ export interface LineupProviderProps {
 
   /** Are we in a trending lineup? Allows tiles to specialize their rendering */
   isTrending?: boolean
-
-  /** Whether we are in the feed lineup */
-  showFeedTipTile?: boolean
-
-  /** How many icons to show for top ranked entries in the lineup. Defaults to 0, showing none */
-  rankIconCount?: number
 
   /** Function triggered on click of tile */
   onClickTile?: (trackId: ID) => void
@@ -255,14 +237,14 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       MINIMUM_INITIAL_LOAD_TRACKS_MULTIPLIER
     )
     const initialTrackLoadCount = getLoadMoreTrackCount(
-      this.props.variant,
+      this.props.variant ?? LineupVariant.MAIN,
       () =>
         this.props.variant === LineupVariant.PLAYLIST
           ? INITIAL_PLAYLISTS_MULTIPLER
           : INITIAL_LOAD_TRACKS_MULTIPLIER
     )
     const trackLoadMoreCount = getLoadMoreTrackCount(
-      this.props.variant,
+      this.props.variant ?? LineupVariant.MAIN,
       TRACKS_AHEAD_MULTIPLIER
     )
     const page = getInitPage(
@@ -367,7 +349,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       this.setState({
         scrollParent,
         trackLoadMoreCount: getLoadMoreTrackCount(
-          this.props.variant,
+          this.props.variant ?? LineupVariant.MAIN,
           TRACKS_AHEAD_MULTIPLIER
         )
       })
@@ -491,12 +473,9 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       lineupContainerStyles,
       tileContainerStyles,
       tileStyles,
-      showLeadingElementArtistPick = true,
       lineup: { isMetadataLoading, page, entries = [] },
       numPlaylistSkeletonRows,
       isTrending = false,
-      showFeedTipTile = false,
-      rankIconCount = 0,
       onClickTile
     } = this.props
     const isMobile = this.context.isMobile
@@ -537,7 +516,6 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
           if (entry._marked_deleted) return null
           let trackProps: TrackTileProps = {
             ...entry,
-            key: index,
             index,
             ordered,
             togglePlay: this.togglePlay,
@@ -545,12 +523,9 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
             statSize,
             containerClassName,
             uid: entry.uid,
-            showArtistPick: showLeadingElementArtistPick && !!leadingElementId,
             isLoading: !this.canLoad(index),
             hasLoaded: this.hasLoaded,
             isTrending,
-            showRankIcon: index < rankIconCount,
-            showFeedTipTile,
             onClick: onClickTile,
             source: ModalSource.LineUpTrackTile
           }
@@ -563,7 +538,6 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
 
           const playlistProps: PlaylistTileProps = {
             ...entry,
-            key: index,
             index,
             uid: entry.uid,
             size: tileSize,
@@ -576,8 +550,6 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
             hasLoaded: this.hasLoaded,
             numLoadingSkeletonRows: numPlaylistSkeletonRows,
             isTrending,
-            showRankIcon: index < rankIconCount,
-            showFeedTipTile,
             source: ModalSource.LineUpCollectionTile
           }
 
@@ -611,7 +583,6 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
         ...Array(loadingSkeletonCount)
       ].map((_, index) => {
         const skeletonTileProps = {
-          key: tiles.length + index,
           index: tiles.length + index,
           size: tileSize,
           ordered: this.props.ordered,
@@ -647,8 +618,9 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
               >
                 <div className={styles.featuredContent}>
                   <SkeletonTileElement
-                    {...{ ...skeletonTileProps, ...leadingElementTileProps }}
-                    key={index}
+                    {...skeletonTileProps}
+                    {...leadingElementTileProps}
+                    key={tiles.length + index}
                   />
                 </div>
               </div>
@@ -716,114 +688,116 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
 
     const endLineup =
       !lineup.hasMore && !count && endOfLineup ? endOfLineup : null
-    return [
-      <div
-        className={cn(lineupStyle, {
-          [lineupContainerStyles!]: !!lineupContainerStyles
-        })}
-        style={{ position: 'relative' }}
-        key='lineup'
-      >
-        <Transition
-          items={featuredTrackUid}
-          from={{ opacity: 0, marginBottom: 0, maxHeight: 0 }}
-          // Set the `initial` value to the same as `enter` signifying that component mounts
-          // of the lineup do not trigger an animation, rather  updates to the featuredTrackUid do.
-          initial={{
-            opacity: 1,
-            marginBottom: 12,
-            maxHeight: 174
-          }}
-          enter={{
-            opacity: 1,
-            marginBottom: 12,
-            maxHeight: 174
-          }}
-          leave={{ opacity: 0, marginBottom: 0, maxHeight: 0 }}
-          config={{ duration: 175 }}
-          immediate={isMobile || !animateLeadingElement}
+    return (
+      <>
+        <div
+          className={cn(lineupStyle, {
+            [lineupContainerStyles!]: !!lineupContainerStyles
+          })}
+          style={{ position: 'relative' }}
         >
-          {(featuredId: ID | null) =>
-            featuredId
-              ? (props) => (
-                  <div
-                    className={cn(
-                      styles.featuredContainer,
-                      leadingElementClassName
-                    )}
-                    style={{
-                      height: '100%',
-                      maxHeight: props.maxHeight,
-                      marginBottom: props.marginBottom
-                    }}
-                  >
+          <Transition
+            items={featuredTrackUid}
+            from={{ opacity: 0, marginBottom: 0, maxHeight: 0 }}
+            // Set the `initial` value to the same as `enter` signifying that component mounts
+            // of the lineup do not trigger an animation, rather  updates to the featuredTrackUid do.
+            initial={{
+              opacity: 1,
+              marginBottom: 12,
+              maxHeight: 174
+            }}
+            enter={{
+              opacity: 1,
+              marginBottom: 12,
+              maxHeight: 174
+            }}
+            leave={{ opacity: 0, marginBottom: 0, maxHeight: 0 }}
+            config={{ duration: 175 }}
+            immediate={isMobile || !animateLeadingElement}
+          >
+            {(featuredId: ID | null) =>
+              featuredId
+                ? (props) => (
                     <div
-                      className={styles.featuredContent}
+                      className={cn(
+                        styles.featuredContainer,
+                        leadingElementClassName
+                      )}
                       style={{
                         height: '100%',
-                        opacity: props.opacity,
-                        maxHeight: props.maxHeight
+                        maxHeight: props.maxHeight,
+                        marginBottom: props.marginBottom
                       }}
                     >
-                      {allTracks[featuredId]}
+                      <div
+                        className={styles.featuredContent}
+                        style={{
+                          height: '100%',
+                          opacity: props.opacity,
+                          maxHeight: props.maxHeight
+                        }}
+                      >
+                        {allTracks[featuredId]}
+                      </div>
                     </div>
-                  </div>
-                )
-              : () => null
-          }
-        </Transition>
-        <div
-          ref={this.scrollContainer}
-          style={{
-            display: 'flex',
-            flexDirection: 'column'
-          }}
-          className={cn({
-            [laggingContainerClassName!]: !!laggingContainerClassName
-          })}
-        >
-          {tiles.length === 0 && status === Status.SUCCESS ? (
-            this.props.emptyElement
-          ) : (
-            <InfiniteScroll
-              aria-label={this.props['aria-label']}
-              pageStart={0}
-              className={cn({
-                [tileContainerStyles!]: !!tileContainerStyles
-              })}
-              loadMore={lineup.hasMore ? this.loadMore : () => {}}
-              hasMore={lineup.hasMore && canLoadMore}
-              // If we're on mobile, we scroll the entire page so we should use the window
-              // to calculate scroll position.
-              useWindow={isMobile}
-              initialLoad={false}
-              getScrollParent={() => {
-                if (scrollParent?.id === 'mainContent') {
-                  return document.getElementById('mainContent')
-                }
-                return scrollParent
-              }}
-              threshold={loadMoreThreshold}
-              element='ol'
-            >
-              {showFeedTipTile ? <FeedTipTile /> : null}
-              {tiles.map((tile, index) => (
-                <li key={index} className={cn({ [tileStyles!]: !!tileStyles })}>
-                  {tile}
-                </li>
-              ))}
-            </InfiniteScroll>
-          )}
+                  )
+                : () => null
+            }
+          </Transition>
+          <div
+            ref={this.scrollContainer}
+            style={{
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+            className={cn({
+              [laggingContainerClassName!]: !!laggingContainerClassName
+            })}
+          >
+            {tiles.length === 0 && status === Status.SUCCESS ? (
+              this.props.emptyElement
+            ) : (
+              <InfiniteScroll
+                aria-label={this.props['aria-label']}
+                pageStart={0}
+                className={cn({
+                  [tileContainerStyles!]: !!tileContainerStyles
+                })}
+                loadMore={lineup.hasMore ? this.loadMore : () => {}}
+                hasMore={lineup.hasMore && canLoadMore}
+                // If we're on mobile, we scroll the entire page so we should use the window
+                // to calculate scroll position.
+                useWindow={isMobile}
+                initialLoad={false}
+                getScrollParent={() => {
+                  if (scrollParent?.id === 'mainContent') {
+                    return document.getElementById('mainContent')
+                  }
+                  return scrollParent
+                }}
+                threshold={loadMoreThreshold}
+                element='ol'
+              >
+                {tiles.map((tile, index) => (
+                  <li
+                    key={index}
+                    className={cn({ [tileStyles!]: !!tileStyles })}
+                  >
+                    {tile}
+                  </li>
+                ))}
+              </InfiniteScroll>
+            )}
+          </div>
         </div>
-      </div>,
-      endLineup
-    ]
+        {endLineup}
+      </>
+    )
   }
 }
 
 function mapStateToProps(state: AppState) {
   return {
-    showTip: getShowTip(state),
     playing: getPlaying(state),
     playingUid: getUid(state)
   }
@@ -831,7 +805,7 @@ function mapStateToProps(state: AppState) {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
+    goToRoute: (route: string) => dispatch(push(route)),
     setPage: (page: number, setPageAction: (page: number) => any) =>
       dispatch(setPageAction(page)),
     record: (event: TrackEvent) => dispatch(event)

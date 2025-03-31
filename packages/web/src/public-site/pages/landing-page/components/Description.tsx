@@ -4,22 +4,18 @@ import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useChain, useSpring, useTrail, animated } from 'react-spring'
 
-import productShot from 'assets/img/publicSite/ProductShot2@2x.webp'
+import productShot from 'assets/img/publicSite/ProductShot2.webp'
 import dotsLogo1x from 'assets/img/publicSite/dot-logo@1x.jpg'
 import dotsLogo2x from 'assets/img/publicSite/dot-logo@2x.jpg'
 
 import styles from './Description.module.css'
 
 const messages = {
-  title1: 'A New Model',
-  title2: 'Artist Owned & Controlled',
-  description:
-    "Step into the future with Audius, where we're rewriting the rules of the music industry. Designed by artists, for artists, Audius is not just a platform but a movement. Navigate your creative journey on your terms. In the music industry, connections make the difference, and Audius is where those connections happen. Join us in shaping the next chapter of music history."
+  title: 'The Music Industry Hard Fork',
+  description: `Audius is music done right. It's a community-run music platform that connects artists and fans directly. Fans and artists build communities together around music, and developers build anything they want on their terms.`
 }
 
-const title1Items = messages.title1.split(' ')
-const title2Items = messages.title2.split(' ')
-const config = { mass: 5, tension: 2000, friction: 200 }
+const titleItems = messages.title.split(' ')
 
 type DescriptionProps = {
   isMobile: boolean
@@ -50,21 +46,12 @@ const Description = (props: DescriptionProps) => {
     [refInView]
   )
 
-  const firstTitleRef = useRef()
-  const secTitleRef = useRef()
+  const titleRef = useRef()
   const bodyRef = useRef()
 
-  const trail = useTrail(title1Items.length, {
+  const titleTrail = useTrail(titleItems.length, {
     // @ts-ignore
-    ref: firstTitleRef,
-    config,
-    to: { opacity: 1, x: 0 },
-    from: { opacity: 0, x: 80 }
-  })
-
-  const secondTitle = useTrail(title2Items.length, {
-    // @ts-ignore
-    ref: secTitleRef,
+    ref: titleRef,
     config: { mass: 3, tension: 2000, friction: 200 },
     to: { opacity: 1, x: 0 },
     from: { opacity: 0, x: 80 }
@@ -80,7 +67,7 @@ const Description = (props: DescriptionProps) => {
   })
 
   // @ts-ignore
-  useChain(hasViewed ? [firstTitleRef, secTitleRef, bodyRef] : [], [0, 0.7, 1])
+  useChain(hasViewed ? [titleRef, bodyRef] : [], [0, 0.7])
 
   useEffect(() => {
     refInView()
@@ -106,31 +93,11 @@ const Description = (props: DescriptionProps) => {
             className={styles.productShot}
             alt='Audius Product Shot'
           />
-          <h3 ref={setStartAnimation} className={styles.title}>
-            {trail.map(({ x, wordYPosition, ...rest }: any, index: any) => (
-              <animated.span
-                key={title1Items[index]}
-                className={cn(styles.textAnimate)}
-                // @ts-ignore
-                style={{
-                  ...rest,
-                  transform: x.interpolate(
-                    (x: number) => `translate3d(0,${x}px,0)`
-                  )
-                }}
-              >
-                <animated.div className={styles.word}>
-                  {' '}
-                  {title1Items[index]}{' '}
-                </animated.div>
-              </animated.span>
-            ))}
-          </h3>
-          <h3 className={styles.titleColor}>
-            {secondTitle.map(
+          <h3 ref={setStartAnimation} className={styles.titleColor}>
+            {titleTrail.map(
               ({ x, wordYPosition, ...rest }: any, index: number) => (
                 <animated.span
-                  key={title2Items[index]}
+                  key={titleItems[index]}
                   className={cn(cn(styles.textAnimate))}
                   // @ts-ignore
                   style={{
@@ -148,7 +115,7 @@ const Description = (props: DescriptionProps) => {
                     )}
                   >
                     {' '}
-                    {title2Items[index]}{' '}
+                    {titleItems[index]}{' '}
                   </animated.div>
                 </animated.span>
               )
@@ -190,31 +157,11 @@ const Description = (props: DescriptionProps) => {
             className={styles.productShot}
             alt='Audius Mobile Product Shot'
           />
-          <h3 ref={setStartAnimation} className={styles.title}>
-            {trail.map(({ x, wordYPosition, ...rest }: any, index: any) => (
-              <animated.span
-                key={title1Items[index]}
-                className={cn(styles.textAnimate)}
-                // @ts-ignore
-                style={{
-                  ...rest,
-                  transform: x.interpolate(
-                    (x: number) => `translate3d(0,${x}px,0)`
-                  )
-                }}
-              >
-                <animated.div className={styles.word}>
-                  {' '}
-                  {title1Items[index]}{' '}
-                </animated.div>
-              </animated.span>
-            ))}
-          </h3>
-          <h3 className={styles.coloredTitle}>
-            {secondTitle.map(
+          <h3 ref={setStartAnimation} className={styles.coloredTitle}>
+            {titleTrail.map(
               ({ x, wordYPosition, ...rest }: any, index: number) => (
                 <animated.span
-                  key={title2Items[index]}
+                  key={titleItems[index]}
                   className={cn(cn(styles.textAnimate))}
                   // @ts-ignore
                   style={{
@@ -232,7 +179,7 @@ const Description = (props: DescriptionProps) => {
                     )}
                   >
                     {' '}
-                    {title2Items[index]}{' '}
+                    {titleItems[index]}{' '}
                   </animated.div>
                 </animated.span>
               )

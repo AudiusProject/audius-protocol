@@ -3,11 +3,15 @@ import { useState, useCallback, useEffect, forwardRef, Ref } from 'react'
 import { useTheme, type CSSObject } from '@emotion/react'
 import styled from '@emotion/styled'
 
-import type { IconComponent } from 'components/icon'
-import { Flex } from 'components/layout/Flex'
-import { Text } from 'components/text'
-import { useControlled } from 'hooks/useControlled'
-import { IconUserFollowing, IconUserFollow, IconUserUnfollow } from 'icons'
+import type { IconComponent } from '~harmony/components/icon'
+import { Flex } from '~harmony/components/layout/Flex'
+import { Text } from '~harmony/components/text'
+import { useControlled } from '~harmony/hooks/useControlled'
+import {
+  IconUserFollowing,
+  IconUserFollow,
+  IconUserUnfollow
+} from '~harmony/icons'
 
 import type { FollowButtonProps } from './types'
 
@@ -96,7 +100,7 @@ export const FollowButton = forwardRef(
     }, [value, setValueState, onUnfollow, onFollow])
 
     const checkedValue = value
-    let Icon: IconComponent | null = IconUserFollow
+    let Icon: IconComponent = IconUserFollow
     let text = messages.follow
     if (checkedValue && !isHovering) {
       Icon = IconUserFollowing
@@ -109,9 +113,7 @@ export const FollowButton = forwardRef(
     const { color, cornerRadius, motion, shadows } = useTheme()
 
     const textColor =
-      checkedValue || isHovering || isPressing
-        ? color.static.white
-        : color.primary.primary
+      checkedValue || isHovering || isPressing ? 'white' : 'active'
 
     const borderRadius =
       variant === 'pill' ? cornerRadius['2xl'] : cornerRadius.s
@@ -133,31 +135,15 @@ export const FollowButton = forwardRef(
         background-color ${motion.hover},
         color ${motion.hover}
       `,
-      '::before': {
-        content: '""',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0)',
-        borderRadius
-      },
       '&:hover': {
-        backgroundColor: color.primary.primary,
         borderWidth: 0,
-        boxShadow: shadows.mid,
-        '&::before': {
-          backgroundColor: 'rgba(255, 255, 255, 0.2)'
-        }
+        backgroundColor: color.primary.p300,
+        boxShadow: shadows.mid
       },
       '&:active': {
-        backgroundColor: color.primary.primary,
+        backgroundColor: color.primary.p500,
         borderWidth: 0,
-        boxShadow: 'none',
-        '&::before': {
-          backgroundColor: 'rgba(0, 0, 0, 0.2)'
-        }
+        boxShadow: 'none'
       }
     }
 
@@ -201,14 +187,13 @@ export const FollowButton = forwardRef(
         {...buttonProps}
         {...rootProps}
       >
-        {/* TODO: use theme icon colors (confirm w/design) */}
-        <Icon height={18} width={18} css={{ path: { fill: textColor } }} />
+        <Icon height={18} width={18} color={textColor} />
         <Text
           variant='label'
           tag='span'
           size={size === 'small' ? 's' : 'l'}
           strength='default'
-          css={{ color: textColor }}
+          color={textColor}
         >
           {text}
         </Text>

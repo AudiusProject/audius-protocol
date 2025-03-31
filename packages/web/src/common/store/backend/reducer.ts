@@ -3,13 +3,11 @@ import { SETUP, SETUP_BACKEND_SUCCEEDED, SETUP_BACKEND_FAILED } from './actions'
 type BackendState = {
   isSettingUp: boolean
   isSetup: boolean
-  web3Error: boolean
 }
 
 const initialState: BackendState = {
   isSettingUp: false,
-  isSetup: false,
-  web3Error: false
+  isSetup: false
 }
 
 const actionsMap = {
@@ -20,23 +18,18 @@ const actionsMap = {
       isSetup: false
     }
   },
-  [SETUP_BACKEND_SUCCEEDED](
-    state: BackendState,
-    action: { web3Error: boolean }
-  ) {
+  [SETUP_BACKEND_SUCCEEDED](state: BackendState) {
     return {
       ...state,
       isSettingUp: false,
-      isSetup: true,
-      web3Error: action.web3Error
+      isSetup: true
     }
   },
   [SETUP_BACKEND_FAILED](state: BackendState) {
     return {
       ...state,
       isSettingUp: false,
-      isSetup: false,
-      web3Error: false
+      isSetup: false
     }
   }
 }
@@ -46,10 +39,9 @@ export default function backend(
   action: {
     type: typeof SETUP_BACKEND_SUCCEEDED | typeof SETUP_BACKEND_FAILED
     isSetup?: boolean
-    web3Error: boolean
   }
 ) {
   const matchingReduceFunction = actionsMap[action.type]
   if (!matchingReduceFunction) return state
-  return matchingReduceFunction(state, action)
+  return matchingReduceFunction(state)
 }

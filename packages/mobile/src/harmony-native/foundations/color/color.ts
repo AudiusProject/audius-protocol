@@ -1,5 +1,5 @@
 import { primitiveTheme as harmonyPrimitiveTheme } from '@audius/harmony/src/foundations/color/primitive'
-import { themes as harmonyThemes } from '@audius/harmony/src/foundations/theme/theme'
+import { themes as harmonyTheme } from '@audius/harmony/src/foundations/theme/theme'
 import { merge } from 'lodash'
 
 // linear-gradient at 315deg
@@ -13,7 +13,10 @@ const primitiveOverrides = {
     special: {
       gradient: {
         ...baseLinearGradient,
-        colors: ['#5B23E1', '#A22FEB']
+        colors: [
+          harmonyPrimitiveTheme.day.special.gradientStop1,
+          harmonyPrimitiveTheme.day.special.gradientStop2
+        ]
       }
     }
   },
@@ -21,7 +24,10 @@ const primitiveOverrides = {
     special: {
       gradient: {
         ...baseLinearGradient,
-        colors: ['#7652CC', '#B05CE6']
+        colors: [
+          harmonyPrimitiveTheme.dark.special.gradientStop1,
+          harmonyPrimitiveTheme.dark.special.gradientStop2
+        ]
       }
     }
   },
@@ -29,15 +35,10 @@ const primitiveOverrides = {
     special: {
       gradient: {
         ...baseLinearGradient,
-        colors: ['#7652CC', '#B05CE6']
-      }
-    }
-  },
-  debug: {
-    special: {
-      gradient: {
-        ...baseLinearGradient,
-        colors: ['#FF00001A', '#FF00001A']
+        colors: [
+          harmonyPrimitiveTheme.matrix.special.gradientStop1,
+          harmonyPrimitiveTheme.matrix.special.gradientStop2
+        ]
       }
     }
   }
@@ -67,76 +68,53 @@ const semanticOverrides = {
     icon: {
       heading: primitiveOverrides.matrix.special.gradient
     }
-  },
-  debug: {
-    text: {
-      heading: primitiveOverrides.debug.special.gradient
-    },
-    icon: {
-      heading: primitiveOverrides.debug.special.gradient
-    }
   }
 }
 
 export const colorTheme = {
   day: {
-    ...harmonyThemes.day.color,
+    ...harmonyTheme.day.color,
     special: {
-      ...harmonyThemes.day.color.special,
+      ...harmonyTheme.day.color.special,
       ...primitiveOverrides.day.special
     },
     text: {
-      ...harmonyThemes.day.color.text,
+      ...harmonyTheme.day.color.text,
       ...semanticOverrides.day.text
     },
     icon: {
-      ...harmonyThemes.day.color.icon,
+      ...harmonyTheme.day.color.icon,
       ...semanticOverrides.day.icon
     }
   },
   dark: {
-    ...harmonyThemes.dark.color,
+    ...harmonyTheme.dark.color,
     special: {
-      ...harmonyThemes.dark.color.special,
+      ...harmonyTheme.dark.color.special,
       ...primitiveOverrides.dark.special
     },
     text: {
-      ...harmonyThemes.dark.color.text,
+      ...harmonyTheme.dark.color.text,
       ...semanticOverrides.dark.text
     },
     icon: {
-      ...harmonyThemes.dark.color.icon,
+      ...harmonyTheme.dark.color.icon,
       ...semanticOverrides.dark.icon
     }
   },
   matrix: {
-    ...harmonyThemes.matrix.color,
+    ...harmonyTheme.matrix.color,
     special: {
-      ...harmonyThemes.matrix.color.special,
+      ...harmonyTheme.matrix.color.special,
       ...primitiveOverrides.matrix.special
     },
     text: {
-      ...harmonyThemes.matrix.color.text,
+      ...harmonyTheme.matrix.color.text,
       ...semanticOverrides.matrix.text
     },
     icon: {
-      ...harmonyThemes.matrix.color.icon,
+      ...harmonyTheme.matrix.color.icon,
       ...semanticOverrides.matrix.icon
-    }
-  },
-  debug: {
-    ...harmonyThemes.debug.color,
-    special: {
-      ...harmonyThemes.debug.color.special,
-      ...primitiveOverrides.debug.special
-    },
-    text: {
-      ...harmonyThemes.debug.color.text,
-      ...semanticOverrides.debug.text
-    },
-    icon: {
-      ...harmonyThemes.debug.color.icon,
-      ...semanticOverrides.debug.icon
     }
   }
 }

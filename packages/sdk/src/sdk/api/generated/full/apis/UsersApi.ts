@@ -16,6 +16,7 @@
 
 import * as runtime from '../runtime';
 import type {
+  AlbumsResponseFull,
   CollectionLibraryResponseFull,
   FollowingResponseFull,
   FullBulkSubscribersResponse,
@@ -24,6 +25,7 @@ import type {
   FullGetSupporter,
   FullGetSupporters,
   FullGetSupporting,
+  FullMutualFollowersResponse,
   FullPurchasersResponse,
   FullRemixersResponse,
   FullReposts,
@@ -33,6 +35,7 @@ import type {
   HistoryResponseFull,
   ManagedUsersResponse,
   ManagersResponse,
+  PlaylistsResponseFull,
   PurchasersCountResponse,
   PurchasesCountResponse,
   PurchasesResponse,
@@ -44,9 +47,12 @@ import type {
   TransactionHistoryCountResponse,
   TransactionHistoryResponse,
   UserAccountResponseFull,
+  UserCommentsResponseFull,
   UserFeedResponse,
 } from '../models';
 import {
+    AlbumsResponseFullFromJSON,
+    AlbumsResponseFullToJSON,
     CollectionLibraryResponseFullFromJSON,
     CollectionLibraryResponseFullToJSON,
     FollowingResponseFullFromJSON,
@@ -63,6 +69,8 @@ import {
     FullGetSupportersToJSON,
     FullGetSupportingFromJSON,
     FullGetSupportingToJSON,
+    FullMutualFollowersResponseFromJSON,
+    FullMutualFollowersResponseToJSON,
     FullPurchasersResponseFromJSON,
     FullPurchasersResponseToJSON,
     FullRemixersResponseFromJSON,
@@ -81,6 +89,8 @@ import {
     ManagedUsersResponseToJSON,
     ManagersResponseFromJSON,
     ManagersResponseToJSON,
+    PlaylistsResponseFullFromJSON,
+    PlaylistsResponseFullToJSON,
     PurchasersCountResponseFromJSON,
     PurchasersCountResponseToJSON,
     PurchasesCountResponseFromJSON,
@@ -103,6 +113,8 @@ import {
     TransactionHistoryResponseToJSON,
     UserAccountResponseFullFromJSON,
     UserAccountResponseFullToJSON,
+    UserCommentsResponseFullFromJSON,
+    UserCommentsResponseFullToJSON,
     UserFeedResponseFromJSON,
     UserFeedResponseToJSON,
 } from '../models';
@@ -125,6 +137,16 @@ export interface GetAIAttributedTracksByUserHandleRequest {
     sortMethod?: GetAIAttributedTracksByUserHandleSortMethodEnum;
     sortDirection?: GetAIAttributedTracksByUserHandleSortDirectionEnum;
     filterTracks?: GetAIAttributedTracksByUserHandleFilterTracksEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
+}
+
+export interface GetAlbumsByUserRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+    sortMethod?: GetAlbumsByUserSortMethodEnum;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -196,6 +218,23 @@ export interface GetMutedUsersRequest {
     encodedDataSignature?: string;
 }
 
+export interface GetMutualFollowersRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+}
+
+export interface GetPlaylistsByUserRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+    sortMethod?: GetPlaylistsByUserSortMethodEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
+}
+
 export interface GetPurchasersRequest {
     id: string;
     offset?: number;
@@ -239,6 +278,7 @@ export interface GetRelatedUsersRequest {
     offset?: number;
     limit?: number;
     userId?: string;
+    filterFollowed?: boolean;
 }
 
 export interface GetRemixersRequest {
@@ -397,6 +437,13 @@ export interface GetUserAccountRequest {
 
 export interface GetUserByHandleRequest {
     handle: string;
+    userId?: string;
+}
+
+export interface GetUserCommentsRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
     userId?: string;
 }
 
@@ -606,6 +653,61 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getAIAttributedTracksByUserHandle(params: GetAIAttributedTracksByUserHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracks> {
         const response = await this.getAIAttributedTracksByUserHandleRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the albums created by a user using their user ID
+     */
+    async getAlbumsByUserRaw(params: GetAlbumsByUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AlbumsResponseFull>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getAlbumsByUser.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/albums`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AlbumsResponseFullFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the albums created by a user using their user ID
+     */
+    async getAlbumsByUser(params: GetAlbumsByUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AlbumsResponseFull> {
+        const response = await this.getAlbumsByUserRaw(params, initOverrides);
         return await response.value();
     }
 
@@ -1014,6 +1116,104 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
+     * Get intersection of users that follow followeeUserId and users that are followed by followerUserId
+     */
+    async getMutualFollowersRaw(params: GetMutualFollowersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullMutualFollowersResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getMutualFollowers.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/mutuals`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FullMutualFollowersResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get intersection of users that follow followeeUserId and users that are followed by followerUserId
+     */
+    async getMutualFollowers(params: GetMutualFollowersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullMutualFollowersResponse> {
+        const response = await this.getMutualFollowersRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the playlists created by a user using their user ID
+     */
+    async getPlaylistsByUserRaw(params: GetPlaylistsByUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PlaylistsResponseFull>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getPlaylistsByUser.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/playlists`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PlaylistsResponseFullFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the playlists created by a user using their user ID
+     */
+    async getPlaylistsByUser(params: GetPlaylistsByUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PlaylistsResponseFull> {
+        const response = await this.getPlaylistsByUserRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
      * Gets the list of unique users who have purchased content by the given user
      */
     async getPurchasersRaw(params: GetPurchasersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullPurchasersResponse>> {
@@ -1245,6 +1445,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (params.userId !== undefined) {
             queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.filterFollowed !== undefined) {
+            queryParameters['filter_followed'] = params.filterFollowed;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -2205,6 +2409,49 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
+     * Get user comment history
+     */
+    async getUserCommentsRaw(params: GetUserCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserCommentsResponseFull>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserComments.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/comments`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => UserCommentsResponseFullFromJSON(jsonValue));
+    }
+
+    /**
+     * Get user comment history
+     */
+    async getUserComments(params: GetUserCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserCommentsResponseFull> {
+        const response = await this.getUserCommentsRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
      * Gets the feed for the user
      */
     async getUserFeedRaw(params: GetUserFeedRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserFeedResponse>> {
@@ -2581,6 +2828,14 @@ export type GetAIAttributedTracksByUserHandleFilterTracksEnum = typeof GetAIAttr
 /**
  * @export
  */
+export const GetAlbumsByUserSortMethodEnum = {
+    Recent: 'recent',
+    Popular: 'popular'
+} as const;
+export type GetAlbumsByUserSortMethodEnum = typeof GetAlbumsByUserSortMethodEnum[keyof typeof GetAlbumsByUserSortMethodEnum];
+/**
+ * @export
+ */
 export const GetAudioTransactionsSortMethodEnum = {
     Date: 'date',
     TransactionType: 'transaction_type'
@@ -2617,6 +2872,14 @@ export const GetFavoritesSortDirectionEnum = {
     Desc: 'desc'
 } as const;
 export type GetFavoritesSortDirectionEnum = typeof GetFavoritesSortDirectionEnum[keyof typeof GetFavoritesSortDirectionEnum];
+/**
+ * @export
+ */
+export const GetPlaylistsByUserSortMethodEnum = {
+    Recent: 'recent',
+    Popular: 'popular'
+} as const;
+export type GetPlaylistsByUserSortMethodEnum = typeof GetPlaylistsByUserSortMethodEnum[keyof typeof GetPlaylistsByUserSortMethodEnum];
 /**
  * @export
  */

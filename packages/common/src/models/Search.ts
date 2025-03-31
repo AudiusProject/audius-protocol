@@ -39,7 +39,6 @@ export type SearchUser = UserMultihash &
 export type SearchTrack = TrackImage & {
   ai_attribution_user_id?: number
   _co_sign: undefined
-  _cover_art_sizes: null
   description: string | null
   genre: string
   mood: string
@@ -94,7 +93,6 @@ export type SearchTrack = TrackImage & {
 }
 
 export type SearchPlaylist = CollectionImage & {
-  _cover_art_sizes: null
   _is_publishing?: boolean
   description: string | null
   is_album: boolean

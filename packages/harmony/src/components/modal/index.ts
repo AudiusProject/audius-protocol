@@ -5,10 +5,10 @@ export { ModalContentText } from './ModalContentText'
 export { ModalHeader, ModalTitle } from './ModalHeader'
 export { ModalFooter } from './ModalFooter'
 export {
-  ModalProps,
+  type ModalProps,
   Anchor,
-  ModalContentProps,
-  ModalHeaderProps,
-  ModalTitleProps,
-  ModalFooterProps
+  type ModalContentProps,
+  type ModalHeaderProps,
+  type ModalTitleProps,
+  type ModalFooterProps
 } from './types'

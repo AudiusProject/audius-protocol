@@ -41,7 +41,7 @@ export type UserMetadata = {
   follower_count: number
   supporter_count: number
   supporting_count: number
-  handle: string
+  handle: Nullable<string>
   handle_lc: string
   is_deactivated: boolean
   is_verified: boolean
@@ -66,7 +66,6 @@ export type UserMetadata = {
   profile_picture_sizes: Nullable<CID>
   metadata_multihash: Nullable<CID>
   has_collectibles: boolean
-  collectiblesOrderUnset?: boolean
   primary_id: number
   secondary_ids: number[]
 

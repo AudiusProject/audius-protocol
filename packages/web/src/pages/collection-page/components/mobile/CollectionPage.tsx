@@ -140,11 +140,6 @@ const CollectionPage = ({
   const queuedAndPlaying = playing && isQueued()
   const queuedAndPreviewing = previewing && isQueued()
   const tracksLoading = tracks.status === Status.LOADING
-
-  const coverArtSizes =
-    metadata && metadata?.variant !== Variant.SMART
-      ? metadata._cover_art_sizes
-      : null
   const duration =
     tracks.entries?.reduce(
       (duration: number, entry: CollectionTrack) =>
@@ -176,7 +171,7 @@ const CollectionPage = ({
       ? smartCollectionIcons[metadata.playlist_name]
       : null
   const typeTitle =
-    metadata?.variant === Variant.SMART ? metadata?.typeTitle ?? type : type
+    metadata?.variant === Variant.SMART ? (metadata?.typeTitle ?? type) : type
   const customEmptyText =
     metadata?.variant === Variant.SMART ? metadata?.customEmptyText : null
 
@@ -267,7 +262,6 @@ const CollectionPage = ({
             title={playlistName}
             artistName={playlistOwnerName}
             artistHandle={playlistOwnerHandle}
-            coverArtSizes={coverArtSizes}
             description={description}
             isOwner={isOwner}
             isAlbum={isAlbum}

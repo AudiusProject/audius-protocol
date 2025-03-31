@@ -2,14 +2,14 @@ import type { RefObject } from 'react'
 import React, { useCallback, useRef, useState } from 'react'
 
 import type { SearchCategory } from '@audius/common/api'
-import { useGetSearchResults } from '@audius/common/api'
+import { useFollowers, useSearchUserResults } from '@audius/common/api'
 import type { ReplyingAndEditingState } from '@audius/common/context'
 import {
   CommentSectionProvider,
   useCurrentCommentSection
 } from '@audius/common/context'
 import type { ID, UserMetadata } from '@audius/common/models'
-import { Status } from '@audius/common/models'
+import type { LineupBaseActions, playerActions } from '@audius/common/store'
 import { accountSelectors } from '@audius/common/store'
 import type {
   BottomSheetFlatListMethods,
@@ -39,6 +39,7 @@ import { CommentDrawerHeader } from './CommentDrawerHeader'
 import { CommentSkeleton } from './CommentSkeleton'
 import { CommentThread } from './CommentThread'
 import { NoComments } from './NoComments'
+import { COMMENT_DRAWER_BORDER_RADIUS } from './constants'
 import { useGestureEventsHandlers } from './useGestureEventHandlers'
 import { useScrollEventsHandlers } from './useScrollEventHandlers'
 
@@ -88,19 +89,19 @@ const CommentDrawerAutocompleteContent = ({
     offset: 0
   }
 
-  const { data, status } = useGetSearchResults(params, { debounce: 500 })
-
-  // No search state
-  if (query === '') {
-    return (
-      <Flex p='l'>
-        <Text>Search Users</Text>
-      </Flex>
-    )
-  }
+  const { data: searchData, isLoading: searchLoading } =
+    useSearchUserResults(params)
+  const { users: followersData, isPending: followerDataPending } = useFollowers(
+    {
+      pageSize: 6,
+      userId: currentUserId
+    }
+  )
+  const userList = query !== '' ? searchData : followersData
+  const isUserListPending = query !== '' ? searchLoading : followerDataPending
 
   // Loading state
-  if (status === Status.LOADING || status === Status.IDLE) {
+  if (isUserListPending) {
     return (
       <Flex p='l' alignItems='center'>
         <LoadingSpinner style={{ height: 24 }} />
@@ -109,7 +110,7 @@ const CommentDrawerAutocompleteContent = ({
   }
 
   // Empty state
-  if (!data || !data.users || !data.users.length) {
+  if (!userList || !userList.length) {
     return (
       <Flex p='l'>
         <Text>No User Results</Text>
@@ -119,7 +120,7 @@ const CommentDrawerAutocompleteContent = ({
 
   return (
     <BottomSheetFlatList
-      data={data.users}
+      data={userList}
       keyExtractor={({ user_id }) => user_id.toString()}
       ListHeaderComponent={<Box h='l' />}
       enableFooterMarginAdjustment
@@ -127,7 +128,10 @@ const CommentDrawerAutocompleteContent = ({
       keyboardShouldPersistTaps='handled'
       renderItem={({ item }) => (
         <Box ph='l'>
-          <UserListItem user={item} onPress={() => onSelect(item)} />
+          <UserListItem
+            user={item as UserMetadata}
+            onPress={() => onSelect(item as UserMetadata)}
+          />
         </Box>
       )}
     />
@@ -195,12 +199,18 @@ const CommentDrawerContent = (props: {
   )
 }
 
-const BORDER_RADIUS = 40
-
 export type CommentDrawerData = {
   entityId: number
   navigation: NativeStackNavigationProp<ParamListBase>
   autoFocusInput?: boolean
+  uid?: string
+  /** Object containing lineup/player actions such as play, togglePlay, setPage
+   *  Typically these are lineup actions -
+   *  but playerActions are used when the comments were opened from NowPlaying.
+   *  In that scenario the comments are always for the currently playing track,
+   *  so it doesnt need to worry about changing lineups
+   */
+  actions?: LineupBaseActions | typeof playerActions
 }
 
 type CommentDrawerProps = {
@@ -214,7 +224,9 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
     navigation,
     bottomSheetModalRef,
     handleClose,
-    autoFocusInput
+    autoFocusInput,
+    uid,
+    actions
   } = props
   const { color } = useTheme()
   const insets = useSafeAreaInsets()
@@ -251,6 +263,8 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
             entityId={entityId}
             replyingAndEditingState={replyingAndEditingState}
             setReplyingAndEditingState={setReplyingAndEditingState}
+            uid={uid}
+            lineupActions={actions}
           >
             <CommentDrawerForm
               commentListRef={commentListRef}
@@ -284,8 +298,8 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
         snapPoints={['66%', '100%']}
         topInset={insets.top}
         style={{
-          borderTopRightRadius: BORDER_RADIUS,
-          borderTopLeftRadius: BORDER_RADIUS,
+          borderTopRightRadius: COMMENT_DRAWER_BORDER_RADIUS,
+          borderTopLeftRadius: COMMENT_DRAWER_BORDER_RADIUS,
           overflow: 'hidden'
         }}
         backgroundStyle={{ backgroundColor: color.background.white }}
@@ -309,6 +323,8 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
           setReplyingAndEditingState={setReplyingAndEditingState}
           navigation={navigation}
           closeDrawer={handleCloseDrawer}
+          uid={uid}
+          lineupActions={actions}
         >
           <CommentDrawerHeader minimal={autoCompleteActive} />
           <Divider orientation='horizontal' />

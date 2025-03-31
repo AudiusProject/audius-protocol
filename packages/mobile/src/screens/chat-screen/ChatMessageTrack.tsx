@@ -80,11 +80,11 @@ export const ChatMessageTrack = ({
 
   return track && user && uid ? (
     <TrackTile
+      id={track.track_id}
       index={0}
       togglePlay={togglePlay}
       uid={uid}
       isTrending={false}
-      showArtistPick={false}
       showRankIcon={false}
       styles={styles}
       variant='readonly'

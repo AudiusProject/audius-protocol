@@ -7,7 +7,6 @@ import { Kind } from '../models'
 
 import account from './account/slice'
 import averageColorReducer from './average-color/slice'
-import { buyCryptoReducer } from './buy-crypto'
 import { buyUSDCReducer } from './buy-usdc'
 import collectionsReducer from './cache/collections/reducer'
 import { CollectionsCacheState } from './cache/collections/types'
@@ -27,11 +26,9 @@ import gatedContent from './gated-content/slice'
 import musicConfettiReducer, {
   MusicConfettiState
 } from './music-confetti/slice'
-import { NotificationsState, notificationsReducer } from './notifications'
 import { HistoryPageState, SavedPageState } from './pages'
 import ai from './pages/ai/slice'
 import audioRewardsSlice from './pages/audio-rewards/slice'
-import audioTransactionsSlice from './pages/audio-transactions/slice'
 import { chatReducer } from './pages/chat'
 import collection from './pages/collection/reducer'
 import { CollectionsPageState } from './pages/collection/types'
@@ -40,7 +37,6 @@ import {
   DeactivateAccountState
 } from './pages/deactivate-account'
 import exploreCollectionsReducer from './pages/explore/exploreCollections/slice'
-import explorePageReducer from './pages/explore/slice'
 import feed from './pages/feed/reducer'
 import { FeedPageState } from './pages/feed/types'
 import historyPageReducer from './pages/history-page/reducer'
@@ -80,7 +76,6 @@ import remixSettingsReducer, {
 import savedCollectionsReducer from './saved-collections/slice'
 import searchReducer from './search/slice'
 import { SearchState } from './search/types'
-import solanaReducer from './solana/slice'
 import stemsUpload from './stems-upload/slice'
 import tippingReducer from './tipping/slice'
 import {
@@ -107,8 +102,6 @@ import { MobileOverflowModalState } from './ui/mobile-overflow-menu/types'
 import { modalsReducer, ModalsState } from './ui/modals'
 import nowPlayingReducer, { NowPlayingState } from './ui/now-playing/slice'
 import reactionsReducer, { ReactionsState } from './ui/reactions/slice'
-import relatedArtistsReducer from './ui/related-artists/slice'
-import { RelatedArtistsState } from './ui/related-artists/types'
 import shareModalReducer from './ui/share-modal/slice'
 import { ShareModalState } from './ui/share-modal/types'
 import stripeModalReducer from './ui/stripe-modal/slice'
@@ -178,15 +171,12 @@ export const reducers = (storage: Storage, history?: History) => ({
   playlistLibrary: playlistLibraryReducer,
   playlistUpdates: playlistUpdatesReducer,
 
-  notifications: notificationsReducer,
-
   // UI
   ui: combineReducers({
     averageColor: averageColorReducer,
     addToCollection: addToCollectionReducer,
     buyAudio: buyAudioReducer,
 
-    relatedArtists: relatedArtistsReducer,
     changePassword: changePasswordReducer,
     collectibleDetails: collectibleDetailsReducer,
     deletePlaylistConfirmationModal: deletePlaylistConfirmationReducer,
@@ -225,12 +215,10 @@ export const reducers = (storage: Storage, history?: History) => ({
   pages: combineReducers({
     ai,
     audioRewards: audioRewardsSlice.reducer,
-    audioTransactions: audioTransactionsSlice.reducer,
     chat: chatReducer,
     collection,
     deactivateAccount: deactivateAccountReducer,
     feed,
-    explore: explorePageReducer,
     exploreCollections: exploreCollectionsReducer,
     historyPage: historyPageReducer,
     profile: profileReducer,
@@ -247,10 +235,6 @@ export const reducers = (storage: Storage, history?: History) => ({
     premiumTracks
   }),
   search: searchReducer(storage),
-
-  // Solana
-  solana: solanaReducer,
-
   stemsUpload,
 
   // Tipping
@@ -258,7 +242,6 @@ export const reducers = (storage: Storage, history?: History) => ({
 
   // Gated content
   buyUSDC: buyUSDCReducer,
-  buyCrypto: buyCryptoReducer,
   gatedContent,
   purchaseContent: purchaseContentReducer,
   withdrawUSDC: withdrawUSDCReducer,
@@ -309,8 +292,6 @@ export type CommonState = {
   playlistLibrary: PlaylistLibraryState
   playlistUpdates: PlaylistUpdateState
 
-  notifications: NotificationsState
-
   ui: {
     averageColor: ReturnType<typeof averageColorReducer>
     buyAudio: ReturnType<typeof buyAudioReducer>
@@ -324,7 +305,6 @@ export type CommonState = {
     musicConfetti: MusicConfettiState
     nowPlaying: NowPlayingState
     reactions: ReactionsState
-    relatedArtists: RelatedArtistsState
     remixSettings: RemixSettingsState
     searchUsersModal: SearchUsersModalState
     shareModal: ShareModalState
@@ -353,12 +333,10 @@ export type CommonState = {
   pages: {
     ai: ReturnType<typeof ai>
     audioRewards: ReturnType<typeof audioRewardsSlice.reducer>
-    audioTransactions: ReturnType<typeof audioTransactionsSlice.reducer>
     chat: ReturnType<typeof chatReducer>
     collection: CollectionsPageState
     deactivateAccount: DeactivateAccountState
     feed: FeedPageState
-    explore: ReturnType<typeof explorePageReducer>
     exploreCollections: ReturnType<typeof exploreCollectionsReducer>
     smartCollection: ReturnType<typeof smartCollection>
     tokenDashboard: ReturnType<typeof tokenDashboardSlice.reducer>
@@ -375,13 +353,11 @@ export type CommonState = {
     premiumTracks: ReturnType<typeof premiumTracks>
   }
   search: SearchState
-  solana: ReturnType<typeof solanaReducer>
 
   stemsUpload: ReturnType<typeof stemsUpload>
 
   // USDC
   buyUSDC: ReturnType<typeof buyUSDCReducer>
-  buyCrypto: ReturnType<typeof buyCryptoReducer>
 
   // Tipping
   tipping: ReturnType<typeof tippingReducer>

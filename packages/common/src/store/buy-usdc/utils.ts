@@ -1,34 +1,81 @@
-import { call, select } from 'typed-redux-saga'
+import { getAccount } from '@solana/spl-token'
+import { PublicKey } from '@solana/web3.js'
+import { call, delay, select } from 'typed-redux-saga'
 
-import { createUserBankIfNeeded } from '~/services/audius-backend/solana'
 import { IntKeys } from '~/services/remote-config'
 import {
   MAX_CONTENT_PRICE_CENTS,
   MAX_USDC_PURCHASE_AMOUNT_CENTS,
   MIN_CONTENT_PRICE_CENTS,
-  MIN_USDC_PURCHASE_AMOUNT_CENTS,
-  BUY_TOKEN_VIA_SOL_SLIPPAGE_BPS
+  MIN_USDC_PURCHASE_AMOUNT_CENTS
 } from '~/services/remote-config/defaults'
-import { getContext } from '~/store/effects'
-import { getFeePayer } from '~/store/solana/selectors'
+
+import { getAccountUser } from '../account/selectors'
+import { getContext } from '../effects'
+import { getSDK } from '../sdkUtils'
+
+const POLL_ACCOUNT_INFO_DELAY_MS = 1000
+const POLL_ACCOUNT_INFO_RETRIES = 30
 
 /**
  * Derives a USDC user bank for a given eth address, creating it if necessary.
  * Defaults to the wallet of the current user.
  */
-export function* getUSDCUserBank(ethAddress?: string) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const { track } = yield* getContext('analytics')
-  const feePayerOverride = yield* select(getFeePayer)
-  if (!feePayerOverride) {
-    throw new Error('getUSDCUserBank: unexpectedly no fee payer override')
+export function* getOrCreateUSDCUserBank(ethAddress?: string) {
+  const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
+  let ethWallet = ethAddress
+  if (!ethWallet) {
+    const user = yield* select(getAccountUser)
+    if (!user?.wallet) {
+      throw new Error('Failed to create USDC user bank: No user wallet found.')
+    }
+    ethWallet = user.wallet
   }
-  return yield* call(createUserBankIfNeeded, audiusBackendInstance, {
-    ethAddress,
-    feePayerOverride,
-    mint: 'usdc',
-    recordAnalytics: track
-  })
+  const { userBank } = yield* call(
+    [
+      sdk.services.claimableTokensClient,
+      sdk.services.claimableTokensClient.getOrCreateUserBank
+    ],
+    {
+      ethWallet,
+      mint: 'USDC'
+    }
+  )
+  return userBank
+}
+
+/** Polls for the given token account info up to a maximum retry count. Useful
+ * for ensuring account is returned if it may have just been created.
+ */
+export function* pollForTokenAccountInfo({
+  retryDelayMs = POLL_ACCOUNT_INFO_DELAY_MS,
+  maxRetryCount = POLL_ACCOUNT_INFO_RETRIES,
+  tokenAccount
+}: {
+  tokenAccount: PublicKey
+  retryDelayMs?: number
+  maxRetryCount?: number
+}) {
+  const sdk = yield* getSDK()
+
+  let retries = 0
+  let result
+  while (retries < maxRetryCount && !result) {
+    result = yield* call(
+      getAccount,
+      sdk.services.solanaClient.connection,
+      tokenAccount
+    )
+    retries += 1
+    yield* delay(retryDelayMs)
+  }
+  if (!result) {
+    throw new Error(
+      `Failed to fetch USDC user bank token account info for ${tokenAccount.toString()}`
+    )
+  }
+  return result
 }
 
 export function* getBuyUSDCRemoteConfig() {
@@ -56,18 +103,12 @@ export function* getBuyUSDCRemoteConfig() {
       IntKeys.BUY_TOKEN_WALLET_POLL_MAX_RETRIES
     ) ?? undefined
 
-  // Only used in the BuyCryptoViaSol flow
-  const slippage =
-    remoteConfigInstance.getRemoteVar(IntKeys.BUY_TOKEN_VIA_SOL_SLIPPAGE_BPS) ??
-    BUY_TOKEN_VIA_SOL_SLIPPAGE_BPS
-
   return {
     minContentPriceCents,
     maxContentPriceCents,
     minUSDCPurchaseAmountCents,
     maxUSDCPurchaseAmountCents,
     maxRetryCount,
-    retryDelayMs,
-    slippage
+    retryDelayMs
   }
 }

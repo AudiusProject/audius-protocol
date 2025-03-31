@@ -6,6 +6,7 @@
     "start": "./start.sh"
   },
   "dependencies": {
+    "@audius/commands": "*",
     "@audius/sdk": "*",
     "@audius/spl": "*",
     "@pedalboard/relay": "*",
@@ -13,7 +14,8 @@
     "@pedalboard/solana-relay": "*",
     "@pedalboard/crm": "*",
     "@pedalboard/trending-challenge-rewards": "*",
-    "@pedalboard/backfill-audio-analyses": "*"
+    "@pedalboard/staking": "*",
+    "@pedalboard/archiver": "*"
   },
   "license": "ISC"
 }

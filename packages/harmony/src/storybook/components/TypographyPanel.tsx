@@ -8,8 +8,8 @@ import {
   TextSize,
   TextStrength,
   TextVariant
-} from 'components'
-import { variantStylesMap } from 'components/text'
+} from '~harmony/components'
+import { variantStylesMap } from '~harmony/components/text'
 
 type TypographyCardProps = {
   variant: TextVariant

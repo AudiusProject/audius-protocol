@@ -7,6 +7,9 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Don't include lockfile as this is an example project
+package-lock.json
+
 node_modules
 dist
 dist-ssr

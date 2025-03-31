@@ -4,7 +4,8 @@ import {
   settingsPageActions as actions,
   BrowserNotificationSetting,
   getContext,
-  accountSelectors
+  accountSelectors,
+  getSDK
 } from '@audius/common/store'
 import { getErrorMessage } from '@audius/common/utils'
 import { select, call, put, takeEvery } from 'typed-redux-saga'
@@ -28,11 +29,14 @@ function* watchGetSettings() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(actions.GET_NOTIFICATION_SETTINGS, function* () {
     try {
-      const account = yield* select(accountSelectors.getAccountUser)
+      const hasAccount = yield* select(accountSelectors.getHasAccount)
 
-      if (!isBrowserPushAvailable || !account) return
+      if (!isBrowserPushAvailable || !hasAccount) return
+
+      const sdk = yield* getSDK()
       const settings = yield* call(
-        audiusBackendInstance.getBrowserPushNotificationSettings
+        audiusBackendInstance.getBrowserPushNotificationSettings,
+        { sdk }
       )
       // If settings exist, set them in the store, else leave it at the defaults.
       if (settings) yield* put(actions.setNotificationSettings(settings))
@@ -47,7 +51,7 @@ function* watchGetSettings() {
               )
               const enabled = yield* call(
                 audiusBackendInstance.getBrowserPushSubscription,
-                subscription.endpoint
+                { sdk, pushEndpoint: subscription.endpoint }
               )
               yield* put(actions.setBrowserNotificationEnabled(enabled, false))
             }
@@ -60,7 +64,7 @@ function* watchGetSettings() {
           if (permissionData.permission === Permission.GRANTED) {
             const enabled = yield* call(
               audiusBackendInstance.getSafariBrowserPushEnabled,
-              permissionData.deviceToken
+              { sdk, deviceToken: permissionData.deviceToken }
             )
             yield* put(actions.setBrowserNotificationEnabled(enabled, false))
           }
@@ -74,18 +78,20 @@ function* watchGetSettings() {
 
 function* watchToogleBrowserPushNotification() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* takeEvery(
     actions.SET_BROWSER_NOTIFICATION_ENABLED,
     function* (action: actions.SetBrowserNotificationEnabled) {
       try {
-        const account = yield* select(accountSelectors.getAccountUser)
-        if (!account) return
+        const hasAccount = yield* select(accountSelectors.getHasAccount)
+        if (!hasAccount) return
 
         if (isPushManagerAvailable) {
           const subscription = yield* call(getPushManagerBrowserSubscription)
           if (subscription) {
             if (action.updateServer) {
               yield* call(audiusBackendInstance.updateBrowserNotifications, {
+                sdk,
                 enabled: action.enabled,
                 subscription
               })
@@ -103,11 +109,11 @@ function* watchToogleBrowserPushNotification() {
             pushPermission.permission === Permission.GRANTED
           ) {
             if (action.updateServer) {
-              yield* call(
-                audiusBackendInstance.registerDeviceToken,
-                pushPermission.deviceToken,
-                'safari'
-              )
+              yield* call(audiusBackendInstance.registerDeviceToken, {
+                sdk,
+                deviceToken: pushPermission.deviceToken,
+                deviceType: 'safari'
+              })
             }
 
             const event = make(Name.BROWSER_NOTIFICATION_SETTINGS, {
@@ -120,10 +126,10 @@ function* watchToogleBrowserPushNotification() {
             pushPermission.permission === Permission.GRANTED
           ) {
             if (action.updateServer) {
-              yield* call(
-                audiusBackendInstance.deregisterDeviceToken,
-                pushPermission.deviceToken
-              )
+              yield* call(audiusBackendInstance.deregisterDeviceToken, {
+                sdk,
+                deviceToken: pushPermission.deviceToken
+              })
             }
 
             const event = make(Name.BROWSER_NOTIFICATION_SETTINGS, {
@@ -144,6 +150,7 @@ function* watchToogleBrowserPushNotification() {
 
 function* watchSetBrowserNotificationSettingsOn() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* takeEvery(
     actions.SET_BROWSER_NOTIFICATION_SETTINGS_ON,
     function* (action: actions.SetBrowserNotificationSettingsOn) {
@@ -160,10 +167,10 @@ function* watchSetBrowserNotificationSettingsOn() {
           [BrowserNotificationSetting.Reactions]: true
         }
         yield* put(actions.setNotificationSettings(updatedSettings))
-        yield* call(
-          audiusBackendInstance.updateNotificationSettings,
-          updatedSettings
-        )
+        yield* call(audiusBackendInstance.updateNotificationSettings, {
+          sdk,
+          settings: updatedSettings
+        })
       } catch (error) {
         yield* put(
           actions.browserPushNotificationFailed(getErrorMessage(error))
@@ -175,6 +182,7 @@ function* watchSetBrowserNotificationSettingsOn() {
 
 function* watchSetBrowserNotificationSettingsOff() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* takeEvery(
     actions.SET_BROWSER_NOTIFICATION_SETTINGS_OFF,
     function* (action: actions.SetBrowserNotificationSettingsOff) {
@@ -191,10 +199,10 @@ function* watchSetBrowserNotificationSettingsOff() {
           [BrowserNotificationSetting.Reactions]: false
         }
         yield* put(actions.setNotificationSettings(updatedSettings))
-        yield* call(
-          audiusBackendInstance.updateNotificationSettings,
-          updatedSettings
-        )
+        yield* call(audiusBackendInstance.updateNotificationSettings, {
+          sdk,
+          settings: updatedSettings
+        })
       } catch (error) {
         yield* put(
           actions.browserPushNotificationFailed(getErrorMessage(error))
@@ -206,12 +214,13 @@ function* watchSetBrowserNotificationSettingsOff() {
 
 function* watchUpdateNotificationSettings() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* takeEvery(
     actions.TOGGLE_NOTIFICATION_SETTING,
     function* (action: actions.ToggleNotificationSetting) {
       try {
-        const account = yield* select(accountSelectors.getAccountUser)
-        if (!account) return
+        const hasAccount = yield* select(accountSelectors.getHasAccount)
+        if (!hasAccount) return
 
         let isOn: boolean | null | undefined | Permission = action.isOn
         if (isOn === undefined) {
@@ -221,7 +230,8 @@ function* watchUpdateNotificationSettings() {
           isOn = notificationSettings[action.notificationType]
         }
         yield* call(audiusBackendInstance.updateNotificationSettings, {
-          [action.notificationType]: isOn
+          sdk,
+          settings: { [action.notificationType]: isOn }
         })
 
         const event = make(Name.NOTIFICATIONS_TOGGLE_SETTINGS, {

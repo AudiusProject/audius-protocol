@@ -1,13 +1,18 @@
+import { IconComponent } from '~harmony/components'
+
+// Two Tone / Special Styling
 import IconArtistBadgeSVG from '../assets/icons/ArtistBadge.svg'
 import IconCosignSVG from '../assets/icons/Cosign.svg'
 import IconMultiselectAddSVG from '../assets/icons/MultiselectAdd.svg'
 import IconMultiselectRemoveSVG from '../assets/icons/MultiselectRemove.svg'
-import IconTokenBronzeSVG from '../assets/icons/TokenBronze.svg'
-import IconTokenGoldSVG from '../assets/icons/TokenGold.svg'
-import IconTokenNoTierSVG from '../assets/icons/TokenNoTier.svg'
-import IconTokenPlatinumSVG from '../assets/icons/TokenPlatinum.svg'
-import IconTokenSilverSVG from '../assets/icons/TokenSilver.svg'
+// Token Tier Badges
+import TokenBronzePng from '../assets/icons/TokenBronze.png'
+import TokenGoldPng from '../assets/icons/TokenGold.png'
+import TokenNoTierPng from '../assets/icons/TokenNoTier.png'
+import TokenPlatinumPng from '../assets/icons/TokenPlatinum.png'
+import TokenSilverPng from '../assets/icons/TokenSilver.png'
 import IconVerifiedSVG from '../assets/icons/Verified.svg'
+// File Types
 import IconCcBySVG from '../assets/icons/ccBy.svg'
 import IconCcCCSVG from '../assets/icons/ccCC.svg'
 import IconCcNC_EUSVG from '../assets/icons/ccNC-EU.svg'
@@ -54,7 +59,19 @@ import IconFileWAVSVG from '../assets/icons/fileWAV.svg'
 import IconFileWAVESVG from '../assets/icons/fileWAVE.svg'
 import IconFileWEBMSVG from '../assets/icons/fileWEBM.svg'
 import IconFileXWMASVG from '../assets/icons/fileXWMA.svg'
-import type { IconComponent } from '../components/icon'
+// Creative Commons
+// Playback Rate Icons
+import IconPlaybackRate0_5xSVG from '../assets/icons/iconPlaybackRate0_5x.svg'
+import IconPlaybackRate0_8xSVG from '../assets/icons/iconPlaybackRate0_8x.svg'
+import IconPlaybackRate0_9xSVG from '../assets/icons/iconPlaybackRate0_9x.svg'
+import IconPlaybackRate1_1xSVG from '../assets/icons/iconPlaybackRate1_1x.svg'
+import IconPlaybackRate1_2xSVG from '../assets/icons/iconPlaybackRate1_2x.svg'
+import IconPlaybackRate1_5xSVG from '../assets/icons/iconPlaybackRate1_5x.svg'
+import IconPlaybackRate1xSVG from '../assets/icons/iconPlaybackRate1x.svg'
+import IconPlaybackRate2_5xSVG from '../assets/icons/iconPlaybackRate2_5x.svg'
+import IconPlaybackRate2xSVG from '../assets/icons/iconPlaybackRate2x.svg'
+import IconPlaybackRate3xSVG from '../assets/icons/iconPlaybackRate3x.svg'
+import { createImageIcon } from '../utils/createImageIcon'
 
 // Two Tone / Special Styling
 export const IconArtistBadge = IconArtistBadgeSVG as IconComponent
@@ -62,13 +79,13 @@ export const IconCosign = IconCosignSVG as IconComponent
 export const IconMultiselectAdd = IconMultiselectAddSVG as IconComponent
 export const IconMultiselectRemove = IconMultiselectRemoveSVG as IconComponent
 
-// VIP Tier Badges
+// Token Tier Badge Components
 export const IconVerified = IconVerifiedSVG as IconComponent
-export const IconTokenBronze = IconTokenBronzeSVG as IconComponent
-export const IconTokenGold = IconTokenGoldSVG as IconComponent
-export const IconTokenPlatinum = IconTokenPlatinumSVG as IconComponent
-export const IconTokenSilver = IconTokenSilverSVG as IconComponent
-export const IconTokenNoTier = IconTokenNoTierSVG as IconComponent
+export const IconTokenNoTier = createImageIcon(TokenNoTierPng)
+export const IconTokenBronze = createImageIcon(TokenBronzePng)
+export const IconTokenGold = createImageIcon(TokenGoldPng)
+export const IconTokenPlatinum = createImageIcon(TokenPlatinumPng)
+export const IconTokenSilver = createImageIcon(TokenSilverPng)
 
 // File Types
 export const IconFile3GA = IconFile3GASVG as IconComponent
@@ -119,3 +136,15 @@ export const IconCcSampling = IconCcSamplingSVG as IconComponent
 export const IconCcSamplingPlus = IconCcSamplingPlusSVG as IconComponent
 export const IconCcShare = IconCcShareSVG as IconComponent
 export const IconCcZero = IconCcZeroSVG as IconComponent
+
+// Playback Rate Icons
+export const IconPlaybackRate0_5x = IconPlaybackRate0_5xSVG as IconComponent
+export const IconPlaybackRate0_8x = IconPlaybackRate0_8xSVG as IconComponent
+export const IconPlaybackRate0_9x = IconPlaybackRate0_9xSVG as IconComponent
+export const IconPlaybackRate1x = IconPlaybackRate1xSVG as IconComponent
+export const IconPlaybackRate1_1x = IconPlaybackRate1_1xSVG as IconComponent
+export const IconPlaybackRate1_2x = IconPlaybackRate1_2xSVG as IconComponent
+export const IconPlaybackRate1_5x = IconPlaybackRate1_5xSVG as IconComponent
+export const IconPlaybackRate2x = IconPlaybackRate2xSVG as IconComponent
+export const IconPlaybackRate2_5x = IconPlaybackRate2_5xSVG as IconComponent
+export const IconPlaybackRate3x = IconPlaybackRate3xSVG as IconComponent

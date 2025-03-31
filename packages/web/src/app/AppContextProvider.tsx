@@ -5,7 +5,7 @@ import { useAsync } from 'react-use'
 
 import * as analytics from 'services/analytics'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { getStorageNodeSelector } from 'services/audius-sdk/storageNodeSelector'
+import { audiusSdk } from 'services/audius-sdk'
 import { localStorage } from 'services/local-storage'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { generatePlaylistArtwork } from 'utils/imageProcessingUtil'
@@ -17,20 +17,21 @@ type AppContextProviderProps = {
 export const AppContextProvider = (props: AppContextProviderProps) => {
   const { children } = props
 
-  const { value: storageNodeSelector } = useAsync(getStorageNodeSelector)
+  const { value: sdk } = useAsync(audiusSdk)
 
   const value = useMemo(
     () => ({
       analytics,
       localStorage,
-      storageNodeSelector,
       imageUtils: {
         generatePlaylistArtwork
       },
+      getHostUrl: () => window.location.origin,
+      audiusSdk: sdk,
       audiusBackend: audiusBackendInstance,
       remoteConfig: remoteConfigInstance
     }),
-    [storageNodeSelector]
+    [sdk]
   )
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

@@ -1,11 +1,11 @@
 .container {
   display: inline-flex;
   align-items: center;
-  height: 72px;
+  height: 80px;
   width: 100%;
   position: fixed;
   top: 0px;
-  bottom: 72px;
+  bottom: 80px;
   z-index: 100;
   transition: all 0.15s ease-in-out;
   background-color: rgba(255, 255, 255, 0);
@@ -56,7 +56,7 @@
 
 .icon path {
   transition: fill 0.07s ease-in-out;
-  fill: var(--harmony-static-white);
+  fill: var(--harmony-white);
 }
 .invertColors .icon path {
   fill: var(--harmony-secondary);
@@ -72,7 +72,7 @@
 
 .horizontalLogo {
   cursor: pointer;
-  max-width: 132px;
+  max-width: 160px;
 }
 
 .horizontalLogo {
@@ -89,7 +89,7 @@
   display: inline-flex;
   align-items: center;
   gap: 32px;
-  color: var(--harmony-static-white);
+  color: var(--harmony-white);
 }
 
 .resources {
@@ -108,7 +108,7 @@
 }
 
 .resourcesIcon path {
-  fill: var(--harmony-static-white);
+  fill: var(--harmony-white);
 }
 
 .resourcesMenu {
@@ -120,7 +120,8 @@
   border-radius: 12px;
   border: 1px solid var(--border-border-strong, #e7e6eb);
   background: var(--background-bg-white, #fff);
-  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.08),
+  box-shadow:
+    0px 8px 16px 0px rgba(0, 0, 0, 0.08),
     0px 0px 4px 0px rgba(0, 0, 0, 0.04);
   min-width: 618px;
   max-width: 618px;
@@ -133,7 +134,7 @@
   padding: 16px;
   cursor: pointer;
   border-radius: 6px;
-  border: 1px solid var(--harmony-static-white);
+  border: 1px solid var(--harmony-white);
 }
 
 .menuItemContainer:hover {
@@ -169,7 +170,8 @@
 .popup {
   border-radius: 12px !important;
   border: 1px solid var(--harmony-n-150) !important;
-  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.08),
+  box-shadow:
+    0px 8px 16px 0px rgba(0, 0, 0, 0.08),
     0px 0px 4px 0px rgba(0, 0, 0, 0.04) !important;
   padding: 0 !important;
   user-select: none !important;
@@ -216,7 +218,7 @@
   text-align: center;
   padding: 11px 26px 10px;
   border-radius: 4px;
-  background-color: var(--harmony-static-white);
+  background-color: var(--harmony-white);
   transform: scale3d(1, 1, 1);
   transition: all 0.15s ease-in-out;
 }
@@ -239,7 +241,7 @@
 }
 
 .invertColors .signUp:hover {
-  color: var(--harmony-static-white);
+  color: var(--harmony-white);
   background-color: #dc19f0;
   box-shadow: 0 10px 20px -2px rgba(253, 0, 254, 0.5);
   border: none;
@@ -286,7 +288,7 @@
 
 .kebabMenu path,
 .trendingIcon path {
-  fill: var(--harmony-static-white);
+  fill: var(--harmony-white);
 }
 
 .invertColors path {
@@ -299,7 +301,7 @@
   cursor: pointer;
   transition: all 0.15s ease-in-out;
   transform: scale3d(1, 1, 1);
-  text-decoration-color: var(--harmony-static-white) !important;
+  text-decoration-color: var(--harmony-white) !important;
 }
 
 .iconLink:not(:last-child) {
@@ -307,7 +309,7 @@
 }
 
 .iconLink:hover {
-  text-decoration: underline var(--harmony-static-white) !important;
+  text-decoration: underline var(--harmony-white) !important;
   opacity: 0.8;
   transform: scale3d(1.03, 1.03, 1.03);
 }
@@ -324,11 +326,11 @@
 }
 
 .linkIcon path {
-  fill: var(--harmony-static-white);
+  fill: var(--harmony-white);
 }
 
 .iconLinkText {
-  color: var(--harmony-static-white);
+  color: var(--harmony-white);
   font-size: var(--harmony-font-m);
   font-weight: var(--harmony-font-bold);
   letter-spacing: 0.2px;

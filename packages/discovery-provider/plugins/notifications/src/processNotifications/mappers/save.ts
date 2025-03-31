@@ -50,13 +50,16 @@ export class Save extends BaseNotification<SaveNotificationRow> {
       .from<UserRow>('users')
       .where('is_current', true)
       .whereIn('user_id', [this.receiverUserId, this.saverUserId])
-    const users = res.reduce((acc, user) => {
-      acc[user.user_id] = {
-        name: user.name,
-        isDeactivated: user.is_deactivated
-      }
-      return acc
-    }, {} as Record<number, { name: string; isDeactivated: boolean }>)
+    const users = res.reduce(
+      (acc, user) => {
+        acc[user.user_id] = {
+          name: user.name,
+          isDeactivated: user.is_deactivated
+        }
+        return acc
+      },
+      {} as Record<number, { name: string; isDeactivated: boolean }>
+    )
 
     if (users?.[this.receiverUserId]?.isDeactivated) {
       return
@@ -72,10 +75,13 @@ export class Save extends BaseNotification<SaveNotificationRow> {
         .from<TrackRow>('tracks')
         .where('is_current', true)
         .whereIn('track_id', [this.saveItemId])
-      const tracks = res.reduce((acc, track) => {
-        acc[track.track_id] = { title: track.title }
-        return acc
-      }, {} as Record<number, { title: string }>)
+      const tracks = res.reduce(
+        (acc, track) => {
+          acc[track.track_id] = { title: track.title }
+          return acc
+        },
+        {} as Record<number, { title: string }>
+      )
 
       entityType = 'track'
       entityName = tracks[this.saveItemId]?.title
@@ -89,13 +95,16 @@ export class Save extends BaseNotification<SaveNotificationRow> {
         .from<PlaylistRow>('playlists')
         .where('is_current', true)
         .whereIn('playlist_id', [this.saveItemId])
-      const playlists = res.reduce((acc, playlist) => {
-        acc[playlist.playlist_id] = {
-          playlist_name: playlist.playlist_name,
-          is_album: playlist.is_album
-        }
-        return acc
-      }, {} as Record<number, { playlist_name: string; is_album: boolean }>)
+      const playlists = res.reduce(
+        (acc, playlist) => {
+          acc[playlist.playlist_id] = {
+            playlist_name: playlist.playlist_name,
+            is_album: playlist.is_album
+          }
+          return acc
+        },
+        {} as Record<number, { playlist_name: string; is_album: boolean }>
+      )
       const playlist = playlists[this.saveItemId]
       entityType = playlist?.is_album ? 'album' : 'playlist'
       entityName = playlist?.playlist_name

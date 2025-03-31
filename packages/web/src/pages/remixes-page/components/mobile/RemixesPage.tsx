@@ -3,7 +3,6 @@ import { useEffect, useContext } from 'react'
 import { Track, User } from '@audius/common/models'
 import { pluralize } from '@audius/common/utils'
 import { IconRemix as IconRemixes } from '@audius/harmony'
-import cn from 'classnames'
 
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
@@ -12,7 +11,6 @@ import MobilePageContainer from 'components/mobile-page-container/MobilePageCont
 import { useSubPageHeader } from 'components/nav/mobile/NavContext'
 import UserBadges from 'components/user-badges/UserBadges'
 import { fullTrackRemixesPage } from 'utils/route'
-import { isMatrix } from 'utils/theme/theme'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './RemixesPage.module.css'
@@ -28,8 +26,8 @@ const messages = {
 export type RemixesPageProps = {
   title: string
   count: number | null
-  originalTrack: Track | null
-  user: User | null
+  originalTrack: Pick<Track, 'track_id' | 'permalink' | 'title'> | undefined
+  user: User | undefined
   getLineupProps: () => LineupProps
   goToTrackPage: () => void
   goToArtistPage: () => void
@@ -60,11 +58,7 @@ const RemixesPage = g(
             className={styles.header}
             title={
               <>
-                <IconRemixes
-                  className={cn(styles.iconRemix, {
-                    [styles.matrix]: isMatrix()
-                  })}
-                />
+                <IconRemixes className={styles.iconRemix} color='heading' />
                 <span>{title}</span>
               </>
             }
@@ -97,7 +91,7 @@ const RemixesPage = g(
                 {user.name}
                 <UserBadges
                   userId={user.user_id}
-                  badgeSize={10}
+                  size='3xs'
                   className={styles.iconVerified}
                 />
               </div>

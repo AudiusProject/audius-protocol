@@ -23,7 +23,7 @@ const ThisWeekTab = () => {
   const trendingGenre = useSelector(getTrendingGenre)
   return (
     <TrendingLineup
-      header={trendingGenre ? null : <RewardsBanner type='tracks' />}
+      header={trendingGenre ? null : <RewardsBanner bannerType='tracks' />}
       timeRange={TimeRange.WEEK}
       rankIconCount={5}
     />
@@ -39,20 +39,17 @@ const AllTimeTab = () => {
 
 const trendingScreens = [
   {
-    name: 'ThisWeek',
-    label: 'This Week',
+    name: 'This Week',
     Icon: IconCalendarDay,
     component: ThisWeekTab
   },
   {
-    name: 'ThisMonth',
-    label: 'This Month',
+    name: 'This Month',
     Icon: IconCalendarMonth,
     component: ThisMonthTab
   },
   {
-    name: 'AllTime',
-    label: 'All Time',
+    name: 'All Time',
     Icon: IconAllTime,
     component: AllTimeTab
   }

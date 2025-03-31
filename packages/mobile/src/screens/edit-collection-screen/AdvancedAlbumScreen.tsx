@@ -17,7 +17,7 @@ export const AdvancedAlbumScreen = () => {
   const [{ value: isHidden }] = useField('is_private')
   const [{ value: releaseDate, onChange }] = useField('release_date')
 
-  const error = !upc || /^\d{12}$/.test(upc) ? null : messages.upcInputError
+  const error = !upc || /^\d{12,13}$/.test(upc) ? null : messages.upcInputError
 
   return (
     <FormScreen
@@ -36,7 +36,7 @@ export const AdvancedAlbumScreen = () => {
             name='upc'
             label={messages.upcInputLabel}
             transformValueOnChange={(value) => value.replace(/\D/g, '')}
-            maxLength={12}
+            maxLength={13}
             error={touched && !!error}
             helperText={touched && error}
           />

@@ -1,12 +1,23 @@
-import { UserListStoreState } from '~/store/user-list/types'
-
-export const NOTIFICATIONS_USER_LIST_TAG = 'NOTIFICATION'
-
-export type NotificationUsersPageOwnState = {
-  id: string | null
-}
+import {
+  CommentMentionNotification,
+  CommentNotification,
+  CommentReactionNotification,
+  CommentThreadNotification,
+  FavoriteNotification,
+  FollowNotification,
+  RepostNotification
+} from '~/store/notifications'
 
 export type NotificationUsersPageState = {
-  notificationUsersPage: NotificationUsersPageOwnState
-  userList: UserListStoreState
+  notification:
+    | FollowNotification
+    | FavoriteNotification
+    | RepostNotification
+    | CommentNotification
+    | CommentThreadNotification
+    | CommentMentionNotification
+    | CommentReactionNotification
+    | null
 }
+
+export const NOTIFICATIONS_USER_LIST_TAG = 'NOTIFICATION'

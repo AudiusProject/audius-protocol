@@ -32,6 +32,7 @@ import { OutOfText } from '../components/OutOfText'
 import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
 import { Heading, Page, PageFooter } from '../components/layout'
+import { useFastReferral } from '../hooks/useFastReferral'
 import { useSocialMediaLoader } from '../hooks/useSocialMediaLoader'
 
 const {
@@ -117,18 +118,22 @@ export const PickHandlePage = () => {
   const { value: handle } = useSelector(getHandleField)
   const isLinkingSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
   const handleInputRef = useRef<HTMLInputElement>(null)
+  const isFastReferral = useFastReferral()
 
   const handleSubmit = useCallback(
     (values: PickHandleValues) => {
       const { handle } = values
       dispatch(setValueField('handle', handle))
+      if (isFastReferral) {
+        dispatch(setValueField('name', handle))
+      }
       navigate(
         isLinkingSocialOnFirstPage
           ? SIGN_UP_CREATE_LOGIN_DETAILS
           : SIGN_UP_FINISH_PROFILE_PAGE
       )
     },
-    [dispatch, navigate, isLinkingSocialOnFirstPage]
+    [dispatch, isFastReferral, navigate, isLinkingSocialOnFirstPage]
   )
 
   const handleCompleteSocialMediaLogin = useCallback(

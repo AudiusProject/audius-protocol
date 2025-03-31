@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react'
 
-import { Flex } from 'components/layout'
-import { IconNote, IconVisibilityHidden } from 'icons'
+import { Flex } from '~harmony/components/layout'
+import { IconNote, IconVisibilityHidden } from '~harmony/icons'
 
 import { IconButton, IconButtonProps } from './IconButton'
 

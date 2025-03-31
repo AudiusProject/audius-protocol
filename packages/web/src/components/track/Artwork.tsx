@@ -1,6 +1,6 @@
 import { memo } from 'react'
 
-import { SquareSizes, ID, CoverArtSizes } from '@audius/common/models'
+import { SquareSizes, ID } from '@audius/common/models'
 import {
   IconLock,
   IconPlaybackPlay as IconPlay,
@@ -19,7 +19,6 @@ import styles from './Artwork.module.css'
 
 type TileArtworkProps = {
   id: ID
-  coverArtSizes: CoverArtSizes
   size: any
   isBuffering: boolean
   isPlaying: boolean
@@ -131,22 +130,19 @@ const Artwork = memo(
 )
 
 export const TrackArtwork = memo((props: TileArtworkProps) => {
-  const image = useTrackCoverArt(
-    props.id,
-    props.coverArtSizes,
-    SquareSizes.SIZE_150_BY_150,
-    ''
-  )
+  const image = useTrackCoverArt({
+    trackId: props.id,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   return <Artwork {...props} image={image} isTrack />
 })
 
 export const CollectionArtwork = memo((props: TileArtworkProps) => {
-  const image = useCollectionCoverArt(
-    props.id,
-    props.coverArtSizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const image = useCollectionCoverArt({
+    collectionId: props.id,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   return <Artwork {...props} image={image} />
 })

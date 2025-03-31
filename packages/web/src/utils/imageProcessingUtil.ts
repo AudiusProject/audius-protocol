@@ -1,5 +1,4 @@
 import WebWorker from 'services/WebWorker'
-import averageRgbWorkerFile from 'workers/averageRgb.worker.js'
 import dominantColorWorkerFile from 'workers/dominantColor.worker.js'
 import generatePlaylistArtworkWorkerFile from 'workers/generatePlaylistArtwork.worker.js'
 import gifPreviewWorkerFile from 'workers/gifPreview.worker.js'
@@ -7,7 +6,6 @@ import resizeImageWorkerFile from 'workers/resizeImage.worker.js'
 // @ts-ignore - jimp is a raw-loaded to have workers called directly with it.
 import jimp from 'workers/utils/jimp.min.workerscript'
 
-const averageRgbWorker = new WebWorker(averageRgbWorkerFile, false, [jimp])
 const dominantColorWorker = new WebWorker(dominantColorWorkerFile, false, [
   jimp
 ])
@@ -44,11 +42,6 @@ export const resizeImage = async (
   const worker = new WebWorker(resizeImageWorkerFile, true, [jimp])
   worker.call({ imageUrl: imageUrlBlob, maxWidth, square }, key)
   return worker.getResult()
-}
-
-export const averageRgb = async (imageUrl: string, chunkSize = 100) => {
-  averageRgbWorker.call({ imageUrl, chunkSize }, imageUrl)
-  return averageRgbWorker.getResult(imageUrl)
 }
 
 export const dominantColor = async (imageUrl: string) => {

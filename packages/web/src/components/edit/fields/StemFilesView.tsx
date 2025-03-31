@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { StemCategory, StemUploadWithFile } from '@audius/common/models'
-import { encodeHashId } from '@audius/common/utils'
 import { Box, Flex, Text } from '@audius/harmony'
+import { Id } from '@audius/sdk'
 import cn from 'classnames'
 
 import { Dropzone } from 'components/upload/Dropzone'
@@ -11,12 +11,12 @@ import { audiusSdk } from 'services/audius-sdk'
 
 import styles from './StemFilesView.module.css'
 
-const MAX_ROWS = 20
+const MAX_ROWS = 200
 
 const messages = {
   additionalFiles: 'UPLOAD ADDITIONAL FILES',
   audioQuality: 'Provide FLAC, WAV, ALAC, or AIFF for highest audio quality',
-  maxCapacity: 'Reached upload limit of 20 files.',
+  maxCapacity: `Reached upload limit of ${MAX_ROWS} files.`,
   stemTypeHeader: 'Select Stem Type',
   stemTypeDescription: 'Please select a stem type for each of your files.'
 }
@@ -46,7 +46,7 @@ const useStemFileInfos = (stems: StemUploadWithFile[]) => {
             return {
               i,
               res: await sdk.tracks.inspectTrack({
-                trackId: encodeHashId(trackId),
+                trackId: Id.parse(trackId),
                 original: true
               })
             }

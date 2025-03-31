@@ -2,14 +2,16 @@ import type { ReactNode } from 'react'
 
 import type {
   PlaybackSource,
-  FavoriteType,
   Collection,
   ID,
   UID,
   Track,
   User
 } from '@audius/common/models'
-import type { RepostType, EnhancedCollectionTrack } from '@audius/common/store'
+import type {
+  EnhancedCollectionTrack,
+  LineupBaseActions
+} from '@audius/common/store'
 import type { StyleProp, ViewStyle } from 'react-native'
 
 import type { ImageProps } from '@audius/harmony-native'
@@ -34,14 +36,14 @@ export type LineupItemProps = {
   /** Index of tile in lineup */
   index: number
 
+  /** Id of the item */
+  id: ID
+
   /** Are we in a trending lineup? Allows tiles to specialize their rendering */
   isTrending?: boolean
 
   /** Is this item unlisted (hidden)? */
   isUnlisted?: boolean
-
-  /** Whether or not to show the artist pick indicators */
-  showArtistPick?: boolean
 
   /** Whether to show an icon indicating rank in lineup */
   showRankIcon?: boolean
@@ -69,6 +71,9 @@ export type LineupItemProps = {
 
   /** Tell the tile where it's being used */
   source?: LineupTileSource
+
+  /** Object containing lineup actions such as setPage */
+  actions?: LineupBaseActions
 }
 
 export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
@@ -80,17 +85,8 @@ export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
   /** Duration of the tile's tracks */
   duration?: number
 
-  /** Favorite type used for the favorited user list */
-  favoriteType: FavoriteType
-
-  /** Hide the play count */
-  hidePlays?: boolean
-
   /** Hide the share button */
   hideShare?: boolean
-
-  /** Hide the comments stat */
-  hideComments?: boolean
 
   /** ID of the item */
   id: ID
@@ -128,15 +124,6 @@ export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
   /** Function to call when the edit button is pressed */
   onPressEdit?: GestureResponderHandler
 
-  /** Amount of plays on this item */
-  playCount?: number
-
-  /** Amount of comments on this item */
-  commentCount?: number
-
-  /** Repost type used for the reposted user list */
-  repostType: RepostType
-
   /** Title of the item */
   title: string
 
@@ -150,4 +137,10 @@ export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
 
   /** Analytics context about where this tile is being used */
   source?: LineupTileSource
+
+  /** A UID for the item in the lineup - can be used to trigger track changes within the lineup */
+  uid?: string
+
+  /** Object containing lineup actions such as play, togglePlay, setPage */
+  actions?: LineupBaseActions
 }

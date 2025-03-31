@@ -1,5 +1,6 @@
 import { ReactNode } from 'react'
 
+import { Flex, IconComponent, Text } from '@audius/harmony'
 import cn from 'classnames'
 
 import { useHistoryContext } from 'app/HistoryProvider'
@@ -14,45 +15,34 @@ export type HeaderProps = {
   bottomBar?: ReactNode // e.g. tabs
   secondary?: ReactNode
   rightDecorator?: ReactNode
-  variant?: 'main' | 'mini' | 'section' | 'page'
   containerStyles?: string
-  wrapperClassName?: string
   showBackButton?: boolean
   onClickBack?: () => void
-  overrideWidth?: number
   children?: ReactNode
   isChromeOrSafari?: boolean
   scrollBarWidth?: number
   headerContainerRef?: React.RefObject<HTMLDivElement>
+  icon?: IconComponent
 }
 
-const Header = (props: HeaderProps) => {
+export const Header = (props: HeaderProps) => {
   const {
     primary,
     secondary = null,
     rightDecorator = null,
     topLeftElement = null,
     children,
-    variant = 'main',
     containerStyles = '',
-    wrapperClassName,
     showBackButton = false,
     onClickBack,
     bottomBar,
-    overrideWidth = null,
     isChromeOrSafari,
     scrollBarWidth,
-    headerContainerRef
+    headerContainerRef,
+    icon: Icon
   } = props
 
   const { history } = useHistoryContext()
-
-  const variantStyle = {
-    [styles.main]: variant === 'main',
-    [styles.mini]: variant === 'mini',
-    [styles.section]: variant === 'section',
-    [styles.page]: variant === 'page'
-  }
 
   return (
     <>
@@ -62,37 +52,61 @@ const Header = (props: HeaderProps) => {
         scrollBarWidth={scrollBarWidth}
       />
       <div
-        className={cn(
-          styles.container,
-          variantStyle,
-          { [containerStyles]: !!containerStyles },
-          { [styles.containerWithBar]: !!bottomBar }
-        )}
+        className={cn(styles.container, {
+          [containerStyles]: !!containerStyles
+        })}
       >
-        <div
-          className={cn(styles.maxWidthWrapper, {
-            [styles.maxWithWrapperWithBar]: !!bottomBar
-          })}
+        <Flex
+          w='100%'
+          direction='column'
+          alignItems='flex-start'
+          gap='l'
+          mt='2xl'
+          mb='l'
+          css={{ maxWidth: 1080 }}
         >
-          <div
-            className={styles.middleRow}
-            style={overrideWidth !== null ? { maxWidth: overrideWidth } : {}}
+          {topLeftElement || null}
+          <Flex
+            alignItems='center'
+            justifyContent='space-between'
+            w='100%'
+            gap='m'
           >
-            <div className={cn(styles.headerWrapper, wrapperClassName)}>
-              {showBackButton ? (
-                <BackButton onClick={onClickBack ?? history.goBack} />
-              ) : null}
-              <h1 className={cn(styles.header, variantStyle)}>{primary}</h1>
-              <h2 className={styles.secondary}>{secondary}</h2>
-            </div>
+            {showBackButton ? (
+              <BackButton onClick={onClickBack ?? history.goBack} />
+            ) : null}
+            <Flex alignItems='center' gap='m'>
+              {Icon ? <Icon size='2xl' color='heading' /> : null}
+              <Text
+                variant='heading'
+                tag='h1'
+                strength='default'
+                size='l'
+                color='heading'
+              >
+                {primary}
+              </Text>
+            </Flex>
+            {/* Padding to help align heading */}
+            <Flex pt={6}>
+              {typeof secondary === 'string' ? (
+                <Text
+                  variant='body'
+                  color='default'
+                  strength='default'
+                  size='m'
+                >
+                  {secondary}
+                </Text>
+              ) : (
+                secondary
+              )}
+            </Flex>
             <div className={styles.rightDecorator}>{rightDecorator}</div>
-          </div>
-        </div>
-        {children}
-        {topLeftElement && (
-          <div className={styles.topLeftWrapper}>{topLeftElement}</div>
-        )}
+          </Flex>
+        </Flex>
       </div>
+      {children}
       {bottomBar && (
         <div className={styles.bottomBarContainer}>
           <div className={styles.bottomBar}>{bottomBar}</div>
@@ -101,5 +115,3 @@ const Header = (props: HeaderProps) => {
     </>
   )
 }
-
-export default Header

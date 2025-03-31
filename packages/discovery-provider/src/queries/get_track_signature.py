@@ -4,7 +4,10 @@ import urllib.parse
 from typing import Optional, TypedDict
 
 from src.gated_content.content_access_checker import content_access_checker
-from src.gated_content.signature import get_gated_content_signature
+from src.gated_content.signature import (
+    GatedContentSignature,
+    get_gated_content_signature,
+)
 from src.models.tracks.track import Track
 from src.queries.get_authed_user import get_authed_user
 from src.queries.get_managed_users import is_active_manager
@@ -30,6 +33,11 @@ class GetTrackDownloadSignature(TypedDict):
     user_id: Optional[int]
     user_signature: Optional[str]
     nft_access_signature: Optional[str]
+
+
+class StreamSignature(TypedDict):
+    signature: GatedContentSignature | None
+    cid: str
 
 
 def get_authed_or_managed_user(
@@ -70,7 +78,7 @@ def get_authed_or_managed_user(
 
 # Returns a dictionary {signature, cid} if user has stream access
 # Returns None otherwise
-def get_track_stream_signature(args: GetTrackStreamSignature):
+def get_track_stream_signature(args: GetTrackStreamSignature) -> StreamSignature | None:
     track = args["track"]
     is_stream_gated = track["is_stream_gated"]
     is_preview = args.get("is_preview", False)
@@ -170,7 +178,24 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
     cid = cid.strip()
     authed_user = get_authed_or_managed_user(user_data, user_signature, user_id)
 
-    # all non-download-gated tracks should be publicly available
+    # Check if user is the track owner
+    if authed_user and authed_user["user_id"] == track["owner_id"]:
+        signature = get_gated_content_signature(
+            {
+                "track_id": track["track_id"],
+                "cid": cid,
+                "type": "track",
+                "user_id": authed_user["user_id"],
+                "is_gated": False,
+            }
+        )
+        return {"signature": signature, "cid": cid, "filename": filename}
+
+    # For non-owners, check if track is downloadable
+    if not track.get("is_downloadable", False):
+        return None
+
+    # all non-download-gated downloadable tracks should be publicly available
     if not is_download_gated:
         signature = get_gated_content_signature(
             {

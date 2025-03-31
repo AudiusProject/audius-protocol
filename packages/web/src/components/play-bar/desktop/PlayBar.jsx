@@ -1,13 +1,6 @@
 import { Component } from 'react'
 
-import {
-  Name,
-  RepostSource,
-  FavoriteSource,
-  PlaybackSource,
-  Kind
-} from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
+import { Name, RepostSource, PlaybackSource, Kind } from '@audius/common/models'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -23,7 +16,6 @@ import {
 } from '@audius/common/store'
 import { Genre, route } from '@audius/common/utils'
 import { removeHotkeys, setupHotkeys, Scrubber } from '@audius/harmony'
-import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
@@ -34,9 +26,9 @@ import PreviousButtonProvider from 'components/play-bar/previous-button/Previous
 import RepeatButtonProvider from 'components/play-bar/repeat-button/RepeatButtonProvider'
 import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleButtonProvider'
 import { audioPlayer } from 'services/audio-player'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
 import { getLocation } from 'store/routing/selectors'
+import { push } from 'utils/navigation'
 import { collectibleDetailsPage } from 'utils/route'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
@@ -59,11 +51,10 @@ const {
 
 const { seek, reset } = playerActions
 const { getTheme } = themeSelectors
-const { repostTrack, undoRepostTrack, saveTrack, unsaveTrack } =
-  tracksSocialActions
+const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { play, pause, next, previous, repeat, shuffle } = queueActions
 const { getLineupEntries } = lineupSelectors
-const { getAccountUser, getUserId } = accountSelectors
+const { getUserId } = accountSelectors
 const { getTrack } = cacheTracksSelectors
 
 const VOLUME_GRANULARITY = 100.0
@@ -191,14 +182,6 @@ class PlayBar extends Component {
     }
   }
 
-  onToggleFavorite = (favorited, trackId) => {
-    if (trackId) {
-      favorited
-        ? this.props.unsaveTrack(trackId)
-        : this.props.saveTrack(trackId)
-    }
-  }
-
   onToggleRepost = (reposted, trackId) => {
     if (trackId) {
       reposted
@@ -300,7 +283,8 @@ class PlayBar extends Component {
       isBuffering,
       playbackRate,
       userId,
-      theme
+      theme,
+      toggleSaveTrack
     } = this.props
     const { mediaKey } = this.state
 
@@ -309,7 +293,6 @@ class PlayBar extends Component {
     let artistHandle = ''
     let artistUserId = null
     let isVerified = false
-    let profilePictureSizes = null
     let trackId = null
     let duration = null
     let isOwner = false
@@ -323,7 +306,6 @@ class PlayBar extends Component {
       artistHandle = user.handle
       artistUserId = user.user_id
       isVerified = user.is_verified
-      profilePictureSizes = user._profile_picture_sizes
       isOwner = track.owner_id === userId
       trackPermalink = track.permalink
 
@@ -338,8 +320,7 @@ class PlayBar extends Component {
       artistHandle = user.handle
       artistUserId = user.user_id
       isVerified = user.is_verified
-      profilePictureSizes = user._profile_picture_sizes
-      isOwner = this.props.accountUser?.user_id === user.user_id
+      isOwner = this.props.accountUserId === user.user_id
       duration = audioPlayer.getDuration()
     }
 
@@ -355,17 +336,12 @@ class PlayBar extends Component {
     const matrix = isMatrix()
     const isLongFormContent =
       track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
-    const isNewPodcastControlsEnabled = getFeatureEnabled(
-      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-    )
 
     return (
       <div className={styles.playBar}>
         <div className={styles.playBarContentWrapper}>
           <div className={styles.playBarPlayingInfo}>
             <PlayingTrackInfo
-              profilePictureSizes={profilePictureSizes}
               trackId={trackId}
               isOwner={isOwner}
               trackTitle={trackTitle}
@@ -406,7 +382,7 @@ class PlayBar extends Component {
 
             <div className={styles.buttonControls}>
               <div className={styles.shuffleButton}>
-                {isLongFormContent && isNewPodcastControlsEnabled ? null : (
+                {isLongFormContent ? null : (
                   <ShuffleButtonProvider
                     isMatrix={matrix}
                     darkMode={shouldShowDark(theme)}
@@ -429,7 +405,7 @@ class PlayBar extends Component {
                 <NextButtonProvider onClick={this.onNext} />
               </div>
               <div className={styles.repeatButton}>
-                {isLongFormContent && isNewPodcastControlsEnabled ? (
+                {isLongFormContent ? (
                   <PlaybackRateButton />
                 ) : (
                   <RepeatButtonProvider
@@ -455,7 +431,7 @@ class PlayBar extends Component {
               uid={uid}
               isOwner={isOwner}
               onToggleRepost={this.onToggleRepost}
-              onToggleFavorite={this.onToggleFavorite}
+              onToggleFavorite={toggleSaveTrack}
             />
           </div>
         </div>
@@ -493,7 +469,7 @@ const makeMapStateToProps = () => {
 
     return {
       seek: getSeek(state),
-      accountUser: getAccountUser(state),
+      accountUserId: getUserId(state),
       currentQueueItem: getCurrentQueueItem(state),
       playCounter: getCounter(state),
       collectible: getCollectible(state),
@@ -538,10 +514,7 @@ const mapDispatchToProps = (dispatch) => ({
     dispatch(repostTrack(trackId, RepostSource.PLAYBAR)),
   undoRepostTrack: (trackId) =>
     dispatch(undoRepostTrack(trackId, RepostSource.PLAYBAR)),
-  saveTrack: (trackId) => dispatch(saveTrack(trackId, FavoriteSource.PLAYBAR)),
-  unsaveTrack: (trackId) =>
-    dispatch(unsaveTrack(trackId, FavoriteSource.PLAYBAR)),
-  goToRoute: (route) => dispatch(pushRoute(route)),
+  goToRoute: (route) => dispatch(push(route)),
   record: (event) => dispatch(event)
 })
 

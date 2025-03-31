@@ -1,8 +1,9 @@
 import { createRequire } from 'node:module'
 
 import alias from '@rollup/plugin-alias'
+import image from '@rollup/plugin-image'
+import json from '@rollup/plugin-json'
 import svgr from '@svgr/rollup'
-import json from 'rollup-plugin-json'
 import postcss from 'rollup-plugin-postcss'
 import rollupTypescript from 'rollup-plugin-typescript2'
 
@@ -45,6 +46,9 @@ export default {
       modules: true
     }),
     svgr(),
+    image({
+      exclude: /\.svg$/ // Exclude SVG files since they're handled by SVGR
+    }),
     rollupTypescript({
       typescript: tspCompiler,
       clean: true

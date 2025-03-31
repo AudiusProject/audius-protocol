@@ -43,3 +43,6 @@ export const makeGetCurrent = () => {
     })
   )
 }
+
+export const getPlaybackRetryCount = (state: CommonState) =>
+  state.player.retries

@@ -4,12 +4,12 @@ import styled from '@emotion/styled'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import { backgroundOverlay } from 'utils/styleUtils'
 
 import styles from './AccountSwitcherRow.module.css'
 
-export type AccountSwitcherRowProps = {
+type AccountSwitcherRowProps = {
   user: UserMetadata
   isSelected?: boolean
 }
@@ -27,11 +27,11 @@ export const AccountSwitcherRow = ({
   user,
   isSelected = false
 }: AccountSwitcherRowProps) => {
-  const profilePicture = useProfilePicture(
-    user.user_id,
-    SquareSizes.SIZE_150_BY_150
-  )
-  const { iconSizes, color } = useTheme()
+  const profilePicture = useProfilePicture({
+    userId: user.user_id,
+    size: SquareSizes.SIZE_150_BY_150
+  })
+  const { color } = useTheme()
   return (
     <Flex
       ph='xl'
@@ -73,7 +73,7 @@ export const AccountSwitcherRow = ({
           >
             {user.name}
           </Text>
-          <UserBadges userId={user.user_id} badgeSize={iconSizes.xs} inline />
+          <UserBadges userId={user.user_id} inline />
         </Flex>
         <Text
           variant='body'

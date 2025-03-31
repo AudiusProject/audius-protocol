@@ -40,16 +40,11 @@ export const getTrackWithFallback = (track: Track | null) => {
       is_original_available: false,
       activity_timestamp: '',
       _co_sign: undefined,
-      _cover_art_sizes: {
-        '150x150': '',
-        '480x480': '',
-        '1000x1000': '',
-        OVERRIDE: ''
-      },
       release_date: '',
       ddex_app: null,
       comment_count: 0,
-      comments_disabled: false
+      comments_disabled: false,
+      album_backlink: undefined
     }
   )
 }
@@ -74,12 +69,6 @@ export const getCollectionWithFallback = (collection: Collection | null) => {
       activity_timestamp: '',
       _co_sign: undefined,
       playlist_owner_id: -1,
-      _cover_art_sizes: {
-        '150x150': '',
-        '480x480': '',
-        '1000x1000': '',
-        OVERRIDE: ''
-      },
       is_stream_gated: false,
       stream_conditions: null,
       access: {

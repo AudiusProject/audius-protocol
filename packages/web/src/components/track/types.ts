@@ -6,13 +6,12 @@ import {
   Favorite,
   ID,
   UID,
-  CoverArtSizes,
   Repost,
-  FieldVisibility,
   Remix,
   AccessConditions,
   LineupTrack,
-  ModalSource
+  ModalSource,
+  FieldVisibility
 } from '@audius/common/models'
 import { Genre, Nullable } from '@audius/common/utils'
 
@@ -31,7 +30,6 @@ export type TileProps = {
   hasCurrentUserReposted: boolean
   hasCurrentUserSaved: boolean
   duration: number
-  coverArtSizes: CoverArtSizes
   activityTimestamp?: string
   togglePlay: (uid: UID, trackId: ID, source?: PlaybackSource) => void
   trackTileStyles?: {}
@@ -42,22 +40,18 @@ export type TileProps = {
   isPlaying: boolean
   isLoading: boolean
   hasLoaded: (index: number) => void
-  goToRoute: (route: string) => void
   isTrending: boolean
-  showRankIcon: boolean
   variant?: 'readonly'
 }
 
 export type TrackTileProps = TileProps & {
   title: string
   genre: Genre
-  showArtistPick?: boolean
   showListens?: boolean
   disableActions?: boolean
   showArtworkIcon?: boolean
   showSkeleton?: boolean
   userSignedIn?: boolean
-  listenCount?: number
   saveCount: number
   commentCount: number
   commentsDisabled?: boolean
@@ -124,9 +118,6 @@ export type DesktopTrackTileProps = {
   /** Prefix order number displayed on the left side of the tile */
   order?: number
 
-  /** The number of plays for the track */
-  listenCount?: number
-
   /** If there is nothing underneath, it's standalone */
   standalone?: boolean
 
@@ -138,12 +129,6 @@ export type DesktopTrackTileProps = {
 
   /** If the track is playing */
   isPlaying?: boolean
-
-  /** If the track is gated */
-  isStreamGated?: boolean
-
-  /** If the track is unlisted/hidden */
-  isUnlisted?: boolean
 
   /** If the track is a scheduled release */
   isScheduledRelease?: boolean
@@ -186,12 +171,6 @@ export type DesktopTrackTileProps = {
 
   /** The beneath the title is the username, for the track's creator */
   userName: ReactNode
-
-  /** The beneath the username is the state, displays the favorite and repost counts */
-  stats: ReactNode
-
-  /** The fields which are visible on the track */
-  fieldVisibility?: FieldVisibility
 
   /** Displayed on the bottom right is the kebab icon for menu options */
   rightActions?: ReactNode
@@ -238,9 +217,6 @@ export type DesktopTrackTileProps = {
   /** Are we in a trending lineup? Allows tiles to specialize their rendering */
   isTrending?: boolean
 
-  /** Whether to show an icon indicating rank in lineup */
-  showRankIcon: boolean
-
   /** The relative link of the track */
   permalink: string
 
@@ -276,9 +252,6 @@ export type DesktopPlaylistTileProps = {
   /** If the button actions should be clickable */
   isDisabled?: boolean
 
-  /** If the track is unlisted */
-  isUnlisted?: boolean
-
   /** If track metadata is loading in */
   isLoading?: boolean
 
@@ -305,9 +278,6 @@ export type DesktopPlaylistTileProps = {
 
   /** The beneath the title is the username, for the track's creator */
   userName: ReactNode
-
-  /** The beneath the username is the state, displays the favorite and repost counts */
-  stats: ReactNode
 
   /** Displayed on the bottom right is the kebab icon for menu options */
   rightActions?: ReactNode
@@ -369,9 +339,6 @@ export type DesktopPlaylistTileProps = {
   /** Are we in a trending lineup? Allows tiles to specialize their rendering */
   isTrending?: boolean
 
-  /** Whether to show an icon indicating rank in lineup */
-  showRankIcon: boolean
-
   /** Relative link to playlist page */
   href: string
 
@@ -386,11 +353,4 @@ export type DesktopPlaylistTileProps = {
 
   /** ID for the playlist */
   playlistId: ID
-}
-
-export type SkeletonTileProps = {
-  index?: number
-  key: number
-  tileSize: TrackTileSize
-  ordered?: boolean
 }

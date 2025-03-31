@@ -1,6 +1,6 @@
 import { Ref, forwardRef } from 'react'
 
-import { IconButton, IconButtonProps, useTheme } from '@audius/harmony'
+import { IconButton, IconButtonProps } from '@audius/harmony'
 
 type NavHeaderButtonProps = IconButtonProps & {
   isActive?: boolean
@@ -9,33 +9,14 @@ type NavHeaderButtonProps = IconButtonProps & {
 export const NavHeaderButton = forwardRef(
   (props: NavHeaderButtonProps, ref: Ref<HTMLButtonElement>) => {
     const { isActive, ...other } = props
-    const { color } = useTheme()
-
-    const activeCss = {
-      backgroundColor: color.secondary.s100,
-      svg: {
-        path: {
-          fill: color.static.white
-        }
-      }
-    }
-
-    const css = {
-      border: `1px solid ${color.border.default}`,
-      backgroundColor: color.background.surface1,
-      svg: {
-        path: {
-          fill: color.icon.subdued
-        }
-      },
-      '&:hover,&:active': activeCss
-    }
 
     return (
       <IconButton
         ref={ref}
-        css={[css, isActive && activeCss]}
-        size='m'
+        ripple
+        color='subdued'
+        activeColor='default'
+        isActive={isActive}
         {...other}
       />
     )

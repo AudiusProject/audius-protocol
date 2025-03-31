@@ -1,8 +1,8 @@
 import { ReactNode } from 'react'
 
-import { IconComponent } from 'components/icon'
-import { TextInputProps } from 'components/input'
-import { MenuContentProps, MenuProps } from 'components/internal/Menu'
+import { IconComponent } from '~harmony/components/icon'
+import { TextInputProps } from '~harmony/components/input'
+import { MenuContentProps, MenuProps } from '~harmony/components/internal/Menu'
 
 export type SelectOption<Value extends string> = {
   value: Value
@@ -38,6 +38,13 @@ export type SelectProps<Value extends string = string> = {
    * e.g. { label: 'Option A', icon: IconRadar }
    */
   options: SelectOption<Value>[]
+
+  /**
+   * Optional function to customize the selected option's displayed label
+   * @param option The currently selected option
+   * @returns The string to display as the label
+   */
+  renderSelectedOptionLabel?: (option: SelectOption<Value>) => string
 
   children?: (props: ChildrenProps<Value>) => ReactNode
 

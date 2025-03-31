@@ -28,8 +28,8 @@ export type EditTrackScreenProps = {
 } & Partial<ScreenProps>
 
 export type EditTrackFormProps = FormikProps<FormValues> &
-  Partial<ScreenProps> & {
-    doneText?: string
+  Partial<ScreenProps> &
+  Pick<EditTrackScreenProps, 'doneText'> & {
     isUpload?: boolean
   }
 

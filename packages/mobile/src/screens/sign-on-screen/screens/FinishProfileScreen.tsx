@@ -3,20 +3,20 @@ import { useCallback } from 'react'
 import { finishProfilePageMessages } from '@audius/common/messages'
 import { finishProfileSchema } from '@audius/common/schemas'
 import { MAX_DISPLAY_NAME_LENGTH } from '@audius/common/services'
-import type { Image } from '@audius/common/store'
-import {
-  getCoverPhotoField,
-  getHandleField,
-  getIsVerified,
-  getNameField,
-  getProfileImageField
-} from '@audius/web/src/common/store/pages/signon/selectors'
+import { type Image } from '@audius/common/store'
 import { css } from '@emotion/native'
 import {
   setField,
   setValueField,
   signUp
 } from 'common/store/pages/signon/actions'
+import {
+  getCoverPhotoField,
+  getHandleField,
+  getIsVerified,
+  getNameField,
+  getProfileImageField
+} from 'common/store/pages/signon/selectors'
 import { Formik, useField } from 'formik'
 import { isEmpty } from 'lodash'
 import type {
@@ -37,7 +37,7 @@ import { launchSelectImageActionSheet } from 'app/utils/launchSelectImageActionS
 
 import { AccountHeader } from '../components/AccountHeader'
 import { Heading, Page, PageFooter } from '../components/layout'
-import type { SignUpScreenParamList } from '../types'
+import type { SignOnScreenParamList } from '../types'
 import { useTrackScreen } from '../utils/useTrackScreen'
 
 const AnimatedText = Animated.createAnimatedComponent(Text)
@@ -51,7 +51,7 @@ type FinishProfileValues = {
 }
 
 export const FinishProfileScreen = () => {
-  const navigation = useNavigation<SignUpScreenParamList>()
+  const navigation = useNavigation<SignOnScreenParamList>()
   const dispatch = useDispatch()
   const { spacing } = useTheme()
   const savedProfileImage = useSelector(getProfileImageField)

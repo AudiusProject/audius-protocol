@@ -29,7 +29,6 @@ import {
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { full } from '@audius/sdk'
-import { push as pushRoute } from 'connected-react-router'
 import { debounce, isEqual } from 'lodash'
 import { connect } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
@@ -38,6 +37,7 @@ import { Dispatch } from 'redux'
 import { TrackEvent, make } from 'common/store/analytics/actions'
 import { SsrContext } from 'ssr/SsrContext'
 import { AppState } from 'store/types'
+import { push } from 'utils/navigation'
 
 import { SavedPageProps as DesktopSavedPageProps } from './components/desktop/SavedPage'
 import { SavedPageProps as MobileSavedPageProps } from './components/mobile/SavedPage'
@@ -225,14 +225,14 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
   ): [SavedPageTrack[], number] => {
     const { tracks } = this.props
     const playingUid = this.getPlayingUid()
-    const playingIndex = tracks.entries.findIndex(
+    const activeIndex = tracks.entries.findIndex(
       ({ uid }: any) => uid === playingUid
     )
     const filteredMetadata = this.formatMetadata(trackMetadatas)
     const filteredIndex =
-      playingIndex > -1
+      activeIndex > -1
         ? filteredMetadata.findIndex((metadata) => metadata.uid === playingUid)
-        : playingIndex
+        : activeIndex
     return [filteredMetadata, filteredIndex]
   }
 
@@ -242,7 +242,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
     const { tracks } = this.props
     const filterText = this.state.filterText ?? ''
     const playingUid = this.getPlayingUid()
-    const playingIndex = tracks.entries.findIndex(
+    const activeIndex = tracks.entries.findIndex(
       ({ uid }: any) => uid === playingUid
     )
     const filteredMetadata = this.formatMetadata(trackMetadatas)
@@ -253,9 +253,9 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
           item.user?.name.toLowerCase().indexOf(filterText.toLowerCase()) > -1
       )
     const filteredIndex =
-      playingIndex > -1
+      activeIndex > -1
         ? filteredMetadata.findIndex((metadata) => metadata.uid === playingUid)
-        : playingIndex
+        : activeIndex
     return [filteredMetadata, filteredIndex]
   }
 
@@ -316,22 +316,6 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
           source: PlaybackSource.LIBRARY_PAGE
         })
       )
-    }
-  }
-
-  onClickSave = (record: TrackRecord) => {
-    if (!record.has_current_user_saved) {
-      this.props.saveTrack(record.track_id)
-    } else {
-      this.props.unsaveTrack(record.track_id)
-    }
-  }
-
-  onSave = (isSaved: boolean, trackId: ID) => {
-    if (!isSaved) {
-      this.props.saveTrack(trackId)
-    } else {
-      this.props.unsaveTrack(trackId)
     }
   }
 
@@ -483,14 +467,12 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
     const mobileProps = {
       playlistUpdates: this.props.playlistUpdates,
       updatePlaylistLastViewedAt: this.props.updatePlaylistLastViewedAt,
-      onSave: this.onSave,
       onTogglePlay: this.onTogglePlay
     }
 
     const desktopProps = {
       hasReachedEnd: this.props.hasReachedEnd,
       onClickRow: this.onClickRow,
-      onClickSave: this.onClickSave,
       onClickTrackName: this.onClickTrackName,
       onClickArtistName: this.onClickArtistName,
       onClickRepost: this.onClickRepost,
@@ -582,7 +564,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     fetchSavedPlaylists: () => dispatch(accountActions.fetchSavedPlaylists()),
     updatePlaylistLastViewedAt: (playlistId: number) =>
       dispatch(updatedPlaylistViewed({ playlistId })),
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
+    goToRoute: (route: string) => dispatch(push(route)),
     play: (uid?: UID) => dispatch(tracksActions.play(uid)),
     pause: () => dispatch(tracksActions.pause()),
     repostTrack: (trackId: ID) =>

@@ -1,22 +1,30 @@
 import { useState, useCallback, useRef } from 'react'
 
+import { useUserCollectibles } from '@audius/common/api'
 import { RandomImage } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
-import { Button, Popup, SegmentedControl, IconSearch } from '@audius/harmony'
+import {
+  Flex,
+  Button,
+  Popup,
+  SegmentedControl,
+  IconSearch
+} from '@audius/harmony'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 import { useWindowSize } from 'react-use'
 
 import { Dropzone } from 'components/upload/Dropzone'
-import InvalidFileType from 'components/upload/InvalidFileType'
+import { InvalidFileType } from 'components/upload/InvalidFileType'
 import { useMainContentRef } from 'pages/MainContentContext'
 import zIndex from 'utils/zIndex'
 
 import styles from './ImageSelectionPopup.module.css'
-import { ImageSelectionProps, ImageSelectionDefaults } from './PropTypes'
-const getAccountUser = accountSelectors.getAccountUser
+import { ImageSelectionProps } from './PropTypes'
+
+const { getAccountUser } = accountSelectors
 
 const COLLECTIBLES_PER_PAGE = 15
 const POPULAR_TERMS = ['neon', 'space', 'beach', 'nature', 'abstract']
@@ -37,17 +45,19 @@ const DropzonePage = ({ error, onSelect }) => {
     (file) => onSelect(file, 'original'),
     [onSelect]
   )
+
   return (
-    <div className={styles.dropzonePage}>
+    <Flex column mt='l' alignItems='center' gap='s'>
+      {error ? (
+        <InvalidFileType reason='type' className={styles.invalidFileType} />
+      ) : null}
       <Dropzone
         type='image'
         className={styles.dropzone}
-        iconClassName={styles.dropzoneIcon}
         allowMultiple={false}
         onDropAccepted={onDropzoneSelect}
       />
-      {error ? <InvalidFileType className={styles.invalidFileType} /> : null}
-    </div>
+    </Flex>
   )
 }
 
@@ -128,8 +138,12 @@ const CollectionPage = ({ onSelect, source }) => {
   const refs = useRef({})
   const [loadedImgs, setLoadedImgs] = useState([])
   const [page, setPage] = useState(1)
-  const { collectibles, collectibleList, solanaCollectibleList } =
+  const { collectibleList, solanaCollectibleList, user_id } =
     useSelector(getAccountUser)
+
+  const { data: profileCollectibles } = useUserCollectibles({
+    userId: user_id
+  })
   const allCollectibles = [
     ...(collectibleList || []),
     ...(solanaCollectibleList || [])
@@ -139,8 +153,8 @@ const CollectionPage = ({ onSelect, source }) => {
     return acc
   }, {})
 
-  const visibleCollectibles = collectibles?.order
-    ? collectibles.order
+  const visibleCollectibles = profileCollectibles?.order
+    ? profileCollectibles.order
         .map((id) => collectibleIdMap[id])
         .filter(removeNullable)
     : allCollectibles
@@ -215,13 +229,10 @@ const CollectionPage = ({ onSelect, source }) => {
   )
 }
 
-/**
- * A popup that lets a user upload artwork or select a random image.
- */
 const ImageSelectionPopup = ({
   anchorRef,
   className,
-  isVisible,
+  isVisible = true,
   error,
   onClose,
   onAfterClose,
@@ -231,15 +242,19 @@ const ImageSelectionPopup = ({
   const mainContentRef = useMainContentRef()
   const [page, setPage] = useState(messages.uploadYourOwn)
   const windowSize = useWindowSize()
-  const { collectibles, collectibleList, solanaCollectibleList } =
+  const { collectibleList, solanaCollectibleList, user_id } =
     useSelector(getAccountUser)
+
+  const { data: profileCollectibles } = useUserCollectibles({
+    userId: user_id
+  })
 
   const allCollectibles = [
     ...(collectibleList || []),
     ...(solanaCollectibleList || [])
   ]
-  const visibleCollectibles = collectibles?.order
-    ? allCollectibles.filter((c) => collectibles?.order?.includes(c.id))
+  const visibleCollectibles = profileCollectibles?.order
+    ? profileCollectibles.order
     : allCollectibles
 
   const handleClose = () => {
@@ -311,11 +326,6 @@ ImageSelectionPopup.propTypes = {
   className: PropTypes.string,
   isVisible: PropTypes.bool.isRequired,
   ...ImageSelectionProps
-}
-
-ImageSelectionPopup.defaultProps = {
-  isVisible: true,
-  ...ImageSelectionDefaults
 }
 
 export default ImageSelectionPopup

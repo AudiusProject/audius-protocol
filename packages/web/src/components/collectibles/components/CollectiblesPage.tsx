@@ -7,16 +7,22 @@ import {
   useState
 } from 'react'
 
+import {
+  useUpdateUserCollectibles,
+  useUserCollectibles
+} from '@audius/common/api'
 import { useInstanceVar } from '@audius/common/hooks'
-import { CollectiblesMetadata, Collectible } from '@audius/common/models'
+import {
+  CollectiblesMetadata,
+  Collectible,
+  UserMetadata
+} from '@audius/common/models'
 import {
   collectibleDetailsUISelectors,
-  collectibleDetailsUIActions,
-  ProfileUser
+  collectibleDetailsUIActions
 } from '@audius/common/store'
 import { getHash, route } from '@audius/common/utils'
 import {
-  Button as HarmonyButton,
   Modal,
   IconKebabHorizontal,
   IconPencil,
@@ -25,7 +31,10 @@ import {
   PopupMenuItem,
   Button,
   Flex,
-  Box
+  ModalHeader,
+  ModalTitle,
+  ModalContent,
+  Text
 } from '@audius/harmony'
 import cn from 'classnames'
 import { chunk } from 'lodash'
@@ -110,8 +119,8 @@ type CollectiblesPageProps = {
   name: string
   isMobile: boolean
   isUserOnTheirProfile: boolean
-  profile: ProfileUser
-  updateProfile?: (metadata: any) => void
+  profile: UserMetadata
+  allowUpdates?: boolean
   updateProfilePicture?: (
     selectedFiles: any,
     source: 'original' | 'unsplash' | 'url'
@@ -126,13 +135,19 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
     name,
     isMobile,
     profile,
-    updateProfile,
+    allowUpdates = false,
     updateProfilePicture,
     isUserOnTheirProfile,
     onLoad,
     onSave
   } = props
   const { toast } = useContext(ToastContext)
+  const { data: profileCollectibles, isLoading: isProfileCollectiblesLoading } =
+    useUserCollectibles({ userId })
+  const {
+    mutate: updateUserCollectibles,
+    isPending: isUpdatingUserCollectibles
+  } = useUpdateUserCollectibles()
   const dispatch = useDispatch()
   const ethCollectibleList = profile?.collectibleList ?? null
   const solanaCollectibleList = useMemo(() => {
@@ -149,7 +164,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
   const isLoading =
     profile.collectibleList === undefined ||
     profile.solanaCollectibleList === undefined ||
-    (hasCollectibles && !profile.collectibles)
+    isProfileCollectiblesLoading
 
   useEffect(() => {
     if (!isLoading && onLoad) {
@@ -259,24 +274,25 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
         if (solanaCollectibleList) {
           setHasSetSolanaCollectibles(true)
         }
-      } else if (profile.collectibles) {
+      } else if (profileCollectibles) {
         /**
          * include collectibles returned by OpenSea which have not been stored in the user preferences
          */
-        const dedupedCollectiblesOrder = dedupe(profile.collectibles.order)
+        const dedupedCollectiblesOrder = dedupe(profileCollectibles.order)
         const metadata: CollectiblesMetadata = {
-          ...profile.collectibles,
+          ...profileCollectibles,
           order: dedupedCollectiblesOrder
         }
 
         // Remove duplicates in user collectibles order if any
         if (
           isUserOnTheirProfile &&
-          updateProfile &&
-          profile.collectibles.order.length !== dedupedCollectiblesOrder.length
+          userId &&
+          allowUpdates &&
+          profileCollectibles.order.length !== dedupedCollectiblesOrder.length
         ) {
-          updateProfile({
-            ...profile,
+          updateUserCollectibles({
+            userId,
             collectibles: metadata
           })
         }
@@ -284,7 +300,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
         /**
          * Update id of collectibles to use correct format
          */
-        Object.keys(profile.collectibles).forEach((key) => {
+        Object.keys(profileCollectibles).forEach((key) => {
           if (key !== 'order' && key.indexOf(':::') === -1) {
             const savedCollectible = collectibleList.find(
               (c) => c.tokenId === key
@@ -325,14 +341,16 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
       }
     }
   }, [
-    profile,
+    profileCollectibles,
+    userId,
+    updateUserCollectibles,
     hasCollectibles,
     collectibleList,
     ethCollectibleList,
     solanaCollectibleList,
     collectiblesMetadata,
     isUserOnTheirProfile,
-    updateProfile,
+    allowUpdates,
     getHasSetEthCollectibles,
     setHasSetEthCollectibles,
     getHasSetSolanaCollectibles,
@@ -349,7 +367,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
 
   const handleDoneClick = useCallback(() => {
     setIsEditingPreferences(false)
-    if (updateProfile) {
+    if (allowUpdates && userId) {
       // There was a previous bug where NFTs may have been duplicated.
       // To be on the safe side and ensure that this doesn't happen anymore,
       // we turn the order array into a set, then back into an array.
@@ -357,12 +375,18 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
         ...collectiblesMetadata,
         order: dedupe(collectiblesMetadata?.order ?? [])
       }
-      updateProfile({
-        ...profile,
+      updateUserCollectibles({
+        userId,
         collectibles: dedupedCollectiblesMetadata
       })
     }
-  }, [setIsEditingPreferences, updateProfile, profile, collectiblesMetadata])
+  }, [
+    setIsEditingPreferences,
+    updateUserCollectibles,
+    allowUpdates,
+    userId,
+    collectiblesMetadata
+  ])
 
   const handleShowCollectible = useCallback(
     (id: string) => () => {
@@ -570,11 +594,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
             <div className={styles.subtitle}>
               {`${collectibleMessages.subtitlePrefix}${name}`}
               {userId && (
-                <UserBadges
-                  className={styles.badges}
-                  userId={userId}
-                  badgeSize={14}
-                />
+                <UserBadges className={styles.badges} userId={userId} />
               )}
             </div>
           </div>
@@ -696,100 +716,111 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
       </div>
 
       <Modal
-        title={collectibleMessages.sortCollectibles}
         isOpen={isEditingPreferences}
         onClose={() => setIsEditingPreferences(false)}
-        showTitleHeader
-        showDismissButton
-        bodyClassName={cn(styles.modalBody, styles.editModalBody)}
-        headerContainerClassName={styles.modalHeader}
-        titleClassName={styles.modalTitle}
-        allowScroll
+        size='large'
       >
-        <div className={styles.editModal}>
-          {getVisibleCollectibles().length > 0 && (
-            <div className={styles.editListSection}>
-              <DragDropContext onDragEnd={onDragEnd}>
+        <ModalHeader>
+          <ModalTitle title={collectibleMessages.sortCollectibles} />
+        </ModalHeader>
+        <ModalContent>
+          <Flex gap='m' h={600}>
+            {getVisibleCollectibles().length > 0 && (
+              <div className={styles.editListSection}>
+                <DragDropContext onDragEnd={onDragEnd}>
+                  <div className={styles.editListHeader}>
+                    <Text variant='title' size='l'>
+                      {collectibleMessages.visibleCollectibles}
+                    </Text>
+                  </div>
+
+                  <div
+                    className={cn(
+                      styles.editTableContainer,
+                      editTableContainerClass,
+                      {
+                        [styles.tableTopShadow]: showVisibleTableTopShadow,
+                        [styles.tableBottomShadow]:
+                          showVisibleTableBottomShadow,
+                        [styles.tableVerticalShadow]:
+                          showVisibleTableTopShadow &&
+                          showVisibleTableBottomShadow
+                      }
+                    )}
+                    ref={visibleTableRef}
+                  >
+                    <Droppable droppableId={VISIBLE_COLLECTIBLES_DROPPABLE_ID}>
+                      {(provided) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.droppableProps}
+                        >
+                          {getVisibleCollectibles().map((c, index) => (
+                            <Draggable
+                              key={c.id}
+                              draggableId={c.id}
+                              index={index}
+                            >
+                              {(provided, snapshot) => (
+                                <VisibleCollectibleRow
+                                  {...provided.draggableProps}
+                                  handleProps={provided.dragHandleProps}
+                                  forwardRef={provided.innerRef}
+                                  isDragging={snapshot.isDragging}
+                                  collectible={c}
+                                  onHideClick={handleHideCollectible(c.id)}
+                                />
+                              )}
+                            </Draggable>
+                          ))}
+
+                          {provided.placeholder}
+                        </div>
+                      )}
+                    </Droppable>
+                  </div>
+                </DragDropContext>
+              </div>
+            )}
+
+            {getHiddenCollectibles().length > 0 && (
+              <div className={styles.editListSection}>
                 <div className={styles.editListHeader}>
-                  {collectibleMessages.visibleCollectibles}
+                  <Text variant='title' size='l'>
+                    {collectibleMessages.hiddenCollectibles}
+                  </Text>
                 </div>
 
                 <div
-                  className={cn(
-                    styles.editTableContainer,
-                    editTableContainerClass,
-                    {
-                      [styles.tableTopShadow]: showVisibleTableTopShadow,
-                      [styles.tableBottomShadow]: showVisibleTableBottomShadow,
-                      [styles.tableVerticalShadow]:
-                        showVisibleTableTopShadow &&
-                        showVisibleTableBottomShadow
-                    }
-                  )}
-                  ref={visibleTableRef}
+                  className={cn(styles.editTableContainer, {
+                    [styles.tableTopShadow]: showHiddenTableTopShadow,
+                    [styles.tableBottomShadow]: showHiddenTableBottomShadow,
+                    [styles.tableVerticalShadow]:
+                      showHiddenTableTopShadow && showHiddenTableBottomShadow
+                  })}
+                  ref={hiddenTableRef}
                 >
-                  <Droppable droppableId={VISIBLE_COLLECTIBLES_DROPPABLE_ID}>
-                    {(provided) => (
-                      <div ref={provided.innerRef} {...provided.droppableProps}>
-                        {getVisibleCollectibles().map((c, index) => (
-                          <Draggable
-                            key={c.id}
-                            draggableId={c.id}
-                            index={index}
-                          >
-                            {(provided, snapshot) => (
-                              <VisibleCollectibleRow
-                                {...provided.draggableProps}
-                                handleProps={provided.dragHandleProps}
-                                forwardRef={provided.innerRef}
-                                isDragging={snapshot.isDragging}
-                                collectible={c}
-                                onHideClick={handleHideCollectible(c.id)}
-                              />
-                            )}
-                          </Draggable>
-                        ))}
-
-                        {provided.placeholder}
-                      </div>
-                    )}
-                  </Droppable>
+                  {getHiddenCollectibles().map((c) => (
+                    <HiddenCollectibleRow
+                      key={c.id}
+                      collectible={c}
+                      onShowClick={handleShowCollectible(c.id)}
+                    />
+                  ))}
                 </div>
-              </DragDropContext>
-            </div>
-          )}
-
-          {getHiddenCollectibles().length > 0 && (
-            <div className={styles.editListSection}>
-              <div className={styles.editListHeader}>
-                {collectibleMessages.hiddenCollectibles}
               </div>
-
-              <div
-                className={cn(styles.editTableContainer, {
-                  [styles.tableTopShadow]: showHiddenTableTopShadow,
-                  [styles.tableBottomShadow]: showHiddenTableBottomShadow,
-                  [styles.tableVerticalShadow]:
-                    showHiddenTableTopShadow && showHiddenTableBottomShadow
-                })}
-                ref={hiddenTableRef}
-              >
-                {getHiddenCollectibles().map((c) => (
-                  <HiddenCollectibleRow
-                    key={c.id}
-                    collectible={c}
-                    onShowClick={handleShowCollectible(c.id)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-          <Box m='l'>
-            <HarmonyButton variant='primary' onClick={handleDoneClick}>
-              Done
-            </HarmonyButton>
-          </Box>
-        </div>
+            )}
+          </Flex>
+        </ModalContent>
+        <Flex justifyContent='center' pb='xl'>
+          <Button
+            variant='primary'
+            onClick={handleDoneClick}
+            disabled={isUpdatingUserCollectibles}
+          >
+            Done
+          </Button>
+        </Flex>
       </Modal>
 
       <Modal
@@ -832,9 +863,9 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
                   </div>
                 </div>
               </Toast>
-              <HarmonyButton variant='primary' onClick={closeEmbedModal}>
+              <Button variant='primary' onClick={closeEmbedModal}>
                 {collectibleMessages.done}
-              </HarmonyButton>
+              </Button>
             </div>
           </div>
         </div>

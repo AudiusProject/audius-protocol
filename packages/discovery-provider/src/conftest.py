@@ -30,18 +30,6 @@ def db_mock(monkeypatch):
     return db
 
 
-# Test fixture to mock a web3 provider
-@pytest.fixture()
-def web3_mock(monkeypatch):
-    web3 = MagicMock()
-
-    def get_web3():
-        return web3
-
-    monkeypatch.setattr(src.utils.web3_provider, "get_web3", get_web3)
-    return web3
-
-
 # Test fixture to mock a redis connection
 @pytest.fixture()
 def redis_mock(monkeypatch):
@@ -80,6 +68,8 @@ def get_monitors_mock(monkeypatch):
 
 @pytest.fixture
 def mock_requests(monkeypatch):
+    real_get = requests.get
+
     def mock_relay_health(*args, **kwargs):
         url = args[0]
 
@@ -100,7 +90,7 @@ def mock_requests(monkeypatch):
             return MockResponse(json_response, 200)
 
         # For all other URLs and endpoints, perform the actual request using requests.get
-        return requests.get(*args, **kwargs)
+        return real_get(*args, **kwargs)  # Call the original requests.get
 
     # Apply the mock_get function to requests.get
     monkeypatch.setattr(requests, "get", mock_relay_health)

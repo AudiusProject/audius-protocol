@@ -11,7 +11,7 @@ export const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   },
   scrollViewContent: {
     padding: spacing(4),
-    paddingTop: spacing(6),
+    paddingTop: spacing(13),
     gap: spacing(6)
   },
   subheader: {
@@ -34,22 +34,10 @@ export const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   audioMatchingDescriptionContainer: {
     gap: spacing(3)
   },
-  statusGrid: {
-    borderRadius: spacing(4),
-    borderColor: palette.neutralLight8,
-    borderWidth: 1,
-    width: '100%',
-    marginBottom: spacing(6),
-    flexDirection: 'column',
-    overflow: 'hidden'
-  },
   statusGridColumns: {
-    padding: spacing(4),
+    padding: spacing(2),
     gap: spacing(4),
     flexDirection: 'row',
-    justifyContent: 'center'
-  },
-  rewardCell: {
     justifyContent: 'center'
   },
   progressCell: {
@@ -119,5 +107,8 @@ export const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     marginTop: spacing(4),
     textAlign: 'center',
     color: palette.neutralLight4
+  },
+  cooldownNote: {
+    marginTop: spacing(4)
   }
 }))

@@ -2,16 +2,15 @@ import { useCallback, useEffect } from 'react'
 
 import { Name, SquareSizes } from '@audius/common/models'
 import { accountSelectors, musicConfettiActions } from '@audius/common/store'
-import { Modal } from '@audius/harmony'
+import { Modal, SocialButton } from '@audius/harmony'
 import { connect, useDispatch } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { useRecord, make } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import ConnectedMusicConfetti from 'components/music-confetti/ConnectedMusicConfetti'
-import { TwitterButton } from 'components/social-button'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import { AppState } from 'store/types'
 import { fullProfilePage } from 'utils/route'
 import { openTwitterLink } from 'utils/tweet'
@@ -52,11 +51,10 @@ const g = withNullGuard(
 )
 
 const FirstUploadModal = g(({ account, isOpen, close }) => {
-  const image = useUserProfilePicture(
-    account.user_id,
-    account._profile_picture_sizes,
-    SquareSizes.SIZE_480_BY_480
-  )
+  const image = useProfilePicture({
+    userId: account.user_id,
+    size: SquareSizes.SIZE_480_BY_480
+  })
 
   const record = useRecord()
   const onShare = useCallback(() => {
@@ -97,7 +95,7 @@ const FirstUploadModal = g(({ account, isOpen, close }) => {
               <UserBadges
                 userId={account.user_id}
                 className={styles.iconVerified}
-                badgeSize={12}
+                size='2xs'
               />
             </div>
             <div className={styles.handle}>{`@${account.handle}`}</div>
@@ -106,9 +104,13 @@ const FirstUploadModal = g(({ account, isOpen, close }) => {
             <div className={styles.text}>{messages.first}</div>
             <div className={styles.text}>{messages.deal}</div>
             <div className={styles.text}>{messages.share}</div>
-            <TwitterButton onClick={onShare} className={styles.tweetButton}>
+            <SocialButton
+              socialType='twitter'
+              onClick={onShare}
+              className={styles.tweetButton}
+            >
               {messages.shareButton}
-            </TwitterButton>
+            </SocialButton>
           </div>
         </div>
       </Modal>

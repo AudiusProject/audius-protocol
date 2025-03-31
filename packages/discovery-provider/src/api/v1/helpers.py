@@ -5,10 +5,13 @@ from datetime import datetime
 from typing import Dict, Union, cast
 
 import requests
-from flask_restx import inputs, reqparse
+from flask_restx import fields, inputs, reqparse
 
 from src import api_helpers
-from src.api.v1.models.common import full_response
+from src.api.v1.models.common import full_response, ns
+from src.api.v1.models.tracks import track as track_model
+from src.api.v1.models.tracks import track_full as track_model_full
+from src.api.v1.models.users import user_model, user_model_full
 from src.models.rewards.challenge import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
 from src.queries.get_extended_purchase_gate import get_legacy_purchase_gate
@@ -20,6 +23,7 @@ from src.queries.get_support_for_user import SupportResponse
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
 from src.queries.query_helpers import (
     CollectionLibrarySortMethod,
+    CollectionSortMethod,
     LibraryFilterType,
     SearchSortMethod,
     SortDirection,
@@ -51,6 +55,11 @@ def make_image(endpoint, cid, width="", height=""):
     return f"{endpoint}/content/{cid}/{width}x{height}.jpg"
 
 
+def make_legacy_image(endpoint, cid):
+    # These images have no sizes, so just route to the cid
+    return f"{endpoint}/content/{cid}"
+
+
 def init_rendezvous(user, cid):
     if not cid:
         return ""
@@ -73,6 +82,8 @@ def get_n_primary_endpoints(user, cid, n):
     return rendezvous.get_n(n, cid)
 
 
+# TODO: Rename/refactor this function
+# https://linear.app/audius/issue/PAY-3825/remove-added-timestamps
 def get_playlist_added_timestamps(playlist):
     if "playlist_contents" not in playlist:
         return []
@@ -119,12 +130,8 @@ def extend_search(resp):
 
 
 def add_user_artwork(user):
-    # Legacy CID-only references to images
-    user["cover_photo_legacy"] = user.get("cover_photo")
-    user["profile_picture_legacy"] = user.get("profile_picture")
-
-    profile_cid = user.get("profile_picture_sizes")
-    if profile_cid:
+    if user.get("profile_picture_sizes"):
+        profile_cid = user.get("profile_picture_sizes")
         profile_endpoints = get_n_primary_endpoints(user, profile_cid, 3)
         profile_endpoint = profile_endpoints[0]
         profile_mirrors = profile_endpoints[1:]
@@ -134,15 +141,21 @@ def add_user_artwork(user):
             "1000x1000": make_image(profile_endpoint, profile_cid, 1000, 1000),
             "mirrors": profile_mirrors,
         }
-    else:
+    elif user.get("profile_picture") and type(user.get("profile_picture")) == str:
+        profile_cid = user.get("profile_picture")
+        profile_endpoints = get_n_primary_endpoints(user, profile_cid, 3)
+        profile_endpoint = profile_endpoints[0]
+        profile_mirrors = profile_endpoints[1:]
         user["profile_picture"] = {
-            "150x150": None,
-            "480x480": None,
-            "1000x1000": None,
-            "mirrors": [],
+            "150x150": make_legacy_image(profile_endpoint, profile_cid),
+            "480x480": make_legacy_image(profile_endpoint, profile_cid),
+            "1000x1000": make_legacy_image(profile_endpoint, profile_cid),
+            "mirrors": profile_mirrors,
         }
-    cover_cid = user.get("cover_photo_sizes")
-    if cover_cid:
+    else:
+        user["profile_picture"] = None
+    if user.get("cover_photo_sizes"):
+        cover_cid = user.get("cover_photo_sizes")
         cover_endpoints = get_n_primary_endpoints(user, cover_cid, 3)
         cover_endpoint = cover_endpoints[0]
         cover_mirrors = cover_endpoints[1:]
@@ -151,12 +164,18 @@ def add_user_artwork(user):
             "2000x": make_image(cover_endpoint, cover_cid, 2000),
             "mirrors": cover_mirrors,
         }
-    else:
+    elif user.get("cover_photo") and type(user.get("cover_photo")) == str:
+        cover_cid = user.get("cover_photo")
+        cover_endpoints = get_n_primary_endpoints(user, cover_cid, 3)
+        cover_endpoint = cover_endpoints[0]
+        cover_mirrors = cover_endpoints[1:]
         user["cover_photo"] = {
-            "640x": None,
-            "2000x": None,
-            "mirrors": [],
+            "640x": make_legacy_image(cover_endpoint, cover_cid),
+            "2000x": make_legacy_image(cover_endpoint, cover_cid),
+            "mirrors": cover_mirrors,
         }
+    else:
+        user["cover_photo"] = None
     return user
 
 
@@ -282,8 +301,8 @@ def parse_unix_epoch_param_non_utc(time, default=0):
 def add_track_artwork(track):
     if "user" not in track:
         return track
-    cid = track["cover_art_sizes"]
-    if cid:
+    if track.get("cover_art_sizes"):
+        cid = track["cover_art_sizes"]
         endpoints = get_n_primary_endpoints(track["user"], cid, 3)
         endpoint = endpoints[0]
         mirrors = endpoints[1:]
@@ -293,13 +312,19 @@ def add_track_artwork(track):
             "1000x1000": make_image(endpoint, cid, 1000, 1000),
             "mirrors": mirrors,
         }
-    else:
+    elif track.get("cover_art"):
+        cid = track["cover_art"]
+        endpoints = get_n_primary_endpoints(track["user"], cid, 3)
+        endpoint = endpoints[0]
+        mirrors = endpoints[1:]
         track["artwork"] = {
-            "150x150": None,
-            "480x480": None,
-            "1000x1000": None,
-            "mirrors": [],
+            "150x150": make_legacy_image(endpoint, cid),
+            "480x480": make_legacy_image(endpoint, cid),
+            "1000x1000": make_legacy_image(endpoint, cid),
+            "mirrors": mirrors,
         }
+    else:
+        track["artwork"] = None
     return track
 
 
@@ -332,15 +357,6 @@ def extend_track(track, session=None):
         "is_deactivated"
     )
 
-    # TODO: This block is only for legacy tracks that have track_segments instead of duration
-    duration = track.get("duration")
-    if not duration:
-        duration = 0.0
-        for segment in track["track_segments"]:
-            # NOTE: Legacy track segments store the duration as a string
-            duration += float(segment["duration"])
-        track["duration"] = round(duration)
-
     # Transform new format of splits to legacy format for client compatibility
     if "stream_conditions" in track:
         track["stream_conditions"] = get_legacy_purchase_gate(
@@ -350,7 +366,6 @@ def extend_track(track, session=None):
         track["download_conditions"] = get_legacy_purchase_gate(
             track["download_conditions"], session
         )
-
     return track
 
 
@@ -378,8 +393,8 @@ def add_playlist_artwork(playlist):
     if "user" not in playlist:
         return playlist
 
-    cid = playlist["playlist_image_sizes_multihash"]
-    if cid:
+    if playlist.get("playlist_image_sizes_multihash"):
+        cid = playlist["playlist_image_sizes_multihash"]
         endpoints = get_n_primary_endpoints(playlist["user"], cid, 3)
         endpoint = endpoints[0]
         mirrors = endpoints[1:]
@@ -389,13 +404,19 @@ def add_playlist_artwork(playlist):
             "1000x1000": make_image(endpoint, cid, 1000, 1000),
             "mirrors": mirrors,
         }
-    else:
+    elif playlist.get("playlist_image_multihash"):
+        cid = playlist["playlist_image_multihash"]
+        endpoints = get_n_primary_endpoints(playlist["user"], cid, 3)
+        endpoint = endpoints[0]
+        mirrors = endpoints[1:]
         playlist["artwork"] = {
-            "150x150": None,
-            "480x480": None,
-            "1000x1000": None,
-            "mirrors": [],
+            "150x150": make_legacy_image(endpoint, cid),
+            "480x480": make_legacy_image(endpoint, cid),
+            "1000x1000": make_legacy_image(endpoint, cid),
+            "mirrors": mirrors,
         }
+    else:
+        playlist["artwork"] = None
     return playlist
 
 
@@ -406,7 +427,10 @@ def extend_playlist(playlist):
     playlist["user_id"] = owner_id
     playlist = add_playlist_artwork(playlist)
     if "user" in playlist:
-        playlist["user"] = extend_user(playlist["user"])
+        if isinstance(playlist["user"], list):
+            playlist["user"] = extend_user(playlist["user"][0])
+        else:
+            playlist["user"] = extend_user(playlist["user"])
     if "followee_saves" in playlist:
         playlist["followee_favorites"] = list(
             map(extend_favorite, playlist["followee_saves"])
@@ -418,6 +442,8 @@ def extend_playlist(playlist):
     if "save_count" in playlist:
         playlist["favorite_count"] = playlist["save_count"]
 
+    # TODO: This is deprecated but can't be removed until clients are updated
+    # https://linear.app/audius/issue/PAY-3825/remove-added-timestamps
     playlist["added_timestamps"] = get_playlist_added_timestamps(playlist)
     playlist["cover_art"] = playlist["playlist_image_multihash"]
     playlist["cover_art_sizes"] = playlist["playlist_image_sizes_multihash"]
@@ -431,6 +457,8 @@ def extend_playlist(playlist):
     playlist["stream_conditions"] = get_legacy_purchase_gate(
         playlist.get("stream_conditions", None)
     )
+    # re-assign playlist_contents to be the new format
+    playlist["playlist_contents"] = playlist["added_timestamps"]
     return playlist
 
 
@@ -453,6 +481,7 @@ def filter_hidden_tracks(playlist, current_user_id):
             if (track_id := track.get("track_id")) in tracks_map
             and not tracks_map.get(track_id, {}).get("is_unlisted", False)
         ]
+        # https://linear.app/audius/issue/PAY-3825/remove-added-timestamps
         added_timestamps_list = playlist.get("added_timestamps", [])
         playlist["added_timestamps"] = [
             track
@@ -471,10 +500,6 @@ def extend_activity(item):
         }
     if item.get("playlist_id"):
         extended_playlist = extend_playlist(item)
-        # Wee hack to make sure this marshals correctly. The marshaller for
-        # playlist_model expects these two values to be the same type.
-        # TODO: https://linear.app/audius/issue/PAY-3398/fix-playlist-contents-serialization
-        extended_playlist["playlist_contents"] = extended_playlist["added_timestamps"]
         return {
             "item_type": "playlist",
             "timestamp": item["activity_timestamp"],
@@ -569,13 +594,39 @@ def extend_feed_item(item):
         }
     if item.get("playlist_id"):
         extended_playlist = extend_playlist(item)
-        # TODO: https://linear.app/audius/issue/PAY-3398/fix-playlist-contents-serialization
-        extended_playlist["playlist_contents"] = extended_playlist["added_timestamps"]
+        tracks = list(map(extend_track, item.get("tracks", [])))
+        extended_playlist["tracks"] = tracks
         return {
             "type": "playlist",
             "item": extended_playlist,
         }
     return None
+
+
+def extend_related(related, current_user_id=None):
+    """Extends the related object containing users and tracks.
+
+    Args:
+        related: A dictionary containing 'users' and 'tracks' lists
+        current_user_id: The ID of the current user making the request
+
+    Returns:
+        The extended related object with extended users and tracks
+    """
+    if not related:
+        return related
+
+    result = {"users": [], "tracks": []}
+
+    if "users" in related and related["users"]:
+        result["users"] = [
+            extend_user(user, current_user_id) for user in related["users"]
+        ]
+
+    if "tracks" in related and related["tracks"]:
+        result["tracks"] = list(map(extend_track, related["tracks"]))
+
+    return result
 
 
 def abort_bad_path_param(param, namespace):
@@ -608,14 +659,38 @@ def decode_with_abort(identifier: str, namespace) -> int:
 def make_response(name, namespace, modelType):
     return namespace.model(
         name,
-        {
-            "data": modelType,
-        },
+        {"data": modelType},
     )
+
+
+related_model = ns.model(
+    "related",
+    {
+        "users": fields.List(fields.Nested(user_model)),
+        "tracks": fields.List(fields.Nested(track_model)),
+    },
+)
 
 
 def make_full_response(name, namespace, modelType):
     return namespace.clone(name, full_response, {"data": modelType})
+
+
+related_model_full = ns.model(
+    "related",
+    {
+        "users": fields.List(fields.Nested(user_model_full)),
+        "tracks": fields.List(fields.Nested(track_model_full)),
+    },
+)
+
+
+def make_full_response_with_related(name, namespace, modelType):
+    return namespace.clone(
+        name,
+        full_response,
+        {"data": modelType, "related": fields.Nested(related_model_full)},
+    )
 
 
 def to_dict(multi_dict):
@@ -726,7 +801,7 @@ pagination_with_current_user_parser.add_argument(
     "user_id", required=False, description="The user ID of the user making the request"
 )
 
-search_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+search_parser = pagination_parser.copy()
 search_parser.add_argument("query", required=False, description="The search query")
 search_parser.add_argument(
     "genre",
@@ -932,6 +1007,26 @@ user_tracks_route_parser.add_argument(
     choices=("all", "public", "unlisted"),
 )
 
+user_playlists_route_parser = pagination_with_current_user_parser.copy()
+user_playlists_route_parser.add_argument(
+    "sort_method",
+    required=False,
+    description="The sort method to use",
+    type=str,
+    default=CollectionSortMethod.recent,
+    choices=CollectionSortMethod._member_names_,
+)
+
+user_albums_route_parser = pagination_with_current_user_parser.copy()
+user_albums_route_parser.add_argument(
+    "sort_method",
+    required=False,
+    description="The sort method to use",
+    type=str,
+    default=CollectionSortMethod.recent,
+    choices=CollectionSortMethod._member_names_,
+)
+
 full_search_parser = pagination_with_current_user_parser.copy()
 full_search_parser.add_argument("query", required=False, description="The search query")
 full_search_parser.add_argument(
@@ -1064,6 +1159,10 @@ notifications_parser.add_argument(
 
 def success_response(entity):
     return api_helpers.success_response(entity, status=200, to_json=False)
+
+
+def success_response_with_related(entity):
+    return api_helpers.success_response_with_related(entity, status=200, to_json=False)
 
 
 def error_response(error):

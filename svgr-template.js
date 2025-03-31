@@ -25,6 +25,11 @@ const webStyles = `
      minWidth: width
   })
   other.className = cx(className, classNameProp)
+
+  // Handle gradient fills for heading style
+  if (color === 'heading') {
+    fill = 'url(#harmony-gradient)'
+  }
 `
 
 const nativeStyles = `
@@ -79,18 +84,20 @@ const ${variables.componentName} = forwardRef((${variables.props}, ref) => {
   }
 
   const width = widthProp ?? theme.iconSizes?.[sizeW ?? size]
+
   if (width) {
-    other.width = width
+    other.width = isNaN(width) ? "100%" : width
   }
 
-  const fillColor = other.fill ?? theme.color?.icon[color] ?? 'red'
+  // Using let here because it may be updated by webStyles
+  let fill = other.fill ?? theme.color?.icon[color]
 
   ${native ? nativeStyles : webStyles}
 
   other.role = title ? 'img' : undefined
   other['aria-hidden'] = title ? undefined : true
 
-  props = {...other, ref, fillColor}
+  props = {...other, ref, fill}
 
   ${native ? `const Path = animatedProps ? AnimatedPath : RNSVGPath` : ''}
 

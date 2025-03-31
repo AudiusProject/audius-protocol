@@ -1,13 +1,11 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 
 import { User } from '@audius/common/models'
 import {
   ChatPermissionAction,
   accountSelectors,
   chatActions,
-  chatSelectors,
-  tippingActions,
-  tippingSelectors
+  chatSelectors
 } from '@audius/common/store'
 import { removeNullable, route } from '@audius/common/utils'
 import {
@@ -19,11 +17,11 @@ import {
   IconUser,
   PopupMenu
 } from '@audius/harmony'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
 import ArtistChip from 'components/artist/ArtistChip'
+import { push } from 'utils/navigation'
 import zIndex from 'utils/zIndex'
 
 import styles from './CreateChatUserResult.module.css'
@@ -50,12 +48,8 @@ type UserResultComposeProps = {
   presetMessage?: string
 }
 
-const { getUserId } = accountSelectors
-const { getOptimisticSupporters, getOptimisticSupporting } = tippingSelectors
-
-const { fetchSupportersForUser } = tippingActions
-const { blockUser, unblockUser, fetchPermissions } = chatActions
-const { getBlockees, getCanCreateChat } = chatSelectors
+const { blockUser, unblockUser } = chatActions
+const { getCanCreateChat } = chatSelectors
 
 const renderTrigger = (
   anchorRef: React.MutableRefObject<any>,
@@ -107,10 +101,8 @@ export const CreateChatUserResult = (props: UserResultComposeProps) => {
   const dispatch = useDispatch()
   const { user, closeParentModal, openInboxUnavailableModal, presetMessage } =
     props
-  const currentUserId = useSelector(getUserId)
-  const supportingMap = useSelector(getOptimisticSupporting)
-  const supportersMap = useSelector(getOptimisticSupporters)
-  const blockeeList = useSelector(getBlockees)
+  const currentUserId = useSelector(accountSelectors.getUserId)
+  const blockeeList = useSelector(chatSelectors.getBlockees)
   const isBlockee = blockeeList.includes(user.user_id)
 
   const { canCreateChat, callToAction } = useSelector((state) =>
@@ -125,7 +117,7 @@ export const CreateChatUserResult = (props: UserResultComposeProps) => {
   })
 
   const handleVisitClicked = useCallback(() => {
-    dispatch(pushRoute(profilePage(user.handle)))
+    dispatch(push(profilePage(user.handle)))
     closeParentModal()
   }, [dispatch, user, closeParentModal])
 
@@ -159,20 +151,6 @@ export const CreateChatUserResult = (props: UserResultComposeProps) => {
         }
   ].filter(removeNullable)
 
-  useEffect(() => {
-    if (
-      currentUserId &&
-      supportingMap[currentUserId]?.[user.user_id] &&
-      !supportersMap[user.user_id]
-    ) {
-      dispatch(fetchSupportersForUser({ userId: user.user_id }))
-    }
-  }, [dispatch, currentUserId, supportingMap, supportersMap, user])
-
-  useEffect(() => {
-    dispatch(fetchPermissions({ userIds: [user.user_id] }))
-  }, [dispatch, user])
-
   if (currentUserId === user.user_id) {
     return null
   }
@@ -181,7 +159,7 @@ export const CreateChatUserResult = (props: UserResultComposeProps) => {
     <div className={styles.root}>
       <ArtistChip
         className={styles.artistChip}
-        user={user}
+        userId={user.user_id}
         showPopover={false}
         showSupportFor={currentUserId ?? undefined}
         customChips={canCreateChat ? null : renderCustomChip(callToAction)}

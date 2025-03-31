@@ -1,9 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
 import type { Collection } from '@audius/common/models'
 import { CreatePlaylistSource } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import type { CommonState } from '@audius/common/store'
 import {
   accountSelectors,
@@ -29,7 +27,7 @@ import { FilterInput } from '../filter-input'
 
 const { addTrackToPlaylist, createAlbum, createPlaylist } =
   cacheCollectionsActions
-const { getTrackId, getTrackTitle, getTrackIsUnlisted, getCollectionType } =
+const { getTrackId, getTrackTitle, getCollectionType } =
   addToCollectionUISelectors
 const { getAccountWithNameSortedPlaylistsAndAlbums } = accountSelectors
 const { requestOpen: openDuplicateAddConfirmation } =
@@ -71,11 +69,7 @@ export const AddToCollectionDrawer = () => {
   const isAlbumType = collectionType === 'album'
   const trackId = useSelector(getTrackId)
   const trackTitle = useSelector(getTrackTitle)
-  const isTrackUnlisted = useSelector(getTrackIsUnlisted)
   const [filter, setFilter] = useState('')
-  const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
-    FeatureFlags.HIDDEN_PAID_SCHEDULED
-  )
 
   const messages = getMessages(collectionType)
 
@@ -135,16 +129,6 @@ export const AddToCollectionDrawer = () => {
           onPress={() => {
             if (!trackId) return
 
-            // Don't add if the track is hidden, but collection is public
-            if (
-              !isHiddenPaidScheduledEnabled &&
-              isTrackUnlisted &&
-              !item.is_private
-            ) {
-              toast({ content: messages.hiddenAdd })
-              return
-            }
-
             const doesCollectionContainTrack =
               item.playlist_contents.track_ids.some(
                 (track) => track.track === trackId
@@ -169,9 +153,7 @@ export const AddToCollectionDrawer = () => {
       trackId,
       handleAddToNewCollection,
       collectionType,
-      isTrackUnlisted,
       messages,
-      isHiddenPaidScheduledEnabled,
       onClose,
       toast,
       dispatch

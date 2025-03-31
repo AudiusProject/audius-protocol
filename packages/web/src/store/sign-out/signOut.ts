@@ -1,8 +1,4 @@
-import {
-  LocalStorage,
-  AudiusBackend,
-  AuthService
-} from '@audius/common/services'
+import { LocalStorage, AuthService } from '@audius/common/services'
 
 import { removeHasRequestedBrowserPermission } from 'utils/browserNotifications'
 
@@ -18,7 +14,6 @@ const removeLocalStorageItems = async (localStorage: LocalStorage) => {
 }
 
 export const signOut = async (
-  audiusBackendInstance: AudiusBackend,
   localStorage: LocalStorage,
   authService: AuthService
 ) => {
@@ -28,7 +23,6 @@ export const signOut = async (
   await localStorage.clearAudiusAccountUser()
   await localStorage.clearPlaybackRate()
   removeHasRequestedBrowserPermission()
-  await audiusBackendInstance.signOut()
   await authService.signOut()
   clearTheme()
 

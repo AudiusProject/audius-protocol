@@ -1,34 +1,28 @@
-import { accountSelectors, cacheUsersSelectors } from '@audius/common/store'
+import { accountSelectors } from '@audius/common/store'
 import { createSelector } from 'reselect'
 
 import { AppState } from 'store/types'
-const { getHasAccount } = accountSelectors
-const { getUsers } = cacheUsersSelectors
 
 // Sign On selectors
 export const getSignOn = (state: AppState) => state.signOn
 export const getEmailField = (state: AppState) => state.signOn.email
 export const getNameField = (state: AppState) => state.signOn.name
 export const getPasswordField = (state: AppState) => state.signOn.password
+export const getIsGuest = (state: AppState) => state.signOn.isGuest
 export const getOtpField = (state: AppState) => state.signOn.otp
 export const getRequiresOtp = (state: AppState) => {
   const passwordField = getPasswordField(state)
   const { error } = passwordField
   return error && error.includes('403')
 }
-export const getCanShowOtp = (state: AppState) => {
-  const { value: email } = getEmailField(state)
-  const { value: password, error } = getPasswordField(state)
-  return email && password && error
-}
+export const getFinishedPhase1 = (state: AppState) =>
+  state.signOn.finishedPhase1
 export const getHandleField = (state: AppState) => state.signOn.handle
 export const getIsVerified = (state: AppState) => state.signOn.verified
 export const getCoverPhotoField = (state: AppState) => state.signOn.coverPhoto
 export const getProfileImageField = (state: AppState) =>
   state.signOn.profileImage
 export const getGenres = (state: AppState) => state.signOn.genres
-export const getIsMobileSignOnVisible = (state: AppState) =>
-  state.signOn.isMobileSignOnVisible
 export const getStatus = (state: AppState) => state.signOn.status
 export const getPage = (state: AppState) => state.signOn.page
 export const getRouteOnCompletion = (state: AppState) =>
@@ -51,34 +45,21 @@ export const getReferrer = (state: AppState) => state.signOn.referrer
 
 export const getHidePreviewHint = (state: AppState) =>
   state.signOn.hidePreviewHint
-export const getFollowArtists = (state: AppState) => state.signOn.followArtists
-export const getFollowIds = (state: AppState) =>
-  state.signOn.followArtists.selectedUserIds
-
-export const getSuggestedFollowIds = (state: AppState) => {
-  const { selectedCategory, categories } = state.signOn.followArtists
-  return categories[selectedCategory] || []
-}
+export const getFollowIds = (state: AppState) => state.signOn.selectedUserIds
 
 export const getHasCompletedAccount = createSelector(
-  [getHasAccount, getStartedSignUpProcess, getFinishedSignUpProcess],
-  (hasAccount, startedSignUpProcess, finishedSignUpProcess) => {
+  [
+    accountSelectors.getIsAccountComplete,
+    getStartedSignUpProcess,
+    getFinishedSignUpProcess
+  ],
+  (isAccountComplete, startedSignUpProcess, finishedSignUpProcess) => {
     // If a user has started the sign up flow,
     // only return true if they finish the flow
     // (including selecting followees)
-    return hasAccount && (!startedSignUpProcess || finishedSignUpProcess)
+    return isAccountComplete && (!startedSignUpProcess || finishedSignUpProcess)
   }
 )
 
 export const getWelcomeModalShown = (state: AppState) =>
   state.signOn.welcomeModalShown
-
-/**
- * Each lineup that invokes this selector should pass its own selector as an argument, e.g.
- *   const getLineupMetadatas = makeGetLineupMetadatas(ownProps.lineupSelector)
- *   const mapStateToProps = (state, props) => ({ lineup: getLineupMetadatas(state) })
- */
-export const makeGetFollowArtists = () =>
-  createSelector([getSuggestedFollowIds, getUsers], (artistIds, users) =>
-    artistIds.map((aId) => users[aId]).filter(Boolean)
-  )

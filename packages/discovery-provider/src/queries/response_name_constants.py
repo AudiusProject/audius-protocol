@@ -14,6 +14,10 @@ followee_reposts = "followee_reposts"
 followee_saves = "followee_saves"
 # json - determines stream and download access for current user
 access = "access"
+# json - objects containing the stream/download/preview url and mirrors
+stream = "stream"
+download = "download"
+preview = "preview"
 
 # remix track specific
 remix_of = "remix_of"  # dictionary - contains an array of parent track ids
@@ -57,6 +61,8 @@ supporting_count = "supporting_count"
 does_current_user_follow = "does_current_user_follow"
 # boolean - does current user subscribe to given user
 does_current_user_subscribe = "does_current_user_subscribe"
+# boolean - does given user follow current user
+does_follow_current_user = "does_follow_current_user"
 # integer - number of followees of current user that also follow given user
 current_user_followee_follow_count = "current_user_followee_follow_count"
 # boolean - has current user tipped given user

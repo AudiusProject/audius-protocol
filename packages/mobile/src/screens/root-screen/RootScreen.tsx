@@ -6,10 +6,13 @@ import {
   chatActions,
   playerActions
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { PortalHost } from '@gorhom/portal'
+import { useLinkTo } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import {
   getHasCompletedAccount,
+  getRouteOnCompletion,
   getStartedSignUpProcess,
   getWelcomeModalShown
 } from 'common/store/pages/signon/selectors'
@@ -33,11 +36,13 @@ import { ResetPasswordModalScreen } from '../reset-password-screen'
 import { SignOnStack } from '../sign-on-screen'
 
 import { StatusBar } from './StatusBar'
+import { useResetNotificationBadgeCount } from './useResetNotificationBadgeCount'
 
 const { getAccountStatus } = accountSelectors
 const { fetchMoreChats, fetchUnreadMessagesCount, connect, disconnect } =
   chatActions
 const { reset } = playerActions
+const { FEED_PAGE } = route
 
 const Stack = createNativeStackNavigator()
 
@@ -68,11 +73,15 @@ export const RootScreen = () => {
   const [isSplashScreenDismissed, setIsSplashScreenDismissed] = useState(false)
   const { navigate } = useNavigation()
   const { onOpen: openWelcomeDrawer } = useDrawer('Welcome')
+  const routeOnCompletion = useSelector(getRouteOnCompletion)
+  const linkTo = useLinkTo()
 
   useAppState(
     () => dispatch(enterForeground()),
     () => dispatch(enterBackground())
   )
+
+  useResetNotificationBadgeCount()
 
   useEffect(() => {
     if (
@@ -106,16 +115,23 @@ export const RootScreen = () => {
     if (showHomeStack && startedSignUp && !welcomeModalShown) {
       openWelcomeDrawer()
       // On iOS this will auto-navigate when we un-render sign up but on Android we have to navigate intentionally
-      if (navigate) {
+      if (isAndroid && navigate) {
         navigate('HomeStack')
       }
+    }
+    if (showHomeStack && routeOnCompletion && routeOnCompletion !== FEED_PAGE) {
+      // Route to the original deep link after user signs up
+      linkTo(routeOnCompletion)
     }
   }, [
     openWelcomeDrawer,
     showHomeStack,
     startedSignUp,
     welcomeModalShown,
-    navigate
+    navigate,
+    isAndroid,
+    routeOnCompletion,
+    linkTo
   ])
 
   return (
@@ -151,7 +167,7 @@ export const RootScreen = () => {
               options={isAndroid ? { animation: 'none' } : undefined}
             />
           ) : (
-            <Stack.Screen name='SignOnStackNew'>
+            <Stack.Screen name='SignOnStack'>
               {() => (
                 <SignOnStack
                   isSplashScreenDismissed={isSplashScreenDismissed}

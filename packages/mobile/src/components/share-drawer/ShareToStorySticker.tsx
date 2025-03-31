@@ -3,8 +3,9 @@ import { SquareSizes } from '@audius/common/models'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
+import { Divider } from '@audius/harmony-native'
 import AudiusLogo from 'app/assets/images/audiusLogoHorizontal.svg'
-import { Divider, Text } from 'app/components/core'
+import { Text } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
@@ -26,7 +27,6 @@ type ShareToStoryStickerProps = {
     | 'owner_id'
     | 'title'
     | 'track_id'
-    | '_cover_art_sizes'
   >
   artist: Pick<User, 'user_id' | 'name' | 'is_verified'>
   style?: StyleProp<ViewStyle>
@@ -87,14 +87,14 @@ export const ShareToStorySticker = ({
 }: ShareToStoryStickerProps) => {
   const styles = useStyles()
 
-  const { neutralLight2, staticNeutralLight8 } = useThemeColors()
+  const { neutralLight2 } = useThemeColors()
   return (
     <View style={[styles.container, style]}>
       <View>
         <TrackImage
+          trackId={track.track_id}
           size={SquareSizes.SIZE_480_BY_480}
           style={styles.trackImage}
-          track={track}
           onLoad={onLoad}
         />
         <Text
@@ -125,7 +125,7 @@ export const ShareToStorySticker = ({
             hideName
           />
         </View>
-        <Divider color={staticNeutralLight8} width={2} />
+        <Divider />
         <View
           style={[
             styles.belowDividerContainer,

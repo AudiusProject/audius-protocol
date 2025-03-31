@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react'
 
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,
@@ -19,7 +20,7 @@ import type {
   Track,
   User
 } from '@audius/common/models'
-import { FeatureFlags, trpc } from '@audius/common/services'
+import { FeatureFlags } from '@audius/common/services'
 import type { CommonState } from '@audius/common/store'
 import {
   accountSelectors,
@@ -65,7 +66,6 @@ import {
 import CoSign, { Size } from 'app/components/co-sign'
 import { useCommentDrawer } from 'app/components/comments/CommentDrawerContext'
 import { Tag, UserGeneratedText } from 'app/components/core'
-import { TrackDogEar } from 'app/components/core/TrackDogEar'
 import { DeletedTile } from 'app/components/details-tile/DeletedTile'
 import { DetailsProgressInfo } from 'app/components/details-tile/DetailsProgressInfo'
 import { DetailsTileActionButtons } from 'app/components/details-tile/DetailsTileActionButtons'
@@ -76,6 +76,7 @@ import { DetailsTileStats } from 'app/components/details-tile/DetailsTileStats'
 import { TrackMetadataList } from 'app/components/details-tile/TrackMetadataList'
 import { TrackImage } from 'app/components/image/TrackImage'
 import { OfflineStatusRow } from 'app/components/offline-downloads'
+import { TrackDogEar } from 'app/components/track/TrackDogEar'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
@@ -88,8 +89,7 @@ const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
-const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
-  tracksSocialActions
+const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { tracksActions } = trackPageLineupActions
 const { getUserId } = accountSelectors
 const { getIsReachable } = reachabilitySelectors
@@ -196,7 +196,8 @@ export const TrackScreenDetailsTile = ({
     release_date: releaseDate,
     is_scheduled_release: isScheduledRelease,
     _is_publishing,
-    preview_cid
+    preview_cid,
+    album_backlink
   } = track as Track
 
   const isOwner = ownerId === currentUserId
@@ -211,10 +212,6 @@ export const TrackScreenDetailsTile = ({
     (track as Track)?.is_downloadable ||
     ((track as Track)?._stems?.length ?? 0) > 0
 
-  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId },
-    { enabled: !!trackId }
-  )
   const { open: openCommentDrawer } = useCommentDrawer()
 
   const isLongFormContent =
@@ -289,7 +286,11 @@ export const TrackScreenDetailsTile = ({
 
   const renderImage = useCallback(
     (props: ImageProps) => (
-      <TrackImage track={track} size={SquareSizes.SIZE_480_BY_480} {...props} />
+      <TrackImage
+        trackId={track.track_id}
+        size={SquareSizes.SIZE_480_BY_480}
+        {...props}
+      />
     ),
     [track]
   )
@@ -355,7 +356,12 @@ export const TrackScreenDetailsTile = ({
   }, [dispatch, trackId, navigation])
 
   const handlePressComments = useCallback(() => {
-    openCommentDrawer({ entityId: trackId, navigation })
+    openCommentDrawer({
+      entityId: trackId,
+      navigation,
+      actions: tracksActions,
+      uid
+    })
     trackEvent(
       make({
         eventName: Name.COMMENTS_CLICK_COMMENT_STAT,
@@ -363,17 +369,12 @@ export const TrackScreenDetailsTile = ({
         source: 'track_page'
       })
     )
-  }, [openCommentDrawer, trackId, navigation])
+  }, [openCommentDrawer, trackId, navigation, uid])
 
-  const handlePressSave = () => {
-    if (!isOwner) {
-      if (hasSaved) {
-        dispatch(unsaveTrack(trackId, FavoriteSource.TRACK_PAGE))
-      } else {
-        dispatch(saveTrack(trackId, FavoriteSource.TRACK_PAGE))
-      }
-    }
-  }
+  const handlePressSave = useToggleFavoriteTrack({
+    trackId,
+    source: FavoriteSource.TRACK_PAGE
+  })
 
   const handlePressRepost = () => {
     if (!isOwner) {
@@ -424,14 +425,14 @@ export const TrackScreenDetailsTile = ({
       isOwner
         ? null
         : user.does_current_user_follow
-        ? OverflowAction.UNFOLLOW_ARTIST
-        : OverflowAction.FOLLOW_ARTIST,
+          ? OverflowAction.UNFOLLOW_ARTIST
+          : OverflowAction.FOLLOW_ARTIST,
       isLongFormContent
         ? playbackPositionInfo?.status === 'COMPLETED'
           ? OverflowAction.MARK_AS_UNPLAYED
           : OverflowAction.MARK_AS_PLAYED
         : null,
-      albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
+      album_backlink ? OverflowAction.VIEW_ALBUM_PAGE : null,
       OverflowAction.VIEW_ARTIST_PAGE,
       isOwner && !ddexApp ? OverflowAction.EDIT_TRACK : null,
       isOwner && isScheduledRelease && isUnlisted

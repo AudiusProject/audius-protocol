@@ -96,11 +96,9 @@
             },
             "required": [
                 "bio",
-                "cover_photo",
                 "cover_photo_sizes",
                 "location",
                 "name",
-                "profile_picture",
                 "profile_picture_sizes",
                 "artist_pick_track_id"
             ],

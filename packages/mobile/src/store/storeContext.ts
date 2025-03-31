@@ -1,22 +1,23 @@
 import type { CommonStoreContext } from '@audius/common/store'
 import { FetchNFTClient } from '@audius/fetch-nft'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import * as Sentry from '@sentry/react-native'
+import { setTag, getCurrentScope } from '@sentry/react-native'
 
-import { env } from 'app/env'
 import * as analytics from 'app/services/analytics'
 import { audioPlayer } from 'app/services/audio-player'
-import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
+import { env } from 'app/services/env'
 import { explore } from 'app/services/explore'
 import { fingerprintClient } from 'app/services/fingerprint'
 import { localStorage } from 'app/services/local-storage'
+import { queryClient } from 'app/services/query-client'
 import {
   getFeatureEnabled,
   remoteConfigInstance
 } from 'app/services/remote-config'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
-import { authService } from 'app/services/sdk/auth'
+import { authService, solanaWalletService } from 'app/services/sdk/auth'
+import { identityService } from 'app/services/sdk/identity'
 import { trackDownload } from 'app/services/track-download'
 import { walletClient } from 'app/services/wallet-client'
 import {
@@ -32,10 +33,12 @@ export const storeContext: CommonStoreContext = {
   setLocalStorageItem: async (key, value) => AsyncStorage.setItem(key, value),
   removeLocalStorageItem: async (key) => AsyncStorage.removeItem(key),
   getFeatureEnabled,
+  getHostUrl: () => {
+    return `${env.PUBLIC_PROTOCOL}//${env.PUBLIC_HOSTNAME}`
+  },
   analytics,
   remoteConfigInstance,
   audiusBackendInstance,
-  apiClient,
   fingerprintClient,
   walletClient,
   localStorage,
@@ -55,7 +58,7 @@ export const storeContext: CommonStoreContext = {
       metadataProgramId: env.METADATA_PROGRAM_ID
     }
   }),
-  sentry: Sentry,
+  sentry: { setTag, getCurrentScope },
   reportToSentry,
   // Shim in main, but defined in native-reloaded branch
   audioPlayer,
@@ -65,10 +68,13 @@ export const storeContext: CommonStoreContext = {
   share: (url: string, message?: string) => share({ url, message }),
   audiusSdk,
   authService,
+  identityService,
+  solanaWalletService,
   imageUtils: {
     generatePlaylistArtwork
   },
   isMobile: true,
+  queryClient,
   mobileWalletActions: {
     connect,
     signAndSendTransaction

@@ -96,6 +96,8 @@ export const ToastContextProvider = (props: { children: ReactNode }) => {
             content={item.content}
             link={item.link}
             linkText={item.linkText}
+            leftIcon={item.leftIcon}
+            rightIcon={item.rightIcon}
             isControlled
             isOpen
           />

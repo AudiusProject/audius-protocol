@@ -26,6 +26,12 @@ import {
     AccessGateFromJSONTyped,
     AccessGateToJSON,
 } from './AccessGate';
+import type { AlbumBacklink } from './AlbumBacklink';
+import {
+    AlbumBacklinkFromJSON,
+    AlbumBacklinkFromJSONTyped,
+    AlbumBacklinkToJSON,
+} from './AlbumBacklink';
 import type { CoverArt } from './CoverArt';
 import {
     CoverArtFromJSON,
@@ -74,6 +80,12 @@ import {
     TrackSegmentFromJSONTyped,
     TrackSegmentToJSON,
 } from './TrackSegment';
+import type { UrlWithMirrors } from './UrlWithMirrors';
+import {
+    UrlWithMirrorsFromJSON,
+    UrlWithMirrorsFromJSONTyped,
+    UrlWithMirrorsToJSON,
+} from './UrlWithMirrors';
 import type { UserFull } from './UserFull';
 import {
     UserFullFromJSON,
@@ -243,6 +255,12 @@ export interface SearchTrackFull {
      * @memberof SearchTrackFull
      */
     pinnedCommentId?: number;
+    /**
+     * 
+     * @type {AlbumBacklink}
+     * @memberof SearchTrackFull
+     */
+    albumBacklink?: AlbumBacklink;
     /**
      * Describes what access the given user has
      * @type {Access}
@@ -543,6 +561,24 @@ export interface SearchTrackFull {
      * @memberof SearchTrackFull
      */
     isOwnedByUser: boolean;
+    /**
+     * 
+     * @type {UrlWithMirrors}
+     * @memberof SearchTrackFull
+     */
+    stream: UrlWithMirrors;
+    /**
+     * 
+     * @type {UrlWithMirrors}
+     * @memberof SearchTrackFull
+     */
+    download: UrlWithMirrors;
+    /**
+     * 
+     * @type {UrlWithMirrors}
+     * @memberof SearchTrackFull
+     */
+    preview: UrlWithMirrors;
 }
 
 /**
@@ -582,6 +618,9 @@ export function instanceOfSearchTrackFull(value: object): value is SearchTrackFu
     isInstance = isInstance && "isStreamGated" in value && value["isStreamGated"] !== undefined;
     isInstance = isInstance && "isDownloadGated" in value && value["isDownloadGated"] !== undefined;
     isInstance = isInstance && "isOwnedByUser" in value && value["isOwnedByUser"] !== undefined;
+    isInstance = isInstance && "stream" in value && value["stream"] !== undefined;
+    isInstance = isInstance && "download" in value && value["download"] !== undefined;
+    isInstance = isInstance && "preview" in value && value["preview"] !== undefined;
 
     return isInstance;
 }
@@ -622,6 +661,7 @@ export function SearchTrackFullFromJSONTyped(json: any, ignoreDiscriminator: boo
         'ddexApp': !exists(json, 'ddex_app') ? undefined : json['ddex_app'],
         'playlistsContainingTrack': !exists(json, 'playlists_containing_track') ? undefined : json['playlists_containing_track'],
         'pinnedCommentId': !exists(json, 'pinned_comment_id') ? undefined : json['pinned_comment_id'],
+        'albumBacklink': !exists(json, 'album_backlink') ? undefined : AlbumBacklinkFromJSON(json['album_backlink']),
         'access': AccessFromJSON(json['access']),
         'blocknumber': json['blocknumber'],
         'createDate': !exists(json, 'create_date') ? undefined : json['create_date'],
@@ -672,6 +712,9 @@ export function SearchTrackFullFromJSONTyped(json: any, ignoreDiscriminator: boo
         'coverOriginalSongTitle': !exists(json, 'cover_original_song_title') ? undefined : json['cover_original_song_title'],
         'coverOriginalArtist': !exists(json, 'cover_original_artist') ? undefined : json['cover_original_artist'],
         'isOwnedByUser': json['is_owned_by_user'],
+        'stream': UrlWithMirrorsFromJSON(json['stream']),
+        'download': UrlWithMirrorsFromJSON(json['download']),
+        'preview': UrlWithMirrorsFromJSON(json['preview']),
     };
 }
 
@@ -710,6 +753,7 @@ export function SearchTrackFullToJSON(value?: SearchTrackFull | null): any {
         'ddex_app': value.ddexApp,
         'playlists_containing_track': value.playlistsContainingTrack,
         'pinned_comment_id': value.pinnedCommentId,
+        'album_backlink': AlbumBacklinkToJSON(value.albumBacklink),
         'access': AccessToJSON(value.access),
         'blocknumber': value.blocknumber,
         'create_date': value.createDate,
@@ -760,6 +804,9 @@ export function SearchTrackFullToJSON(value?: SearchTrackFull | null): any {
         'cover_original_song_title': value.coverOriginalSongTitle,
         'cover_original_artist': value.coverOriginalArtist,
         'is_owned_by_user': value.isOwnedByUser,
+        'stream': UrlWithMirrorsToJSON(value.stream),
+        'download': UrlWithMirrorsToJSON(value.download),
+        'preview': UrlWithMirrorsToJSON(value.preview),
     };
 }
 

@@ -2,9 +2,9 @@ import { expect } from '@storybook/jest'
 import type { Meta, StoryObj } from '@storybook/react'
 import { within } from '@storybook/testing-library'
 
-import { Flex } from 'components/layout'
-import { Text } from 'components/text'
-import { IconArrowLeft, IconArrowRight } from 'icons'
+import { Flex } from '~harmony/components/layout'
+import { Text } from '~harmony/components/text'
+import { IconArrowLeft, IconArrowRight } from '~harmony/icons'
 
 import { Button } from './Button'
 import { ButtonProps } from './types'

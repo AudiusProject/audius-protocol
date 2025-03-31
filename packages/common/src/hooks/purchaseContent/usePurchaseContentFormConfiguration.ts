@@ -1,12 +1,17 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import { USDC } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
+import { z } from 'zod'
 
+import { useGetCurrentUser } from '~/api'
+import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
 import { UserCollectionMetadata } from '~/models'
 import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
 import { UserTrackMetadata } from '~/models/Track'
+import { FeatureFlags } from '~/services'
+import { accountSelectors } from '~/store'
 import {
   PurchaseableContentType,
   PurchaseContentPage,
@@ -15,21 +20,23 @@ import {
   purchaseContentSelectors
 } from '~/store/purchase-content'
 import { isContentCollection, isContentTrack } from '~/utils'
-import { Nullable } from '~/utils/typeUtils'
 
+import { useFeatureFlag } from '../useFeatureFlag'
 import { useUSDCBalance } from '../useUSDCBalance'
 
 import {
   AMOUNT_PRESET,
   CENTS_TO_USDC_MULTIPLIER,
   CUSTOM_AMOUNT,
+  GUEST_CHECKOUT,
+  GUEST_EMAIL,
   PURCHASE_METHOD,
   PURCHASE_METHOD_MINT_ADDRESS,
   PURCHASE_VENDOR
 } from './constants'
 import { PayExtraAmountPresetValues, PayExtraPreset } from './types'
 import { getExtraAmount } from './utils'
-import { PurchaseContentSchema, PurchaseContentValues } from './validation'
+import { createPurchaseContentSchema } from './validation'
 
 const { startPurchaseContentFlow, setPurchasePage } = purchaseContentActions
 const {
@@ -37,6 +44,7 @@ const {
   getPurchaseContentError,
   getPurchaseContentPage
 } = purchaseContentSelectors
+const { getGuestEmail } = accountSelectors
 
 const USDC_TOKEN_ADDRESS = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
 
@@ -46,11 +54,13 @@ export const usePurchaseContentFormConfiguration = ({
   presetValues,
   purchaseVendor
 }: {
-  metadata?: Nullable<UserTrackMetadata | UserCollectionMetadata>
+  metadata?: UserTrackMetadata | UserCollectionMetadata
   price: number
   presetValues: PayExtraAmountPresetValues
   purchaseVendor?: PurchaseVendor
 }) => {
+  const audiusQueryContext = useAudiusQueryContext()
+
   const dispatch = useDispatch()
   const isAlbum = isContentCollection(metadata)
   const isTrack = isContentTrack(metadata)
@@ -60,6 +70,22 @@ export const usePurchaseContentFormConfiguration = ({
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const { data: balanceBN } = useUSDCBalance()
   const balance = USDC(balanceBN ?? new BN(0)).value
+  const guestEmail = useSelector(getGuestEmail)
+  const { data: currentUser } = useGetCurrentUser({})
+  const { isEnabled: guestCheckoutEnabled } = useFeatureFlag(
+    FeatureFlags.GUEST_CHECKOUT
+  )
+
+  const isGuestCheckout =
+    guestCheckoutEnabled &&
+    (!currentUser || (currentUser && !currentUser.handle))
+
+  useEffect(() => {
+    // check if feature flag loaded to set the page
+    if (isGuestCheckout) {
+      dispatch(setPurchasePage({ page: PurchaseContentPage.GUEST_CHECKOUT }))
+    }
+  }, [dispatch, isGuestCheckout])
 
   const initialValues: PurchaseContentValues = {
     [CUSTOM_AMOUNT]: undefined,
@@ -69,8 +95,27 @@ export const usePurchaseContentFormConfiguration = ({
         ? PurchaseMethod.BALANCE
         : PurchaseMethod.CARD,
     [PURCHASE_VENDOR]: purchaseVendor ?? PurchaseVendor.STRIPE,
+    [GUEST_CHECKOUT]: isGuestCheckout,
+    [GUEST_EMAIL]: guestEmail ?? undefined,
     [PURCHASE_METHOD_MINT_ADDRESS]: USDC_TOKEN_ADDRESS
   }
+
+  const contentId = isAlbum
+    ? metadata?.playlist_id
+    : isTrack
+      ? metadata?.track_id
+      : undefined
+
+  const validationSchema = useMemo(
+    () =>
+      createPurchaseContentSchema(
+        audiusQueryContext,
+        page,
+        guestEmail ?? undefined
+      ),
+    [audiusQueryContext, guestEmail, page]
+  )
+  type PurchaseContentValues = z.input<typeof validationSchema>
 
   const onSubmit = useCallback(
     ({
@@ -78,13 +123,9 @@ export const usePurchaseContentFormConfiguration = ({
       amountPreset,
       purchaseMethod,
       purchaseVendor,
+      guestEmail,
       purchaseMethodMintAddress
     }: PurchaseContentValues) => {
-      const contentId = isAlbum
-        ? metadata.playlist_id
-        : isTrack
-        ? metadata.track_id
-        : undefined
       if (isUnlocking || !contentId) return
 
       if (
@@ -92,6 +133,11 @@ export const usePurchaseContentFormConfiguration = ({
         page === PurchaseContentPage.PURCHASE
       ) {
         dispatch(setPurchasePage({ page: PurchaseContentPage.TRANSFER }))
+      } else if (
+        page === PurchaseContentPage.GUEST_CHECKOUT &&
+        guestEmail !== ''
+      ) {
+        dispatch(setPurchasePage({ page: PurchaseContentPage.PURCHASE }))
       } else {
         const extraAmount = getExtraAmount({
           amountPreset,
@@ -108,17 +154,18 @@ export const usePurchaseContentFormConfiguration = ({
             contentId,
             contentType: isAlbum
               ? PurchaseableContentType.ALBUM
-              : PurchaseableContentType.TRACK
+              : PurchaseableContentType.TRACK,
+            guestEmail
           })
         )
       }
     },
-    [isAlbum, isUnlocking, metadata, page, presetValues, dispatch, isTrack]
+    [isUnlocking, contentId, page, dispatch, presetValues, isAlbum]
   )
 
   return {
     initialValues,
-    validationSchema: PurchaseContentSchema,
+    validationSchema,
     onSubmit
   }
 }

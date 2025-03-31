@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 # NOTE: This script is meant to be used from within docker containers
 

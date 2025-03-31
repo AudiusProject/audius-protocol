@@ -18,29 +18,20 @@
 }
 
 .tabMobile {
-  font-weight: var(--harmony-font-bold);
-  font-size: var(--harmony-font-2xs);
-  text-transform: uppercase;
-  letter-spacing: 0.15px;
-  line-height: 13px;
-
-  color: var(--harmony-n-400);
+  color: var(--harmony-text-subdued);
   padding-top: 4px;
   flex-direction: column;
   width: 100%;
 }
 
 .tabDesktop {
+  color: var(--harmony-text-subdued);
   flex-direction: row;
   justify-content: center;
   margin-right: 16px;
-  font-size: var(--harmony-font-s);
-  font-weight: var(--harmony-font-heavy);
-  color: var(--harmony-n-400);
   padding: 0px 8px 4px;
   min-height: 32px;
   min-width: 110px;
-  letter-spacing: 0.66px;
 }
 
 .tabDesktop svg {
@@ -48,7 +39,7 @@
 }
 
 .tab path {
-  fill: var(--harmony-n-400);
+  fill: var(--harmony-text-subdued);
   transition: all 0.18s ease-in-out;
 }
 

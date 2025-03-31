@@ -1,5 +1,6 @@
-import { ChangeEvent, useMemo } from 'react'
+import { ChangeEvent, useCallback, useMemo } from 'react'
 
+import { useFavoriteTrack, useUnfavoriteTrack } from '@audius/common/api'
 import {
   Variant,
   Status,
@@ -9,7 +10,8 @@ import {
   User,
   isContentUSDCPurchaseGated,
   ModalSource,
-  Track
+  Track,
+  FavoriteSource
 } from '@audius/common/models'
 import {
   CollectionTrack,
@@ -19,7 +21,7 @@ import {
   PurchaseableContentType
 } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
-import { Flex, Paper, Text } from '@audius/harmony'
+import { Divider, Flex, Paper, Text } from '@audius/harmony'
 
 import {
   CollectiblesPlaylistTableColumn,
@@ -27,11 +29,10 @@ import {
 } from 'components/collectibles-playlist-table/CollectiblesPlaylistTable'
 import { CollectionDogEar } from 'components/collection'
 import { CollectionHeader } from 'components/collection/desktop/CollectionHeader'
-import { Divider } from 'components/divider'
 import Page from 'components/page/Page'
 import { SuggestedTracks } from 'components/suggested-tracks'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
-import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
+import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons'
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'
 
@@ -66,7 +67,7 @@ const EmptyContent = (props: EmptyContentProps) => {
   return (
     <Flex column p='2xl' alignItems='center' gap='s'>
       <Text variant='title' size='l'>
-        {textProp ?? isOwner
+        {(textProp ?? isOwner)
           ? messages.emptyPage.ownerTitle
           : messages.emptyPage.visitor}
       </Text>
@@ -150,7 +151,6 @@ const CollectionPage = ({
   onPlay,
   onPreview,
   onClickRow,
-  onClickSave,
   onClickRepostTrack,
   onSortTracks,
   onReorderTracks,
@@ -162,7 +162,7 @@ const CollectionPage = ({
   const { status, metadata, user } = collection
 
   // TODO: Consider dynamic lineups, esp. for caching improvement.
-  const [dataSource, playingIndex] =
+  const [dataSource, activeIndex] =
     tracks.status === Status.SUCCESS
       ? getFilteredData(tracks.entries)
       : [[], -1]
@@ -173,10 +173,6 @@ const CollectionPage = ({
     trackCount > 0 &&
     (tracks.status === Status.LOADING || tracks.status === Status.IDLE)
 
-  const coverArtSizes =
-    metadata && metadata?.variant !== Variant.SMART
-      ? metadata._cover_art_sizes
-      : null
   const duration =
     dataSource.reduce(
       (duration: number, entry: CollectionTrack) =>
@@ -198,7 +194,7 @@ const CollectionPage = ({
   const imageOverride =
     metadata?.variant === Variant.SMART ? metadata.imageOverride : ''
   const typeTitle =
-    metadata?.variant === Variant.SMART ? metadata?.typeTitle ?? type : type
+    metadata?.variant === Variant.SMART ? (metadata?.typeTitle ?? type) : type
   const customEmptyText =
     metadata?.variant === Variant.SMART ? metadata?.customEmptyText : null
   const access =
@@ -228,7 +224,7 @@ const CollectionPage = ({
   // Note: This would normally belong in the CollectionPageProvider,
   // but it benefits us more to reuse existing hooks and that component cannot use hooks
   const { onOpen: openPremiumContentModal } = usePremiumContentPurchaseModal()
-  const openPurchaseModal = useAuthenticatedCallback(
+  const openPurchaseModal = useRequiresAccountCallback(
     ({ track_id }: Track) => {
       openPremiumContentModal(
         { contentId: track_id, contentType: PurchaseableContentType.TRACK },
@@ -237,6 +233,26 @@ const CollectionPage = ({
     },
     [openPremiumContentModal]
   )
+
+  const { mutate: favoriteTrack } = useFavoriteTrack()
+  const { mutate: unfavoriteTrack } = useUnfavoriteTrack()
+  const toggleSaveTrack = useCallback(
+    (track: Track) => {
+      if (track.has_current_user_saved) {
+        unfavoriteTrack({
+          trackId: track.track_id,
+          source: FavoriteSource.COLLECTION_PAGE
+        })
+      } else {
+        favoriteTrack({
+          trackId: track.track_id,
+          source: FavoriteSource.COLLECTION_PAGE
+        })
+      }
+    },
+    [favoriteTrack, unfavoriteTrack]
+  )
+
   const isPlayable = !areAllTracksDeleted && numTracks > 0
 
   const topSection = (
@@ -250,7 +266,6 @@ const CollectionPage = ({
       title={playlistName}
       artistName={playlistOwnerName}
       artistHandle={playlistOwnerHandle}
-      coverArtSizes={coverArtSizes}
       description={description}
       isOwner={isOwner}
       isAlbum={isAlbum}
@@ -350,15 +365,15 @@ const CollectionPage = ({
               loading={isNftPlaylist ? collectionLoading : tracksLoading}
               userId={userId}
               playing={playing}
-              playingIndex={playingIndex}
+              activeIndex={activeIndex}
               data={dataSource}
               onClickRow={onClickRow}
-              onClickFavorite={onClickSave}
+              onClickFavorite={toggleSaveTrack}
               onClickRemove={isOwner ? onClickRemove : undefined}
               onClickRepost={onClickRepostTrack}
               onClickPurchase={openPurchaseModal}
-              onReorderTracks={onReorderTracks}
-              onSortTracks={onSortTracks}
+              onReorder={onReorderTracks}
+              onSort={onSortTracks}
               isReorderable={
                 userId !== null && userId === playlistOwnerId && allowReordering
               }
@@ -377,10 +392,10 @@ const CollectionPage = ({
       </Paper>
 
       {!collectionLoading && isOwner && !isAlbum && !isNftPlaylist ? (
-        <>
-          <Divider variant='default' className={styles.tileDivider} />
+        <Flex column gap='2xl' pv='2xl' w='100%' css={{ minWidth: 774 }}>
+          <Divider />
           <SuggestedTracks collectionId={playlistId} />
-        </>
+        </Flex>
       ) : null}
     </Page>
   )

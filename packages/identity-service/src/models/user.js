@@ -68,6 +68,11 @@ module.exports = (sequelize, DataTypes) => {
       lastSeenDate: {
         type: DataTypes.DATE,
         allowNull: false
+      },
+      isGuest: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
       }
     },
     {}

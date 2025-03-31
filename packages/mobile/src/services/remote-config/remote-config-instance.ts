@@ -9,7 +9,7 @@ import codePush from 'react-native-code-push'
 import Config from 'react-native-config'
 import VersionNumber from 'react-native-version-number'
 
-import { env } from 'app/env'
+import { env } from 'app/services/env'
 import { reportToSentry } from 'app/utils/reportToSentry'
 
 import packageInfo from '../../../package.json'

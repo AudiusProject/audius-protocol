@@ -1,11 +1,11 @@
 import { useCallback, useContext, useEffect } from 'react'
 
+import { TrackForEdit, TrackForUpload } from '@audius/common/store'
 import { IconDrag, IconTrash, Text, IconButton, Flex } from '@audius/harmony'
 import { useField } from 'formik'
 
 import { UploadPreviewContext } from 'components/edit-track/utils/uploadPreviewContext'
 import { Tile } from 'components/tile'
-import { CollectionTrackForUpload } from 'pages/upload-page/types'
 
 import styles from './CollectionTrackField.module.css'
 import { TrackNameField } from './TrackNameField'
@@ -16,15 +16,19 @@ type CollectionTrackFieldProps = {
   disableDelete: boolean
 }
 
+type CollectionTrackWithOverride = (TrackForEdit | TrackForUpload) & {
+  override: boolean
+}
+
 export const CollectionTrackField = (props: CollectionTrackFieldProps) => {
   const { disableDelete = false, index, remove } = props
   const { playingPreviewIndex, stopPreview } = useContext(UploadPreviewContext)
-  const [{ value: track }] = useField<CollectionTrackForUpload>(
+  const [{ value: track }] = useField<CollectionTrackWithOverride>(
     `tracks.${index}`
   )
 
   const [{ value: metadata }, , { setValue }] = useField<
-    CollectionTrackForUpload['metadata']
+    CollectionTrackWithOverride['metadata']
   >(`tracks.${index}.metadata`)
 
   const [{ value }] = useField('trackDetails')

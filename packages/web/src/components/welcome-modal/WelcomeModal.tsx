@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
+import { imageProfilePicEmpty } from '@audius/common/assets'
 import { welcomeModalMessages } from '@audius/common/messages'
 import { Name, SquareSizes } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
@@ -25,7 +26,7 @@ import {
 } from 'common/store/pages/signon/selectors'
 import Drawer from 'components/drawer/Drawer'
 import { useMedia } from 'hooks/useMedia'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import { CoverPhotoBanner } from 'pages/sign-up-page/components/CoverPhotoBanner'
 import { useSelector } from 'utils/reducer'
 
@@ -38,16 +39,17 @@ export const WelcomeModal = () => {
   const { value: nameField } = useSelector(getNameField)
   const accountName = useSelector(getUserName)
   const profileImageField = useSelector(getProfileImageField)
-  const userId = useSelector(getUserId) ?? {}
-  const presavedProfilePic = useProfilePicture(
-    userId as number,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const userId = useSelector(getUserId)
+  const presavedProfilePic = useProfilePicture({
+    userId: userId ?? undefined,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   const userName = nameField ?? accountName
   const [isOpen, setIsOpen] = useModalState('Welcome')
 
-  const profileImage = profileImageField?.url ?? presavedProfilePic
+  const profileImage =
+    profileImageField?.url ?? (presavedProfilePic || imageProfilePicEmpty)
 
   const Root = isMobile ? Drawer : Modal
   const onClose = useCallback(() => {

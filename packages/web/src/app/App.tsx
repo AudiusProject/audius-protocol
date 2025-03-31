@@ -1,12 +1,10 @@
 // @refresh reset
-
 import { useEffect, Suspense, lazy } from 'react'
 
 import { route } from '@audius/common/utils'
 import { CoinflowPurchaseProtection } from '@coinflowlabs/react'
 import { Redirect, Route, Switch } from 'react-router-dom'
 
-import { CoinbasePayButtonProvider } from 'components/coinbase-pay-button'
 import { AppModal } from 'pages/modals/AppModal'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
 import { env } from 'services/env'
@@ -16,6 +14,7 @@ import { AppErrorBoundary } from './AppErrorBoundary'
 import { AppProviders } from './AppProviders'
 import { useHistoryContext } from './HistoryProvider'
 import WebPlayer from './web-player/WebPlayer'
+
 const {
   PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
   SIGN_IN_PAGE,
@@ -25,8 +24,6 @@ const {
 
 const SignOnPage = lazy(() => import('pages/sign-on-page'))
 const OAuthLoginPage = lazy(() => import('pages/oauth-login-page'))
-const DemoTrpcPage = lazy(() => import('pages/demo-trpc/DemoTrpcPage'))
-const TrpcHistoryPage = lazy(() => import('pages/demo-trpc/TrpcHistory'))
 const PrivateKeyExporterPage = lazy(
   () => import('pages/private-key-exporter-page/PrivateKeyExporterPage')
 )
@@ -37,7 +34,7 @@ const PrivateKeyExporterModal = lazy(
 const MERCHANT_ID = env.COINFLOW_MERCHANT_ID
 const IS_PRODUCTION = env.ENVIRONMENT === 'production'
 
-export const AppInner = () => {
+export const App = () => {
   const { history } = useHistoryContext()
 
   useEffect(() => {
@@ -45,7 +42,7 @@ export const AppInner = () => {
   }, [history])
 
   return (
-    <>
+    <AppProviders>
       <SomethingWrong />
       <Suspense fallback={null}>
         <CoinflowPurchaseProtection
@@ -62,12 +59,6 @@ export const AppInner = () => {
           <Route exact path='/oauth/auth'>
             <OAuthLoginPage />
           </Route>
-          <Route path='/demo/trpc/history'>
-            <TrpcHistoryPage />
-          </Route>
-          <Route path='/demo/trpc'>
-            <DemoTrpcPage />
-          </Route>
           <Route path={PRIVATE_KEY_EXPORTER_SETTINGS_PAGE}>
             <PrivateKeyExporterPage />
             <AppModal
@@ -78,21 +69,11 @@ export const AppInner = () => {
           </Route>
           <Route path='/'>
             <AppErrorBoundary>
-              <CoinbasePayButtonProvider>
-                <WebPlayer />
-              </CoinbasePayButtonProvider>
+              <WebPlayer />
             </AppErrorBoundary>
           </Route>
         </Switch>
       </Suspense>
-    </>
-  )
-}
-
-export const App = () => {
-  return (
-    <AppProviders>
-      <AppInner />
     </AppProviders>
   )
 }

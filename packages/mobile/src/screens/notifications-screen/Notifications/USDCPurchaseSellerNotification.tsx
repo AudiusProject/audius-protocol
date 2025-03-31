@@ -30,6 +30,7 @@ const { getNotificationUsers, getNotificationEntity } = notificationsSelectors
 const messages = {
   title: (type: Entity.Track | Entity.Album) => `${capitalize(type)} Sold`,
   congrats: 'Congrats,',
+  someone: 'someone',
   justBoughtYourTrack: (type: Entity.Track | Entity.Album) =>
     ` just bought your ${type} `,
   for: ' for ',
@@ -67,7 +68,12 @@ export const USDCPurchaseSellerNotification = (
         <NotificationTitle>{messages.title(entityType)}</NotificationTitle>
       </NotificationHeader>
       <NotificationText>
-        {messages.congrats} <UserNameLink user={buyerUser} />
+        {messages.congrats}{' '}
+        {buyerUser.handle ? (
+          <UserNameLink user={buyerUser} />
+        ) : (
+          messages.someone
+        )}
         {messages.justBoughtYourTrack(entityType)}
         <EntityLink entity={content} />
         {messages.for + messages.dollar}

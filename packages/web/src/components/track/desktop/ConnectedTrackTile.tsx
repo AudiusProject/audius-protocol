@@ -1,22 +1,14 @@
-import {
-  memo,
-  useCallback,
-  useEffect,
-  MouseEvent,
-  useRef,
-  useMemo
-} from 'react'
+import { memo, useCallback, useEffect, MouseEvent, useRef } from 'react'
 
-import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
+import { useToggleFavoriteTrack } from '@audius/common/api'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,
   RepostSource,
   FavoriteSource,
   ID,
-  UID,
-  Name
+  UID
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -29,7 +21,6 @@ import {
 import { Genre } from '@audius/common/utils'
 import { IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
-import { push } from 'connected-react-router'
 import { connect, useDispatch } from 'react-redux'
 import { Dispatch } from 'redux'
 
@@ -39,15 +30,6 @@ import { UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
 import { TrackArtwork } from 'components/track/Artwork'
-import { make, track as trackEvent } from 'services/analytics'
-import {
-  setUsers,
-  setVisibility
-} from 'store/application/ui/userListModal/slice'
-import {
-  UserListType,
-  UserListEntityType
-} from 'store/application/ui/userListModal/types'
 import { AppState } from 'store/types'
 import { isDescendantElementOf } from 'utils/domUtils'
 import { fullTrackPage } from 'utils/route'
@@ -58,14 +40,11 @@ import { TrackTileSize } from '../types'
 
 import styles from './ConnectedTrackTile.module.css'
 import TrackTile from './TrackTile'
-import Stats from './stats/Stats'
-import { Flavor } from './stats/StatsText'
 const { getUid, getPlaying, getBuffering } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { getTrack } = cacheTracksSelectors
 const { getUserFromTrack } = cacheUsersSelectors
-const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
-  tracksSocialActions
+const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { getUserHandle } = accountSelectors
 const { setLockedContentId } = gatedContentActions
 
@@ -76,13 +55,11 @@ type OwnProps = {
   containerClassName?: string
   size: TrackTileSize
   statSize: 'small' | 'large'
-  showArtistPick: boolean
   ordered: boolean
   togglePlay: (uid: UID, id: ID) => void
   isLoading: boolean
   hasLoaded: (index: number) => void
   isTrending: boolean
-  showRankIcon: boolean
   isFeed: boolean
   onClick?: (trackId: ID) => void
 }
@@ -98,7 +75,6 @@ const ConnectedTrackTile = ({
   track,
   user,
   ordered,
-  showArtistPick,
   togglePlay,
   isBuffering,
   isPlaying,
@@ -106,68 +82,45 @@ const ConnectedTrackTile = ({
   isLoading,
   hasLoaded,
   containerClassName,
-  setRepostUsers,
-  setFavoriteUsers,
-  setModalVisibility,
   userHandle,
-  saveTrack,
-  unsaveTrack,
   repostTrack,
   undoRepostTrack,
   shareTrack,
   isTrending,
   isFeed = false,
-  showRankIcon,
-  onClick,
-  statSize = 'large',
-  goToRoute
+  onClick
 }: ConnectedTrackTileProps) => {
   const trackWithFallback = getTrackWithFallback(track)
   const {
     is_delete,
     is_unlisted: isUnlisted,
-    is_scheduled_release: isScheduledRelease,
     is_stream_gated: isStreamGated,
     stream_conditions: streamConditions,
     track_id: trackId,
     title,
     genre,
     permalink,
-    repost_count,
-    save_count,
-    comment_count,
-    comments_disabled,
-    field_visibility: fieldVisibility,
-    followee_reposts,
-    followee_saves,
     _co_sign: coSign,
     has_current_user_reposted: isReposted,
     has_current_user_saved: isFavorited,
-    _cover_art_sizes,
-    play_count,
     duration,
-    release_date: releaseDate,
     ddex_app: ddexApp
   } = trackWithFallback
 
   const {
     user_id,
-    artist_pick_track_id,
     name,
     handle,
-    is_deactivated: isOwnerDeactivated
+    is_deactivated: isOwnerDeactivated,
+    artist_pick_track_id
   } = getUserWithFallback(user)
-
-  const { isEnabled: isCommentsEnabled } = useFeatureFlag(
-    FeatureFlags.COMMENTS_ENABLED
-  )
 
   const isActive = uid === playingUid
   const isTrackBuffering = isActive && isBuffering
   const isTrackPlaying = isActive && isPlaying
   const isOwner = handle === userHandle
-  const isArtistPick = showArtistPick && artist_pick_track_id === trackId
   const hasPreview = !!track?.preview_cid
+  const isArtistPick = artist_pick_track_id === trackId
 
   const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(trackWithFallback)
@@ -177,27 +130,10 @@ const ConnectedTrackTile = ({
   const [, setLockedContentVisibility] = useModalState('LockedContent')
   const menuRef = useRef<HTMLDivElement>(null)
 
-  const onClickStatRepost = () => {
-    setRepostUsers(trackId)
-    setModalVisibility()
-  }
-
-  const onClickStatFavorite = () => {
-    setFavoriteUsers(trackId)
-    setModalVisibility()
-  }
-
-  const onClickStatComment = () => {
-    goToRoute(permalink + '?showComments=true')
-
-    trackEvent(
-      make({
-        eventName: Name.COMMENTS_CLICK_COMMENT_STAT,
-        trackId,
-        source: 'lineup'
-      })
-    )
-  }
+  const toggleSaveTrack = useToggleFavoriteTrack({
+    trackId,
+    source: FavoriteSource.TILE
+  })
 
   useEffect(() => {
     if (!loading && hasLoaded) {
@@ -208,7 +144,6 @@ const ConnectedTrackTile = ({
   const renderImage = () => {
     const artworkProps = {
       id: trackId,
-      coverArtSizes: _cover_art_sizes,
       coSign: coSign || undefined,
       size: 'large',
       isBuffering: isTrackBuffering,
@@ -276,70 +211,9 @@ const ConnectedTrackTile = ({
     <UserLink userId={user_id} badgeSize='xs' isActive={isActive} popover />
   )
 
-  const followeeRepostsTruncated = useMemo(
-    () => (followee_reposts ?? []).slice(0, 1),
-    [followee_reposts]
-  )
-
-  const followeeSavesTruncated = useMemo(() => {
-    const [firstSave, secondSave] = followee_saves ?? []
-    const [firstRepost] = followee_reposts ?? []
-
-    // If the first followee save is not the same as the first followee repost,
-    // then we should show the first followee save. Otherwise, we should show
-    // the second followee save.
-    if (firstSave && firstSave.user_id !== firstRepost?.user_id) {
-      return [firstSave]
-    } else if (secondSave) {
-      return [secondSave]
-    }
-    return []
-  }, [followee_saves, followee_reposts])
-
-  const renderStats = () => {
-    const contentTitle = 'track' // undefined,  playlist or album -  undefined is track
-    return (
-      <div className={cn(styles.socialInfo)}>
-        <Stats
-          hideImage={size === TrackTileSize.SMALL}
-          count={repost_count}
-          followeeActions={followeeRepostsTruncated}
-          contentTitle={contentTitle}
-          size={statSize}
-          onClick={onClickStatRepost}
-          flavor={Flavor.REPOST}
-          isOwner={isOwner}
-        />
-        <Stats
-          count={save_count}
-          followeeActions={followeeSavesTruncated}
-          contentTitle={contentTitle}
-          size={statSize}
-          onClick={onClickStatFavorite}
-          flavor={Flavor.FAVORITE}
-          isOwner={isOwner}
-        />
-        {!isCommentsEnabled || comments_disabled ? null : (
-          <Stats
-            count={comment_count}
-            contentTitle={contentTitle}
-            size={statSize}
-            onClick={onClickStatComment}
-            flavor={Flavor.COMMENT}
-            isOwner={isOwner}
-          />
-        )}
-      </div>
-    )
-  }
-
   const onClickFavorite = useCallback(() => {
-    if (isFavorited) {
-      unsaveTrack(trackId)
-    } else {
-      saveTrack(trackId, isFeed)
-    }
-  }, [isFavorited, unsaveTrack, trackId, saveTrack, isFeed])
+    toggleSaveTrack()
+  }, [toggleSaveTrack])
 
   const onClickRepost = useCallback(() => {
     if (isReposted) {
@@ -403,7 +277,6 @@ const ConnectedTrackTile = ({
 
   const order = ordered && index !== undefined ? index + 1 : undefined
   const artwork = renderImage()
-  const stats = renderStats()
   const rightActions = renderOverflowMenu()
 
   const disableActions = false
@@ -417,17 +290,12 @@ const ConnectedTrackTile = ({
       isFavorited={isFavorited}
       isReposted={isReposted}
       isOwner={isOwner}
-      isUnlisted={isUnlisted}
-      isScheduledRelease={isScheduledRelease}
-      isStreamGated={isStreamGated}
       streamConditions={streamConditions}
       hasStreamAccess={hasStreamAccess}
       isLoading={loading}
       isDarkMode={isDarkMode()}
       isMatrixMode={isMatrix()}
-      listenCount={play_count}
       isActive={isActive}
-      isArtistPick={isArtistPick}
       isPlaying={isTrackPlaying}
       artwork={artwork}
       rightActions={rightActions}
@@ -435,8 +303,6 @@ const ConnectedTrackTile = ({
       genre={genre as Genre}
       userName={userName}
       duration={duration}
-      stats={stats}
-      fieldVisibility={fieldVisibility}
       containerClassName={cn(styles.container, {
         [containerClassName!]: !!containerClassName,
         [styles.loading]: loading,
@@ -449,11 +315,9 @@ const ConnectedTrackTile = ({
       onTogglePlay={onTogglePlay}
       onClickTitle={onClickTitle}
       isTrending={isTrending}
-      showRankIcon={showRankIcon}
       permalink={permalink}
       trackId={trackId}
       isTrack
-      releaseDate={releaseDate}
     />
   )
 
@@ -499,30 +363,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     repostTrack: (trackId: ID, isFeed: boolean) =>
       dispatch(repostTrack(trackId, RepostSource.TILE, isFeed)),
     undoRepostTrack: (trackId: ID) =>
-      dispatch(undoRepostTrack(trackId, RepostSource.TILE)),
-    saveTrack: (trackId: ID, isFeed: boolean) =>
-      dispatch(saveTrack(trackId, FavoriteSource.TILE, isFeed)),
-    unsaveTrack: (trackId: ID) =>
-      dispatch(unsaveTrack(trackId, FavoriteSource.TILE)),
-
-    setRepostUsers: (trackID: ID) =>
-      dispatch(
-        setUsers({
-          userListType: UserListType.REPOST,
-          entityType: UserListEntityType.TRACK,
-          id: trackID
-        })
-      ),
-    setFavoriteUsers: (trackID: ID) =>
-      dispatch(
-        setUsers({
-          userListType: UserListType.FAVORITE,
-          entityType: UserListEntityType.TRACK,
-          id: trackID
-        })
-      ),
-    setModalVisibility: () => dispatch(setVisibility(true)),
-    goToRoute: (route: string) => dispatch(push(route))
+      dispatch(undoRepostTrack(trackId, RepostSource.TILE))
   }
 }
 

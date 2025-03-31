@@ -29,7 +29,12 @@ import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 import type { SvgProps } from 'react-native-svg'
 
 import type { TextColors } from '@audius/harmony-native'
-import { Flex, Text as HarmonyText, IconCloseAlt } from '@audius/harmony-native'
+import {
+  Flex,
+  Text as HarmonyText,
+  IconCloseAlt,
+  PlainButton
+} from '@audius/harmony-native'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import type { StylesProp } from 'app/styles'
 import { makeStyles } from 'app/styles'
@@ -37,8 +42,6 @@ import { spacing } from 'app/styles/spacing'
 import { convertHexToRGBA } from 'app/utils/convertHexToRGBA'
 import { mergeRefs } from 'app/utils/mergeRefs'
 import { Theme, useThemeColors, useThemeVariant } from 'app/utils/theme'
-
-import { TextButton } from './TextButton'
 
 const messages = {
   done: 'Done'
@@ -461,13 +464,9 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
               blurAmount={20}
               style={styles.inputAccessory}
             >
-              <TextButton
-                variant='secondary'
-                title={messages.done}
-                TextProps={{ fontSize: 'large', weight: 'demiBold' }}
-                style={styles.doneButton}
-                onPress={Keyboard.dismiss}
-              />
+              <PlainButton style={styles.doneButton} onPress={Keyboard.dismiss}>
+                {messages.done}
+              </PlainButton>
             </BlurView>
           </InputAccessoryView>
         )}

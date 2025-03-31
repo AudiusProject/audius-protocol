@@ -1,5 +1,5 @@
-import { main } from "./main";
+import { main } from './main'
 
-(async () => {
-  await main().catch(console.error);
-})();
+;(async () => {
+  await main().catch(console.error)
+})()

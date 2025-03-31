@@ -1,13 +1,14 @@
 import { ReactNode } from 'react'
 
+import { Text, Flex, IconComponent } from '@audius/harmony'
 import cn from 'classnames'
 
-import styles from './Toast.module.css'
 import ToastLinkContent from './ToastLinkContent'
 
-// TODO: SK - Move this into Stems
 interface ToastProps {
   children?: JSX.Element
+  leftIcon?: IconComponent
+  rightIcon?: IconComponent
   content: ReactNode
   link?: string
   linkText?: string
@@ -21,13 +22,15 @@ interface ToastProps {
   isOpen?: boolean
 }
 
-export const Toast = (props: ToastProps) => {
+const Toast = (props: ToastProps) => {
   const {
     children,
     content: contentProp,
     containerClassName,
+    leftIcon: LeftIcon,
     link,
-    linkText
+    linkText,
+    rightIcon: RightIcon
   } = props
 
   const content =
@@ -44,13 +47,27 @@ export const Toast = (props: ToastProps) => {
   return (
     <>
       <div
-        className={cn(styles.wrapperClass, {
+        className={cn({
           [containerClassName!]: !!containerClassName
         })}
       >
         {children}
       </div>
-      <div className={styles.container}>{content}</div>
+      <Flex
+        direction='row'
+        gap='s'
+        alignItems='center'
+        backgroundColor='accent'
+        pv='s'
+        ph='m'
+        borderRadius='m'
+      >
+        {LeftIcon && <LeftIcon size='s' color='staticWhite' />}
+        <Text color='staticWhite' size='s' strength='strong'>
+          {content}
+        </Text>
+        {RightIcon && <RightIcon size='s' color='staticWhite' />}
+      </Flex>
     </>
   )
 }

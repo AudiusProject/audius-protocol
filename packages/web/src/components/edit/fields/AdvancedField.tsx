@@ -120,9 +120,9 @@ const AdvancedFormSchema = z
     path: [ISWC]
   })
 
-export type AdvancedFormValues = z.input<typeof AdvancedFormSchema>
+type AdvancedFormValues = z.input<typeof AdvancedFormSchema>
 
-export type AdvancedFieldProps = {
+type AdvancedFieldProps = {
   isHidden?: boolean
   isUpload?: boolean
 }
@@ -596,6 +596,7 @@ const AdvancedModalFields = ({ isUpload }: { isUpload?: boolean }) => {
               w='100%'
               borderRadius='m'
               backgroundColor='surface1'
+              border='default'
             >
               <Text variant='title' size='m'>
                 {messages.coverAttribution.attribution.header}

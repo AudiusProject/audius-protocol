@@ -4,7 +4,7 @@ import { Button, IconTokenGold } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
-import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
+import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 
 const { beginTip } = tippingActions
 const { getProfileUser } = profilePageSelectors
@@ -18,7 +18,7 @@ export const TipAudioButton = () => {
   const dispatch = useDispatch()
   const profile = useSelector(getProfileUser)
 
-  const handleClick = useAuthenticatedCallback(() => {
+  const handleClick = useRequiresAccountCallback(() => {
     dispatch(beginTip({ user: profile, source: 'profile' }))
   }, [dispatch, profile])
 

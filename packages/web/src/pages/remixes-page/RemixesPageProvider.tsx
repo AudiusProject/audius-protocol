@@ -1,5 +1,6 @@
 import { useEffect, useCallback, ComponentType, RefObject } from 'react'
 
+import { useUser, useTrack } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import {
   lineupSelectors,
@@ -10,13 +11,13 @@ import {
   playerSelectors
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { useParams } from 'react-router'
 import { Dispatch } from 'redux'
 
 import { LineupVariant } from 'components/lineup/types'
 import { AppState } from 'store/types'
+import { push as pushRoute } from 'utils/navigation'
 
 import { RemixesPageProps as DesktopRemixesPageProps } from './components/desktop/RemixesPage'
 import { RemixesPageProps as MobileRemixesPageProps } from './components/mobile/RemixesPage'
@@ -24,7 +25,7 @@ import { RemixesPageProps as MobileRemixesPageProps } from './components/mobile/
 const { profilePage } = route
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
-const { getTrack, getUser, getLineup, getCount } = remixesPageSelectors
+const { getTrackId, getLineup, getCount } = remixesPageSelectors
 const { fetchTrack, reset } = remixesPageActions
 const { makeGetLineupMetadatas } = lineupSelectors
 
@@ -49,8 +50,7 @@ const RemixesPageProvider = ({
   containerRef,
   children: Children,
   count,
-  originalTrack,
-  user,
+  originalTrackId,
   tracks,
   fetchTrack,
   currentQueueItem,
@@ -64,6 +64,10 @@ const RemixesPageProvider = ({
   resetTracks
 }: RemixesPageProviderProps) => {
   const { handle, slug } = useParams<{ handle: string; slug: string }>()
+
+  const { data: originalTrack } = useTrack(originalTrackId)
+  const { data: user } = useUser(originalTrack?.owner_id)
+
   useEffect(() => {
     fetchTrack(handle, slug)
   }, [handle, slug, fetchTrack])
@@ -127,8 +131,7 @@ function makeMapStateToProps() {
 
   const mapStateToProps = (state: AppState) => {
     return {
-      user: getUser(state),
-      originalTrack: getTrack(state),
+      originalTrackId: getTrackId(state),
       count: getCount(state),
       tracks: getRemixesTracksLineup(state),
       currentQueueItem: getCurrentQueueItem(state),

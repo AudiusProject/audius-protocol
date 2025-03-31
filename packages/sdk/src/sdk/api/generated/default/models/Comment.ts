@@ -44,6 +44,18 @@ export interface Comment {
      * @type {string}
      * @memberof Comment
      */
+    entityId: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Comment
+     */
+    entityType: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Comment
+     */
     userId?: string;
     /**
      * 
@@ -131,6 +143,8 @@ export interface Comment {
 export function instanceOfComment(value: object): value is Comment {
     let isInstance = true;
     isInstance = isInstance && "id" in value && value["id"] !== undefined;
+    isInstance = isInstance && "entityId" in value && value["entityId"] !== undefined;
+    isInstance = isInstance && "entityType" in value && value["entityType"] !== undefined;
     isInstance = isInstance && "message" in value && value["message"] !== undefined;
     isInstance = isInstance && "reactCount" in value && value["reactCount"] !== undefined;
     isInstance = isInstance && "replyCount" in value && value["replyCount"] !== undefined;
@@ -151,6 +165,8 @@ export function CommentFromJSONTyped(json: any, ignoreDiscriminator: boolean): C
     return {
         
         'id': json['id'],
+        'entityId': json['entity_id'],
+        'entityType': json['entity_type'],
         'userId': !exists(json, 'user_id') ? undefined : json['user_id'],
         'message': json['message'],
         'mentions': !exists(json, 'mentions') ? undefined : ((json['mentions'] as Array<any>).map(CommentMentionFromJSON)),
@@ -178,6 +194,8 @@ export function CommentToJSON(value?: Comment | null): any {
     return {
         
         'id': value.id,
+        'entity_id': value.entityId,
+        'entity_type': value.entityType,
         'user_id': value.userId,
         'message': value.message,
         'mentions': value.mentions === undefined ? undefined : ((value.mentions as Array<any>).map(CommentMentionToJSON)),

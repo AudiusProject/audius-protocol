@@ -1,13 +1,9 @@
 import { TOKEN_LISTING_MAP, JupiterTokenSymbol } from '@audius/common/store'
 import { convertBigIntToAmountObject } from '@audius/common/utils'
-import { TransactionHandler } from '@audius/sdk-legacy/dist/core'
 import { createJupiterApiClient, Instruction, QuoteResponse } from '@jup-ag/api'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 
 let _jup: ReturnType<typeof createJupiterApiClient>
-
-const ERROR_CODE_INSUFFICIENT_FUNDS = 1 // Error code for when the swap fails due to insufficient funds in the wallet
-const ERROR_CODE_SLIPPAGE = 6000 // Error code for when the swap fails due to specified slippage being exceeded
 
 const getInstance = () => {
   if (!_jup) {
@@ -25,7 +21,7 @@ const initJupiter = () => {
   }
 }
 
-export type JupiterSwapMode = 'ExactIn' | 'ExactOut'
+type JupiterSwapMode = 'ExactIn' | 'ExactOut'
 
 /**
  * Gets a quote from Jupiter for an exchange from inputTokenSymbol => outputTokenSymbol
@@ -150,91 +146,7 @@ const getSwapInstructions = async ({
   }
 }
 
-export const parseInstruction = (instruction: Instruction) => {
-  return new TransactionInstruction({
-    programId: new PublicKey(instruction.programId),
-    keys: instruction.accounts.map((a) => ({
-      pubkey: new PublicKey(a.pubkey),
-      isSigner: a.isSigner,
-      isWritable: a.isWritable
-    })),
-    data: Buffer.from(instruction.data, 'base64')
-  })
-}
-
-async function _sendTransaction({
-  name,
-  instructions,
-  feePayer,
-  transactionHandler,
-  lookupTableAddresses,
-  signatures,
-  recentBlockhash
-}: {
-  name: string
-  instructions: TransactionInstruction[]
-  feePayer: PublicKey
-  transactionHandler: TransactionHandler
-  lookupTableAddresses: string[]
-  signatures?: { publicKey: string; signature: Buffer }[]
-  recentBlockhash?: string
-}) {
-  console.debug(`Exchange: starting ${name} transaction...`)
-  const result = await transactionHandler.handleTransaction({
-    instructions,
-    feePayerOverride: feePayer,
-    skipPreflight: true,
-    lookupTableAddresses,
-    signatures,
-    recentBlockhash,
-    errorMapping: {
-      fromErrorCode: (errorCode) => {
-        if (errorCode === ERROR_CODE_SLIPPAGE) {
-          return 'Slippage threshold exceeded'
-        } else if (errorCode === ERROR_CODE_INSUFFICIENT_FUNDS) {
-          return 'Insufficient funds'
-        }
-        return `Error Code: ${errorCode}`
-      }
-    }
-  })
-  if (result.error) {
-    console.debug(
-      `Exchange: ${name} instructions stringified:`,
-      JSON.stringify(instructions)
-    )
-    throw new Error(`${name} transaction failed: ${result.error}`)
-  }
-  console.debug(`Exchange: ${name} transaction... success txid: ${result.res}`)
-  return result
-}
-
-const executeExchange = async ({
-  instructions,
-  feePayer,
-  transactionHandler,
-  lookupTableAddresses = [],
-  signatures
-}: {
-  instructions: TransactionInstruction[]
-  feePayer: PublicKey
-  transactionHandler: TransactionHandler
-  lookupTableAddresses?: string[]
-  signatures?: { publicKey: string; signature: Buffer }[]
-}) => {
-  const { res: txId } = await _sendTransaction({
-    name: 'Swap',
-    instructions,
-    feePayer,
-    transactionHandler,
-    lookupTableAddresses,
-    signatures
-  })
-  return txId
-}
-
 export const JupiterSingleton = {
   getQuote,
-  getSwapInstructions,
-  executeExchange
+  getSwapInstructions
 }

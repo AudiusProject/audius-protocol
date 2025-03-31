@@ -53,6 +53,9 @@ View all available commands for any of these tools with `--help`, e.g.
 You can confirm that things are wired up correctly by running `audius-cmd create-user`.
 Note that `audius-cmd` requires the stack to be up and healthy, per [Bring up the protocol](#bring-up-the-protocol), and to have run `audius-compose connect`.
 
+The `audius-cmd` script in this directory will build the `audius-cmd` tool if it detects
+the output is missing. Otherwise, you can force a build by running `audius-cmd build`
+
 Examples of available commands can be found [here](../packages/commands)
 
 # Helpful Commands

@@ -81,7 +81,7 @@ export const ReferralLinkCopyButton = ({
               style={styles.iconCopy}
               width={24}
               height={24}
-              color='staticWhite'
+              color='white'
             />
             <Text weight={'bold'} style={styles.copyText}>
               {messages.copyPrompt}

@@ -13,7 +13,7 @@ const messages = {
   current: 'CURRENT'
 }
 
-export function getBNPercentage(n1: BN, n2: BN): number {
+function getBNPercentage(n1: BN, n2: BN): number {
   if (n2.isZero()) return 0
   const thousand = new BN('1000')
   const num = n1.mul(thousand).div(n2)

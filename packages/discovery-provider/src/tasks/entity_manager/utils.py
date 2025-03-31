@@ -34,11 +34,17 @@ from src.models.social.save import Save
 from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
+from src.models.users.associated_wallet import AssociatedWallet
+from src.models.users.collectibles import Collectibles
 from src.models.users.user import User
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks.metadata import (
+    add_associated_wallet_metadata_format,
+    collectibles_metadata_format,
     comment_metadata_format,
+    encrypted_email_metadata_format,
     playlist_metadata_format,
+    remove_associated_wallet_metadata_format,
     track_comment_notification_setting_format,
     track_download_metadata_format,
     track_metadata_format,
@@ -85,6 +91,7 @@ class Action(str, Enum):
     UNPIN = "Unpin"
     MUTE = "Mute"
     UNMUTE = "Unmute"
+    ADD_EMAIL = "AddEmail"
     REPORT = "Report"
 
     def __str__(self) -> str:
@@ -120,6 +127,9 @@ class EntityType(str, Enum):
     COMMENT_MENTION = "CommentMention"
     MUTED_USER = "MutedUser"
     COMMENT_NOTIFICATION_SETTING = "CommentNotificationSetting"
+    ENCRYPTED_EMAIL = "EncryptedEmail"
+    EMAIL_ACCESS = "EmailAccess"
+    COLLECTIBLES = "Collectibles"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -160,6 +170,8 @@ class RecordDict(TypedDict):
 
 
 class ExistingRecordDict(TypedDict):
+    AssociatedWallet: Dict[str, AssociatedWallet]
+    Collectibles: Dict[int, Collectibles]
     Playlist: Dict[int, Playlist]
     Track: Dict[int, Track]
     UserWallet: Dict[str, User]
@@ -198,6 +210,7 @@ class EntitiesToFetchDict(TypedDict):
     PlaylistRoute: Set[int]
     UserEvent: Set[int]
     AssociatedWallet: Set[int]
+    Collectibles: Set[int]
     UserWallet: Set[str]
     Comment: Set[int]
     CommentReaction: Set[Tuple]
@@ -206,6 +219,8 @@ class EntitiesToFetchDict(TypedDict):
     CommentNotificationSetting: Set[Tuple]
     MutedUser: Set[Tuple]
     CommentReport: Set[Tuple]
+    EncryptedEmail: Set[int]
+    EmailAccess: Set[Tuple[int, int, int]]  # (email_owner_id, receiving_id, grantor_id)
 
 
 MANAGE_ENTITY_EVENT_TYPE = "ManageEntity"
@@ -360,6 +375,23 @@ def get_metadata_type_and_format(entity_type, action=None):
     elif entity_type == EntityType.COMMENT:
         metadata_type = "comment"
         metadata_format = comment_metadata_format
+    elif entity_type == EntityType.ENCRYPTED_EMAIL:
+        metadata_type = "encrypted_email"
+        metadata_format = encrypted_email_metadata_format
+    elif (
+        entity_type == EntityType.ASSOCIATED_WALLET
+        and action == Action.CREATE
+        or action == Action.DELETE
+    ):
+        metadata_type = "associated_wallet"
+        metadata_format = (
+            add_associated_wallet_metadata_format
+            if action == Action.CREATE
+            else remove_associated_wallet_metadata_format
+        )
+    elif entity_type == EntityType.COLLECTIBLES:
+        metadata_type = "collectibles"
+        metadata_format = collectibles_metadata_format
     else:
         raise IndexingValidationError(f"Unknown metadata type ${entity_type}")
     return metadata_type, metadata_format

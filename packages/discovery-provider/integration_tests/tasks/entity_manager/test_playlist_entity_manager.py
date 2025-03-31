@@ -1513,3 +1513,420 @@ def test_access_conditions(app, mocker, tx_receipts):
             .first()
         )
         assert album == None
+
+
+def test_validate_playlist_tx_new_format(app, mocker):
+    """Tests validation of playlist_contents in the new array format"""
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
+        update_task = UpdateTask(web3, challenge_event_bus)
+
+    test_metadata = {
+        "ValidNewFormat": {
+            "playlist_contents": [
+                {"track": 1, "time": 1660927554},
+                {"track_id": 2, "timestamp": 1660927555},
+            ],
+            "description": "test",
+            "playlist_name": "playlist",
+            "playlist_image_sizes_multihash": "",  # Required field
+            "playlist_image_multihash": "",  # Required field
+        },
+        "InvalidNewFormat": {
+            "playlist_contents": [{"invalid_field": 1}, {"track_id": 2}],
+            "description": "test",
+            "playlist_name": "playlist",
+            "playlist_image_sizes_multihash": "",  # Required field
+            "playlist_image_multihash": "",  # Required field
+        },
+    }
+
+    valid_metadata = json.dumps(test_metadata["ValidNewFormat"])
+    invalid_metadata = json.dumps(test_metadata["InvalidNewFormat"])
+
+    tx_receipts = {
+        "ValidNewFormatTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "ValidNewFormat", "data": {valid_metadata}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            }
+        ],
+        "InvalidNewFormatTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 1,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "InvalidNewFormat", "data": {invalid_metadata}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            }
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
+    entities = {
+        "users": [{"user_id": 1, "handle": "user-1", "wallet": "user1wallet"}],
+        "tracks": [{"track_id": 1, "owner_id": 1}, {"track_id": 2, "owner_id": 1}],
+    }
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        # Valid format should succeed
+        entity_manager_update(
+            update_task,
+            session,
+            [entity_manager_txs[0]],
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=hex(0),
+        )
+
+        playlist = (
+            session.query(Playlist)
+            .filter(
+                Playlist.playlist_id == PLAYLIST_ID_OFFSET, Playlist.is_current == True
+            )
+            .first()
+        )
+        assert playlist is not None
+        assert len(playlist.playlist_contents["track_ids"]) == 2
+        # Verify the track fields are correctly mapped
+        for track in playlist.playlist_contents["track_ids"]:
+            assert "track" in track
+            assert "time" in track
+            assert "metadata_time" in track
+
+        # Invalid format should fail
+        total_changes, _ = entity_manager_update(
+            update_task,
+            session,
+            [entity_manager_txs[1]],
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=hex(0),
+        )
+        assert total_changes == 0
+
+
+def test_playlist_creation_with_legacy_format(app, mocker):
+    """Tests creating a playlist using the legacy nested track_ids format"""
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
+        update_task = UpdateTask(web3, challenge_event_bus)
+
+    test_metadata = {
+        "playlist_contents": {
+            "track_ids": [
+                {"track": 1, "time": 1660927554},
+                {"track": 2, "time": 1660927555},
+            ]
+        },
+        "description": "Legacy format playlist",
+        "playlist_name": "My Legacy Playlist",
+        "playlist_image_sizes_multihash": "",
+        "playlist_image_multihash": "",
+    }
+
+    tx_receipt = {
+        "args": AttributeDict(
+            {
+                "_entityId": PLAYLIST_ID_OFFSET,
+                "_entityType": "Playlist",
+                "_userId": 1,
+                "_action": "Create",
+                "_metadata": f'{{"cid": "Legacy", "data": {json.dumps(test_metadata)}}}',
+                "_signer": "user1wallet",
+            }
+        )
+    }
+
+    entity_manager_tx = AttributeDict(
+        {"transactionHash": update_task.web3.to_bytes(text="LegacyTx")}
+    )
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        return_value=[tx_receipt],
+        autospec=True,
+    )
+
+    entities = {
+        "users": [{"user_id": 1, "handle": "user-1", "wallet": "user1wallet"}],
+        "tracks": [{"track_id": 1, "owner_id": 1}, {"track_id": 2, "owner_id": 1}],
+    }
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        entity_manager_update(
+            update_task,
+            session,
+            [entity_manager_tx],
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=hex(0),
+        )
+
+        playlist = (
+            session.query(Playlist)
+            .filter(
+                Playlist.playlist_id == PLAYLIST_ID_OFFSET, Playlist.is_current == True
+            )
+            .first()
+        )
+
+        assert playlist is not None
+        assert len(playlist.playlist_contents["track_ids"]) == 2
+        assert playlist.playlist_contents["track_ids"][0]["track"] == 1
+        assert playlist.playlist_contents["track_ids"][1]["track"] == 2
+
+
+def test_playlist_creation_with_flattened_format(app, mocker):
+    """Tests creating a playlist using the new flattened track array format"""
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
+        update_task = UpdateTask(web3, challenge_event_bus)
+
+    test_metadata = {
+        "playlist_contents": [
+            {"track": 1, "time": 1660927554},
+            {
+                "track_id": 2,
+                "timestamp": 1660927555,
+            },  # Tests both field naming conventions
+        ],
+        "description": "New format playlist",
+        "playlist_name": "My New Playlist",
+        "playlist_image_sizes_multihash": "",
+        "playlist_image_multihash": "",
+    }
+
+    tx_receipt = {
+        "args": AttributeDict(
+            {
+                "_entityId": PLAYLIST_ID_OFFSET,
+                "_entityType": "Playlist",
+                "_userId": 1,
+                "_action": "Create",
+                "_metadata": f'{{"cid": "New", "data": {json.dumps(test_metadata)}}}',
+                "_signer": "user1wallet",
+            }
+        )
+    }
+
+    entity_manager_tx = AttributeDict(
+        {"transactionHash": update_task.web3.to_bytes(text="NewTx")}
+    )
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        return_value=[tx_receipt],
+        autospec=True,
+    )
+
+    entities = {
+        "users": [{"user_id": 1, "handle": "user-1", "wallet": "user1wallet"}],
+        "tracks": [{"track_id": 1, "owner_id": 1}, {"track_id": 2, "owner_id": 1}],
+    }
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        entity_manager_update(
+            update_task,
+            session,
+            [entity_manager_tx],
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=hex(0),
+        )
+
+        playlist = (
+            session.query(Playlist)
+            .filter(
+                Playlist.playlist_id == PLAYLIST_ID_OFFSET, Playlist.is_current == True
+            )
+            .first()
+        )
+
+        assert playlist is not None
+        assert len(playlist.playlist_contents["track_ids"]) == 2
+        assert playlist.playlist_contents["track_ids"][0]["track"] == 1
+        assert playlist.playlist_contents["track_ids"][1]["track"] == 2
+
+
+def test_playlist_update_preserves_existing_tracks(app, mocker):
+    """Tests that updating a playlist preserves track order and timing information"""
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
+        update_task = UpdateTask(web3, challenge_event_bus)
+
+    # First create a playlist
+    initial_metadata = {
+        "playlist_contents": [
+            {"track": 1, "time": 1585336422},
+            {"track": 2, "time": 1585336422},
+        ],
+        "description": "Initial playlist",
+        "playlist_name": "My Playlist",
+        "playlist_image_sizes_multihash": "",
+        "playlist_image_multihash": "",
+    }
+
+    # Then update it with some changes
+    update_metadata = {
+        "playlist_contents": [
+            {"track": 1, "time": 1585336422},  # Same track and time
+            {
+                "track": 2,
+                "timestamp": 1585336422,
+                "metadata_timestamp": 1585336422,
+            },  # Same track and time
+            {
+                "track": 2,
+                "timestamp": 0,
+                "metadata_timestamp": 1585336425,
+            },  # Same track, new metadata time (adding a new copy of the track)
+            {"track": 3, "time": 1585336425},  # New track
+        ],
+        "description": "Updated playlist",
+        "playlist_name": "My Updated Playlist",
+        "playlist_image_sizes_multihash": "",
+        "playlist_image_multihash": "",
+    }
+
+    tx_receipts = [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": PLAYLIST_ID_OFFSET,
+                    "_entityType": "Playlist",
+                    "_userId": 1,
+                    "_action": "Create",
+                    "_metadata": f'{{"cid": "Initial", "data": {json.dumps(initial_metadata)}}}',
+                    "_signer": "user1wallet",
+                }
+            )
+        },
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": PLAYLIST_ID_OFFSET,
+                    "_entityType": "Playlist",
+                    "_userId": 1,
+                    "_action": "Update",
+                    "_metadata": f'{{"cid": "Update", "data": {json.dumps(update_metadata)}}}',
+                    "_signer": "user1wallet",
+                }
+            )
+        },
+    ]
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=f"Tx{i}")})
+        for i in range(2)
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        idx = entity_manager_txs.index(tx_receipt)
+        return [tx_receipts[idx]]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
+    entities = {
+        "users": [{"user_id": 1, "handle": "user-1", "wallet": "user1wallet"}],
+        "tracks": [{"track_id": i, "owner_id": 1} for i in range(1, 4)],
+    }
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        # Create initial playlist
+        entity_manager_update(
+            update_task,
+            session,
+            [entity_manager_txs[0]],
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=hex(0),
+        )
+
+        # Update playlist
+        entity_manager_update(
+            update_task,
+            session,
+            [entity_manager_txs[1]],
+            block_number=1,
+            # index time is two blocks after the value passed in the tx
+            block_timestamp=1585336427,
+            block_hash=hex(1),
+        )
+
+        playlist = (
+            session.query(Playlist)
+            .filter(
+                Playlist.playlist_id == PLAYLIST_ID_OFFSET, Playlist.is_current == True
+            )
+            .first()
+        )
+
+        assert playlist is not None
+        assert len(playlist.playlist_contents["track_ids"]) == 4
+
+        # First track should keep original time
+        assert playlist.playlist_contents["track_ids"][0]["track"] == 1
+        assert playlist.playlist_contents["track_ids"][0]["time"] == 1585336422
+        assert playlist.playlist_contents["track_ids"][0]["metadata_time"] == 1585336422
+
+        # Second track should keep original time
+        assert playlist.playlist_contents["track_ids"][1]["track"] == 2
+        assert playlist.playlist_contents["track_ids"][1]["time"] == 1585336422
+        assert playlist.playlist_contents["track_ids"][1]["metadata_time"] == 1585336422
+
+        # Third track is a copy of the second track using a new metadata_timestamp
+        assert playlist.playlist_contents["track_ids"][2]["track"] == 2
+        assert (
+            playlist.playlist_contents["track_ids"][2]["time"] == 1585336427
+        )  # new track uses index time of the block
+        assert playlist.playlist_contents["track_ids"][2]["metadata_time"] == 1585336425
+
+        # Third track added at same time as second track modified, should use same timestamps
+        assert playlist.playlist_contents["track_ids"][3]["track"] == 3
+        assert (
+            playlist.playlist_contents["track_ids"][3]["time"] == 1585336427
+        )  # new track uses index time of the block
+        assert playlist.playlist_contents["track_ids"][3]["metadata_time"] == 1585336425

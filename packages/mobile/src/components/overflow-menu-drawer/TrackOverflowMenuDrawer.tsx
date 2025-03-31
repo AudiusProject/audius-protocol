@@ -1,6 +1,13 @@
 import { useCallback, useContext } from 'react'
 
 import {
+  useCollection,
+  useToggleFavoriteTrack,
+  useTrack,
+  useFollowUser,
+  useUnfollowUser
+} from '@audius/common/api'
+import {
   ShareSource,
   RepostSource,
   FavoriteSource,
@@ -8,16 +15,12 @@ import {
   ModalSource
 } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
-import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheCollectionsActions,
-  cacheCollectionsSelectors,
-  cacheTracksSelectors,
   cacheUsersSelectors,
   collectionPageLineupActions as tracksActions,
   tracksSocialActions,
-  usersSocialActions,
   addToCollectionUIActions,
   mobileOverflowMenuUISelectors,
   shareModalUIActions,
@@ -27,7 +30,9 @@ import {
   usePremiumContentPurchaseModal,
   usePublishConfirmationModal,
   trackPageActions,
-  artistPickModalActions
+  artistPickModalActions,
+  playerActions,
+  playerSelectors
 } from '@audius/common/store'
 import type { CommonState, OverflowActionCallbacks } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
@@ -38,17 +43,16 @@ import { useToast } from 'app/hooks/useToast'
 import { AppTabNavigationContext } from 'app/screens/app-screen'
 import { setVisibility } from 'app/store/drawers/slice'
 
+import { useCommentDrawer } from '../comments/CommentDrawerContext'
+
+const { makeGetCurrent } = playerSelectors
 const { getUserId } = accountSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 const { requestOpen: openAddToCollectionModal } = addToCollectionUIActions
-const { followUser, unfollowUser } = usersSocialActions
 const { setTrackPosition, clearTrackPosition } = playbackPositionActions
-const { repostTrack, undoRepostTrack, saveTrack, unsaveTrack } =
-  tracksSocialActions
+const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { getUser } = cacheUsersSelectors
-const { getTrack } = cacheTracksSelectors
-const { getCollection } = cacheCollectionsSelectors
 const { removeTrackFromPlaylist } = cacheCollectionsActions
 
 type Props = {
@@ -71,23 +75,28 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
   const id = modalId as ID
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
+  const currentQueueItem = useSelector(makeGetCurrent())
+  const { mutate: followUser } = useFollowUser()
+  const { mutate: unfollowUser } = useUnfollowUser()
 
-  const track = useSelector((state: CommonState) => getTrack(state, { id }))
-  const playlist = useSelector((state: CommonState) =>
-    getCollection(state, { id: contextPlaylistId })
-  )
-  const playlistTrackInfo = playlist?.playlist_contents.track_ids.find(
-    (t) => t.track === track?.track_id
-  )
+  const { open } = useCommentDrawer()
 
-  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId: id },
-    { enabled: !!id }
-  )
+  const { data: track } = useTrack(id)
+  const { data: track_ids } = useCollection(contextPlaylistId, {
+    select: (collection) => collection.playlist_contents.track_ids
+  })
+  const playlistTrackInfo = track_ids?.find((t) => t.track === track?.track_id)
+
+  const albumInfo = track?.album_backlink
 
   const user = useSelector((state: CommonState) =>
     getUser(state, { id: track?.owner_id })
   )
+
+  const toggleSaveTrack = useToggleFavoriteTrack({
+    trackId: id,
+    source: FavoriteSource.OVERFLOW
+  })
 
   const handlePurchasePress = useCallback(() => {
     if (track?.track_id) {
@@ -113,6 +122,17 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     dispatch(artistPickModalActions.open({ trackId: null }))
   }, [dispatch])
 
+  const handleOpenCommentsDrawer = useCallback(() => {
+    if (track?.track_id) {
+      open({
+        entityId: track.track_id,
+        navigation,
+        actions: playerActions,
+        uid: currentQueueItem.uid as string
+      })
+    }
+  }, [currentQueueItem.uid, navigation, open, track?.track_id])
+
   if (!track || !user) {
     return null
   }
@@ -128,10 +148,8 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
       dispatch(repostTrack(id, RepostSource.OVERFLOW)),
     [OverflowAction.UNREPOST]: () =>
       dispatch(undoRepostTrack(id, RepostSource.OVERFLOW)),
-    [OverflowAction.FAVORITE]: () =>
-      dispatch(saveTrack(id, FavoriteSource.OVERFLOW)),
-    [OverflowAction.UNFAVORITE]: () =>
-      dispatch(unsaveTrack(id, FavoriteSource.OVERFLOW)),
+    [OverflowAction.FAVORITE]: () => toggleSaveTrack(),
+    [OverflowAction.UNFAVORITE]: () => toggleSaveTrack(),
     [OverflowAction.SHARE]: () =>
       dispatch(
         requestOpenShareModal({
@@ -145,12 +163,12 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     [OverflowAction.ADD_TO_PLAYLIST]: () =>
       dispatch(openAddToCollectionModal('playlist', id, title, is_unlisted)),
     [OverflowAction.REMOVE_FROM_PLAYLIST]: () => {
-      if (playlist && playlistTrackInfo) {
+      if (contextPlaylistId && playlistTrackInfo) {
         const { metadata_time, time } = playlistTrackInfo
         dispatch(
           removeTrackFromPlaylist(
             track.track_id,
-            playlist.playlist_id,
+            contextPlaylistId,
             metadata_time ?? time
           )
         )
@@ -173,9 +191,9 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
       navigation?.push('Profile', { handle })
     },
     [OverflowAction.FOLLOW_ARTIST]: () =>
-      dispatch(followUser(owner_id, FollowSource.OVERFLOW)),
+      followUser({ followeeUserId: owner_id, source: FollowSource.OVERFLOW }),
     [OverflowAction.UNFOLLOW_ARTIST]: () =>
-      dispatch(unfollowUser(owner_id, FollowSource.OVERFLOW)),
+      unfollowUser({ followeeUserId: owner_id, source: FollowSource.OVERFLOW }),
     [OverflowAction.EDIT_TRACK]: () => {
       navigation?.push('EditTrack', { id })
     },
@@ -185,7 +203,6 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
         confirmCallback: () => dispatch(trackPageActions.makeTrackPublic(id))
       })
     },
-
     [OverflowAction.DELETE_TRACK]: () => {
       dispatch(
         setVisibility({
@@ -211,7 +228,8 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     },
     [OverflowAction.PURCHASE_TRACK]: handlePurchasePress,
     [OverflowAction.SET_ARTIST_PICK]: handleSetAsArtistPick,
-    [OverflowAction.UNSET_ARTIST_PICK]: handleUnsetAsArtistPick
+    [OverflowAction.UNSET_ARTIST_PICK]: handleUnsetAsArtistPick,
+    [OverflowAction.VIEW_COMMENTS]: handleOpenCommentsDrawer
   }
 
   return render(callbacks)

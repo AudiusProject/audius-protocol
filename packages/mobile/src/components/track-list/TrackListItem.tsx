@@ -1,19 +1,16 @@
 import type { ComponentType } from 'react'
 import { memo, useCallback, useMemo, useState } from 'react'
 
+import { useCollection, useUser, useTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
-  type Collection,
   type ID,
   type UID,
   type Track,
-  type User,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
-  cacheCollectionsSelectors,
   cacheTracksSelectors,
   cacheUsersSelectors,
   mobileOverflowMenuUIActions,
@@ -22,7 +19,11 @@ import {
   playerSelectors,
   playbackPositionSelectors
 } from '@audius/common/store'
-import { Genre, removeNullable } from '@audius/common/utils'
+import {
+  Genre,
+  getNumericIdFromUid,
+  removeNullable
+} from '@audius/common/utils'
 import type {
   NativeSyntheticEvent,
   NativeTouchEvent,
@@ -53,7 +54,6 @@ const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 const { getUserId } = accountSelectors
 const { getUserFromTrack } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
-const { getCollection } = cacheCollectionsSelectors
 const { getPlaying, getUid } = playerSelectors
 const { getTrackPosition } = playbackPositionSelectors
 
@@ -165,12 +165,9 @@ export type TrackListItemProps = {
 // Using `memo` because FlatList renders these items
 // And we want to avoid a full render when the props haven't changed
 export const TrackListItem = memo((props: TrackListItemProps) => {
-  const { id, uid, contextPlaylistId } = props
+  const { id, uid } = props
 
   const track = useSelector((state) => getTrack(state, { id, uid }))
-  const contextPlaylist = useSelector((state) =>
-    getCollection(state, { id: contextPlaylistId })
-  )
   const user = useSelector((state) => getUserFromTrack(state, { id, uid }))
 
   if (!track || !user) {
@@ -178,26 +175,15 @@ export const TrackListItem = memo((props: TrackListItemProps) => {
     return null
   }
 
-  return (
-    <TrackListItemComponent
-      {...props}
-      track={track}
-      user={user}
-      contextPlaylist={contextPlaylist}
-    />
-  )
+  return <TrackListItemComponent {...props} />
 })
 
-type TrackListItemComponentProps = TrackListItemProps & {
-  track: Track
-  user: User
-  contextPlaylist: Collection | null
-}
+type TrackListItemComponentProps = TrackListItemProps
 
 const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   const {
+    id,
     contextPlaylistId,
-    contextPlaylist,
     onDrag,
     hideArt,
     index,
@@ -205,11 +191,14 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     showViewAlbum = false,
     onRemove,
     togglePlay,
-    track,
     trackItemAction,
-    uid,
-    user
+    uid
   } = props
+
+  const { data: contextPlaylist } = useCollection(contextPlaylistId)
+  const trackId = id ?? (uid ? getNumericIdFromUid(uid) : undefined)
+  const { data: track } = useTrack(trackId)
+  const { data: user } = useUser(track?.owner_id)
 
   const {
     has_current_user_saved,
@@ -220,9 +209,10 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     track_id,
     owner_id,
     ddex_app: ddexApp,
-    stream_conditions: streamConditions
-  } = track
-  const { is_deactivated, name } = user
+    stream_conditions: streamConditions,
+    album_backlink
+  } = track ?? {}
+  const { is_deactivated, name } = user ?? {}
 
   const isDeleted = is_delete || !!is_deactivated
 
@@ -258,7 +248,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   )
 
   const onPressTrack = () => {
-    if (uid && isPlayable && togglePlay) {
+    if (uid && track_id && isPlayable && togglePlay) {
       togglePlay(uid, track_id)
     }
   }
@@ -269,14 +259,9 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     currentUserId && contextPlaylist?.playlist_owner_id === currentUserId
 
   const isLongFormContent =
-    track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
+    track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
   const playbackPositionInfo = useSelector((state) =>
     getTrackPosition(state, { trackId: track_id, userId: currentUserId })
-  )
-
-  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId: track_id },
-    { enabled: !!track_id }
   )
 
   const handleOpenOverflowMenu = useCallback(() => {
@@ -300,7 +285,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
       isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
-      !showViewAlbum && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
+      !showViewAlbum && album_backlink ? OverflowAction.VIEW_ALBUM_PAGE : null,
       isLongFormContent
         ? playbackPositionInfo?.status === 'COMPLETED'
           ? OverflowAction.MARK_AS_UNPLAYED
@@ -310,6 +295,10 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
       !isTrackOwner ? OverflowAction.VIEW_ARTIST_PAGE : null,
       isContextPlaylistOwner ? OverflowAction.REMOVE_FROM_PLAYLIST : null
     ].filter(removeNullable)
+
+    if (!track_id) {
+      return
+    }
 
     dispatch(
       openOverflowMenu({
@@ -329,7 +318,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     ddexApp,
     isLongFormContent,
     showViewAlbum,
-    albumInfo,
+    album_backlink,
     playbackPositionInfo?.status,
     isContextPlaylistOwner,
     dispatch,
@@ -421,7 +410,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
             </View>
             <Text numberOfLines={1} style={styles.artistName}>
               {name}
-              <UserBadges user={user} badgeSize={12} hideName />
+              {user ? <UserBadges user={user} badgeSize={12} hideName /> : null}
             </Text>
           </View>
           {isUnlisted ? (

@@ -1,4 +1,4 @@
-import { PureComponent } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { accountSelectors } from '@audius/common/store'
 import Tooltip from 'antd/lib/tooltip'
@@ -26,7 +26,7 @@ type OwnProps = {
   firesOnClick?: boolean
   useCaret?: boolean
   // Whether or not the tooltip has 100% width.
-  fillParent: boolean
+  fillParent?: boolean
   // Whether the tooltip gets mounted.
   mount?: MountPlacement
   placement?: ComponentPlacement
@@ -39,128 +39,110 @@ type OwnProps = {
 
 type ToastProps = OwnProps & ReturnType<typeof mapStateToProps>
 
-type ToastState = { showToast: boolean }
+const Toast = ({
+  open,
+  delay = 3000,
+  text,
+  requireAccount = true,
+  onVisibilityChange,
+  disabled = false,
+  firesOnClick = true,
+  useCaret = false,
+  fillParent = true,
+  mount = MountPlacement.PAGE,
+  placement = ComponentPlacement.RIGHT,
+  tooltipClassName,
+  overlayClassName,
+  containerClassName,
+  containerStyles = {},
+  children,
+  hasAccount
+}: ToastProps) => {
+  const [showToast, setShowToast] = useState(false)
+  const [hideTimeout, setHideTimeout] = useState<ReturnType<
+    typeof setTimeout
+  > | null>(null)
 
-class Toast extends PureComponent<ToastProps, ToastState> {
-  static defaultProps = {
-    delay: 3000,
-    containerStyles: {},
-    useCaret: false,
-    requireAccount: true,
-    disabled: false,
-    firesOnClick: true,
-    fillParent: true,
-    mount: MountPlacement.PAGE,
-    placement: ComponentPlacement.RIGHT
-  }
-
-  state = {
-    showToast: false
-  }
-
-  hideTimeout: null | any = null
-
-  handleClick = () => {
-    const {
-      delay,
-      firesOnClick,
-      disabled,
-      requireAccount,
-      hasAccount,
-      onVisibilityChange
-    } = this.props
+  const handleClick = useCallback(() => {
     if (disabled || !firesOnClick || (!hasAccount && requireAccount)) return
 
-    this.setState({ showToast: true })
+    setShowToast(true)
     if (onVisibilityChange) onVisibilityChange(true)
-    if (this.hideTimeout && !this.hideTimeout.cleared) {
-      clearTimeout(this.hideTimeout)
+    if (hideTimeout) {
+      clearTimeout(hideTimeout)
     }
-    this.hideTimeout = setTimeout(() => {
-      this.setState({ showToast: false })
+    const timeout = setTimeout(() => {
+      setShowToast(false)
       if (onVisibilityChange) onVisibilityChange(false)
     }, delay)
-  }
+    setHideTimeout(timeout)
+  }, [
+    disabled,
+    firesOnClick,
+    hasAccount,
+    requireAccount,
+    onVisibilityChange,
+    delay,
+    hideTimeout
+  ])
 
-  componentDidUpdate = (prevProps: ToastProps) => {
-    if (
-      prevProps.open === false &&
-      this.props.open === true &&
-      this.props.delay
-    ) {
-      this.handleClick()
+  useEffect(() => {
+    if (open && delay) {
+      handleClick()
     }
-  }
+  }, [open, delay, handleClick])
 
-  componentWillUnmount = () => {
-    if (this.hideTimeout && !this.hideTimeout.cleared)
-      clearTimeout(this.hideTimeout)
-  }
-
-  render() {
-    const {
-      open,
-      text,
-      placement,
-      children,
-      useCaret,
-      fillParent,
-      mount,
-      tooltipClassName,
-      overlayClassName,
-      containerClassName,
-      containerStyles
-    } = this.props
-
-    const { showToast } = this.state
-    const isVisible = open !== undefined ? open : showToast
-    let popupContainer
-
-    switch (mount) {
-      case MountPlacement.PARENT:
-        popupContainer = (triggerNode: HTMLElement) =>
-          triggerNode.parentNode as HTMLElement
-        break
-      case MountPlacement.PAGE: {
-        const page =
-          typeof document !== 'undefined' && document.getElementById('page')
-        if (page) popupContainer = () => page || undefined
-        break
-      }
-      case MountPlacement.BODY:
-      default:
-        popupContainer =
-          typeof document !== 'undefined'
-            ? () => document.body as HTMLElement
-            : undefined
+  useEffect(() => {
+    return () => {
+      if (hideTimeout) clearTimeout(hideTimeout)
     }
+  }, [hideTimeout])
 
-    return (
-      <Tooltip
-        className={cn(styles.tooltip, {
-          [tooltipClassName as string]: !!tooltipClassName,
-          [styles.fillParent]: fillParent
-        })}
-        placement={placement}
-        title={text}
-        visible={isVisible}
-        getPopupContainer={popupContainer}
-        overlayClassName={cn(styles.toast, {
-          [overlayClassName as string]: !!overlayClassName && isVisible,
-          [styles.hideCaret]: !useCaret
-        })}
+  const isVisible = open !== undefined ? open : showToast
+  let popupContainer: ((triggerNode: HTMLElement) => HTMLElement) | undefined
+
+  switch (mount) {
+    case MountPlacement.PARENT:
+      popupContainer = (triggerNode: HTMLElement) =>
+        triggerNode.parentNode as HTMLElement
+      break
+    case MountPlacement.PAGE: {
+      const page =
+        typeof document !== 'undefined' && document.getElementById('page')
+      if (page) popupContainer = () => page
+      break
+    }
+    case MountPlacement.BODY:
+    default:
+      popupContainer =
+        typeof document !== 'undefined' ? () => document.body : undefined
+  }
+
+  return (
+    <Tooltip
+      className={cn(styles.tooltip, {
+        [tooltipClassName as string]: !!tooltipClassName,
+        [styles.fillParent]: fillParent
+      })}
+      placement={placement}
+      title={text}
+      visible={isVisible}
+      getPopupContainer={popupContainer}
+      overlayClassName={cn(styles.toast, {
+        [overlayClassName as string]: !!overlayClassName && isVisible,
+        [styles.hideCaret]: !useCaret
+      })}
+    >
+      <div
+        onClick={handleClick}
+        className={containerClassName}
+        style={containerStyles}
       >
-        <div
-          onClick={this.handleClick}
-          className={containerClassName}
-          style={containerStyles}
-        >
-          {children}
-        </div>
-        {useCaret ? <div className={cn(styles.caret)} /> : null}
-      </Tooltip>
-    )
-  }
+        {children}
+      </div>
+      {useCaret ? <div className={cn(styles.caret)} /> : null}
+    </Tooltip>
+  )
 }
 
 function mapStateToProps(state: AppState) {

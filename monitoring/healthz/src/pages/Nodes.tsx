@@ -16,9 +16,18 @@ const awsBackendIco = new URL('../images/aws.ico', import.meta.url).href
 const bytesToGb = (bytes: number) => Math.floor(bytes / 10 ** 9)
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
+const discprovWhitelist = [
+  ".audius.co",
+  "dn1.monophonic.digital",
+  ".figment.io",
+  ".tikilabs.com",
+  "dn0.mainnet.audiusindex.org",
+  "-1"
+]
+
 export default function Nodes() {
   const [env, nodeType] = useEnvironmentSelection()
-  const { data: sps, error } = useServiceProviders(env, nodeType)
+  let { data: sps, error } = useServiceProviders(env, nodeType)
 
   const isContent = nodeType == 'content'
   const isDiscovery = nodeType == 'discovery'
@@ -26,76 +35,104 @@ export default function Nodes() {
   if (error) return <div className="text-red-600 dark:text-red-400">Error</div>
   if (!sps) return <div className="text-gray-600 dark:text-gray-300">Loading...</div>
 
-  return (
-    <div className="space-y-4 p-4 mt-8 rounded-lg w-full shadow-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white">
-      <div className="overflow-x-auto overflow-y-clip">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">
-                Host
-              </th>
-              {isDiscovery && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Node Health</th>}
-              {isDiscovery && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Block Diff</th>}
-              <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Version</th>
-              {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Storage</th>}
-              {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Fast Repair (checked, pulled, deleted)</th>}
-              {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Full Repair (checked, pulled, deleted)</th>}
-              {isDiscovery && <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200" >Relay</th>}
-              {isDiscovery && <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200" >Solana Relay</th>}
-              <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">DB Size</th>
-              <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Your IP</th>
-              {isDiscovery && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">ACDC Health</th>}
-              {isDiscovery && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Is Signer</th>}
-              {isDiscovery && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Peers</th>}
-              {isDiscovery && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Producing</th>}
-              {isDiscovery && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">ACDC Block</th>}
-              {isDiscovery && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">ACDC Block Hash</th>}
-              {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Started</th>}
-              {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Uploads</th>}
-              {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Healthy Peers {'<'}2m</th>}
-              {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Discovery Listens Enabled</th>}
-            </tr >
-          </thead >
-          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-            {sps.map((sp) => (
-              <HealthRow key={sp.endpoint} isContent={isContent} sp={sp} isStaging={env === 'staging'} />
-            ))}
-          </tbody>
-        </table >
+  // Filter out un-whitelisted dns
+  if (isDiscovery && sps) {
+    sps = sps.filter(
+      sp => discprovWhitelist.reduce(
+        (isWhitelisted, li) => isWhitelisted || sp.endpoint.endsWith(li),
+        false,
+      )
+    )
+  }
+
+  if (isContent || isDiscovery) {  // legacy healthcheck
+    return (
+      <div className="space-y-4 p-4 mt-8 rounded-lg w-full shadow-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white">
+        <div className="overflow-x-auto overflow-y-clip">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">
+                  Host
+                </th>
+                {isDiscovery && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Node Health</th>}
+                {isDiscovery && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Block Diff</th>}
+                <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Version</th>
+                {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Storage</th>}
+                {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Fast Repair (checked, pulled, deleted)</th>}
+                {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Full Repair (checked, pulled, deleted)</th>}
+                <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">DB Size</th>
+                {isDiscovery && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Core Health</th>}
+                {isDiscovery && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Core Block</th>}
+                {isDiscovery && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Indexed Core Block</th>}
+                {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Started</th>}
+                {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Uploads</th>}
+                {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Healthy Peers {'<'}2m</th>}
+                {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Discovery Listens Enabled</th>}
+              </tr >
+            </thead >
+            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+              {sps.map((sp) => (
+                <HealthRow key={sp.endpoint} isContent={isContent} sp={sp} isStaging={env === 'staging'} />
+              ))}
+            </tbody>
+          </table >
+        </div >
       </div >
-    </div >
-  )
+    )
+  } else {  // Core healthcheck
+    return (
+      <div className="space-y-4 p-4 mt-8 rounded-lg w-full shadow-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white">
+        <div className="overflow-x-auto overflow-y-clip">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Host</th>
+                <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Git</th>
+                <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Node Health</th>
+                <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Chain ID</th>
+                <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Blocks</th>
+                <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Transactions</th>
+                <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Eth Address</th>
+                <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Comet Address</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+              {sps.map((sp) => (
+                <CoreHealthRow key={sp.endpoint} sp={sp} isStaging={env === 'staging'} />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    )
+  }
 }
 
 function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, isStaging: boolean }) {
   const path = isContent ? '/health_check' : '/health_check?enforce_block_diff=true&healthy_block_diff=250&plays_count_max_drift=720'
   const { data, error: dataError } = useSWR(sp.endpoint + path, fetcher)
-  const { data: ipCheck, error: ipCheckError } = useSWR(
-    sp.endpoint + '/ip_check',
-    fetcher
-  )
   const { data: metrics } = useSWR(sp.endpoint + '/internal/metrics', fetcher)
-  const { data: relayHealth, error: relayHealthError } = useSWR(sp.endpoint + "/relay/health", fetcher)
-  const { data: solanaRelayHealth, error: solanaRelayHealthError } = useSWR(sp.endpoint + "/solana/health_check", fetcher)
-  const relayStatus = relayHealth?.status
-  const solanaRelayStatus = solanaRelayHealth?.isHealthy ? 'up' : 'down'
+  const { data: consoleHealth } = useSWR(sp.endpoint + "/console/health_check", fetcher)
 
   const health = data?.data
-  const yourIp = ipCheck?.data
+  const coreHealthy = consoleHealth?.healthy
+  const totalCoreBlocks = consoleHealth?.totalBlocks
+  const totalCoreTxs = consoleHealth?.totalBlocks
 
   // API response doesn't include isRegistered
   if (sp.isRegistered !== false) {
     sp.isRegistered = true
   }
+  const coreHealth = health?.core?.health
 
-  if (!health || !yourIp) {
+  if (!health) {
     let healthStatus = 'loading'
     let healthStatusClass = ''
     if (!sp.isRegistered) {
       healthStatus = 'Unregistered'
       healthStatusClass = 'is-unregistered'
-    } else if (dataError || ipCheckError) {
+    } else if (dataError) {
       healthStatus = 'error'
       healthStatusClass = 'is-unhealthy'
     }
@@ -107,24 +144,19 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
           </a>
         </td>
         {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{healthStatus}</td>} {/* Node Health */}
-        {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Block Diff */}
-        <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td> {/* Version */}
-        {isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Storage */}
-        {isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Fast Repair (checked, pulled, deleted) */}
-        {isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Full Repair (checked, pulled, deleted) */}
-        {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{relayHealthError || ipCheckError ? 'error' : 'loading'}</td>} {/* Relay */}
-        {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{solanaRelayHealthError || ipCheckError ? 'error' : 'loading'}</td>} {/* Solana Relay */}
-        <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td> {/* DB Size */}
-        <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td> {/* Your IP */}
-        {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* ACDC Health */}
-        {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Is Signer */}
-        {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Peers */}
-        {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Producing */}
-        {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* ACDC Block */}
-        {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* ACDC Block Hash */}
-        {isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Started */}
-        {isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Uploads */}
-        {isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Healthy Peers */}
+        {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td>} {/* Block Diff */}
+        <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td> {/* Version */}
+        {isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td>} {/* Storage */}
+        {isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td>} {/* Fast Repair (checked, pulled, deleted) */}
+        {isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td>} {/* Full Repair (checked, pulled, deleted) */}
+        <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td> {/* DB Size */}
+        <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td> {/* Your IP */}
+        {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td>} {/* ACDC Health */}
+        {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td>} {/* Producing */}
+        {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td>} {/* ACDC Block */}
+        {isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td>} {/* Started */}
+        {isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td>} {/* Uploads */}
+        {isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td>} {/* Healthy Peers */}
       </tr>
     )
   }
@@ -180,23 +212,6 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
   const autoUpgradeEnabled =
     health.auto_upgrade_enabled || health.autoUpgradeEnabled
   const audiusdManaged = health.audius_d_managed || health.isAudiusdManaged
-  const getPeers = (str: string | undefined) => {
-    if (str === undefined) return 'chain health undefined'
-    const match = str.match(/Peers: (\d+)\./)
-    return match && match[1] ? match[1] : 'no peers found'
-  }
-  const getProducing = (str: string | undefined) => {
-    if (str === undefined) return 'chain health undefined'
-    return (!str.includes('The node stopped producing blocks.')).toString()
-  }
-  // currently discprov does not expose the address of its internal chain instance
-  const isSigner = (nodeAddr?: string, signerAddrs?: string[]) => {
-    if (nodeAddr === undefined) return 'node address not found'
-    if (signerAddrs === undefined) return 'clique signers not found'
-    return signerAddrs.includes(nodeAddr.toLowerCase()).toString()
-  }
-  const chainDescription: string =
-    health.chain_health?.entries['node-health'].description
 
   const StorageProgressBar = ({ progress, max }: { progress: number, max: number }) => {
     const progressPercent = (progress / Math.max(progress, max)) * 100
@@ -219,6 +234,7 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
     healthStatus = 'Unhealthy'
     healthStatusClass = 'is-unhealthy'
   }
+
 
   return (
     <tr className={healthStatusClass}>
@@ -244,7 +260,7 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
           </span>
           <span className="w-px" /><span className="w-px" />
           <a
-            href={`https://github.com/AudiusProject/audius-protocol/commits/${health.git}`}
+            href={`https://github.com/AudiusProject/${isContent ? 'audiusd' : 'audius-protocol'}/commits/${health.git}`}
             target="_blank"
             className="text-gray-900 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400"
           >
@@ -320,18 +336,22 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
           </a>
         </td>
       )}
-      {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{`${relayStatus || "down"}`}</td>}
-      {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{`${solanaRelayStatus}`}</td>}
       <td className="whitespace-nowrap px-3 py-5 text-sm">{isDbLocalhost && <span>{'\u2713'} </span>}{`${dbSize} GB`}</td>
-      <td className="whitespace-nowrap px-3 py-5 text-sm">{`${yourIp}`}</td>
       {!isContent && (<td className="whitespace-nowrap px-3 py-5 text-sm">{health.chain_health?.status}</td>)}
-      {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{isSigner(data?.signer, health.chain_health?.signers)}</td>}
-      {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{getPeers(chainDescription)}</td>}
-      {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{getProducing(chainDescription)}</td>}
-      {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{health.chain_health?.block_number}</td>}
-      {!isContent && (<td className="whitespace-nowrap px-3 py-5 text-sm">
-        <pre>{health.chain_health?.hash}</pre>
-      </td>)}
+      {!isContent &&
+        <td className="whitespace-nowrap px-3 py-5 text-sm">
+          <a href={sp.endpoint + "/core/grpc/block/" + totalCoreBlocks} target="_blank" className="text-sm text-gray-900 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400">
+            {totalCoreBlocks}
+          </a>
+        </td>
+      }
+      {!isContent &&
+        <td className="whitespace-nowrap px-3 py-5 text-sm">
+          <a href={sp.endpoint + "/core/grpc/block/" + coreHealth?.latest_indexed_block} target="_blank" className="text-sm text-gray-900 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400">
+            {coreHealth?.latest_indexed_block}
+          </a>
+        </td>
+      }
       {isContent && (<td className="whitespace-nowrap px-3 py-5 text-sm">
         <RelTime date={health?.startedAt} />
       </td>)}
@@ -348,6 +368,53 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
         </td>
       )}
     </tr>
+  )
+}
+
+function CoreHealthRow({ sp, isStaging }: { sp: SP, isStaging: boolean }) {
+  const path = '/console/health_check'
+  const { data, error: dataError } = useSWR(sp.endpoint + path, fetcher)
+
+  let healthStatus = 'loading'
+  let healthStatusClass = ''
+
+  if (dataError) {
+    healthStatus = 'error'
+    healthStatusClass = 'is-unhealthy'
+  } else if (!data) {
+    healthStatus = 'loading'
+    healthStatusClass = ''
+  } else {
+    healthStatus = data.healthy ? 'Healthy' : 'Unhealthy'
+    healthStatusClass = data.healthy ? '' : 'is-unhealthy'
+  }
+
+  if (!data) {
+    return (
+      <tr className={healthStatusClass}><td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">
+        <a href={sp.endpoint + path} target="_blank">
+          {sp.endpoint.replace('https://', '')}
+        </a>
+      </td><td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td><td className="whitespace-nowrap px-3 py-5 text-sm">{healthStatus}</td><td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td><td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td><td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td><td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td><td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td></tr>
+    )
+  }
+
+  return (
+    <tr className={healthStatusClass}><td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">
+      <a href={sp.endpoint + path} target="_blank" className="text-gray-900 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400">
+        {sp.endpoint.replace('https://', '')}
+      </a>
+    </td><td className="whitespace-nowrap px-3 py-5 text-sm">
+        {data.git && (
+          <a
+            href={`https://github.com/AudiusProject/audiusd/commits/${data.git}`}
+            target="_blank"
+            className="text-gray-900 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400"
+          >
+            {data.git.substring(0, 7)}
+          </a>
+        )}
+      </td><td className="whitespace-nowrap px-3 py-5 text-sm">{`${healthStatus}${healthStatus === 'Unhealthy' ? ': ' + data.errors : ''}`}</td><td className="whitespace-nowrap px-3 py-5 text-sm">{data.chainId}</td><td className="whitespace-nowrap px-3 py-5 text-sm">{data.totalBlocks}</td><td className="whitespace-nowrap px-3 py-5 text-sm">{data.totalTransactions}</td><td className="whitespace-nowrap px-3 py-5 text-sm">{data.ethAddress}</td><td className="whitespace-nowrap px-3 py-5 text-sm">{data.cometAddress}</td></tr>
   )
 }
 

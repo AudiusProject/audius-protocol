@@ -9,8 +9,7 @@ import {
   StringAudio,
   WalletAddress
 } from '~/models/Wallet'
-import { MintName } from '~/services/index'
-import { Nullable, Prettify } from '~/utils/typeUtils'
+import { Nullable } from '~/utils/typeUtils'
 
 import { Chain } from './Chain'
 import { PlaylistLibraryKind } from './PlaylistLibrary'
@@ -29,6 +28,7 @@ export type AnalyticsEvent = {
 }
 
 export enum Name {
+  APP_ERROR = 'App Error', // Generic app error
   SESSION_START = 'Session Start',
   // Account creation
   // When the user opens the create account page
@@ -81,6 +81,10 @@ export enum Name {
   CREATE_ACCOUNT_COMPLETE_FOLLOW = 'Create Account: Complete Follow',
   // When the user continues past the loading page
   CREATE_ACCOUNT_COMPLETE_CREATING = 'Create Account: Complete Creating',
+  // When the user creates a guest account
+  CREATE_ACCOUNT_COMPLETE_GUEST_CREATING = 'Create Account: Complete Guest Creating',
+  // When the user completes a guest profile for a full user
+  CREATE_ACCOUNT_COMPLETE_GUEST_PROFILE = 'Create Account: Complete Guest Profile',
   // When the user continues past the entire signup modal
   CREATE_ACCOUNT_FINISH = 'Create Account: Finish',
   // When the user gets rate limited during signup auth
@@ -92,7 +96,7 @@ export enum Name {
   // When the user clicks the "Upload Track" CTA in the welcome modal
   CREATE_ACCOUNT_WELCOME_MODAL_UPLOAD_TRACK = 'Create Account: Welcome Modal Upload Track Clicked',
   // Sign in
-  SIGN_IN_OPEN = 'Sign In: Open',
+  SIGN_IN_START = 'Sign In: Start',
   SIGN_IN_FINISH = 'Sign In: Finish',
   SIGN_IN_WITH_INCOMPLETE_ACCOUNT = 'Sign In: Incomplete Account',
 
@@ -414,21 +418,6 @@ export enum Name {
   BUY_USDC_RECOVERY_FAILURE = 'Buy USDC: Recovery Failure',
   BUY_USDC_ADD_FUNDS_MANUALLY = 'Buy USDC: Add Funds Manually',
 
-  // Buy Crypto
-  BUY_CRYPTO_STARTED = 'Buy Crypto: Started',
-  BUY_CRYPTO_ON_RAMP_OPENED = 'Buy Crypto: On Ramp Opened',
-  BUY_CRYPTO_ON_RAMP_SUCCESS = 'Buy Crypto: On Ramp Success',
-  BUY_CRYPTO_ON_RAMP_FAILURE = 'Buy Crypto: On Ramp Failure',
-  BUY_CRYPTO_ON_RAMP_CANCELED = 'Buy Crypto: On Ramp Canceled',
-  BUY_CRYPTO_ON_RAMP_CONFIRMED = 'Buy Crypto: On Ramp Confirmed',
-  BUY_CRYPTO_SUCCESS = 'Buy Crypto: Success',
-  BUY_CRYPTO_FAILURE = 'Buy Crypto: Failure',
-
-  // Buy Crypto Recovery
-  BUY_CRYPTO_RECOVERY_STARTED = 'Buy Crypto: Recovery Started',
-  BUY_CRYPTO_RECOVERY_SUCCESS = 'Buy Crypto: Recovery Success',
-  BUY_CRYPTO_RECOVERY_FAILURE = 'Buy Crypto: Recovery Failure',
-
   // Withdraw USDC
   WITHDRAW_USDC_MODAL_OPENED = 'Withdraw USDC: Modal Opened',
   WITHDRAW_USDC_ADDRESS_PASTED = 'Withdraw USDC: Address Pasted',
@@ -565,12 +554,27 @@ export enum Name {
   COMMENTS_OPEN_COMMENT_DRAWER = 'Comments: Open Comment Drawer',
   COMMENTS_CLOSE_COMMENT_DRAWER = 'Comments: Close Comment Drawer',
   COMMENTS_OPEN_AUTH_MODAL = 'Comments: Open Auth Modal',
-  COMMENTS_OPEN_INSTALL_APP_MODAL = 'Comments: Open Install App Modal'
+  COMMENTS_OPEN_INSTALL_APP_MODAL = 'Comments: Open Install App Modal',
+
+  // Recent Comments
+  RECENT_COMMENTS_CLICK = 'Recent Comments: Click',
+  COMMENTS_HISTORY_CLICK = 'Comments History: Click',
+  COMMENTS_HISTORY_DRAWER_OPEN = 'Comments History: Drawer Open',
+
+  // Track Replace
+  TRACK_REPLACE_DOWNLOAD = 'Track Replace: Download',
+  TRACK_REPLACE_PREVIEW = 'Track Replace: Preview',
+  TRACK_REPLACE_REPLACE = 'Track Replace: Replace'
 }
 
 type PageView = {
   eventName: Name.PAGE_VIEW
   route: string
+}
+
+type AppError = {
+  eventName: Name.APP_ERROR
+  errorMessage: string
 }
 
 // Create Account
@@ -744,9 +748,8 @@ type CreateAccountOpenFinish = {
 }
 
 // Sign In
-type SignInOpen = {
-  eventName: Name.SIGN_IN_OPEN
-  source: 'sign up page'
+type SignInStart = {
+  eventName: Name.SIGN_IN_START
 }
 type SignInFinish = {
   eventName: Name.SIGN_IN_FINISH
@@ -1441,7 +1444,8 @@ export enum PlaybackSource {
   PASSIVE = 'passive',
   EMBED_PLAYER = 'embed player',
   CHAT_TRACK = 'chat_track',
-  CHAT_PLAYLIST_TRACK = 'chat_playlist_track'
+  CHAT_PLAYLIST_TRACK = 'chat_playlist_track',
+  SEARCH_PAGE = 'search page'
 }
 
 type PlaybackPlay = {
@@ -1468,7 +1472,7 @@ type BufferSpinnerShown = {
 type LinkClicking = {
   eventName: Name.LINK_CLICKING
   url: string
-  source: 'profile page' | 'track page' | 'collection page'
+  source: 'profile page' | 'track page' | 'collection page' | 'left nav'
 }
 type TagClicking = {
   eventName: Name.TAG_CLICKING
@@ -1813,8 +1817,8 @@ export type TipSource =
 type TipAudioRequest = {
   eventName: Name.TIP_AUDIO_REQUEST
   amount: StringAudio
-  senderWallet: SolanaWalletAddress
-  recipientWallet: SolanaWalletAddress
+  senderWallet?: SolanaWalletAddress
+  recipientWallet?: SolanaWalletAddress
   senderHandle: string
   recipientHandle: string
   source: TipSource
@@ -1824,8 +1828,8 @@ type TipAudioRequest = {
 type TipAudioSuccess = {
   eventName: Name.TIP_AUDIO_SUCCESS
   amount: StringAudio
-  senderWallet: SolanaWalletAddress
-  recipientWallet: SolanaWalletAddress
+  senderWallet?: SolanaWalletAddress
+  recipientWallet?: SolanaWalletAddress
   senderHandle: string
   recipientHandle: string
   source: TipSource
@@ -1835,8 +1839,8 @@ type TipAudioSuccess = {
 type TipAudioFailure = {
   eventName: Name.TIP_AUDIO_FAILURE
   amount: StringAudio
-  senderWallet: SolanaWalletAddress
-  recipientWallet: SolanaWalletAddress
+  senderWallet?: SolanaWalletAddress
+  recipientWallet?: SolanaWalletAddress
   senderHandle: string
   recipientHandle: string
   error: string
@@ -1847,8 +1851,8 @@ type TipAudioFailure = {
 type TipAudioTwitterShare = {
   eventName: Name.TIP_AUDIO_TWITTER_SHARE
   amount: StringAudio
-  senderWallet: SolanaWalletAddress
-  recipientWallet: SolanaWalletAddress
+  senderWallet?: SolanaWalletAddress
+  recipientWallet?: SolanaWalletAddress
   senderHandle: string
   recipientHandle: string
   source: TipSource
@@ -2077,35 +2081,6 @@ type BuyUSDCRecoveryFailure = {
 type BuyUSDCAddFundsManually = {
   eventName: Name.BUY_USDC_ADD_FUNDS_MANUALLY
 }
-
-// Buy Crypto
-
-type BuyCryptoEvent = {
-  eventName:
-    | Name.BUY_CRYPTO_STARTED
-    | Name.BUY_CRYPTO_ON_RAMP_OPENED
-    | Name.BUY_CRYPTO_ON_RAMP_SUCCESS
-    | Name.BUY_CRYPTO_ON_RAMP_FAILURE
-    | Name.BUY_CRYPTO_ON_RAMP_CANCELED
-    | Name.BUY_CRYPTO_ON_RAMP_CONFIRMED
-    | Name.BUY_CRYPTO_SUCCESS
-    | Name.BUY_CRYPTO_FAILURE
-
-  provider: string
-  requestedAmount: number
-  mint: MintName
-  error?: string
-}
-
-type BuyCryptoRecoveryEvent = Prettify<
-  {
-    eventName:
-      | Name.BUY_CRYPTO_RECOVERY_STARTED
-      | Name.BUY_CRYPTO_RECOVERY_FAILURE
-      | Name.BUY_CRYPTO_RECOVERY_SUCCESS
-    intendedSOL: number
-  } & Omit<BuyCryptoEvent, 'eventName'>
->
 
 // Withdraw USDC
 
@@ -2727,9 +2702,44 @@ export type CommentsOpenInstallAppModal = {
   trackId: ID
 }
 
+export type CommentsHistoryClick = {
+  eventName: Name.COMMENTS_HISTORY_CLICK
+  commentId: ID
+  userId: ID
+}
+
+export type CommentsHistoryDrawerOpen = {
+  eventName: Name.COMMENTS_HISTORY_DRAWER_OPEN
+  userId: ID
+}
+
+export type RecentCommentsClick = {
+  eventName: Name.RECENT_COMMENTS_CLICK
+  commentId: ID
+  userId: ID
+}
+
+export type TrackReplaceDownload = {
+  eventName: Name.TRACK_REPLACE_DOWNLOAD
+  trackId?: ID
+}
+
+export type TrackReplaceReplace = {
+  eventName: Name.TRACK_REPLACE_REPLACE
+  trackId?: ID
+  source: 'upload' | 'edit'
+}
+
+export type TrackReplacePreview = {
+  eventName: Name.TRACK_REPLACE_PREVIEW
+  trackId?: ID
+  source: 'upload' | 'edit'
+}
+
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
+  | AppError
   | CreateAccountOpen
   | CreateAccountCompleteEmail
   | CreateAccountCompletePassword
@@ -2758,7 +2768,7 @@ export type AllTrackingEvents =
   | CreateAccountPreviewArtist
   | CreateAccountWelcomeModal
   | CreateAccountWelcomeModalUploadTrack
-  | SignInOpen
+  | SignInStart
   | SignInFinish
   | SignInWithIncompleteAccount
   | SettingsChangeTheme
@@ -2966,8 +2976,6 @@ export type AllTrackingEvents =
   | BuyUSDCRecoverySuccess
   | BuyUSDCRecoveryFailure
   | BuyUSDCAddFundsManually
-  | BuyCryptoEvent
-  | BuyCryptoRecoveryEvent
   | WithdrawUSDCModalOpened
   | WithdrawUSDCAddressPasted
   | WithdrawUSDCFormError
@@ -3091,3 +3099,9 @@ export type AllTrackingEvents =
   | CommentsCloseCommentDrawer
   | CommentsOpenAuthModal
   | CommentsOpenInstallAppModal
+  | CommentsHistoryClick
+  | CommentsHistoryDrawerOpen
+  | RecentCommentsClick
+  | TrackReplaceDownload
+  | TrackReplacePreview
+  | TrackReplaceReplace

@@ -2,6 +2,8 @@ import BN from 'bn.js'
 import { UserBasicInfo } from '../processNotifications/mappers/base'
 import { getContentNode, getHostname } from './env'
 
+export const AUDIO_DIVISOR = 100000000
+
 export const formatNumberCommas = (num) => {
   const parts = num.toString().split('.')
   return (

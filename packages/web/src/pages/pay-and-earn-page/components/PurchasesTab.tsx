@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { useGetPurchases, useGetPurchasesCount, Id } from '@audius/common/api'
+import { useGetPurchases, useGetPurchasesCount } from '@audius/common/api'
 import { useAllPaginatedQuery } from '@audius/common/audius-query'
 import {
   Status,
@@ -13,8 +13,7 @@ import {
   useUSDCPurchaseDetailsModal
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { full } from '@audius/sdk'
-import { push as pushRoute } from 'connected-react-router'
+import { Id, full } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
 import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
@@ -22,6 +21,7 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { useMainContentRef } from 'pages/MainContentContext'
 import { audiusSdk } from 'services/audius-sdk'
 import { formatToday } from 'utils/dateUtils'
+import { push } from 'utils/navigation'
 import { useSelector } from 'utils/reducer'
 
 import styles from '../PayAndEarnPage.module.css'
@@ -70,7 +70,7 @@ const DEFAULT_SORT_DIRECTION = full.GetPurchasesSortDirectionEnum.Desc
 const NoPurchases = () => {
   const dispatch = useDispatch()
   const handleClickFindSongs = useCallback(() => {
-    dispatch(pushRoute(FEED_PAGE))
+    dispatch(push(FEED_PAGE))
   }, [dispatch])
 
   return (

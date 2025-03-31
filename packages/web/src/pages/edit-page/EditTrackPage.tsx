@@ -1,4 +1,4 @@
-import { createContext, useState } from 'react'
+import { createContext } from 'react'
 
 import { useGetCurrentUserId, useGetTrackByPermalink } from '@audius/common/api'
 import {
@@ -12,30 +12,32 @@ import {
 import {
   TrackMetadataForUpload,
   cacheTracksActions,
-  cacheTracksSelectors
+  cacheTracksSelectors,
+  uploadActions,
+  useReplaceTrackConfirmationModal,
+  useReplaceTrackProgressModal
 } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router'
 
 import { useSelector } from 'common/hooks/useSelector'
-import { DeleteConfirmationModal } from 'components/delete-confirmation'
 import { EditTrackForm } from 'components/edit-track/EditTrackForm'
 import { TrackEditFormValues } from 'components/edit-track/types'
-import Header from 'components/header/desktop/Header'
+import { Header } from 'components/header/desktop/Header'
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import Page from 'components/page/Page'
 import { useIsUnauthorizedForHandleRedirect } from 'hooks/useManagedAccountNotAllowedRedirect'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
-import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
+import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
+import { push } from 'utils/navigation'
 
-const { deleteTrack, editTrack } = cacheTracksActions
+const { editTrack } = cacheTracksActions
 const { getStems } = cacheTracksSelectors
+const { updateTrackAudio } = uploadActions
 
 const messages = {
-  title: 'Edit Your Track',
-  deleteTrack: 'DELETE TRACK'
+  title: 'Edit Your Track'
 }
 
 type EditPageProps = {
@@ -50,6 +52,9 @@ export const EditTrackPage = (props: EditPageProps) => {
   const dispatch = useDispatch()
   useRequiresAccount()
   useIsUnauthorizedForHandleRedirect(handle)
+  const { onOpen: openReplaceTrackConfirmation } =
+    useReplaceTrackConfirmationModal()
+  const { onOpen: openReplaceTrackProgress } = useReplaceTrackProgressModal()
 
   const { data: currentUserId } = useGetCurrentUserId({})
   const permalink = `/${handle}/${slug}`
@@ -57,27 +62,49 @@ export const EditTrackPage = (props: EditPageProps) => {
     permalink,
     currentUserId
   })
-  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
 
   const onSubmit = (formValues: TrackEditFormValues) => {
     const metadata = { ...formValues.trackMetadatas[0] }
-    if (!metadata.artwork?.file) {
+    const trackId = metadata.track_id
+    if (!trackId) {
+      console.error('Unexpected missing trackId')
+      return
+    }
+
+    const replaceFile =
+      'file' in formValues.tracks[0] ? formValues.tracks[0].file : null
+
+    if (
+      metadata.artwork &&
+      'file' in metadata.artwork &&
+      !metadata.artwork?.file
+    ) {
       metadata.artwork = null
     }
-    dispatch(editTrack(metadata.track_id, metadata))
-    dispatch(pushRoute(metadata.permalink))
+
+    if (replaceFile) {
+      openReplaceTrackConfirmation({
+        confirmCallback: () => {
+          dispatch(
+            updateTrackAudio({
+              trackId,
+              file: replaceFile,
+              metadata
+            })
+          )
+          openReplaceTrackProgress()
+        }
+      })
+    } else {
+      dispatch(editTrack(trackId, metadata))
+      dispatch(push(metadata.permalink))
+    }
   }
 
-  const onDeleteTrack = () => {
-    if (!track) return
-    dispatch(deleteTrack(track.track_id))
-    dispatch(pushRoute(`/${track.user.handle}`))
-  }
-
-  const coverArtUrl = useTrackCoverArt2(
-    track?.track_id,
-    SquareSizes.SIZE_1000_BY_1000
-  )
+  const coverArtUrl = useTrackCoverArt({
+    trackId: track?.track_id,
+    size: SquareSizes.SIZE_1000_BY_1000
+  })
 
   const stemTracks = useSelector((state) => getStems(state, track?.track_id))
   const stemsAsUploads: StemUpload[] = stemTracks
@@ -123,21 +150,9 @@ export const EditTrackPage = (props: EditPageProps) => {
         <LoadingSpinnerFullPage />
       ) : (
         <EditFormScrollContext.Provider value={scrollToTop}>
-          <EditTrackForm
-            initialValues={initialValues}
-            onSubmit={onSubmit}
-            onDeleteTrack={() => setShowDeleteConfirmation(true)}
-            disableNavigationPrompt={showDeleteConfirmation}
-          />
+          <EditTrackForm initialValues={initialValues} onSubmit={onSubmit} />
         </EditFormScrollContext.Provider>
       )}
-      <DeleteConfirmationModal
-        title={messages.deleteTrack}
-        entity='Track'
-        visible={showDeleteConfirmation}
-        onDelete={onDeleteTrack}
-        onCancel={() => setShowDeleteConfirmation(false)}
-      />
     </Page>
   )
 }

@@ -16,11 +16,9 @@ import {
   NotificationUsersPageState,
   RepostsPageState
 } from '@audius/common/store'
-import { RouterState } from 'connected-react-router'
 
 import SignOnPageState from 'common/store/pages/signon/types'
 import { SearchAiBarState } from 'common/store/search-ai-bar/types'
-import { SearchBarState } from 'common/store/search-bar/types'
 import { EmbedModalState } from 'components/embed-modal/store/types'
 import { FirstUploadModalState } from 'components/first-upload-modal/store/slice'
 import { PasswordResetState } from 'components/password-reset/store/types'
@@ -30,12 +28,12 @@ import DeletedPageReducer from 'pages/deleted-page/store/slice'
 import VisualizerReducer from 'pages/visualizer/store/slice'
 import AppCTAModalReducer from 'store/application/ui/app-cta-modal/slice'
 import { ErrorState } from 'store/errors/reducers'
+import type { RouterState } from 'utils/navigation'
 
 import { BackendState } from '../common/store/backend/types'
 
 import { CookieBannerState } from './application/ui/cookieBanner/types'
 import { EditFolderModalState } from './application/ui/editFolderModal/slice'
-import { NotificationsUIState } from './application/ui/notifications/notificationsUISlice'
 import { ScrollLockState } from './application/ui/scrollLock/types'
 import { UserListModalState } from './application/ui/userListModal/types'
 import { DragnDropState } from './dragndrop/slice'
@@ -45,7 +43,6 @@ export type AppState = CommonState & {
   // These belong in CommonState but are here until we move them to the @audius/common package:
   backend: BackendState
 
-  searchBar: SearchBarState
   searchAiBar: SearchAiBarState
   signOn: SignOnPageState
 
@@ -71,7 +68,6 @@ export type AppState = CommonState & {
       stemsUpload: ReturnType<typeof StemsUploadReducer>
       userListModal: UserListModalState
       visualizer: ReturnType<typeof VisualizerReducer>
-      notifications: NotificationsUIState
     }
     pages: {
       reposts: RepostsPageState
@@ -83,6 +79,9 @@ export type AppState = CommonState & {
       smartCollection: SmartCollectionState
       remixes: ReturnType<typeof RemixesPageReducer>
       deleted: ReturnType<typeof DeletedPageReducer>
+    }
+    account: {
+      guestEmail: string | null
     }
   }
 

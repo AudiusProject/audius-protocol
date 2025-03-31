@@ -7,14 +7,14 @@ import {
   UserMetadata
 } from '@audius/common/models'
 import { accountSelectors, CommonState } from '@audius/common/store'
-import { encodeHashId } from '@audius/common/utils'
+import { Id } from '@audius/sdk'
 import * as queryString from 'query-string'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory, useLocation } from 'react-router-dom'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk } from 'services/audius-sdk'
+import { identityService } from 'services/audius-sdk/identity'
 import * as errorActions from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
 
@@ -34,9 +34,10 @@ import {
   WriteOnceParams,
   WriteOnceTx
 } from './utils'
-const { getAccountUser, getAccountStatus } = accountSelectors
 
-export const useParsedQueryParams = () => {
+const { getAccountStatus, getUserId } = accountSelectors
+
+const useParsedQueryParams = () => {
   const { search } = useLocation()
 
   const {
@@ -194,8 +195,8 @@ export const useOAuthSetup = ({
     const status = getAccountStatus(state)
     return statusIsNotFinalized(status)
   })
-  const account = useSelector(getAccountUser)
-  const isLoggedIn = Boolean(account)
+  const accountUserId = useSelector(getUserId)
+  const isLoggedIn = Boolean(accountUserId)
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [queryParamsError, setQueryParamsError] = useState<string | null>(
     initError
@@ -267,7 +268,7 @@ export const useOAuthSetup = ({
     const getAndSetEmail = async () => {
       let email: string
       try {
-        email = await audiusBackendInstance.getUserEmail()
+        email = await identityService.getUserEmail()
       } catch {
         setUserEmail(null)
         dispatch(
@@ -400,7 +401,7 @@ export const useOAuthSetup = ({
       let appAlreadyAuthorized
       try {
         appAlreadyAuthorized = await getIsAppAuthorized({
-          userId: encodeHashId(account!.user_id), // We know account exists because isLoggedIn is true
+          userId: Id.parse(accountUserId!), // We know account exists because isLoggedIn is true
           apiKey: apiKey as string
         })
       } catch (e) {
@@ -420,7 +421,7 @@ export const useOAuthSetup = ({
     }
     getInitialAuthorizationStatus()
   }, [
-    account,
+    accountUserId,
     apiKey,
     formResponseAndRedirect,
     history,
@@ -433,12 +434,12 @@ export const useOAuthSetup = ({
   useEffect(() => {
     const verifyDisconnectWalletUser = async () => {
       if (
-        account?.user_id != null &&
+        accountUserId != null &&
         txParams?.wallet != null &&
         tx === 'disconnect_dashboard_wallet'
       ) {
         const isCorrectUser = await getIsUserConnectedToDashboardWallet({
-          userId: account?.user_id,
+          userId: accountUserId,
           wallet: txParams.wallet
         })
         if (!isCorrectUser) {
@@ -450,7 +451,7 @@ export const useOAuthSetup = ({
       }
     }
     verifyDisconnectWalletUser()
-  }, [account?.user_id, onError, tx, txParams?.wallet])
+  }, [accountUserId, onError, tx, txParams?.wallet])
 
   const authorize = async ({ account }: { account: UserMetadata }) => {
     let shouldCreateWriteGrant = false
@@ -458,12 +459,12 @@ export const useOAuthSetup = ({
     if (scope === 'write') {
       try {
         shouldCreateWriteGrant = !(await getIsAppAuthorized({
-          userId: encodeHashId(account.user_id),
+          userId: Id.parse(account.user_id),
           apiKey: apiKey as string
         }))
         if (shouldCreateWriteGrant) {
           await authWrite({
-            userId: encodeHashId(account.user_id),
+            userId: Id.parse(account.user_id),
             appApiKey: apiKey as string
           })
         }

@@ -1,6 +1,6 @@
 import { Meta, StoryObj } from '@storybook/react'
 
-import { IconArrowRight, IconPlus } from 'icons'
+import { IconArrowRight, IconPlus } from '~harmony/icons'
 
 import { Pill } from './Pill'
 

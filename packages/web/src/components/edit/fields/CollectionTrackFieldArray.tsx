@@ -1,16 +1,27 @@
+import {
+  TrackForEdit,
+  TrackForUpload,
+  isTrackForUpload
+} from '@audius/common/store'
 import { FieldArray, useField } from 'formik'
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
 
-import { CollectionTrackForUpload } from 'pages/upload-page/types'
-
 import { CollectionTrackField } from './CollectionTrackField'
-
 const messages = {
   trackList: 'Track List'
 }
 
+const makeTrackKey = (track: TrackForUpload | TrackForEdit, index: number) => {
+  if (isTrackForUpload(track)) {
+    return track.file.name ?? `${index}`
+  }
+  const suffix = 'metadata_time' in track ? `-${track.metadata_time}` : ''
+  return `${track.metadata.track_id}${suffix}`
+}
+
 export const CollectionTrackFieldArray = () => {
-  const [{ value: tracks }] = useField<CollectionTrackForUpload[]>('tracks')
+  const [{ value: tracks }] =
+    useField<(TrackForUpload | TrackForEdit)[]>('tracks')
 
   return (
     <FieldArray name='tracks'>
@@ -32,11 +43,10 @@ export const CollectionTrackFieldArray = () => {
                 aria-label={messages.trackList}
               >
                 {tracks.map((track, index) => {
-                  const id =
-                    track.metadata.track_id ?? `${track.file?.name}--${index}`
+                  const id = makeTrackKey(track, index)
 
                   return (
-                    <Draggable key={id} draggableId={String(id)} index={index}>
+                    <Draggable key={id} draggableId={id} index={index}>
                       {(provided) => (
                         <div
                           ref={provided.innerRef}

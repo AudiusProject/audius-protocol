@@ -2,28 +2,29 @@ import { Kind } from '@audius/common/models'
 import {
   cacheActions,
   collectionPageLineupActions as tracksActions,
-  collectionPageSelectors,
   collectionPageActions as collectionActions,
-  reachabilitySelectors
+  reachabilitySelectors,
+  accountSelectors
 } from '@audius/common/store'
 import { makeUid, route } from '@audius/common/utils'
-import { push as pushRoute } from 'connected-react-router'
 import { call, put, select, takeLatest, takeEvery } from 'redux-saga/effects'
 
 import {
   retrieveCollections,
   retrieveCollectionByPermalink
 } from 'common/store/cache/collections/utils'
+import { push as pushRoute } from 'utils/navigation'
 
 import tracksSagas from './lineups/sagas'
 
 const { NOT_FOUND_PAGE } = route
-const { getCollectionUid, getUserUid } = collectionPageSelectors
 const { fetchCollectionSucceeded, fetchCollectionFailed } = collectionActions
 const { getIsReachable } = reachabilitySelectors
+const { getUserId } = accountSelectors
 
 function* watchFetchCollection() {
   yield takeLatest(collectionActions.FETCH_COLLECTION, function* (action) {
+    const userId = yield select(getUserId)
     const { id: collectionId, permalink, fetchLineup, forceFetch } = action
     let retrievedCollections
     if (permalink) {
@@ -32,13 +33,15 @@ function* watchFetchCollection() {
         permalink,
         {
           deleteExistingEntry: true,
-          forceRetrieveFromSource: forceFetch
+          forceRetrieveFromSource: forceFetch,
+          userId
         }
       )
     } else {
       retrievedCollections = yield call(retrieveCollections, [collectionId], {
         deleteExistingEntry: true,
-        forceRetrieveFromSource: forceFetch
+        forceRetrieveFromSource: forceFetch,
+        userId
       })
     }
 
@@ -81,14 +84,7 @@ function* watchFetchCollection() {
 
 function* watchResetCollection() {
   yield takeEvery(collectionActions.RESET_COLLECTION, function* () {
-    const collectionUid = yield select(getCollectionUid)
-    const userUid = yield select(getUserUid)
-
     yield put(tracksActions.reset())
-    yield put(
-      cacheActions.unsubscribe(Kind.COLLECTIONS, [{ uid: collectionUid }])
-    )
-    yield put(cacheActions.unsubscribe(Kind.USERS, [{ uid: userUid }]))
   })
 }
 

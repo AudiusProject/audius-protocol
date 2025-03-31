@@ -1,6 +1,6 @@
 import { Button, IconCart, Flex, Text } from '@audius/harmony'
 
-export type NoTransactionsContentProps = {
+type NoTransactionsContentProps = {
   headerText: string
   bodyText: string
   ctaText: string

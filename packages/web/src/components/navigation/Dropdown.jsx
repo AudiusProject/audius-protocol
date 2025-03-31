@@ -1,4 +1,4 @@
-import { Component } from 'react'
+import { useState } from 'react'
 
 import { IconCaretDown } from '@audius/harmony'
 import AntDropdown from 'antd/lib/dropdown'
@@ -8,91 +8,89 @@ import PropTypes from 'prop-types'
 
 import styles from './Dropdown.module.css'
 
-class Dropdown extends Component {
-  state = {
-    index: this.props.defaultIndex || 0,
-    focused: false
+const Dropdown = ({
+  size = 'small',
+  variant = 'shadow',
+  label = '',
+  disabled = false,
+  error = false,
+  menu,
+  onSelect,
+  onSelectIndex,
+  defaultIndex = 0,
+  textClassName,
+  focused: focusedProp
+}) => {
+  const [internalIndex, setInternalIndex] = useState(defaultIndex)
+  const [internalFocused, setInternalFocused] = useState(false)
+
+  const index = defaultIndex !== undefined ? defaultIndex : internalIndex
+  const focused = focusedProp !== undefined ? focusedProp : internalFocused
+
+  const handleVisibleChange = (visible) => {
+    setInternalFocused(visible)
   }
 
-  onVisibleChange = (visible) => {
-    this.setState({
-      focused: visible
-    })
-  }
-
-  onClick = (index, callback) => {
-    this.setState({ index, focused: false })
+  const handleClick = (clickedIndex, callback) => {
+    setInternalIndex(clickedIndex)
+    setInternalFocused(false)
     if (callback) callback()
-    this.props.onSelect(this.props.menu.items[index].text)
-    this.props.onSelectIndex(index)
+    onSelect?.(menu?.items[clickedIndex]?.text)
+    onSelectIndex?.(clickedIndex)
   }
 
-  render() {
-    const {
-      size,
-      variant,
-      label,
-      error,
-      disabled,
-      menu,
-      textClassName,
-      focused = this.state.focused,
-      index = this.state.index
-    } = this.props
+  const style = {
+    [styles.large]: size === 'large',
+    [styles.medium]: size === 'medium',
+    [styles.small]: size === 'small',
+    [styles.focused]: focused,
+    [styles.disabled]: disabled,
+    [styles.error]: error,
+    [styles.shadow]: variant === 'shadow',
+    [styles.border]: variant === 'border'
+  }
 
-    const style = {
-      [styles.large]: size === 'large',
-      [styles.medium]: size === 'medium',
-      [styles.small]: size === 'small',
-      [styles.focused]: focused,
-      [styles.disabled]: disabled,
-      [styles.error]: error,
-      [styles.shadow]: variant === 'shadow',
-      [styles.border]: variant === 'border'
-    }
-
-    const overlay = (
-      <AntMenu>
-        {menu.items.map((item, i) => (
-          <AntMenu.Item key={`${item.text}_${i}`}>
-            <div
-              onClick={() => {
-                this.onClick(i, item.onClick)
-              }}
-              className={cn(textClassName)}
-            >
-              {item.text}
-            </div>
-          </AntMenu.Item>
-        ))}
-      </AntMenu>
-    )
-
-    const selection = menu.items.length > 0 ? menu.items[index].text : null
-
-    return (
-      <div className={styles.wrapper}>
-        {label ? <div className={styles.label}>{label}</div> : null}
-        <div className={cn(styles.dropdown, style)}>
-          <AntDropdown
-            overlay={overlay}
-            trigger={['click']}
-            disabled={disabled}
-            onVisibleChange={this.onVisibleChange}
-            // Mount the dropdown inside the dropdown div.
-            getPopupContainer={(trigger) => trigger.parentNode}
+  const overlay = (
+    <AntMenu>
+      {menu.items.map((item, i) => (
+        <AntMenu.Item key={`${item.text}_${i}`}>
+          <div
+            onClick={() => {
+              handleClick(i, item.onClick)
+            }}
+            className={cn(textClassName)}
           >
-            <div className={styles.selector}>
-              <div className={cn(styles.selectorText, textClassName)}>
-                {selection}
-              </div>
-              <IconCaretDown className={styles.iconCaret} />
+            {item.text}
+          </div>
+        </AntMenu.Item>
+      ))}
+    </AntMenu>
+  )
+
+  const selection = menu.items.length > 0 ? menu.items[index].text : null
+
+  return (
+    <div className={styles.wrapper}>
+      {label ? <div className={styles.label}>{label}</div> : null}
+      <div className={cn(styles.dropdown, style)}>
+        <AntDropdown
+          overlay={overlay}
+          trigger={['click']}
+          disabled={disabled}
+          onVisibleChange={handleVisibleChange}
+          // Mount the dropdown inside the dropdown div.
+          getPopupContainer={(trigger) => trigger.parentNode}
+        >
+          <div className={styles.selector}>
+            <div className={cn(styles.selectorText, textClassName)}>
+              {selection}
             </div>
-          </AntDropdown>
-        </div>
+            <IconCaretDown className={styles.iconCaret} />
+          </div>
+        </AntDropdown>
       </div>
-    )
-  }
+    </div>
+  )
 }
 
 Dropdown.propTypes = {
@@ -104,20 +102,8 @@ Dropdown.propTypes = {
   menu: PropTypes.object,
   onSelect: PropTypes.func,
   onSelectIndex: PropTypes.func,
-  defaultIndex: PropTypes.number
-}
-
-Dropdown.defaultProps = {
-  size: 'small',
-  variant: 'shadow',
-  label: '',
-  disabled: false,
-  error: false,
-  menu: {
-    items: []
-  },
-  onSelect: () => {},
-  onSelectIndex: () => {}
+  defaultIndex: PropTypes.number,
+  focused: PropTypes.bool
 }
 
 export default Dropdown

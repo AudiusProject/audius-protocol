@@ -95,9 +95,12 @@ export class ClaimableReward extends BaseNotification<ClaimableRewardRow> {
       await this.incrementBadgeCount(this.userId)
     }
 
+    const userEmail = userNotificationSettings.getUserEmail(user.user_id)
+
     await sendTransactionalEmail({
-      email: userNotificationSettings.getUserEmail(user.user_id),
+      email: userEmail,
       html: email({
+        email: userEmail,
         name: user.name,
         handle: user.handle,
         profilePicture: formatImageUrl(user.profile_picture_sizes, 150),

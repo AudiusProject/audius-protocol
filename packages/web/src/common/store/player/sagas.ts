@@ -1,8 +1,6 @@
-import { Kind } from '@audius/common/models'
-import { FeatureFlags, QueryParams } from '@audius/common/services'
+import { Kind, type Track, Feature } from '@audius/common/models'
 import {
   accountSelectors,
-  cacheTracksActions,
   cacheTracksSelectors,
   cacheActions,
   queueActions,
@@ -19,13 +17,12 @@ import {
 } from '@audius/common/store'
 import {
   Genre,
-  encodeHashId,
   actionChannelDispatcher,
-  getQueryParams,
   getTrackPreviewDuration,
   Nullable
 } from '@audius/common/utils'
-import { eventChannel } from 'redux-saga'
+import { Id, OptionalId } from '@audius/sdk'
+import { EventChannel, eventChannel } from 'redux-saga'
 import {
   select,
   take,
@@ -43,8 +40,7 @@ import errorSagas from './errorSagas'
 const { getUserId } = accountSelectors
 const { setTrackPosition } = playbackPositionActions
 const { getTrackPosition } = playbackPositionSelectors
-const { getTrackStreamUrl, getTrack } = cacheTracksSelectors
-const { setStreamUrls } = cacheTracksActions
+const { getTrack } = cacheTracksSelectors
 const {
   play,
   playSucceeded,
@@ -60,8 +56,14 @@ const {
   error: errorAction
 } = playerActions
 
-const { getTrackId, getUid, getCounter, getPlaying, getPlaybackRate } =
-  playerSelectors
+const {
+  getTrackId,
+  getUid,
+  getCounter,
+  getPlaying,
+  getPlaybackRate,
+  getPlaybackRetryCount
+} = playerSelectors
 const { getPlayerBehavior } = queueSelectors
 
 const { recordListen } = tracksSocialActions
@@ -72,19 +74,33 @@ const PLAYER_SUBSCRIBER_NAME = 'PLAYER'
 const RECORD_LISTEN_SECONDS = 1
 const RECORD_LISTEN_INTERVAL = 1000
 
+export const getMirrorStreamUrl = (
+  track: Track,
+  shouldPreview: boolean,
+  retries: number
+) => {
+  const streamObj = shouldPreview ? track.preview : track.stream
+  if (streamObj?.url) {
+    if (streamObj.mirrors.length < retries) {
+      return null
+    }
+    if (retries > 0) {
+      const streamUrl = new URL(streamObj.url)
+      streamUrl.hostname = new URL(streamObj.mirrors[retries - 1]).hostname
+      return streamUrl.toString()
+    }
+  }
+  return streamObj?.url ?? null
+}
+
 export function* watchPlay() {
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   yield* takeLatest(play.type, function* (action: ReturnType<typeof play>) {
-    const { uid, trackId, playerBehavior, startTime, onEnd } =
+    const { uid, trackId, playerBehavior, startTime, onEnd, retries } =
       action.payload ?? {}
 
     const audioPlayer = yield* getContext('audioPlayer')
     const isNativeMobile = yield getContext('isNativeMobile')
-    const isNewPodcastControlsEnabled = yield* call(
-      getFeatureEnabled,
-      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-    )
+    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
     if (trackId) {
       // Load and set end action.
@@ -102,29 +118,15 @@ export function* watchPlay() {
       }
 
       yield* call(waitForWrite)
-      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-      const apiClient = yield* getContext('apiClient')
       const currentUserId = yield* select(getUserId)
-      const isOwner = currentUserId === track.owner_id
+      const audiusSdk = yield* getContext('audiusSdk')
+      const sdk = yield* call(audiusSdk)
 
-      const encodedTrackId = encodeHashId(trackId)
-
-      let queryParams: QueryParams = {}
       const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
       const nftAccessSignature =
         nftAccessSignatureMap[track.track_id]?.mp3 ?? null
-      queryParams = (yield* call(getQueryParams, {
-        audiusBackendInstance,
-        nftAccessSignature,
-        userId: currentUserId
-      })) as unknown as QueryParams
 
       let trackDuration = track.duration
-
-      const usePrefetchStreamUrls = yield* call(
-        getFeatureEnabled,
-        FeatureFlags.PREFETCH_STREAM_URLS
-      )
 
       const { shouldSkip, shouldPreview } = calculatePlayerBehavior(
         track,
@@ -137,57 +139,78 @@ export function* watchPlay() {
       }
 
       if (shouldPreview) {
-        // Add preview query string and calculate preview duration for use later
-        queryParams.preview = true
         trackDuration = getTrackPreviewDuration(track)
       }
 
-      const streamUrl = yield* select(getTrackStreamUrl, track.track_id)
-
-      const mp3Url = apiClient.makeUrl(
-        `/tracks/${encodedTrackId}/stream`,
-        queryParams
+      const contentNodeStreamUrl = getMirrorStreamUrl(
+        track,
+        shouldPreview,
+        retries ?? 0
       )
+
+      const createEndChannel = async (url: string) => {
+        const endChannel = eventChannel((emitter) => {
+          audioPlayer.load(
+            trackDuration ||
+              track.track_segments.reduce(
+                (duration, segment) => duration + parseFloat(segment.duration),
+                0
+              ),
+            () => {
+              if (onEnd) {
+                emitter(onEnd({}))
+              }
+              if (isLongFormContent) {
+                emitter(
+                  setTrackPosition({
+                    userId: currentUserId,
+                    trackId,
+                    positionInfo: {
+                      status: 'COMPLETED',
+                      playbackPosition: 0
+                    }
+                  })
+                )
+              }
+            },
+            url
+          )
+          return () => {}
+        })
+        return endChannel
+      }
+
+      let endChannel: EventChannel<any>
+      // If we have a stream URL from Discovery already for content node, use that.
+      // If not, we might need the NFT gated signature, so fallback to the DN stream endpoint.
+      if (contentNodeStreamUrl) {
+        endChannel = yield* call(createEndChannel, contentNodeStreamUrl)
+      } else {
+        const { data, signature } = yield* call(
+          audiusBackendInstance.signGatedContentRequest,
+          { sdk }
+        )
+        const discoveryNodeStreamUrl = yield* call(
+          [sdk.tracks, sdk.tracks.getTrackStreamUrl],
+          {
+            trackId: Id.parse(trackId),
+            userId: OptionalId.parse(currentUserId),
+            nftAccessSignature: nftAccessSignature
+              ? JSON.stringify(nftAccessSignature)
+              : undefined,
+            userSignature: signature,
+            userData: data,
+            preview: shouldPreview ? true : undefined
+          }
+        )
+        endChannel = yield* call(createEndChannel, discoveryNodeStreamUrl)
+      }
 
       const isLongFormContent =
         track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
 
-      // Always prefer stream url unless an owner is previewing their own track,
-      // since we haven't prefetched the preview.
-      const url =
-        usePrefetchStreamUrls && streamUrl && !(shouldPreview && isOwner)
-          ? streamUrl
-          : mp3Url
-
-      const endChannel = eventChannel((emitter) => {
-        audioPlayer.load(
-          trackDuration ||
-            track.track_segments.reduce(
-              (duration, segment) => duration + parseFloat(segment.duration),
-              0
-            ),
-          () => {
-            if (onEnd) {
-              emitter(onEnd({}))
-            }
-            if (isNewPodcastControlsEnabled && isLongFormContent) {
-              emitter(
-                setTrackPosition({
-                  userId: currentUserId,
-                  trackId,
-                  positionInfo: {
-                    status: 'COMPLETED',
-                    playbackPosition: 0
-                  }
-                })
-              )
-            }
-          },
-          url
-        )
-        return () => {}
-      })
       yield* spawn(actionChannelDispatcher, endChannel)
+
       yield* put(
         cacheActions.subscribe(Kind.TRACKS, [
           { uid: PLAYER_SUBSCRIBER_NAME, id: trackId }
@@ -199,32 +222,28 @@ export function* watchPlay() {
         const playbackRate = yield* select(getPlaybackRate)
         audioPlayer.setPlaybackRate(playbackRate)
 
-        if (isNewPodcastControlsEnabled) {
-          // Set playback position for track to in progress if not already tracked
-          const currentUserId = yield* select(getUserId)
-          const trackPlaybackInfo = yield* select(getTrackPosition, {
-            trackId,
-            userId: currentUserId
-          })
-          if (trackPlaybackInfo?.status !== 'IN_PROGRESS') {
-            yield* put(
-              setTrackPosition({
-                userId: currentUserId,
-                trackId,
-                positionInfo: {
-                  status: 'IN_PROGRESS',
-                  playbackPosition: 0
-                }
-              })
-            )
-          } else {
-            audioPlayer.play()
-            yield* put(
-              playSucceeded({ uid, trackId, isPreview: shouldPreview })
-            )
-            yield* put(seek({ seconds: trackPlaybackInfo.playbackPosition }))
-            return
-          }
+        // Set playback position for track to in progress if not already tracked
+        const currentUserId = yield* select(getUserId)
+        const trackPlaybackInfo = yield* select(getTrackPosition, {
+          trackId,
+          userId: currentUserId
+        })
+        if (trackPlaybackInfo?.status !== 'IN_PROGRESS') {
+          yield* put(
+            setTrackPosition({
+              userId: currentUserId,
+              trackId,
+              positionInfo: {
+                status: 'IN_PROGRESS',
+                playbackPosition: 0
+              }
+            })
+          )
+        } else {
+          audioPlayer.play()
+          yield* put(playSucceeded({ uid, trackId, isPreview: shouldPreview }))
+          yield* put(seek({ seconds: trackPlaybackInfo.playbackPosition }))
+          return
         }
       } else if (audioPlayer.getPlaybackRate() !== '1x') {
         // Reset playback rate when playing a regular track
@@ -317,35 +336,21 @@ export function* watchReset() {
 
 export function* watchStop() {
   yield* takeLatest(stop.type, function* (action: ReturnType<typeof stop>) {
-    const id = yield* select(getTrackId)
-    if (id) {
-      yield* put(
-        cacheActions.unsubscribe(Kind.TRACKS, [
-          { uid: PLAYER_SUBSCRIBER_NAME, id }
-        ])
-      )
-    }
     const audioPlayer = yield* getContext('audioPlayer')
     audioPlayer.stop()
   })
 }
 
 export function* watchSeek() {
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const audioPlayer = yield* getContext('audioPlayer')
 
   yield* takeLatest(seek.type, function* (action: ReturnType<typeof seek>) {
     const { seconds } = action.payload
-    const isNewPodcastControlsEnabled = yield* call(
-      getFeatureEnabled,
-      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-    )
     const trackId = yield* select(getTrackId)
 
     audioPlayer.seek(seconds)
 
-    if (isNewPodcastControlsEnabled && trackId) {
+    if (trackId) {
       const track = yield* select(getTrack, { id: trackId })
       const currentUserId = yield* select(getUserId)
       const isLongFormContent =
@@ -426,27 +431,23 @@ export function* handleAudioErrors() {
     const { error, data } = yield* take(chan)
     const trackId = yield* select(getTrackId)
     if (trackId) {
-      const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-      const usePrefetchStreamUrls = yield* call(
-        getFeatureEnabled,
-        FeatureFlags.PREFETCH_STREAM_URLS
-      )
-      const streamUrl = yield* select(getTrackStreamUrl, trackId)
-      // Check if we were attempting to use a prefetched url
-      // If so we likely have a recovery option
-      if (streamUrl && usePrefetchStreamUrls) {
-        const reportToSentry = yield* getContext('reportToSentry')
-        reportToSentry({
-          error: new Error('Audio prefetch playback saga error'),
-          additionalInfo: { trackId, streamUrl }
-        })
-        // The pre-fetched stream url failed, so we set the value to undefined
-        yield* put(setStreamUrls({ [trackId]: undefined }))
-        // Retrigger play action.
-        // Now the prefetch url is unset and it will instead play from the discovery node /stream endpoint as a fallback
-        yield* put(play({ trackId }))
+      // Retry from a different mirror if we can
+      const track = yield* select(getTrack, { id: trackId })
+      const playerBehavior = yield* select(getPlayerBehavior)
+      const retries = yield* select(getPlaybackRetryCount)
+      const { shouldPreview } = calculatePlayerBehavior(track, playerBehavior)
+      const streamObj = shouldPreview ? track?.preview : track?.stream
+      if (streamObj?.mirrors && streamObj.mirrors.length + 1 > retries) {
+        yield* put(play({ trackId, retries: retries + 1 }))
       } else {
-        yield* put(errorAction({ error, trackId, info: data }))
+        yield* put(
+          errorAction({
+            error,
+            trackId,
+            info: data,
+            feature: Feature.Playback
+          })
+        )
       }
     }
   }

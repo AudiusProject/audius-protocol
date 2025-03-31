@@ -70,11 +70,7 @@ export const NewPasswordPage = () => {
   )
 }
 
-export const ChangePasswordModalForm = ({
-  page
-}: {
-  page: ChangePasswordPage
-}) => {
+const ChangePasswordModalForm = ({ page }: { page: ChangePasswordPage }) => {
   const { isSubmitting } = useFormikContext<ChangePasswordFormValues>()
   return (
     <ModalForm>

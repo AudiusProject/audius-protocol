@@ -1,6 +1,8 @@
-import { memo } from 'react'
+import { memo, useCallback } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { ModalSource, isContentUSDCPurchaseGated } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   usePremiumContentPurchaseModal,
@@ -8,11 +10,7 @@ import {
   CommonState,
   PurchaseableContentType
 } from '@audius/common/store'
-import {
-  formatCount,
-  Genre,
-  formatLineupTileDuration
-} from '@audius/common/utils'
+import { Genre, formatLineupTileDuration } from '@audius/common/utils'
 import {
   IconVolumeLevel2 as IconVolume,
   IconCheck,
@@ -20,27 +18,21 @@ import {
   Text,
   Flex,
   ProgressBar,
-  Paper,
-  IconStar
+  Paper
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
 import { CollectionDogEar } from 'components/collection'
+import { CollectionTileStats } from 'components/collection/CollectionTileStats'
 import { TextLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
-import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
+import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
 
-import {
-  LockedStatusPill,
-  LockedStatusPillProps
-} from '../../locked-status-pill'
-import { GatedTrackLabel } from '../GatedTrackLabel'
-import { LineupTileLabel } from '../LineupTileLabel'
 import { OwnerActionButtons } from '../OwnerActionButtons'
 import { TrackDogEar } from '../TrackDogEar'
+import { TrackTileStats } from '../TrackTileStats'
 import { ViewerActionButtons } from '../ViewerActionButtons'
-import { VisibilityLabel } from '../VisibilityLabel'
 import { messages } from '../trackTileMessages'
 import {
   TrackTileSize,
@@ -54,12 +46,10 @@ const { getTrackPosition } = playbackPositionSelectors
 
 const RankAndIndexIndicator = ({
   hasOrdering,
-  showCrownIcon,
   isLoading,
   index
 }: {
   hasOrdering: boolean
-  showCrownIcon: boolean
   isLoading: boolean
   index: number
 }) => {
@@ -67,7 +57,7 @@ const RankAndIndexIndicator = ({
     <>
       {hasOrdering && (
         <div className={styles.order}>
-          {showCrownIcon && (
+          {!isLoading && index <= 5 && (
             <div className={styles.crownContainer}>
               <IconCrown />
             </div>
@@ -79,49 +69,14 @@ const RankAndIndexIndicator = ({
   )
 }
 
-const renderLockedContentOrPlayCount = ({
-  hasStreamAccess,
-  isOwner,
-  isStreamGated,
-  listenCount,
-  variant
-}: Pick<
-  TrackTileProps,
-  | 'hasStreamAccess'
-  | 'fieldVisibility'
-  | 'isOwner'
-  | 'isStreamGated'
-  | 'listenCount'
-> &
-  Pick<LockedStatusPillProps, 'variant'>) => {
-  if (isStreamGated && !isOwner) {
-    return <LockedStatusPill locked={!hasStreamAccess} variant={variant} />
-  }
-
-  return (
-    listenCount !== undefined &&
-    listenCount > 0 && (
-      <div className={styles.plays}>
-        {formatCount(listenCount)}
-        {messages.getPlays(listenCount)}
-      </div>
-    )
-  )
-}
-
 const TrackTile = ({
   size,
   order,
   standalone,
   isOwner,
-  isUnlisted,
-  isScheduledRelease,
-  isStreamGated,
   streamConditions,
   hasStreamAccess,
-  listenCount,
   isActive,
-  isArtistPick,
   isDisabled,
   isLoading,
   isPlaying,
@@ -132,8 +87,6 @@ const TrackTile = ({
   genre,
   userName,
   duration,
-  stats,
-  fieldVisibility,
   bottomBar,
   isDarkMode,
   isMatrixMode,
@@ -145,12 +98,10 @@ const TrackTile = ({
   onClickShare,
   onClickLocked,
   onTogglePlay,
-  showRankIcon,
   permalink,
   isTrack,
   collectionId,
   trackId,
-  releaseDate,
   source
 }: TrackTileProps) => {
   const currentUserId = useSelector(getUserId)
@@ -166,7 +117,25 @@ const TrackTile = ({
     usePremiumContentPurchaseModal()
   const isPurchase = isContentUSDCPurchaseGated(streamConditions)
 
-  const onClickGatedUnlockPill = useAuthenticatedClickCallback(() => {
+  const onClickGatedUnlockPillRequiresAccount =
+    useRequiresAccountOnClick(() => {
+      if (isPurchase && trackId) {
+        openPremiumContentPurchaseModal(
+          { contentId: trackId, contentType: PurchaseableContentType.TRACK },
+          { source: source ?? ModalSource.TrackTile }
+        )
+      } else if (trackId && !hasStreamAccess && onClickLocked) {
+        onClickLocked()
+      }
+    }, [
+      isPurchase,
+      trackId,
+      openPremiumContentPurchaseModal,
+      hasStreamAccess,
+      onClickLocked
+    ])
+
+  const onClickGatedUnlockPill = useCallback(() => {
     if (isPurchase && trackId) {
       openPremiumContentPurchaseModal(
         { contentId: trackId, contentType: PurchaseableContentType.TRACK },
@@ -178,10 +147,15 @@ const TrackTile = ({
   }, [
     isPurchase,
     trackId,
-    openPremiumContentPurchaseModal,
     hasStreamAccess,
-    onClickLocked
+    onClickLocked,
+    openPremiumContentPurchaseModal,
+    source
   ])
+
+  const { isEnabled: isGuestCheckoutEnabled } = useFeatureFlag(
+    FeatureFlags.GUEST_CHECKOUT
+  )
 
   const getDurationText = () => {
     if (duration === null || duration === undefined) {
@@ -236,7 +210,6 @@ const TrackTile = ({
       {/* prefix ordering */}
       <RankAndIndexIndicator
         hasOrdering={hasOrdering}
-        showCrownIcon={showRankIcon}
         isLoading={!!isLoading}
         index={order ?? 0}
       />
@@ -270,6 +243,7 @@ const TrackTile = ({
             ) : (
               <Flex css={{ marginRight: 132 }}>
                 <TextLink
+                  css={{ alignItems: 'center' }}
                   to={permalink}
                   isActive={isActive}
                   textVariant='title'
@@ -285,45 +259,25 @@ const TrackTile = ({
             )}
             {isLoading ? <Skeleton width='50%' height='20px' /> : userName}
           </Flex>
-
-          <Text variant='body' size='xs' className={styles.socialsRow}>
-            {isLoading ? (
-              <Skeleton width='30%' className={styles.skeleton} />
-            ) : (
-              <>
-                {isArtistPick ? (
-                  <LineupTileLabel color='accent' icon={IconStar}>
-                    {messages.artistPick}
-                  </LineupTileLabel>
-                ) : null}
-                {!isUnlisted && trackId ? (
-                  <GatedTrackLabel trackId={trackId} />
-                ) : null}
-                <VisibilityLabel
-                  releaseDate={releaseDate}
-                  isUnlisted={isUnlisted}
-                  isScheduledRelease={isScheduledRelease}
-                />
-                {isUnlisted ? null : stats}
-              </>
-            )}
-          </Text>
+          {trackId ? (
+            <TrackTileStats
+              trackId={trackId}
+              rankIndex={order}
+              size={size}
+              isLoading={isLoading}
+            />
+          ) : null}
+          {collectionId ? (
+            <CollectionTileStats
+              collectionId={collectionId}
+              isLoading={isLoading}
+              size={size}
+            />
+          ) : null}
           <Text variant='body' size='xs' className={styles.topRight}>
             {!isLoading && duration !== null && duration !== undefined ? (
               <div className={styles.duration}>{getDurationText()}</div>
             ) : null}
-          </Text>
-          <Text variant='body' size='xs' className={styles.bottomRight}>
-            {!isLoading
-              ? renderLockedContentOrPlayCount({
-                  hasStreamAccess,
-                  fieldVisibility,
-                  isOwner,
-                  isStreamGated,
-                  listenCount,
-                  variant: isPurchase ? 'premium' : 'gated'
-                })
-              : null}
           </Text>
         </Flex>
         {isTrack && trackId ? (
@@ -357,7 +311,11 @@ const TrackTile = ({
                 onClickRepost={onClickRepost}
                 onClickFavorite={onClickFavorite}
                 onClickShare={onClickShare}
-                onClickGatedUnlockPill={onClickGatedUnlockPill}
+                onClickGatedUnlockPill={
+                  isGuestCheckoutEnabled
+                    ? onClickGatedUnlockPill
+                    : onClickGatedUnlockPillRequiresAccount
+                }
               />
             )}
           </>

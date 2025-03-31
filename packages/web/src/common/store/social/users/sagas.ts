@@ -1,4 +1,4 @@
-import { Name, Kind, ID } from '@audius/common/models'
+import { Name, Kind, ID, UserMetadata } from '@audius/common/models'
 import {
   accountSelectors,
   cacheActions,
@@ -10,6 +10,7 @@ import {
   confirmTransaction
 } from '@audius/common/store'
 import { makeKindId, route } from '@audius/common/utils'
+import { Id } from '@audius/sdk'
 import { Action } from '@reduxjs/toolkit'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
@@ -23,7 +24,7 @@ import errorSagas from './errorSagas'
 const { profilePage } = route
 const { getUsers, getUser } = cacheUsersSelectors
 const { setNotificationSubscription } = profilePageActions
-const { getUserId } = accountSelectors
+const { getUserId, getIsGuestAccount } = accountSelectors
 
 /* FOLLOW */
 
@@ -35,11 +36,11 @@ export function* followUser(
   action: ReturnType<typeof socialActions.followUser>
 ) {
   yield* call(waitForWrite)
-
   const accountId = yield* select(getUserId)
-  if (!accountId) {
+  const isGuest = yield* select(getIsGuestAccount)
+  if (!accountId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
-    yield* put(signOnActions.showRequiresAccountModal())
+    yield* put(signOnActions.showRequiresAccountToast())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
@@ -48,7 +49,7 @@ export function* followUser(
   }
 
   const users = yield* select(getUsers, { ids: [action.userId, accountId] })
-  let followedUser = users[action.userId]
+  let followedUser: UserMetadata = users[action.userId]
   const currentUser = users[accountId]
 
   if (!followedUser) {
@@ -105,14 +106,18 @@ export function* confirmFollowUser(
   accountId: ID,
   onSuccessActions?: Action[]
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.USERS, userId),
       function* () {
         const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.followUser,
-          userId
+          [sdk.users, sdk.users.followUser],
+          {
+            userId: Id.parse(accountId),
+            followeeUserId: Id.parse(userId)
+          }
         )
         const confirmed = yield* call(
           confirmTransaction,
@@ -180,126 +185,6 @@ export function* followUserSucceeded(
   }
 }
 
-export function* watchUnfollowUser() {
-  yield* takeEvery(socialActions.UNFOLLOW_USER, unfollowUser)
-}
-
-export function* unfollowUser(
-  action: ReturnType<typeof socialActions.unfollowUser>
-) {
-  /* Make Async Backend Call */
-  yield* call(waitForWrite)
-  const accountId = yield* select(getUserId)
-  if (!accountId) {
-    yield* put(signOnActions.openSignOn(false))
-    yield* put(signOnActions.showRequiresAccountModal())
-    yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
-    return
-  }
-  if (accountId === action.userId) {
-    return
-  }
-
-  const users = yield* select(getUsers, { ids: [action.userId, accountId] })
-  const unfollowedUser = users[action.userId]
-  const currentUser = users[accountId]
-
-  // Decrement the follower count on the unfollowed user
-  yield* put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: action.userId,
-        metadata: {
-          does_current_user_follow: false,
-          follower_count: unfollowedUser.follower_count - 1
-        }
-      }
-    ])
-  )
-
-  // Decrement the followee count on the current user
-  yield* call(adjustUserField, {
-    user: currentUser,
-    fieldName: 'followee_count',
-    delta: -1
-  })
-
-  const event = make(Name.UNFOLLOW, {
-    id: action.userId,
-    source: action.source
-  })
-  yield* put(event)
-
-  yield* call(confirmUnfollowUser, action.userId, accountId)
-  yield* put(
-    setNotificationSubscription(
-      action.userId,
-      /* isSubscribed */ false,
-      /* update */ false
-    )
-  )
-}
-
-export function* confirmUnfollowUser(userId: ID, accountId: ID) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  yield* put(
-    confirmerActions.requestConfirmation(
-      makeKindId(Kind.USERS, userId),
-      function* () {
-        const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.unfollowUser,
-          userId
-        )
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm unfollow user for user id ${userId} and account id ${accountId}`
-          )
-        }
-        return accountId
-      },
-      function* () {
-        yield* put(socialActions.unfollowUserSucceeded(userId))
-      },
-      function* ({ timeout, message }: { timeout: boolean; message: string }) {
-        yield* put(
-          socialActions.unfollowUserFailed(
-            userId,
-            timeout ? 'Timeout' : message
-          )
-        )
-        const users = yield* select(getUsers, { ids: [userId, accountId] })
-        const unfollowedUser = users[userId]
-        const currentUser = users[accountId]
-
-        // Revert decremented follower count on unfollowed user
-        yield* put(
-          cacheActions.update(Kind.USERS, [
-            {
-              id: userId,
-              metadata: {
-                does_current_user_follow: true,
-                follower_count: unfollowedUser.follower_count + 1
-              }
-            }
-          ])
-        )
-
-        // Revert decremented followee count on current user
-        yield* call(adjustUserField, {
-          user: currentUser,
-          fieldName: 'followee_count',
-          delta: 1
-        })
-      }
-    )
-  )
-}
-
 /* SUBSCRIBE */
 
 export function* subscribeToUserAsync(userId: ID) {
@@ -325,14 +210,18 @@ export function* subscribeToUserAsync(userId: ID) {
 }
 
 export function* confirmSubscribeToUser(userId: ID, accountId: ID) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.USERS, userId),
       function* () {
         const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.subscribeToUser,
-          { subscribeToUserId: userId, userId: accountId }
+          [sdk.users, sdk.users.subscribeToUser],
+          {
+            subscribeeUserId: Id.parse(userId),
+            userId: Id.parse(accountId)
+          }
         )
         const confirmed = yield* call(
           confirmTransaction,
@@ -391,14 +280,18 @@ export function* unsubscribeFromUserAsync(userId: ID) {
 }
 
 export function* confirmUnsubscribeFromUser(userId: ID, accountId: ID) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.USERS, userId),
       function* () {
         const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.unsubscribeFromUser,
-          { subscribedToUserId: userId, userId: accountId }
+          [sdk.users, sdk.users.unsubscribeFromUser],
+          {
+            subscribeeUserId: Id.parse(userId),
+            userId: Id.parse(accountId)
+          }
         )
         const confirmed = yield* call(
           confirmTransaction,
@@ -462,13 +355,7 @@ export function* watchShareUser() {
 }
 
 const sagas = () => {
-  return [
-    watchFollowUser,
-    watchUnfollowUser,
-    watchFollowUserSucceeded,
-    watchShareUser,
-    errorSagas
-  ]
+  return [watchFollowUser, watchFollowUserSucceeded, watchShareUser, errorSagas]
 }
 
 export default sagas

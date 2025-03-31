@@ -2,7 +2,7 @@ import { Flex, Skeleton } from '@audius/harmony'
 
 import { useIsMobile } from 'hooks/useIsMobile'
 
-export const CommentBlockSkeleton = () => {
+const CommentBlockSkeleton = () => {
   const isMobile = useIsMobile()
   return (
     <Flex direction='row' gap='l' alignItems='center' w='100%'>
@@ -45,22 +45,5 @@ export const SortBarSkeletons = () => (
     <Skeleton w='55px' h='26px' css={{ borderRadius: 100 }} />
     <Skeleton w='80px' h='26px' css={{ borderRadius: 100 }} />
     <Skeleton w='110px' h='26px' css={{ borderRadius: 100 }} />
-  </Flex>
-)
-
-export const CommentSkeletons = () => (
-  <Flex
-    gap='xl'
-    direction='column'
-    w='100%'
-    h='100%'
-    alignItems='flex-start'
-    mt='s'
-  >
-    <CommentBlockSkeleton />
-    <CommentBlockSkeleton />
-    <CommentBlockSkeleton />
-    <CommentBlockSkeleton />
-    <CommentBlockSkeleton />
   </Flex>
 )

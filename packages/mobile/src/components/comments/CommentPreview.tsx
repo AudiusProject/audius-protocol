@@ -6,8 +6,11 @@ import {
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import type { ID } from '@audius/common/models'
+import { trackPageSelectors } from '@audius/common/store'
 import { TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native'
+import { useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
+import { tracksActions } from '~/store/pages/track/lineup/actions'
 
 import {
   Flex,
@@ -25,6 +28,8 @@ import Skeleton from '../skeleton'
 import { CommentBlock } from './CommentBlock'
 import { useCommentDrawer } from './CommentDrawerContext'
 import { CommentForm } from './CommentForm'
+
+const { getLineup } = trackPageSelectors
 
 type CommentPreviewHeaderProps = {
   openCommentDrawer: () => void
@@ -110,7 +115,9 @@ const CommentPreviewContent = (props: CommentPreviewContentProps) => {
     return (
       <Flex gap='m'>
         <Text variant='body'>
-          {isEntityOwner ? messages.noCommentsOwner : messages.noComments}
+          {isEntityOwner
+            ? messages.noCommentsPreviewOwner
+            : messages.noCommentsPreview}
         </Text>
         <TouchableWithoutFeedback onPress={handleFormPress}>
           <View>
@@ -143,12 +150,21 @@ export const CommentPreview = (props: CommentPreviewProps) => {
   const navigation = useNavigation()
   const { open } = useCommentDrawer()
 
+  const lineup = useSelector(getLineup)
+  const trackUid = lineup?.entries?.[0]?.uid
+
   const openCommentDrawer = useCallback(
     (args: { autoFocusInput?: boolean } = {}) => {
       const { autoFocusInput } = args
-      open({ entityId, navigation, autoFocusInput })
+      open({
+        entityId,
+        navigation,
+        autoFocusInput,
+        uid: trackUid,
+        actions: tracksActions
+      })
     },
-    [open, entityId, navigation]
+    [open, entityId, navigation, trackUid]
   )
 
   useEffectOnce(() => {
@@ -158,7 +174,11 @@ export const CommentPreview = (props: CommentPreviewProps) => {
   })
 
   return (
-    <CommentSectionProvider entityId={entityId}>
+    <CommentSectionProvider
+      entityId={entityId}
+      lineupActions={tracksActions}
+      uid={trackUid}
+    >
       <Flex gap='s' direction='column' w='100%' alignItems='flex-start'>
         <CommentPreviewHeader openCommentDrawer={openCommentDrawer} />
         <Paper w='100%' direction='column' gap='s' p='l'>

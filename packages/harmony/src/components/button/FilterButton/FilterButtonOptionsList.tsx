@@ -3,8 +3,8 @@ import { useState, useCallback, useEffect, RefObject } from 'react'
 import { CSSObject } from '@emotion/react'
 import { List, ListRowProps } from 'react-virtualized'
 
-import { MenuItem } from 'components/internal/MenuItem'
-import { OptionKeyHandler } from 'components/internal/OptionKeyHandler'
+import { MenuItem } from '~harmony/components/internal/MenuItem'
+import { OptionKeyHandler } from '~harmony/components/internal/OptionKeyHandler'
 
 import { FilterButtonOptionType } from './types'
 

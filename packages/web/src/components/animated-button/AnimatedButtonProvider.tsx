@@ -9,13 +9,13 @@ import {
 
 import { useInstanceVar } from '@audius/common/hooks'
 import cn from 'classnames'
-import Lottie from 'react-lottie'
+import Lottie, { LottieRefCurrentProps } from 'lottie-react'
 
 import { SeoLink } from 'components/link'
 
 import styles from './AnimatedButtonProvider.module.css'
 
-export type BaseAnimatedButtonProps = {
+type BaseAnimatedButtonProps = {
   href?: string
   onClick: ((e: MouseEvent) => void) | (() => void)
   uniqueKey: string
@@ -72,12 +72,6 @@ const AnimatedButton = ({
     setDidMount(true)
   }, [setDidMount])
 
-  const animationOptions = {
-    loop: false,
-    autoplay: false,
-    animationData: iconJSON
-  }
-
   const handleClick = useCallback(
     (e: MouseEvent) => {
       e.preventDefault()
@@ -94,22 +88,29 @@ const AnimatedButton = ({
     [isDisabled, onClick, stopPropagation]
   )
 
-  const eventListeners = [
-    {
-      eventName: 'complete' as const,
-      callback: () => {
-        setIsPaused(true)
+  const animationRef = useRef<LottieRefCurrentProps>(null)
+  useEffect(() => {
+    if (animationRef.current) {
+      if (isPaused) {
+        animationRef.current.pause()
+      } else {
+        animationRef.current.play()
       }
     }
-  ]
+  }, [animationRef, isPaused])
 
   const buttonElement = (
     <div className={cn(wrapperClassName)}>
       <Lottie
-        options={animationOptions}
-        isPaused={isPaused}
-        isClickToPauseDisabled
-        eventListeners={isDisabled ? [] : eventListeners}
+        lottieRef={animationRef}
+        animationData={iconJSON}
+        loop={false}
+        autoplay={false}
+        onComplete={() => {
+          if (!isDisabled) {
+            setIsPaused(true)
+          }
+        }}
       />
     </div>
   )

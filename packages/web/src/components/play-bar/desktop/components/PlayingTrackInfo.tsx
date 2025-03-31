@@ -1,31 +1,21 @@
 import { memo } from 'react'
 
+import { useTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
-import {
-  SquareSizes,
-  Color,
-  ID,
-  ProfilePictureSizes
-} from '@audius/common/models'
-import {
-  cacheTracksSelectors,
-  playerSelectors,
-  CommonState
-} from '@audius/common/store'
+import { SquareSizes, Color, ID } from '@audius/common/models'
+import { playerSelectors } from '@audius/common/store'
+import { animated, useSpring } from '@react-spring/web'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
-// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
-import { animated, useSpring } from 'react-spring'
 
 import { Draggable } from 'components/dragndrop'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { LockedStatusPill } from 'components/locked-status-pill'
+import { LockedStatusBadge } from 'components/locked-status-badge'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import { fullTrackPage } from 'utils/route'
 
 import styles from './PlayingTrackInfo.module.css'
-const { getTrack } = cacheTracksSelectors
 const { getPreviewing } = playerSelectors
 
 const messages = {
@@ -37,7 +27,6 @@ interface PlayingTrackInfoProps {
   isOwner: boolean
   trackTitle: string
   trackPermalink: string
-  profilePictureSizes: ProfilePictureSizes
   isVerified: boolean
   isTrackUnlisted: boolean
   isStreamGated: boolean
@@ -71,9 +60,7 @@ const PlayingTrackInfo = ({
   hasShadow,
   dominantColor
 }: PlayingTrackInfoProps) => {
-  const track = useSelector((state: CommonState) =>
-    getTrack(state, { id: trackId })
-  )
+  const { data: track } = useTrack(trackId)
   const { hasStreamAccess } = useGatedContentAccess(track)
   const isPreviewing = useSelector(getPreviewing)
   const shouldShowPreviewLock =
@@ -83,10 +70,10 @@ const PlayingTrackInfo = ({
       !hasStreamAccess)
 
   const spring = useSpring(springProps)
-  const profileImage = useProfilePicture(
-    artistUserId ?? null,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const profileImage = useProfilePicture({
+    userId: artistUserId ?? null,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   const boxShadowStyle =
     hasShadow && dominantColor
@@ -107,7 +94,7 @@ const PlayingTrackInfo = ({
           {trackTitle}
         </div>
         {shouldShowPreviewLock ? (
-          <LockedStatusPill
+          <LockedStatusBadge
             locked
             iconSize='2xs'
             coloredWhenLocked
@@ -156,11 +143,7 @@ const PlayingTrackInfo = ({
           >
             {artistName}
           </div>
-          <UserBadges
-            userId={artistUserId}
-            badgeSize={12}
-            className={styles.iconVerified}
-          />
+          <UserBadges userId={artistUserId} className={styles.iconVerified} />
         </animated.div>
       </div>
     </div>

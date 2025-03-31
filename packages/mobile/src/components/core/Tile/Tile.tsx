@@ -115,7 +115,7 @@ export const Tile = <
       <TileComponent style={[styles.tile, stylesProp?.tile]} {...other}>
         <Pressable
           pointerEvents={pointerEvents}
-          style={[styles.content, stylesProp?.content, { borderRadius: 4 }]}
+          style={[{ borderRadius: 4 }, styles.content, stylesProp?.content]}
           onPress={onPress}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}

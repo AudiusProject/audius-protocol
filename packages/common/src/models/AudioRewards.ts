@@ -52,14 +52,19 @@ export enum ChallengeName {
   Referred = 'rd',
   FirstTip = 'ft',
   FirstPlaylist = 'fp',
-  ListenStreak = 'l'
+  ListenStreak = 'l',
+  ListenStreakEndless = 'e',
+  OneShot = 'o',
+  FirstWeeklyComment = 'c',
+  PlayCount250 = 'p1',
+  PlayCount1000 = 'p2',
+  PlayCount10000 = 'p3',
+  Tastemaker = 't',
+  CommentPin = 'cp'
 }
 
 export type ChallengeRewardID =
   | 'track-upload'
-  | 'referrals'
-  | 'ref-v'
-  | 'referred'
   | 'mobile-install'
   | 'connect-verified'
   | 'listen-streak'
@@ -86,7 +91,14 @@ export type ChallengeRewardID =
   | ChallengeName.FirstTip
   | ChallengeName.FirstPlaylist
   | ChallengeName.ListenStreak
-
+  | ChallengeName.ListenStreakEndless
+  | ChallengeName.OneShot
+  | ChallengeName.FirstWeeklyComment
+  | ChallengeName.PlayCount250
+  | ChallengeName.PlayCount1000
+  | ChallengeName.PlayCount10000
+  | ChallengeName.Tastemaker
+  | ChallengeName.CommentPin
 export enum FailureReason {
   // The attestation requires the user to fill out a captcha
   HCAPTCHA = 'HCAPTCHA',

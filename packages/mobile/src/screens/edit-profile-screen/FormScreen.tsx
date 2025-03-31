@@ -3,9 +3,10 @@ import { useCallback } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { isEmpty } from 'lodash'
 
+import { PlainButton } from '@audius/harmony-native'
+
 import type { ScreenProps } from '../../components/core/Screen'
 import { ScreenContent, Screen } from '../../components/core/Screen'
-import { TextButton } from '../../components/core/TextButton'
 
 const messages = {
   cancel: 'Cancel',
@@ -29,20 +30,13 @@ export const FormScreen = (props: FormScreenProps) => {
   }, [navigation, onReset])
 
   const topbarLeft = (
-    <TextButton
-      title={messages.cancel}
-      variant='secondary'
-      onPress={handleCancel}
-    />
+    <PlainButton onPress={handleCancel}>{messages.cancel}</PlainButton>
   )
 
   const topbarRight = (
-    <TextButton
-      title={messages.save}
-      variant='primary'
-      onPress={onSubmit}
-      disabled={!isEmpty(errors)}
-    />
+    <PlainButton onPress={onSubmit} disabled={!isEmpty(errors)}>
+      {messages.save}
+    </PlainButton>
   )
 
   return (

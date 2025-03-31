@@ -32,7 +32,7 @@
 }
 
 .content {
-  background: linear-gradient(119deg, #5200ff 1%, #9e00ff 99%);
+  background: linear-gradient(119deg, #a435d8 -10%, #4118af 40%);
   position: absolute;
   z-index: 2000;
   height: 100vh;
@@ -47,15 +47,6 @@
   display: flex;
   justify-content: space-between;
   margin-bottom: 20px;
-}
-
-.iconClose {
-  width: 32px;
-  height: 32px;
-}
-
-.iconClose path {
-  fill: var(--harmony-static-white);
 }
 
 .horizontalLogo {
@@ -76,8 +67,10 @@
   text-align: center;
   border-radius: 6px;
   background-color: #ffffff;
-  box-shadow: 0px 0px 1px -2px rgba(133, 129, 153, 0.1),
-    0px 1px 0px -2px #e3e3e3, 1px 2px 5px rgba(133, 129, 153, 0.25);
+  box-shadow:
+    0px 0px 1px -2px rgba(133, 129, 153, 0.1),
+    0px 1px 0px -2px #e3e3e3,
+    1px 2px 5px rgba(133, 129, 153, 0.25);
   color: #7e1bcc;
   border: none;
   transform: scale3d(1, 1, 1);
@@ -111,17 +104,17 @@
 }
 
 .dappLinkIcon path {
-  fill: var(--harmony-static-white);
+  fill: var(--harmony-white);
 }
 
 .dappLinkIconStroke path {
   fill: none;
-  stroke: var(--harmony-static-white);
+  stroke: var(--harmony-white);
 }
 
 .dappLinkText {
   margin-left: 16px;
-  color: var(--harmony-static-white);
+  color: var(--harmony-white);
   font-size: 20px;
   line-height: 20px;
   font-weight: 700;
@@ -139,5 +132,5 @@
 }
 
 .icon path {
-  fill: var(--harmony-static-white);
+  fill: var(--harmony-white);
 }

@@ -49,7 +49,10 @@ export const UploadingTrackTile = (props: UploadingTrackTileProps) => {
   const styles = useStyles()
   const { neutralLight8 } = useThemeColors()
 
-  const source = useMemo(() => ({ uri: artwork?.url }), [artwork?.url])
+  const source = useMemo(
+    () => ({ uri: artwork && 'url' in artwork ? artwork?.url : undefined }),
+    [artwork]
+  )
 
   return (
     <Tile styles={{ root: styles.tile, content: styles.tileContent }}>
@@ -59,7 +62,7 @@ export const UploadingTrackTile = (props: UploadingTrackTileProps) => {
           styles={{ root: styles.artwork, imageContainer: styles.image }}
           noSkeleton
         >
-          {artwork?.url ? null : (
+          {artwork && 'url' in artwork && artwork?.url ? null : (
             <IconImage
               fill={neutralLight8}
               height={spacing(8)}

@@ -3,7 +3,7 @@ import { Nullable } from '@audius/common/utils'
 import cn from 'classnames'
 
 import UserBadges from 'components/user-badges/UserBadges'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 
 import styles from './ProfileInfo.module.css'
 
@@ -12,7 +12,6 @@ type ProfileInfoProps = {
   className?: string
   imgClassName?: string
   centered?: boolean
-  badgeSize?: number
   displayNameClassName?: string
   handleClassName?: string
 }
@@ -21,15 +20,13 @@ export const ProfileInfo = ({
   className = '',
   imgClassName = '',
   centered = true,
-  badgeSize = 12,
   displayNameClassName,
   handleClassName
 }: ProfileInfoProps) => {
-  const image = useUserProfilePicture(
-    user?.user_id ?? null,
-    user?._profile_picture_sizes ?? null,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const image = useProfilePicture({
+    userId: user?.user_id,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   return user ? (
     <div className={cn(styles.receiver, className)}>
@@ -42,11 +39,7 @@ export const ProfileInfo = ({
         <div className={styles.userInfoWrapper}>
           <div className={cn(styles.name, displayNameClassName)}>
             {user.name}
-            <UserBadges
-              userId={user?.user_id}
-              badgeSize={badgeSize}
-              className={styles.badge}
-            />
+            <UserBadges userId={user?.user_id} className={styles.badge} />
           </div>
           <div className={styles.handleContainer}>
             <span

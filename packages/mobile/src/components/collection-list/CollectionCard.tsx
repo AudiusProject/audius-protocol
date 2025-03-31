@@ -1,12 +1,11 @@
 import { useCallback } from 'react'
 
+import { useCollection } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
 import { SquareSizes, isContentUSDCPurchaseGated } from '@audius/common/models'
-import {
-  accountSelectors,
-  cacheCollectionsSelectors
-} from '@audius/common/store'
+import { accountSelectors } from '@audius/common/store'
 import { formatCount, formatReleaseDate } from '@audius/common/utils'
+import { pick } from 'lodash'
 import type { GestureResponderEvent } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -21,12 +20,11 @@ import {
 import { UserLink } from 'app/components/user-link'
 import { useNavigation } from 'app/hooks/useNavigation'
 
+import { CollectionDogEar } from '../collection/CollectionDogEar'
 import { LockedStatusBadge } from '../core'
-import { CollectionDogEar } from '../core/CollectionDogEar'
-import { CollectionImageV2 } from '../image/CollectionImageV2'
+import { CollectionImage } from '../image/CollectionImage'
 import { CollectionDownloadStatusIndicator } from '../offline-downloads'
 
-const { getCollection } = cacheCollectionsSelectors
 const { getUserId } = accountSelectors
 
 const messages = {
@@ -46,7 +44,34 @@ type CollectionCardProps = {
 export const CollectionCard = (props: CollectionCardProps) => {
   const { id, onPress, noNavigation } = props
 
-  const collection = useSelector((state) => getCollection(state, { id }))
+  const { data: partialCollection } = useCollection(id, {
+    select: (collection) =>
+      pick(
+        collection,
+        'playlist_name',
+        'playlist_owner_id',
+        'repost_count',
+        'save_count',
+        'is_private',
+        'access',
+        'stream_conditions',
+        'release_date',
+        'is_scheduled_release',
+        'offline'
+      )
+  })
+  const {
+    playlist_name,
+    playlist_owner_id,
+    repost_count,
+    save_count,
+    is_private,
+    access,
+    stream_conditions,
+    release_date,
+    is_scheduled_release,
+    offline
+  } = partialCollection ?? {}
   const accountId = useSelector(getUserId)
 
   const navigation = useNavigation()
@@ -60,34 +85,20 @@ export const CollectionCard = (props: CollectionCardProps) => {
     [onPress, noNavigation, navigation, id]
   )
 
-  if (!collection) {
+  if (!partialCollection) {
     console.warn('Collection missing for CollectionCard, preventing render')
     return null
   }
-
-  const {
-    playlist_id,
-    playlist_name,
-    playlist_owner_id,
-    repost_count,
-    save_count,
-    is_private: isPrivate,
-    access,
-    stream_conditions,
-    release_date: releaseDate,
-    is_scheduled_release: isScheduledRelease,
-    offline
-  } = collection
 
   const isOwner = accountId === playlist_owner_id
   const isPurchase = isContentUSDCPurchaseGated(stream_conditions)
 
   return (
     <Paper border='default' onPress={handlePress}>
-      <CollectionDogEar collectionId={playlist_id} />
+      <CollectionDogEar collectionId={id} />
       <Flex p='s' gap='s'>
-        <CollectionImageV2
-          collectionId={playlist_id}
+        <CollectionImage
+          collectionId={id}
           size={SquareSizes.SIZE_480_BY_480}
           style={{ flex: 1 }}
         />
@@ -95,7 +106,7 @@ export const CollectionCard = (props: CollectionCardProps) => {
           {playlist_name}
         </Text>
         <UserLink
-          userId={playlist_owner_id}
+          userId={playlist_owner_id!}
           textAlign='center'
           style={{ justifyContent: 'center' }}
         />
@@ -110,7 +121,7 @@ export const CollectionCard = (props: CollectionCardProps) => {
         borderBottomLeftRadius='m'
         borderBottomRightRadius='m'
       >
-        {isPrivate ? (
+        {is_private ? (
           <Text
             variant='body'
             size='s'
@@ -119,8 +130,8 @@ export const CollectionCard = (props: CollectionCardProps) => {
             // Ensures footer height is not affected
             style={{ lineHeight: 16 }}
           >
-            {isScheduledRelease && releaseDate
-              ? messages.releases(releaseDate)
+            {is_scheduled_release && release_date
+              ? messages.releases(release_date)
               : messages.hidden}
           </Text>
         ) : (
@@ -128,25 +139,22 @@ export const CollectionCard = (props: CollectionCardProps) => {
             <Flex direction='row' gap='xs' alignItems='center'>
               <IconRepost size='s' color='subdued' />
               <Text variant='label' color='subdued'>
-                {formatCount(repost_count)}
+                {formatCount(repost_count ?? 0)}
               </Text>
             </Flex>
             <Flex direction='row' gap='xs' alignItems='center'>
               <IconHeart size='s' color='subdued' />
               <Text variant='label' color='subdued'>
-                {formatCount(save_count)}
+                {formatCount(save_count ?? 0)}
               </Text>
             </Flex>
           </>
         )}
         {isPurchase && !isOwner ? (
-          <LockedStatusBadge variant='purchase' locked={!access.stream} />
+          <LockedStatusBadge variant='premium' locked={!access?.stream} />
         ) : null}
         {offline ? (
-          <CollectionDownloadStatusIndicator
-            collectionId={playlist_id}
-            size='s'
-          />
+          <CollectionDownloadStatusIndicator collectionId={id} size='s' />
         ) : null}
       </Flex>
     </Paper>

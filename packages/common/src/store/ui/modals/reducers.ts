@@ -2,19 +2,25 @@ import { Action, combineReducers, Reducer } from '@reduxjs/toolkit'
 
 import { addFundsModalReducer } from './add-funds-modal'
 import { albumTrackRemoveConfirmationModalReducer } from './album-track-remove-confirmation-modal'
+import { announcementModalReducer } from './announcement-modal'
 import { artistPickModalReducer } from './artist-pick-modal'
 import { coinflowOnrampModalReducer } from './coinflow-onramp-modal'
 import { coinflowWithdrawModalReducer } from './coinflow-withdraw-modal'
 import { chatBlastModalReducer } from './create-chat-blast-modal'
 import { createChatModalReducer } from './create-chat-modal'
+import { deleteTrackConfirmationModalReducer } from './delete-track-confirmation-modal'
 import { earlyReleaseConfirmationModalReducer } from './early-release-confirmation-modal'
 import { editAccessConfirmationModalReducer } from './edit-access-confirmation-modal'
+import { externalWalletSignUpModalReducer } from './external-wallet-sign-up-modal'
 import { hideContentConfirmationModalReducer } from './hide-confirmation-modal'
 import { inboxUnavailableModalReducer } from './inbox-unavailable-modal'
 import { leavingAudiusModalReducer } from './leaving-audius-modal'
+import { notificationModalReducer } from './notification-modal'
 import parentReducer, { initialState } from './parentSlice'
 import { premiumContentPurchaseModalReducer } from './premium-content-purchase-modal'
 import { publishConfirmationModalReducer } from './publish-confirmation-modal'
+import { replaceTrackConfirmationModalReducer } from './replace-track-confirmation-modal'
+import { replaceTrackProgressModalReducer } from './replace-track-progress-modal'
 import { BaseModalState, Modals, ModalsState } from './types'
 import { uploadConfirmationModalReducer } from './upload-confirmation-modal'
 import { usdcManualTransferModalReducer } from './usdc-manual-transfer-modal'
@@ -26,12 +32,15 @@ import { withdrawUSDCModalReducer } from './withdraw-usdc-modal'
 /**
  * Create a bunch of reducers that do nothing, so that the state is maintained and not lost through the child reducers
  */
-const noOpReducers = Object.keys(initialState).reduce((prev, curr) => {
-  return {
-    ...prev,
-    [curr]: (s: BaseModalState = { isOpen: false }) => s
-  }
-}, {} as Record<Modals, Reducer<BaseModalState>>)
+const noOpReducers = Object.keys(initialState).reduce(
+  (prev, curr) => {
+    return {
+      ...prev,
+      [curr]: (s: BaseModalState = { isOpen: false }) => s
+    }
+  },
+  {} as Record<Modals, Reducer<BaseModalState>>
+)
 
 /**
  * Combine all the child reducers to build the entire parent slice state
@@ -56,8 +65,14 @@ const combinedReducers = combineReducers({
   UploadConfirmation: uploadConfirmationModalReducer,
   EditAccessConfirmation: editAccessConfirmationModalReducer,
   EarlyReleaseConfirmation: earlyReleaseConfirmationModalReducer,
+  DeleteTrackConfirmation: deleteTrackConfirmationModalReducer,
+  ReplaceTrackConfirmation: replaceTrackConfirmationModalReducer,
+  ReplaceTrackProgress: replaceTrackProgressModalReducer,
   PublishConfirmation: publishConfirmationModalReducer,
-  HideContentConfirmation: hideContentConfirmationModalReducer
+  HideContentConfirmation: hideContentConfirmationModalReducer,
+  ExternalWalletSignUp: externalWalletSignUpModalReducer,
+  Announcement: announcementModalReducer,
+  Notification: notificationModalReducer
 })
 
 /**

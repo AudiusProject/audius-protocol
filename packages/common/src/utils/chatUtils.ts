@@ -90,7 +90,7 @@ export const isEarliestUnread = ({
  * there are previous messages to fetch
  */
 export const chatCanFetchMoreMessages = (
-  messagesStatus?: Status,
+  messagesStatus?: Status | 'PENDING',
   prevCount?: number
 ) => {
   return !!messagesStatus && messagesStatus !== Status.LOADING && !!prevCount

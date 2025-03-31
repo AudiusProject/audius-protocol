@@ -1,9 +1,8 @@
 import { useCallback } from 'react'
 
+import { useUser } from '@audius/common/api'
 import type { TierChangeNotification as TierChangeNotificationType } from '@audius/common/store'
-import { cacheUsersSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { useSelector } from 'react-redux'
 
 import {
   IconTokenBronze,
@@ -11,8 +10,8 @@ import {
   IconTokenPlatinum,
   IconTokenSilver
 } from '@audius/harmony-native'
-import { env } from 'app/env'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
+import { env } from 'app/services/env'
 
 import {
   NotificationTile,
@@ -21,7 +20,6 @@ import {
   NotificationText,
   NotificationTwitterButton
 } from '../Notification'
-const { getUser } = cacheUsersSelectors
 
 const messages = {
   unlocked: 'Tier Unlocked',
@@ -33,31 +31,31 @@ const messages = {
 
 const tierInfoMap = {
   none: {
-    icon: IconTokenBronze,
+    icon: (props) => <IconTokenBronze size='xl' {...props} />,
     label: 'None',
     amount: 0,
     twitterIcon: ''
   },
   bronze: {
-    icon: IconTokenBronze,
+    icon: (props) => <IconTokenBronze size='xl' {...props} />,
     label: 'Bronze',
     amount: 10,
     twitterIcon: '🥉'
   },
   silver: {
-    icon: IconTokenSilver,
+    icon: (props) => <IconTokenSilver size='xl' {...props} />,
     label: 'Silver',
     amount: 100,
     twitterIcon: '🥈'
   },
   gold: {
-    icon: IconTokenGold,
+    icon: (props) => <IconTokenGold size='xl' {...props} />,
     label: 'Gold',
     amount: 1000,
     twitterIcon: '🥇'
   },
   platinum: {
-    icon: IconTokenPlatinum,
+    icon: (props) => <IconTokenPlatinum size='xl' {...props} />,
     label: 'Platinum',
     amount: 10000,
     twitterIcon: '🥇'
@@ -72,14 +70,16 @@ export const TierChangeNotification = (props: TierChangeNotificationProps) => {
   const { notification } = props
   const { tier, userId } = notification
   const navigation = useNotificationNavigation()
-  const user = useSelector((state) => getUser(state, { id: userId }))
+  const { data: handle } = useUser(userId, {
+    select: (user) => user.handle
+  })
   const { icon, label, amount, twitterIcon } = tierInfoMap[tier]
 
   const handlePress = useCallback(() => {
     navigation.navigate(notification)
   }, [navigation, notification])
 
-  if (!user) return null
+  if (!handle) return null
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
@@ -91,7 +91,7 @@ export const TierChangeNotification = (props: TierChangeNotificationProps) => {
       <NotificationText>{messages.congrats(label, amount)}</NotificationText>
       <NotificationTwitterButton
         type='static'
-        url={`${env.AUDIUS_URL}${route.profilePage(user.handle)}`}
+        url={`${env.AUDIUS_URL}${route.profilePage(handle)}`}
         shareText={messages.twitterShareText(label, twitterIcon)}
       />
     </NotificationTile>

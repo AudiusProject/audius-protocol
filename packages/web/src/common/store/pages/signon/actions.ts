@@ -1,4 +1,4 @@
-import { ID, User } from '@audius/common/models'
+import { ID } from '@audius/common/models'
 import {
   InstagramProfile,
   TwitterProfile,
@@ -10,7 +10,7 @@ import { createCustomAction } from 'typesafe-actions'
 
 import { UiErrorCode } from 'store/errors/actions'
 
-import { FollowArtistsCategory, Pages } from './types'
+import { Pages } from './types'
 
 export const SET_FIELD = 'SIGN_ON/SET_FIELD'
 export const SET_VALUE_FIELD = 'SIGN_ON/SET_VALUE_FIELD'
@@ -36,6 +36,7 @@ export const SIGN_IN_SUCCEEDED = 'SIGN_ON/SIGN_IN_SUCCEEDED'
 export const SIGN_IN_FAILED = 'SIGN_ON/SIGN_IN_FAILED'
 
 export const SIGN_UP = 'SIGN_ON/SIGN_UP'
+export const CREATE_GUEST_ACCOUNT = 'SIGN_ON/CREATE_GUEST_ACCOUNT'
 export const START_SIGN_UP = 'SIGN_ON/START_SIGN_UP'
 
 /** @deprecated */
@@ -58,7 +59,7 @@ export const SET_TIKTOK_PROFILE_ERROR = 'SIGN_ON/SET_TIKTOK_PROFILE_ERROR'
 export const UNSET_SOCIAL_PROFILE = 'SIGN_ON/UNSET_SOCIAL_PROFILE'
 
 export const SET_STATUS = 'SIGN_ON/SET_STATUS'
-export const CONFIGURE_META_MASK = 'SIGN_ON/CONFIGURE_META_MASK'
+export const USING_EXTERNAL_WALLET = 'SIGN_ON/USING_EXTERNAL_WALLET'
 
 export const OPEN_SIGN_ON = 'SIGN_ON/OPEN_SIGN_ON'
 
@@ -69,13 +70,6 @@ export const GO_TO_PAGE = 'SIGN_ON/GO_TO_PAGE'
 export const UPDATE_ROUTE_ON_COMPLETION = 'SIGN_ON/UPDATE_ROUTE_ON_COMPLETION'
 export const UPDATE_ROUTE_ON_EXIT = 'SIGN_ON/UPDATE_ROUTE_ON_EXIT'
 
-export const GET_USERS_TO_FOLLOW = 'SIGN_ON/GET_USERS_TO_FOLLOW'
-export const SET_USERS_TO_FOLLOW = 'SIGN_ON/SET_USERS'
-export const FETCH_ALL_FOLLOW_ARTISTS = 'SIGN_ON/FETCH_ALL_FOLLOW_ARTISTS'
-export const FETCH_FOLLOW_ARTISTS_SUCCEEDED =
-  'SIGN_ON/FETCH_FOLLOW_ARTISTS_SUCCEEDED'
-export const FETCH_FOLLOW_ARTISTS_FAILED = 'SIGN_ON/FETCH_FOLLOW_ARTISTS_FAILED'
-export const SET_FOLLOW_ARTIST_CATEGORY = 'SIGN_ON/SET_FOLLOW_ARTIST_CATEGORY'
 export const ADD_FOLLOW_ARTISTS = 'SIGN_ON/ADD_FOLLOW_ARTISTS'
 export const REMOVE_FOLLOW_ARTISTS = 'SIGN_ON/REMOVE_FOLLOW_ARTISTS'
 export const COMPLETE_FOLLOW_ARTISTS = 'SIGN_ON/COMPLETE_FOLLOW_ARTISTS'
@@ -180,6 +174,13 @@ export function signUp() {
 }
 
 /**
+ * create guest account
+ */
+export function createGuestAccount(guestEmail: string) {
+  return { type: CREATE_GUEST_ACCOUNT, guestEmail }
+}
+
+/**
  * When the user starts the sign up flow
  */
 export function startSignUp() {
@@ -257,55 +258,6 @@ export const signInFailed = (
   shouldReport,
   uiErrorCode
 })
-
-/**
- * Requests all the follow artist metadata is fetched
- */
-export function fetchAllFollowArtists() {
-  return { type: FETCH_ALL_FOLLOW_ARTISTS }
-}
-
-/**
- * Requests all the users from which to pick suggested followed artists
- */
-export function getUsersToFollow() {
-  return { type: GET_USERS_TO_FOLLOW }
-}
-
-/**
- * Requests all the users from which to pick suggested followed artists
- */
-export function setUsersToFollow(users: Record<ID, User>) {
-  return { type: SET_USERS_TO_FOLLOW, users }
-}
-
-/**
- * Set the user ids for the follow artists category
- * @param category The genre category to set the user ids for
- * @param userIds The top user ids for a category
- */
-export function fetchFollowArtistsSucceeded(
-  category: FollowArtistsCategory,
-  userIds: ID[]
-) {
-  return { type: FETCH_FOLLOW_ARTISTS_SUCCEEDED, category, userIds }
-}
-
-/**
- * Sets the Follow artist category
- * @param category The genre category to display to the user
- */
-export function setFollowAristsCategory(category: FollowArtistsCategory) {
-  return { type: SET_FOLLOW_ARTIST_CATEGORY, category }
-}
-
-/**
- * error response
- * @param error The error for fetch follow artists
- */
-export function fetchFollowArtistsFailed(error: string) {
-  return { type: FETCH_FOLLOW_ARTISTS_FAILED, error }
-}
 
 export function setLinkedSocialOnFirstPage(linkedSocialOnFirstPage: boolean) {
   return {
@@ -400,8 +352,8 @@ export function setStatus(status: 'loading' | 'editing') {
   return { type: SET_STATUS, status }
 }
 
-export function configureMetaMask() {
-  return { type: CONFIGURE_META_MASK }
+export function usingExternalWallet() {
+  return { type: USING_EXTERNAL_WALLET }
 }
 
 /**
@@ -427,9 +379,11 @@ export function removeFollowArtists(userIds: ID[]) {
   return { type: REMOVE_FOLLOW_ARTISTS, userIds }
 }
 
-export const showRequiresAccountModal = () =>
+export const showRequiresAccountToast = (isAccountIncomplete?: boolean) =>
   toastActions.toast({
-    content: 'Oops, it looks like you need an account to do that!'
+    content: isAccountIncomplete
+      ? 'Finish setting up your account to continue'
+      : 'Oops, it looks like you need an account to do that!'
   })
 
 /**

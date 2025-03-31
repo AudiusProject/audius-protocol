@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 
-import { useGetTrackById } from '@audius/common/api'
+import { useGetTrackById, useToggleFavoriteTrack } from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -8,7 +8,6 @@ import {
   PlayableType,
   ID
 } from '@audius/common/models'
-import { FeatureFlags, trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheCollectionsActions,
@@ -18,23 +17,26 @@ import {
   playbackPositionActions,
   playbackPositionSelectors,
   CommonState,
-  artistPickModalActions
+  artistPickModalActions,
+  useDeleteTrackConfirmationModal,
+  shareModalUIActions
 } from '@audius/common/store'
 import { Genre, Nullable, route } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/harmony'
-import { push as pushRoute } from 'connected-react-router'
 import { connect, useDispatch, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import * as embedModalActions from 'components/embed-modal/store/actions'
 import { ToastContext } from 'components/toast/ToastContext'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
+import { push } from 'utils/navigation'
 import { albumPage } from 'utils/route'
+
+const { requestOpen: requestOpenShareModal } = shareModalUIActions
 
 const { profilePage } = route
 const { requestOpen: openAddToCollection } = addToCollectionUIActions
-const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack, shareTrack } =
+const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
   tracksSocialActions
 const { getCollectionId } = collectionPageSelectors
 const { addTrackToPlaylist } = cacheCollectionsActions
@@ -46,6 +48,8 @@ const messages = {
   addToAlbum: 'Add To Album',
   addToPlaylist: 'Add To Playlist',
   copiedToClipboard: 'Copied To Clipboard!',
+  deleteTrack: 'Delete Track',
+  editTrack: 'Edit Track',
   embed: 'Embed',
   favorite: 'Favorite',
   repost: 'Repost',
@@ -73,6 +77,7 @@ export type OwnProps = {
   includeAddToAlbum?: boolean
   includeAddToPlaylist?: boolean
   includeArtistPick?: boolean
+  includeDelete?: boolean
   includeEdit?: boolean
   ddexApp?: string | null
   includeEmbed?: boolean
@@ -95,21 +100,51 @@ export type OwnProps = {
   type: 'track'
 }
 
-export type TrackMenuProps = OwnProps &
+type TrackMenuProps = OwnProps &
   ReturnType<typeof mapDispatchToProps> &
   ReturnType<typeof mapStateToProps>
 
-const TrackMenu = (props: TrackMenuProps) => {
+const TrackMenu = ({
+  includeDelete = true,
+  includeAddToAlbum = true,
+  includeAddToPlaylist = true,
+  includeArtistPick = true,
+  includeEdit = true,
+  includeEmbed = true,
+  includeFavorite = true,
+  includeAlbumPage = true,
+  includeTrackPage = true,
+  isArtistPick,
+  isDeleted,
+  isOwner,
+  isOwnerDeactivated,
+  isUnlisted,
+  extraMenuItems = [],
+  ddexApp = null,
+  isFavorited,
+  ...props
+}: TrackMenuProps) => {
   const { trackPermalink, goToRoute } = props
   const { toast } = useContext(ToastContext)
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
-  const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-  )
+  const { onOpen: openDeleteTrackConfirmation } =
+    useDeleteTrackConfirmationModal()
 
   const { data: track } = useGetTrackById({ id: props.trackId })
+
+  const toggleSaveTrack = useToggleFavoriteTrack({
+    trackId: props.trackId,
+    source: FavoriteSource.OVERFLOW
+  })
+
+  const onDeleteTrack = (trackId: Nullable<number>) => {
+    if (!trackId) return
+
+    openDeleteTrackConfirmation({
+      trackId
+    })
+  }
 
   const onEditTrack = (trackId: Nullable<number>) => {
     if (!trackId) return
@@ -123,66 +158,38 @@ const TrackMenu = (props: TrackMenuProps) => {
 
   const getMenu = () => {
     const {
-      extraMenuItems,
       goToRoute,
       handle,
-      includeAddToAlbum,
-      includeAddToPlaylist,
-      includeArtistPick,
-      includeEdit,
-      ddexApp,
-      includeEmbed,
-      includeFavorite,
       includeRepost,
       includeShare,
-      includeAlbumPage,
-      includeTrackPage,
-      isArtistPick,
-      isDeleted,
-      isFavorited,
-      isOwner,
-      isOwnerDeactivated,
-      isReposted,
-      isUnlisted,
       openAddToCollectionModal,
       openEmbedModal,
       repostTrack,
-      saveTrack,
-      setArtistPick,
       shareTrack,
       trackId,
       trackTitle,
       trackPermalink,
       genre,
       undoRepostTrack,
-      unsaveTrack,
       unsetArtistPick
     } = props
 
-    const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-      { trackId },
-      { enabled: !!trackId }
-    )
+    const albumInfo = track?.album_backlink
     const isLongFormContent =
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
 
     const shareMenuItem = {
       text: messages.share,
-      onClick: () => {
-        if (trackId) {
-          shareTrack(trackId)
-          toast(messages.copiedToClipboard)
-        }
-      }
+      onClick: () => shareTrack(trackId)
     }
 
     const repostMenuItem = {
-      text: isReposted ? messages.undoRepost : messages.repost,
+      text: props.isReposted ? messages.undoRepost : messages.repost,
       // Set timeout so the menu has time to close before we propagate the change.
       onClick: () =>
         setTimeout(() => {
-          isReposted ? undoRepostTrack(trackId) : repostTrack(trackId)
-          toast(isReposted ? messages.unreposted : messages.reposted)
+          props.isReposted ? undoRepostTrack(trackId) : repostTrack(trackId)
+          toast(props.isReposted ? messages.unreposted : messages.reposted)
         }, 0)
     }
 
@@ -191,7 +198,7 @@ const TrackMenu = (props: TrackMenuProps) => {
       // Set timeout so the menu has time to close before we propagate the change.
       onClick: () =>
         setTimeout(() => {
-          isFavorited ? unsaveTrack(trackId) : saveTrack(trackId)
+          toggleSaveTrack()
         }, 0)
     }
 
@@ -220,10 +227,9 @@ const TrackMenu = (props: TrackMenuProps) => {
     }
 
     const trackPageMenuItem = {
-      text:
-        isLongFormContent && isNewPodcastControlsEnabled
-          ? messages.visitEpisodePage
-          : messages.visitTrackPage,
+      text: isLongFormContent
+        ? messages.visitEpisodePage
+        : messages.visitTrackPage,
       onClick: () => {
         goToRoute(trackPermalink)
       }
@@ -256,7 +262,7 @@ const TrackMenu = (props: TrackMenuProps) => {
       onClick: () =>
         albumInfo &&
         goToRoute(
-          albumPage(handle, albumInfo?.playlist_name, albumInfo?.playlist_id)
+          albumPage(handle, albumInfo.playlist_name, albumInfo.playlist_id)
         )
     }
 
@@ -269,11 +275,17 @@ const TrackMenu = (props: TrackMenuProps) => {
       text: isArtistPick ? messages.unsetArtistPick : messages.setArtistPick,
       onClick: isArtistPick
         ? () => unsetArtistPick()
-        : () => setArtistPick(trackId)
+        : () => props.setArtistPick(trackId)
+    }
+
+    const deleteTrackMenuItem = {
+      text: messages.deleteTrack,
+      onClick: () => onDeleteTrack(trackId),
+      destructive: true
     }
 
     const editTrackMenuItem = {
-      text: 'Edit Track',
+      text: messages.editTrack,
       onClick: () => onEditTrack(trackId)
     }
 
@@ -301,7 +313,7 @@ const TrackMenu = (props: TrackMenuProps) => {
     }
     if (trackId && trackTitle && !isDeleted) {
       if (includeTrackPage) menu.items.push(trackPageMenuItem)
-      if (isLongFormContent && isNewPodcastControlsEnabled) {
+      if (isLongFormContent) {
         const playbackPosition = trackPlaybackPositions?.[trackId]
         menu.items.push(
           playbackPosition?.status === 'COMPLETED'
@@ -328,6 +340,9 @@ const TrackMenu = (props: TrackMenuProps) => {
     if (includeEmbed && !isDeleted) {
       menu.items.push(embedMenuItem)
     }
+    if (includeDelete && isOwner && !isDeleted && !ddexApp) {
+      menu.items.push(deleteTrackMenuItem)
+    }
 
     return menu
   }
@@ -346,11 +361,17 @@ function mapStateToProps(state: AppState) {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
+    goToRoute: (route: string) => dispatch(push(route)),
     addTrackToPlaylist: (trackId: ID, playlistId: ID) =>
       dispatch(addTrackToPlaylist(trackId, playlistId)),
     shareTrack: (trackId: ID) =>
-      dispatch(shareTrack(trackId, ShareSource.OVERFLOW)),
+      dispatch(
+        requestOpenShareModal({
+          type: 'track',
+          trackId,
+          source: ShareSource.OVERFLOW
+        })
+      ),
     saveTrack: (trackId: ID) =>
       dispatch(saveTrack(trackId, FavoriteSource.OVERFLOW)),
     unsaveTrack: (trackId: ID) =>
@@ -373,22 +394,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     openEmbedModal: (trackId: ID) =>
       dispatch(embedModalActions.open(trackId, PlayableType.TRACK))
   }
-}
-
-TrackMenu.defaultProps = {
-  includeShare: false,
-  includeRepost: false,
-  isFavorited: false,
-  isReposted: false,
-  includeEdit: true,
-  includeEmbed: true,
-  includeFavorite: true,
-  includeAlbumPage: true,
-  includeTrackPage: true,
-  includeAddToAlbum: true,
-  includeAddToPlaylist: true,
-  includeArtistPick: true,
-  extraMenuItems: []
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(TrackMenu)

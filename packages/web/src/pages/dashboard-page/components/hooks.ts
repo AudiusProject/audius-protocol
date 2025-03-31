@@ -12,7 +12,7 @@ import { accountSelectors } from '@audius/common/store'
 import {
   IconCart,
   IconCollectible,
-  IconSpecialAccess,
+  IconSparkles,
   IconVisibilityHidden,
   IconVisibilityPublic
 } from '@audius/harmony'
@@ -228,7 +228,7 @@ export const useArtistDashboardTrackFilters = () => {
       filterButtonTrackOptions.push({
         id: TrackFilters.SPECIAL_ACCESS,
         label: messages.specialAcess,
-        icon: IconSpecialAccess,
+        icon: IconSparkles,
         value: TrackFilters.SPECIAL_ACCESS
       })
     }

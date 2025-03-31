@@ -1,5 +1,6 @@
-import { LOCATION_CHANGE } from 'connected-react-router'
 import { take } from 'redux-saga/effects'
+
+import { LOCATION_CHANGE } from 'utils/navigation'
 
 enum LocationAction {
   PUSH = 'PUSH',
@@ -14,11 +15,9 @@ if (typeof window !== 'undefined') {
 function* trackLocation() {
   while (true) {
     const {
-      payload: { location, action, isFirstRendering }
+      payload: { location, action }
     } = yield take(LOCATION_CHANGE)
-    if (isFirstRendering) {
-      ;(window as any).locationHistory.push(location)
-    } else if (action === LocationAction.POP) {
+    if (action === LocationAction.POP) {
       ;(window as any).locationHistory.pop()
     } else if (action === LocationAction.REPLACE) {
       const lastIndex = (window as any).locationHistory.length - 1

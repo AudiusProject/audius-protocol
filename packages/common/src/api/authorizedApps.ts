@@ -1,6 +1,7 @@
+import { Id } from '@audius/sdk'
+
 import { createApi } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
-import { encodeHashId } from '~/utils/hashIds'
 
 import { DeveloperApp } from './developerApps'
 
@@ -14,7 +15,7 @@ const authorizedAppsApi = createApi({
   endpoints: {
     getAuthorizedApps: {
       async fetch({ id }: { id: ID }, { audiusSdk }) {
-        const encodedUserId = encodeHashId(id) as string
+        const encodedUserId = Id.parse(id)
         const sdk = await audiusSdk()
         const { data = [] } = await sdk.users.getAuthorizedApps({
           id: encodedUserId
@@ -37,7 +38,7 @@ const authorizedAppsApi = createApi({
     removeAuthorizedApp: {
       async fetch(args: RemoveAuthorizedAppArgs, { audiusSdk }) {
         const { userId, apiKey } = args
-        const encodedUserId = encodeHashId(userId) as string
+        const encodedUserId = Id.parse(userId)
         const sdk = await audiusSdk()
 
         await sdk.grants.revokeGrant({

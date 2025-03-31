@@ -7,6 +7,7 @@ import type { SdkServicesConfig } from './types'
 export const developmentConfig: SdkServicesConfig = {
   "network": {
     "minVersion": "0.0.0",
+    "apiEndpoint": "https://audius-protocol-discovery-provider-1",
     "discoveryNodes": [
       {
         "delegateOwnerWallet": "0xd09ba371c359f10f22ccda12fd26c598c7921bda3220c9942174562bc6a36fe8",
@@ -46,11 +47,13 @@ export const developmentConfig: SdkServicesConfig = {
     "rewardManagerLookupTableAddress": "GNHKVSmHvoRBt1JJCxz7RSMfzDQGDGhGEjmhHyxb3K5J"
   },
   "ethereum": {
-    "rpcEndpoint": "https://audius-protocol-eth-ganache-1",
+    "rpcEndpoint": "http://audius-protocol-eth-ganache-1",
     "addresses": {
       "ethRewardsManagerAddress": "0x",
       "serviceProviderFactoryAddress": "0x",
-      "serviceTypeManagerAddress": "0x"
+      "serviceTypeManagerAddress": "0x",
+      "audiusTokenAddress": "0xdcB2fC9469808630DD0744b0adf97C0003fC29B2",
+      "audiusWormholeAddress": "0xf6f45e4d836da1d4ecd43bb1074620bfb0b7e0d7"
     }
   }
 }

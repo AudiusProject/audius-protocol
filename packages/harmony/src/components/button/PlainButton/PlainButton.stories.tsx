@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react'
 
-import { Box, Flex } from 'components/layout'
-import { IconCaretDown, IconNote, IconUserFollowing } from 'icons'
+import { Box, Flex } from '~harmony/components/layout'
+import { IconCaretDown, IconNote, IconUserFollowing } from '~harmony/icons'
 
 import { PlainButton } from './PlainButton'
 

@@ -10,15 +10,16 @@ import {
   IconSettings,
   IconButton,
   Paper,
-  Flex
+  Flex,
+  Text,
+  IconMessages
 } from '@audius/harmony'
 import { useSelector } from 'react-redux'
+import { useMedia } from 'react-use'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { HeaderGutter } from 'components/header/desktop/HeaderGutter'
 
 import { ChatBlastHeader } from './ChatBlastHeader'
-import styles from './ChatHeader.module.css'
 import { UserChatHeader } from './UserChatHeader'
 
 const messages = {
@@ -50,47 +51,41 @@ export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
       setInboxSettingsVisible(true)
     }, [setInboxSettingsVisible])
 
-    return (
-      <>
-        <HeaderGutter
-          headerContainerRef={headerContainerRef}
-          scrollBarWidth={scrollBarWidth}
-          className={styles.gutterOverride}
+    const isSmallScreen = useMedia('(max-width: 1080px)')
+
+    const headerContent = (
+      <Flex p='l' alignItems='flex-end' gap='m'>
+        <IconMessages size='2xl' color='heading' />
+        <Text variant='heading' strength='default' size='l' color='heading'>
+          {messages.header}
+        </Text>
+        <IconButton
+          aria-label={messages.settings}
+          icon={IconSettings}
+          onClick={handleSettingsClicked}
         />
-        <Paper
-          shadow='flat'
-          ref={ref}
-          css={{
-            marginLeft: -20,
-            height: 112
-          }}
-        >
-          <Flex className={styles.left}>
-            <h1 className={styles.header}>{messages.header}</h1>
-            <div className={styles.options}>
-              <IconButton
-                aria-label={messages.settings}
-                icon={IconSettings}
-                color='default'
-                onClick={handleSettingsClicked}
-              />
-              <IconButton
-                aria-label={messages.compose}
-                icon={IconCompose}
-                color='default'
-                onClick={handleComposeClicked}
-              />
-            </div>
-          </Flex>
-          <Flex className={styles.right}>
-            {isBlast ? (
-              <ChatBlastHeader chat={chat} />
-            ) : (
-              <UserChatHeader chatId={chat?.chat_id} />
-            )}
-          </Flex>
-        </Paper>
-      </>
+        <IconButton
+          aria-label={messages.compose}
+          icon={IconCompose}
+          onClick={handleComposeClicked}
+        />
+      </Flex>
+    )
+
+    return (
+      <Paper shadow='flat' ref={ref} pl={20} ml={-80} h={112}>
+        <Flex w={isSmallScreen ? 96 : 400} borderRight='default'>
+          {isSmallScreen ? null : headerContent}
+        </Flex>
+        {isSmallScreen ? headerContent : null}
+        <Flex p='l' flex={1} alignItems='flex-end'>
+          {isBlast ? (
+            <ChatBlastHeader chat={chat} />
+          ) : (
+            <UserChatHeader chatId={chat?.chat_id} />
+          )}
+        </Flex>
+      </Paper>
     )
   }
 )

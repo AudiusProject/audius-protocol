@@ -1,8 +1,3 @@
-export enum DefaultSizes {
-  // Used as a catch-all fallback when no other size data is available.
-  OVERRIDE = 'OVERRIDE'
-}
-
 export enum SquareSizes {
   SIZE_150_BY_150 = '150x150',
   SIZE_480_BY_480 = '480x480',
@@ -21,8 +16,7 @@ export type ImageSizesObjectWithoutOverride<
 > = Partial<Record<ImageSizeEnum, URL>>
 
 export type ImageSizesObject<ImageSizeEnum extends SquareSizes | WidthSizes> =
-  ImageSizesObjectWithoutOverride<ImageSizeEnum> &
-    Partial<Record<DefaultSizes, URL | number>>
+  ImageSizesObjectWithoutOverride<ImageSizeEnum>
 
 export type CoverArtSizesCids = ImageSizesObjectWithoutOverride<SquareSizes>
 export type CoverArtSizes = ImageSizesObject<SquareSizes>

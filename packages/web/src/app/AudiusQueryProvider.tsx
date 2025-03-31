@@ -4,9 +4,13 @@ import { AudiusQueryContext } from '@audius/common/audius-query'
 import { useDispatch } from 'react-redux'
 
 import * as analytics from 'services/analytics'
-import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { audiusSdk } from 'services/audius-sdk'
+import {
+  audiusSdk,
+  authService,
+  identityService,
+  solanaWalletService
+} from 'services/audius-sdk'
 import { env } from 'services/env'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
@@ -22,9 +26,11 @@ export const AudiusQueryProvider = (props: AudiusQueryProviderProps) => {
   return (
     <AudiusQueryContext.Provider
       value={{
-        apiClient,
         audiusBackend: audiusBackendInstance,
         audiusSdk,
+        authService,
+        identityService,
+        solanaWalletService,
         dispatch,
         reportToSentry,
         env,

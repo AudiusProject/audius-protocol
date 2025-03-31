@@ -12,8 +12,10 @@ from web3.datastructures import AttributeDict
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db, populate_mock_db_blocks
 from src.challenges.challenge_event import ChallengeEvent
-from src.models.indexing.cid_data import CIDData
+from src.models.users.associated_wallet import AssociatedWallet
+from src.models.users.collectibles import Collectibles
 from src.models.users.user import User
+from src.queries.get_balances import IMMEDIATE_REFRESH_REDIS_PREFIX
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks.entity_manager.entities.user import UserEventMetadata, update_user_events
 from src.tasks.entity_manager.entity_manager import entity_manager_update
@@ -365,13 +367,11 @@ def test_index_valid_user(app, mocker):
                 "user_id": 1,
                 "handle": "user-1",
                 "wallet": "user1wallet",
-                "metadata_multihash": "QmCreateUser1",
             },
             {
                 "user_id": 2,
                 "handle": "user-1",
                 "wallet": "User2Wallet",
-                "metadata_multihash": "QmCreateUser2",
             },
         ],
         "tracks": [
@@ -395,18 +395,6 @@ def test_index_valid_user(app, mocker):
             {
                 "user_id": USER_ID_OFFSET,
                 "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
-            },
-        ],
-        "cid_datas": [
-            {
-                "cid": "QmCreateUser1",
-                "type": "user",
-                "data": {},
-            },
-            {
-                "cid": "QmCreateUser2",
-                "type": "user",
-                "data": {},
             },
         ],
     }
@@ -459,9 +447,6 @@ def test_index_valid_user(app, mocker):
         )
         assert user_3.name == "Isaac"
         assert user_3.handle == "isaac"
-
-        all_cid: List[CIDData] = session.query(CIDData).all()
-        assert len(all_cid) == 6
 
         calls = [
             mock.call.dispatch(
@@ -1251,16 +1236,8 @@ def test_index_empty_bio(app, mocker):
                 "user_id": 2,
                 "handle": "user-1",
                 "wallet": "User2Wallet",
-                "metadata_multihash": "QmCreateUser2",
             },
-        ],
-        "cid_datas": [
-            {
-                "cid": "QmCreateUser2",
-                "type": "user",
-                "data": {},
-            },
-        ],
+        ]
     }
 
     populate_mock_db(db, entities)
@@ -1466,3 +1443,783 @@ def test_index_adding_spl_usdc_payout_wallet(app, mocker):
             user.spl_usdc_payout_wallet
             == "7MjEvdyxduYPYwikWovAJ9TjLkzgdW3DiihysYTTN4up"
         )
+
+
+def test_add_associated_wallet(app, mocker):
+    """Tests adding associated wallets with valid and invalid signatures"""
+    bus_mock = set_patches(mocker)
+
+    redis_mock = mocker.Mock()
+    redis_mock.sadd = mocker.Mock()
+
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        update_task = UpdateTask(web3, bus_mock, redis=redis_mock)
+
+    entities = {
+        "users": [
+            {
+                "user_id": 1,
+                "handle": "britneyspores",
+                "wallet": "user1wallet",
+            },
+        ]
+    }
+
+    populate_mock_db(db, entities)
+
+    # Test data for adding ETH wallet
+    eth_wallet = "0x1234567890123456789012345678901234567890"
+    eth_signature = "0xvalid_signature"  # Mock signature
+    eth_metadata = {
+        "chain": "eth",
+        "wallet_address": eth_wallet,
+        "signature": eth_signature,
+    }
+
+    # Test data for adding SOL wallet
+    sol_wallet = "DxMWXrYWxYGgAqNxqzwCd5zyGFn9bGF1pBBCDrQArYox"
+    sol_signature = "0xvalid_signature"  # Mock signature
+    sol_metadata = {
+        "chain": "sol",
+        "wallet_address": sol_wallet,
+        "signature": sol_signature,
+    }
+
+    # Invalid signature test data
+    invalid_eth_wallet = "0x2345678901234567890123456789012345678901"
+    invalid_eth_metadata = {
+        "chain": "eth",
+        "wallet_address": invalid_eth_wallet,
+        "signature": "0xinvalid_signature",
+    }
+
+    tx_receipts = {
+        "AddEthWalletTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": "",
+                        "_entityType": "AssociatedWallet",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": json.dumps({"cid": "", "data": eth_metadata}),
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "AddSolWalletTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": "",
+                        "_entityType": "AssociatedWallet",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": json.dumps({"cid": "", "data": sol_metadata}),
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "AddInvalidSignatureTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": "",
+                        "_entityType": "AssociatedWallet",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": json.dumps(
+                            {"cid": "", "data": invalid_eth_metadata}
+                        ),
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
+    # Mock signature validation
+    def mock_validate_signature(chain, web3, user_id, wallet, signature):
+        if signature == "0xvalid_signature":
+            return True
+        return False
+
+    mocker.patch(
+        "src.tasks.entity_manager.entities.user.validate_signature",
+        side_effect=mock_validate_signature,
+    )
+
+    with db.scoped_session() as session:
+        # Index transactions
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
+            block_hash=hex(0),
+        )
+
+        # Verify results
+        eth_wallet_record = (
+            session.query(AssociatedWallet)
+            .filter(
+                AssociatedWallet.user_id == 1,
+                AssociatedWallet.wallet == eth_wallet,
+                AssociatedWallet.chain == "eth",
+            )
+            .first()
+        )
+        assert eth_wallet_record is not None
+        assert eth_wallet_record.is_current
+        assert not eth_wallet_record.is_delete
+
+        sol_wallet_record = (
+            session.query(AssociatedWallet)
+            .filter(
+                AssociatedWallet.user_id == 1,
+                AssociatedWallet.wallet == sol_wallet,
+                AssociatedWallet.chain == "sol",
+            )
+            .first()
+        )
+        assert sol_wallet_record is not None
+        assert sol_wallet_record.is_current
+        assert not sol_wallet_record.is_delete
+
+        # Invalid signature wallet should not exist
+        invalid_wallet_record = (
+            session.query(AssociatedWallet)
+            .filter(
+                AssociatedWallet.user_id == 1,
+                AssociatedWallet.wallet == invalid_eth_wallet,
+                AssociatedWallet.chain == "eth",
+            )
+            .first()
+        )
+        assert invalid_wallet_record is None
+
+        # Verify balance refresh was called
+        redis_mock.sadd.assert_called_with(IMMEDIATE_REFRESH_REDIS_PREFIX, 1)
+
+
+def test_add_existing_associated_wallet(app, mocker):
+    """Tests adding a wallet that already exists"""
+    bus_mock = set_patches(mocker)
+
+    redis_mock = mocker.Mock()
+    redis_mock.sadd = mocker.Mock()
+
+    # setup db and mocked txs
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        update_task = UpdateTask(web3, bus_mock, redis=redis_mock)
+
+    eth_wallet = "0x1234567890123456789012345678901234567890"
+    eth_signature = "0xvalid_signature"  # Mock signature
+    eth_metadata = {
+        "chain": "eth",
+        "wallet_address": eth_wallet,
+        "signature": eth_signature,
+    }
+
+    tx_receipts = {
+        "AddExistingWalletTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": "",
+                        "_entityType": "AssociatedWallet",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": json.dumps({"cid": "", "data": eth_metadata}),
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+    mocker.patch(
+        "src.tasks.entity_manager.entities.user.validate_signature",
+        return_value=True,
+    )
+
+    # Create existing wallet association
+    entities = {
+        "users": [
+            {
+                "user_id": 1,
+                "handle": "user-1",
+                "wallet": "user1wallet",
+            },
+        ],
+        "associated_wallets": [
+            {
+                "user_id": 1,
+                "wallet": eth_wallet,
+                "chain": "eth",
+                "is_current": True,
+                "is_delete": False,
+                "blocknumber": 0,
+                "blockhash": hex(0),
+            }
+        ],
+    }
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        # Verify initial state
+        initial_wallet = (
+            session.query(AssociatedWallet)
+            .filter(
+                AssociatedWallet.user_id == 1,
+                AssociatedWallet.wallet == eth_wallet,
+                AssociatedWallet.chain == "eth",
+            )
+            .first()
+        )
+        assert initial_wallet is not None
+        assert initial_wallet.is_current
+        assert not initial_wallet.is_delete
+        initial_blockhash = initial_wallet.blockhash
+        initial_blocknumber = initial_wallet.blocknumber
+
+        # Index transactions
+        total_changes, _ = entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=1,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
+            block_hash=hex(1),
+        )
+
+        # Verify no changes were made
+        assert total_changes == 0
+
+        # Verify the wallet was not modified
+        updated_wallet = (
+            session.query(AssociatedWallet)
+            .filter(
+                AssociatedWallet.user_id == 1,
+                AssociatedWallet.wallet == eth_wallet,
+                AssociatedWallet.chain == "eth",
+            )
+            .first()
+        )
+        assert updated_wallet is not None
+        assert updated_wallet.is_current
+        assert not updated_wallet.is_delete
+        assert updated_wallet.blockhash == initial_blockhash
+        assert updated_wallet.blocknumber == initial_blocknumber
+
+        # Verify balance refresh was not called
+        redis_mock.sadd.assert_not_called()
+
+
+def test_remove_associated_wallet(app, mocker):
+    """Tests removing existing associated wallets (ETH and SOL)"""
+    bus_mock = set_patches(mocker)
+
+    redis_mock = mocker.Mock()
+    redis_mock.sadd = mocker.Mock()
+
+    # setup db and mocked txs
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        update_task = UpdateTask(web3, bus_mock, redis=redis_mock)
+
+    eth_wallet = "0x1234567890123456789012345678901234567890"
+    sol_wallet = "DxMWXrYWxYGgAqNxqzwCd5zyGFn9bGF1pBBCDrQArYox"
+
+    remove_eth_metadata = {
+        "chain": "eth",
+        "wallet_address": eth_wallet,
+    }
+
+    remove_sol_metadata = {
+        "chain": "sol",
+        "wallet_address": sol_wallet,
+    }
+
+    tx_receipts = {
+        "RemoveEthWalletTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": "",
+                        "_entityType": "AssociatedWallet",
+                        "_userId": 1,
+                        "_action": "Delete",
+                        "_metadata": json.dumps(
+                            {"cid": "", "data": remove_eth_metadata}
+                        ),
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "RemoveSolWalletTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": "",
+                        "_entityType": "AssociatedWallet",
+                        "_userId": 1,
+                        "_action": "Delete",
+                        "_metadata": json.dumps(
+                            {"cid": "", "data": remove_sol_metadata}
+                        ),
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
+    # Create existing wallet associations
+    entities = {
+        "users": [
+            {
+                "user_id": 1,
+                "handle": "user-1",
+                "wallet": "user1wallet",
+            },
+        ],
+        "associated_wallets": [
+            {
+                "user_id": 1,
+                "wallet": eth_wallet,
+                "chain": "eth",
+                "is_current": True,
+                "is_delete": False,
+                "blocknumber": 0,
+                "blockhash": hex(0),
+            },
+            {
+                "user_id": 1,
+                "wallet": sol_wallet,
+                "chain": "sol",
+                "is_current": True,
+                "is_delete": False,
+                "blocknumber": 0,
+                "blockhash": hex(0),
+            },
+        ],
+    }
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        # Verify initial state
+        initial_eth_wallet = (
+            session.query(AssociatedWallet)
+            .filter(
+                AssociatedWallet.user_id == 1,
+                AssociatedWallet.wallet == eth_wallet,
+                AssociatedWallet.chain == "eth",
+            )
+            .first()
+        )
+        assert initial_eth_wallet is not None
+        assert initial_eth_wallet.is_current
+        assert not initial_eth_wallet.is_delete
+
+        initial_sol_wallet = (
+            session.query(AssociatedWallet)
+            .filter(
+                AssociatedWallet.user_id == 1,
+                AssociatedWallet.wallet == sol_wallet,
+                AssociatedWallet.chain == "sol",
+            )
+            .first()
+        )
+        assert initial_sol_wallet is not None
+        assert initial_sol_wallet.is_current
+        assert not initial_sol_wallet.is_delete
+
+        # Index transactions
+        total_changes, _ = entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=1,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
+            block_hash=hex(1),
+        )
+
+        # Verify both wallets were removed
+        removed_eth_wallet = (
+            session.query(AssociatedWallet)
+            .filter(
+                AssociatedWallet.user_id == 1,
+                AssociatedWallet.wallet == eth_wallet,
+                AssociatedWallet.chain == "eth",
+            )
+            .first()
+        )
+        assert removed_eth_wallet is None
+
+        removed_sol_wallet = (
+            session.query(AssociatedWallet)
+            .filter(
+                AssociatedWallet.user_id == 1,
+                AssociatedWallet.wallet == sol_wallet,
+                AssociatedWallet.chain == "sol",
+            )
+            .first()
+        )
+        assert removed_sol_wallet is None
+
+        # Verify balance refresh was called exactly once for each removal
+        assert redis_mock.sadd.call_count == 2
+        redis_mock.sadd.assert_has_calls(
+            [
+                mock.call(IMMEDIATE_REFRESH_REDIS_PREFIX, 1),
+                mock.call(IMMEDIATE_REFRESH_REDIS_PREFIX, 1),
+            ]
+        )
+
+
+def test_add_user_collectibles(app, mocker):
+    """Tests adding user collectibles data"""
+    bus_mock = set_patches(mocker)
+
+    # setup db and mocked txs
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        update_task = UpdateTask(web3, bus_mock)
+
+    # Test data for valid collectibles
+    valid_collectibles = {
+        "collectibles": {
+            "order": ["collection1"],
+            "collection1": {},
+        }
+    }
+
+    # Test data for invalid collectibles (not a dict)
+    invalid_collectibles = {"collectibles": "not a dict"}
+
+    tx_receipts = {
+        "AddCollectiblesTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": "",
+                        "_entityType": "Collectibles",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": json.dumps(
+                            {"cid": "", "data": valid_collectibles}
+                        ),
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "InvalidCollectiblesTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": "",
+                        "_entityType": "Collectibles",
+                        "_userId": 2,
+                        "_action": "Create",
+                        "_metadata": json.dumps(
+                            {"cid": "", "data": invalid_collectibles}
+                        ),
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
+    # Create user
+    entities = {
+        "users": [
+            {
+                "user_id": 1,
+                "handle": "user-1",
+                "wallet": "user1wallet",
+            },
+            {
+                "user_id": 2,
+                "handle": "user-2",
+                "wallet": "user2wallet",
+            },
+        ],
+    }
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        # Test adding new collectibles
+        total_changes, _ = entity_manager_update(
+            update_task,
+            session,
+            [entity_manager_txs[0]],  # AddCollectiblesTx
+            block_number=0,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
+            block_hash=hex(0),
+        )
+
+        # Verify collectibles were added
+        collectibles_data = (
+            session.query(Collectibles).filter(Collectibles.user_id == 1).first()
+        )
+        assert collectibles_data is not None
+        assert collectibles_data.data == valid_collectibles["collectibles"]
+        assert total_changes == 1
+
+        # Ensure collectibles flag was set to True
+        user = session.query(User).filter(User.user_id == 1).first()
+        assert user.has_collectibles
+
+        # Test invalid collectibles data
+        total_changes, _ = entity_manager_update(
+            update_task,
+            session,
+            [entity_manager_txs[1]],  # InvalidCollectiblesTx
+            block_number=0,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
+            block_hash=hex(0),
+        )
+
+        # Verify no collectibles were added
+        assert total_changes == 0
+        current_data = (
+            session.query(Collectibles).filter(Collectibles.user_id == 2).first()
+        )
+        assert current_data is None
+
+
+def test_update_user_collectibles(app, mocker):
+    """Tests updating user collectibles data"""
+    bus_mock = set_patches(mocker)
+
+    # setup db and mocked txs
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        update_task = UpdateTask(web3, bus_mock)
+
+    updated_collectibles = {
+        "collectibles": {
+            "order": ["collection1"],
+            "collection1": {},
+            "collection2": {},
+        }
+    }
+
+    tx_receipts = {
+        "UpdateCollectiblesTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": "",
+                        "_entityType": "Collectibles",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": json.dumps(
+                            {"cid": "", "data": updated_collectibles}
+                        ),
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "InvalidCollectiblesTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": "",
+                        "_entityType": "Collectibles",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": json.dumps(
+                            {"cid": "", "data": {"collectibles": "not a dict"}}
+                        ),
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "EmptyCollectiblesTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": "",
+                        "_entityType": "Collectibles",
+                        "_userId": 2,
+                        "_action": "Update",
+                        "_metadata": json.dumps(
+                            {"cid": "", "data": {"collectibles": {}}}
+                        ),
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
+    # Create user
+    entities = {
+        "users": [
+            {
+                "user_id": 1,
+                "handle": "user-1",
+                "wallet": "user1wallet",
+                "has_collectibles": True,
+            },
+            {
+                "user_id": 2,
+                "handle": "user-2",
+                "wallet": "user2wallet",
+                "has_collectibles": True,
+            },
+        ],
+        "collectibles_data": [
+            {
+                "user_id": 1,
+                "data": {"order": ["collection1"], "collection1": {}},
+            },
+            {
+                "user_id": 2,
+                "data": {"order": ["collection1"], "collection1": {}},
+            },
+        ],
+    }
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        # Test updating existing collectibles
+        total_changes, _ = entity_manager_update(
+            update_task,
+            session,
+            [entity_manager_txs[0]],  # UpdateCollectiblesTx
+            block_number=0,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
+            block_hash=hex(0),
+        )
+
+        # Verify collectibles were updated
+        updated_data = (
+            session.query(Collectibles).filter(Collectibles.user_id == 1).first()
+        )
+        assert updated_data is not None
+        assert updated_data.data == updated_collectibles["collectibles"]
+        assert total_changes == 1
+
+        # Test invalid collectibles data
+        total_changes, _ = entity_manager_update(
+            update_task,
+            session,
+            [entity_manager_txs[1]],  # InvalidCollectiblesTx
+            block_number=0,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
+            block_hash=hex(0),
+        )
+        assert total_changes == 0
+        current_data = (
+            session.query(Collectibles).filter(Collectibles.user_id == 1).first()
+        )
+        assert current_data is not None
+        assert current_data.data == updated_collectibles["collectibles"]
+
+        # Test empty collectibles data
+        total_changes, _ = entity_manager_update(
+            update_task,
+            session,
+            [entity_manager_txs[2]],  # EmptyCollectiblesTx
+            block_number=1,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
+            block_hash=hex(1),
+        )
+        assert total_changes == 1
+
+        current_data = (
+            session.query(Collectibles).filter(Collectibles.user_id == 2).first()
+        )
+        assert current_data is not None
+        assert current_data.data == {}
+
+        # Verify collectibles flag was set to False
+        user = session.query(User).filter(User.user_id == 2).first()
+        assert not user.has_collectibles

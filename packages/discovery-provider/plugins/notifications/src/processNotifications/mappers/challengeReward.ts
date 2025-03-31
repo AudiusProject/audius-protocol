@@ -8,7 +8,7 @@ import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { ChallengeId } from '../../email/notifications/types'
-import { formatWei } from '../../utils/format'
+import { AUDIO_DIVISOR, formatWei } from '../../utils/format'
 import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 import {
   buildUserNotificationSettings,
@@ -66,6 +66,9 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
     fp: {
       title: '🎼 Create a Playlist',
       amount: 2
+    },
+    o: {
+      title: 'Airdrop 2: Artist Appreciation'
     }
   }
 
@@ -83,6 +86,10 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
       return `You’ve received ${
         this.challengeInfoMap[this.challengeId].amount
       } $AUDIO for being referred! Invite your friends to join to earn more!`
+    } else if (this.challengeId === 'o') {
+      return `You’ve earned ${
+        this.amount / AUDIO_DIVISOR
+      } $AUDIO for completing this challenge!`
     }
     return `You’ve earned ${
       this.challengeInfoMap[this.challengeId].amount
@@ -105,13 +112,16 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
       .from<UserRow>('users')
       .where('is_current', true)
       .whereIn('user_id', [this.receiverUserId])
-    const users = res.reduce((acc, user) => {
-      acc[user.user_id] = {
-        name: user.name,
-        isDeactivated: user.is_deactivated
-      }
-      return acc
-    }, {} as Record<number, { name: string; isDeactivated: boolean }>)
+    const users = res.reduce(
+      (acc, user) => {
+        acc[user.user_id] = {
+          name: user.name,
+          isDeactivated: user.is_deactivated
+        }
+        return acc
+      },
+      {} as Record<number, { name: string; isDeactivated: boolean }>
+    )
 
     if (users?.[this.receiverUserId]?.isDeactivated) {
       return

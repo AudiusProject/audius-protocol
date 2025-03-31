@@ -1,10 +1,15 @@
 import { useCallback, memo, ReactNode, useEffect, useState } from 'react'
 
-import { useGetCurrentUserId, useGetMutedUsers } from '@audius/common/api'
+import {
+  useCurrentUserId,
+  useGetMutedUsers,
+  useProfileReposts,
+  useProfileTracks,
+  useUserCollectibles
+} from '@audius/common/api'
 import { useMuteUser } from '@audius/common/context'
 import { commentsMessages } from '@audius/common/messages'
 import {
-  CreatePlaylistSource,
   Status,
   Collection,
   ID,
@@ -12,13 +17,13 @@ import {
   ProfilePictureSizes,
   CoverPhotoSizes,
   LineupState,
-  Track
+  Track,
+  User
 } from '@audius/common/models'
 import {
   profilePageFeedLineupActions as feedActions,
   profilePageTracksLineupActions as tracksActions,
-  ProfilePageTabs,
-  ProfileUser
+  ProfilePageTabs
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -26,6 +31,7 @@ import {
   Flex,
   IconAlbum,
   IconCollectible as IconCollectibles,
+  IconArtistBadge as BadgeArtist,
   IconNote,
   IconPlaylists,
   IconRepost as IconReposts,
@@ -33,31 +39,48 @@ import {
   Hint,
   IconQuestionCircle
 } from '@audius/harmony'
+import cn from 'classnames'
 
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
-import { CollectionCard } from 'components/collection'
 import { ConfirmationModal } from 'components/confirmation-modal'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
-import CardLineup from 'components/lineup/CardLineup'
 import Lineup from 'components/lineup/Lineup'
+import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import { LineupVariant } from 'components/lineup/types'
 import Mask from 'components/mask/Mask'
-import NavBanner from 'components/nav-banner/NavBanner'
+import NavBanner, { EmptyNavBanner } from 'components/nav-banner/NavBanner'
+import { FlushPageContainer } from 'components/page/FlushPageContainer'
 import Page from 'components/page/Page'
-import ConnectedProfileCompletionHeroCard from 'components/profile-progress/ConnectedProfileCompletionHeroCard'
-import { ProfileMode, StatBanner } from 'components/stat-banner/StatBanner'
+import ProfilePicture from 'components/profile-picture/ProfilePicture'
+import { ProfileCompletionHeroCard } from 'components/profile-progress/components/ProfileCompletionHeroCard'
+import {
+  EmptyStatBanner,
+  ProfileMode,
+  StatBanner
+} from 'components/stat-banner/StatBanner'
 import { StatProps } from 'components/stats/Stats'
 import UploadChip from 'components/upload/UploadChip'
+import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import useTabs, { TabHeader, useTabRecalculator } from 'hooks/useTabs/useTabs'
 import { BlockUserConfirmationModal } from 'pages/chat-page/components/BlockUserConfirmationModal'
 import { UnblockUserConfirmationModal } from 'pages/chat-page/components/UnblockUserConfirmationModal'
-import EmptyTab from 'pages/profile-page/components/EmptyTab'
 import { getUserPageSEOFields } from 'utils/seo'
+import { zIndex } from 'utils/zIndex'
 
 import { DeactivatedProfileTombstone } from '../DeactivatedProfileTombstone'
+import { EditableName } from '../EditableName'
 
+import { AlbumsTab } from './AlbumsTab'
+import { EmptyTab } from './EmptyTab'
+import { PlaylistsTab } from './PlaylistsTab'
+import { ProfileLeftNav } from './ProfileLeftNav'
 import styles from './ProfilePage.module.css'
-import ProfileWrapping from './ProfileWrapping'
+import {
+  COVER_PHOTO_HEIGHT_PX,
+  PROFILE_LEFT_COLUMN_WIDTH_PX,
+  PROFILE_LOCKUP_HEIGHT_PX,
+  PROFILE_COLUMN_GAP
+} from './constants'
 
 const { profilePage } = route
 
@@ -104,9 +127,7 @@ export type ProfilePageProps = {
   showMuteUserConfirmationModal: boolean
   showUnmuteUserConfirmationModal: boolean
 
-  profile: ProfileUser | null
-  albums: Collection[] | null
-  playlists: Collection[] | null
+  profile: User | null
   status: Status
   goToRoute: (route: string) => void
   artistTracks: LineupState<Track>
@@ -118,8 +139,6 @@ export type ProfilePageProps = {
   pauseUserFeedTrack: () => void
 
   // Methods
-  onFollow: () => void
-  onUnfollow: () => void
   updateName: (name: string) => void
   updateBio: (bio: string) => void
   updateLocation: (location: string) => void
@@ -169,19 +188,128 @@ export type ProfilePageProps = {
   onCloseUnmuteUserConfirmationModal: () => void
 }
 
+const messages = {
+  emptyTab: {
+    uploadedTracks: 'uploaded any tracks',
+    repostedAnything: 'reposted anything'
+  },
+  tabs: {
+    tracks: ProfilePageTabs.TRACKS,
+    albums: ProfilePageTabs.ALBUMS,
+    playlists: ProfilePageTabs.PLAYLISTS,
+    reposts: ProfilePageTabs.REPOSTS,
+    collectibles: ProfilePageTabs.COLLECTIBLES
+  },
+  muteUser: commentsMessages.popups.muteUser,
+  unmuteUser: commentsMessages.popups.unmuteUser
+}
+const RepostsTab = ({ handle }: { handle: string }) => {
+  const {
+    data,
+    isPending,
+    isFetching,
+    isError,
+    pageSize,
+    hasNextPage,
+    loadNextPage,
+    play,
+    pause,
+    lineup,
+    isPlaying
+  } = useProfileReposts({
+    handle
+  })
+  return (
+    <div className={styles.tiles}>
+      <TanQueryLineup
+        data={data}
+        isPending={isPending}
+        isFetching={isFetching}
+        isError={isError}
+        pageSize={pageSize}
+        hasNextPage={hasNextPage}
+        loadNextPage={loadNextPage}
+        play={play}
+        pause={pause}
+        variant={LineupVariant.CONDENSED}
+        actions={feedActions}
+        lineup={lineup}
+        isPlaying={isPlaying}
+      />
+    </div>
+  )
+}
+
+const TracksTab = ({
+  profile,
+  handle,
+  isOwner
+}: {
+  profile: User
+  handle: string
+  isOwner: boolean
+}) => {
+  const {
+    data,
+    isPending,
+    isFetching,
+    isError,
+    pageSize,
+    hasNextPage,
+    loadNextPage,
+    play,
+    pause,
+    lineup,
+    isPlaying
+  } = useProfileTracks({
+    handle
+  })
+
+  const trackUploadChip = isOwner ? (
+    <UploadChip
+      key='upload-chip'
+      type='track'
+      variant='tile'
+      source='profile'
+    />
+  ) : undefined
+
+  return (
+    <TanQueryLineup
+      extraPrecedingElement={trackUploadChip}
+      data={data}
+      isPending={isPending}
+      isFetching={isFetching}
+      isError={isError}
+      pageSize={pageSize}
+      hasNextPage={hasNextPage}
+      loadNextPage={loadNextPage}
+      play={play}
+      pause={pause}
+      lineup={lineup}
+      isPlaying={isPlaying}
+      actions={tracksActions}
+      variant={LineupVariant.CONDENSED}
+    />
+  )
+}
+
+const LeftColumnSpacer = () => (
+  <Box
+    w={PROFILE_LEFT_COLUMN_WIDTH_PX}
+    flex={`0 0 ${PROFILE_LEFT_COLUMN_WIDTH_PX}px`}
+  />
+)
+
 const ProfilePage = ({
   isOwner,
   profile,
-  albums,
-  playlists,
   status,
   goToRoute,
-  // Tracks
   artistTracks,
   playArtistTrack,
   pauseArtistTrack,
   getLineupProps,
-  // Feed
   userFeed,
   playUserFeedTrack,
   pauseUserFeedTrack,
@@ -189,9 +317,6 @@ const ProfilePage = ({
   loadMoreUserFeed,
   loadMoreArtistTracks,
   updateProfile,
-
-  onFollow,
-  onUnfollow,
   updateName,
   updateBio,
   updateLocation,
@@ -212,7 +337,6 @@ const ProfilePage = ({
   onSortByRecent,
   onSortByPopular,
   isArtist,
-  status: profileLoadingStatus,
   activeTab,
   shouldMaskContent,
   editMode,
@@ -224,7 +348,6 @@ const ProfilePage = ({
   onUnblock,
   onMute,
   isBlocked,
-  // Chat modals
   showBlockUserConfirmationModal,
   onCloseBlockUserConfirmationModal,
   showUnblockUserConfirmationModal,
@@ -261,19 +384,23 @@ const ProfilePage = ({
   didChangeTabsFrom
 }: ProfilePageProps) => {
   const renderProfileCompletionCard = () => {
-    return isOwner ? <ConnectedProfileCompletionHeroCard /> : null
+    return isOwner ? <ProfileCompletionHeroCard /> : null
   }
+
+  const { data: collectibles } = useUserCollectibles({ userId })
 
   const profileHasCollectibles =
     profile?.collectibleList?.length || profile?.solanaCollectibleList?.length
-  const profileNeverSetCollectiblesOrder = !profile?.collectibles
+  const profileNeverSetCollectiblesOrder = !collectibles
   const profileHasNonEmptyCollectiblesOrder =
-    profile?.collectibles?.order?.length ?? false
+    collectibles?.order?.length ?? false
   const profileHasVisibleImageOrVideoCollectibles =
     profileHasCollectibles &&
     (profileNeverSetCollectiblesOrder || profileHasNonEmptyCollectiblesOrder)
   const didCollectiblesLoadAndWasEmpty =
     profileHasCollectibles && !profileHasNonEmptyCollectiblesOrder
+
+  const isDeactivated = !!profile?.is_deactivated
 
   const isUserOnTheirProfile = accountUserId === userId
 
@@ -283,128 +410,67 @@ const ProfilePage = ({
   }, [tabRecalculator])
 
   const getArtistProfileContent = () => {
-    if (!profile || !albums || !playlists) return { headers: [], elements: [] }
-    const albumCards = albums.map((album) => (
-      <CollectionCard key={album.playlist_id} id={album.playlist_id} size='m' />
-    ))
-    if (isOwner) {
-      albumCards.unshift(
-        <UploadChip
-          key='upload-chip'
-          type='album'
-          variant='card'
-          isFirst={albumCards.length === 0}
-          source={CreatePlaylistSource.PROFILE_PAGE}
-        />
-      )
-    }
-
-    const playlistCards = playlists.map((playlist) => (
-      <CollectionCard
-        key={playlist.playlist_id}
-        id={playlist.playlist_id}
-        size='m'
-      />
-    ))
-    if (isOwner) {
-      playlistCards.unshift(
-        <UploadChip
-          key='upload-chip'
-          type='playlist'
-          variant='card'
-          isFirst={playlistCards.length === 0}
-          source={CreatePlaylistSource.PROFILE_PAGE}
-        />
-      )
-    }
-
-    const trackUploadChip = isOwner ? (
-      <UploadChip
-        key='upload-chip'
-        type='track'
-        variant='tile'
-        source='profile'
-      />
-    ) : null
+    if (!profile) return { headers: [], elements: [] }
 
     const headers: TabHeader[] = [
       {
         icon: <IconNote />,
-        text: ProfilePageTabs.TRACKS,
+        text: messages.tabs.tracks,
         label: ProfilePageTabs.TRACKS,
         to: 'tracks'
       },
       {
         icon: <IconAlbum />,
-        text: ProfilePageTabs.ALBUMS,
+        text: messages.tabs.albums,
         label: ProfilePageTabs.ALBUMS,
         to: 'albums'
       },
       {
         icon: <IconPlaylists />,
-        text: ProfilePageTabs.PLAYLISTS,
+        text: messages.tabs.playlists,
         label: ProfilePageTabs.PLAYLISTS,
         to: 'playlists'
       },
       {
         icon: <IconReposts />,
-        text: ProfilePageTabs.REPOSTS,
+        text: messages.tabs.reposts,
         label: ProfilePageTabs.REPOSTS,
         to: 'reposts'
       }
     ]
     const elements = [
-      <div key={ProfilePageTabs.TRACKS} className={styles.tiles}>
+      <Box w='100%' key={ProfilePageTabs.TRACKS}>
         {renderProfileCompletionCard()}
         {status === Status.SUCCESS ? (
           artistTracks.status === Status.SUCCESS &&
           artistTracks.entries.length === 0 ? (
-            <EmptyTab
-              isOwner={isOwner}
-              name={profile.name}
-              text={'uploaded any tracks'}
-            />
+            <>
+              {isOwner ? (
+                <UploadChip
+                  key='upload-chip'
+                  type='track'
+                  variant='tile'
+                  source='profile'
+                />
+              ) : null}
+              <EmptyTab
+                isOwner={isOwner}
+                name={profile.name}
+                text={messages.emptyTab.uploadedTracks}
+              />
+            </>
           ) : (
-            <Lineup
-              {...getLineupProps(artistTracks)}
-              extraPrecedingElement={trackUploadChip}
-              animateLeadingElement
-              leadingElementId={profile.artist_pick_track_id}
-              loadMore={loadMoreArtistTracks}
-              playTrack={playArtistTrack}
-              pauseTrack={pauseArtistTrack}
-              actions={tracksActions}
-              variant={LineupVariant.GRID}
-            />
+            <TracksTab profile={profile} handle={handle} isOwner={isOwner} />
           )
         ) : null}
-      </div>,
-      <div key={ProfilePageTabs.ALBUMS} className={styles.cards}>
-        {albums.length === 0 && !isOwner ? (
-          <EmptyTab
-            isOwner={isOwner}
-            name={profile.name}
-            text={'created any albums'}
-          />
-        ) : (
-          <CardLineup cardsClassName={styles.cardLineup} cards={albumCards} />
-        )}
-      </div>,
-      <div key={ProfilePageTabs.PLAYLISTS} className={styles.cards}>
-        {playlists.length === 0 && !isOwner ? (
-          <EmptyTab
-            isOwner={isOwner}
-            name={profile.name}
-            text={'created any playlists'}
-          />
-        ) : (
-          <CardLineup
-            cardsClassName={styles.cardLineup}
-            cards={playlistCards}
-          />
-        )}
-      </div>,
-      <div key={ProfilePageTabs.REPOSTS} className={styles.tiles}>
+      </Box>,
+      <Box w='100%' key={ProfilePageTabs.ALBUMS}>
+        <AlbumsTab isOwner={isOwner} profile={profile} userId={userId} />
+      </Box>,
+      <Box w='100%' key={ProfilePageTabs.PLAYLISTS}>
+        <PlaylistsTab isOwner={isOwner} profile={profile} userId={userId} />
+      </Box>,
+      <Box w='100%' key={ProfilePageTabs.REPOSTS}>
         {status === Status.SUCCESS ? (
           (userFeed.status === Status.SUCCESS &&
             userFeed.entries.length === 0) ||
@@ -412,19 +478,13 @@ const ProfilePage = ({
             <EmptyTab
               isOwner={isOwner}
               name={profile.name}
-              text={'reposted anything'}
+              text={messages.emptyTab.repostedAnything}
             />
           ) : (
-            <Lineup
-              {...getLineupProps(userFeed)}
-              loadMore={loadMoreUserFeed}
-              playTrack={playUserFeedTrack}
-              pauseTrack={pauseUserFeedTrack}
-              actions={feedActions}
-            />
+            <RepostsTab handle={handle} />
           )
         ) : null}
-      </div>
+      </Box>
     ]
 
     if (
@@ -435,25 +495,25 @@ const ProfilePage = ({
     ) {
       headers.push({
         icon: <IconCollectibles />,
-        text: ProfilePageTabs.COLLECTIBLES,
+        text: messages.tabs.collectibles,
         label: ProfilePageTabs.COLLECTIBLES,
         to: 'collectibles'
       })
 
       elements.push(
-        <div key={ProfilePageTabs.COLLECTIBLES} className={styles.tiles}>
+        <Box w='100%' key={ProfilePageTabs.COLLECTIBLES}>
           <CollectiblesPage
             userId={userId}
             name={name}
             isMobile={false}
             isUserOnTheirProfile={isUserOnTheirProfile}
             profile={profile}
-            updateProfile={updateProfile}
             updateProfilePicture={updateProfilePicture}
             onLoad={recalculate}
             onSave={onSave}
+            allowUpdates
           />
-        </div>
+        </Box>
       )
     }
 
@@ -466,39 +526,24 @@ const ProfilePage = ({
   }
 
   const getUserProfileContent = () => {
-    if (!profile || !playlists) return { headers: [], elements: [] }
-    const playlistCards = playlists.map((playlist) => (
-      <CollectionCard
-        key={playlist.playlist_id}
-        id={playlist.playlist_id}
-        size='m'
-      />
-    ))
-    playlistCards.unshift(
-      <UploadChip
-        type='playlist'
-        variant='card'
-        source={CreatePlaylistSource.PROFILE_PAGE}
-        isFirst={playlistCards.length === 0}
-      />
-    )
+    if (!profile) return { headers: [], elements: [] }
 
     const headers: TabHeader[] = [
       {
         icon: <IconReposts />,
-        text: ProfilePageTabs.REPOSTS,
+        text: messages.tabs.reposts,
         label: ProfilePageTabs.REPOSTS,
         to: 'reposts'
       },
       {
         icon: <IconPlaylists />,
-        text: ProfilePageTabs.PLAYLISTS,
+        text: messages.tabs.playlists,
         label: ProfilePageTabs.PLAYLISTS,
         to: 'playlists'
       }
     ]
     const elements = [
-      <div key={ProfilePageTabs.REPOSTS} className={styles.tiles}>
+      <Box w='100%' key={ProfilePageTabs.REPOSTS}>
         {renderProfileCompletionCard()}
         {(userFeed.status === Status.SUCCESS &&
           userFeed.entries.length === 0) ||
@@ -506,7 +551,7 @@ const ProfilePage = ({
           <EmptyTab
             isOwner={isOwner}
             name={profile.name}
-            text={'reposted anything'}
+            text={messages.emptyTab.repostedAnything}
           />
         ) : (
           <Lineup
@@ -518,21 +563,10 @@ const ProfilePage = ({
             actions={feedActions}
           />
         )}
-      </div>,
-      <div key={ProfilePageTabs.PLAYLISTS} className={styles.cards}>
-        {playlists.length === 0 && !isOwner ? (
-          <EmptyTab
-            isOwner={isOwner}
-            name={profile.name}
-            text={'created any playlists'}
-          />
-        ) : (
-          <CardLineup
-            cardsClassName={styles.cardLineup}
-            cards={playlistCards}
-          />
-        )}
-      </div>
+      </Box>,
+      <Box w='100%' key={ProfilePageTabs.PLAYLISTS}>
+        <PlaylistsTab isOwner={isOwner} profile={profile} userId={userId} />
+      </Box>
     ]
 
     if (
@@ -542,25 +576,25 @@ const ProfilePage = ({
     ) {
       headers.push({
         icon: <IconCollectibles />,
-        text: ProfilePageTabs.COLLECTIBLES,
+        text: messages.tabs.collectibles,
         label: ProfilePageTabs.COLLECTIBLES,
         to: 'collectibles'
       })
 
       elements.push(
-        <div key={ProfilePageTabs.COLLECTIBLES} className={styles.tiles}>
+        <Box w='100%' key={ProfilePageTabs.COLLECTIBLES}>
           <CollectiblesPage
             userId={userId}
             name={name}
             isMobile={false}
             isUserOnTheirProfile={isUserOnTheirProfile}
             profile={profile}
-            updateProfile={updateProfile}
             updateProfilePicture={updateProfilePicture}
             onLoad={recalculate}
             onSave={onSave}
+            allowUpdates
           />
-        </div>
+        </Box>
       )
     }
 
@@ -578,7 +612,6 @@ const ProfilePage = ({
     isMobile: false,
     tabs: headers,
     tabRecalculator,
-    bodyClassName: styles.tabBody,
     initialTab: activeTab || undefined,
     elements,
     pathname: profilePage(handle)
@@ -594,10 +627,10 @@ const ProfilePage = ({
   const muteUserConfirmationBody = (
     <Flex gap='l' direction='column'>
       <Text color='default' textAlign='left'>
-        {commentsMessages.popups.muteUser.body(name)}
+        {messages.muteUser.body(name)}
       </Text>
       <Hint icon={IconQuestionCircle} css={{ textAlign: 'left' }}>
-        {commentsMessages.popups.muteUser.hint}
+        {messages.muteUser.hint}
       </Hint>
     </Flex>
   ) as ReactNode
@@ -605,19 +638,19 @@ const ProfilePage = ({
   const unMuteUserConfirmationBody = (
     <Flex gap='l' direction='column'>
       <Text color='default' textAlign='left'>
-        {commentsMessages.popups.unmuteUser.body(name)}
+        {messages.unmuteUser.body(name)}
       </Text>
       <Hint icon={IconQuestionCircle} css={{ textAlign: 'left' }}>
-        {commentsMessages.popups.unmuteUser.hint}
+        {messages.unmuteUser.hint}
       </Hint>
     </Flex>
   ) as ReactNode
 
   const [muteUser] = useMuteUser()
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useCurrentUserId()
 
   const { data: mutedUsers } = useGetMutedUsers({
-    userId: currentUserId!
+    userId: currentUserId
   })
 
   const isMutedFromRequest =
@@ -636,103 +669,206 @@ const ProfilePage = ({
       canonicalUrl={canonicalUrl}
       structuredData={structuredData}
       variant='flush'
-      contentClassName={styles.profilePageWrapper}
       scrollableSearch
       fromOpacity={1}
     >
-      <Box w='100%'>
-        <ProfileWrapping
-          userId={userId}
-          isDeactivated={!!profile?.is_deactivated}
-          allowAiAttribution={!!profile?.allow_ai_attribution}
-          loading={status === Status.LOADING}
-          verified={verified}
-          profilePictureSizes={profilePictureSizes}
-          updatedProfilePicture={updatedProfilePicture}
-          hasProfilePicture={hasProfilePicture}
-          isOwner={isOwner}
-          isArtist={isArtist}
-          editMode={editMode}
-          name={name}
-          handle={handle}
-          bio={bio}
-          location={location}
-          twitterHandle={twitterHandle}
-          instagramHandle={instagramHandle}
-          tikTokHandle={tikTokHandle}
-          twitterVerified={!!twitterVerified}
-          instagramVerified={!!instagramVerified}
-          tikTokVerified={!!tikTokVerified}
-          website={website}
-          donation={donation}
-          created={created}
-          onUpdateName={updateName}
-          onUpdateProfilePicture={updateProfilePicture}
-          onUpdateBio={updateBio}
-          onUpdateLocation={updateLocation}
-          onUpdateTwitterHandle={updateTwitterHandle}
-          onUpdateInstagramHandle={updateInstagramHandle}
-          onUpdateTikTokHandle={updateTikTokHandle}
-          onUpdateWebsite={updateWebsite}
-          onUpdateDonation={updateDonation}
-        />
+      <Box w='100%' pb='2xl'>
         <CoverPhoto
           userId={userId}
           updatedCoverPhoto={updatedCoverPhoto ? updatedCoverPhoto.url : ''}
           error={updatedCoverPhoto ? updatedCoverPhoto.error : false}
-          loading={profileLoadingStatus === Status.LOADING}
+          loading={status === Status.LOADING}
           onDrop={updateCoverPhoto}
           edit={editMode}
           darken={editMode}
         />
-        <Mask show={editMode} zIndex={2}>
-          <StatBanner
-            isEmpty={!profile || profile.is_deactivated}
-            mode={mode}
-            stats={stats}
-            profileId={profile?.user_id}
-            areArtistRecommendationsVisible={areArtistRecommendationsVisible}
-            onCloseArtistRecommendations={onCloseArtistRecommendations}
-            onEdit={onEdit}
-            onSave={onSave}
-            onShare={onShare}
-            onCancel={onCancel}
-            following={following}
-            isSubscribed={isSubscribed}
-            onToggleSubscribe={toggleNotificationSubscription}
-            onFollow={onFollow}
-            onUnfollow={onUnfollow}
-            canCreateChat={canCreateChat}
-            onMessage={onMessage}
-            isBlocked={isBlocked}
-            isMuted={isMutedState}
-            accountUserId={accountUserId}
-            onBlock={onBlock}
-            onUnblock={onUnblock}
-            onMute={onMute}
-          />
-          <Flex direction='column'>
-            <NavBanner
-              empty={!profile || profile.is_deactivated}
-              tabs={tabs}
-              dropdownDisabled={dropdownDisabled}
-              onChange={changeTab}
-              activeTab={activeTab}
-              isArtist={isArtist}
-              onSortByRecent={onSortByRecent}
-              onSortByPopular={onSortByPopular}
-              shouldMaskContent={shouldMaskContent}
-            />
+        {/* Profile Photo and Name */}
+        <Flex
+          h={COVER_PHOTO_HEIGHT_PX}
+          justifyContent='center'
+          alignItems='flex-end'
+          w='100%'
+          css={{ position: 'absolute', top: 0 }}
+        >
+          <FlushPageContainer>
+            <Flex
+              alignItems='center'
+              columnGap={PROFILE_COLUMN_GAP}
+              h={PROFILE_LOCKUP_HEIGHT_PX}
+              flex='1 1 100%'
+            >
+              <Flex
+                css={{
+                  flexShrink: 0,
+                  zIndex: zIndex.PROFILE_EDITABLE_COMPONENTS
+                }}
+                w={PROFILE_LEFT_COLUMN_WIDTH_PX}
+                justifyContent='center'
+              >
+                <ProfilePicture
+                  userId={userId}
+                  updatedProfilePicture={
+                    updatedProfilePicture ? updatedProfilePicture.url : ''
+                  }
+                  error={
+                    updatedProfilePicture ? updatedProfilePicture.error : false
+                  }
+                  profilePictureSizes={
+                    isDeactivated ? null : profilePictureSizes
+                  }
+                  loading={status === Status.LOADING}
+                  editMode={editMode}
+                  hasProfilePicture={hasProfilePicture}
+                  onDrop={updateProfilePicture}
+                />
+              </Flex>
+              <Flex
+                column
+                flex='1 1 100%'
+                css={{
+                  position: 'relative',
+                  textAlign: 'left',
+                  userSelect: 'none'
+                }}
+                className={styles.nameWrapper}
+              >
+                <BadgeArtist
+                  className={cn(styles.badgeArtist, {
+                    [styles.hide]:
+                      !isArtist || status === Status.LOADING || isDeactivated
+                  })}
+                />
+                {!isDeactivated && userId && (
+                  <>
+                    <EditableName
+                      className={editMode ? styles.editableName : styles.name}
+                      name={name}
+                      editable={editMode}
+                      verified={verified}
+                      onChange={updateName}
+                      userId={userId}
+                    />
+                    <Flex alignItems='center' columnGap='s'>
+                      <Text
+                        shadow='emphasis'
+                        variant='title'
+                        color='staticWhite'
+                      >
+                        {handle}
+                      </Text>
+                      <FollowsYouBadge userId={userId} />
+                    </Flex>
+                  </>
+                )}
+              </Flex>
+            </Flex>
+          </FlushPageContainer>
+        </Flex>
 
-            <div className={styles.content}>
-              {profile && profile.is_deactivated ? (
-                <DeactivatedProfileTombstone />
-              ) : (
-                body
-              )}
-            </div>
-          </Flex>
-        </Mask>
+        {!profile || profile.is_deactivated ? (
+          <Box>
+            <EmptyStatBanner />
+            <EmptyNavBanner />
+            <FlushPageContainer>
+              <Flex flex='1 1 100%' mh='auto' columnGap={PROFILE_COLUMN_GAP}>
+                <LeftColumnSpacer />
+                {status === Status.SUCCESS && <DeactivatedProfileTombstone />}
+              </Flex>
+            </FlushPageContainer>
+          </Box>
+        ) : (
+          <Mask show={editMode} zIndex={zIndex.PROFILE_EDIT_MASK}>
+            {/* StatBanner */}
+            <FlushPageContainer
+              h='unit14'
+              backgroundColor='surface1'
+              borderBottom='default'
+            >
+              <Flex flex='1 1 100%' h='100%' columnGap={PROFILE_COLUMN_GAP}>
+                <LeftColumnSpacer />
+                <StatBanner
+                  mode={mode}
+                  stats={stats}
+                  profileId={profile?.user_id}
+                  areArtistRecommendationsVisible={
+                    areArtistRecommendationsVisible
+                  }
+                  onCloseArtistRecommendations={onCloseArtistRecommendations}
+                  onEdit={onEdit}
+                  onSave={onSave}
+                  onShare={onShare}
+                  onCancel={onCancel}
+                  following={following}
+                  isSubscribed={isSubscribed}
+                  onToggleSubscribe={toggleNotificationSubscription}
+                  canCreateChat={canCreateChat}
+                  onMessage={onMessage}
+                  isBlocked={isBlocked}
+                  isMuted={isMutedState}
+                  accountUserId={accountUserId}
+                  onBlock={onBlock}
+                  onUnblock={onUnblock}
+                  onMute={onMute}
+                />
+              </Flex>
+            </FlushPageContainer>
+            {/* NavBanner */}
+            <FlushPageContainer h='unit14' backgroundColor='white'>
+              <Flex
+                flex='1 1 100%'
+                h='unit12'
+                alignSelf='flex-end'
+                justifyContent='flex-start'
+                columnGap={PROFILE_COLUMN_GAP}
+              >
+                <LeftColumnSpacer />
+                <NavBanner
+                  tabs={tabs}
+                  dropdownDisabled={dropdownDisabled}
+                  onChange={changeTab}
+                  activeTab={activeTab}
+                  isArtist={isArtist}
+                  onSortByRecent={onSortByRecent}
+                  onSortByPopular={onSortByPopular}
+                />
+              </Flex>
+            </FlushPageContainer>
+            {/* Left side and Tab Content */}
+            <FlushPageContainer pt='2xl'>
+              <Flex flex='1 1 100%' columnGap={PROFILE_COLUMN_GAP}>
+                <ProfileLeftNav
+                  userId={userId}
+                  isDeactivated={isDeactivated}
+                  loading={status === Status.LOADING}
+                  isOwner={isOwner}
+                  isArtist={isArtist}
+                  editMode={editMode}
+                  handle={handle}
+                  bio={bio}
+                  location={location}
+                  allowAiAttribution={!!profile?.allow_ai_attribution}
+                  twitterHandle={twitterHandle}
+                  instagramHandle={instagramHandle}
+                  tikTokHandle={tikTokHandle}
+                  twitterVerified={twitterVerified}
+                  instagramVerified={instagramVerified}
+                  tikTokVerified={tikTokVerified}
+                  website={website}
+                  donation={donation}
+                  created={created}
+                  onUpdateBio={updateBio}
+                  onUpdateLocation={updateLocation}
+                  onUpdateTwitterHandle={updateTwitterHandle}
+                  onUpdateInstagramHandle={updateInstagramHandle}
+                  onUpdateTikTokHandle={updateTikTokHandle}
+                  onUpdateWebsite={updateWebsite}
+                  onUpdateDonation={updateDonation}
+                />
+                <Box flex='1 1 100%'>{body}</Box>
+              </Flex>
+            </FlushPageContainer>
+          </Mask>
+        )}
       </Box>
 
       {profile ? (
@@ -753,14 +889,14 @@ const ProfilePage = ({
             messages={
               isMutedState
                 ? {
-                    header: commentsMessages.popups.unmuteUser.title,
+                    header: messages.unmuteUser.title,
                     description: unMuteUserConfirmationBody,
-                    confirm: commentsMessages.popups.unmuteUser.confirm
+                    confirm: messages.unmuteUser.confirm
                   }
                 : {
-                    header: commentsMessages.popups.muteUser.title,
+                    header: messages.muteUser.title,
                     description: muteUserConfirmationBody,
-                    confirm: commentsMessages.popups.muteUser.confirm
+                    confirm: messages.muteUser.confirm
                   }
             }
             onConfirm={() => {

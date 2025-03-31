@@ -13,10 +13,10 @@ import {
   IconRocket,
   IconShare
 } from '@audius/harmony'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import Tooltip from 'components/tooltip/Tooltip'
+import { push } from 'utils/navigation'
 
 const { makeTrackPublic } = trackPageActions
 
@@ -101,7 +101,7 @@ const BaseOwnerActionButtons = ({
   const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
 
   const handleEdit = useCallback(() => {
-    dispatch(pushRoute(`${permalink}/edit`))
+    dispatch(push(`${permalink}/edit`))
   }, [permalink, dispatch])
 
   const handlePublishClick = useCallback(() => {

@@ -1,14 +1,13 @@
 import { useCallback, useLayoutEffect } from 'react'
 
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
-  ShareSource,
   RepostSource,
   FavoriteSource,
   ModalSource
 } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
-import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   castSelectors,
@@ -16,12 +15,13 @@ import {
   reachabilitySelectors,
   tracksSocialActions,
   mobileOverflowMenuUIActions,
-  shareModalUIActions,
   OverflowAction,
   OverflowSource,
   usePremiumContentPurchaseModal,
   playbackPositionSelectors,
-  PurchaseableContentType
+  PurchaseableContentType,
+  playerActions,
+  playerSelectors
 } from '@audius/common/store'
 import { formatPrice, Genre, removeNullable } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
@@ -34,22 +34,24 @@ import {
   IconCastAirplay,
   IconCastChromecast,
   IconKebabHorizontal,
-  IconShare,
-  Button
+  Button,
+  IconMessage
 } from '@audius/harmony-native'
 import { useAirplay } from 'app/components/audio/Airplay'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
+import { useCommentDrawer } from '../comments/CommentDrawerContext'
+
 import { FavoriteButton } from './FavoriteButton'
 import { RepostButton } from './RepostButton'
 
-const { getAccountUser } = accountSelectors
-const { requestOpen: requestOpenShareModal } = shareModalUIActions
+const { makeGetCurrent } = playerSelectors
+const { getUserId } = accountSelectors
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
-const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
-  tracksSocialActions
+const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { updateMethod } = castActions
 const { getMethod: getCastMethod, getIsCasting } = castSelectors
 const { getTrackPosition } = playbackPositionSelectors
@@ -107,20 +109,19 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   const { toast } = useToast()
   const castMethod = useSelector(getCastMethod)
   const isCasting = useSelector(getIsCasting)
-  const accountUser = useSelector(getAccountUser)
+  const accountUserId = useSelector(getUserId)
   const { neutral, neutralLight6, primary } = useThemeColors()
   const dispatch = useDispatch()
   const isReachable = useSelector(getIsReachable)
+  const navigation = useNavigation()
 
-  const isOwner = track?.owner_id === accountUser?.user_id
+  const { open } = useCommentDrawer()
+  const isOwner = track?.owner_id === accountUserId
+
   const isUnlisted = track?.is_unlisted
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
-
-  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId: track?.track_id ?? 0 },
-    { enabled: !!track?.track_id }
-  )
+  const currentQueueItem = useSelector(makeGetCurrent())
 
   const handlePurchasePress = useCallback(() => {
     if (track?.track_id) {
@@ -146,17 +147,10 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     }
   }, [castMethod, dispatch])
 
-  const handleFavorite = useCallback(() => {
-    if (track) {
-      if (track.has_current_user_saved) {
-        dispatch(unsaveTrack(track.track_id, FavoriteSource.NOW_PLAYING))
-      } else if (isOwner) {
-        toast({ content: messages.favoriteProhibited })
-      } else {
-        dispatch(saveTrack(track.track_id, FavoriteSource.NOW_PLAYING))
-      }
-    }
-  }, [dispatch, isOwner, toast, track])
+  const handleFavorite = useToggleFavoriteTrack({
+    trackId: track?.track_id,
+    source: FavoriteSource.NOW_PLAYING
+  })
 
   const handleRepost = useCallback(() => {
     if (track) {
@@ -170,22 +164,21 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     }
   }, [dispatch, isOwner, toast, track])
 
-  const handleShare = useCallback(() => {
+  const handleComments = useCallback(() => {
     if (track) {
-      dispatch(
-        requestOpenShareModal({
-          type: 'track',
-          trackId: track.track_id,
-          source: ShareSource.NOW_PLAYING
-        })
-      )
+      open({
+        entityId: track.track_id,
+        navigation,
+        actions: playerActions,
+        uid: currentQueueItem.uid as string
+      })
     }
-  }, [dispatch, track])
+  }, [currentQueueItem.uid, navigation, open, track])
 
   const playbackPositionInfo = useSelector((state) =>
     getTrackPosition(state, {
       trackId: track?.track_id,
-      userId: accountUser?.user_id
+      userId: accountUserId
     })
   )
   const onPressOverflow = useCallback(() => {
@@ -193,12 +186,14 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
       const isLongFormContent =
         track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
       const overflowActions = [
+        OverflowAction.VIEW_COMMENTS,
+        OverflowAction.SHARE,
         isOwner && !track?.ddex_app ? OverflowAction.ADD_TO_ALBUM : null,
         !isUnlisted || isOwner ? OverflowAction.ADD_TO_PLAYLIST : null,
         isLongFormContent
           ? OverflowAction.VIEW_EPISODE_PAGE
           : OverflowAction.VIEW_TRACK_PAGE,
-        albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
+        track.album_backlink ? OverflowAction.VIEW_ALBUM_PAGE : null,
         isLongFormContent
           ? playbackPositionInfo?.status === 'COMPLETED'
             ? OverflowAction.MARK_AS_UNPLAYED
@@ -215,14 +210,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         })
       )
     }
-  }, [
-    track,
-    isOwner,
-    isUnlisted,
-    albumInfo,
-    playbackPositionInfo?.status,
-    dispatch
-  ])
+  }, [track, isOwner, isUnlisted, playbackPositionInfo?.status, dispatch])
 
   const { openAirplayDialog } = useAirplay()
   const castDevices = useDevices()
@@ -281,7 +269,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         style={styles.button}
         wrapperStyle={styles.animatedIcon}
         isDisabled={!isReachable}
-        isOwner={track?.owner_id === accountUser?.user_id}
+        isOwner={track?.owner_id === accountUserId}
       />
     )
   }
@@ -293,16 +281,16 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         onPress={handleFavorite}
         style={styles.button}
         wrapperStyle={styles.animatedIcon}
-        isOwner={track?.owner_id === accountUser?.user_id}
+        isOwner={track?.owner_id === accountUserId}
       />
     )
   }
 
-  const renderShareButton = () => {
+  const renderCommentsButton = () => {
     return (
       <IconButton
-        icon={IconShare}
-        onPress={handleShare}
+        icon={IconMessage}
+        onPress={handleComments}
         size='l'
         aria-label={messages.shareLabel}
         style={styles.button}
@@ -330,7 +318,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         {renderCastButton()}
         {shouldShowActions ? renderRepostButton() : null}
         {shouldShowActions ? renderFavoriteButton() : null}
-        {shouldShowActions ? renderShareButton() : null}
+        {shouldShowActions ? renderCommentsButton() : null}
         {renderOptionsButton()}
       </View>
     </View>

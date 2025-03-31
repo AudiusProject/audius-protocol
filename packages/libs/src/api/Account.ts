@@ -32,7 +32,6 @@ export class Account extends Base {
     this.changeCredentials = this.changeCredentials.bind(this)
     this.resetPassword = this.resetPassword.bind(this)
     this.checkIfEmailRegistered = this.checkIfEmailRegistered.bind(this)
-    this.getUserEmail = this.getUserEmail.bind(this)
     this.associateTwitterUser = this.associateTwitterUser.bind(this)
     this.associateInstagramUser = this.associateInstagramUser.bind(this)
     this.associateTikTokUser = this.associateTikTokUser.bind(this)
@@ -155,7 +154,10 @@ export class Account extends Base {
           })
           this.web3Manager.setOwnerWallet(ownerWallet)
           if (generateRecoveryLink) {
-            await this.generateRecoveryLink({ handle: metadata.handle, host })
+            await this.generateRecoveryLink({
+              handle: metadata.handle ?? '',
+              host
+            })
           }
         }
       }
@@ -176,6 +178,43 @@ export class Account extends Base {
           profilePictureFile,
           coverPhotoFile
         })
+
+      return { blockHash, blockNumber, userId: newMetadata.user_id }
+    } catch (e: any) {
+      return {
+        error: e.message,
+        phase,
+        errorStatus: e.response ? e.response.status : null
+      }
+    }
+  }
+
+  async guestSignUp(email: string, metadata: UserMetadata) {
+    const phases = {
+      CREATE_USER_RECORD: 'CREATE_USER_RECORD',
+      HEDGEHOG_SIGNUP: 'HEDGEHOG_SIGNUP',
+      SELECT_STORAGE_NODE: 'SELECT_STORAGE_NODE',
+      ADD_USER: 'ADD_USER',
+      UPLOAD_PROFILE_IMAGES: 'UPLOAD_PROFILE_IMAGES'
+    }
+    let phase = ''
+    try {
+      this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
+      this.REQUIRES(Services.HEDGEHOG)
+      phase = phases.HEDGEHOG_SIGNUP
+
+      // guest account secured by OTP
+      const ownerWallet = await this.hedgehog.signUp({
+        username: email,
+        password: 'TemporaryPassword',
+        isGuest: true
+      })
+
+      this.web3Manager.setOwnerWallet(ownerWallet)
+      // Add user to chain
+      phase = phases.ADD_USER
+      const { newMetadata, blockHash, blockNumber } =
+        await this.User.createEntityManagerGuestUser(metadata)
 
       return { blockHash, blockNumber, userId: newMetadata.user_id }
     } catch (e: any) {
@@ -254,14 +293,6 @@ export class Account extends Base {
   async checkIfEmailRegistered(email: string) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     return await this.identityService.checkIfEmailRegistered(email)
-  }
-
-  /**
-   * Get the current user's email address
-   */
-  async getUserEmail() {
-    this.REQUIRES(Services.IDENTITY_SERVICE)
-    return await this.identityService.getUserEmail()
   }
 
   /**
@@ -470,9 +501,8 @@ export class Account extends Base {
   async permitAndSendTokens(recipientAddress: string, amount: BN) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     const myWalletAddress = this.web3Manager.getWalletAddress()
-    const { selectedEthWallet } = await this.identityService.getEthRelayer(
-      myWalletAddress
-    )
+    const { selectedEthWallet } =
+      await this.identityService.getEthRelayer(myWalletAddress)
     await this.permitProxySendTokens(myWalletAddress, selectedEthWallet, amount)
     await this.sendTokens(
       myWalletAddress,
@@ -502,9 +532,8 @@ export class Account extends Base {
     try {
       const myWalletAddress = this.web3Manager.getWalletAddress()
       const wormholeAddress = this.ethContracts.WormholeClient.contractAddress
-      const { selectedEthWallet } = await this.identityService.getEthRelayer(
-        myWalletAddress
-      )
+      const { selectedEthWallet } =
+        await this.identityService.getEthRelayer(myWalletAddress)
       await this.permitProxySendTokens(myWalletAddress, wormholeAddress, amount)
 
       logs.push('Completed permit proxy send tokens')
@@ -553,9 +582,8 @@ export class Account extends Base {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     const myWalletAddress = this.web3Manager.getWalletAddress()
     const wormholeAddress = this.ethContracts.WormholeClient.contractAddress
-    const { selectedEthWallet } = await this.identityService.getEthRelayer(
-      myWalletAddress
-    )
+    const { selectedEthWallet } =
+      await this.identityService.getEthRelayer(myWalletAddress)
     const permitMethod = await this.getPermitProxySendTokensMethod(
       myWalletAddress,
       wormholeAddress,

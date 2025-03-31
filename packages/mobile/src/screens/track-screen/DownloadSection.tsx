@@ -1,22 +1,20 @@
 import { useCallback, useState } from 'react'
 
+import { useTrack } from '@audius/common/api'
 import {
   useCurrentStems,
   useDownloadableContentAccess
 } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
 import { DownloadQuality, ModalSource } from '@audius/common/models'
-import type { CommonState } from '@audius/common/store'
 import {
   PurchaseableContentType,
-  cacheTracksSelectors,
   usePremiumContentPurchaseModal,
   useWaitForDownloadModal
 } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import { css } from '@emotion/native'
 import { LayoutAnimation } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import {
   Button,
@@ -33,8 +31,6 @@ import type { AllEvents } from 'app/types/analytics'
 import { EventNames } from 'app/types/analytics'
 
 import { DownloadRow } from './DownloadRow'
-
-const { getTrack } = cacheTracksSelectors
 
 const ORIGINAL_TRACK_INDEX = 1
 const STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK = 1
@@ -60,9 +56,7 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
     usePremiumContentPurchaseModal()
   const { onOpen: openWaitForDownloadModal } = useWaitForDownloadModal()
   const [isExpanded, setIsExpanded] = useState(false)
-  const track = useSelector((state: CommonState) =>
-    getTrack(state, { id: trackId })
-  )
+  const { data: track } = useTrack(trackId)
   const { stemTracks } = useCurrentStems({ trackId })
   const {
     price,
@@ -169,7 +163,7 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
                       paddingBottom: 1
                     })}
                   >
-                    <IconLockUnlocked color='staticWhite' size='xs' />
+                    <IconLockUnlocked color='white' size='xs' />
                   </Flex>
                   <Text
                     variant='label'

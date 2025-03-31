@@ -1,13 +1,11 @@
 import { useCallback } from 'react'
 
-import { FeatureFlags } from '@audius/common/services'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { getHasCompletedAccount } from 'common/store/pages/signon/selectors'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { RATE_CTA_STORAGE_KEY } from 'app/constants/storage-keys'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import useSessionCount from 'app/hooks/useSessionCount'
 import { requestReview } from 'app/store/rate-cta/slice'
 
@@ -16,18 +14,12 @@ const REMINDER_FREQUENCY = 5
 
 export const RateCtaReminder = () => {
   const hasCompletedAccount = useSelector(getHasCompletedAccount)
-  const { isEnabled: isRateCtaEnabled } = useFeatureFlag(
-    FeatureFlags.RATE_CTA_ENABLED
-  )
 
   const { value: userRateResponse, loading } = useAsync(() =>
     AsyncStorage.getItem(RATE_CTA_STORAGE_KEY)
   )
 
-  return isRateCtaEnabled &&
-    !loading &&
-    !userRateResponse &&
-    hasCompletedAccount ? (
+  return !loading && !userRateResponse && hasCompletedAccount ? (
     <RateCtaReminderInternal />
   ) : null
 }

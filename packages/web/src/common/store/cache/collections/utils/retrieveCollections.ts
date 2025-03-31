@@ -8,9 +8,7 @@ import {
   CollectionMetadata,
   Collection,
   UserCollectionMetadata,
-  ID,
-  Id,
-  OptionalId
+  ID
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -23,6 +21,7 @@ import {
   getSDK
 } from '@audius/common/store'
 import { makeUid, Nullable } from '@audius/common/utils'
+import { Id, OptionalId } from '@audius/sdk'
 import { chunk } from 'lodash'
 import { all, call, select, put } from 'typed-redux-saga'
 
@@ -38,9 +37,6 @@ const { getCollections } = cacheCollectionsSelectors
 const { setPermalink } = cacheCollectionsActions
 const getUserId = accountSelectors.getUserId
 
-// Attempting to fetch more than this amount at once could result in a 400
-// due to the URL being too long.
-const COLLECTIONS_BATCH_LIMIT = 50
 const TRACKS_BATCH_LIMIT = 200
 
 function* markCollectionDeleted(
@@ -187,7 +183,6 @@ export function* retrieveCollectionByPermalink(
       return metadatasWithDeleted
     },
     onBeforeAddToCache: function* (collections: UserCollectionMetadata[]) {
-      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       yield* addUsersFromCollections(collections)
       yield* addTracksFromCollections(collections)
 
@@ -203,7 +198,7 @@ export function* retrieveCollectionByPermalink(
       }
 
       const reformattedCollections = collections.map((c) =>
-        reformatCollection({ collection: c, audiusBackendInstance })
+        reformatCollection({ collection: c })
       )
 
       return reformattedCollections
@@ -218,7 +213,7 @@ export function* retrieveCollectionByPermalink(
   return { collections: entries, uids }
 }
 
-export type RetrieveCollectionsConfig = {
+type RetrieveCollectionsConfig = {
   // whether or not to fetch the tracks inside eachn collection
   fetchTracks?: boolean
   // optional owner of collections to fetch (TODO: to be removed)
@@ -248,24 +243,32 @@ export function* retrieveCollections(
     },
     getEntriesTimestamp: selectEntriesTimestamp,
     retrieveFromSource: function* (ids: ID[]) {
-      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+      const audiusSdk = yield* getContext('audiusSdk')
+      const sdk = yield* call(audiusSdk)
       let metadatas: CollectionMetadata[]
 
       if (ids.length === 1) {
-        metadatas = yield* call(retrieveCollection, { playlistId: ids[0] })
-      } else {
-        // TODO: Remove this branch when we have batched endpoints in new V1 api.
-        // Request ids in chunks if we're asked for too many
-        const chunks = yield* all(
-          chunk(ids, COLLECTIONS_BATCH_LIMIT).map((chunkedCollectionIds) =>
-            call(
-              audiusBackendInstance.getPlaylists,
-              userId,
-              chunkedCollectionIds
-            )
-          )
+        const { data = [] } = yield* call(
+          [sdk.full.playlists, sdk.full.playlists.getPlaylist],
+          {
+            playlistId: Id.parse(ids[0]),
+            userId: OptionalId.parse(userId)
+          }
         )
-        metadatas = chunks.flat()
+        const [collection] = transformAndCleanList(
+          data,
+          userCollectionMetadataFromSDK
+        )
+        metadatas = [collection]
+      } else {
+        const { data = [] } = yield* call(
+          [sdk.full.playlists, sdk.full.playlists.getBulkPlaylists],
+          {
+            id: ids.map((id) => Id.parse(id)),
+            userId: OptionalId.parse(userId)
+          }
+        )
+        metadatas = transformAndCleanList(data, userCollectionMetadataFromSDK)
       }
 
       // Process any local deletions on the client
@@ -274,7 +277,6 @@ export function* retrieveCollections(
       return metadatasWithDeleted
     },
     onBeforeAddToCache: function* (metadatas: UserCollectionMetadata[]) {
-      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       yield* addUsersFromCollections(metadatas)
       yield* addTracksFromCollections(metadatas)
 
@@ -283,7 +285,7 @@ export function* retrieveCollections(
       }
 
       const reformattedCollections = metadatas.map((c) =>
-        reformatCollection({ collection: c, audiusBackendInstance })
+        reformatCollection({ collection: c })
       )
 
       return reformattedCollections

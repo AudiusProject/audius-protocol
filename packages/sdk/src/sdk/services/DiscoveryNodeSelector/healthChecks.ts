@@ -61,13 +61,9 @@ const isSolanaIndexerHealthy = ({
   data: HealthCheckResponseData
   maxSlotDiffPlays: number | null
 }) =>
-  !data.plays?.is_unhealthy &&
-  !data.rewards_manager?.is_unhealthy &&
-  !data.spl_audio_info?.is_unhealthy &&
-  !data.user_bank?.is_unhealthy &&
-  (!data.plays?.tx_info?.slot_diff ||
-    maxSlotDiffPlays === null ||
-    data.plays?.tx_info?.slot_diff <= maxSlotDiffPlays)
+  !data?.plays?.tx_info?.slot_diff ||
+  maxSlotDiffPlays === null ||
+  data?.plays?.tx_info?.slot_diff <= maxSlotDiffPlays
 
 const isApiSolanaIndexerHealthy = ({
   data,

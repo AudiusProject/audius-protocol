@@ -74,12 +74,6 @@ func chatBlast(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatBlastR
 			blast_id
 		FROM targ
 		ON conflict do nothing
-	),
-	update_unread_count AS (
-    UPDATE chat_member
-    SET unread_count = unread_count + 1
-    WHERE chat_id IN (SELECT chat_id FROM targ)
-		AND user_id IN (SELECT to_user_id FROM targ)
 	)
 	SELECT chat_id FROM targ;
 	`

@@ -1,11 +1,13 @@
-import { User } from '~/models/User'
+import { CachedAccount, User, UserMetadata } from '~/models/User'
 import { PLAYBACK_RATE_LS_KEY } from '~/store/index'
 
 import { Nullable } from '../../utils'
 
-const AUDIUS_ACCOUNT_KEY = '@audius/account'
-const AUDIUS_ACCOUNT_USER_KEY = '@audius/audius-user'
-const AUDIUS_USER_WALLET_OVERRIDE_KEY = '@audius/user-wallet-override'
+import {
+  AUDIUS_ACCOUNT_KEY,
+  AUDIUS_ACCOUNT_USER_KEY,
+  AUDIUS_USER_WALLET_OVERRIDE_KEY
+} from './constants'
 
 type LocalStorageType = {
   getItem: (key: string) => Promise<string | null> | string | null
@@ -51,9 +53,8 @@ export class LocalStorage {
   }
 
   async getExpiringJSONValue<T>(key: string): Promise<T | null> {
-    const res: Nullable<{ value: T; expiry: number }> = await this.getJSONValue(
-      key
-    )
+    const res: Nullable<{ value: T; expiry: number }> =
+      await this.getJSONValue(key)
     if (!res) {
       return null
     }
@@ -92,7 +93,9 @@ export class LocalStorage {
     await this.localStorage.removeItem(key)
   }
 
-  getAudiusAccount = async () => this.getJSONValue(AUDIUS_ACCOUNT_KEY)
+  getAudiusAccount = async (): Promise<CachedAccount | null> =>
+    this.getJSONValue(AUDIUS_ACCOUNT_KEY)
+
   setAudiusAccount = async (value: object) => {
     await this.setJSONValue(AUDIUS_ACCOUNT_KEY, value)
   }
@@ -111,7 +114,7 @@ export class LocalStorage {
   getAudiusAccountUser = async (): Promise<User | null> =>
     this.getJSONValue(AUDIUS_ACCOUNT_USER_KEY)
 
-  setAudiusAccountUser = async (value: User) =>
+  setAudiusAccountUser = async (value: UserMetadata) =>
     this.setJSONValue(AUDIUS_ACCOUNT_USER_KEY, value)
 
   clearAudiusAccountUser = async () => this.removeItem(AUDIUS_ACCOUNT_USER_KEY)

@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { cloneElement, useCallback } from 'react'
 
 import { useSelectTierInfo } from '@audius/common/src/hooks/useSelectTierInfo'
 import { BadgeTier } from '@audius/common/src/models/BadgeTier'
@@ -7,7 +7,7 @@ import { setVisibility } from '@audius/common/src/store/ui/modals/parentSlice'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import { audioTierMapPng } from 'components/user-badges/UserBadges'
+import { audioTierMap } from 'components/user-badges/UserBadges'
 
 import styles from './ProfilePageBadge.module.css'
 
@@ -83,7 +83,9 @@ const ProfilePageBadge = ({
 
   if (tier === 'none') return null
 
-  const badge = audioTierMapPng[tier as BadgeTier]
+  const badge = audioTierMap[tier as BadgeTier]
+  if (!badge) return null
+  const badgeWithSize = cloneElement(badge, { size: '3xl' })
 
   return (
     <div
@@ -94,7 +96,7 @@ const ProfilePageBadge = ({
       )}
       onClick={onClick}
     >
-      {badge}
+      {badgeWithSize}
       {!isCompact && <div className={styles.divider} />}
       <div className={styles.text}>
         <span

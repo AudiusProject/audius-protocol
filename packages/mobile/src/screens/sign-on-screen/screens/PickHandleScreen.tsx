@@ -29,7 +29,7 @@ import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { SocialMediaSignUpButtons } from '../components/SocialMediaSignUpButtons'
 import { Heading, Page, PageFooter } from '../components/layout'
 import { useSocialMediaLoader } from '../components/useSocialMediaLoader'
-import type { SignUpScreenParamList } from '../types'
+import type { SignOnScreenParamList } from '../types'
 import { restrictedHandles } from '../utils/restrictedHandles'
 import { useTrackScreen } from '../utils/useTrackScreen'
 
@@ -92,7 +92,7 @@ const SocialMediaSection = ({
 }
 
 export const PickHandleScreen = () => {
-  const navigation = useNavigation<SignUpScreenParamList>()
+  const navigation = useNavigation<SignOnScreenParamList>()
   const dispatch = useDispatch()
   const alreadyLinkedSocial = useSelector(getIsSocialConnected)
   const {

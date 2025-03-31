@@ -7,9 +7,12 @@ import {
 import { useFeatureFlag } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import { trackPageSelectors } from '@audius/common/store'
 import { Divider, Flex, LoadingSpinner, Paper } from '@audius/harmony'
 import InfiniteScroll from 'react-infinite-scroller'
+import { useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom-v5-compat'
+import { tracksActions } from '~/store/pages/track/lineup/actions'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import { useMainContentRef } from 'pages/MainContentContext'
@@ -25,6 +28,8 @@ import { CommentSortBar } from './CommentSortBar'
 import { CommentThread } from './CommentThread'
 import { NoComments } from './NoComments'
 
+const { getLineup } = trackPageSelectors
+
 type CommentSectionInnerProps = {
   commentSectionRef: React.RefObject<HTMLDivElement>
 }
@@ -35,7 +40,7 @@ type CommentSectionInnerProps = {
  * - Mapping through the root comments array
  * - Infinite scrolling pagination
  */
-export const CommentSectionInner = (props: CommentSectionInnerProps) => {
+const CommentSectionInner = (props: CommentSectionInnerProps) => {
   const { commentSectionRef } = props
   const {
     currentUserId,
@@ -167,9 +172,15 @@ type CommentSectionProps = {
 
 export const CommentSection = (props: CommentSectionProps) => {
   const { entityId, commentSectionRef } = props
+  const lineup = useSelector(getLineup)
+  const uid = lineup?.entries?.[0]?.uid
 
   return (
-    <CommentSectionProvider entityId={entityId}>
+    <CommentSectionProvider
+      entityId={entityId}
+      lineupActions={tracksActions}
+      uid={uid}
+    >
       <CommentSectionInner commentSectionRef={commentSectionRef} />
     </CommentSectionProvider>
   )

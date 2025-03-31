@@ -1,7 +1,7 @@
 import { getLargestTimeUnitText } from '@audius/common/utils'
 import { Text } from '@audius/harmony'
 
-export type TimestampProps = {
+type TimestampProps = {
   time: Date
 }
 

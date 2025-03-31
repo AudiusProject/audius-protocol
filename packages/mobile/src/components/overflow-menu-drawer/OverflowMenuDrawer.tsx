@@ -1,3 +1,4 @@
+import { useTrack } from '@audius/common/api'
 import {
   mobileOverflowMenuUISelectors,
   OverflowAction,
@@ -12,9 +13,12 @@ import type { ActionDrawerRow } from '../action-drawer/ActionDrawer'
 import CollectionOverflowMenuDrawer from './CollectionOverflowMenuDrawer'
 import ProfileOverflowMenuDrawer from './ProfileOverflowMenuDrawer'
 import TrackOverflowMenuDrawer from './TrackOverflowMenuDrawer'
+
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 
-const overflowRowConfig: Record<OverflowAction, ActionDrawerRow> = {
+const overflowRowConfig = (
+  commentCount: number | undefined
+): Record<OverflowAction, ActionDrawerRow> => ({
   [OverflowAction.REPOST]: { text: 'Repost' },
   [OverflowAction.UNREPOST]: { text: 'Unrepost' },
   [OverflowAction.FAVORITE]: { text: 'Favorite' },
@@ -54,11 +58,28 @@ const overflowRowConfig: Record<OverflowAction, ActionDrawerRow> = {
   [OverflowAction.MARK_AS_UNPLAYED]: { text: 'Mark as Unplayed' },
   [OverflowAction.PURCHASE_TRACK]: { text: 'Purchase Track' },
   [OverflowAction.SET_ARTIST_PICK]: { text: 'Set as Artist Pick' },
-  [OverflowAction.UNSET_ARTIST_PICK]: { text: 'Unset as Artist Pick' }
-}
+  [OverflowAction.UNSET_ARTIST_PICK]: { text: 'Unset as Artist Pick' },
+  [OverflowAction.VIEW_COMMENTS]: {
+    text:
+      commentCount !== undefined
+        ? `View (${commentCount}) Comments`
+        : 'View Comments' // slightly better than incorrectly showing a 0 count
+  }
+})
 
 export const OverflowMenuDrawer = () => {
   const overflowMenu = useSelector(getMobileOverflowModal)
+
+  const id =
+    overflowMenu.id !== null && overflowMenu !== undefined
+      ? +overflowMenu.id
+      : undefined
+
+  const { data: commentCount } = useTrack(id, {
+    select: (track) => {
+      return track.comment_count
+    }
+  })
 
   if (!overflowMenu?.id) {
     return <></>
@@ -78,7 +99,7 @@ export const OverflowMenuDrawer = () => {
     <OverflowDrawerComponent
       render={(callbacks) => {
         const rows = (overflowActions ?? []).map((action) => ({
-          ...overflowRowConfig[action],
+          ...overflowRowConfig(commentCount)[action],
           callback: callbacks[action]
         }))
         return <ActionDrawer modalName='Overflow' rows={rows} />

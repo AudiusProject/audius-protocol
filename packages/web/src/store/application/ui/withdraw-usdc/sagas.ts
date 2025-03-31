@@ -19,10 +19,7 @@ import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, select, take } from 'typed-redux-saga'
 
 import { env } from 'services/env'
-import {
-  getRootSolanaAccount,
-  getSolanaConnection
-} from 'services/solana/solana'
+import { getSolanaConnection } from 'services/solana/solana'
 
 const {
   beginWithdrawUSDC,
@@ -47,6 +44,7 @@ function* doWithdrawUSDCCoinflow({
 >) {
   const { track, make } = yield* getContext('analytics')
   const sdk = yield* getSDK()
+  const solanaWalletService = yield* getContext('solanaWalletService')
   yield* put(beginCoinflowWithdrawal())
   const mint = new PublicKey(env.USDC_MINT_ADDRESS)
 
@@ -65,7 +63,13 @@ function* doWithdrawUSDCCoinflow({
       })
     )
 
-    const rootSolanaAccount = yield* call(getRootSolanaAccount)
+    const rootSolanaAccount = yield* call([
+      solanaWalletService,
+      solanaWalletService.getKeypair
+    ])
+    if (!rootSolanaAccount) {
+      throw new Error('Missing solana root wallet')
+    }
 
     const destinationAddress = rootSolanaAccount.publicKey.toString()
     const connection = yield* call(getSolanaConnection)

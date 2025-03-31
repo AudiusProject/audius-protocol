@@ -1,10 +1,8 @@
 import type { ReactNode } from 'react'
 import { useMemo, useCallback, useEffect, useRef, useState } from 'react'
 
-import { useGetUserByHandle } from '@audius/common/api'
-import { accountSelectors } from '@audius/common/store'
+import { useUserByHandle } from '@audius/common/api'
 import {
-  decodeHashId,
   formatCollectionName,
   formatTrackName,
   formatUserName,
@@ -14,9 +12,9 @@ import {
   squashNewLines
 } from '@audius/common/utils'
 import type { CommentMention } from '@audius/sdk'
-import { ResolveApi } from '@audius/sdk'
+import { HashId, ResolveApi } from '@audius/sdk'
 import { css } from '@emotion/native'
-import type { NavigationProp } from '@react-navigation/native'
+import type { NavigationProp, ParamListBase } from '@react-navigation/native'
 import type { To } from '@react-navigation/native/lib/typescript/src/useLinkTo'
 import type { Match } from 'autolinker/dist/es2015'
 import { View } from 'react-native'
@@ -27,7 +25,6 @@ import type {
 } from 'react-native'
 import type { AutolinkProps } from 'react-native-autolink'
 import Autolink from 'react-native-autolink'
-import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { Text } from '@audius/harmony-native'
@@ -35,8 +32,6 @@ import type { TextLinkProps, TextProps } from '@audius/harmony-native'
 import { TextLink } from 'app/harmony-native/components/TextLink/TextLink'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
-
-const { getUserId } = accountSelectors
 
 const {
   instanceOfTrackResponse,
@@ -64,7 +59,7 @@ export type UserGeneratedTextProps = Omit<TextProps, 'children'> &
     // Suffix to append after the text. Used for "edited" text in comments
     suffix?: ReactNode
 
-    navigation?: NavigationProp<ReactNavigation.RootParamList>
+    navigation?: NavigationProp<ParamListBase>
   }
 
 const Link = ({
@@ -74,7 +69,7 @@ const Link = ({
   ...other
 }: TextLinkProps & {
   url: string
-  navigation?: NavigationProp<ReactNavigation.RootParamList>
+  navigation?: NavigationProp<ParamListBase>
 }) => {
   const [unfurledContent, setUnfurledContent] = useState<string>()
   const [to, setTo] = useState<To<any> | undefined>(undefined)
@@ -89,18 +84,18 @@ const Link = ({
       if (res.data) {
         if (instanceOfTrackResponse(res)) {
           setUnfurledContent(formatTrackName({ track: res.data }))
-          setTo({ screen: 'Track', params: { id: decodeHashId(res.data.id) } })
+          setTo({ screen: 'Track', params: { id: HashId.parse(res.data.id) } })
         } else if (instanceOfPlaylistResponse(res)) {
           setUnfurledContent(formatCollectionName({ collection: res.data[0] }))
           setTo({
             screen: 'Collection',
-            params: { id: decodeHashId(res.data[0].id) }
+            params: { id: HashId.parse(res.data[0].id) }
           })
         } else if (instanceOfUserResponse(res)) {
           setUnfurledContent(formatUserName({ user: res.data }))
           setTo({
             screen: 'Profile',
-            params: { id: decodeHashId(res.data.id) }
+            params: { id: HashId.parse(res.data.id) }
           })
         }
       }
@@ -140,25 +135,22 @@ const HandleLink = ({
   onPress,
   ...other
 }: Omit<TextLinkProps, 'to'> & { handle: string }) => {
-  const currentUserId = useSelector(getUserId)
-
-  const { data: user } = useGetUserByHandle({
-    handle: handle.replace('@', ''),
-    currentUserId
+  const { data: userId } = useUserByHandle(handle.replace('@', ''), {
+    select: (user) => user.user_id
   })
 
   const handlePress = useCallback(
     (e: GestureResponderEvent) => {
-      onPress?.(e, 'mention', user?.user_id)
+      onPress?.(e, 'mention', userId)
     },
-    [onPress, user]
+    [onPress, userId]
   )
 
-  return user ? (
+  return userId ? (
     <TextLink
       {...other}
       onPress={handlePress}
-      to={{ screen: 'Profile', params: { id: user.user_id } }}
+      to={{ screen: 'Profile', params: { id: userId } }}
     >
       {handle}
     </TextLink>
@@ -306,11 +298,13 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
   }, [])
 
   const renderText = useCallback(
-    (text: string) => (
-      <Text suppressHighlighting {...other}>
-        {text}
-      </Text>
-    ),
+    (text: string) => {
+      return (
+        <Text suppressHighlighting {...other}>
+          {text}
+        </Text>
+      )
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
@@ -330,7 +324,7 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
             email
             url={false}
             style={[{ marginBottom: 3 }, style]}
-            text={squashNewLines(children) as string}
+            text={squashNewLines(children, 10) as string}
             matchers={[
               // Handle matcher e.g. @handle
               ...(mentions

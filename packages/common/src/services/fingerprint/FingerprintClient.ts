@@ -16,7 +16,6 @@ export class FingerprintClient<TFingerprintClient> {
   private apiKey: string
   private fingerprint: TFingerprintClient | null
   private endpoint: string
-  private identityService: string
   private initFingerprint: (
     apiKey: string,
     endpoint: string
@@ -28,17 +27,10 @@ export class FingerprintClient<TFingerprintClient> {
   ) => Promise<any>
 
   constructor(config: FingerprintClientConfig<TFingerprintClient>) {
-    const {
-      apiKey,
-      endpoint,
-      identityService,
-      initFingerprint,
-      getFingerprint
-    } = config
+    const { apiKey, endpoint, initFingerprint, getFingerprint } = config
     this.apiKey = apiKey
     this.fingerprint = null
     this.endpoint = endpoint
-    this.identityService = identityService
     this.initFingerprint = initFingerprint
     this.getFingerprint = getFingerprint
   }

@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 
+import { useTrack } from '@audius/common/api'
 import {
   useCurrentStems,
   useFileSizes,
@@ -14,9 +15,7 @@ import {
   StemCategory
 } from '@audius/common/models'
 import {
-  cacheTracksSelectors,
   usePremiumContentPurchaseModal,
-  CommonState,
   useWaitForDownloadModal,
   toastActions,
   PurchaseableContentType
@@ -31,21 +30,20 @@ import {
   IconCaretDown,
   IconLockUnlocked
 } from '@audius/harmony'
-import { shallowEqual, useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Expandable } from 'components/expandable/Expandable'
-import {
-  useAuthenticatedCallback,
-  useAuthenticatedClickCallback
-} from 'hooks/useAuthenticatedCallback'
 import { useIsMobile } from 'hooks/useIsMobile'
+import {
+  useRequiresAccountCallback,
+  useRequiresAccountOnClick
+} from 'hooks/useRequiresAccount'
 import { audiusSdk } from 'services/audius-sdk'
 
 import { DownloadRow } from './DownloadRow'
 
-const { getTrack } = cacheTracksSelectors
 const { toast } = toastActions
 
 const ORIGINAL_TRACK_INDEX = 1
@@ -69,10 +67,16 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
   const dispatch = useDispatch()
   const record = useRecord()
   const isMobile = useIsMobile()
-  const track = useSelector(
-    (state: CommonState) => getTrack(state, { id: trackId }),
-    shallowEqual
-  )
+  const { data: partialTrack } = useTrack(trackId, {
+    select: (track) => {
+      return {
+        is_downloadable: track?.is_downloadable,
+        access: track?.access
+      }
+    }
+  })
+  const { is_downloadable, access } = partialTrack ?? {}
+
   const { stemTracks } = useCurrentStems({ trackId })
   const { uploadingTracks: uploadingStems } = useUploadingStems({ trackId })
   const {
@@ -85,7 +89,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
 
   const downloadQuality = DownloadQuality.ORIGINAL
   const shouldHideDownload =
-    !track?.access.download && !shouldDisplayDownloadFollowGated
+    !access?.download && !shouldDisplayDownloadFollowGated
   const formattedPrice = price ? USDC(price / 100).toLocaleString() : undefined
   const [expanded, setExpanded] = useState(false)
   const [lockedContentModalVisibility, setLockedContentModalVisibility] =
@@ -101,7 +105,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
 
   const onToggleExpand = useCallback(() => setExpanded((val) => !val), [])
 
-  const handlePurchaseClick = useAuthenticatedClickCallback((_event) => {
+  const handlePurchaseClick = useRequiresAccountOnClick((_event) => {
     if (lockedContentModalVisibility) {
       setLockedContentModalVisibility(false)
     }
@@ -111,12 +115,12 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     )
   }, [])
 
-  const handleDownload = useAuthenticatedCallback(
+  const handleDownload = useRequiresAccountCallback(
     ({ trackIds, parentTrackId }: { trackIds: ID[]; parentTrackId?: ID }) => {
       if (isMobile && shouldDisplayDownloadFollowGated) {
         // On mobile, show a toast instead of a tooltip
         dispatch(toast({ content: messages.followToDownload }))
-      } else if (track && track.access.download) {
+      } else if (partialTrack && partialTrack.access.download) {
         openWaitForDownloadModal({
           parentTrackId,
           trackIds,
@@ -149,7 +153,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
       openWaitForDownloadModal,
       record,
       shouldDisplayDownloadFollowGated,
-      track
+      partialTrack
     ]
   )
 
@@ -205,7 +209,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                       paddingBottom: '1px'
                     }}
                   >
-                    <IconLockUnlocked color='staticWhite' size='xs' />
+                    <IconLockUnlocked color='white' size='xs' />
                   </Flex>
                   <Text
                     variant='label'
@@ -237,7 +241,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
         ) : null}
         <Expandable expanded={expanded} id='downloads-section'>
           <Box>
-            {track?.is_downloadable ? (
+            {is_downloadable ? (
               <DownloadRow
                 trackId={trackId}
                 parentTrackId={trackId}
@@ -257,7 +261,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 size={fileSizes[s.id]?.[downloadQuality]}
                 index={
                   i +
-                  (track?.is_downloadable
+                  (is_downloadable
                     ? STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK
                     : STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK)
                 }
@@ -272,7 +276,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 index={
                   i +
                   stemTracks.length +
-                  (track?.is_downloadable
+                  (is_downloadable
                     ? STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK
                     : STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK)
                 }

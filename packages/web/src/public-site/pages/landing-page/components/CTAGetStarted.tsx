@@ -8,10 +8,9 @@ import { Parallax } from 'react-scroll-parallax'
 import { useChain, useTrail, animated } from 'react-spring'
 
 import { useHistoryContext } from 'app/HistoryProvider'
-import capshunBg from 'assets/img/publicSite/CapshunBG.webp'
-import capshunBg2 from 'assets/img/publicSite/CapshunBG@2x.webp'
-import capshunBg3 from 'assets/img/publicSite/CapshunBG@3x.webp'
-import capshunBg4 from 'assets/img/publicSite/CapshunBG@4x.webp'
+import ctaSection from 'assets/img/publicSite/CTASection.webp'
+import ctaSection2 from 'assets/img/publicSite/CTASection@2x.webp'
+import ctaSection3 from 'assets/img/publicSite/CTASection@3x.webp'
 import { handleClickRoute } from 'public-site/components/handleClickRoute'
 import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
 
@@ -22,7 +21,7 @@ const { TRENDING_PAGE } = route
 const MOBILE_WIDTH_MEDIA_QUERY = window.matchMedia('(max-width: 1150px)')
 
 const messages = {
-  title: 'Elevate Your Artistry, Amplify Your Reach.',
+  title: 'Artists Deserve More',
   cta: 'Get Started'
 }
 
@@ -81,12 +80,11 @@ const CTAGetStarted = (props: CTAGetStartedProps) => {
             <img
               className={styles.mobileBackground}
               srcSet={`
-              ${capshunBg} 1x,
-              ${capshunBg2} 2x,
-              ${capshunBg3} 3x,
-              ${capshunBg4} 4x,
+              ${ctaSection} 1x,
+              ${ctaSection2} 2x,
+              ${ctaSection3} 3x,
               `}
-              src={capshunBg}
+              src={ctaSection}
               alt='Audius Audio Set'
             />
           </Parallax>
@@ -157,12 +155,11 @@ const CTAGetStarted = (props: CTAGetStartedProps) => {
           <img
             className={styles.background}
             srcSet={`
-            ${capshunBg} 1x,
-            ${capshunBg2} 2x,
-            ${capshunBg3} 3x,
-            ${capshunBg4} 4x,
+            ${ctaSection} 1x,
+            ${ctaSection2} 2x,
+            ${ctaSection3} 3x,
             `}
-            src={capshunBg}
+            src={ctaSection}
             alt='Audius Audio Set'
           />
         </Parallax>

@@ -1,6 +1,6 @@
 import { memo } from 'react'
 
-import { SquareSizes, ID, CoverArtSizes, Remix } from '@audius/common/models'
+import { SquareSizes, ID, Remix } from '@audius/common/models'
 import cn from 'classnames'
 
 import CoSign from 'components/co-sign/CoSign'
@@ -16,7 +16,6 @@ import styles from './TrackTileArt.module.css'
 type TrackTileArtProps = {
   isTrack: boolean
   id: ID
-  coverArtSizes: CoverArtSizes
   className?: string
   showSkeleton?: boolean
   coSign?: Remix | null
@@ -30,9 +29,7 @@ type TrackTileArtProps = {
 
 const TrackTileArt = ({
   id,
-  isTrack,
   className,
-  coverArtSizes,
   showSkeleton,
   coSign,
   label,
@@ -41,8 +38,10 @@ const TrackTileArt = ({
   artworkIconClassName,
   callback
 }: TrackTileArtProps) => {
-  const useImage = isTrack ? useTrackCoverArt : useCollectionCoverArt
-  const image = useImage(id, coverArtSizes, SquareSizes.SIZE_150_BY_150)
+  const image = useTrackCoverArt({
+    trackId: id,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   const imageProps = {
     image: showSkeleton ? '' : image,
@@ -79,4 +78,63 @@ const TrackTileArt = ({
   )
 }
 
-export default memo(TrackTileArt)
+const CollectionTileArt = ({
+  id,
+  className,
+  showSkeleton,
+  coSign,
+  label,
+  isBuffering,
+  isPlaying,
+  artworkIconClassName,
+  callback
+}: TrackTileArtProps) => {
+  const image = useCollectionCoverArt({
+    collectionId: id,
+    size: SquareSizes.SIZE_150_BY_150
+  })
+
+  const imageProps = {
+    image: showSkeleton ? '' : image,
+    wrapperClassName: coSign
+      ? styles.imageWrapper
+      : cn(styles.container, styles.imageWrapper, className),
+    'aria-label': label,
+    onLoad: callback
+  }
+
+  const renderImage = () => (
+    <DynamicImage {...imageProps}>
+      <ArtworkIcon
+        isBuffering={!!isBuffering}
+        isPlaying={!!isPlaying}
+        artworkIconClassName={artworkIconClassName}
+      />
+    </DynamicImage>
+  )
+
+  return coSign ? (
+    <CoSign
+      size={Size.SMALL}
+      className={cn(styles.container, className)}
+      hasFavorited={coSign.has_remix_author_saved}
+      hasReposted={coSign.has_remix_author_reposted}
+      coSignName={coSign.user.name}
+      userId={coSign.user.user_id}
+    >
+      {renderImage()}
+    </CoSign>
+  ) : (
+    renderImage()
+  )
+}
+
+const TileArt = (props: TrackTileArtProps) => {
+  return props.isTrack ? (
+    <TrackTileArt {...props} />
+  ) : (
+    <CollectionTileArt {...props} />
+  )
+}
+
+export default memo(TileArt)

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 import { useTheme } from '@storybook/theming'
 
-import { Flex } from 'components'
+import { Flex } from '~harmony/components'
 
 type TipProps = {
   title: string

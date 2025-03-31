@@ -25,7 +25,6 @@ type useLineupPropsProps = {
   variant?: LineupVariant
   numPlaylistSkeletonRows?: number
   scrollParent?: HTMLElement
-  rankIconCount?: number
   isTrending?: boolean
   isOrdered?: boolean
 }
@@ -41,7 +40,6 @@ export const useLineupProps = ({
   variant,
   numPlaylistSkeletonRows,
   scrollParent,
-  rankIconCount,
   isTrending,
   isOrdered
 }: useLineupPropsProps) => {
@@ -85,8 +83,23 @@ export const useLineupProps = ({
     numPlaylistSkeletonRows,
     scrollParent,
     isMobile,
-    rankIconCount,
     isTrending,
     ordered: isOrdered
+  }
+}
+
+export const useTanQueryLineupProps = () => {
+  // Create memoized selectors
+  const getCurrentQueueItem = useMemo(() => makeGetCurrent(), [])
+
+  // Selectors
+  const currentQueueItem = useSelector(getCurrentQueueItem)
+  const isBuffering = useSelector(getBuffering)
+
+  return {
+    playingUid: currentQueueItem?.uid,
+    playingSource: currentQueueItem?.source,
+    playingTrackId: currentQueueItem?.track?.track_id ?? null,
+    buffering: isBuffering
   }
 }

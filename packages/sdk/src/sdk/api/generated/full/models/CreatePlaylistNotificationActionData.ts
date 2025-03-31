@@ -22,12 +22,6 @@ import { exists, mapValues } from '../runtime';
 export interface CreatePlaylistNotificationActionData {
     /**
      * 
-     * @type {string}
-     * @memberof CreatePlaylistNotificationActionData
-     */
-    playlistData?: string;
-    /**
-     * 
      * @type {boolean}
      * @memberof CreatePlaylistNotificationActionData
      */
@@ -61,7 +55,6 @@ export function CreatePlaylistNotificationActionDataFromJSONTyped(json: any, ign
     }
     return {
         
-        'playlistData': !exists(json, 'playlist_data') ? undefined : json['playlist_data'],
         'isAlbum': json['is_album'],
         'playlistId': json['playlist_id'],
     };
@@ -76,7 +69,6 @@ export function CreatePlaylistNotificationActionDataToJSON(value?: CreatePlaylis
     }
     return {
         
-        'playlist_data': value.playlistData,
         'is_album': value.isAlbum,
         'playlist_id': value.playlistId,
     };

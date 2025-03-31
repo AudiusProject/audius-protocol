@@ -21,7 +21,7 @@ export default async ({ track_id, updated_at, created_at }) => {
   if (!isUpload) return
 
   if (isOldUpload(created_at)) {
-    console.log({ created_at, track_id }, "old upload")
+    console.log({ created_at, track_id }, 'old upload')
     return
   }
 
@@ -54,8 +54,17 @@ export default async ({ track_id, updated_at, created_at }) => {
 
   if (results === undefined) return
 
-  const { title, genre, mood, is_stream_gated, is_download_gated, handle, slug, release_date, name } =
-    results
+  const {
+    title,
+    genre,
+    mood,
+    is_stream_gated,
+    is_download_gated,
+    handle,
+    slug,
+    release_date,
+    name
+  } = results
 
   const { sendMsg } = slack
   const header = `:audius-spin: New upload from *${name}* 🔥`

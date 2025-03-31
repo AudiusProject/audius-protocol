@@ -22,21 +22,17 @@ const CollectibleGallery = ({
   const [hasFetched, setHasFetched] = useState(false)
 
   const fetchCollectiblesOrder = async () => {
-    const result = await getCollectiblesJson(user.metadata_multihash)
+    const result = await getCollectiblesJson(user.id)
     setHasFetched(true)
 
-    if (result && result.collectibles) {
-      const collectiblesMetadataKeySet = new Set(
-        Object.keys(result.collectibles)
-      )
+    if (result) {
+      const collectiblesMetadataKeySet = new Set(Object.keys(result))
       const newCollectiblesMap = collectibles
         .map((c) => c.id)
         .filter((id) => !collectiblesMetadataKeySet.has(id))
         .reduce((acc, curr) => ({ ...acc, [curr]: {} }), {})
 
-      setOrder(
-        result.collectibles.order.concat(Object.keys(newCollectiblesMap))
-      )
+      setOrder(result.order.concat(Object.keys(newCollectiblesMap)))
     }
   }
 

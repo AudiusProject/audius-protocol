@@ -2,7 +2,7 @@
   position: relative;
   width: 100%;
   border-radius: 8px;
-  box-shadow: 0 2px 5px -2px var(--tile-shadow-3);
+  box-shadow: var(--harmony-shadow-mid);
   background-color: var(--harmony-white);
   overflow: hidden;
   padding-bottom: 5px;
@@ -123,7 +123,7 @@
 
 .pageButton.active {
   background-color: var(--harmony-secondary);
-  color: var(--harmony-static-white);
+  color: var(--harmony-white);
   cursor: default;
 }
 
@@ -215,7 +215,9 @@
 .tableRow:hover:not(.skeletonRow),
 .tableRow:hover > .tableCell {
   z-index: 3;
-  box-shadow: 0 1px 0 0 var(--harmony-n-100), 0 -1px 0 0 var(--harmony-n-100);
+  box-shadow:
+    0 1px 0 0 var(--harmony-n-100),
+    0 -1px 0 0 var(--harmony-n-100);
   transition: all 0.07s ease-in-out;
   background-color: var(--harmony-n-50);
 }

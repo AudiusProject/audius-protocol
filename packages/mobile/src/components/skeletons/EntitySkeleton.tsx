@@ -1,9 +1,10 @@
-import type { ReactNode } from 'react'
+import { useMemo, type ReactNode } from 'react'
 
 import { times, random } from 'lodash'
 import { View } from 'react-native'
 
-import { Screen, Tile, Text, Divider, ScreenContent } from 'app/components/core'
+import { Divider, Text } from '@audius/harmony-native'
+import { Tile } from 'app/components/core'
 import Skeleton, { StaticSkeleton } from 'app/components/skeleton/Skeleton'
 import { makeStyles } from 'app/styles'
 
@@ -14,9 +15,7 @@ const messages = {
 }
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
-  root: {
-    margin: spacing(3)
-  },
+  root: {},
   content: {
     paddingVertical: spacing(3) + 2,
     paddingHorizontal: spacing(4)
@@ -24,18 +23,13 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   heading: {
     alignItems: 'center'
   },
-  headingText: {
-    textAlign: 'center',
-    letterSpacing: 2,
-    marginBottom: spacing(2)
-  },
   trackArtwork: {
     borderWidth: 1,
     borderColor: palette.neutralLight8,
     borderRadius: 4,
-    marginBottom: spacing(4),
-    height: 195,
-    width: 195
+    marginTop: spacing(4),
+    height: 224,
+    width: 224
   },
   trackTitle: {
     marginVertical: spacing(2),
@@ -60,10 +54,6 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     width: 25,
     height: 25,
     marginHorizontal: spacing(4)
-  },
-  divider: {
-    width: '100%',
-    marginVertical: spacing(2)
   },
   metrics: {
     width: '100%',
@@ -108,61 +98,62 @@ export const EntitySkeleton = (props: EntitySkeletonProps) => {
   const { entityType, children } = props
   const styles = useStyles()
 
+  const descriptionElementCount = useMemo(
+    () => times(random(5, 15), () => random(20, 100)),
+    []
+  )
+
+  const divider = <Divider w='100%' mv='s' />
+
   return (
-    <Screen>
-      <ScreenContent>
-        <Tile styles={{ root: styles.root, content: styles.content }}>
-          <View style={styles.heading}>
-            <Text
-              fontSize='small'
-              weight='demiBold'
-              color='neutralLight4'
-              textTransform='uppercase'
-              style={styles.headingText}
-            >
-              {entityType ? messages[entityType] : ''}
-            </Text>
-            <Skeleton style={styles.trackArtwork} />
-            <StaticSkeleton style={styles.trackTitle} />
-            <StaticSkeleton style={styles.artistName} />
-            <StaticSkeleton style={styles.playButton} />
-            <View style={styles.socialActions}>
-              <StaticSkeleton style={styles.socialAction} />
-              <StaticSkeleton style={styles.socialAction} />
-              <StaticSkeleton style={styles.socialAction} />
-              <StaticSkeleton style={styles.socialAction} />
-            </View>
-            <Divider style={styles.divider} />
-            <View style={styles.metrics}>
-              <StaticSkeleton style={styles.metric} />
-              <StaticSkeleton style={styles.metric} />
-              <StaticSkeleton style={styles.metric} />
-            </View>
-            <View style={styles.description}>
-              {times(random(5, 15), () => random(20, 100)).map(
-                (elementWidth: number, i) => (
-                  <StaticSkeleton
-                    key={i}
-                    style={[styles.descriptionText, { width: elementWidth }]}
-                  />
-                )
-              )}
-            </View>
-            <Divider style={styles.divider} />
-            <View style={styles.metadataSection}>
-              <StaticSkeleton style={styles.metadata} />
-              <StaticSkeleton style={styles.metadata} />
-              <StaticSkeleton style={styles.metadata} />
-            </View>
-            {children ? (
-              <>
-                <Divider style={styles.divider} />
-                {children}
-              </>
-            ) : null}
-          </View>
-        </Tile>
-      </ScreenContent>
-    </Screen>
+    <Tile styles={{ root: styles.root, content: styles.content }}>
+      <View style={styles.heading}>
+        <Text
+          variant='label'
+          size='m'
+          strength='default'
+          textTransform='uppercase'
+          color='subdued'
+        >
+          {entityType ? messages[entityType] : ''}
+        </Text>
+        <Skeleton style={styles.trackArtwork} />
+        <StaticSkeleton style={styles.trackTitle} />
+        <StaticSkeleton style={styles.artistName} />
+        <StaticSkeleton style={styles.playButton} />
+        <View style={styles.socialActions}>
+          <StaticSkeleton style={styles.socialAction} />
+          <StaticSkeleton style={styles.socialAction} />
+          <StaticSkeleton style={styles.socialAction} />
+          <StaticSkeleton style={styles.socialAction} />
+        </View>
+        {divider}
+        <View style={styles.metrics}>
+          <StaticSkeleton style={styles.metric} />
+          <StaticSkeleton style={styles.metric} />
+          <StaticSkeleton style={styles.metric} />
+        </View>
+        <View style={styles.description}>
+          {descriptionElementCount.map((elementWidth: number, i) => (
+            <StaticSkeleton
+              key={i}
+              style={[styles.descriptionText, { width: elementWidth }]}
+            />
+          ))}
+        </View>
+        {divider}
+        <View style={styles.metadataSection}>
+          <StaticSkeleton style={styles.metadata} />
+          <StaticSkeleton style={styles.metadata} />
+          <StaticSkeleton style={styles.metadata} />
+        </View>
+        {children ? (
+          <>
+            {divider}
+            {children}
+          </>
+        ) : null}
+      </View>
+    </Tile>
   )
 }

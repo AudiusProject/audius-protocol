@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
+import { useCollection, useUser } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,
@@ -16,7 +17,6 @@ import type {
 } from '@audius/common/models'
 import {
   accountSelectors,
-  collectionPageSelectors,
   collectionsSocialActions,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
@@ -30,15 +30,13 @@ import {
   useEarlyReleaseConfirmationModal
 } from '@audius/common/store'
 import { encodeUrlName, removeNullable } from '@audius/common/utils'
-import type { Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
-import type { ImageProps } from '@audius/harmony-native'
+import { Divider, type ImageProps } from '@audius/harmony-native'
 import {
   ScreenContent,
   Screen,
-  VirtualizedScrollView,
-  Divider
+  VirtualizedScrollView
 } from 'app/components/core'
 import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
 import { CollectionImage } from 'app/components/image/CollectionImage'
@@ -48,7 +46,6 @@ import { useRoute } from 'app/hooks/useRoute'
 import { setVisibility } from 'app/store/drawers/slice'
 import { getIsCollectionMarkedForDownload } from 'app/store/offline-downloads/selectors'
 import { makeStyles } from 'app/styles'
-import { useThemePalette } from 'app/utils/theme'
 
 import { CollectionScreenDetailsTile } from './CollectionScreenDetailsTile'
 import { CollectionScreenSkeleton } from './CollectionScreenSkeleton'
@@ -63,16 +60,11 @@ const {
   undoRepostCollection,
   unsaveCollection
 } = collectionsSocialActions
-const { getCollection, getUser } = collectionPageSelectors
 const getUserId = accountSelectors.getUserId
 
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
     padding: spacing(3)
-  },
-  divider: {
-    marginTop: spacing(2),
-    marginBottom: spacing(8)
   }
 }))
 
@@ -85,22 +77,17 @@ export const CollectionScreen = () => {
   // params is incorrectly typed and can sometimes be undefined
   const { id = null, searchCollection, collectionType } = params ?? {}
 
-  const cachedCollection = useSelector((state) =>
-    getCollection(state, { id })
-  ) as Nullable<Collection>
-
-  const cachedUser = useSelector((state) =>
-    getUser(state, { id: cachedCollection?.playlist_owner_id })
-  )
+  const { data: cachedCollection } = useCollection(id)
+  const { data: cachedUser } = useUser(cachedCollection?.playlist_owner_id)
 
   const collection = cachedCollection ?? searchCollection
   const user = cachedUser ?? searchCollection?.user
 
-  return !collection || !user ? (
-    <CollectionScreenSkeleton collectionType={collectionType} />
-  ) : (
-    <CollectionScreenComponent collection={collection} user={user} />
-  )
+  if (!collection || !user) {
+    return <CollectionScreenSkeleton collectionType={collectionType} />
+  }
+
+  return <CollectionScreenComponent collection={collection} user={user} />
 }
 
 type CollectionScreenComponentProps = {
@@ -136,8 +123,6 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
   const { onOpen: openEarlyReleaseConfirmation } =
     useEarlyReleaseConfirmationModal()
 
-  const { neutralLight5 } = useThemePalette()
-
   const releaseDate =
     'release_date' in collection ? collection.release_date : created_at
   const url = useMemo(() => {
@@ -149,12 +134,12 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
   const renderImage = useCallback(
     (props: ImageProps) => (
       <CollectionImage
-        collection={collection}
+        collectionId={playlist_id}
         size={SquareSizes.SIZE_480_BY_480}
         {...props}
       />
     ),
-    [collection]
+    [playlist_id]
   )
 
   const currentUserId = useSelector(getUserId)
@@ -315,7 +300,7 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
             />
             {isOwner && !is_album && !ddex_app ? (
               <ScreenSecondaryContent>
-                <Divider style={styles.divider} color={neutralLight5} />
+                <Divider mt='s' mb='2xl' />
                 <SuggestedTracks collectionId={playlist_id} />
               </ScreenSecondaryContent>
             ) : null}

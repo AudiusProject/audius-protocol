@@ -12,8 +12,8 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { IconAppearance } from '@audius/harmony-native'
 import { SegmentedControl } from 'app/components/core'
-import { env } from 'app/env'
 import { make, track } from 'app/services/analytics'
+import { env } from 'app/services/env'
 
 import { SettingsRowLabel } from './SettingRowLabel'
 import { SettingsRow } from './SettingsRow'
@@ -40,10 +40,6 @@ export const AppearanceSettingsRow = () => {
 
   if (tier === 'gold' || tier === 'platinum' || isStaging) {
     appearanceOptions.push({ key: Theme.MATRIX, text: messages.matrixMode })
-  }
-
-  if (isStaging) {
-    appearanceOptions.push({ key: Theme.DEBUG, text: messages.debugMode })
   }
 
   const handleSetTheme = useCallback(

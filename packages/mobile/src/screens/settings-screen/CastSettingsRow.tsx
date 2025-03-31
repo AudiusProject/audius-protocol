@@ -17,7 +17,7 @@ import { SettingsRowContent } from './SettingsRowContent'
 import { SettingsRowDescription } from './SettingsRowDescription'
 const { updateMethod } = castActions
 const { getMethod: getCastMethod } = castSelectors
-const { getAccountUser } = accountSelectors
+const { getHasAccount } = accountSelectors
 
 const messages = {
   cast: 'Cast to Devices',
@@ -29,7 +29,7 @@ const messages = {
 
 export const CastSettingsRow = () => {
   const dispatch = useDispatch()
-  const accountUser = useSelector(getAccountUser)
+  const hasAccount = useSelector(getHasAccount)
   const castMethod = useSelector(getCastMethod)
 
   const setCastMethod = useCallback(
@@ -41,7 +41,7 @@ export const CastSettingsRow = () => {
     [dispatch]
   )
 
-  if (!accountUser) return null
+  if (!hasAccount) return null
 
   const castOptions = [
     { key: 'airplay', text: messages.airplay },

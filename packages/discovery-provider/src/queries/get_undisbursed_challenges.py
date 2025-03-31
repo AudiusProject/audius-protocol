@@ -46,6 +46,7 @@ class UndisbursedChallengesArgs(TypedDict):
     limit: Optional[int]
     offset: Optional[int]
     completed_blocknumber: Optional[int]
+    challenge_id: Optional[str]
 
 
 MAX_LIMIT = 500
@@ -97,6 +98,11 @@ def get_undisbursed_challenges(
     if args["completed_blocknumber"] is not None:
         undisbursed_challenges_query = undisbursed_challenges_query.filter(
             UserChallenge.completed_blocknumber > args["completed_blocknumber"]
+        )
+
+    if args["challenge_id"] is not None:
+        undisbursed_challenges_query = undisbursed_challenges_query.filter(
+            UserChallenge.challenge_id == args["challenge_id"]
         )
 
     limit = DEFAULT_LIMIT

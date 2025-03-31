@@ -1,5 +1,7 @@
 .openapi-generator-ignore
 apis/ChallengesApi.ts
+apis/CidDataApi.ts
+apis/CommentsApi.ts
 apis/NotificationsApi.ts
 apis/PlaylistsApi.ts
 apis/ReactionsApi.ts
@@ -16,6 +18,8 @@ models/AccountCollection.ts
 models/AccountCollectionUser.ts
 models/AccountFull.ts
 models/ActivityFull.ts
+models/AlbumBacklink.ts
+models/AlbumsResponseFull.ts
 models/AnnouncementNotification.ts
 models/AnnouncementNotificationAction.ts
 models/AnnouncementNotificationActionData.ts
@@ -27,12 +31,16 @@ models/AttestationReponse.ts
 models/ChallengeRewardNotification.ts
 models/ChallengeRewardNotificationAction.ts
 models/ChallengeRewardNotificationActionData.ts
+models/CidData.ts
+models/CidDataResponse.ts
 models/ClaimableRewardNotification.ts
 models/ClaimableRewardNotificationAction.ts
 models/ClaimableRewardNotificationActionData.ts
 models/CollectionActivityFull.ts
 models/CollectionActivityFullWithoutTracks.ts
 models/CollectionLibraryResponseFull.ts
+models/Comment.ts
+models/CommentMention.ts
 models/CommentMentionNotification.ts
 models/CommentMentionNotificationAction.ts
 models/CommentMentionNotificationActionData.ts
@@ -42,6 +50,7 @@ models/CommentNotificationActionData.ts
 models/CommentReactionNotification.ts
 models/CommentReactionNotificationAction.ts
 models/CommentReactionNotificationActionData.ts
+models/CommentRepliesResponse.ts
 models/CommentThreadNotification.ts
 models/CommentThreadNotificationAction.ts
 models/CommentThreadNotificationActionData.ts
@@ -56,6 +65,7 @@ models/CreateNotificationAction.ts
 models/CreateNotificationActionData.ts
 models/CreatePlaylistNotificationActionData.ts
 models/CreateTrackNotificationActionData.ts
+models/DataAndType.ts
 models/Favorite.ts
 models/FieldVisibility.ts
 models/FollowGate.ts
@@ -70,8 +80,11 @@ models/FullGetSupportedUsers.ts
 models/FullGetSupporter.ts
 models/FullGetSupporters.ts
 models/FullGetSupporting.ts
+models/FullMutualFollowersResponse.ts
 models/FullPlaylistResponse.ts
 models/FullPlaylistTracksResponse.ts
+models/FullPlaylistWithScore.ts
+models/FullPlaylistWithScoreResponse.ts
 models/FullPurchasersResponse.ts
 models/FullRemix.ts
 models/FullRemixParent.ts
@@ -90,6 +103,9 @@ models/FullUserResponse.ts
 models/GetTipsResponse.ts
 models/Grant.ts
 models/HistoryResponseFull.ts
+models/ListenStreakReminderNotification.ts
+models/ListenStreakReminderNotificationAction.ts
+models/ListenStreakReminderNotificationActionData.ts
 models/ManagedUser.ts
 models/ManagedUsersResponse.ts
 models/ManagersResponse.ts
@@ -115,6 +131,7 @@ models/PlaylistMilestoneNotificationActionData.ts
 models/PlaylistUpdate.ts
 models/PlaylistUpdates.ts
 models/PlaylistUpdatesResponse.ts
+models/PlaylistsResponseFull.ts
 models/ProfilePicture.ts
 models/ProfilePictureFull.ts
 models/Purchase.ts
@@ -131,6 +148,7 @@ models/Reactions.ts
 models/ReceiveTipNotification.ts
 models/ReceiveTipNotificationAction.ts
 models/ReceiveTipNotificationActionData.ts
+models/Related.ts
 models/RelatedArtistResponseFull.ts
 models/RemixNotification.ts
 models/RemixNotificationAction.ts
@@ -140,6 +158,7 @@ models/RemixersCountResponse.ts
 models/RemixesResponse.ts
 models/RemixesResponseFull.ts
 models/RemixingResponse.ts
+models/ReplyComment.ts
 models/Repost.ts
 models/RepostNotification.ts
 models/RepostNotificationAction.ts
@@ -191,6 +210,7 @@ models/TrackAddedToPurchasedAlbumNotification.ts
 models/TrackAddedToPurchasedAlbumNotificationAction.ts
 models/TrackAddedToPurchasedAlbumNotificationActionData.ts
 models/TrackArtworkFull.ts
+models/TrackCommentsResponseFull.ts
 models/TrackFavoritesResponseFull.ts
 models/TrackFeedItem.ts
 models/TrackFull.ts
@@ -213,6 +233,7 @@ models/TrendingTimesIds.ts
 models/TrendingUndergroundNotification.ts
 models/TrendingUndergroundNotificationAction.ts
 models/TrendingUndergroundNotificationActionData.ts
+models/UrlWithMirrors.ts
 models/UsdcGate.ts
 models/UsdcPurchaseBuyerNotification.ts
 models/UsdcPurchaseBuyerNotificationAction.ts
@@ -221,6 +242,7 @@ models/UsdcPurchaseSellerNotification.ts
 models/UsdcPurchaseSellerNotificationAction.ts
 models/UsdcPurchaseSellerNotificationActionData.ts
 models/UserAccountResponseFull.ts
+models/UserCommentsResponseFull.ts
 models/UserFeedItem.ts
 models/UserFeedResponse.ts
 models/UserFull.ts

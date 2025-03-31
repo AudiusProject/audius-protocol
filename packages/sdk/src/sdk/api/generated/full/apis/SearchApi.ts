@@ -62,6 +62,24 @@ export interface SearchAutocompleteRequest {
     sortMethod?: SearchAutocompleteSortMethodEnum;
 }
 
+export interface SearchTagsRequest {
+    offset?: number;
+    limit?: number;
+    userId?: string;
+    query?: string;
+    kind?: SearchTagsKindEnum;
+    includePurchaseable?: boolean;
+    genre?: Array<string>;
+    mood?: Array<string>;
+    isVerified?: boolean;
+    hasDownloads?: boolean;
+    isPurchaseable?: boolean;
+    key?: Array<string>;
+    bpmMin?: number;
+    bpmMax?: number;
+    sortMethod?: SearchTagsSortMethodEnum;
+}
+
 /**
  * 
  */
@@ -243,6 +261,93 @@ export class SearchApi extends runtime.BaseAPI {
         return await response.value();
     }
 
+    /**
+     * @hidden
+     * Get Users/Tracks/Playlists/Albums that best match the provided tag
+     */
+    async searchTagsRaw(params: SearchTagsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchFullResponse>> {
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.query !== undefined) {
+            queryParameters['query'] = params.query;
+        }
+
+        if (params.kind !== undefined) {
+            queryParameters['kind'] = params.kind;
+        }
+
+        if (params.includePurchaseable !== undefined) {
+            queryParameters['includePurchaseable'] = params.includePurchaseable;
+        }
+
+        if (params.genre) {
+            queryParameters['genre'] = params.genre;
+        }
+
+        if (params.mood) {
+            queryParameters['mood'] = params.mood;
+        }
+
+        if (params.isVerified !== undefined) {
+            queryParameters['is_verified'] = params.isVerified;
+        }
+
+        if (params.hasDownloads !== undefined) {
+            queryParameters['has_downloads'] = params.hasDownloads;
+        }
+
+        if (params.isPurchaseable !== undefined) {
+            queryParameters['is_purchaseable'] = params.isPurchaseable;
+        }
+
+        if (params.key) {
+            queryParameters['key'] = params.key;
+        }
+
+        if (params.bpmMin !== undefined) {
+            queryParameters['bpm_min'] = params.bpmMin;
+        }
+
+        if (params.bpmMax !== undefined) {
+            queryParameters['bpm_max'] = params.bpmMax;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/search/tags`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchFullResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Users/Tracks/Playlists/Albums that best match the provided tag
+     */
+    async searchTags(params: SearchTagsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchFullResponse> {
+        const response = await this.searchTagsRaw(params, initOverrides);
+        return await response.value();
+    }
+
 }
 
 /**
@@ -285,3 +390,23 @@ export const SearchAutocompleteSortMethodEnum = {
     Recent: 'recent'
 } as const;
 export type SearchAutocompleteSortMethodEnum = typeof SearchAutocompleteSortMethodEnum[keyof typeof SearchAutocompleteSortMethodEnum];
+/**
+ * @export
+ */
+export const SearchTagsKindEnum = {
+    All: 'all',
+    Users: 'users',
+    Tracks: 'tracks',
+    Playlists: 'playlists',
+    Albums: 'albums'
+} as const;
+export type SearchTagsKindEnum = typeof SearchTagsKindEnum[keyof typeof SearchTagsKindEnum];
+/**
+ * @export
+ */
+export const SearchTagsSortMethodEnum = {
+    Relevant: 'relevant',
+    Popular: 'popular',
+    Recent: 'recent'
+} as const;
+export type SearchTagsSortMethodEnum = typeof SearchTagsSortMethodEnum[keyof typeof SearchTagsSortMethodEnum];

@@ -1,4 +1,3 @@
-import { BuyCryptoErrorCode } from '~/store/buy-crypto/types'
 import { BuyUSDCErrorCode } from '~/store/index'
 import {
   PurchaseContentErrorCode,
@@ -35,26 +34,12 @@ export const usePurchaseContentErrorMessage = (
       return messages.minimumPurchase(minUSDCPurchaseAmountCents)
     case BuyUSDCErrorCode.MaxAmountExceeded:
       return messages.maximumPurchase(maxUSDCPurchaseAmountCents)
-    case BuyCryptoErrorCode.COUNTRY_NOT_SUPPORTED:
-    case BuyUSDCErrorCode.CountryNotSupported:
-      return messages.countryNotSupported
-    case BuyCryptoErrorCode.BAD_AMOUNT:
-      return messages.badAmount(
-        minUSDCPurchaseAmountCents,
-        maxUSDCPurchaseAmountCents
-      )
     case PurchaseErrorCode.InsufficientExternalTokenBalance:
       return messages.insufficientExternalTokenBalance
     case PurchaseErrorCode.NoQuote:
       return messages.noQuote
-    case BuyCryptoErrorCode.BAD_FEE_PAYER:
-    case BuyCryptoErrorCode.BAD_PROVIDER:
-    case BuyCryptoErrorCode.BAD_TOKEN:
-    case BuyCryptoErrorCode.ON_RAMP_ERROR:
-    case BuyCryptoErrorCode.SWAP_ERROR:
-    case BuyCryptoErrorCode.UNKNOWN:
-    case BuyCryptoErrorCode.INSUFFICIENT_FUNDS_ERROR:
     case BuyUSDCErrorCode.OnrampError:
+    case BuyUSDCErrorCode.CountryNotSupported:
     case PurchaseErrorCode.Canceled:
     case PurchaseErrorCode.InsufficientBalance:
     case PurchaseErrorCode.Unknown:

@@ -43,7 +43,8 @@ export enum NotificationType {
   Comment = 'Comment',
   CommentThread = 'CommentThread',
   CommentMention = 'CommentMention',
-  CommentReaction = 'CommentReaction'
+  CommentReaction = 'CommentReaction',
+  ListenStreakReminder = 'ListenStreakReminder'
 }
 
 export enum PushNotificationType {
@@ -91,7 +92,8 @@ export enum PushNotificationType {
   Comment = 'Comment',
   CommentThread = 'CommentThread',
   CommentMention = 'CommentMention',
-  CommentReaction = 'CommentReaction'
+  CommentReaction = 'CommentReaction',
+  ListenStreakReminder = 'ListenStreakReminder'
 }
 
 export enum Entity {
@@ -462,6 +464,7 @@ export type ChallengeRewardNotification = BaseNotification & {
   challengeId: ChallengeRewardID
   entityType: string
   amount: StringWei
+  listenStreak?: number
 }
 
 export type ClaimableRewardNotification = BaseNotification & {
@@ -687,6 +690,11 @@ export type CommentReactionNotification = BaseNotification & {
   entityType: Entity.Playlist | Entity.Album | Entity.Track
 }
 
+export type ListenStreakReminderNotification = BaseNotification & {
+  type: NotificationType.ListenStreakReminder
+  streak: number
+}
+
 export type Notification =
   | AnnouncementNotification
   | UserSubscriptionNotification
@@ -721,6 +729,7 @@ export type Notification =
   | CommentThreadNotification
   | CommentMentionNotification
   | CommentReactionNotification
+  | ListenStreakReminderNotification
 
 export type IdentityNotification = Omit<Notification, 'timestamp'> & {
   timestamp: string

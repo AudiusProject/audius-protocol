@@ -17,7 +17,8 @@ export const confirmEmailMessages = {
   otpPlaceholder: '123 456',
   noEmailNotice: "Didn't get an email?",
   resendCode: 'Resend Code',
-  resentToast: 'Verification code resent.'
+  resentToast: 'Verification code resent.',
+  finishSigningUp: 'Finish Signing Up'
 }
 
 export const createEmailPageMessages = {
@@ -30,7 +31,8 @@ export const createEmailPageMessages = {
   unknownError: 'Unknown error occurred.',
   metaMaskNotRecommended: 'Signing up with MetaMask is not recommended.',
   signUpMetamask: 'Sign Up With MetaMask',
-  learnMore: 'Learn More'
+  learnMore: 'Learn More',
+  finishSigningUp: 'Finish Signing Up'
 }
 
 export type CompletionChecklistType =

@@ -17,9 +17,11 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
     variant = 'default',
     isActive,
     isExternal = false,
+    ellipses = false,
     onClick,
     textVariant,
     showUnderline,
+    noUnderlineOnHover,
     applyHoverStylesToInnerSvg,
     disabled,
     ...other
@@ -31,7 +33,7 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
     default: color.link.default,
     subdued: color.link.subdued,
     visible: color.link.visible,
-    inverted: color.static.white,
+    inverted: color.static.staticWhite,
     secondary: color.secondary.secondary,
     active: color.primary.primary
   }
@@ -40,20 +42,16 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
     default: color.primary.p300,
     subdued: color.primary.p300,
     visible: color.link.visible,
-    inverted: color.static.white,
+    inverted: color.static.staticWhite,
     secondary: color.secondary.secondary,
     active: color.primary.primary
   }
 
   const hoverStyles = {
-    textDecoration: 'underline',
+    textDecoration: noUnderlineOnHover ? 'none' : 'underline',
     color: variantHoverColors[variant],
     ...(applyHoverStylesToInnerSvg
-      ? {
-          path: {
-            fill: variantHoverColors[variant]
-          }
-        }
+      ? { path: { fill: variantHoverColors[variant] } }
       : {})
   }
 
@@ -70,11 +68,16 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
         transition: `color ${motion.hover}`,
         cursor: 'pointer',
         pointerEvents: disabled ? 'none' : undefined,
+        ...(applyHoverStylesToInnerSvg && {
+          path: { transition: `fill ${motion.hover}` }
+        }),
         ':hover': hoverStyles,
         ...(isActive && { ...hoverStyles, textDecoration: 'none' }),
-        ...(showUnderline && hoverStyles)
+        ...(showUnderline && hoverStyles),
+        ...(ellipses && { minWidth: 0 })
       }}
       variant={textVariant}
+      ellipses={ellipses}
       {...other}
     >
       {asChild ? (

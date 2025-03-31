@@ -1,17 +1,11 @@
 import { useCallback } from 'react'
 
-import {
-  Variant as CollectionVariant,
-  Status,
-  UserCollection,
-  User,
-  Variant
-} from '@audius/common/models'
+import { Variant as CollectionVariant, Variant } from '@audius/common/models'
 import { ExploreCollectionsVariant } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import Lottie from 'react-lottie'
+import { IconExplore } from '@audius/harmony'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
-import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import {
   HEAVY_ROTATION,
   BEST_NEW_RELEASES,
@@ -20,16 +14,13 @@ import {
   REMIXABLES,
   FEELING_LUCKY
 } from 'common/store/smart-collection/smartCollections'
-import CollectionArtCard from 'components/card-legacy/desktop/CollectionArtCard'
-import UserArtCard from 'components/card-legacy/desktop/UserArtCard'
-import Header from 'components/header/desktop/Header'
+import { Header } from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 import PerspectiveCard, {
   TextInterior,
   EmojiInterior
 } from 'components/perspective-card/PerspectiveCard'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
-import { useOrderedLoad } from 'hooks/useOrderedLoad'
 import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons'
 import {
   LET_THEM_DJ,
@@ -46,15 +37,13 @@ import {
 import { BASE_URL, stripBaseUrl } from 'utils/route'
 
 import styles from './ExplorePage.module.css'
+import { FeaturedPlaylists } from './FeaturedPlaylists'
+import { FeaturedProfiles } from './FeaturedProfiles'
 import Section, { Layout } from './Section'
 
 const { EXPLORE_PAGE } = route
 
 const messages = {
-  featuredPlaylists: 'Playlists We Love Right Now',
-  featuredProfiles: 'Artists You Should Follow',
-  exploreMorePlaylists: 'Explore More Playlists',
-  exploreMoreProfiles: 'Explore More Artists',
   justForYou: 'Just For You',
   justForYouSubtitle: `Content curated for you based on your likes,
 reposts, and follows. Refreshes often so if you like a track, favorite it.`,
@@ -88,21 +77,9 @@ export type ExplorePageProps = {
   title: string
   pageTitle: string
   description: string
-  playlists: UserCollection[]
-  profiles: User[]
-  status: Status
-  goToRoute: (route: string) => void
 }
 
-const ExplorePage = ({
-  title,
-  pageTitle,
-  description,
-  playlists,
-  profiles,
-  status,
-  goToRoute
-}: ExplorePageProps) => {
+const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const isUSDCPurchasesEnabled = useIsUSDCEnabled()
   const justForYouTiles = justForYou.filter((tile) => {
     const isPremiumTracksTile =
@@ -110,24 +87,28 @@ const ExplorePage = ({
       tile.title === PREMIUM_TRACKS.title
     return !isPremiumTracksTile || isUSDCPurchasesEnabled
   })
-  const { isLoading: isLoadingPlaylist, setDidLoad: setDidLoadPlaylist } =
-    useOrderedLoad(playlists.length)
-  const { isLoading: isLoadingProfiles, setDidLoad: setDidLoadProfile } =
-    useOrderedLoad(profiles.length)
 
-  const header = <Header primary={title} containerStyles={styles.header} />
+  const navigate = useNavigate()
+
+  const header = (
+    <Header
+      icon={IconExplore}
+      primary={title}
+      containerStyles={styles.header}
+    />
+  )
   const onClickCard = useCallback(
     (url: string) => {
       if (url.startsWith(BASE_URL)) {
-        goToRoute(stripBaseUrl(url))
+        navigate(stripBaseUrl(url))
       } else if (url.startsWith('http')) {
         const win = window.open(url, '_blank')
         if (win) win.focus()
       } else {
-        goToRoute(url)
+        navigate(url)
       }
     },
-    [goToRoute]
+    [navigate]
   )
 
   return (
@@ -150,7 +131,9 @@ const ExplorePage = ({
             i.variant === CollectionVariant.SMART ? i.description : i.subtitle
           const Icon =
             i.variant === Variant.SMART
-              ? smartCollectionIcons[i.playlist_name]
+              ? smartCollectionIcons[
+                  i.playlist_name as keyof typeof smartCollectionIcons
+                ]
               : i.icon
           return (
             <PerspectiveCard
@@ -161,7 +144,9 @@ const ExplorePage = ({
                 i.variant !== ExploreCollectionsVariant.DIRECT_LINK
               }
               backgroundIcon={
-                <Icon height={512} width={512} color='staticWhite' />
+                Icon ? (
+                  <Icon height={512} width={512} color='inverse' />
+                ) : undefined
               }
               backgroundIconClassName={
                 title === PREMIUM_TRACKS.title
@@ -184,72 +169,15 @@ const ExplorePage = ({
             key={i.title}
             backgroundGradient={i.gradient}
             shadowColor={i.shadow}
-            onClick={() => goToRoute(i.link)}
+            onClick={() => navigate(i.link)}
           >
             <EmojiInterior title={i.title} emoji={i.emoji} />
           </PerspectiveCard>
         ))}
       </Section>
 
-      <Section
-        title={messages.featuredPlaylists}
-        expandable
-        expandText={messages.exploreMorePlaylists}
-      >
-        {status === Status.LOADING ? (
-          <div className={styles.loadingSpinner}>
-            <Lottie
-              options={{
-                loop: true,
-                autoplay: true,
-                animationData: loadingSpinner
-              }}
-            />
-          </div>
-        ) : (
-          playlists.map((playlist: UserCollection, i: number) => {
-            return (
-              <CollectionArtCard
-                key={playlist.playlist_id}
-                id={playlist.playlist_id}
-                index={i}
-                isLoading={isLoadingPlaylist(i)}
-                setDidLoad={setDidLoadPlaylist}
-              />
-            )
-          })
-        )}
-      </Section>
-
-      <Section
-        title={messages.featuredProfiles}
-        expandable
-        expandText={messages.exploreMoreProfiles}
-      >
-        {status === Status.LOADING ? (
-          <div className={styles.loadingSpinner}>
-            <Lottie
-              options={{
-                loop: true,
-                autoplay: true,
-                animationData: loadingSpinner
-              }}
-            />
-          </div>
-        ) : (
-          profiles.map((profile: User, i: number) => {
-            return (
-              <UserArtCard
-                key={profile.user_id}
-                id={profile.user_id}
-                index={i}
-                isLoading={isLoadingProfiles(i)}
-                setDidLoad={setDidLoadProfile}
-              />
-            )
-          })
-        )}
-      </Section>
+      <FeaturedPlaylists />
+      <FeaturedProfiles />
     </Page>
   )
 }

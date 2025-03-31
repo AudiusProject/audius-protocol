@@ -1,7 +1,8 @@
 export enum IntKeys {
   /**
    * Duration (in ms) before we consider the fetch of an image against
-   * a primary creator node a failure and try using libs.fetchCID
+   * a primary creator node a failure
+   * @deprecated
    */
   IMAGE_QUICK_FETCH_TIMEOUT_MS = 'IMAGE_QUICK_FETCH_TIMEOUT_MS',
   /**
@@ -24,7 +25,7 @@ export enum IntKeys {
 
   /**
    * Number of blocks at which we would consider a discovery node to be
-   * unhealthy. Unset value (null) means use the libs default block diff.
+   * unhealthy. Unset value (null) means use the default block diff.
    */
   DISCOVERY_NODE_MAX_BLOCK_DIFF = 'DISCOVERY_NODE_MAX_BLOCK_DIFF',
 
@@ -277,7 +278,10 @@ export enum DoubleKeys {
   /**
    * How often we should show suggested follows after a user follows another user
    */
-  SHOW_ARTIST_RECOMMENDATIONS_PERCENT = 'SHOW_ARTIST_RECOMMENDATIONS_PERCENT'
+  SHOW_ARTIST_RECOMMENDATIONS_PERCENT = 'SHOW_ARTIST_RECOMMENDATIONS_PERCENT',
+
+  /** How many Sentry error recordings we sample. Value ranges from 0.0-1.0 */
+  SENTRY_REPLAY_ERROR_SAMPLE_RATE = 'SENTRY_REPLAY_ERROR_SAMPLE_RATE'
 }
 
 export enum StringKeys {

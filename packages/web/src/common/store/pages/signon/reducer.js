@@ -7,8 +7,6 @@ import {
   SET_TWITTER_PROFILE,
   SET_INSTAGRAM_PROFILE,
   SET_TIKTOK_PROFILE,
-  FETCH_FOLLOW_ARTISTS_SUCCEEDED,
-  SET_FOLLOW_ARTIST_CATEGORY,
   VALIDATE_EMAIL,
   VALIDATE_EMAIL_SUCCEEDED,
   VALIDATE_EMAIL_FAILED,
@@ -31,7 +29,7 @@ import {
   SIGN_IN_FAILED,
   SIGN_IN_SUCCEEDED,
   COMPLETE_FOLLOW_ARTISTS,
-  CONFIGURE_META_MASK,
+  USING_EXTERNAL_WALLET,
   UPDATE_ROUTE_ON_COMPLETION,
   UPDATE_ROUTE_ON_EXIT,
   ADD_FOLLOW_ARTISTS,
@@ -42,9 +40,9 @@ import {
   HIDE_PREVIEW_HINT,
   SET_WELCOME_MODAL_SHOWN
 } from './actions'
-import { Pages, FollowArtistsCategory } from './types'
+import { Pages } from './types'
 
-const { FEED_PAGE } = route
+const { FEED_PAGE, TRENDING_PAGE } = route
 
 const createTextField = () => ({
   value: '',
@@ -54,18 +52,19 @@ const createTextField = () => ({
 
 const initialState = {
   routeOnCompletion: FEED_PAGE,
-  routeOnExit: null,
+  routeOnExit: TRENDING_PAGE,
   isMobileSignOnVisible: false,
   email: createTextField(),
   name: createTextField(),
   password: createTextField(),
   otp: createTextField(),
   handle: createTextField(),
+  isGuest: false,
   /** Whether the user linked their social media account on the first page (email page) of the sign up flow */
   linkedSocialOnFirstPage: false,
   accountAlreadyExisted: false,
   verified: false,
-  useMetaMask: false,
+  usingExternalWallet: false,
   accountReady: false,
   twitterId: '',
   twitterScreenName: '',
@@ -83,11 +82,7 @@ const initialState = {
   /** Whether user finished the main part of the flow (before 'Select Genres'), upon which their account gets created */
   finishedPhase1: false,
   hidePreviewHint: false,
-  followArtists: {
-    selectedCategory: FollowArtistsCategory.FEATURED,
-    categories: {},
-    selectedUserIds: []
-  },
+  selectedUserIds: [],
   genres: [],
   referrer: null,
   welcomeModalShown: false
@@ -115,7 +110,8 @@ const actionsMap = {
     return {
       ...state,
       ...action.fields,
-      page: action.page || state.page
+      page: action.page || state.page,
+      routeOnExit: action.routeOnExit || window.location.pathname
     }
   },
   [NEXT_PAGE](state, action) {
@@ -301,10 +297,10 @@ const actionsMap = {
       }
     }
   },
-  [CONFIGURE_META_MASK](state, action) {
+  [USING_EXTERNAL_WALLET](state, action) {
     return {
       ...state,
-      useMetaMask: true
+      usingExternalWallet: true
     }
   },
   [VALIDATE_EMAIL_SUCCEEDED](state, action) {
@@ -416,27 +412,6 @@ const actionsMap = {
       routeOnCompletion: action.route
     }
   },
-  [FETCH_FOLLOW_ARTISTS_SUCCEEDED](state, action) {
-    return {
-      ...state,
-      followArtists: {
-        ...state.followArtists,
-        categories: {
-          ...state.followArtists.categories,
-          [action.category]: action.userIds
-        }
-      }
-    }
-  },
-  [SET_FOLLOW_ARTIST_CATEGORY](state, action) {
-    return {
-      ...state,
-      followArtists: {
-        ...state.followArtists,
-        selectedCategory: action.category
-      }
-    }
-  },
   [COMPLETE_FOLLOW_ARTISTS](state, action) {
     return {
       ...state,
@@ -446,24 +421,18 @@ const actionsMap = {
   [ADD_FOLLOW_ARTISTS](state, action) {
     return {
       ...state,
-      followArtists: {
-        ...state.followArtists,
-        selectedUserIds: [
-          ...new Set(state.followArtists.selectedUserIds.concat(action.userIds))
-        ]
-      }
+      selectedUserIds: [
+        ...new Set(state.selectedUserIds.concat(action.userIds))
+      ]
     }
   },
   [REMOVE_FOLLOW_ARTISTS](state, action) {
     const removeUserIds = new Set(action.userIds)
     return {
       ...state,
-      followArtists: {
-        ...state.followArtists,
-        selectedUserIds: state.followArtists.selectedUserIds.filter(
-          (id) => !removeUserIds.has(id)
-        )
-      }
+      selectedUserIds: state.selectedUserIds.filter(
+        (id) => !removeUserIds.has(id)
+      )
     }
   },
   [UPDATE_ROUTE_ON_EXIT](state, action) {
@@ -472,12 +441,7 @@ const actionsMap = {
       routeOnExit: action.route
     }
   },
-  [SET_REFERRER](state, action) {
-    return {
-      ...state,
-      referrer: action.userId
-    }
-  },
+  [SET_REFERRER](state, action) {},
   [HIDE_PREVIEW_HINT](state) {
     return {
       ...state,

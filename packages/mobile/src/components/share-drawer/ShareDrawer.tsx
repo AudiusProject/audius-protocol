@@ -43,7 +43,7 @@ const { getShareContent, getShareSource } = shareModalUISelectors
 const { shareUser } = usersSocialActions
 const { shareTrack } = tracksSocialActions
 const { shareCollection } = collectionsSocialActions
-const { getAccountUser } = accountSelectors
+const { getUserId } = accountSelectors
 
 export const shareToastTimeout = 1500
 
@@ -79,12 +79,10 @@ export const ShareDrawer = () => {
   const dispatch = useDispatch()
   const content = useSelector(getShareContent)
   const source = useSelector(getShareSource)
-  const account = useSelector(getAccountUser)
+  const accountUserId = useSelector(getUserId)
   const { toast } = useToast()
   const isOwner =
-    content?.type === 'track' &&
-    account &&
-    account.user_id === content.artist.user_id
+    content?.type === 'track' && accountUserId === content.artist.user_id
   const shareType = content?.type ?? 'track'
 
   const isStreamGatedTrack =

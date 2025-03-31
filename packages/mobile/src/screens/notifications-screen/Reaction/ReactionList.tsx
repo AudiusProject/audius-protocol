@@ -144,10 +144,10 @@ export const ReactionList = (props: ReactionListProps) => {
             selectedReaction === reactionType
               ? 'selected'
               : interacting === reactionType
-              ? 'interacting'
-              : selectedReaction
-              ? 'unselected'
-              : 'idle'
+                ? 'interacting'
+                : selectedReaction
+                  ? 'unselected'
+                  : 'idle'
 
           return (
             <Reaction

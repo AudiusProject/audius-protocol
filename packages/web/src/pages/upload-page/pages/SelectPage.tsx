@@ -1,17 +1,18 @@
 import { useCallback, useState } from 'react'
 
+import { ErrorLevel, Feature } from '@audius/common/models'
 import { newCollectionMetadata } from '@audius/common/schemas'
-import { UploadType } from '@audius/common/store'
+import { UploadFormState, UploadType } from '@audius/common/store'
 import { removeNullable, Nullable } from '@audius/common/utils'
 import cn from 'classnames'
 
 import { AudioQuality } from 'components/upload/AudioQuality'
 import { Dropzone } from 'components/upload/Dropzone'
-import InvalidFileType from 'components/upload/InvalidFileType'
+import { InvalidFileType } from 'components/upload/InvalidFileType'
+import { reportToSentry } from 'store/errors/reportToSentry'
 
 import { TracksPreview } from '../components/TracksPreview'
 import { processFiles } from '../store/utils/processFiles'
-import { UploadFormState } from '../types'
 
 import styles from './SelectPage.module.css'
 
@@ -22,12 +23,12 @@ type SelectPageProps = {
   onContinue: (formState: UploadFormState) => void
 }
 
-export const SelectPage = (props: SelectPageProps) => {
+const SelectPage = (props: SelectPageProps) => {
   const { formState, onContinue } = props
 
   const [tracks, setTracks] = useState(formState.tracks ?? [])
   const [uploadType, setUploadType] = useState(
-    formState.uploadType ?? UploadType.INDIVIDUAL_TRACK
+    formState.uploadType ?? UploadType.INDIVIDUAL_TRACKS
   )
   const [uploadTrackError, setUploadTrackError] =
     useState<Nullable<ErrorType>>(null)
@@ -44,9 +45,18 @@ export const SelectPage = (props: SelectPageProps) => {
         return true
       })
 
-      const processedFiles = processFiles(selectedFiles, (_name, reason) =>
-        setUploadTrackError({ reason })
-      )
+      const processedFiles = processFiles(selectedFiles, (name, reason) => {
+        reportToSentry({
+          name: 'UploadProcessFiles',
+          error: new Error(`${reason} error for file ${name}`),
+          feature: Feature.Upload,
+          level: ErrorLevel.Warning,
+          additionalInfo: {
+            selectedFiles
+          }
+        })
+        return setUploadTrackError({ reason })
+      })
       const processedTracks = (await Promise.all(processedFiles)).filter(
         removeNullable
       )

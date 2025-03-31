@@ -6,7 +6,6 @@ import {
   useGatedContentAccess
 } from '@audius/common/hooks'
 import { Variant, SquareSizes, ID, ModalSource } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   CommonState,
   cacheCollectionsSelectors,
@@ -35,7 +34,6 @@ import Skeleton from 'components/skeleton/Skeleton'
 import { GatedContentSection } from 'components/track/GatedContentSection'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
-import { useFlag } from 'hooks/useRemoteConfig'
 import ActionButtonRow from 'pages/track-page/components/mobile/ActionButtonRow'
 import { isShareToastDisabled } from 'utils/clipboardUtil'
 import { isDarkMode } from 'utils/theme/theme'
@@ -82,7 +80,6 @@ const CollectionHeader = ({
   userId,
   title,
   ddexApp,
-  coverArtSizes,
   description = '',
   isOwner = false,
   isReposted = false,
@@ -113,10 +110,6 @@ const CollectionHeader = ({
 }: MobileCollectionHeaderProps) => {
   const navigate = useNavigate()
 
-  const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
-    FeatureFlags.PREMIUM_ALBUMS_ENABLED
-  )
-
   const { data: currentUserId } = useGetCurrentUserId({})
   const { data: collection } = useGetPlaylistById({
     playlistId: collectionId,
@@ -145,8 +138,7 @@ const CollectionHeader = ({
     (isPlayable && hasStreamAccess) || doesUserHaveAccessToAnyTrack
   const shouldShowPreview = isPremium && !hasStreamAccess && !shouldShowPlay
 
-  const showPremiumSection =
-    isPremiumAlbumsEnabled && isAlbum && streamConditions && collectionId
+  const showPremiumSection = isAlbum && streamConditions && collectionId
   const shouldShowStats =
     isPublished && variant !== Variant.SMART && (!isPrivate || isOwner)
   const shouldShowScheduledRelease =
@@ -161,13 +153,13 @@ const CollectionHeader = ({
       isOwner || !isPublished || !hasStreamAccess
         ? null
         : isReposted
-        ? OverflowAction.UNREPOST
-        : OverflowAction.REPOST,
+          ? OverflowAction.UNREPOST
+          : OverflowAction.REPOST,
       isOwner || !isPublished || !hasStreamAccess
         ? null
         : isSaved
-        ? OverflowAction.UNFAVORITE
-        : OverflowAction.FAVORITE,
+          ? OverflowAction.UNFAVORITE
+          : OverflowAction.FAVORITE,
       isOwner && !isPublished ? OverflowAction.PUBLISH_PLAYLIST : null,
       isOwner && !ddexApp
         ? isAlbum
@@ -180,11 +172,10 @@ const CollectionHeader = ({
     onClickMobileOverflow?.(collectionId, overflowActions)
   }
 
-  const image = useCollectionCoverArt(
+  const image = useCollectionCoverArt({
     collectionId,
-    coverArtSizes,
-    SquareSizes.SIZE_1000_BY_1000
-  )
+    size: SquareSizes.SIZE_1000_BY_1000
+  })
 
   const handleClickEdit = useCallback(() => {
     navigate({ pathname: `${permalink}/edit`, search: `?focus=artwork` })
@@ -233,7 +224,7 @@ const CollectionHeader = ({
         >
           {Icon && (
             <Icon
-              color='staticWhite'
+              color='white'
               height='100%'
               width='100%'
               css={{

@@ -1,14 +1,38 @@
-import { SquareSizes } from '@audius/common/models'
+import { SquareSizes, User } from '@audius/common/models'
+import { primeUserDataInternal } from '@audius/common/src/api/tan-query/utils/primeUserData'
 import { Text } from '@audius/harmony'
-import { merge } from 'lodash'
 import { Route, Routes } from 'react-router-dom-v5-compat'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
+import { queryClient } from 'services/query-client'
 import { RenderOptions, render, screen } from 'test/test-utils'
 
 import { UserCard } from './UserCard'
+vi.mock('../../utils/image', () => ({
+  preload: vi.fn((url: string) => Promise.resolve())
+}))
 
-function renderUserCard(options?: RenderOptions) {
+function renderUserCard(users?: User[], options?: RenderOptions) {
+  primeUserDataInternal({
+    users: users ?? [
+      {
+        user_id: 1,
+        handle: 'test-user',
+        name: 'Test User',
+        profile_picture: {
+          [SquareSizes.SIZE_150_BY_150]:
+            'https://node.com/image-profile-small.jpg',
+          [SquareSizes.SIZE_480_BY_480]:
+            'https://node.com/image-profile-medium.jpg',
+          mirrors: ['https://node.com']
+        },
+        follower_count: 1
+      } as User
+    ],
+    queryClient,
+    forceReplace: true
+  })
+
   return render(
     <Routes>
       <Route path='/' element={<UserCard id={1} size='s' />} />
@@ -17,29 +41,7 @@ function renderUserCard(options?: RenderOptions) {
         element={<Text variant='heading'>Test User Page</Text>}
       />
     </Routes>,
-    merge(
-      {
-        reduxState: {
-          users: {
-            entries: {
-              1: {
-                metadata: {
-                  user_id: 1,
-                  handle: 'test-user',
-                  name: 'Test User',
-                  _profile_picture_sizes: {
-                    [SquareSizes.SIZE_150_BY_150]: 'image-small.jpg',
-                    [SquareSizes.SIZE_480_BY_480]: 'image-medium.jpg'
-                  },
-                  follower_count: 1
-                }
-              }
-            }
-          }
-        }
-      },
-      options
-    )
+    options
   )
 }
 
@@ -62,21 +64,31 @@ describe('UserCard', () => {
     ).toBeInTheDocument()
   })
 
-  it('renders the profile picture', () => {
+  it('renders the profile picture', async () => {
     renderUserCard()
 
-    expect(screen.getByRole('img', { hidden: true })).toHaveAttribute(
+    expect(await screen.getByRole('img', { hidden: true })).toHaveAttribute(
       'src',
-      'image-small.jpg'
+      'https://node.com/image-profile-small.jpg'
     )
   })
 
   it('handles users with large follow counts correctly', () => {
-    renderUserCard({
-      reduxState: {
-        users: { entries: { 1: { metadata: { follower_count: 1000 } } } }
-      }
-    })
+    renderUserCard([
+      {
+        user_id: 1,
+        handle: 'test-user',
+        name: 'Test User',
+        profile_picture: {
+          [SquareSizes.SIZE_150_BY_150]:
+            'https://node.com/image-profile-small.jpg',
+          [SquareSizes.SIZE_480_BY_480]:
+            'https://node.com/image-profile-medium.jpg',
+          mirrors: ['https://node.com']
+        },
+        follower_count: 1000
+      } as User
+    ])
 
     expect(screen.getByText('1K Followers')).toBeInTheDocument()
   })

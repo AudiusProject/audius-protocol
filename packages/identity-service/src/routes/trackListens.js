@@ -474,9 +474,12 @@ module.exports = function (app) {
           const endpoint = `${getDiscoveryListensEndpoint()}/solana/tracks/${trackId}/listen`
           const res = await axios.post(endpoint, body, { headers })
           if (res === null) {
-            throw new Error(
-              'failed to forward listen to discovery, sending to solana'
-            )
+            const env = config.get('environment')
+            if (env === 'prod') {
+              throw new Error(
+                'failed to forward listen to discovery, sending to solana'
+              )
+            }
           }
 
           req.logger.info(

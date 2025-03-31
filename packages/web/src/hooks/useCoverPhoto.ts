@@ -1,117 +1,52 @@
-import { useCallback } from 'react'
-
+import { useUser } from '@audius/common/api'
 import {
   imageCoverPhotoBlank,
   imageProfilePicEmpty
 } from '@audius/common/assets'
 import { useImageSize } from '@audius/common/hooks'
-import { SquareSizes, WidthSizes, CoverPhotoSizes } from '@audius/common/models'
-import { cacheUsersActions, cacheUsersSelectors } from '@audius/common/store'
-import { useDispatch } from 'react-redux'
+import { SquareSizes, WidthSizes, ID } from '@audius/common/models'
+import { pick } from 'lodash'
 
-import { useSelector } from 'utils/reducer'
+import { preload } from 'utils/image'
 
-import {
-  useOnUserProfilePicture,
-  useProfilePicture
-} from './useUserProfilePicture'
+import { useProfilePicture } from './useProfilePicture'
 
-const { fetchCoverPhoto } = cacheUsersActions
-const { getUser } = cacheUsersSelectors
-
-export const useCoverPhoto = (
-  userId: number | null,
-  size: WidthSizes,
-  defaultImage: string = imageCoverPhotoBlank as string,
-  load = true,
-  debug = false
-) => {
-  const dispatch = useDispatch()
-  const coverPhotoSizes = useSelector((state) => {
-    const user = getUser(state, { id: userId })
-    return user?.is_deactivated ? null : user?._cover_photo_sizes
-  })
-  const profilePhoto = useProfilePicture(
+export const useCoverPhoto = ({
+  userId,
+  size,
+  defaultImage
+}: {
+  userId?: ID
+  size: WidthSizes
+  defaultImage?: string
+}) => {
+  const profilePicture = useProfilePicture({
     userId,
-    size === WidthSizes.SIZE_640
-      ? SquareSizes.SIZE_480_BY_480
-      : SquareSizes.SIZE_1000_BY_1000,
-    imageProfilePicEmpty,
-    load
-  )
+    size:
+      size === WidthSizes.SIZE_640
+        ? SquareSizes.SIZE_480_BY_480
+        : SquareSizes.SIZE_1000_BY_1000,
+    defaultImage: imageProfilePicEmpty
+  })
+  const { data: partialUser } = useUser(userId, {
+    select: (user) => pick(user, 'cover_photo', 'updatedCoverPhoto')
+  })
+  const { cover_photo, updatedCoverPhoto } = partialUser ?? {}
 
-  const coverPhoto = useImageSize({
-    dispatch,
-    id: userId,
-    sizes: coverPhotoSizes ?? null,
-    size,
-    action: fetchCoverPhoto,
-    defaultImage: imageCoverPhotoBlank,
-    load
+  const image = useImageSize({
+    artwork: cover_photo,
+    targetSize: size,
+    defaultImage: defaultImage ?? imageCoverPhotoBlank,
+    preloadImageFn: preload
   })
 
-  const isDefaultCover = coverPhoto === imageCoverPhotoBlank
-  const isDefaultProfile = profilePhoto === imageProfilePicEmpty
+  const isDefaultCover = image === imageCoverPhotoBlank
+  const isDefaultProfile = profilePicture === imageProfilePicEmpty
+  const shouldBlur = isDefaultCover && !isDefaultProfile
 
-  return {
-    source: !isDefaultCover
-      ? coverPhoto
-      : !isDefaultProfile
-      ? profilePhoto
-      : defaultImage,
-    shouldBlur: isDefaultCover && !isDefaultProfile,
-    debug
+  if (updatedCoverPhoto && !shouldBlur) {
+    return { image: updatedCoverPhoto.url, shouldBlur }
   }
-}
 
-// TODO: this is only used once, maybe just do it inline
-/**
- * Like useUserProfilePicture, but onDemand is set to true, which
- * returns a callback that can be used to fetch the image on demand.
- */
-export const useOnUserCoverPhoto = (
-  userId: number | null,
-  coverPhotoSizes: CoverPhotoSizes | null,
-  size: WidthSizes,
-  defaultImage: string = imageCoverPhotoBlank as string
-) => {
-  const dispatch = useDispatch()
-  const profilePictureSizes = useSelector(
-    (state) => getUser(state, { id: userId })?._profile_picture_sizes
-  )
-  const getProfilePhoto = useOnUserProfilePicture(
-    userId,
-    profilePictureSizes ?? null,
-    size === WidthSizes.SIZE_640
-      ? SquareSizes.SIZE_480_BY_480
-      : SquareSizes.SIZE_1000_BY_1000,
-    ''
-  )
-
-  const getCoverPhoto = useImageSize({
-    dispatch,
-    id: userId,
-    sizes: coverPhotoSizes ?? null,
-    size,
-    action: fetchCoverPhoto,
-    defaultImage: '',
-    load: true,
-    onDemand: true
-  })
-
-  return useCallback(() => {
-    const coverPhoto = getCoverPhoto()
-    const profilePhoto = getProfilePhoto()
-    const isDefaultCover = coverPhoto === imageCoverPhotoBlank
-    const isDefaultProfile = profilePhoto === imageProfilePicEmpty
-
-    return {
-      source: !isDefaultCover
-        ? coverPhoto
-        : !isDefaultProfile
-        ? profilePhoto
-        : defaultImage,
-      shouldBlur: isDefaultCover && !isDefaultProfile
-    }
-  }, [defaultImage, getCoverPhoto, getProfilePhoto])
+  return { image: shouldBlur ? profilePicture : image, shouldBlur }
 }

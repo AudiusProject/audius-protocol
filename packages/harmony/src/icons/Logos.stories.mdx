@@ -1,11 +1,13 @@
 import { Meta, Title } from '@storybook/blocks'
 
-import { Flex, Divider } from 'components'
+import { Heading } from 'storybook/components'
+import { Flex, Divider } from '~harmony/components'
 import {
   IconAudiusLogo,
   IconAudiusLogoColor,
-  IconAudiusLogoHorizontal,
+  IconAudiusLogoHorizontalNew,
   IconAudiusLogoHorizontalColor,
+  IconAudiusLogoHorizontalColorNew,
   IconAudiusLogoVertical,
   IconLogoCoinbase,
   IconLogoCoinbasePay,
@@ -26,9 +28,9 @@ import {
   IconLogoCircleUSD,
   IconLogoCircleUSDC,
   IconPhantom,
-  IconSolana
-} from 'icons/logos'
-import { Heading } from 'storybook/components'
+  IconSolana,
+  IconX
+} from '~harmony/icons/logos'
 
 <Meta title='Icons/Logos' />
 
@@ -47,7 +49,8 @@ Logos are used as a visual representation of our brand and other businesses we p
 
 <Flex gap='2xl'>
   <IconAudiusLogoColor /> <IconAudiusLogo /> <IconAudiusLogoVertical />
-  <IconAudiusLogoHorizontal /> <IconAudiusLogoHorizontalColor />
+  <IconAudiusLogoHorizontalNew /> <IconAudiusLogoHorizontalColor />
+  <IconAudiusLogoHorizontalColorNew />
 </Flex>
 
 <Divider />
@@ -71,6 +74,7 @@ Logos are used as a visual representation of our brand and other businesses we p
   <IconFacebook />
   <IconInstagram />
   <IconTwitter />
+  <IconX />
   <IconTelegram />
   <IconSnapChat />
   <IconTikTok />

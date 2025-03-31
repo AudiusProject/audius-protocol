@@ -1,16 +1,17 @@
 import { useState, useContext, useCallback, useEffect } from 'react'
 
+import { useNotificationUnreadCount } from '@audius/common/api'
 import { Status } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { formatCount, route } from '@audius/common/utils'
 import {
   IconAudiusLogoHorizontal,
   IconSettings,
-  IconCrown,
   IconCaretLeft,
   IconClose,
   IconNotificationOn,
-  IconButton
+  IconButton,
+  IconGift,
+  Flex
 } from '@audius/harmony'
 import cn from 'classnames'
 import { History } from 'history'
@@ -29,9 +30,7 @@ import NavContext, {
   RightPreset
 } from 'components/nav/mobile/NavContext'
 import SearchBar from 'components/search-bar/SearchBar'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { getIsIOS } from 'utils/browser'
-import { isMatrix } from 'utils/theme/theme'
 
 import styles from './NavBar.module.css'
 
@@ -41,11 +40,11 @@ interface NavBarProps {
   isLoading: boolean
   isSignedIn: boolean
   searchStatus: Status
-  notificationCount: number
+  rewardsCount: number
   signUp: () => void
   goToNotificationPage: () => void
   goToSettingsPage: () => void
-  goToAudioPage: () => void
+  goToRewardsPage: () => void
   search: (term: string) => void
   goBack: () => void
   history: History<any>
@@ -53,27 +52,27 @@ interface NavBarProps {
 
 const messages = {
   signUp: 'Sign Up',
-  searchPlaceholderV2: 'What do you want to listen to?',
-  earlyAccess: 'Early Access'
+  searchPlaceholderV2: 'What do you want to listen to?'
 }
 
 const NavBar = ({
   isLoading,
   isSignedIn,
   searchStatus,
-  notificationCount,
+  rewardsCount,
   search,
   signUp,
   goToNotificationPage,
   goToSettingsPage,
   goBack,
-  goToAudioPage,
+  goToRewardsPage,
   history: {
     location: { pathname }
   }
 }: NavBarProps) => {
   const { history } = useHistoryContext()
   const { leftElement, centerElement, rightElement } = useContext(NavContext)!
+  const { data: notificationCount = 0 } = useNotificationUnreadCount()
 
   const [isSearching, setIsSearching] = useState(false)
   const [searchValue, setSearchValue] = useState('')
@@ -167,17 +166,66 @@ const NavBar = ({
     )
   } else if (leftElement === LeftPreset.NOTIFICATION && isSignedIn) {
     left = (
-      <>
-        <IconButton
-          aria-label='notifications'
-          color={notificationCount > 0 ? 'warning' : 'subdued'}
-          icon={IconNotificationOn}
-          onClick={goToNotificationPage}
-        />
-        {notificationCount > 0 && (
-          <div className={styles.iconTag}>{formatCount(notificationCount)}</div>
-        )}
-      </>
+      <Flex gap='s'>
+        <Flex>
+          <IconButton
+            aria-label='notifications'
+            color={notificationCount > 0 ? 'warning' : 'subdued'}
+            icon={IconNotificationOn}
+            onClick={goToNotificationPage}
+          />
+          {notificationCount > 0 && (
+            <Flex
+              css={{
+                position: 'absolute',
+                top: 0,
+                right: 6,
+                backgroundColor: 'var(--harmony-red)',
+                color: 'var(--harmony-white)',
+                fontSize: '11px',
+                fontWeight: 'bold',
+                letterSpacing: '0.07px',
+                lineHeight: '14px',
+                textTransform: 'uppercase',
+                padding: '0px 6px',
+                transform: 'translateX(50%)',
+                borderRadius: '8px'
+              }}
+            >
+              {formatCount(notificationCount)}
+            </Flex>
+          )}
+        </Flex>
+        <Flex>
+          <IconButton
+            aria-label='audio rewards'
+            color={rewardsCount > 0 ? 'warning' : 'subdued'}
+            icon={IconGift}
+            onClick={goToRewardsPage}
+          />
+          {rewardsCount > 0 && (
+            <Flex
+              css={{
+                position: 'absolute',
+                top: 0,
+                right: 6,
+                backgroundColor: 'var(--harmony-red)',
+                color: 'var(--harmony-white)',
+                fontSize: '11px',
+                fontWeight: 'bold',
+                letterSpacing: '0.07px',
+                lineHeight: '14px',
+                textTransform: 'uppercase',
+                padding: '0px 6px',
+                transform: 'translateX(50%)',
+                borderRadius: '8px'
+              }}
+            >
+              {formatCount(rewardsCount)}
+            </Flex>
+          )}
+        </Flex>
+      </Flex>
     )
   } else if (leftElement === LeftPreset.SETTINGS && isSignedIn) {
     left = (
@@ -190,19 +238,18 @@ const NavBar = ({
         />
         <IconButton
           aria-label='audio rewards'
-          color='warning'
-          icon={IconCrown}
-          onClick={goToAudioPage}
+          color={rewardsCount > 0 ? 'warning' : 'subdued'}
+          icon={IconGift}
+          onClick={goToRewardsPage}
         />
+        {rewardsCount > 0 && (
+          <div className={styles.iconTag}>{formatCount(rewardsCount)}</div>
+        )}
       </>
     )
   } else {
     left = leftElement
   }
-
-  const matrix = isMatrix()
-
-  const { isEnabled: isEarlyAccess } = useFlag(FeatureFlags.EARLY_ACCESS)
 
   return (
     <div
@@ -218,10 +265,7 @@ const NavBar = ({
         {left}
       </div>
       {centerElement === CenterPreset.LOGO ? (
-        <Link
-          to={TRENDING_PAGE}
-          className={cn(styles.logo, { [styles.matrixLogo]: matrix })}
-        >
+        <Link to={TRENDING_PAGE} className={styles.logo}>
           {logoTransitions.map(({ item, props, key }) =>
             item ? (
               <animated.div style={props} key={key}>
@@ -230,11 +274,6 @@ const NavBar = ({
                   color='subdued'
                   width='auto'
                 />
-                {isEarlyAccess ? (
-                  <div className={styles.earlyAccess}>
-                    {messages.earlyAccess}
-                  </div>
-                ) : null}
               </animated.div>
             ) : null
           )}

@@ -1,9 +1,9 @@
 import { Name } from '@audius/common/models'
 import { getContext } from '@audius/common/store'
-import { LOCATION_CHANGE } from 'connected-react-router'
 import { take } from 'redux-saga/effects'
 
 import { env } from 'services/env'
+import { LOCATION_CHANGE } from 'utils/navigation'
 
 let prevPathname = ''
 
@@ -12,7 +12,7 @@ function* trackLocation() {
   while (true) {
     const {
       payload: {
-        location: { pathname }
+        location: { pathname, search, ...rest }
       }
     } = yield take(LOCATION_CHANGE)
     if (pathname) {
@@ -30,13 +30,16 @@ function* trackLocation() {
         // Dispatch a track event and then resolve page/screen events with segment
         analytics.track({
           eventName: Name.PAGE_VIEW,
-          properties: { route: pathname }
+          properties: { route: pathname, queryParams: search, ...rest }
         })
       }
     }
   }
 }
 
-export default function sagas() {
-  return [trackLocation]
+const sagas = () => {
+  const sagas = [trackLocation]
+  return sagas
 }
+
+export default sagas

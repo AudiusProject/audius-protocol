@@ -2,8 +2,8 @@ import { useState } from 'react'
 
 import type { Meta, StoryObj } from '@storybook/react'
 
-import { Button } from 'components/button'
-import { Flex } from 'components/layout'
+import { Button } from '~harmony/components/button'
+import { Flex } from '~harmony/components/layout'
 
 import { Artwork, ArtworkProps } from './Artwork'
 

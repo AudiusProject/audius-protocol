@@ -1,15 +1,5 @@
-import { useCallback } from 'react'
-
-import { useGetCurrentUserId } from '@audius/common/api'
-import { useFeatureFlag } from '@audius/common/hooks'
-import { FeatureFlags } from '@audius/common/services'
-import {
-  followersUserListActions,
-  followersUserListSelectors
-} from '@audius/common/store'
+import { useCurrentUserId, useFollowers } from '@audius/common/api'
 import { ChatBlastAudience } from '@audius/sdk'
-import { css } from '@emotion/native'
-import { useDispatch } from 'react-redux'
 
 import { Box, IconUserFollowers } from '@audius/harmony-native'
 import { useProfileRoute } from 'app/hooks/useRoute'
@@ -18,8 +8,6 @@ import { ChatBlastWithAudienceCTA } from '../chat-screen/ChatBlastWithAudienceCT
 
 import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
-const { setFollowers } = followersUserListActions
-const { getUserList } = followersUserListSelectors
 
 const messages = {
   title: 'Followers'
@@ -28,32 +16,24 @@ const messages = {
 export const FollowersScreen = () => {
   const { params } = useProfileRoute<'Followers'>()
   const { userId } = params
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const dispatch = useDispatch()
+  const { data: currentUserId } = useCurrentUserId()
 
-  const handleSetFollowers = useCallback(() => {
-    dispatch(setFollowers(userId))
-  }, [dispatch, userId])
-  const { isEnabled: isOneToManyDMsEnabled } = useFeatureFlag(
-    FeatureFlags.ONE_TO_MANY_DMS
-  )
+  const { data, isFetchingNextPage, isPending, fetchNextPage } = useFollowers({
+    userId
+  })
 
   return (
     <UserListScreen title={messages.title} titleIcon={IconUserFollowers}>
       <>
         <UserList
-          userSelector={getUserList}
+          data={data}
+          isFetchingNextPage={isFetchingNextPage}
+          isPending={isPending}
+          fetchNextPage={fetchNextPage}
           tag='FOLLOWERS'
-          setUserList={handleSetFollowers}
         />
-        {isOneToManyDMsEnabled && currentUserId === userId ? (
-          <Box
-            style={css({
-              position: 'absolute',
-              bottom: 0,
-              width: '100%'
-            })}
-          >
+        {currentUserId === userId ? (
+          <Box w='100%' style={{ position: 'absolute', bottom: 0 }}>
             <ChatBlastWithAudienceCTA audience={ChatBlastAudience.FOLLOWERS} />
           </Box>
         ) : null}

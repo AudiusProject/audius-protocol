@@ -5,10 +5,10 @@ from typing import Optional
 
 from redis import Redis
 from sqlalchemy.orm.session import Session
-from web3 import Web3
 
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.models.core.core_indexed_blocks import CoreIndexedBlocks
 from src.queries.get_trending_playlists import (
     GetTrendingPlaylistsArgs,
     _get_trending_playlists_with_session,
@@ -19,13 +19,10 @@ from src.queries.get_underground_trending import (
     _get_underground_trending_with_session,
 )
 from src.tasks.aggregates import get_latest_blocknumber
-from src.tasks.celery_app import celery
+from src.tasks.core.core_client import CoreClient
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
-from src.utils import helpers, web3_provider
-from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import most_recent_indexed_block_redis_key
-from src.utils.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
 
@@ -77,9 +74,8 @@ def dispatch_trending_challenges(
 
 
 def enqueue_trending_challenges(
-    db: SessionManager,
-    web3: Web3,
-    redis: Redis,
+    session: Session,
+    core: CoreClient,
     challenge_bus: ChallengeEventBus,
     date: date,
 ):
@@ -87,21 +83,41 @@ def enqueue_trending_challenges(
         "calculate_trending_challenges.py | Start calculating trending challenges"
     )
     update_start = time.time()
-    with db.scoped_session() as session, challenge_bus.use_scoped_dispatch_queue():
-        latest_blocknumber = get_latest_blocknumber_via_redis(session, redis)
+    with challenge_bus.use_scoped_dispatch_queue():
+        # subtract final poa block because db is final_poa_block + latest_acdc_block
+        latest_blocknumber = get_latest_blocknumber(session)
         if latest_blocknumber is None:
             logger.error(
                 "calculate_trending_challenges.py | Unable to get latest block number"
             )
             return
 
-        # subtract final poa block because db is final_poa_block + latest_acdc_block
+        latest_block_datetime = None
+        node_info = core.get_node_info()
+        core_chain_id = node_info.chainid
 
-        latest_block_datetime = datetime.fromtimestamp(
-            web3.eth.get_block(latest_blocknumber - helpers.get_final_poa_block())[
-                "timestamp"
-            ]
+        latest_indexed_block: Optional[CoreIndexedBlocks] = (
+            session.query(CoreIndexedBlocks)
+            .filter(CoreIndexedBlocks.chain_id == core_chain_id)
+            .order_by(CoreIndexedBlocks.height.desc())
+            .first()
         )
+        if latest_indexed_block is None:
+            logger.error(
+                "calculate_trending_challenges.py | Unable to get latest indexed core block"
+            )
+            return
+
+        if latest_indexed_block:
+            block = core.get_block(int(latest_indexed_block.height))
+            if block:
+                latest_block_datetime = block.timestamp.ToDatetime()
+
+        if latest_block_datetime is None:
+            logger.error(
+                "calculate_trending_challenges.py | Unable to get latest block time"
+            )
+            return
 
         trending_track_versions = trending_strategy_factory.get_versions_for_type(
             TrendingType.TRACKS
@@ -190,36 +206,3 @@ def enqueue_trending_challenges(
     logger.debug(
         f"calculate_trending_challenges.py | Finished calculating trending in {update_total} seconds"
     )
-
-
-# ####### CELERY TASKS ####### #
-@celery.task(name="calculate_trending_challenges", bind=True)
-@save_duration_metric(metric_group="celery_task")
-def calculate_trending_challenges_task(self, date: Optional[date] = None):
-    """Caches all trending combination of time-range and genre (including no genre)."""
-    if date is None:
-        logger.error("calculate_trending_challenges.py | Must be called with a date")
-        return
-    db = calculate_trending_challenges_task.db
-    redis = calculate_trending_challenges_task.redis
-    challenge_bus = calculate_trending_challenges_task.challenge_event_bus
-    web3 = web3_provider.get_web3()
-    have_lock = False
-    update_lock = redis.lock("calculate_trending_challenges_lock", timeout=7200)
-    try:
-        have_lock = update_lock.acquire(blocking=False)
-        if have_lock:
-
-            enqueue_trending_challenges(db, web3, redis, challenge_bus, date)
-        else:
-            logger.debug(
-                "calculate_trending_challenges.py | Failed to acquire index trending lock"
-            )
-    except Exception as e:
-        logger.error(
-            "calculate_trending_challenges.py | Fatal error in main loop", exc_info=True
-        )
-        raise e
-    finally:
-        if have_lock:
-            update_lock.release()

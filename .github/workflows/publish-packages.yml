@@ -22,6 +22,7 @@ jobs:
         with:
           filters: |
             public-packages:
+              - '.changeset/**'
               - 'packages/create-audius-app/**'
               - 'packages/fixed-decimal/**'
               - 'packages/harmony/**'
@@ -29,6 +30,7 @@ jobs:
               - 'packages/sdk/**'
               - 'packages/sp-actions/**'
               - 'packages/spl/**'
+              - 'packages/eth/**'
 
   publish-packages:
     name: Publish Packages to NPM

@@ -18,14 +18,14 @@ import {
 
 import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
+import ModalDrawer from 'components/modal-drawer/ModalDrawer'
 import { useIsMobile } from 'hooks/useIsMobile'
-import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 import { useSelector } from 'utils/reducer'
 
 import { AdvancedWalletDetails } from './AdvancedWalletDetails'
 import styles from './PrivateKeyExporterPage.module.css'
 
-const getAccountUser = accountSelectors.getAccountUser
+const { getUserHandle, getUserId } = accountSelectors
 
 const messages = {
   privateKey: 'PRIVATE KEY',
@@ -157,25 +157,25 @@ const AdditionalResources = () => {
   )
 }
 
-export const PrivateKeyExporterModal = () => {
+const PrivateKeyExporterModal = () => {
   const record = useRecord()
   const isMobile = useIsMobile()
-  const user = useSelector(getAccountUser) ?? undefined
+  const accountHandle = useSelector(getUserHandle)
+  const accountUserId = useSelector(getUserId)
   const [isVisible, setIsVisible] = useModalState('PrivateKeyExporter')
   const handleClose = useCallback(() => setIsVisible(false), [setIsVisible])
   useEffect(() => {
-    if (isVisible && user) {
+    if (isVisible && accountHandle && accountUserId) {
       record(
         make(Name.EXPORT_PRIVATE_KEY_MODAL_OPENED, {
-          handle: user.handle,
-          userId: user.user_id
+          handle: accountHandle,
+          userId: accountUserId
         })
       )
     }
-  }, [isVisible, user, record])
+  }, [isVisible, accountHandle, accountUserId, record])
   return (
     <ModalDrawer
-      useGradientTitle={false}
       bodyClassName={styles.modal}
       onClose={handleClose}
       isOpen={isVisible}

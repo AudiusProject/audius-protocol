@@ -1,8 +1,12 @@
 import { useRef } from 'react'
 
-import { useGetCurrentUserId } from '@audius/common/api'
+import {
+  useCurrentUserId,
+  useUnfollowUser,
+  useFollowUser
+} from '@audius/common/api'
 import { useFeatureFlag, useIsManagedAccount } from '@audius/common/hooks'
-import { ID, statusIsNotFinalized } from '@audius/common/models'
+import { ID, statusIsNotFinalized, FollowSource } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { chatSelectors } from '@audius/common/store'
 import {
@@ -17,17 +21,15 @@ import {
   Button,
   FollowButton,
   Flex,
-  Skeleton
+  Skeleton,
+  Box
 } from '@audius/harmony'
-import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
 import { ArtistRecommendationsPopup } from 'components/artist-recommendations/ArtistRecommendationsPopup'
 import Stats, { StatProps } from 'components/stats/Stats'
 import SubscribeButton from 'components/subscribe-button/SubscribeButton'
-
-import styles from './StatBanner.module.css'
-
+import { zIndex } from 'utils/zIndex'
 const { getChatPermissionsStatus } = chatSelectors
 
 const BUTTON_COLLAPSE_WIDTHS = {
@@ -54,7 +56,6 @@ export type ProfileMode = 'visitor' | 'owner' | 'editing'
 type StatsBannerProps = {
   stats?: StatProps[]
   mode?: ProfileMode
-  isEmpty?: boolean
   profileId?: number
   areArtistRecommendationsVisible?: boolean
   onCloseArtistRecommendations?: () => void
@@ -62,8 +63,6 @@ type StatsBannerProps = {
   onShare?: () => void
   onSave?: () => void
   onCancel?: () => void
-  onFollow?: () => void
-  onUnfollow?: () => void
   following?: boolean
   isSubscribed?: boolean
   onToggleSubscribe?: () => void
@@ -167,7 +166,6 @@ export const StatBanner = (props: StatsBannerProps) => {
       { number: 0, title: 'reposts' }
     ] as StatProps[],
     mode = 'visitor',
-    isEmpty = false,
     profileId,
     areArtistRecommendationsVisible = false,
     onCloseArtistRecommendations,
@@ -175,8 +173,6 @@ export const StatBanner = (props: StatsBannerProps) => {
     onShare,
     onSave,
     onCancel,
-    onFollow,
-    onUnfollow,
     following,
     canCreateChat,
     onMessage,
@@ -193,7 +189,10 @@ export const StatBanner = (props: StatsBannerProps) => {
   const followButtonRef = useRef<HTMLButtonElement>(null)
   const isManagedAccount = useIsManagedAccount()
   const chatPermissionStatus = useSelector(getChatPermissionsStatus)
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useCurrentUserId()
+
+  const { mutate: followUser } = useFollowUser()
+  const { mutate: unfollowUser } = useUnfollowUser()
 
   const shareButton = (
     <Button
@@ -230,12 +229,7 @@ export const StatBanner = (props: StatsBannerProps) => {
           <Button variant='secondary' size='small' onClick={onCancel}>
             {messages.cancel}
           </Button>
-          <Button
-            variant='primary'
-            size='small'
-            className={cn(styles.buttonTwo, styles.statButton)}
-            onClick={onSave}
-          >
+          <Button variant='primary' size='small' onClick={onSave}>
             {messages.save}
           </Button>
         </>
@@ -284,8 +278,18 @@ export const StatBanner = (props: StatsBannerProps) => {
             <FollowButton
               ref={followButtonRef}
               isFollowing={following}
-              onFollow={onFollow}
-              onUnfollow={onUnfollow}
+              onFollow={() =>
+                followUser({
+                  followeeUserId: profileId,
+                  source: FollowSource.PROFILE_PAGE
+                })
+              }
+              onUnfollow={() =>
+                unfollowUser({
+                  followeeUserId: profileId,
+                  source: FollowSource.PROFILE_PAGE
+                })
+              }
             />
 
             <ArtistRecommendationsPopup
@@ -301,22 +305,22 @@ export const StatBanner = (props: StatsBannerProps) => {
   }
 
   return (
-    <div className={styles.wrapper}>
-      {!isEmpty ? (
-        <div className={styles.statBanner}>
-          <div className={styles.stats}>
-            <Stats clickable userId={profileId!} stats={stats} size='large' />
-          </div>
-          <Flex
-            justifyContent='flex-end'
-            gap='s'
-            alignItems='center'
-            css={{ zIndex: 3 }}
-          >
-            {buttons}
-          </Flex>
-        </div>
-      ) : null}
-    </div>
+    <Flex justifyContent='space-between' alignItems='center' flex='1 1 100%'>
+      <Box w={330}>
+        <Stats clickable userId={profileId!} stats={stats} size='large' />
+      </Box>
+      <Flex
+        justifyContent='flex-end'
+        gap='s'
+        alignItems='center'
+        css={{ zIndex: zIndex.PROFILE_EDITABLE_COMPONENTS }}
+      >
+        {buttons}
+      </Flex>
+    </Flex>
   )
 }
+
+export const EmptyStatBanner = () => (
+  <Box h='unit14' w='100%' backgroundColor='surface1' borderBottom='default' />
+)

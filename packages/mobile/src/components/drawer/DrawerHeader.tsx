@@ -4,17 +4,17 @@ import type { ImageSourcePropType } from 'react-native'
 import { TouchableOpacity, View, Image } from 'react-native'
 
 import type { IconComponent } from '@audius/harmony-native'
-import { Flex, IconClose } from '@audius/harmony-native'
+import { Flex, IconClose, spacing } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
-import { useColor } from 'app/utils/theme'
-
+import { zIndex } from 'app/utils/zIndex'
 type DrawerHeaderProps = {
   onClose: () => void
   title?: ReactNode
   titleIcon?: IconComponent
   titleImage?: ImageSourcePropType
   isFullscreen?: boolean
+  blockClose?: boolean
 }
 
 export const useStyles = makeStyles(({ spacing }) => ({
@@ -23,7 +23,8 @@ export const useStyles = makeStyles(({ spacing }) => ({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: spacing(2),
-    paddingHorizontal: spacing(8)
+    paddingHorizontal: spacing(8),
+    zIndex: zIndex.DRAWER_HEADER
   },
 
   dismissContainer: {
@@ -44,26 +45,26 @@ export const DrawerHeader = (props: DrawerHeaderProps) => {
     title,
     titleIcon: TitleIcon,
     titleImage,
-    isFullscreen
+    isFullscreen,
+    blockClose = false
   } = props
   const styles = useStyles()
-  const iconRemoveColor = useColor('neutralLight4')
-  const titleIconColor = useColor('neutral')
 
   return title || isFullscreen ? (
     <View style={styles.titleBarContainer}>
-      {isFullscreen ? (
+      {isFullscreen && !blockClose ? (
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={onClose}
           style={styles.dismissContainer}
+          hitSlop={spacing.m}
         >
-          <IconClose size='m' fill={iconRemoveColor} />
+          <IconClose size='m' color='subdued' />
         </TouchableOpacity>
       ) : null}
       {title ? (
         <Flex gap='s' alignItems='center' direction='row'>
-          {TitleIcon ? <TitleIcon size='m' fill={titleIconColor} /> : null}
+          {TitleIcon ? <TitleIcon size='m' color='default' /> : null}
           {titleImage ? (
             <Image style={styles.titleImage} source={titleImage} />
           ) : null}

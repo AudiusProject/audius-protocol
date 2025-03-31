@@ -1,10 +1,10 @@
 import { ReactNode } from 'react'
 
-import type { IconComponent } from 'components/icon'
-import { Flex } from 'components/layout'
-import { Paper, PaperProps } from 'components/layout/Paper'
-import { Text } from 'components/text'
-import { IconQuestionCircle } from 'icons'
+import type { IconComponent } from '~harmony/components/icon'
+import { Flex } from '~harmony/components/layout'
+import { Paper, PaperProps } from '~harmony/components/layout/Paper'
+import { Text } from '~harmony/components/text'
+import { IconQuestionCircle } from '~harmony/icons'
 
 type HintProps = {
   icon?: IconComponent

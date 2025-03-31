@@ -7,7 +7,7 @@ const SCROLL_STEP_PX = 5
 const DRAG_HANDLER_THROTTLE_DURATION_MS = 200
 const DISTANCE_FROM_EDGE_AUTOSCROLL_THRESHOLD_PX = 16
 
-export type DragAutoscrollerProps = {
+type DragAutoscrollerProps = {
   children: ReactNode
   containerBoundaries: {
     top: number

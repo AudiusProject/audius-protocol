@@ -1,10 +1,11 @@
 import { useCallback } from 'react'
 
-import { createPasswordPageMessages } from '@audius/common/messages'
+import { createPasswordPageMessages as messages } from '@audius/common/messages'
 import { passwordSchema } from '@audius/common/schemas'
 import { setValueField } from 'common/store/pages/signon/actions'
+import { getEmailField } from 'common/store/pages/signon/selectors'
 import { Formik } from 'formik'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Flex } from '@audius/harmony-native'
@@ -15,13 +16,8 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { PasswordCompletionChecklist } from '../components/PasswordCompletionChecklist'
 import { SignUpAgreementText } from '../components/SignUpPolicyText'
 import { Heading, Page, PageFooter, ReadOnlyField } from '../components/layout'
-import type { SignUpScreenParamList } from '../types'
-import { useRoute } from '../useRoute'
+import type { SignOnScreenParamList } from '../types'
 import { useTrackScreen } from '../utils/useTrackScreen'
-
-export type CreatePasswordParams = {
-  email: string
-}
 
 const initialValues = {
   password: '',
@@ -36,10 +32,9 @@ type CreatePasswordValues = {
 const passwordFormikSchema = toFormikValidationSchema(passwordSchema)
 
 export const CreatePasswordScreen = () => {
-  const { params } = useRoute<'CreatePassword'>()
-  const { email } = params
+  const { value: email } = useSelector(getEmailField)
   const dispatch = useDispatch()
-  const navigation = useNavigation<SignUpScreenParamList>()
+  const navigation = useNavigation<SignOnScreenParamList>()
 
   useTrackScreen('CreatePassword')
 
@@ -63,22 +58,20 @@ export const CreatePasswordScreen = () => {
           <KeyboardAvoidingView keyboardShowingOffset={220}>
             <Flex direction='column' h='100%' gap='l'>
               <Heading
-                heading={createPasswordPageMessages.createYourPassword}
-                description={createPasswordPageMessages.description}
+                heading={messages.createYourPassword}
+                description={messages.description}
               />
-              <ReadOnlyField
-                label={createPasswordPageMessages.yourEmail}
-                value={email}
-              />
+
+              <ReadOnlyField label={messages.yourEmail} value={email} />
               <PasswordField
                 name='password'
                 clearErrorOnChange={false}
-                label={createPasswordPageMessages.passwordLabel}
+                label={messages.passwordLabel}
               />
               <PasswordField
                 name='confirmPassword'
                 clearErrorOnChange={false}
-                label={createPasswordPageMessages.confirmPasswordLabel}
+                label={messages.confirmPasswordLabel}
               />
               <PasswordCompletionChecklist />
               <SignUpAgreementText />

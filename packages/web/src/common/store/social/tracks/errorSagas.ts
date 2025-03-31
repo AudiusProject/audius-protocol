@@ -1,3 +1,4 @@
+import { Feature } from '@audius/common/models'
 import { tracksSocialActions as socialTrackActions } from '@audius/common/store'
 
 import { createErrorSagas } from 'utils/errorSagas'
@@ -18,7 +19,8 @@ const errorSagas = createErrorSagas<TrackRepostErrors>({
   getAdditionalInfo: (action: TrackRepostErrors) => ({
     error: action.error,
     trackId: action.trackId
-  })
+  }),
+  feature: Feature.Social
 })
 
 export default errorSagas

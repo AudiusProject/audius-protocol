@@ -1,8 +1,9 @@
-import type { ReactNode } from 'react'
-import { useRef } from 'react'
+import { useRef, type ReactNode } from 'react'
+import { useEffect } from 'react'
 
+import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
-import { decodeHashId } from '@audius/common/utils'
+import { OptionalHashId } from '@audius/sdk'
 import type {
   LinkingOptions,
   NavigationState,
@@ -13,6 +14,7 @@ import {
   createNavigationContainerRef,
   getStateFromPath
 } from '@react-navigation/native'
+import type { reactNavigationIntegration } from '@sentry/react-native'
 import queryString from 'query-string'
 import { useSelector } from 'react-redux'
 
@@ -23,10 +25,11 @@ import { useThemeVariant } from 'app/utils/theme'
 
 import { navigationThemes } from './navigationThemes'
 
-const { getAccountUser } = accountSelectors
+const { getUserHandle, getHasAccount, getAccountStatus } = accountSelectors
 
 type NavigationContainerProps = {
   children: ReactNode
+  navigationIntegration: ReturnType<typeof reactNavigationIntegration>
 }
 
 export const navigationRef = createNavigationContainerRef()
@@ -75,27 +78,38 @@ const createFeedStackState = (route): PartialState<NavigationState> =>
   })
 
 /**
- * Convert query parameters to an object
- */
-const convertQueryParamsToObject = (url: string) => {
-  // This baseUrl is unimportant, we just need to create a URL object
-  const baseUrl = 'https://audius.co'
-
-  const urlObj = new URL(url, baseUrl)
-  const params = new URLSearchParams(urlObj.search)
-  return Object.fromEntries(params)
-}
-
-/**
  * NavigationContainer contains the react-navigation context
  * and configures linking
  */
 const NavigationContainer = (props: NavigationContainerProps) => {
-  const { children } = props
+  const { children, navigationIntegration } = props
   const theme = useThemeVariant()
-  const account = useSelector(getAccountUser)
+  const accountHandle = useSelector(getUserHandle)
+  const hasAccount = useSelector(getHasAccount)
+  const accountStatus = useSelector(getAccountStatus)
+  const hasCompletedInitialLoad = useRef(false)
 
   const routeNameRef = useRef<string>()
+
+  // Ensure that the user's account data is fully loaded before rendering the app.
+  // This prevents the NavigationContainer from rendering prematurely, which relies
+  // on the hasAccount state to determine how to handle deep links.
+  useEffect(() => {
+    if (
+      !hasCompletedInitialLoad.current &&
+      (accountStatus === Status.SUCCESS || accountStatus === Status.ERROR)
+    ) {
+      hasCompletedInitialLoad.current = true
+    }
+  }, [accountStatus])
+
+  if (
+    !hasCompletedInitialLoad.current &&
+    (accountStatus === Status.IDLE ||
+      (accountStatus === Status.LOADING && !hasAccount))
+  ) {
+    return null
+  }
 
   const linking: LinkingOptions<{}> = {
     prefixes: [
@@ -113,6 +127,11 @@ const NavigationContainer = (props: NavigationContainerProps) => {
     // configuration for matching screens with paths
     config: {
       screens: {
+        SignOnStack: {
+          screens: {
+            SignOn: 'sign-on'
+          }
+        },
         HomeStack: {
           screens: {
             App: {
@@ -261,7 +280,7 @@ const NavigationContainer = (props: NavigationContainerProps) => {
       // Opaque ID routes
       // /tracks/Nz9yBb4
       if (path.match(/^\/tracks\//)) {
-        const id = decodeHashId(pathPart(path)(2))
+        const id = OptionalHashId.parse(pathPart(path)(2))
         return createFeedStackState({
           name: 'Track',
           params: {
@@ -272,7 +291,7 @@ const NavigationContainer = (props: NavigationContainerProps) => {
 
       // /users/Nz9yBb4
       if (path.match(/^\/users\//)) {
-        const id = decodeHashId(pathPart(path)(2))
+        const id = OptionalHashId.parse(pathPart(path)(2))
         return createFeedStackState({
           name: 'Profile',
           params: {
@@ -283,7 +302,7 @@ const NavigationContainer = (props: NavigationContainerProps) => {
 
       // /playlists/Nz9yBb4
       if (path.match(/^\/playlists\//)) {
-        const id = decodeHashId(pathPart(path)(2))
+        const id = OptionalHashId.parse(pathPart(path)(2))
         return createFeedStackState({
           name: 'Profile',
           params: {
@@ -294,7 +313,9 @@ const NavigationContainer = (props: NavigationContainerProps) => {
 
       // /search
       if (path.match(`^/search(/|$)`)) {
-        const { query, ...filters } = convertQueryParamsToObject(path)
+        const {
+          query: { query, ...filters }
+        } = queryString.parseUrl(path)
 
         return createFeedStackState({
           name: 'Search',
@@ -321,9 +342,9 @@ const NavigationContainer = (props: NavigationContainerProps) => {
         const queryParams =
           queryParamsStart > -1 ? `&${path.slice(queryParamsStart + 1)}` : ''
         path = `/settings${subpathParam}${queryParams}`
-      } else if (path.match(`^/${account?.handle}(/|$)`)) {
+      } else if (path.match(`^/${accountHandle}(/|$)`)) {
         // If the path is the current user and set path as `/profile`
-        path = path.replace(`/${account?.handle}`, '/profile')
+        path = path.replace(`/${accountHandle}`, '/profile')
       } else {
         // If the path has two parts
         if (path.match(/^\/[^/]+\/[^/]+$/)) {
@@ -355,8 +376,34 @@ const NavigationContainer = (props: NavigationContainerProps) => {
         }
       }
 
+      if (!hasAccount && !path.match(/^\/reset-password/)) {
+        // Redirect to sign in with original path in query params
+        const { url, query } = queryString.parseUrl(path)
+
+        // If url is signin or signup, set screen param instead of routeOnCompletion
+        if (url === '/signin' || url === '/signup') {
+          path = queryString.stringifyUrl({
+            url: '/sign-on',
+            query: {
+              ...query,
+              screen: url === '/signin' ? 'sign-in' : 'sign-up'
+            }
+          })
+        } else {
+          path = queryString.stringifyUrl({
+            url: '/sign-on',
+            query: { ...query, screen: 'sign-up', routeOnCompletion: url }
+          })
+        }
+      }
+
       return getStateFromPath(path, options)
     }
+  }
+
+  const onReady = () => {
+    routeNameRef.current = getPrimaryRoute(navigationRef.getRootState())
+    navigationIntegration.registerNavigationContainer(navigationRef)
   }
 
   return (
@@ -364,9 +411,7 @@ const NavigationContainer = (props: NavigationContainerProps) => {
       linking={linking}
       theme={navigationThemes[theme]}
       ref={navigationRef}
-      onReady={() => {
-        routeNameRef.current = getPrimaryRoute(navigationRef.getRootState())
-      }}
+      onReady={onReady}
       onStateChange={() => {
         // Record screen views for the primary routes
         // Secondary routes (e.g. Track, Collection, Profile) are recorded via

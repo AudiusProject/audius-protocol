@@ -1,6 +1,6 @@
-import type { EIP712TypedData } from 'eth-sig-util'
 import { rest } from 'msw'
 import { setupServer } from 'msw/node'
+import type { Hex } from 'viem'
 import {
   vitest,
   it,
@@ -12,11 +12,9 @@ import {
 } from 'vitest'
 
 import { developmentConfig } from '../../config/development'
-import Web3 from '../../utils/web3'
-import type { AuthService } from '../Auth/types'
-import { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'
+import { createAppWalletClient } from '../AudiusWalletClient'
 
-import { EntityManager } from './EntityManager'
+import { EntityManagerClient } from './EntityManagerClient'
 import { getDefaultEntityManagerConfig } from './getDefaultConfig'
 import { Action, EntityType } from './types'
 
@@ -25,52 +23,13 @@ const userWallet = '0xc0ffee254729296a45a3885639AC7E10F9d54979'
 const discoveryNode = 'https://discovery-provider.audius.co'
 
 vitest.mock('../DiscoveryNodeSelector')
-vitest.mock('../../utils/web3', () => {
-  return {
-    default: vitest.fn().mockImplementation(() => {
-      return {
-        eth: {
-          getChainId: () => '',
-          Contract: vitest.fn().mockImplementation(() => ({
-            methods: {
-              manageEntity: () => ({
-                encodeABI: () => ''
-              })
-            }
-          }))
-        }
-      }
-    })
-  }
-})
-;(Web3 as any).providers = {
-  HttpProvider: vitest.fn().mockImplementation(() => {})
-}
 
-vitest
-  .spyOn(DiscoveryNodeSelector.prototype, 'getSelectedEndpoint')
-  .mockImplementation(async () => discoveryNode)
-
-class MockAuth implements AuthService {
-  getSharedSecret = async () => new Uint8Array()
-
-  signTransaction: (data: EIP712TypedData) => Promise<string> = async () =>
-    '0xcfe7a6974bd1691c0a298e119318337c54bf58175f8a9a6aeeaf3b0346c6105265c83de64ab81da28266c4b5b4ff68d81d9e266f9163d7ebd5b2a52d46e275941c'
-
-  sign: (data: string | Uint8Array) => Promise<[Uint8Array, number]> =
-    async () => [new Uint8Array(), 0]
-
-  hashAndSign: (data: string) => Promise<string> = async () => ''
-
-  getAddress = async () => {
-    return userWallet
-  }
-}
-
-const auth = new MockAuth()
-const discoveryNodeSelector = new DiscoveryNodeSelector({
-  initialSelectedNode: discoveryNode
-})
+const audiusWalletClient = createAppWalletClient({ apiKey: userWallet }).extend(
+  () => ({
+    signTypedData: async () =>
+      '0xcfe7a6974bd1691c0a298e119318337c54bf58175f8a9a6aeeaf3b0346c6105265c83de64ab81da28266c4b5b4ff68d81d9e266f9163d7ebd5b2a52d46e275941c' as Hex
+  })
+)
 
 const mswHandlers = [
   rest.post(`${discoveryNode}/relay`, (_req, res, ctx) => {
@@ -108,9 +67,10 @@ const mswHandlers = [
 
 const server = setupServer(...mswHandlers)
 
-const entityManager = new EntityManager({
+const entityManager = new EntityManagerClient({
   ...getDefaultEntityManagerConfig(developmentConfig),
-  discoveryNodeSelector
+  audiusWalletClient,
+  endpoint: discoveryNode
 })
 
 describe('EntityManager', () => {
@@ -135,8 +95,7 @@ describe('EntityManager', () => {
         entityType: EntityType.TRACK,
         entityId: 1,
         action: Action.CREATE,
-        metadata: JSON.stringify({}),
-        auth
+        metadata: JSON.stringify({})
       })
 
       expect(confirmWriteSpy).toHaveBeenCalledWith(

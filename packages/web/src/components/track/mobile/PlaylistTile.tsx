@@ -1,57 +1,41 @@
 import { useEffect, MouseEvent, useCallback } from 'react'
 
-import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
 import {
   ID,
   UID,
   LineupTrack,
   AccessConditions,
   ModalSource,
-  isContentUSDCPurchaseGated,
-  GatedContentStatus
+  isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import {
   gatedContentActions,
-  gatedContentSelectors,
   PurchaseableContentType,
   usePremiumContentPurchaseModal
 } from '@audius/common/store'
-import {
-  Nullable,
-  formatCount,
-  formatLineupTileDuration
-} from '@audius/common/utils'
+import { Nullable, formatLineupTileDuration } from '@audius/common/utils'
 import {
   Box,
   Flex,
-  IconVisibilityHidden,
   IconVolumeLevel2 as IconVolume,
   Text
 } from '@audius/harmony'
 import cn from 'classnames'
 import { range } from 'lodash'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
-import FavoriteButton from 'components/alt-button/FavoriteButton'
-import RepostButton from 'components/alt-button/RepostButton'
 import { CollectionDogEar } from 'components/collection'
+import { CollectionTileStats } from 'components/collection/CollectionTileStats'
 import { TextLink, UserLink } from 'components/link'
-import { LockedStatusPill } from 'components/locked-status-pill'
 import Skeleton from 'components/skeleton/Skeleton'
-import { PlaylistTileProps } from 'components/track/types'
-import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
-
-import { GatedConditionsPill } from '../GatedConditionsPill'
-import { GatedContentLabel } from '../GatedContentLabel'
-import { LineupTileLabel } from '../LineupTileLabel'
+import { PlaylistTileProps, TrackTileSize } from 'components/track/types'
+import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
 
 import BottomButtons from './BottomButtons'
 import styles from './PlaylistTile.module.css'
-import { RankIcon } from './TrackTile'
 import TrackTileArt from './TrackTileArt'
 const { setLockedContentId } = gatedContentActions
-const { getGatedContentStatusMap } = gatedContentSelectors
 
 type TrackItemProps = {
   index: number
@@ -185,56 +169,6 @@ type ExtraProps = {
   streamConditions: Nullable<AccessConditions>
 }
 
-type CombinedProps = PlaylistTileProps & ExtraProps
-
-type LockedOrPlaysContentProps = Pick<
-  CombinedProps,
-  | 'hasStreamAccess'
-  | 'isOwner'
-  | 'isStreamGated'
-  | 'streamConditions'
-  | 'variant'
-  | 'id'
-> & {
-  lockedContentType: 'premium' | 'gated'
-  gatedTrackStatus?: GatedContentStatus
-  onClickGatedUnlockPill: (e: MouseEvent) => void
-}
-
-const renderLockedContent = ({
-  id,
-  hasStreamAccess,
-  isOwner,
-  isStreamGated,
-  streamConditions,
-  gatedTrackStatus,
-  onClickGatedUnlockPill,
-  lockedContentType,
-  variant
-}: LockedOrPlaysContentProps) => {
-  if (isStreamGated && streamConditions && !isOwner) {
-    if (
-      !hasStreamAccess &&
-      lockedContentType === 'premium' &&
-      variant === 'readonly'
-    ) {
-      return (
-        <GatedConditionsPill
-          streamConditions={streamConditions}
-          unlocking={gatedTrackStatus === 'UNLOCKING'}
-          onClick={onClickGatedUnlockPill}
-          buttonSize='small'
-          contentId={id}
-          contentType={lockedContentType}
-        />
-      )
-    }
-    return (
-      <LockedStatusPill locked={!hasStreamAccess} variant={lockedContentType} />
-    )
-  }
-}
-
 const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
   const {
     id,
@@ -242,9 +176,6 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     index,
     showSkeleton,
     numLoadingSkeletonRows,
-    isTrending,
-    isOwner,
-    showRankIcon,
     trackCount,
     variant,
     containerClassName,
@@ -255,27 +186,15 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     isPlaying,
     isAlbum,
     ownerId,
-    isStreamGated,
     hasStreamAccess,
     streamConditions,
-    source
+    source,
+    isTrending
   } = props
-
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: collection } = useGetPlaylistById({
-    playlistId: id,
-    currentUserId
-  })
-
-  const {
-    is_private: isPrivate,
-    repost_count: repostCount,
-    save_count: saveCount
-  } = collection ?? {}
 
   useEffect(() => {
     if (!showSkeleton) {
-      hasLoaded(index)
+      hasLoaded?.(index)
     }
   }, [hasLoaded, index, showSkeleton])
 
@@ -285,9 +204,6 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     [styles.show]: shouldShow,
     [styles.hide]: !shouldShow
   }
-  const gatedContentStatusMap = useSelector(getGatedContentStatusMap)
-  const gatedContentStatus = id ? gatedContentStatusMap[id] : undefined
-  const shouldShowStats = !isPrivate && !!(repostCount || saveCount)
 
   const [, setModalVisibility] = useModalState('LockedContent')
   const dispatch = useDispatch()
@@ -302,7 +218,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     usePremiumContentPurchaseModal()
   const isPurchase = isContentUSDCPurchaseGated(streamConditions)
 
-  const onClickGatedUnlockPill = useAuthenticatedClickCallback(() => {
+  const onClickGatedUnlockPill = useRequiresAccountOnClick(() => {
     if (isPurchase && id) {
       openPremiumContentPurchaseModal(
         { contentId: id, contentType: PurchaseableContentType.ALBUM },
@@ -318,24 +234,6 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     hasStreamAccess,
     openLockedContentModal
   ])
-
-  let specialContentLabel = null
-  if (isStreamGated) {
-    specialContentLabel = (
-      <GatedContentLabel
-        streamConditions={streamConditions}
-        hasStreamAccess={!!hasStreamAccess}
-        isOwner={isOwner}
-      />
-    )
-  }
-  if (isPrivate) {
-    specialContentLabel = (
-      <LineupTileLabel icon={IconVisibilityHidden}>
-        {messages.hidden}
-      </LineupTileLabel>
-    )
-  }
 
   return (
     <div
@@ -370,7 +268,6 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
             id={props.id}
             isTrack={false}
             showSkeleton={props.showSkeleton}
-            coverArtSizes={props.coverArtSizes}
             className={styles.albumArtContainer}
             isPlaying={props.isPlaying}
             isBuffering={props.isLoading}
@@ -406,83 +303,14 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
             </UserLink>
           </Flex>
         </div>
-        <Text size='xs' color='subdued'>
-          <Flex m='m' justifyContent='space-between' alignItems='center'>
-            <Flex gap='l'>
-              <RankIcon
-                className={styles.rankIcon}
-                index={index}
-                isVisible={isTrending && shouldShow}
-                showCrown={showRankIcon}
-              />
-              {isReadonly ? specialContentLabel : null}
-              {shouldShowStats ? (
-                <>
-                  <Flex
-                    gap='xs'
-                    alignItems='center'
-                    className={cn(styles.statItem, fadeIn, {
-                      [styles.disabledStatItem]: !props.saveCount
-                    })}
-                    onClick={
-                      props.saveCount && !isReadonly
-                        ? props.makeGoToFavoritesPage(props.id)
-                        : undefined
-                    }
-                  >
-                    <FavoriteButton
-                      iconMode
-                      isDarkMode={props.darkMode}
-                      isMatrixMode={props.isMatrix}
-                      className={styles.favoriteButton}
-                      wrapperClassName={styles.favoriteButtonWrapper}
-                    />
-                    {formatCount(props.saveCount)}
-                  </Flex>
-                  <Flex
-                    gap='xs'
-                    alignItems='center'
-                    className={cn(styles.statItem, fadeIn, {
-                      [styles.disabledStatItem]: !props.repostCount
-                    })}
-                    onClick={
-                      props.repostCount && !isReadonly
-                        ? props.makeGoToRepostsPage(props.id)
-                        : undefined
-                    }
-                  >
-                    <RepostButton
-                      iconMode
-                      isDarkMode={props.darkMode}
-                      isMatrixMode={props.isMatrix}
-                      className={styles.repostButton}
-                      wrapperClassName={styles.repostButtonWrapper}
-                    />
-                    {formatCount(props.repostCount)}
-                  </Flex>
-                </>
-              ) : null}
-            </Flex>
-            <Text
-              variant='body'
-              size='xs'
-              color='staticWhite'
-              className={cn(styles.bottomRight, fadeIn)}
-            >
-              {renderLockedContent({
-                id,
-                hasStreamAccess,
-                isOwner,
-                isStreamGated,
-                streamConditions,
-                gatedTrackStatus: gatedContentStatus,
-                lockedContentType: isPurchase ? 'premium' : 'gated',
-                variant,
-                onClickGatedUnlockPill
-              })}
-            </Text>
-          </Flex>
-        </Text>
+        <Flex ph='s'>
+          <CollectionTileStats
+            collectionId={id}
+            isTrending={isTrending}
+            rankIndex={index}
+            size={TrackTileSize.SMALL}
+          />
+        </Flex>
         <TrackList
           activeTrackUid={props.activeTrackUid}
           goToCollectionPage={props.goToCollectionPage}

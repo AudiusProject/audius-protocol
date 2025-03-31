@@ -1,8 +1,11 @@
 # pylint: disable=too-many-lines
 import enum
+import json
 import logging
+import re
 from collections import defaultdict
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple, TypedDict
+from urllib.parse import quote, urlencode, urljoin
 
 from flask import request
 from sqlalchemy import Integer, and_, bindparam, cast, desc, func, text
@@ -11,8 +14,14 @@ from sqlalchemy.sql.expression import or_
 
 from src import exceptions
 from src.gated_content.content_access_checker import content_access_checker
+from src.gated_content.signature import (
+    GatedContentSignature,
+    get_gated_content_signature,
+)
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
+from src.models.playlists.playlist_route import PlaylistRoute
+from src.models.playlists.playlist_track import PlaylistTrack
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost, RepostType
 from src.models.social.save import Save, SaveType
@@ -24,11 +33,15 @@ from src.models.users.aggregate_user import AggregateUser
 from src.models.users.user import User
 from src.models.users.user_bank import UserBankAccount
 from src.queries import response_name_constants
+from src.queries.get_authorization import is_authorized_request
 from src.queries.get_balances import get_balances
 from src.queries.get_track_comment_count import get_tracks_comment_count
+from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.trending_strategies.trending_type_and_version import TrendingVersion
 from src.utils import helpers, redis_connection
+from src.utils.get_all_nodes import get_all_healthy_content_nodes_cached
+from src.utils.rendezvous import RendezvousHash
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +49,8 @@ redis = redis_connection.get_redis()
 
 
 # ####### VARS ####### #
-
+# number of mirror CNs to return for stream, preview, and download URLs
+mirrorCount = 2
 
 defaultLimit = 100
 minLimit = 1
@@ -122,6 +136,11 @@ class SortMethod(str, enum.Enum):
     reposts = "reposts"
     saves = "saves"
     most_listens_by_user = "most_listens_by_user"
+
+
+class CollectionSortMethod(str, enum.Enum):
+    recent = "recent"
+    popular = "popular"
 
 
 class PurchaseSortMethod(str, enum.Enum):
@@ -232,6 +251,7 @@ def populate_user_metadata(
     current_user_followed_user_ids = {}
     current_user_subscribed_user_ids = {}
     current_user_followee_follow_count_dict = {}
+    queried_user_follows_current_user_dict = {}
     if current_user_id:
         # does current user follow any of requested user ids
         current_user_follow_rows = (
@@ -246,6 +266,20 @@ def populate_user_metadata(
         )
         for [following_id] in current_user_follow_rows:
             current_user_followed_user_ids[following_id] = True
+
+        # does queried user follow current user
+        queried_user_follows_current_user_rows = (
+            session.query(Follow.follower_user_id)
+            .filter(
+                Follow.is_current == True,
+                Follow.is_delete == False,
+                Follow.follower_user_id.in_(user_ids),
+                Follow.followee_user_id == current_user_id,
+            )
+            .all()
+        )
+        for [follower_id] in queried_user_follows_current_user_rows:
+            queried_user_follows_current_user_dict[follower_id] = True
 
         # collect all outgoing subscription edges for current user
         current_user_subscribed_rows = (
@@ -329,8 +363,12 @@ def populate_user_metadata(
             response_name_constants.does_current_user_follow
         ] = current_user_followed_user_ids.get(user_id, False)
         user[
+            response_name_constants.does_follow_current_user
+        ] = queried_user_follows_current_user_dict.get(user_id, False)
+        user[
             response_name_constants.does_current_user_subscribe
         ] = current_user_subscribed_user_ids.get(user_id, False)
+
         user[
             response_name_constants.current_user_followee_follow_count
         ] = current_user_followee_follow_count_dict.get(user_id, 0)
@@ -484,9 +522,51 @@ def populate_track_metadata(
     comment_counts = get_tracks_comment_count(track_ids, current_user_id, session)
 
     # has current user unlocked gated tracks?
-    # if so, also populate corresponding signatures.
+    # if so, also populate corresponding stream/download URLs with signatures.
     # if no current user (guest), populate access based on track stream/download conditions
     _populate_gated_content_metadata(session, tracks, current_user_id)
+
+    # Get album backlinks for all tracks in a single query
+    album_backlinks = (
+        session.query(
+            PlaylistTrack.track_id,
+            Playlist.playlist_id,
+            Playlist.playlist_name,
+            User.handle,
+            PlaylistRoute.slug,
+        )
+        .join(Playlist, Playlist.playlist_id == PlaylistTrack.playlist_id)
+        .join(
+            User,
+            and_(User.user_id == Playlist.playlist_owner_id, User.is_current == True),
+        )
+        .join(
+            PlaylistRoute,
+            and_(
+                PlaylistRoute.playlist_id == Playlist.playlist_id,
+                PlaylistRoute.is_current == True,
+            ),
+        )
+        .filter(
+            PlaylistTrack.track_id.in_(track_ids),
+            PlaylistTrack.is_removed == False,
+            Playlist.is_album == True,
+            Playlist.is_delete == False,
+            Playlist.is_current == True,
+        )
+        .order_by(Playlist.created_at.desc())
+        .all()
+    )
+
+    # Create a dict of track_id to its most recent album (first in the ordered results)
+    album_backlink_dict = {}
+    for track_id, playlist_id, playlist_name, handle, slug in album_backlinks:
+        if track_id not in album_backlink_dict:
+            album_backlink_dict[track_id] = {
+                "playlist_id": playlist_id,
+                "playlist_name": playlist_name,
+                "permalink": f"/{handle}/album/{slug}" if handle and slug else None,
+            }
 
     for track in tracks:
         track_id = track["track_id"]
@@ -542,10 +622,137 @@ def populate_track_metadata(
         else:
             track[response_name_constants.remix_of] = None
 
+        # Add album backlink
+        track["album_backlink"] = album_backlink_dict.get(track_id)
+
     return tracks
 
 
-def _populate_gated_content_metadata(session, entities, current_user_id):
+class UrlWithMirrors(TypedDict):
+    url: str | None
+    mirrors: List[str]
+
+
+def get_stream_url_with_mirrors(
+    track: dict, user_id: int | None, is_authorized_as_user: bool
+) -> UrlWithMirrors:
+    # If the cid exists and the user has access
+    if track.get("track_cid", False) and track.get("access", {}).get("stream", False):
+        # If the signature is authorized for the user that has access or if there's no access gate
+        if is_authorized_as_user or not track.get("is_stream_gated", False):
+            stream_signature = get_gated_content_signature(
+                {
+                    "track_id": track["track_id"],
+                    "cid": track["track_cid"],
+                    "type": "track",
+                    "user_id": user_id,
+                    "is_gated": track.get("is_stream_gated", False),
+                }
+            )
+            if stream_signature:
+                return get_content_url_with_mirrors(
+                    stream_signature,
+                    track["track_cid"],
+                    track.get("placement_hosts", None),
+                )
+    return {"url": None, "mirrors": []}
+
+
+def get_preview_url_with_mirrors(track: dict, user_id: int | None) -> UrlWithMirrors:
+    if track.get("preview_cid"):
+        preview_signature = get_gated_content_signature(
+            {
+                "track_id": track["track_id"],
+                "cid": track["preview_cid"],
+                "type": "track",
+                "user_id": user_id,
+                "is_gated": False,
+            }
+        )
+        if preview_signature:
+            return get_content_url_with_mirrors(
+                preview_signature,
+                track["preview_cid"],
+                track.get("placement_hosts", None),
+            )
+    return {"url": None, "mirrors": []}
+
+
+def get_download_url_with_mirrors(
+    track: dict, user_id: int | None, is_authorized_as_user: bool
+) -> UrlWithMirrors:
+    # If the cid exists and the user has access
+    if track.get("orig_file_cid", False) and track.get("access", {}).get(
+        "download", False
+    ):
+        # If the signature is authorized for the user that has access or if there's no access gate
+        if is_authorized_as_user or not track.get("is_download_gated", False):
+            download_signature = get_gated_content_signature(
+                {
+                    "track_id": track["track_id"],
+                    "cid": track["orig_file_cid"],
+                    "type": "track",
+                    "user_id": user_id,
+                    "is_gated": track.get("is_download_gated", False),
+                }
+            )
+            if download_signature:
+                return get_content_url_with_mirrors(
+                    download_signature,
+                    track["orig_file_cid"],
+                    track.get("placement_hosts", None),
+                )
+    return {"url": None, "mirrors": []}
+
+
+def get_content_url_with_mirrors(
+    signature: GatedContentSignature, cid: str, placement_hosts=None
+) -> UrlWithMirrors:
+    params = {"signature": json.dumps(signature)}
+
+    base_path = f"tracks/cidstream/{cid}"
+    query_string = urlencode(params, quote_via=quote)
+    path = f"{base_path}?{query_string}"
+
+    content_nodes = []
+    # if track has placement_hosts, use that instead
+    if placement_hosts:
+        content_nodes = placement_hosts.split(",")
+    else:
+        healthy_nodes = get_all_healthy_content_nodes_cached(redis)
+        if healthy_nodes:
+            rendezvous = RendezvousHash(
+                *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
+            )
+
+            content_nodes = rendezvous.get_n(mirrorCount + 1, cid)
+
+    if len(content_nodes) == 0:
+        logger.warning(
+            f"helpers.py | get_content_url_with_mirrors | No Content Nodes found for CID {cid}"
+        )
+        return {"url": None, "mirrors": []}
+
+    # Add additional query parameters
+    joined_url = urljoin(content_nodes[0], path)
+
+    return {
+        "url": joined_url,
+        "mirrors": content_nodes[1:],
+    }
+
+
+def _populate_gated_content_metadata(
+    session, entities, current_user_id, include_playlist_tracks=False
+):
+    """Checks if `current_user_id` has access to each entity and populates relevant fields.
+
+    Responsible for populating the `access` field of both tracks and playlists.
+
+    Additionally responsible for populating `download`, `preview`, `stream`
+    fields of tracks with direct to content node URLs and mirrors.
+    """
+
     if not entities:
         return
     if not current_user_id:
@@ -557,16 +764,42 @@ def _populate_gated_content_metadata(session, entities, current_user_id):
                     "stream": True,
                     "download": True,
                 }
+                if entity.get("track_id"):
+                    entity[
+                        response_name_constants.stream
+                    ] = get_stream_url_with_mirrors(
+                        entity, current_user_id, is_authorized_as_user=False
+                    )
+                    entity[
+                        response_name_constants.download
+                    ] = get_download_url_with_mirrors(
+                        entity, current_user_id, is_authorized_as_user=False
+                    )
+                    entity[
+                        response_name_constants.preview
+                    ] = get_preview_url_with_mirrors(entity, current_user_id)
             elif stream_conditions:
                 entity[response_name_constants.access] = {
                     "stream": False,
                     "download": False,
                 }
+                entity[response_name_constants.preview] = get_preview_url_with_mirrors(
+                    entity, current_user_id
+                )
             elif download_conditions:
                 entity[response_name_constants.access] = {
                     "stream": True,
                     "download": False,
                 }
+                if entity.get("track_id"):
+                    entity[
+                        response_name_constants.stream
+                    ] = get_stream_url_with_mirrors(
+                        entity, current_user_id, is_authorized_as_user=False
+                    )
+                    entity[
+                        response_name_constants.preview
+                    ] = get_preview_url_with_mirrors(entity, current_user_id)
         return
 
     current_user_wallet = (
@@ -616,6 +849,8 @@ def _populate_gated_content_metadata(session, entities, current_user_id):
         session, gated_content_access_args
     )
 
+    is_authorized_as_user = is_authorized_request(current_user_id)
+
     for entity in gated_entities:
         content_id = getContentId(entity)
         gated_access = gated_content_access[content_type]
@@ -638,6 +873,8 @@ def _populate_gated_content_metadata(session, entities, current_user_id):
         ] = has_download_access
 
     for entity in entities:
+        if "playlist_id" in entity and "tracks" in entity and include_playlist_tracks:
+            _populate_gated_content_metadata(session, entity["tracks"], current_user_id)
         content_id = getContentId(entity)
         if content_id not in gated_content_ids:
             entity[response_name_constants.access] = {
@@ -655,6 +892,18 @@ def _populate_gated_content_metadata(session, entities, current_user_id):
                 "stream": has_stream_access,
                 "download": has_download_access,
             }
+
+        if entity.get("track_id"):
+            # Populate the stream, download and preview urls
+            entity[response_name_constants.stream] = get_stream_url_with_mirrors(
+                entity, current_user_id, is_authorized_as_user
+            )
+            entity[response_name_constants.download] = get_download_url_with_mirrors(
+                entity, current_user_id, is_authorized_as_user
+            )
+            entity[response_name_constants.preview] = get_preview_url_with_mirrors(
+                entity, current_user_id
+            )
 
 
 def get_track_remix_metadata(session, tracks, current_user_id):
@@ -1223,6 +1472,19 @@ def get_genre_list(genre):
     return genre_list
 
 
+def get_users(session, user_ids, current_user_id=None):
+    users = get_unpopulated_users(session, user_ids)
+    return populate_user_metadata(session, user_ids, users, current_user_id)
+
+
+def get_tracks(session, track_ids, current_user_id=None):
+    tracks = get_unpopulated_tracks(session, track_ids)
+    populated_tracks = populate_track_metadata(
+        session, track_ids, tracks, current_user_id
+    )
+    return add_users_to_tracks(session, populated_tracks, current_user_id)
+
+
 def get_users_by_id(session, user_ids, current_user_id=None, use_request_context=True):
     users = get_unpopulated_users(session, user_ids)
 
@@ -1245,6 +1507,8 @@ def get_users_ids(results):
     for result in results:
         if "playlist_owner_id" in result:
             user_ids.append(int(result["playlist_owner_id"]))
+            for track in result.get("tracks", []):
+                user_ids.append(int(track["owner_id"]))
         elif "owner_id" in result:
             user_ids.append(int(result["owner_id"]))
     # Remove duplicate user ids

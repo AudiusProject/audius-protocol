@@ -5,10 +5,23 @@ import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { useAudiusQueryContext } from '~/audius-query'
-import { useAppContext } from '~/context'
 import { confirmEmailSchema, emailSchema } from '~/schemas'
 
 import { isOtpMissingError } from './useChangePasswordFormConfiguration'
+
+// Note: Not an SDK RequestError as it comes from Hedgehog
+const INVALID_CREDENTIALS_ERROR = 'Invalid credentials'
+const isInvalidCredentialsError = (e: unknown) => {
+  return (
+    e instanceof Error &&
+    'response' in e &&
+    e.response instanceof Object &&
+    'data' in e.response &&
+    e.response.data instanceof Object &&
+    'error' in e.response.data &&
+    e.response.data.error === INVALID_CREDENTIALS_ERROR
+  )
+}
 
 const messages = {
   invalidCredentials: 'Invalid credentials.',
@@ -47,22 +60,23 @@ const confirmPasswordFormikSchema = toFormikValidationSchema(
 const verifyEmailFormikSchema = toFormikValidationSchema(confirmEmailSchema)
 
 export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
-  const { audiusBackend } = useAppContext()
   const [page, setPage] = useState(ChangeEmailPage.ConfirmPassword)
   const audiusQueryContext = useAudiusQueryContext()
+  const { authService } = audiusQueryContext
   const EmailSchema = useMemo(
     () => toFormikValidationSchema(emailSchema(audiusQueryContext)),
     [audiusQueryContext]
   )
+  const reportToSentry = audiusQueryContext.reportToSentry
 
   const validationSchema =
     page === ChangeEmailPage.ConfirmPassword
       ? confirmPasswordFormikSchema
       : page === ChangeEmailPage.NewEmail
-      ? EmailSchema
-      : page === ChangeEmailPage.VerifyEmail
-      ? verifyEmailFormikSchema
-      : undefined
+        ? EmailSchema
+        : page === ChangeEmailPage.VerifyEmail
+          ? verifyEmailFormikSchema
+          : undefined
 
   const checkPassword = useCallback(
     async (
@@ -70,9 +84,8 @@ export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
       helpers: FormikHelpers<ChangeEmailFormValues>
     ) => {
       const { oldEmail, password } = values
-      const libs = await audiusBackend.getAudiusLibsTyped()
       try {
-        const confirmed = await libs.Account?.confirmCredentials({
+        const confirmed = await authService.confirmCredentials({
           username: oldEmail,
           password,
           softCheck: true
@@ -87,7 +100,7 @@ export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
         helpers.setFieldError('password', messages.invalidCredentials)
       }
     },
-    [setPage, audiusBackend]
+    [setPage, authService]
   )
 
   const changeEmail = useCallback(
@@ -97,10 +110,9 @@ export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
     ) => {
       const { oldEmail, password, email, otp } = values
       const sanitizedOtp = otp.replace(/\s/g, '')
-      const libs = await audiusBackend.getAudiusLibsTyped()
 
       try {
-        await libs.Account!.changeCredentials({
+        await authService.changeCredentials({
           newUsername: email,
           newPassword: password,
           oldUsername: oldEmail,
@@ -110,16 +122,21 @@ export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
         })
         onComplete()
       } catch (e) {
+        console.warn(e)
         if (isOtpMissingError(e)) {
           helpers.setFieldTouched('otp', false)
           setPage(ChangeEmailPage.VerifyEmail)
-        } else {
+        } else if (isInvalidCredentialsError(e)) {
           helpers.setFieldError('otp', messages.invalidCredentials)
           helpers.setFieldError('email', messages.somethingWrong)
+        } else {
+          helpers.setFieldError('otp', messages.somethingWrong)
+          helpers.setFieldError('email', messages.somethingWrong)
+          reportToSentry({ error: e as Error, name: 'ChangeEmail' })
         }
       }
     },
-    [setPage, onComplete, audiusBackend]
+    [setPage, onComplete, authService, reportToSentry]
   )
 
   const onSubmit = useCallback(

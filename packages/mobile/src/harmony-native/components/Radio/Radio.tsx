@@ -52,8 +52,8 @@ export const Radio = (props: RadioProps) => {
     backgroundColor: checked
       ? color.secondary.secondary
       : disabled
-      ? color.neutral.n300
-      : color.neutral.n700
+        ? color.neutral.n300
+        : color.neutral.n700
   }
 
   const innerActive: ViewStyle = {

@@ -12,8 +12,3 @@
   border: 1px solid var(--harmony-border-default);
   overflow: hidden;
 }
-
-.text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}

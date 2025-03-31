@@ -48,10 +48,10 @@ const TrackList = ({
   itemClassName,
   tracks,
   onRemove,
-  showTopDivider,
-  showDivider,
+  showTopDivider = false,
+  showDivider = true,
   noDividerMargin,
-  showBorder,
+  showBorder = false,
   togglePlay,
   trackItemAction,
   isReorderable = false,
@@ -171,12 +171,6 @@ const TrackList = ({
       )}
     </div>
   )
-}
-
-TrackList.defaultProps = {
-  hasTopDivider: false,
-  showDivider: true,
-  showBorder: false
 }
 
 export default memo(TrackList)

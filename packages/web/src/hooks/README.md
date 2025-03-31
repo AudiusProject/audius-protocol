@@ -13,7 +13,7 @@ Allows for `useState` style ergonomics for getting & setting modal visibility.
 
 ### `useNavigateToPage`
 
-Wraps `connected-react-router` navigation in a single function.
+Wraps `redux-first-history` navigation in a single function.
 
 ### `useInstanceVar`
 

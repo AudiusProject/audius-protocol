@@ -24,6 +24,7 @@ import type {
   RemixesResponseFull,
   RemixingResponse,
   StemsResponse,
+  TrackCommentsResponseFull,
   TrackFavoritesResponseFull,
   TrackRepostsResponseFull,
   TrendingIdsResponse,
@@ -45,6 +46,8 @@ import {
     RemixingResponseToJSON,
     StemsResponseFromJSON,
     StemsResponseToJSON,
+    TrackCommentsResponseFullFromJSON,
+    TrackCommentsResponseFullToJSON,
     TrackFavoritesResponseFullFromJSON,
     TrackFavoritesResponseFullToJSON,
     TrackRepostsResponseFullFromJSON,
@@ -52,6 +55,13 @@ import {
     TrendingIdsResponseFromJSON,
     TrendingIdsResponseToJSON,
 } from '../models';
+
+export interface GetBestNewReleasesRequest {
+    window: GetBestNewReleasesWindowEnum;
+    userId?: string;
+    limit?: number;
+    withUsers?: boolean;
+}
 
 export interface GetBulkTracksRequest {
     userId?: string;
@@ -104,6 +114,14 @@ export interface GetRemixableTracksRequest {
 export interface GetTrackRequest {
     trackId: string;
     userId?: string;
+}
+
+export interface GetTrackCommentsRequest {
+    trackId: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+    sortMethod?: GetTrackCommentsSortMethodEnum;
 }
 
 export interface GetTrackRemixParentsRequest {
@@ -219,8 +237,28 @@ export class TracksApi extends runtime.BaseAPI {
      * @hidden
      * Gets the tracks found on the \"Best New Releases\" smart playlist
      */
-    async bestNewReleasesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
+    async getBestNewReleasesRaw(params: GetBestNewReleasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
+        if (params.window === null || params.window === undefined) {
+            throw new runtime.RequiredError('window','Required parameter params.window was null or undefined when calling getBestNewReleases.');
+        }
+
         const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.window !== undefined) {
+            queryParameters['window'] = params.window;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.withUsers !== undefined) {
+            queryParameters['with_users'] = params.withUsers;
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -237,8 +275,8 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets the tracks found on the \"Best New Releases\" smart playlist
      */
-    async bestNewReleases(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
-        const response = await this.bestNewReleasesRaw(initOverrides);
+    async getBestNewReleases(params: GetBestNewReleasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
+        const response = await this.getBestNewReleasesRaw(params, initOverrides);
         return await response.value();
     }
 
@@ -571,6 +609,53 @@ export class TracksApi extends runtime.BaseAPI {
      */
     async getTrack(params: GetTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTrackResponse> {
         const response = await this.getTrackRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Get a list of comments for a track
+     */
+    async getTrackCommentsRaw(params: GetTrackCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackCommentsResponseFull>> {
+        if (params.trackId === null || params.trackId === undefined) {
+            throw new runtime.RequiredError('trackId','Required parameter params.trackId was null or undefined when calling getTrackComments.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/{track_id}/comments`.replace(`{${"track_id"}}`, encodeURIComponent(String(params.trackId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TrackCommentsResponseFullFromJSON(jsonValue));
+    }
+
+    /**
+     * Get a list of comments for a track
+     */
+    async getTrackComments(params: GetTrackCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackCommentsResponseFull> {
+        const response = await this.getTrackCommentsRaw(params, initOverrides);
         return await response.value();
     }
 
@@ -1220,6 +1305,15 @@ export class TracksApi extends runtime.BaseAPI {
 /**
  * @export
  */
+export const GetBestNewReleasesWindowEnum = {
+    Week: 'week',
+    Month: 'month',
+    Year: 'year'
+} as const;
+export type GetBestNewReleasesWindowEnum = typeof GetBestNewReleasesWindowEnum[keyof typeof GetBestNewReleasesWindowEnum];
+/**
+ * @export
+ */
 export const GetRecommendedTracksTimeEnum = {
     Week: 'week',
     Month: 'month',
@@ -1237,6 +1331,15 @@ export const GetRecommendedTracksWithVersionTimeEnum = {
     AllTime: 'allTime'
 } as const;
 export type GetRecommendedTracksWithVersionTimeEnum = typeof GetRecommendedTracksWithVersionTimeEnum[keyof typeof GetRecommendedTracksWithVersionTimeEnum];
+/**
+ * @export
+ */
+export const GetTrackCommentsSortMethodEnum = {
+    Top: 'top',
+    Newest: 'newest',
+    Timestamp: 'timestamp'
+} as const;
+export type GetTrackCommentsSortMethodEnum = typeof GetTrackCommentsSortMethodEnum[keyof typeof GetTrackCommentsSortMethodEnum];
 /**
  * @export
  */

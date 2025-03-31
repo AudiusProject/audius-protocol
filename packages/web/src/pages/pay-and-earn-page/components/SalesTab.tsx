@@ -1,12 +1,16 @@
 import { useCallback, useState } from 'react'
 
-import { useGetSales, useGetSalesCount, Id } from '@audius/common/api'
-import { useAllPaginatedQuery } from '@audius/common/audius-query'
-import { useFeatureFlag } from '@audius/common/hooks'
 import {
+  useGetCurrentWeb3User,
+  useGetSales,
+  useGetSalesCount
+} from '@audius/common/api'
+import { useAllPaginatedQuery } from '@audius/common/audius-query'
+import { useFeatureFlag, useIsManagedAccount } from '@audius/common/hooks'
+import {
+  combineStatuses,
   Status,
   statusIsNotFinalized,
-  combineStatuses,
   USDCPurchaseDetails
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -16,8 +20,7 @@ import {
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Flex, IconMoneyBracket, Text, useTheme } from '@audius/harmony'
-import { full } from '@audius/sdk'
-import { push as pushRoute } from 'connected-react-router'
+import { Id, full } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
 import { ExternalTextLink } from 'components/link'
@@ -25,7 +28,9 @@ import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useMainContentRef } from 'pages/MainContentContext'
 import { audiusSdk } from 'services/audius-sdk'
+import { env } from 'services/env'
 import { formatToday } from 'utils/dateUtils'
+import { push } from 'utils/navigation'
 import { useSelector } from 'utils/reducer'
 
 import styles from '../PayAndEarnPage.module.css'
@@ -77,7 +82,7 @@ const DEFAULT_SORT_DIRECTION = full.GetSalesSortDirectionEnum.Desc
 const NoSales = () => {
   const dispatch = useDispatch()
   const handleClickUpload = useCallback(() => {
-    dispatch(pushRoute(UPLOAD_PAGE))
+    dispatch(push(UPLOAD_PAGE))
   }, [dispatch])
   return (
     <NoTransactionsContent
@@ -91,6 +96,9 @@ const NoSales = () => {
 
 export const useSales = () => {
   const userId = useSelector(getUserId)
+  const isManagerMode = useIsManagedAccount()
+  const { data: currentWeb3User } = useGetCurrentWeb3User({})
+
   // Defaults: sort method = date, sort direction = desc
   const [sortMethod, setSortMethod] =
     useState<full.GetSalesSortMethodEnum>(DEFAULT_SORT_METHOD)
@@ -145,6 +153,147 @@ export const useSales = () => {
   const isEmpty = status === Status.SUCCESS && sales.length === 0
   const isLoading = statusIsNotFinalized(status)
 
+  const downloadSalesAsCSVFromJSON = async () => {
+    let link = null
+    let url = null
+
+    try {
+      const sdk = await audiusSdk()
+      const salesAsJSON = await sdk.users.downloadSalesAsJSON({
+        id: Id.parse(userId),
+        granteeUserId: isManagerMode
+          ? Id.parse(currentWeb3User?.user_id)
+          : undefined
+      })
+
+      const sales = salesAsJSON.data?.sales
+
+      if (!sales || sales.length === 0) {
+        return
+      }
+
+      const BATCH_SIZE = 10
+      const CONCURRENT_BATCHES = 3
+      const rows = []
+
+      // Process sales in concurrent batches
+      for (let i = 0; i < sales.length; i += BATCH_SIZE * CONCURRENT_BATCHES) {
+        const batchPromises = []
+
+        // Create promises for concurrent batch processing
+        for (let j = 0; j < CONCURRENT_BATCHES; j++) {
+          const start = i + j * BATCH_SIZE
+          const end = Math.min(start + BATCH_SIZE, sales.length)
+          if (start < sales.length) {
+            const batch = sales.slice(start, end)
+
+            // Process the batch
+            const batchPromise = Promise.all(
+              batch.map(async (sale) => {
+                try {
+                  const decryptionId = sale.isInitial
+                    ? (env.EMAIL_ENCRYPTION_UUID ?? 0)
+                    : sale.buyerUserId
+
+                  let decryptedEmail = ''
+                  if (
+                    sale.encryptedEmail &&
+                    sale.encryptedKey &&
+                    sale.pubkeyBase64
+                  ) {
+                    try {
+                      // Use the pubkey directly from the sale data
+                      const pubkeyToUse = sale.isInitial
+                        ? env.EMAIL_ENCRYPTION_PUBLIC_KEY
+                        : sale.pubkeyBase64
+                      const symmetricKey =
+                        await sdk.services.emailEncryptionService.decryptSymmetricKey(
+                          sale.encryptedKey,
+                          Id.parse(decryptionId),
+                          pubkeyToUse
+                        )
+                      decryptedEmail =
+                        await sdk.services.emailEncryptionService.decryptEmail(
+                          sale.encryptedEmail,
+                          symmetricKey
+                        )
+                    } catch (err) {
+                      console.error('Error decrypting email:', err)
+                    }
+                  }
+
+                  return [
+                    sale.title,
+                    sale.link,
+                    sale.purchasedBy,
+                    decryptedEmail,
+                    sale.date,
+                    sale.salePrice,
+                    sale.networkFee,
+                    sale.payExtra,
+                    sale.total,
+                    sale.country
+                  ]
+                } catch (err) {
+                  console.error('Error processing sale:', err)
+                  return [
+                    sale.title,
+                    sale.link,
+                    sale.purchasedBy,
+                    '',
+                    sale.date,
+                    sale.salePrice,
+                    sale.networkFee,
+                    sale.payExtra,
+                    sale.total,
+                    sale.country
+                  ]
+                }
+              })
+            )
+
+            batchPromises.push(batchPromise)
+          }
+        }
+
+        // Wait for all concurrent batches to complete
+        const batchResults = await Promise.all(batchPromises)
+        rows.push(...batchResults.flat())
+      }
+
+      const headers = [
+        'Title',
+        'Link',
+        'Purchased By',
+        'Email',
+        'Date',
+        'Sale Price',
+        'Network Fee',
+        'Pay Extra',
+        'Total',
+        'Country'
+      ]
+
+      const csvContent = [
+        headers.join(','),
+        ...rows.map((row) => row.join(','))
+      ].join('\n')
+
+      const blob = new Blob([csvContent], { type: 'text/csv' })
+      url = URL.createObjectURL(blob)
+      link = document.createElement('a')
+      link.href = url
+      link.download = `audius_sales_${formatToday()}.csv`
+      document.body.appendChild(link)
+      link.click()
+    } catch (error) {
+      console.error('Error downloading sales data:', error)
+    } finally {
+      if (link) document.body.removeChild(link)
+      if (url) URL.revokeObjectURL(url)
+    }
+  }
+
   const downloadCSV = useCallback(async () => {
     const sdk = await audiusSdk()
     const blob = await sdk.users.downloadSalesAsCSVBlob({
@@ -166,7 +315,8 @@ export const useSales = () => {
     onClickRow,
     isEmpty,
     isLoading,
-    downloadCSV
+    downloadCSV,
+    downloadSalesAsCSVFromJSON
   }
 }
 /**
@@ -180,7 +330,10 @@ export const SalesTab = ({
   onClickRow,
   isEmpty,
   isLoading
-}: Omit<ReturnType<typeof useSales>, 'downloadCSV'>) => {
+}: Omit<
+  ReturnType<typeof useSales>,
+  'downloadCSV' | 'downloadSalesAsCSVFromJSON'
+>) => {
   const isMobile = useIsMobile()
   const mainContentRef = useMainContentRef()
   const { color } = useTheme()

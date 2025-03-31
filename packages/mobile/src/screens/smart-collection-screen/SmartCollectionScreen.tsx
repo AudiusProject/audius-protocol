@@ -15,7 +15,7 @@ import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch, useSelector } from 'react-redux'
 
 import type { FastImageProps } from '@audius/harmony-native'
-import { VirtualizedScrollView } from 'app/components/core'
+import { Screen, VirtualizedScrollView } from 'app/components/core'
 import { CollectionScreenDetailsTile } from 'app/screens/collection-screen/CollectionScreenDetailsTile'
 import type { SmartCollection } from 'app/screens/explore-screen/smartCollections'
 import { makeStyles } from 'app/styles'
@@ -69,7 +69,6 @@ export const SmartCollectionScreen = (props: SmartCollectionScreenProps) => {
   useFocusEffect(handleFetchSmartCollection)
 
   const collection = useSelector((state) => getCollection(state, { variant }))
-
   const playlistName = collection?.playlist_name ?? title
   const playlistDescription = collection?.description ?? description
 
@@ -97,7 +96,7 @@ export const SmartCollectionScreen = (props: SmartCollectionScreenProps) => {
         >
           {Icon ? (
             <View style={styles.imageIcon}>
-              <Icon width='100%' height='100%' color='staticWhite' />
+              <Icon width='100%' height='100%' color='white' />
             </View>
           ) : null}
         </LinearGradient>
@@ -107,19 +106,21 @@ export const SmartCollectionScreen = (props: SmartCollectionScreenProps) => {
   )
 
   return (
-    <VirtualizedScrollView style={styles.root}>
-      <CollectionScreenDetailsTile
-        collectionId={variant}
-        description={playlistDescription}
-        hasSaved={isSaved}
-        hideFavoriteCount
-        hideOverflow
-        hideRepostCount
-        hideActions
-        onPressSave={handlePressSave}
-        renderImage={renderImage}
-        title={playlistName}
-      />
-    </VirtualizedScrollView>
+    <Screen>
+      <VirtualizedScrollView style={styles.root}>
+        <CollectionScreenDetailsTile
+          collectionId={variant}
+          description={playlistDescription}
+          hasSaved={isSaved}
+          hideFavoriteCount
+          hideOverflow
+          hideRepostCount
+          hideActions
+          onPressSave={handlePressSave}
+          renderImage={renderImage}
+          title={playlistName}
+        />
+      </VirtualizedScrollView>
+    </Screen>
   )
 }

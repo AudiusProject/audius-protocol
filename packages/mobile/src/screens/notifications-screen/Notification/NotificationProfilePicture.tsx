@@ -40,12 +40,14 @@ export const NotificationProfilePicture = (
     }
   }, [navigation, navigationType, profile])
 
+  if (!profile?.user_id) return null
+
   const profilePictureElement = (
     <ProfilePicture
       userId={profile.user_id}
       size='medium'
       style={[css({ marginRight: spacing.s }), style]}
-      strokeWidth='thin'
+      borderWidth='thin'
       {...other}
     />
   )

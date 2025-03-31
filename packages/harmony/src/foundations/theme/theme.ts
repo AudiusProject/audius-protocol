@@ -49,15 +49,8 @@ export const matrixTheme: HarmonyTheme = {
   ...commonFoundations
 }
 
-export const debugTheme: HarmonyTheme = {
-  type: 'debug',
-  color: colorTheme.debug,
-  ...commonFoundations
-}
-
 export const themes = {
   day: dayTheme,
   dark: darkTheme,
-  matrix: matrixTheme,
-  debug: debugTheme
+  matrix: matrixTheme
 }

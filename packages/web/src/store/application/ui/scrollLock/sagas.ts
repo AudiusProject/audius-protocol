@@ -7,7 +7,7 @@ const ROOT_ID = 'root'
 const SCROLL_LOCK_CLASS = 'scrollLock'
 const MOBILE_CLASS = 'isMobile'
 
-export function* incrementScrollCount() {
+function* incrementScrollCount() {
   const lockCount = yield* select(getScrollLockCount)
   const isMobile = yield* getContext('isMobile')
   if (lockCount === 1) {
@@ -21,7 +21,7 @@ export function* incrementScrollCount() {
   }
 }
 
-export function* decrementScrollCount() {
+function* decrementScrollCount() {
   const lockCount = yield* select(getScrollLockCount)
   const isMobile = yield* getContext('isMobile')
   if (lockCount === 0) {

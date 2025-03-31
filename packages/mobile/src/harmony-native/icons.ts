@@ -57,9 +57,10 @@ export { default as IconLock } from '@audius/harmony/src/assets/icons/Lock.svg'
 export { default as IconSpeaker } from '@audius/harmony/src/assets/icons/Speaker.svg'
 export { default as IconCaretUp } from '@audius/harmony/src/assets/icons/CaretUp.svg'
 export { default as IconLockUnlocked } from '@audius/harmony/src/assets/icons/LockUnlocked.svg'
-export { default as IconSpecialAccess } from '@audius/harmony/src/assets/icons/SpecialAccess.svg'
+export { default as IconSparkles } from '@audius/harmony/src/assets/icons/Sparkles.svg'
 export { default as IconCart } from '@audius/harmony/src/assets/icons/Cart.svg'
 export { default as IconMessage } from '@audius/harmony/src/assets/icons/Message.svg'
+export { default as IconMessages } from '@audius/harmony/src/assets/icons/Messages.svg'
 export { default as IconMerch } from '@audius/harmony/src/assets/icons/Merch.svg'
 export { default as IconStar } from '@audius/harmony/src/assets/icons/Star.svg'
 export { default as IconCastAirplay } from '@audius/harmony/src/assets/icons/CastAirplay.svg'
@@ -98,6 +99,7 @@ export { default as IconCloudUpload } from '@audius/harmony/src/assets/icons/Clo
 export { default as IconPencil } from '@audius/harmony/src/assets/icons/Pencil.svg'
 export { default as IconUser } from '@audius/harmony/src/assets/icons/User.svg'
 export { default as IconUserArrowRotate } from '@audius/harmony/src/assets/icons/UserArrowRotate.svg'
+export { default as IconArrowRotate } from '@audius/harmony/src/assets/icons/ArrowRotate.svg'
 export { default as IconCollectible } from '@audius/harmony/src/assets/icons/Collectible.svg'
 export { default as IconPlay } from '@audius/harmony/src/assets/icons/Play.svg'
 export { default as IconUserFollow } from '@audius/harmony/src/assets/icons/UserFollow.svg'
@@ -156,6 +158,7 @@ export { default as IconWaveform } from '@audius/harmony/src/assets/icons/Wavefo
 export { default as IconMoneyBracket } from '@audius/harmony/src/assets/icons/MoneyBracket.svg'
 export { default as IconPin } from '@audius/harmony/src/assets/icons/Pin.svg'
 export { default as IconPaperAirplane } from '@audius/harmony/src/assets/icons/PaperAirplane.svg'
+export { default as IconArrowUpToLine } from '@audius/harmony/src/assets/icons/ArrowUpToLine.svg'
 
 // Two Tone / Special Styling
 
@@ -168,11 +171,10 @@ export { default as IconPlaybackPlay } from '@audius/harmony/src/assets/icons/Pl
 export { default as IconVerified } from '@audius/harmony/src/assets/icons/Verified.svg'
 
 // VIP Tier Badges
-export { default as IconTokenBronze } from '@audius/harmony/src/assets/icons/TokenBronze.svg'
-export { default as IconTokenGold } from '@audius/harmony/src/assets/icons/TokenGold.svg'
-export { default as IconTokenPlatinum } from '@audius/harmony/src/assets/icons/TokenPlatinum.svg'
-export { default as IconTokenSilver } from '@audius/harmony/src/assets/icons/TokenSilver.svg'
-// The TokenNoTier svg doesnt work on mobile, so we use a png component instead
+export { IconTokenBronze } from './components/IconTokenBronze'
+export { IconTokenPlatinum } from './components/IconTokenPlatinum'
+export { IconTokenSilver } from './components/IconTokenSilver'
+export { IconTokenGold } from './components/IconTokenGold'
 export { IconTokenNoTier } from './components/IconTokenNoTier'
 
 // File Types
@@ -229,6 +231,7 @@ export { default as IconCcZero } from '@audius/harmony/src/assets/icons/ccZero.s
 export { default as IconAudiusLogo } from '@audius/harmony/src/assets/icons/AudiusLogo.svg'
 export { default as IconAudiusLogoColor } from '@audius/harmony/src/assets/icons/AudiusLogoColor.svg'
 export { default as IconAudiusLogoHorizontal } from '@audius/harmony/src/assets/icons/AudiusLogoHorizontal.svg'
+export { default as IconAudiusLogoHorizontalNew } from '@audius/harmony/src/assets/icons/AudiusLogoHorizontalNew.svg'
 export { default as IconAudiusLogoHorizontalColor } from '@audius/harmony/src/assets/icons/AudiusLogoHorizontalColor.svg'
 export { default as IconAudiusLogoVertical } from '@audius/harmony/src/assets/icons/AudiusLogoVertical.svg'
 export { default as IconLogoCoinbase } from '@audius/harmony/src/assets/icons/Coinbase.svg'
@@ -255,3 +258,15 @@ export { default as IconPhantomPlain } from '@audius/harmony/src/assets/icons/Lo
 
 export { default as Soundwave } from '@audius/harmony/src/assets/animations/Soundwave.json'
 export { default as SoundwaveCircle } from '@audius/harmony/src/assets/animations/SoundwaveCircle.json'
+
+// Playback Rate Icons
+export { default as IconPlaybackRate0_5x } from '@audius/harmony/src/assets/icons/iconPlaybackRate0_5x.svg'
+export { default as IconPlaybackRate0_8x } from '@audius/harmony/src/assets/icons/iconPlaybackRate0_8x.svg'
+export { default as IconPlaybackRate0_9x } from '@audius/harmony/src/assets/icons/iconPlaybackRate0_9x.svg'
+export { default as IconPlaybackRate1x } from '@audius/harmony/src/assets/icons/iconPlaybackRate1x.svg'
+export { default as IconPlaybackRate1_1x } from '@audius/harmony/src/assets/icons/iconPlaybackRate1_1x.svg'
+export { default as IconPlaybackRate1_2x } from '@audius/harmony/src/assets/icons/iconPlaybackRate1_2x.svg'
+export { default as IconPlaybackRate1_5x } from '@audius/harmony/src/assets/icons/iconPlaybackRate1_5x.svg'
+export { default as IconPlaybackRate2x } from '@audius/harmony/src/assets/icons/iconPlaybackRate2x.svg'
+export { default as IconPlaybackRate2_5x } from '@audius/harmony/src/assets/icons/iconPlaybackRate2_5x.svg'
+export { default as IconPlaybackRate3x } from '@audius/harmony/src/assets/icons/iconPlaybackRate3x.svg'

@@ -19,7 +19,6 @@ import {
   SEARCH_HISTORY_KEY,
   THEME_STORAGE_KEY
 } from 'app/constants/storage-keys'
-import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import { localStorage } from 'app/services/local-storage'
 
 import { resetOAuthState } from '../oauth/actions'
@@ -53,7 +52,6 @@ function* signOut() {
   yield* call([localStorage, 'clearAudiusUserWalletOverride'])
   yield* call([localStorage, 'clearAudiusAccount'])
   yield* call([localStorage, 'clearAudiusAccountUser'])
-  yield* call([audiusBackendInstance, 'signOut'])
   yield* call([authService, authService.signOut])
   for (const storageKey of storageKeysToRemove) {
     yield* call([localStorage, 'removeItem'], storageKey)

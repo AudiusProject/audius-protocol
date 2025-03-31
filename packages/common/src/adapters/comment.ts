@@ -1,25 +1,27 @@
 import {
   Comment as CommentSDK,
+  OptionalHashId,
   ReplyComment as ReplyCommentSDK
 } from '@audius/sdk'
 
 import { Comment, ReplyComment } from '~/models/Comment'
-import { decodeHashId } from '~/utils/hashIds'
 
 import { transformAndCleanList } from './utils'
 
 export const commentFromSDK = (input: CommentSDK): Comment | undefined => {
-  const { id, userId, replies, ...rest } = input
-  const decodedId = decodeHashId(id)
-  const decodedUserId = decodeHashId(userId)
+  const { id, userId, entityId, replies, ...rest } = input
+  const decodedId = OptionalHashId.parse(id)
+  const decodedEntityId = OptionalHashId.parse(entityId)
+  const decodedUserId = OptionalHashId.parse(userId)
 
-  if (!decodedId) {
+  if (!decodedId || !decodedEntityId) {
     return undefined
   }
 
   return {
     ...rest,
     id: decodedId,
+    entityId: decodedEntityId,
     userId:
       userId === undefined || decodedUserId === null
         ? undefined
@@ -31,17 +33,19 @@ export const commentFromSDK = (input: CommentSDK): Comment | undefined => {
 export const replyCommentFromSDK = (
   input: ReplyCommentSDK
 ): ReplyComment | undefined => {
-  const { id, userId, ...rest } = input
-  const decodedId = decodeHashId(id)
-  const decodedUserId = decodeHashId(userId)
+  const { id, userId, entityId, ...rest } = input
+  const decodedId = OptionalHashId.parse(id)
+  const decodedUserId = OptionalHashId.parse(userId)
+  const decodedEntityId = OptionalHashId.parse(entityId)
 
-  if (!decodedId || !decodedUserId) {
+  if (!decodedId || !decodedUserId || !decodedEntityId) {
     return undefined
   }
 
   return {
     ...rest,
     id: decodedId,
-    userId: decodedUserId
+    userId: decodedUserId,
+    entityId: decodedEntityId
   }
 }

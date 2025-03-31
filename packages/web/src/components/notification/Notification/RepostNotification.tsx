@@ -5,7 +5,6 @@ import {
   Entity,
   RepostNotification as RepostNotificationType
 } from '@audius/common/store'
-import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { useIsMobile } from 'hooks/useIsMobile'
@@ -14,6 +13,7 @@ import {
   setVisibility as openUserListModal
 } from 'store/application/ui/userListModal/slice'
 import { UserListType } from 'store/application/ui/userListModal/types'
+import { push } from 'utils/navigation'
 import { useSelector } from 'utils/reducer'
 
 import { EntityLink, useGoToEntity } from './components/EntityLink'
@@ -67,7 +67,8 @@ export const RepostNotification = (props: RepostNotificationProps) => {
           setUserListUsers({
             userListType: UserListType.NOTIFICATION,
             entityType: entityToUserListEntity[entityType],
-            id: id as unknown as number
+            id: id as unknown as number,
+            entity: notification
           })
         )
         if (isMobile) {
@@ -79,7 +80,15 @@ export const RepostNotification = (props: RepostNotificationProps) => {
         handleGoToEntity(event)
       }
     },
-    [isMultiUser, dispatch, entityType, id, handleGoToEntity, isMobile]
+    [
+      isMultiUser,
+      notification,
+      dispatch,
+      entityType,
+      id,
+      isMobile,
+      handleGoToEntity
+    ]
   )
 
   if (!users || !firstUser || !entity) return null

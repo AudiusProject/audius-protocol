@@ -465,9 +465,8 @@ export class Track extends Base {
     if (!trackId) trackId = await this.generateTrackId()
     // Prevent extra fields from being added to metadata
     const parsedTrackMetadata = Track._parseTrackMetadata(trackMetadata)
-    const metadataCid = await Utils.fileHasher.generateMetadataCidV1(
-      parsedTrackMetadata
-    )
+    const metadataCid =
+      await Utils.fileHasher.generateMetadataCidV1(parsedTrackMetadata)
     const { txReceipt } =
       await this.contracts.EntityManagerClient!.manageEntity(
         userId,

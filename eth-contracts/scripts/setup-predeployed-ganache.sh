@@ -19,6 +19,7 @@ fi
 mkdir -p $dbPath
 npx ganache \
     --server.host "0.0.0.0" \
+    --server.port 8545 \
     --wallet.deterministic \
     --wallet.totalAccounts 50 \
     --database.dbPath "$dbPath" \

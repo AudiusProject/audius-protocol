@@ -1,9 +1,9 @@
 import { useCallback, useContext } from 'react'
 
+import { useCollection } from '@audius/common/api'
 import {
   accountSelectors,
   cacheCollectionsActions,
-  cacheCollectionsSelectors,
   duplicateAddConfirmationModalUISelectors
 } from '@audius/common/store'
 import { fillString, route } from '@audius/common/utils'
@@ -16,7 +16,7 @@ import {
   ModalTitle,
   ModalFooter
 } from '@audius/harmony'
-import { capitalize } from 'lodash'
+import { capitalize, pick } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -25,9 +25,8 @@ import { ToastContext } from 'components/toast/ToastContext'
 import ToastLinkContent from 'components/toast/mobile/ToastLinkContent'
 
 const { addTrackToPlaylist } = cacheCollectionsActions
-const { getCollection } = cacheCollectionsSelectors
 const { getPlaylistId, getTrackId } = duplicateAddConfirmationModalUISelectors
-const { getAccountUser } = accountSelectors
+const { getUserHandle } = accountSelectors
 const { collectionPage } = route
 
 const messages = {
@@ -46,12 +45,14 @@ export const DuplicateAddConfirmationModal = () => {
   const { toast } = useContext(ToastContext)
   const playlistId = useSelector(getPlaylistId)
   const trackId = useSelector(getTrackId)
-  const playlist = useSelector((state) =>
-    getCollection(state, { id: playlistId })
-  )
-  const account = useSelector(getAccountUser)
+  const { data: partialPlaylist } = useCollection(playlistId, {
+    select: (collection) =>
+      pick(collection, 'is_album', 'playlist_name', 'permalink')
+  })
+  const { is_album, playlist_name, permalink } = partialPlaylist ?? {}
+  const accountHandle = useSelector(getUserHandle)
   const [isOpen, setIsOpen] = useModalState('DuplicateAddConfirmation')
-  const collectionType = playlist?.is_album ? 'album' : 'playlist'
+  const collectionType = is_album ? 'album' : 'playlist'
 
   const onClose = useCallback(() => {
     setIsOpen(false)
@@ -60,17 +61,17 @@ export const DuplicateAddConfirmationModal = () => {
   const handleAdd = useCallback(() => {
     if (trackId && playlistId) {
       dispatch(addTrackToPlaylist(trackId, playlistId))
-      if (account) {
+      if (accountHandle) {
         toast(
           <ToastLinkContent
             text={messages.addedToast(collectionType)}
             linkText={messages.view}
             link={collectionPage(
-              account.handle,
-              playlist?.playlist_name,
+              accountHandle,
+              playlist_name,
               playlistId,
-              playlist?.permalink,
-              playlist?.is_album
+              permalink,
+              is_album
             )}
           />
         )
@@ -84,12 +85,12 @@ export const DuplicateAddConfirmationModal = () => {
     playlistId,
     onClose,
     dispatch,
-    account,
+    accountHandle,
     toast,
     collectionType,
-    playlist?.playlist_name,
-    playlist?.permalink,
-    playlist?.is_album
+    playlist_name,
+    permalink,
+    is_album
   ])
 
   return (
@@ -101,7 +102,7 @@ export const DuplicateAddConfirmationModal = () => {
         <ModalContentText>
           {fillString(
             messages.description(collectionType),
-            playlist ? ` "${playlist.playlist_name}"` : ''
+            playlist_name ? ` "${playlist_name}"` : ''
           )}
         </ModalContentText>
       </ModalContent>

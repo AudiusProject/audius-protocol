@@ -1,10 +1,9 @@
-import type { full } from '@audius/sdk'
+import { Id, type full } from '@audius/sdk'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { transformAndCleanList } from '~/adapters/utils'
 import { AudiusQueryContextType, createApi } from '~/audius-query'
 import { Kind } from '~/models/Kind'
-import { encodeHashId } from '~/utils/hashIds'
 
 type GetLibraryItemsArgs = {
   userId: number
@@ -42,8 +41,8 @@ const fetchLibraryCollections = async ({
   const sdk = await audiusSdk()
 
   const requestParams = {
-    id: encodeHashId(userId),
-    userId: encodeHashId(userId),
+    id: Id.parse(userId),
+    userId: Id.parse(userId),
     offset,
     limit,
     query,

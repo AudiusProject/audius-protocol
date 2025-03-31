@@ -35,6 +35,22 @@ def populate_entries(db):
                 "release_date": datetime(2019, 6, 15),
                 "created_at": datetime(2019, 6, 15),
             },
+            {
+                "track_id": 4,
+                "title": "track 4",
+                "owner_id": 1,
+                "is_unlisted": True,
+                "release_date": datetime(2019, 6, 15),
+                "created_at": datetime(2019, 6, 15),
+            },
+            {
+                "track_id": 5,
+                "title": "track 5",
+                "owner_id": 2,
+                "is_unlisted": True,
+                "release_date": datetime(2019, 6, 15),
+                "created_at": datetime(2019, 6, 15),
+            },
         ],
         "playlists": [
             # playlists -----
@@ -44,6 +60,44 @@ def populate_entries(db):
                 "is_album": False,
                 "created_at": datetime(2019, 6, 17),
                 "playlist_contents": {"track_ids": [{"track": 1}]},
+            },
+            # user 1 hidden playlist
+            {
+                "playlist_id": 5,
+                "playlist_owner_id": 1,
+                "is_album": False,
+                "is_private": True,
+                "created_at": datetime(2019, 6, 18),
+                "playlist_name": "asdf",
+                "playlist_contents": {"track_ids": [{"track": 1}, {"track": 2}]},
+            },
+            # user 1 playlist of all hidden tracks
+            {
+                "playlist_id": 6,
+                "playlist_owner_id": 1,
+                "is_album": False,
+                "created_at": datetime(2019, 6, 19),
+                "playlist_name": "asdf",
+                "playlist_contents": {"track_ids": [{"track": 4}]},
+            },
+            # user 2 hidden playlist
+            {
+                "playlist_id": 7,
+                "playlist_owner_id": 2,
+                "is_album": False,
+                "is_private": True,
+                "created_at": datetime(2019, 6, 17),
+                "playlist_name": "asdf",
+                "playlist_contents": {"track_ids": [{"track": 1}, {"track": 2}]},
+            },
+            # user 2 playlist of all hidden tracks
+            {
+                "playlist_id": 8,
+                "playlist_owner_id": 2,
+                "is_album": False,
+                "created_at": datetime(2019, 6, 18),
+                "playlist_name": "asdf",
+                "playlist_contents": {"track_ids": [{"track": 5}]},
             },
             # reposted
             {
@@ -94,7 +148,21 @@ def populate_entries(db):
                 "save_type": "album",
                 "user_id": 1,
                 "created_at": datetime(2019, 6, 16),
-            }
+            },
+            # saved hidden playlist
+            {
+                "save_item_id": 7,
+                "save_type": "playlist",
+                "user_id": 1,
+                "created_at": datetime(2019, 6, 17),
+            },
+            # saved playlist of all hidden tracks
+            {
+                "save_item_id": 8,
+                "save_type": "playlist",
+                "user_id": 1,
+                "created_at": datetime(2019, 6, 18),
+            },
         ],
     }
     populate_mock_db(db, test_entities)
@@ -134,9 +202,18 @@ def test_distinguishes_albums_vs_favorites(session):
 
     args["collection_type"] = CollectionType.playlist
     res = _get_collection_library(args, session)
-    assert len(res) == 2
-    assert_correct_collection(res, 0, 1, "should only playlists")
-    assert_correct_collection(res, 1, 3, "should only playlists")
+    assert len(res) == 4
+    assert_correct_collection(
+        res,
+        0,
+        6,
+        "should return playlists of all hidden tracks belonging to current user",
+    )
+    assert_correct_collection(
+        res, 1, 5, "should return hidden playlists belonging to user"
+    )
+    assert_correct_collection(res, 2, 1, "should get only playlists")
+    assert_correct_collection(res, 3, 3, "should get only playlists")
 
 
 @with_collection_library_setup
@@ -196,7 +273,7 @@ def test_sort_orders(session):
     args["sort_method"] = SortMethod.reposts
     args["collection_type"] = CollectionType.playlist
     res = _get_collection_library(args, session)
-    assert len(res) == 2
+    assert len(res) == 4
     assert_correct_collection(res, 0, 3, "sort by desc repost")
     assert_correct_collection(res, 1, 1, "sort by desc repost")
 

@@ -1,54 +1,37 @@
-import { MouseEvent, useCallback, useRef, useState } from 'react'
+import { Fragment, useCallback, useRef, useState } from 'react'
 
-import {
-  Name,
-  FavoriteSource,
-  Status,
-  CreateAccountOpen
-} from '@audius/common/models'
+import { FavoriteSource, Status } from '@audius/common/models'
 import {
   accountSelectors,
   collectionsSocialActions,
   tracksSocialActions
 } from '@audius/common/store'
-import { route } from '@audius/common/utils'
-import { Box, Flex, Scrollbar } from '@audius/harmony'
+import { Box, Divider, Flex, Scrollbar } from '@audius/harmony'
 import { ResizeObserver } from '@juggle/resize-observer'
 import { connect } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 import useMeasure from 'react-use-measure'
 import { Dispatch } from 'redux'
 
-import { make, useRecord } from 'common/store/analytics/actions'
-import * as signOnActions from 'common/store/pages/signon/actions'
 import { DragAutoscroller } from 'components/drag-autoscroller/DragAutoscroller'
-import ConnectedProfileCompletionPane from 'components/profile-progress/ConnectedProfileCompletionPane'
+import { ProfileCompletionPanel } from 'components/profile-progress/ProfileCompletionPanel'
 import { selectDraggingKind } from 'store/dragndrop/slice'
 import { AppState } from 'store/types'
 
 import { AccountDetails } from './AccountDetails'
-import { ConnectInstagram } from './ConnectInstagram'
-import { GroupHeader } from './GroupHeader'
 import { LeftNavCTA } from './LeftNavCTA'
-import { LeftNavDroppable } from './LeftNavDroppable'
 import { LeftNavLink } from './LeftNavLink'
 import { NavHeader } from './NavHeader'
 import { NowPlayingArtworkTile } from './NowPlayingArtworkTile'
-import { PlaylistLibrary } from './PlaylistLibrary'
+import { RestrictedExpandableNavItem } from './RestrictedExpandableNavItem'
 import { RouteNav } from './RouteNav'
+import { NavItemConfig, useNavConfig } from './useNavConfig'
 
-const { EXPLORE_PAGE, FEED_PAGE, HISTORY_PAGE, LIBRARY_PAGE, TRENDING_PAGE } =
-  route
 const { saveTrack } = tracksSocialActions
 const { saveCollection } = collectionsSocialActions
-const { getAccountStatus, getAccountUser } = accountSelectors
+const { getAccountStatus, getUserId, getUserHandle } = accountSelectors
 
 export const LEFT_NAV_WIDTH = 240
-
-const messages = {
-  discover: 'Discover',
-  library: 'Your Music'
-}
 
 type OwnProps = {
   isElectron: boolean
@@ -60,17 +43,7 @@ type NavColumnProps = OwnProps &
   RouteComponentProps
 
 const LeftNav = (props: NavColumnProps) => {
-  const {
-    account,
-    showActionRequiresAccount,
-    isElectron,
-    draggingKind,
-    saveTrack,
-    saveCollection,
-    accountStatus,
-    goToSignUp: routeToSignup
-  } = props
-  const record = useRecord()
+  const { isElectron, accountStatus } = props
   const [navBodyContainerMeasureRef, navBodyContainerBoundaries] = useMeasure({
     polyfill: ResizeObserver
   })
@@ -78,30 +51,14 @@ const LeftNav = (props: NavColumnProps) => {
   const [dragScrollingDirection, setDragScrollingDirection] = useState<
     'up' | 'down' | undefined
   >(undefined)
+
+  const navConfig = useNavConfig()
+
   const handleChangeDragScrollingDirection = useCallback(
     (newDirection: 'up' | 'down' | undefined) => {
       setDragScrollingDirection(newDirection)
     },
     []
-  )
-
-  const goToSignUp = useCallback(
-    (source: CreateAccountOpen['source']) => {
-      routeToSignup()
-      record(make(Name.CREATE_ACCOUNT_OPEN, { source }))
-    },
-    [record, routeToSignup]
-  )
-
-  const onClickNavLinkWithAccount = useCallback(
-    (e?: MouseEvent) => {
-      if (!account) {
-        e?.preventDefault()
-        goToSignUp('restricted page')
-        showActionRequiresAccount()
-      }
-    },
-    [account, goToSignUp, showActionRequiresAccount]
   )
 
   const updateScrollTopPosition = useCallback((difference: number) => {
@@ -111,10 +68,44 @@ const LeftNav = (props: NavColumnProps) => {
     }
   }, [])
 
-  const profileCompletionMeter = (
-    <Flex justifyContent='center'>
-      <ConnectedProfileCompletionPane />
-    </Flex>
+  const renderNavItem = useCallback(
+    (item: NavItemConfig) => {
+      if (item.isExpandable) {
+        const NestedComponent = item.nestedComponent
+        return (
+          <RestrictedExpandableNavItem
+            key={item.label}
+            label={item.label}
+            leftIcon={item.leftIcon}
+            rightIcon={item.rightIcon}
+            shouldPersistRightIcon={item.shouldPersistRightIcon}
+            nestedItems={
+              NestedComponent ? (
+                <NestedComponent scrollbarRef={scrollbarRef} />
+              ) : null
+            }
+            canUnfurl={item.canUnfurl}
+            restriction={item.restriction}
+            disabled={item.disabled}
+          />
+        )
+      }
+
+      return (
+        <LeftNavLink
+          key={item.label}
+          leftIcon={item.leftIcon}
+          rightIcon={item.rightIcon}
+          to={item.to}
+          disabled={item.disabled}
+          restriction={item.restriction}
+          hasNotification={item.hasNotification}
+        >
+          {item.label}
+        </LeftNavLink>
+      )
+    },
+    [scrollbarRef]
   )
 
   const navLoaded =
@@ -147,10 +138,10 @@ const LeftNav = (props: NavColumnProps) => {
             dragScrollingDirection === 'up'
               ? 'inset 0px 8px 5px -5px var(--tile-shadow-3)'
               : dragScrollingDirection === 'down'
-              ? 'inset 0px -8px 5px -5px var(--tile-shadow-3)'
-              : undefined,
-          opacity: navLoaded ? 1 : 0,
+                ? 'inset 0px -8px 5px -5px var(--tile-shadow-3)'
+                : undefined,
           overflow: 'hidden',
+          opacity: navLoaded ? 1 : 0,
           transition: 'opacity 0.3s ease-in-out, box-shadow 0.2s ease'
         }}
       >
@@ -165,79 +156,43 @@ const LeftNav = (props: NavColumnProps) => {
             onChangeDragScrollingDirection={handleChangeDragScrollingDirection}
           >
             <AccountDetails />
-
             <Flex
               direction='column'
-              gap='unit5'
               flex='1 1 auto'
               css={{ overflow: 'hidden' }}
             >
-              {account?.handle === 'fbtest' ? (
-                <Box>
-                  <LeftNavLink to={'/fb/share'}>
-                    Share Profile to Facebook
-                  </LeftNavLink>
-                  <LeftNavLink>
-                    <ConnectInstagram />
-                  </LeftNavLink>
-                </Box>
-              ) : null}
-              <Box>
-                <GroupHeader>{messages.discover}</GroupHeader>
-                <LeftNavLink
-                  to={FEED_PAGE}
-                  disabled={!account}
-                  onClick={onClickNavLinkWithAccount}
-                >
-                  Feed
-                </LeftNavLink>
-                <LeftNavLink to={TRENDING_PAGE}>Trending</LeftNavLink>
-                <LeftNavLink to={EXPLORE_PAGE} exact>
-                  Explore
-                </LeftNavLink>
-              </Box>
-              <Box>
-                <GroupHeader>{messages.library}</GroupHeader>
-                <LeftNavDroppable
-                  disabled={!account}
-                  acceptedKinds={['track', 'album']}
-                  acceptOwner={false}
-                  onDrop={draggingKind === 'album' ? saveCollection : saveTrack}
-                >
-                  <LeftNavLink
-                    to={LIBRARY_PAGE}
-                    onClick={onClickNavLinkWithAccount}
-                  >
-                    Library
-                  </LeftNavLink>
-                </LeftNavDroppable>
-                <LeftNavLink
-                  to={HISTORY_PAGE}
-                  onClick={onClickNavLinkWithAccount}
-                  disabled={!account}
-                >
-                  History
-                </LeftNavLink>
-              </Box>
-              <Box>
-                <PlaylistLibrary scrollbarRef={scrollbarRef} />
-              </Box>
+              {navConfig.map((item, index) => {
+                const isLastMainItem = index === navConfig.length - 2
+                return (
+                  <Fragment key={item.label}>
+                    {renderNavItem(item)}
+                    {isLastMainItem ? (
+                      <Box mv='s'>
+                        <Divider />
+                      </Box>
+                    ) : null}
+                  </Fragment>
+                )
+              })}
             </Flex>
           </DragAutoscroller>
         </Scrollbar>
       </Flex>
-      <Flex direction='column' alignItems='center' pt='l' borderTop='default'>
-        {profileCompletionMeter}
-        <LeftNavCTA />
-        <NowPlayingArtworkTile />
-      </Flex>
+      {navLoaded ? (
+        <Flex direction='column' alignItems='center'>
+          <ProfileCompletionPanel />
+          <LeftNavCTA />
+          <NowPlayingArtworkTile />
+        </Flex>
+      ) : null}
     </Flex>
   )
 }
 
 const mapStateToProps = (state: AppState) => {
   return {
-    account: getAccountUser(state),
+    accountUserId: getUserId(state),
+    accountHandle: getUserHandle(state),
     accountStatus: getAccountStatus(state),
     draggingKind: selectDraggingKind(state)
   }
@@ -247,10 +202,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
   saveTrack: (trackId: number) =>
     dispatch(saveTrack(trackId, FavoriteSource.NAVIGATOR)),
   saveCollection: (collectionId: number) =>
-    dispatch(saveCollection(collectionId, FavoriteSource.NAVIGATOR)),
-  showActionRequiresAccount: () =>
-    dispatch(signOnActions.showRequiresAccountModal()),
-  goToSignUp: () => dispatch(signOnActions.openSignOn(/** signIn */ false))
+    dispatch(saveCollection(collectionId, FavoriteSource.NAVIGATOR))
 })
 
 const ConnectedLeftNav = withRouter(

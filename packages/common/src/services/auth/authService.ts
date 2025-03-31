@@ -1,10 +1,16 @@
+import { EthWallet } from '@audius/hedgehog'
+import type { ChangeCredentialsArgs } from '@audius/hedgehog/dist/types'
+
 import type { LocalStorage } from '../local-storage'
 
-import { HedgehogConfig, createHedgehog } from './hedgehog'
-import type { IdentityService } from './identity'
+import {
+  ConfirmCredentialsArgs,
+  HedgehogConfig,
+  createHedgehog
+} from './hedgehog'
 
 export type AuthServiceConfig = {
-  identityService: IdentityService
+  identityServiceEndpoint: string
   localStorage: LocalStorage
   createKey?: HedgehogConfig['createKey']
 }
@@ -29,18 +35,28 @@ export type AuthService = {
     otp?: string
   ) => Promise<SignInResponse>
   signOut: () => Promise<void>
-  getWalletAddresses: () => Promise<GetWalletAddressesResult>
+  resetPassword: ({
+    username,
+    password
+  }: {
+    username: string
+    password: string
+  }) => Promise<void>
+  getWallet: () => EthWallet | null
+  generateRecoveryInfo: () => Promise<{ login: string; host: string }>
+  confirmCredentials: (args: ConfirmCredentialsArgs) => Promise<boolean>
+  changeCredentials: (args: ChangeCredentialsArgs) => Promise<void>
 }
 
 export const createAuthService = ({
   localStorage,
-  identityService,
+  identityServiceEndpoint,
   createKey
 }: AuthServiceConfig): AuthService => {
   const hedgehogInstance = createHedgehog({
     localStorage,
     useLocalStorage: true,
-    identityService,
+    identityServiceEndpoint,
     createKey
   })
 
@@ -66,15 +82,41 @@ export const createAuthService = ({
     return hedgehogInstance.logout()
   }
 
-  const getWalletAddresses = async () => {
-    const walletOverride = await localStorage.getAudiusUserWalletOverride()
-    await hedgehogInstance.waitUntilReady()
-    const hedgehogAddress = hedgehogInstance.wallet?.getAddressString()
-    return {
-      accountWalletAddress: walletOverride || hedgehogAddress || '',
-      web3WalletAddress: hedgehogAddress || ''
-    }
+  const resetPassword = async ({
+    username,
+    password
+  }: {
+    username: string
+    password: string
+  }) => {
+    return hedgehogInstance.resetPassword({ username, password })
   }
 
-  return { hedgehogInstance, signIn, signOut, getWalletAddresses }
+  const generateRecoveryInfo = async () => {
+    await hedgehogInstance.waitUntilReady()
+    return hedgehogInstance.generateRecoveryInfo()
+  }
+
+  const confirmCredentials = async (args: ConfirmCredentialsArgs) => {
+    return await hedgehogInstance.confirmCredentials(args)
+  }
+
+  const changeCredentials = async (args: ChangeCredentialsArgs) => {
+    return await hedgehogInstance.changeCredentials(args)
+  }
+
+  const getWallet = () => {
+    return hedgehogInstance.wallet
+  }
+
+  return {
+    hedgehogInstance,
+    signIn,
+    signOut,
+    generateRecoveryInfo,
+    getWallet,
+    confirmCredentials,
+    changeCredentials,
+    resetPassword
+  }
 }

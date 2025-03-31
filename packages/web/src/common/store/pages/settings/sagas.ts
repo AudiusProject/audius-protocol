@@ -3,7 +3,8 @@ import {
   accountSelectors,
   cacheActions,
   settingsPageActions as actions,
-  getContext
+  getContext,
+  getSDK
 } from '@audius/common/store'
 import { getErrorMessage } from '@audius/common/utils'
 import { call, put, takeEvery, select } from 'typed-redux-saga'
@@ -19,11 +20,13 @@ function* watchGetSettings() {
   yield* takeEvery(actions.GET_NOTIFICATION_SETTINGS, function* () {
     try {
       yield* call(waitForWrite)
+      const sdk = yield* getSDK()
       const userId = yield* select(getUserId)
       if (!userId) return
 
       const emailSettings = yield* call(
-        audiusBackendInstance.getEmailNotificationSettings
+        audiusBackendInstance.getEmailNotificationSettings,
+        { sdk }
       )
       yield* put(
         actions.updateEmailFrequency(
@@ -47,7 +50,9 @@ function* watchUpdateEmailFrequency() {
       const userId = yield* select(getUserId)
 
       if (userId && updateServer) {
+        const sdk = yield* getSDK()
         yield* call(audiusBackendInstance.updateEmailNotificationSettings, {
+          sdk,
           userId,
           emailFrequency
         })
@@ -58,6 +63,7 @@ function* watchUpdateEmailFrequency() {
 
 function* watchSetAiAttribution() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* takeEvery(
     actions.SET_AI_ATTRIBUTION,
     function* (action: actions.SetAiAttribution) {
@@ -68,11 +74,10 @@ function* watchSetAiAttribution() {
 
       accountUser.allow_ai_attribution = allowAiAttribution
 
-      yield* call(
-        audiusBackendInstance.updateCreator,
-        accountUser,
-        accountUser.user_id
-      )
+      yield* call(audiusBackendInstance.updateCreator, {
+        metadata: accountUser,
+        sdk
+      })
 
       yield* put(
         cacheActions.update(Kind.USERS, [

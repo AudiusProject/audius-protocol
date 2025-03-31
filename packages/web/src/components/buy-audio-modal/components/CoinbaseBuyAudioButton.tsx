@@ -1,5 +1,6 @@
-import { useCallback, useContext } from 'react'
+import { useCallback } from 'react'
 
+import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { Status } from '@audius/common/models'
 import {
   buyAudioActions,
@@ -7,14 +8,12 @@ import {
   OnRampProvider
 } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
-import { useAsync } from 'react-use'
 
-import { CoinbasePayContext } from 'components/coinbase-pay-button'
 import { OnRampButton } from 'components/on-ramp-button'
 import Tooltip from 'components/tooltip/Tooltip'
-import { getRootSolanaAccount } from 'services/solana/solana'
 
 import styles from './CoinbaseBuyAudioButton.module.css'
+import { useCoinbasePay } from './useCoinbasePay'
 
 const {
   onrampOpened,
@@ -30,8 +29,8 @@ const messages = {
 
 export const CoinbaseBuyAudioButton = () => {
   const dispatch = useDispatch()
-  const coinbasePay = useContext(CoinbasePayContext)
-  const rootAccount = useAsync(getRootSolanaAccount)
+  const { solanaWalletService } = useAudiusQueryContext()
+  const coinbasePay = useCoinbasePay()
   const purchaseInfoStatus = useSelector(getAudioPurchaseInfoStatus)
   const purchaseInfo = useSelector(getAudioPurchaseInfo)
   const amount =
@@ -45,17 +44,24 @@ export const CoinbaseBuyAudioButton = () => {
   const handleExit = useCallback(() => {
     dispatch(onrampCanceled())
   }, [dispatch])
+
   const handleSuccess = useCallback(() => {
     dispatch(onrampSucceeded())
   }, [dispatch])
 
-  const handleClick = useCallback(() => {
+  const handleClick = useCallback(async () => {
     if (
       purchaseInfoStatus === Status.SUCCESS &&
       purchaseInfo?.isError === false
     ) {
+      const rootAccount = await solanaWalletService.getKeypair()
+      if (!rootAccount) {
+        console.error('CoinbaseBuyAudioButton: Missing solana root account')
+        return
+      }
+
       coinbasePay.resetParams({
-        destinationWalletAddress: rootAccount.value?.publicKey.toString(),
+        destinationWalletAddress: rootAccount.publicKey.toString(),
         presetCryptoAmount: amount,
         onSuccess: handleSuccess,
         onExit: handleExit
@@ -72,7 +78,7 @@ export const CoinbaseBuyAudioButton = () => {
     dispatch,
     purchaseInfoStatus,
     purchaseInfo,
-    rootAccount,
+    solanaWalletService,
     amount,
     handleSuccess,
     handleExit
@@ -86,13 +92,11 @@ export const CoinbaseBuyAudioButton = () => {
       color='secondary'
       shouldWrapContent={false}
     >
-      <div>
-        <OnRampButton
-          provider={OnRampProvider.COINBASE}
-          disabled={isDisabled}
-          onClick={handleClick}
-        />
-      </div>
+      <OnRampButton
+        provider={OnRampProvider.COINBASE}
+        disabled={isDisabled}
+        onClick={handleClick}
+      />
     </Tooltip>
   )
 }

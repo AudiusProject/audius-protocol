@@ -3,24 +3,6 @@
   justify-content: flex-start;
 }
 
-.header {
-  height: 160px;
-}
-
-.headerWrapper {
-  display: flex;
-  flex-direction: column;
-}
-
-.headerWrapper h2 {
-  color: var(--harmony-neutral);
-  font-size: var(--harmony-font-m);
-  font-weight: var(--harmony-font-medium);
-  letter-spacing: 0;
-  margin-top: 5px;
-  margin-bottom: 10px;
-}
-
 .spinner {
   height: 40px;
   width: 40px;

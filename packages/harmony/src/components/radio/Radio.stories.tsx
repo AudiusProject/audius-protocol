@@ -1,8 +1,8 @@
 import { Meta, StoryObj } from '@storybook/react'
 
-import { Flex } from 'components/layout'
-import { RadioGroup } from 'components/radio-group'
-import { Text } from 'components/text'
+import { Flex } from '~harmony/components/layout'
+import { RadioGroup } from '~harmony/components/radio-group'
+import { Text } from '~harmony/components/text'
 
 import { Radio } from './Radio'
 

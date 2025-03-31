@@ -1,5 +1,6 @@
 import { MouseEvent, ReactNode, useCallback } from 'react'
 
+import { Feature } from '@audius/common/models'
 import cn from 'classnames'
 
 import 'url-search-params-polyfill'
@@ -10,10 +11,12 @@ import { reportToSentry } from 'store/errors/reportToSentry'
 const HOSTNAME = env.PUBLIC_HOSTNAME
 const INSTAGRAM_APP_ID = env.INSTAGRAM_APP_ID
 const INSTAGRAM_REDIRECT_URL = env.INSTAGRAM_REDIRECT_URL || ''
-const INSTAGRAM_AUTHORIZE_URL = `https://api.instagram.com/oauth/authorize?client_id=${INSTAGRAM_APP_ID}&redirect_uri=${encodeURIComponent(
-  INSTAGRAM_REDIRECT_URL
-)}&scope=user_profile,user_media&response_type=code`
-const GET_USER_URL = `${audiusBackendInstance.identityServiceUrl}/instagram`
+const INSTAGRAM_AUTHORIZE_URL =
+  `https://api.instagram.com/oauth/authorize?client_id=${INSTAGRAM_APP_ID}&redirect_uri=${encodeURIComponent(
+    INSTAGRAM_REDIRECT_URL
+  )}&scope=user_profile,user_media&response_type=code` as const
+const GET_USER_URL =
+  `${audiusBackendInstance.identityServiceUrl}/instagram` as const
 
 // Instagram User profile fields to capture
 const igUserFields = [
@@ -91,9 +94,11 @@ const InstagramAuth = ({
       } catch (err: any) {
         reportToSentry({
           error: err,
-          name: 'Sign Up: InstagramAuth getProfile failed'
+          name: 'Sign Up: InstagramAuth getProfile failed',
+          tags: { socialMedia: 'instagram' },
+          feature: Feature.SignUp
         })
-        onFailure((err as Error).message)
+        onFailure(err)
       }
     },
     [onSuccess, onFailure]
@@ -134,7 +139,9 @@ const InstagramAuth = ({
               )
               reportToSentry({
                 error,
-                name: 'Sign Up: InstagramAuth oauth redirect failed'
+                name: 'Sign Up: InstagramAuth oauth redirect failed',
+                feature: Feature.SignUp,
+                tags: { socialMedia: 'instagram' }
               })
               return onFailure(error)
             }
@@ -150,11 +157,13 @@ const InstagramAuth = ({
 
   const getRequestToken = useCallback(async () => {
     const popup = openPopup()
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    await new Promise((resolve) => setTimeout(resolve, 500)) // wait 500ms
     if (!popup) {
       reportToSentry({
         error: new Error('Unable to open InstagramAuth popup'),
-        name: 'Sign Up'
+        name: 'Sign Up',
+        feature: Feature.SignUp,
+        tags: { socialMedia: 'instagram' }
       })
     }
     try {
@@ -167,7 +176,9 @@ const InstagramAuth = ({
     } catch (error) {
       reportToSentry({
         error: error as Error,
-        name: 'Sign Up: InstagramAuth popup polling failed'
+        name: 'Sign Up: InstagramAuth popup polling failed',
+        feature: Feature.SignUp,
+        tags: { socialMedia: 'instagram' }
       })
       if (popup) popup.close()
       return onFailure(error)

@@ -62,13 +62,16 @@ module.exports = function (app) {
               })
             } catch (err) {
               // keep address as null for future user recovery
-              req.logger.error('Error recovering users signed address', err)
+              req.logger.error(err, 'Error recovering users signed address')
             }
           }
 
           const { email, oldLookupKey } = body
           if (email) {
             if (!oldLookupKey) {
+              req.logger.error(
+                'Missing one of the required fields: oldLookupKey'
+              )
               return errorResponseBadRequest(
                 'Missing one of the required fields: oldLookupKey'
               )
@@ -76,18 +79,18 @@ module.exports = function (app) {
 
             // require signed headers for changing email
             if (walletAddress === null) {
+              req.logger.error('Missing wallet')
               return errorResponseBadRequest('Invalid credentials')
             }
 
-            // check if new artifacts already exist and are deleted
+            // check if new artifacts already exist and are active
             const newArtifacts = await models.Authentication.findOne({
-              where: { lookupKey: body.lookupKey },
-              paranoid: false
+              where: { lookupKey: body.lookupKey }
             })
 
-            // if artifacts exist or they were previously deleted
             if (newArtifacts) {
               // artifacts passed already exist
+              req.logger.error('Credentials already exist')
               return errorResponseBadRequest('Invalid credentials')
             }
 
@@ -96,6 +99,7 @@ module.exports = function (app) {
               where: { lookupKey: oldLookupKey }
             })
             if (!oldArtifacts) {
+              req.logger.error('Invalid credentials')
               return errorResponseBadRequest('Invalid credentials')
             }
 
@@ -105,6 +109,7 @@ module.exports = function (app) {
             ) {
               // if signature doesn't match old artifacts
               if (walletAddress !== oldArtifacts.walletAddress) {
+                req.logger.error('Signature mismatch for credentials')
                 return errorResponseBadRequest('Invalid credentials')
               }
             }
@@ -118,6 +123,7 @@ module.exports = function (app) {
 
             const isOtpValid = await validateOtp({ email, otp, redis })
             if (!isOtpValid) {
+              req.logger.error('Invalid OTP')
               return errorResponseBadRequest('Invalid credentials')
             }
 
@@ -133,8 +139,8 @@ module.exports = function (app) {
             }
           }
 
-          // Check if an existing record exists but is soft deleted (since the Authentication model is 'paranoid'
-          // Setting the option paranoid to true searches both soft-deleted and non-deleted objects
+          // Check if an existing record exists but is soft deleted (since the Authentication model is 'paranoid')
+          // Setting the option paranoid to false searches both soft-deleted and non-deleted objects
           // https://sequelize.org/master/manual/paranoid.html
           // https://sequelize.org/master/class/lib/model.js~Model.html#static-method-findAll
           let existingRecord = await models.Authentication.findOne({
@@ -172,13 +178,16 @@ module.exports = function (app) {
           await transaction.commit()
           return successResponse()
         } catch (err) {
-          req.logger.error('Error signing up a user', err)
+          req.logger.error(err, 'Error signing up a user')
           return errorResponseBadRequest('Error signing up a user')
         }
       } else
-        return errorResponseBadRequest(
+        req.logger.error(
           'Missing one of the required fields: iv, cipherText, lookupKey'
         )
+      return errorResponseBadRequest(
+        'Missing one of the required fields: iv, cipherText, lookupKey'
+      )
     })
   )
 
@@ -224,6 +233,8 @@ module.exports = function (app) {
       if (!email) {
         return errorResponseBadRequest('Missing email')
       }
+      // Avoid issues looking up values if user enters email in different casing
+      email = email.toLowerCase()
 
       const existingUser = await models.Authentication.findOne({
         where: { lookupKey }
@@ -247,7 +258,7 @@ module.exports = function (app) {
           req,
           authUser: existingUser
         })
-        if (associatedEmail && email !== associatedEmail) {
+        if (associatedEmail && email !== associatedEmail.toLowerCase()) {
           req.logger.error(
             {
               reqEmail: email,
@@ -258,7 +269,7 @@ module.exports = function (app) {
           )
           return errorResponseBadRequest('Invalid credentials')
         } else {
-          email = associatedEmail || email
+          email = (associatedEmail || email).toLowerCase()
         }
 
         if (await shouldSendOtp({ req, email, redis })) {

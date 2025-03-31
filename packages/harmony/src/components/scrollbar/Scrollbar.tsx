@@ -1,4 +1,14 @@
-import { useEffect, useRef, forwardRef, Ref, useCallback, useId } from 'react'
+import {
+  useEffect,
+  useRef,
+  forwardRef,
+  Ref,
+  useCallback,
+  useId,
+  createContext,
+  useContext,
+  RefObject
+} from 'react'
 
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
@@ -7,6 +17,16 @@ import useMeasure from 'react-use-measure'
 
 import styles from './Scrollbar.module.css'
 import { ScrollbarProps } from './types'
+
+const ScrollbarContext = createContext<{
+  scrollBarRef: RefObject<HTMLElement> | null
+}>({
+  scrollBarRef: null
+})
+
+export const useScrollbarRef = () => {
+  return useContext(ScrollbarContext).scrollBarRef
+}
 
 /**
  * A container with a custom scrollbar, meant to be used for small scrolling areas within a
@@ -22,6 +42,7 @@ export const Scrollbar = forwardRef(
     // Do not remove:
     // useMeasure ref is required for infinite scrolling to work
     const [ref] = useMeasure({ polyfill: ResizeObserver })
+    const containerRef = useRef<HTMLElement | null>(null)
     const timerRef = useRef<NodeJS.Timeout | null>(null)
     const reactId = useId()
     const elementId = id || reactId
@@ -67,19 +88,28 @@ export const Scrollbar = forwardRef(
       }
     }, [isHidden, hideScrollbar])
 
-    const content = forward ? children : <div ref={ref}>{children}</div>
+    const content = forward ? (
+      children
+    ) : (
+      <div ref={ref} className={styles.scrollbar}>
+        {children}
+      </div>
+    )
 
     return (
-      <PerfectScrollbar
-        {...props}
-        ref={forwardedRef}
-        id={elementId}
-        className={cn(styles.scrollbar, className)}
-        onMouseEnter={showScrollbar}
-        onMouseLeave={hideScrollbar}
-      >
-        {content}
-      </PerfectScrollbar>
+      <ScrollbarContext.Provider value={{ scrollBarRef: containerRef }}>
+        <PerfectScrollbar
+          {...props}
+          ref={forwardedRef}
+          containerRef={(ref) => (containerRef.current = ref)}
+          id={elementId}
+          className={cn(styles.scrollbar, className)}
+          onMouseEnter={showScrollbar}
+          onMouseLeave={hideScrollbar}
+        >
+          {content}
+        </PerfectScrollbar>
+      </ScrollbarContext.Provider>
     )
   }
 )

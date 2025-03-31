@@ -1,4 +1,8 @@
 import {
+  fileToSdk,
+  playlistMetadataForUpdateWithSDK
+} from '@audius/common/adapters'
+import {
   Name,
   Kind,
   Collection,
@@ -16,7 +20,7 @@ import {
   toastActions,
   getContext,
   confirmerActions,
-  confirmTransaction
+  getSDK
 } from '@audius/common/store'
 import {
   makeUid,
@@ -24,11 +28,11 @@ import {
   updatePlaylistArtwork,
   Nullable
 } from '@audius/common/utils'
+import { Id } from '@audius/sdk'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
-import { encodeHashId } from 'utils/hashIds'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { optimisticUpdateCollection } from './utils/optimisticUpdateCollection'
@@ -49,6 +53,12 @@ type AddTrackToPlaylistAction = ReturnType<
   typeof cacheCollectionsActions.addTrackToPlaylist
 >
 
+// Returns current timestamp in seconds, which is the expected
+// format for client-generated playlist entry timestamps
+const getCurrentTimestamp = () => {
+  return Math.floor(Date.now() / 1000)
+}
+
 /** ADD TRACK TO PLAYLIST */
 
 export function* watchAddTrackToPlaylist() {
@@ -63,8 +73,6 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   yield* waitForWrite()
   const userId = yield* call(ensureLoggedIn)
   const isNative = yield* getContext('isNativeMobile')
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const web3 = yield* call(audiusBackendInstance.getWeb3)
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
 
   let playlist = yield* select(getCollection, { id: playlistId })
@@ -83,17 +91,16 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
     cacheActions.subscribe(Kind.TRACKS, [{ uid: trackUid, id: action.trackId }])
   )
 
-  const currentBlockNumber = yield* call([web3.eth, 'getBlockNumber'])
-  const currentBlock = (yield* call(
-    [web3.eth, 'getBlock'],
-    currentBlockNumber
-  )) as { timestamp: number }
-
   playlist.playlist_contents = {
     track_ids: playlist.playlist_contents.track_ids.concat({
       track: action.trackId,
-      metadata_time: currentBlock?.timestamp as number,
+      // Replaced in indexing with block timestamp
+      // Represents the server time seen when track was added to playlist
       time: 0,
+      // Represents user-facing timestamp when the user added the track to the playlist.
+      // This is needed to disambiguate between tracks added at the same time/potentiall in
+      // the same block.
+      metadata_time: getCurrentTimestamp(),
       uid: trackUid
     })
   }
@@ -112,7 +119,6 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
     playlistTracks,
     { added: track },
     {
-      audiusBackend: audiusBackendInstance,
       generateImage: generatePlaylistArtwork
     }
   )
@@ -139,7 +145,7 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   yield* put(
     setOptimisticChallengeCompleted({
       challengeId: ChallengeName.FirstPlaylist,
-      specifier: encodeHashId(userId)
+      specifier: Id.parse(userId)
     })
   )
 
@@ -164,28 +170,25 @@ function* confirmAddTrackToPlaylist(
   count: number,
   playlist: Collection
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
 
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* () {
-        const { blockHash, blockNumber, error } = yield* call(
-          audiusBackendInstance.addPlaylistTrack,
-          playlist
-        )
-        if (error) throw error
+        const { artwork } = playlist
+        const coverArtFile =
+          artwork && 'file' in artwork ? (artwork?.file ?? null) : null
 
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm add playlist track for playlist id ${playlistId} and track id ${trackId}`
-          )
-        }
+        yield* call([sdk.playlists, sdk.playlists.updatePlaylist], {
+          metadata: playlistMetadataForUpdateWithSDK(playlist),
+          userId: Id.parse(userId),
+          playlistId: Id.parse(playlistId),
+          coverArtFile: coverArtFile
+            ? fileToSdk(coverArtFile, 'cover_art')
+            : undefined
+        })
+
         return playlistId
       },
       function* (confirmedPlaylistId: ID) {
@@ -197,8 +200,7 @@ function* confirmAddTrackToPlaylist(
         if (!playlist) return
 
         const formattedCollection = reformatCollection({
-          collection: confirmedPlaylist,
-          audiusBackendInstance
+          collection: confirmedPlaylist
         })
 
         yield* put(

@@ -126,6 +126,7 @@ export type ChallengeRewardNotification = {
   amount: number
   specifier: string
   challenge_id: ChallengeId
+  listen_streak?: number
 }
 
 export type ClaimableRewardNotification = {
@@ -323,6 +324,10 @@ export type CommentReactionNotification = {
   reacter_user_id: number
 }
 
+export type ListenStreakReminderNotification = {
+  streak: number
+}
+
 export type NotificationData =
   | DMNotification
   | DMReactionNotification
@@ -358,6 +363,7 @@ export type NotificationData =
   | CommentThreadNotification
   | CommentMentionNotification
   | CommentReactionNotification
+  | ListenStreakReminderNotification
 
 export class RequiresRetry extends Error {
   constructor(message: string) {

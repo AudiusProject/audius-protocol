@@ -1,14 +1,11 @@
 import type { ReactNode } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
-import { FeatureFlags } from '@audius/common/services'
 import { View } from 'react-native'
 
 import { Flex, Text } from '@audius/harmony-native'
 
 import { useStyles } from './styles'
 const messages = {
-  task: 'Task Details',
   cooldownDescription:
     'Note: There is a 7 day waiting period from completion until you can claim your reward.'
 }
@@ -17,14 +14,17 @@ type DescriptionContent =
   | {
       description?: never
       renderDescription: () => ReactNode
+      optionalDescription?: never
     }
-  | { description: ReactNode; renderDescription?: never }
+  | {
+      description: ReactNode
+      renderDescription?: never
+      optionalDescription?: ReactNode
+    }
 
 type ChallengeDescriptionProps = {
-  /** Optional icon to render next to the task label */
-  taskIcon?: ReactNode
-  /** Optional override for the task label. Defaults to a Text node of 'Task Details' */
-  task?: ReactNode
+  /** Indicates if the challenge has a cooldown period */
+  isCooldownChallenge?: boolean
 } & DescriptionContent
 
 /** Renders the task description for the challenge. Pass `description` to render
@@ -32,35 +32,23 @@ type ChallengeDescriptionProps = {
  * content.
  */
 export const ChallengeDescription = ({
-  taskIcon,
-  task = messages.task,
   description,
-  renderDescription
+  renderDescription,
+  optionalDescription,
+  isCooldownChallenge = true
 }: ChallengeDescriptionProps) => {
-  const { isEnabled: isRewardsCooldownEnabled } = useFeatureFlag(
-    FeatureFlags.REWARDS_COOLDOWN
-  )
-
   const styles = useStyles()
   return (
     <View style={styles.task}>
-      <View style={styles.taskHeader}>
-        {taskIcon}
-        <Text
-          variant='label'
-          style={styles.subheader}
-          strength='strong'
-          textTransform='uppercase'
-        >
-          {task}
-        </Text>
-      </View>
       {renderDescription ? (
         renderDescription()
       ) : (
         <Flex gap='m' mb='l'>
-          <Text variant='body'>{description}</Text>
-          {isRewardsCooldownEnabled ? (
+          <Text variant='body' size='l'>
+            {description}
+            {optionalDescription}
+          </Text>
+          {isCooldownChallenge ? (
             <Text variant='body' color='subdued'>
               {messages.cooldownDescription}
             </Text>

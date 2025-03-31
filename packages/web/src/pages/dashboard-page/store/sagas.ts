@@ -1,16 +1,23 @@
-import { Collection, ID, Track } from '@audius/common/models'
+import {
+  transformAndCleanList,
+  userCollectionMetadataFromSDK
+} from '@audius/common/adapters'
+import { Track } from '@audius/common/models'
 import { IntKeys } from '@audius/common/services'
 import {
   accountSelectors,
   walletActions,
-  getContext
+  getContext,
+  getSDK
 } from '@audius/common/store'
 import { waitForValue, doEvery, route } from '@audius/common/utils'
+import { Id, OptionalId } from '@audius/sdk'
 import { each } from 'lodash'
 import moment from 'moment'
 import { EventChannel } from 'redux-saga'
 import { all, call, fork, put, take, takeEvery } from 'typed-redux-saga'
 
+import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { retrieveUserTracks } from 'common/store/pages/profile/lineups/tracks/retrieveUserTracks'
 import { requiresAccount } from 'common/utils/requiresAccount'
 import { waitForRead } from 'utils/sagaHelpers'
@@ -20,7 +27,7 @@ import ArtistDashboardState from './types'
 
 const { DASHBOARD_PAGE } = route
 const { getBalance } = walletActions
-const getAccountUser = accountSelectors.getAccountUser
+const { getUserHandle, getUserId } = accountSelectors
 
 const formatMonth = (date: moment.Moment | string) =>
   moment.utc(date).format('MMM').toUpperCase()
@@ -28,13 +35,14 @@ const formatMonth = (date: moment.Moment | string) =>
 function* fetchDashboardTracksAsync(
   action: ReturnType<typeof dashboardActions.fetchTracks>
 ) {
-  const account = yield* call(waitForValue, getAccountUser)
+  const accountHandle = yield* call(waitForValue, getUserHandle)
+  const accountUserId = yield* call(waitForValue, getUserId)
   const { offset, limit } = action.payload
 
   try {
     const tracks = yield* call(retrieveUserTracks, {
-      handle: account.handle,
-      currentUserId: account.user_id,
+      handle: accountHandle,
+      currentUserId: accountUserId,
       offset,
       limit,
       getUnlisted: true
@@ -49,27 +57,51 @@ function* fetchDashboardTracksAsync(
 function* fetchDashboardAsync(
   action: ReturnType<typeof dashboardActions.fetch>
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* call(waitForRead)
 
-  const account = yield* call(waitForValue, getAccountUser)
+  const accountHandle = yield* call(waitForValue, getUserHandle)
+  const accountUserId: number | null = yield* call(waitForValue, getUserId)
+  if (!accountUserId) {
+    yield* put(dashboardActions.fetchFailed({}))
+    return
+  }
   yield* fork(pollForBalance)
 
+  const sdk = yield* getSDK()
   const { offset, limit } = action.payload
   try {
     const data = yield* all([
       call(retrieveUserTracks, {
-        handle: account.handle,
-        currentUserId: account.user_id,
+        handle: accountHandle,
+        currentUserId: accountUserId,
         offset,
         limit,
         getUnlisted: true
       }),
-      call(audiusBackendInstance.getPlaylists, account.user_id, [])
+      call([sdk.full.users, sdk.full.users.getPlaylistsByUser], {
+        id: Id.parse(accountUserId),
+        userId: OptionalId.parse(accountUserId)
+      }),
+      call([sdk.full.users, sdk.full.users.getAlbumsByUser], {
+        id: Id.parse(accountUserId),
+        userId: OptionalId.parse(accountUserId)
+      })
     ])
-    // Casting necessary because yield* all is not typed well
     const tracks = data[0] as Track[]
-    const playlists = data[1] as Collection[]
+    const playlists = transformAndCleanList(
+      (data[1] as Awaited<ReturnType<typeof sdk.full.users.getPlaylistsByUser>>)
+        .data,
+      userCollectionMetadataFromSDK
+    )
+    const albums = transformAndCleanList(
+      (data[2] as Awaited<ReturnType<typeof sdk.full.users.getPlaylistsByUser>>)
+        .data,
+      userCollectionMetadataFromSDK
+    )
+    const processedCollections = yield* processAndCacheCollections([
+      ...playlists,
+      ...albums
+    ])
 
     const trackIds = tracks.map((t) => t.track_id)
     const now = moment()
@@ -87,7 +119,7 @@ function* fetchDashboardAsync(
       yield* put(
         dashboardActions.fetchSucceeded({
           tracks,
-          collections: playlists
+          collections: processedCollections
         })
       )
     } else {
@@ -103,19 +135,16 @@ function* fetchDashboardListenDataAsync(
   action: ReturnType<typeof dashboardActions.fetchListenData>
 ) {
   const { start, end } = action.payload
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const account = yield* call(waitForValue, getAccountUser)
-  const listenData: {
-    [key: string]: {
-      totalListens: number
-      trackIds: ID[]
-      listenCounts: Array<{ trackId: ID; date: string; listens: number }>
+  const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
+  const accountUserId = yield* call(waitForValue, getUserId)
+  const { data: listenData } = yield* call(
+    [sdk.users, sdk.users.getUserMonthlyTrackListens],
+    {
+      id: Id.parse(accountUserId),
+      startTime: start,
+      endTime: end
     }
-  } = yield* call(
-    audiusBackendInstance.getUserListenCountsMonthly,
-    account.user_id,
-    start,
-    end
   )
   const labels: string[] = []
   const labelIndexMap: { [key: string]: number } = {}
@@ -135,19 +164,21 @@ function* fetchDashboardListenDataAsync(
     }
   }
   each(listenData, (data, date) => {
-    formattedListenData.all.values[labelIndexMap[formatMonth(date)]] =
-      data.totalListens
-    data.listenCounts.forEach((count) => {
-      if (!(count.trackId in formattedListenData)) {
-        formattedListenData[count.trackId] = {
-          labels: [...labels],
-          values: new Array(labels.length).fill(0)
+    const index = labelIndexMap[formatMonth(date)]
+    formattedListenData.all.values[index] = data.totalListens ?? 0
+    if (data.listenCounts) {
+      data.listenCounts.forEach((count) => {
+        if (count.trackId && !(count.trackId in formattedListenData)) {
+          formattedListenData[count.trackId] = {
+            labels: [...labels],
+            values: new Array(labels.length).fill(0)
+          }
         }
-      }
-      formattedListenData[count.trackId].values[
-        labelIndexMap[formatMonth(date)]
-      ] = count.listens
-    })
+        if (count.trackId) {
+          formattedListenData[count.trackId].values[index] = count.listens ?? 0
+        }
+      })
+    }
   })
 
   if (listenData) {

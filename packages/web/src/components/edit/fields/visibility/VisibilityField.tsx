@@ -95,8 +95,8 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
     isScheduledRelease && isHidden
       ? 'scheduled'
       : isHidden
-      ? 'hidden'
-      : 'public'
+        ? 'hidden'
+        : 'public'
 
   const renderValue = useCallback(() => {
     switch (visibilityType) {
@@ -194,9 +194,6 @@ type VisibilityMenuFieldsProps = {
 }
 
 const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
-  const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
-    FeatureFlags.EDITABLE_ACCESS_ENABLED
-  )
   const { isEnabled: isPaidScheduledEnabled } = useFeatureFlag(
     FeatureFlags.PAID_SCHEDULED
   )
@@ -204,7 +201,7 @@ const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
   const [field] = useField<VisibilityType>('visibilityType')
 
   return (
-    <RadioGroup {...field}>
+    <RadioGroup {...field} aria-label={messages.title}>
       <ModalRadioItem
         value='public'
         label={messages.public}
@@ -218,12 +215,6 @@ const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
         value='hidden'
         label={messages.hidden}
         description={messages.hiddenDescription}
-        disabled={!isEditableAccessEnabled && initiallyPublic}
-        tooltipText={
-          !isEditableAccessEnabled && initiallyPublic
-            ? messages.hiddenHint(entityType)
-            : undefined
-        }
       />
       {!initiallyPublic &&
       (entityType === 'track' ||

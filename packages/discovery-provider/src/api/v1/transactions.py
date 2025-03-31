@@ -26,7 +26,7 @@ from src.queries.get_usdc_transactions_history import (
 from src.queries.query_helpers import SortDirection, TransactionSortMethod
 from src.utils.auth_middleware import auth_middleware
 
-from .access_helpers import check_authorized
+from .authorization_helpers import check_authorized
 from .models.transactions import transaction_details
 
 logger = logging.getLogger(__name__)

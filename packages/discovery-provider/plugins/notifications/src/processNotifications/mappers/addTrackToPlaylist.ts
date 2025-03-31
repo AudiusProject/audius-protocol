@@ -72,13 +72,16 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
       .from<UserRow>('users')
       .where('is_current', true)
       .whereIn('user_id', [track.owner_id, playlist.playlist_owner_id])
-    const users = res.reduce((acc, user) => {
-      acc[user.user_id] = {
-        name: user.name,
-        isDeactivated: user.is_deactivated
-      }
-      return acc
-    }, {} as Record<number, { name: string; isDeactivated: boolean }>)
+    const users = res.reduce(
+      (acc, user) => {
+        acc[user.user_id] = {
+          name: user.name,
+          isDeactivated: user.is_deactivated
+        }
+        return acc
+      },
+      {} as Record<number, { name: string; isDeactivated: boolean }>
+    )
 
     if (users?.[track.owner_id]?.isDeactivated) {
       return

@@ -1,18 +1,20 @@
 import logging
-from typing import List, TypedDict  # pylint: disable=C0302
+from typing import List, Literal, Optional, TypedDict  # pylint: disable=C0302
 
 from sqlalchemy import and_, desc, or_
 from sqlalchemy.orm.exc import NoResultFound
 
 from src import exceptions
+from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.social.repost import RepostType
 from src.models.social.save import SaveType
 from src.models.users.user import User
 from src.queries.query_helpers import (
+    add_query_pagination,
+    get_pagination_vars,
     get_users_ids,
-    paginate_query,
     populate_playlist_metadata,
     populate_user_metadata,
 )
@@ -35,6 +37,10 @@ class GetPlaylistsArgs(TypedDict, total=False):
     user_id: int
     with_users: bool
     routes: List[RouteArgs]
+    kind: Optional[Literal["Playlist", "Album"]]
+    limit: int
+    offset: int
+    sort_method: str
 
 
 def _get_unpopulated_playlists(session, args):
@@ -42,6 +48,20 @@ def _get_unpopulated_playlists(session, args):
     routes = args.get("routes", None)
 
     current_user_id = args.get("current_user_id")
+
+    # Handle sorting
+    sort_method = args.get("sort_method")
+    if sort_method == "popular":
+        playlist_query = playlist_query.join(
+            AggregatePlaylist, AggregatePlaylist.playlist_id == Playlist.playlist_id
+        ).order_by(
+            desc(AggregatePlaylist.repost_count + AggregatePlaylist.save_count),
+            desc(Playlist.created_at),
+        )
+    else:
+        # invalid sorts default to recent
+        sort_method = "recent"
+        playlist_query = playlist_query.order_by(desc(Playlist.created_at))
 
     if routes:
         # Convert the handles to user_ids
@@ -105,8 +125,13 @@ def _get_unpopulated_playlists(session, args):
         else:
             playlist_query = playlist_query.filter(Playlist.is_private == False)
 
-    playlist_query = playlist_query.order_by(desc(Playlist.created_at))
-    playlists = paginate_query(playlist_query).all()
+    if "kind" in args:
+        if args.get("kind") == "Playlist":
+            playlist_query = playlist_query.filter(Playlist.is_album == False)
+        if args.get("kind") == "Album":
+            playlist_query = playlist_query.filter(Playlist.is_album == True)
+
+    playlists = add_query_pagination(playlist_query, args["limit"], args["offset"])
     playlists = helpers.query_result_to_list(playlists)
 
     # retrieve playlist ids list
@@ -139,6 +164,10 @@ def get_playlists(args: GetPlaylistsArgs):
     db = get_db_read_replica()
     with db.scoped_session() as session:
         try:
+            (limit, offset) = get_pagination_vars()
+            args["limit"] = limit if "limit" not in args else args["limit"]
+            args["offset"] = offset if "offset" not in args else args["offset"]
+
             (playlists, playlist_ids) = _get_unpopulated_playlists(
                 session=session, args=args
             )

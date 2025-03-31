@@ -3,11 +3,11 @@ import { useCallback, useEffect, useRef } from 'react'
 import { useCanSendMessage } from '@audius/common/hooks'
 import { chatActions, chatSelectors } from '@audius/common/store'
 import { ResizeObserver } from '@juggle/resize-observer'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 import useMeasure from 'react-use-measure'
 
 import Page from 'components/page/Page'
+import { push } from 'utils/navigation'
 import { useSelector } from 'utils/reducer'
 import { chatPage } from 'utils/route'
 
@@ -48,7 +48,7 @@ export const ChatPage = ({
   const handleChatClicked = useCallback(
     (chatId: string) => {
       if (chatId !== currentChatId) {
-        dispatch(pushRoute(chatPage(chatId)))
+        dispatch(push(chatPage(chatId)))
       } else {
         messagesRef.current?.scrollTo({
           top: messagesRef.current.scrollHeight,

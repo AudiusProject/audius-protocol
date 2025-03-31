@@ -51,7 +51,7 @@ module.exports = function (app) {
         const email = body.username.toLowerCase()
         const existingUser = await models.User.findOne({
           where: {
-            email: email
+            email
           }
         })
 
@@ -71,7 +71,8 @@ module.exports = function (app) {
             walletAddress: body.walletAddress.toLowerCase(),
             lastSeenDate: Date.now(),
             IP,
-            isEmailDeliverable: isDeliverable
+            isEmailDeliverable: isDeliverable,
+            isGuest: body.isGuest
           })
 
           return successResponse()
@@ -97,22 +98,14 @@ module.exports = function (app) {
         email = email.toLowerCase()
         const existingUser = await models.User.findOne({
           where: {
-            email: email
+            email
           }
         })
         if (existingUser) {
-          const userEvent = await models.UserEvents.findOne({
-            where: {
-              walletAddress: existingUser.walletAddress
-            }
+          return successResponse({
+            exists: true,
+            isGuest: existingUser.isGuest
           })
-          if (!userEvent && !existingUser.handle) {
-            // user does not have recovery email nor handle
-            // delete existing user record to restart sign up
-            existingUser.destroy()
-            return successResponse({ exists: false })
-          }
-          return successResponse({ exists: true })
         } else {
           return successResponse({ exists: false })
         }

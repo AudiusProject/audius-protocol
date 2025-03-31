@@ -4,8 +4,8 @@ import { imageCoverPhotoBlank } from '@audius/common/assets'
 import { WidthSizes } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 import cn from 'classnames'
+import Lottie from 'lottie-react'
 import { FileWithPreview } from 'react-dropzone'
-import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -46,10 +46,10 @@ const CoverPhoto = ({
     ? 'linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.75) 100%)'
     : 'linear-gradient(rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.05) 70%, rgba(0, 0, 0, 0.2) 100%)'
 
-  const { source: image, shouldBlur } = useCoverPhoto(
-    userId,
-    WidthSizes.SIZE_2000
-  )
+  const { image, shouldBlur } = useCoverPhoto({
+    userId: userId ?? undefined,
+    size: WidthSizes.SIZE_2000
+  })
 
   const imageSettings = useMemo(() => {
     if (image) {
@@ -95,13 +95,7 @@ const CoverPhoto = ({
 
   const loadingElement = (
     <div className={cn(styles.overlay, { [styles.processing]: processing })}>
-      <Lottie
-        options={{
-          loop: true,
-          autoplay: true,
-          animationData: loadingSpinner
-        }}
-      />
+      <Lottie loop autoplay animationData={loadingSpinner} />
     </div>
   )
 

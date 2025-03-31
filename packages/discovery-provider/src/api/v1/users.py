@@ -2,9 +2,11 @@ import base64
 import json
 from typing import Optional
 
+from eth_account import Account
 from eth_account.messages import encode_defunct
 from flask import Response, request
 from flask_restx import Namespace, Resource, fields, inputs, reqparse
+from flask_restx.errors import abort
 
 from src.api.v1.helpers import (
     DescriptiveArgument,
@@ -19,7 +21,9 @@ from src.api.v1.helpers import (
     extend_challenge_response,
     extend_favorite,
     extend_feed_item,
+    extend_playlist,
     extend_purchase,
+    extend_related,
     extend_supporter,
     extend_supporting,
     extend_track,
@@ -38,14 +42,18 @@ from src.api.v1.helpers import (
     get_current_user_id,
     get_default_max,
     make_full_response,
+    make_full_response_with_related,
     make_response,
     pagination_parser,
     pagination_with_current_user_parser,
     parse_bool_param,
     success_response,
+    success_response_with_related,
     track_history_parser,
+    user_albums_route_parser,
     user_collections_library_parser,
     user_favorited_tracks_parser,
+    user_playlists_route_parser,
     user_search_parser,
     user_track_listen_count_route_parser,
     user_tracks_library_parser,
@@ -60,12 +68,17 @@ from src.api.v1.models.activities import (
     track_activity_full_model,
     track_activity_model,
 )
+from src.api.v1.models.comments import comment_model
 from src.api.v1.models.common import favorite
 from src.api.v1.models.developer_apps import authorized_app, developer_app
 from src.api.v1.models.extensions.fields import NestedOneOf
 from src.api.v1.models.extensions.models import WildcardModel
 from src.api.v1.models.feed import user_feed_item
 from src.api.v1.models.grants import managed_user, user_manager
+from src.api.v1.models.playlists import (
+    full_playlist_without_tracks_model,
+    playlist_model,
+)
 from src.api.v1.models.support import (
     supporter_response,
     supporter_response_full,
@@ -77,12 +90,15 @@ from src.api.v1.models.users import (
     account_full,
     associated_wallets,
     challenge_response,
+    collectibles,
     connected_wallets,
     decoded_user_token,
+    email_access,
     encoded_user_id,
     purchase,
     remixed_track_aggregate,
     sales_aggregate,
+    sales_json_content,
     user_model,
     user_model_full,
     user_subscribers,
@@ -90,6 +106,8 @@ from src.api.v1.models.users import (
 from src.api.v1.playlists import get_tracks_for_playlist
 from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.exceptions import PermissionError
+from src.models.users.email import EmailAccess
+from src.queries.comments import get_muted_users, get_user_comments
 from src.queries.download_csv import (
     DownloadPurchasesArgs,
     DownloadSalesArgs,
@@ -100,18 +118,20 @@ from src.queries.download_csv import (
 )
 from src.queries.get_associated_user_id import get_associated_user_id
 from src.queries.get_associated_user_wallet import get_associated_user_wallet
+from src.queries.get_authorization import is_authorized_request
 from src.queries.get_challenges import get_challenges
+from src.queries.get_collectibles import GetCollectiblesArgs, get_collectibles
 from src.queries.get_collection_library import (
     CollectionType,
     GetCollectionLibraryArgs,
     get_collection_library,
 )
-from src.queries.get_comments import get_muted_users
 from src.queries.get_developer_apps import (
     get_developer_apps_by_user,
     get_developer_apps_with_grant_for_user,
 )
 from src.queries.get_feed import get_feed
+from src.queries.get_follow_intersection_users import get_follow_intersection_users
 from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
 from src.queries.get_managed_users import (
@@ -121,6 +141,7 @@ from src.queries.get_managed_users import (
     get_user_managers_with_grants,
     is_active_manager,
 )
+from src.queries.get_playlists import GetPlaylistsArgs, get_playlists
 from src.queries.get_purchasers import (
     GetPurchasersArgs,
     get_purchasers,
@@ -169,20 +190,19 @@ from src.queries.get_users import get_users
 from src.queries.get_users_account import GetAccountArgs, get_account
 from src.queries.query_helpers import (
     CollectionLibrarySortMethod,
+    CollectionSortMethod,
     PurchaseSortMethod,
     SortDirection,
 )
 from src.queries.search_queries import SearchKind, search
-from src.utils import web3_provider
 from src.utils.auth_middleware import auth_middleware
-from src.utils.config import shared_config
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import decode_string_id, encode_int_id
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 from src.utils.structured_logger import StructuredLogger, log_duration
 
-from .access_helpers import check_authorized
+from .authorization_helpers import check_authorized
 
 logger = StructuredLogger(__name__)
 
@@ -201,9 +221,6 @@ users_response = make_response(
 full_users_response = make_response(
     "full_users_response", full_ns, fields.List(fields.Nested(user_model_full))
 )
-
-# Cache TTL in seconds for the v1/full/users/content_node route
-GET_USERS_CNODE_TTL_SEC = shared_config["discprov"]["get_users_cnode_ttl_sec"]
 
 
 def get_single_user(user_id, current_user_id):
@@ -389,7 +406,7 @@ user_track_listen_counts_response = make_response(
 )
 
 
-@ns.route("/<string:id>/listen_counts_monthly", doc=False)
+@ns.route("/<string:id>/listen_counts_monthly")
 class UserTrackListenCountsMonthly(Resource):
     @record_metrics
     @ns.doc(
@@ -884,6 +901,160 @@ class FavoritedTracks(Resource):
         return success_response(favorites)
 
 
+USER_PLAYLISTS_ROUTE = "/<string:id>/playlists"
+
+
+playlists_response_full = make_full_response(
+    "playlists_response_full",
+    full_ns,
+    fields.List(fields.Nested(full_playlist_without_tracks_model)),
+)
+
+
+@full_ns.route(USER_PLAYLISTS_ROUTE)
+class PlaylistsFull(Resource):
+    def _get(self, id, authed_user_id):
+        decoded_id = decode_with_abort(id, ns)
+        args = user_playlists_route_parser.parse_args()
+
+        current_user_id = get_current_user_id(args)
+        if current_user_id and not is_authorized_request(current_user_id):
+            abort(403, message="You are not authorized to access this resource")
+
+        offset = format_offset(args)
+        limit = format_limit(args)
+        sort_method = args.get("sort_method", CollectionSortMethod.recent)
+
+        args = GetPlaylistsArgs(
+            user_id=decoded_id,
+            authed_user_id=authed_user_id,
+            current_user_id=current_user_id,
+            filter_deleted=True,
+            limit=limit,
+            offset=offset,
+            kind="Playlist",
+            sort_method=sort_method,
+        )
+        playlists = get_playlists(args)
+        playlists = list(map(extend_playlist, playlists))
+        return success_response(playlists)
+
+    @full_ns.doc(
+        id="""Get Playlists by User""",
+        description="""Gets the playlists created by a user using their user ID""",
+        params={
+            "id": "A User ID",
+        },
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(user_playlists_route_parser)
+    @auth_middleware(user_playlists_route_parser)
+    @full_ns.marshal_with(playlists_response_full)
+    def get(self, id, authed_user_id=None):
+        return self._get(id, authed_user_id)
+
+
+playlists_response = make_response(
+    "playlists_response", ns, fields.List(fields.Nested(playlist_model))
+)
+
+
+@ns.route(USER_PLAYLISTS_ROUTE)
+class Playlists(PlaylistsFull):
+    @record_metrics
+    @ns.doc(
+        id="""Get Playlists by User""",
+        description="""Gets the playlists created by a user using their user ID""",
+        params={
+            "id": "A User ID",
+        },
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(user_playlists_route_parser)
+    @auth_middleware(parser=user_playlists_route_parser)
+    @ns.marshal_with(playlists_response)
+    @cache(ttl_sec=5)
+    def get(self, id, authed_user_id=None):
+        return super()._get(id, authed_user_id)
+
+
+USER_ALBUMS_ROUTE = "/<string:id>/albums"
+
+
+albums_response_full = make_full_response(
+    "albums_response_full",
+    full_ns,
+    fields.List(fields.Nested(full_playlist_without_tracks_model)),
+)
+
+
+@full_ns.route(USER_ALBUMS_ROUTE)
+class AlbumsFull(Resource):
+    def _get(self, id, authed_user_id):
+        decoded_id = decode_with_abort(id, ns)
+        args = user_albums_route_parser.parse_args()
+
+        current_user_id = get_current_user_id(args)
+        if current_user_id and not is_authorized_request(current_user_id):
+            abort(403, message="You are not authorized to access this resource")
+
+        offset = format_offset(args)
+        limit = format_limit(args)
+        sort_method = args.get("sort_method", CollectionSortMethod.recent)
+
+        args = GetPlaylistsArgs(
+            user_id=decoded_id,
+            authed_user_id=authed_user_id,
+            current_user_id=current_user_id,
+            filter_deleted=True,
+            limit=limit,
+            offset=offset,
+            kind="Album",
+            sort_method=sort_method,
+        )
+        albums = get_playlists(args)
+        albums = list(map(extend_playlist, albums))
+        return success_response(albums)
+
+    @full_ns.doc(
+        id="""Get Albums by User""",
+        description="""Gets the albums created by a user using their user ID""",
+        params={
+            "id": "A User ID",
+        },
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(user_albums_route_parser)
+    @auth_middleware(parser=user_albums_route_parser)
+    @full_ns.marshal_with(albums_response_full)
+    def get(self, id, authed_user_id=None):
+        return self._get(id, authed_user_id)
+
+
+albums_response = make_response(
+    "albums_response", ns, fields.List(fields.Nested(playlist_model))
+)
+
+
+@ns.route(USER_ALBUMS_ROUTE)
+class Albums(AlbumsFull):
+    @record_metrics
+    @ns.doc(
+        id="""Get Albums by User""",
+        description="""Gets the albums created by a user using their user ID""",
+        params={
+            "id": "A User ID",
+        },
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(user_albums_route_parser)
+    @auth_middleware(parser=user_albums_route_parser)
+    @ns.marshal_with(albums_response)
+    @cache(ttl_sec=5)
+    def get(self, id, authed_user_id=None):
+        return super()._get(id, authed_user_id)
+
+
 USER_TRACKS_LIBRARY_ROUTE = "/<string:id>/library/tracks"
 USER_PLAYLISTS_LIBRARY_ROUTE = "/<string:id>/library/playlists"
 USER_ALBUMS_LIBRARY_ROUTE = "/<string:id>/library/albums"
@@ -1175,6 +1346,8 @@ class UserSearchResult(Resource):
         args = user_search_parser.parse_args()
         query = args.get("query")
         genres = args.get("genre")
+        limit = format_limit(args, 50, 10)
+        offset = format_offset(args)
         is_verified = parse_bool_param(args.get("is_verified"))
         sort_method = args.get("sort_method")
         search_args = {
@@ -1183,8 +1356,8 @@ class UserSearchResult(Resource):
             "is_auto_complete": False,
             "current_user_id": None,
             "with_users": True,
-            "limit": 10,
-            "offset": 0,
+            "limit": limit,
+            "offset": offset,
             "only_verified": is_verified,
             "genres": genres,
             "sort_method": sort_method,
@@ -1196,6 +1369,7 @@ class UserSearchResult(Resource):
 subscribers_response = make_response(
     "subscribers_response", ns, fields.List(fields.Nested(user_model))
 )
+
 full_subscribers_response = make_full_response(
     "full_subscribers_response", full_ns, fields.List(fields.Nested(user_model_full))
 )
@@ -1451,10 +1625,77 @@ class FollowingUsers(FullFollowingUsers):
         return super()._get(id)
 
 
+mutual_followers_response = make_response(
+    "mutual_followers_response", ns, fields.List(fields.Nested(user_model))
+)
+full_mutual_followers_response = make_full_response(
+    "full_mutual_followers_response",
+    full_ns,
+    fields.List(fields.Nested(user_model_full)),
+)
+
+USER_MUTUAL_FOLLOWERS_ROUTE = "/<string:id>/mutuals"
+
+
+@full_ns.route(USER_MUTUAL_FOLLOWERS_ROUTE)
+class FullMutualFollowers(Resource):
+    @log_duration(logger)
+    def _get_user_mutual_followers(self, id):
+        decoded_id = decode_with_abort(id, full_ns)
+        args = pagination_with_current_user_parser.parse_args()
+        limit = get_default_max(args.get("limit"), 10, 100)
+        offset = get_default_max(args.get("offset"), 0)
+        current_user_id = get_current_user_id(args)
+        args = {
+            "my_id": current_user_id,
+            "other_user_id": decoded_id,
+            "limit": limit,
+            "offset": offset,
+        }
+        users = get_follow_intersection_users(args)
+        users = list(map(extend_user, users))
+        return success_response(users)
+
+    @full_ns.doc(
+        id="""Get Mutual Followers""",
+        description="""Get intersection of users that follow followeeUserId and users that are followed by followerUserId""",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(pagination_with_current_user_parser)
+    @full_ns.marshal_with(full_mutual_followers_response)
+    @cache(ttl_sec=5)
+    def get(self, id):
+        return self._get_user_mutual_followers(id)
+
+
+@ns.route(USER_MUTUAL_FOLLOWERS_ROUTE)
+class MutualFollowers(FullMutualFollowers):
+    @ns.doc(
+        id="""Get Mutual Followers""",
+        description="""Get intersection of users that follow followeeUserId and users that are followed by followerUserId""",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(pagination_with_current_user_parser)
+    @ns.marshal_with(mutual_followers_response)
+    def get(self, id):
+        return super()._get_user_mutual_followers(id)
+
+
 related_artist_route_parser = pagination_with_current_user_parser.copy()
+related_artist_route_parser.add_argument(
+    "filter_followed",
+    required=False,
+    type=inputs.boolean,
+    default=False,
+    description="If true, filters out artists that the current user already follows",
+)
+
 related_artist_response = make_response(
     "related_artist_response", ns, fields.List(fields.Nested(user_model))
 )
+
 related_artist_response_full = make_full_response(
     "related_artist_response_full", full_ns, fields.List(fields.Nested(user_model_full))
 )
@@ -1471,8 +1712,11 @@ class FullRelatedUsers(Resource):
         limit = get_default_max(args.get("limit"), 10, 100)
         offset = format_offset(args)
         current_user_id = get_current_user_id(args)
+        filter_followed = args.get("filter_followed", False)
         decoded_id = decode_with_abort(id, full_ns)
-        users = get_related_artists(decoded_id, current_user_id, limit, offset)
+        users = get_related_artists(
+            decoded_id, current_user_id, limit, offset, filter_followed
+        )
         users = list(map(extend_user, users))
         return success_response(users)
 
@@ -1736,6 +1980,27 @@ class ConnectedWallets(Resource):
         return success_response(
             {"erc_wallets": wallets["eth"], "spl_wallets": wallets["sol"]}
         )
+
+
+collectibles_response = make_response(
+    "collectibles_response", ns, fields.Nested(collectibles, allow_null=True)
+)
+
+
+@ns.route("/<string:id>/collectibles")
+class UserCollectibles(Resource):
+    @ns.doc(
+        id="""Get User Collectibles""",
+        description="""Get the User's indexed collectibles data""",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.marshal_with(collectibles_response)
+    @cache(ttl_sec=10)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, full_ns)
+        collectibles = get_collectibles(GetCollectiblesArgs(user_id=decoded_id))
+        return success_response({"data": collectibles} if collectibles else None)
 
 
 get_challenges_route_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
@@ -2042,13 +2307,10 @@ class GetTokenVerification(Resource):
         base64_payload = token_parts[1]
         message = f"{base64_header}.{base64_payload}"
 
-        # 3. Recover message from signature
-        web3 = web3_provider.get_web3()
-
         wallet = None
         encoded_message = encode_defunct(text=message)
         try:
-            wallet = web3.eth.account.recover_message(
+            wallet = Account.recover_message(
                 encoded_message,
                 signature=signature,
             )
@@ -2218,11 +2480,9 @@ class Managers(Resource):
         },
     )
     @full_ns.expect(managed_users_route_parser)
-    @auth_middleware(managed_users_route_parser, require_auth=True)
     @full_ns.marshal_with(managers_response)
-    def get(self, id, authed_user_id):
+    def get(self, id):
         user_id = decode_with_abort(id, full_ns)
-        check_authorized(user_id, authed_user_id)
 
         args = managed_users_route_parser.parse_args()
         logger.debug(f"DEBUG::args: {args}")
@@ -2265,7 +2525,6 @@ purchases_and_sales_parser.add_argument(
 purchases_response = make_full_response(
     "purchases_response", full_ns, fields.List(fields.Nested(purchase))
 )
-
 
 purchases_count_response = make_full_response(
     "purchases_count_response", full_ns, fields.Integer()
@@ -2322,11 +2581,10 @@ class FullPurchasesCount(Resource):
         params={"id": "A User ID"},
     )
     @full_ns.expect(purchases_and_sales_count_parser)
-    @auth_middleware(purchases_and_sales_count_parser, require_auth=True)
+    @auth_middleware(purchases_and_sales_count_parser)
     @full_ns.marshal_with(purchases_count_response)
     def get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, full_ns)
-        check_authorized(decoded_id, authed_user_id)
         args = purchases_and_sales_count_parser.parse_args()
         content_ids = args.get("content_ids", [])
         decoded_content_ids = decode_ids_array(content_ids) if content_ids else []
@@ -2378,11 +2636,10 @@ class FullSalesCount(Resource):
         params={"id": "A User ID"},
     )
     @full_ns.expect(purchases_and_sales_count_parser)
-    @auth_middleware(purchases_and_sales_count_parser, require_auth=True)
+    @auth_middleware(purchases_and_sales_count_parser)
     @full_ns.marshal_with(purchases_count_response)
     def get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, full_ns)
-        check_authorized(decoded_id, authed_user_id)
         args = purchases_and_sales_count_parser.parse_args()
         content_ids = args.get("content_ids", [])
         decoded_content_ids = decode_ids_array(content_ids) if content_ids else []
@@ -2465,11 +2722,55 @@ class SalesDownload(Resource):
     def get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, ns)
         check_authorized(decoded_id, authed_user_id)
-        args = DownloadSalesArgs(seller_user_id=decoded_id)
-        sales = download_sales(args)
+
+        download_args = DownloadSalesArgs(seller_user_id=decoded_id)
+        sales = download_sales(download_args, return_json=False)
+
         response = Response(sales, content_type="text/csv")
         response.headers["Content-Disposition"] = "attachment; filename=sales.csv"
         return response
+
+
+sales_json_response = make_response(
+    "sales_json_response", ns, fields.Nested(sales_json_content)
+)
+
+sales_download_parser = current_user_parser.copy()
+sales_download_parser.add_argument(
+    "grantee_user_id",
+    required=False,
+    description="Optional receiving user ID for email decryption",
+    type=str,
+)
+
+
+@ns.route("/<string:id>/sales/download/json")
+class SalesDownloadJSON(Resource):
+    @ns.doc(
+        id="Download Sales as JSON",
+        description="Gets the sales data for the user in JSON format",
+        params={"id": "A User ID"},
+    )
+    @ns.produces(["application/json"])
+    @ns.expect(sales_download_parser)
+    @ns.marshal_with(sales_json_response)
+    @auth_middleware(sales_download_parser, require_auth=True)
+    def get(self, id, authed_user_id):
+        decoded_id = decode_with_abort(id, ns)
+        check_authorized(decoded_id, authed_user_id)
+
+        args = sales_download_parser.parse_args()
+        grantee_user_id = (
+            decode_with_abort(args.get("grantee_user_id"), ns)
+            if args.get("grantee_user_id")
+            else None
+        )
+
+        download_args = DownloadSalesArgs(
+            seller_user_id=decoded_id, grantee_user_id=grantee_user_id
+        )
+        sales = download_sales(download_args, return_json=True)
+        return success_response(sales)
 
 
 withdrawals_download_parser = current_user_parser.copy()
@@ -2853,3 +3154,118 @@ class FullMutedUsers(Resource):
         muted_users = get_muted_users(decoded_id)
         muted_users = list(map(extend_user, muted_users))
         return success_response(muted_users)
+
+
+email_access_response = make_response(
+    "email_access_response", ns, fields.Nested(email_access, allow_null=True)
+)
+
+
+@ns.route("/<string:receiving_user_id>/emails/<string:grantor_user_id>/key")
+class UserEmailKey(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get User Email Key""",
+        summary="Get user's email encryption key",
+        description="Gets the encrypted key for email access between the receiving user and granting user.",
+        params={
+            "receiving_user_id": "ID of user receiving email access",
+            "grantor_user_id": "ID of user granting email access",
+        },
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.marshal_with(email_access_response)
+    @cache(ttl_sec=5)
+    def get(self, receiving_user_id, grantor_user_id):
+        receiving_user_id = decode_with_abort(receiving_user_id, ns)
+        grantor_user_id = decode_with_abort(grantor_user_id, ns)
+
+        db = get_db_read_replica()
+        with db.scoped_session() as session:
+            email_access = (
+                session.query(EmailAccess)
+                .filter(
+                    EmailAccess.receiving_user_id == receiving_user_id,
+                    EmailAccess.grantor_user_id == grantor_user_id,
+                )
+                .first()
+            )
+
+            if not email_access:
+                return success_response(None)
+
+            return success_response(email_access.to_dict())
+
+
+# Comments
+user_comments_response = make_response(
+    "user_comments_response", ns, fields.List(fields.Nested(comment_model))
+)
+
+
+@ns.route("/<string:id>/comments")
+class UserComments(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get User Comments""",
+        description="""Get user comment history""",
+        params={"id": "A User ID"},
+        responses={
+            200: "Success",
+            400: "Bad request",
+            500: "Server error",
+        },
+    )
+    @ns.expect(pagination_with_current_user_parser)
+    @ns.marshal_with(user_comments_response)
+    @cache(ttl_sec=5)
+    def get(self, id):
+        args = pagination_with_current_user_parser.parse_args()
+        user_id = decode_with_abort(id, ns)
+        current_user_id = get_current_user_id(args)
+        args = {
+            **args,
+            "user_id": user_id,
+            "current_user_id": current_user_id,
+        }
+        user_comments = get_user_comments(args, include_related=False)
+
+        return success_response(user_comments["data"])
+
+
+user_comments_response_full = make_full_response_with_related(
+    "user_comments_response_full", full_ns, fields.List(fields.Nested(comment_model))
+)
+
+
+@full_ns.route("/<string:id>/comments")
+class FullUserComments(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get User Comments""",
+        description="""Get user comment history""",
+        params={"id": "A User ID"},
+        responses={
+            200: "Success",
+            400: "Bad request",
+            500: "Server error",
+        },
+    )
+    @full_ns.expect(pagination_with_current_user_parser)
+    @full_ns.marshal_with(user_comments_response_full)
+    @cache(ttl_sec=5)
+    def get(self, id):
+        args = pagination_with_current_user_parser.parse_args()
+        user_id = decode_with_abort(id, full_ns)
+        current_user_id = get_current_user_id(args)
+        args = {
+            **args,
+            "user_id": user_id,
+            "current_user_id": current_user_id,
+        }
+        user_comments = get_user_comments(args, include_related=True)
+        user_comments["related"] = extend_related(
+            user_comments["related"], current_user_id
+        )
+
+        return success_response_with_related(user_comments)

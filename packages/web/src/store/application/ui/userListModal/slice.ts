@@ -14,8 +14,7 @@ const initialState: UserListModalState = {
 type SetUsersPayload = {
   userListType: UserListType
   entityType: UserListEntityType
-  id: ID
-}
+} & ({ id: ID } | { entity?: any })
 
 // Slice
 

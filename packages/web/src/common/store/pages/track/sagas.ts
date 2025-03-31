@@ -13,13 +13,13 @@ import {
   getSDK
 } from '@audius/common/store'
 import { makeUid, route } from '@audius/common/utils'
-import { push as pushRoute } from 'connected-react-router'
 import { keccak_256 } from 'js-sha3'
 import moment from 'moment'
 import { call, fork, put, select, takeEvery } from 'typed-redux-saga'
 
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { retrieveTrackByHandleAndSlug } from 'common/store/cache/tracks/utils/retrieveTracks'
+import { push as pushRoute } from 'utils/navigation'
 import { waitForRead } from 'utils/sagaHelpers'
 
 import tracksSagas from './lineups/sagas'
@@ -63,7 +63,14 @@ function* watchFetchTrackBadge() {
                 [sdk.full.tracks, sdk.full.tracks.getTrendingTrackIDs],
                 {}
               )
-          const trendingRanks = trendingIdsFromSDK(data)
+          const trendingRanks = data
+            ? trendingIdsFromSDK(data)
+            : {
+                week: [],
+                month: [],
+                year: [],
+                allTime: []
+              }
           if (TF.size > 0) {
             trendingRanks.week = trendingRanks.week.filter((i) => {
               const shaId = keccak_256(i.toString())

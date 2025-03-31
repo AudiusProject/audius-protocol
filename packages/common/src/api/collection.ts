@@ -1,12 +1,14 @@
+import { Id, OptionalId } from '@audius/sdk'
+
 import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '~/adapters'
 import { createApi } from '~/audius-query'
-import { ID, Id, Kind, OptionalId } from '~/models'
+import { ID, Kind } from '~/models'
 import { Nullable } from '~/utils'
 
-export const playlistPermalinkToHandleAndSlug = (permalink: string) => {
+const playlistPermalinkToHandleAndSlug = (permalink: string) => {
   const splitPermalink = permalink.split('/')
   if (splitPermalink.length !== 4) {
     throw Error(
@@ -35,16 +37,19 @@ const collectionApi = createApi({
           userId: OptionalId.parse(currentUserId)
         })
         return data.length
-          ? userCollectionMetadataFromSDK(data[0]) ?? null
+          ? (userCollectionMetadataFromSDK(data[0]) ?? null)
           : null
       },
       fetchBatch: async (
         { ids, currentUserId }: { ids: ID[]; currentUserId?: Nullable<ID> },
         { audiusSdk }
       ) => {
+        const id = ids.filter((id) => id && id !== -1).map((id) => Id.parse(id))
+        if (id.length === 0) return []
+
         const sdk = await audiusSdk()
         const { data = [] } = await sdk.full.playlists.getBulkPlaylists({
-          id: ids.filter((id) => id && id !== -1).map((id) => Id.parse(id)),
+          id,
           userId: OptionalId.parse(currentUserId)
         })
         return transformAndCleanList(data, userCollectionMetadataFromSDK)
@@ -60,9 +65,12 @@ const collectionApi = createApi({
         { ids, currentUserId }: { ids: ID[]; currentUserId?: Nullable<ID> },
         { audiusSdk }
       ) => {
+        const id = ids.filter((id) => id && id !== -1).map((id) => Id.parse(id))
+        if (id.length === 0) return []
+
         const sdk = await audiusSdk()
         const { data = [] } = await sdk.full.playlists.getBulkPlaylists({
-          id: ids.map((id) => Id.parse(id)),
+          id,
           userId: OptionalId.parse(currentUserId)
         })
         return transformAndCleanList(data, userCollectionMetadataFromSDK)

@@ -1,6 +1,6 @@
 import { route } from '@audius/common/utils'
 
-import DesktopHeader from 'components/header/desktop/Header'
+import { Header } from 'components/header/desktop/Header'
 import { Page } from 'components/page/Page'
 import { BASE_URL } from 'utils/route'
 import { createSeoDescription } from 'utils/seo'
@@ -21,7 +21,7 @@ type PremiumTracksPageContentProps = {
 export const PremiumTracksPageContent = ({
   lineup
 }: PremiumTracksPageContentProps) => {
-  const header = <DesktopHeader primary={messages.pageTitle} variant='main' />
+  const header = <Header primary={messages.pageTitle} />
   return (
     <Page
       title={messages.pageTitle}

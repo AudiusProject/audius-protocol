@@ -12,14 +12,28 @@ import {
   useTheme
 } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
-import { Link, Redirect, Route, Switch, useRouteMatch } from 'react-router-dom'
-import { useEffectOnce, useLocation, useMeasure } from 'react-use'
+import {
+  Link,
+  Redirect,
+  Route,
+  Switch,
+  useRouteMatch,
+  useHistory
+} from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom-v5-compat'
+import { useEffectOnce, useLocalStorage, useMeasure } from 'react-use'
 
 import djBackground from 'assets/img/2-DJ-4-3.jpg'
 import djPortrait from 'assets/img/DJportrait.jpg'
 import imagePhone from 'assets/img/imagePhone.png'
-import { fetchReferrer } from 'common/store/pages/signon/actions'
-import { getHasCompletedAccount } from 'common/store/pages/signon/selectors'
+import {
+  fetchReferrer,
+  setField,
+  setValueField,
+  updateRouteOnCompletion
+} from 'common/store/pages/signon/actions'
+import { getRouteOnExit, getStatus } from 'common/store/pages/signon/selectors'
+import { EditingStatus } from 'common/store/pages/signon/types'
 import { useMedia } from 'hooks/useMedia'
 import { SignInPage } from 'pages/sign-in-page'
 import { AudiusValues } from 'pages/sign-on-page/AudiusValues'
@@ -37,7 +51,6 @@ const {
   SIGN_UP_PAGE,
   SIGN_UP_PASSWORD_PAGE,
   SIGN_UP_REVIEW_HANDLE_PAGE,
-  TRENDING_PAGE,
   SIGN_UP_GENRES_PAGE,
   SIGN_UP_ARTISTS_PAGE
 } = route
@@ -54,6 +67,8 @@ type RootProps = {
 const DesktopSignOnRoot = (props: RootProps) => {
   const { children } = props
   const { spacing, motion, color } = useTheme()
+
+  const routeOnExit = useSelector(getRouteOnExit)
 
   const hideCloseButton = useRouteMatch({
     path: [
@@ -92,7 +107,7 @@ const DesktopSignOnRoot = (props: RootProps) => {
     >
       {!hideCloseButton ? (
         <Link
-          to={TRENDING_PAGE}
+          to={routeOnExit}
           css={{
             zIndex: 1,
             position: 'absolute',
@@ -100,7 +115,7 @@ const DesktopSignOnRoot = (props: RootProps) => {
             top: spacing.xl
           }}
         >
-          <IconCloseAlt color='staticWhite' />
+          <IconCloseAlt color='white' />
         </Link>
       ) : null}
       <Paper
@@ -254,7 +269,7 @@ const MobileSignOnRoot = (props: MobileSignOnRootProps) => {
             <Text
               variant='title'
               strength='weak'
-              color='staticWhite'
+              color='white'
               css={{
                 marginTop: 'auto',
                 opacity: isLoaded ? 1 : 0,
@@ -275,15 +290,71 @@ const MobileSignOnRoot = (props: MobileSignOnRootProps) => {
 
 export const SignOnPage = () => {
   const { isMobile } = useMedia()
-  const hasCompletedAccount = useSelector(getHasCompletedAccount)
-  const location = useLocation()
+  const signOnStatus = useSelector(getStatus)
+  const routeOnExit = useSelector(getRouteOnExit)
   const dispatch = useDispatch()
+  const history = useHistory()
+  const [searchParams] = useSearchParams()
+  const [guestEmailLocalStorage] = useLocalStorage('guestEmail', '')
+
+  // Add ESC key handler
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && routeOnExit) {
+        history.push(routeOnExit)
+      }
+    }
+
+    window.addEventListener('keydown', handleEscKey)
+    return () => {
+      window.removeEventListener('keydown', handleEscKey)
+    }
+  }, [history, routeOnExit])
+
+  const rf = searchParams.get('rf')
+  const ref = searchParams.get('ref')
+  const routeOnCompletion = searchParams.get('routeOnCompletion')
+  const guestEmailParam = searchParams.get('guestEmail')
+  const guestEmail = guestEmailLocalStorage || guestEmailParam
+
+  useEffect(() => {
+    if (rf) {
+      dispatch(fetchReferrer(rf))
+    } else if (ref) {
+      dispatch(fetchReferrer(ref))
+    }
+
+    if (routeOnCompletion) {
+      dispatch(updateRouteOnCompletion(routeOnCompletion))
+    }
+
+    if (guestEmail) {
+      dispatch(setValueField('email', guestEmail))
+      dispatch(setField('isGuest', true))
+    }
+  }, [dispatch, rf, ref, routeOnCompletion, guestEmail])
 
   useEffectOnce(() => {
     // Check for referrals and set them in the store
-    const referrerHandle = new URLSearchParams(location.search).get('ref')
-    if (referrerHandle) {
-      dispatch(fetchReferrer(referrerHandle))
+    const rf = searchParams.get('rf')
+    const ref = searchParams.get('ref')
+    if (rf) {
+      dispatch(fetchReferrer(rf))
+    } else if (ref) {
+      dispatch(fetchReferrer(ref))
+    }
+
+    // Handle completionOnExit parameter
+    const routeOnCompletion = searchParams.get('routeOnCompletion')
+    if (routeOnCompletion) {
+      dispatch(updateRouteOnCompletion(routeOnCompletion))
+    }
+
+    const guestEmailParam = searchParams.get('guestEmail')
+    const guestEmail = guestEmailLocalStorage || guestEmailParam
+    if (guestEmail) {
+      dispatch(setValueField('email', guestEmail))
+      dispatch(setField('isGuest', true))
     }
   })
 
@@ -294,7 +365,7 @@ export const SignOnPage = () => {
     setIsLoaded(true)
   })
 
-  if (hasCompletedAccount) {
+  if (signOnStatus === EditingStatus.SUCCESS) {
     return <Redirect to={FEED_PAGE} />
   }
 

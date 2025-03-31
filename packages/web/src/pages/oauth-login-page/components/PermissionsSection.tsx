@@ -83,8 +83,8 @@ export const PermissionsSection = ({
               {scope === 'write'
                 ? messages.writeAccountAccess
                 : scope === 'write_once'
-                ? getWriteOncePermissionTitle(tx)
-                : messages.readOnlyAccountAccess}
+                  ? getWriteOncePermissionTitle(tx)
+                  : messages.readOnlyAccountAccess}
             </Text>
             {scope === 'write' ? (
               <PermissionText>

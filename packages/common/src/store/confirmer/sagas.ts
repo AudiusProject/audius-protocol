@@ -1,7 +1,8 @@
 import { call, delay, put, race, select, takeEvery } from 'redux-saga/effects'
 
-import { getContext } from '~/store/effects'
 import { waitForValue } from '~/utils/sagaHelpers'
+
+import { getSDK } from '..'
 
 import * as confirmerActions from './actions'
 import {
@@ -16,40 +17,16 @@ import {
 } from './selectors'
 import type { RequestConfirmationError } from './types'
 
-enum BlockConfirmation {
-  CONFIRMED = 'CONFIRMED',
-  DENIED = 'DENIED',
-  UNKNOWN = 'UNKNOWN'
-}
-
-const POLLING_FREQUENCY_MILLIS = 2000
-
-/* Exported  */
-
 export function* confirmTransaction(blockHash: string, blockNumber: number) {
-  const apiClient = yield* getContext('apiClient')
-  /**
-   * Assume confirmation when there is nothing to confirm
-   */
-  if (!blockHash || !blockNumber) return true
-
-  function* confirmBlock(): Generator<any, BlockConfirmation, any> {
-    const { block_passed } = yield apiClient.getBlockConfirmation(
+  const sdk = yield* getSDK()
+  yield call(
+    [sdk.services.entityManager, sdk.services.entityManager.confirmWrite],
+    {
       blockHash,
       blockNumber
-    )
-    // TODO stronger checks when moving to txhash
-    return block_passed
-      ? BlockConfirmation.CONFIRMED
-      : BlockConfirmation.UNKNOWN
-  }
-
-  let confirmation: BlockConfirmation = yield call(confirmBlock)
-  while (confirmation === BlockConfirmation.UNKNOWN) {
-    yield delay(POLLING_FREQUENCY_MILLIS)
-    confirmation = yield call(confirmBlock)
-  }
-  return confirmation === BlockConfirmation.CONFIRMED
+    }
+  )
+  return true
 }
 
 /* Private */

@@ -2,10 +2,10 @@ import { useRef, useState } from 'react'
 
 import type { Meta, StoryObj } from '@storybook/react'
 
-import { Button } from 'components/button'
-import { Box } from 'components/layout/Box'
-import { Paper } from 'components/layout/Paper'
-import { Text } from 'components/text'
+import { Button } from '~harmony/components/button'
+import { Box } from '~harmony/components/layout/Box'
+import { Paper } from '~harmony/components/layout/Paper'
+import { Text } from '~harmony/components/text'
 
 import { Popup } from './Popup'
 import type { PopupProps } from './types'

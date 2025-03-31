@@ -74,8 +74,8 @@ export const RadioButton = (props: RadioButtonProps) => {
         checked
           ? styles.outerActive
           : disabled
-          ? styles.outerDisabled
-          : styles.outerInactive,
+            ? styles.outerDisabled
+            : styles.outerInactive,
         style
       ]}
     >
@@ -84,10 +84,10 @@ export const RadioButton = (props: RadioButtonProps) => {
           checked && disabled
             ? styles.innerActiveAndDisabled
             : checked
-            ? styles.innerActive
-            : disabled
-            ? styles.innerDisabled
-            : styles.innerInactive
+              ? styles.innerActive
+              : disabled
+                ? styles.innerDisabled
+                : styles.innerInactive
         }
       />
     </View>

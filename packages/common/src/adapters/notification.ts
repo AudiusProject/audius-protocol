@@ -1,6 +1,7 @@
-import { full } from '@audius/sdk'
+import { full, HashId } from '@audius/sdk'
+import dayjs from 'dayjs'
 
-import { HashId, type BadgeTier, type ID } from '~/models'
+import { BadgeTier, type ID } from '~/models'
 import type { ChallengeRewardID } from '~/models/AudioRewards'
 import type { StringUSDC, StringWei } from '~/models/Wallet'
 import {
@@ -9,8 +10,21 @@ import {
   NotificationType,
   type Notification
 } from '~/store/notifications/types'
-import { decodeHashId } from '~/utils/hashIds'
 import { removeNullable } from '~/utils/typeUtils'
+
+const getTimeAgo = (date: number) => {
+  const now = dayjs()
+  const notifDate = dayjs.unix(date)
+  const weeksAgo = now.diff(notifDate, 'week')
+  if (weeksAgo) return `${weeksAgo} Week${weeksAgo > 1 ? 's' : ''} ago`
+  const daysAgo = now.diff(notifDate, 'day')
+  if (daysAgo) return `${daysAgo} Day${daysAgo > 1 ? 's' : ''} ago`
+  const hoursAgo = now.diff(notifDate, 'hour')
+  if (hoursAgo) return `${hoursAgo} Hour${hoursAgo > 1 ? 's' : ''} ago`
+  const minutesAgo = now.diff(notifDate, 'minute')
+  if (minutesAgo) return `${minutesAgo} Minute${minutesAgo > 1 ? 's' : ''} ago`
+  return 'A few moments ago'
+}
 
 function formatBaseNotification(notification: full.Notification) {
   const timestamp = notification.actions[0].timestamp
@@ -18,7 +32,8 @@ function formatBaseNotification(notification: full.Notification) {
     groupId: notification.groupId,
     timestamp,
     isViewed: !!notification.seenAt,
-    id: `timestamp:${timestamp}:group_id:${notification.groupId}`
+    id: `timestamp:${timestamp}:group_id:${notification.groupId}`,
+    timeLabel: getTimeAgo(timestamp)
   }
 }
 
@@ -213,6 +228,7 @@ export const notificationFromSDK = (
         challengeId,
         entityType: Entity.User,
         amount: data.amount as StringWei,
+        listenStreak: data.listenStreak,
         ...formatBaseNotification(notification)
       }
     }
@@ -245,7 +261,7 @@ export const notificationFromSDK = (
           if (full.instanceOfCreatePlaylistNotificationActionData(data)) {
             entityType = data.isAlbum ? Entity.Album : Entity.Playlist
             // Future proofing for when playlistId is fixed to be a string
-            return decodeHashId(
+            return HashId.parse(
               Array.isArray(data.playlistId)
                 ? data.playlistId[0]!
                 : data.playlistId
@@ -616,6 +632,14 @@ export const notificationFromSDK = (
         entityId,
         entityType,
         entityUserId,
+        ...formatBaseNotification(notification)
+      }
+    }
+    case 'listen_streak_reminder': {
+      const data = notification.actions[0].data
+      return {
+        type: NotificationType.ListenStreakReminder,
+        streak: data.streak,
         ...formatBaseNotification(notification)
       }
     }

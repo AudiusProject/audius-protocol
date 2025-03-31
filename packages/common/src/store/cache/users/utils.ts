@@ -2,17 +2,14 @@ import { put } from 'typed-redux-saga'
 
 import { Kind } from '~/models/Kind'
 import { UserMetadata } from '~/models/User'
-import { AudiusBackend } from '~/services/audius-backend'
 import * as cacheActions from '~/store/cache/actions'
-import { getContext } from '~/store/effects'
 import { waitForRead } from '~/utils/sagaHelpers'
 import { makeUid } from '~/utils/uid'
 
 export function* processAndCacheUsers(users: UserMetadata[]) {
   yield* waitForRead()
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const reformattedUser = users.map((user) => {
-    return reformatUser(user, audiusBackendInstance)
+    return reformatUser(user)
   })
 
   // insert users into cache
@@ -49,13 +46,8 @@ const setDisplayNameToHandleIfUnset = <T extends UserMetadata>(user: T) => {
  * Reformats a user to be used internally within the client.
  * This method should *always* be called before a user is cached.
  */
-export const reformatUser = (
-  user: UserMetadata,
-  audiusBackendInstance: AudiusBackend
-) => {
-  const withImages = audiusBackendInstance.getUserImages(user)
-
-  const withNames = setDisplayNameToHandleIfUnset(withImages)
+export const reformatUser = (user: UserMetadata) => {
+  const withNames = setDisplayNameToHandleIfUnset(user)
 
   return withNames
 }

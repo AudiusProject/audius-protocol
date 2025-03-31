@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { signInPageMessages } from '@audius/common/messages'
 import { signInSchema, signInErrorMessages } from '@audius/common/schemas'
 import { route } from '@audius/common/utils'
@@ -29,6 +30,7 @@ import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordFiel
 import PreloadImage from 'components/preload-image/PreloadImage'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { GuestEmailHint } from 'pages/sign-on-page/GuestEmailHint'
 import { EmailField } from 'pages/sign-up-page/components/EmailField'
 import { ForgotPasswordModal } from 'pages/sign-up-page/components/ForgotPasswordModal'
 import { Heading, ScrollView } from 'pages/sign-up-page/components/layout'
@@ -37,8 +39,6 @@ import { useSelector } from 'utils/reducer'
 import { SignInWithMetaMaskButton } from './SignInWithMetaMaskButton'
 
 const { SIGN_IN_CONFIRM_EMAIL_PAGE, SIGN_UP_PAGE } = route
-
-const SignInSchema = toFormikValidationSchema(signInSchema)
 
 const smallDesktopWindowHeight = 900
 
@@ -57,6 +57,12 @@ export const SignInPage = () => {
   const { value: existingEmail } = useSelector(getEmailField)
   const { value: existingPassword } = useSelector(getPasswordField)
   const requiresOtp = useSelector(getRequiresOtp)
+
+  const audiusQueryContext = useAudiusQueryContext()
+  const SignInSchema = useMemo(
+    () => toFormikValidationSchema(signInSchema(audiusQueryContext)),
+    [audiusQueryContext]
+  )
 
   useEffect(() => {
     if (requiresOtp) {
@@ -124,6 +130,7 @@ export const SignInPage = () => {
             <Flex direction='column' gap='l'>
               <EmailField />
               <SignInPasswordField />
+              <GuestEmailHint />
             </Flex>
             <Flex direction='column' gap='l' w='100%'>
               <Button

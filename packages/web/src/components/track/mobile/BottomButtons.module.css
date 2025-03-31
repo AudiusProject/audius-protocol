@@ -46,7 +46,7 @@
   align-items: center;
   background-color: var(--harmony-blue);
   border-radius: var(--harmony-unit-1);
-  color: var(--harmony-static-white);
+  color: var(--harmony-white);
   display: flex;
   gap: var(--harmony-unit-1);
   height: var(--harmony-unit-6);
@@ -59,7 +59,7 @@
 }
 
 .gatedContent path {
-  fill: var(--harmony-static-white);
+  fill: var(--harmony-white);
 }
 
 .spinner {
@@ -68,5 +68,5 @@
 }
 
 .spinner g path {
-  stroke: var(--harmony-static-white);
+  stroke: var(--harmony-white);
 }

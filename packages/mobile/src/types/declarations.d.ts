@@ -29,6 +29,11 @@ declare module '*.jpeg' {
   export default value
 }
 
+declare module '*.lottie' {
+  const content: any
+  export default content
+}
+
 declare module '@react-native-masked-view/masked-view' {
   import * as React from 'react'
   import type * as ReactNative from 'react-native'

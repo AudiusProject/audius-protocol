@@ -26,7 +26,7 @@ export const TextPressable = (props: TextLinkProps) => {
     ...other
   } = props
 
-  const { color, motion } = useTheme()
+  const { color, motion, type } = useTheme()
 
   const animatedPressedInternal = useSharedValue(0)
   const animatedPressed = animatedPressedProp ?? animatedPressedInternal
@@ -47,13 +47,16 @@ export const TextPressable = (props: TextLinkProps) => {
     active: color.primary.primary
   }
 
-  const animatedStyles = useAnimatedStyle(() => ({
-    color: interpolateColor(
-      animatedPressed.value,
-      [0, 1],
-      [variantColors[variant], variantPressingColors[variant]]
-    )
-  }))
+  const animatedStyles = useAnimatedStyle(
+    () => ({
+      color: interpolateColor(
+        animatedPressed.value,
+        [0, 1],
+        [variantColors[variant], variantPressingColors[variant]]
+      )
+    }),
+    [variant, type]
+  )
 
   // Need to nest the AnimatedText inside a Text so the handlers & animation work
   // while still supporting proper Text layout. All this nesting is necessary

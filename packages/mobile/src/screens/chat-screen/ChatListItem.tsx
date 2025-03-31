@@ -98,7 +98,7 @@ export const ChatListItem = ({ chatId }: { chatId: string }) => {
                     size='xs'
                     textTransform='uppercase'
                     strength='strong'
-                    color='staticWhite'
+                    color='white'
                     style={css({ letterSpacing: 0.5 })}
                   >
                     {clipMessageCount(chat?.unread_message_count ?? 0)}{' '}

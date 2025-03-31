@@ -1,28 +1,23 @@
 import { useCallback, useState } from 'react'
 
-import {
-  accountSelectors,
-  explorePageActions,
-  ExplorePageTabs
-} from '@audius/common/store'
+import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import {
   openSignOn,
-  showRequiresAccountModal
+  showRequiresAccountToast
 } from 'common/store/pages/signon/actions'
 import BottomBar from 'components/bottom-bar/BottomBar'
 import { AppState } from 'store/types'
+import { push } from 'utils/navigation'
 import { getPathname } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 const { FEED_PAGE, TRENDING_PAGE, EXPLORE_PAGE, profilePage, LIBRARY_PAGE } =
   route
-const { setTab } = explorePageActions
-const { getUserHandle } = accountSelectors
+const { getUserHandle, getIsGuestAccount } = accountSelectors
 
 type ConnectedBottomBarProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps> &
@@ -31,9 +26,9 @@ type ConnectedBottomBarProps = ReturnType<typeof mapStateToProps> &
 const ConnectedBottomBar = ({
   goToRoute,
   handle,
+  isGuestAccount,
   history,
-  openSignOn,
-  resetExploreTab
+  openSignOn
 }: ConnectedBottomBarProps) => {
   const userProfilePage = handle ? profilePage(handle) : null
   const navRoutes = new Set([
@@ -56,41 +51,36 @@ const ConnectedBottomBar = ({
   }
 
   const goToFeed = useCallback(() => {
-    resetExploreTab()
     if (!handle) {
       openSignOn()
     } else {
       goToRoute(FEED_PAGE)
     }
-  }, [goToRoute, handle, openSignOn, resetExploreTab])
+  }, [goToRoute, handle, openSignOn])
 
   const goToTrending = useCallback(() => {
-    resetExploreTab()
     goToRoute(TRENDING_PAGE)
-  }, [goToRoute, resetExploreTab])
+  }, [goToRoute])
 
   const goToExplore = useCallback(() => {
-    resetExploreTab()
     goToRoute(EXPLORE_PAGE)
-  }, [goToRoute, resetExploreTab])
+  }, [goToRoute])
 
   const goToLibrary = useCallback(() => {
-    resetExploreTab()
-    if (!handle) {
+    if (!handle && !isGuestAccount) {
       openSignOn()
     } else {
       goToRoute(LIBRARY_PAGE)
     }
-  }, [goToRoute, handle, openSignOn, resetExploreTab])
+  }, [goToRoute, handle, isGuestAccount, openSignOn])
 
   const goToProfile = useCallback(() => {
-    resetExploreTab()
     if (!handle) {
       openSignOn()
     } else {
       goToRoute(profilePage(handle))
     }
-  }, [goToRoute, handle, openSignOn, resetExploreTab])
+  }, [goToRoute, handle, openSignOn])
 
   return (
     <BottomBar
@@ -109,19 +99,17 @@ const ConnectedBottomBar = ({
 
 function mapStateToProps(state: AppState) {
   return {
-    handle: getUserHandle(state)
+    handle: getUserHandle(state),
+    isGuestAccount: getIsGuestAccount(state)
   }
 }
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
+    goToRoute: (route: string) => dispatch(push(route)),
     openSignOn: () => {
       dispatch(openSignOn(false))
-      dispatch(showRequiresAccountModal())
-    },
-    resetExploreTab: () => {
-      dispatch(setTab({ tab: ExplorePageTabs.FOR_YOU }))
+      dispatch(showRequiresAccountToast())
     }
   }
 }

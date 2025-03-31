@@ -2,7 +2,7 @@ import {
   transformAndCleanList,
   userTrackMetadataFromSDK
 } from '@audius/common/adapters'
-import { OptionalId, Track } from '@audius/common/models'
+import { Track } from '@audius/common/models'
 import {
   accountSelectors,
   aiPageLineupActions as tracksActions,
@@ -11,6 +11,7 @@ import {
   CommonState,
   getSDK
 } from '@audius/common/store'
+import { OptionalId } from '@audius/sdk'
 import { call, put, select } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'

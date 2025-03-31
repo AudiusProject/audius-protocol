@@ -2,7 +2,7 @@ import { Select, SelectProps } from '@audius/harmony'
 import { useField } from 'formik'
 import { SetOptional } from 'type-fest'
 
-export type SelectFieldProps = SetOptional<SelectProps, 'value'> & {
+type SelectFieldProps = SetOptional<SelectProps, 'value'> & {
   name: string
 }
 

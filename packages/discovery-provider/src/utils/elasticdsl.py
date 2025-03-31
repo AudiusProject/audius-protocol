@@ -71,15 +71,26 @@ def populate_user_metadata_es(user, current_user):
     return omit_indexed_fields(user)
 
 
-def populate_track_or_playlist_metadata_es(item, current_user):
+def populate_track_or_playlist_metadata_es(
+    item, current_user, include_playlist_tracks=False
+):
     if current_user:
         my_id = current_user["user_id"]
-        item["has_current_user_reposted"] = my_id in item["reposted_by"]
-        item["has_current_user_saved"] = my_id in item["saved_by"]
+        item["has_current_user_reposted"] = my_id in item.get("reposted_by", [])
+        item["has_current_user_saved"] = my_id in item.get("saved_by", [])
     else:
         item["has_current_user_reposted"] = False
         item["has_current_user_saved"] = False
-    return omit_indexed_fields(item)
+
+    item["followee_reposts"] = item.get("followee_reposts", [])
+    item["followee_saves"] = item.get("followee_saves", [])
+
+    if "playlist_id" in item and "tracks" in item and include_playlist_tracks:
+        item["tracks"] = [
+            populate_track_or_playlist_metadata_es(track, current_user)
+            for track in item["tracks"]
+        ]
+    return omit_indexed_fields(item, include_playlist_tracks)
 
 
 omit_keys = [
@@ -87,7 +98,6 @@ omit_keys = [
     "following_ids",
     "follower_ids",
     "subscribed_ids",
-    "tracks",
     # track index
     "reposted_by",
     "saved_by",
@@ -96,7 +106,7 @@ omit_keys = [
 ]
 
 
-def omit_indexed_fields(doc):
+def omit_indexed_fields(doc, include_playlist_tracks=False):
     doc = copy.copy(doc)
 
     # track
@@ -109,5 +119,8 @@ def omit_indexed_fields(doc):
     for key in omit_keys:
         if key in doc:
             del doc[key]
+
+    if not include_playlist_tracks and "tracks" in doc:
+        del doc["tracks"]
 
     return doc

@@ -1,26 +1,16 @@
-import type { ComponentType, ReactNode } from 'react'
+import { useMemo, type ComponentType, type ReactNode } from 'react'
 
 import type { ImageSourcePropType } from 'react-native'
-import { View, Image } from 'react-native'
+import { Image } from 'react-native'
 import type { SvgProps } from 'react-native-svg'
 
+import { Flex } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 
 const useStyles = makeStyles(({ palette }) => ({
-  root: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderBottomColor: palette.neutralLight8,
-    borderBottomWidth: 1,
-    paddingBottom: spacing(4),
-    marginBottom: spacing(4)
-  },
   iconColor: {
     color: palette.secondary
-  },
-  icon: {
-    marginRight: spacing(2)
   },
   image: {
     height: spacing(7),
@@ -39,28 +29,26 @@ type ImageProps = {
 
 type NotificationHeaderProps = {
   children: ReactNode
+  emoji?: ReactNode
 } & (SVGProps | ImageProps)
 
 export const NotificationHeader = (props: NotificationHeaderProps) => {
   const styles = useStyles()
   const { children } = props
 
-  const iconElement =
-    'icon' in props ? (
-      <props.icon
-        fill={styles.iconColor.color}
-        height={30}
-        width={30}
-        style={styles.icon}
-      />
-    ) : (
-      <Image source={props.imageSource} style={[styles.image, styles.icon]} />
-    )
+  const iconElement = useMemo(() => {
+    if (props.emoji) {
+      return props.emoji
+    } else if ('icon' in props) {
+      return <props.icon fill={styles.iconColor.color} height={30} width={30} />
+    }
+    return <Image source={props.imageSource} style={styles.image} />
+  }, [props, styles.iconColor.color, styles.image])
 
   return (
-    <View style={styles.root}>
+    <Flex row alignItems='center' borderBottom='default' pb='l' mb='l' gap='m'>
       {iconElement}
       {children}
-    </View>
+    </Flex>
   )
 }

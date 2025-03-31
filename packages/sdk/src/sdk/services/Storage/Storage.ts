@@ -7,15 +7,13 @@ import type { CrossPlatformFile as File } from '../../types/File'
 import fetch from '../../utils/fetch'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { wait } from '../../utils/wait'
-import type { AuthService } from '../Auth'
-import { sortObjectKeys } from '../Auth/utils'
 import type { LoggerService } from '../Logger'
 import type { StorageNodeSelectorService } from '../StorageNodeSelector'
 
 import { getDefaultStorageServiceConfig } from './getDefaultConfig'
 import type {
   FileTemplate,
-  ProgressCB,
+  ProgressHandler,
   StorageService,
   StorageServiceConfig,
   StorageServiceConfigInternal,
@@ -44,58 +42,6 @@ export class Storage implements StorageService {
   }
 
   /**
-   * Upload a file on content nodes
-   * @param uploadId
-   * @param data
-   * @param auth
-   * @returns
-   */
-  async editFile({
-    uploadId,
-    data,
-    auth
-  }: {
-    uploadId: string
-    data: { [key: string]: string }
-    auth: AuthService
-  }) {
-    // Generate signature
-    const signatureData = {
-      upload_id: uploadId,
-      timestamp: Date.now()
-    }
-    const signature = await auth.hashAndSign(
-      JSON.stringify(sortObjectKeys(signatureData))
-    )
-    const signatureEnvelope = {
-      data: JSON.stringify(signatureData),
-      signature
-    }
-
-    const contentNodeEndpoint = await this.storageNodeSelector.getSelectedNode()
-
-    if (!contentNodeEndpoint) {
-      throw new Error('No content node available for upload')
-    }
-
-    const response = await axios({
-      method: 'post',
-      url: `${contentNodeEndpoint}/uploads/${uploadId}`,
-      maxContentLength: Infinity,
-      data,
-      params: { signature: JSON.stringify(signatureEnvelope) }
-    })
-
-    // Poll for re-transcoding to complete
-    return await this.pollProcessingStatus(
-      uploadId,
-      response.data.template === 'audio'
-        ? MAX_TRACK_TRANSCODE_TIMEOUT
-        : MAX_IMAGE_RESIZE_TIMEOUT_MS
-    )
-  }
-
-  /**
    * Upload a file to a content node
    * @param file
    * @param onProgress
@@ -110,7 +56,7 @@ export class Storage implements StorageService {
     options = {}
   }: {
     file: File
-    onProgress?: ProgressCB
+    onProgress?: ProgressHandler
     template: FileTemplate
     options?: { [key: string]: string }
   }) {
@@ -119,9 +65,22 @@ export class Storage implements StorageService {
     Object.keys(options).forEach((key) => {
       formData.append(key, `${options[key]}`)
     })
+
+    const formDataFile =
+      'uri' in file
+        ? {
+            ...file,
+            // NOTE this is required for react-native
+            // certain characters in the file name make formData invalid
+            name: file.name
+              ? encodeURIComponent(file.name.replace(/[()]/g, ''))
+              : 'blob'
+          }
+        : file
+
     formData.append(
       'files',
-      isNodeFile(file) ? file.buffer : file,
+      isNodeFile(formDataFile) ? formDataFile.buffer : formDataFile,
       file.name ?? 'blob'
     )
 
@@ -132,13 +91,21 @@ export class Storage implements StorageService {
       method: 'post',
       maxContentLength: Infinity,
       data: formData,
-      headers: formData.getBoundary
-        ? {
-            'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
-          }
-        : undefined,
-      onUploadProgress: (progressEvent) =>
-        onProgress?.(progressEvent.loaded, progressEvent.total)
+      headers: {
+        ...(formData.getBoundary
+          ? {
+              'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
+            }
+          : undefined)
+      },
+      onUploadProgress: (progressEvent) => {
+        const progress = {
+          upload: { loaded: progressEvent.loaded, total: progressEvent.total }
+        }
+        onProgress?.(
+          template === 'audio' ? { audio: progress } : { art: progress }
+        )
+      }
     }
 
     let lastErr
@@ -150,13 +117,17 @@ export class Storage implements StorageService {
       request.url = `${selectedNode!}/uploads`
       try {
         response = await axios(request)
-        break
+        // Server will sometimes return empty array in case of error
+        if (response?.data?.length > 0) {
+          break
+        }
       } catch (e: any) {
         lastErr = e // keep trying other nodes
       }
     }
 
-    if (!response) {
+    // Covers no response or empty response
+    if (!response?.data?.length) {
       const msg = `Error sending storagev2 upload request, tried all healthy storage nodes. Last error: ${lastErr}`
       this.logger.error(msg)
       throw new Error(msg)
@@ -164,10 +135,37 @@ export class Storage implements StorageService {
 
     return await this.pollProcessingStatus(
       response.data[0].id,
-      template === 'audio'
-        ? MAX_TRACK_TRANSCODE_TIMEOUT
-        : MAX_IMAGE_RESIZE_TIMEOUT_MS
+      template,
+      onProgress
     )
+  }
+
+  /**
+   * Generates a preview for a track at the given second offset
+   * @param {Object} params
+   * @param {string} params.cid - The CID of the track to generate a preview for
+   * @param {number} params.secondOffset - The offset in seconds to start the preview from
+   * @returns {Promise<string>} The CID of the generated preview
+   */
+  async generatePreview({
+    cid,
+    secondOffset
+  }: {
+    cid: string
+    secondOffset: number
+  }) {
+    const contentNodeEndpoint = await this.storageNodeSelector.getSelectedNode()
+
+    if (!contentNodeEndpoint) {
+      throw new Error('No content node available')
+    }
+
+    const response = await axios({
+      method: 'post',
+      url: `${contentNodeEndpoint}/generate_preview/${cid}/${secondOffset}`
+    })
+
+    return response.data.cid
   }
 
   /**
@@ -176,11 +174,28 @@ export class Storage implements StorageService {
    * @param maxPollingMs millis to stop polling and error if job is not done
    * @returns successful job info, or throws error if job fails / times out
    */
-  private async pollProcessingStatus(id: string, maxPollingMs: number) {
+  private async pollProcessingStatus(
+    id: string,
+    template: FileTemplate,
+    onProgress?: ProgressHandler
+  ) {
     const start = Date.now()
+
+    const maxPollingMs =
+      template === 'audio'
+        ? MAX_TRACK_TRANSCODE_TIMEOUT
+        : MAX_IMAGE_RESIZE_TIMEOUT_MS
+
     while (Date.now() - start < maxPollingMs) {
       try {
         const resp = await this.getProcessingStatus(id)
+        if (template === 'audio' && resp.transcode_progress) {
+          onProgress?.({
+            audio: {
+              transcode: { decimal: resp.transcode_progress }
+            }
+          })
+        }
         if (resp?.status === 'done') {
           return resp
         }

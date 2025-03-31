@@ -11,7 +11,7 @@ const createFpClient = (apiKey) => {
     return null
   } else {
     return new FingerprintJsServerApiClient({
-      apiKey: apiKey,
+      apiKey,
       region: Region.Global
     })
   }

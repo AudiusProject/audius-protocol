@@ -12,7 +12,6 @@ import { useSelector } from 'react-redux'
 import { PaymentMethod } from 'components/payment-method/PaymentMethod'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { track } from 'services/analytics'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 import styles from './AddFunds.module.css'
 
@@ -34,8 +33,7 @@ export const AddFunds = ({
 }) => {
   useCreateUserbankIfNeeded({
     recordAnalytics: track,
-    audiusBackendInstance,
-    mint: 'usdc'
+    mint: 'USDC'
   })
   const [selectedPurchaseMethod, setSelectedPurchaseMethod] =
     useState<PurchaseMethod>(PurchaseMethod.CARD)

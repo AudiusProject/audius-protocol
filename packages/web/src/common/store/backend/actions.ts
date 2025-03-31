@@ -1,10 +1,9 @@
 export const SETUP = 'BACKEND/SETUP'
 export const SETUP_BACKEND_SUCCEEDED = 'BACKEND/SETUP_BACKEND_SUCCEEDED'
 export const SETUP_BACKEND_FAILED = 'BACKEND/SETUP_BACKEND_FAILED'
-export const LIBS_ERROR = 'BACKEND/LIBS_ERROR'
 
-export function setupBackendSucceeded(web3Error: boolean) {
-  return { type: SETUP_BACKEND_SUCCEEDED, web3Error }
+export function setupBackendSucceeded() {
+  return { type: SETUP_BACKEND_SUCCEEDED }
 }
 
 export function setupBackend() {
@@ -13,8 +12,4 @@ export function setupBackend() {
 
 export function setupBackendFailed() {
   return { type: SETUP_BACKEND_FAILED }
-}
-
-export function libsError(error: string) {
-  return { type: LIBS_ERROR, error }
 }

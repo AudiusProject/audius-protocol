@@ -1,17 +1,22 @@
 import { FeatureFlags } from '@audius/common/services'
 import { CommonStoreContext } from '@audius/common/store'
 import { FetchNFTClient } from '@audius/fetch-nft'
-import { setTag, configureScope } from '@sentry/browser'
+import { setTag, getCurrentScope } from '@sentry/browser'
 
 import * as analytics from 'services/analytics'
 import { audioPlayer } from 'services/audio-player'
-import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { audiusSdk, authService } from 'services/audius-sdk'
+import {
+  audiusSdk,
+  authService,
+  solanaWalletService
+} from 'services/audius-sdk'
+import { identityService } from 'services/audius-sdk/identity'
 import { env } from 'services/env'
 import { explore } from 'services/explore'
 import { fingerprintClient } from 'services/fingerprint'
 import { localStorage } from 'services/local-storage'
+import { queryClient } from 'services/query-client'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { trackDownload } from 'services/track-download'
@@ -39,10 +44,10 @@ export const buildStoreContext = ({
   getFeatureEnabled: getFeatureEnabled as unknown as (
     flag: FeatureFlags
   ) => Promise<boolean>,
+  getHostUrl: () => window.location.origin,
   analytics,
   remoteConfigInstance,
   audiusBackendInstance,
-  apiClient,
   fingerprintClient,
   walletClient,
   localStorage,
@@ -65,18 +70,21 @@ export const buildStoreContext = ({
       metadataProgramId: env.METADATA_PROGRAM_ID
     }
   }),
-  sentry: { setTag, configureScope },
+  sentry: { setTag, getCurrentScope },
   reportToSentry,
   trackDownload,
   instagramAppId: env.INSTAGRAM_APP_ID,
   instagramRedirectUrl: env.INSTAGRAM_REDIRECT_URL,
   share: getShare(isMobile),
   audiusSdk,
+  solanaWalletService,
   authService,
+  identityService,
   imageUtils: {
     generatePlaylistArtwork
   },
   isMobile,
+  queryClient,
   // @ts-ignore dispatch will be populated in configureStore
   dispatch: undefined
 })

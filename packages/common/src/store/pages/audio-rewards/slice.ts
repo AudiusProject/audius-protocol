@@ -140,6 +140,7 @@ const slice = createSlice({
       }
     },
     updateOptimisticListenStreak: (_state) => {},
+    updateOptimisticPlayCount: (_state) => {},
     setUserChallengeCurrentStepCount: (
       state,
       action: PayloadAction<{
@@ -288,6 +289,7 @@ export const {
   showRewardClaimedToast,
   resetRewardClaimedToast,
   updateOptimisticListenStreak,
+  updateOptimisticPlayCount,
   setUserChallengeCurrentStepCount,
   resetUserChallengeCurrentStepCount,
   setOptimisticChallengeCompleted

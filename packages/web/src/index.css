@@ -168,3 +168,19 @@ body,
 .grecaptcha-badge {
   visibility: hidden;
 }
+
+/* Ensures the coinflow chargeback protection module is rendered off-screen to prevent ui jitter */
+body > iframe#storageIframe,
+body > iframe[src='about:blank'] {
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  border: none !important;
+  position: absolute !important;
+  top: -9999px !important;
+  left: -9999px !important;
+  overflow: hidden !important;
+}

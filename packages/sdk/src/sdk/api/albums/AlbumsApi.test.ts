@@ -4,9 +4,8 @@ import path from 'path'
 import { describe, it, expect, vitest, beforeAll } from 'vitest'
 
 import { developmentConfig } from '../../config/development'
-import { DefaultAuth } from '../../services/Auth/DefaultAuth'
-import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
-import { EntityManager } from '../../services/EntityManager'
+import { createAppWalletClient } from '../../services/AudiusWalletClient'
+import { EntityManagerClient } from '../../services/EntityManager'
 import { Logger } from '../../services/Logger'
 import { SolanaRelay } from '../../services/Solana/SolanaRelay'
 import { SolanaRelayWalletAdapter } from '../../services/Solana/SolanaRelayWalletAdapter'
@@ -37,7 +36,6 @@ const pngFile = fs.readFileSync(
 )
 
 vitest.mock('../../services/EntityManager')
-vitest.mock('../../services/DiscoveryNodeSelector')
 vitest.mock('../../services/StorageNodeSelector')
 vitest.mock('../../services/Storage')
 vitest.mock('../tracks/TrackUploadHelper')
@@ -82,20 +80,12 @@ vitest
   .mockImplementation(async () => ({}))
 
 vitest
-  .spyOn(EntityManager.prototype, 'manageEntity')
+  .spyOn(EntityManagerClient.prototype, 'manageEntity')
   .mockImplementation(async () => {
     return {
       blockHash: 'a',
       blockNumber: 1
     } as any
-  })
-
-vitest
-  .spyOn(EntityManager.prototype, 'getCurrentBlock')
-  .mockImplementation(async () => {
-    return {
-      timestamp: 1
-    }
   })
 
 vitest
@@ -115,14 +105,13 @@ vitest
   })
 
 describe('AlbumsApi', () => {
+  // TODO: Remove this setup in describe
   let albums: AlbumsApi
-
-  const auth = new DefaultAuth()
+  // eslint-disable-next-line mocha/no-setup-in-describe
+  const audiusWalletClient = createAppWalletClient({ apiKey: '' })
   const logger = new Logger()
-  const discoveryNodeSelector = new DiscoveryNodeSelector()
   const storageNodeSelector = new StorageNodeSelector({
-    auth,
-    discoveryNodeSelector,
+    endpoint: 'https://discoveryprovider.audius.co',
     logger
   })
 
@@ -130,7 +119,7 @@ describe('AlbumsApi', () => {
     const solanaWalletAdapter = new SolanaRelayWalletAdapter({
       solanaRelay: new SolanaRelay(
         new Configuration({
-          middleware: [discoveryNodeSelector.createMiddleware()]
+          middleware: []
         })
       )
     })
@@ -139,12 +128,18 @@ describe('AlbumsApi', () => {
     })
     albums = new AlbumsApi(
       new Configuration(),
-      new Storage({ storageNodeSelector, logger: new Logger() }),
-      new EntityManager({ discoveryNodeSelector: new DiscoveryNodeSelector() }),
-      auth,
+      new Storage({
+        storageNodeSelector,
+        logger: new Logger()
+      }),
+      new EntityManagerClient({
+        audiusWalletClient,
+        endpoint: 'https://discoveryprovider.audius.co'
+      }),
       logger,
       new ClaimableTokensClient({
         ...getDefaultClaimableTokensConfig(developmentConfig),
+        audiusWalletClient,
         solanaClient
       }),
       new PaymentRouterClient({
@@ -153,7 +148,7 @@ describe('AlbumsApi', () => {
       }),
       new SolanaRelay(
         new Configuration({
-          middleware: [discoveryNodeSelector.createMiddleware()]
+          middleware: []
         })
       ),
       solanaClient

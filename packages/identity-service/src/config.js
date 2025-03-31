@@ -605,28 +605,22 @@ const config = convict({
     env: 'ipdataAPIKey',
     default: ''
   },
-  cognitoAPISecret: {
-    doc: 'API Secret for Cognito',
+  plaidClientId: {
+    doc: 'Plaid client ID',
     format: String,
-    env: 'cognitoAPISecret',
+    env: 'plaidClientId',
     default: ''
   },
-  cognitoAPIKey: {
-    doc: 'API Key for Cognito',
+  plaidSecret: {
+    doc: 'Plaid secret',
     format: String,
-    env: 'cognitoAPIKey',
+    env: 'plaidSecret',
     default: ''
   },
-  cognitoBaseUrl: {
-    doc: 'Base URL for Cognito API',
+  plaidTemplateId: {
+    doc: 'Plaid template ID',
     format: String,
-    env: 'cognitoBaseUrl',
-    default: ''
-  },
-  cognitoTemplateId: {
-    doc: 'Template for using Cognito Flow API',
-    format: String,
-    env: 'cognitoTemplateId',
+    env: 'plaidTemplateId',
     default: ''
   },
   solanaEndpoint: {
@@ -843,18 +837,6 @@ const config = convict({
     doc: 'Amplitude API key',
     format: String,
     env: 'amplitudeAPIKey',
-    default: ''
-  },
-  cognitoIdentityHashSalt: {
-    doc: 'Hash salt',
-    format: String,
-    env: 'cognitoIdentityHashSalt',
-    default: ''
-  },
-  cognitoRetrySecret: {
-    doc: 'The secret necessary to request a retry for the cognito flow',
-    format: String,
-    env: 'cognitoRetrySecret',
     default: ''
   },
   stripeSecretKey: {

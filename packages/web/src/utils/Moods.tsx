@@ -95,7 +95,7 @@ export const moodMap: Record<Mood, JSX.Element> = {
     <Flex alignItems='center' gap='xs'>
       Aggressive{' '}
       <i
-        className='emoji serious-Flex-with-symbols-covering-mouth'
+        className='emoji serious-face-with-symbols-covering-mouth'
         style={{ marginBottom: 0 }}
       />
     </Flex>

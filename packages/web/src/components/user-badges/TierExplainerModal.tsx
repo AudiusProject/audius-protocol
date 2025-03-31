@@ -17,13 +17,13 @@ import {
   IconTokenSilver
 } from '@audius/harmony'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { BadgeTierText } from 'components/user-badges/ProfilePageBadge'
 import { useProfileTier } from 'hooks/wallet'
-import { TierLevel, TierNumber } from 'pages/audio-rewards-page/Tiers'
+import { TierLevel, TierNumber } from 'pages/rewards-page/Tiers'
+import { push } from 'utils/navigation'
 
 import styles from './TierExplainerModal.module.css'
 
@@ -55,16 +55,10 @@ type TierProps = {
   isActive?: boolean
   tier: AudioTiers
   isCompact?: boolean
-  onClickDiscord?: () => void
 }
 
 /** Shows info about a tier - badge, level, tier # */
-export const Tier = ({
-  tier,
-  isActive = false,
-  isCompact = false,
-  onClickDiscord = () => {}
-}: TierProps) => {
+const Tier = ({ tier, isActive = false, isCompact = false }: TierProps) => {
   const badgeImage = audioTierMapSvg[tier]
 
   return (
@@ -119,7 +113,7 @@ const TierExplainerModal = () => {
 
   const onClickLearnMore = useCallback(() => {
     handleDismiss()
-    dispatch(pushRoute(AUDIO_PAGE))
+    dispatch(push(AUDIO_PAGE))
   }, [dispatch, handleDismiss])
 
   return (

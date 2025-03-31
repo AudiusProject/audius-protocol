@@ -5,7 +5,7 @@ import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useGetCurrentUser } from '~/api'
-import { useAppContext } from '~/context/appContext'
+import { useAudiusQueryContext } from '~/audius-query'
 import { Status } from '~/models/Status'
 import { BNUSDC, StringUSDC } from '~/models/Wallet'
 import { getUserbankAccountInfo } from '~/services/index'
@@ -32,7 +32,7 @@ export const useUSDCBalance = ({
   pollingInterval?: number
   commitment?: Commitment
 } = {}) => {
-  const { audiusBackend } = useAppContext()
+  const { audiusSdk } = useAudiusQueryContext()
   const { data: user } = useGetCurrentUser({})
   const ethAddress = user?.wallet ?? null
   const dispatch = useDispatch()
@@ -48,15 +48,17 @@ export const useUSDCBalance = ({
   )
 
   const refresh = useCallback(async () => {
+    const sdk = await audiusSdk()
     if (!ethAddress) {
       return
     }
     setBalanceStatus(Status.LOADING)
     try {
       const account = await getUserbankAccountInfo(
-        audiusBackend,
+        sdk,
         {
-          mint: 'usdc'
+          ethAddress,
+          mint: 'USDC'
         },
         commitment
       )
@@ -66,7 +68,7 @@ export const useUSDCBalance = ({
     } catch (e) {
       setBalanceStatus(Status.ERROR)
     }
-  }, [ethAddress, audiusBackend, setData, commitment])
+  }, [audiusSdk, ethAddress, commitment, setData])
 
   // Refresh balance on mount
   useEffect(() => {

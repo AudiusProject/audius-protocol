@@ -1,6 +1,10 @@
 import { useCallback, useEffect } from 'react'
 
-import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
+import {
+  useCollection,
+  useGetCurrentUserId,
+  useGetPlaylistById
+} from '@audius/common/api'
 import {
   Name,
   PlaybackSource,
@@ -48,8 +52,8 @@ import {
   Text,
   spacing
 } from '@audius/harmony-native'
+import { CollectionDogEar } from 'app/components/collection/CollectionDogEar'
 import { UserGeneratedText } from 'app/components/core'
-import { CollectionDogEar } from 'app/components/core/CollectionDogEar'
 import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
 import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
 import { CollectionMetadataList } from 'app/components/details-tile/CollectionMetadataList'
@@ -73,7 +77,7 @@ import { useFetchCollectionLineup } from './useFetchCollectionLineup'
 const { getPlaying, getPreviewing, getUid, getCurrentTrack } = playerSelectors
 const { getIsReachable } = reachabilitySelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
-const { getCollection, getCollectionTracks } = cacheCollectionsSelectors
+const { getCollectionTracks } = cacheCollectionsSelectors
 const { getTracks } = cacheTracksSelectors
 const { resetCollection, fetchCollection } = collectionPageActions
 
@@ -104,12 +108,13 @@ const selectIsQueued = createSelector(
 const useRefetchLineupOnTrackAdd = (
   collectionId: ID | SmartCollectionVariant
 ) => {
-  const trackCount = useSelector((state) =>
-    typeof collectionId !== 'number'
-      ? 0
-      : getCollection(state, { id: collectionId })?.playlist_contents.track_ids
-          .length
-  )
+  const numericCollectionId =
+    typeof collectionId === 'number' ? collectionId : undefined
+  const { data: collectionTrackCount } = useCollection(numericCollectionId, {
+    select: (collection) => collection.playlist_contents.track_ids.length
+  })
+
+  const trackCount = collectionId ? collectionTrackCount : 0
 
   const previousTrackCount = usePrevious(trackCount)
   const dispatch = useDispatch()
@@ -538,8 +543,10 @@ const CollectionTrackList = ({
 
   const handleFetchCollection = useCallback(() => {
     dispatch(resetCollection())
-    dispatch(fetchCollection(collectionId as number, permalink, true))
-  }, [dispatch, collectionId, permalink])
+    if (numericCollectionId) {
+      dispatch(fetchCollection(collectionId as number, permalink, true))
+    }
+  }, [dispatch, collectionId, permalink, numericCollectionId])
 
   useFetchCollectionLineup(collectionId, handleFetchCollection)
 

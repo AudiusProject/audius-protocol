@@ -1,3 +1,4 @@
+import re
 from enum import Enum
 from typing import Any, List, Optional, TypedDict
 
@@ -37,6 +38,13 @@ class MusicalKey(str, Enum):
 
 def is_valid_musical_key(musical_key: str) -> bool:
     return musical_key in MusicalKey.__members__.values()
+
+
+cid_regex = r"^[a-z0-9]{62}$"
+
+
+def is_valid_cid(cid: str) -> bool:
+    return bool(re.match(cid_regex, cid))
 
 
 class TrackParent(TypedDict):
@@ -247,6 +255,27 @@ comment_metadata_format = {
     "track_timestamp_s": None,
 }
 
+encrypted_email_metadata_format = {
+    "email_owner_user_id": None,
+    "encrypted_email": None,
+    "access_grants": None,
+}
+
+add_associated_wallet_metadata_format = {
+    "wallet_address": None,
+    "chain": None,
+    "signature": None,
+}
+
+remove_associated_wallet_metadata_format = {
+    "wallet_address": None,
+    "chain": None,
+}
+
+collectibles_metadata_format = {
+    "collectibles": None,
+}
+
 
 class PlaylistMetadata(TypedDict):
     playlist_contents: Optional[Any]
@@ -298,6 +327,8 @@ immutable_fields = {
     "created_at",
     "updated_at",
     "slot",
+    # TODO: Remove from immutable_user_fields when we drop the column
+    # https://linear.app/audius/issue/PAY-4018/drop-usersmetadata-multihash
     "metadata_multihash",
     "is_current",
     "is_delete",
@@ -313,12 +344,7 @@ immutable_playlist_fields = immutable_fields | {
 immutable_track_fields = immutable_fields | {
     "track_id",
     "owner_id",
-    "track_cid",
-    "orig_file_cid",
-    "orig_filename",
-    "duration",
     "is_available",
-    "audio_analysis_error_count",
     "ddex_app",
 }
 
@@ -329,6 +355,9 @@ immutable_user_fields = immutable_fields | {
     "wallet",
     "is_available",
     "is_verified",
+    # Legacy fields that can be removed
+    "profile_picture",
+    "cover_photo",
 }
 
 track_comment_notification_setting_format = {

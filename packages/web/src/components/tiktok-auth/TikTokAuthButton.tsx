@@ -1,25 +1,23 @@
 import { MouseEvent, ReactElement, cloneElement, useCallback } from 'react'
 
+import { Feature } from '@audius/common/models'
 import { TikTokProfile } from '@audius/common/store'
+import { SocialButton, SocialButtonProps } from '@audius/harmony'
 
-import {
-  TikTokButton,
-  TikTokButtonProps
-} from 'components/social-button/tiktok-button/TikTokButton'
 import { useTikTokAuth } from 'hooks/useTikTokAuth'
 import { reportToSentry } from 'store/errors/reportToSentry'
 
 type TikTokAuthButtonProps = {
   onFailure: (e: Error) => void
   onSuccess: (uuid: string, profile: TikTokProfile) => void
-} & TikTokButtonProps
+} & Omit<SocialButtonProps, 'socialType'>
 
 type TikTokAuthProps = Pick<
   TikTokAuthButtonProps,
   'onFailure' | 'onSuccess' | 'onClick'
 > & { children: ReactElement }
 
-export const TikTokAuth = ({
+const TikTokAuthWrapper = ({
   onFailure,
   onSuccess,
   onClick,
@@ -59,7 +57,9 @@ export const TikTokAuth = ({
         } catch (e) {
           reportToSentry({
             error: e as Error,
-            name: 'Sign Up: TikTok auth failed'
+            name: 'Sign Up: Failed to get user from TikTok API',
+            feature: Feature.SignUp,
+            tags: { socialMedia: 'tiktok' }
           })
         }
       })
@@ -74,8 +74,12 @@ export const TikTokAuthButton = (props: TikTokAuthButtonProps) => {
   const { onFailure, onSuccess, onClick, ...buttonProps } = props
 
   return (
-    <TikTokAuth onFailure={onFailure} onSuccess={onSuccess} onClick={onClick}>
-      <TikTokButton {...buttonProps} />
-    </TikTokAuth>
+    <TikTokAuthWrapper
+      onFailure={onFailure}
+      onSuccess={onSuccess}
+      onClick={onClick}
+    >
+      <SocialButton socialType='tiktok' {...buttonProps} />
+    </TikTokAuthWrapper>
   )
 }

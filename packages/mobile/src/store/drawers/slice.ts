@@ -32,6 +32,7 @@ export type Drawer =
   | 'Welcome'
   | 'ManagerMode'
   | 'Comment'
+  | 'EditTrackFormOverflowMenu'
 
 export type DrawerData = {
   EnablePushNotifications: undefined
@@ -73,6 +74,7 @@ export type DrawerData = {
   Welcome: undefined
   ManagerMode: undefined
   Comment: { userId: ID; entityId: ID; isEntityOwner: boolean; artistId: ID }
+  EditTrackFormOverflowMenu: undefined
 }
 
 export type DrawersState = { [drawer in Drawer]: boolean | 'closing' } & {
@@ -106,6 +108,7 @@ const initialState: DrawersState = {
   Welcome: false,
   ManagerMode: false,
   Comment: false,
+  EditTrackFormOverflowMenu: false,
   data: {}
 }
 

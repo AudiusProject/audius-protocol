@@ -39,7 +39,7 @@ const getMessages = (collectionType: 'album' | 'playlist') => ({
   createdToast: `${capitalize(collectionType)} created!`
 })
 
-export type AddToCollectionProps = ReturnType<typeof mapStateToProps> &
+type AddToCollectionProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
 const g = withNullGuard((props: AddToCollectionProps) => {

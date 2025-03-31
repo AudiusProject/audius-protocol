@@ -10,7 +10,8 @@ import {
   IconMessage,
   IconNotificationOn,
   IconSettings,
-  IconUserUnfollow
+  IconUserUnfollow,
+  IconListeningHistory
 } from '@audius/harmony-native'
 import audiusLogoHorizontal from 'app/assets/images/Horizontal-Logo-Full-Color.png'
 import { Screen, ScreenContent, ScrollView } from 'app/components/core'
@@ -24,8 +25,8 @@ import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 import { AccountSettingsRow } from './AccountSettingsRow'
 import { AppearanceSettingsRow } from './AppearanceSettingsRow'
 import { CastSettingsRow } from './CastSettingsRow'
-import { Divider } from './Divider'
 import { SettingsRowLabel } from './SettingRowLabel'
+import { SettingsDivider } from './SettingsDivider'
 import { SettingsRow } from './SettingsRow'
 import { SettingsRowDescription } from './SettingsRowDescription'
 
@@ -40,6 +41,7 @@ const messages = {
   commentDescription: 'Prevent certain users from commenting on your tracks.',
   notificationsDescription: 'Review your notification preferences.',
   downloads: 'Download Settings',
+  history: 'Listening History',
   about: 'About'
 }
 
@@ -85,6 +87,10 @@ export const SettingsScreen = () => {
     navigation.push('AboutScreen')
   }, [navigation])
 
+  const handlePressHistory = useCallback(() => {
+    navigation.push('ListeningHistoryScreen')
+  }, [navigation])
+
   return (
     <Screen
       variant='secondary'
@@ -98,7 +104,7 @@ export const SettingsScreen = () => {
         <ScrollView>
           <Image source={audiusLogoHorizontal} style={styles.logo} />
           <AccountSettingsRow />
-          <Divider />
+          <SettingsDivider />
           <AppearanceSettingsRow />
           <SettingsRow onPress={handlePressInbox}>
             <SettingsRowLabel label={messages.inbox} icon={IconMessage} />
@@ -133,11 +139,17 @@ export const SettingsScreen = () => {
               icon={IconCloudDownload}
             />
           </SettingsRow>
-          <Divider />
+          <SettingsRow onPress={handlePressHistory}>
+            <SettingsRowLabel
+              label={messages.history}
+              icon={IconListeningHistory}
+            />
+          </SettingsRow>
+          <SettingsDivider />
           <SettingsRow onPress={handlePressAbout}>
             <SettingsRowLabel label={messages.about} icon={IconInfo} />
           </SettingsRow>
-          <Divider />
+          <SettingsDivider />
         </ScrollView>
       </ScreenContent>
     </Screen>

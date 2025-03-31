@@ -32,14 +32,11 @@ def get_usdc_purchase_tracks(args, strategy):
         key = make_trending_tracks_cache_key(time_range, genre, strategy.version)
         key += ":usdc_purchase_only"
 
-        # The index_trending task runs every 10 seconds, so we set the TTL to 10 seconds
-        ttl_sec = 10
-
         # Will try to hit cached trending from task, falling back
         # to generating it here if necessary and storing it with no TTL
         (tracks, track_ids) = use_redis_cache(
             key,
-            ttl_sec,
+            None,
             make_generate_unpopulated_trending(
                 session=session,
                 genre=genre,

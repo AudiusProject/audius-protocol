@@ -1,5 +1,5 @@
+import { useUser } from '@audius/common/api'
 import { ID } from '@audius/common/models'
-import { cacheUsersSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { IconSize, Text, useTheme } from '@audius/harmony'
 import { Link } from 'react-router-dom'
@@ -7,12 +7,10 @@ import { Link } from 'react-router-dom'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { MountPlacement } from 'components/types'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useSelector } from 'utils/reducer'
 
 import { TextLink, TextLinkProps } from './TextLink'
 
 const { profilePage } = route
-const { getUser } = cacheUsersSelectors
 
 type UserLinkProps = Omit<TextLinkProps, 'to'> & {
   userId: ID
@@ -20,6 +18,9 @@ type UserLinkProps = Omit<TextLinkProps, 'to'> & {
   popover?: boolean
   popoverMount?: MountPlacement
   noText?: boolean // Should be used if you're intending for the children to be the link element (i.e. Avatar)
+  noBadges?: boolean
+  // Hack to fix avatars wrapped in user link
+  noOverflow?: boolean
 }
 
 export const UserLink = (props: UserLinkProps) => {
@@ -30,17 +31,19 @@ export const UserLink = (props: UserLinkProps) => {
     popoverMount,
     children,
     noText,
+    noBadges,
+    noOverflow,
     ...other
   } = props
-  const { iconSizes, spacing } = useTheme()
-
-  const url = useSelector((state) => {
-    const handle = getUser(state, { id: userId })?.handle
-    return handle ? profilePage(handle) : ''
+  const { spacing } = useTheme()
+  const { data: partialUser } = useUser(userId, {
+    select: (user) => ({
+      handle: user?.handle,
+      name: user?.name
+    })
   })
-
-  const handle = useSelector((state) => getUser(state, { id: userId })?.handle)
-  const userName = useSelector((state) => getUser(state, { id: userId })?.name)
+  const { handle, name } = partialUser ?? {}
+  const url = handle ? profilePage(handle) : ''
 
   const textLink = (
     <TextLink
@@ -53,12 +56,14 @@ export const UserLink = (props: UserLinkProps) => {
       ellipses={popover}
       {...other}
     >
-      <Text ellipses>{userName}</Text>
-      <UserBadges
-        badgeSize={iconSizes[badgeSize]}
-        userId={userId}
-        css={{ marginTop: spacing['2xs'] }}
-      />
+      <Text ellipses>{name}</Text>
+      {noBadges ? null : (
+        <UserBadges
+          userId={userId}
+          css={{ marginTop: spacing['2xs'] }}
+          size={badgeSize}
+        />
+      )}
       {children}
     </TextLink>
   )
@@ -67,7 +72,10 @@ export const UserLink = (props: UserLinkProps) => {
 
   return popover && handle ? (
     <ArtistPopover
-      css={{ display: 'inline-flex', overflow: 'hidden' }}
+      css={{
+        display: 'inline-flex',
+        overflow: noOverflow ? 'visible' : 'hidden'
+      }}
       handle={handle}
       component='span'
       mount={popoverMount}

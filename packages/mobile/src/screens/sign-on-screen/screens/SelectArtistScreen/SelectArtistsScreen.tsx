@@ -20,7 +20,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 
 import { ReadOnlyAccountHeader } from '../../components/AccountHeader'
 import { Heading, PageFooter } from '../../components/layout'
-import type { SignUpScreenParamList } from '../../types'
+import type { SignOnScreenParamList } from '../../types'
 import { useTrackScreen } from '../../utils/useTrackScreen'
 
 import { SelectedGenresTabBar } from './SelectedGenresTabBar'
@@ -38,7 +38,7 @@ export const SelectArtistsScreen = () => {
 
   const selectedArtists = useSelector(getFollowIds)
   const dispatch = useDispatch()
-  const navigation = useNavigation<SignUpScreenParamList>()
+  const navigation = useNavigation<SignOnScreenParamList>()
   useTrackScreen('SelectArtists')
 
   const accountCreationStatus = useSelector(getStatus)

@@ -28,7 +28,7 @@ import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { ModalForm } from 'components/modal-form/ModalForm'
 import { ToastContext } from 'components/toast/ToastContext'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { identityService } from 'services/audius-sdk/identity'
 
 import styles from './ChangeEmailModal.module.css'
 
@@ -55,7 +55,7 @@ type ChangeEmailModalProps = {
   onClose: () => void
 }
 
-export const ResendCodeLink = () => {
+const ResendCodeLink = () => {
   const [{ value: email }] = useField('email')
 
   const [isSending, setIsSending] = useState(false)
@@ -63,10 +63,9 @@ export const ResendCodeLink = () => {
 
   const handleClick = useCallback(async () => {
     setIsSending(true)
-    const libs = await audiusBackendInstance.getAudiusLibsTyped()
     // Try to confirm without OTP to force OTP refresh
     try {
-      await libs.identityService?.changeEmail({
+      await identityService.changeEmail({
         email
       })
     } catch (e) {
@@ -90,7 +89,9 @@ const CurrentEmail = () => {
   const [{ value: oldEmail }, , { setValue: setOldEmail }] =
     useField('oldEmail')
   // Load the email for the user
-  const emailRequest = useAsync(audiusBackendInstance.getUserEmail)
+  const emailRequest = useAsync(async () => {
+    return await identityService.getUserEmail()
+  })
   useEffect(() => {
     if (emailRequest.value) {
       setOldEmail(emailRequest.value)

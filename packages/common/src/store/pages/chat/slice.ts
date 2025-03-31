@@ -1,13 +1,14 @@
-import type {
-  TypedCommsResponse,
-  UserChat,
-  ChatMessage,
-  ChatMessageReaction,
-  ChatMessageNullableReaction,
-  UnfurlResponse,
-  ValidatedChatPermissions,
-  ChatBlastAudience,
-  ChatBlast
+import {
+  type TypedCommsResponse,
+  type UserChat,
+  type ChatMessage,
+  type ChatMessageReaction,
+  type ChatMessageNullableReaction,
+  type UnfurlResponse,
+  type ValidatedChatPermissions,
+  type ChatBlastAudience,
+  type ChatBlast,
+  Id
 } from '@audius/sdk'
 import {
   Action,
@@ -21,14 +22,13 @@ import { ID, Status, ChatMessageWithExtras } from '~/models'
 import { signOut } from '~/store/sign-out/slice'
 import { hasTail } from '~/utils/chatUtils'
 import dayjs from '~/utils/dayjs'
-import { encodeHashId } from '~/utils/hashIds'
 
 import { ChatWebsocketError } from './types'
 
 export type Chat = UserChat | ChatBlast
 
 export type UserChatWithMessagesStatus = Chat & {
-  messagesStatus?: Status
+  messagesStatus?: Status | 'PENDING'
   messagesSummary?: TypedCommsResponse<ChatMessage>['summary']
 }
 
@@ -78,8 +78,8 @@ const chatSortComparator = (a: Chat, b: Chat) => {
       return a.is_blast && !b.is_blast
         ? -1
         : b.is_blast && !a.is_blast
-        ? 1
-        : alphabeticalSort
+          ? 1
+          : alphabeticalSort
     }
     return alphabeticalSort
   }
@@ -340,7 +340,7 @@ const slice = createSlice({
       // triggers saga
       // Optimistically set reaction
       const { userId, messageId, reaction } = action.payload
-      const encodedUserId = encodeHashId(userId)
+      const encodedUserId = Id.parse(userId)
       if (reaction) {
         state.optimisticReactions[messageId] = {
           user_id: encodedUserId,
@@ -403,12 +403,15 @@ const slice = createSlice({
         chat.last_message = ''
       }
       const existingChat = getChat(state, chat.chat_id)
-      // If the chat already exists, use its existing messagesStatus, otherwise default to IDLE
-      const messagesStatus = existingChat?.messagesStatus ?? Status.IDLE
+      // If the chat already exists, use its existing messagesStatus, otherwise default to PENDING
+      const messagesStatus = existingChat?.messagesStatus ?? 'PENDING'
       chatsAdapter.upsertOne(state.chats, {
         ...chat,
         messagesStatus
       })
+      if (!(chat.chat_id in state.messages)) {
+        state.messages[chat.chat_id] = chatMessagesAdapter.getInitialState()
+      }
     },
     markChatAsRead: (state, action: PayloadAction<{ chatId: string }>) => {
       // triggers saga
@@ -543,7 +546,7 @@ const slice = createSlice({
       const optimisticRead = state.optimisticChatRead[chatId]
       const existingUnreadCount = optimisticRead
         ? optimisticRead.unread_message_count
-        : existingChat?.unread_message_count ?? 0
+        : (existingChat?.unread_message_count ?? 0)
       if (!isSelfMessage) {
         // If we're actively reading, this will immediately get marked as read.
         // Ignore the unread bump to prevent flicker
@@ -561,7 +564,10 @@ const slice = createSlice({
         // Mark chat as read if its our own
         chatsAdapter.updateOne(state.chats, {
           id: chatId,
-          changes: { unread_message_count: 0, last_read_at: message.created_at }
+          changes: {
+            unread_message_count: 0,
+            last_read_at: message.created_at
+          }
         })
         state.optimisticUnreadMessagesCount =
           (state.optimisticUnreadMessagesCount ?? state.unreadMessagesCount) -

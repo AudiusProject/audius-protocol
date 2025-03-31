@@ -3,7 +3,7 @@ import { useContext } from 'react'
 import { socialMediaMessages } from '@audius/common/messages'
 import { SocialPlatform } from '@audius/common/models'
 import { BooleanKeys } from '@audius/common/services'
-import { Box, Flex, SocialButton } from '@audius/harmony'
+import { Flex, SocialButton } from '@audius/harmony'
 
 import { ToastContext } from 'components/toast/ToastContext'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
@@ -31,9 +31,18 @@ export const SocialMediaLoginOptions = ({
 
   const handleStart = (platform: SocialPlatform) => () => onStart(platform)
 
-  const handleFailure = (platform: SocialPlatform) => (err: any) => {
+  const handleError = (platform: SocialPlatform) => (err: Error) => {
     onError(err, platform)
-    toast(socialMediaMessages.verificationError)
+    const closedByUser = /closed by user/i.test(err.message)
+    const isAccountInUseError =
+      /Another Audius profile has already been authenticated/i.test(err.message)
+    const toastErrMessage = isAccountInUseError
+      ? socialMediaMessages.accountInUseError('tiktok')
+      : socialMediaMessages.verificationError
+
+    if (!closedByUser) {
+      toast(toastErrMessage)
+    }
   }
 
   const handleSuccess = ({
@@ -65,24 +74,16 @@ export const SocialMediaLoginOptions = ({
     <Flex direction='row' gap='s' w='100%'>
       {isTwitterEnabled ? (
         <SignupFlowTwitterAuth
-          css={{ flex: 1 }}
           onStart={handleStart('twitter')}
-          onFailure={handleFailure('twitter')}
+          onFailure={handleError('twitter')}
           onSuccess={handleSuccess}
-        >
-          <SocialButton
-            type='button'
-            socialType='twitter'
-            css={{ width: '100%' }}
-            aria-label={socialMediaMessages.signUpTwitter}
-          />
-        </SignupFlowTwitterAuth>
+        />
       ) : null}
       {isInstagramEnabled ? (
         <SignupFlowInstagramAuth
-          css={{ flex: 1 }}
+          css={{ flex: 1, width: '100%' }}
           onStart={handleStart('instagram')}
-          onFailure={handleFailure('instagram')}
+          onFailure={handleError('instagram')}
           onSuccess={handleSuccess}
         >
           <SocialButton
@@ -94,20 +95,11 @@ export const SocialMediaLoginOptions = ({
         </SignupFlowInstagramAuth>
       ) : null}
       {isTikTokEnabled ? (
-        <Box css={{ flex: 1 }}>
-          <SignupFlowTikTokAuth
-            onStart={handleStart('tiktok')}
-            onFailure={handleFailure('tiktok')}
-            onSuccess={handleSuccess}
-          >
-            <SocialButton
-              type='button'
-              socialType='tiktok'
-              css={{ width: '100%' }}
-              aria-label={socialMediaMessages.signUpTikTok}
-            />
-          </SignupFlowTikTokAuth>
-        </Box>
+        <SignupFlowTikTokAuth
+          onStart={handleStart('tiktok')}
+          onFailure={handleError('tiktok')}
+          onSuccess={handleSuccess}
+        />
       ) : null}
     </Flex>
   )

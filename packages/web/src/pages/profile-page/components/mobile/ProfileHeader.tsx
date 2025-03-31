@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect, MouseEvent } from 'react'
 
+import { useFollowUser, useUnfollowUser } from '@audius/common/api'
 import {
   imageCoverPhotoBlank,
   imageProfilePicEmpty
@@ -10,9 +11,10 @@ import {
   WidthSizes,
   ID,
   ProfilePictureSizes,
-  CoverPhotoSizes
+  CoverPhotoSizes,
+  User,
+  FollowSource
 } from '@audius/common/models'
-import { ProfileUser } from '@audius/common/store'
 import { formatCount, route } from '@audius/common/utils'
 import {
   IconArtistBadge as BadgeArtist,
@@ -24,7 +26,8 @@ import {
   Flex,
   Button,
   IconPencil,
-  FollowButton
+  FollowButton,
+  Text
 } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -38,7 +41,7 @@ import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
 import UserBadges from 'components/user-badges/UserBadges'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 
 import GrowingCoverPhoto from './GrowingCoverPhoto'
 import styles from './ProfileHeader.module.css'
@@ -84,7 +87,7 @@ const LoadingProfileHeader = () => {
 
 type ProfileHeaderProps = {
   isDeactivated: boolean
-  profile: ProfileUser
+  profile: User
   name: string
   handle: string
   isArtist: boolean
@@ -111,8 +114,6 @@ type ProfileHeaderProps = {
   following: boolean
   isSubscribed: boolean
   mode: string
-  onFollow: (id: ID) => void
-  onUnfollow: (id: ID) => void
   switchToEditMode: () => void
   updatedCoverPhoto: string | null
   updatedProfilePicture: string | null
@@ -158,13 +159,11 @@ const ProfileHeader = ({
   following,
   isSubscribed,
   mode,
-  onFollow,
-  onUnfollow,
   switchToEditMode,
   updatedCoverPhoto,
   updatedProfilePicture,
-  onUpdateCoverPhoto,
   onUpdateProfilePicture,
+  onUpdateCoverPhoto,
   setNotificationSubscription,
   areArtistRecommendationsVisible,
   onCloseArtistRecommendations
@@ -173,6 +172,8 @@ const ProfileHeader = ({
   const [isDescriptionMinimized, setIsDescriptionMinimized] = useState(true)
   const bioRef = useRef<HTMLElement | null>(null)
   const isEditing = mode === 'editing'
+  const { mutate: followUser } = useFollowUser()
+  const { mutate: unfollowUser } = useUnfollowUser()
 
   const bioRefCb = useCallback((node: HTMLParagraphElement) => {
     if (node !== null) {
@@ -202,7 +203,10 @@ const ProfileHeader = ({
     }
   }, [website, donation, hasEllipsis, setHasEllipsis])
 
-  let { source: coverPhoto } = useCoverPhoto(userId, WidthSizes.SIZE_2000)
+  let { image: coverPhoto } = useCoverPhoto({
+    userId,
+    size: WidthSizes.SIZE_2000
+  })
   coverPhoto = isDeactivated ? imageProfilePicEmpty : coverPhoto
   let coverPhotoStyle = {}
   if (coverPhoto === imageCoverPhotoBlank) {
@@ -211,11 +215,10 @@ const ProfileHeader = ({
       backgroundSize: '300px 300px'
     }
   }
-  const profilePicture = useUserProfilePicture(
+  const profilePicture = useProfilePicture({
     userId,
-    isDeactivated ? null : profilePictureSizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+    size: SquareSizes.SIZE_150_BY_150
+  })
   const record = useRecord()
 
   const onGoToInstagram = useCallback(() => {
@@ -331,7 +334,7 @@ const ProfileHeader = ({
                     <UserBadges
                       userId={userId}
                       className={styles.iconVerified}
-                      badgeSize={12}
+                      size='2xs'
                     />
                   </span>
                 </h1>
@@ -362,8 +365,18 @@ const ProfileHeader = ({
               ) : (
                 <FollowButton
                   isFollowing={following}
-                  onFollow={() => onFollow(userId)}
-                  onUnfollow={() => onUnfollow(userId)}
+                  onFollow={() =>
+                    followUser({
+                      followeeUserId: userId,
+                      source: FollowSource.PROFILE_PAGE
+                    })
+                  }
+                  onUnfollow={() =>
+                    unfollowUser({
+                      followeeUserId: userId,
+                      source: FollowSource.PROFILE_PAGE
+                    })
+                  }
                   fullWidth={false}
                 />
               )}
@@ -474,7 +487,9 @@ const ProfileHeader = ({
           <ArtistRecommendationsDropdown
             isVisible={areArtistRecommendationsVisible}
             renderHeader={() => (
-              <p>Here are some accounts that vibe well with {name}</p>
+              <Flex ml='m'>
+                <Text>Here are some accounts that vibe well with {name}</Text>
+              </Flex>
             )}
             artistId={userId}
             onClose={onCloseArtistRecommendations}

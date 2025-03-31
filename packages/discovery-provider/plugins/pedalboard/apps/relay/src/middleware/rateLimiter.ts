@@ -81,7 +81,10 @@ export const rateLimiterMiddleware = async (
   } catch (e) {
     if (e instanceof RateLimiterRes) {
       insertReplyHeaders(res, e as RateLimiterRes)
-      logger.info({ limit, signer, isAnonymousAllowed, signerIsUser, operation }, 'rate limit hit')
+      logger.info(
+        { limit, signer, isAnonymousAllowed, signerIsUser, operation },
+        'rate limit hit'
+      )
       rateLimitError(next, 'rate limit hit')
       return
     }

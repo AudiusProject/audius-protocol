@@ -16,6 +16,7 @@ export const PlainButton = forwardRef<HTMLButtonElement, PlainButtonProps>(
       variant = 'default',
       size = 'default',
       disabled,
+      children,
       ...baseProps
     } = props
     const isDisabled = disabled || baseProps.isLoading
@@ -49,8 +50,8 @@ export const PlainButton = forwardRef<HTMLButtonElement, PlainButtonProps>(
         variant === 'subdued' && !isDisabled
           ? color.text.subdued
           : variant === 'inverted'
-          ? color.static.white
-          : color.text.default,
+            ? color.static.staticWhite
+            : color.text.default,
       background: 'transparent',
       border: 'none',
       color: 'var(--text-color)',
@@ -64,14 +65,16 @@ export const PlainButton = forwardRef<HTMLButtonElement, PlainButtonProps>(
       '&:hover': {
         '--text-color':
           variant === 'inverted'
-            ? color.static.white
+            ? color.static.staticWhite
             : color.secondary.secondary,
         ...(variant === 'inverted' && { opacity: 0.8 })
       },
 
       '&:active': {
         '--text-color':
-          variant === 'inverted' ? color.static.white : color.secondary.s500,
+          variant === 'inverted'
+            ? color.static.staticWhite
+            : color.secondary.s500,
         ...(variant === 'inverted' && { opacity: 0.5 })
       },
 
@@ -91,7 +94,11 @@ export const PlainButton = forwardRef<HTMLButtonElement, PlainButtonProps>(
           icon: iconCss
         }}
         {...baseProps}
-      />
+      >
+        <span css={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {children}
+        </span>
+      </BaseButton>
     )
   }
 )

@@ -225,8 +225,8 @@ export class OAuth {
     const effectiveScope = scopeFormatted.includes('write')
       ? 'write'
       : scopeFormatted.includes('write_once')
-      ? 'write_once'
-      : 'read'
+        ? 'write_once'
+        : 'read'
     if (effectiveScope === 'write_once' && !isWriteOnceParams(params)) {
       this._surfaceError('Missing correct params for `oauth.login`.')
       return

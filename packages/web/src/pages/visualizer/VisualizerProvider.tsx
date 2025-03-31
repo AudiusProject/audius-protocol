@@ -1,5 +1,4 @@
 import {
-  averageColorSelectors,
   queueSelectors,
   themeSelectors,
   playerSelectors
@@ -7,7 +6,7 @@ import {
 import { Nullable, route } from '@audius/common/utils'
 import { Name, SquareSizes, Track } from '@audius/common/models'
 import { useEffect, useState, useCallback } from 'react'
-import { push as pushRoute } from 'connected-react-router'
+import { push } from 'utils/navigation'
 import { AppState } from 'store/types'
 import { Dispatch } from 'redux'
 import { connect } from 'react-redux'
@@ -29,23 +28,23 @@ import {
   useTheme,
   IconClose as IconRemove
 } from '@audius/harmony'
-import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
+import {
+  useTrackCoverArt,
+  useTrackCoverArtDominantColors
+} from 'hooks/useTrackCoverArt'
 import { audioPlayer } from 'services/audio-player'
 
 const { profilePage } = route
 const { makeGetCurrent } = queueSelectors
 const { getPlaying } = playerSelectors
 const { getTheme } = themeSelectors
-const getDominantColorsByTrack = averageColorSelectors.getDominantColorsByTrack
 
 const Artwork = ({ track }: { track?: Track | null }) => {
-  const { track_id, _cover_art_sizes } = track || {}
-
-  const image = useTrackCoverArt(
-    track_id || -1,
-    _cover_art_sizes || null,
-    SquareSizes.SIZE_480_BY_480
-  )
+  const { track_id } = track || {}
+  const image = useTrackCoverArt({
+    trackId: track_id,
+    size: SquareSizes.SIZE_480_BY_480
+  })
   return <DynamicImage wrapperClassName={styles.artwork} image={image} />
 }
 
@@ -65,7 +64,6 @@ const Visualizer = ({
   currentQueueItem,
   playing,
   theme,
-  dominantColors,
   onClose,
   recordOpen,
   recordClose,
@@ -94,11 +92,10 @@ const Visualizer = ({
     }
   }, [showVisualizer])
 
-  // if (!webGLExists) {
-  //   return null
-  // }
-
   // Update Colors
+  const dominantColors = useTrackCoverArtDominantColors({
+    trackId: currentQueueItem.track?.track_id
+  })
   useEffect(() => {
     if (dominantColors !== null) {
       Visualizer1?.setDominantColors(dominantColors)
@@ -171,7 +168,6 @@ const Visualizer = ({
     return track && user && uid ? (
       <div className={styles.trackInfoWrapper}>
         <PlayingTrackInfo
-          profilePictureSizes={user._profile_picture_sizes}
           trackId={track.track_id}
           isOwner={track.owner_id === user.user_id}
           trackTitle={track.title}
@@ -222,7 +218,7 @@ const Visualizer = ({
         />
       </div>
       <IconRemove
-        color='staticWhite'
+        color='white'
         className={styles.closeButtonIcon}
         onClick={onClose}
       />
@@ -260,10 +256,7 @@ const makeMapStateToProps = () => {
     return {
       currentQueueItem,
       playing: getPlaying(state),
-      theme: getTheme(state),
-      dominantColors: getDominantColorsByTrack(state, {
-        track: currentQueueItem.track
-      })
+      theme: getTheme(state)
     }
   }
   return mapStateToProps
@@ -278,7 +271,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
     const trackEvent: TrackEvent = make(Name.VISUALIZER_CLOSE, {})
     dispatch(trackEvent)
   },
-  goToRoute: (route: string) => dispatch(pushRoute(route))
+  goToRoute: (route: string) => dispatch(push(route))
 })
 
 export default connect(makeMapStateToProps, mapDispatchToProps)(Visualizer)

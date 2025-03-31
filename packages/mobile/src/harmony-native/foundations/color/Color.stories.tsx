@@ -3,7 +3,8 @@ import { themeActions, themeSelectors } from '@audius/common/store'
 import { SectionList, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Divider, SegmentedControl, Text, Tile } from 'app/components/core'
+import { Divider } from '@audius/harmony-native'
+import { SegmentedControl, Text, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeVariant } from 'app/utils/theme'
 

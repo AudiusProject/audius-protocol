@@ -126,10 +126,10 @@ export class Create extends BaseNotification<CreateNotificationRow> {
     const entityType = this.trackId
       ? 'Track'
       : this.playlistId && this.isAlbum
-      ? 'Album'
-      : this.playlistId && !this.isAlbum
-      ? 'Playlist'
-      : null
+        ? 'Album'
+        : this.playlistId && !this.isAlbum
+          ? 'Playlist'
+          : null
 
     const entityId = this.trackId ?? this.playlistId
 

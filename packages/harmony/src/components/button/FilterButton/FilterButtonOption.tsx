@@ -2,8 +2,8 @@ import { forwardRef, MouseEventHandler, Ref, useCallback } from 'react'
 
 import { CSSObject } from '@emotion/react'
 
-import { Text } from 'components/text/Text'
-import { useTheme } from 'foundations'
+import { Text } from '~harmony/components/text/Text'
+import { useTheme } from '~harmony/foundations'
 
 import { BaseButton } from '../BaseButton/BaseButton'
 
@@ -91,7 +91,7 @@ export const FilterButtonOption = forwardRef(function <Value extends string>(
         <Text
           variant='body'
           strength='strong'
-          color={option.value === activeValue ? 'staticWhite' : 'subdued'}
+          color={option.value === activeValue ? 'white' : 'subdued'}
           className='helperText'
         >
           {option.helperText}

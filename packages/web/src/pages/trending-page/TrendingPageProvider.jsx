@@ -11,10 +11,6 @@ import {
   playerSelectors
 } from '@audius/common/store'
 import { GENRES, route } from '@audius/common/utils'
-import {
-  push as pushRoute,
-  replace as replaceRoute
-} from 'connected-react-router'
 import { connect } from 'react-redux'
 import { matchPath, withRouter } from 'react-router-dom'
 
@@ -22,6 +18,7 @@ import { HistoryContext } from 'app/HistoryProvider'
 import { make } from 'common/store/analytics/actions'
 import { openSignOn } from 'common/store/pages/signon/actions'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { push as pushRoute, replace as replaceRoute } from 'utils/navigation'
 import { getPathname } from 'utils/route'
 import { createSeoDescription } from 'utils/seo'
 const { TRENDING_GENRES } = route

@@ -12,7 +12,7 @@ import {
 import { useModalState } from 'common/hooks/useModalState'
 import Drawer from 'components/drawer/Drawer'
 import { useProfileTier } from 'hooks/wallet'
-import { TierLevel, TierNumber } from 'pages/audio-rewards-page/Tiers'
+import { TierLevel, TierNumber } from 'pages/rewards-page/Tiers'
 
 import { BadgeTierText } from './ProfilePageBadge'
 import styles from './TierExplainerDrawer.module.css'

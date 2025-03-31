@@ -1,6 +1,18 @@
-import { full } from '@audius/sdk'
+import {
+  type full,
+  type CrossPlatformFile,
+  type Genre,
+  type Mood,
+  type NativeFile,
+  type TrackFilesMetadata,
+  HashId,
+  Id,
+  OptionalHashId,
+  OptionalId
+} from '@audius/sdk'
+import camelcaseKeys from 'camelcase-keys'
 import dayjs from 'dayjs'
-import { omit } from 'lodash'
+import { omit, pick, mapValues } from 'lodash'
 import snakecaseKeys from 'snakecase-keys'
 
 import {
@@ -10,10 +22,11 @@ import {
   TrackSegment
 } from '~/models'
 import { StemTrackMetadata, UserTrackMetadata } from '~/models/Track'
-import { License } from '~/utils'
-import { decodeHashId } from '~/utils/hashIds'
+import type { TrackMetadataForUpload } from '~/store/upload/types'
+import { formatMusicalKey, License, Maybe, squashNewLines } from '~/utils'
 
-import { accessConditionsFromSDK } from './access'
+import { accessConditionsFromSDK } from './accessConditionsFromSDK'
+import { accessConditionsToSDK } from './accessConditionsToSDK'
 import { resourceContributorFromSDK } from './attribution'
 import { favoriteFromSDK } from './favorite'
 import { coverArtSizesCIDsFromSDK } from './imageSize'
@@ -34,8 +47,8 @@ export const trackSegmentFromSDK = ({
 export const userTrackMetadataFromSDK = (
   input: full.TrackFull | full.SearchTrackFull
 ): UserTrackMetadata | undefined => {
-  const decodedTrackId = decodeHashId(input.id)
-  const decodedOwnerId = decodeHashId(input.userId)
+  const decodedTrackId = OptionalHashId.parse(input.id)
+  const decodedOwnerId = OptionalHashId.parse(input.userId)
   const user = userMetadataFromSDK(input.user)
   if (!decodedTrackId || !decodedOwnerId || !user) {
     return undefined
@@ -49,7 +62,6 @@ export const userTrackMetadataFromSDK = (
       'id',
       'user_id',
       'followee_favorites',
-      'artwork',
       'favorite_count',
       'is_streamable'
     ]),
@@ -151,7 +163,10 @@ export const userTrackMetadataFromSDK = (
     pinned_comment_id: input.pinnedCommentId ?? null,
     is_owned_by_user: input.isOwnedByUser,
     cover_original_artist: input.coverOriginalArtist ?? null,
-    cover_original_song_title: input.coverOriginalSongTitle ?? null
+    cover_original_song_title: input.coverOriginalSongTitle ?? null,
+    album_backlink: input.albumBacklink
+      ? snakecaseKeys(input.albumBacklink)
+      : undefined
   }
 
   return newTrack
@@ -161,7 +176,7 @@ export const stemTrackMetadataFromSDK = (
   input: full.StemFull
 ): StemTrackMetadata | undefined => {
   const [id, parentId, ownerId] = [input.id, input.parentId, input.userId].map(
-    decodeHashId
+    (id) => HashId.parse(id)
   )
   if (!(id && parentId && ownerId)) return undefined
 
@@ -200,6 +215,7 @@ export const stemTrackMetadataFromSDK = (
       parent_track_id: parentId,
       category: input.category as StemCategory
     },
+    artwork: {},
     remix_of: null,
     duration: 0,
     updated_at: '',
@@ -218,4 +234,112 @@ export const stemTrackMetadataFromSDK = (
     is_playlist_upload: false,
     is_owned_by_user: false
   }
+}
+
+export const trackMetadataForUploadToSdk = (
+  input: TrackMetadataForUpload
+): TrackFilesMetadata => ({
+  ...camelcaseKeys(
+    pick(input, [
+      'license',
+      'isrc',
+      'iswc',
+      'is_unlisted',
+      'is_premium',
+      'premium_conditions',
+      'is_stream_gated',
+      'stream_conditions',
+      'is_download_gated',
+      'is_downloadable',
+      'is_original_available',
+      'is_scheduled_release',
+      'bpm',
+      'is_custom_bpm',
+      'is_custom_musical_key',
+      'comments_disabled',
+      'ddex_release_ids',
+      'parental_warning_type'
+    ])
+  ),
+  trackId: OptionalId.parse(input.track_id),
+  title: input.title,
+  description: squashNewLines(input.description) ?? undefined,
+  mood: input.mood as Mood,
+  tags: input.tags ?? undefined,
+  genre: (input.genre as Genre) || undefined,
+  releaseDate: input.release_date ? new Date(input.release_date) : undefined,
+  previewStartSeconds: input.preview_start_seconds ?? undefined,
+  previewCid: input.preview_cid ?? '',
+  ddexApp: input.ddex_app ?? '',
+  aiAttributionUserId: OptionalId.parse(input.ai_attribution_user_id),
+  audioUploadId: input.audio_upload_id ?? undefined,
+  duration: input.duration ?? undefined,
+  musicalKey: input.musical_key
+    ? formatMusicalKey(input.musical_key)
+    : undefined,
+  trackCid: input.track_cid ?? '',
+  origFileCid: input.orig_file_cid ?? '',
+  origFilename: input.orig_filename ?? undefined,
+  fieldVisibility: input.field_visibility
+    ? mapValues(
+        camelcaseKeys(input.field_visibility),
+        (value: Maybe<boolean>) => (value === null ? undefined : value)
+      )
+    : undefined,
+  downloadConditions: input.download_conditions
+    ? accessConditionsToSDK(input.download_conditions)
+    : null,
+  streamConditions: input.stream_conditions
+    ? accessConditionsToSDK(input.stream_conditions)
+    : null,
+  remixOf: input.remix_of
+    ? {
+        tracks: input.remix_of.tracks.map((track) => ({
+          parentTrackId: Id.parse(track.parent_track_id)
+        }))
+      }
+    : undefined,
+  stemOf: input.stem_of
+    ? {
+        category: input.stem_of.category,
+        parentTrackId: Id.parse(input.stem_of.parent_track_id)
+      }
+    : undefined,
+  copyrightLine: input.copyright_line
+    ? camelcaseKeys(input.copyright_line)
+    : undefined,
+  producerCopyrightLine: input.producer_copyright_line
+    ? camelcaseKeys(input.producer_copyright_line)
+    : undefined,
+  rightsController: input.rights_controller
+    ? camelcaseKeys(input.rights_controller)
+    : undefined,
+  resourceContributors: input.resource_contributors
+    ? input.resource_contributors.map((contributor) =>
+        camelcaseKeys(contributor)
+      )
+    : undefined,
+  indirectResourceContributors: input.indirect_resource_contributors
+    ? input.indirect_resource_contributors.map((contributor) =>
+        camelcaseKeys(contributor)
+      )
+    : undefined
+})
+
+export const fileToSdk = (
+  file: Blob | File | NativeFile,
+  name: string
+): CrossPlatformFile => {
+  // If we're in react-native, return as-is
+  if ('uri' in file) {
+    return file
+  }
+
+  // If it's already a File, return as-is
+  if (file instanceof File) {
+    return file
+  }
+
+  // If it's a Blob, convert to File with a name
+  return new File([file], name, { type: file.type })
 }

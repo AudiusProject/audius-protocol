@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
 
-import { Flex } from 'components/layout'
+import { Flex } from '~harmony/components/layout'
 
 import { SendIcon } from './SendIcon'
 

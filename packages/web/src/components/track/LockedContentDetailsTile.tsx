@@ -14,7 +14,7 @@ import {
   IconCart,
   IconCollectible,
   IconComponent,
-  IconSpecialAccess,
+  IconSparkles,
   useTheme
 } from '@audius/harmony'
 import cn from 'classnames'
@@ -37,7 +37,7 @@ const messages = {
   earn: (amount: string) => `Earn ${amount} $AUDIO for this purchase!`
 }
 
-export type LockedContentDetailsTileProps = {
+type LockedContentDetailsTileProps = {
   metadata: PurchaseableContentMetadata | Track | Collection
   owner: UserMetadata
   showLabel?: boolean
@@ -58,16 +58,14 @@ export const LockedContentDetailsTile = ({
   const title = isAlbum ? metadata.playlist_name : metadata.title
   const isDownloadGated = !isAlbum && metadata.is_download_gated
 
-  const trackArt = useTrackCoverArt(
-    contentId,
-    metadata._cover_art_sizes ?? null,
-    SquareSizes.SIZE_150_BY_150
-  )
-  const albumArt = useCollectionCoverArt(
-    contentId,
-    metadata._cover_art_sizes ?? null,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const trackArt = useTrackCoverArt({
+    trackId: contentId,
+    size: SquareSizes.SIZE_150_BY_150
+  })
+  const albumArt = useCollectionCoverArt({
+    collectionId: contentId,
+    size: SquareSizes.SIZE_150_BY_150
+  })
   const image = isAlbum ? albumArt : trackArt
 
   const label = `${title} by ${owner.name}`
@@ -88,7 +86,7 @@ export const LockedContentDetailsTile = ({
     IconComponent = null
     message = null
   } else {
-    IconComponent = IconSpecialAccess
+    IconComponent = IconSparkles
     message = messages.specialAccess
   }
 

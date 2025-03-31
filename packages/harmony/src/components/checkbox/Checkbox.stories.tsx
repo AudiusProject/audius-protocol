@@ -2,8 +2,8 @@ import { PropsWithChildren } from 'react'
 
 import type { Meta, StoryObj } from '@storybook/react'
 
-import { Flex } from 'components/layout'
-import { Text } from 'components/text'
+import { Flex } from '~harmony/components/layout'
+import { Text } from '~harmony/components/text'
 
 import { Checkbox } from './Checkbox'
 import { CheckboxProps } from './types'

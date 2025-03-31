@@ -12,12 +12,12 @@ import { useGetTrackById } from '@audius/common/api'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
 import type { ID, UserMetadata } from '@audius/common/models'
 import {
-  decodeHashId,
   getDurationFromTimestampMatch,
   parseCommentTrackTimestamp,
   splitOnNewline,
   timestampRegex
 } from '@audius/common/utils'
+import { OptionalHashId } from '@audius/sdk'
 import { isEqual } from 'lodash'
 import type { TextInput as RnTextInput } from 'react-native'
 import { Platform, TouchableOpacity } from 'react-native'
@@ -30,7 +30,7 @@ import { usePrevious } from 'react-use'
 
 import { Flex, IconSend, mergeRefs } from '@audius/harmony-native'
 import { Text, TextInput } from 'app/components/core'
-import { env } from 'app/env'
+import { env } from 'app/services/env'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
@@ -130,6 +130,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
   const { primary, neutralLight7 } = useThemeColors()
   const hasLength = value.length > 0
   const internalRef = useRef<RnTextInput>(null)
+  const latestValueRef = useRef(value)
   const messageIdRef = useRef(messageId)
   const lastKeyPressMsRef = useRef<number | null>(null)
   const { data: track } = useGetTrackById({ id: entityId ?? -1 })
@@ -243,7 +244,6 @@ export const ComposerInput = forwardRef(function ComposerInput(
   const handleAutocomplete = useCallback(
     (user: UserMetadata) => {
       if (!user) return
-
       const autocompleteRange = getAutocompleteRange() ?? [0, 1]
       const mentionText = `@${user.handle}`
 
@@ -281,6 +281,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
 
   const handleChange = useCallback(
     async (value: string) => {
+      latestValueRef.current = value
       setValue(value)
       const editedValue = await resolveLinks(value)
       if (value !== editedValue) {
@@ -298,16 +299,19 @@ export const ComposerInput = forwardRef(function ComposerInput(
   )
 
   const handleSubmit = useCallback(() => {
-    const mentions =
-      getUserMentions(value)?.map((match) => {
-        return {
-          handle: match.text.replace('@', ''),
-          userId: userIdMap[match.text]
-        }
-      }) ?? []
-
-    onSubmit?.(restoreLinks(value), mentions)
-  }, [getUserMentions, onSubmit, restoreLinks, userIdMap, value])
+    internalRef.current?.blur()
+    setTimeout(() => {
+      setValue('')
+      const mentions =
+        getUserMentions(latestValueRef.current)?.map((match) => {
+          return {
+            handle: match.text.replace('@', ''),
+            userId: userIdMap[match.text]
+          }
+        }) ?? []
+      onSubmit?.(restoreLinks(latestValueRef.current), mentions)
+    }, 10)
+  }, [getUserMentions, onSubmit, restoreLinks, userIdMap])
 
   const handleKeyDown = useCallback(
     (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
@@ -500,7 +504,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
   useEffect(() => {
     if (linkEntities.length && !isEqual(linkEntities, prevLinkEntities)) {
       const { type, data } = linkEntities[linkEntities.length - 1]
-      const id = decodeHashId(data.id)
+      const id = OptionalHashId.parse(data.id)
       if (id) {
         onAddLink?.(id, type)
       }

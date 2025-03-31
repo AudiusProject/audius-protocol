@@ -17,8 +17,8 @@ import { makeStyles } from 'app/styles'
 
 import packageInfo from '../../../package.json'
 
-import { Divider } from './Divider'
 import { SettingsRowLabel } from './SettingRowLabel'
+import { SettingsDivider } from './SettingsDivider'
 import { SettingsRow } from './SettingsRow'
 
 const { version: appVersion } = packageInfo
@@ -89,7 +89,7 @@ export const AboutScreen = () => {
         <SettingsRow url={route.AUDIUS_CAREERS_LINK}>
           <SettingsRowLabel label={messages.careers} icon={IconUserGroup} />
         </SettingsRow>
-        <Divider />
+        <SettingsDivider />
         <SettingsRow url={route.AUDIUS_HELP_LINK}>
           <SettingsRowLabel label={messages.help} />
         </SettingsRow>

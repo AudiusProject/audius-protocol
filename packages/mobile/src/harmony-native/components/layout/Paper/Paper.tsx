@@ -33,7 +33,7 @@ export const Paper = forwardRef<View, PaperProps>((props, ref) => {
     ...other
   } = props
 
-  const { shadows, motion } = useTheme()
+  const { shadows, motion, type } = useTheme()
 
   const pressed = useSharedValue(0)
 
@@ -47,42 +47,45 @@ export const Paper = forwardRef<View, PaperProps>((props, ref) => {
       pressed.value = withTiming(0, motion.press)
     })
 
-  const interactiveStyles = useAnimatedStyle(() => ({
-    shadowColor: interpolateColor(
-      pressed.value,
-      [0, 1],
-      [shadowStyle.shadowColor, shadows.near.shadowColor]
-    ),
-    transform: [
-      {
-        scale: interpolate(pressed.value, [0, 1], [1, 0.995])
-      }
-    ],
-    ...(Platform.OS === MobileOS.IOS && {
-      shadowOpacity: interpolate(
+  const interactiveStyles = useAnimatedStyle(
+    () => ({
+      shadowColor: interpolateColor(
         pressed.value,
         [0, 1],
-        [shadowStyle.shadowOpacity, shadows.near.shadowOpacity]
+        [shadowStyle.shadowColor, shadows.near.shadowColor]
       ),
-      shadowRadius: interpolate(
-        pressed.value,
-        [0, 1],
-        [shadowStyle.shadowRadius, shadows.near.shadowRadius]
-      ),
-      shadowOffset: {
-        width: interpolate(
+      transform: [
+        {
+          scale: interpolate(pressed.value, [0, 1], [1, 0.995])
+        }
+      ],
+      ...(Platform.OS === MobileOS.IOS && {
+        shadowOpacity: interpolate(
           pressed.value,
           [0, 1],
-          [shadowStyle.shadowOffset.width, shadows.near.shadowOffset.width]
+          [shadowStyle.shadowOpacity, shadows.near.shadowOpacity]
         ),
-        height: interpolate(
+        shadowRadius: interpolate(
           pressed.value,
           [0, 1],
-          [shadowStyle.shadowOffset.height, shadows.near.shadowOffset.height]
-        )
-      }
-    })
-  }))
+          [shadowStyle.shadowRadius, shadows.near.shadowRadius]
+        ),
+        shadowOffset: {
+          width: interpolate(
+            pressed.value,
+            [0, 1],
+            [shadowStyle.shadowOffset.width, shadows.near.shadowOffset.width]
+          ),
+          height: interpolate(
+            pressed.value,
+            [0, 1],
+            [shadowStyle.shadowOffset.height, shadows.near.shadowOffset.height]
+          )
+        }
+      })
+    }),
+    [type]
+  )
 
   const flexProps = { backgroundColor, borderRadius, shadow }
 

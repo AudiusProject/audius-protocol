@@ -5,19 +5,22 @@ import {
   playerSelectors,
   PlaybackRate
 } from '@audius/common/store'
-import { PopupMenu, PopupMenuItem } from '@audius/harmony'
+import {
+  PopupMenu,
+  PopupMenuItem,
+  IconPlaybackRate0_5x,
+  IconPlaybackRate0_8x,
+  IconPlaybackRate1x,
+  IconPlaybackRate1_1x,
+  IconPlaybackRate1_2x,
+  IconPlaybackRate1_5x,
+  IconPlaybackRate2x,
+  IconPlaybackRate2_5x,
+  IconPlaybackRate3x
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import Icon0_5x from 'assets/img/iconPlaybackRate0_5x.svg'
-import Icon0_8x from 'assets/img/iconPlaybackRate0_8x.svg'
-import Icon1_1x from 'assets/img/iconPlaybackRate1_1x.svg'
-import Icon1_2x from 'assets/img/iconPlaybackRate1_2x.svg'
-import Icon1_5x from 'assets/img/iconPlaybackRate1_5x.svg'
-import Icon1x from 'assets/img/iconPlaybackRate1x.svg'
-import Icon2_5x from 'assets/img/iconPlaybackRate2_5x.svg'
-import Icon2x from 'assets/img/iconPlaybackRate2x.svg'
-import Icon3x from 'assets/img/iconPlaybackRate3x.svg'
 import zIndex from 'utils/zIndex'
 
 import styles from '../PlayBarButton.module.css'
@@ -25,7 +28,7 @@ import styles from '../PlayBarButton.module.css'
 const { setPlaybackRate } = playerActions
 const { getPlaybackRate } = playerSelectors
 
-export type PlaybackRateButtonProps = {
+type PlaybackRateButtonProps = {
   isMobile: boolean
 }
 
@@ -45,16 +48,16 @@ const rates: PlaybackRate[] = [
   '3x'
 ]
 
-const playbackRateIconMap: Record<PlaybackRate, typeof Icon1x> = {
-  '0.5x': Icon0_5x,
-  '0.8x': Icon0_8x,
-  '1x': Icon1x,
-  '1.1x': Icon1_1x,
-  '1.2x': Icon1_2x,
-  '1.5x': Icon1_5x,
-  '2x': Icon2x,
-  '2.5x': Icon2_5x,
-  '3x': Icon3x
+const playbackRateIconMap: Record<PlaybackRate, typeof IconPlaybackRate1x> = {
+  '0.5x': IconPlaybackRate0_5x,
+  '0.8x': IconPlaybackRate0_8x,
+  '1x': IconPlaybackRate1x,
+  '1.1x': IconPlaybackRate1_1x,
+  '1.2x': IconPlaybackRate1_2x,
+  '1.5x': IconPlaybackRate1_5x,
+  '2x': IconPlaybackRate2x,
+  '2.5x': IconPlaybackRate2_5x,
+  '3x': IconPlaybackRate3x
 }
 
 export const PlaybackRateButton = ({ isMobile }: PlaybackRateButtonProps) => {
@@ -84,7 +87,7 @@ export const PlaybackRateButton = ({ isMobile }: PlaybackRateButtonProps) => {
         })}
         onClick={triggerPopup}
       >
-        <Icon className={styles.noAnimation} ref={ref} />
+        <Icon color='default' ref={ref} />
       </button>
     ),
     [Icon, isMobile]

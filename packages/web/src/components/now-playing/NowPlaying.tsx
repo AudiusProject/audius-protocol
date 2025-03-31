@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,
@@ -11,10 +12,8 @@ import {
   SquareSizes,
   ID
 } from '@audius/common/models'
-import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
-  averageColorSelectors,
   queueActions,
   queueSelectors,
   RepeatMode,
@@ -41,7 +40,7 @@ import { useHistoryContext } from 'app/HistoryProvider'
 import { useRecord, make } from 'common/store/analytics/actions'
 import CoSign, { Size } from 'components/co-sign/CoSign'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { LockedStatusPill } from 'components/locked-status-pill'
+import { LockedStatusBadge } from 'components/locked-status-badge'
 import PlayButton from 'components/play-bar/PlayButton'
 import NextButtonProvider from 'components/play-bar/next-button/NextButtonProvider'
 import PreviousButtonProvider from 'components/play-bar/previous-button/PreviousButtonProvider'
@@ -51,8 +50,11 @@ import { PlayButtonStatus } from 'components/play-bar/types'
 import { GatedConditionsPill } from 'components/track/GatedConditionsPill'
 import { TrackDogEar } from 'components/track/TrackDogEar'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
-import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
+import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
+import {
+  useTrackCoverArt,
+  useTrackCoverArtDominantColor
+} from 'hooks/useTrackCoverArt'
 import { audioPlayer } from 'services/audio-player'
 import { AppState } from 'store/types'
 import {
@@ -72,10 +74,8 @@ const { getBuffering, getCounter, getPlaying, getPlaybackRate, getSeek } =
 const { seek, reset } = playerActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
-const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
-  tracksSocialActions
+const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { next, pause, play, previous, repeat, shuffle } = queueActions
-const getDominantColorsByTrack = averageColorSelectors.getDominantColorsByTrack
 const getUserId = accountSelectors.getUserId
 const { getGatedContentStatusMap } = gatedContentSelectors
 
@@ -128,21 +128,15 @@ const NowPlaying = g(
     repeat,
     share,
     shuffle,
-    save,
-    unsave,
     repost,
     undoRepost,
     clickOverflow,
-    goToRoute,
-    dominantColors
+    goToRoute
   }) => {
     const { uid, track, user, collectible } = currentQueueItem
     const { history } = useHistoryContext()
 
-    const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-      { trackId: track?.track_id ?? 0 },
-      { enabled: !!track?.track_id }
-    )
+    const albumInfo = track?.album_backlink
 
     // Keep a ref for the artwork and dynamically resize the width of the
     // image as the height changes (which is flexed).
@@ -212,13 +206,6 @@ const NowPlaying = g(
         title: collectible?.name as string,
         track_id: collectible?.id as string,
         owner_id: user?.user_id,
-        _cover_art_sizes: {
-          [SquareSizes.SIZE_480_BY_480]:
-            collectible?.imageUrl ??
-            collectible?.frameUrl ??
-            collectible?.gifUrl ??
-            ''
-        },
         has_current_user_saved: false,
         has_current_user_reposted: false,
         _co_sign: null
@@ -228,19 +215,16 @@ const NowPlaying = g(
       title,
       track_id,
       owner_id,
-      _cover_art_sizes,
       has_current_user_saved,
       has_current_user_reposted,
       _co_sign
     } = displayInfo
 
     const { name, handle } = user
-    const image =
-      useTrackCoverArt(
-        track_id,
-        _cover_art_sizes,
-        SquareSizes.SIZE_480_BY_480
-      ) || _cover_art_sizes[SquareSizes.SIZE_480_BY_480]
+    const image = useTrackCoverArt({
+      trackId: typeof track_id === 'number' ? track_id : undefined,
+      size: SquareSizes.SIZE_480_BY_480
+    })
 
     let playButtonStatus
     if (isBuffering) {
@@ -271,11 +255,16 @@ const NowPlaying = g(
       }
     }
 
+    const toggleSaveTrack = useToggleFavoriteTrack({
+      trackId: track_id as number,
+      source: FavoriteSource.NOW_PLAYING
+    })
+
     const toggleFavorite = useCallback(() => {
       if (track && track_id && typeof track_id !== 'string') {
-        has_current_user_saved ? unsave(track_id) : save(track_id)
+        toggleSaveTrack()
       }
-    }, [track, track_id, has_current_user_saved, unsave, save])
+    }, [track, track_id, toggleSaveTrack])
 
     const toggleRepost = useCallback(() => {
       if (track && track_id && typeof track_id !== 'string') {
@@ -383,16 +372,18 @@ const NowPlaying = g(
       }
     }
 
-    const dominantColor = dominantColors ? dominantColors[0] : null
-    const artworkAverageColor = dominantColor
-      ? {
-          boxShadow: `0 1px 15px -5px rgba(
-          ${dominantColor.r},
-          ${dominantColor.g},
-          ${dominantColor.b}
-          , 1)`
-        }
-      : {}
+    const dominantColor = useTrackCoverArtDominantColor({
+      trackId: track?.track_id
+    })
+
+    const artworkAverageColor = {
+      boxShadow: `0 1px 15px -5px rgba(
+        ${dominantColor?.r},
+        ${dominantColor?.g},
+        ${dominantColor?.b},
+        ${dominantColor ? 0.25 : 0})`,
+      transition: 'box-shadow 0.3s ease-in-out'
+    }
 
     const matrix = isMatrix()
     const darkMode = isDarkMode()
@@ -403,7 +394,7 @@ const NowPlaying = g(
       gatedTrackStatusMap[typeof track_id === 'number' ? track_id : -1]
     const { onOpen: openPremiumContentPurchaseModal } =
       usePremiumContentPurchaseModal()
-    const onClickPill = useAuthenticatedClickCallback(() => {
+    const onClickPill = useRequiresAccountOnClick(() => {
       openPremiumContentPurchaseModal(
         {
           contentId: typeof track_id === 'number' ? track_id : -1,
@@ -465,7 +456,7 @@ const NowPlaying = g(
               {title}
             </div>
             {shouldShowPurchasePreview ? (
-              <LockedStatusPill
+              <LockedStatusBadge
                 locked
                 iconSize='2xs'
                 coloredWhenLocked
@@ -478,7 +469,7 @@ const NowPlaying = g(
             {name}
             <UserBadges
               userId={owner_id}
-              badgeSize={16}
+              size='s'
               className={styles.verified}
             />
           </div>
@@ -584,10 +575,7 @@ function makeMapStateToProps() {
       currentUserId: getUserId(state),
       playCounter: getCounter(state),
       isPlaying: getPlaying(state),
-      isBuffering: getBuffering(state),
-      dominantColors: getDominantColorsByTrack(state, {
-        track: currentQueueItem.track
-      })
+      isBuffering: getBuffering(state)
     }
   }
   return mapStateToProps
@@ -627,10 +615,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
           source: ShareSource.NOW_PLAYING
         })
       ),
-    save: (trackId: ID) =>
-      dispatch(saveTrack(trackId, FavoriteSource.NOW_PLAYING)),
-    unsave: (trackId: ID) =>
-      dispatch(unsaveTrack(trackId, FavoriteSource.NOW_PLAYING)),
     repost: (trackId: ID) =>
       dispatch(repostTrack(trackId, RepostSource.NOW_PLAYING)),
     undoRepost: (trackId: ID) =>

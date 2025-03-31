@@ -33,8 +33,8 @@ const initialState = {
   hasReachedEnd: false,
   fetchingMore: false,
   tracks: initialLineupState,
-  tracksCategory: LibraryCategory.Favorite,
-  collectionsCategory: LibraryCategory.Favorite,
+  tracksCategory: LibraryCategory.All,
+  collectionsCategory: LibraryCategory.All,
   local: {
     track: {
       favorites: {

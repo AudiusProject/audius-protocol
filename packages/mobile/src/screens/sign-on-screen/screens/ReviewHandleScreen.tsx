@@ -20,7 +20,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { ReadOnlyAccountHeader } from '../components/AccountHeader'
 import { HandleField } from '../components/HandleField'
 import { Heading, Page, PageFooter } from '../components/layout'
-import type { SignUpScreenParamList } from '../types'
+import type { SignOnScreenParamList } from '../types'
 import { restrictedHandles } from '../utils/restrictedHandles'
 import { useTrackScreen } from '../utils/useTrackScreen'
 
@@ -39,7 +39,7 @@ export const ReviewHandleScreen = () => {
     handle
   }
   const audiusQueryContext = useAudiusQueryContext()
-  const navigation = useNavigation<SignUpScreenParamList>()
+  const navigation = useNavigation<SignOnScreenParamList>()
   const isLinkingSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
 
   const validationSchema = useMemo(() => {

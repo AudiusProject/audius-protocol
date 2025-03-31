@@ -131,12 +131,6 @@ export type LineupProps = {
   selfLoad?: boolean
 
   /**
-   * Whether to show the artist pick on the leading element.
-   * Defaults to true.
-   */
-  showLeadingElementArtistPick?: boolean
-
-  /**
    * Which item to start the lineup at (previous items will not be rendered)
    */
   start?: number
@@ -171,6 +165,9 @@ export type LineupProps = {
    * Styles to apply to the items, can be used to override the padding for example
    */
   itemStyles?: ViewStyle
+  pageSize?: number
+  initialPageSize?: number
+  tanQuery?: boolean
 } & Pick<
   SectionListProps<unknown>,
   | 'showsVerticalScrollIndicator'
@@ -187,16 +184,15 @@ export type TogglePlayConfig = {
 
 export type LineupItemTileProps = Pick<
   LineupProps,
-  | 'isTrending'
-  | 'showLeadingElementArtistPick'
-  | 'leadingElementId'
-  | 'itemStyles'
+  'isTrending' | 'leadingElementId' | 'itemStyles'
 > & {
   rankIconCount: number
   item: LineupItem | LoadingLineupItem
   index: number
   togglePlay: ({ uid, id, source }: TogglePlayConfig) => void
   onPress?: (id: ID) => void
+  /** Object containing lineup actions such as play, setPage, togglePlay */
+  actions: LineupBaseActions
 }
 
 export type LineupTileViewProps = Omit<LineupItemTileProps, 'item'> & {

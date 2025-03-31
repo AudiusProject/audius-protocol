@@ -1,19 +1,16 @@
-import { ChatPermission, UserChat } from '@audius/sdk'
+import { ChatPermission, HashId, Id, UserChat } from '@audius/sdk'
 import { createSelector } from 'reselect'
 
 import { ID } from '~/models/Identifiers'
 import { Status } from '~/models/Status'
 import { User } from '~/models/User'
-import { accountSelectors } from '~/store/account'
-import { cacheUsersSelectors } from '~/store/cache'
+import { getUserId } from '~/store/account/selectors'
+import { getUsers } from '~/store/cache/users/selectors'
 import { CommonState } from '~/store/reducers'
-import { decodeHashId, encodeHashId } from '~/utils/hashIds'
 import { Maybe, removeNullable } from '~/utils/typeUtils'
 
 import { Chat, chatMessagesAdapter, chatsAdapter } from './slice'
 import { ChatPermissionAction } from './types'
-const { getUserId } = accountSelectors
-const { getUsers } = cacheUsersSelectors
 
 const { selectById: selectChatById, selectAll: selectAllChats } =
   chatsAdapter.getSelectors<CommonState>((state) => state.pages.chat.chats)
@@ -148,8 +145,8 @@ export const getOtherChatUsersFromChat = (state: CommonState, chat?: Chat) => {
   }
   const currentUserId = getUserId(state)
   const ids = chat.chat_members
-    .filter((u) => decodeHashId(u.user_id) !== currentUserId)
-    .map((u) => decodeHashId(u.user_id) ?? -1)
+    .filter((u) => HashId.parse(u.user_id) !== currentUserId)
+    .map((u) => HashId.parse(u.user_id) ?? -1)
     .filter((u) => u > -1)
   const users = getUsers(state, {
     ids
@@ -185,8 +182,8 @@ export const getUserList = createSelector(
       .map(
         (c) =>
           (c as UserChat).chat_members
-            .filter((u) => decodeHashId(u.user_id) !== currentUserId)
-            .map((u) => decodeHashId(u.user_id))[0]
+            .filter((u) => HashId.parse(u.user_id) !== currentUserId)
+            .map((u) => HashId.parse(u.user_id))[0]
       )
       .filter(removeNullable)
     return {
@@ -289,12 +286,11 @@ export const getCanCreateChat = createSelector(
     // don't need permission to continue chatting.
     // Use a callback fn to prevent iteration until necessary to improve perf
     // Note: this only works if the respective chat has been fetched already, like in chatsUserList
-    const encodedUserId = encodeHashId(user.user_id)
-    const hasExistingChat = () =>
-      !!chats.find(
-        (c) =>
-          !c.is_blast && c.chat_members.find((u) => u.user_id === encodedUserId)
-      )
+    const encodedUserId = Id.parse(user.user_id)
+    const existingChat = chats.find(
+      (c) =>
+        !c.is_blast && c.chat_members.find((u) => u.user_id === encodedUserId)
+    )
 
     const userPermissions = chatPermissions[user.user_id]
     const isBlockee = blockees.includes(user.user_id)
@@ -303,7 +299,9 @@ export const getCanCreateChat = createSelector(
       !isBlockee &&
       !isBlocker &&
       ((userPermissions?.current_user_has_permission ?? true) ||
-        hasExistingChat())
+        (!!existingChat &&
+          !existingChat.is_blast &&
+          !existingChat?.recheck_permissions))
 
     let action = ChatPermissionAction.NOT_APPLICABLE
     if (!canCreateChat) {
@@ -311,12 +309,12 @@ export const getCanCreateChat = createSelector(
         action = ChatPermissionAction.WAIT
       } else if (blockees.includes(user.user_id)) {
         action = ChatPermissionAction.UNBLOCK
-      } else if (userPermissions.permit_list.includes(ChatPermission.TIPPERS)) {
-        action = ChatPermissionAction.TIP
       } else if (
         userPermissions.permit_list.includes(ChatPermission.FOLLOWERS)
       ) {
         action = ChatPermissionAction.FOLLOW
+      } else if (userPermissions.permit_list.includes(ChatPermission.TIPPERS)) {
+        action = ChatPermissionAction.TIP
       } else {
         action = ChatPermissionAction.NONE
       }

@@ -6,7 +6,8 @@ import {
   getContext,
   confirmerActions,
   confirmerSelectors,
-  confirmTransaction
+  confirmTransaction,
+  getSDK
 } from '@audius/common/store'
 import { waitForValue } from '@audius/common/utils'
 import { call, delay, put, select, takeEvery } from 'typed-redux-saga'
@@ -25,6 +26,7 @@ const DEACTIVATE_CONFIRMATION_UID = 'DEACTIVATE'
 
 function* handleDeactivateAccount() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   try {
     yield* waitForWrite()
 
@@ -36,11 +38,10 @@ function* handleDeactivateAccount() {
         DEACTIVATE_CONFIRMATION_UID,
         function* () {
           yield* put(make(Name.DEACTIVATE_ACCOUNT_REQUEST, {}))
-          const result = yield* call(
-            audiusBackendInstance.updateCreator,
-            { ...userMetadata, is_deactivated: true },
-            accountUserId /* note: as of writing, unused parameter */
-          )
+          const result = yield* call(audiusBackendInstance.updateCreator, {
+            metadata: { ...userMetadata, is_deactivated: true },
+            sdk
+          })
           if (!result) return
           const { blockHash, blockNumber } = result
           const confirmed = yield* call(

@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
+import { useUploadCompletionRoute } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 import {
   accountSelectors,
@@ -9,9 +10,10 @@ import {
   ProgressStatus,
   CommonState,
   ProgressState,
-  TrackForUpload
+  TrackForUpload,
+  TrackFormState,
+  CollectionFormState
 } from '@audius/common/store'
-import { route } from '@audius/common/utils'
 import {
   IconArrowRight as IconArrow,
   IconError,
@@ -30,12 +32,10 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { Tile } from 'components/tile'
 
 import { ShareBanner } from '../components/ShareBanner'
-import { CollectionFormState, TrackFormState } from '../types'
 
 import styles from './FinishPage.module.css'
 
-const { profilePage, collectionPage } = route
-const { getAccountUser } = accountSelectors
+const { getUserHandle } = accountSelectors
 const { getCombinedUploadPercentage } = uploadSelectors
 
 const messages = {
@@ -82,7 +82,10 @@ const UploadTrackItem = (props: UploadTrackItemProps) => {
     displayArtwork = false,
     ...otherProps
   } = props
-  const artworkUrl = track.metadata.artwork?.url
+  const artworkUrl =
+    track.metadata.artwork && 'url' in track.metadata.artwork
+      ? track.metadata.artwork?.url
+      : null
 
   return (
     <div className={styles.uploadTrackItem} {...otherProps}>
@@ -108,7 +111,7 @@ export const FinishPage = (props: FinishPageProps) => {
   const { formState, onContinue } = props
   const { tracks, uploadType } = formState
   const upload = useSelector((state: CommonState) => state.upload)
-  const user = useSelector(getAccountUser)
+  const accountHandle = useSelector(getUserHandle)
   const fullUploadPercent = useSelector(getCombinedUploadPercentage)
   const dispatch = useDispatch()
 
@@ -153,33 +156,16 @@ export const FinishPage = (props: FinishPageProps) => {
     }
   }, [upload.tracks, uploadType])
 
-  const visitButtonPath = useMemo(() => {
-    switch (uploadType) {
-      case UploadType.INDIVIDUAL_TRACK:
-        return upload.tracks?.[0].metadata.permalink
-      case UploadType.ALBUM:
-      case UploadType.PLAYLIST:
-        return upload.completedEntity
-          ? collectionPage(
-              null,
-              null,
-              null,
-              upload.completedEntity.permalink,
-              uploadType === UploadType.ALBUM
-            )
-          : ''
-      default:
-        if (!upload.tracks || upload.tracks.length > 1) {
-          return profilePage(user!.handle)
-        } else {
-          return upload.tracks?.[0].metadata.permalink
-        }
-    }
-  }, [upload.completedEntity, upload.tracks, uploadType, user])
+  const visitButtonPath = useUploadCompletionRoute({
+    uploadType,
+    upload,
+    accountHandle
+  })
 
-  const dispatchVisitEvent = useCallback(() => {
+  const handleViewUpload = useCallback(() => {
     dispatch(make(Name.TRACK_UPLOAD_VIEW_TRACK_PAGE, { uploadType }))
-  }, [dispatch, uploadType])
+    onContinue()
+  }, [dispatch, uploadType, onContinue])
 
   const isUnlistedTrack =
     (upload.tracks &&
@@ -208,16 +194,16 @@ export const FinishPage = (props: FinishPageProps) => {
                 {uploadComplete
                   ? '100%'
                   : fullUploadPercent === 100 && !uploadComplete
-                  ? messages.finishingUpload
-                  : `${fullUploadPercent}%`}
+                    ? messages.finishingUpload
+                    : `${fullUploadPercent}%`}
               </Text>
               <ProgressIndicator
                 status={
                   upload.error
                     ? ProgressStatus.ERROR
                     : uploadComplete
-                    ? ProgressStatus.COMPLETE
-                    : ProgressStatus.UPLOADING
+                      ? ProgressStatus.COMPLETE
+                      : ProgressStatus.UPLOADING
                 }
               />
             </div>
@@ -253,7 +239,7 @@ export const FinishPage = (props: FinishPageProps) => {
             <PlainButton onClick={handleUploadMoreClick} iconLeft={IconUpload}>
               {messages.uploadMore}
             </PlainButton>
-            <PlainButton iconRight={IconArrow} onClick={dispatchVisitEvent}>
+            <PlainButton iconRight={IconArrow} onClick={handleViewUpload}>
               <Link to={visitButtonPath}>{visitButtonText}</Link>
             </PlainButton>
           </div>

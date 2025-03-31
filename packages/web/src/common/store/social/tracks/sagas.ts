@@ -1,7 +1,7 @@
 import { Name, Kind, ID, Track, User } from '@audius/common/models'
-import { QueryParams } from '@audius/common/services'
 import {
   accountSelectors,
+  accountActions,
   cacheTracksSelectors,
   cacheActions,
   cacheUsersSelectors,
@@ -9,18 +9,17 @@ import {
   getContext,
   gatedContentSelectors,
   confirmerActions,
-  confirmTransaction,
-  modalsActions
+  modalsActions,
+  getSDK
 } from '@audius/common/store'
 import {
   formatShareText,
-  encodeHashId,
   makeKindId,
   waitForValue,
-  getQueryParams,
-  removeNullable
+  removeNullable,
+  getFilename
 } from '@audius/common/utils'
-import { capitalize } from 'lodash'
+import { Id, OptionalId } from '@audius/sdk'
 import {
   call,
   select,
@@ -41,8 +40,9 @@ import watchTrackErrors from './errorSagas'
 import { watchRecordListen } from './recordListen'
 const { getUser } = cacheUsersSelectors
 const { getTrack, getTracks } = cacheTracksSelectors
-const { getUserId, getUserHandle } = accountSelectors
+const { getUserId, getUserHandle, getIsGuestAccount } = accountSelectors
 const { getNftAccessSignatureMap } = gatedContentSelectors
+const { incrementTrackSaveCount, decrementTrackSaveCount } = accountActions
 const { setVisibility } = modalsActions
 
 /* REPOST TRACK */
@@ -55,9 +55,10 @@ export function* repostTrackAsync(
 ) {
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
-  if (!userId) {
+  const isGuest = yield* select(getIsGuestAccount)
+  if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
-    yield* put(signOnActions.showRequiresAccountModal())
+    yield* put(signOnActions.showRequiresAccountToast())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
@@ -163,26 +164,17 @@ export function* confirmRepostTrack(
   user: User,
   metadata?: { is_repost_of_repost: boolean }
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
+
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
       function* () {
-        const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.repostTrack,
-          trackId,
-          metadata
-        )
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm repost track for track id ${trackId}`
-          )
-        }
+        yield* call([sdk.tracks, sdk.tracks.repostTrack], {
+          trackId: Id.parse(trackId),
+          userId: Id.parse(user.user_id)
+        })
+
         return trackId
       },
       function* () {},
@@ -214,9 +206,10 @@ export function* undoRepostTrackAsync(
 ) {
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
-  if (!userId) {
+  const isGuest = yield* select(getIsGuestAccount)
+  if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
-    yield* put(signOnActions.showRequiresAccountModal())
+    yield* put(signOnActions.showRequiresAccountToast())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
@@ -276,25 +269,16 @@ export function* undoRepostTrackAsync(
 }
 
 export function* confirmUndoRepostTrack(trackId: ID, user: User) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
       function* () {
-        const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.undoRepostTrack,
-          trackId
-        )
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm undo repost track for track id ${trackId}`
-          )
-        }
+        yield* call([sdk.tracks, sdk.tracks.unrepostTrack], {
+          trackId: Id.parse(trackId),
+          userId: Id.parse(user.user_id)
+        })
+
         return trackId
       },
       function* () {},
@@ -327,8 +311,9 @@ export function* saveTrackAsync(
 ) {
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
-  if (!userId) {
-    yield* put(signOnActions.showRequiresAccountModal())
+  const isGuest = yield* select(getIsGuestAccount)
+  if (!userId || isGuest) {
+    yield* put(signOnActions.showRequiresAccountToast())
     yield* put(signOnActions.openSignOn(false))
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
@@ -346,11 +331,7 @@ export function* saveTrackAsync(
     return
   }
 
-  yield* call(adjustUserField, {
-    user,
-    fieldName: 'track_save_count',
-    delta: 1
-  })
+  yield* put(incrementTrackSaveCount())
 
   const event = make(Name.FAVORITE, {
     kind: 'track',
@@ -431,37 +412,23 @@ export function* confirmSaveTrack(
   user: User,
   metadata?: { is_save_of_repost: boolean }
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
       function* () {
-        const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.saveTrack,
-          trackId,
-          metadata
-        )
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm save track for track id ${trackId}`
-          )
-        }
+        yield* call([sdk.tracks, sdk.tracks.favoriteTrack], {
+          userId: Id.parse(user.user_id),
+          trackId: Id.parse(trackId)
+        })
+
         return trackId
       },
       function* () {},
       // @ts-ignore: remove when confirmer is typed
       function* ({ timeout, message }: { timeout: boolean; message: string }) {
         // Revert the incremented save count
-        yield* call(adjustUserField, {
-          user,
-          fieldName: 'track_save_count',
-          delta: -1
-        })
+        yield* put(decrementTrackSaveCount())
 
         yield* put(
           socialActions.saveTrackFailed(trackId, timeout ? 'Timeout' : message)
@@ -480,9 +447,10 @@ export function* unsaveTrackAsync(
 ) {
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
-  if (!userId) {
+  const isGuest = yield* select(getIsGuestAccount)
+  if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
-    yield* put(signOnActions.showRequiresAccountModal())
+    yield* put(signOnActions.showRequiresAccountToast())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
@@ -491,11 +459,7 @@ export function* unsaveTrackAsync(
   const user = yield* select(getUser, { id: userId })
   if (!user) return
 
-  yield* call(adjustUserField, {
-    user,
-    fieldName: 'track_save_count',
-    delta: -1
-  })
+  yield* put(decrementTrackSaveCount())
 
   const event = make(Name.UNFAVORITE, {
     kind: 'track',
@@ -550,36 +514,22 @@ export function* unsaveTrackAsync(
 }
 
 export function* confirmUnsaveTrack(trackId: ID, user: User) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
       function* () {
-        const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.unsaveTrack,
-          trackId
-        )
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm unsave track for track id ${trackId}`
-          )
-        }
+        yield* call([sdk.tracks, sdk.tracks.unfavoriteTrack], {
+          userId: Id.parse(user.user_id),
+          trackId: Id.parse(trackId)
+        })
         return trackId
       },
       function* () {},
       // @ts-ignore: remove when confirmer is typed
       function* ({ timeout, message }: { timeout: boolean; message: string }) {
         // revert the decremented save count
-        yield* call(adjustUserField, {
-          user,
-          fieldName: 'track_save_count',
-          delta: 1
-        })
+        yield* put(incrementTrackSaveCount())
         yield* put(
           socialActions.unsaveTrackFailed(
             trackId,
@@ -642,35 +592,6 @@ export function* watchUnsetArtistPick() {
   })
 }
 
-const getFilename = ({
-  track,
-  user,
-  original
-}: {
-  track: Track
-  user: User
-  original?: boolean
-}) => {
-  let filename
-  const hasCategory = !!track.stem_of?.category
-
-  // Fallback case - should not occur
-  if (!track.orig_filename) {
-    filename = `${track.title} ${
-      hasCategory ? `- ${capitalize(track.stem_of?.category)}` : null
-    } - ${user.name} (Audius)${original ? '.wav' : '.mp3'}`
-  } else if (original) {
-    filename = `${track.orig_filename}`
-  } else {
-    const dotIndex = track.orig_filename.lastIndexOf('.')
-    filename =
-      dotIndex !== -1
-        ? track.orig_filename.substring(0, dotIndex) + '.mp3'
-        : track.orig_filename + '.mp3'
-  }
-  return filename
-}
-
 /**
  * Downloads all tracks in the given quality. Can be used for a single
  * track or multiple tracks (usually for stems). First track is the parent track.
@@ -688,50 +609,59 @@ function* downloadTracks({
   userId?: ID
 }) {
   const { trackId: parentTrackId } = tracks[0]
+
   try {
-    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-    const apiClient = yield* getContext('apiClient')
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
+    const dispatch = yield* getContext('dispatch')
+    const audiusBackend = yield* getContext('audiusBackendInstance')
     const trackDownload = yield* getContext('trackDownload')
-    let queryParams: QueryParams = {}
 
     const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
     const userId = yield* select(getUserId)
+    const { data, signature } = yield* call(
+      audiusBackend.signGatedContentRequest,
+      { sdk }
+    )
     const nftAccessSignature = original
-      ? nftAccessSignatureMap[parentTrackId]?.original ?? null
-      : nftAccessSignatureMap[parentTrackId]?.mp3 ?? null
+      ? (nftAccessSignatureMap[parentTrackId]?.original ?? null)
+      : (nftAccessSignatureMap[parentTrackId]?.mp3 ?? null)
 
-    queryParams = (yield* call(getQueryParams, {
-      audiusBackendInstance,
-      nftAccessSignature,
-      userId
-    })) as unknown as QueryParams
+    yield* call(async () => {
+      const files = await Promise.all(
+        tracks.map(async ({ trackId, filename }) => {
+          const url = await sdk.tracks.getTrackDownloadUrl({
+            trackId: Id.parse(trackId),
+            userId: OptionalId.parse(userId),
+            userSignature: signature,
+            userData: data,
+            nftAccessSignature: nftAccessSignature
+              ? JSON.stringify(nftAccessSignature)
+              : undefined,
+            original
+          })
+          return {
+            url,
+            filename
+          }
+        })
+      )
 
-    queryParams.original = original
-
-    const files = tracks.map(({ trackId, filename }) => {
-      queryParams.filename = filename
-      return {
-        url: apiClient.makeUrl(
-          `/tracks/${encodeHashId(trackId)}/download`,
-          queryParams
-        ),
-        filename
-      }
+      await trackDownload.downloadTracks({
+        files,
+        rootDirectoryName,
+        abortSignal,
+        dispatch
+      })
     })
-    yield* call(trackDownload.downloadTracks, {
-      files,
-      rootDirectoryName,
-      abortSignal
-    })
+
     yield* call(async () => {
       await Promise.all(
         tracks.map(async ({ trackId }) => {
           try {
             await sdk.tracks.recordTrackDownload({
-              userId: userId ? encodeHashId(userId)! : undefined,
-              trackId: encodeHashId(trackId)!
+              userId: OptionalId.parse(userId),
+              trackId: Id.parse(trackId)
             })
             console.debug('Recorded download for track', trackId)
           } catch (e) {
@@ -802,7 +732,8 @@ function* watchDownloadTrack() {
             filename: getFilename({
               track,
               user,
-              original
+              isOriginal: original,
+              isDownload: true
             })
           })
         }

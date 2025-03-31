@@ -1,24 +1,21 @@
 import { useCallback } from 'react'
 
+import { useTrack, useUser } from '@audius/common/api'
 import type { ID, Track, User } from '@audius/common/models'
 import { SquareSizes } from '@audius/common/models'
-import { cacheTracksSelectors, cacheUsersSelectors } from '@audius/common/store'
 import { css } from '@emotion/native'
 import { useTheme } from '@emotion/react'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { Pressable, View } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import CoSign, { Size } from 'app/components/co-sign'
 import { ProfilePicture } from 'app/components/core'
-import { TrackImageV2 } from 'app/components/image/TrackImageV2'
+import { TrackImage } from 'app/components/image/TrackImage'
 import Text from 'app/components/text'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import type { StylesProp } from 'app/styles'
 import { flexRowCentered, makeStyles } from 'app/styles'
-const { getUserFromTrack } = cacheUsersSelectors
-const { getTrack } = cacheTracksSelectors
 
 const messages = {
   by: 'By '
@@ -59,8 +56,8 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 
 export const TrackScreenRemix = (props: TrackScreenRemixProps) => {
   const { id, ...other } = props
-  const track = useSelector((state) => getTrack(state, { id }))
-  const user = useSelector((state) => getUserFromTrack(state, { id }))
+  const { data: track } = useTrack(id)
+  const { data: user } = useUser(track?.owner_id)
 
   if (!track || !user) {
     console.warn(
@@ -110,7 +107,7 @@ const TrackScreenRemixComponent = ({
         position: 'relative'
       }}
     >
-      <TrackImageV2
+      <TrackImage
         trackId={track.track_id}
         style={css({
           zIndex: 0,

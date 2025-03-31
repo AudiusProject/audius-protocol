@@ -12,7 +12,7 @@ export enum ReleaseDateType {
 const messages = {
   title: 'Release Date',
   description: 'Specify the release date of your music.',
-  dateInputLabel: 'ReleaseDate',
+  dateInputLabel: 'Release Date',
   pastReleaseHint:
     'Setting a release date in the past will impact the order tracks appear on your profile.'
 }

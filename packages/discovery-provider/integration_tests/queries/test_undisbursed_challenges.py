@@ -146,7 +146,13 @@ def test_undisbursed_challenges(app):
         # Test that all undisbursed challenges are returned in order
         undisbursed = get_undisbursed_challenges(
             session,
-            {"user_id": None, "limit": 10, "offset": 0, "completed_blocknumber": 99},
+            {
+                "user_id": None,
+                "limit": 10,
+                "offset": 0,
+                "completed_blocknumber": 99,
+                "challenge_id": None,
+            },
         )
 
         expected = [
@@ -192,7 +198,13 @@ def test_undisbursed_challenges(app):
         # Test that it filters correctly by user_id
         undisbursed = get_undisbursed_challenges(
             session,
-            {"user_id": 6, "limit": 10, "offset": 0, "completed_blocknumber": 99},
+            {
+                "user_id": 6,
+                "limit": 10,
+                "offset": 0,
+                "completed_blocknumber": 99,
+                "challenge_id": None,
+            },
         )
 
         expected = [
@@ -214,7 +226,13 @@ def test_undisbursed_challenges(app):
         # Test that it filters correctly by user_id & completed blocknumber
         undisbursed = get_undisbursed_challenges(
             session,
-            {"user_id": 6, "limit": 10, "offset": 0, "completed_blocknumber": 101},
+            {
+                "user_id": 6,
+                "limit": 10,
+                "offset": 0,
+                "completed_blocknumber": 101,
+                "challenge_id": None,
+            },
         )
 
         expected = []

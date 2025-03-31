@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -10,13 +11,12 @@ import {
   Paper,
   SelectablePill
 } from '@audius/harmony'
-import { replace } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
-import Header from 'components/header/desktop/Header'
+import { Header } from 'components/header/desktop/Header'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
-import { useFlag } from 'hooks/useRemoteConfig'
+import { replace } from 'utils/navigation'
 
 import styles from '../PayAndEarnPage.module.css'
 import { PayoutWalletCard } from '../components/PayoutWalletCard'
@@ -27,10 +27,10 @@ import { WithdrawalsTab, useWithdrawals } from '../components/WithdrawalsTab'
 import { PayAndEarnPageProps, TableType } from '../types'
 
 const { PURCHASES_PAGE, SALES_PAGE, WITHDRAWALS_PAGE } = route
-const { getAccountHasTracks } = accountSelectors
+const { getAccountHasTracks, getIsGuestAccount } = accountSelectors
 
 export const messages = {
-  title: 'Pay & Earn',
+  title: 'USDC Wallet',
   description: 'Pay & earn with Audius',
   sales: 'Sales',
   purchases: 'Your Purchases',
@@ -47,18 +47,22 @@ type TableMetadata = {
 export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
   const dispatch = useDispatch()
   const accountHasTracks = useSelector(getAccountHasTracks)
-
+  const isGuest = useSelector(getIsGuestAccount)
   const [tableOptions, setTableOptions] = useState<TableType[] | null>(null)
   const [selectedTable, setSelectedTable] = useState<TableType | null>(null)
   useEffect(() => {
-    if (accountHasTracks !== null) {
+    if (accountHasTracks !== null || isGuest) {
       const tableOptions = accountHasTracks
         ? [TableType.SALES, TableType.PURCHASES, TableType.WITHDRAWALS]
         : [TableType.PURCHASES, TableType.WITHDRAWALS]
       setTableOptions(tableOptions)
       setSelectedTable(tableView ?? tableOptions[0])
     }
-  }, [accountHasTracks, setSelectedTable, tableView, setTableOptions])
+  }, [accountHasTracks, setSelectedTable, tableView, setTableOptions, isGuest])
+
+  const { isEnabled: isOwnYourFansEnabled } = useFeatureFlag(
+    FeatureFlags.OWN_YOUR_FANS
+  )
 
   const {
     count: salesCount,
@@ -68,7 +72,8 @@ export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
     onClickRow: onSalesClickRow,
     isEmpty: isSalesEmpty,
     isLoading: isSalesLoading,
-    downloadCSV: downloadSalesCSV
+    downloadCSV: downloadSalesCSV,
+    downloadSalesAsCSVFromJSON
   } = useSales()
   const {
     count: purchasesCount,
@@ -96,7 +101,9 @@ export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
   const tables: Record<TableType, TableMetadata> = {
     [TableType.SALES]: {
       label: messages.sales,
-      downloadCSV: downloadSalesCSV,
+      downloadCSV: isOwnYourFansEnabled
+        ? downloadSalesAsCSVFromJSON
+        : downloadSalesCSV,
       isDownloadCSVButtonDisabled: isSalesLoading || isSalesEmpty
     },
     [TableType.PURCHASES]: {
@@ -130,10 +137,6 @@ export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
     },
     [setSelectedTable, dispatch]
   )
-  const { isEnabled: isPayoutWalletEnabled } = useFlag(
-    FeatureFlags.PAYOUT_WALLET_ENABLED
-  )
-
   return (
     <Page
       title={messages.title}
@@ -146,7 +149,7 @@ export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
       ) : (
         <>
           <USDCCard />
-          {isPayoutWalletEnabled ? <PayoutWalletCard /> : null}
+          <PayoutWalletCard />
           <Paper w='100%'>
             <Flex direction='column' w='100%'>
               <Flex

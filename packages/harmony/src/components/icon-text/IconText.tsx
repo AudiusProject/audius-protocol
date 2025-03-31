@@ -1,17 +1,17 @@
 import { Fragment } from 'react'
 
-import { Flex } from 'components/layout'
-import { Text } from 'components/text'
+import { Flex } from '~harmony/components/layout'
+import { Text } from '~harmony/components/text'
 
 import { IconTextProps } from './types'
 
 export const IconText = ({
   children,
-  color = 'default',
+  color = 'subdued',
   icons = []
 }: IconTextProps) => {
   const separator = (
-    <Text variant='body' color='default' css={{ fontSize: 8, lineHeight: 20 }}>
+    <Text variant='body' color={color} css={{ fontSize: 8, lineHeight: 20 }}>
       •
     </Text>
   )

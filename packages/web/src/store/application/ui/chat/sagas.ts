@@ -1,9 +1,9 @@
 import { chatActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { push as pushRoute } from 'connected-react-router'
 import { takeLatest } from 'redux-saga/effects'
 import { put } from 'typed-redux-saga'
 
+import { push } from 'utils/navigation'
 import { chatPage } from 'utils/route'
 
 const { CHATS_PAGE } = route
@@ -15,9 +15,9 @@ function* watchGoToChat() {
       payload: { chatId, presetMessage }
     } = action
     if (!chatId) {
-      yield* put(pushRoute(CHATS_PAGE))
+      yield* put(push(CHATS_PAGE))
     } else {
-      yield* put(pushRoute(chatPage(chatId), { presetMessage }))
+      yield* put(push(chatPage(chatId), { presetMessage }))
     }
   })
 }

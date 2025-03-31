@@ -1,9 +1,8 @@
-import { useCallback } from 'react'
+import React, { useCallback } from 'react'
 
-import { trpc } from '@audius/common/services'
+import { useUser } from '@audius/common/api'
 import {
   accountSelectors,
-  cacheUsersSelectors,
   chatActions,
   chatSelectors,
   ChatPermissionAction,
@@ -27,7 +26,6 @@ import { makeStyles } from 'app/styles'
 const { createChat } = chatActions
 const { getCanCreateChat } = chatSelectors
 const { getUserId } = accountSelectors
-const { getUser } = cacheUsersSelectors
 
 const messages = {
   followsYou: 'Follows You',
@@ -154,21 +152,12 @@ export const ChatUserListItem = ({
 }: ChatUserListItemProps) => {
   const styles = useStyles()
   const dispatch = useDispatch()
-  const user = useSelector((state) => getUser(state, { id: userId }))
+  const { data: user } = useUser(userId)
   const currentUserId = useSelector(getUserId)
   const { callToAction, canCreateChat } = useSelector((state) =>
     getCanCreateChat(state, { userId: user?.user_id })
   )
   const { onOpen: openInboxUnavailableDrawer } = useInboxUnavailableModal()
-
-  const { data: relationship } = trpc.me.userRelationship.useQuery(
-    {
-      theirId: userId.toString()
-    },
-    {
-      enabled: !!currentUserId
-    }
-  )
 
   const handlePress = useCallback(() => {
     if (user?.user_id) {
@@ -265,7 +254,7 @@ export const ChatUserListItem = ({
                   </View>
                 )}
               </View>
-              {relationship?.followsMe && canCreateChat ? (
+              {user?.does_follow_current_user && canCreateChat ? (
                 <Text
                   fontSize='xxs'
                   weight='heavy'

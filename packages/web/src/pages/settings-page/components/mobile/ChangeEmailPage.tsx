@@ -15,8 +15,8 @@ import {
 } from 'components/change-email/ChangeEmailModal'
 import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 import { ToastContext } from 'components/toast/ToastContext'
+import { goBack } from 'utils/navigation'
 
-import { SettingsPageProps } from './SettingsPage'
 import { SlidingPages } from './SlidingPages'
 
 const messages = {
@@ -64,7 +64,7 @@ const ChangeEmailMobileForm = ({ page }: { page: ChangeEmailPage }) => {
   )
 }
 
-export const ChangeEmailMobilePage = ({ goBack }: SettingsPageProps) => {
+export const ChangeEmailMobilePage = () => {
   const navContext = useContext(NavContext)!
   const { toast } = useContext(ToastContext)
 
@@ -78,7 +78,7 @@ export const ChangeEmailMobilePage = ({ goBack }: SettingsPageProps) => {
   const onSuccess = useCallback(() => {
     goBack()
     toast(messages.success)
-  }, [goBack, toast])
+  }, [toast])
 
   const { page, ...formikConfiguration } =
     useChangeEmailFormConfiguration(onSuccess)

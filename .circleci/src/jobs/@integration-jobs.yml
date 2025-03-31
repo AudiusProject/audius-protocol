@@ -26,14 +26,17 @@ integration-init:
           - packages/libs/dist
           - packages/sdk/node_modules
           - packages/sdk/dist
-          - packages/trpc-server/node_modules
-          - packages/trpc-server/dist
+          - packages/discovery-provider/plugins/pedalboard/apps/relay/node_modules
+          - packages/discovery-provider/plugins/pedalboard/apps/solana-relay/node_modules
 
 integration-test:
   machine: true
   resource_class: audiusproject/gcp-n2-standard-4
   working_directory: ~/audius-protocol
   steps:
+    # - run:
+    #     name: clean dir
+    #     command: cd ~; [ -d ~/audius-protocol ] && rm -rf ~/audius-protocol
     - checkout
     - attach_workspace:
         at: ./
@@ -41,8 +44,8 @@ integration-test:
         name: setup
         command: AUDIUS_DEV=false bash ./dev-tools/setup.sh
     - run:
-        name: audius-compose up
-        command: . ~/.profile; audius-compose up --prod
+        name: npm run protocol --prod
+        command: . ~/.profile; export DOCKER_UID=$(id -u); export DOCKER_GID=$(id -g); npm run protocol up -- --prod
     - run:
         name: audius-cmd test
         no_output_timeout: 15m
@@ -61,10 +64,15 @@ integration-test:
     - run:
         name: run playwright tests
         command: |
-          cd packages/web 
-          RUN_AGAINST_LOCAL_STACK=true npx playwright test || true
-          echo 'WARNING: errors have been ignored due to test flakiness.'
-          echo 'Please manually inspect output.'
+          cd packages/web
+          trap 'npx playwright stop' EXIT
+          RUN_AGAINST_LOCAL_STACK=true npx playwright test
+        when: always
+    - run:
+        name: shutdown playwright
+        command: |
+          pkill -f playwright || true
+        when: always
     - store_test_results:
         path: packages/web/report.xml
         when: always
@@ -72,9 +80,7 @@ integration-test:
         name: merge playwright test reports
         command: |
           cd packages/web
-          npx playwright merge-reports --reporter html ./blob-report || true
-          echo 'WARNING: errors have been ignored due to test flakiness.'
-          echo 'Please manually inspect output.'
+          npx playwright merge-reports --reporter html ./blob-report
         when: always
     - store_artifacts:
         path: packages/web/playwright-report

@@ -190,6 +190,10 @@ export type Copyright = {
   text: string
 }
 
+type CoverArtSizesWithMirror = CoverArtSizes & {
+  mirrors?: string[] | undefined
+}
+
 export type TrackMetadata = {
   ai_attribution_user_id?: Nullable<number>
   allowed_api_keys?: Nullable<string[]>
@@ -219,6 +223,7 @@ export type TrackMetadata = {
   tags: Nullable<string>
   title: string
   track_segments: TrackSegment[]
+  artwork: CoverArtSizesWithMirror
   cover_art: Nullable<CID>
   cover_art_sizes: Nullable<CID>
   cover_art_cids?: Nullable<CoverArtSizesCids>
@@ -276,7 +281,30 @@ export type TrackMetadata = {
 
   offline?: OfflineTrackMetadata
   local?: boolean
+
+  // API returned URLS
+  stream?: {
+    url?: string
+    mirrors: string[]
+  }
+  download?: {
+    url?: string
+    mirrors: string[]
+  }
+  preview?: {
+    url?: string
+    mirrors: string[]
+  }
+  album_backlink?: {
+    playlist_id: ID
+    playlist_name: string
+    permalink: string
+  }
 } & Timestamped
+
+export type WriteableTrackMetadata = TrackMetadata & {
+  artwork: CoverArtSizesWithMirror & { file?: File | null; url: '' }
+}
 
 export type DownloadReason = {
   is_from_favorites?: boolean
@@ -299,7 +327,6 @@ export type Stem = {
 
 export type ComputedTrackProperties = {
   // All below, added clientside
-  _cover_art_sizes: CoverArtSizes
   _first_segment?: string
   _followees?: Followee[]
   _marked_deleted?: boolean

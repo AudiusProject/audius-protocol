@@ -1,11 +1,10 @@
+import { useTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import { ModalSource, Theme, ID, UID } from '@audius/common/models'
 import {
-  cacheTracksSelectors,
   themeSelectors,
   usePremiumContentPurchaseModal,
   gatedContentSelectors,
-  CommonState,
   PurchaseableContentType
 } from '@audius/common/store'
 import { Flex } from '@audius/harmony'
@@ -15,14 +14,13 @@ import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import Tooltip from 'components/tooltip/Tooltip'
 import { GatedConditionsPill } from 'components/track/GatedConditionsPill'
-import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
+import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
 import { shouldShowDark } from 'utils/theme/theme'
 
 import styles from './SocialActions.module.css'
 
 const { getTheme } = themeSelectors
 const { getGatedContentStatusMap } = gatedContentSelectors
-const { getTrack } = cacheTracksSelectors
 
 type SocialActionsProps = {
   trackId: ID
@@ -46,9 +44,7 @@ export const SocialActions = ({
   onToggleRepost,
   onToggleFavorite
 }: SocialActionsProps) => {
-  const track = useSelector((state: CommonState) =>
-    getTrack(state, { id: trackId })
-  )
+  const { data: track } = useTrack(trackId)
   const isFavoriteAndRepostDisabled = !uid || isOwner
   const favorited = track?.has_current_user_saved ?? false
   const reposted = track?.has_current_user_reposted ?? false
@@ -60,7 +56,7 @@ export const SocialActions = ({
   const gatedTrackStatus = trackId && gatedTrackStatusMap[trackId]
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
-  const onClickPill = useAuthenticatedClickCallback(() => {
+  const onClickPill = useRequiresAccountOnClick(() => {
     openPremiumContentPurchaseModal(
       { contentId: trackId, contentType: PurchaseableContentType.TRACK },
       { source: ModalSource.PlayBar }

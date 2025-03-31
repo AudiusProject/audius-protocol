@@ -1,22 +1,21 @@
 import { useCallback, useRef, useState } from 'react'
 
-import { useProxySelector, useCanSendMessage } from '@audius/common/hooks'
+import { useUsers } from '@audius/common/api'
+import { useCanSendMessage } from '@audius/common/hooks'
 import { Status, ChatMessageWithExtras } from '@audius/common/models'
 import {
   accountSelectors,
-  cacheUsersSelectors,
   chatActions,
   chatSelectors,
   ReactionTypes
 } from '@audius/common/store'
 import {
   formatMessageDate,
-  decodeHashId,
-  encodeHashId,
   isCollectionUrl,
   isTrackUrl
 } from '@audius/common/utils'
 import { Flex, IconError, IconPlus } from '@audius/harmony'
+import { HashId, Id, OptionalHashId } from '@audius/sdk'
 import cn from 'classnames'
 import { find } from 'linkifyjs'
 import { useDispatch } from 'react-redux'
@@ -60,17 +59,13 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
 
   // Selectors
   const userId = useSelector(getUserId)
-  const reactionUsers = useProxySelector(
-    (state) =>
-      cacheUsersSelectors.getUsers(state, {
-        ids: message.reactions?.map((r) => decodeHashId(r.user_id)!)
-      }),
-    [message]
+  const { byId: reactionUsers } = useUsers(
+    message.reactions?.map((r) => HashId.parse(r.user_id))
   )
   const chat = useSelector((state) => getChat(state, chatId ?? ''))
 
   // Derived
-  const senderUserId = decodeHashId(message.sender_user_id)
+  const senderUserId = HashId.parse(message.sender_user_id)
   const isAuthor = userId === senderUserId
   const links = find(message.message)
   const link = links.filter((link) => link.type === 'url' && link.isLink)[0]
@@ -96,7 +91,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
             chatId,
             messageId: message.message_id,
             reaction:
-              message.reactions?.find((r) => r.user_id === encodeHashId(userId))
+              message.reactions?.find((r) => r.user_id === Id.parse(userId))
                 ?.reaction === reaction
                 ? null
                 : reaction
@@ -157,7 +152,9 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
                 key={reaction.user_id}
                 width={48}
                 height={48}
-                title={reactionUsers[decodeHashId(reaction.user_id)!]?.name}
+                title={
+                  reactionUsers[OptionalHashId.parse(reaction.user_id)!]?.name
+                }
                 disableClickAnimation
               />
             )
@@ -213,7 +210,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
             <Flex className={styles.textWrapper}>
               <UserGeneratedTextV2
                 className={styles.text}
-                color={isAuthor ? 'staticWhite' : 'default'}
+                color={isAuthor ? 'white' : 'default'}
                 textAlign='left'
                 linkProps={{
                   variant: isAuthor ? 'inverted' : 'visible',

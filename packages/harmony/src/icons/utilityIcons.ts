@@ -1,8 +1,12 @@
+import { IconComponent } from '~harmony/components'
+
 import IconAlbumSVG from '../assets/icons/Album.svg'
 import IconAllTimeSVG from '../assets/icons/AllTime.svg'
 import IconAppearanceSVG from '../assets/icons/Appearance.svg'
 import IconArrowLeftSVG from '../assets/icons/ArrowLeft.svg'
 import IconArrowRightSVG from '../assets/icons/ArrowRight.svg'
+import IconArrowRotateSVG from '../assets/icons/ArrowRotate.svg'
+import IconArrowUpToLineSVG from '../assets/icons/ArrowUpToLine.svg'
 import IconBlogSVG from '../assets/icons/Blog.svg'
 import IconBoxHeartSVG from '../assets/icons/BoxHeart.svg'
 import IconCalendarDaySVG from '../assets/icons/CalendarDay.svg'
@@ -114,8 +118,8 @@ import IconSortSVG from '../assets/icons/Sort.svg'
 import IconSortDownSVG from '../assets/icons/SortDown.svg'
 import IconSortUpSVG from '../assets/icons/SortUp.svg'
 import IconSoundwaveSVG from '../assets/icons/Soundwave.svg'
+import IconSparklesSVG from '../assets/icons/Sparkles.svg'
 import IconSpeakerSVG from '../assets/icons/Speaker.svg'
-import IconSpecialAccessSVG from '../assets/icons/SpecialAccess.svg'
 import IconStarSVG from '../assets/icons/Star.svg'
 import IconStarsSVG from '../assets/icons/Stars.svg'
 import IconSupportSVG from '../assets/icons/Support.svg'
@@ -148,9 +152,8 @@ import IconVolumeLevel2SVG from '../assets/icons/VolumeLevel2.svg'
 import IconVolumeLevel3SVG from '../assets/icons/VolumeLevel3.svg'
 import IconWalletSVG from '../assets/icons/Wallet.svg'
 import IconWandSVG from '../assets/icons/Wand.svg'
-import IconWaveformSVG from '../assets/icons/Waveform.svg'
+import IconWaveFormSVG from '../assets/icons/Waveform.svg'
 import IconWithdrawSVG from '../assets/icons/Withdraw.svg'
-import type { IconComponent } from '../components/icon'
 
 export const IconFilter = IconFilterSVG as IconComponent
 export const IconSearch = IconSearchSVG as IconComponent
@@ -166,6 +169,7 @@ export const IconArrowLeft = IconArrowLeftSVG as IconComponent
 export const IconHeart = IconHeartSVG as IconComponent
 export const IconShare = IconShareSVG as IconComponent
 export const IconArrowRight = IconArrowRightSVG as IconComponent
+export const IconArrowUpToLine = IconArrowUpToLineSVG as IconComponent
 export const IconImage = IconImageSVG as IconComponent
 export const IconShieldCheck = IconShieldCheckSVG as IconComponent
 export const IconShieldUser = IconShieldUserSVG as IconComponent
@@ -198,7 +202,7 @@ export const IconLock = IconLockSVG as IconComponent
 export const IconSpeaker = IconSpeakerSVG as IconComponent
 export const IconCaretUp = IconCaretUpSVG as IconComponent
 export const IconLockUnlocked = IconLockUnlockedSVG as IconComponent
-export const IconSpecialAccess = IconSpecialAccessSVG as IconComponent
+export const IconSparkles = IconSparklesSVG as IconComponent
 export const IconCart = IconCartSVG as IconComponent
 export const IconMessages = IconMessagesSVG as IconComponent
 export const IconMessage = IconMessageSVG as IconComponent
@@ -248,6 +252,7 @@ export const IconPencil = IconPencilSVG as IconComponent
 export const IconPin = IconPinSVG as IconComponent
 export const IconUser = IconUserSVG as IconComponent
 export const IconUserArrowRotate = IconUserArrowRotateSVG as IconComponent
+export const IconArrowRotate = IconArrowRotateSVG as IconComponent
 export const IconCollectible = IconCollectibleSVG as IconComponent
 export const IconPlay = IconPlaySVG as IconComponent
 export const IconUserFollow = IconUserFollowSVG as IconComponent
@@ -301,7 +306,7 @@ export const IconValidationCheck = IconValidationCheckSVG as IconComponent
 export const IconValidationX = IconValidationXSVG as IconComponent
 export const IconSoundwave = IconSoundwaveSVG as IconComponent
 export const IconCreditCard = IconCreditCardSVG as IconComponent
-export const IconWaveForm = IconWaveformSVG as IconComponent
+export const IconWaveForm = IconWaveFormSVG as IconComponent
 export const IconFoundation = IconFoundationSVG as IconComponent
 export const IconMerch = IconMerchSVG as IconComponent
 export const IconSupport = IconSupportSVG as IconComponent

@@ -5,7 +5,6 @@ import {
   ShareSource,
   RepostSource,
   FavoriteSource,
-  FollowSource,
   PlaybackSource,
   FavoriteType,
   PlayableType,
@@ -16,7 +15,8 @@ import {
   ID,
   UID,
   isContentUSDCPurchaseGated,
-  ModalSource
+  ModalSource,
+  FollowSource
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -28,7 +28,6 @@ import {
   queueSelectors,
   collectionsSocialActions as socialCollectionsActions,
   tracksSocialActions as socialTracksActions,
-  usersSocialActions as socialUsersActions,
   mobileOverflowMenuUIActions,
   modalsActions,
   shareModalUIActions,
@@ -52,7 +51,6 @@ import {
   playerActions
 } from '@audius/common/store'
 import { formatUrlName, Uid, Nullable, route } from '@audius/common/utils'
-import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
@@ -70,6 +68,7 @@ import {
 } from 'store/application/ui/userListModal/types'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
+import { push, replace } from 'utils/navigation'
 import { getPathname } from 'utils/route'
 import { parseCollectionRoute } from 'utils/route/collectionRouteParser'
 import { getCollectionPageSEOFields } from 'utils/seo'
@@ -127,7 +126,22 @@ type OwnProps = {
 type CollectionPageProps = OwnProps &
   ReturnType<ReturnType<typeof makeMapStateToProps>> &
   ReturnType<typeof mapDispatchToProps> &
-  RouteComponentProps
+  RouteComponentProps & {
+    onFollow: ({
+      followeeUserId,
+      source
+    }: {
+      followeeUserId: ID
+      source: FollowSource
+    }) => void
+    onUnfollow: ({
+      followeeUserId,
+      source
+    }: {
+      followeeUserId: ID
+      source: FollowSource
+    }) => void
+  }
 
 type CollectionPageState = {
   filterText: string
@@ -215,12 +229,12 @@ class CollectionPage extends Component<
     const newInitialOrder = tracks.entries.map((track) => track.uid)
 
     const noInitialOrder = !initialOrder && tracks.entries.length > 0
-    const entryIds = new Set(newInitialOrder)
+    const prevEntryIds = new Set(initialOrder)
     const newUids =
       Array.isArray(initialOrder) &&
       initialOrder.length > 0 &&
       newInitialOrder.length > 0 &&
-      !initialOrder.every((id) => entryIds.has(id))
+      !newInitialOrder.every((id) => prevEntryIds.has(id))
 
     if (noInitialOrder || newUids) {
       this.setState({
@@ -377,7 +391,7 @@ class CollectionPage extends Component<
 
     const { permalink, collectionId } = params
 
-    // Need typecast as can't set type via connected-react-router, see https://github.com/reach/router/issues/414
+    // Need typecast as can't set type via redux-first-history, see https://github.com/reach/router/issues/414
     const locationState = this.props.location.state as { forceFetch?: boolean }
     const forceFetch = locationState?.forceFetch
 
@@ -444,7 +458,7 @@ class CollectionPage extends Component<
     const filterText = this.state.filterText
     const { tracks } = this.props
     const playingUid = this.getPlayingUid()
-    const playingIndex = tracks.entries.findIndex(
+    const activeIndex = tracks.entries.findIndex(
       ({ uid }) => uid === playingUid
     )
     const filteredMetadata = this.formatMetadata(trackMetadatas).filter(
@@ -453,9 +467,9 @@ class CollectionPage extends Component<
         item.user.name.toLowerCase().indexOf(filterText.toLowerCase()) > -1
     )
     const filteredIndex =
-      playingIndex > -1
+      activeIndex > -1
         ? filteredMetadata.findIndex((metadata) => metadata.uid === playingUid)
-        : playingIndex
+        : activeIndex
     return [filteredMetadata, filteredIndex] as [
       typeof filteredMetadata,
       number
@@ -489,14 +503,6 @@ class CollectionPage extends Component<
           source: PlaybackSource.PLAYLIST_TRACK
         })
       )
-    }
-  }
-
-  onClickSave = (record: CollectionPageTrackRecord) => {
-    if (!record.has_current_user_saved) {
-      this.props.saveTrack(record.track_id)
-    } else {
-      this.props.unsaveTrack(record.track_id)
     }
   }
 
@@ -724,16 +730,6 @@ class CollectionPage extends Component<
     }
   }
 
-  onFollow = () => {
-    const { onFollow, collection: metadata } = this.props
-    if (metadata) onFollow(metadata.playlist_owner_id)
-  }
-
-  onUnfollow = () => {
-    const { onUnfollow, collection: metadata } = this.props
-    if (metadata) onUnfollow(metadata.playlist_owner_id)
-  }
-
   render() {
     const {
       playing,
@@ -746,7 +742,9 @@ class CollectionPage extends Component<
       userId,
       userPlaylists,
       smartCollection,
-      trackCount
+      trackCount,
+      onFollow,
+      onUnfollow
     } = this.props
     const { allowReordering } = this.state
     const { playlistId } = this.props
@@ -792,7 +790,6 @@ class CollectionPage extends Component<
       onHeroTrackSave: this.onHeroTrackSave,
       onHeroTrackRepost: this.onHeroTrackRepost,
       onClickRow: this.onClickRow,
-      onClickSave: this.onClickSave,
       onClickRepostTrack: this.onClickRepostTrack,
       onClickPurchaseTrack: this.onClickPurchaseTrack,
       onSortTracks: this.onSortTracks,
@@ -801,9 +798,8 @@ class CollectionPage extends Component<
       onClickMobileOverflow: this.props.clickOverflow,
       onClickFavorites: this.onClickFavorites,
       onClickReposts: this.onClickReposts,
-      onFollow: this.onFollow,
-      onUnfollow: this.onUnfollow,
-      refresh: this.refreshCollection,
+      onFollow,
+      onUnfollow,
       trackCount
     }
 
@@ -892,7 +888,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(tracksActions.fetchLineupMetadatas(0, 200, false, undefined)),
     resetCollection: (collectionUid: string, userUid: string) =>
       dispatch(collectionActions.resetCollection(collectionUid, userUid)),
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
+    goToRoute: (route: string) => dispatch(push(route)),
     replaceRoute: (route: string) => dispatch(replace(route)),
     play: (uid?: string, options: { isPreview?: boolean } = {}) =>
       dispatch(tracksActions.play(uid, options)),
@@ -1004,14 +1000,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
           collectionPermalink,
           userId
         )
-      ),
-    onFollow: (userId: ID) =>
-      dispatch(
-        socialUsersActions.followUser(userId, FollowSource.COLLECTION_PAGE)
-      ),
-    onUnfollow: (userId: ID) =>
-      dispatch(
-        socialUsersActions.unfollowUser(userId, FollowSource.COLLECTION_PAGE)
       ),
     clickOverflow: (collectionId: ID, overflowActions: OverflowAction[]) =>
       dispatch(

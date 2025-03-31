@@ -6,7 +6,6 @@ export type Env = {
   AAO_ENDPOINT: string
   AMPLITUDE_API_KEY: Nullable<string>
   AMPLITUDE_PROXY: Nullable<string>
-  AMPLITUDE_WRITE_KEY: Nullable<string>
   APP_NAME: string
   API_KEY: string
   AUDIUS_URL: string
@@ -21,7 +20,6 @@ export type Env = {
   COINFLOW_PARTNER_ID: string
   COGNITO_KEY: Nullable<string>
   COGNITO_TEMPLATE_ID: Nullable<string>
-  EAGER_DISCOVERY_NODES: string
   ENTITY_MANAGER_ADDRESS: string
   ENVIRONMENT: Environment
   ETH_BRIDGE_ADDRESS: Nullable<string>
@@ -73,7 +71,6 @@ export type Env = {
   SOLANA_WEB3_CLUSTER: string
   SUGGESTED_FOLLOW_HANDLES: string
   TIKTOK_APP_ID: string
-  TRPC_ENDPOINT: string
   USDC_MINT_ADDRESS: string
   USER_NODE: string
   USE_HASH_ROUTING: boolean
@@ -82,4 +79,6 @@ export type Env = {
   WEB3_PROVIDER_URL: string
   WORMHOLE_ADDRESS: Nullable<string>
   WORMHOLE_RPC_HOSTS: Nullable<string>
+  EMAIL_ENCRYPTION_UUID?: number
+  EMAIL_ENCRYPTION_PUBLIC_KEY?: string
 }

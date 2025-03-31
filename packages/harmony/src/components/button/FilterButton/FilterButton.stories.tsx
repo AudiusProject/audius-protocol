@@ -2,8 +2,8 @@ import { expect } from '@storybook/jest'
 import type { Meta, StoryObj } from '@storybook/react'
 import { within } from '@storybook/testing-library'
 
-import { Box, Flex } from 'components/layout'
-import { IconAlbum, IconCampfire, IconFilter, IconRadar } from 'icons'
+import { Box, Flex } from '~harmony/components/layout'
+import { IconAlbum, IconCampfire, IconFilter, IconRadar } from '~harmony/icons'
 
 import { FilterButton } from './FilterButton'
 import { FilterButtonProps } from './types'

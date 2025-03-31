@@ -3,15 +3,12 @@ import {
   remoteConfigReducer as remoteConfig,
   reducers as clientStoreReducers
 } from '@audius/common/store'
-import { connectRouter } from 'connected-react-router'
-import { History } from 'history'
 import localForage from 'localforage'
-import { combineReducers } from 'redux'
+import { combineReducers, Reducer } from 'redux'
 
 import backend from 'common/store/backend/reducer'
 import signOnReducer from 'common/store/pages/signon/reducer'
 import searchAiBar from 'common/store/search-ai-bar/reducer'
-import searchBar from 'common/store/search-bar/reducer'
 import embedModal from 'components/embed-modal/store/reducers'
 import firstUploadModal from 'components/first-upload-modal/store/slice'
 import passwordReset from 'components/password-reset/store/reducer'
@@ -22,14 +19,13 @@ import visualizer from 'pages/visualizer/store/slice'
 import appCTAModal from 'store/application/ui/app-cta-modal/slice'
 import cookieBanner from 'store/application/ui/cookieBanner/reducer'
 import editFolderModal from 'store/application/ui/editFolderModal/slice'
-import notifications from 'store/application/ui/notifications/notificationsUISlice'
 import scrollLock from 'store/application/ui/scrollLock/reducer'
 import userListModal from 'store/application/ui/userListModal/slice'
 import dragndrop from 'store/dragndrop/slice'
 import error from 'store/errors/reducers'
 
-const createRootReducer = (routeHistory: History) => {
-  const commonStoreReducers = clientStoreReducers(localForage, routeHistory)
+const createRootReducer = (routerReducer: Reducer) => {
+  const commonStoreReducers = clientStoreReducers(localForage)
 
   return combineReducers({
     // Common store
@@ -37,13 +33,12 @@ const createRootReducer = (routeHistory: History) => {
     // These also belong in common store reducers but are here until we move them to the @audius/common package.
     backend,
     signOn: signOnReducer,
-    searchBar,
     searchAiBar,
 
     // (End common store)
 
     // Router
-    router: connectRouter(routeHistory),
+    router: routerReducer,
 
     // Account
     passwordReset,
@@ -71,8 +66,7 @@ const createRootReducer = (routeHistory: History) => {
         firstUploadModal,
         scrollLock,
         userListModal,
-        visualizer,
-        notifications
+        visualizer
       }),
       pages: combineReducers({
         deleted,

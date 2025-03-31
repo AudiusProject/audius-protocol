@@ -1,21 +1,13 @@
-import { MEMO_PROGRAM_ID } from '@audius/common/services'
-import { InAppAudioPurchaseMetadata } from '@audius/common/store'
 import {
   TokenAccountNotFoundError,
-  createTransferCheckedInstruction,
   getAccount,
   getAssociatedTokenAddress
 } from '@solana/spl-token'
-import {
-  ComputeBudgetProgram,
-  LAMPORTS_PER_SOL,
-  PublicKey,
-  Transaction,
-  TransactionInstruction
-} from '@solana/web3.js'
+import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
 
-import { getLibs } from 'services/audius-libs'
 import { getSolanaConnection } from 'services/solana/solana'
+
+import { audiusBackendInstance } from './audius-backend-instance'
 
 const DEFAULT_RETRY_DELAY = 1000
 const DEFAULT_MAX_RETRY_COUNT = 120
@@ -65,10 +57,10 @@ export const getAudioAccount = async ({
 }: {
   rootAccount: PublicKey
 }) => {
-  const libs = await getLibs()
-  return await libs.solanaWeb3Manager!.findAssociatedTokenAddress(
-    rootAccount.toString()
-  )
+  return audiusBackendInstance.findAssociatedTokenAddress({
+    solanaWalletKey: rootAccount,
+    mint: 'wAUDIO'
+  })
 }
 
 export const getAudioAccountInfo = async ({
@@ -76,10 +68,8 @@ export const getAudioAccountInfo = async ({
 }: {
   tokenAccount: PublicKey
 }) => {
-  const libs = await getLibs()
-  return await libs.solanaWeb3Manager!.getTokenAccountInfo(
-    tokenAccount.toString()
-  )
+  const connection = await getSolanaConnection()
+  return await getAccount(connection, tokenAccount)
 }
 
 export const pollForAudioBalanceChange = async ({
@@ -94,7 +84,14 @@ export const pollForAudioBalanceChange = async ({
   maxRetryCount?: number
 }) => {
   let retries = 0
-  let tokenAccountInfo = await getAudioAccountInfo({ tokenAccount })
+  let tokenAccountInfo
+  try {
+    tokenAccountInfo = await getAudioAccountInfo({ tokenAccount })
+  } catch (e) {
+    console.error('Failed to get AUDIO balance before polling', e)
+    tokenAccountInfo = null
+  }
+
   while (
     (!tokenAccountInfo || tokenAccountInfo.amount === initialBalance) &&
     retries++ < maxRetryCount
@@ -109,7 +106,12 @@ export const pollForAudioBalanceChange = async ({
       )
     }
     await delay(retryDelayMs)
-    tokenAccountInfo = await getAudioAccountInfo({ tokenAccount })
+    try {
+      tokenAccountInfo = await getAudioAccountInfo({ tokenAccount })
+    } catch (e) {
+      console.error('Failed to get AUDIO balance while polling', e)
+      tokenAccountInfo = null
+    }
   }
   if (tokenAccountInfo && tokenAccountInfo.amount !== initialBalance) {
     console.debug(
@@ -198,89 +200,4 @@ export const pollForNewTransaction = async ({
     return transaction
   }
   throw new Error('Transaction polling exceeded maximum retries')
-}
-
-export const createTransferToUserBankTransaction = async ({
-  userBank,
-  fromAccount,
-  amount,
-  memo
-}: {
-  userBank: PublicKey
-  fromAccount: PublicKey
-  amount: bigint
-  memo: string
-}) => {
-  const libs = await getLibs()
-  const mintPublicKey = new PublicKey(libs.solanaWeb3Config.mintAddress)
-  const associatedTokenAccount = await getAudioAccount({
-    rootAccount: fromAccount
-  })
-  // See: https://github.com/solana-labs/solana-program-library/blob/d6297495ea4dcc1bd48f3efdd6e3bbdaef25a495/memo/js/src/index.ts#L27
-  const memoInstruction = new TransactionInstruction({
-    keys: [
-      {
-        pubkey: fromAccount,
-        isSigner: true,
-        isWritable: true
-      }
-    ],
-    programId: MEMO_PROGRAM_ID,
-    data: Buffer.from(memo)
-  })
-  const transferInstruction = createTransferCheckedInstruction(
-    associatedTokenAccount,
-    mintPublicKey,
-    userBank,
-    fromAccount,
-    amount,
-    8
-  )
-  const tx = new Transaction()
-  tx.add(memoInstruction)
-  tx.add(transferInstruction)
-  tx.add(
-    ComputeBudgetProgram.setComputeUnitPrice({
-      microLamports: 100000
-    })
-  )
-  return tx
-}
-
-export const saveUserBankTransactionMetadata = async ({
-  transactionSignature,
-  metadata
-}: {
-  transactionSignature: string
-  metadata: InAppAudioPurchaseMetadata
-}) => {
-  const libs = await getLibs()
-  return await libs.identityService!.saveUserBankTransactionMetadata({
-    transactionSignature,
-    metadata
-  })
-}
-
-export const getUserBankTransactionMetadata = async (transactionId: string) => {
-  const libs = await getLibs()
-  return await libs.identityService!.getUserBankTransactionMetadata(
-    transactionId
-  )
-}
-
-export const createStripeSession = async ({
-  destinationWallet,
-  amount,
-  destinationCurrency = 'sol'
-}: {
-  destinationWallet: string
-  amount: string
-  destinationCurrency?: 'sol' | 'usdc'
-}) => {
-  const libs = await getLibs()
-  return await libs.identityService!.createStripeSession({
-    destinationWallet,
-    amount,
-    destinationCurrency
-  })
 }

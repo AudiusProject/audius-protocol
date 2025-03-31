@@ -71,6 +71,7 @@ module.exports = {
     'no-empty': 'off',
     'arrow-parens': 'off',
     'padded-blocks': 'off',
+    indent: 'off',
 
     'jest/expect-expect': 'off',
 

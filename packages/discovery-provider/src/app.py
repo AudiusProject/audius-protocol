@@ -3,7 +3,6 @@ from __future__ import absolute_import
 import ast
 import datetime
 import logging
-import os
 import time
 from collections import defaultdict
 from typing import Any, Dict
@@ -38,7 +37,7 @@ from src.queries import (
 )
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks import celery_app
-from src.tasks.index_reactions import INDEX_REACTIONS_LOCK
+from src.tasks.index_core import index_core_lock_key
 from src.tasks.repair_audio_analyses import REPAIR_AUDIO_ANALYSES_LOCK
 from src.tasks.update_delist_statuses import UPDATE_DELIST_STATUSES_LOCK
 from src.utils import helpers, web3_provider
@@ -109,11 +108,10 @@ def create_app(test_config=None):
 
 def create_celery(test_config=None):
     # pylint: disable=W0603
-    global web3endpoint, web3, abi_values, eth_abi_values, eth_web3
+    global web3endpoint, abi_values, eth_abi_values, eth_web3
     global trusted_notifier_manager
     global solana_client_manager
 
-    web3 = web3_provider.get_web3()
     abi_values = helpers.load_abi_values()
     # Initialize eth_web3 with MultiProvider
     # We use multiprovider to allow for multiple web3 providers and additional resiliency.
@@ -128,21 +126,6 @@ def create_celery(test_config=None):
 
     # Initialize Solana web3 provider
     solana_client_manager = SolanaClientManager(shared_config["solana"]["endpoint"])
-
-    global entity_manager
-    global contract_addresses
-    # pylint: enable=W0603
-
-    try:
-        (
-            entity_manager,
-            contract_addresses,
-        ) = init_contracts()
-    except:
-        # init_contracts will fail when poa-gateway points to nethermind
-        # only swallow exception in stage
-        if os.getenv("audius_discprov_env") != "stage":
-            raise Exception("Failed to init POA contracts")
 
     return create(test_config, mode="celery")
 
@@ -295,17 +278,10 @@ def configure_celery(celery, test_config=None):
             if "url_read_replica" in test_config["db"]:
                 database_url_read_replica = test_config["db"]["url_read_replica"]
 
-    audius_solana_plays_indexing_interval_s = int(
-        os.getenv("audius_solana_plays_indexing_interval_s", 30)
-    )
-
     # Update celery configuration
     celery.conf.update(
         imports=[
-            "src.tasks.index_nethermind",
-            "src.tasks.index_latest_block",
             "src.tasks.index_metrics",
-            "src.tasks.index_aggregate_monthly_plays",
             "src.tasks.index_hourly_play_counts",
             "src.tasks.vacuum_db",
             "src.tasks.update_clique_signers",
@@ -313,27 +289,25 @@ def configure_celery(celery, test_config=None):
             "src.tasks.cache_user_balance",
             "src.monitors.monitoring_queue",
             "src.tasks.cache_trending_playlists",
-            "src.tasks.index_solana_plays",
             "src.tasks.index_challenges",
             "src.tasks.index_user_bank",
             "src.tasks.index_payment_router",
             "src.tasks.index_eth",
             "src.tasks.index_oracles",
             "src.tasks.index_rewards_manager",
-            "src.tasks.calculate_trending_challenges",
             "src.tasks.user_listening_history.index_user_listening_history",
             "src.tasks.prune_plays",
             "src.tasks.index_spl_token",
             "src.tasks.index_aggregate_tips",
-            "src.tasks.index_reactions",
             "src.tasks.update_delist_statuses",
             "src.tasks.repair_audio_analyses",
             "src.tasks.cache_current_nodes",
-            "src.tasks.index_core",
             "src.tasks.update_aggregates",
             "src.tasks.cache_entity_counts",
             "src.tasks.publish_scheduled_releases",
             "src.tasks.create_engagement_notifications",
+            "src.tasks.create_listen_streak_reminder_notifications",
+            "src.tasks.index_core",
         ],
         beat_schedule={
             "aggregate_metrics": {
@@ -372,14 +346,6 @@ def configure_celery(celery, test_config=None):
                 "task": "cache_trending_playlists",
                 "schedule": timedelta(minutes=30),
             },
-            "index_solana_plays": {
-                "task": "index_solana_plays",
-                "schedule": timedelta(seconds=audius_solana_plays_indexing_interval_s),
-            },
-            "index_challenges": {
-                "task": "index_challenges",
-                "schedule": timedelta(seconds=5),
-            },
             "index_eth": {
                 "task": "index_eth",
                 "schedule": timedelta(seconds=30),
@@ -388,17 +354,9 @@ def configure_celery(celery, test_config=None):
                 "task": "index_oracles",
                 "schedule": timedelta(minutes=5),
             },
-            "index_rewards_manager": {
-                "task": "index_rewards_manager",
-                "schedule": timedelta(seconds=5),
-            },
             "index_user_listening_history": {
                 "task": "index_user_listening_history",
                 "schedule": timedelta(seconds=5),
-            },
-            "index_aggregate_monthly_plays": {
-                "task": "index_aggregate_monthly_plays",
-                "schedule": timedelta(minutes=5),
             },
             "prune_plays": {
                 "task": "prune_plays",
@@ -410,10 +368,6 @@ def configure_celery(celery, test_config=None):
             },
             "index_aggregate_tips": {
                 "task": "index_aggregate_tips",
-                "schedule": timedelta(seconds=5),
-            },
-            "index_reactions": {
-                "task": "index_reactions",
                 "schedule": timedelta(seconds=5),
             },
             "index_profile_challenge_backfill": {
@@ -432,10 +386,6 @@ def configure_celery(celery, test_config=None):
                 "task": "update_aggregates",
                 "schedule": timedelta(minutes=10),
             },
-            "index_latest_block": {
-                "task": "index_latest_block",
-                "schedule": timedelta(seconds=5),
-            },
             "publish_scheduled_releases": {
                 "task": "publish_scheduled_releases",
                 "schedule": timedelta(minutes=1),
@@ -443,6 +393,10 @@ def configure_celery(celery, test_config=None):
             "create_engagement_notifications": {
                 "task": "create_engagement_notifications",
                 "schedule": timedelta(minutes=10),
+            },
+            "create_listen_streak_reminder_notifications": {
+                "task": "create_listen_streak_reminder_notifications",
+                "schedule": timedelta(seconds=10),
             },
             "repair_audio_analyses": {
                 "task": "repair_audio_analyses",
@@ -475,7 +429,6 @@ def configure_celery(celery, test_config=None):
 
     # Clear existing locks used in tasks if present
     redis_inst.delete(eth_indexing_last_scanned_block_key)
-    redis_inst.delete("index_nethermind_lock")
     redis_inst.delete("network_peers_lock")
     redis_inst.delete("update_metrics_lock")
     redis_inst.delete("update_play_count_lock")
@@ -490,31 +443,22 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("index_eth_lock")
     redis_inst.delete("index_oracles_lock")
     redis_inst.delete("solana_rewards_manager_lock")
-    redis_inst.delete("calculate_trending_challenges_lock")
     redis_inst.delete("index_user_listening_history_lock")
     redis_inst.delete("prune_plays_lock")
     redis_inst.delete("update_aggregate_table:aggregate_user_tips")
     redis_inst.delete("spl_token_lock")
     redis_inst.delete("profile_challenge_backfill_lock")
     redis_inst.delete("index_trending_lock")
-    redis_inst.delete(INDEX_REACTIONS_LOCK)
     redis_inst.delete(UPDATE_DELIST_STATUSES_LOCK)
     redis_inst.delete(REPAIR_AUDIO_ANALYSES_LOCK)
     redis_inst.delete("update_aggregates_lock")
     redis_inst.delete("publish_scheduled_releases_lock")
     redis_inst.delete("create_engagement_notifications")
-    redis_inst.delete("index_core_lock")
+    redis_inst.delete(index_core_lock_key)
     # delete cached final_poa_block in case it has changed
     redis_inst.delete(final_poa_block_redis_key)
 
     logger.info("Redis instance connected!")
-
-    # Initialize entity manager
-    entity_manager_contract_abi = abi_values[ENTITY_MANAGER_CONTRACT_NAME]["abi"]
-    entity_manager_contract = web3.eth.contract(
-        address=contract_addresses[ENTITY_MANAGER],
-        abi=entity_manager_contract_abi,
-    )
 
     # Initialize custom task context with database object
     class WrappedDatabaseTask(DatabaseTask):
@@ -533,7 +477,6 @@ def configure_celery(celery, test_config=None):
                 solana_client_manager=solana_client_manager,
                 challenge_event_bus=setup_challenge_bus(),
                 eth_manager=eth_manager,
-                entity_manager_contract=entity_manager_contract,
             )
 
     # Subclassing celery task with discovery provider context
@@ -549,9 +492,8 @@ def configure_celery(celery, test_config=None):
     # Start tasks that should fire upon startup
     celery.send_task("cache_current_nodes")
     celery.send_task("cache_entity_counts")
-    celery.send_task("index_nethermind", queue="index_nethermind")
+    celery.send_task("index_rewards_manager", queue="index_sol")
     celery.send_task("index_user_bank", queue="index_sol")
     celery.send_task("index_payment_router", queue="index_sol")
-
-    if environment == "dev":
-        celery.send_task("index_core")
+    celery.send_task("index_challenges", queue="index_challenges")
+    celery.send_task("index_core", queue="index_core")

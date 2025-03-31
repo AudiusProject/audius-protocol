@@ -1,5 +1,6 @@
+import { playerSelectors, uploadSelectors } from '@audius/common/store'
 import { createAction } from '@reduxjs/toolkit'
-import { call, fork, takeEvery } from 'typed-redux-saga'
+import { call, fork, select, takeEvery } from 'typed-redux-saga'
 
 import { env } from 'services/env'
 import { reportToSentry } from 'store/errors/reportToSentry'
@@ -7,6 +8,8 @@ import {
   foregroundPollingDaemon,
   visibilityPollingDaemon
 } from 'utils/sagaPollingDaemons'
+const { getPlaying } = playerSelectors
+const { getIsUploading } = uploadSelectors
 
 const checkGitSHA = createAction('RELOAD/CHECK_GIT_SHA')
 const SHA_CHECK_MS = 60 * 60 * 1000 // Once every hour
@@ -32,8 +35,10 @@ function* reloadIfNecessary() {
     if (localSha === null) {
       localSha = fetchedSha
     }
+    const isPlaying = yield* select(getPlaying)
+    const isUploading = yield* select(getIsUploading)
     const isLocalBundleCurrent = fetchedSha === localSha
-    if (!isLocalBundleCurrent) {
+    if (!isLocalBundleCurrent && !isPlaying && !isUploading) {
       console.warn('[reload] Bundle out of date. Reloading...', {
         fetchedSha,
         localSha

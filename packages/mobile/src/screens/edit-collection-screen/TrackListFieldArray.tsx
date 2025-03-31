@@ -4,7 +4,7 @@ import type { PlaylistTrackId } from '@audius/common/models'
 import { useField } from 'formik'
 import { View } from 'react-native'
 
-import { Divider, Text } from 'app/components/core'
+import { Divider, Text } from '@audius/harmony-native'
 import { TrackList } from 'app/components/track-list'
 import { makeStyles } from 'app/styles'
 

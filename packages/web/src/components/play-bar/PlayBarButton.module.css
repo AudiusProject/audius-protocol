@@ -72,10 +72,6 @@
 .button:focus {
   outline: none;
 }
-.noAnimation path {
-  fill: var(--harmony-neutral);
-}
-
 .animation {
   max-width: 100%;
   max-height: 100%;

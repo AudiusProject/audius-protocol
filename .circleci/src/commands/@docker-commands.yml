@@ -11,6 +11,17 @@ docker-logout:
         name: Log out of Docker
         command: docker logout
 
+install-crane:
+  steps:
+    - run:
+        name: Install Crane
+        command: |
+          VERSION=v0.19.1
+          OS=Linux
+          ARCH=x86_64
+          curl -sL "https://github.com/google/go-containerregistry/releases/download/${VERSION}/go-containerregistry_${OS}_${ARCH}.tar.gz" > go-containerregistry.tar.gz
+          tar -zxvf go-containerregistry.tar.gz -C $HOME/bin/ crane
+
 docker-tag-images:
   description: 'Update tags of docker images'
   parameters:
@@ -19,23 +30,9 @@ docker-tag-images:
       enum: ['prerelease', 'edge', 'current', '__version__']
     service:
       type: enum
-      enum:
-        [
-          'discovery-provider',
-          'creator-node',
-          'identity-service',
-          'core',
-          'all'
-        ]
+      enum: ['discovery-provider', 'identity-service', 'all']
   steps:
-    - run:
-        name: Get crane
-        command: |
-          VERSION=v0.19.1
-          OS=Linux
-          ARCH=x86_64
-          curl -sL "https://github.com/google/go-containerregistry/releases/download/${VERSION}/go-containerregistry_${OS}_${ARCH}.tar.gz" > go-containerregistry.tar.gz
-          tar -zxvf go-containerregistry.tar.gz -C $HOME/bin/ crane
+    - install-crane
     - docker-login
     - run:
         name: Update docker containers with release tags
@@ -47,44 +44,30 @@ docker-tag-images:
             discovery-provider-openresty
             es-indexer
             relay
-            sla-auditor
             solana-relay
             trending-challenge-rewards
+            staking
             crm
             mri
-            trpc
-            backfill-audio-analyses
             verified-notifications
-          )
-          creator=(
-            mediorum
+            anti-abuse
+            archiver
           )
           identity=(
             identity-service
-          )
-          core=(
-            core
           )
 
           case "<< parameters.service >>" in
             discovery-provider)
               images=( "${discovery[@]}" )
               ;;
-            creator-node)
-              images=( "${creator[@]}" )
-              ;;
             identity-service)
               images=( "${identity[@]}" )
-              ;;
-            core)
-              images=( "${core[@]}" )
               ;;
             all)
               images=(
                 "${discovery[@]}"
-                "${creator[@]}"
                 "${identity[@]}"
-                "${core[@]}"
               )
               ;;
             *)
@@ -104,6 +87,19 @@ docker-tag-images:
             crane copy "audius/${image}:${CIRCLE_SHA1}" "audius/${image}:${tag}"
           done
     - docker-logout
+
+docker-vanity-tag-audiusd:
+  description: |
+    'Adds a semver tag to audius/audiusd:edge that corresponds to the newly released protocol version. '
+    'Makes reverting a bad protocol release easier.'
+  steps:
+    - install-crane
+    - docker-login
+    - run:
+        name:
+        command: |
+          [ -n "$exported_version_tag" ]
+          crane copy "audius/audiusd:edge" "audius/audiusd:${exported_version_tag}"
 
 docker-prune:
   description: 'Perform docker system prune based on disk usage'

@@ -1,6 +1,10 @@
-import type { User } from '@audius/common/models'
-import { SquareSizes, WidthSizes } from '@audius/common/models'
-import { accountActions, accountSagas, getContext } from '@audius/common/store'
+import { SquareSizes, WidthSizes, type User } from '@audius/common/models'
+import {
+  accountActions,
+  accountSagas,
+  getContext,
+  getSDK
+} from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 import webAccountSagas from 'common/store/account/sagas'
 import { updateProfileAsync } from 'common/store/profile/sagas'
@@ -8,8 +12,6 @@ import FastImage from 'react-native-fast-image'
 import { takeEvery, call } from 'typed-redux-saga'
 
 import { IS_MOBILE_USER } from 'app/constants/storage-keys'
-import { getImageSourceOptimistic } from 'app/hooks/useContentNodeImage'
-import { getStorageNodeSelector } from 'app/services/sdk/storageNodeSelector'
 const { signedIn } = accountActions
 
 /**
@@ -17,27 +19,12 @@ const { signedIn } = accountActions
  */
 function* cacheUserImages(user: User) {
   try {
-    const { profile_picture_sizes, cover_photo_sizes } = user
+    const { profile_picture, cover_photo } = user
 
-    const storageNodeSelector = yield* call(getStorageNodeSelector)
-
-    const profileImageUri = profile_picture_sizes
-      ? getImageSourceOptimistic({
-          cid: profile_picture_sizes,
-          endpoints: storageNodeSelector.getNodes(profile_picture_sizes),
-          size: SquareSizes.SIZE_150_BY_150
-        })?.uri
-      : null
-
-    const coverPhotoUri = cover_photo_sizes
-      ? getImageSourceOptimistic({
-          cid: cover_photo_sizes,
-          endpoints: storageNodeSelector.getNodes(cover_photo_sizes),
-          size: WidthSizes.SIZE_640
-        }).uri
-      : null
-
-    const sourcesToPreload = [profileImageUri, coverPhotoUri]
+    const sourcesToPreload = [
+      profile_picture[SquareSizes.SIZE_150_BY_150],
+      cover_photo[WidthSizes.SIZE_640]
+    ]
       .filter(removeNullable)
       .map((uri) => ({ uri }))
 
@@ -52,6 +39,7 @@ function* onSignedIn({ payload: { account } }: ReturnType<typeof signedIn>) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const localStorage = yield* getContext('localStorage')
   const isMobileUser = yield* call(localStorage.getItem, IS_MOBILE_USER)
+  const sdk = yield* getSDK()
 
   yield* call(cacheUserImages, account)
 
@@ -60,6 +48,7 @@ function* onSignedIn({ payload: { account } }: ReturnType<typeof signedIn>) {
       // Legacy method to update whether a user has signed in on
       // native mobile. Used in identity service for notification indexing
       yield* call(audiusBackendInstance.updateUserEvent, {
+        sdk,
         hasSignedInNativeMobile: true
       })
       // Updates the user metadata with an event `is_mobile_user` set to true

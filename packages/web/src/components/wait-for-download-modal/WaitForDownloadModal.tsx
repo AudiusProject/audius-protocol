@@ -1,14 +1,13 @@
 import { useCallback, useEffect } from 'react'
 
+import { useTrack, useUser } from '@audius/common/api'
 import { DownloadQuality } from '@audius/common/models'
 import {
-  CommonState,
   useWaitForDownloadModal,
-  cacheTracksSelectors,
   tracksSocialActions,
   downloadsSelectors
 } from '@audius/common/store'
-import { getDownloadFilename } from '@audius/common/utils'
+import { getFilename } from '@audius/common/utils'
 import {
   ModalHeader,
   Flex,
@@ -20,15 +19,14 @@ import {
   ModalTitle
 } from '@audius/harmony'
 import cn from 'classnames'
-import { shallowEqual, useDispatch, useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import ModalDrawer from 'components/modal-drawer/ModalDrawer'
 import { useIsMobile } from 'hooks/useIsMobile'
-import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 
 import styles from './WaitForDownloadModal.module.css'
 
-const { getTrack } = cacheTracksSelectors
 const { getDownloadError } = downloadsSelectors
 
 const messages = {
@@ -47,11 +45,8 @@ export const WaitForDownloadModal = () => {
     data: { parentTrackId, trackIds, quality }
   } = useWaitForDownloadModal()
   const dispatch = useDispatch()
-  const track = useSelector(
-    (state: CommonState) =>
-      getTrack(state, { id: parentTrackId ?? trackIds[0] }),
-    shallowEqual
-  )
+  const { data: track } = useTrack(parentTrackId ?? trackIds[0])
+  const { data: user } = useUser(track?.owner_id)
 
   const downloadError = useSelector(getDownloadError)
 
@@ -75,9 +70,13 @@ export const WaitForDownloadModal = () => {
   }, [performDownload])
 
   const trackName =
-    !parentTrackId && track?.orig_filename && track?.orig_filename?.length > 0
-      ? getDownloadFilename({
-          filename: track.orig_filename,
+    !parentTrackId &&
+    user &&
+    track?.orig_filename &&
+    track?.orig_filename?.length > 0
+      ? getFilename({
+          track,
+          user,
           isOriginal: quality === DownloadQuality.ORIGINAL
         })
       : track?.title
@@ -89,7 +88,6 @@ export const WaitForDownloadModal = () => {
       onClosed={handleClosed}
       bodyClassName={styles.modal}
       isFullscreen
-      useGradientTitle={false}
       dismissOnClickOutside
       wrapperClassName={isMobile ? styles.mobileWrapper : undefined}
     >

@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { Unstyled } from '@storybook/blocks'
 import { useTheme } from '@storybook/theming'
 
-import { Flex, Paper, Text } from 'components'
+import { Flex, Paper, Text } from '~harmony/components'
 
 import { Link } from './Link'
 

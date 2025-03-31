@@ -6,7 +6,6 @@ import {
 } from '@audius/spl'
 import { SendTransactionOptions } from '@solana/wallet-adapter-base'
 import {
-  TransactionMessage,
   VersionedTransaction,
   Secp256k1Program,
   PublicKey,
@@ -19,6 +18,7 @@ import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
 import { mintFixedDecimalMap } from '../../../../utils/mintFixedDecimalMap'
 import { parseMintToken } from '../../../../utils/parseMintToken'
 import { parseParams } from '../../../../utils/parseParams'
+import type { AudiusWalletClient } from '../../../AudiusWalletClient'
 import type { LoggerService } from '../../../Logger'
 import type { TokenName } from '../../types'
 import { CustomInstructionError } from '../CustomInstructionError'
@@ -77,6 +77,21 @@ export class ClaimableTokensClient {
   /** Map from token mint name to derived user bank authority. */
   private readonly authorities: Record<TokenName, PublicKey>
   private readonly logger: LoggerService
+  private readonly audiusWalletClient: AudiusWalletClient
+
+  /**
+   * Map of user banks to user bank creation promises.
+   * Prevents concurrent attempts to create the same user bank.
+   */
+  private _pendingUserBankCreationPromises: Partial<
+    Record<
+      string,
+      Promise<{
+        userBank: PublicKey
+        didExist: boolean
+      }>
+    >
+  > = {}
 
   constructor(config: ClaimableTokensConfig) {
     const configWithDefaults = mergeConfigWithDefaults(
@@ -96,6 +111,7 @@ export class ClaimableTokensClient {
         mint: configWithDefaults.mints.USDC
       })
     }
+    this.audiusWalletClient = configWithDefaults.audiusWalletClient
     this.logger = configWithDefaults.logger.createPrefixedLogger(
       '[claimable-tokens-client]'
     )
@@ -109,42 +125,63 @@ export class ClaimableTokensClient {
       'getOrCreateUserBank',
       GetOrCreateUserBankSchema
     )(params)
-    const { ethWallet, feePayer: feePayerOverride } = args
+    const {
+      ethWallet = await this.getDefaultWalletAddress(),
+      feePayer: feePayerOverride
+    } = args
     const { mint, token } = parseMintToken(args.mint, this.mints)
     const feePayer = feePayerOverride ?? (await this.client.getFeePayer())
     const userBank = await this.deriveUserBank(args)
-    const userBankAccount = await this.client.connection.getAccountInfo(
-      userBank
-    )
-    if (!userBankAccount) {
-      this.logger.debug(`User bank ${userBank} does not exist. Creating...`)
-      const createUserBankInstruction =
-        ClaimableTokensProgram.createAccountInstruction({
-          ethAddress: ethWallet,
-          payer: feePayer,
-          mint,
-          authority: this.authorities[token],
-          userBank,
-          programId: this.programId
-        })
-      const confirmationStrategyArgs =
-        await this.client.connection.getLatestBlockhash()
-      const message = new TransactionMessage({
-        payerKey: feePayer,
-        recentBlockhash: confirmationStrategyArgs.blockhash,
-        instructions: [createUserBankInstruction]
-      }).compileToLegacyMessage()
-      const transaction = new VersionedTransaction(message)
-      const signature = await this.sendTransaction(transaction)
-      const confirmationStrategy = { ...confirmationStrategyArgs, signature }
-      await this.client.connection.confirmTransaction(
-        confirmationStrategy,
-        'finalized'
-      )
-      return { userBank, didExist: false }
+
+    // If already fetching/creating this user bank, wait for the existing promise.
+    // Then assume the user bank has been created and return with didExist=true.
+    // Don't attempt to catch and retry or concurrency will again be introduced.
+    if (this._pendingUserBankCreationPromises[userBank.toBase58()]) {
+      await this._pendingUserBankCreationPromises[userBank.toBase58()]
+      return { userBank, didExist: true }
     }
-    this.logger.debug(`User bank ${userBank} already exists.`)
-    return { userBank, didExist: true }
+
+    // Create a new lock on the fetch/creation process for this user bank
+    this._pendingUserBankCreationPromises[userBank.toBase58()] = (async () => {
+      const userBankAccount =
+        await this.client.connection.getAccountInfo(userBank)
+      if (!userBankAccount) {
+        this.logger.debug(`User bank ${userBank} does not exist. Creating...`)
+        const createUserBankInstruction =
+          ClaimableTokensProgram.createAccountInstruction({
+            ethAddress: ethWallet,
+            payer: feePayer,
+            mint,
+            authority: this.authorities[token],
+            userBank,
+            programId: this.programId
+          })
+        const { blockhash, lastValidBlockHeight } =
+          await this.client.connection.getLatestBlockhash()
+        const transaction = await this.client.buildTransaction({
+          instructions: [createUserBankInstruction],
+          recentBlockhash: blockhash
+        })
+        const signature = await this.sendTransaction(transaction)
+        await this.client.connection.confirmTransaction(
+          { blockhash, lastValidBlockHeight, signature },
+          'finalized'
+        )
+        return { userBank, didExist: false }
+      }
+      this.logger.debug(`User bank ${userBank} already exists.`)
+      return { userBank, didExist: true }
+    })()
+    try {
+      // Wait for the promise and return the result.
+      // Note that the lock is not removed on success. Keep it as an in-memory
+      // cache that the user bank exists. Reduces RPC calls to check existence.
+      return await this._pendingUserBankCreationPromises[userBank.toBase58()]!
+    } catch (e) {
+      // Remove lock on error so that the next attempt retries creation.
+      delete this._pendingUserBankCreationPromises[userBank.toBase58()]
+      throw e
+    }
   }
 
   /**
@@ -157,7 +194,7 @@ export class ClaimableTokensClient {
   async createTransferInstruction(params: CreateTransferRequest) {
     const {
       feePayer: feePayerOverride,
-      ethWallet,
+      ethWallet = await this.getDefaultWalletAddress(),
       mint,
       destination
     } = await parseParams(
@@ -190,11 +227,16 @@ export class ClaimableTokensClient {
    * @see {@link createTransferInstruction}
    */
   async createTransferSecpInstruction(params: CreateSecpRequest) {
-    const { ethWallet, destination, amount, mint, instructionIndex, auth } =
-      await parseParams(
-        'createTransferSecpInstruction',
-        CreateSecpSchema
-      )(params)
+    const {
+      ethWallet = (await this.audiusWalletClient.getAddresses())[0]!,
+      destination,
+      amount,
+      mint,
+      instructionIndex
+    } = await parseParams(
+      'createTransferSecpInstruction',
+      CreateSecpSchema
+    )(params)
 
     const { token } = parseMintToken(mint, this.mints)
 
@@ -216,7 +258,9 @@ export class ClaimableTokensClient {
       amount: mintFixedDecimalMap[token](amount).value,
       nonce
     })
-    const [signature, recoveryId] = await auth.sign(data)
+    const [signature, recoveryId] = await this.audiusWalletClient.sign({
+      message: { raw: data }
+    })
     return Secp256k1Program.createInstructionWithEthAddress({
       ethAddress: ethWallet,
       message: data,
@@ -232,10 +276,10 @@ export class ClaimableTokensClient {
    * Use {@link getOrCreateUserBank} instead if you want to ensure the userBank exists.
    */
   public async deriveUserBank(params: DeriveUserBankRequest) {
-    const { ethWallet, mint } = await parseParams(
-      'deriveUserBank',
-      GetOrCreateUserBankSchema
-    )(params)
+    const {
+      ethWallet = (await this.audiusWalletClient.getAddresses())[0]!,
+      mint
+    } = await parseParams('deriveUserBank', GetOrCreateUserBankSchema)(params)
 
     const { token } = parseMintToken(mint, this.mints)
 
@@ -289,5 +333,15 @@ export class ClaimableTokensClient {
       }
       throw e
     }
+  }
+
+  private async getDefaultWalletAddress() {
+    const addresses = await this.audiusWalletClient.getAddresses()
+    if (!addresses || !addresses[0]) {
+      throw new Error(
+        'Failed to infer wallet address. Did you forget the "ethAddress" argument?'
+      )
+    }
+    return addresses[0]
   }
 }

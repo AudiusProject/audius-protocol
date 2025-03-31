@@ -2,7 +2,7 @@ import { ID, Status } from '@audius/common/models'
 import { route } from '@audius/common/utils'
 
 import { CollectionCard } from 'components/collection'
-import Header from 'components/header/desktop/Header'
+import { Header } from 'components/header/desktop/Header'
 import CardLineup from 'components/lineup/CardLineup'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
@@ -21,14 +21,7 @@ export type CollectionsPageProps = {
 
 const CollectionsPage = (props: CollectionsPageProps) => {
   const { title, description, collectionIds, status } = props
-  const header = (
-    <Header
-      primary={title}
-      secondary={description}
-      containerStyles={description ? styles.header : undefined}
-      wrapperClassName={description ? styles.headerWrapper : undefined}
-    />
-  )
+  const header = <Header primary={title} secondary={description} />
 
   const cards = collectionIds.map((id) => {
     return <CollectionCard key={id} id={id} size='l' />

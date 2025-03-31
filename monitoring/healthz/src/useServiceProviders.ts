@@ -7,6 +7,8 @@ const prodEndpoint =
 const stagingEndpoint =
   'https://api.staging.audius.co'
 
+const devEndpoint = 'http://audius-protocol-discovery-provider-1/core/nodes'
+
 export type SP = {
   delegateOwnerWallet: string
   endpoint: string
@@ -27,7 +29,16 @@ export function apiGatewayFetcher(
   // abort initial ga request in 5 seconds
   const controller = new AbortController()
   const reqTimeout = setTimeout(() => controller.abort(), 5000)
-  return fetch(`${env == 'staging' ? stagingEndpoint : prodEndpoint}/${type}/verbose?all=true`, { signal: controller.signal })
+
+  let endpoint = prodEndpoint
+  if (env === 'staging') {
+    endpoint = stagingEndpoint
+  }
+  if (env === 'dev') {
+    endpoint = devEndpoint
+  }
+
+  return fetch(`${endpoint}/${type}/verbose?all=true`, { signal: controller.signal })
     .then(async (resp) => {
       const data = await resp.json()
       const sps = data.data as SP[]
@@ -53,13 +64,18 @@ export function apiGatewayFetcher(
 
 export function useServiceProviders(
   env: string,
-  type: 'content' | 'discovery',
+  type: 'content' | 'discovery' | 'core',
   excludeUnregistered = false
 ) {
   const { data: sps, error } = useSWR<SP[]>([env, type, excludeUnregistered], async () => {
-    const sps = await apiGatewayFetcher(env, type)
+    let sps
+    if (type === 'core') {
+      sps = [...(await apiGatewayFetcher(env, 'content')), ...(await apiGatewayFetcher(env, 'discovery'))]
+    } else {
+      sps = await apiGatewayFetcher(env, type)
+    }
     hostSort(sps)
-    return excludeUnregistered || type === 'content' ? sps : [...sps, ...unregisteredNodes(env === 'prod')]
+    return excludeUnregistered || type === 'content' ? sps : [...sps, ...unregisteredNodes(env)]
   })
   return { data: sps, error }
 }
@@ -78,8 +94,8 @@ export function hostSort(sps: SP[]) {
   sps.sort((a, b) => (hostSortKey(a) < hostSortKey(b) ? -1 : 1))
 }
 
-function unregisteredNodes(prod: boolean) {
-  if (prod) {
+function unregisteredNodes(env: string) {
+  if (env === 'prod') {
     return [
       {
         delegateOwnerWallet: '0x32bF5092890bb03A45bd03AaeFAd11d4afC9a851',
@@ -94,7 +110,7 @@ function unregisteredNodes(prod: boolean) {
         type: { id: 'discovery-node' },
       },
     ]
-  } else {
+  } else if (env === 'staging') {
     return [
       {
         delegateOwnerWallet: '0xb1C931A9ac123866372CEbb6bbAF50FfD18dd5DF',
@@ -110,4 +126,5 @@ function unregisteredNodes(prod: boolean) {
       },
     ]
   }
+  return []
 }

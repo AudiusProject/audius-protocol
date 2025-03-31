@@ -1,7 +1,6 @@
+import * as amplitude from '@amplitude/analytics-browser'
+import { sessionReplayPlugin } from '@amplitude/plugin-session-replay-browser'
 import { Name, MobileOS } from '@audius/common/models'
-import { Nullable } from '@audius/common/utils'
-// Amplitude Analytics
-import amplitude from 'amplitude-js'
 
 import { env } from 'services/env'
 import { isElectron as getIsElectron, getMobileOS } from 'utils/clientUtil'
@@ -9,31 +8,29 @@ import { isElectron as getIsElectron, getMobileOS } from 'utils/clientUtil'
 const AMP_API_KEY = env.AMPLITUDE_API_KEY
 const AMPLITUDE_PROXY = env.AMPLITUDE_PROXY
 
+const isAmplitudeConfigured = !!AMP_API_KEY && !!AMPLITUDE_PROXY
+
+// Create and Install Session Replay Plugin
+const sessionReplayTracking = sessionReplayPlugin()
+
 /**
  * ========================= Amplitude Analytics =========================
  * Description:
- *  The Ampltude library
- *
- * Link for more info: https://amplitude.github.io/Amplitude-JavaScript/
+ *  The Amplitude library using V2 API
  */
-let amp: Nullable<any> = null
 export const init = async (isMobile: boolean) => {
   try {
-    if (!amp && AMP_API_KEY && AMPLITUDE_PROXY) {
-      amplitude
-        .getInstance()
-        // Note: https is prepended to the apiEndpoint url specified
-        .init(AMP_API_KEY, undefined, {
-          apiEndpoint: AMPLITUDE_PROXY,
-          includeUtm: true,
-          includeReferrer: true,
-          includeFbclid: true,
-          includeGclid: true,
-          saveParamsReferrerOncePerSession: false
-        })
-      amp = amplitude
+    if (isAmplitudeConfigured) {
+      amplitude.init(AMP_API_KEY, {
+        serverUrl: AMPLITUDE_PROXY,
+        defaultTracking: {
+          sessions: true
+        }
+      })
+      amplitude.add(sessionReplayTracking)
+
       const source = getSource(isMobile)
-      amp.getInstance().logEvent(Name.SESSION_START, { source })
+      amplitude.track(Name.SESSION_START, { source })
     }
   } catch (err) {
     console.error(err)
@@ -41,35 +38,35 @@ export const init = async (isMobile: boolean) => {
 }
 
 // Identify User
-// Docs: https://developers.amplitude.com/docs/javascript#setting-user-id
 export const identify = (
   handle: string,
   traits?: Record<string, any>,
   callback?: () => void
 ) => {
-  if (!amp) {
+  if (!isAmplitudeConfigured) {
     if (callback) callback()
     return
   }
-  amp.getInstance().setUserId(handle)
+  amplitude.setUserId(handle)
   if (traits && Object.keys(traits).length > 0) {
-    amp.getInstance().setUserProperties(traits)
+    const identifyObj = new amplitude.Identify()
+    Object.entries(traits).map(([k, v]) => identifyObj.add(k, v))
+    amplitude.identify(identifyObj)
   }
   if (callback) callback()
 }
 
 // Track Event
-// Docs: https://developers.amplitude.com/docs/javascript#sending-events
 export const track = (
   event: string,
   properties?: Record<string, any>,
   callback?: () => void
 ) => {
-  if (!amp) {
+  if (!isAmplitudeConfigured) {
     if (callback) callback()
     return
   }
-  amp.getInstance().logEvent(event, properties)
+  amplitude.track(event, properties)
   if (callback) {
     callback()
   }

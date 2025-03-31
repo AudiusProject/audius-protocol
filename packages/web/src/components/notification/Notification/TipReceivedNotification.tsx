@@ -1,4 +1,4 @@
-import { ComponentType, useCallback, useState } from 'react'
+import { ComponentType, useCallback } from 'react'
 
 import { useUIAudio } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
@@ -65,7 +65,6 @@ const useSetReaction = (tipTxSignature: string) => {
 export const TipReceivedNotification = (
   props: TipReceivedNotificationProps
 ) => {
-  const [isTileDisabled, setIsTileDisabled] = useState(false)
   const { notification } = props
   const { amount, timeLabel, isViewed, tipTxSignature } = notification
 
@@ -91,15 +90,11 @@ export const TipReceivedNotification = (
     [uiAmount]
   )
 
-  const handleMouseEnter = useCallback(() => setIsTileDisabled(true), [])
-  const handleMouseLeave = useCallback(() => setIsTileDisabled(false), [])
-
   if (!user) return null
 
   return (
     <NotificationTile
       notification={notification}
-      disabled={isTileDisabled}
       disableClosePanel
       onClick={handleClick}
     >
@@ -124,11 +119,7 @@ export const TipReceivedNotification = (
             messages.sayThanks
           )}
         </div>
-        <div
-          className={styles.reactionList}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        >
+        <div className={styles.reactionList}>
           {reactionList.map(([reactionType, Reaction]) => (
             <Reaction
               key={reactionType}

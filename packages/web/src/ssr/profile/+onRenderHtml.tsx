@@ -28,7 +28,9 @@ type TrackPageContext = PageContextServer & {
 export default function render(pageContext: TrackPageContext) {
   const { pageProps, userAgent } = pageContext
   const { user } = pageProps
-  const { user_id, handle, name, bio } = user
+  const { user_id, name, bio } = user
+  // Use lower case since cache lookup by handle will lowercase it
+  const handle = user.handle.toLowerCase()
 
   const isMobile = isMobileUserAgent(userAgent)
 

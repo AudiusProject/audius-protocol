@@ -55,11 +55,10 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   bottomButtons: {
     ...flexRowCentered(),
     justifyContent: 'space-between',
-    marginHorizontal: spacing(3),
-    marginBottom: spacing(1),
+    marginHorizontal: spacing(2),
+    paddingVertical: spacing(2),
     borderTopWidth: 1,
-    borderTopColor: palette.neutralLight8,
-    minHeight: spacing(8)
+    borderTopColor: palette.neutralLight8
   },
   button: {
     height: spacing(6),
@@ -119,6 +118,9 @@ export const LineupTileActionButtons = ({
       onPress={onPressShare}
       aria-label={messages.shareButtonLabel}
       size='l'
+      style={{
+        padding: 0
+      }}
     />
   )
 
@@ -130,6 +132,9 @@ export const LineupTileActionButtons = ({
       onPress={onPressOverflow}
       aria-label={messages.overflowButtonLabel}
       size='l'
+      style={{
+        padding: 0
+      }}
     />
   )
 
@@ -141,6 +146,9 @@ export const LineupTileActionButtons = ({
       onPress={onPressEdit}
       aria-label={messages.editButtonLabel}
       size='l'
+      style={{
+        padding: 0
+      }}
     />
   )
 
@@ -152,6 +160,9 @@ export const LineupTileActionButtons = ({
       onPress={onPressPublish}
       aria-label={messages.publishButtonLabel}
       size='l'
+      style={{
+        padding: 0
+      }}
     />
   )
 
@@ -175,7 +186,7 @@ export const LineupTileActionButtons = ({
     }
   } else {
     content = (
-      <Flex direction='row' justifyContent='space-between' w='100%' mt='s'>
+      <Flex direction='row' justifyContent='space-between' w='100%'>
         <Flex gap='2xl' direction='row' alignItems='center'>
           {showGatedAccessStatus && contentType && streamConditions != null ? (
             <LineupTileAccessStatus

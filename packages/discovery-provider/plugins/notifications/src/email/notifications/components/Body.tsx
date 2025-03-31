@@ -108,7 +108,12 @@ const snippetMap = {
   },
   ['usdc_purchase_seller'](notification) {
     const { entity, users, amount } = notification
-    return `Congrats, ${users[0].name} just bought your track ${entity.name} for $${amount}!`
+    const userName = users[0].name
+    return `Congrats, ${
+      userName || 'someone'
+    } just bought your ${entity.type.toLowerCase()} ${
+      entity.name
+    } for $${amount}!`
   },
   ['usdc_purchase_buyer'](notification) {
     const { entity, users } = notification
@@ -193,8 +198,8 @@ const snippetMap = {
       notification.entityUser.user_id === notification.receiverUserId
         ? 'your'
         : notification.entityUser.user_id === user.user_id
-        ? 'their'
-        : `${notification.entityUser.name}'s`
+          ? 'their'
+          : `${notification.entityUser.name}'s`
     } ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
   },
   ['comment_mention'](notification) {
@@ -203,8 +208,8 @@ const snippetMap = {
       notification.entityUser.user_id === notification.receiverUserId
         ? 'your'
         : notification.entityUser.user_id === user.user_id
-        ? 'their'
-        : `${notification.entityUser.name}'s`
+          ? 'their'
+          : `${notification.entityUser.name}'s`
     } ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
   },
   ['comment_reaction'](notification) {
@@ -213,8 +218,8 @@ const snippetMap = {
       notification.entityUser.user_id === notification.receiverUserId
         ? 'your'
         : notification.entityUser.user_id === user.user_id
-        ? 'their'
-        : `${notification.entityUser.name}'s`
+          ? 'their'
+          : `${notification.entityUser.name}'s`
     } ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
   }
 }

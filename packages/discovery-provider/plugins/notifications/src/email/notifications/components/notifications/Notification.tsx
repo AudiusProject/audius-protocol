@@ -68,6 +68,10 @@ const challengeRewardsConfig: {
   fp: {
     title: 'Create a Playlist',
     icon: <TrebleClefIcon />
+  },
+  o: {
+    title: 'Airdrop 2: Artist Appreciation',
+    icon: <TrebleClefIcon />
   }
 }
 
@@ -78,7 +82,8 @@ export const HighlightText = ({ text }: { text: string }) => (
       color: '#7E1BCC',
       fontSize: '14px',
       fontWeight: '500'
-    }}>
+    }}
+  >
     {text}
   </span>
 )
@@ -96,7 +101,8 @@ export const BodyText = ({
       color: '#858199',
       fontSize: '14px',
       fontWeight: '500'
-    }}>
+    }}
+  >
     {text}
   </span>
 )
@@ -282,13 +288,15 @@ const notificationMap = {
     )
   },
   ['usdc_purchase_seller'](notification) {
-    const entityName = notification.entity.name
-    const [buyerUser] = notification.users
-    const amount = notification.amount
+    const { entity, users, amount } = notification
+    const { name: entityName, type } = entity
+    const [buyerUser] = users
     return (
       <span className={'notificationText'}>
         <BodyText
-          text={`Congrats, ${buyerUser.name} just bought your track ${entityName} for $${amount}!`}
+          text={`Congrats, ${
+            buyerUser.name || 'someone'
+          } just bought your ${type.toLowerCase()} ${entityName} for $${amount}!`}
         />
       </span>
     )
@@ -378,12 +386,14 @@ const notificationMap = {
     let bodyText
     if (notification.challengeId === 'rd') {
       bodyText = `You’ve received ${rewardAmount} $AUDIO for being referred! Invite your friends to join to earn more!`
+    } else if (notification.challengeId === 'o') {
+      bodyText = `Congrats!🎉 You’re eligible for the Airdrop! Claim your tokens now!`
     } else {
       bodyText = `You’ve earned ${rewardAmount} $AUDIO for completing this challenge!`
     }
     return (
       <span className={'notificationText'}>
-        <table cellSpacing="0" cellPadding="0" style={{ marginBottom: '4px' }}>
+        <table cellSpacing='0' cellPadding='0' style={{ marginBottom: '4px' }}>
           <tr>
             <td>{icon}</td>
             <td>
@@ -495,8 +505,8 @@ const notificationMap = {
             notification.entityUser.user_id === notification.receiverUserId
               ? 'your'
               : isOwnerMention
-              ? 'their'
-              : `${notification.entityUser.name}'s`
+                ? 'their'
+                : `${notification.entityUser.name}'s`
           }
         />
         {entity}
@@ -518,8 +528,8 @@ const notificationMap = {
             notification.entityUser.user_id === notification.receiverUserId
               ? 'your'
               : isOwnerMention
-              ? 'their'
-              : `${notification.entityUser.name}'s`
+                ? 'their'
+                : `${notification.entityUser.name}'s`
           }
         />
         {entity}
@@ -541,8 +551,8 @@ const notificationMap = {
             notification.entityUser.user_id === notification.receiverUserId
               ? 'your'
               : isOwnerMention
-              ? 'their'
-              : `${notification.entityUser.name}'s`
+                ? 'their'
+                : `${notification.entityUser.name}'s`
           }
         />
         {entity}

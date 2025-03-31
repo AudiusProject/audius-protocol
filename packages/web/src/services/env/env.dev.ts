@@ -4,7 +4,6 @@ export const env: Env = {
   AAO_ENDPOINT: 'http://audius-protocol-anti-abuse-oracle-1',
   AMPLITUDE_API_KEY: null,
   AMPLITUDE_PROXY: null,
-  AMPLITUDE_WRITE_KEY: null,
   API_KEY: '2dc52ec9a4c31790cab6653de0c637f680faa993',
   APP_NAME: 'audius-client',
   AUDIUS_URL: 'https://staging.audius.co',
@@ -20,7 +19,6 @@ export const env: Env = {
   COINFLOW_PARTNER_ID: 'AUDIUS',
   COGNITO_KEY: 'sandbox_publishable_key_e61e1acfe63bd1760827b68d4f00245b',
   COGNITO_TEMPLATE_ID: 'flwtmp_7ZUYaBUFLeNhJw',
-  EAGER_DISCOVERY_NODES: 'http://audius-protocol-discovery-provider-1',
   ENTITY_MANAGER_ADDRESS: '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B',
   ENVIRONMENT: 'development',
   ETH_BRIDGE_ADDRESS: null,
@@ -76,7 +74,6 @@ export const env: Env = {
   SUGGESTED_FOLLOW_HANDLES:
     'https://download.staging.audius.co/static-resources/signup-follows.json',
   TIKTOK_APP_ID: 'awa9re2w7ec3xrn6',
-  TRPC_ENDPOINT: 'http://localhost:2022/trpc',
   USDC_MINT_ADDRESS: '26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y',
   USER_NODE: 'http://audius-protocol-creator-node-1',
   USE_HASH_ROUTING: false,

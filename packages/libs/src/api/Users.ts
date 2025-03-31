@@ -276,9 +276,8 @@ export class Users extends Base {
   ) {
     let didMetadataUpdate = false
     if (profilePictureFile) {
-      const resp = await this.creatorNode.uploadProfilePictureV2(
-        profilePictureFile
-      )
+      const resp =
+        await this.creatorNode.uploadProfilePictureV2(profilePictureFile)
       metadata.profile_picture_sizes = resp.id
       didMetadataUpdate = true
     }
@@ -322,9 +321,8 @@ export class Users extends Base {
 
       // Upload images
       if (profilePictureFile) {
-        const resp = await this.creatorNode.uploadProfilePictureV2(
-          profilePictureFile
-        )
+        const resp =
+          await this.creatorNode.uploadProfilePictureV2(profilePictureFile)
         newMetadata.profile_picture_sizes = resp.id
       }
       if (coverPhotoFile) {
@@ -342,6 +340,47 @@ export class Users extends Base {
           JSON.stringify({
             cid: cid.toString(),
             data: newMetadata
+          })
+        )
+      await this._waitForDiscoveryToIndexUser(
+        userId,
+        manageEntityResponse.txReceipt.blockNumber
+      )
+
+      return {
+        newMetadata,
+        blockHash: manageEntityResponse.txReceipt.blockHash,
+        blockNumber: manageEntityResponse.txReceipt.blockNumber
+      }
+    } catch (e) {
+      const errorMsg = `createEntityManagerUserV2() error: ${e}`
+      if (e instanceof Error) {
+        e.message = errorMsg
+        throw e
+      }
+      throw new Error(errorMsg)
+    }
+  }
+
+  async createEntityManagerGuestUser(newMetadata: UserMetadata) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+
+    try {
+      const userId = await this._generateUserId()
+
+      newMetadata.is_storage_v2 = true
+      newMetadata.wallet = this.web3Manager.getWalletAddress()
+      newMetadata.handle = null
+
+      const manageEntityResponse =
+        await this.contracts.EntityManagerClient!.manageEntity(
+          userId,
+          EntityManagerClient.EntityType.USER,
+          userId,
+          EntityManagerClient.Action.CREATE,
+          JSON.stringify({
+            cid: null,
+            data: null
           })
         )
       await this._waitForDiscoveryToIndexUser(

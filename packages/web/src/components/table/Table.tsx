@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState
 } from 'react'
 
@@ -16,7 +17,7 @@ import {
   IconCaretUp
 } from '@audius/harmony'
 import cn from 'classnames'
-import { debounce, range } from 'lodash'
+import { range } from 'lodash'
 import moment from 'moment'
 import {
   Cell,
@@ -77,7 +78,7 @@ const isEmptyRowDefault = (row: any) => {
   return Boolean(!row?.original?.uid || row?.original?.kind === Kind.EMPTY)
 }
 
-type TableProps = {
+export type TableProps = {
   activeIndex?: number
   columns: any[]
   data: any[]
@@ -138,7 +139,8 @@ export const Table = ({
   tableHeaderClassName,
   totalRowCount,
   useLocalSort = false,
-  wrapperClassName
+  wrapperClassName,
+  ...other
 }: TableProps) => {
   const trackAccessMap = useGatedContentAccessMap(isTracksTable ? data : [])
 
@@ -157,10 +159,6 @@ export const Table = ({
       maxWidth: 200
     }),
     []
-  )
-  const debouncedFetchMore = useMemo(
-    () => (fetchMore ? debounce(fetchMore, 0) : null),
-    [fetchMore]
   )
 
   // Pagination page
@@ -196,6 +194,9 @@ export const Table = ({
   const [showMore, setShowMore] = useState(
     !showMoreLimit || pageSize < showMoreLimit
   )
+
+  const prevSortValue = useRef<string | null>(null)
+  const sortValue = sortBy[0] ? `${sortBy[0].id}${sortBy[0].desc}` : null
 
   // NOTE: react-table allows for multple sorters, but we are only checking the first here
   // - This can be updated if we need multiple sorters in the future
@@ -233,10 +234,16 @@ export const Table = ({
     }
   }, [columns, defaultSorter, isVirtualized, onSort, sortBy, useLocalSort])
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => handleSortChange(), [sortBy])
+  useEffect(() => {
+    if (sortValue !== prevSortValue.current) {
+      prevSortValue.current = sortValue
+      handleSortChange()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sortValue])
 
   const renderTableHeader = useCallback((column: any, endHeader?: boolean) => {
+    const { key, colSpan, role, style } = column.getHeaderProps()
     return (
       <th
         className={cn(styles.tableHeader, {
@@ -246,8 +253,10 @@ export const Table = ({
           [styles.rightAlign]: column.align === 'right',
           [styles.cellSectionEnd]: endHeader
         })}
-        {...column.getHeaderProps()}
-        key={column.id}
+        colSpan={colSpan}
+        role={role}
+        style={style}
+        key={key}
       >
         {/* Sorting Container */}
         <div {...column.getSortByToggleProps()} title=''>
@@ -339,7 +348,7 @@ export const Table = ({
         {...cell.getCellProps()}
         key={`${cell.row.id}_skeletonCell_${cell.getCellProps().key}`}
       >
-        <Skeleton />
+        <Skeleton noShimmer />
       </td>
     ),
     []
@@ -399,13 +408,12 @@ export const Table = ({
   )
 
   const renderSkeletonRow = useCallback(
-    (row: Row, key: string, props: TableRowProps, className = '') => {
+    (row: Row, key: string, props: TableRowProps) => {
       return (
         <tr
           className={cn(
             styles.tableRow,
             styles.skeletonRow,
-            className,
             getRowClassName?.(row.index),
             {
               [styles.active]: row.index === activeIndex
@@ -414,7 +422,7 @@ export const Table = ({
           {...props}
           key={key}
         >
-          {row.cells.map(renderSkeletonCell)}
+          {row.cells.map((cell) => renderSkeletonCell(cell))}
         </tr>
       )
     },
@@ -553,17 +561,13 @@ export const Table = ({
     renderTableRow
   ])
 
-  // TODO: This is supposed to return a promise that resolves when the row data has been fetched.
-  // It currently does not, but there are no issues with this currently so will fix if issues pop up
   const loadMoreRows = useCallback(
     async ({ startIndex }: { startIndex: number }) => {
-      if (!debouncedFetchMore) return null
       const offset = startIndex
       const limit = fetchBatchSize
-      debouncedFetchMore(offset, limit)
-      return null
+      fetchMore?.(offset, limit)
     },
-    [debouncedFetchMore, fetchBatchSize]
+    [fetchMore, fetchBatchSize]
   )
 
   const isRowLoaded = useCallback(
@@ -736,7 +740,7 @@ export const Table = ({
                           ref={registerListChild}
                           overscanRowsCount={2}
                           rowCount={
-                            debouncedFetchMore && totalRowCount != null
+                            fetchMore && totalRowCount != null
                               ? totalRowCount
                               : rows.length
                           }
@@ -754,22 +758,22 @@ export const Table = ({
       </InfiniteLoader>
     )
   }, [
-    debouncedFetchMore,
-    fetchBatchSize,
-    fetchThreshold,
-    getTableBodyProps,
-    getTableProps,
     isRowLoaded,
     loadMoreRows,
-    loading,
-    renderHeaders,
-    renderRow,
-    rows.length,
-    scrollRef,
-    tableClassName,
     totalRowCount,
+    rows.length,
+    fetchThreshold,
+    fetchBatchSize,
+    scrollRef,
     wrapperClassName,
-    tableHeaderClassName
+    tableClassName,
+    getTableProps,
+    tableHeaderClassName,
+    renderHeaders,
+    loading,
+    getTableBodyProps,
+    fetchMore,
+    renderRow
   ])
 
   return isVirtualized ? renderVirtualizedContent() : renderContent()

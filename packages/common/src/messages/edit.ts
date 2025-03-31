@@ -10,8 +10,6 @@ export const visibilityMessages = {
   scheduledRelease: 'Scheduled Release',
   scheduledReleaseDescription:
     'Select the date and time this will become public.',
-  hiddenHint: (entityType: 'track' | 'album' | 'playlist') =>
-    `You can’t make a public ${entityType} hidden`,
   dateLabel: 'Release Date',
   timeLabel: 'Time',
   futureReleaseHint: (timezone: string) =>
@@ -154,7 +152,7 @@ export const advancedAlbumMessages = {
   upcValue: 'UPC',
   upcTitle: 'UPC (Universal Product Code)',
   upcDescription:
-    'A Universal Product Code (UPC) is a unique barcode that identifies music releases.',
+    'A Universal Product Code (UPC) is a unique barcode that identifies music releases. EAN-13 compatible.',
   upcInputLabel: 'UPC',
   upcInputError: 'Invalid UPC',
   releaseDate: {

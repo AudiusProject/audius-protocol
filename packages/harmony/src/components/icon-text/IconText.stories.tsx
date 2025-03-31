@@ -1,7 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react'
 
-import { Divider, Flex } from 'components/layout'
-import { IconHeart, IconPin, IconStar, IconTipping, IconTrophy } from 'icons'
+import { Divider, Flex } from '~harmony/components/layout'
+import {
+  IconHeart,
+  IconPin,
+  IconStar,
+  IconTipping,
+  IconTrophy
+} from '~harmony/icons'
 
 import { IconText } from './IconText'
 

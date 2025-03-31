@@ -18,7 +18,7 @@ import {
   useTheme
 } from '@audius/harmony'
 import { useField } from 'formik'
-import Lottie from 'react-lottie'
+import Lottie from 'lottie-react'
 import { useDispatch } from 'react-redux'
 import { useHover } from 'react-use'
 
@@ -40,10 +40,10 @@ export const FollowArtistCard = (props: FollowArtistTileProps) => {
   } = props
   const dispatch = useDispatch()
   const { isMobile } = useMedia()
-  const { source: coverPhoto, shouldBlur } = useCoverPhoto(
-    user_id,
-    WidthSizes.SIZE_640
-  )
+  const { image: coverPhoto, shouldBlur } = useCoverPhoto({
+    userId: user_id,
+    size: WidthSizes.SIZE_640
+  })
   const [followField] = useField({ name: 'selectedArtists', type: 'checkbox' })
   const { spacing } = useTheme()
 
@@ -79,10 +79,10 @@ export const FollowArtistCard = (props: FollowArtistTileProps) => {
       >
         {hasTracks ? (
           isPlaying ? (
-            <IconPause size='l' color='staticWhite' />
+            <IconPause size='l' color='white' />
           ) : (
             <Box pl='xs'>
-              <IconPlay size='l' color='staticWhite' />
+              <IconPlay size='l' color='white' />
             </Box>
           )
         ) : null}
@@ -121,7 +121,7 @@ export const FollowArtistCard = (props: FollowArtistTileProps) => {
               zIndex: 1
             }}
           >
-            <Lottie options={{ animationData: SoundwaveCircle }} />
+            <Lottie loop autoplay animationData={SoundwaveCircle} />
           </Box>
         ) : null}
         {avatar}

@@ -26,7 +26,7 @@ import {
   modalsSagas
 } from '~/store/ui'
 
-import { buyCryptoSagas } from './buy-crypto'
+import { cacheSagas } from './cache'
 import { playlistUpdatesSagas } from './playlist-updates'
 import { CommonStoreContext } from './storeContext'
 
@@ -38,13 +38,12 @@ import { CommonStoreContext } from './storeContext'
  * @returns an object of all sagas to be yielded
  */
 export const sagas = (_ctx: CommonStoreContext) => ({
-  // cache: cacheSagas,
+  cache: cacheSagas,
   // collectionsError: collectionsErrorSagas,
   // collections: collectionsSagas,
   // tracks: tracksSagas,
   // users: usersSagas,
   account: accountSagas,
-  buyCrypto: buyCryptoSagas,
   buyUSDC: buyUSDCSagas,
   remoteConfig: remoteConfigSagas,
   cast: castSagas,

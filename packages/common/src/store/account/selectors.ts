@@ -15,17 +15,38 @@ export const internalGetAccountUser = (state: CommonState) =>
   getUser(state, { id: getUserId(state) })
 const hasTracksInternal = (state: CommonState) => state.account.hasTracks
 
+export const getAccount = (state: CommonState) => state.account
 export const getHasAccount = (state: CommonState) => !!state.account.userId
+export const getIsAccountComplete = (state: CommonState) => {
+  const { userId } = state.account
+
+  const user = getUser(state, { id: userId })
+  if (!user) return false
+
+  const { handle, name } = user
+  return Boolean(handle && name)
+}
+
+export const getTrackSaveCount = (state: CommonState) =>
+  state.account.trackSaveCount ?? 0
+
+export const getGuestEmail = (state: CommonState) => {
+  return state.account.guestEmail ?? null
+}
+
+export const getIsGuestAccount = (state: CommonState) => {
+  const { userId } = state.account
+
+  const user = getUser(state, { id: userId })
+  if (!user) return false
+
+  const { handle, name } = user
+  return Boolean(!handle && !name)
+}
 export const getUserId = (state: CommonState) => state.account.userId
 export const getAccountStatus = (state: CommonState) => state.account.status
-export const getUserPlaylistOrder = (state: CommonState) =>
-  state.account.orderedPlaylists
 export const getNeedsAccountRecovery = (state: CommonState) =>
   state.account.needsAccountRecovery
-export const getAccountToCache = (state: CommonState) => ({
-  userId: state.account.userId,
-  collections: state.account.collections
-})
 
 export const getWalletAddresses = (state: CommonState) =>
   state.account.walletAddresses
@@ -51,6 +72,10 @@ export const getAccountHasTracks = createSelector(
       ? null // still loading
       : hasTracks || (user ? user.track_count > 0 : false)
 )
+export const getAccountFolloweeCount = createSelector(
+  [internalGetAccountUser],
+  (user) => user?.followee_count ?? null
+)
 export const getAccountCollectibles = createSelector(
   [internalGetAccountUser],
   (user) => [
@@ -58,16 +83,17 @@ export const getAccountCollectibles = createSelector(
     ...(user?.solanaCollectibleList ?? [])
   ]
 )
-export const getAccountProfilePictureSizes = (state: CommonState) => {
-  const user = internalGetAccountUser(state)
-  return user ? user._profile_picture_sizes : null
-}
 export const getPlaylistLibrary = (state: CommonState) => {
-  return getAccountUser(state)?.playlist_library ?? null
+  return state.account.playlistLibrary
 }
 export const getAccountERCWallet = createSelector(
   [internalGetAccountUser],
   (user) => user?.erc_wallet ?? null
+)
+
+export const getAccountSplWallet = createSelector(
+  [internalGetAccountUser],
+  (user) => user?.spl_usdc_payout_wallet ?? null
 )
 
 /**
@@ -103,15 +129,18 @@ export const getAccountWithCollections = createSelector(
  * Gets the account's playlist nav bar info
  */
 export const getAccountNavigationPlaylists = (state: CommonState) => {
-  return Object.keys(state.account.collections).reduce((acc, cur) => {
-    const collection = state.account.collections[cur as unknown as number]
-    if (collection.is_album) return acc
-    if (getUser(state, { id: collection.user.id })?.is_deactivated) return acc
-    return {
-      ...acc,
-      [cur]: collection
-    }
-  }, {} as { [id: number]: AccountCollection })
+  return Object.keys(state.account.collections).reduce(
+    (acc, cur) => {
+      const collection = state.account.collections[cur as unknown as number]
+      if (collection.is_album) return acc
+      if (getUser(state, { id: collection.user.id })?.is_deactivated) return acc
+      return {
+        ...acc,
+        [cur]: collection
+      }
+    },
+    {} as { [id: number]: AccountCollection }
+  )
 }
 
 /**
@@ -132,15 +161,18 @@ export const getUserPlaylists = createSelector(
 export const getAccountCollections = createSelector(
   [internalGetAccountCollections, getCollections],
   (accountCollections, collections) => {
-    return Object.keys(accountCollections).reduce((acc, cur) => {
-      const track = accountCollections[cur as unknown as number]
-      if (!collections[track.id] || collections[track.id]._marked_deleted)
-        return acc
-      return {
-        ...acc,
-        [track.id]: track
-      }
-    }, {} as { [id: number]: AccountCollection })
+    return Object.keys(accountCollections).reduce(
+      (acc, cur) => {
+        const track = accountCollections[cur as unknown as number]
+        if (!collections[track.id] || collections[track.id]._marked_deleted)
+          return acc
+        return {
+          ...acc,
+          [track.id]: track
+        }
+      },
+      {} as { [id: number]: AccountCollection }
+    )
   }
 )
 

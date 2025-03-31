@@ -1,14 +1,13 @@
 import { useCallback, useEffect } from 'react'
 
+import { useTrack, useUser } from '@audius/common/api'
 import { DownloadQuality } from '@audius/common/models'
-import type { CommonState } from '@audius/common/store'
 import {
-  cacheTracksSelectors,
   tracksSocialActions,
   useWaitForDownloadModal,
   downloadsSelectors
 } from '@audius/common/store'
-import { getDownloadFilename } from '@audius/common/utils'
+import { getFilename } from '@audius/common/utils'
 import { css } from '@emotion/native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -25,7 +24,6 @@ import {
 import Drawer from 'app/components/drawer'
 
 import LoadingSpinner from '../loading-spinner'
-const { getTrack } = cacheTracksSelectors
 const { getDownloadError } = downloadsSelectors
 
 const messages = {
@@ -47,13 +45,16 @@ export const WaitForDownloadDrawer = () => {
   const downloadError = useSelector(getDownloadError)
 
   const { spacing } = useTheme()
-  const track = useSelector((state: CommonState) =>
-    getTrack(state, { id: parentTrackId ?? trackIds[0] })
-  )
+  const { data: track } = useTrack(parentTrackId ?? trackIds[0])
+  const { data: user } = useUser(track?.owner_id)
   const trackName =
-    !parentTrackId && track?.orig_filename && track?.orig_filename?.length > 0
-      ? getDownloadFilename({
-          filename: track.orig_filename,
+    !parentTrackId &&
+    user &&
+    track?.orig_filename &&
+    track?.orig_filename?.length > 0
+      ? getFilename({
+          track,
+          user,
           isOriginal: quality === DownloadQuality.ORIGINAL
         })
       : track?.title

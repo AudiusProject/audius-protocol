@@ -2,26 +2,19 @@ import { userTrackMetadataFromSDK } from '@audius/common/adapters'
 import type {
   ID,
   TrackMetadata,
-  Track,
   UserTrackMetadata
 } from '@audius/common/models'
-import { Id, OptionalId, SquareSizes } from '@audius/common/models'
-import type { QueryParams } from '@audius/common/services'
+import { SquareSizes } from '@audius/common/models'
 import {
   accountSelectors,
   getContext,
   gatedContentSelectors,
   getSDK
 } from '@audius/common/store'
-import {
-  encodeHashId,
-  removeNullable,
-  getQueryParams
-} from '@audius/common/utils'
+import { Id, OptionalId } from '@audius/sdk'
 import ReactNativeBlobUtil from 'react-native-blob-util'
 import { select, call, put, all, take, race } from 'typed-redux-saga'
 
-import { createAllImageSources } from 'app/hooks/useContentNodeImage'
 import { make, track } from 'app/services/analytics'
 import {
   getLocalAudioPath,
@@ -29,7 +22,6 @@ import {
   getLocalTrackDir,
   getLocalTrackJsonPath
 } from 'app/services/offline-downloader'
-import { getStorageNodeSelector } from 'app/services/sdk/storageNodeSelector'
 import { EventNames } from 'app/types/analytics'
 
 import { getTrackOfflineDownloadStatus } from '../../../selectors'
@@ -159,27 +151,30 @@ function* downloadTrackAsync(
 }
 
 function* downloadTrackAudio(track: UserTrackMetadata, userId: ID) {
-  const { track_id, title } = track
+  const { track_id } = track
 
   const trackFilePath = getLocalAudioPath(track_id)
-  const encodedTrackId = encodeHashId(track_id)
 
+  const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const apiClient = yield* getContext('apiClient')
   const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
   const nftAccessSignature = nftAccessSignatureMap[track_id]?.mp3 ?? null
-  let queryParams: QueryParams = {}
-  queryParams = yield* call(getQueryParams, {
-    audiusBackendInstance,
-    nftAccessSignature,
-    userId
-  })
-  // todo: pass in correct filename and whether to download original or mp3
-  queryParams.filename = `${title}.mp3`
-
-  const trackAudioUri = apiClient.makeUrl(
-    `/tracks/${encodedTrackId}/download`,
-    queryParams
+  const { data, signature } = yield* call(
+    audiusBackendInstance.signGatedContentRequest,
+    { sdk }
+  )
+  const trackAudioUri = yield* call(
+    [sdk.tracks, sdk.tracks.getTrackStreamUrl],
+    {
+      trackId: Id.parse(track_id),
+      userId: OptionalId.parse(userId),
+      userSignature: signature,
+      userData: data,
+      nftAccessSignature: nftAccessSignature
+        ? JSON.stringify(nftAccessSignature)
+        : undefined
+    }
   )
   const response = yield* call(downloadFile, trackAudioUri, trackFilePath)
   const { status } = response.info()
@@ -189,21 +184,20 @@ function* downloadTrackAudio(track: UserTrackMetadata, userId: ID) {
 }
 
 function* downloadTrackCoverArt(track: TrackMetadata) {
-  const { cover_art_cids, cover_art_sizes, cover_art, track_id } = track
-  const cid = cover_art_sizes ?? cover_art
+  const { artwork, track_id } = track
 
-  const storageNodeSelector = yield* call(getStorageNodeSelector)
+  const primaryImage = artwork[SquareSizes.SIZE_1000_BY_1000]
+  if (!primaryImage) return
 
-  const imageSources = createAllImageSources({
-    cid,
-    endpoints: cid ? storageNodeSelector.getNodes(cid) : [],
-    size: SquareSizes.SIZE_1000_BY_1000,
-    cidMap: cover_art_cids
-  })
+  const coverArtUris = [
+    primaryImage,
+    ...(artwork.mirrors ?? []).map((mirror) => {
+      const url = new URL(primaryImage)
+      url.hostname = new URL(mirror).hostname
+      return url.toString()
+    })
+  ]
 
-  const coverArtUris = imageSources
-    .map((src) => (typeof src === 'object' && 'uri' in src ? src.uri : null))
-    .filter(removeNullable)
   const covertArtFilePath = getLocalTrackCoverArtDestination(track_id)
 
   for (const coverArtUri of coverArtUris) {
@@ -218,17 +212,11 @@ function* downloadTrackCoverArt(track: TrackMetadata) {
 async function writeTrackMetadata(track: UserTrackMetadata) {
   const { track_id } = track
 
-  const trackMetadata: Track & UserTrackMetadata = {
-    ...track,
-    // Empty cover art sizes because the images are stored locally
-    _cover_art_sizes: {}
-  }
-
   const trackMetadataPath = getLocalTrackJsonPath(track_id.toString())
 
   return await ReactNativeBlobUtil.fs.writeFile(
     trackMetadataPath,
-    JSON.stringify(trackMetadata)
+    JSON.stringify(track)
   )
 }
 

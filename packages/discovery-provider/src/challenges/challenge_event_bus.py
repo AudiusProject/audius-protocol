@@ -14,9 +14,26 @@ from src.challenges.audio_matching_challenge import (
 from src.challenges.challenge import ChallengeManager, EventMetadata
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.connect_verified_challenge import connect_verified_challenge_manager
+from src.challenges.cosign_challenge import cosign_challenge_manager
 from src.challenges.first_playlist_challenge import first_playlist_challenge_manager
-from src.challenges.listen_streak_challenge import listen_streak_challenge_manager
+from src.challenges.first_weekly_comment_challenge import (
+    first_weekly_comment_challenge_manager,
+)
+from src.challenges.listen_streak_endless_challenge import (
+    listen_streak_endless_challenge_manager,
+)
 from src.challenges.mobile_install_challenge import mobile_install_challenge_manager
+from src.challenges.one_shot_challenge import one_shot_challenge_manager
+from src.challenges.pinned_comment_challenge import pinned_comment_challenge_manager
+from src.challenges.play_count_milestone_250_challenge import (
+    play_count_250_milestone_challenge_manager,
+)
+from src.challenges.play_count_milestone_1000_challenge import (
+    play_count_1000_milestone_challenge_manager,
+)
+from src.challenges.play_count_milestone_10000_challenge import (
+    play_count_10000_milestone_challenge_manager,
+)
 from src.challenges.profile_challenge import profile_challenge_manager
 from src.challenges.referral_challenge import (
     referral_challenge_manager,
@@ -24,6 +41,7 @@ from src.challenges.referral_challenge import (
     verified_referral_challenge_manager,
 )
 from src.challenges.send_first_tip_challenge import send_first_tip_challenge_manager
+from src.challenges.tastemaker_challenge import tastemaker_challenge_manager
 from src.challenges.track_upload_challenge import track_upload_challenge_manager
 from src.challenges.trending_challenge import (
     trending_playlist_challenge_manager,
@@ -152,7 +170,7 @@ class ChallengeEventBus:
                 logger.warning(f"ChallengeEventBus: error enqueuing to Redis: {e}")
         self._in_memory_queue.clear()
 
-    def process_events(self, session: Session, max_events=1000) -> Tuple[int, bool]:
+    def process_events(self, session: Session, max_events=1) -> Tuple[int, bool]:
         """Dequeues `max_events` from Redis queue and processes them, forwarding to listening ChallengeManagers.
         Returns (num_processed_events, did_error).
         Will return -1 as num_processed_events if an error prevented any events from
@@ -238,8 +256,20 @@ def setup_challenge_bus():
     bus.register_listener(ChallengeEvent.repost, profile_challenge_manager)
     bus.register_listener(ChallengeEvent.follow, profile_challenge_manager)
     bus.register_listener(ChallengeEvent.favorite, profile_challenge_manager)
-    # listen_streak_challenge_manager listeners
-    bus.register_listener(ChallengeEvent.track_listen, listen_streak_challenge_manager)
+    # listen_streak_endless_challenge_manager listeners
+    bus.register_listener(
+        ChallengeEvent.track_listen, listen_streak_endless_challenge_manager
+    )
+    # Play count milestones challenge manager listeners
+    bus.register_listener(
+        ChallengeEvent.track_played, play_count_250_milestone_challenge_manager
+    )
+    bus.register_listener(
+        ChallengeEvent.track_played, play_count_1000_milestone_challenge_manager
+    )
+    bus.register_listener(
+        ChallengeEvent.track_played, play_count_10000_milestone_challenge_manager
+    )
     # track_upload_challenge_manager listeners
     bus.register_listener(ChallengeEvent.track_upload, track_upload_challenge_manager)
     # referral challenge managers
@@ -275,5 +305,14 @@ def setup_challenge_bus():
     bus.register_listener(
         ChallengeEvent.audio_matching_seller, audio_matching_seller_challenge_manager
     )
+    bus.register_listener(ChallengeEvent.one_shot, one_shot_challenge_manager)
+    bus.register_listener(
+        ChallengeEvent.first_weekly_comment, first_weekly_comment_challenge_manager
+    )
+    bus.register_listener(ChallengeEvent.tastemaker, tastemaker_challenge_manager)
+    bus.register_listener(
+        ChallengeEvent.pinned_comment, pinned_comment_challenge_manager
+    )
+    bus.register_listener(ChallengeEvent.cosign, cosign_challenge_manager)
 
     return bus

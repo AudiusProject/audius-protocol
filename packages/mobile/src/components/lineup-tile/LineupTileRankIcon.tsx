@@ -17,18 +17,16 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 }))
 
 type LineupTileRankIconProps = {
-  /** Whether or not to show the crown icon */
-  showCrown?: boolean
   /** Index of this item in the lineup */
   index: number
 }
 
 export const LineupTileRankIcon = (props: LineupTileRankIconProps) => {
-  const { showCrown, index } = props
+  const { index } = props
   const styles = useStyles()
   const trackTileStyles = useTrackTileStyles()
   const { secondary } = useThemeColors()
-  const Icon = showCrown ? IconCrown : IconTrending
+  const Icon = index < 5 ? IconCrown : IconTrending
   return (
     <View style={trackTileStyles.statItem}>
       <Icon fill={secondary} style={styles.icon} height={14} width={14} />

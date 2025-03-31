@@ -17,6 +17,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import type { IconComponent } from '@audius/harmony-native'
 import {
   Box,
+  Divider,
   Flex,
   FollowButton,
   IconNote,
@@ -30,7 +31,6 @@ import {
   useTheme
 } from '@audius/harmony-native'
 import {
-  Divider,
   ProfilePicture,
   UserCoverPhoto,
   UserDisplayName
@@ -126,7 +126,7 @@ export const FollowArtistCard = (props: FollowArtistCardProps) => {
         center={[50, 50]}
         radius={50}
       >
-        <PreviewIcon size='l' color='staticWhite' shadow='drop' />
+        <PreviewIcon size='l' color='white' shadow='drop' />
       </RadialGradient>
     )
   }

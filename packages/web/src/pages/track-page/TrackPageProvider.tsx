@@ -4,7 +4,6 @@ import {
   Name,
   ShareSource,
   RepostSource,
-  FavoriteSource,
   FollowSource,
   PlaybackSource,
   FavoriteType,
@@ -22,7 +21,6 @@ import {
   trackPageSelectors,
   queueSelectors,
   tracksSocialActions as socialTracksActions,
-  usersSocialActions as socialUsersActions,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
   OverflowAction,
@@ -34,7 +32,6 @@ import {
   playerActions
 } from '@audius/common/store'
 import { formatDate, route, Uid } from '@audius/common/utils'
-import { push as pushRoute, replace } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
@@ -45,6 +42,7 @@ import DeletedPage from 'pages/deleted-page/DeletedPage'
 import { SsrContext } from 'ssr/SsrContext'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
+import { push, replace } from 'utils/navigation'
 import { trackRemixesPage } from 'utils/route'
 import { parseTrackRoute, TrackRouteParams } from 'utils/route/trackRouteParser'
 import { getTrackPageSEOFields } from 'utils/seo'
@@ -92,7 +90,22 @@ type OwnProps = {
 type mapStateProps = ReturnType<typeof makeMapStateToProps>
 type TrackPageProviderProps = OwnProps &
   ReturnType<mapStateProps> &
-  ReturnType<typeof mapDispatchToProps>
+  ReturnType<typeof mapDispatchToProps> & {
+    onFollow: ({
+      followeeUserId,
+      source
+    }: {
+      followeeUserId: ID
+      source: FollowSource
+    }) => void
+    onUnfollow: ({
+      followeeUserId,
+      source
+    }: {
+      followeeUserId: ID
+      source: FollowSource
+    }) => void
+  }
 
 type TrackPageProviderState = {
   pathname: string
@@ -144,8 +157,8 @@ class TrackPageProvider extends Component<
       this.goToProfilePage(user.handle)
     }
     if (!this.context.isMobile) {
-      // On componentDidUpdate we try to reparse the URL because if you’re on a track page
-      // and go to another track page, the component doesn’t remount but we need to
+      // On componentDidUpdate we try to reparse the URL because if you're on a track page
+      // and go to another track page, the component doesn't remount but we need to
       // trigger a re-fetch based on the URL. On mobile, separate page provider components are
       // used so this is a non-issue.
       if (pathname !== this.state.pathname) {
@@ -316,31 +329,6 @@ class TrackPageProvider extends Component<
     shareTrack(trackId)
   }
 
-  onSaveTrack = (isSaved: boolean, trackId: ID) => {
-    const { saveTrack, unsaveTrack } = this.props
-    if (isSaved) {
-      unsaveTrack(trackId)
-    } else {
-      saveTrack(trackId)
-    }
-  }
-
-  onFollow = () => {
-    const { onFollow, track } = this.props
-    if (track) onFollow(track.owner_id)
-  }
-
-  onUnfollow = () => {
-    const { onUnfollow, onConfirmUnfollow, track } = this.props
-    if (track) {
-      if (this.context.isMobile) {
-        onConfirmUnfollow(track.owner_id)
-      } else {
-        onUnfollow(track.owner_id)
-      }
-    }
-  }
-
   goToProfilePage = (handle: string) => {
     this.props.goToRoute(profilePage(handle))
   }
@@ -373,8 +361,10 @@ class TrackPageProvider extends Component<
       playing,
       previewing,
       buffering,
+      pause,
       userId,
-      pause
+      onFollow,
+      onUnfollow
     } = this.props
     const heroPlaying =
       playing &&
@@ -385,15 +375,15 @@ class TrackPageProvider extends Component<
       trackRank.year && trackRank.year <= TRENDING_BADGE_LIMIT
         ? `#${trackRank.year} This Year`
         : trackRank.month && trackRank.month <= TRENDING_BADGE_LIMIT
-        ? `#${trackRank.month} This Month`
-        : trackRank.week && trackRank.week <= TRENDING_BADGE_LIMIT
-        ? `#${trackRank.week} This Week`
-        : null
+          ? `#${trackRank.month} This Month`
+          : trackRank.week && trackRank.week <= TRENDING_BADGE_LIMIT
+            ? `#${trackRank.week} This Week`
+            : null
 
     const desktopProps = {
       // Follow Props
-      onFollow: this.onFollow,
-      onUnfollow: this.onUnfollow,
+      onFollow,
+      onUnfollow,
       makePublic: this.props.makeTrackPublic
     }
     const releaseDate = track ? track.release_date || track.created_at : ''
@@ -450,7 +440,6 @@ class TrackPageProvider extends Component<
       goToAllRemixesPage: this.goToAllRemixesPage,
       onHeroRepost: this.onHeroRepost,
       onHeroShare: this.onHeroShare,
-      onSaveTrack: this.onSaveTrack,
       onClickMobileOverflow: this.props.clickOverflow,
       onConfirmUnfollow: this.props.onConfirmUnfollow,
       goToFavoritesPage: this.goToFavoritesPage,
@@ -528,7 +517,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     makeTrackPublic: (trackId: ID) =>
       dispatch(trackPageActions.makeTrackPublic(trackId)),
 
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
+    goToRoute: (route: string) => dispatch(push(route)),
     replaceRoute: (route: string) => dispatch(replace(route)),
     reset: (source?: string) => dispatch(tracksActions.reset(source)),
     play: (uid?: string, options: { isPreview?: boolean } = {}) =>
@@ -551,16 +540,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
           source: ShareSource.PAGE
         })
       ),
-    saveTrack: (trackId: ID) =>
-      dispatch(
-        socialTracksActions.saveTrack(trackId, FavoriteSource.TRACK_PAGE)
-      ),
-    unsaveTrack: (trackId: ID) =>
-      dispatch(
-        socialTracksActions.unsaveTrack(trackId, FavoriteSource.TRACK_PAGE)
-      ),
-    deleteTrack: (trackId: ID) =>
-      dispatch(cacheTrackActions.deleteTrack(trackId)),
     repostTrack: (trackId: ID) =>
       dispatch(
         socialTracksActions.repostTrack(trackId, RepostSource.TRACK_PAGE)
@@ -571,12 +550,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
       ),
     editTrack: (trackId: ID, formFields: any) =>
       dispatch(cacheTrackActions.editTrack(trackId, formFields)),
-    onFollow: (userId: ID) =>
-      dispatch(socialUsersActions.followUser(userId, FollowSource.TRACK_PAGE)),
-    onUnfollow: (userId: ID) =>
-      dispatch(
-        socialUsersActions.unfollowUser(userId, FollowSource.TRACK_PAGE)
-      ),
     onConfirmUnfollow: (userId: ID) =>
       dispatch(unfollowConfirmationActions.setOpen(userId)),
     clickOverflow: (trackId: ID, overflowActions: OverflowAction[]) =>

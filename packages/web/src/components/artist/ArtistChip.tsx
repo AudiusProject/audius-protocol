@@ -1,13 +1,15 @@
 import { ComponentPropsWithoutRef } from 'react'
 
-import { SquareSizes, ID, User } from '@audius/common/models'
+import { useUser } from '@audius/common/api'
+import { SquareSizes, ID } from '@audius/common/models'
 import cn from 'classnames'
+import { pick } from 'lodash'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { MountPlacement } from 'components/types'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 
 import styles from './ArtistChip.module.css'
 import { ArtistChipFollowers } from './ArtistChipFollowers'
@@ -40,12 +42,7 @@ const ArtistIdentifier = ({
       >
         <div className={styles.name}>
           <span>{name}</span>
-          <UserBadges
-            userId={userId}
-            className={cn(styles.badge)}
-            badgeSize={14}
-            inline
-          />
+          <UserBadges userId={userId} className={cn(styles.badge)} inline />
         </div>
       </ArtistPopover>
       <ArtistPopover
@@ -61,20 +58,15 @@ const ArtistIdentifier = ({
     <div>
       <div className={styles.name}>
         <span>{name}</span>
-        <UserBadges
-          userId={userId}
-          className={cn(styles.badge)}
-          badgeSize={14}
-          inline
-        />
+        <UserBadges userId={userId} className={cn(styles.badge)} inline />
       </div>
       <div className={styles.handle}>@{handle}</div>
     </div>
   )
 }
 
-type ArtistChipProps = {
-  user: User
+export type ArtistChipProps = {
+  userId: ID
   onClickArtistName?: () => void
   showPopover?: boolean
   showFollowsYou?: boolean
@@ -85,8 +77,9 @@ type ArtistChipProps = {
   customChips?: React.ReactNode
   onNavigateAway?: () => void
 }
+
 const ArtistChip = ({
-  user,
+  userId,
   onClickArtistName,
   showPopover = true,
   showFollowsYou = true,
@@ -97,19 +90,18 @@ const ArtistChip = ({
   customChips = null,
   onNavigateAway
 }: ArtistChipProps) => {
-  const {
-    user_id: userId,
-    name,
-    handle,
-    _profile_picture_sizes: profilePictureSizes,
-    follower_count: followers
-  } = user
+  const { data: user } = useUser(userId, {
+    select: (user) => pick(user, ['name', 'handle', 'follower_count'])
+  })
 
-  const profilePicture = useUserProfilePicture(
+  const profilePicture = useProfilePicture({
     userId,
-    profilePictureSizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+    size: SquareSizes.SIZE_150_BY_150
+  })
+
+  if (!user) return null
+
+  const { name, handle, follower_count } = user
 
   return (
     <div
@@ -164,17 +156,14 @@ const ArtistChip = ({
             <ArtistChipFollowers
               showFollowsYou={showFollowsYou}
               userId={userId}
-              followerCount={followers}
+              followerCount={follower_count}
             />
             {showSupportFor ? (
-              <ArtistChipSupportFor
-                artistId={user.user_id}
-                userId={showSupportFor}
-              />
+              <ArtistChipSupportFor artistId={userId} userId={showSupportFor} />
             ) : null}
             {showSupportFrom ? (
               <ArtistChipSupportFrom
-                artistId={user.user_id}
+                artistId={userId}
                 userId={showSupportFrom}
               />
             ) : null}

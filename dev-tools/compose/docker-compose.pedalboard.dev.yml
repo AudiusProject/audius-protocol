@@ -7,9 +7,20 @@ version: '3'
 
 services:
   app-template:
+    user: ${DOCKER_UID:-root}:${DOCKER_GID:-root}
     extends:
       file: docker-compose.pedalboard.prod.yml
       service: app-template
+    build:
+      dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.dev
+    volumes:
+      - ${PROJECT_ROOT}:/app
+
+  anti-abuse:
+    user: ${DOCKER_UID:-root}:${DOCKER_GID:-root}
+    extends:
+      file: docker-compose.pedalboard.prod.yml
+      service: anti-abuse
     build:
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.dev
     volumes:
@@ -19,6 +30,15 @@ services:
     extends:
       file: docker-compose.pedalboard.prod.yml
       service: trending-challenge-rewards
+    build:
+      dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.dev
+    volumes:
+      - ${PROJECT_ROOT}:/app
+
+  staking:
+    extends:
+      file: docker-compose.pedalboard.prod.yml
+      service: staking
     build:
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.dev
     volumes:
@@ -59,7 +79,7 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.dev
     volumes:
       - ${PROJECT_ROOT}:/app
-  
+
   mri:
     extends:
       file: docker-compose.pedalboard.prod.yml
@@ -69,19 +89,20 @@ services:
     volumes:
       - ${PROJECT_ROOT}:/app
 
-  backfill-audio-analyses:
+  verified-notifications:
     extends:
       file: docker-compose.pedalboard.prod.yml
-      service: backfill-audio-analyses
+      service: verified-notifications
     build:
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.dev
     volumes:
       - ${PROJECT_ROOT}:/app
 
-  verified-notifications:
+  archiver:
+    user: ${DOCKER_UID:-root}:${DOCKER_GID:-root}
     extends:
       file: docker-compose.pedalboard.prod.yml
-      service: verified-notifications
+      service: archiver
     build:
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.dev
     volumes:

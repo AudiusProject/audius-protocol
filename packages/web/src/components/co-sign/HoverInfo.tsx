@@ -60,11 +60,7 @@ const HoverInfo = ({
         <div className={styles.text}>
           <div className={styles.name}>
             {coSignName}
-            <UserBadges
-              userId={userId}
-              badgeSize={14}
-              className={styles.iconVerified}
-            />
+            <UserBadges userId={userId} className={styles.iconVerified} />
           </div>
           {text}
         </div>

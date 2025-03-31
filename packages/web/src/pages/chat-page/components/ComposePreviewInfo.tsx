@@ -4,8 +4,8 @@ import { Flex, Text } from '@audius/harmony'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
-import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
+import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
+import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 type ComposePreviewInfoProps = {
   title: string
@@ -34,7 +34,7 @@ const ComposePreviewInfo = (props: ComposePreviewInfoProps) => {
           <Text variant='body' strength='strong'>
             {name}
           </Text>
-          <UserBadges userId={userId} badgeSize={14} />
+          <UserBadges userId={userId} />
         </Flex>
       </Flex>
     </Flex>
@@ -47,7 +47,10 @@ type ComposerTrackInfoProps = {
 
 export const ComposerTrackInfo = (props: ComposerTrackInfoProps) => {
   const { trackId } = props
-  const image = useTrackCoverArt2(trackId, SquareSizes.SIZE_150_BY_150)
+  const image = useTrackCoverArt({
+    trackId,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   const { data: track } = useGetTrackById({ id: trackId }, { force: true })
 
@@ -69,10 +72,10 @@ type ComposerCollectionInfoProps = {
 
 export const ComposerCollectionInfo = (props: ComposerCollectionInfoProps) => {
   const { collectionId } = props
-  const image = useCollectionCoverArt2(
+  const image = useCollectionCoverArt({
     collectionId,
-    SquareSizes.SIZE_150_BY_150
-  )
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   const { data: collection } = useGetPlaylistById(
     { playlistId: collectionId },

@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
-import { confirmEmailMessages } from '@audius/common/messages'
+import { confirmEmailMessages as messages } from '@audius/common/messages'
 import {
   confirmEmailSchema,
   formatOtp,
@@ -11,11 +11,16 @@ import { Form, Formik, useField } from 'formik'
 import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { setValueField, signIn } from 'common/store/pages/signon/actions'
+import {
+  setValueField,
+  signIn,
+  startSignUp
+} from 'common/store/pages/signon/actions'
 import {
   getEmailField,
   getOtpField,
-  getPasswordField
+  getPasswordField,
+  getIsGuest
 } from 'common/store/pages/signon/selectors'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { ToastContext } from 'components/toast/ToastContext'
@@ -39,6 +44,7 @@ export const ConfirmEmailPage = () => {
   const { value: email } = useSelector(getEmailField)
   const { value: password } = useSelector(getPasswordField)
   const { value: otp } = useSelector(getOtpField)
+  const isGuest = useSelector(getIsGuest)
   const isSubmitting = !!otp
 
   const handleSubmit = useCallback(
@@ -46,6 +52,8 @@ export const ConfirmEmailPage = () => {
       const { otp } = values
       const sanitizedOtp = otp.replace(/\s/g, '')
       dispatch(setValueField('otp', sanitizedOtp))
+      dispatch(setValueField('email', email))
+      dispatch(startSignUp())
       dispatch(signIn(email, password, undefined, sanitizedOtp))
     },
     [dispatch, email, password]
@@ -59,14 +67,18 @@ export const ConfirmEmailPage = () => {
     >
       <Page as={Form} transition={isMobile ? undefined : 'horizontal'}>
         <Heading
-          heading={confirmEmailMessages.title}
-          description={confirmEmailMessages.description}
+          heading={isGuest ? messages.finishSigningUp : messages.title}
+          description={messages.description}
         />
         <VerificationCodeField />
         <Text variant='body'>
-          {confirmEmailMessages.noEmailNotice} <ResendCodeLink />
+          {messages.noEmailNotice} <ResendCodeLink />
         </Text>
-        <PageFooter shadow='flat' buttonProps={{ isLoading: isSubmitting }} />
+        <PageFooter
+          shadow='flat'
+          ph={0}
+          buttonProps={{ isLoading: isSubmitting }}
+        />
       </Page>
     </Formik>
   )
@@ -89,8 +101,8 @@ const VerificationCodeField = () => {
   return (
     <HarmonyTextField
       name='otp'
-      label={confirmEmailMessages.otpLabel}
-      placeholder={confirmEmailMessages.otpPlaceholder}
+      label={messages.otpLabel}
+      placeholder={messages.otpPlaceholder}
       transformValueOnChange={formatOtp}
     />
   )
@@ -105,7 +117,7 @@ const ResendCodeLink = () => {
 
   const handleClick = useCallback(() => {
     dispatch(signIn(email, password))
-    toast(confirmEmailMessages.resentToast)
+    toast(messages.resentToast)
     setHasResendCode(true)
   }, [dispatch, email, password, toast])
 
@@ -115,7 +127,7 @@ const ResendCodeLink = () => {
       onClick={handleClick}
       disabled={hasResentCode}
     >
-      {confirmEmailMessages.resendCode}
+      {messages.resendCode}
     </TextLink>
   )
 }

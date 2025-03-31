@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
 import {
   AccessConditions,
   DownloadTrackAvailabilityType,
@@ -9,7 +8,6 @@ import {
   isContentTipGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { Nullable } from '@audius/common/utils'
 import {
   Box,
@@ -56,17 +54,13 @@ const getMessages = (props: DownloadAvailabilityProps) => ({
 
 type DownloadAvailabilityProps = {
   isUpload: boolean
-  initialDownloadConditions: Nullable<AccessConditions>
   value: DownloadTrackAvailabilityType
   setValue: (value: DownloadTrackAvailabilityType) => void
 }
 
 export const DownloadAvailability = (props: DownloadAvailabilityProps) => {
-  const { isUpload, initialDownloadConditions, value, setValue } = props
+  const { value, setValue } = props
   const messages = getMessages(props)
-  const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
-    FeatureFlags.EDITABLE_ACCESS_ENABLED
-  )
 
   const { submitForm, setStatus } = useFormikContext()
   const [{ value: streamConditions }] =
@@ -104,14 +98,6 @@ export const DownloadAvailability = (props: DownloadAvailabilityProps) => {
     submitForm()
   }, [setStatus, submitForm])
 
-  const isFollowersOptionDisabled =
-    !isEditableAccessEnabled &&
-    !isUpload &&
-    !isContentFollowGated(initialDownloadConditions)
-  const isPremiumOptionDisabled =
-    !isEditableAccessEnabled &&
-    !isUpload &&
-    !isContentUSDCPurchaseGated(initialDownloadConditions)
   const options: Option<DownloadTrackAvailabilityType>[] = [
     {
       key: DownloadTrackAvailabilityType.PUBLIC,
@@ -121,25 +107,13 @@ export const DownloadAvailability = (props: DownloadAvailabilityProps) => {
     {
       key: DownloadTrackAvailabilityType.FOLLOWERS,
       text: messages.followers,
-      icon: (
-        <IconUserFollowing
-          size='s'
-          color={isFollowersOptionDisabled ? 'subdued' : 'default'}
-        />
-      ),
-      disabled: isFollowersOptionDisabled
+      icon: <IconUserFollowing size='s' color='default' />
     },
     {
       key: DownloadTrackAvailabilityType.USDC_PURCHASE,
       text: messages.premium,
-      icon: (
-        <IconCart
-          size='s'
-          color={isPremiumOptionDisabled ? 'subdued' : 'default'}
-        />
-      ),
-      disabled: isPremiumOptionDisabled,
-      variant: isPremiumOptionDisabled ? 'subdued' : 'default'
+      icon: <IconCart size='s' color='default' />,
+      variant: 'default'
     }
   ]
 

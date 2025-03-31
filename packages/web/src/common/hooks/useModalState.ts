@@ -36,7 +36,7 @@ export const useSetVisibility = () => {
 /**
  * Gets the latest visibility for a modal
  */
-export const useGetVisibility = (modalName: Modals) => {
+const useGetVisibility = (modalName: Modals) => {
   return useSelector((state) => getModalVisibility(state, modalName))
 }
 

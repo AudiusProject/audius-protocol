@@ -5,8 +5,8 @@ import type { ListRenderItem, ViewStyle } from 'react-native'
 import { TouchableOpacity, View, FlatList } from 'react-native'
 
 import type { IconComponent } from '@audius/harmony-native'
-import { Flex, Text } from '@audius/harmony-native'
-import { Divider, RadioButton } from 'app/components/core'
+import { Divider, Flex, Text } from '@audius/harmony-native'
+import { RadioButton } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { makeStyles } from 'app/styles'
 

@@ -17,7 +17,7 @@ declare global {
   }
 }
 
-export const FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY = 'featureFlagSessionId-2'
+const FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY = 'featureFlagSessionId-2'
 
 export const remoteConfigInstance = remoteConfig({
   appVersion,

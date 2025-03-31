@@ -1,3 +1,5 @@
+import { NativeFile } from '@audius/sdk'
+
 import { CollectionValues } from '~/schemas'
 
 import {
@@ -9,15 +11,6 @@ import {
   TrackMetadata
 } from '../../models'
 import { Nullable } from '../../utils/typeUtils'
-
-export type NativeFile = {
-  uri: string
-  name: string | null
-  copyError?: string
-  fileCopyUri: string | null
-  type: string | null
-  size: number | null
-}
 
 export enum UploadType {
   INDIVIDUAL_TRACK = 0,
@@ -37,29 +30,50 @@ export interface TrackForUpload {
 
 export interface TrackForEdit {
   metadata: TrackMetadataForUpload
+  metadata_time?: number
 }
+
+export const isTrackForEdit = (
+  track: TrackForUpload | TrackForEdit
+): track is TrackForEdit => !('file' in track)
+
+export const isTrackForUpload = (
+  track: TrackForUpload | TrackForEdit
+): track is TrackForUpload => 'file' in track
 
 /**
  * Unlike normal Track metadata, TrackMetadataForUpload includes additional
  * files: artwork and a stems field with StemsForUpload.
+ * This type is used for both Upload and Edit flows.
  */
-export interface TrackMetadataForUpload extends TrackMetadata {
-  artwork?: Nullable<{
-    file?: Blob | NativeFile
-    url: string
-    source?: string
-  }>
+export interface TrackMetadataForUpload
+  extends Omit<TrackMetadata, 'artwork' | 'track_id'> {
+  artwork?:
+    | Nullable<{
+        file?: Blob | NativeFile
+        url: string
+        source?: string
+      }>
+    | TrackMetadata['artwork']
   stems?: (StemUploadWithFile | StemUpload)[]
+  /** During Upload, tracks will typically not have a track_id, but it might
+   * be assigned ahead of time for tracks with stems.
+   */
+  track_id?: number
 }
 /**
  * Unlike normal CollectionMetadata, CollectionMetadataForUpload has artwork
  * and track details to be passed to its descendant tracks.
  */
-export interface CollectionMetadataForUpload extends CollectionMetadata {
-  artwork: {
-    file?: Blob
-    url: string
-  }
+export interface CollectionMetadataForUpload
+  extends Omit<CollectionMetadata, 'artwork'> {
+  artwork?:
+    | Nullable<{
+        file?: Blob | NativeFile
+        url: string
+        source?: string
+      }>
+    | CollectionMetadata['artwork']
   trackDetails: {
     genre: string
     mood: string
@@ -98,6 +112,28 @@ export type ProgressState = {
   stems: ProgressState[]
 }
 
+type InitialFormState = {
+  uploadType: undefined
+  tracks: undefined
+  metadata: undefined
+}
+
+export type TrackFormState = {
+  uploadType: UploadType.INDIVIDUAL_TRACK | UploadType.INDIVIDUAL_TRACKS
+  tracks: TrackForUpload[]
+}
+
+export type CollectionFormState = {
+  uploadType: UploadType.ALBUM | UploadType.PLAYLIST
+  tracks: TrackForUpload[]
+  metadata: CollectionValues
+}
+
+export type UploadFormState =
+  | TrackFormState
+  | CollectionFormState
+  | InitialFormState
+
 type UploadStateBase = {
   openMultiTrackNotification: boolean
   tracks: Nullable<TrackForUpload[]>
@@ -106,10 +142,10 @@ type UploadStateBase = {
   uploadProgress: Nullable<ProgressState[]>
   success: boolean
   error: boolean
-  shouldReset: boolean
   completionId: Nullable<number>
   stems: StemUpload[][]
   failedTrackIndices: number[]
+  formState: Nullable<UploadFormState>
 }
 
 type UploadStateForTracks = UploadStateBase & {

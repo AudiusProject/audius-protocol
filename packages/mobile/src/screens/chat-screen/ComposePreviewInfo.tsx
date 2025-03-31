@@ -5,8 +5,8 @@ import type { ID, UserMetadata } from '@audius/common/models'
 import { SquareSizes } from '@audius/common/models'
 
 import { Flex, Text } from '@audius/harmony-native'
-import { CollectionImageV2 } from 'app/components/image/CollectionImageV2'
-import { TrackImageV2 } from 'app/components/image/TrackImageV2'
+import { CollectionImage } from 'app/components/image/CollectionImage'
+import { TrackImage } from 'app/components/image/TrackImage'
 import UserBadges from 'app/components/user-badges'
 
 type ComposePreviewInfoProps = {
@@ -67,7 +67,7 @@ export const ComposerTrackInfo = (props: ComposerTrackInfoProps) => {
       name={track.user.name}
       user={track.user}
       image={
-        <TrackImageV2 trackId={trackId} size={SquareSizes.SIZE_150_BY_150} />
+        <TrackImage trackId={trackId} size={SquareSizes.SIZE_150_BY_150} />
       }
     />
   )
@@ -93,7 +93,7 @@ export const ComposerCollectionInfo = (props: ComposerCollectionInfoProps) => {
       name={collection.user.name}
       user={collection.user}
       image={
-        <CollectionImageV2
+        <CollectionImage
           collectionId={collectionId}
           size={SquareSizes.SIZE_150_BY_150}
         />

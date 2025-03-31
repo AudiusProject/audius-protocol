@@ -1,8 +1,14 @@
 #!/usr/bin/env bash
 set -e
 
-cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"/compose  # audius-protocol/dev-tools/compose
+PROJECT_DIR=$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")
+cd "$PROJECT_DIR"/dev-tools/compose  # audius-protocol/dev-tools/compose
 export COMPOSE_PROJECT_NAME='audius-protocol'
+
+if [[ "$1" == "build" ]]; then
+	turbo run build --filter=@audius/commands
+	exit
+fi
 
 if [[ "$1" == "test" ]]; then
 	docker compose exec audius-cmd npm test
@@ -24,7 +30,12 @@ for arg in "$@"; do
 	fi
 done
 
-docker compose exec audius-cmd node src/index.mjs "${updated_args[@]}" || true
+if [[ ! -f "$PROJECT_DIR/packages/commands/dist/index.js" ]]; then
+	turbo run build --filter=@audius/commands
+	# Give container time to sync output
+	sleep 1
+fi
+docker compose exec audius-cmd node dist/index.js "${updated_args[@]}" || true
 
 for tmpfile in "${tmpfiles[@]}"; do
 	docker compose exec audius-cmd rm $tmpfile

@@ -2,6 +2,7 @@ import type { WalletAdapter } from '@solana/wallet-adapter-base'
 import { z } from 'zod'
 
 import { PublicKeySchema } from '../../services/Solana'
+import { ProgressHandler } from '../../services/Storage/types'
 import {
   DDEXResourceContributor,
   DDEXCopyright,
@@ -16,8 +17,7 @@ import { StemCategory } from '../../types/StemCategory'
 const messages = {
   titleRequiredError: 'Your track must have a name',
   artworkRequiredError: 'Artwork is required',
-  genreRequiredError: 'Genre is required',
-  invalidReleaseDateError: 'Release date should not be in the future'
+  genreRequiredError: 'Genre is required'
 }
 
 export const EthCollectibleGatedConditions = z
@@ -52,13 +52,13 @@ export const CollectibleGatedConditions = z
 
 export const FollowGatedConditions = z
   .object({
-    followUserId: HashId
+    followUserId: z.number()
   })
   .strict()
 
 export const TipGatedConditions = z
   .object({
-    tipUserId: HashId
+    tipUserId: z.number()
   })
   .strict()
 
@@ -71,155 +71,171 @@ export const USDCPurchaseConditions = z
   })
   .strict()
 
-export const createUploadTrackMetadataSchema = () =>
-  z.object({
-    aiAttributionUserId: z.optional(HashId),
-    description: z.optional(z.string().max(1000)),
-    fieldVisibility: z.optional(
-      z.object({
-        mood: z.optional(z.boolean()),
-        tags: z.optional(z.boolean()),
-        genre: z.optional(z.boolean()),
-        share: z.optional(z.boolean()),
-        playCount: z.optional(z.boolean()),
-        remixes: z.optional(z.boolean())
-      })
-    ),
-    genre: z
-      .enum(Object.values(Genre) as [Genre, ...Genre[]])
-      .nullable()
-      .refine((val) => val !== null, {
-        message: messages.genreRequiredError
-      }),
-    isrc: z.optional(z.string().nullable()),
-    isUnlisted: z.optional(z.boolean()),
-    iswc: z.optional(z.string().nullable()),
-    license: z.optional(z.string().nullable()),
-    mood: z
-      .optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]]))
-      .nullable(),
-    isStreamGated: z.optional(z.boolean()),
-    streamConditions: z
-      .optional(
-        z.union([
-          CollectibleGatedConditions,
-          FollowGatedConditions,
-          TipGatedConditions,
-          USDCPurchaseConditions
-        ])
-      )
-      .nullable(),
-    isDownloadGated: z.optional(z.boolean()),
-    downloadConditions: z
-      .optional(
-        z.union([
-          CollectibleGatedConditions,
-          FollowGatedConditions,
-          TipGatedConditions,
-          USDCPurchaseConditions
-        ])
-      )
-      .nullable(),
-    releaseDate: z.optional(
-      z.date().max(new Date(), { message: messages.invalidReleaseDateError })
-    ),
-    remixOf: z.optional(
-      z
-        .object({
-          tracks: z
-            .array(
-              z.object({
-                parentTrackId: HashId
-              })
-            )
-            .min(1)
-        })
-        .strict()
-    ),
-    stemOf: z.optional(
-      z.object({
-        category: z
-          .enum(
-            Object.values(StemCategory) as [StemCategory, ...StemCategory[]]
-          )
-          .default(StemCategory.OTHER),
-        parentTrackId: HashId
-      })
-    ),
-    tags: z.optional(z.string()),
-    title: z.string({
-      required_error: messages.titleRequiredError
-    }),
-    previewStartSeconds: z.optional(z.number()),
-    placementHosts: z.optional(z.string()),
-    audioUploadId: z.optional(z.string()),
-    previewCid: z.optional(z.string()),
-    origFileCid: z.optional(z.string()),
-    origFilename: z.optional(z.string()),
-    isDownloadable: z.optional(z.boolean()),
-    isOriginalAvailable: z.optional(z.boolean()),
-    ddexReleaseIds: z.optional(z.record(z.string()).nullable()),
-    ddexApp: z.optional(z.string()),
-    artists: z.optional(z.array(DDEXResourceContributor)).nullable(),
-    resourceContributors: z.optional(
-      z.array(DDEXResourceContributor).nullable()
-    ),
-    indirectResourceContributors: z.optional(
-      z.array(DDEXResourceContributor).nullable()
-    ),
-    rightsController: z.optional(DDEXRightsController.nullable()),
-    copyrightLine: z.optional(DDEXCopyright.nullable()),
-    producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
-    parentalWarningType: z.optional(z.string().nullable()),
-    bpm: z.optional(z.number().nullable()),
-    isCustomBpm: z.optional(z.boolean()),
-    musicalKey: z.optional(z.string().nullable()),
-    isCustomMusicalKey: z.optional(z.boolean()),
-    audioAnalysisErrorCount: z.optional(z.number()),
-    commentsDisabled: z.optional(z.boolean())
-  })
-
-export type TrackMetadata = z.input<
-  ReturnType<typeof createUploadTrackMetadataSchema>
->
-
-export const createUploadTrackSchema = () =>
-  z
-    .object({
-      userId: HashId,
-      coverArtFile: ImageFile,
-      metadata: createUploadTrackMetadataSchema().strict(),
-      onProgress: z.optional(z.function().args(z.number())),
-      trackFile: AudioFile
+export const UploadTrackMetadataSchema = z.object({
+  trackId: z.optional(HashId),
+  aiAttributionUserId: z.optional(HashId),
+  description: z.optional(z.string().max(1000)),
+  fieldVisibility: z.optional(
+    z.object({
+      mood: z.optional(z.boolean()),
+      tags: z.optional(z.boolean()),
+      genre: z.optional(z.boolean()),
+      share: z.optional(z.boolean()),
+      playCount: z.optional(z.boolean()),
+      remixes: z.optional(z.boolean())
     })
-    .strict()
+  ),
+  genre: z
+    .enum(Object.values(Genre) as [Genre, ...Genre[]])
+    .nullable()
+    .refine((val) => val !== null, {
+      message: messages.genreRequiredError
+    }),
+  isrc: z.optional(z.string().nullable()),
+  isUnlisted: z.optional(z.boolean()),
+  iswc: z.optional(z.string().nullable()),
+  license: z.optional(z.string().nullable()),
+  mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])).nullable(),
+  isStreamGated: z.optional(z.boolean()),
+  streamConditions: z
+    .optional(
+      z.union([
+        CollectibleGatedConditions,
+        FollowGatedConditions,
+        TipGatedConditions,
+        USDCPurchaseConditions
+      ])
+    )
+    .nullable(),
+  isDownloadGated: z.optional(z.boolean()),
+  downloadConditions: z
+    .optional(
+      z.union([
+        CollectibleGatedConditions,
+        FollowGatedConditions,
+        TipGatedConditions,
+        USDCPurchaseConditions
+      ])
+    )
+    .nullable(),
+  releaseDate: z.optional(z.date()),
+  remixOf: z.optional(
+    z
+      .object({
+        tracks: z
+          .array(
+            z.object({
+              parentTrackId: HashId
+            })
+          )
+          .min(1)
+      })
+      .strict()
+  ),
+  stemOf: z.optional(
+    z.object({
+      category: z
+        .enum(Object.values(StemCategory) as [StemCategory, ...StemCategory[]])
+        .default(StemCategory.OTHER),
+      parentTrackId: HashId
+    })
+  ),
+  tags: z.optional(z.string()),
+  title: z.string({
+    required_error: messages.titleRequiredError
+  }),
+  duration: z.optional(z.number()),
+  previewStartSeconds: z.optional(z.number()),
+  placementHosts: z.optional(z.string()),
+  audioUploadId: z.optional(z.string()),
+  trackCid: z.optional(z.string()),
+  previewCid: z.optional(z.string()),
+  origFileCid: z.optional(z.string()),
+  origFilename: z.optional(z.string()),
+  isDownloadable: z.optional(z.boolean()),
+  isOriginalAvailable: z.optional(z.boolean()),
+  ddexReleaseIds: z.optional(z.record(z.string()).nullable()),
+  ddexApp: z.optional(z.string()),
+  artists: z.optional(z.array(DDEXResourceContributor)).nullable(),
+  resourceContributors: z.optional(z.array(DDEXResourceContributor).nullable()),
+  indirectResourceContributors: z.optional(
+    z.array(DDEXResourceContributor).nullable()
+  ),
+  rightsController: z.optional(DDEXRightsController.nullable()),
+  copyrightLine: z.optional(DDEXCopyright.nullable()),
+  producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
+  parentalWarningType: z.optional(z.string().nullable()),
+  bpm: z.optional(z.number().nullable()),
+  isCustomBpm: z.optional(z.boolean()),
+  musicalKey: z.optional(z.string().nullable()),
+  isCustomMusicalKey: z.optional(z.boolean()),
+  audioAnalysisErrorCount: z.optional(z.number()),
+  commentsDisabled: z.optional(z.boolean()),
+  isScheduledRelease: z.optional(z.boolean())
+})
+
+export type TrackMetadata = z.input<typeof UploadTrackMetadataSchema>
+
+export const UploadTrackSchema = z
+  .object({
+    userId: HashId,
+    coverArtFile: ImageFile,
+    metadata: UploadTrackMetadataSchema.strict(),
+    onProgress: z.optional(z.function()),
+    trackFile: AudioFile
+  })
+  .strict()
 
 export type UploadTrackRequest = Omit<
-  z.input<ReturnType<typeof createUploadTrackSchema>>,
+  z.input<typeof UploadTrackSchema>,
   'onProgress'
 > & {
   // Typing function manually because z.function() does not
   // support argument names
-  onProgress?: (progress: number) => void
+  onProgress?: ProgressHandler
 }
 
-export const createUpdateTrackSchema = () =>
-  z
-    .object({
-      userId: HashId,
-      trackId: HashId,
-      metadata: createUploadTrackMetadataSchema().strict().partial(),
-      transcodePreview: z.optional(z.boolean()),
-      coverArtFile: z.optional(ImageFile),
-      onProgress: z.optional(z.function().args(z.number()))
-    })
-    .strict()
+export const UploadTrackFilesSchema = z
+  .object({
+    userId: HashId,
+    coverArtFile: z.optional(ImageFile),
+    metadata: UploadTrackMetadataSchema.extend({
+      genre: z.optional(z.enum(Object.values(Genre) as [Genre, ...Genre[]]))
+    }).strict(),
+    onProgress: z.optional(z.function()),
+    trackFile: AudioFile
+  })
+  .strict()
 
-export type UpdateTrackRequest = Omit<
-  z.input<ReturnType<typeof createUpdateTrackSchema>>,
+export type TrackFilesMetadata = z.input<
+  typeof UploadTrackFilesSchema
+>['metadata']
+
+export type UploadTrackFilesRequest = Omit<
+  z.input<typeof UploadTrackFilesSchema>,
   'onProgress'
 > & {
-  onProgress?: (progress: number) => void
+  // Typing function manually because z.function() does not
+  // support argument names
+  onProgress?: ProgressHandler
+}
+
+export const UpdateTrackSchema = z
+  .object({
+    userId: HashId,
+    trackId: HashId,
+    metadata: UploadTrackMetadataSchema.strict().partial(),
+    generatePreview: z.optional(z.boolean()),
+    coverArtFile: z.optional(ImageFile),
+    onProgress: z.optional(z.function())
+  })
+  .strict()
+
+export type UpdateTrackRequest = Omit<
+  z.input<typeof UpdateTrackSchema>,
+  'onProgress'
+> & {
+  onProgress?: ProgressHandler
 }
 
 export const DeleteTrackSchema = z

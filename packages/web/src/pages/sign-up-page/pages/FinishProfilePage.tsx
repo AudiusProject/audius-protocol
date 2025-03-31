@@ -2,7 +2,10 @@ import { useCallback, useRef } from 'react'
 
 import { finishProfilePageMessages } from '@audius/common/messages'
 import { Name } from '@audius/common/models'
-import { finishProfileSchema } from '@audius/common/schemas'
+import {
+  finishProfileSchema,
+  finishReferralProfileSchema
+} from '@audius/common/schemas'
 import { MAX_DISPLAY_NAME_LENGTH } from '@audius/common/services'
 import { route } from '@audius/common/utils'
 import { Flex, Paper, PlainButton, Text, useTheme } from '@audius/harmony'
@@ -35,16 +38,18 @@ import { AccountHeader } from '../components/AccountHeader'
 import { ImageFieldValue } from '../components/ImageField'
 import { OutOfText } from '../components/OutOfText'
 import { Heading, Page, PageFooter } from '../components/layout'
+import { useFastReferral } from '../hooks/useFastReferral'
 
-const { SIGN_UP_GENRES_PAGE } = route
+const { SIGN_UP_GENRES_PAGE, SIGN_UP_LOADING_PAGE } = route
 
-export type FinishProfileValues = {
+type FinishProfileValues = {
   profileImage?: ImageFieldValue
   coverPhoto?: ImageFieldValue
   displayName: string
 }
 
 const formSchema = toFormikValidationSchema(finishProfileSchema)
+const referralformSchema = toFormikValidationSchema(finishReferralProfileSchema)
 
 const ImageUploadErrorText = () => {
   const { errors } = useFormikContext<FinishProfileValues>()
@@ -89,6 +94,7 @@ export const FinishProfilePage = () => {
   const linkedSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
   const savedCoverPhoto = useSelector(getCoverPhotoField)
   const savedProfileImage = useSelector(getProfileImageField)
+  const isFastReferral = useFastReferral()
 
   // If the user comes back from a later page we start with whats in the store
   const initialValues = {
@@ -130,17 +136,21 @@ export const FinishProfilePage = () => {
         dispatch(setField('coverPhoto', coverPhoto))
       }
       dispatch(setFinishedPhase1(true))
-      navigate(SIGN_UP_GENRES_PAGE)
       dispatch(signUp())
+      if (isFastReferral) {
+        navigate(SIGN_UP_LOADING_PAGE)
+      } else {
+        navigate(SIGN_UP_GENRES_PAGE)
+      }
     },
-    [navigate, dispatch]
+    [dispatch, isFastReferral, navigate]
   )
 
   return (
     <Formik
       initialValues={initialValues}
       onSubmit={handleSubmit}
-      validationSchema={formSchema}
+      validationSchema={isFastReferral ? referralformSchema : formSchema}
       validateOnMount
       validateOnChange
     >
@@ -188,7 +198,11 @@ export const FinishProfilePage = () => {
             centered
             sticky
             buttonProps={{ disabled: !isValid }}
-            prefix={isMobile ? <UploadProfilePhotoHelperText /> : null}
+            prefix={
+              isMobile && !isFastReferral ? (
+                <UploadProfilePhotoHelperText />
+              ) : null
+            }
             postfix={
               isMobile || isSocialConnected ? null : (
                 <PlainButton variant='subdued' onClick={history.goBack}>

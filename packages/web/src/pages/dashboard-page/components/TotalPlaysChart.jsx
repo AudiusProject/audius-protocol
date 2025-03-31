@@ -1,4 +1,4 @@
-import { createRef, Component } from 'react'
+import { useRef, useState, useEffect } from 'react'
 
 import { Theme } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
@@ -194,34 +194,57 @@ const getLineGraphOptions = (transformXValue) => ({
   }
 })
 
-export class TotalPlaysChart extends Component {
-  state = {
-    chartSize: { width: 0, height: 0 },
-    yearOptions: [{ text: messages.thisYear }]
-  }
+const TotalPlaysChart = ({
+  tracks = [],
+  data = {
+    labels: [
+      'JAN',
+      'FEB',
+      'MAR',
+      'APR',
+      'MAY',
+      'JUN',
+      'JUL',
+      'AUG',
+      'SEP',
+      'OCT',
+      'NOV',
+      'DEC'
+    ],
+    values: Array(12).fill(0)
+  },
+  onSetTrackOption,
+  onSetYearOption,
+  accountCreatedAt,
+  theme
+}) => {
+  const [chartSize, setChartSize] = useState({ width: 0, height: 0 })
+  const [yearOptions, setYearOptions] = useState([{ text: messages.thisYear }])
 
-  chartContainer = createRef()
-  chart = createRef()
+  const chartContainer = useRef()
+  const chart = useRef()
 
-  setChartWidthHeight = () => {
-    if (this.chartContainer) {
+  const setChartWidthHeight = () => {
+    if (chartContainer.current) {
       const { clientHeight: height, clientWidth: width } =
-        this.chartContainer.current
-      this.setState({ chartSize: { width, height } })
+        chartContainer.current
+      setChartSize({ width, height })
     }
   }
 
-  componentDidMount = () => {
-    this.setChartWidthHeight()
-    window.addEventListener('resize', this.setChartWidthHeight)
+  useEffect(() => {
+    setChartWidthHeight()
+    window.addEventListener('resize', setChartWidthHeight)
     // NOTE: Hacky fix b/c chart.js uses canvas to calculte posistion,
     // so we need to have the font loaded to correctly measure text size to position the chart axes text
     document.fonts.ready.then(() => {
-      this.updateChart()
+      if (chart.current?.chartInstance) {
+        chart.current.chartInstance.update()
+      }
     })
 
     // Calculate how many years to show in the dropdown
-    const createdAt = moment(this.props.accountCreatedAt)
+    const createdAt = moment(accountCreatedAt)
     const today = moment()
 
     const diff = today.diff(createdAt, 'years')
@@ -229,72 +252,60 @@ export class TotalPlaysChart extends Component {
     for (let i = 0; i < diff; i++) {
       years.push({ text: createdAt.clone().add(i, 'years').year() })
     }
-    this.setState({
-      yearOptions: this.state.yearOptions.concat(years)
-    })
-  }
+    setYearOptions((prev) => [...prev, ...years])
 
-  componentWillUnmount = () => {
-    window.removeEventListener('resize', this.setChartWidthHeight)
-  }
-
-  updateChart = () => {
-    if (this.chart.chartInstance) this.chart.chartInstance.update()
-  }
-
-  render() {
-    const { data, tracks, onSetTrackOption, onSetYearOption, theme } =
-      this.props
-    const { chartSize, yearOptions } = this.state
-
-    const trackOptions = [{ name: 'All Tracks', id: -1 }].concat(tracks)
-
-    const tracksMenu = {
-      items: trackOptions.map((t) => ({ id: t.id, text: t.name }))
+    return () => {
+      window.removeEventListener('resize', setChartWidthHeight)
     }
-    const yearsMenu = { items: yearOptions }
+  }, [accountCreatedAt])
 
-    const lineData = getDataProps(data, theme)
-    const lineGraphOptions = getLineGraphOptions(transformMonth)
+  const trackOptions = [{ name: 'All Tracks', id: -1 }].concat(tracks)
 
-    return (
-      <div className={styles.playsTileContainer}>
-        <div className={styles.playsTileHeading}>
-          <div className={styles.playsTileHeader}>Total Plays</div>
-          <div className={styles.playsTrackDropdown}>
-            <DropdownInput
-              size='small'
-              variant='alternative'
-              onSelect={onSetTrackOption}
-              placeholder='All Tracks'
-              menu={tracksMenu}
-            />
-          </div>
-          <div className={styles.playsYearDropdown}>
-            <Dropdown
-              size='small'
-              onSelect={onSetYearOption}
-              variant='border'
-              placeholder={messages.thisYear}
-              menu={yearsMenu}
-            />
-          </div>
+  const tracksMenu = {
+    items: trackOptions.map((t) => ({ id: t.id, text: t.name }))
+  }
+  const yearsMenu = { items: yearOptions }
+
+  const lineData = getDataProps(data, theme)
+  const lineGraphOptions = getLineGraphOptions(transformMonth)
+
+  return (
+    <div className={styles.playsTileContainer}>
+      <div className={styles.playsTileHeading}>
+        <div className={styles.playsTileHeader}>Total Plays</div>
+        <div className={styles.playsTrackDropdown}>
+          <DropdownInput
+            size='small'
+            variant='alternative'
+            onSelect={onSetTrackOption}
+            placeholder='All Tracks'
+            menu={tracksMenu}
+          />
         </div>
-        <div className={styles.lineChartContainer} ref={this.chartContainer}>
-          {chartSize.width && chartSize.height && (
-            <Line
-              ref={this.chart}
-              data={lineData}
-              options={lineGraphOptions}
-              width={chartSize.width}
-              height={chartSize.height}
-            />
-          )}
-          <div id='chartjs-tooltip' style={{ opacity: 0 }} />
+        <div className={styles.playsYearDropdown}>
+          <Dropdown
+            size='small'
+            onSelect={onSetYearOption}
+            variant='border'
+            placeholder={messages.thisYear}
+            menu={yearsMenu}
+          />
         </div>
       </div>
-    )
-  }
+      <div className={styles.lineChartContainer} ref={chartContainer}>
+        {chartSize.width && chartSize.height && (
+          <Line
+            ref={chart}
+            data={lineData}
+            options={lineGraphOptions}
+            width={chartSize.width}
+            height={chartSize.height}
+          />
+        )}
+        <div id='chartjs-tooltip' style={{ opacity: 0 }} />
+      </div>
+    </div>
+  )
 }
 
 TotalPlaysChart.propTypes = {
@@ -312,31 +323,6 @@ TotalPlaysChart.propTypes = {
   onSetTrackOption: PropTypes.func,
   onSetYearOption: PropTypes.func,
   accountCreatedAt: PropTypes.string
-}
-
-TotalPlaysChart.defaultProps = {
-  data: {
-    labels: [
-      'JAN',
-      'FEB',
-      'MAR',
-      'APR',
-      'MAY',
-      'JUN',
-      'JUL',
-      'AUG',
-      'SEP',
-      'OCT',
-      'NOV',
-      'DEC'
-    ],
-    values: Array(12).fill(0)
-  },
-  tracks: [],
-  selectedTrack: -1,
-  selectedYear: 'All Years',
-  onSetTrackOption: () => {},
-  onSetYearOption: () => {}
 }
 
 export default TotalPlaysChart

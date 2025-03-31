@@ -3,9 +3,9 @@ import { EventEmitter } from 'events'
 import type { AudiusSdk } from '@audius/sdk'
 import { Configuration, SolanaRelay, sdk } from '@audius/sdk'
 
-import { env } from 'app/env'
+import { env } from 'app/services/env'
 
-import { auth } from './auth'
+import { getAudiusWalletClient } from './auth'
 import { discoveryNodeSelectorService } from './discoveryNodeSelector'
 
 let inProgress = false
@@ -38,6 +38,7 @@ const initSdk = async () => {
 
   // Overrides some DN configuration from optimizely
   const discoveryNodeSelector = await discoveryNodeSelectorService.getInstance()
+  const audiusWalletClient = await getAudiusWalletClient()
 
   const audiusSdk = sdk({
     appName: env.APP_NAME,
@@ -46,7 +47,7 @@ const initSdk = async () => {
     services: {
       discoveryNodeSelector,
       solanaRelay,
-      auth
+      audiusWalletClient
     }
   })
   sdkInstance = audiusSdk

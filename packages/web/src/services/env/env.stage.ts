@@ -1,10 +1,9 @@
 import { Env } from '@audius/common/services'
 
 export const env: Env = {
-  AAO_ENDPOINT: 'https://antiabuseoracle.staging.audius.co',
+  AAO_ENDPOINT: 'https://discoveryprovider.staging.audius.co',
   AMPLITUDE_API_KEY: '72a58ce4ad1f9bafcba0b92bedb6c33d',
-  AMPLITUDE_PROXY: 'gain.audius.co',
-  AMPLITUDE_WRITE_KEY: null,
+  AMPLITUDE_PROXY: 'https://gain2.audius.co/2/httpapi',
   API_KEY: '2dc52ec9a4c31790cab6653de0c637f680faa993',
   APP_NAME: 'audius-client',
   AUDIUS_URL: 'https://staging.audius.co',
@@ -21,8 +20,6 @@ export const env: Env = {
   COINFLOW_APP_ID: '9JBW2RHC7JNJN8ZQ',
   COINFLOW_MERCHANT_ID: 'audius',
   COINFLOW_PARTNER_ID: 'AUDIUS',
-  EAGER_DISCOVERY_NODES:
-    'https://discoveryprovider.staging.audius.co,https://discoveryprovider2.staging.audius.co,https://discoveryprovider3.staging.audius.co',
   ENTITY_MANAGER_ADDRESS: '0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64',
   ENVIRONMENT: 'staging',
   ETH_BRIDGE_ADDRESS: null,
@@ -79,7 +76,6 @@ export const env: Env = {
   SUGGESTED_FOLLOW_HANDLES:
     'https://download.staging.audius.co/static-resources/signup-follows.json',
   TIKTOK_APP_ID: 'awa9re2w7ec3xrn6',
-  TRPC_ENDPOINT: 'https://discoveryprovider3.staging.audius.co/trpc/trpc',
   USDC_MINT_ADDRESS: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
   USE_HASH_ROUTING: false,
   USER_NODE: 'https://usermetadata.staging.audius.co',
@@ -87,5 +83,8 @@ export const env: Env = {
   WEB3_NETWORK_ID: '1056801',
   WEB3_PROVIDER_URL: 'https://poa-gateway.staging.audius.co',
   WORMHOLE_ADDRESS: '0xf6f45e4d836da1d4ecd43bb1074620bfb0b7e0d7',
-  WORMHOLE_RPC_HOSTS: null
+  WORMHOLE_RPC_HOSTS: null,
+  EMAIL_ENCRYPTION_UUID: 469591815,
+  EMAIL_ENCRYPTION_PUBLIC_KEY:
+    'BEWe4ZtUe5647jNJN2UgP2lJTG/H38jZShCopDBqEx6rcQzlDPNZRdI9+OHzx2tICTu/BYXGz+TgNEQXT6m9WEQ='
 }

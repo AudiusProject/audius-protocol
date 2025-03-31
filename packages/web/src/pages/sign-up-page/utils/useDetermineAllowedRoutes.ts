@@ -10,8 +10,10 @@ import {
 import { EditingStatus } from 'common/store/pages/signon/types'
 import { env } from 'services/env'
 
+import { useFastReferral } from '../hooks/useFastReferral'
+
 const { FEED_PAGE, SignUpPath } = route
-const { getAccountUser } = accountSelectors
+const { getIsAccountComplete, getAccountFolloweeCount } = accountSelectors
 
 const isDevEnvironment =
   env.ENVIRONMENT === 'development' ||
@@ -25,11 +27,12 @@ const isDevEnvironment =
 export const useDetermineAllowedRoute = () => {
   const [, setIsWelcomeModalOpen] = useModalState('Welcome')
   const signUpState = useSelector(getSignOn)
-  const user = useSelector(getAccountUser)
-  const hasAccount = !!user
+  const followeeCount = useSelector(getAccountFolloweeCount)
+  const isAccountComplete = useSelector(getIsAccountComplete)
   const hasAlreadySignedUp = useSelector(getAccountAlreadyExisted)
+  const isFastReferral = useFastReferral()
 
-  const pastAccountPhase = signUpState.finishedPhase1 || hasAccount
+  const pastAccountPhase = signUpState.finishedPhase1 || isAccountComplete
 
   // this requestedRoute string should have already trimmed out /signup/
   return (
@@ -39,7 +42,7 @@ export const useDetermineAllowedRoute = () => {
     isAllowedRoute: boolean
     correctedRoute: string
   } => {
-    if (user?.followee_count && user?.followee_count >= 3) {
+    if (followeeCount && followeeCount >= 3) {
       setIsWelcomeModalOpen(true)
       return {
         allowedRoutes: [],
@@ -49,7 +52,8 @@ export const useDetermineAllowedRoute = () => {
     }
     const attemptedPath = requestedRoute.toString().replace('/signup/', '')
     // Have to type as string[] to avoid too narrow of a type for comparing against
-    let allowedRoutes: string[] = [SignUpPath.createEmail] // create email is available by default
+    let allowedRoutes: string[] = [SignUpPath.createEmail]
+
     if (signUpState.linkedSocialOnFirstPage) {
       allowedRoutes.push(SignUpPath.createLoginDetails)
       allowedRoutes.push(SignUpPath.reviewHandle)
@@ -59,19 +63,27 @@ export const useDetermineAllowedRoute = () => {
       // Either way the user can't go back any more
       allowedRoutes = [SignUpPath.selectGenres]
 
+      if (isFastReferral) {
+        allowedRoutes.push(SignUpPath.selectArtists)
+        allowedRoutes.push(SignUpPath.appCta)
+        allowedRoutes.push(SignUpPath.completedRedirect)
+        allowedRoutes.push(SignUpPath.completedReferrerRedirect)
+        allowedRoutes.push(SignUpPath.loading)
+      }
+
       // TODO: These checks below here may need to fall under a different route umbrella separate from sign up
       if (signUpState.genres && signUpState.genres.length > 0) {
         // Already have genres selected
         allowedRoutes.push(SignUpPath.selectArtists)
 
-        if (
-          signUpState.followArtists?.selectedUserIds?.length >= 3 ||
-          isDevEnvironment
-        ) {
+        if (signUpState.selectedUserIds?.length >= 3 || isDevEnvironment) {
           // Already have 3 artists followed, ready to finish sign up
           allowedRoutes.push(SignUpPath.appCta)
 
-          if (signUpState.status === EditingStatus.SUCCESS || hasAccount) {
+          if (
+            signUpState.status === EditingStatus.SUCCESS ||
+            isAccountComplete
+          ) {
             allowedRoutes.push(SignUpPath.completedRedirect)
           } else {
             allowedRoutes.push(SignUpPath.loading)
@@ -84,7 +96,11 @@ export const useDetermineAllowedRoute = () => {
         // Already have email
         allowedRoutes.push(SignUpPath.createPassword)
 
-        if (signUpState.password.value || signUpState.useMetaMask) {
+        if (
+          signUpState.password.value ||
+          signUpState.usingExternalWallet ||
+          (!signUpState.isGuest && attemptedPath === SignUpPath.createPassword) // force redirect to create password
+        ) {
           // Already have password
           if (!signUpState.linkedSocialOnFirstPage) {
             allowedRoutes.push(SignUpPath.pickHandle)
@@ -105,11 +121,11 @@ export const useDetermineAllowedRoute = () => {
       attemptedPath === '/signup' && hasAlreadySignedUp
         ? allowedRoutes[allowedRoutes.length - 1]
         : isAllowedRoute
-        ? attemptedPath
-        : // IF we attempted to go to /signup directly, that means it was a link from somewhere else in the app, so we should start back at the beginning
-        attemptedPath === '/signup'
-        ? allowedRoutes[0]
-        : allowedRoutes[allowedRoutes.length - 1]
+          ? attemptedPath
+          : // IF we attempted to go to /signup directly, that means it was a link from somewhere else in the app, so we should start back at the beginning
+            attemptedPath === '/signup'
+            ? allowedRoutes[0]
+            : allowedRoutes[allowedRoutes.length - 1]
 
     if (correctedPath === SignUpPath.completedRedirect) {
       setIsWelcomeModalOpen(true)

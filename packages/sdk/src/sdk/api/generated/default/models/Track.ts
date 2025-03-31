@@ -14,6 +14,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { AlbumBacklink } from './AlbumBacklink';
+import {
+    AlbumBacklinkFromJSON,
+    AlbumBacklinkFromJSONTyped,
+    AlbumBacklinkToJSON,
+} from './AlbumBacklink';
 import type { RemixParent } from './RemixParent';
 import {
     RemixParentFromJSON,
@@ -195,6 +201,12 @@ export interface Track {
      * @memberof Track
      */
     pinnedCommentId?: number;
+    /**
+     * 
+     * @type {AlbumBacklink}
+     * @memberof Track
+     */
+    albumBacklink?: AlbumBacklink;
 }
 
 /**
@@ -255,6 +267,7 @@ export function TrackFromJSONTyped(json: any, ignoreDiscriminator: boolean): Tra
         'ddexApp': !exists(json, 'ddex_app') ? undefined : json['ddex_app'],
         'playlistsContainingTrack': !exists(json, 'playlists_containing_track') ? undefined : json['playlists_containing_track'],
         'pinnedCommentId': !exists(json, 'pinned_comment_id') ? undefined : json['pinned_comment_id'],
+        'albumBacklink': !exists(json, 'album_backlink') ? undefined : AlbumBacklinkFromJSON(json['album_backlink']),
     };
 }
 
@@ -293,6 +306,7 @@ export function TrackToJSON(value?: Track | null): any {
         'ddex_app': value.ddexApp,
         'playlists_containing_track': value.playlistsContainingTrack,
         'pinned_comment_id': value.pinnedCommentId,
+        'album_backlink': AlbumBacklinkToJSON(value.albumBacklink),
     };
 }
 

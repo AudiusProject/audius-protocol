@@ -7,6 +7,7 @@ import {
   useSharedValue
 } from 'react-native-reanimated'
 
+import { DEFAULT_HIT_SLOP } from 'app/harmony-native/constants'
 import { useTheme } from 'app/harmony-native/foundations/theme'
 import type { IconComponent, IconProps } from 'app/harmony-native/icons'
 import { useToast } from 'app/hooks/useToast'
@@ -19,6 +20,7 @@ export type IconButtonProps = {
   ripple?: boolean
   style?: StyleProp<ViewStyle>
   disabledHint?: string
+  iconStyle?: StyleProp<ViewStyle>
 } & Pick<IconProps, 'color' | 'size' | 'shadow'> &
   Omit<BaseButtonProps, 'fill' | 'styles'> &
   (
@@ -40,24 +42,29 @@ export const IconButton = (props: IconButtonProps) => {
     onPress,
     disabled,
     disabledHint,
+    iconStyle,
     ...other
   } = props
   const pressed = useSharedValue(0)
-  const { color, spacing } = useTheme()
+  const { color, spacing, type } = useTheme()
   const { toast } = useToast()
 
   const buttonStyles = {
     borderRadius: 1000,
-    padding: spacing.xs
+    padding: spacing.xs,
+    overflow: 'visible' as const
   }
 
-  const rippleStyles = useAnimatedStyle(() => ({
-    backgroundColor: interpolateColor(
-      pressed.value,
-      [0, 1],
-      ['transparent', color.neutral.n150]
-    )
-  }))
+  const rippleStyles = useAnimatedStyle(
+    () => ({
+      backgroundColor: interpolateColor(
+        pressed.value,
+        [0, 1],
+        ['transparent', color.neutral.n150]
+      )
+    }),
+    [type]
+  )
 
   const handlePress = useCallback(
     (e: GestureResponderEvent) => {
@@ -78,11 +85,13 @@ export const IconButton = (props: IconButtonProps) => {
       onPress={handlePress}
       disabled={disabled && !disabledHint}
       pressScale={0.9}
+      hitSlop={DEFAULT_HIT_SLOP}
     >
       <Icon
         color={disabled ? 'disabled' : iconColor}
         size={size}
         shadow={shadow}
+        style={iconStyle}
       />
     </BaseButton>
   )

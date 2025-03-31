@@ -1,21 +1,18 @@
+import { useTrack, useUser } from '@audius/common/api'
 import { useDownloadableContentAccess } from '@audius/common/hooks'
 import {
   ID,
   StemCategory,
   stemCategoryFriendlyNames
 } from '@audius/common/models'
-import { cacheTracksSelectors, CommonState } from '@audius/common/store'
-import { getDownloadFilename, formatBytes } from '@audius/common/utils'
+import { getFilename, formatBytes } from '@audius/common/utils'
 import { Flex, IconButton, IconReceive, Text } from '@audius/harmony'
-import { shallowEqual, useSelector } from 'react-redux'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Tooltip from 'components/tooltip/Tooltip'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import styles from './DownloadRow.module.css'
-
-const { getTrack } = cacheTracksSelectors
 
 const messages = {
   fullTrack: 'Full Track',
@@ -47,10 +44,9 @@ export const DownloadRow = ({
   isLoading
 }: DownloadRowProps) => {
   const isMobile = useIsMobile()
-  const track = useSelector(
-    (state: CommonState) => getTrack(state, { id: trackId }),
-    shallowEqual
-  )
+  const { data: track } = useTrack(trackId)
+  const { data: user } = useUser(track?.owner_id)
+
   const downloadableContentAccess = useDownloadableContentAccess({
     trackId: parentTrackId ?? trackId ?? 0
   })
@@ -93,8 +89,8 @@ export const DownloadRow = ({
             {category
               ? stemCategoryFriendlyNames[category]
               : track?.stem_of?.category
-              ? stemCategoryFriendlyNames[track?.stem_of?.category]
-              : messages.fullTrack}
+                ? stemCategoryFriendlyNames[track?.stem_of?.category]
+                : messages.fullTrack}
           </Text>
           <Text
             variant='body'
@@ -105,10 +101,14 @@ export const DownloadRow = ({
               whiteSpace: 'nowrap'
             }}
           >
-            {getDownloadFilename({
-              filename: filename ?? track?.orig_filename,
-              isOriginal: true
-            })}
+            {filename ??
+              (track && user
+                ? getFilename({
+                    track,
+                    user,
+                    isOriginal: true
+                  })
+                : null)}
           </Text>
         </Flex>
       </Flex>

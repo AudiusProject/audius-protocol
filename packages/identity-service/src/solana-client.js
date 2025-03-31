@@ -173,15 +173,15 @@ async function createTrackListenInstructions({
 
   let sourceData
   if (config.get('ipdataAPIKey')) {
-    sourceData = JSON.stringify({ source: source, location: location })
+    sourceData = JSON.stringify({ source, location })
   } else {
     sourceData = source
   }
 
   // max sol tx size is 1232 bytes
   const trackData = new TrackData({
-    userId: userId,
-    trackId: trackId,
+    userId,
+    trackId,
     source: sourceData, // use api key as feature flag
     timestamp:
       (await getListenTimestamp(connection)) ||
@@ -194,7 +194,7 @@ async function createTrackListenInstructions({
   const sigObj = secp256k1.ecdsaSign(Uint8Array.from(msgHash), privKey)
 
   const instructionArgs = new InstructionArgs({
-    trackData: trackData,
+    trackData,
     signature: Array.from(sigObj.signature),
     recoveryId: sigObj.recid
   })

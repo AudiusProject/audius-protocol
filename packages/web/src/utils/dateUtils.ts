@@ -47,17 +47,3 @@ export const formatCalendarTime = (
 export const getLocalTimezone = () => {
   return dayjs().format('z')
 }
-
-export const formatDate = (date: string, format?: string): string => {
-  const dayjsFormat = format || 'M/D/YY'
-  return dayjs(date).format(dayjsFormat)
-}
-
-export const formatSeconds = (seconds: number): string => {
-  const time = dayjs.duration(seconds, 'seconds')
-  if (seconds >= 60 * 60) {
-    return time.format('H:mm:ss')
-  } else {
-    return time.format('m:ss')
-  }
-}

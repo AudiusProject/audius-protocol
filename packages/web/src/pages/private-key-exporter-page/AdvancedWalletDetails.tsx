@@ -1,5 +1,6 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
+import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { Name } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Nullable, shortenSPLAddress } from '@audius/common/utils'
@@ -9,11 +10,10 @@ import pkg from 'bs58'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 import { copyToClipboard } from 'utils/clipboardUtil'
 import { useSelector } from 'utils/reducer'
 
-const getAccountUser = accountSelectors.getAccountUser
+const { getUserHandle, getUserId } = accountSelectors
 
 const messages = {
   advancedWalletDetails: 'Advanced Wallet Details',
@@ -33,28 +33,29 @@ const Key = ({ label, value, isPrivate }: KeyProps) => {
   const { toast } = useContext(ToastContext)
   const record = useRecord()
   const isMobile = useIsMobile()
-  const user = useSelector(getAccountUser) ?? undefined
+  const accountHandle = useSelector(getUserHandle)
+  const accountUserId = useSelector(getUserId)
   const handleClick = useCallback(() => {
     copyToClipboard(value)
-    if (user) {
+    if (accountHandle && accountUserId) {
       if (isPrivate) {
         record(
           make(Name.EXPORT_PRIVATE_KEY_PRIVATE_KEY_COPIED, {
-            handle: user.handle,
-            userId: user.user_id
+            handle: accountHandle,
+            userId: accountUserId
           })
         )
       } else {
         record(
           make(Name.EXPORT_PRIVATE_KEY_PUBLIC_ADDRESS_COPIED, {
-            handle: user.handle,
-            userId: user.user_id
+            handle: accountHandle,
+            userId: accountUserId
           })
         )
       }
     }
     toast(messages.copied)
-  }, [value, user, isPrivate, record, toast])
+  }, [value, accountHandle, accountUserId, isPrivate, record, toast])
   return (
     <Flex
       border='strong'
@@ -74,8 +75,8 @@ const Key = ({ label, value, isPrivate }: KeyProps) => {
           {isPrivate
             ? shortenSPLAddress(value, isMobile ? 4 : 18)
             : isMobile
-            ? shortenSPLAddress(value, 4)
-            : value}
+              ? shortenSPLAddress(value, 4)
+              : value}
         </Text>
       </Box>
       <Divider orientation='vertical' />
@@ -90,23 +91,18 @@ export const AdvancedWalletDetails = () => {
   const [publicKey, setPublicKey] = useState<Nullable<string>>(null)
   const [encodedPrivateKey, setEncodedPrivateKey] =
     useState<Nullable<string>>(null)
+  const { solanaWalletService } = useAudiusQueryContext()
 
   useEffect(() => {
     const fetchKeypair = async () => {
-      await waitForLibsInit()
-      const libs = window.audiusLibs
-      const privateKey = libs.Account?.hedgehog?.wallet?.getPrivateKey()
-      if (privateKey) {
-        const keypair =
-          libs.solanaWeb3Manager?.solanaWeb3?.Keypair?.fromSeed(privateKey)
-        if (keypair) {
-          setPublicKey(keypair.publicKey.toString())
-          setEncodedPrivateKey(pkg.encode(keypair.secretKey))
-        }
+      const keypair = await solanaWalletService.getKeypair()
+      if (keypair) {
+        setPublicKey(keypair.publicKey.toString())
+        setEncodedPrivateKey(pkg.encode(keypair.secretKey))
       }
     }
     fetchKeypair()
-  }, [])
+  }, [solanaWalletService])
 
   if (!publicKey || !encodedPrivateKey) {
     return null

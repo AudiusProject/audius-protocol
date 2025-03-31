@@ -4,12 +4,13 @@ import type { AudiusSdk } from '@audius/sdk'
 import type { Dispatch } from 'redux'
 import { getContext } from 'typed-redux-saga'
 
-import type { AudiusAPIClient } from '~/services/audius-api-client'
+import type { AuthService, IdentityService } from '~/services/auth'
 import {
   AudiusBackend,
   Env,
   FeatureFlags,
-  RemoteConfigInstance
+  RemoteConfigInstance,
+  SolanaWalletService
 } from '~/services/index'
 
 import {
@@ -19,9 +20,11 @@ import {
 } from '../models'
 
 export type AudiusQueryContextType = {
-  apiClient: AudiusAPIClient
   audiusSdk: () => Promise<AudiusSdk>
   audiusBackend: AudiusBackend
+  authService: AuthService
+  solanaWalletService: SolanaWalletService
+  identityService: IdentityService
   dispatch: Dispatch
   reportToSentry: (args: ReportToSentryArgs) => void
   env: Env
@@ -72,29 +75,35 @@ export function* getAudiusQueryContext(): Generator<
 > {
   // We can't use common typed `getContext` here because of circular dependency
   return {
-    apiClient: yield* getContext<AudiusQueryContextType['apiClient']>(
-      'apiClient'
-    ),
     audiusBackend: yield* getContext<AudiusQueryContextType['audiusBackend']>(
       'audiusBackendInstance'
     ),
-    audiusSdk: yield* getContext<AudiusQueryContextType['audiusSdk']>(
-      'audiusSdk'
-    ),
+    authService:
+      yield* getContext<AudiusQueryContextType['authService']>('authService'),
+    identityService:
+      yield* getContext<AudiusQueryContextType['identityService']>(
+        'identityService'
+      ),
+    audiusSdk:
+      yield* getContext<AudiusQueryContextType['audiusSdk']>('audiusSdk'),
+    solanaWalletService: yield* getContext<
+      AudiusQueryContextType['solanaWalletService']
+    >('solanaWalletService'),
     dispatch: yield* getContext<AudiusQueryContextType['dispatch']>('dispatch'),
     env: yield* getContext<AudiusQueryContextType['env']>('env'),
     fetch,
-    getFeatureEnabled: yield* getContext<
-      AudiusQueryContextType['getFeatureEnabled']
-    >('getFeatureEnabled'),
+    getFeatureEnabled:
+      yield* getContext<AudiusQueryContextType['getFeatureEnabled']>(
+        'getFeatureEnabled'
+      ),
     remoteConfigInstance: yield* getContext<
       AudiusQueryContextType['remoteConfigInstance']
     >('remoteConfigInstance'),
-    reportToSentry: yield* getContext<AudiusQueryContextType['reportToSentry']>(
-      'reportToSentry'
-    ),
-    analytics: yield* getContext<AudiusQueryContextType['analytics']>(
-      'analytics'
-    )
+    reportToSentry:
+      yield* getContext<AudiusQueryContextType['reportToSentry']>(
+        'reportToSentry'
+      ),
+    analytics:
+      yield* getContext<AudiusQueryContextType['analytics']>('analytics')
   }
 }

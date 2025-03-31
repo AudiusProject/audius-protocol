@@ -5,7 +5,6 @@ import {
   FollowNotification as FollowNotificationType
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { useIsMobile } from 'hooks/useIsMobile'
@@ -17,6 +16,7 @@ import {
   UserListEntityType,
   UserListType
 } from 'store/application/ui/userListModal/types'
+import { push } from 'utils/navigation'
 import { useSelector } from 'utils/reducer'
 
 import { NotificationBody } from './components/NotificationBody'
@@ -59,7 +59,8 @@ export const FollowNotification = (props: FollowNotificationProps) => {
         setUserListUsers({
           userListType: UserListType.NOTIFICATION,
           entityType: UserListEntityType.USER,
-          id: id as unknown as number
+          id: id as unknown as number,
+          entity: notification
         })
       )
       if (isMobile) {
@@ -72,7 +73,7 @@ export const FollowNotification = (props: FollowNotificationProps) => {
         dispatch(push(profilePage(firstUser.handle)))
       }
     }
-  }, [isMultiUser, dispatch, id, firstUser, isMobile])
+  }, [isMultiUser, dispatch, id, notification, isMobile, firstUser])
 
   if (!users || !firstUser) return null
 

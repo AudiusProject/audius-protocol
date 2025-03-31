@@ -121,23 +121,6 @@ export const subscribeSafariPushBrowser = async (
   return null
 }
 
-export const unsubscribePushManagerBrowser = async () => {
-  try {
-    if (!isServiceWorkerRegistered()) {
-      const isRegistered = await registerServiceWorker()
-      if (!isRegistered) return null
-    }
-    const subscription = swRegistration.pushManager.getSubscription()
-    if (subscription) {
-      await subscription.unsubscribe()
-    }
-    return subscription
-  } catch (error) {
-    console.error('Error unsubscribing', error)
-    return null
-  }
-}
-
 export const getPushManagerBrowserSubscription = async () => {
   try {
     if (!isServiceWorkerRegistered()) {
@@ -170,11 +153,11 @@ export const getPushManagerPermission =
     }
   }
 
-export const isServiceWorkerRegistered = () => {
+const isServiceWorkerRegistered = () => {
   return isPushManagerAvailable && swRegistration
 }
 
-export const registerServiceWorker = async () => {
+const registerServiceWorker = async () => {
   if (isPushManagerAvailable) {
     try {
       const swReg = await navigator.serviceWorker.register(
@@ -191,12 +174,6 @@ export const registerServiceWorker = async () => {
 
 export const getSafariPushBrowser = () => {
   return window.safari.pushNotification.permission(safariWebPushID)
-}
-
-export const getSafariPushPermission = (): Permission => {
-  const permissionData =
-    window.safari.pushNotification.permission(safariWebPushID)
-  return permissionData.permission
 }
 
 // The localstorage variable 'HAS_REQUESTED_BROWSER_PUSH_PERMISSION' is used to know

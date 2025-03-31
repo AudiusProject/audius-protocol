@@ -9,6 +9,18 @@ from src.utils.db_session import get_db_read_replica
 
 
 def get_tracks_comment_count(track_ids, current_user_id, db_session=None):
+    """
+    Get comment counts for multiple tracks with filtering for moderation
+
+    Args:
+        track_ids: List of track IDs to get comment counts for
+        current_user_id: ID of the user making the request
+        db_session: Optional database session to use
+
+    Returns:
+        Dictionary mapping track IDs to their comment counts
+    """
+
     def _get_counts(session):
         track = (
             session.query(Track.track_id, Track.owner_id)

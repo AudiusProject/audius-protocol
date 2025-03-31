@@ -48,6 +48,7 @@ export type PlaylistMetadata = {
   release_date: Nullable<string>
   is_scheduled_release: boolean
   ddex_app?: string | null
+  upc?: string | null
 }
 
 export type ProgressCB = (
@@ -350,6 +351,12 @@ export class CreatorNode {
         )
       }
     })
+
+    // Covers no response or empty response
+    if (!response?.data?.length) {
+      throw new Error('No upload response from storage node')
+    }
+
     return await this.pollProcessingStatusV2(
       response.data[0].id,
       template,

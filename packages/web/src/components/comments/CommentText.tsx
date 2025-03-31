@@ -1,6 +1,5 @@
 import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react'
 
-import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import { ID, Name } from '@audius/common/models'
 import {
@@ -17,22 +16,20 @@ import { track as trackEvent, make } from 'services/analytics'
 
 import { TimestampLink } from './TimestampLink'
 
-export type CommentTextProps = {
+type CommentTextProps = {
   children: string
   mentions: CommentMention[]
   isEdited?: boolean
   isPreview?: boolean
   commentId: ID
+  duration?: number
 }
 
 export const CommentText = (props: CommentTextProps) => {
-  const { children, isEdited, mentions, isPreview, commentId } = props
+  const { children, isEdited, mentions, isPreview, commentId, duration } = props
   const textRef = useRef<HTMLElement>()
   const [isOverflowing, setIsOverflowing] = useState(false)
   const [isExpanded, toggleIsExpanded] = useToggle(false)
-  const {
-    track: { duration }
-  } = useCurrentCommentSection()
 
   useEffect(() => {
     setIsOverflowing(
@@ -106,7 +103,7 @@ export const CommentText = (props: CommentTextProps) => {
               if (matches.length === 0) return null
 
               const timestampSeconds = getDurationFromTimestampMatch(matches[0])
-              const showLink = timestampSeconds <= duration
+              const showLink = duration && timestampSeconds <= duration
 
               return showLink ? (
                 <TimestampLink

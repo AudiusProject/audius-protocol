@@ -1,9 +1,0 @@
-package pages
-
-templ (p *Pages) GenesisHTML(genesis map[string]interface{}) {
-	@p.layout.SiteFrame() {
-		<div class="text-small p-4 rounded-lg">
-			<pre class="bg-gray-100 p-4">{ p.renderJSON(genesis) }</pre>
-		</div>
-	}
-}

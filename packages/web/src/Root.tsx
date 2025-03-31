@@ -58,6 +58,7 @@ const AppOrPublicSite = () => {
 
   const shouldRedirectToApp =
     foundUser && !isPublicSiteSubRoute(history.location)
+
   if (renderPublicSite && !clientIsElectron && !shouldRedirectToApp) {
     return (
       <Suspense fallback={<div style={{ width: '100vw', height: '100vh' }} />}>

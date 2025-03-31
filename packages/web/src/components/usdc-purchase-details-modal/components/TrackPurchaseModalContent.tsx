@@ -1,7 +1,7 @@
 import { useGetTrackById } from '@audius/common/api'
 import { SquareSizes, USDCPurchaseDetails } from '@audius/common/models'
 
-import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
+import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 import { PurchaseModalContent } from './PurchaseModalContent'
 
@@ -18,7 +18,10 @@ export const TrackPurchaseModalContent = ({
 }) => {
   const { contentId } = purchaseDetails
   const { data: track } = useGetTrackById({ id: contentId })
-  const trackArtwork = useTrackCoverArt2(contentId, SquareSizes.SIZE_150_BY_150)
+  const trackArtwork = useTrackCoverArt({
+    trackId: contentId,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   if (!track) return null
   return (

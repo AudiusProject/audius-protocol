@@ -19,6 +19,7 @@ from src.api.v1.helpers import (
     decode_ids_array,
     decode_with_abort,
     extend_blob_info,
+    extend_related,
     extend_track,
     extend_user,
     format_limit,
@@ -28,26 +29,25 @@ from src.api.v1.helpers import (
     get_default_max,
     get_encoded_track_id,
     make_full_response,
+    make_full_response_with_related,
     make_response,
     pagination_parser,
     pagination_with_current_user_parser,
     parse_bool_param,
     stem_from_track,
     success_response,
+    success_response_with_related,
     track_search_parser,
     trending_parser,
     trending_parser_paginated,
 )
-from src.api.v1.models.comments import (
-    base_comment_model,
-    comment_notification_setting_model,
-)
+from src.api.v1.models.comments import comment_model, comment_notification_setting_model
 from src.api.v1.models.users import user_model, user_model_full
+from src.queries.comments import get_track_comments
 from src.queries.generate_unpopulated_trending_tracks import (
     TRENDING_TRACKS_LIMIT,
     TRENDING_TRACKS_TTL_SEC,
 )
-from src.queries.get_comments import get_track_comments, get_track_notification_setting
 from src.queries.get_extended_purchase_gate import get_extended_purchase_gate
 from src.queries.get_feed import get_feed
 from src.queries.get_latest_entities import get_latest_entities
@@ -355,7 +355,7 @@ class FullBulkTracks(Resource):
             response, status = success_response(tracks)
             return marshal(response, full_track_response), status
         else:
-            tracks = [extend_track(track) for track in tracks]
+            tracks = list(map(extend_track, tracks))
             response, status = success_response(tracks)
             return marshal(response, full_tracks_response), status
 
@@ -469,9 +469,6 @@ class TrackInspect(Resource):
 
 
 # Comments
-track_comments_response = make_response(
-    "track_comments_response", ns, fields.List(fields.Nested(base_comment_model))
-)
 
 track_comments_parser = pagination_with_current_user_parser.copy()
 track_comments_parser.add_argument(
@@ -484,11 +481,16 @@ track_comments_parser.add_argument(
 )
 
 
+track_comments_response = make_response(
+    "track_comments_response", ns, fields.List(fields.Nested(comment_model))
+)
+
+
 @ns.route("/<string:track_id>/comments")
 class TrackComments(Resource):
     @record_metrics
     @ns.doc(
-        id="""Track Comments""",
+        id="""Get Track Comments""",
         description="""Get a list of comments for a track""",
         params={"track_id": "A Track ID"},
         responses={
@@ -504,8 +506,45 @@ class TrackComments(Resource):
         args = track_comments_parser.parse_args()
         decoded_id = decode_with_abort(track_id, ns)
         current_user_id = args.get("user_id")
-        track_comments = get_track_comments(args, decoded_id, current_user_id)
-        return success_response(track_comments)
+        track_comments = get_track_comments(
+            args, decoded_id, current_user_id, include_related=False
+        )
+
+        return success_response(track_comments["data"])
+
+
+track_comments_response_full = make_full_response_with_related(
+    "track_comments_response_full", full_ns, fields.List(fields.Nested(comment_model))
+)
+
+
+@full_ns.route("/<string:track_id>/comments")
+class FullTrackComments(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get Track Comments""",
+        description="""Get a list of comments for a track""",
+        params={"track_id": "A Track ID"},
+        responses={
+            200: "Success",
+            400: "Bad request",
+            500: "Server error",
+        },
+    )
+    @full_ns.expect(track_comments_parser)
+    @full_ns.marshal_with(track_comments_response_full)
+    @cache(ttl_sec=5)
+    def get(self, track_id):
+        args = track_comments_parser.parse_args()
+        decoded_id = decode_with_abort(track_id, full_ns)
+        current_user_id = args.get("user_id")
+        track_comments = get_track_comments(
+            args, decoded_id, current_user_id, include_related=True
+        )
+        track_comments["related"] = extend_related(
+            track_comments["related"], current_user_id
+        )
+        return success_response_with_related(track_comments)
 
 
 track_comment_notification_setting_response = make_response(
@@ -530,7 +569,7 @@ track_comment_count_response = make_response(
 class TrackCommentCount(Resource):
     @record_metrics
     @ns.doc(
-        id="""Track Comment Count""",
+        id="""Get Track Comment Count""",
         description="""Get the comment count for a track""",
         params={"track_id": "A Track ID"},
         responses={
@@ -554,7 +593,7 @@ class TrackCommentCount(Resource):
 class TrackCommentNotificationSetting(Resource):
     @record_metrics
     @ns.doc(
-        id="""Track Comment Notification Setting""",
+        id="""Get Track Comment Notification Setting""",
         description="""Get the comment notification setting for a track""",
         params={"track_id": "A Track ID"},
         responses={
@@ -571,7 +610,7 @@ class TrackCommentNotificationSetting(Resource):
         decoded_id = decode_with_abort(track_id, ns)
 
         current_user_id = get_current_user_id(args)
-        track_comments = get_track_notification_setting(decoded_id, current_user_id)
+        track_comments = get_track_comment_count(decoded_id, current_user_id)
         return success_response(track_comments)
 
 
@@ -923,14 +962,16 @@ class TrackSearchResult(Resource):
         bpm_max = args.get("bpm_max")
         sort_method = args.get("sort_method")
         only_downloadable = args.get("only_downloadable")
+        limit = format_limit(args, 50, 10)
+        offset = format_offset(args)
         search_args = {
             "query": query,
             "kind": SearchKind.tracks.name,
             "is_auto_complete": False,
             "current_user_id": None,
             "with_users": True,
-            "limit": 10,
-            "offset": 0,
+            "limit": limit,
+            "offset": offset,
             "only_downloadable": only_downloadable,
             "include_purchaseable": include_purchaseable,
             "only_purchaseable": is_purchaseable,
@@ -1519,8 +1560,9 @@ class FullRemixableTracks(Resource):
     @cache(ttl_sec=5)
     def get(self):
         args = track_remixables_route_parser.parse_args()
+        current_user_id = get_current_user_id(args)
         args = {
-            "current_user_id": get_current_user_id(args),
+            "current_user_id": current_user_id,
             "limit": get_default_max(args.get("limit"), 25, 100),
             "with_users": args.get("with_users", False),
         }
@@ -1607,7 +1649,11 @@ class FullRemixingRoute(Resource):
 """
 best_new_releases_parser = current_user_parser.copy()
 best_new_releases_parser.add_argument(
-    "window", required=True, choices=("week", "month", "year"), type=str
+    "window",
+    required=True,
+    choices=("week", "month", "year"),
+    type=str,
+    description="The window from now() to look back over",
 )
 best_new_releases_parser.add_argument(
     "limit",
@@ -1628,18 +1674,20 @@ best_new_releases_parser.add_argument(
 class BestNewReleases(Resource):
     @record_metrics
     @full_ns.doc(
-        id="Best New Releases",
+        id="Get Best New Releases",
         description='Gets the tracks found on the "Best New Releases" smart playlist',
     )
+    @full_ns.expect(best_new_releases_parser)
     @full_ns.marshal_with(full_tracks_response)
     @cache(ttl_sec=10)
     def get(self):
         request_args = best_new_releases_parser.parse_args()
         window = request_args.get("window")
+        current_user_id = get_current_user_id(request_args)
         args = {
             "with_users": request_args.get("with_users"),
             "limit": format_limit(request_args, 100),
-            "user_id": get_current_user_id(request_args),
+            "user_id": current_user_id,
         }
         tracks = get_top_followee_windowed("track", window, args)
         tracks = list(map(extend_track, tracks))
@@ -1695,12 +1743,13 @@ class UnderTheRadar(Resource):
     @cache(ttl_sec=10)
     def get(self):
         request_args = under_the_radar_parser.parse_args()
+        current_user_id = get_current_user_id(request_args)
         args = {
             "tracks_only": request_args.get("tracks_only"),
             "with_users": request_args.get("with_users"),
             "limit": format_limit(request_args, 100, 25),
             "offset": format_offset(request_args),
-            "user_id": get_current_user_id(request_args),
+            "user_id": current_user_id,
             "filter": request_args.get("filter"),
         }
         feed_results = get_feed(args)
@@ -1782,10 +1831,11 @@ class FeelingLucky(Resource):
     @cache(ttl_sec=10)
     def get(self):
         request_args = feeling_lucky_parser.parse_args()
+        current_user_id = get_current_user_id(request_args)
         args = {
             "with_users": request_args.get("with_users"),
             "limit": format_limit(request_args, max_limit=100, default_limit=25),
-            "user_id": get_current_user_id(request_args),
+            "user_id": current_user_id,
             "min_followers": request_args.get("min_followers"),
         }
         tracks = get_random_tracks(args)

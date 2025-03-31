@@ -4,7 +4,6 @@
 
 .wrapper {
   padding: 24px 0;
-  margin-top: 4px;
   max-width: 1080px;
   border: 1px solid var(--harmony-n-100);
   border-radius: 8px;
@@ -169,7 +168,7 @@
   margin-bottom: 20px;
   font-size: var(--harmony-font-xs);
   line-height: 15px;
-  color: var(--harmony-static-white);
+  color: var(--harmony-white);
   gap: var(--harmony-unit-2);
 }
 
@@ -348,23 +347,8 @@
   line-height: 28px;
 }
 
-.editModal {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: var(--harmony-font-s);
-  font-weight: var(--harmony-font-bold);
-  margin: 0 24px;
-}
-
-.editModalBody {
-  width: 100%;
-  max-width: 620px;
-}
-
 .editListSection {
   width: 100%;
-  margin-top: 32px;
 }
 
 .editListHeader {
@@ -418,9 +402,7 @@
 
 .editRowTitle {
   flex-grow: 1;
-  font-size: var(--harmony-font-m);
   width: 260px;
-  line-height: 20px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -449,7 +431,7 @@
 }
 
 .editTableContainer {
-  max-height: 20vh;
+  max-height: 550px;
   overflow-y: auto;
 }
 
@@ -462,7 +444,8 @@
 }
 
 .tableVerticalShadow {
-  box-shadow: inset 0 14px 14px -14px rgba(0, 0, 0, 0.15),
+  box-shadow:
+    inset 0 14px 14px -14px rgba(0, 0, 0, 0.15),
     inset 0 -14px 14px -14px rgba(0, 0, 0, 0.15);
 }
 

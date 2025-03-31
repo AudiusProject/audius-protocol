@@ -1,4 +1,5 @@
 import {
+  Connection,
   Transaction,
   TransactionMessage,
   VersionedTransaction
@@ -9,6 +10,7 @@ import { Logger } from 'pino'
 import { recover } from 'web3-eth-accounts'
 import { keccak256 } from 'web3-utils'
 import { z } from 'zod'
+import { normalizeEp } from '../../utils/connections'
 
 import {
   LISTENS_RATE_LIMIT_IP_PREFIX,
@@ -20,10 +22,7 @@ import { getCachedContentNodes } from '../../redis'
 import { getConnection } from '../../utils/connections'
 import { getIP, getIpData } from '../../utils/ipData'
 import { sortKeys } from '../../utils/sortKeys'
-import {
-  broadcastTransaction,
-  sendTransactionWithRetries
-} from '../../utils/transaction'
+import { sendTransactionWithRetries } from '../../utils/transaction'
 
 import {
   createTrackListenInstructions,
@@ -52,6 +51,16 @@ export const recordListenParamsSchema = z.object({
     })
     .transform((val) => val.toString())
 })
+
+let conn: Connection | null = null
+
+export const getListensConnection = (): Connection => {
+  if (conn) {
+    return conn
+  }
+  conn = new Connection(normalizeEp(config.listenRpcUrl))
+  return conn
+}
 
 export interface RecordListenRequest extends Request {
   body: z.infer<typeof recordListenBodySchema>
@@ -105,7 +114,7 @@ export const recordListen = async (
     })
 
   logger.info({ secpInstruction, listenInstruction }, 'instructions')
-  const latestBlockHash = await getConnection().getLatestBlockhash()
+  const latestBlockHash = await getListensConnection().getLatestBlockhash()
 
   const feePayer = getFeePayerKeyPair()
   const tx = new Transaction({
@@ -138,17 +147,11 @@ export const recordListen = async (
     'pre send'
   )
 
-  const solTxSignature = await sendTransactionWithRetries({
-    transaction,
-    commitment: 'confirmed',
-    confirmationStrategy,
-    logger
+  const solTxSignature = await getListensConnection().sendRawTransaction(transaction.serialize(), {
+    skipPreflight: true,
   })
 
   logger.info({ solTxSignature }, 'transaction sig')
-
-  // no need to confirm since we already confirm in the sendTransactionWithRetries
-  await broadcastTransaction({ logger, signature: solTxSignature })
 
   return { solTxSignature }
 }
@@ -185,9 +188,8 @@ export const listenRouteRateLimiter = async (params: {
 
   // consume and check rate limits
   const ipLimit = await listensIpRateLimiter.checkLimit(ip)
-  const ipTrackLimit = await listensIpTrackRateLimiter.checkLimit(
-    ipTrackConcatKey
-  )
+  const ipTrackLimit =
+    await listensIpTrackRateLimiter.checkLimit(ipTrackConcatKey)
 
   // merge limits and check if both allow passage
   const allowed = ipLimit.allowed && ipTrackLimit.allowed
@@ -206,8 +208,19 @@ export const listen = async (
 ) => {
   let logger
   try {
-    // validation
     logger = res.locals.logger
+
+    // if not prod, just return 200
+    if (config.environment !== 'prod') {
+      logger.info('not prod, skipping listen')
+      res.status(200).json({
+        solTxSignature: null
+      })
+      next()
+      return
+    }
+
+    // validation
     const { userId, timestamp, signature } = recordListenBodySchema.parse(
       req.body
     )

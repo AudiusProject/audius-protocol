@@ -5,7 +5,7 @@ import { Flex, Text } from '@audius/harmony'
 import { TextLink } from 'components/link'
 import { useIsMobile } from 'hooks/useIsMobile'
 
-export type MetadataItemProps = {
+type MetadataItemProps = {
   label: string
   value: string
   url?: string

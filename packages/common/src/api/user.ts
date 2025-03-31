@@ -1,26 +1,18 @@
-import { full } from '@audius/sdk'
+import { full, HashId, Id, OptionalId } from '@audius/sdk'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { accountFromSDK, userMetadataListFromSDK } from '~/adapters/user'
 import { createApi } from '~/audius-query'
-import {
-  HashId,
-  ID,
-  Kind,
-  OptionalId,
-  SolanaWalletAddress,
-  StringUSDC
-} from '~/models'
+import { ID, Kind, StringUSDC } from '~/models'
 import {
   USDCTransactionDetails,
   USDCTransactionMethod,
   USDCTransactionType
 } from '~/models/USDCTransactions'
-import { encodeHashId, isResponseError } from '~/utils'
+import { isResponseError } from '~/utils'
 import { Nullable } from '~/utils/typeUtils'
 
 import { SDKRequest } from './types'
-import { Id } from './utils'
 
 type GetUSDCTransactionListArgs = {
   userId: Nullable<ID>
@@ -64,18 +56,7 @@ const userApi = createApi({
             return null
           }
 
-          const account = accountFromSDK(data)
-          // If we got a valid account, populate user bank since that's
-          // expected to exist on "account" users
-          if (account) {
-            const userBank =
-              await sdk.services.claimableTokensClient.deriveUserBank({
-                ethWallet: wallet,
-                mint: 'wAUDIO'
-              })
-            account.user.userBank = userBank.toString() as SolanaWalletAddress
-          }
-          return account
+          return accountFromSDK(data)
         } catch (e) {
           // Account doesn't exist, don't bubble up an error, just return null
           if (isResponseError(e) && [401, 404].includes(e.response.status)) {
@@ -142,10 +123,17 @@ const userApi = createApi({
       }
     },
     getUsersByIds: {
-      fetch: async (args: { ids: ID[] }, context) => {
-        const { ids } = args
-        const { audiusBackend } = context
-        return await audiusBackend.getCreators(ids)
+      fetch: async (
+        args: { ids: ID[]; currentUserId?: Nullable<ID> },
+        { audiusSdk }
+      ) => {
+        const { ids, currentUserId } = args
+        const sdk = await audiusSdk()
+        const { data: users = [] } = await sdk.full.users.getBulkUsers({
+          id: ids.map((id) => Id.parse(id)),
+          userId: OptionalId.parse(currentUserId)
+        })
+        return userMetadataListFromSDK(users)
       },
       options: { idListArgKey: 'ids', kind: Kind.USERS, schemaKey: 'users' }
     },
@@ -226,9 +214,12 @@ const userApi = createApi({
           userId,
           limit = 10,
           offset = 0
-        }: { userId: ID; offset?: number; limit?: number },
+        }: { userId: ID | null | undefined; offset?: number; limit?: number },
         { audiusSdk }
       ) => {
+        if (!userId) {
+          return []
+        }
         const sdk = await audiusSdk()
         const { data = [] } = await sdk.full.users.getFollowers({
           id: Id.parse(userId),
@@ -236,28 +227,6 @@ const userApi = createApi({
           offset
         })
         return userMetadataListFromSDK(data)
-      },
-      options: {
-        kind: Kind.USERS,
-        schemaKey: 'users'
-      }
-    },
-    getSupporters: {
-      fetch: async (
-        {
-          userId,
-          limit = 10,
-          offset = 0
-        }: { userId: ID; offset?: number; limit?: number },
-        { audiusSdk }
-      ) => {
-        const sdk = await audiusSdk()
-        const { data = [] } = await sdk.full.users.getSupporters({
-          id: Id.parse(userId),
-          limit,
-          offset
-        })
-        return userMetadataListFromSDK(data.map((user) => user.sender))
       },
       options: {
         kind: Kind.USERS,
@@ -297,7 +266,7 @@ const userApi = createApi({
         const { data } = await sdk.full.users.getRemixersCount({
           id: Id.parse(userId),
           userId: Id.parse(userId),
-          trackId: trackId ? encodeHashId(trackId) : undefined
+          trackId: OptionalId.parse(trackId)
         })
         return data
       },
@@ -323,7 +292,7 @@ const userApi = createApi({
         const sdk = await audiusSdk()
         const { data = [] } = await sdk.full.users.getPurchasers({
           id: Id.parse(userId),
-          contentId: contentId ? encodeHashId(contentId) : undefined,
+          contentId: OptionalId.parse(contentId),
           contentType,
           limit,
           offset
@@ -346,8 +315,8 @@ const userApi = createApi({
       ) => {
         const sdk = await audiusSdk()
         const { data } = await sdk.full.users.getPurchasersCount({
-          id: encodeHashId(userId),
-          contentId: contentId ? encodeHashId(contentId) : undefined,
+          id: Id.parse(userId),
+          contentId: OptionalId.parse(contentId),
           contentType
         })
         return data ?? 0
@@ -375,13 +344,17 @@ const userApi = createApi({
           id: Id.parse(userId)
         })
 
-        return data
+        return data?.map((sale) => ({
+          ...sale,
+          contentId: parseInt(sale.contentId)
+        }))
       },
       options: {}
     },
     getMutedUsers: {
-      async fetch({ userId }: { userId: ID }, { audiusSdk }) {
-        const encodedUserId = encodeHashId(userId) as string
+      async fetch({ userId }: { userId: Nullable<ID> }, { audiusSdk }) {
+        if (!userId) return []
+        const encodedUserId = Id.parse(userId)
         const sdk = await audiusSdk()
         const { data: users } = await sdk.full.users.getMutedUsers({
           id: encodedUserId
@@ -403,7 +376,6 @@ export const {
   useGetUSDCTransactions,
   useGetUSDCTransactionsCount,
   useGetFollowers,
-  useGetSupporters,
   useGetRemixers,
   useGetRemixersCount,
   useGetPurchasers,

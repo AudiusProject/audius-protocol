@@ -53,7 +53,8 @@ const ConvertingInfo = ({ isVisible }: { isVisible: boolean }) => (
           <p>{messages.severalMinutes}</p>
           <p>{messages.holdOn}</p>
         </animated.div>
-      ) : null}
+      ) : null
+    }
   </Transition>
 )
 
@@ -137,6 +138,7 @@ export const ConfirmSendTip = () => {
       <div className={cn(styles.flexCenter, styles.buttonContainer)}>
         <Button
           variant='primary'
+          fullWidth
           onClick={handleConfirmSendClick}
           iconRight={isSending ? undefined : IconCheck}
           isLoading={isSending || isConverting}
@@ -145,8 +147,8 @@ export const ConfirmSendTip = () => {
           {hasError
             ? messages.confirmAndTryAgain
             : !isSending && !isConverting
-            ? messages.confirmTip
-            : ''}
+              ? messages.confirmTip
+              : ''}
         </Button>
       </div>
       {!isSending && !isConverting ? (

@@ -3,7 +3,9 @@
   flex: 1 1 352px;
   border: 1px solid var(--harmony-n-100);
   background-color: var(--harmony-white);
-  box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2),
+  box-shadow:
+    0 0 1px 0 var(--tile-shadow-1),
+    0 1px 0 0 var(--tile-shadow-2),
     0 2px 5px -2px var(--tile-shadow-3);
   display: flex;
   overflow: hidden;
@@ -24,7 +26,8 @@
 }
 
 .container:active {
-  box-shadow: 0 0 1px 0 var(--tile-shadow-1),
+  box-shadow:
+    0 0 1px 0 var(--tile-shadow-1),
     0 2px 3px -2px var(--tile-shadow-3);
 }
 
@@ -38,7 +41,7 @@
 }
 
 .container .artworkIcon path {
-  fill: var(--harmony-static-white);
+  fill: var(--harmony-white);
 }
 
 .mainContent {
@@ -68,20 +71,6 @@
   position: absolute;
   right: 10px;
   top: 10px;
-}
-
-.statItem {
-  transform: scale(1);
-  transition: transform 0.07s ease-in-out;
-}
-
-.statItem:active {
-  transform: scale(0.93);
-  color: var(--harmony-primary);
-}
-
-.statItem:active svg path {
-  fill: var(--harmony-primary);
 }
 
 .readonly .statItem:active {
@@ -167,26 +156,6 @@
   color: var(--harmony-n-400);
 }
 
-.readonly .favoriteButtonWrapper:hover {
-  transform: scale3d(1, 1, 1);
-}
-
-.favoriteButton {
-  height: 14px;
-  width: 14px;
-  margin-left: 4px;
-}
-
-.readonly .repostButtonWrapper:hover {
-  transform: scale3d(1, 1, 1);
-}
-
-.repostButton {
-  height: 16px;
-  width: 16px;
-  margin-left: 4px;
-}
-
 .hide {
   opacity: 0 !important;
 }
@@ -194,8 +163,4 @@
 .show {
   opacity: 1;
   transition: opacity ease-in-out 0.5s;
-}
-
-.rankIcon {
-  margin: 0px 16px 0px 10px !important;
 }

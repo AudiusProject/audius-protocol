@@ -1,4 +1,5 @@
-import { isBrowser } from 'browser-or-node'
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { mainnet } from 'viem/chains'
 
 import { ResolveApi } from './api/ResolveApi'
 import { AlbumsApi } from './api/albums/AlbumsApi'
@@ -17,9 +18,12 @@ import {
   UsersApi as UsersApiFull,
   TipsApi as TipsApiFull,
   TransactionsApi as TransactionsApiFull,
-  NotificationsApi as NotificationsApiFull
+  NotificationsApi as NotificationsApiFull,
+  CidDataApi as CidDataApiFull,
+  CommentsApi as CommentsApiFull
 } from './api/generated/full'
 import { GrantsApi } from './api/grants/GrantsApi'
+import { NotificationsApi } from './api/notifications/NotificationsApi'
 import { PlaylistsApi } from './api/playlists/PlaylistsApi'
 import { TracksApi } from './api/tracks/TracksApi'
 import { UsersApi } from './api/users/UsersApi'
@@ -38,14 +42,14 @@ import {
 import { AntiAbuseOracle } from './services/AntiAbuseOracle/AntiAbuseOracle'
 import { getDefaultAntiAbuseOracleSelectorConfig } from './services/AntiAbuseOracleSelector'
 import { AntiAbuseOracleSelector } from './services/AntiAbuseOracleSelector/AntiAbuseOracleSelector'
-import { AppAuth } from './services/Auth/AppAuth'
-import { DefaultAuth } from './services/Auth/DefaultAuth'
+import { createAppWalletClient } from './services/AudiusWalletClient'
 import {
   DiscoveryNodeSelector,
   getDefaultDiscoveryNodeSelectorConfig
 } from './services/DiscoveryNodeSelector'
+import { EmailEncryptionService } from './services/Encryption'
 import {
-  EntityManager,
+  EntityManagerClient,
   getDefaultEntityManagerConfig
 } from './services/EntityManager'
 import {
@@ -65,7 +69,7 @@ import {
   getDefaultStakingConfig,
   TrustedNotifierManagerClient,
   getDefaultTrustedNotifierManagerConfig,
-  WormholeClient,
+  AudiusWormholeClient,
   getDefaultWormholeConfig,
   RegistryClient,
   getDefaultRegistryConfig,
@@ -105,6 +109,7 @@ export const sdk = (config: SdkConfig) => {
 
   // Initialize APIs
   const apis = initializeApis({
+    config,
     apiKey,
     appName,
     services
@@ -132,25 +137,42 @@ const initializeServices = (config: SdkConfig) => {
     config.environment === 'development'
       ? developmentConfig
       : config.environment === 'staging'
-      ? stagingConfig
-      : productionConfig
+        ? stagingConfig
+        : productionConfig
 
   const defaultLogger = new Logger({
     logLevel: config.environment !== 'production' ? 'debug' : undefined
   })
   const logger = config.services?.logger ?? defaultLogger
 
+  const isBrowser: boolean =
+    typeof window !== 'undefined' && typeof window.document !== 'undefined'
   if (config.apiSecret && isBrowser) {
     logger.warn(
       "apiSecret should only be provided server side so that it isn't exposed"
     )
   }
+  const audiusWalletClient =
+    config.services?.audiusWalletClient ??
+    createAppWalletClient({
+      // Allow undefined apiKey for now, use dummy wallet
+      apiKey: config.apiKey ?? '0x0000000000000000000000000000000000000000',
+      apiSecret: config.apiSecret
+    })
 
-  const auth =
-    config.services?.auth ??
-    (config.apiKey && config.apiSecret
-      ? new AppAuth(config.apiKey, config.apiSecret)
-      : new DefaultAuth(config.apiKey))
+  const ethPublicClient =
+    config.services?.ethPublicClient ??
+    createPublicClient({
+      chain: mainnet,
+      transport: http(servicesConfig.ethereum.rpcEndpoint)
+    })
+
+  const ethWalletClient =
+    config.services?.ethWalletClient ??
+    createWalletClient({
+      chain: mainnet,
+      transport: http(servicesConfig.ethereum.rpcEndpoint)
+    })
 
   const discoveryNodeSelector =
     config.services?.discoveryNodeSelector ??
@@ -163,16 +185,14 @@ const initializeServices = (config: SdkConfig) => {
     config.services?.storageNodeSelector ??
     new StorageNodeSelector({
       ...getDefaultStorageNodeSelectorConfig(servicesConfig),
-      auth,
-      discoveryNodeSelector,
       logger
     })
 
   const entityManager =
     config.services?.entityManager ??
-    new EntityManager({
+    new EntityManagerClient({
       ...getDefaultEntityManagerConfig(servicesConfig),
-      discoveryNodeSelector,
+      audiusWalletClient,
       logger
     })
 
@@ -197,19 +217,34 @@ const initializeServices = (config: SdkConfig) => {
       antiAbuseOracleSelector
     })
 
+  const middleware = [
+    addRequestSignatureMiddleware({ services: { audiusWalletClient, logger } }),
+    discoveryNodeSelector.createMiddleware()
+  ]
+
   /* Solana Programs */
   const solanaRelay = config.services?.solanaRelay
     ? config.services.solanaRelay.withMiddleware(
-        addRequestSignatureMiddleware({ services: { auth, logger } })
+        addRequestSignatureMiddleware({
+          services: { audiusWalletClient, logger }
+        })
       )
     : new SolanaRelay(
         new Configuration({
-          middleware: [
-            addRequestSignatureMiddleware({ services: { auth, logger } }),
-            discoveryNodeSelector.createMiddleware()
-          ]
+          middleware
         })
       )
+
+  const emailEncryptionService =
+    config.services?.emailEncryptionService ??
+    new EmailEncryptionService(
+      new Configuration({
+        fetchApi: fetch,
+        basePath: '',
+        middleware
+      }),
+      audiusWalletClient
+    )
 
   const solanaWalletAdapter =
     config.services?.solanaWalletAdapter ??
@@ -221,7 +256,8 @@ const initializeServices = (config: SdkConfig) => {
     config.services?.solanaClient ??
     new SolanaClient({
       ...getDefaultSolanaClientConfig(servicesConfig),
-      solanaWalletAdapter
+      solanaWalletAdapter,
+      logger
     })
 
   const claimableTokensClient =
@@ -229,6 +265,7 @@ const initializeServices = (config: SdkConfig) => {
     new ClaimableTokensClient({
       ...getDefaultClaimableTokensConfig(servicesConfig),
       solanaClient,
+      audiusWalletClient,
       logger
     })
 
@@ -251,6 +288,9 @@ const initializeServices = (config: SdkConfig) => {
   const audiusTokenClient =
     config.services?.audiusTokenClient ??
     new AudiusTokenClient({
+      audiusWalletClient,
+      ethPublicClient,
+      ethWalletClient,
       ...getDefaultAudiusTokenConfig(servicesConfig)
     })
 
@@ -278,9 +318,12 @@ const initializeServices = (config: SdkConfig) => {
       ...getDefaultTrustedNotifierManagerConfig(servicesConfig)
     })
 
-  const wormholeClient =
-    config.services?.wormholeClient ??
-    new WormholeClient({
+  const audiusWormholeClient =
+    config.services?.audiusWormholeClient ??
+    new AudiusWormholeClient({
+      audiusWalletClient,
+      ethPublicClient,
+      ethWalletClient,
       ...getDefaultWormholeConfig(servicesConfig)
     })
 
@@ -320,7 +363,9 @@ const initializeServices = (config: SdkConfig) => {
     antiAbuseOracleSelector,
     entityManager,
     storage,
-    auth,
+    audiusWalletClient,
+    ethPublicClient,
+    ethWalletClient,
     claimableTokensClient,
     rewardManagerClient,
     paymentRouterClient,
@@ -333,42 +378,57 @@ const initializeServices = (config: SdkConfig) => {
     delegateManagerClient,
     stakingClient,
     trustedNotifierManagerClient,
-    wormholeClient,
+    audiusWormholeClient,
     registryClient,
     governanceClient,
     serviceTypeManagerClient,
     serviceProviderFactoryClient,
     ethRewardsManagerClient,
+    emailEncryptionService,
     logger
   }
   return services
 }
 
 const initializeApis = ({
+  config,
   apiKey,
   appName,
   services
 }: {
+  config: SdkConfig
   apiKey?: string
   appName?: string
   services: ServicesContainer
 }) => {
+  const basePath =
+    config.environment === 'development'
+      ? developmentConfig.network.apiEndpoint
+      : config.environment === 'staging'
+        ? stagingConfig.network.apiEndpoint
+        : productionConfig.network.apiEndpoint
+
   const middleware = [
     addAppInfoMiddleware({ apiKey, appName, services }),
-    addRequestSignatureMiddleware({ services }),
-    services.discoveryNodeSelector.createMiddleware()
+    addRequestSignatureMiddleware({ services })
   ]
-  const generatedApiClientConfig = new Configuration({
+  const apiClientConfig = new Configuration({
     fetchApi: fetch,
-    middleware
+    middleware,
+    basePath: `${basePath}/v1`
+  })
+  const apiClientConfigWithDiscoveryNodeSelector = new Configuration({
+    fetchApi: fetch,
+    middleware: [
+      ...middleware,
+      services.discoveryNodeSelector.createMiddleware()
+    ]
   })
 
   const tracks = new TracksApi(
-    generatedApiClientConfig,
-    services.discoveryNodeSelector,
+    apiClientConfig,
     services.storage,
     services.entityManager,
-    services.auth,
     services.logger,
     services.claimableTokensClient,
     services.paymentRouterClient,
@@ -376,19 +436,18 @@ const initializeApis = ({
     services.solanaClient
   )
   const users = new UsersApi(
-    generatedApiClientConfig,
+    apiClientConfig,
     services.storage,
     services.entityManager,
-    services.auth,
     services.logger,
     services.claimableTokensClient,
-    services.solanaClient
+    services.solanaClient,
+    services.emailEncryptionService
   )
   const albums = new AlbumsApi(
-    generatedApiClientConfig,
+    apiClientConfig,
     services.storage,
     services.entityManager,
-    services.auth,
     services.logger,
     services.claimableTokensClient,
     services.paymentRouterClient,
@@ -396,52 +455,44 @@ const initializeApis = ({
     services.solanaClient
   )
   const playlists = new PlaylistsApi(
-    generatedApiClientConfig,
+    apiClientConfig,
     services.storage,
     services.entityManager,
-    services.auth,
     services.logger
   )
   const comments = new CommentsApi(
-    generatedApiClientConfig,
+    apiClientConfig,
     services.entityManager,
-    services.auth,
     services.logger
   )
-  const tips = new TipsApi(generatedApiClientConfig)
-  const resolveApi = new ResolveApi(generatedApiClientConfig)
+  const tips = new TipsApi(apiClientConfig)
+  const resolveApi = new ResolveApi(apiClientConfig)
   const resolve = resolveApi.resolve.bind(resolveApi)
+
   const chats = new ChatsApi(
     new Configuration({
+      basePath, // comms is not a v1 API
       fetchApi: fetch,
-      basePath: '',
       middleware
     }),
-    services.auth,
-    services.discoveryNodeSelector,
+    services.audiusWalletClient,
     services.logger
   )
-  const grants = new GrantsApi(
-    generatedApiClientConfig,
-    services.entityManager,
-    services.auth,
-    users
-  )
+
+  const grants = new GrantsApi(apiClientConfig, services.entityManager, users)
 
   const developerApps = new DeveloperAppsApi(
-    generatedApiClientConfig,
-    services.entityManager,
-    services.auth
+    apiClientConfig,
+    services.entityManager
   )
 
   const dashboardWalletUsers = new DashboardWalletUsersApi(
-    generatedApiClientConfig,
-    services.entityManager,
-    services.auth
+    apiClientConfig,
+    services.entityManager
   )
 
   const challenges = new ChallengesApi(
-    generatedApiClientConfig,
+    apiClientConfigWithDiscoveryNodeSelector,
     users,
     services.discoveryNodeSelector,
     services.rewardManagerClient,
@@ -451,7 +502,13 @@ const initializeApis = ({
     services.solanaClient
   )
 
+  const notifications = new NotificationsApi(
+    apiClientConfig,
+    services.entityManager
+  )
+
   const generatedApiClientConfigFull = new ConfigurationFull({
+    basePath: `${basePath}/v1/full`,
     fetchApi: fetch,
     middleware
   })
@@ -464,7 +521,9 @@ const initializeApis = ({
     reactions: new ReactionsApiFull(generatedApiClientConfigFull),
     tips: new TipsApiFull(generatedApiClientConfigFull),
     transactions: new TransactionsApiFull(generatedApiClientConfigFull),
-    notifications: new NotificationsApiFull(generatedApiClientConfigFull)
+    notifications: new NotificationsApiFull(generatedApiClientConfigFull),
+    cidData: new CidDataApiFull(generatedApiClientConfigFull),
+    comments: new CommentsApiFull(generatedApiClientConfigFull)
   }
 
   return {
@@ -481,7 +540,8 @@ const initializeApis = ({
     dashboardWalletUsers,
     challenges,
     services,
-    comments
+    comments,
+    notifications
   }
 }
 

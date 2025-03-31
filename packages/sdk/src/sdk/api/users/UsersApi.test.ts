@@ -10,18 +10,18 @@ import {
   TransactionMessage,
   VersionedTransaction
 } from '@solana/web3.js'
-import { describe, it, beforeAll, expect, vitest } from 'vitest'
+import { beforeAll, describe, expect, it, vitest } from 'vitest'
 
 import { developmentConfig } from '../../config/development'
 import {
-  AppAuth,
   ClaimableTokensClient,
   SolanaRelay,
   SolanaRelayWalletAdapter,
-  getDefaultClaimableTokensConfig
+  createAppWalletClient,
+  getDefaultClaimableTokensConfig,
+  EmailEncryptionService
 } from '../../services'
-import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
-import { EntityManager } from '../../services/EntityManager'
+import { EntityManagerClient } from '../../services/EntityManager'
 import { Logger } from '../../services/Logger'
 import { SolanaClient } from '../../services/Solana/programs/SolanaClient'
 import { Storage } from '../../services/Storage'
@@ -58,7 +58,7 @@ vitest.spyOn(Storage.prototype, 'uploadFile').mockImplementation(async () => {
 })
 
 vitest
-  .spyOn(EntityManager.prototype, 'manageEntity')
+  .spyOn(EntityManagerClient.prototype, 'manageEntity')
   .mockImplementation(async () => {
     return {
       blockHash: 'a',
@@ -68,12 +68,10 @@ vitest
 
 let users: UsersApi
 
-const auth = new AppAuth('key', 'secret')
+const audiusWalletClient = createAppWalletClient({ apiKey: '' })
 const logger = new Logger()
-const discoveryNodeSelector = new DiscoveryNodeSelector()
 const storageNodeSelector = new StorageNodeSelector({
-  auth,
-  discoveryNodeSelector,
+  endpoint: 'https://discoveryprovider.audius.co',
   logger
 })
 const solanaRelay = new SolanaRelay()
@@ -82,19 +80,31 @@ const solanaClient = new SolanaClient({
 })
 const claimableTokens = new ClaimableTokensClient({
   ...getDefaultClaimableTokensConfig(developmentConfig),
+  audiusWalletClient,
   solanaClient
 })
+
+const emailEncryption = new EmailEncryptionService(
+  new Configuration(),
+  audiusWalletClient
+)
 
 describe('UsersApi', () => {
   beforeAll(() => {
     users = new UsersApi(
       new Configuration(),
-      new Storage({ storageNodeSelector, logger: new Logger() }),
-      new EntityManager({ discoveryNodeSelector: new DiscoveryNodeSelector() }),
-      auth,
+      new Storage({
+        storageNodeSelector,
+        logger: new Logger()
+      }),
+      new EntityManagerClient({
+        audiusWalletClient,
+        endpoint: 'https://discoveryprovider.audius.co'
+      }),
       new Logger(),
       claimableTokens,
-      solanaClient
+      solanaClient,
+      emailEncryption
     )
     vitest.spyOn(console, 'warn').mockImplementation(() => {})
     vitest.spyOn(console, 'info').mockImplementation(() => {})
@@ -341,7 +351,7 @@ describe('UsersApi', () => {
         })
 
       // Mock sign
-      vitest.spyOn(auth, 'sign').mockImplementation(async () => {
+      vitest.spyOn(audiusWalletClient, 'sign').mockImplementation(async () => {
         return [Uint8Array.from(new Array(64).fill(0)), 0]
       })
 
@@ -397,6 +407,302 @@ describe('UsersApi', () => {
         blockHash: 'a',
         blockNumber: 1
       })
+    })
+  })
+
+  describe('shareEmail', () => {
+    beforeAll(() => {
+      vitest
+        .spyOn(EmailEncryptionService.prototype, 'decryptSymmetricKey')
+        .mockImplementation(async () => {
+          return new Uint8Array(32)
+        })
+
+      vitest
+        .spyOn(EmailEncryptionService.prototype, 'createSymmetricKey')
+        .mockImplementation(() => {
+          return new Uint8Array(32)
+        })
+
+      vitest
+        .spyOn(EmailEncryptionService.prototype, 'encryptSymmetricKey')
+        .mockImplementation(async () => {
+          return 'mockEncryptedKey'
+        })
+
+      vitest
+        .spyOn(EmailEncryptionService.prototype, 'encryptEmail')
+        .mockImplementation(async () => {
+          return 'mockEncryptedEmail'
+        })
+
+      vitest
+        .spyOn(UsersApi.prototype, 'getUserEmailKey')
+        .mockImplementation(async () => {
+          return {
+            data: {
+              encryptedKey: 'mockEncryptedKey',
+              isInitial: false,
+              id: 1,
+              emailOwnerUserId: 1,
+              receivingUserId: 2,
+              grantorUserId: 3,
+              createdAt: '2025-01-01',
+              updatedAt: '2025-01-01'
+            }
+          }
+        })
+    })
+
+    it('adds an encrypted email if valid metadata is provided', async () => {
+      const result = await users.shareEmail({
+        emailOwnerUserId: 123,
+        receivingUserId: 456,
+        email: 'email@example.com',
+        initialEmailEncryptionUuid: 1
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('adds an encrypted email without optional delegated fields', async () => {
+      const result = await users.shareEmail({
+        emailOwnerUserId: 123,
+        receivingUserId: 456,
+        email: 'email@example.com',
+        initialEmailEncryptionUuid: 1
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('throws an error if required fields are missing', async () => {
+      await expect(async () => {
+        await users.shareEmail({
+          emailOwnerUserId: 123,
+          // Missing receivingUserId
+          encryptedEmail: 'encryptedEmailString',
+          encryptedKey: 'encryptedKeyString'
+        } as any)
+      }).rejects.toThrow()
+    })
+
+    it('throws an error if invalid metadata is provided', async () => {
+      await expect(async () => {
+        await users.shareEmail({
+          emailOwnerUserId: 123,
+          // Incorrect type for receivingUserId
+          receivingUserId: '456',
+          encryptedEmail: 'encryptedEmailString',
+          encryptedKey: 'encryptedKeyString'
+        } as any)
+      }).rejects.toThrow()
+    })
+  })
+
+  describe('addAssociatedWallet', () => {
+    it('adds an associated ethereum wallet if valid metadata is provided', async () => {
+      const result = await users.addAssociatedWallet({
+        userId: '7eP5n',
+        wallet: {
+          address: '0x1234567890123456789012345678901234567890',
+          chain: 'eth'
+        },
+        signature: '0xabcdef1234567890'
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('adds an associated solana wallet if valid metadata is provided', async () => {
+      const result = await users.addAssociatedWallet({
+        userId: '7eP5n',
+        wallet: {
+          address: '5FHwkrdxkjgwwmeNq4Gu168KzTXdMxZY8wuTvqxDbB1E',
+          chain: 'sol'
+        },
+        signature: 'mockSolanaSignature'
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('throws an error if invalid ethereum address is provided', async () => {
+      await expect(async () => {
+        await users.addAssociatedWallet({
+          userId: '7eP5n',
+          wallet: {
+            address: '0xinvalid', // Invalid eth address
+            chain: 'eth'
+          },
+          signature: '0xabcdef1234567890'
+        })
+      }).rejects.toThrow()
+    })
+
+    it('throws an error if invalid solana address is provided', async () => {
+      await expect(async () => {
+        await users.addAssociatedWallet({
+          userId: '7eP5n',
+          wallet: {
+            address: 'invalid', // Invalid sol address
+            chain: 'sol'
+          },
+          signature: 'mockSolanaSignature'
+        })
+      }).rejects.toThrow()
+    })
+
+    it('throws an error if invalid chain is provided', async () => {
+      await expect(async () => {
+        await users.addAssociatedWallet({
+          userId: '7eP5n',
+          wallet: {
+            address: '0x1234567890123456789012345678901234567890',
+            chain: 'invalid' as any
+          },
+          signature: '0xabcdef1234567890'
+        })
+      }).rejects.toThrow()
+    })
+
+    it('throws an error if required signature is missing', async () => {
+      await expect(async () => {
+        await users.addAssociatedWallet({
+          userId: '7eP5n',
+          wallet: {
+            address: '0x1234567890123456789012345678901234567890',
+            chain: 'eth'
+          }
+        } as any)
+      }).rejects.toThrow()
+    })
+  })
+
+  describe('removeAssociatedWallet', () => {
+    it('removes an associated ethereum wallet if valid metadata is provided', async () => {
+      const result = await users.removeAssociatedWallet({
+        userId: '7eP5n',
+        wallet: {
+          address: '0x1234567890123456789012345678901234567890',
+          chain: 'eth'
+        }
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('removes an associated solana wallet if valid metadata is provided', async () => {
+      const result = await users.removeAssociatedWallet({
+        userId: '7eP5n',
+        wallet: {
+          address: '5FHwkrdxkjgwwmeNq4Gu168KzTXdMxZY8wuTvqxDbB1E',
+          chain: 'sol'
+        }
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('throws an error if invalid ethereum address is provided', async () => {
+      await expect(async () => {
+        await users.removeAssociatedWallet({
+          userId: '7eP5n',
+          wallet: {
+            address: '0xinvalid', // Invalid eth address
+            chain: 'eth'
+          }
+        })
+      }).rejects.toThrow()
+    })
+
+    it('throws an error if invalid solana address is provided', async () => {
+      await expect(async () => {
+        await users.removeAssociatedWallet({
+          userId: '7eP5n',
+          wallet: {
+            address: 'invalid', // Invalid sol address
+            chain: 'sol'
+          }
+        })
+      }).rejects.toThrow()
+    })
+
+    it('throws an error if invalid chain is provided', async () => {
+      await expect(async () => {
+        await users.removeAssociatedWallet({
+          userId: '7eP5n',
+          wallet: {
+            address: '0x1234567890123456789012345678901234567890',
+            chain: 'invalid' as any
+          }
+        })
+      }).rejects.toThrow()
+    })
+
+    it('throws an error if required fields are missing', async () => {
+      await expect(async () => {
+        await users.removeAssociatedWallet({
+          userId: '7eP5n'
+          // Missing wallet object
+        } as any)
+      }).rejects.toThrow()
+    })
+  })
+
+  describe('updateCollectibles', () => {
+    it('updates the user collectibles if valid metadata is provided', async () => {
+      const result = await users.updateCollectibles({
+        userId: '7eP5n',
+        collectibles: {
+          order: ['collection1'],
+          collection1: {}
+        }
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('allows empty collectibles metadata', async () => {
+      const result = await users.updateCollectibles({
+        userId: '7eP5n',
+        collectibles: null
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('throws an error if invalid metadata is provided', async () => {
+      await expect(async () => {
+        await users.updateCollectibles({
+          userId: '7eP5n',
+          collectibles: {} as any // Invalid collectibles metadata
+        })
+      }).rejects.toThrow()
     })
   })
 })

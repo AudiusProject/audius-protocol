@@ -15,6 +15,8 @@ from src.api.v1.helpers import (
     extend_track,
     extend_user,
     filter_hidden_tracks,
+    format_limit,
+    format_offset,
     full_trending_parser,
     get_current_user_id,
     get_default_max,
@@ -72,16 +74,16 @@ full_playlists_response = make_full_response(
     "full_playlist_response", full_ns, fields.List(fields.Nested(full_playlist_model))
 )
 
-playlists_with_score = ns.clone(
-    "playlist_full",
+full_playlist_with_score = full_ns.clone(
+    "full_playlist_with_score",
     full_playlist_model,
-    {"score": fields.Float},
+    {"score": fields.Float(required=True)},
 )
 
-full_playlists_with_score_response = make_full_response(
+full_playlist_with_score_response = make_full_response(
     "full_playlist_with_score_response",
     full_ns,
-    fields.List(fields.Nested(playlists_with_score)),
+    fields.List(fields.Nested(full_playlist_with_score)),
 )
 
 
@@ -112,10 +114,7 @@ def get_playlist(
     args = format_get_playlists_args(current_user_id, playlist_id, route, with_users)
     playlists = get_playlists(args)
     if playlists:
-        extendedPlaylist = extend_playlist(playlists[0])
-        # TODO: https://linear.app/audius/issue/PAY-3398/fix-playlist-contents-serialization
-        extendedPlaylist["playlist_contents"] = extendedPlaylist["added_timestamps"]
-        return extendedPlaylist
+        return extend_playlist(playlists[0])
     return None
 
 
@@ -150,15 +149,7 @@ def get_bulk_playlists(
 
     playlists = get_playlists(args)
     if playlists:
-        extendedPlaylists = list(map(extend_playlist, playlists))
-
-        # TODO: https://linear.app/audius/issue/PAY-3398/fix-playlist-contents-serialization
-        def add_playlist_contents(playlist):
-            playlist["playlist_contents"] = playlist["added_timestamps"]
-            return playlist
-
-        extendedPlaylists = list(map(add_playlist_contents, playlists))
-        return extendedPlaylists
+        return list(map(extend_playlist, playlists))
     return None
 
 
@@ -415,14 +406,16 @@ class PlaylistSearchResult(Resource):
         include_purchaseable = parse_bool_param(args.get("includePurchaseable"))
         has_downloads = parse_bool_param(args.get("has_downloads"))
         sort_method = args.get("sort_method")
+        limit = format_limit(args, 50, 10)
+        offset = format_offset(args)
         search_args = {
             "query": query,
             "kind": SearchKind.playlists.name,
             "is_auto_complete": False,
             "current_user_id": None,
             "with_users": True,
-            "limit": 10,
-            "offset": 0,
+            "limit": limit,
+            "offset": offset,
             "genres": genres,
             "moods": moods,
             "include_purchaseable": include_purchaseable,
@@ -433,33 +426,34 @@ class PlaylistSearchResult(Resource):
         return success_response(response["playlists"])
 
 
-top_parser = pagination_with_current_user_parser.copy()
-top_parser.add_argument(
+full_top_parser = pagination_with_current_user_parser.copy()
+full_top_parser.add_argument(
     "type",
     required=True,
     choices=("album", "playlist"),
     description="The collection type",
 )
-top_parser.add_argument(
+full_top_parser.add_argument(
     "mood",
     required=False,
     description="Filter to a mood",
 )
-top_parser.add_argument(
+full_top_parser.add_argument(
     "filter",
     required=False,
     description="Filter for the playlist query",
 )
 
 
-@full_ns.route("/top", doc=False)
-class Top(Resource):
+@full_ns.route("/top")
+class FullTopPlaylists(Resource):
     @record_metrics
-    @ns.doc(id="""Top Playlists""", description="""Gets top playlists.""")
-    @ns.marshal_with(full_playlists_with_score_response)
+    @full_ns.doc(id="""Get Top Playlists""", description="""Gets top playlists.""")
+    @full_ns.expect(full_top_parser)
+    @full_ns.marshal_with(full_playlist_with_score_response)
     @cache(ttl_sec=30 * 60)
     def get(self):
-        args = top_parser.parse_args()
+        args = full_top_parser.parse_args()
         if args.get("limit") is None:
             args["limit"] = 100
         else:
@@ -471,11 +465,9 @@ class Top(Resource):
         current_user_id = get_current_user_id(args)
         if current_user_id:
             args["current_user_id"] = current_user_id
-
         args["with_users"] = True
 
         response = get_top_playlists(args.type, args)
-
         playlists = list(map(extend_playlist, response))
         return success_response(playlists)
 
@@ -648,6 +640,7 @@ class FullTrendingPlaylists(Resource):
             TrendingType.PLAYLISTS, version_list[0]
         )
         playlists = get_full_trending_playlists(request, args, strategy)
+        playlists = list(map(extend_playlist, playlists))
         return success_response(playlists)
 
 

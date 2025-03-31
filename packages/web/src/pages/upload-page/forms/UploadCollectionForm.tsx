@@ -1,12 +1,14 @@
 import { useCallback } from 'react'
 
 import { CollectionValues } from '@audius/common/schemas'
-import { TrackForUpload, UploadType } from '@audius/common/store'
+import {
+  CollectionFormState,
+  TrackForUpload,
+  UploadType
+} from '@audius/common/store'
 import moment from 'moment'
 
 import { EditCollectionForm } from 'components/edit-collection/EditCollectionForm'
-
-import { CollectionFormState } from '../types'
 
 type UploadCollectionFormProps = {
   formState: CollectionFormState

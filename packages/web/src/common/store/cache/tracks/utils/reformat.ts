@@ -1,5 +1,4 @@
 import { TrackMetadata, Track } from '@audius/common/models'
-import { AudiusBackend } from '@audius/common/services'
 import { omit } from 'lodash'
 
 /**
@@ -42,7 +41,8 @@ const setFieldVisibility = <T extends TrackMetadata>(track: T) => {
         mood: true,
         tags: true,
         share: true,
-        play_count: true
+        play_count: true,
+        remixes: true
       }
     }
   }
@@ -66,16 +66,12 @@ const setDefaultFolloweeSaves = <T extends TrackMetadata>(track: T) => {
  * Reformats a track to be used internally within the client
  * This method should *always* be called before a track is cached.
  */
-export const reformat = <T extends TrackMetadata>(
-  track: T,
-  audiusBackendInstance: AudiusBackend
-): Track => {
+export const reformat = <T extends TrackMetadata>(track: T): Track => {
   const t = track
   const withoutUser = omit(t, 'user')
   // audius-query denormalization expects track.user to contain the id of the owner.
   const withUserIdAsUser = { ...withoutUser, user: t.owner_id }
-  const withImages = audiusBackendInstance.getTrackImages(withUserIdAsUser)
-  const withCosign = setIsCoSigned(withImages)
+  const withCosign = setIsCoSigned(withUserIdAsUser)
   const withFieldVisibility = setFieldVisibility(withCosign)
 
   const withDefaultSaves = setDefaultFolloweeSaves(withFieldVisibility)

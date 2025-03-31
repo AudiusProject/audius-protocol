@@ -4,10 +4,12 @@ import { ModalSource } from '~/models/Analytics'
 
 import { AddFundsModalState } from './add-funds-modal'
 import { AlbumTrackRemoveConfirmationModalState } from './album-track-remove-confirmation-modal'
+import { AnnouncementModalState } from './announcement-modal'
 import { ArtistPickModalState } from './artist-pick-modal'
 import { CoinflowOnrampModalState } from './coinflow-onramp-modal'
 import { CoinflowWithdrawModalState } from './coinflow-withdraw-modal'
 import { ChatBlastModalState } from './create-chat-blast-modal'
+import { DeleteTrackConfirmationModalState } from './delete-track-confirmation-modal'
 import { EarlyReleaseConfirmationModalState } from './early-release-confirmation-modal'
 import { EditAccessConfirmationModalState } from './edit-access-confirmation-modal'
 import { HideContentConfirmationModalState } from './hide-confirmation-modal'
@@ -15,6 +17,8 @@ import { InboxUnavailableModalState } from './inbox-unavailable-modal'
 import { LeavingAudiusModalState } from './leaving-audius-modal'
 import { PremiumContentPurchaseModalState } from './premium-content-purchase-modal'
 import { PublishConfirmationModalState } from './publish-confirmation-modal'
+import { ReplaceTrackConfirmationModalState } from './replace-track-confirmation-modal'
+import { ReplaceTrackProgressModalState } from './replace-track-progress-modal'
 import { UploadConfirmationModalState } from './upload-confirmation-modal'
 import { USDCManualTransferModalState } from './usdc-manual-transfer-modal'
 import { USDCPurchaseDetailsModalState } from './usdc-purchase-details-modal'
@@ -35,7 +39,7 @@ export type CreateChatModalState = {
 export type Modals =
   | 'TiersExplainer'
   | 'TrendingRewardsExplainer'
-  | 'ChallengeRewardsExplainer'
+  | 'ChallengeRewards'
   | 'ClaimAllRewards'
   | 'LinkSocialRewardsExplainer'
   | 'APIRewardsExplainer'
@@ -58,6 +62,9 @@ export type Modals =
   | 'Overflow'
   | 'AddToCollection'
   | 'DeletePlaylistConfirmation'
+  | 'DeleteTrackConfirmation'
+  | 'ReplaceTrackConfirmation'
+  | 'ReplaceTrackProgress'
   | 'FeatureFlagOverride'
   | 'BuyAudio'
   | 'BuyAudioRecovery'
@@ -95,6 +102,10 @@ export type Modals =
   | 'ArtistPick'
   | 'AlbumTrackRemoveConfirmation'
   | 'PayoutWallet'
+  | 'EditTrackFormOverflowMenu'
+  | 'ExternalWalletSignUp'
+  | 'Announcement'
+  | 'Notification'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState
@@ -121,6 +132,11 @@ export type StatefulModalsState = {
   EarlyReleaseConfirmation: EarlyReleaseConfirmationModalState
   PublishConfirmation: PublishConfirmationModalState
   HideContentConfirmation: HideContentConfirmationModalState
+  DeleteTrackConfirmation: DeleteTrackConfirmationModalState
+  ReplaceTrackConfirmation: ReplaceTrackConfirmationModalState
+  ReplaceTrackProgress: ReplaceTrackProgressModalState
+  Announcement: AnnouncementModalState
+  Notification: BaseModalState
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState

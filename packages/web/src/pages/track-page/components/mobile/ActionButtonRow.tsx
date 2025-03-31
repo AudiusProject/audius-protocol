@@ -6,7 +6,7 @@ import {
   IconPencil
 } from '@audius/harmony'
 import cn from 'classnames'
-import Lottie from 'react-lottie'
+import Lottie from 'lottie-react'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import AnimatedIconButton, {
@@ -105,13 +105,7 @@ const ActionButtonRow = ({
   const renderSpinner = () => {
     return (
       <div className={cn(styles.actionButton, styles.spinner)}>
-        <Lottie
-          options={{
-            loop: true,
-            autoplay: true,
-            animationData: loadingSpinner
-          }}
-        />
+        <Lottie loop autoplay animationData={loadingSpinner} />
       </div>
     )
   }

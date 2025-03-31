@@ -21,7 +21,10 @@ export enum BuyUSDCErrorCode {
 }
 
 export class BuyUSDCError extends Error {
-  constructor(public code: BuyUSDCErrorCode, message: string) {
+  constructor(
+    public code: BuyUSDCErrorCode,
+    message: string
+  ) {
     super(message)
   }
 }

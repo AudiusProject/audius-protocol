@@ -2,6 +2,7 @@ import type { ChangeEvent } from 'react'
 import { useCallback, useEffect, useState } from 'react'
 
 import { css } from '@emotion/native'
+import type { GestureResponderEvent } from 'react-native'
 import { Pressable } from 'react-native'
 
 import {
@@ -16,9 +17,10 @@ import { Flex } from '../../layout'
 
 import type { FollowButtonProps } from './types'
 
-const messages = {
+const defaultMessages = {
   follow: 'Follow',
-  following: 'Following'
+  following: 'Following',
+  unfollow: 'Unfollow'
 }
 
 export const FollowButton = (props: FollowButtonProps) => {
@@ -30,12 +32,14 @@ export const FollowButton = (props: FollowButtonProps) => {
     size = 'default',
     value,
     onChange,
+    messages: messagesProp,
     ...other
   } = props
-  const { disabled } = other
+  const { disabled, onPress } = other
   const [following, setFollowing] = useState(isFollowing)
   const { color, cornerRadius } = useTheme()
   const isInput = !!onChange
+  const messages = { ...defaultMessages, ...messagesProp }
 
   useEffect(() => {
     setFollowing(isFollowing)
@@ -43,18 +47,22 @@ export const FollowButton = (props: FollowButtonProps) => {
 
   const Icon = following ? IconUserFollowing : IconUserFollow
 
-  const handlePress = useCallback(() => {
-    if (following) {
-      onUnfollow?.()
-    } else {
-      haptics.medium()
-      onFollow?.()
-    }
-    onChange?.({
-      target: { value, checked: !following, type: 'checkbox' }
-    } as ChangeEvent<HTMLInputElement>)
-    setFollowing(!following)
-  }, [following, onChange, value, onUnfollow, onFollow])
+  const handlePress = useCallback(
+    (event: GestureResponderEvent) => {
+      if (following) {
+        onUnfollow?.()
+      } else {
+        haptics.medium()
+        onFollow?.()
+      }
+      onChange?.({
+        target: { value, checked: !following, type: 'checkbox' }
+      } as ChangeEvent<HTMLInputElement>)
+      setFollowing(!following)
+      onPress?.(event)
+    },
+    [following, onChange, value, onUnfollow, onFollow, onPress]
+  )
 
   const inputProps = isInput
     ? {
@@ -66,15 +74,15 @@ export const FollowButton = (props: FollowButtonProps) => {
     : null
 
   return (
-    <Pressable onPress={handlePress} {...other} {...inputProps}>
+    <Pressable onPress={handlePress} disabled={disabled} {...inputProps}>
       <Flex
         h={size === 'small' ? 28 : 32}
         direction='row'
         alignItems='center'
         justifyContent='center'
         gap='xs'
-        pv='s'
         ph='l'
+        pv='s'
         border='default'
         style={css({
           opacity: disabled ? 0.45 : 1,

@@ -1,4 +1,4 @@
-import type { AuthService, EntityManagerService } from '../../services'
+import type { EntityManagerService } from '../../services'
 import {
   Action,
   AdvancedOptions,
@@ -20,8 +20,7 @@ import {
 export class DashboardWalletUsersApi extends GeneratedDashboardWalletUsersApi {
   constructor(
     config: Configuration,
-    private readonly entityManager: EntityManagerService,
-    private readonly auth: AuthService
+    private readonly entityManager: EntityManagerService
   ) {
     super(config)
   }
@@ -62,7 +61,6 @@ export class DashboardWalletUsersApi extends GeneratedDashboardWalletUsersApi {
         wallet,
         ...signatureMetadata
       }),
-      auth: this.auth,
       ...advancedOptions
     })
 
@@ -89,8 +87,7 @@ export class DashboardWalletUsersApi extends GeneratedDashboardWalletUsersApi {
       action: Action.DELETE,
       metadata: JSON.stringify({
         wallet
-      }),
-      auth: this.auth
+      })
     })
   }
 }

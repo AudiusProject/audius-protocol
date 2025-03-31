@@ -15,12 +15,12 @@ import {
   PopupMenuItem
 } from '@audius/harmony'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
 import { capitalize } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { Tile } from 'components/tile'
 import { track, make } from 'services/analytics'
+import { push as pushRoute } from 'utils/navigation'
 
 import styles from './UploadChip.module.css'
 const { UPLOAD_PAGE } = route

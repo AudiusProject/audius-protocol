@@ -104,10 +104,13 @@ export function getAllEntries(
   | { [id: string]: Collection }
 export function getAllEntries(state: CommonState, props: { kind: Kind }) {
   const entries = getCache(state, props).entries
-  return Object.keys(entries).reduce((acc, id) => {
-    acc[id] = entries[id as unknown as number].metadata
-    return acc
-  }, {} as { [id: string]: Track | Collection | User })
+  return Object.keys(entries).reduce(
+    (acc, id) => {
+      acc[id] = entries[id as unknown as number].metadata
+      return acc
+    },
+    {} as { [id: string]: Track | Collection | User }
+  )
 }
 
 export function getCache(

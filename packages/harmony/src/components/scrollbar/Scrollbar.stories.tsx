@@ -1,6 +1,6 @@
 import { StoryObj } from '@storybook/react'
 
-import { TextLink } from 'components/text-link'
+import { TextLink } from '~harmony/components/text-link'
 
 import { Text } from '../text'
 

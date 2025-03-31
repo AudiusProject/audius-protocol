@@ -1,5 +1,8 @@
+import { Name } from '@audius/common/models'
 import { toastActions } from '@audius/common/store'
 import { takeEvery, put } from 'redux-saga/effects'
+
+import { make } from 'common/store/analytics/actions'
 
 import * as errorActions from './actions'
 import { reportToSentry } from './reportToSentry'
@@ -12,8 +15,14 @@ function* handleError(action: errorActions.HandleErrorAction) {
       level: action.level,
       additionalInfo: action.additionalInfo,
       error: new Error(action.message),
-      name: action.name
+      name: action.name,
+      feature: action.feature
     })
+    yield put(
+      make(Name.APP_ERROR, {
+        errorMessage: action?.message ?? 'Unknown Error'
+      })
+    )
   }
 
   // Toast error at the top of the page

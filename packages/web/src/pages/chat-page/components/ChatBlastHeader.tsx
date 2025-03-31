@@ -8,11 +8,10 @@ import {
   IconUserList,
   Text
 } from '@audius/harmony'
-import { ChatBlast } from '@audius/sdk'
+import { ChatBlast, OptionalHashId } from '@audius/sdk'
 
-import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
-import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
-import { decodeHashId } from 'utils/hashIds'
+import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
+import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 export const ChatBlastHeader = ({ chat }: { chat: ChatBlast }) => {
   const {
@@ -23,12 +22,15 @@ export const ChatBlastHeader = ({ chat }: { chat: ChatBlast }) => {
     useChatBlastAudienceContent({
       chat
     })
-  const decodedId = decodeHashId(audienceContentId) ?? undefined
-  const albumArtwork = useCollectionCoverArt2(
-    decodedId,
-    SquareSizes.SIZE_150_BY_150
-  )
-  const trackArtwork = useTrackCoverArt2(decodedId, SquareSizes.SIZE_150_BY_150)
+  const decodedId = OptionalHashId.parse(audienceContentId)
+  const albumArtwork = useCollectionCoverArt({
+    collectionId: decodedId,
+    size: SquareSizes.SIZE_150_BY_150
+  })
+  const trackArtwork = useTrackCoverArt({
+    trackId: decodedId,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   return (
     <Flex justifyContent='space-between' w='100%'>

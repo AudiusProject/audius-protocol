@@ -2,7 +2,7 @@ import type { ReactElement } from 'react'
 
 import type { CSSObject } from '@emotion/react'
 
-import { Flex } from 'components'
+import { Flex } from '~harmony/components'
 
 import { ComponentRule, ComponentRuleSize } from './ComponentRule'
 

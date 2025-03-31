@@ -189,26 +189,27 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
   }, [userId, dispatch, onClose])
 
   switch (callToAction) {
-    case ChatPermissionAction.NONE:
+    case ChatPermissionAction.FOLLOW:
       return (
         <>
           <Text style={styles.callToActionText}>
-            {messages.noAction}
-            {user ? (
-              <UserBadges
-                user={user}
-                nameStyle={styles.callToActionText}
-                as={Text}
-              />
-            ) : null}
+            {messages.followRequired(
+              user ? (
+                <UserBadges
+                  user={user}
+                  nameStyle={styles.callToActionText}
+                  as={Text}
+                />
+              ) : null
+            )}
           </Text>
           <Button
-            key={messages.learnMore}
-            onPress={handleLearnMorePress}
-            variant='secondary'
+            key={messages.follow}
+            onPress={handleFollowPress}
+            variant='primary'
             fullWidth
           >
-            {messages.learnMore}
+            {messages.follow}
           </Button>
         </>
       )
@@ -237,30 +238,6 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
           </Button>
         </>
       )
-    case ChatPermissionAction.FOLLOW:
-      return (
-        <>
-          <Text style={styles.callToActionText}>
-            {messages.followRequired(
-              user ? (
-                <UserBadges
-                  user={user}
-                  nameStyle={styles.callToActionText}
-                  as={Text}
-                />
-              ) : null
-            )}
-          </Text>
-          <Button
-            key={messages.follow}
-            onPress={handleFollowPress}
-            variant='primary'
-            fullWidth
-          >
-            {messages.follow}
-          </Button>
-        </>
-      )
     case ChatPermissionAction.UNBLOCK:
       return (
         <>
@@ -280,6 +257,29 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
             fullWidth
           >
             {messages.cancel}
+          </Button>
+        </>
+      )
+    case ChatPermissionAction.NONE:
+      return (
+        <>
+          <Text style={styles.callToActionText}>
+            {messages.noAction}
+            {user ? (
+              <UserBadges
+                user={user}
+                nameStyle={styles.callToActionText}
+                as={Text}
+              />
+            ) : null}
+          </Text>
+          <Button
+            key={messages.learnMore}
+            onPress={handleLearnMorePress}
+            variant='secondary'
+            fullWidth
+          >
+            {messages.learnMore}
           </Button>
         </>
       )

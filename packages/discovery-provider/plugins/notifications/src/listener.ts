@@ -38,6 +38,8 @@ export class Listener {
     logger.info('did connect')
 
     this.client.on('notification', async (msg: Notification) => {
+      // Only process events from notification table
+      if (msg.channel !== 'notification') return
       const { notification_id }: { notification_id: number } = JSON.parse(
         msg.payload
       )

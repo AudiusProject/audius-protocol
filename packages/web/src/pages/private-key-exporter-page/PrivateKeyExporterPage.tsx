@@ -21,7 +21,6 @@ import {
   IconAudiusLogoHorizontalColor,
   Switch
 } from '@audius/harmony'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 
@@ -29,13 +28,14 @@ import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Avatar } from 'components/avatar/Avatar'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
+import { push } from 'utils/navigation'
 import { useSelector } from 'utils/reducer'
 import { isDarkMode } from 'utils/theme/theme'
 
 import styles from './PrivateKeyExporterPage.module.css'
 
 const { SETTINGS_PAGE, TRENDING_PAGE } = route
-const getAccountUser = accountSelectors.getAccountUser
+const { getUserId, getUserHandle } = accountSelectors
 
 const messages = {
   backToSettings: 'Back To Settings',
@@ -81,7 +81,7 @@ const AUDIUS_SUPPORT_EMAIL = 'support@audius.co'
 
 const Header = () => {
   const { color } = useTheme()
-  const user = useSelector(getAccountUser)
+  const accountUserId = useSelector(getUserId)
   const darkMode = isDarkMode()
   return (
     <Flex
@@ -107,7 +107,10 @@ const Header = () => {
         )}
       </Link>
       <Flex direction='row-reverse'>
-        <Avatar userId={user?.user_id} css={{ width: 52, height: 52 }} />
+        <Avatar
+          userId={accountUserId ?? undefined}
+          css={{ width: 52, height: 52 }}
+        />
       </Flex>
     </Flex>
   )
@@ -116,7 +119,7 @@ const Header = () => {
 const BackToSettings = () => {
   const dispatch = useDispatch()
   const handleClick = useCallback(() => {
-    dispatch(pushRoute(SETTINGS_PAGE))
+    dispatch(push(SETTINGS_PAGE))
   }, [dispatch])
   return (
     <PlainButton iconLeft={IconCaretLeft} onClick={handleClick}>
@@ -291,7 +294,7 @@ const AgreeAndContinue = () => {
     messages.iAcknowledge
   ]
   const handleCancel = useCallback(() => {
-    dispatch(pushRoute(SETTINGS_PAGE))
+    dispatch(push(SETTINGS_PAGE))
   }, [dispatch])
   const handleProceed = useCallback(() => {
     setIsPrivateKeyExporterModalVisible(true)
@@ -337,22 +340,23 @@ const AgreeAndContinue = () => {
   )
 }
 
-export const PrivateKeyExporterPage = () => {
+const PrivateKeyExporterPage = () => {
   useRequiresAccount()
   const record = useRecord()
-  const user = useSelector(getAccountUser) ?? undefined
+  const accountUserId = useSelector(getUserId)
+  const accountHandle = useSelector(getUserHandle)
   const [hasViewed, setHasViewed] = useState(false)
   useEffect(() => {
-    if (user && !hasViewed) {
+    if (accountHandle && accountUserId && !hasViewed) {
       setHasViewed(true)
       record(
         make(Name.EXPORT_PRIVATE_KEY_PAGE_VIEWED, {
-          handle: user.handle,
-          userId: user.user_id
+          handle: accountHandle,
+          userId: accountUserId
         })
       )
     }
-  }, [user, hasViewed, record])
+  }, [accountHandle, accountUserId, hasViewed, record])
   return (
     <Flex direction='column' css={{ width: '100%' }}>
       <Header />

@@ -1,4 +1,4 @@
-import { Config, readConfig } from './config/config'
+import { chainId, Config, readConfig } from './config/config'
 import { ethers, providers } from 'ethers'
 import { WalletManager } from './walletManager'
 import { logger } from './logger'
@@ -26,11 +26,17 @@ export let web3: providers.JsonRpcProvider
 export let wallets: WalletManager
 
 const main = async () => {
-  // async config
-  const connectedWeb3 = await connectWeb3(config)
-  web3 = connectedWeb3.web3
-  config.acdcChainId = connectedWeb3.chainId.toString()
-  wallets = new WalletManager(web3)
+  try {
+    // async config
+    const connectedWeb3 = await connectWeb3(config)
+    web3 = connectedWeb3.web3
+    config.acdcChainId = connectedWeb3.chainId.toString()
+    wallets = new WalletManager(web3)
+  } catch (e) {
+    logger.warn("web3 not configured for relay, acdc not reachable")
+  }
+  // needs to stay so decoding can happen correctly
+  config.acdcChainId = chainId(config)
 
   // start webserver after async config
   const { serverHost, serverPort } = config

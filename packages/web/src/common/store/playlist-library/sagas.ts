@@ -1,12 +1,11 @@
 import {
-  Kind,
   PlaylistLibraryID,
   PlaylistIdentifier,
   AccountCollection
 } from '@audius/common/models'
 import {
   accountSelectors,
-  cacheActions,
+  accountActions,
   playlistLibraryActions,
   playlistLibraryHelpers
 } from '@audius/common/store'
@@ -31,25 +30,21 @@ const { getAccountNavigationPlaylists, getAccountUser, getPlaylistLibrary } =
 function* watchUpdatePlaylistLibrary() {
   yield* takeEvery(
     update.type,
-    function* updatePlaylistLibrary(action: ReturnType<typeof update>) {
+    function* handleUpdatePlaylistLibrary(action: ReturnType<typeof update>) {
       yield* waitForWrite()
       const { playlistLibrary } = action.payload
 
       const account = yield* select(getAccountUser)
       if (!account) return
 
-      account.playlist_library =
+      const updatedPlaylistLibrary =
         removePlaylistLibraryDuplicates(playlistLibrary)
-      yield* put(
-        cacheActions.update(Kind.USERS, [
-          {
-            id: account.user_id,
-            metadata: account
-          }
-        ])
-      )
 
-      yield* fork(updateProfileAsync, { metadata: account })
+      yield* put(accountActions.updatePlaylistLibrary(updatedPlaylistLibrary))
+
+      yield* fork(updateProfileAsync, {
+        metadata: { ...account, playlist_library: updatedPlaylistLibrary }
+      })
     }
   )
 }
@@ -71,7 +66,7 @@ export function* addPlaylistsNotInLibrary() {
         ({
           playlist_id: playlist.id,
           type: 'playlist'
-        } as PlaylistIdentifier)
+        }) as PlaylistIdentifier
     )
     const newContents = [...newEntries, ...library.contents]
     yield* put(

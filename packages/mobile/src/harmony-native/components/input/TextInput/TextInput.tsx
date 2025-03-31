@@ -86,7 +86,7 @@ export const TextInput = forwardRef(
 
     const innerInputRef = useRef<RNTextInput>(null)
 
-    const { typography, color, motion, cornerRadius } = useTheme()
+    const { typography, color, motion, cornerRadius, type } = useTheme()
 
     let endAdornment: null | ReactNode
     if (EndIcon != null) {
@@ -162,10 +162,10 @@ export const TextInput = forwardRef(
     const statusColor = disabled
       ? 'subdued'
       : error
-      ? 'danger'
-      : warning || _incorrectError
-      ? 'warning'
-      : undefined
+        ? 'danger'
+        : warning || _incorrectError
+          ? 'warning'
+          : undefined
 
     const handlePressRoot = useCallback(() => {
       if (!isFocused) {
@@ -197,8 +197,8 @@ export const TextInput = forwardRef(
       const staticBorderColor = _isFocused
         ? color.secondary.s400
         : statusColor
-        ? color.text[statusColor]
-        : undefined
+          ? color.text[statusColor]
+          : undefined
 
       return {
         borderColor:
@@ -209,7 +209,7 @@ export const TextInput = forwardRef(
             [color.border.default, color.secondary.s400]
           )
       }
-    })
+    }, [statusColor, _isFocused, type])
 
     const animatedLabelStyle = useAnimatedStyle(() => ({
       fontSize: hasValue

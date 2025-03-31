@@ -1,17 +1,11 @@
 import { useCallback } from 'react'
 
-import {
-  accountSelectors,
-  cacheUsersSelectors,
-  profilePageSelectors
-} from '@audius/common/store'
-import { removeNullable } from '@audius/common/utils'
-import { IconUserFollowing } from '@audius/harmony'
+import { useMutualFollowers, useUsers } from '@audius/common/api'
+import { User } from '@audius/common/models'
+import { accountSelectors, profilePageSelectors } from '@audius/common/store'
+import { Flex, IconUserFollowing } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
-import { createSelector } from 'reselect'
 
-import { ProfilePageNavSectionTitle } from 'components/profile-page-nav-section-title/ProfilePageNavSectionTitle'
-import { ProfilePictureListTile } from 'components/profile-picture-list-tile/ProfilePictureListTile'
 import {
   setUsers,
   setVisibility
@@ -21,11 +15,11 @@ import {
   UserListType
 } from 'store/application/ui/userListModal/types'
 
-import styles from './ProfileMutuals.module.css'
-const { getFolloweeFollows, getProfileUser, getProfileUserId } =
-  profilePageSelectors
-const { getUsers } = cacheUsersSelectors
-const getUserId = accountSelectors.getUserId
+import { ProfilePageNavSectionTitle } from './ProfilePageNavSectionTitle'
+import { ProfilePictureListTile } from './ProfilePictureListTile'
+
+const { getProfileUser, getProfileUserId } = profilePageSelectors
+const { getUserId } = accountSelectors
 
 const messages = {
   mutuals: 'Mutuals'
@@ -33,23 +27,17 @@ const messages = {
 
 const MAX_MUTUALS = 5
 
-const selectMutuals = createSelector(
-  [getFolloweeFollows, getUsers],
-  (followeeFollows, users) => {
-    return (
-      followeeFollows?.userIds
-        .map(({ id }) => users[id])
-        .filter(removeNullable) ?? []
-    )
-  }
-)
-
 export const ProfileMutuals = () => {
   const userId = useSelector(getProfileUserId)
   const accountId = useSelector(getUserId)
-  const profile = useSelector(getProfileUser)
+  const profile = useSelector(getProfileUser) as User | null
+  const { data: mutuals } = useMutualFollowers({
+    userId,
+    pageSize: MAX_MUTUALS
+  })
 
-  const mutuals = useSelector(selectMutuals)
+  const { data: users = [] } = useUsers(mutuals)
+
   const dispatch = useDispatch()
 
   const handleClick = useCallback(() => {
@@ -64,23 +52,23 @@ export const ProfileMutuals = () => {
     dispatch(setVisibility(true))
   }, [dispatch, userId])
 
-  if (!profile || userId === accountId || mutuals.length === 0) {
+  if (!profile || userId === accountId || !mutuals || mutuals.length === 0) {
     return null
   }
 
   return (
-    <div>
+    <Flex column gap='m'>
       <ProfilePageNavSectionTitle
         title={messages.mutuals}
-        titleIcon={<IconUserFollowing className={styles.followingIcon} />}
+        Icon={IconUserFollowing}
       />
       <ProfilePictureListTile
         onClick={handleClick}
-        users={mutuals}
+        users={users}
         totalUserCount={profile.current_user_followee_follow_count}
         limit={MAX_MUTUALS}
         disableProfileClick
       />
-    </div>
+    </Flex>
   )
 }

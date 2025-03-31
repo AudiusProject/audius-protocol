@@ -1,4 +1,4 @@
-import { createRef, Component } from 'react'
+import { useRef, useState, useEffect, useCallback } from 'react'
 
 import {
   IconVolumeLevel0 as IconVolume0,
@@ -31,19 +31,31 @@ const getSavedVolume = (defaultVolume) => {
   }
 }
 
-class VolumeBar extends Component {
-  state = {
-    volumeLevel: getSavedVolume(this.props.defaultValue)
-  }
+const VolumeBar = ({
+  defaultValue = 100,
+  onChange = () => {},
+  granularity
+}) => {
+  const [volumeLevel, setVolumeLevel] = useState(getSavedVolume(defaultValue))
+  const volumeBarRef = useRef()
 
-  volumeBarRef = createRef()
+  const volumeChange = useCallback(
+    (value, persist = true) => {
+      if (persist) {
+        window.localStorage.setItem('volume', value)
+      }
+      setVolumeLevel(value)
+      onChange(value)
+    },
+    [onChange]
+  )
 
-  componentDidMount() {
+  useEffect(() => {
     const volumeUp = () => {
-      this.volumeChange(Math.min(this.state.volumeLevel + 10, 100))
+      volumeChange(Math.min(volumeLevel + 10, 100))
     }
     const volumeDown = () => {
-      this.volumeChange(Math.max(this.state.volumeLevel - 10, 0))
+      volumeChange(Math.max(volumeLevel - 10, 0))
     }
     setupHotkeys({
       38 /* up */: { cb: volumeUp, or: [ModifierKeys.CTRL, ModifierKeys.CMD] },
@@ -53,66 +65,43 @@ class VolumeBar extends Component {
       }
     })
     // Ensure rounded edges at the default volume (100%).
-    this.volumeChange(this.state.volumeLevel)
+    volumeChange(volumeLevel)
+  }, [volumeChange, volumeLevel])
+
+  const mute = () => {
+    volumeChange(0, false)
   }
 
-  /**
-   * @param {number} value volume number to set, 0 to 100
-   * @param {boolean} persist whether or not toe persist the change to local storage
-   */
-  volumeChange = (value, persist = true) => {
-    // Round the volume bar tracker's right edge when it reaches 100%
-    if (persist) {
-      window.localStorage.setItem('volume', value)
-    }
-    this.setState({ volumeLevel: value })
-    this.props.onChange(value)
+  const unmute = () => {
+    const unmuteVolume = Math.max(10, getSavedVolume(defaultValue))
+    volumeChange(unmuteVolume)
   }
 
-  mute = () => {
-    this.volumeChange(0, false)
+  const onClick = () => {
+    volumeLevel > 0 ? mute() : unmute()
   }
 
-  unmute = () => {
-    const unmuteVolume = Math.max(10, getSavedVolume(this.props.defaultValue))
-    this.volumeChange(unmuteVolume)
-  }
+  const VolumeIcon = getVolumeIcon(volumeLevel)
 
-  onClick = () => {
-    this.state.volumeLevel > 0 ? this.mute() : this.unmute()
-  }
-
-  render() {
-    const { volumeLevel } = this.state
-    const { granularity, defaultValue } = this.props
-
-    const VolumeIcon = getVolumeIcon(volumeLevel)
-
-    return (
-      <div className={styles.volumeBarWrapper}>
-        <VolumeIcon onClick={this.onClick} className={styles.volumeIcon} />
-        <div ref={this.volumeBarRef} className={styles.volumeBar}>
-          <Slider
-            defaultValue={defaultValue}
-            value={this.state.volumeLevel}
-            max={granularity}
-            showHandle={false}
-            onChange={this.volumeChange}
-          />
-        </div>
+  return (
+    <div className={styles.volumeBarWrapper}>
+      <VolumeIcon onClick={onClick} className={styles.volumeIcon} />
+      <div ref={volumeBarRef} className={styles.volumeBar}>
+        <Slider
+          defaultValue={defaultValue}
+          value={volumeLevel}
+          max={granularity}
+          showHandle={false}
+          onChange={volumeChange}
+        />
       </div>
-    )
-  }
+    </div>
+  )
 }
 
 VolumeBar.propTypes = {
   defaultValue: PropTypes.number,
   onChange: PropTypes.func
-}
-
-VolumeBar.defaultProps = {
-  defaultValue: 100,
-  onChange: () => {}
 }
 
 export default VolumeBar

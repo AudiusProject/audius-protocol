@@ -5,11 +5,11 @@ import {
   coinflowModalUIActions,
   useCoinflowOnrampModal
 } from '@audius/common/store'
-import { CoinflowPurchase } from '@coinflowlabs/react'
+import { CoinflowPurchase, Currency } from '@coinflowlabs/react'
 import { VersionedTransaction } from '@solana/web3.js'
 import { useDispatch } from 'react-redux'
 
-import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
+import ModalDrawer from 'components/modal-drawer/ModalDrawer'
 import { env } from 'services/env'
 import { isElectron } from 'utils/clientUtil'
 import zIndex from 'utils/zIndex'
@@ -23,7 +23,7 @@ const IS_PRODUCTION = env.ENVIRONMENT === 'production'
 
 export const CoinflowOnrampModal = () => {
   const {
-    data: { amount, serializedTransaction, purchaseMetadata },
+    data: { amount, serializedTransaction, purchaseMetadata, guestEmail },
     isOpen,
     onClose,
     onClosed
@@ -74,6 +74,7 @@ export const CoinflowOnrampModal = () => {
     >
       {showContent ? (
         <CoinflowPurchase
+          email={guestEmail}
           transaction={transaction}
           wallet={adapter.wallet}
           chargebackProtectionData={purchaseMetadata ? [purchaseMetadata] : []}
@@ -84,7 +85,7 @@ export const CoinflowOnrampModal = () => {
           disableGooglePay={isElectron()}
           disableApplePay={isElectron()}
           blockchain='solana'
-          amount={amount}
+          subtotal={{ cents: amount * 100, currency: Currency.USD }}
         />
       ) : null}
     </ModalDrawer>

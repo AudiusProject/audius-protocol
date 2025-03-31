@@ -1,5 +1,4 @@
 import type { CrossPlatformFile as File } from '../../types/File'
-import type { AuthService } from '../Auth'
 import type { LoggerService } from '../Logger'
 import type { StorageNodeSelectorService } from '../StorageNodeSelector'
 
@@ -17,7 +16,23 @@ export type StorageServiceConfig = Partial<StorageServiceConfigInternal> & {
   storageNodeSelector: StorageNodeSelectorService
 }
 
-export type ProgressCB = (loaded: number, total: number) => void
+export type ProgressHandler = (
+  progress:
+    | {
+        art: {
+          upload?: { loaded: number; total: number }
+          transcode?: { decimal: number }
+          resize?: undefined
+        }
+      }
+    | {
+        audio: {
+          upload?: { loaded: number; total: number }
+          transcode?: { decimal: number }
+          resize?: undefined
+        }
+      }
+) => void
 
 export type FileTemplate = 'audio' | 'img_square' | 'img_backdrop'
 
@@ -29,19 +44,17 @@ export type StorageService = {
     options
   }: {
     file: File
-    onProgress?: ProgressCB
+    onProgress?: ProgressHandler
     template: FileTemplate
     options?: { [key: string]: string }
   }) => Promise<UploadResponse>
-  editFile: ({
-    uploadId,
-    data,
-    auth
+  generatePreview: ({
+    cid,
+    secondOffset
   }: {
-    uploadId: string
-    data: { [key: string]: string }
-    auth: AuthService
-  }) => Promise<UploadResponse>
+    cid: string
+    secondOffset: number
+  }) => Promise<string>
 }
 
 export type ProcessingStatus =
@@ -70,4 +83,5 @@ export type UploadResponse = {
       duration: string
     }
   }
+  transcode_progress?: number
 }

@@ -1,10 +1,8 @@
-import { useGetPlaylistById, useGetCurrentUserId } from '@audius/common/api'
-import { useFeatureFlag } from '@audius/common/hooks'
+import { useMemo } from 'react'
+
+import { useCollection, useTracks } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
-import { cacheCollectionsSelectors } from '@audius/common/store'
-import type { CommonState } from '@audius/common/store'
-import { useSelector } from 'react-redux'
+import { pick } from 'lodash'
 
 import {
   Flex,
@@ -18,9 +16,6 @@ import { FavoriteButton } from 'app/components/favorite-button'
 import { RepostButton } from 'app/components/repost-button'
 import { makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
-
-const { getCollectionHasHiddenTracks, getIsCollectionEmpty } =
-  cacheCollectionsSelectors
 
 const getMessages = (collectionType: 'album' | 'playlist') => ({
   publishButtonEmptyDisabledContent: 'You must add at least 1 track.',
@@ -81,26 +76,19 @@ export const DetailsTileActionButtons = ({
   onPressSave,
   onPressShare
 }: DetailsTileActionButtonsProps) => {
-  const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
-    FeatureFlags.HIDDEN_PAID_SCHEDULED
-  )
-
   const styles = useStyles()
-  const isCollectionEmpty = useSelector((state: CommonState) =>
-    getIsCollectionEmpty(state, { id: collectionId })
+  const { data: partialCollection } = useCollection(collectionId, {
+    select: (collection) => pick(collection, ['playlist_contents', 'is_album'])
+  })
+  const { playlist_contents, is_album } = partialCollection ?? {}
+  const isCollectionEmpty = playlist_contents?.track_ids.length === 0
+  const { data: tracks } = useTracks(
+    playlist_contents?.track_ids.map((t) => t.track)
   )
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: collection } = useGetPlaylistById(
-    {
-      playlistId: collectionId!,
-      currentUserId
-    },
-    { disabled: !collectionId || !isCollection }
-  )
-  const collectionHasHiddenTracks = useSelector((state: CommonState) =>
-    getCollectionHasHiddenTracks(state, { id: collectionId })
-  )
-  const messages = getMessages(collection?.is_album ? 'album' : 'playlist')
+  const collectionHasHiddenTracks = useMemo(() => {
+    return tracks?.some((track) => track.is_unlisted)
+  }, [tracks])
+  const messages = getMessages(is_album ? 'album' : 'playlist')
 
   const repostButton = (
     <RepostButton
@@ -161,10 +149,7 @@ export const DetailsTileActionButtons = ({
     <IconButton
       color='subdued'
       icon={IconRocket}
-      disabled={
-        isCollectionEmpty ||
-        (collectionHasHiddenTracks && !isHiddenPaidScheduledEnabled)
-      }
+      disabled={isCollectionEmpty}
       disabledHint={
         collectionHasHiddenTracks
           ? messages.publishButtonHiddenDisabledContent

@@ -1,15 +1,17 @@
+import { useCollectionByPermalink } from '@audius/common/api'
 import {
-  useGetCurrentUserId,
-  useGetPlaylistByPermalink
-} from '@audius/common/api'
-import { Name, SquareSizes, Status } from '@audius/common/models'
+  Name,
+  SquareSizes,
+  Status,
+  UserTrackMetadata
+} from '@audius/common/models'
 import { CollectionValues } from '@audius/common/schemas'
+import { useTracks } from '@audius/common/src/api/tan-query/useTracks'
+import { useUsers } from '@audius/common/src/api/tan-query/useUsers'
 import {
   EditCollectionValues,
-  cacheCollectionsActions,
-  cacheCollectionsSelectors
+  cacheCollectionsActions
 } from '@audius/common/store'
-import { replace } from 'connected-react-router'
 import { isEqual } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router'
@@ -17,19 +19,18 @@ import { useRouteMatch } from 'react-router-dom'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { EditCollectionForm } from 'components/edit-collection/EditCollectionForm'
-import Header from 'components/header/desktop/Header'
+import { Header } from 'components/header/desktop/Header'
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import Page from 'components/page/Page'
-import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
+import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useIsUnauthorizedForHandleRedirect } from 'hooks/useManagedAccountNotAllowedRedirect'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { track } from 'services/analytics'
-import { useSelector } from 'utils/reducer'
+import { replace } from 'utils/navigation'
 
-import { updatePlaylistContents } from '../utils'
+import { getEditablePlaylistContents, updatePlaylistContents } from '../utils'
 
 const { editPlaylist } = cacheCollectionsActions
-const { getCollection } = cacheCollectionsSelectors
 
 type EditCollectionPageParams = {
   handle: string
@@ -50,33 +51,35 @@ export const EditCollectionPage = () => {
   useRequiresAccount()
   useIsUnauthorizedForHandleRedirect(handle)
 
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: apiCollection, status } = useGetPlaylistByPermalink(
-    {
-      permalink,
-      currentUserId
-    },
-    { disabled: !currentUserId, force: true }
-  )
+  const { data: collection } = useCollectionByPermalink(permalink)
 
-  const localCollection = useSelector((state) =>
-    getCollection(state, { permalink })
-  )
+  const { playlist_id, trackIds, description, playlist_contents } =
+    collection ?? {}
 
-  const collection = status === Status.ERROR ? localCollection : apiCollection
+  const { data: tracks } = useTracks(trackIds)
+  const { data: users } = useUsers(tracks?.map((t) => t.owner_id))
 
-  const { playlist_id, tracks, description } = collection ?? {}
+  const tracksWithUsers: UserTrackMetadata[] = tracks?.map((t) => ({
+    ...t,
+    user: users?.find((u) => u.user_id === t.owner_id)
+  })) as UserTrackMetadata[]
 
-  const artworkUrl = useCollectionCoverArt2(
-    playlist_id,
-    SquareSizes.SIZE_1000_BY_1000
-  )
+  const artworkUrl = useCollectionCoverArt({
+    collectionId: playlist_id,
+    size: SquareSizes.SIZE_1000_BY_1000
+  })
 
   const initialValues = {
     ...collection,
     description: description ?? undefined,
     artwork: { url: artworkUrl! },
-    tracks: tracks?.map((track) => ({ metadata: track })) ?? [],
+    tracks:
+      tracksWithUsers && playlist_contents
+        ? getEditablePlaylistContents({
+            playlist_contents,
+            tracks: tracksWithUsers
+          })
+        : [],
     isUpload: false
   } as CollectionValues
 

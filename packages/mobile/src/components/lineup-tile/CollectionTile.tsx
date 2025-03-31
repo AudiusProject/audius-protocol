@@ -1,12 +1,12 @@
 import { useCallback, useMemo } from 'react'
 
+import { useCollection, useUser } from '@audius/common/api'
 import { useProxySelector } from '@audius/common/hooks'
 import {
   ShareSource,
   RepostSource,
   FavoriteSource,
   PlaybackSource,
-  FavoriteType,
   SquareSizes,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
@@ -14,13 +14,11 @@ import type { Collection, Track, User } from '@audius/common/models'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
-  cacheUsersSelectors,
   collectionsSocialActions,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
   OverflowAction,
   OverflowSource,
-  RepostType,
   playerSelectors
 } from '@audius/common/store'
 import type { EnhancedCollectionTrack, CommonState } from '@audius/common/store'
@@ -28,10 +26,11 @@ import { removeNullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
 import type { ImageProps } from '@audius/harmony-native'
-import { CollectionImage } from 'app/components/image/CollectionImage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { setVisibility } from 'app/store/drawers/slice'
 import { getIsCollectionMarkedForDownload } from 'app/store/offline-downloads/selectors'
+
+import { CollectionImage } from '../image/CollectionImage'
 
 import { CollectionTileTrackList } from './CollectionTileTrackList'
 import { LineupTile } from './LineupTile'
@@ -45,24 +44,20 @@ const {
   undoRepostCollection,
   unsaveCollection
 } = collectionsSocialActions
-const { getUserFromCollection } = cacheUsersSelectors
-const { getCollection, getTracksFromCollection } = cacheCollectionsSelectors
+const { getTracksFromCollection } = cacheCollectionsSelectors
 const getUserId = accountSelectors.getUserId
 
 export const CollectionTile = (props: LineupItemProps) => {
   const {
     uid,
+    id,
     collection: collectionOverride,
     tracks: tracksOverride,
     source = LineupTileSource.LINEUP_COLLECTION
   } = props
 
-  const collection = useProxySelector(
-    (state) => {
-      return collectionOverride ?? getCollection(state, { uid })
-    },
-    [collectionOverride, uid]
-  )
+  const { data: cachedCollection } = useCollection(id)
+  const collection = collectionOverride ?? cachedCollection
 
   const tracks = useProxySelector(
     (state) => {
@@ -71,10 +66,7 @@ export const CollectionTile = (props: LineupItemProps) => {
     [tracksOverride, uid]
   )
 
-  const user = useProxySelector(
-    (state) => getUserFromCollection(state, { uid }),
-    [uid]
-  )
+  const { data: user } = useUser(collection?.playlist_owner_id)
 
   if (!collection || !tracks || !user) {
     console.warn(
@@ -146,22 +138,24 @@ const CollectionTileComponent = ({
   const renderImage = useCallback(
     (props: ImageProps) => (
       <CollectionImage
-        collection={collection}
+        collectionId={playlist_id}
         size={SquareSizes.SIZE_150_BY_150}
         {...props}
       />
     ),
-    [collection]
+    [playlist_id]
   )
 
   const handlePress = useCallback(() => {
     if (!tracks.length) return
 
-    togglePlay({
-      uid: currentTrack?.uid ?? tracks[0]?.uid ?? null,
-      id: currentTrack?.track_id ?? tracks[0]?.track_id ?? null,
-      source: PlaybackSource.PLAYLIST_TILE_TRACK
-    })
+    setTimeout(() => {
+      togglePlay({
+        uid: currentTrack?.uid ?? tracks[0]?.uid ?? null,
+        id: currentTrack?.track_id ?? tracks[0]?.track_id ?? null,
+        source: PlaybackSource.PLAYLIST_TILE_TRACK
+      })
+    }, 100)
   }, [currentTrack, togglePlay, tracks])
 
   const handlePressTitle = useCallback(() => {
@@ -255,8 +249,6 @@ const CollectionTileComponent = ({
     <LineupTile
       {...lineupTileProps}
       duration={duration}
-      favoriteType={FavoriteType.PLAYLIST}
-      repostType={RepostType.COLLECTION}
       id={playlist_id}
       renderImage={renderImage}
       isPlayingUid={isPlayingUid}
@@ -272,7 +264,6 @@ const CollectionTileComponent = ({
       user={user}
       variant={variant}
       isUnlisted={isPrivate}
-      hideComments
     >
       <CollectionTileTrackList
         tracks={tracks}

@@ -55,12 +55,8 @@ export const PremiumTracksPage = ({ containerRef }: PremiumTracksPageProps) => {
   const renderLineup = () => {
     return (
       <Lineup
-        key='premium-tracks'
         endOfLineup={
-          <EndOfLineup
-            key='endOfLineup'
-            description={messages.endOfLineupDescription}
-          />
+          <EndOfLineup description={messages.endOfLineupDescription} />
         }
         {...lineupProps}
       />

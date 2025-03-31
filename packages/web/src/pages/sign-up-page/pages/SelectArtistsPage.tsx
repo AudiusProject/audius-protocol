@@ -16,10 +16,7 @@ import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import {
-  addFollowArtists,
-  completeFollowArtists
-} from 'common/store/pages/signon/actions'
+import { addFollowArtists } from 'common/store/pages/signon/actions'
 import { getGenres } from 'common/store/pages/signon/selectors'
 import {
   FollowArtistCard,
@@ -33,12 +30,14 @@ import { useSelector } from 'utils/reducer'
 
 import { AccountHeader } from '../components/AccountHeader'
 import { PreviewArtistHint } from '../components/PreviewArtistHint'
+import { SkipButton } from '../components/SkipButton'
 import {
   Heading,
   HiddenLegend,
   PageFooter,
   ScrollView
 } from '../components/layout'
+import { useFastReferral } from '../hooks/useFastReferral'
 
 const { SIGN_UP_APP_CTA_PAGE, SIGN_UP_COMPLETED_REDIRECT } = route
 
@@ -71,6 +70,7 @@ export const SelectArtistsPage = () => {
   const navigate = useNavigateToPage()
   const { color } = useTheme()
   const headerContainerRef = useRef<HTMLDivElement | null>(null)
+  const isFastReferral = useFastReferral()
   const { isMobile } = useMedia()
 
   const handleChangeGenre = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -82,7 +82,6 @@ export const SelectArtistsPage = () => {
       const { selectedArtists } = values
       const artistsIDArray = [...selectedArtists].map((a) => Number(a))
       dispatch(addFollowArtists(artistsIDArray))
-      dispatch(completeFollowArtists())
       if (isMobile) {
         navigate(SIGN_UP_COMPLETED_REDIRECT)
       } else {
@@ -116,7 +115,8 @@ export const SelectArtistsPage = () => {
     env.ENVIRONMENT === 'development' ||
     window.localStorage.getItem('FORCE_DEV') === 'true'
   // This a workaround flag for local envs that don't have any artists and get stuck at this screen
-  const noArtistsSkipValidation = artists?.length === 0 && isDevEnvironment
+  const noArtistsSkipValidation =
+    (!artists || artists.length === 0) && isDevEnvironment
 
   const ArtistsList = isMobile ? Flex : Paper
 
@@ -262,6 +262,7 @@ export const SelectArtistsPage = () => {
                 disabled: !isValid || isSubmitting,
                 isLoading: isSubmitting || isValidating
               }}
+              prefix={isFastReferral ? <SkipButton /> : null}
               postfix={
                 <Text variant='body'>
                   {selectArtistsPageMessages.selected}{' '}

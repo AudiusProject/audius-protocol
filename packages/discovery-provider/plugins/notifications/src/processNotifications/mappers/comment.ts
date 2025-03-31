@@ -54,13 +54,16 @@ export class Comment extends BaseNotification<CommentNotificationRow> {
       .from<UserRow>('users')
       .where('is_current', true)
       .whereIn('user_id', [this.receiverUserId, this.commenterUserId])
-    const users = res.reduce((acc, user) => {
-      acc[user.user_id] = {
-        name: user.name,
-        isDeactivated: user.is_deactivated
-      }
-      return acc
-    }, {} as Record<number, { name: string; isDeactivated: boolean }>)
+    const users = res.reduce(
+      (acc, user) => {
+        acc[user.user_id] = {
+          name: user.name,
+          isDeactivated: user.is_deactivated
+        }
+        return acc
+      },
+      {} as Record<number, { name: string; isDeactivated: boolean }>
+    )
 
     if (users?.[this.receiverUserId]?.isDeactivated) {
       return
@@ -76,10 +79,13 @@ export class Comment extends BaseNotification<CommentNotificationRow> {
         .from<TrackRow>('tracks')
         .where('is_current', true)
         .whereIn('track_id', [this.entityId])
-      const tracks = res.reduce((acc, track) => {
-        acc[track.track_id] = { title: track.title }
-        return acc
-      }, {} as Record<number, { title: string }>)
+      const tracks = res.reduce(
+        (acc, track) => {
+          acc[track.track_id] = { title: track.title }
+          return acc
+        },
+        {} as Record<number, { title: string }>
+      )
 
       entityType = 'track'
       entityName = tracks[this.entityId]?.title

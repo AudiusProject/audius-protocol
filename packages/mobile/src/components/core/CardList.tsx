@@ -15,6 +15,7 @@ export type CardListProps<ItemT> = Omit<FlatListProps<ItemT>, 'data'> & {
   disableTopTabScroll?: boolean
   FlatListComponent?: ComponentType<FlatListProps<ItemT | LoadingCard>>
   isLoading?: boolean
+  isLoadingMore?: boolean
   LoadingCardComponent?: ComponentType
   // If total count is known, use this to aid in rendering the right number
   // of skeletons
@@ -49,6 +50,7 @@ export function CardList<ItemT extends {}>(props: CardListProps<ItemT>) {
     disableTopTabScroll,
     data: dataProp,
     isLoading: isLoadingProp,
+    isLoadingMore,
     LoadingCardComponent = DefaultLoadingCard,
     FlatListComponent = FlatList,
     totalCount,
@@ -68,8 +70,9 @@ export function CardList<ItemT extends {}>(props: CardListProps<ItemT>) {
 
   const data = useMemo(() => {
     const skeletonData = isLoading ? getSkeletonData(totalCount) : []
-    return [...(dataProp ?? []), ...skeletonData]
-  }, [dataProp, isLoading, totalCount])
+    const moreSkeletonData = isLoadingMore ? getSkeletonData(2) : []
+    return [...(dataProp ?? []), ...skeletonData, ...moreSkeletonData]
+  }, [dataProp, isLoading, isLoadingMore, totalCount])
 
   const handleRenderItem: ListRenderItem<ItemT | LoadingCard> = useCallback(
     (info) => {
@@ -77,7 +80,7 @@ export function CardList<ItemT extends {}>(props: CardListProps<ItemT>) {
         '_loading' in info.item ? (
           <LoadingCardComponent />
         ) : (
-          renderItem?.(info as ListRenderItemInfo<ItemT>) ?? null
+          (renderItem?.(info as ListRenderItemInfo<ItemT>) ?? null)
         )
 
       return <View style={styles.card}>{itemElement}</View>

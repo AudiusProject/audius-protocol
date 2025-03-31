@@ -50,19 +50,17 @@ def health_check():
             "challenge_events_age_max_drift", type=int
         ),
         "plays_count_max_drift": request.args.get("plays_count_max_drift", type=int),
-        "reactions_max_indexing_drift": request.args.get(
-            "reactions_max_indexing_drift", type=int
+        "reward_manager_max_drift": request.args.get(
+            "reward_manager_max_drift", type=int
         ),
-        "reactions_max_last_reaction_drift": request.args.get(
-            "reactions_max_last_reaction_drift", type=int
+        "user_bank_max_drift": request.args.get("user_bank_max_drift", type=int),
+        "spl_token_max_drift": request.args.get("spl_token_max_drift", type=int),
+        "payment_router_max_drift": request.args.get(
+            "payment_router_max_drift", type=int
         ),
-        "rewards_manager_max_drift": request.args.get(
-            "rewards_manager_max_drift", type=int
+        "aggregate_tips_max_drift": request.args.get(
+            "aggregate_tips_max_drift", type=int
         ),
-        "user_bank_max_slot_diff": request.args.get(
-            "user_bank_max_slot_diff", type=int
-        ),
-        "spl_audio_max_drift": request.args.get("spl_audio_max_drift", type=int),
     }
     try:
         comms_health = {"comms": requests.get("http://comms:8925/comms").json()}

@@ -35,9 +35,10 @@ lint-discovery-provider:
         name: Lint
         command: |
           cd packages/discovery-provider
-          isort --check --diff .
-          flake8 .
-          black --check --diff .
+          isort --check --diff . --skip ./src/tasks/core/gen --skip ./plugins
+          flake8 . --exclude=./src/tasks/core/gen,./plugins
+          black --check --diff . --exclude './src/tasks/core/gen|./plugins'
+
 
     - run:
         name: Typecheck
@@ -49,16 +50,3 @@ lint-discovery-provider:
         root: ./
         paths:
           - node_modules
-
-test-discovery-api:
-  working_directory: ~/audius-protocol
-  executor: newman/postman-newman-docker
-  steps:
-    - checkout
-    - run:
-        name: Run API Tests
-        command: |
-          # Run API tests but ignore any errors
-          set +e
-          newman run ./packages/discovery-provider/api-tests/Discovery\ API\ Tests.postman_collection.json --environment ./packages/discovery-provider/api-tests/Test\ Sandbox.postman_environment.json
-          set -e

@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 
-import { SearchCategory, useGetSearchResults } from '@audius/common/api'
+import {
+  SearchCategory,
+  useFollowers,
+  useSearchUserResults,
+  useUsers
+} from '@audius/common/api'
 import { Status, UserMetadata } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import {
@@ -39,6 +44,12 @@ export const UserMentionAutocompleteText = (
   const searchText = text.slice(1)
   const accountStatus = useSelector(getAccountStatus)
   const currentUserId = useSelector(getUserId)
+  const {
+    data: followerIds,
+    isPending: followerDataPending,
+    isSuccess: followersDataSuccess
+  } = useFollowers({ pageSize: 6, userId: currentUserId })
+  const { data: followers } = useUsers(followerIds)
   const optionRefs = useRef<HTMLButtonElement[]>([])
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -51,21 +62,29 @@ export const UserMentionAutocompleteText = (
     disableAnalytics: true
   }
 
-  const { data, status } = useGetSearchResults(params, {
-    debounce: 500,
-    disabled: accountStatus === Status.LOADING || accountStatus === Status.IDLE
+  const {
+    data: searchData,
+    isLoading,
+    isSuccess
+  } = useSearchUserResults(params, {
+    enabled: accountStatus !== Status.LOADING && accountStatus !== Status.IDLE
   })
 
+  const userList = searchText !== '' ? searchData : followers
+  const userListLoadSuccess =
+    searchText !== '' ? isSuccess : followersDataSuccess
+  const isUserListPending = searchText !== '' ? isLoading : followerDataPending
+
   const options = useMemo(
-    () => data?.users?.map((user) => ({ value: String(user.user_id) })) ?? [],
-    [data]
+    () => userList?.map((user) => ({ value: String(user.user_id) })) ?? [],
+    [userList]
   )
 
   useEffect(() => {
-    if (status === Status.SUCCESS && data?.users) {
-      onResultsLoaded?.(data.users)
+    if (userList && userListLoadSuccess) {
+      onResultsLoaded?.(userList)
     }
-  }, [data, onResultsLoaded, status])
+  }, [userList, onResultsLoaded, searchText, userListLoadSuccess])
 
   const handleClose = useCallback(() => {
     setIsOpen(false)
@@ -73,20 +92,16 @@ export const UserMentionAutocompleteText = (
 
   const handleChange = useCallback(
     (userId: string) => {
-      const user = data?.users?.find((user) => user.user_id === Number(userId))
+      const user = userList?.find((user) => user.user_id === Number(userId))
       if (user) {
         onConfirm?.(user)
       }
     },
-    [data?.users, onConfirm]
+    [userList, onConfirm]
   )
 
   const renderContent = () => {
-    if (!searchText) {
-      return <Text>{messages.searchUsers}</Text>
-    }
-
-    if (status === Status.LOADING || status === Status.IDLE) {
+    if (isUserListPending) {
       return (
         <Flex justifyContent='center' alignItems='center' p='m' w='100%'>
           <LoadingSpinner css={{ height: 32 }} />
@@ -94,7 +109,7 @@ export const UserMentionAutocompleteText = (
       )
     }
 
-    if (!data?.users || data.users.length === 0) {
+    if (!userList || userList.length === 0) {
       return <Text>{messages.noResults}</Text>
     }
 
@@ -135,11 +150,8 @@ export const UserMentionAutocompleteText = (
                       disabled
                       variant={isActive ? 'inverted' : 'default'}
                     />
-                    <Text
-                      size='xs'
-                      color={isActive ? 'staticWhite' : 'subdued'}
-                    >
-                      {data.users[index].handle}
+                    <Text size='xs' color={isActive ? 'white' : 'subdued'}>
+                      {userList[index].handle}
                     </Text>
                   </Flex>
                 }

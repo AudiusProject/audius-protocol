@@ -1,9 +1,9 @@
 import { useTheme } from '@emotion/react'
 import { useTheme as useStorybookTheme } from '@storybook/theming'
 
-import { Box, Flex } from 'components'
-import { themes, HarmonyTheme } from 'foundations'
-import type { Theme } from 'foundations/theme/types'
+import { Box, Flex } from '~harmony/components'
+import { themes, HarmonyTheme } from '~harmony/foundations'
+import type { Theme } from '~harmony/foundations/theme/types'
 
 type ColorType = keyof HarmonyTheme['color']
 

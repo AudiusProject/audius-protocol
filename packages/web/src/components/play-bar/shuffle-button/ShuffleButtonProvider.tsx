@@ -11,8 +11,8 @@ type ShuffleButtonProviderProps = {
 }
 
 type AnimationStates = {
-  pbIconShuffleOff: string
-  pbIconShuffleOn: string
+  pbIconShuffleOff: object
+  pbIconShuffleOn: object
 }
 
 const ShuffleButtonProvider = ({

@@ -1,6 +1,6 @@
 import { memo, useEffect } from 'react'
 
-import { SquareSizes, CoverArtSizes, Remix } from '@audius/common/models'
+import { SquareSizes, Remix } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 
 import CoSign from 'components/co-sign/CoSign'
@@ -12,7 +12,6 @@ import styles from './GiantArtwork.module.css'
 
 type GiantArtworkProps = {
   trackId: number
-  coverArtSizes: Nullable<CoverArtSizes>
   coSign: Nullable<Remix>
   callback: () => void
 }
@@ -22,13 +21,11 @@ const messages = {
 }
 
 const GiantArtwork = (props: GiantArtworkProps) => {
-  const { trackId, coverArtSizes, coSign, callback } = props
-  const image = useTrackCoverArt(
+  const { trackId, coSign, callback } = props
+  const image = useTrackCoverArt({
     trackId,
-    coverArtSizes,
-    SquareSizes.SIZE_1000_BY_1000,
-    ''
-  )
+    size: SquareSizes.SIZE_1000_BY_1000
+  })
   useEffect(() => {
     if (image) callback()
   }, [image, callback])

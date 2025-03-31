@@ -28,6 +28,31 @@ Install `@audius/harmony`:
 npm install --save @audius/harmony
 ```
 
+Due to an issue with react-virtualized, if using vite you must also install a plugin to fix the build:
+https://www.npmjs.com/package/esbuild-plugin-react-virtualized
+
+```bash
+npm install --save-dev esbuild-plugin-react-virtualized
+```
+
+Follow the instructions to add the plugin to your vite config:
+```js
+// vite.config.js
+import { defineConfig } from 'vite'
+import fixReactVirtualized from 'esbuild-plugin-react-virtualized'
+
+export default defineConfig({
+  optimizeDeps: {
+    esbuildOptions: {
+      plugins: [fixReactVirtualized],
+    },
+  },
+})
+```
+
+For more information, see:
+https://github.com/bvaughn/react-virtualized/issues/1722
+
 ## Setup
 
 Import styles exported by Harmony

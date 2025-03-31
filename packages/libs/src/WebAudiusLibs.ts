@@ -458,6 +458,7 @@ export class AudiusLibs {
       await this.determineCreatorNodeEndpointForWallet(wallet)
     )
     this.discoveryProvider?.setCurrentUser(userId)
+    this.EntityManager?.setCurrentUserId(userId)
   }
 
   getCurrentUser() {
@@ -470,6 +471,7 @@ export class AudiusLibs {
     delete this.currentUserId
     this.creatorNode?.setEndpoint(this.creatorNodeConfig.fallbackUrl)
     this.discoveryProvider?.clearCurrentUser()
+    this.EntityManager?.clearCurrentUserId()
   }
 
   /** Init services based on presence of a relevant config. */
@@ -606,7 +608,9 @@ export class AudiusLibs {
         this.creatorNodeConfig.passList,
         this.creatorNodeConfig.blockList,
         this.creatorNodeConfig.monitoringCallbacks,
-        this.creatorNodeConfig.storageNodeSelector
+        this.creatorNodeConfig.storageNodeSelector,
+        this.creatorNodeConfig.wallet,
+        this.creatorNodeConfig.userId
       )
       await this.creatorNode.init()
     }

@@ -1,7 +1,7 @@
-import { imageProfilePicEmpty } from '@audius/common/assets'
+import { useCurrentUserId, useUser } from '@audius/common/api'
+import { imageProfilePicEmptyNew } from '@audius/common/assets'
 import { SquareSizes, ID } from '@audius/common/models'
-import { accountSelectors, cacheUsersSelectors } from '@audius/common/store'
-import { Maybe } from '@audius/common/utils'
+import { Maybe, Nullable } from '@audius/common/utils'
 import {
   Avatar as HarmonyAvatar,
   type AvatarProps as HarmonyAvatarProps
@@ -9,12 +9,7 @@ import {
 
 import { UserLink } from 'components/link'
 import { MountPlacement } from 'components/types'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
-import { useSelector } from 'utils/reducer'
-
-const { getAccountUser } = accountSelectors
-
-const { getUser } = cacheUsersSelectors
+import { useProfilePicture } from 'hooks/useProfilePicture'
 
 const messages = {
   goTo: 'Go to',
@@ -22,9 +17,9 @@ const messages = {
   profile: 'profile'
 }
 
-type AvatarProps = Omit<HarmonyAvatarProps, 'src'> & {
+export type AvatarProps = Omit<HarmonyAvatarProps, 'src'> & {
   'aria-hidden'?: true
-  userId: Maybe<ID>
+  userId: Maybe<Nullable<ID>>
   onClick?: () => void
   imageSize?: SquareSizes
   popover?: boolean
@@ -39,17 +34,21 @@ export const Avatar = (props: AvatarProps) => {
     popover,
     ...other
   } = props
-  const profileImage = useProfilePicture(userId ?? null, imageSize)
 
-  const image = userId ? profileImage : imageProfilePicEmpty
-
-  const userName = useSelector((state) => {
-    const user = getUser(state, { id: userId })
-    const currentUser = getAccountUser(state)
-    return user?.user_id === currentUser?.user_id ? messages.your : user?.name
+  const profileImage = useProfilePicture({
+    userId: userId ?? undefined,
+    size: imageSize
   })
 
-  const label = `${messages.goTo} ${userName} ${messages.profile}`
+  const image = userId ? profileImage : imageProfilePicEmptyNew
+
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: userName } = useUser(userId, {
+    select: (user) => user.name
+  })
+  const displayName = userId === currentUserId ? messages.your : userName
+
+  const label = `${messages.goTo} ${displayName} ${messages.profile}`
 
   if (ariaHidden) {
     return <HarmonyAvatar src={image} {...other} />
@@ -77,6 +76,7 @@ export const Avatar = (props: AvatarProps) => {
         noText
         aria-label={label}
         popoverMount={MountPlacement.PARENT}
+        noOverflow={popover}
       >
         <HarmonyAvatar src={image} {...other} />
       </UserLink>

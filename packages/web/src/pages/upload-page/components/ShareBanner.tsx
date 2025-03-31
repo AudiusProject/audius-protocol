@@ -1,49 +1,26 @@
-import { useCallback, useContext } from 'react'
+import { useCallback } from 'react'
 
-import { Name, ShareSource, Track, User } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
+import { Name, ShareSource, User } from '@audius/common/models'
 import {
   accountSelectors,
-  tracksSocialActions,
-  usersSocialActions,
-  ShareContent,
   UploadType,
   shareModalUIActions,
   createChatModalActions
 } from '@audius/common/store'
-import { route } from '@audius/common/utils'
-import {
-  Button,
-  IconLink,
-  IconMessage,
-  IconShare,
-  IconTwitter as IconTwitterBird,
-  Text
-} from '@audius/harmony'
+import { Button, IconMessage, IconShare, Text } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import backgroundPlaceholder from 'assets/img/1-Concert-3-1.jpg'
-import { make, useRecord } from 'common/store/analytics/actions'
-import {
-  ShareMessageConfig,
-  getTwitterShareText
-} from 'components/share-modal/utils'
-import { ToastContext } from 'components/toast/ToastContext'
-import { useFlag } from 'hooks/useRemoteConfig'
-import { copyLinkToClipboard, getCopyableLink } from 'utils/clipboardUtil'
-import { SHARE_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
+import { make } from 'common/store/analytics/actions'
+import { getCopyableLink } from 'utils/clipboardUtil'
 import { useSelector } from 'utils/reducer'
-import { openTwitterLink } from 'utils/tweet'
 
 import styles from './ShareBanner.module.css'
 
-const { shareUser } = usersSocialActions
-const { shareTrack } = tracksSocialActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open: openCreateChatModal } = createChatModalActions
 
 const { getAccountUser } = accountSelectors
-const { collectionPage } = route
 
 const uploadTypeMap = {
   [UploadType.INDIVIDUAL_TRACK]: 'new track',
@@ -64,17 +41,6 @@ const messages = {
   shareToDirectMessage: 'Direct Message'
 }
 
-const twitterSharMessages: ShareMessageConfig = {
-  profileShareText: () => 'Check out my new tracks on @audius #Audius $AUDIO',
-  trackShareText: (title: string) =>
-    `Check out my new track ${title} on @audius #Audius $AUDIO`,
-  albumShareText: (albumName: string) =>
-    `Check out my new album, ${albumName} on @audius #Audius $AUDIO`,
-  playlistShareText: (playlistName: string) =>
-    `Check out my new playlist, ${playlistName} on @audius #Audius $AUDIO`,
-  audioNftPlaylistShareText: () => ''
-}
-
 type ShareBannerProps = {
   uploadType: UploadType
   isUnlistedTrack: boolean
@@ -85,113 +51,6 @@ export const ShareBanner = (props: ShareBannerProps) => {
   const accountUser = useSelector(getAccountUser) as User
   const upload = useSelector((state) => state.upload)
   const dispatch = useDispatch()
-  const { toast } = useContext(ToastContext)
-  const record = useRecord()
-
-  const { isEnabled: isOneToManyDmsEnabled } = useFlag(
-    FeatureFlags.ONE_TO_MANY_DMS
-  )
-
-  const handleTwitterShare = useCallback(async () => {
-    let twitterShareContent: ShareContent
-
-    switch (upload.uploadType) {
-      case UploadType.INDIVIDUAL_TRACK: {
-        const track = upload.tracks?.[0]
-        if (!track) return
-
-        twitterShareContent = {
-          type: 'track',
-          track: track.metadata as unknown as Track,
-          artist: accountUser
-        }
-        break
-      }
-
-      case UploadType.ALBUM: {
-        const album = upload.completedEntity
-        if (!album) return
-
-        twitterShareContent = {
-          type: 'album',
-          album,
-          artist: accountUser
-        }
-        break
-      }
-
-      case UploadType.PLAYLIST: {
-        const playlist = upload.completedEntity
-        if (!playlist) return
-
-        twitterShareContent = {
-          type: 'playlist',
-          playlist,
-          creator: accountUser
-        }
-        break
-      }
-
-      case UploadType.INDIVIDUAL_TRACKS:
-      default: {
-        twitterShareContent = {
-          type: 'profile',
-          profile: accountUser
-        }
-        break
-      }
-    }
-
-    const { twitterText, link, analyticsEvent } = await getTwitterShareText(
-      twitterShareContent,
-      true,
-      twitterSharMessages
-    )
-    openTwitterLink(link, twitterText)
-    record(
-      make(Name.SHARE_TO_TWITTER, {
-        source: ShareSource.UPLOAD,
-        ...analyticsEvent
-      })
-    )
-  }, [
-    record,
-    upload.tracks,
-    accountUser,
-    upload.uploadType,
-    upload.completedEntity
-  ])
-
-  const handleCopyLink = useCallback(() => {
-    switch (uploadType) {
-      case UploadType.INDIVIDUAL_TRACK: {
-        const trackId = upload.tracks?.[0].metadata.track_id
-        if (!trackId) return
-        dispatch(shareTrack(trackId, ShareSource.UPLOAD))
-        break
-      }
-      case UploadType.INDIVIDUAL_TRACKS: {
-        dispatch(shareUser(accountUser.user_id, ShareSource.UPLOAD))
-        break
-      }
-      // We don't have access to the playlist_id so we manually copy to clipboard
-      case UploadType.ALBUM:
-      case UploadType.PLAYLIST: {
-        const collectionLink = collectionPage(
-          accountUser.handle,
-          upload.metadata?.playlist_name,
-          upload.completionId,
-          null,
-          uploadType === UploadType.ALBUM
-        )
-
-        copyLinkToClipboard(collectionLink)
-        break
-      }
-    }
-
-    toast(messages.copyLinkToast(uploadType), SHARE_TOAST_TIMEOUT_MILLIS)
-  }, [uploadType, toast, upload, dispatch, accountUser])
 
   const handleShare = useCallback(() => {
     switch (uploadType) {
@@ -270,27 +129,6 @@ export const ShareBanner = (props: ShareBannerProps) => {
     uploadType
   ])
 
-  const legacyShareButtons = (
-    <>
-      <Button
-        variant='tertiary'
-        fullWidth
-        iconLeft={IconTwitterBird}
-        onClick={handleTwitterShare}
-      >
-        {messages.twitterButtonText}
-      </Button>
-      <Button
-        variant='tertiary'
-        fullWidth
-        iconLeft={IconLink}
-        onClick={handleCopyLink}
-      >
-        {messages.copyLinkButtonText}
-      </Button>
-    </>
-  )
-
   return (
     <div
       className={styles.root}
@@ -307,28 +145,24 @@ export const ShareBanner = (props: ShareBannerProps) => {
             {messages.shareText(uploadType)}
           </Text>
           <div className={styles.buttonContainer}>
-            {!isOneToManyDmsEnabled ? (
-              legacyShareButtons
-            ) : (
-              <>
-                <Button
-                  variant='tertiary'
-                  fullWidth
-                  iconLeft={IconMessage}
-                  onClick={handleShareToDirectMessage}
-                >
-                  {messages.shareToDirectMessage}
-                </Button>
-                <Button
-                  variant='tertiary'
-                  fullWidth
-                  iconLeft={IconShare}
-                  onClick={handleShare}
-                >
-                  {messages.share}
-                </Button>
-              </>
-            )}
+            <>
+              <Button
+                variant='tertiary'
+                fullWidth
+                iconLeft={IconMessage}
+                onClick={handleShareToDirectMessage}
+              >
+                {messages.shareToDirectMessage}
+              </Button>
+              <Button
+                variant='tertiary'
+                fullWidth
+                iconLeft={IconShare}
+                onClick={handleShare}
+              >
+                {messages.share}
+              </Button>
+            </>
           </div>
         </>
       ) : null}

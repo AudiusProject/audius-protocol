@@ -112,7 +112,7 @@ def app_module():
 def celery_config():
     return {
         "broker_url": TEST_BROKER_URL,
-        "imports": ["src.tasks.index_nethermind"],
+        "imports": [],
         "task_serializer": "json",
         "accept_content": ["json"],
         "task_always_eager": True,

@@ -6,11 +6,7 @@ export function* optimisticUpdateCollection(collection: Collection) {
   const optimisticCollection = { ...collection }
   if (optimisticCollection.artwork?.url) {
     const { artwork } = optimisticCollection
-    const { url } = artwork
     optimisticCollection.artwork = artwork
-    const coverArtSizes = optimisticCollection._cover_art_sizes ?? {}
-    coverArtSizes.OVERRIDE = url
-    optimisticCollection._cover_art_sizes = coverArtSizes
   }
 
   yield* put(

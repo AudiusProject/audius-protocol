@@ -4,6 +4,7 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Dict, List, Set, Tuple, cast
 
+from eth_utils import to_hex
 from sqlalchemy import and_, func, literal_column, or_
 from sqlalchemy.orm.session import Session
 from web3.types import TxReceipt
@@ -32,6 +33,8 @@ from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.associated_wallet import AssociatedWallet
+from src.models.users.collectibles import Collectibles
+from src.models.users.email import EmailAccess, EncryptedEmail
 from src.models.users.user import User
 from src.models.users.user_events import UserEvent
 from src.queries.confirm_indexing_transaction_error import (
@@ -61,6 +64,10 @@ from src.tasks.entity_manager.entities.developer_app import (
     create_developer_app,
     delete_developer_app,
     update_developer_app,
+)
+from src.tasks.entity_manager.entities.email import (
+    create_encrypted_email,
+    grant_email_access,
 )
 from src.tasks.entity_manager.entities.grant import (
     approve_grant,
@@ -93,9 +100,15 @@ from src.tasks.entity_manager.entities.track import (
     download_track,
     update_track,
 )
-from src.tasks.entity_manager.entities.user import create_user, update_user, verify_user
+from src.tasks.entity_manager.entities.user import (
+    add_associated_wallet,
+    create_user,
+    remove_associated_wallet,
+    update_user,
+    update_user_collectibles,
+    verify_user,
+)
 from src.tasks.entity_manager.utils import (
-    MANAGE_ENTITY_EVENT_TYPE,
     Action,
     EntitiesToFetchDict,
     EntityType,
@@ -109,6 +122,7 @@ from src.tasks.entity_manager.utils import (
     save_cid_metadata,
 )
 from src.utils import helpers
+from src.utils.config import shared_config
 from src.utils.indexing_errors import IndexingError
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.structured_logger import StructuredLogger
@@ -117,6 +131,8 @@ logger = StructuredLogger(__name__)
 
 # Please toggle below variable to true for development
 ENABLE_DEVELOPMENT_FEATURES = True
+
+environment = shared_config["discprov"]["env"]
 
 entity_type_table_mapping = {
     "Save": Save.__tablename__,
@@ -127,6 +143,7 @@ entity_type_table_mapping = {
     "Track": Track.__tablename__,
     "User": User.__tablename__,
     "AssociatedWallet": AssociatedWallet.__tablename__,
+    "Collectibles": Collectibles.__tablename__,
     "UserEvent": UserEvent.__tablename__,
     "TrackRoute": TrackRoute.__tablename__,
     "PlaylistRoute": PlaylistRoute.__tablename__,
@@ -140,6 +157,8 @@ entity_type_table_mapping = {
     "CommentReaction": CommentReaction.__tablename__,
     "MutedUser": MutedUser.__tablename__,
     "CommentNotificationSetting": CommentNotificationSetting.__tablename__,
+    "EncryptedEmail": EncryptedEmail.__tablename__,
+    "EmailAccess": EmailAccess.__tablename__,
 }
 
 
@@ -165,7 +184,6 @@ def entity_manager_update(
     4. Create new database record based on a transaction.
     5. Bulk insert new records.
     """
-
     try:
         update_start_time = time.time()
         challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
@@ -185,7 +203,6 @@ def entity_manager_update(
 
         # collect events by entity type and action
         entities_to_fetch = collect_entities_to_fetch(update_task, entity_manager_txs)
-
         # fetch existing tracks and playlists
         existing_records, existing_records_in_json = fetch_existing_entities(
             session, entities_to_fetch
@@ -207,7 +224,7 @@ def entity_manager_update(
 
         # process in tx order and populate records_to_save
         for tx_receipt in entity_manager_txs:
-            txhash = update_task.web3.to_hex(tx_receipt["transactionHash"])
+            txhash = to_hex(tx_receipt["transactionHash"])
             entity_manager_event_tx = get_entity_manager_events_tx(
                 update_task, tx_receipt
             )
@@ -288,13 +305,13 @@ def entity_manager_update(
                         and params.entity_type == EntityType.USER
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
-                        create_user(params, cid_type, cid_metadata)
+                        create_user(params)
                     elif (
                         params.action == Action.UPDATE
                         and params.entity_type == EntityType.USER
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
-                        update_user(params, cid_type, cid_metadata)
+                        update_user(params)
                     elif (
                         params.action == Action.VERIFY
                         and params.entity_type == EntityType.USER
@@ -423,6 +440,30 @@ def entity_manager_update(
                         params.action == Action.MUTE or params.action == Action.UNMUTE
                     ) and params.entity_type == EntityType.COMMENT:
                         update_comment_notification_setting(params)
+                    elif (
+                        params.action == Action.ADD_EMAIL
+                        and params.entity_type == EntityType.ENCRYPTED_EMAIL
+                    ):
+                        create_encrypted_email(params)
+                    elif (
+                        params.action == Action.UPDATE
+                        and params.entity_type == EntityType.EMAIL_ACCESS
+                    ):
+                        grant_email_access(params)
+                    elif (
+                        params.action == Action.CREATE
+                        and params.entity_type == EntityType.ASSOCIATED_WALLET
+                    ):
+                        add_associated_wallet(params)
+                    elif (
+                        params.action == Action.DELETE
+                        and params.entity_type == EntityType.ASSOCIATED_WALLET
+                    ):
+                        remove_associated_wallet(params)
+                    elif (
+                        params.action == Action.CREATE or params.action == Action.UPDATE
+                    ) and params.entity_type == EntityType.COLLECTIBLES:
+                        update_user_collectibles(params)
 
                     logger.debug("process transaction")  # log event context
                 except IndexingValidationError as e:
@@ -560,7 +601,13 @@ def copy_original_records(existing_records):
 
 
 entity_types_to_fetch = set(
-    [EntityType.USER, EntityType.TRACK, EntityType.PLAYLIST, EntityType.COMMENT]
+    [
+        EntityType.USER,
+        EntityType.TRACK,
+        EntityType.PLAYLIST,
+        EntityType.COMMENT,
+        EntityType.ENCRYPTED_EMAIL,
+    ]
 )
 
 
@@ -582,6 +629,8 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
             if entity_type == EntityType.USER:
                 entities_to_fetch[EntityType.USER_EVENT].add(user_id)
                 entities_to_fetch[EntityType.ASSOCIATED_WALLET].add(user_id)
+                if action == Action.UPDATE:
+                    entities_to_fetch[EntityType.COLLECTIBLES].add(user_id)
                 if action == Action.MUTE or action == Action.UNMUTE:
                     entities_to_fetch[EntityType.MUTED_USER].add((user_id, entity_id))
                     entities_to_fetch[EntityType.USER].add(entity_id)
@@ -752,14 +801,68 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
 
                 # Add playlist track ids in entities to fetch
                 # to prevent playlists from including gated tracks
-                tracks = json_metadata.get("playlist_contents", {}).get("track_ids", [])
-                for track in tracks:
-                    entities_to_fetch[EntityType.TRACK].add(track["track"])
+                playlist_contents = json_metadata.get("playlist_contents")
+                if playlist_contents:
+                    if isinstance(playlist_contents, dict):
+                        tracks = playlist_contents.get("track_ids", [])
+                    else:
+                        tracks = playlist_contents
+
+                    for track in tracks:
+                        track_id = track.get("track") or track.get("track_id")
+                        if track_id:
+                            entities_to_fetch[EntityType.TRACK].add(track_id)
 
                 if entity_type == EntityType.TRACK:
                     user_id = json_metadata.get("ai_attribution_user_id")
                     if user_id:
                         entities_to_fetch[EntityType.USER].add(user_id)
+
+            if entity_type == EntityType.ENCRYPTED_EMAIL:
+                try:
+                    json_metadata = json.loads(metadata)
+                except Exception as e:
+                    logger.error(
+                        f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}"
+                    )
+                    # skip invalid metadata
+                    continue
+
+                # Add email owner's record to fetch
+                email_owner_user_id = json_metadata.get("email_owner_user_id")
+                if email_owner_user_id:
+                    entities_to_fetch[EntityType.ENCRYPTED_EMAIL].add(
+                        email_owner_user_id
+                    )
+
+            if entity_type == EntityType.EMAIL_ACCESS and action == Action.UPDATE:
+                try:
+                    json_metadata = json.loads(metadata)
+                except Exception as e:
+                    logger.error(
+                        f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}"
+                    )
+                    # skip invalid metadata
+                    continue
+
+                # Add email access record to fetch
+                email_owner_user_id = json_metadata.get("email_owner_user_id")
+                for access_grant in json_metadata.get("access_grants", []):
+                    receiving_user_id = access_grant.get("receiving_user_id")
+                    grantor_user_id = access_grant.get("grantor_user_id")
+                    if all([email_owner_user_id, receiving_user_id, grantor_user_id]):
+                        entities_to_fetch[EntityType.EMAIL_ACCESS].add(
+                            (email_owner_user_id, receiving_user_id, grantor_user_id)
+                        )
+                        # Also fetch the email record
+                        entities_to_fetch[EntityType.ENCRYPTED_EMAIL].add(
+                            email_owner_user_id
+                        )
+            if entity_type == EntityType.ASSOCIATED_WALLET:
+                entities_to_fetch[EntityType.ASSOCIATED_WALLET].add(user_id)
+            if entity_type == EntityType.COLLECTIBLES:
+                entities_to_fetch[EntityType.COLLECTIBLES].add(user_id)
+                entities_to_fetch[EntityType.USER].add(user_id)
 
     return entities_to_fetch
 
@@ -897,6 +1000,24 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         existing_entities_in_json[EntityType.ASSOCIATED_WALLET] = {
             (wallet_json["wallet"]): wallet_json
             for _, wallet_json in associated_wallets
+        }
+
+    if entities_to_fetch["Collectibles"]:
+        collectibles_results: List[Tuple[Collectibles, dict]] = (
+            session.query(
+                Collectibles,
+                literal_column(f"row_to_json({Collectibles.__tablename__})"),
+            )
+            .filter(Collectibles.user_id.in_(entities_to_fetch["Collectibles"]))
+            .all()
+        )
+        existing_entities[EntityType.COLLECTIBLES] = {
+            collectibles.user_id: collectibles
+            for collectibles, _ in collectibles_results
+        }
+        existing_entities_in_json[EntityType.COLLECTIBLES] = {
+            collectible_json["user_id"]: collectible_json
+            for _, collectible_json in collectibles_results
         }
 
     # FOLLOWS
@@ -1388,13 +1509,74 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             for _, comment_notification_setting in comment_notification_settings
         }
 
+    # Add new email-related entity fetching
+    if entities_to_fetch[EntityType.ENCRYPTED_EMAIL.value]:
+        encrypted_emails: List[Tuple[EncryptedEmail, dict]] = (
+            session.query(
+                EncryptedEmail,
+                literal_column(f"row_to_json({EncryptedEmail.__tablename__})"),
+            )
+            .filter(
+                EncryptedEmail.email_owner_user_id.in_(
+                    entities_to_fetch[EntityType.ENCRYPTED_EMAIL.value]
+                )
+            )
+            .all()
+        )
+        existing_entities[EntityType.ENCRYPTED_EMAIL] = {
+            encrypted_email.email_owner_user_id: encrypted_email
+            for encrypted_email, _ in encrypted_emails
+        }
+        existing_entities_in_json[EntityType.ENCRYPTED_EMAIL] = {
+            encrypted_email_json["email_owner_user_id"]: encrypted_email_json
+            for _, encrypted_email_json in encrypted_emails
+        }
+
+    if entities_to_fetch[EntityType.EMAIL_ACCESS.value]:
+        access_grants_to_fetch: Set[Tuple[int, int, int]] = entities_to_fetch[
+            EntityType.EMAIL_ACCESS.value
+        ]
+        or_queries = []
+        for access_grant in access_grants_to_fetch:
+            email_owner_id, receiving_id, grantor_id = access_grant
+            or_queries.append(
+                and_(
+                    EmailAccess.email_owner_user_id == email_owner_id,
+                    EmailAccess.receiving_user_id == receiving_id,
+                    EmailAccess.grantor_user_id == grantor_id,
+                )
+            )
+
+        access_grants: List[Tuple[EmailAccess, dict]] = (
+            session.query(
+                EmailAccess,
+                literal_column(f"row_to_json({EmailAccess.__tablename__})"),
+            )
+            .filter(or_(*or_queries))
+            .all()
+        )
+        existing_entities[EntityType.EMAIL_ACCESS] = {
+            (
+                grant.email_owner_user_id,
+                grant.receiving_user_id,
+                grant.grantor_user_id,
+            ): grant
+            for grant, _ in access_grants
+        }
+        existing_entities_in_json[EntityType.EMAIL_ACCESS] = {
+            (
+                grant_json["email_owner_user_id"],
+                grant_json["receiving_user_id"],
+                grant_json["grantor_user_id"],
+            ): grant_json
+            for _, grant_json in access_grants
+        }
+
     return existing_entities, existing_entities_in_json
 
 
 def get_entity_manager_events_tx(update_task, tx_receipt: TxReceipt):
-    return getattr(
-        update_task.entity_manager_contract.events, MANAGE_ENTITY_EVENT_TYPE
-    )().process_receipt(tx_receipt)
+    return [tx_receipt]
 
 
 def create_and_raise_indexing_error(err, redis, session):

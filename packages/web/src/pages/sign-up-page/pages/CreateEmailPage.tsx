@@ -1,8 +1,9 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { createEmailPageMessages } from '@audius/common/messages'
 import { emailSchema } from '@audius/common/schemas'
+import { useExternalWalletSignUpModal } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
   Box,
@@ -37,8 +38,8 @@ import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { SocialMediaLoginOptions } from 'pages/sign-up-page/components/SocialMediaLoginOptions'
 
-import ConnectedMetaMaskModal from '../components/ConnectedMetaMaskModal'
-import { NewEmailField } from '../components/EmailField'
+import { ExternalWalletSignUpModal } from '../components/ExternalWalletSignUpModal'
+import { NewEmailField } from '../components/NewEmailField'
 import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { Heading, Page } from '../components/layout'
 import { useSocialMediaLoader } from '../hooks/useSocialMediaLoader'
@@ -46,14 +47,13 @@ import { useSocialMediaLoader } from '../hooks/useSocialMediaLoader'
 const {
   SIGN_IN_PAGE,
   SIGN_UP_CREATE_LOGIN_DETAILS,
-  SIGN_UP_HANDLE_PAGE,
   SIGN_UP_PASSWORD_PAGE,
   SIGN_UP_REVIEW_HANDLE_PAGE
 } = route
 
 const smallDesktopWindowHeight = 900
 
-export type SignUpEmailValues = {
+type SignUpEmailValues = {
   email: string
   withMetaMask?: boolean
 }
@@ -64,7 +64,8 @@ export const CreateEmailPage = () => {
   const isSmallDesktop = windowHeight < smallDesktopWindowHeight
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
-  const [isMetaMaskModalOpen, setIsMetaMaskModalOpen] = useState(false)
+  const { onOpen: openExternalWalletSignUpModal } =
+    useExternalWalletSignUpModal()
   const existingEmailValue = useSelector(getEmailField)
   const alreadyLinkedSocial = useSelector(getLinkedSocialOnFirstPage)
   const audiusQueryContext = useAudiusQueryContext()
@@ -108,12 +109,12 @@ export const CreateEmailPage = () => {
       dispatch(startSignUp())
       dispatch(setValueField('email', email))
       if (withMetaMask) {
-        setIsMetaMaskModalOpen(true)
+        openExternalWalletSignUpModal()
       } else {
         navigate(SIGN_UP_PASSWORD_PAGE)
       }
     },
-    [dispatch, navigate]
+    [dispatch, navigate, openExternalWalletSignUpModal]
   )
 
   const signInLink = (
@@ -129,11 +130,12 @@ export const CreateEmailPage = () => {
       initialValues={initialValues}
       onSubmit={handleSubmit}
       validationSchema={EmailSchema}
+      validateOnMount={!!existingEmailValue}
       validateOnChange={false}
     >
       {({ isSubmitting, setFieldValue, submitForm }) => (
         <Page as={Form} pt={isMobile ? 'xl' : 'unit13'}>
-          <Box alignSelf={isSmallDesktop ? 'flex-start' : 'center'}>
+          <Box alignSelf='center'>
             {isMobile || isSmallDesktop ? (
               <IconAudiusLogoHorizontalColor />
             ) : (
@@ -204,11 +206,7 @@ export const CreateEmailPage = () => {
               >
                 {createEmailPageMessages.signUpMetamask}
               </Button>
-              <ConnectedMetaMaskModal
-                open={isMetaMaskModalOpen}
-                onBack={() => setIsMetaMaskModalOpen(false)}
-                onSuccess={() => navigate(SIGN_UP_HANDLE_PAGE)}
-              />
+              <ExternalWalletSignUpModal />
               <Text size='s' variant='body'>
                 {createEmailPageMessages.metaMaskNotRecommended}{' '}
                 <TextLink variant='visible'>

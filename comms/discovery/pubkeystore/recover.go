@@ -82,8 +82,7 @@ func RecoverUserPublicKeyBase64(ctx context.Context, userId int) (string, error)
 	conn := db.Conn
 
 	// first check a "pubkey cache" for a hit
-	// see: https://github.com/AudiusProject/audius-docker-compose/blob/nats/discovery-provider/clusterizer/src/recover.ts#L65
-	if got, err := getPubkey(userId); err == nil {
+	if got, err := GetPubkey(userId); err == nil {
 		return got, nil
 	}
 
@@ -243,7 +242,9 @@ func recoverPublicKey(signature []byte, typedData apitypes.TypedData) ([]byte, e
 
 	// update the recovery id
 	// https://github.com/ethereum/go-ethereum/blob/55599ee95d4151a2502465e0afc7c47bd1acba77/internal/ethapi/api.go#L442
-	signature[64] -= 27
+	if len(signature) > 64 {
+		signature[64] -= 27
+	}
 
 	return crypto.Ecrecover(sighash, signature)
 

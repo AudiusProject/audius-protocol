@@ -1,4 +1,3 @@
-import type { EIP712TypedData } from 'eth-sig-util'
 import { rest } from 'msw'
 import { setupServer } from 'msw/node'
 import {
@@ -10,10 +9,7 @@ import {
   afterEach,
   vitest
 } from 'vitest'
-import waitForExpect from 'wait-for-expect'
 
-import type { AuthService } from '../Auth/types'
-import { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'
 import type { HealthCheckResponseData } from '../DiscoveryNodeSelector/healthCheckTypes'
 import { Logger } from '../Logger'
 
@@ -28,30 +24,9 @@ const storageNodeB = {
   delegateOwnerWallet: '0xc0ffee254729296a45a3885639AC7E10F9d54972'
 }
 
-const userWallet = '0xc0ffee254729296a45a3885639AC7E10F9d54979'
-
 const discoveryNode = 'https://discovery-provider.audius.co'
 
-class MockAuth implements AuthService {
-  getSharedSecret = async () => new Uint8Array()
-
-  signTransaction: (data: EIP712TypedData) => Promise<string> = async () => ''
-
-  sign: (data: string | Uint8Array) => Promise<[Uint8Array, number]> =
-    async () => [new Uint8Array(), 0]
-
-  hashAndSign: (data: string) => Promise<string> = async () => ''
-
-  getAddress = async () => {
-    return userWallet
-  }
-}
-
-const auth = new MockAuth()
 const logger = new Logger()
-const discoveryNodeSelector = new DiscoveryNodeSelector({
-  initialSelectedNode: discoveryNode
-})
 
 const mswHandlers = [
   rest.get(`${discoveryNode}/health_check`, (_req, res, ctx) => {
@@ -77,11 +52,11 @@ const mswHandlers = [
   }),
 
   rest.get(`${storageNodeA.endpoint}/health_check`, (_req, res, ctx) => {
-    return res(ctx.status(200))
+    return res(ctx.status(200), ctx.json({ data: { diskHasSpace: true } }))
   }),
 
   rest.get(`${storageNodeB.endpoint}/health_check`, (_req, res, ctx) => {
-    return res(ctx.status(200))
+    return res(ctx.status(200), ctx.json({ data: { diskHasSpace: true } }))
   })
 ]
 
@@ -109,14 +84,12 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       bootstrapNodes,
-      auth,
-      discoveryNodeSelector,
-      logger
+      logger,
+      endpoint: discoveryNode
     })
 
-    expect(await storageNodeSelector.getSelectedNode()).toEqual(
-      storageNodeA.endpoint
-    )
+    const nodes = storageNodeSelector.getNodes('test')
+    expect(nodes[0]!).toEqual(storageNodeA.endpoint)
   })
 
   it('selects the first healthy node', async () => {
@@ -129,61 +102,13 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       bootstrapNodes,
-      auth,
-      discoveryNodeSelector,
-      logger
+      logger,
+      endpoint: discoveryNode
     })
 
     expect(await storageNodeSelector.getSelectedNode()).toEqual(
       storageNodeB.endpoint
     )
-  })
-
-  it('selects correct storage node when discovery node already available', async () => {
-    const discoveryNodeSelector = new DiscoveryNodeSelector({
-      healthCheckThresholds: {
-        minVersion: '1.2.3'
-      },
-      initialSelectedNode: discoveryNode
-    })
-
-    const storageNodeSelector = new StorageNodeSelector({
-      discoveryNodeSelector,
-      auth,
-      logger
-    })
-
-    await waitForExpect(async () => {
-      expect(await storageNodeSelector.getSelectedNode()).toEqual(
-        storageNodeA.endpoint
-      )
-    })
-  })
-
-  it('selects correct storage node when discovery node is selected', async () => {
-    const bootstrapDiscoveryNodes = [discoveryNode].map((endpoint) => ({
-      endpoint,
-      delegateOwnerWallet: '',
-      ownerWallet: ''
-    }))
-    const discoveryNodeSelector = new DiscoveryNodeSelector({
-      healthCheckThresholds: {
-        minVersion: '1.2.3'
-      },
-      bootstrapServices: bootstrapDiscoveryNodes
-    })
-
-    const storageNodeSelector = new StorageNodeSelector({
-      discoveryNodeSelector,
-      auth,
-      logger
-    })
-
-    await waitForExpect(async () => {
-      expect(await storageNodeSelector.getSelectedNode()).toEqual(
-        storageNodeA.endpoint
-      )
-    })
   })
 
   it('selects correct nodes when provided a cid', async () => {
@@ -192,35 +117,14 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       bootstrapNodes,
-      auth,
-      discoveryNodeSelector,
-      logger
+      logger,
+      endpoint: discoveryNode
     })
 
     expect(await storageNodeSelector.getNodes(cid)).toEqual([
       storageNodeB.endpoint,
       storageNodeA.endpoint
     ])
-  })
-
-  it('force reselects successfully', async () => {
-    const bootstrapNodes = [storageNodeA, storageNodeB]
-
-    const storageNodeSelector = new StorageNodeSelector({
-      bootstrapNodes,
-      auth,
-      discoveryNodeSelector,
-      logger
-    })
-
-    expect(await storageNodeSelector.getSelectedNode()).toEqual(
-      storageNodeA.endpoint
-    )
-
-    // force reselect
-    expect(await storageNodeSelector.getSelectedNode(true)).toEqual(
-      storageNodeB.endpoint
-    )
   })
 
   it('tries selecting all nodes', async () => {
@@ -238,9 +142,8 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       bootstrapNodes,
-      auth,
-      discoveryNodeSelector,
-      logger
+      logger,
+      endpoint: discoveryNode
     })
 
     expect(await storageNodeSelector.getSelectedNode()).toBe(null)

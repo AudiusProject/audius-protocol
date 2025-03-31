@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 
 import { Animated, Platform, StyleSheet } from 'react-native'
 import * as BootSplash from 'react-native-bootsplash'
@@ -10,11 +10,11 @@ import { zIndex } from 'app/utils/zIndex'
 
 /**
  * Assets for this splash screen are generated with
- * npx react-native generate-bootsplash \
- *  src/assets/images/bootsplash_logo.png \
- *  --background-color=7E1BCC \
+ * npx react-native-bootsplash generate \
+ *  --background=#7E1BCC \
  *  --logo-width=150 \
- *  --assets-path=src/assets/images
+ *  --assets-output=src/assets/images
+ *  src/assets/images/bootsplash_logo.svg
  */
 
 // Extra larger render width so when we scale it up,
@@ -58,12 +58,12 @@ const IosSplashScreen = (props: SplashScreenProps) => {
   const scale = useRef(new Animated.Value(START_SIZE)).current
   const [isShowing, setIsShowing] = useState(true)
 
-  useEffect(() => {
-    if (canDismiss) {
-      // Hide the system splash screen
-      BootSplash.hide()
-
-      // Animate smaller, then bigger with a fade out at the same time
+  const { container } = BootSplash.useHideAnimation({
+    // @ts-expect-error this is not implemented in the type but is valid
+    // https://github.com/zoontek/react-native-bootsplash?tab=readme-ov-file#method-type-2
+    ready: canDismiss,
+    manifest: require('../../assets/images/bootsplash_manifest.json'),
+    animate: () => {
       Animated.spring(scale, {
         useNativeDriver: true,
         tension: 10,
@@ -89,10 +89,11 @@ const IosSplashScreen = (props: SplashScreenProps) => {
         })
       })
     }
-  }, [canDismiss, scale, opacity, onDismiss])
+  })
 
   return isShowing ? (
     <Animated.View
+      {...container}
       style={[StyleSheet.absoluteFill, styles.splash, { opacity }]}
     >
       <Animated.View

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { useImageSize } from '@audius/common/hooks'
 import { SquareSizes } from '@audius/common/models'
 import {
   cacheUsersSelectors,
@@ -17,8 +18,6 @@ import {
 import TrackPlayer, { Event } from 'react-native-track-player'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync, usePrevious } from 'react-use'
-
-import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 
 const { setIsCasting } = castActions
 const { getCurrentTrack, getPlaying, getSeek, getCounter } = playerSelectors
@@ -50,16 +49,14 @@ export const useChromecast = () => {
   const previousCastState = usePrevious(castState)
 
   const [internalCounter, setInternalCounter] = useState(0)
+  const imageUrl = useImageSize({
+    artwork: track?.artwork,
+    targetSize: SquareSizes.SIZE_1000_BY_1000
+  })
 
   const loadCast = useCallback(
     async (track, startTime, contentUrl) => {
-      if (client && track && owner && contentUrl) {
-        const imageUrl = await audiusBackendInstance.getImageUrl(
-          track.cover_art_sizes,
-          SquareSizes.SIZE_1000_BY_1000,
-          track.cover_art_cids
-        )
-
+      if (client && track && owner && contentUrl && imageUrl) {
         client.loadMedia({
           mediaInfo: {
             contentUrl,
@@ -78,7 +75,7 @@ export const useChromecast = () => {
         })
       }
     },
-    [client, owner]
+    [client, owner, imageUrl]
   )
 
   const playCast = useCallback(() => {

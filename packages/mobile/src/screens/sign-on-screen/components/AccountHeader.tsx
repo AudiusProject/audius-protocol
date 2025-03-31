@@ -149,7 +149,7 @@ const CoverPhoto = (props: CoverPhotoProps) => {
               paddingRight: spacing.m,
               borderRadius: 0
             }}
-            color='staticWhite'
+            color='white'
             shadow='near'
             onPress={onSelectCoverPhoto}
             icon={IconImage}
@@ -190,7 +190,7 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
             accessibilityLabel={messages.selectProfilePicture}
             icon={IconCamera}
             size='2xl'
-            color='staticWhite'
+            color='white'
             shadow='near'
             onPress={onSelectProfilePicture}
           />
@@ -221,7 +221,7 @@ const AccountDetails = (props: AccountDetailsProps) => {
         variant='heading'
         size='s'
         strength='strong'
-        color='staticWhite'
+        color='white'
         ellipsizeMode='tail'
         numberOfLines={1}
         style={{ flex: 1, flexShrink: 1 }}
@@ -233,7 +233,7 @@ const AccountDetails = (props: AccountDetailsProps) => {
         <Text
           variant='title'
           size='s'
-          color='staticWhite'
+          color='white'
           shadow={shadow}
           numberOfLines={1}
         >

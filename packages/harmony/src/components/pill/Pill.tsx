@@ -2,9 +2,9 @@ import { Ref, forwardRef } from 'react'
 
 import { CSSObject, useTheme } from '@emotion/react'
 
-import { BaseButton } from 'components/button/BaseButton/BaseButton'
-import { BaseButtonProps } from 'components/button/BaseButton/types'
-import { Text } from 'components/text'
+import { BaseButton } from '../button/BaseButton/BaseButton'
+import { BaseButtonProps } from '../button/BaseButton/types'
+import { Text } from '../text'
 
 export type PillProps = BaseButtonProps & {
   variant?: 'default' | 'active' | 'custom'
@@ -35,20 +35,20 @@ export const Pill = forwardRef(
 
     const textColors = {
       default: color.text.subdued,
-      active: color.text.staticWhite,
-      custom: color.text.staticWhite
+      active: color.text.white,
+      custom: color.text.white
     }
 
     const hoverTextColors = {
-      default: color.text.staticWhite,
-      active: color.text.staticWhite,
-      custom: color.text.staticWhite
+      default: color.text.white,
+      active: color.text.white,
+      custom: color.text.white
     }
 
     const buttonCss: CSSObject = {
       gap: spacing['2xs'],
       paddingInline: 6,
-      paddingBlock: spacing['2xs'],
+      paddingBlock: spacing.xs,
       borderWidth: 0,
       borderRadius: cornerRadius.circle,
       backgroundColor: backgroundColors[variant],

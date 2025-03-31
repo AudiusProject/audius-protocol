@@ -1,8 +1,9 @@
-import { createRef, Component } from 'react'
+import { useRef, useEffect, useState } from 'react'
 
 import { trimToAlphaNumeric } from '@audius/common/utils'
 import { Tag } from '@audius/harmony'
 import cn from 'classnames'
+import PropTypes from 'prop-types'
 
 import styles from './TagInput.module.css'
 
@@ -22,102 +23,103 @@ const isAlphaNumericKeyCode = (e) => {
   return /[A-Z0-9]/.test(char)
 }
 
-class TagInput extends Component {
-  state = {
-    tags: new Set(this.props.defaultTags),
-    typingMode: false,
-    flashExistingTag: null
-  }
+const TagInput = ({
+  placeholder = 'new tag',
+  defaultTags = [],
+  maxTags = 10,
+  maxCharacters = 25,
+  minCharacters = 0,
+  label = '',
+  size = 'normal',
+  layout = 'vertical',
+  onChangeTags = () => {},
+  tags: controlledTags,
+  typingMode: controlledTypingMode,
+  flashExistingTag: controlledFlashExistingTag,
+  'aria-label': ariaLabel,
+  labelStyle
+}) => {
+  const [tags, setTags] = useState(new Set(defaultTags))
+  const [typingMode, setTypingMode] = useState(false)
+  const [flashExistingTag, setFlashExistingTag] = useState(null)
 
-  newTagInputRef = createRef()
+  const newTagInputRef = useRef()
 
-  componentDidUpdate = (prevProps, prevState) => {
-    if (this.state.typingMode && this.newTagInputRef.current) {
-      this.newTagInputRef.current.focus()
+  useEffect(() => {
+    if (typingMode && newTagInputRef.current) {
+      newTagInputRef.current.focus()
     }
-    if (
-      prevState.tags === this.state.tags &&
-      prevProps.tags !== this.props.tags
-    ) {
-      this.setState({ tags: this.props.tags })
+  }, [typingMode])
+
+  useEffect(() => {
+    if (controlledTags && controlledTags !== tags) {
+      setTags(controlledTags)
     }
-  }
+  }, [controlledTags, tags])
 
-  setTypingMode = () => {
-    this.setState({
-      typingMode: true
-    })
-  }
-
-  isValidTag = (tag) => {
+  const isValidTag = (tag) => {
     return (
-      tag.length <= this.props.maxCharacters &&
-      tag.length > this.props.minCharacters &&
+      tag.length <= maxCharacters &&
+      tag.length > minCharacters &&
       isAlphaNumeric(tag)
     )
   }
 
-  formatTag = (tag) => {
+  const formatTag = (tag) => {
     // Remove non-alpha numeric and hash tags.
     return trimToAlphaNumeric(tag)
   }
 
-  addTag = (input) => {
-    let tag = this.formatTag(input)
-    if (tag.length > this.props.maxCharacters) {
-      tag = tag.slice(0, this.props.maxCharacters)
+  const addTag = (input) => {
+    let tag = formatTag(input)
+    if (tag.length > maxCharacters) {
+      tag = tag.slice(0, maxCharacters)
     }
-    if (this.isValidTag(tag)) {
-      let flashExistingTag = null
-      const newSet = new Set(this.state.tags)
-      if (newSet.size < this.props.maxTags) {
-        if (this.state.tags.has(tag)) {
-          flashExistingTag = tag
+    if (isValidTag(tag)) {
+      let newFlashExistingTag = null
+      const newSet = new Set(tags)
+      if (newSet.size < maxTags) {
+        if (tags.has(tag)) {
+          newFlashExistingTag = tag
           setTimeout(() => {
-            this.setState({
-              flashExistingTag: null
-            })
+            setFlashExistingTag(null)
           }, 200)
         }
         newSet.add(tag)
       }
-      this.setState({
-        tags: newSet,
-        typingMode: newSet.size !== this.props.maxTags,
-        flashExistingTag
-      })
-      this.props.onChangeTags(newSet)
-      this.newTagInputRef.current.value = ''
+      setTags(newSet)
+      setTypingMode(newSet.size !== maxTags)
+      setFlashExistingTag(newFlashExistingTag)
+      onChangeTags(newSet)
+      newTagInputRef.current.value = ''
     }
   }
 
-  deleteTag = (tag, e) => {
+  const deleteTag = (tag, e) => {
     if (e) e.stopPropagation()
-    const newTags = new Set(this.state.tags)
+    const newTags = new Set(tags)
     newTags.delete(tag)
-    this.setState({
-      tags: newTags
-    })
-    this.props.onChangeTags(newTags)
+    setTags(newTags)
+    onChangeTags(newTags)
   }
 
-  onNewTagInputKeyPress = (e) => {
-    const newTag = this.newTagInputRef.current.value.toLowerCase()
+  const onNewTagInputKeyPress = (e) => {
+    const newTag = newTagInputRef.current.value.toLowerCase()
     if (
       e.keyCode === 13 /* enter */ ||
       e.keyCode === 9 /* tab */ ||
       e.keyCode === 188 /* comma */
     ) {
       e.preventDefault()
-      this.addTag(newTag)
+      addTag(newTag)
     } else if (e.keyCode === 8 /* backspace */ && newTag.length === 0) {
-      const lastTag = [...this.state.tags.keys()].pop()
-      this.deleteTag(lastTag)
+      const lastTag = [...tags.keys()].pop()
+      deleteTag(lastTag)
     }
 
     if (
       // Don't allow typing past max characters.
-      (newTag.length > this.props.maxCharacters - 1 && e.keyCode !== 8) ||
+      (newTag.length > maxCharacters - 1 && e.keyCode !== 8) ||
       // Allow only backspace and alpha-numeric
       (e.keyCode !== 8 /* backspace */ && !isAlphaNumericKeyCode(e))
     ) {
@@ -126,98 +128,89 @@ class TagInput extends Component {
     }
   }
 
-  onNewTagInputBlur = () => {
-    const newTag = this.newTagInputRef.current.value.toLowerCase()
-    this.addTag(newTag)
-    this.setState({
-      typingMode: false
-    })
+  const onNewTagInputBlur = () => {
+    const newTag = newTagInputRef.current.value.toLowerCase()
+    addTag(newTag)
+    setTypingMode(false)
   }
 
-  render() {
-    const {
-      placeholder,
-      maxTags,
-      label,
-      labelStyle,
-      size,
-      layout,
-      tags = this.state.tags,
-      typingMode = this.state.typingMode,
-      flashExistingTag = this.state.flashExistingTag,
-      'aria-label': ariaLabel
-    } = this.props
+  const displayTypingMode =
+    controlledTypingMode !== undefined ? controlledTypingMode : typingMode
+  const displayFlashExistingTag =
+    controlledFlashExistingTag !== undefined
+      ? controlledFlashExistingTag
+      : flashExistingTag
 
-    const style = {
-      [styles.horizontal]: layout === 'horizontal',
-      [styles.vertical]: layout === 'vertical',
-      [styles.normal]: size === 'normal',
-      [styles.small]: size === 'small',
-      [styles.focused]: typingMode
-    }
+  const style = {
+    [styles.horizontal]: layout === 'horizontal',
+    [styles.vertical]: layout === 'vertical',
+    [styles.normal]: size === 'normal',
+    [styles.small]: size === 'small',
+    [styles.focused]: displayTypingMode
+  }
 
-    const tagNodes = [...tags].map((tag, i) => (
-      <Tag
-        className={cn({ [styles.flash]: flashExistingTag === tag })}
-        key={tag}
-        multiselect
-        variant='default'
-        onClick={(e) => this.deleteTag(tag, e)}
-      >
-        {trimToAlphaNumeric(tag)}
-      </Tag>
-    ))
+  const tagNodes = [...tags].map((tag) => (
+    <Tag
+      className={cn({ [styles.flash]: displayFlashExistingTag === tag })}
+      key={tag}
+      multiselect
+      variant='default'
+      onClick={(e) => deleteTag(tag, e)}
+    >
+      {trimToAlphaNumeric(tag)}
+    </Tag>
+  ))
 
-    const newTag = (
-      <>
-        {typingMode ? null : (
-          <Tag variant='composed' multiselect onClick={this.setTypingMode}>
-            {placeholder}
-          </Tag>
-        )}
-        <input
-          aria-label={ariaLabel}
-          ref={this.newTagInputRef}
-          className={cn(styles.newTagInput, {
-            [styles.activeInput]: typingMode
+  const newTag = (
+    <>
+      {!displayTypingMode ? (
+        <Tag variant='composed' multiselect onClick={() => setTypingMode(true)}>
+          {placeholder}
+        </Tag>
+      ) : null}
+      <input
+        aria-label={ariaLabel}
+        ref={newTagInputRef}
+        className={cn(styles.newTagInput, {
+          [styles.activeInput]: displayTypingMode
+        })}
+        onKeyDown={onNewTagInputKeyPress}
+        onBlur={onNewTagInputBlur}
+      />
+    </>
+  )
+
+  return (
+    <div className={cn(styles.wrapper, style)}>
+      {label ? (
+        <div className={cn(styles.label, labelStyle)}>{label}</div>
+      ) : null}
+      <div className={styles.tagInput} onClick={() => setTypingMode(true)}>
+        {tagNodes}
+        {tags.size < maxTags ? newTag : null}
+        <div
+          className={cn(styles.tagCount, {
+            [styles.nearLimit]: tags.size > (7.0 / 8.0) * maxTags
           })}
-          onKeyDown={this.onNewTagInputKeyPress}
-          onBlur={this.onNewTagInputBlur}
-        />
-      </>
-    )
-
-    return (
-      <div className={cn(styles.wrapper, style)}>
-        {label ? (
-          <div className={cn(styles.label, labelStyle)}>{label}</div>
-        ) : null}
-        <div className={styles.tagInput} onClick={this.setTypingMode}>
-          {tagNodes}
-          {tags.size < maxTags ? newTag : null}
-          <div
-            className={cn(styles.tagCount, {
-              [styles.nearLimit]: tags.size > (7.0 / 8.0) * maxTags
-            })}
-          >
-            {tags.size}/{maxTags}
-          </div>
+        >
+          {tags.size}/{maxTags}
         </div>
       </div>
-    )
-  }
+    </div>
+  )
 }
 
-TagInput.defaultProps = {
-  placeholder: 'new tag',
-  defaultTags: [],
-  maxTags: 10,
-  maxCharacters: 25,
-  minCharacters: 0,
-  label: '',
-  size: 'normal',
-  layout: 'vertical',
-  onChangeTags: (tag) => {}
+TagInput.propTypes = {
+  className: PropTypes.string,
+  placeholder: PropTypes.string,
+  defaultTags: PropTypes.array,
+  maxTags: PropTypes.number,
+  maxCharacters: PropTypes.number,
+  minCharacters: PropTypes.number,
+  label: PropTypes.string,
+  size: PropTypes.oneOf(['normal', 'small']),
+  layout: PropTypes.oneOf(['horizontal', 'vertical']),
+  onChangeTags: PropTypes.func
 }
 
 export default TagInput

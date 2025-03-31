@@ -17,7 +17,7 @@ const getTwitterShareHandle = (user: User) => {
   return twitterHandle ? `@${twitterHandle}` : user.handle
 }
 
-export type ShareMessageConfig = Pick<
+type ShareMessageConfig = Pick<
   typeof messages,
   | 'profileShareText'
   | 'trackShareText'

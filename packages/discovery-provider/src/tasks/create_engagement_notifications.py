@@ -70,8 +70,8 @@ def _create_engagement_notifications(session):
         existing_notification = (
             session.query(Notification)
             .filter(
-                Notification.user_ids.any(
-                    user_challenge.user_id
+                Notification.user_ids.overlap(
+                    [user_challenge.user_id]
                 ),  # Assumes 'user_ids' can handle multiple IDs and is searchable this way
                 Notification.timestamp >= time_threshold,
                 Notification.type == CLAIMABLE_REWARD,
@@ -128,4 +128,7 @@ def create_engagement_notifications(self):
         logger.error(f"ERROR caching node info {e}")
     finally:
         if have_lock:
-            update_lock.release()
+            try:
+                update_lock.release()
+            except Exception as e:
+                logger.error(f"could not release lock {e}")

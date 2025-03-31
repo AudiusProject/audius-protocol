@@ -1,11 +1,13 @@
 import { FetchNFTClient } from '@audius/fetch-nft'
 import type { AudiusSdk } from '@audius/sdk'
 import { VersionedTransaction } from '@solana/web3.js'
+import { QueryClient } from '@tanstack/react-query'
 import { Location } from 'history'
 import { Dispatch } from 'redux'
 import nacl from 'tweetnacl'
 
-import { AuthService } from '~/services'
+import { AuthService, IdentityService } from '~/services'
+import { SolanaWalletService } from '~/services/solana'
 
 import {
   AllTrackingEvents,
@@ -15,7 +17,6 @@ import {
   Track
 } from '../models'
 import { AudioPlayer } from '../services/audio-player'
-import { AudiusAPIClient } from '../services/audius-api-client'
 import { AudiusBackend } from '../services/audius-backend'
 import { Env } from '../services/env'
 import { Explore } from '../services/explore'
@@ -51,9 +52,9 @@ export type CommonStoreContext = {
       properties: any
     }
   }
+  getHostUrl: () => string
   remoteConfigInstance: RemoteConfigInstance
   audiusBackendInstance: AudiusBackend
-  apiClient: AudiusAPIClient
   fingerprintClient: FingerprintClient<any>
   walletClient: WalletClient
   localStorage: LocalStorage
@@ -70,7 +71,7 @@ export type CommonStoreContext = {
   nftClient: FetchNFTClient
   sentry: {
     setTag: (key: string, value: string) => void
-    configureScope: (fn: (scope: { setUser: any }) => void) => void
+    getCurrentScope: () => { setUser: (user: any) => void }
   }
   reportToSentry: (args: ReportToSentryArgs) => void
   trackDownload: TrackDownload
@@ -79,6 +80,8 @@ export type CommonStoreContext = {
   share: (url: string, message?: string) => Promise<void> | void
   audiusSdk: () => Promise<AudiusSdk>
   authService: AuthService
+  identityService: IdentityService
+  solanaWalletService: SolanaWalletService
   imageUtils: {
     generatePlaylistArtwork: (
       urls: string[]
@@ -86,6 +89,7 @@ export type CommonStoreContext = {
   }
   isMobile: boolean
   dispatch: Dispatch<any>
+  queryClient: QueryClient
   mobileWalletActions?: {
     connect: (dappKeyPair: nacl.BoxKeyPair) => void
     signAndSendTransaction: (params: {

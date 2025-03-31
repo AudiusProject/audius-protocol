@@ -378,12 +378,12 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   req.logger.info(`L2 - txRelay - success, req ${reqBodySHA}`)
 
   await models.Transaction.create({
-    contractRegistryKey: contractRegistryKey,
+    contractRegistryKey,
     contractFn: decodedABI.name,
-    contractAddress: contractAddress,
-    senderAddress: senderAddress,
+    contractAddress,
+    senderAddress,
     encodedNonceAndSignature: hashedData,
-    decodedABI: decodedABI,
+    decodedABI,
     receipt: txReceipt
   })
 

@@ -3,9 +3,8 @@ import path from 'path'
 
 import { describe, it, beforeAll, expect, vitest } from 'vitest'
 
-import { DefaultAuth } from '../../services/Auth/DefaultAuth'
-import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
-import { EntityManager } from '../../services/EntityManager'
+import { createAppWalletClient } from '../../services'
+import { EntityManagerClient } from '../../services/EntityManager'
 import { Logger } from '../../services/Logger'
 import { Storage } from '../../services/Storage'
 import { StorageNodeSelector } from '../../services/StorageNodeSelector'
@@ -70,20 +69,12 @@ vitest
   .mockImplementation(async () => ({}))
 
 vitest
-  .spyOn(EntityManager.prototype, 'manageEntity')
+  .spyOn(EntityManagerClient.prototype, 'manageEntity')
   .mockImplementation(async () => {
     return {
       blockHash: 'a',
       blockNumber: 1
     } as any
-  })
-
-vitest
-  .spyOn(EntityManager.prototype, 'getCurrentBlock')
-  .mockImplementation(async () => {
-    return {
-      timestamp: 1
-    }
   })
 
 vitest
@@ -103,23 +94,28 @@ vitest
   })
 
 describe('PlaylistsApi', () => {
+  // TODO: Move this setup out of describe
   let playlists: PlaylistsApi
 
-  const auth = new DefaultAuth()
+  // eslint-disable-next-line mocha/no-setup-in-describe
+  const audiusWalletClient = createAppWalletClient({ apiKey: '' })
   const logger = new Logger()
-  const discoveryNodeSelector = new DiscoveryNodeSelector()
   const storageNodeSelector = new StorageNodeSelector({
-    auth,
-    discoveryNodeSelector,
+    endpoint: 'https://discoveryprovider.audius.co',
     logger
   })
 
   beforeAll(() => {
     playlists = new PlaylistsApi(
       new Configuration(),
-      new Storage({ storageNodeSelector, logger: new Logger() }),
-      new EntityManager({ discoveryNodeSelector: new DiscoveryNodeSelector() }),
-      auth,
+      new Storage({
+        storageNodeSelector,
+        logger: new Logger()
+      }),
+      new EntityManagerClient({
+        audiusWalletClient,
+        endpoint: 'https://discoveryprovider.audius.co'
+      }),
       new Logger()
     )
     vitest.spyOn(console, 'warn').mockImplementation(() => {})

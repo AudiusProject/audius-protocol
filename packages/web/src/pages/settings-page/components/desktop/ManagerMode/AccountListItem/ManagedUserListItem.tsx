@@ -1,12 +1,9 @@
 import { useCallback, useContext, useEffect, useMemo } from 'react'
 
+import { useApproveManagedAccount, useRemoveManager } from '@audius/common/api'
 import { useAppContext } from '@audius/common/context'
 import { useAccountSwitcher, useIsManagedAccount } from '@audius/common/hooks'
 import { ManagedUserMetadata, Name, Status } from '@audius/common/models'
-import {
-  useApproveManagedAccount,
-  useRemoveManager
-} from '@audius/common/src/api/account'
 import { accountSelectors, chatSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -73,7 +70,6 @@ export const ManagedUserListItem = ({
   )
 
   const composeChat = useComposeChat({
-    // @ts-expect-error - This wants a User, but works with UserMetadata
     user
   })
 

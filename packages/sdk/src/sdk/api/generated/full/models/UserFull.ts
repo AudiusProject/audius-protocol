@@ -317,6 +317,12 @@ export interface UserFull {
     doesCurrentUserSubscribe: boolean;
     /**
      * 
+     * @type {boolean}
+     * @memberof UserFull
+     */
+    doesFollowCurrentUser: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof UserFull
      */
@@ -363,12 +369,6 @@ export interface UserFull {
      * @memberof UserFull
      */
     profilePictureLegacy?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFull
-     */
-    metadataMultihash?: string;
     /**
      * 
      * @type {boolean}
@@ -426,6 +426,7 @@ export function instanceOfUserFull(value: object): value is UserFull {
     isInstance = isInstance && "currentUserFolloweeFollowCount" in value && value["currentUserFolloweeFollowCount"] !== undefined;
     isInstance = isInstance && "doesCurrentUserFollow" in value && value["doesCurrentUserFollow"] !== undefined;
     isInstance = isInstance && "doesCurrentUserSubscribe" in value && value["doesCurrentUserSubscribe"] !== undefined;
+    isInstance = isInstance && "doesFollowCurrentUser" in value && value["doesFollowCurrentUser"] !== undefined;
     isInstance = isInstance && "handleLc" in value && value["handleLc"] !== undefined;
     isInstance = isInstance && "updatedAt" in value && value["updatedAt"] !== undefined;
     isInstance = isInstance && "hasCollectibles" in value && value["hasCollectibles"] !== undefined;
@@ -488,6 +489,7 @@ export function UserFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'currentUserFolloweeFollowCount': json['current_user_followee_follow_count'],
         'doesCurrentUserFollow': json['does_current_user_follow'],
         'doesCurrentUserSubscribe': json['does_current_user_subscribe'],
+        'doesFollowCurrentUser': json['does_follow_current_user'],
         'handleLc': json['handle_lc'],
         'updatedAt': json['updated_at'],
         'coverPhotoSizes': !exists(json, 'cover_photo_sizes') ? undefined : json['cover_photo_sizes'],
@@ -496,7 +498,6 @@ export function UserFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'profilePictureSizes': !exists(json, 'profile_picture_sizes') ? undefined : json['profile_picture_sizes'],
         'profilePictureCids': !exists(json, 'profile_picture_cids') ? undefined : ProfilePictureFromJSON(json['profile_picture_cids']),
         'profilePictureLegacy': !exists(json, 'profile_picture_legacy') ? undefined : json['profile_picture_legacy'],
-        'metadataMultihash': !exists(json, 'metadata_multihash') ? undefined : json['metadata_multihash'],
         'hasCollectibles': json['has_collectibles'],
         'playlistLibrary': !exists(json, 'playlist_library') ? undefined : PlaylistLibraryFromJSON(json['playlist_library']),
         'allowAiAttribution': json['allow_ai_attribution'],
@@ -556,6 +557,7 @@ export function UserFullToJSON(value?: UserFull | null): any {
         'current_user_followee_follow_count': value.currentUserFolloweeFollowCount,
         'does_current_user_follow': value.doesCurrentUserFollow,
         'does_current_user_subscribe': value.doesCurrentUserSubscribe,
+        'does_follow_current_user': value.doesFollowCurrentUser,
         'handle_lc': value.handleLc,
         'updated_at': value.updatedAt,
         'cover_photo_sizes': value.coverPhotoSizes,
@@ -564,7 +566,6 @@ export function UserFullToJSON(value?: UserFull | null): any {
         'profile_picture_sizes': value.profilePictureSizes,
         'profile_picture_cids': ProfilePictureToJSON(value.profilePictureCids),
         'profile_picture_legacy': value.profilePictureLegacy,
-        'metadata_multihash': value.metadataMultihash,
         'has_collectibles': value.hasCollectibles,
         'playlist_library': PlaylistLibraryToJSON(value.playlistLibrary),
         'allow_ai_attribution': value.allowAiAttribution,

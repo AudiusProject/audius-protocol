@@ -1,15 +1,22 @@
-import type { full } from '@audius/sdk'
-import { omit } from 'lodash'
+import {
+  HashId,
+  OptionalHashId,
+  OptionalId,
+  type full,
+  type UpdateProfileRequest
+} from '@audius/sdk'
+import camelcaseKeys from 'camelcase-keys'
+import { omit, pick } from 'lodash'
 import snakecaseKeys from 'snakecase-keys'
 
 import {
   AccountUserMetadata,
   ManagedUserMetadata,
   UserManagerMetadata,
-  UserMetadata
+  UserMetadata,
+  WriteableUserMetadata
 } from '~/models/User'
 import { SolanaWalletAddress, StringWei } from '~/models/Wallet'
-import { decodeHashId } from '~/utils/hashIds'
 import { removeNullable } from '~/utils/typeUtils'
 
 import { accountCollectionFromSDK } from './collection'
@@ -25,7 +32,7 @@ import { transformAndCleanList } from './utils'
 export const userMetadataFromSDK = (
   input: full.UserFull
 ): UserMetadata | undefined => {
-  const decodedUserId = decodeHashId(input.id)
+  const decodedUserId = OptionalHashId.parse(input.id)
   if (!decodedUserId) {
     return undefined
   }
@@ -40,11 +47,10 @@ export const userMetadataFromSDK = (
 
     // Conversions
     artist_pick_track_id: input.artistPickTrackId
-      ? decodeHashId(input.artistPickTrackId)
+      ? HashId.parse(input.artistPickTrackId)
       : null,
 
     // Nested Types
-    playlist_library: playlistLibraryFromSDK(input.playlistLibrary) ?? null,
     cover_photo_cids: input.coverPhotoCids
       ? coverPhotoSizesCIDsFromSDK(input.coverPhotoCids)
       : null,
@@ -59,11 +65,21 @@ export const userMetadataFromSDK = (
     user_id: decodedUserId,
     spl_wallet: input.splWallet as SolanaWalletAddress,
     spl_usdc_payout_wallet: input.splUsdcPayoutWallet as SolanaWalletAddress,
-
-    // Legacy Overrides
-    cover_photo: input.coverPhotoLegacy ?? null,
-    profile_picture: input.profilePictureLegacy ?? null,
-
+    cover_photo: input.coverPhoto
+      ? {
+          '640x': input.coverPhoto._640x,
+          '2000x': input.coverPhoto._2000x,
+          mirrors: input.coverPhoto.mirrors
+        }
+      : {},
+    profile_picture: input.profilePicture
+      ? {
+          '150x150': input.profilePicture._150x150,
+          '480x480': input.profilePicture._480x480,
+          '1000x1000': input.profilePicture._1000x1000,
+          mirrors: input.profilePicture.mirrors
+        }
+      : {},
     // Required Nullable fields
     bio: input.bio ?? null,
     twitter_handle: input.twitterHandle ?? null,
@@ -74,7 +90,6 @@ export const userMetadataFromSDK = (
     cover_photo_sizes: input.coverPhotoSizes ?? null,
     creator_node_endpoint: input.creatorNodeEndpoint ?? null,
     location: input.location ?? null,
-    metadata_multihash: input.metadataMultihash ?? null,
     profile_picture_sizes: input.profilePictureSizes ?? null
   }
 
@@ -132,9 +147,30 @@ export const accountFromSDK = (
     // Account users included extended information, so we'll merge that in here.
     user: {
       ...user,
-      ...accountMetadata
+      playlists: accountMetadata.playlists
     },
     // These values are included outside the user as well to facilitate separate caching
     ...accountMetadata
   }
 }
+
+export const userMetadataToSdk = (
+  input: WriteableUserMetadata & Pick<AccountUserMetadata, 'playlist_library'>
+): UpdateProfileRequest['metadata'] => ({
+  ...camelcaseKeys(
+    pick(input, ['name', 'handle', 'is_deactivated', 'allow_ai_attribution'])
+  ),
+  bio: input.bio ?? undefined,
+  website: input.website ?? undefined,
+  donation: input.donation ?? undefined,
+  artistPickTrackId: OptionalId.parse(input.artist_pick_track_id ?? undefined),
+  events: {
+    referrer: OptionalId.parse(input.events?.referrer ?? undefined),
+    isMobileUser: input.events?.is_mobile_user ?? undefined
+  },
+  location: input.location ?? undefined,
+  twitterHandle: input.twitter_handle ?? undefined,
+  instagramHandle: input.instagram_handle ?? undefined,
+  playlistLibrary: input.playlist_library ?? undefined,
+  tiktokHandle: input.tiktok_handle ?? undefined
+})

@@ -19,7 +19,7 @@ import {
 import { PasswordField } from 'components/form-fields/PasswordField'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 
-import { NewEmailField } from '../components/EmailField'
+import { NewEmailField } from '../components/NewEmailField'
 import { PasswordCompletionChecklist } from '../components/PasswordCompletionChecklist'
 import { SignUpAgreementText } from '../components/SignUpPolicyText'
 import { Heading, Page, PageFooter, ReadOnlyField } from '../components/layout'
@@ -27,7 +27,7 @@ import { loginDetailsSchema } from '../utils/loginDetailsSchema'
 
 const { SIGN_UP_FINISH_PROFILE_PAGE } = route
 
-export type CreateLoginDetailsValues = {
+type CreateLoginDetailsValues = {
   email: string
   password: string
   confirmPassword: string

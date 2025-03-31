@@ -150,7 +150,7 @@ describe('health_check', () => {
       expect(reason).toBe('slot diff')
     })
 
-    // test('comms unhealthy', () => {
+    // it('comms unhealthy', () => {
     //   const { health, reason } = parseApiHealthStatusReason({
     //     data: {
     //       health: {
@@ -168,7 +168,7 @@ describe('health_check', () => {
     //   expect(reason).toBe('comms')
     // })
 
-    // test('comms healthy', () => {
+    // it('comms healthy', () => {
     //   const { health } = parseApiHealthStatusReason({
     //     data: {
     //       health: {

@@ -1,9 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-export type VisualizerState = {
-  isVisible: boolean
-}
-
 const initialState = { isVisible: false }
 
 const slice = createSlice({
@@ -22,10 +18,7 @@ const slice = createSlice({
   }
 })
 
-export const {
-  toggleVisibility,
-  closeVisualizer,
-  openVisualizer,
-} = slice.actions
+export const { toggleVisibility, closeVisualizer, openVisualizer } =
+  slice.actions
 
 export default slice.reducer

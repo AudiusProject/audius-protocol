@@ -24,8 +24,8 @@ export type Config = {
   rateLimitAllowList: string[]
   rateLimitBlockList: string[]
   finalPoaBlock: number
-  redisUrl: string,
-  verifierAddress: string,
+  redisUrl: string
+  verifierAddress: string
   coreEndpoint: string
 }
 
@@ -39,8 +39,14 @@ const readDotEnv = () => {
 }
 
 const defaultCoreEndpoint = (env: string): string => {
-  if (env === "dev") return "core-discovery-1:50051"
-  return "core:50051"
+  if (env === 'dev') return 'http://audiusd-1:50051'
+  return 'http://core:50051'
+}
+
+export const chainId = (config: Config): string => {
+  if (config.environment == "stage") return "1056801"
+  if (config.environment == "dev") return "1337"
+  return "31524"
 }
 
 export const readConfig = (): Config => {
@@ -72,7 +78,7 @@ export const readConfig = (): Config => {
     relay_server_port: num({ default: 6001 }),
     audius_final_poa_block: num({ default: 0 }),
     audius_redis_url: str({
-      default: 'redis://audius-protocol-discovery-provider-redis-1:6379/00'
+      default: 'redis://audius-protocol-discovery-provider-redis-1:6379/0'
     }),
     audius_contracts_verified_address: str({ default: '' }),
     audius_core_endpoint: str({ default: '' })
@@ -94,7 +100,10 @@ export const readConfig = (): Config => {
       finalPoaBlock: env.audius_final_poa_block,
       redisUrl: env.audius_redis_url,
       verifierAddress: env.audius_contracts_verified_address,
-      coreEndpoint: env.audius_core_endpoint !== '' ? env.audius_core_endpoint : defaultCoreEndpoint(env.audius_discprov_env)
+      coreEndpoint:
+        env.audius_core_endpoint !== ''
+          ? env.audius_core_endpoint
+          : defaultCoreEndpoint(env.audius_discprov_env)
     }
   }
 

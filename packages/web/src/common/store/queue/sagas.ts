@@ -16,20 +16,22 @@ import {
   cacheCollectionsSelectors,
   cacheTracksSelectors,
   cacheActions,
-  cacheSelectors,
   cacheUsersSelectors,
   lineupRegistry,
   queueActions,
   queueSelectors,
+  reachabilitySelectors,
   RepeatMode,
   QueueSource,
   getContext,
   playerActions,
   playerSelectors,
-  PlayerBehavior
+  PlayerBehavior,
+  profilePageSelectors
 } from '@audius/common/store'
 import { Uid, makeUid, waitForAccount, Nullable } from '@audius/common/utils'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
+import { PREFIX as SEARCH_PREFIX } from '~/store/pages/search-results/lineup/tracks/actions'
 
 import { make } from 'common/store/analytics/actions'
 import { getRecommendedTracks } from 'common/store/recommendation/sagas'
@@ -45,9 +47,10 @@ const {
   getShuffle,
   getSource,
   getUid,
-  getUndershot,
-  getCurrentArtist
+  getUndershot
 } = queueSelectors
+
+const { getProfileUserHandle } = profilePageSelectors
 
 const {
   getTrackId: getPlayerTrackId,
@@ -55,13 +58,12 @@ const {
   getPlayerBehavior
 } = playerSelectors
 
-const { add, clear, next, pause, play, queueAutoplay, previous, remove } =
-  queueActions
-const { getId } = cacheSelectors
+const { add, clear, next, pause, play, queueAutoplay, previous } = queueActions
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
-const getUserId = accountSelectors.getUserId
+const { getUserId } = accountSelectors
+const { getIsReachable } = reachabilitySelectors
 
 const QUEUE_SUBSCRIBER_NAME = 'QUEUE'
 
@@ -154,7 +156,7 @@ function* handleQueueAutoplay({
  * 3. If the queue is indexed onto a different uid than the player, play the queue's uid
  * 4. Resume whatever was playing on the player
  */
-export function* watchPlay() {
+function* watchPlay() {
   yield* takeLatest(play.type, function* (action: ReturnType<typeof play>) {
     const { uid, trackId, collectible, playerBehavior } = action.payload
 
@@ -176,7 +178,14 @@ export function* watchPlay() {
       const isNearEndOfQueue = index + 3 >= length
 
       if (isNearEndOfQueue) {
-        yield* call(fetchLineupTracks)
+        /* Fetch more lineup tracks if available. Ideally, this would run async after we've started
+        playing the next track. But since we may skip the next track, we need the lineup and/or autoplay
+        logic to be run ahead of time.
+        Important note: Using the track we're being asked to play, as the lineup
+        source may be changing with that track, and we don't want to look up a lineup
+        using the "currentTrack" in the player.
+        */
+        yield* call(fetchLineupTracks, playActionTrack)
       }
 
       yield* call(handleQueueAutoplay, {
@@ -243,6 +252,7 @@ export function* watchPlay() {
 
         const location = yield* select(getLocation)
 
+        if (!location) return
         const lineup: LineupState<Track> = yield* select(
           getLineupSelectorForRoute(location)
         )
@@ -287,15 +297,30 @@ export function* watchPlay() {
 
 // Fetches more lineup tracks if available. This is needed for cases
 // where the user hasn't scrolled through the lineup.
-function* fetchLineupTracks() {
+function* fetchLineupTracks(currentTrack: Track) {
   const source = yield* select(getSource)
   if (!source) return
 
   const lineupEntry = lineupRegistry[source]
   if (!lineupEntry) return
 
-  const currentArtist = yield* select(getCurrentArtist)
-  const lineup = yield* select(lineupEntry.selector, currentArtist?.handle)
+  // NOTE: SPECIAL CASE - For tan-query search we don't want this behavior
+  if (lineupEntry.actions.prefix === SEARCH_PREFIX) return
+
+  const currentProfileUserHandle = yield* select(getProfileUserHandle)
+
+  const currentTrackOwner = yield* select(getUser, {
+    id: currentTrack.owner_id
+  })
+
+  // NOTE: This is a bandaid fix. On the profile page when on the reposts lineup,
+  // we need to select the lineup using the handle of the profile page user, not the handle of the track owner
+  const handleToUse =
+    source === QueueSource.PROFILE_FEED
+      ? (currentProfileUserHandle ?? undefined)
+      : currentTrackOwner?.handle
+
+  const lineup = yield* select(lineupEntry.selector, handleToUse)
 
   if (lineup.hasMore) {
     const offset = lineup.entries.length + lineup.deleted + lineup.nullCount
@@ -311,13 +336,13 @@ function* fetchLineupTracks() {
   }
 }
 
-export function* watchPause() {
+function* watchPause() {
   yield* takeEvery(pause.type, function* (action: ReturnType<typeof pause>) {
     yield* put(playerActions.pause({}))
   })
 }
 
-export function* watchNext() {
+function* watchNext() {
   yield* takeEvery(next.type, function* (action: ReturnType<typeof next>) {
     const skip = action.payload?.skip
 
@@ -406,11 +431,13 @@ export function* watchNext() {
   })
 }
 
-export function* watchQueueAutoplay() {
+function* watchQueueAutoplay() {
   yield* takeEvery(
     queueAutoplay.type,
     function* (action: ReturnType<typeof queueAutoplay>) {
       const { genre, exclusionList, currentUserId } = action.payload
+      const isReachable = yield* select(getIsReachable)
+      if (!isReachable) return
       const tracks: UserTrackMetadata[] = yield* call(
         getRecommendedTracks,
         genre,
@@ -427,7 +454,7 @@ export function* watchQueueAutoplay() {
   )
 }
 
-export function* watchPrevious() {
+function* watchPrevious() {
   yield* takeEvery(
     previous.type,
     function* (action: ReturnType<typeof previous>) {
@@ -498,7 +525,7 @@ export function* watchPrevious() {
   )
 }
 
-export function* watchAdd() {
+function* watchAdd() {
   yield* takeEvery(add.type, function* (action: ReturnType<typeof add>) {
     const { entries } = action.payload
 
@@ -510,19 +537,6 @@ export function* watchAdd() {
   })
 }
 
-export function* watchRemove() {
-  yield* takeEvery(remove.type, function* (action: ReturnType<typeof remove>) {
-    const { uid } = action.payload
-
-    const id = yield* select(getId, { kind: Kind.TRACKS, uid })
-    yield* put(
-      cacheActions.unsubscribe(Kind.TRACKS, [
-        { uid: QUEUE_SUBSCRIBER_NAME, id }
-      ])
-    )
-  })
-}
-
 const sagas = () => {
   const sagas = [
     watchPlay,
@@ -530,8 +544,7 @@ const sagas = () => {
     watchNext,
     watchQueueAutoplay,
     watchPrevious,
-    watchAdd,
-    watchRemove
+    watchAdd
   ]
   return sagas
 }

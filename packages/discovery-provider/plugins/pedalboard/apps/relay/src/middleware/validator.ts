@@ -212,7 +212,9 @@ export const retrieveUser = async (
   }
 
   if (!addedWalletClause && handle) {
-    query = query.where('handle_lc', '=', handle.toLowerCase())
+    query = query
+      .where('handle_lc', '=', handle.toLowerCase())
+      .orWhereNull('handle_lc')
     addedHandleClause = true
   }
 
@@ -222,7 +224,6 @@ export const retrieveUser = async (
 
   const user = await query
     .andWhere('is_current', '=', true)
-    .whereNotNull('handle_lc')
     .orderBy('created_at', 'asc')
     .first()
   return user

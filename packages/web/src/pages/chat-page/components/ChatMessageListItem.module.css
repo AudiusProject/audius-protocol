@@ -20,7 +20,8 @@
   display: inline-block;
   max-width: 448px;
   filter: var(--drop-shadow-near);
-  transition: background-color var(--harmony-expressive),
+  transition:
+    background-color var(--harmony-expressive),
     filter var(--harmony-expressive);
 }
 
@@ -114,7 +115,9 @@
   justify-content: center;
   opacity: 0;
   /* transform looks better if it only eases-out */
-  transition: opacity var(--harmony-quick), transform 0.07s ease-out;
+  transition:
+    opacity var(--harmony-quick),
+    transform 0.07s ease-out;
 }
 
 .reactionsContainer:not(.hasReaction) .reactionsButton {

@@ -1,19 +1,15 @@
 import { useCallback, useEffect } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
 import { User } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   chatActions,
-  chatSelectors,
   searchUsersModalActions,
   useCreateChatModal,
   createChatModalActions,
   useInboxUnavailableModal,
   userListActions,
   followersUserListActions,
-  followersUserListSelectors,
   FOLLOWERS_USER_LIST_TAG
 } from '@audius/common/store'
 import { IconCompose } from '@audius/harmony'
@@ -30,26 +26,15 @@ const messages = {
   title: 'New Message'
 }
 
-const { getAccountUser } = accountSelectors
-const { getUserList: getFollowersUserList } = followersUserListSelectors
-const { getUserList: getChatsUserList } = chatSelectors
+const { getUserId } = accountSelectors
 const { fetchBlockers, fetchMoreChats } = chatActions
 
-export const CreateChatModal = () => {
-  const { isEnabled: isChatBlastsEnabled } = useFeatureFlag(
-    FeatureFlags.ONE_TO_MANY_DMS
-  )
-
+const CreateChatModal = () => {
   const dispatch = useDispatch()
-  const currentUser = useSelector(getAccountUser)
+  const currentUserId = useSelector(getUserId)
   const { isOpen, onClose, onClosed, data } = useCreateChatModal()
   const { onOpen: openInboxUnavailableModal } = useInboxUnavailableModal()
   const { onCancelAction, presetMessage, defaultUserList } = data
-
-  const followersUserList = useSelector(getFollowersUserList)
-  const chatsUserList = useSelector(getChatsUserList)
-  const { userIds, hasMore, loading } =
-    defaultUserList === 'chats' ? chatsUserList : followersUserList
 
   const handleCancel = useCallback(() => {
     if (onCancelAction) {
@@ -58,15 +43,15 @@ export const CreateChatModal = () => {
   }, [onCancelAction, dispatch])
 
   const loadMore = useCallback(() => {
-    if (currentUser) {
+    if (currentUserId) {
       if (defaultUserList === 'chats') {
         dispatch(fetchMoreChats())
       } else {
-        dispatch(followersUserListActions.setFollowers(currentUser?.user_id))
+        dispatch(followersUserListActions.setFollowers(currentUserId))
         dispatch(userListActions.loadMore(FOLLOWERS_USER_LIST_TAG))
       }
     }
-  }, [dispatch, defaultUserList, currentUser])
+  }, [dispatch, defaultUserList, currentUserId])
 
   const handleOpenInboxUnavailableModal = useCallback(
     (user: User) => {
@@ -95,12 +80,6 @@ export const CreateChatModal = () => {
     <>
       <SearchUsersModal
         titleProps={{ title: messages.title, icon: <IconCompose /> }}
-        defaultUserList={{
-          userIds,
-          loadMore,
-          loading,
-          hasMore
-        }}
         renderUser={(user, closeParentModal) => (
           <CreateChatUserResult
             key={user.user_id}
@@ -115,9 +94,7 @@ export const CreateChatModal = () => {
         onClose={onClose}
         onClosed={onClosed}
         onCancel={handleCancel}
-        footer={
-          isChatBlastsEnabled ? <ChatBlastCTA onClick={onClose} /> : undefined
-        }
+        footer={<ChatBlastCTA onClick={onClose} />}
       />
     </>
   )

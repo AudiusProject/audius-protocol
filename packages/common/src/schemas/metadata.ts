@@ -1,10 +1,11 @@
-// TODO(nkang) - convert to TS
-// @ts-nocheck
-
 import { pick } from 'lodash'
+
+import { WriteableTrackMetadata, WriteableUserMetadata } from '~/models'
 
 const trackMetadataSchema = {
   track_cid: null,
+  orig_file_cid: null,
+  orig_filename: null,
   owner_id: null,
   title: null,
   duration: null,
@@ -75,7 +76,10 @@ const trackMetadataSchema = {
   is_owned_by_user: false
 }
 
-export const newTrackMetadata = (fields, validate = false): TrackMetadata => {
+export const newTrackMetadata = (
+  fields?: any,
+  validate = false
+): WriteableTrackMetadata => {
   const validFields = validate
     ? pick(fields, Object.keys(trackMetadataSchema).concat(['track_id']))
     : fields
@@ -97,7 +101,7 @@ export const newTrackMetadata = (fields, validate = false): TrackMetadata => {
 const collectionMetadataSchema = {
   is_album: false,
   is_current: true,
-  is_private: false,
+  is_private: true,
   tags: null,
   genre: null,
   mood: null,
@@ -151,9 +155,6 @@ const userMetadataSchema = {
   donation: null,
   creator_node_endpoint: null,
   updated_at: null,
-  associated_wallets: null,
-  associated_sol_wallets: null,
-  collectibles: null,
   playlist_library: null,
   events: null,
   is_deactivated: false,
@@ -161,7 +162,10 @@ const userMetadataSchema = {
   spl_usdc_payout_wallet: null
 }
 
-export const newUserMetadata = (fields?: any, validate = false): User => {
+export const newUserMetadata = (
+  fields?: any,
+  validate = false
+): WriteableUserMetadata => {
   const validFields = validate
     ? pick(fields, Object.keys(userMetadataSchema).concat(['user_id']))
     : fields

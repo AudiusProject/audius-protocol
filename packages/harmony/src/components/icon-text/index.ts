@@ -1,2 +1,2 @@
 export { IconText } from './IconText'
-export { IconTextProps } from './types'
+export { type IconTextProps } from './types'

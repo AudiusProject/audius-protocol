@@ -3,6 +3,8 @@ export const AMOUNT_PRESET = 'amountPreset'
 export const PURCHASE_METHOD = 'purchaseMethod'
 export const PURCHASE_METHOD_MINT_ADDRESS = 'purchaseMethodMintAddress'
 export const PURCHASE_VENDOR = 'purchaseVendor'
+export const GUEST_CHECKOUT = 'guestCheckout'
+export const GUEST_EMAIL = 'guestEmail'
 export const PAGE = 'page'
 
 // Pay between $1 and $100 extra

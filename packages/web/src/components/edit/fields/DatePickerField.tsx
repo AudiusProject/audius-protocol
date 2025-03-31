@@ -93,7 +93,7 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
               // @ts-ignore todo: upgrade moment
               date={moment(value)}
               onDateChange={(value) => {
-                helpers.setValue(value?.toString())
+                helpers.setValue(value?.startOf('day').toString())
                 helpers.setTouched(true, false)
               }}
               isOutsideRange={(day) => {

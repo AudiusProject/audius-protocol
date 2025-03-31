@@ -1,13 +1,11 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
 
-import { useAppContext } from '@audius/common/context'
-import { Name, SquareSizes } from '@audius/common/models'
+import { useUsers } from '@audius/common/api'
+import { Name } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
-  cacheUsersSelectors,
   savedPageTracksLineupActions,
   queueActions,
   queueSelectors,
@@ -21,19 +19,18 @@ import {
   playbackPositionSelectors,
   gatedContentSelectors,
   calculatePlayerBehavior,
-  PlayerBehavior,
-  cacheTracksActions
+  PlayerBehavior
 } from '@audius/common/store'
 import type { Queueable, CommonState } from '@audius/common/store'
 import {
   Genre,
-  encodeHashId,
   shallowCompare,
   removeNullable,
-  getQueryParams,
   getTrackPreviewDuration
 } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
+import { Id, OptionalId } from '@audius/sdk'
+import { getMirrorStreamUrl } from '@audius/web/src/common/store/player/sagas'
 import { isEqual } from 'lodash'
 import TrackPlayer, {
   AppKilledPlaybackBehavior,
@@ -48,16 +45,13 @@ import TrackPlayer, {
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync, usePrevious } from 'react-use'
 
-import { DEFAULT_IMAGE_URL } from 'app/components/image/TrackImage'
-import { getImageSourceOptimistic } from 'app/hooks/useContentNodeImage'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track as analyticsTrack } from 'app/services/analytics'
-import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import {
   getLocalAudioPath,
   getLocalTrackCoverArtPath
 } from 'app/services/offline-downloader'
+import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
 import {
   getOfflineTrackStatus,
@@ -71,10 +65,11 @@ import {
 import { useChromecast } from './GoogleCast'
 import { useSavePodcastProgress } from './useSavePodcastProgress'
 
+export const DEFAULT_IMAGE_URL =
+  'https://download.audius.co/static-resources/preview-image.jpg'
+
 const { getUserId } = accountSelectors
-const { getUsers } = cacheUsersSelectors
-const { getTracks, getTrackStreamUrls } = cacheTracksSelectors
-const { setStreamUrls } = cacheTracksActions
+const { getTracks } = cacheTracksSelectors
 const {
   getPlaying,
   getSeek,
@@ -167,13 +162,6 @@ type QueueableTrack = {
 } & Pick<Queueable, 'playerBehavior'>
 
 export const AudioPlayer = () => {
-  const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-  )
-  const { isEnabled: isStreamPrefetchEnabled } = useFeatureFlag(
-    FeatureFlags.PREFETCH_STREAM_URLS
-  )
   const track = useSelector(getCurrentTrack)
   const playing = useSelector(getPlaying)
   const seek = useSelector(getSeek)
@@ -189,11 +177,11 @@ export const AudioPlayer = () => {
   const trackPositions = useSelector((state: CommonState) =>
     getUserTrackPositions(state, { userId: currentUserId })
   )
+  const [retries, setRetries] = useState(0)
 
   const isReachable = useSelector(getIsReachable)
   const isNotReachable = isReachable === false
   const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
-  const { storageNodeSelector } = useAppContext()
 
   useChromecast()
 
@@ -219,10 +207,7 @@ export const AudioPlayer = () => {
     .map(({ track }) => track?.owner_id)
     .filter(removeNullable)
 
-  const queueTrackOwnersMap = useSelector(
-    (state) => getUsers(state, { ids: queueTrackOwnerIds }),
-    shallowCompare
-  )
+  const { byId: queueTrackOwnersMap } = useUsers(queueTrackOwnerIds)
 
   const isCollectionMarkedForDownload = useSelector(
     getIsCollectionMarkedForDownload(
@@ -266,10 +251,6 @@ export const AudioPlayer = () => {
     [dispatch]
   )
 
-  const trackStreamUrls = useSelector(getTrackStreamUrls)
-  const isUsingPrefetchUrl =
-    trackStreamUrls[track?.track_id ?? -1] !== undefined &&
-    isStreamPrefetchEnabled
   const reset = useCallback(
     () => dispatch(playerActions.reset({ shouldAutoplay: false })),
     [dispatch]
@@ -324,13 +305,11 @@ export const AudioPlayer = () => {
   ])
 
   const makeTrackData = useCallback(
-    async (
-      { track, playerBehavior }: QueueableTrack,
-      noPrefetch?: boolean // option to opt out of prefetched stream urls (see error handling method)
-    ) => {
+    async ({ track, playerBehavior }: QueueableTrack, retries?: number) => {
       if (!track) {
         return unlistedTrackFallbackTrackData
       }
+      setRetries(retries ?? 0)
 
       const trackOwner = queueTrackOwnersMap[track.owner_id]
       const trackId = track.track_id
@@ -342,54 +321,41 @@ export const AudioPlayer = () => {
       // Get Track url
       let url: string
 
-      // If we pre-fetched a stream url, prefer to use that
-      const prefetchedStreamUrl = trackStreamUrls[trackId]
+      const contentNodeStreamUrl = getMirrorStreamUrl(
+        track,
+        shouldPreview,
+        retries ?? 0
+      )
       if (offlineTrackAvailable && isCollectionMarkedForDownload) {
         const audioFilePath = getLocalAudioPath(trackId)
         url = `file://${audioFilePath}`
-      } else if (
-        prefetchedStreamUrl &&
-        isStreamPrefetchEnabled &&
-        !noPrefetch
-      ) {
-        url = prefetchedStreamUrl
+      } else if (contentNodeStreamUrl) {
+        url = contentNodeStreamUrl
       } else {
-        let queryParams = trackQueryParams.current[trackId]
-
-        if (!queryParams) {
-          const nftAccessSignature = nftAccessSignatureMap[trackId]?.mp3 ?? null
-          queryParams = await getQueryParams({
-            audiusBackendInstance,
-            nftAccessSignature,
-            userId: currentUserId
+        const sdk = await audiusSdk()
+        const nftAccessSignature = nftAccessSignatureMap[trackId]?.mp3 ?? null
+        const { data, signature } =
+          await audiusBackendInstance.signGatedContentRequest({
+            sdk
           })
-          trackQueryParams.current[trackId] = queryParams
-        }
-
-        queryParams = { ...queryParams, preview: shouldPreview }
-
-        url = apiClient.makeUrl(
-          `/tracks/${encodeHashId(track.track_id)}/stream`,
-          queryParams
-        )
+        url = await sdk.tracks.getTrackStreamUrl({
+          trackId: Id.parse(track.track_id),
+          userId: OptionalId.parse(currentUserId),
+          userSignature: signature,
+          userData: data,
+          nftAccessSignature: nftAccessSignature
+            ? JSON.stringify(nftAccessSignature)
+            : undefined
+        })
       }
 
       const localTrackImageSource =
         isNotReachable && track
-          ? { uri: `file://${getLocalTrackCoverArtPath(trackId.toString())}` }
+          ? `file://${getLocalTrackCoverArtPath(trackId.toString())}`
           : undefined
 
-      const cid = track ? track.cover_art_sizes || track.cover_art : null
-
       const imageUrl =
-        cid && storageNodeSelector
-          ? getImageSourceOptimistic({
-              cid,
-              endpoints: storageNodeSelector.getNodes(cid),
-              size: SquareSizes.SIZE_1000_BY_1000,
-              localSource: localTrackImageSource
-            })?.uri ?? DEFAULT_IMAGE_URL
-          : DEFAULT_IMAGE_URL
+        localTrackImageSource ?? track.artwork['1000x1000'] ?? DEFAULT_IMAGE_URL
 
       return {
         url,
@@ -408,12 +374,10 @@ export const AudioPlayer = () => {
       currentUserId,
       isCollectionMarkedForDownload,
       isNotReachable,
-      isStreamPrefetchEnabled,
       nftAccessSignatureMap,
       offlineAvailabilityByTrackId,
       queueTrackOwnersMap,
-      storageNodeSelector,
-      trackStreamUrls
+      setRetries
     ]
   )
 
@@ -441,20 +405,14 @@ export const AudioPlayer = () => {
 
     if (event.type === Event.PlaybackError) {
       console.error(`TrackPlayer Playback Error:`, event)
-      // Special recoverable case where the player was using a prefetched url but it failed
-      if (isUsingPrefetchUrl && track) {
-        // Unset the broken stream url, we don't want to accidentally use it again
-        dispatch(setStreamUrls({ [track.track_id]: undefined }))
-        // Get an updated track without a prefetched url
-        const updatedTrack = await makeTrackData(
-          {
-            track,
-            playerBehavior
-          },
-          true
-        )
-        TrackPlayer.load(updatedTrack)
-      }
+      const updatedTrack = await makeTrackData(
+        {
+          track,
+          playerBehavior
+        },
+        retries + 1
+      )
+      TrackPlayer.load(updatedTrack)
     }
 
     if (event.type === Event.RemotePlay || event.type === Event.RemotePause) {
@@ -524,7 +482,7 @@ export const AudioPlayer = () => {
               dispatch(
                 playerActions.seek({ seconds: trackPosition.playbackPosition })
               )
-            } else if (isNewPodcastControlsEnabled && isLongFormContent) {
+            } else if (isLongFormContent) {
               dispatch(
                 setTrackPosition({
                   userId: currentUserId,
@@ -555,11 +513,7 @@ export const AudioPlayer = () => {
       }
 
       // Handle track end event
-      if (
-        isNewPodcastControlsEnabled &&
-        event?.lastPosition !== undefined &&
-        event?.index !== undefined
-      ) {
+      if (event?.lastPosition !== undefined && event?.index !== undefined) {
         const { track } = queueTracks[event.index] ?? {}
         const isLongFormContent =
           track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
@@ -663,8 +617,6 @@ export const AudioPlayer = () => {
   const enqueueTracksJobRef = useRef<Promise<void>>()
   // A way to abort the enqeue tracks job if a new lineup is played
   const abortEnqueueControllerRef = useRef(new AbortController())
-  // The ref of trackQueryParams to avoid re-generating query params for the same track
-  const trackQueryParams = useRef({})
 
   const handleQueueChange = useCallback(async () => {
     const refUids = queueListRef.current

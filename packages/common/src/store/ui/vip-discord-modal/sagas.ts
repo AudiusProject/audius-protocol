@@ -15,9 +15,13 @@ function* fetchDiscordCode() {
   const discordCode = yield* select(getDiscordCode)
   if (!discordCode) {
     const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-    yield* call(audiusBackendInstance.waitForWeb3)
+    const audiusSdk = yield* getContext('audiusSdk')
+    const sdk = yield* call(audiusSdk)
     const data = getSignableData()
-    const signature = yield* call(audiusBackendInstance.getSignature, data)
+    const { signature } = yield* call(audiusBackendInstance.getSignature, {
+      data,
+      sdk
+    })
     const appended = `${signature}:${data}`
     yield* put(setDiscordCode({ code: appended }))
   }
