@@ -16,9 +16,6 @@ if [[ -z "${CI}" ]]; then
   npm run install-git-secrets > /dev/null
 fi
 
-printf "${GREEN}Applying patches...\n${NC}"
-npm run patch-package > /dev/null
-
 # xcodebuild may exist (e.g. if xcode-select is installed via homebrew) but won't work alone
 if [[ -z "${SKIP_POD_INSTALL}" ]]; then
   if ! xcodebuild --help &>/dev/null; then
@@ -37,21 +34,23 @@ if [[ -z "${SKIP_POD_INSTALL}" ]]; then
       # Symlink react-native into the root package bc npm doesn't
       # support nohoist
 
-      cd ./packages/mobile/node_modules
+      cd ./packages/mobile
 
-      source_path=../../../node_modules/react-native
-      target_path=react-native
+      echo "this should run"
+      source_path=node_modules/react-native
+      target_path=../../node_modules/react-native
+      if [ ! -e "$target_path" ]; then
+        mkdir -p ../../node_modules
+        ln -s "$(pwd)/$source_path" "$target_path"
+      fi
+
+      source_path=../../node_modules/react-native-code-push
+      target_path=node_modules/react-native-code-push
       if [ ! -e "$target_path" ]; then
         ln -s "$source_path" "$target_path"
       fi
 
-      source_path=../../../node_modules/react-native-code-push
-      target_path=react-native-code-push
-      if [ ! -e "$target_path" ]; then
-        ln -s "$source_path" "$target_path"
-      fi
-
-      cd ../ios
+      cd ./ios
 
       if command -v bundle >/dev/null; then
         bundle check || bundle install
@@ -63,6 +62,9 @@ if [[ -z "${SKIP_POD_INSTALL}" ]]; then
     } > /dev/null
   fi
 fi
+
+printf "${GREEN}Applying patches...\n${NC}"
+npm run patch-package > /dev/null
 
 if [[ -z "${CI}" ]]; then
   printf "${GREEN}Setting up audius-compose...\n${NC}"
