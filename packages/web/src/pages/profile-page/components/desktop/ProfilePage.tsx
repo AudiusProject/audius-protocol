@@ -554,14 +554,7 @@ const ProfilePage = ({
             text={messages.emptyTab.repostedAnything}
           />
         ) : (
-          <Lineup
-            {...getLineupProps(userFeed)}
-            count={profile.repost_count}
-            loadMore={loadMoreUserFeed}
-            playTrack={playUserFeedTrack}
-            pauseTrack={pauseUserFeedTrack}
-            actions={feedActions}
-          />
+          <RepostsTab handle={handle} />
         )}
       </Box>,
       <Box w='100%' key={ProfilePageTabs.PLAYLISTS}>
