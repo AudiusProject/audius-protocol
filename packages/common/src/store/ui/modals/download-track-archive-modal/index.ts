@@ -3,7 +3,7 @@ import { ID } from '~/models/Identifiers'
 import { createModal } from '../createModal'
 
 export type DownloadTrackArchiveModalState = {
-  trackId: ID
+  trackId: ID | null
   fileCount: number
 }
 
@@ -11,7 +11,7 @@ const downloadTrackArchiveModal = createModal<DownloadTrackArchiveModalState>({
   reducerPath: 'DownloadTrackArchive',
   initialState: {
     isOpen: false,
-    trackId: -1,
+    trackId: null,
     fileCount: 1
   },
   sliceSelector: (state) => state.ui.modals

@@ -5,6 +5,7 @@ import {
   useDownloadTrackStems,
   useGetStemsArchiveJobStatus
 } from '@audius/common/api'
+import { ID } from '@audius/common/models'
 import { useDownloadTrackArchiveModal } from '@audius/common/store'
 import {
   Modal,
@@ -41,14 +42,20 @@ const triggerDownload = (url: string) => {
   }
 }
 
-export const DownloadTrackArchiveModal = () => {
-  const {
-    data: { trackId, fileCount },
-    isOpen,
-    onClose,
-    onClosed
-  } = useDownloadTrackArchiveModal()
-
+type DownloadTrackArchiveModalContentProps = {
+  trackId: ID
+  fileCount: number
+  isOpen: boolean
+  onClose: () => void
+  onClosed: () => void
+}
+const DownloadTrackArchiveModalContent = ({
+  trackId,
+  fileCount,
+  isOpen,
+  onClose,
+  onClosed
+}: DownloadTrackArchiveModalContentProps) => {
   const {
     mutate: downloadTrackStems,
     isError: initiateDownloadFailed,
@@ -60,13 +67,13 @@ export const DownloadTrackArchiveModal = () => {
 
   const { mutate: cancelStemsArchiveJob } = useCancelStemsArchiveJob()
 
-  const { data: jobState } = useGetStemsArchiveJobStatus({
+  const { data: jobStatus } = useGetStemsArchiveJobStatus({
     jobId
   })
 
   const hasError =
     !isStartingDownload &&
-    (initiateDownloadFailed || jobState?.state === 'failed')
+    (initiateDownloadFailed || jobStatus?.state === 'failed')
 
   useEffect(() => {
     if (isOpen) {
@@ -75,11 +82,11 @@ export const DownloadTrackArchiveModal = () => {
   }, [isOpen, downloadTrackStems, trackId])
 
   useEffect(() => {
-    if (jobState?.state === 'completed') {
+    if (jobStatus?.state === 'completed') {
       triggerDownload(`${env.ARCHIVE_ENDPOINT}/archive/stems/download/${jobId}`)
       onClose()
     }
-  }, [jobState, onClose, jobId])
+  }, [jobStatus, onClose, jobId])
 
   const handleClose = useCallback(() => {
     if (jobId) {
@@ -134,5 +141,31 @@ export const DownloadTrackArchiveModal = () => {
         </Flex>
       </ModalContent>
     </Modal>
+  )
+}
+
+export const DownloadTrackArchiveModal = () => {
+  const {
+    data: { trackId, fileCount },
+    isOpen,
+    onClose,
+    onClosed
+  } = useDownloadTrackArchiveModal()
+
+  if (!trackId) {
+    console.error(
+      'Unexpected missing trackId when rendering DownloadTrackArchiveModal'
+    )
+    return null
+  }
+
+  return (
+    <DownloadTrackArchiveModalContent
+      trackId={trackId}
+      fileCount={fileCount}
+      isOpen={isOpen}
+      onClose={onClose}
+      onClosed={onClosed}
+    />
   )
 }

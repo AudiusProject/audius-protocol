@@ -44,6 +44,8 @@ export const useDownloadTrackStems = ({ trackId }: { trackId: ID }) => {
 
 export const useCancelStemsArchiveJob = () => {
   const { audiusSdk } = useAudiusQueryContext()
+  const queryClient = useQueryClient()
+
   return useMutation({
     mutationFn: async ({ jobId }: { jobId: string }) => {
       const sdk = await audiusSdk()
@@ -52,6 +54,13 @@ export const useCancelStemsArchiveJob = () => {
         throw new Error('Archiver service not configured')
       }
       await archiver.cancelStemsArchiveJob({ jobId })
+      return jobId
+    },
+    onSuccess: (jobId) => {
+      queryClient.removeQueries({
+        queryKey: [QUERY_KEYS.stemsArchiveJob, jobId],
+        exact: true
+      })
     }
   })
 }
