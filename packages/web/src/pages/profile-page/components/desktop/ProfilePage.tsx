@@ -43,6 +43,7 @@ import cn from 'classnames'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
 import { ConfirmationModal } from 'components/confirmation-modal'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
+import Lineup from 'components/lineup/Lineup'
 import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import { LineupVariant } from 'components/lineup/types'
 import Mask from 'components/mask/Mask'
@@ -507,7 +508,7 @@ const ProfilePage = ({
             text={'reposted anything'}
           />
         ) : (
-          <RepostsTab handle={handle} />
+          <RepostsTab isOwner={isOwner} profile={profile} handle={handle} />
         )}
       </Box>,
       <Box w='100%' key={ProfilePageTabs.PLAYLISTS}>
