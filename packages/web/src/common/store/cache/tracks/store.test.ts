@@ -1,5 +1,11 @@
 import { userTrackMetadataFromSDK } from '@audius/common/adapters'
-import { Kind, StemCategory, Status } from '@audius/common/models'
+import {
+  Kind,
+  StemCategory,
+  Status,
+  UserTrackMetadata
+} from '@audius/common/models'
+import { primeTrackDataInternal } from '@audius/common/src/api/tan-query/utils/primeTrackData'
 import {
   cacheActions,
   cacheTracksActions as trackActions,
@@ -15,8 +21,9 @@ import { expectSaga } from 'redux-saga-test-plan'
 import { getContext } from 'redux-saga-test-plan/matchers'
 import * as matchers from 'redux-saga-test-plan/matchers'
 import { StaticProvider, throwError } from 'redux-saga-test-plan/providers'
-import { describe, it, Mock, vi } from 'vitest'
+import { beforeEach, describe, it, Mock, vi } from 'vitest'
 
+import { queryClient } from 'services/query-client'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { allSagas, noopReducer } from 'store/testHelper'
 
@@ -48,7 +55,8 @@ const defaultProviders: StaticProvider[] = [
   [getContext('remoteConfigInstance'), remoteConfigInstance],
   [getContext('getFeatureEnabled'), () => false],
   [getContext('audiusSdk'), async () => mockAudiusSdk],
-  [getContext('reportToSentry'), () => {}]
+  [getContext('reportToSentry'), () => {}],
+  [getContext('queryClient'), queryClient]
 ]
 
 // Add mock at the top level
@@ -227,6 +235,15 @@ describe('editTrack', () => {
     blockHash: '0x123',
     blockNumber: 456
   }
+
+  beforeEach(() => {
+    queryClient.clear()
+    primeTrackDataInternal({
+      tracks: [mockTrack as unknown as UserTrackMetadata],
+      queryClient,
+      forceReplace: true
+    })
+  })
 
   it('successfully edits track metadata fields', async () => {
     await expectSaga(allSagas(sagas()))
