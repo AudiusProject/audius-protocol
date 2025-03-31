@@ -28,6 +28,8 @@ export * from './DeveloperApps';
 export * from './EmailAccess';
 export * from './EmailAccessResponse';
 export * from './EncodedUserId';
+export * from './Event';
+export * from './EventsResponse';
 export * from './ExtendedAccessGate';
 export * from './ExtendedPaymentSplit';
 export * from './ExtendedPurchaseGate';

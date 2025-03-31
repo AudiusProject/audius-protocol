@@ -8,6 +8,7 @@ import { ChatsApi } from './api/chats/ChatsApi'
 import { CommentsApi } from './api/comments/CommentsAPI'
 import { DashboardWalletUsersApi } from './api/dashboard-wallet-users/DashboardWalletUsersApi'
 import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
+import { EventsApi } from './api/events/EventsApi'
 import { Configuration, TipsApi } from './api/generated/default'
 import {
   TracksApi as TracksApiFull,
@@ -522,6 +523,12 @@ const initializeApis = ({
     middleware
   })
 
+  const events = new EventsApi(
+    generatedApiClientConfig,
+    services.entityManager,
+    services.logger
+  )
+
   const full = {
     tracks: new TracksApiFull(generatedApiClientConfigFull),
     users: new UsersApiFull(generatedApiClientConfigFull),
@@ -550,7 +557,8 @@ const initializeApis = ({
     challenges,
     services,
     comments,
-    notifications
+    notifications,
+    events
   }
 }
 
