@@ -179,7 +179,7 @@ export const ChallengeRewardsTile = () => {
         />
       )
     })
-
+  console.log('asdf rewardsPanels: ', rewardsPanels)
   return (
     <Paper shadow='near' border='strong' ph='s' pv='xl'>
       <Flex gap='unit10' alignItems='center'>

@@ -60,11 +60,8 @@ export enum ChallengeName {
   PlayCount1000 = 'p2',
   PlayCount10000 = 'p3',
   Tastemaker = 't',
-<<<<<<< Updated upstream
-  CommentPin = 'cp'
-=======
+  CommentPin = 'cp',
   Cosign = 'cs'
->>>>>>> Stashed changes
 }
 
 export type ChallengeRewardID =
@@ -102,11 +99,8 @@ export type ChallengeRewardID =
   | ChallengeName.PlayCount1000
   | ChallengeName.PlayCount10000
   | ChallengeName.Tastemaker
-<<<<<<< Updated upstream
   | ChallengeName.CommentPin
-=======
   | ChallengeName.Cosign
->>>>>>> Stashed changes
 export enum FailureReason {
   // The attestation requires the user to fill out a captcha
   HCAPTCHA = 'HCAPTCHA',

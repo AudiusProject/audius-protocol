@@ -335,13 +335,14 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
         iconRight: IconCheck
       }
     },
-<<<<<<< Updated upstream
     [ChallengeName.CommentPin]: {
       icon: SpeechBalloon,
-=======
+      buttonInfo: {
+        iconRight: IconCheck
+      }
+    },
     [ChallengeName.Cosign]: {
       icon: Recycle,
->>>>>>> Stashed changes
       buttonInfo: {
         iconRight: IconCheck
       }
