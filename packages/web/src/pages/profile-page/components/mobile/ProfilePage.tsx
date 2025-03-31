@@ -471,14 +471,7 @@ const ProfilePage = g(
                 }
               />
             ) : (
-              <Lineup
-                {...getLineupProps(userFeed)}
-                count={profile.repost_count}
-                loadMore={loadMoreUserFeed}
-                playTrack={playUserFeedTrack}
-                pauseTrack={pauseUserFeedTrack}
-                actions={feedActions}
-              />
+              <RepostsTab isOwner={isOwner} profile={profile} handle={handle} />
             )}
           </div>,
           <div className={styles.cardLineupContainer} key='playlists'>
