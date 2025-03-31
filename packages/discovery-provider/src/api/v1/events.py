@@ -11,7 +11,7 @@ from src.api.v1.helpers import (
     success_response,
 )
 from src.api.v1.models.events import event_model
-from src.queries.get_events import get_events, get_events_by_id
+from src.queries.get_events import get_events, get_events_by_ids
 from src.queries.get_unclaimed_id import get_unclaimed_id
 from src.utils.redis_cache import cache
 
@@ -43,7 +43,7 @@ class BulkEvents(Resource):
     def get(self):
         args = bulk_events_parser.parse_args()
         ids = decode_ids_array(args.get("id"))
-        events = get_events_by_id({"id": ids})
+        events = get_events_by_ids({"id": ids})
         if not events:
             abort_not_found(ids, ns)
         return success_response(events)

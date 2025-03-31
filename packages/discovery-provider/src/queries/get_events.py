@@ -32,7 +32,7 @@ def format_events(events) -> List[Event]:
     return formatted_events  # type: ignore
 
 
-def get_events_by_id(args) -> List[Event]:
+def get_events_by_ids(args) -> List[Event]:
     """Get a list of events by their IDs.
 
     Returns:

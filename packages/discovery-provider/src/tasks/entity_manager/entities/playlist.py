@@ -22,7 +22,7 @@ from src.tasks.entity_manager.utils import (
     ManageEntityParameters,
     convert_legacy_purchase_access_gate,
     copy_record,
-    parse_date_str,
+    parse_release_date,
     validate_signer,
 )
 from src.tasks.metadata import immutable_playlist_fields
@@ -656,7 +656,9 @@ def populate_playlist_record_metadata(
         elif key == "release_date":
             if "release_date" in playlist_metadata:
                 # casting to string because datetime doesn't work for some reason
-                parsed_release_date = parse_date_str(playlist_metadata["release_date"])
+                parsed_release_date = parse_release_date(
+                    playlist_metadata["release_date"]
+                )
                 # postgres will convert to a timestamp
 
                 if (

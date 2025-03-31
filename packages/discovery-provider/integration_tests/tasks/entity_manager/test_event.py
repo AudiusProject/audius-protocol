@@ -16,6 +16,7 @@ from src.utils.db_session import get_db
 logger = logging.getLogger(__name__)
 
 # Test data for events
+block_datetime = datetime.now()
 test_entities = {
     "events": [
         {
@@ -24,7 +25,7 @@ test_entities = {
             "user_id": 1,
             "entity_type": EventEntityType.track,
             "entity_id": 1,
-            "end_date": datetime.now() + timedelta(days=7),
+            "end_date": block_datetime + timedelta(days=7),
             "is_deleted": False,
             "created_at": datetime(2024, 1, 1),
             "updated_at": datetime(2024, 1, 1),
@@ -38,7 +39,7 @@ test_entities = {
             "user_id": 2,
             "entity_type": EventEntityType.track,
             "entity_id": 2,
-            "end_date": datetime.now() + timedelta(days=14),
+            "end_date": block_datetime + timedelta(days=14),
             "is_deleted": False,
             "created_at": datetime(2024, 1, 2),
             "updated_at": datetime(2024, 1, 2),
@@ -92,7 +93,7 @@ def setup_test(app, mocker, entities, tx_receipts):
             session,
             entity_manager_txs,
             block_number=0,
-            block_timestamp=1585336422,
+            block_timestamp=datetime.now().timestamp(),
             block_hash=hex(0),
         )
 
@@ -118,7 +119,7 @@ def setup_test_without_mock(app, tx_receipts):
             session,
             entity_manager_txs,
             block_number=0,
-            block_timestamp=1585336422,
+            block_timestamp=datetime.now().timestamp(),
             block_hash=hex(0),
         )
 
@@ -207,6 +208,47 @@ def test_update_event(app, mocker):
         updated_event = session.query(Event).filter_by(event_id=1).first()
         assert updated_event.event_id == 1
         assert updated_event.end_date.isoformat() == metadata["end_date"]
+
+
+def test_update_event_with_past_end_date(app, mocker):
+    """Test that updating an event with an end_date in the past fails validation"""
+    # Use a past date for the end_date
+    block_datetime = datetime.now()
+    metadata = {
+        "end_date": (block_datetime - timedelta(days=1)).isoformat(),
+    }
+
+    tx_receipts = {
+        "UpdateEventWithPastDate": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": EntityType.EVENT,
+                        "_userId": 1,
+                        "_action": Action.UPDATE,
+                        "_metadata": f'{{"cid": "", "data": {json.dumps(metadata)}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    db, index_transaction = setup_test(app, mocker, test_entities, tx_receipts)
+
+    with db.scoped_session() as session:
+        # Get the original event's end_date before attempting update
+        original_event = session.query(Event).filter_by(event_id=1).first()
+        original_end_date = original_event.end_date
+
+        # Try to update with invalid end_date
+        index_transaction(session)
+
+        # Verify the event was NOT updated - end_date should remain unchanged
+        updated_event = session.query(Event).filter_by(event_id=1).first()
+        assert updated_event.end_date == original_end_date
+        assert updated_event.end_date.isoformat() != metadata["end_date"]
 
 
 def test_delete_event(app, mocker):

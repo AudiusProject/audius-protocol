@@ -66,7 +66,6 @@ models/CreateNotificationActionData.ts
 models/CreatePlaylistNotificationActionData.ts
 models/CreateTrackNotificationActionData.ts
 models/DataAndType.ts
-models/Event.ts
 models/Favorite.ts
 models/FieldVisibility.ts
 models/FollowGate.ts

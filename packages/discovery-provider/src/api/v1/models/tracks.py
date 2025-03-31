@@ -2,7 +2,6 @@ from flask_restx import fields
 
 from .access_gate import access_gate, extended_access_gate
 from .common import favorite, ns, repost
-from .events import event_model
 from .extensions.fields import NestedOneOf
 from .extensions.models import WildcardModel
 from .users import user_model, user_model_full
@@ -206,7 +205,6 @@ track_full = ns.clone(
         "is_custom_musical_key": fields.Boolean,
         "audio_analysis_error_count": fields.Integer,
         "comments_disabled": fields.Boolean,
-        "events": fields.List(fields.Nested(event_model), required=True),
         # DDEX fields
         "ddex_release_ids": fields.Raw(allow_null=True),
         "artists": fields.List(fields.Raw, allow_null=True),

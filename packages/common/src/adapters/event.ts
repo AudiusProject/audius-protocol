@@ -1,22 +1,9 @@
 import { Event as EventSDK, HashId, OptionalHashId } from '@audius/sdk'
 
-import { Event, EventType, EventEntityType } from '~/models/Event'
-import { Nullable } from '~/utils/typeUtils'
+import { Event } from '~/models/Event'
 
 export const eventMetadataFromSDK = (input: EventSDK): Event | undefined => {
-  const {
-    eventId,
-    userId,
-    entityId,
-    eventType,
-    entityType,
-    eventData,
-    isDeleted,
-    endDate,
-    createdAt,
-    updatedAt,
-    ...rest
-  } = input
+  const { eventId, userId, entityId, ...rest } = input
 
   const decodedEventId = HashId.parse(eventId)
   const decodedUserId = HashId.parse(userId)
@@ -28,16 +15,9 @@ export const eventMetadataFromSDK = (input: EventSDK): Event | undefined => {
 
   return {
     ...rest,
-    event_id: Number(decodedEventId),
-    user_id: Number(decodedUserId),
-    event_type: eventType as unknown as EventType,
-    entity_type: entityType as Nullable<EventEntityType>,
-    entity_id: decodedEntityId ? Number(decodedEntityId) : null,
-    event_data: eventData as Record<string, any>,
-    is_deleted: Boolean(isDeleted),
-    end_date: endDate ? endDate.toISOString() : null,
-    created_at: createdAt?.toISOString() ?? new Date().toISOString(),
-    updated_at: updatedAt?.toISOString() ?? new Date().toISOString()
+    eventId: decodedEventId,
+    userId: decodedUserId,
+    entityId: decodedEntityId ?? null
   }
 }
 

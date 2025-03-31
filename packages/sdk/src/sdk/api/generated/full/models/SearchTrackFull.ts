@@ -38,12 +38,6 @@ import {
     CoverArtFromJSONTyped,
     CoverArtToJSON,
 } from './CoverArt';
-import type { Event } from './Event';
-import {
-    EventFromJSON,
-    EventFromJSONTyped,
-    EventToJSON,
-} from './Event';
 import type { Favorite } from './Favorite';
 import {
     FavoriteFromJSON,
@@ -479,12 +473,6 @@ export interface SearchTrackFull {
     commentsDisabled?: boolean;
     /**
      * 
-     * @type {Array<Event>}
-     * @memberof SearchTrackFull
-     */
-    events: Array<Event>;
-    /**
-     * 
      * @type {object}
      * @memberof SearchTrackFull
      */
@@ -627,7 +615,6 @@ export function instanceOfSearchTrackFull(value: object): value is SearchTrackFu
     isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
     isInstance = isInstance && "isDelete" in value && value["isDelete"] !== undefined;
     isInstance = isInstance && "isAvailable" in value && value["isAvailable"] !== undefined;
-    isInstance = isInstance && "events" in value && value["events"] !== undefined;
     isInstance = isInstance && "isStreamGated" in value && value["isStreamGated"] !== undefined;
     isInstance = isInstance && "isDownloadGated" in value && value["isDownloadGated"] !== undefined;
     isInstance = isInstance && "isOwnedByUser" in value && value["isOwnedByUser"] !== undefined;
@@ -710,7 +697,6 @@ export function SearchTrackFullFromJSONTyped(json: any, ignoreDiscriminator: boo
         'isCustomMusicalKey': !exists(json, 'is_custom_musical_key') ? undefined : json['is_custom_musical_key'],
         'audioAnalysisErrorCount': !exists(json, 'audio_analysis_error_count') ? undefined : json['audio_analysis_error_count'],
         'commentsDisabled': !exists(json, 'comments_disabled') ? undefined : json['comments_disabled'],
-        'events': ((json['events'] as Array<any>).map(EventFromJSON)),
         'ddexReleaseIds': !exists(json, 'ddex_release_ids') ? undefined : json['ddex_release_ids'],
         'artists': !exists(json, 'artists') ? undefined : json['artists'],
         'resourceContributors': !exists(json, 'resource_contributors') ? undefined : json['resource_contributors'],
@@ -803,7 +789,6 @@ export function SearchTrackFullToJSON(value?: SearchTrackFull | null): any {
         'is_custom_musical_key': value.isCustomMusicalKey,
         'audio_analysis_error_count': value.audioAnalysisErrorCount,
         'comments_disabled': value.commentsDisabled,
-        'events': ((value.events as Array<any>).map(EventToJSON)),
         'ddex_release_ids': value.ddexReleaseIds,
         'artists': value.artists,
         'resource_contributors': value.resourceContributors,

@@ -678,17 +678,10 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                         # skip invalid metadata
                         continue
 
-                    event_user_id = json_metadata.get("data", {}).get("user_id")
-                    entities_to_fetch[EntityType.USER].add(event_user_id)
-
                     event_entity_type = json_metadata.get("data", {}).get("entity_type")
-                    # TODO: Update this to fetch the proper entity based on the entity_type in metadata
                     if event_entity_type == EventEntityType.track:
                         event_entity_id = json_metadata.get("data", {}).get("entity_id")
                         entities_to_fetch[EntityType.TRACK].add(event_entity_id)
-                    elif event_entity_type == EventEntityType.user:
-                        event_entity_id = json_metadata.get("data", {}).get("entity_id")
-                        entities_to_fetch[EntityType.USER].add(event_entity_id)
 
             if entity_type == EntityType.COMMENT:
                 if (

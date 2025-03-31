@@ -47,9 +47,12 @@ class Event(Base, RepresentableMixin):
     entity_id = Column(Integer, nullable=True, index=True)
     event_data = Column(JSONB(), nullable=False)
     is_deleted = Column(Boolean, default=False)
-    end_date = Column(DateTime, nullable=True)
+    end_date = Column(DateTime, nullable=True, index=True)
     created_at = Column(
-        DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP")
+        DateTime,
+        nullable=False,
+        server_default=text("CURRENT_TIMESTAMP"),
+        index=True,
     )
     updated_at = Column(
         DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP")
