@@ -83,7 +83,8 @@ export enum EntityType {
   ENCRYPTED_EMAIL = 'EncryptedEmail',
   EMAIL_ACCESS = 'EmailAccess',
   ASSOCIATED_WALLET = 'AssociatedWallet',
-  COLLECTIBLES = 'Collectibles'
+  COLLECTIBLES = 'Collectibles',
+  EVENT = 'Event'
 }
 
 export type AdvancedOptions = {

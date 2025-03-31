@@ -27,6 +27,7 @@ export enum FeatureFlags {
   TRACK_REPLACE_DOWNLOADS = 'track_replace_downloads',
   CLAIM_ALL_REWARDS_TILE = 'claim_all_rewards_tile',
   RECENT_COMMENTS = 'recent_comments',
+  DOWNLOAD_ALL_TRACK_FILES = 'download_all_track_files',
   REMIX_CONTEST = 'remix_contest'
 }
 
@@ -70,5 +71,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.TRACK_REPLACE_DOWNLOADS]: false,
   [FeatureFlags.CLAIM_ALL_REWARDS_TILE]: true,
   [FeatureFlags.RECENT_COMMENTS]: false,
+  [FeatureFlags.DOWNLOAD_ALL_TRACK_FILES]: false,
   [FeatureFlags.REMIX_CONTEST]: false
 }

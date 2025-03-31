@@ -82,7 +82,8 @@ export const useFormattedProgressLabel = ({
     } else if (
       challenge?.challenge_id === ChallengeName.FirstWeeklyComment ||
       challenge?.challenge_id === ChallengeName.AudioMatchingBuy ||
-      challenge?.challenge_id === ChallengeName.AudioMatchingSell
+      challenge?.challenge_id === ChallengeName.AudioMatchingSell ||
+      challenge?.challenge_id === ChallengeName.Cosign
     ) {
       label = getChallengeStatusLabel(challenge, challenge?.challenge_id)
     } else {
