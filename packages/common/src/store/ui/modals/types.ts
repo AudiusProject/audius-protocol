@@ -10,6 +10,7 @@ import { CoinflowOnrampModalState } from './coinflow-onramp-modal'
 import { CoinflowWithdrawModalState } from './coinflow-withdraw-modal'
 import { ChatBlastModalState } from './create-chat-blast-modal'
 import { DeleteTrackConfirmationModalState } from './delete-track-confirmation-modal'
+import { DownloadTrackArchiveModalState } from './download-track-archive-modal'
 import { EarlyReleaseConfirmationModalState } from './early-release-confirmation-modal'
 import { EditAccessConfirmationModalState } from './edit-access-confirmation-modal'
 import { HideContentConfirmationModalState } from './hide-confirmation-modal'
@@ -107,6 +108,7 @@ export type Modals =
   | 'ConnectedWallets'
   | 'Announcement'
   | 'Notification'
+  | 'DownloadTrackArchive'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState
@@ -138,6 +140,7 @@ export type StatefulModalsState = {
   ReplaceTrackProgress: ReplaceTrackProgressModalState
   Announcement: AnnouncementModalState
   Notification: BaseModalState
+  DownloadTrackArchive: DownloadTrackArchiveModalState
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState

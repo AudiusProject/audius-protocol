@@ -1,17 +1,13 @@
 import { useCallback } from 'react'
 
-import { RepostSource, Collection, ID } from '@audius/common/models'
-import {
-  collectionPageSelectors,
-  collectionsSocialActions,
-  CommonState
-} from '@audius/common/store'
+import { useCollection } from '@audius/common/api'
+import { RepostSource, ID } from '@audius/common/models'
+import { collectionsSocialActions } from '@audius/common/store'
 import { IconRepost, IconButton, IconButtonProps } from '@audius/harmony'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'
 
-const { getCollection } = collectionPageSelectors
 const { repostCollection, undoRepostCollection } = collectionsSocialActions
 
 const messages = {
@@ -28,10 +24,9 @@ export const RepostButton = (props: RepostButtonProps) => {
   const { collectionId, color, ...other } = props
   const dispatch = useDispatch()
 
-  const { has_current_user_reposted } =
-    (useSelector((state: CommonState) =>
-      getCollection(state, { id: collectionId })
-    ) as Collection) ?? {}
+  const { data: has_current_user_reposted } = useCollection(collectionId, {
+    select: (collection) => collection.has_current_user_reposted
+  })
 
   const handleRepost = useCallback(() => {
     if (has_current_user_reposted) {

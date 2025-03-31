@@ -17,6 +17,7 @@ import ConfirmerPreview from 'components/confirmer-preview/ConfirmerPreview'
 import DeletePlaylistConfirmationModal from 'components/delete-playlist-confirmation-modal/DeletePlaylistConfirmationModal'
 import { DeleteTrackConfirmationModal } from 'components/delete-track-confirmation-modal/DeleteTrackConfirmationModal'
 import DiscoveryNodeSelection from 'components/discovery-node-selection/DiscoveryNodeSelection'
+import { DownloadTrackArchiveModal } from 'components/download-track-archive-modal/DownloadTrackArchiveModal'
 import { DuplicateAddConfirmationModal } from 'components/duplicate-add-confirmation-modal'
 import { EarlyReleaseConfirmationModal } from 'components/early-release-confirmation-modal'
 import { EditAccessConfirmationModal } from 'components/edit-access-confirmation-modal'
@@ -46,8 +47,7 @@ import { UploadConfirmationModal } from 'components/upload-confirmation-modal'
 import { USDCPurchaseDetailsModal } from 'components/usdc-purchase-details-modal/USDCPurchaseDetailsModal'
 import { USDCTransactionDetailsModal } from 'components/usdc-transaction-details-modal/USDCTransactionDetailsModal'
 import TierExplainerModal from 'components/user-badges/TierExplainerModal'
-import ConnectedUserListModal from 'components/user-list-modal/ConnectedUserListModal'
-import UserListModalV2 from 'components/user-list-modal/components/UserListModalV2'
+import { UserListModal } from 'components/user-list-modal/UserListModal'
 import { WaitForDownloadModal } from 'components/wait-for-download-modal/WaitForDownloadModal'
 import { WelcomeModal } from 'components/welcome-modal/WelcomeModal'
 import { WithdrawUSDCModal } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
@@ -60,7 +60,6 @@ import { ChatBlastModal } from 'pages/chat-page/components/ChatBlastModal'
 import { ChallengeRewardsModal } from 'pages/rewards-page/components/modals/ChallengeRewardsModal'
 
 import { AppModal } from './AppModal'
-
 const ShareModal = lazy(() => import('components/share-modal'))
 
 const StripeOnRampModal = lazy(() => import('components/stripe-on-ramp-modal'))
@@ -128,7 +127,8 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   WaitForDownloadModal,
   ArtistPick: ArtistPickModal,
   PayoutWallet: PayoutWalletModal,
-  ConnectedWallets: ConnectedWalletsModal
+  ConnectedWallets: ConnectedWalletsModal,
+  DownloadTrackArchive: DownloadTrackArchiveModal
 }
 
 const commonModals = Object.entries(commonModalsMap) as [
@@ -156,8 +156,7 @@ const Modals = () => {
       ) : (
         <>
           <EmbedModal />
-          <ConnectedUserListModal />
-          <UserListModalV2 />
+          <UserListModal />
           <AppCTAModal />
           {/* dev-mode hot-key modals */}
           <ConfirmerPreview />

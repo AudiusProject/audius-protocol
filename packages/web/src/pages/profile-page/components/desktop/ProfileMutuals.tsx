@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useMutualFollowers } from '@audius/common/api'
+import { useMutualFollowers, useUsers } from '@audius/common/api'
 import { User } from '@audius/common/models'
 import { accountSelectors, profilePageSelectors } from '@audius/common/store'
 import { Flex, IconUserFollowing } from '@audius/harmony'
@@ -35,6 +35,9 @@ export const ProfileMutuals = () => {
     userId,
     pageSize: MAX_MUTUALS
   })
+
+  const { data: users = [] } = useUsers(mutuals)
+
   const dispatch = useDispatch()
 
   const handleClick = useCallback(() => {
@@ -61,7 +64,7 @@ export const ProfileMutuals = () => {
       />
       <ProfilePictureListTile
         onClick={handleClick}
-        users={mutuals}
+        users={users}
         totalUserCount={profile.current_user_followee_follow_count}
         limit={MAX_MUTUALS}
         disableProfileClick

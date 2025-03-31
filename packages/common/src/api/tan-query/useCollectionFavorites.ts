@@ -5,7 +5,6 @@ import { useDispatch } from 'react-redux'
 import { userMetadataListFromSDK } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
-import { User } from '~/models/User'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
@@ -40,7 +39,7 @@ export const useCollectionFavorites = (
   return useInfiniteQuery({
     queryKey: getCollectionFavoritesQueryKey({ collectionId, pageSize }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: User[], allPages) => {
+    getNextPageParam: (lastPage: ID[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -54,7 +53,7 @@ export const useCollectionFavorites = (
       })
       const users = userMetadataListFromSDK(data)
       primeUserData({ users, queryClient, dispatch })
-      return users
+      return users.map((user) => user.user_id)
     },
     select: (data) => data.pages.flat(),
     ...options,

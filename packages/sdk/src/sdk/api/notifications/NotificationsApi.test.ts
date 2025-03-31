@@ -1,7 +1,6 @@
 import { describe, it, beforeAll, expect, vitest } from 'vitest'
 
 import { createAppWalletClient } from '../../services/AudiusWalletClient'
-import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { EntityManagerClient } from '../../services/EntityManager'
 import { Configuration } from '../generated/default'
 
@@ -29,8 +28,8 @@ describe('NotificationsApi', () => {
     notifications = new NotificationsApi(
       new Configuration(),
       new EntityManagerClient({
-        discoveryNodeSelector: new DiscoveryNodeSelector(),
-        audiusWalletClient: createAppWalletClient({ apiKey: '' })
+        audiusWalletClient: createAppWalletClient({ apiKey: '' }),
+        endpoint: 'https://discoveryprovider.audius.co'
       })
     )
     vitest.spyOn(console, 'warn').mockImplementation(() => {})

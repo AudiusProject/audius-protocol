@@ -1,15 +1,8 @@
 import { useContext, useEffect } from 'react'
 
-import {
-  followersUserListSelectors,
-  FOLLOWERS_USER_LIST_TAG
-} from '@audius/common/store'
-
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
-import { UserList } from 'components/user-list/UserList'
-
-const { getUserList } = followersUserListSelectors
+import { FollowersUserList } from 'components/user-list/lists/FollowersUserList'
 
 const messages = {
   title: 'Followers'
@@ -26,7 +19,7 @@ const FollowersPage = () => {
 
   return (
     <MobilePageContainer fullHeight>
-      <UserList stateSelector={getUserList} tag={FOLLOWERS_USER_LIST_TAG} />
+      <FollowersUserList />
     </MobilePageContainer>
   )
 }

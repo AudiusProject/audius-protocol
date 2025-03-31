@@ -1,5 +1,4 @@
 import type { AudiusWalletClient } from '../AudiusWalletClient'
-import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 import type { LoggerService } from '../Logger'
 
 export type EntityManagerTransactionReceipt = {
@@ -17,23 +16,15 @@ export type EntityManagerConfigInternal = {
    */
   chainId: number
   /**
-   * The URL of the Audius Identity Service, used for relays
-   */
-  identityServiceUrl: string
-  /**
-   * Whether to use discovery for relay instead of identity
-   */
-  useDiscoveryRelay: boolean
-  /**
    * Logger service, defaults to console
    */
   logger: LoggerService
+  /**
+   * The endpoint to use for relays
+   */
+  endpoint: string
 }
 export type EntityManagerConfig = Partial<EntityManagerConfigInternal> & {
-  /**
-   * The DiscoveryNodeSelector service used to get a discovery node to confirm blocks
-   */
-  discoveryNodeSelector: DiscoveryNodeSelectorService
   audiusWalletClient: AudiusWalletClient
 }
 
@@ -92,7 +83,8 @@ export enum EntityType {
   ENCRYPTED_EMAIL = 'EncryptedEmail',
   EMAIL_ACCESS = 'EmailAccess',
   ASSOCIATED_WALLET = 'AssociatedWallet',
-  COLLECTIBLES = 'Collectibles'
+  COLLECTIBLES = 'Collectibles',
+  EVENT = 'Event'
 }
 
 export type AdvancedOptions = {

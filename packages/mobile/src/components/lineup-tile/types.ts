@@ -36,6 +36,9 @@ export type LineupItemProps = {
   /** Index of tile in lineup */
   index: number
 
+  /** Id of the item */
+  id: ID
+
   /** Are we in a trending lineup? Allows tiles to specialize their rendering */
   isTrending?: boolean
 

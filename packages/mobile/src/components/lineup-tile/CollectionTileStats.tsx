@@ -1,8 +1,6 @@
+import { useCollection } from '@audius/common/api'
 import { useIsCollectionUnlockable } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
-import type { CommonState } from '@audius/common/store'
-import { cacheCollectionsSelectors } from '@audius/common/store'
-import { useSelector } from 'react-redux'
 
 import { Flex } from '@audius/harmony-native'
 
@@ -12,8 +10,6 @@ import { CollectionDownloadStatusIndicator } from '../offline-downloads'
 
 import { RepostsMetric, SavesMetric } from './CollectionTileMetrics'
 import { LineupTileRankIcon } from './LineupTileRankIcon'
-
-const { getCollection } = cacheCollectionsSelectors
 
 type CollectionTileStatsProps = {
   collectionId: ID
@@ -26,8 +22,8 @@ export const CollectionTileStats = (props: CollectionTileStatsProps) => {
 
   const isUnlockable = useIsCollectionUnlockable(collectionId)
 
-  const isPrivate = useSelector((state: CommonState) => {
-    return getCollection(state, { id: collectionId })?.is_private
+  const { data: isPrivate } = useCollection(collectionId, {
+    select: (collection) => collection.is_private
   })
 
   return (

@@ -38,21 +38,6 @@ export const followUserFailed = createCustomAction(
   (userId: ID, error: any) => ({ userId, error })
 )
 
-export const unfollowUser = createCustomAction(
-  UNFOLLOW_USER,
-  (userId: ID, source: FollowSource) => ({ userId, source })
-)
-
-export const unfollowUserSucceeded = createCustomAction(
-  UNFOLLOW_USER_SUCCEEDED,
-  (userId: ID) => ({ userId })
-)
-
-export const unfollowUserFailed = createCustomAction(
-  UNFOLLOW_USER_FAILED,
-  (userId: ID, error: any) => ({ userId, error })
-)
-
 export const subscribeUserFailed = createCustomAction(
   SUBSCRIBE_USER_FAILED,
   (userId: ID, error: any) => ({ userId, error })

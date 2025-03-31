@@ -6,9 +6,17 @@ import {
   Kind,
   ID,
   UID,
-  ModalSource
+  ModalSource,
+  TrackMetadata,
+  Lineup,
+  Status,
+  Collection,
+  LineupTrack,
+  Track,
+  UserTrackMetadata,
+  UserCollectionMetadata,
+  CollectionMetadata
 } from '@audius/common/models'
-import { LineupQueryData } from '@audius/common/src/api/tan-query/types'
 import {
   LineupBaseActions,
   playerSelectors,
@@ -40,7 +48,24 @@ const { makeGetCurrent } = queueSelectors
 
 export interface TanQueryLineupProps {
   /** Query data should be fetched one component above and passed through here */
-  lineupQueryData: LineupQueryData
+  data:
+    | (
+        | UserTrackMetadata
+        | TrackMetadata
+        | UserCollectionMetadata
+        | CollectionMetadata
+      )[]
+    | undefined
+  isFetching: boolean
+  isPending: boolean
+  isError: boolean
+  hasNextPage: boolean
+  loadNextPage: () => void
+  play: (uid: UID) => void
+  pause: () => void
+  isPlaying: boolean
+
+  lineup: Lineup<LineupTrack | Track | Collection>
 
   'aria-label'?: string
 
@@ -126,6 +151,7 @@ export interface TanQueryLineupProps {
 }
 
 const defaultLineup = {
+  status: Status.IDLE,
   entries: [] as any[],
   order: {},
   total: 0,
@@ -145,7 +171,6 @@ const DEFAULT_LOAD_MORE_THRESHOLD = 500 // px
  * is controlled by injecting tiles conforming to `Track/Playlist/SkeletonProps interfaces.
  */
 export const TanQueryLineup = ({
-  lineupQueryData,
   'aria-label': ariaLabel,
   variant = LineupVariant.MAIN,
   ordered = false,
@@ -158,30 +183,25 @@ export const TanQueryLineup = ({
   numPlaylistSkeletonRows,
   isTrending = false,
   onClickTile,
-  pageSize: propsPageSize,
   initialPageSize,
   scrollParent: externalScrollParent,
   loadMoreThreshold = DEFAULT_LOAD_MORE_THRESHOLD,
   start,
   shouldLoadMore = true,
+  data,
+  pageSize,
+  lineup = defaultLineup,
+  play,
+  pause,
+  loadNextPage,
+  hasNextPage,
+  isPending = true,
+  isPlaying = false,
+  isFetching = true,
+  isError = false,
   maxEntries
 }: TanQueryLineupProps) => {
   const dispatch = useDispatch()
-  const pageSize = propsPageSize ?? lineupQueryData.pageSize
-  const {
-    lineup = defaultLineup,
-    play,
-    pause,
-    hasNextPage,
-    isPending = true,
-    isPlaying = false,
-    isFetching = true,
-    isError = false
-  } = lineupQueryData
-
-  const loadNextPage = useCallback(() => {
-    lineupQueryData.loadNextPage()
-  }, [lineupQueryData])
 
   const getCurrentQueueItem = useMemo(() => makeGetCurrent(), [])
   const currentQueueItem = useSelector(getCurrentQueueItem)
@@ -195,13 +215,15 @@ export const TanQueryLineup = ({
   const scrollContainer = useRef<HTMLDivElement>(null)
 
   // Memoize component selection based on device type
-  const { TrackTile, PlaylistTile } = {
-    TrackTile:
-      isMobile || variant === LineupVariant.SECTION
-        ? TrackTileMobile
-        : TrackTileDesktop,
-    PlaylistTile: isMobile ? PlaylistTileMobile : PlaylistTileDesktop
-  }
+  const { TrackTile, PlaylistTile } = useMemo(() => {
+    return {
+      TrackTile:
+        isMobile || variant === LineupVariant.SECTION
+          ? TrackTileMobile
+          : TrackTileDesktop,
+      PlaylistTile: isMobile ? PlaylistTileMobile : PlaylistTileDesktop
+    }
+  }, [isMobile, variant])
 
   // Memoized scroll parent callback
   const getScrollParent = useCallback(() => {
@@ -238,7 +260,7 @@ export const TanQueryLineup = ({
         play(uid)
         dispatch(
           make(Name.PLAYBACK_PLAY, {
-            id: `${trackId}`,
+            id: trackId,
             source: source || PlaybackSource.TRACK_TILE
           })
         )
@@ -246,7 +268,7 @@ export const TanQueryLineup = ({
         pause()
         dispatch(
           make(Name.PLAYBACK_PAUSE, {
-            id: `${trackId}`,
+            id: trackId,
             source: source || PlaybackSource.TRACK_TILE
           })
         )
@@ -322,7 +344,8 @@ export const TanQueryLineup = ({
             statSize,
             containerClassName,
             uid: entry.uid,
-            isLoading: lineupQueryData.data?.[index] === undefined,
+            id: entry.id,
+            isLoading: data?.[index] === undefined,
             isTrending,
             onClick: onClickTile,
             source: ModalSource.LineUpTrackTile,
@@ -336,13 +359,14 @@ export const TanQueryLineup = ({
             ...entry,
             index,
             uid: entry.uid,
+            id: entry.id,
             size: tileSize,
             ordered,
             playTrack: play,
             pauseTrack: pause,
             playingTrackId,
             togglePlay,
-            isLoading: lineupQueryData.data?.[index] === undefined,
+            isLoading: data?.[index] === undefined,
             numLoadingSkeletonRows: numPlaylistSkeletonRows,
             isTrending,
             source: ModalSource.LineUpCollectionTile,
@@ -362,29 +386,31 @@ export const TanQueryLineup = ({
 
     return result
   }, [
-    lineupEntries,
     isError,
-    delineate,
     isMobile,
+    isTrending,
+    isBuffering,
+    lineupEntries,
+    delineate,
     ordered,
     togglePlay,
     tileSize,
     statSize,
     containerClassName,
-    lineupQueryData.data,
-    isTrending,
+    data,
     onClickTile,
-    isBuffering,
     playingSource,
+    TrackTile,
     play,
     pause,
     playingTrackId,
     numPlaylistSkeletonRows,
-    TrackTile,
     PlaylistTile
   ])
 
   const isInitialLoad = (isFetching && tiles.length === 0) || isPending
+
+  const isEmptyResults = tiles.length === 0 && !isFetching && !isInitialLoad
 
   return (
     <>
@@ -410,8 +436,9 @@ export const TanQueryLineup = ({
             getScrollParent={getScrollParent}
             element='ol'
             threshold={loadMoreThreshold}
+            // Render empty results as full width instead of a tile taking up one grid space
             className={cn({
-              [tileContainerStyles!]: !!tileContainerStyles
+              [tileContainerStyles!]: !!tileContainerStyles && !isEmptyResults
             })}
           >
             {tiles.length === 0

@@ -1,20 +1,20 @@
 import { useCallback } from 'react'
 
-import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
-import { Collection } from '@audius/common/models'
+import {
+  useCollection,
+  useGetCurrentUserId,
+  useGetPlaylistById
+} from '@audius/common/api'
 import {
   cacheCollectionsActions,
-  collectionPageSelectors,
-  CommonState,
   useEarlyReleaseConfirmationModal,
   usePublishConfirmationModal
 } from '@audius/common/store'
 import { IconRocket, IconButton, IconButtonProps } from '@audius/harmony'
-import { useDispatch, useSelector } from 'react-redux'
+import { pick } from 'lodash'
+import { useDispatch } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'
-
-const { getCollection } = collectionPageSelectors
 
 const messages = {
   publish: 'Make Public',
@@ -29,9 +29,12 @@ type PublishButtonProps = Partial<IconButtonProps> & {
 
 export const PublishButton = (props: PublishButtonProps) => {
   const { collectionId, ...other } = props
-  const { _is_publishing, is_scheduled_release, is_album } = useSelector(
-    (state: CommonState) => getCollection(state, { id: collectionId })
-  ) as Collection
+  const { data: partialCollection } = useCollection(collectionId, {
+    select: (collection) =>
+      pick(collection, '_is_publishing', 'is_scheduled_release', 'is_album')
+  })
+  const { _is_publishing, is_scheduled_release, is_album } =
+    partialCollection ?? {}
   const { data: currentUserId } = useGetCurrentUserId({})
   const { data: collection } = useGetPlaylistById({
     playlistId: collectionId,

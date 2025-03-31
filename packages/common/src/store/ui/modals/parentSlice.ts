@@ -77,7 +77,8 @@ export const initialState: BasicModalsState = {
   ExternalWalletSignUp: { isOpen: false },
   ConnectedWallets: { isOpen: false },
   Announcement: { isOpen: false },
-  Notification: { isOpen: false }
+  Notification: { isOpen: false },
+  DownloadTrackArchive: { isOpen: false }
 }
 
 const slice = createSlice({

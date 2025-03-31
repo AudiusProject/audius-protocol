@@ -10,6 +10,7 @@ import { connectedWalletsModalReducer } from './connected-wallets-modal'
 import { chatBlastModalReducer } from './create-chat-blast-modal'
 import { createChatModalReducer } from './create-chat-modal'
 import { deleteTrackConfirmationModalReducer } from './delete-track-confirmation-modal'
+import { downloadTrackArchiveModalReducer } from './download-track-archive-modal'
 import { earlyReleaseConfirmationModalReducer } from './early-release-confirmation-modal'
 import { editAccessConfirmationModalReducer } from './edit-access-confirmation-modal'
 import { externalWalletSignUpModalReducer } from './external-wallet-sign-up-modal'
@@ -74,7 +75,8 @@ const combinedReducers = combineReducers({
   ExternalWalletSignUp: externalWalletSignUpModalReducer,
   ConnectedWallets: connectedWalletsModalReducer,
   Announcement: announcementModalReducer,
-  Notification: notificationModalReducer
+  Notification: notificationModalReducer,
+  DownloadTrackArchive: downloadTrackArchiveModalReducer
 })
 
 /**

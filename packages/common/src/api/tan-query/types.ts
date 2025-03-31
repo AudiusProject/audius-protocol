@@ -10,9 +10,9 @@ import { UseLineupQueryData } from './utils/useLineupQuery'
 /**
  * Standard tan-query pass-thru options that we use
  */
-export type QueryOptions<T = any> = Pick<
-  DefinedInitialDataOptions<T>,
-  'staleTime' | 'enabled' | 'placeholderData'
+export type QueryOptions = Pick<
+  DefinedInitialDataOptions<any>,
+  'staleTime' | 'enabled' | 'placeholderData' | 'refetchOnMount'
 >
 
 export type SelectableQueryOptions<TData, TResult = TData> = Omit<

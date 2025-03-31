@@ -10,7 +10,7 @@ from src.utils.config import shared_config
 logger = logging.getLogger(__name__)
 
 # Targeting 2025-04-02
-TASTEMAKER_CHALLENGE_START_BLOCK_PROD = 1120000
+TASTEMAKER_CHALLENGE_START_BLOCK_PROD = 1100000
 # Targeting 2025-03-25
 TASTEMAKER_CHALLENGE_START_BLOCK_STAGE = 1000000
 TASTEMAKER_CHALLENGE_START_BLOCK_DEV = 0
@@ -53,8 +53,8 @@ class TastemakerChallengeUpdater(ChallengeUpdater):
         item_type = "p" if extra["tastemaker_item_type"] == "playlist" else "t"
         return f"{hex(user_id)[2:]}:{item_type}:{hex(extra['tastemaker_item_id'])[2:]}"
 
-    def should_update_challenge(
-        self, session: Session, user_id: int, tastemaker_item_id: int
+    def should_create_new_challenge(
+        self, session: Session, event: str, user_id: int, extra: Dict
     ) -> bool:
         block = (
             session.query(CoreIndexedBlocks)

@@ -8,6 +8,7 @@ import { ChatsApi } from './api/chats/ChatsApi'
 import { CommentsApi } from './api/comments/CommentsAPI'
 import { DashboardWalletUsersApi } from './api/dashboard-wallet-users/DashboardWalletUsersApi'
 import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
+import { EventsApi } from './api/events/EventsApi'
 import { Configuration, TipsApi } from './api/generated/default'
 import {
   TracksApi as TracksApiFull,
@@ -109,6 +110,7 @@ export const sdk = (config: SdkConfig) => {
 
   // Initialize APIs
   const apis = initializeApis({
+    config,
     apiKey,
     appName,
     services
@@ -184,7 +186,6 @@ const initializeServices = (config: SdkConfig) => {
     config.services?.storageNodeSelector ??
     new StorageNodeSelector({
       ...getDefaultStorageNodeSelectorConfig(servicesConfig),
-      discoveryNodeSelector,
       logger
     })
 
@@ -192,7 +193,6 @@ const initializeServices = (config: SdkConfig) => {
     config.services?.entityManager ??
     new EntityManagerClient({
       ...getDefaultEntityManagerConfig(servicesConfig),
-      discoveryNodeSelector,
       audiusWalletClient,
       logger
     })
@@ -235,6 +235,14 @@ const initializeServices = (config: SdkConfig) => {
           middleware
         })
       )
+
+  const archiverService = config.services?.archiverService
+    ? config.services.archiverService.withMiddleware(
+        addRequestSignatureMiddleware({
+          services: { audiusWalletClient, logger }
+        })
+      )
+    : undefined
 
   const emailEncryptionService =
     config.services?.emailEncryptionService ??
@@ -386,39 +394,49 @@ const initializeServices = (config: SdkConfig) => {
     serviceProviderFactoryClient,
     ethRewardsManagerClient,
     emailEncryptionService,
+    archiverService,
     logger
   }
   return services
 }
 
 const initializeApis = ({
+  config,
   apiKey,
   appName,
   services
 }: {
+  config: SdkConfig
   apiKey?: string
   appName?: string
   services: ServicesContainer
 }) => {
+  const basePath =
+    config.environment === 'development'
+      ? developmentConfig.network.apiEndpoint
+      : config.environment === 'staging'
+        ? stagingConfig.network.apiEndpoint
+        : productionConfig.network.apiEndpoint
+
   const middleware = [
     addAppInfoMiddleware({ apiKey, appName, services }),
-    addRequestSignatureMiddleware({ services }),
-    services.discoveryNodeSelector.createMiddleware()
+    addRequestSignatureMiddleware({ services })
   ]
-  const generatedApiClientConfig = new Configuration({
+  const apiClientConfig = new Configuration({
     fetchApi: fetch,
-    middleware
+    middleware,
+    basePath: `${basePath}/v1`
   })
-
-  const noBasePathConfig = new Configuration({
+  const apiClientConfigWithDiscoveryNodeSelector = new Configuration({
     fetchApi: fetch,
-    basePath: '',
-    middleware
+    middleware: [
+      ...middleware,
+      services.discoveryNodeSelector.createMiddleware()
+    ]
   })
 
   const tracks = new TracksApi(
-    generatedApiClientConfig,
-    services.discoveryNodeSelector,
+    apiClientConfig,
     services.storage,
     services.entityManager,
     services.logger,
@@ -428,7 +446,7 @@ const initializeApis = ({
     services.solanaClient
   )
   const users = new UsersApi(
-    generatedApiClientConfig,
+    apiClientConfig,
     services.storage,
     services.entityManager,
     services.logger,
@@ -437,7 +455,7 @@ const initializeApis = ({
     services.emailEncryptionService
   )
   const albums = new AlbumsApi(
-    generatedApiClientConfig,
+    apiClientConfig,
     services.storage,
     services.entityManager,
     services.logger,
@@ -447,45 +465,44 @@ const initializeApis = ({
     services.solanaClient
   )
   const playlists = new PlaylistsApi(
-    generatedApiClientConfig,
+    apiClientConfig,
     services.storage,
     services.entityManager,
     services.logger
   )
   const comments = new CommentsApi(
-    generatedApiClientConfig,
+    apiClientConfig,
     services.entityManager,
     services.logger
   )
-  const tips = new TipsApi(generatedApiClientConfig)
-  const resolveApi = new ResolveApi(generatedApiClientConfig)
+  const tips = new TipsApi(apiClientConfig)
+  const resolveApi = new ResolveApi(apiClientConfig)
   const resolve = resolveApi.resolve.bind(resolveApi)
 
   const chats = new ChatsApi(
-    noBasePathConfig,
+    new Configuration({
+      basePath, // comms is not a v1 API
+      fetchApi: fetch,
+      middleware
+    }),
     services.audiusWalletClient,
-    services.discoveryNodeSelector,
     services.logger
   )
 
-  const grants = new GrantsApi(
-    generatedApiClientConfig,
-    services.entityManager,
-    users
-  )
+  const grants = new GrantsApi(apiClientConfig, services.entityManager, users)
 
   const developerApps = new DeveloperAppsApi(
-    generatedApiClientConfig,
+    apiClientConfig,
     services.entityManager
   )
 
   const dashboardWalletUsers = new DashboardWalletUsersApi(
-    generatedApiClientConfig,
+    apiClientConfig,
     services.entityManager
   )
 
   const challenges = new ChallengesApi(
-    generatedApiClientConfig,
+    apiClientConfigWithDiscoveryNodeSelector,
     users,
     services.discoveryNodeSelector,
     services.rewardManagerClient,
@@ -496,14 +513,21 @@ const initializeApis = ({
   )
 
   const notifications = new NotificationsApi(
-    generatedApiClientConfig,
+    apiClientConfig,
     services.entityManager
   )
 
   const generatedApiClientConfigFull = new ConfigurationFull({
+    basePath: `${basePath}/v1/full`,
     fetchApi: fetch,
     middleware
   })
+
+  const events = new EventsApi(
+    generatedApiClientConfig,
+    services.entityManager,
+    services.logger
+  )
 
   const full = {
     tracks: new TracksApiFull(generatedApiClientConfigFull),
@@ -533,7 +557,8 @@ const initializeApis = ({
     challenges,
     services,
     comments,
-    notifications
+    notifications,
+    events
   }
 }
 

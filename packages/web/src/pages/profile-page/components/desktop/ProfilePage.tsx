@@ -44,7 +44,6 @@ import cn from 'classnames'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
 import { ConfirmationModal } from 'components/confirmation-modal'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
-import Lineup from 'components/lineup/Lineup'
 import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import { LineupVariant } from 'components/lineup/types'
 import Mask from 'components/mask/Mask'
@@ -139,8 +138,6 @@ export type ProfilePageProps = {
   pauseUserFeedTrack: () => void
 
   // Methods
-  onFollow: () => void
-  onUnfollow: () => void
   updateName: (name: string) => void
   updateBio: (bio: string) => void
   updateLocation: (location: string) => void
@@ -206,17 +203,37 @@ const messages = {
   unmuteUser: commentsMessages.popups.unmuteUser
 }
 const RepostsTab = ({ handle }: { handle: string }) => {
-  const queryData = useProfileReposts({
+  const {
+    data,
+    isPending,
+    isFetching,
+    isError,
+    pageSize,
+    hasNextPage,
+    loadNextPage,
+    play,
+    pause,
+    lineup,
+    isPlaying
+  } = useProfileReposts({
     handle
   })
-
   return (
     <div className={styles.tiles}>
       <TanQueryLineup
-        lineupQueryData={queryData}
-        actions={feedActions}
-        pageSize={queryData.pageSize}
+        data={data}
+        isPending={isPending}
+        isFetching={isFetching}
+        isError={isError}
+        pageSize={pageSize}
+        hasNextPage={hasNextPage}
+        loadNextPage={loadNextPage}
+        play={play}
+        pause={pause}
         variant={LineupVariant.CONDENSED}
+        actions={feedActions}
+        lineup={lineup}
+        isPlaying={isPlaying}
       />
     </div>
   )
@@ -231,7 +248,19 @@ const TracksTab = ({
   handle: string
   isOwner: boolean
 }) => {
-  const queryData = useProfileTracks({
+  const {
+    data,
+    isPending,
+    isFetching,
+    isError,
+    pageSize,
+    hasNextPage,
+    loadNextPage,
+    play,
+    pause,
+    lineup,
+    isPlaying
+  } = useProfileTracks({
     handle
   })
 
@@ -247,9 +276,17 @@ const TracksTab = ({
   return (
     <TanQueryLineup
       extraPrecedingElement={trackUploadChip}
-      lineupQueryData={queryData}
-      leadingElementId={profile.artist_pick_track_id}
-      pageSize={queryData.pageSize}
+      data={data}
+      isPending={isPending}
+      isFetching={isFetching}
+      isError={isError}
+      pageSize={pageSize}
+      hasNextPage={hasNextPage}
+      loadNextPage={loadNextPage}
+      play={play}
+      pause={pause}
+      lineup={lineup}
+      isPlaying={isPlaying}
       actions={tracksActions}
       variant={LineupVariant.CONDENSED}
     />
@@ -279,8 +316,6 @@ const ProfilePage = ({
   loadMoreUserFeed,
   loadMoreArtistTracks,
   updateProfile,
-  onFollow,
-  onUnfollow,
   updateName,
   updateBio,
   updateLocation,
@@ -518,14 +553,7 @@ const ProfilePage = ({
             text={messages.emptyTab.repostedAnything}
           />
         ) : (
-          <Lineup
-            {...getLineupProps(userFeed)}
-            count={profile.repost_count}
-            loadMore={loadMoreUserFeed}
-            playTrack={playUserFeedTrack}
-            pauseTrack={pauseUserFeedTrack}
-            actions={feedActions}
-          />
+          <RepostsTab handle={handle} />
         )}
       </Box>,
       <Box w='100%' key={ProfilePageTabs.PLAYLISTS}>
@@ -765,8 +793,6 @@ const ProfilePage = ({
                   following={following}
                   isSubscribed={isSubscribed}
                   onToggleSubscribe={toggleNotificationSubscription}
-                  onFollow={onFollow}
-                  onUnfollow={onUnfollow}
                   canCreateChat={canCreateChat}
                   onMessage={onMessage}
                   isBlocked={isBlocked}

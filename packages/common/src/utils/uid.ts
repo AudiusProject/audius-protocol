@@ -125,6 +125,13 @@ export const getIdFromKindId = (kindId: string) => kindId.split('-')[1]
  */
 export const getKindFromKindId = (kindId: string) => kindId.split('-')[0]
 
+/**
+ * Gets the numeric id from a uid
+ * @param uid
+ */
+export const getNumericIdFromUid = (uid: string) =>
+  parseInt(getIdFromKindId(uid).split(':')[1])
+
 export const uuid = () => {
   // https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript/873856#873856
   const s = []
