@@ -10,6 +10,7 @@ import { EntriesByKind } from '~/store/cache/types'
 
 import { TQCollection } from '../models'
 import { getCollectionQueryKey } from '../useCollection'
+import { getCollectionByPermalinkQueryKey } from '../useCollectionByPermalink'
 
 import { primeTrackDataInternal } from './primeTrackData'
 import { primeUserDataInternal } from './primeUserData'
@@ -95,12 +96,23 @@ export const primeCollectionDataInternal = ({
       )
     }
 
+    if (
+      forceReplace ||
+      !queryClient.getQueryData(
+        getCollectionByPermalinkQueryKey(collection.permalink)
+      )
+    ) {
+      queryClient.setQueryData(
+        getCollectionByPermalinkQueryKey(collection.permalink),
+        collection.playlist_id
+      )
+    }
+
     // Prime user data from collection owner
     if ('user' in collection) {
       const userEntries = primeUserDataInternal({
         users: [collection.user],
         queryClient,
-        skipQueryData,
         forceReplace
       })
 
@@ -116,7 +128,6 @@ export const primeCollectionDataInternal = ({
       const trackEntries = primeTrackDataInternal({
         tracks: collection.tracks,
         queryClient,
-        skipQueryData,
         forceReplace
       })
 
