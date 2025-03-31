@@ -274,8 +274,13 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
   [ChallengeName.Tastemaker]: {
     icon: <i className='emoji large smiling-face-licking-lips' />
   },
+<<<<<<< Updated upstream
   [ChallengeName.CommentPin]: {
     icon: <i className='emoji large speech-balloon' />
+=======
+  [ChallengeName.Cosign]: {
+    icon: <i className='emoji large recycle' />
+>>>>>>> Stashed changes
   }
 }
 

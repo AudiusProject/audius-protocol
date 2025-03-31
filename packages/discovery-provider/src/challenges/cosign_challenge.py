@@ -16,7 +16,7 @@ class CosignChallengeUpdater(ChallengeUpdater):
     """
 
     def generate_specifier(self, session: Session, user_id: int, extra: Dict) -> str:
-        return f"{extra['track_id']}"
+        return f"{hex(extra['track_id'])[2:]}"
 
     def should_create_new_challenge(
         self, session: Session, event: str, user_id: int, extra: Dict

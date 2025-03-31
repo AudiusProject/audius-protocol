@@ -3,6 +3,7 @@ import type { ComponentType } from 'react'
 import { ChallengeName } from '@audius/common/models'
 
 import { AudioMatchingChallengeContent } from './AudioMatchingChallengeContent'
+import { CosignChallengeContent } from './CosignChallengeContent'
 import { DefaultChallengeContent } from './DefaultChallengeContent'
 import { FirstWeeklyCommentChallengeContent } from './FirstWeeklyCommentChallengeContent'
 import { ListenStreakEndlessChallengeContent } from './ListenStreakEndlessChallengeContent'
@@ -29,6 +30,8 @@ export const challengeContentRegistry: ChallengeContentMap = {
   [ChallengeName.PlayCount1000]: PlayCountMilestoneContent,
   [ChallengeName.PlayCount10000]: PlayCountMilestoneContent,
   [ChallengeName.Tastemaker]: TastemakerChallengeContent,
+  [ChallengeName.Cosign]: CosignChallengeContent,
+
   default: DefaultChallengeContent
 }
 
