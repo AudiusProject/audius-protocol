@@ -14,6 +14,8 @@ export const SupportingUserList = () => {
   const { data, hasNextPage, isFetchingNextPage, fetchNextPage, isPending } =
     useSupportedUsers({ userId })
 
+  if (!userId) return null
+
   return (
     <UserList
       data={data?.map((supporter) => supporter.receiver.user_id)}
@@ -22,6 +24,7 @@ export const SupportingUserList = () => {
       isFetchingNextPage={isFetchingNextPage}
       isPending={isPending}
       fetchNextPage={fetchNextPage}
+      showSupportFrom={userId}
     />
   )
 }
