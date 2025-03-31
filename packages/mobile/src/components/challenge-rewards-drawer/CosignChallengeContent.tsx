@@ -13,7 +13,6 @@ import {
   IconArrowRight,
   Button,
   Text,
-  IconArrowRotate,
   IconCheck
 } from '@audius/harmony-native'
 import { getChallengeConfig } from 'app/utils/challenges'
@@ -38,7 +37,7 @@ export const CosignChallengeContent = ({
   onClaim,
   onClose
 }: ChallengeContentProps) => {
-  const config = getChallengeConfig(ChallengeName.FirstWeeklyComment)
+  const config = getChallengeConfig(ChallengeName.Cosign)
   const claimInProgress =
     claimStatus === ClaimStatus.CLAIMING ||
     claimStatus === ClaimStatus.WAITING_FOR_RETRY
@@ -115,8 +114,6 @@ export const CosignChallengeContent = ({
       </Button>
     )
 
-  // Following the pattern from FirstWeeklyCommentChallengeModalContent
-  // where totalAmount is set to challenge.amount
   const modifiedAmount = challenge?.amount ?? 0
 
   return (
