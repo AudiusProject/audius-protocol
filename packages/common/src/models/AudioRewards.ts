@@ -60,7 +60,8 @@ export enum ChallengeName {
   PlayCount1000 = 'p2',
   PlayCount10000 = 'p3',
   Tastemaker = 't',
-  CommentPin = 'cp'
+  CommentPin = 'cp',
+  Cosign = 'cs'
 }
 
 export type ChallengeRewardID =
@@ -99,6 +100,7 @@ export type ChallengeRewardID =
   | ChallengeName.PlayCount10000
   | ChallengeName.Tastemaker
   | ChallengeName.CommentPin
+  | ChallengeName.Cosign
 export enum FailureReason {
   // The attestation requires the user to fill out a captcha
   HCAPTCHA = 'HCAPTCHA',
