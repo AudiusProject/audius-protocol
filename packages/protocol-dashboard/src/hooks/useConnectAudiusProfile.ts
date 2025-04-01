@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { DecodedUserToken, OAUTH_URL } from '@audius/sdk'
-import { useTypedQueryClient } from '@audius/api'
+import { useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { getDashboardWalletUserQueryKey } from 'hooks/useDashboardWalletUsers'
@@ -38,7 +38,7 @@ export const useConnectAudiusProfile = ({
   wallet: string
   onSuccess: () => void
 }) => {
-  const queryClient = useTypedQueryClient()
+  const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const [isWaiting, setIsWaiting] = useState(false)
   const handleConnectSuccess = async (profile: DecodedUserToken) => {
