@@ -524,7 +524,7 @@ const initializeApis = ({
   })
 
   const events = new EventsApi(
-    generatedApiClientConfig,
+    apiClientConfig,
     services.entityManager,
     services.logger
   )
