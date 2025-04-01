@@ -27,7 +27,8 @@ export enum ChallengeId {
   PLAY_COUNT_250_MILESTONE_2025 = 'p1',
   PLAY_COUNT_1000_MILESTONE_2025 = 'p2',
   PLAY_COUNT_10000_MILESTONE_2025 = 'p3',
-  TASTEMAKER = 't'
+  TASTEMAKER = 't',
+  COSIGN = 'cs'
 }
 
 const DefaultSpecifier = z.object({

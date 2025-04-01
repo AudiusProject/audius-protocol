@@ -1,6 +1,11 @@
 import { memo, useCallback, useEffect, MouseEvent, useRef } from 'react'
 
-import { useToggleFavoriteTrack } from '@audius/common/api'
+import {
+  useCurrentUserId,
+  useToggleFavoriteTrack,
+  useTrack,
+  useUser
+} from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,
@@ -10,9 +15,6 @@ import {
   UID
 } from '@audius/common/models'
 import {
-  accountSelectors,
-  cacheTracksSelectors,
-  cacheUsersSelectors,
   tracksSocialActions,
   shareModalUIActions,
   playerSelectors,
@@ -21,8 +23,7 @@ import {
 import { Genre } from '@audius/common/utils'
 import { IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
-import { connect, useDispatch } from 'react-redux'
-import { Dispatch } from 'redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { Draggable } from 'components/dragndrop'
@@ -30,7 +31,6 @@ import { UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
 import { TrackArtwork } from 'components/track/Artwork'
-import { AppState } from 'store/types'
 import { isDescendantElementOf } from 'utils/domUtils'
 import { fullTrackPage } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
@@ -40,16 +40,15 @@ import { TrackTileSize } from '../types'
 
 import styles from './ConnectedTrackTile.module.css'
 import TrackTile from './TrackTile'
+
 const { getUid, getPlaying, getBuffering } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
-const { getTrack } = cacheTracksSelectors
-const { getUserFromTrack } = cacheUsersSelectors
 const { repostTrack, undoRepostTrack } = tracksSocialActions
-const { getUserHandle } = accountSelectors
 const { setLockedContentId } = gatedContentActions
 
 type OwnProps = {
   uid: UID
+  id: ID
   index: number
   order: number
   containerClassName?: string
@@ -64,32 +63,73 @@ type OwnProps = {
   onClick?: (trackId: ID) => void
 }
 
-type ConnectedTrackTileProps = OwnProps &
-  ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps>
+type ConnectedTrackTileProps = OwnProps
 
 const ConnectedTrackTile = ({
   uid,
+  id,
   index,
   size,
-  track,
-  user,
   ordered,
   togglePlay,
-  isBuffering,
-  isPlaying,
-  playingUid,
   isLoading,
   hasLoaded,
   containerClassName,
-  userHandle,
-  repostTrack,
-  undoRepostTrack,
-  shareTrack,
   isTrending,
   isFeed = false,
   onClick
 }: ConnectedTrackTileProps) => {
+  const dispatch = useDispatch()
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: track, isPending } = useTrack(id)
+  const { data: partialUser } = useUser(track?.owner_id, {
+    select: (user) => ({
+      user_id: user?.user_id,
+      handle: user?.handle,
+      name: user?.name,
+      is_verified: user?.is_verified,
+      is_deactivated: user?.is_deactivated,
+      artist_pick_track_id: user?.artist_pick_track_id
+    })
+  })
+  const {
+    user_id,
+    name,
+    handle,
+    is_deactivated: isOwnerDeactivated,
+    artist_pick_track_id
+  } = getUserWithFallback(partialUser)
+  const playingUid = useSelector(getUid)
+  const isBuffering = useSelector(getBuffering)
+  const isPlaying = useSelector(getPlaying)
+
+  const shareTrack = useCallback(
+    (trackId: ID) => {
+      dispatch(
+        requestOpenShareModal({
+          type: 'track',
+          trackId,
+          source: ShareSource.TILE
+        })
+      )
+    },
+    [dispatch]
+  )
+
+  const handleRepostTrack = useCallback(
+    (trackId: ID, isFeed: boolean) => {
+      dispatch(repostTrack(trackId, RepostSource.TILE, isFeed))
+    },
+    [dispatch]
+  )
+
+  const handleUndoRepostTrack = useCallback(
+    (trackId: ID) => {
+      dispatch(undoRepostTrack(trackId, RepostSource.TILE))
+    },
+    [dispatch]
+  )
+
   const trackWithFallback = getTrackWithFallback(track)
   const {
     is_delete,
@@ -107,26 +147,17 @@ const ConnectedTrackTile = ({
     ddex_app: ddexApp
   } = trackWithFallback
 
-  const {
-    user_id,
-    name,
-    handle,
-    is_deactivated: isOwnerDeactivated,
-    artist_pick_track_id
-  } = getUserWithFallback(user)
-
   const isActive = uid === playingUid
   const isTrackBuffering = isActive && isBuffering
   const isTrackPlaying = isActive && isPlaying
-  const isOwner = handle === userHandle
+  const isOwner = currentUserId === user_id
   const hasPreview = !!track?.preview_cid
   const isArtistPick = artist_pick_track_id === trackId
 
   const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(trackWithFallback)
-  const loading = isLoading || isFetchingNFTAccess
+  const loading = isLoading || isFetchingNFTAccess || isPending
 
-  const dispatch = useDispatch()
   const [, setLockedContentVisibility] = useModalState('LockedContent')
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -137,7 +168,7 @@ const ConnectedTrackTile = ({
 
   useEffect(() => {
     if (!loading && hasLoaded) {
-      hasLoaded(index)
+      hasLoaded?.(index)
     }
   }, [hasLoaded, index, loading])
 
@@ -163,8 +194,8 @@ const ConnectedTrackTile = ({
       handle,
       includeAddToPlaylist: !isUnlisted || isOwner,
       includeAddToAlbum: isOwner && !ddexApp,
-      includeArtistPick: handle === userHandle,
-      includeEdit: handle === userHandle,
+      includeArtistPick: isOwner,
+      includeEdit: isOwner,
       ddexApp: track?.ddex_app,
       includeEmbed: !(isUnlisted || isStreamGated),
       includeFavorite: hasStreamAccess,
@@ -217,11 +248,11 @@ const ConnectedTrackTile = ({
 
   const onClickRepost = useCallback(() => {
     if (isReposted) {
-      undoRepostTrack(trackId)
+      handleUndoRepostTrack(trackId)
     } else {
-      repostTrack(trackId, isFeed)
+      handleRepostTrack(trackId, isFeed)
     }
-  }, [repostTrack, undoRepostTrack, trackId, isReposted, isFeed])
+  }, [handleRepostTrack, handleUndoRepostTrack, trackId, isReposted, isFeed])
 
   const onClickShare = useCallback(() => {
     shareTrack(trackId)
@@ -273,7 +304,7 @@ const ConnectedTrackTile = ({
     ]
   )
 
-  if (is_delete || user?.is_deactivated) return null
+  if (is_delete || isOwnerDeactivated) return null
 
   const order = ordered && index !== undefined ? index + 1 : undefined
   const artwork = renderImage()
@@ -339,35 +370,4 @@ const ConnectedTrackTile = ({
   )
 }
 
-function mapStateToProps(state: AppState, ownProps: OwnProps) {
-  return {
-    track: getTrack(state, { uid: ownProps.uid }),
-    user: getUserFromTrack(state, { uid: ownProps.uid }),
-    playingUid: getUid(state),
-    isBuffering: getBuffering(state),
-    isPlaying: getPlaying(state),
-    userHandle: getUserHandle(state)
-  }
-}
-
-function mapDispatchToProps(dispatch: Dispatch) {
-  return {
-    shareTrack: (trackId: ID) =>
-      dispatch(
-        requestOpenShareModal({
-          type: 'track',
-          trackId,
-          source: ShareSource.TILE
-        })
-      ),
-    repostTrack: (trackId: ID, isFeed: boolean) =>
-      dispatch(repostTrack(trackId, RepostSource.TILE, isFeed)),
-    undoRepostTrack: (trackId: ID) =>
-      dispatch(undoRepostTrack(trackId, RepostSource.TILE))
-  }
-}
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(memo(ConnectedTrackTile))
+export default memo(ConnectedTrackTile)

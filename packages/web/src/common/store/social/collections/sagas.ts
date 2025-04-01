@@ -1,4 +1,9 @@
 import {
+  queryCollection,
+  queryUser,
+  queryUserByHandle
+} from '@audius/common/api'
+import {
   Name,
   Kind,
   SmartCollectionVariant,
@@ -9,9 +14,7 @@ import {
 import {
   accountActions,
   accountSelectors,
-  cacheCollectionsSelectors,
   cacheActions,
-  cacheUsersSelectors,
   savedPageActions,
   LibraryCategory,
   playlistLibraryActions,
@@ -45,8 +48,6 @@ import watchCollectionErrors from './errorSagas'
 const { updatedPlaylistViewed } = playlistUpdatesActions
 const { update: updatePlaylistLibrary } = playlistLibraryActions
 const { removeFromPlaylistLibrary } = playlistLibraryHelpers
-const { getUser } = cacheUsersSelectors
-const { getCollections, getCollection } = cacheCollectionsSelectors
 const { addLocalCollection, removeLocalCollection } = savedPageActions
 const { getPlaylistLibrary, getUserId, getIsGuestAccount } = accountSelectors
 const { collectionPage } = route
@@ -71,15 +72,12 @@ export function* repostCollectionAsync(
   }
 
   // increment the repost count on the user
-  const user = yield* select(getUser, { id: userId })
+  const user = yield* queryUser(userId)
   if (!user) return
 
   let collection = action.metadata
   if (!collection) {
-    const collections = yield* select(getCollections, {
-      ids: [action.collectionId]
-    })
-    collection = collections[action.collectionId]
+    collection = yield* queryCollection(action.collectionId)
   }
 
   if (collection.playlist_owner_id === userId) {
@@ -195,15 +193,13 @@ export function* undoRepostCollectionAsync(
   }
 
   // decrement the repost count on the user
-  const user = yield* select(getUser, { id: userId })
+  const user = yield* queryUser(userId)
   if (!user) return
 
   yield* call(adjustUserField, { user, fieldName: 'repost_count', delta: -1 })
 
-  const collections = yield* select(getCollections, {
-    ids: [action.collectionId]
-  })
-  const collection = collections[action.collectionId]
+  const collection = yield* queryCollection(action.collectionId)
+  if (!collection) return
 
   yield* put(
     removeLocalCollection({
@@ -347,11 +343,9 @@ export function* saveCollectionAsync(
     return
   }
 
-  const collections = yield* select(getCollections, {
-    ids: [action.collectionId]
-  })
-  const collection = collections[action.collectionId]
-  const user = yield* select(getUser, { id: collection.playlist_owner_id })
+  const collection = yield* queryCollection(action.collectionId)
+  if (!collection) return
+  const user = yield* queryUser(collection.playlist_owner_id)
   if (!user) return
 
   if (collection.playlist_owner_id === userId) {
@@ -510,10 +504,8 @@ export function* unsaveCollectionAsync(
 ) {
   yield* call(waitForWrite)
 
-  const collections = yield* select(getCollections, {
-    ids: [action.collectionId]
-  })
-  const collection = collections[action.collectionId]
+  const collection = yield* queryCollection(action.collectionId)
+  if (!collection) return
 
   yield* put(
     removeLocalCollection({
@@ -591,10 +583,10 @@ export function* watchShareCollection() {
     socialActions.SHARE_COLLECTION,
     function* (action: ReturnType<typeof socialActions.shareCollection>) {
       const { collectionId } = action
-      const collection = yield* select(getCollection, { id: collectionId })
+      const collection = yield* queryCollection(collectionId)
       if (!collection) return
 
-      const user = yield* select(getUser, { id: collection.playlist_owner_id })
+      const user = yield* queryUser(collection.playlist_owner_id)
       if (!user) return
 
       const link = collectionPage(
@@ -624,7 +616,7 @@ export function* watchShareAudioNftPlaylist() {
     socialActions.SHARE_AUDIO_NFT_PLAYLIST,
     function* (action: ReturnType<typeof socialActions.shareAudioNftPlaylist>) {
       const { handle } = action
-      const user = yield* select(getUser, { handle })
+      const user = yield* queryUserByHandle(handle)
 
       const link = audioNftPlaylistPage(handle)
       const share = yield* getContext('share')

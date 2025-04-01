@@ -1,3 +1,6 @@
+import { UserMetadata, UserTrackMetadata } from '@audius/common/models'
+import { primeTrackDataInternal } from '@audius/common/src/api/tan-query/utils/primeTrackData'
+import { primeUserDataInternal } from '@audius/common/src/api/tan-query/utils/primeUserData'
 import {
   playerReducer,
   playerActions,
@@ -9,9 +12,10 @@ import { expectSaga } from 'redux-saga-test-plan'
 import { call, getContext, select } from 'redux-saga-test-plan/matchers'
 import * as matchers from 'redux-saga-test-plan/matchers'
 import { StaticProvider } from 'redux-saga-test-plan/providers'
-import { describe, it, expect, vitest } from 'vitest'
+import { describe, it, expect, vitest, beforeEach } from 'vitest'
 
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { queryClient } from 'services/query-client'
 import { noopReducer } from 'store/testHelper'
 import { waitForWrite } from 'utils/sagaHelpers'
 
@@ -21,7 +25,7 @@ type PlayerState = ReturnType<typeof playerReducer>
 
 const initialTracks = {
   entries: {
-    1: { metadata: { owner_id: 1, track_segments: [] } }
+    1: { metadata: { owner_id: 1, track_segments: [], track_id: 1 } }
   },
   uids: {
     123: 1
@@ -61,8 +65,27 @@ const defaultProviders: StaticProvider[] = [
   [select(gatedContentSelectors.getNftAccessSignatureMap), {}],
   [getContext('getFeatureEnabled'), () => false],
   [matchers.getContext('audiusSdk'), async () => mockAudiusSdk],
-  [matchers.getContext('audiusBackendInstance'), audiusBackendInstance]
+  [matchers.getContext('audiusBackendInstance'), audiusBackendInstance],
+  [getContext('queryClient'), queryClient]
 ]
+
+beforeEach(() => {
+  queryClient.clear()
+  primeTrackDataInternal({
+    tracks: Object.values(initialTracks.entries).map(
+      (track) => track.metadata as unknown as UserTrackMetadata
+    ),
+    queryClient,
+    forceReplace: true
+  })
+  primeUserDataInternal({
+    users: Object.values(initialUsers.entries).map(
+      (user) => user.metadata as unknown as UserMetadata
+    ),
+    queryClient,
+    forceReplace: true
+  })
+})
 
 describe('watchPlay', () => {
   it('plays uid', async () => {

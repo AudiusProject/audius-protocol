@@ -107,43 +107,43 @@ export const UserListModal = () => {
       case UserListType.NOTIFICATION:
         return {
           component: <NotificationsUserList />,
-          icon: IconTrophy,
+          Icon: IconTrophy,
           title: notificationTitle
         }
       case UserListType.SUPPORTER:
         return {
           component: <TopSupportersUserList />,
-          icon: IconTrophy,
+          Icon: IconTrophy,
           title: messages.topSupporters
         }
       case UserListType.SUPPORTING:
         return {
           component: <SupportingUserList />,
-          icon: IconTip,
+          Icon: IconTip,
           title: messages.supporting
         }
       case UserListType.MUTUAL_FOLLOWER:
         return {
           component: <MutualsUserList />,
-          icon: IconFollowing,
+          Icon: IconFollowing,
           title: messages.mutuals
         }
       case UserListType.RELATED_ARTISTS:
         return {
           component: <RelatedArtistsUserList />,
-          icon: IconUserGroup,
+          Icon: IconUserGroup,
           title: messages.relatedArtists
         }
       case UserListType.PURCHASER:
         return {
           component: <PurchasersUserList />,
-          icon: IconCart,
+          Icon: IconCart,
           title: messages.purchasers
         }
       case UserListType.REMIXER:
         return {
           component: <RemixersUserList />,
-          icon: IconRemix,
+          Icon: IconRemix,
           title: messages.remixers
         }
       default:

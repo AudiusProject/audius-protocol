@@ -30,7 +30,8 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
   ChallengeName.PlayCount1000,
   ChallengeName.PlayCount10000,
   ChallengeName.Tastemaker,
-  ChallengeName.CommentPin
+  ChallengeName.CommentPin,
+  ChallengeName.Cosign
 ])
 
 /** Pulls rewards from remoteconfig */

@@ -1,10 +1,9 @@
+import { queryTrack, queryUser } from '@audius/common/api'
 import { Name, Kind, ID, Track, User } from '@audius/common/models'
 import {
   accountSelectors,
   accountActions,
-  cacheTracksSelectors,
   cacheActions,
-  cacheUsersSelectors,
   tracksSocialActions as socialActions,
   getContext,
   gatedContentSelectors,
@@ -17,7 +16,8 @@ import {
   makeKindId,
   waitForValue,
   removeNullable,
-  getFilename
+  getFilename,
+  waitForQueryValue
 } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
 import {
@@ -38,8 +38,6 @@ import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import watchTrackErrors from './errorSagas'
 import { watchRecordListen } from './recordListen'
-const { getUser } = cacheUsersSelectors
-const { getTrack, getTracks } = cacheTracksSelectors
 const { getUserId, getUserHandle, getIsGuestAccount } = accountSelectors
 const { getNftAccessSignatureMap } = gatedContentSelectors
 const { incrementTrackSaveCount, decrementTrackSaveCount } = accountActions
@@ -64,10 +62,10 @@ export function* repostTrackAsync(
   }
 
   // Increment the repost count on the user
-  const user = yield* select(getUser, { id: userId })
+  const user = yield* queryUser(userId)
   if (!user) return
 
-  const track = yield* select(getTrack, { id: action.trackId })
+  const track = yield* queryTrack(action.trackId)
   if (!track) return
 
   if (track.owner_id === userId) {
@@ -133,7 +131,7 @@ export function* repostTrackAsync(
     const hasAlreadyCoSigned =
       has_remix_author_reposted || has_remix_author_saved
 
-    const parentTrack = yield* select(getTrack, { id: parent_track_id })
+    const parentTrack = yield* queryTrack(parent_track_id)
 
     if (parentTrack) {
       const coSignIndicatorEvent = make(Name.REMIX_COSIGN_INDICATOR, {
@@ -215,7 +213,7 @@ export function* undoRepostTrackAsync(
   }
 
   // Decrement the repost count
-  const user = yield* select(getUser, { id: userId })
+  const user = yield* queryUser(userId)
   if (!user) return
 
   yield* call(adjustUserField, { user, fieldName: 'repost_count', delta: -1 })
@@ -229,8 +227,8 @@ export function* undoRepostTrackAsync(
 
   yield* call(confirmUndoRepostTrack, action.trackId, user)
 
-  const tracks = yield* select(getTracks, { ids: [action.trackId] })
-  const track = tracks[action.trackId]
+  const track = yield* queryTrack(action.trackId)
+  if (!track) return
 
   const eagerlyUpdatedMetadata: Partial<Track> = {
     has_current_user_reposted: false,
@@ -318,13 +316,13 @@ export function* saveTrackAsync(
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
-  const tracks = yield* select(getTracks, { ids: [action.trackId] })
-  const track = tracks[action.trackId]
+  const track = yield* queryTrack(action.trackId)
+  if (!track) return
 
   if (track.has_current_user_saved) return
 
   // Increment the save count on the user
-  const user = yield* select(getUser, { id: userId })
+  const user = yield* queryUser(userId)
   if (!user) return
 
   if (track.owner_id === userId) {
@@ -383,7 +381,7 @@ export function* saveTrackAsync(
     const hasAlreadyCoSigned =
       remixTrack.has_remix_author_reposted || remixTrack.has_remix_author_saved
 
-    const parentTrack = yield* select(getTrack, { id: parentTrackId })
+    const parentTrack = yield* queryTrack(parentTrackId)
     const handle = yield* select(getUserHandle)
     const coSignIndicatorEvent = make(Name.REMIX_COSIGN_INDICATOR, {
       id: action.trackId,
@@ -456,7 +454,7 @@ export function* unsaveTrackAsync(
   }
 
   // Decrement the save count
-  const user = yield* select(getUser, { id: userId })
+  const user = yield* queryUser(userId)
   if (!user) return
 
   yield* put(decrementTrackSaveCount())
@@ -470,8 +468,8 @@ export function* unsaveTrackAsync(
 
   yield* call(confirmUnsaveTrack, action.trackId, user)
 
-  const tracks = yield* select(getTracks, { ids: [action.trackId] })
-  const track = tracks[action.trackId]
+  const track = yield* queryTrack(action.trackId)
+  if (!track) return
 
   if (track) {
     const eagerlyUpdatedMetadata: Partial<Track> = {
@@ -559,7 +557,7 @@ export function* watchSetArtistPick() {
           }
         ])
       )
-      const user = yield* call(waitForValue, getUser, { id: userId })
+      const user = yield* waitForQueryValue(queryUser, userId)
       yield* fork(updateProfileAsync, { metadata: user })
 
       const event = make(Name.ARTIST_PICK_SELECT_TRACK, { id: action.trackId })
@@ -584,7 +582,7 @@ export function* watchUnsetArtistPick() {
         }
       ])
     )
-    const user = yield* call(waitForValue, getUser, { id: userId })
+    const user = yield* call(waitForQueryValue, queryUser, userId)
     yield* fork(updateProfileAsync, { metadata: user })
 
     const event = make(Name.ARTIST_PICK_SELECT_TRACK, { id: 'none' })
@@ -697,9 +695,7 @@ function* watchDownloadTrack() {
         }
 
         const mainTrackId = parentTrackId ?? trackIds[0]
-        const mainTrack = yield* select(getTrack, {
-          id: mainTrackId
-        })
+        const mainTrack = yield* queryTrack(mainTrackId)
         if (!mainTrack) {
           console.error(
             `Failed to download because no mainTrack ${mainTrackId}`
@@ -707,7 +703,7 @@ function* watchDownloadTrack() {
           return
         }
         const userId = mainTrack?.owner_id
-        const user = yield* select(getUser, { id: userId })
+        const user = yield* queryUser(userId)
         if (!user) {
           console.error(`Failed to download because no user ${userId}`)
           return
@@ -719,7 +715,7 @@ function* watchDownloadTrack() {
         for (const trackId of [...trackIds, parentTrackId].filter(
           removeNullable
         )) {
-          const track: Track | null = yield* select(getTrack, { id: trackId })
+          const track = yield* queryTrack(trackId)
           if (!track) {
             console.error(
               `Skipping individual download because no track ${trackId}`
@@ -771,10 +767,10 @@ function* watchShareTrack() {
     function* (action: ReturnType<typeof socialActions.shareTrack>) {
       const { trackId } = action
 
-      const track: Track | null = yield* select(getTrack, { id: trackId })
+      const track = yield* queryTrack(trackId)
       if (!track) return
 
-      const user = yield* select(getUser, { id: track.owner_id })
+      const user = yield* queryUser(track.owner_id)
       if (!user) return
 
       const link = track.permalink

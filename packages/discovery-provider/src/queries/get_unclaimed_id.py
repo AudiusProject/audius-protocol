@@ -3,6 +3,7 @@ import random
 
 from src import exceptions
 from src.models.comments.comment import Comment
+from src.models.events.event import Event
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.users.aggregate_user import AggregateUser
@@ -22,9 +23,9 @@ logger = logging.getLogger(__name__)
 
 
 def get_unclaimed_id(type):
-    if type not in ["track", "playlist", "user", "comment"]:
+    if type not in ["track", "playlist", "user", "comment", "event"]:
         raise exceptions.ArgumentError(
-            "Invalid type provided, must be one of 'track', 'playlist', 'user', 'comment'"
+            "Invalid type provided, must be one of 'track', 'playlist', 'user', 'comment', 'event'"
         )
 
     db = get_db_read_replica()
@@ -65,6 +66,13 @@ def get_unclaimed_id(type):
                     session.query(Comment.comment_id).filter(
                         Comment.comment_id == random_id
                     )
+                ).first()
+
+            if type == "event":
+                random_id = random.randint(1, MAX_POSTGRES_ID)
+
+                is_claimed = (
+                    session.query(Event.event_id).filter(Event.event_id == random_id)
                 ).first()
 
             if not is_claimed:

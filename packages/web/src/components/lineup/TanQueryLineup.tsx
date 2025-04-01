@@ -208,13 +208,15 @@ export const TanQueryLineup = ({
   const scrollContainer = useRef<HTMLDivElement>(null)
 
   // Memoize component selection based on device type
-  const { TrackTile, PlaylistTile } = {
-    TrackTile:
-      isMobile || variant === LineupVariant.SECTION
-        ? TrackTileMobile
-        : TrackTileDesktop,
-    PlaylistTile: isMobile ? PlaylistTileMobile : PlaylistTileDesktop
-  }
+  const { TrackTile, PlaylistTile } = useMemo(() => {
+    return {
+      TrackTile:
+        isMobile || variant === LineupVariant.SECTION
+          ? TrackTileMobile
+          : TrackTileDesktop,
+      PlaylistTile: isMobile ? PlaylistTileMobile : PlaylistTileDesktop
+    }
+  }, [isMobile, variant])
 
   // Memoized scroll parent callback
   const getScrollParent = useCallback(() => {
@@ -251,7 +253,7 @@ export const TanQueryLineup = ({
         play(uid)
         dispatch(
           make(Name.PLAYBACK_PLAY, {
-            id: `${trackId}`,
+            id: trackId,
             source: source || PlaybackSource.TRACK_TILE
           })
         )
@@ -259,7 +261,7 @@ export const TanQueryLineup = ({
         pause()
         dispatch(
           make(Name.PLAYBACK_PAUSE, {
-            id: `${trackId}`,
+            id: trackId,
             source: source || PlaybackSource.TRACK_TILE
           })
         )
@@ -335,6 +337,7 @@ export const TanQueryLineup = ({
             statSize,
             containerClassName,
             uid: entry.uid,
+            id: entry.id,
             isLoading: data?.[index] === undefined,
             isTrending,
             onClick: onClickTile,
@@ -349,6 +352,7 @@ export const TanQueryLineup = ({
             ...entry,
             index,
             uid: entry.uid,
+            id: entry.id,
             size: tileSize,
             ordered,
             playTrack: play,

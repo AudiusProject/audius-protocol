@@ -97,6 +97,8 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
   const { data: partialCollection } = useCollection(
     typeof id === 'number' ? id : null,
     {
+      // ensure read only
+      enabled: false,
       select: (collection) =>
         pick(collection, 'is_album', 'playlist_name', 'permalink', 'is_private')
     }
