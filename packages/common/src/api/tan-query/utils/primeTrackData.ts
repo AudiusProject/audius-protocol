@@ -10,6 +10,7 @@ import { EntriesByKind } from '~/store/cache/types'
 
 import { TypedQueryClient } from '../typed-query-client'
 import { getTrackQueryKey } from '../useTrack'
+import { getTrackByPermalinkQueryKey } from '../useTrackByPermalink'
 
 import { formatTrackData } from './formatTrackData'
 import { primeUserDataInternal } from './primeUserData'
@@ -162,10 +163,18 @@ export const primeTrackDataInternal = ({
       (!skipQueryData &&
         !queryClient.getQueryData(getTrackQueryKey(track.track_id)))
     ) {
-      const tqTrack: TrackMetadata = {
-        ...omit(track, 'user')
-      }
+      const tqTrack: TrackMetadata = omit(track, 'user')
       queryClient.setQueryData(getTrackQueryKey(track.track_id), tqTrack)
+    }
+
+    if (
+      forceReplace ||
+      !queryClient.getQueryData(getTrackByPermalinkQueryKey(track.permalink))
+    ) {
+      queryClient.setQueryData(
+        getTrackByPermalinkQueryKey(track.permalink),
+        track.track_id
+      )
     }
 
     // Prime user data from track owner
@@ -174,7 +183,6 @@ export const primeTrackDataInternal = ({
       const userEntries = primeUserDataInternal({
         users: [user],
         queryClient,
-        skipQueryData,
         forceReplace
       })
 

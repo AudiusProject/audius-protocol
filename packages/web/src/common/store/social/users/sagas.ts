@@ -1,8 +1,8 @@
+import { queryUser, queryUsers } from '@audius/common/api'
 import { Name, Kind, ID, UserMetadata } from '@audius/common/models'
 import {
   accountSelectors,
   cacheActions,
-  cacheUsersSelectors,
   profilePageActions,
   usersSocialActions as socialActions,
   getContext,
@@ -22,7 +22,6 @@ import { waitForWrite } from 'utils/sagaHelpers'
 import errorSagas from './errorSagas'
 
 const { profilePage } = route
-const { getUsers, getUser } = cacheUsersSelectors
 const { setNotificationSubscription } = profilePageActions
 const { getUserId, getIsGuestAccount } = accountSelectors
 
@@ -48,7 +47,7 @@ export function* followUser(
     return
   }
 
-  const users = yield* select(getUsers, { ids: [action.userId, accountId] })
+  const users = yield* queryUsers([action.userId, accountId])
   let followedUser: UserMetadata = users[action.userId]
   const currentUser = users[accountId]
 
@@ -138,9 +137,8 @@ export function* confirmFollowUser(
         yield* put(
           socialActions.followUserFailed(userId, timeout ? 'Timeout' : message)
         )
-        const users = yield* select(getUsers, { ids: [userId, accountId] })
-        const followedUser = users[userId]
-        const currentUser = users[accountId]
+        const followedUser = yield* queryUser(userId)
+        const currentUser = yield* queryUser(accountId)
         if (followedUser) {
           // Revert the incremented follower count on the followed user
           yield* put(
@@ -156,12 +154,14 @@ export function* confirmFollowUser(
           )
         }
 
-        // Revert the incremented followee count on the current user
-        yield* call(adjustUserField, {
-          user: currentUser,
-          fieldName: 'followee_count',
-          delta: -1
-        })
+        if (currentUser) {
+          // Revert the incremented followee count on the current user
+          yield* call(adjustUserField, {
+            user: currentUser,
+            fieldName: 'followee_count',
+            delta: -1
+          })
+        }
       }
     )
   )
@@ -336,7 +336,7 @@ export function* watchShareUser() {
     function* (action: ReturnType<typeof socialActions.shareUser>) {
       const { userId, source } = action
 
-      const user = yield* select(getUser, { id: userId })
+      const user = yield* queryUser(userId)
       if (!user) return
 
       const link = profilePage(user.handle)

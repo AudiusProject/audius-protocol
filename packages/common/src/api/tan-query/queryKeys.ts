@@ -13,6 +13,8 @@ export const QUERY_KEYS = {
   userCommentList: 'userCommentList',
   comment: 'comment',
   commentReplies: 'commentReplies',
+  downloadTrackStems: 'downloadTrackStems',
+  stemsArchiveJob: 'stemsArchiveJob',
   exploreContent: 'exploreContent',
   trackCommentNotificationSetting: 'trackCommentNotificationSetting',
   trackCommentCount: 'trackCommentCount',

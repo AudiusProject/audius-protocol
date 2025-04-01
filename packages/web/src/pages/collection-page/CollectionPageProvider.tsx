@@ -93,7 +93,6 @@ const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
 const {
   getCollection,
-  getCollectionStatus,
   getCollectionTracksLineup,
   getCollectionUid,
   getUser,
@@ -847,7 +846,7 @@ function makeMapStateToProps() {
       collectionPermalink: getCollectionPermalink(state),
       user: getUser(state),
       userUid: getUserUid(state) || '',
-      status: getCollectionStatus(state) || '',
+      status: getCollectionTracksLineup(state)?.status || Status.LOADING,
       order: getLineupOrder(state),
       userId: getUserId(state),
       playlistId: (getCollection(state) as Collection)?.playlist_id,

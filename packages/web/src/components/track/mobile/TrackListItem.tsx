@@ -149,7 +149,6 @@ const TrackListItem = ({
   togglePlay,
   trackItemAction,
   onClickOverflow,
-  onClickGatedUnlockPill,
   streamConditions,
   isReorderable = false,
   isDragging = false

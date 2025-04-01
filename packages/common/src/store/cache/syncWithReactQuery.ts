@@ -1,36 +1,44 @@
-import { TQCollection, TQTrack } from '~/api/tan-query/models'
-import { TypedQueryClient } from '~/api/tan-query/typed-query-client'
-import { User } from '~/models/User'
-
-import { getCollectionQueryKey } from '../../api/tan-query/useCollection'
-import { getTrackQueryKey } from '../../api/tan-query/useTrack'
-import { getUserQueryKey } from '../../api/tan-query/useUser'
+import { primeCollectionDataInternal } from '../../api/tan-query/utils/primeCollectionData'
+import { primeTrackDataInternal } from '../../api/tan-query/utils/primeTrackData'
+import { primeUserDataInternal } from '../../api/tan-query/utils/primeUserData'
+import type { CollectionMetadata } from '../../models/Collection'
 import { Kind } from '../../models/Kind'
+import type { Track } from '../../models/Track'
+import type { User } from '../../models/User'
 
 import type { EntriesByKind } from './types'
+import { TypedQueryClient } from '~/api/tan-query/typed-query-client'
 
 export const syncWithReactQuery = (
   queryClient: TypedQueryClient,
   entriesByKind: EntriesByKind
 ) => {
-  Object.entries(entriesByKind).forEach(([kind, entries]) => {
-    if (!entries) return
-    Object.entries(entries).forEach(([id, entry]) => {
-      const parsedId = parseInt(id, 10)
-      switch (kind as Kind) {
-        case Kind.USERS:
-          queryClient.setQueryData(getUserQueryKey(parsedId), entry as User)
-          break
-        case Kind.TRACKS:
-          queryClient.setQueryData(getTrackQueryKey(parsedId), entry as TQTrack)
-          break
-        case Kind.COLLECTIONS:
-          queryClient.setQueryData(
-            getCollectionQueryKey(parsedId),
-            entry as TQCollection
-          )
-          break
-      }
+  // Process users first since tracks and collections may depend on them
+  if (entriesByKind[Kind.USERS]) {
+    primeUserDataInternal({
+      users: Object.values(entriesByKind[Kind.USERS]) as User[],
+      queryClient,
+      forceReplace: true
     })
-  })
+  }
+
+  // Process tracks
+  if (entriesByKind[Kind.TRACKS]) {
+    primeTrackDataInternal({
+      tracks: Object.values(entriesByKind[Kind.TRACKS]) as Track[],
+      queryClient,
+      forceReplace: true
+    })
+  }
+
+  // Process collections
+  if (entriesByKind[Kind.COLLECTIONS]) {
+    primeCollectionDataInternal({
+      collections: Object.values(
+        entriesByKind[Kind.COLLECTIONS]
+      ) as CollectionMetadata[],
+      queryClient,
+      forceReplace: true
+    })
+  }
 }

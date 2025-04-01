@@ -13,7 +13,7 @@ import { TextLink, TextLinkProps } from './TextLink'
 const { profilePage } = route
 
 type UserLinkProps = Omit<TextLinkProps, 'to'> & {
-  userId: ID
+  userId: ID | undefined
   badgeSize?: IconSize
   popover?: boolean
   popoverMount?: MountPlacement
@@ -36,14 +36,18 @@ export const UserLink = (props: UserLinkProps) => {
     ...other
   } = props
   const { spacing } = useTheme()
+
   const { data: partialUser } = useUser(userId, {
-    select: (user) => ({
-      handle: user?.handle,
-      name: user?.name
-    })
+    select: (user) => {
+      const { handle, name } = user ?? {}
+      return { url: profilePage(handle), handle, name }
+    }
   })
-  const { handle, name } = partialUser ?? {}
-  const url = handle ? profilePage(handle) : ''
+  const { url = '/', handle, name } = partialUser ?? {}
+
+  if (!userId) {
+    return null
+  }
 
   const textLink = (
     <TextLink

@@ -3,6 +3,7 @@ import {
   trackMetadataForUploadToSdk,
   fileToSdk
 } from '@audius/common/adapters'
+import { queryTrack, queryUser } from '@audius/common/api'
 import {
   Name,
   Kind,
@@ -16,9 +17,7 @@ import {
   Entry,
   getContext,
   accountSelectors,
-  cacheTracksSelectors,
   cacheTracksActions as trackActions,
-  cacheUsersSelectors,
   cacheActions,
   confirmerActions,
   TrackMetadataForUpload,
@@ -45,8 +44,6 @@ import { recordEditTrackAnalytics } from './sagaHelpers'
 
 const { startStemUploads } = stemsUploadActions
 const { getCurrentUploads } = stemsUploadSelectors
-const { getUser } = cacheUsersSelectors
-const { getTrack } = cacheTracksSelectors
 const { getUserId, getUserHandle } = accountSelectors
 
 function* fetchRepostInfo(entries: Entry<Collection>[]) {
@@ -89,11 +86,9 @@ export function* trackNewRemixEvent(track: TrackWithRemix) {
   const accountHandle = yield* select(getUserHandle)
   if (!track.remix_of || !accountHandle) return
   const remixParentTrack = track.remix_of.tracks[0]
-  const parentTrack = yield* select(getTrack, {
-    id: remixParentTrack.parent_track_id
-  })
+  const parentTrack = yield* queryTrack(remixParentTrack.parent_track_id)
   const parentTrackUser = parentTrack
-    ? yield* select(getUser, { id: parentTrack.owner_id })
+    ? yield* queryUser(parentTrack.owner_id)
     : null
   yield* put(
     make(Name.REMIX_NEW_REMIX, {
@@ -111,7 +106,7 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
   yield* call(waitForWrite)
   action.formFields.description = squashNewLines(action.formFields.description)
 
-  const currentTrack = yield* select(getTrack, { id: action.trackId })
+  const currentTrack = yield* queryTrack(action.trackId)
   if (!currentTrack) return
   const isPublishing = currentTrack._is_publishing
   const wasUnlisted = currentTrack.is_unlisted
