@@ -1,4 +1,4 @@
-import { Mood, OptionalId } from '@audius/sdk'
+import { Mood, OptionalId, EntityType } from '@audius/sdk'
 import {
   InfiniteData,
   useInfiniteQuery,
@@ -26,7 +26,7 @@ import { Genre, formatMusicalKey } from '~/utils'
 import { useCurrentUserId } from '..'
 
 import { QUERY_KEYS } from './queryKeys'
-import { FlatUseInfiniteQueryResult, QueryOptions } from './types'
+import { FlatUseInfiniteQueryResult, QueryOptions, LineupData } from './types'
 import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
 import { primeCollectionData } from './utils/primeCollectionData'
 import { primeTrackData } from './utils/primeTrackData'
@@ -250,7 +250,7 @@ const useSearchQueryProps = <T>(
         }
       }))
 
-      // Send our results to the lineup
+      // Update lineup when new data arrives
       dispatch(
         searchResultsPageTracksLineupActions.fetchLineupMetadatas(
           pageParam,
@@ -279,12 +279,7 @@ export const useSearchAllResults = (
   options?: QueryOptions
 ) => {
   const { pageSize = SEARCH_PAGE_SIZE } = searchArgs
-  const queryProps = useSearchQueryProps<{
-    tracks: UserTrackMetadata[]
-    users: UserMetadata[]
-    albums: UserCollectionMetadata[]
-    playlists: UserCollectionMetadata[]
-  }>(
+  const queryProps = useSearchQueryProps(
     {
       ...searchArgs,
       category: 'all'
@@ -328,36 +323,44 @@ export const useSearchTrackResults = (
   options?: QueryOptions
 ) => {
   const { pageSize = SEARCH_PAGE_SIZE } = searchArgs
-  const queryProps = useSearchQueryProps<UserTrackMetadata>(
+  const queryProps = useSearchQueryProps(
     {
       ...searchArgs,
-      category: 'tracks'
+      category: 'tracks',
+      pageSize
     },
     options
   )
 
   const queryData = useInfiniteQuery({
     ...queryProps,
-    getNextPageParam: (
-      lastPage: UserTrackMetadata[],
-      pages: UserTrackMetadata[][]
-    ) => {
-      const noMorePages = lastPage.length < pageSize // When using a specific category we do pagination, so we just check that category
-      return noMorePages ? undefined : pages.length * pageSize
+    getNextPageParam: (lastPage: LineupData, allPages) => {
+      if (lastPage.length < pageSize) return undefined
+      return allPages.length * pageSize
     },
     queryFn: async ({ pageParam }) => {
       const data = await queryProps.queryFn({ pageParam })
-      return data.tracks
+      return data.tracks.map((t) => ({
+        id: t.track_id,
+        type: EntityType.TRACK
+      }))
+    },
+    select: (data) => {
+      return data.pages.flat()
     }
   })
 
   return useLineupQuery({
     queryData,
-    pageSize,
-    queryKey: queryProps.queryKey,
+    queryKey: getSearchResultsQueryKey({
+      ...searchArgs,
+      category: 'tracks',
+      pageSize
+    }),
     lineupActions: searchResultsPageTracksLineupActions,
     lineupSelector: getSearchTracksLineup,
-    playbackSource: PlaybackSource.SEARCH_PAGE
+    playbackSource: PlaybackSource.SEARCH_PAGE,
+    pageSize
   })
 }
 
@@ -366,7 +369,7 @@ export const useSearchUserResults = (
   options?: QueryOptions
 ) => {
   const { pageSize = SEARCH_PAGE_SIZE } = searchArgs
-  const queryProps = useSearchQueryProps<UserMetadata>(
+  const queryProps = useSearchQueryProps(
     {
       ...searchArgs,
       category: 'users'
@@ -399,7 +402,7 @@ export const useSearchAlbumResults = (
   options?: QueryOptions
 ) => {
   const { pageSize = SEARCH_PAGE_SIZE } = searchArgs
-  const queryProps = useSearchQueryProps<UserCollectionMetadata>(
+  const queryProps = useSearchQueryProps(
     {
       ...searchArgs,
       category: 'albums'
@@ -432,7 +435,7 @@ export const useSearchPlaylistResults = (
   options?: QueryOptions
 ) => {
   const { pageSize = SEARCH_PAGE_SIZE } = searchArgs
-  const queryProps = useSearchQueryProps<UserCollectionMetadata>(
+  const queryProps = useSearchQueryProps(
     {
       ...searchArgs,
       category: 'playlists'

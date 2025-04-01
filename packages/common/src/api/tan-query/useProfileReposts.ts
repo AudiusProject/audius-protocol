@@ -1,19 +1,18 @@
-import { Id } from '@audius/sdk'
+import { Id, EntityType } from '@audius/sdk'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { repostActivityFromSDK, transformAndCleanList } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
-import { UserTrackMetadata, UserCollectionMetadata, ID } from '~/models'
+import { UserTrackMetadata, UserCollectionMetadata } from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
-import { Entity } from '~/store'
 import {
   profilePageSelectors,
   profilePageFeedLineupActions as feedActions
 } from '~/store/pages'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { LineupData, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils'
 import { primeCollectionData } from './utils/primeCollectionData'
@@ -44,7 +43,7 @@ export const useProfileReposts = (
   const queryData = useInfiniteQuery({
     queryKey: getProfileRepostsQueryKey({ handle, pageSize }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: { id: ID; type: Entity }[], allPages) => {
+    getNextPageParam: (lastPage: LineupData, allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -101,8 +100,8 @@ export const useProfileReposts = (
       // Return only ids
       return reposts.map((t) =>
         'track_id' in t
-          ? { id: t.track_id, type: Entity.Track }
-          : { id: t.playlist_id, type: Entity.Playlist }
+          ? { id: t.track_id, type: EntityType.TRACK }
+          : { id: t.playlist_id, type: EntityType.PLAYLIST }
       )
     },
     select: (data) => {

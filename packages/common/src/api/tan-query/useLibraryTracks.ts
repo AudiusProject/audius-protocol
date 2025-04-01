@@ -1,4 +1,4 @@
-import { Id } from '@audius/sdk'
+import { Id, EntityType } from '@audius/sdk'
 import {
   GetUserLibraryTracksSortMethodEnum,
   GetUserLibraryTracksSortDirectionEnum
@@ -19,7 +19,7 @@ import { removeNullable } from '~/utils'
 import { userTrackMetadataFromSDK } from '../../adapters/track'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryOptions, LineupData } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
 import { primeTrackData } from './utils/primeTrackData'
@@ -107,9 +107,12 @@ export const useLibraryTracks = (
         )
       )
 
-      return tracks
+      return tracks.map((t) => ({
+        id: t.track_id,
+        type: EntityType.TRACK
+      }))
     },
-    getNextPageParam: (lastPage, allPages) => {
+    getNextPageParam: (lastPage: LineupData, allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },

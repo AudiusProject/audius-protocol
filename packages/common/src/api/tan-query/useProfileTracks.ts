@@ -1,10 +1,9 @@
-import { Id } from '@audius/sdk'
+import { EntityType, Id } from '@audius/sdk'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
-import { UserTrackMetadata } from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
 import {
   profilePageSelectors,
@@ -13,7 +12,7 @@ import {
 import { TracksSortMode } from '~/store/pages/profile/types'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { LineupData, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -55,7 +54,7 @@ export const useProfileTracks = (
   const queryData = useInfiniteQuery({
     queryKey: getProfileTracksQueryKey({ handle, pageSize, sort, getUnlisted }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: UserTrackMetadata[], allPages) => {
+    getNextPageParam: (lastPage: LineupData, allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -91,7 +90,10 @@ export const useProfileTracks = (
         )
       )
 
-      return processedTracks
+      return processedTracks.map((t) => ({
+        id: t.track_id,
+        type: EntityType.TRACK
+      }))
     },
     select: (data) => data?.pages.flat(),
     ...options,
