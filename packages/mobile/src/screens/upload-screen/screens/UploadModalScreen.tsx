@@ -1,3 +1,4 @@
+import { useRoute } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import { ModalScreen } from 'app/components/core'
@@ -16,12 +17,17 @@ const screenOptionOverrides = { headerRight: () => null }
 
 export const UploadModalScreen = () => {
   const screenOptions = useAppScreenOptions(screenOptionOverrides)
+  const { params } = useRoute()
 
   return (
     <ModalScreen>
       <UploadFileContextProvider>
         <Stack.Navigator screenOptions={screenOptions}>
-          <Stack.Screen name='SelectTrack' component={SelectTrackScreen} />
+          <Stack.Screen
+            name='SelectTrack'
+            component={SelectTrackScreen}
+            initialParams={params}
+          />
           <Stack.Screen
             name='CompleteTrack'
             component={CompleteTrackScreen}

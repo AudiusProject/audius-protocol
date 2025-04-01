@@ -91,7 +91,7 @@ const messages = {
   releases: (releaseDate: string) =>
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`,
   remixContest: 'Contest Deadline',
-  submitRemix: 'Upload Submission',
+  uploadRemixButtonText: 'Upload Your Remix',
   deadline: (deadline: string) => `${deadline} at ${dayjs().format('h:mm A')}`
 }
 
@@ -435,12 +435,12 @@ export const GiantTrackTile = ({
           <Text>{messages.deadline(remixContestDeadline)}</Text>
         </Flex>
         <Button
-          variant='primary'
+          variant='secondary'
           size='small'
           onClick={goToUploadWithRemix}
           iconLeft={IconCloudUpload}
         >
-          {messages.submitRemix}
+          {messages.uploadRemixButtonText}
         </Button>
       </Flex>
     )
