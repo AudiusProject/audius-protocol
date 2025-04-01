@@ -47,7 +47,7 @@ const fetchWalletAudioBalance = async (
       return AUDIO(balance).value
     }
     const delegatedBalance =
-      await sdk.services.delegateManagerClient.contract.getTotalDelegatorStake({
+      await sdk.services.delegateManagerClient.getTotalDelegatorStake({
         delegatorAddress: checksumWallet
       })
     const stakedBalance =

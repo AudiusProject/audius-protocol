@@ -793,9 +793,9 @@ export const audiusBackend = ({
         account: checksumWallet
       })
       const delegatedBalance =
-        await sdk.services.delegateManagerClient.contract.getTotalDelegatorStake(
-          { delegatorAddress: checksumWallet }
-        )
+        await sdk.services.delegateManagerClient.getTotalDelegatorStake({
+          delegatorAddress: checksumWallet
+        })
       const stakedBalance =
         await sdk.services.stakingClient.contract.totalStakedFor({
           account: checksumWallet

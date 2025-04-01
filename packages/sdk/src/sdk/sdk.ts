@@ -312,6 +312,9 @@ const initializeServices = (config: SdkConfig) => {
   const delegateManagerClient =
     config.services?.delegateManagerClient ??
     new DelegateManagerClient({
+      audiusWalletClient,
+      ethPublicClient,
+      ethWalletClient,
       ...getDefaultDelegateManagerConfig(servicesConfig)
     })
 
