@@ -321,6 +321,9 @@ const initializeServices = (config: SdkConfig) => {
   const stakingClient =
     config.services?.stakingClient ??
     new StakingClient({
+      audiusWalletClient,
+      ethPublicClient,
+      ethWalletClient,
       ...getDefaultStakingConfig(servicesConfig)
     })
 

@@ -38,6 +38,7 @@ export type SdkServicesConfig = {
       audiusTokenAddress: Hex
       audiusWormholeAddress: Hex
       delegateManagerAddress: Hex
+      stakingAddress: Hex
     }
   }
 }

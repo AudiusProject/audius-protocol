@@ -796,10 +796,9 @@ export const audiusBackend = ({
         await sdk.services.delegateManagerClient.getTotalDelegatorStake({
           delegatorAddress: checksumWallet
         })
-      const stakedBalance =
-        await sdk.services.stakingClient.contract.totalStakedFor({
-          account: checksumWallet
-        })
+      const stakedBalance = await sdk.services.stakingClient.totalStakedFor({
+        account: checksumWallet
+      })
 
       return AUDIO(balance + delegatedBalance + stakedBalance).value
     } catch (e) {

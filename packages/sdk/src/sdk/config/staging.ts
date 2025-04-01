@@ -99,7 +99,8 @@ export const stagingConfig: SdkServicesConfig = {
       "serviceTypeManagerAddress": "0x9fd76d2cD48022526F3a164541E6552291F4a862",
       "audiusTokenAddress": "0x1376180Ee935AA64A27780F4BE97726Df7B0e2B2",
       "audiusWormholeAddress": "0xf6f45e4d836da1d4ecd43bb1074620bfb0b7e0d7",
-      "delegateManagerAddress": "0xDA74d6FfbF268Ac441404f5a61f01103451E8697"
+      "delegateManagerAddress": "0xDA74d6FfbF268Ac441404f5a61f01103451E8697",
+      "stakingAddress": "0x5bcF21A4D5Bab9B0869B9c55D233f80135C814C6"
     }
   }
 }
