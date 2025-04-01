@@ -10,17 +10,17 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
+import { useDisconnect } from '@reown/appkit/react'
 import { metaMask } from '@wagmi/connectors'
-import { disconnect } from '@wagmi/core'
 import { useDispatch } from 'react-redux'
 import { useAccount, useConnect, useSwitchChain } from 'wagmi'
 
+import { audiusChain } from 'app/ReownAppKitModal'
 import { getRouteOnCompletion } from 'common/store/pages/signon/selectors'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { doesUserExist } from 'pages/sign-up-page/components/ExternalWalletSignUpModal'
 import { userHasMetaMask } from 'pages/sign-up-page/utils/metamask'
 import { initSdk } from 'services/audius-sdk'
-import { audiusChain, wagmiConfig } from 'services/audius-sdk/wagmi'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { useSelector } from 'utils/reducer'
 
@@ -39,6 +39,7 @@ const messages = {
 
 export const SignInWithMetaMaskButton = (props: ButtonProps) => {
   const { connectAsync } = useConnect()
+  const { disconnect } = useDisconnect()
   const { isConnected, address } = useAccount()
   const { switchChainAsync } = useSwitchChain()
   const navigate = useNavigateToPage()
@@ -53,6 +54,7 @@ export const SignInWithMetaMaskButton = (props: ButtonProps) => {
       let wallet = address
       // Ensure the wallet is connected
       if (!isConnected) {
+        console.debug('Connecting to the external wallet...')
         const connection = await connectAsync({
           chainId: audiusChain.id,
           connector: metaMask()
@@ -67,13 +69,13 @@ export const SignInWithMetaMaskButton = (props: ButtonProps) => {
       await switchChainAsync({ chainId: audiusChain.id })
 
       // Reinit SDK with the connected wallet
-      const sdk = await initSdk({ ignoreCachedUserWallet: true })
+      const sdk = await initSdk()
 
       // Check that the user exists.
       // If they don't, disconnect and try to get them to sign up.
       const userExists = await doesUserExist(sdk, wallet)
       if (!userExists) {
-        await disconnect(wagmiConfig)
+        await disconnect()
         await initSdk()
         setIsNoAccountError(true)
         setStatus(Status.ERROR)
@@ -92,6 +94,7 @@ export const SignInWithMetaMaskButton = (props: ButtonProps) => {
   }, [
     address,
     connectAsync,
+    disconnect,
     dispatch,
     isConnected,
     navigate,

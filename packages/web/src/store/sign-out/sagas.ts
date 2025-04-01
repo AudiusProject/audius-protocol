@@ -8,12 +8,14 @@ import {
 import { disconnect } from '@wagmi/core'
 import { takeLatest, put, call } from 'redux-saga/effects'
 
-import { wagmiConfig } from 'app/AppProviders'
+import { wagmiAdapter } from 'app/ReownAppKitModal'
 import { make } from 'common/store/analytics/actions'
 import { signOut } from 'store/sign-out/signOut'
 import { push } from 'utils/navigation'
 const { resetAccount, unsubscribeBrowserPushNotifications } = accountActions
 const { signOut: signOutAction } = signOutActions
+
+const wagmiConfig = wagmiAdapter.wagmiConfig
 
 function* watchSignOut() {
   const localStorage = yield* getContext('localStorage')

@@ -18,17 +18,16 @@ import {
   Button
 } from '@audius/harmony'
 import type { AudiusSdk } from '@audius/sdk'
-import { metaMask } from '@wagmi/connectors'
-import { getChainId } from '@wagmi/core'
+import { useAppKitAccount, useAppKitState } from '@reown/appkit/react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useAccount, useConnect, useSwitchChain } from 'wagmi'
+import { useSwitchChain } from 'wagmi'
 
+import { audiusChain } from 'app/ReownAppKitModal'
 import { usingExternalWallet } from 'common/store/pages/signon/actions'
 import { getRouteOnCompletion } from 'common/store/pages/signon/selectors'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { usePortal } from 'hooks/usePortal'
 import { initSdk } from 'services/audius-sdk'
-import { audiusChain, wagmiConfig } from 'services/audius-sdk/wagmi'
 
 const messages = {
   title: 'Continue With External Wallet?',
@@ -59,10 +58,10 @@ export const doesUserExist = async (sdk: AudiusSdk, wallet: string) => {
 
 export const ExternalWalletSignUpModal = () => {
   const { isOpen, onClose } = useExternalWalletSignUpModal()
-
-  const { connectAsync } = useConnect()
+  const state = useAppKitState()
+  const { isConnected, address } = useAppKitAccount()
   const { switchChainAsync } = useSwitchChain()
-  const { isConnected, address } = useAccount()
+
   const navigate = useNavigateToPage()
   const dispatch = useDispatch()
   const [status, setStatus] = useState(Status.IDLE)
@@ -71,57 +70,21 @@ export const ExternalWalletSignUpModal = () => {
   const handleConfirm = useCallback(async () => {
     setStatus(Status.LOADING)
     try {
-      let wallet = address
-      // Ensure the wallet is connected
-      if (!isConnected) {
-        const connection = await connectAsync({
-          chainId: audiusChain.id,
-          connector: metaMask()
-        })
-        wallet = connection.accounts[0]
-      }
-      if (!wallet) {
-        throw new Error('No wallet connected')
+      if (!isConnected || !address) {
+        throw new Error('Account not connected')
       }
 
-      console.debug('Connected to wallet', wallet)
-
-      // Ensure we're on the Audius chain
+      console.debug('Switching chains...')
       await switchChainAsync({ chainId: audiusChain.id })
-      console.debug('Switching to Audius chain')
-
-      // For some reason, a delay is needed to ensure the chain ID switches.
-      // I couldn't find the part of the wagmiConfig state that changes.
-      // This is partially voodoo magic, a setTimeout would also work here.
-      // Without this delay, new users without the network added will get a ConnectorChainMismatchError
-
-      const chainId = getChainId(wagmiConfig)
-
-      console.debug('Chain ID', chainId)
-
-      if (chainId !== audiusChain.id) {
-        let unsubscribe = () => {}
-        await new Promise<void>((resolve) => {
-          unsubscribe = wagmiConfig.subscribe(
-            (state) => state,
-            () => {
-              console.debug('State change event received')
-              resolve()
-            }
-          )
-        })
-        unsubscribe()
-      }
-      console.debug('Switched to Audius chain')
 
       // Reinit SDK with the connected wallet
-      const sdk = await initSdk({ ignoreCachedUserWallet: true })
+      const sdk = await initSdk()
 
       console.debug('SDK reinitialized')
 
       // Check that the user doesn't already exist.
       // If they do, log them in.
-      const userExists = await doesUserExist(sdk, wallet)
+      const userExists = await doesUserExist(sdk, address)
 
       console.debug('User exists?', userExists)
       if (userExists) {
@@ -143,7 +106,6 @@ export const ExternalWalletSignUpModal = () => {
     }
   }, [
     address,
-    connectAsync,
     dispatch,
     isConnected,
     navigate,
@@ -165,18 +127,24 @@ export const ExternalWalletSignUpModal = () => {
         onClose={onClose}
         onClosed={onClosed}
         size='medium'
+        dismissOnClickOutside={!state.open}
       >
         <ModalHeader>
           <ModalTitle title={messages.title} />
         </ModalHeader>
         <ModalContent>
-          <Text>{messages.body}</Text>
+          <Flex direction='column' gap='s' alignItems='center'>
+            <Text>{messages.body}</Text>
+            {/* @ts-ignore */}
+            <appkit-button balance='hide' namespace='eip155' />
+          </Flex>
         </ModalContent>
         <ModalFooter>
           <Flex w='100%' direction='column' gap='s'>
             <Flex gap='s'>
               <Button
                 fullWidth
+                disabled={!isConnected}
                 variant='destructive'
                 onClick={handleConfirm}
                 isLoading={status === Status.LOADING}

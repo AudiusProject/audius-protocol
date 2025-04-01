@@ -1,15 +1,25 @@
-import { mainnet, solana, type AppKitNetwork } from '@reown/appkit/networks'
+import {
+  mainnet,
+  solana,
+  type AppKitNetwork,
+  type Chain
+} from '@reown/appkit/networks'
 import { createAppKit } from '@reown/appkit/react'
 import { SolanaAdapter } from '@reown/appkit-adapter-solana/react'
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
-import {
-  PhantomWalletAdapter,
-  SolflareWalletAdapter
-} from '@solana/wallet-adapter-wallets'
 
-import { audiusChain } from 'services/audius-sdk/wagmi'
 import { env } from 'services/env'
 import zIndex from 'utils/zIndex'
+
+// Audius ACDC chain (now ports to Core)
+export const audiusChain = {
+  id: env.AUDIUS_NETWORK_CHAIN_ID,
+  name: 'Audius',
+  nativeCurrency: { name: '-', symbol: '-', decimals: 18 },
+  rpcUrls: {
+    default: { http: [`${env.API_URL}/core/erpc`] }
+  }
+} as const satisfies Chain
 
 // 1. Get projectId from https://cloud.reown.com
 const projectId = '24a90db08b835b7539f7f7f06d4d2374'
@@ -35,9 +45,7 @@ export const wagmiAdapter = new WagmiAdapter({
   projectId
 })
 
-const solanaAdapter = new SolanaAdapter({
-  wallets: [new PhantomWalletAdapter(), new SolflareWalletAdapter()]
-})
+const solanaAdapter = new SolanaAdapter()
 
 // 5. Create modal
 export const modal = createAppKit({

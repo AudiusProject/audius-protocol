@@ -15,7 +15,6 @@ import { ScrollProvider } from 'components/scroll-provider/ScrollProvider'
 import { ToastContextProvider } from 'components/toast/ToastContext'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { MainContentContextProvider } from 'pages/MainContentContext'
-import { wagmiConfig } from 'services/audius-sdk/wagmi'
 import { queryClient } from 'services/query-client'
 import { configureStore } from 'store/configureStore'
 import { getSystemAppearance, getTheme } from 'utils/theme/theme'
@@ -91,4 +90,3 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
     </WagmiProvider>
   )
 }
-export { wagmiConfig }
