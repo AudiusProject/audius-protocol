@@ -402,7 +402,7 @@ export const useSearchAlbumResults = (
   options?: QueryOptions
 ) => {
   const { pageSize = SEARCH_PAGE_SIZE } = searchArgs
-  const queryProps = useSearchQueryProps(
+  const queryProps = useSearchQueryProps<UserCollectionMetadata>(
     {
       ...searchArgs,
       category: 'albums'
@@ -435,7 +435,7 @@ export const useSearchPlaylistResults = (
   options?: QueryOptions
 ) => {
   const { pageSize = SEARCH_PAGE_SIZE } = searchArgs
-  const queryProps = useSearchQueryProps(
+  const queryProps = useSearchQueryProps<UserCollectionMetadata>(
     {
       ...searchArgs,
       category: 'playlists'
