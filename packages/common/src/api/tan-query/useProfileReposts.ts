@@ -6,6 +6,7 @@ import { repostActivityFromSDK, transformAndCleanList } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
 import { UserTrackMetadata, UserCollectionMetadata, ID } from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
+import { Entity } from '~/store'
 import {
   profilePageSelectors,
   profilePageFeedLineupActions as feedActions
@@ -43,7 +44,7 @@ export const useProfileReposts = (
   const queryData = useInfiniteQuery({
     queryKey: getProfileRepostsQueryKey({ handle, pageSize }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: ID[], allPages) => {
+    getNextPageParam: (lastPage: { id: ID; type: Entity }[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -98,7 +99,11 @@ export const useProfileReposts = (
       )
 
       // Return only ids
-      return reposts.map((t) => ('track_id' in t ? t.track_id : t.playlist_id))
+      return reposts.map((t) =>
+        'track_id' in t
+          ? { id: t.track_id, type: Entity.Track }
+          : { id: t.playlist_id, type: Entity.Playlist }
+      )
     },
     select: (data) => {
       return data?.pages?.flat()
