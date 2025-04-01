@@ -1,9 +1,10 @@
-import { Event as SDKEvent } from '@audius/sdk'
+import { OptionalId, Event as SDKEvent } from '@audius/sdk'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 
 import { eventMetadataFromSDK } from '~/adapters/event'
 import { useAudiusQueryContext } from '~/audius-query'
-import { Event } from '~/models/Event'
+import { ID } from '~/models'
+import { removeNullable } from '~/utils'
 
 import { QueryOptions } from '../types'
 import { useCurrentUserId } from '../useCurrentUserId'
@@ -14,7 +15,6 @@ const DEFAULT_PAGE_SIZE = 25
 
 type UseAllEventsArgs = {
   pageSize?: number
-  sortMethod?: 'newest' | 'timestamp'
 }
 
 /**
@@ -22,10 +22,7 @@ type UseAllEventsArgs = {
  * This version supports infinite scrolling and maintains the full list of events.
  */
 export const useAllEvents = (
-  {
-    pageSize = DEFAULT_PAGE_SIZE,
-    sortMethod = 'newest'
-  }: UseAllEventsArgs = {},
+  { pageSize = DEFAULT_PAGE_SIZE }: UseAllEventsArgs = {},
   options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
@@ -33,9 +30,9 @@ export const useAllEvents = (
   const queryClient = useQueryClient()
 
   const queryRes = useInfiniteQuery({
-    queryKey: getEventListQueryKey({ pageSize, sortMethod }),
+    queryKey: getEventListQueryKey({ pageSize }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: Event[], allPages) => {
+    getNextPageParam: (lastPage: ID[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -44,35 +41,26 @@ export const useAllEvents = (
       const { data } = await sdk.events.getAllEvents({
         limit: pageSize,
         offset: pageParam,
-        userId: currentUserId?.toString(),
-        sortMethod
+        userId: OptionalId.parse(currentUserId)
       })
 
       if (!data) return []
 
-      const events = data
+      const eventIds = data
         .map((sdkEvent: SDKEvent) => {
           const event = eventMetadataFromSDK(sdkEvent)
           if (!event) return null
           // Prime the event cache with individual events
           queryClient.setQueryData(getEventQueryKey(event.eventId), event)
-          return event
+          return event.eventId
         })
-        .filter((event): event is Event => event !== null)
+        .filter(removeNullable)
 
-      return events
+      return eventIds
     },
     select: (data) => data.pages.flat(),
     ...options
   })
 
-  return {
-    data: queryRes.data,
-    isPending: queryRes.isPending,
-    isLoading: queryRes.isLoading,
-    isSuccess: queryRes.isSuccess,
-    hasNextPage: queryRes.hasNextPage,
-    isFetchingNextPage: queryRes.isFetchingNextPage,
-    fetchNextPage: queryRes.fetchNextPage
-  }
+  return queryRes
 }

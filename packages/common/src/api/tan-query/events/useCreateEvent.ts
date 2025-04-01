@@ -24,7 +24,7 @@ export const useCreateEvent = () => {
   return useMutation({
     mutationFn: async (args: CreateEventArgs) => {
       const sdk = await audiusSdk()
-      return await sdk.events.createEvent({ ...args })
+      return await sdk.events.createEvent(args)
     },
     onMutate: async (args: CreateEventArgs) => {
       const { userId, eventType, entityType, entityId, endDate, eventData } =

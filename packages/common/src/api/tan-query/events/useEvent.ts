@@ -21,7 +21,6 @@ export const useEvent = <TResult = Event>(
   const dispatch = useDispatch()
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
-  const validEventId = !!eventId && eventId > 0
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const select = useMemo(() => options?.select, [])
@@ -40,6 +39,6 @@ export const useEvent = <TResult = Event>(
     },
     ...options,
     select,
-    enabled: options?.enabled !== false && validEventId
+    enabled: options?.enabled !== false && !!eventId
   })
 }

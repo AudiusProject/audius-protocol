@@ -7,10 +7,7 @@ export const getEventQueryKey = (eventId: ID | null | undefined) => [
   eventId
 ]
 
-export const getEventListQueryKey = ({
-  pageSize,
-  sortMethod
-}: {
-  pageSize?: number
-  sortMethod?: 'newest' | 'timestamp'
-}) => [QUERY_KEYS.events, { pageSize, sortMethod }]
+export const getEventListQueryKey = ({ pageSize }: { pageSize?: number }) => [
+  QUERY_KEYS.events,
+  { pageSize }
+]

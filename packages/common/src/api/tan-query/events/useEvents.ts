@@ -39,17 +39,13 @@ export const useEvents = (
         return await batchGetEvents.fetch(eventId)
       },
       ...options,
-      enabled: options?.enabled !== false && !!eventId && eventId > 0
+      enabled: options?.enabled !== false && !!eventId
     })),
     combine: combineQueryResults<Event[]>
   })
   const { data: events } = queryResults
 
-  const byId = useMemo(() => keyBy(events, 'event_id'), [events])
+  const byId = useMemo(() => keyBy(events, 'eventId'), [events])
 
-  return {
-    ...queryResults,
-    data: events,
-    byId
-  }
+  return { ...queryResults, byId }
 }
