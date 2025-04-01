@@ -4,8 +4,6 @@ import { remoteConfig } from '@audius/common/services'
 import * as optimizely from '@optimizely/optimizely-sdk'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Platform } from 'react-native'
-import type { LocalPackage } from 'react-native-code-push'
-import codePush from 'react-native-code-push'
 import Config from 'react-native-config'
 import VersionNumber from 'react-native-version-number'
 
@@ -26,29 +24,9 @@ const getMobileClientInfo = async () => {
   const mobilePlatform = Platform.OS
   const mobileAppVersion = VersionNumber.appVersion
 
-  let codePushUpdateMetadata: LocalPackage | null = null
-  try {
-    codePushUpdateMetadata = await codePush.getUpdateMetadata()
-  } catch (e) {
-    console.error(
-      'Error getting CodePush metadata for remote config instance.',
-      e
-    )
-  }
-
-  let codePushUpdateNumber: number | undefined
-  if (
-    codePushUpdateMetadata &&
-    codePushUpdateMetadata.label &&
-    codePushUpdateMetadata.label.length > 1
-  ) {
-    // Codepush version nunbers are formatted as e.g."v10" - remove the leading "v".
-    codePushUpdateNumber = Number(codePushUpdateMetadata.label.slice(1))
-  }
   return {
     mobilePlatform,
-    mobileAppVersion,
-    codePushUpdateNumber
+    mobileAppVersion
   }
 }
 
