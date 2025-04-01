@@ -5,7 +5,7 @@ import {
   TrackForUpload,
   TrackMetadataForUpload
 } from '@audius/common/store'
-import moment from 'moment'
+import dayjs from 'dayjs'
 
 import { EditTrackForm } from 'components/edit-track/EditTrackForm'
 import { TrackEditFormValues } from 'components/edit-track/types'
@@ -39,7 +39,7 @@ export const UploadTrackForm = (props: UploadTrackFormProps) => {
         description: initialMetadata?.description ?? '',
         releaseDate: initialMetadata?.release_date
           ? new Date(initialMetadata.release_date)
-          : new Date(moment().toString()),
+          : new Date(dayjs().toString()),
         tags: initialMetadata?.tags ?? '',
         field_visibility: {
           ...defaultHiddenFields,
