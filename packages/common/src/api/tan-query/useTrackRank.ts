@@ -4,7 +4,7 @@ import { trendingIdsFromSDK } from '~/adapters/trending'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 
-import { QUERY_KEYS } from './queryKeys'
+import { QUERY_KEYS } from './typed-query-client/queryKeys'
 
 type GetTrendingIdsArgs = {
   genre?: string

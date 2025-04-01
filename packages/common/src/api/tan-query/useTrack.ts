@@ -8,8 +8,8 @@ import { ID } from '~/models/Identifiers'
 
 import { getTracksBatcher } from './batchers/getTracksBatcher'
 import { TQTrack } from './models'
-import { QUERY_KEYS } from './queryKeys'
 import { useTypedQueryClient } from './typed-query-client'
+import { QUERY_KEYS } from './typed-query-client/queryKeys'
 import { SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 export const getTrackQueryKey = (trackId: ID | null | undefined) =>

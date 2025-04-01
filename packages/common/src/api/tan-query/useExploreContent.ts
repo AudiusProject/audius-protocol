@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models'
 
-import { QUERY_KEYS } from './queryKeys'
+import { QUERY_KEYS } from './typed-query-client/queryKeys'
 import { SelectableQueryOptions } from './types'
 
 const STATIC_EXPLORE_CONTENT_URL =

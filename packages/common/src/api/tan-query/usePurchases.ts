@@ -11,7 +11,7 @@ import {
   USDCPurchaseDetails
 } from '~/models/USDCTransactions'
 
-import { QUERY_KEYS } from './queryKeys'
+import { QUERY_KEYS } from './typed-query-client/queryKeys'
 import { QueryOptions } from './types'
 import { useCollections } from './useCollections'
 import { useTracks } from './useTracks'

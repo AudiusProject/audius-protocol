@@ -7,8 +7,8 @@ import { ID } from '~/models/Identifiers'
 import { PlaylistLibrary } from '~/models/PlaylistLibrary'
 import { User, UserMetadata } from '~/models/User'
 
-import { QUERY_KEYS } from './queryKeys'
 import { useTypedQueryClient } from './typed-query-client'
+import { QUERY_KEYS } from './typed-query-client/queryKeys'
 import { getCurrentUserQueryKey } from './useCurrentUser'
 import { getUserQueryKey } from './useUser'
 

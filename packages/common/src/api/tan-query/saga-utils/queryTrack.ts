@@ -2,7 +2,7 @@ import { ID } from '~/models/Identifiers'
 import { getContext } from '~/store/effects'
 
 import { TQTrack } from '../models'
-import { QUERY_KEYS } from '../queryKeys'
+import { QUERY_KEYS } from '../typed-query-client/queryKeys'
 import { getTrackQueryKey } from '../useTrack'
 
 export function* queryTrack(id: ID | null | undefined) {

@@ -6,7 +6,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { useFeatureFlag } from '~/hooks/useFeatureFlag'
 import { FeatureFlags } from '~/services/remote-config'
 
-import { QUERY_KEYS } from './queryKeys'
+import { QUERY_KEYS } from './typed-query-client/queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 

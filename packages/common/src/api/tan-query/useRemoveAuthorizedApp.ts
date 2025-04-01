@@ -6,8 +6,8 @@ import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
 import { ID } from '~/models'
 
 import { DeveloperApp } from './developerApps'
-import { QUERY_KEYS } from './queryKeys'
 import { useTypedQueryClient } from './typed-query-client'
+import { QUERY_KEYS } from './typed-query-client/queryKeys'
 
 export type UseRemoveAuthorizedAppArgs = {
   apiKey: string

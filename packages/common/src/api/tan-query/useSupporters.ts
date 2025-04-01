@@ -9,8 +9,8 @@ import {
   supporterMetadataListFromSDK
 } from '~/models/Tipping'
 
-import { QUERY_KEYS } from './queryKeys'
 import { useTypedQueryClient } from './typed-query-client'
+import { QUERY_KEYS } from './typed-query-client/queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getSupporterQueryKey } from './useSupporter'

@@ -8,7 +8,7 @@ import { ID } from '~/models/Identifiers'
 import { AccountUserMetadata } from '~/models/User'
 import { getWalletAddresses } from '~/store/account/selectors'
 
-import { QUERY_KEYS } from './queryKeys'
+import { QUERY_KEYS } from './typed-query-client/queryKeys'
 import { SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 

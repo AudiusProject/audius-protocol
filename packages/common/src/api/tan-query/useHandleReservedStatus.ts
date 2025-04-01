@@ -7,7 +7,7 @@ import { IntKeys } from '~/services/remote-config/types'
 import { parseHandleReservedStatusFromSocial } from '~/utils/handleReservedStatus'
 import { promiseWithTimeout } from '~/utils/promiseWithTimeout'
 
-import { QUERY_KEYS } from './queryKeys'
+import { QUERY_KEYS } from './typed-query-client/queryKeys'
 import { QueryOptions } from './types'
 
 const DEFAULT_HANDLE_VERIFICATION_TIMEOUT_MILLIS = 5_000

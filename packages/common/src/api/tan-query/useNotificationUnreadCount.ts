@@ -12,7 +12,7 @@ import { getBalance } from '~/store/wallet/slice'
 
 import { IntKeys } from '../../services/remote-config'
 
-import { QUERY_KEYS } from './queryKeys'
+import { QUERY_KEYS } from './typed-query-client/queryKeys'
 import { useCurrentUserId } from './useCurrentUserId'
 import { useNotificationValidTypes } from './useNotificationValidTypes'
 

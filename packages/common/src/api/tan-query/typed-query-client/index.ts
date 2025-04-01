@@ -1,2 +1,2 @@
 export * from './typedQueryClient'
-export * from './typedQueryKeys'
+export * from './queryKeys'

@@ -7,8 +7,8 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 import { Nullable } from '~/utils/typeUtils'
 
-import { QUERY_KEYS } from './queryKeys'
 import { useTypedQueryClient } from './typed-query-client'
+import { QUERY_KEYS } from './typed-query-client/queryKeys'
 import { SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 

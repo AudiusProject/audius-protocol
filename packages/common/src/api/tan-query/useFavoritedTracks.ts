@@ -6,7 +6,7 @@ import { favoriteFromSDK } from '~/adapters/favorite'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 
-import { QUERY_KEYS } from './queryKeys'
+import { QUERY_KEYS } from './typed-query-client/queryKeys'
 import { QueryOptions } from './types'
 
 export const getFavoritedTracksQueryKey = (userId: ID | null | undefined) => [

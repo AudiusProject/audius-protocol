@@ -4,7 +4,7 @@ import { QueryKey, useQuery } from '@tanstack/react-query'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 
-import { QUERY_KEYS } from './queryKeys'
+import { QUERY_KEYS } from './typed-query-client/queryKeys'
 import { QueryOptions } from './types'
 
 type UseTopTagsArgs = {

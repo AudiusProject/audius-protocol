@@ -6,7 +6,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { UserMetadata } from '~/models/User'
 import { getWalletAddresses } from '~/store/account/selectors'
 
-import { QUERY_KEYS } from './queryKeys'
+import { QUERY_KEYS } from './typed-query-client/queryKeys'
 import { SelectableQueryOptions } from './types'
 
 export const getCurrentUserQueryKey = (

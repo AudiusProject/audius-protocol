@@ -2,7 +2,7 @@ import { ID } from '~/models/Identifiers'
 import { getContext } from '~/store/effects'
 
 import { TQCollection } from '../models'
-import { QUERY_KEYS } from '../queryKeys'
+import { QUERY_KEYS } from '../typed-query-client/queryKeys'
 import { getCollectionQueryKey } from '../useCollection'
 
 export function* queryCollection(id: ID | null | undefined) {

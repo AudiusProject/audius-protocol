@@ -3,8 +3,8 @@ import { Dispatch } from 'redux'
 import { ID } from '~/models'
 import { incrementTrackCommentCount } from '~/store/cache/tracks/actions'
 
-import { QUERY_KEYS } from '../queryKeys'
 import { TypedQueryClient } from '../typed-query-client'
+import { QUERY_KEYS } from '../typed-query-client/queryKeys'
 
 import { TrackCommentCount } from './types'
 

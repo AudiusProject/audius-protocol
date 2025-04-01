@@ -4,7 +4,7 @@ import { isEmpty } from 'lodash'
 import { useAudiusQueryContext } from '~/audius-query'
 import { AudiusQueryContextType } from '~/audius-query/AudiusQueryContext'
 
-import { QUERY_KEYS } from './queryKeys'
+import { QUERY_KEYS } from './typed-query-client/queryKeys'
 import { QueryOptions } from './types'
 
 export const fetchHandleInUse = async (

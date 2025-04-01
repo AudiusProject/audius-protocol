@@ -7,8 +7,8 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models'
 import { getUserId } from '~/store/account/selectors'
 
-import { QUERY_KEYS } from './queryKeys'
 import { useTypedQueryClient } from './typed-query-client'
+import { QUERY_KEYS } from './typed-query-client/queryKeys'
 import { QueryOptions } from './types'
 import { primeUserData } from './utils/primeUserData'
 

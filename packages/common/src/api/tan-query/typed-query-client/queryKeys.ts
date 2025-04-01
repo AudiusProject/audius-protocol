@@ -8,13 +8,102 @@ import { User } from '~/models/User'
 import { CommentOrReply, TrackCommentCount } from '../comments/types'
 import { DeveloperApp } from '../developerApps'
 import { TQTrack, TQCollection } from '../models'
-import { QUERY_KEYS } from '../queryKeys'
 
 // We're creating a registry of typed query keys and their associated data types
 // This will allow us to have type-safe access to query data
 
 // Define a type for all the query key strings from QUERY_KEYS
 export type QueryKeyString = (typeof QUERY_KEYS)[keyof typeof QUERY_KEYS]
+
+/**
+ * Query keys for the TanStack Query library
+ *
+ * Each key should only hold values of a single type
+ *
+ * If you need to hold multiple types, use a union type or a separate key for each type
+ * Types are registered below in the QueryKeyTypeMap
+ */
+export const QUERY_KEYS = {
+  aiTracks: 'aiTracks',
+  accountUser: 'accountUser',
+  trackCommentList: 'trackCommentList',
+  userCommentList: 'userCommentList',
+  comment: 'comment',
+  commentReplies: 'commentReplies',
+  downloadTrackStems: 'downloadTrackStems',
+  stemsArchiveJob: 'stemsArchiveJob',
+  exploreContent: 'exploreContent',
+  trackCommentNotificationSetting: 'trackCommentNotificationSetting',
+  trackCommentCount: 'trackCommentCount',
+  track: 'track',
+  tracks: 'tracks',
+  tracksByUser: 'tracksByUser',
+  tracksByHandle: 'tracksByHandle',
+  trackByPermalink: 'trackByPermalink',
+  tracksByPlaylist: 'tracksByPlaylist',
+  tracksByAlbum: 'tracksByAlbum',
+  user: 'user',
+  users: 'users',
+  userByHandle: 'userByHandle',
+  userTracksByHandle: 'userTracksByHandle',
+  userPlaylists: 'userPlaylists',
+  userAlbums: 'userAlbums',
+  userCollectibles: 'userCollectibles',
+  collection: 'collection',
+  collections: 'collections',
+  collectionByPermalink: 'collectionByPermalink',
+  followers: 'followers',
+  favoritedTracks: 'favoritedTracks',
+  supporters: 'supporters',
+  supporter: 'supporter',
+  topSupporter: 'topSupporter',
+  supportedUsers: 'supportedUsers',
+  relatedArtists: 'relatedArtists',
+  purchases: 'purchases',
+  purchasesCount: 'purchasesCount',
+  sales: 'sales',
+  salesCount: 'salesCount',
+  mutualFollowers: 'mutualFollowers',
+  emailInUse: 'emailInUse',
+  handleInUse: 'handleInUse',
+  handleReservedStatus: 'handleReservedStatus',
+  search: 'search',
+  trending: 'trending',
+  suggestedArtists: 'suggestedArtists',
+  topArtistsInGenre: 'topArtistsInGenre',
+  audioTransactions: 'audioTransactions',
+  audioTransactionsCount: 'audioTransactionsCount',
+  libraryCollections: 'libraryCollections',
+  favorites: 'favorites',
+  following: 'following',
+  notifications: 'notifications',
+  notificationUnreadCount: 'notificationUnreadCount',
+  reposts: 'reposts',
+  remixers: 'remixers',
+  remixersCount: 'remixersCount',
+  trackHistory: 'trackHistory',
+  topTags: 'topTags',
+  feed: 'feed',
+  authorizedApps: 'authorizedApps',
+  developerApps: 'developerApps',
+  searchAutocomplete: 'searchAutocomplete',
+  purchasers: 'purchasers',
+  purchasersCount: 'purchasersCount',
+  remixedTracks: 'remixedTracks',
+  mutedUsers: 'mutedUsers',
+  salesAggregate: 'salesAggregate',
+  usdcTransactionsCount: 'usdcTransactionsCount',
+  usdcTransactions: 'usdcTransactions',
+  libraryTracks: 'libraryTracks',
+  remixes: 'remixes',
+  premiumTracks: 'premiumTracks',
+  profileReposts: 'profileReposts',
+  profileTracks: 'profileTracks',
+  trendingIds: 'trendingIds',
+  trendingPlaylists: 'trendingPlaylists',
+  trendingUnderground: 'trendingUnderground',
+  trackPageLineup: 'trackPageLineup'
+} as const
 
 /**
  * TypedQueryKey represents all possible query key tuples

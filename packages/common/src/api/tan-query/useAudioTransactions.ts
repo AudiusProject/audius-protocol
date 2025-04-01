@@ -12,7 +12,7 @@ import {
 } from '~/store/ui/transaction-details/types'
 import { Nullable, removeNullable } from '~/utils/typeUtils'
 
-import { QUERY_KEYS } from './queryKeys'
+import { QUERY_KEYS } from './typed-query-client/queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { useUsers } from './useUsers'

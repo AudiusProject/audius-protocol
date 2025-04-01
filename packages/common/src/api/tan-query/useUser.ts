@@ -9,8 +9,8 @@ import { User } from '~/models/User'
 import { getUserId } from '~/store/account/selectors'
 
 import { getUsersBatcher } from './batchers/getUsersBatcher'
-import { QUERY_KEYS } from './queryKeys'
 import { useTypedQueryClient } from './typed-query-client'
+import { QUERY_KEYS } from './typed-query-client/queryKeys'
 import { SelectableQueryOptions } from './types'
 
 export const getUserQueryKey = (userId: ID | null | undefined) =>

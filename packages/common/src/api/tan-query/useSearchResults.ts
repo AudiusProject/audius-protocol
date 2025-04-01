@@ -19,8 +19,8 @@ import { tracksActions as searchResultsPageTracksLineupActions } from '~/store/p
 import { getSearchTracksLineup } from '~/store/pages/search-results/selectors'
 import { Genre, formatMusicalKey } from '~/utils'
 
-import { QUERY_KEYS } from './queryKeys'
 import { useTypedQueryClient } from './typed-query-client'
+import { QUERY_KEYS } from './typed-query-client/queryKeys'
 import { FlatUseInfiniteQueryResult, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { loadNextPage } from './utils/infiniteQueryLoadNextPage'

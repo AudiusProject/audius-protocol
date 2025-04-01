@@ -7,7 +7,7 @@ import {
   QueryClientContext
 } from '@tanstack/react-query'
 
-import { TypedQueryKey, QueryKeyData } from './typedQueryKeys'
+import { TypedQueryKey, QueryKeyData } from './queryKeys'
 
 // This merges the QueryClient type (minus our overridden methods) with our TypedQueryClient
 export type TypedQueryClient = TypedQueryClientImpl &

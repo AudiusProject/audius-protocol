@@ -8,8 +8,8 @@ import { ID } from '~/models'
 
 import { getCollectionsBatcher } from './batchers/getCollectionsBatcher'
 import { TQCollection } from './models'
-import { QUERY_KEYS } from './queryKeys'
 import { useTypedQueryClient } from './typed-query-client'
+import { QUERY_KEYS } from './typed-query-client/queryKeys'
 import { SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
