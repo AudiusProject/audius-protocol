@@ -42,6 +42,7 @@ export const RemixCosignNotification = (
   props: RemixCosignNotificationProps
 ) => {
   const { notification } = props
+  console.log('asdf remixCosignNotification', notification)
   const navigation = useNotificationNavigation()
   const { childTrackId, parentTrackUserId } = notification
   const user = useSelector((state) => getNotificationUser(state, notification))
@@ -78,7 +79,7 @@ export const RemixCosignNotification = (
     },
     [parentTrackTitle]
   )
-
+  console.log('asdf parentTrack', parentTrack, parentTrackUserId, tracks)
   if (!user || !childTrack || !parentTrack) return null
 
   const twitterUrl = getTrackRoute(childTrack, true)

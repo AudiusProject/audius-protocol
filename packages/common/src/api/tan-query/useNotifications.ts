@@ -83,7 +83,7 @@ const collectEntityIds = (notifications: Notification[]): EntityIds => {
       trackIds.add(notification.parentTrackId).add(notification.childTrackId)
     }
     if (type === NotificationType.RemixCosign) {
-      trackIds.add(notification.childTrackId)
+      notification.entityIds.forEach((id) => trackIds.add(id))
       userIds.add(notification.parentTrackUserId)
     }
     if (
@@ -197,7 +197,12 @@ export const useNotifications = (options?: QueryOptions) => {
         validTypes
       })
 
-      return transformAndCleanList(data?.notifications, notificationFromSDK)
+      const res = transformAndCleanList(
+        data?.notifications,
+        notificationFromSDK
+      )
+      console.log('asdf res: ', res)
+      return res
     },
     getNextPageParam: (lastPage: Notification[]) => {
       const lastNotification = lastPage[lastPage.length - 1]
@@ -217,7 +222,7 @@ export const useNotifications = (options?: QueryOptions) => {
   const { userIds, trackIds, collectionIds } = lastPage
     ? collectEntityIds(lastPage)
     : { userIds: undefined, trackIds: undefined, collectionIds: undefined }
-
+  console.log('asdf trackIds:', trackIds)
   // Pre-fetch related entities
   const { isPending: isUsersPending } = useUsers(userIds)
   const { isPending: isTracksPending } = useTracks(trackIds)
