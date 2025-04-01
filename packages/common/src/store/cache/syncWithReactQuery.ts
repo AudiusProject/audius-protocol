@@ -1,3 +1,5 @@
+import { TypedQueryClient } from '~/api/tan-query/typed-query-client'
+
 import { primeCollectionDataInternal } from '../../api/tan-query/utils/primeCollectionData'
 import { primeTrackDataInternal } from '../../api/tan-query/utils/primeTrackData'
 import { primeUserDataInternal } from '../../api/tan-query/utils/primeUserData'
@@ -7,7 +9,6 @@ import type { Track } from '../../models/Track'
 import type { User } from '../../models/User'
 
 import type { EntriesByKind } from './types'
-import { TypedQueryClient } from '~/api/tan-query/typed-query-client'
 
 export const syncWithReactQuery = (
   queryClient: TypedQueryClient,
