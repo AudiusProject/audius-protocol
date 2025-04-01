@@ -107,7 +107,8 @@ const productionConfig: SdkServicesConfig = {
         '0xD17A9bc90c582249e211a4f4b16721e7f65156c8',
       serviceTypeManagerAddress: '0x9EfB0f4F38aFbb4b0984D00C126E97E21b8417C5',
       audiusTokenAddress: '0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998',
-      audiusWormholeAddress: '0x6E7a1F7339bbB62b23D44797b63e4258d283E095'
+      audiusWormholeAddress: '0x6E7a1F7339bbB62b23D44797b63e4258d283E095',
+      delegateManagerAddress: '0x4d7968ebfD390D5E7926Cb3587C39eFf2F9FB225'
     }
   }
 }
@@ -150,7 +151,8 @@ const stagingConfig: SdkServicesConfig = {
         '0x377BE01aD31360d0DFB16035A4515954395A8185',
       serviceTypeManagerAddress: '0x9fd76d2cD48022526F3a164541E6552291F4a862',
       audiusTokenAddress: '0x1376180Ee935AA64A27780F4BE97726Df7B0e2B2',
-      audiusWormholeAddress: '0xf6f45e4d836da1d4ecd43bb1074620bfb0b7e0d7'
+      audiusWormholeAddress: '0xf6f45e4d836da1d4ecd43bb1074620bfb0b7e0d7',
+      delegateManagerAddress: '0xDA74d6FfbF268Ac441404f5a61f01103451E8697'
     }
   }
 }
@@ -204,7 +206,8 @@ const developmentConfig: SdkServicesConfig = {
       serviceProviderFactoryAddress: '0x',
       serviceTypeManagerAddress: '0x',
       audiusTokenAddress: '0xdcB2fC9469808630DD0744b0adf97C0003fC29B2',
-      audiusWormholeAddress: '0xf6f45e4d836da1d4ecd43bb1074620bfb0b7e0d7' // staging repeated, doesn't exist in dev
+      audiusWormholeAddress: '0x',
+      delegateManagerAddress: '0x'
     }
   }
 }

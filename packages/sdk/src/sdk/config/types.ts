@@ -37,6 +37,7 @@ export type SdkServicesConfig = {
       ethRewardsManagerAddress: Hex
       audiusTokenAddress: Hex
       audiusWormholeAddress: Hex
+      delegateManagerAddress: Hex
     }
   }
 }

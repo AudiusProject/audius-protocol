@@ -5,11 +5,11 @@ import { createConfig, http } from 'wagmi'
 import { env } from 'services/env'
 
 export const audiusChain = {
-  id: parseInt(env.WEB3_NETWORK_ID),
+  id: env.AUDIUS_NETWORK_CHAIN_ID,
   name: 'Audius',
   nativeCurrency: { name: '-', symbol: '-', decimals: 18 },
   rpcUrls: {
-    default: { http: [`${env.EAGER_DISCOVERY_NODES.split(',')[0]}/chain`] }
+    default: { http: [`${env.API_URL}/core/erpc`] }
   }
 } as const satisfies Chain
 

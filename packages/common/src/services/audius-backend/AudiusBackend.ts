@@ -151,9 +151,6 @@ type AudiusBackendParams = {
   remoteConfigInstance: RemoteConfigInstance
   setLocalStorageItem: (key: string, value: string) => Promise<void>
   solanaConfig: AudiusBackendSolanaConfig
-  userNodeUrl: Maybe<string>
-  web3NetworkId: Maybe<string>
-  web3ProviderUrls: Maybe<string[]>
 }
 
 export const audiusBackend = ({
@@ -161,7 +158,6 @@ export const audiusBackend = ({
   generalAdmissionUrl,
   nativeMobile,
   reportError,
-  userNodeUrl,
   env
 }: AudiusBackendParams) => {
   const currentDiscoveryProvider: Nullable<string> = null
@@ -1185,8 +1181,7 @@ export const audiusBackend = ({
     updateNotificationSettings,
     updatePushNotificationSettings,
     updateUserEvent,
-    updateUserLocationTimezone,
-    userNodeUrl
+    updateUserLocationTimezone
   }
 }
 

@@ -6,9 +6,11 @@ export type Env = {
   AAO_ENDPOINT: string
   AMPLITUDE_API_KEY: Nullable<string>
   AMPLITUDE_PROXY: Nullable<string>
+  API_URL: string
   APP_NAME: string
   API_KEY: string
   ARCHIVE_ENDPOINT: string
+  AUDIUS_NETWORK_CHAIN_ID: number
   AUDIUS_URL: string
   BITSKI_CALLBACK_URL: string
   BITSKI_CLIENT_ID: string
@@ -73,11 +75,8 @@ export type Env = {
   SUGGESTED_FOLLOW_HANDLES: string
   TIKTOK_APP_ID: string
   USDC_MINT_ADDRESS: string
-  USER_NODE: string
   USE_HASH_ROUTING: boolean
   WAUDIO_MINT_ADDRESS: string
-  WEB3_NETWORK_ID: string
-  WEB3_PROVIDER_URL: string
   WORMHOLE_ADDRESS: Nullable<string>
   WORMHOLE_RPC_HOSTS: Nullable<string>
   EMAIL_ENCRYPTION_UUID?: number

@@ -6,8 +6,10 @@ export const env: Env = {
   AMPLITUDE_API_KEY: '86760558b8bb1b3aae61656efd4ddacb',
   AMPLITUDE_PROXY: 'https://gain2.audius.co/2/httpapi',
   API_KEY: '8acf5eb7436ea403ee536a7334faa5e9ada4b50f',
+  API_URL: 'http://api.audius.co',
   APP_NAME: 'audius-client',
   ARCHIVE_ENDPOINT: 'https://discoveryprovider.audius.co',
+  AUDIUS_NETWORK_CHAIN_ID: 31524,
   AUDIUS_URL: 'https://audius.co',
   BITSKI_CALLBACK_URL: 'https://audius.co/bitski-callback.html',
   BITSKI_CLIENT_ID: '661ce11a-3e0f-4659-b365-795ad2111f42',
@@ -77,11 +79,8 @@ export const env: Env = {
     'https://download.audius.co/static-resources/signup-follows.json',
   TIKTOK_APP_ID: Config.TIKTOK_APP_ID!,
   USDC_MINT_ADDRESS: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-  USER_NODE: 'https://usermetadata.audius.co',
   USE_HASH_ROUTING: false,
   WAUDIO_MINT_ADDRESS: '9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM',
-  WEB3_NETWORK_ID: '99',
-  WEB3_PROVIDER_URL: 'https://poa-gateway.audius.co',
   WORMHOLE_ADDRESS: '0x6E7a1F7339bbB62b23D44797b63e4258d283E095',
   WORMHOLE_RPC_HOSTS:
     'https://wormhole-v2-mainnet-api.certus.one,https://wormhole.inotel.ro,https://wormhole-v2-mainnet-api.mcf.rocks,https://wormhole-v2-mainnet-api.chainlayer.network,https://wormhole-v2-mainnet-api.staking.fund,https://wormhole-v2-mainnet-api.chainlayer.network'
