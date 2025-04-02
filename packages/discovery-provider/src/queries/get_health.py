@@ -58,8 +58,6 @@ number_of_cpus = os.cpu_count()
 
 disc_prov_version = helpers.get_discovery_provider_version()
 
-openresty_public_key = helpers.get_openresty_public_key()
-
 default_healthy_block_diff = int(shared_config["discprov"]["healthy_block_diff"])
 default_indexing_interval_seconds = int(
     shared_config["discprov"]["block_processing_interval_sec"]
@@ -348,7 +346,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
             "user_bank": user_bank_health_info,
             "aggregate_tips": aggregate_tips_health_info,
         },
-        "openresty_public_key": openresty_public_key,
         "infra_setup": infra_setup,
         "url": url,
         # Temp
