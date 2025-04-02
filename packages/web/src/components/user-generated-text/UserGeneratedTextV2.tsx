@@ -16,7 +16,8 @@ import {
   formatCollectionName,
   formatUserName,
   handleRegex,
-  squashNewLines
+  squashNewLines,
+  EMAIL_REGEX
 } from '@audius/common/utils'
 import { Text, TextProps } from '@audius/harmony'
 import {
@@ -67,6 +68,9 @@ type UserGeneratedTextV2Props = {
 } & TextProps
 
 const formatExternalLink = (href: string) => {
+  if (EMAIL_REGEX.test(href)) {
+    return `mailto:${href}`
+  }
   const strippedHref = href.replace(/((?:https?):\/\/)|www./g, '')
   return `https://${strippedHref}`
 }
@@ -300,6 +304,11 @@ export const UserGeneratedTextV2 = forwardRef(function (
   )
 
   const matchers: Matcher[] = [
+    // email matcher (must come before link matcher to prevent double matching)
+    {
+      pattern: EMAIL_REGEX,
+      renderLink
+    },
     // link matcher
     {
       pattern:
