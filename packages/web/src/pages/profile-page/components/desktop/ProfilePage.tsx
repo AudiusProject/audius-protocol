@@ -202,7 +202,13 @@ const messages = {
   muteUser: commentsMessages.popups.muteUser,
   unmuteUser: commentsMessages.popups.unmuteUser
 }
-const RepostsTab = ({ handle }: { handle: string }) => {
+const RepostsTab = ({
+  handle,
+  artistPickTrackId
+}: {
+  handle: string
+  artistPickTrackId: ID | null
+}) => {
   const {
     data,
     isPending,
@@ -221,6 +227,7 @@ const RepostsTab = ({ handle }: { handle: string }) => {
   return (
     <div className={styles.tiles}>
       <TanQueryLineup
+        leadingElementId={artistPickTrackId}
         data={data}
         isPending={isPending}
         isFetching={isFetching}
@@ -480,7 +487,10 @@ const ProfilePage = ({
               text={messages.emptyTab.repostedAnything}
             />
           ) : (
-            <RepostsTab handle={handle} />
+            <RepostsTab
+              handle={handle}
+              artistPickTrackId={profile.artist_pick_track_id}
+            />
           )
         ) : null}
       </Box>
@@ -553,7 +563,10 @@ const ProfilePage = ({
             text={messages.emptyTab.repostedAnything}
           />
         ) : (
-          <RepostsTab handle={handle} />
+          <RepostsTab
+            handle={handle}
+            artistPickTrackId={profile.artist_pick_track_id}
+          />
         )}
       </Box>,
       <Box w='100%' key={ProfilePageTabs.PLAYLISTS}>

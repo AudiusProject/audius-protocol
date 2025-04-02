@@ -95,33 +95,6 @@ export interface TanQueryLineupProps {
    */
   leadingElementTileProps?: Partial<TileProps>
 
-  /**
-   * Class name to optionally apply to the leading element
-   */
-  leadingElementClassName?: string
-
-  /**
-   * Class name to optionally apply to the container after the leading element
-   */
-  laggingContainerClassName?: string
-
-  /**
-   * Whether or not to animate the sliding in of the leading element
-   */
-  animateLeadingElement?: boolean
-
-  /**
-   * Whether or not to apply leading element tile props and styles to the
-   * skeleton tile rendered in its place
-   */
-  applyLeadingElementStylesToSkeleton?: boolean
-
-  /**
-   * Extra content that preceeds the lineup to be rendered. Can be anything,
-   * but is not tied to playback or other lineup pagination logic.
-   */
-  extraPrecedingElement?: JSX.Element
-
   ordered?: boolean
   lineupContainerStyles?: string
   tileContainerStyles?: string
@@ -176,6 +149,8 @@ export const TanQueryLineup = ({
   ordered = false,
   delineate = false,
   endOfLineupElement: endOfLineup,
+  leadingElementId,
+  leadingElementTileProps,
   lineupContainerStyles,
   tileContainerStyles,
   tileStyles,
@@ -350,7 +325,8 @@ export const TanQueryLineup = ({
             onClick: onClickTile,
             source: ModalSource.LineUpTrackTile,
             isBuffering,
-            playingSource
+            playingSource,
+            ...(entry.id === leadingElementId && leadingElementTileProps)
           }
           // @ts-ignore - TODO: these types werent enforced before - something smelly here
           return <TrackTile {...trackProps} key={entry.uid || index} />
@@ -371,7 +347,8 @@ export const TanQueryLineup = ({
             isTrending,
             source: ModalSource.LineUpCollectionTile,
             isBuffering,
-            playingSource
+            playingSource,
+            ...(entry.id === leadingElementId && leadingElementTileProps)
           }
           // @ts-ignore - TODO: these types werent enforced before - something smelly here
           return <PlaylistTile {...playlistProps} key={entry.uid || index} />
