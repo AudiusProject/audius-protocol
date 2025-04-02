@@ -39,7 +39,6 @@ const messages = {
 }
 
 export const CashWallet = () => {
-  // Renamed component
   const isManagedAccount = useIsManagedAccount()
   const { onOpen: openWithdrawUSDCModal } = useWithdrawUSDCModal()
   const { onOpen: openAddFundsModal } = useAddFundsModal()
@@ -82,11 +81,9 @@ export const CashWallet = () => {
 
   return (
     <Paper direction='column' shadow='far' ph='xl' pv='l' borderRadius='l'>
-      {/* Top Area with Balance Info and Transaction History */}
       <Flex justifyContent='space-between' alignItems='flex-start' w='100%'>
         {/* Left Column - Balance Info */}
         <Flex direction='column' gap='s' alignItems='flex-start'>
-          {/* Cash Balance Title */}
           <Flex alignItems='center' gap='s'>
             <IconLogoCircleUSDC size='l' />
             <Flex alignItems='center' gap='xs'>
