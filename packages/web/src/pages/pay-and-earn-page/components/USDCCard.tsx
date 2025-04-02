@@ -5,7 +5,8 @@ import { Name, Status, BNUSDC } from '@audius/common/models'
 import {
   WithdrawUSDCModalPages,
   useWithdrawUSDCModal,
-  useAddFundsModal
+  useAddFundsModal,
+  useBuySellModal
 } from '@audius/common/store'
 import {
   formatCurrencyBalance,
@@ -39,13 +40,15 @@ const messages = {
   withdraw: 'Withdraw',
   addFunds: 'Add Funds',
   salesSummary: 'Sales Summary',
-  withdrawalHistory: 'Withdrawal History'
+  withdrawalHistory: 'Withdrawal History',
+  buySell: 'Buy / Sell'
 }
 
 export const USDCCard = () => {
   const isManagedAccount = useIsManagedAccount()
   const { onOpen: openWithdrawUSDCModal } = useWithdrawUSDCModal()
   const { onOpen: openAddFundsModal } = useAddFundsModal()
+  const { onOpen: openBuySellModal } = useBuySellModal()
   const { data: balance, status: balanceStatus } = useUSDCBalance()
   const { color } = useTheme()
 
@@ -77,6 +80,11 @@ export const USDCCard = () => {
         eventName: Name.BUY_USDC_ADD_FUNDS_MANUALLY
       })
     )
+  }
+
+  const handleBuySell = () => {
+    openBuySellModal()
+    // TODO: Add analytics tracking if needed
   }
 
   return (
@@ -135,6 +143,16 @@ export const USDCCard = () => {
               disabled={balanceStatus === Status.LOADING}
             >
               {messages.addFunds}
+            </Button>
+          </div>
+          <div className={styles.buySellButton}>
+            <Button
+              variant='secondary'
+              fullWidth
+              onClick={handleBuySell}
+              disabled={balanceStatus === Status.LOADING}
+            >
+              {messages.buySell}
             </Button>
           </div>
           <div className={styles.withdrawButton}>
