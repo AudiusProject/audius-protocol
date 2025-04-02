@@ -1,9 +1,11 @@
 from flask_restx import Namespace, Resource, fields
 
 from src.api.v1.helpers import (
+    abort_bad_request_param,
     abort_not_found,
     current_user_parser,
     decode_ids_array,
+    decode_with_abort,
     format_limit,
     format_offset,
     make_response,
@@ -11,6 +13,7 @@ from src.api.v1.helpers import (
     success_response,
 )
 from src.api.v1.models.events import event_model
+from src.models.events.event import EventEntityType
 from src.queries.get_events import get_events, get_events_by_ids
 from src.queries.get_unclaimed_id import get_unclaimed_id
 from src.utils.redis_cache import cache
@@ -42,7 +45,7 @@ class BulkEvents(Resource):
     @cache(ttl=5)
     def get(self):
         args = bulk_events_parser.parse_args()
-        ids = decode_ids_array(args.get("id"))
+        ids = decode_ids_array(args.get("id") if args.get("id") else [])
         events = get_events_by_ids({"id": ids})
         if not events:
             abort_not_found(ids, ns)
@@ -96,3 +99,52 @@ class GetUnclaimedEventId(Resource):
     def get(self):
         unclaimed_id = get_unclaimed_id("event")
         return success_response(unclaimed_id)
+
+
+entity_events_parser = pagination_with_current_user_parser.copy()
+entity_events_parser.add_argument(
+    "entity_id",
+    required=True,
+    type=str,
+    description="The ID of the entity to get events for",
+)
+entity_events_parser.add_argument(
+    "entity_type",
+    required=False,
+    type=str,
+    choices=list(EventEntityType),
+    description="The type of entity to get events for",
+)
+entity_events_parser.add_argument(
+    "filter_deleted",
+    required=False,
+    type=bool,
+    default=True,
+    description="Whether to filter deleted events",
+)
+
+
+@ns.route("/entity")
+class EntityEvents(Resource):
+    @ns.doc(
+        id="Get Entity Events",
+        description="Get events for a specific entity",
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(entity_events_parser)
+    @ns.marshal_with(events_response)
+    @cache(ttl=5)
+    def get(self):
+        """Get events for a specific entity"""
+        args = entity_events_parser.parse_args()
+        decoded_entity_id = decode_with_abort(args.get("entity_id"), ns)
+        events = get_events(
+            {
+                "entity_id": decoded_entity_id,
+                "entity_type": args.get("entity_type"),
+                "filter_deleted": args.get("filter_deleted", True),
+                "limit": format_limit(args),
+                "offset": format_offset(args),
+            }
+        )
+        return success_response(events)
