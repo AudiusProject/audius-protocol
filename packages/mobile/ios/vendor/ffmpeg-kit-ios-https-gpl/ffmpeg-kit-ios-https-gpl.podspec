@@ -9,5 +9,14 @@ Pod::Spec.new do |s|
   s.platform         = :ios, '12.1'
   # Using a dummy git repo to satisfy CocoaPods, it will NOT be fetched.
   s.source           = { :git => 'https://example.com/placeholder.git', :tag => s.version }
-  s.vendored_frameworks = 'ffmpegkit.framework'
+  s.vendored_frameworks = [
+    'ffmpegkit.framework',
+    'libavdevice.framework',
+    'libavcodec.framework',
+    'libavfilter.framework',
+    'libavformat.framework',
+    'libavutil.framework',
+    'libswresample.framework',
+    'libswscale.framework'
+  ]
 end
