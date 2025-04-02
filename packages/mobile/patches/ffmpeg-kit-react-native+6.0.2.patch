@@ -1,5 +1,5 @@
 diff --git a/node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec b/node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec
-index 889d3e8..e50cff5 100644
+index 889d3e8..9cd64c8 100644
 --- a/node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec
 +++ b/node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec
 @@ -16,7 +16,7 @@ Pod::Spec.new do |s|
@@ -11,7 +11,28 @@ index 889d3e8..e50cff5 100644
  
    s.dependency "React-Core"
  
-@@ -132,4 +132,20 @@ Pod::Spec.new do |s|
+@@ -72,8 +72,19 @@ Pod::Spec.new do |s|
+   s.subspec 'https-gpl-lts' do |ss|
+       ss.source_files      = '**/FFmpegKitReactNativeModule.m',
+                              '**/FFmpegKitReactNativeModule.h'
+-      ss.dependency 'ffmpeg-kit-ios-https-gpl', "6.0.LTS"
++      #   ss.dependency 'ffmpeg-kit-ios-https-gpl', "6.0.LTS"
+       ss.ios.deployment_target = '10'
++
++      ss.vendored_frameworks = [
++        '../../packages/mobile/ios/vendor/ffmpeg-kit-ios-https/ffmpegkit.xcframework',
++        '../../packages/mobile/ios/vendor/ffmpeg-kit-ios-https/libavdevice.xcframework',
++        '../../packages/mobile/ios/vendor/ffmpeg-kit-ios-https/libavcodec.xcframework',
++        '../../packages/mobile/ios/vendor/ffmpeg-kit-ios-https/libavfilter.xcframework',
++        '../../packages/mobile/ios/vendor/ffmpeg-kit-ios-https/libavformat.xcframework',
++        '../../packages/mobile/ios/vendor/ffmpeg-kit-ios-https/libavutil.xcframework',
++        '../../packages/mobile/ios/vendor/ffmpeg-kit-ios-https/libswresample.xcframework',
++        '../../packages/mobile/ios/vendor/ffmpeg-kit-ios-https/libswscale.xcframework'
++      ]
+   end
+ 
+   s.subspec 'audio' do |ss|
+@@ -132,4 +143,20 @@ Pod::Spec.new do |s|
        ss.ios.deployment_target = '10'
    end
  
