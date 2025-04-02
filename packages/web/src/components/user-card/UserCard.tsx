@@ -49,7 +49,7 @@ export const UserCard = (props: UserCardProps) => {
     [onClick, handleNavigate]
   )
 
-  if (!handle || !follower_count || loading) {
+  if (!handle || follower_count === undefined || loading) {
     return (
       <Card size={size} {...other}>
         <Box p='l' pb='s'>
