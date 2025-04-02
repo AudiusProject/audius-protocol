@@ -15,8 +15,8 @@ import { push } from 'redux-first-history'
 export const useNavigateToPage = () => {
   const dispatch = useDispatch()
   return useCallback(
-    (route: string) => {
-      dispatch(push(route))
+    (route: string, state?: any) => {
+      dispatch(push(route, state))
     },
     [dispatch]
   )
