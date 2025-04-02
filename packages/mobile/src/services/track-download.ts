@@ -316,6 +316,7 @@ const download = async ({
 /** Generic file download that doesn't use sagas. */
 const downloadFile = async ({
   file: { url, filename },
+  mimeType,
   abortSignal
 }: DownloadFileArgs) => {
   if (Platform.OS === 'ios') {
@@ -353,6 +354,7 @@ const downloadFile = async ({
         notification: true,
         storeInDownloads: true,
         title: filename,
+        mime: mimeType,
         useDownloadManager: true
       }
     }).fetch('GET', url)

@@ -11,6 +11,7 @@ export type DownloadTrackArgs = {
 
 export type DownloadFileArgs = {
   file: DownloadFile
+  mimeType?: string
   abortSignal?: AbortSignal
 }
 

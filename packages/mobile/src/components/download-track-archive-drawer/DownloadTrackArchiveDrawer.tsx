@@ -3,7 +3,8 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   useCancelStemsArchiveJob,
   useDownloadTrackStems,
-  useGetStemsArchiveJobStatus
+  useGetStemsArchiveJobStatus,
+  useTrack
 } from '@audius/common/api'
 import { useAppContext } from '@audius/common/context'
 import type { ID } from '@audius/common/models'
@@ -43,7 +44,7 @@ const useDownloadFile = () => {
       setError(null)
       try {
         // TODO: AbortSignal?
-        await trackDownload.downloadFile({ file })
+        await trackDownload.downloadFile({ file, mimeType: 'application/zip' })
         setSuccess(true)
       } catch (e) {
         // TODO: Do we need to bubble this to sentry/amplitude?
@@ -79,6 +80,9 @@ const DownloadTrackArchiveDrawerContent = ({
   onClose,
   onClosed
 }: DownloadTrackArchiveDrawerContentProps) => {
+  const { data: trackTitle } = useTrack(trackId, {
+    select: (track) => track.title
+  })
   const {
     mutate: downloadTrackStems,
     isError: initiateDownloadFailed,
@@ -117,18 +121,16 @@ const DownloadTrackArchiveDrawerContent = ({
   }, [isOpen, downloadTrackStems, trackId])
 
   useEffect(() => {
-    if (jobState?.state === 'completed') {
-      // TODO: Native version of this
+    if (jobState?.state === 'completed' && trackTitle) {
       downloadFile({
         file: {
           url: `${env.ARCHIVE_ENDPOINT}/archive/stems/download/${jobId}`,
-          // TODO
-          filename: 'test.zip'
+          filename: `${trackTitle}.zip`
         }
       })
       onClose()
     }
-  }, [jobState, onClose, jobId, downloadFile])
+  }, [jobState, onClose, jobId, downloadFile, trackTitle])
 
   // Close drawer automatically if download was successful
   useEffect(() => {
