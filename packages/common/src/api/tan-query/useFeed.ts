@@ -110,7 +110,7 @@ export const useFeed = (
           pageParam,
           currentPageSize,
           false,
-          { feed }
+          { items: feed }
         )
       )
 
