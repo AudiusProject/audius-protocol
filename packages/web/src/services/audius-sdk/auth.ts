@@ -18,6 +18,7 @@ const wagmiConfig = wagmiAdapter.wagmiConfig
 
 export const getAudiusWalletClient = async (): Promise<AudiusWalletClient> => {
   // Check if the user has already connected Hedgehog first...
+  await authService.hedgehogInstance.waitUntilReady()
   const hedgehogWallet = authService.getWallet()
   if (hedgehogWallet) {
     console.debug(
