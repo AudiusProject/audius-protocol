@@ -38,7 +38,7 @@ export const useTrendingUnderground = (
   const queryData = useInfiniteQuery({
     queryKey: getTrendingUndergroundQueryKey({ pageSize }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: LineupData, allPages) => {
+    getNextPageParam: (lastPage: LineupData[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },

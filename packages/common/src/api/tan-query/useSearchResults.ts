@@ -187,7 +187,7 @@ const useSearchQueryProps = <T>(
       const { tracks, playlists, albums, users } = searchResultsFromSDK(data)
 
       const primeSearchSlice = <
-        T extends UserTrackMetadata | UserMetadata | UserCollectionMetadata
+        T extends LineupData | UserMetadata | UserCollectionMetadata
       >(
         data: T[],
         category: SearchCategory
@@ -216,7 +216,10 @@ const useSearchQueryProps = <T>(
       if (tracks?.length) {
         primeTrackData({ tracks, queryClient, dispatch })
         if (shouldPrimeCache) {
-          primeSearchSlice(tracks, 'tracks')
+          primeSearchSlice(
+            tracks.map((t) => ({ id: t.track_id, type: EntityType.TRACK })),
+            'tracks'
+          )
         }
       }
 
@@ -334,7 +337,7 @@ export const useSearchTrackResults = (
 
   const queryData = useInfiniteQuery({
     ...queryProps,
-    getNextPageParam: (lastPage: LineupData, allPages) => {
+    getNextPageParam: (lastPage: LineupData[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },

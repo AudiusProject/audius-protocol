@@ -112,7 +112,7 @@ export const useLibraryTracks = (
         type: EntityType.TRACK
       }))
     },
-    getNextPageParam: (lastPage: LineupData, allPages) => {
+    getNextPageParam: (lastPage: LineupData[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },

@@ -51,7 +51,7 @@ export const useTrackHistory = (
 
   const queryData = useInfiniteQuery({
     initialPageParam: 0,
-    getNextPageParam: (lastPage: LineupData, allPages) => {
+    getNextPageParam: (lastPage: LineupData[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },

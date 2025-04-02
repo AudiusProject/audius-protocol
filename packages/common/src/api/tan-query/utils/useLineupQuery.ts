@@ -45,7 +45,7 @@ export const useLineupQuery = ({
   pageSize
 }: {
   // Lineup related props
-  queryData: UseInfiniteQueryResult<LineupData>
+  queryData: UseInfiniteQueryResult<LineupData[]>
   queryKey: QueryKey
   lineupActions: LineupActions
   lineupSelector: Selector<

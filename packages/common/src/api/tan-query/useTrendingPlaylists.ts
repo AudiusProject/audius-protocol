@@ -49,7 +49,7 @@ export const useTrendingPlaylists = (
   const queryData = useInfiniteQuery({
     queryKey: getTrendingPlaylistsQueryKey({ pageSize, time }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: LineupData, allPages) => {
+    getNextPageParam: (lastPage: LineupData[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },

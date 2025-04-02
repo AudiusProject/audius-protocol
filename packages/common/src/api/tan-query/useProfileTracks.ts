@@ -54,7 +54,7 @@ export const useProfileTracks = (
   const queryData = useInfiniteQuery({
     queryKey: getProfileTracksQueryKey({ handle, pageSize, sort, getUnlisted }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: LineupData, allPages) => {
+    getNextPageParam: (lastPage: LineupData[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },

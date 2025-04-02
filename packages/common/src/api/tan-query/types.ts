@@ -23,7 +23,7 @@ export type SelectableQueryOptions<TData, TResult = TData> = Omit<
   'queryKey' | 'queryFn'
 >
 
-export type LineupData = { id: ID; type: EntityType }[]
+export type LineupData = { id: ID; type: EntityType }
 
 export type LineupQueryData = UseLineupQueryData &
   Pick<
