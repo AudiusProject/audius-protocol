@@ -1,11 +1,15 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   useCancelStemsArchiveJob,
   useDownloadTrackStems,
   useGetStemsArchiveJobStatus
 } from '@audius/common/api'
+import { useAppContext } from '@audius/common/context'
+import type { ID } from '@audius/common/models'
+import type { DownloadFile } from '@audius/common/services'
 import { useDownloadTrackArchiveModal } from '@audius/common/store'
+import { env } from 'services/env'
 
 import {
   Flex,
@@ -20,7 +24,6 @@ import Drawer from 'app/components/drawer'
 
 import { HarmonyModalHeader } from '../core/HarmonyModalHeader'
 import LoadingSpinner from '../loading-spinner'
-
 const messages = {
   title: 'Preparing Download',
   zippingFiles: (count: number) => `Zipping files (${count})`,
@@ -28,14 +31,54 @@ const messages = {
   tryAgain: 'Try again.'
 }
 
-export const DownloadTrackArchiveDrawer = () => {
-  const {
-    data: { trackId, fileCount },
-    isOpen,
-    onClose,
-    onClosed
-  } = useDownloadTrackArchiveModal()
+const useDownloadFile = () => {
+  const { trackDownload } = useAppContext()
+  const [fetching, setFetching] = useState<boolean>(false)
+  const [success, setSuccess] = useState<boolean>(false)
+  const [error, setError] = useState<Error | null>(null)
 
+  const downloadFile = useCallback(
+    async ({ file }: { file: DownloadFile }) => {
+      setFetching(true)
+      setError(null)
+      try {
+        // TODO: AbortSignal?
+        await trackDownload.downloadFile({ file })
+        setSuccess(true)
+      } catch (e) {
+        // TODO: Do we need to bubble this to sentry/amplitude?
+        setError(e as Error)
+      } finally {
+        setFetching(false)
+      }
+    },
+    [trackDownload]
+  )
+
+  const reset = useCallback(() => {
+    setFetching(false)
+    setSuccess(false)
+    setError(null)
+  }, [])
+
+  return { downloadFile, fetching, success, error, reset }
+}
+
+type DownloadTrackArchiveDrawerContentProps = {
+  trackId: ID
+  fileCount: number
+  isOpen: boolean
+  onClose: () => void
+  onClosed: () => void
+}
+
+const DownloadTrackArchiveDrawerContent = ({
+  trackId,
+  fileCount,
+  isOpen,
+  onClose,
+  onClosed
+}: DownloadTrackArchiveDrawerContentProps) => {
   const {
     mutate: downloadTrackStems,
     isError: initiateDownloadFailed,
@@ -45,6 +88,13 @@ export const DownloadTrackArchiveDrawer = () => {
   } = useDownloadTrackStems({
     trackId
   })
+
+  const {
+    downloadFile,
+    success: downloadSuccess,
+    error: downloadError,
+    reset: resetDownload
+  } = useDownloadFile()
 
   if (initiateDownloadError) {
     console.error(initiateDownloadError)
@@ -58,7 +108,7 @@ export const DownloadTrackArchiveDrawer = () => {
 
   const hasError =
     !isStartingDownload &&
-    (initiateDownloadFailed || jobState?.state === 'failed')
+    (downloadError || initiateDownloadFailed || jobState?.state === 'failed')
 
   useEffect(() => {
     if (isOpen) {
@@ -69,10 +119,23 @@ export const DownloadTrackArchiveDrawer = () => {
   useEffect(() => {
     if (jobState?.state === 'completed') {
       // TODO: Native version of this
-      // triggerDownload(`${env.ARCHIVE_ENDPOINT}/archive/stems/download/${jobId}`)
+      downloadFile({
+        file: {
+          url: `${env.ARCHIVE_ENDPOINT}/archive/stems/download/${jobId}`,
+          // TODO
+          filename: 'test.zip'
+        }
+      })
       onClose()
     }
-  }, [jobState, onClose, jobId])
+  }, [jobState, onClose, jobId, downloadFile])
+
+  // Close drawer automatically if download was successful
+  useEffect(() => {
+    if (downloadSuccess) {
+      onClose()
+    }
+  }, [downloadSuccess, onClose])
 
   const handleClose = useCallback(() => {
     if (jobId) {
@@ -82,8 +145,9 @@ export const DownloadTrackArchiveDrawer = () => {
   }, [onClose, jobId, cancelStemsArchiveJob])
 
   const handleRetry = useCallback(() => {
+    resetDownload()
     downloadTrackStems()
-  }, [downloadTrackStems])
+  }, [downloadTrackStems, resetDownload])
 
   return (
     <Drawer isOpen={isOpen} onClose={handleClose} onClosed={onClosed}>
@@ -114,5 +178,31 @@ export const DownloadTrackArchiveDrawer = () => {
         </Flex>
       </Flex>
     </Drawer>
+  )
+}
+
+export const DownloadTrackArchiveDrawer = () => {
+  const {
+    data: { trackId, fileCount },
+    isOpen,
+    onClose,
+    onClosed
+  } = useDownloadTrackArchiveModal()
+
+  if (!trackId) {
+    console.error(
+      'Unexpected missing trackId when rendering DownloadTrackArchiveDrawer'
+    )
+    return null
+  }
+
+  return (
+    <DownloadTrackArchiveDrawerContent
+      trackId={trackId}
+      fileCount={fileCount}
+      isOpen={isOpen}
+      onClose={onClose}
+      onClosed={onClosed}
+    />
   )
 }
