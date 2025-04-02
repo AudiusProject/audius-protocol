@@ -1,0 +1,34 @@
+diff --git a/node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec b/node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec
+index 889d3e8..e50cff5 100644
+--- a/node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec
++++ b/node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec
+@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
+ 
+   s.source       = { :git => "https://github.com/arthenica/ffmpeg-kit.git", :tag => "react.native.v#{s.version}" }
+ 
+-  s.default_subspec   = 'https'
++  s.default_subspec     = 'ffmpeg_kit_ios_local'
+ 
+   s.dependency "React-Core"
+ 
+@@ -132,4 +132,20 @@ Pod::Spec.new do |s|
+       ss.ios.deployment_target = '10'
+   end
+ 
++  s.subspec 'ffmpeg_kit_ios_local' do |ss|
++      ss.source_files         = 'Classes/**/*'
++      ss.public_header_files  = 'Classes/**/*.h'
++      ss.ios.deployment_target = '12.1'
++
++      ss.vendored_frameworks = [
++        '../../packages/mobile/ios/vendor/ffmpeg-kit-ios-https/ffmpegkit.xcframework',
++        '../../packages/mobile/ios/vendor/ffmpeg-kit-ios-https/libavdevice.xcframework',
++        '../../packages/mobile/ios/vendor/ffmpeg-kit-ios-https/libavcodec.xcframework',
++        '../../packages/mobile/ios/vendor/ffmpeg-kit-ios-https/libavfilter.xcframework',
++        '../../packages/mobile/ios/vendor/ffmpeg-kit-ios-https/libavformat.xcframework',
++        '../../packages/mobile/ios/vendor/ffmpeg-kit-ios-https/libavutil.xcframework',
++        '../../packages/mobile/ios/vendor/ffmpeg-kit-ios-https/libswresample.xcframework',
++        '../../packages/mobile/ios/vendor/ffmpeg-kit-ios-https/libswscale.xcframework'
++      ]
++  end
+ end
