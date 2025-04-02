@@ -284,19 +284,19 @@ export const TanQueryLineup = ({
             .fill(null)
             .map((_, index) => {
               return (
-                <li
-                  key={index}
-                  className={cn({ [tileStyles!]: !!tileStyles })}
-                  css={{ listStyle: 'none' }}
-                >
-                  <Flex direction='column' gap='m' key={index} mb='xl'>
+                <Flex direction='column' gap='m' key={index} mb='xl' w='100%'>
+                  <li
+                    key={index}
+                    className={cn({ [tileStyles!]: !!tileStyles })}
+                    css={{ listStyle: 'none' }}
+                  >
                     {/* @ts-ignore - the types here need work - we're not passing the full expected types here whenever we pass isLoading: true */}
                     <TrackTile {...skeletonTileProps(index)} key={index} />
-                    {index === 0 && leadingElementId !== undefined ? (
-                      <Divider css={{ width: '100%' }} />
-                    ) : null}
-                  </Flex>
-                </li>
+                  </li>
+                  {index === 0 && leadingElementId !== undefined ? (
+                    <Divider css={{ width: '100%' }} />
+                  ) : null}
+                </Flex>
               )
             })}
         </>
@@ -340,15 +340,7 @@ export const TanQueryLineup = ({
             isBuffering,
             playingSource
           }
-          if (entry.id === leadingElementId) {
-            return (
-              <Flex direction='column' gap='m' key={entry.uid || index} mb='xl'>
-                {/* @ts-ignore - the types here need work - we're not passing the full expected types here whenever we pass isLoading: true */}
-                <TrackTile {...trackProps} />
-                <Divider />
-              </Flex>
-            )
-          }
+
           // @ts-ignore - the types here need work - we're not passing the full expected types here whenever we pass isLoading: true
           return <TrackTile {...trackProps} key={entry.uid || index} />
 
@@ -446,12 +438,14 @@ export const TanQueryLineup = ({
                 ? renderSkeletons(initialPageSize ?? pageSize)
                 : emptyElement
               : tiles.map((tile: any, index: number) => (
-                  <li
-                    key={index}
-                    className={cn({ [tileStyles!]: !!tileStyles })}
-                  >
-                    {tile}
-                  </li>
+                  <Flex direction='column' gap='m' key={index} mb='xl'>
+                    <li className={cn({ [tileStyles!]: !!tileStyles })}>
+                      {tile}
+                    </li>
+                    {index === 0 && leadingElementId !== undefined ? (
+                      <Divider />
+                    ) : null}
+                  </Flex>
                 ))}
 
             {isFetching &&
