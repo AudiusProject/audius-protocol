@@ -284,15 +284,22 @@ export const TanQueryLineup = ({
             .fill(null)
             .map((_, index) => {
               return (
-                <Flex direction='column' gap='m' key={index} mb='xl' w='100%'>
-                  <li
-                    key={index}
-                    className={cn({ [tileStyles!]: !!tileStyles })}
-                    css={{ listStyle: 'none' }}
-                  >
-                    {/* @ts-ignore - the types here need work - we're not passing the full expected types here whenever we pass isLoading: true */}
-                    <TrackTile {...skeletonTileProps(index)} key={index} />
-                  </li>
+                <Flex
+                  direction='column'
+                  gap='m'
+                  key={index}
+                  mb={
+                    index === 0 && leadingElementId !== undefined
+                      ? 'xl'
+                      : undefined
+                  }
+                  w='100%'
+                  as='li'
+                  className={cn({ [tileStyles!]: !!tileStyles })}
+                  css={{ listStyle: 'none' }}
+                >
+                  {/* @ts-ignore - the types here need work - we're not passing the full expected types here whenever we pass isLoading: true */}
+                  <TrackTile {...skeletonTileProps(index)} key={index} />
                   {index === 0 && leadingElementId !== undefined ? (
                     <Divider css={{ width: '100%' }} />
                   ) : null}
@@ -390,7 +397,6 @@ export const TanQueryLineup = ({
     onClickTile,
     isBuffering,
     playingSource,
-    leadingElementId,
     TrackTile,
     isMobile,
     play,
@@ -438,10 +444,19 @@ export const TanQueryLineup = ({
                 ? renderSkeletons(initialPageSize ?? pageSize)
                 : emptyElement
               : tiles.map((tile: any, index: number) => (
-                  <Flex direction='column' gap='m' key={index} mb='xl'>
-                    <li className={cn({ [tileStyles!]: !!tileStyles })}>
-                      {tile}
-                    </li>
+                  <Flex
+                    direction='column'
+                    gap='m'
+                    key={index}
+                    mb={
+                      index === 0 && leadingElementId !== undefined
+                        ? 'xl'
+                        : undefined
+                    }
+                    className={cn({ [tileStyles!]: !!tileStyles })}
+                    as='li'
+                  >
+                    {tile}
                     {index === 0 && leadingElementId !== undefined ? (
                       <Divider />
                     ) : null}
