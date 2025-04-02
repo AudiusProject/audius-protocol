@@ -83,7 +83,7 @@ const collectEntityIds = (notifications: Notification[]): EntityIds => {
       trackIds.add(notification.parentTrackId).add(notification.childTrackId)
     }
     if (type === NotificationType.RemixCosign) {
-      trackIds.add(notification.childTrackId)
+      notification.entityIds.forEach((id) => trackIds.add(id))
       userIds.add(notification.parentTrackUserId)
     }
     if (

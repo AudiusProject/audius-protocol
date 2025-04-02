@@ -23,7 +23,7 @@ import { CooldownSummaryTable } from './CooldownSummaryTable'
 import type { ChallengeContentProps } from './types'
 
 const messages = {
-  rewardMapping: '$AUDIO/Week',
+  rewardMapping: '$AUDIO/Co-Sign',
   totalClaimed: (amount: string) =>
     `${formatNumberCommas(amount)} $AUDIO Claimed`,
   claimAudio: (amount: string) => `Claim ${amount} $AUDIO`,

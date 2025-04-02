@@ -5,7 +5,10 @@ import {
   UndisbursedUserChallenge
 } from '@audius/common/models'
 import { audioRewardsPageActions } from '@audius/common/store'
-import { getClaimableChallengeSpecifiers } from '@audius/common/utils'
+import {
+  formatNumberCommas,
+  getClaimableChallengeSpecifiers
+} from '@audius/common/utils'
 import { Button, IconArrowRight } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
@@ -13,7 +16,8 @@ const { claimChallengeReward } = audioRewardsPageActions
 
 const messages = {
   close: 'Close',
-  claimableAmountLabel: (amount: number) => `Claim ${amount} $AUDIO`
+  claimableAmountLabel: (amount: number) =>
+    `Claim ${formatNumberCommas(amount)} $AUDIO`
 }
 
 type ClaimButtonProps = {
