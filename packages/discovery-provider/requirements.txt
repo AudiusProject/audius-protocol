@@ -12,7 +12,7 @@ types-pytz==2021.1.2
 types-freezegun==1.1.10
 types-Flask==1.1.6
 mypy-protobuf==3.6.0
-types-protobuf==5.29.1
+types-protobuf==5.29.1.20250403
 
 web3==6.20.2
 hexbytes==0.3.1
