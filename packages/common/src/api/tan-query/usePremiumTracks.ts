@@ -1,5 +1,9 @@
 import { OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
@@ -25,7 +29,7 @@ type UsePremiumTracksArgs = {
 
 export const getPremiumTracksQueryKey = (pageSize: number) => {
   return [QUERY_KEYS.premiumTracks, pageSize] as unknown as QueryKey<
-    UserTrackMetadata[]
+    InfiniteData<UserTrackMetadata[]>
   >
 }
 

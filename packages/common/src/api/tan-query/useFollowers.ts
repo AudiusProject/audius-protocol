@@ -1,5 +1,9 @@
 import { Id, OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
@@ -20,7 +24,9 @@ type UseFollowersArgs = {
 }
 
 export const getFollowersQueryKey = ({ userId, pageSize }: UseFollowersArgs) =>
-  [QUERY_KEYS.followers, userId, { pageSize }] as unknown as QueryKey<ID[]>
+  [QUERY_KEYS.followers, userId, { pageSize }] as unknown as QueryKey<
+    InfiniteData<ID[]>
+  >
 
 /**
  * Hook to fetch followers for a user with infinite query support.

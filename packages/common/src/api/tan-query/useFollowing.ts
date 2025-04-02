@@ -1,5 +1,9 @@
 import { Id, OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
@@ -19,7 +23,9 @@ type UseFollowingArgs = {
 }
 
 export const getFollowingQueryKey = ({ userId, pageSize }: UseFollowingArgs) =>
-  [QUERY_KEYS.following, userId, { pageSize }] as unknown as QueryKey<ID[]>
+  [QUERY_KEYS.following, userId, { pageSize }] as unknown as QueryKey<
+    InfiniteData<ID[]>
+  >
 
 /**
  * Hook to fetch following for a user with infinite query support.

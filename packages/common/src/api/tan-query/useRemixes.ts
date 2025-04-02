@@ -1,7 +1,11 @@
 import { useEffect } from 'react'
 
 import { Id, OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
@@ -32,7 +36,7 @@ export const getRemixesQueryKey = ({
   pageSize = DEFAULT_PAGE_SIZE
 }: UseRemixesArgs) =>
   [QUERY_KEYS.remixes, trackId, { pageSize }] as unknown as QueryKey<
-    UserTrackMetadata[]
+    InfiniteData<UserTrackMetadata[]>
   >
 
 export const useRemixes = (

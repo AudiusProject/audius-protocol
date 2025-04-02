@@ -1,5 +1,9 @@
 import { OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
@@ -27,7 +31,7 @@ export const getTrendingUndergroundQueryKey = ({
   pageSize
 }: UseTrendingUndergroundArgs) =>
   [QUERY_KEYS.trendingUnderground, { pageSize }] as unknown as QueryKey<
-    UserTrackMetadata[]
+    InfiniteData<UserTrackMetadata[]>
   >
 
 export const useTrendingUnderground = (

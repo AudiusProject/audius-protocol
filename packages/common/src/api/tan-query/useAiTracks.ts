@@ -1,7 +1,11 @@
 import { useEffect } from 'react'
 
 import { OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
@@ -29,7 +33,7 @@ export const getAiTracksQueryKey = ({
   pageSize = DEFAULT_PAGE_SIZE
 }: UseAiTracksArgs) =>
   [QUERY_KEYS.aiTracks, handle, { pageSize }] as unknown as QueryKey<
-    UserTrackMetadata[]
+    InfiniteData<UserTrackMetadata[]>
   >
 
 export const useAiTracks = (

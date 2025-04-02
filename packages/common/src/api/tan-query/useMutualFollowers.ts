@@ -1,5 +1,9 @@
 import { Id, OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
@@ -23,7 +27,7 @@ export const getMutualFollowersQueryKey = ({
   pageSize
 }: UseMutualFollowersArgs) =>
   [QUERY_KEYS.mutualFollowers, userId, { pageSize }] as unknown as QueryKey<
-    ID[]
+    InfiniteData<ID[]>
   >
 
 export const useMutualFollowers = (

@@ -78,7 +78,7 @@ export const useUpdateProfile = () => {
       })
 
       // Snapshot the previous values
-      const previousMetadata = queryClient.getQueryData<UserMetadata>(
+      const previousMetadata = queryClient.getQueryData(
         getUserQueryKey(currentUserId)
       )
 

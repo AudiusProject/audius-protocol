@@ -1,5 +1,9 @@
 import { Id, OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
@@ -26,7 +30,7 @@ export const getSupportedUsersQueryKey = (
   pageSize: number = SUPPORTING_PAGINATION_SIZE
 ) =>
   [QUERY_KEYS.supportedUsers, userId, pageSize] as unknown as QueryKey<
-    SupportedUserMetadata[]
+    InfiniteData<SupportedUserMetadata[]>
   >
 
 export const useSupportedUsers = (

@@ -1,3 +1,5 @@
+import { InfiniteData } from '@tanstack/react-query'
+
 import { ID } from '~/models'
 import { Event } from '~/models/Event'
 
@@ -9,5 +11,7 @@ export const getEventQueryKey = (eventId: ID | null | undefined) => {
 }
 
 export const getEventListQueryKey = ({ pageSize }: { pageSize?: number }) => {
-  return [QUERY_KEYS.events, { pageSize }] as unknown as QueryKey<Event[]>
+  return [QUERY_KEYS.events, { pageSize }] as unknown as QueryKey<
+    InfiniteData<ID[]>
+  >
 }

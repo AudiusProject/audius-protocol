@@ -1,5 +1,9 @@
 import { Id, OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
@@ -8,7 +12,7 @@ import { ID } from '~/models/Identifiers'
 import { PurchaseableContentType } from '~/store'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils/primeUserData'
 
@@ -24,14 +28,15 @@ export const getPurchasersQueryKey = ({
   contentId,
   contentType,
   pageSize
-}: UsePurchasersArgs) => [
-  QUERY_KEYS.purchasers,
-  {
-    contentId,
-    contentType,
-    pageSize
-  }
-]
+}: UsePurchasersArgs) =>
+  [
+    QUERY_KEYS.purchasers,
+    {
+      contentId,
+      contentType,
+      pageSize
+    }
+  ] as unknown as QueryKey<InfiniteData<ID[]>>
 
 export const usePurchasers = (
   args: UsePurchasersArgs,

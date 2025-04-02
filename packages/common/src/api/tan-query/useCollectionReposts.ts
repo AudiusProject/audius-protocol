@@ -1,5 +1,9 @@
 import { Id, OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
@@ -22,7 +26,9 @@ export const getCollectionRepostsQueryKey = ({
   collectionId,
   pageSize
 }: UseCollectionRepostsArgs) =>
-  [QUERY_KEYS.reposts, collectionId, { pageSize }] as unknown as QueryKey<ID[]>
+  [QUERY_KEYS.reposts, collectionId, { pageSize }] as unknown as QueryKey<
+    InfiniteData<ID[]>
+  >
 
 export const useCollectionReposts = (
   { collectionId, pageSize = DEFAULT_PAGE_SIZE }: UseCollectionRepostsArgs,

@@ -1,11 +1,15 @@
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { pick } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { userMetadataFromSDK } from '~/adapters'
 import { transformAndCleanList } from '~/adapters/utils'
 import { useAudiusQueryContext } from '~/audius-query'
-import { UserMetadata } from '~/models/User'
+import { ID } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryKey, QueryOptions } from './types'
@@ -21,7 +25,7 @@ type UseTopArtistsInGenreArgs = {
 
 export const getTopArtistsInGenreQueryKey = (genre: string, pageSize: number) =>
   [QUERY_KEYS.topArtistsInGenre, genre, pageSize] as unknown as QueryKey<
-    UserMetadata[]
+    InfiniteData<ID[]>
   >
 
 export const useTopArtistsInGenre = (

@@ -1,4 +1,4 @@
-import { Id, Track } from '@audius/sdk'
+import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useStore } from 'react-redux'
 
@@ -47,10 +47,9 @@ export const useUpdateTrack = () => {
     }: UpdateTrackParams) => {
       const sdk = await audiusSdk()
 
-      const previousMetadata = queryClient.getQueryData<Track>([
-        QUERY_KEYS.track,
-        trackId
-      ])
+      const previousMetadata = queryClient.getQueryData(
+        getTrackQueryKey(trackId)
+      )
       const sdkMetadata = trackMetadataForUploadToSdk(
         metadata as TrackMetadataForUpload
       )

@@ -1,13 +1,17 @@
 import { useEffect } from 'react'
 
 import { OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { transformAndCleanList } from '~/adapters/utils'
 import { useAudiusQueryContext } from '~/audius-query'
-import { PlaybackSource } from '~/models'
+import { PlaybackSource, UserTrackMetadata } from '~/models'
 import { TimeRange } from '~/models/TimeRange'
 import { StringKeys } from '~/services/remote-config'
 import {
@@ -23,7 +27,7 @@ import {
 import { Genre } from '~/utils/genres'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -43,10 +47,11 @@ export const getTrendingQueryKey = ({
   genre,
   initialPageSize,
   loadMorePageSize
-}: GetTrendingArgs) => [
-  QUERY_KEYS.trending,
-  { timeRange, genre, initialPageSize, loadMorePageSize }
-]
+}: GetTrendingArgs) =>
+  [
+    QUERY_KEYS.trending,
+    { timeRange, genre, initialPageSize, loadMorePageSize }
+  ] as unknown as QueryKey<InfiniteData<UserTrackMetadata[]>>
 
 export const useTrending = (
   {
@@ -80,7 +85,10 @@ export const useTrending = (
       loadMorePageSize
     }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage, allPages) => {
+    getNextPageParam: (
+      lastPage: UserTrackMetadata[],
+      allPages: UserTrackMetadata[][]
+    ) => {
       const isFirstPage = allPages.length === 1
       const currentPageSize = isFirstPage ? initialPageSize : loadMorePageSize
       if (lastPage.length < currentPageSize) return undefined

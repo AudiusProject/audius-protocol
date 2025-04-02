@@ -1,8 +1,7 @@
-import { QueryClient } from '@tanstack/react-query'
+import { InfiniteData, QueryClient } from '@tanstack/react-query'
 import { Dispatch } from 'redux'
 
 import { ID } from '~/models'
-import { Comment, ReplyComment } from '~/models/Comment'
 import { incrementTrackCommentCount } from '~/store/cache/tracks/actions'
 
 import { QUERY_KEYS } from '../queryKeys'
@@ -26,7 +25,7 @@ export const getTrackCommentListQueryKey = ({
     QUERY_KEYS.trackCommentList,
     trackId,
     { sortMethod }
-  ] as unknown as QueryKey<Comment[]>
+  ] as unknown as QueryKey<InfiniteData<ID[]>>
 }
 
 export const getTrackCommentCountQueryKey = (
@@ -50,14 +49,7 @@ export const getCommentRepliesQueryKey = ({
     commentId,
     QUERY_KEYS.commentReplies,
     pageSize
-  ] as unknown as QueryKey<ReplyComment[]>
-}
-
-export const getTrackCommentNotificationSettingQueryKey = (trackId: ID) => {
-  return [
-    QUERY_KEYS.trackCommentNotificationSetting,
-    trackId
-  ] as unknown as QueryKey<boolean>
+  ] as unknown as QueryKey<InfiniteData<ID[]>>
 }
 
 export const setPreviousCommentCount = (
