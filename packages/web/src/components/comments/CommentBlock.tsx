@@ -108,7 +108,7 @@ const CommentBlockInternal = (
           {!isPreview && (isPinned || isArtistReacted) ? (
             <Flex justifyContent='space-between' alignItems='center'>
               <ArtistPick isLiked={isArtistReacted} isPinned={isPinned} />
-              {userId !== undefined ? (
+              {userId ? (
                 <CommentBadge
                   isArtist={isCommentByArtist}
                   commentUserId={userId}
@@ -120,7 +120,7 @@ const CommentBlockInternal = (
             <Flex justifyContent='space-between' alignItems='center'>
               <Flex gap='s' alignItems='center'>
                 {isLoadingUser ? <Skeleton w={80} h={18} /> : null}
-                {userId !== undefined ? (
+                {userId ? (
                   <UserLink
                     userId={userId}
                     popover
@@ -143,9 +143,7 @@ const CommentBlockInternal = (
                   ) : null}
                 </Flex>
               </Flex>
-              {!isPreview &&
-              userId !== undefined &&
-              !(isPinned || isArtistReacted) ? (
+              {!isPreview && userId && !(isPinned || isArtistReacted) ? (
                 <CommentBadge
                   isArtist={isCommentByArtist}
                   commentUserId={userId}

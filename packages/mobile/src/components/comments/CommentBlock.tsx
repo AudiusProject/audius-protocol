@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { useComment, useGetUserById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
@@ -119,7 +119,7 @@ export const CommentBlockInternal = (
                 alignItems='center'
               >
                 <ArtistPick isLiked={isArtistReacted} isPinned={isPinned} />
-                {userId !== undefined ? (
+                {userId ? (
                   <CommentBadge
                     isArtist={isCommentByArtist}
                     commentUserId={userId}
@@ -136,7 +136,7 @@ export const CommentBlockInternal = (
               >
                 <Flex direction='row' gap='s' alignItems='center'>
                   {isLoadingUser ? <Skeleton width={80} height={18} /> : null}
-                  {userId !== undefined && !isLoadingUser ? (
+                  {userId && !isLoadingUser ? (
                     <UserLink
                       userId={userId}
                       strength='strong'
@@ -162,9 +162,7 @@ export const CommentBlockInternal = (
                     ) : null}
                   </Flex>
                 </Flex>
-                {!isPreview &&
-                userId !== undefined &&
-                !(isPinned || isArtistReacted) ? (
+                {!isPreview && userId && !(isPinned || isArtistReacted) ? (
                   <CommentBadge
                     isArtist={isCommentByArtist}
                     commentUserId={userId}
