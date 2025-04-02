@@ -77,5 +77,6 @@ export const QUERY_KEYS = {
   trendingIds: 'trendingIds',
   trendingPlaylists: 'trendingPlaylists',
   trendingUnderground: 'trendingUnderground',
-  trackPageLineup: 'trackPageLineup'
+  trackPageLineup: 'trackPageLineup',
+  events: 'events'
 } as const

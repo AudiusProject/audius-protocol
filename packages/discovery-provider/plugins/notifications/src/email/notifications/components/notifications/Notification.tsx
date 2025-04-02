@@ -283,7 +283,7 @@ const notificationMap = {
     return (
       <span className={'notificationText'}>
         <HighlightText text={entityName} />
-        <BodyText text={` is now trending thanks to you! Great work 🙌🏽`} />
+        <BodyText text={` is now trending thanks to you! Great work 🙌`} />
       </span>
     )
   },

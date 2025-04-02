@@ -310,8 +310,8 @@ export const notificationFromSDK = (
     case 'cosign': {
       const data = notification.actions[0].data
       const entityType = Entity.Track
-      const entityIds = [HashId.parse(data.parentTrackId)]
       const childTrackId = HashId.parse(data.trackId)
+      const entityIds = [HashId.parse(data.parentTrackId), childTrackId]
       const parentTrackUserId = HashId.parse(notification.actions[0].specifier)
       const userId = HashId.parse(data.trackOwnerId)
 
