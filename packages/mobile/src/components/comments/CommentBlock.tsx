@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import React, { useCallback } from 'react'
 
 import { useComment, useGetUserById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
@@ -111,11 +111,29 @@ export const CommentBlockInternal = (
           style={{ flexShrink: 1 }}
         >
           <Flex gap='2xs'>
-            <Flex row justifyContent='space-between' w='100%'>
-              {isPinned || isArtistReacted ? (
+            {!isPreview && (isPinned || isArtistReacted) ? (
+              <Flex
+                row
+                justifyContent='space-between'
+                w='100%'
+                alignItems='center'
+              >
                 <ArtistPick isLiked={isArtistReacted} isPinned={isPinned} />
-              ) : null}
-              {!isTombstone ? (
+                {userId !== undefined ? (
+                  <CommentBadge
+                    isArtist={isCommentByArtist}
+                    commentUserId={userId}
+                  />
+                ) : null}
+              </Flex>
+            ) : null}
+            {!isTombstone ? (
+              <Flex
+                direction='row'
+                justifyContent='space-between'
+                alignItems='center'
+                w='100%'
+              >
                 <Flex direction='row' gap='s' alignItems='center'>
                   {isLoadingUser ? <Skeleton width={80} height={18} /> : null}
                   {userId !== undefined && !isLoadingUser ? (
@@ -129,7 +147,7 @@ export const CommentBlockInternal = (
                   ) : null}
                   <Flex direction='row' gap='xs' alignItems='center' h='100%'>
                     <Timestamp time={dayjs.utc(createdAt).toDate()} />
-                    {trackTimestampS !== undefined ? (
+                    {trackTimestampS !== undefined && !isPreview ? (
                       <>
                         <Text color='subdued' size='s'>
                           •
@@ -144,26 +162,28 @@ export const CommentBlockInternal = (
                     ) : null}
                   </Flex>
                 </Flex>
-              ) : null}
-              {userId !== undefined ? (
-                <CommentBadge
-                  isArtist={isCommentByArtist}
-                  commentUserId={userId}
-                />
-              ) : null}
-            </Flex>
-            <CommentText
-              isEdited={isEdited && !isTombstone}
-              isPreview={isPreview}
-              commentId={commentId}
-              mentions={mentions}
-              trackDuration={track.duration}
-              navigation={navigation}
-              onCloseDrawer={closeDrawer}
-            >
-              {message}
-            </CommentText>
+                {!isPreview &&
+                userId !== undefined &&
+                !(isPinned || isArtistReacted) ? (
+                  <CommentBadge
+                    isArtist={isCommentByArtist}
+                    commentUserId={userId}
+                  />
+                ) : null}
+              </Flex>
+            ) : null}
           </Flex>
+          <CommentText
+            isEdited={isEdited && !isTombstone}
+            isPreview={isPreview}
+            commentId={commentId}
+            mentions={mentions}
+            trackDuration={track.duration}
+            navigation={navigation}
+            onCloseDrawer={closeDrawer}
+          >
+            {message}
+          </CommentText>
           {!isPreview ? (
             <CommentActionBar
               comment={comment}

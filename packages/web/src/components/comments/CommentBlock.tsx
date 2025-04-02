@@ -105,11 +105,19 @@ const CommentBlockInternal = (
       </Box>
       <Flex direction='column' w='100%' gap='s' alignItems='flex-start'>
         <Flex column gap='xs' w='100%'>
-          {isPinned || isArtistReacted ? (
-            <ArtistPick isLiked={isArtistReacted} isPinned={isPinned} />
+          {!isPreview && (isPinned || isArtistReacted) ? (
+            <Flex justifyContent='space-between' alignItems='center'>
+              <ArtistPick isLiked={isArtistReacted} isPinned={isPinned} />
+              {userId !== undefined ? (
+                <CommentBadge
+                  isArtist={isCommentByArtist}
+                  commentUserId={userId}
+                />
+              ) : null}
+            </Flex>
           ) : null}
           {!isTombstone ? (
-            <Flex justifyContent='space-between'>
+            <Flex justifyContent='space-between' alignItems='center'>
               <Flex gap='s' alignItems='center'>
                 {isLoadingUser ? <Skeleton w={80} h={18} /> : null}
                 {userId !== undefined ? (
@@ -122,7 +130,7 @@ const CommentBlockInternal = (
                 ) : null}
                 <Flex gap='xs' alignItems='flex-end' h='100%'>
                   <Timestamp time={createdAtDate} />
-                  {trackTimestampS !== undefined ? (
+                  {trackTimestampS !== undefined && !isPreview ? (
                     <>
                       <Text color='subdued' size='s'>
                         •
@@ -135,7 +143,9 @@ const CommentBlockInternal = (
                   ) : null}
                 </Flex>
               </Flex>
-              {userId !== undefined ? (
+              {!isPreview &&
+              userId !== undefined &&
+              !(isPinned || isArtistReacted) ? (
                 <CommentBadge
                   isArtist={isCommentByArtist}
                   commentUserId={userId}
@@ -143,36 +153,36 @@ const CommentBlockInternal = (
               ) : null}
             </Flex>
           ) : null}
-          {showEditInput ? (
-            <Flex w='100%' direction='column' gap='s'>
-              <CommentForm
-                autoFocus
-                onSubmit={() => setShowEditInput(false)}
-                commentId={commentId}
-                initialValue={message}
-                initialUserMentions={mentions}
-                isEdit
-                hideAvatar
-              />
-              <PlainButton
-                css={{ alignSelf: 'flex-end' }}
-                onClick={() => setShowEditInput(false)}
-              >
-                Cancel
-              </PlainButton>
-            </Flex>
-          ) : (
-            <CommentText
-              isEdited={isEdited && !isTombstone}
-              isPreview={isPreview}
-              mentions={mentions}
-              commentId={commentId}
-              duration={track.duration}
-            >
-              {message}
-            </CommentText>
-          )}
         </Flex>
+        {showEditInput ? (
+          <Flex w='100%' direction='column' gap='s'>
+            <CommentForm
+              autoFocus
+              onSubmit={() => setShowEditInput(false)}
+              commentId={commentId}
+              initialValue={message}
+              initialUserMentions={mentions}
+              isEdit
+              hideAvatar
+            />
+            <PlainButton
+              css={{ alignSelf: 'flex-end' }}
+              onClick={() => setShowEditInput(false)}
+            >
+              Cancel
+            </PlainButton>
+          </Flex>
+        ) : (
+          <CommentText
+            isEdited={isEdited && !isTombstone}
+            isPreview={isPreview}
+            mentions={mentions}
+            commentId={commentId}
+            duration={track.duration}
+          >
+            {message}
+          </CommentText>
+        )}
         <Flex column gap='xs' w='100%'>
           {isPreview ? null : (
             <CommentActionBar
