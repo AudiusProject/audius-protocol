@@ -342,7 +342,11 @@ export const ComposerInput = (props: ComposerInputProps) => {
 
       // Start user autocomplete
       if (e.key === AT_KEY) {
-        if (mentionCount < maxMentions) {
+        // Only trigger autocomplete if @ is at the start of input or after a space
+        const textBeforeCursor = textarea.value.slice(0, cursorPosition)
+        const isAtStartOfWordOrInput =
+          !textBeforeCursor || textBeforeCursor.endsWith(' ')
+        if (mentionCount < maxMentions && isAtStartOfWordOrInput) {
           setAutocompleteAtIndex(cursorPosition)
           setIsUserAutocompleteActive(true)
         }
