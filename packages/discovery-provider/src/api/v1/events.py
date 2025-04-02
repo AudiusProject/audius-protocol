@@ -1,7 +1,6 @@
 from flask_restx import Namespace, Resource, fields
 
 from src.api.v1.helpers import (
-    abort_bad_request_param,
     abort_not_found,
     current_user_parser,
     decode_ids_array,
