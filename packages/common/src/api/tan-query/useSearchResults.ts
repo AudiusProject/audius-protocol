@@ -26,7 +26,7 @@ import { Genre, formatMusicalKey } from '~/utils'
 import { useCurrentUserId } from '..'
 
 import { QUERY_KEYS } from './queryKeys'
-import { FlatUseInfiniteQueryResult, QueryOptions } from './types'
+import { FlatUseInfiniteQueryResult, QueryKey, QueryOptions } from './types'
 import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
 import { primeCollectionData } from './utils/primeCollectionData'
 import { primeTrackData } from './utils/primeTrackData'
@@ -69,18 +69,34 @@ const getMinMaxFromBpm = (bpm?: string) => {
   return [bufferedBpmMin, bufferedBpmMax]
 }
 
-export const getSearchResultsQueryKey = ({
+export const getSearchResultsQueryKey = <T extends SearchCategory>({
   query,
   category,
   sortMethod,
   pageSize,
   ...filters
-}: Omit<SearchArgs & { category: SearchCategory }, 'currentUserId'>) => [
-  QUERY_KEYS.search,
-  category,
-  query,
-  { sortMethod, pageSize, ...filters }
-]
+}: Omit<SearchArgs & { category: T }, 'currentUserId'>) =>
+  [
+    QUERY_KEYS.search,
+    category,
+    query,
+    { sortMethod, pageSize, ...filters }
+  ] as unknown as QueryKey<
+    InfiniteData<
+      T extends 'tracks'
+        ? UserTrackMetadata[]
+        : T extends 'users'
+          ? UserMetadata[]
+          : T extends 'albums' | 'playlists'
+            ? UserCollectionMetadata[]
+            : {
+                tracks: UserTrackMetadata[]
+                users: UserMetadata[]
+                albums: UserCollectionMetadata[]
+                playlists: UserCollectionMetadata[]
+              }
+    >
+  >
 
 export const SEARCH_PAGE_SIZE = 12
 
@@ -197,6 +213,7 @@ const useSearchQueryProps = <T>(
             ...queryKeyArgs,
             category
           }),
+          // @ts-ignore search type is conditional on category, too verbose to inline
           (queryData: InfiniteData<T[]>): InfiniteData<T[]> => {
             const prevPages = (queryData?.pages as T[][]) ?? []
             const currentIndex = pageParam % pageSize
