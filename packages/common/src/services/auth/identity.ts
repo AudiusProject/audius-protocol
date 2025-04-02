@@ -81,6 +81,9 @@ export class IdentityService {
   // Likely this means extending BaseAPI and using request sig middleware
   // But calling code needs to update to follow SDK patterns as well
   private async _makeRequest<T = unknown>(axiosRequestObj: AxiosRequestConfig) {
+    axiosRequestObj.baseURL =
+      axiosRequestObj.baseURL || this.identityServiceEndpoint
+
     const requestId = uuid()
     axiosRequestObj.headers = {
       ...(axiosRequestObj.headers || {}),
