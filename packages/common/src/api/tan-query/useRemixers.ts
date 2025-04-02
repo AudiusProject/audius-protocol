@@ -7,7 +7,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils/primeUserData'
 
@@ -23,7 +23,10 @@ export const getRemixersQueryKey = ({
   userId,
   trackId,
   pageSize = DEFAULT_PAGE_SIZE
-}: UseRemixersArgs) => [QUERY_KEYS.remixers, userId, trackId, { pageSize }]
+}: UseRemixersArgs) =>
+  [QUERY_KEYS.remixers, userId, trackId, { pageSize }] as unknown as QueryKey<
+    ID[]
+  >
 
 export const useRemixers = (
   { userId, trackId, pageSize = DEFAULT_PAGE_SIZE }: UseRemixersArgs,

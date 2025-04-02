@@ -8,7 +8,7 @@ import { ID } from '~/models'
 import { getUserId } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { primeUserData } from './utils/primeUserData'
 
 const DEFAULT_PAGE_SIZE = 20
@@ -21,7 +21,10 @@ type UseMutualFollowersArgs = {
 export const getMutualFollowersQueryKey = ({
   userId,
   pageSize
-}: UseMutualFollowersArgs) => [QUERY_KEYS.mutualFollowers, userId, { pageSize }]
+}: UseMutualFollowersArgs) =>
+  [QUERY_KEYS.mutualFollowers, userId, { pageSize }] as unknown as QueryKey<
+    ID[]
+  >
 
 export const useMutualFollowers = (
   { userId, pageSize = DEFAULT_PAGE_SIZE }: UseMutualFollowersArgs,

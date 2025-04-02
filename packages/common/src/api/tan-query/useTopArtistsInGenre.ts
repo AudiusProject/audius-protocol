@@ -5,9 +5,10 @@ import { useDispatch } from 'react-redux'
 import { userMetadataFromSDK } from '~/adapters'
 import { transformAndCleanList } from '~/adapters/utils'
 import { useAudiusQueryContext } from '~/audius-query'
+import { UserMetadata } from '~/models/User'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useUsers } from './useUsers'
 import { primeUserData } from './utils/primeUserData'
 
@@ -18,10 +19,10 @@ type UseTopArtistsInGenreArgs = {
   pageSize?: number
 }
 
-export const getTopArtistsInGenreQueryKey = (
-  genre: string,
-  pageSize: number
-) => [QUERY_KEYS.topArtistsInGenre, genre, pageSize]
+export const getTopArtistsInGenreQueryKey = (genre: string, pageSize: number) =>
+  [QUERY_KEYS.topArtistsInGenre, genre, pageSize] as unknown as QueryKey<
+    UserMetadata[]
+  >
 
 export const useTopArtistsInGenre = (
   args: UseTopArtistsInGenreArgs,

@@ -5,7 +5,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { CollectiblesMetadata, ID } from '~/models'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 
 export type GetUserCollectiblesArgs = {
   userId: ID | null
@@ -13,7 +13,12 @@ export type GetUserCollectiblesArgs = {
 
 export const getUserCollectiblesQueryKey = ({
   userId
-}: GetUserCollectiblesArgs) => [QUERY_KEYS.userCollectibles, userId]
+}: GetUserCollectiblesArgs) => {
+  return [
+    QUERY_KEYS.userCollectibles,
+    userId
+  ] as unknown as QueryKey<CollectiblesMetadata>
+}
 
 /** Returns the user's known/ordered collectibles list if they have been set */
 export const useUserCollectibles = (
@@ -75,8 +80,7 @@ export const useUpdateUserCollectibles = () => {
         queryKey
       })
 
-      const previousCollectibles =
-        queryClient.getQueryData<CollectiblesMetadata>(queryKey)
+      const previousCollectibles = queryClient.getQueryData(queryKey)
 
       queryClient.setQueryData(queryKey, collectibles)
 

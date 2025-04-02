@@ -5,8 +5,35 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
+
+type GetStemsArchiveJobStatusResponse = {
+  id: string
+  state:
+    | 'completed'
+    | 'failed'
+    | 'active'
+    | 'waiting'
+    | 'delayed'
+    | 'prioritized'
+  progress?: number
+  failedReason?: string
+}
+
+export const getStemsArchiveJobQueryKey = (jobId?: string) => {
+  return [
+    QUERY_KEYS.stemsArchiveJob,
+    jobId
+  ] as unknown as QueryKey<GetStemsArchiveJobStatusResponse>
+}
+
+export const getDownloadTrackStemsQueryKey = (trackId: ID) => {
+  return [
+    QUERY_KEYS.downloadTrackStems,
+    trackId
+  ] as unknown as QueryKey<GetStemsArchiveJobStatusResponse>
+}
 
 export const useDownloadTrackStems = ({ trackId }: { trackId: ID }) => {
   const { audiusSdk } = useAudiusQueryContext()
@@ -30,12 +57,9 @@ export const useDownloadTrackStems = ({ trackId }: { trackId: ID }) => {
       })
     },
     onSuccess: async (response) => {
+      queryClient.setQueryData(getDownloadTrackStemsQueryKey(trackId), response)
       queryClient.setQueryData(
-        [QUERY_KEYS.downloadTrackStems, trackId],
-        response
-      )
-      queryClient.setQueryData(
-        [QUERY_KEYS.stemsArchiveJob, response.id],
+        getStemsArchiveJobQueryKey(response.id),
         response
       )
     }
@@ -58,7 +82,7 @@ export const useCancelStemsArchiveJob = () => {
     },
     onSuccess: (jobId) => {
       queryClient.removeQueries({
-        queryKey: [QUERY_KEYS.stemsArchiveJob, jobId],
+        queryKey: getStemsArchiveJobQueryKey(jobId),
         exact: true
       })
     }
@@ -72,7 +96,7 @@ export const useGetStemsArchiveJobStatus = (
   const { audiusSdk } = useAudiusQueryContext()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.stemsArchiveJob, jobId],
+    queryKey: getStemsArchiveJobQueryKey(jobId),
     queryFn: async () => {
       if (!jobId) {
         throw new Error('Job ID is required')

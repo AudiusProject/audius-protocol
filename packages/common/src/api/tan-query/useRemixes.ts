@@ -15,7 +15,7 @@ import {
 } from '~/store/pages'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -30,7 +30,10 @@ export type UseRemixesArgs = {
 export const getRemixesQueryKey = ({
   trackId,
   pageSize = DEFAULT_PAGE_SIZE
-}: UseRemixesArgs) => [QUERY_KEYS.remixes, trackId, { pageSize }]
+}: UseRemixesArgs) =>
+  [QUERY_KEYS.remixes, trackId, { pageSize }] as unknown as QueryKey<
+    UserTrackMetadata[]
+  >
 
 export const useRemixes = (
   { trackId, pageSize = DEFAULT_PAGE_SIZE }: UseRemixesArgs,

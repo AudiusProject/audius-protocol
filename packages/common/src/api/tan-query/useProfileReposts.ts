@@ -12,7 +12,7 @@ import {
 } from '~/store/pages'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils'
 import { primeCollectionData } from './utils/primeCollectionData'
@@ -29,7 +29,10 @@ type UseProfileRepostsArgs = {
 export const getProfileRepostsQueryKey = ({
   handle,
   pageSize
-}: UseProfileRepostsArgs) => [QUERY_KEYS.profileReposts, handle, { pageSize }]
+}: UseProfileRepostsArgs) =>
+  [QUERY_KEYS.profileReposts, handle, { pageSize }] as unknown as QueryKey<
+    (UserTrackMetadata | UserCollectionMetadata)[]
+  >
 
 export const useProfileReposts = (
   { handle, pageSize = DEFAULT_PAGE_SIZE }: UseProfileRepostsArgs,

@@ -7,7 +7,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { useUsers } from './useUsers'
 import { primeUserData } from './utils/primeUserData'
@@ -19,10 +19,8 @@ type UseFollowersArgs = {
   pageSize?: number
 }
 
-export const getFollowersQueryKey = ({
-  userId,
-  pageSize
-}: UseFollowersArgs) => [QUERY_KEYS.followers, userId, { pageSize }]
+export const getFollowersQueryKey = ({ userId, pageSize }: UseFollowersArgs) =>
+  [QUERY_KEYS.followers, userId, { pageSize }] as unknown as QueryKey<ID[]>
 
 /**
  * Hook to fetch followers for a user with infinite query support.

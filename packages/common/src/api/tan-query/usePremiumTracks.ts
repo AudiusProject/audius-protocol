@@ -12,7 +12,7 @@ import {
 } from '~/store/pages'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -23,10 +23,11 @@ type UsePremiumTracksArgs = {
   pageSize?: number
 }
 
-export const getPremiumTracksQueryKey = (pageSize: number) => [
-  QUERY_KEYS.premiumTracks,
-  pageSize
-]
+export const getPremiumTracksQueryKey = (pageSize: number) => {
+  return [QUERY_KEYS.premiumTracks, pageSize] as unknown as QueryKey<
+    UserTrackMetadata[]
+  >
+}
 
 export const usePremiumTracks = (
   { pageSize = DEFAULT_PAGE_SIZE }: UsePremiumTracksArgs = {},

@@ -11,15 +11,17 @@ import { CommonState } from '~/store/commonStore'
 import { stemsUploadSelectors } from '~/store/stems-upload'
 import { TrackMetadataForUpload } from '~/store/upload'
 
+import { TQTrack } from './models'
 import { QUERY_KEYS } from './queryKeys'
 import { useDeleteTrack } from './useDeleteTrack'
 import { getTrackQueryKey } from './useTrack'
 import { handleStemUpdates } from './utils/handleStemUpdates'
 import { primeTrackData } from './utils/primeTrackData'
+
 const { getCurrentUploads } = stemsUploadSelectors
 
 type MutationContext = {
-  previousTrack: UserTrackMetadata | undefined
+  previousTrack: TQTrack | undefined
 }
 
 export type UpdateTrackParams = {
@@ -88,10 +90,7 @@ export const useUpdateTrack = () => {
       })
 
       // Snapshot the previous values
-      const previousTrack = queryClient.getQueryData<UserTrackMetadata>([
-        QUERY_KEYS.track,
-        trackId
-      ])
+      const previousTrack = queryClient.getQueryData(getTrackQueryKey(trackId))
 
       // Optimistically update track
       if (previousTrack) {
@@ -149,7 +148,7 @@ export const useUpdateTrack = () => {
     },
     onSettled: (_, __, { trackId }) => {
       // Always refetch after error or success to ensure cache is in sync with server
-      // queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.track, trackId] })
+      // queryClient.invalidateQueries({ queryKey: getTrackQueryKey(trackId) })
     }
   })
 }

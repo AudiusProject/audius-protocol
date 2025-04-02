@@ -12,7 +12,7 @@ import { aiPageLineupActions, aiPageSelectors } from '~/store/pages'
 import { fetchAiUser } from '~/store/pages/ai/slice'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -27,7 +27,10 @@ type UseAiTracksArgs = {
 export const getAiTracksQueryKey = ({
   handle,
   pageSize = DEFAULT_PAGE_SIZE
-}: UseAiTracksArgs) => [QUERY_KEYS.aiTracks, handle, { pageSize }]
+}: UseAiTracksArgs) =>
+  [QUERY_KEYS.aiTracks, handle, { pageSize }] as unknown as QueryKey<
+    UserTrackMetadata[]
+  >
 
 export const useAiTracks = (
   { handle, pageSize = DEFAULT_PAGE_SIZE }: UseAiTracksArgs,

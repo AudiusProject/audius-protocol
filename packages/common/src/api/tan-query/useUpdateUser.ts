@@ -7,7 +7,6 @@ import { ID } from '~/models/Identifiers'
 import { PlaylistLibrary } from '~/models/PlaylistLibrary'
 import { UserMetadata } from '~/models/User'
 
-import { QUERY_KEYS } from './queryKeys'
 import { getCurrentUserQueryKey } from './useCurrentUser'
 import { getUserQueryKey } from './useUser'
 
@@ -49,10 +48,7 @@ export const useUpdateUser = () => {
       await queryClient.cancelQueries({ queryKey: getUserQueryKey(userId) })
 
       // Snapshot the previous values
-      const previousUser = queryClient.getQueryData<UserMetadata>([
-        QUERY_KEYS.user,
-        userId
-      ])
+      const previousUser = queryClient.getQueryData(getUserQueryKey(userId))
 
       // Snapshot the previous account user if it matches
       const previousAccountUser = queryClient

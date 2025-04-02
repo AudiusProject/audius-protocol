@@ -1,11 +1,19 @@
 import {
+  DataTag,
   DefinedInitialDataOptions,
+  QueryKey as TanQueryKey,
   UseInfiniteQueryResult,
   UseQueryOptions
 } from '@tanstack/react-query'
 
 import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
 import { UseLineupQueryData } from './utils/useLineupQuery'
+
+/**
+ * Using DataTag allows tan-query to infer the data type stored at this key
+ * TData is the type of the data stored at this key
+ */
+export type QueryKey<TData> = DataTag<TanQueryKey, TData>
 
 /**
  * Standard tan-query pass-thru options that we use

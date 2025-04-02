@@ -1,9 +1,5 @@
 import { Id, OptionalId } from '@audius/sdk'
-import {
-  QueryKey,
-  useInfiniteQuery,
-  useQueryClient
-} from '@tanstack/react-query'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
@@ -14,7 +10,7 @@ import {
 } from '~/models/Tipping'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getSupporterQueryKey } from './useSupporter'
 import { primeUserData } from './utils/primeUserData'
@@ -28,8 +24,11 @@ type UseSupportersArgs = {
 
 export const getSupportersQueryKey = (
   userId: ID | null | undefined,
-  pageSize: number
-) => [QUERY_KEYS.supporters, userId, pageSize]
+  pageSize: number = DEFAULT_PAGE_SIZE
+) =>
+  [QUERY_KEYS.supporters, userId, pageSize] as unknown as QueryKey<
+    SupporterMetadata[]
+  >
 
 export const useSupporters = (
   { userId, pageSize = DEFAULT_PAGE_SIZE }: UseSupportersArgs,
@@ -40,13 +39,7 @@ export const useSupporters = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  return useInfiniteQuery<
-    SupporterMetadata[],
-    Error,
-    SupporterMetadata[],
-    QueryKey,
-    number
-  >({
+  return useInfiniteQuery({
     queryKey: getSupportersQueryKey(userId, pageSize),
     initialPageParam: 0,
     getNextPageParam: (

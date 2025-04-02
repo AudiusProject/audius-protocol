@@ -1,11 +1,6 @@
 import { useMemo } from 'react'
 
-import {
-  DataTag,
-  QueryKey,
-  useQuery,
-  useQueryClient
-} from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
@@ -14,14 +9,11 @@ import { ID } from '~/models/Identifiers'
 import { getTracksBatcher } from './batchers/getTracksBatcher'
 import { TQTrack } from './models'
 import { QUERY_KEYS } from './queryKeys'
-import { SelectableQueryOptions } from './types'
+import { QueryKey, SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
 export const getTrackQueryKey = (trackId: ID | null | undefined) => {
-  return [QUERY_KEYS.track, trackId] as unknown as DataTag<
-    QueryKey,
-    TQTrack | undefined
-  >
+  return [QUERY_KEYS.track, trackId] as unknown as QueryKey<TQTrack>
 }
 
 export const useTrack = <TResult = TQTrack>(
