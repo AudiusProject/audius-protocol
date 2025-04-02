@@ -23,6 +23,7 @@ import {
   queueSelectors
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
+import { Divider, Flex } from '@audius/harmony'
 import cn from 'classnames'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch, useSelector } from 'react-redux'
@@ -150,7 +151,6 @@ export const TanQueryLineup = ({
   delineate = false,
   endOfLineupElement: endOfLineup,
   leadingElementId,
-  leadingElementTileProps,
   lineupContainerStyles,
   tileContainerStyles,
   tileStyles,
@@ -172,10 +172,11 @@ export const TanQueryLineup = ({
   hasNextPage,
   isPending = true,
   isPlaying = false,
-  isFetching = true,
+  // isFetching = true,
   isError = false,
   maxEntries
 }: TanQueryLineupProps) => {
+  const isFetching = true
   const dispatch = useDispatch()
 
   const getCurrentQueueItem = useMemo(() => makeGetCurrent(), [])
@@ -288,15 +289,27 @@ export const TanQueryLineup = ({
                   className={cn({ [tileStyles!]: !!tileStyles })}
                   css={{ listStyle: 'none' }}
                 >
-                  {/* @ts-ignore - TODO: these types werent being enforced before */}
-                  <TrackTile {...skeletonTileProps(index)} key={index} />
+                  <Flex direction='column' gap='m' key={index} mb='xl'>
+                    {/* @ts-ignore - the types here need work - we're not passing the full expected types here whenever we pass isLoading: true */}
+                    <TrackTile {...skeletonTileProps(index)} key={index} />
+                    {index === 0 && leadingElementId !== undefined ? (
+                      <Divider css={{ width: '100%' }} />
+                    ) : null}
+                  </Flex>
                 </li>
               )
             })}
         </>
       )
     },
-    [TrackTile, numPlaylistSkeletonRows, ordered, tileSize, tileStyles]
+    [
+      TrackTile,
+      leadingElementId,
+      numPlaylistSkeletonRows,
+      ordered,
+      tileSize,
+      tileStyles
+    ]
   )
 
   // Determine how to render our tiles
@@ -325,11 +338,21 @@ export const TanQueryLineup = ({
             onClick: onClickTile,
             source: ModalSource.LineUpTrackTile,
             isBuffering,
-            playingSource,
-            ...(entry.id === leadingElementId && leadingElementTileProps)
+            playingSource
           }
-          // @ts-ignore - TODO: these types werent enforced before - something smelly here
+          if (entry.id === leadingElementId) {
+            return (
+              <Flex direction='column' gap='m' key={entry.uid || index} mb='xl'>
+                {/* @ts-ignore - the types here need work - we're not passing the full expected types here whenever we pass isLoading: true */}
+                <TrackTile {...trackProps} />
+                <Divider />
+              </Flex>
+            )
+          }
+          // @ts-ignore - the types here need work - we're not passing the full expected types here whenever we pass isLoading: true
           return <TrackTile {...trackProps} key={entry.uid || index} />
+
+          // @ts-ignore - TODO: these types werent enforced before - something smelly here
         } else if (entry.kind === Kind.COLLECTIONS || entry.playlist_id) {
           const playlistProps: PlaylistTileProps = {
             ...entry,
@@ -347,8 +370,7 @@ export const TanQueryLineup = ({
             isTrending,
             source: ModalSource.LineUpCollectionTile,
             isBuffering,
-            playingSource,
-            ...(entry.id === leadingElementId && leadingElementTileProps)
+            playingSource
           }
           // @ts-ignore - TODO: these types werent enforced before - something smelly here
           return <PlaylistTile {...playlistProps} key={entry.uid || index} />
@@ -364,9 +386,6 @@ export const TanQueryLineup = ({
     return result
   }, [
     isError,
-    isMobile,
-    isTrending,
-    isBuffering,
     lineupEntries,
     delineate,
     ordered,
@@ -375,9 +394,13 @@ export const TanQueryLineup = ({
     statSize,
     containerClassName,
     data,
+    isTrending,
     onClickTile,
+    isBuffering,
     playingSource,
+    leadingElementId,
     TrackTile,
+    isMobile,
     play,
     pause,
     playingTrackId,

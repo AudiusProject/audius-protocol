@@ -202,13 +202,7 @@ const messages = {
   muteUser: commentsMessages.popups.muteUser,
   unmuteUser: commentsMessages.popups.unmuteUser
 }
-const RepostsTab = ({
-  handle,
-  artistPickTrackId
-}: {
-  handle: string
-  artistPickTrackId: ID | null
-}) => {
+const RepostsTab = ({ handle }: { handle: string }) => {
   const {
     data,
     isPending,
@@ -227,7 +221,6 @@ const RepostsTab = ({
   return (
     <div className={styles.tiles}>
       <TanQueryLineup
-        leadingElementId={artistPickTrackId}
         data={data}
         isPending={isPending}
         isFetching={isFetching}
@@ -247,13 +240,11 @@ const RepostsTab = ({
 }
 
 const TracksTab = ({
-  profile,
-  handle,
-  isOwner
+  artistPickTrackId,
+  handle
 }: {
-  profile: User
   handle: string
-  isOwner: boolean
+  artistPickTrackId: ID | null
 }) => {
   const {
     data,
@@ -271,18 +262,9 @@ const TracksTab = ({
     handle
   })
 
-  const trackUploadChip = isOwner ? (
-    <UploadChip
-      key='upload-chip'
-      type='track'
-      variant='tile'
-      source='profile'
-    />
-  ) : undefined
-
   return (
     <TanQueryLineup
-      extraPrecedingElement={trackUploadChip}
+      leadingElementId={artistPickTrackId}
       data={data}
       isPending={isPending}
       isFetching={isFetching}
@@ -466,7 +448,10 @@ const ProfilePage = ({
               />
             </>
           ) : (
-            <TracksTab profile={profile} handle={handle} isOwner={isOwner} />
+            <TracksTab
+              handle={handle}
+              artistPickTrackId={profile.artist_pick_track_id}
+            />
           )
         ) : null}
       </Box>,
@@ -487,10 +472,7 @@ const ProfilePage = ({
               text={messages.emptyTab.repostedAnything}
             />
           ) : (
-            <RepostsTab
-              handle={handle}
-              artistPickTrackId={profile.artist_pick_track_id}
-            />
+            <RepostsTab handle={handle} />
           )
         ) : null}
       </Box>
@@ -563,10 +545,7 @@ const ProfilePage = ({
             text={messages.emptyTab.repostedAnything}
           />
         ) : (
-          <RepostsTab
-            handle={handle}
-            artistPickTrackId={profile.artist_pick_track_id}
-          />
+          <RepostsTab handle={handle} />
         )}
       </Box>,
       <Box w='100%' key={ProfilePageTabs.PLAYLISTS}>
