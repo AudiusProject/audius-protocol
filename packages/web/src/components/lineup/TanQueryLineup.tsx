@@ -255,14 +255,13 @@ export const TanQueryLineup = ({
 
   // Trim lineup based on start & maxEntry props
   const lineupEntries = useMemo(() => {
-    if (pageSize !== undefined && start !== undefined) {
-      return lineup.entries.slice(start, start + pageSize)
-    } else if (maxEntries !== undefined) {
+    if (maxEntries !== undefined) {
       return lineup.entries.slice(0, maxEntries)
     }
     return lineup.entries
-  }, [lineup.entries, pageSize, start, maxEntries])
+  }, [lineup.entries, maxEntries])
 
+  // console.log('lineupEntries', lineupEntries)
   const renderSkeletons = useCallback(
     (skeletonCount: number | undefined) => {
       // This means no skeletons are desired
@@ -406,6 +405,7 @@ export const TanQueryLineup = ({
     PlaylistTile
   ])
 
+  // console.log('tiles', tiles)
   const isInitialLoad = (isFetching && tiles.length === 0) || isPending
 
   const isEmptyResults = tiles.length === 0 && !isFetching && !isInitialLoad
