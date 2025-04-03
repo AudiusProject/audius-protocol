@@ -207,9 +207,12 @@ export const GiantTrackTile = ({
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
   )
-  const { data: events } = useEventsByEntityId(trackId, {
-    entityType: GetEntityEventsEntityTypeEnum.Track
-  })
+  const { data: events, isLoading: isEventsLoading } = useEventsByEntityId(
+    trackId,
+    {
+      entityType: GetEntityEventsEntityTypeEnum.Track
+    }
+  )
   const event = events?.[0]
   const isRemixContest = isRemixContestEnabled && !isOwner && event
 
@@ -454,7 +457,7 @@ export const GiantTrackTile = ({
     )
   }, [isRemixContest, goToUploadWithRemix, event])
 
-  const isLoading = loading || artworkLoading
+  const isLoading = loading || artworkLoading || isEventsLoading
 
   const overflowMenuExtraItems = []
   if (!isOwner) {

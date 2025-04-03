@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { Event as EventSDK, Id, OptionalId } from '@audius/sdk'
+import { Event as EventSDK, Id, OptionalId, decodeHashId } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
 
@@ -15,9 +15,9 @@ import { getEventsByEntityIdQueryKey, EventsByEntityIdOptions } from './utils'
 
 const transformEvent = (event: EventSDK): Event => ({
   ...event,
-  eventId: parseInt(event.eventId),
-  userId: parseInt(event.userId),
-  entityId: event.entityId ? parseInt(event.entityId) : null
+  eventId: decodeHashId(event.eventId)!,
+  userId: decodeHashId(event.userId)!,
+  entityId: event.entityId ? (decodeHashId(event.entityId) ?? null) : null
 })
 
 type UseEventsByEntityIdOptions<TResult = Event[]> = SelectableQueryOptions<
@@ -59,7 +59,6 @@ export const useEventsByEntityId = <TResult = Event[]>(
         ? options.select(events)
         : (events as unknown as TResult)
     }
-    // enabled: options?.enabled !== false && !!queryKey
   })
 
   const events = data as unknown as Event[] | undefined

@@ -24,12 +24,4 @@ export const getEventListQueryKey = ({ pageSize }: { pageSize?: number }) => [
 export const getEventsByEntityIdQueryKey = (
   entityId: ID | null | undefined,
   options?: EventsByEntityIdOptions
-) =>
-  [
-    QUERY_KEYS.eventsByEntityId,
-    entityId,
-    options?.entityType,
-    options?.filterDeleted,
-    options?.offset,
-    options?.limit
-  ] as const
+) => [QUERY_KEYS.eventsByEntityId, entityId, options]
