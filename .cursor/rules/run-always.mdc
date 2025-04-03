@@ -71,3 +71,37 @@ When asked to analyze, search, or investigate code, do NOT make any code changes
 If the user wants changes, they will explicitly ask for them with words like "update", "change", "fix", "modify", etc.
 
 
+# Migration File Naming Convention
+
+When creating new migration files in `packages/discovery-provider/ddl/migrations/`, follow these guidelines:
+
+1. File Naming Pattern
+   - Use the format: `{number}_{descriptive_name}.sql`
+   - The number should be the next sequential number after the highest existing migration
+   - Example: If the latest is `0128_patch_user_handle.sql`, the next should be `0129_...`
+
+2. Finding the Latest Number
+   - Check the `packages/discovery-provider/ddl/migrations/` directory
+   - Look for the highest numbered migration file
+   - Increment that number by 1 for your new migration
+
+3. Migration Content
+   - Always wrap migrations in a transaction (begin/commit)
+   - Use clear, descriptive names that indicate what the migration does
+   - Add comments if the migration's purpose isn't immediately clear from the name
+
+4. Multiple Migrations
+   - If multiple migrations are being added in the same PR:
+     - Coordinate with other developers to avoid number conflicts
+     - Each migration should have its own sequential number
+     - Never use the same number with different suffixes (e.g., 0129a, 0129b)
+
+Example:
+```sql
+-- File: 0129_add_new_column.sql
+begin;
+ALTER TABLE my_table ADD COLUMN new_column varchar;
+commit;
+```
+
+
