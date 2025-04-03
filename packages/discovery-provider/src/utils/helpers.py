@@ -13,7 +13,6 @@ from typing import List, Optional, TypedDict, cast
 
 import base58
 import psutil
-import requests
 
 # pylint: disable=no-name-in-module
 from eth_account.messages import encode_defunct
@@ -48,16 +47,6 @@ def get_ip(request_obj):
     if not ip:
         return ""
     return ip.split(",")[0].strip()
-
-
-def get_openresty_public_key():
-    """Get public key for openresty if it is running"""
-    try:
-        resp = requests.get("http://localhost:5000/openresty_pubkey", timeout=1)
-        resp.raise_for_status()
-        return resp.text
-    except requests.exceptions.RequestException:
-        return None
 
 
 @contextlib.contextmanager

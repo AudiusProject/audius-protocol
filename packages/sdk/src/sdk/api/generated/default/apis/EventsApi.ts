@@ -38,6 +38,15 @@ export interface GetBulkEventsRequest {
     id?: Array<string>;
 }
 
+export interface GetEntityEventsRequest {
+    entityId: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+    entityType?: GetEntityEventsEntityTypeEnum;
+    filterDeleted?: boolean;
+}
+
 /**
  * 
  */
@@ -125,6 +134,63 @@ export class EventsApi extends runtime.BaseAPI {
 
     /**
      * @hidden
+     * Get events for a specific entity
+     * Get events for a specific entity
+     */
+    async getEntityEventsRaw(params: GetEntityEventsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EventsResponse>> {
+        if (params.entityId === null || params.entityId === undefined) {
+            throw new runtime.RequiredError('entityId','Required parameter params.entityId was null or undefined when calling getEntityEvents.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.entityId !== undefined) {
+            queryParameters['entity_id'] = params.entityId;
+        }
+
+        if (params.entityType !== undefined) {
+            queryParameters['entity_type'] = params.entityType;
+        }
+
+        if (params.filterDeleted !== undefined) {
+            queryParameters['filter_deleted'] = params.filterDeleted;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/events/entity`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => EventsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get events for a specific entity
+     * Get events for a specific entity
+     */
+    async getEntityEvents(params: GetEntityEventsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EventsResponse> {
+        const response = await this.getEntityEventsRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
      * Gets an unclaimed blockchain event ID
      */
     async getUnclaimedEventIDRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UnclaimedIdResponse>> {
@@ -160,3 +226,12 @@ export const GetAllEventsSortMethodEnum = {
     Timestamp: 'timestamp'
 } as const;
 export type GetAllEventsSortMethodEnum = typeof GetAllEventsSortMethodEnum[keyof typeof GetAllEventsSortMethodEnum];
+/**
+ * @export
+ */
+export const GetEntityEventsEntityTypeEnum = {
+    Track: 'track',
+    Collection: 'collection',
+    User: 'user'
+} as const;
+export type GetEntityEventsEntityTypeEnum = typeof GetEntityEventsEntityTypeEnum[keyof typeof GetEntityEventsEntityTypeEnum];
