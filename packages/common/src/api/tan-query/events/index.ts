@@ -2,6 +2,7 @@
 export * from './useAllEvents'
 export * from './useEvent'
 export * from './useEvents'
+export * from './useEventsByEntityId'
 
 // Mutations
 export * from './useCreateEvent'
