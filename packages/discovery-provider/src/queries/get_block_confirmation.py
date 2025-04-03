@@ -9,7 +9,7 @@ core: CoreClient = get_core_instance()
 
 # returns a dictionary that represents whether
 # the given blockhash is present, the given blocknumber is passed
-def get_block_confirmation(blockhash, blocknumber):
+def get_block_confirmation(blockhash, blocknumber, core=core):
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
         blockhash_query = (
