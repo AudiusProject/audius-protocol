@@ -1,23 +1,17 @@
 from src.models.core.core_indexed_blocks import CoreIndexedBlocks
 from src.queries.get_block_confirmation import get_block_confirmation
-from src.tasks.core.gen.protocol_pb2 import BlockResponse, NodeInfoResponse
+from src.tasks.core.gen.protocol_pb2 import NodeInfoResponse
 
 
 class MockCore:
-    def __init__(self, return_block: BlockResponse):
-        self.return_block = return_block
-
     def get_node_info(self) -> NodeInfoResponse:
         return NodeInfoResponse(chainid="audius-devnet")
-
-    def get_block(self, *args) -> BlockResponse:
-        return self.return_block
 
 
 def test_get_block_confirmation(redis_mock, db_mock):
     """Tests confirmation of block given a blockhash and a blocknumber"""
 
-    core = MockCore(BlockResponse())
+    core = MockCore()
 
     # Set up db state
     blockhash, blocknumber = "0x01", 1
@@ -31,7 +25,7 @@ def test_get_block_confirmation(redis_mock, db_mock):
                 blockhash="0x00",
                 height=0,
                 parenthash=None,
-                chain_id="1",
+                chain_id="audius-devnet",
             )
         )
         session.add(
@@ -39,7 +33,7 @@ def test_get_block_confirmation(redis_mock, db_mock):
                 blockhash=blockhash,
                 height=blocknumber,
                 parenthash="0x00",
-                chain_id="1",
+                chain_id="audius-devnet",
             )
         )
         session.add(
@@ -47,7 +41,7 @@ def test_get_block_confirmation(redis_mock, db_mock):
                 blockhash=latest_blockhash,
                 height=latest_blocknumber,
                 parenthash=blockhash,
-                chain_id="1",
+                chain_id="audius-devnet",
             )
         )
 
