@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 
 import cn from 'classnames'
 import Lottie, { LottieRefCurrentProps } from 'lottie-react'
@@ -71,9 +71,9 @@ const PlayButton = ({
     prevStatus.current = status
   }, [status, playState])
 
-  const handleChange = () => {
+  const handleChange = useCallback(() => {
     let newIcon, newIsPaused
-    const newPlayState = (playState + 1) % Object.keys(PlayStates).length
+    const newPlayState = (playState + 1) % (Object.keys(PlayStates).length / 2)
 
     switch (newPlayState) {
       case PlayStates.PLAY:
@@ -100,14 +100,14 @@ const PlayButton = ({
     setIcon(newIcon)
     setIsPaused(newIsPaused)
     setPlayState(newPlayState)
-  }
+  }, [playState, setIcon, setIsPaused, setPlayState])
 
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     if (playable) {
       handleChange()
       onClick()
     }
-  }
+  }, [playable, handleChange, onClick])
 
   const isLoading = status === 'load'
   let data: object
@@ -131,7 +131,7 @@ const PlayButton = ({
         lottieRef.current.play()
       }
     }
-  }, [lottieRef, currentIsPaused])
+  }, [lottieRef, currentIsPaused, playState])
 
   const ariaLabel = isLoading
     ? 'track loading'
