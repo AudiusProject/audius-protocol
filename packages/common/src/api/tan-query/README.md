@@ -313,45 +313,39 @@ To reduce redundant network requests for the same type of entity (e.g., fetching
 
 See `useUser.ts` for an example of using `getUsersBatcher`.
 
-### 4. Priming / Prefetching Data
+## Priming Data
 
 You can manually add or update data in the cache without a full query:
 
-- **Priming (`queryClient.setQueryData`)**: If you already have the data (e.g., from a different API response or after a mutation), you can directly insert it into the cache. This is useful for normalization and optimistic updates.
+If you already have the data (e.g., from a different API response or after a mutation), you can directly insert it into the cache. This is useful for normalization and optimistic updates.
 
-  ```typescript
-  // Inside a component or another hook
-  const queryClient = useQueryClient()
-  const newUser = { id: 123, name: 'New User' } // Data you already have
-  queryClient.setQueryData(getUserQueryKey(123), newUser)
-  ```
+```typescript
+import { queryClient } from 'services/query-client'
+// OR
+const queryClient = useQueryClient()
 
-- **Prefetching (`queryClient.prefetchQuery`)**: If you anticipate needing data soon (e.g., on hover), you can prefetch it so it's likely already cached when the actual `useQuery` mounts.
-  ```typescript
-  // Inside a component or event handler
-  const queryClient = useQueryClient()
-  const prefetchUserData = async (userId: number) => {
-    const sdk = await audiusSdk() // Assuming you have access to the SDK context
-    await queryClient.prefetchQuery({
-      queryKey,
-      queryFn: () => sdk.users.getUser({ id: userId }) // Replace with actual SDK call
-    })
-  }
-  ```
+queryClient.setQueryData(getMyDataQueryKey(123), myNewData123)
+```
 
-## Normalization
+We have helpers for common entities `User`, `Track`, and `Collection`.
+
+`primeUserData`, `primeTrackData`, and `primeCollectionData` are utils that call `setQueryData` for you with the entity and each of its sub-entities. (e.g. primeTrackData will add the `Track` and the `track.user` `User` to their respective cache keys.)
+
+## Normalization & Single Source of Truth
 
 TanStack Query doesn't enforce normalization itself, but we follow a pattern:
 
 1.  **Fetch Entities by ID:** Hooks like `useUser`, `useTrack`, `useCollection` fetch individual entities and store them under a query key specific to that entity's ID (e.g., `['user', 123]`).
-2.  **Fetch Lists of IDs:** Hooks fetching lists (e.g., `useFollowers`, `useFavoritedTracks`) often fetch _only the IDs_ or minimal data for the list itself.
-3.  **Combine in UI:** The UI component fetches the list (e.g., follower IDs) and then uses individual entity hooks (`useUser`) for each ID to get the full data. TanStack Query efficiently deduplicates the requests for the individual entities.
+2.  **Fetch Lists of IDs:** Hooks fetching lists (e.g., `useFollowers`, `useFavoritedTracks`) often fetch and prime the full entities, but store _only the IDs_ in their cache keys or minimal data for the list itself.
+3.  **Combine in UI:** The UI component fetches the list (e.g., follower IDs) and then uses individual entity hooks (`useUser`) for each ID to get the full data. Because we prime the cache on fetch succeeded, the requests for the individual entities always cache hit.
 
-This ensures that if a user's details are updated via `useUpdateUser`, all places displaying that user (via `useUser(userId)`) will reflect the change automatically (either through optimistic updates or background refetching). Priming the cache (`queryClient.setQueryData`) after mutations is crucial for this pattern.
+    _Note: In some cases, the `useUsers` call is combined into the tan-query hook for convenience._
+
+This ensures _single source of truth_ for each datum. If a user's details are updated via `useUpdateUser`, all components displaying that user (via `useUser(userId)`) will reflect the change automatically. Priming the cache (`queryClient.setQueryData`) after mutations is crucial for this pattern.
 
 ## Default Cache Behavior
 
-- **`staleTime: 0` (Default):** Data is considered "stale" immediately after being fetched. This means the _next_ time the component mounts or the query key changes, TanStack Query _can_ refetch in the background if needed. It doesn't necessarily mean a loading state will show; the cached data is still returned instantly.
+- **`staleTime: 5 * 60 * 1000` (Default):** Data is considered "stale" 5 minutes after being fetched. This means the _next_ time the component mounts or the query key changes, TanStack Query _can_ refetch in the background if needed. It doesn't necessarily mean a loading state will show; the cached data is still returned instantly.
 - **`cacheTime: 5 * 60 * 1000` (Default):** Inactive queries (no active `useQuery` instance for that key) will keep their data in memory for 5 minutes. After this period, the data is garbage collected.
 
-These defaults provide a good balance between showing fresh data and using the cache effectively. Specific hooks might override these defaults if a different behavior is needed (e.g., for data that changes very infrequently).
+These defaults provide a good balance between showing fresh data and using the cache effectively. Specific hooks may override these defaults via `options` if a different behavior is needed (e.g., for data that changes very infrequently).
