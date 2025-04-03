@@ -8,6 +8,7 @@ import {
 } from '@audius/common/api'
 import { useAppContext } from '@audius/common/context'
 import type { ID } from '@audius/common/models'
+import { Feature, Name } from '@audius/common/models'
 import type { DownloadFile } from '@audius/common/services'
 import { useDownloadTrackArchiveModal } from '@audius/common/store'
 
@@ -22,9 +23,11 @@ import {
 } from '@audius/harmony-native'
 import Drawer from 'app/components/drawer'
 import { env } from 'app/services/env'
+import { reportToSentry } from 'app/utils/reportToSentry'
 
 import { DrawerHeader } from '../core/DrawerHeader'
 import LoadingSpinner from '../loading-spinner'
+
 const messages = {
   title: 'Downloading...',
   zippingFiles: (count: number) => `Zipping files (${count})`,
@@ -54,8 +57,15 @@ const useDownloadFile = () => {
         })
         setSuccess(true)
       } catch (e) {
-        // TODO: Do we need to bubble this to sentry/amplitude?
         setError(e as Error)
+        reportToSentry({
+          additionalInfo: {
+            file
+          },
+          name: 'Failed to download track archive',
+          error: e as Error,
+          feature: Feature.Remixes
+        })
       } finally {
         setFetching(false)
         setAbortController(null)
@@ -65,7 +75,6 @@ const useDownloadFile = () => {
   )
 
   const cancel = useCallback(() => {
-    console.log('cancelling')
     if (abortController) {
       abortController.abort()
     }
@@ -95,6 +104,10 @@ const DownloadTrackArchiveDrawerContent = ({
   onClose,
   onClosed
 }: DownloadTrackArchiveDrawerContentProps) => {
+  const {
+    analytics: { track, make }
+  } = useAppContext()
+
   const { data: trackTitle } = useTrack(trackId, {
     select: (track) => track.title
   })
@@ -103,7 +116,6 @@ const DownloadTrackArchiveDrawerContent = ({
   const {
     mutate: downloadTrackStems,
     isError: initiateDownloadFailed,
-    error: initiateDownloadError,
     isPending: isStartingDownload,
     data: { id: jobId } = {}
   } = useDownloadTrackStems({
@@ -118,10 +130,6 @@ const DownloadTrackArchiveDrawerContent = ({
     cancel: cancelDownload
   } = useDownloadFile()
 
-  if (initiateDownloadError) {
-    console.error(initiateDownloadError)
-  }
-
   const { mutate: cancelStemsArchiveJob } = useCancelStemsArchiveJob()
 
   const { data: jobState } = useGetStemsArchiveJobStatus({
@@ -131,6 +139,16 @@ const DownloadTrackArchiveDrawerContent = ({
   const hasError =
     !isStartingDownload &&
     (downloadError || initiateDownloadFailed || jobState?.state === 'failed')
+
+  useEffect(() => {
+    if (hasError) {
+      track(
+        make({
+          eventName: Name.TRACK_DOWNLOAD_FAILED_DOWNLOAD_ALL
+        })
+      )
+    }
+  }, [hasError, track, make])
 
   useEffect(() => {
     if (isOpen) {
@@ -148,11 +166,16 @@ const DownloadTrackArchiveDrawerContent = ({
             filename: `${trackTitle}.zip`
           }
         })
+        track(
+          make({
+            eventName: Name.TRACK_DOWNLOAD_SUCCESSFUL_DOWNLOAD_ALL
+          })
+        )
         onClose()
       }
       fetchResult()
     }
-  }, [jobState, onClose, jobId, downloadFile, trackTitle])
+  }, [jobState, onClose, jobId, downloadFile, trackTitle, make, track])
 
   // Close drawer automatically if download was successful
   useEffect(() => {
