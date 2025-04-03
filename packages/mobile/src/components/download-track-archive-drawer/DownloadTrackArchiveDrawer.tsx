@@ -37,24 +37,39 @@ const useDownloadFile = () => {
   const [fetching, setFetching] = useState<boolean>(false)
   const [success, setSuccess] = useState<boolean>(false)
   const [error, setError] = useState<Error | null>(null)
+  const [abortController, setAbortController] =
+    useState<AbortController | null>(null)
 
   const downloadFile = useCallback(
     async ({ file }: { file: DownloadFile }) => {
       setFetching(true)
       setError(null)
+      const abortController = new AbortController()
+      setAbortController(abortController)
       try {
-        // TODO: AbortSignal?
-        await trackDownload.downloadFile({ file, mimeType: 'application/zip' })
+        await trackDownload.downloadFile({
+          file,
+          mimeType: 'application/zip',
+          abortSignal: abortController.signal
+        })
         setSuccess(true)
       } catch (e) {
         // TODO: Do we need to bubble this to sentry/amplitude?
         setError(e as Error)
       } finally {
         setFetching(false)
+        setAbortController(null)
       }
     },
     [trackDownload]
   )
+
+  const cancel = useCallback(() => {
+    console.log('cancelling')
+    if (abortController) {
+      abortController.abort()
+    }
+  }, [abortController])
 
   const reset = useCallback(() => {
     setFetching(false)
@@ -62,7 +77,7 @@ const useDownloadFile = () => {
     setError(null)
   }, [])
 
-  return { downloadFile, fetching, success, error, reset }
+  return { downloadFile, fetching, success, error, reset, cancel }
 }
 
 type DownloadTrackArchiveDrawerContentProps = {
@@ -99,7 +114,8 @@ const DownloadTrackArchiveDrawerContent = ({
     downloadFile,
     success: downloadSuccess,
     error: downloadError,
-    reset: resetDownload
+    reset: resetDownload,
+    cancel: cancelDownload
   } = useDownloadFile()
 
   if (initiateDownloadError) {
@@ -149,8 +165,9 @@ const DownloadTrackArchiveDrawerContent = ({
     if (jobId) {
       cancelStemsArchiveJob({ jobId })
     }
+    cancelDownload()
     onClose()
-  }, [onClose, jobId, cancelStemsArchiveJob])
+  }, [onClose, jobId, cancelStemsArchiveJob, cancelDownload])
 
   const handleRetry = useCallback(() => {
     setStep('zipping')
