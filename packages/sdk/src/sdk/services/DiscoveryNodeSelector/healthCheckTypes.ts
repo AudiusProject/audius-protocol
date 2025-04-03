@@ -70,7 +70,6 @@ export type HealthCheckResponseData = DeepPartial<{
   num_users_in_immediate_balance_refresh_queue: number
   num_users_in_lazy_balance_refresh_queue: number
   number_of_cpus: number
-  openresty_public_key: string
   received_bytes_per_sec: number
   redis_total_memory: number
   service: string
