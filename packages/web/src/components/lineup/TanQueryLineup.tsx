@@ -298,7 +298,7 @@ export const TanQueryLineup = ({
                   className={cn({ [tileStyles!]: !!tileStyles })}
                   css={{ listStyle: 'none' }}
                 >
-                  <Flex direction='row' w='100%'>
+                  <Flex direction={isMobile ? 'row' : 'column'} w='100%'>
                     {/* @ts-ignore - the types here need work - we're not passing the full expected types here whenever we pass isLoading: true */}
                     <TrackTile {...skeletonTileProps(index)} key={index} />
                   </Flex>
@@ -314,6 +314,7 @@ export const TanQueryLineup = ({
     [
       TrackTile,
       leadingElementId,
+      isMobile,
       numPlaylistSkeletonRows,
       ordered,
       tileSize,
@@ -458,7 +459,7 @@ export const TanQueryLineup = ({
                     className={cn({ [tileStyles!]: !!tileStyles })}
                     as='li'
                   >
-                    <Flex direction='row' w='100%'>
+                    <Flex direction={isMobile ? 'row' : 'column'} w='100%'>
                       {tile}
                     </Flex>
                     {index === 0 && leadingElementId !== undefined ? (
