@@ -65,7 +65,7 @@ export const TrackTableLineup = ({
     hasNextPage,
     pageSize
   } = lineupQueryData
-  const { data: tracks } = useTracks(trackIds?.map((entry) => entry.id) ?? [])
+  const { data: tracks } = useTracks(trackIds?.map((entry) => entry.id))
 
   // Get current queue item
   const getCurrentQueueItem = useMemo(() => makeGetCurrent(), [])

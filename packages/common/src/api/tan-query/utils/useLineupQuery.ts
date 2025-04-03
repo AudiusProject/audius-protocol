@@ -28,7 +28,7 @@ import { CommonState } from '~/store/commonStore'
 import { LineupActions } from '~/store/lineup/actions'
 import { getPlaying } from '~/store/player/selectors'
 
-import { TQCollection } from '../models'
+import { TQCollection, TQTrack } from '../models'
 import { LineupData } from '../types'
 
 import { loadNextPage } from './infiniteQueryLoadNextPage'
@@ -92,11 +92,11 @@ export const useLineupQuery = ({
       if (lineupData?.length) {
         // The TQ cache for lineups only stores data in ID form, but our legacy lineup logic requires full entries.
         // Here we take the ids and retrieve full entities from the tq cache
-        // There should never be a cache miss here because
+        // There should never be a cache miss here because if the lineup believes entity is cached, it was primed at some point.
         const fullLineupItems = lineupData
           ?.map((item) => {
             if (item.type === EntityType.TRACK) {
-              const track = queryClient.getQueryData<Track>(
+              const track = queryClient.getQueryData<TQTrack>(
                 getTrackQueryKey(item.id)
               )
               if (!track) {
