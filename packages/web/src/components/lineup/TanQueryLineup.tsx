@@ -23,6 +23,7 @@ import {
   queueSelectors
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
+import { Divider, Flex } from '@audius/harmony'
 import cn from 'classnames'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch, useSelector } from 'react-redux'
@@ -95,33 +96,6 @@ export interface TanQueryLineupProps {
    */
   leadingElementTileProps?: Partial<TileProps>
 
-  /**
-   * Class name to optionally apply to the leading element
-   */
-  leadingElementClassName?: string
-
-  /**
-   * Class name to optionally apply to the container after the leading element
-   */
-  laggingContainerClassName?: string
-
-  /**
-   * Whether or not to animate the sliding in of the leading element
-   */
-  animateLeadingElement?: boolean
-
-  /**
-   * Whether or not to apply leading element tile props and styles to the
-   * skeleton tile rendered in its place
-   */
-  applyLeadingElementStylesToSkeleton?: boolean
-
-  /**
-   * Extra content that preceeds the lineup to be rendered. Can be anything,
-   * but is not tied to playback or other lineup pagination logic.
-   */
-  extraPrecedingElement?: JSX.Element
-
   ordered?: boolean
   lineupContainerStyles?: string
   tileContainerStyles?: string
@@ -176,6 +150,7 @@ export const TanQueryLineup = ({
   ordered = false,
   delineate = false,
   endOfLineupElement: endOfLineup,
+  leadingElementId,
   lineupContainerStyles,
   tileContainerStyles,
   tileStyles,
@@ -197,10 +172,11 @@ export const TanQueryLineup = ({
   hasNextPage,
   isPending = true,
   isPlaying = false,
-  isFetching = true,
+  // isFetching = true,
   isError = false,
   maxEntries
 }: TanQueryLineupProps) => {
+  const isFetching = true
   const dispatch = useDispatch()
 
   const getCurrentQueueItem = useMemo(() => makeGetCurrent(), [])
@@ -308,20 +284,39 @@ export const TanQueryLineup = ({
             .fill(null)
             .map((_, index) => {
               return (
-                <li
+                <Flex
+                  direction='column'
+                  gap='m'
                   key={index}
+                  mb={
+                    index === 0 && leadingElementId !== undefined
+                      ? 'xl'
+                      : undefined
+                  }
+                  w='100%'
+                  as='li'
                   className={cn({ [tileStyles!]: !!tileStyles })}
                   css={{ listStyle: 'none' }}
                 >
-                  {/* @ts-ignore - TODO: these types werent being enforced before */}
+                  {/* @ts-ignore - the types here need work - we're not passing the full expected types here whenever we pass isLoading: true */}
                   <TrackTile {...skeletonTileProps(index)} key={index} />
-                </li>
+                  {index === 0 && leadingElementId !== undefined ? (
+                    <Divider css={{ width: '100%' }} />
+                  ) : null}
+                </Flex>
               )
             })}
         </>
       )
     },
-    [TrackTile, numPlaylistSkeletonRows, ordered, tileSize, tileStyles]
+    [
+      TrackTile,
+      leadingElementId,
+      numPlaylistSkeletonRows,
+      ordered,
+      tileSize,
+      tileStyles
+    ]
   )
 
   // Determine how to render our tiles
@@ -352,8 +347,11 @@ export const TanQueryLineup = ({
             isBuffering,
             playingSource
           }
-          // @ts-ignore - TODO: these types werent enforced before - something smelly here
+
+          // @ts-ignore - the types here need work - we're not passing the full expected types here whenever we pass isLoading: true
           return <TrackTile {...trackProps} key={entry.uid || index} />
+
+          // @ts-ignore - TODO: these types werent enforced before - something smelly here
         } else if (entry.kind === Kind.COLLECTIONS || entry.playlist_id) {
           const playlistProps: PlaylistTileProps = {
             ...entry,
@@ -387,9 +385,6 @@ export const TanQueryLineup = ({
     return result
   }, [
     isError,
-    isMobile,
-    isTrending,
-    isBuffering,
     lineupEntries,
     delineate,
     ordered,
@@ -398,9 +393,12 @@ export const TanQueryLineup = ({
     statSize,
     containerClassName,
     data,
+    isTrending,
     onClickTile,
+    isBuffering,
     playingSource,
     TrackTile,
+    isMobile,
     play,
     pause,
     playingTrackId,
@@ -446,12 +444,23 @@ export const TanQueryLineup = ({
                 ? renderSkeletons(initialPageSize ?? pageSize)
                 : emptyElement
               : tiles.map((tile: any, index: number) => (
-                  <li
+                  <Flex
+                    direction='column'
+                    gap='m'
                     key={index}
+                    mb={
+                      index === 0 && leadingElementId !== undefined
+                        ? 'xl'
+                        : undefined
+                    }
                     className={cn({ [tileStyles!]: !!tileStyles })}
+                    as='li'
                   >
                     {tile}
-                  </li>
+                    {index === 0 && leadingElementId !== undefined ? (
+                      <Divider />
+                    ) : null}
+                  </Flex>
                 ))}
 
             {isFetching &&
