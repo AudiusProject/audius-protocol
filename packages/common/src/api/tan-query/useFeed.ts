@@ -15,7 +15,7 @@ import { feedPageSelectors, feedPageLineupActions } from '~/store/pages'
 import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { primeCollectionData } from './utils/primeCollectionData'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -33,11 +33,11 @@ type FeedArgs = {
   loadMorePageSize?: number
 }
 
-export const getFeedQueryKey = ({ userId, filter }: FeedArgs) => [
-  QUERY_KEYS.feed,
-  userId,
-  { filter }
-]
+export const getFeedQueryKey = ({ userId, filter }: FeedArgs) => {
+  return [QUERY_KEYS.feed, userId, { filter }] as unknown as QueryKey<
+    (UserTrackMetadata | UserCollectionMetadata)[]
+  >
+}
 
 export const FEED_INITIAL_PAGE_SIZE = 10
 export const FEED_LOAD_MORE_PAGE_SIZE = 4

@@ -1,12 +1,12 @@
 import { full, Id } from '@audius/sdk'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { InfiniteData, useInfiniteQuery } from '@tanstack/react-query'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 import { USDCTransactionDetails } from '~/models/USDCTransactions'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
 const DEFAULT_PAGE_SIZE = 50
@@ -40,7 +40,7 @@ export const getUSDCTransactionsQueryKey = (
       method,
       pageSize
     }
-  ]
+  ] as unknown as QueryKey<InfiniteData<USDCTransactionDetails[]>>
 }
 
 /**

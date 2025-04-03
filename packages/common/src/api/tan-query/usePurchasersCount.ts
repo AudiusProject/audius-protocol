@@ -5,7 +5,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
 export type UsePurchasersCountArgs = {
@@ -16,13 +16,14 @@ export type UsePurchasersCountArgs = {
 export const getPurchasersCountQueryKey = ({
   contentId,
   contentType
-}: UsePurchasersCountArgs) => [
-  QUERY_KEYS.purchasersCount,
-  {
-    contentId,
-    contentType
-  }
-]
+}: UsePurchasersCountArgs) =>
+  [
+    QUERY_KEYS.purchasersCount,
+    {
+      contentId,
+      contentType
+    }
+  ] as unknown as QueryKey<number>
 
 export const usePurchasersCount = (
   { contentId, contentType }: UsePurchasersCountArgs = {},

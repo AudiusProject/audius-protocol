@@ -9,15 +9,14 @@ import { ID } from '~/models/Identifiers'
 import { UserMetadata } from '~/models/User'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions, SelectableQueryOptions } from './types'
+import { QueryKey, QueryOptions, SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { useUsers } from './useUsers'
 import { primeUserData } from './utils/primeUserData'
 
-export const getMutedUsersQueryKey = (currentUserId: ID | null | undefined) => [
-  QUERY_KEYS.mutedUsers,
-  currentUserId
-]
+export const getMutedUsersQueryKey = (currentUserId: ID | null | undefined) => {
+  return [QUERY_KEYS.mutedUsers, currentUserId] as unknown as QueryKey<ID[]>
+}
 
 export const useMutedUsers = <TResult = UserMetadata[]>(
   options?: SelectableQueryOptions<UserMetadata[], TResult>

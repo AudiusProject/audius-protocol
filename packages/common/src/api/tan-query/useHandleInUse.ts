@@ -5,7 +5,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { AudiusQueryContextType } from '~/audius-query/AudiusQueryContext'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 
 export const fetchHandleInUse = async (
   handle: string | null | undefined,
@@ -27,10 +27,9 @@ export const fetchHandleInUse = async (
   }
 }
 
-export const getHandleInUseQueryKey = (handle: string | null | undefined) => [
-  QUERY_KEYS.handleInUse,
-  handle
-]
+export const getHandleInUseQueryKey = (handle: string | null | undefined) => {
+  return [QUERY_KEYS.handleInUse, handle] as unknown as QueryKey<boolean>
+}
 
 /**
  * Hook to check if a handle is already in use

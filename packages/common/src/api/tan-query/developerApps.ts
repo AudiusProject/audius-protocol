@@ -8,7 +8,7 @@ import { ID } from '~/models/Identifiers'
 import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
-import { SelectableQueryOptions } from './types'
+import { QueryKey, SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
 export const DEVELOPER_APP_DESCRIPTION_MAX_LENGTH = 128
@@ -68,10 +68,11 @@ type UseDeleteDeveloperAppArgs = {
   userId: ID
 }
 
-export const getDeveloperAppsQueryKey = (userId: Nullable<ID>) => [
-  QUERY_KEYS.authorizedApps,
-  userId
-]
+export const getDeveloperAppsQueryKey = (userId: Nullable<ID>) => {
+  return [QUERY_KEYS.developerApps, userId] as unknown as QueryKey<
+    DeveloperApp[]
+  >
+}
 
 export const useDeveloperApps = <TResult = DeveloperApp[]>(
   options?: SelectableQueryOptions<SDKDeveloperApp[], TResult>
@@ -147,8 +148,8 @@ export const useEditDeveloperApp = () => {
         queryKey: getDeveloperAppsQueryKey(userId)
       })
 
-      const previousApps: DeveloperApp[] =
-        queryClient.getQueryData([QUERY_KEYS.developerApps, userId]) ?? []
+      const previousApps =
+        queryClient.getQueryData(getDeveloperAppsQueryKey(userId)) ?? []
       const appIndex = previousApps.findIndex(
         (app) => app.apiKey === editedApp.apiKey
       )
@@ -194,8 +195,8 @@ export const useDeleteDeveloperApp = () => {
         queryKey: getDeveloperAppsQueryKey(userId)
       })
 
-      const previousApps: DeveloperApp[] | undefined = queryClient.getQueryData(
-        [QUERY_KEYS.developerApps, userId]
+      const previousApps = queryClient.getQueryData(
+        getDeveloperAppsQueryKey(userId)
       )
 
       if (previousApps === undefined) {

@@ -8,7 +8,7 @@ import { Kind } from '~/models'
 import { Name, FollowSource } from '~/models/Analytics'
 import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
-import { UserMetadata } from '~/models/User'
+import { AccountUserMetadata, UserMetadata } from '~/models/User'
 import { update } from '~/store/cache/actions'
 import { removeFolloweeId } from '~/store/gated-content/slice'
 import { revokeFollowGatedAccess } from '~/store/tipping/slice'
@@ -16,7 +16,6 @@ import { revokeFollowGatedAccess } from '~/store/tipping/slice'
 import { getCurrentAccountQueryKey } from './useCurrentAccount'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getUserQueryKey } from './useUser'
-import { getUserByHandleQueryKey } from './useUserByHandle'
 
 type UnfollowUserParams = {
   followeeUserId: ID | null | undefined
@@ -25,7 +24,7 @@ type UnfollowUserParams = {
 
 type MutationContext = {
   previousUser: UserMetadata | undefined
-  previousAccountUser: UserMetadata | undefined
+  previousAccountUser: AccountUserMetadata | undefined
 }
 
 export const useUnfollowUser = () => {
@@ -74,7 +73,7 @@ export const useUnfollowUser = () => {
         queryKey: getUserQueryKey(followeeUserId)
       })
 
-      const previousUser = queryClient.getQueryData<UserMetadata>(
+      const previousUser = queryClient.getQueryData(
         getUserQueryKey(followeeUserId)
       )
 
@@ -88,14 +87,10 @@ export const useUnfollowUser = () => {
           ...followeeUpdate
         }
         queryClient.setQueryData(getUserQueryKey(followeeUserId), updatedUser)
-        queryClient.setQueryData(
-          getUserByHandleQueryKey(previousUser.handle),
-          updatedUser
-        )
       }
       dispatch(update(Kind.USERS, [{ id: followeeUserId, metadata: update }]))
 
-      const currentUser = queryClient.getQueryData<UserMetadata>(
+      const currentUser = queryClient.getQueryData(
         getUserQueryKey(currentUserId)
       )
       if (currentUser) {
@@ -105,17 +100,20 @@ export const useUnfollowUser = () => {
         })
       }
 
-      const previousAccountUser = queryClient.getQueryData<UserMetadata>(
+      const previousAccountUser = queryClient.getQueryData(
         getCurrentAccountQueryKey(currentUserId)
       )
 
       if (previousAccountUser) {
         queryClient.setQueryData(getCurrentAccountQueryKey(currentUserId), {
           ...previousAccountUser,
-          followee_count: Math.max(
-            (previousAccountUser?.followee_count ?? 0) - 1,
-            0
-          )
+          user: {
+            ...previousAccountUser.user,
+            followee_count: Math.max(
+              (previousAccountUser?.user?.followee_count ?? 0) - 1,
+              0
+            )
+          }
         })
       }
 
@@ -125,7 +123,7 @@ export const useUnfollowUser = () => {
             id: currentUserId,
             metadata: {
               followee_count: Math.max(
-                (previousAccountUser?.followee_count ?? 0) - 1,
+                (previousAccountUser?.user?.followee_count ?? 0) - 1,
                 0
               )
             }
@@ -140,22 +138,10 @@ export const useUnfollowUser = () => {
       { followeeUserId },
       context: MutationContext | undefined
     ) => {
-      const { previousUser, previousAccountUser } = context ?? {}
+      const { previousUser } = context ?? {}
 
       if (previousUser) {
         queryClient.setQueryData(getUserQueryKey(followeeUserId), previousUser)
-
-        queryClient.setQueryData(
-          getUserByHandleQueryKey(previousUser.handle),
-          previousUser
-        )
-      }
-
-      if (previousAccountUser) {
-        queryClient.setQueryData(
-          getUserByHandleQueryKey(previousAccountUser.handle),
-          previousAccountUser
-        )
       }
 
       reportToSentry({

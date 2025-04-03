@@ -30,9 +30,7 @@ export const useUpdateEvent = () => {
       const { eventId, ...updates } = args
 
       // Get the current event from cache
-      const currentEvent = queryClient.getQueryData<Event>(
-        getEventQueryKey(eventId)
-      )
+      const currentEvent = queryClient.getQueryData(getEventQueryKey(eventId))
       if (!currentEvent) return
 
       const updatedEvent: Event = {
