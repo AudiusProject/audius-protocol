@@ -10,13 +10,14 @@ export const DrawerHeader = ({ icon: Icon, title }: DrawerHeaderProps) => {
   return (
     <Flex
       row
+      w='100%'
       justifyContent='center'
       alignItems='center'
-      gap='2xs'
-      pb='xs'
+      gap='s'
+      pb='l'
       borderBottom='default'
     >
-      <Icon fill='subdued' height={20} width={24} />
+      <Icon color='subdued' size='m' />
       <Text strength='strong' variant='label' color='subdued' size='xl'>
         {title}
       </Text>

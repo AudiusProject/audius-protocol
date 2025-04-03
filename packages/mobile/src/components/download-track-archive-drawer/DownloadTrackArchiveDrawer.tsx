@@ -10,7 +10,6 @@ import { useAppContext } from '@audius/common/context'
 import type { ID } from '@audius/common/models'
 import type { DownloadFile } from '@audius/common/services'
 import { useDownloadTrackArchiveModal } from '@audius/common/store'
-import { env } from 'services/env'
 
 import {
   Flex,
@@ -22,11 +21,12 @@ import {
   TextLink
 } from '@audius/harmony-native'
 import Drawer from 'app/components/drawer'
+import { env } from 'app/services/env'
 
 import { DrawerHeader } from '../core/DrawerHeader'
 import LoadingSpinner from '../loading-spinner'
 const messages = {
-  title: 'Preparing Download',
+  title: 'Downloading...',
   zippingFiles: (count: number) => `Zipping files (${count})`,
   error: 'Something went wrong. Please check your connection and try again.',
   tryAgain: 'Try again.'
