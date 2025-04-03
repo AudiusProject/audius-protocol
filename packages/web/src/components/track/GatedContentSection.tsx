@@ -252,7 +252,7 @@ const LockedGatedContentSection = ({
     if (isContentFollowGated(streamConditions) && followee) {
       return (
         <Text variant='body' strength='strong'>
-          {messages.unlockFollowGatedContentPrefix}&nbsp;
+          {messages.unlockFollowGatedContentPrefix}{' '}
           <UserLink userId={followee.user_id} />
           {messages.period}
         </Text>
@@ -262,7 +262,7 @@ const LockedGatedContentSection = ({
     if (isContentTipGated(streamConditions) && tippedUser) {
       return (
         <Text variant='body' strength='strong'>
-          {messages.unlockTipGatedContentPrefix}&nbsp;
+          {messages.unlockTipGatedContentPrefix}{' '}
           <UserLink userId={tippedUser.user_id} />
           {messages.unlockTipGatedContentSuffix}
         </Text>
@@ -498,8 +498,7 @@ const UnlockedGatedContentSection = ({
         messages.ownFollowGated
       ) : (
         <>
-          {messages.thankYouForFollowing}&nbsp;
-          <UserLink userId={followee.user_id} />
+          {messages.thankYouForFollowing} <UserLink userId={followee.user_id} />
           {messages.unlockedFollowGatedContentSuffix}
         </>
       )
@@ -510,7 +509,7 @@ const UnlockedGatedContentSection = ({
         messages.ownTipGated
       ) : (
         <>
-          {messages.thankYouForSupporting}&nbsp;
+          {messages.thankYouForSupporting}{' '}
           <UserLink userId={tippedUser.user_id} />
           {messages.unlockedTipGatedContentSuffix}
         </>
@@ -524,10 +523,10 @@ const UnlockedGatedContentSection = ({
         )
       ) : (
         <>
-          {messages.purchased}&nbsp;
+          {messages.purchased}{' '}
           {trackOwner ? (
             <>
-              {messages.thankYouForSupporting}&nbsp;
+              {messages.thankYouForSupporting}{' '}
               <UserLink userId={trackOwner.user_id} />
               {messages.period}
             </>
@@ -554,17 +553,10 @@ const UnlockedGatedContentSection = ({
   }
 
   return (
-    <Flex className={className}>
-      <Text
-        variant='label'
-        size='l'
-        strength='strong'
-        className={cn(styles.gatedContentSectionTitle, {
-          [styles.isOwner]: isOwner
-        })}
-      >
+    <Flex className={className} gap='s' alignItems='center'>
+      <Flex gap='s'>
         {isOwner ? (
-          <IconComponent className={styles.gatedContentIcon} />
+          <IconComponent />
         ) : (
           <LockedStatusBadge
             locked={false}
@@ -573,13 +565,11 @@ const UnlockedGatedContentSection = ({
             }
           />
         )}
-        {isOwner ? gatedConditionTitle : messages.unlocked}
-      </Text>
-      <Text
-        variant='body'
-        strength='strong'
-        className={styles.gatedContentSectionDescription}
-      >
+        <Text variant='label' size='l' strength='strong'>
+          {isOwner ? gatedConditionTitle : messages.unlocked}
+        </Text>
+      </Flex>
+      <Text variant='body' strength='strong'>
         {renderUnlockedDescription()}
       </Text>
     </Flex>
