@@ -8,7 +8,8 @@ import {
   IconCaretRight,
   IconLogoCircle,
   Paper,
-  Text
+  Text,
+  useTheme
 } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 import { push } from 'redux-first-history'
@@ -20,6 +21,7 @@ const { getAccountTotalBalance } = walletSelectors
 const messages = {
   title: 'Your Coins',
   buySell: 'Buy/Sell',
+  // TODO: Farid [PE-5901] get the current price of AUDIO
   dollarValue: '$0.00 ($0.082)',
   loading: '-- $AUDIO'
 }
@@ -27,6 +29,7 @@ const messages = {
 export const YourCoins = () => {
   const dispatch = useDispatch()
   const totalBalance = useSelector(getAccountTotalBalance)
+  const { color } = useTheme()
 
   // Format the balance for display using toShorthand
   const audioAmount = totalBalance
@@ -53,7 +56,7 @@ export const YourCoins = () => {
         css={{
           cursor: 'pointer',
           '&:hover': {
-            backgroundColor: 'var(--surface-2)'
+            backgroundColor: color.background.surface2
           }
         }}
       >
