@@ -1,4 +1,4 @@
-import { OptionalId, full } from '@audius/sdk'
+import { OptionalId, full, EntityType } from '@audius/sdk'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
@@ -8,14 +8,13 @@ import {
 } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
 import { PlaybackSource } from '~/models/Analytics'
-import { UserCollectionMetadata } from '~/models/Collection'
 import {
   trendingPlaylistsPageLineupActions,
   trendingPlaylistsPageLineupSelectors
 } from '~/store/pages'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryOptions, LineupData } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeCollectionData } from './utils/primeCollectionData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -50,7 +49,7 @@ export const useTrendingPlaylists = (
   const queryData = useInfiniteQuery({
     queryKey: getTrendingPlaylistsQueryKey({ pageSize, time }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: UserCollectionMetadata[], allPages) => {
+    getNextPageParam: (lastPage: LineupData[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -86,7 +85,10 @@ export const useTrendingPlaylists = (
         )
       )
 
-      return processedPlaylists
+      return processedPlaylists.map((p) => ({
+        id: p.playlist_id,
+        type: EntityType.PLAYLIST
+      }))
     },
     select: (data) => data?.pages.flat(),
     ...options,

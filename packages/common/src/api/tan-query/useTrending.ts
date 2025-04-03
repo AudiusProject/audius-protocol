@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { OptionalId } from '@audius/sdk'
+import { OptionalId, EntityType } from '@audius/sdk'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
@@ -23,7 +23,7 @@ import {
 import { Genre } from '~/utils/genres'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { LineupData, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -80,7 +80,7 @@ export const useTrending = (
       loadMorePageSize
     }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage, allPages) => {
+    getNextPageParam: (lastPage: LineupData[], allPages) => {
       const isFirstPage = allPages.length === 1
       const currentPageSize = isFirstPage ? initialPageSize : loadMorePageSize
       if (lastPage.length < currentPageSize) return undefined
@@ -151,9 +151,12 @@ export const useTrending = (
           )
           break
       }
-      return tracks
+      return tracks.map((t) => ({
+        id: t.track_id,
+        type: EntityType.TRACK
+      }))
     },
-    select: (data) => data.pages.flat(),
+    select: (data) => data?.pages.flat(),
     ...options,
     enabled: !!currentUserId && options?.enabled !== false && !!timeRange
   })
