@@ -23,7 +23,7 @@ import {
 } from '@audius/harmony-native'
 import Drawer from 'app/components/drawer'
 
-import { HarmonyModalHeader } from '../core/HarmonyModalHeader'
+import { DrawerHeader } from '../core/DrawerHeader'
 import LoadingSpinner from '../loading-spinner'
 const messages = {
   title: 'Preparing Download',
@@ -154,7 +154,7 @@ const DownloadTrackArchiveDrawerContent = ({
   return (
     <Drawer isOpen={isOpen} onClose={handleClose} onClosed={onClosed}>
       <Flex ph='l' pv='xl' gap='xl'>
-        <HarmonyModalHeader icon={IconReceive} title={messages.title} />
+        <DrawerHeader icon={IconReceive} title={messages.title} />
         <Flex justifyContent='center' alignItems='center' gap='xl'>
           <Flex row alignItems='center' gap='l'>
             <IconFolder color='default' size='l' />
