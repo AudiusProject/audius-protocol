@@ -33,13 +33,8 @@ export const useEventsByEntityId = <TResult = Event[]>(
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
 
-  const queryKey = useMemo(
-    () => getEventsByEntityIdQueryKey(entityId, options),
-    [entityId, options]
-  )
-
   const { data, ...rest } = useQuery<EventSDK[], Error, TResult>({
-    queryKey: queryKey ?? ['events', 'entity', null],
+    queryKey: getEventsByEntityIdQueryKey(entityId, options),
     queryFn: async () => {
       if (!entityId) return []
       const sdk = await audiusSdk()
@@ -58,7 +53,8 @@ export const useEventsByEntityId = <TResult = Event[]>(
       return options?.select
         ? options.select(events)
         : (events as unknown as TResult)
-    }
+    },
+    enabled: options?.enabled !== false && entityId !== undefined
   })
 
   const events = data as unknown as Event[] | undefined
