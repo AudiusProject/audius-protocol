@@ -119,8 +119,9 @@ export const HostRemixContestModal = () => {
               error={endDateError ? messages.endDateError : undefined}
               touched={endDateTouched}
             />
-            <Flex>
+            <Flex gap='l'>
               <TextInput
+                css={{ flex: 1 }}
                 label={messages.timeLabel}
                 placeholder={messages.timePlaceholder}
                 value={timeInputValue}
@@ -130,6 +131,7 @@ export const HostRemixContestModal = () => {
                 }}
               />
               <Select
+                css={{ flex: 1 }}
                 label={messages.meridianLabel}
                 placeholder={messages.meridianPlaceholder}
                 hideLabel
