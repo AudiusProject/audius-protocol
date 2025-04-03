@@ -124,7 +124,7 @@ export const useUpdateTrack = () => {
         updatedMetadata as TrackMetadataForUpload
       )
 
-      // Determine if we need to generate a preview
+      // Determine if we need to generate a preview - check if preview_start has changed OR track file has changed
       const generatePreview =
         previousMetadata &&
         ((updatedMetadata.preview_start_seconds !== null &&
