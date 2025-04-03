@@ -301,7 +301,9 @@ update_user_score_query = """
 update aggregate_user
 set score = scores.score
 from get_user_scores() as scores
-where aggregate_user.user_id = scores.user_id;
+where aggregate_user.user_id = scores.user_id
+and aggregate_user.score != scores.score
+returning aggregate_user.user_id;
 """
 
 
