@@ -1,4 +1,5 @@
 import {
+  AntiAbuseOracleSelector,
   Configuration,
   DiscoveryNodeSelector,
   SolanaRelay,
@@ -8,6 +9,12 @@ import {
 const makeDiscoveryNodeSelector = (allowlist?: string[]) =>
   new DiscoveryNodeSelector({
     allowlist: allowlist ? new Set(allowlist) : undefined
+  })
+
+const makeAAOSelector = () =>
+  new AntiAbuseOracleSelector({
+    endpoints: ['https://discoveryprovider.audius.co'],
+    registeredAddresses: ['0x9811BA3eAB1F2Cd9A2dFeDB19e8c2a69729DC8b6']
   })
 
 const makeSolanaRelay = (relayNode: string) =>
@@ -43,7 +50,8 @@ export const audiusSdk = ({
     environment,
     services: {
       discoveryNodeSelector: makeDiscoveryNodeSelector(discoveryNodeAllowlist),
-      solanaRelay: makeSolanaRelay(solanaRelayNode)
+      solanaRelay: makeSolanaRelay(solanaRelayNode),
+      antiAbuseOracleSelector: makeAAOSelector()
     }
   })
 }
