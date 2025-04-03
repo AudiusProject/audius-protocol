@@ -143,7 +143,7 @@ const CommentBlockInternal = (
                   ) : null}
                 </Flex>
               </Flex>
-              {!isPreview && userId && !(isPinned || isArtistReacted) ? (
+              {userId && (isPreview || !(isPinned || isArtistReacted)) ? (
                 <CommentBadge
                   isArtist={isCommentByArtist}
                   commentUserId={userId}
