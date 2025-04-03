@@ -23,7 +23,7 @@ const { getUndisbursedUserChallenges, getClaimStatus } =
   audioRewardsPageSelectors
 
 const messages = {
-  rewardSubtext: '$AUDIO',
+  rewardSubtext: '$AUDIO/Co-Sign',
   totalClaimed: (amount: string) =>
     `${formatNumberCommas(amount)} $AUDIO Claimed`
 }

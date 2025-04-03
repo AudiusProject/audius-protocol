@@ -1,4 +1,4 @@
-import { Id } from '@audius/sdk'
+import { Id, EntityType } from '@audius/sdk'
 import {
   GetUserLibraryTracksSortMethodEnum,
   GetUserLibraryTracksSortDirectionEnum
@@ -13,7 +13,6 @@ import { useDispatch } from 'react-redux'
 import { useAudiusQueryContext } from '~/audius-query'
 import { PlaybackSource } from '~/models/Analytics'
 import { ID } from '~/models/Identifiers'
-import { UserTrackMetadata } from '~/models/Track'
 import {
   savedPageTracksLineupActions,
   savedPageSelectors,
@@ -24,7 +23,7 @@ import { removeNullable } from '~/utils'
 import { userTrackMetadataFromSDK } from '../../adapters/track'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryKey, QueryOptions } from './types'
+import { QueryKey, QueryOptions, LineupData } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
 import { primeTrackData } from './utils/primeTrackData'
@@ -58,7 +57,7 @@ export const getLibraryTracksQueryKey = ({
       query,
       pageSize
     }
-  ] as unknown as QueryKey<InfiniteData<UserTrackMetadata[]>>
+  ] as unknown as QueryKey<InfiniteData<LineupData[]>>
 
 export const useLibraryTracks = (
   {
@@ -113,9 +112,12 @@ export const useLibraryTracks = (
         )
       )
 
-      return tracks
+      return tracks.map((t) => ({
+        id: t.track_id,
+        type: EntityType.TRACK
+      }))
     },
-    getNextPageParam: (lastPage, allPages) => {
+    getNextPageParam: (lastPage: LineupData[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },

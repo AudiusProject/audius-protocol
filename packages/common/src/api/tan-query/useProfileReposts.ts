@@ -1,4 +1,4 @@
-import { Id } from '@audius/sdk'
+import { Id, EntityType } from '@audius/sdk'
 import {
   InfiniteData,
   useInfiniteQuery,
@@ -16,7 +16,7 @@ import {
 } from '~/store/pages'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryKey, QueryOptions } from './types'
+import { QueryKey, LineupData, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils'
 import { primeCollectionData } from './utils/primeCollectionData'
@@ -50,10 +50,7 @@ export const useProfileReposts = (
   const queryData = useInfiniteQuery({
     queryKey: getProfileRepostsQueryKey({ handle, pageSize }),
     initialPageParam: 0,
-    getNextPageParam: (
-      lastPage: (UserTrackMetadata | UserCollectionMetadata)[],
-      allPages
-    ) => {
+    getNextPageParam: (lastPage: LineupData[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -107,7 +104,12 @@ export const useProfileReposts = (
         })
       )
 
-      return reposts
+      // Return only ids
+      return reposts.map((t) =>
+        'track_id' in t
+          ? { id: t.track_id, type: EntityType.TRACK }
+          : { id: t.playlist_id, type: EntityType.PLAYLIST }
+      )
     },
     select: (data) => {
       return data?.pages?.flat()

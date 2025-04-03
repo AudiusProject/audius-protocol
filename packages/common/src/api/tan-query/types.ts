@@ -1,3 +1,4 @@
+import { EntityType } from '@audius/sdk'
 import {
   DataTag,
   DefinedInitialDataOptions,
@@ -5,6 +6,8 @@ import {
   UseInfiniteQueryResult,
   UseQueryOptions
 } from '@tanstack/react-query'
+
+import { ID } from '~/models'
 
 import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
 import { UseLineupQueryData } from './utils/useLineupQuery'
@@ -27,6 +30,8 @@ export type SelectableQueryOptions<TData, TResult = TData> = Omit<
   UseQueryOptions<TData, Error, TResult>,
   'queryKey' | 'queryFn'
 >
+
+export type LineupData = { id: ID; type: EntityType }
 
 export type LineupQueryData = UseLineupQueryData &
   Pick<

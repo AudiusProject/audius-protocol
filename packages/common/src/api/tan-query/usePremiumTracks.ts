@@ -1,4 +1,4 @@
-import { OptionalId } from '@audius/sdk'
+import { OptionalId, EntityType } from '@audius/sdk'
 import {
   InfiniteData,
   useInfiniteQuery,
@@ -6,17 +6,17 @@ import {
 } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
-import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
+import { userTrackMetadataFromSDK } from '~/adapters/track'
+import { transformAndCleanList } from '~/adapters/utils'
 import { useAudiusQueryContext } from '~/audius-query'
-import { PlaybackSource } from '~/models/Analytics'
-import { UserTrackMetadata } from '~/models/Track'
+import { PlaybackSource } from '~/models'
 import {
   premiumTracksPageLineupActions,
   premiumTracksPageLineupSelectors
 } from '~/store/pages'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryKey, QueryOptions } from './types'
+import { QueryKey, LineupData, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -29,7 +29,7 @@ type UsePremiumTracksArgs = {
 
 export const getPremiumTracksQueryKey = (pageSize: number) => {
   return [QUERY_KEYS.premiumTracks, pageSize] as unknown as QueryKey<
-    InfiniteData<UserTrackMetadata[]>
+    InfiniteData<LineupData[]>
   >
 }
 
@@ -45,26 +45,24 @@ export const usePremiumTracks = (
   const queryData = useInfiniteQuery({
     queryKey: getPremiumTracksQueryKey(pageSize),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: UserTrackMetadata[], allPages) => {
+    getNextPageParam: (lastPage: LineupData[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
     queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
-
-      const { data: tracks } =
+      const { data: tracks = [] } =
         await sdk.full.tracks.getTrendingUSDCPurchaseTracks({
           userId: OptionalId.parse(currentUserId),
           limit: pageSize,
           offset: pageParam
         })
 
-      if (!tracks) return []
-
       const processedTracks = transformAndCleanList(
         tracks,
         userTrackMetadataFromSDK
       )
+
       primeTrackData({ tracks: processedTracks, queryClient, dispatch })
 
       // Update lineup when new data arrives
@@ -77,9 +75,12 @@ export const usePremiumTracks = (
         )
       )
 
-      return processedTracks
+      return processedTracks.map((t) => ({
+        id: t.track_id,
+        type: EntityType.TRACK
+      }))
     },
-    select: (data) => data.pages.flat(),
+    select: (data) => data?.pages.flat(),
     ...options,
     enabled: options?.enabled !== false
   })

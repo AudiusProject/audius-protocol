@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { Id, OptionalId } from '@audius/sdk'
+import { Id, OptionalId, EntityType } from '@audius/sdk'
 import {
   InfiniteData,
   useInfiniteQuery,
@@ -10,7 +10,6 @@ import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
-import { UserTrackMetadata } from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
 import {
   remixesPageLineupActions,
@@ -19,7 +18,7 @@ import {
 } from '~/store/pages'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryKey, QueryOptions } from './types'
+import { QueryKey, QueryOptions, LineupData } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -36,7 +35,7 @@ export const getRemixesQueryKey = ({
   pageSize = DEFAULT_PAGE_SIZE
 }: UseRemixesArgs) =>
   [QUERY_KEYS.remixes, trackId, { pageSize }] as unknown as QueryKey<
-    InfiniteData<UserTrackMetadata[]>
+    InfiniteData<LineupData[]>
   >
 
 export const useRemixes = (
@@ -57,7 +56,7 @@ export const useRemixes = (
   const queryData = useInfiniteQuery({
     queryKey: getRemixesQueryKey({ trackId, pageSize }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: UserTrackMetadata[], allPages) => {
+    getNextPageParam: (lastPage: LineupData[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -88,7 +87,10 @@ export const useRemixes = (
         )
       )
 
-      return processedTracks
+      return processedTracks.map((t) => ({
+        id: t.track_id,
+        type: EntityType.TRACK
+      }))
     },
     select: (data) => data.pages.flat(),
     ...options,

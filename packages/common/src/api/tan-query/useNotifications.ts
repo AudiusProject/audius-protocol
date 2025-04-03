@@ -83,7 +83,7 @@ const collectEntityIds = (notifications: Notification[]): EntityIds => {
       trackIds.add(notification.parentTrackId).add(notification.childTrackId)
     }
     if (type === NotificationType.RemixCosign) {
-      trackIds.add(notification.childTrackId)
+      notification.entityIds.forEach((id) => trackIds.add(id))
       userIds.add(notification.parentTrackUserId)
     }
     if (
@@ -237,8 +237,16 @@ export const useNotifications = (options?: QueryOptions) => {
     notifications.push(...lastPage)
   }
 
-  const queryResults = query as typeof query & { notifications: Notification[] }
+  const queryResults = query as typeof query & {
+    notifications: Notification[]
+    isAllPending: boolean
+  }
   queryResults.notifications = notifications
+  queryResults.isAllPending =
+    queryResults.isPending ||
+    isUsersPending ||
+    isTracksPending ||
+    isCollectionsPending
 
   return queryResults
 }
