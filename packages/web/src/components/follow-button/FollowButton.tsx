@@ -1,11 +1,15 @@
-import { useCallback } from 'react'
-
-import { useFollowUser, useUnfollowUser, useUser } from '@audius/common/api'
+import { useUser } from '@audius/common/api'
 import { FollowSource, ID } from '@audius/common/models'
+import { usersSocialActions } from '@audius/common/store'
 import {
   FollowButton as HarmonyFollowButton,
   FollowButtonProps as HarmonyFollowButtonProps
 } from '@audius/harmony'
+import { useDispatch } from 'react-redux'
+
+import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
+
+const { followUser, unfollowUser } = usersSocialActions
 
 type FollowButtonProps = HarmonyFollowButtonProps & {
   userId: ID
@@ -14,20 +18,18 @@ type FollowButtonProps = HarmonyFollowButtonProps & {
 
 export const FollowButton = (props: FollowButtonProps) => {
   const { userId, ...rest } = props
+  const dispatch = useDispatch()
   const { data: doesCurrentUserFollow } = useUser(userId, {
     select: (user) => user.does_current_user_follow
   })
 
-  const { mutate: followUser } = useFollowUser()
-  const { mutate: unfollowUser } = useUnfollowUser()
+  const handleFollow = useRequiresAccountCallback(() => {
+    dispatch(followUser(userId, FollowSource.OVERFLOW))
+  }, [dispatch, userId])
 
-  const handleFollow = useCallback(() => {
-    followUser({ followeeUserId: userId, source: FollowSource.OVERFLOW })
-  }, [followUser, userId])
-
-  const handleUnfollow = useCallback(() => {
-    unfollowUser({ followeeUserId: userId, source: FollowSource.OVERFLOW })
-  }, [unfollowUser, userId])
+  const handleUnfollow = useRequiresAccountCallback(() => {
+    dispatch(unfollowUser(userId, FollowSource.OVERFLOW))
+  }, [dispatch, userId])
 
   return (
     <HarmonyFollowButton
