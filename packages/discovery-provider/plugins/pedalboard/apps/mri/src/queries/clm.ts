@@ -4,6 +4,7 @@ import { toCsvString } from '../csv'
 import { S3Config, publish } from '../s3'
 import { readConfig } from '../config'
 import { formatDate } from '../date'
+import dayjs from 'dayjs'
 
 const config = readConfig()
 
@@ -43,10 +44,11 @@ export const clm = async (db: Knex, date: Date): Promise<void> => {
   logger.info('beginning client label metadata processing')
 
   // Gather data from "YYYY-MM-DDT00:00:00.000Z" to "YYYY-MM-DDT23:59:59.999Z"
-  const start = new Date(date)
-  start.setHours(0, 0, 0, 0)
-  const end = new Date(start)
-  end.setDate(start.getDate() + 1)
+  const startOfThisMonth = dayjs(date).startOf('month')
+  const startOfLastMonth = startOfThisMonth.subtract(1, 'month')
+
+  const start = startOfLastMonth.toDate()
+  const end = startOfThisMonth.toDate()
 
   logger.info(
     { start: start.toISOString(), end: end.toISOString() },
