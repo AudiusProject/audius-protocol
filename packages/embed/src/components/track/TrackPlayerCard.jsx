@@ -32,7 +32,8 @@ const TrackPlayerCard = ({
   backgroundColor,
   isTwitter,
   streamConditions,
-  hasPremiumExtras
+  hasPremiumExtras,
+  audioPlayer
 }) => {
   const mobileWebTwitter = isMobileWebTwitter(isTwitter)
   const getBottomWrapperStyle = () =>
@@ -103,6 +104,7 @@ const TrackPlayerCard = ({
                 mediaKey={`${mediaKey}`}
                 playingState={playingState}
                 seekTo={seekTo}
+                audioPlayer={audioPlayer}
               />
             ) : null}
             {isPurchaseable ? <Preview /> : null}
