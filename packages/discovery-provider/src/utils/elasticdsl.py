@@ -3,6 +3,9 @@ import os
 
 from elasticsearch import Elasticsearch, logging
 
+from src.queries import response_name_constants
+from src.queries.query_helpers import get_track_remix_metadata
+from src.utils import db_session
 from src.utils.spl_audio import to_wei
 
 logging.getLogger("elasticsearch").setLevel(logging.WARNING)
@@ -90,6 +93,25 @@ def populate_track_or_playlist_metadata_es(
             populate_track_or_playlist_metadata_es(track, current_user)
             for track in item["tracks"]
         ]
+
+    # Populate remix_of tracks w/ the parent track's user and if that user saved/reposted the child
+    # Necessary to show cosign on feed / search
+    db = db_session.get_db_read_replica()
+    with db.scoped_session() as session:
+        remixes = get_track_remix_metadata(session, [item], current_user["user_id"])
+        if (
+            response_name_constants.remix_of in item
+            and isinstance(item[response_name_constants.remix_of], dict)
+            and item["track_id"] in remixes
+        ):
+            remix_tracks = item[response_name_constants.remix_of].get("tracks")
+            if remix_tracks and isinstance(remix_tracks, list):
+                for remix_track in remix_tracks:
+                    parent_track_id = remix_track.get("parent_track_id")
+                    if parent_track_id in remixes[item["track_id"]]:
+                        remix_track.update(remixes[item["track_id"]][parent_track_id])
+        else:
+            item[response_name_constants.remix_of] = None
     return omit_indexed_fields(item, include_playlist_tracks)
 
 
