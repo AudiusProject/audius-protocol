@@ -55,7 +55,7 @@ export const NotificationPanel = ({
     notifications,
     fetchNextPage,
     hasNextPage,
-    isPending,
+    isAllPending: isPending,
     isError,
     isFetchingNextPage
   } = useNotifications()
