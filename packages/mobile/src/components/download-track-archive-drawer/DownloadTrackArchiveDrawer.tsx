@@ -83,6 +83,8 @@ const DownloadTrackArchiveDrawerContent = ({
   const { data: trackTitle } = useTrack(trackId, {
     select: (track) => track.title
   })
+  const [step, setStep] = useState<'downloading' | 'zipping'>('zipping')
+
   const {
     mutate: downloadTrackStems,
     isError: initiateDownloadFailed,
@@ -122,13 +124,17 @@ const DownloadTrackArchiveDrawerContent = ({
 
   useEffect(() => {
     if (jobState?.state === 'completed' && trackTitle) {
-      downloadFile({
-        file: {
-          url: `${env.ARCHIVE_ENDPOINT}/archive/stems/download/${jobId}`,
-          filename: `${trackTitle}.zip`
-        }
-      })
-      onClose()
+      const fetchResult = async () => {
+        setStep('downloading')
+        await downloadFile({
+          file: {
+            url: `${env.ARCHIVE_ENDPOINT}/archive/stems/download/${jobId}`,
+            filename: `${trackTitle}.zip`
+          }
+        })
+        onClose()
+      }
+      fetchResult()
     }
   }, [jobState, onClose, jobId, downloadFile, trackTitle])
 
@@ -147,6 +153,7 @@ const DownloadTrackArchiveDrawerContent = ({
   }, [onClose, jobId, cancelStemsArchiveJob])
 
   const handleRetry = useCallback(() => {
+    setStep('zipping')
     resetDownload()
     downloadTrackStems()
   }, [downloadTrackStems, resetDownload])
@@ -157,10 +164,18 @@ const DownloadTrackArchiveDrawerContent = ({
         <DrawerHeader icon={IconReceive} title={messages.title} />
         <Flex justifyContent='center' alignItems='center' gap='xl'>
           <Flex row alignItems='center' gap='l'>
-            <IconFolder color='default' size='l' />
-            <Text variant='body' size='l' strength='strong'>
-              {messages.zippingFiles(fileCount)}
-            </Text>
+            {step === 'zipping' ? (
+              <>
+                <IconFolder color='default' size='l' />
+                <Text variant='body' size='l' strength='strong'>
+                  {messages.zippingFiles(fileCount)}
+                </Text>
+              </>
+            ) : (
+              <Text variant='body' size='l' strength='strong'>
+                {`${trackTitle}.zip`}
+              </Text>
+            )}
           </Flex>
           {hasError ? (
             <Hint
