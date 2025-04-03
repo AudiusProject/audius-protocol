@@ -3,12 +3,12 @@ CREATE OR REPLACE FUNCTION get_user_scores(
     ) RETURNS TABLE(
         user_id integer,
         handle_lc text,
-        play_count integer,
-        follower_count integer,
-        challenge_count integer,
-        following_count integer,
-        chat_block_count integer,
-        score integer
+        play_count bigint,
+        follower_count bigint,
+        challenge_count bigint,
+        following_count bigint,
+        chat_block_count bigint,
+        score bigint
     ) LANGUAGE sql AS $function$ with play_activity as (
         select plays.user_id,
             count(distinct date_trunc('minute', plays.created_at)) as play_count
