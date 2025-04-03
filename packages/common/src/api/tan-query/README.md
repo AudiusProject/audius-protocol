@@ -2,12 +2,21 @@
 
 ## Table of Contents
 
-<!-- 1. [Philosophy](#philosophy)
-2. [Calling Existing Hooks](#calling-existing-hooks)
-3. [Batching](#batching)
-4. [Priming / Prefetching Data](#priming--prefetching-data)
-5. [Normalization](#normalization)
-6. [Default Cache Behavior](#default-cache-behavior) -->
+1. [Purpose](#purpose)
+2. [Philosophy](#philosophy)
+3. [Query Hook Usage](#query-hook-usage)
+   - [Basic Examples](#basic-examples)
+     - [Fetching a User](#fetching-a-user)
+     - [Selecting data](#selecting-data)
+     - [Pagination](#pagination)
+4. [Mutations](#mutations-writes)
+5. [Writing Your Own Hooks](#writing-your-own-hooks)
+   - [Query Hooks (Fetching Data)](#query-hooks-fetching-data)
+   - [Mutation Hooks (Changing Data)](#mutation-hooks-changing-data)
+   - [Batching](#batching)
+   - [Priming Data](#priming-data)
+6. [Normalization & Single Source of Truth](#normalization--single-source-of-truth)
+7. [Default Cache Behavior](#default-cache-behavior)
 
 # Purpose
 
