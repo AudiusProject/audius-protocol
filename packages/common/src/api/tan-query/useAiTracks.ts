@@ -1,18 +1,22 @@
 import { useEffect } from 'react'
 
-import { OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import { EntityType, OptionalId } from '@audius/sdk'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
-import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
+import { userTrackMetadataFromSDK } from '~/adapters/track'
+import { transformAndCleanList } from '~/adapters/utils'
 import { useAudiusQueryContext } from '~/audius-query'
-import { PlaybackSource } from '~/models/Analytics'
-import { UserTrackMetadata } from '~/models/Track'
+import { PlaybackSource } from '~/models'
 import { aiPageLineupActions, aiPageSelectors } from '~/store/pages'
 import { fetchAiUser } from '~/store/pages/ai/slice'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { LineupData, QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -27,7 +31,10 @@ type UseAiTracksArgs = {
 export const getAiTracksQueryKey = ({
   handle,
   pageSize = DEFAULT_PAGE_SIZE
-}: UseAiTracksArgs) => [QUERY_KEYS.aiTracks, handle, { pageSize }]
+}: UseAiTracksArgs) =>
+  [QUERY_KEYS.aiTracks, handle, { pageSize }] as unknown as QueryKey<
+    InfiniteData<LineupData[]>
+  >
 
 export const useAiTracks = (
   { handle, pageSize = DEFAULT_PAGE_SIZE }: UseAiTracksArgs,
@@ -45,7 +52,7 @@ export const useAiTracks = (
   const queryData = useInfiniteQuery({
     queryKey: getAiTracksQueryKey({ handle, pageSize }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: UserTrackMetadata[], allPages) => {
+    getNextPageParam: (lastPage: LineupData[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -77,7 +84,10 @@ export const useAiTracks = (
         })
       )
 
-      return processedTracks
+      return processedTracks.map((t) => ({
+        id: t.track_id,
+        type: EntityType.TRACK
+      }))
     },
     select: (data) => data?.pages.flat(),
     ...options,

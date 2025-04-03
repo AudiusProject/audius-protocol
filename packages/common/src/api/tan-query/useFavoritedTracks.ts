@@ -4,15 +4,15 @@ import { useQuery } from '@tanstack/react-query'
 import { transformAndCleanList } from '~/adapters'
 import { favoriteFromSDK } from '~/adapters/favorite'
 import { useAudiusQueryContext } from '~/audius-query'
+import { Favorite } from '~/models/Favorite'
 import { ID } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 
-export const getFavoritedTracksQueryKey = (userId: ID | null | undefined) => [
-  QUERY_KEYS.favoritedTracks,
-  userId
-]
+export const getFavoritedTracksQueryKey = (userId: ID | null | undefined) => {
+  return [QUERY_KEYS.favoritedTracks, userId] as unknown as QueryKey<Favorite[]>
+}
 
 export const useFavoritedTracks = (
   userId: ID | null | undefined,

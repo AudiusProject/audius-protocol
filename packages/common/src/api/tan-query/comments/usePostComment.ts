@@ -1,9 +1,5 @@
 import { CommentMention, EntityType } from '@audius/sdk'
-import {
-  InfiniteData,
-  useMutation,
-  useQueryClient
-} from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { cloneDeep } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -80,17 +76,17 @@ export const usePostComment = () => {
       // If a root comment, update the sort data
       if (isReply) {
         // Update the parent comment replies list
-        queryClient.setQueryData<Comment | undefined>(
+        queryClient.setQueryData(
           getCommentQueryKey(parentCommentId),
           (comment) =>
             ({
               ...comment,
-              replyCount: (comment?.replyCount ?? 0) + 1,
-              replies: [...(comment?.replies ?? []), newComment]
+              replyCount: (comment as Comment)?.replyCount ?? 0 + 1,
+              replies: [...((comment as Comment)?.replies ?? []), newComment]
             }) as Comment
         )
       } else {
-        queryClient.setQueryData<InfiniteData<ID[]>>(
+        queryClient.setQueryData(
           getTrackCommentListQueryKey({ trackId, sortMethod: currentSort }),
           (prevData) => {
             // NOTE: The prevData here should never be undefined so the backup object should never be used

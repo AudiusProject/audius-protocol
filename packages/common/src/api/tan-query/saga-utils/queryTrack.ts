@@ -8,14 +8,14 @@ import { getTrackQueryKey } from '../useTrack'
 export function* queryTrack(id: ID | null | undefined) {
   if (!id) return null
   const queryClient = yield* getContext('queryClient')
-  return queryClient.getQueryData<TQTrack>(getTrackQueryKey(id))
+  return queryClient.getQueryData(getTrackQueryKey(id))
 }
 
 export function* queryTracks(ids: ID[]) {
   const queryClient = yield* getContext('queryClient')
   return ids.reduce(
     (acc, id) => {
-      const track = queryClient.getQueryData<TQTrack>(getTrackQueryKey(id))
+      const track = queryClient.getQueryData(getTrackQueryKey(id))
       if (track) {
         acc[id] = track
       }

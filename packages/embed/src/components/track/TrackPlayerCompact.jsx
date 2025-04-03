@@ -28,7 +28,8 @@ const TrackPlayerCompact = ({
   seekTo,
   backgroundColor,
   streamConditions,
-  hasPremiumExtras
+  hasPremiumExtras,
+  audioPlayer
 }) => {
   const isGated = !!streamConditions
   const isPurchaseable =
@@ -73,6 +74,7 @@ const TrackPlayerCompact = ({
                 seekTo={seekTo}
                 duration={duration}
                 elapsedSeconds={position}
+                audioPlayer={audioPlayer}
               />
             </div>
           ) : null}

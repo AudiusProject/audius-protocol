@@ -1,5 +1,9 @@
-import { OptionalId, full } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import { OptionalId, full, EntityType } from '@audius/sdk'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import {
@@ -8,14 +12,13 @@ import {
 } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
 import { PlaybackSource } from '~/models/Analytics'
-import { UserCollectionMetadata } from '~/models/Collection'
 import {
   trendingPlaylistsPageLineupActions,
   trendingPlaylistsPageLineupSelectors
 } from '~/store/pages'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions, LineupData } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeCollectionData } from './utils/primeCollectionData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -30,10 +33,10 @@ export type UseTrendingPlaylistsArgs = {
 export const getTrendingPlaylistsQueryKey = ({
   pageSize,
   time
-}: UseTrendingPlaylistsArgs) => [
-  QUERY_KEYS.trendingPlaylists,
-  { pageSize, time }
-]
+}: UseTrendingPlaylistsArgs) =>
+  [QUERY_KEYS.trendingPlaylists, { pageSize, time }] as unknown as QueryKey<
+    InfiniteData<LineupData[]>
+  >
 
 export const useTrendingPlaylists = (
   {
@@ -50,7 +53,7 @@ export const useTrendingPlaylists = (
   const queryData = useInfiniteQuery({
     queryKey: getTrendingPlaylistsQueryKey({ pageSize, time }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: UserCollectionMetadata[], allPages) => {
+    getNextPageParam: (lastPage: LineupData[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -86,7 +89,10 @@ export const useTrendingPlaylists = (
         )
       )
 
-      return processedPlaylists
+      return processedPlaylists.map((p) => ({
+        id: p.playlist_id,
+        type: EntityType.PLAYLIST
+      }))
     },
     select: (data) => data?.pages.flat(),
     ...options,

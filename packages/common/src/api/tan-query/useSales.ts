@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
 import { full, Id } from '@audius/sdk'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { InfiniteData, useInfiniteQuery } from '@tanstack/react-query'
 
 import { purchaseFromSDK } from '~/adapters/purchase'
 import { useAudiusQueryContext } from '~/audius-query'
@@ -12,7 +12,7 @@ import {
 } from '~/models/USDCTransactions'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCollections } from './useCollections'
 import { useTracks } from './useTracks'
 import { useUsers } from './useUsers'
@@ -31,11 +31,12 @@ export const getSalesQueryKey = ({
   sortMethod,
   sortDirection,
   pageSize = PAGE_SIZE
-}: GetSalesListArgs) => [
-  QUERY_KEYS.sales,
-  userId,
-  { sortMethod, sortDirection, pageSize }
-]
+}: GetSalesListArgs) =>
+  [
+    QUERY_KEYS.sales,
+    userId,
+    { sortMethod, sortDirection, pageSize }
+  ] as unknown as QueryKey<InfiniteData<USDCPurchaseDetails[]>>
 
 export const useSales = (args: GetSalesListArgs, options?: QueryOptions) => {
   const { userId, sortMethod, sortDirection, pageSize = PAGE_SIZE } = args

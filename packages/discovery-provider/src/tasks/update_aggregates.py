@@ -367,7 +367,11 @@ with scoped_users as (
     )
     update aggregate_user set score = computed_scores.score
     from computed_scores
-    where aggregate_user.user_id = computed_scores.user_id
+    where
+      aggregate_user.user_id = computed_scores.user_id
+      and (
+        aggregate_user.score != computed_scores.score
+      )
     returning aggregate_user.user_id;
 """
 

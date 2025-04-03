@@ -37,12 +37,11 @@ export const useReactToComment = () => {
       isLiked,
       isEntityOwner
     }: ReactToCommentArgs) => {
-      const prevComment = queryClient.getQueryData<CommentOrReply | undefined>([
-        'comment',
-        commentId
-      ])
+      const prevComment = queryClient.getQueryData(
+        getCommentQueryKey(commentId)
+      )
       // Optimistic update our cache
-      queryClient.setQueryData<CommentOrReply | undefined>(
+      queryClient.setQueryData(
         getCommentQueryKey(commentId),
         (prevCommentState) =>
           ({

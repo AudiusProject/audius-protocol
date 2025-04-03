@@ -1,5 +1,6 @@
 import { useRef, useCallback, useMemo } from 'react'
 
+import { LineupData } from '@audius/common/api'
 import {
   Name,
   PlaybackSource,
@@ -7,15 +8,11 @@ import {
   ID,
   UID,
   ModalSource,
-  TrackMetadata,
   Lineup,
   Status,
   Collection,
   LineupTrack,
-  Track,
-  UserTrackMetadata,
-  UserCollectionMetadata,
-  CollectionMetadata
+  Track
 } from '@audius/common/models'
 import {
   LineupBaseActions,
@@ -49,14 +46,7 @@ const { makeGetCurrent } = queueSelectors
 
 export interface TanQueryLineupProps {
   /** Query data should be fetched one component above and passed through here */
-  data:
-    | (
-        | UserTrackMetadata
-        | TrackMetadata
-        | UserCollectionMetadata
-        | CollectionMetadata
-      )[]
-    | undefined
+  data: LineupData[] | undefined
   isFetching: boolean
   isPending: boolean
   isError: boolean
@@ -297,8 +287,10 @@ export const TanQueryLineup = ({
                   className={cn({ [tileStyles!]: !!tileStyles })}
                   css={{ listStyle: 'none' }}
                 >
-                  {/* @ts-ignore - the types here need work - we're not passing the full expected types here whenever we pass isLoading: true */}
-                  <TrackTile {...skeletonTileProps(index)} key={index} />
+                  <Flex direction={isMobile ? 'row' : 'column'} w='100%'>
+                    {/* @ts-ignore - the types here need work - we're not passing the full expected types here whenever we pass isLoading: true */}
+                    <TrackTile {...skeletonTileProps(index)} key={index} />
+                  </Flex>
                   {index === 0 && leadingElementId !== undefined ? (
                     <Divider css={{ width: '100%' }} />
                   ) : null}
@@ -311,6 +303,7 @@ export const TanQueryLineup = ({
     [
       TrackTile,
       leadingElementId,
+      isMobile,
       numPlaylistSkeletonRows,
       ordered,
       tileSize,
@@ -456,7 +449,9 @@ export const TanQueryLineup = ({
                     className={cn({ [tileStyles!]: !!tileStyles })}
                     as='li'
                   >
-                    {tile}
+                    <Flex direction={isMobile ? 'row' : 'column'} w='100%'>
+                      {tile}
+                    </Flex>
                     {index === 0 && leadingElementId !== undefined ? (
                       <Divider />
                     ) : null}

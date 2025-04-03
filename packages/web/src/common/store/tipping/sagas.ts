@@ -1,6 +1,10 @@
-import { QUERY_KEYS } from '@audius/common/api'
-import { Name, ID, BNWei, SolanaWalletAddress } from '@audius/common/models'
-import { LocalStorage } from '@audius/common/services'
+import {
+  getSupportedUsersQueryKey,
+  getSupporterQueryKey,
+  getSupportersQueryKey,
+  getUserQueryKey
+} from '@audius/common/api'
+import { Name, BNWei, SolanaWalletAddress } from '@audius/common/models'
 import {
   accountSelectors,
   chatActions,
@@ -39,20 +43,6 @@ const { getSendTipData } = tippingSelectors
 
 const { getAccountUser, getWalletAddresses } = accountSelectors
 const { fetchPermissions } = chatActions
-
-const FEED_TIP_DISMISSAL_TIME_LIMIT_SEC = 30 * 24 * 60 * 60 // 30 days
-const DISMISSED_TIP_KEY = 'dismissed-tips'
-
-export const storeDismissedTipInfo = async (
-  localStorage: LocalStorage,
-  receiverId: ID
-) => {
-  localStorage.setExpiringJSONValue(
-    DISMISSED_TIP_KEY,
-    { receiver_id: receiverId },
-    FEED_TIP_DISMISSAL_TIME_LIMIT_SEC
-  )
-}
 
 /**
  * Polls the /supporter endpoint to check if the sender is listed as a supporter of the recipient
@@ -248,19 +238,19 @@ function* sendTipAsync() {
     const queryClient = yield* getContext('queryClient')
 
     queryClient.invalidateQueries({
-      queryKey: [QUERY_KEYS.user, receiverUserId]
+      queryKey: getUserQueryKey(receiver.user_id)
     })
     queryClient.invalidateQueries({
-      queryKey: [QUERY_KEYS.user, senderUserId]
+      queryKey: getUserQueryKey(sender.user_id)
     })
     queryClient.invalidateQueries({
-      queryKey: [QUERY_KEYS.supporters, receiverUserId]
+      queryKey: getSupportersQueryKey(receiver.user_id)
     })
     queryClient.invalidateQueries({
-      queryKey: [QUERY_KEYS.supporters, receiverUserId, senderUserId]
+      queryKey: getSupporterQueryKey(receiver.user_id, sender.user_id)
     })
     queryClient.invalidateQueries({
-      queryKey: [QUERY_KEYS.supportedUsers, senderUserId]
+      queryKey: getSupportedUsersQueryKey(sender.user_id)
     })
   } catch (error) {
     const e = error instanceof Error ? error : new Error(String(error))
