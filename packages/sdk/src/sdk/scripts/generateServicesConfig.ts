@@ -69,10 +69,11 @@ const productionConfig: SdkServicesConfig = {
   network: {
     minVersion: '',
     discoveryNodes: [],
+    apiEndpoint: 'https://api.audius.co',
     storageNodes: [],
     antiAbuseOracleNodes: {
       endpoints: [
-        'https://antiabuseoracle.audius.co',
+        'https://discoveryprovider.audius.co',
         'https://audius-oracle.creatorseed.com',
         'https://oracle.audius.endl.net'
       ],
@@ -114,6 +115,7 @@ const productionConfig: SdkServicesConfig = {
 const stagingConfig: SdkServicesConfig = {
   network: {
     minVersion: '',
+    apiEndpoint: 'https://api.staging.audius.co',
     discoveryNodes: [],
     storageNodes: [],
     antiAbuseOracleNodes: {
@@ -156,6 +158,7 @@ const stagingConfig: SdkServicesConfig = {
 const developmentConfig: SdkServicesConfig = {
   network: {
     minVersion: '0.0.0',
+    apiEndpoint: 'http://audius-protocol-discovery-provider-1',
     discoveryNodes: [
       {
         delegateOwnerWallet:
@@ -175,7 +178,7 @@ const developmentConfig: SdkServicesConfig = {
       endpoints: ['http://audius-protocol-anti-abuse-oracle-1:8000'],
       registeredAddresses: ['0xF0D5BC18421fa04D0a2A2ef540ba5A9f04014BE3']
     },
-    identityService: 'https://audius-protocol-identity-service-1'
+    identityService: 'http://audius-protocol-identity-service-1'
   },
   acdc: {
     entityManagerContractAddress: '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B',
@@ -195,7 +198,7 @@ const developmentConfig: SdkServicesConfig = {
       'GNHKVSmHvoRBt1JJCxz7RSMfzDQGDGhGEjmhHyxb3K5J'
   },
   ethereum: {
-    rpcEndpoint: 'https://audius-protocol-eth-ganache-1',
+    rpcEndpoint: 'http://audius-protocol-eth-ganache-1',
     addresses: {
       ethRewardsManagerAddress: '0x',
       serviceProviderFactoryAddress: '0x',

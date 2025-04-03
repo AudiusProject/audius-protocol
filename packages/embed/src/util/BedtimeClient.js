@@ -22,19 +22,19 @@ export const RequestedEntity = Object.seal({
   COLLECTIONS: 'collections',
   COLLECTIBLES: 'collectibles'
 })
-let discoveryEndpoint
+
 const audiusSdk = sdk({
   appName,
   apiKey,
   environment: env
 })
 
-audiusSdk.services.discoveryNodeSelector.addEventListener(
-  'change',
-  (endpoint) => {
-    discoveryEndpoint = endpoint
-  }
-)
+const apiEndpoint =
+  env === 'production'
+    ? 'https://api.audius.co'
+    : env === 'staging'
+      ? 'https://api.staging.audius.co'
+      : 'http://audius-protocol-discovery-provider-1'
 
 const fetchNFTClient = new FetchNFTClient({
   openSeaConfig: { apiEndpoint: openSeaApiUrl },
@@ -43,13 +43,15 @@ const fetchNFTClient = new FetchNFTClient({
 })
 
 export const getTrackStreamEndpoint = (trackId, isPurchaseable) =>
-  `${discoveryEndpoint}/v1/tracks/${trackId}/stream?app_name=${appName}&api_key=${apiKey}${
+  `${apiEndpoint}/v1/tracks/${trackId}/stream?app_name=${appName}&api_key=${apiKey}${
     isPurchaseable ? '&preview=true' : ''
   }`
 
-export const getCollectiblesJson = async (cid) => {
-  const url = `${discoveryEndpoint}/v1/full/cid_data/${cid}`
-  return (await (await fetch(url)).json())?.data?.data
+export const getCollectiblesJson = async (hashId) => {
+  const { data: collectibles } = await audiusSdk.users.getUserCollectibles({
+    id: hashId
+  })
+  return collectibles.data
 }
 
 window.audiusSdk = audiusSdk

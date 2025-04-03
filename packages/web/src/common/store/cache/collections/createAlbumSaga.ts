@@ -2,6 +2,7 @@ import {
   albumMetadataForSDK,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
+import { queryCollection, queryTrack, queryUser } from '@audius/common/api'
 import {
   Name,
   Kind,
@@ -14,11 +15,8 @@ import { newCollectionMetadata } from '@audius/common/schemas'
 import {
   accountSelectors,
   cacheCollectionsActions,
-  cacheCollectionsSelectors,
-  cacheTracksSelectors,
   cacheActions,
   reformatCollection,
-  cacheUsersSelectors,
   confirmerActions,
   EditCollectionValues,
   RequestConfirmationError,
@@ -35,9 +33,6 @@ import { waitForWrite } from 'utils/sagaHelpers'
 
 const { requestConfirmation } = confirmerActions
 const { getUserId, getAccountUser } = accountSelectors
-const { getTrack } = cacheTracksSelectors
-const { getCollection } = cacheCollectionsSelectors
-const { getUser } = cacheUsersSelectors
 const { collectionPage } = route
 
 export function* createAlbumSaga() {
@@ -61,13 +56,18 @@ function* createAlbumWorker(
   ])
   if (!collectionId) return
 
-  const initTrack = yield* select(getTrack, { id: initTrackId })
+  const initTrack = yield* queryTrack(initTrackId)
 
   if (initTrack) {
     collection.cover_art_sizes = initTrack.cover_art_sizes
   }
 
-  yield* call(optimisticallySaveAlbum, collectionId, collection, initTrack)
+  yield* call(
+    optimisticallySaveAlbum,
+    collectionId,
+    collection,
+    initTrack as Track
+  )
   yield* put(
     cacheCollectionsActions.createPlaylistRequested(
       collectionId,
@@ -80,7 +80,7 @@ function* createAlbumWorker(
     collectionId,
     userId,
     collection,
-    initTrack,
+    initTrack as Track,
     source
   )
 }
@@ -98,7 +98,7 @@ function* optimisticallySaveAlbum(
     ...formFields
   }
 
-  const initTrackOwner = yield* select(getUser, { id: initTrack?.owner_id })
+  const initTrackOwner = yield* queryUser(initTrack?.owner_id)
 
   album.playlist_owner_id = user_id
   album.is_private = true
@@ -205,7 +205,7 @@ function* createAndConfirmAlbum(
       )
     }
 
-    const optimisticAlbum = yield* select(getCollection, { id: albumId })
+    const optimisticAlbum = yield* queryCollection(albumId)
 
     const reformattedAlbum = {
       ...reformatCollection({

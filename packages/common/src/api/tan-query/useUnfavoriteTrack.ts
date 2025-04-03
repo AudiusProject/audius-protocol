@@ -57,9 +57,7 @@ export const useUnfavoriteTrack = () => {
       await queryClient.cancelQueries({ queryKey: getTrackQueryKey(trackId) })
 
       // Snapshot the previous values
-      const previousTrack = queryClient.getQueryData<Track>(
-        getTrackQueryKey(trackId)
-      )
+      const previousTrack = queryClient.getQueryData(getTrackQueryKey(trackId))
       if (!previousTrack) throw new Error('Track not found')
 
       // Don't allow unfavoriting your own track

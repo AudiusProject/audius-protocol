@@ -1,5 +1,9 @@
 import { Id, OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
@@ -7,7 +11,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { useUsers } from './useUsers'
 import { primeUserData } from './utils/primeUserData'
@@ -19,10 +23,10 @@ type UseFollowersArgs = {
   pageSize?: number
 }
 
-export const getFollowersQueryKey = ({
-  userId,
-  pageSize
-}: UseFollowersArgs) => [QUERY_KEYS.followers, userId, { pageSize }]
+export const getFollowersQueryKey = ({ userId, pageSize }: UseFollowersArgs) =>
+  [QUERY_KEYS.followers, userId, { pageSize }] as unknown as QueryKey<
+    InfiniteData<ID[]>
+  >
 
 /**
  * Hook to fetch followers for a user with infinite query support.
@@ -37,7 +41,7 @@ export const useFollowers = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const { data: userIds, ...queryResult } = useInfiniteQuery({
+  const queryRes = useInfiniteQuery({
     queryKey: getFollowersQueryKey({ userId, pageSize }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: ID[], allPages) => {
@@ -61,10 +65,16 @@ export const useFollowers = (
     enabled: options?.enabled !== false && !!userId
   })
 
-  const { data: users } = useUsers(userIds)
+  const { data: users } = useUsers(queryRes.data)
 
   return {
-    data: users,
-    ...queryResult
+    users,
+    data: queryRes.data,
+    isPending: queryRes.isPending,
+    isLoading: queryRes.isLoading,
+    isSuccess: queryRes.isSuccess,
+    hasNextPage: queryRes.hasNextPage,
+    isFetchingNextPage: queryRes.isFetchingNextPage,
+    fetchNextPage: queryRes.fetchNextPage
   }
 }

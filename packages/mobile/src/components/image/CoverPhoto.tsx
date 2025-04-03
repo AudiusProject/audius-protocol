@@ -1,18 +1,16 @@
+import { useUser } from '@audius/common/api'
 import { useImageSize } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
 import { SquareSizes, WidthSizes } from '@audius/common/models'
-import { cacheUsersSelectors } from '@audius/common/store'
 import { BlurView } from '@react-native-community/blur'
+import { pick } from 'lodash'
 import { Animated, StyleSheet } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import type { FastImageProps } from '@audius/harmony-native'
 import { FastImage, preload } from '@audius/harmony-native'
 
 import { useProfilePicture } from './UserImage'
 import { primitiveToImageSource } from './primitiveToImageSource'
-
-const { getUser } = cacheUsersSelectors
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView)
 
@@ -56,8 +54,11 @@ export const useCoverPhoto = ({
           : SquareSizes.SIZE_1000_BY_1000,
       defaultImage: ''
     })
-  const user = useSelector((state) => getUser(state, { id: userId }))
-  const coverPhoto = user?.cover_photo
+  const { data: partialUser } = useUser(userId, {
+    select: (user) => pick(user, 'cover_photo', 'updatedCoverPhoto')
+  })
+  const { cover_photo, updatedCoverPhoto } = partialUser ?? {}
+  const coverPhoto = cover_photo
   const image = useImageSize({
     artwork: coverPhoto,
     targetSize: size,
@@ -70,9 +71,9 @@ export const useCoverPhoto = ({
   const isDefaultCover = image === ''
   const shouldBlur = isDefaultCover && !isDefaultProfile
 
-  if (user?.updatedCoverPhoto && !shouldBlur) {
+  if (updatedCoverPhoto && !shouldBlur) {
     return {
-      source: primitiveToImageSource(user.updatedCoverPhoto.url),
+      source: primitiveToImageSource(updatedCoverPhoto.url),
       shouldBlur
     }
   }

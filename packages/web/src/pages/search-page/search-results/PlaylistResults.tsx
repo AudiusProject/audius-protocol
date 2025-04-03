@@ -1,18 +1,21 @@
 import { useCallback } from 'react'
 
-import { ID, Kind, Name, Status } from '@audius/common/models'
+import { useSearchPlaylistResults } from '@audius/common/api'
+import { Kind, Name, UserCollectionMetadata } from '@audius/common/models'
 import { searchActions } from '@audius/common/store'
 import { Box, Flex, Text, useTheme } from '@audius/harmony'
 import { range } from 'lodash'
+import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import { CollectionCard } from 'components/collection'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { useMainContentRef } from 'pages/MainContentContext'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { SortMethodFilterButton } from '../SortMethodFilterButton'
-import { useGetSearchResults, useSearchParams } from '../hooks'
+import { useSearchParams } from '../hooks'
 
 const { addItem: addRecentSearch } = searchActions
 
@@ -22,19 +25,45 @@ const messages = {
 }
 
 type PlaylistResultsProps = {
-  ids: ID[]
   limit?: number
   skeletonCount?: number
+  data: UserCollectionMetadata[]
+  isFetching: boolean
+  isPending: boolean
+}
+
+const PlaylistResultsSkeletons = ({
+  skeletonCount = 10
+}: {
+  skeletonCount: number
+}) => {
+  const isMobile = useIsMobile()
+  return (
+    <>
+      {range(skeletonCount).map((_, i) => (
+        <CollectionCard
+          key={`playlist_card_skeleton_${i}`}
+          id={0}
+          size={isMobile ? 'xs' : 's'}
+          css={isMobile ? { maxWidth: 320 } : undefined}
+          loading={true}
+        />
+      ))}
+    </>
+  )
 }
 
 export const PlaylistResults = (props: PlaylistResultsProps) => {
-  const { limit = 100, ids, skeletonCount = 10 } = props
-  const { query } = useSearchParams()
+  const { limit, skeletonCount = 10, data, isFetching, isPending } = props
+
+  const searchParams = useSearchParams()
+  const { query } = searchParams
 
   const isMobile = useIsMobile()
   const dispatch = useDispatch()
 
-  const truncatedIds = ids?.slice(0, limit) ?? []
+  const truncatedResults =
+    limit !== undefined ? (data?.slice(0, limit) ?? []) : data
 
   const handleClick = useCallback(
     (id?: number) => {
@@ -60,6 +89,10 @@ export const PlaylistResults = (props: PlaylistResultsProps) => {
     [dispatch, query]
   )
 
+  // Only show pagination skeletons when we're not loading the first page & still under the limit
+  const shouldShowMoreSkeletons =
+    isFetching && !isPending && (limit === undefined || data?.length < limit)
+
   return (
     <Box
       css={{
@@ -72,26 +105,23 @@ export const PlaylistResults = (props: PlaylistResultsProps) => {
       }}
       p={isMobile ? 'm' : undefined}
     >
-      {!truncatedIds.length
-        ? range(skeletonCount).map((_, i) => (
-            <CollectionCard
-              key={`user_card_sekeleton_${i}`}
-              id={0}
-              size={isMobile ? 'xs' : 's'}
-              css={isMobile ? { maxWidth: 320 } : undefined}
-              loading={true}
-            />
-          ))
-        : truncatedIds.map((id) => (
-            <CollectionCard
-              key={id}
-              id={id}
-              size={isMobile ? 'xs' : 's'}
-              css={isMobile ? { maxWidth: 320 } : undefined}
-              onClick={() => handleClick(id)}
-              onCollectionLinkClick={() => handleClick(id)}
-            />
-          ))}
+      {!truncatedResults.length ? (
+        <PlaylistResultsSkeletons skeletonCount={skeletonCount} />
+      ) : (
+        truncatedResults.map((playlist) => (
+          <CollectionCard
+            key={playlist.playlist_id}
+            id={playlist.playlist_id}
+            size={isMobile ? 'xs' : 's'}
+            css={isMobile ? { maxWidth: 320 } : undefined}
+            onClick={() => handleClick(playlist.playlist_id)}
+            onCollectionLinkClick={() => handleClick(playlist.playlist_id)}
+          />
+        ))
+      )}
+      {shouldShowMoreSkeletons ? (
+        <PlaylistResultsSkeletons skeletonCount={skeletonCount} />
+      ) : null}
     </Box>
   )
 }
@@ -99,28 +129,61 @@ export const PlaylistResults = (props: PlaylistResultsProps) => {
 export const PlaylistResultsPage = () => {
   const isMobile = useIsMobile()
   const { color } = useTheme()
+  const mainContentRef = useMainContentRef()
 
-  const { data: ids, status } = useGetSearchResults('playlists')
-  const isLoading = status === Status.LOADING
+  const getMainContentRef = useCallback(() => {
+    if (isMobile) {
+      return null
+    }
+    return mainContentRef?.current || null
+  }, [isMobile, mainContentRef])
 
-  const isResultsEmpty = ids?.length === 0
-  const showNoResultsTile = !isLoading && isResultsEmpty
+  const searchParams = useSearchParams()
+  const queryData = useSearchPlaylistResults(searchParams)
+  const {
+    data: playlists,
+    isFetching,
+    hasNextPage,
+    loadNextPage,
+    isPending
+  } = queryData
+
+  const isResultsEmpty = playlists?.length === 0
+  const showNoResultsTile = !isFetching && isResultsEmpty
 
   return (
-    <Flex
-      direction='column'
-      gap='xl'
-      css={isMobile ? { backgroundColor: color.background.default } : {}}
+    <InfiniteScroll
+      pageStart={0}
+      loadMore={loadNextPage}
+      hasMore={hasNextPage}
+      getScrollParent={getMainContentRef}
+      initialLoad={false}
+      useWindow={isMobile}
     >
-      {!isMobile ? (
-        <Flex justifyContent='space-between' alignItems='center'>
-          <Text variant='heading' textAlign='left'>
-            {messages.playlists}
-          </Text>
-          <SortMethodFilterButton />
-        </Flex>
-      ) : null}
-      {showNoResultsTile ? <NoResultsTile /> : <PlaylistResults ids={ids} />}
-    </Flex>
+      <Flex
+        direction='column'
+        gap='xl'
+        css={isMobile ? { backgroundColor: color.background.default } : {}}
+      >
+        {!isMobile ? (
+          <Flex justifyContent='space-between' alignItems='center'>
+            <Text variant='heading' textAlign='left'>
+              {messages.playlists}
+            </Text>
+            <SortMethodFilterButton />
+          </Flex>
+        ) : null}
+        {showNoResultsTile ? (
+          <NoResultsTile />
+        ) : (
+          <PlaylistResults
+            data={playlists ?? []}
+            isFetching={isFetching}
+            isPending={isPending}
+            skeletonCount={10}
+          />
+        )}
+      </Flex>
+    </InfiniteScroll>
   )
 }

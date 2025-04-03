@@ -1,6 +1,6 @@
 import { useEffect, useContext, useMemo } from 'react'
 
-import { useTrackHistory } from '@audius/common/api'
+import { useTrackHistory, useTracks, useUsers } from '@audius/common/api'
 import { route } from '@audius/common/utils'
 import { Button } from '@audius/harmony'
 import { Link } from 'react-router-dom'
@@ -31,10 +31,25 @@ export type HistoryPageProps = {
 }
 
 export const HistoryPage = ({ title, description }: HistoryPageProps) => {
-  const { lineup, isInitialLoading, data, isPlaying, togglePlay } =
-    useTrackHistory({
-      pageSize: 50
-    })
+  const {
+    lineup,
+    isInitialLoading,
+    data: trackIds,
+    isPlaying,
+    togglePlay
+  } = useTrackHistory({
+    pageSize: 50
+  })
+  const { data: trackData } = useTracks(
+    trackIds?.map((entry) => entry.id) ?? []
+  )
+  const { data: users } = useUsers(
+    trackData?.map((track) => track.owner_id) ?? []
+  )
+  const userTrackData = trackData?.map((track) => ({
+    ...track,
+    user: users?.find((user) => user.user_id === track.owner_id)
+  }))
   const lineupProps = useTanQueryLineupProps()
   const { playingUid } = lineupProps
 
@@ -48,8 +63,13 @@ export const HistoryPage = ({ title, description }: HistoryPageProps) => {
 
   // Merge lineup entries with their corresponding track data
   const tracks = useMemo(() => {
-    if (lineup.entries.length === 0 || !data || data.length === 0) return []
-    return data.map((track, index) => {
+    if (
+      lineup.entries.length === 0 ||
+      !userTrackData ||
+      userTrackData.length === 0
+    )
+      return []
+    return userTrackData.map((track, index) => {
       const lineupTrack = {
         ...lineup.entries[index],
         ...track
@@ -65,17 +85,17 @@ export const HistoryPage = ({ title, description }: HistoryPageProps) => {
         isSaved: lineupTrack.has_current_user_saved,
         isActive,
         isPlaying: isActive && isPlaying,
-        artistName: lineupTrack.user.name,
-        artistHandle: lineupTrack.user.handle,
+        artistName: lineupTrack.user?.name,
+        artistHandle: lineupTrack.user?.handle,
         permalink: lineupTrack.permalink,
         trackTitle: lineupTrack.title,
         trackId: lineupTrack.track_id,
         uid: lineupTrack.uid,
-        isDeleted: lineupTrack.is_delete || !!lineupTrack.user.is_deactivated,
+        isDeleted: lineupTrack.is_delete || !!lineupTrack.user?.is_deactivated,
         isLocked: false
       }
     })
-  }, [lineup.entries, data, playingUid, isInitialLoading, isPlaying])
+  }, [lineup.entries, userTrackData, playingUid, isInitialLoading, isPlaying])
 
   return (
     <MobilePageContainer title={title} description={description}>

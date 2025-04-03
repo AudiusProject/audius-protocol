@@ -1,22 +1,26 @@
 import { Id, OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
+import { PurchaseableContentType } from '~/store'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
-import { useUsers } from './useUsers'
 import { primeUserData } from './utils/primeUserData'
 
 const PAGE_SIZE = 20
 
 export type UsePurchasersArgs = {
-  contentId?: ID | null | undefined
-  contentType?: string | undefined
+  contentId?: ID | undefined
+  contentType?: PurchaseableContentType | undefined
   pageSize?: number
 }
 
@@ -24,14 +28,15 @@ export const getPurchasersQueryKey = ({
   contentId,
   contentType,
   pageSize
-}: UsePurchasersArgs) => [
-  QUERY_KEYS.purchasers,
-  {
-    contentId,
-    contentType,
-    pageSize
-  }
-]
+}: UsePurchasersArgs) =>
+  [
+    QUERY_KEYS.purchasers,
+    {
+      contentId,
+      contentType,
+      pageSize
+    }
+  ] as unknown as QueryKey<InfiniteData<ID[]>>
 
 export const usePurchasers = (
   args: UsePurchasersArgs,
@@ -43,7 +48,7 @@ export const usePurchasers = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const { data: userIds, ...queryResult } = useInfiniteQuery({
+  return useInfiniteQuery({
     queryKey: getPurchasersQueryKey(args),
     initialPageParam: 0,
     getNextPageParam: (lastPage: ID[], allPages) => {
@@ -69,11 +74,4 @@ export const usePurchasers = (
     ...options,
     enabled: options?.enabled !== false && !!currentUserId
   })
-
-  const { data: users } = useUsers(userIds)
-
-  return {
-    data: users,
-    ...queryResult
-  }
 }

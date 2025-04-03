@@ -1,24 +1,18 @@
 import { useCallback } from 'react'
 
-import {
-  FavoriteSource,
-  Collection,
-  SmartCollection,
-  ID
-} from '@audius/common/models'
+import { useCollection } from '@audius/common/api'
+import { FavoriteSource, ID } from '@audius/common/models'
 import {
   accountSelectors,
-  collectionPageSelectors,
   collectionsSocialActions,
-  CommonState,
   playlistLibraryHelpers
 } from '@audius/common/store'
 import { IconHeart, IconButtonProps, IconButton } from '@audius/harmony'
+import { pick } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'
 
-const { getCollection } = collectionPageSelectors
 const { getPlaylistLibrary } = accountSelectors
 const {
   saveCollection,
@@ -44,17 +38,19 @@ export const FavoriteButton = (props: FavoriteButtonProps) => {
 
   const userPlaylistLibrary = useSelector(getPlaylistLibrary)
 
-  const collection =
-    (useSelector((state: CommonState) =>
-      getCollection(state, collectionId ? { id: collectionId } : undefined)
-    ) as SmartCollection | Collection) ?? {}
+  const { data: partialCollection } = useCollection(collectionId, {
+    select: (collection) =>
+      pick(collection, 'has_current_user_saved', 'playlist_name', 'save_count')
+  })
+  const {
+    has_current_user_saved,
+    playlist_name,
+    save_count = 0
+  } = partialCollection ?? {}
 
-  const { has_current_user_saved, playlist_name } = collection
-  const saveCount = (collection as Collection).save_count ?? 0
-  const isInLibrary = !!findInPlaylistLibrary(
-    userPlaylistLibrary,
-    playlist_name
-  )
+  const isInLibrary =
+    !!playlist_name &&
+    !!findInPlaylistLibrary(userPlaylistLibrary, playlist_name)
 
   const isSaved = has_current_user_saved || isInLibrary
 
@@ -68,11 +64,11 @@ export const FavoriteButton = (props: FavoriteButtonProps) => {
         dispatch(saveCollection(collectionId, FavoriteSource.COLLECTION_PAGE))
       }
     } else {
-      if (isSaved) {
+      if (isSaved && playlist_name) {
         dispatch(
           unsaveSmartCollection(playlist_name, FavoriteSource.COLLECTION_PAGE)
         )
-      } else {
+      } else if (playlist_name) {
         dispatch(
           saveSmartCollection(playlist_name, FavoriteSource.COLLECTION_PAGE)
         )
@@ -82,7 +78,7 @@ export const FavoriteButton = (props: FavoriteButtonProps) => {
 
   return (
     <Tooltip
-      disabled={isOwner || saveCount === 0}
+      disabled={isOwner || save_count === 0}
       text={isSaved ? messages.unfavorite : messages.favorite}
     >
       <IconButton

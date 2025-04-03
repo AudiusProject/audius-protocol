@@ -25,7 +25,13 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
   ChallengeName.ListenStreak,
   ChallengeName.OneShot,
   ChallengeName.ListenStreakEndless,
-  ChallengeName.FirstWeeklyComment
+  ChallengeName.FirstWeeklyComment,
+  ChallengeName.PlayCount250,
+  ChallengeName.PlayCount1000,
+  ChallengeName.PlayCount10000,
+  ChallengeName.Tastemaker,
+  ChallengeName.CommentPin,
+  ChallengeName.Cosign
 ])
 
 /** Pulls rewards from remoteconfig */

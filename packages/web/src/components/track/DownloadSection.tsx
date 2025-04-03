@@ -1,10 +1,12 @@
 import { useCallback, useState } from 'react'
 
+import { useTrack } from '@audius/common/api'
 import {
   useCurrentStems,
   useFileSizes,
   useDownloadableContentAccess,
-  useUploadingStems
+  useUploadingStems,
+  useFeatureFlag
 } from '@audius/common/hooks'
 import {
   Name,
@@ -13,13 +15,13 @@ import {
   ID,
   StemCategory
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
-  cacheTracksSelectors,
   usePremiumContentPurchaseModal,
-  CommonState,
   useWaitForDownloadModal,
   toastActions,
-  PurchaseableContentType
+  PurchaseableContentType,
+  useDownloadTrackArchiveModal
 } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import {
@@ -31,7 +33,7 @@ import {
   IconCaretDown,
   IconLockUnlocked
 } from '@audius/harmony'
-import { shallowEqual, useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
@@ -45,7 +47,6 @@ import { audiusSdk } from 'services/audius-sdk'
 
 import { DownloadRow } from './DownloadRow'
 
-const { getTrack } = cacheTracksSelectors
 const { toast } = toastActions
 
 const ORIGINAL_TRACK_INDEX = 1
@@ -58,7 +59,8 @@ const messages = {
   purchased: 'purchased',
   followToDownload: 'Must follow artist to download.',
   purchaseableIsOwner: (price: string) =>
-    `Fans can unlock & download these files for a one time purchase of ${price}`
+    `Fans can unlock & download these files for a one time purchase of ${price}`,
+  downloadAll: 'Download All'
 }
 
 type DownloadSectionProps = {
@@ -69,10 +71,16 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
   const dispatch = useDispatch()
   const record = useRecord()
   const isMobile = useIsMobile()
-  const track = useSelector(
-    (state: CommonState) => getTrack(state, { id: trackId }),
-    shallowEqual
-  )
+  const { data: partialTrack } = useTrack(trackId, {
+    select: (track) => {
+      return {
+        is_downloadable: track?.is_downloadable,
+        access: track?.access
+      }
+    }
+  })
+  const { is_downloadable, access } = partialTrack ?? {}
+
   const { stemTracks } = useCurrentStems({ trackId })
   const { uploadingTracks: uploadingStems } = useUploadingStems({ trackId })
   const {
@@ -83,15 +91,22 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     shouldDisplayOwnerPremiumDownloads
   } = useDownloadableContentAccess({ trackId })
 
+  const { isEnabled: isDownloadAllTrackFilesEnabled } = useFeatureFlag(
+    FeatureFlags.DOWNLOAD_ALL_TRACK_FILES
+  )
+
   const downloadQuality = DownloadQuality.ORIGINAL
   const shouldHideDownload =
-    !track?.access.download && !shouldDisplayDownloadFollowGated
+    !access?.download && !shouldDisplayDownloadFollowGated
   const formattedPrice = price ? USDC(price / 100).toLocaleString() : undefined
   const [expanded, setExpanded] = useState(false)
   const [lockedContentModalVisibility, setLockedContentModalVisibility] =
     useModalState('LockedContent')
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
+
+  const { onOpen: openDownloadTrackArchiveModal } =
+    useDownloadTrackArchiveModal()
   const fileSizes = useFileSizes({
     audiusSdk,
     trackIds: [trackId, ...stemTracks.map((s) => s.id)],
@@ -116,7 +131,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
       if (isMobile && shouldDisplayDownloadFollowGated) {
         // On mobile, show a toast instead of a tooltip
         dispatch(toast({ content: messages.followToDownload }))
-      } else if (track && track.access.download) {
+      } else if (partialTrack && partialTrack.access.download) {
         openWaitForDownloadModal({
           parentTrackId,
           trackIds,
@@ -149,9 +164,16 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
       openWaitForDownloadModal,
       record,
       shouldDisplayDownloadFollowGated,
-      track
+      partialTrack
     ]
   )
+
+  const handleDownloadAll = useRequiresAccountCallback(() => {
+    openDownloadTrackArchiveModal({
+      trackId,
+      fileCount: stemTracks.length + 1
+    })
+  }, [trackId, stemTracks])
 
   return (
     <Box border='default' borderRadius='m' css={{ overflow: 'hidden' }}>
@@ -237,7 +259,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
         ) : null}
         <Expandable expanded={expanded} id='downloads-section'>
           <Box>
-            {track?.is_downloadable ? (
+            {is_downloadable ? (
               <DownloadRow
                 trackId={trackId}
                 parentTrackId={trackId}
@@ -257,12 +279,33 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 size={fileSizes[s.id]?.[downloadQuality]}
                 index={
                   i +
-                  (track?.is_downloadable
+                  (is_downloadable
                     ? STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK
                     : STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK)
                 }
               />
             ))}
+            {shouldHideDownload || !isDownloadAllTrackFilesEnabled ? null : (
+              <Flex
+                p='l'
+                borderTop='default'
+                direction='row'
+                alignItems='center'
+                justifyContent='center'
+                w='100%'
+                gap='xs'
+                role='row'
+              >
+                <Button
+                  variant='secondary'
+                  size='small'
+                  iconLeft={IconReceive}
+                  onClick={handleDownloadAll}
+                >
+                  {messages.downloadAll}
+                </Button>
+              </Flex>
+            )}
             {uploadingStems.map((s, i) => (
               <DownloadRow
                 key={`uploading-stem-${i}`}
@@ -272,7 +315,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 index={
                   i +
                   stemTracks.length +
-                  (track?.is_downloadable
+                  (is_downloadable
                     ? STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK
                     : STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK)
                 }

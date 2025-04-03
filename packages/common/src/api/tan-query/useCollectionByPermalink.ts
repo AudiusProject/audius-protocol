@@ -1,13 +1,16 @@
 import { Id } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { pick } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { useAudiusQueryContext } from '~/audius-query'
+import { ID } from '~/models/Identifiers'
 import { getUserId } from '~/store/account/selectors'
 
+import { TQCollection } from './models'
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions, SelectableQueryOptions } from './types'
 import { useCollection } from './useCollection'
 import { primeCollectionData } from './utils/primeCollectionData'
 
@@ -15,7 +18,12 @@ const STALE_TIME = Infinity
 
 export const getCollectionByPermalinkQueryKey = (
   permalink: string | undefined | null
-) => [QUERY_KEYS.collectionByPermalink, permalink]
+) => {
+  return [
+    QUERY_KEYS.collectionByPermalink,
+    permalink
+  ] as unknown as QueryKey<ID>
+}
 
 export const playlistPermalinkToHandleAndSlug = (permalink: string) => {
   const splitPermalink = permalink.split('/')
@@ -29,16 +37,22 @@ export const playlistPermalinkToHandleAndSlug = (permalink: string) => {
   return { handle, slug }
 }
 
-export const useCollectionByPermalink = (
+export const useCollectionByPermalink = <TResult = TQCollection>(
   permalink: string | undefined | null,
-  options?: QueryOptions
+  options?: SelectableQueryOptions<TQCollection, TResult>
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
 
-  const { data: collectionId } = useQuery({
+  const simpleOptions = pick(options, [
+    'enabled',
+    'staleTime',
+    'placeholderData'
+  ]) as QueryOptions
+
+  const { data: collectionId } = useQuery<number | undefined>({
     queryKey: getCollectionByPermalinkQueryKey(permalink),
     queryFn: async () => {
       const { handle, slug } = playlistPermalinkToHandleAndSlug(permalink!)
@@ -64,9 +78,9 @@ export const useCollectionByPermalink = (
 
       return collection?.playlist_id
     },
-    staleTime: options?.staleTime ?? STALE_TIME,
-    enabled: options?.enabled !== false && !!permalink
+    staleTime: simpleOptions?.staleTime ?? STALE_TIME,
+    enabled: simpleOptions?.enabled !== false && !!permalink
   })
 
-  return useCollection(collectionId)
+  return useCollection(collectionId, options)
 }

@@ -57,10 +57,10 @@ export const useCommentReplies = (
       // Add the replies to our parent comment replies list
       queryClient.setQueryData(
         getCommentQueryKey(commentId),
-        (comment: Comment | undefined) =>
+        (comment) =>
           ({
             ...comment,
-            replies: [...(comment?.replies ?? []), ...replies]
+            replies: [...((comment as Comment)?.replies ?? []), ...replies]
           }) as Comment
       )
 
@@ -89,29 +89,12 @@ export const useCommentReplies = (
     }
   }, [error, dispatch, reportToSentry])
 
-  const commentsQuery = useComments(replyIds)
-  const { data: replies } = commentsQuery
-
-  // Merge the loading states from both queries
-  const isLoading = queryRes.isLoading || commentsQuery.isLoading
-  const isPending = queryRes.isPending || commentsQuery.isPending
-  const isFetching = queryRes.isFetching || commentsQuery.isFetching
-  const isSuccess = queryRes.isSuccess && commentsQuery.isSuccess
-
-  // Determine the overall status based on both queries
-  let status = queryRes.status
-  if (queryRes.status === 'success' && commentsQuery.status !== 'success') {
-    status = commentsQuery.status
-  }
+  const { data: replies } = useComments(replyIds)
 
   return {
-    ...queryRes,
     data: replies,
-    replyIds,
-    isLoading,
-    isPending,
-    isFetching,
-    isSuccess,
-    status
+    isPending: queryRes.isPending,
+    isLoading: queryRes.isLoading,
+    isFetching: queryRes.isFetching
   }
 }

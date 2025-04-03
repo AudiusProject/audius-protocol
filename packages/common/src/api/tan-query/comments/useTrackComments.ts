@@ -15,7 +15,6 @@ import { toast } from '~/store/ui/toast/slice'
 
 import { QueryOptions } from '../types'
 import { useCurrentUserId } from '../useCurrentUserId'
-import { combineQueryStatuses } from '../utils/combineQueryStatuses'
 import { primeCommentData } from '../utils/primeCommentData'
 import { primeRelatedData } from '../utils/primeRelatedData'
 
@@ -80,7 +79,7 @@ export const useTrackComments = (
     enabled: isMutating === 0 && options?.enabled !== false && !!trackId
   })
 
-  const { error, data: commentIds = [] } = queryRes
+  const { error, data: commentIds } = queryRes
 
   useEffect(() => {
     if (error) {
@@ -93,15 +92,17 @@ export const useTrackComments = (
     }
   }, [error, dispatch, reportToSentry])
 
-  const commentsQuery = useComments(commentIds)
-  const { data: comments } = commentsQuery
-
-  const statusResults = combineQueryStatuses([queryRes, commentsQuery])
+  const { data: comments } = useComments(commentIds)
 
   return {
-    ...queryRes,
-    data: comments,
     commentIds,
-    ...statusResults
+    data: comments,
+    isPending: queryRes.isPending,
+    isLoading: queryRes.isLoading,
+    isFetching: queryRes.isFetching,
+    status: queryRes.status,
+    hasNextPage: queryRes.hasNextPage,
+    isFetchingNextPage: queryRes.isFetchingNextPage,
+    fetchNextPage: queryRes.fetchNextPage
   }
 }

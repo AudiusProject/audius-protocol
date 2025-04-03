@@ -1,10 +1,13 @@
-import { Id } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import { EntityType, Id } from '@audius/sdk'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
-import { UserTrack } from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
 import {
   profilePageSelectors,
@@ -13,7 +16,7 @@ import {
 import { TracksSortMode } from '~/store/pages/profile/types'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, LineupData, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -32,11 +35,12 @@ export const getProfileTracksQueryKey = ({
   pageSize,
   sort,
   getUnlisted
-}: UseProfileTracksArgs) => [
-  QUERY_KEYS.profileTracks,
-  handle,
-  { pageSize, sort, getUnlisted }
-]
+}: UseProfileTracksArgs) =>
+  [
+    QUERY_KEYS.profileTracks,
+    handle,
+    { pageSize, sort, getUnlisted }
+  ] as unknown as QueryKey<InfiniteData<LineupData[]>>
 
 export const useProfileTracks = (
   {
@@ -55,16 +59,17 @@ export const useProfileTracks = (
   const queryData = useInfiniteQuery({
     queryKey: getProfileTracksQueryKey({ handle, pageSize, sort, getUnlisted }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: UserTrack[], allPages) => {
+    getNextPageParam: (lastPage: LineupData[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
     queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
       if (!handle) return []
-
+      // If the @ is still at the beginning of the handle, trim it off
+      const handleNoAt = handle.startsWith('@') ? handle.substring(1) : handle
       const { data: tracks } = await sdk.full.users.getTracksByUserHandle({
-        handle,
+        handle: handleNoAt,
         userId: currentUserId ? Id.parse(currentUserId) : undefined,
         limit: pageSize,
         offset: pageParam,
@@ -86,26 +91,31 @@ export const useProfileTracks = (
           pageParam,
           pageSize,
           false,
-          { tracks: processedTracks, handle }
+          { items: processedTracks, handle }
         )
       )
 
-      return processedTracks
+      return processedTracks.map((t) => ({
+        id: t.track_id,
+        type: EntityType.TRACK
+      }))
     },
+    select: (data) => data?.pages.flat(),
     ...options,
     enabled: options?.enabled !== false && !!handle
   })
 
-  const lineupData = useLineupQuery({
+  return useLineupQuery({
     queryData,
+    queryKey: getProfileTracksQueryKey({
+      handle,
+      pageSize,
+      sort,
+      getUnlisted
+    }),
     lineupActions: profilePageTracksLineupActions,
     lineupSelector: profilePageSelectors.getProfileTracksLineup,
-    playbackSource: PlaybackSource.TRACK_TILE
-  })
-
-  return {
-    ...queryData,
-    ...lineupData,
+    playbackSource: PlaybackSource.TRACK_TILE,
     pageSize
-  }
+  })
 }

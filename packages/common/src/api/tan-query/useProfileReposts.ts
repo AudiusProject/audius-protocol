@@ -1,15 +1,14 @@
-import { Id } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import { Id, EntityType } from '@audius/sdk'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { repostActivityFromSDK, transformAndCleanList } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
-import {
-  Track,
-  Collection,
-  UserTrackMetadata,
-  UserCollectionMetadata
-} from '~/models'
+import { UserTrackMetadata, UserCollectionMetadata } from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
 import {
   profilePageSelectors,
@@ -17,8 +16,9 @@ import {
 } from '~/store/pages'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, LineupData, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
+import { primeUserData } from './utils'
 import { primeCollectionData } from './utils/primeCollectionData'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -33,7 +33,10 @@ type UseProfileRepostsArgs = {
 export const getProfileRepostsQueryKey = ({
   handle,
   pageSize
-}: UseProfileRepostsArgs) => [QUERY_KEYS.profileReposts, handle, { pageSize }]
+}: UseProfileRepostsArgs) =>
+  [QUERY_KEYS.profileReposts, handle, { pageSize }] as unknown as QueryKey<
+    InfiniteData<(UserTrackMetadata | UserCollectionMetadata)[]>
+  >
 
 export const useProfileReposts = (
   { handle, pageSize = DEFAULT_PAGE_SIZE }: UseProfileRepostsArgs,
@@ -47,7 +50,7 @@ export const useProfileReposts = (
   const queryData = useInfiniteQuery({
     queryKey: getProfileRepostsQueryKey({ handle, pageSize }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: (Track | Collection)[], allPages) => {
+    getNextPageParam: (lastPage: LineupData[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -55,8 +58,10 @@ export const useProfileReposts = (
       const sdk = await audiusSdk()
       if (!handle) return []
 
+      // If the @ is still at the beginning of the handle, trim it off
+      const handleNoAt = handle.startsWith('@') ? handle.substring(1) : handle
       const { data: repostsSDKData } = await sdk.full.users.getRepostsByHandle({
-        handle,
+        handle: handleNoAt,
         userId: currentUserId ? Id.parse(currentUserId) : undefined,
         limit: pageSize,
         offset: pageParam
@@ -70,6 +75,13 @@ export const useProfileReposts = (
         (activity) => repostActivityFromSDK(activity)?.item
       )
 
+      primeUserData({
+        users: reposts
+          .filter((item): item is UserTrackMetadata => 'track_id' in item)
+          .map((item) => item.user),
+        queryClient,
+        dispatch
+      })
       primeTrackData({
         tracks: reposts.filter(
           (item): item is UserTrackMetadata => 'track_id' in item
@@ -88,27 +100,33 @@ export const useProfileReposts = (
       // Update lineup when new data arrives
       dispatch(
         feedActions.fetchLineupMetadatas(pageParam, pageSize, false, {
-          reposts,
-          handle
+          items: reposts
         })
       )
 
-      return reposts
+      // Return only ids
+      return reposts.map((t) =>
+        'track_id' in t
+          ? { id: t.track_id, type: EntityType.TRACK }
+          : { id: t.playlist_id, type: EntityType.PLAYLIST }
+      )
+    },
+    select: (data) => {
+      return data?.pages?.flat()
     },
     ...options,
     enabled: options?.enabled !== false && !!handle
   })
 
-  const lineupData = useLineupQuery({
+  return useLineupQuery({
     queryData,
+    queryKey: getProfileRepostsQueryKey({
+      handle,
+      pageSize
+    }),
     lineupActions: feedActions,
     lineupSelector: profilePageSelectors.getProfileFeedLineup,
-    playbackSource: PlaybackSource.TRACK_TILE
-  })
-
-  return {
-    ...queryData,
-    ...lineupData,
+    playbackSource: PlaybackSource.TRACK_TILE,
     pageSize
-  }
+  })
 }

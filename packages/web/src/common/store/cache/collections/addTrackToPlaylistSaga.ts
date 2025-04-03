@@ -2,6 +2,7 @@ import {
   fileToSdk,
   playlistMetadataForUpdateWithSDK
 } from '@audius/common/adapters'
+import { queryCollection, queryTrack } from '@audius/common/api'
 import {
   Name,
   Kind,
@@ -12,7 +13,6 @@ import {
 import {
   cacheCollectionsActions,
   cacheCollectionsSelectors,
-  cacheTracksSelectors,
   cacheActions,
   PlaylistOperations,
   reformatCollection,
@@ -38,8 +38,7 @@ import { waitForWrite } from 'utils/sagaHelpers'
 import { optimisticUpdateCollection } from './utils/optimisticUpdateCollection'
 import { retrieveCollection } from './utils/retrieveCollections'
 
-const { getCollection, getCollectionTracks } = cacheCollectionsSelectors
-const { getTrack } = cacheTracksSelectors
+const { getCollectionTracks } = cacheCollectionsSelectors
 const { setOptimisticChallengeCompleted } = audioRewardsPageActions
 
 const { toast } = toastActions
@@ -52,6 +51,12 @@ const messages = {
 type AddTrackToPlaylistAction = ReturnType<
   typeof cacheCollectionsActions.addTrackToPlaylist
 >
+
+// Returns current timestamp in seconds, which is the expected
+// format for client-generated playlist entry timestamps
+const getCurrentTimestamp = () => {
+  return Math.floor(Date.now() / 1000)
+}
 
 /** ADD TRACK TO PLAYLIST */
 
@@ -67,12 +72,11 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   yield* waitForWrite()
   const userId = yield* call(ensureLoggedIn)
   const isNative = yield* getContext('isNativeMobile')
-  const sdk = yield* getSDK()
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
 
-  let playlist = yield* select(getCollection, { id: playlistId })
+  const playlist = yield* queryCollection(playlistId)
   const playlistTracks = yield* select(getCollectionTracks, { id: playlistId })
-  const track = yield* select(getTrack, { id: trackId })
+  const track = yield* queryTrack(trackId)
 
   if (!playlist || !playlistTracks || !track) return
 
@@ -85,10 +89,6 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   yield* put(
     cacheActions.subscribe(Kind.TRACKS, [{ uid: trackUid, id: action.trackId }])
   )
-  const { timestamp: currentBlockTimestamp } = yield* call([
-    sdk.services.entityManager,
-    sdk.services.entityManager.getCurrentBlock
-  ])
 
   playlist.playlist_contents = {
     track_ids: playlist.playlist_contents.track_ids.concat({
@@ -99,7 +99,7 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
       // Represents user-facing timestamp when the user added the track to the playlist.
       // This is needed to disambiguate between tracks added at the same time/potentiall in
       // the same block.
-      metadata_time: currentBlockTimestamp,
+      metadata_time: getCurrentTimestamp(),
       uid: trackUid
     })
   }
@@ -112,7 +112,7 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
     yield* call(optimisticUpdateCollection, playlist)
   }
 
-  playlist = yield* call(
+  const updatedPlaylist = yield* call(
     updatePlaylistArtwork,
     playlist,
     playlistTracks,
@@ -123,7 +123,7 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   )
 
   // Optimistic update #2 to show updated artwork
-  yield* call(optimisticUpdateCollection, playlist)
+  yield* call(optimisticUpdateCollection, updatedPlaylist)
 
   yield* call(
     confirmAddTrackToPlaylist,
@@ -131,7 +131,7 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
     action.playlistId,
     action.trackId,
     count,
-    playlist
+    updatedPlaylist
   )
 
   yield* put(
@@ -195,7 +195,7 @@ function* confirmAddTrackToPlaylist(
           playlistId: confirmedPlaylistId
         })
 
-        const playlist = yield* select(getCollection, { id: playlistId })
+        const playlist = yield* queryCollection(playlistId)
         if (!playlist) return
 
         const formattedCollection = reformatCollection({

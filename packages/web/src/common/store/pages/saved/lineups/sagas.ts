@@ -1,6 +1,6 @@
+import { queryTrack } from '@audius/common/api'
 import { Collection, Kind, LineupEntry, UID } from '@audius/common/models'
 import {
-  cacheTracksSelectors,
   savedPageTracksLineupActions as savedTracksActions,
   savedPageActions as saveActions,
   savedPageSelectors,
@@ -40,7 +40,6 @@ const {
   getCategory
 } = savedPageSelectors
 const { purchaseConfirmed } = purchaseContentActions
-const { getTracks: getCacheTracks } = cacheTracksSelectors
 
 const getSavedTracks = (state: AppState) => state.pages.savedPage.tracks
 
@@ -171,10 +170,9 @@ function* watchAddToLibrary() {
 
       const trackId =
         'trackId' in action ? action.trackId : action.payload.contentId
-      const tracks = yield* select(getCacheTracks, { ids: [trackId] })
+      const track = yield* queryTrack(trackId)
 
-      const track = tracks[trackId]
-      if (track.has_current_user_saved && type === SAVE_TRACK) {
+      if (!track || (track.has_current_user_saved && type === SAVE_TRACK)) {
         return
       }
 

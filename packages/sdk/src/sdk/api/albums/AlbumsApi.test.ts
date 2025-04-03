@@ -1,12 +1,10 @@
 import fs from 'fs'
 import path from 'path'
 
-import type { GetBlockReturnType } from 'viem/actions'
 import { describe, it, expect, vitest, beforeAll } from 'vitest'
 
 import { developmentConfig } from '../../config/development'
 import { createAppWalletClient } from '../../services/AudiusWalletClient'
-import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { EntityManagerClient } from '../../services/EntityManager'
 import { Logger } from '../../services/Logger'
 import { SolanaRelay } from '../../services/Solana/SolanaRelay'
@@ -38,7 +36,6 @@ const pngFile = fs.readFileSync(
 )
 
 vitest.mock('../../services/EntityManager')
-vitest.mock('../../services/DiscoveryNodeSelector')
 vitest.mock('../../services/StorageNodeSelector')
 vitest.mock('../../services/Storage')
 vitest.mock('../tracks/TrackUploadHelper')
@@ -92,14 +89,6 @@ vitest
   })
 
 vitest
-  .spyOn(EntityManagerClient.prototype, 'getCurrentBlock')
-  .mockImplementation(async () => {
-    return {
-      timestamp: 1
-    } as GetBlockReturnType & { timestamp: number }
-  })
-
-vitest
   .spyOn(GeneratedPlaylistsApi.prototype, 'getPlaylist')
   .mockImplementation(async () => {
     return {
@@ -121,9 +110,8 @@ describe('AlbumsApi', () => {
   // eslint-disable-next-line mocha/no-setup-in-describe
   const audiusWalletClient = createAppWalletClient({ apiKey: '' })
   const logger = new Logger()
-  const discoveryNodeSelector = new DiscoveryNodeSelector()
   const storageNodeSelector = new StorageNodeSelector({
-    discoveryNodeSelector,
+    endpoint: 'https://discoveryprovider.audius.co',
     logger
   })
 
@@ -131,7 +119,7 @@ describe('AlbumsApi', () => {
     const solanaWalletAdapter = new SolanaRelayWalletAdapter({
       solanaRelay: new SolanaRelay(
         new Configuration({
-          middleware: [discoveryNodeSelector.createMiddleware()]
+          middleware: []
         })
       )
     })
@@ -146,7 +134,7 @@ describe('AlbumsApi', () => {
       }),
       new EntityManagerClient({
         audiusWalletClient,
-        discoveryNodeSelector: new DiscoveryNodeSelector()
+        endpoint: 'https://discoveryprovider.audius.co'
       }),
       logger,
       new ClaimableTokensClient({
@@ -160,7 +148,7 @@ describe('AlbumsApi', () => {
       }),
       new SolanaRelay(
         new Configuration({
-          middleware: [discoveryNodeSelector.createMiddleware()]
+          middleware: []
         })
       ),
       solanaClient

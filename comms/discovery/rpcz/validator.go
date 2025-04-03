@@ -1,11 +1,13 @@
 package rpcz
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	"comms.audius.co/discovery/config"
@@ -24,8 +26,9 @@ var (
 )
 
 type Validator struct {
-	db      *sqlx.DB
-	limiter *RateLimiter
+	db        *sqlx.DB
+	limiter   *RateLimiter
+	aaoServer string
 }
 
 func (vtor *Validator) Validate(userId int32, rawRpc schema.RawRPC) error {
@@ -115,6 +118,12 @@ func (vtor *Validator) validateChatCreate(tx *sqlx.Tx, userId int32, rpc schema.
 	receiver := int32(user1)
 	if receiver == userId {
 		receiver = int32(user2)
+	}
+
+	// Check that the creator is non-abusive
+	err = validateSenderPassesAbuseCheck(q, userId, vtor.aaoServer)
+	if err != nil {
+		return err
 	}
 
 	// if recipient is creating a chat from a blast
@@ -472,5 +481,34 @@ func validatePermittedToMessage(q db.Queryable, userId int32, chatId string) err
 		return err
 	}
 
+	return nil
+}
+
+func validateSenderPassesAbuseCheck(q db.Queryable, userId int32, aaoServer string) error {
+	// Keeping this somewhat opaque as it gets sent to client
+	aaoFailure := errors.New("attestation failed")
+	var handle string
+	err := q.Get(&handle, `SELECT handle FROM users WHERE user_id = $1`, userId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return fmt.Errorf("user %d not found", userId)
+		}
+		return err
+	}
+
+	url := fmt.Sprintf("%s/attestation/%s", aaoServer, handle)
+	// Dummy challenge for now to mitigate
+	requestBody := []byte(`{ "challengeId": "x", "challengeSpecifier": "x", "amount": 0 }`)
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(requestBody))
+	if err != nil {
+		slog.Error("Error checking user attestation", "error", err, "handle", handle)
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		slog.Warn("User failed AAO check", "userId", userId, "status", resp.StatusCode)
+		return aaoFailure
+	}
 	return nil
 }

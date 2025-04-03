@@ -1,8 +1,4 @@
-import {
-  InfiniteData,
-  useMutation,
-  useQueryClient
-} from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { cloneDeep } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -11,7 +7,11 @@ import { Comment, Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
 import { messages } from './types'
-import { getCommentQueryKey, getTrackCommentCountQueryKey } from './utils'
+import {
+  getCommentQueryKey,
+  getTrackCommentCountQueryKey,
+  getTrackCommentListQueryKey
+} from './utils'
 
 export type MuteUserArgs = {
   mutedUserId: ID
@@ -34,17 +34,20 @@ export const useMuteUser = () => {
     onMutate: ({ trackId, mutedUserId, currentSort }) => {
       // Optimistic update - filter out the comment
       if (trackId !== undefined && currentSort !== undefined) {
-        queryClient.setQueryData<InfiniteData<ID[]>>(
-          ['trackCommentList', trackId, currentSort],
+        queryClient.setQueryData(
+          getTrackCommentListQueryKey({
+            trackId,
+            sortMethod: currentSort
+          }),
           (prevData) => {
             if (!prevData) return
             const newState = cloneDeep(prevData)
             // Filter out any comments by the muted user
             newState.pages = newState.pages.map((page) =>
               page.filter((id) => {
-                const rootComment = queryClient.getQueryData<
-                  Comment | undefined
-                >(getCommentQueryKey(id))
+                const rootComment = queryClient.getQueryData(
+                  getCommentQueryKey(id)
+                ) as Comment | undefined
                 if (!rootComment) return false
                 // Check for any replies by our muted user first
                 if (

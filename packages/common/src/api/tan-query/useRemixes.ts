@@ -1,12 +1,15 @@
 import { useEffect } from 'react'
 
-import { Id, OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import { Id, OptionalId, EntityType } from '@audius/sdk'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
-import { UserTrack } from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
 import {
   remixesPageLineupActions,
@@ -15,9 +18,8 @@ import {
 } from '~/store/pages'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions, LineupData } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
-import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
 
@@ -31,7 +33,10 @@ export type UseRemixesArgs = {
 export const getRemixesQueryKey = ({
   trackId,
   pageSize = DEFAULT_PAGE_SIZE
-}: UseRemixesArgs) => [QUERY_KEYS.remixes, trackId, { pageSize }]
+}: UseRemixesArgs) =>
+  [QUERY_KEYS.remixes, trackId, { pageSize }] as unknown as QueryKey<
+    InfiniteData<LineupData[]>
+  >
 
 export const useRemixes = (
   { trackId, pageSize = DEFAULT_PAGE_SIZE }: UseRemixesArgs,
@@ -44,14 +49,14 @@ export const useRemixes = (
 
   useEffect(() => {
     if (trackId) {
-      dispatch(remixesPageActions.setTrackId({ trackId }))
+      dispatch(remixesPageActions.fetchTrackSucceeded({ trackId }))
     }
   }, [dispatch, trackId])
 
   const queryData = useInfiniteQuery({
     queryKey: getRemixesQueryKey({ trackId, pageSize }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: UserTrack[], allPages) => {
+    getNextPageParam: (lastPage: LineupData[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -82,23 +87,25 @@ export const useRemixes = (
         )
       )
 
-      return processedTracks
+      return processedTracks.map((t) => ({
+        id: t.track_id,
+        type: EntityType.TRACK
+      }))
     },
+    select: (data) => data.pages.flat(),
     ...options,
     enabled: options?.enabled !== false && !!trackId
   })
 
-  const lineupData = useLineupQuery({
+  return useLineupQuery({
     queryData,
+    queryKey: getRemixesQueryKey({
+      trackId,
+      pageSize
+    }),
     lineupActions: remixesPageLineupActions,
     lineupSelector: remixesPageSelectors.getLineup,
-    playbackSource: PlaybackSource.TRACK_TILE
-  })
-
-  return {
-    ...queryData,
-    ...lineupData,
-    loadNextPage: loadNextPage(queryData),
+    playbackSource: PlaybackSource.TRACK_TILE,
     pageSize
-  }
+  })
 }

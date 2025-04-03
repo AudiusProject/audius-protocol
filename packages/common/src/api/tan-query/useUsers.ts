@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { useQueries, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -11,15 +11,15 @@ import { CommonState } from '~/store'
 
 import { getUsersBatcher } from './batchers/getUsersBatcher'
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getUserQueryKey } from './useUser'
 import { combineQueryResults } from './utils/combineQueryResults'
+import { useQueries } from './utils/useQueries'
 
-export const getUsersQueryKey = (userIds: ID[] | null | undefined) => [
-  QUERY_KEYS.users,
-  userIds
-]
+export const getUsersQueryKey = (userIds: ID[] | null | undefined) => {
+  return [QUERY_KEYS.users, userIds] as unknown as QueryKey<UserMetadata[]>
+}
 
 export const useUsers = (
   userIds: ID[] | null | undefined,
@@ -31,7 +31,7 @@ export const useUsers = (
   const { data: currentUserId } = useCurrentUserId()
 
   const queryResults = useQueries({
-    queries: (userIds ?? []).map((userId) => ({
+    queries: userIds?.map((userId) => ({
       queryKey: getUserQueryKey(userId),
       queryFn: async () => {
         const sdk = await audiusSdk()
@@ -44,7 +44,7 @@ export const useUsers = (
         return await batchGetUsers.fetch(userId)
       },
       ...options,
-      enabled: options?.enabled !== false && !!userId
+      enabled: options?.enabled !== false && !!userId && userId > 0
     })),
     combine: combineQueryResults<UserMetadata[]>
   })
@@ -56,15 +56,13 @@ export const useUsers = (
     userIds?.every((userId) => !!state.users.entries[userId])
   )
 
-  const results = {
-    ...queryResults,
-    data: isSavedToRedux ? users : undefined,
-    isPending: queryResults.isPending || !isSavedToRedux,
-    isLoading: queryResults.isLoading || !isSavedToRedux
-  } as typeof queryResults
-
   return {
-    ...results,
-    byId
+    data: isSavedToRedux ? users : undefined,
+    byId,
+    status: isSavedToRedux ? queryResults.status : 'pending',
+    isPending: queryResults.isPending || !isSavedToRedux,
+    isLoading: queryResults.isLoading || !isSavedToRedux,
+    isFetching: queryResults.isFetching,
+    isSuccess: queryResults.isSuccess
   }
 }

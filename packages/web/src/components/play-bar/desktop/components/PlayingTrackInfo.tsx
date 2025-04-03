@@ -1,12 +1,9 @@
 import { memo } from 'react'
 
+import { useTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import { SquareSizes, Color, ID } from '@audius/common/models'
-import {
-  cacheTracksSelectors,
-  playerSelectors,
-  CommonState
-} from '@audius/common/store'
+import { playerSelectors } from '@audius/common/store'
 import { animated, useSpring } from '@react-spring/web'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
@@ -19,7 +16,6 @@ import { useProfilePicture } from 'hooks/useProfilePicture'
 import { fullTrackPage } from 'utils/route'
 
 import styles from './PlayingTrackInfo.module.css'
-const { getTrack } = cacheTracksSelectors
 const { getPreviewing } = playerSelectors
 
 const messages = {
@@ -64,9 +60,7 @@ const PlayingTrackInfo = ({
   hasShadow,
   dominantColor
 }: PlayingTrackInfoProps) => {
-  const track = useSelector((state: CommonState) =>
-    getTrack(state, { id: trackId })
-  )
+  const { data: track } = useTrack(trackId)
   const { hasStreamAccess } = useGatedContentAccess(track)
   const isPreviewing = useSelector(getPreviewing)
   const shouldShowPreviewLock =

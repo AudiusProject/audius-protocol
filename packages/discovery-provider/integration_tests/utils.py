@@ -6,7 +6,9 @@ from src.models.comments.comment_notification_setting import CommentNotification
 from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_report import CommentReport
 from src.models.comments.comment_thread import CommentThread
+from src.models.core.core_indexed_blocks import CoreIndexedBlocks
 from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
+from src.models.events.event import Event, EventEntityType, EventType
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.indexing.block import Block
@@ -130,6 +132,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 block_offset = 0
 
         tracks = entities.get("tracks", [])
+        events = entities.get("events", [])
         comments = entities.get("comments", [])
         comment_threads = entities.get("comment_threads", [])
         comment_reactions = entities.get("comment_reactions", [])
@@ -190,6 +193,7 @@ def populate_mock_db(db, entities, block_offset=None):
         num_blocks = max(
             len(tracks),
             len(playlists),
+            len(events),
             len(comments),
             len(comment_threads),
             len(comment_mentions),
@@ -215,13 +219,25 @@ def populate_mock_db(db, entities, block_offset=None):
                 {"is_current": False}
             )
             if not max_block:
+                blockhash = hex(i)
+                parenthash = "0x01"
+
                 block = Block(
-                    blockhash=hex(i),
+                    blockhash=blockhash,
                     number=i,
-                    parenthash="0x01",
+                    parenthash=parenthash,
                     is_current=(i == block_offset + num_blocks - 1),
                 )
                 session.add(block)
+
+                core_block = CoreIndexedBlocks(
+                    blockhash=blockhash,
+                    parenthash=parenthash,
+                    chain_id="audius-devnet",
+                    height=i,
+                )
+                session.add(core_block)
+
                 session.flush()
 
         for i, aggregate_user_meta in enumerate(aggregate_user):
@@ -396,7 +412,6 @@ def populate_mock_db(db, entities, block_offset=None):
                 is_deactivated=user_meta.get("is_deactivated", False),
                 allow_ai_attribution=user_meta.get("allow_ai_attribution", False),
                 is_verified=user_meta.get("is_verified", False),
-                metadata_multihash=user_meta.get("metadata_multihash", "fake_cid"),
             )
             user_bank = UserBankAccount(
                 signature=f"0x{i}",
@@ -819,6 +834,23 @@ def populate_mock_db(db, entities, block_offset=None):
                 ),
             )
             session.add(user_payout_wallet_history_record)
+        for i, event_meta in enumerate(events):
+            event_record = Event(
+                event_id=event_meta.get("event_id", i),
+                event_type=event_meta.get("event_type", EventType.remix_contest),
+                user_id=event_meta.get("user_id", i),
+                entity_id=event_meta.get("entity_id", i),
+                entity_type=event_meta.get("entity_type", EventEntityType.track),
+                event_data=event_meta.get("event_data", {}),
+                is_deleted=event_meta.get("is_deleted", False),
+                end_date=event_meta.get("end_date", datetime.now()),
+                created_at=event_meta.get("created_at", datetime.now()),
+                updated_at=event_meta.get("updated_at", datetime.now()),
+                txhash=event_meta.get("txhash", str(i + block_offset)),
+                blockhash=event_meta.get("blockhash", str(i + block_offset)),
+                blocknumber=i + block_offset,
+            )
+            session.add(event_record)
         for i, comment_meta in enumerate(comments):
             comment_record = Comment(
                 user_id=comment_meta.get("user_id", i),

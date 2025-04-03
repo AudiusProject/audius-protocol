@@ -1,21 +1,18 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 
-import { Kind, Name, Status } from '@audius/common/models'
+import { SEARCH_PAGE_SIZE, useSearchTrackResults } from '@audius/common/api'
+import { Kind, Name } from '@audius/common/models'
 import {
-  lineupSelectors,
-  playerSelectors,
-  queueSelectors,
-  searchResultsPageSelectors,
   searchResultsPageTracksLineupActions,
   searchActions,
   SearchKind
 } from '@audius/common/store'
 import { FilterButton, Flex, Text, useTheme } from '@audius/harmony'
 import { css } from '@emotion/css'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
-import Lineup from 'components/lineup/Lineup'
+import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import { LineupVariant } from 'components/lineup/types'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useMainContentRef } from 'pages/MainContentContext'
@@ -24,12 +21,7 @@ import { NoResultsTile } from '../NoResultsTile'
 import { SortMethodFilterButton } from '../SortMethodFilterButton'
 import { useSearchParams } from '../hooks'
 import { ViewLayout, viewLayoutOptions } from '../types'
-import { ALL_RESULTS_LIMIT } from '../utils'
 
-const { makeGetLineupMetadatas } = lineupSelectors
-const { getBuffering, getPlaying } = playerSelectors
-const { getSearchTracksLineup } = searchResultsPageSelectors
-const { makeGetCurrent } = queueSelectors
 const { addItem: addRecentSearch } = searchActions
 
 const PAGE_WIDTH = 1080
@@ -41,68 +33,33 @@ const messages = {
   sortOptionsLabel: 'Sort By'
 }
 
-const getCurrentQueueItem = makeGetCurrent()
-const getSearchTracksLineupMetadatas = makeGetLineupMetadatas(
-  getSearchTracksLineup
-)
-
 type TrackResultsProps = {
+  isPending: boolean
+  isFetching: boolean
+  isError: boolean
   viewLayout?: ViewLayout
   category?: SearchKind
   count?: number
 }
 
 export const TrackResults = (props: TrackResultsProps) => {
-  const { category = 'tracks', viewLayout = 'list', count } = props
+  const {
+    category = SearchKind.TRACKS,
+    viewLayout = 'list',
+    count,
+    isPending,
+    isFetching,
+    isError
+  } = props
+
   const mainContentRef = useMainContentRef()
   const isMobile = useIsMobile()
 
   const dispatch = useDispatch()
-  const currentQueueItem = useSelector(getCurrentQueueItem)
-  const playing = useSelector(getPlaying)
-  const buffering = useSelector(getBuffering)
 
   const isTrackGridLayout = viewLayout === 'grid'
 
-  const lineup = useSelector(getSearchTracksLineupMetadatas)
-
   const searchParams = useSearchParams()
-
-  const getResults = useCallback(
-    (offset: number, limit: number, overwrite: boolean) => {
-      const { query, ...filters } = searchParams
-
-      dispatch(
-        searchResultsPageTracksLineupActions.fetchLineupMetadatas(
-          offset,
-          limit,
-          overwrite,
-          {
-            category,
-            query,
-            filters,
-            dispatch
-          }
-        )
-      )
-    },
-    [dispatch, searchParams, category]
-  )
-  useEffect(() => {
-    dispatch(searchResultsPageTracksLineupActions.reset())
-    getResults(0, ALL_RESULTS_LIMIT, true)
-  }, [dispatch, searchParams, getResults])
-
-  const loadMore = useCallback(
-    (offset: number, limit: number) => {
-      // Only load more if some results have already been loaded
-      if (!lineup.entries.length) {
-        return
-      }
-      getResults(offset, limit, false)
-    },
-    [getResults, lineup]
-  )
 
   const handleClickTrackTile = useCallback(
     (id?: number) => {
@@ -128,32 +85,30 @@ export const TrackResults = (props: TrackResultsProps) => {
     [dispatch, searchParams]
   )
 
-  if (
-    (!lineup || lineup.entries.length === 0) &&
-    lineup.status === Status.SUCCESS
-  ) {
-    return <NoResultsTile />
-  }
+  const { data, hasNextPage, loadNextPage, isPlaying, play, pause, lineup } =
+    useSearchTrackResults(searchParams)
 
   return (
-    <Lineup
-      variant={viewLayout === 'grid' ? LineupVariant.GRID : LineupVariant.MAIN}
-      count={count}
-      loadMore={loadMore}
-      scrollParent={mainContentRef.current}
+    <TanQueryLineup
+      data={data}
       lineup={lineup}
-      playingSource={currentQueueItem.source}
-      playingUid={currentQueueItem.uid}
-      playingTrackId={currentQueueItem.track && currentQueueItem.track.track_id}
-      playing={playing}
-      buffering={buffering}
-      playTrack={(uid, trackId) => {
-        handleClickTrackTile(trackId)
-        dispatch(searchResultsPageTracksLineupActions.play(uid))
-      }}
-      pauseTrack={() => dispatch(searchResultsPageTracksLineupActions.pause())}
+      pageSize={SEARCH_PAGE_SIZE}
+      isFetching={isFetching}
+      isPending={isPending}
+      isError={isError}
+      hasNextPage={hasNextPage}
+      loadNextPage={loadNextPage}
+      isPlaying={isPlaying}
+      play={play}
+      pause={pause}
+      variant={viewLayout === 'grid' ? LineupVariant.GRID : LineupVariant.MAIN}
+      scrollParent={mainContentRef.current}
       actions={searchResultsPageTracksLineupActions}
+      emptyElement={<NoResultsTile />}
       onClickTile={handleClickTrackTile}
+      maxEntries={count}
+      // Whenever this component is shown on the AllResults page - we don't want to infinite scroll
+      shouldLoadMore={category === 'tracks'}
       {...(!isMobile
         ? {
             lineupContainerStyles: css({ width: '100%' }),
@@ -175,6 +130,8 @@ export const TrackResults = (props: TrackResultsProps) => {
 export const TrackResultsPage = () => {
   const isMobile = useIsMobile()
   const { color } = useTheme()
+  const searchParams = useSearchParams()
+  const { isPending, isFetching, isError } = useSearchTrackResults(searchParams)
 
   const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
 
@@ -195,11 +152,20 @@ export const TrackResultsPage = () => {
           />
         </Flex>
       </Flex>
-      <TrackResults viewLayout={tracksLayout} />
+      <TrackResults
+        viewLayout={tracksLayout}
+        isPending={isPending}
+        isFetching={isFetching}
+        isError={isError}
+      />
     </Flex>
   ) : (
     <Flex p='m' css={{ backgroundColor: color.background.default }}>
-      <TrackResults />
+      <TrackResults
+        isPending={isPending}
+        isFetching={isFetching}
+        isError={isError}
+      />
     </Flex>
   )
 }

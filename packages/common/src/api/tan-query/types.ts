@@ -1,21 +1,55 @@
+import { EntityType } from '@audius/sdk'
 import {
+  DataTag,
   DefinedInitialDataOptions,
-  UseInfiniteQueryResult
+  QueryKey as TanQueryKey,
+  UseInfiniteQueryResult,
+  UseQueryOptions
 } from '@tanstack/react-query'
+
+import { ID } from '~/models'
 
 import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
 import { UseLineupQueryData } from './utils/useLineupQuery'
+
+/**
+ * Using DataTag allows tan-query to infer the data type stored at this key
+ * TData is the type of the data stored at this key
+ */
+export type QueryKey<TData> = DataTag<TanQueryKey, TData, Error>
 
 /**
  * Standard tan-query pass-thru options that we use
  */
 export type QueryOptions = Pick<
   DefinedInitialDataOptions<any>,
-  'staleTime' | 'enabled' | 'placeholderData' | 'select'
+  'staleTime' | 'enabled' | 'placeholderData' | 'refetchOnMount'
 >
 
+export type SelectableQueryOptions<TData, TResult = TData> = Omit<
+  UseQueryOptions<TData, Error, TResult>,
+  'queryKey' | 'queryFn'
+>
+
+export type LineupData = { id: ID; type: EntityType }
+
 export type LineupQueryData = UseLineupQueryData &
-  Omit<UseInfiniteQueryResult, 'status'> & {
+  Pick<
+    UseInfiniteQueryResult,
+    | 'data'
+    | 'hasNextPage'
+    | 'isInitialLoading'
+    | 'isLoading'
+    | 'isPending'
+    | 'isError'
+  > & {
     loadNextPage: ReturnType<typeof loadNextPage>
     pageSize?: number
   }
+
+export type FlatUseInfiniteQueryResult<T> = Omit<
+  UseInfiniteQueryResult,
+  'data' // These types get invalidated by the select modifier changing the output shape
+> & {
+  data: T[]
+}

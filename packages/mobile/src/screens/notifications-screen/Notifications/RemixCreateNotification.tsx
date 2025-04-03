@@ -1,10 +1,8 @@
 import { useCallback } from 'react'
 
+import { useTrack } from '@audius/common/api'
 import type { RemixCreateNotification as RemixCreateNotificationType } from '@audius/common/store'
-import {
-  cacheTracksSelectors,
-  notificationsSelectors
-} from '@audius/common/store'
+import { notificationsSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
 import { IconRemix } from '@audius/harmony-native'
@@ -22,7 +20,6 @@ import {
   NotificationTwitterButton
 } from '../Notification'
 const { getNotificationUser } = notificationsSelectors
-const { getTrack } = cacheTracksSelectors
 
 const messages = {
   title: 'New Remix of Your Track',
@@ -44,13 +41,8 @@ export const RemixCreateNotification = (
   const navigation = useNotificationNavigation()
   const user = useSelector((state) => getNotificationUser(state, notification))
 
-  const childTrack = useSelector((state) =>
-    getTrack(state, { id: childTrackId })
-  )
-
-  const parentTrack = useSelector((state) =>
-    getTrack(state, { id: parentTrackId })
-  )
+  const { data: childTrack } = useTrack(childTrackId)
+  const { data: parentTrack } = useTrack(parentTrackId)
 
   const parentTrackTitle = parentTrack?.title
 

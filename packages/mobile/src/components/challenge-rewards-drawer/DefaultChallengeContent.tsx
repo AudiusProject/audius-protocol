@@ -108,7 +108,6 @@ export const DefaultChallengeContent = ({
       progressValue={challenge?.current_step_count}
       progressMax={challenge?.max_steps}
       statusLabel={statusLabel}
-      claimInProgress={claimInProgress}
       actions={children ?? actions}
       errorContent={
         claimError ? <ClaimError aaoErrorCode={aaoErrorCode} /> : null

@@ -391,17 +391,12 @@ def search_tags_es(args: dict):
 
 
 def mdsl_limit_offset(mdsl, limit, offset):
-    # add size and limit with some over-fetching
-    # for sake of reorder_users
-    index_name = ""
+    # add size and limit to the elasticsearch query
     for dsl in mdsl:
         if "index" in dsl:
-            index_name = dsl["index"]
             continue
         dsl["size"] = limit
         dsl["from"] = offset
-        if index_name == ES_USERS:
-            dsl["size"] = limit + 5
 
 
 def finalize_response(
@@ -576,19 +571,24 @@ def track_dsl(
         "must": [
             {"term": {"is_unlisted": {"value": False}}},
             {"term": {"is_delete": False}},
+        ],
+        "must_not": [
+            {"exists": {"field": "stem_of"}},
+            {"term": {"user.is_deactivated": {"value": True}}},
+        ],
+        "should": [
+            {"term": {"user.is_verified": {"value": True}}},
+        ],
+        "filter": [],
+    }
+
+    # search_str might be empty for searches by other qualities (tag, moood, etc)
+    if search_str:
+        dsl["must"].append(
             {
                 "bool": {
                     "should": [
                         *base_match(search_str),
-                        {
-                            "wildcard": {
-                                "title": {
-                                    "value": "*" + search_str + "*",
-                                    "boost": 0.01,
-                                    "case_insensitive": True,
-                                }
-                            }
-                        },
                         {
                             "multi_match": {
                                 "query": search_str,
@@ -637,18 +637,11 @@ def track_dsl(
                     ],
                     "minimum_should_match": 1,
                 }
-            },
-        ],
-        "must_not": [
-            {"exists": {"field": "stem_of"}},
-            {"term": {"user.is_deactivated": {"value": True}}},
-        ],
-        "should": [
-            *base_match(search_str, operator="and", boost=len(search_str)),
-            {"term": {"user.is_verified": {"value": True}}},
-        ],
-        "filter": [],
-    }
+            }
+        )
+        dsl["should"].extend(
+            base_match(search_str, operator="and", boost=len(search_str)),
+        )
 
     if tag_search:
         dsl["must"].append(
@@ -812,6 +805,16 @@ def user_dsl(
     dsl = {
         "must": [
             {"term": {"is_deactivated": {"value": False}}},
+        ],
+        "must_not": [],
+        "should": [
+            {"term": {"is_verified": {"value": True, "boost": 5}}},
+        ],
+    }
+
+    # search_str might be empty for searches by other qualities (tag, moood, etc)
+    if search_str:
+        dsl["must"].append(
             {
                 "bool": {
                     "should": [
@@ -829,16 +832,6 @@ def user_dsl(
                                 "type": "cross_fields",
                                 "operator": "and",
                                 "boost": len(search_str) * 0.5,
-                            }
-                        },
-                        # Original wildcard matching
-                        {
-                            "wildcard": {
-                                "name": {
-                                    "value": "*" + search_str + "*",
-                                    "boost": 0.01,
-                                    "case_insensitive": True,
-                                }
                             }
                         },
                         {
@@ -893,27 +886,26 @@ def user_dsl(
                     ],
                     "minimum_should_match": 1,
                 }
-            },
-        ],
-        "must_not": [],
-        "should": [
-            *base_match(
-                search_str,
-                operator="and",
-                extra_fields=["name"],
-                boost=len(search_str) * 24,
-            ),
-            {
-                "term": {
-                    "name": {
-                        "value": search_str,
-                        "boost": (len(search_str) * 0.2) ** 2,
+            }
+        )
+        dsl["should"].extend(
+            [
+                *base_match(
+                    search_str,
+                    operator="and",
+                    extra_fields=["name"],
+                    boost=len(search_str) * 24,
+                ),
+                {
+                    "term": {
+                        "name": {
+                            "value": search_str,
+                            "boost": (len(search_str) * 0.2) ** 2,
+                        }
                     }
-                }
-            },
-            {"term": {"is_verified": {"value": True, "boost": 5}}},
-        ],
-    }
+                },
+            ]
+        )
 
     if tag_search:
         dsl["must"].append(
@@ -1037,19 +1029,41 @@ def base_playlist_dsl(
 ):
     dsl = {
         "must": [
+            {"term": {"is_private": {"value": False}}},
+            {"term": {"is_delete": False}},
+            {"term": {"is_album": {"value": is_album}}},
+        ],
+        "must_not": [
+            {"term": {"user.is_deactivated": {"value": True}}},
+        ],
+        "should": [
+            {"term": {"user.is_verified": {"value": True, "boost": 3}}},
+        ],
+    }
+
+    query = {
+        "query": {
+            "function_score": {
+                "functions": [
+                    {
+                        "field_value_factor": {
+                            "field": "repost_count",
+                            "factor": 1000,
+                            "modifier": "ln2p",
+                        },
+                    }
+                ],
+                "boost_mode": "multiply",
+            }
+        }
+    }
+
+    if search_str:
+        dsl["must"].append(
             {
                 "bool": {
                     "should": [
                         *base_match(search_str, boost=len(search_str)),
-                        {
-                            "wildcard": {
-                                "playlist_name": {
-                                    "value": "*" + search_str + "*",
-                                    "boost": 0.01,
-                                    "case_insensitive": True,
-                                }
-                            }
-                        },
                         {
                             "multi_match": {
                                 "query": search_str,
@@ -1088,36 +1102,11 @@ def base_playlist_dsl(
                     ],
                     "minimum_should_match": 1,
                 }
-            },
-            {"term": {"is_private": {"value": False}}},
-            {"term": {"is_delete": False}},
-            {"term": {"is_album": {"value": is_album}}},
-        ],
-        "must_not": [
-            {"term": {"user.is_deactivated": {"value": True}}},
-        ],
-        "should": [
-            *base_match(search_str, operator="and", boost=len(search_str) * 10),
-            {"term": {"user.is_verified": {"value": True, "boost": 3}}},
-        ],
-    }
-
-    query = {
-        "query": {
-            "function_score": {
-                "functions": [
-                    {
-                        "field_value_factor": {
-                            "field": "repost_count",
-                            "factor": 1000,
-                            "modifier": "ln2p",
-                        },
-                    }
-                ],
-                "boost_mode": "multiply",
             }
-        }
-    }
+        )
+        dsl["should"].extend(
+            base_match(search_str, operator="and", boost=len(search_str) * 10)
+        )
 
     if tag_search:
         dsl["must"].append(
@@ -1317,28 +1306,18 @@ def album_dsl(
 
 
 def reorder_users(users):
-    """Filters out users with copy cat names.
-    e.g. if a verified deadmau5 is in the result set
-    filter out all non-verified users with same name.
-
+    """
     Moves users without profile pictures to the end.
     """
-    reserved = set()
-    for user in users:
-        if user["is_verified"]:
-            reserved.add(lower_ascii_name(user["name"]))
-
-    filtered = []
+    users_with_photos = []
     users_without_photos = []
     for user in users:
-        if not user["is_verified"] and lower_ascii_name(user["name"]) in reserved:
-            continue
         if user["profile_picture_sizes"] or user["profile_picture"]:
-            filtered.append(user)
+            users_with_photos.append(user)
         else:
             users_without_photos.append(user)
 
-    return filtered + users_without_photos
+    return users_with_photos + users_without_photos
 
 
 def lower_ascii_name(name):

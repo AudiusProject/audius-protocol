@@ -1,20 +1,21 @@
+import { useUser } from '@audius/common/api'
 import { ID } from '@audius/common/models'
-import { cacheUsersSelectors } from '@audius/common/store'
 import { TextLink } from '@audius/harmony'
 
 import { UserLink } from 'components/link'
-import { useSelector } from 'utils/reducer'
-
-const { getIsGuestUser } = cacheUsersSelectors
 
 type BuyerUserLinkProps = {
   userId: ID
 }
 
 export const BuyerUserLink = ({ userId }: BuyerUserLinkProps) => {
-  const isGuestUser = useSelector((state) =>
-    getIsGuestUser(state, { id: userId })
-  )
+  const { data: partialUser } = useUser(userId, {
+    select: (user) => ({
+      handle: user?.handle,
+      name: user?.name
+    })
+  })
+  const isGuestUser = !partialUser?.handle && !partialUser?.name
 
   if (isGuestUser) {
     return (

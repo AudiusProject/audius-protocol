@@ -1,18 +1,21 @@
 import { useCallback } from 'react'
 
-import { ID, Kind, Name, Status } from '@audius/common/models'
+import { useSearchUserResults } from '@audius/common/api'
+import { Kind, Name, UserMetadata } from '@audius/common/models'
 import { searchActions } from '@audius/common/store'
 import { Box, Flex, Text, useTheme } from '@audius/harmony'
 import { range } from 'lodash'
+import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import { UserCard } from 'components/user-card'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { useMainContentRef } from 'pages/MainContentContext'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { SortMethodFilterButton } from '../SortMethodFilterButton'
-import { useGetSearchResults, useSearchParams } from '../hooks'
+import { useSearchParams } from '../hooks'
 
 const { addItem: addRecentSearch } = searchActions
 
@@ -22,19 +25,43 @@ const messages = {
 }
 
 type ProfileResultsProps = {
-  ids: ID[]
+  isFetching: boolean
+  isPending: boolean
+  data: UserMetadata[]
   limit?: number
   skeletonCount?: number
 }
 
-export const ProfileResults = (props: ProfileResultsProps) => {
-  const { limit = 100, ids, skeletonCount = 10 } = props
+const ProfileResultsSkeletons = ({
+  skeletonCount = 12
+}: {
+  skeletonCount: number
+}) => {
+  const isMobile = useIsMobile()
+  return (
+    <>
+      {range(skeletonCount).map((_, i) => (
+        <UserCard
+          key={`user_card_sekeleton_${i}`}
+          id={0}
+          size={isMobile ? 'xs' : 's'}
+          css={isMobile ? { maxWidth: 320 } : undefined}
+          loading={true}
+        />
+      ))}
+    </>
+  )
+}
+
+export const ProfileResultsTiles = (props: ProfileResultsProps) => {
+  const { limit, skeletonCount = 10, data, isFetching, isPending } = props
+  const ids = data?.map((user) => user.user_id) ?? []
   const { query } = useSearchParams()
 
   const isMobile = useIsMobile()
   const dispatch = useDispatch()
 
-  const truncatedIds = ids?.slice(0, limit) ?? []
+  const truncatedIds = limit !== undefined ? (ids?.slice(0, limit) ?? []) : ids
 
   const handleClick = useCallback(
     (id?: number) => {
@@ -60,6 +87,10 @@ export const ProfileResults = (props: ProfileResultsProps) => {
     [dispatch, query]
   )
 
+  // Only show pagination skeletons when we're not loading the first page & still under the limit
+  const shouldShowMoreSkeletons =
+    isFetching && !isPending && (limit === undefined || data?.length < limit)
+
   return (
     <Box
       css={{
@@ -72,26 +103,23 @@ export const ProfileResults = (props: ProfileResultsProps) => {
       }}
       p={isMobile ? 'm' : undefined}
     >
-      {!truncatedIds.length
-        ? range(skeletonCount).map((_, i) => (
-            <UserCard
-              key={`user_card_sekeleton_${i}`}
-              id={0}
-              size={isMobile ? 'xs' : 's'}
-              css={isMobile ? { maxWidth: 320 } : undefined}
-              loading={true}
-            />
-          ))
-        : truncatedIds.map((id) => (
-            <UserCard
-              key={id}
-              id={id}
-              size={isMobile ? 'xs' : 's'}
-              css={isMobile ? { maxWidth: 320 } : undefined}
-              onClick={() => handleClick(id)}
-              onUserLinkClick={() => handleClick(id)}
-            />
-          ))}
+      {!truncatedIds.length ? (
+        <ProfileResultsSkeletons skeletonCount={skeletonCount} />
+      ) : (
+        truncatedIds.map((id) => (
+          <UserCard
+            key={id}
+            id={id}
+            size={isMobile ? 'xs' : 's'}
+            css={isMobile ? { maxWidth: 320 } : undefined}
+            onClick={() => handleClick(id)}
+            onUserLinkClick={() => handleClick(id)}
+          />
+        ))
+      )}
+      {shouldShowMoreSkeletons ? (
+        <ProfileResultsSkeletons skeletonCount={skeletonCount} />
+      ) : null}
     </Box>
   )
 }
@@ -99,28 +127,60 @@ export const ProfileResults = (props: ProfileResultsProps) => {
 export const ProfileResultsPage = () => {
   const isMobile = useIsMobile()
   const { color } = useTheme()
+  const mainContentRef = useMainContentRef()
 
-  const { data: ids, status } = useGetSearchResults('users')
-  const isLoading = status === Status.LOADING
+  const getMainContentRef = useCallback(() => {
+    if (isMobile) {
+      return null
+    }
+    return mainContentRef?.current || null
+  }, [isMobile, mainContentRef])
+
+  const searchParams = useSearchParams()
+  const {
+    data: ids,
+    isFetching,
+    hasNextPage,
+    loadNextPage,
+    isPending
+  } = useSearchUserResults(searchParams)
 
   const isResultsEmpty = ids?.length === 0
-  const showNoResultsTile = !isLoading && isResultsEmpty
+  const showNoResultsTile = !isFetching && isResultsEmpty
 
   return (
-    <Flex
-      direction='column'
-      gap='xl'
-      css={isMobile ? { backgroundColor: color.background.default } : {}}
+    <InfiniteScroll
+      pageStart={0}
+      loadMore={loadNextPage}
+      hasMore={hasNextPage}
+      getScrollParent={getMainContentRef}
+      initialLoad={false}
+      useWindow={isMobile}
     >
-      {!isMobile ? (
-        <Flex justifyContent='space-between' alignItems='center'>
-          <Text variant='heading' textAlign='left'>
-            {messages.profiles}
-          </Text>
-          <SortMethodFilterButton />
-        </Flex>
-      ) : null}
-      {showNoResultsTile ? <NoResultsTile /> : <ProfileResults ids={ids} />}
-    </Flex>
+      <Flex
+        direction='column'
+        gap='xl'
+        css={isMobile ? { backgroundColor: color.background.default } : {}}
+      >
+        {!isMobile ? (
+          <Flex justifyContent='space-between' alignItems='center'>
+            <Text variant='heading' textAlign='left'>
+              {messages.profiles}
+            </Text>
+            <SortMethodFilterButton />
+          </Flex>
+        ) : null}
+        {showNoResultsTile ? (
+          <NoResultsTile />
+        ) : (
+          <ProfileResultsTiles
+            isFetching={isFetching}
+            isPending={isPending}
+            data={ids}
+            skeletonCount={10}
+          />
+        )}
+      </Flex>
+    </InfiniteScroll>
   )
 }

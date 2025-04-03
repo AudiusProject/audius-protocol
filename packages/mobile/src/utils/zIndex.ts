@@ -2,6 +2,7 @@
 export enum zIndex {
   CHAT_TAIL = -10,
   CHAT_BLAST_SUBHEADER = 1,
+  DRAWER_HEADER = 1,
   NOW_PLAYING_DRAWER = 3,
   DOG_EAR = 4,
   PLAY_BAR = 5,

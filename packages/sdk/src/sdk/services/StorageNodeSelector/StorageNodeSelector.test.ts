@@ -10,7 +10,6 @@ import {
   vitest
 } from 'vitest'
 
-import { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'
 import type { HealthCheckResponseData } from '../DiscoveryNodeSelector/healthCheckTypes'
 import { Logger } from '../Logger'
 
@@ -28,9 +27,6 @@ const storageNodeB = {
 const discoveryNode = 'https://discovery-provider.audius.co'
 
 const logger = new Logger()
-const discoveryNodeSelector = new DiscoveryNodeSelector({
-  initialSelectedNode: discoveryNode
-})
 
 const mswHandlers = [
   rest.get(`${discoveryNode}/health_check`, (_req, res, ctx) => {
@@ -88,8 +84,8 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       bootstrapNodes,
-      discoveryNodeSelector,
-      logger
+      logger,
+      endpoint: discoveryNode
     })
 
     const nodes = storageNodeSelector.getNodes('test')
@@ -106,8 +102,8 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       bootstrapNodes,
-      discoveryNodeSelector,
-      logger
+      logger,
+      endpoint: discoveryNode
     })
 
     expect(await storageNodeSelector.getSelectedNode()).toEqual(
@@ -121,8 +117,8 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       bootstrapNodes,
-      discoveryNodeSelector,
-      logger
+      logger,
+      endpoint: discoveryNode
     })
 
     expect(await storageNodeSelector.getNodes(cid)).toEqual([
@@ -146,8 +142,8 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       bootstrapNodes,
-      discoveryNodeSelector,
-      logger
+      logger,
+      endpoint: discoveryNode
     })
 
     expect(await storageNodeSelector.getSelectedNode()).toBe(null)

@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
 import { Name } from '@audius/common/models'
-import { useFocusEffect } from '@react-navigation/native'
+import { useFocusEffect, useRoute } from '@react-navigation/native'
 
 import { IconClose, IconCloudUpload, Button } from '@audius/harmony-native'
 import {
@@ -18,7 +18,7 @@ import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
 import { TopBarIconButton } from '../../app-screen'
-import type { UploadParamList } from '../types'
+import type { UploadParamList, UploadRouteProp } from '../types'
 
 import { UploadFileContext } from './UploadFileContext'
 
@@ -52,12 +52,24 @@ export const SelectTrackScreen = () => {
   const styles = useStyles()
   const { neutralLight4 } = useThemeColors()
   const navigation = useNavigation<UploadParamList>()
+  const { params } = useRoute<UploadRouteProp<'SelectTrack'>>()
   const [navigatedBack, setNavigatedBack] = useState(false)
   const { track, loading, error, selectFile } = useContext(UploadFileContext)
 
   useEffect(() => {
-    if (track) navigation.push('CompleteTrack', {})
-  }, [track, navigation])
+    if (track) {
+      // If we have initialMetadata, merge it with the track metadata
+      if (params?.initialMetadata) {
+        track.metadata = {
+          ...track.metadata,
+          ...params.initialMetadata
+        }
+      }
+      navigation.push('CompleteTrack', {
+        initialMetadata: params?.initialMetadata
+      })
+    }
+  }, [track, navigation, params?.initialMetadata])
 
   useFocusEffect(
     useCallback(() => {

@@ -11,7 +11,7 @@ SELECT
 from
     follows
     join users on users.user_id = follows.followee_user_id
-    left outer join aggregate_user on followee_user_id = aggregate_user.user_id
+    join aggregate_user on followee_user_id = aggregate_user.user_id
 where
     follows.is_current = true
     and follows.is_delete = false

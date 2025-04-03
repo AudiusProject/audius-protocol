@@ -449,7 +449,14 @@ def index_purchase(
     )
     session.add(usdc_purchase)
 
+    receiver_set = set()
+
     for user_account in receiver_user_accounts:
+        if user_account["user_bank_account"] in receiver_set:
+            logger.warn(
+                f"index_payment_router.py | tx: {tx_sig} | Duplicate recipient found. Possible duplicate user record for user ID: {user_account['user_id']} address: {user_account['user_bank_account']}"
+            )
+            continue
         balance_change = balance_changes[user_account["user_bank_account"]]
         usdc_tx_received = USDCTransactionsHistory(
             user_bank=user_account["user_bank_account"],
@@ -462,6 +469,7 @@ def index_purchase(
             balance=Decimal(balance_change["post_balance"]),
             tx_metadata=str(purchase_metadata["purchaser_user_id"]),
         )
+        receiver_set.add(user_account["user_bank_account"])
         session.add(usdc_tx_received)
         logger.debug(
             f"index_payment_router.py | tx: {tx_sig} | Created usdc_tx_history received tx for purchase {usdc_tx_received}"

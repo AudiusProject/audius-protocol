@@ -1,5 +1,9 @@
 import { full, Id } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
@@ -9,7 +13,7 @@ import { ID } from '~/models/Identifiers'
 import { CollectionType } from '~/store/saved-collections/types'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCollections } from './useCollections'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeCollectionData } from './utils/primeCollectionData'
@@ -33,18 +37,19 @@ export const getLibraryCollectionsQueryKey = ({
   sortMethod,
   sortDirection,
   pageSize
-}: UseLibraryCollectionsArgs & { currentUserId: ID | null | undefined }) => [
-  QUERY_KEYS.libraryCollections,
-  currentUserId,
-  {
-    collectionType,
-    category,
-    query,
-    sortMethod,
-    sortDirection,
-    pageSize
-  }
-]
+}: UseLibraryCollectionsArgs & { currentUserId: ID | null | undefined }) =>
+  [
+    QUERY_KEYS.libraryCollections,
+    currentUserId,
+    {
+      collectionType,
+      category,
+      query,
+      sortMethod,
+      sortDirection,
+      pageSize
+    }
+  ] as unknown as QueryKey<InfiniteData<ID[]>>
 
 export const useLibraryCollections = (
   {
@@ -62,7 +67,7 @@ export const useLibraryCollections = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const { data: collectionIds, ...queryResult } = useInfiniteQuery({
+  const { data: collectionIds } = useInfiniteQuery({
     queryKey: getLibraryCollectionsQueryKey({
       currentUserId,
       collectionType,
@@ -113,10 +118,5 @@ export const useLibraryCollections = (
     enabled: options?.enabled !== false && !!currentUserId
   })
 
-  const { data: collections } = useCollections(collectionIds)
-
-  return {
-    data: collections,
-    ...queryResult
-  }
+  return useCollections(collectionIds)
 }

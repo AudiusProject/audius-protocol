@@ -2,8 +2,8 @@ import { Id, OptionalId } from '@audius/sdk'
 import {
   useInfiniteQuery,
   useQueryClient,
-  QueryKey,
-  InfiniteData
+  InfiniteData,
+  UseInfiniteQueryResult
 } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
@@ -16,9 +16,8 @@ import { trackPageSelectors } from '~/store/pages'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
-import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
 
@@ -27,7 +26,10 @@ const DEFAULT_PAGE_SIZE = 6
 export const getTrackPageLineupQueryKey = (
   trackId: ID | null | undefined,
   ownerHandle: string | null | undefined
-) => [QUERY_KEYS.trackPageLineup, trackId, ownerHandle]
+) =>
+  [QUERY_KEYS.trackPageLineup, trackId, ownerHandle] as unknown as QueryKey<
+    InfiniteData<TrackPageData>
+  >
 
 type UseTrackPageLineupArgs = {
   trackId: ID | null | undefined
@@ -61,13 +63,7 @@ export const useTrackPageLineup = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const queryData = useInfiniteQuery<
-    TrackPageData,
-    Error,
-    InfiniteData<TrackPageData>,
-    QueryKey,
-    number
-  >({
+  const queryData = useInfiniteQuery({
     queryKey: getTrackPageLineupQueryKey(trackId, ownerHandle),
     initialPageParam: 0,
     getNextPageParam: () => undefined, // Always return undefined to indicate no more pages
@@ -205,19 +201,27 @@ export const useTrackPageLineup = (
     enabled: options?.enabled !== false && !!ownerHandle && !!trackId
   })
 
+  const indices = queryData.data?.pages?.[0]?.indices
+  const queryDataWithFlatData = queryData as unknown as UseInfiniteQueryResult<
+    UserTrackMetadata[],
+    Error
+  >
+  queryDataWithFlatData.data = queryData.data?.pages
+    .map((page) => page.tracks)
+    .flat()
+
   const lineupData = useLineupQuery({
-    queryData,
+    queryData: queryDataWithFlatData,
+    queryKey: getTrackPageLineupQueryKey(trackId, ownerHandle),
     lineupActions: tracksActions,
     lineupSelector: trackPageSelectors.getLineup,
-    playbackSource: PlaybackSource.TRACK_TILE
+    playbackSource: PlaybackSource.TRACK_TILE,
+    pageSize
   })
 
   return {
-    ...queryData,
     ...lineupData,
-    loadNextPage: loadNextPage(queryData),
-    pageSize,
-    indices: queryData.data?.pages?.[0]?.indices,
+    indices,
     hasNextPage: false // Override hasNextPage to always be false
   }
 }

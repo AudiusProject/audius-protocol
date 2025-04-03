@@ -1,9 +1,10 @@
-import { SquareSizes } from '@audius/common/models'
+import { SquareSizes, UserCollectionMetadata } from '@audius/common/models'
+import { primeCollectionDataInternal } from '@audius/common/src/api/tan-query/utils/primeCollectionData'
 import { Text } from '@audius/harmony'
-import { merge } from 'lodash'
 import { Routes, Route } from 'react-router-dom-v5-compat'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
+import { queryClient } from 'services/query-client'
 import { RenderOptions, render, screen } from 'test/test-utils'
 
 import { CollectionCard } from './CollectionCard'
@@ -12,7 +13,33 @@ vi.mock('../../utils/image', () => ({
   preload: vi.fn((url: string) => Promise.resolve())
 }))
 
-function renderCollectionCard(options?: RenderOptions) {
+const testCollection = {
+  playlist_id: 1,
+  playlist_name: 'Test Collection',
+  playlist_owner_id: 2,
+  permalink: '/test-user/test-collection',
+  repost_count: 10,
+  save_count: 5,
+  artwork: {
+    [SquareSizes.SIZE_150_BY_150]:
+      'https://node.com/image-collection-small.jpg',
+    [SquareSizes.SIZE_480_BY_480]:
+      'https://node.com/image-collection-medium.jpg',
+    mirrors: ['https://node.com']
+  },
+  access: { stream: true },
+  user: { user_id: 2, handle: 'test-user', name: 'Test User' }
+} as UserCollectionMetadata
+
+function renderCollectionCard(
+  collections?: UserCollectionMetadata[],
+  options?: RenderOptions
+) {
+  primeCollectionDataInternal({
+    collections: collections ?? [testCollection],
+    queryClient,
+    forceReplace: true
+  })
   return render(
     <Routes>
       <Route path='/' element={<CollectionCard id={1} size='s' />} />
@@ -25,47 +52,15 @@ function renderCollectionCard(options?: RenderOptions) {
         element={<Text variant='heading'>Test User Page</Text>}
       />
     </Routes>,
-    merge(
-      {
-        reduxState: {
-          collections: {
-            entries: {
-              1: {
-                metadata: {
-                  playlist_id: 1,
-                  playlist_name: 'Test Collection',
-                  playlist_owner_id: 2,
-                  permalink: '/test-user/test-collection',
-                  repost_count: 10,
-                  save_count: 5,
-                  artwork: {
-                    [SquareSizes.SIZE_150_BY_150]:
-                      'https://node.com/image-collection-small.jpg',
-                    [SquareSizes.SIZE_480_BY_480]:
-                      'https://node.com/image-collection-medium.jpg',
-                    mirrors: ['https://node.com']
-                  },
-                  access: { stream: true }
-                }
-              }
-            }
-          },
-          users: {
-            entries: {
-              2: { metadata: { handle: 'test-user', name: 'Test User' } }
-            },
-            handles: {
-              'test-user': 2
-            }
-          }
-        }
-      },
-      options
-    )
+    options
   )
 }
 
 describe('CollectionCard', () => {
+  beforeEach(() => {
+    queryClient.clear()
+  })
+
   it('renders a button with the label comprising the collection and artist name, and favorites and reposts', () => {
     renderCollectionCard()
     expect(
@@ -102,11 +97,12 @@ describe('CollectionCard', () => {
   })
 
   it('hidden collections are rendered correctly', () => {
-    renderCollectionCard({
-      reduxState: {
-        collections: { entries: { 1: { metadata: { is_private: true } } } }
+    renderCollectionCard([
+      {
+        ...testCollection,
+        is_private: true
       }
-    })
+    ])
 
     expect(
       screen.getByRole('button', { name: /test collection test user hidden/i })
@@ -114,22 +110,16 @@ describe('CollectionCard', () => {
   })
 
   it('premium locked collections are rendered correctly', () => {
-    renderCollectionCard({
-      reduxState: {
-        collections: {
-          entries: {
-            1: {
-              metadata: {
-                access: { stream: false },
-                stream_conditions: {
-                  usdc_purchase: { price: 10, albumTrackPrice: 1, splits: {} }
-                }
-              }
-            }
-          }
+    renderCollectionCard([
+      {
+        ...testCollection,
+        access: { stream: false, download: false },
+        stream_conditions: {
+          usdc_purchase: { price: 10, albumTrackPrice: 1, splits: {} }
         }
       }
-    })
+    ])
+
     expect(
       screen.getByRole('button', {
         name: /test collection test user reposts 10 favorites 5 available for purchase/i
@@ -138,22 +128,15 @@ describe('CollectionCard', () => {
   })
 
   it('premium unlocked collections are rendered correctly', () => {
-    renderCollectionCard({
-      reduxState: {
-        collections: {
-          entries: {
-            1: {
-              metadata: {
-                access: { stream: true },
-                stream_conditions: {
-                  usdc_purchase: { price: 10, albumTrackPrice: 1, splits: {} }
-                }
-              }
-            }
-          }
+    renderCollectionCard([
+      {
+        ...testCollection,
+        access: { stream: true, download: true },
+        stream_conditions: {
+          usdc_purchase: { price: 10, albumTrackPrice: 1, splits: {} }
         }
       }
-    })
+    ])
     expect(
       screen.getByRole('button', {
         name: /test collection test user reposts 10 favorites 5 purchased/i
@@ -162,7 +145,7 @@ describe('CollectionCard', () => {
   })
 
   it('premium collections owned by user are rendered correctly', () => {
-    renderCollectionCard({ reduxState: { account: { userId: 2 } } })
+    renderCollectionCard(undefined, { reduxState: { account: { userId: 2 } } })
 
     // Expect the locked icon to not exist
     expect(

@@ -210,7 +210,7 @@ export const SummaryTable = ({
   }
 
   return (
-    <Flex direction='column' gap='l'>
+    <Flex direction='column' gap='l' w='100%'>
       {collapsible ? (
         <Expandable
           style={styles.container}

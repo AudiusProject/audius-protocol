@@ -1,33 +1,36 @@
-import { useMemo } from 'react'
+import { useEffect } from 'react'
 
-import { UseInfiniteQueryResult } from '@tanstack/react-query'
-import { partition } from 'lodash'
-import { Selector, useDispatch, useSelector } from 'react-redux'
-
+import { EntityType } from '@audius/sdk'
 import {
-  LineupEntry,
+  QueryKey,
+  UseInfiniteQueryResult,
+  useQueryClient
+} from '@tanstack/react-query'
+import { isEqual } from 'lodash'
+import { Selector, useDispatch, useSelector } from 'react-redux'
+import { usePrevious } from 'react-use'
+
+import { getCollectionQueryKey, getTrackQueryKey } from '~/api'
+import { useAudiusQueryContext } from '~/audius-query'
+import {
   Collection,
+  Feature,
   ID,
-  Kind,
   LineupState,
   LineupTrack,
   PlaybackSource,
   Status,
   Track,
   UID,
-  combineStatuses,
-  UserTrackMetadata,
-  UserCollectionMetadata
+  combineStatuses
 } from '~/models'
 import { CommonState } from '~/store/commonStore'
 import { LineupActions } from '~/store/lineup/actions'
 import { getPlaying } from '~/store/player/selectors'
 
-import { useCollections } from '../useCollections'
-import { useTracks } from '../useTracks'
-import { useUsers } from '../useUsers'
+import { TQCollection, TQTrack } from '../models'
+import { LineupData } from '../types'
 
-import { combineQueryStatuses } from './combineQueryStatuses'
 import { loadNextPage } from './infiniteQueryLoadNextPage'
 
 /**
@@ -35,19 +38,25 @@ import { loadNextPage } from './infiniteQueryLoadNextPage'
  */
 export const useLineupQuery = ({
   queryData,
+  queryKey,
   lineupActions,
   lineupSelector,
-  playbackSource
+  playbackSource,
+  pageSize
 }: {
   // Lineup related props
-  queryData: UseInfiniteQueryResult
+  queryData: UseInfiniteQueryResult<LineupData[]>
+  queryKey: QueryKey
   lineupActions: LineupActions
   lineupSelector: Selector<
     CommonState,
     LineupState<LineupTrack | Track | Collection>
   >
+  pageSize: number
   playbackSource: PlaybackSource
 }) => {
+  const { reportToSentry } = useAudiusQueryContext()
+  const queryClient = useQueryClient()
   const lineup = useSelector(lineupSelector)
 
   const isPlaying = useSelector(getPlaying)
@@ -69,65 +78,76 @@ export const useLineupQuery = ({
     dispatch(lineupActions.updateLineupOrder(orderedIds))
   }
 
-  const [lineupTrackIds, lineupCollectionIds] = useMemo(() => {
-    const [tracks, collections] = partition(
-      lineup.entries,
-      (entry) => entry.kind === Kind.TRACKS
-    )
-    return [
-      tracks.map((entry) => entry.id),
-      collections.map((entry) => entry.id)
-    ]
-  }, [lineup.entries])
+  const { data: lineupData } = queryData
+  const prevQueryKey = usePrevious(queryKey)
+  const hasQueryKeyChanged = !isEqual(prevQueryKey, queryKey)
 
-  const { byId: tracksById, ...tracksQuery } = useTracks(lineupTrackIds)
-  const { byId: collectionsById, ...collectionsQuery } =
-    useCollections(lineupCollectionIds)
-  const userIds = useMemo(() => {
-    const userIds = lineup.entries.map((entry) =>
-      entry.kind === Kind.TRACKS
-        ? tracksById[entry.id]?.owner_id
-        : collectionsById[entry.id]?.playlist_owner_id
-    )
-    return userIds
-  }, [lineup.entries, tracksById, collectionsById])
-  const { byId: usersById } = useUsers(userIds)
-  const entries: LineupEntry<
-    LineupTrack | UserTrackMetadata | UserCollectionMetadata
-  >[] = useMemo(() => {
-    const newEntries = lineup.entries.map((entry) => {
-      const entity =
-        entry.kind === Kind.TRACKS
-          ? tracksById[entry.id]
-          : entry.kind === Kind.COLLECTIONS
-            ? collectionsById[entry.id]
-            : entry
-
-      const userId =
-        entry.kind === Kind.TRACKS
-          ? tracksById[entry.id]?.owner_id
-          : collectionsById[entry.id]?.playlist_owner_id
-
-      const lineupEntry = {
-        ...entry,
-        ...entity
-      } as LineupEntry<LineupTrack | UserTrackMetadata | UserCollectionMetadata>
-      if (userId) {
-        lineupEntry.user = usersById[userId]
+  // On a cache hit, we need to manually load the cached data into the lineup since the queryFn won't run.
+  useEffect(() => {
+    if (hasQueryKeyChanged) {
+      dispatch(lineupActions.reset())
+      // NOTE: This squashes all previously cached pages into the first page of the lineup.
+      // This means the first page may have more entries than the pageSize.
+      // If this causes issues we can slice the data back into pages, but this seems more inefficient.
+      if (lineupData?.length) {
+        // The TQ cache for lineups only stores data in ID form, but our legacy lineup logic requires full entries.
+        // Here we take the ids and retrieve full entities from the tq cache
+        // There should never be a cache miss here because if the lineup believes entity is cached, it was primed at some point.
+        const fullLineupItems = lineupData
+          ?.map((item) => {
+            if (item.type === EntityType.TRACK) {
+              const track = queryClient.getQueryData<TQTrack>(
+                getTrackQueryKey(item.id)
+              )
+              if (!track) {
+                reportToSentry({
+                  feature: Feature.TanQuery,
+                  error: new Error(
+                    `Missing cache entry for track from ${lineup.prefix} lineup. Missing id: ${item.id}`
+                  )
+                })
+                return undefined
+              } else {
+                return track
+              }
+            } else {
+              const collection = queryClient.getQueryData<TQCollection>(
+                getCollectionQueryKey(item.id)
+              )
+              if (!collection) {
+                reportToSentry({
+                  feature: Feature.TanQuery,
+                  error: new Error(
+                    `Missing cache entry for collection from ${lineup.prefix} lineup. Missing id: ${item.id}`
+                  )
+                })
+                return undefined
+              } else {
+                return collection
+              }
+            }
+          })
+          .filter(Boolean)
+        // Put the full entities in the lineup
+        dispatch(
+          lineupActions.fetchLineupMetadatas(0, lineupData.length, false, {
+            items: fullLineupItems
+          })
+        )
       }
-      return lineupEntry
-    })
-    return newEntries
-  }, [lineup.entries, tracksById, collectionsById, usersById])
-
-  const combinedQueryStatus = combineQueryStatuses([
-    queryData,
-    tracksQuery,
-    collectionsQuery
+    }
+  }, [
+    dispatch,
+    lineupActions,
+    lineupData,
+    hasQueryKeyChanged,
+    queryClient,
+    lineup.prefix,
+    reportToSentry
   ])
 
   const status = combineStatuses([
-    combinedQueryStatus.isFetching ? Status.LOADING : Status.SUCCESS,
+    queryData.isFetching ? Status.LOADING : Status.SUCCESS,
     lineup.status
   ])
 
@@ -136,17 +156,31 @@ export const useLineupQuery = ({
     source: playbackSource,
     lineup: {
       ...lineup,
-      entries,
       status,
       isMetadataLoading: status === Status.LOADING,
-      hasMore: queryData.isLoading ? true : queryData.hasNextPage
+      hasMore: queryData.isLoading
+        ? true
+        : 'hasNextPage' in queryData
+          ? queryData.hasNextPage
+          : false
     },
     togglePlay,
     play,
     pause,
     updateLineupOrder,
     isPlaying,
-    loadNextPage: loadNextPage(queryData)
+    pageSize,
+    // pass through specific queryData props
+    //   this avoids spreading all queryData props which causes extra renders
+    loadNextPage: loadNextPage(queryData),
+    data: queryData.data,
+    isInitialLoading: queryData.isInitialLoading,
+    hasNextPage: queryData.hasNextPage,
+    isLoading: queryData.isLoading,
+    isPending: queryData.isPending,
+    isError: queryData.isError,
+    isFetching: queryData.isFetching,
+    isSuccess: queryData.isSuccess
   }
 }
 

@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 
+import { useSearchPlaylistResults } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
-import { Kind, Name, Status } from '@audius/common/models'
+import { Kind, Name } from '@audius/common/models'
 import { searchActions } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
@@ -12,8 +13,8 @@ import { make, track as record } from 'app/services/analytics'
 import { NoResultsTile } from '../NoResultsTile'
 import { SearchCatalogTile } from '../SearchCatalogTile'
 import {
-  useGetSearchResults,
   useIsEmptySearch,
+  useSearchFilters,
   useSearchQuery
 } from '../searchState'
 
@@ -22,10 +23,18 @@ const { addItem: addRecentSearch } = searchActions
 export const PlaylistResults = () => {
   const dispatch = useDispatch()
   const { spacing } = useTheme()
-  const { data, status } = useGetSearchResults('playlists')
   const [query] = useSearchQuery()
+  const [filters] = useSearchFilters()
+  const {
+    data: playlists,
+    isLoading,
+    isSuccess
+  } = useSearchPlaylistResults({
+    query,
+    ...filters
+  })
   const isEmptySearch = useIsEmptySearch()
-  const hasNoResults = (!data || data.length === 0) && status === Status.SUCCESS
+  const hasNoResults = (!playlists || playlists.length === 0) && isSuccess
 
   const handlePress = useCallback(
     (id: ID) => {
@@ -64,8 +73,8 @@ export const PlaylistResults = () => {
             paddingVertical: spacing.m
           }}
           keyboardShouldPersistTaps='handled'
-          isLoading={status === Status.LOADING}
-          collection={data as any[]}
+          isLoading={isLoading}
+          collection={playlists}
           onCollectionPress={handlePress}
         />
       )}

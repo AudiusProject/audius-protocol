@@ -13,7 +13,6 @@ from typing import List, Optional, TypedDict, cast
 
 import base58
 import psutil
-import requests
 
 # pylint: disable=no-name-in-module
 from eth_account.messages import encode_defunct
@@ -48,16 +47,6 @@ def get_ip(request_obj):
     if not ip:
         return ""
     return ip.split(",")[0].strip()
-
-
-def get_openresty_public_key():
-    """Get public key for openresty if it is running"""
-    try:
-        resp = requests.get("http://localhost:5000/openresty_pubkey", timeout=1)
-        resp.raise_for_status()
-        return resp.text
-    except requests.exceptions.RequestException:
-        return None
 
 
 @contextlib.contextmanager
@@ -615,12 +604,6 @@ def has_log(meta: UiTransactionStatusMeta, instruction: str):
 #     },
 def get_account_index(instruction: CompiledInstruction, index: int):
     return instruction.accounts[index]
-
-
-# get block number with a final POA block offset
-def get_adjusted_block(web3: Web3, block_number: int):
-    nethermind_block_number = block_number - get_final_poa_block()
-    return web3.eth.get_block(nethermind_block_number, True)
 
 
 def get_final_poa_block() -> int:

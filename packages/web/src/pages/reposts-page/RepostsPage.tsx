@@ -1,14 +1,8 @@
 import { useContext, useEffect } from 'react'
 
-import {
-  repostsUserListSelectors,
-  REPOSTS_USER_LIST_TAG
-} from '@audius/common/store'
-
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
-import { UserList } from 'components/user-list/UserList'
-const { getUserList } = repostsUserListSelectors
+import { RepostsUserList } from 'components/user-list/lists/RepostsUserList'
 
 const messages = {
   title: 'Reposts'
@@ -25,7 +19,7 @@ const RepostsPage = () => {
 
   return (
     <MobilePageContainer fullHeight>
-      <UserList stateSelector={getUserList} tag={REPOSTS_USER_LIST_TAG} />
+      <RepostsUserList />
     </MobilePageContainer>
   )
 }

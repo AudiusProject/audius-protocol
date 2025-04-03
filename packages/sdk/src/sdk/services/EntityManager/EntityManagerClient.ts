@@ -1,13 +1,9 @@
 import {
-  createPublicClient,
   encodeFunctionData,
   decodeFunctionData,
-  http,
   type Hex,
-  type PublicClient,
   type TypedDataDefinition
 } from 'viem'
-import type { TransactionReceipt } from 'web3-core'
 
 import * as runtime from '../../api/generated/default/runtime'
 import { productionConfig } from '../../config/production'
@@ -15,7 +11,6 @@ import fetch, { Headers } from '../../utils/fetch'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { getNonce } from '../../utils/signatureSchemas'
 import type { AudiusWalletClient } from '../AudiusWalletClient'
-import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 import type { LoggerService } from '../Logger'
 
 import {
@@ -27,6 +22,7 @@ import {
   BlockConfirmation,
   EntityManagerConfig,
   EntityManagerService,
+  EntityManagerTransactionReceipt,
   ManageEntityOptions
 } from './types'
 
@@ -35,35 +31,23 @@ const CONFIRMATION_POLLING_INTERVAL = 2000
 const CONFIRMATION_TIMEOUT = 45000
 
 export class EntityManagerClient implements EntityManagerService {
-  private readonly discoveryNodeSelector: DiscoveryNodeSelectorService
   private readonly audiusWalletClient: AudiusWalletClient
   private readonly logger: LoggerService
 
   private readonly chainId: number
   private readonly contractAddress: string
-
-  private publicClient: PublicClient | undefined
+  private readonly endpoint: string
 
   constructor(config_: EntityManagerConfig) {
     const config = mergeConfigWithDefaults(
       config_,
       getDefaultEntityManagerConfig(productionConfig)
     )
-    this.discoveryNodeSelector = config.discoveryNodeSelector
     this.audiusWalletClient = config.audiusWalletClient
     this.chainId = config.chainId
     this.contractAddress = config.contractAddress
     this.logger = config.logger.createPrefixedLogger('[entity-manager]')
-  }
-
-  private async getClient() {
-    if (!this.publicClient) {
-      const web3Provider = `${await this.discoveryNodeSelector.getSelectedEndpoint()}/chain`
-      this.publicClient = createPublicClient({
-        transport: http(web3Provider)
-      })
-    }
-    return this.publicClient
+    this.endpoint = config.endpoint
   }
 
   /**
@@ -77,9 +61,7 @@ export class EntityManagerClient implements EntityManagerService {
     metadata = '',
     confirmationTimeout = CONFIRMATION_TIMEOUT,
     skipConfirmation = false
-  }: ManageEntityOptions): Promise<
-    Pick<TransactionReceipt, 'blockHash' | 'blockNumber'>
-  > {
+  }: ManageEntityOptions): Promise<EntityManagerTransactionReceipt> {
     const nonce = await getNonce()
 
     const typedData: TypedDataDefinition<EntityManagerTypes, 'ManageEntity'> = {
@@ -102,7 +84,7 @@ export class EntityManagerClient implements EntityManagerService {
     const [senderAddress] = await this.audiusWalletClient.getAddresses()
     const signature = await this.audiusWalletClient.signTypedData(typedData)
 
-    const url = `${await this.discoveryNodeSelector.getSelectedEndpoint()}/relay`
+    const url = `${this.endpoint}/relay`
     this.logger.info(`Making relay request to ${url}`)
     const response = await fetch(url, {
       method: 'POST',
@@ -174,8 +156,7 @@ export class EntityManagerClient implements EntityManagerService {
   }) {
     this.logger.info(`Confirming write ${blockHash} ${blockNumber}`)
     const confirmBlock = async () => {
-      const endpoint = await this.discoveryNodeSelector.getSelectedEndpoint()
-      const url = `${endpoint}/block_confirmation?blocknumber=${blockNumber}&blockhash=${blockHash}`
+      const url = `${this.endpoint}/block_confirmation?blocknumber=${blockNumber}&blockhash=${blockHash}`
       const {
         data: { block_passed }
       } = await (await fetch(url)).json()
@@ -211,18 +192,6 @@ export class EntityManagerClient implements EntityManagerService {
    */
   public async decodeManageEntity(data: Hex) {
     return decodeFunctionData({ abi: EntityManager.abi, data })
-  }
-
-  /**
-   * Gets the current block
-   * @returns The current block
-   */
-  public async getCurrentBlock() {
-    const client = await this.getClient()
-    const currentBlockNumber = await client.getBlockNumber()
-    const block = await client.getBlock({ blockNumber: currentBlockNumber })
-    // TODO: Make this not need to be cast to number
-    return { ...block, timestamp: Number(block.timestamp) }
   }
 
   /**

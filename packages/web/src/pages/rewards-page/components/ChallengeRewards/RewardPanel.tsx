@@ -70,7 +70,10 @@ export const RewardPanel = ({
   })
 
   const challenge = userChallenges[id]
-  const hasDisbursed = challenge?.state === 'disbursed'
+  const hasDisbursed =
+    challenge?.state === 'disbursed' ||
+    (challenge?.challenge_id === ChallengeName.OneShot &&
+      challenge?.disbursed_amount > 0)
   const needsDisbursement = Boolean(challenge && challenge.claimableAmount > 0)
   const shouldShowProgressBar =
     challenge &&

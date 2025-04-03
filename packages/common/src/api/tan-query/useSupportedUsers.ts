@@ -1,6 +1,6 @@
 import { Id, OptionalId } from '@audius/sdk'
 import {
-  QueryKey,
+  InfiniteData,
   useInfiniteQuery,
   useQueryClient
 } from '@tanstack/react-query'
@@ -15,7 +15,7 @@ import {
 import { SUPPORTING_PAGINATION_SIZE } from '~/utils/constants'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getSupporterQueryKey } from './useSupporter'
 import { primeUserData } from './utils/primeUserData'
@@ -27,8 +27,11 @@ type UseSupportedUsersArgs = {
 
 export const getSupportedUsersQueryKey = (
   userId: ID | null | undefined,
-  pageSize: number
-) => [QUERY_KEYS.supportedUsers, userId, pageSize]
+  pageSize: number = SUPPORTING_PAGINATION_SIZE
+) =>
+  [QUERY_KEYS.supportedUsers, userId, pageSize] as unknown as QueryKey<
+    InfiniteData<SupportedUserMetadata[]>
+  >
 
 export const useSupportedUsers = (
   { userId, pageSize = SUPPORTING_PAGINATION_SIZE }: UseSupportedUsersArgs,
@@ -39,13 +42,7 @@ export const useSupportedUsers = (
   const { data: currentUserId } = useCurrentUserId()
   const dispatch = useDispatch()
 
-  return useInfiniteQuery<
-    SupportedUserMetadata[],
-    Error,
-    SupportedUserMetadata[],
-    QueryKey,
-    number
-  >({
+  return useInfiniteQuery({
     queryKey: getSupportedUsersQueryKey(userId, pageSize),
     initialPageParam: 0,
     getNextPageParam: (
@@ -69,7 +66,10 @@ export const useSupportedUsers = (
       supporting.forEach((supportedUser) => {
         queryClient.setQueryData(
           getSupporterQueryKey(supportedUser.receiver.user_id, userId),
-          supportedUser
+          {
+            ...supportedUser,
+            sender: supportedUser.receiver
+          }
         )
       })
 

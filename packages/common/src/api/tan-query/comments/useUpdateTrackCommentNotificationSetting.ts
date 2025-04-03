@@ -7,8 +7,7 @@ import { Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
 import { messages } from './types'
-import { getTrackCommentNotificationSettingQueryKey } from './utils'
-
+import { getTrackCommentNotificationSettingQueryKey } from './useGetTrackCommentNotificationSetting'
 export type UpdateTrackCommentNotificationSettingArgs = {
   userId: ID
   trackId: ID

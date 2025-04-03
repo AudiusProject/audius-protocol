@@ -1,7 +1,7 @@
+import { queryTrack } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import {
   accountSelectors,
-  cacheTracksSelectors,
   audioRewardsPageActions,
   tracksSocialActions,
   getContext,
@@ -12,8 +12,8 @@ import { call, put, select, takeEvery } from 'typed-redux-saga'
 import { make } from 'common/store/analytics/actions'
 import { waitForWrite } from 'utils/sagaHelpers'
 
-const { updateOptimisticListenStreak } = audioRewardsPageActions
-const { getTrack } = cacheTracksSelectors
+const { updateOptimisticListenStreak, updateOptimisticPlayCount } =
+  audioRewardsPageActions
 const { getUserId } = accountSelectors
 
 function* recordListen(action: { trackId: number }) {
@@ -23,7 +23,7 @@ function* recordListen(action: { trackId: number }) {
   yield* call(waitForWrite)
   const sdk = yield* getSDK()
   const userId = yield* select(getUserId)
-  const track = yield* select(getTrack, { id: trackId })
+  const track = yield* queryTrack(trackId)
   if (!userId || !track) return
 
   if (userId === track.owner_id && (track.listenCount ?? 0) > 10) {
@@ -39,6 +39,11 @@ function* recordListen(action: { trackId: number }) {
 
   // Optimistically update the listen streak if applicable
   yield* put(updateOptimisticListenStreak())
+
+  // Optimistically update the play count if the user is playing their own track
+  if (userId === track.owner_id) {
+    yield* put(updateOptimisticPlayCount())
+  }
 }
 
 export function* watchRecordListen() {

@@ -1,23 +1,35 @@
-from src.models.indexing.block import Block
+from sqlalchemy import desc
+
+from src.models.core.core_indexed_blocks import CoreIndexedBlocks
+from src.tasks.core.core_client import CoreClient, get_core_instance
 from src.utils import db_session, helpers
+
+core: CoreClient = get_core_instance()
 
 
 # returns a dictionary that represents whether
 # the given blockhash is present, the given blocknumber is passed
-def get_block_confirmation(blockhash, blocknumber):
+def get_block_confirmation(blockhash, blocknumber, core=core):
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
         blockhash_query = (
-            session.query(Block).filter(Block.blockhash == blockhash).all()
+            session.query(CoreIndexedBlocks)
+            .filter(CoreIndexedBlocks.blockhash == blockhash)
+            .all()
         )
 
-        latest_block_query = session.query(Block).filter(Block.is_current == True).all()
+        latest_block_query = (
+            session.query(CoreIndexedBlocks)
+            .filter(CoreIndexedBlocks.chain_id == core.get_node_info().chainid)
+            .order_by(desc(CoreIndexedBlocks.height))
+            .first()
+        )
 
-        if len(latest_block_query) != 1:
-            raise Exception("Expected SINGLE row marked as current")
+        if latest_block_query is None:
+            raise Exception("No latest block")
 
-        latest_block_record = helpers.model_to_dictionary(latest_block_query[0])
-        latest_block_number = latest_block_record["number"] or 0
+        latest_block_record = helpers.model_to_dictionary(latest_block_query)
+        latest_block_number = latest_block_record["height"] or 0
 
         return {
             "block_found": len(blockhash_query) > 0,

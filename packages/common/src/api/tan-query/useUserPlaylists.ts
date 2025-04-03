@@ -1,5 +1,9 @@
 import { Id, OptionalId, full } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
@@ -8,7 +12,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCollections } from './useCollections'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeCollectionData } from './utils/primeCollectionData'
@@ -28,7 +32,7 @@ export const getUserPlaylistsQueryKey = (params: GetPlaylistsOptions) => {
       pageSize,
       sortMethod
     }
-  ]
+  ] as unknown as QueryKey<InfiniteData<ID[]>>
 }
 
 export const useUserPlaylists = (
@@ -41,7 +45,7 @@ export const useUserPlaylists = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const { data: collectionIds, ...queryResult } = useInfiniteQuery({
+  const queryRes = useInfiniteQuery({
     queryKey: getUserPlaylistsQueryKey(params),
     initialPageParam: 0,
     getNextPageParam: (lastPage: ID[], allPages) => {
@@ -75,10 +79,14 @@ export const useUserPlaylists = (
     enabled: options?.enabled !== false && !!userId
   })
 
-  const { data: collections } = useCollections(collectionIds)
+  const { data: collections } = useCollections(queryRes.data)
 
   return {
     data: collections,
-    ...queryResult
+    isPending: queryRes.isPending,
+    isLoading: queryRes.isLoading,
+    hasNextPage: queryRes.hasNextPage,
+    isFetchingNextPage: queryRes.isFetchingNextPage,
+    fetchNextPage: queryRes.fetchNextPage
   }
 }

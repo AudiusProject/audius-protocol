@@ -1,0 +1,107 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Always implement high quality production ready code that performs the requested task, using the requested tools, libraries, external systems, infrastructure etc. Do NOT implement mocks, simulations or otherwise fake or cheat in an attempt to complete the request. Do not update or delete unrelated code (this includes insertions, deletions, and additions).
+
+If you find yourself doing something very unusual or inconsistent with the existing codebase, patterns and practices then stop and explain the situation to the user and confirm the course of action before proceeding, else, proceed as normal.
+
+# Stay On Task
+
+When working on a specific task:
+
+1. Maintain Focus
+- Stay focused on the core task/issue described by the user
+- Do not get sidetracked by peripheral issues (linter errors, type errors, etc.) unless they directly block the main task
+- If encountering peripheral issues, note them but continue with the main task
+
+2. Prioritize Functionality
+- Verify the core functionality works first
+- Only address type/lint errors if they prevent testing the core functionality
+- Save non-blocking improvements for later
+
+3. Ask Before Expanding Scope
+- If you find related issues that should be fixed, list them for the user
+- Do not start fixing additional issues without explicit user request
+- When in doubt, ask the user if they want to address additional issues
+
+4. Document Distractions
+- If you notice yourself starting to work on unrelated issues, stop
+- Explain to the user what additional issues you found
+- Let the user decide if and when to address them
+
+
+# Preserve Debug Console Logs
+
+When working with code that contains console logs prefixed with identifiers (e.g., 'REED', 'DEBUG', etc.), these logs should be preserved as they serve specific debugging purposes. Follow these guidelines:
+
+1. DO NOT remove console.log statements that:
+   - Have a prefix like 'REED', 'DEBUG', etc.
+   - Are explicitly added for debugging/tracing purposes
+   - Are part of active development or debugging
+
+2. DO remove console.log statements that:
+   - Are generic without identifiers
+   - Were accidentally left from previous development
+   - Are no longer needed for debugging
+
+3. When encountering linter errors for console statements:
+   - Ignore linter errors for identified debug logs
+   - Document why the console log is being preserved
+   - Consider adding a comment to explain the purpose
+
+Example of preserved console log:
+```typescript
+// Debug log for tracking metadata flow
+console.log('REED upload track form', { initialMetadata })
+```
+
+This rule helps maintain important debugging tools while keeping the codebase clean of unnecessary logging.
+
+
+# Analyze Only
+
+When asked to analyze, search, or investigate code, do NOT make any code changes unless explicitly requested. Instead:
+1. Use search tools to find relevant code
+2. Explain the current flow/architecture
+3. Identify potential issues or gaps
+4. Wait for the user to request specific changes
+
+If the user wants changes, they will explicitly ask for them with words like "update", "change", "fix", "modify", etc.
+
+
+# Migration File Naming Convention
+
+When creating new migration files in `packages/discovery-provider/ddl/migrations/`, follow these guidelines:
+
+1. File Naming Pattern
+   - Use the format: `{number}_{descriptive_name}.sql`
+   - The number should be the next sequential number after the highest existing migration
+   - Example: If the latest is `0128_patch_user_handle.sql`, the next should be `0129_...`
+
+2. Finding the Latest Number
+   - Check the `packages/discovery-provider/ddl/migrations/` directory
+   - Look for the highest numbered migration file
+   - Increment that number by 1 for your new migration
+
+3. Migration Content
+   - Always wrap migrations in a transaction (begin/commit)
+   - Use clear, descriptive names that indicate what the migration does
+   - Add comments if the migration's purpose isn't immediately clear from the name
+
+4. Multiple Migrations
+   - If multiple migrations are being added in the same PR:
+     - Coordinate with other developers to avoid number conflicts
+     - Each migration should have its own sequential number
+     - Never use the same number with different suffixes (e.g., 0129a, 0129b)
+
+Example:
+```sql
+-- File: 0129_add_new_column.sql
+begin;
+ALTER TABLE my_table ADD COLUMN new_column varchar;
+commit;
+```
+
+

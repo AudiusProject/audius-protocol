@@ -1,10 +1,10 @@
 import { memo, useCallback } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { ModalSource, isContentUSDCPurchaseGated } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
-  accountSelectors,
   usePremiumContentPurchaseModal,
   playbackPositionSelectors,
   CommonState,
@@ -41,7 +41,6 @@ import {
 
 import styles from './TrackTile.module.css'
 
-const { getUserId } = accountSelectors
 const { getTrackPosition } = playbackPositionSelectors
 
 const RankAndIndexIndicator = ({
@@ -104,7 +103,7 @@ const TrackTile = ({
   trackId,
   source
 }: TrackTileProps) => {
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const trackPositionInfo = useSelector((state: CommonState) =>
     getTrackPosition(state, { trackId, userId: currentUserId })
   )

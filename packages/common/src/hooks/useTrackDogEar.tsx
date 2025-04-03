@@ -1,5 +1,5 @@
-import { useSelector } from 'react-redux'
-
+import { useCurrentUserId } from '~/api'
+import { useTrack } from '~/api/tan-query/useTrack'
 import { DogEarType } from '~/models'
 import { ID } from '~/models/Identifiers'
 import {
@@ -7,25 +7,22 @@ import {
   isContentSpecialAccess,
   isContentUSDCPurchaseGated
 } from '~/models/Track'
-import { CommonState } from '~/store'
-import { getUserId } from '~/store/account/selectors'
-import { getTrack } from '~/store/cache/tracks/selectors'
 import { Nullable } from '~/utils'
 
 import { useGatedTrackAccess } from './useGatedContent'
 
 export const useTrackDogEar = (trackId: ID, hideUnlocked = false) => {
-  const streamConditions = useSelector((state: CommonState) => {
-    return getTrack(state, { id: trackId })?.stream_conditions
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: partialTrack } = useTrack(trackId, {
+    select: (track) => {
+      return {
+        streamConditions: track.stream_conditions,
+        downloadConditions: track.download_conditions,
+        isOwner: track.owner_id === currentUserId
+      }
+    }
   })
-
-  const downloadConditions = useSelector((state: CommonState) => {
-    return getTrack(state, { id: trackId })?.download_conditions
-  })
-
-  const isOwner = useSelector((state: CommonState) => {
-    return getTrack(state, { id: trackId })?.owner_id === getUserId(state)
-  })
+  const { streamConditions, downloadConditions, isOwner } = partialTrack ?? {}
 
   const { hasStreamAccess, hasDownloadAccess } = useGatedTrackAccess(trackId)
 

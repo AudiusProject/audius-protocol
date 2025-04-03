@@ -72,7 +72,8 @@ export const CommentReactionNotification = (
           setUserListUsers({
             userListType: UserListType.NOTIFICATION,
             entityType: entityToUserListEntity[entityType],
-            id: id as unknown as number
+            id: id as unknown as number,
+            entity: notification
           })
         )
         if (isMobile) {
@@ -94,12 +95,12 @@ export const CommentReactionNotification = (
     },
     [
       isMultiUser,
+      notification,
       dispatch,
       entityType,
       id,
       isMobile,
-      handleGoToEntity,
-      notification.entityId
+      handleGoToEntity
     ]
   )
 

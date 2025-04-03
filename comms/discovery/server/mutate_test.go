@@ -20,6 +20,7 @@ import (
 )
 
 func TestMutateEndpoint(t *testing.T) {
+
 	// Generate user keys
 	privateKey1, err := crypto.GenerateKey()
 	assert.NoError(t, err)

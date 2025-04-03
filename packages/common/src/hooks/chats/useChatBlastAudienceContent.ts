@@ -7,8 +7,8 @@ import {
   useGetCurrentUserId,
   useGetPlaylistById,
   useGetPurchasersCount,
-  useGetRemixersCount,
-  useGetTrackById
+  useGetTrackById,
+  useRemixersCount
 } from '~/api'
 import {
   getChatBlastAudienceDescription,
@@ -53,14 +53,10 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
       disabled: audience !== ChatBlastAudience.CUSTOMERS || !currentUserId
     }
   )
-  const { data: remixersCount } = useGetRemixersCount(
-    {
-      userId: currentUserId!,
-      trackId: decodedContentId
-    },
-    {
-      disabled: audience !== ChatBlastAudience.REMIXERS || !currentUserId
-    }
+
+  const { data: remixersCount } = useRemixersCount(
+    { trackId: decodedContentId },
+    { enabled: audience === ChatBlastAudience.REMIXERS }
   )
 
   const audienceCount = useMemo(() => {
@@ -106,6 +102,8 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
     chatBlastAudienceDescription,
     chatBlastCTA,
     contentTitle,
-    audienceCount
+    audienceCount,
+    audienceContentId: decodedContentId,
+    audienceContentType
   }
 }

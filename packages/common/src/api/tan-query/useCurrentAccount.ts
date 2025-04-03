@@ -9,17 +9,28 @@ import { AccountUserMetadata } from '~/models/User'
 import { getWalletAddresses } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
 export const getCurrentAccountQueryKey = (
   currentUserId: ID | null | undefined
-) => [QUERY_KEYS.accountUser, currentUserId]
+) =>
+  [
+    QUERY_KEYS.accountUser,
+    currentUserId
+  ] as unknown as QueryKey<AccountUserMetadata>
 
 /**
  * Hook to get the currently logged in user's account
  */
-export const useCurrentAccount = (options?: QueryOptions) => {
+export const useCurrentAccount = <
+  TResult = AccountUserMetadata | null | undefined
+>(
+  options?: SelectableQueryOptions<
+    AccountUserMetadata | null | undefined,
+    TResult
+  >
+) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { currentUser } = useSelector(getWalletAddresses)
   const { data: currentUserId } = useCurrentUserId()

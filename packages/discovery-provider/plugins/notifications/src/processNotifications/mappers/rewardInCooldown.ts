@@ -6,7 +6,11 @@ import { logger } from '../../logger'
 import { sendTransactionalEmail } from '../../email/notifications/sendEmail'
 import { buildUserNotificationSettings } from './userNotificationSettings'
 import { email } from '../../email/notifications/preRendered/rewardInCooldown'
-import { formatImageUrl, formatProfileUrl } from '../../utils/format'
+import {
+  formatImageUrl,
+  formatNumberCommas,
+  formatProfileUrl
+} from '../../utils/format'
 import { ChallengeId } from '../../email/notifications/types'
 
 type RewardInCooldownRow = Omit<NotificationRow, 'data'> & {
@@ -76,6 +80,12 @@ const challengeMessages = {
     title: 'Spend to Earn',
     description: 'Earn 5 $AUDIO for each dollar you spend on Audius.',
     imageUrl: 'AXu4i3Zj3QCGifxQ5ug5z8Pp8am9mS.png'
+  },
+  cs: {
+    title: 'Co-signed Remix',
+    description:
+      'If your remix is co-signed by a verified artist you will earn a reward!',
+    imageUrl: 'recycle-trophy.png'
   }
 }
 
@@ -116,7 +126,7 @@ export class RewardInCooldown extends BaseNotification<RewardInCooldownRow> {
         handle: user.handle,
         profilePicture: formatImageUrl(user.profile_picture_sizes, 150),
         profileLink: formatProfileUrl(user.handle),
-        amount: this.amount,
+        amount: formatNumberCommas(this.amount),
         challengeTitle: challengeMessage.title,
         challengeDescription: challengeMessage.description,
         challengeImage: challengeMessage.imageUrl

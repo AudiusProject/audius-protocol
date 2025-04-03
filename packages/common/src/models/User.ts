@@ -52,7 +52,6 @@ export type UserMetadata = {
   website: Nullable<string>
   donation: Nullable<string>
   location: Nullable<string>
-  metadata_multihash: Nullable<CID>
   name: string
   playlist_count: number
   profile_picture_cids?: Nullable<ProfilePictureSizesCids>
@@ -93,8 +92,8 @@ export type UserManagerMetadata = {
 export type ComputedUserProperties = {
   _collectionIds?: ID[]
   _profile_picture_color?: Color
-  updatedProfilePicture?: { file: File; url: string }
-  updatedCoverPhoto?: { file: File; url: string }
+  updatedProfilePicture?: { file: File; url: string; type?: string }
+  updatedCoverPhoto?: { file: File; url: string; type?: string }
 }
 
 export type User = UserMetadata & ComputedUserProperties
@@ -121,10 +120,7 @@ export type UserImage = Pick<
   | 'profile_picture_cids'
 >
 
-export type UserMultihash = Pick<
-  User,
-  'metadata_multihash' | 'creator_node_endpoint'
->
+export type UserMultihash = Pick<User, 'creator_node_endpoint'>
 
 export type TwitterUser = {
   verified: boolean

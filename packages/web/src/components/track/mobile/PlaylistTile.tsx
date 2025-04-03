@@ -1,9 +1,9 @@
 import { useEffect, MouseEvent, useCallback } from 'react'
 
+import { CollectionTrackWithUid, useUser } from '@audius/common/api'
 import {
   ID,
   UID,
-  LineupTrack,
   AccessConditions,
   ModalSource,
   isContentUSDCPurchaseGated
@@ -39,7 +39,7 @@ const { setLockedContentId } = gatedContentActions
 
 type TrackItemProps = {
   index: number
-  track?: LineupTrack
+  track?: CollectionTrackWithUid
   isAlbum: boolean
   active: boolean
   deleted?: boolean
@@ -57,6 +57,10 @@ const messages = {
 
 const TrackItem = (props: TrackItemProps) => {
   const { active, deleted, index, isAlbum, track, forceSkeleton } = props
+  const { data: trackOwnerName } = useUser(track?.owner_id, {
+    select: (user) => user?.name
+  })
+
   return (
     <>
       <div className={styles.trackItemDivider}></div>
@@ -75,7 +79,7 @@ const TrackItem = (props: TrackItemProps) => {
             {!isAlbum ? (
               <div className={styles.byArtist}>
                 {' '}
-                {`${messages.by} ${track.user.name}`}{' '}
+                {`${messages.by} ${trackOwnerName}`}{' '}
               </div>
             ) : null}
             {deleted ? (
@@ -90,7 +94,7 @@ const TrackItem = (props: TrackItemProps) => {
 
 type TrackListProps = {
   activeTrackUid: UID | null
-  tracks: LineupTrack[]
+  tracks: CollectionTrackWithUid[]
   goToCollectionPage: (e: MouseEvent<HTMLElement>) => void
   isLoading?: boolean
   isAlbum: boolean
@@ -194,7 +198,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
 
   useEffect(() => {
     if (!showSkeleton) {
-      hasLoaded(index)
+      hasLoaded?.(index)
     }
   }, [hasLoaded, index, showSkeleton])
 
