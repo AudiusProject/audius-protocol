@@ -151,10 +151,8 @@ const DownloadTrackArchiveDrawerContent = ({
   }, [hasError, track, make])
 
   useEffect(() => {
-    if (isOpen) {
-      downloadTrackStems()
-    }
-  }, [isOpen, downloadTrackStems, trackId])
+    downloadTrackStems()
+  }, [downloadTrackStems])
 
   useEffect(() => {
     if (jobState?.state === 'completed' && trackTitle) {
