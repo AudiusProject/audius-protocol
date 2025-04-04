@@ -171,9 +171,13 @@ export class AppNotificationsProcessor {
         )
         .map((notification) => Number(notification.specifier))
 
-      const res = await this.dnDB.raw('SELECT get_shadowbanned_users(?)', [
-        usersTriggeringNotifications
-      ])
+      const res = await this.dnDB.raw(
+        `
+          SELECT * 
+          FROM get_user_scores(?) 
+          `,
+        [usersTriggeringNotifications]
+      )
       const shadowBannedUsers = res.rows.map((row) =>
         String(row.get_shadowbanned_users)
       )
