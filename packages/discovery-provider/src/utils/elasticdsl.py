@@ -99,9 +99,7 @@ def populate_track_or_playlist_metadata_es(
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
         remixes = get_track_remix_metadata(
-            session,
-            [item],
-            current_user["user_id"] if "user_id" in current_user else None,
+            session, [item], current_user.get("user_id") if current_user else None
         )
         if (
             response_name_constants.remix_of in item
