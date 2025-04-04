@@ -8,6 +8,7 @@ create or replace function get_user_scores(
         challenge_count bigint,
         following_count bigint,
         chat_block_count bigint,
+        is_audius_impersonator boolean,
         score bigint
     ) language sql as $function$ with play_activity as (
         select plays.user_id,
@@ -57,7 +58,7 @@ create or replace function get_user_scores(
                 )
                 and users.is_verified = false then true
                 else false
-            end as audius_impersonator,
+            end as is_audius_impersonator,
             coalesce(play_activity.play_count, 0) as play_count,
             coalesce(fast_challenge_completion.challenge_count, 0) as challenge_count,
             coalesce(aggregate_user.following_count, 0) as following_count,
@@ -81,13 +82,13 @@ select a.user_id,
     a.challenge_count,
     a.following_count,
     a.chat_block_count,
-    a.audius_impersonator,
+    a.is_audius_impersonator,
     (
         a.play_count + a.follower_count - a.challenge_count - (a.chat_block_count * 10) + case
             when a.following_count < 5 then -1
             else 0
         end + case
-            when a.audius_impersonator then -1000
+            when a.is_audius_impersonator then -1000
             else 0
         end
     ) as score
