@@ -84,7 +84,7 @@ select a.user_id,
     a.chat_block_count,
     a.is_audius_impersonator,
     (
-        a.play_count + a.follower_count - a.challenge_count - (a.chat_block_count * 10) + case
+        a.play_count + a.follower_count - a.challenge_count - (a.chat_block_count * 100) + case
             when a.following_count < 5 then -1
             else 0
         end + case
