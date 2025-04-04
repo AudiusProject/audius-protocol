@@ -98,7 +98,11 @@ def populate_track_or_playlist_metadata_es(
     # Necessary to show cosign on feed / search
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
-        remixes = get_track_remix_metadata(session, [item], current_user["user_id"])
+        remixes = get_track_remix_metadata(
+            session,
+            [item],
+            current_user["user_id"] if "user_id" in current_user else None,
+        )
         if (
             response_name_constants.remix_of in item
             and isinstance(item[response_name_constants.remix_of], dict)
