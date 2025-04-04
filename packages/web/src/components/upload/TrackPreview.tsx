@@ -74,7 +74,7 @@ const fileTypeIcon = (type: string) => {
   }
 }
 
-type TrackPreviewProps = ComponentPropsWithoutRef<'div'> & {
+export type TrackPreviewProps = ComponentPropsWithoutRef<'div'> & {
   index: number
   displayIndex: boolean
   onRemove: () => void
