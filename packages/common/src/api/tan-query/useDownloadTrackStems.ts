@@ -2,6 +2,7 @@ import { Id } from '@audius/sdk'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { useAudiusQueryContext } from '~/audius-query'
+import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
@@ -36,7 +37,7 @@ export const getDownloadTrackStemsQueryKey = (trackId: ID) => {
 }
 
 export const useDownloadTrackStems = ({ trackId }: { trackId: ID }) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
 
@@ -62,6 +63,13 @@ export const useDownloadTrackStems = ({ trackId }: { trackId: ID }) => {
         getStemsArchiveJobQueryKey(response.id),
         response
       )
+    },
+    onError: (error) => {
+      reportToSentry({
+        error,
+        name: 'Failed to initiate stems archive download',
+        feature: Feature.Remixes
+      })
     }
   })
 }

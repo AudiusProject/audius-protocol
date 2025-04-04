@@ -2,7 +2,7 @@ import { Flex, IconUserArrowRotate, Text } from '@audius/harmony-native'
 import { NativeDrawer } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
 
-import { HarmonyModalHeader } from '../core/HarmonyModalHeader'
+import { DrawerHeader } from '../core/DrawerHeader'
 
 const messages = {
   managerModeNotAvailable:
@@ -16,7 +16,7 @@ export const ManagerModeDrawer = () => {
   return (
     <NativeDrawer drawerName='ManagerMode' onClose={closeDrawer}>
       <Flex w='100%' p='2xl' gap='xl'>
-        <HarmonyModalHeader
+        <DrawerHeader
           icon={IconUserArrowRotate}
           title={messages.managerModeNotAvailableTitle}
         />

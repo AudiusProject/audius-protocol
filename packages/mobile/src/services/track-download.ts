@@ -1,4 +1,7 @@
-import type { DownloadTrackArgs } from '@audius/common/services'
+import type {
+  DownloadFileArgs,
+  DownloadTrackArgs
+} from '@audius/common/services'
 import { TrackDownload as TrackDownloadBase } from '@audius/common/services'
 import { tracksSocialActions, downloadsActions } from '@audius/common/store'
 import { Platform, Share } from 'react-native'
@@ -14,8 +17,6 @@ import { dedupFilenames } from '~/utils'
 import { make, track as trackEvent } from 'app/services/analytics'
 import { dispatch } from 'app/store'
 import { EventNames } from 'app/types/analytics'
-
-import { audiusBackendInstance } from './audius-backend-instance'
 
 const { downloadFinished } = tracksSocialActions
 const { beginDownload, setDownloadError, setFetchCancel, setFileInfo } =
@@ -312,12 +313,67 @@ const download = async ({
   }
 }
 
+/** Generic file download that doesn't use sagas. */
+const downloadFile = async ({
+  file: { url, filename },
+  mimeType,
+  abortSignal
+}: DownloadFileArgs) => {
+  if (Platform.OS === 'ios') {
+    const audiusDirectory =
+      ReactNativeBlobUtil.fs.dirs.DocumentDir + '/' + audiusDownloadsDirectory
+    const filePath = audiusDirectory + '/' + filename
+    try {
+      const fetchPromise = ReactNativeBlobUtil.config({
+        /* on iOS we stage the file into a temporary location, then use the
+         * share sheet to let the user decide where to put it.
+         * Afterwards we delete the temp file.
+         */
+        fileCache: true,
+        path: filePath
+      }).fetch('GET', url)
+
+      abortSignal?.addEventListener('abort', () => {
+        fetchPromise.cancel()
+      })
+      await fetchPromise
+
+      await Share.share({
+        url: filePath
+      })
+    } finally {
+      // The fetched file is temporary on iOS and we always want to be sure to remove it.
+      removePathIfExists(filePath)
+    }
+  } else {
+    // On Android we use the Download Manager to download the file.
+    const fetchPromise = ReactNativeBlobUtil.config({
+      addAndroidDownloads: {
+        description: filename,
+        mediaScannable: true,
+        notification: true,
+        storeInDownloads: true,
+        title: filename,
+        mime: mimeType,
+        useDownloadManager: true
+      }
+    }).fetch('GET', url)
+
+    abortSignal?.addEventListener('abort', () => {
+      fetchPromise.cancel()
+    })
+    await fetchPromise
+  }
+}
+
 class TrackDownload extends TrackDownloadBase {
   async downloadTracks(args: DownloadTrackArgs) {
     await download(args)
   }
+
+  async downloadFile(args: DownloadFileArgs) {
+    await downloadFile(args)
+  }
 }
 
-export const trackDownload = new TrackDownload({
-  audiusBackend: audiusBackendInstance
-})
+export const trackDownload = new TrackDownload()

@@ -14,6 +14,7 @@ import { earlyReleaseConfirmationModalReducer } from './early-release-confirmati
 import { editAccessConfirmationModalReducer } from './edit-access-confirmation-modal'
 import { externalWalletSignUpModalReducer } from './external-wallet-sign-up-modal'
 import { hideContentConfirmationModalReducer } from './hide-confirmation-modal'
+import { hostRemixContestModalReducer } from './host-remix-contest-modal'
 import { inboxUnavailableModalReducer } from './inbox-unavailable-modal'
 import { leavingAudiusModalReducer } from './leaving-audius-modal'
 import { notificationModalReducer } from './notification-modal'
@@ -74,7 +75,8 @@ const combinedReducers = combineReducers({
   ExternalWalletSignUp: externalWalletSignUpModalReducer,
   Announcement: announcementModalReducer,
   Notification: notificationModalReducer,
-  DownloadTrackArchive: downloadTrackArchiveModalReducer
+  DownloadTrackArchive: downloadTrackArchiveModalReducer,
+  HostRemixContest: hostRemixContestModalReducer
 })
 
 /**
