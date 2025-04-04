@@ -1,8 +1,5 @@
-import { useMemo } from 'react'
-
 import { Event as EventSDK, Id, OptionalId, decodeHashId } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
-import { keyBy } from 'lodash'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { Event } from '~/models/Event'
