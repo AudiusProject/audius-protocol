@@ -138,6 +138,8 @@ export type ProfilePageProps = {
   pauseUserFeedTrack: () => void
 
   // Methods
+  onFollow: () => void
+  onUnfollow: () => void
   updateName: (name: string) => void
   updateBio: (bio: string) => void
   updateLocation: (location: string) => void
@@ -305,6 +307,8 @@ const ProfilePage = ({
   loadMoreUserFeed,
   loadMoreArtistTracks,
   updateProfile,
+  onFollow,
+  onUnfollow,
   updateName,
   updateBio,
   updateLocation,
@@ -785,6 +789,8 @@ const ProfilePage = ({
                   following={following}
                   isSubscribed={isSubscribed}
                   onToggleSubscribe={toggleNotificationSubscription}
+                  onFollow={onFollow}
+                  onUnfollow={onUnfollow}
                   canCreateChat={canCreateChat}
                   onMessage={onMessage}
                   isBlocked={isBlocked}
