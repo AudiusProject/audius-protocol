@@ -1,13 +1,12 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 
+import { useTrackFileInfo } from '@audius/common/api'
 import { StemCategory, StemUploadWithFile } from '@audius/common/models'
 import { Box, Flex, Text } from '@audius/harmony'
-import { Id } from '@audius/sdk'
 import cn from 'classnames'
 
 import { Dropzone } from 'components/upload/Dropzone'
-import { TrackPreview } from 'components/upload/TrackPreview'
-import { audiusSdk } from 'services/audius-sdk'
+import { TrackPreview, TrackPreviewProps } from 'components/upload/TrackPreview'
 
 import styles from './StemFilesView.module.css'
 
@@ -21,62 +20,8 @@ const messages = {
   stemTypeDescription: 'Please select a stem type for each of your files.'
 }
 
-const useStemFileInfos = (stems: StemUploadWithFile[]) => {
-  const [fileInfos, setFileInfos] = useState<{ [index: number]: File }>({})
-
-  useEffect(() => {
-    const indexToTrackIdsMap = stems.reduce((acc, stem, i) => {
-      if (!stem.file) acc[i] = stem.metadata.track_id
-      return acc
-    }, {})
-    const indexToTrackTitlesMap = stems.reduce((acc, stem, i) => {
-      if (!stem.file) acc[i] = stem.metadata.orig_filename ?? ''
-      return acc
-    }, {})
-
-    const fetchInfos = async (indexToTrackIdsMap: {
-      [index: number]: number
-    }) => {
-      try {
-        const sdk = await audiusSdk()
-        const indices = Object.keys(indexToTrackIdsMap).map(Number)
-        const responses = await Promise.all(
-          indices.map(async (i: number) => {
-            const trackId = indexToTrackIdsMap[i]
-            return {
-              i,
-              res: await sdk.tracks.inspectTrack({
-                trackId: Id.parse(trackId),
-                original: true
-              })
-            }
-          })
-        )
-        const datas = responses.reduce((acc, { i, res }) => {
-          acc[i] = res
-          return acc
-        }, {})
-        const infos = stems.reduce((acc, stem, i) => {
-          if (!stem.file) {
-            const name = indexToTrackTitlesMap[i]
-            const type = datas[i]?.data?.contentType ?? ''
-            const size = datas[i]?.data?.size ?? 0
-            acc[i] = { name, type, size }
-          } else {
-            acc[i] = stem.file
-          }
-          return acc
-        }, {})
-        setFileInfos(infos)
-      } catch (e) {
-        console.error(`Error inspecting stem tracks: ${e}`)
-      }
-    }
-
-    fetchInfos(indexToTrackIdsMap)
-  }, [stems])
-
-  return fileInfos
+const makeStemKey = (stem: StemUploadWithFile) => {
+  return stem.metadata.track_id ?? stem.metadata.orig_filename
 }
 
 type StemFilesViewProps = {
@@ -86,14 +31,39 @@ type StemFilesViewProps = {
   onDeleteStem: (index: number) => void
 }
 
+type StemPreviewProps = Omit<TrackPreviewProps, 'file'> & {
+  stem: StemUploadWithFile
+}
+
+const StemFilePreview = (props: StemPreviewProps) => {
+  return props.stem.metadata.track_id ? (
+    <StemRemoteFilePreview {...props} />
+  ) : (
+    <TrackPreview {...props} file={props.stem.file} />
+  )
+}
+
+const StemRemoteFilePreview = (props: StemPreviewProps) => {
+  const { data } = useTrackFileInfo(props.stem.metadata.track_id)
+  const file = useMemo(() => {
+    if (data) {
+      return {
+        name: props.stem.metadata.orig_filename ?? '',
+        type: data.contentType,
+        size: data.size
+      } as File
+    }
+    return props.stem.file
+  }, [data, props.stem.file, props.stem.metadata.orig_filename])
+  return <TrackPreview {...props} file={file} />
+}
+
 export const StemFilesView = ({
   onAddStems,
   stems,
   onSelectCategory,
   onDeleteStem
 }: StemFilesViewProps) => {
-  const fileInfos = useStemFileInfos(stems)
-
   const renderStemFiles = () => {
     return stems.length > 0 ? (
       <>
@@ -113,13 +83,13 @@ export const StemFilesView = ({
           css={{ overflow: 'hidden' }}
         >
           {stems.map((stem, i) => (
-            <TrackPreview
+            <StemFilePreview
               role='listitem'
               className={styles.stemPreview}
               index={i}
               displayIndex={stems.length > 1}
-              key={`stem-${i}`}
-              file={fileInfos[i] ?? stem.file}
+              key={`stem-${makeStemKey(stem)}`}
+              stem={stem}
               onRemove={() => onDeleteStem(i)}
               stemCategory={stem.category}
               onEditStemCategory={(category) => onSelectCategory(category, i)}
