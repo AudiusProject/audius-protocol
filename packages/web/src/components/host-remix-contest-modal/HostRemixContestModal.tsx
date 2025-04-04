@@ -17,10 +17,12 @@ import {
 } from '@audius/harmony'
 import { EventEntityTypeEnum, EventEventTypeEnum } from '@audius/sdk'
 import { css } from '@emotion/css'
-import moment from 'moment'
+import dayjs from 'dayjs'
 
 import { DatePicker } from 'components/edit/fields/DatePickerField'
 import { mergeReleaseDateValues } from 'components/edit/fields/visibility/mergeReleaseDateValues'
+
+const MODAL_WIDTH = 720
 
 const messages = {
   hostTitle: 'Host Remix Contest',
@@ -44,15 +46,15 @@ export const HostRemixContestModal = () => {
   // Can get the track id from the data from the modal hook
   const { data, isOpen, onClose } = useHostRemixContestModal()
   const [contestEndDate, setContestEndDate] = useState(
-    moment().add(1, 'day').endOf('day').toISOString()
+    dayjs().add(1, 'day').endOf('day').toISOString()
   )
   const [endDateTouched, setEndDateTouched] = useState(false)
   const [endDateError, setEndDateError] = useState(false)
   const { mutate: createEvent } = useCreateEvent()
   const { data: currentUserId } = useCurrentUserId()
 
-  const meridianValue = moment(contestEndDate).format('A')
-  const timeValue = moment(contestEndDate).format('hh:mm')
+  const meridianValue = dayjs(contestEndDate).format('A')
+  const timeValue = dayjs(contestEndDate).format('hh:mm')
   const [timeInputValue, setTimeInputValue] = useState(timeValue)
 
   const { trackId } = data
@@ -70,21 +72,21 @@ export const HostRemixContestModal = () => {
 
     setEndDateTouched(true)
     setEndDateError(hasError)
-    if (hasError) return
+    if (hasError || !trackId || !currentUserId) return
 
-    const endDate = moment(contestEndDate).toISOString()
+    const endDate = dayjs(contestEndDate).toISOString()
 
     // Create event
     createEvent({
       eventType: EventEventTypeEnum.RemixContest,
       entityType: EventEntityTypeEnum.Track,
-      entityId: trackId ?? undefined,
+      entityId: trackId,
       endDate,
-      userId: currentUserId!
+      userId: currentUserId
     })
 
     // Reset form and close modal
-    setContestEndDate(moment().add(1, 'day').endOf('day').toISOString())
+    setContestEndDate(dayjs().add(1, 'day').endOf('day').toISOString())
     onClose()
   }, [contestEndDate, createEvent, trackId, currentUserId, onClose])
 
@@ -95,7 +97,7 @@ export const HostRemixContestModal = () => {
       size='small'
       bodyClassName={css({
         width: '100%',
-        maxWidth: 720
+        maxWidth: MODAL_WIDTH
       })}
     >
       <ModalHeader onClose={onClose}>
