@@ -24,9 +24,7 @@ export const useDeleteEvent = () => {
       const { eventId } = args
 
       // Get the current event from cache
-      const currentEvent = queryClient.getQueryData<Event>(
-        getEventQueryKey(eventId)
-      )
+      const currentEvent = queryClient.getQueryData(getEventQueryKey(eventId))
       if (!currentEvent) return
 
       const deletedEvent: Event = {

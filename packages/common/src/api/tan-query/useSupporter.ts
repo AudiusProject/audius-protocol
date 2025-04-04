@@ -5,12 +5,13 @@ import { useDispatch } from 'react-redux'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 import {
+  SupporterMetadata,
   supporterMetadataFromSDK,
   supporterMetadataListFromSDK
 } from '~/models/Tipping'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils/primeUserData'
 
@@ -24,7 +25,13 @@ const DEFAULT_STALE_TIME = 1000 * 30
 export const getSupporterQueryKey = (
   userId: ID | null | undefined,
   supporterUserId: ID | null | undefined
-) => [QUERY_KEYS.supporter, userId, supporterUserId]
+) => {
+  return [
+    QUERY_KEYS.supporter,
+    userId,
+    supporterUserId
+  ] as unknown as QueryKey<SupporterMetadata | null>
+}
 
 export const useSupporter = (
   { userId, supporterUserId }: UseSupporterArgs,
@@ -58,6 +65,13 @@ export const useSupporter = (
   })
 }
 
+export const getTopSupporterQueryKey = (userId: ID | null | undefined) => {
+  return [
+    QUERY_KEYS.topSupporter,
+    userId
+  ] as unknown as QueryKey<SupporterMetadata | null>
+}
+
 export const useTopSupporter = (userId: ID | null | undefined) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
@@ -65,7 +79,7 @@ export const useTopSupporter = (userId: ID | null | undefined) => {
   const dispatch = useDispatch()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.topSupporter, userId],
+    queryKey: getTopSupporterQueryKey(userId),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const { data } = await sdk.full.users.getSupporters({

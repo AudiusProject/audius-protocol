@@ -1,7 +1,11 @@
 import { useEffect } from 'react'
 
 import { OptionalId, EntityType } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
@@ -23,7 +27,7 @@ import {
 import { Genre } from '~/utils/genres'
 
 import { QUERY_KEYS } from './queryKeys'
-import { LineupData, QueryOptions } from './types'
+import { QueryKey, LineupData, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -43,10 +47,11 @@ export const getTrendingQueryKey = ({
   genre,
   initialPageSize,
   loadMorePageSize
-}: GetTrendingArgs) => [
-  QUERY_KEYS.trending,
-  { timeRange, genre, initialPageSize, loadMorePageSize }
-]
+}: GetTrendingArgs) =>
+  [
+    QUERY_KEYS.trending,
+    { timeRange, genre, initialPageSize, loadMorePageSize }
+  ] as unknown as QueryKey<InfiniteData<LineupData[]>>
 
 export const useTrending = (
   {
