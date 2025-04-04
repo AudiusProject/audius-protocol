@@ -1,10 +1,11 @@
 import { GetEntityEventsEntityTypeEnum } from '@audius/sdk'
-import { InfiniteData, QueryKey } from '@tanstack/react-query'
+import { InfiniteData } from '@tanstack/react-query'
 
 import { ID } from '~/models'
 import { Event } from '~/models/Event'
 
 import { QUERY_KEYS } from '../queryKeys'
+import { QueryKey } from '../types'
 
 export type EventsByEntityIdOptions = {
   entityType?: GetEntityEventsEntityTypeEnum
