@@ -7,8 +7,7 @@ import {
   usersSocialActions as socialActions,
   getContext,
   confirmerActions,
-  confirmTransaction,
-  cacheUsersSelectors
+  confirmTransaction
 } from '@audius/common/store'
 import { makeKindId, route } from '@audius/common/utils'
 import { Id } from '@audius/sdk'
@@ -26,7 +25,6 @@ const { profilePage } = route
 const { getUsers, getUser } = cacheUsersSelectors
 const { setNotificationSubscription } = profilePageActions
 const { getUserId, getIsGuestAccount } = accountSelectors
-const { getUsers } = cacheUsersSelectors
 
 /* FOLLOW */
 
