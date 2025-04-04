@@ -9,8 +9,8 @@ import { env } from 'app/services/env'
 import { localStorage } from 'app/services/local-storage'
 import { remoteConfigInstance } from 'app/services/remote-config/remote-config-instance'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
+import { trackDownload } from 'app/services/track-download'
 import { generatePlaylistArtwork } from 'app/utils/generatePlaylistArtwork'
-
 type AppContextProviderProps = {
   children: ReactNode
 }
@@ -30,6 +30,7 @@ export const AppContextProvider = (props: AppContextProviderProps) => {
       imageUtils: { generatePlaylistArtwork },
       audiusSdk: sdk,
       audiusBackend: audiusBackendInstance,
+      trackDownload,
       remoteConfig: remoteConfigInstance
     }),
     [sdk]

@@ -61,7 +61,7 @@ import { isImageUriSource } from 'app/utils/image'
 import { reportToSentry } from 'app/utils/reportToSentry'
 import { getTrackRoute } from 'app/utils/routes'
 
-import { HarmonyModalHeader } from '../core/HarmonyModalHeader'
+import { DrawerHeader } from '../core/DrawerHeader'
 import { NativeDrawer } from '../drawer'
 import { useTrackImage } from '../image/TrackImage'
 
@@ -604,7 +604,7 @@ export const ShareToStoryProgressDrawer = () => {
       onClose={handleCancel}
     >
       <View style={styles.container}>
-        <HarmonyModalHeader
+        <DrawerHeader
           icon={IconWaveform}
           title={messages.loadingStoryModalTitle}
         />

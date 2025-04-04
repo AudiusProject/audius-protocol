@@ -8,8 +8,8 @@ import { audiusBackendInstance } from 'services/audius-backend/audius-backend-in
 import { audiusSdk } from 'services/audius-sdk'
 import { localStorage } from 'services/local-storage'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
+import { trackDownload } from 'services/track-download'
 import { generatePlaylistArtwork } from 'utils/imageProcessingUtil'
-
 type AppContextProviderProps = {
   children: ReactNode
 }
@@ -29,7 +29,8 @@ export const AppContextProvider = (props: AppContextProviderProps) => {
       getHostUrl: () => window.location.origin,
       audiusSdk: sdk,
       audiusBackend: audiusBackendInstance,
-      remoteConfig: remoteConfigInstance
+      remoteConfig: remoteConfigInstance,
+      trackDownload
     }),
     [sdk]
   )
