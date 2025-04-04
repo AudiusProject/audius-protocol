@@ -4,6 +4,7 @@ import { z } from 'zod'
 
 import { AntiAbuseOracleService } from './services/AntiAbuseOracle/types'
 import type { AntiAbuseOracleSelectorService } from './services/AntiAbuseOracleSelector/types'
+import type { ArchiverService } from './services/Archiver'
 import type { AudiusWalletClient } from './services/AudiusWalletClient'
 import type { DiscoveryNodeSelectorService } from './services/DiscoveryNodeSelector'
 import { EmailEncryptionService } from './services/Encryption'
@@ -32,7 +33,6 @@ import { RewardManagerClient } from './services/Solana/programs/RewardManagerCli
 import type { SolanaClient } from './services/Solana/programs/SolanaClient'
 import type { StorageService } from './services/Storage'
 import type { StorageNodeSelectorService } from './services/StorageNodeSelector'
-
 export type ServicesContainer = {
   /**
    * Service used to choose discovery node
@@ -167,6 +167,11 @@ export type ServicesContainer = {
    * Service used to handle the encryption and decryption of emails, also used for the encryption needed to share emails between users
    */
   emailEncryptionService: EmailEncryptionService
+
+  /**
+   * Service used to create and download track archives
+   */
+  archiverService?: ArchiverService
 }
 
 /**

@@ -9,13 +9,12 @@ import { Kind } from '~/models'
 import { Name, FollowSource } from '~/models/Analytics'
 import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
-import { UserMetadata } from '~/models/User'
+import { AccountUserMetadata, UserMetadata } from '~/models/User'
 import { update } from '~/store/cache/actions'
 
 import { getCurrentAccountQueryKey } from './useCurrentAccount'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getUserQueryKey } from './useUser'
-import { getUserByHandleQueryKey } from './useUserByHandle'
 
 type FollowUserParams = {
   followeeUserId: ID | null | undefined
@@ -25,7 +24,7 @@ type FollowUserParams = {
 
 type MutationContext = {
   previousUser: UserMetadata | undefined
-  previousAccountUser: UserMetadata | undefined
+  previousAccountUser: AccountUserMetadata | undefined
 }
 
 export const useFollowUser = () => {
@@ -80,7 +79,7 @@ export const useFollowUser = () => {
         queryKey: getUserQueryKey(followeeUserId)
       })
 
-      const previousUser = queryClient.getQueryData<UserMetadata>(
+      const previousUser = queryClient.getQueryData(
         getUserQueryKey(followeeUserId)
       )
 
@@ -95,17 +94,12 @@ export const useFollowUser = () => {
           ...followeeUpdate
         }
         queryClient.setQueryData(getUserQueryKey(followeeUserId), updatedUser)
-
-        queryClient.setQueryData(
-          getUserByHandleQueryKey(previousUser.handle),
-          updatedUser
-        )
       }
       dispatch(
         update(Kind.USERS, [{ id: followeeUserId, metadata: followeeUpdate }])
       )
 
-      const currentUser = queryClient.getQueryData<UserMetadata>(
+      const currentUser = queryClient.getQueryData(
         getUserQueryKey(currentUserId)
       )
       if (currentUser) {
@@ -115,14 +109,17 @@ export const useFollowUser = () => {
         })
       }
 
-      const previousAccountUser = queryClient.getQueryData<UserMetadata>(
+      const previousAccountUser = queryClient.getQueryData(
         getCurrentAccountQueryKey(currentUserId)
       )
 
       if (previousAccountUser) {
         queryClient.setQueryData(getCurrentAccountQueryKey(currentUserId), {
           ...previousAccountUser,
-          followee_count: previousAccountUser.followee_count + 1
+          user: {
+            ...previousAccountUser.user,
+            followee_count: previousAccountUser.user.followee_count + 1
+          }
         })
       }
 
@@ -131,7 +128,8 @@ export const useFollowUser = () => {
           {
             id: currentUserId,
             metadata: {
-              followee_count: (previousAccountUser?.followee_count ?? 0) + 1
+              followee_count:
+                (previousAccountUser?.user?.followee_count ?? 0) + 1
             }
           }
         ])
@@ -148,11 +146,6 @@ export const useFollowUser = () => {
 
       if (previousUser) {
         queryClient.setQueryData(getUserQueryKey(followeeUserId), previousUser)
-
-        queryClient.setQueryData(
-          getUserByHandleQueryKey(previousUser.handle),
-          previousUser
-        )
       }
 
       if (previousAccountUser) {

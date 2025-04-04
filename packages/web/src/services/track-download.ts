@@ -9,7 +9,6 @@ import { dedupFilenames } from '@audius/common/utils'
 import { downloadZip } from 'client-zip'
 
 import { track as trackEvent } from './analytics/amplitude'
-import { audiusBackendInstance } from './audius-backend/audius-backend-instance'
 
 const { downloadFinished } = tracksSocialActions
 
@@ -111,6 +110,4 @@ class TrackDownload extends TrackDownloadBase {
   }
 }
 
-export const trackDownload = new TrackDownload({
-  audiusBackend: audiusBackendInstance
-})
+export const trackDownload = new TrackDownload()

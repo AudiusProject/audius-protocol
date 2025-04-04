@@ -17,6 +17,7 @@ import ConfirmerPreview from 'components/confirmer-preview/ConfirmerPreview'
 import DeletePlaylistConfirmationModal from 'components/delete-playlist-confirmation-modal/DeletePlaylistConfirmationModal'
 import { DeleteTrackConfirmationModal } from 'components/delete-track-confirmation-modal/DeleteTrackConfirmationModal'
 import DiscoveryNodeSelection from 'components/discovery-node-selection/DiscoveryNodeSelection'
+import { DownloadTrackArchiveModal } from 'components/download-track-archive-modal/DownloadTrackArchiveModal'
 import { DuplicateAddConfirmationModal } from 'components/duplicate-add-confirmation-modal'
 import { EarlyReleaseConfirmationModal } from 'components/early-release-confirmation-modal'
 import { EditAccessConfirmationModal } from 'components/edit-access-confirmation-modal'
@@ -25,6 +26,7 @@ import EmbedModal from 'components/embed-modal/EmbedModal'
 import { FeatureFlagOverrideModal } from 'components/feature-flag-override-modal'
 import FirstUploadModal from 'components/first-upload-modal/FirstUploadModal'
 import { HideContentConfirmationModal } from 'components/hide-confirmation-modal'
+import { HostRemixContestModal } from 'components/host-remix-contest-modal/HostRemixContestModal'
 import { InboxUnavailableModal } from 'components/inbox-unavailable-modal/InboxUnavailableModal'
 import { LeavingAudiusModal } from 'components/leaving-audius-modal/LeavingAudiusModal'
 import { LockedContentModal } from 'components/locked-content-modal/LockedContentModal'
@@ -58,7 +60,6 @@ import { ChatBlastModal } from 'pages/chat-page/components/ChatBlastModal'
 import { ChallengeRewardsModal } from 'pages/rewards-page/components/modals/ChallengeRewardsModal'
 
 import { AppModal } from './AppModal'
-
 const ShareModal = lazy(() => import('components/share-modal'))
 
 const StripeOnRampModal = lazy(() => import('components/stripe-on-ramp-modal'))
@@ -87,6 +88,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   TiersExplainer: TierExplainerModal,
   DeletePlaylistConfirmation: DeletePlaylistConfirmationModal,
   DeleteTrackConfirmation: DeleteTrackConfirmationModal,
+  HostRemixContest: HostRemixContestModal,
   ReplaceTrackConfirmation: ReplaceTrackConfirmationModal,
   ReplaceTrackProgress: ReplaceTrackProgressModal,
   DuplicateAddConfirmation: DuplicateAddConfirmationModal,
@@ -125,7 +127,8 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   CoinflowWithdraw: CoinflowWithdrawModal,
   WaitForDownloadModal,
   ArtistPick: ArtistPickModal,
-  PayoutWallet: PayoutWalletModal
+  PayoutWallet: PayoutWalletModal,
+  DownloadTrackArchive: DownloadTrackArchiveModal
 }
 
 const commonModals = Object.entries(commonModalsMap) as [

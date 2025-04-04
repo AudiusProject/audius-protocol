@@ -1,7 +1,7 @@
 import 'react-dates/initialize'
 import 'react-dates/lib/css/_datepicker.css'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { Flex, IconCalendarMonth, Popup, Text } from '@audius/harmony'
 import cn from 'classnames'
@@ -24,19 +24,58 @@ type DatePickerFieldProps = {
   futureDatesOnly?: boolean
 }
 
+/**
+ * Wrapper component for the DatePicker component that integrates with Formik.
+ */
 export const DatePickerField = (props: DatePickerFieldProps) => {
+  const { submitCount } = useFormikContext()
+  const [{ value }, { touched, error }, helpers] = useField<string | undefined>(
+    props.name
+  )
+
+  const onChange = useCallback(
+    (value: string) => {
+      helpers.setValue(value)
+      helpers.setTouched(true, false)
+    },
+    [helpers]
+  )
+
+  return (
+    <DatePicker
+      {...props}
+      value={value}
+      touched={touched}
+      error={error}
+      submitCount={submitCount}
+      onChange={onChange}
+    />
+  )
+}
+
+type DatePickerProps = DatePickerFieldProps & {
+  value?: string
+  touched?: boolean
+  error?: string
+  submitCount?: number
+  onChange: (value: string) => void
+}
+
+export const DatePicker = (props: DatePickerProps) => {
   const {
     name,
     label,
     style,
     shouldFocus,
     isInitiallyUnlisted,
-    futureDatesOnly
+    futureDatesOnly,
+    value,
+    touched = false,
+    error,
+    submitCount = 0,
+    onChange
   } = props
-  const { submitCount } = useFormikContext()
-  const [{ value }, { touched, error }, helpers] = useField<string | undefined>(
-    name
-  )
+
   const [isFocused, setIsFocused] = useState(false)
   const anchorRef = useRef<HTMLDivElement | null>(null)
 
@@ -92,9 +131,8 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
             <DayPickerSingleDateController
               // @ts-ignore todo: upgrade moment
               date={moment(value)}
-              onDateChange={(value) => {
-                helpers.setValue(value?.startOf('day').toString())
-                helpers.setTouched(true, false)
+              onDateChange={(date) => {
+                onChange(date?.startOf('day').toString() ?? moment().toString())
               }}
               isOutsideRange={(day) => {
                 if (futureDatesOnly) {

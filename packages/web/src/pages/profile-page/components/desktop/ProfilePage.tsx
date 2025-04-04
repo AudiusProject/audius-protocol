@@ -44,7 +44,6 @@ import cn from 'classnames'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
 import { ConfirmationModal } from 'components/confirmation-modal'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
-import Lineup from 'components/lineup/Lineup'
 import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import { LineupVariant } from 'components/lineup/types'
 import Mask from 'components/mask/Mask'
@@ -139,6 +138,8 @@ export type ProfilePageProps = {
   pauseUserFeedTrack: () => void
 
   // Methods
+  onFollow: () => void
+  onUnfollow: () => void
   updateName: (name: string) => void
   updateBio: (bio: string) => void
   updateLocation: (location: string) => void
@@ -241,13 +242,11 @@ const RepostsTab = ({ handle }: { handle: string }) => {
 }
 
 const TracksTab = ({
-  profile,
-  handle,
-  isOwner
+  artistPickTrackId,
+  handle
 }: {
-  profile: User
   handle: string
-  isOwner: boolean
+  artistPickTrackId: ID | null
 }) => {
   const {
     data,
@@ -265,18 +264,9 @@ const TracksTab = ({
     handle
   })
 
-  const trackUploadChip = isOwner ? (
-    <UploadChip
-      key='upload-chip'
-      type='track'
-      variant='tile'
-      source='profile'
-    />
-  ) : undefined
-
   return (
     <TanQueryLineup
-      extraPrecedingElement={trackUploadChip}
+      leadingElementId={artistPickTrackId}
       data={data}
       isPending={isPending}
       isFetching={isFetching}
@@ -317,6 +307,8 @@ const ProfilePage = ({
   loadMoreUserFeed,
   loadMoreArtistTracks,
   updateProfile,
+  onFollow,
+  onUnfollow,
   updateName,
   updateBio,
   updateLocation,
@@ -460,7 +452,10 @@ const ProfilePage = ({
               />
             </>
           ) : (
-            <TracksTab profile={profile} handle={handle} isOwner={isOwner} />
+            <TracksTab
+              handle={handle}
+              artistPickTrackId={profile.artist_pick_track_id}
+            />
           )
         ) : null}
       </Box>,
@@ -554,14 +549,7 @@ const ProfilePage = ({
             text={messages.emptyTab.repostedAnything}
           />
         ) : (
-          <Lineup
-            {...getLineupProps(userFeed)}
-            count={profile.repost_count}
-            loadMore={loadMoreUserFeed}
-            playTrack={playUserFeedTrack}
-            pauseTrack={pauseUserFeedTrack}
-            actions={feedActions}
-          />
+          <RepostsTab handle={handle} />
         )}
       </Box>,
       <Box w='100%' key={ProfilePageTabs.PLAYLISTS}>
@@ -801,6 +789,8 @@ const ProfilePage = ({
                   following={following}
                   isSubscribed={isSubscribed}
                   onToggleSubscribe={toggleNotificationSubscription}
+                  onFollow={onFollow}
+                  onUnfollow={onUnfollow}
                   canCreateChat={canCreateChat}
                   onMessage={onMessage}
                   isBlocked={isBlocked}

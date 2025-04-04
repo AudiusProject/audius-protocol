@@ -10,7 +10,6 @@ import { ID } from '~/models'
 import { setTrackCommentCount } from '~/store/cache/tracks/actions'
 import { Nullable } from '~/utils'
 
-import { TrackCommentCount } from './types'
 import { getTrackCommentCountQueryKey } from './utils'
 
 const COMMENT_COUNT_POLL_INTERVAL = 10 * 1000 // 10 secs
@@ -32,10 +31,9 @@ export const useTrackCommentCount = (
         trackId: Id.parse(trackId as ID), // Its safe to cast to ID because we only enable the query with !!trackId above
         userId: userId?.toString() ?? undefined // userId can be undefined if not logged in
       })
-      const previousData = queryClient.getQueryData<TrackCommentCount>([
-        'trackCommentCount',
-        trackId
-      ])
+      const previousData = queryClient.getQueryData(
+        getTrackCommentCountQueryKey(trackId)
+      )
       return {
         // If we've loaded previous data before, keep using the same previousValue
         // if there is no previous data its a first load so we need to set a baseline

@@ -9,10 +9,12 @@ import { coinflowWithdrawModalReducer } from './coinflow-withdraw-modal'
 import { chatBlastModalReducer } from './create-chat-blast-modal'
 import { createChatModalReducer } from './create-chat-modal'
 import { deleteTrackConfirmationModalReducer } from './delete-track-confirmation-modal'
+import { downloadTrackArchiveModalReducer } from './download-track-archive-modal'
 import { earlyReleaseConfirmationModalReducer } from './early-release-confirmation-modal'
 import { editAccessConfirmationModalReducer } from './edit-access-confirmation-modal'
 import { externalWalletSignUpModalReducer } from './external-wallet-sign-up-modal'
 import { hideContentConfirmationModalReducer } from './hide-confirmation-modal'
+import { hostRemixContestModalReducer } from './host-remix-contest-modal'
 import { inboxUnavailableModalReducer } from './inbox-unavailable-modal'
 import { leavingAudiusModalReducer } from './leaving-audius-modal'
 import { notificationModalReducer } from './notification-modal'
@@ -72,7 +74,9 @@ const combinedReducers = combineReducers({
   HideContentConfirmation: hideContentConfirmationModalReducer,
   ExternalWalletSignUp: externalWalletSignUpModalReducer,
   Announcement: announcementModalReducer,
-  Notification: notificationModalReducer
+  Notification: notificationModalReducer,
+  DownloadTrackArchive: downloadTrackArchiveModalReducer,
+  HostRemixContest: hostRemixContestModalReducer
 })
 
 /**

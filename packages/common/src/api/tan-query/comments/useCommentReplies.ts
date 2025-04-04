@@ -57,10 +57,10 @@ export const useCommentReplies = (
       // Add the replies to our parent comment replies list
       queryClient.setQueryData(
         getCommentQueryKey(commentId),
-        (comment: Comment | undefined) =>
+        (comment) =>
           ({
             ...comment,
-            replies: [...(comment?.replies ?? []), ...replies]
+            replies: [...((comment as Comment)?.replies ?? []), ...replies]
           }) as Comment
       )
 

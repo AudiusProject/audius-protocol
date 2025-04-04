@@ -50,9 +50,7 @@ export const useFavoriteTrack = () => {
       await queryClient.cancelQueries({ queryKey: getTrackQueryKey(trackId) })
 
       // Snapshot the previous values
-      const previousTrack = queryClient.getQueryData<Track>(
-        getTrackQueryKey(trackId)
-      )
+      const previousTrack = queryClient.getQueryData(getTrackQueryKey(trackId))
       if (!previousTrack) throw new Error('Track not found')
 
       // Don't allow favoriting your own track
@@ -109,7 +107,7 @@ export const useFavoriteTrack = () => {
     },
     onSuccess: async (_, { trackId }) => {
       // Handle co-sign events after successful save
-      const track = queryClient.getQueryData<Track>(getTrackQueryKey(trackId))
+      const track = queryClient.getQueryData(getTrackQueryKey(trackId))
       if (!track) return
 
       const remixTrack = track.remix_of?.tracks?.[0]
@@ -120,7 +118,7 @@ export const useFavoriteTrack = () => {
           remixTrack.has_remix_author_reposted ||
           remixTrack.has_remix_author_saved
 
-        const parentTrack = queryClient.getQueryData<Track>(
+        const parentTrack = queryClient.getQueryData(
           getTrackQueryKey(parentTrackId)
         )
 

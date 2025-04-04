@@ -30,6 +30,7 @@ import MobilePhoneWithArrow from 'app/assets/images/emojis/mobile-phone-with-arr
 import MoneyWings from 'app/assets/images/emojis/money-with-wings.png'
 import MultipleMusicalNotes from 'app/assets/images/emojis/multiple-musical-notes.png'
 import Parachute from 'app/assets/images/emojis/parachute.png'
+import Recycle from 'app/assets/images/emojis/recycle.png'
 import ArrowUp from 'app/assets/images/emojis/right-arrow-curving-up.png'
 import SmilingFaceLickingLips from 'app/assets/images/emojis/smiling-face-licking-lips.png'
 import SpeechBalloon from 'app/assets/images/emojis/speech-balloon.png'
@@ -336,6 +337,12 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
     },
     [ChallengeName.CommentPin]: {
       icon: SpeechBalloon,
+      buttonInfo: {
+        iconRight: IconCheck
+      }
+    },
+    [ChallengeName.Cosign]: {
+      icon: Recycle,
       buttonInfo: {
         iconRight: IconCheck
       }

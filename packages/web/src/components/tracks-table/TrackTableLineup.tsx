@@ -1,13 +1,12 @@
 import { useCallback, useMemo } from 'react'
 
-import type { LineupQueryData } from '@audius/common/api'
+import { LineupQueryData, useTracks } from '@audius/common/api'
 import {
   Name,
   PlaybackSource,
   FavoriteSource,
   RepostSource,
   LineupTrack,
-  UserTrackMetadata,
   Kind,
   LineupEntry
 } from '@audius/common/models'
@@ -62,12 +61,11 @@ export const TrackTableLineup = ({
     loadNextPage,
     isPlaying,
     isInitialLoading,
-    data,
+    data: trackIds,
     hasNextPage,
     pageSize
   } = lineupQueryData
-
-  const tracks = data as UserTrackMetadata[] | null
+  const { data: tracks } = useTracks(trackIds?.map((entry) => entry.id))
 
   // Get current queue item
   const getCurrentQueueItem = useMemo(() => makeGetCurrent(), [])

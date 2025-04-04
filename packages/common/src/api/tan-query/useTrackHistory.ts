@@ -1,14 +1,9 @@
-import { Id, full } from '@audius/sdk'
-import {
-  QueryKey,
-  useInfiniteQuery,
-  useQueryClient
-} from '@tanstack/react-query'
+import { Id, full, EntityType } from '@audius/sdk'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { trackActivityFromSDK, transformAndCleanList } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
-import { UserTrackMetadata } from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
 import {
   historyPageTracksLineupActions,
@@ -16,7 +11,7 @@ import {
 } from '~/store/pages'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { LineupData, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -54,15 +49,9 @@ export const useTrackHistory = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const queryData = useInfiniteQuery<
-    UserTrackMetadata[],
-    Error,
-    UserTrackMetadata[],
-    QueryKey,
-    number
-  >({
+  const queryData = useInfiniteQuery({
     initialPageParam: 0,
-    getNextPageParam: (lastPage: UserTrackMetadata[], allPages) => {
+    getNextPageParam: (lastPage: LineupData[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -113,9 +102,12 @@ export const useTrackHistory = (
         )
       )
 
-      return tracks
+      return tracks.map((t) => ({
+        id: t.track_id,
+        type: EntityType.TRACK
+      }))
     },
-    select: (data) => data.pages.flat(),
+    select: (data) => data?.pages.flat(),
     ...options,
     enabled: options?.enabled !== false && !!currentUserId
   })

@@ -43,7 +43,10 @@ export enum Feature {
   Social = 'social',
   Notifications = 'notifications',
   Rewards = 'rewards',
-  Edit = 'edit'
+  Edit = 'edit',
+  Events = 'events',
+  Remixes = 'remixes',
+  TanQuery = 'tan-query'
 }
 
 export type ReportToSentryArgs = {

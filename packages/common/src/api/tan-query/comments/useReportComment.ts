@@ -1,8 +1,4 @@
-import {
-  InfiniteData,
-  useMutation,
-  useQueryClient
-} from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { cloneDeep } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -37,21 +33,21 @@ export const useReportComment = () => {
     onMutate: ({ trackId, commentId, currentSort, parentCommentId }) => {
       // Optimistic update - filter out the comment from either the top list or the parent comment's replies
       if (parentCommentId) {
-        queryClient.setQueryData<Comment>(
+        queryClient.setQueryData(
           getCommentQueryKey(parentCommentId),
-          (prevData: Comment | undefined) => {
+          (prevData) => {
             if (!prevData) return
             return {
               ...prevData,
-              replies: prevData.replies?.filter(
+              replies: ((prevData as Comment)?.replies ?? []).filter(
                 (reply: ReplyComment) => reply.id !== commentId
               ),
-              replyCount: prevData.replyCount ? prevData.replyCount - 1 : 0
+              replyCount: ((prevData as Comment)?.replyCount ?? 0) - 1
             } as Comment
           }
         )
       } else {
-        queryClient.setQueryData<InfiniteData<ID[]>>(
+        queryClient.setQueryData(
           getTrackCommentListQueryKey({
             trackId,
             sortMethod: currentSort

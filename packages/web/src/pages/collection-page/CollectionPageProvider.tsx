@@ -5,6 +5,7 @@ import {
   ShareSource,
   RepostSource,
   FavoriteSource,
+  FollowSource,
   PlaybackSource,
   FavoriteType,
   PlayableType,
@@ -15,8 +16,7 @@ import {
   ID,
   UID,
   isContentUSDCPurchaseGated,
-  ModalSource,
-  FollowSource
+  ModalSource
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -28,6 +28,7 @@ import {
   queueSelectors,
   collectionsSocialActions as socialCollectionsActions,
   tracksSocialActions as socialTracksActions,
+  usersSocialActions as socialUsersActions,
   mobileOverflowMenuUIActions,
   modalsActions,
   shareModalUIActions,
@@ -93,7 +94,6 @@ const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
 const {
   getCollection,
-  getCollectionStatus,
   getCollectionTracksLineup,
   getCollectionUid,
   getUser,
@@ -126,22 +126,7 @@ type OwnProps = {
 type CollectionPageProps = OwnProps &
   ReturnType<ReturnType<typeof makeMapStateToProps>> &
   ReturnType<typeof mapDispatchToProps> &
-  RouteComponentProps & {
-    onFollow: ({
-      followeeUserId,
-      source
-    }: {
-      followeeUserId: ID
-      source: FollowSource
-    }) => void
-    onUnfollow: ({
-      followeeUserId,
-      source
-    }: {
-      followeeUserId: ID
-      source: FollowSource
-    }) => void
-  }
+  RouteComponentProps
 
 type CollectionPageState = {
   filterText: string
@@ -730,6 +715,16 @@ class CollectionPage extends Component<
     }
   }
 
+  onFollow = () => {
+    const { onFollow, collection: metadata } = this.props
+    if (metadata) onFollow(metadata.playlist_owner_id)
+  }
+
+  onUnfollow = () => {
+    const { onUnfollow, collection: metadata } = this.props
+    if (metadata) onUnfollow(metadata.playlist_owner_id)
+  }
+
   render() {
     const {
       playing,
@@ -742,9 +737,7 @@ class CollectionPage extends Component<
       userId,
       userPlaylists,
       smartCollection,
-      trackCount,
-      onFollow,
-      onUnfollow
+      trackCount
     } = this.props
     const { allowReordering } = this.state
     const { playlistId } = this.props
@@ -798,8 +791,9 @@ class CollectionPage extends Component<
       onClickMobileOverflow: this.props.clickOverflow,
       onClickFavorites: this.onClickFavorites,
       onClickReposts: this.onClickReposts,
-      onFollow,
-      onUnfollow,
+      onFollow: this.onFollow,
+      onUnfollow: this.onUnfollow,
+      refresh: this.refreshCollection,
       trackCount
     }
 
@@ -847,7 +841,7 @@ function makeMapStateToProps() {
       collectionPermalink: getCollectionPermalink(state),
       user: getUser(state),
       userUid: getUserUid(state) || '',
-      status: getCollectionStatus(state) || '',
+      status: getCollectionTracksLineup(state)?.status || Status.LOADING,
       order: getLineupOrder(state),
       userId: getUserId(state),
       playlistId: (getCollection(state) as Collection)?.playlist_id,
@@ -1000,6 +994,14 @@ function mapDispatchToProps(dispatch: Dispatch) {
           collectionPermalink,
           userId
         )
+      ),
+    onFollow: (userId: ID) =>
+      dispatch(
+        socialUsersActions.followUser(userId, FollowSource.COLLECTION_PAGE)
+      ),
+    onUnfollow: (userId: ID) =>
+      dispatch(
+        socialUsersActions.unfollowUser(userId, FollowSource.COLLECTION_PAGE)
       ),
     clickOverflow: (collectionId: ID, overflowActions: OverflowAction[]) =>
       dispatch(
