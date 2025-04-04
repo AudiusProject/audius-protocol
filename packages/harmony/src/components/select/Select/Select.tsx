@@ -178,7 +178,7 @@ export const Select = forwardRef(function Select<Value extends string>(
         autoComplete='off'
         endIcon={Icon}
         IconProps={{ onClick: handleClickIcon }}
-        elevateLabel={!!selectedOption}
+        elevateLabel={!!selectedOption && !props.hideLabel}
         hidePlaceholder={!!selectedOption}
         {...other}
       />

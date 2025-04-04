@@ -7,16 +7,18 @@ import { ID } from '~/models'
 
 import { DeveloperApp } from './developerApps'
 import { QUERY_KEYS } from './queryKeys'
+import { QueryKey } from './types'
 
 export type UseRemoveAuthorizedAppArgs = {
   apiKey: string
   userId: ID
 }
 
-export const getRemoveAuthorizedAppQueryKey = (userId: ID) => [
-  QUERY_KEYS.authorizedApps,
-  userId
-]
+export const getRemoveAuthorizedAppQueryKey = (userId: ID) => {
+  return [QUERY_KEYS.authorizedApps, userId] as unknown as QueryKey<
+    DeveloperApp[]
+  >
+}
 
 export const useRemoveAuthorizedApp = () => {
   const { audiusSdk } = useAudiusQueryContext()

@@ -13,12 +13,17 @@ import { getBalance } from '~/store/wallet/slice'
 import { IntKeys } from '../../services/remote-config'
 
 import { QUERY_KEYS } from './queryKeys'
+import { QueryKey } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { useNotificationValidTypes } from './useNotificationValidTypes'
 
 export const getNotificationUnreadCountQueryKey = (
   currentUserId: ID | null | undefined
-) => [QUERY_KEYS.notificationUnreadCount, currentUserId]
+) =>
+  [
+    QUERY_KEYS.notificationUnreadCount,
+    currentUserId
+  ] as unknown as QueryKey<number>
 
 /**
  * Hook that returns the number of unread notifications for the current user.

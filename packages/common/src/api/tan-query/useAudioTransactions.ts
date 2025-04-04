@@ -13,7 +13,7 @@ import {
 import { Nullable, removeNullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { useUsers } from './useUsers'
 
@@ -32,16 +32,17 @@ export const getAudioTransactionsQueryKey = ({
   sortMethod,
   sortDirection,
   pageSize
-}: GetAudioTransactionsArgs & { userId: Nullable<ID> }) => [
-  QUERY_KEYS.audioTransactions,
-  userId,
-  {
-    page,
-    sortMethod,
-    sortDirection,
-    pageSize
-  }
-]
+}: GetAudioTransactionsArgs & { userId: Nullable<ID> }) =>
+  [
+    QUERY_KEYS.audioTransactions,
+    userId,
+    {
+      page,
+      sortMethod,
+      sortDirection,
+      pageSize
+    }
+  ] as unknown as QueryKey<TransactionDetails[]>
 
 export const useAudioTransactions = (
   args: GetAudioTransactionsArgs,

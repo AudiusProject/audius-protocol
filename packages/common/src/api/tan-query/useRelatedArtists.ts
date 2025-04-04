@@ -1,5 +1,9 @@
 import { Id, OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
@@ -7,7 +11,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { useUsers } from './useUsers'
 import { primeUserData } from './utils/primeUserData'
@@ -23,11 +27,12 @@ export const getRelatedArtistsQueryKey = ({
   artistId,
   pageSize = DEFAULT_PAGE_SIZE,
   filterFollowed
-}: UseRelatedArtistsArgs) => [
-  QUERY_KEYS.relatedArtists,
-  artistId,
-  { pageSize, filterFollowed }
-]
+}: UseRelatedArtistsArgs) =>
+  [
+    QUERY_KEYS.relatedArtists,
+    artistId,
+    { pageSize, filterFollowed }
+  ] as unknown as QueryKey<InfiniteData<ID[]>>
 
 export const useRelatedArtists = (
   {

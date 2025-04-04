@@ -218,7 +218,8 @@ const usePlayback = (id, onAfterAudioEnd) => {
     seekTo,
     onTogglePlay,
     stop,
-    setVolume
+    setVolume,
+    audioPlayer: audioRef
   }
 }
 

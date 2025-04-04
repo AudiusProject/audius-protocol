@@ -6,13 +6,15 @@ import { ID } from '~/models'
 import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
-import { SelectableQueryOptions } from './types'
+import { QueryKey, SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
-export const getAudioTransactionsCountQueryKey = (userId: Nullable<ID>) => [
-  QUERY_KEYS.audioTransactionsCount,
-  userId
-]
+export const getAudioTransactionsCountQueryKey = (userId: Nullable<ID>) => {
+  return [
+    QUERY_KEYS.audioTransactionsCount,
+    userId
+  ] as unknown as QueryKey<number>
+}
 
 export const useAudioTransactionsCount = <TResult = number>(
   options?: SelectableQueryOptions<number, TResult>

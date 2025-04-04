@@ -5,13 +5,14 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models'
 
 import { QUERY_KEYS } from './queryKeys'
-import { SelectableQueryOptions } from './types'
+import { QueryKey, SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
-export const getSalesAggregateQueryKey = (userId: ID | null | undefined) => [
-  QUERY_KEYS.salesAggregate,
-  userId
-]
+export const getSalesAggregateQueryKey = (userId: ID | null | undefined) => {
+  return [QUERY_KEYS.salesAggregate, userId] as unknown as QueryKey<
+    SalesAggregate[] | null
+  >
+}
 
 export const useSalesAggregate = <
   TResult = SalesAggregate[] | null | undefined

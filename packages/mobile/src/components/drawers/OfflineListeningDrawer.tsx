@@ -20,7 +20,7 @@ import { requestDownloadAllFavorites } from 'app/store/offline-downloads/slice'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
-import { HarmonyModalHeader } from '../core/HarmonyModalHeader'
+import { DrawerHeader } from '../core/DrawerHeader'
 import { NativeDrawer } from '../drawer'
 
 const useDrawerStyles = makeStyles(({ spacing, palette, typography }) => ({
@@ -148,7 +148,7 @@ export const OfflineListeningDrawer = () => {
   return (
     <NativeDrawer drawerName='OfflineListening'>
       <View style={styles.container}>
-        <HarmonyModalHeader
+        <DrawerHeader
           icon={IconCloudDownload}
           title={messages.offlineListeningTitle}
         />

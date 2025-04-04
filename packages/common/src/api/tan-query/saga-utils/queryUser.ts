@@ -9,13 +9,13 @@ import { getUserByHandleQueryKey } from '../useUserByHandle'
 export function* queryUser(id: ID | null | undefined) {
   if (!id) return null
   const queryClient = yield* getContext('queryClient')
-  return queryClient.getQueryData<User>(getUserQueryKey(id))
+  return queryClient.getQueryData(getUserQueryKey(id))
 }
 
 export function* queryUserByHandle(handle: string | null | undefined) {
   if (!handle) return null
   const queryClient = yield* getContext('queryClient')
-  const id = queryClient.getQueryData<ID>(getUserByHandleQueryKey(handle))
+  const id = queryClient.getQueryData(getUserByHandleQueryKey(handle))
   if (!id) return null
   return yield* queryUser(id)
 }
@@ -25,7 +25,7 @@ export function* queryUsers(ids: ID[]) {
 
   return ids.reduce(
     (acc, id) => {
-      const user = queryClient.getQueryData<User>(getUserQueryKey(id))
+      const user = queryClient.getQueryData(getUserQueryKey(id))
       if (user) {
         acc[id] = user
       }

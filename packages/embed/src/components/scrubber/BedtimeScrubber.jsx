@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
 
 import { Scrubber } from '@audius/harmony'
 
@@ -24,7 +24,8 @@ const EmbedScrubber = ({
   railUnlistenedColor = RAIL_UNLISTENED_COLOR,
   railHoverColor = RAIL_HOVER_COLOR,
   handleColor = HANDLE_COLOR,
-  handleShadow = HANDLE_SHADOW
+  handleShadow = HANDLE_SHADOW,
+  audioPlayer
 }) => {
   // Gross hack:
   // Stems relies on a :before pseudo selector to style
@@ -39,6 +40,10 @@ const EmbedScrubber = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  if (!audioPlayer.current) {
+    return null
+  }
+
   return (
     <div className={styles.container}>
       <Scrubber
@@ -50,6 +55,8 @@ const EmbedScrubber = ({
         onScrubRelease={seekTo}
         totalSeconds={duration}
         elapsedSeconds={elapsedSeconds}
+        getAudioPosition={audioPlayer.current.getPosition}
+        getTotalTime={audioPlayer.current.getDuration}
         includeExpandedTargets={includeExpandedTargets}
         style={{
           railListenedColor,

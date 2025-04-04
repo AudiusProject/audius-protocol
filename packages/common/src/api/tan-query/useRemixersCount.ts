@@ -5,17 +5,15 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
 export type UseRemixersCountArgs = {
   trackId?: ID | null | undefined
 }
 
-export const getRemixersCountQueryKey = ({ trackId }: UseRemixersCountArgs) => [
-  QUERY_KEYS.remixersCount,
-  trackId
-]
+export const getRemixersCountQueryKey = ({ trackId }: UseRemixersCountArgs) =>
+  [QUERY_KEYS.remixersCount, trackId] as unknown as QueryKey<number>
 
 export const useRemixersCount = (
   { trackId }: UseRemixersCountArgs = {},

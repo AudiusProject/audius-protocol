@@ -1,7 +1,6 @@
-import React, { type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
-import { useFollowUser } from '@audius/common/api'
 import { useFeatureFlag, useStreamConditionsEntity } from '@audius/common/hooks'
 import {
   FollowSource,
@@ -16,6 +15,7 @@ import type { ID, AccessConditions, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   PurchaseableContentType,
+  usersSocialActions,
   tippingActions,
   usePremiumContentPurchaseModal,
   gatedContentSelectors
@@ -45,6 +45,7 @@ import { spacing } from 'app/styles/spacing'
 import { EventNames } from 'app/types/analytics'
 
 const { getGatedContentStatusMap } = gatedContentSelectors
+const { followUser } = usersSocialActions
 const { beginTip } = tippingActions
 
 const messages = {
@@ -199,17 +200,14 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
   const { isEnabled: isUsdcPurchasesEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
   )
-  const { mutate: followUser } = useFollowUser()
+
   const { onPress: handlePressCollection } = useLink(collectionLink)
 
   const handleFollowArtist = useCallback(() => {
     if (followee) {
-      followUser({
-        followeeUserId: followee.user_id,
-        source: followSource
-      })
+      dispatch(followUser(followee.user_id, followSource, trackId))
     }
-  }, [followee, followUser, followSource])
+  }, [followee, dispatch, followSource, trackId])
 
   const handleSendTip = useCallback(() => {
     onClose()
