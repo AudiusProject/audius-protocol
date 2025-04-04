@@ -4,7 +4,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { AudiusQueryContextType } from '~/audius-query/AudiusQueryContext'
 
 import { QUERY_KEYS } from './queryKeys'
-import { SelectableQueryOptions } from './types'
+import { QueryKey, SelectableQueryOptions } from './types'
 
 export const fetchEmailInUse = async (
   email: string | null | undefined,
@@ -14,10 +14,12 @@ export const fetchEmailInUse = async (
   return await identityService.checkIfEmailRegistered(email)
 }
 
-export const getEmailInUseQueryKey = (email: string | null | undefined) => [
-  QUERY_KEYS.emailInUse,
-  email
-]
+export const getEmailInUseQueryKey = (email: string | null | undefined) => {
+  return [QUERY_KEYS.emailInUse, email] as unknown as QueryKey<{
+    exists: boolean
+    isGuest: boolean
+  }>
+}
 
 /**
  * Hook to check if an email is already registered

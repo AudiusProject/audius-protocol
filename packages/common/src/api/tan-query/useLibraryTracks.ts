@@ -3,7 +3,11 @@ import {
   GetUserLibraryTracksSortMethodEnum,
   GetUserLibraryTracksSortDirectionEnum
 } from '@audius/sdk/src/sdk/api/generated/full/apis/UsersApi'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
@@ -19,7 +23,7 @@ import { removeNullable } from '~/utils'
 import { userTrackMetadataFromSDK } from '../../adapters/track'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions, LineupData } from './types'
+import { QueryKey, QueryOptions, LineupData } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
 import { primeTrackData } from './utils/primeTrackData'
@@ -42,17 +46,18 @@ export const getLibraryTracksQueryKey = ({
   sortDirection,
   query,
   pageSize
-}: UseLibraryTracksArgs & { currentUserId: ID | null | undefined }) => [
-  QUERY_KEYS.libraryTracks,
-  currentUserId,
-  {
-    category,
-    sortMethod,
-    sortDirection,
-    query,
-    pageSize
-  }
-]
+}: UseLibraryTracksArgs & { currentUserId: ID | null | undefined }) =>
+  [
+    QUERY_KEYS.libraryTracks,
+    currentUserId,
+    {
+      category,
+      sortMethod,
+      sortDirection,
+      query,
+      pageSize
+    }
+  ] as unknown as QueryKey<InfiniteData<LineupData[]>>
 
 export const useLibraryTracks = (
   {

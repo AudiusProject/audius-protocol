@@ -1,5 +1,9 @@
 import { Id, EntityType } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { repostActivityFromSDK, transformAndCleanList } from '~/adapters'
@@ -12,7 +16,7 @@ import {
 } from '~/store/pages'
 
 import { QUERY_KEYS } from './queryKeys'
-import { LineupData, QueryOptions } from './types'
+import { QueryKey, LineupData, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils'
 import { primeCollectionData } from './utils/primeCollectionData'
@@ -29,7 +33,10 @@ type UseProfileRepostsArgs = {
 export const getProfileRepostsQueryKey = ({
   handle,
   pageSize
-}: UseProfileRepostsArgs) => [QUERY_KEYS.profileReposts, handle, { pageSize }]
+}: UseProfileRepostsArgs) =>
+  [QUERY_KEYS.profileReposts, handle, { pageSize }] as unknown as QueryKey<
+    InfiniteData<(UserTrackMetadata | UserCollectionMetadata)[]>
+  >
 
 export const useProfileReposts = (
   { handle, pageSize = DEFAULT_PAGE_SIZE }: UseProfileRepostsArgs,

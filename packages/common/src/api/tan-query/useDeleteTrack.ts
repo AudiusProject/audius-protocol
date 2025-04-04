@@ -58,9 +58,7 @@ export const useDeleteTrack = () => {
       }
 
       // Snapshot the previous values
-      const previousTrack = queryClient.getQueryData<Track>(
-        getTrackQueryKey(trackId)
-      )
+      const previousTrack = queryClient.getQueryData(getTrackQueryKey(trackId))
       if (!previousTrack) throw new Error('Track not found')
 
       // Triggers removal from profile lineup
@@ -111,7 +109,7 @@ export const useDeleteTrack = () => {
       return { previousTrack, previousUser: currentUser }
     },
     onSuccess: async (_, { trackId }) => {
-      const track = queryClient.getQueryData<Track>(getTrackQueryKey(trackId))
+      const track = queryClient.getQueryData(getTrackQueryKey(trackId))
 
       if (track?.stem_of) {
         trackEvent({

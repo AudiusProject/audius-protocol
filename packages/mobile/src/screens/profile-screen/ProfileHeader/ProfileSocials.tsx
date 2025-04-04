@@ -119,6 +119,7 @@ export const ProfileSocials = () => {
       alignItems='center'
       pointerEvents='box-none'
       pv='m'
+      gap='l'
     >
       <ProfileTierTile interactive={false} />
       <Animated.View

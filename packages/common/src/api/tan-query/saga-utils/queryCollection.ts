@@ -8,16 +8,14 @@ import { getCollectionQueryKey } from '../useCollection'
 export function* queryCollection(id: ID | null | undefined) {
   if (!id) return null
   const queryClient = yield* getContext('queryClient')
-  return queryClient.getQueryData<TQCollection>(getCollectionQueryKey(id))
+  return queryClient.getQueryData(getCollectionQueryKey(id))
 }
 
 export function* queryCollections(ids: ID[]) {
   const queryClient = yield* getContext('queryClient')
   return ids.reduce(
     (acc, id) => {
-      const collection = queryClient.getQueryData<TQCollection>(
-        getCollectionQueryKey(id)
-      )
+      const collection = queryClient.getQueryData(getCollectionQueryKey(id))
       if (collection) {
         acc[id] = collection
       }

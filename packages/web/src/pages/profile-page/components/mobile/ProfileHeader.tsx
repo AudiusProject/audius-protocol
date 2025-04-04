@@ -1,6 +1,5 @@
 import { useState, useRef, useCallback, useEffect, MouseEvent } from 'react'
 
-import { useFollowUser, useUnfollowUser } from '@audius/common/api'
 import {
   imageCoverPhotoBlank,
   imageProfilePicEmpty
@@ -12,8 +11,7 @@ import {
   ID,
   ProfilePictureSizes,
   CoverPhotoSizes,
-  User,
-  FollowSource
+  User
 } from '@audius/common/models'
 import { formatCount, route } from '@audius/common/utils'
 import {
@@ -114,6 +112,8 @@ type ProfileHeaderProps = {
   following: boolean
   isSubscribed: boolean
   mode: string
+  onFollow: (id: ID) => void
+  onUnfollow: (id: ID) => void
   switchToEditMode: () => void
   updatedCoverPhoto: string | null
   updatedProfilePicture: string | null
@@ -159,11 +159,13 @@ const ProfileHeader = ({
   following,
   isSubscribed,
   mode,
+  onFollow,
+  onUnfollow,
   switchToEditMode,
   updatedCoverPhoto,
   updatedProfilePicture,
-  onUpdateProfilePicture,
   onUpdateCoverPhoto,
+  onUpdateProfilePicture,
   setNotificationSubscription,
   areArtistRecommendationsVisible,
   onCloseArtistRecommendations
@@ -172,8 +174,6 @@ const ProfileHeader = ({
   const [isDescriptionMinimized, setIsDescriptionMinimized] = useState(true)
   const bioRef = useRef<HTMLElement | null>(null)
   const isEditing = mode === 'editing'
-  const { mutate: followUser } = useFollowUser()
-  const { mutate: unfollowUser } = useUnfollowUser()
 
   const bioRefCb = useCallback((node: HTMLParagraphElement) => {
     if (node !== null) {
@@ -365,18 +365,8 @@ const ProfileHeader = ({
               ) : (
                 <FollowButton
                   isFollowing={following}
-                  onFollow={() =>
-                    followUser({
-                      followeeUserId: userId,
-                      source: FollowSource.PROFILE_PAGE
-                    })
-                  }
-                  onUnfollow={() =>
-                    unfollowUser({
-                      followeeUserId: userId,
-                      source: FollowSource.PROFILE_PAGE
-                    })
-                  }
+                  onFollow={() => onFollow(userId)}
+                  onUnfollow={() => onUnfollow(userId)}
                   fullWidth={false}
                 />
               )}

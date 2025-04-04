@@ -1,5 +1,9 @@
 import { OptionalId, full, EntityType } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import {
@@ -14,7 +18,7 @@ import {
 } from '~/store/pages'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions, LineupData } from './types'
+import { QueryKey, QueryOptions, LineupData } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeCollectionData } from './utils/primeCollectionData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -29,10 +33,10 @@ export type UseTrendingPlaylistsArgs = {
 export const getTrendingPlaylistsQueryKey = ({
   pageSize,
   time
-}: UseTrendingPlaylistsArgs) => [
-  QUERY_KEYS.trendingPlaylists,
-  { pageSize, time }
-]
+}: UseTrendingPlaylistsArgs) =>
+  [QUERY_KEYS.trendingPlaylists, { pageSize, time }] as unknown as QueryKey<
+    InfiniteData<LineupData[]>
+  >
 
 export const useTrendingPlaylists = (
   {

@@ -83,7 +83,7 @@ export const onDisburse = async (
     for (const challengeId of TRENDING_REWARD_IDS) {
       // Get all undisbursed challenges for the given challenge id starting from a known point where
       // completion is consistent
-      const url = `${endpoint}/v1/challenges/undisbursed?challenge_id=${challengeId}&completed_blocknumber=95137305`
+      const url = `${endpoint}/v1/challenges/undisbursed?challenge_id=${challengeId}&completed_blocknumber=95137307`
       console.log('fetching undisbursed challenges from url = ', url)
       // Fetch all undisbursed challenges
       const res = await axios.get(
