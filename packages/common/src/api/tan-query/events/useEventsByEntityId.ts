@@ -1,6 +1,7 @@
-import { Event as EventSDK, Id, OptionalId, decodeHashId } from '@audius/sdk'
+import { Id, OptionalId } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
+import { eventMetadataFromSDK } from '~/adapters/event'
 import { useAudiusQueryContext } from '~/audius-query'
 import { Event } from '~/models/Event'
 import { ID } from '~/models/Identifiers'
@@ -10,20 +11,13 @@ import { useCurrentUserId } from '../useCurrentUserId'
 
 import { getEventsByEntityIdQueryKey, EventsByEntityIdOptions } from './utils'
 
-const transformEvent = (event: EventSDK): Event => ({
-  ...event,
-  eventId: decodeHashId(event.eventId)!,
-  userId: decodeHashId(event.userId)!,
-  entityId: event.entityId ? (decodeHashId(event.entityId) ?? null) : null
-})
-
 type UseEventsByEntityIdOptions<TResult = Event[]> = SelectableQueryOptions<
   Event[],
   TResult
 > &
   EventsByEntityIdOptions
 
-export const useEventsByEntityId = <TResult = Event[]>(
+export const useEventsByEntityId = <TResult>(
   entityId: ID | null | undefined,
   options?: UseEventsByEntityIdOptions<TResult>
 ) => {
@@ -33,7 +27,6 @@ export const useEventsByEntityId = <TResult = Event[]>(
   const queryData = useQuery({
     queryKey: getEventsByEntityIdQueryKey(entityId, options),
     queryFn: async () => {
-      if (!entityId) return []
       const sdk = await audiusSdk()
       const response = await sdk.events.getEntityEvents({
         entityId: Id.parse(entityId),
@@ -44,7 +37,7 @@ export const useEventsByEntityId = <TResult = Event[]>(
         limit: options?.limit
       })
       const events = response.data ?? []
-      return events.map(transformEvent)
+      return events.map(eventMetadataFromSDK)
     },
     enabled: options?.enabled !== false && entityId !== undefined
   })

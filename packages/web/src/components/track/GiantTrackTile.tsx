@@ -1,7 +1,7 @@
 import { Suspense, lazy, useCallback, useState } from 'react'
 
 import {
-  useEventsByEntityId,
+  useRemixContest,
   useToggleFavoriteTrack,
   useTrack
 } from '@audius/common/api'
@@ -97,8 +97,10 @@ const messages = {
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`,
   remixContest: 'Contest Deadline',
   uploadRemixButtonText: 'Upload Your Remix',
-  deadline: (deadline: string) =>
-    `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`
+  deadline: (deadline?: string) =>
+    deadline
+      ? `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`
+      : ''
 }
 
 type GiantTrackTileProps = {
@@ -207,7 +209,7 @@ export const GiantTrackTile = ({
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
   )
-  const { data: events, isLoading: isEventsLoading } = useEventsByEntityId(
+  const { data: events, isLoading: isEventsLoading } = useRemixContest(
     trackId,
     {
       entityType: GetEntityEventsEntityTypeEnum.Track
@@ -443,7 +445,7 @@ export const GiantTrackTile = ({
           <Text variant='label' color='accent'>
             {messages.remixContest}
           </Text>
-          <Text>{messages.deadline(event?.endDate ?? '')}</Text>
+          <Text>{messages.deadline(event?.endDate)}</Text>
         </Flex>
         <Button
           variant='secondary'

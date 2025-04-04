@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 
-import { useEventsByEntityId, useToggleFavoriteTrack } from '@audius/common/api'
+import { useRemixContest, useToggleFavoriteTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,
@@ -117,8 +117,10 @@ const messages = {
   releases: (releaseDate: string) =>
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`,
   remixContest: 'Remix Contest',
-  deadline: (deadline: string) =>
-    `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`,
+  deadline: (deadline?: string) =>
+    deadline
+      ? `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`
+      : '',
   uploadRemixButtonText: 'Upload Your Remix'
 }
 
@@ -227,7 +229,7 @@ export const TrackScreenDetailsTile = ({
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
   )
-  const { data: events } = useEventsByEntityId(trackId, {
+  const { data: events } = useRemixContest(trackId, {
     entityType: GetEntityEventsEntityTypeEnum.Track
   })
   const event = events?.[0]
@@ -504,7 +506,7 @@ export const TrackScreenDetailsTile = ({
             {messages.remixContest}
           </Text>
           <Text size='s' strength='strong'>
-            {messages.deadline(event?.endDate ?? '')}
+            {messages.deadline(event?.endDate)}
           </Text>
         </Flex>
         <Flex flex={1}>
