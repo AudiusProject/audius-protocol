@@ -215,7 +215,6 @@ export const GiantTrackTile = ({
   )
   const event = events?.[0]
   const isRemixContest = isRemixContestEnabled && !isOwner && event
-  console.log('REED event', event)
 
   const isLongFormContent =
     genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
@@ -438,7 +437,6 @@ export const GiantTrackTile = ({
 
   const renderSubmitRemixContestSection = useCallback(() => {
     if (!isRemixContest) return null
-    console.log('REED deadline', event?.endDate)
     return (
       <Flex row gap='m'>
         <Flex gap='xs' alignItems='center'>
