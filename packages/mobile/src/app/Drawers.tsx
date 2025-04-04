@@ -17,6 +17,7 @@ import { CreateChatActionsDrawer } from 'app/components/create-chat-actions-draw
 import { DeactivateAccountConfirmationDrawer } from 'app/components/deactivate-account-confirmation-drawer'
 import { DeleteChatDrawer } from 'app/components/delete-chat-drawer'
 import { DeletePlaylistConfirmationDrawer } from 'app/components/delete-playlist-confirmation-drawer'
+import { DownloadTrackArchiveDrawer } from 'app/components/download-track-archive-drawer/DownloadTrackArchiveDrawer'
 import { ArtistPickConfirmationDrawer } from 'app/components/drawers/ArtistPickConfirmationDrawer'
 import { MuteCommentsConfirmationDrawer } from 'app/components/drawers/MuteCommentsConfirmationDrawer'
 import { DuplicateAddConfirmationDrawer } from 'app/components/duplicate-add-confirmation-drawer'
@@ -61,7 +62,6 @@ import { ShareToStoryProgressDrawer } from '../components/share-drawer/useShareT
 import { VipDiscordDrawer } from '../components/vip-discord-drawer'
 import { useDrawer } from '../hooks/useDrawer'
 import type { Drawer } from '../store/drawers/slice'
-
 type CommonDrawerProps = {
   modal: ComponentType
   modalName: Modals
@@ -132,7 +132,8 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   PublishConfirmation: PublishConfirmationDrawer,
   ReplaceTrackProgress: ReplaceTrackProgressDrawer,
   EarlyReleaseConfirmation: EarlyReleaseConfirmationDrawer,
-  ArtistPick: ArtistPickConfirmationDrawer
+  ArtistPick: ArtistPickConfirmationDrawer,
+  DownloadTrackArchive: DownloadTrackArchiveDrawer
 }
 
 const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {

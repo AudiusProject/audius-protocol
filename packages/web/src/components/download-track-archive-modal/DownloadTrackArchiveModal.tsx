@@ -5,7 +5,8 @@ import {
   useDownloadTrackStems,
   useGetStemsArchiveJobStatus
 } from '@audius/common/api'
-import { ID } from '@audius/common/models'
+import { useAppContext } from '@audius/common/context'
+import { ID, Name } from '@audius/common/models'
 import { useDownloadTrackArchiveModal } from '@audius/common/store'
 import {
   Modal,
@@ -57,6 +58,9 @@ const DownloadTrackArchiveModalContent = ({
   onClosed
 }: DownloadTrackArchiveModalContentProps) => {
   const {
+    analytics: { track, make }
+  } = useAppContext()
+  const {
     mutate: downloadTrackStems,
     isError: initiateDownloadFailed,
     isPending: isStartingDownload,
@@ -76,17 +80,30 @@ const DownloadTrackArchiveModalContent = ({
     (initiateDownloadFailed || jobStatus?.state === 'failed')
 
   useEffect(() => {
-    if (isOpen) {
-      downloadTrackStems()
+    if (hasError) {
+      track(
+        make({
+          eventName: Name.TRACK_DOWNLOAD_FAILED_DOWNLOAD_ALL
+        })
+      )
     }
-  }, [isOpen, downloadTrackStems, trackId])
+  }, [hasError, track, make])
+
+  useEffect(() => {
+    downloadTrackStems()
+  }, [downloadTrackStems])
 
   useEffect(() => {
     if (jobStatus?.state === 'completed') {
       triggerDownload(`${env.ARCHIVE_ENDPOINT}/archive/stems/download/${jobId}`)
+      track(
+        make({
+          eventName: Name.TRACK_DOWNLOAD_SUCCESSFUL_DOWNLOAD_ALL
+        })
+      )
       onClose()
     }
-  }, [jobStatus, onClose, jobId])
+  }, [jobStatus, onClose, jobId, track, make])
 
   const handleClose = useCallback(() => {
     if (jobId) {
