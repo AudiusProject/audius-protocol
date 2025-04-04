@@ -162,7 +162,7 @@ const stagingConfig: SdkServicesConfig = {
 const developmentConfig: SdkServicesConfig = {
   network: {
     minVersion: '0.0.0',
-    apiEndpoint: 'https://audius-protocol-discovery-provider-1',
+    apiEndpoint: 'http://audius-protocol-discovery-provider-1',
     discoveryNodes: [
       {
         delegateOwnerWallet:
@@ -182,7 +182,7 @@ const developmentConfig: SdkServicesConfig = {
       endpoints: ['http://audius-protocol-anti-abuse-oracle-1:8000'],
       registeredAddresses: ['0xF0D5BC18421fa04D0a2A2ef540ba5A9f04014BE3']
     },
-    identityService: 'https://audius-protocol-identity-service-1'
+    identityService: 'http://audius-protocol-identity-service-1'
   },
   acdc: {
     entityManagerContractAddress: '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B',

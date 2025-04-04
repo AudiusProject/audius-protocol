@@ -5,12 +5,11 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 
-export const getSalesCountQueryKey = (userId: ID | null | undefined) => [
-  QUERY_KEYS.salesCount,
-  userId
-]
+export const getSalesCountQueryKey = (userId: ID | null | undefined) => {
+  return [QUERY_KEYS.salesCount, userId] as unknown as QueryKey<number>
+}
 
 export const useSalesCount = (
   userId: ID | null | undefined,

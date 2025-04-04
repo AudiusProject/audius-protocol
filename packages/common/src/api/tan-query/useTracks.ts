@@ -6,21 +6,19 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
-import { TrackMetadata } from '~/models/Track'
 import { CommonState } from '~/store'
 
 import { getTracksBatcher } from './batchers/getTracksBatcher'
+import { TQTrack } from './models'
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getTrackQueryKey } from './useTrack'
 import { combineQueryResults } from './utils/combineQueryResults'
 import { useQueries } from './utils/useQueries'
 
-export const getTracksQueryKey = (trackIds: ID[] | null | undefined) => [
-  QUERY_KEYS.tracks,
-  trackIds
-]
+export const getTracksQueryKey = (trackIds: ID[] | null | undefined) =>
+  [QUERY_KEYS.tracks, trackIds] as unknown as QueryKey<TQTrack[]>
 
 export const useTracks = (
   trackIds: ID[] | null | undefined,
@@ -47,7 +45,7 @@ export const useTracks = (
       ...options,
       enabled: options?.enabled !== false && !!trackId && trackId > 0
     })),
-    combine: combineQueryResults<TrackMetadata[]>
+    combine: combineQueryResults<TQTrack[]>
   })
 
   const { data: tracks } = queryResults

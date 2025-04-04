@@ -5,10 +5,12 @@ import {
   UploadFormState,
   uploadSelectors,
   UploadType,
-  useUploadConfirmationModal
+  useUploadConfirmationModal,
+  TrackMetadataForUpload
 } from '@audius/common/store'
 import { IconCloudUpload } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
+import { useLocation } from 'react-router-dom'
 
 import { Header } from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
@@ -52,9 +54,15 @@ type UploadPageProps = {
   scrollToTop: () => void
 }
 
+type LocationState = {
+  initialMetadata?: Partial<TrackMetadataForUpload>
+}
+
 export const UploadPage = (props: UploadPageProps) => {
   const { scrollToTop } = props
   const dispatch = useDispatch()
+  const location = useLocation()
+  const initialMetadata = (location.state as LocationState)?.initialMetadata
   const formStateFromStore = useSelector(getFormState)
   const uploadSuccess = useSelector(getUploadSuccess)
   const uploadError = useSelector(getUploadError)
@@ -130,6 +138,7 @@ export const UploadPage = (props: UploadPageProps) => {
         page = (
           <EditPage
             formState={formState}
+            initialMetadata={initialMetadata}
             onContinue={(formState: UploadFormState) => {
               setFormState(formState)
               dispatch(updateFormState(formState))

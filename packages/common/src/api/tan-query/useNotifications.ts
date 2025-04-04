@@ -1,5 +1,5 @@
 import { Id } from '@audius/sdk'
-import { InfiniteData, QueryKey, useInfiniteQuery } from '@tanstack/react-query'
+import { InfiniteData, useInfiniteQuery } from '@tanstack/react-query'
 
 import { notificationFromSDK, transformAndCleanList } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
@@ -11,7 +11,7 @@ import {
 } from '~/store/notifications/types'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCollections } from './useCollections'
 import { useCurrentUserId } from './useCurrentUserId'
 import { useNotificationValidTypes } from './useNotificationValidTypes'
@@ -83,7 +83,7 @@ const collectEntityIds = (notifications: Notification[]): EntityIds => {
       trackIds.add(notification.parentTrackId).add(notification.childTrackId)
     }
     if (type === NotificationType.RemixCosign) {
-      trackIds.add(notification.childTrackId)
+      notification.entityIds.forEach((id) => trackIds.add(id))
       userIds.add(notification.parentTrackUserId)
     }
     if (
@@ -162,7 +162,12 @@ export const getNotificationsQueryKey = ({
 }: {
   currentUserId: ID | null | undefined
   pageSize: number
-}) => [QUERY_KEYS.notifications, currentUserId, { pageSize }]
+}) =>
+  [
+    QUERY_KEYS.notifications,
+    currentUserId,
+    { pageSize }
+  ] as unknown as QueryKey<InfiniteData<Notification[]>>
 
 /**
  * Hook that returns paginated notifications for the current user.
@@ -175,13 +180,7 @@ export const useNotifications = (options?: QueryOptions) => {
   const validTypes = useNotificationValidTypes()
   const pageSize = DEFAULT_LIMIT
 
-  const query = useInfiniteQuery<
-    Notification[],
-    Error,
-    InfiniteData<Notification[]>,
-    QueryKey,
-    PageParam
-  >({
+  const query = useInfiniteQuery({
     queryKey: getNotificationsQueryKey({
       currentUserId,
       pageSize
@@ -197,7 +196,10 @@ export const useNotifications = (options?: QueryOptions) => {
         validTypes
       })
 
-      return transformAndCleanList(data?.notifications, notificationFromSDK)
+      return transformAndCleanList(
+        data?.notifications,
+        notificationFromSDK
+      ) as Notification[]
     },
     getNextPageParam: (lastPage: Notification[]) => {
       const lastNotification = lastPage[lastPage.length - 1]
@@ -235,8 +237,16 @@ export const useNotifications = (options?: QueryOptions) => {
     notifications.push(...lastPage)
   }
 
-  const queryResults = query as typeof query & { notifications: Notification[] }
+  const queryResults = query as typeof query & {
+    notifications: Notification[]
+    isAllPending: boolean
+  }
   queryResults.notifications = notifications
+  queryResults.isAllPending =
+    queryResults.isPending ||
+    isUsersPending ||
+    isTracksPending ||
+    isCollectionsPending
 
   return queryResults
 }

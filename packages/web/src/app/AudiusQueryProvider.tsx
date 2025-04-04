@@ -16,6 +16,7 @@ import { env } from 'services/env'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { reportToSentry } from 'store/errors/reportToSentry'
+import { generatePlaylistArtwork } from 'utils/imageProcessingUtil'
 
 type AudiusQueryProviderProps = {
   children: ReactNode
@@ -50,7 +51,10 @@ export const AudiusQueryProvider = (props: AudiusQueryProviderProps) => {
             rpcEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
             metadataProgramId: env.METADATA_PROGRAM_ID
           }
-        })
+        }),
+        imageUtils: {
+          generatePlaylistArtwork
+        }
       }}
     >
       {children}

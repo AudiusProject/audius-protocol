@@ -52,6 +52,11 @@ export type AudiusQueryContextType = {
     }
   }
   nftClient: FetchNFTClient
+  imageUtils: {
+    generatePlaylistArtwork: (
+      urls: string[]
+    ) => Promise<{ url: string; file: File }>
+  }
 }
 
 export const AudiusQueryContext = createContext<AudiusQueryContextType>(
@@ -108,6 +113,8 @@ export function* getAudiusQueryContext(): Generator<
     analytics:
       yield* getContext<AudiusQueryContextType['analytics']>('analytics'),
     nftClient:
-      yield* getContext<AudiusQueryContextType['nftClient']>('nftClient')
+      yield* getContext<AudiusQueryContextType['nftClient']>('nftClient'),
+    imageUtils:
+      yield* getContext<AudiusQueryContextType['imageUtils']>('imageUtils')
   }
 }

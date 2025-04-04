@@ -1,8 +1,9 @@
-import { useFollowUser, useUnfollowUser, useUser } from '@audius/common/api'
+import { useUser } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
 import { ShareSource, FollowSource } from '@audius/common/models'
 import type { OverflowActionCallbacks } from '@audius/common/store'
 import {
+  usersSocialActions,
   mobileOverflowMenuUISelectors,
   shareModalUIActions,
   OverflowAction
@@ -11,6 +12,7 @@ import { pick } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
+const { followUser, unfollowUser } = usersSocialActions
 
 type Props = {
   render: (callbacks: OverflowActionCallbacks) => JSX.Element
@@ -23,8 +25,6 @@ const ProfileOverflowMenuDrawer = ({ render }: Props) => {
   const { data: partialUser } = useUser(id, {
     select: (user) => pick(user, 'handle', 'name')
   })
-  const { mutate: followUser } = useFollowUser()
-  const { mutate: unfollowUser } = useUnfollowUser()
 
   const { handle, name } = partialUser ?? {}
 
@@ -34,9 +34,9 @@ const ProfileOverflowMenuDrawer = ({ render }: Props) => {
 
   const callbacks = {
     [OverflowAction.FOLLOW]: () =>
-      followUser({ followeeUserId: id, source: FollowSource.OVERFLOW }),
+      dispatch(followUser(id, FollowSource.OVERFLOW)),
     [OverflowAction.UNFOLLOW]: () =>
-      unfollowUser({ followeeUserId: id, source: FollowSource.OVERFLOW }),
+      dispatch(unfollowUser(id, FollowSource.OVERFLOW)),
     [OverflowAction.SHARE]: () => {
       dispatch(
         requestOpenShareModal({

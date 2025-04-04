@@ -74,6 +74,14 @@ else
             --prefetch-multiplier 1 \
             2>&1 | tee >(logger -t index_sol_worker) &
 
+        # start worker dedicated to index challenges
+        audius_service=worker celery -A src.worker.celery worker -Q index_challenges \
+            --loglevel "$audius_discprov_loglevel" \
+            --hostname=index_challenges \
+            --concurrency 1 \
+            --prefetch-multiplier 1 \
+            2>&1 | tee >(logger -t index_challenges_worker) &
+
         # start other workers with remaining CPUs
         audius_service=worker celery -A src.worker.celery worker \
             --max-memory-per-child 300000 \
@@ -81,6 +89,7 @@ else
             --concurrency 3 \
             --prefetch-multiplier 1 \
             --max-tasks-per-child 10 \
+            --exclude-queues=index_sol,index_core,index_challenges \
             2>&1 | tee >(logger -t worker) &
 
         while [[ "$audius_discprov_env" == "stage" ]]; do

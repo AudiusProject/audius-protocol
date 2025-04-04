@@ -1,5 +1,9 @@
 import { Id, OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
@@ -7,7 +11,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils/primeUserData'
 
@@ -21,11 +25,10 @@ export type UseCollectionFavoritesArgs = {
 export const getCollectionFavoritesQueryKey = ({
   collectionId,
   pageSize
-}: UseCollectionFavoritesArgs) => [
-  QUERY_KEYS.favorites,
-  collectionId,
-  { pageSize }
-]
+}: UseCollectionFavoritesArgs) =>
+  [QUERY_KEYS.favorites, collectionId, { pageSize }] as unknown as QueryKey<
+    InfiniteData<ID[]>
+  >
 
 export const useCollectionFavorites = (
   { collectionId, pageSize = DEFAULT_PAGE_SIZE }: UseCollectionFavoritesArgs,

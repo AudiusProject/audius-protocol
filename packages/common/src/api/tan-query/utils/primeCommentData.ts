@@ -18,19 +18,13 @@ export const primeCommentData = ({
   // Populate individual comment cache
   comments.forEach((comment) => {
     // Prime the main comment
-    queryClient.setQueryData<CommentOrReply>(
-      getCommentQueryKey(comment.id),
-      comment
-    )
+    queryClient.setQueryData(getCommentQueryKey(comment.id), comment)
 
     // Prime any replies if they exist
     if ('replies' in comment && comment.replies) {
-      comment.replies.forEach((reply: ReplyComment) =>
-        queryClient.setQueryData<CommentOrReply>(
-          getCommentQueryKey(reply.id),
-          reply
-        )
-      )
+      comment.replies.forEach((reply: ReplyComment) => {
+        queryClient.setQueryData(getCommentQueryKey(reply.id), reply)
+      })
     }
   })
 }

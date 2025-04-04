@@ -300,9 +300,9 @@ export const challengeRewardsConfig: Record<
     shortTitle: 'Co-signed Remix',
     title: 'Co-signed Remix',
     description: () =>
-      'The first 10 remixes on a track to be co-signed by a verified artist will be rewarded!',
+      'If your remix is co-signed by a verified artist you will earn a reward!',
     fullDescription: () =>
-      'The first 10 remixes on a track to be co-signed by a verified artist will be rewarded!',
+      'If your remix is co-signed by a verified artist you will earn a reward!',
     panelButtonText: 'cosign description',
     id: ChallengeName.Cosign,
     progressLabel: 'Available',
@@ -485,10 +485,6 @@ export const getClaimableChallengeSpecifiers = (
 }
 
 const newChallengeIds: ChallengeRewardID[] = [
-  ChallengeName.ListenStreakEndless,
-  ChallengeName.FirstWeeklyComment,
-  ChallengeName.PlayCount250,
-  ChallengeName.PlayCount1000,
   ChallengeName.PlayCount10000,
   ChallengeName.Tastemaker,
   ChallengeName.CommentPin,

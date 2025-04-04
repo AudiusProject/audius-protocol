@@ -5,17 +5,20 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { useAudiusQueryContext } from '~/audius-query'
+import { ID } from '~/models/Identifiers'
 import { getUserId } from '~/store/account/selectors'
 
 import { TQTrack } from './models'
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions, SelectableQueryOptions } from './types'
+import { QueryKey, QueryOptions, SelectableQueryOptions } from './types'
 import { useTrack } from './useTrack'
 import { primeTrackData } from './utils/primeTrackData'
 
 export const getTrackByPermalinkQueryKey = (
   permalink: string | undefined | null
-) => [QUERY_KEYS.trackByPermalink, permalink]
+) => {
+  return [QUERY_KEYS.trackByPermalink, permalink] as unknown as QueryKey<ID>
+}
 
 export const useTrackByPermalink = <TResult = TQTrack>(
   permalink: string | undefined | null,

@@ -6,19 +6,22 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
 import { ID } from '~/models'
-import { UserCollectionMetadata } from '~/models/Collection'
 import { CommonState } from '~/store'
 
 import { getCollectionsBatcher } from './batchers/getCollectionsBatcher'
+import { TQCollection } from './models'
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { combineQueryResults } from './utils/combineQueryResults'
 import { useQueries } from './utils/useQueries'
-export const getCollectionQueryKey = (collectionId: ID | null | undefined) => [
-  QUERY_KEYS.collection,
-  collectionId
-]
+
+export const getCollectionQueryKey = (collectionId: ID | null | undefined) => {
+  return [
+    QUERY_KEYS.collection,
+    collectionId
+  ] as unknown as QueryKey<TQCollection>
+}
 
 export const useCollections = (
   collectionIds: ID[] | null | undefined,
@@ -45,7 +48,7 @@ export const useCollections = (
       ...options,
       enabled: options?.enabled !== false && !!collectionId && collectionId > 0
     })),
-    combine: combineQueryResults<UserCollectionMetadata[]>
+    combine: combineQueryResults<TQCollection[]>
   })
 
   const { data: collections } = queriesResults

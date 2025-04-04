@@ -26,7 +26,8 @@ const TrackPlayerTiny = ({
   duration,
   seekTo,
   onTogglePlay,
-  streamConditions
+  streamConditions,
+  audioPlayer
 }) => {
   const info = `${title} • ${artistName}`
 
@@ -120,6 +121,7 @@ const TrackPlayerTiny = ({
           railListenedColor={'var(--primary)'}
           railUnlistenedColor={'var(--neutral-light-8)'}
           railHoverColor={'var(--primary)'}
+          audioPlayer={audioPlayer}
         />
       </div>
     </div>

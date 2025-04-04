@@ -640,7 +640,7 @@ def track_dsl(
             }
         )
         dsl["should"].extend(
-            *base_match(search_str, operator="and", boost=len(search_str)),
+            base_match(search_str, operator="and", boost=len(search_str)),
         )
 
     if tag_search:
@@ -1105,7 +1105,7 @@ def base_playlist_dsl(
             }
         )
         dsl["should"].extend(
-            *base_match(search_str, operator="and", boost=len(search_str) * 10)
+            base_match(search_str, operator="and", boost=len(search_str) * 10)
         )
 
     if tag_search:

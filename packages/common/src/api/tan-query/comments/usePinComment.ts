@@ -1,8 +1,4 @@
-import {
-  InfiniteData,
-  useMutation,
-  useQueryClient
-} from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { cloneDeep } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -42,7 +38,7 @@ export const usePinComment = () => {
     onMutate: ({ commentId, isPinned, trackId, currentSort }) => {
       if (isPinned) {
         // Loop through the sort list and move the newly pinned comment
-        queryClient.setQueryData<InfiniteData<ID[]>>(
+        queryClient.setQueryData(
           getTrackCommentListQueryKey({ trackId, sortMethod: currentSort }),
           (prevCommentData) => {
             const newCommentData = cloneDeep(prevCommentData) ?? {

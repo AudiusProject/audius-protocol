@@ -8,19 +8,21 @@ import { playlistMetadataForUpdateWithSDK } from '~/adapters/collection'
 import { fileToSdk } from '~/adapters/track'
 import { useAudiusQueryContext } from '~/audius-query'
 import { isContentUSDCPurchaseGated } from '~/models'
-import { Collection, UserCollectionMetadata } from '~/models/Collection'
+import { Collection } from '~/models/Collection'
 import { ID } from '~/models/Identifiers'
 import { getAccountUser } from '~/store/account/selectors'
 import { renameAccountPlaylist } from '~/store/account/slice'
 import { EditCollectionValues } from '~/store/cache/collections/types'
+import { removeNullable } from '~/utils'
 import { updatePlaylistArtwork } from '~/utils/updatePlaylistArtwork'
 
-import { getCollectionQueryKey, useCurrentUserId } from '..'
+import { getCollectionQueryKey, getTrackQueryKey, useCurrentUserId } from '..'
 
+import { TQCollection } from './models'
 import { primeCollectionData } from './utils/primeCollectionData'
 
 type MutationContext = {
-  previousCollection: UserCollectionMetadata | undefined
+  previousCollection: TQCollection | undefined
   collectionUpdate: EditCollectionValues
 }
 
@@ -131,16 +133,20 @@ export const useUpdateCollection = () => {
       })
 
       // Snapshot the previous values
-      const previousCollection =
-        queryClient.getQueryData<UserCollectionMetadata>(
-          getCollectionQueryKey(collectionId)
-        )
+      const previousCollection = queryClient.getQueryData(
+        getCollectionQueryKey(collectionId)
+      )
+
+      const previousTracks =
+        previousCollection?.trackIds
+          .map((trackId) => queryClient.getQueryData(getTrackQueryKey(trackId)))
+          .filter(removeNullable) ?? []
 
       // Optimistically update collection
       const mergedCollection = { ...previousCollection, ...metadata }
       const collectionUpdate = (await updatePlaylistArtwork(
         mergedCollection,
-        previousCollection?.tracks ?? [],
+        previousTracks,
         { updated: mergedCollection.tracks },
         { generateImage: generatePlaylistArtwork }
       )) as EditCollectionValues
@@ -153,9 +159,7 @@ export const useUpdateCollection = () => {
           forceReplace: true
         })
 
-        const previousTrackIds = previousCollection.tracks?.map(
-          (track) => track.track_id
-        )
+        const previousTrackIds = previousTracks.map((track) => track.track_id)
         const updatedTrackIds = collectionUpdate.tracks?.map(
           (track) => track.track_id
         )

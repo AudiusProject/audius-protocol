@@ -1,15 +1,13 @@
 import { Fragment, useCallback, useState } from 'react'
 
-import {
-  useRelatedArtistsUsers,
-  useFollowUser,
-  useUnfollowUser
-} from '@audius/common/api'
+import { useRelatedArtistsUsers } from '@audius/common/api'
 import { FollowSource } from '@audius/common/models'
 import type { User } from '@audius/common/models'
+import { usersSocialActions } from '@audius/common/store'
 import { css } from '@emotion/native'
 import { isEmpty } from 'lodash'
 import { TouchableOpacity } from 'react-native'
+import { useDispatch } from 'react-redux'
 
 import {
   IconClose,
@@ -24,6 +22,8 @@ import { UserLink } from 'app/components/user-link'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { useSelectProfile } from '../selectors'
+
+const { followUser, unfollowUser } = usersSocialActions
 
 const messages = {
   description: 'Here are some accounts that vibe well with',
@@ -42,9 +42,8 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
   const { spacing } = useTheme()
   const navigation = useNavigation()
   const { user_id, name } = useSelectProfile(['user_id', 'name'])
+  const dispatch = useDispatch()
   const [hasFollowedAll, setHasFollowedAll] = useState(false)
-  const { mutate: followUser } = useFollowUser()
-  const { mutate: unfollowUser } = useUnfollowUser()
 
   const { data: suggestedArtists = [], isPending } = useRelatedArtistsUsers({
     artistId: user_id,
@@ -54,23 +53,21 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
 
   const handlePressFollow = useCallback(() => {
     suggestedArtists.forEach((artist) => {
-      followUser({
-        followeeUserId: artist.user_id,
-        source: FollowSource.ARTIST_RECOMMENDATIONS_POPUP
-      })
+      dispatch(
+        followUser(artist.user_id, FollowSource.ARTIST_RECOMMENDATIONS_POPUP)
+      )
     })
     setHasFollowedAll(true)
-  }, [suggestedArtists, followUser])
+  }, [suggestedArtists, dispatch])
 
   const handlePressUnfollow = useCallback(() => {
     suggestedArtists.forEach((artist) => {
-      unfollowUser({
-        followeeUserId: artist.user_id,
-        source: FollowSource.ARTIST_RECOMMENDATIONS_POPUP
-      })
+      dispatch(
+        unfollowUser(artist.user_id, FollowSource.ARTIST_RECOMMENDATIONS_POPUP)
+      )
     })
     setHasFollowedAll(false)
-  }, [suggestedArtists, unfollowUser])
+  }, [suggestedArtists, dispatch])
 
   const handlePressArtist = useCallback(
     (artist: User) => () => {

@@ -80,5 +80,6 @@ export const QUERY_KEYS = {
   trackPageLineup: 'trackPageLineup',
   connectedWallets: 'connectedWallets',
   audioBalance: 'audioBalance',
-  walletCollectibles: 'walletCollectibles'
+  walletCollectibles: 'walletCollectibles',
+  events: 'events'
 } as const
