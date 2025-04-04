@@ -3,11 +3,16 @@ import { EventEventTypeEnum } from '@audius/sdk'
 import { Event } from '~/models/Event'
 import { ID } from '~/models/Identifiers'
 
-import { useEventsByEntityId } from './useEventsByEntityId'
+import { SelectableQueryOptions } from '../types'
 
-type UseRemixContestOptions = {
-  enabled?: boolean
-}
+import { useEventsByEntityId } from './useEventsByEntityId'
+import { EventsByEntityIdOptions } from './utils'
+
+type UseRemixContestOptions<TResult = Event[]> = SelectableQueryOptions<
+  Event[],
+  TResult
+> &
+  EventsByEntityIdOptions
 
 /**
  * Hook to fetch the remix contest event for a given entity ID.
