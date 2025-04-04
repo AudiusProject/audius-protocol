@@ -1,7 +1,6 @@
 import { route } from '@audius/common/utils'
 import { COPYRIGHT_TEXT } from '@audius/web/src/utils/copyright'
 import { View, Image } from 'react-native'
-import { useAsync } from 'react-use'
 
 import {
   IconMessage,
