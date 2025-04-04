@@ -53,7 +53,7 @@ create or replace function get_user_scores(
             case
                 when (
                     users.handle_lc ilike '%audius%'
-                    or users.name ilike '%audius%'
+                    or lower(users.name) ilike '%audius%'
                 )
                 and users.is_verified = false then true
                 else false
