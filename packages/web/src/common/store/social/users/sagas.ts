@@ -7,7 +7,8 @@ import {
   usersSocialActions as socialActions,
   getContext,
   confirmerActions,
-  confirmTransaction
+  confirmTransaction,
+  cacheUsersSelectors
 } from '@audius/common/store'
 import { makeKindId, route } from '@audius/common/utils'
 import { Id } from '@audius/sdk'
@@ -25,6 +26,7 @@ const { profilePage } = route
 const { getUsers, getUser } = cacheUsersSelectors
 const { setNotificationSubscription } = profilePageActions
 const { getUserId, getIsGuestAccount } = accountSelectors
+const { getUsers } = cacheUsersSelectors
 
 /* FOLLOW */
 
@@ -183,6 +185,131 @@ export function* followUserSucceeded(
       yield* put({ ...onSuccessAction })
     }
   }
+}
+
+export function* watchUnfollowUser() {
+  yield* takeEvery(socialActions.UNFOLLOW_USER, unfollowUser)
+}
+
+export function* unfollowUser(
+  action: ReturnType<typeof socialActions.unfollowUser>
+) {
+  /* Make Async Backend Call */
+  yield* call(waitForWrite)
+  const accountId = yield* select(getUserId)
+  const isGuest = yield* select(getIsGuestAccount)
+  if (!accountId || isGuest) {
+    yield* put(signOnActions.openSignOn(false))
+    yield* put(signOnActions.showRequiresAccountToast())
+    yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
+    return
+  }
+  if (accountId === action.userId) {
+    return
+  }
+
+  const users = yield* select(getUsers, { ids: [action.userId, accountId] })
+  const unfollowedUser = users[action.userId]
+  const currentUser = users[accountId]
+
+  // Decrement the follower count on the unfollowed user
+  yield* put(
+    cacheActions.update(Kind.USERS, [
+      {
+        id: action.userId,
+        metadata: {
+          does_current_user_follow: false,
+          follower_count: unfollowedUser.follower_count - 1
+        }
+      }
+    ])
+  )
+
+  // Decrement the followee count on the current user
+  yield* call(adjustUserField, {
+    user: currentUser,
+    fieldName: 'followee_count',
+    delta: -1
+  })
+
+  const event = make(Name.UNFOLLOW, {
+    id: action.userId,
+    source: action.source
+  })
+  yield* put(event)
+
+  yield* call(confirmUnfollowUser, action.userId, accountId)
+  yield* put(
+    setNotificationSubscription(
+      action.userId,
+      /* isSubscribed */ false,
+      /* update */ false
+    )
+  )
+}
+
+export function* confirmUnfollowUser(userId: ID, accountId: ID) {
+  const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
+  yield* put(
+    confirmerActions.requestConfirmation(
+      makeKindId(Kind.USERS, userId),
+      function* () {
+        const { blockHash, blockNumber } = yield* call(
+          [sdk.users, sdk.users.unfollowUser],
+          {
+            userId: Id.parse(accountId),
+            followeeUserId: Id.parse(userId)
+          }
+        )
+        const confirmed = yield* call(
+          confirmTransaction,
+          blockHash,
+          blockNumber
+        )
+        if (!confirmed) {
+          throw new Error(
+            `Could not confirm unfollow user for user id ${userId} and account id ${accountId}`
+          )
+        }
+        return accountId
+      },
+      function* () {
+        yield* put(socialActions.unfollowUserSucceeded(userId))
+      },
+      function* ({ timeout, message }: { timeout: boolean; message: string }) {
+        yield* put(
+          socialActions.unfollowUserFailed(
+            userId,
+            timeout ? 'Timeout' : message
+          )
+        )
+        const users = yield* select(getUsers, { ids: [userId, accountId] })
+        const unfollowedUser = users[userId]
+        const currentUser = users[accountId]
+
+        // Revert decremented follower count on unfollowed user
+        yield* put(
+          cacheActions.update(Kind.USERS, [
+            {
+              id: userId,
+              metadata: {
+                does_current_user_follow: true,
+                follower_count: unfollowedUser.follower_count + 1
+              }
+            }
+          ])
+        )
+
+        // Revert decremented followee count on current user
+        yield* call(adjustUserField, {
+          user: currentUser,
+          fieldName: 'followee_count',
+          delta: 1
+        })
+      }
+    )
+  )
 }
 
 /* SUBSCRIBE */
@@ -355,7 +482,13 @@ export function* watchShareUser() {
 }
 
 const sagas = () => {
-  return [watchFollowUser, watchFollowUserSucceeded, watchShareUser, errorSagas]
+  return [
+    watchFollowUser,
+    watchUnfollowUser,
+    watchFollowUserSucceeded,
+    watchShareUser,
+    errorSagas
+  ]
 }
 
 export default sagas

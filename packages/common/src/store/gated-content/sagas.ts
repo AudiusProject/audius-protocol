@@ -36,6 +36,7 @@ import { cacheActions, cacheTracksSelectors } from '~/store/cache'
 import { collectiblesActions } from '~/store/collectibles'
 import { getContext } from '~/store/effects'
 import { musicConfettiActions } from '~/store/music-confetti'
+import { usersSocialActions } from '~/store/social'
 import { tippingActions } from '~/store/tipping'
 import { Nullable } from '~/utils/typeUtils'
 
@@ -51,6 +52,7 @@ const DEFAULT_GATED_TRACK_POLL_INTERVAL_MS = 1000
 
 const {
   updateNftAccessSignatures,
+  revokeAccess,
   updateGatedContentStatus,
   updateGatedContentStatuses,
   addFolloweeId,
@@ -59,7 +61,7 @@ const {
   removeTippedUserId
 } = gatedContentActions
 
-const { refreshTipGatedTracks, revokeFollowGatedAccess } = tippingActions
+const { refreshTipGatedTracks } = tippingActions
 const { show: showConfetti } = musicConfettiActions
 
 const { updateUserEthCollectibles, updateUserSolCollectibles } =
@@ -656,12 +658,12 @@ function* updateSpecialAccessTracks(
  * 2. Set those track statuses to 'LOCKED'
  * 3. Revoke access for those tracks
  */
-function* handleRevokeFollowGatedAccess(
-  action: ReturnType<typeof revokeFollowGatedAccess>
+function* handleUnfollowUser(
+  action: ReturnType<typeof usersSocialActions.unfollowUser>
 ) {
   // Remove followee from gated content store to unsubscribe from
   // polling their newly loaded follow gated track signatures.
-  yield* put(removeFolloweeId({ id: action.payload.userId }))
+  yield* put(removeFolloweeId({ id: action.userId }))
 
   const statusMap: { [id: ID]: GatedContentStatus } = {}
   const revokeAccessMap: { [id: ID]: 'stream' | 'download' } = {}
@@ -676,18 +678,29 @@ function* handleRevokeFollowGatedAccess(
     } = cachedTracks[id]
     const isStreamFollowGated = isContentFollowGated(streamConditions)
     const isDownloadFollowGated = isContentFollowGated(downloadConditions)
-    if (isStreamFollowGated && ownerId === action.payload.userId) {
+    if (isStreamFollowGated && ownerId === action.userId) {
       statusMap[id] = 'LOCKED'
       // note: if necessary, update some ui status to show that the track download is locked
       revokeAccessMap[id] = 'stream'
-    } else if (isDownloadFollowGated && ownerId === action.payload.userId) {
+    } else if (isDownloadFollowGated && ownerId === action.userId) {
       // note: if necessary, update some ui status to show that the track download is locked
       revokeAccessMap[id] = 'download'
     }
   })
 
   yield* put(updateGatedContentStatuses(statusMap))
-  yield* call(revokeAccess, revokeAccessMap)
+  yield* put(revokeAccess({ revokeAccessMap }))
+}
+
+function* handleFollowUser(
+  action: ReturnType<typeof usersSocialActions.followUser>
+) {
+  yield* call(
+    updateSpecialAccessTracks,
+    action.userId,
+    'follow',
+    action.trackId
+  )
 }
 
 function* handleTipGatedTracks(
@@ -705,7 +718,8 @@ function* handleTipGatedTracks(
  * Remove stream signatures from track metadata when they're
  * no longer accessible by the user.
  */
-function* revokeAccess(revokeAccessMap: { [id: ID]: 'stream' | 'download' }) {
+function* handleRevokeAccess(action: ReturnType<typeof revokeAccess>) {
+  const { revokeAccessMap } = action.payload
   const metadatas = Object.keys(revokeAccessMap).map((trackId) => {
     const access =
       revokeAccessMap[trackId] === 'stream'
@@ -731,14 +745,28 @@ function* watchGatedTracks() {
   )
 }
 
+function* watchFollowGatedTracks() {
+  yield* takeEvery(usersSocialActions.FOLLOW_USER, handleFollowUser)
+}
+
+function* watchUnfollowGatedTracks() {
+  yield* takeEvery(usersSocialActions.UNFOLLOW_USER, handleUnfollowUser)
+}
+
 function* watchTipGatedTracks() {
   yield* takeEvery(refreshTipGatedTracks.type, handleTipGatedTracks)
 }
 
-function* watchRevokeFollowGatedAccess() {
-  yield* takeEvery(revokeFollowGatedAccess.type, handleRevokeFollowGatedAccess)
+function* watchRevokeAccess() {
+  yield* takeEvery(revokeAccess.type, handleRevokeAccess)
 }
 
 export const sagas = () => {
-  return [watchGatedTracks, watchTipGatedTracks, watchRevokeFollowGatedAccess]
+  return [
+    watchGatedTracks,
+    watchFollowGatedTracks,
+    watchUnfollowGatedTracks,
+    watchTipGatedTracks,
+    watchRevokeAccess
+  ]
 }
