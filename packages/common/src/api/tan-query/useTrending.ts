@@ -35,7 +35,7 @@ export const TRENDING_LOAD_MORE_PAGE_SIZE = 4
 
 export type GetTrendingArgs = {
   timeRange: TimeRange
-  genre?: Genre
+  genre?: Genre | null
   initialPageSize?: number
   loadMorePageSize?: number
 }

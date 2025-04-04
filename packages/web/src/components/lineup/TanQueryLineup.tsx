@@ -251,7 +251,6 @@ export const TanQueryLineup = ({
     return lineup.entries
   }, [lineup.entries, maxEntries])
 
-  // console.log('lineupEntries', lineupEntries)
   const renderSkeletons = useCallback(
     (skeletonCount: number | undefined) => {
       // This means no skeletons are desired
@@ -398,7 +397,6 @@ export const TanQueryLineup = ({
     PlaylistTile
   ])
 
-  // console.log('tiles', tiles)
   const isInitialLoad = (isFetching && tiles.length === 0) || isPending
 
   const isEmptyResults = tiles.length === 0 && !isFetching && !isInitialLoad

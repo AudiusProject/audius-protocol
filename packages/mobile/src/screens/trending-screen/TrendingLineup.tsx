@@ -60,9 +60,7 @@ export const TrendingLineup = (props: TrendingLineupProps) => {
   const dispatch = useDispatch()
   const trendingActions = actionsMap[timeRange]
 
-  const { lineup, loadNextPage } = useTrending({
-    timeRange
-  })
+  const { lineup, loadNextPage } = useTrending({ timeRange })
 
   useEffect(() => {
     // @ts-ignore tabPress is not a valid event, and wasn't able to figure out a fix

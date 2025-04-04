@@ -16,6 +16,7 @@ import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
 import { LineupData, QueryKey, QueryOptions } from './types'
+import { useCurrentUserId } from './useCurrentUserId'
 import { primeCollectionData } from './utils/primeCollectionData'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -44,13 +45,13 @@ export const FEED_LOAD_MORE_PAGE_SIZE = 4
 
 export const useFeed = (
   {
-    userId,
     filter = FeedFilter.ALL,
     initialPageSize = FEED_INITIAL_PAGE_SIZE,
     loadMorePageSize = FEED_LOAD_MORE_PAGE_SIZE
   }: FeedArgs,
   options?: QueryOptions
 ) => {
+  const { data: currentUserId } = useCurrentUserId()
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
@@ -63,14 +64,14 @@ export const useFeed = (
       if (lastPage.length < currentPageSize) return undefined
       return allPages.reduce((total, page) => total + page.length, 0)
     },
-    queryKey: getFeedQueryKey({ userId, filter }),
+    queryKey: getFeedQueryKey({ userId: currentUserId, filter }),
     queryFn: async ({ pageParam }) => {
       const isFirstPage = pageParam === 0
       const currentPageSize = isFirstPage ? initialPageSize : loadMorePageSize
       const sdk = await audiusSdk()
       const { data = [] } = await sdk.full.users.getUserFeed({
-        id: Id.parse(userId),
-        userId: Id.parse(userId),
+        id: Id.parse(currentUserId),
+        userId: Id.parse(currentUserId),
         filter: filterMap[filter],
         limit: currentPageSize,
         offset: pageParam,
@@ -119,13 +120,13 @@ export const useFeed = (
     },
     select: (data) => data?.pages.flat(),
     ...options,
-    enabled: userId !== null
+    enabled: currentUserId !== null
   })
 
   return useLineupQuery({
     queryData,
     queryKey: getFeedQueryKey({
-      userId,
+      userId: currentUserId,
       filter
     }),
     lineupActions: feedPageLineupActions,

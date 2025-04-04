@@ -67,7 +67,7 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
     lineup
   } = useTrending({
     timeRange: trendingTimeRange,
-    genre: trendingGenre || undefined
+    genre: trendingGenre
   })
 
   // Maintain a set of combinations of time range & genre that
