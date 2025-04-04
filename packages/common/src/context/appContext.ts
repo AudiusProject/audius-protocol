@@ -6,7 +6,7 @@ import { AnalyticsEvent, AllTrackingEvents } from '~/models/Analytics'
 import { AudiusBackend } from '~/services/audius-backend'
 import { LocalStorage } from '~/services/local-storage'
 import { RemoteConfigInstance } from '~/services/remote-config'
-
+import { TrackDownload } from '~/services/track-download'
 type AppContextType = {
   analytics: {
     track: (event: AnalyticsEvent, callback?: () => void) => Promise<void>
@@ -24,6 +24,7 @@ type AppContextType = {
   }
   getHostUrl: () => string
   audiusBackend: AudiusBackend
+  trackDownload: TrackDownload
   audiusSdk?: AudiusSdk
   remoteConfig: RemoteConfigInstance
   localStorage: LocalStorage

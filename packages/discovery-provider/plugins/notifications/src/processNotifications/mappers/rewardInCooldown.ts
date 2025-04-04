@@ -84,7 +84,7 @@ const challengeMessages = {
   cs: {
     title: 'Co-signed Remix',
     description:
-      'Remixes on a track co-signed by a verified artist will be rewarded!',
+      'If your remix is co-signed by a verified artist you will earn a reward!',
     imageUrl: 'recycle-trophy.png'
   }
 }

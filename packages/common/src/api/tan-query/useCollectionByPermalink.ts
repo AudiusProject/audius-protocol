@@ -5,11 +5,12 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { useAudiusQueryContext } from '~/audius-query'
+import { ID } from '~/models/Identifiers'
 import { getUserId } from '~/store/account/selectors'
 
 import { TQCollection } from './models'
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions, SelectableQueryOptions } from './types'
+import { QueryKey, QueryOptions, SelectableQueryOptions } from './types'
 import { useCollection } from './useCollection'
 import { primeCollectionData } from './utils/primeCollectionData'
 
@@ -17,7 +18,12 @@ const STALE_TIME = Infinity
 
 export const getCollectionByPermalinkQueryKey = (
   permalink: string | undefined | null
-) => [QUERY_KEYS.collectionByPermalink, permalink]
+) => {
+  return [
+    QUERY_KEYS.collectionByPermalink,
+    permalink
+  ] as unknown as QueryKey<ID>
+}
 
 export const playlistPermalinkToHandleAndSlug = (permalink: string) => {
   const splitPermalink = permalink.split('/')

@@ -23,7 +23,7 @@ export const Scrubber = ({
   includeTimestamps = true,
   elapsedSeconds,
   totalSeconds,
-  playbackRate,
+  playbackRate = 1,
   getAudioPosition,
   getTotalTime,
   onScrub,

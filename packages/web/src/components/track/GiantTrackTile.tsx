@@ -477,6 +477,7 @@ export const GiantTrackTile = ({
       includeEmbed: !(isUnlisted || isStreamGated),
       includeArtistPick: true,
       includeAddToAlbum: isOwner && !ddexApp,
+      includeRemixContest: isRemixContestEnabled,
       extraMenuItems: overflowMenuExtraItems
     }
   }

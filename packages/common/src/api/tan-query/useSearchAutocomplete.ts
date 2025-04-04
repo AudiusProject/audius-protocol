@@ -1,5 +1,5 @@
 import { OptionalId } from '@audius/sdk'
-import { QueryKey, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 
 import { SearchResults, searchResultsFromSDK } from '~/adapters/search'
 import { useAudiusQueryContext } from '~/audius-query'
@@ -7,7 +7,7 @@ import { useFeatureFlag } from '~/hooks/useFeatureFlag'
 import { FeatureFlags } from '~/services/remote-config'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
 const DEFAULT_LIMIT = 3
@@ -20,7 +20,8 @@ type UseSearchAutocompleteArgs = {
 export const getSearchAutocompleteQueryKey = ({
   query,
   limit = DEFAULT_LIMIT
-}: UseSearchAutocompleteArgs) => [QUERY_KEYS.search, query, { limit }]
+}: UseSearchAutocompleteArgs) =>
+  [QUERY_KEYS.search, query, { limit }] as unknown as QueryKey<SearchResults>
 
 export const useSearchAutocomplete = (
   { query, limit = DEFAULT_LIMIT }: UseSearchAutocompleteArgs,
@@ -32,7 +33,7 @@ export const useSearchAutocomplete = (
     FeatureFlags.USDC_PURCHASES
   )
 
-  return useQuery<SearchResults, Error, SearchResults, QueryKey>({
+  return useQuery({
     queryKey: getSearchAutocompleteQueryKey({ query, limit }),
     queryFn: async () => {
       const sdk = await audiusSdk()

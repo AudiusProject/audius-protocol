@@ -92,8 +92,8 @@ export type UserManagerMetadata = {
 export type ComputedUserProperties = {
   _collectionIds?: ID[]
   _profile_picture_color?: Color
-  updatedProfilePicture?: { file: File; url: string }
-  updatedCoverPhoto?: { file: File; url: string }
+  updatedProfilePicture?: { file: File; url: string; type?: string }
+  updatedCoverPhoto?: { file: File; url: string; type?: string }
 }
 
 export type User = UserMetadata & ComputedUserProperties

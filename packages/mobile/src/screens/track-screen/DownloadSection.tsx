@@ -3,12 +3,15 @@ import { useCallback, useState } from 'react'
 import { useTrack } from '@audius/common/api'
 import {
   useCurrentStems,
-  useDownloadableContentAccess
+  useDownloadableContentAccess,
+  useFeatureFlag
 } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
 import { DownloadQuality, ModalSource } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   PurchaseableContentType,
+  useDownloadTrackArchiveModal,
   usePremiumContentPurchaseModal,
   useWaitForDownloadModal
 } from '@audius/common/store'
@@ -46,7 +49,8 @@ const messages = {
   purchased: 'purchased',
   followToDownload: 'Must follow artist to download.',
   purchaseableIsOwner: (price: string) =>
-    `Fans can unlock & download these files for a one time purchase of ${price}`
+    `Fans can unlock & download these files for a one time purchase of ${price}`,
+  downloadAll: 'Download All'
 }
 
 export const DownloadSection = ({ trackId }: { trackId: ID }) => {
@@ -65,6 +69,10 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
     shouldDisplayDownloadFollowGated,
     shouldDisplayOwnerPremiumDownloads
   } = useDownloadableContentAccess({ trackId })
+  const { isEnabled: isDownloadAllTrackFilesEnabled } = useFeatureFlag(
+    FeatureFlags.DOWNLOAD_ALL_TRACK_FILES
+  )
+
   const formattedPrice = price ? USDC(price / 100).toLocaleString() : undefined
   const shouldHideDownload =
     !track?.access.download && !shouldDisplayDownloadFollowGated
@@ -123,6 +131,16 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
       track
     ]
   )
+
+  const { onOpen: openDownloadTrackArchiveModal } =
+    useDownloadTrackArchiveModal()
+
+  const handleDownloadAll = useCallback(() => {
+    openDownloadTrackArchiveModal({
+      trackId,
+      fileCount: stemTracks.length + 1
+    })
+  }, [openDownloadTrackArchiveModal, stemTracks, trackId])
 
   const renderHeader = () => {
     return (
@@ -220,6 +238,23 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
             onDownload={handleDownload}
           />
         ))}
+        {isDownloadAllTrackFilesEnabled && !shouldHideDownload ? (
+          <Flex
+            borderTop='default'
+            direction='row'
+            alignItems='center'
+            justifyContent='center'
+            p='l'
+          >
+            <Button
+              variant='secondary'
+              size='small'
+              onPress={handleDownloadAll}
+            >
+              {messages.downloadAll}
+            </Button>
+          </Flex>
+        ) : null}
       </Expandable>
     </Flex>
   )

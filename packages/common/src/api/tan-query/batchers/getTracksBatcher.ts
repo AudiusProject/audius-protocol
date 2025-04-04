@@ -4,7 +4,6 @@ import { memoize, omit } from 'lodash'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { transformAndCleanList } from '~/adapters/utils'
-import { TrackMetadata } from '~/models'
 import { ID } from '~/models/Identifiers'
 
 import { TQTrack } from '../models'
@@ -16,7 +15,7 @@ import { BatchContext } from './types'
 export const getTracksBatcher = memoize(
   (context: BatchContext) =>
     create({
-      fetcher: async (ids: ID[]): Promise<TrackMetadata[]> => {
+      fetcher: async (ids: ID[]): Promise<TQTrack[]> => {
         const { sdk, currentUserId, queryClient, dispatch } = context
         if (!ids.length) return []
 

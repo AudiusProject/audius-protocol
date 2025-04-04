@@ -138,6 +138,8 @@ export type ProfilePageProps = {
   pauseUserFeedTrack: () => void
 
   // Methods
+  onFollow: () => void
+  onUnfollow: () => void
   updateName: (name: string) => void
   updateBio: (bio: string) => void
   updateLocation: (location: string) => void
@@ -240,13 +242,11 @@ const RepostsTab = ({ handle }: { handle: string }) => {
 }
 
 const TracksTab = ({
-  profile,
-  handle,
-  isOwner
+  artistPickTrackId,
+  handle
 }: {
-  profile: User
   handle: string
-  isOwner: boolean
+  artistPickTrackId: ID | null
 }) => {
   const {
     data,
@@ -264,18 +264,9 @@ const TracksTab = ({
     handle
   })
 
-  const trackUploadChip = isOwner ? (
-    <UploadChip
-      key='upload-chip'
-      type='track'
-      variant='tile'
-      source='profile'
-    />
-  ) : undefined
-
   return (
     <TanQueryLineup
-      extraPrecedingElement={trackUploadChip}
+      leadingElementId={artistPickTrackId}
       data={data}
       isPending={isPending}
       isFetching={isFetching}
@@ -316,6 +307,8 @@ const ProfilePage = ({
   loadMoreUserFeed,
   loadMoreArtistTracks,
   updateProfile,
+  onFollow,
+  onUnfollow,
   updateName,
   updateBio,
   updateLocation,
@@ -459,7 +452,10 @@ const ProfilePage = ({
               />
             </>
           ) : (
-            <TracksTab profile={profile} handle={handle} isOwner={isOwner} />
+            <TracksTab
+              handle={handle}
+              artistPickTrackId={profile.artist_pick_track_id}
+            />
           )
         ) : null}
       </Box>,
@@ -793,6 +789,8 @@ const ProfilePage = ({
                   following={following}
                   isSubscribed={isSubscribed}
                   onToggleSubscribe={toggleNotificationSubscription}
+                  onFollow={onFollow}
+                  onUnfollow={onUnfollow}
                   canCreateChat={canCreateChat}
                   onMessage={onMessage}
                   isBlocked={isBlocked}
