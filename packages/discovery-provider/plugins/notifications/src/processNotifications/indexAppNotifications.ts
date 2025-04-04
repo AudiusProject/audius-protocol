@@ -178,9 +178,8 @@ export class AppNotificationsProcessor {
           `,
         [usersTriggeringNotifications]
       )
-      const shadowBannedUsers = res.rows.map((row) =>
-        String(row.get_shadowbanned_users)
-      )
+
+      const shadowBannedUsers = res.rows.map((row) => String(row.user_id))
       logger.info(
         `Skipping notifications triggered by users: ${shadowBannedUsers}`
       )
