@@ -1,10 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
-import {
-  TRENDING_LOAD_MORE_PAGE_SIZE,
-  TRENDING_INITIAL_PAGE_SIZE,
-  useTrending
-} from '@audius/common/api/tan-query/useTrending'
+import { useTrending } from '@audius/common/api'
 import { Name, TimeRange } from '@audius/common/models'
 import {
   lineupSelectors,
