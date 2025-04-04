@@ -1,4 +1,4 @@
-import { Id, full } from '@audius/sdk'
+import { EntityType, Id, full } from '@audius/sdk'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
@@ -15,7 +15,7 @@ import { feedPageSelectors, feedPageLineupActions } from '~/store/pages'
 import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryKey, QueryOptions } from './types'
+import { LineupData, QueryKey, QueryOptions } from './types'
 import { primeCollectionData } from './utils/primeCollectionData'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -57,10 +57,7 @@ export const useFeed = (
 
   const queryData = useInfiniteQuery({
     initialPageParam: 0,
-    getNextPageParam: (
-      lastPage: (UserTrackMetadata | UserCollectionMetadata)[],
-      allPages
-    ) => {
+    getNextPageParam: (lastPage: LineupData[], allPages) => {
       const isFirstPage = allPages.length === 1
       const currentPageSize = isFirstPage ? initialPageSize : loadMorePageSize
       if (lastPage.length < currentPageSize) return undefined
@@ -114,7 +111,11 @@ export const useFeed = (
         )
       )
 
-      return feed
+      return feed.map((item) =>
+        'track_id' in item
+          ? { id: item.track_id, type: EntityType.TRACK }
+          : { id: item.playlist_id, type: EntityType.PLAYLIST }
+      )
     },
     select: (data) => data?.pages.flat(),
     ...options,
