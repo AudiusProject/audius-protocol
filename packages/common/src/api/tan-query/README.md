@@ -1,5 +1,3 @@
-// table of contents
-
 ## Table of Contents
 
 1. [Purpose](#purpose)
@@ -22,33 +20,25 @@
 
 This directory centralizes data fetching and mutation logic using [TanStack Query](https://tanstack.com/query/latest) (v5). It provides React hooks for interacting with the Audius API and managing server state within the client.
 
-```typescript
-import {} from '@audius/common/api'
-```
-
 # Philosophy
 
 The core goals of using TanStack Query here are:
 
 1.  **Declarative Data Fetching:** Define _what_ data is needed, and let TanStack Query handle _how_ and _when_ to fetch it.
-1.  **Normalization:** Store fetched entities (users, tracks, collections) in a normalized way to ensure consistency and efficient updates.
-1.  TOOD
+1.  **Single source of truth for entities** - To ensure consistent updates & reduce the size of our cache, we always want to a single copy of each entity, and reference it
+1.  **Select only the data you need** - To maximize efficiency and minimize rerendering, use selectors wherever possible to get only the relevant data (see below for details)
 
 ## Normalization & Single Source of Truth
 
 TanStack Query doesn't enforce normalization itself, but we follow a pattern:
 
 1.  **Fetch Entities by ID:** Hooks like `useUser`, `useTrack`, `useCollection` fetch individual entities and store them under a query key specific to that entity's ID (e.g., `['user', 123]`).
-2.  **Fetch Lists of IDs:** Hooks fetching lists (e.g., `useFollowers`, `useFavoritedTracks`) often fetch and prime the full entities, but store _only the IDs_ in their cache keys or minimal data for the list itself.
+2.  **Fetch Lists of Entities:** When a hooks fetches a list of entities (e.g., `useFollowers`, `useFavoritedTracks`) the hook will fetch the full entities, then save them in the individual entity cache, but the key for the list only stores & returns IDs for that hook. This way, we maintain a single copy of the entity and avoid duplication.
 3.  **Combine in UI:** The UI component fetches the list (e.g., follower IDs) and then uses individual entity hooks (`useUser`) for each ID to get the full data. Because we prime the cache on fetch succeeded, the requests for the individual entities always cache hit.
-
-    _Note: In some cases, the `useUsers` call is combined into the tan-query hook for convenience._
-
-This ensures _single source of truth_ for each datum. If a user's details are updated via `useUpdateUser`, all components displaying that user (via `useUser(userId)`) will reflect the change automatically. Priming the cache (`queryClient.setQueryData`) after mutations is crucial for this pattern.
 
 # Query Hook Usage
 
-If a hook exists for the data you need, simply call the hook in your component. The hook will handle the selecting and/or fetching of data as needed. In general, you can think of these hooks as source agnostic suppliers of data. For example, `useUser` will return the requested `User` object either from cache or via sdk call. You don't need to know which one.
+If a hook exists for the data you need, simply call the hook in your component. The hook will handle fetching of data as needed. In general, you can think of these hooks as source agnostic suppliers of data. For example, `useUser` will return the requested `User` object either from cache or via sdk call. You don't need to know which one.
 
 Hooks typically accept parameters required for the API call and an optional `options` object which can include standard TanStack Query options like `enabled`, `select`, `staleTime`, etc.
 
@@ -116,7 +106,7 @@ Many hooks support progressive pagination through the `useInfiniteQuery` pattern
 
   _Note: many of our paginated queries actually use `select` internally to return a flattened list of data instead of the pages array_
 
-- `fetchNextPage()` loads the next page of data
+- `loadNextPage()` loads the next page of data
 - `hasNextPage` indicates if more data exists
 - `isFetchingNextPage` is `true` while loading the next page
 
@@ -130,7 +120,7 @@ import { useTrending } from '@audius/common/api'
 const TrendingTracksList = () => {
   const {
     data,
-    fetchNextPage,
+    loadNextPage,
     hasNextPage,
     isFetchingNextPage
   } = useTrending({
@@ -149,7 +139,7 @@ const TrendingTracksList = () => {
 
       {hasNextPage && (
         <button
-          onClick={() => fetchNextPage()}
+          onClick={() => loadNextPage()}
           disabled={isFetchingNextPage}
         >
           {isFetchingNextPage ? 'Loading more...' : 'Load more'}
@@ -197,7 +187,7 @@ const onClickButton = useCallback(() => {
       [QUERY_KEYS.myData, param] as unknown as QueryKey<MyData>
     ```
 
-    The `as unknown as QueryKey<MyData>` type cast is important for TanStack Query's type inference. The `QueryKey<T>` type uses TanStack's `DataTag` to tell the query client what type of data is stored at this key, enabling better TypeScript support when using `queryClient.getQueryData` and other methods.
+The `as unknown as QueryKey<MyData>` type cast is necessary for TanStack Query's type inference. This will make `queryClient.getQueryData` and other methods to have strong typing.
 
 1.  **Create the Hook:**
 
@@ -205,7 +195,6 @@ const onClickButton = useCallback(() => {
     - Use `useAudiusQueryContext` to get access to the `audiusSdk`.
     - Implement the `queryFn` to call the relevant SDK method.
     - Use the query key function defined in step 1.
-    - Consider using batching if applicable (see below).
 
     ```typescript
     // useMyData.ts
@@ -329,14 +318,16 @@ const onClickButton = useCallback(() => {
 To reduce redundant network requests for the same type of entity (e.g., fetching multiple users by ID across different components), we use batching.
 
 - Look at the `batchers/` directory for examples (e.g., `getUsersBatcher`).
-- Batchers collect requests over a short time window and make a single API call for multiple resources.
+- Batchers collect requests over a short time window and make a single API call for multiple resources. They keep track of which request was which, and route the individual items back from the batch response.
 - Inside a query hook's `queryFn`, instead of calling the SDK directly, you obtain an instance of the relevant batcher and call its `fetch` method.
 
 See `useUser.ts` for an example of using `getUsersBatcher`.
 
 ## Priming Data
 
-You can manually add or update data in the cache without a full query:
+You can manually add or update data in the cache without a full query.
+
+We have helpers for common entities `User`, `Track`, and `Collection`. `primeUserData`, `primeTrackData`, and `primeCollectionData` are utils that call `setQueryData` for you with the entity and each of its sub-entities. (e.g. primeTrackData will add the `Track` and the `track.user` `User` to their respective cache keys.)
 
 If you already have the data (e.g., from a different API response or after a mutation), you can directly insert it into the cache. This is useful for normalization and optimistic updates.
 
@@ -348,21 +339,9 @@ const queryClient = useQueryClient()
 queryClient.setQueryData(getMyDataQueryKey(123), myNewData123)
 ```
 
-We have helpers for common entities `User`, `Track`, and `Collection`.
-
-`primeUserData`, `primeTrackData`, and `primeCollectionData` are utils that call `setQueryData` for you with the entity and each of its sub-entities. (e.g. primeTrackData will add the `Track` and the `track.user` `User` to their respective cache keys.)
-
 ## Default Cache Behavior
 
 - **`staleTime: 5 * 60 * 1000` (Default):** Data is considered "stale" 5 minutes after being fetched. This means the _next_ time the component mounts or the query key changes, TanStack Query _can_ refetch in the background if needed. It doesn't necessarily mean a loading state will show; the cached data is still returned instantly.
 - **`cacheTime: 5 * 60 * 1000` (Default):** Inactive queries (no active `useQuery` instance for that key) will keep their data in memory for 5 minutes. After this period, the data is garbage collected.
 
 These defaults provide a good balance between showing fresh data and using the cache effectively. Specific hooks may override these defaults via `options` if a different behavior is needed (e.g., for data that changes very infrequently).
-
-// TODO:
-
-- Advanced usage
-  - Paginated endpoint returns users
-  - prime them
-  - select them back with useUsers in the component
-- mention adapters for sdk objects
