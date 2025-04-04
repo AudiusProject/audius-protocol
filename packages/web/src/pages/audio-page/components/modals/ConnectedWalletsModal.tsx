@@ -7,6 +7,7 @@ import {
 } from '@audius/common/api'
 import { useAppContext } from '@audius/common/context'
 import { Chain, Name } from '@audius/common/models'
+import { useCurrentUser } from '@audius/common/src/api/tan-query/useCurrentUser'
 import {
   accountSelectors,
   profilePageActions,
@@ -29,14 +30,20 @@ import {
 import { mainnet, solana } from '@reown/appkit/networks'
 import {
   useAppKitAccount,
-  useAppKitProvider,
-  useDisconnect
+  useDisconnect,
+  type NamespaceTypeMap
 } from '@reown/appkit/react'
 import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useSignMessage } from 'wagmi'
+import type { Hex } from 'viem'
+import {
+  useAccount,
+  useSignMessage,
+  useSwitchAccount,
+  useSwitchChain
+} from 'wagmi'
 
-import { wagmiAdapter, modal } from 'app/ReownAppKitModal'
+import { wagmiAdapter, modal, audiusChain } from 'app/ReownAppKitModal'
 import { ToastContext } from 'components/toast/ToastContext'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { NEW_WALLET_CONNECTED_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
@@ -66,23 +73,34 @@ const messages = {
  * using Solana or Ethereum.
  */
 const useSignMessageAgnostic = () => {
-  const { walletProvider: solanaProvider } =
-    useAppKitProvider<SolanaProvider>('solana')
   const { signMessageAsync } = useSignMessage({
     config: wagmiAdapter.wagmiConfig
   })
 
   const signMessageAgnostic = useCallback(
-    async (message: string) => {
-      if (solanaProvider) {
+    async (
+      message: string,
+      account: string,
+      namespace: keyof NamespaceTypeMap
+    ) => {
+      if (namespace === 'solana') {
+        const solanaProvider = modal.getProvider<SolanaProvider>('solana')
+        if (!solanaProvider) {
+          throw new Error('Missing SolanaProvider')
+        }
+        console.debug('Signing with SolanaProvider...')
         const encodedMessage = new TextEncoder().encode(message)
         const signatureBytes = await solanaProvider.signMessage(encodedMessage)
         return Buffer.from(signatureBytes).toString('hex')
       } else {
-        return await signMessageAsync({ message })
+        console.debug('Signing with Wagmi...')
+        return await signMessageAsync({
+          account: account as Hex | undefined,
+          message
+        })
       }
     },
-    [solanaProvider, signMessageAsync]
+    [signMessageAsync]
   )
   return { signMessageAgnostic }
 }
@@ -131,14 +149,30 @@ const useConnectWallet = () => {
         })
       })
       unsubscribeEvents?.()
-      const address = modal.getAddress()
-      if (!address) {
+      const activeAccount = modal.getAccount()
+      const wallets = [
+        ...(activeAccount?.allAccounts.map((a) => ({
+          address: a.address,
+          chain: a.namespace === 'eip155' ? Chain.Eth : Chain.Sol
+        })) ?? []),
+        ...(activeAccount?.address && modal.getActiveChainNamespace()
+          ? [
+              {
+                address: activeAccount.address,
+                chain:
+                  modal.getActiveChainNamespace() === 'eip155'
+                    ? Chain.Eth
+                    : Chain.Sol
+              }
+            ]
+          : [])
+      ]
+      if (!wallets) {
         throw new Error(
           'Unexpected undefined address when adding associated wallet.'
         )
       }
-      const chain = modal.getChainId() === mainnet.id ? Chain.Eth : Chain.Sol
-      return { address, chain }
+      return wallets
     } catch (error) {
       if (error instanceof Error) {
         // Ignore the user closing the modal
@@ -171,6 +205,10 @@ export const ConnectedWalletsModal = () => {
   const { isOpen, onClose, onClosed } = useConnectedWalletsModal()
   const { connectWallet, isWalletConnecting } = useConnectWallet()
   const { signMessageAgnostic } = useSignMessageAgnostic()
+  const currentUser = useCurrentUser()
+  const { switchAccountAsync } = useSwitchAccount()
+  const { connector: originalConnector } = useAccount()
+  const { switchChainAsync } = useSwitchChain()
 
   const accountUserId = useSelector(accountSelectors.getUserId)
 
@@ -197,32 +235,53 @@ export const ConnectedWalletsModal = () => {
 
   const handleAddClicked = useCallback(async () => {
     try {
+      const originalAddress = currentUser?.data?.wallet
       await track(make({ eventName: Name.CONNECT_WALLET_NEW_WALLET_START }))
-      // 1. Connect the wallet using Reown AppKit
-      const wallet = await connectWallet()
+      // 0. Disconnect from external wallet if applicable (if user is signed in with eg. Metamask)
+      if (originalConnector) {
+        await originalConnector.disconnect()
+      }
+      // 1. Connect the wallets using Reown AppKit
+      const wallets = await connectWallet()
+      console.debug('Wallets connected:', wallets)
       // 2. Request a signature as proof the wallet belongs to the user
-      const signature = await signMessageAgnostic(
-        `AudiusUserID:${accountUserId}`
-      )
-      await track(
-        make({
-          eventName: Name.CONNECT_WALLET_NEW_WALLET_CONNECTING,
-          chain: wallet.chain,
-          walletAddress: wallet.address
-        })
-      )
-      // 3. Send a transaction via SDK to the network to add the association
-      await addConnectedWalletAsync({
-        wallet,
-        signature
-      })
-      await track(
-        make({
-          eventName: Name.CONNECT_WALLET_NEW_WALLET_CONNECTED,
-          chain: wallet.chain,
-          walletAddress: wallet.address
-        })
-      )
+      for (const { address, chain } of wallets) {
+        console.debug('Adding wallet', { address, chain, originalAddress })
+        // Skip the user's account address
+        if (address !== originalAddress) {
+          const signature = await signMessageAgnostic(
+            `AudiusUserID:${accountUserId}`,
+            address,
+            chain === Chain.Sol ? 'solana' : 'eip155'
+          )
+          await track(
+            make({
+              eventName: Name.CONNECT_WALLET_NEW_WALLET_CONNECTING,
+              chain,
+              walletAddress: address
+            })
+          )
+          // 3. Swap back to original external wallet (if user is signed in with eg. Metamask)
+          if (originalConnector) {
+            await originalConnector.connect()
+            await switchAccountAsync({ connector: originalConnector })
+            await switchChainAsync({ chainId: audiusChain.id })
+          }
+
+          // 4. Send a transaction via SDK to the network to add the association
+          await addConnectedWalletAsync({
+            wallet: { address, chain },
+            signature
+          })
+          await track(
+            make({
+              eventName: Name.CONNECT_WALLET_NEW_WALLET_CONNECTED,
+              chain,
+              walletAddress: address
+            })
+          )
+        }
+      }
       // TODO: Update across app to show in-app balance from queryClient rather
       // than requiring this action to be dispatched to update the store.
       dispatch(walletActions.getBalance())
@@ -251,14 +310,17 @@ export const ConnectedWalletsModal = () => {
       toast(messages.error)
     }
   }, [
+    currentUser?.data?.wallet,
     track,
     make,
     connectWallet,
-    signMessageAgnostic,
-    accountUserId,
-    addConnectedWalletAsync,
     dispatch,
-    toast
+    accountUserId,
+    toast,
+    signMessageAgnostic,
+    originalConnector,
+    addConnectedWalletAsync,
+    switchAccountAsync
   ])
 
   const handleRemoveClicked = useCallback(
