@@ -31,7 +31,8 @@ def validate_create_event_tx(params: ManageEntityParameters):
     # Validate end_date is not in the past
     if (
         params.metadata.get("end_date")
-        and datetime.fromisoformat(params.metadata["end_date"]) < params.block_datetime
+        and datetime.fromisoformat(params.metadata["end_date"]).timestamp()
+        < params.block_datetime.timestamp()
     ):
         raise IndexingValidationError("end_date cannot be in the past")
 
@@ -127,7 +128,8 @@ def validate_update_event_tx(params: ManageEntityParameters):
     # Validate end_date is not in the past
     if (
         params.metadata.get("end_date")
-        and datetime.fromisoformat(params.metadata["end_date"]) < params.block_datetime
+        and datetime.fromisoformat(params.metadata["end_date"]).timestamp()
+        < params.block_datetime.timestamp()
     ):
         raise IndexingValidationError("end_date cannot be in the past")
 

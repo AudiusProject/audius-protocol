@@ -14,6 +14,7 @@ import { DownloadTrackArchiveModalState } from './download-track-archive-modal'
 import { EarlyReleaseConfirmationModalState } from './early-release-confirmation-modal'
 import { EditAccessConfirmationModalState } from './edit-access-confirmation-modal'
 import { HideContentConfirmationModalState } from './hide-confirmation-modal'
+import { HostRemixContestModalState } from './host-remix-contest-modal'
 import { InboxUnavailableModalState } from './inbox-unavailable-modal'
 import { LeavingAudiusModalState } from './leaving-audius-modal'
 import { PremiumContentPurchaseModalState } from './premium-content-purchase-modal'
@@ -108,6 +109,7 @@ export type Modals =
   | 'Announcement'
   | 'Notification'
   | 'DownloadTrackArchive'
+  | 'HostRemixContest'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState
@@ -140,6 +142,7 @@ export type StatefulModalsState = {
   Announcement: AnnouncementModalState
   Notification: BaseModalState
   DownloadTrackArchive: DownloadTrackArchiveModalState
+  HostRemixContest: HostRemixContestModalState
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState
