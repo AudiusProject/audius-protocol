@@ -98,7 +98,7 @@ const messages = {
   remixContest: 'Contest Deadline',
   uploadRemixButtonText: 'Upload Your Remix',
   deadline: (deadline: string) =>
-    `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs().format('h:mm A')}`
+    `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`
 }
 
 type GiantTrackTileProps = {
@@ -215,6 +215,7 @@ export const GiantTrackTile = ({
   )
   const event = events?.[0]
   const isRemixContest = isRemixContestEnabled && !isOwner && event
+  console.log('REED event', event)
 
   const isLongFormContent =
     genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
@@ -437,6 +438,7 @@ export const GiantTrackTile = ({
 
   const renderSubmitRemixContestSection = useCallback(() => {
     if (!isRemixContest) return null
+    console.log('REED deadline', event?.endDate)
     return (
       <Flex row gap='m'>
         <Flex gap='xs' alignItems='center'>

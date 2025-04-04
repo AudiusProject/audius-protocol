@@ -118,7 +118,7 @@ const messages = {
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`,
   remixContest: 'Remix Contest',
   deadline: (deadline: string) =>
-    `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs().format('h:mm A')}`,
+    `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`,
   uploadRemixButtonText: 'Upload Your Remix'
 }
 
