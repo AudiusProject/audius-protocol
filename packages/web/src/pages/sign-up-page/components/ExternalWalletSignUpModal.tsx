@@ -23,7 +23,7 @@ import { useAppKitWallet } from '@reown/appkit-wallet-button/react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSwitchChain } from 'wagmi'
 
-import { audiusChain, modal } from 'app/ReownAppKitModal'
+import { audiusChain, appkitModal } from 'app/ReownAppKitModal'
 import { usingExternalWallet } from 'common/store/pages/signon/actions'
 import { getRouteOnCompletion } from 'common/store/pages/signon/selectors'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
@@ -72,26 +72,24 @@ export const ExternalWalletSignUpModal = () => {
     setStatus(Status.LOADING)
     try {
       await connect('metamask')
-      const account = modal.getAccount()
+      const account = appkitModal.getAccount()
       if (!account || !account.isConnected || !account.address) {
         throw new Error('Account not connected')
       }
       const { address } = account
 
+      // Ensure we're on the Audius chain
       console.debug('Switching chains...')
       await switchChainAsync({ chainId: audiusChain.id })
 
       // Reinit SDK with the connected wallet
       const sdk = await initSdk()
 
-      console.debug('SDK reinitialized')
-
       // Check that the user doesn't already exist.
       // If they do, log them in.
       const userExists = await doesUserExist(sdk, address)
-
-      console.debug('User exists?', userExists)
       if (userExists) {
+        console.debug('User already exists. Fetching account and signing in...')
         dispatch(
           accountActions.fetchAccount({ shouldMarkAccountAsLoading: true })
         )
@@ -101,6 +99,7 @@ export const ExternalWalletSignUpModal = () => {
       }
 
       // Let signup saga know it's ok to go pick a handle, then go pick a handle.
+      console.debug('User does not exist. Continuing sign up flow...')
       dispatch(usingExternalWallet())
       navigate(SIGN_UP_HANDLE_PAGE)
       onClose()

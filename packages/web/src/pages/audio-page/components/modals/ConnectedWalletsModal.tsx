@@ -36,7 +36,7 @@ import { useSelector } from 'react-redux'
 import type { Hex } from 'viem'
 import { useAccount, useSignMessage, useSwitchAccount } from 'wagmi'
 
-import { wagmiAdapter, modal, audiusChain } from 'app/ReownAppKitModal'
+import { wagmiAdapter, appkitModal, audiusChain } from 'app/ReownAppKitModal'
 import { ToastContext } from 'components/toast/ToastContext'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { NEW_WALLET_CONNECTED_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
@@ -77,7 +77,7 @@ const useSignMessageAgnostic = () => {
       namespace: keyof NamespaceTypeMap
     ) => {
       if (namespace === 'solana') {
-        const solanaProvider = modal.getProvider<SolanaProvider>('solana')
+        const solanaProvider = appkitModal.getProvider<SolanaProvider>('solana')
         if (!solanaProvider) {
           throw new Error('Missing SolanaProvider')
         }
@@ -112,10 +112,10 @@ const useConnectWallet = () => {
   const { disconnect } = useDisconnect()
 
   const openModal = useCallback(() => {
-    modal.options.networks = [mainnet, solana]
-    modal.updateFeatures({ socials: false, email: false })
-    modal.setThemeMode(theme.type === 'day' ? 'light' : 'dark')
-    modal.open({ view: 'Connect' })
+    appkitModal.options.networks = [mainnet, solana]
+    appkitModal.updateFeatures({ socials: false, email: false })
+    appkitModal.setThemeMode(theme.type === 'day' ? 'light' : 'dark')
+    appkitModal.open({ view: 'Connect' })
   }, [theme])
 
   const connectWallet = useCallback(async () => {
@@ -131,7 +131,7 @@ const useConnectWallet = () => {
         signal.addEventListener('abort', () => {
           reject(signal.reason)
         })
-        unsubscribeEvents = modal.subscribeEvents((newEvent) => {
+        unsubscribeEvents = appkitModal.subscribeEvents((newEvent) => {
           if (newEvent.data.event === 'MODAL_CLOSE') {
             if (newEvent.data.properties.connected) {
               resolve()
@@ -142,18 +142,18 @@ const useConnectWallet = () => {
         })
       })
       unsubscribeEvents?.()
-      const activeAccount = modal.getAccount()
+      const activeAccount = appkitModal.getAccount()
       const wallets = [
         ...(activeAccount?.allAccounts.map((a) => ({
           address: a.address,
           chain: a.namespace === 'eip155' ? Chain.Eth : Chain.Sol
         })) ?? []),
-        ...(activeAccount?.address && modal.getActiveChainNamespace()
+        ...(activeAccount?.address && appkitModal.getActiveChainNamespace()
           ? [
               {
                 address: activeAccount.address,
                 chain:
-                  modal.getActiveChainNamespace() === 'eip155'
+                  appkitModal.getActiveChainNamespace() === 'eip155'
                     ? Chain.Eth
                     : Chain.Sol
               }

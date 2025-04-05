@@ -11,11 +11,12 @@ import {
   TextLink
 } from '@audius/harmony'
 import { useDisconnect } from '@reown/appkit/react'
-import { metaMask } from '@wagmi/connectors'
+import { useAppKitWallet } from '@reown/appkit-wallet-button/react'
 import { useDispatch } from 'react-redux'
-import { useAccount, useConnect, useSwitchChain } from 'wagmi'
+import type { Hex } from 'viem'
+import { useAccount, useSwitchChain } from 'wagmi'
 
-import { audiusChain } from 'app/ReownAppKitModal'
+import { audiusChain, appkitModal } from 'app/ReownAppKitModal'
 import { getRouteOnCompletion } from 'common/store/pages/signon/selectors'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { doesUserExist } from 'pages/sign-up-page/components/ExternalWalletSignUpModal'
@@ -38,7 +39,7 @@ const messages = {
 }
 
 export const SignInWithMetaMaskButton = (props: ButtonProps) => {
-  const { connectAsync } = useConnect()
+  const { connect } = useAppKitWallet()
   const { disconnect } = useDisconnect()
   const { isConnected, address } = useAccount()
   const { switchChainAsync } = useSwitchChain()
@@ -55,17 +56,19 @@ export const SignInWithMetaMaskButton = (props: ButtonProps) => {
       // Ensure the wallet is connected
       if (!isConnected) {
         console.debug('Connecting to the external wallet...')
-        const connection = await connectAsync({
-          chainId: audiusChain.id,
-          connector: metaMask()
-        })
-        wallet = connection.accounts[0]
+        await connect('metamask')
+        const account = appkitModal.getAccount()
+        if (!account || !account.isConnected || !account.address) {
+          throw new Error('Account not connected')
+        }
+        wallet = account.address as Hex
       }
       if (!wallet) {
         throw new Error('No wallet connected')
       }
 
       // Ensure we're on the Audius chain
+      console.debug('Switching chains...')
       await switchChainAsync({ chainId: audiusChain.id })
 
       // Reinit SDK with the connected wallet
@@ -75,6 +78,7 @@ export const SignInWithMetaMaskButton = (props: ButtonProps) => {
       // If they don't, disconnect and try to get them to sign up.
       const userExists = await doesUserExist(sdk, wallet)
       if (!userExists) {
+        console.debug('User does not exist, resetting...')
         await disconnect()
         await initSdk()
         setIsNoAccountError(true)
@@ -83,6 +87,7 @@ export const SignInWithMetaMaskButton = (props: ButtonProps) => {
       }
 
       // Otherwise, refetch the user account in the saga.
+      console.debug('User exists. Fetching account and signing in...')
       dispatch(
         accountActions.fetchAccount({ shouldMarkAccountAsLoading: true })
       )
@@ -93,7 +98,7 @@ export const SignInWithMetaMaskButton = (props: ButtonProps) => {
     }
   }, [
     address,
-    connectAsync,
+    connect,
     disconnect,
     dispatch,
     isConnected,

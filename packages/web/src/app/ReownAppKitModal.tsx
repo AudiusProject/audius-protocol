@@ -48,7 +48,7 @@ export const wagmiAdapter = new WagmiAdapter({
 const solanaAdapter = new SolanaAdapter()
 
 // 5. Create modal
-export const modal = createAppKit({
+export const appkitModal = createAppKit({
   adapters: [wagmiAdapter, solanaAdapter],
   networks,
   projectId,
