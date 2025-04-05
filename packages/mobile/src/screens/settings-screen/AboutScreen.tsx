@@ -1,7 +1,6 @@
 import { route } from '@audius/common/utils'
 import { COPYRIGHT_TEXT } from '@audius/web/src/utils/copyright'
 import { View, Image } from 'react-native'
-import codePush from 'react-native-code-push'
 import { useAsync } from 'react-use'
 
 import {
@@ -55,11 +54,6 @@ const useStyles = makeStyles(({ spacing }) => ({
 export const AboutScreen = () => {
   const styles = useStyles()
 
-  const { value: codePushLabel } = useAsync(async () => {
-    const metadata = await codePush.getUpdateMetadata()
-    return metadata?.label
-  })
-
   return (
     <Screen variant='secondary' title={messages.title} topbarRight={null}>
       <ScreenContent isOfflineCapable>
@@ -69,7 +63,6 @@ export const AboutScreen = () => {
             <Text variant='h2'>{messages.appName}</Text>
             <Text variant='body2'>
               {messages.version} {appVersion}
-              {!codePushLabel ? null : ` c${codePushLabel}`}
             </Text>
             <Text variant='body2'>{messages.copyright}</Text>
           </View>
