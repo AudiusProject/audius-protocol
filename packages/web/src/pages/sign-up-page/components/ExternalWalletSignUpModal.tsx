@@ -18,11 +18,12 @@ import {
   Button
 } from '@audius/harmony'
 import type { AudiusSdk } from '@audius/sdk'
-import { useAppKitAccount, useAppKitState } from '@reown/appkit/react'
+import { useAppKitState } from '@reown/appkit/react'
+import { useAppKitWallet } from '@reown/appkit-wallet-button/react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSwitchChain } from 'wagmi'
 
-import { audiusChain } from 'app/ReownAppKitModal'
+import { audiusChain, modal } from 'app/ReownAppKitModal'
 import { usingExternalWallet } from 'common/store/pages/signon/actions'
 import { getRouteOnCompletion } from 'common/store/pages/signon/selectors'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
@@ -59,8 +60,8 @@ export const doesUserExist = async (sdk: AudiusSdk, wallet: string) => {
 export const ExternalWalletSignUpModal = () => {
   const { isOpen, onClose } = useExternalWalletSignUpModal()
   const state = useAppKitState()
-  const { isConnected, address } = useAppKitAccount()
   const { switchChainAsync } = useSwitchChain()
+  const { connect } = useAppKitWallet()
 
   const navigate = useNavigateToPage()
   const dispatch = useDispatch()
@@ -70,9 +71,12 @@ export const ExternalWalletSignUpModal = () => {
   const handleConfirm = useCallback(async () => {
     setStatus(Status.LOADING)
     try {
-      if (!isConnected || !address) {
+      await connect('metamask')
+      const account = modal.getAccount()
+      if (!account || !account.isConnected || !account.address) {
         throw new Error('Account not connected')
       }
+      const { address } = account
 
       console.debug('Switching chains...')
       await switchChainAsync({ chainId: audiusChain.id })
@@ -104,15 +108,7 @@ export const ExternalWalletSignUpModal = () => {
       console.error(e)
       setStatus(Status.ERROR)
     }
-  }, [
-    address,
-    dispatch,
-    isConnected,
-    navigate,
-    onClose,
-    route,
-    switchChainAsync
-  ])
+  }, [connect, dispatch, navigate, onClose, route, switchChainAsync])
 
   const onClosed = useCallback(() => {
     setStatus(Status.IDLE)
@@ -136,7 +132,7 @@ export const ExternalWalletSignUpModal = () => {
           <Flex direction='column' gap='s' alignItems='center'>
             <Text>{messages.body}</Text>
             {/* @ts-ignore */}
-            <appkit-button balance='hide' namespace='eip155' />
+            {/* <appkit-button balance='hide' namespace='eip155' /> */}
           </Flex>
         </ModalContent>
         <ModalFooter>
@@ -144,7 +140,6 @@ export const ExternalWalletSignUpModal = () => {
             <Flex gap='s'>
               <Button
                 fullWidth
-                disabled={!isConnected}
                 variant='destructive'
                 onClick={handleConfirm}
                 isLoading={status === Status.LOADING}
