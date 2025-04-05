@@ -10,9 +10,7 @@ import { Chain, Name } from '@audius/common/models'
 import { useCurrentUser } from '@audius/common/src/api/tan-query/useCurrentUser'
 import {
   accountSelectors,
-  profilePageActions,
-  useConnectedWalletsModal,
-  walletActions
+  useConnectedWalletsModal
 } from '@audius/common/store'
 import {
   Button,
@@ -34,7 +32,7 @@ import {
   type NamespaceTypeMap
 } from '@reown/appkit/react'
 import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import type { Hex } from 'viem'
 import { useAccount, useSignMessage, useSwitchAccount } from 'wagmi'
 
@@ -196,7 +194,6 @@ export const ConnectedWalletsModal = () => {
   const {
     analytics: { track, make }
   } = useAppContext()
-  const dispatch = useDispatch()
   const { isOpen, onClose, onClosed } = useConnectedWalletsModal()
   const { connectWallet, isWalletConnecting } = useConnectWallet()
   const { signMessageAgnostic } = useSignMessageAgnostic()
@@ -286,20 +283,6 @@ export const ConnectedWalletsModal = () => {
           )
         }
       }
-      // TODO: Update across app to show in-app balance from queryClient rather
-      // than requiring this action to be dispatched to update the store.
-      dispatch(walletActions.getBalance())
-      // TODO: Remove the refetch of the user and refresh the collectibles directly.
-      dispatch(
-        profilePageActions.fetchProfile(
-          null,
-          accountUserId,
-          false,
-          false,
-          false
-        )
-      )
-
       const timeout = NEW_WALLET_CONNECTED_TOAST_TIMEOUT_MILLIS
       toast(messages.newWalletConnected, timeout)
     } catch (e) {
@@ -319,7 +302,6 @@ export const ConnectedWalletsModal = () => {
     make,
     originalConnector,
     connectWallet,
-    dispatch,
     accountUserId,
     toast,
     signMessageAgnostic,
@@ -339,21 +321,6 @@ export const ConnectedWalletsModal = () => {
     try {
       await removeConnectedWalletAsync({ wallet: walletToRemove! })
       setCurrentPage(Pages.TABLE)
-
-      // TODO: Update across app to show in-app balance from queryClient rather
-      // than requiring this action to be dispatched to update the store.
-      dispatch(walletActions.getBalance())
-      // TODO: Remove the refetch of the user and refresh the collectibles directly.
-      dispatch(
-        profilePageActions.fetchProfile(
-          null,
-          accountUserId,
-          false,
-          false,
-          false
-        )
-      )
-
       const timeout = NEW_WALLET_CONNECTED_TOAST_TIMEOUT_MILLIS
       toast(messages.walletRemoved, timeout)
     } catch (e) {
@@ -361,13 +328,7 @@ export const ConnectedWalletsModal = () => {
         toast(messages.error)
       }
     }
-  }, [
-    accountUserId,
-    dispatch,
-    removeConnectedWalletAsync,
-    toast,
-    walletToRemove
-  ])
+  }, [removeConnectedWalletAsync, toast, walletToRemove])
 
   const handleIgnoreClicked = useCallback(() => setCurrentPage(Pages.TABLE), [])
 
