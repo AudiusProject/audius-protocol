@@ -738,19 +738,21 @@ export const audiusBackend = ({
     sdk: AudiusSdk
   }): Promise<BN | null> {
     try {
-      const { userBank } =
-        await sdk.services.claimableTokensClient.getOrCreateUserBank({
-          ethWallet: ethAddress,
-          mint: 'wAUDIO'
-        })
+      const userBank = await sdk.services.claimableTokensClient.deriveUserBank({
+        ethWallet: ethAddress,
+        mint: 'wAUDIO'
+      })
       const connection = sdk.services.solanaClient.connection
-      const {
-        value: { amount }
-      } = await connection.getTokenAccountBalance(userBank)
-      const ownerWAudioBalance = AUDIO(wAUDIO(BigInt(amount))).value
-      if (isNullOrUndefined(ownerWAudioBalance)) {
-        throw new Error('Failed to fetch account waudio balance')
+      let balance = BigInt(0)
+      try {
+        const {
+          value: { amount }
+        } = await connection.getTokenAccountBalance(userBank)
+        balance = BigInt(amount)
+      } catch (e) {
+        console.error(e)
       }
+      const ownerWAudioBalance = AUDIO(wAUDIO(balance)).value
       return new BN(ownerWAudioBalance.toString())
     } catch (e) {
       console.error(e)
