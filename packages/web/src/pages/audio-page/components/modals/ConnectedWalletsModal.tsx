@@ -36,12 +36,7 @@ import {
 import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react'
 import { useDispatch, useSelector } from 'react-redux'
 import type { Hex } from 'viem'
-import {
-  useAccount,
-  useSignMessage,
-  useSwitchAccount,
-  useSwitchChain
-} from 'wagmi'
+import { useAccount, useSignMessage, useSwitchAccount } from 'wagmi'
 
 import { wagmiAdapter, modal, audiusChain } from 'app/ReownAppKitModal'
 import { ToastContext } from 'components/toast/ToastContext'
@@ -208,7 +203,6 @@ export const ConnectedWalletsModal = () => {
   const currentUser = useCurrentUser()
   const { switchAccountAsync } = useSwitchAccount()
   const { connector: originalConnector } = useAccount()
-  const { switchChainAsync } = useSwitchChain()
 
   const accountUserId = useSelector(accountSelectors.getUserId)
 
@@ -238,15 +232,24 @@ export const ConnectedWalletsModal = () => {
       const originalAddress = currentUser?.data?.wallet
       await track(make({ eventName: Name.CONNECT_WALLET_NEW_WALLET_START }))
       // 0. Disconnect from external wallet if applicable (if user is signed in with eg. Metamask)
-      if (originalConnector) {
+      let attemptReconnect = false
+      if (
+        originalConnector &&
+        (await originalConnector.getChainId()) === audiusChain.id
+      ) {
+        console.debug('Disconnecting original connector...', originalConnector)
         await originalConnector.disconnect()
+        attemptReconnect = true
       }
       // 1. Connect the wallets using Reown AppKit
       const wallets = await connectWallet()
       console.debug('Wallets connected:', wallets)
       // 2. Request a signature as proof the wallet belongs to the user
       for (const { address, chain } of wallets) {
-        console.debug('Adding wallet', { address, chain, originalAddress })
+        console.debug('Getting wallet signature', {
+          address,
+          chain
+        })
         // Skip the user's account address
         if (address !== originalAddress) {
           const signature = await signMessageAgnostic(
@@ -262,13 +265,14 @@ export const ConnectedWalletsModal = () => {
             })
           )
           // 3. Swap back to original external wallet (if user is signed in with eg. Metamask)
-          if (originalConnector) {
-            await originalConnector.connect()
+          if (originalConnector && attemptReconnect) {
+            console.debug('Reconnecting original connector...')
+            await originalConnector.connect({ chainId: audiusChain.id })
             await switchAccountAsync({ connector: originalConnector })
-            await switchChainAsync({ chainId: audiusChain.id })
           }
 
           // 4. Send a transaction via SDK to the network to add the association
+          console.debug('Adding wallet...', { address, chain })
           await addConnectedWalletAsync({
             wallet: { address, chain },
             signature
@@ -313,12 +317,12 @@ export const ConnectedWalletsModal = () => {
     currentUser?.data?.wallet,
     track,
     make,
+    originalConnector,
     connectWallet,
     dispatch,
     accountUserId,
     toast,
     signMessageAgnostic,
-    originalConnector,
     addConnectedWalletAsync,
     switchAccountAsync
   ])
