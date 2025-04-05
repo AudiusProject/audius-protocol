@@ -1,8 +1,11 @@
 import { Id } from '@audius/sdk'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
 import { Chain, type ID } from '~/models'
+import { profilePageActions } from '~/store/pages'
+import { walletActions } from '~/store/wallet'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
@@ -57,6 +60,10 @@ export const useAddConnectedWallet = () => {
   const queryClient = useQueryClient()
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
+
+  // for priming cache
+  const dispatch = useDispatch()
+
   return useMutation({
     mutationFn: async ({ wallet, signature }: AddConnectedWalletParams) => {
       const sdk = await audiusSdk()
@@ -88,9 +95,25 @@ export const useAddConnectedWallet = () => {
       return { previousAssociatedWallets }
     },
     onSettled: async () => {
-      return await queryClient.invalidateQueries({
+      queryClient.invalidateQueries({
         queryKey: getConnectedWalletsQueryKey({ userId: currentUserId })
       })
+      queryClient.invalidateQueries({
+        queryKey: getUserCollectiblesQueryKey({ userId: currentUserId })
+      })
+
+      // Temporarily manually refetch relevant redux states
+      // TODO: Remove once consumers of the redux store migrate to tanquery
+      dispatch(walletActions.getBalance())
+      dispatch(
+        profilePageActions.fetchProfile(
+          null,
+          currentUserId,
+          false,
+          false,
+          false
+        )
+      )
     },
     onError: (error, _newWallet, context) => {
       queryClient.setQueryData(
@@ -113,6 +136,10 @@ export const useRemoveConnectedWallet = () => {
   const queryClient = useQueryClient()
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
+
+  // for priming cache
+  const dispatch = useDispatch()
+
   return useMutation({
     mutationFn: async ({ wallet }: RemoveConnectedWalletParams) => {
       const sdk = await audiusSdk()
@@ -129,6 +156,19 @@ export const useRemoveConnectedWallet = () => {
       queryClient.invalidateQueries({
         queryKey: getUserCollectiblesQueryKey({ userId: currentUserId })
       })
+
+      // Temporarily manually refetch relevant redux states
+      // TODO: Remove once consumers of the redux store migrate to tanquery
+      dispatch(walletActions.getBalance())
+      dispatch(
+        profilePageActions.fetchProfile(
+          null,
+          currentUserId,
+          false,
+          false,
+          false
+        )
+      )
     },
     onError: (error) => {
       reportToSentry({

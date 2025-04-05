@@ -129,6 +129,8 @@ export const useWalletAudioBalances = (
 
 /**
  * Hook for getting the AUDIO balance of the current user, including connected wallets.
+ *
+ * NOTE: Does not stay in sync with the store. Won't reflect optimism.
  */
 export const useAudioBalance = () => {
   // Get account balances
@@ -170,8 +172,5 @@ export const useAudioBalance = () => {
 
   // Together they are the total balance
   const totalBalance = accountBalance + connectedWalletsBalance
-
-  // Call prime balance data
-
   return { accountBalance, connectedWalletsBalance, totalBalance }
 }
