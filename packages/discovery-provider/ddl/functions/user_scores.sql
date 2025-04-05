@@ -1,6 +1,6 @@
-CREATE OR REPLACE FUNCTION get_user_scores(
-        target_user_ids integer [] DEFAULT NULL::integer []
-    ) RETURNS TABLE(
+create or replace function get_user_scores(
+        target_user_ids integer [] default null::integer []
+    ) returns table(
         user_id integer,
         handle_lc text,
         play_count bigint,
@@ -8,8 +8,9 @@ CREATE OR REPLACE FUNCTION get_user_scores(
         challenge_count bigint,
         following_count bigint,
         chat_block_count bigint,
+        is_audius_impersonator boolean,
         score bigint
-    ) LANGUAGE sql AS $function$ with play_activity as (
+    ) language sql as $function$ with play_activity as (
         select plays.user_id,
             count(distinct date_trunc('minute', plays.created_at)) as play_count
         from plays
@@ -50,6 +51,14 @@ CREATE OR REPLACE FUNCTION get_user_scores(
         select users.user_id,
             users.handle_lc,
             users.created_at,
+            case
+                when (
+                    users.handle_lc ilike '%audius%'
+                    or lower(users.name) ilike '%audius%'
+                )
+                and users.is_verified = false then true
+                else false
+            end as is_audius_impersonator,
             coalesce(play_activity.play_count, 0) as play_count,
             coalesce(fast_challenge_completion.challenge_count, 0) as challenge_count,
             coalesce(aggregate_user.following_count, 0) as following_count,
@@ -73,10 +82,15 @@ select a.user_id,
     a.challenge_count,
     a.following_count,
     a.chat_block_count,
+    a.is_audius_impersonator,
     (
-        a.play_count + a.follower_count - a.challenge_count - (a.chat_block_count * 10) + case
+        a.play_count + a.follower_count - a.challenge_count - (a.chat_block_count * 100) + case
             when a.following_count < 5 then -1
+            else 0
+        end + case
+            when a.is_audius_impersonator then -1000
             else 0
         end
     ) as score
-from aggregate_scores a $function$;
+from aggregate_scores a;
+$function$;
