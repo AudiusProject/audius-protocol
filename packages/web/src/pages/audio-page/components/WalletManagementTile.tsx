@@ -256,7 +256,10 @@ const ManageWalletsButton = () => {
 
   return (
     <>
-      <OptionButton onClick={openConnectedWalletsModal} iconLeft={IconWallet}>
+      <OptionButton
+        onClick={() => openConnectedWalletsModal()}
+        iconLeft={IconWallet}
+      >
         {messages.connectedWallets}
       </OptionButton>
       {isMobile && (
