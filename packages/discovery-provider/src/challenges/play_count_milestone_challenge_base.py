@@ -81,7 +81,7 @@ class PlayCountMilestoneUpdaterBase(ChallengeUpdater):
         elif self.CHALLENGE_ID == "p3":
             milestone = "10000"
 
-        return f"{hex(user_id)[2:]}_{milestone}"
+        return f"{hex(user_id)[2:]}:{milestone}"
 
     def should_create_new_challenge(
         self,

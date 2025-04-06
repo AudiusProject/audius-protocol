@@ -19,7 +19,8 @@ import {
   CommonState,
   artistPickModalActions,
   useDeleteTrackConfirmationModal,
-  shareModalUIActions
+  shareModalUIActions,
+  useHostRemixContestModal
 } from '@audius/common/store'
 import { Genre, Nullable, route } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/harmony'
@@ -67,7 +68,9 @@ const messages = {
   markAsPlayed: 'Mark as Played',
   markedAsPlayed: 'Marked as Played',
   markAsUnplayed: 'Mark as Unplayed',
-  markedAsUnplayed: 'Marked as Unplayed'
+  markedAsUnplayed: 'Marked as Unplayed',
+  hostRemixContest: 'Host Remix Contest',
+  editRemixContest: 'Edit Remix Contest'
 }
 
 export type OwnProps = {
@@ -84,6 +87,7 @@ export type OwnProps = {
   includeFavorite?: boolean
   includeRepost?: boolean
   includeShare?: boolean
+  includeRemixContest?: boolean
   includeAlbumPage?: boolean
   includeTrackPage?: boolean
   isArtistPick?: boolean
@@ -130,7 +134,7 @@ const TrackMenu = ({
   const currentUserId = useSelector(getUserId)
   const { onOpen: openDeleteTrackConfirmation } =
     useDeleteTrackConfirmationModal()
-
+  const { onOpen: openHostRemixContest } = useHostRemixContestModal()
   const { data: track } = useGetTrackById({ id: props.trackId })
 
   const toggleSaveTrack = useToggleFavoriteTrack({
@@ -162,6 +166,7 @@ const TrackMenu = ({
       handle,
       includeRepost,
       includeShare,
+      includeRemixContest,
       openAddToCollectionModal,
       openEmbedModal,
       repostTrack,
@@ -294,7 +299,21 @@ const TrackMenu = ({
       onClick: () => openEmbedModal(trackId)
     }
 
+    const remixContestMenuItem = {
+      // TODO: Update this to edit when the track is a contest ()
+      text: messages.hostRemixContest,
+      onClick: () => {
+        openHostRemixContest({
+          trackId
+        })
+      }
+    }
+
     const menu: { items: PopupMenuItem[] } = { items: [] }
+
+    if (includeRemixContest && isOwner && !isDeleted) {
+      menu.items.push(remixContestMenuItem)
+    }
 
     if (includeShare && !isDeleted) {
       menu.items.push(shareMenuItem)

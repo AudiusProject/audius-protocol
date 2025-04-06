@@ -7,7 +7,7 @@ export const env: Env = {
   API_URL: 'https://api.staging.audius.co',
   API_KEY: '2dc52ec9a4c31790cab6653de0c637f680faa993',
   APP_NAME: 'audius-client',
-  ARCHIVE_ENDPOINT: 'https://discoveryprovider.staging.audius.co',
+  ARCHIVE_ENDPOINT: 'https://api.staging.audius.co',
   AUDIUS_NETWORK_CHAIN_ID: 1056801,
   AUDIUS_URL: 'https://staging.audius.co',
   BITSKI_CALLBACK_URL: 'https://staging.audius.co/bitski-callback.html',

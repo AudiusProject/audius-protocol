@@ -78,7 +78,8 @@ export const initialState: BasicModalsState = {
   ConnectedWallets: { isOpen: false },
   Announcement: { isOpen: false },
   Notification: { isOpen: false },
-  DownloadTrackArchive: { isOpen: false }
+  DownloadTrackArchive: { isOpen: false },
+  HostRemixContest: { isOpen: false }
 }
 
 const slice = createSlice({

@@ -26,6 +26,7 @@ import EmbedModal from 'components/embed-modal/EmbedModal'
 import { FeatureFlagOverrideModal } from 'components/feature-flag-override-modal'
 import FirstUploadModal from 'components/first-upload-modal/FirstUploadModal'
 import { HideContentConfirmationModal } from 'components/hide-confirmation-modal'
+import { HostRemixContestModal } from 'components/host-remix-contest-modal/HostRemixContestModal'
 import { InboxUnavailableModal } from 'components/inbox-unavailable-modal/InboxUnavailableModal'
 import { LeavingAudiusModal } from 'components/leaving-audius-modal/LeavingAudiusModal'
 import { LockedContentModal } from 'components/locked-content-modal/LockedContentModal'
@@ -88,6 +89,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   TiersExplainer: TierExplainerModal,
   DeletePlaylistConfirmation: DeletePlaylistConfirmationModal,
   DeleteTrackConfirmation: DeleteTrackConfirmationModal,
+  HostRemixContest: HostRemixContestModal,
   ReplaceTrackConfirmation: ReplaceTrackConfirmationModal,
   ReplaceTrackProgress: ReplaceTrackProgressModal,
   DuplicateAddConfirmation: DuplicateAddConfirmationModal,

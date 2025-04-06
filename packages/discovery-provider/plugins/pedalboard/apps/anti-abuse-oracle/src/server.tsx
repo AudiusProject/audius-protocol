@@ -235,6 +235,7 @@ app.get('/attestation/ui', async (c) => {
             <th>Follower Count</th>
             <th>Following Count</th>
             <th>Fast Challenges</th>
+            <th>Chat Blocks</th>
             <th>Fingerprint</th>
             <th>Override</th>
             <th>Overall Score</th>
@@ -266,6 +267,7 @@ app.get('/attestation/ui', async (c) => {
                 <td>{userScore.followerCount}</td>
                 <td>{userScore.followingCount}</td>
                 <td>{userScore.challengeCount}</td>
+                <td>{userScore.chatBlockCount}</td>
                 <td>{userScore.fingerprintCount}</td>
                 <td>
                   {userScore.isBlocked
@@ -372,6 +374,7 @@ app.get('/attestation/ui/user', async (c) => {
               <th class='text-left'>Follower Count</th>
               <th class='text-left'>Fast Challenge Count</th>
               <th class='text-left'>Following Count</th>
+              <th class='text-left'>Chat Block Count</th>
             </tr>
           </thead>
           <tbody>
@@ -393,6 +396,13 @@ app.get('/attestation/ui/user', async (c) => {
                 }
               >
                 {userScore.followingCount}
+              </td>
+              <td
+                class={
+                  userScore.chatBlockCount ? 'text-red-500' : 'text-green-500'
+                }
+              >
+                {userScore.chatBlockCount}
               </td>
               <td
                 class={

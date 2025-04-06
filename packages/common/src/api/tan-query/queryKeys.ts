@@ -81,5 +81,6 @@ export const QUERY_KEYS = {
   connectedWallets: 'connectedWallets',
   audioBalance: 'audioBalance',
   walletCollectibles: 'walletCollectibles',
-  events: 'events'
+  events: 'events',
+  eventsByEntityId: 'eventsByEntityId'
 } as const
