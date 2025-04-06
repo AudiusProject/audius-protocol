@@ -44,13 +44,7 @@ import {
   PushNotificationSetting,
   PushNotifications
 } from '../../store'
-import {
-  getErrorMessage,
-  uuid,
-  Maybe,
-  Nullable,
-  isNullOrUndefined
-} from '../../utils'
+import { getErrorMessage, uuid, Maybe, Nullable } from '../../utils'
 
 import { MintName } from './solana'
 import { MonitoringCallbacks } from './types'
