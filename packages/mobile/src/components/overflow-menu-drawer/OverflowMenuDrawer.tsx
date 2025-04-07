@@ -1,10 +1,9 @@
-import { useEventsByEntityId, useTrack } from '@audius/common/api'
+import { useRemixContest, useTrack } from '@audius/common/api'
 import {
   mobileOverflowMenuUISelectors,
   OverflowAction,
   OverflowSource
 } from '@audius/common/store'
-import { findActiveRemixContest } from '@audius/common/utils'
 import { EventEntityTypeEnum } from '@audius/sdk'
 import { useSelector } from 'react-redux'
 
@@ -90,11 +89,11 @@ export const OverflowMenuDrawer = () => {
     }
   })
 
-  const { data: events } = useEventsByEntityId(id, {
+  const { data: events } = useRemixContest(id, {
     entityType: EventEntityTypeEnum.Track
   })
 
-  const event = findActiveRemixContest(events)
+  const event = events?.[0]
   const isRemixContest = !!event
 
   if (!overflowMenu?.id) {

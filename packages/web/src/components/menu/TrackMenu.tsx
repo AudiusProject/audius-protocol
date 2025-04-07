@@ -26,12 +26,7 @@ import {
   shareModalUIActions,
   useHostRemixContestModal
 } from '@audius/common/store'
-import {
-  findActiveRemixContest,
-  Genre,
-  Nullable,
-  route
-} from '@audius/common/utils'
+import { Genre, Nullable, route } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/harmony'
 import { EventEntityTypeEnum } from '@audius/sdk'
 import { connect, useDispatch, useSelector } from 'react-redux'
@@ -155,7 +150,7 @@ const TrackMenu = ({
   const { data: events } = useRemixContest(props.trackId, {
     entityType: EventEntityTypeEnum.Track
   })
-  const event = findActiveRemixContest(events)
+  const event = events?.[0]
 
   const onDeleteTrack = (trackId: Nullable<number>) => {
     if (!trackId) return

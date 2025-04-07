@@ -20,13 +20,7 @@ import {
   useEarlyReleaseConfirmationModal,
   usePublishConfirmationModal
 } from '@audius/common/store'
-import {
-  Genre,
-  Nullable,
-  findActiveRemixContest,
-  formatReleaseDate,
-  route
-} from '@audius/common/utils'
+import { Genre, Nullable, formatReleaseDate, route } from '@audius/common/utils'
 import {
   Text,
   Box,
@@ -221,7 +215,7 @@ export const GiantTrackTile = ({
       entityType: GetEntityEventsEntityTypeEnum.Track
     }
   )
-  const event = findActiveRemixContest(events)
+  const event = events?.[0]
   const isRemixContest = isRemixContestEnabled && event
 
   const isLongFormContent =

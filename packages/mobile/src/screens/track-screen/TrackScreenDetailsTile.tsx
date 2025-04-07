@@ -42,12 +42,7 @@ import {
   usePublishConfirmationModal,
   useEarlyReleaseConfirmationModal
 } from '@audius/common/store'
-import {
-  findActiveRemixContest,
-  formatReleaseDate,
-  Genre,
-  removeNullable
-} from '@audius/common/utils'
+import { formatReleaseDate, Genre, removeNullable } from '@audius/common/utils'
 import { EventEntityTypeEnum } from '@audius/sdk'
 import dayjs from 'dayjs'
 import { TouchableOpacity } from 'react-native'
@@ -238,7 +233,7 @@ export const TrackScreenDetailsTile = ({
   const { data: events } = useRemixContest(trackId, {
     entityType: EventEntityTypeEnum.Track
   })
-  const event = findActiveRemixContest(events)
+  const event = events?.[0]
   const isRemixContest = isRemixContestEnabled && event
 
   const isPlayingPreview = isPreviewing && isPlaying

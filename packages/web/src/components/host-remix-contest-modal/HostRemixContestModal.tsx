@@ -7,7 +7,6 @@ import {
   useUpdateEvent
 } from '@audius/common/api'
 import { useHostRemixContestModal } from '@audius/common/store'
-import { findActiveRemixContest } from '@audius/common/utils'
 import {
   Button,
   Flex,
@@ -56,7 +55,7 @@ export const HostRemixContestModal = () => {
     entityType: EventEntityTypeEnum.Track
   })
 
-  const event = findActiveRemixContest(events)
+  const event = events?.[0]
   const isEdit = !!event
 
   const [contestEndDate, setContestEndDate] = useState(
