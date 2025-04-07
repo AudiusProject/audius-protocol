@@ -43,7 +43,7 @@ import {
   useEarlyReleaseConfirmationModal
 } from '@audius/common/store'
 import { formatReleaseDate, Genre, removeNullable } from '@audius/common/utils'
-import { GetEntityEventsEntityTypeEnum } from '@audius/sdk'
+import { EventEntityTypeEnum } from '@audius/sdk'
 import dayjs from 'dayjs'
 import { TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -117,6 +117,7 @@ const messages = {
   releases: (releaseDate: string) =>
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`,
   remixContest: 'Remix Contest',
+  contestDeadline: 'Contest Deadline',
   deadline: (deadline?: string) =>
     deadline
       ? `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`
@@ -230,10 +231,10 @@ export const TrackScreenDetailsTile = ({
     FeatureFlags.REMIX_CONTEST
   )
   const { data: events } = useRemixContest(trackId, {
-    entityType: GetEntityEventsEntityTypeEnum.Track
+    entityType: EventEntityTypeEnum.Track
   })
   const event = events?.[0]
-  const isRemixContest = isRemixContestEnabled && !isOwner && event
+  const isRemixContest = isRemixContestEnabled && event
 
   const isPlayingPreview = isPreviewing && isPlaying
   const isPlayingFullAccess = isPlaying && !isPreviewing
@@ -506,22 +507,24 @@ export const TrackScreenDetailsTile = ({
       <Flex gap='m'>
         <Flex row gap='xs' alignItems='center'>
           <Text variant='label' color='accent'>
-            {messages.remixContest}
+            {messages.contestDeadline}
           </Text>
           <Text size='s' strength='strong'>
             {messages.deadline(event?.endDate)}
           </Text>
         </Flex>
-        <Flex flex={1}>
-          <Button
-            variant='secondary'
-            size='small'
-            iconLeft={IconCloudUpload}
-            onPress={handlePressSubmitRemix}
-          >
-            {messages.uploadRemixButtonText}
-          </Button>
-        </Flex>
+        {!isOwner ? (
+          <Flex flex={1}>
+            <Button
+              variant='secondary'
+              size='small'
+              iconLeft={IconCloudUpload}
+              onPress={handlePressSubmitRemix}
+            >
+              {messages.uploadRemixButtonText}
+            </Button>
+          </Flex>
+        ) : null}
       </Flex>
     )
   }
