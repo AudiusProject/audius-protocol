@@ -1,9 +1,11 @@
-import { useTrack } from '@audius/common/api'
+import { useEventsByEntityId, useTrack } from '@audius/common/api'
 import {
   mobileOverflowMenuUISelectors,
   OverflowAction,
   OverflowSource
 } from '@audius/common/store'
+import { findActiveRemixContest } from '@audius/common/utils'
+import { EventEntityTypeEnum } from '@audius/sdk'
 import { useSelector } from 'react-redux'
 
 import ActionDrawer from 'app/components/action-drawer'
@@ -16,9 +18,13 @@ import TrackOverflowMenuDrawer from './TrackOverflowMenuDrawer'
 
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 
-const overflowRowConfig = (
+const overflowRowConfig = ({
+  commentCount,
+  isRemixContest = false
+}: {
   commentCount: number | undefined
-): Record<OverflowAction, ActionDrawerRow> => ({
+  isRemixContest: boolean
+}): Record<OverflowAction, ActionDrawerRow> => ({
   [OverflowAction.REPOST]: { text: 'Repost' },
   [OverflowAction.UNREPOST]: { text: 'Unrepost' },
   [OverflowAction.FAVORITE]: { text: 'Favorite' },
@@ -65,8 +71,9 @@ const overflowRowConfig = (
         ? `View (${commentCount}) Comments`
         : 'View Comments' // slightly better than incorrectly showing a 0 count
   },
-  // TODO: Update to say edit remix contest when the track already has an event
-  [OverflowAction.HOST_REMIX_CONTEST]: { text: 'Host Remix Contest' }
+  [OverflowAction.HOST_REMIX_CONTEST]: {
+    text: isRemixContest ? 'Edit Remix Contest' : 'Host Remix Contest'
+  }
 })
 
 export const OverflowMenuDrawer = () => {
@@ -82,6 +89,13 @@ export const OverflowMenuDrawer = () => {
       return track.comment_count
     }
   })
+
+  const { data: events } = useEventsByEntityId(id, {
+    entityType: EventEntityTypeEnum.Track
+  })
+
+  const event = findActiveRemixContest(events)
+  const isRemixContest = !!event
 
   if (!overflowMenu?.id) {
     return <></>
@@ -101,7 +115,7 @@ export const OverflowMenuDrawer = () => {
     <OverflowDrawerComponent
       render={(callbacks) => {
         const rows = (overflowActions ?? []).map((action) => ({
-          ...overflowRowConfig(commentCount)[action],
+          ...overflowRowConfig({ commentCount, isRemixContest })[action],
           callback: callbacks[action]
         }))
         return <ActionDrawer modalName='Overflow' rows={rows} />

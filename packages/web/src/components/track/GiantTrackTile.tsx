@@ -20,7 +20,13 @@ import {
   useEarlyReleaseConfirmationModal,
   usePublishConfirmationModal
 } from '@audius/common/store'
-import { Genre, Nullable, formatReleaseDate, route } from '@audius/common/utils'
+import {
+  Genre,
+  Nullable,
+  findActiveRemixContest,
+  formatReleaseDate,
+  route
+} from '@audius/common/utils'
 import {
   Text,
   Box,
@@ -95,7 +101,7 @@ const messages = {
   hidden: 'hidden',
   releases: (releaseDate: string) =>
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`,
-  remixContest: 'Contest Deadline',
+  contestDeadline: 'Contest Deadline',
   uploadRemixButtonText: 'Upload Your Remix',
   deadline: (deadline?: string) =>
     deadline
@@ -215,8 +221,8 @@ export const GiantTrackTile = ({
       entityType: GetEntityEventsEntityTypeEnum.Track
     }
   )
-  const event = events?.[0]
-  const isRemixContest = isRemixContestEnabled && !isOwner && event
+  const event = findActiveRemixContest(events)
+  const isRemixContest = isRemixContestEnabled && event
 
   const isLongFormContent =
     genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
@@ -443,21 +449,23 @@ export const GiantTrackTile = ({
       <Flex row gap='m'>
         <Flex gap='xs' alignItems='center'>
           <Text variant='label' color='accent'>
-            {messages.remixContest}
+            {messages.contestDeadline}
           </Text>
           <Text>{messages.deadline(event?.endDate)}</Text>
         </Flex>
-        <Button
-          variant='secondary'
-          size='small'
-          onClick={goToUploadWithRemix}
-          iconLeft={IconCloudUpload}
-        >
-          {messages.uploadRemixButtonText}
-        </Button>
+        {!isOwner ? (
+          <Button
+            variant='secondary'
+            size='small'
+            onClick={goToUploadWithRemix}
+            iconLeft={IconCloudUpload}
+          >
+            {messages.uploadRemixButtonText}
+          </Button>
+        ) : null}
       </Flex>
     )
-  }, [isRemixContest, goToUploadWithRemix, event])
+  }, [isRemixContest, event?.endDate, isOwner, goToUploadWithRemix])
 
   const isLoading = loading || artworkLoading || isEventsLoading
 
