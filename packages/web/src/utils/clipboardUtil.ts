@@ -45,9 +45,9 @@ export const getCopyableLink = (link: string) => {
   const hostname = window.location.host // host instead of hostname to work with ports besides 80
 
   if (protocol !== 'audius:') {
-    return `${protocol}//${hostname}${link}`
+    return `${protocol}//${hostname}/${link}`
   } else {
-    return `${PUBLIC_PROTOCOL}//${PUBLIC_HOSTNAME}${link}`
+    return `${PUBLIC_PROTOCOL}//${PUBLIC_HOSTNAME}/${link}`
   }
 }
 
