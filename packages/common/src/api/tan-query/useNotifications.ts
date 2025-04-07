@@ -41,12 +41,16 @@ const collectEntityIds = (notifications: Notification[]): EntityIds => {
     const { type } = notification
     if (type === NotificationType.UserSubscription) {
       if (notification.entityType === Entity.Track) {
-        notification.entityIds.forEach((id) => trackIds.add(id))
+        if (notification.entityIds.length === 1) {
+          trackIds.add(notification.entityIds[0])
+        }
       } else if (
         notification.entityType === Entity.Playlist ||
         notification.entityType === Entity.Album
       ) {
-        notification.entityIds.forEach((id) => collectionIds.add(id))
+        if (notification.entityIds.length === 1) {
+          collectionIds.add(notification.entityIds[0])
+        }
       }
       userIds.add(notification.userId)
     }
@@ -145,7 +149,9 @@ const collectEntityIds = (notifications: Notification[]): EntityIds => {
       if (notification.entityType === Entity.Track) {
         trackIds.add(notification.entityId)
       }
-      notification.userIds.forEach((id) => userIds.add(id))
+      notification.userIds
+        .slice(0, USER_INITIAL_LOAD_COUNT)
+        .forEach((id) => userIds.add(id))
     }
   })
 
