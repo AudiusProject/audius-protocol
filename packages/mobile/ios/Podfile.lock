@@ -2074,7 +2074,7 @@ DEPENDENCIES:
   - RNImageCropPicker (from `../node_modules/react-native-image-crop-picker`)
   - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
-  - RNReanimated (from `../node_modules/react-native-reanimated`)
+  - RNReanimated (from `../../../node_modules/react-native-reanimated`)
   - RNScreens (from `../../../node_modules/react-native-screens`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNShare (from `../node_modules/react-native-share`)
@@ -2317,7 +2317,7 @@ EXTERNAL SOURCES:
   RNReactNativeHapticFeedback:
     :path: "../node_modules/react-native-haptic-feedback"
   RNReanimated:
-    :path: "../node_modules/react-native-reanimated"
+    :path: "../../../node_modules/react-native-reanimated"
   RNScreens:
     :path: "../../../node_modules/react-native-screens"
   RNSentry:
@@ -2449,7 +2449,7 @@ SPEC CHECKSUMS:
   RNImageCropPicker: 64b6bec9ec185ee59b71a93d7058816bd0e1916e
   RNPermissions: e6379535a4f3166931b2ada9dfe6cdd10c80ae6a
   RNReactNativeHapticFeedback: ec56a5f81c3941206fd85625fa669ffc7b4545f9
-  RNReanimated: 3e6072b3d49d4fc687b8f1ba3022f0fdc0b43969
+  RNReanimated: f3cd5ba475eab52decab7d7d3fca6199d97b9dd7
   RNScreens: c7ceced6a8384cb9be5e7a5e88e9e714401fd958
   RNSentry: 6747516b98b64d55d115ade591143803dbbf9851
   RNShare: 859ff710211285676b0bcedd156c12437ea1d564
