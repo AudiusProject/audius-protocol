@@ -127,7 +127,7 @@ const collectEntityIds = (notifications: Notification[]): EntityIds => {
       type === NotificationType.USDCPurchaseBuyer ||
       type === NotificationType.USDCPurchaseSeller
     ) {
-      userIds.add(notification.userIds[0])
+      notification.userIds.forEach((id) => userIds.add(id))
       if (notification.entityType === Entity.Track) {
         trackIds.add(notification.entityId)
       } else if (notification.entityType === Entity.Album) {
