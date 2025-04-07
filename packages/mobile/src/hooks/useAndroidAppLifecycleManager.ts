@@ -9,9 +9,10 @@ import { useAsync, useEffectOnce } from 'react-use'
 import * as analytics from '../services/analytics'
 import { EventNames } from '../types/analytics'
 
-const eventEmitter = new NativeEventEmitter(
-  NativeModules.DeviceEventManagerModule
-)
+const eventEmitter =
+  Platform.OS === 'android'
+    ? new NativeEventEmitter(NativeModules.DeviceEventManagerModule)
+    : null
 
 // Time in milliseconds after which we consider the app to be "long backgrounded"
 const BACKGROUND_THRESHOLD = 1000 * 60 * 60 // 1 hour
@@ -112,6 +113,7 @@ const useRestartStaleApp = () => {
 
 const useForceQuitHandler = () => {
   useEffectOnce(() => {
+    if (Platform.OS !== 'android' || !eventEmitter) return
     const subscription = eventEmitter.addListener(
       'ForceQuitDetected',
       async () => {
