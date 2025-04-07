@@ -12,7 +12,7 @@ import { TopBarIconButton } from '../app-screen'
 
 import { ConnectNewWalletButton } from './ConnectNewWalletButton'
 import { LinkedWallets } from './components'
-import type { WalletConnectParamList } from './types'
+import type { ExternalWalletsParamList } from './types'
 import { usePhantomConnect } from './usePhantomConnect'
 import { useWalletStatusToasts } from './useWalletStatusToasts'
 
@@ -52,7 +52,7 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
 
 export const ExternalWalletsScreen = () => {
   const styles = useStyles()
-  const navigation = useNavigation<WalletConnectParamList>()
+  const navigation = useNavigation<ExternalWalletsParamList>()
   const dispatch = useDispatch()
   useWalletStatusToasts()
   usePhantomConnect()
