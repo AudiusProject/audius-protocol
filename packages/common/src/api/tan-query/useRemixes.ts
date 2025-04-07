@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 
 import { Id, OptionalId, EntityType } from '@audius/sdk'
 import {
+  dataTagSymbol,
   InfiniteData,
   useInfiniteQuery,
   useQueryClient
@@ -20,6 +21,8 @@ import {
 import { QUERY_KEYS } from './queryKeys'
 import { QueryKey, QueryOptions, LineupData } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
+import { getTrackQueryKey } from './useTrack'
+import { getUserQueryKey } from './useUser'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
 
@@ -27,19 +30,27 @@ const DEFAULT_PAGE_SIZE = 10
 
 export type UseRemixesArgs = {
   trackId: number | null | undefined
+  includeOriginal?: Boolean
   pageSize?: number
 }
 
 export const getRemixesQueryKey = ({
   trackId,
+  includeOriginal = false,
   pageSize = DEFAULT_PAGE_SIZE
 }: UseRemixesArgs) =>
-  [QUERY_KEYS.remixes, trackId, { pageSize }] as unknown as QueryKey<
-    InfiniteData<LineupData[]>
-  >
+  [
+    QUERY_KEYS.remixes,
+    trackId,
+    { pageSize, includeOriginal }
+  ] as unknown as QueryKey<InfiniteData<LineupData[]>>
 
 export const useRemixes = (
-  { trackId, pageSize = DEFAULT_PAGE_SIZE }: UseRemixesArgs,
+  {
+    trackId,
+    includeOriginal = false,
+    pageSize = DEFAULT_PAGE_SIZE
+  }: UseRemixesArgs,
   options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
@@ -54,7 +65,7 @@ export const useRemixes = (
   }, [dispatch, trackId])
 
   const queryData = useInfiniteQuery({
-    queryKey: getRemixesQueryKey({ trackId, pageSize }),
+    queryKey: getRemixesQueryKey({ trackId, pageSize, includeOriginal }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: LineupData[], allPages) => {
       if (lastPage.length < pageSize) return undefined
@@ -70,12 +81,19 @@ export const useRemixes = (
           limit: pageSize,
           offset: pageParam
         })
-
-      const processedTracks = transformAndCleanList(
+      let processedTracks = transformAndCleanList(
         data.tracks,
         userTrackMetadataFromSDK
       )
       primeTrackData({ tracks: processedTracks, queryClient, dispatch })
+
+      const track = queryClient.getQueryData(getTrackQueryKey(trackId))
+      if (track && data.tracks && includeOriginal) {
+        const user = queryClient.getQueryData(getUserQueryKey(track.owner_id))
+        if (user) {
+          processedTracks = [{ ...track, user }, ...processedTracks]
+        }
+      }
 
       // Update lineup when new data arrives
       dispatch(
@@ -86,6 +104,7 @@ export const useRemixes = (
           { items: processedTracks }
         )
       )
+      dispatch(remixesPageActions.setCount({ count: data.count }))
 
       return processedTracks.map((t) => ({
         id: t.track_id,

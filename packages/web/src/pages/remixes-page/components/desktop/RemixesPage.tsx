@@ -2,7 +2,7 @@ import { useRemixes } from '@audius/common/api'
 import { Track, User } from '@audius/common/models'
 import { remixesPageLineupActions } from '@audius/common/store'
 import { pluralize } from '@audius/common/utils'
-import { IconRemix, Text } from '@audius/harmony'
+import { IconRemix, Text, Flex } from '@audius/harmony'
 
 import { Header } from 'components/header/desktop/Header'
 import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
@@ -50,25 +50,13 @@ const RemixesPage = g(({ title, count = 0, originalTrack, user }) => {
     lineup,
     pageSize
   } = useRemixes({
-    trackId: originalTrack?.track_id
+    trackId: originalTrack?.track_id,
+    includeOriginal: true
   })
 
   const renderHeader = () => (
-    <Header
-      icon={IconRemix}
-      primary={title}
-      secondary={
-        <Text variant='title' size='l' strength='weak'>
-          {count} {pluralize(messages.remixes, count, 'es', !count)}{' '}
-          {messages.of}{' '}
-          <TrackLink trackId={originalTrack.track_id} variant='secondary' />{' '}
-          {messages.by} <UserLink userId={user.user_id} variant='secondary' />
-        </Text>
-      }
-      containerStyles={styles.header}
-    />
+    <Header icon={IconRemix} primary={title} containerStyles={styles.header} />
   )
-
   return (
     <Page
       title={title}
@@ -76,20 +64,29 @@ const RemixesPage = g(({ title, count = 0, originalTrack, user }) => {
       canonicalUrl={fullTrackRemixesPage(originalTrack.permalink)}
       header={renderHeader()}
     >
-      <TanQueryLineup
-        data={data}
-        isFetching={isFetching}
-        isPending={isPending}
-        isError={isError}
-        hasNextPage={hasNextPage}
-        play={play}
-        pause={pause}
-        loadNextPage={loadNextPage}
-        isPlaying={isPlaying}
-        lineup={lineup}
-        actions={remixesPageLineupActions}
-        pageSize={pageSize}
-      />
+      <Flex direction='column' gap='xl'>
+        <Text variant='heading'>Original Track</Text>
+        <TanQueryLineup
+          data={data}
+          isFetching={isFetching}
+          isPending={isPending}
+          isError={isError}
+          hasNextPage={hasNextPage}
+          play={play}
+          pause={pause}
+          loadNextPage={loadNextPage}
+          isPlaying={isPlaying}
+          lineup={lineup}
+          actions={remixesPageLineupActions}
+          pageSize={pageSize}
+          leadingElementId={0}
+          leadingElementDelineator={
+            <Text variant='heading'>
+              {count} {pluralize(messages.remixes, count, 'es', !count)}
+            </Text>
+          }
+        />{' '}
+      </Flex>
     </Page>
   )
 })
