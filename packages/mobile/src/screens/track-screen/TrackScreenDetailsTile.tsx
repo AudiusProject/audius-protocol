@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 
-import { useToggleFavoriteTrack } from '@audius/common/api'
+import { useRemixContest, useToggleFavoriteTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,
@@ -43,6 +43,7 @@ import {
   useEarlyReleaseConfirmationModal
 } from '@audius/common/store'
 import { formatReleaseDate, Genre, removeNullable } from '@audius/common/utils'
+import { GetEntityEventsEntityTypeEnum } from '@audius/sdk'
 import dayjs from 'dayjs'
 import { TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -116,7 +117,10 @@ const messages = {
   releases: (releaseDate: string) =>
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`,
   remixContest: 'Remix Contest',
-  deadline: (deadline: string) => `${deadline} at ${dayjs().format('h:mm A')}`,
+  deadline: (deadline?: string) =>
+    deadline
+      ? `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`
+      : '',
   uploadRemixButtonText: 'Upload Your Remix'
 }
 
@@ -225,6 +229,11 @@ export const TrackScreenDetailsTile = ({
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
   )
+  const { data: events } = useRemixContest(trackId, {
+    entityType: GetEntityEventsEntityTypeEnum.Track
+  })
+  const event = events?.[0]
+  const isRemixContest = isRemixContestEnabled && !isOwner && event
 
   const isPlayingPreview = isPreviewing && isPlaying
   const isPlayingFullAccess = isPlaying && !isPreviewing
@@ -247,7 +256,9 @@ export const TrackScreenDetailsTile = ({
     (!isOwner && (playCount ?? 0) <= 0)
 
   let headerText
-  if (isRemix) {
+  if (isRemixContest) {
+    headerText = messages.remixContest
+  } else if (isRemix) {
     headerText = messages.remix
   } else if (isStreamGated) {
     if (isContentCollectibleGated(streamConditions)) {
@@ -421,6 +432,9 @@ export const TrackScreenDetailsTile = ({
     const addToAlbumAction =
       isOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null
     const overflowActions = [
+      isOwner && isRemixContestEnabled
+        ? OverflowAction.HOST_REMIX_CONTEST
+        : null,
       addToAlbumAction,
       !isUnlisted || isOwner ? OverflowAction.ADD_TO_PLAYLIST : null,
       isOwner
@@ -487,9 +501,7 @@ export const TrackScreenDetailsTile = ({
   }, [navigation, track])
 
   const renderRemixContestSection = () => {
-    const isRemixContest = isRemixContestEnabled && !isOwner
     if (!isRemixContest) return null
-    const remixContestDeadline = dayjs().add(1, 'week').format('MMM D, YYYY')
     return (
       <Flex gap='m'>
         <Flex row gap='xs' alignItems='center'>
@@ -497,7 +509,7 @@ export const TrackScreenDetailsTile = ({
             {messages.remixContest}
           </Text>
           <Text size='s' strength='strong'>
-            {messages.deadline(remixContestDeadline)}
+            {messages.deadline(event?.endDate)}
           </Text>
         </Flex>
         <Flex flex={1}>
