@@ -23,7 +23,6 @@ import { useAndroidAppLifecycleManager } from 'app/hooks/useAndroidAppLifecycleM
 import { useEnterForeground } from 'app/hooks/useAppState'
 import { incrementSessionCount } from 'app/hooks/useSessionCount'
 import { RootScreen } from 'app/screens/root-screen'
-import { WalletConnectProvider } from 'app/screens/wallet-connect'
 import { queryClient } from 'app/services/query-client'
 import { persistor, store } from 'app/store'
 import {
@@ -75,31 +74,29 @@ const App = () => {
             <QueryClientProvider client={queryClient}>
               <PersistGate loading={null} persistor={persistor}>
                 <ThemeProvider>
-                  <WalletConnectProvider>
-                    <GestureHandlerRootView style={{ flex: 1 }}>
-                      <PortalProvider>
-                        <ErrorBoundary>
-                          <NavigationContainer
-                            navigationIntegration={navigationIntegration}
-                          >
-                            <BottomSheetModalProvider>
-                              <CommentDrawerProvider>
-                                <Toasts />
-                                <Airplay />
-                                <RootScreen />
-                                <Drawers />
-                                <OAuthWebView />
-                                <NotificationReminder />
-                                <RateCtaReminder />
-                                <PortalHost name='ChatReactionsPortal' />
-                              </CommentDrawerProvider>
-                            </BottomSheetModalProvider>
-                            <PortalHost name='DrawerPortal' />
-                          </NavigationContainer>
-                        </ErrorBoundary>
-                      </PortalProvider>
-                    </GestureHandlerRootView>
-                  </WalletConnectProvider>
+                  <GestureHandlerRootView style={{ flex: 1 }}>
+                    <PortalProvider>
+                      <ErrorBoundary>
+                        <NavigationContainer
+                          navigationIntegration={navigationIntegration}
+                        >
+                          <BottomSheetModalProvider>
+                            <CommentDrawerProvider>
+                              <Toasts />
+                              <Airplay />
+                              <RootScreen />
+                              <Drawers />
+                              <OAuthWebView />
+                              <NotificationReminder />
+                              <RateCtaReminder />
+                              <PortalHost name='ChatReactionsPortal' />
+                            </CommentDrawerProvider>
+                          </BottomSheetModalProvider>
+                          <PortalHost name='DrawerPortal' />
+                        </NavigationContainer>
+                      </ErrorBoundary>
+                    </PortalProvider>
+                  </GestureHandlerRootView>
                 </ThemeProvider>
               </PersistGate>
             </QueryClientProvider>
