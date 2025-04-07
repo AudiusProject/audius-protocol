@@ -12,6 +12,8 @@ const messages = {
   description: 'Description'
 }
 
+const MAX_DESCRIPTION_LENGTH = 2500
+
 export const TrackMetadataFields = () => {
   const [{ value: index }] = useField('trackMetadatasIndex')
 
@@ -30,7 +32,7 @@ export const TrackMetadataFields = () => {
         name={getTrackFieldName(index, 'description')}
         aria-label='description'
         placeholder={messages.description}
-        maxLength={1000}
+        maxLength={MAX_DESCRIPTION_LENGTH}
         css={{ minHeight: 96 }}
         showMaxLength
         grows

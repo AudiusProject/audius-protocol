@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useState } from 'react'
+import { Suspense, lazy, useCallback, useState, useRef, useEffect } from 'react'
 
 import {
   useRemixContest,
@@ -33,7 +33,11 @@ import {
   Button,
   MusicBadge,
   Paper,
-  IconCloudUpload
+  IconCloudUpload,
+  PlainButton,
+  IconCaretDown,
+  IconCaretUp,
+  spacing
 } from '@audius/harmony'
 import IconCalendarMonth from '@audius/harmony/src/assets/icons/CalendarMonth.svg'
 import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
@@ -80,6 +84,7 @@ const BUTTON_COLLAPSE_WIDTHS = {
 // Toast timeouts in ms
 const REPOST_TIMEOUT = 1000
 const SAVED_TIMEOUT = 1000
+const MAX_DESCRIPTION_LINES = 8
 
 const messages = {
   makePublic: 'MAKE PUBLIC',
@@ -100,7 +105,9 @@ const messages = {
   deadline: (deadline?: string) =>
     deadline
       ? `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`
-      : ''
+      : '',
+  seeMore: 'See More',
+  seeLess: 'See Less'
 }
 
 type GiantTrackTileProps = {
@@ -240,6 +247,22 @@ export const GiantTrackTile = ({
   const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
   const shouldShowScheduledRelease =
     isScheduledRelease && dayjs(releaseDate).isAfter(dayjs())
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
+  const [showToggle, setShowToggle] = useState(false)
+  const descriptionRef = useRef<HTMLDivElement>(null)
+
+  // Calculate line height and determine if toggle should be shown
+  useEffect(() => {
+    if (description && descriptionRef.current) {
+      const element = descriptionRef.current
+      const computedStyle = window.getComputedStyle(element)
+      const lineHeight = parseInt(computedStyle.lineHeight) ?? spacing.xl
+      const height = element.scrollHeight
+      const lines = Math.round(height / lineHeight)
+      setShowToggle(lines > MAX_DESCRIPTION_LINES)
+    }
+  }, [description])
+
   const renderCardTitle = (className: string) => {
     return (
       <CardTitle
@@ -665,9 +688,34 @@ export const GiantTrackTile = ({
       >
         <TrackMetadataList trackId={trackId} />
         {description ? (
-          <UserGeneratedText tag='h3' size='s' lineHeight='multi'>
-            {description}
-          </UserGeneratedText>
+          <Flex column gap='m'>
+            <Flex ref={descriptionRef} column>
+              <UserGeneratedText
+                tag='h3'
+                size='s'
+                lineHeight='multi'
+                css={{
+                  display: '-webkit-box',
+                  WebkitLineClamp: isDescriptionExpanded
+                    ? 'unset'
+                    : MAX_DESCRIPTION_LINES,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden'
+                }}
+              >
+                {description}
+              </UserGeneratedText>
+            </Flex>
+            {showToggle && (
+              <PlainButton
+                iconRight={isDescriptionExpanded ? IconCaretUp : IconCaretDown}
+                onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                css={{ alignSelf: 'flex-start' }}
+              >
+                {isDescriptionExpanded ? messages.seeLess : messages.seeMore}
+              </PlainButton>
+            )}
+          </Flex>
         ) : null}
 
         {renderTags()}
