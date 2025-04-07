@@ -226,7 +226,7 @@ export const StemsAndDownloadsField = (props: StemsAndDownloadsFieldProps) => {
     ]
   )
 
-  const renderValue = useCallback(() => {
+  const renderValue = () => {
     let values = []
     if (!streamConditions) {
       if (isContentUSDCPurchaseGated(savedDownloadConditions)) {
@@ -254,44 +254,9 @@ export const StemsAndDownloadsField = (props: StemsAndDownloadsFieldProps) => {
 
     if (values.length === 0) return null
 
-    // Group values by type
-    const groupedValues = values.reduce(
-      (acc: Record<string, number>, value) => {
-        const label = typeof value === 'string' ? value : value.label
-        if (acc[label]) {
-          acc[label]++
-        } else {
-          acc[label] = 1
-        }
-        return acc
-      },
-      {}
-    )
-
-    // Convert grouped values into array with counts
-    const displayValues = Object.entries(groupedValues).map(
-      ([label, count]) => {
-        const originalValue = values.find((v) =>
-          typeof v === 'string' ? v === label : v.label === label
-        )
-
-        if (typeof originalValue === 'object') {
-          return {
-            ...originalValue,
-            label:
-              count > 1
-                ? `${originalValue.label} (${count})`
-                : originalValue.label
-          }
-        }
-
-        return count > 1 ? `${label} (${count})` : label
-      }
-    )
-
     return (
       <SelectedValues>
-        {displayValues.map((value, i) => {
+        {values.map((value, i) => {
           const valueProps =
             typeof value === 'string' ? { label: value } : value
           return (
@@ -300,7 +265,7 @@ export const StemsAndDownloadsField = (props: StemsAndDownloadsFieldProps) => {
         })}
       </SelectedValues>
     )
-  }, [isDownloadable, savedDownloadConditions, stemsValue, streamConditions])
+  }
 
   return (
     <ContextualMenu
