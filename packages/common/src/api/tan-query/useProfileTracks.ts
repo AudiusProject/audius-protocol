@@ -1,5 +1,9 @@
 import { EntityType, Id } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
@@ -12,7 +16,7 @@ import {
 import { TracksSortMode } from '~/store/pages/profile/types'
 
 import { QUERY_KEYS } from './queryKeys'
-import { LineupData, QueryOptions } from './types'
+import { QueryKey, LineupData, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -31,11 +35,12 @@ export const getProfileTracksQueryKey = ({
   pageSize,
   sort,
   getUnlisted
-}: UseProfileTracksArgs) => [
-  QUERY_KEYS.profileTracks,
-  handle,
-  { pageSize, sort, getUnlisted }
-]
+}: UseProfileTracksArgs) =>
+  [
+    QUERY_KEYS.profileTracks,
+    handle,
+    { pageSize, sort, getUnlisted }
+  ] as unknown as QueryKey<InfiniteData<LineupData[]>>
 
 export const useProfileTracks = (
   {

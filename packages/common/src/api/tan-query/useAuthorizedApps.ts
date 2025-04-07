@@ -6,13 +6,14 @@ import { ID } from '~/models'
 import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
-import { SelectableQueryOptions } from './types'
+import { QueryKey, SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
-export const getAuthorizedAppsQueryKey = (userId: Nullable<ID>) => [
-  QUERY_KEYS.authorizedApps,
-  userId
-]
+export const getAuthorizedAppsQueryKey = (userId: Nullable<ID>) => {
+  return [QUERY_KEYS.authorizedApps, userId] as unknown as QueryKey<
+    AuthorizedApp[]
+  >
+}
 
 export const useAuthorizedApps = <TResult = AuthorizedApp[]>(
   options?: SelectableQueryOptions<AuthorizedApp[], TResult>

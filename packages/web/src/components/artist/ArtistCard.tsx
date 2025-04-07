@@ -1,8 +1,7 @@
 import { MouseEventHandler, useCallback, useMemo } from 'react'
 
-import { useFollowUser, useUnfollowUser } from '@audius/common/api'
 import { FollowSource, User } from '@audius/common/models'
-import { profilePageActions } from '@audius/common/store'
+import { profilePageActions, usersSocialActions } from '@audius/common/store'
 import { FollowButton } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
@@ -11,7 +10,7 @@ import Stats, { StatProps } from 'components/stats/Stats'
 import styles from './ArtistCard.module.css'
 import { ArtistCardCover } from './ArtistCardCover'
 import { ArtistSupporting } from './ArtistSupporting'
-
+const { followUser, unfollowUser } = usersSocialActions
 const { setNotificationSubscription } = profilePageActions
 
 type ArtistCardProps = {
@@ -32,8 +31,6 @@ export const ArtistCard = (props: ArtistCardProps) => {
   } = artist
 
   const dispatch = useDispatch()
-  const { mutate: followUser } = useFollowUser()
-  const { mutate: unfollowUser } = useUnfollowUser()
   const isArtist = track_count > 0
 
   const handleClick: MouseEventHandler = useCallback((event) => {
@@ -72,13 +69,13 @@ export const ArtistCard = (props: ArtistCardProps) => {
   }, [isArtist, track_count, follower_count, followee_count, playlist_count])
 
   const handleFollow = useCallback(() => {
-    followUser({ followeeUserId: user_id, source: FollowSource.HOVER_TILE })
-  }, [followUser, user_id])
+    dispatch(followUser(user_id, FollowSource.HOVER_TILE))
+  }, [dispatch, user_id])
 
   const handleUnfollow = useCallback(() => {
-    unfollowUser({ followeeUserId: user_id, source: FollowSource.HOVER_TILE })
+    dispatch(unfollowUser(user_id, FollowSource.HOVER_TILE))
     dispatch(setNotificationSubscription(user_id, false, false))
-  }, [dispatch, user_id, unfollowUser])
+  }, [dispatch, user_id])
 
   return (
     <div className={styles.popoverContainer} onClick={handleClick}>

@@ -1,7 +1,9 @@
-import { useEffect } from 'react'
-
 import { OptionalId, EntityType } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
@@ -23,7 +25,7 @@ import {
 import { Genre } from '~/utils/genres'
 
 import { QUERY_KEYS } from './queryKeys'
-import { LineupData, QueryOptions } from './types'
+import { QueryKey, LineupData, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -33,7 +35,7 @@ export const TRENDING_LOAD_MORE_PAGE_SIZE = 4
 
 export type GetTrendingArgs = {
   timeRange: TimeRange
-  genre?: Genre
+  genre?: Genre | null
   initialPageSize?: number
   loadMorePageSize?: number
 }
@@ -43,10 +45,11 @@ export const getTrendingQueryKey = ({
   genre,
   initialPageSize,
   loadMorePageSize
-}: GetTrendingArgs) => [
-  QUERY_KEYS.trending,
-  { timeRange, genre, initialPageSize, loadMorePageSize }
-]
+}: GetTrendingArgs) =>
+  [
+    QUERY_KEYS.trending,
+    { timeRange, genre, initialPageSize, loadMorePageSize }
+  ] as unknown as QueryKey<InfiniteData<LineupData[]>>
 
 export const useTrending = (
   {
@@ -61,16 +64,6 @@ export const useTrending = (
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
   const dispatch = useDispatch()
-
-  // The lineup needs to be reset when the genre changes - otherwise it won't show the load state properly
-  // Otherwise it can continue to show old data
-  useEffect(() => {
-    dispatch(
-      trendingWeekActions.fetchLineupMetadatas(0, initialPageSize, false, {
-        tracks: []
-      })
-    )
-  }, [dispatch, genre, initialPageSize])
 
   const infiniteQueryData = useInfiniteQuery({
     queryKey: getTrendingQueryKey({
@@ -126,7 +119,7 @@ export const useTrending = (
               pageParam,
               currentPageSize,
               false,
-              { tracks }
+              { items: tracks }
             )
           )
           break
@@ -136,7 +129,7 @@ export const useTrending = (
               pageParam,
               currentPageSize,
               false,
-              { tracks }
+              { items: tracks }
             )
           )
           break
@@ -146,7 +139,7 @@ export const useTrending = (
               pageParam,
               currentPageSize,
               false,
-              { tracks }
+              { items: tracks }
             )
           )
           break
@@ -158,7 +151,7 @@ export const useTrending = (
     },
     select: (data) => data?.pages.flat(),
     ...options,
-    enabled: !!currentUserId && options?.enabled !== false && !!timeRange
+    enabled: options?.enabled !== false && !!timeRange
   })
 
   let lineupActions
@@ -177,7 +170,7 @@ export const useTrending = (
       lineupSelector = getDiscoverTrendingWeekLineup
       break
   }
-  const lineupData = useLineupQuery({
+  return useLineupQuery({
     queryData: infiniteQueryData,
     queryKey: getTrendingQueryKey({
       timeRange,
@@ -190,6 +183,4 @@ export const useTrending = (
     playbackSource: PlaybackSource.TRACK_TILE_LINEUP,
     pageSize: loadMorePageSize
   })
-
-  return { ...infiniteQueryData, ...lineupData }
 }

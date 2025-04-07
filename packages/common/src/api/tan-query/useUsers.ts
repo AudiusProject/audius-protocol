@@ -11,15 +11,15 @@ import { CommonState } from '~/store'
 
 import { getUsersBatcher } from './batchers/getUsersBatcher'
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getUserQueryKey } from './useUser'
 import { combineQueryResults } from './utils/combineQueryResults'
 import { useQueries } from './utils/useQueries'
-export const getUsersQueryKey = (userIds: ID[] | null | undefined) => [
-  QUERY_KEYS.users,
-  userIds
-]
+
+export const getUsersQueryKey = (userIds: ID[] | null | undefined) => {
+  return [QUERY_KEYS.users, userIds] as unknown as QueryKey<UserMetadata[]>
+}
 
 export const useUsers = (
   userIds: ID[] | null | undefined,

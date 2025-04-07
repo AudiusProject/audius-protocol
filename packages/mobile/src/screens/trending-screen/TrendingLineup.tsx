@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
+import { useTrending } from '@audius/common/api'
 import { Name, TimeRange } from '@audius/common/models'
 import {
   lineupSelectors,
@@ -59,6 +60,8 @@ export const TrendingLineup = (props: TrendingLineupProps) => {
   const dispatch = useDispatch()
   const trendingActions = actionsMap[timeRange]
 
+  const { lineup, loadNextPage } = useTrending({ timeRange })
+
   useEffect(() => {
     // @ts-ignore tabPress is not a valid event, and wasn't able to figure out a fix
     const tabPressListener = navigation.addListener('tabPress', () => {
@@ -70,20 +73,22 @@ export const TrendingLineup = (props: TrendingLineupProps) => {
 
   const handleLoadMore = useCallback(
     (offset: number, limit: number, overwrite: boolean) => {
-      dispatch(trendingActions.fetchLineupMetadatas(offset, limit, overwrite))
+      loadNextPage()
       track(make({ eventName: Name.TRENDING_PAGINATE, offset, limit }))
     },
-    [dispatch, trendingActions]
+    [loadNextPage]
   )
 
   return (
     <Lineup
       isTrending
+      tanQuery
+      lineup={lineup}
+      loadMore={handleLoadMore}
       selfLoad
       pullToRefresh
       lineupSelector={selectorsMap[timeRange]}
       actions={trendingActions}
-      loadMore={handleLoadMore}
       {...other}
     />
   )

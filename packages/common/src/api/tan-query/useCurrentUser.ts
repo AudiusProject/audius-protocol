@@ -7,11 +7,15 @@ import { UserMetadata } from '~/models/User'
 import { getWalletAddresses } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
-import { SelectableQueryOptions } from './types'
+import { QueryKey, SelectableQueryOptions } from './types'
 
 export const getCurrentUserQueryKey = (
   currentUser: string | null | undefined
-) => [QUERY_KEYS.accountUser, currentUser]
+) =>
+  [
+    QUERY_KEYS.accountUser,
+    currentUser
+  ] as unknown as QueryKey<UserMetadata | null>
 
 /**
  * Hook to get the currently logged in user's data

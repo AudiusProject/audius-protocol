@@ -1,11 +1,24 @@
-from typing import List
+import logging
+from typing import List, Optional, TypedDict
 
 from sqlalchemy import desc
 
-from src.models.events.event import Event
-from src.queries.query_helpers import add_query_pagination
+from src.models.events.event import Event, EventEntityType
+from src.queries.query_helpers import add_query_pagination, get_pagination_vars
+from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import encode_int_id
+
+logger = logging.getLogger(__name__)
+
+
+class GetEventArgs(TypedDict, total=False):
+    entity_id: int
+    entity_type: Optional[EventEntityType]
+    limit: int
+    offset: int
+    current_user_id: Optional[int]
+    filter_deleted: bool
 
 
 def format_events(events) -> List[Event]:
@@ -14,18 +27,16 @@ def format_events(events) -> List[Event]:
     for event in events:
         formatted_events.append(
             {
-                "event_id": encode_int_id(event.event_id),
-                "entity_type": event.entity_type.value if event.entity_type else None,
-                "user_id": encode_int_id(event.user_id),
-                "entity_id": encode_int_id(event.entity_id)
-                if event.entity_id
-                else None,
-                "event_type": event.event_type.value,
-                "end_date": str(event.end_date),
-                "is_deleted": event.is_deleted,
-                "created_at": str(event.created_at),
-                "updated_at": str(event.updated_at),
-                "event_data": event.event_data,
+                "event_id": encode_int_id(event.get("event_id")),
+                "entity_type": (event.get("entity_type").value),
+                "user_id": encode_int_id(event.get("user_id")),
+                "entity_id": (encode_int_id(event.get("entity_id"))),
+                "event_type": event.get("event_type").value,
+                "end_date": str(event.get("end_date")),
+                "is_deleted": event.get("is_deleted"),
+                "created_at": str(event.get("created_at")),
+                "updated_at": str(event.get("updated_at")),
+                "event_data": event.get("event_data"),
             }
         )
 
@@ -41,26 +52,65 @@ def get_events_by_ids(args) -> List[Event]:
 
     db = get_db_read_replica()
     ids = args.get("id")
-
     with db.scoped_session() as session:
-        query = session.query(Event).filter(Event.event_id.in_(ids))
+        query = session.query(Event)
+        if ids:
+            query = query.filter(Event.event_id.in_(ids))
         events = query.all()
 
         return format_events(events)
 
 
-def get_events(args) -> List[Event]:
-    """Get all events ordered by creation date descending.
+def _get_events(session, args):
+    """Internal method to query events with the given arguments"""
+    # Create initial query
+    base_query = session.query(Event)
+
+    # Filter by entity_id if provided
+    if args.get("entity_id") is not None:
+        base_query = base_query.filter(Event.entity_id == args.get("entity_id"))
+
+    # Filter by entity_type if provided
+    if args.get("entity_type") is not None:
+        base_query = base_query.filter(Event.entity_type == args.get("entity_type"))
+
+    # Allow filtering of deletes
+    if args.get("filter_deleted", True):
+        base_query = base_query.filter(Event.is_deleted == False)
+
+    # Order by created_at desc by default
+    base_query = base_query.order_by(desc(Event.created_at))
+
+    # Add pagination
+    query_results = add_query_pagination(base_query, args["limit"], args["offset"])
+
+    # Convert to list of dicts
+    events = helpers.query_result_to_list(query_results.all())
+    return events
+
+
+def get_events(args: GetEventArgs):
+    """
+    Gets events based on the provided arguments.
+
+    Args:
+        args (GetEventArgs): Arguments for filtering and pagination
+            - entity_id (int): ID of the entity to get events for
+            - entity_type (EventEntityType, optional): Type of entity
+            - current_user_id (int, optional): ID of the current user
+            - filter_deleted (bool, optional): Whether to filter deleted events
 
     Returns:
-        List[Event]: List of events
+        List of events matching the criteria
     """
-
     db = get_db_read_replica()
-    limit, offset = args.get("limit"), args.get("offset")
-
     with db.scoped_session() as session:
-        query = session.query(Event).order_by(desc(Event.created_at))
-        events = add_query_pagination(query, limit, offset).all()
+        # Get pagination params if not provided
+        if "limit" not in args or "offset" not in args:
+            (limit, offset) = get_pagination_vars()
+            args["limit"] = limit
+            args["offset"] = offset
+
+        events = _get_events(session, args)
 
         return format_events(events)
