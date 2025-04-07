@@ -16,7 +16,7 @@ import { accountSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { IconCart, IconReceive } from '@audius/harmony'
 import { FormikErrors } from 'formik'
-import { get, set } from 'lodash'
+import { get, set, groupBy } from 'lodash'
 import { useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -254,26 +254,15 @@ export const StemsAndDownloadsField = (props: StemsAndDownloadsFieldProps) => {
 
     if (values.length === 0) return null
 
-    // Group values by type
-    const groupedValues = values.reduce(
-      (acc: Record<string, number>, value) => {
-        const label = typeof value === 'string' ? value : value.label
-        if (acc[label]) {
-          acc[label]++
-        } else {
-          acc[label] = 1
-        }
-        return acc
-      },
-      {}
-    )
+    const getLabel = (value: any) =>
+      typeof value === 'string' ? value : value.label
+    const groupedValues = groupBy(values, getLabel)
 
     // Convert grouped values into array with counts
     const displayValues = Object.entries(groupedValues).map(
-      ([label, count]) => {
-        const originalValue = values.find((v) =>
-          typeof v === 'string' ? v === label : v.label === label
-        )
+      ([label, items]) => {
+        const originalValue = items[0]
+        const count = items.length
 
         if (typeof originalValue === 'object') {
           return {
