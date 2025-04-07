@@ -1,11 +1,8 @@
 import { useMemo } from 'react'
 
-import { useProxySelector } from '@audius/common/hooks'
+import { useProfileReposts } from '@audius/common/api'
 import { Status } from '@audius/common/models'
-import {
-  profilePageFeedLineupActions as feedActions,
-  profilePageSelectors
-} from '@audius/common/store'
+import { profilePageFeedLineupActions as feedActions } from '@audius/common/store'
 import { useRoute } from '@react-navigation/native'
 
 import { Lineup } from 'app/components/lineup'
@@ -13,8 +10,6 @@ import { Lineup } from 'app/components/lineup'
 import { EmptyProfileTile } from '../EmptyProfileTile'
 import type { ProfileTabRoutes } from '../routes'
 import { useSelectProfile } from '../selectors'
-
-const { getProfileFeedLineup } = profilePageSelectors
 
 export const RepostsTab = () => {
   const { params } = useRoute<ProfileTabRoutes<'Reposts'>>()
@@ -25,10 +20,7 @@ export const RepostsTab = () => {
     'repost_count'
   ])
 
-  const lineup = useProxySelector(
-    (state) => getProfileFeedLineup(state, handle),
-    [handle]
-  )
+  const { lineup, loadNextPage } = useProfileReposts({ handle })
 
   const fetchPayload = useMemo(() => ({ userId: user_id }), [user_id])
   const extraFetchOptions = useMemo(() => ({ handle }), [handle])
@@ -41,6 +33,7 @@ export const RepostsTab = () => {
       selfLoad
       lazy={lazy}
       pullToRefresh
+      loadMore={loadNextPage}
       actions={feedActions}
       lineup={lineup}
       fetchPayload={fetchPayload}
@@ -51,6 +44,7 @@ export const RepostsTab = () => {
         canShowEmptyTile ? <EmptyProfileTile tab='reposts' /> : undefined
       }
       showsVerticalScrollIndicator={false}
+      tanQuery
     />
   )
 }
