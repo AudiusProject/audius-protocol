@@ -22,7 +22,6 @@ import { Toasts } from 'app/components/toasts'
 import { useEnterForeground } from 'app/hooks/useAppState'
 import { incrementSessionCount } from 'app/hooks/useSessionCount'
 import { RootScreen } from 'app/screens/root-screen'
-// import { WalletConnectProvider } from 'app/screens/wallet-connect'
 import { queryClient } from 'app/services/query-client'
 import { persistor, store } from 'app/store'
 import {
@@ -72,7 +71,6 @@ const App = () => {
             <QueryClientProvider client={queryClient}>
               <PersistGate loading={null} persistor={persistor}>
                 <ThemeProvider>
-                  {/* <WalletConnectProvider> */}
                   <GestureHandlerRootView style={{ flex: 1 }}>
                     <PortalProvider>
                       <ErrorBoundary>
@@ -96,7 +94,6 @@ const App = () => {
                       </ErrorBoundary>
                     </PortalProvider>
                   </GestureHandlerRootView>
-                  {/* </WalletConnectProvider> */}
                 </ThemeProvider>
               </PersistGate>
             </QueryClientProvider>

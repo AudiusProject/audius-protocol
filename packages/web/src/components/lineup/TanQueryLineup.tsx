@@ -142,6 +142,7 @@ export const TanQueryLineup = ({
   endOfLineupElement: endOfLineup,
   leadingElementId,
   lineupContainerStyles,
+  leadingElementDelineator,
   tileContainerStyles,
   tileStyles,
   emptyElement,
@@ -245,13 +246,11 @@ export const TanQueryLineup = ({
 
   // Trim lineup based on start & maxEntry props
   const lineupEntries = useMemo(() => {
-    if (pageSize !== undefined && start !== undefined) {
-      return lineup.entries.slice(start, start + pageSize)
-    } else if (maxEntries !== undefined) {
+    if (maxEntries !== undefined) {
       return lineup.entries.slice(0, maxEntries)
     }
     return lineup.entries
-  }, [lineup.entries, pageSize, start, maxEntries])
+  }, [lineup.entries, maxEntries])
 
   const renderSkeletons = useCallback(
     (skeletonCount: number | undefined) => {
@@ -293,7 +292,11 @@ export const TanQueryLineup = ({
                     <TrackTile {...skeletonTileProps(index)} key={index} />
                   </Flex>
                   {index === 0 && leadingElementId !== undefined ? (
-                    <Divider css={{ width: '100%' }} />
+                    leadingElementDelineator !== undefined ? (
+                      leadingElementDelineator
+                    ) : (
+                      <Divider css={{ width: '100%' }} />
+                    )
                   ) : null}
                 </Flex>
               )
@@ -302,13 +305,14 @@ export const TanQueryLineup = ({
       )
     },
     [
-      TrackTile,
-      leadingElementId,
-      isMobile,
-      numPlaylistSkeletonRows,
-      ordered,
       tileSize,
-      tileStyles
+      ordered,
+      numPlaylistSkeletonRows,
+      leadingElementId,
+      tileStyles,
+      isMobile,
+      TrackTile,
+      leadingElementDelineator
     ]
   )
 
@@ -453,7 +457,11 @@ export const TanQueryLineup = ({
                       {tile}
                     </Flex>
                     {index === 0 && leadingElementId !== undefined ? (
-                      <Divider />
+                      leadingElementDelineator !== undefined ? (
+                        leadingElementDelineator
+                      ) : (
+                        <Divider />
+                      )
                     ) : null}
                   </Flex>
                 ))}

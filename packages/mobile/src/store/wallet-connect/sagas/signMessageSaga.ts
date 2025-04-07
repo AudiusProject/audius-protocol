@@ -90,7 +90,7 @@ function* signMessageAsync(action: SignMessageAction) {
   }
 
   yield* put(setConnectionStatus({ status: 'done' }))
-  yield* put(setVisibility({ drawer: 'ConnectWallets', visible: false }))
+  yield* put(setVisibility({ drawer: 'ConnectNewWallet', visible: false }))
 
   const analytics = yield* getContext('analytics')
   analytics.track({

@@ -19,7 +19,8 @@ const messages = {
   hiddenTrackTooltip: 'Anyone with a link to this page will be able to see it',
   collectibleGated: 'COLLECTIBLE GATED',
   specialAccess: 'SPECIAL ACCESS',
-  premiumTrack: 'PREMIUM TRACK'
+  premiumTrack: 'PREMIUM TRACK',
+  remixContest: 'REMIX CONTEST'
 }
 
 type CardTitleProps = {
@@ -30,6 +31,7 @@ type CardTitleProps = {
   isStreamGated: boolean
   isPodcast: boolean
   streamConditions: Nullable<AccessConditions>
+  isRemixContest: boolean
 }
 
 export const CardTitle = ({
@@ -37,7 +39,8 @@ export const CardTitle = ({
   isRemix,
   isStreamGated,
   isPodcast,
-  streamConditions
+  streamConditions,
+  isRemixContest
 }: CardTitleProps) => {
   let content
 
@@ -65,11 +68,13 @@ export const CardTitle = ({
   } else {
     content = (
       <Text variant='label' color='subdued'>
-        {isRemix
-          ? messages.remixTitle
-          : isPodcast
-            ? messages.podcastTitle
-            : messages.trackTitle}
+        {isRemixContest
+          ? messages.remixContest
+          : isRemix
+            ? messages.remixTitle
+            : isPodcast
+              ? messages.podcastTitle
+              : messages.trackTitle}
       </Text>
     )
   }
