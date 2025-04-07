@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
-import { useGetTrackById } from '@audius/common/api'
+import { useGetTrackById, useRemixes } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import type { ID, Track } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -61,6 +61,11 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
   const { isEnabled: commentsFlagEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED
   )
+
+  useRemixes({
+    trackId
+  })
+
   const handlePlay = useCallback(
     (uid?: string) => {
       dispatch(tracksActions.play(uid))
@@ -103,6 +108,7 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
       : LineupVariant.CONDENSED
 
   if (!remixTrackIds || !remixTrackIds.length) {
+    console.log('asdf no remixes')
     return null
   }
 

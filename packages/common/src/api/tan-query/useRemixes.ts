@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 
 import { Id, OptionalId, EntityType, full } from '@audius/sdk'
 import {
+  dataTagSymbol,
   InfiniteData,
   useInfiniteQuery,
   useQueryClient
@@ -123,6 +124,7 @@ export const useRemixes = (
           { items: processedTracks }
         )
       )
+      dispatch(remixesPageActions.setCount({ count: data.count }))
 
       return processedTracks.map((t) => ({
         id: t.track_id,
