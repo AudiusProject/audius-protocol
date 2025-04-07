@@ -29,7 +29,7 @@ export type SignedMessageParams = {
   params?: SignedMessageParams
 }
 
-export type WalletConnectParamList = {
+export type ExternalWalletsParamList = {
   Wallets:
     | ConnectParams
     | ConnectNewWalletParams
@@ -48,5 +48,6 @@ export type WalletConnectParams =
   | ConnectNewWalletParams
   | SignedMessageParams
 
-export type WalletConnectRoute<Screen extends keyof WalletConnectParamList> =
-  RouteProp<WalletConnectParamList, Screen>
+export type ExternalWalletsRoute<
+  Screen extends keyof ExternalWalletsParamList
+> = RouteProp<ExternalWalletsParamList, Screen>

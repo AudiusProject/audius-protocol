@@ -233,7 +233,7 @@ export const AudioScreen = () => {
   }, [dispatch])
 
   const handlePressManageWallets = useCallback(() => {
-    navigation.navigate('WalletConnect')
+    navigation.navigate('ExternalWallets')
   }, [navigation])
 
   const renderWhatTile = () => {

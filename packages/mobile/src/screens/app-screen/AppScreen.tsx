@@ -11,10 +11,10 @@ import { ChangePasswordModalScreen } from '../change-password-screen'
 import { CreateChatBlastNavigator } from '../create-chat-blast-screen/CreateChatBlastNavigator'
 import { EditCollectionScreen } from '../edit-collection-screen'
 import { EditTrackModalScreen } from '../edit-track-screen'
+import { ExternalWalletsModalScreen } from '../external-wallets'
 import { FeatureFlagOverrideScreen } from '../feature-flag-override-screen'
 import { TipArtistModalScreen } from '../tip-artist-screen'
 import { UploadModalScreen } from '../upload-screen'
-import { WalletConnectModalScreen } from '../wallet-connect'
 
 import { AppTabsScreen } from './AppTabsScreen'
 
@@ -60,8 +60,8 @@ export const AppScreen = () => {
           component={CreateChatBlastNavigator}
         />
         <Stack.Screen
-          name='WalletConnect'
-          component={WalletConnectModalScreen}
+          name='ExternalWallets'
+          component={ExternalWalletsModalScreen}
         />
         <Stack.Screen
           name='FeatureFlagOverride'

@@ -47,6 +47,7 @@ import { WaitForDownloadDrawer } from 'app/components/wait-for-download-drawer'
 import { ReplaceTrackProgressDrawer } from 'app/screens/edit-track-screen/components'
 import { EarlyReleaseConfirmationDrawer } from 'app/screens/edit-track-screen/components/EarlyReleaseConfirmationDrawer'
 import { PublishConfirmationDrawer } from 'app/screens/edit-track-screen/components/PublishConfirmationDrawer'
+import { ConnectNewWalletDrawer } from 'app/screens/external-wallets/components/ConnectNewWalletDrawer'
 import { WelcomeDrawer } from 'app/screens/sign-on-screen/components/WelcomeDrawer'
 import { TrendingFilterDrawer } from 'app/screens/trending-screen'
 
@@ -157,7 +158,8 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   MuteComments: MuteCommentsConfirmationDrawer,
   DeleteChat: DeleteChatDrawer,
   SupportersInfo: SupportersInfoDrawer,
-  Welcome: WelcomeDrawer
+  Welcome: WelcomeDrawer,
+  ConnectNewWallet: ConnectNewWalletDrawer
 }
 
 const commonDrawers = Object.entries(commonDrawersMap) as [
