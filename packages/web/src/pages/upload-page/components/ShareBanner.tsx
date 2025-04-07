@@ -116,7 +116,7 @@ export const ShareBanner = (props: ShareBannerProps) => {
     dispatch(
       openCreateChatModal({
         // Just care about the link
-        presetMessage: permalink ? getCopyableLink(`/${permalink}`) : undefined,
+        presetMessage: permalink ? getCopyableLink(permalink) : undefined,
         defaultUserList: 'chats'
       })
     )
