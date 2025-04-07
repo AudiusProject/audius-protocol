@@ -231,13 +231,6 @@ app.get('/attestation/ui', async (c) => {
           <tr>
             <th>Timestamp</th>
             <th>Handle</th>
-            <th>Listen Activity</th>
-            <th>Follower Count</th>
-            <th>Following Count</th>
-            <th>Fast Challenges</th>
-            <th>Chat Blocks</th>
-            <th>Fingerprint</th>
-            <th>Override</th>
             <th>Overall Score</th>
           </tr>
         </>
@@ -262,19 +255,6 @@ app.get('/attestation/ui', async (c) => {
                   >
                     {userScore.handleLowerCase}
                   </a>
-                </td>
-                <td>{userScore.playCount}</td>
-                <td>{userScore.followerCount}</td>
-                <td>{userScore.followingCount}</td>
-                <td>{userScore.challengeCount}</td>
-                <td>{userScore.chatBlockCount}</td>
-                <td>{userScore.fingerprintCount}</td>
-                <td>
-                  {userScore.isBlocked
-                    ? 'Blocked'
-                    : userScore.isBlocked === false
-                      ? 'Allowed'
-                      : ''}
                 </td>
                 <td>{userScore.overallScore}</td>
               </tr>
@@ -354,7 +334,7 @@ app.get('/attestation/ui/user', async (c) => {
               <div
                 className={`badge badge-xl ${userScore.overallScore < 0 ? 'badge-error' : 'badge-success'}`}
               >
-                {(userScore.normalizedScore * 100).toFixed(0)}%
+                {userScore.overallScore}
               </div>{' '}
               {Object.entries(signals).map(([name, ok]) => (
                 <div
@@ -375,6 +355,7 @@ app.get('/attestation/ui/user', async (c) => {
               <th class='text-left'>Fast Challenge Count</th>
               <th class='text-left'>Following Count</th>
               <th class='text-left'>Chat Block Count</th>
+              <th class='text-left'>Audius Impersonator</th>
             </tr>
           </thead>
           <tbody>
@@ -404,6 +385,16 @@ app.get('/attestation/ui/user', async (c) => {
               >
                 {userScore.chatBlockCount}
               </td>
+              <td
+                class={
+                  userScore.isAudiusImpersonator
+                    ? 'text-red-500'
+                    : 'text-green-500'
+                }
+              >
+                {userScore.isAudiusImpersonator.toString()}
+              </td>
+
               <td
                 class={
                   userScore.shadowbanScore < 0
@@ -543,7 +534,7 @@ app.get('/attestation/ui/recent-tips', async (c) => {
 
   let lastDate = ''
   function dateHeader(timestamp: Date) {
-    const d = timestamp.toDateString()
+    const d = timestamp?.toDateString()
     if (d != lastDate) {
       lastDate = d
       return (
