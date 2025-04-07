@@ -60,7 +60,7 @@ export const AppScreen = () => {
           component={CreateChatBlastNavigator}
         />
         <Stack.Screen
-          name='WalletConnect'
+          name='ExternalWallets'
           component={ExternalWalletsModalScreen}
         />
         <Stack.Screen
