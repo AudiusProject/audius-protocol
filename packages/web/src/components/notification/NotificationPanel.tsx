@@ -58,7 +58,7 @@ export const NotificationPanel = ({
     isAllPending: isPending,
     isError,
     isFetchingNextPage
-  } = useNotifications()
+  } = useNotifications({ enabled: isOpen })
 
   const handleLoadMore = useCallback(() => {
     if (!isFetchingNextPage) {
