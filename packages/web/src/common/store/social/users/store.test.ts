@@ -1,4 +1,5 @@
-import { FollowSource, Kind } from '@audius/common/models'
+import { getUserQueryKey } from '@audius/common/api'
+import { FollowSource, Kind, User } from '@audius/common/models'
 import {
   cacheActions,
   usersSocialActions as actions
@@ -12,6 +13,7 @@ import { describe, it } from 'vitest'
 
 import { adjustUserField } from 'common/store/cache/users/sagas'
 import * as sagas from 'common/store/social/users/sagas'
+import { queryClient } from 'services/query-client'
 import { noopReducer } from 'store/testHelper'
 import { waitForWrite } from 'utils/sagaHelpers'
 
@@ -22,11 +24,17 @@ const mockAudiusSdk = {}
 
 const defaultProviders: StaticProvider[] = [
   [call.fn(waitForWrite), undefined],
-  [matchers.getContext('audiusSdk'), async () => mockAudiusSdk]
+  [matchers.getContext('audiusSdk'), async () => mockAudiusSdk],
+  [matchers.getContext('queryClient'), queryClient]
 ]
-
 describe('follow', () => {
   it('follows', async () => {
+    queryClient.setQueryData(getUserQueryKey(1), accountUser as unknown as User)
+    queryClient.setQueryData(
+      getUserQueryKey(2),
+      followedUser as unknown as User
+    )
+
     await expectSaga(sagas.watchFollowUser)
       .withReducer(
         combineReducers({
