@@ -94,7 +94,8 @@ const CollectionPlayerCard = ({
   activeTrackIndex,
   onTogglePlay,
   isTwitter,
-  streamConditions
+  streamConditions,
+  audioPlayer
 }) => {
   const makeOnTogglePlay = (index) => () => onTogglePlay(index)
   const permalink = `${stripLeadingSlash(collection.permalink)}`
@@ -148,6 +149,7 @@ const CollectionPlayerCard = ({
                 mediaKey={mediaKey}
                 playingState={playingState}
                 seekTo={seekTo}
+                audioPlayer={audioPlayer}
               />
               {isPurchaseable ? <Preview /> : null}
             </div>

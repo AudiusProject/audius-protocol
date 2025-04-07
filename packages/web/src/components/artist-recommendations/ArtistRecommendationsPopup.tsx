@@ -37,16 +37,12 @@ export const ArtistRecommendationsPopup = (props: Props) => {
 
   // Get the related artists which should be available in the query cache
   const queryClient = useQueryClient()
-  const relatedArtistsData = queryClient.getQueryData<{
-    pages: User[][]
-    pageParams: number[]
-  }>(
+  const relatedArtists = queryClient.getQueryData(
     getRelatedArtistsQueryKey({
       artistId,
       pageSize: MAX_PROFILE_RELATED_ARTISTS
     })
   )
-  const relatedArtists = relatedArtistsData?.pages.flat()
 
   // Query for suggested artists only if there are related artists in the first place
   const { data: suggestedArtists = [], isLoading } = useRelatedArtistsUsers(
@@ -55,7 +51,10 @@ export const ArtistRecommendationsPopup = (props: Props) => {
       filterFollowed: true,
       pageSize: 7
     },
-    { enabled: isVisible && relatedArtists && relatedArtists.length > 0 }
+    {
+      enabled:
+        isVisible && relatedArtists && relatedArtists.pages?.flat().length > 0
+    }
   )
 
   // Only show popup if we have artists to recommend

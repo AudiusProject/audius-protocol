@@ -49,10 +49,12 @@ const TrackPlayerContainer = ({
     seekTo,
     onTogglePlay,
     initAudio,
-    stop
-  } = usePlayback(track.id, onTrackEnd)
+    stop,
+    audioPlayer
+  } = usePlayback(track?.id, onTrackEnd)
 
   const trackInfoForPlayback = useMemo(() => {
+    if (!track?.id) return null
     const isPurchaseable =
       track.streamConditions && instanceOfPurchaseGate(track.streamConditions)
     return {
@@ -63,14 +65,15 @@ const TrackPlayerContainer = ({
       isPurchaseable
     }
   }, [
-    track.id,
-    track.title,
-    track.streamConditions,
-    track.user.creatorNodeEndpoint,
-    track.user.name
+    track?.id,
+    track?.title,
+    track?.streamConditions,
+    track?.user?.creatorNodeEndpoint,
+    track?.user?.name
   ])
 
   const didTogglePlay = useCallback(() => {
+    if (!trackInfoForPlayback) return
     if (!didInitAudio) {
       initAudio()
       loadTrack(trackInfoForPlayback)
@@ -96,12 +99,12 @@ const TrackPlayerContainer = ({
   const playbarEnabled =
     playingState !== PlayingState.Buffering && !popoverVisibility
   useSpacebar(didTogglePlay, playbarEnabled)
-  useRecordListens(position, mediaKey, track.id, LISTEN_INTERVAL_SECONDS)
+  useRecordListens(position, mediaKey, track?.id, LISTEN_INTERVAL_SECONDS)
 
   // Setup autoplay on twitter
   useEffect(() => {
     const mobile = isMobile()
-    if (!isTwitter || mobile) return
+    if (!isTwitter || mobile || !trackInfoForPlayback) return
     initAudio()
     loadTrack(trackInfoForPlayback)
     setDidInitAudio(true)
@@ -119,7 +122,7 @@ const TrackPlayerContainer = ({
           if (from && from === 'audiusapi') {
             if (method === 'togglePlay') didTogglePlay()
             if (method === 'stop') stop()
-            if (method === 'seekTo') seekTo(value)
+            if (method === 'seekTo' && didInitAudio) seekTo(value)
           }
         } catch (error) {
           logError(error)
@@ -136,26 +139,27 @@ const TrackPlayerContainer = ({
   const albumArtURL = getArtworkUrl(track)
 
   const hasPremiumExtras =
-    track.isDownloadGated && instanceOfPurchaseGate(track.downloadConditions)
+    track?.isDownloadGated && instanceOfPurchaseGate(track?.downloadConditions)
 
   const props = {
-    title: track.title,
+    title: track?.title,
     mediaKey,
-    handle: track.user.handle,
-    artistName: track.user.name,
+    handle: track?.user?.handle,
+    artistName: track?.user?.name,
     playingState,
     albumArtURL,
     onTogglePlay: didTogglePlay,
-    isVerified: track.user.isVerified,
-    seekTo,
-    position,
-    duration,
-    trackURL: stripLeadingSlash(track.permalink),
+    isVerified: track?.user?.isVerified,
+    seekTo: didInitAudio ? seekTo : undefined,
+    position: didInitAudio ? position : 0,
+    duration: didInitAudio ? duration : 0,
+    trackURL: stripLeadingSlash(track?.permalink),
     backgroundColor,
     isTwitter,
-    streamConditions: track.streamConditions,
+    streamConditions: track?.streamConditions,
     did404,
-    hasPremiumExtras
+    hasPremiumExtras,
+    audioPlayer
   }
 
   let trackPlayer

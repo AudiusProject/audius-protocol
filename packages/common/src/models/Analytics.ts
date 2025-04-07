@@ -1186,12 +1186,12 @@ type TrackDownloadClickedDownloadAll = {
 
 type TrackDownloadSuccessfulDownloadAll = {
   eventName: Name.TRACK_DOWNLOAD_SUCCESSFUL_DOWNLOAD_ALL
-  device: 'web' | 'native'
+  device?: 'web' | 'native'
 }
 
 type TrackDownloadFailedDownloadAll = {
   eventName: Name.TRACK_DOWNLOAD_FAILED_DOWNLOAD_ALL
-  device: 'web' | 'native'
+  device?: 'web' | 'native'
 }
 
 type TrackDownloadClickedDownloadSingle = {

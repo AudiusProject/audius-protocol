@@ -139,14 +139,14 @@ export const ProfileResultsPage = () => {
   const searchParams = useSearchParams()
   const {
     data: ids,
-    isLoading,
+    isFetching,
     hasNextPage,
     loadNextPage,
     isPending
   } = useSearchUserResults(searchParams)
 
   const isResultsEmpty = ids?.length === 0
-  const showNoResultsTile = !isLoading && isResultsEmpty
+  const showNoResultsTile = !isFetching && isResultsEmpty
 
   return (
     <InfiniteScroll
@@ -174,7 +174,7 @@ export const ProfileResultsPage = () => {
           <NoResultsTile />
         ) : (
           <ProfileResultsTiles
-            isFetching={isLoading}
+            isFetching={isFetching}
             isPending={isPending}
             data={ids}
             skeletonCount={10}

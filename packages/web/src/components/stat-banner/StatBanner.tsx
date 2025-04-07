@@ -1,12 +1,8 @@
 import { useRef } from 'react'
 
-import {
-  useCurrentUserId,
-  useUnfollowUser,
-  useFollowUser
-} from '@audius/common/api'
+import { useGetCurrentUserId } from '@audius/common/api'
 import { useFeatureFlag, useIsManagedAccount } from '@audius/common/hooks'
-import { ID, statusIsNotFinalized, FollowSource } from '@audius/common/models'
+import { ID, statusIsNotFinalized } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { chatSelectors } from '@audius/common/store'
 import {
@@ -63,6 +59,8 @@ type StatsBannerProps = {
   onShare?: () => void
   onSave?: () => void
   onCancel?: () => void
+  onFollow?: () => void
+  onUnfollow?: () => void
   following?: boolean
   isSubscribed?: boolean
   onToggleSubscribe?: () => void
@@ -173,6 +171,8 @@ export const StatBanner = (props: StatsBannerProps) => {
     onShare,
     onSave,
     onCancel,
+    onFollow,
+    onUnfollow,
     following,
     canCreateChat,
     onMessage,
@@ -189,10 +189,7 @@ export const StatBanner = (props: StatsBannerProps) => {
   const followButtonRef = useRef<HTMLButtonElement>(null)
   const isManagedAccount = useIsManagedAccount()
   const chatPermissionStatus = useSelector(getChatPermissionsStatus)
-  const { data: currentUserId } = useCurrentUserId()
-
-  const { mutate: followUser } = useFollowUser()
-  const { mutate: unfollowUser } = useUnfollowUser()
+  const { data: currentUserId } = useGetCurrentUserId({})
 
   const shareButton = (
     <Button
@@ -278,18 +275,8 @@ export const StatBanner = (props: StatsBannerProps) => {
             <FollowButton
               ref={followButtonRef}
               isFollowing={following}
-              onFollow={() =>
-                followUser({
-                  followeeUserId: profileId,
-                  source: FollowSource.PROFILE_PAGE
-                })
-              }
-              onUnfollow={() =>
-                unfollowUser({
-                  followeeUserId: profileId,
-                  source: FollowSource.PROFILE_PAGE
-                })
-              }
+              onFollow={onFollow}
+              onUnfollow={onUnfollow}
             />
 
             <ArtistRecommendationsPopup

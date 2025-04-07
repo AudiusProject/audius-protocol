@@ -26,7 +26,7 @@ const PlayButton = ({
   iconStyle = {}
 }) => {
   const stateIconMap = {
-    [PlayingState.Playing]: <IconPause style={iconStyle} size='l' />,
+    [PlayingState.Playing]: <IconPause style={iconStyle} size={iconSize} />,
     [PlayingState.Paused]: (
       <Flex ml='10%'>
         <IconPlay style={iconStyle} size={iconSize} />

@@ -17,6 +17,7 @@ import { CreateChatActionsDrawer } from 'app/components/create-chat-actions-draw
 import { DeactivateAccountConfirmationDrawer } from 'app/components/deactivate-account-confirmation-drawer'
 import { DeleteChatDrawer } from 'app/components/delete-chat-drawer'
 import { DeletePlaylistConfirmationDrawer } from 'app/components/delete-playlist-confirmation-drawer'
+import { DownloadTrackArchiveDrawer } from 'app/components/download-track-archive-drawer/DownloadTrackArchiveDrawer'
 import { ArtistPickConfirmationDrawer } from 'app/components/drawers/ArtistPickConfirmationDrawer'
 import { MuteCommentsConfirmationDrawer } from 'app/components/drawers/MuteCommentsConfirmationDrawer'
 import { DuplicateAddConfirmationDrawer } from 'app/components/duplicate-add-confirmation-drawer'
@@ -24,6 +25,7 @@ import { EditCollectiblesDrawer } from 'app/components/edit-collectibles-drawer'
 import { EnablePushNotificationsDrawer } from 'app/components/enable-push-notifications-drawer'
 import { FeedFilterDrawer } from 'app/components/feed-filter-drawer'
 import { ForgotPasswordDrawer } from 'app/components/forgot-password-drawer'
+import { HostRemixContestDrawer } from 'app/components/host-remix-contest-drawer/HostRemixContestDrawer'
 import { InboxUnavailableDrawer } from 'app/components/inbox-unavailable-drawer/InboxUnavailableDrawer'
 import { LeavingAudiusDrawer } from 'app/components/leaving-audius-drawer'
 import { LockedContentDrawer } from 'app/components/locked-content-drawer'
@@ -61,7 +63,6 @@ import { ShareToStoryProgressDrawer } from '../components/share-drawer/useShareT
 import { VipDiscordDrawer } from '../components/vip-discord-drawer'
 import { useDrawer } from '../hooks/useDrawer'
 import type { Drawer } from '../store/drawers/slice'
-
 type CommonDrawerProps = {
   modal: ComponentType
   modalName: Modals
@@ -132,7 +133,9 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   PublishConfirmation: PublishConfirmationDrawer,
   ReplaceTrackProgress: ReplaceTrackProgressDrawer,
   EarlyReleaseConfirmation: EarlyReleaseConfirmationDrawer,
-  ArtistPick: ArtistPickConfirmationDrawer
+  ArtistPick: ArtistPickConfirmationDrawer,
+  DownloadTrackArchive: DownloadTrackArchiveDrawer,
+  HostRemixContest: HostRemixContestDrawer
 }
 
 const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {

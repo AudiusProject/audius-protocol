@@ -13,6 +13,7 @@ import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { authService, solanaWalletService } from 'app/services/sdk/auth'
 import { identityService } from 'app/services/sdk/identity'
 import { store } from 'app/store'
+import { generatePlaylistArtwork } from 'app/utils/generatePlaylistArtwork'
 import { reportToSentry } from 'app/utils/reportToSentry'
 
 type AudiusQueryProviderProps = {
@@ -31,7 +32,10 @@ export const audiusQueryContext = {
   fetch,
   remoteConfigInstance,
   getFeatureEnabled,
-  analytics
+  analytics,
+  imageUtils: {
+    generatePlaylistArtwork
+  }
 }
 
 export const AudiusQueryProvider = (props: AudiusQueryProviderProps) => {

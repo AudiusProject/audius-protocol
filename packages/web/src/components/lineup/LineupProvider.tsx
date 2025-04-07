@@ -541,6 +541,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
             ...entry,
             index,
             uid: entry.uid,
+            id: entry.id,
             size: tileSize,
             ordered,
             playTrack,

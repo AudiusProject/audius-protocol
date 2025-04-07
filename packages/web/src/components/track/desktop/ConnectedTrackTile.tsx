@@ -84,6 +84,7 @@ const ConnectedTrackTile = ({
   const { data: track, isPending } = useTrack(id)
   const { data: partialUser } = useUser(track?.owner_id, {
     select: (user) => ({
+      user_id: user?.user_id,
       handle: user?.handle,
       name: user?.name,
       is_verified: user?.is_verified,

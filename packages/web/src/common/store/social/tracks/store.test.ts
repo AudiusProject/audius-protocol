@@ -1,4 +1,12 @@
-import { FavoriteSource, Kind, RepostSource } from '@audius/common/models'
+import {
+  FavoriteSource,
+  Kind,
+  RepostSource,
+  UserMetadata,
+  UserTrackMetadata
+} from '@audius/common/models'
+import { primeTrackDataInternal } from '@audius/common/src/api/tan-query/utils/primeTrackData'
+import { primeUserDataInternal } from '@audius/common/src/api/tan-query/utils/primeUserData'
 import {
   cacheActions,
   tracksSocialActions as actions
@@ -7,28 +15,56 @@ import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
 import { StaticProvider } from 'redux-saga-test-plan/providers'
-import { describe, it } from 'vitest'
+import { beforeEach, describe, it } from 'vitest'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import * as sagas from 'common/store/social/tracks/sagas'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { queryClient } from 'services/query-client'
 import { noopReducer } from 'store/testHelper'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { watchRecordListen } from './recordListen'
 
-const repostingUser = { repost_count: 0, handle: 'handle', name: 'name' }
-const saveUser = { handle: 'saveUser', name: 'name' }
+const repostingUser = {
+  user_id: 3,
+  repost_count: 0,
+  handle: 'handle',
+  name: 'name'
+} as UserMetadata
+const saveUser = {
+  handle: 'saveUser',
+  name: 'name',
+  user_id: 3
+} as UserMetadata
 
 const mockAudiusSdk = {}
 
 const defaultProviders: StaticProvider[] = [
   [matchers.call.fn(waitForWrite), undefined],
   [matchers.call.fn(waitForBackendSetup), undefined],
-  [matchers.getContext('audiusSdk'), async () => mockAudiusSdk]
+  [matchers.getContext('audiusSdk'), async () => mockAudiusSdk],
+  [matchers.getContext('queryClient'), queryClient]
 ]
 
+beforeEach(() => {
+  queryClient.clear()
+})
+
 describe('repost', () => {
+  beforeEach(() => {
+    primeTrackDataInternal({
+      tracks: [{ track_id: 1, repost_count: 5 } as UserTrackMetadata],
+      queryClient,
+      forceReplace: true
+    })
+    primeUserDataInternal({
+      users: [repostingUser],
+      queryClient,
+      forceReplace: true
+    })
+  })
+
   it('reposts', async () => {
     await expectSaga(sagas.watchRepostTrack)
       .withReducer(
@@ -73,6 +109,14 @@ describe('repost', () => {
   })
 
   it('does not allow self reposts', async () => {
+    primeTrackDataInternal({
+      tracks: [
+        { track_id: 1, repost_count: 5, owner_id: 2 } as UserTrackMetadata
+      ],
+      queryClient,
+      forceReplace: true
+    })
+
     await expectSaga(sagas.watchRepostTrack)
       .withReducer(
         combineReducers({
@@ -158,6 +202,19 @@ describe('repost', () => {
 })
 
 describe('save', () => {
+  beforeEach(() => {
+    primeTrackDataInternal({
+      tracks: [{ track_id: 1, save_count: 5 } as UserTrackMetadata],
+      queryClient,
+      forceReplace: true
+    })
+    primeUserDataInternal({
+      users: [saveUser],
+      queryClient,
+      forceReplace: true
+    })
+  })
+
   it('saves', async () => {
     await expectSaga(sagas.watchSaveTrack)
       .withReducer(
@@ -177,7 +234,7 @@ describe('save', () => {
           },
           users: {
             entries: {
-              3: { metadata: saveUser }
+              4: { metadata: saveUser }
             }
           }
         }
@@ -202,6 +259,14 @@ describe('save', () => {
   })
 
   it('does not allow self saves', async () => {
+    primeTrackDataInternal({
+      tracks: [
+        { track_id: 1, save_count: 5, owner_id: 2 } as UserTrackMetadata
+      ],
+      queryClient,
+      forceReplace: true
+    })
+
     await expectSaga(sagas.watchSaveTrack)
       .withReducer(
         combineReducers({
@@ -215,12 +280,12 @@ describe('save', () => {
           },
           tracks: {
             entries: {
-              1: { metadata: { save_count: 5, owner_id: 2 } }
+              1: { metadata: { save_count: 5, owner_id: 4 } }
             }
           },
           users: {
             entries: {
-              2: { metadata: saveUser }
+              4: { metadata: saveUser }
             }
           }
         }
@@ -263,7 +328,7 @@ describe('save', () => {
           },
           users: {
             entries: {
-              3: { metadata: saveUser }
+              4: { metadata: saveUser }
             }
           }
         }
@@ -288,6 +353,18 @@ describe('save', () => {
 
 describe('recordListen', () => {
   it('dispatches a listen for another account', async () => {
+    primeTrackDataInternal({
+      tracks: [
+        {
+          track_id: 1,
+          owner_id: 2,
+          _listen_count: 11
+        } as unknown as UserTrackMetadata
+      ],
+      queryClient,
+      forceReplace: true
+    })
+
     await expectSaga(watchRecordListen)
       .withReducer(
         combineReducers({
@@ -315,6 +392,14 @@ describe('recordListen', () => {
   })
 
   it('limits listens on own account', async () => {
+    primeTrackDataInternal({
+      tracks: [
+        { track_id: 1, owner_id: 1, listenCount: 11 } as UserTrackMetadata
+      ],
+      queryClient,
+      forceReplace: true
+    })
+
     await expectSaga(watchRecordListen)
       .withReducer(
         combineReducers({

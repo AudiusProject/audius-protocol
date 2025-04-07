@@ -3,6 +3,7 @@ apis/ChallengesApi.ts
 apis/CommentsApi.ts
 apis/DashboardWalletUsersApi.ts
 apis/DeveloperAppsApi.ts
+apis/EventsApi.ts
 apis/PlaylistsApi.ts
 apis/ResolveApi.ts
 apis/TipsApi.ts
@@ -38,6 +39,8 @@ models/DeveloperApps.ts
 models/EmailAccess.ts
 models/EmailAccessResponse.ts
 models/EncodedUserId.ts
+models/Event.ts
+models/EventsResponse.ts
 models/ExtendedAccessGate.ts
 models/ExtendedPaymentSplit.ts
 models/ExtendedPurchaseGate.ts

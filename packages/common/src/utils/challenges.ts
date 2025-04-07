@@ -296,6 +296,18 @@ export const challengeRewardsConfig: Record<
     panelButtonText: 'Comment on a Track',
     id: ChallengeName.FirstWeeklyComment
   },
+  [ChallengeName.Cosign]: {
+    shortTitle: 'Co-signed Remix',
+    title: 'Co-signed Remix',
+    description: () =>
+      'If your remix is co-signed by a verified artist you will earn a reward!',
+    fullDescription: () =>
+      'If your remix is co-signed by a verified artist you will earn a reward!',
+    panelButtonText: 'cosign description',
+    id: ChallengeName.Cosign,
+    progressLabel: 'Available',
+    remainingLabel: 'Available'
+  },
   [ChallengeName.PlayCount250]: {
     id: ChallengeName.PlayCount250,
     title: '250 Plays',
@@ -473,13 +485,10 @@ export const getClaimableChallengeSpecifiers = (
 }
 
 const newChallengeIds: ChallengeRewardID[] = [
-  ChallengeName.ListenStreakEndless,
-  ChallengeName.FirstWeeklyComment,
-  ChallengeName.PlayCount250,
-  ChallengeName.PlayCount1000,
   ChallengeName.PlayCount10000,
   ChallengeName.Tastemaker,
-  ChallengeName.CommentPin
+  ChallengeName.CommentPin,
+  ChallengeName.Cosign
 ]
 
 export const isNewChallenge = (challengeId: ChallengeRewardID) =>
@@ -509,7 +518,18 @@ export const getChallengeStatusLabel = (
   switch (challengeId) {
     case ChallengeName.ListenStreakEndless:
       return `Day ${challenge.current_step_count}`
-
+    case ChallengeName.Cosign:
+      if (
+        challenge.undisbursedSpecifiers.length &&
+        !challenge.claimableAmount &&
+        challenge.cooldown_days
+      ) {
+        return DEFAULT_STATUS_LABELS.REWARD_PENDING
+      }
+      if (challenge.claimableAmount > 0) {
+        return DEFAULT_STATUS_LABELS.READY_TO_CLAIM
+      }
+      return 'Available'
     case ChallengeName.AudioMatchingBuy:
     case ChallengeName.AudioMatchingSell:
       if (challenge.state === 'completed' && challenge.cooldown_days) {

@@ -16,18 +16,18 @@ export type CollectionTrackWithUid = TrackMetadata & {
  */
 export const useCollectionTracksWithUid = (
   collection: Pick<TQCollection, 'playlist_contents' | 'trackIds'> | undefined,
-  collectionUid: UID
+  collectionUid: UID | undefined
 ) => {
-  const collectionSource = Uid.fromString(collectionUid).source
+  const collectionSource = Uid.fromString(collectionUid ?? '')?.source
 
-  const { byId } = useTracks(collection?.trackIds)
+  const { byId } = useTracks(collection?.trackIds, { enabled: !!collectionUid })
 
   // Return tracks & rebuild UIDs for the track so they refer directly to this collection
   return useMemo(() => {
-    return collection?.playlist_contents?.track_ids
+    return (collection?.playlist_contents?.track_ids ?? [])
       .map((t, i) => {
         const { uid, track: trackId } = t ?? {}
-        const trackUid = Uid.fromString(uid ?? '')
+        const trackUid = Uid.fromString(`${uid}`)
         trackUid.source = `${collectionSource}:${trackUid.source}`
         trackUid.count = i
 

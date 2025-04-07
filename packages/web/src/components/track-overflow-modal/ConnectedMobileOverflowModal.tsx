@@ -1,8 +1,4 @@
-import {
-  useToggleFavoriteTrack,
-  useFollowUser,
-  useUnfollowUser
-} from '@audius/common/api'
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import {
   FavoriteSource,
   ID,
@@ -18,6 +14,8 @@ import {
   cacheUsersSelectors,
   queueSelectors,
   collectionsSocialActions,
+  tracksSocialActions,
+  usersSocialActions,
   addToCollectionUIActions,
   deletePlaylistConfirmationModalUIActions,
   mobileOverflowMenuUISelectors,
@@ -26,8 +24,7 @@ import {
   modalsActions,
   usePremiumContentPurchaseModal,
   OverflowSource,
-  PurchaseableContentType,
-  tracksSocialActions
+  PurchaseableContentType
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { connect } from 'react-redux'
@@ -50,6 +47,7 @@ const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { requestOpen: openDeletePlaylist } =
   deletePlaylistConfirmationModalUIActions
 const { requestOpen: openAddToCollection } = addToCollectionUIActions
+const { followUser, unfollowUser } = usersSocialActions
 const { repostTrack, undoRepostTrack } = tracksSocialActions
 const {
   repostCollection,
@@ -100,6 +98,8 @@ const ConnectedMobileOverflowModal = ({
   visitArtistPage,
   visitCollectiblePage,
   visitPlaylistPage,
+  follow,
+  unfollow,
   shareUser
 }: ConnectedMobileOverflowModalProps) => {
   const { onOpen: openPremiumContentModal } = usePremiumContentPurchaseModal()
@@ -108,8 +108,6 @@ const ConnectedMobileOverflowModal = ({
       openPremiumContentModal(...args),
     [openPremiumContentModal]
   )
-  const { mutate: followUser } = useFollowUser()
-  const { mutate: unfollowUser } = useUnfollowUser()
   const navigate = useNavigate()
 
   const toggleSaveTrack = useToggleFavoriteTrack({
@@ -174,16 +172,8 @@ const ConnectedMobileOverflowModal = ({
               ? console.error(`Permalink missing for track ${id}`)
               : visitTrackPage(permalink),
           onVisitArtistPage: () => visitArtistPage(handle),
-          onFollow: () =>
-            followUser({
-              followeeUserId: ownerId,
-              source: FollowSource.OVERFLOW
-            }),
-          onUnfollow: () =>
-            unfollowUser({
-              followeeUserId: ownerId,
-              source: FollowSource.OVERFLOW
-            }),
+          onFollow: () => follow(ownerId),
+          onUnfollow: () => unfollow(ownerId),
           onPurchase: () =>
             openPurchaseModal(
               {
@@ -224,16 +214,8 @@ const ConnectedMobileOverflowModal = ({
       case OverflowSource.PROFILE: {
         if (!id || !handle || !artistName) return {}
         return {
-          onFollow: () =>
-            followUser({
-              followeeUserId: id as ID,
-              source: FollowSource.OVERFLOW
-            }),
-          onUnfollow: () =>
-            unfollowUser({
-              followeeUserId: id as ID,
-              source: FollowSource.OVERFLOW
-            }),
+          onFollow: () => follow(id as ID),
+          onUnfollow: () => unfollow(id as ID),
           onShare: () => shareUser(id as ID)
         }
       }
@@ -382,6 +364,9 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
     publishPlaylist: (playlistId: ID) => dispatch(publishPlaylist(playlistId)),
 
     // Users
+    follow: (userId: ID) => dispatch(followUser(userId, FollowSource.OVERFLOW)),
+    unfollow: (userId: ID) =>
+      dispatch(unfollowUser(userId, FollowSource.OVERFLOW)),
     shareUser: (userId: ID) => {
       dispatch(
         requestOpenShareModal({

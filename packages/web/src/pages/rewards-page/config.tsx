@@ -276,6 +276,9 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
   },
   [ChallengeName.CommentPin]: {
     icon: <i className='emoji large speech-balloon' />
+  },
+  [ChallengeName.Cosign]: {
+    icon: <i className='emoji large recycle' />
   }
 }
 

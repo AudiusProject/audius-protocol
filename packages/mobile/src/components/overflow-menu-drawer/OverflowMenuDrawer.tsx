@@ -64,7 +64,9 @@ const overflowRowConfig = (
       commentCount !== undefined
         ? `View (${commentCount}) Comments`
         : 'View Comments' // slightly better than incorrectly showing a 0 count
-  }
+  },
+  // TODO: Update to say edit remix contest when the track already has an event
+  [OverflowAction.HOST_REMIX_CONTEST]: { text: 'Host Remix Contest' }
 })
 
 export const OverflowMenuDrawer = () => {

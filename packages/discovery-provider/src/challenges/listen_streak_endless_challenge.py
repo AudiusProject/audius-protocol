@@ -135,7 +135,7 @@ class ChallengeListenEndlessStreakUpdater(ChallengeUpdater):
         )
         created_at = datetime.fromtimestamp(extra["created_at"])
         old_formatted_date = created_at.strftime("%Y%m%d")
-        old_specifier = f"{hex(user_id)[2:]}_{old_formatted_date}"
+        old_specifier = f"{hex(user_id)[2:]}:{old_formatted_date}"
         if (
             not block
             or not block.height

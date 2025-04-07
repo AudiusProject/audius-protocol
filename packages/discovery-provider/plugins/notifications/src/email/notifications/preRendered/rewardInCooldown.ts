@@ -12,7 +12,7 @@ export const email = ({
   handle: string
   profilePicture: string
   profileLink: string
-  amount: number
+  amount: string
   challengeTitle: string
   challengeDescription: string
   challengeImage: string

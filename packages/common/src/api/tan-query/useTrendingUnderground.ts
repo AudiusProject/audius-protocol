@@ -1,18 +1,21 @@
-import { OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import { OptionalId, EntityType } from '@audius/sdk'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
 import { PlaybackSource } from '~/models/Analytics'
-import { UserTrackMetadata } from '~/models/Track'
 import {
   trendingUndergroundPageLineupActions,
   trendingUndergroundPageLineupSelectors
 } from '~/store/pages'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions, LineupData } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -25,7 +28,10 @@ type UseTrendingUndergroundArgs = {
 
 export const getTrendingUndergroundQueryKey = ({
   pageSize
-}: UseTrendingUndergroundArgs) => [QUERY_KEYS.trendingUnderground, { pageSize }]
+}: UseTrendingUndergroundArgs) =>
+  [QUERY_KEYS.trendingUnderground, { pageSize }] as unknown as QueryKey<
+    InfiniteData<LineupData[]>
+  >
 
 export const useTrendingUnderground = (
   { pageSize = DEFAULT_PAGE_SIZE }: UseTrendingUndergroundArgs = {},
@@ -39,7 +45,7 @@ export const useTrendingUnderground = (
   const queryData = useInfiniteQuery({
     queryKey: getTrendingUndergroundQueryKey({ pageSize }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: UserTrackMetadata[], allPages) => {
+    getNextPageParam: (lastPage: LineupData[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -66,7 +72,10 @@ export const useTrendingUnderground = (
         )
       )
 
-      return tracks
+      return tracks.map((t) => ({
+        id: t.track_id,
+        type: EntityType.TRACK
+      }))
     },
     select: (data) => data?.pages.flat(),
     ...options,

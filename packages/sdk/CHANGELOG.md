@@ -1,5 +1,37 @@
 # @audius/sdk
 
+## 9.0.0
+
+### Major Changes
+
+- 138921a: Update comment methods with 'get' prefix
+
+### Minor Changes
+
+- 7d9dfb2: Add archiver service
+- fb32b3d: Update add/remove wallet to use new transaction types
+- c8a0e06: Add support for fetching collectibles
+- 1056ad1: Adds support for updating user collectibles preferences
+- 3e4099c: Remove metadata_multihash from user responses
+- b19692d: Skip adding signature headers if they are passed in RequestInit
+- 0d08a9f: Add events endpoint
+- 8bc0a7f: Use AAO discovery plugin
+- 50ed5e1: Use static endpoint for apis except for challenges
+- 2edda3f: Pass playlist_contents in updated format
+
+### Patch Changes
+
+- fbb4f34: key fix for UpdateProfile
+- 1ec2871: remove unused notification data fields
+- 09c6315: Add c challenge
+- 53fdcf9: Add priority fees to Challenge Rewards Claiming
+- cd0e6c0: Add tastemaker challenge
+- a5a1ea4: Remove old listen streak challenge
+- fcb5221: Add new listen streak challenge to allow list
+- 7aefb4c: get event by entity ID endpoint
+- 202f0b3: Add support for setting compute budget limit, add multiplier for priority fee percentile.
+- e1db903: Added play count milestones to challenge types
+
 ## 8.0.1
 
 ### Patch Changes

@@ -1,8 +1,4 @@
-import {
-  InfiniteData,
-  useMutation,
-  useQueryClient
-} from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { cloneDeep } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -10,7 +6,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { Comment, Feature, ID, ReplyComment } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
-import { CommentOrReply, messages } from './types'
+import { messages } from './types'
 import {
   getCommentQueryKey,
   getTrackCommentListQueryKey,
@@ -40,28 +36,28 @@ export const useDeleteComment = () => {
       subtractCommentCount(dispatch, queryClient, trackId)
       // If reply, filter it from the parent's list of replies
       if (parentCommentId) {
-        queryClient.setQueryData<Comment>(
+        queryClient.setQueryData(
           getCommentQueryKey(parentCommentId),
           (prev) =>
             ({
               ...prev,
-              replies: (prev?.replies ?? []).filter(
+              replies: ((prev as Comment)?.replies ?? []).filter(
                 (reply: ReplyComment) => reply.id !== commentId
               ),
-              replyCount: (prev?.replyCount ?? 0) - 1
+              replyCount: ((prev as Comment)?.replyCount ?? 0) - 1
             }) as Comment
         )
       } else {
-        const existingCommentData = queryClient.getQueryData<
-          CommentOrReply | undefined
-        >(getCommentQueryKey(commentId))
+        const existingCommentData = queryClient.getQueryData(
+          getCommentQueryKey(commentId)
+        )
         const hasReplies =
           existingCommentData &&
           'replies' in existingCommentData &&
           (existingCommentData?.replies?.length ?? 0) > 0
 
         if (hasReplies) {
-          queryClient.setQueryData<Comment>(
+          queryClient.setQueryData(
             getCommentQueryKey(commentId),
             (prevCommentData) =>
               ({
@@ -74,8 +70,11 @@ export const useDeleteComment = () => {
           )
         } else {
           // If not a reply & has no replies, remove from the sort list
-          queryClient.setQueryData<InfiniteData<ID[]>>(
-            ['trackCommentList', trackId, currentSort],
+          queryClient.setQueryData(
+            getTrackCommentListQueryKey({
+              trackId,
+              sortMethod: currentSort
+            }),
             (prevCommentData) => {
               const newCommentData = cloneDeep(prevCommentData)
               if (!newCommentData) return
