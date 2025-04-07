@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useState, useRef, useEffect } from 'react'
+import { Suspense, lazy, useCallback, useState, useEffect } from 'react'
 
 import {
   useRemixContest,
@@ -44,8 +44,12 @@ import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
 import IconTrending from '@audius/harmony/src/assets/icons/Trending.svg'
 import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
 import { GetEntityEventsEntityTypeEnum } from '@audius/sdk'
+import { useTheme } from '@emotion/react'
+import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 import dayjs from 'dayjs'
+import { useToggle } from 'react-use'
+import useMeasure from 'react-use-measure'
 
 import { UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
@@ -85,6 +89,7 @@ const BUTTON_COLLAPSE_WIDTHS = {
 const REPOST_TIMEOUT = 1000
 const SAVED_TIMEOUT = 1000
 const MAX_DESCRIPTION_LINES = 8
+const DEFAULT_LINE_HEIGHT = spacing.xl
 
 const messages = {
   makePublic: 'MAKE PUBLIC',
@@ -247,21 +252,28 @@ export const GiantTrackTile = ({
   const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
   const shouldShowScheduledRelease =
     isScheduledRelease && dayjs(releaseDate).isAfter(dayjs())
-  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
+  const [isDescriptionExpanded, toggleDescriptionExpanded] = useToggle(false)
   const [showToggle, setShowToggle] = useState(false)
-  const descriptionRef = useRef<HTMLDivElement>(null)
+  const theme = useTheme()
 
-  // Calculate line height and determine if toggle should be shown
+  // This ref holds the description height for expansion
+  const [descriptionRef, descriptionBounds] = useMeasure({
+    polyfill: ResizeObserver
+  })
+
+  // This ref holds the full content height for expansion
+  const [fullContentRef, fullContentBounds] = useMeasure({
+    polyfill: ResizeObserver
+  })
+
+  // Calculate if toggle should be shown based on content height
   useEffect(() => {
-    if (description && descriptionRef.current) {
-      const element = descriptionRef.current
-      const computedStyle = window.getComputedStyle(element)
-      const lineHeight = parseInt(computedStyle.lineHeight) ?? spacing.xl
-      const height = element.scrollHeight
-      const lines = Math.round(height / lineHeight)
-      setShowToggle(lines > MAX_DESCRIPTION_LINES)
+    if (description && descriptionBounds.height && fullContentBounds.height) {
+      const lineHeight = DEFAULT_LINE_HEIGHT
+      const maxHeight = lineHeight * MAX_DESCRIPTION_LINES
+      setShowToggle(fullContentBounds.height > maxHeight)
     }
-  }, [description])
+  }, [description, descriptionBounds.height, fullContentBounds.height])
 
   const renderCardTitle = (className: string) => {
     return (
@@ -689,27 +701,36 @@ export const GiantTrackTile = ({
         <TrackMetadataList trackId={trackId} />
         {description ? (
           <Flex column gap='m'>
-            <Flex ref={descriptionRef} column>
-              <UserGeneratedText
-                tag='h3'
-                size='s'
-                lineHeight='multi'
-                css={{
-                  display: '-webkit-box',
-                  WebkitLineClamp: isDescriptionExpanded
-                    ? 'unset'
-                    : MAX_DESCRIPTION_LINES,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden'
-                }}
-              >
-                {description}
-              </UserGeneratedText>
+            {/* Container with height transition */}
+            <Flex
+              direction='column'
+              css={{
+                transition: `height ${theme.motion.expressive}, opacity ${theme.motion.quick}`,
+                overflow: 'hidden',
+                height: isDescriptionExpanded
+                  ? fullContentBounds.height
+                  : Math.min(
+                      fullContentBounds.height,
+                      DEFAULT_LINE_HEIGHT * MAX_DESCRIPTION_LINES
+                    )
+              }}
+            >
+              {/* Inner content that we measure */}
+              <Flex ref={fullContentRef} direction='column'>
+                <UserGeneratedText
+                  ref={descriptionRef}
+                  tag='h3'
+                  size='s'
+                  lineHeight='multi'
+                >
+                  {description}
+                </UserGeneratedText>
+              </Flex>
             </Flex>
             {showToggle && (
               <PlainButton
                 iconRight={isDescriptionExpanded ? IconCaretUp : IconCaretDown}
-                onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                onClick={toggleDescriptionExpanded}
                 css={{ alignSelf: 'flex-start' }}
               >
                 {isDescriptionExpanded ? messages.seeLess : messages.seeMore}
