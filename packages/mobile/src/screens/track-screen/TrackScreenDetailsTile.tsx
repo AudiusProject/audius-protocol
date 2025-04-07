@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useState, useEffect } from 'react'
 
 import { useRemixContest, useToggleFavoriteTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
@@ -45,25 +45,28 @@ import {
 import { formatReleaseDate, Genre, removeNullable } from '@audius/common/utils'
 import { GetEntityEventsEntityTypeEnum } from '@audius/sdk'
 import dayjs from 'dayjs'
-import { TouchableOpacity } from 'react-native'
+import { TouchableOpacity, Animated, Easing } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
+import { useToggle } from 'react-use'
 
 import {
-  Box,
   Button,
+  Divider,
   Flex,
   IconCalendarMonth,
+  IconCaretDown,
+  IconCaretUp,
+  IconCloudUpload,
   IconPause,
   IconPlay,
   IconRepeatOff,
   IconVisibilityHidden,
-  IconCloudUpload,
   MusicBadge,
   Paper,
+  PlainButton,
   Text,
   spacing,
-  type ImageProps,
-  Divider
+  type ImageProps
 } from '@audius/harmony-native'
 import CoSign, { Size } from 'app/components/co-sign'
 import { useCommentDrawer } from 'app/components/comments/CommentDrawerContext'
@@ -99,6 +102,9 @@ const { getTrackPosition } = playbackPositionSelectors
 const { makeGetCurrent } = queueSelectors
 const getCurrentQueueItem = makeGetCurrent()
 
+const MAX_DESCRIPTION_LINES = 8
+const DEFAULT_LINE_HEIGHT = spacing.xl
+
 const messages = {
   track: 'track',
   podcast: 'podcast',
@@ -121,7 +127,9 @@ const messages = {
     deadline
       ? `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`
       : '',
-  uploadRemixButtonText: 'Upload Your Remix'
+  uploadRemixButtonText: 'Upload Your Remix',
+  seeMore: 'See More',
+  seeLess: 'See Less'
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -229,10 +237,9 @@ export const TrackScreenDetailsTile = ({
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
   )
-  const { data: events } = useRemixContest(trackId, {
+  const { data: event } = useRemixContest(trackId, {
     entityType: GetEntityEventsEntityTypeEnum.Track
   })
-  const event = events?.[0]
   const isRemixContest = isRemixContestEnabled && !isOwner && event
 
   const isPlayingPreview = isPreviewing && isPlaying
@@ -568,6 +575,62 @@ export const TrackScreenDetailsTile = ({
     ) : null
   }
 
+  const [isDescriptionExpanded, toggleDescriptionExpanded] = useToggle(false)
+  const [showToggle, setShowToggle] = useState(false)
+  const descriptionLength = description?.length || 0
+
+  // Animation value for description height
+  const [animatedHeight] = useState(new Animated.Value(0))
+
+  // Log when component renders to ensure our code is running
+  useEffect(() => {
+    console.log(
+      'REED TrackScreenDetailsTile rendering, description length:',
+      descriptionLength
+    )
+
+    // Use description length as a simple heuristic
+    if (descriptionLength > MAX_DESCRIPTION_LINES * 50) {
+      console.log('REED Setting showToggle based on length:', descriptionLength)
+      setShowToggle(true)
+    }
+  }, [descriptionLength])
+
+  // Handle toggle animation
+  useEffect(() => {
+    // Animate to expanded or collapsed height
+    Animated.timing(animatedHeight, {
+      toValue: isDescriptionExpanded ? 1 : 0,
+      duration: 300, // Match harmony motion.expressive duration
+      easing: Easing.inOut(Easing.ease), // Use easing for smoother animation
+      useNativeDriver: false
+    }).start()
+  }, [isDescriptionExpanded, animatedHeight])
+
+  // Use onTextLayout instead of onLayout
+  const onDescriptionTextLayout = useCallback(
+    (event) => {
+      if (!description) return
+
+      // Get the number of lines from the text layout event
+      const { lines } = event.nativeEvent
+      const numLines = lines?.length || 0
+
+      console.log(
+        'REED Text layout lines:',
+        numLines,
+        'showToggle:',
+        numLines > MAX_DESCRIPTION_LINES
+      )
+
+      // Set toggle visibility based on number of lines
+      if (numLines > MAX_DESCRIPTION_LINES) {
+        setShowToggle(true)
+      }
+    },
+    [description]
+  )
+
   if (!trackId) return null
 
   if (isDeleted) {
@@ -686,11 +749,42 @@ export const TrackScreenDetailsTile = ({
           onPressComments={handlePressComments}
         />
         {description ? (
-          <Box w='100%'>
-            <UserGeneratedText source={'track page'} variant='body' size='s'>
-              {description}
-            </UserGeneratedText>
-          </Box>
+          <Flex column gap='m'>
+            <Animated.View
+              style={{
+                maxHeight: animatedHeight.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [
+                    DEFAULT_LINE_HEIGHT * MAX_DESCRIPTION_LINES,
+                    1000 // Large enough value to show all content
+                  ]
+                }),
+                overflow: 'hidden'
+              }}
+            >
+              <UserGeneratedText
+                source={'track page'}
+                variant='body'
+                size='s'
+                onTextLayout={onDescriptionTextLayout}
+                numberOfLines={
+                  isDescriptionExpanded ? undefined : MAX_DESCRIPTION_LINES
+                }
+                style={{ width: '100%' }}
+              >
+                {description}
+              </UserGeneratedText>
+            </Animated.View>
+            {showToggle ? (
+              <PlainButton
+                iconRight={isDescriptionExpanded ? IconCaretUp : IconCaretDown}
+                onPress={toggleDescriptionExpanded}
+                style={{ alignSelf: 'flex-start' }}
+              >
+                {isDescriptionExpanded ? messages.seeLess : messages.seeMore}
+              </PlainButton>
+            ) : null}
+          </Flex>
         ) : null}
         <TrackMetadataList trackId={trackId} />
         {renderTags()}
