@@ -50,7 +50,7 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   }
 }))
 
-export const WalletConnectScreen = () => {
+export const ExternalWalletsScreen = () => {
   const styles = useStyles()
   const navigation = useNavigation<WalletConnectParamList>()
   const dispatch = useDispatch()
