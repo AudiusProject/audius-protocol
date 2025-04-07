@@ -432,6 +432,9 @@ export const TrackScreenDetailsTile = ({
     const addToAlbumAction =
       isOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null
     const overflowActions = [
+      isOwner && isRemixContestEnabled
+        ? OverflowAction.HOST_REMIX_CONTEST
+        : null,
       addToAlbumAction,
       !isUnlisted || isOwner ? OverflowAction.ADD_TO_PLAYLIST : null,
       isOwner
