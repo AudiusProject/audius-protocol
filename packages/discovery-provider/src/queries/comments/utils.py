@@ -75,6 +75,35 @@ def get_base_comments_query(session, current_user_id=None):
     }
 
 
+def get_reactions_batch(session, comment_ids, user_ids):
+    """
+    Batch fetch reactions for multiple comments and users.
+
+    Args:
+        session: Database session
+        comment_ids: List of comment IDs to check reactions for
+        user_ids: List of user IDs to check reactions from
+
+    Returns:
+        Dict mapping (user_id, comment_id) tuples to boolean indicating if reacted
+    """
+    if not comment_ids or not user_ids:
+        return {}
+
+    reactions = (
+        session.query(CommentReaction.user_id, CommentReaction.comment_id)
+        .filter(
+            CommentReaction.comment_id.in_(comment_ids),
+            CommentReaction.user_id.in_(user_ids),
+            CommentReaction.is_delete == False,
+        )
+        .all()
+    )
+
+    # Create a mapping of (user_id, comment_id) -> True for existing reactions
+    return {(r.user_id, r.comment_id): True for r in reactions}
+
+
 def _format_comment_response(
     comment,
     react_count,
@@ -84,6 +113,7 @@ def _format_comment_response(
     session,
     artist_id=None,
     replies=None,
+    reactions_map=None,
 ):
     """Common formatter for comment responses"""
 
@@ -93,6 +123,12 @@ def _format_comment_response(
 
     def filter_mentions(mention):
         return mention["user_id"] is not None and mention["is_delete"] is not True
+
+    # Helper to check reactions from the pre-fetched map
+    def is_reacted(user_id, comment_id):
+        if not user_id or not reactions_map:
+            return False
+        return reactions_map.get((user_id, comment_id), False)
 
     response = {
         "id": encode_int_id(comment.comment_id),
@@ -104,9 +140,7 @@ def _format_comment_response(
         "is_edited": comment.is_edited,
         "track_timestamp_s": comment.track_timestamp_s,
         "react_count": react_count,
-        "is_current_user_reacted": get_is_reacted(
-            session, current_user_id, comment.comment_id
-        ),
+        "is_current_user_reacted": is_reacted(current_user_id, comment.comment_id),
         "created_at": str(comment.created_at),
         "updated_at": str(comment.updated_at),
         "is_muted": is_muted if is_muted is not None else False,
@@ -120,11 +154,7 @@ def _format_comment_response(
                 "reply_count": reply_count,
                 "replies": replies[:3],
                 "is_tombstone": comment.is_delete and reply_count > 0,
-                "is_artist_reacted": (
-                    get_is_reacted(session, artist_id, comment.comment_id)
-                    if artist_id
-                    else False
-                ),
+                "is_artist_reacted": is_reacted(artist_id, comment.comment_id),
             }
         )
     # Even if no replies are provided, we need to set is_tombstone for deleted comments
@@ -525,6 +555,52 @@ def format_comments(
     Returns:
         List of formatted comments
     """
+    if not comments:
+        return []
+
+    # Extract all parent comment IDs for which we need to fetch replies
+    parent_comment_ids = [comment_data[0].comment_id for comment_data in comments]
+
+    # Get replies first so we can collect all comment IDs
+    replies_results = None
+    if include_replies and parent_comment_ids:
+        # Get base query components
+        base_query = get_base_comments_query(session, current_user_id)
+
+        # Build the query using batch_replies query type
+        replies_query = build_comments_query(
+            session=session,
+            query_type="batch_replies",
+            base_query=base_query,
+            current_user_id=current_user_id,
+            artist_id=artist_id,
+            parent_comment_ids=parent_comment_ids,
+        )
+        replies_results = replies_query.all()
+
+    # Collect all comment IDs and user IDs we need to check reactions for
+    comment_ids = []
+    user_ids = []
+
+    # Add main comments
+    for comment_data in comments:
+        comment = comment_data[0]  # First element is always the comment
+        comment_ids.append(comment.comment_id)
+
+    # Add reply comment IDs if we have them
+    if replies_results:
+        for reply, _, _, _ in replies_results:
+            comment_ids.append(reply.comment_id)
+
+    # Add current user and artist if present
+    if current_user_id:
+        user_ids.append(current_user_id)
+    if artist_id:
+        user_ids.append(artist_id)
+
+    # Batch fetch all reactions
+    reactions_map = get_reactions_batch(session, comment_ids, user_ids)
+
     # If we don't need to include replies, just format the comments directly
     if not include_replies:
         formatted_comments = []
@@ -546,15 +622,10 @@ def format_comments(
                 session,
                 artist_id=artist_id,
                 replies=None,
+                reactions_map=reactions_map,
             )
             formatted_comments.append(formatted_comment)
         return formatted_comments
-
-    # Extract all parent comment IDs for which we need to fetch replies
-    parent_comment_ids = [comment_data[0].comment_id for comment_data in comments]
-
-    if not parent_comment_ids:
-        return []
 
     # Create a mapping of comment_id to its position in the original list
     # This is important to maintain the original order
@@ -571,6 +642,7 @@ def format_comments(
         parent_comment_ids=parent_comment_ids,
         current_user_id=current_user_id,
         artist_id=artist_id,
+        reactions_map=reactions_map,
     )
 
     # Now format the main comments with their replies
@@ -595,6 +667,7 @@ def format_comments(
             session,
             artist_id=artist_id,
             replies=comment_replies,
+            reactions_map=reactions_map,
         )
 
         # Add to the formatted comments list at the correct position
@@ -680,6 +753,7 @@ def get_comment_replies(
     artist_id=None,
     offset=None,
     limit=None,
+    reactions_map=None,
 ):
     """
     Fetch replies for one or more parent comments.
@@ -691,6 +765,7 @@ def get_comment_replies(
         artist_id: ID of the track owner (optional)
         offset: Pagination offset (optional)
         limit: Pagination limit (optional)
+        reactions_map: Pre-fetched reactions map (optional)
 
     Returns:
         If parent_comment_ids is a list, returns a dict mapping parent_comment_id to list of formatted replies
@@ -725,6 +800,21 @@ def get_comment_replies(
     # Execute the query
     replies_results = replies_query.all()
 
+    # If we don't have a reactions map and we have replies, create one
+    if not reactions_map and replies_results:
+        # Collect reply IDs
+        reply_ids = [reply.comment_id for reply, _, _, _ in replies_results]
+
+        # Collect user IDs to check reactions for
+        user_ids = []
+        if current_user_id:
+            user_ids.append(current_user_id)
+        if artist_id:
+            user_ids.append(artist_id)
+
+        # Batch fetch reactions for replies
+        reactions_map = get_reactions_batch(session, reply_ids, user_ids)
+
     # Process the results and organize replies by parent_comment_id
     replies_map = {}
     for reply_data in replies_results:
@@ -750,16 +840,22 @@ def get_comment_replies(
             "is_edited": reply.is_edited,
             "track_timestamp_s": reply.track_timestamp_s,
             "react_count": react_count,
-            "is_current_user_reacted": get_is_reacted(
-                session, current_user_id, reply.comment_id
+            "is_current_user_reacted": (
+                reactions_map.get((current_user_id, reply.comment_id), False)
+                if reactions_map
+                else get_is_reacted(session, current_user_id, reply.comment_id)
             ),
             "created_at": str(reply.created_at),
             "updated_at": str(reply.updated_at),
             "is_muted": False,  # Replies don't have mute status
             "is_artist_reacted": (
-                get_is_reacted(session, artist_id, reply.comment_id)
-                if artist_id
-                else False
+                reactions_map.get((artist_id, reply.comment_id), False)
+                if reactions_map
+                else (
+                    get_is_reacted(session, artist_id, reply.comment_id)
+                    if artist_id
+                    else False
+                )
             ),
         }
 
