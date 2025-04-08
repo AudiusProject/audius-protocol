@@ -89,9 +89,7 @@ export const ConnectedWalletsModal = () => {
       setCurrentPage(Pages.TABLE)
       toast(messages.walletRemoved, NEW_WALLET_CONNECTED_TOAST_TIMEOUT_MILLIS)
     } catch (e) {
-      if (e instanceof Error) {
-        toast(messages.error)
-      }
+      toast(messages.error)
     }
   }, [removeConnectedWalletAsync, toast, walletToRemove])
 
