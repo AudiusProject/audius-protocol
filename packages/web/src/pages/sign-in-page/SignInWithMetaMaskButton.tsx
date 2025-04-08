@@ -10,11 +10,9 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
-import { useDisconnect } from '@reown/appkit/react'
+import { useAppKitNetwork, useDisconnect } from '@reown/appkit/react'
 import { useAppKitWallet } from '@reown/appkit-wallet-button/react'
 import { useDispatch } from 'react-redux'
-import type { Hex } from 'viem'
-import { useAccount, useSwitchChain } from 'wagmi'
 
 import { audiusChain, appkitModal } from 'app/ReownAppKitModal'
 import { getRouteOnCompletion } from 'common/store/pages/signon/selectors'
@@ -40,9 +38,8 @@ const messages = {
 
 export const SignInWithMetaMaskButton = (props: ButtonProps) => {
   const { connect } = useAppKitWallet()
+  const { switchNetwork } = useAppKitNetwork()
   const { disconnect } = useDisconnect()
-  const { isConnected, address } = useAccount()
-  const { switchChainAsync } = useSwitchChain()
   const navigate = useNavigateToPage()
   const route = useSelector(getRouteOnCompletion)
   const [status, setStatus] = useState(Status.IDLE)
@@ -52,33 +49,32 @@ export const SignInWithMetaMaskButton = (props: ButtonProps) => {
   const handleClick = useCallback(async () => {
     try {
       setStatus(Status.LOADING)
-      let wallet = address
-      // Ensure the wallet is connected
-      if (!isConnected) {
-        console.debug('Connecting to the external wallet...')
-        await connect('metamask')
-        const account = appkitModal.getAccount()
-        if (!account || !account.isConnected || !account.address) {
-          throw new Error('Account not connected')
-        }
-        wallet = account.address as Hex
-      }
-      if (!wallet) {
-        throw new Error('No wallet connected')
-      }
 
-      // Ensure we're on the Audius chain
-      console.debug('Switching chains...')
-      await switchChainAsync({ chainId: audiusChain.id })
+      // Disconnect and start fresh
+      console.debug('[siwmm]', 'Disconnecting any external wallets...')
+      await disconnect()
+
+      // Ensure we're selecting for audiusChain
+      switchNetwork(audiusChain)
+      console.debug('[siwmm]', 'Connecting to the external wallet...')
+      await connect('metamask')
+
+      // Ensure we get an account back
+      const account = appkitModal.getAccount()
+      console.debug('[siwmm]', 'Account selected:', account)
+      if (!account || !account.isConnected || !account.address) {
+        throw new Error('Account not connected')
+      }
+      const wallet = account.address
 
       // Reinit SDK with the connected wallet
       const sdk = await initSdk()
 
-      // Check that the user exists.
+      // Ensure that the user exists.
       // If they don't, disconnect and try to get them to sign up.
       const userExists = await doesUserExist(sdk, wallet)
       if (!userExists) {
-        console.debug('User does not exist, resetting...')
+        console.debug('[siwmm]', 'User does not exist, resetting...')
         await disconnect()
         await initSdk()
         setIsNoAccountError(true)
@@ -96,16 +92,7 @@ export const SignInWithMetaMaskButton = (props: ButtonProps) => {
       setStatus(Status.ERROR)
       await reportToSentry({ error: e as Error })
     }
-  }, [
-    address,
-    connect,
-    disconnect,
-    dispatch,
-    isConnected,
-    navigate,
-    route,
-    switchChainAsync
-  ])
+  }, [connect, disconnect, dispatch, navigate, route, switchNetwork])
 
   if (!userHasMetaMask) return null
 
