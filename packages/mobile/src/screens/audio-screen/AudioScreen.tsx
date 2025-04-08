@@ -9,7 +9,6 @@ import {
 } from '@audius/common/store'
 import { isNullOrUndefined } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
-import { css } from '@emotion/native'
 import { useFocusEffect } from '@react-navigation/native'
 import { Image, Linking } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
@@ -165,16 +164,7 @@ export const AudioScreen = () => {
                 style={styles.spinner}
               />
             ) : (
-              <Text
-                variant='heading'
-                color='white'
-                strength='strong'
-                style={css({
-                  fontSize: 80,
-                  lineHeight: 96,
-                  paddingVertical: 8
-                })}
-              >
+              <Text variant='display' size='l' color='white' strength='strong'>
                 {AUDIO(totalBalance).toShorthand()}
               </Text>
             )}
