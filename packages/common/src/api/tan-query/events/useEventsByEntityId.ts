@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import { Id, OptionalId } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
@@ -24,6 +26,9 @@ export const useEventsByEntityId = <TResult>(
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const select = useMemo(() => options?.select, [])
+
   const queryData = useQuery({
     queryKey: getEventsByEntityIdQueryKey(entityId, options),
     queryFn: async () => {
@@ -40,7 +45,7 @@ export const useEventsByEntityId = <TResult>(
       return events.map(eventMetadataFromSDK) as Event[]
     },
     enabled: options?.enabled !== false && entityId !== undefined,
-    select: options?.select
+    select
   })
 
   return queryData
