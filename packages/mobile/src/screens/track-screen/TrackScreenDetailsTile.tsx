@@ -62,8 +62,7 @@ import {
   Paper,
   Text,
   spacing,
-  type ImageProps,
-  useTheme
+  type ImageProps
 } from '@audius/harmony-native'
 import CoSign, { Size } from 'app/components/co-sign'
 import { useCommentDrawer } from 'app/components/comments/CommentDrawerContext'

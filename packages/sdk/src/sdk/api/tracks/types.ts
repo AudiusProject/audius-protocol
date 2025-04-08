@@ -14,13 +14,13 @@ import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
 import { StemCategory } from '../../types/StemCategory'
 
+import { MAX_DESCRIPTION_LENGTH } from './constants'
+
 const messages = {
   titleRequiredError: 'Your track must have a name',
   artworkRequiredError: 'Artwork is required',
   genreRequiredError: 'Genre is required'
 }
-
-const MAX_DESCRIPTION_LENGTH = 2500
 
 export const EthCollectibleGatedConditions = z
   .object({

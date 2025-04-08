@@ -1,4 +1,5 @@
 import { Flex } from '@audius/harmony'
+import { MAX_DESCRIPTION_LENGTH } from '@audius/sdk'
 import { useField } from 'formik'
 
 import { getTrackFieldName } from 'components/edit-track/hooks'
@@ -7,12 +8,9 @@ import { ArtworkField, TagField, TextAreaField } from 'components/form-fields'
 import { SelectGenreField } from './SelectGenreField'
 import { SelectMoodField } from './SelectMoodField'
 import { TrackNameField } from './TrackNameField'
-
 const messages = {
   description: 'Description'
 }
-
-const MAX_DESCRIPTION_LENGTH = 2500
 
 export const TrackMetadataFields = () => {
   const [{ value: index }] = useField('trackMetadatasIndex')

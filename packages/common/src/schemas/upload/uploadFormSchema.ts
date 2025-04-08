@@ -3,7 +3,8 @@ import {
   Mood,
   EthCollectibleGatedConditions,
   SolCollectibleGatedConditions,
-  NativeFile
+  NativeFile,
+  MAX_DESCRIPTION_LENGTH
 } from '@audius/sdk'
 import { z } from 'zod'
 
@@ -24,8 +25,6 @@ const messages = {
     nameRequiredError: 'Your album must have a name.'
   }
 }
-
-const MAX_DESCRIPTION_LENGTH = 2500
 
 /** Same as SDK but snake-cased */
 const CollectibleGatedConditions = z
