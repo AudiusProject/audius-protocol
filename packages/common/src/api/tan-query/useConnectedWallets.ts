@@ -95,7 +95,7 @@ export const useAddConnectedWallet = () => {
       return { previousAssociatedWallets }
     },
     onSettled: async () => {
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: getConnectedWalletsQueryKey({ userId: currentUserId })
       })
       queryClient.invalidateQueries({
