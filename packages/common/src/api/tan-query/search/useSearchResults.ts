@@ -35,7 +35,7 @@ import { loadNextPage } from '../utils/infiniteQueryLoadNextPage'
 import { primeCollectionData } from '../utils/primeCollectionData'
 import { primeTrackData } from '../utils/primeTrackData'
 import { primeUserData } from '../utils/primeUserData'
-import { useLineupQuery } from '../utils/useLineupQuery'
+import { useLineupQuery } from '../lineups/useLineupQuery'
 
 export type SearchCategory = 'all' | 'tracks' | 'albums' | 'playlists' | 'users'
 

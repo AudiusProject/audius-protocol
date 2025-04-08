@@ -30,8 +30,7 @@ import { getPlaying } from '~/store/player/selectors'
 
 import { TQCollection, TQTrack } from '../models'
 import { LineupData } from '../types'
-
-import { loadNextPage } from './infiniteQueryLoadNextPage'
+import { loadNextPage } from '../utils/infiniteQueryLoadNextPage'
 
 /**
  * Helper to provide stitch together tan-query data and easily provide lineup methods as part of our query hooks
