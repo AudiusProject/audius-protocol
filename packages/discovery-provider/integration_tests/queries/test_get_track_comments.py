@@ -780,7 +780,6 @@ def test_get_comment_reactions(app):
                 "user_id": 1,
                 "entity_id": 1,
                 "entity_type": "Track",
-                "created_at": datetime(2022, 1, 1),
                 "text": "Parent comment",
             },
             {
@@ -788,7 +787,6 @@ def test_get_comment_reactions(app):
                 "user_id": 2,
                 "entity_id": 1,
                 "entity_type": "Track",
-                "created_at": datetime(2022, 1, 2),
                 "text": "Reply comment",
             },
         ],
@@ -803,6 +801,13 @@ def test_get_comment_reactions(app):
             {"comment_id": 2, "user_id": 3},
             # Deleted reaction shouldn't count
             {"comment_id": 1, "user_id": 4, "is_delete": True},
+        ],
+        "users": [
+            {"user_id": 1},
+            {"user_id": 2},
+            {"user_id": 3},
+            {"user_id": 10},
+            {"user_id": 4},
         ],
     }
 
@@ -859,60 +864,3 @@ def test_get_comment_reactions(app):
         assert reply["react_count"] == 1
         assert reply["is_current_user_reacted"] == True  # User 3 reacted
         assert reply["is_artist_reacted"] == False  # Artist didn't react
-
-
-# def test_get_comment_reactions_deleted_comments(app):
-#     """Test that reactions work correctly with deleted comments"""
-#     entities = {
-#         "comments": [
-#             {
-#                 "comment_id": 1,
-#                 "user_id": 1,
-#                 "entity_id": 1,
-#                 "entity_type": "Track",
-#                 "created_at": datetime(2022, 1, 1),
-#                 "text": "Parent comment",
-#                 "is_delete": True,  # Deleted comment with replies
-#             },
-#             {
-#                 "comment_id": 2,
-#                 "user_id": 2,
-#                 "entity_id": 1,
-#                 "entity_type": "Track",
-#                 "created_at": datetime(2022, 1, 2),
-#                 "text": "Reply to deleted comment",
-#             },
-#         ],
-#         "comment_threads": [{"parent_comment_id": 1, "comment_id": 2}],
-#         "tracks": [{"track_id": 1, "owner_id": 10}],
-#         "comment_reactions": [
-#             # Reactions to deleted comment should still be counted
-#             {"comment_id": 1, "user_id": 10},  # Artist reaction
-#             {"comment_id": 1, "user_id": 3},  # User reaction
-#             {"comment_id": 2, "user_id": 10},  # Artist reaction to reply
-#         ],
-#     }
-
-#     with app.app_context():
-#         db = get_db()
-#         populate_mock_db(db, entities)
-
-#         # Test reactions for track comments
-#         response = get_track_comments({}, 1, current_user_id=3)
-#         comments = response["data"]
-#         assert len(comments) == 1
-
-#         # Check deleted parent comment reactions
-#         parent_comment = comments[0]
-#         assert parent_comment["is_tombstone"] == True
-#         assert parent_comment["react_count"] == 2
-#         assert parent_comment["is_current_user_reacted"] == True
-#         assert parent_comment["is_artist_reacted"] == True
-
-#         # Check reply reactions
-#         replies = parent_comment["replies"]
-#         assert len(replies) == 1
-#         reply = replies[0]
-#         assert reply["react_count"] == 1
-#         assert reply["is_current_user_reacted"] == False
-#         assert reply["is_artist_reacted"] == True
