@@ -776,25 +776,26 @@ export const audiusBackend = ({
 
   /**
    * Make a request to fetch the balance, staked and delegated total of the wallet address
-   * @params {string} address The wallet address to fetch the balance for
-   * @params {bool} bustCache
-   * @returns {Promise<BN | null>} balance or null if error
+   * @param address The wallet address to fetch the balance for
+   * @param bustCache
+   * @returns balance or null if error
    */
   async function getAddressTotalStakedBalance(address: string, sdk: AudiusSdk) {
     if (!address) return null
 
     try {
       const checksumWallet = getAddress(address)
-      const balance = await sdk.services.audiusTokenClient.balanceOf({
-        account: checksumWallet
-      })
-      const delegatedBalance =
-        await sdk.services.delegateManagerClient.getTotalDelegatorStake({
+      const [balance, delegatedBalance, stakedBalance] = await Promise.all([
+        sdk.services.audiusTokenClient.balanceOf({
+          account: checksumWallet
+        }),
+        sdk.services.delegateManagerClient.getTotalDelegatorStake({
           delegatorAddress: checksumWallet
+        }),
+        sdk.services.stakingClient.totalStakedFor({
+          account: checksumWallet
         })
-      const stakedBalance = await sdk.services.stakingClient.totalStakedFor({
-        account: checksumWallet
-      })
+      ])
 
       return AUDIO(balance + delegatedBalance + stakedBalance).value
     } catch (e) {
