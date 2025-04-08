@@ -75,7 +75,7 @@ export const NotificationPanel = ({
     (target: EventTarget) => {
       if (isUserListOpen) return true
       if (target instanceof Element) {
-        return (
+        return !!(
           panelRef.current?.contains(target) ||
           anchorRef.current?.contains(target)
         )
