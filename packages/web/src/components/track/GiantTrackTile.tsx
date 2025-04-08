@@ -107,12 +107,13 @@ const messages = {
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`,
   contestDeadline: 'Contest Deadline',
   uploadRemixButtonText: 'Upload Your Remix',
-  deadline: (deadline?: string) =>
-    deadline
-      ? `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`
-      : '',
-  seeMore: 'See More',
-  seeLess: 'See Less'
+  deadline: (deadline?: string) => {
+    const userTimezone = dayjs.tz.guess()
+    const localTime = dayjs(deadline).utc(true).local().tz(userTimezone)
+    return deadline
+      ? `${localTime.format('MM/DD/YYYY')} at ${localTime.format('h:mm A')}`
+      : ''
+  }
 }
 
 type GiantTrackTileProps = {

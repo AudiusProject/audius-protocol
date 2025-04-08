@@ -27,8 +27,6 @@ import dayjs from 'dayjs'
 import { DatePicker } from 'components/edit/fields/DatePickerField'
 import { mergeReleaseDateValues } from 'components/edit/fields/visibility/mergeReleaseDateValues'
 
-const MODAL_WIDTH = 720
-
 const messages = {
   hostTitle: 'Host Remix Contest',
   description:
@@ -46,34 +44,33 @@ const messages = {
 }
 
 export const HostRemixContestModal = () => {
-  const { data, isOpen, onClose } = useHostRemixContestModal()
+  const { data, isOpen, onClose, onClosed } = useHostRemixContestModal()
+  const { trackId } = data
   const { mutate: createEvent } = useCreateEvent()
   const { mutate: updateEvent } = useUpdateEvent()
   const { data: userId } = useCurrentUserId()
-  const { trackId } = data
   const { data: events } = useRemixContest(trackId, {
     entityType: EventEntityTypeEnum.Track
   })
+  const userTimezone = dayjs.tz.guess()
 
   const event = events?.[0]
   const isEdit = !!event
 
   const [contestEndDate, setContestEndDate] = useState(
-    event
-      ? dayjs(event.endDate).toISOString()
-      : dayjs().add(1, 'day').endOf('day').toISOString()
+    event ? dayjs(event.endDate).utc(true).local().tz(userTimezone) : null
   )
   const [endDateTouched, setEndDateTouched] = useState(false)
   const [endDateError, setEndDateError] = useState(false)
 
-  const meridianValue = dayjs(contestEndDate).format('A')
-  const timeValue = dayjs(contestEndDate).format('hh:mm')
+  const meridianValue = contestEndDate ? dayjs(contestEndDate).format('A') : ''
+  const timeValue = contestEndDate ? dayjs(contestEndDate).format('hh:mm') : ''
   const [timeInputValue, setTimeInputValue] = useState(timeValue)
 
   const handleChange = useCallback(
     (date: string, time: string, meridian: string) => {
       const newDate = mergeReleaseDateValues(date, time, meridian)
-      setContestEndDate(newDate.toISOString())
+      setContestEndDate(dayjs(newDate.toISOString()))
     },
     []
   )
@@ -86,10 +83,6 @@ export const HostRemixContestModal = () => {
     if (hasError || !trackId || !userId) return
 
     const endDate = dayjs(contestEndDate).toISOString()
-
-    // TODO: Need to update this to adjust the time.
-    // The time is currently set to UTC time so after the user sets the time, it displays as UTC time.
-    // We need to adjust the time to the user's local time.
 
     if (isEdit) {
       updateEvent({
@@ -107,10 +100,6 @@ export const HostRemixContestModal = () => {
       })
     }
 
-    // Reset form and close modal
-    setContestEndDate(
-      isEdit ? endDate : dayjs().add(1, 'day').endOf('day').toISOString()
-    )
     onClose()
   }, [
     contestEndDate,
@@ -124,15 +113,7 @@ export const HostRemixContestModal = () => {
   ])
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      size='small'
-      bodyClassName={css({
-        width: '100%',
-        maxWidth: MODAL_WIDTH
-      })}
-    >
+    <Modal isOpen={isOpen} onClose={onClose} onClosed={onClosed} size='medium'>
       <ModalHeader onClose={onClose}>
         <ModalTitle Icon={IconTrophy} title={messages.hostTitle} />
       </ModalHeader>
@@ -149,7 +130,7 @@ export const HostRemixContestModal = () => {
               onChange={(value) =>
                 handleChange(value, timeValue, meridianValue)
               }
-              value={contestEndDate}
+              value={contestEndDate?.toISOString() ?? undefined}
               futureDatesOnly
               error={endDateError ? messages.endDateError : undefined}
               touched={endDateTouched}
@@ -160,9 +141,14 @@ export const HostRemixContestModal = () => {
                 label={messages.timeLabel}
                 placeholder={messages.timePlaceholder}
                 value={timeInputValue}
+                disabled={!contestEndDate}
                 onChange={(e) => {
                   setTimeInputValue(e.target.value)
-                  handleChange(contestEndDate, e.target.value, meridianValue)
+                  handleChange(
+                    contestEndDate?.toISOString() ?? '',
+                    e.target.value,
+                    meridianValue
+                  )
                 }}
               />
               <Select
@@ -171,8 +157,13 @@ export const HostRemixContestModal = () => {
                 placeholder={messages.meridianPlaceholder}
                 hideLabel
                 value={meridianValue}
+                disabled={!contestEndDate}
                 onChange={(value) =>
-                  handleChange(contestEndDate, timeValue, value)
+                  handleChange(
+                    contestEndDate?.toISOString() ?? '',
+                    timeValue,
+                    value
+                  )
                 }
                 options={[
                   { value: 'AM', label: 'AM' },
@@ -189,6 +180,7 @@ export const HostRemixContestModal = () => {
           <Button
             variant='secondary'
             onClick={handleSubmit}
+            disabled={!contestEndDate || endDateError}
             className={css({ alignSelf: 'center' })}
           >
             {isEdit ? messages.save : messages.startContest}
