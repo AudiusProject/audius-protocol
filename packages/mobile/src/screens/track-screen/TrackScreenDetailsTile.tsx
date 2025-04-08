@@ -43,7 +43,7 @@ import {
   useEarlyReleaseConfirmationModal
 } from '@audius/common/store'
 import { formatReleaseDate, Genre, removeNullable } from '@audius/common/utils'
-import { GetEntityEventsEntityTypeEnum } from '@audius/sdk'
+import { EventEntityTypeEnum } from '@audius/sdk'
 import dayjs from 'dayjs'
 import { TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -232,7 +232,7 @@ export const TrackScreenDetailsTile = ({
     FeatureFlags.REMIX_CONTEST
   )
   const { data: event } = useRemixContest(trackId, {
-    entityType: GetEntityEventsEntityTypeEnum.Track
+    entityType: EventEntityTypeEnum.Track
   })
   const isRemixContest = isRemixContestEnabled && !isOwner && event
 
