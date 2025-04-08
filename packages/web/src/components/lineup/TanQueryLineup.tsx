@@ -163,11 +163,10 @@ export const TanQueryLineup = ({
   hasNextPage,
   isPending = true,
   isPlaying = false,
-  // isFetching = true,
+  isFetching = true,
   isError = false,
   maxEntries
 }: TanQueryLineupProps) => {
-  const isFetching = true
   const dispatch = useDispatch()
 
   const getCurrentQueueItem = useMemo(() => makeGetCurrent(), [])
