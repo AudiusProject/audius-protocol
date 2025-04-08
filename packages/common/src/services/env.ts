@@ -62,6 +62,7 @@ export type Env = {
   REWARDS_MANAGER_PROGRAM_ID: string
   REWARDS_MANAGER_PROGRAM_PDA: string
   REWARDS_MANAGER_TOKEN_PDA: string
+  REOWN_PROJECT_ID: string
   SAFARI_WEB_PUSH_ID: string
   SCHEME: string
   SENTRY_DSN: string

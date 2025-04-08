@@ -22,7 +22,7 @@ export const audiusChain = {
 } as const satisfies Chain
 
 // 1. Get projectId from https://cloud.reown.com
-const projectId = '24a90db08b835b7539f7f7f06d4d2374'
+const projectId = env.REOWN_PROJECT_ID
 
 // 2. Create a metadata object - optional
 const metadata = {
