@@ -143,6 +143,7 @@ export const TanQueryLineup = ({
   leadingElementId,
   lineupContainerStyles,
   tileContainerStyles,
+  leadingElementDelineator,
   tileStyles,
   emptyElement,
   numPlaylistSkeletonRows,
@@ -275,11 +276,7 @@ export const TanQueryLineup = ({
                   direction='column'
                   gap='m'
                   key={index}
-                  mb={
-                    index === 0 && leadingElementId !== undefined
-                      ? 'xl'
-                      : undefined
-                  }
+                  mb={index === 0 && leadingElementId ? 'xl' : undefined}
                   w='100%'
                   as='li'
                   className={cn({ [tileStyles!]: !!tileStyles })}
@@ -289,7 +286,7 @@ export const TanQueryLineup = ({
                     {/* @ts-ignore - the types here need work - we're not passing the full expected types here whenever we pass isLoading: true */}
                     <TrackTile {...skeletonTileProps(index)} key={index} />
                   </Flex>
-                  {index === 0 && leadingElementId !== undefined ? (
+                  {index === 0 && leadingElementId ? (
                     <Divider css={{ width: '100%' }} />
                   ) : null}
                 </Flex>
@@ -438,19 +435,19 @@ export const TanQueryLineup = ({
                     direction='column'
                     gap='m'
                     key={index}
-                    mb={
-                      index === 0 && leadingElementId !== undefined
-                        ? 'xl'
-                        : undefined
-                    }
+                    mb={index === 0 && leadingElementId ? 'xl' : undefined}
                     className={cn({ [tileStyles!]: !!tileStyles })}
                     as='li'
                   >
                     <Flex direction={isMobile ? 'row' : 'column'} w='100%'>
                       {tile}
                     </Flex>
-                    {index === 0 && leadingElementId !== undefined ? (
-                      <Divider />
+                    {index === 0 && tiles.length > 1 && leadingElementId ? (
+                      leadingElementDelineator !== undefined ? (
+                        leadingElementDelineator
+                      ) : (
+                        <Divider />
+                      )
                     ) : null}
                   </Flex>
                 ))}
