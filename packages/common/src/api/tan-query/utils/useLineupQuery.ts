@@ -102,6 +102,7 @@ export const useLineupQuery = ({
                 getTrackQueryKey(item.id)
               )
               if (!track) {
+                console.log('asdf no track found for item', item)
                 reportToSentry({
                   feature: Feature.TanQuery,
                   error: new Error(

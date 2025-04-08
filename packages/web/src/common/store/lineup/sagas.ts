@@ -195,6 +195,7 @@ function* fetchLineupMetadatasAsync<T extends Track | Collection>(
       ) as unknown as LineupEntry<T>[]
 
       if (lineupMetadatasResponse === null) {
+        console.log('asdf no metadata response')
         yield* put(lineupActions.fetchLineupMetadatasFailed())
       }
       const lineup = yield* select((state) =>
@@ -361,6 +362,7 @@ function* fetchLineupMetadatasAsync<T extends Track | Collection>(
       )
     } catch (err) {
       console.error(err)
+      console.log('asdf fetch lineup failed')
       yield* put(lineupActions.fetchLineupMetadatasFailed())
     }
   }

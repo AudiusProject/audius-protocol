@@ -209,6 +209,7 @@ export class LineupActions {
 
   // Side-effect: Unsubscribes this lineup from cache entries it is subscribed to.
   reset(source?: string) {
+    console.log('asdf reset lineup', source)
     return {
       type: addPrefix(this.prefix, RESET),
       source
