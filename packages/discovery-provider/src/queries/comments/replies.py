@@ -3,92 +3,13 @@ import logging
 from src.api.v1.helpers import format_limit, format_offset
 from src.models.comments.comment import Comment
 from src.models.tracks.track import Track
-from src.queries.comments.utils import (
-    COMMENT_REPLIES_DEFAULT_LIMIT,
-    _format_comment_response,
-    build_comments_query,
-    fetch_related_entities,
-    format_comments,
-    get_base_comments_query,
-)
+from src.queries.comments.utils import fetch_related_entities, get_comment_replies
 from src.utils.db_session import get_db_read_replica
 
 logger = logging.getLogger(__name__)
 
 
-def get_replies(
-    session,
-    parent_comment_id,
-    current_user_id,
-    # note: artist id already exists when used via get_track_comments - no need to requery for it
-    artist_id=None,
-    offset=0,
-    limit=COMMENT_REPLIES_DEFAULT_LIMIT,
-):
-    """
-    Get replies to a specific comment
-
-    Args:
-        session: Database session
-        parent_comment_id: ID of the parent comment to get replies for
-        current_user_id: ID of the user making the request
-        artist_id: ID of the track owner (optional)
-        offset: Pagination offset
-        limit: Pagination limit
-
-    Returns:
-        List of reply objects with metadata
-    """
-    if artist_id is None:
-        # Try to find the artist_id if not provided
-        track_query = (
-            session.query(Track)
-            .join(Comment, Track.track_id == Comment.entity_id)
-            .filter(Comment.comment_id == parent_comment_id)
-            .first()
-        )
-        artist_id = track_query.owner_id if track_query else None
-
-    # Get base query components
-    base_query = get_base_comments_query(session, current_user_id)
-
-    # Build the query using the shared utility function
-    query = build_comments_query(
-        session=session,
-        query_type="replies",
-        base_query=base_query,
-        current_user_id=current_user_id,
-        artist_id=artist_id,
-        parent_comment_id=parent_comment_id,
-    )
-
-    # Apply pagination if provided
-    if offset is not None:
-        query = query.offset(offset)
-    if limit is not None:
-        query = query.limit(limit)
-
-    # Execute the query
-    replies = query.all()
-
-    # Format the results
-    return [
-        _format_comment_response(
-            reply,
-            react_count,
-            None,  # is_muted is None for replies
-            mentions,
-            current_user_id,
-            session,
-            artist_id=artist_id,
-        )
-        for reply, react_count, mentions in replies
-    ]
-
-
-def get_paginated_replies(
-    args, comment_id, current_user_id=None, include_related=False
-):
+def get_replies(args, comment_id, current_user_id=None, include_related=False):
     """
     Get paginated replies to a comment (API endpoint handler)
 
@@ -107,9 +28,6 @@ def get_paginated_replies(
     db = get_db_read_replica()
 
     with db.scoped_session() as session:
-        # Get base query components
-        base_query = get_base_comments_query(session, current_user_id)
-
         # Try to find the artist_id if not provided
         track_query = (
             session.query(Track)
@@ -119,29 +37,14 @@ def get_paginated_replies(
         )
         artist_id = track_query.owner_id if track_query else None
 
-        # Build the query using the shared utility function
-        query = build_comments_query(
+        # Use the shared helper function to fetch replies
+        formatted_replies = get_comment_replies(
             session=session,
-            query_type="replies",
-            base_query=base_query,
+            parent_comment_ids=comment_id,
             current_user_id=current_user_id,
             artist_id=artist_id,
-            parent_comment_id=comment_id,
-        )
-
-        # Apply pagination
-        query = query.offset(offset).limit(limit)
-
-        # Execute the query
-        replies_query_results = query.all()
-
-        # Format comments and collect user/track IDs
-        formatted_replies = format_comments(
-            session=session,
-            comments=replies_query_results,
-            current_user_id=current_user_id,
-            include_replies=False,
-            artist_id=artist_id,
+            offset=offset,
+            limit=limit,
         )
 
         # Prepare the response
