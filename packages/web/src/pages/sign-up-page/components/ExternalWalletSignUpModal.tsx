@@ -6,7 +6,6 @@ import {
   accountActions,
   useExternalWalletSignUpModal
 } from '@audius/common/store'
-import { isResponseError } from '@audius/common/utils'
 import {
   Text,
   Flex,
@@ -17,18 +16,16 @@ import {
   ModalTitle,
   Button
 } from '@audius/harmony'
-import type { AudiusSdk } from '@audius/sdk'
-import { useAppKitState } from '@reown/appkit/react'
-import { useAppKitWallet } from '@reown/appkit-wallet-button/react'
+import type { ParsedCaipAddress } from '@reown/appkit-common'
 import { useDispatch, useSelector } from 'react-redux'
-import { useSwitchChain } from 'wagmi'
 
-import { audiusChain, appkitModal } from 'app/ReownAppKitModal'
 import { usingExternalWallet } from 'common/store/pages/signon/actions'
 import { getRouteOnCompletion } from 'common/store/pages/signon/selectors'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { usePortal } from 'hooks/usePortal'
 import { initSdk } from 'services/audius-sdk'
+
+import { doesUserExist, useExternalWalletAuth } from './useExternalWalletAuth'
 
 const messages = {
   title: 'Continue With External Wallet?',
@@ -40,53 +37,16 @@ const messages = {
   error: 'Something went wrong. Please try again.'
 }
 
-export const doesUserExist = async (sdk: AudiusSdk, wallet: string) => {
-  try {
-    const { data } = await sdk.full.users.getUserAccount({
-      wallet
-    })
-    if (data?.user) {
-      return true
-    }
-  } catch (e) {
-    // We expect an unauthorized response for non-users
-    if (!isResponseError(e) || e.response.status !== 401) {
-      throw e
-    }
-  }
-  return false
-}
-
 export const ExternalWalletSignUpModal = () => {
   const { isOpen, onClose } = useExternalWalletSignUpModal()
-  const state = useAppKitState()
-  const { switchChainAsync } = useSwitchChain()
-  const { connect } = useAppKitWallet()
-
   const navigate = useNavigateToPage()
   const dispatch = useDispatch()
   const [status, setStatus] = useState(Status.IDLE)
   const route = useSelector(getRouteOnCompletion)
 
-  const handleConfirm = useCallback(async () => {
-    setStatus(Status.LOADING)
-    try {
-      await connect('metamask')
-      const account = appkitModal.getAccount()
-      if (!account || !account.isConnected || !account.address) {
-        throw new Error('Account not connected')
-      }
-      const { address } = account
-
-      // Ensure we're on the Audius chain
-      console.debug('Switching chains...')
-      await switchChainAsync({ chainId: audiusChain.id })
-
-      // Reinit SDK with the connected wallet
+  const onConnect = useCallback(
+    async ({ address }: ParsedCaipAddress) => {
       const sdk = await initSdk()
-
-      // Check that the user doesn't already exist.
-      // If they do, log them in.
       const userExists = await doesUserExist(sdk, address)
       if (userExists) {
         console.debug('User already exists. Fetching account and signing in...')
@@ -98,16 +58,24 @@ export const ExternalWalletSignUpModal = () => {
         return
       }
 
-      // Let signup saga know it's ok to go pick a handle, then go pick a handle.
       console.debug('User does not exist. Continuing sign up flow...')
       dispatch(usingExternalWallet())
       navigate(SIGN_UP_HANDLE_PAGE)
       onClose()
-    } catch (e) {
-      console.error(e)
-      setStatus(Status.ERROR)
-    }
-  }, [connect, dispatch, navigate, onClose, route, switchChainAsync])
+    },
+    [dispatch, navigate, onClose, route]
+  )
+
+  const onError = useCallback((e: unknown) => {
+    setStatus(Status.ERROR)
+  }, [])
+
+  const { connect } = useExternalWalletAuth({ onSuccess: onConnect, onError })
+
+  const handleConfirm = useCallback(async () => {
+    setStatus(Status.LOADING)
+    await connect('metamask')
+  }, [connect])
 
   const onClosed = useCallback(() => {
     setStatus(Status.IDLE)
@@ -122,7 +90,7 @@ export const ExternalWalletSignUpModal = () => {
         onClose={onClose}
         onClosed={onClosed}
         size='medium'
-        dismissOnClickOutside={!state.open}
+        dismissOnClickOutside={status === Status.LOADING}
       >
         <ModalHeader>
           <ModalTitle title={messages.title} />

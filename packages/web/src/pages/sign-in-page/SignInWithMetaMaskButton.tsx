@@ -10,17 +10,18 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
-import { useAppKitNetwork, useDisconnect } from '@reown/appkit/react'
-import { useAppKitWallet } from '@reown/appkit-wallet-button/react'
+import { useDisconnect } from '@reown/appkit/react'
+import type { ParsedCaipAddress } from '@reown/appkit-common'
 import { useDispatch } from 'react-redux'
 
-import { audiusChain, appkitModal } from 'app/ReownAppKitModal'
 import { getRouteOnCompletion } from 'common/store/pages/signon/selectors'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { doesUserExist } from 'pages/sign-up-page/components/ExternalWalletSignUpModal'
+import {
+  doesUserExist,
+  useExternalWalletAuth
+} from 'pages/sign-up-page/components/useExternalWalletAuth'
 import { userHasMetaMask } from 'pages/sign-up-page/utils/metamask'
 import { initSdk } from 'services/audius-sdk'
-import { reportToSentry } from 'store/errors/reportToSentry'
 import { useSelector } from 'utils/reducer'
 
 const messages = {
@@ -37,8 +38,6 @@ const messages = {
 }
 
 export const SignInWithMetaMaskButton = (props: ButtonProps) => {
-  const { connect } = useAppKitWallet()
-  const { switchNetwork } = useAppKitNetwork()
   const { disconnect } = useDisconnect()
   const navigate = useNavigateToPage()
   const route = useSelector(getRouteOnCompletion)
@@ -46,35 +45,12 @@ export const SignInWithMetaMaskButton = (props: ButtonProps) => {
   const [isNoAccountError, setIsNoAccountError] = useState(false)
   const dispatch = useDispatch()
 
-  const handleClick = useCallback(async () => {
-    try {
-      setStatus(Status.LOADING)
-
-      // Disconnect and start fresh
-      console.debug('[siwmm]', 'Disconnecting any external wallets...')
-      await disconnect()
-
-      // Ensure we're selecting for audiusChain
-      switchNetwork(audiusChain)
-      console.debug('[siwmm]', 'Connecting to the external wallet...')
-      await connect('metamask')
-
-      // Ensure we get an account back
-      const account = appkitModal.getAccount()
-      console.debug('[siwmm]', 'Account selected:', account)
-      if (!account || !account.isConnected || !account.address) {
-        throw new Error('Account not connected')
-      }
-      const wallet = account.address
-
-      // Reinit SDK with the connected wallet
+  const onConnect = useCallback(
+    async ({ address }: ParsedCaipAddress) => {
       const sdk = await initSdk()
-
-      // Ensure that the user exists.
-      // If they don't, disconnect and try to get them to sign up.
-      const userExists = await doesUserExist(sdk, wallet)
+      const userExists = await doesUserExist(sdk, address)
       if (!userExists) {
-        console.debug('[siwmm]', 'User does not exist, resetting...')
+        console.debug('User does not exist, resetting...')
         await disconnect()
         await initSdk()
         setIsNoAccountError(true)
@@ -82,17 +58,25 @@ export const SignInWithMetaMaskButton = (props: ButtonProps) => {
         return
       }
 
-      // Otherwise, refetch the user account in the saga.
       console.debug('User exists. Fetching account and signing in...')
       dispatch(
         accountActions.fetchAccount({ shouldMarkAccountAsLoading: true })
       )
       navigate(route ?? FEED_PAGE)
-    } catch (e) {
-      setStatus(Status.ERROR)
-      await reportToSentry({ error: e as Error })
-    }
-  }, [connect, disconnect, dispatch, navigate, route, switchNetwork])
+    },
+    [disconnect, dispatch, navigate, route]
+  )
+
+  const onError = useCallback((e: unknown) => {
+    setStatus(Status.ERROR)
+  }, [])
+
+  const { connect } = useExternalWalletAuth({ onSuccess: onConnect, onError })
+
+  const handleClick = useCallback(async () => {
+    setStatus(Status.LOADING)
+    await connect('metamask')
+  }, [connect])
 
   if (!userHasMetaMask) return null
 
