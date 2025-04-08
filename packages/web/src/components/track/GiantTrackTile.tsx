@@ -113,7 +113,9 @@ const messages = {
     return deadline
       ? `${localTime.format('MM/DD/YYYY')} at ${localTime.format('h:mm A')}`
       : ''
-  }
+  },
+  seeMore: 'See More',
+  seeLess: 'See Less'
 }
 
 type GiantTrackTileProps = {
