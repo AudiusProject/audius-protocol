@@ -45,7 +45,12 @@ import {
 import { formatReleaseDate, Genre, removeNullable } from '@audius/common/utils'
 import { GetEntityEventsEntityTypeEnum } from '@audius/sdk'
 import dayjs from 'dayjs'
-import { TouchableOpacity, Animated, Easing } from 'react-native'
+import { TouchableOpacity } from 'react-native'
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming
+} from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
@@ -66,7 +71,8 @@ import {
   PlainButton,
   Text,
   spacing,
-  type ImageProps
+  type ImageProps,
+  useTheme
 } from '@audius/harmony-native'
 import CoSign, { Size } from 'app/components/co-sign'
 import { useCommentDrawer } from 'app/components/comments/CommentDrawerContext'
@@ -89,6 +95,8 @@ import { make, track as trackEvent } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 
 import { DownloadSection } from './DownloadSection'
+import { TrackDescription } from './TrackDescription'
+
 const { getPlaying, getTrackId, getPreviewing } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
@@ -170,6 +178,7 @@ export const TrackScreenDetailsTile = ({
   const styles = useStyles()
   const { hasStreamAccess } = useGatedContentAccess(track as Track) // track is of type Track | SearchTrack but we only care about some of their common fields, maybe worth refactoring later
   const navigation = useNavigation()
+  const { motion } = useTheme()
 
   const isReachable = useSelector(getIsReachable)
   const currentUserId = useSelector(getUserId)
@@ -575,62 +584,6 @@ export const TrackScreenDetailsTile = ({
     ) : null
   }
 
-  const [isDescriptionExpanded, toggleDescriptionExpanded] = useToggle(false)
-  const [showToggle, setShowToggle] = useState(false)
-  const descriptionLength = description?.length || 0
-
-  // Animation value for description height
-  const [animatedHeight] = useState(new Animated.Value(0))
-
-  // Log when component renders to ensure our code is running
-  useEffect(() => {
-    console.log(
-      'REED TrackScreenDetailsTile rendering, description length:',
-      descriptionLength
-    )
-
-    // Use description length as a simple heuristic
-    if (descriptionLength > MAX_DESCRIPTION_LINES * 50) {
-      console.log('REED Setting showToggle based on length:', descriptionLength)
-      setShowToggle(true)
-    }
-  }, [descriptionLength])
-
-  // Handle toggle animation
-  useEffect(() => {
-    // Animate to expanded or collapsed height
-    Animated.timing(animatedHeight, {
-      toValue: isDescriptionExpanded ? 1 : 0,
-      duration: 300, // Match harmony motion.expressive duration
-      easing: Easing.inOut(Easing.ease), // Use easing for smoother animation
-      useNativeDriver: false
-    }).start()
-  }, [isDescriptionExpanded, animatedHeight])
-
-  // Use onTextLayout instead of onLayout
-  const onDescriptionTextLayout = useCallback(
-    (event) => {
-      if (!description) return
-
-      // Get the number of lines from the text layout event
-      const { lines } = event.nativeEvent
-      const numLines = lines?.length || 0
-
-      console.log(
-        'REED Text layout lines:',
-        numLines,
-        'showToggle:',
-        numLines > MAX_DESCRIPTION_LINES
-      )
-
-      // Set toggle visibility based on number of lines
-      if (numLines > MAX_DESCRIPTION_LINES) {
-        setShowToggle(true)
-      }
-    },
-    [description]
-  )
-
   if (!trackId) return null
 
   if (isDeleted) {
@@ -748,44 +701,7 @@ export const TrackScreenDetailsTile = ({
           onPressReposts={handlePressReposts}
           onPressComments={handlePressComments}
         />
-        {description ? (
-          <Flex column gap='m'>
-            <Animated.View
-              style={{
-                maxHeight: animatedHeight.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [
-                    DEFAULT_LINE_HEIGHT * MAX_DESCRIPTION_LINES,
-                    1000 // Large enough value to show all content
-                  ]
-                }),
-                overflow: 'hidden'
-              }}
-            >
-              <UserGeneratedText
-                source={'track page'}
-                variant='body'
-                size='s'
-                onTextLayout={onDescriptionTextLayout}
-                numberOfLines={
-                  isDescriptionExpanded ? undefined : MAX_DESCRIPTION_LINES
-                }
-                style={{ width: '100%' }}
-              >
-                {description}
-              </UserGeneratedText>
-            </Animated.View>
-            {showToggle ? (
-              <PlainButton
-                iconRight={isDescriptionExpanded ? IconCaretUp : IconCaretDown}
-                onPress={toggleDescriptionExpanded}
-                style={{ alignSelf: 'flex-start' }}
-              >
-                {isDescriptionExpanded ? messages.seeLess : messages.seeMore}
-              </PlainButton>
-            ) : null}
-          </Flex>
-        ) : null}
+        {description ? <TrackDescription description={description} /> : null}
         <TrackMetadataList trackId={trackId} />
         {renderTags()}
         {renderRemixContestSection()}
