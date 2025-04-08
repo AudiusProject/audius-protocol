@@ -98,8 +98,6 @@ export const ExternalWalletSignUpModal = () => {
         <ModalContent>
           <Flex direction='column' gap='s' alignItems='center'>
             <Text>{messages.body}</Text>
-            {/* @ts-ignore */}
-            {/* <appkit-button balance='hide' namespace='eip155' /> */}
           </Flex>
         </ModalContent>
         <ModalFooter>
