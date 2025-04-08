@@ -30,7 +30,7 @@ const initialState: WalletConnectState = {
 }
 
 const walletConnectSlice = createSlice({
-  name: 'walletConnect',
+  name: 'ExternalWallets',
   initialState,
   reducers: {
     connect: (_state, _action: ConnectAction) => {},

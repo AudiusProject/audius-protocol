@@ -1,6 +1,11 @@
 import { useCallback, useState } from 'react'
 
-import { useCurrentUserId, useCreateEvent } from '@audius/common/api'
+import {
+  useCurrentUserId,
+  useCreateEvent,
+  useRemixContest,
+  useUpdateEvent
+} from '@audius/common/api'
 import { useHostRemixContestModal } from '@audius/common/store'
 import { EventEntityTypeEnum, EventEventTypeEnum } from '@audius/sdk'
 import type { Dayjs } from 'dayjs'
@@ -28,8 +33,9 @@ const messages = {
   hint: 'You can host one contest per song and adjust the submission deadline anytime within 90 days of the contest start.',
   dateLabel: 'Last day to submit to contest',
   timeLabel: 'Time',
+  startContestError: 'Contest end date must be in the future',
   startContest: 'Start Contest',
-  startContestError: 'Contest end date must be in the future'
+  save: 'Save'
 }
 
 const mergeDateTime = (day: string, time: string) => {
@@ -48,11 +54,17 @@ const mergeDateTime = (day: string, time: string) => {
 export const HostRemixContestDrawer = () => {
   const { data, onClose } = useHostRemixContestModal()
   const { mutate: createEvent } = useCreateEvent()
-  const { data: currentUserId } = useCurrentUserId()
+  const { mutate: updateEvent } = useUpdateEvent()
+  const { data: userId } = useCurrentUserId()
   const { trackId } = data
+  const { data: events } = useRemixContest(trackId, {
+    entityType: EventEntityTypeEnum.Track
+  })
+  const event = events?.[0]
+  const isEdit = !!event
 
   const [endDate, setEndDate] = useState<Dayjs>(
-    dayjs().add(1, 'day').endOf('day')
+    event ? dayjs(event.endDate) : dayjs().add(1, 'day').endOf('day')
   )
   const [endDateError, setEndDateError] = useState<boolean>(false)
 
@@ -81,21 +93,42 @@ export const HostRemixContestDrawer = () => {
   )
 
   const handleSubmit = useCallback(() => {
-    if (endDateError || !trackId || !currentUserId) return
+    if (endDateError || !trackId || !userId) return
 
-    // Create event
-    createEvent({
-      eventType: EventEventTypeEnum.RemixContest,
-      entityType: EventEntityTypeEnum.Track,
-      entityId: trackId,
-      endDate: endDate.toISOString(),
-      userId: currentUserId
-    })
+    // TODO: Need to update this to adjust the time.
+    // The time is currently set to UTC time so after the user sets the time, it displays as UTC time.
+    // We need to adjust the time to the user's local time.
+
+    if (isEdit) {
+      updateEvent({
+        eventId: event.eventId,
+        endDate: endDate.toISOString(),
+        userId
+      })
+    } else {
+      createEvent({
+        eventType: EventEventTypeEnum.RemixContest,
+        entityType: EventEntityTypeEnum.Track,
+        entityId: trackId,
+        endDate: endDate.toISOString(),
+        userId
+      })
+    }
 
     // Reset form and close modal
     setEndDate(dayjs().add(1, 'day').endOf('day'))
     onClose()
-  }, [endDateError, trackId, currentUserId, createEvent, endDate, onClose])
+  }, [
+    endDateError,
+    trackId,
+    userId,
+    isEdit,
+    onClose,
+    updateEvent,
+    event?.eventId,
+    endDate,
+    createEvent
+  ])
 
   return (
     <AppDrawer
@@ -143,7 +176,7 @@ export const HostRemixContestDrawer = () => {
             fullWidth
             onPress={handleSubmit}
           >
-            {messages.startContest}
+            {isEdit ? messages.save : messages.startContest}
           </Button>
         </Flex>
       </Flex>

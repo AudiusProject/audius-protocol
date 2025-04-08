@@ -1,6 +1,10 @@
 import { useContext } from 'react'
 
-import { useGetTrackById, useToggleFavoriteTrack } from '@audius/common/api'
+import {
+  useGetTrackById,
+  useRemixContest,
+  useToggleFavoriteTrack
+} from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -24,6 +28,7 @@ import {
 } from '@audius/common/store'
 import { Genre, Nullable, route } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/harmony'
+import { EventEntityTypeEnum } from '@audius/sdk'
 import { connect, useDispatch, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
@@ -141,6 +146,11 @@ const TrackMenu = ({
     trackId: props.trackId,
     source: FavoriteSource.OVERFLOW
   })
+
+  const { data: events } = useRemixContest(props.trackId, {
+    entityType: EventEntityTypeEnum.Track
+  })
+  const event = events?.[0]
 
   const onDeleteTrack = (trackId: Nullable<number>) => {
     if (!trackId) return
@@ -300,12 +310,9 @@ const TrackMenu = ({
     }
 
     const remixContestMenuItem = {
-      // TODO: Update this to edit when the track is a contest ()
-      text: messages.hostRemixContest,
+      text: event ? messages.editRemixContest : messages.hostRemixContest,
       onClick: () => {
-        openHostRemixContest({
-          trackId
-        })
+        openHostRemixContest({ trackId })
       }
     }
 

@@ -212,7 +212,7 @@ const NavigationContainer = (props: NavigationContainerProps) => {
                 Upload: {
                   path: 'upload'
                 },
-                WalletConnect: {
+                ExternalWallets: {
                   initialRouteName: 'Wallets',
                   screens: {
                     Wallets: 'wallets'

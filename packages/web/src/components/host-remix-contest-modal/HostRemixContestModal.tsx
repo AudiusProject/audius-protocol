@@ -1,6 +1,11 @@
 import { useCallback, useState } from 'react'
 
-import { useCreateEvent, useCurrentUserId } from '@audius/common/api'
+import {
+  useCreateEvent,
+  useCurrentUserId,
+  useRemixContest,
+  useUpdateEvent
+} from '@audius/common/api'
 import { useHostRemixContestModal } from '@audius/common/store'
 import {
   Button,
@@ -33,7 +38,7 @@ const messages = {
   startContest: 'Start Contest',
   save: 'Save',
   contestEndDateLabel: 'Last day to submit to contest',
-  endDateError: 'Please select a date in the future',
+  endDateError: 'Contest end date must be in the future',
   timeLabel: 'Time',
   timePlaceholder: '12:00',
   meridianLabel: 'Meridian',
@@ -41,23 +46,29 @@ const messages = {
 }
 
 export const HostRemixContestModal = () => {
-  // TODO: Need to update this to check the track events when the backend returns it
-  // Should update the submit button copy, the submit function call, and prepopulate the datepicker value
-  // Can get the track id from the data from the modal hook
   const { data, isOpen, onClose } = useHostRemixContestModal()
+  const { mutate: createEvent } = useCreateEvent()
+  const { mutate: updateEvent } = useUpdateEvent()
+  const { data: userId } = useCurrentUserId()
+  const { trackId } = data
+  const { data: events } = useRemixContest(trackId, {
+    entityType: EventEntityTypeEnum.Track
+  })
+
+  const event = events?.[0]
+  const isEdit = !!event
+
   const [contestEndDate, setContestEndDate] = useState(
-    dayjs().add(1, 'day').endOf('day').toISOString()
+    event
+      ? dayjs(event.endDate).toISOString()
+      : dayjs().add(1, 'day').endOf('day').toISOString()
   )
   const [endDateTouched, setEndDateTouched] = useState(false)
   const [endDateError, setEndDateError] = useState(false)
-  const { mutate: createEvent } = useCreateEvent()
-  const { data: currentUserId } = useCurrentUserId()
 
   const meridianValue = dayjs(contestEndDate).format('A')
   const timeValue = dayjs(contestEndDate).format('hh:mm')
   const [timeInputValue, setTimeInputValue] = useState(timeValue)
-
-  const { trackId } = data
 
   const handleChange = useCallback(
     (date: string, time: string, meridian: string) => {
@@ -72,23 +83,45 @@ export const HostRemixContestModal = () => {
 
     setEndDateTouched(true)
     setEndDateError(hasError)
-    if (hasError || !trackId || !currentUserId) return
+    if (hasError || !trackId || !userId) return
 
     const endDate = dayjs(contestEndDate).toISOString()
 
-    // Create event
-    createEvent({
-      eventType: EventEventTypeEnum.RemixContest,
-      entityType: EventEntityTypeEnum.Track,
-      entityId: trackId,
-      endDate,
-      userId: currentUserId
-    })
+    // TODO: Need to update this to adjust the time.
+    // The time is currently set to UTC time so after the user sets the time, it displays as UTC time.
+    // We need to adjust the time to the user's local time.
+
+    if (isEdit) {
+      updateEvent({
+        eventId: event.eventId,
+        endDate,
+        userId
+      })
+    } else {
+      createEvent({
+        eventType: EventEventTypeEnum.RemixContest,
+        entityType: EventEntityTypeEnum.Track,
+        entityId: trackId,
+        endDate,
+        userId
+      })
+    }
 
     // Reset form and close modal
-    setContestEndDate(dayjs().add(1, 'day').endOf('day').toISOString())
+    setContestEndDate(
+      isEdit ? endDate : dayjs().add(1, 'day').endOf('day').toISOString()
+    )
     onClose()
-  }, [contestEndDate, createEvent, trackId, currentUserId, onClose])
+  }, [
+    contestEndDate,
+    trackId,
+    userId,
+    isEdit,
+    onClose,
+    updateEvent,
+    event?.eventId,
+    createEvent
+  ])
 
   return (
     <Modal
@@ -158,7 +191,7 @@ export const HostRemixContestModal = () => {
             onClick={handleSubmit}
             className={css({ alignSelf: 'center' })}
           >
-            {messages.startContest}
+            {isEdit ? messages.save : messages.startContest}
           </Button>
         </Flex>
       </ModalContent>
