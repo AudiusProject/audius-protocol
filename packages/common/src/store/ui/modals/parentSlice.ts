@@ -78,6 +78,7 @@ export const initialState: BasicModalsState = {
   Announcement: { isOpen: false },
   Notification: { isOpen: false },
   DownloadTrackArchive: { isOpen: false },
+  BuySellModal: { isOpen: false },
   HostRemixContest: { isOpen: false }
 }
 

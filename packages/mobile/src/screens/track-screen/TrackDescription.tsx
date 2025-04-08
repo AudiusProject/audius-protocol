@@ -1,5 +1,6 @@
 import React, { useCallback, useState, useEffect } from 'react'
 
+import type { Nullable } from '@audius/common/utils'
 import type { LayoutChangeEvent } from 'react-native/types'
 import Animated, {
   useAnimatedStyle,
@@ -17,7 +18,6 @@ import {
   useTheme
 } from '@audius/harmony-native'
 import { UserGeneratedText } from 'app/components/core'
-
 const MAX_DESCRIPTION_LINES = 6
 const DEFAULT_LINE_HEIGHT = spacing.xl
 
@@ -27,7 +27,7 @@ const messages = {
 }
 
 type TrackDescriptionProps = {
-  description: string
+  description?: Nullable<string>
 }
 
 export const TrackDescription = ({ description }: TrackDescriptionProps) => {
@@ -62,10 +62,6 @@ export const TrackDescription = ({ description }: TrackDescriptionProps) => {
 
         // If first measure, set container height
         if (containerHeight.value === null) {
-          console.log('REED initial height', {
-            height,
-            default: DEFAULT_LINE_HEIGHT * MAX_DESCRIPTION_LINES
-          })
           const initialHeight = Math.min(
             height,
             DEFAULT_LINE_HEIGHT * MAX_DESCRIPTION_LINES

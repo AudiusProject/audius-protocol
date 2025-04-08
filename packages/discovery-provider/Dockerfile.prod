@@ -45,10 +45,7 @@ RUN curl -O 'http://openresty.org/package/admin@openresty.com-5ea678a6.rsa.pub' 
   mv 'admin@openresty.com-5ea678a6.rsa.pub' /etc/apk/keys/ && \
   echo "http://openresty.org/package/alpine/v3.18/main" >> /etc/apk/repositories && \
   apk update && \
-  apk add openresty openresty-opm && \
-  opm get spacewander/lua-resty-rsa && \
-  opm get ledgetech/lua-resty-http && \
-  opm get bsiara/dkjson && \
+  apk add openresty && \
   mkdir -p /usr/local/openresty/conf /usr/local/openresty/logs
 
 

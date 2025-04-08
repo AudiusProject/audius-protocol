@@ -117,7 +117,7 @@ export type AppTabScreenParamList = {
   FeatureFlagOverride: undefined
   CreateChatBlast: undefined
   EditTrack: { id: ID }
-  WalletConnect: undefined
+  ExternalWallets: undefined
   ChatList: undefined
   ChatUserList:
     | {

@@ -4,6 +4,7 @@ import { addFundsModalReducer } from './add-funds-modal'
 import { albumTrackRemoveConfirmationModalReducer } from './album-track-remove-confirmation-modal'
 import { announcementModalReducer } from './announcement-modal'
 import { artistPickModalReducer } from './artist-pick-modal'
+import { buySellModalReducer } from './buy-sell-modal'
 import { coinflowOnrampModalReducer } from './coinflow-onramp-modal'
 import { coinflowWithdrawModalReducer } from './coinflow-withdraw-modal'
 import { chatBlastModalReducer } from './create-chat-blast-modal'
@@ -57,6 +58,7 @@ const combinedReducers = combineReducers({
   USDCPurchaseDetailsModal: usdcPurchaseDetailsModalReducer,
   USDCManualTransferModal: usdcManualTransferModalReducer,
   AddFundsModal: addFundsModalReducer,
+  BuySellModal: buySellModalReducer,
   USDCTransactionDetailsModal: usdcTransactionDetailsModalReducer,
   PremiumContentPurchaseModal: premiumContentPurchaseModalReducer,
   CoinflowOnramp: coinflowOnrampModalReducer,

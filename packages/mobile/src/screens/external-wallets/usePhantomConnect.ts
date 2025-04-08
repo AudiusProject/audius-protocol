@@ -10,20 +10,20 @@ import {
   signMessage
 } from 'app/store/wallet-connect/slice'
 
-import type { WalletConnectRoute } from './types'
+import type { ExternalWalletsRoute } from './types'
 
 const { updateWalletError } = tokenDashboardPageActions
 
 export const usePhantomConnect = (
   getParamsFromRoute: (
-    route: WalletConnectRoute<'Wallets'>
-  ) => WalletConnectRoute<'Wallets'>['params'] = (route) => route.params
+    route: ExternalWalletsRoute<'Wallets'>
+  ) => ExternalWalletsRoute<'Wallets'>['params'] = (route) => route.params
 ) => {
   const dispatch = useDispatch()
-  const route = useRoute<WalletConnectRoute<'Wallets'>>()
+  const route = useRoute<ExternalWalletsRoute<'Wallets'>>()
   const params = getParamsFromRoute(
     route
-  ) as WalletConnectRoute<'Wallets'>['params']
+  ) as ExternalWalletsRoute<'Wallets'>['params']
 
   useEffect(() => {
     if (!params) return

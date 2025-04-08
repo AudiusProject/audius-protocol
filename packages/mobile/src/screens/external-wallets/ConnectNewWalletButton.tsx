@@ -1,14 +1,12 @@
-import { useCallback } from 'react'
-
 import { tokenDashboardPageSelectors } from '@audius/common/store'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { Button } from '@audius/harmony-native'
+import { useDrawer } from 'app/hooks/useDrawer'
 import { makeStyles } from 'app/styles'
 
 import { useCanConnectNewWallet } from './useCanConnectNewWallet'
-import { useWalletConnect } from './useWalletConnect'
 
 const { getConfirmingWalletStatus, getRemoveWallet } =
   tokenDashboardPageSelectors
@@ -27,16 +25,12 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 export const ConnectNewWalletButton = () => {
   const styles = useStyles()
-  const { connector } = useWalletConnect()
 
   const newWalletStatus = useSelector(getConfirmingWalletStatus)
   const { status: removeWalletStatus } = useSelector(getRemoveWallet)
+  const { onOpen } = useDrawer('ConnectNewWallet')
 
   const canConnectNewWallet = useCanConnectNewWallet()
-
-  const handleConnectWallet = useCallback(() => {
-    connector.connect()
-  }, [connector])
 
   const title = canConnectNewWallet
     ? messages.connect
@@ -51,7 +45,7 @@ export const ConnectNewWalletButton = () => {
       <Button
         variant='primary'
         fullWidth
-        onPress={handleConnectWallet}
+        onPress={onOpen}
         disabled={!canConnectNewWallet}
       >
         {title}

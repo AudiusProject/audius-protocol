@@ -7,7 +7,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import type { NavigatorScreenParams } from '@react-navigation/native'
 import { useDispatch } from 'react-redux'
 
-import { usePhantomConnect } from '../wallet-connect/usePhantomConnect'
+import { usePhantomConnect } from '../external-wallets/usePhantomConnect'
 
 import { AppTabBar } from './AppTabBar'
 import type { ExploreTabScreenParamList } from './ExploreTabScreen'

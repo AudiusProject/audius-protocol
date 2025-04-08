@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react'
+import React, { useCallback } from 'react'
 
 import { useRemixContest, useToggleFavoriteTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
@@ -46,21 +46,13 @@ import { formatReleaseDate, Genre, removeNullable } from '@audius/common/utils'
 import { GetEntityEventsEntityTypeEnum } from '@audius/sdk'
 import dayjs from 'dayjs'
 import { TouchableOpacity } from 'react-native'
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming
-} from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
-import { useToggle } from 'react-use'
 
 import {
   Button,
   Divider,
   Flex,
   IconCalendarMonth,
-  IconCaretDown,
-  IconCaretUp,
   IconCloudUpload,
   IconPause,
   IconPlay,
@@ -68,7 +60,6 @@ import {
   IconVisibilityHidden,
   MusicBadge,
   Paper,
-  PlainButton,
   Text,
   spacing,
   type ImageProps,
@@ -76,7 +67,7 @@ import {
 } from '@audius/harmony-native'
 import CoSign, { Size } from 'app/components/co-sign'
 import { useCommentDrawer } from 'app/components/comments/CommentDrawerContext'
-import { Tag, UserGeneratedText } from 'app/components/core'
+import { Tag } from 'app/components/core'
 import { DeletedTile } from 'app/components/details-tile/DeletedTile'
 import { DetailsProgressInfo } from 'app/components/details-tile/DetailsProgressInfo'
 import { DetailsTileActionButtons } from 'app/components/details-tile/DetailsTileActionButtons'
@@ -110,9 +101,6 @@ const { getTrackPosition } = playbackPositionSelectors
 const { makeGetCurrent } = queueSelectors
 const getCurrentQueueItem = makeGetCurrent()
 
-const MAX_DESCRIPTION_LINES = 8
-const DEFAULT_LINE_HEIGHT = spacing.xl
-
 const messages = {
   track: 'track',
   podcast: 'podcast',
@@ -131,13 +119,12 @@ const messages = {
   releases: (releaseDate: string) =>
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`,
   remixContest: 'Remix Contest',
+  contestDeadline: 'Contest Deadline',
   deadline: (deadline?: string) =>
     deadline
       ? `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`
       : '',
-  uploadRemixButtonText: 'Upload Your Remix',
-  seeMore: 'See More',
-  seeLess: 'See Less'
+  uploadRemixButtonText: 'Upload Your Remix'
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -178,7 +165,6 @@ export const TrackScreenDetailsTile = ({
   const styles = useStyles()
   const { hasStreamAccess } = useGatedContentAccess(track as Track) // track is of type Track | SearchTrack but we only care about some of their common fields, maybe worth refactoring later
   const navigation = useNavigation()
-  const { motion } = useTheme()
 
   const isReachable = useSelector(getIsReachable)
   const currentUserId = useSelector(getUserId)
@@ -522,22 +508,24 @@ export const TrackScreenDetailsTile = ({
       <Flex gap='m'>
         <Flex row gap='xs' alignItems='center'>
           <Text variant='label' color='accent'>
-            {messages.remixContest}
+            {messages.contestDeadline}
           </Text>
           <Text size='s' strength='strong'>
             {messages.deadline(event?.endDate)}
           </Text>
         </Flex>
-        <Flex flex={1}>
-          <Button
-            variant='secondary'
-            size='small'
-            iconLeft={IconCloudUpload}
-            onPress={handlePressSubmitRemix}
-          >
-            {messages.uploadRemixButtonText}
-          </Button>
-        </Flex>
+        {!isOwner ? (
+          <Flex flex={1}>
+            <Button
+              variant='secondary'
+              size='small'
+              iconLeft={IconCloudUpload}
+              onPress={handlePressSubmitRemix}
+            >
+              {messages.uploadRemixButtonText}
+            </Button>
+          </Flex>
+        ) : null}
       </Flex>
     )
   }
@@ -701,7 +689,7 @@ export const TrackScreenDetailsTile = ({
           onPressReposts={handlePressReposts}
           onPressComments={handlePressComments}
         />
-        {description ? <TrackDescription description={description} /> : null}
+        <TrackDescription description={description} />
         <TrackMetadataList trackId={trackId} />
         {renderTags()}
         {renderRemixContestSection()}

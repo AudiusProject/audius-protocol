@@ -125,7 +125,8 @@ export async function getUserNormalizedScore(userId: number) {
     challenge_count,
     following_count,
     chat_block_count,
-    shadowban_score,
+    is_audius_impersonator,
+    score: shadowban_score,
     is_blocked
   } = rows[0]
 
@@ -138,9 +139,9 @@ export async function getUserNormalizedScore(userId: number) {
 
   // override score
   if (is_blocked === true) {
-    overallScore = -1
+    overallScore = -1000
   } else if (is_blocked === false) {
-    overallScore = 1
+    overallScore = 1000
   }
 
   const normalizedScore = Math.min(
@@ -156,6 +157,7 @@ export async function getUserNormalizedScore(userId: number) {
     followingCount: following_count,
     chatBlockCount: chat_block_count,
     fingerprintCount: numberOfUserWithFingerprint,
+    isAudiusImpersonator: is_audius_impersonator,
     isBlocked: is_blocked,
     shadowbanScore,
     overallScore,
