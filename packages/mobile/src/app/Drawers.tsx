@@ -25,6 +25,7 @@ import { EditCollectiblesDrawer } from 'app/components/edit-collectibles-drawer'
 import { EnablePushNotificationsDrawer } from 'app/components/enable-push-notifications-drawer'
 import { FeedFilterDrawer } from 'app/components/feed-filter-drawer'
 import { ForgotPasswordDrawer } from 'app/components/forgot-password-drawer'
+import { HostRemixContestDrawer } from 'app/components/host-remix-contest-drawer/HostRemixContestDrawer'
 import { InboxUnavailableDrawer } from 'app/components/inbox-unavailable-drawer/InboxUnavailableDrawer'
 import { LeavingAudiusDrawer } from 'app/components/leaving-audius-drawer'
 import { LockedContentDrawer } from 'app/components/locked-content-drawer'
@@ -46,6 +47,7 @@ import { WaitForDownloadDrawer } from 'app/components/wait-for-download-drawer'
 import { ReplaceTrackProgressDrawer } from 'app/screens/edit-track-screen/components'
 import { EarlyReleaseConfirmationDrawer } from 'app/screens/edit-track-screen/components/EarlyReleaseConfirmationDrawer'
 import { PublishConfirmationDrawer } from 'app/screens/edit-track-screen/components/PublishConfirmationDrawer'
+import { ConnectNewWalletDrawer } from 'app/screens/external-wallets/components/ConnectNewWalletDrawer'
 import { WelcomeDrawer } from 'app/screens/sign-on-screen/components/WelcomeDrawer'
 import { TrendingFilterDrawer } from 'app/screens/trending-screen'
 
@@ -133,7 +135,8 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   ReplaceTrackProgress: ReplaceTrackProgressDrawer,
   EarlyReleaseConfirmation: EarlyReleaseConfirmationDrawer,
   ArtistPick: ArtistPickConfirmationDrawer,
-  DownloadTrackArchive: DownloadTrackArchiveDrawer
+  DownloadTrackArchive: DownloadTrackArchiveDrawer,
+  HostRemixContest: HostRemixContestDrawer
 }
 
 const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
@@ -155,7 +158,8 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   MuteComments: MuteCommentsConfirmationDrawer,
   DeleteChat: DeleteChatDrawer,
   SupportersInfo: SupportersInfoDrawer,
-  Welcome: WelcomeDrawer
+  Welcome: WelcomeDrawer,
+  ConnectNewWallet: ConnectNewWalletDrawer
 }
 
 const commonDrawers = Object.entries(commonDrawersMap) as [

@@ -74,12 +74,12 @@ export const NotificationPanel = ({
   const handleCheckClickInside = useCallback(
     (target: EventTarget) => {
       if (isUserListOpen) return true
-      if (target instanceof Element && anchorRef.current) {
-        return anchorRef.current.contains(target)
+      if (target instanceof Element && panelRef.current) {
+        return panelRef.current.contains(target)
       }
       return false
     },
-    [isUserListOpen, anchorRef]
+    [isUserListOpen]
   )
 
   useEffect(() => {

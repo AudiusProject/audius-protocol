@@ -83,7 +83,7 @@ export const useRemixes = (
           pageParam,
           pageSize,
           false,
-          { tracks: processedTracks }
+          { items: processedTracks }
         )
       )
 
