@@ -80,6 +80,7 @@ from src.queries.get_trending import get_trending
 from src.queries.get_trending_ids import get_trending_ids
 from src.queries.get_unclaimed_id import get_unclaimed_id
 from src.queries.get_underground_trending import get_underground_trending
+from src.queries.query_helpers import get_content_url_with_mirrors
 from src.queries.search_queries import SearchKind, search
 from src.trending_strategies.trending_strategy_factory import (
     DEFAULT_TRENDING_VERSIONS,
@@ -706,7 +707,6 @@ class TrackStream(Resource):
         user_signature = request_args.get("user_signature")
         nft_access_signature = request_args.get("nft_access_signature")
         api_key = request_args.get("api_key")
-        skip_check = request_args.get("skip_check")
         no_redirect = request_args.get("no_redirect")
 
         decoded_id = decode_with_abort(track_id, ns)
@@ -728,7 +728,6 @@ class TrackStream(Resource):
                 f"tracks.py | stream | Streaming track {track_id} does not allow streaming from api key {api_key}."
             )
             abort_not_found(track_id, ns)
-        redis = redis_connection.get_redis()
 
         # signature for the track to be included as a query param in the redirect to CN
         stream_signature = get_track_stream_signature(
@@ -751,59 +750,13 @@ class TrackStream(Resource):
         if skip_play_count:
             params["skip_play_count"] = skip_play_count
 
-        base_path = f"tracks/cidstream/{cid}"
-        query_string = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
-        path = f"{base_path}?{query_string}"
-
-        # we cache track cid -> content node so we can avoid
-        # checking multiple content nodes for a track
-        # if we already know where to look
-        redis_key = f"track_cid:{cid}"
-        cached_content_node = redis.get(redis_key)
-        stream_url = None
-        if cached_content_node:
-            cached_content_node = cached_content_node.decode("utf-8")
-            stream_url = get_stream_url_from_content_node(
-                cached_content_node, path, skip_check
-            )
-            if stream_url:
-                if no_redirect:
-                    return success_response(stream_url)
-                else:
-                    return stream_url
-
-        healthy_nodes = get_all_healthy_content_nodes_cached(redis)
-        if not healthy_nodes:
-            logger.error(
-                f"tracks.py | stream | No healthy Content Nodes found when streaming track ID {track_id}. Please investigate."
-            )
-            abort_not_found(track_id, ns)
-
-        rendezvous = RendezvousHash(
-            *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
+        content_url_with_mirrors = get_content_url_with_mirrors(
+            signature, cid, track.get("placement_hosts")
         )
-
-        content_nodes = rendezvous.get_n(9999999, cid)
-
-        # if track has placement_hosts, use that instead
-        if track.get("placement_hosts"):
-            content_nodes = track.get("placement_hosts").split(",")
-
-        for content_node in content_nodes:
-            try:
-                stream_url = get_stream_url_from_content_node(
-                    content_node, path, skip_check
-                )
-                if stream_url:
-                    redis.set(redis_key, content_node)
-                    redis.expire(redis_key, 60 * 30)  # 30 min ttl
-                    if no_redirect:
-                        return success_response(stream_url)
-                    else:
-                        return stream_url
-            except Exception as e:
-                logger.error(f"Could not locate cid {cid} on {content_node}: {e}")
-        abort_not_found(track_id, ns)
+        if no_redirect:
+            return success_response(content_url_with_mirrors["url"])
+        else:
+            return content_url_with_mirrors["url"]
 
 
 # Download
