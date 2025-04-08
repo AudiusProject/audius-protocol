@@ -171,7 +171,6 @@ export const ConnectedWalletsModal = () => {
                 <WalletTableRow
                   key={props.address}
                   {...props}
-                  showActionMenu
                   onRemove={handleRemoveClicked}
                 />
               )}

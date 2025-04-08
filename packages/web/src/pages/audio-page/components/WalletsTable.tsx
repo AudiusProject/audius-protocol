@@ -44,10 +44,8 @@ const messages = {
 }
 
 type WalletProps = {
-  className?: string
   chain: Chain
   address: string
-  collectibleCount?: number
   isPending?: boolean
   showActionMenu?: boolean
   onRemove?: (props: { address: string; chain: Chain }) => void
