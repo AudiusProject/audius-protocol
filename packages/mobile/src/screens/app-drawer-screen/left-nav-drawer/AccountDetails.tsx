@@ -2,6 +2,7 @@ import { useCallback, useContext } from 'react'
 
 import type { User } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
+import { css } from '@emotion/native'
 import { TouchableOpacity } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -51,7 +52,7 @@ export const AccountDetails = () => {
           borderWidth='thin'
         />
         <Flex gap='unitHalf'>
-          <Flex row justifyContent='space-around'>
+          <Flex row justifyContent='space-around' pr='2xl'>
             <Text numberOfLines={1} variant='body' size='l' strength='strong'>
               {name}
             </Text>

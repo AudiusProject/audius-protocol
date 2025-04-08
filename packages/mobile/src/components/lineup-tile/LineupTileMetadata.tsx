@@ -1,9 +1,10 @@
 import type { Remix, User } from '@audius/common/models'
 import { playerSelectors } from '@audius/common/store'
+import { css } from '@emotion/native'
 import { TouchableOpacity, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { IconVolumeLevel2 } from '@audius/harmony-native'
+import { Flex, IconVolumeLevel2 } from '@audius/harmony-native'
 import { Text, FadeInView } from 'app/components/core'
 import { UserLink } from 'app/components/user-link'
 import { makeStyles } from 'app/styles'
@@ -109,11 +110,13 @@ export const LineupTileMetadata = ({
             />
           ) : null}
         </TouchableOpacity>
-        <UserLink
-          variant={isActive ? 'active' : 'default'}
-          textVariant='body'
-          userId={user.user_id}
-        />
+        <Flex pr='s'>
+          <UserLink
+            variant={isActive ? 'active' : 'default'}
+            textVariant='body'
+            userId={user.user_id}
+          />
+        </Flex>
       </FadeInView>
       {/* We weren't passing coSign in and the ui is broken so I'm disabling for now */}
       {/* {coSign && (
