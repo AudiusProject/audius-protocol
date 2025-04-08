@@ -769,3 +769,150 @@ def test_get_comment_replies_related_field(app):
         # Check that replies don't have their own related field
         for reply in replies:
             assert "related" not in reply
+
+
+def test_get_comment_reactions(app):
+    """Test that comment reactions are correctly reflected for both users and artists"""
+    entities = {
+        "comments": [
+            {
+                "comment_id": 1,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "created_at": datetime(2022, 1, 1),
+                "text": "Parent comment",
+            },
+            {
+                "comment_id": 2,
+                "user_id": 2,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "created_at": datetime(2022, 1, 2),
+                "text": "Reply comment",
+            },
+        ],
+        "comment_threads": [{"parent_comment_id": 1, "comment_id": 2}],
+        "tracks": [{"track_id": 1, "owner_id": 10}],  # Artist is user_id 10
+        "comment_reactions": [
+            # Artist reacted to parent comment
+            {"comment_id": 1, "user_id": 10},
+            # User 3 reacted to parent comment
+            {"comment_id": 1, "user_id": 3},
+            # User 3 reacted to reply
+            {"comment_id": 2, "user_id": 3},
+            # Deleted reaction shouldn't count
+            {"comment_id": 1, "user_id": 4, "is_delete": True},
+        ],
+    }
+
+    with app.app_context():
+        db = get_db()
+        populate_mock_db(db, entities)
+
+        # Test reactions for track comments
+        response = get_track_comments({}, 1, current_user_id=3)
+        comments = response["data"]
+        assert len(comments) == 1
+
+        # Check parent comment reactions
+        parent_comment = comments[0]
+        assert parent_comment["react_count"] == 2  # Artist and user 3
+        assert parent_comment["is_current_user_reacted"] == True  # User 3 reacted
+        assert parent_comment["is_artist_reacted"] == True  # Artist reacted
+
+        # Check reply reactions
+        replies = parent_comment["replies"]
+        assert len(replies) == 1
+        reply = replies[0]
+        assert reply["react_count"] == 1  # Only user 3
+        assert reply["is_current_user_reacted"] == True  # User 3 reacted
+        assert reply["is_artist_reacted"] == False  # Artist didn't react
+
+        # Test reactions from artist's perspective
+        response = get_track_comments({}, 1, current_user_id=10)
+        comments = response["data"]
+        parent_comment = comments[0]
+        assert parent_comment["is_current_user_reacted"] == True  # Artist reacted
+        assert parent_comment["is_artist_reacted"] == True  # Artist reacted
+
+        reply = parent_comment["replies"][0]
+        assert reply["is_current_user_reacted"] == False  # Artist didn't react
+        assert reply["is_artist_reacted"] == False  # Artist didn't react
+
+        # Test reactions from non-reacted user's perspective
+        response = get_track_comments({}, 1, current_user_id=5)
+        comments = response["data"]
+        parent_comment = comments[0]
+        assert parent_comment["is_current_user_reacted"] == False  # User 5 didn't react
+        assert parent_comment["is_artist_reacted"] == True  # Artist reacted
+
+        reply = parent_comment["replies"][0]
+        assert reply["is_current_user_reacted"] == False  # User 5 didn't react
+        assert reply["is_artist_reacted"] == False  # Artist didn't react
+
+        # Test direct replies endpoint
+        response = get_replies({"limit": 10, "offset": 0}, 1, current_user_id=3)
+        replies = response["data"]
+        assert len(replies) == 1
+        reply = replies[0]
+        assert reply["react_count"] == 1
+        assert reply["is_current_user_reacted"] == True  # User 3 reacted
+        assert reply["is_artist_reacted"] == False  # Artist didn't react
+
+
+# def test_get_comment_reactions_deleted_comments(app):
+#     """Test that reactions work correctly with deleted comments"""
+#     entities = {
+#         "comments": [
+#             {
+#                 "comment_id": 1,
+#                 "user_id": 1,
+#                 "entity_id": 1,
+#                 "entity_type": "Track",
+#                 "created_at": datetime(2022, 1, 1),
+#                 "text": "Parent comment",
+#                 "is_delete": True,  # Deleted comment with replies
+#             },
+#             {
+#                 "comment_id": 2,
+#                 "user_id": 2,
+#                 "entity_id": 1,
+#                 "entity_type": "Track",
+#                 "created_at": datetime(2022, 1, 2),
+#                 "text": "Reply to deleted comment",
+#             },
+#         ],
+#         "comment_threads": [{"parent_comment_id": 1, "comment_id": 2}],
+#         "tracks": [{"track_id": 1, "owner_id": 10}],
+#         "comment_reactions": [
+#             # Reactions to deleted comment should still be counted
+#             {"comment_id": 1, "user_id": 10},  # Artist reaction
+#             {"comment_id": 1, "user_id": 3},  # User reaction
+#             {"comment_id": 2, "user_id": 10},  # Artist reaction to reply
+#         ],
+#     }
+
+#     with app.app_context():
+#         db = get_db()
+#         populate_mock_db(db, entities)
+
+#         # Test reactions for track comments
+#         response = get_track_comments({}, 1, current_user_id=3)
+#         comments = response["data"]
+#         assert len(comments) == 1
+
+#         # Check deleted parent comment reactions
+#         parent_comment = comments[0]
+#         assert parent_comment["is_tombstone"] == True
+#         assert parent_comment["react_count"] == 2
+#         assert parent_comment["is_current_user_reacted"] == True
+#         assert parent_comment["is_artist_reacted"] == True
+
+#         # Check reply reactions
+#         replies = parent_comment["replies"]
+#         assert len(replies) == 1
+#         reply = replies[0]
+#         assert reply["react_count"] == 1
+#         assert reply["is_current_user_reacted"] == False
+#         assert reply["is_artist_reacted"] == True
