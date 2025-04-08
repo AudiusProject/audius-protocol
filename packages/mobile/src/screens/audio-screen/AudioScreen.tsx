@@ -9,7 +9,6 @@ import {
 } from '@audius/common/store'
 import { isNullOrUndefined } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
-import { css } from '@emotion/native'
 import { useFocusEffect } from '@react-navigation/native'
 import { Image, Linking } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
