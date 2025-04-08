@@ -1,6 +1,5 @@
 import type { Remix, User } from '@audius/common/models'
 import { playerSelectors } from '@audius/common/store'
-import { css } from '@emotion/native'
 import { TouchableOpacity, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
