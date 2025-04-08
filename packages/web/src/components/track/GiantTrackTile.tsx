@@ -222,13 +222,9 @@ export const GiantTrackTile = ({
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
   )
-  const { data: events, isLoading: isEventsLoading } = useRemixContest(
-    trackId,
-    {
-      entityType: GetEntityEventsEntityTypeEnum.Track
-    }
-  )
-  const event = events?.[0]
+  const { data: event, isLoading: isEventsLoading } = useRemixContest(trackId, {
+    entityType: GetEntityEventsEntityTypeEnum.Track
+  })
   const isRemixContest = isRemixContestEnabled && event
 
   const isLongFormContent =

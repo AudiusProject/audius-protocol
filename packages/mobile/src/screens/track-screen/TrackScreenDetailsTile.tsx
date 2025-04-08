@@ -231,10 +231,9 @@ export const TrackScreenDetailsTile = ({
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
   )
-  const { data: events } = useRemixContest(trackId, {
+  const { data: event } = useRemixContest(trackId, {
     entityType: EventEntityTypeEnum.Track
   })
-  const event = events?.[0]
   const isRemixContest = isRemixContestEnabled && !isOwner && event
 
   const isPlayingPreview = isPreviewing && isPlaying

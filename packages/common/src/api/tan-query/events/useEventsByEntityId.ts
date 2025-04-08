@@ -37,9 +37,10 @@ export const useEventsByEntityId = <TResult>(
         limit: options?.limit
       })
       const events = response.data ?? []
-      return events.map(eventMetadataFromSDK)
+      return events.map(eventMetadataFromSDK) as Event[]
     },
-    enabled: options?.enabled !== false && entityId !== undefined
+    enabled: options?.enabled !== false && entityId !== undefined,
+    select: options?.select
   })
 
   return queryData
