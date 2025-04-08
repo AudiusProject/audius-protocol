@@ -18,7 +18,8 @@ import {
   useTrackComments,
   QUERY_KEYS,
   useTrackCommentCount,
-  resetPreviousCommentCount
+  resetPreviousCommentCount,
+  useSupporters
 } from '~/api'
 import { useGatedContentAccess } from '~/hooks'
 import {
@@ -106,6 +107,11 @@ export function CommentSectionProvider<NavigationProp>(
     lineupActions
   } = props
   const { data: track } = useGetTrackById({ id: entityId })
+  const trackOwnerId = track?.owner_id
+
+  // Prefetch the track owner's supporters
+  useSupporters({ userId: trackOwnerId })
+
   const {
     analytics: { make, track: trackEvent }
   } = useAppContext()
