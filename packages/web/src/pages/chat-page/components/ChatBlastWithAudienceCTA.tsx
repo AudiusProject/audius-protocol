@@ -1,7 +1,12 @@
 import { useCallback } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { useCanSendChatBlast } from '@audius/common/hooks'
-import { chatActions } from '@audius/common/store'
+import {
+  chatActions,
+  followersUserListSelectors,
+  topSupportersUserListSelectors
+} from '@audius/common/store'
 import {
   Box,
   Flex,
@@ -11,7 +16,7 @@ import {
   useTheme
 } from '@audius/harmony'
 import { ChatBlastAudience } from '@audius/sdk'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 const { createChatBlast } = chatActions
 
@@ -41,6 +46,18 @@ export const ChatBlastWithAudienceCTA = (
   const { audience, onClick } = props
   const messages = getMessages(audience)
   const { color } = useTheme()
+  const { data: currentUserId } = useCurrentUserId()
+
+  // Get the userId based on the audience type
+  const followersUserId = useSelector(followersUserListSelectors.getId)
+  const supportersUserId = useSelector(topSupportersUserListSelectors.getId)
+  const targetUserId =
+    audience === ChatBlastAudience.FOLLOWERS
+      ? followersUserId
+      : supportersUserId
+
+  // Check if the current user is the profile owner
+  const isOwner = currentUserId === targetUserId
 
   const dispatch = useDispatch()
   const handleClick = useCallback(() => {
@@ -49,7 +66,8 @@ export const ChatBlastWithAudienceCTA = (
   }, [audience, dispatch, onClick])
 
   const userMeetsRequirements = useCanSendChatBlast()
-  if (!userMeetsRequirements || !messages) {
+  // Only show if the user can send blast messages and is the profile owner
+  if (!userMeetsRequirements || !messages || !isOwner) {
     return null
   }
 
