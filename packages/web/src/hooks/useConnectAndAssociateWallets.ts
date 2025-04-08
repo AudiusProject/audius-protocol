@@ -162,7 +162,7 @@ export const useConnectAndAssociateWallets = (
   const associateConnectedWallets = useCallback(async () => {
     try {
       isAssociatingRef.current = true
-      await track(make({ eventName: Name.CONNECT_WALLET_NEW_WALLET_START }))
+      track(make({ eventName: Name.CONNECT_WALLET_NEW_WALLET_START }))
       const activeAccount = appkitModal.getAccount()
       const originalAddress = currentUser?.data?.wallet
 
@@ -189,7 +189,7 @@ export const useConnectAndAssociateWallets = (
       if (filteredWallets.length === 0) {
         if (wallets.length > 0) {
           for (const { chain, address } of wallets) {
-            await track(
+            track(
               make({
                 eventName: Name.CONNECT_WALLET_ALREADY_ASSOCIATED,
                 chain,
@@ -210,7 +210,7 @@ export const useConnectAndAssociateWallets = (
           address,
           chain
         })
-        await track(
+        track(
           make({
             eventName: Name.CONNECT_WALLET_NEW_WALLET_CONNECTING,
             chain,
@@ -238,7 +238,7 @@ export const useConnectAndAssociateWallets = (
           wallet: { address, chain },
           signature
         })
-        await track(
+        track(
           make({
             eventName: Name.CONNECT_WALLET_NEW_WALLET_CONNECTED,
             chain,
@@ -250,9 +250,7 @@ export const useConnectAndAssociateWallets = (
       // DONE!
       onSuccess?.(filteredWallets)
     } catch (e) {
-      await track(
-        make({ eventName: Name.CONNECT_WALLET_ERROR, error: String(e) })
-      )
+      track(make({ eventName: Name.CONNECT_WALLET_ERROR, error: String(e) }))
       onError?.(e)
     } finally {
       isAssociatingRef.current = false
