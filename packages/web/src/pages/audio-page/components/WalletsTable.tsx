@@ -157,7 +157,7 @@ type WalletsTableProps = {
   renderWallet?: (props: {
     address: string
     chain: Chain
-    isMutationPending?: boolean
+    isPending?: boolean
   }) => ReactNode
 }
 
