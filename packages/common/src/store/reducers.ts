@@ -1,3 +1,4 @@
+import { QueryClient } from '@tanstack/react-query'
 import { History } from 'history'
 import { combineReducers } from 'redux'
 import type { Storage } from 'redux-persist'
@@ -373,4 +374,6 @@ export type CommonState = {
   upload: UploadState
   confirmer: ConfirmerState
   downloads: DownloadState
+
+  queryClient: QueryClient
 }

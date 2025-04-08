@@ -40,7 +40,8 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
           theme: getTheme(),
           systemAppearance: getSystemAppearance()
         }
-      }
+      },
+      queryClient
     }
 
     const { store, history: storeHistory } = configureStore(
