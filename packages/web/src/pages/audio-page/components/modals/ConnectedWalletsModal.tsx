@@ -132,10 +132,13 @@ const useConnectAndAssociateWallets = (
   const { data: connectedWallets } = useConnectedWallets()
   const { switchAccountAsync } = useSwitchAccount()
   const { disconnect } = useDisconnect()
+
+  // The state goes from modal open => connecting => associating
+  const { open: isAppKitModalOpen } = useAppKitState()
   const [isConnecting, setIsConnecting] = useState(false)
   const [isAssociating, setIsAssociating] = useState(false)
-  const { open: isAppKitModalOpen } = useAppKitState()
 
+  // Keep track of any existing connected external wallets
   const { isConnected, connector, chainId } = useAccount()
   const originalConnectorRef = useRef(connector)
   const originalChainIdRef = useRef(chainId)
