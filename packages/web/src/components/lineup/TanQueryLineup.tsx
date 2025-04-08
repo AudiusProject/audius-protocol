@@ -276,11 +276,7 @@ export const TanQueryLineup = ({
                   direction='column'
                   gap='m'
                   key={index}
-                  mb={
-                    index === 0 && leadingElementId !== undefined
-                      ? 'xl'
-                      : undefined
-                  }
+                  mb={index === 0 && leadingElementId ? 'xl' : undefined}
                   w='100%'
                   as='li'
                   className={cn({ [tileStyles!]: !!tileStyles })}
@@ -444,18 +440,16 @@ export const TanQueryLineup = ({
                     direction='column'
                     gap='m'
                     key={index}
-                    mb={
-                      index === 0 && leadingElementId !== undefined
-                        ? 'xl'
-                        : undefined
-                    }
+                    mb={index === 0 && leadingElementId ? 'xl' : undefined}
                     className={cn({ [tileStyles!]: !!tileStyles })}
                     as='li'
                   >
                     <Flex direction={isMobile ? 'row' : 'column'} w='100%'>
                       {tile}
                     </Flex>
-                    {index === 0 && leadingElementId !== undefined ? (
+                    {index === 0 &&
+                    tiles.length > 1 &&
+                    leadingElementId !== undefined ? (
                       leadingElementDelineator !== undefined ? (
                         leadingElementDelineator
                       ) : (
