@@ -23,6 +23,8 @@ import { useMainPageHeader } from 'components/nav/mobile/NavContext'
 import { FeedPageContentProps } from 'pages/feed-page/types'
 import { BASE_URL } from 'utils/route'
 
+import EmptyFeed from '../EmptyFeed'
+
 import Filters from './FeedFilterButton'
 import FeedFilterDrawer from './FeedFilterDrawer'
 import styles from './FeedPageContent.module.css'
@@ -111,6 +113,7 @@ const FeedPageMobileContent = ({
           hasNextPage={hasNextPage}
           play={play}
           pause={pause}
+          emptyElement={<EmptyFeed />}
           loadNextPage={loadNextPage}
           isPlaying={isPlaying}
           lineup={lineup}
