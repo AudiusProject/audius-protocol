@@ -2,13 +2,15 @@ import { useRemixes } from '@audius/common/api'
 import { Track, User } from '@audius/common/models'
 import { remixesPageLineupActions } from '@audius/common/store'
 import { pluralize } from '@audius/common/utils'
-import { IconRemix, Text, Flex } from '@audius/harmony'
+import { IconRemix, Text, Flex, FilterButton } from '@audius/harmony'
 
 import { Header } from 'components/header/desktop/Header'
 import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import { TrackLink } from 'components/link/TrackLink'
 import { UserLink } from 'components/link/UserLink'
 import Page from 'components/page/Page'
+import { useRemixPageParams } from 'pages/remixes-page/hooks'
+import { useUpdateSearchParams } from 'pages/search-page/hooks'
 import { fullTrackRemixesPage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'
 
@@ -19,7 +21,9 @@ const messages = {
   by: 'by',
   of: 'of',
   getDescription: (trackName: string, artistName: string) =>
-    `${messages.remixes} ${messages.of} ${trackName} ${messages.by} ${artistName}`
+    `${messages.remixes} ${messages.of} ${trackName} ${messages.by} ${artistName}`,
+  coSigned: 'Co-Signs',
+  contestEntries: 'Contest Entries'
 }
 
 export type RemixesPageProps = {
@@ -53,10 +57,13 @@ const RemixesPage = g(({ title, count = 0, originalTrack, user }) => {
     trackId: originalTrack?.track_id,
     includeOriginal: true
   })
+  const updateSortParam = useUpdateSearchParams('sortMethod')
+  const { sortMethod } = useRemixPageParams()
 
   const renderHeader = () => (
     <Header icon={IconRemix} primary={title} containerStyles={styles.header} />
   )
+  console.log('asdf hasNextPage: ', data, hasNextPage)
   return (
     <Page
       title={title}
@@ -78,14 +85,32 @@ const RemixesPage = g(({ title, count = 0, originalTrack, user }) => {
           isPlaying={isPlaying}
           lineup={lineup}
           actions={remixesPageLineupActions}
-          pageSize={pageSize}
+          pageSize={5}
           leadingElementId={0}
           leadingElementDelineator={
-            <Text variant='heading'>
-              {count} {pluralize(messages.remixes, count, 'es', !count)}
-            </Text>
+            <Flex justifyContent='space-between'>
+              <Text variant='heading'>
+                {count} {pluralize(messages.remixes, count, 'es', !count)}
+              </Text>
+              <Flex gap='s'>
+                {' '}
+                <FilterButton label={messages.coSigned} value={null} />
+                <FilterButton label={messages.contestEntries} value={null} />
+                <FilterButton
+                  value={sortMethod ?? 'relevant'}
+                  variant='replaceLabel'
+                  // optionsLabel={messages.sortOptionsLabel}
+                  onChange={updateSortParam}
+                  options={[
+                    { label: 'Most Relevant', value: 'relevant' },
+                    { label: 'Most Popular', value: 'popular' },
+                    { label: 'Most Recent', value: 'recent' }
+                  ]}
+                />
+              </Flex>
+            </Flex>
           }
-        />{' '}
+        />
       </Flex>
     </Page>
   )

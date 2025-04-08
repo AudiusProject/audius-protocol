@@ -136,10 +136,10 @@ export const useRemixes = (
     ...options,
     enabled: options?.enabled !== false && !!trackId
   })
-  const cachedData = queryClient.getQueryData(
-    getRemixesQueryKey({ trackId, pageSize, includeOriginal })
-  )
-  console.log('asdf cached Data:', cachedData)
+  // const cachedData = queryClient.getQueryData(
+  //   getRemixesQueryKey({ trackId, pageSize, includeOriginal })
+  // )
+  // console.log('asdf cached Data:', cachedData)
   return useLineupQuery({
     queryData,
     queryKey: getRemixesQueryKey({
