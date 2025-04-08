@@ -10,7 +10,7 @@ import { ID } from '~/models/Identifiers'
 
 import { getEventsBatcher } from '../batchers/getEventsBatcher'
 import { QueryOptions } from '../types'
-import { useCurrentUserId } from '../useCurrentUserId'
+import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { combineQueryResults } from '../utils/combineQueryResults'
 import { useQueries } from '../utils/useQueries'
 

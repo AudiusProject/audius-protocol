@@ -7,7 +7,7 @@ import { Event } from '~/models/Event'
 import { ID } from '~/models/Identifiers'
 
 import { SelectableQueryOptions } from '../types'
-import { useCurrentUserId } from '../useCurrentUserId'
+import { useCurrentUserId } from '../users/account/useCurrentUserId'
 
 import { getEventsByEntityIdQueryKey, EventsByEntityIdOptions } from './utils'
 
