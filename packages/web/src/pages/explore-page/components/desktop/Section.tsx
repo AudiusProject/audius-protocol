@@ -1,6 +1,6 @@
 import { useState, useCallback, ReactNode } from 'react'
 
-import { Button } from '@audius/harmony'
+import { Button, Flex } from '@audius/harmony'
 import cn from 'classnames'
 
 import styles from './Section.module.css'
@@ -56,13 +56,15 @@ const Section = ({
       <div className={styles.subtitle}>{subtitle}</div>
       <div className={styles.children}>{children}</div>
       {expandable && !isExpanded && (
-        <Button
-          variant='primary'
-          css={(theme) => ({ marginTop: theme.spacing['3xl'] })}
-          onClick={expand}
-        >
-          {expandText || messages.more}
-        </Button>
+        <Flex justifyContent='center'>
+          <Button
+            variant='primary'
+            css={(theme) => ({ marginTop: theme.spacing['3xl'] })}
+            onClick={expand}
+          >
+            {expandText || messages.more}
+          </Button>
+        </Flex>
       )}
     </div>
   )
