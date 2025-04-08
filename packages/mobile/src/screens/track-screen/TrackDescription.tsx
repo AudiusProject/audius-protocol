@@ -18,8 +18,7 @@ import {
 } from '@audius/harmony-native'
 import { UserGeneratedText } from 'app/components/core'
 
-// Constants
-const MAX_DESCRIPTION_LINES = 8
+const MAX_DESCRIPTION_LINES = 6
 const DEFAULT_LINE_HEIGHT = spacing.xl
 
 const messages = {
@@ -40,7 +39,6 @@ export const TrackDescription = ({ description }: TrackDescriptionProps) => {
   const [contentHeight, setContentHeight] = useState<number | null>(null)
   const containerHeight = useSharedValue<number | null>(null)
 
-  // Animated style for container
   const animatedContainerStyle = useAnimatedStyle(() => {
     return {
       width: '100%',
@@ -49,7 +47,6 @@ export const TrackDescription = ({ description }: TrackDescriptionProps) => {
     }
   })
 
-  // Toggle expanded state
   const toggleExpanded = useCallback(() => {
     setIsExpanded((prev) => !prev)
   }, [])
@@ -65,6 +62,10 @@ export const TrackDescription = ({ description }: TrackDescriptionProps) => {
 
         // If first measure, set container height
         if (containerHeight.value === null) {
+          console.log('REED initial height', {
+            height,
+            default: DEFAULT_LINE_HEIGHT * MAX_DESCRIPTION_LINES
+          })
           const initialHeight = Math.min(
             height,
             DEFAULT_LINE_HEIGHT * MAX_DESCRIPTION_LINES
@@ -97,7 +98,6 @@ export const TrackDescription = ({ description }: TrackDescriptionProps) => {
     }
   }, [isExpanded, contentHeight, containerHeight, motion.expressive])
 
-  // Early return if no description
   if (!description) return null
 
   return (
