@@ -48,7 +48,6 @@ export const ChatBlastWithAudienceCTA = (
   const { color } = useTheme()
   const { data: currentUserId } = useCurrentUserId()
 
-  // Get the userId based on the audience type
   const followersUserId = useSelector(followersUserListSelectors.getId)
   const supportersUserId = useSelector(topSupportersUserListSelectors.getId)
   const targetUserId =
@@ -56,7 +55,6 @@ export const ChatBlastWithAudienceCTA = (
       ? followersUserId
       : supportersUserId
 
-  // Check if the current user is the profile owner
   const isOwner = currentUserId === targetUserId
 
   const dispatch = useDispatch()
@@ -66,7 +64,6 @@ export const ChatBlastWithAudienceCTA = (
   }, [audience, dispatch, onClick])
 
   const userMeetsRequirements = useCanSendChatBlast()
-  // Only show if the user can send blast messages and is the profile owner
   if (!userMeetsRequirements || !messages || !isOwner) {
     return null
   }
