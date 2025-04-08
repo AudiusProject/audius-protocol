@@ -3,6 +3,7 @@ import {
   remoteConfigReducer as remoteConfig,
   reducers as clientStoreReducers
 } from '@audius/common/store'
+import { QueryClient } from '@tanstack/react-query'
 import localForage from 'localforage'
 import { combineReducers, Reducer } from 'redux'
 
@@ -24,12 +25,15 @@ import userListModal from 'store/application/ui/userListModal/slice'
 import dragndrop from 'store/dragndrop/slice'
 import error from 'store/errors/reducers'
 
+const queryClientReducer = (state: QueryClient | null = null) => state
+
 const createRootReducer = (routerReducer: Reducer) => {
   const commonStoreReducers = clientStoreReducers(localForage)
 
   return combineReducers({
     // Common store
     ...commonStoreReducers,
+    queryClient: queryClientReducer,
     // These also belong in common store reducers but are here until we move them to the @audius/common package.
     backend,
     signOn: signOnReducer,
