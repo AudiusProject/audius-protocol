@@ -31,7 +31,7 @@ export const SellTab = ({ tokenPair }: SellTabProps) => {
         title='You Pay'
         tokenInfo={baseToken}
         isInput={true}
-        amount={baseAmount}
+        amount={parseFloat(baseAmount)}
         onAmountChange={handleBaseAmountChange}
         onMaxClick={handleMaxClick}
         availableBalance={baseToken.balance}

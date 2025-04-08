@@ -2,25 +2,6 @@ import { IconLogoCircle, IconLogoCircleUSDC } from '@audius/harmony'
 
 import { TokenInfo, TokenPair } from './types'
 
-export const messages = {
-  title: 'BUY / SELL',
-  buy: 'Buy',
-  sell: 'Sell',
-  youPay: 'You Pay',
-  youReceive: 'You Receive',
-  amountUSDC: 'Amount (USDC)',
-  amountAUDIO: 'Amount (AUDIO)',
-  max: 'MAX',
-  available: 'Available',
-  audioTicker: '$AUDIO',
-  usdcTicker: 'USDC',
-  continue: 'Continue',
-  poweredBy: 'POWERED BY',
-  helpCenter: 'Check out our help center for more info!',
-  walletGuide: 'Wallet Guide',
-  selectPair: 'Select Token Pair'
-}
-
 // Token metadata
 export const TOKENS: Record<string, TokenInfo> = {
   AUDIO: {

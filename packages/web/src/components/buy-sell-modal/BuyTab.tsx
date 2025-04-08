@@ -31,7 +31,7 @@ export const BuyTab = ({ tokenPair }: BuyTabProps) => {
         title='You Pay'
         tokenInfo={quoteToken}
         isInput={true}
-        amount={quoteAmount}
+        amount={parseFloat(quoteAmount)}
         onAmountChange={handleQuoteAmountChange}
         onMaxClick={handleMaxClick}
         availableBalance={quoteToken.balance}

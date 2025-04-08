@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { buySellMessages as messages } from '@audius/common/messages'
 import { useBuySellModal } from '@audius/common/store'
 import {
   Button,
@@ -11,26 +12,32 @@ import {
   ModalHeader,
   ModalTitle,
   SegmentedControl,
-  Text
+  Text,
+  TextLink
 } from '@audius/harmony'
 import { useTheme } from '@emotion/react'
 
 import { BuyTab } from './BuyTab'
 import { SellTab } from './SellTab'
-import { SUPPORTED_TOKEN_PAIRS, TOKENS, messages } from './constants'
+import { SUPPORTED_TOKEN_PAIRS, TOKENS } from './constants'
 import { BuySellTab } from './types'
 
 // import { useIsMobile } from 'hooks/useIsMobile' // Keep for potential mobile-specific adjustments - Removing for now
 
+type TabOption = {
+  key: BuySellTab
+  text: string
+}
+
 export const BuySellModal = () => {
   const { isOpen, onClose } = useBuySellModal()
-  const { spacing } = useTheme()
+  const { spacing, color } = useTheme()
   // const isMobile = useIsMobile() // Keep for potential mobile-specific adjustments - Removing for now
   const [activeTab, setActiveTab] = useState<BuySellTab>('buy')
   // selectedPairIndex will be used in future when multiple token pairs are supported
   const [selectedPairIndex] = useState(0)
 
-  const tabs = [
+  const tabs: TabOption[] = [
     { key: 'buy', text: messages.buy },
     { key: 'sell', text: messages.sell }
   ]
@@ -44,20 +51,14 @@ export const BuySellModal = () => {
 
   const selectedPair = SUPPORTED_TOKEN_PAIRS[selectedPairIndex]
 
-  const handleTabChange = useCallback((newTab: string) => {
-    setActiveTab(newTab as BuySellTab)
+  const handleActiveTabChange = useCallback((newTab: BuySellTab) => {
+    setActiveTab(newTab)
   }, [])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size='medium'>
       <ModalHeader onClose={onClose} showDismissButton={true}>
-        <ModalTitle
-          title={
-            <Text variant='label' size='xl' strength='strong'>
-              {messages.title}
-            </Text>
-          }
-        />
+        <ModalTitle title={messages.title} />
       </ModalHeader>
       <ModalContent>
         <Flex direction='column' gap='l'>
@@ -65,7 +66,7 @@ export const BuySellModal = () => {
             <SegmentedControl
               options={tabs}
               selected={activeTab}
-              onSelectOption={handleTabChange}
+              onSelectOption={handleActiveTabChange}
               css={{ flex: 1 }}
             />
           </Flex>
@@ -78,13 +79,12 @@ export const BuySellModal = () => {
 
           <Hint>
             {messages.helpCenter}{' '}
-            <Text
-              variant='body'
-              color='accent'
-              css={{ textDecoration: 'underline' }}
+            <TextLink
+              variant='visible'
+              href='#' // Replace with actual URL when available
             >
               {messages.walletGuide}
-            </Text>
+            </TextLink>
           </Hint>
 
           <Button variant='primary' fullWidth>
@@ -96,8 +96,8 @@ export const BuySellModal = () => {
         css={{
           justifyContent: 'center',
           gap: spacing.s,
-          borderTop: '1px solid var(--harmony-border-strong)',
-          backgroundColor: 'var(--harmony-bg-surface-1)'
+          borderTop: `1px solid ${color.border.strong}`,
+          backgroundColor: color.background.surface1
         }}
       >
         <Text variant='label' size='xs' color='subdued'>
