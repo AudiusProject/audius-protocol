@@ -165,16 +165,7 @@ export const AudioScreen = () => {
                 style={styles.spinner}
               />
             ) : (
-              <Text
-                variant='heading'
-                color='white'
-                strength='strong'
-                style={css({
-                  fontSize: 80,
-                  lineHeight: 96,
-                  paddingVertical: 8
-                })}
-              >
+              <Text variant='display' size='l' color='white' strength='strong'>
                 {AUDIO(totalBalance).toShorthand()}
               </Text>
             )}
