@@ -62,9 +62,13 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
     FeatureFlags.COMMENTS_ENABLED
   )
 
-  useRemixes({
-    trackId
-  })
+  useRemixes(
+    {
+      trackId,
+      includeOriginal: false
+    },
+    { refetchOnMount: 'always' } // force refresh required until migrated lineup to TQ below
+  )
 
   const handlePlay = useCallback(
     (uid?: string) => {

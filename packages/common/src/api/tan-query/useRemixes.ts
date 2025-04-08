@@ -88,6 +88,7 @@ export const useRemixes = (
       return allPages.length * pageSize
     },
     queryFn: async ({ pageParam }) => {
+      console.log('asdf querying')
       const sdk = await audiusSdk()
       const { data = { count: 0, tracks: [] } } =
         await sdk.full.tracks.getTrackRemixes({
@@ -135,7 +136,10 @@ export const useRemixes = (
     ...options,
     enabled: options?.enabled !== false && !!trackId
   })
-
+  const cachedData = queryClient.getQueryData(
+    getRemixesQueryKey({ trackId, pageSize, includeOriginal })
+  )
+  console.log('asdf cached Data:', cachedData)
   return useLineupQuery({
     queryData,
     queryKey: getRemixesQueryKey({
