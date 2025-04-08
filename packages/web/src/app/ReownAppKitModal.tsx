@@ -21,38 +21,22 @@ export const audiusChain = {
   }
 } as const satisfies Chain
 
-// 1. Get projectId from https://cloud.reown.com
 const projectId = env.REOWN_PROJECT_ID
-
-// 2. Create a metadata object - optional
-const metadata = {
-  name: 'Audius',
-  description: 'Artists Deserve More',
-  url: env.AUDIUS_URL,
-  icons: ['https://assets.reown.com/reown-profile-pic.png'] // TODO: Add our own icon?
-}
-
-// 3. Set the networks
 const networks: [AppKitNetwork, ...AppKitNetwork[]] = [
   mainnet,
   solana,
   audiusChain
 ]
-
-// 4. Create Wagmi Adapter
 export const wagmiAdapter = new WagmiAdapter({
   networks,
   projectId
 })
-
 const solanaAdapter = new SolanaAdapter()
 
-// 5. Create modal
 export const appkitModal = createAppKit({
   adapters: [wagmiAdapter, solanaAdapter],
   networks,
   projectId,
-  metadata,
   themeVariables: {
     '--w3m-z-index': zIndex.REOWN_APPKIT_MODAL // above ConnectWalletModal
   },
