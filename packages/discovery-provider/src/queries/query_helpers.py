@@ -2,6 +2,7 @@
 import enum
 import json
 import logging
+import random
 import re
 from collections import defaultdict
 from typing import List, Optional, Tuple, TypedDict
@@ -732,6 +733,8 @@ def get_content_url_with_mirrors(
             f"helpers.py | get_content_url_with_mirrors | No Content Nodes found for CID {cid}"
         )
         return {"url": None, "mirrors": []}
+
+    random.shuffle(content_nodes)
 
     # Add additional query parameters
     joined_url = urljoin(content_nodes[0], path)
