@@ -1,4 +1,4 @@
-import { Flex, IconArrowRight, Paper, PlainButton } from '@audius/harmony'
+import { IconArrowRight, Paper, PlainButton } from '@audius/harmony'
 
 import {
   UserProfileListProps,
