@@ -1,6 +1,6 @@
 import { Fragment, useCallback, useState } from 'react'
 
-import { useRelatedArtists } from '@audius/common/api'
+import { useRelatedArtistsUsers } from '@audius/common/api'
 import { FollowSource } from '@audius/common/models'
 import type { User } from '@audius/common/models'
 import { usersSocialActions } from '@audius/common/store'
@@ -45,7 +45,7 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
   const dispatch = useDispatch()
   const [hasFollowedAll, setHasFollowedAll] = useState(false)
 
-  const { data: suggestedArtists = [], isPending } = useRelatedArtists({
+  const { data: suggestedArtists = [], isPending } = useRelatedArtistsUsers({
     artistId: user_id,
     filterFollowed: true,
     pageSize: 7

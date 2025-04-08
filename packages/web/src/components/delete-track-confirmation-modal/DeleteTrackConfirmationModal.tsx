@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useDeleteTrack } from '@audius/common/api'
 import { useDeleteTrackConfirmationModal } from '@audius/common/store'
 
 import { DeleteConfirmationModal } from 'components/delete-confirmation'
@@ -11,17 +12,18 @@ const messages = {
 
 export const DeleteTrackConfirmationModal = () => {
   const { data, isOpen, onClose } = useDeleteTrackConfirmationModal()
-  const { confirmCallback, cancelCallback } = data
+  const { trackId } = data
+  const { mutateAsync: deleteTrack } = useDeleteTrack()
 
   const handleConfirm = useCallback(() => {
-    confirmCallback()
+    if (!trackId) return
+    deleteTrack({ trackId, source: 'delete_track_confirmation_modal' })
     onClose()
-  }, [confirmCallback, onClose])
+  }, [trackId, deleteTrack, onClose])
 
   const handleCancel = useCallback(() => {
-    cancelCallback?.()
     onClose()
-  }, [cancelCallback, onClose])
+  }, [onClose])
 
   return (
     <DeleteConfirmationModal

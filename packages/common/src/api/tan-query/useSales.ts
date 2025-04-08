@@ -1,5 +1,7 @@
+import { useMemo } from 'react'
+
 import { full, Id } from '@audius/sdk'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { InfiniteData, useInfiniteQuery } from '@tanstack/react-query'
 
 import { purchaseFromSDK } from '~/adapters/purchase'
 import { useAudiusQueryContext } from '~/audius-query'
@@ -10,7 +12,7 @@ import {
 } from '~/models/USDCTransactions'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCollections } from './useCollections'
 import { useTracks } from './useTracks'
 import { useUsers } from './useUsers'
@@ -29,11 +31,12 @@ export const getSalesQueryKey = ({
   sortMethod,
   sortDirection,
   pageSize = PAGE_SIZE
-}: GetSalesListArgs) => [
-  QUERY_KEYS.sales,
-  userId,
-  { sortMethod, sortDirection, pageSize }
-]
+}: GetSalesListArgs) =>
+  [
+    QUERY_KEYS.sales,
+    userId,
+    { sortMethod, sortDirection, pageSize }
+  ] as unknown as QueryKey<InfiniteData<USDCPurchaseDetails[]>>
 
 export const useSales = (args: GetSalesListArgs, options?: QueryOptions) => {
   const { userId, sortMethod, sortDirection, pageSize = PAGE_SIZE } = args
@@ -62,24 +65,32 @@ export const useSales = (args: GetSalesListArgs, options?: QueryOptions) => {
       })
       return data.map(purchaseFromSDK)
     },
+    select: (data) => data.pages.flat(),
     ...options,
     enabled: options?.enabled !== false && !!args.userId
   })
 
-  const pages = queryResult.data?.pages
-  const lastPage = pages?.[pages.length - 1]
-  const userIdsToFetch = lastPage?.map(({ buyerUserId }) => buyerUserId)
-  const trackIdsToFetch = lastPage
-    ?.filter(({ contentType }) => contentType === USDCContentPurchaseType.TRACK)
-    .map(({ contentId }) => contentId)
-  const collectionIdsToFetch = lastPage
-    ?.filter(({ contentType }) => contentType === USDCContentPurchaseType.ALBUM)
-    .map(({ contentId }) => contentId)
+  const { userIdsToFetch, trackIdsToFetch, collectionIdsToFetch } = useMemo(
+    () => ({
+      userIdsToFetch: queryResult.data?.map(({ buyerUserId }) => buyerUserId),
+      trackIdsToFetch: queryResult.data
+        ?.filter(
+          ({ contentType }) => contentType === USDCContentPurchaseType.TRACK
+        )
+        .map(({ contentId }) => contentId),
+      collectionIdsToFetch: queryResult.data
+        ?.filter(
+          ({ contentType }) => contentType === USDCContentPurchaseType.ALBUM
+        )
+        .map(({ contentId }) => contentId)
+    }),
+    [queryResult.data]
+  )
 
   // Call the hooks dropping results to pre-fetch the data
   useUsers(userIdsToFetch)
   useTracks(trackIdsToFetch)
   useCollections(collectionIdsToFetch)
 
-  return { ...queryResult, data: queryResult.data?.pages.flat() }
+  return queryResult
 }

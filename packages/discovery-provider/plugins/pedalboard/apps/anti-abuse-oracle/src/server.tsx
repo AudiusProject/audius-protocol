@@ -12,7 +12,6 @@ import {
   type ActionRow,
   type TrackDetails,
   type UserDetails,
-  getAAOAttestation,
   queryUsers
 } from './actionLog'
 import { logger } from 'hono/logger'
@@ -43,10 +42,110 @@ if (!AAO_AUTH_PASSWORD) {
   )
 }
 
+async function ensureTableExists() {
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS anti_abuse_blocked_users (
+        handle_lc VARCHAR(255) PRIMARY KEY,
+        is_blocked BOOLEAN NOT NULL DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `
+  } catch (error) {
+    console.error(
+      'Error ensuring anti_abuse_blocked_users table exists:',
+      error
+    )
+    process.exit(1) // Exit the process if table creation fails
+  }
+}
+
+ensureTableExists()
+
 const app = new Hono()
 
 app.use(logger())
 app.use('/attestation/*', cors())
+
+app.post(
+  '/attestation/block-user',
+  basicAuth({
+    username: AAO_AUTH_USER,
+    password: AAO_AUTH_PASSWORD
+  }),
+  async (c) => {
+    const formData = await c.req.parseBody()
+    const handle = formData.handle as string
+    if (!handle) {
+      return c.text('Handle is required', 400)
+    }
+
+    try {
+      await sql`
+      INSERT INTO anti_abuse_blocked_users (
+        handle_lc,
+        is_blocked,
+        created_at,
+        updated_at
+      ) VALUES (
+        ${handle.toLowerCase()},
+        TRUE,  -- is_blocked
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+      )
+      ON CONFLICT (handle_lc)
+      DO UPDATE SET
+        is_blocked = EXCLUDED.is_blocked,
+        updated_at = CURRENT_TIMESTAMP;
+    `
+      return c.redirect(`/attestation/ui/user?q=${encodeURIComponent(handle)}`)
+    } catch (error) {
+      console.error('Error blocking user:', error)
+      return c.text('Failed to block user', 500)
+    }
+  }
+)
+
+app.post(
+  '/attestation/unblock-user',
+  basicAuth({
+    username: AAO_AUTH_USER,
+    password: AAO_AUTH_PASSWORD
+  }),
+  async (c) => {
+    const formData = await c.req.parseBody()
+
+    const handle = formData.handle as string
+    if (!handle) {
+      return c.text('Handle is required', 400)
+    }
+
+    try {
+      await sql`
+      INSERT INTO anti_abuse_blocked_users (
+        handle_lc,
+        is_blocked,
+        created_at,
+        updated_at
+      ) VALUES (
+        ${handle.toLocaleLowerCase()},
+        FALSE,  -- is_blocked
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+      )
+      ON CONFLICT (handle_lc)
+      DO UPDATE SET
+        is_blocked = EXCLUDED.is_blocked,
+        updated_at = CURRENT_TIMESTAMP;
+    `
+      return c.redirect(`/attestation/ui/user?q=${encodeURIComponent(handle)}`)
+    } catch (error) {
+      console.error('Error unblocking user:', error)
+      return c.text('Failed to block user', 500)
+    }
+  }
+)
 
 app.post('/attestation/:handle', async (c) => {
   const handle = c.req.param('handle').toLowerCase()
@@ -55,9 +154,13 @@ app.post('/attestation/:handle', async (c) => {
   const users =
     await sql`select user_id, wallet from users where handle_lc = ${handle}`
   const user = users[0]
-  if (!user) return c.text(`handle not found: ${handle}`, 404)
+  if (!user) return c.json({ error: `handle not found: ${handle}` }, 404)
 
-  // TODO: check score
+  // pass / fail
+  const userScore = await getUserNormalizedScore(user.user_id)
+  if (userScore.overallScore < 0) {
+    return c.json({ error: 'denied' }, 400)
+  }
 
   try {
     const bnAmount = SolanaUtils.uiAudioToBNWaudio(amount)
@@ -81,7 +184,7 @@ app.post('/attestation/:handle', async (c) => {
     return c.json({ result })
   } catch (error) {
     console.log(`Something went wrong: ${error}`)
-    return c.text(`Something went wrong`, 500)
+    return c.json({ error: `Something went wrong` }, 500)
   }
 })
 
@@ -98,7 +201,20 @@ app.use(
 )
 
 app.get('/attestation/ui', async (c) => {
-  const tips = await recentTips()
+  const page = parseInt(c.req.query('page') || '0')
+  const recentUsers = await getRecentUsers(page)
+  const userScores = recentUsers
+    ? await Promise.all(
+        recentUsers.map(async (user) => {
+          const [userScore] = await Promise.all([
+            getUserNormalizedScore(user.id)
+          ])
+          return {
+            ...userScore
+          }
+        })
+      )
+    : []
 
   let lastDate = ''
   function dateHeader(timestamp: Date) {
@@ -114,9 +230,8 @@ app.get('/attestation/ui', async (c) => {
           </tr>
           <tr>
             <th>Timestamp</th>
-            <th>Sender</th>
-            <th>Receiver</th>
-            <th>Amount</th>
+            <th>Handle</th>
+            <th>Overall Score</th>
           </tr>
         </>
       )
@@ -126,34 +241,43 @@ app.get('/attestation/ui', async (c) => {
 
   return c.html(
     <Layout container>
-      <h1 class='text-4xl font-bold mt-8'>Recent Tips</h1>
+      <h1 class='text-4xl font-bold mt-8'>Recent Users</h1>
       <table class='table'>
         <tbody>
-          {tips.map((tip) => (
+          {userScores.map((userScore) => (
             <>
-              {dateHeader(tip.timestamp)}
-              <tr>
-                <td>{tip.timestamp.toLocaleTimeString()}</td>
+              {dateHeader(userScore.timestamp)}
+              <tr className={userScore.overallScore < 0 ? 'bg-red-100' : ''}>
+                <td>{userScore.timestamp.toLocaleTimeString()}</td>
                 <td>
                   <a
-                    href={`/attestation/ui/user?q=${encodeURIComponent(tip.sender.handle)}`}
+                    href={`/attestation/ui/user?q=${encodeURIComponent(userScore.handleLowerCase)}`}
                   >
-                    {tip.sender.handle}
+                    {userScore.handleLowerCase}
                   </a>
                 </td>
-                <td>
-                  <a
-                    href={`/attestation/ui/user?q=${encodeURIComponent(tip.receiver.handle)}`}
-                  >
-                    {tip.receiver.handle}
-                  </a>
-                </td>
-                <td class='text-right'>{tip.amount / 100_000_000}</td>
+                <td>{userScore.overallScore}</td>
               </tr>
             </>
           ))}
         </tbody>
       </table>
+
+      <div class='flex'>
+        <a
+          href={`/attestation/ui?page=${encodeURIComponent(page - 1)}`}
+          class='flex items-center justify-center px-3 h-8 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+        >
+          Previous
+        </a>
+
+        <a
+          href={`/attestation/ui?page=${encodeURIComponent(page + 1)}`}
+          class='flex items-center justify-center px-3 h-8 ms-3 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+        >
+          Next
+        </a>
+      </div>
     </Layout>
   )
 })
@@ -208,9 +332,9 @@ app.get('/attestation/ui/user', async (c) => {
             </div>
             <div class='flex gap-2 mt-2 items-center'>
               <div
-                className={`badge badge-xl ${userScore.overallScore < 0 ? 'badge-error' : 'badge-neutral'}`}
+                className={`badge badge-xl ${userScore.overallScore < 0 ? 'badge-error' : 'badge-success'}`}
               >
-                {(userScore.normalizedScore * 100).toFixed(0)}%
+                {userScore.overallScore}
               </div>{' '}
               {Object.entries(signals).map(([name, ok]) => (
                 <div
@@ -230,19 +354,124 @@ app.get('/attestation/ui/user', async (c) => {
               <th class='text-left'>Follower Count</th>
               <th class='text-left'>Fast Challenge Count</th>
               <th class='text-left'>Following Count</th>
-              <th class='text-left'>Fingerprint Count</th>
-              <th class='text-left'>Overall Score</th>
+              <th class='text-left'>Chat Block Count</th>
+              <th class='text-left'>Audius Impersonator</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>{userScore.playCount}</td>
-              <td>{userScore.followerCount}</td>
-              <td>{userScore.challengeCount}</td>
-              <td>{userScore.followingCount}</td>
-              <td>{userScore.fingerprintCount}</td>
-              <td>{userScore.overallScore}</td>
+              <td class={userScore.playCount > 0 ? 'text-green-500' : ''}>
+                {userScore.playCount}
+              </td>
+              <td class={userScore.followerCount > 0 ? 'text-green-500' : ''}>
+                {userScore.followerCount}
+              </td>
+              <td class={userScore.challengeCount > 0 ? 'text-red-500' : ''}>
+                {userScore.challengeCount}
+              </td>
+              <td
+                class={
+                  userScore.followingCount < 5
+                    ? 'text-red-500'
+                    : 'text-green-500'
+                }
+              >
+                {userScore.followingCount}
+              </td>
+              <td
+                class={
+                  userScore.chatBlockCount ? 'text-red-500' : 'text-green-500'
+                }
+              >
+                {userScore.chatBlockCount}
+              </td>
+              <td
+                class={
+                  userScore.isAudiusImpersonator
+                    ? 'text-red-500'
+                    : 'text-green-500'
+                }
+              >
+                {userScore.isAudiusImpersonator.toString()}
+              </td>
+
+              <td
+                class={
+                  userScore.shadowbanScore < 0
+                    ? 'text-red-500'
+                    : 'text-green-500'
+                }
+              >{`${userScore.shadowbanScore < 0 ? 'Shadowbanned' : 'Not shadowbanned'} from notifications.`}</td>
             </tr>
+          </tbody>
+        </table>
+        <table>
+          <thead>
+            <tr>
+              <th class='text-left border-left'>Fingerprint Count</th>
+              <th class='text-left'>Override</th>
+              <th class='text-left'>Overall Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            <td class={userScore.fingerprintCount > 0 ? 'text-red-500' : ''}>
+              {userScore.fingerprintCount}
+            </td>
+            <td
+              class={`${
+                userScore.isBlocked
+                  ? 'text-red-500'
+                  : userScore.isBlocked === false
+                    ? 'text-green-500'
+                    : ''
+              }`}
+            >
+              {userScore.isBlocked
+                ? 'Blocked'
+                : userScore.isBlocked === false
+                  ? 'Allowed'
+                  : 'N/A'}
+            </td>
+            <td
+              class={
+                userScore.overallScore >= 0 ? 'text-green-500' : 'text-red-500'
+              }
+            >
+              {userScore.overallScore}
+            </td>
+            <td
+              class={`
+                ${userScore.overallScore < 0 ? 'text-red-500' : 'text-green-500'} flex items-center gap-4
+              `}
+            >
+              {`${userScore.overallScore < 0 ? 'Blocked' : 'Not blocked'} from claiming and DMs.`}
+
+              {userScore.overallScore < 0 ? (
+                <form method='post' action='/attestation/unblock-user'>
+                  <input type='hidden' name='handle' value={user.handle} />
+                  <button
+                    type='submit'
+                    class={
+                      'bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full text-xs cursor-pointer'
+                    }
+                  >
+                    Unblock
+                  </button>
+                </form>
+              ) : (
+                <form method='post' action='/attestation/block-user'>
+                  <input type='hidden' name='handle' value={user.handle} />
+                  <button
+                    type='submit'
+                    class={
+                      'bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full text-xs cursor-pointer'
+                    }
+                  >
+                    Block
+                  </button>
+                </form>
+              )}
+            </td>
           </tbody>
         </table>
 
@@ -300,27 +529,12 @@ app.get('/attestation/ui/user', async (c) => {
   )
 })
 
-app.get('/attestation/ui/recent-users', async (c) => {
-  const page = parseInt(c.req.query('page') || '1')
-  const recentUsers = await getRecentUsers(page)
-  const userScores = recentUsers
-    ? await Promise.all(
-        recentUsers.map(async (user) => {
-          const [userScore, flagged] = await Promise.all([
-            getUserNormalizedScore(user.id),
-            getAAOAttestation(user.handle)
-          ])
-          return {
-            ...userScore,
-            flagged
-          }
-        })
-      )
-    : []
+app.get('/attestation/ui/recent-tips', async (c) => {
+  const tips = await recentTips()
 
   let lastDate = ''
   function dateHeader(timestamp: Date) {
-    const d = timestamp.toDateString()
+    const d = timestamp?.toDateString()
     if (d != lastDate) {
       lastDate = d
       return (
@@ -332,13 +546,9 @@ app.get('/attestation/ui/recent-users', async (c) => {
           </tr>
           <tr>
             <th>Timestamp</th>
-            <th>Handle</th>
-            <th>Listen Activity</th>
-            <th>Follower Count</th>
-            <th>Following Count</th>
-            <th>Fast Challenges</th>
-            <th>Overall Score</th>
-            <th>Normalized Score</th>
+            <th>Sender</th>
+            <th>Receiver</th>
+            <th>Amount</th>
           </tr>
         </>
       )
@@ -348,58 +558,34 @@ app.get('/attestation/ui/recent-users', async (c) => {
 
   return c.html(
     <Layout container>
-      <h1 class='text-4xl font-bold mt-8'>Recent Users</h1>
+      <h1 class='text-4xl font-bold mt-8'>Recent Tips</h1>
       <table class='table'>
         <tbody>
-          {userScores.map((userScore) => (
+          {tips.map((tip) => (
             <>
-              {dateHeader(userScore.timestamp)}
-              <tr
-                className={
-                  userScore?.flagged && userScore.overallScore < 0
-                    ? 'bg-purple-100'
-                    : userScore.overallScore < 0
-                      ? 'bg-red-100'
-                      : userScore?.flagged
-                        ? 'bg-blue-100'
-                        : ''
-                }
-              >
-                <td>{userScore.timestamp.toLocaleTimeString()}</td>
+              {dateHeader(tip.timestamp)}
+              <tr>
+                <td>{tip.timestamp.toLocaleTimeString()}</td>
                 <td>
                   <a
-                    href={`/attestation/ui/user?q=${encodeURIComponent(userScore.handleLowerCase)}`}
+                    href={`/attestation/ui/user?q=${encodeURIComponent(tip.sender.handle)}`}
                   >
-                    {userScore.handleLowerCase}
+                    {tip.sender.handle}
                   </a>
                 </td>
-                <td>{userScore.playCount}</td>
-                <td>{userScore.followerCount}</td>
-                <td>{userScore.followingCount}</td>
-                <td>{userScore.challengeCount}</td>
-                <td>{userScore.overallScore}</td>
-                <td>{userScore.normalizedScore}</td>
+                <td>
+                  <a
+                    href={`/attestation/ui/user?q=${encodeURIComponent(tip.receiver.handle)}`}
+                  >
+                    {tip.receiver.handle}
+                  </a>
+                </td>
+                <td class='text-right'>{tip.amount / 100_000_000}</td>
               </tr>
             </>
           ))}
         </tbody>
       </table>
-
-      <div class='flex'>
-        <a
-          href={`/attestation/ui/recent-users?page=${encodeURIComponent(page - 1)}`}
-          class='flex items-center justify-center px-3 h-8 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
-        >
-          Previous
-        </a>
-
-        <a
-          href={`/attestation/ui/recent-users?page=${encodeURIComponent(page + 1)}`}
-          class='flex items-center justify-center px-3 h-8 ms-3 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
-        >
-          Next
-        </a>
-      </div>
     </Layout>
   )
 })
@@ -489,12 +675,9 @@ function Layout(props: LayoutProps) {
                   type='search'
                   class='input'
                   autocomplete={'off'}
-                  placeholder='Search ID or Handle'
+                  placeholder='Search user handle'
                 />
               </form>
-              <a href='/attestation/ui/recent-users' class='btn'>
-                Recent Users
-              </a>
             </div>
             <div class={props.container ? 'container mx-auto' : ''}>
               {props.children}

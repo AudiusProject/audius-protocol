@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 
 import type { Nullable } from '@audius/common/utils'
 import type { StyleProp, ViewStyle } from 'react-native'
+import { View } from 'react-native'
 
 import type { IconButtonProps } from '@audius/harmony-native'
 import {
@@ -35,7 +36,13 @@ const useStyles = makeStyles(({ spacing }) => ({
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    gap: spacing(2)
+    gap: spacing(2),
+    maxWidth: '100%',
+    flexShrink: 1
+  },
+  textContainer: {
+    flex: 1,
+    minWidth: 0 // Needed for text truncation to work properly
   }
 }))
 
@@ -76,19 +83,25 @@ export const SocialLink = (props: SocialLinkProps) => {
         {...other}
       >
         {iconButtonElement}
-        {hyperlink ? (
-          <UserGeneratedText variant='body' source='profile page'>
-            {text}
-          </UserGeneratedText>
-        ) : (
-          <Text
-            variant='body'
-            numberOfLines={1}
-            color={isActive ? 'active' : 'default'}
-          >
-            {text}
-          </Text>
-        )}
+        <View style={styles.textContainer}>
+          {hyperlink ? (
+            <UserGeneratedText
+              variant='body'
+              source='profile page'
+              numberOfLines={1}
+            >
+              {text}
+            </UserGeneratedText>
+          ) : (
+            <Text
+              variant='body'
+              numberOfLines={1}
+              color={isActive ? 'active' : 'default'}
+            >
+              {text}
+            </Text>
+          )}
+        </View>
       </Link>
     )
 

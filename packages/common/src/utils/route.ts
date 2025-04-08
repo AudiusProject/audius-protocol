@@ -79,6 +79,7 @@ export const PAYMENTS_PAGE = '/payments'
 export const PURCHASES_PAGE = '/payments/purchases'
 export const SALES_PAGE = '/payments/sales'
 export const WITHDRAWALS_PAGE = '/payments/withdrawals'
+export const TRANSACTION_HISTORY_PAGE = '/transaction-history'
 export const PRIVATE_KEY_EXPORTER_SETTINGS_PAGE = '/settings/export-private-key'
 
 // Multi-stage sign up flow routes
@@ -362,8 +363,8 @@ export const staticRoutes = new Set([
   CHATS_PAGE
 ])
 
-export const profilePage = (handle: string) => {
-  return `/${encodeUrlName(handle)}`
+export const profilePage = (handle: string | null | undefined) => {
+  return `/${encodeUrlName(handle ?? '')}`
 }
 
 export const collectionPage = (

@@ -1,12 +1,10 @@
-import { Collection } from '@audius/common/models'
-import { collectionPageSelectors, CommonState } from '@audius/common/store'
-import { useSelector } from 'react-redux'
+import { useCollection } from '@audius/common/api'
+import { pick } from 'lodash'
 
 import { EditButton } from './EditButton'
 import { OverflowMenuButton } from './OverflowMenuButton'
 import { PublishButton } from './PublishButton'
 import { ShareButton } from './ShareButton'
-const { getCollection } = collectionPageSelectors
 
 type OwnerActionButtonProps = {
   collectionId: number
@@ -14,15 +12,23 @@ type OwnerActionButtonProps = {
 
 export const OwnerActionButtons = (props: OwnerActionButtonProps) => {
   const { collectionId } = props
-  const collection = useSelector((state: CommonState) =>
-    getCollection(state, { id: collectionId })
-  ) as Collection
-  const { is_private, is_album, playlist_contents, ddex_app } = collection ?? {}
-  const track_count = playlist_contents.track_ids.length
+  const { data: partialCollection } = useCollection(collectionId, {
+    select: (collection) =>
+      pick(
+        collection,
+        'is_private',
+        'is_album',
+        'playlist_contents',
+        'ddex_app'
+      )
+  })
+  const { is_private, is_album, playlist_contents, ddex_app } =
+    partialCollection ?? {}
+  const track_count = playlist_contents?.track_ids.length ?? 0
 
   const isDisabled = !track_count || track_count === 0
 
-  if (!collection) return null
+  if (!partialCollection) return null
 
   return (
     <>

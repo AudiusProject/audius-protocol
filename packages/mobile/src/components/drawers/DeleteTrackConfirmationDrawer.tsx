@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
-import { cacheTracksActions } from '@audius/common/store'
-import { useDispatch } from 'react-redux'
+import { useDeleteTrack } from '@audius/common/api'
 
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -9,8 +8,6 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { navigationRef } from '../navigation-container/NavigationContainer'
 
 import { ConfirmationDrawer } from './ConfirmationDrawer'
-
-const { deleteTrack } = cacheTracksActions
 
 const messages = {
   header: 'Delete Track',
@@ -24,16 +21,20 @@ const drawerName = 'DeleteTrackConfirmation'
 export const DeleteTrackConfirmationDrawer = () => {
   const { data } = useDrawer(drawerName)
   const { trackId } = data
-  const dispatch = useDispatch()
   const navigation = useNavigation()
 
+  const { mutateAsync: deleteTrack } = useDeleteTrack()
+
   const handleConfirm = useCallback(() => {
-    dispatch(deleteTrack(trackId))
+    deleteTrack({
+      trackId,
+      source: 'delete_track_confirmation_drawer'
+    })
     const currentRouteName = navigationRef.getCurrentRoute()?.name
     if (currentRouteName === 'Track') {
       navigation.goBack()
     }
-  }, [dispatch, trackId, navigation])
+  }, [deleteTrack, trackId, navigation])
 
   return (
     <ConfirmationDrawer

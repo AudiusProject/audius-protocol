@@ -14,7 +14,12 @@ import {
   userCollectionMetadataFromSDK,
   userTrackMetadataFromSDK
 } from '~/adapters'
-import { getUserCollectiblesQueryKey } from '~/api/tan-query/useUserCollectibles'
+import {
+  queryCollection,
+  queryTrack,
+  getUserCollectiblesQueryKey,
+  queryAllTracks
+} from '~/api'
 import {
   Chain,
   Collectible,
@@ -32,7 +37,7 @@ import {
 import { User } from '~/models/User'
 import { IntKeys } from '~/services/remote-config'
 import { accountSelectors } from '~/store/account'
-import { cacheActions, cacheTracksSelectors } from '~/store/cache'
+import { cacheActions } from '~/store/cache'
 import { collectiblesActions } from '~/store/collectibles'
 import { getContext } from '~/store/effects'
 import { musicConfettiActions } from '~/store/music-confetti'
@@ -40,8 +45,6 @@ import { usersSocialActions } from '~/store/social'
 import { tippingActions } from '~/store/tipping'
 import { Nullable } from '~/utils/typeUtils'
 
-import { getCollection } from '../cache/collections/selectors'
-import { getTrack } from '../cache/tracks/selectors'
 import { PurchaseableContentType } from '../purchase-content'
 import { getSDK } from '../sdkUtils'
 
@@ -71,7 +74,6 @@ const { getNftAccessSignatureMap, getFolloweeIds, getTippedUserIds } =
   gatedContentSelectors
 
 const { getAccountUser, getUserId } = accountSelectors
-const { getTracks } = cacheTracksSelectors
 
 function* hasNotFetchedAllCollectibles(account: User) {
   const { collectibleList, solanaCollectibleList } = account
@@ -284,7 +286,7 @@ function* updateCollectibleGatedTracks(trackMap: { [id: ID]: string[] }) {
       return
     }
     trackIds.push(id)
-    tokenIds.push(trackMap[trackId].join('-'))
+    tokenIds.push(trackMap[id].join('-'))
   })
   const { data: nftGatedTrackSignatureResponse = {} } = yield* call(
     [sdk.full.tracks, sdk.full.tracks.getNFTGatedTrackSignatures],
@@ -389,7 +391,7 @@ function* updateGatedContentAccess(
   if (yield* call(hasNotFetchedAllCollectibles, account)) return
 
   // halt if no tracks in cache and no added tracks
-  const cachedTracks = yield* select(getTracks, {})
+  const cachedTracks = yield* queryAllTracks()
   const newlyUpdatedTracks = areTracksUpdated ? action.entries : []
   if (!Object.keys(cachedTracks).length && !newlyUpdatedTracks.length) return
 
@@ -421,7 +423,7 @@ function* updateGatedContentAccess(
     const {
       stream_conditions: streamConditions,
       download_conditions: downloadConditions
-    } = allTracks[trackId]
+    } = allTracks[id]
     const isCollectibleGated =
       isContentCollectibleGated(streamConditions) ||
       isContentCollectibleGated(downloadConditions)
@@ -464,10 +466,8 @@ export function* pollGatedContent({
   // get initial track metadata to determine whether we are polling for stream or download access
   const isAlbum = contentType === PurchaseableContentType.ALBUM
   const cachedEntity = isAlbum
-    ? yield* select(getCollection, { id: contentId })
-    : yield* select(getTrack, {
-        id: contentId
-      })
+    ? yield* queryCollection(contentId)
+    : yield* queryTrack(contentId)
   const initiallyHadNoStreamAccess = !cachedEntity?.access.stream
   const initiallyHadNoDownloadAccess = !cachedEntity?.access.download
 
@@ -612,7 +612,7 @@ function* updateSpecialAccessTracks(
 
   const statusMap: { [id: ID]: GatedContentStatus } = {}
   const tracksToPoll: Set<ID> = new Set()
-  const cachedTracks = yield* select(getTracks, {})
+  const cachedTracks = yield* queryAllTracks()
 
   Object.keys(cachedTracks).forEach((trackId) => {
     const id = parseInt(trackId)
@@ -667,7 +667,7 @@ function* handleUnfollowUser(
 
   const statusMap: { [id: ID]: GatedContentStatus } = {}
   const revokeAccessMap: { [id: ID]: 'stream' | 'download' } = {}
-  const cachedTracks = yield* select(getTracks, {})
+  const cachedTracks = yield* queryAllTracks()
 
   Object.keys(cachedTracks).forEach((trackId) => {
     const id = parseInt(trackId)
@@ -721,11 +721,11 @@ function* handleTipGatedTracks(
 function* handleRevokeAccess(action: ReturnType<typeof revokeAccess>) {
   const { revokeAccessMap } = action.payload
   const metadatas = Object.keys(revokeAccessMap).map((trackId) => {
+    const id = parseInt(trackId)
     const access =
-      revokeAccessMap[trackId] === 'stream'
+      revokeAccessMap[id] === 'stream'
         ? { stream: false, download: false }
         : { stream: true, download: false }
-    const id = parseInt(trackId)
     return {
       id,
       metadata: { access }

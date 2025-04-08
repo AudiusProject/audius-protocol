@@ -1,5 +1,5 @@
 import { Id } from '@audius/sdk'
-import { InfiniteData, QueryKey, useInfiniteQuery } from '@tanstack/react-query'
+import { InfiniteData, useInfiniteQuery } from '@tanstack/react-query'
 
 import { notificationFromSDK, transformAndCleanList } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
@@ -11,7 +11,7 @@ import {
 } from '~/store/notifications/types'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCollections } from './useCollections'
 import { useCurrentUserId } from './useCurrentUserId'
 import { useNotificationValidTypes } from './useNotificationValidTypes'
@@ -27,9 +27,9 @@ type PageParam = {
 } | null
 
 type EntityIds = {
-  userIds: Set<ID>
-  trackIds: Set<ID>
-  collectionIds: Set<ID>
+  userIds: ID[]
+  trackIds: ID[]
+  collectionIds: ID[]
 }
 
 const collectEntityIds = (notifications: Notification[]): EntityIds => {
@@ -41,12 +41,16 @@ const collectEntityIds = (notifications: Notification[]): EntityIds => {
     const { type } = notification
     if (type === NotificationType.UserSubscription) {
       if (notification.entityType === Entity.Track) {
-        notification.entityIds.forEach((id) => trackIds.add(id))
+        if (notification.entityIds.length === 1) {
+          trackIds.add(notification.entityIds[0])
+        }
       } else if (
         notification.entityType === Entity.Playlist ||
         notification.entityType === Entity.Album
       ) {
-        notification.entityIds.forEach((id) => collectionIds.add(id))
+        if (notification.entityIds.length === 1) {
+          collectionIds.add(notification.entityIds[0])
+        }
       }
       userIds.add(notification.userId)
     }
@@ -83,7 +87,7 @@ const collectEntityIds = (notifications: Notification[]): EntityIds => {
       trackIds.add(notification.parentTrackId).add(notification.childTrackId)
     }
     if (type === NotificationType.RemixCosign) {
-      trackIds.add(notification.childTrackId)
+      notification.entityIds.forEach((id) => trackIds.add(id))
       userIds.add(notification.parentTrackUserId)
     }
     if (
@@ -145,11 +149,17 @@ const collectEntityIds = (notifications: Notification[]): EntityIds => {
       if (notification.entityType === Entity.Track) {
         trackIds.add(notification.entityId)
       }
-      notification.userIds.forEach((id) => userIds.add(id))
+      notification.userIds
+        .slice(0, USER_INITIAL_LOAD_COUNT)
+        .forEach((id) => userIds.add(id))
     }
   })
 
-  return { userIds, trackIds, collectionIds }
+  return {
+    userIds: Array.from(userIds),
+    trackIds: Array.from(trackIds),
+    collectionIds: Array.from(collectionIds)
+  }
 }
 
 export const getNotificationsQueryKey = ({
@@ -158,7 +168,12 @@ export const getNotificationsQueryKey = ({
 }: {
   currentUserId: ID | null | undefined
   pageSize: number
-}) => [QUERY_KEYS.notifications, currentUserId, { pageSize }]
+}) =>
+  [
+    QUERY_KEYS.notifications,
+    currentUserId,
+    { pageSize }
+  ] as unknown as QueryKey<InfiniteData<Notification[]>>
 
 /**
  * Hook that returns paginated notifications for the current user.
@@ -171,13 +186,7 @@ export const useNotifications = (options?: QueryOptions) => {
   const validTypes = useNotificationValidTypes()
   const pageSize = DEFAULT_LIMIT
 
-  const query = useInfiniteQuery<
-    Notification[],
-    Error,
-    InfiniteData<Notification[]>,
-    QueryKey,
-    PageParam
-  >({
+  const query = useInfiniteQuery({
     queryKey: getNotificationsQueryKey({
       currentUserId,
       pageSize
@@ -193,7 +202,10 @@ export const useNotifications = (options?: QueryOptions) => {
         validTypes
       })
 
-      return transformAndCleanList(data?.notifications, notificationFromSDK)
+      return transformAndCleanList(
+        data?.notifications,
+        notificationFromSDK
+      ) as Notification[]
     },
     getNextPageParam: (lastPage: Notification[]) => {
       const lastNotification = lastPage[lastPage.length - 1]
@@ -212,41 +224,35 @@ export const useNotifications = (options?: QueryOptions) => {
   const lastPage = query.data?.pages[query.data.pages.length - 1]
   const { userIds, trackIds, collectionIds } = lastPage
     ? collectEntityIds(lastPage)
-    : {
-        userIds: new Set<ID>(),
-        trackIds: new Set<ID>(),
-        collectionIds: new Set<ID>()
-      }
+    : { userIds: undefined, trackIds: undefined, collectionIds: undefined }
 
   // Pre-fetch related entities
-  const usersQuery = useUsers(Array.from(userIds))
-  const tracksQuery = useTracks(Array.from(trackIds))
-  const collectionsQuery = useCollections(Array.from(collectionIds))
-
-  // Check if the latest page's entity data is still loading
-  const isLatestPagePending =
-    usersQuery.isPending || tracksQuery.isPending || collectionsQuery.isPending
-
-  const isLatestPageLoading =
-    usersQuery.isLoading || tracksQuery.isLoading || collectionsQuery.isLoading
-
-  const isError =
-    query.isError ||
-    usersQuery.isError ||
-    tracksQuery.isError ||
-    collectionsQuery.isError
+  const { isPending: isUsersPending } = useUsers(userIds)
+  const { isPending: isTracksPending } = useTracks(trackIds)
+  const { isPending: isCollectionsPending } = useCollections(collectionIds)
 
   // Return all pages except the last one if it's still loading entity data
   const notifications = query.data?.pages.slice(0, -1).flat() ?? []
-  if (!isLatestPagePending && lastPage) {
+  if (
+    !query.isPending &&
+    !isUsersPending &&
+    !isTracksPending &&
+    !isCollectionsPending &&
+    lastPage
+  ) {
     notifications.push(...lastPage)
   }
 
-  return {
-    ...query,
-    isPending: query.isPending || isLatestPagePending,
-    isLoading: query.isLoading || isLatestPageLoading,
-    isError,
-    notifications
+  const queryResults = query as typeof query & {
+    notifications: Notification[]
+    isAllPending: boolean
   }
+  queryResults.notifications = notifications
+  queryResults.isAllPending =
+    queryResults.isPending ||
+    isUsersPending ||
+    isTracksPending ||
+    isCollectionsPending
+
+  return queryResults
 }

@@ -1,12 +1,18 @@
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
+import { pick } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { userMetadataFromSDK } from '~/adapters'
 import { transformAndCleanList } from '~/adapters/utils'
 import { useAudiusQueryContext } from '~/audius-query'
+import { ID } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useUsers } from './useUsers'
 import { primeUserData } from './utils/primeUserData'
 
@@ -17,10 +23,10 @@ type UseTopArtistsInGenreArgs = {
   pageSize?: number
 }
 
-export const getTopArtistsInGenreQueryKey = (
-  genre: string,
-  pageSize: number
-) => [QUERY_KEYS.topArtistsInGenre, genre, pageSize]
+export const getTopArtistsInGenreQueryKey = (genre: string, pageSize: number) =>
+  [QUERY_KEYS.topArtistsInGenre, genre, pageSize] as unknown as QueryKey<
+    InfiniteData<ID[]>
+  >
 
 export const useTopArtistsInGenre = (
   args: UseTopArtistsInGenreArgs,
@@ -31,10 +37,16 @@ export const useTopArtistsInGenre = (
   const dispatch = useDispatch()
   const { genre, pageSize = ARTISTS_PER_GENRE_PAGE_SIZE } = args
 
-  const { data: userIds, ...queryResult } = useInfiniteQuery({
+  const simpleOptions = pick(options, [
+    'enabled',
+    'staleTime',
+    'placeholderData'
+  ]) as QueryOptions
+
+  const { data: userIds } = useInfiniteQuery({
     queryKey: getTopArtistsInGenreQueryKey(genre, pageSize),
     initialPageParam: 0,
-    getNextPageParam: (lastPage, allPages) => {
+    getNextPageParam: (lastPage: number[], allPages: number[][]) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -50,14 +62,9 @@ export const useTopArtistsInGenre = (
       return users.map((user) => user.user_id)
     },
     select: (data) => data.pages.flat(),
-    ...options,
-    enabled: options?.enabled !== false && !!genre
+    ...simpleOptions,
+    enabled: simpleOptions?.enabled !== false && !!genre
   })
 
-  const { data: users } = useUsers(userIds)
-
-  return {
-    data: users,
-    ...queryResult
-  }
+  return useUsers(userIds)
 }

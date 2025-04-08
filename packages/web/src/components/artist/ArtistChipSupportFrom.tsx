@@ -1,15 +1,10 @@
-import { useEffect, useState } from 'react'
-
-import { ID, StringWei } from '@audius/common/models'
-import { tippingSelectors } from '@audius/common/store'
-import { stringWeiToBN, formatWei, Nullable } from '@audius/common/utils'
+import { useSupporter } from '@audius/common/api'
+import { ID } from '@audius/common/models'
+import { stringWeiToBN, formatWei } from '@audius/common/utils'
 import { IconTipping as IconTip } from '@audius/harmony'
 import cn from 'classnames'
 
-import { useSelector } from 'common/hooks/useSelector'
-
 import styles from './ArtistChip.module.css'
-const { getOptimisticSupporting } = tippingSelectors
 
 const messages = {
   audio: '$AUDIO'
@@ -24,16 +19,12 @@ export const ArtistChipSupportFrom = ({
   artistId,
   userId
 }: ArtistChipTipsProps) => {
-  const supportingMap = useSelector(getOptimisticSupporting)
-  const [amount, setAmount] = useState<Nullable<StringWei>>(null)
+  const { data: supportFrom } = useSupporter({
+    supporterUserId: userId,
+    userId: artistId
+  })
 
-  useEffect(() => {
-    if (artistId && userId) {
-      const userSupportingMap = supportingMap[userId] ?? {}
-      const artistSupporting = userSupportingMap[artistId] ?? {}
-      setAmount(artistSupporting.amount ?? null)
-    }
-  }, [artistId, supportingMap, userId])
+  const amount = supportFrom?.amount
 
   return (
     <div className={styles.tipContainer}>

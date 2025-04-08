@@ -1,4 +1,12 @@
-import { FavoriteSource, Kind, RepostSource } from '@audius/common/models'
+import {
+  CollectionMetadata,
+  FavoriteSource,
+  Kind,
+  RepostSource,
+  UserMetadata
+} from '@audius/common/models'
+import { primeCollectionDataInternal } from '@audius/common/src/api/tan-query/utils/primeCollectionData'
+import { primeUserDataInternal } from '@audius/common/src/api/tan-query/utils/primeUserData'
 import {
   cacheActions,
   collectionsSocialActions as actions
@@ -7,13 +15,20 @@ import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 import { call, getContext } from 'redux-saga-test-plan/matchers'
 import { StaticProvider } from 'redux-saga-test-plan/providers'
-import { describe, it } from 'vitest'
+import { beforeEach, describe, it } from 'vitest'
 
 import * as sagas from 'common/store/social/collections/sagas'
+import { queryClient } from 'services/query-client'
 import { noopReducer } from 'store/testHelper'
 import { waitForWrite } from 'utils/sagaHelpers'
 
-const repostingUser = { repost_count: 0, handle: 'handle', name: 'name' }
+const repostingUser = {
+  user_id: 3,
+  repost_count: 0,
+  handle: 'handle',
+  name: 'name'
+} as UserMetadata
+
 const defaultProviders: StaticProvider[] = [
   [call.fn(waitForWrite), undefined],
   [
@@ -23,11 +38,32 @@ const defaultProviders: StaticProvider[] = [
         collections: {}
       }
     }
-  ]
+  ],
+  [getContext('queryClient'), queryClient]
 ]
+
+beforeEach(() => {
+  queryClient.clear()
+})
 
 describe('repost', () => {
   it('reposts', async () => {
+    primeCollectionDataInternal({
+      collections: [
+        {
+          playlist_id: 1,
+          playlist_owner_id: 2,
+          repost_count: 5
+        } as CollectionMetadata
+      ],
+      queryClient,
+      forceReplace: true
+    })
+    primeUserDataInternal({
+      users: [repostingUser],
+      queryClient,
+      forceReplace: true
+    })
     await expectSaga(sagas.watchRepostCollection)
       .withReducer(
         combineReducers({
@@ -112,6 +148,22 @@ describe('repost', () => {
   })
 
   it('undoes repost', async () => {
+    primeCollectionDataInternal({
+      collections: [
+        {
+          playlist_id: 1,
+          playlist_owner_id: 2,
+          repost_count: 5
+        } as CollectionMetadata
+      ],
+      queryClient,
+      forceReplace: true
+    })
+    primeUserDataInternal({
+      users: [repostingUser],
+      queryClient,
+      forceReplace: true
+    })
     await expectSaga(sagas.watchUndoRepostCollection)
       .withReducer(
         combineReducers({
@@ -155,6 +207,27 @@ describe('repost', () => {
 
 describe('save', () => {
   it('saves', async () => {
+    primeCollectionDataInternal({
+      collections: [
+        {
+          playlist_id: 1,
+          playlist_name: 'test',
+          playlist_owner_id: 2,
+          save_count: 5,
+          is_album: false
+        } as CollectionMetadata
+      ],
+      queryClient,
+      forceReplace: true
+    })
+    primeUserDataInternal({
+      users: [
+        { user_id: 1, handle: 'saveUser' } as UserMetadata,
+        { user_id: 2, handle: 'otherUser' } as UserMetadata
+      ],
+      queryClient,
+      forceReplace: true
+    })
     await expectSaga(sagas.watchSaveCollection)
       .withReducer(
         combineReducers({
@@ -254,6 +327,27 @@ describe('save', () => {
   })
 
   it('unsaves', async () => {
+    primeCollectionDataInternal({
+      collections: [
+        {
+          playlist_id: 1,
+          playlist_owner_id: 2,
+          save_count: 5,
+          is_album: false
+        } as CollectionMetadata
+      ],
+      queryClient,
+      forceReplace: true
+    })
+    primeUserDataInternal({
+      users: [
+        { user_id: 1, handle: 'saveUser' } as UserMetadata,
+        { user_id: 2, handle: 'otherUser' } as UserMetadata
+      ],
+      queryClient,
+      forceReplace: true
+    })
+
     await expectSaga(sagas.watchUnsaveCollection)
       .withReducer(
         combineReducers({

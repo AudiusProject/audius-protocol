@@ -129,7 +129,7 @@ export function CommentSectionProvider<NavigationProp>(
 
   const {
     data: comments = [],
-    commentIds,
+    commentIds = [],
     status,
     isFetching,
     hasNextPage,

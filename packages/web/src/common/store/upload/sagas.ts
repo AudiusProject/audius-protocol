@@ -6,6 +6,7 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
+import { queryUser } from '@audius/common/api'
 import {
   Collection,
   Feature,
@@ -27,7 +28,6 @@ import {
   accountActions,
   accountSelectors,
   cacheActions,
-  cacheUsersSelectors,
   confirmerActions,
   getContext,
   reformatCollection,
@@ -930,7 +930,7 @@ export function* uploadCollection(
             uploadType
           })
         )
-        const user = yield* select(cacheUsersSelectors.getUser, { id: userId })
+        const user = yield* queryUser(userId)
         yield* put(
           cacheActions.update(Kind.USERS, [
             {

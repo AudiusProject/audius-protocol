@@ -1,5 +1,5 @@
+import { useUser } from '@audius/common/api'
 import { ID } from '@audius/common/models'
-import { cacheUsersSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { IconSize, Text, useTheme } from '@audius/harmony'
 import { Link } from 'react-router-dom'
@@ -7,15 +7,13 @@ import { Link } from 'react-router-dom'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { MountPlacement } from 'components/types'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useSelector } from 'utils/reducer'
 
 import { TextLink, TextLinkProps } from './TextLink'
 
 const { profilePage } = route
-const { getUser } = cacheUsersSelectors
 
 type UserLinkProps = Omit<TextLinkProps, 'to'> & {
-  userId: ID
+  userId: ID | undefined
   badgeSize?: IconSize
   popover?: boolean
   popoverMount?: MountPlacement
@@ -39,13 +37,17 @@ export const UserLink = (props: UserLinkProps) => {
   } = props
   const { spacing } = useTheme()
 
-  const url = useSelector((state) => {
-    const handle = getUser(state, { id: userId })?.handle
-    return handle ? profilePage(handle) : ''
+  const { data: partialUser } = useUser(userId, {
+    select: (user) => {
+      const { handle, name } = user ?? {}
+      return { url: profilePage(handle), handle, name }
+    }
   })
+  const { url = '/', handle, name } = partialUser ?? {}
 
-  const handle = useSelector((state) => getUser(state, { id: userId })?.handle)
-  const userName = useSelector((state) => getUser(state, { id: userId })?.name)
+  if (!userId) {
+    return null
+  }
 
   const textLink = (
     <TextLink
@@ -58,7 +60,7 @@ export const UserLink = (props: UserLinkProps) => {
       ellipses={popover}
       {...other}
     >
-      <Text ellipses>{userName}</Text>
+      <Text ellipses>{name}</Text>
       {noBadges ? null : (
         <UserBadges
           userId={userId}

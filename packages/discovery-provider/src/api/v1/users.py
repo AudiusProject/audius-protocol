@@ -2,6 +2,7 @@ import base64
 import json
 from typing import Optional
 
+from eth_account import Account
 from eth_account.messages import encode_defunct
 from flask import Response, request
 from flask_restx import Namespace, Resource, fields, inputs, reqparse
@@ -194,7 +195,6 @@ from src.queries.query_helpers import (
     SortDirection,
 )
 from src.queries.search_queries import SearchKind, search
-from src.utils import web3_provider
 from src.utils.auth_middleware import auth_middleware
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import decode_string_id, encode_int_id
@@ -1346,6 +1346,8 @@ class UserSearchResult(Resource):
         args = user_search_parser.parse_args()
         query = args.get("query")
         genres = args.get("genre")
+        limit = format_limit(args, 50, 10)
+        offset = format_offset(args)
         is_verified = parse_bool_param(args.get("is_verified"))
         sort_method = args.get("sort_method")
         search_args = {
@@ -1354,8 +1356,8 @@ class UserSearchResult(Resource):
             "is_auto_complete": False,
             "current_user_id": None,
             "with_users": True,
-            "limit": 10,
-            "offset": 0,
+            "limit": limit,
+            "offset": offset,
             "only_verified": is_verified,
             "genres": genres,
             "sort_method": sort_method,
@@ -1645,8 +1647,8 @@ class FullMutualFollowers(Resource):
         offset = get_default_max(args.get("offset"), 0)
         current_user_id = get_current_user_id(args)
         args = {
-            "follower_user_id": current_user_id,
-            "followee_user_id": decoded_id,
+            "my_id": current_user_id,
+            "other_user_id": decoded_id,
             "limit": limit,
             "offset": offset,
         }
@@ -2305,13 +2307,10 @@ class GetTokenVerification(Resource):
         base64_payload = token_parts[1]
         message = f"{base64_header}.{base64_payload}"
 
-        # 3. Recover message from signature
-        web3 = web3_provider.get_web3()
-
         wallet = None
         encoded_message = encode_defunct(text=message)
         try:
-            wallet = web3.eth.account.recover_message(
+            wallet = Account.recover_message(
                 encoded_message,
                 signature=signature,
             )

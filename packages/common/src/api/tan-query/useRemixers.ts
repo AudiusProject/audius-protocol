@@ -1,5 +1,9 @@
 import { Id, OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
@@ -7,9 +11,8 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
-import { useUsers } from './useUsers'
 import { primeUserData } from './utils/primeUserData'
 
 const DEFAULT_PAGE_SIZE = 20
@@ -24,7 +27,10 @@ export const getRemixersQueryKey = ({
   userId,
   trackId,
   pageSize = DEFAULT_PAGE_SIZE
-}: UseRemixersArgs) => [QUERY_KEYS.remixers, userId, trackId, { pageSize }]
+}: UseRemixersArgs) =>
+  [QUERY_KEYS.remixers, userId, trackId, { pageSize }] as unknown as QueryKey<
+    InfiniteData<ID[]>
+  >
 
 export const useRemixers = (
   { userId, trackId, pageSize = DEFAULT_PAGE_SIZE }: UseRemixersArgs,
@@ -35,7 +41,7 @@ export const useRemixers = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const { data: userIds, ...queryResult } = useInfiniteQuery({
+  return useInfiniteQuery({
     queryKey: getRemixersQueryKey({ userId, trackId, pageSize }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: ID[], allPages) => {
@@ -59,11 +65,4 @@ export const useRemixers = (
     ...options,
     enabled: options?.enabled !== false && !!userId
   })
-
-  const { data: users } = useUsers(userIds)
-
-  return {
-    data: users,
-    ...queryResult
-  }
 }

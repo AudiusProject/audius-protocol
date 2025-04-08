@@ -1,11 +1,14 @@
 import { ChallengeName } from '@audius/common/models'
 
 import { AudioMatchingRewardsModalContent } from './AudioMatchingRewardsModalContent'
+import { CosignChallengeModalContent } from './CosignChallengeModalContent'
 import { DefaultChallengeContent } from './DefaultChallengeContent'
 import { FirstWeeklyCommentChallengeModalContent } from './FirstWeeklyCommentChallengeModalContent'
 import { ListenStreakChallengeModalContent } from './ListenStreakChallengeModalContent'
 import { OneShotChallengeModalContent } from './OneShotChallengeModalContent'
+import { PlayCountMilestoneContent } from './PlayCountMilestoneContent'
 import { ReferralsChallengeModalContent } from './ReferralsChallengeModalContent'
+import { TastemakerChallengeModalContent } from './TastemakerChallengeModalContent'
 import {
   type ChallengeContentMap,
   type ChallengeContentComponent
@@ -26,6 +29,16 @@ export const challengeContentRegistry: ChallengeContentMap = {
     ReferralsChallengeModalContent as ChallengeContentComponent,
   [ChallengeName.ReferralsVerified]:
     ReferralsChallengeModalContent as ChallengeContentComponent,
+  [ChallengeName.PlayCount250]:
+    PlayCountMilestoneContent as ChallengeContentComponent,
+  [ChallengeName.PlayCount1000]:
+    PlayCountMilestoneContent as ChallengeContentComponent,
+  [ChallengeName.PlayCount10000]:
+    PlayCountMilestoneContent as ChallengeContentComponent,
+  [ChallengeName.Tastemaker]:
+    TastemakerChallengeModalContent as ChallengeContentComponent,
+  [ChallengeName.Cosign]:
+    CosignChallengeModalContent as ChallengeContentComponent,
   default: DefaultChallengeContent as ChallengeContentComponent
 }
 

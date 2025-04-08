@@ -7,7 +7,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import type { NavigatorScreenParams } from '@react-navigation/native'
 import { useDispatch } from 'react-redux'
 
-import { usePhantomConnect } from '../wallet-connect/usePhantomConnect'
+import { usePhantomConnect } from '../external-wallets/usePhantomConnect'
 
 import { AppTabBar } from './AppTabBar'
 import type { ExploreTabScreenParamList } from './ExploreTabScreen'
@@ -20,6 +20,7 @@ import { NotificationsTabScreen } from './NotificationsTabScreen'
 import type { ProfileTabScreenParamList } from './ProfileTabScreen'
 import type { TrendingTabScreenParamList } from './TrendingTabScreen'
 import { TrendingTabScreen } from './TrendingTabScreen'
+import { usePrefetchNotifications } from './usePrefetchNotifications'
 const { getBalance } = walletActions
 
 export type AppScreenParamList = {
@@ -39,6 +40,7 @@ export const AppTabsScreen = () => {
   const dispatch = useDispatch()
   const appState = useAppState()
   usePhantomConnect((route) => route?.params?.params?.params ?? ({} as any))
+  usePrefetchNotifications()
 
   useEffect(() => {
     if (appState === 'active') {

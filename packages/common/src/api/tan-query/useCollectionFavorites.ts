@@ -1,14 +1,17 @@
 import { Id, OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
-import { User } from '~/models/User'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils/primeUserData'
 
@@ -22,11 +25,10 @@ export type UseCollectionFavoritesArgs = {
 export const getCollectionFavoritesQueryKey = ({
   collectionId,
   pageSize
-}: UseCollectionFavoritesArgs) => [
-  QUERY_KEYS.favorites,
-  collectionId,
-  { pageSize }
-]
+}: UseCollectionFavoritesArgs) =>
+  [QUERY_KEYS.favorites, collectionId, { pageSize }] as unknown as QueryKey<
+    InfiniteData<ID[]>
+  >
 
 export const useCollectionFavorites = (
   { collectionId, pageSize = DEFAULT_PAGE_SIZE }: UseCollectionFavoritesArgs,
@@ -37,10 +39,10 @@ export const useCollectionFavorites = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const { data: users, ...queryResult } = useInfiniteQuery({
+  return useInfiniteQuery({
     queryKey: getCollectionFavoritesQueryKey({ collectionId, pageSize }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: User[], allPages) => {
+    getNextPageParam: (lastPage: ID[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -54,15 +56,10 @@ export const useCollectionFavorites = (
       })
       const users = userMetadataListFromSDK(data)
       primeUserData({ users, queryClient, dispatch })
-      return users
+      return users.map((user) => user.user_id)
     },
     select: (data) => data.pages.flat(),
     ...options,
     enabled: options?.enabled !== false && !!collectionId
   })
-
-  return {
-    data: users,
-    ...queryResult
-  }
 }

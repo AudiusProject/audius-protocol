@@ -44,13 +44,12 @@ export const useEditComment = () => {
       await sdk.comments.editComment(commentData)
     },
     onMutate: ({ commentId, newMessage, mentions }) => {
-      const prevComment = queryClient.getQueryData<CommentOrReply | undefined>([
-        'comment',
-        commentId
-      ])
+      const prevComment = queryClient.getQueryData(
+        getCommentQueryKey(commentId)
+      )
       queryClient.setQueryData(
         getCommentQueryKey(commentId),
-        (prevData: CommentOrReply | undefined) =>
+        (prevData) =>
           ({
             ...prevData,
             isEdited: true,

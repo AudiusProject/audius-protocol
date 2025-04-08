@@ -26,11 +26,7 @@ const { getUndisbursedUserChallenges, getClaimStatus } =
 
 const messages = {
   rewardSubtext: '$AUDIO/day',
-  descriptionSubtext:
-    'Listen to music on Audius daily for a week to start a streak and earn $AUDIO for each day you keep it going.',
-  totalClaimed: (amount: string) => `${amount} $AUDIO Claimed`,
-  day: (day: number) => `Day ${day} ${day > 0 ? '🔥' : ''}`,
-  readyToClaim: 'Ready to claim!'
+  totalClaimed: (amount: string) => `${amount} $AUDIO Claimed`
 }
 
 export const ListenStreakChallengeModalContent = ({

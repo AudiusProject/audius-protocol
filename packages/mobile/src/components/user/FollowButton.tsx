@@ -1,15 +1,15 @@
 import { useCallback } from 'react'
 
+import { useUser } from '@audius/common/api'
 import type { FollowSource, ID } from '@audius/common/models'
-import { cacheUsersSelectors, usersSocialActions } from '@audius/common/store'
+import { usersSocialActions } from '@audius/common/store'
 import type { GestureResponderEvent } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { FollowButton as HarmonyFollowButton } from '@audius/harmony-native'
 import type { FollowButtonProps as HarmonyFollowButtonProps } from '@audius/harmony-native'
 
 const { followUser, unfollowUser } = usersSocialActions
-const { getUser } = cacheUsersSelectors
 
 type FollowButtonsProps = Partial<HarmonyFollowButtonProps> & {
   userId: ID
@@ -19,9 +19,9 @@ type FollowButtonsProps = Partial<HarmonyFollowButtonProps> & {
 export const FollowButton = (props: FollowButtonsProps) => {
   const { userId, onPress, followSource, ...other } = props
 
-  const isFollowing = useSelector(
-    (state) => getUser(state, { id: userId })?.does_current_user_follow
-  )
+  const { data: isFollowing } = useUser(userId, {
+    select: (user) => user?.does_current_user_follow
+  })
 
   const dispatch = useDispatch()
 

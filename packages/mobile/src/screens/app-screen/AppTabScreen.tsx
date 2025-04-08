@@ -10,7 +10,8 @@ import type {
 import type {
   NotificationType,
   RepostType,
-  CreateChatModalState
+  CreateChatModalState,
+  TrackMetadataForUpload
 } from '@audius/common/store'
 import type { EventArg, NavigationState } from '@react-navigation/native'
 import type { createNativeStackNavigator } from '@react-navigation/native-stack'
@@ -110,11 +111,13 @@ export type AppTabScreenParamList = {
   PayAndEarnScreen: undefined
   AudioScreen: undefined
   RewardsScreen: undefined
-  Upload: undefined
+  Upload: {
+    initialMetadata?: Partial<TrackMetadataForUpload>
+  }
   FeatureFlagOverride: undefined
   CreateChatBlast: undefined
   EditTrack: { id: ID }
-  WalletConnect: undefined
+  ExternalWallets: undefined
   ChatList: undefined
   ChatUserList:
     | {

@@ -84,29 +84,14 @@ export const useUserComments = (
     }
   }, [error, dispatch, reportToSentry])
 
-  const commentsQuery = useComments(commentIds)
-  const { data: comments } = commentsQuery
-
-  // Merge the loading states from both queries
-  const isLoading = queryRes.isLoading || commentsQuery.isLoading
-  const isPending = queryRes.isPending || commentsQuery.isPending
-  const isFetching = queryRes.isFetching || commentsQuery.isFetching
-  const isSuccess = queryRes.isSuccess && commentsQuery.isSuccess
-
-  // Determine the overall status based on both queries
-  let status = queryRes.status
-  if (queryRes.status === 'success' && commentsQuery.status !== 'success') {
-    status = commentsQuery.status
-  }
+  const { data: comments } = useComments(commentIds)
 
   return {
-    ...queryRes,
     data: comments,
-    commentIds,
-    isLoading,
-    isPending,
-    isFetching,
-    isSuccess,
-    status
+    isPending: queryRes.isPending,
+    isLoading: queryRes.isLoading,
+    hasNextPage: queryRes.hasNextPage,
+    isFetchingNextPage: queryRes.isFetchingNextPage,
+    fetchNextPage: queryRes.fetchNextPage
   }
 }

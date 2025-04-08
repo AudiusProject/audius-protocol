@@ -11,7 +11,8 @@ import {
   relatedArtistsUserListActions,
   RepostType,
   remixersUserListActions,
-  purchasersUserListActions
+  purchasersUserListActions,
+  PurchaseableContentType
 } from '@audius/common/store'
 import { takeEvery, put } from 'redux-saga/effects'
 
@@ -24,57 +25,72 @@ function* watchSetUsers() {
   yield takeEvery(
     setUsers.type,
     function* (action: ReturnType<typeof setUsers>) {
-      const { userListType, entityType, id, entity } = action.payload
-      switch (userListType) {
-        case UserListType.FAVORITE:
-          yield put(
-            favoritesActions.setFavorite(
-              id,
-              entityType === UserListEntityType.TRACK
-                ? FavoriteType.TRACK
-                : FavoriteType.PLAYLIST
+      const { payload } = action
+      const { userListType, entityType } = payload
+      if (userListType === UserListType.NOTIFICATION && 'entity' in payload) {
+        yield put(notificationActions.setNotification(payload.entity))
+        return
+      }
+
+      if ('id' in payload) {
+        const { id } = payload
+        switch (userListType) {
+          case UserListType.FAVORITE:
+            yield put(
+              favoritesActions.setFavorite(
+                id,
+                entityType === UserListEntityType.TRACK
+                  ? FavoriteType.TRACK
+                  : FavoriteType.PLAYLIST
+              )
             )
-          )
-          break
-        case UserListType.REPOST:
-          yield put(
-            repostActions.setRepost(
-              id,
-              entityType === UserListEntityType.TRACK
-                ? RepostType.TRACK
-                : RepostType.COLLECTION
+            break
+          case UserListType.REPOST:
+            yield put(
+              repostActions.setRepost(
+                id,
+                entityType === UserListEntityType.TRACK
+                  ? RepostType.TRACK
+                  : RepostType.COLLECTION
+              )
             )
-          )
-          break
-        case UserListType.FOLLOWER:
-          yield put(followerActions.setFollowers(id))
-          break
-        case UserListType.FOLLOWING:
-          yield put(followingActions.setFollowing(id))
-          break
-        case UserListType.MUTUAL_FOLLOWER:
-          yield put(setMutuals(id))
-          break
-        case UserListType.NOTIFICATION:
-          yield put(notificationActions.setNotification(entity))
-          break
-        case UserListType.RELATED_ARTISTS:
-          yield put(setRelatedArtists(id))
-          break
-        case UserListType.SUPPORTER:
-          yield put(topSupporterActions.setTopSupporters(id))
-          break
-        case UserListType.SUPPORTING:
-          yield put(supportingActions.setSupporting(id))
-          break
-        case UserListType.REMIXER:
-          yield put(remixersUserListActions.setRemixers(id))
-          break
-        case UserListType.PURCHASER:
-          yield put(purchasersUserListActions.setPurchasers(id))
-          break
-        default:
-          break
+            break
+          case UserListType.FOLLOWER:
+            yield put(followerActions.setFollowers(id))
+            break
+          case UserListType.FOLLOWING:
+            yield put(followingActions.setFollowing(id))
+            break
+          case UserListType.MUTUAL_FOLLOWER:
+            yield put(setMutuals(id))
+            break
+          case UserListType.RELATED_ARTISTS:
+            yield put(setRelatedArtists(id))
+            break
+          case UserListType.SUPPORTER:
+            yield put(topSupporterActions.setTopSupporters(id))
+            break
+          case UserListType.SUPPORTING:
+            yield put(supportingActions.setSupporting(id))
+            break
+          case UserListType.REMIXER:
+            yield put(remixersUserListActions.setRemixers(id))
+            break
+          case UserListType.PURCHASER:
+            yield put(
+              purchasersUserListActions.setPurchasers(
+                entityType === UserListEntityType.USER ? undefined : id,
+                entityType === UserListEntityType.TRACK
+                  ? PurchaseableContentType.TRACK
+                  : entityType === UserListEntityType.COLLECTION
+                    ? PurchaseableContentType.ALBUM
+                    : undefined
+              )
+            )
+            break
+          default:
+            break
+        }
       }
     }
   )

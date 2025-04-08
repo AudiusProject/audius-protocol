@@ -2,7 +2,8 @@ import { useCallback, useMemo, useEffect } from 'react'
 
 import {
   useGetTracksByIds,
-  useGetPlaylistByPermalink
+  useGetPlaylistByPermalink,
+  useCollection
 } from '@audius/common/api'
 import { usePlayTrack, usePauseTrack } from '@audius/common/hooks'
 import {
@@ -16,11 +17,9 @@ import {
 import {
   accountSelectors,
   cacheCollectionsActions,
-  cacheCollectionsSelectors,
   QueueSource,
   playerSelectors,
-  ChatMessageTileProps,
-  CommonState
+  ChatMessageTileProps
 } from '@audius/common/store'
 import { getPathFromPlaylistUrl, makeUid } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
@@ -30,7 +29,6 @@ import MobilePlaylistTile from 'components/track/mobile/ConnectedPlaylistTile'
 
 const { getUserId } = accountSelectors
 const { getTrackId } = playerSelectors
-const { getCollection } = cacheCollectionsSelectors
 const { fetchCoverArt } = cacheCollectionsActions
 
 export const ChatMessagePlaylist = ({
@@ -53,9 +51,7 @@ export const ChatMessagePlaylist = ({
   )
 
   const collectionId = playlist?.playlist_id
-  const collection = useSelector((state: CommonState) =>
-    getCollection(state, { id: collectionId })
-  )
+  const { data: collection } = useCollection(collectionId)
 
   useEffect(() => {
     if (collectionId) {
@@ -133,6 +129,7 @@ export const ChatMessagePlaylist = ({
       containerClassName={className}
       index={0}
       uid={uid}
+      id={collectionId}
       collection={collection}
       tracks={tracksWithUids}
       playTrack={playTrack}

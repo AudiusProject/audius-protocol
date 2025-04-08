@@ -297,6 +297,15 @@ where
 returning au.user_id;
 """
 
+update_user_score_query = """
+update aggregate_user
+set score = scores.score
+from get_user_scores() as scores
+where aggregate_user.user_id = scores.user_id
+and aggregate_user.score != scores.score
+returning aggregate_user.user_id;
+"""
+
 
 def _update_aggregates(session):
     start_time = datetime.now()
@@ -306,6 +315,15 @@ def _update_aggregates(session):
     logger.debug(
         f"update_aggregates.py | updated aggregate_user {updated_user_ids} in {datetime.now() - start_time}"
     )
+
+    start_time = datetime.now()
+
+    logger.debug("update_aggregates.py | updating user scores...")
+    updated_user_ids = session.execute(update_user_score_query).fetchall()
+    logger.debug(
+        f"update_aggregates.py | updated user scores {updated_user_ids} in {datetime.now() - start_time}"
+    )
+
     start_time = datetime.now()
 
     updated_track_ids = session.execute(update_aggregate_track_query).fetchall()

@@ -4,6 +4,7 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Dict, List, Set, Tuple, cast
 
+from eth_utils import to_hex
 from sqlalchemy import and_, func, literal_column, or_
 from sqlalchemy.orm.session import Session
 from web3.types import TxReceipt
@@ -18,6 +19,7 @@ from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_report import CommentReport
 from src.models.comments.comment_thread import CommentThread
 from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
+from src.models.events.event import Event, EventEntityType
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.indexing.revert_block import RevertBlock
@@ -68,6 +70,11 @@ from src.tasks.entity_manager.entities.email import (
     create_encrypted_email,
     grant_email_access,
 )
+from src.tasks.entity_manager.entities.event import (
+    create_event,
+    delete_event,
+    update_event,
+)
 from src.tasks.entity_manager.entities.grant import (
     approve_grant,
     create_grant,
@@ -108,7 +115,6 @@ from src.tasks.entity_manager.entities.user import (
     verify_user,
 )
 from src.tasks.entity_manager.utils import (
-    MANAGE_ENTITY_EVENT_TYPE,
     Action,
     EntitiesToFetchDict,
     EntityType,
@@ -123,7 +129,6 @@ from src.tasks.entity_manager.utils import (
 )
 from src.utils import helpers
 from src.utils.config import shared_config
-from src.utils.core import is_indexing_core_em
 from src.utils.indexing_errors import IndexingError
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.structured_logger import StructuredLogger
@@ -225,7 +230,7 @@ def entity_manager_update(
 
         # process in tx order and populate records_to_save
         for tx_receipt in entity_manager_txs:
-            txhash = update_task.web3.to_hex(tx_receipt["transactionHash"])
+            txhash = to_hex(tx_receipt["transactionHash"])
             entity_manager_event_tx = get_entity_manager_events_tx(
                 update_task, tx_receipt
             )
@@ -306,13 +311,13 @@ def entity_manager_update(
                         and params.entity_type == EntityType.USER
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
-                        create_user(params, cid_type, cid_metadata)
+                        create_user(params)
                     elif (
                         params.action == Action.UPDATE
                         and params.entity_type == EntityType.USER
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
-                        update_user(params, cid_type, cid_metadata)
+                        update_user(params)
                     elif (
                         params.action == Action.VERIFY
                         and params.entity_type == EntityType.USER
@@ -465,6 +470,21 @@ def entity_manager_update(
                         params.action == Action.CREATE or params.action == Action.UPDATE
                     ) and params.entity_type == EntityType.COLLECTIBLES:
                         update_user_collectibles(params)
+                    elif (
+                        params.action == Action.CREATE
+                        and params.entity_type == EntityType.EVENT
+                    ):
+                        create_event(params)
+                    elif (
+                        params.action == Action.UPDATE
+                        and params.entity_type == EntityType.EVENT
+                    ):
+                        update_event(params)
+                    elif (
+                        params.action == Action.DELETE
+                        and params.entity_type == EntityType.EVENT
+                    ):
+                        delete_event(params)
 
                     logger.debug("process transaction")  # log event context
                 except IndexingValidationError as e:
@@ -644,6 +664,25 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                     )
             if entity_type == EntityType.PLAYLIST:
                 entities_to_fetch[EntityType.PLAYLIST_ROUTE].add(entity_id)
+            if entity_type == EntityType.EVENT:
+                entities_to_fetch[EntityType.EVENT].add(entity_id)
+                entities_to_fetch[EntityType.USER].add(user_id)
+
+                if action != Action.DELETE:
+                    try:
+                        json_metadata = json.loads(metadata)
+                    except Exception as e:
+                        logger.error(
+                            f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}"
+                        )
+                        # skip invalid metadata
+                        continue
+
+                    event_entity_type = json_metadata.get("data", {}).get("entity_type")
+                    if event_entity_type == EventEntityType.track:
+                        event_entity_id = json_metadata.get("data", {}).get("entity_id")
+                        entities_to_fetch[EntityType.TRACK].add(event_entity_id)
+
             if entity_type == EntityType.COMMENT:
                 if (
                     action == Action.CREATE
@@ -1304,6 +1343,19 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             for _, dashboard_wallet_json in dashboard_wallets
         }
 
+    if entities_to_fetch["Event"]:
+        events: List[Tuple[Event, dict]] = (
+            session.query(Event, literal_column(f"row_to_json({Event.__tablename__})"))
+            .filter(Event.event_id.in_(entities_to_fetch["Event"]))
+            .all()
+        )
+        existing_entities[EntityType.EVENT] = {
+            event.event_id: event for event, _ in events
+        }
+        existing_entities_in_json[EntityType.EVENT] = {
+            event_json["event_id"]: event_json for _, event_json in events
+        }
+
     if entities_to_fetch["Comment"]:
         comments: List[Tuple[Comment, dict]] = (
             session.query(
@@ -1577,11 +1629,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
 
 
 def get_entity_manager_events_tx(update_task, tx_receipt: TxReceipt):
-    if is_indexing_core_em():
-        return [tx_receipt]
-    return getattr(
-        update_task.entity_manager_contract.events, MANAGE_ENTITY_EVENT_TYPE
-    )().process_receipt(tx_receipt)
+    return [tx_receipt]
 
 
 def create_and_raise_indexing_error(err, redis, session):

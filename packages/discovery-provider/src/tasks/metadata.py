@@ -276,6 +276,15 @@ collectibles_metadata_format = {
     "collectibles": None,
 }
 
+event_metadata_format = {
+    "event_type": None,
+    "entity_type": None,
+    "entity_id": None,
+    "is_deleted": None,
+    "end_date": None,
+    "event_data": None,
+}
+
 
 class PlaylistMetadata(TypedDict):
     playlist_contents: Optional[Any]
@@ -327,6 +336,8 @@ immutable_fields = {
     "created_at",
     "updated_at",
     "slot",
+    # TODO: Remove from immutable_user_fields when we drop the column
+    # https://linear.app/audius/issue/PAY-4018/drop-usersmetadata-multihash
     "metadata_multihash",
     "is_current",
     "is_delete",

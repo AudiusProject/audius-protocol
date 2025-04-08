@@ -15,6 +15,7 @@ import { useIsMobile } from 'hooks/useIsMobile'
 
 import { ChallengeRewardsLayout } from './ChallengeRewardsLayout'
 import { ClaimButton } from './ClaimButton'
+import { CooldownSummaryTable } from './CooldownSummaryTable'
 import { type DefaultChallengeProps } from './types'
 
 const { getOptimisticUserChallenges } = challengesSelectors
@@ -107,6 +108,11 @@ export const FirstWeeklyCommentChallengeModalContent = ({
       amount={modifiedChallenge?.totalAmount}
       rewardSubtext={messages.rewardSubtext}
       progressStatusLabel={progressStatusLabel}
+      additionalContent={
+        challenge?.cooldown_days ? (
+          <CooldownSummaryTable challengeId={challenge.challenge_id} />
+        ) : null
+      }
       actions={
         <ClaimButton
           challenge={modifiedChallenge}

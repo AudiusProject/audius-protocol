@@ -65,7 +65,14 @@ integration-test:
         name: run playwright tests
         command: |
           cd packages/web
+          trap 'npx playwright stop' EXIT
           RUN_AGAINST_LOCAL_STACK=true npx playwright test
+        when: always
+    - run:
+        name: shutdown playwright
+        command: |
+          pkill -f playwright || true
+        when: always
     - store_test_results:
         path: packages/web/report.xml
         when: always

@@ -37,9 +37,20 @@ func NewProcessor(discoveryConfig *config.DiscoveryConfig) (*RPCProcessor, error
 	if err != nil {
 		return nil, err
 	}
+
+	aaoServer := "https://discoveryprovider.audius.co"
+	if discoveryConfig.IsStaging {
+		aaoServer = "https://discoveryprovider.staging.audius.co"
+	}
+
+	if discoveryConfig.IsDev {
+		aaoServer = "http://audius-protocol-discovery-provider-1"
+	}
+
 	validator := &Validator{
-		db:      db.Conn,
-		limiter: limiter,
+		db:        db.Conn,
+		limiter:   limiter,
+		aaoServer: aaoServer,
 	}
 
 	proc := &RPCProcessor{

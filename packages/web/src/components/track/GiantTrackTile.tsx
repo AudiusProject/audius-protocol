@@ -1,6 +1,11 @@
 import { Suspense, lazy, useCallback, useState } from 'react'
 
-import { useToggleFavoriteTrack } from '@audius/common/api'
+import {
+  useRemixContest,
+  useToggleFavoriteTrack,
+  useTrack
+} from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
   isContentUSDCPurchaseGated,
   ID,
@@ -9,14 +14,13 @@ import {
   AccessConditions,
   FavoriteSource
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
-  cacheTracksSelectors,
-  CommonState,
   PurchaseableContentType,
   useEarlyReleaseConfirmationModal,
   usePublishConfirmationModal
 } from '@audius/common/store'
-import { Genre, Nullable, formatReleaseDate } from '@audius/common/utils'
+import { Genre, Nullable, formatReleaseDate, route } from '@audius/common/utils'
 import {
   Text,
   Box,
@@ -28,15 +32,16 @@ import {
   IconRocket,
   Button,
   MusicBadge,
-  Paper
+  Paper,
+  IconCloudUpload
 } from '@audius/harmony'
 import IconCalendarMonth from '@audius/harmony/src/assets/icons/CalendarMonth.svg'
 import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
 import IconTrending from '@audius/harmony/src/assets/icons/Trending.svg'
 import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
+import { GetEntityEventsEntityTypeEnum } from '@audius/sdk'
 import cn from 'classnames'
 import dayjs from 'dayjs'
-import { shallowEqual, useSelector } from 'react-redux'
 
 import { UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
@@ -46,6 +51,7 @@ import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement } from 'components/types'
 import { UserGeneratedText } from 'components/user-generated-text'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
 
 import { AiTrackSection } from './AiTrackSection'
 import { CardTitle } from './CardTitle'
@@ -58,13 +64,13 @@ import { TrackDogEar } from './TrackDogEar'
 import { TrackMetadataList } from './TrackMetadataList'
 import { TrackStats } from './TrackStats'
 
+const { UPLOAD_PAGE } = route
+
 const DownloadSection = lazy(() =>
   import('./DownloadSection').then((module) => ({
     default: module.DownloadSection
   }))
 )
-
-const { getTrack } = cacheTracksSelectors
 
 const BUTTON_COLLAPSE_WIDTHS = {
   first: 1095,
@@ -88,7 +94,13 @@ const messages = {
   actionGroupLabel: 'track actions',
   hidden: 'hidden',
   releases: (releaseDate: string) =>
-    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
+    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`,
+  contestDeadline: 'Contest Deadline',
+  uploadRemixButtonText: 'Upload Your Remix',
+  deadline: (deadline?: string) =>
+    deadline
+      ? `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`
+      : ''
 }
 
 type GiantTrackTileProps = {
@@ -183,6 +195,7 @@ export const GiantTrackTile = ({
   ddexApp,
   scrollToCommentSection
 }: GiantTrackTileProps) => {
+  const navigate = useNavigateToPage()
   const [artworkLoading, setArtworkLoading] = useState(false)
   const onArtworkLoad = useCallback(
     () => setArtworkLoading(false),
@@ -193,19 +206,36 @@ export const GiantTrackTile = ({
     source: FavoriteSource.TRACK_PAGE
   })
 
+  const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
+    FeatureFlags.REMIX_CONTEST
+  )
+  const { data: events, isLoading: isEventsLoading } = useRemixContest(
+    trackId,
+    {
+      entityType: GetEntityEventsEntityTypeEnum.Track
+    }
+  )
+  const event = events?.[0]
+  const isRemixContest = isRemixContestEnabled && event
+
   const isLongFormContent =
     genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
-  const track = useSelector(
-    (state: CommonState) => getTrack(state, { id: trackId }),
-    shallowEqual
-  )
-  const hasDownloadableAssets =
-    track?.is_downloadable || (track?._stems?.length ?? 0) > 0
+  const { data: partialTrack } = useTrack(trackId, {
+    select: (track) => {
+      return {
+        is_downloadable: track?.is_downloadable,
+        _stems: track?._stems,
+        preview_cid: track?.preview_cid
+      }
+    }
+  })
+  const { is_downloadable, _stems, preview_cid } = partialTrack ?? {}
+  const hasDownloadableAssets = is_downloadable || (_stems?.length ?? 0) > 0
   // Preview button is shown for USDC-gated tracks if user does not have access
   // or is the owner
   const showPreview =
-    isUSDCPurchaseGated && (isOwner || !hasStreamAccess) && track?.preview_cid
+    isUSDCPurchaseGated && (isOwner || !hasStreamAccess) && preview_cid
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
   const shouldShowScheduledRelease =
@@ -220,6 +250,7 @@ export const GiantTrackTile = ({
         isStreamGated={isStreamGated}
         isPodcast={genre === Genre.PODCASTS}
         streamConditions={streamConditions}
+        isRemixContest={!!isRemixContest}
       />
     )
   }
@@ -380,7 +411,7 @@ export const GiantTrackTile = ({
     const shouldShow = !isUnlisted || fieldVisibility.tags
     if (!shouldShow || !tags) return null
     return (
-      <Flex pt='m' wrap='wrap' gap='s'>
+      <Flex wrap='wrap' gap='s'>
         {tags
           .split(',')
           .filter((t) => t)
@@ -393,7 +424,44 @@ export const GiantTrackTile = ({
     )
   }
 
-  const isLoading = loading || artworkLoading
+  const goToUploadWithRemix = useCallback(() => {
+    if (!trackId) return
+    const state = {
+      initialMetadata: {
+        is_remix: true,
+        remix_of: {
+          tracks: [{ parent_track_id: trackId }]
+        }
+      }
+    }
+    navigate(UPLOAD_PAGE, state)
+  }, [trackId, navigate])
+
+  const renderSubmitRemixContestSection = useCallback(() => {
+    if (!isRemixContest) return null
+    return (
+      <Flex row gap='m'>
+        <Flex gap='xs' alignItems='center'>
+          <Text variant='label' color='accent'>
+            {messages.contestDeadline}
+          </Text>
+          <Text>{messages.deadline(event?.endDate)}</Text>
+        </Flex>
+        {!isOwner ? (
+          <Button
+            variant='secondary'
+            size='small'
+            onClick={goToUploadWithRemix}
+            iconLeft={IconCloudUpload}
+          >
+            {messages.uploadRemixButtonText}
+          </Button>
+        ) : null}
+      </Flex>
+    )
+  }, [isRemixContest, event?.endDate, isOwner, goToUploadWithRemix])
+
+  const isLoading = loading || artworkLoading || isEventsLoading
 
   const overflowMenuExtraItems = []
   if (!isOwner) {
@@ -424,6 +492,7 @@ export const GiantTrackTile = ({
       includeEmbed: !(isUnlisted || isStreamGated),
       includeArtistPick: true,
       includeAddToAlbum: isOwner && !ddexApp,
+      includeRemixContest: isRemixContestEnabled,
       extraMenuItems: overflowMenuExtraItems
     }
   }
@@ -594,22 +663,19 @@ export const GiantTrackTile = ({
         backgroundColor='surface1'
         borderTop='default'
         className={cn(fadeIn)}
+        gap='m'
       >
         <TrackMetadataList trackId={trackId} />
         {description ? (
-          <UserGeneratedText
-            tag='h3'
-            size='s'
-            lineHeight='multi'
-            css={(theme) => ({ paddingTop: theme.spacing.m })}
-          >
+          <UserGeneratedText tag='h3' size='s' lineHeight='multi'>
             {description}
           </UserGeneratedText>
         ) : null}
 
         {renderTags()}
+        {renderSubmitRemixContestSection()}
         {hasDownloadableAssets ? (
-          <Box pt='l' w='100%'>
+          <Box w='100%'>
             <Suspense>
               <DownloadSection trackId={trackId} />
             </Suspense>

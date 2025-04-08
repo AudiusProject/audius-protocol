@@ -5,11 +5,9 @@ import {
   useMarkNotificationsAsViewed
 } from '@audius/common/api'
 import { Notification as Notifications } from '@audius/common/store'
-import { Flex } from '@audius/harmony'
-import Lottie from 'lottie-react'
+import { Flex, LoadingSpinner } from '@audius/harmony'
 import InfiniteScroll from 'react-infinite-scroller'
 
-import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 
@@ -32,7 +30,7 @@ const SCROLL_THRESHOLD = 300
 export const NotificationPage = () => {
   const {
     notifications,
-    isPending,
+    isAllPending: isPending,
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage
@@ -71,7 +69,7 @@ export const NotificationPage = () => {
           as={InfiniteScroll}
           direction='column'
           p='l'
-          backgroundColor='default'
+          backgroundColor='white'
           gap='s'
           // @ts-ignore
           pageStart={0}
@@ -93,7 +91,7 @@ export const NotificationPage = () => {
                 />
               )
             })}
-          {isPending && <Lottie loop autoplay animationData={loadingSpinner} />}
+          {isPending && <LoadingSpinner size='3xl' />}
         </Flex>
       )}
     </MobilePageContainer>

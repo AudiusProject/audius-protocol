@@ -5,6 +5,8 @@ export const QUERY_KEYS = {
   userCommentList: 'userCommentList',
   comment: 'comment',
   commentReplies: 'commentReplies',
+  downloadTrackStems: 'downloadTrackStems',
+  stemsArchiveJob: 'stemsArchiveJob',
   exploreContent: 'exploreContent',
   trackCommentNotificationSetting: 'trackCommentNotificationSetting',
   trackCommentCount: 'trackCommentCount',
@@ -75,5 +77,7 @@ export const QUERY_KEYS = {
   trendingIds: 'trendingIds',
   trendingPlaylists: 'trendingPlaylists',
   trendingUnderground: 'trendingUnderground',
-  trackPageLineup: 'trackPageLineup'
+  trackPageLineup: 'trackPageLineup',
+  events: 'events',
+  eventsByEntityId: 'eventsByEntityId'
 } as const

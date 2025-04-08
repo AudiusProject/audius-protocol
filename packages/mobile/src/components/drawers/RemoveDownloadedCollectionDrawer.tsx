@@ -1,14 +1,13 @@
 import { useCallback } from 'react'
 
-import { cacheCollectionsSelectors } from '@audius/common/store'
+import { useCollection } from '@audius/common/api'
 import { capitalize } from 'lodash'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { useDrawer } from 'app/hooks/useDrawer'
 import { requestRemoveDownloadedCollection } from 'app/store/offline-downloads/slice'
 
 import { ConfirmationDrawer } from './ConfirmationDrawer'
-const { getCollection } = cacheCollectionsSelectors
 
 const messages = {
   header: 'Are You Sure?',
@@ -25,9 +24,9 @@ export const RemoveDownloadedCollectionDrawer = () => {
   const { collectionId } = data
   const dispatch = useDispatch()
 
-  const isAlbum = useSelector(
-    (state) => !!getCollection(state, { id: collectionId })?.is_album
-  )
+  const { data: isAlbum } = useCollection(collectionId, {
+    select: (collection) => collection.is_album
+  })
   const contentType = isAlbum ? 'album' : 'playlist'
 
   const handleConfirm = useCallback(() => {

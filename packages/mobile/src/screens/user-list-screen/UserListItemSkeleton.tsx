@@ -13,7 +13,7 @@ const profileStyle = css({ height: 74, width: 74, borderRadius: 74 })
 export const UserListItemSkeleton = (props: Props) => {
   const { tag } = props
   const isSupporterTile = ['SUPPORTING', 'TOP SUPPORTERS'].includes(tag)
-  const itemHeight = isSupporterTile ? 167 : 147
+  const itemHeight = isSupporterTile ? 171 : 154
   const { cornerRadius } = useTheme()
 
   return (

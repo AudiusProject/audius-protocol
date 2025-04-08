@@ -32,7 +32,9 @@ def _get_user_from_wallet(session, wallet: str):
     wallet = wallet.lower()
     if len(wallet) == 42:
         base_query = base_query.filter_by(wallet=wallet)
-        base_query = base_query.order_by(asc(User.created_at))
+        base_query = base_query.order_by(
+            desc(User.handle.isnot(None)), asc(User.created_at)
+        )
     else:
         raise exceptions.ArgumentError("Invalid wallet length")
 

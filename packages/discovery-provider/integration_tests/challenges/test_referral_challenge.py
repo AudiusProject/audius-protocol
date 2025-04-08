@@ -155,7 +155,7 @@ def test_referral_challenge(app):
         dispatch_new_user_signup(referrer.user_id, 10, session, bus)
         dispatch_new_user_signup(referrer.user_id, 11, session, bus)
         bus.flush()
-        bus.process_events(session)
+        bus.process_events(session, 100)
         challenges = (
             session.query(UserChallenge)
             .filter(
@@ -248,10 +248,10 @@ def test_referral_challenge(app):
             dispatch_new_user_signup(verified_user.user_id, 14 + i, session, bus)
             if i % 500 == 0:
                 bus.flush()
-                bus.process_events(session)
+                bus.process_events(session, 1000)
 
         bus.flush()
-        bus.process_events(session)
+        bus.process_events(session, 1000)
 
         # Ensure 5000 verified referral created
         challenges = (

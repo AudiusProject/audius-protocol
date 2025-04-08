@@ -13,12 +13,14 @@ import {
   Text,
   IconArrowRight,
   IconCheck,
-  IconCloudUpload
+  IconCloudUpload,
+  IconPlaybackPause
 } from '@audius/harmony-native'
 import BallotBoxTick from 'app/assets/images/emojis/ballot-box-tick.png'
 import Cart from 'app/assets/images/emojis/cart.png'
 import BarChart from 'app/assets/images/emojis/chart-bar.png'
 import ChartIncreasing from 'app/assets/images/emojis/chart-increasing.png'
+import Fire from 'app/assets/images/emojis/fire.png'
 import Gear from 'app/assets/images/emojis/gear.png'
 import Headphone from 'app/assets/images/emojis/headphone.png'
 import IncomingEnvelope from 'app/assets/images/emojis/incoming-envelope.png'
@@ -28,7 +30,10 @@ import MobilePhoneWithArrow from 'app/assets/images/emojis/mobile-phone-with-arr
 import MoneyWings from 'app/assets/images/emojis/money-with-wings.png'
 import MultipleMusicalNotes from 'app/assets/images/emojis/multiple-musical-notes.png'
 import Parachute from 'app/assets/images/emojis/parachute.png'
+import Recycle from 'app/assets/images/emojis/recycle.png'
 import ArrowUp from 'app/assets/images/emojis/right-arrow-curving-up.png'
+import SmilingFaceLickingLips from 'app/assets/images/emojis/smiling-face-licking-lips.png'
+import SpeechBalloon from 'app/assets/images/emojis/speech-balloon.png'
 import TrebleClef from 'app/assets/images/emojis/treble-clef.png'
 import type { SummaryTableItem } from 'app/components/summary-table/SummaryTable'
 
@@ -295,13 +300,49 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
       }
     },
     [ChallengeName.ListenStreakEndless]: {
-      icon: undefined,
+      icon: Fire,
       buttonInfo: {
         iconRight: IconCheck
       }
     },
     [ChallengeName.FirstWeeklyComment]: {
-      icon: undefined,
+      icon: SpeechBalloon,
+      buttonInfo: {
+        iconRight: IconCheck
+      }
+    },
+    [ChallengeName.PlayCount250]: {
+      icon: IconPlaybackPause,
+      buttonInfo: {
+        iconRight: IconCheck
+      }
+    },
+    [ChallengeName.PlayCount1000]: {
+      icon: IconPlaybackPause,
+      buttonInfo: {
+        iconRight: IconCheck
+      }
+    },
+    [ChallengeName.PlayCount10000]: {
+      icon: IconPlaybackPause,
+      buttonInfo: {
+        iconRight: IconCheck
+      }
+    },
+    [ChallengeName.Tastemaker]: {
+      icon: SmilingFaceLickingLips,
+      buttonInfo: {
+        iconRight: IconCheck
+      }
+    },
+    [ChallengeName.CommentPin]: {
+      icon: SpeechBalloon,
+      buttonInfo: {
+        iconRight: IconCheck
+      }
+    },
+    [ChallengeName.Cosign]: {
+      icon: Recycle,
       buttonInfo: {
         iconRight: IconCheck
       }

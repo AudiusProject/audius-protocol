@@ -8,7 +8,7 @@ import { parseHandleReservedStatusFromSocial } from '~/utils/handleReservedStatu
 import { promiseWithTimeout } from '~/utils/promiseWithTimeout'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 
 const DEFAULT_HANDLE_VERIFICATION_TIMEOUT_MILLIS = 5_000
 
@@ -75,7 +75,10 @@ export const fetchHandleReservedStatus = async (
 
 export const getHandleReservedStatusQueryKey = (
   handle: string | null | undefined
-) => [QUERY_KEYS.handleReservedStatus, handle]
+) =>
+  [QUERY_KEYS.handleReservedStatus, handle] as unknown as QueryKey<
+    'notReserved' | 'reserved'
+  >
 
 /**
  * Hook to check if a handle is reserved on social media platforms

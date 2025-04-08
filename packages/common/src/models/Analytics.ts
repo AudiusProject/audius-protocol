@@ -1186,12 +1186,12 @@ type TrackDownloadClickedDownloadAll = {
 
 type TrackDownloadSuccessfulDownloadAll = {
   eventName: Name.TRACK_DOWNLOAD_SUCCESSFUL_DOWNLOAD_ALL
-  device: 'web' | 'native'
+  device?: 'web' | 'native'
 }
 
 type TrackDownloadFailedDownloadAll = {
   eventName: Name.TRACK_DOWNLOAD_FAILED_DOWNLOAD_ALL
-  device: 'web' | 'native'
+  device?: 'web' | 'native'
 }
 
 type TrackDownloadClickedDownloadSingle = {
@@ -1444,7 +1444,8 @@ export enum PlaybackSource {
   PASSIVE = 'passive',
   EMBED_PLAYER = 'embed player',
   CHAT_TRACK = 'chat_track',
-  CHAT_PLAYLIST_TRACK = 'chat_playlist_track'
+  CHAT_PLAYLIST_TRACK = 'chat_playlist_track',
+  SEARCH_PAGE = 'search page'
 }
 
 type PlaybackPlay = {

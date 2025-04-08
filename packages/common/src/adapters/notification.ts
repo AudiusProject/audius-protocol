@@ -1,4 +1,5 @@
 import { full, HashId } from '@audius/sdk'
+import dayjs from 'dayjs'
 
 import { BadgeTier, type ID } from '~/models'
 import type { ChallengeRewardID } from '~/models/AudioRewards'
@@ -11,13 +12,28 @@ import {
 } from '~/store/notifications/types'
 import { removeNullable } from '~/utils/typeUtils'
 
+const getTimeAgo = (date: number) => {
+  const now = dayjs()
+  const notifDate = dayjs.unix(date)
+  const weeksAgo = now.diff(notifDate, 'week')
+  if (weeksAgo) return `${weeksAgo} Week${weeksAgo > 1 ? 's' : ''} ago`
+  const daysAgo = now.diff(notifDate, 'day')
+  if (daysAgo) return `${daysAgo} Day${daysAgo > 1 ? 's' : ''} ago`
+  const hoursAgo = now.diff(notifDate, 'hour')
+  if (hoursAgo) return `${hoursAgo} Hour${hoursAgo > 1 ? 's' : ''} ago`
+  const minutesAgo = now.diff(notifDate, 'minute')
+  if (minutesAgo) return `${minutesAgo} Minute${minutesAgo > 1 ? 's' : ''} ago`
+  return 'A few moments ago'
+}
+
 function formatBaseNotification(notification: full.Notification) {
   const timestamp = notification.actions[0].timestamp
   return {
     groupId: notification.groupId,
     timestamp,
     isViewed: !!notification.seenAt,
-    id: `timestamp:${timestamp}:group_id:${notification.groupId}`
+    id: `timestamp:${timestamp}:group_id:${notification.groupId}`,
+    timeLabel: getTimeAgo(timestamp)
   }
 }
 
@@ -294,8 +310,8 @@ export const notificationFromSDK = (
     case 'cosign': {
       const data = notification.actions[0].data
       const entityType = Entity.Track
-      const entityIds = [HashId.parse(data.parentTrackId)]
       const childTrackId = HashId.parse(data.trackId)
+      const entityIds = [HashId.parse(data.parentTrackId), childTrackId]
       const parentTrackUserId = HashId.parse(notification.actions[0].specifier)
       const userId = HashId.parse(data.trackOwnerId)
 

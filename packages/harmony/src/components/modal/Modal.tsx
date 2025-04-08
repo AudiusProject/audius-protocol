@@ -135,7 +135,8 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
     dismissOnClickOutside = true,
     showDismissButton = false,
     zIndex,
-    size
+    size,
+    className
   },
   ref
 ) {
@@ -300,7 +301,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
   }
   /** End @deprecated section  */
 
-  const bodyClassNames = cn(styles.body, {
+  const bodyClassNames = cn(styles.body, className, {
     [styles.noScroll!]: !allowScroll,
     [styles[`size${capitalize(size)}`]]: size,
     [bodyClassName!]: !!bodyClassName

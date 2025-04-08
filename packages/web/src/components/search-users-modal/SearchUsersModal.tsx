@@ -3,14 +3,14 @@ import {
   ReactNode,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState
 } from 'react'
 
-import { useProxySelector } from '@audius/common/hooks'
+import { useUsers } from '@audius/common/api'
 import { ID, Status, User } from '@audius/common/models'
 import {
-  cacheUsersSelectors,
   searchUsersModalActions,
   searchUsersModalSelectors
 } from '@audius/common/store'
@@ -43,7 +43,6 @@ const DEBOUNCE_MS = 100
 
 const { searchUsers } = searchUsersModalActions
 const { getUserList, getLastSearchQuery } = searchUsersModalSelectors
-const { getUsers } = cacheUsersSelectors
 
 type UsersSearchProps = {
   debounceMs?: number
@@ -93,16 +92,12 @@ export const UsersSearch = (props: UsersSearchProps) => {
   const { userIds, hasMore, status } = useSelector(getUserList)
   const lastSearchQuery = useSelector(getLastSearchQuery)
 
-  const users = useProxySelector(
-    (state) => {
-      const unfilteredIds = hasQuery ? userIds : defaultUserList.userIds
-      const excludedUserIdsSet = new Set(excludedUserIds ?? [])
-      const ids = unfilteredIds.filter((id) => !excludedUserIdsSet.has(id))
-      const users = getUsers(state, { ids })
-      return ids.map((id) => users[id])
-    },
-    [excludedUserIds, hasQuery, userIds]
-  )
+  const ids = useMemo(() => {
+    const unfilteredIds = hasQuery ? userIds : defaultUserList.userIds
+    const excludedUserIdsSet = new Set(excludedUserIds ?? [])
+    return unfilteredIds.filter((id) => !excludedUserIdsSet.has(id))
+  }, [hasQuery, userIds, defaultUserList.userIds, excludedUserIds])
+  const { data: users } = useUsers(ids)
 
   useDebounce(
     () => {
@@ -191,9 +186,10 @@ export const UsersSearch = (props: UsersSearchProps) => {
           }
           threshold={48}
         >
-          {!hasQuery &&
-          !defaultUserList.loading &&
-          defaultUserList.userIds.length === 0
+          {(!hasQuery &&
+            !defaultUserList.loading &&
+            defaultUserList.userIds.length === 0) ||
+          !users?.length
             ? renderEmpty()
             : users.map((user) => renderUser(user, handleClose))}
         </InfiniteScroll>

@@ -1,6 +1,6 @@
 import { forwardRef, ReactNode, useCallback, useEffect, useState } from 'react'
 
-import { useRelatedArtists } from '@audius/common/api'
+import { useRelatedArtistsUsers } from '@audius/common/api'
 import { Name, FollowSource, SquareSizes, ID } from '@audius/common/models'
 import { usersSocialActions as socialActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -122,7 +122,7 @@ export const ArtistRecommendations = forwardRef<
   const dispatch = useDispatch()
   const [hasFollowedAll, setHasFollowedAll] = useState(false)
 
-  const { data: suggestedArtists = [] } = useRelatedArtists({
+  const { data: suggestedArtists = [] } = useRelatedArtistsUsers({
     artistId,
     filterFollowed: true,
     pageSize: 7

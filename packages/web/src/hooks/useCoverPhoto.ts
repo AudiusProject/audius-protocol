@@ -1,17 +1,15 @@
+import { useUser } from '@audius/common/api'
 import {
   imageCoverPhotoBlank,
   imageProfilePicEmpty
 } from '@audius/common/assets'
 import { useImageSize } from '@audius/common/hooks'
 import { SquareSizes, WidthSizes, ID } from '@audius/common/models'
-import { cacheUsersSelectors } from '@audius/common/store'
+import { pick } from 'lodash'
 
 import { preload } from 'utils/image'
-import { useSelector } from 'utils/reducer'
 
 import { useProfilePicture } from './useProfilePicture'
-
-const { getUser } = cacheUsersSelectors
 
 export const useCoverPhoto = ({
   userId,
@@ -30,10 +28,13 @@ export const useCoverPhoto = ({
         : SquareSizes.SIZE_1000_BY_1000,
     defaultImage: imageProfilePicEmpty
   })
-  const user = useSelector((state) => getUser(state, { id: userId }))
-  const coverPhoto = user?.cover_photo
+  const { data: partialUser } = useUser(userId, {
+    select: (user) => pick(user, 'cover_photo', 'updatedCoverPhoto')
+  })
+  const { cover_photo, updatedCoverPhoto } = partialUser ?? {}
+
   const image = useImageSize({
-    artwork: coverPhoto,
+    artwork: cover_photo,
     targetSize: size,
     defaultImage: defaultImage ?? imageCoverPhotoBlank,
     preloadImageFn: preload
@@ -43,8 +44,8 @@ export const useCoverPhoto = ({
   const isDefaultProfile = profilePicture === imageProfilePicEmpty
   const shouldBlur = isDefaultCover && !isDefaultProfile
 
-  if (user?.updatedCoverPhoto && !shouldBlur) {
-    return { image: user.updatedCoverPhoto.url, shouldBlur }
+  if (updatedCoverPhoto && !shouldBlur) {
+    return { image: updatedCoverPhoto.url, shouldBlur }
   }
 
   return { image: shouldBlur ? profilePicture : image, shouldBlur }

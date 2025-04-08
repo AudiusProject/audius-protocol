@@ -1,6 +1,10 @@
 import { useContext } from 'react'
 
-import { useGetTrackById, useToggleFavoriteTrack } from '@audius/common/api'
+import {
+  useGetTrackById,
+  useRemixContest,
+  useToggleFavoriteTrack
+} from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -11,7 +15,6 @@ import {
 import {
   accountSelectors,
   cacheCollectionsActions,
-  cacheTracksActions,
   collectionPageSelectors,
   tracksSocialActions,
   addToCollectionUIActions,
@@ -19,10 +22,13 @@ import {
   playbackPositionSelectors,
   CommonState,
   artistPickModalActions,
-  useDeleteTrackConfirmationModal
+  useDeleteTrackConfirmationModal,
+  shareModalUIActions,
+  useHostRemixContestModal
 } from '@audius/common/store'
 import { Genre, Nullable, route } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/harmony'
+import { EventEntityTypeEnum } from '@audius/sdk'
 import { connect, useDispatch, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
@@ -32,12 +38,14 @@ import { AppState } from 'store/types'
 import { push } from 'utils/navigation'
 import { albumPage } from 'utils/route'
 
+const { requestOpen: requestOpenShareModal } = shareModalUIActions
+
 const { profilePage } = route
 const { requestOpen: openAddToCollection } = addToCollectionUIActions
-const { repostTrack, undoRepostTrack, shareTrack } = tracksSocialActions
+const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
+  tracksSocialActions
 const { getCollectionId } = collectionPageSelectors
 const { addTrackToPlaylist } = cacheCollectionsActions
-const { deleteTrack } = cacheTracksActions
 const { getAccountOwnedPlaylists, getUserId } = accountSelectors
 const { clearTrackPosition, setTrackPosition } = playbackPositionActions
 const { getUserTrackPositions } = playbackPositionSelectors
@@ -65,7 +73,9 @@ const messages = {
   markAsPlayed: 'Mark as Played',
   markedAsPlayed: 'Marked as Played',
   markAsUnplayed: 'Mark as Unplayed',
-  markedAsUnplayed: 'Marked as Unplayed'
+  markedAsUnplayed: 'Marked as Unplayed',
+  hostRemixContest: 'Host Remix Contest',
+  editRemixContest: 'Edit Remix Contest'
 }
 
 export type OwnProps = {
@@ -82,6 +92,7 @@ export type OwnProps = {
   includeFavorite?: boolean
   includeRepost?: boolean
   includeShare?: boolean
+  includeRemixContest?: boolean
   includeAlbumPage?: boolean
   includeTrackPage?: boolean
   isArtistPick?: boolean
@@ -128,7 +139,7 @@ const TrackMenu = ({
   const currentUserId = useSelector(getUserId)
   const { onOpen: openDeleteTrackConfirmation } =
     useDeleteTrackConfirmationModal()
-
+  const { onOpen: openHostRemixContest } = useHostRemixContestModal()
   const { data: track } = useGetTrackById({ id: props.trackId })
 
   const toggleSaveTrack = useToggleFavoriteTrack({
@@ -136,12 +147,16 @@ const TrackMenu = ({
     source: FavoriteSource.OVERFLOW
   })
 
+  const { data: events } = useRemixContest(props.trackId, {
+    entityType: EventEntityTypeEnum.Track
+  })
+  const event = events?.[0]
+
   const onDeleteTrack = (trackId: Nullable<number>) => {
     if (!trackId) return
+
     openDeleteTrackConfirmation({
-      confirmCallback: () => {
-        dispatch(deleteTrack(trackId))
-      }
+      trackId
     })
   }
 
@@ -161,6 +176,7 @@ const TrackMenu = ({
       handle,
       includeRepost,
       includeShare,
+      includeRemixContest,
       openAddToCollectionModal,
       openEmbedModal,
       repostTrack,
@@ -179,12 +195,7 @@ const TrackMenu = ({
 
     const shareMenuItem = {
       text: messages.share,
-      onClick: () => {
-        if (trackId) {
-          shareTrack(trackId)
-          toast(messages.copiedToClipboard)
-        }
-      }
+      onClick: () => shareTrack(trackId)
     }
 
     const repostMenuItem = {
@@ -298,7 +309,18 @@ const TrackMenu = ({
       onClick: () => openEmbedModal(trackId)
     }
 
+    const remixContestMenuItem = {
+      text: event ? messages.editRemixContest : messages.hostRemixContest,
+      onClick: () => {
+        openHostRemixContest({ trackId })
+      }
+    }
+
     const menu: { items: PopupMenuItem[] } = { items: [] }
+
+    if (includeRemixContest && isOwner && !isDeleted) {
+      menu.items.push(remixContestMenuItem)
+    }
 
     if (includeShare && !isDeleted) {
       menu.items.push(shareMenuItem)
@@ -369,7 +391,17 @@ function mapDispatchToProps(dispatch: Dispatch) {
     addTrackToPlaylist: (trackId: ID, playlistId: ID) =>
       dispatch(addTrackToPlaylist(trackId, playlistId)),
     shareTrack: (trackId: ID) =>
-      dispatch(shareTrack(trackId, ShareSource.OVERFLOW)),
+      dispatch(
+        requestOpenShareModal({
+          type: 'track',
+          trackId,
+          source: ShareSource.OVERFLOW
+        })
+      ),
+    saveTrack: (trackId: ID) =>
+      dispatch(saveTrack(trackId, FavoriteSource.OVERFLOW)),
+    unsaveTrack: (trackId: ID) =>
+      dispatch(unsaveTrack(trackId, FavoriteSource.OVERFLOW)),
     repostTrack: (trackId: ID) =>
       dispatch(repostTrack(trackId, RepostSource.OVERFLOW)),
     undoRepostTrack: (trackId: ID) =>

@@ -9,7 +9,8 @@ const onDemandRun = async (app: App<SharedData>) => {
   // Run on demand only if runNow is true
   const { runNow } = app.viewAppData()
   if (runNow) {
-    await announceTopFiveTrending(app)
+    // Uncomment to also announce to slack
+    // await announceTopFiveTrending(app)
     await disburseTrendingRewards(app)
   }
 }
@@ -23,9 +24,9 @@ export const main = async () => {
     .run()
 }
 
-// Friday at 12:10 pm PST, extra minutes for trending to calculate
+// Friday at 12:15 pm PST, extra minutes for trending to calculate
 cron.schedule(
-  '10 12 * * 5',
+  '15 12 * * 5',
   () => {
     initSharedData().then((data) => {
       // make new appdata instance to satisfy types

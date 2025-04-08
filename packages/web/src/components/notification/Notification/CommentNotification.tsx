@@ -62,7 +62,7 @@ export const CommentNotification = (props: CommentNotificationProps) => {
           setUserListUsers({
             userListType: UserListType.NOTIFICATION,
             entityType: entityToUserListEntity[entityType],
-            id: id as unknown as number
+            entity: notification
           })
         )
         if (isMobile) {
@@ -83,7 +83,7 @@ export const CommentNotification = (props: CommentNotificationProps) => {
     },
     [
       isMultiUser,
-      notification.entityId,
+      notification,
       dispatch,
       entityType,
       id,

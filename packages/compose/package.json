@@ -14,7 +14,8 @@
     "@pedalboard/solana-relay": "*",
     "@pedalboard/crm": "*",
     "@pedalboard/trending-challenge-rewards": "*",
-    "@pedalboard/staking": "*"
+    "@pedalboard/staking": "*",
+    "@pedalboard/archiver": "*"
   },
   "license": "ISC"
 }

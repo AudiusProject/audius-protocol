@@ -6,7 +6,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
-import { messages } from './types'
+import { CommentOrReply, messages } from './types'
 import { getCommentQueryKey } from './utils'
 
 export type UpdateCommentNotificationSettingArgs = {
@@ -36,9 +36,12 @@ export const useUpdateCommentNotificationSetting = () => {
           return {
             ...prevData,
             isMuted: action === EntityManagerAction.MUTE
-          }
+          } as CommentOrReply
         }
-        return { isMuted: action === EntityManagerAction.MUTE }
+        // TODO: this might be a bug. Shouldn't be storing non-CommentOrReply data in the cache
+        return {
+          isMuted: action === EntityManagerAction.MUTE
+        } as CommentOrReply
       })
     },
     onError: (error: Error, args) => {

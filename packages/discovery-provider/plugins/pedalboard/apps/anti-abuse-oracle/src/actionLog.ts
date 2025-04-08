@@ -83,7 +83,7 @@ export async function getRecentUsers(page: number) {
   ${sql.unsafe(buildUserDetails)}
   where handle_lc is not null
   order by created_at desc
-  LIMIT 10 OFFSET ${(page + 27) * 10}
+  LIMIT 10 OFFSET ${page * 10}
   `
   if (!rows.length) return
   return rows.map((row) => row.user as UserDetails)
@@ -107,59 +107,15 @@ export async function getUserScore(userId: number) {
 
 export async function getUserNormalizedScore(userId: number) {
   const rows = await sql`
-WITH scoped_users as (
-select * from users
-where user_id = ${userId}
-order by created_at desc
-limit 100
-),
-play_activity AS (
-    SELECT user_id,
-          COUNT(DISTINCT date_trunc('minute', plays.created_at)) AS play_count
-    FROM plays
-    WHERE user_id IS NOT NULL
-    AND user_id in (select user_id from scoped_users)
-    GROUP BY user_id
-),
-fast_challenge_completion AS (
-    SELECT users.user_id,
-          handle_lc,
-          users.created_at,
-          COUNT(*) AS challenge_count,
-          ARRAY_AGG(user_challenges.challenge_id) AS challenge_ids
-    FROM users
-    LEFT JOIN user_challenges ON users.user_id = user_challenges.user_id
-    WHERE user_challenges.is_complete
-      AND user_challenges.completed_at - users.created_at <= INTERVAL '3 minutes'
-      AND user_challenges.challenge_id not in ('m', 'b')
-    AND users.user_id in (select user_id from scoped_users)
-    GROUP BY users.user_id, users.handle_lc, users.created_at
-    ORDER BY users.created_at DESC
-),
-aggregate_scores AS (
-    SELECT
-        users.handle_lc,
-        users.created_at,
-        COALESCE(play_activity.play_count, 0) AS play_count,
-        COALESCE(fast_challenge_completion.challenge_count, 0) AS challenge_count,
-        COALESCE(aggregate_user.following_count, 0) AS following_count,
-        COALESCE(aggregate_user.follower_count, 0) AS follower_count
-    FROM users
-    LEFT JOIN play_activity ON users.user_id = play_activity.user_id
-    LEFT JOIN fast_challenge_completion ON users.user_id = fast_challenge_completion.user_id
-    LEFT JOIN aggregate_user ON aggregate_user.user_id = users.user_id
-    WHERE users.handle_lc IS NOT NULL
-    AND users.user_id in (select user_id from scoped_users)
-    ORDER BY users.created_at DESC
-)
-SELECT
-	a.handle_lc,
- 	a.created_at as "timestamp",
-    a.play_count,
-    a.follower_count,
-    a.challenge_count,
-    a.following_count
-FROM aggregate_scores a
+    SELECT 
+      user_scores.handle_lc,
+      users.created_at as timestamp,
+      user_scores.*,
+      anti_abuse_blocked_users.is_blocked 
+    FROM get_user_scores(${[userId]}) as user_scores
+    LEFT JOIN users on users.user_id = user_scores.user_id
+    LEFT JOIN anti_abuse_blocked_users ON anti_abuse_blocked_users.handle_lc = user_scores.handle_lc
+
   `
   const {
     handle_lc,
@@ -167,23 +123,27 @@ FROM aggregate_scores a
     play_count,
     follower_count,
     challenge_count,
-    following_count
+    following_count,
+    chat_block_count,
+    is_audius_impersonator,
+    score: shadowban_score,
+    is_blocked
   } = rows[0]
 
   // Convert values to numbers
-  const playCount = Number(play_count)
-  const followerCount = Number(follower_count)
-  const challengeCount = Number(challenge_count)
-  const followingCount = Number(following_count)
+  const shadowbanScore = Number(shadowban_score)
 
   const numberOfUserWithFingerprint = (await useFingerprintDeviceCount(userId))!
 
-  const overallScore =
-    playCount +
-    followerCount -
-    challengeCount -
-    (followingCount < 5 ? -1 : 0) -
-    numberOfUserWithFingerprint
+  let overallScore = shadowbanScore - numberOfUserWithFingerprint
+
+  // override score
+  if (is_blocked === true) {
+    overallScore = -1000
+  } else if (is_blocked === false) {
+    overallScore = 1000
+  }
+
   const normalizedScore = Math.min(
     (overallScore - MIN_SCORE) / (MAX_SCORE - MIN_SCORE),
     1
@@ -195,7 +155,11 @@ FROM aggregate_scores a
     followerCount: follower_count,
     challengeCount: challenge_count,
     followingCount: following_count,
+    chatBlockCount: chat_block_count,
     fingerprintCount: numberOfUserWithFingerprint,
+    isAudiusImpersonator: is_audius_impersonator,
+    isBlocked: is_blocked,
+    shadowbanScore,
     overallScore,
     normalizedScore
   }

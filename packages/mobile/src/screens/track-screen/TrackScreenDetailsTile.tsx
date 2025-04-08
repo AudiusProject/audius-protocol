@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 
-import { useToggleFavoriteTrack } from '@audius/common/api'
+import { useRemixContest, useToggleFavoriteTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,
@@ -43,6 +43,7 @@ import {
   useEarlyReleaseConfirmationModal
 } from '@audius/common/store'
 import { formatReleaseDate, Genre, removeNullable } from '@audius/common/utils'
+import { EventEntityTypeEnum } from '@audius/sdk'
 import dayjs from 'dayjs'
 import { TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -50,18 +51,19 @@ import { useDispatch, useSelector } from 'react-redux'
 import {
   Box,
   Button,
-  Divider,
   Flex,
   IconCalendarMonth,
   IconPause,
   IconPlay,
   IconRepeatOff,
   IconVisibilityHidden,
+  IconCloudUpload,
   MusicBadge,
   Paper,
   Text,
   spacing,
-  type ImageProps
+  type ImageProps,
+  Divider
 } from '@audius/harmony-native'
 import CoSign, { Size } from 'app/components/co-sign'
 import { useCommentDrawer } from 'app/components/comments/CommentDrawerContext'
@@ -113,7 +115,14 @@ const messages = {
   preview: 'Preview',
   hidden: 'Hidden',
   releases: (releaseDate: string) =>
-    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
+    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`,
+  remixContest: 'Remix Contest',
+  contestDeadline: 'Contest Deadline',
+  deadline: (deadline?: string) =>
+    deadline
+      ? `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`
+      : '',
+  uploadRemixButtonText: 'Upload Your Remix'
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -218,9 +227,14 @@ export const TrackScreenDetailsTile = ({
     track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
   const aiAttributionUserId = track?.ai_attribution_user_id
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
-  const { isEnabled: isCommentsEnabled } = useFeatureFlag(
-    FeatureFlags.COMMENTS_ENABLED
+  const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
+    FeatureFlags.REMIX_CONTEST
   )
+  const { data: events } = useRemixContest(trackId, {
+    entityType: EventEntityTypeEnum.Track
+  })
+  const event = events?.[0]
+  const isRemixContest = isRemixContestEnabled && event
 
   const isPlayingPreview = isPreviewing && isPlaying
   const isPlayingFullAccess = isPlaying && !isPreviewing
@@ -236,17 +250,16 @@ export const TrackScreenDetailsTile = ({
   const shouldHideRepostCount =
     isUnlisted || (!isOwner && (repostCount ?? 0) <= 0)
   const shouldHideCommentCount =
-    !isCommentsEnabled ||
-    isUnlisted ||
-    commentsDisabled ||
-    (!isOwner && (commentCount ?? 0) <= 0)
+    isUnlisted || commentsDisabled || (!isOwner && (commentCount ?? 0) <= 0)
   const shouldHidePlayCount =
     (!isOwner && isUnlisted) ||
     isStreamGated ||
     (!isOwner && (playCount ?? 0) <= 0)
 
   let headerText
-  if (isRemix) {
+  if (isRemixContest) {
+    headerText = messages.remixContest
+  } else if (isRemix) {
     headerText = messages.remix
   } else if (isStreamGated) {
     if (isContentCollectibleGated(streamConditions)) {
@@ -420,6 +433,9 @@ export const TrackScreenDetailsTile = ({
     const addToAlbumAction =
       isOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null
     const overflowActions = [
+      isOwner && isRemixContestEnabled
+        ? OverflowAction.HOST_REMIX_CONTEST
+        : null,
       addToAlbumAction,
       !isUnlisted || isOwner ? OverflowAction.ADD_TO_PLAYLIST : null,
       isOwner
@@ -473,6 +489,45 @@ export const TrackScreenDetailsTile = ({
     publish
   ])
 
+  const handlePressSubmitRemix = useCallback(() => {
+    if (!track?.track_id) return
+    navigation.push('Upload', {
+      initialMetadata: {
+        is_remix: true,
+        remix_of: {
+          tracks: [{ parent_track_id: track.track_id }]
+        }
+      }
+    })
+  }, [navigation, track])
+
+  const renderRemixContestSection = () => {
+    if (!isRemixContest) return null
+    return (
+      <Flex gap='m'>
+        <Flex row gap='xs' alignItems='center'>
+          <Text variant='label' color='accent'>
+            {messages.contestDeadline}
+          </Text>
+          <Text size='s' strength='strong'>
+            {messages.deadline(event?.endDate)}
+          </Text>
+        </Flex>
+        {!isOwner ? (
+          <Flex flex={1}>
+            <Button
+              variant='secondary'
+              size='small'
+              iconLeft={IconCloudUpload}
+              onPress={handlePressSubmitRemix}
+            >
+              {messages.uploadRemixButtonText}
+            </Button>
+          </Flex>
+        ) : null}
+      </Flex>
+    )
+  }
   const renderBottomContent = () => {
     return hasDownloadableAssets ? (
       <>
@@ -642,9 +697,10 @@ export const TrackScreenDetailsTile = ({
         ) : null}
         <TrackMetadataList trackId={trackId} />
         {renderTags()}
+        {renderRemixContestSection()}
         <OfflineStatusRow contentId={trackId} isCollection={false} />
+        {renderBottomContent()}
       </Flex>
-      {renderBottomContent()}
     </Paper>
   )
 }

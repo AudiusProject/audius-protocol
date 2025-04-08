@@ -1,13 +1,11 @@
 import { useCallback, useEffect } from 'react'
 
+import { useTrack, useUser } from '@audius/common/api'
 import { DownloadQuality } from '@audius/common/models'
 import {
-  CommonState,
   useWaitForDownloadModal,
-  cacheTracksSelectors,
   tracksSocialActions,
-  downloadsSelectors,
-  cacheUsersSelectors
+  downloadsSelectors
 } from '@audius/common/store'
 import { getFilename } from '@audius/common/utils'
 import {
@@ -21,7 +19,7 @@ import {
   ModalTitle
 } from '@audius/harmony'
 import cn from 'classnames'
-import { shallowEqual, useDispatch, useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import ModalDrawer from 'components/modal-drawer/ModalDrawer'
@@ -29,8 +27,6 @@ import { useIsMobile } from 'hooks/useIsMobile'
 
 import styles from './WaitForDownloadModal.module.css'
 
-const { getTrack } = cacheTracksSelectors
-const { getUser } = cacheUsersSelectors
 const { getDownloadError } = downloadsSelectors
 
 const messages = {
@@ -49,15 +45,8 @@ export const WaitForDownloadModal = () => {
     data: { parentTrackId, trackIds, quality }
   } = useWaitForDownloadModal()
   const dispatch = useDispatch()
-  const track = useSelector(
-    (state: CommonState) =>
-      getTrack(state, { id: parentTrackId ?? trackIds[0] }),
-    shallowEqual
-  )
-  const user = useSelector(
-    (state: CommonState) => getUser(state, { id: track?.owner_id }),
-    shallowEqual
-  )
+  const { data: track } = useTrack(parentTrackId ?? trackIds[0])
+  const { data: user } = useUser(track?.owner_id)
 
   const downloadError = useSelector(getDownloadError)
 

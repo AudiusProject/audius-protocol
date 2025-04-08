@@ -59,7 +59,8 @@ export const FollowNotification = (props: FollowNotificationProps) => {
         setUserListUsers({
           userListType: UserListType.NOTIFICATION,
           entityType: UserListEntityType.USER,
-          id: id as unknown as number
+          id: id as unknown as number,
+          entity: notification
         })
       )
       if (isMobile) {
@@ -72,7 +73,7 @@ export const FollowNotification = (props: FollowNotificationProps) => {
         dispatch(push(profilePage(firstUser.handle)))
       }
     }
-  }, [isMultiUser, dispatch, id, firstUser, isMobile])
+  }, [isMultiUser, dispatch, id, notification, isMobile, firstUser])
 
   if (!users || !firstUser) return null
 

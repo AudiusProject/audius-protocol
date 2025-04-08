@@ -96,7 +96,7 @@ export const NotificationList = () => {
 
   const {
     notifications,
-    isLoading: isPending,
+    isAllPending: isPending,
     isError,
     fetchNextPage,
     refetch,

@@ -93,7 +93,8 @@ const CollectionPlayerContainer = ({
     seekTo,
     onTogglePlay,
     stop,
-    initAudio
+    initAudio,
+    audioPlayer
   } = usePlayback(getId(activeTrackIndex), onTrackEnd)
 
   // Setup recording listens
@@ -181,6 +182,7 @@ const CollectionPlayerContainer = ({
         seekTo={seekTo}
         isTwitter={isTwitter}
         streamConditions={collection.streamConditions}
+        audioPlayer={audioPlayer}
       />
     </>
   )

@@ -1,10 +1,10 @@
+import { queryUser } from '@audius/common/api'
 import {
   Kind,
   ID,
   Name,
   PlaybackSource,
   LineupState,
-  User,
   Collectible,
   Track,
   Collection,
@@ -16,7 +16,6 @@ import {
   cacheCollectionsSelectors,
   cacheTracksSelectors,
   cacheActions,
-  cacheUsersSelectors,
   lineupRegistry,
   queueActions,
   queueSelectors,
@@ -31,6 +30,7 @@ import {
 } from '@audius/common/store'
 import { Uid, makeUid, waitForAccount, Nullable } from '@audius/common/utils'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
+import { PREFIX as SEARCH_PREFIX } from '~/store/pages/search-results/lineup/tracks/actions'
 
 import { make } from 'common/store/analytics/actions'
 import { getRecommendedTracks } from 'common/store/recommendation/sagas'
@@ -58,7 +58,6 @@ const {
 } = playerSelectors
 
 const { add, clear, next, pause, play, queueAutoplay, previous } = queueActions
-const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
 const { getUserId } = accountSelectors
@@ -193,8 +192,8 @@ function* watchPlay() {
         track: playActionTrack
       })
 
-      const user: User | null = playActionTrack
-        ? yield* select(getUser, { id: playActionTrack.owner_id })
+      const user = playActionTrack
+        ? yield* queryUser(playActionTrack.owner_id)
         : null
 
       // Skip deleted tracks
@@ -303,11 +302,12 @@ function* fetchLineupTracks(currentTrack: Track) {
   const lineupEntry = lineupRegistry[source]
   if (!lineupEntry) return
 
+  // NOTE: SPECIAL CASE - For tan-query search we don't want this behavior
+  if (lineupEntry.actions.prefix === SEARCH_PREFIX) return
+
   const currentProfileUserHandle = yield* select(getProfileUserHandle)
 
-  const currentTrackOwner = yield* select(getUser, {
-    id: currentTrack.owner_id
-  })
+  const currentTrackOwner = yield* queryUser(currentTrack.owner_id)
 
   // NOTE: This is a bandaid fix. On the profile page when on the reposts lineup,
   // we need to select the lineup using the handle of the profile page user, not the handle of the track owner
@@ -370,7 +370,7 @@ function* watchNext() {
       | PlayerBehavior
       | undefined
     const track = yield* select(getTrack, { id })
-    const user = yield* select(getUser, { id: track?.owner_id })
+    const user = yield* queryUser(track?.owner_id)
     const doesUserHaveStreamAccess =
       !track?.is_stream_gated || !!track?.access?.stream
 
@@ -484,7 +484,7 @@ function* watchPrevious() {
         | undefined
       const track = yield* select(getTrack, { id })
       const source = yield* select(getSource)
-      const user = yield* select(getUser, { id: track?.owner_id })
+      const user = yield* queryUser(track?.owner_id)
       const doesUserHaveStreamAccess =
         !track?.is_stream_gated || !!track?.access?.stream
 

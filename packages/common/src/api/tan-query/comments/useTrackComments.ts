@@ -79,7 +79,7 @@ export const useTrackComments = (
     enabled: isMutating === 0 && options?.enabled !== false && !!trackId
   })
 
-  const { error, data: commentIds = [] } = queryRes
+  const { error, data: commentIds } = queryRes
 
   useEffect(() => {
     if (error) {
@@ -92,29 +92,17 @@ export const useTrackComments = (
     }
   }, [error, dispatch, reportToSentry])
 
-  const commentsQuery = useComments(commentIds)
-  const { data: comments } = commentsQuery
-
-  // Merge the loading states from both queries
-  const isLoading = queryRes.isLoading || commentsQuery.isLoading
-  const isPending = queryRes.isPending || commentsQuery.isPending
-  const isFetching = queryRes.isFetching || commentsQuery.isFetching
-  const isSuccess = queryRes.isSuccess && commentsQuery.isSuccess
-
-  // Determine the overall status based on both queries
-  let status = queryRes.status
-  if (queryRes.status === 'success' && commentsQuery.status !== 'success') {
-    status = commentsQuery.status
-  }
+  const { data: comments } = useComments(commentIds)
 
   return {
-    ...queryRes,
-    data: comments,
     commentIds,
-    isLoading,
-    isPending,
-    isFetching,
-    isSuccess,
-    status
+    data: comments,
+    isPending: queryRes.isPending,
+    isLoading: queryRes.isLoading,
+    isFetching: queryRes.isFetching,
+    status: queryRes.status,
+    hasNextPage: queryRes.hasNextPage,
+    isFetchingNextPage: queryRes.isFetchingNextPage,
+    fetchNextPage: queryRes.fetchNextPage
   }
 }

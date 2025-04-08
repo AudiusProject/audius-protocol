@@ -69,7 +69,7 @@ import FollowersPage from 'pages/followers-page/FollowersPage'
 import FollowingPage from 'pages/following-page/FollowingPage'
 import HistoryPage from 'pages/history-page/HistoryPage'
 import { NotFoundPage } from 'pages/not-found-page/NotFoundPage'
-import NotificationUsersPage from 'pages/notification-users-page/NotificationUsersPage'
+import { NotificationUsersPage } from 'pages/notification-users-page/NotificationUsersPage'
 import { PayAndEarnPage } from 'pages/pay-and-earn-page/PayAndEarnPage'
 import { TableType } from 'pages/pay-and-earn-page/types'
 import { PremiumTracksPage } from 'pages/premium-tracks-page/PremiumTracksPage'
@@ -87,6 +87,7 @@ import SupportingPage from 'pages/supporting-page/SupportingPage'
 import TopSupportersPage from 'pages/top-supporters-page/TopSupportersPage'
 import { TrackCommentsPage } from 'pages/track-page/TrackCommentsPage'
 import TrackPage from 'pages/track-page/TrackPage'
+import { TransactionHistoryPage } from 'pages/transaction-history-page/TransactionHistoryPage'
 import TrendingPage from 'pages/trending-page/TrendingPage'
 import TrendingPlaylistsPage from 'pages/trending-playlists/TrendingPlaylistPage'
 import TrendingUndergroundPage from 'pages/trending-underground/TrendingUndergroundPage'
@@ -180,6 +181,7 @@ const {
   WITHDRAWALS_PAGE,
   PURCHASES_PAGE,
   SALES_PAGE,
+  TRANSACTION_HISTORY_PAGE,
   AUTHORIZED_APPS_SETTINGS_PAGE,
   ACCOUNTS_MANAGING_YOU_SETTINGS_PAGE,
   ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE,
@@ -766,6 +768,12 @@ class WebPlayer extends Component {
                   render={(props) => (
                     <PayAndEarnPage {...props} tableView={TableType.SALES} />
                   )}
+                />
+                <Route
+                  exact
+                  path={TRANSACTION_HISTORY_PAGE}
+                  isMobile={isMobile}
+                  component={TransactionHistoryPage}
                 />
                 <Route
                   exact

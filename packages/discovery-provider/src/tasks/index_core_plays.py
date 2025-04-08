@@ -42,6 +42,10 @@ def index_core_plays(
 ) -> Optional[int]:
     indexed_slot: Optional[int] = None
     for tx in block.transaction_responses:
+        tx_type = tx.transaction.WhichOneof("transaction")
+        if tx_type != "plays":
+            continue
+
         indexed_slot = index_core_play(
             logger=logger,
             session=session,

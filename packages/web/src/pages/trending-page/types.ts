@@ -1,4 +1,5 @@
 import { TimeRange, ID, UID, Lineup, Track, User } from '@audius/common/models'
+import { Genre } from '@audius/sdk'
 
 type ExtraTrendingLineupProps = {}
 
@@ -35,7 +36,7 @@ export interface TrendingPageContentProps {
   }
   resetTrendingLineup: () => void
 
-  trendingGenre: string | null
+  trendingGenre: Genre | null
   trendingTimeRange: TimeRange
   lastFetchedTrendingGenre: string | null
   setTrendingGenre: (genre: string | null) => void

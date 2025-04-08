@@ -1,5 +1,10 @@
 import { useCallback, useContext, useEffect, useMemo } from 'react'
 
+import {
+  TRENDING_INITIAL_PAGE_SIZE,
+  TRENDING_LOAD_MORE_PAGE_SIZE,
+  useTrending
+} from '@audius/common/api'
 import { Name, TimeRange } from '@audius/common/models'
 import { trendingPageLineupActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -14,7 +19,7 @@ import { make, useRecord } from 'common/store/analytics/actions'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import { EndOfLineup } from 'components/lineup/EndOfLineup'
-import Lineup from 'components/lineup/Lineup'
+import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import { LineupVariant } from 'components/lineup/types'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, {
@@ -52,21 +57,27 @@ const tabHeaders = [
 const TrendingPageMobileContent = ({
   pageTitle,
   trendingDescription,
-
   trendingTimeRange,
   setTrendingTimeRange,
-
-  getLineupProps,
-  makePauseTrack,
-  makeLoadMore,
-  makePlayTrack,
-  trendingWeek,
-  trendingMonth,
-  trendingAllTime,
   makeSetInView,
   trendingGenre,
   goToGenreSelection
 }: TrendingPageContentProps) => {
+  const {
+    data,
+    isFetching,
+    isPending,
+    isError,
+    hasNextPage,
+    play,
+    pause,
+    loadNextPage,
+    isPlaying,
+    lineup
+  } = useTrending({
+    timeRange: trendingTimeRange,
+    genre: trendingGenre || undefined
+  })
   // Set Nav-Bar Menu
   const { setLeft, setCenter, setRight } = useContext(NavContext)!
   useEffect(() => {
@@ -74,20 +85,6 @@ const TrendingPageMobileContent = ({
     setRight(RightPreset.SEARCH)
     setCenter(CenterPreset.LOGO)
   }, [setLeft, setCenter, setRight])
-
-  // Setup lineups
-  const weekProps = useMemo(
-    () => getLineupProps(trendingWeek),
-    [getLineupProps, trendingWeek]
-  )
-  const monthProps = useMemo(
-    () => getLineupProps(trendingMonth),
-    [getLineupProps, trendingMonth]
-  )
-  const allTimeProps = useMemo(
-    () => getLineupProps(trendingAllTime),
-    [getLineupProps, trendingAllTime]
-  )
 
   const lineups = useMemo(() => {
     return [
@@ -97,59 +94,83 @@ const TrendingPageMobileContent = ({
             <RewardsBanner bannerType='tracks' />
           </div>
         ) : null}
-        <Lineup
+        <TanQueryLineup
+          data={data}
+          isFetching={isFetching}
+          isPending={isPending}
+          isError={isError}
+          hasNextPage={hasNextPage}
+          play={play}
+          pause={pause}
+          loadNextPage={loadNextPage}
+          isPlaying={isPlaying}
+          lineup={lineup}
           key={`trendingWeek-${trendingGenre}`}
-          {...weekProps}
-          setInView={makeSetInView(TimeRange.WEEK)}
-          loadMore={makeLoadMore(TimeRange.WEEK)}
-          playTrack={makePlayTrack(TimeRange.WEEK)}
-          pauseTrack={makePauseTrack(TimeRange.WEEK)}
+          pageSize={TRENDING_LOAD_MORE_PAGE_SIZE}
+          initialPageSize={TRENDING_INITIAL_PAGE_SIZE}
           actions={trendingWeekActions}
           variant={LineupVariant.MAIN}
           isTrending
-          endOfLineup={
+          endOfLineupElement={
             <EndOfLineup description={messages.endOfLineupDescription} />
           }
         />
       </>,
-      <Lineup
+      <TanQueryLineup
+        data={data}
+        isFetching={isFetching}
+        isPending={isPending}
+        isError={isError}
+        hasNextPage={hasNextPage}
+        play={play}
+        pause={pause}
+        loadNextPage={loadNextPage}
+        isPlaying={isPlaying}
+        lineup={lineup}
         key={`trendingMonth-${trendingGenre}`}
-        {...monthProps}
-        setInView={makeSetInView(TimeRange.MONTH)}
-        loadMore={makeLoadMore(TimeRange.MONTH)}
-        playTrack={makePlayTrack(TimeRange.MONTH)}
-        pauseTrack={makePauseTrack(TimeRange.MONTH)}
+        pageSize={TRENDING_LOAD_MORE_PAGE_SIZE}
+        initialPageSize={TRENDING_INITIAL_PAGE_SIZE}
         actions={trendingMonthActions}
         variant={LineupVariant.MAIN}
         isTrending
-        endOfLineup={
+        endOfLineupElement={
           <EndOfLineup description={messages.endOfLineupDescription} />
         }
       />,
-      <Lineup
+      <TanQueryLineup
+        data={data}
+        isFetching={isFetching}
+        isPending={isPending}
+        isError={isError}
+        hasNextPage={hasNextPage}
+        play={play}
+        pause={pause}
+        loadNextPage={loadNextPage}
+        isPlaying={isPlaying}
+        lineup={lineup}
         key={`trendingAllTime-${trendingGenre}`}
-        {...allTimeProps}
-        setInView={makeSetInView(TimeRange.ALL_TIME)}
-        loadMore={makeLoadMore(TimeRange.ALL_TIME)}
-        playTrack={makePlayTrack(TimeRange.ALL_TIME)}
-        pauseTrack={makePauseTrack(TimeRange.ALL_TIME)}
+        pageSize={TRENDING_LOAD_MORE_PAGE_SIZE}
+        initialPageSize={TRENDING_INITIAL_PAGE_SIZE}
         actions={trendingAllTimeActions}
         variant={LineupVariant.MAIN}
         isTrending
-        endOfLineup={
+        endOfLineupElement={
           <EndOfLineup description={messages.endOfLineupDescription} />
         }
       />
     ]
   }, [
-    makeLoadMore,
-    makePauseTrack,
-    makePlayTrack,
-    makeSetInView,
-    monthProps,
-    weekProps,
-    allTimeProps,
-    trendingGenre
+    trendingGenre,
+    data,
+    isFetching,
+    isPending,
+    isError,
+    hasNextPage,
+    play,
+    pause,
+    loadNextPage,
+    isPlaying,
+    lineup
   ])
   const record = useRecord()
 

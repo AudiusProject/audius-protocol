@@ -51,6 +51,7 @@ docker-tag-images:
             mri
             verified-notifications
             anti-abuse
+            archiver
           )
           identity=(
             identity-service

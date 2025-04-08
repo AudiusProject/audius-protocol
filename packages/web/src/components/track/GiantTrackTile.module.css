@@ -112,22 +112,6 @@
   gap: var(--harmony-unit-4);
 }
 
-.gatedContentSectionTitle {
-  display: flex;
-  align-items: center;
-  gap: var(--harmony-unit-2);
-  margin-bottom: var(--harmony-unit-2);
-}
-
-.gatedContentSectionDescription {
-  text-align: left;
-}
-
-.gatedContentSectionDescription > p {
-  display: flex;
-  align-items: center;
-}
-
 .collectibleImage {
   width: var(--harmony-unit-8);
   height: var(--harmony-unit-8);
@@ -167,12 +151,6 @@
 
 .collectibleName:active {
   color: var(--harmony-s-500);
-}
-
-.gatedContentIcon {
-  margin-right: var(--harmony-unit-2);
-  width: var(--harmony-unit-4);
-  height: var(--harmony-unit-4);
 }
 
 .gatedContentIcon path {
@@ -273,12 +251,6 @@
 
   .gatedContentDescriptionContainer {
     width: 100%;
-  }
-
-  .gatedContentSectionTitle:not(.isOwner) {
-    width: 100%;
-    flex-direction: row-reverse;
-    justify-content: space-between;
   }
 
   .gatedContentSectionButton {
