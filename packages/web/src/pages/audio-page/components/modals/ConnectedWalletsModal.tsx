@@ -307,18 +307,25 @@ const useConnectAndAssociateWallets = (
     track
   ])
 
+  /**
+   * Handle events from the modal.
+   * Typical flow is:
+   * 1) SELECT_WALLET: The user has selected wallet(s) to connect
+   * 2) MODAL_CLOSE: The modal was closed (it closes automatically after selection)
+   * 3) CONNECT_SUCCESS || CONNECT_ERROR: The selected wallet(s) were connected,
+   *    or failed to connect.
+   */
   useEffect(() => {
     return appkitModal.subscribeEvents(async (event) => {
-      // NOTE: This event fires after MODAL_CLOSE
-      if (event.data.event === 'CONNECT_SUCCESS') {
-        setIsConnecting(false)
-        await associateConnectedWallets()
+      if (event.data.event === 'SELECT_WALLET') {
+        setIsConnecting(true)
       } else if (event.data.event === 'MODAL_CLOSE') {
         if (!isConnecting && !isAssociating) {
           await reconnectExternalAuthWallet()
         }
-      } else if (event.data.event === 'SELECT_WALLET') {
-        setIsConnecting(true)
+      } else if (event.data.event === 'CONNECT_SUCCESS') {
+        setIsConnecting(false)
+        await associateConnectedWallets()
       } else if (event.data.event === 'CONNECT_ERROR') {
         setIsConnecting(false)
       }
@@ -331,7 +338,7 @@ const useConnectAndAssociateWallets = (
   ])
 
   return {
-    isPending: isAppKitModalOpen || isAssociating || isConnecting,
+    isPending: isAppKitModalOpen || isConnecting || isAssociating,
     openAppKitModal
   }
 }
