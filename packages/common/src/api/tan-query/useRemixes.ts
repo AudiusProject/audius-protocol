@@ -88,11 +88,13 @@ export const useRemixes = (
       )
       primeTrackData({ tracks: processedTracks, queryClient, dispatch })
 
-      const track = queryClient.getQueryData(getTrackQueryKey(trackId))
-      if (track && data.tracks && includeOriginal) {
-        const user = queryClient.getQueryData(getUserQueryKey(track.owner_id))
-        if (user) {
-          processedTracks = [{ ...track, user }, ...processedTracks]
+      if (includeOriginal && pageParam === 0) {
+        const track = queryClient.getQueryData(getTrackQueryKey(trackId))
+        if (track && data.tracks) {
+          const user = queryClient.getQueryData(getUserQueryKey(track.owner_id))
+          if (user) {
+            processedTracks = [{ ...track, user }, ...processedTracks]
+          }
         }
       }
 
@@ -116,10 +118,10 @@ export const useRemixes = (
     ...options,
     enabled: options?.enabled !== false && !!trackId
   })
-  const cachedData = queryClient.getQueryData(
-    getRemixesQueryKey({ trackId, pageSize, includeOriginal })
-  )
-  console.log('asdf cached Data:', cachedData)
+  // const cachedData = queryClient.getQueryData(
+  //   getRemixesQueryKey({ trackId, pageSize, includeOriginal })
+  // )
+  // console.log('asdf cached Data:', cachedData)
   return useLineupQuery({
     queryData,
     queryKey: getRemixesQueryKey({
