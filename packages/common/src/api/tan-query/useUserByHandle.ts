@@ -5,18 +5,13 @@ import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
-import { ID } from '~/models/Identifiers'
 import { User } from '~/models/User'
 
-import { QUERY_KEYS } from './queryKeys'
-import { QueryKey, QueryOptions, SelectableQueryOptions } from './types'
+import { getUserByHandleQueryKey } from './queryKeys'
+import { QueryOptions, SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { useUser } from './useUser'
 import { primeUserData } from './utils/primeUserData'
-
-export const getUserByHandleQueryKey = (handle: string | null | undefined) => {
-  return [QUERY_KEYS.userByHandle, handle] as unknown as QueryKey<ID>
-}
 
 export const useUserByHandle = <TResult = User>(
   handle: string | null | undefined,

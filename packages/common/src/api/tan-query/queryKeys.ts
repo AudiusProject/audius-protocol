@@ -90,6 +90,7 @@ export const QUERY_KEYS = {
 
 /**
  * Core entity query key fns are separated here due to cylical import issues
+ * These methods are imported in the cache selectors which cause a circular dependency issue if importing directly from the query hook files.
  */
 
 export const getUserQueryKey = (userId: ID | null | undefined) => {
@@ -105,4 +106,8 @@ export const getCollectionQueryKey = (collectionId: ID | null | undefined) => {
 
 export const getTrackQueryKey = (trackId: ID | null | undefined) => {
   return [QUERY_KEYS.track, trackId] as unknown as QueryKey<TQTrack>
+}
+
+export const getUserByHandleQueryKey = (handle: string | null | undefined) => {
+  return [QUERY_KEYS.userByHandle, handle] as unknown as QueryKey<ID>
 }

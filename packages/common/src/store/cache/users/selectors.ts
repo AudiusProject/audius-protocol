@@ -1,4 +1,7 @@
-import { getUserQueryKey } from '~/api/tan-query/queryKeys'
+import {
+  getUserQueryKey,
+  getUserByHandleQueryKey
+} from '~/api/tan-query/queryKeys'
 import { getAllEntries, getEntryTimestamp } from '~/store/cache/selectors'
 import type { CommonState } from '~/store/commonStore'
 
@@ -8,12 +11,13 @@ import type { ID, User } from '../../../models'
 /** @deprecated use useUser instead */
 export const getUser = (
   state: CommonState,
-  props: { handle?: string | null; id?: ID | null }
+  props: { handle: string | null } | { id: ID | null }
 ) => {
-  if (props.handle && state.users.handles[props.handle.toLowerCase()]) {
-    props.id = state.users.handles[props.handle.toLowerCase()]
-  }
-  return state.queryClient.getQueryData(getUserQueryKey(props.id))
+  // const handle = 'handle' in props ? props.handle : null
+  // const id = 'id' in props ? props.id : null
+  return 'handle' in props
+    ? state.queryClient.getQueryData(getUserByHandleQueryKey(props.handle))
+    : state.queryClient.getQueryData(getUserQueryKey(props.id))
 }
 
 /** @deprecated use useUserByHandle instead */

@@ -233,15 +233,15 @@ const useQueryState = <Args, Data>(
       const { kind, idArgKey, idListArgKey, permalinkArgKey, schemaKey } =
         endpoint.options
 
-      let cachedData: Nullable<Entity | number[]> = null
+      let cachedData: Nullable<Entity | number[]> | undefined = null
       if (idArgKey || permalinkArgKey || idListArgKey) {
         const fetchArgsRecord = fetchArgs as Record<string, any>
         if (idArgKey && fetchArgsRecord[idArgKey]) {
-          const idAsNumber =
-            typeof fetchArgsRecord[idArgKey] === 'number'
-              ? fetchArgsRecord[idArgKey]
-              : parseInt(fetchArgsRecord[idArgKey])
-          // TODO: use queryClient instead here
+          // TODO: investigate this block, need to figure out how to use queryClient instead here
+          // const idAsNumber =
+          //   typeof fetchArgsRecord[idArgKey] === 'number'
+          //     ? fetchArgsRecord[idArgKey]
+          //     : parseInt(fetchArgsRecord[idArgKey])
           // cachedData = cacheSelectors.getEntry(state, {
           //   kind,
           //   id: idAsNumber
