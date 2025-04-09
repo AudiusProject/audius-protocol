@@ -41,6 +41,9 @@ const g = withNullGuard(
 )
 
 const RemixesPage = g(({ title, count = 0, originalTrack, user }) => {
+  const updateSortParam = useUpdateSearchParams('sortMethod')
+  const { sortMethod } = useRemixPageParams()
+
   const {
     data,
     isFetching,
@@ -55,10 +58,9 @@ const RemixesPage = g(({ title, count = 0, originalTrack, user }) => {
     pageSize
   } = useRemixes({
     trackId: originalTrack?.track_id,
-    includeOriginal: true
+    includeOriginal: true,
+    sortMethod
   })
-  const updateSortParam = useUpdateSearchParams('sortMethod')
-  const { sortMethod } = useRemixPageParams()
 
   const renderHeader = () => (
     <Header icon={IconRemix} primary={title} containerStyles={styles.header} />

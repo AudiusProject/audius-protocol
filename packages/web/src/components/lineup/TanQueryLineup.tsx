@@ -266,7 +266,7 @@ export const TanQueryLineup = ({
         isLoading: true,
         numLoadingSkeletonRows: numPlaylistSkeletonRows
       })
-      console.log('asdf skeleton count', skeletonCount)
+
       return (
         <>
           {Array(skeletonCount)
@@ -402,14 +402,7 @@ export const TanQueryLineup = ({
   const isInitialLoad = (isFetching && tiles.length === 0) || isPending
 
   const isEmptyResults = tiles.length === 0 && !isFetching && !isInitialLoad
-  console.log('asdf render: ', {
-    tiles,
-    isFetching,
-    isInitialLoad,
-    isEmptyResults,
-    shouldLoadMore,
-    hasNextPage
-  })
+
   return (
     <>
       <div

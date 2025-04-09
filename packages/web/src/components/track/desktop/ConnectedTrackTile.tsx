@@ -22,6 +22,7 @@ import {
 } from '@audius/common/store'
 import { Genre } from '@audius/common/utils'
 import { IconKebabHorizontal } from '@audius/harmony'
+import { useQueryClient } from '@tanstack/react-query'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -82,6 +83,8 @@ const ConnectedTrackTile = ({
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
   const { data: track, isPending } = useTrack(id)
+  const queryClient = useQueryClient()
+
   const { data: partialUser } = useUser(track?.owner_id, {
     select: (user) => ({
       user_id: user?.user_id,
@@ -131,6 +134,12 @@ const ConnectedTrackTile = ({
   )
 
   const trackWithFallback = getTrackWithFallback(track)
+  if (track?.track_id === 1412790461) {
+    const cache = queryClient.getQueryCache().getAll()
+    console.log('asdf TanStack Query Cache:', cache)
+
+    console.log('asdf track', track?.track_id, track?._co_sign)
+  }
   const {
     is_delete,
     is_unlisted: isUnlisted,
@@ -185,6 +194,7 @@ const ConnectedTrackTile = ({
       label: `${title} by ${name}`,
       hasStreamAccess: hasStreamAccess || hasPreview
     }
+    console.log('asdf track art', id, coSign)
     return <TrackArtwork {...artworkProps} />
   }
 
