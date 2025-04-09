@@ -5,6 +5,7 @@ import { Name } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
 import {
   accountSelectors,
+  cacheUsersSelectors,
   cacheTracksSelectors,
   savedPageTracksLineupActions,
   queueActions,
@@ -69,6 +70,7 @@ export const DEFAULT_IMAGE_URL =
   'https://download.audius.co/static-resources/preview-image.jpg'
 
 const { getUserId } = accountSelectors
+const { getUsers } = cacheUsersSelectors
 const { getTracks } = cacheTracksSelectors
 const {
   getPlaying,
@@ -207,7 +209,10 @@ export const AudioPlayer = () => {
     .map(({ track }) => track?.owner_id)
     .filter(removeNullable)
 
-  const { byId: queueTrackOwnersMap } = useUsers(queueTrackOwnerIds)
+  const queueTrackOwnersMap = useSelector(
+    (state) => getUsers(state, { ids: queueTrackOwnerIds }),
+    shallowCompare
+  )
 
   const isCollectionMarkedForDownload = useSelector(
     getIsCollectionMarkedForDownload(
