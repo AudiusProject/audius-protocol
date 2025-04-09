@@ -29,5 +29,5 @@ export const getEventsByEntityIdQueryKey = (
   options?: EventsByEntityIdOptions
 ) =>
   [QUERY_KEYS.eventsByEntityId, entityId, options] as unknown as QueryKey<
-    InfiniteData<ID[]>
+    Event[]
   >

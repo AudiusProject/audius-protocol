@@ -147,10 +147,9 @@ const TrackMenu = ({
     source: FavoriteSource.OVERFLOW
   })
 
-  const { data: events } = useRemixContest(props.trackId, {
+  const { data: event } = useRemixContest(props.trackId, {
     entityType: EventEntityTypeEnum.Track
   })
-  const event = events?.[0]
 
   const onDeleteTrack = (trackId: Nullable<number>) => {
     if (!trackId) return

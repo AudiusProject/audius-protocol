@@ -49,12 +49,10 @@ export const HostRemixContestModal = () => {
   const { mutate: createEvent } = useCreateEvent()
   const { mutate: updateEvent } = useUpdateEvent()
   const { data: userId } = useCurrentUserId()
-  const { data: events } = useRemixContest(trackId, {
+  const { data: event } = useRemixContest(trackId, {
     entityType: EventEntityTypeEnum.Track
   })
   const userTimezone = dayjs.tz.guess()
-
-  const event = events?.[0]
   const isEdit = !!event
 
   const [contestEndDate, setContestEndDate] = useState(
@@ -130,7 +128,7 @@ export const HostRemixContestModal = () => {
               onChange={(value) =>
                 handleChange(value, timeValue, meridianValue)
               }
-              value={contestEndDate?.toISOString() ?? undefined}
+              value={contestEndDate?.toISOString()}
               futureDatesOnly
               error={endDateError ? messages.endDateError : undefined}
               touched={endDateTouched}

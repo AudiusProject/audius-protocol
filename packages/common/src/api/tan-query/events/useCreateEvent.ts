@@ -1,11 +1,12 @@
 import { EventEventTypeEnum, EventEntityTypeEnum } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { cloneDeep } from 'lodash'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { Event, Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
-import { getEventQueryKey } from './utils'
+import { getEventQueryKey, getEventsByEntityIdQueryKey } from './utils'
 
 export type CreateEventArgs = {
   eventId?: ID
@@ -49,10 +50,20 @@ export const useCreateEvent = () => {
         updatedAt: new Date().toISOString()
       }
 
-      // TODO: Update event list query keys here
-
       // Update the individual event cache
       queryClient.setQueryData(getEventQueryKey(newId), newEvent)
+
+      // Add event to the list of events for the entity
+      queryClient.setQueryData(
+        getEventsByEntityIdQueryKey(entityId, {
+          entityType
+        }),
+        (prevData) => {
+          const newState = cloneDeep(prevData) ?? []
+          newState.unshift(newEvent)
+          return newState
+        }
+      )
     },
     onError: (error: Error, args) => {
       reportToSentry({

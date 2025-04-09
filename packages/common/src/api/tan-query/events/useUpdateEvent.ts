@@ -1,11 +1,12 @@
 import { EventEntityTypeEnum, EventEventTypeEnum } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { cloneDeep } from 'lodash'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { Event, Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
-import { getEventQueryKey } from './utils'
+import { getEventQueryKey, getEventsByEntityIdQueryKey } from './utils'
 
 export type UpdateEventArgs = {
   eventId: ID
@@ -41,6 +42,24 @@ export const useUpdateEvent = () => {
 
       // Update the event cache
       queryClient.setQueryData(getEventQueryKey(eventId), updatedEvent)
+
+      // Update the events by entity id cache
+      queryClient.setQueryData(
+        getEventsByEntityIdQueryKey(currentEvent.entityId, {
+          entityType: currentEvent.entityType
+        }),
+        (prevData) => {
+          const newState = cloneDeep(prevData) ?? []
+          const prevIndex = newState.findIndex(
+            (event) => event.eventId === eventId
+          )
+          if (prevIndex !== -1) {
+            newState[prevIndex] = updatedEvent
+          }
+
+          return newState
+        }
+      )
 
       // Return context for rollback
       return { previousEvent: currentEvent }
