@@ -14,6 +14,8 @@ import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
 import { StemCategory } from '../../types/StemCategory'
 
+import { MAX_DESCRIPTION_LENGTH } from './constants'
+
 const messages = {
   titleRequiredError: 'Your track must have a name',
   artworkRequiredError: 'Artwork is required',
@@ -74,7 +76,7 @@ export const USDCPurchaseConditions = z
 export const UploadTrackMetadataSchema = z.object({
   trackId: z.optional(HashId),
   aiAttributionUserId: z.optional(HashId),
-  description: z.optional(z.string().max(1000)),
+  description: z.optional(z.string().max(MAX_DESCRIPTION_LENGTH)),
   fieldVisibility: z.optional(
     z.object({
       mood: z.optional(z.boolean()),

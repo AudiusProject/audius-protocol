@@ -53,26 +53,25 @@ import { TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
-  Box,
   Button,
+  Divider,
   Flex,
   IconCalendarMonth,
+  IconCloudUpload,
   IconPause,
   IconPlay,
   IconRepeatOff,
   IconVisibilityHidden,
-  IconCloudUpload,
   IconTrending,
   MusicBadge,
   Paper,
   Text,
   spacing,
-  type ImageProps,
-  Divider
+  type ImageProps
 } from '@audius/harmony-native'
 import CoSign, { Size } from 'app/components/co-sign'
 import { useCommentDrawer } from 'app/components/comments/CommentDrawerContext'
-import { Tag, UserGeneratedText } from 'app/components/core'
+import { Tag } from 'app/components/core'
 import { DeletedTile } from 'app/components/details-tile/DeletedTile'
 import { DetailsProgressInfo } from 'app/components/details-tile/DetailsProgressInfo'
 import { DetailsTileActionButtons } from 'app/components/details-tile/DetailsTileActionButtons'
@@ -91,6 +90,8 @@ import { make, track as trackEvent } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 
 import { DownloadSection } from './DownloadSection'
+import { TrackDescription } from './TrackDescription'
+
 const { getPlaying, getTrackId, getPreviewing } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
@@ -235,11 +236,10 @@ export const TrackScreenDetailsTile = ({
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
   )
-  const { data: events } = useRemixContest(trackId, {
+  const { data: event } = useRemixContest(trackId, {
     entityType: EventEntityTypeEnum.Track
   })
-  const event = events?.[0]
-  const isRemixContest = isRemixContestEnabled && event
+  const isRemixContest = isRemixContestEnabled && !isOwner && event
 
   const isPlayingPreview = isPreviewing && isPlaying
   const isPlayingFullAccess = isPlaying && !isPreviewing
@@ -700,13 +700,7 @@ export const TrackScreenDetailsTile = ({
           onPressReposts={handlePressReposts}
           onPressComments={handlePressComments}
         />
-        {description ? (
-          <Box w='100%'>
-            <UserGeneratedText source={'track page'} variant='body' size='s'>
-              {description}
-            </UserGeneratedText>
-          </Box>
-        ) : null}
+        <TrackDescription description={description} />
         <TrackMetadataList trackId={trackId} />
         {renderTags()}
         {renderRemixContestSection()}

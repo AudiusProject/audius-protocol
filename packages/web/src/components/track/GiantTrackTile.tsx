@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useState } from 'react'
+import { Suspense, lazy, useCallback, useState, useEffect } from 'react'
 
 import {
   useTrackRank,
@@ -34,15 +34,23 @@ import {
   Button,
   MusicBadge,
   Paper,
-  IconCloudUpload
+  IconCloudUpload,
+  PlainButton,
+  IconCaretDown,
+  IconCaretUp,
+  spacing
 } from '@audius/harmony'
 import IconCalendarMonth from '@audius/harmony/src/assets/icons/CalendarMonth.svg'
 import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
 import IconTrending from '@audius/harmony/src/assets/icons/Trending.svg'
 import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
 import { GetEntityEventsEntityTypeEnum } from '@audius/sdk'
+import { useTheme } from '@emotion/react'
+import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 import dayjs from 'dayjs'
+import { useToggle } from 'react-use'
+import useMeasure from 'react-use-measure'
 
 import { UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
@@ -81,6 +89,8 @@ const BUTTON_COLLAPSE_WIDTHS = {
 // Toast timeouts in ms
 const REPOST_TIMEOUT = 1000
 const SAVED_TIMEOUT = 1000
+const MAX_DESCRIPTION_LINES = 8
+const DEFAULT_LINE_HEIGHT = spacing.xl
 
 const messages = {
   makePublic: 'MAKE PUBLIC',
@@ -104,7 +114,9 @@ const messages = {
     return deadline
       ? `${localTime.format('MM/DD/YYYY')} at ${localTime.format('h:mm A')}`
       : ''
-  }
+  },
+  seeMore: 'See More',
+  seeLess: 'See Less'
 }
 
 type GiantTrackTileProps = {
@@ -211,13 +223,9 @@ export const GiantTrackTile = ({
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
   )
-  const { data: events, isLoading: isEventsLoading } = useRemixContest(
-    trackId,
-    {
-      entityType: GetEntityEventsEntityTypeEnum.Track
-    }
-  )
-  const event = events?.[0]
+  const { data: event, isLoading: isEventsLoading } = useRemixContest(trackId, {
+    entityType: GetEntityEventsEntityTypeEnum.Track
+  })
   const isRemixContest = isRemixContestEnabled && event
 
   const isLongFormContent =
@@ -242,6 +250,29 @@ export const GiantTrackTile = ({
   const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
   const shouldShowScheduledRelease =
     isScheduledRelease && dayjs(releaseDate).isAfter(dayjs())
+  const [isDescriptionExpanded, toggleDescriptionExpanded] = useToggle(false)
+  const [showToggle, setShowToggle] = useState(false)
+  const theme = useTheme()
+
+  // This ref holds the description height for expansion
+  const [descriptionRef, descriptionBounds] = useMeasure({
+    polyfill: ResizeObserver
+  })
+
+  // This ref holds the full content height for expansion
+  const [fullContentRef, fullContentBounds] = useMeasure({
+    polyfill: ResizeObserver
+  })
+
+  // Calculate if toggle should be shown based on content height
+  useEffect(() => {
+    if (description && descriptionBounds.height && fullContentBounds.height) {
+      const lineHeight = DEFAULT_LINE_HEIGHT
+      const maxHeight = lineHeight * MAX_DESCRIPTION_LINES
+      setShowToggle(fullContentBounds.height > maxHeight)
+    }
+  }, [description, descriptionBounds.height, fullContentBounds.height])
+
   const renderCardTitle = (className: string) => {
     return (
       <CardTitle
@@ -671,9 +702,43 @@ export const GiantTrackTile = ({
       >
         <TrackMetadataList trackId={trackId} />
         {description ? (
-          <UserGeneratedText tag='h3' size='s' lineHeight='multi'>
-            {description}
-          </UserGeneratedText>
+          <Flex column gap='m'>
+            {/* Container with height transition */}
+            <Flex
+              direction='column'
+              css={{
+                transition: `height ${theme.motion.expressive}, opacity ${theme.motion.quick}`,
+                overflow: 'hidden',
+                height: isDescriptionExpanded
+                  ? fullContentBounds.height
+                  : Math.min(
+                      fullContentBounds.height,
+                      DEFAULT_LINE_HEIGHT * MAX_DESCRIPTION_LINES
+                    )
+              }}
+            >
+              {/* Inner content that we measure */}
+              <Flex ref={fullContentRef} direction='column'>
+                <UserGeneratedText
+                  ref={descriptionRef}
+                  tag='h3'
+                  size='s'
+                  lineHeight='multi'
+                >
+                  {description}
+                </UserGeneratedText>
+              </Flex>
+            </Flex>
+            {showToggle && (
+              <PlainButton
+                iconRight={isDescriptionExpanded ? IconCaretUp : IconCaretDown}
+                onClick={toggleDescriptionExpanded}
+                css={{ alignSelf: 'flex-start' }}
+              >
+                {isDescriptionExpanded ? messages.seeLess : messages.seeMore}
+              </PlainButton>
+            )}
+          </Flex>
         ) : null}
 
         {renderTags()}
