@@ -1,10 +1,8 @@
 import { useEffect } from 'react'
 
-import { useTrackByParams, useUser } from '@audius/common/api'
-import { useFeatureFlag, useProxySelector } from '@audius/common/hooks'
+import { useProxySelector } from '@audius/common/hooks'
 import { trackPageMessages } from '@audius/common/messages'
 import { Status } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   trackPageLineupActions,
   trackPageActions,
@@ -32,7 +30,7 @@ import { TrackScreenRemixes } from './TrackScreenRemixes'
 import { TrackScreenSkeleton } from './TrackScreenSkeleton'
 const { fetchTrack } = trackPageActions
 const { tracksActions } = trackPageLineupActions
-const { getLineup, getRemixParentTrack } = trackPageSelectors
+const { getLineup, getRemixParentTrack, getTrack, getUser } = trackPageSelectors
 const { getIsReachable } = reachabilitySelectors
 
 const messages = {
@@ -51,19 +49,17 @@ export const TrackScreen = () => {
 
   const { searchTrack, id, canBeUnlisted = true, handle, slug } = params ?? {}
 
-  const { data: cachedTrack } = useTrackByParams(params)
+  const cachedTrack = useSelector((state) => getTrack(state, params))
   const track = cachedTrack?.track_id ? cachedTrack : searchTrack
 
-  const { data: cachedUser } = useUser(track?.owner_id)
+  const cachedUser = useSelector((state) =>
+    getUser(state, { id: track?.owner_id })
+  )
   const user = cachedUser ?? searchTrack?.user
 
   const lineup = useSelector(getLineup)
 
   const remixParentTrack = useProxySelector(getRemixParentTrack, [])
-
-  const { isEnabled: isCommentingEnabled } = useFeatureFlag(
-    FeatureFlags.COMMENTS_ENABLED
-  )
 
   const isScreenReady = useIsScreenReady()
   useEffect(() => {
@@ -148,7 +144,7 @@ export const TrackScreen = () => {
               <ScreenSecondaryContent>
                 <Flex gap='2xl'>
                   {/* Comments */}
-                  {isCommentingEnabled && !comments_disabled ? (
+                  {!comments_disabled ? (
                     <Flex flex={3}>
                       <CommentPreview entityId={track_id} />
                     </Flex>
