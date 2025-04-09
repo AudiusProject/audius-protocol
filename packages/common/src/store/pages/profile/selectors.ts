@@ -51,7 +51,7 @@ export const getProfileUser = (
   if (!params) return getUser(state, { handle: profileHandle })
 
   const { id, handle } = params
-  if (id) return getUser(state, params)
+  if (id) return getUser(state, { id })
   return getUser(state, { handle: handle ?? profileHandle })
 }
 
@@ -102,12 +102,13 @@ export const makeGetProfile = () => {
     [
       getProfileStatus,
       getProfileError,
-      getProfileUserId,
       getIsSubscribed,
-      // External
-      getUsers
+      (state: CommonState) => {
+        const userId = getProfileUserId(state)
+        return getUser(state, { id: userId })
+      }
     ],
-    (status, error, userId, isSubscribed, users) => {
+    (status, error, isSubscribed, user) => {
       const emptyState = {
         profile: null,
         playlists: null,
@@ -116,10 +117,8 @@ export const makeGetProfile = () => {
         status
       }
       if (error) return { ...emptyState, error: true }
-      if (!userId) return emptyState
-      if (!(userId in users)) return emptyState
+      if (!user) return emptyState
 
-      const user = users[userId]
       return {
         profile: user,
         status,

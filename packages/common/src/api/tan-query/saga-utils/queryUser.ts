@@ -2,8 +2,11 @@ import { ID } from '~/models/Identifiers'
 import { User } from '~/models/User'
 import { getContext } from '~/store/effects'
 
-import { QUERY_KEYS, getUserQueryKey } from '../queryKeys'
-import { getUserByHandleQueryKey } from '../useUserByHandle'
+import {
+  QUERY_KEYS,
+  getUserQueryKey,
+  getUserByHandleQueryKey
+} from '../queryKeys'
 
 export function* queryUser(id: ID | null | undefined) {
   if (!id) return null

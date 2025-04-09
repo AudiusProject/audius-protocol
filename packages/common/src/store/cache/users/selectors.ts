@@ -1,61 +1,100 @@
+import { QueryKey } from '@tanstack/react-query'
+
 import {
   getUserQueryKey,
-  getUserByHandleQueryKey
+  getUserByHandleQueryKey,
+  QUERY_KEYS
 } from '~/api/tan-query/queryKeys'
-import { getAllEntries, getEntryTimestamp } from '~/store/cache/selectors'
+import { getEntryTimestamp } from '~/store/cache/selectors'
 import type { CommonState } from '~/store/commonStore'
 
 import { Kind } from '../../../models'
 import type { ID, User } from '../../../models'
 
-/** @deprecated use useUser instead */
+/** @deprecated use a tan-query method instead - either useUser for hooks or queryClient.getQueryData */
 export const getUser = (
   state: CommonState,
-  props: { handle: string | null } | { id: ID | null }
+  props:
+    | { handle: string | null }
+    | { id: ID | null | undefined }
+    | { uid: any }
 ) => {
-  // const handle = 'handle' in props ? props.handle : null
-  // const id = 'id' in props ? props.id : null
+  if ('uid' in props) {
+    console.log('FOUND A UID ', props)
+    throw new Error(
+      'We should not be passing uid to getUser - fix wherever this showed up'
+    )
+  }
   return 'handle' in props
-    ? state.queryClient.getQueryData(getUserByHandleQueryKey(props.handle))
-    : state.queryClient.getQueryData(getUserQueryKey(props.id))
+    ? getUserByHandle(state, { handle: props.handle })
+    : 'id' in props
+      ? state.queryClient.getQueryData(getUserQueryKey(props.id))
+      : undefined
 }
 
-/** @deprecated use useUserByHandle instead */
+/** @deprecated use a tan-query method instead - either useUserByHandle for hooks or queryClient.getQueryData */
 export const getUserByHandle = (
   state: CommonState,
-  props: { handle: string }
+  props: { handle: string | null }
   // TODO: should we put some form of this into tan-query
-) => state.users.handles[props.handle] || null
+) => {
+  if (!props.handle) return undefined
+  const userId = state.queryClient.getQueryData(
+    getUserByHandleQueryKey(props.handle)
+  )
+  if (!userId) return undefined
+  return state.queryClient.getQueryData(getUserQueryKey(userId))
+}
 
-/** @deprecated use useUsers instead */
+/** @deprecated use a tan-query method instead - either useUsers for hooks or queryClient.getQueriesData */
 export const getUsers = (
   state: CommonState,
-  props?: {
+  identifiers?: {
     ids?: ID[] | null
     handles?: string[] | null
   }
 ) => {
-  if (props && props.ids) {
-    const users: { [id: number]: User } = {}
-    props.ids.forEach((id) => {
-      const user = getUser(state, { id })
-      if (user) {
-        users[id] = user
-      }
-    })
-    return users
-  } else if (props && props.handles) {
-    const users: { [handle: string]: User } = {}
-    props.handles.forEach((handle) => {
-      const id = getUserByHandle(state, { handle: handle?.toLowerCase() })
-      if (id) {
-        const user = getUser(state, { id })
-        if (user) users[handle] = user
-      }
-    })
-    return users
+  const { ids, handles } = identifiers ?? {}
+  if (ids) {
+    return ids.reduce(
+      (acc, id) => {
+        const user = state.queryClient.getQueryData(getUserQueryKey(id))
+        if (user) {
+          acc[id] = user
+        }
+        return acc
+      },
+      {} as { [id: number]: User }
+    )
   }
-  return getAllEntries(state, { kind: Kind.USERS })
+  if (handles) {
+    return handles.reduce(
+      (acc, handle) => {
+        const userId = state.queryClient.getQueryData(
+          getUserByHandleQueryKey(handle)
+        )
+        if (!userId) return acc
+        const user = state.queryClient.getQueryData(getUserQueryKey(userId))
+        if (user) acc[handle] = user
+        return acc
+      },
+      {} as { [handle: string]: User }
+    )
+  }
+  // Returns all users in cache. TODO: refactor so that we dont need to do this - horribly inefficient
+  const userQueryResults = state.queryClient.getQueriesData({
+    queryKey: [QUERY_KEYS.user]
+  })
+  return userQueryResults.reduce((acc, queryData) => {
+    const [, user] = queryData as [QueryKey, User]
+    if (user !== undefined) {
+      return {
+        ...acc,
+        [user.user_id]: user
+      }
+    }
+    return acc
+  }, {})
 }
 
 /**
