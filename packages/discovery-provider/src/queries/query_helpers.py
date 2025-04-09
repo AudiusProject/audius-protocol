@@ -180,6 +180,12 @@ class LibraryFilterType(str, enum.Enum):
     purchase = "purchase"
 
 
+class RemixesSortMethod(str, enum.Enum):
+    likes = "likes"
+    plays = "plays"
+    recent = "recent"
+
+
 # given list of user ids and corresponding users, populates each user object with:
 #   track_count, playlist_count, album_count, follower_count, followee_count, repost_count, supporter_count, supporting_count
 #   if current_user_id available, populates does_current_user_follow, followee_follows, does_current_user_subscribe
