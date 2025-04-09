@@ -26,6 +26,7 @@ import { QueryKey, QueryOptions, LineupData } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { loadNextPage } from '../utils/infiniteQueryLoadNextPage'
 import { primeTrackData } from '../utils/primeTrackData'
+
 import { useLineupQuery } from './useLineupQuery'
 
 const DEFAULT_PAGE_SIZE = 5

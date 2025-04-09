@@ -17,11 +17,11 @@ import {
   remixesPageActions
 } from '~/store/pages'
 
+import { useLineupQuery } from '../lineups/useLineupQuery'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, QueryOptions, LineupData } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { primeTrackData } from '../utils/primeTrackData'
-import { useLineupQuery } from '../lineups/useLineupQuery'
 
 const DEFAULT_PAGE_SIZE = 10
 

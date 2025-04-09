@@ -10,11 +10,11 @@ import {
   historyPageSelectors
 } from '~/store/pages'
 
+import { useLineupQuery } from '../lineups/useLineupQuery'
 import { QUERY_KEYS } from '../queryKeys'
 import { LineupData, QueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { primeTrackData } from '../utils/primeTrackData'
-import { useLineupQuery } from '../lineups/useLineupQuery'
 
 const DEFAULT_PAGE_SIZE = 30
 

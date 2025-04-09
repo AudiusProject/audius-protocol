@@ -15,11 +15,11 @@ import { UserTrackMetadata } from '~/models/Track'
 import { trackPageSelectors } from '~/store/pages'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
 
+import { useLineupQuery } from '../lineups/useLineupQuery'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, QueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { primeTrackData } from '../utils/primeTrackData'
-import { useLineupQuery } from '../lineups/useLineupQuery'
 
 const DEFAULT_PAGE_SIZE = 6
 

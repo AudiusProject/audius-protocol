@@ -9,8 +9,8 @@ import {
 
 import { ID } from '~/models'
 
-import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
 import { UseLineupQueryData } from './lineups/useLineupQuery'
+import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
 
 /**
  * Using DataTag allows tan-query to infer the data type stored at this key

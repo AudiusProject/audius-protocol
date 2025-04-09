@@ -24,6 +24,7 @@ import { getSearchTracksLineup } from '~/store/pages/search-results/selectors'
 import { Genre, formatMusicalKey } from '~/utils'
 
 import { useCurrentUserId } from '../..'
+import { useLineupQuery } from '../lineups/useLineupQuery'
 import { QUERY_KEYS } from '../queryKeys'
 import {
   FlatUseInfiniteQueryResult,
@@ -35,7 +36,6 @@ import { loadNextPage } from '../utils/infiniteQueryLoadNextPage'
 import { primeCollectionData } from '../utils/primeCollectionData'
 import { primeTrackData } from '../utils/primeTrackData'
 import { primeUserData } from '../utils/primeUserData'
-import { useLineupQuery } from '../lineups/useLineupQuery'
 
 export type SearchCategory = 'all' | 'tracks' | 'albums' | 'playlists' | 'users'
 
