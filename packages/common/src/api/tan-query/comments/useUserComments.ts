@@ -14,7 +14,7 @@ import { Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
 import { QueryOptions } from '../types'
-import { useCurrentUserId } from '../useCurrentUserId'
+import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { primeCommentData } from '../utils/primeCommentData'
 import { primeRelatedData } from '../utils/primeRelatedData'
 

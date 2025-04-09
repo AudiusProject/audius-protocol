@@ -9,8 +9,8 @@ import { User } from '~/models/User'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
-import { getTrackQueryKey } from '../useTrack'
-import { getTrackByPermalinkQueryKey } from '../useTrackByPermalink'
+import { getTrackQueryKey } from '../tracks/useTrack'
+import { getTrackByPermalinkQueryKey } from '../tracks/useTrackByPermalink'
 
 import { formatTrackData } from './formatTrackData'
 import { primeUserDataInternal } from './primeUserData'

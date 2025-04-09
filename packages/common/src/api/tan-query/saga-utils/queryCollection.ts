@@ -1,9 +1,9 @@
 import { ID } from '~/models/Identifiers'
 import { getContext } from '~/store/effects'
 
+import { getCollectionQueryKey } from '../collection/useCollection'
 import { TQCollection } from '../models'
 import { QUERY_KEYS } from '../queryKeys'
-import { getCollectionQueryKey } from '../useCollection'
 
 export function* queryCollection(id: ID | null | undefined) {
   if (!id) return null

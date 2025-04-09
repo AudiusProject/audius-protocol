@@ -8,9 +8,9 @@ import { CollectionMetadata, UserCollectionMetadata } from '~/models/Collection'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
+import { getCollectionQueryKey } from '../collection/useCollection'
+import { getCollectionByPermalinkQueryKey } from '../collection/useCollectionByPermalink'
 import { TQCollection } from '../models'
-import { getCollectionQueryKey } from '../useCollection'
-import { getCollectionByPermalinkQueryKey } from '../useCollectionByPermalink'
 
 import { primeTrackDataInternal } from './primeTrackData'
 import { primeUserDataInternal } from './primeUserData'

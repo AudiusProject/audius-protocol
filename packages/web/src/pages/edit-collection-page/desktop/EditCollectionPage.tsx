@@ -1,4 +1,8 @@
-import { useCollectionByPermalink } from '@audius/common/api'
+import {
+  useCollectionByPermalink,
+  useTracks,
+  useUsers
+} from '@audius/common/api'
 import {
   Name,
   SquareSizes,
@@ -6,8 +10,6 @@ import {
   UserTrackMetadata
 } from '@audius/common/models'
 import { CollectionValues } from '@audius/common/schemas'
-import { useTracks } from '@audius/common/src/api/tan-query/useTracks'
-import { useUsers } from '@audius/common/src/api/tan-query/useUsers'
 import {
   EditCollectionValues,
   cacheCollectionsActions

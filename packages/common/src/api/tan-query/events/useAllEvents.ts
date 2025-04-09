@@ -7,7 +7,7 @@ import { ID } from '~/models'
 import { removeNullable } from '~/utils'
 
 import { QueryOptions } from '../types'
-import { useCurrentUserId } from '../useCurrentUserId'
+import { useCurrentUserId } from '../users/account/useCurrentUserId'
 
 import { getEventQueryKey, getEventListQueryKey } from './utils'
 
