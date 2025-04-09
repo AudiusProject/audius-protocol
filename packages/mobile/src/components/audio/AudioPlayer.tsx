@@ -1,6 +1,5 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
 
-import { useUsers } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
 import {
