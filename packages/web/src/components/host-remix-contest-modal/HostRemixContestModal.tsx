@@ -52,11 +52,10 @@ export const HostRemixContestModal = () => {
   const { data: event } = useRemixContest(trackId, {
     entityType: EventEntityTypeEnum.Track
   })
-  const userTimezone = dayjs.tz.guess()
   const isEdit = !!event
 
   const [contestEndDate, setContestEndDate] = useState(
-    event ? dayjs(event.endDate).utc(true).local().tz(userTimezone) : null
+    event ? dayjs(event.endDate) : null
   )
   const [endDateTouched, setEndDateTouched] = useState(false)
   const [endDateError, setEndDateError] = useState(false)
