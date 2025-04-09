@@ -1,4 +1,5 @@
-import { getEntry, getAllEntries } from '~/store/cache/selectors'
+import { getTrackQueryKey } from '~/api/tan-query/queryKeys'
+import { getAllEntries } from '~/store/cache/selectors'
 import { CommonState } from '~/store/commonStore'
 
 import { Kind, ID, UID, Status, Track, StemTrack } from '../../../models'
@@ -14,10 +15,7 @@ export const getTrack = (
   ) {
     props.id = state.tracks.permalinks[props.permalink.toLowerCase()]
   }
-  return getEntry(state, {
-    ...props,
-    kind: Kind.TRACKS
-  })
+  return state.queryClient.getQueryData(getTrackQueryKey(props.id))
 }
 
 export const getStatus = (state: CommonState, props: { id?: ID | null }) =>

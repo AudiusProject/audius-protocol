@@ -1,3 +1,9 @@
+import { User } from '~/models'
+import { ID } from '~/models/Identifiers'
+
+import { TQCollection, TQTrack } from './models'
+import { QueryKey } from './types'
+
 export const QUERY_KEYS = {
   aiTracks: 'aiTracks',
   accountUser: 'accountUser',
@@ -81,3 +87,22 @@ export const QUERY_KEYS = {
   events: 'events',
   eventsByEntityId: 'eventsByEntityId'
 } as const
+
+/**
+ * Core entity query key fns are separated here due to cylical import issues
+ */
+
+export const getUserQueryKey = (userId: ID | null | undefined) => {
+  return [QUERY_KEYS.user, userId] as unknown as QueryKey<User>
+}
+
+export const getCollectionQueryKey = (collectionId: ID | null | undefined) => {
+  return [
+    QUERY_KEYS.collection,
+    collectionId
+  ] as unknown as QueryKey<TQCollection>
+}
+
+export const getTrackQueryKey = (trackId: ID | null | undefined) => {
+  return [QUERY_KEYS.track, trackId] as unknown as QueryKey<TQTrack>
+}

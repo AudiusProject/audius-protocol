@@ -8,16 +8,9 @@ import { ID } from '~/models'
 
 import { getCollectionsBatcher } from './batchers/getCollectionsBatcher'
 import { TQCollection } from './models'
-import { QUERY_KEYS } from './queryKeys'
-import { QueryKey, SelectableQueryOptions } from './types'
+import { getCollectionQueryKey } from './queryKeys'
+import { SelectableQueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
-
-export const getCollectionQueryKey = (collectionId: ID | null | undefined) => {
-  return [
-    QUERY_KEYS.collection,
-    collectionId
-  ] as unknown as QueryKey<TQCollection>
-}
 
 export const useCollection = <TResult = TQCollection>(
   collectionId: ID | null | undefined,

@@ -9,7 +9,7 @@ import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
 import { TQCollection } from '../models'
-import { getCollectionQueryKey } from '../useCollection'
+import { getCollectionQueryKey } from '../queryKeys'
 import { getCollectionByPermalinkQueryKey } from '../useCollectionByPermalink'
 
 import { primeTrackDataInternal } from './primeTrackData'

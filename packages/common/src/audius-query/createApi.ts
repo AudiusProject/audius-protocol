@@ -241,10 +241,11 @@ const useQueryState = <Args, Data>(
             typeof fetchArgsRecord[idArgKey] === 'number'
               ? fetchArgsRecord[idArgKey]
               : parseInt(fetchArgsRecord[idArgKey])
-          cachedData = cacheSelectors.getEntry(state, {
-            kind,
-            id: idAsNumber
-          })
+          // TODO: use queryClient instead here
+          // cachedData = cacheSelectors.getEntry(state, {
+          //   kind,
+          //   id: idAsNumber
+          // })
         } else if (permalinkArgKey && fetchArgsRecord[permalinkArgKey]) {
           if (kind === Kind.TRACKS) {
             cachedData = getTrack(state, {

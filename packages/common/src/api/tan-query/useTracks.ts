@@ -10,10 +10,9 @@ import { CommonState } from '~/store'
 
 import { getTracksBatcher } from './batchers/getTracksBatcher'
 import { TQTrack } from './models'
-import { QUERY_KEYS } from './queryKeys'
+import { QUERY_KEYS, getTrackQueryKey } from './queryKeys'
 import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
-import { getTrackQueryKey } from './useTrack'
 import { combineQueryResults } from './utils/combineQueryResults'
 import { useQueries } from './utils/useQueries'
 

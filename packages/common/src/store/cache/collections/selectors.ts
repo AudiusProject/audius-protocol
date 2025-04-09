@@ -1,6 +1,7 @@
 import { createSelector } from 'reselect'
 
-import { getAllEntries, getEntry } from '~/store/cache/selectors'
+import { getCollectionQueryKey } from '~/api/tan-query/queryKeys'
+import { getAllEntries } from '~/store/cache/selectors'
 import { getTrack, getTracks } from '~/store/cache/tracks/selectors'
 import {
   getUser,
@@ -19,16 +20,13 @@ import type { EnhancedCollectionTrack } from './types'
 /** @deprecated Use useCollection instead */
 export const getCollection = (
   state: CommonState,
-  props: { id?: ID | null; uid?: UID | null; permalink?: string | null }
+  props: { id?: ID | null; permalink?: string | null }
 ) => {
   const permalink = props.permalink?.toLowerCase()
   if (permalink && state.collections.permalinks[permalink]) {
     props.id = state.collections.permalinks[permalink]
   }
-  return getEntry(state, {
-    ...props,
-    kind: Kind.COLLECTIONS
-  })
+  return state.queryClient.getQueryData(getCollectionQueryKey(props.id))
 }
 export const getStatus = (state: CommonState, props: { id: ID }) =>
   state.collections.statuses[props.id] || null

@@ -2,8 +2,7 @@ import { ID } from '~/models/Identifiers'
 import { getContext } from '~/store/effects'
 
 import { TQCollection } from '../models'
-import { QUERY_KEYS } from '../queryKeys'
-import { getCollectionQueryKey } from '../useCollection'
+import { QUERY_KEYS, getCollectionQueryKey } from '../queryKeys'
 
 export function* queryCollection(id: ID | null | undefined) {
   if (!id) return null

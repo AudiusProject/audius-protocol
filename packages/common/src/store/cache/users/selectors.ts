@@ -1,15 +1,14 @@
-// import { getUserQueryKey } from '~/api/tan-query/useUser'
-import { getUserQueryKey } from '~/api/tan-query/useUser'
+import { getUserQueryKey } from '~/api/tan-query/queryKeys'
 import { getAllEntries, getEntryTimestamp } from '~/store/cache/selectors'
 import type { CommonState } from '~/store/commonStore'
 
 import { Kind } from '../../../models'
-import type { ID, UID, User } from '../../../models'
+import type { ID, User } from '../../../models'
 
 /** @deprecated use useUser instead */
 export const getUser = (
   state: CommonState,
-  props: { handle?: string | null; id?: ID | null; uid?: UID | null }
+  props: { handle?: string | null; id?: ID | null }
 ) => {
   if (props.handle && state.users.handles[props.handle.toLowerCase()]) {
     props.id = state.users.handles[props.handle.toLowerCase()]
@@ -21,6 +20,7 @@ export const getUser = (
 export const getUserByHandle = (
   state: CommonState,
   props: { handle: string }
+  // TODO: should we put some form of this into tan-query
 ) => state.users.handles[props.handle] || null
 
 /** @deprecated use useUsers instead */
@@ -28,7 +28,6 @@ export const getUsers = (
   state: CommonState,
   props?: {
     ids?: ID[] | null
-    uids?: UID[] | null
     handles?: string[] | null
   }
 ) => {
@@ -38,15 +37,6 @@ export const getUsers = (
       const user = getUser(state, { id })
       if (user) {
         users[id] = user
-      }
-    })
-    return users
-  } else if (props && props.uids) {
-    const users: { [id: number]: User } = {}
-    props.uids.forEach((uid) => {
-      const user = getUser(state, { uid })
-      if (user) {
-        users[user.user_id] = user
       }
     })
     return users

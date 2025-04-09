@@ -9,7 +9,7 @@ import { User } from '~/models/User'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
-import { getTrackQueryKey } from '../useTrack'
+import { getTrackQueryKey } from '../queryKeys'
 import { getTrackByPermalinkQueryKey } from '../useTrackByPermalink'
 
 import { formatTrackData } from './formatTrackData'

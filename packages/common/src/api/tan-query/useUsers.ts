@@ -10,10 +10,9 @@ import { UserMetadata } from '~/models/User'
 import { CommonState } from '~/store'
 
 import { getUsersBatcher } from './batchers/getUsersBatcher'
-import { QUERY_KEYS } from './queryKeys'
+import { QUERY_KEYS, getUserQueryKey } from './queryKeys'
 import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
-import { getUserQueryKey } from './useUser'
 import { combineQueryResults } from './utils/combineQueryResults'
 import { useQueries } from './utils/useQueries'
 

@@ -11,8 +11,8 @@ import { Track } from '~/models/Track'
 import { accountActions } from '~/store/account'
 import { tracksSocialActions } from '~/store/social'
 
+import { getTrackQueryKey } from './queryKeys'
 import { useCurrentUserId } from './useCurrentUserId'
-import { getTrackQueryKey } from './useTrack'
 import { useUser } from './useUser'
 import { primeTrackData } from './utils/primeTrackData'
 
