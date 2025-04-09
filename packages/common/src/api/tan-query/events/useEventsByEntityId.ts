@@ -1,17 +1,22 @@
 import { useMemo } from 'react'
 
 import { Id, OptionalId } from '@audius/sdk'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { eventMetadataFromSDK } from '~/adapters/event'
 import { useAudiusQueryContext } from '~/audius-query'
 import { Event } from '~/models/Event'
 import { ID } from '~/models/Identifiers'
+import { removeNullable } from '~/utils'
 
 import { SelectableQueryOptions } from '../types'
 import { useCurrentUserId } from '../useCurrentUserId'
 
-import { getEventsByEntityIdQueryKey, EventsByEntityIdOptions } from './utils'
+import {
+  getEventsByEntityIdQueryKey,
+  EventsByEntityIdOptions,
+  getEventQueryKey
+} from './utils'
 
 type UseEventsByEntityIdOptions<TResult = Event[]> = SelectableQueryOptions<
   Event[],
@@ -25,6 +30,7 @@ export const useEventsByEntityId = <TResult>(
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
+  const queryClient = useQueryClient()
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const select = useMemo(() => options?.select, [])
@@ -42,7 +48,15 @@ export const useEventsByEntityId = <TResult>(
         limit: options?.limit
       })
       const events = response.data ?? []
-      return events.map(eventMetadataFromSDK) as Event[]
+      const eventsMetadata = events
+        .map(eventMetadataFromSDK)
+        .filter(removeNullable)
+
+      eventsMetadata.forEach((event) => {
+        queryClient.setQueryData(getEventQueryKey(event.eventId), event)
+      })
+
+      return eventsMetadata
     },
     enabled: options?.enabled !== false && entityId !== undefined,
     select

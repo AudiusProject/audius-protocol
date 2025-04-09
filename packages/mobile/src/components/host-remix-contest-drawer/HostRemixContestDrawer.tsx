@@ -8,7 +8,6 @@ import {
 } from '@audius/common/api'
 import { useHostRemixContestModal } from '@audius/common/store'
 import { EventEntityTypeEnum, EventEventTypeEnum } from '@audius/sdk'
-import type { Dayjs } from 'dayjs'
 import dayjs from 'dayjs'
 
 import {
@@ -57,15 +56,12 @@ export const HostRemixContestDrawer = () => {
   const { mutate: updateEvent } = useUpdateEvent()
   const { data: userId } = useCurrentUserId()
   const { trackId } = data
-  const { data: events } = useRemixContest(trackId, {
+  const { data: event } = useRemixContest(trackId, {
     entityType: EventEntityTypeEnum.Track
   })
-  const event = events?.[0]
   const isEdit = !!event
 
-  const [endDate, setEndDate] = useState<Dayjs>(
-    event ? dayjs(event.endDate) : dayjs().add(1, 'day').endOf('day')
-  )
+  const [endDate, setEndDate] = useState(event ? dayjs(event.endDate) : null)
   const [endDateError, setEndDateError] = useState<boolean>(false)
 
   const handleChange = useCallback((date: string, time: string) => {
@@ -80,20 +76,20 @@ export const HostRemixContestDrawer = () => {
 
   const handleDateChange = useCallback(
     (date: string) => {
-      handleChange(date, endDate.toString())
+      handleChange(date, endDate?.toString() ?? '')
     },
     [endDate, handleChange]
   )
 
   const handleTimeChange = useCallback(
     (time: string) => {
-      handleChange(endDate.toString(), time)
+      handleChange(endDate?.toString() ?? '', time)
     },
     [endDate, handleChange]
   )
 
   const handleSubmit = useCallback(() => {
-    if (endDateError || !trackId || !userId) return
+    if (endDateError || !trackId || !userId || !endDate) return
 
     // TODO: Need to update this to adjust the time.
     // The time is currently set to UTC time so after the user sets the time, it displays as UTC time.
@@ -115,8 +111,6 @@ export const HostRemixContestDrawer = () => {
       })
     }
 
-    // Reset form and close modal
-    setEndDate(dayjs().add(1, 'day').endOf('day'))
     onClose()
   }, [
     endDateError,
@@ -147,7 +141,7 @@ export const HostRemixContestDrawer = () => {
             </Text>
             <DateTimeInput
               mode='date'
-              date={endDate.toString()}
+              date={endDate?.toString() ?? ''}
               onChange={handleDateChange}
               inputProps={{
                 label: messages.dateLabel,
@@ -158,7 +152,7 @@ export const HostRemixContestDrawer = () => {
             />
             <DateTimeInput
               mode='time'
-              date={endDate.toString()}
+              date={endDate?.toString() ?? ''}
               onChange={handleTimeChange}
               inputProps={{ label: messages.timeLabel }}
             />

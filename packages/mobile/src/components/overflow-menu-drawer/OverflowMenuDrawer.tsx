@@ -89,11 +89,10 @@ export const OverflowMenuDrawer = () => {
     }
   })
 
-  const { data: events } = useRemixContest(id, {
+  const { data: event } = useRemixContest(id, {
     entityType: EventEntityTypeEnum.Track
   })
 
-  const event = events?.[0]
   const isRemixContest = !!event
 
   if (!overflowMenu?.id) {

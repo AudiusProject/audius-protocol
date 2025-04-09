@@ -43,7 +43,7 @@ import IconCalendarMonth from '@audius/harmony/src/assets/icons/CalendarMonth.sv
 import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
 import IconTrending from '@audius/harmony/src/assets/icons/Trending.svg'
 import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
-import { GetEntityEventsEntityTypeEnum } from '@audius/sdk'
+import { EventEntityTypeEnum } from '@audius/sdk'
 import { useTheme } from '@emotion/react'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
@@ -225,9 +225,9 @@ export const GiantTrackTile = ({
     FeatureFlags.REMIX_CONTEST
   )
   const { data: event, isLoading: isEventsLoading } = useRemixContest(trackId, {
-    entityType: GetEntityEventsEntityTypeEnum.Track
+    entityType: EventEntityTypeEnum.Track
   })
-  const isRemixContest = isRemixContestEnabled && event
+  const isRemixContest = isRemixContestEnabled && !!event
 
   const isLongFormContent =
     genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
