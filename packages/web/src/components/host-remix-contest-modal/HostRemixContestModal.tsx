@@ -80,7 +80,7 @@ export const HostRemixContestModal = () => {
     setEndDateError(hasError)
     if (hasError || !trackId || !userId) return
 
-    const endDate = dayjs(contestEndDate).toISOString()
+    const endDate = contestEndDate.toISOString()
 
     if (isEdit) {
       updateEvent({

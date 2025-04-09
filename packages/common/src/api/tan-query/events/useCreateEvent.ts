@@ -53,6 +53,7 @@ export const useCreateEvent = () => {
       // Update the individual event cache
       queryClient.setQueryData(getEventQueryKey(newId), newEvent)
 
+      let prevState: Event[] = []
       // Add event to the list of events for the entity
       queryClient.setQueryData(
         getEventsByEntityIdQueryKey(entityId, {
@@ -60,18 +61,37 @@ export const useCreateEvent = () => {
         }),
         (prevData) => {
           const newState = cloneDeep(prevData) ?? []
+          prevState = newState
           newState.unshift(newEvent)
           return newState
         }
       )
+
+      return { prevState }
     },
-    onError: (error: Error, args) => {
+    onError: (error: Error, args, context) => {
       reportToSentry({
         error,
         additionalInfo: args,
         name: 'Events',
         feature: Feature.Events
       })
+
+      // Revert the optimistic updates
+      queryClient.resetQueries({
+        queryKey: getEventQueryKey(args.eventId)
+      })
+
+      const prevState = context?.prevState
+      if (prevState) {
+        queryClient.setQueryData(
+          getEventsByEntityIdQueryKey(args.entityId, {
+            entityType: args.entityType
+          }),
+          prevState
+        )
+      }
+
       // Toast generic error message
       toast({
         content: 'There was an error creating the event. Please try again'

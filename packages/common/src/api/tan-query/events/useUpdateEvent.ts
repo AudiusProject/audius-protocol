@@ -65,14 +65,6 @@ export const useUpdateEvent = () => {
       return { previousEvent: currentEvent }
     },
     onError: (error: Error, args, context) => {
-      // Revert the optimistic update
-      if (context?.previousEvent) {
-        queryClient.setQueryData(
-          getEventQueryKey(args.eventId),
-          context.previousEvent
-        )
-      }
-
       reportToSentry({
         error,
         additionalInfo: args,
@@ -80,6 +72,32 @@ export const useUpdateEvent = () => {
         feature: Feature.Events
       })
 
+      // Revert the optimistic updates
+      if (context?.previousEvent) {
+        queryClient.setQueryData(
+          getEventQueryKey(args.eventId),
+          context.previousEvent
+        )
+
+        queryClient.setQueryData(
+          getEventsByEntityIdQueryKey(context.previousEvent.entityId, {
+            entityType: context.previousEvent.entityType
+          }),
+          (prevData) => {
+            const newState = cloneDeep(prevData) ?? []
+            const prevIndex = newState.findIndex(
+              (event) => event.eventId === args.eventId
+            )
+            if (prevIndex !== -1) {
+              newState[prevIndex] = context.previousEvent
+            }
+
+            return newState
+          }
+        )
+      }
+
+      // Toast generic error message
       toast({
         content: 'There was an error updating the event. Please try again'
       })
