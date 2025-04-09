@@ -136,6 +136,7 @@ export interface GetTrackRemixesRequest {
     offset?: number;
     limit?: number;
     userId?: string;
+    sortMethod?: GetTrackRemixesSortMethodEnum;
 }
 
 export interface GetTrackStemsRequest {
@@ -723,6 +724,10 @@ export class TracksApi extends runtime.BaseAPI {
 
         if (params.userId !== undefined) {
             queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1340,6 +1345,16 @@ export const GetTrackCommentsSortMethodEnum = {
     Timestamp: 'timestamp'
 } as const;
 export type GetTrackCommentsSortMethodEnum = typeof GetTrackCommentsSortMethodEnum[keyof typeof GetTrackCommentsSortMethodEnum];
+/**
+ * @export
+ */
+export const GetTrackRemixesSortMethodEnum = {
+    Recent: 'recent',
+    Likes: 'likes',
+    Plays: 'plays'
+} as const;
+export type GetTrackRemixesSortMethodEnum = typeof GetTrackRemixesSortMethodEnum[keyof typeof GetTrackRemixesSortMethodEnum];
+
 /**
  * @export
  */

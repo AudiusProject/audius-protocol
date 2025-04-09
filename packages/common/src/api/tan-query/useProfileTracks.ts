@@ -64,6 +64,7 @@ export const useProfileTracks = (
       return allPages.length * pageSize
     },
     queryFn: async ({ pageParam }) => {
+      console.log('asdf useProfileTracks querying')
       const sdk = await audiusSdk()
       if (!handle) return []
       // If the @ is still at the beginning of the handle, trim it off
@@ -84,7 +85,7 @@ export const useProfileTracks = (
         userTrackMetadataFromSDK
       )
       primeTrackData({ tracks: processedTracks, queryClient, dispatch })
-
+      console.log('asdf useProfileTracks: ', processedTracks)
       // Update lineup when new data arrives
       dispatch(
         profilePageTracksLineupActions.fetchLineupMetadatas(
@@ -104,7 +105,7 @@ export const useProfileTracks = (
     ...options,
     enabled: options?.enabled !== false && !!handle
   })
-
+  console.log('asdf useProfileTracks from lineup')
   return useLineupQuery({
     queryData,
     queryKey: getProfileTracksQueryKey({

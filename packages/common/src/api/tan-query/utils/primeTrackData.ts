@@ -106,6 +106,7 @@ export const primeTrackData = ({
   skipQueryData?: boolean
 }) => {
   const formattedTracks = tracks.map((track) => formatTrackData(track))
+  console.log('asdf formattedTracks:', formattedTracks)
   const entries = primeTrackDataInternal({
     tracks: formattedTracks,
     queryClient,

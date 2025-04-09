@@ -12,7 +12,7 @@ const setIsCoSigned = <T extends TrackMetadata>(track: T) => {
     remixOfTrack &&
     (remixOfTrack.has_remix_author_saved ||
       remixOfTrack.has_remix_author_reposted)
-
+  console.log('asdf setIsCosigned', track.track_id, isCoSigned, remixOfTrack)
   if (isCoSigned) {
     return {
       ...track,

@@ -32,24 +32,27 @@ export type UseRemixesArgs = {
   trackId: number | null | undefined
   includeOriginal?: Boolean
   pageSize?: number
+  sortMethod?: string
 }
 
 export const getRemixesQueryKey = ({
   trackId,
   includeOriginal = false,
-  pageSize = DEFAULT_PAGE_SIZE
+  pageSize = DEFAULT_PAGE_SIZE,
+  sortMethod = 'recent'
 }: UseRemixesArgs) =>
   [
     QUERY_KEYS.remixes,
     trackId,
-    { pageSize, includeOriginal }
+    { pageSize, includeOriginal, sortMethod }
   ] as unknown as QueryKey<InfiniteData<LineupData[]>>
 
 export const useRemixes = (
   {
     trackId,
     includeOriginal = false,
-    pageSize = DEFAULT_PAGE_SIZE
+    pageSize = DEFAULT_PAGE_SIZE,
+    sortMethod = 'recent'
   }: UseRemixesArgs,
   options?: QueryOptions
 ) => {
