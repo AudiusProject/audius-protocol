@@ -282,6 +282,7 @@ DEPENDENCIES
   cocoapods (= 1.16.2)
   fastlane (~> 2.225.0)
   fastlane-plugin-versioning
+  xcodeproj (< 1.26.0)
 
 BUNDLED WITH
    2.5.16
