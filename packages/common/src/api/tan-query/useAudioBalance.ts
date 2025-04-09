@@ -32,7 +32,7 @@ export const getWalletAudioBalanceQueryKey = ({
     QUERY_KEYS.audioBalance,
     chain,
     address,
-    includeStaked
+    { includeStaked }
   ] as unknown as QueryKey<AudioWei>
 
 const fetchWalletAudioBalance = async (
@@ -136,7 +136,7 @@ export const useWalletAudioBalances = (
 export const useAudioBalance = () => {
   // Get account balances
   const { data: currentUserId } = useCurrentUserId()
-  const { data, isFetched: isUserFetched } = useUser(currentUserId)
+  const { data, isSuccess: isUserFetched } = useUser(currentUserId)
   const accountBalances = useWalletAudioBalances(
     {
       wallets: [
