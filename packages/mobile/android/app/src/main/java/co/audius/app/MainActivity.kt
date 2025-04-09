@@ -5,8 +5,10 @@ import com.bytedance.sdk.open.tiktok.TikTokOpenApiFactory
 import com.bytedance.sdk.open.tiktok.TikTokOpenConfig
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
+import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.google.android.gms.cast.framework.CastContext
 import com.zoontek.rnbars.RNBars
 import com.zoontek.rnbootsplash.RNBootSplash
@@ -42,5 +44,19 @@ class MainActivity : ReactActivity() {
 
     // lazy load Google Cast context
     CastContext.getSharedInstance(this)
+  }
+
+  override fun onDestroy() {
+    // Check if this is a configuration change (e.g. rotation)
+    // If it is, we don't want to do cleanup since the activity will be recreated
+    if (!isChangingConfigurations) {
+      // Emit an event to React Native so we can handle cleanup in JS
+      val params = Arguments.createMap()
+      reactInstanceManager
+        .currentReactContext
+        ?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+        ?.emit("ForceQuitDetected", params)
+    }
+    super.onDestroy()
   }
 }

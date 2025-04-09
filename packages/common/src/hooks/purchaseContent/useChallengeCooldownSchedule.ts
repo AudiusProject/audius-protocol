@@ -9,6 +9,7 @@ import { getOptimisticUserChallenges } from '~/store/challenges/selectors'
 import { audioRewardsPageSelectors } from '~/store/pages'
 import { isCooldownChallengeClaimable } from '~/utils/challenges'
 import dayjs, { Dayjs } from '~/utils/dayjs'
+import { formatNumberCommas } from '~/utils/formatUtil'
 import { utcToLocalTime } from '~/utils/timeUtil'
 
 const { getUndisbursedUserChallenges } = audioRewardsPageSelectors
@@ -104,7 +105,7 @@ export const useChallengeCooldownSchedule = ({
       ? {
           id: messages.readyToClaim,
           label: messages.readyToClaim,
-          value: claimableAmount
+          value: formatNumberCommas(claimableAmount)
         }
       : undefined
 

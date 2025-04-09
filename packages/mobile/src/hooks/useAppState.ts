@@ -32,7 +32,6 @@ export const useAppState = (
         nextAppState === 'active' &&
         onEnterForeground
       ) {
-        console.info('Enter foreground')
         onEnterForeground()
       }
       if (
@@ -40,7 +39,6 @@ export const useAppState = (
         nextAppState.match(NotActive) &&
         onEnterBackground
       ) {
-        console.info('Enter background')
         onEnterBackground()
       }
       setAppState(nextAppState)

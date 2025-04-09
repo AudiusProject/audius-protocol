@@ -267,14 +267,13 @@ export const StemsAndDownloadsField = (props: StemsAndDownloadsFieldProps) => {
         if (typeof originalValue === 'object') {
           return {
             ...originalValue,
-            label:
-              count > 1
-                ? `${originalValue.label} (${count})`
-                : originalValue.label
+            label: `${originalValue.label} (${count})`
           }
         }
 
-        return count > 1 ? `${label} (${count})` : label
+        // Check if this value is a stem category by checking if it exists in the stems array
+        const isStemCategory = stemsCategories.includes(label)
+        return isStemCategory ? `${label} (${count})` : label
       }
     )
 
