@@ -8,7 +8,7 @@ import { profilePageActions } from '~/store/pages'
 import { walletActions } from '~/store/wallet'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryOptions, type QueryKey } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getUserCollectiblesQueryKey } from './useUserCollectibles'
 
@@ -22,7 +22,10 @@ export const getConnectedWalletsQueryKey = ({
   userId
 }: {
   userId: ID | null
-}) => [QUERY_KEYS.connectedWallets, userId]
+}) =>
+  [QUERY_KEYS.connectedWallets, userId] as unknown as QueryKey<
+    ConnectedWallet[]
+  >
 
 export const useConnectedWallets = (options?: QueryOptions) => {
   const { audiusSdk } = useAudiusQueryContext()
@@ -86,12 +89,8 @@ export const useAddConnectedWallet = () => {
       // Optimistically add the new wallet
       queryClient.setQueryData(
         getConnectedWalletsQueryKey({ userId: currentUserId }),
-        (old: ConnectedWallet[]) => [
-          ...old,
-          { ...params.wallet, isPending: true }
-        ]
+        (old) => [...(old ?? []), { ...params.wallet, isPending: true }]
       )
-
       return { previousAssociatedWallets }
     },
     onSettled: async () => {

@@ -10,7 +10,7 @@ import { Chain } from '~/models'
 import type { Env } from '~/services'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { QueryOptions, type QueryKey } from './types'
 import { useConnectedWallets } from './useConnectedWallets'
 import { useCurrentUserId } from './useCurrentUserId'
 import { useUser } from './useUser'
@@ -27,12 +27,13 @@ export const getWalletAudioBalanceQueryKey = ({
   address,
   includeStaked,
   chain
-}: UseWalletAudioBalanceParams) => [
-  QUERY_KEYS.audioBalance,
-  chain,
-  address,
-  includeStaked
-]
+}: UseWalletAudioBalanceParams) =>
+  [
+    QUERY_KEYS.audioBalance,
+    chain,
+    address,
+    includeStaked
+  ] as unknown as QueryKey<AudioWei>
 
 const fetchWalletAudioBalance = async (
   { sdk, env }: { sdk: AudiusSdk; env: Env },
