@@ -24,7 +24,7 @@ import { CooldownSummaryTable } from './CooldownSummaryTable'
 import type { ChallengeContentProps } from './types'
 
 const messages = {
-  rewardMapping: '$AUDIO/Pin',
+  rewardMapping: '$AUDIO',
   totalClaimed: (amount: string) => `${amount} $AUDIO Claimed`,
   claimAudio: (amount: string) => `Claim ${amount} $AUDIO`,
   close: 'Close'
