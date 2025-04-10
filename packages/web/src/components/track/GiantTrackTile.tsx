@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useState, useEffect } from 'react'
+import { Suspense, lazy, useCallback, useState, useEffect, useRef } from 'react'
 
 import {
   useTrackRank,
@@ -256,6 +256,18 @@ export const GiantTrackTile = ({
   const [isDescriptionExpanded, toggleDescriptionExpanded] = useToggle(false)
   const [showToggle, setShowToggle] = useState(false)
   const theme = useTheme()
+  const toggleButtonRef = useRef<HTMLButtonElement>(null)
+
+  const handleToggleDescription = useCallback(() => {
+    toggleDescriptionExpanded()
+    // If we're collapsing, scroll the button into view
+    if (isDescriptionExpanded && toggleButtonRef.current) {
+      toggleButtonRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'end'
+      })
+    }
+  }, [isDescriptionExpanded, toggleDescriptionExpanded])
 
   // This ref holds the description height for expansion
   const [descriptionRef, descriptionBounds] = useMeasure({
@@ -734,8 +746,9 @@ export const GiantTrackTile = ({
             </Flex>
             {showToggle && (
               <PlainButton
+                ref={toggleButtonRef}
                 iconRight={isDescriptionExpanded ? IconCaretUp : IconCaretDown}
-                onClick={toggleDescriptionExpanded}
+                onClick={handleToggleDescription}
                 css={{ alignSelf: 'flex-start' }}
               >
                 {isDescriptionExpanded ? messages.seeLess : messages.seeMore}

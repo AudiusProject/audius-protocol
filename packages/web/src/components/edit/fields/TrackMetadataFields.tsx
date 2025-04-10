@@ -31,7 +31,7 @@ export const TrackMetadataFields = () => {
         aria-label='description'
         placeholder={messages.description}
         maxLength={MAX_DESCRIPTION_LENGTH}
-        css={{ minHeight: 96 }}
+        css={{ minHeight: 96, maxHeight: 300 }}
         showMaxLength
         grows
       />
