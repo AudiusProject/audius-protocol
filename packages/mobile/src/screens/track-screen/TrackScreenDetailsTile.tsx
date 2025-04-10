@@ -1,6 +1,10 @@
 import React, { useCallback } from 'react'
 
-import { useToggleFavoriteTrack } from '@audius/common/api'
+import {
+  useRemixContest,
+  useToggleFavoriteTrack,
+  useTrackRank
+} from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,
@@ -43,30 +47,31 @@ import {
   useEarlyReleaseConfirmationModal
 } from '@audius/common/store'
 import { formatReleaseDate, Genre, removeNullable } from '@audius/common/utils'
+import { EventEntityTypeEnum } from '@audius/sdk'
 import dayjs from 'dayjs'
 import { TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
-  Box,
   Button,
+  Divider,
   Flex,
   IconCalendarMonth,
+  IconCloudUpload,
   IconPause,
   IconPlay,
   IconRepeatOff,
   IconVisibilityHidden,
-  IconCloudUpload,
+  IconTrending,
   MusicBadge,
   Paper,
   Text,
   spacing,
-  type ImageProps,
-  Divider
+  type ImageProps
 } from '@audius/harmony-native'
 import CoSign, { Size } from 'app/components/co-sign'
 import { useCommentDrawer } from 'app/components/comments/CommentDrawerContext'
-import { Tag, UserGeneratedText } from 'app/components/core'
+import { Tag } from 'app/components/core'
 import { DeletedTile } from 'app/components/details-tile/DeletedTile'
 import { DetailsProgressInfo } from 'app/components/details-tile/DetailsProgressInfo'
 import { DetailsTileActionButtons } from 'app/components/details-tile/DetailsTileActionButtons'
@@ -85,6 +90,8 @@ import { make, track as trackEvent } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 
 import { DownloadSection } from './DownloadSection'
+import { TrackDescription } from './TrackDescription'
+
 const { getPlaying, getTrackId, getPreviewing } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
@@ -116,7 +123,11 @@ const messages = {
   releases: (releaseDate: string) =>
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`,
   remixContest: 'Remix Contest',
-  deadline: (deadline: string) => `${deadline} at ${dayjs().format('h:mm A')}`,
+  contestDeadline: 'Contest Deadline',
+  deadline: (deadline?: string) =>
+    deadline
+      ? `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`
+      : '',
   uploadRemixButtonText: 'Upload Your Remix'
 }
 
@@ -225,6 +236,10 @@ export const TrackScreenDetailsTile = ({
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
   )
+  const { data: event } = useRemixContest(trackId, {
+    entityType: EventEntityTypeEnum.Track
+  })
+  const isRemixContest = isRemixContestEnabled && event
 
   const isPlayingPreview = isPreviewing && isPlaying
   const isPlayingFullAccess = isPlaying && !isPreviewing
@@ -247,7 +262,9 @@ export const TrackScreenDetailsTile = ({
     (!isOwner && (playCount ?? 0) <= 0)
 
   let headerText
-  if (isRemix) {
+  if (isRemixContest) {
+    headerText = messages.remixContest
+  } else if (isRemix) {
     headerText = messages.remix
   } else if (isStreamGated) {
     if (isContentCollectibleGated(streamConditions)) {
@@ -266,9 +283,16 @@ export const TrackScreenDetailsTile = ({
       ? IconRepeatOff
       : IconPlay
 
+  const trendingRank = useTrackRank(trackId)
+
   const badges = [
     aiAttributionUserId ? (
       <DetailsTileAiAttribution userId={aiAttributionUserId} />
+    ) : null,
+    trendingRank ? (
+      <MusicBadge color='blue' icon={IconTrending}>
+        {trendingRank}
+      </MusicBadge>
     ) : null,
     shouldShowScheduledRelease ? (
       <MusicBadge variant='accent' icon={IconCalendarMonth}>
@@ -421,6 +445,9 @@ export const TrackScreenDetailsTile = ({
     const addToAlbumAction =
       isOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null
     const overflowActions = [
+      isOwner && isRemixContestEnabled
+        ? OverflowAction.HOST_REMIX_CONTEST
+        : null,
       addToAlbumAction,
       !isUnlisted || isOwner ? OverflowAction.ADD_TO_PLAYLIST : null,
       isOwner
@@ -487,29 +514,29 @@ export const TrackScreenDetailsTile = ({
   }, [navigation, track])
 
   const renderRemixContestSection = () => {
-    const isRemixContest = isRemixContestEnabled && !isOwner
     if (!isRemixContest) return null
-    const remixContestDeadline = dayjs().add(1, 'week').format('MMM D, YYYY')
     return (
       <Flex gap='m'>
         <Flex row gap='xs' alignItems='center'>
           <Text variant='label' color='accent'>
-            {messages.remixContest}
+            {messages.contestDeadline}
           </Text>
           <Text size='s' strength='strong'>
-            {messages.deadline(remixContestDeadline)}
+            {messages.deadline(event?.endDate)}
           </Text>
         </Flex>
-        <Flex flex={1}>
-          <Button
-            variant='secondary'
-            size='small'
-            iconLeft={IconCloudUpload}
-            onPress={handlePressSubmitRemix}
-          >
-            {messages.uploadRemixButtonText}
-          </Button>
-        </Flex>
+        {!isOwner ? (
+          <Flex flex={1}>
+            <Button
+              variant='secondary'
+              size='small'
+              iconLeft={IconCloudUpload}
+              onPress={handlePressSubmitRemix}
+            >
+              {messages.uploadRemixButtonText}
+            </Button>
+          </Flex>
+        ) : null}
       </Flex>
     )
   }
@@ -673,13 +700,7 @@ export const TrackScreenDetailsTile = ({
           onPressReposts={handlePressReposts}
           onPressComments={handlePressComments}
         />
-        {description ? (
-          <Box w='100%'>
-            <UserGeneratedText source={'track page'} variant='body' size='s'>
-              {description}
-            </UserGeneratedText>
-          </Box>
-        ) : null}
+        <TrackDescription description={description} />
         <TrackMetadataList trackId={trackId} />
         {renderTags()}
         {renderRemixContestSection()}

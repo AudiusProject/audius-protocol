@@ -12,7 +12,7 @@ export type Drawer =
   | 'NowPlaying'
   | 'CancelEditTrack'
   | 'DeleteTrackConfirmation'
-  | 'ConnectWallets'
+  | 'ConnectNewWallet'
   | 'ConfirmRemoveWallet'
   | 'ShareToStoryProgress'
   | 'RemoveAllDownloads'
@@ -45,7 +45,7 @@ export type DrawerData = {
   DeleteTrackConfirmation: {
     trackId: number
   }
-  ConnectWallets: { uri: string }
+  ConnectNewWallet: undefined
   ConfirmRemoveWallet: undefined
   ShareToStoryProgress: undefined
   UnfavoriteDownloadedCollection: { collectionId: number }
@@ -88,7 +88,7 @@ const initialState: DrawersState = {
   NowPlaying: false,
   CancelEditTrack: false,
   DeleteTrackConfirmation: false,
-  ConnectWallets: false,
+  ConnectNewWallet: false,
   ConfirmRemoveWallet: false,
   ShareToStoryProgress: false,
   RemoveAllDownloads: false,

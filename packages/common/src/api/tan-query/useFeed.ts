@@ -1,4 +1,4 @@
-import { Id, full } from '@audius/sdk'
+import { EntityType, Id, full } from '@audius/sdk'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
@@ -15,7 +15,8 @@ import { feedPageSelectors, feedPageLineupActions } from '~/store/pages'
 import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryKey, QueryOptions } from './types'
+import { LineupData, QueryKey, QueryOptions } from './types'
+import { useCurrentUserId } from './useCurrentUserId'
 import { primeCollectionData } from './utils/primeCollectionData'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -44,36 +45,33 @@ export const FEED_LOAD_MORE_PAGE_SIZE = 4
 
 export const useFeed = (
   {
-    userId,
     filter = FeedFilter.ALL,
     initialPageSize = FEED_INITIAL_PAGE_SIZE,
     loadMorePageSize = FEED_LOAD_MORE_PAGE_SIZE
   }: FeedArgs,
   options?: QueryOptions
 ) => {
+  const { data: currentUserId } = useCurrentUserId()
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
   const queryData = useInfiniteQuery({
     initialPageParam: 0,
-    getNextPageParam: (
-      lastPage: (UserTrackMetadata | UserCollectionMetadata)[],
-      allPages
-    ) => {
+    getNextPageParam: (lastPage: LineupData[], allPages) => {
       const isFirstPage = allPages.length === 1
       const currentPageSize = isFirstPage ? initialPageSize : loadMorePageSize
       if (lastPage.length < currentPageSize) return undefined
       return allPages.reduce((total, page) => total + page.length, 0)
     },
-    queryKey: getFeedQueryKey({ userId, filter }),
+    queryKey: getFeedQueryKey({ userId: currentUserId, filter }),
     queryFn: async ({ pageParam }) => {
       const isFirstPage = pageParam === 0
       const currentPageSize = isFirstPage ? initialPageSize : loadMorePageSize
       const sdk = await audiusSdk()
       const { data = [] } = await sdk.full.users.getUserFeed({
-        id: Id.parse(userId),
-        userId: Id.parse(userId),
+        id: Id.parse(currentUserId),
+        userId: Id.parse(currentUserId),
         filter: filterMap[filter],
         limit: currentPageSize,
         offset: pageParam,
@@ -110,21 +108,25 @@ export const useFeed = (
           pageParam,
           currentPageSize,
           false,
-          { feed }
+          { items: feed }
         )
       )
 
-      return feed
+      return feed.map((item) =>
+        'track_id' in item
+          ? { id: item.track_id, type: EntityType.TRACK }
+          : { id: item.playlist_id, type: EntityType.PLAYLIST }
+      )
     },
     select: (data) => data?.pages.flat(),
     ...options,
-    enabled: userId !== null
+    enabled: currentUserId !== null
   })
 
   return useLineupQuery({
     queryData,
     queryKey: getFeedQueryKey({
-      userId,
+      userId: currentUserId,
       filter
     }),
     lineupActions: feedPageLineupActions,

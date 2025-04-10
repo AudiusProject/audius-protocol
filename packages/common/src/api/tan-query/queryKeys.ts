@@ -79,5 +79,9 @@ export const QUERY_KEYS = {
   trendingPlaylists: 'trendingPlaylists',
   trendingUnderground: 'trendingUnderground',
   trackPageLineup: 'trackPageLineup',
-  events: 'events'
+  connectedWallets: 'connectedWallets',
+  audioBalance: 'audioBalance',
+  walletCollectibles: 'walletCollectibles',
+  events: 'events',
+  eventsByEntityId: 'eventsByEntityId'
 } as const

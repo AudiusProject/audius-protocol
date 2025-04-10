@@ -16,7 +16,7 @@ import { accountSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { IconCart, IconReceive } from '@audius/harmony'
 import { FormikErrors } from 'formik'
-import { get, set } from 'lodash'
+import { get, set, groupBy } from 'lodash'
 import { useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -226,7 +226,7 @@ export const StemsAndDownloadsField = (props: StemsAndDownloadsFieldProps) => {
     ]
   )
 
-  const renderValue = () => {
+  const renderValue = useCallback(() => {
     let values = []
     if (!streamConditions) {
       if (isContentUSDCPurchaseGated(savedDownloadConditions)) {
@@ -254,9 +254,32 @@ export const StemsAndDownloadsField = (props: StemsAndDownloadsFieldProps) => {
 
     if (values.length === 0) return null
 
+    const getLabel = (value: any) =>
+      typeof value === 'string' ? value : value.label
+    const groupedValues = groupBy(values, getLabel)
+
+    // Convert grouped values into array with counts
+    const displayValues = Object.entries(groupedValues).map(
+      ([label, items]) => {
+        const originalValue = items[0]
+        const count = items.length
+
+        if (typeof originalValue === 'object') {
+          return {
+            ...originalValue,
+            label: `${originalValue.label} (${count})`
+          }
+        }
+
+        // Check if this value is a stem category by checking if it exists in the stems array
+        const isStemCategory = stemsCategories.includes(label)
+        return isStemCategory ? `${label} (${count})` : label
+      }
+    )
+
     return (
       <SelectedValues>
-        {values.map((value, i) => {
+        {displayValues.map((value, i) => {
           const valueProps =
             typeof value === 'string' ? { label: value } : value
           return (
@@ -265,7 +288,7 @@ export const StemsAndDownloadsField = (props: StemsAndDownloadsFieldProps) => {
         })}
       </SelectedValues>
     )
-  }
+  }, [isDownloadable, savedDownloadConditions, stemsValue, streamConditions])
 
   return (
     <ContextualMenu

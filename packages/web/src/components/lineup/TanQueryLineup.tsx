@@ -142,6 +142,7 @@ export const TanQueryLineup = ({
   endOfLineupElement: endOfLineup,
   leadingElementId,
   lineupContainerStyles,
+  leadingElementDelineator,
   tileContainerStyles,
   tileStyles,
   emptyElement,
@@ -162,11 +163,10 @@ export const TanQueryLineup = ({
   hasNextPage,
   isPending = true,
   isPlaying = false,
-  // isFetching = true,
+  isFetching = true,
   isError = false,
   maxEntries
 }: TanQueryLineupProps) => {
-  const isFetching = true
   const dispatch = useDispatch()
 
   const getCurrentQueueItem = useMemo(() => makeGetCurrent(), [])
@@ -245,13 +245,11 @@ export const TanQueryLineup = ({
 
   // Trim lineup based on start & maxEntry props
   const lineupEntries = useMemo(() => {
-    if (pageSize !== undefined && start !== undefined) {
-      return lineup.entries.slice(start, start + pageSize)
-    } else if (maxEntries !== undefined) {
+    if (maxEntries !== undefined) {
       return lineup.entries.slice(0, maxEntries)
     }
     return lineup.entries
-  }, [lineup.entries, pageSize, start, maxEntries])
+  }, [lineup.entries, maxEntries])
 
   const renderSkeletons = useCallback(
     (skeletonCount: number | undefined) => {
@@ -278,11 +276,7 @@ export const TanQueryLineup = ({
                   direction='column'
                   gap='m'
                   key={index}
-                  mb={
-                    index === 0 && leadingElementId !== undefined
-                      ? 'xl'
-                      : undefined
-                  }
+                  mb={index === 0 && leadingElementId ? 'xl' : undefined}
                   w='100%'
                   as='li'
                   className={cn({ [tileStyles!]: !!tileStyles })}
@@ -293,7 +287,11 @@ export const TanQueryLineup = ({
                     <TrackTile {...skeletonTileProps(index)} key={index} />
                   </Flex>
                   {index === 0 && leadingElementId !== undefined ? (
-                    <Divider css={{ width: '100%' }} />
+                    leadingElementDelineator !== undefined ? (
+                      leadingElementDelineator
+                    ) : (
+                      <Divider css={{ width: '100%' }} />
+                    )
                   ) : null}
                 </Flex>
               )
@@ -302,13 +300,14 @@ export const TanQueryLineup = ({
       )
     },
     [
-      TrackTile,
-      leadingElementId,
-      isMobile,
-      numPlaylistSkeletonRows,
-      ordered,
       tileSize,
-      tileStyles
+      ordered,
+      numPlaylistSkeletonRows,
+      leadingElementId,
+      tileStyles,
+      isMobile,
+      TrackTile,
+      leadingElementDelineator
     ]
   )
 
@@ -441,19 +440,21 @@ export const TanQueryLineup = ({
                     direction='column'
                     gap='m'
                     key={index}
-                    mb={
-                      index === 0 && leadingElementId !== undefined
-                        ? 'xl'
-                        : undefined
-                    }
+                    mb={index === 0 && leadingElementId ? 'xl' : undefined}
                     className={cn({ [tileStyles!]: !!tileStyles })}
                     as='li'
                   >
                     <Flex direction={isMobile ? 'row' : 'column'} w='100%'>
                       {tile}
                     </Flex>
-                    {index === 0 && leadingElementId !== undefined ? (
-                      <Divider />
+                    {index === 0 &&
+                    tiles.length > 1 &&
+                    leadingElementId !== undefined ? (
+                      leadingElementDelineator !== undefined ? (
+                        leadingElementDelineator
+                      ) : (
+                        <Divider />
+                      )
                     ) : null}
                   </Flex>
                 ))}

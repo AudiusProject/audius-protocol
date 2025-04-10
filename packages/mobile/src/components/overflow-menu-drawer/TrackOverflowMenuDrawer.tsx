@@ -31,7 +31,8 @@ import {
   trackPageActions,
   artistPickModalActions,
   playerActions,
-  playerSelectors
+  playerSelectors,
+  useHostRemixContestModal
 } from '@audius/common/store'
 import type { CommonState, OverflowActionCallbacks } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
@@ -109,6 +110,7 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
   }, [track, openPremiumContentPurchaseModal])
 
   const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
+  const { onOpen: openHostRemixContest } = useHostRemixContestModal()
 
   const handleSetAsArtistPick = useCallback(() => {
     if (track) {
@@ -130,6 +132,12 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
       })
     }
   }, [currentQueueItem.uid, navigation, open, track?.track_id])
+
+  const handleOpenRemixContestDrawer = useCallback(() => {
+    if (track?.track_id) {
+      openHostRemixContest({ trackId: track.track_id })
+    }
+  }, [track?.track_id, openHostRemixContest])
 
   if (!track || !user) {
     return null
@@ -227,7 +235,8 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     [OverflowAction.PURCHASE_TRACK]: handlePurchasePress,
     [OverflowAction.SET_ARTIST_PICK]: handleSetAsArtistPick,
     [OverflowAction.UNSET_ARTIST_PICK]: handleUnsetAsArtistPick,
-    [OverflowAction.VIEW_COMMENTS]: handleOpenCommentsDrawer
+    [OverflowAction.VIEW_COMMENTS]: handleOpenCommentsDrawer,
+    [OverflowAction.HOST_REMIX_CONTEST]: handleOpenRemixContestDrawer
   }
 
   return render(callbacks)

@@ -1,7 +1,7 @@
-import { useCallback, useEffect } from 'react'
+import { useEffect } from 'react'
 
+import { useRemixes } from '@audius/common/api'
 import {
-  lineupSelectors,
   remixesPageLineupActions as tracksActions,
   remixesPageActions,
   remixesPageSelectors
@@ -19,11 +19,8 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 import { flexRowCentered, makeStyles } from 'app/styles'
 
-const { getTrack, getUser, getLineup, getCount } = remixesPageSelectors
+const { getTrack, getUser, getCount } = remixesPageSelectors
 const { fetchTrack, reset } = remixesPageActions
-const { makeGetLineupMetadatas } = lineupSelectors
-
-const getRemixesTracksLineup = makeGetLineupMetadatas(getLineup)
 
 const messages = {
   remix: 'Remix',
@@ -54,12 +51,16 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 
 export const TrackRemixesScreen = () => {
   const navigation = useNavigation()
-  const lineup = useSelector(getRemixesTracksLineup)
+
   const count = useSelector(getCount)
   const track = useSelector(getTrack)
   const user = useSelector(getUser)
   const dispatch = useDispatch()
   const trackId = track?.track_id
+
+  const { lineup, loadNextPage } = useRemixes({
+    trackId
+  })
 
   const styles = useStyles()
   const { params } = useRoute<'TrackRemixes'>()
@@ -98,19 +99,6 @@ export const TrackRemixesScreen = () => {
     navigation.push('Profile', { handle: user.handle })
   }
 
-  const loadMore = useCallback(
-    (offset: number, limit: number, overwrite: boolean) => {
-      if (trackId) {
-        dispatch(
-          tracksActions.fetchLineupMetadatas(offset, limit, overwrite, {
-            trackId
-          })
-        )
-      }
-    },
-    [dispatch, trackId]
-  )
-
   const remixesText = pluralize(messages.remix, count, 'es', !count)
   const remixesCountText = `${count || ''} ${remixesText} ${messages.of}`
 
@@ -119,8 +107,9 @@ export const TrackRemixesScreen = () => {
       <ScreenHeader text={messages.header} icon={IconRemix} />
       <ScreenContent>
         <Lineup
+          tanQuery
           lineup={lineup}
-          loadMore={loadMore}
+          loadMore={loadNextPage}
           header={
             track && user ? (
               <View style={styles.header}>

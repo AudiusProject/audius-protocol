@@ -6,7 +6,6 @@ import {
   accountActions,
   useExternalWalletSignUpModal
 } from '@audius/common/store'
-import { isResponseError } from '@audius/common/utils'
 import {
   Text,
   Flex,
@@ -17,17 +16,16 @@ import {
   ModalTitle,
   Button
 } from '@audius/harmony'
-import type { AudiusSdk } from '@audius/sdk'
-import { metaMask } from '@wagmi/connectors'
+import type { ParsedCaipAddress } from '@reown/appkit-common'
 import { useDispatch, useSelector } from 'react-redux'
-import { useAccount, useConnect, useSwitchChain } from 'wagmi'
 
 import { usingExternalWallet } from 'common/store/pages/signon/actions'
 import { getRouteOnCompletion } from 'common/store/pages/signon/selectors'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { usePortal } from 'hooks/usePortal'
 import { initSdk } from 'services/audius-sdk'
-import { audiusChain, wagmiConfig } from 'services/audius-sdk/wagmi'
+
+import { doesUserExist, useExternalWalletAuth } from './useExternalWalletAuth'
 
 const messages = {
   title: 'Continue With External Wallet?',
@@ -39,75 +37,19 @@ const messages = {
   error: 'Something went wrong. Please try again.'
 }
 
-export const doesUserExist = async (sdk: AudiusSdk, wallet: string) => {
-  try {
-    const { data } = await sdk.full.users.getUserAccount({
-      wallet
-    })
-    if (data?.user) {
-      return true
-    }
-  } catch (e) {
-    // We expect an unauthorized response for non-users
-    if (!isResponseError(e) || e.response.status !== 401) {
-      throw e
-    }
-  }
-  return false
-}
-
 export const ExternalWalletSignUpModal = () => {
   const { isOpen, onClose } = useExternalWalletSignUpModal()
-
-  const { connectAsync } = useConnect()
-  const { switchChainAsync } = useSwitchChain()
-  const { isConnected, address } = useAccount()
   const navigate = useNavigateToPage()
   const dispatch = useDispatch()
   const [status, setStatus] = useState(Status.IDLE)
   const route = useSelector(getRouteOnCompletion)
 
-  const handleConfirm = useCallback(async () => {
-    setStatus(Status.LOADING)
-    try {
-      let wallet = address
-      // Ensure the wallet is connected
-      if (!isConnected) {
-        const connection = await connectAsync({
-          chainId: audiusChain.id,
-          connector: metaMask()
-        })
-        wallet = connection.accounts[0]
-      }
-      if (!wallet) {
-        throw new Error('No wallet connected')
-      }
-
-      // Ensure we're on the Audius chain
-      await switchChainAsync({ chainId: audiusChain.id })
-
-      // For some reason, a delay is needed to ensure the chain ID switches.
-      // I couldn't find the part of the wagmiConfig state that changes.
-      // This is partially voodoo magic, a setTimeout would also work here.
-      // Without this delay, new users without the network added will get a ConnectorChainMismatchError
-      let unsubscribe = () => {}
-      await new Promise<void>((resolve) => {
-        unsubscribe = wagmiConfig.subscribe(
-          (state) => state,
-          () => {
-            resolve()
-          }
-        )
-      })
-      unsubscribe()
-
-      // Reinit SDK with the connected wallet
-      const sdk = await initSdk({ ignoreCachedUserWallet: true })
-
-      // Check that the user doesn't already exist.
-      // If they do, log them in.
-      const userExists = await doesUserExist(sdk, wallet)
+  const onConnect = useCallback(
+    async ({ address }: ParsedCaipAddress) => {
+      const sdk = await initSdk()
+      const userExists = await doesUserExist(sdk, address)
       if (userExists) {
+        console.debug('User already exists. Fetching account and signing in...')
         dispatch(
           accountActions.fetchAccount({ shouldMarkAccountAsLoading: true })
         )
@@ -116,24 +58,24 @@ export const ExternalWalletSignUpModal = () => {
         return
       }
 
-      // Let signup saga know it's ok to go pick a handle, then go pick a handle.
+      console.debug('User does not exist. Continuing sign up flow...')
       dispatch(usingExternalWallet())
       navigate(SIGN_UP_HANDLE_PAGE)
       onClose()
-    } catch (e) {
-      console.error(e)
-      setStatus(Status.ERROR)
-    }
-  }, [
-    address,
-    connectAsync,
-    dispatch,
-    isConnected,
-    navigate,
-    onClose,
-    route,
-    switchChainAsync
-  ])
+    },
+    [dispatch, navigate, onClose, route]
+  )
+
+  const onError = useCallback((e: unknown) => {
+    setStatus(Status.ERROR)
+  }, [])
+
+  const { connect } = useExternalWalletAuth({ onSuccess: onConnect, onError })
+
+  const handleConfirm = useCallback(async () => {
+    setStatus(Status.LOADING)
+    await connect('metamask')
+  }, [connect])
 
   const onClosed = useCallback(() => {
     setStatus(Status.IDLE)
@@ -148,12 +90,15 @@ export const ExternalWalletSignUpModal = () => {
         onClose={onClose}
         onClosed={onClosed}
         size='medium'
+        dismissOnClickOutside={status === Status.LOADING}
       >
         <ModalHeader>
           <ModalTitle title={messages.title} />
         </ModalHeader>
         <ModalContent>
-          <Text>{messages.body}</Text>
+          <Flex direction='column' gap='s' alignItems='center'>
+            <Text>{messages.body}</Text>
+          </Flex>
         </ModalContent>
         <ModalFooter>
           <Flex w='100%' direction='column' gap='s'>
