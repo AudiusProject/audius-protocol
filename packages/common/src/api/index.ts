@@ -77,6 +77,7 @@ export * from './tan-query/useAudioTransactionsCount'
 export * from './tan-query/useFeed'
 export * from './tan-query/useTrending'
 export * from './tan-query/useRemixes'
+export * from './tan-query/useTrackRank'
 
 // Saga fetch utils, remove when migration is complete
 export * from './tan-query/saga-utils'
