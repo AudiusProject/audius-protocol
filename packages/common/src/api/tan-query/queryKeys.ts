@@ -17,6 +17,7 @@ export const QUERY_KEYS = {
   trackByPermalink: 'trackByPermalink',
   tracksByPlaylist: 'tracksByPlaylist',
   tracksByAlbum: 'tracksByAlbum',
+  trackFileInfo: 'trackFileInfo',
   user: 'user',
   users: 'users',
   userByHandle: 'userByHandle',
