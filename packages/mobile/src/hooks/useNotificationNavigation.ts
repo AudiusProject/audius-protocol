@@ -131,7 +131,7 @@ export const useNotificationNavigation = () => {
         navigation.navigate('NotificationUsers', { notification })
       } else if (entityType === Entity.Track) {
         navigation.navigate('Track', {
-          id: entityId,
+          trackId: entityId,
           canBeUnlisted: false,
           showComments: type.startsWith('Comment')
         })
@@ -252,7 +252,7 @@ export const useNotificationNavigation = () => {
         notification: RemixCosignNotification | RemixCosignPushNotification
       ) => {
         navigation.navigate('Track', {
-          id:
+          trackId:
             'childTrackId' in notification
               ? notification.childTrackId
               : notification.entityId,
@@ -263,7 +263,7 @@ export const useNotificationNavigation = () => {
         notification: RemixCreateNotification | RemixCreatePushNotification
       ) => {
         navigation.navigate('Track', {
-          id:
+          trackId:
             'childTrackId' in notification
               ? notification.childTrackId
               : notification.entityId,
@@ -301,7 +301,7 @@ export const useNotificationNavigation = () => {
         notification: TrendingTrackNotification
       ) => {
         navigation.navigate('Track', {
-          id: notification.entityId,
+          trackId: notification.entityId,
           canBeUnlisted: false
         })
       },
