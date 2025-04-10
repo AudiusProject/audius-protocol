@@ -1,15 +1,20 @@
 import { useMemo } from 'react'
 
-import { useProfileReposts } from '@audius/common/api'
+import { useProxySelector } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
-import { profilePageFeedLineupActions as feedActions } from '@audius/common/store'
+import {
+  profilePageFeedLineupActions as feedActions,
+  profilePageSelectors
+} from '@audius/common/store'
 import { useRoute } from '@react-navigation/native'
 
-import { TanQueryLineup } from 'app/components/lineup/TanQueryLineup'
+import { Lineup } from 'app/components/lineup'
 
 import { EmptyProfileTile } from '../EmptyProfileTile'
 import type { ProfileTabRoutes } from '../routes'
 import { useSelectProfile } from '../selectors'
+
+const { getProfileFeedLineup } = profilePageSelectors
 
 export const RepostsTab = () => {
   const { params } = useRoute<ProfileTabRoutes<'Reposts'>>()
@@ -20,16 +25,10 @@ export const RepostsTab = () => {
     'repost_count'
   ])
 
-  const {
-    data,
-    isFetching,
-    isPending,
-    lineup,
-    loadNextPage,
-    pageSize,
-    refresh: refreshQuery,
-    hasNextPage
-  } = useProfileReposts({ handle })
+  const lineup = useProxySelector(
+    (state) => getProfileFeedLineup(state, handle),
+    [handle]
+  )
 
   const fetchPayload = useMemo(() => ({ userId: user_id }), [user_id])
   const extraFetchOptions = useMemo(() => ({ handle }), [handle])
@@ -38,11 +37,12 @@ export const RepostsTab = () => {
   const canShowEmptyTile = repost_count === 0 || lineup.status !== Status.IDLE
 
   return (
-    <TanQueryLineup
+    <Lineup
       selfLoad
       lazy={lazy}
       pullToRefresh
       actions={feedActions}
+      lineup={lineup}
       fetchPayload={fetchPayload}
       extraFetchOptions={extraFetchOptions}
       limit={repost_count}
@@ -51,15 +51,6 @@ export const RepostsTab = () => {
         canShowEmptyTile ? <EmptyProfileTile tab='reposts' /> : undefined
       }
       showsVerticalScrollIndicator={false}
-      // Tan query props
-      loadNextPage={loadNextPage}
-      hasMore={hasNextPage}
-      pageSize={pageSize}
-      queryData={data}
-      isFetching={isFetching}
-      isPending={isPending}
-      lineup={lineup}
-      refresh={refreshQuery}
     />
   )
 }

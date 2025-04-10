@@ -1,6 +1,5 @@
 import { useCallback, useEffect } from 'react'
 
-import { useTrending } from '@audius/common/api'
 import { Name, TimeRange } from '@audius/common/models'
 import {
   lineupSelectors,
@@ -11,7 +10,7 @@ import {
 import { useNavigation } from '@react-navigation/native'
 import { useDispatch } from 'react-redux'
 
-import { TanQueryLineup } from 'app/components/lineup/TanQueryLineup'
+import { Lineup } from 'app/components/lineup'
 import type { LineupProps } from 'app/components/lineup/types'
 import { make, track } from 'app/services/analytics'
 const {
@@ -60,18 +59,6 @@ export const TrendingLineup = (props: TrendingLineupProps) => {
   const dispatch = useDispatch()
   const trendingActions = actionsMap[timeRange]
 
-  const {
-    data,
-    lineup,
-    loadNextPage,
-    pageSize,
-    isFetching,
-    refresh: refreshQuery,
-    isPending,
-    hasNextPage,
-    initialPageSize
-  } = useTrending({ timeRange })
-
   useEffect(() => {
     // @ts-ignore tabPress is not a valid event, and wasn't able to figure out a fix
     const tabPressListener = navigation.addListener('tabPress', () => {
@@ -83,30 +70,21 @@ export const TrendingLineup = (props: TrendingLineupProps) => {
 
   const handleLoadMore = useCallback(
     (offset: number, limit: number, overwrite: boolean) => {
-      loadNextPage()
+      dispatch(trendingActions.fetchLineupMetadatas(offset, limit, overwrite))
       track(make({ eventName: Name.TRENDING_PAGINATE, offset, limit }))
     },
-    [loadNextPage]
+    [dispatch, trendingActions]
   )
 
   return (
-    <TanQueryLineup
+    <Lineup
       isTrending
-      lineup={lineup}
-      loadMore={handleLoadMore}
       selfLoad
       pullToRefresh
       lineupSelector={selectorsMap[timeRange]}
       actions={trendingActions}
+      loadMore={handleLoadMore}
       {...other}
-      isFetching={isFetching}
-      loadNextPage={loadNextPage}
-      hasMore={hasNextPage}
-      isPending={isPending}
-      queryData={data}
-      pageSize={pageSize}
-      refresh={refreshQuery}
-      initialPageSize={initialPageSize}
     />
   )
 }

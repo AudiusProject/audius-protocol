@@ -1,12 +1,17 @@
 import { useMemo } from 'react'
 
-import { useProfileTracks } from '@audius/common/api'
-import { profilePageTracksLineupActions as tracksActions } from '@audius/common/store'
+import { useProxySelector } from '@audius/common/hooks'
+import {
+  profilePageTracksLineupActions as tracksActions,
+  profilePageSelectors
+} from '@audius/common/store'
 
-import { TanQueryLineup } from 'app/components/lineup/TanQueryLineup'
+import { Lineup } from 'app/components/lineup'
 
 import { EmptyProfileTile } from '../EmptyProfileTile'
 import { useSelectProfile } from '../selectors'
+
+const { getProfileTracksLineup } = profilePageSelectors
 
 export const TracksTab = () => {
   const { handle, user_id, artist_pick_track_id } = useSelectProfile([
@@ -14,43 +19,29 @@ export const TracksTab = () => {
     'user_id',
     'artist_pick_track_id'
   ])
-  const {
-    data,
-    lineup,
-    loadNextPage,
-    pageSize,
-    isFetching,
-    refresh: refreshQuery,
-    isPending,
-    hasNextPage
-  } = useProfileTracks({
-    handle
-  })
+
+  const handleLower = handle.toLowerCase()
+
+  const lineup = useProxySelector(
+    (state) => getProfileTracksLineup(state, handleLower),
+    [handleLower]
+  )
 
   const fetchPayload = useMemo(() => ({ userId: user_id }), [user_id])
   const extraFetchOptions = useMemo(() => ({ handle }), [handle])
 
   return (
-    <TanQueryLineup
+    <Lineup
       selfLoad
       pullToRefresh
       leadingElementId={artist_pick_track_id}
       actions={tracksActions}
       lineup={lineup}
-      loadMore={loadNextPage}
       fetchPayload={fetchPayload}
       extraFetchOptions={extraFetchOptions}
       disableTopTabScroll
       LineupEmptyComponent={<EmptyProfileTile tab='tracks' />}
       showsVerticalScrollIndicator={false}
-      // Tan query props
-      pageSize={pageSize}
-      isFetching={isFetching}
-      isPending={isPending}
-      queryData={data}
-      loadNextPage={loadNextPage}
-      hasMore={hasNextPage}
-      refresh={refreshQuery}
     />
   )
 }
