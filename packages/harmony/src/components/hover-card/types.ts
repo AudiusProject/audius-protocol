@@ -24,6 +24,11 @@ export type FlairHoverCardProps = {
   onClose?: () => void
 
   /**
+   * Callback fired when the hover card is clicked
+   */
+  onClick?: () => void
+
+  /**
    * Position of the anchor origin
    * @default { horizontal: 'right', vertical: 'center' }
    */

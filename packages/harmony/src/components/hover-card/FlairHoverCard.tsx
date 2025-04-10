@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 
-import { Paper, Popup } from '..'
+import { Flex, Paper, Popup } from '..'
 import { Origin } from '../popup/types'
 
 import { FlairHoverCardProps } from './types'
@@ -41,6 +41,7 @@ export const FlairHoverCard = ({
   className,
   content,
   onClose,
+  onClick,
   anchorOrigin = DEFAULT_ANCHOR_ORIGIN,
   transformOrigin = DEFAULT_TRANSFORM_ORIGIN
 }: FlairHoverCardProps) => {
@@ -61,7 +62,7 @@ export const FlairHoverCard = ({
   }
 
   return (
-    <div
+    <Flex
       ref={anchorRef}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -82,10 +83,11 @@ export const FlairHoverCard = ({
           borderRadius='m'
           backgroundColor='white'
           direction='column'
+          onClick={onClick}
         >
           {content}
         </Paper>
       </Popup>
-    </div>
+    </Flex>
   )
 }
