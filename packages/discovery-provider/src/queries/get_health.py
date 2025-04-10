@@ -472,22 +472,10 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         if not api_healthy:
             errors.append(f"api unhealthy: {reason}")
 
-    play_health_unhealthy = play_health_info and play_health_info.get("is_unhealthy")
-    is_unhealthy = not bypass_errors and (
-        unhealthy_blocks
-        or unhealthy_challenges
-        or play_health_unhealthy
-        or not delist_statuses_ok
-        or (
-            health_results.get("elasticsearch") != None
-            and health_results["elasticsearch"]["status"] != "green"
-        )
-    )
-
     health_results["errors"] = errors
-    health_results["discovery_provider_healthy"] = not errors
+    health_results["discovery_provider_healthy"] = not errors or bypass_errors
 
-    return health_results, is_unhealthy
+    return health_results, health_results["discovery_provider_healthy"]
 
 
 class LocationResponse(TypedDict):
