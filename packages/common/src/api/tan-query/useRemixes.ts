@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 
 import { Id, OptionalId, EntityType, full } from '@audius/sdk'
 import {
-  dataTagSymbol,
   InfiniteData,
   useInfiniteQuery,
   useQueryClient

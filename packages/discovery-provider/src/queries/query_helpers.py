@@ -144,6 +144,12 @@ class CollectionSortMethod(str, enum.Enum):
     popular = "popular"
 
 
+class RemixesSortMethod(str, enum.Enum):
+    recent = "recent"
+    plays = "plays"
+    likes = "likes"
+
+
 class PurchaseSortMethod(str, enum.Enum):
     content_title = "content_title"
     artist_name = "artist_name"
@@ -178,12 +184,6 @@ class LibraryFilterType(str, enum.Enum):
     repost = "repost"
     favorite = "favorite"
     purchase = "purchase"
-
-
-class RemixesSortMethod(str, enum.Enum):
-    likes = "likes"
-    plays = "plays"
-    recent = "recent"
 
 
 # given list of user ids and corresponding users, populates each user object with:

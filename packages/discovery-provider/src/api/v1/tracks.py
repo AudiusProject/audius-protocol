@@ -1611,6 +1611,7 @@ class FullRemixesRoute(Resource):
             "only_cosigns": request_args.get("only_cosigns"),
             "only_contest_entries": request_args.get("only_contest_entries"),
         }
+        print(f"asdf sort_method {args['sort_method']}")
         response = get_remixes_of(args)
         response["tracks"] = list(map(extend_track, response["tracks"]))
         return success_response(response)
