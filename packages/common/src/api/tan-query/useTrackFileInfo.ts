@@ -7,8 +7,15 @@ import { ID } from '~/models/Identifiers'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryKey, SelectableQueryOptions } from './types'
 
-export const getTrackFileInfoQueryKey = (trackId: ID | null | undefined) => {
-  return [QUERY_KEYS.trackFileInfo, trackId] as unknown as QueryKey<BlobInfo>
+export const getTrackFileInfoQueryKey = (
+  trackId: ID | null | undefined,
+  original?: boolean
+) => {
+  return [
+    QUERY_KEYS.trackFileInfo,
+    trackId,
+    { original }
+  ] as unknown as QueryKey<BlobInfo>
 }
 
 export const useTrackFileInfo = <TResult = BlobInfo>(
