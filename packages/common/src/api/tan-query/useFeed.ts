@@ -66,7 +66,6 @@ export const useFeed = (
     },
     queryKey: getFeedQueryKey({ userId: currentUserId, filter }),
     queryFn: async ({ pageParam }) => {
-      console.log('pageParam', pageParam)
       const isFirstPage = pageParam === 0
       const currentPageSize = isFirstPage ? initialPageSize : loadMorePageSize
       const sdk = await audiusSdk()
