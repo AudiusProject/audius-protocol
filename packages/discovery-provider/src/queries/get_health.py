@@ -475,7 +475,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     health_results["errors"] = errors
     health_results["discovery_provider_healthy"] = not errors or bypass_errors
 
-    return health_results, health_results["discovery_provider_healthy"]
+    return health_results, not health_results["discovery_provider_healthy"]
 
 
 class LocationResponse(TypedDict):
