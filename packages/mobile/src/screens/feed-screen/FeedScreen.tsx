@@ -11,7 +11,6 @@ import { useSelector } from 'react-redux'
 
 import { IconFeed } from '@audius/harmony-native'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
-import { Lineup } from 'app/components/lineup'
 import { EndOfLineupNotice } from 'app/components/lineup/EndOfLineupNotice'
 import { TanQueryLineup } from 'app/components/lineup/TanQueryLineup'
 import { OnlineOnly } from 'app/components/offline-placeholder/OnlineOnly'

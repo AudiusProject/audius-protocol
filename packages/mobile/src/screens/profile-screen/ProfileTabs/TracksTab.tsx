@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 
 import { useProfileTracks } from '@audius/common/api'
 import { profilePageTracksLineupActions as tracksActions } from '@audius/common/store'
-import { useDispatch } from 'react-redux'
 
 import { TanQueryLineup } from 'app/components/lineup/TanQueryLineup'
 

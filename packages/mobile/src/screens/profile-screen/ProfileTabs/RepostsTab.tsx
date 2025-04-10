@@ -4,7 +4,6 @@ import { useProfileReposts } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import { profilePageFeedLineupActions as feedActions } from '@audius/common/store'
 import { useRoute } from '@react-navigation/native'
-import { useDispatch } from 'react-redux'
 
 import { TanQueryLineup } from 'app/components/lineup/TanQueryLineup'
 
