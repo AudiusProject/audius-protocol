@@ -15,7 +15,11 @@ import { QueryOptions } from './types'
 import { useTrack } from './useTrack'
 import { useTrackByPermalink } from './useTrackByPermalink'
 
-type TrackParams = { handle?: string; slug?: string; trackId?: ID | null }
+type TrackParams = {
+  handle?: string | null
+  slug?: string | null
+  trackId?: ID | null
+}
 
 /**
  * Hook that returns track data given either a track ID or a handle + slug.
