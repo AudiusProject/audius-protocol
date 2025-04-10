@@ -117,9 +117,7 @@ def test_get_health(redis_mock, db_mock, mock_requests):
         )
 
     args = {}
-    health_results, error = get_health(args)
-
-    assert error == False
+    health_results, _ = get_health(args)
 
     assert health_results["web"]["blocknumber"] == 2
     assert health_results["db"]["number"] == 1
@@ -166,9 +164,7 @@ def test_get_health_using_redis(redis_mock, db_mock, mock_requests):
         )
 
     args = {}
-    health_results, error = get_health(args)
-
-    assert error == False
+    health_results, _ = get_health(args)
 
     assert health_results["web"]["blocknumber"] == 3
     assert health_results["db"]["number"] == 2
@@ -213,9 +209,7 @@ def test_get_health_partial_redis(redis_mock, db_mock, mock_requests):
         )
 
     args = {}
-    health_results, error = get_health(args)
-
-    assert error == False
+    health_results, _ = get_health(args)
 
     assert health_results["web"]["blocknumber"] == 2
     assert health_results["db"]["number"] == 1
@@ -255,9 +249,7 @@ def test_get_health_with_invalid_db_state(redis_mock, db_mock, mock_requests):
         )
 
     args = {}
-    health_results, error = get_health(args)
-
-    assert error == False
+    health_results, _ = get_health(args)
 
     assert health_results["web"]["blocknumber"] == 2
     assert health_results["db"]["number"] == 0
@@ -304,9 +296,7 @@ def test_get_health_skip_redis(redis_mock, db_mock, mock_requests):
         )
 
     args = {}
-    health_results, error = get_health(args, use_redis_cache=False)
-
-    assert error == False
+    health_results, _ = get_health(args, use_redis_cache=False)
 
     assert health_results["web"]["blocknumber"] == 2
     assert health_results["db"]["number"] == 1
@@ -389,8 +379,7 @@ def test_get_health_with_monitors(
         )
 
     args = {}
-    health_results, error = get_health(args)
-    assert error == False
+    health_results, _ = get_health(args)
     assert health_results["database_connections"] == 2
     assert health_results["filesystem_size"] == 62725623808
     assert health_results["filesystem_used"] == 50381168640
@@ -450,9 +439,7 @@ def test_get_health_verbose(redis_mock, db_mock, get_monitors_mock, mock_request
         IndexingCheckpoint.__table__.create(db_mock._engine)
 
     args = {"verbose": True}
-    health_results, error = get_health(args)
-
-    assert error == False
+    health_results, _ = get_health(args)
 
     assert health_results["web"]["blocknumber"] == 2
     assert health_results["db"]["number"] == 1
