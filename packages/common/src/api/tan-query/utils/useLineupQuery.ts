@@ -42,7 +42,8 @@ export const useLineupQuery = ({
   lineupActions,
   lineupSelector,
   playbackSource,
-  pageSize
+  pageSize,
+  initialPageSize
 }: {
   // Lineup related props
   queryData: UseInfiniteQueryResult<LineupData[]>
@@ -53,6 +54,7 @@ export const useLineupQuery = ({
     LineupState<LineupTrack | Track | Collection>
   >
   pageSize: number
+  initialPageSize?: number
   playbackSource: PlaybackSource
 }) => {
   const { reportToSentry } = useAudiusQueryContext()
@@ -174,6 +176,7 @@ export const useLineupQuery = ({
     pause,
     updateLineupOrder,
     isPlaying,
+    initialPageSize,
     pageSize,
     // pass through specific queryData props
     //   this avoids spreading all queryData props which causes extra renders

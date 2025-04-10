@@ -170,20 +170,18 @@ export const useTrending = (
       lineupSelector = getDiscoverTrendingWeekLineup
       break
   }
-  return {
-    ...useLineupQuery({
-      queryData: infiniteQueryData,
-      queryKey: getTrendingQueryKey({
-        timeRange,
-        genre,
-        initialPageSize,
-        loadMorePageSize
-      }),
-      lineupActions,
-      lineupSelector,
-      playbackSource: PlaybackSource.TRACK_TILE_LINEUP,
-      pageSize: loadMorePageSize
+  return useLineupQuery({
+    queryData: infiniteQueryData,
+    queryKey: getTrendingQueryKey({
+      timeRange,
+      genre,
+      initialPageSize,
+      loadMorePageSize
     }),
+    lineupActions,
+    lineupSelector,
+    playbackSource: PlaybackSource.TRACK_TILE_LINEUP,
+    pageSize: loadMorePageSize,
     initialPageSize
-  }
+  })
 }

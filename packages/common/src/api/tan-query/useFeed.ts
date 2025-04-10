@@ -124,18 +124,16 @@ export const useFeed = (
     enabled: currentUserId !== null
   })
 
-  return {
-    ...useLineupQuery({
-      queryData,
-      queryKey: getFeedQueryKey({
-        userId: currentUserId,
-        filter
-      }),
-      lineupActions: feedPageLineupActions,
-      lineupSelector: feedPageSelectors.getDiscoverFeedLineup,
-      playbackSource: PlaybackSource.TRACK_TILE_LINEUP,
-      pageSize: loadMorePageSize
+  return useLineupQuery({
+    queryData,
+    queryKey: getFeedQueryKey({
+      userId: currentUserId,
+      filter
     }),
+    lineupActions: feedPageLineupActions,
+    lineupSelector: feedPageSelectors.getDiscoverFeedLineup,
+    playbackSource: PlaybackSource.TRACK_TILE_LINEUP,
+    pageSize: loadMorePageSize,
     initialPageSize
-  }
+  })
 }
