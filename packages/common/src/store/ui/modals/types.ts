@@ -107,6 +107,7 @@ export type Modals =
   | 'PayoutWallet'
   | 'EditTrackFormOverflowMenu'
   | 'ExternalWalletSignUp'
+  | 'ConnectedWallets'
   | 'Announcement'
   | 'Notification'
   | 'DownloadTrackArchive'

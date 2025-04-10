@@ -24,6 +24,21 @@ vi.mock('@audius/sdk', async (importOriginal) => {
   }
 })
 
+vi.mock('@reown/appkit/react', () => {
+  // See https://github.com/orgs/WalletConnect/discussions/5729#discussioncomment-12770662
+  return {
+    createAppKit: vi.fn().mockReturnValue({
+      getUniversalProvider: vi.fn()
+    })
+  }
+})
+
+vi.mock('@reown/appkit-adapter-wagmi', () => {
+  return {
+    WagmiAdapter: vi.fn()
+  }
+})
+
 vi.mock('redux-first-history', async (importOriginal) => {
   const originalImport: any = await importOriginal()
   return { ...originalImport, connectRouter: vi.fn() }

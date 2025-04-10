@@ -44,13 +44,7 @@ import {
   PushNotificationSetting,
   PushNotifications
 } from '../../store'
-import {
-  getErrorMessage,
-  uuid,
-  Maybe,
-  Nullable,
-  isNullOrUndefined
-} from '../../utils'
+import { getErrorMessage, uuid, Maybe, Nullable } from '../../utils'
 
 import { MintName } from './solana'
 import { MonitoringCallbacks } from './types'
@@ -151,9 +145,6 @@ type AudiusBackendParams = {
   remoteConfigInstance: RemoteConfigInstance
   setLocalStorageItem: (key: string, value: string) => Promise<void>
   solanaConfig: AudiusBackendSolanaConfig
-  userNodeUrl: Maybe<string>
-  web3NetworkId: Maybe<string>
-  web3ProviderUrls: Maybe<string[]>
 }
 
 export const audiusBackend = ({
@@ -161,7 +152,6 @@ export const audiusBackend = ({
   generalAdmissionUrl,
   nativeMobile,
   reportError,
-  userNodeUrl,
   env
 }: AudiusBackendParams) => {
   const currentDiscoveryProvider: Nullable<string> = null
@@ -738,19 +728,21 @@ export const audiusBackend = ({
     sdk: AudiusSdk
   }): Promise<BN | null> {
     try {
-      const { userBank } =
-        await sdk.services.claimableTokensClient.getOrCreateUserBank({
-          ethWallet: ethAddress,
-          mint: 'wAUDIO'
-        })
+      const userBank = await sdk.services.claimableTokensClient.deriveUserBank({
+        ethWallet: ethAddress,
+        mint: 'wAUDIO'
+      })
       const connection = sdk.services.solanaClient.connection
-      const {
-        value: { amount }
-      } = await connection.getTokenAccountBalance(userBank)
-      const ownerWAudioBalance = AUDIO(wAUDIO(BigInt(amount))).value
-      if (isNullOrUndefined(ownerWAudioBalance)) {
-        throw new Error('Failed to fetch account waudio balance')
+      let balance = BigInt(0)
+      try {
+        const {
+          value: { amount }
+        } = await connection.getTokenAccountBalance(userBank)
+        balance = BigInt(amount)
+      } catch (e) {
+        console.error(e)
       }
+      const ownerWAudioBalance = AUDIO(wAUDIO(balance)).value
       return new BN(ownerWAudioBalance.toString())
     } catch (e) {
       console.error(e)
@@ -784,26 +776,26 @@ export const audiusBackend = ({
 
   /**
    * Make a request to fetch the balance, staked and delegated total of the wallet address
-   * @params {string} address The wallet address to fetch the balance for
-   * @params {bool} bustCache
-   * @returns {Promise<BN | null>} balance or null if error
+   * @param address The wallet address to fetch the balance for
+   * @param bustCache
+   * @returns balance or null if error
    */
   async function getAddressTotalStakedBalance(address: string, sdk: AudiusSdk) {
     if (!address) return null
 
     try {
       const checksumWallet = getAddress(address)
-      const balance = await sdk.services.audiusTokenClient.balanceOf({
-        account: checksumWallet
-      })
-      const delegatedBalance =
-        await sdk.services.delegateManagerClient.contract.getTotalDelegatorStake(
-          { delegatorAddress: checksumWallet }
-        )
-      const stakedBalance =
-        await sdk.services.stakingClient.contract.totalStakedFor({
+      const [balance, delegatedBalance, stakedBalance] = await Promise.all([
+        sdk.services.audiusTokenClient.balanceOf({
+          account: checksumWallet
+        }),
+        sdk.services.delegateManagerClient.getTotalDelegatorStake({
+          delegatorAddress: checksumWallet
+        }),
+        sdk.services.stakingClient.totalStakedFor({
           account: checksumWallet
         })
+      ])
 
       return AUDIO(balance + delegatedBalance + stakedBalance).value
     } catch (e) {
@@ -1185,8 +1177,7 @@ export const audiusBackend = ({
     updateNotificationSettings,
     updatePushNotificationSettings,
     updateUserEvent,
-    updateUserLocationTimezone,
-    userNodeUrl
+    updateUserLocationTimezone
   }
 }
 
