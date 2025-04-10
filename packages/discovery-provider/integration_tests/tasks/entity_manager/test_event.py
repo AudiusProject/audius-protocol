@@ -251,6 +251,45 @@ def test_update_event_with_past_end_date(app, mocker):
         assert updated_event.end_date.isoformat() != metadata["end_date"]
 
 
+def test_update_event_with_invalid_end_date_format(app, mocker):
+    """Test that updating an event with an invalid end_date format fails validation"""
+    metadata = {
+        "end_date": "not-a-valid-iso-date",  # Invalid date format
+    }
+
+    tx_receipts = {
+        "UpdateEventWithInvalidDate": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": EntityType.EVENT,
+                        "_userId": 1,
+                        "_action": Action.UPDATE,
+                        "_metadata": f'{{"cid": "", "data": {json.dumps(metadata)}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    db, index_transaction = setup_test(app, mocker, test_entities, tx_receipts)
+
+    with db.scoped_session() as session:
+        # Get the original event's end_date before attempting update
+        original_event = session.query(Event).filter_by(event_id=1).first()
+        original_end_date = original_event.end_date
+
+        # Try to update with invalid end_date format
+        index_transaction(session)
+
+        # Verify the event was NOT updated - end_date should remain unchanged
+        updated_event = session.query(Event).filter_by(event_id=1).first()
+        assert updated_event.event_id == 1
+        assert updated_event.end_date == original_end_date
+
+
 def test_delete_event(app, mocker):
     """Test deleting an existing event"""
     tx_receipts = {
