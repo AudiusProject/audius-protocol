@@ -1,6 +1,19 @@
-import { ReactNode, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { Paper, Popup } from '..'
+import { Origin } from '../popup/types'
+
+import { FlairHoverCardProps } from './types'
+
+const DEFAULT_ANCHOR_ORIGIN: Origin = {
+  horizontal: 'right',
+  vertical: 'center'
+}
+
+const DEFAULT_TRANSFORM_ORIGIN: Origin = {
+  horizontal: 'left',
+  vertical: 'center'
+}
 
 /**
  * FlairHoverCard is a component that displays content in a hover card/tooltip
@@ -27,7 +40,9 @@ export const FlairHoverCard = ({
   children,
   className,
   content,
-  onClose
+  onClose,
+  anchorOrigin = DEFAULT_ANCHOR_ORIGIN,
+  transformOrigin = DEFAULT_TRANSFORM_ORIGIN
 }: FlairHoverCardProps) => {
   const [isHovered, setIsHovered] = useState(false)
   const anchorRef = useRef<HTMLDivElement | null>(null)
@@ -59,14 +74,8 @@ export const FlairHoverCard = ({
         dismissOnMouseLeave
         hideCloseButton
         zIndex={30000} // Using tooltip z-index
-        anchorOrigin={{
-          horizontal: 'right',
-          vertical: 'center'
-        }}
-        transformOrigin={{
-          horizontal: 'left',
-          vertical: 'center'
-        }}
+        anchorOrigin={anchorOrigin}
+        transformOrigin={transformOrigin}
       >
         <Paper
           className={className}
@@ -79,26 +88,4 @@ export const FlairHoverCard = ({
       </Popup>
     </div>
   )
-}
-
-export type FlairHoverCardProps = {
-  /**
-   * Content displayed as the hover trigger
-   */
-  children: ReactNode
-
-  /**
-   * Content displayed inside the hover card
-   */
-  content: ReactNode
-
-  /**
-   * Optional CSS class name
-   */
-  className?: string
-
-  /**
-   * Callback fired when the hover card is closed
-   */
-  onClose?: () => void
 }

@@ -1,24 +1,9 @@
-import { ReactNode } from 'react'
-
 import { IconButton } from '~harmony/components/button'
 import { Flex } from '~harmony/components/layout'
 import { Text } from '~harmony/components/text'
 import { IconArrowRight } from '~harmony/icons'
 
-export type BaseFlairHoverCardHeaderProps = {
-  /**
-   * The icon or component to display on the left side of the header
-   */
-  icon: ReactNode
-  /**
-   * The title to display in the header
-   */
-  title: string
-  /**
-   * Optional callback when the close button is clicked
-   */
-  onClose?: () => void
-}
+import { BaseFlairHoverCardHeaderProps } from './types'
 
 /**
  * A shared base component for flair hover card headers

@@ -1,0 +1,45 @@
+import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs'
+
+import { FlairHoverCard } from './FlairHoverCard'
+import { BaseFlairHoverCardHeader } from './FlairHoverCardHeader'
+
+<Meta title='Components/FlairHoverCard' component={FlairHoverCard} />
+
+# FlairHoverCard
+
+FlairHoverCard is a component that displays content in a hover card/tooltip with a Paper container
+when the user hovers over the component's children.
+
+The hover card appears to the right of the child element by default and disappears when the user's mouse leaves either the trigger or the card.
+
+## Basic Usage
+
+<Canvas>
+  <Story id='components-flairhovercard--basic' />
+</Canvas>
+
+## With Custom Anchor and Transform Origin
+
+You can customize the position of the hover card by specifying the `anchorOrigin` and `transformOrigin` props.
+
+<Canvas>
+  <Story id='components-flairhovercard--custom-position' />
+</Canvas>
+
+## With Header
+
+The FlairHoverCard is often used with a BaseFlairHoverCardHeader component that provides a title and icon.
+
+<Canvas>
+  <Story id='components-flairhovercard--with-header' />
+</Canvas>
+
+## API Reference
+
+### FlairHoverCard Props
+
+<ArgsTable of={FlairHoverCard} />
+
+### BaseFlairHoverCardHeader Props
+
+<ArgsTable of={BaseFlairHoverCardHeader} />
