@@ -39,7 +39,6 @@
 
 .selectedValue {
   position: relative;
-  height: 28px;
   display: inline-flex;
   align-self: flex-start;
   padding: var(--harmony-unit-1) var(--harmony-unit-2);
