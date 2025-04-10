@@ -1,29 +1,19 @@
 import { useContext, useEffect } from 'react'
 
-import {
-  FEED_LOAD_MORE_PAGE_SIZE,
-  FEED_INITIAL_PAGE_SIZE,
-  useFeed,
-  useCurrentUserId
-} from '@audius/common/api'
 import { Name, FeedFilter } from '@audius/common/models'
-import { getUid } from '@audius/common/src/store/player/selectors'
 import { feedPageLineupActions as feedActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import cn from 'classnames'
-import { useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
-import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
+import Lineup from 'components/lineup/Lineup'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import { useMainPageHeader } from 'components/nav/mobile/NavContext'
 import { FeedPageContentProps } from 'pages/feed-page/types'
 import { BASE_URL } from 'utils/route'
-
-import EmptyFeed from '../EmptyFeed'
 
 import Filters from './FeedFilterButton'
 import FeedFilterDrawer from './FeedFilterDrawer'
@@ -38,31 +28,19 @@ const messages = {
 const FeedPageMobileContent = ({
   feedTitle,
   feedDescription,
+  feed,
+  setFeedInView,
+  loadMoreFeed,
+  playFeedTrack,
+  pauseFeedTrack,
+  getLineupProps,
   feedFilter,
-  setFeedFilter
+  setFeedFilter,
+  refreshFeedInView,
+  resetFeedLineup
 }: FeedPageContentProps) => {
-  const playingUid = useSelector(getUid)
   const { setHeader } = useContext(HeaderContext)
   const [modalIsOpen, setModalIsOpen] = useModalState('FeedFilter')
-
-  const { data: currentUserId } = useCurrentUserId()
-  const {
-    data,
-    isFetching,
-    isPending,
-    isError,
-    hasNextPage,
-    play,
-    pause,
-    loadNextPage,
-    isPlaying,
-    lineup
-  } = useFeed({
-    userId: currentUserId,
-    filter: feedFilter,
-    initialPageSize: FEED_INITIAL_PAGE_SIZE,
-    loadMorePageSize: FEED_LOAD_MORE_PAGE_SIZE
-  })
 
   useEffect(() => {
     setHeader(
@@ -81,10 +59,28 @@ const FeedPageMobileContent = ({
   // Set Nav-Bar Menu
   useMainPageHeader()
 
+  const lineupProps = {
+    ordered: true,
+    ...getLineupProps(feed),
+    loadMore: (offset: number, limit: number, overwrite: boolean) =>
+      loadMoreFeed(offset, limit, overwrite),
+    setInView: setFeedInView,
+    playTrack: playFeedTrack,
+    pauseTrack: pauseFeedTrack,
+    actions: feedActions,
+    delineate: true
+  }
+
   const record = useRecord()
   const handleSelectFilter = (filter: FeedFilter) => {
     setModalIsOpen(false)
     setFeedFilter(filter)
+    // Clear the lineup
+    resetFeedLineup()
+    // Tell the store that the feed is still in view so it can be refetched
+    setFeedInView(true)
+    // Force a refresh for at least 10 tiles
+    refreshFeedInView(true, 10)
     record(make(Name.FEED_CHANGE_VIEW, { view: filter }))
   }
 
@@ -102,27 +98,10 @@ const FeedPageMobileContent = ({
       />
       <div
         className={cn(styles.lineupContainer, {
-          [styles.playing]: !!playingUid
+          [styles.playing]: !!lineupProps.playingUid
         })}
       >
-        <TanQueryLineup
-          data={data}
-          isFetching={isFetching}
-          isPending={isPending}
-          isError={isError}
-          hasNextPage={hasNextPage}
-          play={play}
-          pause={pause}
-          emptyElement={<EmptyFeed />}
-          loadNextPage={loadNextPage}
-          isPlaying={isPlaying}
-          lineup={lineup}
-          ordered
-          actions={feedActions}
-          delineate
-          initialPageSize={FEED_INITIAL_PAGE_SIZE}
-          pageSize={FEED_LOAD_MORE_PAGE_SIZE}
-        />
+        <Lineup {...lineupProps} />
       </div>
     </MobilePageContainer>
   )
