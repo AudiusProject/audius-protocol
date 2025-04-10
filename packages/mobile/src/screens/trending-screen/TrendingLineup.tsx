@@ -11,7 +11,7 @@ import {
 import { useNavigation } from '@react-navigation/native'
 import { useDispatch } from 'react-redux'
 
-import { Lineup } from 'app/components/lineup'
+import { TanQueryLineup } from 'app/components/lineup/TanQueryLineup'
 import type { LineupProps } from 'app/components/lineup/types'
 import { make, track } from 'app/services/analytics'
 const {
@@ -60,7 +60,17 @@ export const TrendingLineup = (props: TrendingLineupProps) => {
   const dispatch = useDispatch()
   const trendingActions = actionsMap[timeRange]
 
-  const { lineup, loadNextPage } = useTrending({ timeRange })
+  const {
+    data,
+    lineup,
+    loadNextPage,
+    pageSize,
+    isFetching,
+    refresh: refreshQuery,
+    isPending,
+    hasNextPage,
+    initialPageSize
+  } = useTrending({ timeRange })
 
   useEffect(() => {
     // @ts-ignore tabPress is not a valid event, and wasn't able to figure out a fix
@@ -80,9 +90,8 @@ export const TrendingLineup = (props: TrendingLineupProps) => {
   )
 
   return (
-    <Lineup
+    <TanQueryLineup
       isTrending
-      tanQuery
       lineup={lineup}
       loadMore={handleLoadMore}
       selfLoad
@@ -90,6 +99,14 @@ export const TrendingLineup = (props: TrendingLineupProps) => {
       lineupSelector={selectorsMap[timeRange]}
       actions={trendingActions}
       {...other}
+      isFetching={isFetching}
+      loadNextPage={loadNextPage}
+      hasMore={hasNextPage}
+      isPending={isPending}
+      queryData={data}
+      pageSize={pageSize}
+      refresh={refreshQuery}
+      initialPageSize={initialPageSize}
     />
   )
 }

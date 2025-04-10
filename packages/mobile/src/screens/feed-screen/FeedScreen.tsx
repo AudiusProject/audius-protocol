@@ -11,8 +11,8 @@ import { useSelector } from 'react-redux'
 
 import { IconFeed } from '@audius/harmony-native'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
-import { Lineup } from 'app/components/lineup'
 import { EndOfLineupNotice } from 'app/components/lineup/EndOfLineupNotice'
+import { TanQueryLineup } from 'app/components/lineup/TanQueryLineup'
 import { OnlineOnly } from 'app/components/offline-placeholder/OnlineOnly'
 import { SuggestedFollows } from 'app/components/suggested-follows'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
@@ -34,7 +34,17 @@ export const FeedScreen = () => {
 
   const feedFilter = useSelector(getFeedFilter)
   const { data: currentUserId } = useCurrentUserId()
-  const { lineup, loadNextPage } = useFeed({
+  const {
+    data,
+    lineup,
+    loadNextPage,
+    pageSize,
+    isFetching,
+    refresh: refreshQuery,
+    isPending,
+    hasNextPage,
+    initialPageSize
+  } = useFeed({
     filter: feedFilter,
     userId: currentUserId
   })
@@ -55,8 +65,7 @@ export const FeedScreen = () => {
         </OnlineOnly>
       </ScreenHeader>
       <ScreenContent>
-        <Lineup
-          tanQuery
+        <TanQueryLineup
           lineup={lineup}
           pullToRefresh
           delineate
@@ -70,6 +79,14 @@ export const FeedScreen = () => {
           lineupSelector={getFeedLineup}
           loadMore={loadMore}
           showsVerticalScrollIndicator={false}
+          isFetching={isFetching}
+          loadNextPage={loadNextPage}
+          hasMore={hasNextPage}
+          isPending={isPending}
+          queryData={data}
+          initialPageSize={initialPageSize}
+          pageSize={pageSize}
+          refresh={refreshQuery}
         />
       </ScreenContent>
     </Screen>

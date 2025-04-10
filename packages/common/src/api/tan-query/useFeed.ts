@@ -132,6 +132,7 @@ export const useFeed = (
     lineupActions: feedPageLineupActions,
     lineupSelector: feedPageSelectors.getDiscoverFeedLineup,
     playbackSource: PlaybackSource.TRACK_TILE_LINEUP,
-    pageSize: loadMorePageSize
+    pageSize: loadMorePageSize,
+    initialPageSize
   })
 }
