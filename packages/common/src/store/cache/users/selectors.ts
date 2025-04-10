@@ -81,7 +81,7 @@ export const getUsers = (
       {} as { [handle: string]: User }
     )
   }
-  // Returns all users in cache. TODO: refactor so that we dont need to do this - horribly inefficient
+  // Returns all users in cache. TODO: this horribly inefficient dear god why on earth was this done
   const userQueryResults = state.queryClient.getQueriesData({
     queryKey: [QUERY_KEYS.user]
   })

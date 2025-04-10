@@ -1,84 +1,102 @@
+import { QueryKey } from '@tanstack/react-query'
+
+import { QUERY_KEYS, getTrackByPermalinkQueryKey } from '~/api'
 import { getTrackQueryKey } from '~/api/tan-query/queryKeys'
-import { getAllEntries } from '~/store/cache/selectors'
 import { CommonState } from '~/store/commonStore'
 
-import { Kind, ID, UID, Status, Track, StemTrack } from '../../../models'
+import { ID, UID, Track, StemTrack } from '../../../models'
 
-/** @deprecated Use useTrack instead */
+/** @deprecated Use a tan-query equivalent instead. useTrack or queryClient.getQueryData */
 export const getTrack = (
   state: CommonState,
-  props: { id?: ID | null; uid?: UID | null; permalink?: string | null }
-) => {
-  if (
-    props.permalink &&
-    state.tracks.permalinks[props.permalink.toLowerCase()]
-  ) {
-    props.id = state.tracks.permalinks[props.permalink.toLowerCase()]
+  props: { id: ID | null } | { uid: UID | null } | { permalink: string | null }
+): Track | undefined => {
+  if ('permalink' in props) {
+    const trackId = state.queryClient.getQueryData(
+      getTrackByPermalinkQueryKey(props.permalink)
+    )
+    return state.queryClient.getQueryData(getTrackQueryKey(trackId))
+  } else if ('uid' in props) {
+    // TODO: figure the way to do uid lookup
+  } else if ('id' in props) {
+    return state.queryClient.getQueryData(getTrackQueryKey(props.id))
   }
-  return state.queryClient.getQueryData(getTrackQueryKey(props.id))
+  return undefined
 }
-
-export const getStatus = (state: CommonState, props: { id?: ID | null }) =>
-  (props.id && state.tracks.statuses[props.id]) || null
 
 /** @deprecated Use useTracks instead */
 export const getTracks = (
   state: CommonState,
-  props: {
-    ids?: ID[] | null
-    uids?: UID[] | null
-    permalinks?: string[] | null
-  }
+  props:
+    | {
+        ids: ID[] | null
+      }
+    | {
+        uids: UID[] | null
+      }
+    | {
+        permalinks: string[] | null
+      }
+    | undefined
 ) => {
-  if (props && props.ids) {
-    const tracks: { [id: number]: Track } = {}
-    props.ids.forEach((id) => {
-      const track = getTrack(state, { id })
-      if (track) {
-        tracks[id] = track
-      }
-    })
-    return tracks
-  } else if (props && props.uids) {
-    const tracks: { [id: number]: Track } = {}
-    props.uids.forEach((uid) => {
-      const track = getTrack(state, { uid })
-      if (track) {
-        tracks[track.track_id] = track
-      }
-    })
-    return tracks
-  } else if (props && props.permalinks) {
-    const tracks: { [permalink: string]: Track } = {}
-    props.permalinks.forEach((permalink) => {
-      const track = getTrack(state, { permalink })
-      if (track) tracks[permalink] = track
-    })
-    return tracks
+  if (props && 'ids' in props) {
+    return props.ids?.reduce(
+      (acc, id) => {
+        const track = getTrack(state, { id })
+        if (track) {
+          acc[id] = track
+        }
+        return acc
+      },
+      {} as { [id: number]: Track }
+    )
+  } else if (props && 'uids' in props) {
+    return props.uids?.reduce(
+      (acc, uid) => {
+        const track = getTrack(state, { uid })
+        if (track) {
+          acc[uid] = track
+        }
+        return acc
+      },
+      {} as { [uid: string]: Track }
+    )
+  } else if (props && 'permalinks' in props) {
+    return props.permalinks?.reduce(
+      (acc, permalink) => {
+        const track = getTrack(state, { permalink })
+        if (track) {
+          acc[permalink] = track
+        }
+        return acc
+      },
+      {} as { [permalink: string]: Track }
+    )
   }
-  return getAllEntries(state, { kind: Kind.TRACKS })
+  // Returns all users in cache. TODO: this horribly inefficient dear god why on earth was this done
+  const trackQueryResults = state.queryClient.getQueriesData({
+    queryKey: [QUERY_KEYS.track]
+  })
+  return trackQueryResults.reduce((acc, queryData) => {
+    const [, track] = queryData as [QueryKey, Track]
+    if (track !== undefined) {
+      return {
+        ...acc,
+        [track.track_id]: track
+      }
+    }
+    return acc
+  }, {})
 }
 
-// TODO:
 export const getTracksByUid = (state: CommonState) => {
   return Object.keys(state.tracks.uids).reduce(
     (entries, uid) => {
       entries[uid] = getTrack(state, { uid })
       return entries
     },
-    {} as { [uid: string]: Track | null }
+    {} as { [uid: string]: Track | undefined }
   )
-}
-
-export const getStatuses = (state: CommonState, props: { ids: ID[] }) => {
-  const statuses: { [id: number]: Status } = {}
-  props.ids.forEach((id) => {
-    const status = getStatus(state, { id })
-    if (status) {
-      statuses[id] = status
-    }
-  })
-  return statuses
 }
 
 export const getStems = (state: CommonState, trackId?: ID) => {
