@@ -234,7 +234,7 @@ export const TrackScreenDetailsTile = ({
   const { data: event } = useRemixContest(trackId, {
     entityType: EventEntityTypeEnum.Track
   })
-  const isRemixContest = isRemixContestEnabled && !isOwner && event
+  const isRemixContest = isRemixContestEnabled && event
 
   const isPlayingPreview = isPreviewing && isPlaying
   const isPlayingFullAccess = isPlaying && !isPreviewing

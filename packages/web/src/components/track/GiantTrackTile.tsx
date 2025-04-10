@@ -20,7 +20,13 @@ import {
   useEarlyReleaseConfirmationModal,
   usePublishConfirmationModal
 } from '@audius/common/store'
-import { Genre, Nullable, formatReleaseDate, route } from '@audius/common/utils'
+import {
+  Genre,
+  Nullable,
+  dayjs,
+  formatReleaseDate,
+  route
+} from '@audius/common/utils'
 import {
   Text,
   Box,
@@ -47,7 +53,6 @@ import { EventEntityTypeEnum } from '@audius/sdk'
 import { useTheme } from '@emotion/react'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
-import dayjs from 'dayjs'
 import { useToggle } from 'react-use'
 import useMeasure from 'react-use-measure'
 
@@ -108,10 +113,8 @@ const messages = {
   contestDeadline: 'Contest Deadline',
   uploadRemixButtonText: 'Upload Your Remix',
   deadline: (deadline?: string) => {
-    const userTimezone = dayjs.tz.guess()
-    const localTime = dayjs(deadline).utc(true).local().tz(userTimezone)
     return deadline
-      ? `${localTime.format('MM/DD/YYYY')} at ${localTime.format('h:mm A')}`
+      ? `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`
       : ''
   },
   seeMore: 'See More',
