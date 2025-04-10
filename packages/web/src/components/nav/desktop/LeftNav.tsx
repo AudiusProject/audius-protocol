@@ -14,6 +14,7 @@ import useMeasure from 'react-use-measure'
 import { Dispatch } from 'redux'
 
 import { DragAutoscroller } from 'components/drag-autoscroller/DragAutoscroller'
+import { FlairHoverCardExample } from 'components/flair/FlairHoverCardExample'
 import { ProfileCompletionPanel } from 'components/profile-progress/ProfileCompletionPanel'
 import { selectDraggingKind } from 'store/dragndrop/slice'
 import { AppState } from 'store/types'
@@ -183,6 +184,7 @@ const LeftNav = (props: NavColumnProps) => {
           <ProfileCompletionPanel />
           <LeftNavCTA />
           <NowPlayingArtworkTile />
+          <FlairHoverCardExample />
         </Flex>
       ) : null}
     </Flex>
