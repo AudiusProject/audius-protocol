@@ -1,5 +1,5 @@
 import type { Ref } from 'react'
-import { forwardRef, useEffect, useState } from 'react'
+import { forwardRef, useState } from 'react'
 
 import type { TextInput as RNTextInput } from 'react-native'
 import { Dimensions } from 'react-native'
