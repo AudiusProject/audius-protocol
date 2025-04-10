@@ -8,7 +8,7 @@ import type {
   SectionListProps as RNSectionListProps
 } from 'react-native'
 import { Animated, Platform, RefreshControl, View } from 'react-native'
-import { useCollapsibleScene } from 'react-native-collapsible-tab-view'
+import { Tabs, useCollapsibleScene } from 'react-native-collapsible-tab-view'
 
 import { useThemeColors } from 'app/utils/theme'
 
@@ -49,7 +49,7 @@ const CollapsibleSectionList = <ItemT, SectionT = DefaultSectionT>(
     scrollY: collapsibleScrollAnim
   } = useContext(CollapsibleTabNavigatorContext)
 
-  const { ref, ...scrollProps } = useCollapsibleSectionListScene(sceneName)
+  // const { ref, ...scrollProps } = useCollapsibleSectionListScene(sceneName)
   const { neutral, staticWhite } = useThemeColors()
 
   return (
@@ -65,16 +65,16 @@ const CollapsibleSectionList = <ItemT, SectionT = DefaultSectionT>(
           />
         </Portal>
       ) : null}
-      <Animated.SectionList
+      <Tabs.SectionList
         {...other}
-        {...scrollProps}
-        ref={ref as unknown as Ref<Animated.SectionList<ItemT, SectionT>>}
+        // {...scrollProps}
+        // ref={ref as unknown as Ref<Animated.SectionList<ItemT, SectionT>>}
         // @ts-ignore `forkEvent` is not defined on the type but it exists
-        onScroll={Animated.forkEvent(scrollProps.onScroll, onScroll)}
+        // onScroll={Animated.forkEvent(scrollProps.onScroll, onScroll)}
         refreshControl={
           Platform.OS === 'ios' ? undefined : (
             <RefreshControl
-              progressViewOffset={scrollProps.progressViewOffset}
+              // progressViewOffset={scrollProps.progressViewOffset}
               refreshing={!!refreshing}
               onRefresh={onRefresh ?? undefined}
               colors={[neutral]}
