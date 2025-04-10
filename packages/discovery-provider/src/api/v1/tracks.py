@@ -34,6 +34,7 @@ from src.api.v1.helpers import (
     pagination_parser,
     pagination_with_current_user_parser,
     parse_bool_param,
+    remixes_parser,
     stem_from_track,
     success_response,
     success_response_with_related,
@@ -1537,12 +1538,12 @@ class FullRemixesRoute(Resource):
         description="""Get all tracks that remix the given track""",
         params={"track_id": "A Track ID"},
     )
-    @full_ns.expect(pagination_with_current_user_parser)
+    @full_ns.expect(remixes_parser)
     @full_ns.marshal_with(remixes_response)
     @cache(ttl_sec=10)
     def get(self, track_id):
         decoded_id = decode_with_abort(track_id, full_ns)
-        request_args = pagination_with_current_user_parser.parse_args()
+        request_args = remixes_parser.parse_args()
         current_user_id = get_current_user_id(request_args)
 
         args = {
@@ -1551,7 +1552,10 @@ class FullRemixesRoute(Resource):
             "current_user_id": current_user_id,
             "limit": format_limit(request_args, default_limit=10),
             "offset": format_offset(request_args),
+            "sort_method": request_args.get("sort_method"),
+            "only_cosign": request_args.get("only_cosign"),
         }
+        print(f"asdf sort_method {args['sort_method']}")
         response = get_remixes_of(args)
         response["tracks"] = list(map(extend_track, response["tracks"]))
         return success_response(response)

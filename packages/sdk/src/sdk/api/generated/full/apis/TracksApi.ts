@@ -1350,11 +1350,10 @@ export type GetTrackCommentsSortMethodEnum = typeof GetTrackCommentsSortMethodEn
  */
 export const GetTrackRemixesSortMethodEnum = {
     Recent: 'recent',
-    Likes: 'likes',
-    Plays: 'plays'
+    Plays: 'plays',
+    Likes: 'likes'
 } as const;
 export type GetTrackRemixesSortMethodEnum = typeof GetTrackRemixesSortMethodEnum[keyof typeof GetTrackRemixesSortMethodEnum];
-
 /**
  * @export
  */

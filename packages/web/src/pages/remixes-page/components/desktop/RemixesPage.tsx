@@ -42,8 +42,10 @@ const g = withNullGuard(
 
 const RemixesPage = g(({ title, count = 0, originalTrack, user }) => {
   const updateSortParam = useUpdateSearchParams('sortMethod')
-  const { sortMethod } = useRemixPageParams()
+  const updateIsCosignParam = useUpdateSearchParams('isCosign')
 
+  const { sortMethod, isCosign } = useRemixPageParams()
+  console.log('asdf isCosign', isCosign)
   const {
     data,
     isFetching,
@@ -59,13 +61,14 @@ const RemixesPage = g(({ title, count = 0, originalTrack, user }) => {
   } = useRemixes({
     trackId: originalTrack?.track_id,
     includeOriginal: true,
-    sortMethod
+    sortMethod,
+    isCosign
   })
 
   const renderHeader = () => (
     <Header icon={IconRemix} primary={title} containerStyles={styles.header} />
   )
-  console.log('asdf hasNextPage: ', data, hasNextPage)
+
   return (
     <Page
       title={title}
@@ -94,19 +97,35 @@ const RemixesPage = g(({ title, count = 0, originalTrack, user }) => {
               <Text variant='heading'>
                 {count} {pluralize(messages.remixes, count, 'es', !count)}
               </Text>
-              <Flex gap='s'>
+              <Flex gap='s' mb='xl'>
                 {' '}
-                <FilterButton label={messages.coSigned} value={null} />
+                {/* label={messages.mood}
+      menuProps={{
+        anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+        transformOrigin: { vertical: 'top', horizontal: 'left' },
+        maxHeight: 400
+      }}
+      value={mood}
+      onChange={updateSearchParams}
+      options={moodOptions}
+      showFilterInput
+      filterInputProps={{ label: messages.moodFilterLabel }}
+ */}
+                <FilterButton
+                  label={messages.coSigned}
+                  value={isCosign}
+                  onClick={() => updateIsCosignParam(isCosign ? '' : 'true')}
+                />
                 <FilterButton label={messages.contestEntries} value={null} />
                 <FilterButton
-                  value={sortMethod ?? 'relevant'}
+                  value={sortMethod ?? 'recent'}
                   variant='replaceLabel'
                   // optionsLabel={messages.sortOptionsLabel}
                   onChange={updateSortParam}
                   options={[
-                    { label: 'Most Relevant', value: 'relevant' },
-                    { label: 'Most Popular', value: 'popular' },
-                    { label: 'Most Recent', value: 'recent' }
+                    { label: 'Most Recent', value: 'recent' },
+                    { label: 'Most Plays', value: 'plays' },
+                    { label: 'Most Likes', value: 'likes' }
                   ]}
                 />
               </Flex>

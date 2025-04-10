@@ -25,6 +25,7 @@ from src.queries.query_helpers import (
     CollectionLibrarySortMethod,
     CollectionSortMethod,
     LibraryFilterType,
+    RemixesSortMethod,
     SearchSortMethod,
     SortDirection,
     SortMethod,
@@ -799,6 +800,16 @@ pagination_parser.add_argument(
 pagination_with_current_user_parser = pagination_parser.copy()
 pagination_with_current_user_parser.add_argument(
     "user_id", required=False, description="The user ID of the user making the request"
+)
+
+remixes_parser = pagination_with_current_user_parser.copy()
+remixes_parser.add_argument(
+    "sort_method",
+    required=False,
+    description="The sort method to use",
+    type=str,
+    default=RemixesSortMethod.recent,
+    choices=RemixesSortMethod._member_names_,
 )
 
 search_parser = pagination_parser.copy()

@@ -21,12 +21,14 @@ export const useRemixPageParams = () => {
   const [urlRemixPageParams] = useParams()
 
   const sortMethod = urlRemixPageParams.get('sortMethod') as SearchSortMethod
+  const isCosign = urlRemixPageParams.get('isCosign') as SearchSortMethod
 
   const remixPageParams = useMemo(
     () => ({
-      sortMethod: sortMethod || undefined
+      sortMethod: sortMethod || undefined,
+      isCosign: isCosign || undefined
     }),
-    [sortMethod]
+    [sortMethod, isCosign]
   )
   return remixPageParams
 }

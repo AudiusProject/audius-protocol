@@ -1,4 +1,4 @@
-from sqlalchemy import and_, desc, or_
+from sqlalchemy import and_, desc, func, or_
 from sqlalchemy.orm import aliased
 
 from src import exceptions
@@ -125,16 +125,17 @@ def get_remixes_of(args):
                 )
             elif sort_method == RemixesSortMethod.likes:
                 base_query = base_query.order_by(
-                    desc(AggregateTrack.save_count), desc(Track.track_id)
+                    desc(func.coalesce(AggregateTrack.count, 0)), desc(Track.track_id)
                 )
             elif sort_method == RemixesSortMethod.plays:
                 base_query = base_query.order_by(
-                    desc(AggregatePlay.count), desc(Track.track_id)
+                    desc(func.coalesce(AggregatePlay.count, 0)), desc(Track.track_id)
                 )
 
             (tracks, count) = add_query_pagination(
                 base_query, limit, offset, True, True
             )
+            print(f"asdf base_query: {base_query}")
             tracks = tracks.all()
             tracks = helpers.query_result_to_list(tracks)
             track_ids = list(map(lambda track: track["track_id"], tracks))

@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { Id, OptionalId, EntityType } from '@audius/sdk'
+import { Id, OptionalId, EntityType, full } from '@audius/sdk'
 import {
   dataTagSymbol,
   InfiniteData,
@@ -32,14 +32,16 @@ export type UseRemixesArgs = {
   trackId: number | null | undefined
   includeOriginal?: Boolean
   pageSize?: number
-  sortMethod?: string
+  sortMethod?: full.GetTrackRemixesSortMethodEnum
+  isCosign?: boolean
 }
 
 export const getRemixesQueryKey = ({
   trackId,
   includeOriginal = false,
   pageSize = DEFAULT_PAGE_SIZE,
-  sortMethod = 'recent'
+  sortMethod = 'recent',
+  isCosign = false
 }: UseRemixesArgs) =>
   [
     QUERY_KEYS.remixes,
@@ -52,7 +54,8 @@ export const useRemixes = (
     trackId,
     includeOriginal = false,
     pageSize = DEFAULT_PAGE_SIZE,
-    sortMethod = 'recent'
+    sortMethod = 'recent',
+    isCosign = false
   }: UseRemixesArgs,
   options?: QueryOptions
 ) => {
@@ -68,7 +71,13 @@ export const useRemixes = (
   }, [dispatch, trackId])
 
   const queryData = useInfiniteQuery({
-    queryKey: getRemixesQueryKey({ trackId, pageSize, includeOriginal }),
+    queryKey: getRemixesQueryKey({
+      trackId,
+      pageSize,
+      includeOriginal,
+      sortMethod,
+      isCosign
+    }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: LineupData[], allPages) => {
       if (lastPage.length < pageSize) return undefined
@@ -77,13 +86,15 @@ export const useRemixes = (
     queryFn: async ({ pageParam }) => {
       console.log('asdf querying')
       const sdk = await audiusSdk()
-
+      console.log('asdf useRemixes sortMethod: ', sortMethod)
       const { data = { count: 0, tracks: [] } } =
         await sdk.full.tracks.getTrackRemixes({
           trackId: Id.parse(trackId),
           userId: OptionalId.parse(currentUserId),
           limit: pageSize,
-          offset: pageParam
+          offset: pageParam,
+          sortMethod,
+          isCosign
         })
       let processedTracks = transformAndCleanList(
         data.tracks,
@@ -130,7 +141,9 @@ export const useRemixes = (
     queryKey: getRemixesQueryKey({
       trackId,
       includeOriginal,
-      pageSize
+      pageSize,
+      sortMethod,
+      isCosign
     }),
     lineupActions: remixesPageLineupActions,
     lineupSelector: remixesPageSelectors.getLineup,
