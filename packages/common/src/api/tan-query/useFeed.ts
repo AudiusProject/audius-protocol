@@ -66,6 +66,7 @@ export const useFeed = (
     },
     queryKey: getFeedQueryKey({ userId: currentUserId, filter }),
     queryFn: async ({ pageParam }) => {
+      console.log('pageParam', pageParam)
       const isFirstPage = pageParam === 0
       const currentPageSize = isFirstPage ? initialPageSize : loadMorePageSize
       const sdk = await audiusSdk()
@@ -123,15 +124,18 @@ export const useFeed = (
     enabled: currentUserId !== null
   })
 
-  return useLineupQuery({
-    queryData,
-    queryKey: getFeedQueryKey({
-      userId: currentUserId,
-      filter
+  return {
+    ...useLineupQuery({
+      queryData,
+      queryKey: getFeedQueryKey({
+        userId: currentUserId,
+        filter
+      }),
+      lineupActions: feedPageLineupActions,
+      lineupSelector: feedPageSelectors.getDiscoverFeedLineup,
+      playbackSource: PlaybackSource.TRACK_TILE_LINEUP,
+      pageSize: loadMorePageSize
     }),
-    lineupActions: feedPageLineupActions,
-    lineupSelector: feedPageSelectors.getDiscoverFeedLineup,
-    playbackSource: PlaybackSource.TRACK_TILE_LINEUP,
-    pageSize: loadMorePageSize
-  })
+    initialPageSize
+  }
 }

@@ -4,8 +4,9 @@ import { useProfileReposts } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import { profilePageFeedLineupActions as feedActions } from '@audius/common/store'
 import { useRoute } from '@react-navigation/native'
+import { useDispatch } from 'react-redux'
 
-import { Lineup } from 'app/components/lineup'
+import { TanQueryLineup } from 'app/components/lineup/TanQueryLineup'
 
 import { EmptyProfileTile } from '../EmptyProfileTile'
 import type { ProfileTabRoutes } from '../routes'
@@ -20,7 +21,16 @@ export const RepostsTab = () => {
     'repost_count'
   ])
 
-  const { lineup, loadNextPage } = useProfileReposts({ handle })
+  const {
+    data,
+    isFetching,
+    isPending,
+    lineup,
+    loadNextPage,
+    pageSize,
+    refresh: refreshQuery,
+    hasNextPage
+  } = useProfileReposts({ handle })
 
   const fetchPayload = useMemo(() => ({ userId: user_id }), [user_id])
   const extraFetchOptions = useMemo(() => ({ handle }), [handle])
@@ -29,13 +39,11 @@ export const RepostsTab = () => {
   const canShowEmptyTile = repost_count === 0 || lineup.status !== Status.IDLE
 
   return (
-    <Lineup
+    <TanQueryLineup
       selfLoad
       lazy={lazy}
       pullToRefresh
-      loadMore={loadNextPage}
       actions={feedActions}
-      lineup={lineup}
       fetchPayload={fetchPayload}
       extraFetchOptions={extraFetchOptions}
       limit={repost_count}
@@ -44,7 +52,15 @@ export const RepostsTab = () => {
         canShowEmptyTile ? <EmptyProfileTile tab='reposts' /> : undefined
       }
       showsVerticalScrollIndicator={false}
-      tanQuery
+      // Tan query props
+      loadNextPage={loadNextPage}
+      hasMore={hasNextPage}
+      pageSize={pageSize}
+      queryData={data}
+      isFetching={isFetching}
+      isPending={isPending}
+      lineup={lineup}
+      refresh={refreshQuery}
     />
   )
 }

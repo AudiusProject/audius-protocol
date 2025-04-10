@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useCallback } from 'react'
 
 import { EntityType } from '@audius/sdk'
 import {
@@ -150,6 +150,10 @@ export const useLineupQuery = ({
     queryData.isFetching ? Status.LOADING : Status.SUCCESS,
     lineup.status
   ])
+  const refresh = useCallback(() => {
+    dispatch(lineupActions.reset())
+    queryClient.resetQueries({ queryKey })
+  }, [dispatch, lineupActions, queryClient, queryKey])
 
   return {
     status,
@@ -164,6 +168,7 @@ export const useLineupQuery = ({
           ? queryData.hasNextPage
           : false
     },
+    refresh,
     togglePlay,
     play,
     pause,
