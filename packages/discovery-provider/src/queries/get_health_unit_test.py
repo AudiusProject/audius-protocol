@@ -92,6 +92,7 @@ def test_get_health(redis_mock, db_mock, mock_requests):
 
     cache_play_health_vars(redis_mock)
     cache_trusted_notifier_discrepancies_vars(redis_mock)
+    redis_mock.set(latest_block_redis_key, "2")
 
     cache_core_health_vars(
         redis_mock=redis_mock,
@@ -211,9 +212,9 @@ def test_get_health_partial_redis(redis_mock, db_mock, mock_requests):
     args = {}
     health_results, _ = get_health(args)
 
-    assert health_results["web"]["blocknumber"] == 2
+    assert health_results["web"]["blocknumber"] == 3
     assert health_results["db"]["number"] == 1
-    assert health_results["block_difference"] == 1
+    assert health_results["block_difference"] == 2
 
     assert "maximum_healthy_block_difference" in health_results
     assert "version" in health_results
@@ -225,6 +226,7 @@ def test_get_health_with_invalid_db_state(redis_mock, db_mock, mock_requests):
 
     cache_play_health_vars(redis_mock)
     cache_trusted_notifier_discrepancies_vars(redis_mock)
+    redis_mock.set(latest_block_redis_key, "2")
 
     cache_core_health_vars(
         redis_mock=redis_mock,
@@ -298,9 +300,9 @@ def test_get_health_skip_redis(redis_mock, db_mock, mock_requests):
     args = {}
     health_results, _ = get_health(args, use_redis_cache=False)
 
-    assert health_results["web"]["blocknumber"] == 2
+    assert health_results["web"]["blocknumber"] == 3
     assert health_results["db"]["number"] == 1
-    assert health_results["block_difference"] == 1
+    assert health_results["block_difference"] == 2
 
     assert "maximum_healthy_block_difference" in health_results
     assert "version" in health_results
@@ -312,6 +314,7 @@ def test_get_health_unhealthy_block_difference(redis_mock, db_mock, mock_request
 
     cache_play_health_vars(redis_mock)
     cache_trusted_notifier_discrepancies_vars(redis_mock)
+    redis_mock.set(latest_block_redis_key, "50")
     cache_core_health_vars(
         redis_mock=redis_mock,
         health={
@@ -413,6 +416,7 @@ def test_get_health_verbose(redis_mock, db_mock, get_monitors_mock, mock_request
 
     cache_play_health_vars(redis_mock)
     cache_trusted_notifier_discrepancies_vars(redis_mock)
+    redis_mock.set(latest_block_redis_key, "2")
 
     cache_core_health_vars(
         redis_mock=redis_mock,
