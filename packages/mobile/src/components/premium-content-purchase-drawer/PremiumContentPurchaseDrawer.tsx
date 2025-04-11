@@ -246,10 +246,9 @@ const RenderForm = ({
   const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
     FeatureFlags.BUY_WITH_COINFLOW
   )
-  const { isEnabled: isIOSUSDCPurchaseEnabled } = useFeatureFlag(
-    FeatureFlags.IOS_USDC_PURCHASE_ENABLED
+  const { isEnabled: isUsdcPurchaseEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES
   )
-  const isIOSDisabled = Platform.OS === 'ios' && !isIOSUSDCPurchaseEnabled
 
   const { submitForm, resetForm } = useFormikContext()
 
@@ -368,7 +367,9 @@ const RenderForm = ({
                   streamPurchaseCount={streamPurchaseCount}
                   totalPriceInCents={totalPriceInCents}
                 />
-                {isIOSDisabled || isUnlocking || isPurchaseSuccessful ? null : (
+                {!isUsdcPurchaseEnabled ||
+                isUnlocking ||
+                isPurchaseSuccessful ? null : (
                   <PaymentMethod
                     selectedMethod={purchaseMethod}
                     setSelectedMethod={setPurchaseMethod}
@@ -387,7 +388,7 @@ const RenderForm = ({
                   />
                 )}
               </View>
-              {isIOSDisabled ? (
+              {!isUsdcPurchaseEnabled ? (
                 <PurchaseUnavailable />
               ) : isPurchaseSuccessful ? (
                 <PurchaseSuccess

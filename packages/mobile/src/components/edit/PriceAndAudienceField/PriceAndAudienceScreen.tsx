@@ -198,10 +198,12 @@ export const PriceAndAudienceScreen = () => {
             setPreviewValue(null)
           }}
         />
-        <PremiumRadioField
-          disabled={disableUsdcGate}
-          previousStreamConditions={previousStreamConditions}
-        />
+        {isUsdcEnabled ? (
+          <PremiumRadioField
+            disabled={disableUsdcGate}
+            previousStreamConditions={previousStreamConditions}
+          />
+        ) : null}
         {entityType === 'track' ? (
           <SpecialAccessRadioField
             disabled={
