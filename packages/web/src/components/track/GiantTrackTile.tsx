@@ -4,7 +4,8 @@ import {
   useTrackRank,
   useRemixContest,
   useToggleFavoriteTrack,
-  useTrack
+  useTrack,
+  useCurrentUserId
 } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import {
@@ -16,6 +17,7 @@ import {
   FavoriteSource
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import { SIGN_UP_PAGE } from '@audius/common/src/utils/route'
 import {
   PurchaseableContentType,
   useEarlyReleaseConfirmationModal,
@@ -222,6 +224,7 @@ export const GiantTrackTile = ({
     trackId,
     source: FavoriteSource.TRACK_PAGE
   })
+  const { data: currentUserId } = useCurrentUserId()
 
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
@@ -474,6 +477,12 @@ export const GiantTrackTile = ({
 
   const goToUploadWithRemix = useCallback(() => {
     if (!trackId) return
+
+    if (!currentUserId) {
+      navigate(SIGN_UP_PAGE)
+      return
+    }
+
     const state = {
       initialMetadata: {
         is_remix: true,
@@ -483,7 +492,7 @@ export const GiantTrackTile = ({
       }
     }
     navigate(UPLOAD_PAGE, state)
-  }, [trackId, navigate])
+  }, [trackId, navigate, currentUserId])
 
   const renderSubmitRemixContestSection = useCallback(() => {
     if (!isRemixContest) return null
