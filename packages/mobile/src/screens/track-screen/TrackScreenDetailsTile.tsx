@@ -1,3 +1,4 @@
+import type { RefObject } from 'react'
 import React, { useCallback } from 'react'
 
 import {
@@ -49,6 +50,7 @@ import {
 import { formatReleaseDate, Genre, removeNullable } from '@audius/common/utils'
 import { EventEntityTypeEnum } from '@audius/sdk'
 import dayjs from 'dayjs'
+import type { FlatList } from 'react-native'
 import { TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -147,6 +149,7 @@ type TrackScreenDetailsTileProps = {
   user: User | SearchUser
   uid: UID
   isLineupLoading: boolean
+  scrollViewRef: RefObject<FlatList>
 }
 
 const recordPlay = (id, play = true, isPreview = false) => {
@@ -164,7 +167,8 @@ export const TrackScreenDetailsTile = ({
   track,
   user,
   uid,
-  isLineupLoading
+  isLineupLoading,
+  scrollViewRef
 }: TrackScreenDetailsTileProps) => {
   const styles = useStyles()
   const { hasStreamAccess } = useGatedContentAccess(track as Track) // track is of type Track | SearchTrack but we only care about some of their common fields, maybe worth refactoring later
@@ -700,7 +704,7 @@ export const TrackScreenDetailsTile = ({
           onPressReposts={handlePressReposts}
           onPressComments={handlePressComments}
         />
-        <TrackDescription description={description} />
+        <TrackDescription description={description} scrollRef={scrollViewRef} />
         <TrackMetadataList trackId={trackId} />
         {renderTags()}
         {renderRemixContestSection()}

@@ -1,7 +1,12 @@
-import React, { useCallback, useState, useEffect } from 'react'
+import React, { useCallback, useState, useEffect, useRef } from 'react'
 
 import type { Nullable } from '@audius/common/utils'
-import type { LayoutChangeEvent } from 'react-native/types'
+import type { View } from 'react-native'
+import type {
+  LayoutChangeEvent,
+  ScrollView,
+  FlatList
+} from 'react-native/types'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -18,6 +23,7 @@ import {
   useTheme
 } from '@audius/harmony-native'
 import { UserGeneratedText } from 'app/components/core'
+
 const MAX_DESCRIPTION_LINES = 6
 const DEFAULT_LINE_HEIGHT = spacing.xl
 
@@ -28,12 +34,17 @@ const messages = {
 
 type TrackDescriptionProps = {
   description?: Nullable<string>
+  scrollRef?: React.RefObject<ScrollView | FlatList>
 }
 
-export const TrackDescription = ({ description }: TrackDescriptionProps) => {
+export const TrackDescription = ({
+  description,
+  scrollRef
+}: TrackDescriptionProps) => {
   const { motion } = useTheme()
   const [isExpanded, setIsExpanded] = useState(false)
   const [showToggle, setShowToggle] = useState(false)
+  const toggleButtonRef = useRef<View>(null)
 
   // Track height of content for animation
   const [contentHeight, setContentHeight] = useState<number | null>(null)
@@ -47,9 +58,50 @@ export const TrackDescription = ({ description }: TrackDescriptionProps) => {
     }
   })
 
+  const scrollToButton = useCallback(
+    (pageY: number, height: number) => {
+      if (scrollRef?.current) {
+        if ('scrollTo' in scrollRef.current) {
+          // ScrollView
+          scrollRef.current.scrollTo({
+            y: pageY - height / 2,
+            animated: true
+          })
+        } else if ('scrollToOffset' in scrollRef.current) {
+          // FlatList
+          scrollRef.current.scrollToOffset({
+            offset: pageY - height / 2,
+            animated: true
+          })
+        }
+      }
+    },
+    [scrollRef]
+  )
+
   const toggleExpanded = useCallback(() => {
-    setIsExpanded((prev) => !prev)
-  }, [])
+    setIsExpanded((prev) => {
+      const newIsExpanded = !prev
+
+      // If we're collapsing, scroll to center the toggle button
+      if (!newIsExpanded && toggleButtonRef.current) {
+        toggleButtonRef.current.measure(
+          (
+            x: number,
+            y: number,
+            width: number,
+            height: number,
+            pageX: number,
+            pageY: number
+          ) => {
+            scrollToButton(pageY, height)
+          }
+        )
+      }
+
+      return newIsExpanded
+    })
+  }, [scrollToButton])
 
   // Handle layout measurement
   const handleContentLayout = useCallback(
@@ -107,13 +159,15 @@ export const TrackDescription = ({ description }: TrackDescriptionProps) => {
       </Animated.View>
 
       {showToggle && (
-        <PlainButton
-          iconRight={isExpanded ? IconCaretUp : IconCaretDown}
-          onPress={toggleExpanded}
-          style={{ alignSelf: 'flex-start' }}
-        >
-          {isExpanded ? messages.seeLess : messages.seeMore}
-        </PlainButton>
+        <Flex ref={toggleButtonRef}>
+          <PlainButton
+            iconRight={isExpanded ? IconCaretUp : IconCaretDown}
+            onPress={toggleExpanded}
+            style={{ alignSelf: 'flex-start' }}
+          >
+            {isExpanded ? messages.seeLess : messages.seeMore}
+          </PlainButton>
+        </Flex>
       )}
     </Flex>
   )
