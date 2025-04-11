@@ -1,7 +1,5 @@
 import { Buffer } from 'buffer'
 
-import { startCase } from 'lodash'
-
 import { Track, User } from '~/models'
 import { DownloadFile } from '~/services'
 
