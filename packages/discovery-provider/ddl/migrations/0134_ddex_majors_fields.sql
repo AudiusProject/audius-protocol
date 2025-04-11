@@ -42,7 +42,7 @@ begin
     
     -- check each element to make sure it's a 2 letter ISO code
     for i in 1..array_length(codes, 1) loop
-        if codes[i] !~ '^[a-z]{2}$' then
+        if codes[i] !~ '^[A-Z]{2}$' then
             return false;
         end if;
     end loop;
