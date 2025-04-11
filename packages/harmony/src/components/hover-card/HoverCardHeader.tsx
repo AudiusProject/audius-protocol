@@ -3,16 +3,16 @@ import { Flex } from '~harmony/components/layout'
 import { Text } from '~harmony/components/text'
 import { IconArrowRight } from '~harmony/icons'
 
-import { BaseHoverCardHeaderProps } from './types'
+import { HoverCardHeaderProps } from './types'
 
 /**
  * A shared base component for hover card headers
  */
-export const BaseHoverCardHeader = ({
+export const HoverCardHeader = ({
   icon,
   title,
   onClose
-}: BaseHoverCardHeaderProps) => {
+}: HoverCardHeaderProps) => {
   return (
     <Flex
       w='100%'

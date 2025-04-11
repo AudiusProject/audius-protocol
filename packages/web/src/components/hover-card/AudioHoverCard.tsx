@@ -6,7 +6,7 @@ import {
   IconTokenSilver,
   IconTokenGold,
   IconTokenPlatinum,
-  BaseHoverCardHeader,
+  HoverCardHeader,
   HoverCard
 } from '@audius/harmony'
 
@@ -59,7 +59,7 @@ export const AudioHoverCard = ({
     <HoverCard
       content={
         <>
-          <BaseHoverCardHeader
+          <HoverCardHeader
             icon={audioTierBadgeMap[tier]}
             title={getBadgeName(tier)}
             onClose={onClose}

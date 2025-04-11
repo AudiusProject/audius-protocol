@@ -41,7 +41,7 @@ export type HoverCardProps = {
   transformOrigin?: Origin
 }
 
-export type BaseHoverCardHeaderProps = {
+export type HoverCardHeaderProps = {
   /**
    * The icon or component to display on the left side of the header
    */
