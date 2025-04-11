@@ -11,7 +11,6 @@ import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.soloader.SoLoader
 import com.wix.reactnativenotifications.RNNotificationsPackage
-import com.microsoft.codepush.react.CodePush
 
 class MainApplication : Application(), ReactApplication {
 

@@ -4,8 +4,6 @@ import { getErrorMessage, isResponseError } from '@audius/common/utils'
 import { captureException, withScope } from '@sentry/react-native'
 import type { SeverityLevel } from '@sentry/types'
 
-import { versionInfo } from './appVersionWithCodepush'
-
 const Levels: { [level in ErrorLevel]: SeverityLevel } = {
   Warning: 'warning',
   Fatal: 'fatal',
@@ -43,7 +41,6 @@ export const reportToSentry = async ({
 }: ReportToSentryArgs) => {
   try {
     withScope(async (scope) => {
-      scope.setExtra('mobileClientVersionInclOTA', versionInfo ?? 'unknown')
       if (level) {
         scope.setLevel(Levels[level])
       }
