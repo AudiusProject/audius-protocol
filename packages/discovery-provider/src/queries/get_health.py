@@ -238,7 +238,9 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     latest_block_num = -1
     if core_health:
         latest_indexed_block_num = core_health.get("latest_indexed_block") or 0
-        latest_block_num = core_health.get("latest_chain_block") or 0
+
+    # Get latest chain block from tip, irrespective of indexer
+    (latest_block_num, _) = get_latest_chain_block_set_if_nx(redis)
 
     user_bank_health_info = get_solana_indexer_status(
         redis, redis_keys.solana.user_bank, user_bank_max_drift
