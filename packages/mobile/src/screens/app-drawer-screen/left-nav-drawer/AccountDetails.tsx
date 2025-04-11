@@ -51,7 +51,7 @@ export const AccountDetails = () => {
           borderWidth='thin'
         />
         <Flex gap='unitHalf'>
-          <Flex row justifyContent='space-around'>
+          <Flex row justifyContent='space-around' pr='2xl'>
             <Text numberOfLines={1} variant='body' size='l' strength='strong'>
               {name}
             </Text>
