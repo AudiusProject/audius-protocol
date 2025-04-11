@@ -518,7 +518,6 @@ def validate_track_tx(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_DESCRIPTION}"
             )
-
         validate_remixability(params)
         validate_access_conditions(params)
 
@@ -811,6 +810,18 @@ def validate_access_conditions(params: ManageEntityParameters):
         raise IndexingValidationError(
             f"Track {params.entity_id} is a stem track but has stream/download conditions"
         )
+
+    if is_stream_gated or is_download_gated:
+        conditions = (
+            params.metadata["stream_conditions"]
+            if is_stream_gated
+            else params.metadata["download_conditions"]
+        )
+        if conditions and USDC_PURCHASE_KEY in conditions:
+            if not conditions[USDC_PURCHASE_KEY].get("splits"):
+                raise IndexingValidationError(
+                    f"Track {params.entity_id} usdc_purchase does not contain splits"
+                )
 
     if is_stream_gated:
         # if stream gated, must have stream conditions
