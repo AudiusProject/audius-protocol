@@ -31,11 +31,6 @@ export type MakeTrackPublicAction = {
   trackId: ID
 }
 
-export type FetchTrackSucceededAction = {
-  type: typeof FETCH_TRACK_SUCCEEDED
-  trackId: ID
-}
-
 export type RefetchLineupAction = {
   type: typeof REFETCH_LINEUP
 }
@@ -45,7 +40,6 @@ export type TrackPageAction =
   | SetTrackIdAction
   | SetTrackPermalinkAction
   | MakeTrackPublicAction
-  | FetchTrackSucceededAction
   | RefetchLineupAction
 
 export const resetTrackPage = (): ResetAction => ({ type: RESET })
@@ -61,13 +55,6 @@ export const setTrackPermalink = (
 })
 export const makeTrackPublic = (trackId: ID): MakeTrackPublicAction => ({
   type: MAKE_TRACK_PUBLIC,
-  trackId
-})
-
-export const fetchTrackSucceeded = (
-  trackId: ID
-): FetchTrackSucceededAction => ({
-  type: FETCH_TRACK_SUCCEEDED,
   trackId
 })
 
