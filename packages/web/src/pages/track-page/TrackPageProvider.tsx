@@ -48,7 +48,6 @@ import { trackRemixesPage } from 'utils/route'
 import { parseTrackRoute, TrackRouteParams } from 'utils/route/trackRouteParser'
 import { getTrackPageSEOFields } from 'utils/seo'
 
-import StemsSEOHint from './components/StemsSEOHint'
 import { OwnProps as DesktopTrackPageProps } from './components/desktop/TrackPage'
 import { OwnProps as MobileTrackPageProps } from './components/mobile/TrackPage'
 
@@ -467,7 +466,6 @@ class TrackPageProviderClass extends Component<
 
     return (
       <>
-        {!!track?._stems?.[0] && <StemsSEOHint />}
         {/* @ts-ignore lineup has wrong type LineupState<{ id: number }> */}
         <this.props.children
           key={this.state.routeKey}

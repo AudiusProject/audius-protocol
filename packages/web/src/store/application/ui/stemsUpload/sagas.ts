@@ -1,9 +1,9 @@
+import { getStemsQueryKey } from '@audius/common/api'
 import { Name, StemCategory } from '@audius/common/models'
-import { stemsUploadActions } from '@audius/common/store'
+import { getContext, stemsUploadActions } from '@audius/common/store'
 import { takeEvery, put, call } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { handleUploads } from 'common/store/upload/sagas'
 import { createStemMetadata } from 'pages/upload-page/store/utils/stems'
 
@@ -45,10 +45,10 @@ function* watchUploadStems() {
         }
       }
 
-      // Retrieve the parent track to refresh stems
-      yield* call(retrieveTracks, {
-        trackIds: [parentId],
-        withStems: true
+      const queryClient = yield* getContext('queryClient')
+
+      queryClient.invalidateQueries({
+        queryKey: getStemsQueryKey(parentId)
       })
     }
   )

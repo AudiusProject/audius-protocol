@@ -98,6 +98,7 @@ models/TrackCommentNotificationResponse.ts
 models/TrackCommentsResponse.ts
 models/TrackElement.ts
 models/TrackInspect.ts
+models/TrackInspectList.ts
 models/TrackResponse.ts
 models/TrackSearch.ts
 models/TracksResponse.ts

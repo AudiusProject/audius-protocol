@@ -1,8 +1,7 @@
 import { useCallback, useState } from 'react'
 
-import { useTrack } from '@audius/common/api'
+import { useStems, useTrack } from '@audius/common/api'
 import {
-  useCurrentStems,
   useDownloadableContentAccess,
   useFeatureFlag
 } from '@audius/common/hooks'
@@ -61,7 +60,7 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
   const { onOpen: openWaitForDownloadModal } = useWaitForDownloadModal()
   const [isExpanded, setIsExpanded] = useState(false)
   const { data: track } = useTrack(trackId)
-  const { stemTracks } = useCurrentStems({ trackId })
+  const { data: stemTracks = [] } = useStems(trackId)
   const {
     price,
     shouldDisplayPremiumDownloadLocked,

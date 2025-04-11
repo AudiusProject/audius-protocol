@@ -87,6 +87,7 @@ export * from './TrackCommentNotificationResponse';
 export * from './TrackCommentsResponse';
 export * from './TrackElement';
 export * from './TrackInspect';
+export * from './TrackInspectList';
 export * from './TrackResponse';
 export * from './TrackSearch';
 export * from './TracksResponse';

@@ -26,7 +26,6 @@ import {
   fetchAndProcessRemixes,
   fetchAndProcessRemixParents
 } from './fetchAndProcessRemixes'
-import { fetchAndProcessStems } from './fetchAndProcessStems'
 import { addUsersFromTracks } from './helpers'
 import { reformat } from './reformat'
 const { getEntryTimestamp } = cacheSelectors
@@ -45,7 +44,6 @@ type RetrieveTracksArgs = {
   trackIds: ID[] | UnlistedTrackRequest[]
   /** deprecated */
   canBeUnlisted?: boolean
-  withStems?: boolean
   withRemixes?: boolean
   withRemixParents?: boolean
   forceRetrieveFromSource?: boolean
@@ -64,7 +62,6 @@ type RetrieveTracksArgs = {
 export function* retrieveTracks({
   trackIds,
   canBeUnlisted = false,
-  withStems = false,
   withRemixes = false,
   withRemixParents = false
 }: RetrieveTracksArgs) {
@@ -153,16 +150,6 @@ export function* retrieveTracks({
 
   const trackId = ids[0]
   const track = tracks.entries[trackId]
-
-  if (withStems) {
-    yield* spawn(function* () {
-      if (ids.length > 1 && track) {
-        console.error('Stems endpoint only supports fetching single tracks')
-        return
-      }
-      yield* call(fetchAndProcessStems, trackId)
-    })
-  }
 
   if (withRemixes) {
     yield* spawn(function* () {
