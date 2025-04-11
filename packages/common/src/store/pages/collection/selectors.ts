@@ -39,14 +39,12 @@ export const getCollection = (
       ? { id: params.id }
       : { uid: getCollectionUid(state) }
 
-    console.log({ config })
     return getCachedCollection(state, config)
   }
 }
 
 export const getUser = (state: CommonState, params?: { id?: ID }) => {
   const props = params?.id ? { id: params.id } : { uid: getUserUid(state) }
-  console.log({ props })
   return getCachedUser(state, props)
 }
 

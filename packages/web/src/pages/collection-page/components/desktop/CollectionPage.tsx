@@ -142,7 +142,7 @@ const CollectionPage = ({
   playing,
   previewing,
   type,
-collection,
+  collection,
   tracks,
   userId,
   getFilteredData,
@@ -197,8 +197,7 @@ collection,
     metadata?.variant === Variant.SMART ? (metadata?.typeTitle ?? type) : type
   const customEmptyText =
     metadata?.variant === Variant.SMART ? metadata?.customEmptyText : null
-  const access =
-    metadata !== null && 'access' in metadata ? metadata?.access : null
+  const access = metadata && 'access' in metadata ? metadata?.access : null
 
   const isNftPlaylist = typeTitle === 'Audio NFT Playlist'
 

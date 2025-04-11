@@ -3,6 +3,7 @@ import { QueryKey } from '@tanstack/react-query'
 import { QUERY_KEYS, getTrackByPermalinkQueryKey } from '~/api'
 import { getTrackQueryKey } from '~/api/tan-query/queryKeys'
 import { CommonState } from '~/store/commonStore'
+import { Uid } from '~/utils/uid'
 
 import { ID, UID, Track, StemTrack } from '../../../models'
 
@@ -17,7 +18,7 @@ export const getTrack = (
     )
     return state.queryClient.getQueryData(getTrackQueryKey(trackId))
   } else if ('uid' in props && props.uid) {
-    const trackId = state.tracks.uids[props.uid]
+    const trackId = parseInt(Uid.fromString(props.uid).id as string, 10)
     return state.queryClient.getQueryData(getTrackQueryKey(trackId))
   } else if ('id' in props && props.id) {
     return state.queryClient.getQueryData(getTrackQueryKey(props.id))
