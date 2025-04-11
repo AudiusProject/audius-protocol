@@ -56,12 +56,12 @@ export const HostRemixContestDrawer = () => {
   const { mutate: updateEvent } = useUpdateEvent()
   const { data: userId } = useCurrentUserId()
   const { trackId } = data
-  const { data: event } = useRemixContest(trackId, {
-    entityType: EventEntityTypeEnum.Track
-  })
-  const isEdit = !!event
+  const { data: remixContest } = useRemixContest(trackId)
+  const isEdit = !!remixContest
 
-  const [endDate, setEndDate] = useState(event ? dayjs(event.endDate) : null)
+  const [endDate, setEndDate] = useState(
+    remixContest ? dayjs(remixContest.endDate) : null
+  )
   const [endDateError, setEndDateError] = useState<boolean>(false)
 
   const handleChange = useCallback((date: string, time: string) => {
@@ -98,7 +98,7 @@ export const HostRemixContestDrawer = () => {
 
     if (isEdit) {
       updateEvent({
-        eventId: event.eventId,
+        eventId: remixContest.eventId,
         endDate: endDate.toISOString(),
         userId
       })
@@ -120,7 +120,7 @@ export const HostRemixContestDrawer = () => {
     isEdit,
     onClose,
     updateEvent,
-    event?.eventId,
+    remixContest?.eventId,
     endDate,
     createEvent
   ])

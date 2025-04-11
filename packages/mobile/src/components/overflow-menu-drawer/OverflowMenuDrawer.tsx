@@ -4,7 +4,6 @@ import {
   OverflowAction,
   OverflowSource
 } from '@audius/common/store'
-import { EventEntityTypeEnum } from '@audius/sdk'
 import { useSelector } from 'react-redux'
 
 import ActionDrawer from 'app/components/action-drawer'

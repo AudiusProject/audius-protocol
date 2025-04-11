@@ -48,7 +48,6 @@ import {
   useEarlyReleaseConfirmationModal
 } from '@audius/common/store'
 import { formatReleaseDate, Genre, removeNullable } from '@audius/common/utils'
-import { EventEntityTypeEnum } from '@audius/sdk'
 import dayjs from 'dayjs'
 import type { FlatList } from 'react-native'
 import { TouchableOpacity } from 'react-native'
