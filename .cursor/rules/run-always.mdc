@@ -34,10 +34,10 @@ When working on a specific task:
 
 # Preserve Debug Console Logs
 
-When working with code that contains console logs prefixed with identifiers (e.g., 'REED', 'DEBUG', etc.), these logs should be preserved as they serve specific debugging purposes. Follow these guidelines:
+When working with code that contains console logs prefixed with identifiers (e.g., 'NAME', 'DEBUG', etc.), these logs should be preserved as they serve specific debugging purposes. Follow these guidelines:
 
 1. DO NOT remove console.log statements that:
-   - Have a prefix like 'REED', 'DEBUG', etc.
+   - Have a prefix like 'NAME', 'DEBUG', etc.
    - Are explicitly added for debugging/tracing purposes
    - Are part of active development or debugging
 
@@ -54,7 +54,7 @@ When working with code that contains console logs prefixed with identifiers (e.g
 Example of preserved console log:
 ```typescript
 // Debug log for tracking metadata flow
-console.log('REED upload track form', { initialMetadata })
+console.log('NAME upload track form', { initialMetadata })
 ```
 
 This rule helps maintain important debugging tools while keeping the codebase clean of unnecessary logging.
@@ -105,3 +105,39 @@ commit;
 ```
 
 
+# Preserve Type Definitions
+
+When making code changes:
+
+1. DO NOT modify type definitions unless:
+   - Explicitly requested by the user
+   - Required to fix a type error that blocks the main task
+   - Part of a type-focused refactoring task
+
+2. Especially preserve:
+   - Interface and type definitions
+   - Type imports
+   - Type parameters
+   - Type assertions
+   - Type annotations
+
+3. If a type change is necessary:
+   - Explain why the change is needed
+   - Get explicit approval from the user
+   - Document the type change impact
+
+4. When fixing type errors:
+   - Focus on the specific type causing the error
+   - Do not modify unrelated types
+   - Consider using type assertions as a temporary solution
+
+Example of what NOT to do:
+```typescript
+// Don't change this:
+type Props = {
+  uid: UID,  // Don't change to string or any other type
+  // ... other props
+}
+```
+
+This rule helps maintain type safety and prevents unintended type changes that could introduce bugs or break existing code.
