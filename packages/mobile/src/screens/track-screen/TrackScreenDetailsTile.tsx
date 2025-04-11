@@ -3,7 +3,8 @@ import React, { useCallback } from 'react'
 import {
   useRemixContest,
   useToggleFavoriteTrack,
-  useTrackRank
+  useTrackRank,
+  useStems
 } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
@@ -223,9 +224,9 @@ export const TrackScreenDetailsTile = ({
 
   const remixParentTrackId = remixOf?.tracks?.[0]?.parent_track_id
   const isRemix = !!remixParentTrackId
+  const { data: stems = [] } = useStems(track.track_id)
   const hasDownloadableAssets =
-    (track as Track)?.is_downloadable ||
-    ((track as Track)?._stems?.length ?? 0) > 0
+    (track as Track)?.is_downloadable || stems.length > 0
 
   const { open: openCommentDrawer } = useCommentDrawer()
 

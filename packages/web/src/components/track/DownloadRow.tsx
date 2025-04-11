@@ -26,7 +26,7 @@ type DownloadRowProps = {
   parentTrackId?: ID
   hideDownload?: boolean
   index: number
-  size?: number
+  size?: number | null
   category?: StemCategory
   filename?: string
   isLoading?: boolean
