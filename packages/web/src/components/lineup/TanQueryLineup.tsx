@@ -22,7 +22,6 @@ import {
 import { Nullable } from '@audius/common/utils'
 import { Divider, Flex } from '@audius/harmony'
 import cn from 'classnames'
-import { initial } from 'lodash'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch, useSelector } from 'react-redux'
 

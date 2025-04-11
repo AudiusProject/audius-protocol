@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from integration_tests.utils import populate_mock_db
-from src.models.events.event import Event, EventEntityType, EventType
 from src.queries.get_remixable_tracks import get_remixable_tracks
 from src.queries.get_remixes_of import get_remixes_of
 from src.queries.get_tracks import _get_tracks
