@@ -1,3 +1,5 @@
+import React from 'react'
+
 import { useFeatureFlag } from '@audius/common/hooks'
 import { advancedTrackMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
@@ -22,9 +24,6 @@ export const AdvancedScreen = () => {
   const { isEnabled: isCommentsEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED
   )
-  const { isEnabled: isRightsAndCoversEnabled } = useFeatureFlag(
-    FeatureFlags.RIGHTS_AND_COVERS
-  )
 
   return (
     <FormScreen
@@ -47,7 +46,7 @@ export const AdvancedScreen = () => {
         )}
         <LicenseTypeField />
         <IsrcField />
-        {isRightsAndCoversEnabled ? <CoverAttributionField /> : <></>}
+        <CoverAttributionField />
       </SubmenuList>
     </FormScreen>
   )
