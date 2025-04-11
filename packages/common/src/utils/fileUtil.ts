@@ -40,7 +40,6 @@ export const getFilename = ({
     `.${existingExtension ?? ''}`,
     ''
   )
-  const hasCategory = !!track.stem_of?.category
 
   if (track.ddex_app) {
     filename = track.title
@@ -59,10 +58,6 @@ export const getFilename = ({
     } else {
       filename = track.title
     }
-  }
-
-  if (hasCategory) {
-    filename += ` - ${startCase(track.stem_of?.category.toLowerCase())}`
   }
 
   if (isDownload) {
