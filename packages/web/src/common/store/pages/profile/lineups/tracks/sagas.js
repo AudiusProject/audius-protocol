@@ -6,20 +6,42 @@ import {
   cacheTracksSelectors,
   profilePageTracksLineupActions as lineupActions,
   profilePageSelectors,
+  TracksSortMode,
   tracksSocialActions
 } from '@audius/common/store'
-import { select, takeEvery, put } from 'redux-saga/effects'
+import { call, select, takeEvery, put } from 'redux-saga/effects'
 
 import { LineupSagas } from 'common/store/lineup/sagas'
+import { waitForRead } from 'utils/sagaHelpers'
 
+import { retrieveUserTracks } from './retrieveUserTracks'
 import { watchUploadTracksSaga } from './watchUploadTracksSaga'
 
 const { SET_ARTIST_PICK } = tracksSocialActions
 const { getProfileTracksLineup, getTrackSource } = profilePageSelectors
 const { getTrack } = cacheTracksSelectors
-const { DELETE_TRACK } = cacheTracksActions
-const { getUserHandle } = accountSelectors
+const { DELETE_TRACK_REQUESTED } = cacheTracksActions
+const { getUserId, getUserHandle } = accountSelectors
 const PREFIX = tracksActions.prefix
+
+function* getTracks({ offset, limit, payload, handle }) {
+  yield waitForRead()
+  const currentUserId = yield select(getUserId)
+  const profileHandle = handle.toLowerCase()
+
+  const sort = payload?.sort === TracksSortMode.POPULAR ? 'plays' : 'date'
+  const getUnlisted = true
+
+  const processed = yield call(retrieveUserTracks, {
+    handle: profileHandle,
+    currentUserId,
+    sort,
+    limit,
+    offset,
+    getUnlisted
+  })
+  return processed
+}
 
 class TracksSagas extends LineupSagas {
   constructor() {
@@ -27,9 +49,7 @@ class TracksSagas extends LineupSagas {
       PREFIX,
       tracksActions,
       getProfileTracksLineup,
-      function* (action) {
-        return action.payload.items
-      },
+      getTracks,
       undefined,
       undefined,
       getTrackSource
@@ -60,8 +80,8 @@ function* watchSetArtistPick() {
   })
 }
 
-function* watchDeleteTrack() {
-  yield takeEvery(DELETE_TRACK, function* (action) {
+function* watchDeleteTrackRequested() {
+  yield takeEvery(DELETE_TRACK_REQUESTED, function* (action) {
     const { trackId } = action
     const accountHandle = yield select(getUserHandle)
     const lineup = yield select((state) =>
@@ -82,7 +102,7 @@ export default function sagas() {
   const trackSagas = new TracksSagas().getSagas()
   return trackSagas.concat([
     watchSetArtistPick,
-    watchDeleteTrack,
+    watchDeleteTrackRequested,
     watchUploadTracksSaga
   ])
 }

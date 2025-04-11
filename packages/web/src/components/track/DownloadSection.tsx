@@ -285,6 +285,24 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 }
               />
             ))}
+            {uploadingStems.map((s, i) => (
+              <DownloadRow
+                key={`uploading-stem-${i}`}
+                onDownload={() => {}}
+                hideDownload={shouldHideDownload}
+                size={s.size}
+                index={
+                  i +
+                  stemTracks.length +
+                  (is_downloadable
+                    ? STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK
+                    : STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK)
+                }
+                category={s.category ?? StemCategory.OTHER}
+                filename={s.name}
+                isLoading
+              />
+            ))}
             {shouldHideDownload || !isDownloadAllTrackFilesEnabled ? null : (
               <Flex
                 p='l'
@@ -306,24 +324,6 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 </Button>
               </Flex>
             )}
-            {uploadingStems.map((s, i) => (
-              <DownloadRow
-                key={`uploading-stem-${i}`}
-                onDownload={() => {}}
-                hideDownload={shouldHideDownload}
-                size={s.size}
-                index={
-                  i +
-                  stemTracks.length +
-                  (is_downloadable
-                    ? STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK
-                    : STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK)
-                }
-                category={s.category ?? StemCategory.OTHER}
-                filename={s.name}
-                isLoading
-              />
-            ))}
           </Box>
         </Expandable>
       </Flex>

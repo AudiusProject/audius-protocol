@@ -2,6 +2,7 @@ from datetime import datetime
 
 from integration_tests.utils import populate_mock_db
 from src.queries.get_remixable_tracks import get_remixable_tracks
+from src.queries.get_remixes_of import get_remixes_of
 from src.queries.get_tracks import _get_tracks
 from src.queries.query_helpers import SortDirection, SortMethod
 from src.utils.db_session import get_db
@@ -405,6 +406,57 @@ def test_get_remixable_tracks(app):
         tracks = get_remixable_tracks({"with_users": True})
         assert len(tracks) == 2
         assert tracks[0]["user"]
+
+
+def test_get_remixes_of(app):
+    with app.app_context():
+        db = get_db()
+
+        populate_tracks(db)
+        populate_mock_db(
+            db,
+            {
+                "remixes": [
+                    {"parent_track_id": 1, "child_track_id": 2},
+                    {"parent_track_id": 1, "child_track_id": 3},
+                    {"parent_track_id": 1, "child_track_id": 4},
+                ],
+                "aggregate_plays": [
+                    {"play_item_id": 2, "count": 100},
+                    {"play_item_id": 4, "count": 50},
+                    {"play_item_id": 3, "count": 2},
+                ],
+                "saves": [
+                    {"user_id": 1287289, "save_item_id": 2},
+                ],
+                "reposts": [
+                    {"user_id": 1287289, "repost_item_id": 4},
+                ],
+                "events": [
+                    {
+                        "user_id": 1287289,
+                        "entity_id": 1,
+                        "created_at": datetime(2018, 5, 19),
+                        "end_date": datetime(2018, 5, 20),
+                    }
+                ],
+            },
+        )
+
+        tracks = get_remixes_of({"track_id": 1, "sort_method": "plays"})["tracks"]
+        assert len(tracks) == 3
+        assert tracks[0]["track_id"] == 2
+        assert tracks[1]["track_id"] == 4
+        assert tracks[2]["track_id"] == 3
+
+        tracks = get_remixes_of({"track_id": 1, "only_cosigns": True})["tracks"]
+        assert len(tracks) == 2
+        assert tracks[0]["track_id"] == 4
+        assert tracks[1]["track_id"] == 2
+
+        tracks = get_remixes_of({"track_id": 1, "only_contest_entries": True})["tracks"]
+        assert len(tracks) == 1
+        assert tracks[0]["track_id"] == 4
 
 
 def test_get_ai_attributed_tracks(app):

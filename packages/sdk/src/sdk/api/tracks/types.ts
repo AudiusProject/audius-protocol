@@ -19,7 +19,8 @@ import { MAX_DESCRIPTION_LENGTH } from './constants'
 const messages = {
   titleRequiredError: 'Your track must have a name',
   artworkRequiredError: 'Artwork is required',
-  genreRequiredError: 'Genre is required'
+  genreRequiredError: 'Genre is required',
+  genreAllError: 'Genre cannot be set to "All Genres"'
 }
 
 export const EthCollectibleGatedConditions = z
@@ -92,6 +93,9 @@ export const UploadTrackMetadataSchema = z.object({
     .nullable()
     .refine((val) => val !== null, {
       message: messages.genreRequiredError
+    })
+    .refine((val) => val !== Genre.ALL, {
+      message: messages.genreAllError
     }),
   isrc: z.optional(z.string().nullable()),
   isUnlisted: z.optional(z.boolean()),
