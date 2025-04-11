@@ -6,11 +6,9 @@ import {
   isContentUSDCPurchaseGated,
   USDCPurchaseConditions
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   getOrCreateUSDCUserBank,
-  getContext,
   TrackForUpload,
   TrackMetadataForUpload
 } from '@audius/common/store'
