@@ -68,13 +68,11 @@ export const HostRemixContestModal = () => {
   const { mutate: createEvent } = useCreateEvent()
   const { mutate: updateEvent } = useUpdateEvent()
   const { data: userId } = useCurrentUserId()
-  const { data: event } = useRemixContest(trackId, {
-    entityType: EventEntityTypeEnum.Track
-  })
-  const isEdit = !!event
+  const { data: remixContest } = useRemixContest(trackId)
+  const isEdit = !!remixContest
 
   const [contestEndDate, setContestEndDate] = useState(
-    event ? dayjs(event.endDate) : null
+    remixContest ? dayjs(remixContest.endDate) : null
   )
   const [endDateTouched, setEndDateTouched] = useState(false)
   const [endDateError, setEndDateError] = useState(false)
@@ -123,7 +121,7 @@ export const HostRemixContestModal = () => {
 
     if (isEdit) {
       updateEvent({
-        eventId: event.eventId,
+        eventId: remixContest.eventId,
         endDate,
         userId
       })
@@ -147,7 +145,7 @@ export const HostRemixContestModal = () => {
     isEdit,
     onClose,
     updateEvent,
-    event?.eventId,
+    remixContest?.eventId,
     createEvent
   ])
 
