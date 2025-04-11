@@ -65,7 +65,12 @@ export const HostRemixContestDrawer = () => {
   const [endDateError, setEndDateError] = useState<boolean>(false)
 
   const handleChange = useCallback((date: string, time: string) => {
-    const newDate = mergeDateTime(date, time)
+    if (!date && !time) {
+      setEndDate(null)
+      return
+    }
+
+    const newDate = mergeDateTime(date || time, time || date)
     if (newDate.isBefore(dayjs())) {
       setEndDateError(true)
     } else {
