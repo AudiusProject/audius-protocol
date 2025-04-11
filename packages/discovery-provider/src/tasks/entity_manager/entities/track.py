@@ -817,7 +817,7 @@ def validate_access_conditions(params: ManageEntityParameters):
             if is_stream_gated
             else params.metadata["download_conditions"]
         )
-        if USDC_PURCHASE_KEY in conditions:
+        if conditions and USDC_PURCHASE_KEY in conditions:
             if not conditions[USDC_PURCHASE_KEY].get("splits"):
                 raise IndexingValidationError(
                     f"Track {params.entity_id} usdc_purchase does not contain splits"
