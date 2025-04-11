@@ -96,12 +96,12 @@ const RemixesPage = nullGuard(({ title, count = 0, originalTrack }) => {
               <Flex gap='s' mb='xl'>
                 <FilterButton
                   label={messages.coSigned}
-                  value={isCosign}
+                  value={isCosign.toString()}
                   onClick={() => updateIsCosignParam(isCosign ? '' : 'true')}
                 />
                 <FilterButton
                   label={messages.contestEntries}
-                  value={isContestEntry}
+                  value={isContestEntry.toString()}
                   onClick={() =>
                     updateIsContestEntryParam(isContestEntry ? '' : 'true')
                   }
