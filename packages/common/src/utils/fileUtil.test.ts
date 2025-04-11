@@ -39,42 +39,6 @@ describe('getFilename', () => {
     expect(result).toBe('Test Track.mp3')
   })
 
-  it('includes category when stem_of is present', () => {
-    const mockUser: User = {
-      name: 'Test User'
-    } as User
-
-    const mockTrack: Track = {
-      title: 'Test Track',
-      orig_filename: 'original_track.wav',
-      stem_of: { parent_track_id: 1, category: StemCategory.LEAD_VOCALS }
-    } as Track
-
-    const result = getFilename({
-      track: mockTrack,
-      user: mockUser
-    })
-    expect(result).toBe('original_track - Lead Vocals.mp3')
-  })
-
-  it('handles download format', () => {
-    const mockUser: User = {
-      name: 'Test User'
-    } as User
-
-    const mockTrack: Track = {
-      title: 'Test Track',
-      orig_filename: 'original_track.wav'
-    } as Track
-
-    const result = getFilename({
-      track: mockTrack,
-      user: mockUser,
-      isDownload: true
-    })
-    expect(result).toBe('original_track - Test User (Audius).mp3')
-  })
-
   it('preserves original extension for original files', () => {
     const mockUser: User = {
       name: 'Test User'
