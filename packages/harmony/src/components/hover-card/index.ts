@@ -1,6 +1,3 @@
-export { FlairHoverCard } from './FlairHoverCard'
-export { BaseFlairHoverCardHeader } from './FlairHoverCardHeader'
-export type {
-  FlairHoverCardProps,
-  BaseFlairHoverCardHeaderProps
-} from './types'
+export { HoverCard } from './HoverCard'
+export { BaseHoverCardHeader } from './HoverCardHeader'
+export type { HoverCardProps, BaseHoverCardHeaderProps } from './types'

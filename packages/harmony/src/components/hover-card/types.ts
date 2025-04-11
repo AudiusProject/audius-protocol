@@ -2,7 +2,7 @@ import { ReactNode } from 'react'
 
 import { Origin } from '../popup/types'
 
-export type FlairHoverCardProps = {
+export type HoverCardProps = {
   /**
    * Content displayed as the hover trigger
    */
@@ -41,7 +41,7 @@ export type FlairHoverCardProps = {
   transformOrigin?: Origin
 }
 
-export type BaseFlairHoverCardHeaderProps = {
+export type BaseHoverCardHeaderProps = {
   /**
    * The icon or component to display on the left side of the header
    */

@@ -2,17 +2,17 @@ import { ReactNode } from 'react'
 
 import { Flex, Text } from '@audius/harmony'
 
-export type FlairHoverCardBodyProps = {
+export type HoverCardBodyProps = {
   icon: ReactNode
   amount: string
   currency?: string
 }
 
-export const FlairHoverCardBody = ({
+export const HoverCardBody = ({
   icon,
   amount,
   currency = '$AUDIO'
-}: FlairHoverCardBodyProps) => {
+}: HoverCardBodyProps) => {
   return (
     <Flex w='100%' p='s' column justifyContent='center'>
       <Flex gap='s' alignItems='center'>

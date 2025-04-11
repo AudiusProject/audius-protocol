@@ -1,4 +1,4 @@
-export { AudioTierFlairHoverCardHeader } from './AudioTierFlairHoverCardHeader'
-export { FlairHoverCardBody } from './FlairHoverCardBody'
+export { AudioHoverCard } from './AudioHoverCard'
+export { HoverCardBody } from './HoverCardBody'
 export type { BadgeTier, AudioTiers } from '@audius/common/src/models/BadgeTier'
-export type { FlairHoverCardBodyProps } from './FlairHoverCardBody'
+export type { HoverCardBodyProps } from './HoverCardBody'

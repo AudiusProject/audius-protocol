@@ -3,7 +3,7 @@ import { useRef, useState } from 'react'
 import { Flex, Paper, Popup } from '..'
 import { Origin } from '../popup/types'
 
-import { FlairHoverCardProps } from './types'
+import { HoverCardProps } from './types'
 
 const DEFAULT_ANCHOR_ORIGIN: Origin = {
   horizontal: 'right',
@@ -16,7 +16,7 @@ const DEFAULT_TRANSFORM_ORIGIN: Origin = {
 }
 
 /**
- * FlairHoverCard is a component that displays content in a hover card/tooltip
+ * HoverCard is a component that displays content in a hover card/tooltip
  * with a Paper container when the user hovers over the component's children.
  *
  * The hover card appears to the right of the child element and disappears when
@@ -24,7 +24,7 @@ const DEFAULT_TRANSFORM_ORIGIN: Origin = {
  *
  * @example
  * ```tsx
- * <FlairHoverCard
+ * <HoverCard
  *   content={
  *     <>
  *       <SomeHeader />
@@ -33,10 +33,10 @@ const DEFAULT_TRANSFORM_ORIGIN: Origin = {
  *   }
  * >
  *   <Text>Hover over me</Text>
- * </FlairHoverCard>
+ * </HoverCard>
  * ```
  */
-export const FlairHoverCard = ({
+export const HoverCard = ({
   children,
   className,
   content,
@@ -44,7 +44,7 @@ export const FlairHoverCard = ({
   onClick,
   anchorOrigin = DEFAULT_ANCHOR_ORIGIN,
   transformOrigin = DEFAULT_TRANSFORM_ORIGIN
-}: FlairHoverCardProps) => {
+}: HoverCardProps) => {
   const [isHovered, setIsHovered] = useState(false)
   const anchorRef = useRef<HTMLDivElement | null>(null)
 

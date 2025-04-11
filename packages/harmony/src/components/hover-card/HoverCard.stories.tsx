@@ -3,18 +3,18 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { Text, Flex } from '..'
 import { IconInfo } from '../../icons'
 
-import { FlairHoverCard } from './FlairHoverCard'
+import { HoverCard } from './HoverCard'
 
-const meta: Meta<typeof FlairHoverCard> = {
-  title: 'Components/FlairHoverCard',
-  component: FlairHoverCard,
+const meta: Meta<typeof HoverCard> = {
+  title: 'Components/HoverCard',
+  component: HoverCard,
   parameters: {
     layout: 'centered'
   }
 }
 
 export default meta
-type Story = StoryObj<typeof FlairHoverCard>
+type Story = StoryObj<typeof HoverCard>
 
 export const Default: Story = {
   args: {
