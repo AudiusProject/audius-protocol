@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { Id, OptionalId, EntityType } from '@audius/sdk'
+import { Id, OptionalId, EntityType, full } from '@audius/sdk'
 import {
   InfiniteData,
   useInfiniteQuery,
@@ -20,6 +20,8 @@ import {
 import { QUERY_KEYS } from './queryKeys'
 import { QueryKey, QueryOptions, LineupData } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
+import { getTrackQueryKey } from './useTrack'
+import { getUserQueryKey } from './useUser'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
 
@@ -27,19 +29,36 @@ const DEFAULT_PAGE_SIZE = 10
 
 export type UseRemixesArgs = {
   trackId: number | null | undefined
+  includeOriginal?: Boolean
   pageSize?: number
+  sortMethod?: full.GetTrackRemixesSortMethodEnum
+  isCosign?: boolean
+  isContestEntry?: boolean
 }
 
 export const getRemixesQueryKey = ({
   trackId,
-  pageSize = DEFAULT_PAGE_SIZE
+  includeOriginal = false,
+  pageSize = DEFAULT_PAGE_SIZE,
+  sortMethod = 'recent',
+  isCosign = false,
+  isContestEntry = false
 }: UseRemixesArgs) =>
-  [QUERY_KEYS.remixes, trackId, { pageSize }] as unknown as QueryKey<
-    InfiniteData<LineupData[]>
-  >
+  [
+    QUERY_KEYS.remixes,
+    trackId,
+    { pageSize, includeOriginal, sortMethod, isCosign, isContestEntry }
+  ] as unknown as QueryKey<InfiniteData<LineupData[]>>
 
 export const useRemixes = (
-  { trackId, pageSize = DEFAULT_PAGE_SIZE }: UseRemixesArgs,
+  {
+    trackId,
+    includeOriginal = false,
+    pageSize = DEFAULT_PAGE_SIZE,
+    sortMethod = 'recent',
+    isCosign = false,
+    isContestEntry = false
+  }: UseRemixesArgs,
   options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
@@ -54,7 +73,14 @@ export const useRemixes = (
   }, [dispatch, trackId])
 
   const queryData = useInfiniteQuery({
-    queryKey: getRemixesQueryKey({ trackId, pageSize }),
+    queryKey: getRemixesQueryKey({
+      trackId,
+      pageSize,
+      includeOriginal,
+      sortMethod,
+      isCosign,
+      isContestEntry
+    }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: LineupData[], allPages) => {
       if (lastPage.length < pageSize) return undefined
@@ -62,20 +88,31 @@ export const useRemixes = (
     },
     queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
-
       const { data = { count: 0, tracks: [] } } =
         await sdk.full.tracks.getTrackRemixes({
           trackId: Id.parse(trackId),
           userId: OptionalId.parse(currentUserId),
           limit: pageSize,
-          offset: pageParam
+          offset: pageParam,
+          sortMethod,
+          onlyCosigns: isCosign,
+          onlyContestEntries: isContestEntry
         })
-
-      const processedTracks = transformAndCleanList(
+      let processedTracks = transformAndCleanList(
         data.tracks,
         userTrackMetadataFromSDK
       )
       primeTrackData({ tracks: processedTracks, queryClient, dispatch })
+
+      if (includeOriginal && pageParam === 0) {
+        const track = queryClient.getQueryData(getTrackQueryKey(trackId))
+        if (track && data.tracks) {
+          const user = queryClient.getQueryData(getUserQueryKey(track.owner_id))
+          if (user) {
+            processedTracks = [{ ...track, user }, ...processedTracks]
+          }
+        }
+      }
 
       // Update lineup when new data arrives
       dispatch(
@@ -101,7 +138,11 @@ export const useRemixes = (
     queryData,
     queryKey: getRemixesQueryKey({
       trackId,
-      pageSize
+      includeOriginal,
+      pageSize,
+      sortMethod,
+      isCosign,
+      isContestEntry
     }),
     lineupActions: remixesPageLineupActions,
     lineupSelector: remixesPageSelectors.getLineup,
