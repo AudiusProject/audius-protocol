@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { ChangeEvent, useCallback, useState } from 'react'
 
 import {
   useCreateEvent,
@@ -22,13 +22,10 @@ import {
 } from '@audius/harmony'
 import { EventEntityTypeEnum, EventEventTypeEnum } from '@audius/sdk'
 import { css } from '@emotion/css'
-import dayjs from 'dayjs'
-import customParseFormat from 'dayjs/plugin/customParseFormat'
 
 import { DatePicker } from 'components/edit/fields/DatePickerField'
 import { mergeReleaseDateValues } from 'components/edit/fields/visibility/mergeReleaseDateValues'
-
-dayjs.extend(customParseFormat)
+import dayjs from 'utils/dayjs'
 
 const messages = {
   hostTitle: 'Host Remix Contest',
@@ -47,6 +44,10 @@ const messages = {
   meridianPlaceholder: 'AM'
 }
 
+/**
+ * Parses the user-provided time string and returns the formatted time
+ * Returns null if the time is invalid
+ */
 const parseTime = (time: string) => {
   if (time.length < 3 || time.length > 5) return null
 
@@ -84,6 +85,23 @@ export const HostRemixContestModal = () => {
   const [meridianValue, setMeridianValue] = useState(
     contestEndDate ? dayjs(contestEndDate).format('A') : ''
   )
+
+  const handleEndDateChange = useCallback((value: string) => {
+    setContestEndDate(dayjs(value))
+    setEndDateError(false)
+  }, [])
+
+  const handleTimeChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    setTimeValue(e.target.value)
+    const parsedTime = parseTime(e.target.value)
+    setTimeError(!parsedTime)
+    setEndDateError(false)
+  }, [])
+
+  const handleMeridianChange = useCallback((value: string) => {
+    setMeridianValue(value)
+    setEndDateError(false)
+  }, [])
 
   const handleSubmit = useCallback(() => {
     const parsedTime = parseTime(timeValue)
@@ -148,10 +166,7 @@ export const HostRemixContestModal = () => {
             <DatePicker
               name='contestEndDate'
               label={messages.contestEndDateLabel}
-              onChange={(value) => {
-                setContestEndDate(dayjs(value))
-                setEndDateError(false)
-              }}
+              onChange={handleEndDateChange}
               value={contestEndDate?.toISOString()}
               futureDatesOnly
               error={endDateError ? messages.endDateError : undefined}
@@ -165,12 +180,7 @@ export const HostRemixContestModal = () => {
                 disabled={!contestEndDate}
                 value={timeValue}
                 helperText={timeError ? messages.timeError : undefined}
-                onChange={(e) => {
-                  setTimeValue(e.target.value)
-                  const parsedTime = parseTime(e.target.value)
-                  setTimeError(!parsedTime)
-                  setEndDateError(false)
-                }}
+                onChange={handleTimeChange}
               />
               <Select
                 css={{ flex: 1 }}
@@ -179,10 +189,7 @@ export const HostRemixContestModal = () => {
                 hideLabel
                 disabled={!contestEndDate}
                 value={meridianValue}
-                onChange={(value) => {
-                  setMeridianValue(value)
-                  setEndDateError(false)
-                }}
+                onChange={handleMeridianChange}
                 options={[
                   { value: 'AM', label: 'AM' },
                   { value: 'PM', label: 'PM' }
