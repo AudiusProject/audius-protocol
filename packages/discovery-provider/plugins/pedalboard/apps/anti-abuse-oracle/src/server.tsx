@@ -218,7 +218,7 @@ app.get('/attestation/ui', async (c) => {
 
   let lastDate = ''
   function dateHeader(timestamp: Date) {
-    const d = timestamp.toDateString()
+    const d = timestamp?.toDateString()
     if (d != lastDate) {
       lastDate = d
       return (
@@ -298,7 +298,7 @@ app.get('/attestation/ui/user', async (c) => {
 
   let lastDate = ''
   function dateHeader(timestamp: Date) {
-    const d = timestamp.toDateString()
+    const d = timestamp?.toDateString()
     if (d != lastDate) {
       lastDate = d
       return (
@@ -511,7 +511,7 @@ app.get('/attestation/ui/user', async (c) => {
             <>
               {dateHeader(r.timestamp)}
               <tr>
-                <td>{r.timestamp.toLocaleTimeString()}</td>
+                <td>{r.timestamp?.toLocaleTimeString()}</td>
                 <td>{r.verb}</td>
                 <td>{r.target}</td>
                 <td>{renderDetails(r)}</td>
