@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
-import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -60,10 +58,6 @@ export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
     }
   }, [accountHasTracks, setSelectedTable, tableView, setTableOptions, isGuest])
 
-  const { isEnabled: isOwnYourFansEnabled } = useFeatureFlag(
-    FeatureFlags.OWN_YOUR_FANS
-  )
-
   const {
     count: salesCount,
     data: sales,
@@ -72,7 +66,6 @@ export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
     onClickRow: onSalesClickRow,
     isEmpty: isSalesEmpty,
     isLoading: isSalesLoading,
-    downloadCSV: downloadSalesCSV,
     downloadSalesAsCSVFromJSON
   } = useSales()
   const {
@@ -101,9 +94,7 @@ export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
   const tables: Record<TableType, TableMetadata> = {
     [TableType.SALES]: {
       label: messages.sales,
-      downloadCSV: isOwnYourFansEnabled
-        ? downloadSalesAsCSVFromJSON
-        : downloadSalesCSV,
+      downloadCSV: downloadSalesAsCSVFromJSON,
       isDownloadCSVButtonDisabled: isSalesLoading || isSalesEmpty
     },
     [TableType.PURCHASES]: {
