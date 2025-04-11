@@ -142,7 +142,7 @@ const CollectionPage = ({
   playing,
   previewing,
   type,
-  collection,
+collection,
   tracks,
   userId,
   getFilteredData,

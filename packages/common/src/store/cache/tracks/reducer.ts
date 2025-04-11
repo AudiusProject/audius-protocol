@@ -52,88 +52,83 @@ const addEntries = (state: TracksCacheState, entries: Entry[]) => {
 }
 
 const actionsMap = {
-  [ADD_SUCCEEDED](
-    state: TracksCacheState,
-    action: AddSuccededAction<Track>
-  ): TracksCacheState {
-    const { entries } = action
-    return addEntries(state, entries)
-  },
-  [ADD_ENTRIES](
-    state: TracksCacheState,
-    action: AddEntriesAction<Track>,
-    kind: Kind
-  ): TracksCacheState {
-    const { entriesByKind } = action
-    const matchingEntries = entriesByKind[kind]
-
-    if (!matchingEntries) return state
-    const cacheableEntries: Entry[] = Object.entries(matchingEntries).map(
-      ([id, entry]) => ({
-        id: parseInt(id, 10),
-        metadata: entry
-      })
-    )
-    return addEntries(state, cacheableEntries)
-  },
-  [SET_PERMALINK](
-    state: TracksCacheState,
-    action: ReturnType<typeof setPermalink>
-  ): TracksCacheState {
-    const { permalink, trackId } = action
-
-    if (!permalink) return state
-    return {
-      ...state,
-      permalinks: { ...state.permalinks, [permalink.toLowerCase()]: trackId }
-    }
-  },
-  [INCREMENT_TRACK_COMMENT_COUNT](
-    state: TracksCacheState,
-    action: ReturnType<typeof incrementTrackCommentCount>
-  ): TracksCacheState {
-    const { trackId, commentCountIncrement } = action
-
-    return merge(state, {
-      entries: {
-        [trackId]: {
-          metadata: {
-            comment_count:
-              (state.entries[trackId].metadata.comment_count || 0) +
-              commentCountIncrement
-          }
-        }
-      }
-    })
-  },
-  [SET_TRACK_COMMENT_COUNT](
-    state: TracksCacheState,
-    action: ReturnType<typeof setTrackCommentCount>
-  ): TracksCacheState {
-    const { trackId, newCommentCount } = action
-
-    return merge(state, {
-      entries: {
-        [trackId]: {
-          metadata: {
-            comment_count: newCommentCount
-          }
-        }
-      }
-    })
-  },
-  [SET_PINNED_COMMENT_ID](
-    state: TracksCacheState,
-    action: ReturnType<typeof setPinnedCommentId>
-  ): TracksCacheState {
-    const { trackId, commentId } = action
-
-    return merge(state, {
-      entries: {
-        [trackId]: { metadata: { pinned_comment_id: commentId } }
-      }
-    })
-  }
+  // [ADD_SUCCEEDED](
+  //   state: TracksCacheState,
+  //   action: AddSuccededAction<Track>
+  // ): TracksCacheState {
+  //   const { entries } = action
+  //   return addEntries(state, entries)
+  // },
+  // [ADD_ENTRIES](
+  //   state: TracksCacheState,
+  //   action: AddEntriesAction<Track>,
+  //   kind: Kind
+  // ): TracksCacheState {
+  //   const { entriesByKind } = action
+  //   const matchingEntries = entriesByKind[kind]
+  //   if (!matchingEntries) return state
+  //   const cacheableEntries: Entry[] = Object.entries(matchingEntries).map(
+  //     ([id, entry]) => ({
+  //       id: parseInt(id, 10),
+  //       metadata: entry
+  //     })
+  //   )
+  //   return addEntries(state, cacheableEntries)
+  // },
+  // [SET_PERMALINK](
+  //   state: TracksCacheState,
+  //   action: ReturnType<typeof setPermalink>
+  // ): TracksCacheState {
+  //   const { permalink, trackId } = action
+  //   if (!permalink) return state
+  //   return {
+  //     ...state,
+  //     permalinks: { ...state.permalinks, [permalink.toLowerCase()]: trackId }
+  //   }
+  // },
+  // [INCREMENT_TRACK_COMMENT_COUNT](
+  //   state: TracksCacheState,
+  //   action: ReturnType<typeof incrementTrackCommentCount>
+  // ): TracksCacheState {
+  //   const { trackId, commentCountIncrement } = action
+  //   return merge(state, {
+  //     entries: {
+  //       [trackId]: {
+  //         metadata: {
+  //           comment_count:
+  //             (state.entries[trackId].metadata.comment_count || 0) +
+  //             commentCountIncrement
+  //         }
+  //       }
+  //     }
+  //   })
+  // },
+  // [SET_TRACK_COMMENT_COUNT](
+  //   state: TracksCacheState,
+  //   action: ReturnType<typeof setTrackCommentCount>
+  // ): TracksCacheState {
+  //   const { trackId, newCommentCount } = action
+  //   return merge(state, {
+  //     entries: {
+  //       [trackId]: {
+  //         metadata: {
+  //           comment_count: newCommentCount
+  //         }
+  //       }
+  //     }
+  //   })
+  // },
+  // [SET_PINNED_COMMENT_ID](
+  //   state: TracksCacheState,
+  //   action: ReturnType<typeof setPinnedCommentId>
+  // ): TracksCacheState {
+  //   const { trackId, commentId } = action
+  //   return merge(state, {
+  //     entries: {
+  //       [trackId]: { metadata: { pinned_comment_id: commentId } }
+  //     }
+  //   })
+  // }
 }
 
 const reducer = (

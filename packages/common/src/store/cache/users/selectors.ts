@@ -7,6 +7,7 @@ import {
 } from '~/api/tan-query/queryKeys'
 import { getEntryTimestamp } from '~/store/cache/selectors'
 import type { CommonState } from '~/store/commonStore'
+import { Uid } from '~/utils/uid'
 
 import { Kind } from '../../../models'
 import type { ID, User } from '../../../models'
@@ -20,10 +21,7 @@ export const getUser = (
     | { uid: any }
 ) => {
   if ('uid' in props) {
-    console.log('FOUND A UID ', props)
-    throw new Error(
-      'We should not be passing uid to getUser - fix wherever this showed up'
-    )
+    return undefined
   }
   return 'handle' in props
     ? getUserByHandle(state, { handle: props.handle })

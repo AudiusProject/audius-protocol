@@ -8,7 +8,6 @@ import {
   PlaybackSource,
   FavoriteType,
   PlayableType,
-  Status,
   ID,
   Track
 } from '@audius/common/models'
@@ -72,7 +71,6 @@ const {
   getTrackRank,
   getTrack,
   getRemixParentTrack,
-  getStatus,
   getSourceSelector,
   getTrackPermalink
 } = trackPageSelectors
@@ -128,17 +126,8 @@ class TrackPageProvider extends Component<
   }
 
   componentDidUpdate(prevProps: TrackPageProviderProps) {
-    const {
-      pathname,
-      track,
-      status,
-      refetchTracksLinup,
-      user,
-      trackPermalink
-    } = this.props
-    if (status === Status.ERROR) {
-      this.props.goToRoute(NOT_FOUND_PAGE)
-    }
+    const { pathname, track, refetchTracksLinup, user, trackPermalink } =
+      this.props
     if (user && user.is_deactivated) {
       this.goToProfilePage(user.handle)
     }
@@ -483,7 +472,6 @@ function makeMapStateToProps() {
       trackPermalink: getTrackPermalink(state),
       remixParentTrack: getRemixParentTrack(state),
       user: getUser(state),
-      status: getStatus(state),
       moreByArtist: getMoreByArtistLineup(state),
       userId: getUserId(state),
 

@@ -55,45 +55,43 @@ const addEntries = (state: CollectionsCacheState, entries: any[]) => {
 }
 
 const actionsMap = {
-  [ADD_SUCCEEDED](
-    state: CollectionsCacheState,
-    action: AddSuccededAction<Collection>
-  ) {
-    const { entries } = action
-    return addEntries(state, entries)
-  },
-  [ADD_ENTRIES](
-    state: CollectionsCacheState,
-    action: AddEntriesAction<Collection>,
-    kind: Kind
-  ) {
-    const { entriesByKind } = action
-    const matchingEntries = entriesByKind[kind]
-
-    if (!matchingEntries) return state
-    const cacheableEntries: Entry[] = Object.entries(matchingEntries).map(
-      ([id, entry]) => ({
-        id: parseInt(id, 10),
-        metadata: entry
-      })
-    )
-    return addEntries(state, cacheableEntries)
-  },
-  [SET_PERMALINK](
-    state: CollectionsCacheState,
-    action: ReturnType<typeof setPermalink>
-  ): CollectionsCacheState {
-    const { permalink, collectionId } = action
-
-    if (!permalink) return state
-    return {
-      ...state,
-      permalinks: {
-        ...state.permalinks,
-        [permalink.toLowerCase()]: collectionId
-      }
-    }
-  }
+  // [ADD_SUCCEEDED](
+  //   state: CollectionsCacheState,
+  //   action: AddSuccededAction<Collection>
+  // ) {
+  //   const { entries } = action
+  //   return addEntries(state, entries)
+  // },
+  // [ADD_ENTRIES](
+  //   state: CollectionsCacheState,
+  //   action: AddEntriesAction<Collection>,
+  //   kind: Kind
+  // ) {
+  //   const { entriesByKind } = action
+  //   const matchingEntries = entriesByKind[kind]
+  //   if (!matchingEntries) return state
+  //   const cacheableEntries: Entry[] = Object.entries(matchingEntries).map(
+  //     ([id, entry]) => ({
+  //       id: parseInt(id, 10),
+  //       metadata: entry
+  //     })
+  //   )
+  //   return addEntries(state, cacheableEntries)
+  // },
+  // [SET_PERMALINK](
+  //   state: CollectionsCacheState,
+  //   action: ReturnType<typeof setPermalink>
+  // ): CollectionsCacheState {
+  //   const { permalink, collectionId } = action
+  //   if (!permalink) return state
+  //   return {
+  //     ...state,
+  //     permalinks: {
+  //       ...state.permalinks,
+  //       [permalink.toLowerCase()]: collectionId
+  //     }
+  //   }
+  // }
 }
 
 const reducer = (state = initialState, action: any, kind: Kind) => {

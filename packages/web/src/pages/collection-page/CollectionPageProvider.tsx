@@ -837,7 +837,7 @@ function makeMapStateToProps() {
       trackCount: (getCollection(state) as Collection)?.playlist_contents
         .track_ids.length,
       collectionUid: getCollectionUid(state) || '',
-      collection: getCollection(state) as Collection,
+      collection: (getCollection(state) as Collection) ?? {},
       collectionPermalink: getCollectionPermalink(state),
       user: getUser(state),
       userUid: getUserUid(state) || '',

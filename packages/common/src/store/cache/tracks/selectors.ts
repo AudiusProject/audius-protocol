@@ -11,20 +11,21 @@ export const getTrack = (
   state: CommonState,
   props: { id: ID | null } | { uid: UID | null } | { permalink: string | null }
 ): Track | undefined => {
-  if ('permalink' in props) {
+  if ('permalink' in props && props.permalink) {
     const trackId = state.queryClient.getQueryData(
       getTrackByPermalinkQueryKey(props.permalink)
     )
     return state.queryClient.getQueryData(getTrackQueryKey(trackId))
-  } else if ('uid' in props) {
-    // TODO: figure the way to do uid lookup
-  } else if ('id' in props) {
+  } else if ('uid' in props && props.uid) {
+    const trackId = state.tracks.uids[props.uid]
+    return state.queryClient.getQueryData(getTrackQueryKey(trackId))
+  } else if ('id' in props && props.id) {
     return state.queryClient.getQueryData(getTrackQueryKey(props.id))
   }
   return undefined
 }
 
-/** @deprecated Use useTracks instead */
+/** @deprecated Use a tan-query equivalent instead. useTracks or queryClient.getQueriesData */
 export const getTracks = (
   state: CommonState,
   props:
@@ -38,7 +39,7 @@ export const getTracks = (
         permalinks: string[] | null
       }
     | undefined
-) => {
+): { [id: number]: Track } | undefined => {
   if (props && 'ids' in props) {
     return props.ids?.reduce(
       (acc, id) => {
@@ -73,7 +74,7 @@ export const getTracks = (
       {} as { [permalink: string]: Track }
     )
   }
-  // Returns all users in cache. TODO: this horribly inefficient dear god why on earth was this done
+  // Returns all tracks in cache. TODO: this horribly inefficient dear god why on earth was this done
   const trackQueryResults = state.queryClient.getQueriesData({
     queryKey: [QUERY_KEYS.track]
   })

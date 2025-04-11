@@ -169,6 +169,8 @@ const addEntries = (state: CacheState, entries: Entry[], replace?: boolean) => {
         metadata: entity.metadata
       }
       if (entity.uid) {
+        console.log('adding uid: ', entity.uid, entity.id)
+        console.log({ entries })
         newUids[entity.uid] = entity.id
       }
     }
@@ -182,81 +184,74 @@ const addEntries = (state: CacheState, entries: Entry[], replace?: boolean) => {
 }
 
 const actionsMap = {
-  [SET_CACHE_CONFIG](state: CacheState, action: SetCacheConfigAction) {
-    const { entryTTL } = action
-    return {
-      ...state,
-      entryTTL
-    }
-  },
-  [ADD_SUCCEEDED](state: CacheState, action: AddSuccededAction) {
-    const { entries, replace } = action
-    return addEntries(state, entries, replace)
-  },
-  [ADD_ENTRIES](state: CacheState, action: AddEntriesAction, kind: Kind) {
-    const { entriesByKind, replace } = action
-    const matchingEntries = entriesByKind[kind] ?? {}
-    const cacheableEntries: Entry[] = Object.entries(matchingEntries).map(
-      ([id, entry]) => ({
-        id: parseInt(id, 10),
-        metadata: entry
-      })
-    )
-    return addEntries(state, cacheableEntries, replace)
-  },
-  [UPDATE](state: CacheState, action: { entries: any[] }) {
-    const newEntries = { ...state.entries }
-
-    action.entries.forEach((e: { id: string | number; metadata: any }) => {
-      const existing = { ...unwrapEntry(state.entries[e.id]) }
-      const newEntry = mergeWith({}, existing, e.metadata, mergeCustomizer)
-      newEntries[e.id] = wrapEntry(newEntry)
-    })
-
-    return {
-      ...state,
-      entries: newEntries
-    }
-  },
-  [INCREMENT](state: any[], action: { entries: any[] }) {
-    const newEntries = { ...state.entries }
-
-    action.entries.forEach((e: { id: string | number; metadata: any }) => {
-      newEntries[e.id] = wrapEntry(
-        mergeWith({}, { ...unwrapEntry(state.entries[e.id]) }, e.metadata, add)
-      )
-    })
-
-    return {
-      ...state,
-      entries: newEntries
-    }
-  },
-  [SET_STATUS](state: { statuses: any }, action: { statuses: any[] }) {
-    const newStatuses = { ...state.statuses }
-
-    action.statuses.forEach((s: { id: string | number; status: any }) => {
-      newStatuses[s.id] = s.status
-    })
-
-    return {
-      ...state,
-      statuses: newStatuses
-    }
-  },
-  [SUBSCRIBE](state: CacheState, action: { id: any; subscribers: any[] }) {
-    const newUids = { ...state.uids }
-
-    action.subscribers.forEach((s: { id: any; uid: any }) => {
-      const { id, uid } = s
-      newUids[uid] = id
-    })
-
-    return {
-      ...state,
-      uids: newUids
-    }
-  }
+  // [SET_CACHE_CONFIG](state: CacheState, action: SetCacheConfigAction) {
+  //   const { entryTTL } = action
+  //   return {
+  //     ...state,
+  //     entryTTL
+  //   }
+  // },
+  // [ADD_SUCCEEDED](state: CacheState, action: AddSuccededAction) {
+  //   const { entries, replace } = action
+  //   return addEntries(state, entries, replace)
+  // },
+  // [ADD_ENTRIES](state: CacheState, action: AddEntriesAction, kind: Kind) {
+  //   const { entriesByKind, replace } = action
+  //   const matchingEntries = entriesByKind[kind] ?? {}
+  //   const cacheableEntries: Entry[] = Object.entries(matchingEntries).map(
+  //     ([id, entry]) => ({
+  //       id: parseInt(id, 10),
+  //       metadata: entry
+  //     })
+  //   )
+  //   return addEntries(state, cacheableEntries, replace)
+  // },
+  // [UPDATE](state: CacheState, action: { entries: any[] }) {
+  //   const newEntries = { ...state.entries }
+  //   action.entries.forEach((e: { id: string | number; metadata: any }) => {
+  //     const existing = { ...unwrapEntry(state.entries[e.id]) }
+  //     const newEntry = mergeWith({}, existing, e.metadata, mergeCustomizer)
+  //     newEntries[e.id] = wrapEntry(newEntry)
+  //   })
+  //   return {
+  //     ...state,
+  //     entries: newEntries
+  //   }
+  // },
+  // [INCREMENT](state: any[], action: { entries: any[] }) {
+  //   const newEntries = { ...state.entries }
+  //   action.entries.forEach((e: { id: string | number; metadata: any }) => {
+  //     newEntries[e.id] = wrapEntry(
+  //       mergeWith({}, { ...unwrapEntry(state.entries[e.id]) }, e.metadata, add)
+  //     )
+  //   })
+  //   return {
+  //     ...state,
+  //     entries: newEntries
+  //   }
+  // },
+  // [SET_STATUS](state: { statuses: any }, action: { statuses: any[] }) {
+  //   const newStatuses = { ...state.statuses }
+  //   action.statuses.forEach((s: { id: string | number; status: any }) => {
+  //     newStatuses[s.id] = s.status
+  //   })
+  //   return {
+  //     ...state,
+  //     statuses: newStatuses
+  //   }
+  // },
+  // [SUBSCRIBE](state: CacheState, action: { id: any; subscribers: any[] }) {
+  //   const newUids = { ...state.uids }
+  //   action.subscribers.forEach((s: { id: any; uid: any }) => {
+  //     const { id, uid } = s
+  //     // console.log('subscribing: ', uid, id)
+  //     newUids[uid] = id
+  //   })
+  //   return {
+  //     ...state,
+  //     uids: newUids
+  //   }
+  // }
 }
 
 export const asCache =
@@ -297,3 +292,39 @@ export const asCache =
 
     return reducer(updatedState, action, kind)
   }
+
+// export const asCache =
+//   (
+//     reducer: {
+//       (
+//         state: CacheState | undefined,
+//         action: any,
+//         kind: Kind
+//       ): {
+//         // id => entry
+//         entries: {}
+//         // id => status
+//         statuses: {}
+//         // uid => id
+//         uids: {}
+//       }
+//       (arg0: any, arg1: any): any
+//     },
+//     kind: Kind
+//   ) =>
+//   (state: any, action: { kind: Kind | Kind[]; type: string | number }) => {
+//     switch (action.type) {
+//       case ADD_ENTRIES:
+//         if (action.entriesByKind[Kind.TRACKS]) {
+//           console.log({ action })
+//         }
+//         return {
+//           ...initialCacheState,
+//           ...state
+//         }
+//     }
+//     return {
+//       ...initialCacheState,
+//       ...state
+//     }
+//   }

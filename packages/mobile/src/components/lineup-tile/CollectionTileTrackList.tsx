@@ -1,3 +1,4 @@
+import type { TQTrack } from '@audius/common/api'
 import type { UID, LineupTrack } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import { playerSelectors } from '@audius/common/store'
@@ -24,7 +25,7 @@ type LineupTileTrackListProps = {
   isLoading?: boolean
   onPress: GestureResponderHandler
   trackCount: number
-  tracks: LineupTrack[]
+  tracks: TQTrack[]
   isAlbum: boolean
 }
 
@@ -120,7 +121,7 @@ const TrackItem = (props: TrackItemProps) => {
                 ]}
                 numberOfLines={1}
               >
-                {`${messages.by} ${track.user.name}`}
+                {`${messages.by} TODO: RETRIEVE ARTIST NAME`}
               </Text>
             ) : null}
             {deleted ? (

@@ -39,30 +39,29 @@ const addEntries = (state: UsersCacheState, entries: Entry[]) => {
 }
 
 const actionsMap = {
-  [ADD_SUCCEEDED](
-    state: UsersCacheState,
-    action: AddSuccededAction<User>
-  ): UsersCacheState {
-    const { entries } = action
-    return addEntries(state, entries)
-  },
-  [ADD_ENTRIES](
-    state: UsersCacheState,
-    action: AddEntriesAction<User>,
-    kind: Kind
-  ): UsersCacheState {
-    const { entriesByKind } = action
-    const matchingEntries = entriesByKind[kind]
-
-    if (!matchingEntries) return state
-    const cacheableEntries: Entry[] = Object.entries(matchingEntries).map(
-      ([id, entry]) => ({
-        id: parseInt(id, 10),
-        metadata: entry
-      })
-    )
-    return addEntries(state, cacheableEntries)
-  }
+  // [ADD_SUCCEEDED](
+  //   state: UsersCacheState,
+  //   action: AddSuccededAction<User>
+  // ): UsersCacheState {
+  //   const { entries } = action
+  //   return addEntries(state, entries)
+  // },
+  // [ADD_ENTRIES](
+  //   state: UsersCacheState,
+  //   action: AddEntriesAction<User>,
+  //   kind: Kind
+  // ): UsersCacheState {
+  //   const { entriesByKind } = action
+  //   const matchingEntries = entriesByKind[kind]
+  //   if (!matchingEntries) return state
+  //   const cacheableEntries: Entry[] = Object.entries(matchingEntries).map(
+  //     ([id, entry]) => ({
+  //       id: parseInt(id, 10),
+  //       metadata: entry
+  //     })
+  //   )
+  //   return addEntries(state, cacheableEntries)
+  // }
 }
 
 const reducer = (

@@ -1,8 +1,9 @@
+import { QueryKey } from '@tanstack/react-query'
 import { createSelector } from 'reselect'
 
-import { getCollectionQueryKey } from '~/api/tan-query/queryKeys'
-import { getAllEntries } from '~/store/cache/selectors'
-import { getTrack, getTracks } from '~/store/cache/tracks/selectors'
+import { getCollectionByPermalinkQueryKey } from '~/api'
+import { QUERY_KEYS, getCollectionQueryKey } from '~/api/tan-query/queryKeys'
+import { getTracks } from '~/store/cache/tracks/selectors'
 import {
   getUser,
   getUser as getUserById,
@@ -13,70 +14,94 @@ import { removeNullable } from '~/utils/typeUtils'
 import { Uid } from '~/utils/uid'
 
 import type { ID, UID, Collection, User } from '../../../models'
-import { Status, Kind } from '../../../models'
+import { Status } from '../../../models'
 
 import type { EnhancedCollectionTrack } from './types'
 
-/** @deprecated Use useCollection instead */
+/** @deprecated Use a tan-query equivalent instead. useCollection or queryClient.getQueryData */
 export const getCollection = (
   state: CommonState,
-  props: { id?: ID | null; permalink?: string | null }
+  props:
+    | { id: ID | null | undefined }
+    | { permalink: string | null }
+    | { uid: string | null }
 ) => {
-  const permalink = props.permalink?.toLowerCase()
-  if (permalink && state.collections.permalinks[permalink]) {
-    props.id = state.collections.permalinks[permalink]
+  if ('permalink' in props && props.permalink) {
+    const collectionId = state.queryClient.getQueryData(
+      getCollectionByPermalinkQueryKey(props.permalink)
+    )
+    return state.queryClient.getQueryData(getCollectionQueryKey(collectionId))
+  } else if ('id' in props && props.id) {
+    return state.queryClient.getQueryData(getCollectionQueryKey(props.id))
+  } else if ('uid' in props && props.uid) {
+    const collectionId = parseInt(Uid.fromString(props.uid).id as string, 10)
+    return state.queryClient.getQueryData(getCollectionQueryKey(collectionId))
   }
-  return state.queryClient.getQueryData(getCollectionQueryKey(props.id))
+  return undefined
 }
-export const getStatus = (state: CommonState, props: { id: ID }) =>
-  state.collections.statuses[props.id] || null
 
-/** @deprecated Use useCollections instead */
+/** @deprecated Use a tan-query equivalent instead. useCollections or queryClient.getQueriesData */
 export const getCollections = (
   state: CommonState,
-  props?: {
-    ids?: ID[] | null
-    uids?: UID[] | null
-    permalinks?: string[] | null
-  }
+  props?:
+    | {
+        ids: ID[] | null
+      }
+    | {
+        uids: UID[] | null
+      }
+    | {
+        permalinks: string[] | null
+      }
 ) => {
-  if (props && props.ids) {
-    const collections: { [id: number]: Collection } = {}
-    props.ids.forEach((id) => {
-      const collection = getCollection(state, { id })
-      if (collection) {
-        collections[id] = collection
-      }
-    })
-    return collections
-  } else if (props && props.uids) {
-    const collections: { [uid: string]: Collection } = {}
-    props.uids.forEach((uid) => {
-      const collection = getCollection(state, { uid })
-      if (collection) {
-        collections[collection.playlist_id] = collection
-      }
-    })
-    return collections
-  } else if (props && props.permalinks) {
-    const collections: { [permalink: string]: Collection } = {}
-    props.permalinks.forEach((permalink) => {
-      const collection = getCollection(state, { permalink })
-      if (collection) collections[permalink] = collection
-    })
-    return collections
+  if (props && 'ids' in props) {
+    return props.ids?.reduce(
+      (acc, id) => {
+        const collection = getCollection(state, { id })
+        if (collection) {
+          acc[id] = collection
+        }
+        return acc
+      },
+      {} as { [id: number]: Collection }
+    )
+  } else if (props && 'uids' in props) {
+    return props.uids?.reduce(
+      (acc, uid) => {
+        const collection = getCollection(state, { uid })
+        if (collection) {
+          acc[uid] = collection
+        }
+        return acc
+      },
+      {} as { [uid: string]: Collection }
+    )
+  } else if (props && 'permalinks' in props) {
+    return props.permalinks?.reduce(
+      (acc, permalink) => {
+        const collection = getCollection(state, { permalink })
+        if (collection) {
+          acc[permalink] = collection
+        }
+        return acc
+      },
+      {} as { [permalink: string]: Collection }
+    )
   }
-  return getAllEntries(state, { kind: Kind.COLLECTIONS })
-}
-
-export const getCollectionsByUid = (state: CommonState) => {
-  return Object.keys(state.collections.uids).reduce(
-    (entries, uid) => {
-      entries[uid] = getCollection(state, { uid })
-      return entries
-    },
-    {} as { [uid: string]: Collection | null }
-  )
+  // Returns all tracks in cache. TODO: this horribly inefficient dear god why on earth was this done
+  const collectionQueryResults = state.queryClient.getQueriesData({
+    queryKey: [QUERY_KEYS.collection]
+  })
+  return collectionQueryResults.reduce((acc, queryData) => {
+    const [, collection] = queryData as [QueryKey, Collection]
+    if (collection !== undefined) {
+      return {
+        ...acc,
+        [collection.playlist_id]: collection
+      }
+    }
+    return acc
+  }, {})
 }
 
 export const getCollectionTracks = (
@@ -89,11 +114,8 @@ export const getCollectionTracks = (
   const trackIds = collection.playlist_contents.track_ids.map(
     ({ track }) => track
   )
-  const tracks = trackIds
-    .map((trackId) => getTrack(state, { id: trackId }))
-    .filter(removeNullable)
-
-  return tracks
+  const tracks = getTracks(state, { ids: trackIds })
+  return Object.values(tracks ?? {})
 }
 
 export const getCollectionDuration = createSelector(
@@ -114,70 +136,6 @@ export const getCollectionTracksWithUsers = (
       return { ...track, user }
     })
     .filter(removeNullable)
-}
-
-export const getStatuses = (state: CommonState, props: { ids: ID[] }) => {
-  const statuses: { [id: number]: Status } = {}
-  props.ids.forEach((id) => {
-    const status = getStatus(state, { id })
-    if (status) {
-      statuses[id] = status
-    }
-  })
-  return statuses
-}
-
-const emptyList: EnhancedCollectionTrack[] = []
-export const getTracksFromCollection = (
-  state: CommonState,
-  props: { uid: UID }
-) => {
-  const collection = getCollection(state, props)
-
-  if (
-    !collection ||
-    !collection.playlist_contents ||
-    !collection.playlist_contents.track_ids
-  )
-    return emptyList
-
-  const collectionSource = Uid.fromString(props.uid).source
-
-  const ids = collection.playlist_contents.track_ids.map((t) => t.track)
-  const tracks = getTracks(state, { ids })
-
-  const userIds = Object.keys(tracks)
-    .map((id) => {
-      const track = tracks[id as unknown as number]
-      if (track?.owner_id) {
-        return track.owner_id
-      }
-      console.error(`Found empty track ${id}, expected it to have an owner_id`)
-      return null
-    })
-    .filter((userId) => userId !== null) as number[]
-  const users = getUsers(state, { ids: userIds })
-
-  if (!users || Object.keys(users).length === 0) return emptyList
-
-  // Return tracks & rebuild UIDs for the track so they refer directly to this collection
-  return collection.playlist_contents.track_ids
-    .map((t, i) => {
-      const trackUid = Uid.fromString(t.uid ?? '')
-      trackUid.source = `${collectionSource}:${trackUid.source}`
-      trackUid.count = i
-
-      if (!tracks[t.track]) {
-        console.error(`Found empty track ${t.track}`)
-        return null
-      }
-      return {
-        ...tracks[t.track],
-        uid: trackUid.toString(),
-        user: users[tracks[t.track].owner_id]
-      }
-    })
-    .filter(Boolean) as EnhancedCollectionTrack[]
 }
 
 export type EnhancedCollection = Collection & { user: User }

@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
-import { useCollection, useUser } from '@audius/common/api'
-import { useProxySelector } from '@audius/common/hooks'
+import type { TQTrack } from '@audius/common/api'
+import { useCollection, useTracks, useUser } from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -13,7 +13,6 @@ import {
 import type { Collection, Track, User } from '@audius/common/models'
 import {
   accountSelectors,
-  cacheCollectionsSelectors,
   collectionsSocialActions,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
@@ -44,12 +43,10 @@ const {
   undoRepostCollection,
   unsaveCollection
 } = collectionsSocialActions
-const { getTracksFromCollection } = cacheCollectionsSelectors
 const getUserId = accountSelectors.getUserId
 
 export const CollectionTile = (props: LineupItemProps) => {
   const {
-    uid,
     id,
     collection: collectionOverride,
     tracks: tracksOverride,
@@ -59,12 +56,8 @@ export const CollectionTile = (props: LineupItemProps) => {
   const { data: cachedCollection } = useCollection(id)
   const collection = collectionOverride ?? cachedCollection
 
-  const tracks = useProxySelector(
-    (state) => {
-      return tracksOverride ?? getTracksFromCollection(state, { uid })
-    },
-    [tracksOverride, uid]
-  )
+  const { data: cachedTracks = [] } = useTracks(cachedCollection?.trackIds)
+  const tracks = tracksOverride ?? cachedTracks
 
   const { data: user } = useUser(collection?.playlist_owner_id)
 
@@ -90,9 +83,9 @@ export const CollectionTile = (props: LineupItemProps) => {
   )
 }
 
-type CollectionTileProps = LineupItemProps & {
+type CollectionTileProps = Omit<LineupItemProps, 'tracks'> & {
   collection: Collection
-  tracks: EnhancedCollectionTrack[]
+  tracks: TQTrack[]
   user: User
 }
 
