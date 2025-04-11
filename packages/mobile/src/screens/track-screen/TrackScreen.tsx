@@ -9,7 +9,7 @@ import {
   trackPageSelectors,
   reachabilitySelectors
 } from '@audius/common/store'
-import type { FlatList, ScrollView } from 'react-native'
+import type { FlatList } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { IconArrowRight, Button, Text, Flex } from '@audius/harmony-native'
