@@ -6,12 +6,13 @@ import type {
   MaterialTopTabNavigationOptions
 } from '@react-navigation/material-top-tabs'
 import type { Animated } from 'react-native'
-import { createMaterialCollapsibleTopTabNavigator } from 'react-native-collapsible-tab-view'
 import type { SvgProps } from 'react-native-svg'
 
 import { TopTabBar } from 'app/components/top-tab-bar'
 
-const Tab = createMaterialCollapsibleTopTabNavigator()
+import { createCollapsibleTabNavigator } from './createCollapsibleTabNavigator'
+
+const Tab = createCollapsibleTabNavigator()
 
 type CollapsibleTabNavigatorContextProps = {
   sceneName?: string
@@ -55,7 +56,7 @@ export const CollapsibleTabNavigatorContextProvider = (
   )
 }
 
-const tabBar = (props: MaterialTopTabBarProps) => <TopTabBar {...props} />
+const renderTabBar = (props: MaterialTopTabBarProps) => <TopTabBar {...props} />
 
 type CollapsibleTabNavigatorProps = {
   /**
@@ -91,8 +92,9 @@ export const CollapsibleTabNavigator = ({
     <Tab.Navigator
       collapsibleOptions={collapsibleOptions}
       initialRouteName={initialScreenName}
-      tabBar={tabBar}
       screenOptions={{ ...screenOptions, lazy: false }}
+      renderHeader={renderHeader}
+      renderTabBar={renderTabBar}
     >
       {children}
     </Tab.Navigator>
