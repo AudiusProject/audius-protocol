@@ -111,7 +111,6 @@ def get_remixes_of(args):
                         ParentTrack.owner_id == Repost.user_id,
                     )
                 )
-            print(f"asdf only_contest_entries {only_contest_entries}")
             if only_contest_entries:
                 base_query = base_query.filter(
                     and_(
@@ -137,7 +136,6 @@ def get_remixes_of(args):
             (tracks, count) = add_query_pagination(
                 base_query, limit, offset, True, True
             )
-            print(f"asdf base_query: {base_query}")
             tracks = tracks.all()
             tracks = helpers.query_result_to_list(tracks)
             track_ids = list(map(lambda track: track["track_id"], tracks))
