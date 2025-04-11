@@ -111,6 +111,7 @@ def get_remixes_of(args):
                         ParentTrack.owner_id == Repost.user_id,
                     )
                 )
+            print(f"asdf only_contest_entries {only_contest_entries}")
             if only_contest_entries:
                 base_query = base_query.filter(
                     and_(
