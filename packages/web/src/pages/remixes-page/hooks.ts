@@ -8,14 +8,14 @@ export const useRemixPageParams = () => {
   const [urlRemixPageParams] = useParams()
 
   const sortMethod = urlRemixPageParams.get('sortMethod') as RemixSortMethod
-  const isCosign = urlRemixPageParams.get('isCosign')
-  const isContestEntry = urlRemixPageParams.get('isContestEntry')
+  const isCosign = urlRemixPageParams.get('isCosign') === 'true'
+  const isContestEntry = urlRemixPageParams.get('isContestEntry') === 'true'
 
   const remixPageParams = useMemo(
     () => ({
-      sortMethod: sortMethod || undefined,
-      isCosign: isCosign || undefined,
-      isContestEntry: isContestEntry || undefined
+      sortMethod,
+      isCosign,
+      isContestEntry
     }),
     [sortMethod, isCosign, isContestEntry]
   )

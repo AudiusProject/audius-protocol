@@ -21,6 +21,8 @@ const messages = {
   originalTrack: 'Original Track'
 }
 
+export const REMIXES_PAGE_SIZE = 10
+
 export type RemixesPageProps = {
   title: string
   count: number | null
@@ -30,12 +32,12 @@ export type RemixesPageProps = {
   goToArtistPage: () => void
 }
 
-const g = withNullGuard(
+const nullGuard = withNullGuard(
   ({ originalTrack, user, ...p }: RemixesPageProps) =>
     originalTrack && user && { ...p, originalTrack, user }
 )
 
-const RemixesPage = g(({ title, count = 0, originalTrack }) => {
+const RemixesPage = nullGuard(({ title, count = 0, originalTrack }) => {
   const updateSortParam = useUpdateSearchParams('sortMethod')
   const updateIsCosignParam = useUpdateSearchParams('isCosign')
   const updateIsContestEntryParam = useUpdateSearchParams('isContestEntry')
@@ -56,8 +58,8 @@ const RemixesPage = g(({ title, count = 0, originalTrack }) => {
     trackId: originalTrack?.track_id,
     includeOriginal: true,
     sortMethod,
-    isCosign: isCosign === 'true',
-    isContestEntry: isContestEntry === 'true'
+    isCosign,
+    isContestEntry
   })
 
   const renderHeader = () => (
@@ -83,8 +85,8 @@ const RemixesPage = g(({ title, count = 0, originalTrack }) => {
           loadNextPage={loadNextPage}
           isPlaying={isPlaying}
           lineup={lineup}
+          pageSize={REMIXES_PAGE_SIZE}
           actions={remixesPageLineupActions}
-          pageSize={5}
           leadingElementId={0}
           leadingElementDelineator={
             <Flex justifyContent='space-between'>
