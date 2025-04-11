@@ -117,7 +117,7 @@ const productionConfig: SdkServicesConfig = {
 const stagingConfig: SdkServicesConfig = {
   network: {
     minVersion: '',
-    apiEndpoint: 'https://discoveryprovider2.staging.audius.co',
+    apiEndpoint: 'https://api.staging.audius.co',
     discoveryNodes: [],
     storageNodes: [],
     antiAbuseOracleNodes: {
