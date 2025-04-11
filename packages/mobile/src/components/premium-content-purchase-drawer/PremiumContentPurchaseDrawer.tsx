@@ -415,7 +415,7 @@ const RenderForm = ({
           />
         </View>
       )}
-      {isPurchaseSuccessful || isIOSDisabled ? null : (
+      {isPurchaseSuccessful || !isUsdcPurchaseEnabled ? null : (
         <View style={styles.formActions}>
           {error ? <RenderError error={error} /> : null}
           {page === PurchaseContentPage.TRANSFER ? (
