@@ -1,5 +1,11 @@
 # @audius/sdk
 
+## 9.0.1
+
+### Patch Changes
+
+- 1870048: export MAX_DESCRIPTION_LENGTH
+
 ## 9.0.0
 
 ### Major Changes
