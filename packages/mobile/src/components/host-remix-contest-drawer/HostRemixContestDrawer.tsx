@@ -96,10 +96,6 @@ export const HostRemixContestDrawer = () => {
   const handleSubmit = useCallback(() => {
     if (endDateError || !trackId || !userId || !endDate) return
 
-    // TODO: Need to update this to adjust the time.
-    // The time is currently set to UTC time so after the user sets the time, it displays as UTC time.
-    // We need to adjust the time to the user's local time.
-
     if (isEdit) {
       updateEvent({
         eventId: event.eventId,

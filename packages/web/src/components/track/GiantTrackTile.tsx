@@ -66,6 +66,7 @@ import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement } from 'components/types'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 
 import { AiTrackSection } from './AiTrackSection'
 import { CardTitle } from './CardTitle'
@@ -472,8 +473,9 @@ export const GiantTrackTile = ({
     )
   }
 
-  const goToUploadWithRemix = useCallback(() => {
+  const goToUploadWithRemix = useRequiresAccountCallback(() => {
     if (!trackId) return
+
     const state = {
       initialMetadata: {
         is_remix: true,
