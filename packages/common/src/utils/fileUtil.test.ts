@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { StemCategory, Track, User } from '~/models'
+import { Track, User } from '~/models'
 
 import { getFilename } from './fileUtil'
 
