@@ -51,7 +51,7 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.VERIFY_HANDLE_WITH_TIKTOK]: false,
   [FeatureFlags.VERIFY_HANDLE_WITH_TWITTER]: false,
   [FeatureFlags.VERIFY_HANDLE_WITH_INSTAGRAM]: false,
-  [FeatureFlags.USDC_PURCHASES]: false,
+  [FeatureFlags.USDC_PURCHASES]: true,
   [FeatureFlags.FEATURE_FLAG_ACCESS]: false,
   [FeatureFlags.IOS_USDC_PURCHASE_ENABLED]: true,
   [FeatureFlags.BUY_WITH_COINFLOW]: false,

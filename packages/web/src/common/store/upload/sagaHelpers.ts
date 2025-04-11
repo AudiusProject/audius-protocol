@@ -6,11 +6,9 @@ import {
   isContentUSDCPurchaseGated,
   USDCPurchaseConditions
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   getOrCreateUSDCUserBank,
-  getContext,
   TrackForUpload,
   TrackMetadataForUpload
 } from '@audius/common/store'
@@ -124,13 +122,6 @@ export function* getUSDCMetadata(stream_conditions: USDCPurchaseConditions) {
 export function* addPremiumMetadata<T extends TrackMetadataForUpload>(
   track: T
 ) {
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  const isUsdcPurchaseEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.USDC_PURCHASES
-  )
-  if (!isUsdcPurchaseEnabled) return track
-
   // download_conditions could be set separately from stream_conditions, so we check for them first
   if (isContentUSDCPurchaseGated(track.download_conditions)) {
     track.download_conditions = yield* call(
