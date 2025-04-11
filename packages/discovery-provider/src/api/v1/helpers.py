@@ -811,6 +811,19 @@ remixes_parser.add_argument(
     default=RemixesSortMethod.recent,
     choices=RemixesSortMethod._member_names_,
 )
+remixes_parser.add_argument(
+    "only_cosigns",
+    required=False,
+    description="Only remixes cosigned by the original artist",
+    type=inputs.boolean,
+)
+remixes_parser.add_argument(
+    "only_contest_entries",
+    required=False,
+    description="Only entries to a remix contest",
+    type=inputs.boolean,
+)
+
 
 search_parser = pagination_parser.copy()
 search_parser.add_argument("query", required=False, description="The search query")

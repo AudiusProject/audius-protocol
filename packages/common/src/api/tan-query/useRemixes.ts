@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 
 import { Id, OptionalId, EntityType, full } from '@audius/sdk'
 import {
-  dataTagSymbol,
   InfiniteData,
   useInfiniteQuery,
   useQueryClient
@@ -34,6 +33,7 @@ export type UseRemixesArgs = {
   pageSize?: number
   sortMethod?: full.GetTrackRemixesSortMethodEnum
   isCosign?: boolean
+  isContestEntry?: boolean
 }
 
 export const getRemixesQueryKey = ({
@@ -41,12 +41,13 @@ export const getRemixesQueryKey = ({
   includeOriginal = false,
   pageSize = DEFAULT_PAGE_SIZE,
   sortMethod = 'recent',
-  isCosign = false
+  isCosign = false,
+  isContestEntry = false
 }: UseRemixesArgs) =>
   [
     QUERY_KEYS.remixes,
     trackId,
-    { pageSize, includeOriginal, sortMethod }
+    { pageSize, includeOriginal, sortMethod, isCosign, isContestEntry }
   ] as unknown as QueryKey<InfiniteData<LineupData[]>>
 
 export const useRemixes = (
@@ -55,7 +56,8 @@ export const useRemixes = (
     includeOriginal = false,
     pageSize = DEFAULT_PAGE_SIZE,
     sortMethod = 'recent',
-    isCosign = false
+    isCosign = false,
+    isContestEntry = false
   }: UseRemixesArgs,
   options?: QueryOptions
 ) => {
@@ -76,7 +78,8 @@ export const useRemixes = (
       pageSize,
       includeOriginal,
       sortMethod,
-      isCosign
+      isCosign,
+      isContestEntry
     }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: LineupData[], allPages) => {
@@ -84,9 +87,7 @@ export const useRemixes = (
       return allPages.length * pageSize
     },
     queryFn: async ({ pageParam }) => {
-      console.log('asdf querying')
       const sdk = await audiusSdk()
-      console.log('asdf useRemixes sortMethod: ', sortMethod)
       const { data = { count: 0, tracks: [] } } =
         await sdk.full.tracks.getTrackRemixes({
           trackId: Id.parse(trackId),
@@ -94,7 +95,8 @@ export const useRemixes = (
           limit: pageSize,
           offset: pageParam,
           sortMethod,
-          isCosign
+          onlyCosigns: isCosign,
+          onlyContestEntries: isContestEntry
         })
       let processedTracks = transformAndCleanList(
         data.tracks,
@@ -132,10 +134,7 @@ export const useRemixes = (
     ...options,
     enabled: options?.enabled !== false && !!trackId
   })
-  // const cachedData = queryClient.getQueryData(
-  //   getRemixesQueryKey({ trackId, pageSize, includeOriginal })
-  // )
-  // console.log('asdf cached Data:', cachedData)
+
   return useLineupQuery({
     queryData,
     queryKey: getRemixesQueryKey({
@@ -143,7 +142,8 @@ export const useRemixes = (
       includeOriginal,
       pageSize,
       sortMethod,
-      isCosign
+      isCosign,
+      isContestEntry
     }),
     lineupActions: remixesPageLineupActions,
     lineupSelector: remixesPageSelectors.getLineup,

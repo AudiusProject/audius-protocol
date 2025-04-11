@@ -111,6 +111,7 @@ def get_remixes_of(args):
                         ParentTrack.owner_id == Repost.user_id,
                     )
                 )
+            print(f"asdf only_contest_entries {only_contest_entries}")
             if only_contest_entries:
                 base_query = base_query.filter(
                     and_(
@@ -125,7 +126,8 @@ def get_remixes_of(args):
                 )
             elif sort_method == RemixesSortMethod.likes:
                 base_query = base_query.order_by(
-                    desc(func.coalesce(AggregateTrack.count, 0)), desc(Track.track_id)
+                    desc(func.coalesce(AggregateTrack.save_count, 0)),
+                    desc(Track.track_id),
                 )
             elif sort_method == RemixesSortMethod.plays:
                 base_query = base_query.order_by(

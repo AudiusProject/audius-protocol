@@ -137,6 +137,8 @@ export interface GetTrackRemixesRequest {
     limit?: number;
     userId?: string;
     sortMethod?: GetTrackRemixesSortMethodEnum;
+    onlyCosigns?: boolean;
+    onlyContestEntries?: boolean;
 }
 
 export interface GetTrackStemsRequest {
@@ -728,6 +730,14 @@ export class TracksApi extends runtime.BaseAPI {
 
         if (params.sortMethod !== undefined) {
             queryParameters['sort_method'] = params.sortMethod;
+        }
+
+        if (params.onlyCosigns !== undefined) {
+            queryParameters['only_cosigns'] = params.onlyCosigns;
+        }
+
+        if (params.onlyContestEntries !== undefined) {
+            queryParameters['only_contest_entries'] = params.onlyContestEntries;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

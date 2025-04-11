@@ -258,13 +258,9 @@ const TracksTab = ({
     pause,
     lineup,
     isPlaying
-  } = useProfileTracks(
-    {
-      handle
-    },
-    { refetchOnMount: 'always' }
-  )
-  console.log('asdf tracks tab', data)
+  } = useProfileTracks({
+    handle
+  })
 
   return (
     <TanQueryLineup

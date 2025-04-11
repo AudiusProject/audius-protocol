@@ -1553,9 +1553,10 @@ class FullRemixesRoute(Resource):
             "limit": format_limit(request_args, default_limit=10),
             "offset": format_offset(request_args),
             "sort_method": request_args.get("sort_method"),
-            "only_cosign": request_args.get("only_cosign"),
+            "only_cosigns": request_args.get("only_cosigns"),
+            "only_contest_entries": request_args.get("only_contest_entries"),
         }
-        print(f"asdf sort_method {args['sort_method']}")
+        print(f"asdf args {args} {request_args}")
         response = get_remixes_of(args)
         response["tracks"] = list(map(extend_track, response["tracks"]))
         return success_response(response)

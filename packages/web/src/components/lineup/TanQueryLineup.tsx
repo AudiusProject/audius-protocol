@@ -449,7 +449,7 @@ export const TanQueryLineup = ({
                       {tile}
                     </Flex>
                     {index === 0 &&
-                    tiles.length > 1 &&
+                    tiles.length >= 1 &&
                     leadingElementId !== undefined ? (
                       leadingElementDelineator !== undefined ? (
                         leadingElementDelineator
