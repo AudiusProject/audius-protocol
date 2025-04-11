@@ -41,13 +41,7 @@ import {
 import type { PurchaseContentError } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
 import { Formik, useField, useFormikContext } from 'formik'
-import {
-  Linking,
-  View,
-  ScrollView,
-  TouchableOpacity,
-  Platform
-} from 'react-native'
+import { Linking, View, ScrollView, TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
