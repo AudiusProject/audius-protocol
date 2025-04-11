@@ -8,6 +8,7 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import RemixesPageProvider from './RemixesPageProvider'
 import NewRemixesPageDesktopContent from './components/desktop/NewRemixesPage'
 import RemixesPageDesktopContent from './components/desktop/RemixesPage'
+import NewRemixesPageMobileContent from './components/mobile/NewRemixesPage'
 import RemixesPageMobileContent from './components/mobile/RemixesPage'
 
 type RemixesPageProps = {
@@ -23,7 +24,13 @@ const RemixesPage = ({ containerRef }: RemixesPageProps) => {
   let content = isMobile ? RemixesPageMobileContent : RemixesPageDesktopContent
 
   if (isRemixContestEnabled) {
+<<<<<<< Updated upstream
     content = isMobile ? RemixesPageMobileContent : NewRemixesPageDesktopContent
+=======
+    content = isMobile
+      ? NewRemixesPageMobileContent
+      : NewRemixesPageDesktopContent
+>>>>>>> Stashed changes
   }
   return (
     <RemixesPageProvider containerRef={containerRef}>
