@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { useTrackByParams, useUser } from '@audius/common/api'
 import { useProxySelector } from '@audius/common/hooks'
@@ -9,6 +9,7 @@ import {
   trackPageSelectors,
   reachabilitySelectors
 } from '@audius/common/store'
+import type { FlatList } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { IconArrowRight, Button, Text, Flex } from '@audius/harmony-native'
@@ -45,6 +46,7 @@ export const TrackScreen = () => {
   const { params } = useRoute<'Track'>()
   const dispatch = useDispatch()
   const isReachable = useSelector(getIsReachable)
+  const scrollViewRef = useRef<FlatList>(null)
 
   const { searchTrack, ...restParams } = params ?? {}
   const { data: fetchedTrack } = useTrackByParams(restParams)
@@ -115,7 +117,7 @@ export const TrackScreen = () => {
   return (
     <Screen url={permalink}>
       <ScreenContent isOfflineCapable>
-        <VirtualizedScrollView>
+        <VirtualizedScrollView ref={scrollViewRef}>
           <Flex p='l' gap='2xl'>
             {/* Track Details */}
             <ScreenPrimaryContent skeleton={<TrackScreenSkeleton />}>
@@ -124,6 +126,7 @@ export const TrackScreen = () => {
                 user={user}
                 uid={lineup?.entries?.[0]?.uid}
                 isLineupLoading={!lineup?.entries?.[0]}
+                scrollViewRef={scrollViewRef}
               />
             </ScreenPrimaryContent>
 
