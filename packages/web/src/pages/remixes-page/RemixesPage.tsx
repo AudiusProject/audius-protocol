@@ -24,13 +24,9 @@ const RemixesPage = ({ containerRef }: RemixesPageProps) => {
   let content = isMobile ? RemixesPageMobileContent : RemixesPageDesktopContent
 
   if (isRemixContestEnabled) {
-<<<<<<< Updated upstream
-    content = isMobile ? RemixesPageMobileContent : NewRemixesPageDesktopContent
-=======
     content = isMobile
       ? NewRemixesPageMobileContent
       : NewRemixesPageDesktopContent
->>>>>>> Stashed changes
   }
   return (
     <RemixesPageProvider containerRef={containerRef}>
