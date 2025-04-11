@@ -366,28 +366,28 @@ def populate_user_metadata(
             user_id, {}
         ).get(response_name_constants.supporting_count, 0)
         # current user specific
-        user[response_name_constants.does_current_user_follow] = (
-            current_user_followed_user_ids.get(user_id, False)
-        )
-        user[response_name_constants.does_follow_current_user] = (
-            queried_user_follows_current_user_dict.get(user_id, False)
-        )
-        user[response_name_constants.does_current_user_subscribe] = (
-            current_user_subscribed_user_ids.get(user_id, False)
-        )
+        user[
+            response_name_constants.does_current_user_follow
+        ] = current_user_followed_user_ids.get(user_id, False)
+        user[
+            response_name_constants.does_follow_current_user
+        ] = queried_user_follows_current_user_dict.get(user_id, False)
+        user[
+            response_name_constants.does_current_user_subscribe
+        ] = current_user_subscribed_user_ids.get(user_id, False)
 
-        user[response_name_constants.current_user_followee_follow_count] = (
-            current_user_followee_follow_count_dict.get(user_id, 0)
-        )
+        user[
+            response_name_constants.current_user_followee_follow_count
+        ] = current_user_followee_follow_count_dict.get(user_id, 0)
         user[response_name_constants.balance] = user_balance.get(
             "owner_wallet_balance", "0"
         )
         user[response_name_constants.total_balance] = user_balance.get(
             "total_balance", "0"
         )
-        user[response_name_constants.total_audio_balance] = (
-            helpers.format_total_audio_balance(user_balance.get("total_balance", "0"))
-        )
+        user[
+            response_name_constants.total_audio_balance
+        ] = helpers.format_total_audio_balance(user_balance.get("total_balance", "0"))
         user[response_name_constants.associated_wallets_balance] = user_balance.get(
             "associated_wallets_balance", "0"
         )
@@ -601,18 +601,18 @@ def populate_track_metadata(
             track[response_name_constants.play_count] = play_count_dict.get(track_id, 0)
         # current user specific
         track[response_name_constants.comment_count] = comment_counts.get(track_id, 0)
-        track[response_name_constants.followee_reposts] = (
-            followee_track_repost_dict.get(track_id, [])
-        )
+        track[
+            response_name_constants.followee_reposts
+        ] = followee_track_repost_dict.get(track_id, [])
         track[response_name_constants.followee_saves] = followee_track_save_dict.get(
             track_id, []
         )
-        track[response_name_constants.has_current_user_reposted] = (
-            user_reposted_track_dict.get(track_id, False)
-        )
-        track[response_name_constants.has_current_user_saved] = (
-            user_saved_track_dict.get(track["track_id"], False)
-        )
+        track[
+            response_name_constants.has_current_user_reposted
+        ] = user_reposted_track_dict.get(track_id, False)
+        track[
+            response_name_constants.has_current_user_saved
+        ] = user_saved_track_dict.get(track["track_id"], False)
 
         # Populate the remix_of tracks w/ the parent track's user and if that user saved/reposted the child
         if (
@@ -774,19 +774,19 @@ def _populate_gated_content_metadata(
                     "download": True,
                 }
                 if entity.get("track_id"):
-                    entity[response_name_constants.stream] = (
-                        get_stream_url_with_mirrors(
-                            entity, current_user_id, is_authorized_as_user=False
-                        )
+                    entity[
+                        response_name_constants.stream
+                    ] = get_stream_url_with_mirrors(
+                        entity, current_user_id, is_authorized_as_user=False
                     )
-                    entity[response_name_constants.download] = (
-                        get_download_url_with_mirrors(
-                            entity, current_user_id, is_authorized_as_user=False
-                        )
+                    entity[
+                        response_name_constants.download
+                    ] = get_download_url_with_mirrors(
+                        entity, current_user_id, is_authorized_as_user=False
                     )
-                    entity[response_name_constants.preview] = (
-                        get_preview_url_with_mirrors(entity, current_user_id)
-                    )
+                    entity[
+                        response_name_constants.preview
+                    ] = get_preview_url_with_mirrors(entity, current_user_id)
             elif stream_conditions:
                 entity[response_name_constants.access] = {
                     "stream": False,
@@ -801,14 +801,14 @@ def _populate_gated_content_metadata(
                     "download": False,
                 }
                 if entity.get("track_id"):
-                    entity[response_name_constants.stream] = (
-                        get_stream_url_with_mirrors(
-                            entity, current_user_id, is_authorized_as_user=False
-                        )
+                    entity[
+                        response_name_constants.stream
+                    ] = get_stream_url_with_mirrors(
+                        entity, current_user_id, is_authorized_as_user=False
                     )
-                    entity[response_name_constants.preview] = (
-                        get_preview_url_with_mirrors(entity, current_user_id)
-                    )
+                    entity[
+                        response_name_constants.preview
+                    ] = get_preview_url_with_mirrors(entity, current_user_id)
         return
 
     current_user_wallet = (
@@ -1199,18 +1199,18 @@ def populate_playlist_metadata(
         )
 
         # current user specific
-        playlist[response_name_constants.followee_reposts] = (
-            followee_playlist_repost_dict.get(playlist_id, [])
-        )
-        playlist[response_name_constants.followee_saves] = (
-            followee_playlist_save_dict.get(playlist_id, [])
-        )
-        playlist[response_name_constants.has_current_user_reposted] = (
-            user_reposted_playlist_dict.get(playlist_id, False)
-        )
-        playlist[response_name_constants.has_current_user_saved] = (
-            user_saved_playlist_dict.get(playlist_id, False)
-        )
+        playlist[
+            response_name_constants.followee_reposts
+        ] = followee_playlist_repost_dict.get(playlist_id, [])
+        playlist[
+            response_name_constants.followee_saves
+        ] = followee_playlist_save_dict.get(playlist_id, [])
+        playlist[
+            response_name_constants.has_current_user_reposted
+        ] = user_reposted_playlist_dict.get(playlist_id, False)
+        playlist[
+            response_name_constants.has_current_user_saved
+        ] = user_saved_playlist_dict.get(playlist_id, False)
 
     return playlists
 
