@@ -22,6 +22,7 @@ import { FlushPageContainer } from 'components/page/FlushPageContainer'
 import Page from 'components/page/Page'
 import { EmptyStatBanner } from 'components/stat-banner/StatBanner'
 import { GiantTrackTile } from 'components/track/GiantTrackTile'
+import { RemixContestCountdown } from 'components/track/RemixContestCountdown'
 import { TrackTileSize } from 'components/track/types'
 import { getTrackDefaults, emptyStringGuard } from 'pages/track-page/utils'
 
@@ -238,6 +239,7 @@ const TrackPage = ({
       noIndex={defaults.isUnlisted}
     >
       <Box w='100%' css={{ position: 'absolute', height: '376px' }}>
+        <RemixContestCountdown trackId={heroTrack?.track_id ?? 0} />
         <CoverPhoto loading={loading} userId={user ? user.user_id : null} />
         <EmptyStatBanner />
         <EmptyNavBanner />
