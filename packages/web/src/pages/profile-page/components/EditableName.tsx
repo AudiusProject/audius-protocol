@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react'
 import { IconButton, IconPencil } from '@audius/harmony'
 import cn from 'classnames'
 
-import UserBadges from 'components/user-badges/UserBadges'
+import { TieredUserBadge } from 'components/user-badges'
 
 import styles from './EditableName.module.css'
 
@@ -61,11 +61,13 @@ export const EditableName = (props: EditableNameProps) => {
       ) : (
         <>
           <h1>{name}</h1>
-          <UserBadges
+          <TieredUserBadge
             userId={userId}
             size='l'
             className={styles.iconVerified}
             isVerifiedOverride={verified}
+            anchorOrigin={{ horizontal: 'center', vertical: 'top' }}
+            transformOrigin={{ horizontal: 'center', vertical: 'bottom' }}
           />
         </>
       )}

@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { MountPlacement } from 'components/types'
-import UserBadges from 'components/user-badges/UserBadges'
+import { TieredUserBadge } from 'components/user-badges'
 
 import { TextLink, TextLinkProps } from './TextLink'
 
@@ -49,6 +49,15 @@ export const UserLink = (props: UserLinkProps) => {
     return null
   }
 
+  // Prepare the user badges using the new TieredUserBadge component
+  const badges = noBadges ? null : (
+    <TieredUserBadge
+      userId={userId}
+      size={badgeSize}
+      css={{ marginTop: spacing['2xs'] }}
+    />
+  )
+
   const textLink = (
     <TextLink
       to={url}
@@ -61,13 +70,7 @@ export const UserLink = (props: UserLinkProps) => {
       {...other}
     >
       <Text ellipses>{name}</Text>
-      {noBadges ? null : (
-        <UserBadges
-          userId={userId}
-          css={{ marginTop: spacing['2xs'] }}
-          size={badgeSize}
-        />
-      )}
+      {badges}
       {children}
     </TextLink>
   )
