@@ -4,7 +4,9 @@ import {
   useCurrentUserId,
   useCreateEvent,
   useRemixContest,
-  useUpdateEvent
+  useUpdateEvent,
+  useDeleteEvent,
+  useRemixes
 } from '@audius/common/api'
 import { useHostRemixContestModal } from '@audius/common/store'
 import { EventEntityTypeEnum, EventEventTypeEnum } from '@audius/sdk'
@@ -34,7 +36,8 @@ const messages = {
   timeLabel: 'Time',
   startContestError: 'Contest end date must be in the future',
   startContest: 'Start Contest',
-  save: 'Save'
+  save: 'Save',
+  turnOff: 'Turn Off Contest'
 }
 
 const mergeDateTime = (day: string, time: string) => {
@@ -53,11 +56,18 @@ const mergeDateTime = (day: string, time: string) => {
 export const HostRemixContestDrawer = () => {
   const { data, onClose } = useHostRemixContestModal()
   const { mutate: createEvent } = useCreateEvent()
+  const { mutate: deleteEvent } = useDeleteEvent()
   const { mutate: updateEvent } = useUpdateEvent()
   const { data: userId } = useCurrentUserId()
   const { trackId } = data
   const { data: remixContest } = useRemixContest(trackId)
+  const { data: remixes, isLoading: remixesLoading } = useRemixes({
+    trackId,
+    isContestEntry: true
+  })
   const isEdit = !!remixContest
+  const hasContestEntries = remixesLoading || remixes?.length
+  const displayTurnOffButton = !hasContestEntries && isEdit
 
   const [endDate, setEndDate] = useState(
     remixContest ? dayjs(remixContest.endDate) : null
@@ -125,6 +135,12 @@ export const HostRemixContestDrawer = () => {
     createEvent
   ])
 
+  const handleDeleteEvent = useCallback(() => {
+    if (!remixContest || !userId) return
+    deleteEvent({ eventId: remixContest.eventId, userId })
+    onClose()
+  }, [remixContest, userId, deleteEvent, onClose])
+
   return (
     <AppDrawer
       modalName={MODAL_NAME}
@@ -164,7 +180,7 @@ export const HostRemixContestDrawer = () => {
             </Hint>
           </Flex>
         </Flex>
-        <Flex direction='row' p='l' pb='3xl' borderTop='strong'>
+        <Flex direction='column' gap='l' p='l' pb='3xl' borderTop='strong'>
           <Button
             disabled={!endDate || endDateError}
             variant='primary'
@@ -173,6 +189,11 @@ export const HostRemixContestDrawer = () => {
           >
             {isEdit ? messages.save : messages.startContest}
           </Button>
+          {displayTurnOffButton ? (
+            <Button variant='secondary' fullWidth onPress={handleDeleteEvent}>
+              {messages.turnOff}
+            </Button>
+          ) : null}
         </Flex>
       </Flex>
     </AppDrawer>
