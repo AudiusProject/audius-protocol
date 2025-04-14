@@ -6,10 +6,11 @@ import { DownloadQuality } from '~/models'
 import { ID } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
+import { QueryKey, SelectableQueryOptions } from './types'
 
 type FileSizeResponse = {
   [trackId: ID]: {
-    [k in DownloadQuality]?: number | null
+    [k in DownloadQuality]?: number
   }
 }
 
@@ -18,17 +19,22 @@ type UseFileSizesProps = {
   downloadQuality: DownloadQuality
 }
 
+export const getFileSizesQueryKey = (args: {
+  trackIds: ID[]
+  downloadQuality: DownloadQuality
+}) => [QUERY_KEYS.fileSizes, args] as unknown as QueryKey<FileSizeResponse>
+
 /**
  * Returns file sizes for given track ids and download quality (mp3 vs lossless)
  */
-export const useFileSizes = ({
-  trackIds,
-  downloadQuality
-}: UseFileSizesProps) => {
+export const useFileSizes = (
+  { trackIds, downloadQuality }: UseFileSizesProps,
+  options?: SelectableQueryOptions<FileSizeResponse>
+) => {
   const { audiusSdk } = useAudiusQueryContext()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.FILE_SIZES, { trackIds, downloadQuality }],
+    queryKey: getFileSizesQueryKey({ trackIds, downloadQuality }),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const res = await sdk.tracks.inspectTracks({
@@ -40,13 +46,15 @@ export const useFileSizes = ({
         (acc, blobInfo: BlobInfo, index: number) => {
           const trackId = trackIds[index]
           acc[trackId] = {
-            [downloadQuality]: blobInfo?.size ?? null
+            [downloadQuality]: blobInfo?.size
           }
           return acc
         },
         {}
       )
     },
-    enabled: trackIds.length > 0
+    ...options,
+    enabled:
+      options?.enabled !== false && trackIds.length > 0 && !!downloadQuality
   })
 }

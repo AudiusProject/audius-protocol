@@ -85,5 +85,5 @@ export const QUERY_KEYS = {
   walletCollectibles: 'walletCollectibles',
   events: 'events',
   eventsByEntityId: 'eventsByEntityId',
-  FILE_SIZES: 'FILE_SIZES'
+  fileSizes: 'fileSizes'
 } as const

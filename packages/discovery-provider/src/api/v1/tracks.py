@@ -394,7 +394,7 @@ def get_stream_url_from_content_node(
 inspect_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 inspect_parser.add_argument(
     "original",
-    description="""Optional - if set to true inspects the original quality file""",
+    description="""Optional - if set to true inspects the original file quality""",
     type=inputs.boolean,
     required=False,
     default=False,
@@ -460,7 +460,7 @@ bulk_inspect_parser.add_argument(
 )
 bulk_inspect_parser.add_argument(
     "original",
-    description="""Optional - if set to true inspects the original quality file""",
+    description="""Optional - if set to true inspects the original file quality""",
     type=inputs.boolean,
     required=False,
     default=False,
