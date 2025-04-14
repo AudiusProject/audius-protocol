@@ -156,7 +156,7 @@ export const ConnectedWalletsModal = () => {
           <Flex alignItems='center' gap='s'>
             <IconWallet fill={iconFill} />
             <Text color='heading' variant='heading'>
-              Connect Wallet
+              {messages.title}
             </Text>
           </Flex>
           <Text textAlign='center' size='l'>
