@@ -1,9 +1,7 @@
 import { useCallback, useState } from 'react'
 
-import { useTrack } from '@audius/common/api'
+import { useFileSizes, useStems, useTrack } from '@audius/common/api'
 import {
-  useCurrentStems,
-  useFileSizes,
   useDownloadableContentAccess,
   useUploadingStems,
   useFeatureFlag
@@ -43,7 +41,6 @@ import {
   useRequiresAccountCallback,
   useRequiresAccountOnClick
 } from 'hooks/useRequiresAccount'
-import { audiusSdk } from 'services/audius-sdk'
 
 import { DownloadRow } from './DownloadRow'
 
@@ -81,8 +78,8 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
   })
   const { is_downloadable, access } = partialTrack ?? {}
 
-  const { stemTracks } = useCurrentStems({ trackId })
-  const { uploadingTracks: uploadingStems } = useUploadingStems({ trackId })
+  const { data: stemTracks = [] } = useStems(trackId)
+  const { uploadingTracks: uploadingStems } = useUploadingStems(trackId)
   const {
     price,
     shouldDisplayPremiumDownloadLocked,
@@ -107,9 +104,8 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
 
   const { onOpen: openDownloadTrackArchiveModal } =
     useDownloadTrackArchiveModal()
-  const fileSizes = useFileSizes({
-    audiusSdk,
-    trackIds: [trackId, ...stemTracks.map((s) => s.id)],
+  const { data: fileSizes } = useFileSizes({
+    trackIds: [trackId, ...stemTracks.map((s) => s.track_id)],
     downloadQuality
   })
   const { onOpen: openWaitForDownloadModal } = useWaitForDownloadModal()
@@ -266,17 +262,17 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 onDownload={handleDownload}
                 index={ORIGINAL_TRACK_INDEX}
                 hideDownload={shouldHideDownload}
-                size={fileSizes[trackId]?.[downloadQuality]}
+                size={fileSizes?.[trackId]?.[downloadQuality]}
               />
             ) : null}
-            {stemTracks.map((s, i) => (
+            {stemTracks.map((stemTrack, i) => (
               <DownloadRow
-                trackId={s.id}
+                trackId={stemTrack.track_id}
                 parentTrackId={trackId}
-                key={s.id}
+                key={stemTrack.track_id}
                 onDownload={handleDownload}
                 hideDownload={shouldHideDownload}
-                size={fileSizes[s.id]?.[downloadQuality]}
+                size={fileSizes?.[stemTrack.track_id]?.[downloadQuality]}
                 index={
                   i +
                   (is_downloadable
