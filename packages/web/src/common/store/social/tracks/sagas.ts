@@ -66,7 +66,6 @@ export function* repostTrackAsync(
   if (!user) return
 
   const track = yield* queryTrack(action.trackId)
-  const trackUser = yield* queryUser(track?.owner_id)
   if (!track) return
 
   if (track.owner_id === userId) {
