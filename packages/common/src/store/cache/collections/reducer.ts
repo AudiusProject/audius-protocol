@@ -7,6 +7,8 @@ const initialState = {
   permalinks: {}
 }
 
+const actionsMap = {}
+
 // TODO: delete this reducer entirely
 const reducer = (state = initialState, action: any, kind: Kind) => {
   const matchingReduceFunction = actionsMap[action.type]

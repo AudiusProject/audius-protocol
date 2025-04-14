@@ -252,7 +252,8 @@ export const reducers = (storage: Storage, history?: History) => ({
 
   upload,
   confirmer,
-  downloads
+  downloads,
+  queryClient: (state: QueryClient | null = null) => state
 })
 
 export type CommonState = {

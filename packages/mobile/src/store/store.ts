@@ -22,6 +22,7 @@ import { persistStore } from 'redux-persist'
 import createSagaMiddleware from 'redux-saga'
 import thunk from 'redux-thunk'
 
+import { queryClient } from 'app/services/query-client'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { reportToSentry } from 'app/utils/reportToSentry'
 
@@ -41,7 +42,6 @@ import type { ShareToStoryProgressState } from './share-to-story-progress/slice'
 import { storeContext } from './storeContext'
 import type { WalletConnectState } from './wallet-connect/slice'
 import walletConnect from './wallet-connect/slice'
-
 const errorRestartTimeout = 2000
 
 const { toast } = toastActions
@@ -145,6 +145,9 @@ const enhancer = __DEV__ ? getDevEnhancer() : getProdEnhancer()
 
 export const store = createStore(
   rootReducer,
+  {
+    queryClient
+  },
   enhancer
 ) as unknown as Store<AppState> // need to explicitly type the store for offline-mode store reference
 storeContext.dispatch = store.dispatch
