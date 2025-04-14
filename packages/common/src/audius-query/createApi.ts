@@ -238,7 +238,6 @@ const useQueryState = <Args, Data>(
       if (idArgKey || permalinkArgKey || idListArgKey) {
         const fetchArgsRecord = fetchArgs as Record<string, any>
         if (idArgKey && fetchArgsRecord[idArgKey]) {
-          // TODO: investigate this block, need to figure out how to use queryClient instead here
           const idAsNumber =
             typeof fetchArgsRecord[idArgKey] === 'number'
               ? fetchArgsRecord[idArgKey]

@@ -1,23 +1,9 @@
-import { mergeWith, add } from 'lodash'
-
 import { ID, UID } from '~/models/Identifiers'
 import { Status } from '~/models/Status'
 
 import { Kind } from '../../models/Kind'
 
-import {
-  ADD_SUCCEEDED,
-  UPDATE,
-  SET_STATUS,
-  SUBSCRIBE,
-  INCREMENT,
-  AddSuccededAction,
-  ADD_ENTRIES,
-  AddEntriesAction,
-  SetCacheConfigAction,
-  SET_CACHE_CONFIG
-} from './actions'
-import { Entry, Metadata } from './types'
+import { Metadata } from './types'
 
 type CacheState = {
   entries: Record<ID, { _timestamp: number; metadata: Metadata }>
@@ -44,20 +30,6 @@ export const initialCacheState: CacheState = {
   // uid => id
   uids: {},
   entryTTL: Infinity
-}
-
-// Wraps a metadata into a cache entry
-const wrapEntry = (metadata: any, _timestamp?: number) => ({
-  metadata,
-  _timestamp: _timestamp ?? Date.now()
-})
-
-// Unwraps a cache entry into its public metadata
-const unwrapEntry = (entry: { metadata: any }) => {
-  if (entry && entry.metadata) {
-    return entry.metadata
-  }
-  return null
 }
 
 // These are fields we never want to merge -
@@ -131,129 +103,6 @@ export const mergeCustomizer = (objValue: any, srcValue: any, key: string) => {
     return { ...srcValue, track_ids: trackIds }
   }
 }
-
-const addEntries = (state: CacheState, entries: Entry[], replace?: boolean) => {
-  const { entryTTL } = state
-  const newEntries = { ...state.entries }
-  const newUids = { ...state.uids }
-  const now = Date.now()
-
-  for (let i = 0; i < entries.length; i++) {
-    const entity = entries[i]
-    const { metadata: existing, _timestamp } = newEntries[entity.id] ?? {}
-
-    // Don't add if block number is < existing
-    if (
-      existing &&
-      existing.blocknumber &&
-      entity.metadata.blocknumber &&
-      existing.blocknumber > entity.metadata.blocknumber
-    ) {
-      // do nothing
-    } else if (replace) {
-      newEntries[entity.id] = wrapEntry(entity.metadata)
-    } else if (existing && !existing.local && _timestamp + entryTTL > now) {
-      // do nothing
-    } else if (existing) {
-      delete existing.local
-      const newMetadata = mergeWith(
-        {},
-        existing,
-        entity.metadata,
-        mergeCustomizer
-      )
-      newEntries[entity.id] = wrapEntry(newMetadata, now)
-    } else {
-      newEntries[entity.id] = {
-        _timestamp: entity.timestamp ?? now,
-        metadata: entity.metadata
-      }
-      if (entity.uid) {
-        console.log('adding uid: ', entity.uid, entity.id)
-        console.log({ entries })
-        newUids[entity.uid] = entity.id
-      }
-    }
-  }
-
-  return {
-    ...state,
-    entries: newEntries,
-    uids: newUids
-  }
-}
-
-const actionsMap = {
-  // [SET_CACHE_CONFIG](state: CacheState, action: SetCacheConfigAction) {
-  //   const { entryTTL } = action
-  //   return {
-  //     ...state,
-  //     entryTTL
-  //   }
-  // },
-  // [ADD_SUCCEEDED](state: CacheState, action: AddSuccededAction) {
-  //   const { entries, replace } = action
-  //   return addEntries(state, entries, replace)
-  // },
-  // [ADD_ENTRIES](state: CacheState, action: AddEntriesAction, kind: Kind) {
-  //   const { entriesByKind, replace } = action
-  //   const matchingEntries = entriesByKind[kind] ?? {}
-  //   const cacheableEntries: Entry[] = Object.entries(matchingEntries).map(
-  //     ([id, entry]) => ({
-  //       id: parseInt(id, 10),
-  //       metadata: entry
-  //     })
-  //   )
-  //   return addEntries(state, cacheableEntries, replace)
-  // },
-  // [UPDATE](state: CacheState, action: { entries: any[] }) {
-  //   const newEntries = { ...state.entries }
-  //   action.entries.forEach((e: { id: string | number; metadata: any }) => {
-  //     const existing = { ...unwrapEntry(state.entries[e.id]) }
-  //     const newEntry = mergeWith({}, existing, e.metadata, mergeCustomizer)
-  //     newEntries[e.id] = wrapEntry(newEntry)
-  //   })
-  //   return {
-  //     ...state,
-  //     entries: newEntries
-  //   }
-  // },
-  // [INCREMENT](state: any[], action: { entries: any[] }) {
-  //   const newEntries = { ...state.entries }
-  //   action.entries.forEach((e: { id: string | number; metadata: any }) => {
-  //     newEntries[e.id] = wrapEntry(
-  //       mergeWith({}, { ...unwrapEntry(state.entries[e.id]) }, e.metadata, add)
-  //     )
-  //   })
-  //   return {
-  //     ...state,
-  //     entries: newEntries
-  //   }
-  // },
-  // [SET_STATUS](state: { statuses: any }, action: { statuses: any[] }) {
-  //   const newStatuses = { ...state.statuses }
-  //   action.statuses.forEach((s: { id: string | number; status: any }) => {
-  //     newStatuses[s.id] = s.status
-  //   })
-  //   return {
-  //     ...state,
-  //     statuses: newStatuses
-  //   }
-  // },
-  // [SUBSCRIBE](state: CacheState, action: { id: any; subscribers: any[] }) {
-  //   const newUids = { ...state.uids }
-  //   action.subscribers.forEach((s: { id: any; uid: any }) => {
-  //     const { id, uid } = s
-  //     // console.log('subscribing: ', uid, id)
-  //     newUids[uid] = id
-  //   })
-  //   return {
-  //     ...state,
-  //     uids: newUids
-  //   }
-  // }
-}
-
 export const asCache =
   (
     reducer: {
@@ -283,48 +132,5 @@ export const asCache =
       return state
     }
 
-    let updatedState = state
-
-    const matchingReduceFunction = actionsMap[action.type]
-    if (matchingReduceFunction) {
-      updatedState = matchingReduceFunction(state, action, kind)
-    }
-
-    return reducer(updatedState, action, kind)
+    return reducer(state, action, kind)
   }
-
-// export const asCache =
-//   (
-//     reducer: {
-//       (
-//         state: CacheState | undefined,
-//         action: any,
-//         kind: Kind
-//       ): {
-//         // id => entry
-//         entries: {}
-//         // id => status
-//         statuses: {}
-//         // uid => id
-//         uids: {}
-//       }
-//       (arg0: any, arg1: any): any
-//     },
-//     kind: Kind
-//   ) =>
-//   (state: any, action: { kind: Kind | Kind[]; type: string | number }) => {
-//     switch (action.type) {
-//       case ADD_ENTRIES:
-//         if (action.entriesByKind[Kind.TRACKS]) {
-//           console.log({ action })
-//         }
-//         return {
-//           ...initialCacheState,
-//           ...state
-//         }
-//     }
-//     return {
-//       ...initialCacheState,
-//       ...state
-//     }
-//   }
