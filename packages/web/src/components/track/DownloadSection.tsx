@@ -212,31 +212,51 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                   {messages.unlockAll(formattedPrice)}
                 </Button>
               ) : null}
-              {shouldDisplayPremiumDownloadUnlocked ? (
-                <Flex gap='s'>
-                  <Flex
-                    borderRadius='3xl'
-                    ph='s'
-                    css={{
-                      backgroundColor: 'var(--harmony-light-green)',
-                      paddingTop: '1px',
-                      paddingBottom: '1px'
-                    }}
-                  >
-                    <IconLockUnlocked color='white' size='xs' />
-                  </Flex>
-                  <Text
-                    variant='label'
-                    size='l'
-                    strength='strong'
-                    color='subdued'
-                  >
-                    {messages.purchased}
-                  </Text>
-                </Flex>
-              ) : null}
             </Flex>
           </Flex>
+          <Flex
+            direction='row'
+            alignItems='center'
+            justifyContent='flex-end'
+            gap='m'
+            role='row'
+          >
+            {shouldHideDownload || !isDownloadAllTrackFilesEnabled ? null : (
+              <Button
+                variant='secondary'
+                size='small'
+                iconLeft={IconReceive}
+                onClick={handleDownloadAll}
+              >
+                {messages.downloadAll}
+              </Button>
+            )}
+
+            {shouldDisplayPremiumDownloadUnlocked ? (
+              <Flex gap='s'>
+                <Flex
+                  borderRadius='3xl'
+                  ph='s'
+                  css={{
+                    backgroundColor: 'var(--harmony-light-green)',
+                    paddingTop: '1px',
+                    paddingBottom: '1px'
+                  }}
+                >
+                  <IconLockUnlocked color='white' size='xs' />
+                </Flex>
+                <Text
+                  variant='label'
+                  size='l'
+                  strength='strong'
+                  color='subdued'
+                >
+                  {messages.purchased}
+                </Text>
+              </Flex>
+            ) : null}
+          </Flex>
+
           <IconCaretDown
             css={{
               transition: 'transform var(--harmony-expressive)',
@@ -299,27 +319,6 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 isLoading
               />
             ))}
-            {shouldHideDownload || !isDownloadAllTrackFilesEnabled ? null : (
-              <Flex
-                p='l'
-                borderTop='default'
-                direction='row'
-                alignItems='center'
-                justifyContent='center'
-                w='100%'
-                gap='xs'
-                role='row'
-              >
-                <Button
-                  variant='secondary'
-                  size='small'
-                  iconLeft={IconReceive}
-                  onClick={handleDownloadAll}
-                >
-                  {messages.downloadAll}
-                </Button>
-              </Flex>
-            )}
           </Box>
         </Expandable>
       </Flex>
