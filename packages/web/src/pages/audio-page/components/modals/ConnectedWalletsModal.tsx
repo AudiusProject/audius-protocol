@@ -16,8 +16,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalTitle,
-  Text,
-  useTheme
+  Text
 } from '@audius/harmony'
 
 import Drawer from 'components/drawer/Drawer'
@@ -140,8 +139,6 @@ export const ConnectedWalletsModal = () => {
 
   // Not supported on mobile web
   const isMobile = useIsMobile()
-  const theme = useTheme()
-  const iconFill = theme.color.text.default
   if (isMobile) {
     return (
       <Drawer isOpen={isOpen} onClose={onClose} onClosed={onClosed}>
@@ -154,7 +151,7 @@ export const ConnectedWalletsModal = () => {
           pb='3xl'
         >
           <Flex alignItems='center' gap='s'>
-            <IconWallet fill={iconFill} />
+            <IconWallet color='default' />
             <Text color='heading' variant='heading'>
               {messages.title}
             </Text>
