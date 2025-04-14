@@ -92,6 +92,7 @@ import TrendingPage from 'pages/trending-page/TrendingPage'
 import TrendingPlaylistsPage from 'pages/trending-playlists/TrendingPlaylistPage'
 import TrendingUndergroundPage from 'pages/trending-underground/TrendingUndergroundPage'
 import Visualizer from 'pages/visualizer/Visualizer'
+import { WalletPage } from 'pages/wallet-page'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { initializeSentry } from 'services/sentry'
 import { SsrContext } from 'ssr/SsrContext'
@@ -190,7 +191,8 @@ const {
   SEARCH_BASE_ROUTE,
   EDIT_PLAYLIST_PAGE,
   EDIT_ALBUM_PAGE,
-  AIRDROP_PAGE
+  AIRDROP_PAGE,
+  WALLET_PAGE
 } = route
 
 const {
@@ -786,6 +788,12 @@ class WebPlayer extends Component {
                   path={AUDIO_PAGE}
                   isMobile={isMobile}
                   component={AudioPage}
+                />
+                <Route
+                  exact
+                  path={WALLET_PAGE}
+                  isMobile={isMobile}
+                  component={WalletPage}
                 />
                 <Route
                   exact

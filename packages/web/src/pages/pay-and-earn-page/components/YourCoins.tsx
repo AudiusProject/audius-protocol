@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { walletSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -21,24 +21,59 @@ const { getAccountTotalBalance } = walletSelectors
 const messages = {
   title: 'Your Coins',
   buySell: 'Buy/Sell',
-  // TODO: Farid [PE-5901] get the current price of AUDIO
-  dollarValue: '$0.00 ($0.082)',
   loading: '-- $AUDIO'
 }
+
+// AUDIO token address from Jupiter
+const AUDIO_TOKEN_ID = '9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM'
 
 export const YourCoins = () => {
   const dispatch = useDispatch()
   const totalBalance = useSelector(getAccountTotalBalance)
   const { color } = useTheme()
+  const [audioPrice, setAudioPrice] = useState<string | null>(null)
+  const [isLoadingPrice, setIsLoadingPrice] = useState(false)
 
   // Format the balance for display using toShorthand
   const audioAmount = totalBalance
     ? `${AUDIO(totalBalance).toShorthand()} $AUDIO`
     : messages.loading
 
+  useEffect(() => {
+    const fetchAudioPrice = async () => {
+      try {
+        setIsLoadingPrice(true)
+        const response = await fetch(
+          `https://lite-api.jup.ag/price/v2?ids=${AUDIO_TOKEN_ID}`
+        )
+        const data = await response.json()
+        if (data?.data?.[AUDIO_TOKEN_ID]?.price) {
+          setAudioPrice(data.data[AUDIO_TOKEN_ID].price)
+        }
+      } catch (error) {
+        console.error('Failed to fetch AUDIO price:', error)
+      } finally {
+        setIsLoadingPrice(false)
+      }
+    }
+
+    fetchAudioPrice()
+  }, [])
+
   const handleTokenClick = useCallback(() => {
     dispatch(push(AUDIO_PAGE))
   }, [dispatch])
+
+  // Calculate dollar value of user's AUDIO balance
+  const dollarValue = (() => {
+    if (!audioPrice || !totalBalance) return '$0.00'
+
+    const priceNumber = parseFloat(audioPrice)
+    const balanceValue = parseFloat(AUDIO(totalBalance).toString())
+    const totalValue = priceNumber * balanceValue
+
+    return `$${totalValue.toFixed(2)} ($${parseFloat(audioPrice).toFixed(4)})`
+  })()
 
   return (
     <Paper
@@ -67,7 +102,7 @@ export const YourCoins = () => {
               {audioAmount}
             </Text>
             <Text variant='body' size='m' color='subdued'>
-              {messages.dollarValue}
+              {isLoadingPrice ? '$0.00 (loading...)' : dollarValue}
             </Text>
           </Flex>
         </Flex>

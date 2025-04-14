@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import { useIsManagedAccount, useUSDCBalance } from '@audius/common/hooks'
 import { Name, Status } from '@audius/common/models'
+import { TRANSACTION_HISTORY_PAGE } from '@audius/common/src/utils/route'
 import {
   WithdrawUSDCModalPages,
   useWithdrawUSDCModal,
@@ -12,17 +13,19 @@ import {
   Button,
   Flex,
   IconInfo,
-  IconLogoCircle,
   IconLogoCircleUSDC,
   Paper,
   Text,
   TextLink
 } from '@audius/harmony'
 import BN from 'bn.js'
+import { useHistory } from 'react-router-dom'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { PayoutWalletDisplay } from 'components/payout-wallet-display'
+import Tooltip from 'components/tooltip/Tooltip'
 import { make, track } from 'services/analytics'
-
+import { zIndex } from 'utils/zIndex'
 const messages = {
   usdc: 'USDC',
   earn: 'Earn USDC by selling your music',
@@ -35,10 +38,13 @@ const messages = {
   cashBalance: 'Cash Balance',
   payoutWallet: 'Payout Wallet',
   builtInWallet: 'Built-In Wallet',
-  transactionHistory: 'Transaction History'
+  transactionHistory: 'Transaction History',
+  cashBalanceTooltip:
+    'Your cash balance is stored as USDC in your built-in wallet'
 }
 
 export const CashWallet = () => {
+  const history = useHistory()
   const isManagedAccount = useIsManagedAccount()
   const { onOpen: openWithdrawUSDCModal } = useWithdrawUSDCModal()
   const { onOpen: openAddFundsModal } = useAddFundsModal()
@@ -79,6 +85,10 @@ export const CashWallet = () => {
     setPayoutWalletModalOpen(true)
   }, [setPayoutWalletModalOpen])
 
+  const handleGoToTransactionHistory = useCallback(() => {
+    history.push(TRANSACTION_HISTORY_PAGE)
+  }, [history])
+
   return (
     <Paper direction='column' shadow='far' ph='xl' pv='l' borderRadius='l'>
       <Flex justifyContent='space-between' alignItems='flex-start' w='100%'>
@@ -90,7 +100,15 @@ export const CashWallet = () => {
               <Text variant='heading' size='s' color='subdued'>
                 {messages.cashBalance}
               </Text>
-              <IconInfo size='s' color='subdued' />
+              <Tooltip
+                text={messages.cashBalanceTooltip}
+                placement='top'
+                mount='page'
+                shouldWrapContent={false}
+                css={{ zIndex: zIndex.CASH_WALLET_TOOLTIP }}
+              >
+                <IconInfo size='s' color='subdued' />
+              </Tooltip>
             </Flex>
           </Flex>
 
@@ -109,26 +127,16 @@ export const CashWallet = () => {
               {messages.payoutWallet}
             </TextLink>
             {/* Wallet Display */}
-            <Flex
-              alignItems='center'
-              backgroundColor='surface1'
-              border='default'
-              borderRadius='circle'
-              pt='xs'
-              pl='xs'
-              pr='s'
-              gap='xs'
-            >
-              <IconLogoCircle size='l' />
-              <Text variant='body' size='m' strength='strong' ellipses>
-                {messages.builtInWallet}
-              </Text>
-            </Flex>
+            <PayoutWalletDisplay />
           </Flex>
         </Flex>
 
         {/* Right Side - Transaction History Link */}
-        <TextLink variant='visible' size='m'>
+        <TextLink
+          variant='visible'
+          size='m'
+          onClick={handleGoToTransactionHistory}
+        >
           {messages.transactionHistory}
         </TextLink>
       </Flex>
