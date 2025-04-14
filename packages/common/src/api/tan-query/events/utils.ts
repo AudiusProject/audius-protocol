@@ -1,4 +1,4 @@
-import { EventEntityTypeEnum } from '@audius/sdk'
+import { EventEntityTypeEnum, EventEventTypeEnum } from '@audius/sdk'
 import { InfiniteData } from '@tanstack/react-query'
 
 import { ID } from '~/models'
@@ -8,7 +8,9 @@ import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey } from '../types'
 
 export type EventsByEntityIdOptions = {
+  entityId: ID | null | undefined
   entityType?: EventEntityTypeEnum
+  eventType?: EventEventTypeEnum
   filterDeleted?: boolean
   offset?: number
   limit?: number
@@ -24,10 +26,5 @@ export const getEventListQueryKey = ({ pageSize }: { pageSize?: number }) => {
   >
 }
 
-export const getEventsByEntityIdQueryKey = (
-  entityId: ID | null | undefined,
-  options?: EventsByEntityIdOptions
-) =>
-  [QUERY_KEYS.eventsByEntityId, entityId, options] as unknown as QueryKey<
-    Event[]
-  >
+export const getEventsByEntityIdQueryKey = (args?: EventsByEntityIdOptions) =>
+  [QUERY_KEYS.eventsByEntityId, args] as unknown as QueryKey<Event[]>

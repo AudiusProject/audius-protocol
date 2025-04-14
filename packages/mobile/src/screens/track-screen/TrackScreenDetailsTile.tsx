@@ -49,7 +49,6 @@ import {
   useEarlyReleaseConfirmationModal
 } from '@audius/common/store'
 import { formatReleaseDate, Genre, removeNullable } from '@audius/common/utils'
-import { EventEntityTypeEnum } from '@audius/sdk'
 import dayjs from 'dayjs'
 import type { FlatList } from 'react-native'
 import { TouchableOpacity } from 'react-native'
@@ -241,10 +240,8 @@ export const TrackScreenDetailsTile = ({
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
   )
-  const { data: event } = useRemixContest(trackId, {
-    entityType: EventEntityTypeEnum.Track
-  })
-  const isRemixContest = isRemixContestEnabled && event
+  const { data: remixContest } = useRemixContest(trackId)
+  const isRemixContest = isRemixContestEnabled && remixContest
 
   const isPlayingPreview = isPreviewing && isPlaying
   const isPlayingFullAccess = isPlaying && !isPreviewing
@@ -527,7 +524,7 @@ export const TrackScreenDetailsTile = ({
             {messages.contestDeadline}
           </Text>
           <Text size='s' strength='strong'>
-            {messages.deadline(event?.endDate)}
+            {messages.deadline(remixContest?.endDate)}
           </Text>
         </Flex>
         {!isOwner ? (

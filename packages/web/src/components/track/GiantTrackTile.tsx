@@ -51,7 +51,6 @@ import IconCalendarMonth from '@audius/harmony/src/assets/icons/CalendarMonth.sv
 import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
 import IconTrending from '@audius/harmony/src/assets/icons/Trending.svg'
 import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
-import { EventEntityTypeEnum } from '@audius/sdk'
 import { useTheme } from '@emotion/react'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
@@ -229,10 +228,9 @@ export const GiantTrackTile = ({
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
   )
-  const { data: event, isLoading: isEventsLoading } = useRemixContest(trackId, {
-    entityType: EventEntityTypeEnum.Track
-  })
-  const isRemixContest = isRemixContestEnabled && !!event
+  const { data: remixContest, isLoading: isEventsLoading } =
+    useRemixContest(trackId)
+  const isRemixContest = isRemixContestEnabled && !!remixContest
 
   const isLongFormContent =
     genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
@@ -491,7 +489,7 @@ export const GiantTrackTile = ({
           <Text variant='label' color='accent'>
             {messages.contestDeadline}
           </Text>
-          <Text>{messages.deadline(event?.endDate)}</Text>
+          <Text>{messages.deadline(remixContest?.endDate)}</Text>
         </Flex>
         {!isOwner ? (
           <Button
@@ -505,7 +503,7 @@ export const GiantTrackTile = ({
         ) : null}
       </Flex>
     )
-  }, [isRemixContest, event?.endDate, isOwner, goToUploadWithRemix])
+  }, [isRemixContest, remixContest?.endDate, isOwner, goToUploadWithRemix])
 
   const isLoading = loading || artworkLoading || isEventsLoading
 

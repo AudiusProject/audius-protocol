@@ -56,9 +56,7 @@ export const useCreateEvent = () => {
       let prevState: Event[] = []
       // Add event to the list of events for the entity
       queryClient.setQueryData(
-        getEventsByEntityIdQueryKey(entityId, {
-          entityType
-        }),
+        getEventsByEntityIdQueryKey({ entityId, entityType }),
         (prevData) => {
           const newState = cloneDeep(prevData) ?? []
           prevState = newState
@@ -85,7 +83,8 @@ export const useCreateEvent = () => {
       const prevState = context?.prevState
       if (prevState) {
         queryClient.setQueryData(
-          getEventsByEntityIdQueryKey(args.entityId, {
+          getEventsByEntityIdQueryKey({
+            entityId: args.entityId,
             entityType: args.entityType
           }),
           prevState
