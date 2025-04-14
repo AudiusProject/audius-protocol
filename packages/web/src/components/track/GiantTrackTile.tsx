@@ -229,12 +229,8 @@ export const GiantTrackTile = ({
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
   )
-  const { data: remixContest2, isLoading: isEventsLoading } =
+  const { data: remixContest, isLoading: isEventsLoading } =
     useRemixContest(trackId)
-  const remixContest = {
-    ...remixContest2,
-    endDate: '2025-03-13T12:00:00.000Z'
-  }
   const isRemixContest = isRemixContestEnabled && !!remixContest
 
   const isLongFormContent =
