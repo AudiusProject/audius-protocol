@@ -23,6 +23,7 @@ import { User, UserMetadata } from '~/models/User'
 import { getCollection } from '~/store/cache/collections/selectors'
 import { reformatCollection } from '~/store/cache/collections/utils/reformatCollection'
 import { getTrack } from '~/store/cache/tracks/selectors'
+import { getUser } from '~/store/cache/users/selectors'
 import { reformatUser } from '~/store/cache/users/utils'
 import { CommonState } from '~/store/reducers'
 import { getErrorMessage } from '~/utils/error'
@@ -238,14 +239,27 @@ const useQueryState = <Args, Data>(
         const fetchArgsRecord = fetchArgs as Record<string, any>
         if (idArgKey && fetchArgsRecord[idArgKey]) {
           // TODO: investigate this block, need to figure out how to use queryClient instead here
-          // const idAsNumber =
-          //   typeof fetchArgsRecord[idArgKey] === 'number'
-          //     ? fetchArgsRecord[idArgKey]
-          //     : parseInt(fetchArgsRecord[idArgKey])
-          // cachedData = cacheSelectors.getEntry(state, {
-          //   kind,
-          //   id: idAsNumber
-          // })
+          const idAsNumber =
+            typeof fetchArgsRecord[idArgKey] === 'number'
+              ? fetchArgsRecord[idArgKey]
+              : parseInt(fetchArgsRecord[idArgKey])
+          switch (kind) {
+            case Kind.TRACKS:
+              cachedData = getTrack(state, {
+                id: idAsNumber
+              })
+              break
+            case Kind.COLLECTIONS:
+              cachedData = getCollection(state, {
+                id: idAsNumber
+              })
+              break
+            case Kind.USERS:
+              cachedData = getUser(state, {
+                id: idAsNumber
+              })
+              break
+          }
         } else if (permalinkArgKey && fetchArgsRecord[permalinkArgKey]) {
           if (kind === Kind.TRACKS) {
             cachedData = getTrack(state, {
@@ -313,6 +327,7 @@ const createCacheDataSelector =
     ) {
       return denormalize(normalizedData, apiResponseSchema, entityMap) as Data
     }
+
     return normalizedData
   }
 

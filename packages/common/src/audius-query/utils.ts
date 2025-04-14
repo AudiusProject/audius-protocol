@@ -2,9 +2,10 @@ import { mapValues } from 'lodash'
 import objectHash from 'object-hash'
 
 import { Kind } from '~/models/Kind'
+import { getCollections } from '~/store/cache/collections/selectors'
+import { getTracks } from '~/store/cache/tracks/selectors'
+import { getUsers } from '~/store/cache/users/selectors'
 import { CommonState } from '~/store/reducers'
-
-import * as cacheSelectors from '../store/cache/selectors'
 
 import { EntityMap } from './types'
 export function capitalize(str: string) {
@@ -16,6 +17,12 @@ export const getKeyFromFetchArgs = (fetchArgs: any) => {
   return objectHash(fetchArgs)
 }
 
+const entitySelectorMap = {
+  [Kind.USERS]: getUsers,
+  [Kind.TRACKS]: getTracks,
+  [Kind.COLLECTIONS]: getCollections
+}
+
 export const selectCommonEntityMap = (
   state: CommonState,
   kind?: Kind,
@@ -23,23 +30,16 @@ export const selectCommonEntityMap = (
 ): EntityMap | null => {
   if (kind && shallow) {
     return {
-      [kind]: mapValues(
-        cacheSelectors.getCache(state, { kind }).entries,
-        'metadata'
-      )
+      [kind]: mapValues(entitySelectorMap[kind](state), 'metadata')
     }
   }
 
   const entityMap: EntityMap = {
-    [Kind.USERS]: cacheSelectors.getAllEntries(state, { kind: Kind.USERS })
+    [Kind.USERS]: entitySelectorMap[Kind.USERS](state)
   }
   if (kind === Kind.USERS) return entityMap
-  entityMap[Kind.TRACKS] = cacheSelectors.getAllEntries(state, {
-    kind: Kind.TRACKS
-  })
+  entityMap[Kind.TRACKS] = entitySelectorMap[Kind.TRACKS](state)
   if (kind === Kind.TRACKS) return entityMap
-  entityMap[Kind.COLLECTIONS] = cacheSelectors.getAllEntries(state, {
-    kind: Kind.COLLECTIONS
-  })
+  entityMap[Kind.COLLECTIONS] = entitySelectorMap[Kind.COLLECTIONS](state)
   return entityMap
 }

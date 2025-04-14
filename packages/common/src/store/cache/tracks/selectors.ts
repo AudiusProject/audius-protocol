@@ -10,17 +10,17 @@ import { ID, UID, Track, StemTrack } from '../../../models'
 /** @deprecated Use a tan-query equivalent instead. useTrack or queryClient.getQueryData */
 export const getTrack = (
   state: CommonState,
-  props: { id: ID | null } | { uid: UID | null } | { permalink: string | null }
+  props?: { id: ID | null } | { uid: UID | null } | { permalink: string | null }
 ): Track | undefined => {
-  if ('permalink' in props && props.permalink) {
+  if (props && 'permalink' in props && props.permalink) {
     const trackId = state.queryClient.getQueryData(
       getTrackByPermalinkQueryKey(props.permalink)
     )
     return state.queryClient.getQueryData(getTrackQueryKey(trackId))
-  } else if ('uid' in props && props.uid) {
+  } else if (props && 'uid' in props && props.uid) {
     const trackId = parseInt(Uid.fromString(props.uid).id as string, 10)
     return state.queryClient.getQueryData(getTrackQueryKey(trackId))
-  } else if ('id' in props && props.id) {
+  } else if (props && 'id' in props && props.id) {
     return state.queryClient.getQueryData(getTrackQueryKey(props.id))
   }
   return undefined
@@ -29,7 +29,7 @@ export const getTrack = (
 /** @deprecated Use a tan-query equivalent instead. useTracks or queryClient.getQueriesData */
 export const getTracks = (
   state: CommonState,
-  props:
+  props?:
     | {
         ids: ID[] | null
       }
@@ -39,7 +39,6 @@ export const getTracks = (
     | {
         permalinks: string[] | null
       }
-    | undefined
 ): { [id: number]: Track } | undefined => {
   if (props && 'ids' in props) {
     return props.ids?.reduce(

@@ -1,11 +1,12 @@
 import { createSelector } from 'reselect'
 
 import { Kind } from '~/models'
-import { getTracksByUid } from '~/store/cache/tracks/selectors'
+import { getTrack, getTracksByUid } from '~/store/cache/tracks/selectors'
 import { getUsers } from '~/store/cache/users/selectors'
 import { Nullable, removeNullable } from '~/utils/typeUtils'
 
 import { LineupState } from '../../models/Lineup'
+import { CommonState } from '../reducers'
 
 // Some lineups can have additional properties (T)
 // e.g. collections have dateAdded in entries
@@ -31,13 +32,16 @@ export const makeGetTableMetadatas = <T, State>(
 ) => {
   return createSelector(
     lineupSelector,
-    getTracksByUid,
     getUsers,
-    (lineup, trackUids, users) => {
+    (state: CommonState) =>
+      ({
+        queryClient: state.queryClient
+      }) as CommonState,
+    (lineup, users, state) => {
       let deleted = lineup.deleted
       const entries = lineup.entries
         .map((entry) => {
-          const track = trackUids[entry.uid]
+          const track = getTrack(state, { uid: entry.uid })
           if (track) {
             return {
               ...entry,

@@ -1,3 +1,4 @@
+import { mergeWith } from 'lodash'
 import { call, select, takeEvery, all } from 'typed-redux-saga'
 
 import { FeatureFlags } from '~/services/remote-config/feature-flags'
@@ -17,6 +18,78 @@ import {
 import { getEntry } from './selectors'
 import { syncWithReactQuery } from './syncWithReactQuery'
 import { EntryMap } from './types'
+
+// These are fields we never want to merge -
+// we should always prefer the latest update from
+// backend.
+const forceUpdateKeys = new Set([
+  'field_visibility',
+  'followee_reposts',
+  'followee_saves',
+  'stream_conditions',
+  'download_conditions'
+])
+
+// Customize lodash recursive merge to never merge
+// the forceUpdateKeys, and special-case
+// playlist_contents
+export const mergeCustomizer = (objValue: any, srcValue: any, key: string) => {
+  if (forceUpdateKeys.has(key)) {
+    return srcValue
+  }
+
+  if (key === 'is_verified') {
+    return srcValue || objValue
+  }
+
+  // Delete is unidirectional (after marked deleted, future updates are not reflected)
+  if (key === 'is_delete' && objValue === true && srcValue === false) {
+    return objValue
+  }
+
+  // Not every user request provides collectible lists,
+  // so always prefer it's existence, starting with latest
+  if (key === 'collectibleList' || key === 'solanaCollectibleList') {
+    return srcValue || objValue
+  }
+
+  if (key === 'stream_conditions' || key === 'download_conditions') {
+    return srcValue || objValue
+  }
+
+  // For playlist_contents, this is trickier.
+  // We want to never merge because playlists can have
+  // tracks be deleted since last time, but
+  // new fetches won't have UIDs, so we need to preserve those.
+  if (objValue && key === 'playlist_contents') {
+    // Map out tracks keyed by id, but store as an array-value
+    // because a playlist can contain multiple of the same track id
+    const trackMap = {}
+    objValue.track_ids.forEach((t: { track: any }) => {
+      const id = t.track
+      if (id in trackMap) {
+        trackMap[id].push(t)
+      } else {
+        trackMap[id] = [t]
+      }
+    })
+
+    const trackIds = srcValue.track_ids.map((t: { track: string | number }) => {
+      const mappedList = trackMap[t.track]
+      if (!mappedList) return t
+
+      const mappedTrack = mappedList.shift()
+      if (!mappedTrack?.uid) return t
+
+      return {
+        ...t,
+        uid: mappedTrack.uid
+      }
+    })
+
+    return { ...srcValue, track_ids: trackIds }
+  }
+}
 
 function* watchAddSucceeded() {
   const queryClient = yield* getContext('queryClient')
@@ -83,16 +156,22 @@ function* watchUpdate() {
     // For any entity type, sync to React Query using the latest state from Redux
     const entriesMap = {} as EntryMap
     for (const entry of entries) {
-      // Get the latest state from Redux after the update
-      const latestEntry = yield* select(getEntry, {
+      // Update requests will typically only have the updated metadata fields
+      // but syncWithReactQuery expects the full entry - so we merge them here
+      const fullEntry = yield* select(getEntry, {
         kind,
         id: entry.id
       })
-      if (latestEntry) {
-        entriesMap[entry.id] = latestEntry
+      if (fullEntry) {
+        // note: we use a special merge function avoiding certain fields - see above
+        entriesMap[entry.id] = mergeWith(
+          {},
+          fullEntry,
+          entry.metadata,
+          mergeCustomizer
+        )
       }
     }
-
     syncWithReactQuery(queryClient, {
       [kind]: entriesMap
     })

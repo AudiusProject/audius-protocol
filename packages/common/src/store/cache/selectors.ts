@@ -6,7 +6,9 @@ import { ID, UID } from '../../models/Identifiers'
 import { Kind } from '../../models/Kind'
 import { Track } from '../../models/Track'
 import { User } from '../../models/User'
+import { getTrack, getUser } from '../pages/track/selectors'
 
+import { getCollection } from './collections/selectors'
 import { CollectionsCacheState } from './collections/types'
 import { TracksCacheState } from './tracks/types'
 import { UsersCacheState } from './users/types'
@@ -50,20 +52,20 @@ export function getEntry(
   state: CommonState,
   props: {
     kind: Kind
-    id?: ID | null
-    uid?: UID | null
+    id?: ID
+    uid?: UID
   }
 ) {
-  if (props.id) {
-    const entry = getCache(state, props).entries[props.id]
-    return entry ? entry.metadata : null
+  if (props.kind === Kind.USERS) {
+    return getUser(state, props)
   }
-  if (props.uid) {
-    const id = Uid.fromString(props.uid).id
-    const entry = getCache(state, props).entries[id]
-    return entry ? entry.metadata : null
+  if (props.kind === Kind.TRACKS) {
+    return getTrack(state, props)
   }
-  return null
+  if (props.kind === Kind.COLLECTIONS) {
+    return getCollection(state, props)
+  }
+  return undefined
 }
 
 /**
