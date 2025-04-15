@@ -80,6 +80,8 @@ export * from './tan-query/useTrending'
 export * from './tan-query/useRemixes'
 export * from './tan-query/useTrackRank'
 export * from './tan-query/useUpdateTrack'
+export * from './tan-query/useWalletOwner'
+export * from './tan-query/useTokenPrice'
 
 // Saga fetch utils, remove when migration is complete
 export * from './tan-query/saga-utils'

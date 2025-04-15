@@ -1,17 +1,14 @@
-import { SolanaWalletAddress } from '@audius/common/models'
+import { useWalletOwner } from '@audius/common/api'
 import { accountSelectors } from '@audius/common/store'
 import { shortenSPLAddress } from '@audius/common/utils'
 import {
   Flex,
   IconLogoCircle,
-  IconLogoCircleUSDC,
-  Text,
-  Skeleton
+  IconLogoCircleSOL,
+  Skeleton,
+  Text
 } from '@audius/harmony'
 import { useSelector } from 'react-redux'
-import { useAsync } from 'react-use'
-
-import { getAssociatedTokenAccountOwner } from 'services/solana/solana'
 
 const { getAccountUser } = accountSelectors
 
@@ -19,7 +16,7 @@ const messages = {
   builtInWallet: 'Built-In Wallet'
 }
 
-const PayoutWalletDisplayLoading = () => {
+const PayoutWalletDisplaySkeleton = () => {
   return (
     <Flex
       alignItems='center'
@@ -42,40 +39,18 @@ export const PayoutWalletDisplay = () => {
   const user = useSelector(getAccountUser)
   const payoutWallet = user?.spl_usdc_payout_wallet
 
-  const {
-    value: externalWalletOwner,
-    loading: isLoadingOwner,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    error
-  } = useAsync(async () => {
-    if (payoutWallet) {
-      try {
-        const owner = await getAssociatedTokenAccountOwner(
-          payoutWallet as SolanaWalletAddress
-        )
-        // If owner is null, it might mean the ATA doesn't exist or is invalid,
-        // but we still want to display the configured address to avoid confusion.
-        // A null owner likely indicates an issue the user needs to resolve in the modal.
-        // We'll display the payoutWallet address itself if owner lookup fails.
-        return owner?.toString() ?? payoutWallet
-      } catch (e) {
-        console.error('Failed to get associated token account owner:', e)
-        // Fallback to displaying the stored address on error
-        return payoutWallet
-      }
-    }
-    return null
-  }, [payoutWallet])
+  const { data: externalWalletOwner, isPending: isLoadingOwner } =
+    useWalletOwner(payoutWallet)
 
   if (isLoadingOwner) {
-    return <PayoutWalletDisplayLoading />
+    return <PayoutWalletDisplaySkeleton />
   }
 
   const displayAddress = externalWalletOwner ?? payoutWallet
 
   const isExternalWallet = !!payoutWallet
 
-  const IconComponent = isExternalWallet ? IconLogoCircleUSDC : IconLogoCircle
+  const IconComponent = isExternalWallet ? IconLogoCircleSOL : IconLogoCircle
   const displayText = isExternalWallet
     ? shortenSPLAddress(displayAddress ?? '') // shorten the owner address or the stored address
     : messages.builtInWallet

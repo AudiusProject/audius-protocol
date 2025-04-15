@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback } from 'react'
 
-import { walletSelectors } from '@audius/common/store'
+import { useTokenPrice } from '@audius/common/api'
+import { TOKEN_LISTING_MAP, walletSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
 import {
@@ -21,44 +22,28 @@ const { getAccountTotalBalance } = walletSelectors
 const messages = {
   title: 'Your Coins',
   buySell: 'Buy/Sell',
-  loading: '-- $AUDIO'
+  loading: '-- $AUDIO',
+  dollarZero: '$0.00',
+  loadingPrice: '$0.00 (loading...)'
 }
 
 // AUDIO token address from Jupiter
-const AUDIO_TOKEN_ID = '9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM'
+const AUDIO_TOKEN_ID = TOKEN_LISTING_MAP.AUDIO.address
 
 export const YourCoins = () => {
   const dispatch = useDispatch()
   const totalBalance = useSelector(getAccountTotalBalance)
   const { color } = useTheme()
-  const [audioPrice, setAudioPrice] = useState<string | null>(null)
-  const [isLoadingPrice, setIsLoadingPrice] = useState(false)
+
+  const { data: audioPriceData, isPending: isLoadingPrice } =
+    useTokenPrice(AUDIO_TOKEN_ID)
+
+  const audioPrice = audioPriceData?.price || null
 
   // Format the balance for display using toShorthand
   const audioAmount = totalBalance
     ? `${AUDIO(totalBalance).toShorthand()} $AUDIO`
     : messages.loading
-
-  useEffect(() => {
-    const fetchAudioPrice = async () => {
-      try {
-        setIsLoadingPrice(true)
-        const response = await fetch(
-          `https://lite-api.jup.ag/price/v2?ids=${AUDIO_TOKEN_ID}`
-        )
-        const data = await response.json()
-        if (data?.data?.[AUDIO_TOKEN_ID]?.price) {
-          setAudioPrice(data.data[AUDIO_TOKEN_ID].price)
-        }
-      } catch (error) {
-        console.error('Failed to fetch AUDIO price:', error)
-      } finally {
-        setIsLoadingPrice(false)
-      }
-    }
-
-    fetchAudioPrice()
-  }, [])
 
   const handleTokenClick = useCallback(() => {
     dispatch(push(AUDIO_PAGE))
@@ -66,7 +51,7 @@ export const YourCoins = () => {
 
   // Calculate dollar value of user's AUDIO balance
   const dollarValue = (() => {
-    if (!audioPrice || !totalBalance) return '$0.00'
+    if (!audioPrice || !totalBalance) return messages.dollarZero
 
     const priceNumber = parseFloat(audioPrice)
     const balanceValue = parseFloat(AUDIO(totalBalance).toString())
@@ -102,7 +87,7 @@ export const YourCoins = () => {
               {audioAmount}
             </Text>
             <Text variant='body' size='m' color='subdued'>
-              {isLoadingPrice ? '$0.00 (loading...)' : dollarValue}
+              {isLoadingPrice ? messages.loadingPrice : dollarValue}
             </Text>
           </Flex>
         </Flex>

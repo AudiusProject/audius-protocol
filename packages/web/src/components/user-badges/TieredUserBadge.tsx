@@ -4,7 +4,6 @@ import { walletSelectors } from '@audius/common/store'
 import { formatWei } from '@audius/common/utils'
 import { IconSize } from '@audius/harmony'
 import { Origin } from '@audius/harmony/src/components/popup/types'
-import { Interpolation, Theme } from '@emotion/react'
 
 import { AudioHoverCard } from 'components/hover-card/AudioHoverCard'
 import { useSelector } from 'utils/reducer'
@@ -15,12 +14,9 @@ type TieredUserBadgeProps = {
   userId: ID
   size?: IconSize
   className?: string
-  css?: Interpolation<Theme>
   isVerifiedOverride?: boolean
   anchorOrigin?: Origin
   transformOrigin?: Origin
-  // Any other props that UserBadges might need
-  [key: string]: any
 }
 
 /**
@@ -31,7 +27,6 @@ export const TieredUserBadge = (props: TieredUserBadgeProps) => {
     userId,
     size,
     className,
-    css,
     isVerifiedOverride,
     anchorOrigin,
     transformOrigin,
@@ -49,7 +44,6 @@ export const TieredUserBadge = (props: TieredUserBadgeProps) => {
       userId={userId}
       size={size}
       className={className}
-      css={css}
       isVerifiedOverride={isVerifiedOverride}
       {...otherUserBadgeProps}
     />

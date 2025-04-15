@@ -15,13 +15,12 @@ import {
   IconInfo,
   IconLogoCircleUSDC,
   Paper,
-  Text,
-  TextLink
+  Text
 } from '@audius/harmony'
 import BN from 'bn.js'
-import { useHistory } from 'react-router-dom'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { TextLink } from 'components/link'
 import { PayoutWalletDisplay } from 'components/payout-wallet-display'
 import Tooltip from 'components/tooltip/Tooltip'
 import { make, track } from 'services/analytics'
@@ -44,7 +43,6 @@ const messages = {
 }
 
 export const CashWallet = () => {
-  const history = useHistory()
   const isManagedAccount = useIsManagedAccount()
   const { onOpen: openWithdrawUSDCModal } = useWithdrawUSDCModal()
   const { onOpen: openAddFundsModal } = useAddFundsModal()
@@ -84,10 +82,6 @@ export const CashWallet = () => {
   const handlePayoutWalletClick = useCallback(() => {
     setPayoutWalletModalOpen(true)
   }, [setPayoutWalletModalOpen])
-
-  const handleGoToTransactionHistory = useCallback(() => {
-    history.push(TRANSACTION_HISTORY_PAGE)
-  }, [history])
 
   return (
     <Paper direction='column' shadow='far' ph='xl' pv='l' borderRadius='l'>
@@ -132,11 +126,7 @@ export const CashWallet = () => {
         </Flex>
 
         {/* Right Side - Transaction History Link */}
-        <TextLink
-          variant='visible'
-          size='m'
-          onClick={handleGoToTransactionHistory}
-        >
+        <TextLink variant='visible' size='m' to={TRANSACTION_HISTORY_PAGE}>
           {messages.transactionHistory}
         </TextLink>
       </Flex>
