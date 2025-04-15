@@ -180,16 +180,15 @@ export const TanQueryLineup = ({
   const isMobile = useIsMobile()
   const scrollContainer = useRef<HTMLDivElement>(null)
 
+  const isSmallTrackTile = isMobile || variant === LineupVariant.SECTION
+
   // Memoize component selection based on device type
   const { TrackTile, PlaylistTile } = useMemo(() => {
     return {
-      TrackTile:
-        isMobile || variant === LineupVariant.SECTION
-          ? TrackTileMobile
-          : TrackTileDesktop,
-      PlaylistTile: isMobile ? PlaylistTileMobile : PlaylistTileDesktop
+      TrackTile: isSmallTrackTile ? TrackTileMobile : TrackTileDesktop,
+      PlaylistTile: isSmallTrackTile ? PlaylistTileMobile : PlaylistTileDesktop
     }
-  }, [isMobile, variant])
+  }, [isSmallTrackTile])
 
   // Memoized scroll parent callback
   const getScrollParent = useCallback(() => {
@@ -274,7 +273,10 @@ export const TanQueryLineup = ({
                   className={cn({ [tileStyles!]: !!tileStyles })}
                   css={{ listStyle: 'none' }}
                 >
-                  <Flex direction={isMobile ? 'row' : 'column'} w='100%'>
+                  <Flex
+                    direction={isSmallTrackTile ? 'row' : 'column'}
+                    w='100%'
+                  >
                     {/* @ts-ignore - the types here need work - we're not passing the full expected types here whenever we pass isLoading: true */}
                     <TrackTile {...skeletonTileProps(index)} key={index} />
                   </Flex>
@@ -297,7 +299,7 @@ export const TanQueryLineup = ({
       numPlaylistSkeletonRows,
       leadingElementId,
       tileStyles,
-      isMobile,
+      isSmallTrackTile,
       TrackTile,
       leadingElementDelineator
     ]
@@ -449,7 +451,10 @@ export const TanQueryLineup = ({
                     className={cn({ [tileStyles!]: !!tileStyles })}
                     as='li'
                   >
-                    <Flex direction={isMobile ? 'row' : 'column'} w='100%'>
+                    <Flex
+                      direction={isSmallTrackTile ? 'row' : 'column'}
+                      w='100%'
+                    >
                       {tile}
                     </Flex>
                     {index === 0 &&
