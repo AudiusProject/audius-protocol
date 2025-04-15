@@ -318,7 +318,7 @@ const TrackMenu = ({
 
     const menu: { items: PopupMenuItem[] } = { items: [] }
 
-    if (includeRemixContest && isOwner && !isDeleted) {
+    if (includeRemixContest && isOwner && !isDeleted && !track?.remix_of) {
       menu.items.push(remixContestMenuItem)
     }
 
