@@ -31,11 +31,13 @@ export interface GetAllEventsRequest {
     limit?: number;
     userId?: string;
     sortMethod?: GetAllEventsSortMethodEnum;
+    eventType?: GetAllEventsEventTypeEnum;
 }
 
 export interface GetBulkEventsRequest {
     userId?: string;
     id?: Array<string>;
+    eventType?: GetBulkEventsEventTypeEnum;
 }
 
 export interface GetEntityEventsRequest {
@@ -76,6 +78,10 @@ export class EventsApi extends runtime.BaseAPI {
             queryParameters['sort_method'] = params.sortMethod;
         }
 
+        if (params.eventType !== undefined) {
+            queryParameters['event_type'] = params.eventType;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
@@ -110,6 +116,10 @@ export class EventsApi extends runtime.BaseAPI {
 
         if (params.id) {
             queryParameters['id'] = params.id;
+        }
+
+        if (params.eventType !== undefined) {
+            queryParameters['event_type'] = params.eventType;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -226,6 +236,24 @@ export const GetAllEventsSortMethodEnum = {
     Timestamp: 'timestamp'
 } as const;
 export type GetAllEventsSortMethodEnum = typeof GetAllEventsSortMethodEnum[keyof typeof GetAllEventsSortMethodEnum];
+/**
+ * @export
+ */
+export const GetAllEventsEventTypeEnum = {
+    RemixContest: 'remix_contest',
+    LiveEvent: 'live_event',
+    NewRelease: 'new_release'
+} as const;
+export type GetAllEventsEventTypeEnum = typeof GetAllEventsEventTypeEnum[keyof typeof GetAllEventsEventTypeEnum];
+/**
+ * @export
+ */
+export const GetBulkEventsEventTypeEnum = {
+    RemixContest: 'remix_contest',
+    LiveEvent: 'live_event',
+    NewRelease: 'new_release'
+} as const;
+export type GetBulkEventsEventTypeEnum = typeof GetBulkEventsEventTypeEnum[keyof typeof GetBulkEventsEventTypeEnum];
 /**
  * @export
  */

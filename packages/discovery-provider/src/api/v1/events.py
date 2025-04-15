@@ -12,7 +12,7 @@ from src.api.v1.helpers import (
     success_response,
 )
 from src.api.v1.models.events import event_model
-from src.models.events.event import EventEntityType
+from src.models.events.event import EventEntityType, EventType
 from src.queries.get_events import get_events, get_events_by_ids
 from src.queries.get_unclaimed_id import get_unclaimed_id
 from src.utils.redis_cache import cache
@@ -30,6 +30,13 @@ bulk_events_parser.add_argument(
     action="append",
     description="The ID of the event(s) to retrieve",
 )
+bulk_events_parser.add_argument(
+    "event_type",
+    required=False,
+    type=str,
+    choices=list(EventType),
+    description="The type of event to filter by",
+)
 
 
 @ns.route("")
@@ -45,7 +52,7 @@ class BulkEvents(Resource):
     def get(self):
         args = bulk_events_parser.parse_args()
         ids = decode_ids_array(args.get("id") if args.get("id") else [])
-        events = get_events_by_ids({"id": ids})
+        events = get_events_by_ids({"id": ids, "event_type": args.get("event_type")})
         if not events:
             abort_not_found(ids, ns)
         return success_response(events)
@@ -59,6 +66,13 @@ events_parser.add_argument(
     choices=("newest", "timestamp"),
     type=str,
     description="The sort method",
+)
+events_parser.add_argument(
+    "event_type",
+    required=False,
+    type=str,
+    choices=list(EventType),
+    description="The type of event to filter by",
 )
 
 
@@ -79,6 +93,7 @@ class EventList(Resource):
             {
                 "limit": format_limit(args, default_limit=25),
                 "offset": format_offset(args),
+                "event_type": args.get("event_type"),
             }
         )
         return success_response(events)

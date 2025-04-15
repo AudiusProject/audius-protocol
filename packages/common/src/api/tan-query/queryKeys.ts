@@ -18,6 +18,7 @@ export const QUERY_KEYS = {
   tracksByPlaylist: 'tracksByPlaylist',
   tracksByAlbum: 'tracksByAlbum',
   trackFileInfo: 'trackFileInfo',
+  stems: 'stems',
   user: 'user',
   users: 'users',
   userByHandle: 'userByHandle',
@@ -85,5 +86,6 @@ export const QUERY_KEYS = {
   events: 'events',
   eventsByEntityId: 'eventsByEntityId',
   walletOwner: 'walletOwner',
-  tokenPrice: 'tokenPrice'
+  tokenPrice: 'tokenPrice',
+  fileSizes: 'fileSizes'
 } as const

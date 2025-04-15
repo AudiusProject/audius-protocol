@@ -45,7 +45,8 @@ export const useUpdateEvent = () => {
 
       // Update the events by entity id cache
       queryClient.setQueryData(
-        getEventsByEntityIdQueryKey(currentEvent.entityId, {
+        getEventsByEntityIdQueryKey({
+          entityId: currentEvent.entityId,
           entityType: currentEvent.entityType
         }),
         (prevData) => {
@@ -80,7 +81,8 @@ export const useUpdateEvent = () => {
         )
 
         queryClient.setQueryData(
-          getEventsByEntityIdQueryKey(context.previousEvent.entityId, {
+          getEventsByEntityIdQueryKey({
+            entityId: context.previousEvent.entityId,
             entityType: context.previousEvent.entityType
           }),
           (prevData) => {

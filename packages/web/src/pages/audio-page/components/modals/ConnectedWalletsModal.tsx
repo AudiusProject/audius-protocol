@@ -19,7 +19,9 @@ import {
   Text
 } from '@audius/harmony'
 
+import Drawer from 'components/drawer/Drawer'
 import { ToastContext } from 'components/toast/ToastContext'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { NEW_WALLET_CONNECTED_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 
@@ -45,7 +47,9 @@ const messages = {
   remove: 'Remove Wallet',
   ignore: 'Nevermind',
   error: 'Something went wrong. Please try again.',
-  walletAlreadyAdded: 'No new wallets selected to connect.'
+  walletAlreadyAdded: 'No new wallets selected to connect.',
+  goToDesktop:
+    'To connect external wallets to your account, visit audius.co from a desktop browser.'
 }
 
 enum Pages {
@@ -132,6 +136,33 @@ export const ConnectedWalletsModal = () => {
   const isMutationPending = isConnectingWallets || isRemovePending
   const isConnectDisabled =
     hasReachedLimit || isMutationPending || isConnectingWallets
+
+  // Not supported on mobile web
+  const isMobile = useIsMobile()
+  if (isMobile) {
+    return (
+      <Drawer isOpen={isOpen} onClose={onClose} onClosed={onClosed}>
+        <Flex
+          direction='column'
+          alignItems='center'
+          gap='m'
+          p='l'
+          ph='2xl'
+          pb='3xl'
+        >
+          <Flex alignItems='center' gap='s'>
+            <IconWallet color='default' />
+            <Text color='heading' variant='heading'>
+              {messages.title}
+            </Text>
+          </Flex>
+          <Text textAlign='center' size='l'>
+            {messages.goToDesktop}
+          </Text>
+        </Flex>
+      </Drawer>
+    )
+  }
 
   return (
     <Modal

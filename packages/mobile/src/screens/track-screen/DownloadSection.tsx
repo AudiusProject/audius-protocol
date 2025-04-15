@@ -1,8 +1,7 @@
 import { useCallback, useState } from 'react'
 
-import { useTrack } from '@audius/common/api'
+import { useStems, useTrack } from '@audius/common/api'
 import {
-  useCurrentStems,
   useDownloadableContentAccess,
   useFeatureFlag
 } from '@audius/common/hooks'
@@ -61,7 +60,7 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
   const { onOpen: openWaitForDownloadModal } = useWaitForDownloadModal()
   const [isExpanded, setIsExpanded] = useState(false)
   const { data: track } = useTrack(trackId)
-  const { stemTracks } = useCurrentStems({ trackId })
+  const { data: stemTracks = [] } = useStems(trackId)
   const {
     price,
     shouldDisplayPremiumDownloadLocked,
@@ -151,7 +150,7 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
           justifyContent='space-between'
           alignItems='center'
         >
-          <Flex gap='m'>
+          <Flex gap='l' direction='column'>
             <Flex direction='row' alignItems='center' gap='s'>
               <IconReceive color='default' />
               <Text variant='label' size='l' strength='strong'>
@@ -194,6 +193,18 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
                   </Text>
                 </Flex>
               </>
+            ) : null}
+            {isDownloadAllTrackFilesEnabled && !shouldHideDownload ? (
+              <Flex direction='row' alignItems='center' alignSelf='flex-start'>
+                <Button
+                  iconLeft={IconReceive}
+                  variant='secondary'
+                  size='small'
+                  onPress={handleDownloadAll}
+                >
+                  {messages.downloadAll}
+                </Button>
+              </Flex>
             ) : null}
           </Flex>
           <ExpandableArrowIcon expanded={isExpanded} />
@@ -238,23 +249,6 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
             onDownload={handleDownload}
           />
         ))}
-        {isDownloadAllTrackFilesEnabled && !shouldHideDownload ? (
-          <Flex
-            borderTop='default'
-            direction='row'
-            alignItems='center'
-            justifyContent='center'
-            p='l'
-          >
-            <Button
-              variant='secondary'
-              size='small'
-              onPress={handleDownloadAll}
-            >
-              {messages.downloadAll}
-            </Button>
-          </Flex>
-        ) : null}
       </Expandable>
     </Flex>
   )

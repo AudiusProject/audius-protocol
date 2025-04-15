@@ -3,7 +3,9 @@ import { ChangeEvent, useCallback, useState } from 'react'
 import {
   useCreateEvent,
   useCurrentUserId,
+  useDeleteEvent,
   useRemixContest,
+  useRemixes,
   useUpdateEvent
 } from '@audius/common/api'
 import { useHostRemixContestModal } from '@audius/common/store'
@@ -21,7 +23,6 @@ import {
   TextInput
 } from '@audius/harmony'
 import { EventEntityTypeEnum, EventEventTypeEnum } from '@audius/sdk'
-import { css } from '@emotion/css'
 
 import { DatePicker } from 'components/edit/fields/DatePickerField'
 import { mergeReleaseDateValues } from 'components/edit/fields/visibility/mergeReleaseDateValues'
@@ -41,7 +42,8 @@ const messages = {
   timePlaceholder: '12:00',
   timeError: 'Invalid time',
   meridianLabel: 'Meridian',
-  meridianPlaceholder: 'AM'
+  meridianPlaceholder: 'AM',
+  turnOff: 'Turn Off Contest'
 }
 
 /**
@@ -67,14 +69,19 @@ export const HostRemixContestModal = () => {
   const { trackId } = data
   const { mutate: createEvent } = useCreateEvent()
   const { mutate: updateEvent } = useUpdateEvent()
+  const { mutate: deleteEvent } = useDeleteEvent()
   const { data: userId } = useCurrentUserId()
-  const { data: event } = useRemixContest(trackId, {
-    entityType: EventEntityTypeEnum.Track
+  const { data: remixes, isLoading: remixesLoading } = useRemixes({
+    trackId,
+    isContestEntry: true
   })
-  const isEdit = !!event
+  const { data: remixContest } = useRemixContest(trackId)
+  const isEdit = !!remixContest
+  const hasContestEntries = remixesLoading || remixes?.length
+  const displayTurnOffButton = !hasContestEntries && isEdit
 
   const [contestEndDate, setContestEndDate] = useState(
-    event ? dayjs(event.endDate) : null
+    remixContest ? dayjs(remixContest.endDate) : null
   )
   const [endDateTouched, setEndDateTouched] = useState(false)
   const [endDateError, setEndDateError] = useState(false)
@@ -123,7 +130,7 @@ export const HostRemixContestModal = () => {
 
     if (isEdit) {
       updateEvent({
-        eventId: event.eventId,
+        eventId: remixContest.eventId,
         endDate,
         userId
       })
@@ -147,9 +154,15 @@ export const HostRemixContestModal = () => {
     isEdit,
     onClose,
     updateEvent,
-    event?.eventId,
+    remixContest?.eventId,
     createEvent
   ])
+
+  const handleDeleteEvent = useCallback(() => {
+    if (!remixContest || !userId) return
+    deleteEvent({ eventId: remixContest.eventId, userId })
+    onClose()
+  }, [remixContest, userId, deleteEvent, onClose])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} onClosed={onClosed} size='medium'>
@@ -202,14 +215,25 @@ export const HostRemixContestModal = () => {
               </Text>
             </Hint>
           </Flex>
-          <Button
-            variant='secondary'
-            onClick={handleSubmit}
-            disabled={!contestEndDate || endDateError || timeError}
-            className={css({ alignSelf: 'center' })}
-          >
-            {isEdit ? messages.save : messages.startContest}
-          </Button>
+          <Flex gap='l' justifyContent='center'>
+            {displayTurnOffButton ? (
+              <Button
+                variant='secondary'
+                onClick={handleDeleteEvent}
+                fullWidth={displayTurnOffButton}
+              >
+                {messages.turnOff}
+              </Button>
+            ) : null}
+            <Button
+              variant='primary'
+              onClick={handleSubmit}
+              disabled={!contestEndDate || endDateError || timeError}
+              fullWidth={displayTurnOffButton}
+            >
+              {isEdit ? messages.save : messages.startContest}
+            </Button>
+          </Flex>
         </Flex>
       </ModalContent>
     </Modal>

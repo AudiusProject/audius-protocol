@@ -4,7 +4,8 @@ import React, { useCallback } from 'react'
 import {
   useRemixContest,
   useToggleFavoriteTrack,
-  useTrackRank
+  useTrackRank,
+  useStems
 } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
@@ -48,7 +49,6 @@ import {
   useEarlyReleaseConfirmationModal
 } from '@audius/common/store'
 import { formatReleaseDate, Genre, removeNullable } from '@audius/common/utils'
-import { EventEntityTypeEnum } from '@audius/sdk'
 import dayjs from 'dayjs'
 import type { FlatList } from 'react-native'
 import { TouchableOpacity } from 'react-native'
@@ -227,9 +227,9 @@ export const TrackScreenDetailsTile = ({
 
   const remixParentTrackId = remixOf?.tracks?.[0]?.parent_track_id
   const isRemix = !!remixParentTrackId
+  const { data: stems = [] } = useStems(track.track_id)
   const hasDownloadableAssets =
-    (track as Track)?.is_downloadable ||
-    ((track as Track)?._stems?.length ?? 0) > 0
+    (track as Track)?.is_downloadable || stems.length > 0
 
   const { open: openCommentDrawer } = useCommentDrawer()
 
@@ -240,10 +240,8 @@ export const TrackScreenDetailsTile = ({
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
   )
-  const { data: event } = useRemixContest(trackId, {
-    entityType: EventEntityTypeEnum.Track
-  })
-  const isRemixContest = isRemixContestEnabled && event
+  const { data: remixContest } = useRemixContest(trackId)
+  const isRemixContest = isRemixContestEnabled && remixContest
 
   const isPlayingPreview = isPreviewing && isPlaying
   const isPlayingFullAccess = isPlaying && !isPreviewing
@@ -526,7 +524,7 @@ export const TrackScreenDetailsTile = ({
             {messages.contestDeadline}
           </Text>
           <Text size='s' strength='strong'>
-            {messages.deadline(event?.endDate)}
+            {messages.deadline(remixContest?.endDate)}
           </Text>
         </Flex>
         {!isOwner ? (
