@@ -28,7 +28,8 @@ export enum FeatureFlags {
   CLAIM_ALL_REWARDS_TILE = 'claim_all_rewards_tile',
   RECENT_COMMENTS = 'recent_comments',
   DOWNLOAD_ALL_TRACK_FILES = 'download_all_track_files',
-  REMIX_CONTEST = 'remix_contest'
+  REMIX_CONTEST = 'remix_contest',
+  WALLET_UI_UPDATE = 'wallet_ui_update'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -72,5 +73,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.CLAIM_ALL_REWARDS_TILE]: true,
   [FeatureFlags.RECENT_COMMENTS]: false,
   [FeatureFlags.DOWNLOAD_ALL_TRACK_FILES]: false,
-  [FeatureFlags.REMIX_CONTEST]: false
+  [FeatureFlags.REMIX_CONTEST]: false,
+  [FeatureFlags.WALLET_UI_UPDATE]: false
 }

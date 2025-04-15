@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import { useIsManagedAccount, useUSDCBalance } from '@audius/common/hooks'
 import { Name, Status } from '@audius/common/models'
+import { TRANSACTION_HISTORY_PAGE } from '@audius/common/src/utils/route'
 import {
   WithdrawUSDCModalPages,
   useWithdrawUSDCModal,
@@ -12,17 +13,18 @@ import {
   Button,
   Flex,
   IconInfo,
-  IconLogoCircle,
   IconLogoCircleUSDC,
   Paper,
-  Text,
-  TextLink
+  Text
 } from '@audius/harmony'
 import BN from 'bn.js'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { TextLink } from 'components/link'
+import { PayoutWalletDisplay } from 'components/payout-wallet-display'
+import Tooltip from 'components/tooltip/Tooltip'
 import { make, track } from 'services/analytics'
-
+import { zIndex } from 'utils/zIndex'
 const messages = {
   usdc: 'USDC',
   earn: 'Earn USDC by selling your music',
@@ -35,7 +37,9 @@ const messages = {
   cashBalance: 'Cash Balance',
   payoutWallet: 'Payout Wallet',
   builtInWallet: 'Built-In Wallet',
-  transactionHistory: 'Transaction History'
+  transactionHistory: 'Transaction History',
+  cashBalanceTooltip:
+    'Your cash balance is stored as USDC in your built-in wallet'
 }
 
 export const CashWallet = () => {
@@ -90,7 +94,15 @@ export const CashWallet = () => {
               <Text variant='heading' size='s' color='subdued'>
                 {messages.cashBalance}
               </Text>
-              <IconInfo size='s' color='subdued' />
+              <Tooltip
+                text={messages.cashBalanceTooltip}
+                placement='top'
+                mount='page'
+                shouldWrapContent={false}
+                css={{ zIndex: zIndex.CASH_WALLET_TOOLTIP }}
+              >
+                <IconInfo size='s' color='subdued' />
+              </Tooltip>
             </Flex>
           </Flex>
 
@@ -109,26 +121,12 @@ export const CashWallet = () => {
               {messages.payoutWallet}
             </TextLink>
             {/* Wallet Display */}
-            <Flex
-              alignItems='center'
-              backgroundColor='surface1'
-              border='default'
-              borderRadius='circle'
-              pt='xs'
-              pl='xs'
-              pr='s'
-              gap='xs'
-            >
-              <IconLogoCircle size='l' />
-              <Text variant='body' size='m' strength='strong' ellipses>
-                {messages.builtInWallet}
-              </Text>
-            </Flex>
+            <PayoutWalletDisplay />
           </Flex>
         </Flex>
 
         {/* Right Side - Transaction History Link */}
-        <TextLink variant='visible' size='m'>
+        <TextLink variant='visible' size='m' to={TRANSACTION_HISTORY_PAGE}>
           {messages.transactionHistory}
         </TextLink>
       </Flex>

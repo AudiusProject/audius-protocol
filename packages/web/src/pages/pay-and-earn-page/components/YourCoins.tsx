@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
-import { walletSelectors } from '@audius/common/store'
+import { useTokenPrice } from '@audius/common/api'
+import { TOKEN_LISTING_MAP, walletSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
 import {
@@ -21,15 +22,23 @@ const { getAccountTotalBalance } = walletSelectors
 const messages = {
   title: 'Your Coins',
   buySell: 'Buy/Sell',
-  // TODO: Farid [PE-5901] get the current price of AUDIO
-  dollarValue: '$0.00 ($0.082)',
-  loading: '-- $AUDIO'
+  loading: '-- $AUDIO',
+  dollarZero: '$0.00',
+  loadingPrice: '$0.00 (loading...)'
 }
+
+// AUDIO token address from Jupiter
+const AUDIO_TOKEN_ID = TOKEN_LISTING_MAP.AUDIO.address
 
 export const YourCoins = () => {
   const dispatch = useDispatch()
   const totalBalance = useSelector(getAccountTotalBalance)
   const { color } = useTheme()
+
+  const { data: audioPriceData, isPending: isLoadingPrice } =
+    useTokenPrice(AUDIO_TOKEN_ID)
+
+  const audioPrice = audioPriceData?.price || null
 
   // Format the balance for display using toShorthand
   const audioAmount = totalBalance
@@ -39,6 +48,17 @@ export const YourCoins = () => {
   const handleTokenClick = useCallback(() => {
     dispatch(push(AUDIO_PAGE))
   }, [dispatch])
+
+  // Calculate dollar value of user's AUDIO balance
+  const dollarValue = (() => {
+    if (!audioPrice || !totalBalance) return messages.dollarZero
+
+    const priceNumber = parseFloat(audioPrice)
+    const balanceValue = parseFloat(AUDIO(totalBalance).toString())
+    const totalValue = priceNumber * balanceValue
+
+    return `$${totalValue.toFixed(2)} ($${parseFloat(audioPrice).toFixed(4)})`
+  })()
 
   return (
     <Paper
@@ -67,7 +87,7 @@ export const YourCoins = () => {
               {audioAmount}
             </Text>
             <Text variant='body' size='m' color='subdued'>
-              {messages.dollarValue}
+              {isLoadingPrice ? messages.loadingPrice : dollarValue}
             </Text>
           </Flex>
         </Flex>

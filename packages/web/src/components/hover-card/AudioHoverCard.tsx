@@ -9,6 +9,7 @@ import {
   HoverCardHeader,
   HoverCard
 } from '@audius/harmony'
+import { Origin } from '@audius/harmony/src/components/popup/types'
 
 import { HoverCardBody } from './HoverCardBody'
 
@@ -32,6 +33,16 @@ type AudioHoverCardProps = {
    * Optional callback fired when the hover card is closed
    */
   onClose?: () => void
+
+  /**
+   * Position of the anchor origin
+   */
+  anchorOrigin?: Origin
+
+  /**
+   * Position of the transform origin
+   */
+  transformOrigin?: Origin
 }
 
 // Audio tier badge map for header icons
@@ -53,7 +64,9 @@ export const AudioHoverCard = ({
   children,
   tier,
   amount,
-  onClose
+  onClose,
+  anchorOrigin,
+  transformOrigin
 }: AudioHoverCardProps) => {
   return (
     <HoverCard
@@ -67,6 +80,8 @@ export const AudioHoverCard = ({
           <HoverCardBody icon={audioTierBadgeMap[tier]} amount={amount} />
         </>
       }
+      anchorOrigin={anchorOrigin}
+      transformOrigin={transformOrigin}
     >
       {children}
     </HoverCard>
