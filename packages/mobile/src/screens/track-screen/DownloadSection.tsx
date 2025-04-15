@@ -144,7 +144,7 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
 
   const renderHeader = () => {
     return (
-      <Flex gap='l' column pb='l'>
+      <Flex gap='l' column>
         <Flex row justifyContent='space-between' alignItems='center'>
           <Flex row alignItems='center' gap='s'>
             <IconReceive color='default' />
