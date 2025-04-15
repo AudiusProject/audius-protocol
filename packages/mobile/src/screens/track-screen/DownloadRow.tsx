@@ -27,45 +27,23 @@ export const DownloadRow = ({
   const { data: track } = useTrack(trackId)
   const { data: user } = useUser(track?.owner_id)
 
+  const filename =
+    track && user ? getFilename({ track, user, isOriginal: true }) : null
+
   return (
-    <Flex
-      direction='row'
-      alignItems='center'
-      justifyContent='space-between'
-      borderTop='default'
-      pv='m'
-    >
-      <Flex
-        direction='row'
-        gap='xl'
-        alignItems='center'
-        justifyContent='space-between'
-        style={css({ flexShrink: 1 })}
-      >
+    <Flex row alignItems='center' justifyContent='space-between'>
+      <Flex row gap='m' alignItems='center' style={css({ flexShrink: 1 })}>
         <Text variant='body' color='subdued'>
           {index}
         </Text>
-        <Flex gap='xs' style={css({ flexShrink: 1 })}>
-          <Text variant='body'>
-            {track?.stem_of?.category
-              ? stemCategoryFriendlyNames[track?.stem_of?.category]
-              : messages.fullTrack}
-          </Text>
-          <Text
-            variant='body'
-            color='subdued'
-            ellipsizeMode='tail'
-            numberOfLines={1}
-          >
-            {track &&
-              user &&
-              getFilename({
-                track,
-                user,
-                isOriginal: true
-              })}
-          </Text>
-        </Flex>
+        <Text
+          variant='body'
+          ellipsizeMode='tail'
+          numberOfLines={1}
+          style={css({ flexShrink: 1 })}
+        >
+          {filename}
+        </Text>
       </Flex>
       {hideDownload ? null : (
         <PlainButton
