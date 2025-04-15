@@ -7,7 +7,8 @@ export type RemixSortMethod = 'likes' | 'plays' | 'recent'
 export const useRemixPageParams = () => {
   const [urlRemixPageParams] = useParams()
 
-  const sortMethod = urlRemixPageParams.get('sortMethod') as RemixSortMethod
+  const sortMethod =
+    (urlRemixPageParams.get('sortMethod') as RemixSortMethod) ?? 'recent'
   const isCosign = urlRemixPageParams.get('isCosign') === 'true'
   const isContestEntry = urlRemixPageParams.get('isContestEntry') === 'true'
 

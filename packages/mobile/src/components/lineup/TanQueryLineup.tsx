@@ -447,7 +447,7 @@ export const TanQueryLineup = ({
       () => ({ _loading: true }) as LoadingLineupItem
     )
 
-    if (leadingElementId) {
+    if (leadingElementId !== undefined) {
       const [artistPick, ...restEntries] = [...items, ...skeletonItems]
 
       const result: Section[] = [

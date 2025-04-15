@@ -1,18 +1,28 @@
 import { useEffect } from 'react'
 
 import { useRemixes, useTrackByParams } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { remixMessages as messages } from '@audius/common/messages'
+import { FeatureFlags } from '@audius/common/services'
 import {
   remixesPageLineupActions as tracksActions,
   remixesPageActions,
   remixesPageSelectors
 } from '@audius/common/store'
 import { pluralize } from '@audius/common/utils'
-import { Text, View } from 'react-native'
+import { Text as RNText, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconRemix } from '@audius/harmony-native'
-import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
+import { Flex, IconRemix, Text } from '@audius/harmony-native'
+import {
+  Screen,
+  ScreenContent,
+  ScreenHeader,
+  ScrollView
+} from 'app/components/core'
+import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
 import { Lineup } from 'app/components/lineup'
+import { TanQueryLineup } from 'app/components/lineup/TanQueryLineup'
 import { TrackLink } from 'app/components/track/TrackLink'
 import { UserLink } from 'app/components/user-link'
 import { useRoute } from 'app/hooks/useRoute'
@@ -20,8 +30,7 @@ import { flexRowCentered, makeStyles } from 'app/styles'
 
 const { getCount } = remixesPageSelectors
 const { fetchTrackSucceeded } = remixesPageActions
-
-const messages = {
+const legacyMessages = {
   remix: 'Remix',
   of: 'of',
   by: 'by',
@@ -51,8 +60,15 @@ export const TrackRemixesScreen = () => {
   const { params } = useRoute<'TrackRemixes'>()
   const { data: track } = useTrackByParams(params)
   const trackId = track?.track_id
-  const { lineup, loadNextPage } = useRemixes({ trackId })
   const count = useSelector(getCount)
+  const { data, isFetching, isPending, loadNextPage, lineup, pageSize } =
+    useRemixes({
+      trackId: track?.track_id,
+      includeOriginal: true
+    })
+  const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
+    FeatureFlags.REMIX_CONTEST
+  )
 
   const styles = useStyles()
 
@@ -71,31 +87,62 @@ export const TrackRemixesScreen = () => {
     }
   }, [dispatch, trackId])
 
-  const remixesText = pluralize(messages.remix, count, 'es', !count)
-  const remixesCountText = `${count || ''} ${remixesText} ${messages.of}`
+  const remixesText = pluralize(legacyMessages.remix, count, 'es', !count)
+  const remixesCountText = `${count || ''} ${remixesText} ${legacyMessages.of}`
 
   return (
     <Screen>
-      <ScreenHeader text={messages.header} icon={IconRemix} />
+      <ScreenHeader text={messages.remixesTitle} icon={IconRemix} />
       <ScreenContent>
-        <Lineup
-          tanQuery
-          lineup={lineup}
-          loadMore={loadNextPage}
-          header={
-            track ? (
-              <View style={styles.header}>
-                <Text style={styles.text}>{remixesCountText}</Text>
-                <Text style={styles.text}>
-                  <TrackLink trackId={track.track_id} variant='visible' />
-                  <Text>{messages.by}</Text>{' '}
-                  <UserLink userId={track.owner_id} variant='visible' />
+        {isRemixContestEnabled ? (
+          <ScreenPrimaryContent>
+            <ScrollView>
+              <Flex ph='m' mt='l'>
+                <Text variant='heading' size='xs'>
+                  {messages.originalTrack}
                 </Text>
-              </View>
-            ) : null
-          }
-          actions={tracksActions}
-        />
+              </Flex>
+
+              <TanQueryLineup
+                queryData={data}
+                isFetching={isFetching}
+                isPending={isPending}
+                loadNextPage={loadNextPage}
+                lineup={lineup}
+                actions={tracksActions}
+                pageSize={pageSize}
+                hasMore={false}
+                leadingElementId={0}
+                leadingElementDelineator={
+                  <Flex justifyContent='space-between' mt='l' ph='m'>
+                    <Text variant='heading' size='xs'>
+                      {count} {pluralize(messages.remixes, count, 'es', !count)}
+                    </Text>
+                  </Flex>
+                }
+              />
+            </ScrollView>
+          </ScreenPrimaryContent>
+        ) : (
+          <Lineup
+            tanQuery
+            lineup={lineup}
+            loadMore={loadNextPage}
+            header={
+              track ? (
+                <View style={styles.header}>
+                  <Text style={styles.text}>{remixesCountText}</Text>
+                  <Text style={styles.text}>
+                    <TrackLink trackId={track.track_id} variant='visible' />
+                    <RNText>{legacyMessages.by}</RNText>{' '}
+                    <UserLink userId={track.owner_id} variant='visible' />
+                  </Text>
+                </View>
+              ) : null
+            }
+            actions={tracksActions}
+          />
+        )}
       </ScreenContent>
     </Screen>
   )
