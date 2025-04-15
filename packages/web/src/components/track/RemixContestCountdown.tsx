@@ -2,7 +2,7 @@ import { useRemixContest } from '@audius/common/src/api/tan-query/events/useRemi
 import { useRemixCountdown } from '@audius/common/src/hooks/useRemixCountdown'
 import { ID } from '@audius/common/src/models/Identifiers'
 import { formatDoubleDigit } from '@audius/common/src/utils/formatUtil'
-import { Text, Flex, spacing, Divider } from '@audius/harmony'
+import { Text, Flex, spacing, Divider, Paper } from '@audius/harmony'
 
 import { zIndex } from 'utils/zIndex'
 
@@ -20,12 +20,8 @@ type TimeUnitProps = {
 
 const TimeUnit = ({ value, label }: TimeUnitProps) => {
   return (
-    <Flex column gap='xs' alignItems='center' justifyContent='center'>
-      <Text
-        variant='label'
-        color='inverse'
-        css={{ fontSize: 24, 'line-height': 24 }}
-      >
+    <Flex column alignItems='center' justifyContent='center'>
+      <Text variant='heading' color='inverse'>
         {formatDoubleDigit(value)}
       </Text>
       <Text variant='label' color='inverse' size='xs'>
@@ -48,19 +44,17 @@ export const RemixContestCountdown = ({
   if (!remixContest || !timeLeft) return null
 
   return (
-    <Flex
+    <Paper
       gap='xl'
       pv='s'
       ph='xl'
       justifyContent='center'
       alignItems='center'
-      backgroundColor='white'
       borderRadius='l'
-      shadow='mid'
       css={{
         position: 'absolute',
-        top: spacing.xl,
-        right: spacing.unit24,
+        top: spacing['2xl'],
+        right: spacing.unit15,
         opacity: 0.8,
         zIndex: zIndex.REMIX_CONTEST_COUNT_DOWN
       }}
@@ -72,6 +66,6 @@ export const RemixContestCountdown = ({
       <TimeUnit value={timeLeft.minutes} label={messages.minutes} />
       <Divider color='default' orientation='vertical' />
       <TimeUnit value={timeLeft.seconds} label={messages.seconds} />
-    </Flex>
+    </Paper>
   )
 }

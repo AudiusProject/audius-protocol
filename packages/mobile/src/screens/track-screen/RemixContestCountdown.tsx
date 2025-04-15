@@ -4,7 +4,7 @@ import type { ID } from '@audius/common/models'
 import { formatDoubleDigit } from '@audius/common/utils'
 import { css } from '@emotion/native'
 
-import { Text, Flex, Divider } from '@audius/harmony-native'
+import { Text, Flex, Divider, Paper } from '@audius/harmony-native'
 
 const messages = {
   days: 'days',
@@ -20,12 +20,8 @@ type TimeUnitProps = {
 
 const TimeUnit = ({ value, label }: TimeUnitProps) => {
   return (
-    <Flex column gap='2xs' alignItems='center' justifyContent='center'>
-      <Text
-        variant='label'
-        color='inverse'
-        style={css({ fontSize: 24, lineHeight: 24 })}
-      >
+    <Flex column alignItems='center' justifyContent='center'>
+      <Text variant='heading' color='inverse'>
         {formatDoubleDigit(value)}
       </Text>
       <Text variant='label' color='inverse' size='xs'>
@@ -48,14 +44,12 @@ export const RemixContestCountdown = ({
   if (!remixContest || !timeLeft) return null
 
   return (
-    <Flex
+    <Paper
       row
       pv='m'
       ph='l'
-      shadow='mid'
       justifyContent='space-around'
       alignItems='center'
-      backgroundColor='white'
       borderRadius='l'
       style={css({
         opacity: 0.8
@@ -68,6 +62,6 @@ export const RemixContestCountdown = ({
       <TimeUnit value={timeLeft.minutes} label={messages.minutes} />
       <Divider orientation='vertical' />
       <TimeUnit value={timeLeft.seconds} label={messages.seconds} />
-    </Flex>
+    </Paper>
   )
 }
