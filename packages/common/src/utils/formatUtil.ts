@@ -339,3 +339,9 @@ export const getHash = (str: string) =>
       return a & a
     }, 0)
   ).toString(36)
+
+/**
+ * Formats a number to be a double digit
+ */
+export const formatDoubleDigit = (value: number) =>
+  value.toString().padStart(2, '0')

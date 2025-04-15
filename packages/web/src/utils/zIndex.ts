@@ -13,6 +13,7 @@ export enum zIndex {
   // Harmony buttons use a zIndex for their icons which can put them above
   // other elements that get promoted to gpu layers
   SVG_BUTTON_ICONS = 1,
+  REMIX_CONTEST_COUNT_DOWN = 1,
 
   GATED_TRACK_TILE_CORNER_TAG = 3,
   // Legacy tabs component from useTabs()

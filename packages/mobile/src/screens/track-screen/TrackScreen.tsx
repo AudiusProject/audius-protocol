@@ -26,6 +26,7 @@ import { Lineup } from 'app/components/lineup'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 
+import { RemixContestCountdown } from './RemixContestCountdown'
 import { TrackScreenDetailsTile } from './TrackScreenDetailsTile'
 import { TrackScreenRemixes } from './TrackScreenRemixes'
 import { TrackScreenSkeleton } from './TrackScreenSkeleton'
@@ -121,13 +122,16 @@ export const TrackScreen = () => {
           <Flex p='l' gap='2xl'>
             {/* Track Details */}
             <ScreenPrimaryContent skeleton={<TrackScreenSkeleton />}>
-              <TrackScreenDetailsTile
-                track={track}
-                user={user}
-                uid={lineup?.entries?.[0]?.uid}
-                isLineupLoading={!lineup?.entries?.[0]}
-                scrollViewRef={scrollViewRef}
-              />
+              <Flex gap='l'>
+                <RemixContestCountdown trackId={track_id} />
+                <TrackScreenDetailsTile
+                  track={track}
+                  user={user}
+                  uid={lineup?.entries?.[0]?.uid}
+                  isLineupLoading={!lineup?.entries?.[0]}
+                  scrollViewRef={scrollViewRef}
+                />
+              </Flex>
             </ScreenPrimaryContent>
 
             {isReachable ? (
