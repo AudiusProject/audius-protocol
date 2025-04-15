@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react'
-import { memo, useCallback, useEffect, useMemo, useRef } from 'react'
+import { memo, useCallback, useMemo, useRef } from 'react'
 
 import type { LineupData as LineupQueryData } from '@audius/common/api'
 import { useDebouncedCallback } from '@audius/common/hooks'
