@@ -105,7 +105,7 @@ export interface TanQueryLineupProps {
   loadMoreThreshold?: number
 
   /** Starting index to render from */
-  start?: number
+  offset?: number
 
   /** Whether to load more items when the user scrolls to the bottom of the lineup */
   shouldLoadMore?: boolean
@@ -152,7 +152,7 @@ export const TanQueryLineup = ({
   initialPageSize,
   scrollParent: externalScrollParent,
   loadMoreThreshold = DEFAULT_LOAD_MORE_THRESHOLD,
-  start,
+  offset,
   shouldLoadMore = true,
   data,
   pageSize,
@@ -243,14 +243,6 @@ export const TanQueryLineup = ({
     [playingUid, isPlaying, play, dispatch, pause]
   )
 
-  // Trim lineup based on start & maxEntry props
-  const lineupEntries = useMemo(() => {
-    if (maxEntries !== undefined) {
-      return lineup.entries.slice(0, maxEntries)
-    }
-    return lineup.entries
-  }, [lineup.entries, maxEntries])
-
   const renderSkeletons = useCallback(
     (skeletonCount: number | undefined) => {
       // This means no skeletons are desired
@@ -319,13 +311,13 @@ export const TanQueryLineup = ({
 
     // Apply offset and maxEntries to the lineup entries
     const lineupEntries =
-      pageSize !== undefined && start !== undefined
-        ? lineup.entries.slice(start, start + pageSize)
+      maxEntries !== undefined && offset !== undefined
+        ? lineup.entries.slice(offset, offset + maxEntries)
         : lineup.entries
 
     const lineupData =
-      pageSize !== undefined && start !== undefined
-        ? data?.slice(start, start + pageSize)
+      maxEntries !== undefined && offset !== undefined
+        ? data?.slice(offset, offset + maxEntries)
         : data
 
     let result = lineupEntries
@@ -388,16 +380,16 @@ export const TanQueryLineup = ({
     return result
   }, [
     isError,
-    pageSize,
-    start,
+    maxEntries,
+    offset,
     lineup.entries,
+    data,
     delineate,
     ordered,
     togglePlay,
     tileSize,
     statSize,
     containerClassName,
-    data,
     isTrending,
     onClickTile,
     isBuffering,

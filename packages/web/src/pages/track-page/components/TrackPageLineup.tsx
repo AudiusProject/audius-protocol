@@ -1,22 +1,16 @@
 import { useFeatureFlag } from '@audius/common/hooks'
-import { User, PlaybackSource } from '@audius/common/models'
+import { User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { useTrackPageLineup } from '@audius/common/src/api/tan-query/useTrackPageLineup'
 import { tracksActions } from '@audius/common/src/store/pages/track/lineup/actions'
-import { playerSelectors } from '@audius/common/store'
 import { Flex, Text, IconRemix } from '@audius/harmony'
 import type { IconComponent } from '@audius/harmony'
-import { useSelector } from 'react-redux'
 
 import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import { LineupVariant } from 'components/lineup/types'
 
 import { ViewOtherRemixesButton } from './ViewOtherRemixesButton'
 import { useTrackPageSize } from './useTrackPageSize'
-
-const { getUid, getTrackId, getBuffering } = playerSelectors
-
-const DEFAULT_PAGE_SIZE = 6
 
 type TrackPageLineupProps = {
   user: User | null
@@ -56,19 +50,9 @@ export const TrackPageLineup = ({
   trackId,
   commentsDisabled
 }: TrackPageLineupProps) => {
-  const {
-    indices,
-    pageSize = DEFAULT_PAGE_SIZE,
-    ...lineupData
-  } = useTrackPageLineup({
-    trackId,
-    ownerHandle: user?.handle
-  })
+  const { indices, ...lineupData } = useTrackPageLineup({ trackId })
 
   const { isDesktop, isMobile } = useTrackPageSize()
-  const playingUid = useSelector(getUid)
-  const playingTrackId = useSelector(getTrackId)
-  const isBuffering = useSelector(getBuffering)
 
   const { isEnabled: commentsFlagEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED
@@ -78,18 +62,19 @@ export const TrackPageLineup = ({
     (isCommentingEnabled && isDesktop) || isMobile
       ? LineupVariant.SECTION
       : LineupVariant.CONDENSED
+
   if (!indices) return null
 
   const renderRemixParentSection = () => {
-    if (indices.remixParentIndex === null) return null
+    if (indices.remixParentSection.index === null) return null
 
     return (
       <Section title={messages.originalTrack}>
         <TanQueryLineup
           {...lineupData}
-          pageSize={1}
+          maxEntries={indices.remixParentSection.pageSize}
           variant={lineupVariant}
-          start={indices.remixParentIndex}
+          offset={indices.remixParentSection.index}
           actions={tracksActions}
         />
       </Section>
@@ -97,17 +82,15 @@ export const TrackPageLineup = ({
   }
 
   const renderRemixesSection = () => {
-    if (indices.remixesStartIndex === null || !trackId) return null
-    const start = indices.remixesStartIndex
-    const end = indices.moreByTracksStartIndex
+    if (indices.remixesSection.index === null || !trackId) return null
 
     return (
       <Section title={messages.remixes} icon={IconRemix}>
         <TanQueryLineup
           {...lineupData}
-          pageSize={end !== null ? end - start : 0}
+          maxEntries={indices.remixesSection.pageSize}
           variant={lineupVariant}
-          start={start}
+          offset={indices.remixesSection.index}
           actions={tracksActions}
         />
         <ViewOtherRemixesButton parentTrackId={trackId} size='xs' />
@@ -116,17 +99,15 @@ export const TrackPageLineup = ({
   }
 
   const renderMoreBySection = () => {
-    if (indices.moreByTracksStartIndex === null) return null
-    const start = indices.moreByTracksStartIndex
-    const end = indices.recommendedTracksStartIndex
+    if (indices.moreBySection.index === null) return null
 
     return (
       <Section title={messages.moreBy(user?.name ?? '')}>
         <TanQueryLineup
           {...lineupData}
-          pageSize={end !== null ? end - start : 0}
+          maxEntries={indices.moreBySection.pageSize}
           variant={lineupVariant}
-          start={start}
+          offset={indices.moreBySection.index}
           actions={tracksActions}
         />
       </Section>
@@ -134,15 +115,15 @@ export const TrackPageLineup = ({
   }
 
   const renderRecommendedSection = () => {
-    if (indices.recommendedTracksStartIndex === null) return null
+    if (indices.recommendedSection.index === null) return null
 
     return (
       <Section title={messages.youMightAlsoLike}>
         <TanQueryLineup
           {...lineupData}
-          pageSize={pageSize}
+          maxEntries={indices.recommendedSection.pageSize}
           variant={lineupVariant}
-          start={indices.recommendedTracksStartIndex}
+          offset={indices.recommendedSection.index}
           actions={tracksActions}
         />
       </Section>

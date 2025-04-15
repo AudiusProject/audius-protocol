@@ -1,15 +1,13 @@
 import { useTrackPageLineup } from '@audius/common/api'
-import type { Track, User } from '@audius/common/models'
+import type { ID, User } from '@audius/common/models'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
 
 import { Flex, Text } from '@audius/harmony-native'
 import { Lineup } from 'app/components/lineup'
 
-const DEFAULT_PAGE_SIZE = 6
-
 type TrackScreenLineupProps = {
   user: User | null
-  track: Track | null
+  trackId: ID
 }
 
 type SectionProps = {
@@ -39,20 +37,16 @@ const messages = {
   youMightAlsoLike: 'You Might Also Like'
 }
 
-export const TrackScreenLineup = ({ user, track }: TrackScreenLineupProps) => {
-  const {
-    indices,
-    pageSize = DEFAULT_PAGE_SIZE,
-    lineup
-  } = useTrackPageLineup({
-    trackId: track?.track_id,
-    ownerHandle: user?.handle
-  })
+export const TrackScreenLineup = ({
+  user,
+  trackId
+}: TrackScreenLineupProps) => {
+  const { indices, lineup, pageSize } = useTrackPageLineup({ trackId })
 
   if (!indices) return null
 
   const renderRemixParentSection = () => {
-    if (indices.remixParentIndex === null) return null
+    if (indices.remixParentSection.index === null) return null
 
     return (
       <Section title={messages.originalTrack}>
@@ -60,8 +54,8 @@ export const TrackScreenLineup = ({ user, track }: TrackScreenLineupProps) => {
           tanQuery
           actions={tracksActions}
           lineup={lineup}
-          start={indices.remixParentIndex}
-          pageSize={1}
+          start={indices.remixParentSection.index}
+          pageSize={indices.remixParentSection.pageSize}
           includeLineupStatus
           itemStyles={itemStyles}
         />
@@ -70,9 +64,7 @@ export const TrackScreenLineup = ({ user, track }: TrackScreenLineupProps) => {
   }
 
   const renderRemixesSection = () => {
-    if (indices.remixesStartIndex === null) return null
-    const start = indices.remixesStartIndex
-    const end = indices.moreByTracksStartIndex
+    if (indices.remixesSection.index === null) return null
 
     return (
       <Section title={messages.remixes}>
@@ -80,8 +72,8 @@ export const TrackScreenLineup = ({ user, track }: TrackScreenLineupProps) => {
           tanQuery
           actions={tracksActions}
           lineup={lineup}
-          start={start}
-          pageSize={end !== null ? end - start : pageSize}
+          start={indices.remixesSection.index}
+          pageSize={indices.remixesSection.pageSize}
           includeLineupStatus
           itemStyles={itemStyles}
         />
@@ -90,9 +82,7 @@ export const TrackScreenLineup = ({ user, track }: TrackScreenLineupProps) => {
   }
 
   const renderMoreBySection = () => {
-    if (indices.moreByTracksStartIndex === null) return null
-    const start = indices.moreByTracksStartIndex
-    const end = indices.recommendedTracksStartIndex
+    if (indices.moreBySection.index === null) return null
 
     return (
       <Section title={messages.moreBy(user?.name ?? '')}>
@@ -100,8 +90,8 @@ export const TrackScreenLineup = ({ user, track }: TrackScreenLineupProps) => {
           tanQuery
           actions={tracksActions}
           lineup={lineup}
-          start={start}
-          pageSize={end !== null ? end - start : pageSize}
+          start={indices.moreBySection.index}
+          pageSize={indices.moreBySection.pageSize ?? pageSize}
           includeLineupStatus
           itemStyles={itemStyles}
         />
@@ -110,7 +100,7 @@ export const TrackScreenLineup = ({ user, track }: TrackScreenLineupProps) => {
   }
 
   const renderRecommendedSection = () => {
-    if (indices.recommendedTracksStartIndex === null) return null
+    if (indices.recommendedSection.index === null) return null
 
     return (
       <Section title={messages.youMightAlsoLike}>
@@ -118,8 +108,8 @@ export const TrackScreenLineup = ({ user, track }: TrackScreenLineupProps) => {
           tanQuery
           actions={tracksActions}
           lineup={lineup}
-          start={indices.recommendedTracksStartIndex}
-          pageSize={pageSize}
+          start={indices.recommendedSection.index}
+          pageSize={indices.recommendedSection.pageSize}
           includeLineupStatus
           itemStyles={itemStyles}
         />

@@ -2,8 +2,7 @@ import { EntityType, Id, OptionalId } from '@audius/sdk'
 import {
   useInfiniteQuery,
   useQueryClient,
-  InfiniteData,
-  UseInfiniteQueryResult
+  InfiniteData
 } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
@@ -16,33 +15,43 @@ import { trackPageSelectors } from '~/store/pages'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
 
 import { QUERY_KEYS } from './queryKeys'
-import { LineupData, QueryKey, QueryOptions } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
+import { useTrack } from './useTrack'
+import { useUser } from './useUser'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
 
 const DEFAULT_PAGE_SIZE = 6
 
-export const getTrackPageLineupQueryKey = (
-  trackId: ID | null | undefined,
-  ownerHandle: string | null | undefined
-) =>
-  [QUERY_KEYS.trackPageLineup, trackId, ownerHandle] as unknown as QueryKey<
+export const getTrackPageLineupQueryKey = (trackId: ID | null | undefined) =>
+  [QUERY_KEYS.trackPageLineup, trackId] as unknown as QueryKey<
     InfiniteData<TrackPageData>
   >
 
 type UseTrackPageLineupArgs = {
   trackId: ID | null | undefined
-  ownerHandle: string | null | undefined
   pageSize?: number
 }
 
 type TrackIndices = {
-  mainTrackIndex: number | null
-  remixParentIndex: number | null
-  remixesStartIndex: number | null
-  moreByTracksStartIndex: number | null
-  recommendedTracksStartIndex: number | null
+  mainTrackIndex: number | undefined
+  remixParentSection: {
+    index: number | undefined
+    pageSize: number | undefined
+  }
+  remixesSection: {
+    index: number | undefined
+    pageSize: number | undefined
+  }
+  moreBySection: {
+    index: number | undefined
+    pageSize: number | undefined
+  }
+  recommendedSection: {
+    index: number | undefined
+    pageSize: number | undefined
+  }
 }
 
 type TrackPageData = {
@@ -51,11 +60,7 @@ type TrackPageData = {
 }
 
 export const useTrackPageLineup = (
-  {
-    trackId,
-    ownerHandle,
-    pageSize = DEFAULT_PAGE_SIZE
-  }: UseTrackPageLineupArgs,
+  { trackId, pageSize = DEFAULT_PAGE_SIZE }: UseTrackPageLineupArgs,
   options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
@@ -63,19 +68,26 @@ export const useTrackPageLineup = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
+  const { data: ownerId } = useTrack(trackId, {
+    select: (track) => track?.owner_id
+  })
+  const { data: ownerHandle } = useUser(ownerId, {
+    select: (user) => user?.handle
+  })
+
   const queryData = useInfiniteQuery({
-    queryKey: getTrackPageLineupQueryKey(trackId, ownerHandle),
+    queryKey: getTrackPageLineupQueryKey(trackId),
     initialPageParam: 0,
     getNextPageParam: () => undefined, // Always return undefined to indicate no more pages
     queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
       const tracks: UserTrackMetadata[] = []
       const indices: TrackIndices = {
-        mainTrackIndex: null,
-        remixParentIndex: null,
-        remixesStartIndex: null,
-        moreByTracksStartIndex: null,
-        recommendedTracksStartIndex: null
+        mainTrackIndex: undefined,
+        remixParentSection: { index: undefined, pageSize: undefined },
+        remixesSection: { index: undefined, pageSize: undefined },
+        moreBySection: { index: undefined, pageSize: undefined },
+        recommendedSection: { index: undefined, pageSize: undefined }
       }
 
       // First get the hero track
@@ -104,8 +116,9 @@ export const useTrackPageLineup = (
               ? userTrackMetadataFromSDK(remixParentTrack.data)
               : undefined
             if (processedParentTrack) {
-              indices.remixParentIndex = tracks.length
+              indices.remixParentSection.index = tracks.length
               tracks.push(processedParentTrack)
+              indices.remixParentSection.pageSize = 1
             }
           } else {
             // If hero track is remixable (not a remix), get its remixes
@@ -124,8 +137,9 @@ export const useTrackPageLineup = (
                 userTrackMetadataFromSDK
               )
               if (processedRemixes.length > 0) {
-                indices.remixesStartIndex = tracks.length
-                tracks.push(...processedRemixes.slice(0, pageSize))
+                indices.remixesSection.index = tracks.length
+                tracks.push(...processedRemixes)
+                indices.remixesSection.pageSize = processedRemixes.length
               }
             }
           }
@@ -155,13 +169,14 @@ export const useTrackPageLineup = (
           .slice(0, pageSize)
 
         if (processedTracks.length > 0) {
-          indices.moreByTracksStartIndex = tracks.length
+          indices.moreBySection.index = tracks.length
           tracks.push(...processedTracks)
+          indices.moreBySection.pageSize = processedTracks.length
         }
       }
 
       // If there are no remixes, get recommended tracks based on genre
-      if (indices.remixesStartIndex === null && heroTrack?.data) {
+      if (indices.remixesSection.index === null && heroTrack?.data) {
         const { data: trendingData } = await sdk.full.tracks.getTrendingTracks({
           genre: heroTrack.data.genre ?? undefined,
           limit: pageSize,
@@ -180,8 +195,9 @@ export const useTrackPageLineup = (
           )
 
           if (processedTracks.length > 0) {
-            indices.recommendedTracksStartIndex = tracks.length
+            indices.recommendedSection.index = tracks.length
             tracks.push(...processedTracks)
+            indices.recommendedSection.pageSize = processedTracks.length
           }
         }
       }
@@ -208,20 +224,14 @@ export const useTrackPageLineup = (
   })
 
   const indices = queryData.data?.pages?.[0]?.indices
-  // const queryDataWithFlatData = queryData as unknown as UseInfiniteQueryResult<
-  //   LineupData[],
-  //   Error
-  // >
-  // queryDataWithFlatData.data = queryData.data?.pages
-  //   .map((page) => page.tracks)
-  //   .flat()
 
   const lineupData = useLineupQuery({
+    // @ts-ignore
     queryData: {
       ...queryData,
       data: queryData.data?.pages.map((page) => page.tracks).flat()
     },
-    queryKey: getTrackPageLineupQueryKey(trackId, ownerHandle),
+    queryKey: getTrackPageLineupQueryKey(trackId),
     lineupActions: tracksActions,
     lineupSelector: trackPageSelectors.getLineup,
     playbackSource: PlaybackSource.TRACK_TILE,

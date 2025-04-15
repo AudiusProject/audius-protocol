@@ -86,7 +86,7 @@ export const TrackScreen = () => {
                       <CommentPreview entityId={track_id} />
                     </Flex>
                   ) : null}
-                  <TrackScreenLineup track={track} user={user} />
+                  <TrackScreenLineup trackId={track} user={user} />
                 </Flex>
               </ScreenSecondaryContent>
             ) : null}
