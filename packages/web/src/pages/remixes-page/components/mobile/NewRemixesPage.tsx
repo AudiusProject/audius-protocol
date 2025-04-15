@@ -47,7 +47,8 @@ const RemixesPage = nullGuard(
       lineup,
       pageSize
     } = useRemixes({
-      trackId: originalTrack?.track_id
+      trackId: originalTrack?.track_id,
+      includeOriginal: true
     })
 
     const { setHeader } = useContext(HeaderContext)
