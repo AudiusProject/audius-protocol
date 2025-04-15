@@ -7,7 +7,8 @@ import {
   IconTokenGold,
   IconTokenPlatinum,
   HoverCardHeader,
-  HoverCard
+  HoverCard,
+  IconLogoCircle
 } from '@audius/harmony'
 import { Origin } from '@audius/harmony/src/components/popup/types'
 
@@ -83,7 +84,7 @@ export const AudioHoverCard = ({
             title={getBadgeName(tier)}
             onClose={onClose}
           />
-          <HoverCardBody icon={audioTierBadgeMap[tier]} amount={amount} />
+          <HoverCardBody icon={<IconLogoCircle size='3xl' />} amount={amount} />
         </>
       }
       anchorOrigin={anchorOrigin}
