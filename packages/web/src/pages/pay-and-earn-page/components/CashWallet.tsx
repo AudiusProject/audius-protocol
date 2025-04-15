@@ -51,12 +51,9 @@ export const CashWallet = () => {
 
   // Calculate the balance in cents by flooring to 2 decimal places then multiplying by 100
   const usdcValue = USDC(balance ?? new BN(0)).floor(2)
-  const balanceCents = Number(usdcValue.toString()) * 100
 
-  // Format the balance for display using the trunc and toShorthand methods
-  const balanceFormatted = USDC(balanceCents / 100)
-    .trunc()
-    .toShorthand()
+  // Format the balance for display
+  const balanceFormatted = usdcValue.toLocaleString().replace('$', '')
 
   const handleWithdraw = () => {
     openWithdrawUSDCModal({
@@ -65,7 +62,7 @@ export const CashWallet = () => {
     track(
       make({
         eventName: Name.WITHDRAW_USDC_MODAL_OPENED,
-        currentBalance: balanceCents / 100
+        currentBalance: Number(usdcValue.toString())
       })
     )
   }
