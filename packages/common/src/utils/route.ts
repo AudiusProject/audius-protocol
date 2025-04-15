@@ -79,7 +79,7 @@ export const PAYMENTS_PAGE = '/payments'
 export const PURCHASES_PAGE = '/payments/purchases'
 export const SALES_PAGE = '/payments/sales'
 export const WITHDRAWALS_PAGE = '/payments/withdrawals'
-export const TRANSACTION_HISTORY_PAGE = '/transaction-history'
+export const TRANSACTION_HISTORY_PAGE = '/wallet/transaction-history'
 export const WALLET_PAGE = '/wallet'
 export const PRIVATE_KEY_EXPORTER_SETTINGS_PAGE = '/settings/export-private-key'
 
