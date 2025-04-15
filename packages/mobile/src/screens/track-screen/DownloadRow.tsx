@@ -34,7 +34,6 @@ export const DownloadRow = ({
       justifyContent='space-between'
       borderTop='default'
       pv='m'
-      ph='l'
     >
       <Flex
         direction='row'
