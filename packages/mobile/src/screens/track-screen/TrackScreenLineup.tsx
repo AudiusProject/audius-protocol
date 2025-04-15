@@ -46,7 +46,7 @@ export const TrackScreenLineup = ({
   if (!indices) return null
 
   const renderRemixParentSection = () => {
-    if (indices.remixParentSection.index === null) return null
+    if (indices.remixParentSection.index === undefined) return null
 
     return (
       <Section title={messages.originalTrack}>
@@ -82,7 +82,7 @@ export const TrackScreenLineup = ({
   }
 
   const renderMoreBySection = () => {
-    if (indices.moreBySection.index === null) return null
+    if (indices.moreBySection.index === undefined) return null
 
     return (
       <Section title={messages.moreBy(user?.name ?? '')}>
@@ -100,7 +100,7 @@ export const TrackScreenLineup = ({
   }
 
   const renderRecommendedSection = () => {
-    if (indices.recommendedSection.index === null) return null
+    if (indices.recommendedSection.index === undefined) return null
 
     return (
       <Section title={messages.youMightAlsoLike}>

@@ -66,7 +66,7 @@ export const TrackPageLineup = ({
   if (!indices) return null
 
   const renderRemixParentSection = () => {
-    if (indices.remixParentSection.index === null) return null
+    if (indices.remixParentSection.index === undefined) return null
 
     return (
       <Section title={messages.originalTrack}>
@@ -82,7 +82,7 @@ export const TrackPageLineup = ({
   }
 
   const renderRemixesSection = () => {
-    if (indices.remixesSection.index === null || !trackId) return null
+    if (indices.remixesSection.index === undefined || !trackId) return null
 
     return (
       <Section title={messages.remixes} icon={IconRemix}>
@@ -99,7 +99,7 @@ export const TrackPageLineup = ({
   }
 
   const renderMoreBySection = () => {
-    if (indices.moreBySection.index === null) return null
+    if (indices.moreBySection.index === undefined) return null
 
     return (
       <Section title={messages.moreBy(user?.name ?? '')}>
@@ -115,7 +115,7 @@ export const TrackPageLineup = ({
   }
 
   const renderRecommendedSection = () => {
-    if (indices.recommendedSection.index === null) return null
+    if (indices.recommendedSection.index === undefined) return null
 
     return (
       <Section title={messages.youMightAlsoLike}>
