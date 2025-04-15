@@ -43,6 +43,11 @@ type AudioHoverCardProps = {
    * Position of the transform origin
    */
   transformOrigin?: Origin
+
+  /**
+   * Optional callback fired when the hover card is clicked
+   */
+  onClick?: () => void
 }
 
 // Audio tier badge map for header icons
@@ -66,7 +71,8 @@ export const AudioHoverCard = ({
   amount,
   onClose,
   anchorOrigin,
-  transformOrigin
+  transformOrigin,
+  onClick
 }: AudioHoverCardProps) => {
   return (
     <HoverCard
@@ -82,6 +88,7 @@ export const AudioHoverCard = ({
       }
       anchorOrigin={anchorOrigin}
       transformOrigin={transformOrigin}
+      onClick={onClick}
     >
       {children}
     </HoverCard>
