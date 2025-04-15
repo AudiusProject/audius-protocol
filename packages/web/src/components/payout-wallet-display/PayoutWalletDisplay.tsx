@@ -39,7 +39,7 @@ export const PayoutWalletDisplay = () => {
   const user = useSelector(getAccountUser)
   const payoutWallet = user?.spl_usdc_payout_wallet
 
-  const { data: externalWalletOwner, isPending: isLoadingOwner } =
+  const { data: externalWalletOwner, isLoading: isLoadingOwner } =
     useWalletOwner(payoutWallet)
 
   if (isLoadingOwner) {
