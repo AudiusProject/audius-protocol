@@ -1,15 +1,10 @@
 import { useTrack, useUser } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
-import { stemCategoryFriendlyNames } from '@audius/common/models'
 import { getFilename } from '@audius/common/utils'
 import { css } from '@emotion/native'
 
 import { Flex, Text, IconReceive, Box } from '@audius/harmony-native'
 import { PlainButton } from 'app/harmony-native/components/Button/PlainButton/PlainButton'
-
-const messages = {
-  fullTrack: 'Full Track'
-}
 
 type DownloadRowProps = {
   trackId: ID
