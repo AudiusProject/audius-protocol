@@ -78,7 +78,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
   })
   const { is_downloadable, access } = partialTrack ?? {}
 
-  const { data: stemTracks = [] } = useStems(trackId)
+  const { data: stemTracks = [], isSuccess: isStemsSuccess } = useStems(trackId)
   const { uploadingTracks: uploadingStems } = useUploadingStems(trackId)
   const {
     price,
@@ -104,10 +104,14 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
 
   const { onOpen: openDownloadTrackArchiveModal } =
     useDownloadTrackArchiveModal()
-  const { data: fileSizes } = useFileSizes({
-    trackIds: [trackId, ...stemTracks.map((s) => s.track_id)],
-    downloadQuality
-  })
+
+  const { data: fileSizes } = useFileSizes(
+    {
+      trackIds: [trackId, ...stemTracks.map((s) => s.track_id)],
+      downloadQuality
+    },
+    { enabled: isStemsSuccess }
+  )
   const { onOpen: openWaitForDownloadModal } = useWaitForDownloadModal()
 
   const onToggleExpand = useCallback(() => setExpanded((val) => !val), [])
