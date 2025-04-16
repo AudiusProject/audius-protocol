@@ -1,4 +1,4 @@
-import { Suspense, useCallback } from 'react'
+import { Suspense, useCallback, useState } from 'react'
 
 import { useRemixContest, useTrack, useTrackRank } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
@@ -13,7 +13,7 @@ import {
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { OverflowAction, PurchaseableContentType } from '@audius/common/store'
-import { Nullable, formatReleaseDate } from '@audius/common/utils'
+import { Nullable, formatReleaseDate, dayjs } from '@audius/common/utils'
 import {
   Flex,
   IconCollectible,
@@ -24,19 +24,20 @@ import {
   Box,
   Button,
   MusicBadge,
-  Text
+  Text,
+  IconCloudUpload
 } from '@audius/harmony'
 import IconCalendarMonth from '@audius/harmony/src/assets/icons/CalendarMonth.svg'
 import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
 import IconTrending from '@audius/harmony/src/assets/icons/Trending.svg'
 import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
 import cn from 'classnames'
-import dayjs from 'dayjs'
 import { useDispatch } from 'react-redux'
 
 import CoSign from 'components/co-sign/CoSign'
 import HoverInfo from 'components/co-sign/HoverInfo'
 import { Size } from 'components/co-sign/types'
+import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
 import { SearchTag } from 'components/search-bar/SearchTag'
@@ -68,7 +69,15 @@ const messages = {
   hidden: 'Hidden',
   releases: (releaseDate: string) =>
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`,
-  remixContest: 'Remix Contest'
+  remixContest: 'Remix Contest',
+  contestEnded: 'Contest Ended',
+  contestDeadline: 'Contest Deadline',
+  uploadRemixButtonText: 'Upload Remix',
+  deadline: (deadline?: string) => {
+    return deadline
+      ? `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`
+      : ''
+  }
 }
 
 type PlayButtonProps = {
@@ -351,6 +360,40 @@ const TrackHeader = ({
     )
   }
 
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const handleDrawerClose = useCallback(() => {
+    setIsDrawerOpen(false)
+  }, [setIsDrawerOpen])
+
+  const handleClick = useCallback(() => {
+    setIsDrawerOpen(true)
+  }, [setIsDrawerOpen])
+
+  const renderSubmitRemixContestSection = useCallback(() => {
+    if (!isRemixContest) return null
+    const isContestOver = dayjs(remixContest.endDate).isBefore(dayjs())
+    return (
+      <Flex column gap='m' w='100%'>
+        <Flex gap='xs' alignItems='center'>
+          <Text variant='label' color='accent'>
+            {isContestOver ? messages.contestEnded : messages.contestDeadline}
+          </Text>
+          <Text>{messages.deadline(remixContest.endDate)}</Text>
+        </Flex>
+        {!isOwner ? (
+          <Button
+            variant='secondary'
+            size='small'
+            onClick={handleClick}
+            iconLeft={IconCloudUpload}
+          >
+            {messages.uploadRemixButtonText}
+          </Button>
+        ) : null}
+      </Flex>
+    )
+  }, [isRemixContest, remixContest?.endDate, isOwner, handleClick])
+
   const trendingRank = useTrackRank(trackId)
 
   return (
@@ -467,6 +510,14 @@ const TrackHeader = ({
       ) : null}
       <TrackMetadataList trackId={trackId} />
       {renderTags()}
+      {isRemix ? (
+        <Flex>
+          <Text variant='label' color='subdued'>
+            {messages.remixContest}
+          </Text>
+        </Flex>
+      ) : null}
+      {renderSubmitRemixContestSection()}
       {hasDownloadableAssets ? (
         <Box pt='l' w='100%'>
           <Suspense>
@@ -474,6 +525,10 @@ const TrackHeader = ({
           </Suspense>
         </Box>
       ) : null}
+      <DownloadMobileAppDrawer
+        isOpen={isDrawerOpen}
+        onClose={handleDrawerClose}
+      />
     </div>
   )
 }
