@@ -2,8 +2,7 @@ import { cloneElement, MouseEvent, ReactElement, useCallback } from 'react'
 
 import { useSelectTierInfo } from '@audius/common/hooks'
 import { BadgeTier, ID } from '@audius/common/models'
-import { walletSelectors } from '@audius/common/store'
-import { formatWei, Nullable, route } from '@audius/common/utils'
+import { Nullable, route } from '@audius/common/utils'
 import {
   Box,
   Flex,
@@ -22,7 +21,6 @@ import cn from 'classnames'
 
 import { AudioHoverCard } from 'components/hover-card/AudioHoverCard'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { useSelector } from 'utils/reducer'
 
 import styles from './UserBadges.module.css'
 
@@ -72,8 +70,6 @@ const UserBadges = ({
   const hasContent = isUserVerified || tier !== 'none'
 
   const navigate = useNavigateToPage()
-  const totalBalance = useSelector(walletSelectors.getAccountTotalBalance)
-  const formattedBalance = totalBalance ? formatWei(totalBalance, true) : '0'
 
   // Create a click handler that stops propagation and navigates to AUDIO page
   const handleClick = useCallback(() => {
@@ -108,7 +104,7 @@ const UserBadges = ({
     tier !== 'none' ? (
       <AudioHoverCard
         tier={tier}
-        amount={formattedBalance}
+        userId={userId}
         anchorOrigin={anchorOrigin}
         transformOrigin={transformOrigin}
         onClick={handleClick}

@@ -61,6 +61,13 @@ export const HoverCard = ({
     if (onClose) onClose()
   }
 
+  const handleClick = () => {
+    if (onClick) {
+      onClick()
+      setIsHovered(false)
+    }
+  }
+
   return (
     <Flex
       ref={anchorRef}
@@ -83,7 +90,7 @@ export const HoverCard = ({
           borderRadius='m'
           backgroundColor='white'
           direction='column'
-          onClick={onClick}
+          onClick={handleClick}
         >
           {content}
         </Paper>
