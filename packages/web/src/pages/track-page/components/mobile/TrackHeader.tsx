@@ -1,6 +1,7 @@
 import { Suspense, useCallback } from 'react'
 
-import { useTrack, useTrackRank } from '@audius/common/api'
+import { useRemixContest, useTrack, useTrackRank } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
   SquareSizes,
   isContentCollectibleGated,
@@ -10,6 +11,7 @@ import {
   Remix,
   AccessConditions
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { OverflowAction, PurchaseableContentType } from '@audius/common/store'
 import { Nullable, formatReleaseDate } from '@audius/common/utils'
 import {
@@ -65,7 +67,8 @@ const messages = {
   artworkAltText: 'Track Artwork',
   hidden: 'Hidden',
   releases: (releaseDate: string) =>
-    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
+    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`,
+  remixContest: 'Remix Contest'
 }
 
 type PlayButtonProps = {
@@ -217,6 +220,11 @@ const TrackHeader = ({
   const albumInfo = album_backlink
   const shouldShowScheduledRelease =
     release_date && dayjs(release_date).isAfter(dayjs())
+  const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
+    FeatureFlags.REMIX_CONTEST
+  )
+  const { data: remixContest } = useRemixContest(trackId)
+  const isRemixContest = isRemixContestEnabled && !!remixContest
 
   const image = useTrackCoverArt({
     trackId,
@@ -304,6 +312,16 @@ const TrackHeader = ({
   )
 
   const renderHeaderText = () => {
+    if (isRemixContest) {
+      return (
+        <Flex justifyContent='center' alignItems='center'>
+          <Text variant='label' color='subdued'>
+            {messages.remixContest}
+          </Text>
+        </Flex>
+      )
+    }
+
     if (isStreamGated) {
       let IconComponent = IconSparkles
       let titleMessage = messages.specialAccess
