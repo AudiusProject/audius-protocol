@@ -6,12 +6,15 @@ import type { CommonState } from '@audius/common/store'
 import {
   accountSelectors,
   shareModalUIActions,
+  trackPageActions,
   uploadActions,
   uploadSelectors
 } from '@audius/common/store'
 import { make } from '@audius/web/src/common/store/analytics/actions'
 import { View, Image } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
+import { useEffectOnce } from 'react-use'
+import { parseTrackRoute } from 'utils/route/trackRouteParser'
 
 import {
   IconShare,
@@ -34,6 +37,7 @@ import { getTrackRoute } from 'app/utils/routes'
 const { getTracks } = uploadSelectors
 const { reset } = uploadActions
 const { getAccountUser } = accountSelectors
+const { fetchTrack } = trackPageActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 
 const messages = {
@@ -90,6 +94,14 @@ export const UploadCompleteScreen = () => {
   const accountUser = useSelector(getAccountUser)
   const { data: uploadedTrack } = useTrackByPermalink(permalink)
   const trackRoute = getTrackRoute(track!, true)
+
+  useEffectOnce(() => {
+    const params = parseTrackRoute(permalink)
+    if (params) {
+      const { slug, handle } = params
+      dispatch(fetchTrack(null, slug!, handle!))
+    }
+  })
 
   const handleClose = useCallback(() => {
     navigation.getParent()?.goBack()

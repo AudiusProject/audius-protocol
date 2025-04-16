@@ -15,11 +15,7 @@ import { QueryOptions } from './types'
 import { useTrack } from './useTrack'
 import { useTrackByPermalink } from './useTrackByPermalink'
 
-type TrackParams = {
-  handle?: string | null
-  slug?: string | null
-  trackId?: ID | null
-}
+type TrackParams = { handle?: string; slug?: string; id?: ID | null }
 
 /**
  * Hook that returns track data given either a track ID or a handle + slug.
@@ -31,15 +27,15 @@ export const useTrackByParams = (
   params: TrackParams | null,
   options?: QueryOptions
 ) => {
-  const { handle, slug, trackId } = params ?? {}
+  const { handle, slug, id } = params ?? {}
   const permalink = handle ? `/${handle}/${slug}` : null
 
   const dispatch = useDispatch()
-  const trackQuery = useTrack(trackId, options)
+  const trackQuery = useTrack(id, options)
   const permalinkQuery = useTrackByPermalink(permalink, options)
   const source = useSelector(trackPageSelectors.getSourceSelector)
 
-  const query = trackId ? trackQuery : permalinkQuery
+  const query = id ? trackQuery : permalinkQuery
 
   const { data: track, isSuccess } = query
 

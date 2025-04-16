@@ -12,10 +12,7 @@ export const getEntityRoute = (entity: EntityType, fullUrl = false) => {
 
 export const getEntityScreen = (entity: EntityType) => {
   if ('track_id' in entity) {
-    return [
-      'Track',
-      { trackId: entity.track_id, fromNotifications: true }
-    ] as const
+    return ['Track', { id: entity.track_id, fromNotifications: true }] as const
   }
   return [
     'Collection',

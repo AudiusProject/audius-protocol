@@ -1,5 +1,7 @@
-import { Track } from '@audius/common/src/models/Track'
-import { User } from '@audius/common/src/models/User'
+import {
+  getTrack,
+  getUser
+} from '@audius/common/src/store/pages/track/selectors'
 import { formatCount } from '@audius/common/src/utils/formatUtil'
 import {
   formatDate,
@@ -25,20 +27,17 @@ import { TextLink } from '@audius/harmony/src/components/text-link'
 import { Link } from 'react-router-dom'
 
 import { ServerUserGeneratedText } from 'components/user-generated-text/ServerUserGeneratedText'
+import { useSelector } from 'utils/reducer'
 import { searchResultsPage } from 'utils/route'
 
 import { Metadata } from './components/Metadata'
 const { profilePage } = route
 
-type DesktopServerTrackPageProps = {
-  track: Track
-  user: User
-}
+export const DesktopServerTrackPage = () => {
+  const track = useSelector(getTrack)
+  const user = useSelector(getUser)
+  if (!track || !user) return null
 
-export const DesktopServerTrackPage = ({
-  track,
-  user
-}: DesktopServerTrackPageProps) => {
   const {
     title,
     repost_count,

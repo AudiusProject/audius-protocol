@@ -1,6 +1,5 @@
 import { Component, ComponentType } from 'react'
 
-import { useTrackByParams } from '@audius/common/api'
 import {
   Name,
   ShareSource,
@@ -69,6 +68,7 @@ const { tracksActions } = trackPageLineupActions
 const {
   getUser,
   getLineup,
+  getTrack,
   getRemixParentTrack,
   getStatus,
   getSourceSelector,
@@ -99,15 +99,8 @@ type TrackPageProviderState = {
   source: string | undefined
 }
 
-const TrackPageProviderWrapper = (props: TrackPageProviderProps) => {
-  const params = parseTrackRoute(props.pathname)
-  const { data: track } = useTrackByParams(params)
-
-  return <TrackPageProviderClass {...props} track={track as Track | null} />
-}
-
-class TrackPageProviderClass extends Component<
-  TrackPageProviderProps & { track: Track | null },
+class TrackPageProvider extends Component<
+  TrackPageProviderProps,
   TrackPageProviderState
 > {
   static contextType = SsrContext
@@ -129,21 +122,10 @@ class TrackPageProviderClass extends Component<
       return
     }
 
-    this.props.reset()
-    // Only fetch lineup data since track data is handled by the hook
-    if (params.trackId) {
-      this.props.setTrackId(params.trackId)
-    } else if (params.slug && params.handle) {
-      this.props.setTrackPermalink(`/${params.handle}/${params.slug}`)
-    }
-    if (params.handle) {
-      this.setState({ ownerHandle: params.handle })
-    }
+    this.fetchTracks(params)
   }
 
-  componentDidUpdate(
-    prevProps: TrackPageProviderProps & { track: Track | null }
-  ) {
+  componentDidUpdate(prevProps: TrackPageProviderProps) {
     const {
       pathname,
       track,
@@ -167,22 +149,16 @@ class TrackPageProviderClass extends Component<
         const params = parseTrackRoute(pathname)
         if (params) {
           this.setState({ pathname })
-          this.props.reset()
-          // Track data is handled by the hook
-          if (params.trackId) {
-            this.props.setTrackId(params.trackId)
-          } else if (params.slug && params.handle) {
-            this.props.setTrackPermalink(`/${params.handle}/${params.slug}`)
-          }
-          if (params.handle) {
-            this.setState({ ownerHandle: params.handle })
-          }
+          this.fetchTracks(params)
         }
       }
     }
 
     // Set the lineup source in state once it's set in redux
-    if (!this.state.source && this.state.routeKey === track?.track_id) {
+    if (
+      !this.state.source &&
+      this.state.routeKey === this.props.track?.track_id
+    ) {
       this.setState({ source: this.props.source })
     }
 
@@ -252,6 +228,7 @@ class TrackPageProviderClass extends Component<
     if (slug && handle) {
       this.props.setTrackPermalink(`/${handle}/${slug}`)
     }
+    this.props.fetchTrack(trackId, slug || '', handle || '', !!(slug && handle))
     if (handle) {
       this.setState({ ownerHandle: handle })
     }
@@ -490,6 +467,7 @@ function makeMapStateToProps() {
   const mapStateToProps = (state: AppState) => {
     return {
       source: getSourceSelector(state),
+      track: getTrack(state),
       trackPermalink: getTrackPermalink(state),
       remixParentTrack: getRemixParentTrack(state),
       user: getUser(state),
@@ -509,6 +487,15 @@ function makeMapStateToProps() {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
+    fetchTrack: (
+      trackId: number | null,
+      slug: string,
+      ownerHandle: string,
+      canBeUnlisted: boolean
+    ) =>
+      dispatch(
+        trackPageActions.fetchTrack(trackId, slug, ownerHandle, canBeUnlisted)
+      ),
     setTrackId: (trackId: number) =>
       dispatch(trackPageActions.setTrackId(trackId)),
     setTrackPermalink: (permalink: string) =>
@@ -574,4 +561,4 @@ function mapDispatchToProps(dispatch: Dispatch) {
 export default connect(
   makeMapStateToProps,
   mapDispatchToProps
-)(TrackPageProviderWrapper)
+)(TrackPageProvider)
