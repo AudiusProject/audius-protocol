@@ -33,7 +33,7 @@ import {
   playerSelectors,
   playerActions
 } from '@audius/common/store'
-import { formatDate, route, Uid } from '@audius/common/utils'
+import { formatDate, route } from '@audius/common/utils'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
@@ -59,7 +59,7 @@ const {
   REPOSTING_USERS_ROUTE
 } = route
 const { makeGetCurrent } = queueSelectors
-const { getPlaying, getPreviewing, getBuffering } = playerSelectors
+const { getPlaying, getPreviewing } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
@@ -312,15 +312,6 @@ class TrackPageProviderClass extends Component<
     }
   }
 
-  onMoreByArtistTracksPlay = (uid?: string) => {
-    const { play, recordPlayMoreByArtist } = this.props
-    play(uid)
-    if (uid) {
-      const trackId = Uid.fromString(uid).id
-      recordPlayMoreByArtist(trackId as number)
-    }
-  }
-
   onHeroRepost = (isReposted: boolean, trackId: ID) => {
     const { repostTrack, undoRepostTrack } = this.props
     if (!isReposted) {
@@ -377,13 +368,10 @@ class TrackPageProviderClass extends Component<
       track,
       remixParentTrack,
       user,
-      moreByArtist,
       currentQueueItem,
       playing,
       previewing,
-      buffering,
-      userId,
-      pause
+      userId
     } = this.props
     const heroPlaying =
       playing &&
@@ -447,21 +435,12 @@ class TrackPageProviderClass extends Component<
       userId,
       previewing,
       onHeroPlay: this.onHeroPlay,
-      goToAllRemixesPage: this.goToAllRemixesPage,
       onHeroRepost: this.onHeroRepost,
       onHeroShare: this.onHeroShare,
       onClickMobileOverflow: this.props.clickOverflow,
       onConfirmUnfollow: this.props.onConfirmUnfollow,
       goToFavoritesPage: this.goToFavoritesPage,
-      goToRepostsPage: this.goToRepostsPage,
-
-      // Tracks Lineup Props
-      tracks: moreByArtist,
-      currentQueueItem,
-      isPlaying: playing,
-      isBuffering: buffering,
-      play: this.onMoreByArtistTracksPlay,
-      pause
+      goToRepostsPage: this.goToRepostsPage
     }
 
     return (
@@ -498,7 +477,6 @@ function makeMapStateToProps() {
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
       previewing: getPreviewing(state),
-      buffering: getBuffering(state),
       pathname: getLocationPathname(state)
     }
   }

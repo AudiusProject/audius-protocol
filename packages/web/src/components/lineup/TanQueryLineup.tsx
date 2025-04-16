@@ -105,7 +105,7 @@ export interface TanQueryLineupProps {
   loadMoreThreshold?: number
 
   /** Starting index to render from */
-  start?: number
+  offset?: number
 
   /** Whether to load more items when the user scrolls to the bottom of the lineup */
   shouldLoadMore?: boolean
@@ -152,7 +152,7 @@ export const TanQueryLineup = ({
   initialPageSize,
   scrollParent: externalScrollParent,
   loadMoreThreshold = DEFAULT_LOAD_MORE_THRESHOLD,
-  start,
+  offset,
   shouldLoadMore = true,
   data,
   pageSize,
@@ -180,16 +180,15 @@ export const TanQueryLineup = ({
   const isMobile = useIsMobile()
   const scrollContainer = useRef<HTMLDivElement>(null)
 
+  const isSmallTrackTile = isMobile || variant === LineupVariant.SECTION
+
   // Memoize component selection based on device type
   const { TrackTile, PlaylistTile } = useMemo(() => {
     return {
-      TrackTile:
-        isMobile || variant === LineupVariant.SECTION
-          ? TrackTileMobile
-          : TrackTileDesktop,
-      PlaylistTile: isMobile ? PlaylistTileMobile : PlaylistTileDesktop
+      TrackTile: isSmallTrackTile ? TrackTileMobile : TrackTileDesktop,
+      PlaylistTile: isSmallTrackTile ? PlaylistTileMobile : PlaylistTileDesktop
     }
-  }, [isMobile, variant])
+  }, [isSmallTrackTile])
 
   // Memoized scroll parent callback
   const getScrollParent = useCallback(() => {
@@ -243,14 +242,6 @@ export const TanQueryLineup = ({
     [playingUid, isPlaying, play, dispatch, pause]
   )
 
-  // Trim lineup based on start & maxEntry props
-  const lineupEntries = useMemo(() => {
-    if (maxEntries !== undefined) {
-      return lineup.entries.slice(0, maxEntries)
-    }
-    return lineup.entries
-  }, [lineup.entries, maxEntries])
-
   const renderSkeletons = useCallback(
     (skeletonCount: number | undefined) => {
       // This means no skeletons are desired
@@ -282,7 +273,10 @@ export const TanQueryLineup = ({
                   className={cn({ [tileStyles!]: !!tileStyles })}
                   css={{ listStyle: 'none' }}
                 >
-                  <Flex direction={isMobile ? 'row' : 'column'} w='100%'>
+                  <Flex
+                    direction={isSmallTrackTile ? 'row' : 'column'}
+                    w='100%'
+                  >
                     {/* @ts-ignore - the types here need work - we're not passing the full expected types here whenever we pass isLoading: true */}
                     <TrackTile {...skeletonTileProps(index)} key={index} />
                   </Flex>
@@ -305,7 +299,7 @@ export const TanQueryLineup = ({
       numPlaylistSkeletonRows,
       leadingElementId,
       tileStyles,
-      isMobile,
+      isSmallTrackTile,
       TrackTile,
       leadingElementDelineator
     ]
@@ -316,6 +310,17 @@ export const TanQueryLineup = ({
     if (isError) {
       return []
     }
+
+    // Apply offset and maxEntries to the lineup entries
+    const lineupEntries =
+      maxEntries !== undefined && offset !== undefined
+        ? lineup.entries.slice(offset, offset + maxEntries)
+        : lineup.entries
+
+    const lineupData =
+      maxEntries !== undefined && offset !== undefined
+        ? data?.slice(offset, offset + maxEntries)
+        : data
 
     let result = lineupEntries
       .map((entry: any, index: number) => {
@@ -332,7 +337,7 @@ export const TanQueryLineup = ({
             containerClassName,
             uid: entry.uid,
             id: entry.id,
-            isLoading: data?.[index] === undefined,
+            isLoading: lineupData?.[index] === undefined,
             isTrending,
             onClick: onClickTile,
             source: ModalSource.LineUpTrackTile,
@@ -356,7 +361,7 @@ export const TanQueryLineup = ({
             pauseTrack: pause,
             playingTrackId,
             togglePlay,
-            isLoading: data?.[index] === undefined,
+            isLoading: lineupData?.[index] === undefined,
             numLoadingSkeletonRows: numPlaylistSkeletonRows,
             isTrending,
             source: ModalSource.LineUpCollectionTile,
@@ -377,25 +382,27 @@ export const TanQueryLineup = ({
     return result
   }, [
     isError,
-    lineupEntries,
+    maxEntries,
+    offset,
+    lineup.entries,
+    data,
     delineate,
     ordered,
     togglePlay,
     tileSize,
     statSize,
     containerClassName,
-    data,
     isTrending,
     onClickTile,
     isBuffering,
     playingSource,
     TrackTile,
-    isMobile,
     play,
     pause,
     playingTrackId,
     numPlaylistSkeletonRows,
-    PlaylistTile
+    PlaylistTile,
+    isMobile
   ])
 
   const isInitialLoad = (isFetching && tiles.length === 0) || isPending
@@ -444,7 +451,10 @@ export const TanQueryLineup = ({
                     className={cn({ [tileStyles!]: !!tileStyles })}
                     as='li'
                   >
-                    <Flex direction={isMobile ? 'row' : 'column'} w='100%'>
+                    <Flex
+                      direction={isSmallTrackTile ? 'row' : 'column'}
+                      w='100%'
+                    >
                       {tile}
                     </Flex>
                     {index === 0 &&
