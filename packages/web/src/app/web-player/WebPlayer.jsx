@@ -127,6 +127,7 @@ const {
   HISTORY_PAGE,
   DASHBOARD_PAGE,
   AUDIO_PAGE,
+  WALLET_AUDIO_PAGE,
   REWARDS_PAGE,
   UPLOAD_PAGE,
   UPLOAD_ALBUM_PAGE,
@@ -786,6 +787,12 @@ class WebPlayer extends Component {
                 <Route
                   exact
                   path={AUDIO_PAGE}
+                  isMobile={isMobile}
+                  component={AudioPage}
+                />
+                <Route
+                  exact
+                  path={WALLET_AUDIO_PAGE}
                   isMobile={isMobile}
                   component={AudioPage}
                 />

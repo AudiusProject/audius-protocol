@@ -10,6 +10,7 @@ import {
 } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import {
+  Box,
   Button,
   Flex,
   IconInfo,
@@ -17,6 +18,7 @@ import {
   Paper,
   Text
 } from '@audius/harmony'
+import { useTheme } from '@emotion/react'
 import BN from 'bn.js'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -48,12 +50,13 @@ export const CashWallet = () => {
   const { onOpen: openAddFundsModal } = useAddFundsModal()
   const { data: balance, status: balanceStatus } = useUSDCBalance()
   const [, setPayoutWalletModalOpen] = useModalState('PayoutWallet')
+  const { motion, color } = useTheme()
 
   // Calculate the balance in cents by flooring to 2 decimal places then multiplying by 100
   const usdcValue = USDC(balance ?? new BN(0)).floor(2)
 
-  // Format the balance for display
-  const balanceFormatted = usdcValue.toLocaleString().replace('$', '')
+  // Format the balance for display with exactly 2 decimal places
+  const balanceFormatted = usdcValue.toFixed(2).replace('$', '')
 
   const handleWithdraw = () => {
     openWithdrawUSDCModal({
@@ -98,7 +101,16 @@ export const CashWallet = () => {
                 shouldWrapContent={false}
                 css={{ zIndex: zIndex.CASH_WALLET_TOOLTIP }}
               >
-                <IconInfo size='s' color='subdued' />
+                <Box
+                  css={{
+                    transition: motion.hover,
+                    '&:hover svg path': {
+                      fill: color.icon.default
+                    }
+                  }}
+                >
+                  <IconInfo size='s' color='subdued' />
+                </Box>
               </Tooltip>
             </Flex>
           </Flex>

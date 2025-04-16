@@ -30,7 +30,7 @@ export const HoverCardHeader = ({
         <Text
           variant='label'
           size='s'
-          color='subdued'
+          color='default'
           textTransform='uppercase'
         >
           {title}

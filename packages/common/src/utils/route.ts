@@ -53,6 +53,7 @@ export const DASHBOARD_PAGE = '/dashboard'
 export const AUDIO_PAGE = '/audio'
 export const REWARDS_PAGE = '/rewards'
 export const AIRDROP_PAGE = '/rewards/airdrop'
+export const WALLET_AUDIO_PAGE = '/wallet/audio'
 export const UPLOAD_PAGE = '/upload'
 export const UPLOAD_ALBUM_PAGE = '/upload/album'
 export const UPLOAD_PLAYLIST_PAGE = '/upload/playlist'
@@ -272,6 +273,7 @@ export const orderedRoutes = [
   DASHBOARD_PAGE,
   PAYMENTS_PAGE,
   AUDIO_PAGE,
+  WALLET_AUDIO_PAGE,
   WALLET_PAGE,
   REWARDS_PAGE,
   SETTINGS_PAGE,
@@ -319,6 +321,7 @@ export const staticRoutes = new Set([
   DASHBOARD_PAGE,
   PAYMENTS_PAGE,
   AUDIO_PAGE,
+  WALLET_AUDIO_PAGE,
   REWARDS_PAGE,
   TRACK_EDIT_PAGE,
   UPLOAD_PAGE,

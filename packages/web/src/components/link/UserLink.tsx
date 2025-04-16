@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { MountPlacement } from 'components/types'
-import { TieredUserBadge } from 'components/user-badges'
+import UserBadges from 'components/user-badges'
 
 import { TextLink, TextLinkProps } from './TextLink'
 
@@ -49,14 +49,32 @@ export const UserLink = (props: UserLinkProps) => {
     return null
   }
 
-  // Prepare the user badges using the new TieredUserBadge component
+  // Prepare the user badges
   const badges = noBadges ? null : (
-    <TieredUserBadge
+    <UserBadges
       userId={userId}
       size={badgeSize}
       css={{ marginTop: spacing['2xs'] }}
     />
   )
+
+  // Create a text element that may or may not be wrapped in a popover
+  const textElement =
+    popover && handle ? (
+      <ArtistPopover
+        css={{
+          display: 'inline-flex',
+          overflow: noOverflow ? 'visible' : 'hidden'
+        }}
+        handle={handle}
+        component='span'
+        mount={popoverMount}
+      >
+        <Text ellipses>{name}</Text>
+      </ArtistPopover>
+    ) : (
+      <Text ellipses>{name}</Text>
+    )
 
   const textLink = (
     <TextLink
@@ -69,7 +87,7 @@ export const UserLink = (props: UserLinkProps) => {
       ellipses={popover}
       {...other}
     >
-      <Text ellipses>{name}</Text>
+      {textElement}
       {badges}
       {children}
     </TextLink>
@@ -77,19 +95,5 @@ export const UserLink = (props: UserLinkProps) => {
   const noTextLink = <Link to={url}>{children}</Link>
   const linkElement = noText ? noTextLink : textLink
 
-  return popover && handle ? (
-    <ArtistPopover
-      css={{
-        display: 'inline-flex',
-        overflow: noOverflow ? 'visible' : 'hidden'
-      }}
-      handle={handle}
-      component='span'
-      mount={popoverMount}
-    >
-      {linkElement}
-    </ArtistPopover>
-  ) : (
-    linkElement
-  )
+  return linkElement
 }
