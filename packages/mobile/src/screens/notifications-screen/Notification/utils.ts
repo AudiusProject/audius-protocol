@@ -19,6 +19,6 @@ export const getEntityScreen = (entity: EntityType) => {
   }
   return [
     'Collection',
-    { id: entity.playlist_id, fromNotifications: true }
+    { collectionId: entity.playlist_id, fromNotifications: true }
   ] as const
 }

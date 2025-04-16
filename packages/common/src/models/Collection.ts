@@ -87,8 +87,6 @@ export type OfflineCollectionMetadata = {
 export type ComputedCollectionProperties = {
   _is_publishing?: boolean
   _marked_deleted?: boolean
-  _moved?: UID
-  _temp?: boolean
   artwork?: CollectionMetadata['artwork'] & {
     file?: File
     url?: string

@@ -7,7 +7,6 @@ import { Status } from '../../../models/Status'
 import { LineupActions, asLineup } from '../../../store/lineup/reducer'
 
 import {
-  FETCH_COLLECTION,
   FETCH_COLLECTION_SUCCEEDED,
   FETCH_COLLECTION_FAILED,
   RESET_COLLECTION,
@@ -16,7 +15,6 @@ import {
   FetchCollectionFailedAction,
   CollectionPageAction,
   SetSmartCollectionAction,
-  FetchCollectionAction,
   ResetCollectionAction
 } from './actions'
 import { PREFIX as tracksPrefix } from './lineup/actions'
@@ -33,27 +31,13 @@ export const initialState = {
 }
 
 const actionsMap = {
-  [FETCH_COLLECTION](
-    state: CollectionsPageState,
-    _action: FetchCollectionAction
-  ) {
-    return {
-      ...state,
-      status: Status.LOADING,
-      smartCollectionVariant: null
-    }
-  },
   [FETCH_COLLECTION_SUCCEEDED](
     state: CollectionsPageState,
     action: FetchCollectionSucceededAction
   ) {
     return {
       ...state,
-      collectionId: action.collectionId,
-      collectionUid: action.collectionUid,
-      userUid: action.userUid,
-      status: Status.SUCCESS,
-      collectionPermalink: action.collectionPermalink
+      collectionId: action.collectionId
     }
   },
   [FETCH_COLLECTION_FAILED](

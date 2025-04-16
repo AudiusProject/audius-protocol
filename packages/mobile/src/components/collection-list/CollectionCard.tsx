@@ -80,7 +80,7 @@ export const CollectionCard = (props: CollectionCardProps) => {
     (e: GestureResponderEvent) => {
       onPress?.(e)
       if (noNavigation) return
-      navigation.navigate('Collection', { id })
+      navigation.navigate('Collection', { collectionId: id })
     },
     [onPress, noNavigation, navigation, id]
   )

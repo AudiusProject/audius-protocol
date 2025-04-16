@@ -1,5 +1,6 @@
 import { ComponentType, PureComponent, RefObject } from 'react'
 
+import { useUserByParams } from '@audius/common/api'
 import {
   Name,
   ShareSource,
@@ -7,7 +8,8 @@ import {
   CreatePlaylistSource,
   Status,
   ID,
-  UID
+  UID,
+  UserMetadata
 } from '@audius/common/models'
 import { newUserMetadata } from '@audius/common/schemas'
 import {
@@ -97,10 +99,17 @@ type OwnProps = {
     | ComponentType<DesktopProfilePageProps>
 }
 
-type ProfilePageProps = OwnProps &
+type ProfilePageProviderProps = OwnProps &
   ReturnType<ReturnType<typeof makeMapStateToProps>> &
   ReturnType<typeof mapDispatchToProps> &
   RouteComponentProps
+
+const ProfilePageProvider = (props: ProfilePageProviderProps) => {
+  const params = parseUserRoute(props.pathname)
+  const { data: user } = useUserByParams(params!)
+
+  return <ProfilePage {...props} user={user} />
+}
 
 type ProfilePageState = {
   activeTab: ProfilePageTabs | null
@@ -122,6 +131,10 @@ type ProfilePageState = {
   showUnblockUserConfirmationModal: boolean
   showMuteUserConfirmationModal: boolean
   showUnmuteUserConfirmationModal: boolean
+}
+
+type ProfilePageProps = ProfilePageProviderProps & {
+  user: UserMetadata | null | undefined
 }
 
 class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
@@ -671,11 +684,8 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   }
 
   getIsOwner = (overrideProps?: ProfilePageProps) => {
-    const {
-      profile: { profile },
-      accountUserId
-    } = overrideProps || this.props
-    return profile && accountUserId ? profile.user_id === accountUserId : false
+    const { user, accountUserId } = overrideProps || this.props
+    return user && accountUserId ? user.user_id === accountUserId : false
   }
 
   onMessage = () => {
@@ -1148,5 +1158,5 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
 }
 
 export default withRouter(
-  connect(makeMapStateToProps, mapDispatchToProps)(ProfilePage)
+  connect(makeMapStateToProps, mapDispatchToProps)(ProfilePageProvider)
 )

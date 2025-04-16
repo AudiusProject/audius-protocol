@@ -84,12 +84,15 @@ const Link = ({
       if (res.data) {
         if (instanceOfTrackResponse(res)) {
           setUnfurledContent(formatTrackName({ track: res.data }))
-          setTo({ screen: 'Track', params: { id: HashId.parse(res.data.id) } })
+          setTo({
+            screen: 'Track',
+            params: { trackId: HashId.parse(res.data.id) }
+          })
         } else if (instanceOfPlaylistResponse(res)) {
           setUnfurledContent(formatCollectionName({ collection: res.data[0] }))
           setTo({
             screen: 'Collection',
-            params: { id: HashId.parse(res.data[0].id) }
+            params: { collectionId: HashId.parse(res.data[0].id) }
           })
         } else if (instanceOfUserResponse(res)) {
           setUnfurledContent(formatUserName({ user: res.data }))

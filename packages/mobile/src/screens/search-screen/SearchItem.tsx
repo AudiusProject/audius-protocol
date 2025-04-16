@@ -160,7 +160,7 @@ export const SearchItemCollection = (props: SearchItemProps) => {
 
   const handlePress = () => {
     onPress?.()
-    navigation.push('Collection', { id })
+    navigation.push('Collection', { collectionId: id })
   }
 
   return (

@@ -21,7 +21,7 @@ export const EntityLink = (props: EntityLinkProps) => {
       })
     } else if ('playlist_id' in entity) {
       navigation.navigate('Collection', {
-        id: entity.playlist_id,
+        collectionId: entity.playlist_id,
         fromNotifications: true
       })
     }

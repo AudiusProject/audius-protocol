@@ -1,10 +1,13 @@
 import { ChangeEvent, useCallback, useMemo } from 'react'
 
-import { useFavoriteTrack, useUnfavoriteTrack } from '@audius/common/api'
+import {
+  TQCollection,
+  useFavoriteTrack,
+  useUnfavoriteTrack
+} from '@audius/common/api'
 import {
   Variant,
   Status,
-  Collection,
   SmartCollection,
   ID,
   User,
@@ -97,8 +100,8 @@ export type CollectionPageProps = {
   getPlayingUid: () => string | null
   type: CollectionsPageType
   collection: {
-    status: string
-    metadata: Collection | SmartCollection | null
+    status: 'pending' | 'success' | 'error'
+    metadata: TQCollection | SmartCollection | null
     user: User | null
   }
   tracks: {
@@ -166,12 +169,10 @@ const CollectionPage = ({
     tracks.status === Status.SUCCESS
       ? getFilteredData(tracks.entries)
       : [[], -1]
-  const collectionLoading = status === Status.LOADING
+  const collectionLoading = status === 'pending'
   const queuedAndPlaying = playing && isQueued()
   const queuedAndPreviewing = previewing && isQueued()
-  const tracksLoading =
-    trackCount > 0 &&
-    (tracks.status === Status.LOADING || tracks.status === Status.IDLE)
+  const tracksLoading = trackCount > 0 && status === 'pending'
 
   const duration =
     dataSource.reduce(
@@ -189,7 +190,9 @@ const CollectionPage = ({
   const gradient = metadata?.variant === Variant.SMART ? metadata.gradient : ''
   const icon =
     metadata?.variant === Variant.SMART
-      ? smartCollectionIcons[metadata.playlist_name]
+      ? smartCollectionIcons[
+          metadata.playlist_name as keyof typeof smartCollectionIcons
+        ]
       : null
   const imageOverride =
     metadata?.variant === Variant.SMART ? metadata.imageOverride : ''

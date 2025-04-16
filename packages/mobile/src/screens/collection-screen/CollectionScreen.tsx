@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { useCollection, useUser } from '@audius/common/api'
+import { useCollectionByParams, useUser } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,
@@ -9,12 +9,7 @@ import {
   FavoriteType,
   SquareSizes
 } from '@audius/common/models'
-import type {
-  Collection,
-  SearchUser,
-  SearchPlaylist,
-  User
-} from '@audius/common/models'
+import type { Collection, SearchPlaylist, User } from '@audius/common/models'
 import {
   accountSelectors,
   collectionsSocialActions,
@@ -73,18 +68,11 @@ const useStyles = makeStyles(({ spacing }) => ({
  */
 export const CollectionScreen = () => {
   const { params } = useRoute<'Collection'>()
-
-  // params is incorrectly typed and can sometimes be undefined
-  const { id = null, searchCollection, collectionType } = params ?? {}
-
-  const { data: cachedCollection } = useCollection(id)
-  const { data: cachedUser } = useUser(cachedCollection?.playlist_owner_id)
-
-  const collection = cachedCollection ?? searchCollection
-  const user = cachedUser ?? searchCollection?.user
+  const { data: collection } = useCollectionByParams(params)
+  const { data: user } = useUser(collection?.playlist_owner_id)
 
   if (!collection || !user) {
-    return <CollectionScreenSkeleton collectionType={collectionType} />
+    return <CollectionScreenSkeleton collectionType={params?.collectionType} />
   }
 
   return <CollectionScreenComponent collection={collection} user={user} />
@@ -92,13 +80,13 @@ export const CollectionScreen = () => {
 
 type CollectionScreenComponentProps = {
   collection: Collection | SearchPlaylist
-  user: User | SearchUser
+  user: User
 }
 const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
+  const { collection, user } = props
   const styles = useStyles()
   const dispatch = useDispatch()
   const navigation = useNavigation()
-  const { collection, user } = props
   const {
     _is_publishing,
     description,
