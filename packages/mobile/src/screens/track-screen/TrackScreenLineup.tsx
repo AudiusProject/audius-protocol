@@ -1,9 +1,12 @@
-import { useTrackPageLineup } from '@audius/common/api'
+import { useTrack, useTrackPageLineup } from '@audius/common/api'
+import { trackPageMessages as messages } from '@audius/common/messages'
 import type { ID, User } from '@audius/common/models'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
 
-import { Flex, Text } from '@audius/harmony-native'
+import { Button, Flex, Text } from '@audius/harmony-native'
 import { Lineup } from 'app/components/lineup'
+import { TanQueryLineup } from 'app/components/lineup/TanQueryLineup'
+import { useNavigation } from 'app/hooks/useNavigation'
 
 type TrackScreenLineupProps = {
   user: User | null
@@ -30,18 +33,37 @@ const itemStyles = {
   paddingHorizontal: 0
 }
 
-const messages = {
-  originalTrack: 'Original Track',
-  remixes: 'Remixes of this Track',
-  moreBy: (name: string) => `More by ${name}`,
-  youMightAlsoLike: 'You Might Also Like'
-}
-
 export const TrackScreenLineup = ({
   user,
   trackId
 }: TrackScreenLineupProps) => {
-  const { indices, lineup, pageSize } = useTrackPageLineup({ trackId })
+  const {
+    indices,
+    lineup,
+    pageSize,
+    isFetching,
+    loadNextPage,
+    isPending,
+    data
+  } = useTrackPageLineup({ trackId })
+
+  const { data: permalink } = useTrack(trackId, {
+    select: (track) => track.permalink
+  })
+
+  const navigation = useNavigation()
+
+  const viewRemixesButton = (
+    <Button
+      style={{ alignSelf: 'flex-start' }}
+      size='small'
+      onPress={() => {
+        navigation.navigate('TrackRemixes', { trackId })
+      }}
+    >
+      {messages.viewOtherRemixes}
+    </Button>
+  )
 
   if (!indices) return null
 
@@ -50,15 +72,22 @@ export const TrackScreenLineup = ({
 
     return (
       <Section title={messages.originalTrack}>
-        <Lineup
-          tanQuery
-          actions={tracksActions}
-          lineup={lineup}
-          start={indices.remixParentSection.index}
-          pageSize={indices.remixParentSection.pageSize}
-          includeLineupStatus
-          itemStyles={itemStyles}
-        />
+        <Flex column gap='l'>
+          <TanQueryLineup
+            actions={tracksActions}
+            lineup={lineup}
+            offset={indices.remixParentSection.index}
+            maxEntries={indices.remixParentSection.pageSize}
+            includeLineupStatus
+            itemStyles={itemStyles}
+            isFetching={isFetching}
+            loadNextPage={loadNextPage}
+            hasMore={false}
+            isPending={isPending}
+            queryData={data}
+          />
+          {viewRemixesButton}
+        </Flex>
       </Section>
     )
   }
@@ -68,15 +97,22 @@ export const TrackScreenLineup = ({
 
     return (
       <Section title={messages.remixes}>
-        <Lineup
-          tanQuery
-          actions={tracksActions}
-          lineup={lineup}
-          start={indices.remixesSection.index}
-          pageSize={indices.remixesSection.pageSize}
-          includeLineupStatus
-          itemStyles={itemStyles}
-        />
+        <Flex column gap='l'>
+          <TanQueryLineup
+            actions={tracksActions}
+            lineup={lineup}
+            offset={indices.remixesSection.index}
+            maxEntries={indices.remixesSection.pageSize}
+            includeLineupStatus
+            itemStyles={itemStyles}
+            isFetching={isFetching}
+            loadNextPage={loadNextPage}
+            hasMore={false}
+            isPending={isPending}
+            queryData={data}
+          />
+          {viewRemixesButton}
+        </Flex>
       </Section>
     )
   }
@@ -86,14 +122,18 @@ export const TrackScreenLineup = ({
 
     return (
       <Section title={messages.moreBy(user?.name ?? '')}>
-        <Lineup
-          tanQuery
+        <TanQueryLineup
           actions={tracksActions}
           lineup={lineup}
-          start={indices.moreBySection.index}
-          pageSize={indices.moreBySection.pageSize ?? pageSize}
+          offset={indices.moreBySection.index}
+          maxEntries={indices.moreBySection.pageSize ?? pageSize}
           includeLineupStatus
           itemStyles={itemStyles}
+          isFetching={isFetching}
+          loadNextPage={loadNextPage}
+          hasMore={false}
+          isPending={isPending}
+          queryData={data}
         />
       </Section>
     )
@@ -104,14 +144,18 @@ export const TrackScreenLineup = ({
 
     return (
       <Section title={messages.youMightAlsoLike}>
-        <Lineup
-          tanQuery
+        <TanQueryLineup
           actions={tracksActions}
           lineup={lineup}
-          start={indices.recommendedSection.index}
-          pageSize={indices.recommendedSection.pageSize}
+          offset={indices.recommendedSection.index}
+          maxEntries={indices.recommendedSection.pageSize}
           includeLineupStatus
           itemStyles={itemStyles}
+          isFetching={isFetching}
+          loadNextPage={loadNextPage}
+          hasMore={false}
+          isPending={isPending}
+          queryData={data}
         />
       </Section>
     )
