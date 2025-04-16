@@ -91,6 +91,7 @@ export const useTrackPageLineup = (
 
       if (!heroTrack || !ownerHandle) return { tracks: [], indices }
 
+      tracks.push(heroTrack as UserTrackMetadata)
       indices.mainTrackIndex = 0
 
       // If hero track is a remix, get the parent track
