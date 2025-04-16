@@ -6,6 +6,7 @@ from eth_account.messages import encode_defunct
 from flask.globals import request
 from flask_restx import reqparse
 from flask_restx.errors import abort
+from sqlalchemy import desc
 
 from src.models.users.user import User
 from src.utils import db_session
@@ -34,7 +35,7 @@ def recover_authority_from_signature_headers() -> tuple[int | None, str | None]:
                 )
                 # In the case that multiple wallets match (not enforced on the data layer),
                 # pick the user that was created first.
-                .order_by(User.created_at.asc())
+                .order_by(desc(User.handle.isnot(None)), User.created_at.asc())
                 .first()
             )
             if user:
