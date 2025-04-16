@@ -125,11 +125,10 @@ const messages = {
   releases: (releaseDate: string) =>
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`,
   remixContest: 'Remix Contest',
+  contestEnded: 'Contest Ended',
   contestDeadline: 'Contest Deadline',
   deadline: (deadline?: string) =>
-    deadline
-      ? `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`
-      : '',
+    deadline ? `${dayjs(deadline).format('MM/DD/YYYY')}` : '',
   uploadRemixButtonText: 'Upload Your Remix'
 }
 
@@ -447,7 +446,7 @@ export const TrackScreenDetailsTile = ({
     const addToAlbumAction =
       isOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null
     const overflowActions = [
-      isOwner && isRemixContestEnabled
+      isOwner && isRemixContestEnabled && !isRemix
         ? OverflowAction.HOST_REMIX_CONTEST
         : null,
       addToAlbumAction,
@@ -517,11 +516,12 @@ export const TrackScreenDetailsTile = ({
 
   const renderRemixContestSection = () => {
     if (!isRemixContest) return null
+    const isContestOver = dayjs(remixContest?.endDate).isBefore(dayjs())
     return (
       <Flex gap='m'>
         <Flex row gap='xs' alignItems='center'>
           <Text variant='label' color='accent'>
-            {messages.contestDeadline}
+            {isContestOver ? messages.contestEnded : messages.contestDeadline}
           </Text>
           <Text size='s' strength='strong'>
             {messages.deadline(remixContest?.endDate)}

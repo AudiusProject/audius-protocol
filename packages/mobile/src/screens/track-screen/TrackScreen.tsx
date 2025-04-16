@@ -21,6 +21,7 @@ import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSeconda
 import { useIsScreenReady } from 'app/components/core/Screen/hooks/useIsScreenReady'
 import { useRoute } from 'app/hooks/useRoute'
 
+import { RemixContestCountdown } from './RemixContestCountdown'
 import { TrackScreenDetailsTile } from './TrackScreenDetailsTile'
 import { TrackScreenLineup } from './TrackScreenLineup'
 import { TrackScreenSkeleton } from './TrackScreenSkeleton'
@@ -68,13 +69,16 @@ export const TrackScreen = () => {
           <Flex p='l' gap='2xl'>
             {/* Track Details */}
             <ScreenPrimaryContent skeleton={<TrackScreenSkeleton />}>
-              <TrackScreenDetailsTile
-                track={track}
-                user={user}
-                uid={lineup?.entries?.[0]?.uid}
-                isLineupLoading={!lineup?.entries?.[0]}
-                scrollViewRef={scrollViewRef}
-              />
+              <Flex gap='l'>
+                <RemixContestCountdown trackId={track_id} />
+                <TrackScreenDetailsTile
+                  track={track}
+                  user={user}
+                  uid={lineup?.entries?.[0]?.uid}
+                  isLineupLoading={!lineup?.entries?.[0]}
+                  scrollViewRef={scrollViewRef}
+                />
+              </Flex>
             </ScreenPrimaryContent>
 
             {isReachable ? (

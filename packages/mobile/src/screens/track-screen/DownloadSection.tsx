@@ -143,113 +143,104 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
 
   const renderHeader = () => {
     return (
-      <>
-        <Flex
-          p='l'
-          direction='row'
-          justifyContent='space-between'
-          alignItems='center'
-        >
-          <Flex gap='l' direction='column'>
-            <Flex direction='row' alignItems='center' gap='s'>
-              <IconReceive color='default' />
-              <Text variant='label' size='l' strength='strong'>
-                {messages.title}
-              </Text>
-            </Flex>
-            {shouldDisplayPremiumDownloadLocked &&
-            formattedPrice !== undefined ? (
-              <Button
-                variant='primary'
-                size='small'
-                color='lightGreen'
-                onPress={handlePurchasePress}
-              >
-                {messages.unlockAll(formattedPrice)}
-              </Button>
-            ) : null}
-            {shouldDisplayPremiumDownloadUnlocked ? (
-              <>
-                <Flex gap='s' direction='row' alignItems='center'>
-                  <Flex
-                    borderRadius='3xl'
-                    ph='s'
-                    style={css({
-                      backgroundColor: color.special.lightGreen,
-                      paddingTop: 1,
-                      paddingBottom: 1
-                    })}
-                  >
-                    <IconLockUnlocked color='white' size='xs' />
-                  </Flex>
-                  <Text
-                    variant='label'
-                    // TODO: size other than m causes misalignment C-3709
-                    size='l'
-                    strength='strong'
-                    color='subdued'
-                  >
-                    {messages.purchased}
-                  </Text>
-                </Flex>
-              </>
-            ) : null}
-            {isDownloadAllTrackFilesEnabled && !shouldHideDownload ? (
-              <Flex direction='row' alignItems='center' alignSelf='flex-start'>
-                <Button
-                  iconLeft={IconReceive}
-                  variant='secondary'
-                  size='small'
-                  onPress={handleDownloadAll}
-                >
-                  {messages.downloadAll}
-                </Button>
-              </Flex>
-            ) : null}
+      <Flex gap='l' column pb='l'>
+        <Flex row justifyContent='space-between' alignItems='center'>
+          <Flex row alignItems='center' gap='s'>
+            <IconReceive color='default' />
+            <Text variant='label' size='l' strength='strong'>
+              {messages.title}
+            </Text>
           </Flex>
           <ExpandableArrowIcon expanded={isExpanded} />
         </Flex>
+        {shouldDisplayPremiumDownloadLocked && formattedPrice !== undefined ? (
+          <Button
+            variant='primary'
+            size='small'
+            color='lightGreen'
+            onPress={handlePurchasePress}
+          >
+            {messages.unlockAll(formattedPrice)}
+          </Button>
+        ) : null}
+        {shouldDisplayPremiumDownloadUnlocked ? (
+          <>
+            <Flex row alignItems='center' gap='s'>
+              <Flex
+                borderRadius='3xl'
+                ph='s'
+                style={css({
+                  backgroundColor: color.special.lightGreen,
+                  paddingTop: 1,
+                  paddingBottom: 1
+                })}
+              >
+                <IconLockUnlocked color='white' size='xs' />
+              </Flex>
+              <Text
+                variant='label'
+                // TODO: size other than m causes misalignment C-3709
+                size='l'
+                strength='strong'
+                color='subdued'
+              >
+                {messages.purchased}
+              </Text>
+            </Flex>
+          </>
+        ) : null}
+        {isDownloadAllTrackFilesEnabled && !shouldHideDownload ? (
+          <Flex row alignItems='center' alignSelf='flex-start'>
+            <Button
+              iconLeft={IconReceive}
+              variant='secondary'
+              size='small'
+              onPress={handleDownloadAll}
+              fullWidth
+            >
+              {messages.downloadAll}
+            </Button>
+          </Flex>
+        ) : null}
         {shouldDisplayOwnerPremiumDownloads && formattedPrice ? (
-          <Flex pl='l' pr='l' pb='l'>
+          <Flex>
             <Text variant='body' size='m' strength='strong'>
               {messages.purchaseableIsOwner(formattedPrice)}
             </Text>
           </Flex>
         ) : null}
-      </>
+      </Flex>
     )
   }
 
   return (
-    <Flex>
-      <Expandable
-        renderHeader={renderHeader}
-        expanded={isExpanded}
-        onToggleExpand={onToggleExpand}
-      >
-        {track?.is_downloadable ? (
-          <DownloadRow
-            trackId={trackId}
-            index={ORIGINAL_TRACK_INDEX}
-            hideDownload={shouldHideDownload}
-            onDownload={handleDownload}
-          />
-        ) : null}
-        {stemTracks?.map((s, i) => (
-          <DownloadRow
-            trackId={s.id}
-            key={s.id}
-            index={
-              i +
-              (track?.is_downloadable
-                ? STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK
-                : STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK)
-            }
-            hideDownload={shouldHideDownload}
-            onDownload={handleDownload}
-          />
-        ))}
-      </Expandable>
-    </Flex>
+    <Expandable
+      renderHeader={renderHeader}
+      expanded={isExpanded}
+      onToggleExpand={onToggleExpand}
+    >
+      {track?.is_downloadable ? (
+        <DownloadRow
+          trackId={trackId}
+          index={ORIGINAL_TRACK_INDEX}
+          hideDownload={shouldHideDownload}
+          onDownload={handleDownload}
+        />
+      ) : null}
+      {stemTracks?.map((s, i) => (
+        <DownloadRow
+          trackId={s.id}
+          key={s.id}
+          index={
+            i +
+            (track?.is_downloadable
+              ? STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK
+              : STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK)
+          }
+          hideDownload={shouldHideDownload}
+          onDownload={handleDownload}
+        />
+      ))}
+    </Expandable>
   )
 }

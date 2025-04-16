@@ -115,6 +115,7 @@ const messages = {
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`,
   contestDeadline: 'Contest Deadline',
   uploadRemixButtonText: 'Upload Your Remix',
+  contestEnded: 'Contest Ended',
   deadline: (deadline?: string) => {
     return deadline
       ? `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`
@@ -483,13 +484,14 @@ export const GiantTrackTile = ({
 
   const renderSubmitRemixContestSection = useCallback(() => {
     if (!isRemixContest) return null
+    const isContestOver = dayjs(remixContest.endDate).isBefore(dayjs())
     return (
       <Flex row gap='m'>
         <Flex gap='xs' alignItems='center'>
           <Text variant='label' color='accent'>
-            {messages.contestDeadline}
+            {isContestOver ? messages.contestEnded : messages.contestDeadline}
           </Text>
-          <Text>{messages.deadline(remixContest?.endDate)}</Text>
+          <Text>{messages.deadline(remixContest.endDate)}</Text>
         </Flex>
         {!isOwner ? (
           <Button
@@ -503,7 +505,7 @@ export const GiantTrackTile = ({
         ) : null}
       </Flex>
     )
-  }, [isRemixContest, remixContest?.endDate, isOwner, goToUploadWithRemix])
+  }, [isRemixContest, remixContest, isOwner, goToUploadWithRemix])
 
   const isLoading = loading || artworkLoading || isEventsLoading
 

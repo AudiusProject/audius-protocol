@@ -442,7 +442,9 @@ class TrackInspect(Resource):
             else track_info.get("track_cid")
         )
 
-        raw_blob_info = get_track_inspect_info(cid, track_id=track_id, redis=redis)
+        raw_blob_info = get_track_inspect_info(
+            cid, track_id=track_id, redis_instance=redis
+        )
         if not raw_blob_info:
             abort_not_found(track_id, ns)
 
@@ -514,7 +516,7 @@ class BulkTrackInspect(Resource):
                 else track_info.get("track_cid")
             )
             raw_blob_info = get_track_inspect_info(
-                cid, track_id=track_info.get("track_id"), redis=redis
+                cid, track_id=track_info.get("track_id"), redis_instance=redis
             )
             if raw_blob_info:
                 blob_info = extend_blob_info(raw_blob_info)

@@ -92,6 +92,11 @@ def validate_create_event_tx(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"An existing remix contest for entity_id {metadata['entity_id']} already exists"
             )
+        track = params.existing_records[EntityType.TRACK.value][metadata["entity_id"]]
+        if track.remix_of:
+            raise IndexingValidationError(
+                f"Track {metadata['entity_id']} is a remix and cannot host a remix contest"
+            )
 
 
 def create_event(params: ManageEntityParameters):
