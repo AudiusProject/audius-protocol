@@ -7,7 +7,7 @@ import { Event } from '~/models/Event'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey } from '../types'
 
-export type EventsByEntityIdOptions = {
+export type EventIdsByEntityIdOptions = {
   entityId: ID | null | undefined
   entityType?: EventEntityTypeEnum
   eventType?: EventEventTypeEnum
@@ -26,5 +26,6 @@ export const getEventListQueryKey = ({ pageSize }: { pageSize?: number }) => {
   >
 }
 
-export const getEventsByEntityIdQueryKey = (args?: EventsByEntityIdOptions) =>
-  [QUERY_KEYS.eventsByEntityId, args] as unknown as QueryKey<Event[]>
+export const getEventIdsByEntityIdQueryKey = (
+  args?: EventIdsByEntityIdOptions
+) => [QUERY_KEYS.eventsByEntityId, args] as unknown as QueryKey<ID[]>

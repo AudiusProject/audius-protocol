@@ -5,21 +5,21 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { eventMetadataFromSDK } from '~/adapters/event'
 import { useAudiusQueryContext } from '~/audius-query'
-import { Event } from '~/models/Event'
+import { ID } from '~/models'
 import { removeNullable } from '~/utils'
 
 import { SelectableQueryOptions } from '../types'
 import { useCurrentUserId } from '../useCurrentUserId'
 
 import {
-  getEventsByEntityIdQueryKey,
-  EventsByEntityIdOptions,
+  getEventIdsByEntityIdQueryKey,
+  EventIdsByEntityIdOptions,
   getEventQueryKey
 } from './utils'
 
-export const useEventsByEntityId = <TReturn extends Event>(
-  args: EventsByEntityIdOptions,
-  options?: SelectableQueryOptions<Event[], TReturn>
+export const useEventIdsByEntityId = (
+  args: EventIdsByEntityIdOptions,
+  options?: SelectableQueryOptions<ID[]>
 ) => {
   const { entityId, ...restArgs } = args ?? {}
   const { audiusSdk } = useAudiusQueryContext()
@@ -30,7 +30,7 @@ export const useEventsByEntityId = <TReturn extends Event>(
   const select = useMemo(() => options?.select, [])
 
   const queryData = useQuery({
-    queryKey: getEventsByEntityIdQueryKey(args),
+    queryKey: getEventIdsByEntityIdQueryKey(args),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const response = await sdk.events.getEntityEvents({
@@ -47,7 +47,7 @@ export const useEventsByEntityId = <TReturn extends Event>(
         queryClient.setQueryData(getEventQueryKey(event.eventId), event)
       })
 
-      return eventsMetadata
+      return eventsMetadata.map((event) => event.eventId)
     },
     ...options,
     enabled: options?.enabled !== false && !!entityId,
