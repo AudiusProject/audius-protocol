@@ -371,9 +371,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         )
 
     if latest_block_num is not None and latest_indexed_block_num is not None:
-        block_difference = abs(
-            latest_block_num - latest_indexed_block_num
-        )  # nethermind offset
+        block_difference = max(0, abs(latest_block_num - latest_indexed_block_num))
     else:
         # If we cannot get a reading from chain about what the latest block is,
         # we set the difference to be an unhealthy amount
