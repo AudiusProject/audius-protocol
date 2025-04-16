@@ -5,7 +5,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { Event, Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
-import { getEventQueryKey, getEventsByEntityIdQueryKey } from './utils'
+import { getEventQueryKey, getEventIdsByEntityIdQueryKey } from './utils'
 
 export type DeleteEventArgs = {
   eventId: ID
@@ -43,7 +43,7 @@ export const useDeleteEvent = () => {
       let prevEntityState: ID[] = []
       if (entityId) {
         queryClient.setQueryData(
-          getEventsByEntityIdQueryKey({ entityId, entityType }),
+          getEventIdsByEntityIdQueryKey({ entityId, entityType }),
           (prevData) => {
             const newState = cloneDeep(prevData) ?? []
             prevEntityState = newState
@@ -57,7 +57,7 @@ export const useDeleteEvent = () => {
       let prevEventTypeState: ID[] = []
       if (entityId) {
         queryClient.setQueryData(
-          getEventsByEntityIdQueryKey({ entityId, entityType, eventType }),
+          getEventIdsByEntityIdQueryKey({ entityId, entityType, eventType }),
           (prevData) => {
             const newState = cloneDeep(prevData) ?? []
             prevEventTypeState = newState
@@ -92,7 +92,7 @@ export const useDeleteEvent = () => {
 
       if (prevEntityState && currentEvent) {
         queryClient.setQueryData(
-          getEventsByEntityIdQueryKey({
+          getEventIdsByEntityIdQueryKey({
             entityId: currentEvent.entityId,
             entityType: currentEvent.entityType
           }),
@@ -102,7 +102,7 @@ export const useDeleteEvent = () => {
 
       if (prevEventTypeState && currentEvent) {
         queryClient.setQueryData(
-          getEventsByEntityIdQueryKey({
+          getEventIdsByEntityIdQueryKey({
             entityId: currentEvent.entityId,
             entityType: currentEvent.entityType,
             eventType: currentEvent.eventType

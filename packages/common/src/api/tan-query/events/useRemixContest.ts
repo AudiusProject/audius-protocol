@@ -5,8 +5,8 @@ import { ID } from '~/models/Identifiers'
 
 import { SelectableQueryOptions } from '../types'
 
-import { useEvents } from './useEvents'
-import { useEventsByEntityId } from './useEventsByEntityId'
+import { useEvent } from './useEvent'
+import { useEventIdsByEntityId } from './useEventsByEntityId'
 
 /**
  * Hook to fetch the remix contest event for a given entity ID.
@@ -14,22 +14,25 @@ import { useEventsByEntityId } from './useEventsByEntityId'
  */
 export const useRemixContest = (
   entityId: ID | null | undefined,
-  options?: SelectableQueryOptions<ID[], Event>
+  options?: SelectableQueryOptions<Event>
 ) => {
-  const eventsQuery = useEventsByEntityId(
+  const eventsQuery = useEventIdsByEntityId(
     {
       entityId,
       entityType: EventEntityTypeEnum.Track,
       eventType: EventEventTypeEnum.RemixContest
     },
-    { ...options }
+    {
+      enabled: !!options?.enabled
+    }
   )
 
-  // @ts-ignore: KJ - this is an ID[], but it thinks it's Event[]
-  const { data: events } = useEvents(eventsQuery.data ?? [])
+  const remixContestId = eventsQuery.data?.[0]
+
+  const { data: remixContest } = useEvent(remixContestId, options)
 
   return {
     ...eventsQuery,
-    data: events?.[0]
+    data: remixContest
   }
 }

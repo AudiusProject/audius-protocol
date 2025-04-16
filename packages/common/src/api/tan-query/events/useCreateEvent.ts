@@ -6,7 +6,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { Event, Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
-import { getEventQueryKey, getEventsByEntityIdQueryKey } from './utils'
+import { getEventQueryKey, getEventIdsByEntityIdQueryKey } from './utils'
 
 export type CreateEventArgs = {
   eventId?: ID
@@ -56,7 +56,7 @@ export const useCreateEvent = () => {
       // Add event to the list of events for the entity
       let prevEntityState: ID[] = []
       queryClient.setQueryData(
-        getEventsByEntityIdQueryKey({ entityId, entityType }),
+        getEventIdsByEntityIdQueryKey({ entityId, entityType }),
         (prevData) => {
           const newState = cloneDeep(prevData) ?? []
           prevEntityState = newState
@@ -68,7 +68,7 @@ export const useCreateEvent = () => {
       // Add event to list of events for the entity by event type
       let prevEventTypeState: ID[] = []
       queryClient.setQueryData(
-        getEventsByEntityIdQueryKey({ entityId, entityType, eventType }),
+        getEventIdsByEntityIdQueryKey({ entityId, entityType, eventType }),
         (prevData) => {
           const newState = cloneDeep(prevData) ?? []
           prevEventTypeState = newState
@@ -95,7 +95,7 @@ export const useCreateEvent = () => {
       const prevEntityState = context?.prevEntityState
       if (prevEntityState) {
         queryClient.setQueryData(
-          getEventsByEntityIdQueryKey({
+          getEventIdsByEntityIdQueryKey({
             entityId: args.entityId,
             entityType: args.entityType
           }),
@@ -106,7 +106,7 @@ export const useCreateEvent = () => {
       const prevEventTypeState = context?.prevEventTypeState
       if (prevEventTypeState) {
         queryClient.setQueryData(
-          getEventsByEntityIdQueryKey({
+          getEventIdsByEntityIdQueryKey({
             entityId: args.entityId,
             entityType: args.entityType,
             eventType: args.eventType
