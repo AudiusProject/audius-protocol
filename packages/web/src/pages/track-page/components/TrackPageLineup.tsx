@@ -28,7 +28,7 @@ const Section = ({ title, icon: Icon, children }: SectionProps) => {
   return (
     <Flex direction='column' gap='l' w='100%'>
       <Flex gap='s' alignItems='center'>
-        {Icon && <Icon />}
+        {Icon && <Icon color='default' />}
         <Text variant='title' size='l'>
           {title}
         </Text>
