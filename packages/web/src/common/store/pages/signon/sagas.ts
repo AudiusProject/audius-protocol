@@ -67,6 +67,7 @@ import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { fetchUserByHandle, fetchUsers } from 'common/store/cache/users/sagas'
 import { sendRecoveryEmail } from 'common/store/recovery-email/sagas'
 import { UiErrorCode } from 'store/errors/actions'
+import { reportToSentry } from 'store/errors/reportToSentry'
 import { setHasRequestedBrowserPermission } from 'utils/browserNotifications'
 import { push as pushRoute } from 'utils/navigation'
 import { restrictedHandles } from 'utils/restrictedHandles'
@@ -908,6 +909,12 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
           accountAlreadyExisted: true
         })
       )
+
+      yield* put(make(Name.SIGN_IN_WITH_INCOMPLETE_ACCOUNT, { handle: '' }))
+      yield* call(reportToSentry, {
+        error: new Error('Failed to fetch account')
+      })
+
       yield* put(toastActions.toast({ content: messages.incompleteAccount }))
       return
     }
