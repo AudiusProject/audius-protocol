@@ -1,10 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { cloneDeep } from 'lodash'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { Event, Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
-import { getEventQueryKey } from './utils'
+import { getEventQueryKey, getEventsByEntityIdQueryKey } from './utils'
 
 export type DeleteEventArgs = {
   eventId: ID
@@ -27,6 +28,8 @@ export const useDeleteEvent = () => {
       const currentEvent = queryClient.getQueryData(getEventQueryKey(eventId))
       if (!currentEvent) return
 
+      const { entityId, entityType, eventType } = currentEvent
+
       const deletedEvent: Event = {
         ...currentEvent,
         isDeleted: true,
@@ -36,8 +39,40 @@ export const useDeleteEvent = () => {
       // Update the event cache
       queryClient.setQueryData(getEventQueryKey(eventId), deletedEvent)
 
+      // Remove event from the list of events for the entity
+      let prevEntityState: ID[] = []
+      if (entityId) {
+        queryClient.setQueryData(
+          getEventsByEntityIdQueryKey({ entityId, entityType }),
+          (prevData) => {
+            const newState = cloneDeep(prevData) ?? []
+            prevEntityState = newState
+            newState.splice(newState.indexOf(eventId), 1)
+            return newState
+          }
+        )
+      }
+
+      // Remove event from the list of events for the entity by event type
+      let prevEventTypeState: ID[] = []
+      if (entityId) {
+        queryClient.setQueryData(
+          getEventsByEntityIdQueryKey({ entityId, entityType, eventType }),
+          (prevData) => {
+            const newState = cloneDeep(prevData) ?? []
+            prevEventTypeState = newState
+            newState.splice(newState.indexOf(eventId), 1)
+            return newState
+          }
+        )
+      }
+
       // Return context for rollback
-      return { previousEvent: currentEvent }
+      return {
+        previousEvent: currentEvent,
+        prevEntityState,
+        prevEventTypeState
+      }
     },
     onError: (error: Error, args, context) => {
       // Revert the optimistic update
@@ -45,6 +80,34 @@ export const useDeleteEvent = () => {
         queryClient.setQueryData(
           getEventQueryKey(args.eventId),
           context.previousEvent
+        )
+      }
+
+      const { eventId } = args
+      const prevEntityState = context?.prevEntityState
+      const prevEventTypeState = context?.prevEventTypeState
+
+      // Get the current event from cache
+      const currentEvent = queryClient.getQueryData(getEventQueryKey(eventId))
+
+      if (prevEntityState && currentEvent) {
+        queryClient.setQueryData(
+          getEventsByEntityIdQueryKey({
+            entityId: currentEvent.entityId,
+            entityType: currentEvent.entityType
+          }),
+          prevEntityState
+        )
+      }
+
+      if (prevEventTypeState && currentEvent) {
+        queryClient.setQueryData(
+          getEventsByEntityIdQueryKey({
+            entityId: currentEvent.entityId,
+            entityType: currentEvent.entityType,
+            eventType: currentEvent.eventType
+          }),
+          prevEventTypeState
         )
       }
 

@@ -53,19 +53,31 @@ export const useCreateEvent = () => {
       // Update the individual event cache
       queryClient.setQueryData(getEventQueryKey(newId), newEvent)
 
-      let prevState: Event[] = []
       // Add event to the list of events for the entity
+      let prevEntityState: ID[] = []
       queryClient.setQueryData(
         getEventsByEntityIdQueryKey({ entityId, entityType }),
         (prevData) => {
           const newState = cloneDeep(prevData) ?? []
-          prevState = newState
-          newState.unshift(newEvent)
+          prevEntityState = newState
+          newState.unshift(newEvent.eventId)
           return newState
         }
       )
 
-      return { prevState }
+      // Add event to list of events for the entity by event type
+      let prevEventTypeState: ID[] = []
+      queryClient.setQueryData(
+        getEventsByEntityIdQueryKey({ entityId, entityType, eventType }),
+        (prevData) => {
+          const newState = cloneDeep(prevData) ?? []
+          prevEventTypeState = newState
+          newState.unshift(newEvent.eventId)
+          return newState
+        }
+      )
+
+      return { prevEntityState, prevEventTypeState }
     },
     onError: (error: Error, args, context) => {
       reportToSentry({
@@ -80,14 +92,26 @@ export const useCreateEvent = () => {
         queryKey: getEventQueryKey(args.eventId)
       })
 
-      const prevState = context?.prevState
-      if (prevState) {
+      const prevEntityState = context?.prevEntityState
+      if (prevEntityState) {
         queryClient.setQueryData(
           getEventsByEntityIdQueryKey({
             entityId: args.entityId,
             entityType: args.entityType
           }),
-          prevState
+          prevEntityState
+        )
+      }
+
+      const prevEventTypeState = context?.prevEventTypeState
+      if (prevEventTypeState) {
+        queryClient.setQueryData(
+          getEventsByEntityIdQueryKey({
+            entityId: args.entityId,
+            entityType: args.entityType,
+            eventType: args.eventType
+          }),
+          prevEventTypeState
         )
       }
 

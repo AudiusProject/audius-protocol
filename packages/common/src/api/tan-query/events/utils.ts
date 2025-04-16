@@ -27,4 +27,4 @@ export const getEventListQueryKey = ({ pageSize }: { pageSize?: number }) => {
 }
 
 export const getEventsByEntityIdQueryKey = (args?: EventsByEntityIdOptions) =>
-  [QUERY_KEYS.eventsByEntityId, args] as unknown as QueryKey<Event[]>
+  [QUERY_KEYS.eventsByEntityId, args] as unknown as QueryKey<ID[]>
