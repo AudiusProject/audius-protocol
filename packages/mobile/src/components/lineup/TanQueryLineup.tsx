@@ -162,7 +162,7 @@ export type LineupProps = {
   actions: LineupBaseActions
 
   /** The maximum number of total tracks to fetch */
-  maxEntries?: number
+  count?: number
 
   /**
    * Whether or not to delineate the lineup by time of the `activityTimestamp`
@@ -264,7 +264,7 @@ export type LineupProps = {
   /**
    * Which item to start the lineup at (previous items will not be rendered)
    */
-  offset?: number
+  start?: number
 
   /**
    * The variant of the Lineup
@@ -318,7 +318,7 @@ export type LineupProps = {
  */
 export const TanQueryLineup = ({
   actions,
-  maxEntries,
+  count,
   delineate,
   disableTopTabScroll,
   fetchPayload,
@@ -335,7 +335,7 @@ export const TanQueryLineup = ({
   pullToRefresh,
   rankIconCount = 0,
   refresh,
-  offset = 0,
+  start = 0,
   variant = LineupVariant.MAIN,
   listKey,
   selfLoad,
@@ -424,9 +424,9 @@ export const TanQueryLineup = ({
 
     // Apply offset and maxEntries to the lineup entries
     const items =
-      maxEntries !== undefined
-        ? entries.slice(offset, offset + maxEntries)
-        : entries.slice(offset)
+      count !== undefined
+        ? entries.slice(start, start + count)
+        : entries.slice(start)
 
     const getSkeletonCount = () => {
       // No skeletons if not fetching
@@ -438,7 +438,7 @@ export const TanQueryLineup = ({
         return initialPageSize
       }
       if (pageSize) {
-        return maxEntries ? Math.min(maxEntries, pageSize) : pageSize
+        return count ? Math.min(count, pageSize) : pageSize
       }
       return 0
     }
@@ -466,8 +466,8 @@ export const TanQueryLineup = ({
     return [{ delineate: false, data }]
   }, [
     lineup.entries,
-    maxEntries,
-    offset,
+    count,
+    start,
     leadingElementId,
     isFetching,
     isLineupPending,

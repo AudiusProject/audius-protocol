@@ -216,7 +216,6 @@ const TrackTile = (props: CombinedProps) => {
         { [styles.readonly]: isReadonly },
         containerClassName
       )}
-      css={{ width: '100%' }}
     >
       <TrackDogEar trackId={id} hideUnlocked />
       <div className={styles.mainContent} onClick={handleClick}>

@@ -1,4 +1,4 @@
-import { useTrack } from '@audius/common/api'
+import { useGetTrackById } from '@audius/common/api'
 import { trackPageMessages as messages } from '@audius/common/messages'
 import { ID } from '@audius/common/models'
 import { Button, ButtonProps, IconArrowRight } from '@audius/harmony'
@@ -13,11 +13,9 @@ type ViewOtherRemixesButtonProps = {
 export const ViewOtherRemixesButton = (props: ViewOtherRemixesButtonProps) => {
   const { parentTrackId, ...buttonProps } = props
 
-  const { data: permalink } = useTrack(parentTrackId, {
-    select: (track) => track.permalink
-  })
+  const { data: parentTrack } = useGetTrackById({ id: parentTrackId })
 
-  const remixesRoute = trackRemixesPage(permalink ?? '')
+  const remixesRoute = trackRemixesPage(parentTrack?.permalink ?? '')
 
   return (
     <Button iconRight={IconArrowRight} asChild {...buttonProps}>
