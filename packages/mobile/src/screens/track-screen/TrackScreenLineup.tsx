@@ -1,10 +1,9 @@
-import { useTrack, useTrackPageLineup } from '@audius/common/api'
+import { useTrackPageLineup } from '@audius/common/api'
 import { trackPageMessages as messages } from '@audius/common/messages'
 import type { ID, User } from '@audius/common/models'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
 
 import { Button, Flex, Text } from '@audius/harmony-native'
-import { Lineup } from 'app/components/lineup'
 import { TanQueryLineup } from 'app/components/lineup/TanQueryLineup'
 import { useNavigation } from 'app/hooks/useNavigation'
 
@@ -46,10 +45,6 @@ export const TrackScreenLineup = ({
     isPending,
     data
   } = useTrackPageLineup({ trackId })
-
-  const { data: permalink } = useTrack(trackId, {
-    select: (track) => track.permalink
-  })
 
   const navigation = useNavigation()
 
