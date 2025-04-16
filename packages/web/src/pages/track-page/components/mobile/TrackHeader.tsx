@@ -397,139 +397,144 @@ const TrackHeader = ({
   const trendingRank = useTrackRank(trackId)
 
   return (
-    <div className={styles.trackHeader}>
-      <TrackDogEar trackId={trackId} />
-      <Flex gap='s' direction='column'>
-        {renderHeaderText()}
-        {aiAttributedUserId ? (
-          <MusicBadge icon={IconRobot} color='lightGreen' size='s'>
-            {messages.generatedWithAi}
-          </MusicBadge>
-        ) : null}
-        {trendingRank ? (
-          <MusicBadge color='blue' icon={IconTrending} size='s'>
-            {trendingRank}
-          </MusicBadge>
-        ) : null}
-        {shouldShowScheduledRelease ? (
-          <MusicBadge variant='accent' icon={IconCalendarMonth} size='s'>
-            {messages.releases(releaseDate)}
-          </MusicBadge>
-        ) : isUnlisted ? (
-          <MusicBadge icon={IconVisibilityHidden} size='s'>
-            {messages.hidden}
-          </MusicBadge>
-        ) : null}
-      </Flex>
-      {imageElement}
-      <div className={styles.titleArtistSection}>
-        <h1 className={styles.title}>{title}</h1>
-        <UserLink userId={userId} variant='visible' size='l' />
-      </div>
-      {showPlay ? (
-        <PlayButton
-          disabled={!hasStreamAccess}
-          playing={isPlaying && !isPreviewing}
-          onPlay={onPlay}
-        />
-      ) : null}
-      {showPreview ? (
-        <PreviewButton playing={isPlaying && isPreviewing} onPlay={onPreview} />
-      ) : null}
-      {streamConditions && trackId ? (
-        <Box w='100%'>
-          <GatedContentSection
-            isLoading={isLoading}
-            contentId={trackId}
-            contentType={PurchaseableContentType.TRACK}
-            streamConditions={streamConditions}
-            hasStreamAccess={hasStreamAccess}
-            isOwner={isOwner}
-            wrapperClassName={styles.gatedContentSectionWrapper}
-            className={styles.gatedContentSection}
-            buttonClassName={styles.gatedContentSectionButton}
-            ownerId={userId}
-          />
-        </Box>
-      ) : null}
-
-      <ActionButtonRow
-        showRepost={showSocials}
-        showFavorite={showSocials}
-        showShare={!isUnlisted || isOwner}
-        showOverflow={!isUnlisted || isOwner}
-        shareToastDisabled
-        isOwner={isOwner}
-        isReposted={isReposted}
-        isSaved={isSaved}
-        onClickOverflow={onClickOverflow}
-        onRepost={onRepost}
-        onFavorite={onSaveHeroTrack}
-        onShare={onShare}
-        darkMode={isDarkMode()}
-      />
-      {coSign ? (
-        <div className={cn(styles.coSignInfo, styles.withSectionDivider)}>
-          <HoverInfo
-            coSignName={coSign.user.name}
-            hasFavorited={coSign.has_remix_author_saved}
-            hasReposted={coSign.has_remix_author_reposted}
-            userId={coSign.user.user_id}
-          />
-        </div>
-      ) : null}
-      <StatsButtonRow
-        className={styles.withSectionDivider}
-        showListenCount={showListenCount}
-        showFavoriteCount={!isUnlisted}
-        showRepostCount={!isUnlisted}
-        showCommentCount={!isUnlisted && !commentsDisabled}
-        listenCount={listenCount}
-        favoriteCount={saveCount}
-        repostCount={repostCount}
-        commentCount={commentCount}
-        onClickFavorites={onClickFavorites}
-        onClickReposts={onClickReposts}
-        onClickComments={onClickComments}
-      />
-      {aiAttributedUserId ? (
-        <AiTrackSection
-          attributedUserId={aiAttributedUserId}
-          className={cn(styles.aiSection, styles.withSectionDivider)}
-          descriptionClassName={styles.aiSectionDescription}
-        />
-      ) : null}
-
-      {description ? (
-        <UserGeneratedText
-          className={styles.description}
-          linkSource='track page'
-        >
-          {description}
-        </UserGeneratedText>
-      ) : null}
-      <TrackMetadataList trackId={trackId} />
-      {renderTags()}
-      {isRemix ? (
-        <Flex>
-          <Text variant='label' color='subdued'>
-            {messages.remixContest}
-          </Text>
+    <Box w='100%' borderRadius='m' backgroundColor='white' p='l'>
+      <Flex column gap='l' alignItems='center'>
+        <TrackDogEar trackId={trackId} />
+        <Flex gap='s' column>
+          {renderHeaderText()}
+          {aiAttributedUserId ? (
+            <MusicBadge icon={IconRobot} color='lightGreen' size='s'>
+              {messages.generatedWithAi}
+            </MusicBadge>
+          ) : null}
+          {trendingRank ? (
+            <MusicBadge color='blue' icon={IconTrending} size='s'>
+              {trendingRank}
+            </MusicBadge>
+          ) : null}
+          {shouldShowScheduledRelease ? (
+            <MusicBadge variant='accent' icon={IconCalendarMonth} size='s'>
+              {messages.releases(releaseDate)}
+            </MusicBadge>
+          ) : isUnlisted ? (
+            <MusicBadge icon={IconVisibilityHidden} size='s'>
+              {messages.hidden}
+            </MusicBadge>
+          ) : null}
         </Flex>
-      ) : null}
-      {renderSubmitRemixContestSection()}
-      {hasDownloadableAssets ? (
-        <Box pt='l' w='100%'>
-          <Suspense>
-            <DownloadSection trackId={trackId} />
-          </Suspense>
-        </Box>
-      ) : null}
-      <DownloadMobileAppDrawer
-        isOpen={isDrawerOpen}
-        onClose={handleDrawerClose}
-      />
-    </div>
+        {imageElement}
+        <div className={styles.titleArtistSection}>
+          <h1 className={styles.title}>{title}</h1>
+          <UserLink userId={userId} variant='visible' size='l' />
+        </div>
+        {showPlay ? (
+          <PlayButton
+            disabled={!hasStreamAccess}
+            playing={isPlaying && !isPreviewing}
+            onPlay={onPlay}
+          />
+        ) : null}
+        {showPreview ? (
+          <PreviewButton
+            playing={isPlaying && isPreviewing}
+            onPlay={onPreview}
+          />
+        ) : null}
+        {streamConditions && trackId ? (
+          <Box w='100%'>
+            <GatedContentSection
+              isLoading={isLoading}
+              contentId={trackId}
+              contentType={PurchaseableContentType.TRACK}
+              streamConditions={streamConditions}
+              hasStreamAccess={hasStreamAccess}
+              isOwner={isOwner}
+              wrapperClassName={styles.gatedContentSectionWrapper}
+              className={styles.gatedContentSection}
+              buttonClassName={styles.gatedContentSectionButton}
+              ownerId={userId}
+            />
+          </Box>
+        ) : null}
+
+        <ActionButtonRow
+          showRepost={showSocials}
+          showFavorite={showSocials}
+          showShare={!isUnlisted || isOwner}
+          showOverflow={!isUnlisted || isOwner}
+          shareToastDisabled
+          isOwner={isOwner}
+          isReposted={isReposted}
+          isSaved={isSaved}
+          onClickOverflow={onClickOverflow}
+          onRepost={onRepost}
+          onFavorite={onSaveHeroTrack}
+          onShare={onShare}
+          darkMode={isDarkMode()}
+        />
+        {coSign ? (
+          <div className={cn(styles.coSignInfo, styles.withSectionDivider)}>
+            <HoverInfo
+              coSignName={coSign.user.name}
+              hasFavorited={coSign.has_remix_author_saved}
+              hasReposted={coSign.has_remix_author_reposted}
+              userId={coSign.user.user_id}
+            />
+          </div>
+        ) : null}
+        <StatsButtonRow
+          className={styles.withSectionDivider}
+          showListenCount={showListenCount}
+          showFavoriteCount={!isUnlisted}
+          showRepostCount={!isUnlisted}
+          showCommentCount={!isUnlisted && !commentsDisabled}
+          listenCount={listenCount}
+          favoriteCount={saveCount}
+          repostCount={repostCount}
+          commentCount={commentCount}
+          onClickFavorites={onClickFavorites}
+          onClickReposts={onClickReposts}
+          onClickComments={onClickComments}
+        />
+        {aiAttributedUserId ? (
+          <AiTrackSection
+            attributedUserId={aiAttributedUserId}
+            className={cn(styles.aiSection, styles.withSectionDivider)}
+            descriptionClassName={styles.aiSectionDescription}
+          />
+        ) : null}
+
+        {description ? (
+          <UserGeneratedText
+            className={styles.description}
+            linkSource='track page'
+          >
+            {description}
+          </UserGeneratedText>
+        ) : null}
+        <TrackMetadataList trackId={trackId} />
+        {renderTags()}
+        {isRemix ? (
+          <Flex>
+            <Text variant='label' color='subdued'>
+              {messages.remixContest}
+            </Text>
+          </Flex>
+        ) : null}
+        {renderSubmitRemixContestSection()}
+        {hasDownloadableAssets ? (
+          <Box pt='l' w='100%'>
+            <Suspense>
+              <DownloadSection trackId={trackId} />
+            </Suspense>
+          </Box>
+        ) : null}
+        <DownloadMobileAppDrawer
+          isOpen={isDrawerOpen}
+          onClose={handleDrawerClose}
+        />
+      </Flex>
+    </Box>
   )
 }
 

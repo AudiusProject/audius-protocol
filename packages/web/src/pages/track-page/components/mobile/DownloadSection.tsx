@@ -166,7 +166,8 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
       <Flex direction='column'>
         <Flex
           gap='m'
-          pv='l'
+          pt='l'
+          pb={expanded ? 'l' : undefined}
           w='100%'
           column
           justifyContent='space-between'
