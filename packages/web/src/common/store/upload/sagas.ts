@@ -1139,10 +1139,17 @@ export function* uploadMultipleTracks(
   })
 
   for (const track of newTracks) {
-    // If it's a remix, invalidate the parent track's lineup
-    if (track.remix_of?.tracks?.[0]?.parent_track_id) {
+    const parentTrackId = track.remix_of?.tracks[0]?.parent_track_id
+
+    // If it's a remix, invalidate the parent track's lineup and remixes page
+    if (parentTrackId) {
       queryClient.invalidateQueries({
-        queryKey: ['trackPageLineup', track.remix_of.tracks[0].parent_track_id]
+        queryKey: ['trackPageLineup', parentTrackId]
+      })
+      // Invalidate all possible combinations of remixes queries for the parent track
+      queryClient.invalidateQueries({
+        queryKey: ['remixes', parentTrackId],
+        exact: false
       })
     }
   }
