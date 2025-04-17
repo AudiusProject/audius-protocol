@@ -110,7 +110,11 @@ export const StemFilesView = ({
     const onAdd = useCallback(
       (toAdd: any[]) => {
         const remaining = MAX_ROWS - stems.length
-        onAddStems(toAdd.slice(0, remaining))
+        // Filter out stems that already exist
+        const filteredStems = toAdd.filter(
+          (stem) => !stems.find((s) => s.file.name === stem.name)
+        )
+        onAddStems(filteredStems.slice(0, remaining))
       },
       // eslint-disable-next-line
       [stems]
