@@ -33,7 +33,7 @@ const AUDIO_TOKEN_ID = TOKEN_LISTING_MAP.AUDIO.address
 export const YourCoins = () => {
   const dispatch = useDispatch()
   const totalBalance = useSelector(getAccountTotalBalance)
-  const { color } = useTheme()
+  const { color, spacing } = useTheme()
 
   const { data: audioPriceData, isPending: isLoadingPrice } =
     useTokenPrice(AUDIO_TOKEN_ID)
@@ -77,13 +77,41 @@ export const YourCoins = () => {
           cursor: 'pointer',
           '&:hover': {
             backgroundColor: color.background.surface2
+          },
+          '@media (max-width: 768px)': {
+            padding: spacing.l
           }
         }}
       >
-        <Flex alignItems='center' gap='l'>
-          <IconLogoCircle width={DIMENSIONS} height={DIMENSIONS} />
+        <Flex
+          alignItems='center'
+          gap='l'
+          css={{
+            '@media (max-width: 480px)': {
+              gap: spacing.m
+            }
+          }}
+        >
+          <IconLogoCircle
+            width={DIMENSIONS}
+            height={DIMENSIONS}
+            css={{
+              '@media (max-width: 480px)': {
+                width: '48px',
+                height: '48px'
+              }
+            }}
+          />
           <Flex direction='column' gap='xs'>
-            <Flex gap='xs'>
+            <Flex
+              gap='xs'
+              css={{
+                '@media (max-width: 480px)': {
+                  flexDirection: 'column',
+                  gap: '0'
+                }
+              }}
+            >
               <Text variant='heading' size='l' color='default'>
                 {audioAmount}
               </Text>

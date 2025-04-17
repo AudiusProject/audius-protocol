@@ -1,4 +1,5 @@
 import { Flex, IconWallet } from '@audius/harmony'
+import { useTheme } from '@emotion/react'
 
 import { Header } from 'components/header/desktop/Header'
 import { useMobileHeader } from 'components/header/mobile/hooks'
@@ -14,6 +15,7 @@ const messages = {
 
 export const WalletPage = () => {
   const isMobile = useIsMobile()
+  const { spacing } = useTheme()
 
   // Set up mobile header with icon
   useMobileHeader({
@@ -23,7 +25,19 @@ export const WalletPage = () => {
   const header = <Header primary={messages.title} icon={IconWallet} />
 
   const content = (
-    <Flex direction='column' gap='l' mb='xl'>
+    <Flex
+      direction='column'
+      gap='l'
+      mb='xl'
+      w='100%'
+      css={{
+        '@media (min-width: 768px) and (max-width: 1024px)': {
+          maxWidth: '90%',
+          margin: '0 auto',
+          marginBottom: spacing.xl
+        }
+      }}
+    >
       <CashWallet />
       <YourCoins />
     </Flex>
