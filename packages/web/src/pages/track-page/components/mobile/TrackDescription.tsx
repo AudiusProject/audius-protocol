@@ -66,9 +66,10 @@ export const TrackDescription = ({
   if (!description) return null
 
   return (
-    <Flex column gap='m'>
+    <Flex column gap='m' w='100%'>
       <Flex
         direction='column'
+        w='100%'
         css={{
           transition: `height ${motion.expressive}, opacity ${motion.quick}`,
           overflow: 'hidden',
