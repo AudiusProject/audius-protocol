@@ -58,8 +58,6 @@ export const useTokenPrice = (
         throw error
       }
     },
-    // Default refresh every 60 seconds
-    staleTime: 60000,
     ...options,
     enabled: options?.enabled !== false && !!tokenMint
   })
