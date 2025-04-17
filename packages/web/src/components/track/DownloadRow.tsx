@@ -84,33 +84,31 @@ export const DownloadRow = ({
         <Text variant='body' color='subdued'>
           {index}
         </Text>
-        <Flex direction='column' gap='xs' css={{ overflow: 'hidden' }} w='100%'>
-          <Text variant='body' strength='default'>
-            {category
-              ? stemCategoryFriendlyNames[category]
-              : track?.stem_of?.category
-                ? stemCategoryFriendlyNames[track?.stem_of?.category]
-                : messages.fullTrack}
-          </Text>
-          <Text
-            variant='body'
-            color='subdued'
-            css={{
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap'
-            }}
-          >
-            {filename ??
-              (track && user
-                ? getFilename({
-                    track,
-                    user,
-                    isOriginal: true
-                  })
-                : null)}
-          </Text>
-        </Flex>
+        <Text variant='body' strength='default'>
+          {category
+            ? stemCategoryFriendlyNames[category]
+            : track?.stem_of?.category
+              ? stemCategoryFriendlyNames[track?.stem_of?.category]
+              : messages.fullTrack}
+        </Text>
+        <Text
+          variant='body'
+          color='subdued'
+          css={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          {filename ??
+            (track && user
+              ? getFilename({
+                  track,
+                  user,
+                  isOriginal: true
+                })
+              : null)}
+        </Text>
       </Flex>
       <Flex gap='2xl'>
         {size && !isMobile ? (

@@ -146,7 +146,7 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
 
   const renderHeader = () => {
     return (
-      <Flex gap='l' column>
+      <Flex gap='l' column pb={isExpanded ? 'l' : undefined}>
         <Flex row justifyContent='space-between' alignItems='center'>
           <Flex row alignItems='center' gap='s'>
             <IconReceive color='default' />
@@ -191,16 +191,14 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
           </Flex>
         ) : null}
         {isDownloadAllTrackFilesEnabled && !shouldHideDownload ? (
-          <Flex row alignItems='center' alignSelf='flex-start'>
-            <Button
-              variant='secondary'
-              size='small'
-              onPress={handleDownloadAll}
-              fullWidth
-            >
-              {messages.downloadAll}
-            </Button>
-          </Flex>
+          <Button
+            variant='secondary'
+            size='small'
+            onPress={handleDownloadAll}
+            fullWidth
+          >
+            {messages.downloadAll}
+          </Button>
         ) : null}
         {shouldDisplayOwnerPremiumDownloads && formattedPrice ? (
           <Flex>
