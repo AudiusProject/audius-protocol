@@ -183,3 +183,118 @@ const MyComponent = () => {
   )
 }
 ```
+
+### createResponsiveStyles Utility
+
+For more maintainable responsive styling with Emotion, use the `createResponsiveStyles` utility:
+
+```tsx
+import { useMedia, createResponsiveStyles } from '@audius/harmony'
+
+const MyComponent = () => {
+  const media = useMedia()
+  const { spacing } = useTheme()
+
+  // Define styles for different breakpoints
+  const styles = createResponsiveStyles(media, {
+    // For a single element
+    container: {
+      base: {
+        padding: spacing.l,
+        display: 'flex'
+      },
+      mobile: {
+        padding: spacing.m,
+        flexDirection: 'column'
+      },
+      tablet: {
+        padding: spacing.l,
+        flexDirection: 'row',
+        flexWrap: 'wrap'
+      }
+    },
+
+    // Include multiple elements in one call
+    header: {
+      base: { fontSize: '24px' },
+      mobile: { fontSize: '18px' }
+    },
+
+    // Use functions for complex conditional logic
+    content: {
+      base: { marginTop: spacing.m },
+      mobile: (currentMedia) => ({
+        // isExtraSmall is for phones (≤ 480px)
+        ...(currentMedia.isExtraSmall && {
+          marginTop: spacing.s,
+          fontSize: '14px'
+        })
+      })
+    }
+  })
+
+  return (
+    <div css={styles.container}>
+      <h1 css={styles.header}>Title</h1>
+      <div css={styles.content}>Content</div>
+    </div>
+  )
+}
+```
+
+The utility applies styles in this order, with later ones overriding earlier ones:
+
+1. Base styles (always applied)
+2. Mobile styles (if screen width ≤ 768px)
+3. Tablet styles (if 768px < width ≤ 1024px)
+4. Desktop styles (if width > 1024px)
+
+This approach improves maintainability by:
+
+- Grouping related styles by component part
+- Keeping responsive logic out of JSX
+- Making breakpoint-specific styles easy to locate and update
+
+#### Using \*.styles.ts Files for Organization
+
+For complex components with many responsive styles, it's beneficial to extract the styles into a separate file:
+
+```tsx
+// Button.styles.ts
+import { createResponsiveStyles, useMedia } from '@audius/harmony'
+
+type MediaContext = ReturnType<typeof useMedia>
+
+export const getButtonStyles = (
+  media: MediaContext,
+  spacing: Record<string, string | number>
+) => {
+  return createResponsiveStyles(media, {
+    container: {
+      base: { display: 'flex', padding: spacing.m },
+      mobile: { flexDirection: 'column' }
+    }
+    // More styles...
+  })
+}
+
+// Button.tsx
+import { getButtonStyles } from './Button.styles'
+
+export const Button = () => {
+  const media = useMedia()
+  const { spacing } = useTheme()
+
+  // Import styles from separate file
+  const styles = getButtonStyles(media, spacing)
+
+  return <div css={styles.container}>{/* Component content */}</div>
+}
+```
+
+This pattern:
+
+- Keeps component logic and style definitions separate
+- Makes the component file more readable
+- Promotes reusability of styles
+- Makes it easier to maintain complex responsive UIs

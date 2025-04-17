@@ -8,7 +8,7 @@ import {
 
 import { breakpoints } from '../foundations/breakpoints'
 
-type MediaContextType = {
+export type MediaContextType = {
   // Specific size breakpoint checks
   isExtraSmall: boolean // <= 480px
   isSmall: boolean // <= 768px

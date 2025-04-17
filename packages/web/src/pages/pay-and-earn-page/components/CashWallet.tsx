@@ -29,6 +29,8 @@ import Tooltip from 'components/tooltip/Tooltip'
 import { make, track } from 'services/analytics'
 import { zIndex } from 'utils/zIndex'
 
+import { getCashWalletStyles } from './CashWallet.styles'
+
 const messages = {
   usdc: 'USDC',
   earn: 'Earn USDC by selling your music',
@@ -55,11 +57,11 @@ export const CashWallet = () => {
   const { spacing } = useTheme()
 
   // Use the harmony media hook for responsive design
-  const {
-    isSmall: isMobile,
-    isMedium: isTablet,
-    isExtraSmall: isSmallMobile
-  } = useMedia()
+  const media = useMedia()
+  const { isSmall: isMobile, isExtraSmall: isSmallMobile } = media
+
+  // Get responsive styles using the media context
+  const styles = getCashWalletStyles(media, spacing)
 
   // Calculate the balance in cents by flooring to 2 decimal places then multiplying by 100
   const usdcValue = USDC(balance ?? new BN(0)).floor(2)
@@ -104,14 +106,7 @@ export const CashWallet = () => {
         justifyContent='space-between'
         alignItems='flex-start'
         w='100%'
-        css={
-          isTablet
-            ? {
-                flexDirection: 'column',
-                gap: spacing.l
-              }
-            : null
-        }
+        css={styles.mainFlex}
       >
         {/* Left Column - Balance Info */}
         <Flex direction='column' gap='s' alignItems='flex-start'>
@@ -145,19 +140,7 @@ export const CashWallet = () => {
           </Text>
 
           {/* Payout Wallet Info */}
-          <Flex
-            alignItems='center'
-            gap='s'
-            css={
-              isSmallMobile
-                ? {
-                    flexDirection: 'column',
-                    alignItems: 'flex-start',
-                    gap: spacing.xs
-                  }
-                : null
-            }
-          >
+          <Flex alignItems='center' gap='s' css={styles.payoutWalletFlex}>
             <TextLink
               variant='visible'
               size='m'
@@ -175,11 +158,7 @@ export const CashWallet = () => {
           variant='visible'
           size='m'
           to={TRANSACTION_HISTORY_PAGE}
-          css={{
-            ...(isTablet && {
-              alignSelf: isSmallMobile ? 'flex-start' : 'flex-end'
-            })
-          }}
+          css={styles.transactionLink}
         >
           {messages.transactionHistory}
         </TextLink>
@@ -190,13 +169,7 @@ export const CashWallet = () => {
         gap={isSmallMobile ? 'm' : 'l'}
         pt='m'
         w='100%'
-        css={
-          isSmallMobile
-            ? {
-                flexDirection: 'column'
-              }
-            : null
-        }
+        css={styles.buttonArea}
       >
         {!isManagedAccount ? (
           <>
