@@ -45,7 +45,6 @@ import { AiTrackSection } from 'components/track/AiTrackSection'
 import { GatedContentSection } from 'components/track/GatedContentSection'
 import { TrackDogEar } from 'components/track/TrackDogEar'
 import { TrackMetadataList } from 'components/track/TrackMetadataList'
-import { UserGeneratedText } from 'components/user-generated-text'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { push as pushRoute } from 'utils/navigation'
 import { isDarkMode } from 'utils/theme/theme'
@@ -53,6 +52,7 @@ import { isDarkMode } from 'utils/theme/theme'
 import ActionButtonRow from './ActionButtonRow'
 import { DownloadSection } from './DownloadSection'
 import StatsButtonRow from './StatsButtonRow'
+import { TrackDescription } from './TrackDescription'
 import styles from './TrackHeader.module.css'
 
 const messages = {
@@ -505,12 +505,10 @@ const TrackHeader = ({
         ) : null}
 
         {description ? (
-          <UserGeneratedText
+          <TrackDescription
+            description={description}
             className={styles.description}
-            linkSource='track page'
-          >
-            {description}
-          </UserGeneratedText>
+          />
         ) : null}
         <TrackMetadataList trackId={trackId} />
         {renderTags()}
