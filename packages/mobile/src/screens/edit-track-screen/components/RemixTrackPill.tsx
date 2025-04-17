@@ -69,12 +69,12 @@ export const RemixTrackPill = (props: RemixTrackPillProps) => {
         style={{ height: 20, width: 20 }}
         borderRadius='xs'
       />
-      <Flex direction='row' alignItems='center' style={{ flexShrink: 1 }}>
+      <Flex row alignItems='center' style={{ flexShrink: 1 }}>
         <Text size='s' numberOfLines={1} ellipses>
           {title}
         </Text>
       </Flex>
-      <Flex direction='row' alignItems='center'>
+      <Flex row alignItems='center'>
         <Text color='subdued'>{messages.trackBy}</Text>
         <UserLink userId={user.user_id} size='s' disabled />
       </Flex>
