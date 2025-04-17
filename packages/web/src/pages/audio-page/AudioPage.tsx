@@ -1,10 +1,12 @@
 import { ReactNode, useContext, useEffect } from 'react'
 
 import { StringKeys } from '@audius/common/services'
+import { WALLET_AUDIO_PAGE } from '@audius/common/src/utils/route'
 import { walletActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
+import { useLocation } from 'react-router-dom'
 
 import { Header } from 'components/header/desktop/Header'
 import { useMobileHeader } from 'components/header/mobile/hooks'
@@ -62,7 +64,13 @@ const RewardsContent = () => {
 }
 
 const DesktopPage = ({ children }: { children: ReactNode }) => {
-  const header = <Header primary={messages.title} />
+  const location = useLocation()
+
+  const showBackButton = location.pathname === WALLET_AUDIO_PAGE
+
+  const header = (
+    <Header primary={messages.title} showBackButton={showBackButton} />
+  )
   return (
     <Page
       title={messages.title}

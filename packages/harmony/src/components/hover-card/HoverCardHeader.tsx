@@ -30,20 +30,24 @@ export const HoverCardHeader = ({
         <Text
           variant='label'
           size='s'
-          color='subdued'
+          color='default'
           textTransform='uppercase'
         >
           {title}
         </Text>
       </Flex>
 
-      <IconButton
-        icon={IconArrowRight}
-        color='subdued'
-        size='s'
-        aria-label='Close'
-        onClick={onClose}
-      />
+      {onClose ? (
+        <IconButton
+          icon={IconArrowRight}
+          color='subdued'
+          size='s'
+          aria-label='Close'
+          onClick={onClose}
+        />
+      ) : (
+        <IconArrowRight color='subdued' size='s' />
+      )}
     </Flex>
   )
 }

@@ -1,6 +1,9 @@
 import { ReactNode } from 'react'
 
-import { BadgeTier, AudioTiers } from '@audius/common/src/models/BadgeTier'
+import { useUser } from '@audius/common/api'
+import { BadgeTier, AudioTiers, ID } from '@audius/common/models'
+import { formatCount } from '@audius/common/utils'
+import { AUDIO } from '@audius/fixed-decimal'
 import {
   IconTokenBronze,
   IconTokenSilver,
@@ -11,6 +14,7 @@ import {
   IconLogoCircle
 } from '@audius/harmony'
 import { Origin } from '@audius/harmony/src/components/popup/types'
+import BN from 'bn.js'
 
 import { HoverCardBody } from './HoverCardBody'
 
@@ -26,9 +30,9 @@ type AudioHoverCardProps = {
   tier: AudioTiers
 
   /**
-   * The amount to display in the body
+   * The user ID to fetch balance and tier information for
    */
-  amount: string
+  userId: ID
 
   /**
    * Optional callback fired when the hover card is closed
@@ -69,12 +73,22 @@ const getBadgeName = (tier: BadgeTier) => {
 export const AudioHoverCard = ({
   children,
   tier,
-  amount,
+  userId,
   onClose,
   anchorOrigin,
   transformOrigin,
   onClick
 }: AudioHoverCardProps) => {
+  // Get user's formatted balance directly using select
+  const { data: formattedBalance = '0' } = useUser(userId, {
+    select: (user) => {
+      if (!user?.total_balance) return '0'
+      const balanceValue = new BN(user.total_balance)
+      const audioValue = AUDIO(balanceValue)
+      return formatCount(Number(audioValue.toFixed(2)))
+    }
+  })
+
   return (
     <HoverCard
       content={
@@ -84,7 +98,10 @@ export const AudioHoverCard = ({
             title={getBadgeName(tier)}
             onClose={onClose}
           />
-          <HoverCardBody icon={<IconLogoCircle size='3xl' />} amount={amount} />
+          <HoverCardBody
+            icon={<IconLogoCircle size='3xl' />}
+            amount={formattedBalance}
+          />
         </>
       }
       anchorOrigin={anchorOrigin}

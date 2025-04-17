@@ -16,7 +16,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { push } from 'redux-first-history'
 
 const DIMENSIONS = 64
-const { AUDIO_PAGE } = route
+const { WALLET_AUDIO_PAGE } = route
 const { getAccountTotalBalance } = walletSelectors
 
 const messages = {
@@ -33,20 +33,20 @@ const AUDIO_TOKEN_ID = TOKEN_LISTING_MAP.AUDIO.address
 export const YourCoins = () => {
   const dispatch = useDispatch()
   const totalBalance = useSelector(getAccountTotalBalance)
-  const { color } = useTheme()
+  const { color, spacing } = useTheme()
 
   const { data: audioPriceData, isPending: isLoadingPrice } =
     useTokenPrice(AUDIO_TOKEN_ID)
 
   const audioPrice = audioPriceData?.price || null
 
-  // Format the balance for display using toShorthand
+  // Format the balance for display using toLocaleString for numbers with commas
   const audioAmount = totalBalance
-    ? `${AUDIO(totalBalance).toShorthand()} $AUDIO`
+    ? `${AUDIO(totalBalance).toLocaleString()}`
     : messages.loading
 
   const handleTokenClick = useCallback(() => {
-    dispatch(push(AUDIO_PAGE))
+    dispatch(push(WALLET_AUDIO_PAGE))
   }, [dispatch])
 
   // Calculate dollar value of user's AUDIO balance
@@ -77,16 +77,49 @@ export const YourCoins = () => {
           cursor: 'pointer',
           '&:hover': {
             backgroundColor: color.background.surface2
+          },
+          '@media (max-width: 768px)': {
+            padding: spacing.l
           }
         }}
       >
-        <Flex alignItems='center' gap='l'>
-          <IconLogoCircle width={DIMENSIONS} height={DIMENSIONS} />
+        <Flex
+          alignItems='center'
+          gap='l'
+          css={{
+            '@media (max-width: 480px)': {
+              gap: spacing.m
+            }
+          }}
+        >
+          <IconLogoCircle
+            width={DIMENSIONS}
+            height={DIMENSIONS}
+            css={{
+              '@media (max-width: 480px)': {
+                width: '48px',
+                height: '48px'
+              }
+            }}
+          />
           <Flex direction='column' gap='xs'>
-            <Text variant='heading' size='l' color='default'>
-              {audioAmount}
-            </Text>
-            <Text variant='body' size='m' color='subdued'>
+            <Flex
+              gap='xs'
+              css={{
+                '@media (max-width: 480px)': {
+                  flexDirection: 'column',
+                  gap: '0'
+                }
+              }}
+            >
+              <Text variant='heading' size='l' color='default'>
+                {audioAmount}
+              </Text>
+              <Text variant='heading' size='l' color='subdued'>
+                $AUDIO
+              </Text>
+            </Flex>
+            <Text variant='heading' size='s' color='subdued'>
               {isLoadingPrice ? messages.loadingPrice : dollarValue}
             </Text>
           </Flex>

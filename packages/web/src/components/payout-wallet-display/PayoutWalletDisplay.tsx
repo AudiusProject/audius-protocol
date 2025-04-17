@@ -61,7 +61,7 @@ export const PayoutWalletDisplay = () => {
       backgroundColor='surface1'
       border='default'
       borderRadius='circle'
-      pt='xs'
+      pv='xs'
       pl='xs'
       pr='s'
       gap='xs'
