@@ -46,7 +46,7 @@ export const HoverCardHeader = ({
           onClick={onClose}
         />
       ) : (
-        <IconArrowRight color='subdued' size='s' aria-hidden />
+        <IconArrowRight color='subdued' size='s' />
       )}
     </Flex>
   )

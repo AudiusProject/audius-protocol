@@ -10,13 +10,13 @@ import {
 } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import {
-  Box,
   Button,
   Flex,
   IconInfo,
   IconLogoCircleUSDC,
   Paper,
-  Text
+  Text,
+  IconButton
 } from '@audius/harmony'
 import { useTheme } from '@emotion/react'
 import BN from 'bn.js'
@@ -50,7 +50,7 @@ export const CashWallet = () => {
   const { onOpen: openAddFundsModal } = useAddFundsModal()
   const { data: balance, status: balanceStatus } = useUSDCBalance()
   const [, setPayoutWalletModalOpen] = useModalState('PayoutWallet')
-  const { motion, color, spacing } = useTheme()
+  const { spacing } = useTheme()
 
   // Calculate the balance in cents by flooring to 2 decimal places then multiplying by 100
   const usdcValue = USDC(balance ?? new BN(0)).floor(2)
@@ -125,16 +125,13 @@ export const CashWallet = () => {
                 shouldWrapContent={false}
                 css={{ zIndex: zIndex.CASH_WALLET_TOOLTIP }}
               >
-                <Box
-                  css={{
-                    transition: motion.hover,
-                    '&:hover svg path': {
-                      fill: color.icon.default
-                    }
-                  }}
-                >
-                  <IconInfo size='s' color='subdued' />
-                </Box>
+                <IconButton
+                  icon={IconInfo}
+                  size='s'
+                  color='subdued'
+                  activeColor='default'
+                  aria-label='Cash balance information'
+                />
               </Tooltip>
             </Flex>
           </Flex>

@@ -5,8 +5,8 @@ import { route } from '@audius/common/utils'
 import cn from 'classnames'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
+import { UserLink } from 'components/link/UserLink'
 import { ProfilePicture } from 'components/notification/Notification/components/ProfilePicture'
-import UserBadges from 'components/user-badges/UserBadges'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 
 import styles from './ChatUser.module.css'
@@ -33,15 +33,11 @@ export const ChatUser = ({
       <ProfilePicture user={user} className={styles.profilePicture} />
       <div className={cn(styles.text, textClassName)}>
         <div className={styles.nameAndBadge}>
-          <ArtistPopover handle={user.handle}>
-            <span className={styles.name} onClick={goToProfile}>
-              {user.name}
-            </span>
-          </ArtistPopover>
-          <UserBadges
+          <UserLink
             userId={user.user_id}
-            anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
-            transformOrigin={{ horizontal: 'center', vertical: 'top' }}
+            popover
+            onClick={goToProfile}
+            className={styles.name}
           />
         </div>
         <ArtistPopover handle={user.handle}>

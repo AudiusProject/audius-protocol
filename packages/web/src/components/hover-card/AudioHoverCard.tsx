@@ -79,17 +79,15 @@ export const AudioHoverCard = ({
   transformOrigin,
   onClick
 }: AudioHoverCardProps) => {
-  // Get user's balance information
-  const { data: user } = useUser(userId)
-
-  // Convert balance string to BN and use AUDIO for proper formatting
-  const balanceValue = user?.total_balance
-    ? new BN(user.total_balance)
-    : new BN(0)
-  const audioValue = AUDIO(balanceValue)
-
-  // Format the balance using formatCount to handle large numbers nicely
-  const formattedBalance = formatCount(Number(audioValue.toFixed(2)))
+  // Get user's formatted balance directly using select
+  const { data: formattedBalance = '0' } = useUser(userId, {
+    select: (user) => {
+      if (!user?.total_balance) return '0'
+      const balanceValue = new BN(user.total_balance)
+      const audioValue = AUDIO(balanceValue)
+      return formatCount(Number(audioValue.toFixed(2)))
+    }
+  })
 
   return (
     <HoverCard
