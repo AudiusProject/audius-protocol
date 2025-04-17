@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { Fragment, useCallback, useState } from 'react'
 
 import { useStems, useTrack } from '@audius/common/api'
 import {
@@ -62,6 +62,8 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const { data: track } = useTrack(trackId)
   const { data: stemTracks = [] } = useStems(trackId)
+
+  // console.log('stemTracks', stemTracks)
   const {
     price,
     shouldDisplayPremiumDownloadLocked,
@@ -191,7 +193,6 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
         {isDownloadAllTrackFilesEnabled && !shouldHideDownload ? (
           <Flex row alignItems='center' alignSelf='flex-start'>
             <Button
-              iconLeft={IconReceive}
               variant='secondary'
               size='small'
               onPress={handleDownloadAll}
@@ -230,12 +231,11 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
             />
           </>
         ) : null}
-        {stemTracks?.map((s, i) => (
-          <>
+        {stemTracks?.map((stemTrack, i) => (
+          <Fragment key={stemTrack.track_id}>
             <Divider />
             <DownloadRow
-              trackId={s.id}
-              key={s.id}
+              trackId={stemTrack.track_id}
               index={
                 i +
                 (track?.is_downloadable
@@ -245,7 +245,7 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
               hideDownload={shouldHideDownload}
               onDownload={handleDownload}
             />
-          </>
+          </Fragment>
         ))}
       </Flex>
     </Expandable>

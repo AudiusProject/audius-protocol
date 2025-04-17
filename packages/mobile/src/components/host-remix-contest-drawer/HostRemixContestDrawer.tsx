@@ -80,7 +80,7 @@ export const HostRemixContestDrawer = () => {
       return
     }
 
-    const newDate = mergeDateTime(date || time, time || date)
+    const newDate = mergeDateTime(date, time)
     if (newDate.isBefore(dayjs())) {
       setEndDateError(true)
     } else {
@@ -160,6 +160,7 @@ export const HostRemixContestDrawer = () => {
               mode='date'
               date={endDate?.toString() ?? ''}
               onChange={handleDateChange}
+              dateTimeProps={{ minimumDate: new Date() }}
               inputProps={{
                 label: messages.dateLabel,
                 startIcon: IconCalendarMonth,

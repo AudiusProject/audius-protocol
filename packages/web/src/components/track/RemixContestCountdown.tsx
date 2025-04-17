@@ -1,3 +1,5 @@
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import { useRemixContest } from '@audius/common/src/api/tan-query/events/useRemixContest'
 import { useRemixCountdown } from '@audius/common/src/hooks/useRemixCountdown'
 import { ID } from '@audius/common/src/models/Identifiers'
@@ -39,11 +41,14 @@ type RemixContestCountdownProps = {
 export const RemixContestCountdown = ({
   trackId
 }: RemixContestCountdownProps) => {
+  const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
+    FeatureFlags.REMIX_CONTEST
+  )
   const { data: remixContest } = useRemixContest(trackId)
   const timeLeft = useRemixCountdown(remixContest?.endDate)
   const isMobile = useIsMobile()
 
-  if (!remixContest || !timeLeft) return null
+  if (!remixContest || !timeLeft || !isRemixContestEnabled) return null
 
   return (
     <Paper
