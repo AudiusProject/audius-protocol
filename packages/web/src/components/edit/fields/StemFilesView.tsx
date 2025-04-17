@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { useTrackFileInfo } from '@audius/common/api'
 import { StemCategory, StemUploadWithFile } from '@audius/common/models'
@@ -17,7 +17,8 @@ const messages = {
   audioQuality: 'Provide FLAC, WAV, ALAC, or AIFF for highest audio quality',
   maxCapacity: `Reached upload limit of ${MAX_ROWS} files.`,
   stemTypeHeader: 'Select Stem Type',
-  stemTypeDescription: 'Please select a stem type for each of your files.'
+  stemTypeDescription: 'Please select a stem type for each of your files.',
+  duplicateStems: 'Some files with duplicate names could not be uploaded.'
 }
 
 const makeStemKey = (stem: StemUploadWithFile) => {
@@ -105,40 +106,68 @@ export const StemFilesView = ({
 
   const useRenderDropzone = () => {
     const atCapacity = stems.length >= MAX_ROWS
+    const [duplicateStems, setDuplicateStems] = useState<string[]>([])
 
     // Trim out stems > MAX_ROWS on add
     const onAdd = useCallback(
       (toAdd: any[]) => {
         const remaining = MAX_ROWS - stems.length
-        onAddStems(toAdd.slice(0, remaining))
+        setDuplicateStems([])
+
+        // Filter out stems that already exist
+        const newStems = []
+        const duplicateStems = []
+
+        for (const stem of toAdd) {
+          if (stems.find((s) => s.file.name === stem.name)) {
+            duplicateStems.push(stem.name)
+          } else {
+            newStems.push(stem)
+          }
+        }
+
+        onAddStems(newStems.slice(0, remaining))
+        setDuplicateStems(duplicateStems)
       },
       // eslint-disable-next-line
       [stems]
     )
 
     return (
-      <Dropzone
-        className={cn(styles.dropZone, {
-          [styles.dropzoneDisabled]: atCapacity
-        })}
-        titleTextClassName={cn(styles.dropzoneTitle, {
-          [styles.dropzoneDisabled]: atCapacity
-        })}
-        messageClassName={cn(styles.dropzoneMessage, {
-          [styles.dropzoneDisabled]: atCapacity
-        })}
-        iconClassName={cn(styles.dropzoneIcon, {
-          [styles.dropzoneDisabled]: atCapacity
-        })}
-        textAboveIcon={messages.additionalFiles}
-        subtextAboveIcon={messages.audioQuality}
-        onDropAccepted={onAdd}
-        type='stem'
-        subtitle={atCapacity ? messages.maxCapacity : undefined}
-        disableClick={atCapacity}
-        disabled={atCapacity}
-        isTruncated={stems.length > 0}
-      />
+      <>
+        {duplicateStems.length > 0 && (
+          <Text
+            variant='body'
+            strength='strong'
+            color='danger'
+            textAlign='center'
+          >
+            {messages.duplicateStems}
+          </Text>
+        )}
+        <Dropzone
+          className={cn(styles.dropZone, {
+            [styles.dropzoneDisabled]: atCapacity
+          })}
+          titleTextClassName={cn(styles.dropzoneTitle, {
+            [styles.dropzoneDisabled]: atCapacity
+          })}
+          messageClassName={cn(styles.dropzoneMessage, {
+            [styles.dropzoneDisabled]: atCapacity
+          })}
+          iconClassName={cn(styles.dropzoneIcon, {
+            [styles.dropzoneDisabled]: atCapacity
+          })}
+          textAboveIcon={messages.additionalFiles}
+          subtextAboveIcon={messages.audioQuality}
+          onDropAccepted={onAdd}
+          type='stem'
+          subtitle={atCapacity ? messages.maxCapacity : undefined}
+          disableClick={atCapacity}
+          disabled={atCapacity}
+          isTruncated={stems.length > 0}
+        />
+      </>
     )
   }
 
