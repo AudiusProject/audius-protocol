@@ -704,7 +704,8 @@ function* signUp() {
             }
 
             yield* put(
-              identify(handle, {
+              identify({
+                handle,
                 name,
                 email,
                 userId
@@ -916,6 +917,11 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
       })
 
       yield* put(toastActions.toast({ content: messages.incompleteAccount }))
+      yield* put(
+        make(Name.SIGN_IN_WITH_INCOMPLETE_ACCOUNT, {
+          email
+        })
+      )
       return
     }
 
@@ -954,6 +960,7 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
 
       yield* put(
         make(Name.SIGN_IN_WITH_INCOMPLETE_ACCOUNT, {
+          email,
           handle: user.handle
         })
       )
@@ -1000,6 +1007,7 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
     yield* put(pushRoute(route || FEED_PAGE))
 
     const trackEvent = make(Name.SIGN_IN_FINISH, { status: 'success' })
+
     yield* put(trackEvent)
 
     yield* put(signOnActions.resetSignOn())

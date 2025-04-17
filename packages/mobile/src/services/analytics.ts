@@ -6,6 +6,7 @@ import {
   Identify,
   Types as AmplitudeTypes
 } from '@amplitude/analytics-react-native'
+import type { IdentifyTraits } from '@audius/common/models'
 import VersionNumber from 'react-native-version-number'
 
 import { env } from 'app/services/env'
@@ -77,14 +78,16 @@ export const make = (event: AllEvents) => {
 }
 
 // Identify User
-export const identify = async (
-  handle: string,
-  traits: Record<string, any> = {}
-) => {
+export const identify = async (traits: IdentifyTraits) => {
   const isSetup = await isAudiusSetup()
   if (!isSetup) return
 
-  setUserId(handle)
+  if (traits.handle) {
+    setUserId(traits.handle)
+  } else if (traits.email) {
+    // Use email as our user identifier before we have handle (works better for partial accounts in the signup flow)
+    setUserId(traits.email)
+  }
   const identifyObj = new Identify()
   Object.entries(traits).forEach(([key, value]) => {
     identifyObj.set(key, value)

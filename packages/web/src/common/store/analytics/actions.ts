@@ -1,21 +1,19 @@
 import { useCallback } from 'react'
 
-import { Name, AllTrackingEvents } from '@audius/common/models'
+import { Name, AllTrackingEvents, IdentifyTraits } from '@audius/common/models'
 import { useDispatch as useDispatchRedux } from 'react-redux'
 
 /** UI EVENTS */
 export const IDENTIFY = 'ANALYTICS/IDENTIFY'
 export const TRACK = 'ANALYTICS/TRACK'
 
-export const identify = (handle: string, traits?: Record<string, any>) => ({
+export const identify = (traits?: IdentifyTraits) => ({
   type: IDENTIFY,
-  handle,
   traits
 })
 
 export type IdentifyEvent = {
   type: typeof IDENTIFY
-  handle: string
   traits: Record<string, any>
 }
 
