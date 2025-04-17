@@ -1,7 +1,6 @@
+import { dayjs } from '@audius/common/utils'
 import moment from 'moment'
 import { Nullable } from 'vitest'
-
-import dayjs from './dayjs'
 
 export const formatToday = () => {
   const today = new Date()
