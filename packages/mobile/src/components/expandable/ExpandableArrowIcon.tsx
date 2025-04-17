@@ -22,7 +22,7 @@ const springToValue = ({
 
 type ExpandableArrowIconProps = {
   expanded: boolean
-  iconSize?: IconProps['size']
+  size?: IconProps['size']
 }
 
 /**
@@ -34,7 +34,7 @@ type ExpandableArrowIconProps = {
  */
 export const ExpandableArrowIcon = ({
   expanded,
-  iconSize = 'm' as IconProps['size']
+  size = 'm' as IconProps['size']
 }: ExpandableArrowIconProps) => {
   const rotateAnim = useRef(new Animated.Value(0))
 
@@ -58,7 +58,7 @@ export const ExpandableArrowIcon = ({
         ]
       }}
     >
-      <IconCaretDown size={iconSize} color='default' />
+      <IconCaretDown size={size} color='default' />
     </Animated.View>
   )
 }

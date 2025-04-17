@@ -229,7 +229,6 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
               <Button
                 variant='secondary'
                 size='small'
-                iconLeft={IconReceive}
                 onClick={handleDownloadAll}
               >
                 {messages.downloadAll}

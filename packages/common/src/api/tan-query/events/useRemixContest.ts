@@ -22,9 +22,7 @@ export const useRemixContest = (
       entityType: EventEntityTypeEnum.Track,
       eventType: EventEventTypeEnum.RemixContest
     },
-    {
-      enabled: !!options?.enabled
-    }
+    { enabled: options?.enabled !== false }
   )
 
   const remixContestId = eventsQuery.data?.[0]
