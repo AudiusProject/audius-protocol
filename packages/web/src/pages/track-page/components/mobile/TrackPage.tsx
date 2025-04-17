@@ -1,9 +1,8 @@
 import { useEffect, useContext } from 'react'
 
 import { useToggleFavoriteTrack } from '@audius/common/api'
-import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import { FavoriteSource, ID, Track, User } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { OverflowAction } from '@audius/common/store'
 import { Flex } from '@audius/harmony'
 
@@ -15,6 +14,7 @@ import NavContext, {
   CenterPreset,
   RightPreset
 } from 'components/nav/mobile/NavContext'
+import { RemixContestCountdown } from 'components/track/RemixContestCountdown'
 import { getTrackDefaults } from 'pages/track-page/utils'
 
 import { TrackPageLineup } from '../TrackPageLineup'
@@ -89,11 +89,7 @@ const TrackPage = ({
   const { isFetchingNFTAccess, hasStreamAccess, hasDownloadAccess } =
     useGatedContentAccess(heroTrack)
 
-  const { isEnabled: commentsFlagEnabled } = useFeatureFlag(
-    FeatureFlags.COMMENTS_ENABLED
-  )
-  const isCommentingEnabled =
-    commentsFlagEnabled && !heroTrack?.comments_disabled
+  const isCommentingEnabled = !heroTrack?.comments_disabled
 
   const loading = !heroTrack || isFetchingNFTAccess
 
@@ -124,48 +120,51 @@ const TrackPage = ({
       noIndex={defaults.isUnlisted}
     >
       <Flex column p='l' gap='2xl' w='100%'>
-        <TrackPageHeader
-          isLoading={loading}
-          isPlaying={heroPlaying}
-          isPreviewing={previewing}
-          isReposted={isReposted}
-          isFollowing={isFollowing}
-          title={defaults.title}
-          trackId={defaults.trackId}
-          userId={heroTrack?.owner_id ?? 0}
-          tags={defaults.tags}
-          description={defaults.description}
-          listenCount={defaults.playCount}
-          repostCount={defaults.repostCount}
-          commentCount={defaults.commentCount}
-          commentsDisabled={defaults.commentsDisabled}
-          duration={defaults.duration}
-          releaseDate={defaults.releaseDate}
-          credits={defaults.credits}
-          genre={defaults.genre}
-          mood={defaults.mood}
-          saveCount={defaults.saveCount}
-          isOwner={isOwner}
-          isSaved={isSaved}
-          coSign={defaults.coSign}
-          // Actions (Wire up once we add backend integrations)
-          onClickMobileOverflow={onClickMobileOverflow}
-          onPlay={onPlay}
-          onPreview={onPreview}
-          onSave={toggleSaveTrack}
-          onShare={onShare}
-          onRepost={onRepost}
-          isUnlisted={defaults.isUnlisted}
-          isStreamGated={defaults.isStreamGated}
-          streamConditions={defaults.streamConditions}
-          hasStreamAccess={hasStreamAccess}
-          hasDownloadAccess={hasDownloadAccess}
-          isRemix={!!defaults.remixParentTrackId}
-          fieldVisibility={defaults.fieldVisibility}
-          aiAttributedUserId={defaults.aiAttributionUserId}
-          goToFavoritesPage={goToFavoritesPage}
-          goToRepostsPage={goToRepostsPage}
-        />
+        <Flex column gap='l'>
+          <RemixContestCountdown trackId={defaults.trackId} />
+          <TrackPageHeader
+            isLoading={loading}
+            isPlaying={heroPlaying}
+            isPreviewing={previewing}
+            isReposted={isReposted}
+            isFollowing={isFollowing}
+            title={defaults.title}
+            trackId={defaults.trackId}
+            userId={heroTrack?.owner_id ?? 0}
+            tags={defaults.tags}
+            description={defaults.description}
+            listenCount={defaults.playCount}
+            repostCount={defaults.repostCount}
+            commentCount={defaults.commentCount}
+            commentsDisabled={defaults.commentsDisabled}
+            duration={defaults.duration}
+            releaseDate={defaults.releaseDate}
+            credits={defaults.credits}
+            genre={defaults.genre}
+            mood={defaults.mood}
+            saveCount={defaults.saveCount}
+            isOwner={isOwner}
+            isSaved={isSaved}
+            coSign={defaults.coSign}
+            // Actions (Wire up once we add backend integrations)
+            onClickMobileOverflow={onClickMobileOverflow}
+            onPlay={onPlay}
+            onPreview={onPreview}
+            onSave={toggleSaveTrack}
+            onShare={onShare}
+            onRepost={onRepost}
+            isUnlisted={defaults.isUnlisted}
+            isStreamGated={defaults.isStreamGated}
+            streamConditions={defaults.streamConditions}
+            hasStreamAccess={hasStreamAccess}
+            hasDownloadAccess={hasDownloadAccess}
+            isRemix={!!defaults.remixParentTrackId}
+            fieldVisibility={defaults.fieldVisibility}
+            aiAttributedUserId={defaults.aiAttributionUserId}
+            goToFavoritesPage={goToFavoritesPage}
+            goToRepostsPage={goToRepostsPage}
+          />
+        </Flex>
         {isCommentingEnabled ? (
           <CommentPreview entityId={defaults.trackId} />
         ) : null}

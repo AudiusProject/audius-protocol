@@ -4,6 +4,7 @@ import { ID } from '@audius/common/src/models/Identifiers'
 import { formatDoubleDigit } from '@audius/common/src/utils/formatUtil'
 import { Text, Flex, spacing, Divider, Paper } from '@audius/harmony'
 
+import { useIsMobile } from 'hooks/useIsMobile'
 import { zIndex } from 'utils/zIndex'
 
 const messages = {
@@ -40,6 +41,7 @@ export const RemixContestCountdown = ({
 }: RemixContestCountdownProps) => {
   const { data: remixContest } = useRemixContest(trackId)
   const timeLeft = useRemixCountdown(remixContest?.endDate)
+  const isMobile = useIsMobile()
 
   if (!remixContest || !timeLeft) return null
 
@@ -51,13 +53,17 @@ export const RemixContestCountdown = ({
       justifyContent='center'
       alignItems='center'
       borderRadius='l'
-      css={{
-        position: 'absolute',
-        top: spacing['2xl'],
-        right: spacing.unit15,
-        opacity: 0.8,
-        zIndex: zIndex.REMIX_CONTEST_COUNT_DOWN
-      }}
+      css={
+        isMobile
+          ? {}
+          : {
+              position: 'absolute',
+              top: spacing['2xl'],
+              right: spacing.unit15,
+              opacity: 0.8,
+              zIndex: zIndex.REMIX_CONTEST_COUNT_DOWN
+            }
+      }
     >
       <TimeUnit value={timeLeft.days} label={messages.days} />
       <Divider color='default' orientation='vertical' />
