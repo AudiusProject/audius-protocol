@@ -16,9 +16,9 @@ import {
   IconLogoCircleUSDC,
   Paper,
   Text,
-  IconButton
+  IconButton,
+  useMedia
 } from '@audius/harmony'
-import { useTheme } from '@emotion/react'
 import BN from 'bn.js'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -27,6 +27,9 @@ import { PayoutWalletDisplay } from 'components/payout-wallet-display'
 import Tooltip from 'components/tooltip/Tooltip'
 import { make, track } from 'services/analytics'
 import { zIndex } from 'utils/zIndex'
+
+import { useCashWalletStyles } from './CashWallet.styles'
+
 const messages = {
   usdc: 'USDC',
   earn: 'Earn USDC by selling your music',
@@ -50,7 +53,11 @@ export const CashWallet = () => {
   const { onOpen: openAddFundsModal } = useAddFundsModal()
   const { data: balance, status: balanceStatus } = useUSDCBalance()
   const [, setPayoutWalletModalOpen] = useModalState('PayoutWallet')
-  const { spacing } = useTheme()
+
+  const styles = useCashWalletStyles()
+
+  // We still need useMedia for responsive conditionals
+  const { isSmall: isMobile, isExtraSmall: isSmallMobile } = useMedia()
 
   // Calculate the balance in cents by flooring to 2 decimal places then multiplying by 100
   const usdcValue = USDC(balance ?? new BN(0)).floor(2)
@@ -87,28 +94,15 @@ export const CashWallet = () => {
     <Paper
       direction='column'
       shadow='far'
-      ph='xl'
-      pv='l'
+      ph={isMobile ? 'l' : 'xl'}
+      pv={isMobile ? 'm' : 'l'}
       borderRadius='l'
-      css={{
-        '@media (max-width: 768px)': {
-          paddingLeft: spacing.l,
-          paddingRight: spacing.l,
-          paddingTop: spacing.m,
-          paddingBottom: spacing.m
-        }
-      }}
     >
       <Flex
         justifyContent='space-between'
         alignItems='flex-start'
         w='100%'
-        css={{
-          '@media (max-width: 1024px)': {
-            flexDirection: 'column',
-            gap: spacing.l
-          }
-        }}
+        css={styles.mainFlex}
       >
         {/* Left Column - Balance Info */}
         <Flex direction='column' gap='s' alignItems='flex-start'>
@@ -142,17 +136,7 @@ export const CashWallet = () => {
           </Text>
 
           {/* Payout Wallet Info */}
-          <Flex
-            alignItems='center'
-            gap='s'
-            css={{
-              '@media (max-width: 480px)': {
-                flexDirection: 'column',
-                alignItems: 'flex-start',
-                gap: spacing.xs
-              }
-            }}
-          >
+          <Flex alignItems='center' gap='s' css={styles.payoutWalletFlex}>
             <TextLink
               variant='visible'
               size='m'
@@ -170,14 +154,7 @@ export const CashWallet = () => {
           variant='visible'
           size='m'
           to={TRANSACTION_HISTORY_PAGE}
-          css={{
-            '@media (max-width: 1024px)': {
-              alignSelf: 'flex-end'
-            },
-            '@media (max-width: 480px)': {
-              alignSelf: 'flex-start'
-            }
-          }}
+          css={styles.transactionLink}
         >
           {messages.transactionHistory}
         </TextLink>
@@ -185,15 +162,10 @@ export const CashWallet = () => {
 
       {/* Bottom Button Area */}
       <Flex
-        gap='l'
+        gap={isSmallMobile ? 'm' : 'l'}
         pt='m'
         w='100%'
-        css={{
-          '@media (max-width: 480px)': {
-            flexDirection: 'column',
-            gap: spacing.m
-          }
-        }}
+        css={styles.buttonArea}
       >
         {!isManagedAccount ? (
           <>
