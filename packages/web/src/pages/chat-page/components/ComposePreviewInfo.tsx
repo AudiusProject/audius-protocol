@@ -34,7 +34,11 @@ const ComposePreviewInfo = (props: ComposePreviewInfoProps) => {
           <Text variant='body' strength='strong'>
             {name}
           </Text>
-          <UserBadges userId={userId} />
+          <UserBadges
+            userId={userId}
+            anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
+            transformOrigin={{ horizontal: 'center', vertical: 'top' }}
+          />
         </Flex>
       </Flex>
     </Flex>

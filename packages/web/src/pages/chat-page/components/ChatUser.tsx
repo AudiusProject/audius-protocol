@@ -32,12 +32,18 @@ export const ChatUser = ({
     <div className={styles.root}>
       <ProfilePicture user={user} className={styles.profilePicture} />
       <div className={cn(styles.text, textClassName)}>
-        <ArtistPopover handle={user.handle}>
-          <div className={styles.nameAndBadge} onClick={goToProfile}>
-            <span className={styles.name}>{user.name}</span>
-            <UserBadges userId={user.user_id} />
-          </div>
-        </ArtistPopover>
+        <div className={styles.nameAndBadge}>
+          <ArtistPopover handle={user.handle}>
+            <span className={styles.name} onClick={goToProfile}>
+              {user.name}
+            </span>
+          </ArtistPopover>
+          <UserBadges
+            userId={user.user_id}
+            anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
+            transformOrigin={{ horizontal: 'center', vertical: 'top' }}
+          />
+        </div>
         <ArtistPopover handle={user.handle}>
           <span className={styles.handle} onClick={goToProfile}>
             @{user.handle}
