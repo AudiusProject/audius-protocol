@@ -5,6 +5,7 @@ create or replace function get_user_scores(
         user_id integer,
         handle_lc text,
         play_count bigint,
+        distinct_tracks_played bigint,
         follower_count bigint,
         challenge_count bigint,
         following_count bigint,
@@ -13,7 +14,8 @@ create or replace function get_user_scores(
         score bigint
     ) language sql as $function$ with play_activity as (
         select plays.user_id,
-            count(distinct date_trunc('minute', plays.created_at)) as play_count
+            count(distinct (date_trunc('hour', plays.created_at))) as play_count,
+            count(distinct(plays.play_item_id)) as distinct_tracks_played
         from plays
             join users on plays.user_id = users.user_id
         where target_user_ids is null
@@ -61,6 +63,7 @@ create or replace function get_user_scores(
                 else false
             end as is_audius_impersonator,
             coalesce(play_activity.play_count, 0) as play_count,
+            coalesce(play_activity.distinct_tracks_played, 0) as distinct_tracks_played,
             coalesce(fast_challenge_completion.challenge_count, 0) as challenge_count,
             coalesce(aggregate_user.following_count, 0) as following_count,
             coalesce(aggregate_user.follower_count, 0) as follower_count,
@@ -79,17 +82,21 @@ create or replace function get_user_scores(
 select a.user_id,
     a.handle_lc,
     a.play_count,
+    a.distinct_tracks_played,
     a.follower_count,
     a.challenge_count,
     a.following_count,
     a.chat_block_count,
     a.is_audius_impersonator,
     (
-        a.play_count + a.follower_count - a.challenge_count - (a.chat_block_count * 100) + case
+        (a.play_count / 2) + a.follower_count - a.challenge_count - (a.chat_block_count * 100) + case
             when a.following_count < 5 then -1
             else 0
         end + case
             when a.is_audius_impersonator then -1000
+            else 0
+        end + case
+            when a.distinct_tracks_played <= 3 then -10
             else 0
         end
     ) as score
