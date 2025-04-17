@@ -1,0 +1,784 @@
+diff --git a/packages/harmony/README.md b/packages/harmony/README.md
+index c89ac71dd1..77a787ae3c 100644
+--- a/packages/harmony/README.md
++++ b/packages/harmony/README.md
+@@ -36,6 +36,7 @@ npm install --save-dev esbuild-plugin-react-virtualized
+ ```
+ 
+ Follow the instructions to add the plugin to your vite config:
++
+ ```js
+ // vite.config.js
+ import { defineConfig } from 'vite'
+@@ -44,9 +45,9 @@ import fixReactVirtualized from 'esbuild-plugin-react-virtualized'
+ export default defineConfig({
+   optimizeDeps: {
+     esbuildOptions: {
+-      plugins: [fixReactVirtualized],
+-    },
+-  },
++      plugins: [fixReactVirtualized]
++    }
++  }
+ })
+ ```
+ 
+@@ -123,3 +124,62 @@ npm run storybook
+ ## Contribution
+ 
+ A Contribution Guide is [available here](https://www.notion.so/audiusproject/Submitting-for-Design-Updates-52a8bc3bb68747818a96d2721bace27f).
++
++## Responsive Design
++
++Harmony includes utilities to help build responsive designs consistently across the application.
++
++### Breakpoints
++
++The breakpoints module provides standardized screen size breakpoints and media query helpers:
++
++```tsx
++import { breakpoints } from '@audius/harmony'
++
++// Access specific breakpoint values
++const tabletWidth = breakpoints.values.md // 1024
++
++// Use predefined media queries
++const mobileQuery = breakpoints.down.sm // (max-width: 768px)
++const desktopQuery = breakpoints.up.md // (min-width: 1025px)
++const tabletQuery = breakpoints.between.sm_md // (min-width: 769px) and (max-width: 1024px)
++
++// Create custom media queries
++const customQuery = breakpoints.createCustomQuery(500, 800) // (min-width: 500px) and (max-width: 800px)
++```
++
++### useMedia Hook
++
++For reactive responsive designs, use the `useMedia` hook:
++
++```tsx
++import { useMedia } from '@audius/harmony'
++
++const MyComponent = () => {
++  const {
++    // Common device categories
++    isMobile, // <= 768px
++    isTablet, // > 768px and <= 1024px
++    isDesktop, // > 1024px
++
++    // Detailed breakpoint checks
++    isExtraSmall, // <= 480px
++    isSmall, // <= 768px
++    isMedium, // <= 1024px
++
++    // Check custom queries
++    matchesQuery
++  } = useMedia()
++
++  return (
++    <div>
++      {isMobile && <MobileLayout />}
++      {isTablet && <TabletLayout />}
++      {isDesktop && <DesktopLayout />}
++
++      {/* Check a custom query */}
++      {matchesQuery('(orientation: portrait)') && <PortraitContent />}
++    </div>
++  )
++}
++```
+diff --git a/packages/harmony/src/foundations/index.ts b/packages/harmony/src/foundations/index.ts
+index 5a5dbd5b74..e02a1b37f4 100644
+--- a/packages/harmony/src/foundations/index.ts
++++ b/packages/harmony/src/foundations/index.ts
+@@ -5,3 +5,4 @@ export * from './shadows'
+ export * from './theme'
+ export * from './typography'
+ export * from './spacing'
++export * from './breakpoints'
+diff --git a/packages/harmony/src/hooks/index.ts b/packages/harmony/src/hooks/index.ts
+index d819c86d1c..663a7da99a 100644
+--- a/packages/harmony/src/hooks/index.ts
++++ b/packages/harmony/src/hooks/index.ts
+@@ -3,3 +3,4 @@ export * from './useControlled'
+ export * from './useHotKeys'
+ export * from './useMediaQueryListener'
+ export * from './useScrollLock'
++export * from './useMedia'
+diff --git a/packages/harmony/src/hooks/useMediaQueryListener.ts b/packages/harmony/src/hooks/useMediaQueryListener.ts
+index 5dc3cefa58..6f5042a802 100644
+--- a/packages/harmony/src/hooks/useMediaQueryListener.ts
++++ b/packages/harmony/src/hooks/useMediaQueryListener.ts
+@@ -7,7 +7,7 @@ export const useMediaQueryListener = (mediaQuery: string) => {
+   // Updates whether there is a match or not
+   // when the media query status changes
+   const listener = useCallback(
+-    (matcher: any) => setIsMatch(matcher.matches),
++    (event: MediaQueryListEvent) => setIsMatch(event.matches),
+     [setIsMatch]
+   )
+ 
+@@ -15,9 +15,11 @@ export const useMediaQueryListener = (mediaQuery: string) => {
+   useEffect(() => {
+     if (mediaQuery) {
+       const matcher = window.matchMedia(mediaQuery)
+-      listener(matcher)
+-      matcher.addListener(listener)
+-      return () => matcher.removeListener(listener)
++      // Set initial value
++      setIsMatch(matcher.matches)
++      // Use modern event listener API
++      matcher.addEventListener('change', listener)
++      return () => matcher.removeEventListener('change', listener)
+     }
+     return () => {}
+   }, [mediaQuery, listener])
+diff --git a/packages/web/src/app/AppProviders.tsx b/packages/web/src/app/AppProviders.tsx
+index 2bbade74ca..81d404db55 100644
+--- a/packages/web/src/app/AppProviders.tsx
++++ b/packages/web/src/app/AppProviders.tsx
+@@ -1,5 +1,6 @@
+ import { ReactNode, useState } from 'react'
+ 
++import { MediaProvider } from '@audius/harmony/src/contexts'
+ import { QueryClientProvider } from '@tanstack/react-query'
+ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+ import { Provider as ReduxProvider } from 'react-redux'
+@@ -58,33 +59,35 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
+   return (
+     <WagmiProvider config={wagmiAdapter.wagmiConfig}>
+       <QueryClientProvider client={queryClient}>
+-        <ReduxProvider store={store}>
+-          <Router history={storeHistory}>
+-            <CompatRouter>
+-              <LastLocationProvider>
+-                <RouterContextProvider>
+-                  <HeaderContextProvider>
+-                    <NavProvider>
+-                      <ScrollProvider>
+-                        <ThemeProvider>
+-                          <ToastContextProvider>
+-                            <AppContextProvider>
+-                              <AudiusQueryProvider>
+-                                <MainContentContextProvider>
+-                                  {children}
+-                                </MainContentContextProvider>
+-                              </AudiusQueryProvider>
+-                            </AppContextProvider>
+-                          </ToastContextProvider>
+-                        </ThemeProvider>
+-                      </ScrollProvider>
+-                    </NavProvider>
+-                  </HeaderContextProvider>
+-                </RouterContextProvider>
+-              </LastLocationProvider>
+-            </CompatRouter>
+-          </Router>
+-        </ReduxProvider>
++        <MediaProvider>
++          <ReduxProvider store={store}>
++            <Router history={storeHistory}>
++              <CompatRouter>
++                <LastLocationProvider>
++                  <RouterContextProvider>
++                    <HeaderContextProvider>
++                      <NavProvider>
++                        <ScrollProvider>
++                          <ThemeProvider>
++                            <ToastContextProvider>
++                              <AppContextProvider>
++                                <AudiusQueryProvider>
++                                  <MainContentContextProvider>
++                                    {children}
++                                  </MainContentContextProvider>
++                                </AudiusQueryProvider>
++                              </AppContextProvider>
++                            </ToastContextProvider>
++                          </ThemeProvider>
++                        </ScrollProvider>
++                      </NavProvider>
++                    </HeaderContextProvider>
++                  </RouterContextProvider>
++                </LastLocationProvider>
++              </CompatRouter>
++            </Router>
++          </ReduxProvider>
++        </MediaProvider>
+         <ReactQueryDevtools />
+       </QueryClientProvider>
+     </WagmiProvider>
+diff --git a/packages/web/src/pages/pay-and-earn-page/components/CashWallet.tsx b/packages/web/src/pages/pay-and-earn-page/components/CashWallet.tsx
+index 647a647a37..14efd97679 100644
+--- a/packages/web/src/pages/pay-and-earn-page/components/CashWallet.tsx
++++ b/packages/web/src/pages/pay-and-earn-page/components/CashWallet.tsx
+@@ -16,7 +16,8 @@ import {
+   IconLogoCircleUSDC,
+   Paper,
+   Text,
+-  IconButton
++  IconButton,
++  useMedia
+ } from '@audius/harmony'
+ import { useTheme } from '@emotion/react'
+ import BN from 'bn.js'
+@@ -27,6 +28,7 @@ import { PayoutWalletDisplay } from 'components/payout-wallet-display'
+ import Tooltip from 'components/tooltip/Tooltip'
+ import { make, track } from 'services/analytics'
+ import { zIndex } from 'utils/zIndex'
++
+ const messages = {
+   usdc: 'USDC',
+   earn: 'Earn USDC by selling your music',
+@@ -52,6 +54,13 @@ export const CashWallet = () => {
+   const [, setPayoutWalletModalOpen] = useModalState('PayoutWallet')
+   const { spacing } = useTheme()
+ 
++  // Use the harmony media hook for responsive design
++  const {
++    isSmall: isMobile,
++    isMedium: isTablet,
++    isExtraSmall: isSmallMobile
++  } = useMedia()
++
+   // Calculate the balance in cents by flooring to 2 decimal places then multiplying by 100
+   const usdcValue = USDC(balance ?? new BN(0)).floor(2)
+ 
+@@ -87,28 +96,22 @@ export const CashWallet = () => {
+     <Paper
+       direction='column'
+       shadow='far'
+-      ph='xl'
+-      pv='l'
++      ph={isMobile ? 'l' : 'xl'}
++      pv={isMobile ? 'm' : 'l'}
+       borderRadius='l'
+-      css={{
+-        '@media (max-width: 768px)': {
+-          paddingLeft: spacing.l,
+-          paddingRight: spacing.l,
+-          paddingTop: spacing.m,
+-          paddingBottom: spacing.m
+-        }
+-      }}
+     >
+       <Flex
+         justifyContent='space-between'
+         alignItems='flex-start'
+         w='100%'
+-        css={{
+-          '@media (max-width: 1024px)': {
+-            flexDirection: 'column',
+-            gap: spacing.l
+-          }
+-        }}
++        css={
++          isTablet
++            ? {
++                flexDirection: 'column',
++                gap: spacing.l
++              }
++            : undefined
++        }
+       >
+         {/* Left Column - Balance Info */}
+         <Flex direction='column' gap='s' alignItems='flex-start'>
+@@ -145,13 +148,15 @@ export const CashWallet = () => {
+           <Flex
+             alignItems='center'
+             gap='s'
+-            css={{
+-              '@media (max-width: 480px)': {
+-                flexDirection: 'column',
+-                alignItems: 'flex-start',
+-                gap: spacing.xs
+-              }
+-            }}
++            css={
++              isSmallMobile
++                ? {
++                    flexDirection: 'column',
++                    alignItems: 'flex-start',
++                    gap: spacing.xs
++                  }
++                : undefined
++            }
+           >
+             <TextLink
+               variant='visible'
+@@ -171,12 +176,9 @@ export const CashWallet = () => {
+           size='m'
+           to={TRANSACTION_HISTORY_PAGE}
+           css={{
+-            '@media (max-width: 1024px)': {
+-              alignSelf: 'flex-end'
+-            },
+-            '@media (max-width: 480px)': {
+-              alignSelf: 'flex-start'
+-            }
++            ...(isTablet && {
++              alignSelf: isSmallMobile ? 'flex-start' : 'flex-end'
++            })
+           }}
+         >
+           {messages.transactionHistory}
+@@ -185,15 +187,16 @@ export const CashWallet = () => {
+ 
+       {/* Bottom Button Area */}
+       <Flex
+-        gap='l'
++        gap={isSmallMobile ? 'm' : 'l'}
+         pt='m'
+         w='100%'
+-        css={{
+-          '@media (max-width: 480px)': {
+-            flexDirection: 'column',
+-            gap: spacing.m
+-          }
+-        }}
++        css={
++          isSmallMobile
++            ? {
++                flexDirection: 'column'
++              }
++            : undefined
++        }
+       >
+         {!isManagedAccount ? (
+           <>
+diff --git a/packages/harmony/src/hooks/useMediaQueryListener.ts b/packages/harmony/src/hooks/useMediaQueryListener.ts
+index 5dc3cefa58..6f5042a802 100644
+--- a/packages/harmony/src/hooks/useMediaQueryListener.ts
++++ b/packages/harmony/src/hooks/useMediaQueryListener.ts
+@@ -7,7 +7,7 @@ export const useMediaQueryListener = (mediaQuery: string) => {
+   // Updates whether there is a match or not
+   // when the media query status changes
+   const listener = useCallback(
+-    (matcher: any) => setIsMatch(matcher.matches),
++    (event: MediaQueryListEvent) => setIsMatch(event.matches),
+     [setIsMatch]
+   )
+ 
+@@ -15,9 +15,11 @@ export const useMediaQueryListener = (mediaQuery: string) => {
+   useEffect(() => {
+     if (mediaQuery) {
+       const matcher = window.matchMedia(mediaQuery)
+-      listener(matcher)
+-      matcher.addListener(listener)
+-      return () => matcher.removeListener(listener)
++      // Set initial value
++      setIsMatch(matcher.matches)
++      // Use modern event listener API
++      matcher.addEventListener('change', listener)
++      return () => matcher.removeEventListener('change', listener)
+     }
+     return () => {}
+   }, [mediaQuery, listener])
+diff --git a/packages/web/src/app/AppProviders.tsx b/packages/web/src/app/AppProviders.tsx
+index 2bbade74ca..81d404db55 100644
+--- a/packages/web/src/app/AppProviders.tsx
++++ b/packages/web/src/app/AppProviders.tsx
+@@ -1,5 +1,6 @@
+ import { ReactNode, useState } from 'react'
+ 
++import { MediaProvider } from '@audius/harmony/src/contexts'
+ import { QueryClientProvider } from '@tanstack/react-query'
+ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+ import { Provider as ReduxProvider } from 'react-redux'
+@@ -58,33 +59,35 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
+   return (
+     <WagmiProvider config={wagmiAdapter.wagmiConfig}>
+       <QueryClientProvider client={queryClient}>
+-        <ReduxProvider store={store}>
+-          <Router history={storeHistory}>
+-            <CompatRouter>
+-              <LastLocationProvider>
+-                <RouterContextProvider>
+-                  <HeaderContextProvider>
+-                    <NavProvider>
+-                      <ScrollProvider>
+-                        <ThemeProvider>
+-                          <ToastContextProvider>
+-                            <AppContextProvider>
+-                              <AudiusQueryProvider>
+-                                <MainContentContextProvider>
+-                                  {children}
+-                                </MainContentContextProvider>
+-                              </AudiusQueryProvider>
+-                            </AppContextProvider>
+-                          </ToastContextProvider>
+-                        </ThemeProvider>
+-                      </ScrollProvider>
+-                    </NavProvider>
+-                  </HeaderContextProvider>
+-                </RouterContextProvider>
+-              </LastLocationProvider>
+-            </CompatRouter>
+-          </Router>
+-        </ReduxProvider>
++        <MediaProvider>
++          <ReduxProvider store={store}>
++            <Router history={storeHistory}>
++              <CompatRouter>
++                <LastLocationProvider>
++                  <RouterContextProvider>
++                    <HeaderContextProvider>
++                      <NavProvider>
++                        <ScrollProvider>
++                          <ThemeProvider>
++                            <ToastContextProvider>
++                              <AppContextProvider>
++                                <AudiusQueryProvider>
++                                  <MainContentContextProvider>
++                                    {children}
++                                  </MainContentContextProvider>
++                                </AudiusQueryProvider>
++                              </AppContextProvider>
++                            </ToastContextProvider>
++                          </ThemeProvider>
++                        </ScrollProvider>
++                      </NavProvider>
++                    </HeaderContextProvider>
++                  </RouterContextProvider>
++                </LastLocationProvider>
++              </CompatRouter>
++            </Router>
++          </ReduxProvider>
++        </MediaProvider>
+         <ReactQueryDevtools />
+       </QueryClientProvider>
+     </WagmiProvider>
+diff --git a/contexts/MediaContext.tsx b/contexts/MediaContext.tsx
+new file mode 100644
+index 0000000000..3df5d482dd
+--- /dev/null
++++ b/contexts/MediaContext.tsx
+@@ -0,0 +1,146 @@
++import {
++  createContext,
++  useContext,
++  useEffect,
++  useState,
++  ReactNode
++} from 'react'
++
++import { breakpoints } from '../foundations/breakpoints'
++
++type MediaContextType = {
++  // Specific size breakpoint checks
++  isExtraSmall: boolean // <= 480px
++  isSmall: boolean // <= 768px
++  isMedium: boolean // <= 1024px
++  isLarge: boolean // <= 1280px
++  isExtraLarge: boolean // <= 1440px
++
++  // Specific "larger than" checks
++  isAboveExtraSmall: boolean // > 480px
++  isAboveSmall: boolean // > 768px
++  isAboveMedium: boolean // > 1024px
++  isAboveLarge: boolean // > 1280px
++  isAboveExtraLarge: boolean // > 1440px
++
++  // Common device categories
++  isMobile: boolean // <= 768px
++  isTablet: boolean // > 768px and <= 1024px
++  isDesktop: boolean // > 1024px
++
++  // Utility function for custom queries
++  matchesQuery: (query: string) => boolean
++}
++
++const MediaContext = createContext<MediaContextType | null>(null)
++
++type MediaProviderProps = {
++  children: ReactNode
++}
++
++/**
++ * Provider component that monitors media queries and makes responsive breakpoints
++ * available throughout the app via context.
++ */
++export const MediaProvider = ({ children }: MediaProviderProps) => {
++  // Initialize all the media state
++  const [isExtraSmall, setIsExtraSmall] = useState(false)
++  const [isSmall, setIsSmall] = useState(false)
++  const [isMedium, setIsMedium] = useState(false)
++  const [isLarge, setIsLarge] = useState(false)
++  const [isExtraLarge, setIsExtraLarge] = useState(false)
++
++  const [isAboveExtraSmall, setIsAboveExtraSmall] = useState(false)
++  const [isAboveSmall, setIsAboveSmall] = useState(false)
++  const [isAboveMedium, setIsAboveMedium] = useState(false)
++  const [isAboveLarge, setIsAboveLarge] = useState(false)
++  const [isAboveExtraLarge, setIsAboveExtraLarge] = useState(false)
++
++  // Set up all the media query listeners at once
++  useEffect(() => {
++    // Helper to create and set up a media query listener
++    const createMediaListener = (
++      query: string,
++      setter: (matches: boolean) => void
++    ) => {
++      const mql = window.matchMedia(query)
++
++      // Set initial value
++      setter(mql.matches)
++
++      // Set up listener for changes
++      const listener = (event: MediaQueryListEvent) => {
++        setter(event.matches)
++      }
++
++      mql.addEventListener('change', listener)
++      return () => mql.removeEventListener('change', listener)
++    }
++
++    // Set up all listeners
++    const cleanupFunctions = [
++      // Down queries
++      createMediaListener(breakpoints.down.xs, setIsExtraSmall),
++      createMediaListener(breakpoints.down.sm, setIsSmall),
++      createMediaListener(breakpoints.down.md, setIsMedium),
++      createMediaListener(breakpoints.down.lg, setIsLarge),
++      createMediaListener(breakpoints.down.xl, setIsExtraLarge),
++
++      // Up queries
++      createMediaListener(breakpoints.up.xs, setIsAboveExtraSmall),
++      createMediaListener(breakpoints.up.sm, setIsAboveSmall),
++      createMediaListener(breakpoints.up.md, setIsAboveMedium),
++      createMediaListener(breakpoints.up.lg, setIsAboveLarge),
++      createMediaListener(breakpoints.up.xl, setIsAboveExtraLarge)
++    ]
++
++    // Clean up all listeners on unmount
++    return () => {
++      cleanupFunctions.forEach((cleanup) => cleanup())
++    }
++  }, [])
++
++  // Derived properties
++  const isMobile = isSmall // <= 768px
++  const isTablet = !isSmall && !isAboveMedium // > 768px and <= 1024px
++  const isDesktop = isAboveMedium // > 1024px
++
++  // Utility function for custom queries
++  const matchesQuery = (query: string) => {
++    return window.matchMedia(query).matches
++  }
++
++  const value: MediaContextType = {
++    isExtraSmall,
++    isSmall,
++    isMedium,
++    isLarge,
++    isExtraLarge,
++    isAboveExtraSmall,
++    isAboveSmall,
++    isAboveMedium,
++    isAboveLarge,
++    isAboveExtraLarge,
++    isMobile,
++    isTablet,
++    isDesktop,
++    matchesQuery
++  }
++
++  return <MediaContext.Provider value={value}>{children}</MediaContext.Provider>
++}
++
++/**
++ * Hook to access media query state from the MediaContext.
++ * This hook should be used instead of the original useMedia hook
++ * to avoid creating multiple listeners in every component.
++ */
++export const useMedia = (): MediaContextType => {
++  const context = useContext(MediaContext)
++
++  if (context === null) {
++    throw new Error('useMedia must be used within a MediaProvider')
++  }
++
++  return context
++}
+diff --git a/contexts/index.ts b/contexts/index.ts
+new file mode 100644
+index 0000000000..954546ac72
+--- /dev/null
++++ b/contexts/index.ts
+@@ -0,0 +1 @@
++export { MediaProvider } from './MediaContext'
+diff --git a/foundations/breakpoints/breakpoints.ts b/foundations/breakpoints/breakpoints.ts
+new file mode 100644
+index 0000000000..4887a7990c
+--- /dev/null
++++ b/foundations/breakpoints/breakpoints.ts
+@@ -0,0 +1,140 @@
++/**
++ * Audius Breakpoint System
++ *
++ * Standard breakpoints for responsive design. These values align with common
++ * device sizes and are used throughout the application for consistent
++ * responsive behavior.
++ */
++
++export const breakpoints = {
++  // Maximum width values for each breakpoint
++  values: {
++    /**
++     * Extra small devices (portrait phones)
++     */
++    xs: 480,
++    /**
++     * Small devices (landscape phones)
++     */
++    sm: 768,
++    /**
++     * Medium devices (tablets)
++     */
++    md: 1024,
++    /**
++     * Large devices (desktops)
++     */
++    lg: 1280,
++    /**
++     * Extra large devices (large desktops)
++     */
++    xl: 1440
++  },
++
++  /**
++   * Media query strings for max-width (smaller than breakpoint)
++   */
++  down: {
++    /**
++     * @example (max-width: 480px)
++     * Smaller than xs breakpoint (mobile phones)
++     */
++    xs: `(max-width: 480px)`,
++    /**
++     * @example (max-width: 768px)
++     * Smaller than sm breakpoint (includes mobile phones and small tablets)
++     */
++    sm: `(max-width: 768px)`,
++    /**
++     * @example (max-width: 1024px)
++     * Smaller than md breakpoint (includes mobile phones, tablets, and small laptops)
++     */
++    md: `(max-width: 1024px)`,
++    /**
++     * @example (max-width: 1280px)
++     * Smaller than lg breakpoint (includes all except large desktops)
++     */
++    lg: `(max-width: 1280px)`,
++    /**
++     * @example (max-width: 1440px)
++     * Smaller than xl breakpoint
++     */
++    xl: `(max-width: 1440px)`
++  },
++
++  /**
++   * Media query strings for min-width (larger than breakpoint)
++   */
++  up: {
++    /**
++     * @example (min-width: 481px)
++     * Larger than xs breakpoint (tablets and above)
++     */
++    xs: `(min-width: 481px)`,
++    /**
++     * @example (min-width: 769px)
++     * Larger than sm breakpoint (desktops and above)
++     */
++    sm: `(min-width: 769px)`,
++    /**
++     * @example (min-width: 1025px)
++     * Larger than md breakpoint (larger desktops)
++     */
++    md: `(min-width: 1025px)`,
++    /**
++     * @example (min-width: 1281px)
++     * Larger than lg breakpoint (large desktops)
++     */
++    lg: `(min-width: 1281px)`,
++    /**
++     * @example (min-width: 1441px)
++     * Larger than xl breakpoint (extra large desktops)
++     */
++    xl: `(min-width: 1441px)`
++  },
++
++  /**
++   * Media query strings for ranges between breakpoints
++   */
++  between: {
++    /**
++     * @example (min-width: 481px) and (max-width: 768px)
++     * Between xs and sm breakpoints (small tablets)
++     */
++    xs_sm: `(min-width: 481px) and (max-width: 768px)`,
++    /**
++     * @example (min-width: 769px) and (max-width: 1024px)
++     * Between sm and md breakpoints (tablets)
++     */
++    sm_md: `(min-width: 769px) and (max-width: 1024px)`,
++    /**
++     * @example (min-width: 1025px) and (max-width: 1280px)
++     * Between md and lg breakpoints (small desktops)
++     */
++    md_lg: `(min-width: 1025px) and (max-width: 1280px)`,
++    /**
++     * @example (min-width: 1281px) and (max-width: 1440px)
++     * Between lg and xl breakpoints (medium desktops)
++     */
++    lg_xl: `(min-width: 1281px) and (max-width: 1440px)`
++  },
++
++  /**
++   * Helper function to create a custom media query
++   * @param minWidth minimum width in pixels
++   * @param maxWidth maximum width in pixels
++   * @returns media query string
++   */
++  createCustomQuery: (minWidth?: number, maxWidth?: number): string => {
++    if (minWidth && maxWidth) {
++      return `(min-width: ${minWidth}px) and (max-width: ${maxWidth}px)`
++    }
++    if (minWidth) {
++      return `(min-width: ${minWidth}px)`
++    }
++    if (maxWidth) {
++      return `(max-width: ${maxWidth}px)`
++    }
++    return ''
++  }
++}
+diff --git a/foundations/breakpoints/index.ts b/foundations/breakpoints/index.ts
+new file mode 100644
+index 0000000000..024751b3ca
+--- /dev/null
++++ b/foundations/breakpoints/index.ts
+@@ -0,0 +1 @@
++export * from './breakpoints'
+diff --git a/hooks/useMedia.ts b/hooks/useMedia.ts
+new file mode 100644
+index 0000000000..cdb0d381fd
+--- /dev/null
++++ b/hooks/useMedia.ts
+@@ -0,0 +1,18 @@
++/**
++ * A hook that provides responsive design state based on predefined breakpoints.
++ *
++ * This is now a re-export from MediaContext, which centralizes all media query listeners
++ * in a single provider to improve performance.
++ *
++ * @example
++ * ```tsx
++ * const { isMobile, isTablet, isDesktop, matchesQuery } = useMedia()
++ *
++ * // Conditionally render based on screen size
++ * if (isMobile) return <MobileView />
++ * if (isTablet) return <TabletView />
++ * if (matchesQuery(breakpoints.between.lg_xl)) return <LargeDesktopView />
++ * return <DefaultView />
++ * ```
++ */
++export { useMedia } from '../contexts/MediaContext'

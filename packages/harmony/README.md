@@ -36,6 +36,7 @@ npm install --save-dev esbuild-plugin-react-virtualized
 ```
 
 Follow the instructions to add the plugin to your vite config:
+
 ```js
 // vite.config.js
 import { defineConfig } from 'vite'
@@ -44,9 +45,9 @@ import fixReactVirtualized from 'esbuild-plugin-react-virtualized'
 export default defineConfig({
   optimizeDeps: {
     esbuildOptions: {
-      plugins: [fixReactVirtualized],
-    },
-  },
+      plugins: [fixReactVirtualized]
+    }
+  }
 })
 ```
 
@@ -123,3 +124,62 @@ npm run storybook
 ## Contribution
 
 A Contribution Guide is [available here](https://www.notion.so/audiusproject/Submitting-for-Design-Updates-52a8bc3bb68747818a96d2721bace27f).
+
+## Responsive Design
+
+Harmony includes utilities to help build responsive designs consistently across the application.
+
+### Breakpoints
+
+The breakpoints module provides standardized screen size breakpoints and media query helpers:
+
+```tsx
+import { breakpoints } from '@audius/harmony'
+
+// Access specific breakpoint values
+const tabletWidth = breakpoints.values.md // 1024
+
+// Use predefined media queries
+const mobileQuery = breakpoints.down.sm // (max-width: 768px)
+const desktopQuery = breakpoints.up.md // (min-width: 1025px)
+const tabletQuery = breakpoints.between.sm_md // (min-width: 769px) and (max-width: 1024px)
+
+// Create custom media queries
+const customQuery = breakpoints.createCustomQuery(500, 800) // (min-width: 500px) and (max-width: 800px)
+```
+
+### useMedia Hook
+
+For reactive responsive designs, use the `useMedia` hook:
+
+```tsx
+import { useMedia } from '@audius/harmony'
+
+const MyComponent = () => {
+  const {
+    // Common device categories
+    isMobile, // <= 768px
+    isTablet, // > 768px and <= 1024px
+    isDesktop, // > 1024px
+
+    // Detailed breakpoint checks
+    isExtraSmall, // <= 480px
+    isSmall, // <= 768px
+    isMedium, // <= 1024px
+
+    // Check custom queries
+    matchesQuery
+  } = useMedia()
+
+  return (
+    <div>
+      {isMobile && <MobileLayout />}
+      {isTablet && <TabletLayout />}
+      {isDesktop && <DesktopLayout />}
+
+      {/* Check a custom query */}
+      {matchesQuery('(orientation: portrait)') && <PortraitContent />}
+    </div>
+  )
+}
+```
