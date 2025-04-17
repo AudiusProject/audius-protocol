@@ -27,6 +27,7 @@ import {
   TextLink
 } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { identify } from 'app/services/analytics'
 import { resetOAuthState } from 'app/store/oauth/actions'
 
 import { NewEmailField } from '../components/NewEmailField'
@@ -68,6 +69,7 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
       const { email } = values
       dispatch(setValueField('email', email))
       dispatch(startSignUp())
+      identify({ email })
       navigation.navigate('CreatePassword')
     },
     [dispatch, navigation]

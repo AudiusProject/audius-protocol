@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { identify } from '@amplitude/analytics-browser'
 import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { signInPageMessages } from '@audius/common/messages'
 import { signInSchema, signInErrorMessages } from '@audius/common/schemas'
@@ -86,6 +87,7 @@ export const SignInPage = () => {
       dispatch(setValueField('email', email))
       dispatch(setValueField('password', password))
       dispatch(signIn(email, password))
+      identify({ email })
     },
     [dispatch]
   )

@@ -20,6 +20,13 @@ const ANALYTICS_TRACK_EVENT = 'ANALYTICS/TRACK_EVENT'
 
 type JsonMap = Record<string, unknown>
 
+export type IdentifyTraits = {
+  handle?: string
+  name?: string
+  email?: string
+  userId?: ID
+}
+
 export type AnalyticsEvent = {
   eventName: string
   properties?: JsonMap

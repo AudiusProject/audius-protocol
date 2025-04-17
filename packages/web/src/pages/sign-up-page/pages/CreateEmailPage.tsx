@@ -37,6 +37,7 @@ import PreloadImage from 'components/preload-image/PreloadImage'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { SocialMediaLoginOptions } from 'pages/sign-up-page/components/SocialMediaLoginOptions'
+import { identify } from 'services/analytics'
 
 import { ExternalWalletSignUpModal } from '../components/ExternalWalletSignUpModal'
 import { NewEmailField } from '../components/NewEmailField'
@@ -108,6 +109,9 @@ export const CreateEmailPage = () => {
       const { email, withMetaMask } = values
       dispatch(startSignUp())
       dispatch(setValueField('email', email))
+      identify({
+        email
+      })
       if (withMetaMask) {
         openExternalWalletSignUpModal()
       } else {
