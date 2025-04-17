@@ -1,10 +1,6 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  ReactNode
-} from 'react'
+import { createContext, useContext, ReactNode, useMemo } from 'react'
+
+import { useMedia as useMediaQuery } from 'react-use'
 
 import { breakpoints } from '../foundations/breakpoints'
 
@@ -43,62 +39,18 @@ type MediaProviderProps = {
  * available throughout the app via context.
  */
 export const MediaProvider = ({ children }: MediaProviderProps) => {
-  // Initialize all the media state
-  const [isExtraSmall, setIsExtraSmall] = useState(false)
-  const [isSmall, setIsSmall] = useState(false)
-  const [isMedium, setIsMedium] = useState(false)
-  const [isLarge, setIsLarge] = useState(false)
-  const [isExtraLarge, setIsExtraLarge] = useState(false)
+  // Use react-use's useMedia hook for each breakpoint query
+  const isExtraSmall = useMediaQuery(breakpoints.down.xs)
+  const isSmall = useMediaQuery(breakpoints.down.sm)
+  const isMedium = useMediaQuery(breakpoints.down.md)
+  const isLarge = useMediaQuery(breakpoints.down.lg)
+  const isExtraLarge = useMediaQuery(breakpoints.down.xl)
 
-  const [isAboveExtraSmall, setIsAboveExtraSmall] = useState(false)
-  const [isAboveSmall, setIsAboveSmall] = useState(false)
-  const [isAboveMedium, setIsAboveMedium] = useState(false)
-  const [isAboveLarge, setIsAboveLarge] = useState(false)
-  const [isAboveExtraLarge, setIsAboveExtraLarge] = useState(false)
-
-  // Set up all the media query listeners at once
-  useEffect(() => {
-    // Helper to create and set up a media query listener
-    const createMediaListener = (
-      query: string,
-      setter: (matches: boolean) => void
-    ) => {
-      const mql = window.matchMedia(query)
-
-      // Set initial value
-      setter(mql.matches)
-
-      // Set up listener for changes
-      const listener = (event: MediaQueryListEvent) => {
-        setter(event.matches)
-      }
-
-      mql.addEventListener('change', listener)
-      return () => mql.removeEventListener('change', listener)
-    }
-
-    // Set up all listeners
-    const cleanupFunctions = [
-      // Down queries
-      createMediaListener(breakpoints.down.xs, setIsExtraSmall),
-      createMediaListener(breakpoints.down.sm, setIsSmall),
-      createMediaListener(breakpoints.down.md, setIsMedium),
-      createMediaListener(breakpoints.down.lg, setIsLarge),
-      createMediaListener(breakpoints.down.xl, setIsExtraLarge),
-
-      // Up queries
-      createMediaListener(breakpoints.up.xs, setIsAboveExtraSmall),
-      createMediaListener(breakpoints.up.sm, setIsAboveSmall),
-      createMediaListener(breakpoints.up.md, setIsAboveMedium),
-      createMediaListener(breakpoints.up.lg, setIsAboveLarge),
-      createMediaListener(breakpoints.up.xl, setIsAboveExtraLarge)
-    ]
-
-    // Clean up all listeners on unmount
-    return () => {
-      cleanupFunctions.forEach((cleanup) => cleanup())
-    }
-  }, [])
+  const isAboveExtraSmall = useMediaQuery(breakpoints.up.xs)
+  const isAboveSmall = useMediaQuery(breakpoints.up.sm)
+  const isAboveMedium = useMediaQuery(breakpoints.up.md)
+  const isAboveLarge = useMediaQuery(breakpoints.up.lg)
+  const isAboveExtraLarge = useMediaQuery(breakpoints.up.xl)
 
   // Derived properties
   const isMobile = isSmall // <= 768px
@@ -110,22 +62,39 @@ export const MediaProvider = ({ children }: MediaProviderProps) => {
     return window.matchMedia(query).matches
   }
 
-  const value: MediaContextType = {
-    isExtraSmall,
-    isSmall,
-    isMedium,
-    isLarge,
-    isExtraLarge,
-    isAboveExtraSmall,
-    isAboveSmall,
-    isAboveMedium,
-    isAboveLarge,
-    isAboveExtraLarge,
-    isMobile,
-    isTablet,
-    isDesktop,
-    matchesQuery
-  }
+  const value = useMemo(
+    () => ({
+      isExtraSmall,
+      isSmall,
+      isMedium,
+      isLarge,
+      isExtraLarge,
+      isAboveExtraSmall,
+      isAboveSmall,
+      isAboveMedium,
+      isAboveLarge,
+      isAboveExtraLarge,
+      isMobile,
+      isTablet,
+      isDesktop,
+      matchesQuery
+    }),
+    [
+      isExtraSmall,
+      isSmall,
+      isMedium,
+      isLarge,
+      isExtraLarge,
+      isAboveExtraSmall,
+      isAboveSmall,
+      isAboveMedium,
+      isAboveLarge,
+      isAboveExtraLarge,
+      isMobile,
+      isTablet,
+      isDesktop
+    ]
+  )
 
   return <MediaContext.Provider value={value}>{children}</MediaContext.Provider>
 }

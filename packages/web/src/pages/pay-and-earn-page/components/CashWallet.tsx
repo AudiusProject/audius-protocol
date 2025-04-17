@@ -19,7 +19,6 @@ import {
   IconButton,
   useMedia
 } from '@audius/harmony'
-import { useTheme } from '@emotion/react'
 import BN from 'bn.js'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -29,7 +28,7 @@ import Tooltip from 'components/tooltip/Tooltip'
 import { make, track } from 'services/analytics'
 import { zIndex } from 'utils/zIndex'
 
-import { getCashWalletStyles } from './CashWallet.styles'
+import { useCashWalletStyles } from './CashWallet.styles'
 
 const messages = {
   usdc: 'USDC',
@@ -54,14 +53,11 @@ export const CashWallet = () => {
   const { onOpen: openAddFundsModal } = useAddFundsModal()
   const { data: balance, status: balanceStatus } = useUSDCBalance()
   const [, setPayoutWalletModalOpen] = useModalState('PayoutWallet')
-  const { spacing } = useTheme()
 
-  // Use the harmony media hook for responsive design
-  const media = useMedia()
-  const { isSmall: isMobile, isExtraSmall: isSmallMobile } = media
+  const styles = useCashWalletStyles()
 
-  // Get responsive styles using the media context
-  const styles = getCashWalletStyles(media, spacing)
+  // We still need useMedia for responsive conditionals
+  const { isSmall: isMobile, isExtraSmall: isSmallMobile } = useMedia()
 
   // Calculate the balance in cents by flooring to 2 decimal places then multiplying by 100
   const usdcValue = USDC(balance ?? new BN(0)).floor(2)

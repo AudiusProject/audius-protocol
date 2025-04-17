@@ -1,45 +1,50 @@
-import { createResponsiveStyles, useMedia, Spacing } from '@audius/harmony'
+import { makeResponsiveStyles } from '@audius/harmony/src/utils'
+import { CSSObject } from '@emotion/react'
 
-// Use ReturnType to get the MediaContextType
-type MediaContext = ReturnType<typeof useMedia>
+type Styles = {
+  mainFlex: CSSObject
+  payoutWalletFlex: CSSObject
+  transactionLink: CSSObject
+  buttonArea: CSSObject
+}
 
-export const getCashWalletStyles = (media: MediaContext, spacing: Spacing) => {
-  return createResponsiveStyles(media, {
+export const useCashWalletStyles = makeResponsiveStyles<Styles>(
+  ({ media, theme }) => ({
     // Main layout flex container
     mainFlex: {
       tablet: {
         display: 'flex',
         flexDirection: 'column',
-        gap: spacing.l
+        gap: theme.spacing.l
       }
     },
 
     // Payout wallet flex container
     payoutWalletFlex: {
-      mobile: (currentMedia) => ({
-        ...(currentMedia.isExtraSmall && {
+      mobile: {
+        ...(media.isExtraSmall && {
           flexDirection: 'column',
           alignItems: 'flex-start',
-          gap: spacing.xs
+          gap: theme.spacing.xs
         })
-      })
+      }
     },
 
     // Transaction history link
     transactionLink: {
-      tablet: (currentMedia) => ({
-        alignSelf: currentMedia.isExtraSmall ? 'flex-start' : 'flex-end'
-      })
+      tablet: {
+        alignSelf: media.isExtraSmall ? 'flex-start' : 'flex-end'
+      }
     },
 
     // Bottom button area
     buttonArea: {
-      mobile: (currentMedia) => ({
-        ...(currentMedia.isExtraSmall && {
+      mobile: {
+        ...(media.isExtraSmall && {
           flexDirection: 'column',
-          gap: spacing.m
+          gap: theme.spacing.m
         })
-      })
+      }
     }
   })
-}
+)
