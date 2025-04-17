@@ -191,7 +191,6 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
         {isDownloadAllTrackFilesEnabled && !shouldHideDownload ? (
           <Flex row alignItems='center' alignSelf='flex-start'>
             <Button
-              iconLeft={IconReceive}
               variant='secondary'
               size='small'
               onPress={handleDownloadAll}
