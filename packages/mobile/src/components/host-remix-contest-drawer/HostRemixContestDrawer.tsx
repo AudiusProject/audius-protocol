@@ -80,7 +80,7 @@ export const HostRemixContestDrawer = () => {
       return
     }
 
-    const newDate = mergeDateTime(date, time)
+    const newDate = mergeDateTime(date || time, time || date)
     if (newDate.isBefore(dayjs())) {
       setEndDateError(true)
     } else {
