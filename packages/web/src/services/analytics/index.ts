@@ -67,7 +67,7 @@ export const track = async (
 }
 
 export const identify = async (
-  traits: IdentifyTraits,
+  traits?: IdentifyTraits,
   options?: Record<string, any>,
   callback?: () => void
 ) => {
@@ -75,7 +75,9 @@ export const identify = async (
     if (!IS_PRODUCTION_BUILD) {
       console.info('Amplitude | identify', { traits, options })
     }
-
+    if (!traits) {
+      return
+    }
     await didInit
     return amplitude.identify(traits, callback)
   } catch (err) {

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { identify } from '@amplitude/analytics-browser'
 import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { signInPageMessages } from '@audius/common/messages'
 import { signInSchema, signInErrorMessages } from '@audius/common/schemas'
@@ -35,6 +34,7 @@ import { GuestEmailHint } from 'pages/sign-on-page/GuestEmailHint'
 import { EmailField } from 'pages/sign-up-page/components/EmailField'
 import { ForgotPasswordModal } from 'pages/sign-up-page/components/ForgotPasswordModal'
 import { Heading, ScrollView } from 'pages/sign-up-page/components/layout'
+import { identify } from 'services/analytics'
 import { useSelector } from 'utils/reducer'
 
 import { SignInWithMetaMaskButton } from './SignInWithMetaMaskButton'
