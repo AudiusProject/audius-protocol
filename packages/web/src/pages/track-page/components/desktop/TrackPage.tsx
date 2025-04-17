@@ -169,8 +169,10 @@ const TrackPage = ({
       fromOpacity={1}
       noIndex={defaults.isUnlisted}
     >
-      <Box w='100%' css={{ position: 'absolute', height: '376px' }}>
+      <FlushPageContainer>
         <RemixContestCountdown trackId={heroTrack?.track_id ?? 0} />
+      </FlushPageContainer>
+      <Box w='100%' css={{ position: 'absolute', height: '376px' }}>
         <CoverPhoto loading={loading} userId={user ? user.user_id : null} />
         <EmptyStatBanner />
         <EmptyNavBanner />

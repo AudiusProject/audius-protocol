@@ -16,15 +16,16 @@ const messages = {
 type TimeUnitProps = {
   value: number
   label: string
+  isSubdued: boolean
 }
 
-const TimeUnit = ({ value, label }: TimeUnitProps) => {
+const TimeUnit = ({ value, label, isSubdued }: TimeUnitProps) => {
   return (
     <Flex column alignItems='center' justifyContent='center'>
-      <Text variant='heading' color='inverse'>
+      <Text variant='heading' color={isSubdued ? 'subdued' : 'inverse'}>
         {formatDoubleDigit(value)}
       </Text>
-      <Text variant='label' color='inverse' size='xs'>
+      <Text variant='label' color={isSubdued ? 'subdued' : 'inverse'} size='xs'>
         {label}
       </Text>
     </Flex>
@@ -56,13 +57,29 @@ export const RemixContestCountdown = ({
         alignItems='center'
         style={{ opacity: 0.8 }}
       >
-        <TimeUnit value={timeLeft.days} label={messages.days} />
+        <TimeUnit
+          value={timeLeft.days.value}
+          label={messages.days}
+          isSubdued={timeLeft.days.isSubdued}
+        />
         <Divider orientation='vertical' />
-        <TimeUnit value={timeLeft.hours} label={messages.hours} />
+        <TimeUnit
+          value={timeLeft.hours.value}
+          label={messages.hours}
+          isSubdued={timeLeft.hours.isSubdued}
+        />
         <Divider orientation='vertical' />
-        <TimeUnit value={timeLeft.minutes} label={messages.minutes} />
+        <TimeUnit
+          value={timeLeft.minutes.value}
+          label={messages.minutes}
+          isSubdued={timeLeft.minutes.isSubdued}
+        />
         <Divider orientation='vertical' />
-        <TimeUnit value={timeLeft.seconds} label={messages.seconds} />
+        <TimeUnit
+          value={timeLeft.seconds.value}
+          label={messages.seconds}
+          isSubdued={timeLeft.seconds.isSubdued}
+        />
       </Flex>
     </Paper>
   )
