@@ -96,6 +96,7 @@ def get_remixes_of(args):
                     and_(
                         Event.entity_id == ParentTrack.track_id,
                         Event.event_type == EventType.remix_contest,
+                        Event.is_deleted == False,
                     ),
                 )
                 .filter(
