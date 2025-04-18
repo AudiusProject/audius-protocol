@@ -1,8 +1,6 @@
 import logging
 from datetime import datetime, timedelta
 
-from sqlalchemy.orm.session import Session
-
 from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.cosign_challenge import cosign_challenge_manager
 from src.models.indexing.block import Block
