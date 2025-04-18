@@ -134,7 +134,6 @@ export const useRemixes = (
         count: data.count
       }
     },
-    // select: (data) => data.pages.flat(),
     ...options,
     enabled: options?.enabled !== false && !!trackId
   })
