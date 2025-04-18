@@ -72,6 +72,7 @@ export const useRemixes = (
     }
   }, [dispatch, trackId])
 
+  // @ts-ignore - Returning the count with the data and then marshalling it into the LineupData[] afterwards
   const queryData = useInfiniteQuery({
     queryKey: getRemixesQueryKey({
       trackId,
@@ -125,18 +126,24 @@ export const useRemixes = (
       )
       dispatch(remixesPageActions.setCount({ count: data.count }))
 
-      return processedTracks.map((t) => ({
-        id: t.track_id,
-        type: EntityType.TRACK
-      }))
+      return {
+        tracks: processedTracks.map((t) => ({
+          id: t.track_id,
+          type: EntityType.TRACK
+        })),
+        count: data.count
+      }
     },
-    select: (data) => data.pages.flat(),
     ...options,
     enabled: options?.enabled !== false && !!trackId
   })
 
-  return useLineupQuery({
-    queryData,
+  const lineupData = useLineupQuery({
+    // @ts-ignore - Marshalling the data back into LineupData[]
+    queryData: {
+      ...queryData,
+      data: queryData.data?.pages.flatMap((page) => page.tracks)
+    },
     queryKey: getRemixesQueryKey({
       trackId,
       includeOriginal,
@@ -150,4 +157,9 @@ export const useRemixes = (
     playbackSource: PlaybackSource.TRACK_TILE,
     pageSize
   })
+
+  return {
+    ...lineupData,
+    count: queryData.data?.pages[0]?.count
+  }
 }
