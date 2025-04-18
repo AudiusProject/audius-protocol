@@ -1,7 +1,5 @@
 import logging
-from datetime import datetime
-
-from sqlalchemy.orm.session import Session
+from datetime import datetime, timedelta
 
 from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.cosign_challenge import cosign_challenge_manager
@@ -19,18 +17,23 @@ BLOCK_NUMBER = 10
 
 
 def dispatch_cosign(
-    session: Session,
     bus: ChallengeEventBus,
-    track_id: int = 1,
-    track_owner_id: int = 1,
+    track_id: int,
+    original_track_owner_id: int,
+    track_owner_id: int,
+    date: datetime,
 ):
     """Dispatch a cosign event"""
     bus.dispatch(
         ChallengeEvent.cosign,
         BLOCK_NUMBER,
-        datetime.now(),
+        date,
         track_owner_id,
-        {"track_id": track_id},
+        {
+            "original_track_owner_id": original_track_owner_id,
+            "remix_track_id": track_id,
+            "cosign_date": date.timestamp(),
+        },
     )
 
 
@@ -85,14 +88,27 @@ def test_cosign_challenge(app):
     with db.scoped_session() as session:
         setup_challenges(session)
 
-        def dc(track_id=1, user_id=1):
-            return dispatch_cosign(session, bus, track_id, user_id)
+        def dc(
+            track_id: int,
+            original_track_owner_id: int,
+            remixer_user_id: int,
+            date: datetime,
+        ):
+            return dispatch_cosign(
+                bus, track_id, original_track_owner_id, remixer_user_id, date
+            )
 
         scope_and_process = make_scope_and_process(bus, session)
 
-        scope_and_process(lambda: dc(0, 1))
+        # limited to 5 verified cosigns per month
+        for track_id in range(1, 10):
+            scope_and_process(
+                lambda: dc(track_id, 2, 1, datetime.now() - timedelta(days=50))
+            )
+
+        scope_and_process(lambda: dc(11, 2, 1, datetime.now()))
 
         # Check that the challenge is completed
         state = cosign_challenge_manager.get_user_challenge_state(session)
-        assert len(state) == 1
+        assert len(state) == 6
         assert state[0].is_complete == True
