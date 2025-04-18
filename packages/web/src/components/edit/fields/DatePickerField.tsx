@@ -22,6 +22,7 @@ type DatePickerFieldProps = {
   shouldFocus?: boolean
   isInitiallyUnlisted?: boolean
   futureDatesOnly?: boolean
+  maxDate?: Date
 }
 
 /**
@@ -69,6 +70,7 @@ export const DatePicker = (props: DatePickerProps) => {
     shouldFocus,
     isInitiallyUnlisted,
     futureDatesOnly,
+    maxDate,
     value,
     touched = false,
     error,
@@ -136,6 +138,12 @@ export const DatePicker = (props: DatePickerProps) => {
               }}
               isOutsideRange={(day) => {
                 if (futureDatesOnly) {
+                  if (maxDate) {
+                    return (
+                      !isInclusivelyAfterDay(day, moment()) ||
+                      !isInclusivelyBeforeDay(day, moment(maxDate))
+                    )
+                  }
                   return !isInclusivelyAfterDay(day, moment())
                 } else if (isInitiallyUnlisted) {
                   return !isInclusivelyBeforeDay(day, moment().add(1, 'year'))

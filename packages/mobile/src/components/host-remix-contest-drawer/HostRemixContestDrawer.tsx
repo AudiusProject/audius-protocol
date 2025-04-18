@@ -160,7 +160,10 @@ export const HostRemixContestDrawer = () => {
               mode='date'
               date={endDate?.toString() ?? ''}
               onChange={handleDateChange}
-              dateTimeProps={{ minimumDate: new Date() }}
+              dateTimeProps={{
+                minimumDate: new Date(),
+                maximumDate: dayjs().add(90, 'days').toDate()
+              }}
               inputProps={{
                 label: messages.dateLabel,
                 startIcon: IconCalendarMonth,
