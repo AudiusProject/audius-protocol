@@ -68,6 +68,9 @@ export const TrackPageLineup = ({
   const renderRemixParentSection = () => {
     if (indices.remixParentSection.index === undefined || !trackId) return null
 
+    const parentTrackId =
+      lineupData.data?.[indices.remixParentSection.index]?.id
+
     return (
       <Section title={messages.originalTrack}>
         <TanQueryLineup
@@ -77,7 +80,9 @@ export const TrackPageLineup = ({
           offset={indices.remixParentSection.index}
           actions={tracksActions}
         />
-        <ViewOtherRemixesButton parentTrackId={trackId} size='xs' />
+        {parentTrackId ? (
+          <ViewOtherRemixesButton parentTrackId={parentTrackId} size='xs' />
+        ) : null}
       </Section>
     )
   }
