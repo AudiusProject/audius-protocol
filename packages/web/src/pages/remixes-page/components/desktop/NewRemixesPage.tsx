@@ -1,8 +1,17 @@
-import { useRemixes } from '@audius/common/api'
+import { useRemixes, useRemixContest } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { remixMessages as messages } from '@audius/common/messages'
 import { Track, User } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { remixesPageLineupActions } from '@audius/common/store'
 import { pluralize } from '@audius/common/utils'
-import { IconRemix, Text, Flex, FilterButton } from '@audius/harmony'
+import {
+  IconRemix,
+  Text,
+  Flex,
+  FilterButton,
+  IconTrophy
+} from '@audius/harmony'
 
 import { Header } from 'components/header/desktop/Header'
 import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
@@ -13,13 +22,6 @@ import { fullTrackRemixesPage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './RemixesPage.module.css'
-
-const messages = {
-  remixes: 'Remix',
-  coSigned: 'Co-Signs',
-  contestEntries: 'Contest Entries',
-  originalTrack: 'Original Track'
-}
 
 export const REMIXES_PAGE_SIZE = 10
 
@@ -41,6 +43,11 @@ const RemixesPage = nullGuard(({ title, count = 0, originalTrack }) => {
   const updateSortParam = useUpdateSearchParams('sortMethod')
   const updateIsCosignParam = useUpdateSearchParams('isCosign')
   const updateIsContestEntryParam = useUpdateSearchParams('isContestEntry')
+  const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
+    FeatureFlags.REMIX_CONTEST
+  )
+  const { data: contest } = useRemixContest(originalTrack?.track_id)
+  const isRemixContest = isRemixContestEnabled && contest
 
   const { sortMethod, isCosign, isContestEntry } = useRemixPageParams()
   const {
@@ -63,7 +70,11 @@ const RemixesPage = nullGuard(({ title, count = 0, originalTrack }) => {
   })
 
   const renderHeader = () => (
-    <Header icon={IconRemix} primary={title} containerStyles={styles.header} />
+    <Header
+      icon={isRemixContest ? IconTrophy : IconRemix}
+      primary={title}
+      containerStyles={styles.header}
+    />
   )
 
   return (
@@ -91,21 +102,22 @@ const RemixesPage = nullGuard(({ title, count = 0, originalTrack }) => {
           leadingElementDelineator={
             <Flex justifyContent='space-between'>
               <Text variant='heading'>
-                {count} {pluralize(messages.remixes, count, 'es', !count)}
+                {count}{' '}
+                {isRemixContest
+                  ? pluralize(messages.submissions, count)
+                  : pluralize(messages.remixes, count, 'es')}
               </Text>
               <Flex gap='s' mb='xl'>
                 <FilterButton
                   label={messages.coSigned}
                   value={isCosign ? 'true' : null}
-                  onClick={() =>
-                    updateIsCosignParam(isCosign ? 'false' : 'true')
-                  }
+                  onClick={() => updateIsCosignParam(isCosign ? '' : 'true')}
                 />
                 <FilterButton
                   label={messages.contestEntries}
                   value={isContestEntry ? 'true' : null}
                   onClick={() =>
-                    updateIsContestEntryParam(isContestEntry ? 'false' : 'true')
+                    updateIsContestEntryParam(isContestEntry ? '' : 'true')
                   }
                 />
                 <FilterButton

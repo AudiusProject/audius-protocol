@@ -1,7 +1,10 @@
 import { useEffect, useCallback, ComponentType, RefObject } from 'react'
 
 import { useUser, useTrack, useTrackByPermalink } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { remixMessages } from '@audius/common/messages'
 import { ID } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   lineupSelectors,
   remixesPageLineupActions as tracksActions,
@@ -28,11 +31,6 @@ const { getPlaying, getBuffering } = playerSelectors
 const { getTrackId, getLineup, getCount } = remixesPageSelectors
 const { fetchTrackSucceeded, reset } = remixesPageActions
 const { makeGetLineupMetadatas } = lineupSelectors
-
-const messages = {
-  title: 'Remixes',
-  description: 'Remixes'
-}
 
 type OwnProps = {
   containerRef: RefObject<HTMLDivElement>
@@ -64,6 +62,9 @@ const RemixesPageProvider = ({
 }: RemixesPageProviderProps) => {
   const { handle, slug } = useParams<{ handle: string; slug: string }>()
   const { data: originalTrack } = useTrack(originalTrackId)
+  const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
+    FeatureFlags.REMIX_CONTEST
+  )
 
   const { data: originalTrackByPermalink } = useTrackByPermalink(
     handle && slug ? `/${handle}/${slug}` : null
@@ -124,7 +125,9 @@ const RemixesPageProvider = ({
   }
 
   const childProps = {
-    title: messages.title,
+    title: isRemixContestEnabled
+      ? remixMessages.submissionsTitle
+      : remixMessages.remixesTitle,
     count,
     originalTrack: track,
     user,
