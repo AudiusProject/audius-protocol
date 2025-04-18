@@ -38,28 +38,41 @@ const formatTimeInput = (
   let cursorPos = selectionStart
 
   // Parse hours and minutes based on input length
-  if (cleaned.length <= 2) {
-    // Handle 1 or 2 digits as hours
+  if (cleaned.length === 1) {
+    // Single digit - treat as hour
     hours = cleaned
-    if (parseInt(hours, 10) > 12) {
-      hours = hours[0]
-      minutes = hours[1]
+  } else if (cleaned.length === 2) {
+    // Two digits - if valid hour, treat as hour, otherwise split
+    const num = parseInt(cleaned, 10)
+    if (num <= 12) {
+      hours = cleaned
+    } else {
+      hours = cleaned[0]
+      minutes = cleaned[1]
     }
   } else {
-    // Handle 3 or more digits
-    hours = cleaned.slice(0, 2)
-    minutes = cleaned.slice(2, 4)
-
-    // Validate hours
-    if (parseInt(hours, 10) > 12) {
-      hours = '12'
+    // Three or more digits
+    if (
+      parseInt(cleaned[0], 10) > 1 ||
+      (cleaned.length > 3 && parseInt(cleaned.slice(0, 2), 10) > 12)
+    ) {
+      // If first digit > 1 or first two digits > 12, treat first digit as hour
+      hours = cleaned[0]
+      minutes = cleaned.slice(1, 3)
+    } else {
+      // Otherwise take first two digits as hours if possible
+      hours = cleaned.slice(0, 2)
+      minutes = cleaned.slice(2, 4)
+      if (parseInt(hours, 10) > 12) {
+        hours = hours[0]
+        minutes = cleaned.slice(1, 3)
+      }
     }
   }
 
   // Format the time string
   let formatted = hours
-  if (hours && (cleaned.length > 2 || value.includes(':'))) {
-    // Only pad with zeros if we don't have any minute digits yet
+  if (hours && (cleaned.length > hours.length || value.includes(':'))) {
     formatted += ':' + (minutes || '00')
   }
 
@@ -146,8 +159,6 @@ export const TimeInput = ({
       ref={inputRef}
       value={value}
       onChange={handleChange}
-      // max length is 5 because largest time is 12:00
-      maxLength={5}
     />
   )
 }
