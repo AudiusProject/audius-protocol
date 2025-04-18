@@ -56,7 +56,7 @@ export const useImageSize = <
   defaultImage?: string
   preloadImageFn?: (url: string) => Promise<void>
 }) => {
-  // Initialize with cached value if available
+  // Initialize our imageUrl state preferring to use a cached value if available (upsizing if necessary)
   const getInitialState = () => {
     if (!artwork) return undefined
 
