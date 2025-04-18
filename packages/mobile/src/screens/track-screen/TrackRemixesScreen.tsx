@@ -1,6 +1,10 @@
 import { useEffect } from 'react'
 
-import { useRemixes, useTrackByParams } from '@audius/common/api'
+import {
+  useRemixContest,
+  useRemixes,
+  useTrackByParams
+} from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { remixMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
@@ -13,7 +17,7 @@ import { pluralize } from '@audius/common/utils'
 import { Text as RNText, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Flex, IconRemix, Text } from '@audius/harmony-native'
+import { Flex, IconRemix, IconTrophy, Text } from '@audius/harmony-native'
 import {
   Screen,
   ScreenContent,
@@ -56,7 +60,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 
 export const TrackRemixesScreen = () => {
   const dispatch = useDispatch()
-
   const { params } = useRoute<'TrackRemixes'>()
   const { data: track } = useTrackByParams(params)
   const trackId = track?.track_id
@@ -69,6 +72,8 @@ export const TrackRemixesScreen = () => {
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
   )
+  const { data: contest } = useRemixContest(trackId)
+  const isRemixContest = isRemixContestEnabled && contest
 
   const styles = useStyles()
 
@@ -92,15 +97,18 @@ export const TrackRemixesScreen = () => {
 
   return (
     <Screen>
-      <ScreenHeader text={messages.remixesTitle} icon={IconRemix} />
+      <ScreenHeader
+        text={
+          isRemixContest ? messages.submissionsTitle : messages.remixesTitle
+        }
+        icon={isRemixContest ? IconTrophy : IconRemix}
+      />
       <ScreenContent>
-        {isRemixContestEnabled ? (
+        {isRemixContest ? (
           <ScreenPrimaryContent>
             <ScrollView>
-              <Flex ph='m' mt='l'>
-                <Text variant='heading' size='xs'>
-                  {messages.originalTrack}
-                </Text>
+              <Flex ph='l' mt='l'>
+                <Text variant='title'>{messages.originalTrack}</Text>
               </Flex>
 
               <TanQueryLineup
@@ -114,10 +122,12 @@ export const TrackRemixesScreen = () => {
                 hasMore={false}
                 leadingElementId={0}
                 leadingElementDelineator={
-                  <Flex justifyContent='space-between' mt='l' ph='m'>
-                    <Text variant='heading' size='xs'>
-                      {count} {pluralize(messages.remixes, count, 'es', !count)}
-                    </Text>
+                  <Flex justifyContent='space-between' ph='l' pt='xl'>
+                    {count ? (
+                      <Text variant='title'>
+                        {count} {pluralize(messages.submissions, count)}
+                      </Text>
+                    ) : null}
                   </Flex>
                 }
               />

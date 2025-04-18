@@ -1,11 +1,18 @@
 import { useEffect, useContext } from 'react'
 
-import { useRemixes } from '@audius/common/api'
+import { useRemixContest, useRemixes } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { remixMessages as messages } from '@audius/common/messages'
 import { Track, User } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { remixesPageLineupActions } from '@audius/common/store'
 import { pluralize } from '@audius/common/utils'
-import { Flex, Text, IconRemix as IconRemixes } from '@audius/harmony'
+import {
+  Flex,
+  Text,
+  IconRemix as IconRemixes,
+  IconTrophy
+} from '@audius/harmony'
 
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
@@ -51,6 +58,12 @@ const RemixesPage = nullGuard(
       includeOriginal: true
     })
 
+    const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
+      FeatureFlags.REMIX_CONTEST
+    )
+    const { data: contest } = useRemixContest(originalTrack?.track_id)
+    const isRemixContest = isRemixContestEnabled && contest
+
     const { setHeader } = useContext(HeaderContext)
     useEffect(() => {
       setHeader(
@@ -59,7 +72,11 @@ const RemixesPage = nullGuard(
             className={styles.header}
             title={
               <>
-                <IconRemixes className={styles.iconRemix} color='heading' />
+                {isRemixContest ? (
+                  <IconTrophy className={styles.iconRemix} color='heading' />
+                ) : (
+                  <IconRemixes className={styles.iconRemix} color='heading' />
+                )}
                 <Text variant='heading' size='xs'>
                   {title}
                 </Text>
@@ -68,7 +85,15 @@ const RemixesPage = nullGuard(
           />
         </>
       )
-    }, [setHeader, title, originalTrack, user, goToArtistPage, goToTrackPage])
+    }, [
+      setHeader,
+      title,
+      originalTrack,
+      user,
+      goToArtistPage,
+      goToTrackPage,
+      isRemixContest
+    ])
 
     return (
       <MobilePageContainer
@@ -77,9 +102,7 @@ const RemixesPage = nullGuard(
         containerClassName={styles.container}
       >
         <Flex direction='column' mt='3xl' gap='l' w='100%'>
-          <Text variant='heading' size='xs'>
-            {messages.originalTrack}
-          </Text>
+          <Text variant='title'>{messages.originalTrack}</Text>
           <TanQueryLineup
             data={data}
             isFetching={isFetching}
@@ -96,8 +119,11 @@ const RemixesPage = nullGuard(
             leadingElementId={0}
             leadingElementDelineator={
               <Flex justifyContent='space-between' gap='l' mb='xl'>
-                <Text variant='heading' size='xs'>
-                  {count} {pluralize(messages.remixes, count, 'es', !count)}
+                <Text variant='title'>
+                  {count}{' '}
+                  {isRemixContest
+                    ? pluralize(messages.submissions, count)
+                    : pluralize(messages.remixes, count, 'es')}
                 </Text>
               </Flex>
             }
