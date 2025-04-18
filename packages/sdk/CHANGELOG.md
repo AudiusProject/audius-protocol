@@ -1,5 +1,15 @@
 # @audius/sdk
 
+## 9.1.0
+
+### Minor Changes
+
+- 4bd9fe8: Add eventType to events endpoint
+
+### Patch Changes
+
+- 1870048: export MAX_DESCRIPTION_LENGTH
+
 ## 9.0.0
 
 ### Major Changes
