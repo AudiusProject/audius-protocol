@@ -92,7 +92,7 @@ export const UploadingTracksScreen = () => {
     if (trackUploadProgress === 100) {
       const timeout = setTimeout(
         () => {
-          const err = new Error('Upload error: stalled at 100%')
+          const err = new Error('Upload error: stalled at 100% for 5+ minutes')
           reportToSentry({
             error: err,
             feature: Feature.Upload,
@@ -101,7 +101,7 @@ export const UploadingTracksScreen = () => {
           // TODO: For now this is just logging the error so we can better understand the issue & frequency of it.
           // We need to figure out how to resolve this
         },
-        1000 * 60 * 10 // 10 minutes
+        1000 * 60 * 5 // 5 minutes
       )
       return () => clearTimeout(timeout)
     }
