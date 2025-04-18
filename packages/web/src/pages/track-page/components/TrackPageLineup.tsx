@@ -66,7 +66,7 @@ export const TrackPageLineup = ({
   if (!indices) return null
 
   const renderRemixParentSection = () => {
-    if (indices.remixParentSection.index === undefined) return null
+    if (indices.remixParentSection.index === undefined || !trackId) return null
 
     return (
       <Section title={messages.originalTrack}>
@@ -77,6 +77,7 @@ export const TrackPageLineup = ({
           offset={indices.remixParentSection.index}
           actions={tracksActions}
         />
+        <ViewOtherRemixesButton parentTrackId={trackId} size='xs' />
       </Section>
     )
   }

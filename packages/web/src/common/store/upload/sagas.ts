@@ -1130,6 +1130,29 @@ export function* uploadMultipleTracks(
 
   // Bust the cache so we refetch the user
   yield* put(cacheActions.setExpired(Kind.USERS, account!.user_id))
+
+  const queryClient = yield* getContext('queryClient')
+
+  // Invalidate the uploader's profile tracks cache
+  queryClient.invalidateQueries({
+    queryKey: ['profileTracks', account!.handle]
+  })
+
+  for (const track of newTracks) {
+    const parentTrackId = track.remix_of?.tracks[0]?.parent_track_id
+
+    // If it's a remix, invalidate the parent track's lineup and remixes page
+    if (parentTrackId) {
+      queryClient.invalidateQueries({
+        queryKey: ['trackPageLineup', parentTrackId]
+      })
+      // Invalidate all possible combinations of remixes queries for the parent track
+      queryClient.invalidateQueries({
+        queryKey: ['remixes', parentTrackId],
+        exact: false
+      })
+    }
+  }
 }
 
 function* uploadTracksAsync(
