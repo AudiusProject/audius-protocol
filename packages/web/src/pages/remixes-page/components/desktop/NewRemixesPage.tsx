@@ -39,7 +39,7 @@ const nullGuard = withNullGuard(
     originalTrack && user && { ...p, originalTrack, user }
 )
 
-const RemixesPage = nullGuard(({ title, count = 0, originalTrack }) => {
+const RemixesPage = nullGuard(({ title, originalTrack }) => {
   const updateSortParam = useUpdateSearchParams('sortMethod')
   const updateIsCosignParam = useUpdateSearchParams('isCosign')
   const updateIsContestEntryParam = useUpdateSearchParams('isContestEntry')
@@ -52,6 +52,7 @@ const RemixesPage = nullGuard(({ title, count = 0, originalTrack }) => {
   const { sortMethod, isCosign, isContestEntry } = useRemixPageParams()
   const {
     data,
+    count,
     isFetching,
     isPending,
     isError,
