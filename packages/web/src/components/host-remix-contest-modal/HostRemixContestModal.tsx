@@ -9,6 +9,7 @@ import {
   useUpdateEvent
 } from '@audius/common/api'
 import { useHostRemixContestModal } from '@audius/common/store'
+import { dayjs } from '@audius/common/utils'
 import {
   Button,
   Flex,
@@ -25,7 +26,6 @@ import { EventEntityTypeEnum, EventEventTypeEnum } from '@audius/sdk'
 
 import { DatePicker } from 'components/edit/fields/DatePickerField'
 import { mergeReleaseDateValues } from 'components/edit/fields/visibility/mergeReleaseDateValues'
-import dayjs from 'utils/dayjs'
 
 import { TimeInput, parseTime } from './TimeInput'
 
