@@ -114,13 +114,15 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
                   value={isCosign ? 'true' : null}
                   onClick={() => updateIsCosignParam(isCosign ? '' : 'true')}
                 />
-                <FilterButton
-                  label={messages.contestEntries}
-                  value={isContestEntry ? 'true' : null}
-                  onClick={() =>
-                    updateIsContestEntryParam(isContestEntry ? '' : 'true')
-                  }
-                />
+                {isRemixContest ? (
+                  <FilterButton
+                    label={messages.contestEntries}
+                    value={isContestEntry ? 'true' : null}
+                    onClick={() =>
+                      updateIsContestEntryParam(isContestEntry ? '' : 'true')
+                    }
+                  />
+                ) : null}
                 <FilterButton
                   value={sortMethod ?? 'recent'}
                   variant='replaceLabel'
