@@ -56,7 +56,31 @@ export const useImageSize = <
   defaultImage?: string
   preloadImageFn?: (url: string) => Promise<void>
 }) => {
-  const [imageUrl, setImageUrl] = useState<Maybe<string>>(undefined)
+  // Initialize with cached value if available
+  const getInitialState = () => {
+    if (!artwork) return undefined
+
+    const targetUrl = artwork[targetSize]
+    if (targetUrl && IMAGE_CACHE.has(targetUrl)) {
+      return targetUrl
+    }
+
+    // Check for larger cached size on init
+    const largerSize = Object.keys(artwork).find(
+      (size) =>
+        getWidth(size) > getWidth(targetSize) &&
+        artwork[size as SizeType] &&
+        IMAGE_CACHE.has(artwork[size as SizeType]!)
+    ) as SizeType | undefined
+
+    if (largerSize && artwork[largerSize]) {
+      return artwork[largerSize]
+    }
+
+    return artwork[targetSize] ?? undefined
+  }
+
+  const [imageUrl, setImageUrl] = useState<Maybe<string>>(getInitialState())
 
   const fetchWithFallback = useCallback(
     async (url: string) => {
@@ -92,7 +116,9 @@ export const useImageSize = <
     }
 
     if (IMAGE_CACHE.has(targetUrl)) {
-      setImageUrl(targetUrl)
+      if (targetUrl !== imageUrl) {
+        setImageUrl(targetUrl)
+      }
       return
     }
 
@@ -136,7 +162,7 @@ export const useImageSize = <
     } catch (e) {
       console.error(`Unable to load image ${targetUrl} after retries: ${e}`)
     }
-  }, [artwork, targetSize, fetchWithFallback, defaultImage])
+  }, [artwork, targetSize, defaultImage, imageUrl, fetchWithFallback])
 
   useEffect(() => {
     resolveImageUrl()

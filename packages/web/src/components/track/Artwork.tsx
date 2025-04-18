@@ -94,8 +94,11 @@ const Artwork = memo(
           [styles.small]: size === 'small',
           [styles.large]: size === 'large'
         })}
-        className={styles.artwork}
-        image={showSkeleton ? '' : image}
+        className={cn(styles.artwork, {
+          [styles.loaded]: !!image
+        })}
+        image={image || ''}
+        immediate={!!image}
         aria-label={label}
       >
         {showArtworkIcon && (
