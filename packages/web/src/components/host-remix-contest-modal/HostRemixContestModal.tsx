@@ -38,7 +38,7 @@ const messages = {
   startContest: 'Start Contest',
   save: 'Save',
   contestEndDateLabel: 'Last day to submit to contest',
-  endDateError: 'Contest end date must be in the future or within 90 days',
+  endDateError: 'Contest end date must be in the future within 90 days',
   timeLabel: 'Time',
   timePlaceholder: '12:00',
   timeError: 'Invalid time',

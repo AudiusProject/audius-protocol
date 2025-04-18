@@ -146,6 +146,7 @@ export const TimeInput = ({
       ref={inputRef}
       value={value}
       onChange={handleChange}
+      // max length is 5 because largest time is 12:00
       maxLength={5}
     />
   )

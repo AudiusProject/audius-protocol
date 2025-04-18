@@ -34,7 +34,7 @@ const messages = {
   hint: 'You can host one contest per song and adjust the submission deadline anytime within 90 days of the contest start.',
   dateLabel: 'Last day to submit to contest',
   timeLabel: 'Time',
-  startContestError: 'Contest end date must be in the future',
+  startContestError: 'Contest end date must be in the future within 90 days',
   startContest: 'Start Contest',
   save: 'Save',
   turnOff: 'Turn Off Contest'

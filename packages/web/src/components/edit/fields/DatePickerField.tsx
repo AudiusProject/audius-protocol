@@ -137,13 +137,13 @@ export const DatePicker = (props: DatePickerProps) => {
                 onChange(date?.startOf('day').toString() ?? moment().toString())
               }}
               isOutsideRange={(day) => {
+                if (maxDate) {
+                  return (
+                    !isInclusivelyAfterDay(day, moment()) ||
+                    !isInclusivelyBeforeDay(day, moment(maxDate))
+                  )
+                }
                 if (futureDatesOnly) {
-                  if (maxDate) {
-                    return (
-                      !isInclusivelyAfterDay(day, moment()) ||
-                      !isInclusivelyBeforeDay(day, moment(maxDate))
-                    )
-                  }
                   return !isInclusivelyAfterDay(day, moment())
                 } else if (isInitiallyUnlisted) {
                   return !isInclusivelyBeforeDay(day, moment().add(1, 'year'))
