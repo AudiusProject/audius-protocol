@@ -1,10 +1,8 @@
 import { useCallback } from 'react'
 
-import { useTokenPrice } from '@audius/common/api'
-import { TOKEN_LISTING_MAP, walletSelectors } from '@audius/common/store'
-import { AUDIO } from '@audius/fixed-decimal'
+import { useFormattedAudioBalance } from '@audius/common/hooks'
+import { walletMessages } from '@audius/common/messages'
 import { TouchableOpacity } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import {
   Flex,
@@ -16,18 +14,6 @@ import {
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
-
-const { getAccountTotalBalance } = walletSelectors
-
-const messages = {
-  title: 'Your Coins',
-  loading: '-- $AUDIO',
-  dollarZero: '$0.00',
-  loadingPrice: '$0.00 (loading...)'
-}
-
-// AUDIO token address from Jupiter
-const AUDIO_TOKEN_ID = TOKEN_LISTING_MAP.AUDIO.address
 
 const ICON_SIZE = 48
 
@@ -47,32 +33,21 @@ const useStyles = makeStyles(({ palette }) => ({
 export const YourCoins = () => {
   const navigation = useNavigation()
   const styles = useStyles()
-  const totalBalance = useSelector(getAccountTotalBalance)
 
-  const { data: audioPriceData, isPending: isLoadingPrice } =
-    useTokenPrice(AUDIO_TOKEN_ID)
-
-  const audioPrice = audioPriceData?.price || null
-
-  // Format the balance for display using toLocaleString for numbers with commas
-  const audioAmount = totalBalance
-    ? `${AUDIO(totalBalance).toLocaleString()}`
-    : messages.loading
+  const {
+    audioBalanceFormatted,
+    audioDollarValue,
+    isAudioBalanceLoading,
+    isAudioPriceLoading
+  } = useFormattedAudioBalance()
 
   const handleTokenClick = useCallback(() => {
     navigation.navigate('AudioScreen')
   }, [navigation])
 
-  // Calculate dollar value of user's AUDIO balance
-  const dollarValue = (() => {
-    if (!audioPrice || !totalBalance) return messages.dollarZero
-
-    const priceNumber = parseFloat(audioPrice)
-    const balanceValue = parseFloat(AUDIO(totalBalance).toString())
-    const totalValue = priceNumber * balanceValue
-
-    return `$${totalValue.toFixed(2)} ($${parseFloat(audioPrice).toFixed(4)})`
-  })()
+  const displayAmount = isAudioBalanceLoading
+    ? walletMessages.loading
+    : audioBalanceFormatted
 
   return (
     <Paper style={styles.container}>
@@ -89,14 +64,16 @@ export const YourCoins = () => {
             <Flex direction='column' gap='xs'>
               <Flex direction='row' alignItems='center' gap='xs'>
                 <Text variant='heading' size='l' color='default'>
-                  {audioAmount}
+                  {displayAmount}
                 </Text>
                 <Text variant='heading' size='l' color='subdued'>
                   $AUDIO
                 </Text>
               </Flex>
               <Text variant='heading' size='s' color='subdued'>
-                {isLoadingPrice ? messages.loadingPrice : dollarValue}
+                {isAudioPriceLoading
+                  ? walletMessages.loadingPrice
+                  : audioDollarValue}
               </Text>
             </Flex>
           </Flex>

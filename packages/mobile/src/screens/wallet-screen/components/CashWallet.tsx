@@ -1,12 +1,15 @@
 import React, { useCallback, useRef } from 'react'
 
-import { useIsManagedAccount, useUSDCBalance } from '@audius/common/hooks'
-import { Name, Status } from '@audius/common/models'
+import {
+  useIsManagedAccount,
+  useFormattedUSDCBalance
+} from '@audius/common/hooks'
+import { walletMessages } from '@audius/common/messages'
+import { Name } from '@audius/common/models'
 import {
   WithdrawUSDCModalPages,
   useWithdrawUSDCModal
 } from '@audius/common/store'
-import { USDC } from '@audius/fixed-decimal'
 import { BottomSheetModal, BottomSheetBackdrop } from '@gorhom/bottom-sheet'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -23,27 +26,14 @@ import {
 import LoadingSpinner from 'app/components/loading-spinner'
 import { make, track } from 'app/services/analytics'
 
-const messages = {
-  cashBalance: 'Cash Balance',
-  withdraw: 'Withdraw',
-  cashBalanceTooltip:
-    'Your cash balance is stored as USDC in your built-in wallet'
-}
-
 export const CashWallet = () => {
   const isManagedAccount = useIsManagedAccount()
   const { onOpen: openWithdrawUSDCModal } = useWithdrawUSDCModal()
-  const { data: balance, status: balanceStatus } = useUSDCBalance()
+  const { balanceFormatted, usdcValue, isLoading } = useFormattedUSDCBalance()
   const insets = useSafeAreaInsets()
 
   // Create a ref for the bottom sheet modal
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-
-  // Calculate the balance in cents by flooring to 2 decimal places
-  const usdcValue = USDC(balance ?? 0).floor(2)
-
-  // Format the balance for display with exactly 2 decimal places
-  const balanceFormatted = usdcValue.toFixed(2).replace('$', '')
 
   const handleWithdraw = useCallback(() => {
     openWithdrawUSDCModal({
@@ -62,7 +52,7 @@ export const CashWallet = () => {
     bottomSheetModalRef.current?.present()
   }, [])
 
-  if (balanceStatus === Status.LOADING) {
+  if (isLoading) {
     return <LoadingSpinner />
   }
 
@@ -75,7 +65,7 @@ export const CashWallet = () => {
               <IconLogoCircleUSDC size='l' />
             </Box>
             <Text variant='heading' size='s' color='subdued'>
-              {messages.cashBalance}
+              {walletMessages.cashBalance}
             </Text>
             <IconButton
               icon={IconInfo}
@@ -92,7 +82,7 @@ export const CashWallet = () => {
 
           {!isManagedAccount ? (
             <Button variant='primary' onPress={handleWithdraw} fullWidth>
-              {messages.withdraw}
+              {walletMessages.withdraw}
             </Button>
           ) : null}
         </Flex>
@@ -113,11 +103,11 @@ export const CashWallet = () => {
       >
         <Flex p='l'>
           <Text variant='title' size='m'>
-            Cash Balance
+            {walletMessages.cashBalance}
           </Text>
           <Box mt='m'>
             <Text variant='body' size='m'>
-              {messages.cashBalanceTooltip}
+              {walletMessages.cashBalanceTooltip}
             </Text>
           </Box>
         </Flex>
