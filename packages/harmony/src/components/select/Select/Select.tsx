@@ -53,7 +53,7 @@ export const Select = forwardRef(function Select<Value extends string>(
     ...other
   } = props
 
-  const { label } = other
+  const { label, hideLabel } = other
 
   const [value, setValue] = useControlled({
     controlledProp: valueProp,
@@ -178,7 +178,7 @@ export const Select = forwardRef(function Select<Value extends string>(
         autoComplete='off'
         endIcon={Icon}
         IconProps={{ onClick: handleClickIcon }}
-        elevateLabel={!!selectedOption && !props.hideLabel}
+        elevateLabel={!!selectedOption && !hideLabel}
         hidePlaceholder={!!selectedOption}
         {...other}
       />
@@ -192,7 +192,7 @@ export const Select = forwardRef(function Select<Value extends string>(
           css={({ spacing }) => ({
             position: 'absolute',
             // Magic values to align the selected option with the input
-            top: (props.hideLabel ? spacing.unit3 : spacing.unit6) + 2,
+            top: (hideLabel ? spacing.unit3 : spacing.unit6) + 2,
             left: spacing.unit1,
             opacity: isOpen ? 0.5 : 1
           })}

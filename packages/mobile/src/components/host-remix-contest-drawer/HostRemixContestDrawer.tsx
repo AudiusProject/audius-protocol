@@ -34,7 +34,7 @@ const messages = {
   hint: 'You can host one contest per song and adjust the submission deadline anytime within 90 days of the contest start.',
   dateLabel: 'Last day to submit to contest',
   timeLabel: 'Time',
-  startContestError: 'Contest end date must be in the future',
+  startContestError: 'Contest end date must be in the future within 90 days',
   startContest: 'Start Contest',
   save: 'Save',
   turnOff: 'Turn Off Contest'
@@ -160,7 +160,10 @@ export const HostRemixContestDrawer = () => {
               mode='date'
               date={endDate?.toString() ?? ''}
               onChange={handleDateChange}
-              dateTimeProps={{ minimumDate: new Date() }}
+              dateTimeProps={{
+                minimumDate: new Date(),
+                maximumDate: dayjs().add(90, 'days').toDate()
+              }}
               inputProps={{
                 label: messages.dateLabel,
                 startIcon: IconCalendarMonth,
