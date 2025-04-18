@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import {
   useCreateEvent,
@@ -9,6 +9,7 @@ import {
   useUpdateEvent
 } from '@audius/common/api'
 import { useHostRemixContestModal } from '@audius/common/store'
+import { dayjs } from '@audius/common/utils'
 import {
   Button,
   Flex,
@@ -19,14 +20,14 @@ import {
   ModalHeader,
   ModalTitle,
   Select,
-  Text,
-  TextInput
+  Text
 } from '@audius/harmony'
 import { EventEntityTypeEnum, EventEventTypeEnum } from '@audius/sdk'
 
 import { DatePicker } from 'components/edit/fields/DatePickerField'
 import { mergeReleaseDateValues } from 'components/edit/fields/visibility/mergeReleaseDateValues'
-import dayjs from 'utils/dayjs'
+
+import { TimeInput, parseTime } from './TimeInput'
 
 const messages = {
   hostTitle: 'Host Remix Contest',
@@ -37,31 +38,13 @@ const messages = {
   startContest: 'Start Contest',
   save: 'Save',
   contestEndDateLabel: 'Last day to submit to contest',
-  endDateError: 'Contest end date must be in the future',
+  endDateError: 'Contest end date must be in the future within 90 days',
   timeLabel: 'Time',
   timePlaceholder: '12:00',
   timeError: 'Invalid time',
   meridianLabel: 'Meridian',
   meridianPlaceholder: 'AM',
   turnOff: 'Turn Off Contest'
-}
-
-/**
- * Parses the user-provided time string and returns the formatted time
- * Returns null if the time is invalid
- */
-const parseTime = (time: string) => {
-  if (time.length < 3 || time.length > 5) return null
-
-  const formattedTime = time.includes(':')
-    ? time
-    : `${time.slice(0, -2)}:${time.slice(-2)}`
-  const parsed = dayjs(formattedTime, 'h:mm')
-
-  if (parsed.isValid()) {
-    return parsed.format('hh:mm')
-  }
-  return null
 }
 
 export const HostRemixContestModal = () => {
@@ -93,16 +76,25 @@ export const HostRemixContestModal = () => {
     contestEndDate ? dayjs(contestEndDate).format('A') : ''
   )
 
-  const handleEndDateChange = useCallback((value: string) => {
-    setContestEndDate(dayjs(value))
+  const handleEndDateChange = useCallback(
+    (value: string) => {
+      setContestEndDate(dayjs(value))
+      if (value && !timeValue) {
+        setTimeValue('11:59')
+        setMeridianValue('PM')
+      }
+      setEndDateError(false)
+    },
+    [timeValue]
+  )
+
+  const handleTimeChange = useCallback((value: string) => {
+    setTimeValue(value)
     setEndDateError(false)
   }, [])
 
-  const handleTimeChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setTimeValue(e.target.value)
-    const parsedTime = parseTime(e.target.value)
-    setTimeError(!parsedTime)
-    setEndDateError(false)
+  const handleTimeError = useCallback((hasError: boolean) => {
+    setTimeError(hasError)
   }, [])
 
   const handleMeridianChange = useCallback((value: string) => {
@@ -120,7 +112,9 @@ export const HostRemixContestModal = () => {
       meridianValue
     )
     const hasError =
-      !parsedDate || dayjs(parsedDate.toISOString()).isBefore(dayjs())
+      !parsedDate ||
+      dayjs(parsedDate.toISOString()).isBefore(dayjs()) ||
+      dayjs(parsedDate.toISOString()).isAfter(dayjs().add(90, 'days'))
 
     setEndDateTouched(true)
     setEndDateError(hasError)
@@ -184,9 +178,10 @@ export const HostRemixContestModal = () => {
               futureDatesOnly
               error={endDateError ? messages.endDateError : undefined}
               touched={endDateTouched}
+              maxDate={dayjs().add(90, 'days').toDate()}
             />
             <Flex gap='l'>
-              <TextInput
+              <TimeInput
                 css={{ flex: 1 }}
                 label={messages.timeLabel}
                 placeholder={messages.timePlaceholder}
@@ -194,6 +189,7 @@ export const HostRemixContestModal = () => {
                 value={timeValue}
                 helperText={timeError ? messages.timeError : undefined}
                 onChange={handleTimeChange}
+                onError={handleTimeError}
               />
               <Select
                 css={{ flex: 1 }}

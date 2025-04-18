@@ -100,7 +100,7 @@ export interface TanQueryLineupProps {
 
   /** Function triggered on click of tile */
   onClickTile?: (trackId: ID) => void
-  pageSize?: number
+  pageSize: number
   initialPageSize?: number
   loadMoreThreshold?: number
 
@@ -165,7 +165,7 @@ export const TanQueryLineup = ({
   isPlaying = false,
   isFetching = true,
   isError = false,
-  maxEntries
+  maxEntries = Infinity
 }: TanQueryLineupProps) => {
   const dispatch = useDispatch()
 
@@ -440,7 +440,9 @@ export const TanQueryLineup = ({
           >
             {tiles.length === 0
               ? isFetching || isInitialLoad
-                ? renderSkeletons(initialPageSize ?? pageSize)
+                ? renderSkeletons(
+                    Math.min(maxEntries, initialPageSize ?? pageSize)
+                  )
                 : emptyElement
               : tiles.map((tile: any, index: number) => (
                   <Flex
@@ -472,7 +474,7 @@ export const TanQueryLineup = ({
             {isFetching &&
               shouldLoadMore &&
               hasNextPage &&
-              renderSkeletons(pageSize)}
+              renderSkeletons(Math.min(maxEntries, pageSize))}
           </InfiniteScroll>
         </div>
       </div>
