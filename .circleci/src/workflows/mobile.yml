@@ -59,24 +59,6 @@ jobs:
         branches:
           only: /(^release.*)$/
 
-  - mobile-hold-deploy-codepush-ios-if-ota-release:
-      type: approval
-      requires:
-        - mobile-build-upload-production-ios-if-full-release
-      filters:
-        branches:
-          only: /(^release.*)$/
-
-  - mobile-deploy-codepush-production-ios-if-ota-release:
-      context:
-        - Audius Mobile Client
-        - slack-secrets
-      requires:
-        - mobile-hold-deploy-codepush-ios-if-ota-release
-      filters:
-        branches:
-          only: /(^release.*)$/
-
   - mobile-build-staging-android:
       context: Audius Mobile Client
       requires:
@@ -129,24 +111,6 @@ jobs:
         - slack-secrets
       requires:
         - mobile-init
-      filters:
-        branches:
-          only: /(^release.*)$/
-
-  - mobile-hold-deploy-codepush-android-if-ota-release:
-      type: approval
-      requires:
-        - mobile-build-upload-production-android-if-full-release
-      filters:
-        branches:
-          only: /(^release.*)$/
-
-  - mobile-deploy-codepush-production-android-if-ota-release:
-      context:
-        - Audius Mobile Client
-        - slack-secrets
-      requires:
-        - mobile-hold-deploy-codepush-android-if-ota-release
       filters:
         branches:
           only: /(^release.*)$/
