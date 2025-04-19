@@ -1,6 +1,11 @@
 import { useEffect, useCallback, ComponentType, RefObject } from 'react'
 
-import { useUser, useTrack, useTrackByPermalink } from '@audius/common/api'
+import {
+  useUser,
+  useTrack,
+  useTrackByPermalink,
+  useRemixContest
+} from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { remixMessages } from '@audius/common/messages'
 import { ID } from '@audius/common/models'
@@ -65,6 +70,8 @@ const RemixesPageProvider = ({
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
   )
+  const { data: remixContest } = useRemixContest(originalTrackId)
+  const isRemixContest = isRemixContestEnabled && remixContest
 
   const { data: originalTrackByPermalink } = useTrackByPermalink(
     handle && slug ? `/${handle}/${slug}` : null
@@ -125,7 +132,7 @@ const RemixesPageProvider = ({
   }
 
   const childProps = {
-    title: isRemixContestEnabled
+    title: isRemixContest
       ? remixMessages.submissionsTitle
       : remixMessages.remixesTitle,
     count,
