@@ -57,6 +57,7 @@ import {
   TopSupportersScreen,
   SupportingUsersScreen
 } from 'app/screens/user-list-screen'
+import { WalletScreen } from 'app/screens/wallet-screen'
 
 import { useAppScreenOptions } from './useAppScreenOptions'
 
@@ -108,6 +109,7 @@ export type AppTabScreenParamList = {
   PayAndEarnScreen: undefined
   AudioScreen: undefined
   RewardsScreen: undefined
+  wallet: undefined
   Upload: {
     initialMetadata?: Partial<TrackMetadataForUpload>
   }
@@ -226,6 +228,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       <Stack.Screen name='PayAndEarnScreen' component={PayAndEarnScreen} />
       <Stack.Screen name='AudioScreen' component={AudioScreen} />
       <Stack.Screen name='RewardsScreen' component={RewardsScreen} />
+      <Stack.Screen name='wallet' component={WalletScreen} />
 
       <Stack.Group>
         <Stack.Screen name='EditProfile' component={EditProfileScreen} />
