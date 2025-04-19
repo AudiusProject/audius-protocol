@@ -78,7 +78,8 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   }
 }))
 
-export const TopTabBar = ({ state, descriptors, navigation, position }) => {
+export const TopTabBar = (props: any) => {
+  const { state, descriptors, navigation, position } = props
   // Horizontal padding decreases as the number of tabs increases
   const horizontalPadding =
     Math.max(6 - state.routes.length, 0) * HORIZONTAL_PADDING
@@ -110,14 +111,14 @@ export const TopTabBar = ({ state, descriptors, navigation, position }) => {
     })
   }
 
-  const left = position.interpolate({
-    inputRange: [0, state.routes.length],
-    outputRange: [horizontalPadding, screenWidth - horizontalPadding]
-  })
+  // const left = position.interpolate({
+  //   inputRange: [0, state.routes.length],
+  //   outputRange: [horizontalPadding, screenWidth - horizontalPadding]
+  // })
 
-  const xScale = position.interpolate(
-    getSinAnimationRanges(state.routes.length)
-  )
+  // const xScale = position.interpolate(
+  //   getSinAnimationRanges(state.routes.length)
+  // )
 
   return (
     <View style={styles.tabBarContainer}>
@@ -129,11 +130,11 @@ export const TopTabBar = ({ state, descriptors, navigation, position }) => {
           const label = options.tabBarLabel ?? options.title ?? route.name
           const icon = options.tabBarIcon({ color: neutral })
 
-          const inputRange = state.routes.map((_, i) => i)
-          const opacity = position.interpolate({
-            inputRange,
-            outputRange: inputRange.map((i) => (i === index ? 1 : 0.52)) // opacity range
-          })
+          // const inputRange = state.routes.map((_, i) => i)
+          // const opacity = position.interpolate({
+          //   inputRange,
+          //   outputRange: inputRange.map((i) => (i === index ? 1 : 0.52)) // opacity range
+          // })
 
           return (
             <View key={label} style={styles.tabContainer}>
@@ -147,8 +148,8 @@ export const TopTabBar = ({ state, descriptors, navigation, position }) => {
                 style={styles.tab}
                 testID={options.tabBarTestID}
               >
-                <Animated.View style={{ opacity }}>{icon}</Animated.View>
-                <AnimatedText size='xs' strength='strong' style={{ opacity }}>
+                <Animated.View style={{}}>{icon}</Animated.View>
+                <AnimatedText size='xs' strength='strong' style={{}}>
                   {label}
                 </AnimatedText>
               </TouchableOpacity>
@@ -160,7 +161,7 @@ export const TopTabBar = ({ state, descriptors, navigation, position }) => {
         style={[
           styles.tabIndicator,
           {
-            transform: [{ translateX: left }, { scaleX: xScale }],
+            // transform: [{ translateX: left }, { scaleX: xScale }],
             width: tabWidth
           }
         ]}
