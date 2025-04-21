@@ -42,10 +42,6 @@ export const RemixContestSection = ({
 }: RemixContestSectionProps) => {
   const navigate = useNavigateToPage()
   const { data: remixContest } = useRemixContest(trackId)
-  const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
-    FeatureFlags.REMIX_CONTEST
-  )
-  const isRemixContest = isRemixContestEnabled && remixContest
 
   const tabs = [
     {
@@ -89,7 +85,7 @@ export const RemixContestSection = ({
   }, [trackId, navigate])
 
   // TODO: Also return null if no remix contest description
-  if (!trackId || !isRemixContest) return null
+  if (!trackId || !remixContest) return null
 
   return (
     <Flex column gap='l'>
