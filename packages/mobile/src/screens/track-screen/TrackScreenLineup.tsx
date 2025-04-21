@@ -3,9 +3,10 @@ import { trackPageMessages as messages } from '@audius/common/messages'
 import type { ID, User } from '@audius/common/models'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
 
-import { Button, Flex, Text } from '@audius/harmony-native'
+import { Flex, Text } from '@audius/harmony-native'
 import { TanQueryLineup } from 'app/components/lineup/TanQueryLineup'
-import { useNavigation } from 'app/hooks/useNavigation'
+
+import { ViewOtherRemixesButton } from './ViewOtherRemixesButton'
 
 type TrackScreenLineupProps = {
   user: User | null
@@ -46,24 +47,12 @@ export const TrackScreenLineup = ({
     data
   } = useTrackPageLineup({ trackId })
 
-  const navigation = useNavigation()
-
-  const viewRemixesButton = (
-    <Button
-      style={{ alignSelf: 'flex-start' }}
-      size='small'
-      onPress={() => {
-        navigation.navigate('TrackRemixes', { trackId })
-      }}
-    >
-      {messages.viewOtherRemixes}
-    </Button>
-  )
-
   if (!indices) return null
 
   const renderRemixParentSection = () => {
     if (indices.remixParentSection.index === undefined) return null
+
+    const parentTrackId = data?.[indices.remixParentSection.index]?.id
 
     return (
       <Section title={messages.originalTrack}>
@@ -73,6 +62,7 @@ export const TrackScreenLineup = ({
             lineup={lineup}
             offset={indices.remixParentSection.index}
             maxEntries={indices.remixParentSection.pageSize}
+            pageSize={pageSize}
             includeLineupStatus
             itemStyles={itemStyles}
             isFetching={isFetching}
@@ -81,14 +71,16 @@ export const TrackScreenLineup = ({
             isPending={isPending}
             queryData={data}
           />
-          {viewRemixesButton}
+          {parentTrackId ? (
+            <ViewOtherRemixesButton parentTrackId={parentTrackId} />
+          ) : null}
         </Flex>
       </Section>
     )
   }
 
   const renderRemixesSection = () => {
-    if (indices.remixesSection.index === null) return null
+    if (indices.remixesSection.index === undefined) return null
 
     return (
       <Section title={messages.remixes}>
@@ -98,6 +90,7 @@ export const TrackScreenLineup = ({
             lineup={lineup}
             offset={indices.remixesSection.index}
             maxEntries={indices.remixesSection.pageSize}
+            pageSize={pageSize}
             includeLineupStatus
             itemStyles={itemStyles}
             isFetching={isFetching}
@@ -106,7 +99,7 @@ export const TrackScreenLineup = ({
             isPending={isPending}
             queryData={data}
           />
-          {viewRemixesButton}
+          <ViewOtherRemixesButton parentTrackId={trackId} />
         </Flex>
       </Section>
     )
@@ -122,6 +115,7 @@ export const TrackScreenLineup = ({
           lineup={lineup}
           offset={indices.moreBySection.index}
           maxEntries={indices.moreBySection.pageSize ?? pageSize}
+          pageSize={pageSize}
           includeLineupStatus
           itemStyles={itemStyles}
           isFetching={isFetching}
@@ -144,6 +138,7 @@ export const TrackScreenLineup = ({
           lineup={lineup}
           offset={indices.recommendedSection.index}
           maxEntries={indices.recommendedSection.pageSize}
+          pageSize={pageSize}
           includeLineupStatus
           itemStyles={itemStyles}
           isFetching={isFetching}
