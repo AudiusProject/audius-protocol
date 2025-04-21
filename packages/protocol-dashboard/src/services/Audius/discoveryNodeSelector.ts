@@ -13,10 +13,6 @@ export let discoveryNodeSelector: DiscoveryNodeSelector | undefined
 
 // Initialize the discovery node selector if the discovery endpoint is set
 if (discoveryEndpoint) {
-  console.log(
-    'Initializing discovery node selector with override endpoint',
-    discoveryEndpoint
-  )
   const servicesConfig =
     env === 'development'
       ? developmentConfig
