@@ -10,6 +10,7 @@ import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
+import { ID } from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
 import {
   remixesPageLineupActions,
@@ -18,7 +19,7 @@ import {
 } from '~/store/pages'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryKey, QueryOptions, LineupData } from './types'
+import { QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getTrackQueryKey } from './useTrack'
 import { getUserQueryKey } from './useUser'
@@ -36,6 +37,11 @@ export type UseRemixesArgs = {
   isContestEntry?: boolean
 }
 
+type RemixesQueryData = {
+  count: number
+  tracks: { id: ID; type: EntityType }[]
+}
+
 export const getRemixesQueryKey = ({
   trackId,
   includeOriginal = false,
@@ -48,7 +54,7 @@ export const getRemixesQueryKey = ({
     QUERY_KEYS.remixes,
     trackId,
     { pageSize, includeOriginal, sortMethod, isCosign, isContestEntry }
-  ] as unknown as QueryKey<InfiniteData<LineupData[]>>
+  ] as unknown as QueryKey<InfiniteData<RemixesQueryData[]>>
 
 export const useRemixes = (
   {
@@ -72,7 +78,6 @@ export const useRemixes = (
     }
   }, [dispatch, trackId])
 
-  // @ts-ignore - Returning the count with the data and then marshalling it into the LineupData[] afterwards
   const queryData = useInfiniteQuery({
     queryKey: getRemixesQueryKey({
       trackId,
@@ -83,8 +88,8 @@ export const useRemixes = (
       isContestEntry
     }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage: LineupData[], allPages) => {
-      if (lastPage.length < pageSize) return undefined
+    getNextPageParam: (lastPage: RemixesQueryData, allPages) => {
+      if (lastPage?.count < pageSize) return undefined
       return allPages.length * pageSize
     },
     queryFn: async ({ pageParam }) => {
@@ -139,11 +144,8 @@ export const useRemixes = (
   })
 
   const lineupData = useLineupQuery({
-    // @ts-ignore - Marshalling the data back into LineupData[]
-    queryData: {
-      ...queryData,
-      data: queryData.data?.pages.flatMap((page) => page.tracks)
-    },
+    lineupData: queryData.data?.pages.flatMap((page) => page.tracks) ?? [],
+    queryData,
     queryKey: getRemixesQueryKey({
       trackId,
       includeOriginal,

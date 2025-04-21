@@ -243,7 +243,7 @@ export const TanQueryLineup = ({
   )
 
   const renderSkeletons = useCallback(
-    (skeletonCount: number | undefined) => {
+    (skeletonCount: number | undefined, isInitialLoad: boolean) => {
       // This means no skeletons are desired
       if (!skeletonCount) {
         return <></>
@@ -280,7 +280,9 @@ export const TanQueryLineup = ({
                     {/* @ts-ignore - the types here need work - we're not passing the full expected types here whenever we pass isLoading: true */}
                     <TrackTile {...skeletonTileProps(index)} key={index} />
                   </Flex>
-                  {index === 0 && leadingElementId !== undefined ? (
+                  {index === 0 &&
+                  leadingElementId !== undefined &&
+                  isInitialLoad ? (
                     leadingElementDelineator !== undefined ? (
                       leadingElementDelineator
                     ) : (
@@ -441,7 +443,8 @@ export const TanQueryLineup = ({
             {tiles.length === 0
               ? isFetching || isInitialLoad
                 ? renderSkeletons(
-                    Math.min(maxEntries, initialPageSize ?? pageSize)
+                    Math.min(maxEntries, initialPageSize ?? pageSize),
+                    true
                   )
                 : emptyElement
               : tiles.map((tile: any, index: number) => (
@@ -474,7 +477,7 @@ export const TanQueryLineup = ({
             {isFetching &&
               shouldLoadMore &&
               hasNextPage &&
-              renderSkeletons(Math.min(maxEntries, pageSize))}
+              renderSkeletons(Math.min(maxEntries, pageSize), false)}
           </InfiniteScroll>
         </div>
       </div>
