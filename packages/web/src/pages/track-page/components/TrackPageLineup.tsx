@@ -1,6 +1,4 @@
-import { useFeatureFlag } from '@audius/common/hooks'
 import { User } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { useTrackPageLineup } from '@audius/common/src/api/tan-query/useTrackPageLineup'
 import { tracksActions } from '@audius/common/src/store/pages/track/lineup/actions'
 import { Flex, Text, IconRemix } from '@audius/harmony'
@@ -54,10 +52,7 @@ export const TrackPageLineup = ({
 
   const { isDesktop, isMobile } = useTrackPageSize()
 
-  const { isEnabled: commentsFlagEnabled } = useFeatureFlag(
-    FeatureFlags.COMMENTS_ENABLED
-  )
-  const isCommentingEnabled = commentsFlagEnabled && !commentsDisabled
+  const isCommentingEnabled = !commentsDisabled
   const lineupVariant =
     (isCommentingEnabled && isDesktop) || isMobile
       ? LineupVariant.SECTION
