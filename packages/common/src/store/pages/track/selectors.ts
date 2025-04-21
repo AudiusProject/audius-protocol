@@ -9,9 +9,11 @@ import { Nullable } from '../../../utils/typeUtils'
 export const getBaseState = (state: CommonState) => state.pages.track
 
 export const getTrackId = (state: CommonState) => getBaseState(state).trackId
+
 export const getTrackPermalink = (state: CommonState) =>
   getBaseState(state).trackPermalink
-export const getTrack = (state: CommonState, params?: { id?: ID }) => {
+
+const getTrack = (state: CommonState, params?: { id?: ID }) => {
   if (params?.id) {
     return getCachedTrack(state, { id: params.id })
   }
@@ -47,11 +49,5 @@ export const getUser = (state: CommonState, params?: { id?: ID }) => {
 }
 
 export const getLineup = (state: CommonState) => getBaseState(state).tracks
-export const getTrackRank = (state: CommonState) => getBaseState(state).rank
-export const getTrendingTrackRanks = (state: CommonState) => {
-  const ranks = getBaseState(state).trendingTrackRanks
-  if (!ranks.week && !ranks.month && !ranks.year) return null
-  return ranks
-}
 export const getSourceSelector = (state: CommonState) =>
   `${PREFIX}:${getTrackId(state)}`

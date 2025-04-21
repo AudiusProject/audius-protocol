@@ -1,3 +1,8 @@
-import type { EthereumContractConfigInternal } from '../types'
+import type { Hex } from 'viem'
 
-export type DelegateManagerConfig = {} & EthereumContractConfigInternal
+import type { EthereumClientConfig } from '../types'
+
+export type DelegateManagerConfig = DelegateManagerConfigInternal &
+  EthereumClientConfig
+
+export type DelegateManagerConfigInternal = { address: Hex }

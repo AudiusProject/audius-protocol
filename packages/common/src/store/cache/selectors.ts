@@ -1,16 +1,16 @@
 import { CommonState } from '~/store/commonStore'
-import { Uid } from '~/utils/uid'
 
 import { Collection } from '../../models/Collection'
 import { ID, UID } from '../../models/Identifiers'
 import { Kind } from '../../models/Kind'
 import { Track } from '../../models/Track'
 import { User } from '../../models/User'
-import { getTrack, getUser } from '../pages/track/selectors'
 
 import { getCollection } from './collections/selectors'
 import { CollectionsCacheState } from './collections/types'
+import { getTrack } from './tracks/selectors'
 import { TracksCacheState } from './tracks/types'
+import { getUser } from './users/selectors'
 import { UsersCacheState } from './users/types'
 
 /**

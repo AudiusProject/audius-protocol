@@ -23,6 +23,8 @@ export const QUERY_KEYS = {
   trackByPermalink: 'trackByPermalink',
   tracksByPlaylist: 'tracksByPlaylist',
   tracksByAlbum: 'tracksByAlbum',
+  trackFileInfo: 'trackFileInfo',
+  stems: 'stems',
   user: 'user',
   users: 'users',
   userByHandle: 'userByHandle',
@@ -84,8 +86,14 @@ export const QUERY_KEYS = {
   trendingPlaylists: 'trendingPlaylists',
   trendingUnderground: 'trendingUnderground',
   trackPageLineup: 'trackPageLineup',
+  connectedWallets: 'connectedWallets',
+  audioBalance: 'audioBalance',
+  walletCollectibles: 'walletCollectibles',
   events: 'events',
-  eventsByEntityId: 'eventsByEntityId'
+  eventsByEntityId: 'eventsByEntityId',
+  walletOwner: 'walletOwner',
+  tokenPrice: 'tokenPrice',
+  fileSizes: 'fileSizes'
 } as const
 
 /**

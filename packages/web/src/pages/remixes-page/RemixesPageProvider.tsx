@@ -1,7 +1,15 @@
 import { useEffect, useCallback, ComponentType, RefObject } from 'react'
 
-import { useUser, useTrack } from '@audius/common/api'
+import {
+  useUser,
+  useTrack,
+  useTrackByPermalink,
+  useRemixContest
+} from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { remixMessages } from '@audius/common/messages'
 import { ID } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   lineupSelectors,
   remixesPageLineupActions as tracksActions,
@@ -11,7 +19,7 @@ import {
   playerSelectors
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { connect } from 'react-redux'
+import { connect, useDispatch } from 'react-redux'
 import { useParams } from 'react-router'
 import { Dispatch } from 'redux'
 
@@ -26,13 +34,8 @@ const { profilePage } = route
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
 const { getTrackId, getLineup, getCount } = remixesPageSelectors
-const { fetchTrack, reset } = remixesPageActions
+const { fetchTrackSucceeded, reset } = remixesPageActions
 const { makeGetLineupMetadatas } = lineupSelectors
-
-const messages = {
-  title: 'Remixes',
-  description: 'Remixes'
-}
 
 type OwnProps = {
   containerRef: RefObject<HTMLDivElement>
@@ -52,7 +55,6 @@ const RemixesPageProvider = ({
   count,
   originalTrackId,
   tracks,
-  fetchTrack,
   currentQueueItem,
   isPlaying,
   isBuffering,
@@ -64,13 +66,26 @@ const RemixesPageProvider = ({
   resetTracks
 }: RemixesPageProviderProps) => {
   const { handle, slug } = useParams<{ handle: string; slug: string }>()
-
   const { data: originalTrack } = useTrack(originalTrackId)
-  const { data: user } = useUser(originalTrack?.owner_id)
+  const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
+    FeatureFlags.REMIX_CONTEST
+  )
+  const { data: remixContest } = useRemixContest(originalTrackId)
+  const isRemixContest = isRemixContestEnabled && remixContest
+
+  const { data: originalTrackByPermalink } = useTrackByPermalink(
+    handle && slug ? `/${handle}/${slug}` : null
+  )
+  const track = originalTrackByPermalink ?? originalTrack
+  const { data: user } = useUser(track?.owner_id)
+  const dispatch = useDispatch()
+  const trackId = track?.track_id
 
   useEffect(() => {
-    fetchTrack(handle, slug)
-  }, [handle, slug, fetchTrack])
+    if (trackId) {
+      dispatch(fetchTrackSucceeded({ trackId }))
+    }
+  }, [dispatch, trackId])
 
   useEffect(() => {
     return function cleanup() {
@@ -80,10 +95,10 @@ const RemixesPageProvider = ({
   }, [reset, resetTracks])
 
   const goToTrackPage = useCallback(() => {
-    if (user && originalTrack) {
-      goToRoute(originalTrack.permalink)
+    if (user && track) {
+      goToRoute(track.permalink)
     }
-  }, [goToRoute, originalTrack, user])
+  }, [goToRoute, track, user])
 
   const goToArtistPage = useCallback(() => {
     if (user) {
@@ -112,10 +127,16 @@ const RemixesPageProvider = ({
     }
   }
 
+  if (!track) {
+    return null
+  }
+
   const childProps = {
-    title: messages.title,
+    title: isRemixContest
+      ? remixMessages.submissionsTitle
+      : remixMessages.remixesTitle,
     count,
-    originalTrack,
+    originalTrack: track,
     user,
     goToTrackPage,
     goToArtistPage,
@@ -145,8 +166,6 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
     goToRoute: (route: string) => dispatch(pushRoute(route)),
-    fetchTrack: (handle: string, slug: string) =>
-      dispatch(fetchTrack({ handle, slug })),
     loadMore: (
       offset: number,
       limit: number,

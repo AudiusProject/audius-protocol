@@ -41,13 +41,7 @@ import {
 import type { PurchaseContentError } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
 import { Formik, useField, useFormikContext } from 'formik'
-import {
-  Linking,
-  View,
-  ScrollView,
-  TouchableOpacity,
-  Platform
-} from 'react-native'
+import { Linking, View, ScrollView, TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -246,10 +240,9 @@ const RenderForm = ({
   const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
     FeatureFlags.BUY_WITH_COINFLOW
   )
-  const { isEnabled: isIOSUSDCPurchaseEnabled } = useFeatureFlag(
-    FeatureFlags.IOS_USDC_PURCHASE_ENABLED
+  const { isEnabled: isUsdcPurchaseEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES
   )
-  const isIOSDisabled = Platform.OS === 'ios' && !isIOSUSDCPurchaseEnabled
 
   const { submitForm, resetForm } = useFormikContext()
 
@@ -368,7 +361,9 @@ const RenderForm = ({
                   streamPurchaseCount={streamPurchaseCount}
                   totalPriceInCents={totalPriceInCents}
                 />
-                {isIOSDisabled || isUnlocking || isPurchaseSuccessful ? null : (
+                {!isUsdcPurchaseEnabled ||
+                isUnlocking ||
+                isPurchaseSuccessful ? null : (
                   <PaymentMethod
                     selectedMethod={purchaseMethod}
                     setSelectedMethod={setPurchaseMethod}
@@ -387,7 +382,7 @@ const RenderForm = ({
                   />
                 )}
               </View>
-              {isIOSDisabled ? (
+              {!isUsdcPurchaseEnabled ? (
                 <PurchaseUnavailable />
               ) : isPurchaseSuccessful ? (
                 <PurchaseSuccess
@@ -420,7 +415,7 @@ const RenderForm = ({
           />
         </View>
       )}
-      {isPurchaseSuccessful || isIOSDisabled ? null : (
+      {isPurchaseSuccessful || !isUsdcPurchaseEnabled ? null : (
         <View style={styles.formActions}>
           {error ? <RenderError error={error} /> : null}
           {page === PurchaseContentPage.TRANSFER ? (

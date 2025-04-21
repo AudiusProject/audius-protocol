@@ -11,14 +11,13 @@ import {
 } from '@audius/common/models'
 import {
   accountSelectors,
-  cacheTracksActions,
   cacheTracksSelectors,
   cacheSelectors,
   CommonState,
   getSDK
 } from '@audius/common/store'
 import { Id, OptionalId } from '@audius/sdk'
-import { call, put, select, spawn } from 'typed-redux-saga'
+import { call, select, spawn } from 'typed-redux-saga'
 
 import { retrieve } from 'common/store/cache/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
@@ -27,12 +26,10 @@ import {
   fetchAndProcessRemixes,
   fetchAndProcessRemixParents
 } from './fetchAndProcessRemixes'
-import { fetchAndProcessStems } from './fetchAndProcessStems'
 import { addUsersFromTracks } from './helpers'
 import { reformat } from './reformat'
 const { getEntryTimestamp } = cacheSelectors
 const { getTracks: getTracksSelector } = cacheTracksSelectors
-const { setPermalink } = cacheTracksActions
 const getUserId = accountSelectors.getUserId
 
 type UnlistedTrackRequest = {
@@ -47,102 +44,9 @@ type RetrieveTracksArgs = {
   trackIds: ID[] | UnlistedTrackRequest[]
   /** deprecated */
   canBeUnlisted?: boolean
-  withStems?: boolean
   withRemixes?: boolean
   withRemixParents?: boolean
   forceRetrieveFromSource?: boolean
-}
-type RetrieveTrackByHandleAndSlugArgs = {
-  handle: string
-  slug: string
-  withStems?: boolean
-  withRemixes?: boolean
-  withRemixParents?: boolean
-  forceRetrieveFromSource?: boolean
-}
-
-export function* retrieveTrackByHandleAndSlug({
-  handle,
-  slug,
-  withStems,
-  withRemixes,
-  withRemixParents,
-  forceRetrieveFromSource = false
-}: RetrieveTrackByHandleAndSlugArgs) {
-  const permalink = `/${handle}/${slug}`
-
-  // @ts-ignore string IDs don't play well with the current retrieve typing
-  const tracks = (yield* call(retrieve, {
-    ids: [permalink],
-    selectFromCache: function* (permalinks: string[]) {
-      const track = yield* select(getTracksSelector, {
-        permalinks
-      })
-      return track
-    },
-    retrieveFromSource: function* (permalinks: string[]) {
-      yield* waitForRead()
-      const sdk = yield* getSDK()
-      const userId = yield* select(getUserId)
-      const { data } = yield* call(
-        [sdk.full.tracks, sdk.full.tracks.getBulkTracks],
-        { permalink: permalinks, userId: OptionalId.parse(userId) }
-      )
-      return data ? userTrackMetadataFromSDK(data[0]) : null
-    },
-    kind: Kind.TRACKS,
-    idField: 'track_id',
-    // If this is the first fetch after server side rendering the track page,
-    // force retrieve from source to ensure we have personalized data
-    forceRetrieveFromSource,
-    shouldSetLoading: true,
-    deleteExistingEntry: false,
-    getEntriesTimestamp: function* (ids: ID[]) {
-      const selected = yield* select(
-        (state: CommonState, ids: ID[]) =>
-          ids.reduce(
-            (acc, id) => {
-              acc[id] = getEntryTimestamp(state, { kind: Kind.TRACKS, id })
-              return acc
-            },
-            {} as { [id: number]: number | null }
-          ),
-        ids
-      )
-      return selected
-    },
-    onBeforeAddToCache: function* (tracks: TrackMetadata[]) {
-      yield* addUsersFromTracks(tracks)
-      const [track] = tracks
-      const isLegacyPermalink = track.permalink !== permalink
-      if (isLegacyPermalink) {
-        yield* put(setPermalink(permalink, track.track_id))
-      }
-      return tracks.map((track) => reformat(track))
-    }
-  })) as { entries: { [permalink: string]: Track } }
-
-  const track = tracks.entries[permalink]
-  if (!track || !track.track_id) return null
-  const trackId = track.track_id
-  if (withStems) {
-    yield* spawn(function* () {
-      yield* call(fetchAndProcessStems, trackId)
-    })
-  }
-
-  if (withRemixes) {
-    yield* spawn(function* () {
-      yield* call(fetchAndProcessRemixes, trackId)
-    })
-  }
-
-  if (withRemixParents) {
-    yield* spawn(function* () {
-      yield* call(fetchAndProcessRemixParents, trackId)
-    })
-  }
-  return track
 }
 
 /**
@@ -158,7 +62,6 @@ export function* retrieveTrackByHandleAndSlug({
 export function* retrieveTracks({
   trackIds,
   canBeUnlisted = false,
-  withStems = false,
   withRemixes = false,
   withRemixParents = false
 }: RetrieveTracksArgs) {
@@ -247,16 +150,6 @@ export function* retrieveTracks({
 
   const trackId = ids[0]
   const track = tracks.entries[trackId]
-
-  if (withStems) {
-    yield* spawn(function* () {
-      if (ids.length > 1 && track) {
-        console.error('Stems endpoint only supports fetching single tracks')
-        return
-      }
-      yield* call(fetchAndProcessStems, trackId)
-    })
-  }
 
   if (withRemixes) {
     yield* spawn(function* () {

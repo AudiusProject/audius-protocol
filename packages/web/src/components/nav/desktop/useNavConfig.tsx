@@ -1,6 +1,10 @@
 import { ReactNode, useMemo } from 'react'
 
-import { useChallengeCooldownSchedule } from '@audius/common/hooks'
+import {
+  useChallengeCooldownSchedule,
+  useFeatureFlag
+} from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors, chatSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import type { IconComponent } from '@audius/harmony'
@@ -38,7 +42,8 @@ const {
   TRENDING_PAGE,
   CHATS_PAGE,
   UPLOAD_PAGE,
-  REWARDS_PAGE
+  REWARDS_PAGE,
+  WALLET_PAGE
 } = route
 
 const { getUnreadMessagesCount } = chatSelectors
@@ -87,6 +92,9 @@ export const useNavConfig = () => {
   })
   const playingFromRoute = useNavSourcePlayingStatus()
   const location = useLocation()
+  const { isEnabled: isWalletUIUpdateEnabled } = useFeatureFlag(
+    FeatureFlags.WALLET_UI_UPDATE
+  )
 
   const navItems = useMemo(
     (): NavItemConfig[] => [
@@ -94,7 +102,7 @@ export const useNavConfig = () => {
         label: 'Feed',
         leftIcon: IconFeed,
         targetRoute: FEED_PAGE,
-        restriction: 'account',
+        restriction: 'account' as RestrictionType,
         disabled: !hasAccount,
         playingFromRoute
       }),
@@ -103,20 +111,20 @@ export const useNavConfig = () => {
         leftIcon: IconTrending,
         targetRoute: TRENDING_PAGE,
         playingFromRoute,
-        restriction: 'none'
+        restriction: 'none' as RestrictionType
       }),
       createNavItemWithSpeaker({
         label: 'Explore',
         leftIcon: IconExplore,
         targetRoute: EXPLORE_PAGE,
         playingFromRoute,
-        restriction: 'none'
+        restriction: 'none' as RestrictionType
       }),
       createNavItemWithSpeaker({
         label: 'Library',
         leftIcon: IconLibrary,
         targetRoute: LIBRARY_PAGE,
-        restriction: 'guest',
+        restriction: 'guest' as RestrictionType,
         disabled: !hasAccount,
         playingFromRoute
       }),
@@ -124,7 +132,7 @@ export const useNavConfig = () => {
         label: 'Messages',
         leftIcon: IconMessages,
         to: CHATS_PAGE,
-        restriction: 'account',
+        restriction: 'account' as RestrictionType,
         rightIcon:
           unreadMessagesCount > 0 ? (
             <NotificationCount
@@ -138,20 +146,32 @@ export const useNavConfig = () => {
         hasNotification: unreadMessagesCount > 0,
         disabled: !hasAccount
       },
-      {
-        label: 'Wallets',
-        leftIcon: IconWallet,
-        isExpandable: true,
-        restriction: 'account',
-        nestedComponent: WalletsNestedContent,
-        canUnfurl: isAccountComplete,
-        disabled: !hasAccount
-      },
+      ...(isWalletUIUpdateEnabled
+        ? [
+            {
+              label: 'Wallet',
+              leftIcon: IconWallet,
+              to: WALLET_PAGE,
+              restriction: 'account' as RestrictionType,
+              disabled: !hasAccount
+            }
+          ]
+        : [
+            {
+              label: 'Wallets',
+              leftIcon: IconWallet,
+              isExpandable: true,
+              restriction: 'account' as RestrictionType,
+              nestedComponent: WalletsNestedContent,
+              canUnfurl: isAccountComplete,
+              disabled: !hasAccount
+            }
+          ]),
       {
         label: 'Rewards',
         leftIcon: IconGift,
         to: REWARDS_PAGE,
-        restriction: 'account',
+        restriction: 'account' as RestrictionType,
         rightIcon:
           claimableAmount > 0 ? (
             <NotificationCount
@@ -179,7 +199,7 @@ export const useNavConfig = () => {
           />
         ) : undefined,
         shouldPersistRightIcon: true,
-        restriction: 'account',
+        restriction: 'account' as RestrictionType,
         disabled: !hasAccount
       },
       {
@@ -189,7 +209,7 @@ export const useNavConfig = () => {
         rightIcon: <CreatePlaylistLibraryItemButton />,
         shouldPersistRightIcon: true,
         nestedComponent: PlaylistLibrary,
-        restriction: 'account',
+        restriction: 'account' as RestrictionType,
         canUnfurl: isAccountComplete,
         disabled: !hasAccount
       }
@@ -204,7 +224,8 @@ export const useNavConfig = () => {
       isOnUploadPage,
       playingFromRoute,
       color,
-      spacing
+      spacing,
+      isWalletUIUpdateEnabled
     ]
   )
 

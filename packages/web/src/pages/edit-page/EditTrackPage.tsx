@@ -1,18 +1,19 @@
 import { createContext } from 'react'
 
-import { useGetCurrentUserId, useGetTrackByPermalink } from '@audius/common/api'
+import {
+  useGetCurrentUserId,
+  useGetTrackByPermalink,
+  useUpdateTrack,
+  useStems
+} from '@audius/common/api'
 import {
   SquareSizes,
   Status,
-  Stem,
   StemUpload,
-  Track,
   TrackMetadata
 } from '@audius/common/models'
 import {
   TrackMetadataForUpload,
-  cacheTracksActions,
-  cacheTracksSelectors,
   uploadActions,
   useReplaceTrackConfirmationModal,
   useReplaceTrackProgressModal
@@ -21,7 +22,6 @@ import { removeNullable } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router'
 
-import { useSelector } from 'common/hooks/useSelector'
 import { EditTrackForm } from 'components/edit-track/EditTrackForm'
 import { TrackEditFormValues } from 'components/edit-track/types'
 import { Header } from 'components/header/desktop/Header'
@@ -32,8 +32,6 @@ import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { push } from 'utils/navigation'
 
-const { editTrack } = cacheTracksActions
-const { getStems } = cacheTracksSelectors
 const { updateTrackAudio } = uploadActions
 
 const messages = {
@@ -55,6 +53,7 @@ export const EditTrackPage = (props: EditPageProps) => {
   const { onOpen: openReplaceTrackConfirmation } =
     useReplaceTrackConfirmationModal()
   const { onOpen: openReplaceTrackProgress } = useReplaceTrackProgressModal()
+  const { mutate: updateTrack } = useUpdateTrack()
 
   const { data: currentUserId } = useGetCurrentUserId({})
   const permalink = `/${handle}/${slug}`
@@ -62,6 +61,8 @@ export const EditTrackPage = (props: EditPageProps) => {
     permalink,
     currentUserId
   })
+
+  const { data: stemTracks = [] } = useStems(track?.track_id)
 
   const onSubmit = (formValues: TrackEditFormValues) => {
     const metadata = { ...formValues.trackMetadatas[0] }
@@ -96,7 +97,11 @@ export const EditTrackPage = (props: EditPageProps) => {
         }
       })
     } else {
-      dispatch(editTrack(trackId, metadata))
+      updateTrack({
+        trackId,
+        userId: currentUserId!,
+        metadata
+      })
       dispatch(push(metadata.permalink))
     }
   }
@@ -106,16 +111,11 @@ export const EditTrackPage = (props: EditPageProps) => {
     size: SquareSizes.SIZE_1000_BY_1000
   })
 
-  const stemTracks = useSelector((state) => getStems(state, track?.track_id))
   const stemsAsUploads: StemUpload[] = stemTracks
     .map((stemTrack) => {
-      const stem = (track as unknown as Track)?._stems?.find(
-        (s: Stem) => s.track_id === stemTrack.track_id
-      )
-      if (!stem) return null
       return {
         metadata: stemTrack,
-        category: stem.category,
+        category: stemTrack.stem_of.category,
         allowCategorySwitch: false,
         allowDelete: true
       }

@@ -21,6 +21,7 @@ export const getUser = (
     | { uid: any }
 ) => {
   if ('uid' in props) {
+    // TODO: what to do about select by UID -
     return undefined
   }
   return 'handle' in props

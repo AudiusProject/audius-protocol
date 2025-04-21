@@ -124,6 +124,7 @@ export const useFeed = (
   })
 
   return useLineupQuery({
+    lineupData: queryData.data ?? [],
     queryData,
     queryKey: getFeedQueryKey({
       userId: currentUserId,
@@ -132,6 +133,7 @@ export const useFeed = (
     lineupActions: feedPageLineupActions,
     lineupSelector: feedPageSelectors.getDiscoverFeedLineup,
     playbackSource: PlaybackSource.TRACK_TILE_LINEUP,
-    pageSize: loadMorePageSize
+    pageSize: loadMorePageSize,
+    initialPageSize
   })
 }

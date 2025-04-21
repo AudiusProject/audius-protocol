@@ -71,9 +71,6 @@ import queue from './queue/slice'
 import reachability from './reachability/reducer'
 import { ReachabilityState } from './reachability/types'
 import { recoveryEmailReducer, RecoveryEmailState } from './recovery-email'
-import remixSettingsReducer, {
-  RemixSettingsState
-} from './remix-settings/slice'
 import savedCollectionsReducer from './saved-collections/slice'
 import searchReducer from './search/slice'
 import { SearchState } from './search/types'
@@ -187,7 +184,6 @@ export const reducers = (storage: Storage, history?: History) => ({
     musicConfetti: musicConfettiReducer,
     nowPlaying: nowPlayingReducer,
     reactions: reactionsReducer,
-    remixSettings: remixSettingsReducer,
     shareModal: shareModalReducer,
     stripeModal: stripeModalReducer,
     coinflowModal: coinflowModalReducer,
@@ -307,7 +303,6 @@ export type CommonState = {
     musicConfetti: MusicConfettiState
     nowPlaying: NowPlayingState
     reactions: ReactionsState
-    remixSettings: RemixSettingsState
     searchUsersModal: SearchUsersModalState
     shareModal: ShareModalState
     stripeModal: StripeModalState

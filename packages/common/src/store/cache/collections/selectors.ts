@@ -4,19 +4,12 @@ import { createSelector } from 'reselect'
 import { getCollectionByPermalinkQueryKey } from '~/api'
 import { QUERY_KEYS, getCollectionQueryKey } from '~/api/tan-query/queryKeys'
 import { getTracks } from '~/store/cache/tracks/selectors'
-import {
-  getUser,
-  getUser as getUserById,
-  getUsers
-} from '~/store/cache/users/selectors'
+import { getUser, getUser as getUserById } from '~/store/cache/users/selectors'
 import type { CommonState } from '~/store/commonStore'
 import { removeNullable } from '~/utils/typeUtils'
 import { Uid } from '~/utils/uid'
 
 import type { ID, UID, Collection, User } from '../../../models'
-import { Status } from '../../../models'
-
-import type { EnhancedCollectionTrack } from './types'
 
 /** @deprecated Use a tan-query equivalent instead. useCollection or queryClient.getQueryData */
 export const getCollection = (

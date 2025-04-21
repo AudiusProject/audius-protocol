@@ -7,7 +7,7 @@ export const useMediaQueryListener = (mediaQuery: string) => {
   // Updates whether there is a match or not
   // when the media query status changes
   const listener = useCallback(
-    (matcher: any) => setIsMatch(matcher.matches),
+    (event: MediaQueryListEvent) => setIsMatch(event.matches),
     [setIsMatch]
   )
 
@@ -15,9 +15,11 @@ export const useMediaQueryListener = (mediaQuery: string) => {
   useEffect(() => {
     if (mediaQuery) {
       const matcher = window.matchMedia(mediaQuery)
-      listener(matcher)
-      matcher.addListener(listener)
-      return () => matcher.removeListener(listener)
+      // Set initial value
+      setIsMatch(matcher.matches)
+      // Use modern event listener API
+      matcher.addEventListener('change', listener)
+      return () => matcher.removeEventListener('change', listener)
     }
     return () => {}
   }, [mediaQuery, listener])

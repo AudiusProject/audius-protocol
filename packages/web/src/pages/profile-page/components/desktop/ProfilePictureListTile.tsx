@@ -1,4 +1,4 @@
-import { Flex, IconArrowRight, PlainButton } from '@audius/harmony'
+import { IconArrowRight, Paper, PlainButton } from '@audius/harmony'
 
 import {
   UserProfileListProps,
@@ -24,16 +24,14 @@ export const ProfilePictureListTile = ({
   profilePictureClassname
 }: ProfilePictureListTileProps) => {
   return (
-    <Flex
+    <Paper
       direction='column'
       gap='m'
       ph='m'
       pv='s'
       alignItems='flex-start'
       backgroundColor='white'
-      borderRadius='m'
       onClick={onClick}
-      css={{ cursor: 'pointer' }}
     >
       <UserProfilePictureList
         users={users}
@@ -47,6 +45,6 @@ export const ProfilePictureListTile = ({
       <PlainButton variant='subdued' iconRight={IconArrowRight}>
         {messages.viewAll}
       </PlainButton>
-    </Flex>
+    </Paper>
   )
 }

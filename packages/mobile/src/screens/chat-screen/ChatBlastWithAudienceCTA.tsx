@@ -1,10 +1,15 @@
 import { useCallback } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { useCanSendChatBlast } from '@audius/common/hooks'
-import { chatActions } from '@audius/common/store'
+import {
+  chatActions,
+  followersUserListSelectors,
+  topSupportersUserListSelectors
+} from '@audius/common/store'
 import { ChatBlastAudience } from '@audius/sdk'
 import { TouchableHighlight } from 'react-native-gesture-handler'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import {
   Box,
@@ -40,6 +45,16 @@ export const ChatBlastWithAudienceCTA = (
 ) => {
   const { audience } = props
   const messages = getMessages(audience)
+  const { data: currentUserId } = useCurrentUserId()
+
+  const followersUserId = useSelector(followersUserListSelectors.getId)
+  const supportersUserId = useSelector(topSupportersUserListSelectors.getId)
+  const targetUserId =
+    audience === ChatBlastAudience.FOLLOWERS
+      ? followersUserId
+      : supportersUserId
+
+  const isOwner = currentUserId === targetUserId
 
   const dispatch = useDispatch()
   const handlePress = useCallback(() => {
@@ -47,7 +62,7 @@ export const ChatBlastWithAudienceCTA = (
   }, [audience, dispatch])
 
   const userMeetsRequirements = useCanSendChatBlast()
-  if (!userMeetsRequirements || !messages) {
+  if (!userMeetsRequirements || !messages || !isOwner) {
     return null
   }
 

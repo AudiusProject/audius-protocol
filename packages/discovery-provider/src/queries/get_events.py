@@ -3,7 +3,7 @@ from typing import List, Optional, TypedDict
 
 from sqlalchemy import desc
 
-from src.models.events.event import Event, EventEntityType
+from src.models.events.event import Event, EventEntityType, EventType
 from src.queries.query_helpers import add_query_pagination, get_pagination_vars
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 class GetEventArgs(TypedDict, total=False):
     entity_id: int
     entity_type: Optional[EventEntityType]
+    event_type: Optional[EventType]
     limit: int
     offset: int
     current_user_id: Optional[int]
@@ -46,6 +47,11 @@ def format_events(events) -> List[Event]:
 def get_events_by_ids(args) -> List[Event]:
     """Get a list of events by their IDs.
 
+    Args:
+        args: Dictionary containing:
+            - id (List[int]): List of event IDs to fetch
+            - event_type (Optional[EventType]): Type of event to filter by
+
     Returns:
         List[Event]: List of events corresponding to the provided IDs.
     """
@@ -56,6 +62,8 @@ def get_events_by_ids(args) -> List[Event]:
         query = session.query(Event)
         if ids:
             query = query.filter(Event.event_id.in_(ids))
+        if args.get("event_type") is not None:
+            query = query.filter(Event.event_type == args.get("event_type"))
         events = query.all()
 
         return format_events(events)
@@ -73,6 +81,10 @@ def _get_events(session, args):
     # Filter by entity_type if provided
     if args.get("entity_type") is not None:
         base_query = base_query.filter(Event.entity_type == args.get("entity_type"))
+
+    # Filter by event_type if provided
+    if args.get("event_type") is not None:
+        base_query = base_query.filter(Event.event_type == args.get("event_type"))
 
     # Allow filtering of deletes
     if args.get("filter_deleted", True):

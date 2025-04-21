@@ -201,7 +201,7 @@ const TrackListItem = (props: TrackListItemProps) => {
           {!isAlbum ? (
             <div className={styles.artistName} onClick={onClickArtistName}>
               <div className={styles.by}>{strings.by}</div>
-              {!isOwnerDeactivated ? (
+              {isOwnerDeactivated ? (
                 `${userName} [Deactivated]`
               ) : (
                 <ArtistPopover handle={userHandle}>{userName}</ArtistPopover>

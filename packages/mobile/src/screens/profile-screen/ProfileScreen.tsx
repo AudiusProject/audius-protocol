@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import {
+  getProfileRepostsQueryKey,
+  getProfileTracksQueryKey
+} from '@audius/common/api'
 import { ShareSource, Status } from '@audius/common/models'
 import {
   profilePageActions,
@@ -14,6 +18,7 @@ import {
 import { encodeUrlName } from '@audius/common/utils'
 import { PortalHost } from '@gorhom/portal'
 import { useFocusEffect, useNavigationState } from '@react-navigation/native'
+import { useQueryClient } from '@tanstack/react-query'
 import { Animated, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -68,6 +73,7 @@ export const ProfileScreen = () => {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const isNotReachable = useSelector(getIsReachable) === false
   const isScreenReady = useIsScreenReady()
+  const queryClient = useQueryClient()
 
   const setCurrentUser = useCallback(() => {
     dispatch(setCurrentUserAction(handleLower))
@@ -117,6 +123,11 @@ export const ProfileScreen = () => {
       fetchProfile()
       switch (currentTab) {
         case ProfilePageTabs.TRACKS:
+          queryClient.resetQueries({
+            queryKey: getProfileTracksQueryKey({
+              handle: handleLower
+            })
+          })
           dispatch(
             profilePageTracksLineupActions.refreshInView(
               true,
@@ -127,6 +138,11 @@ export const ProfileScreen = () => {
           )
           break
         case ProfilePageTabs.REPOSTS:
+          queryClient.resetQueries({
+            queryKey: getProfileRepostsQueryKey({
+              handle: handleLower
+            })
+          })
           dispatch(
             profilePageFeedLineupActions.refreshInView(
               true,
@@ -138,7 +154,7 @@ export const ProfileScreen = () => {
           break
       }
     }
-  }, [profile, fetchProfile, currentTab, dispatch, handleLower])
+  }, [profile, fetchProfile, currentTab, queryClient, handleLower, dispatch])
 
   useEffect(() => {
     if (status === Status.SUCCESS) {

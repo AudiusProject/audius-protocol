@@ -1,6 +1,6 @@
 {
   "name": "@audius/mobile",
-  "version": "1.5.129",
+  "version": "1.5.131",
   "private": true,
   "scripts": {
     "android:dev": "ENVFILE=.env.dev turbo run android -- --mode=prodDebug",
@@ -108,7 +108,7 @@
     "fxa-common-password-list": "0.0.4",
     "jimp": "0.14.0",
     "linkifyjs": "4.1.0",
-    "lodash.samplesize": "4.2.0",
+    "lodash": "4.17.21",
     "lottie-react-native": "7.1.0",
     "moment": "2.24.0",
     "node-libs-react-native": "1.2.1",
@@ -211,7 +211,6 @@
     "@types/array.prototype.flat": "1.2.1",
     "@types/bn.js": "5.1.0",
     "@types/color": "^3.0.6",
-    "@types/lodash.samplesize": "4.2.6",
     "@types/node": "12.20.27",
     "@types/numeral": "2.0.2",
     "@types/react": "18.3.1",

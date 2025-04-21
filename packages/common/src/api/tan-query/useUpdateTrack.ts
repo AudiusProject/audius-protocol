@@ -12,9 +12,8 @@ import { stemsUploadSelectors } from '~/store/stems-upload'
 import { TrackMetadataForUpload } from '~/store/upload'
 
 import { TQTrack } from './models'
-import { QUERY_KEYS } from './queryKeys'
+import { QUERY_KEYS, getTrackQueryKey } from './queryKeys'
 import { useDeleteTrack } from './useDeleteTrack'
-import { getTrackQueryKey } from './useTrack'
 import { handleStemUpdates } from './utils/handleStemUpdates'
 import { primeTrackData } from './utils/primeTrackData'
 

@@ -1,5 +1,6 @@
 import { Component, ComponentType } from 'react'
 
+import { useTrackByParams } from '@audius/common/api'
 import {
   Name,
   ShareSource,
@@ -9,7 +10,8 @@ import {
   FavoriteType,
   PlayableType,
   ID,
-  Track
+  Track,
+  Status
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -31,12 +33,11 @@ import {
   playerSelectors,
   playerActions
 } from '@audius/common/store'
-import { formatDate, route, Uid } from '@audius/common/utils'
+import { formatDate, route } from '@audius/common/utils'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { TrackEvent, make } from 'common/store/analytics/actions'
-import { TRENDING_BADGE_LIMIT } from 'common/store/pages/track/sagas'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
 import DeletedPage from 'pages/deleted-page/DeletedPage'
 import { SsrContext } from 'ssr/SsrContext'
@@ -47,7 +48,6 @@ import { trackRemixesPage } from 'utils/route'
 import { parseTrackRoute, TrackRouteParams } from 'utils/route/trackRouteParser'
 import { getTrackPageSEOFields } from 'utils/seo'
 
-import StemsSEOHint from './components/StemsSEOHint'
 import { OwnProps as DesktopTrackPageProps } from './components/desktop/TrackPage'
 import { OwnProps as MobileTrackPageProps } from './components/mobile/TrackPage'
 
@@ -59,7 +59,7 @@ const {
   REPOSTING_USERS_ROUTE
 } = route
 const { makeGetCurrent } = queueSelectors
-const { getPlaying, getPreviewing, getBuffering } = playerSelectors
+const { getPlaying, getPreviewing } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
@@ -68,8 +68,6 @@ const { tracksActions } = trackPageLineupActions
 const {
   getUser,
   getLineup,
-  getTrackRank,
-  getTrack,
   getRemixParentTrack,
   getSourceSelector,
   getTrackPermalink
@@ -99,8 +97,15 @@ type TrackPageProviderState = {
   source: string | undefined
 }
 
-class TrackPageProvider extends Component<
-  TrackPageProviderProps,
+const TrackPageProviderWrapper = (props: TrackPageProviderProps) => {
+  const params = parseTrackRoute(props.pathname)
+  const { data: track } = useTrackByParams(params)
+
+  return <TrackPageProviderClass {...props} track={track as Track | null} />
+}
+
+class TrackPageProviderClass extends Component<
+  TrackPageProviderProps & { track: Track | null },
   TrackPageProviderState
 > {
   static contextType = SsrContext
@@ -122,12 +127,32 @@ class TrackPageProvider extends Component<
       return
     }
 
-    this.fetchTracks(params)
+    this.props.reset()
+    // Only fetch lineup data since track data is handled by the hook
+    if (params.trackId) {
+      this.props.setTrackId(params.trackId)
+    } else if (params.slug && params.handle) {
+      this.props.setTrackPermalink(`/${params.handle}/${params.slug}`)
+    }
+    if (params.handle) {
+      this.setState({ ownerHandle: params.handle })
+    }
   }
 
-  componentDidUpdate(prevProps: TrackPageProviderProps) {
-    const { pathname, track, refetchTracksLinup, user, trackPermalink } =
-      this.props
+  componentDidUpdate(
+    prevProps: TrackPageProviderProps & { track: Track | null }
+  ) {
+    const {
+      pathname,
+      track,
+      status,
+      refetchTracksLinup,
+      user,
+      trackPermalink
+    } = this.props
+    if (status === Status.ERROR) {
+      this.props.goToRoute(NOT_FOUND_PAGE)
+    }
     if (user && user.is_deactivated) {
       this.goToProfilePage(user.handle)
     }
@@ -140,16 +165,22 @@ class TrackPageProvider extends Component<
         const params = parseTrackRoute(pathname)
         if (params) {
           this.setState({ pathname })
-          this.fetchTracks(params)
+          this.props.reset()
+          // Track data is handled by the hook
+          if (params.trackId) {
+            this.props.setTrackId(params.trackId)
+          } else if (params.slug && params.handle) {
+            this.props.setTrackPermalink(`/${params.handle}/${params.slug}`)
+          }
+          if (params.handle) {
+            this.setState({ ownerHandle: params.handle })
+          }
         }
       }
     }
 
     // Set the lineup source in state once it's set in redux
-    if (
-      !this.state.source &&
-      this.state.routeKey === this.props.track?.track_id
-    ) {
+    if (!this.state.source && this.state.routeKey === track?.track_id) {
       this.setState({ source: this.props.source })
     }
 
@@ -219,7 +250,6 @@ class TrackPageProvider extends Component<
     if (slug && handle) {
       this.props.setTrackPermalink(`/${handle}/${slug}`)
     }
-    this.props.fetchTrack(trackId, slug || '', handle || '', !!(slug && handle))
     if (handle) {
       this.setState({ ownerHandle: handle })
     }
@@ -281,15 +311,6 @@ class TrackPageProvider extends Component<
     }
   }
 
-  onMoreByArtistTracksPlay = (uid?: string) => {
-    const { play, recordPlayMoreByArtist } = this.props
-    play(uid)
-    if (uid) {
-      const trackId = Uid.fromString(uid).id
-      recordPlayMoreByArtist(trackId as number)
-    }
-  }
-
   onHeroRepost = (isReposted: boolean, trackId: ID) => {
     const { repostTrack, undoRepostTrack } = this.props
     if (!isReposted) {
@@ -346,28 +367,16 @@ class TrackPageProvider extends Component<
       track,
       remixParentTrack,
       user,
-      trackRank,
-      moreByArtist,
       currentQueueItem,
       playing,
       previewing,
-      buffering,
-      userId,
-      pause
+      userId
     } = this.props
     const heroPlaying =
       playing &&
       !!track &&
       !!currentQueueItem.track &&
       currentQueueItem.track.track_id === track.track_id
-    const trendingBadgeLabel =
-      trackRank.year && trackRank.year <= TRENDING_BADGE_LIMIT
-        ? `#${trackRank.year} This Year`
-        : trackRank.month && trackRank.month <= TRENDING_BADGE_LIMIT
-          ? `#${trackRank.month} This Month`
-          : trackRank.week && trackRank.week <= TRENDING_BADGE_LIMIT
-            ? `#${trackRank.week} This Week`
-            : null
 
     const desktopProps = {
       // Follow Props
@@ -423,29 +432,18 @@ class TrackPageProvider extends Component<
       user,
       heroPlaying,
       userId,
-      trendingBadgeLabel,
       previewing,
       onHeroPlay: this.onHeroPlay,
-      goToAllRemixesPage: this.goToAllRemixesPage,
       onHeroRepost: this.onHeroRepost,
       onHeroShare: this.onHeroShare,
       onClickMobileOverflow: this.props.clickOverflow,
       onConfirmUnfollow: this.props.onConfirmUnfollow,
       goToFavoritesPage: this.goToFavoritesPage,
-      goToRepostsPage: this.goToRepostsPage,
-
-      // Tracks Lineup Props
-      tracks: moreByArtist,
-      currentQueueItem,
-      isPlaying: playing,
-      isBuffering: buffering,
-      play: this.onMoreByArtistTracksPlay,
-      pause
+      goToRepostsPage: this.goToRepostsPage
     }
 
     return (
       <>
-        {!!track?._stems?.[0] && <StemsSEOHint />}
         {/* @ts-ignore lineup has wrong type LineupState<{ id: number }> */}
         <this.props.children
           key={this.state.routeKey}
@@ -468,7 +466,6 @@ function makeMapStateToProps() {
   const mapStateToProps = (state: AppState) => {
     return {
       source: getSourceSelector(state),
-      track: getTrack(state),
       trackPermalink: getTrackPermalink(state),
       remixParentTrack: getRemixParentTrack(state),
       user: getUser(state),
@@ -478,8 +475,6 @@ function makeMapStateToProps() {
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
       previewing: getPreviewing(state),
-      buffering: getBuffering(state),
-      trackRank: getTrackRank(state),
       pathname: getLocationPathname(state)
     }
   }
@@ -488,15 +483,6 @@ function makeMapStateToProps() {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    fetchTrack: (
-      trackId: number | null,
-      slug: string,
-      ownerHandle: string,
-      canBeUnlisted: boolean
-    ) =>
-      dispatch(
-        trackPageActions.fetchTrack(trackId, slug, ownerHandle, canBeUnlisted)
-      ),
     setTrackId: (trackId: number) =>
       dispatch(trackPageActions.setTrackId(trackId)),
     setTrackPermalink: (permalink: string) =>
@@ -562,4 +548,4 @@ function mapDispatchToProps(dispatch: Dispatch) {
 export default connect(
   makeMapStateToProps,
   mapDispatchToProps
-)(TrackPageProvider)
+)(TrackPageProviderWrapper)

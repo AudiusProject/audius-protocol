@@ -209,9 +209,9 @@
     "name": "COMMENT_PIN",
     "type": "aggregate",
     "amount": 10,
-    "active": false,
-    "step_count": 1,
-    "starting_block": 0,
+    "active": true,
+    "step_count": 2147483647,
+    "starting_block": 1979515,
     "weekly_pool": 2147483647,
     "cooldown_days": 7
   },
