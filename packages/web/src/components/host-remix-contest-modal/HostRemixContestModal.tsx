@@ -209,10 +209,16 @@ export const HostRemixContestModal = () => {
         <Flex direction='column' gap='xl'>
           <Text variant='body'>{messages.description}</Text>
           <Flex direction='column' gap='l'>
-            <Text variant='title' size='l'>
+            <Text
+              variant='title'
+              size='l'
+              tag='label'
+              htmlFor='contestDescription'
+            >
               {messages.descriptionLabel}
             </Text>
             <TextAreaV2
+              id='contestDescription'
               aria-label='contestDescription'
               placeholder={messages.descriptionPlaceholder}
               maxLength={1000}
@@ -231,10 +237,16 @@ export const HostRemixContestModal = () => {
           </Flex>
           <Divider color='default' />
           <Flex direction='column' gap='l'>
-            <Text variant='title' size='l'>
+            <Text
+              variant='title'
+              size='l'
+              tag='label'
+              htmlFor='contestPrizeInfo'
+            >
               {messages.prizeInfoLabel}
             </Text>
             <TextAreaV2
+              id='contestPrizeInfo'
               aria-label='contestPrizeInfo'
               placeholder={messages.prizeInfoPlaceholder}
               maxLength={1000}
