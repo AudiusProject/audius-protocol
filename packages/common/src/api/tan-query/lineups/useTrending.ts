@@ -172,6 +172,7 @@ export const useTrending = (
       break
   }
   return useLineupQuery({
+    lineupData: infiniteQueryData.data ?? [],
     queryData: infiniteQueryData,
     queryKey: getTrendingQueryKey({
       timeRange,
@@ -182,6 +183,7 @@ export const useTrending = (
     lineupActions,
     lineupSelector,
     playbackSource: PlaybackSource.TRACK_TILE_LINEUP,
-    pageSize: loadMorePageSize
+    pageSize: loadMorePageSize,
+    initialPageSize
   })
 }

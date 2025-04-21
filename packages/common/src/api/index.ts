@@ -100,5 +100,8 @@ export * from './tan-query/users/useUserCollectibles'
 export * from './tan-query/users/useUserPlaylists'
 export * from './tan-query/users/useUsers'
 
+export * from './tan-query/useStems'
+export * from './tan-query/useFileSizes'
+export * from './tan-query/useTrackFileInfo'
 // Saga fetch utils, remove when migration is complete
 export * from './tan-query/saga-utils'

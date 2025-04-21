@@ -33,10 +33,14 @@ export const CommentBadge = ({
   isArtist
 }: CommentBadgeProps) => {
   const { artistId } = useCurrentCommentSection()
-  const { data: supporter } = useSupporter({
-    userId: artistId,
-    supporterUserId: commentUserId
-  })
+  const { data: supporter } = useSupporter(
+    {
+      userId: artistId,
+      supporterUserId: commentUserId
+    },
+    // Read only, relying on prefetch in commentsContext
+    { enabled: false }
+  )
 
   const isTopSupporter = supporter?.rank === 1
 

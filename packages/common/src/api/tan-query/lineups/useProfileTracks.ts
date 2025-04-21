@@ -107,6 +107,7 @@ export const useProfileTracks = (
   })
 
   return useLineupQuery({
+    lineupData: queryData.data ?? [],
     queryData,
     queryKey: getProfileTracksQueryKey({
       handle,

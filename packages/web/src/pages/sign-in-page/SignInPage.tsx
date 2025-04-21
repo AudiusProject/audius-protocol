@@ -34,6 +34,7 @@ import { GuestEmailHint } from 'pages/sign-on-page/GuestEmailHint'
 import { EmailField } from 'pages/sign-up-page/components/EmailField'
 import { ForgotPasswordModal } from 'pages/sign-up-page/components/ForgotPasswordModal'
 import { Heading, ScrollView } from 'pages/sign-up-page/components/layout'
+import { identify } from 'services/analytics'
 import { useSelector } from 'utils/reducer'
 
 import { SignInWithMetaMaskButton } from './SignInWithMetaMaskButton'
@@ -86,6 +87,7 @@ export const SignInPage = () => {
       dispatch(setValueField('email', email))
       dispatch(setValueField('password', password))
       dispatch(signIn(email, password))
+      identify({ email })
     },
     [dispatch]
   )

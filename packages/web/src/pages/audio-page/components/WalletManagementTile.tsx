@@ -1,14 +1,15 @@
 import { useCallback, useContext, useEffect, useMemo } from 'react'
 
+import { useConnectedWallets } from '@audius/common/api'
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { Client, BNWei } from '@audius/common/models'
 import { StringKeys, FeatureFlags, Location } from '@audius/common/services'
 import {
-  tokenDashboardPageSelectors,
   tokenDashboardPageActions,
   walletSelectors,
   buyAudioActions,
-  OnRampProvider
+  OnRampProvider,
+  useConnectedWalletsModal
 } from '@audius/common/store'
 import { isNullOrUndefined, formatWei, route } from '@audius/common/utils'
 import {
@@ -44,9 +45,7 @@ import { pushUniqueRoute } from 'utils/route'
 import TokenHoverTooltip from './TokenHoverTooltip'
 import styles from './WalletManagementTile.module.css'
 const { TRENDING_PAGE } = route
-const { getHasAssociatedWallets } = tokenDashboardPageSelectors
-const { pressReceive, pressSend, pressConnectWallets } =
-  tokenDashboardPageActions
+const { pressReceive, pressSend } = tokenDashboardPageActions
 const {
   getAccountBalance,
   getAccountTotalBalance,
@@ -245,19 +244,11 @@ export const useOnRampProviderInfo = () => {
 }
 
 const ManageWalletsButton = () => {
-  const dispatch = useDispatch()
   const isMobile = useIsMobile()
   const [, setOpenConnectWalletsDrawer] = useModalState(
     'MobileConnectWalletsDrawer'
   )
-
-  const onClickConnectWallets = useCallback(() => {
-    if (isMobile) {
-      setOpenConnectWalletsDrawer(true)
-    } else {
-      dispatch(pressConnectWallets())
-    }
-  }, [isMobile, setOpenConnectWalletsDrawer, dispatch])
+  const { onOpen: openConnectedWalletsModal } = useConnectedWalletsModal()
 
   const onCloseConnectWalletsDrawer = useCallback(() => {
     setOpenConnectWalletsDrawer(false)
@@ -265,7 +256,10 @@ const ManageWalletsButton = () => {
 
   return (
     <>
-      <OptionButton onClick={onClickConnectWallets} iconLeft={IconWallet}>
+      <OptionButton
+        onClick={() => openConnectedWalletsModal()}
+        iconLeft={IconWallet}
+      >
         {messages.connectedWallets}
       </OptionButton>
       {isMobile && (
@@ -277,7 +271,7 @@ const ManageWalletsButton = () => {
 export const WalletManagementTile = () => {
   const isManagedAccount = useIsManagedAccount()
   const totalBalance = useSelector(getAccountTotalBalance)
-  const hasMultipleWallets = useSelector(getHasAssociatedWallets)
+  const { data: connectedWallets } = useConnectedWallets()
   const balanceLoadDidFail = useSelector(getTotalBalanceLoadDidFail)
   const { toast } = useContext(ToastContext)
   const [, setOpen] = useModalState('AudioBreakdown')
@@ -325,7 +319,7 @@ export const WalletManagementTile = () => {
           </TokenHoverTooltip>
         )}
         <div className={styles.balance}>
-          {hasMultipleWallets ? (
+          {connectedWallets && connectedWallets.length > 0 ? (
             <div onClick={onClickOpen}>
               {messages.audio}
               <IconInfo className={styles.iconInfo} />

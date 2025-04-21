@@ -54,6 +54,7 @@
     "@tanstack/react-query": "5.62.7",
     "@tanstack/react-query-devtools": "5.62.7",
     "@web3modal/ethers": "4.1.5",
+    "@web3modal/siwe": "^5.1.11",
     "@yornaath/batshit": "0.10.1",
     "chart.js": "2.9.3",
     "classnames": "^2.3.2",

@@ -152,9 +152,9 @@ export const ClaimAllRewardsModal = () => {
                 </Text>
                 <Flex gap='l'>
                   <Text variant='label' size='s' color='default'>
-                    {`${
+                    {`${formatNumberCommas(
                       totalClaimableAmount - claimableAmount
-                    }/${totalClaimableAmount}`}
+                    )}/${formatNumberCommas(totalClaimableAmount)}`}
                   </Text>
                   <Box h='unit4' w='unit4'>
                     <LoadingSpinner />

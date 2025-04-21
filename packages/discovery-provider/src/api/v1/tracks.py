@@ -34,6 +34,7 @@ from src.api.v1.helpers import (
     pagination_parser,
     pagination_with_current_user_parser,
     parse_bool_param,
+    remixes_parser,
     stem_from_track,
     success_response,
     success_response_with_related,
@@ -71,6 +72,7 @@ from src.queries.get_top_followee_windowed import get_top_followee_windowed
 from src.queries.get_top_listeners_for_track import get_top_listeners_for_track
 from src.queries.get_track_access_info import get_track_access_info
 from src.queries.get_track_comment_count import get_track_comment_count
+from src.queries.get_track_inspect_info import get_track_inspect_info
 from src.queries.get_track_signature import (
     get_track_download_signature,
     get_track_stream_signature,
@@ -80,6 +82,7 @@ from src.queries.get_trending import get_trending
 from src.queries.get_trending_ids import get_trending_ids
 from src.queries.get_unclaimed_id import get_unclaimed_id
 from src.queries.get_underground_trending import get_underground_trending
+from src.queries.query_helpers import get_content_url_with_mirrors
 from src.queries.search_queries import SearchKind, search
 from src.trending_strategies.trending_strategy_factory import (
     DEFAULT_TRENDING_VERSIONS,
@@ -392,7 +395,7 @@ def get_stream_url_from_content_node(
 inspect_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 inspect_parser.add_argument(
     "original",
-    description="""Optional - if set to true inspects the original quality file""",
+    description="""Optional - if set to true inspects the original file quality""",
     type=inputs.boolean,
     required=False,
     default=False,
@@ -424,48 +427,104 @@ class TrackInspect(Resource):
         is_original = request_args.get("original")
         decoded_id = decode_with_abort(track_id, ns)
         info = get_track_access_info(decoded_id)
-        track = info.get("track")
+        track_info = info.get("track")
 
-        if not track:
+        if not track_info:
             logger.error(
                 f"tracks.py | stream | Track with id {track_id} may not exist. Please investigate."
             )
             abort_not_found(track_id, ns)
 
         redis = redis_connection.get_redis()
+        cid = (
+            track_info.get("orig_file_cid")
+            if is_original
+            else track_info.get("track_cid")
+        )
 
-        cid = track.get("orig_file_cid") if is_original else track.get("track_cid")
-        path = f"internal/blobs/info/{cid}"
-        redis_key = f"track_cid:{cid}"
-
-        cached_content_node = redis.get(redis_key)
-        if cached_content_node:
-            cached_content_node = cached_content_node.decode("utf-8")
-            response = requests.get(urljoin(cached_content_node, path))
-            blob_info = extend_blob_info(response.json())
-            return success_response(blob_info)
-
-        healthy_nodes = get_all_healthy_content_nodes_cached(redis)
-        if not healthy_nodes:
-            logger.error(
-                f"tracks.py | stream | No healthy Content Nodes found when fetching track ID {track_id}. Please investigate."
-            )
+        raw_blob_info = get_track_inspect_info(
+            cid, track_id=track_id, redis_instance=redis
+        )
+        if not raw_blob_info:
             abort_not_found(track_id, ns)
 
-        rendezvous = RendezvousHash(
-            *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
-        )
-        content_nodes = rendezvous.get_n(9999999, cid)
-        for content_node in content_nodes:
-            try:
-                response = requests.get(urljoin(content_node, path))
-                if response:
-                    blob_info = extend_blob_info(response.json())
-                    return success_response(blob_info)
-            except Exception as e:
-                logger.error(f"Could not locate cid {cid} on {content_node}: {e}")
+        blob_info = extend_blob_info(raw_blob_info)
+        return success_response(blob_info)
 
-        abort_not_found(track_id, ns)
+
+# Bulk Inspect
+bulk_inspect_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+bulk_inspect_parser.add_argument(
+    "id",
+    description="""List of track IDs to inspect""",
+    type=str,
+    action="append",
+    required=True,
+)
+bulk_inspect_parser.add_argument(
+    "original",
+    description="""Optional - if set to true inspects the original file quality""",
+    type=inputs.boolean,
+    required=False,
+    default=False,
+)
+bulk_inspect_result = make_response(
+    "track_inspect_list", ns, fields.List(fields.Nested(blob_info))
+)
+
+
+@ns.route("/inspect")
+class BulkTrackInspect(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Inspect Tracks""",
+        description="""Inspect multiple tracks""",
+        responses={
+            200: "Success",
+            400: "Bad request",
+            500: "Server error",
+        },
+    )
+    @ns.expect(bulk_inspect_parser)
+    @ns.marshal_with(bulk_inspect_result)
+    @cache(ttl_sec=5)
+    def get(self):
+        """
+        Inspects the details of the files for multiple tracks.
+        """
+        request_args = bulk_inspect_parser.parse_args()
+        is_original = request_args.get("original")
+        track_ids = request_args.get("id")
+
+        if not track_ids:
+            ns.abort(400, "Expected query param 'id'")
+
+        decoded_ids = [decode_with_abort(track_id, ns) for track_id in track_ids]
+        tracks_info = [get_track_access_info(decoded_id) for decoded_id in decoded_ids]
+        valid_tracks = [info.get("track") for info in tracks_info if info.get("track")]
+
+        if not valid_tracks:
+            abort_not_found(track_ids, ns)
+
+        redis = redis_connection.get_redis()
+        results = []
+
+        for track_info in valid_tracks:
+            cid = (
+                track_info.get("orig_file_cid")
+                if is_original
+                else track_info.get("track_cid")
+            )
+            raw_blob_info = get_track_inspect_info(
+                cid, track_id=track_info.get("track_id"), redis_instance=redis
+            )
+            if raw_blob_info:
+                blob_info = extend_blob_info(raw_blob_info)
+                results.append(blob_info)
+            else:
+                results.append(None)
+
+        return success_response(results)
 
 
 # Comments
@@ -706,7 +765,6 @@ class TrackStream(Resource):
         user_signature = request_args.get("user_signature")
         nft_access_signature = request_args.get("nft_access_signature")
         api_key = request_args.get("api_key")
-        skip_check = request_args.get("skip_check")
         no_redirect = request_args.get("no_redirect")
 
         decoded_id = decode_with_abort(track_id, ns)
@@ -728,7 +786,6 @@ class TrackStream(Resource):
                 f"tracks.py | stream | Streaming track {track_id} does not allow streaming from api key {api_key}."
             )
             abort_not_found(track_id, ns)
-        redis = redis_connection.get_redis()
 
         # signature for the track to be included as a query param in the redirect to CN
         stream_signature = get_track_stream_signature(
@@ -751,59 +808,13 @@ class TrackStream(Resource):
         if skip_play_count:
             params["skip_play_count"] = skip_play_count
 
-        base_path = f"tracks/cidstream/{cid}"
-        query_string = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
-        path = f"{base_path}?{query_string}"
-
-        # we cache track cid -> content node so we can avoid
-        # checking multiple content nodes for a track
-        # if we already know where to look
-        redis_key = f"track_cid:{cid}"
-        cached_content_node = redis.get(redis_key)
-        stream_url = None
-        if cached_content_node:
-            cached_content_node = cached_content_node.decode("utf-8")
-            stream_url = get_stream_url_from_content_node(
-                cached_content_node, path, skip_check
-            )
-            if stream_url:
-                if no_redirect:
-                    return success_response(stream_url)
-                else:
-                    return stream_url
-
-        healthy_nodes = get_all_healthy_content_nodes_cached(redis)
-        if not healthy_nodes:
-            logger.error(
-                f"tracks.py | stream | No healthy Content Nodes found when streaming track ID {track_id}. Please investigate."
-            )
-            abort_not_found(track_id, ns)
-
-        rendezvous = RendezvousHash(
-            *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
+        content_url_with_mirrors = get_content_url_with_mirrors(
+            signature, cid, track.get("placement_hosts")
         )
-
-        content_nodes = rendezvous.get_n(9999999, cid)
-
-        # if track has placement_hosts, use that instead
-        if track.get("placement_hosts"):
-            content_nodes = track.get("placement_hosts").split(",")
-
-        for content_node in content_nodes:
-            try:
-                stream_url = get_stream_url_from_content_node(
-                    content_node, path, skip_check
-                )
-                if stream_url:
-                    redis.set(redis_key, content_node)
-                    redis.expire(redis_key, 60 * 30)  # 30 min ttl
-                    if no_redirect:
-                        return success_response(stream_url)
-                    else:
-                        return stream_url
-            except Exception as e:
-                logger.error(f"Could not locate cid {cid} on {content_node}: {e}")
-        abort_not_found(track_id, ns)
+        if no_redirect:
+            return success_response(content_url_with_mirrors["url"])
+        else:
+            return content_url_with_mirrors["url"]
 
 
 # Download
@@ -1584,12 +1595,12 @@ class FullRemixesRoute(Resource):
         description="""Get all tracks that remix the given track""",
         params={"track_id": "A Track ID"},
     )
-    @full_ns.expect(pagination_with_current_user_parser)
+    @full_ns.expect(remixes_parser)
     @full_ns.marshal_with(remixes_response)
     @cache(ttl_sec=10)
     def get(self, track_id):
         decoded_id = decode_with_abort(track_id, full_ns)
-        request_args = pagination_with_current_user_parser.parse_args()
+        request_args = remixes_parser.parse_args()
         current_user_id = get_current_user_id(request_args)
 
         args = {
@@ -1598,6 +1609,9 @@ class FullRemixesRoute(Resource):
             "current_user_id": current_user_id,
             "limit": format_limit(request_args, default_limit=10),
             "offset": format_offset(request_args),
+            "sort_method": request_args.get("sort_method"),
+            "only_cosigns": request_args.get("only_cosigns"),
+            "only_contest_entries": request_args.get("only_contest_entries"),
         }
         response = get_remixes_of(args)
         response["tracks"] = list(map(extend_track, response["tracks"]))

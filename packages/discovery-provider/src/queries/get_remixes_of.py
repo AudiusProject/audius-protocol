@@ -1,7 +1,9 @@
-from flask.globals import request
-from sqlalchemy import and_, case, desc, func
+from sqlalchemy import and_, desc, func, or_
+from sqlalchemy.orm import aliased
 
 from src import exceptions
+from src.models.events.event import Event, EventType
+from src.models.social.aggregate_plays import AggregatePlay
 from src.models.social.repost import Repost, RepostType
 from src.models.social.save import Save, SaveType
 from src.models.tracks.aggregate_track import AggregateTrack
@@ -9,30 +11,25 @@ from src.models.tracks.remix import Remix
 from src.models.tracks.track import Track
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import (
+    RemixesSortMethod,
     add_query_pagination,
     add_users_to_tracks,
     populate_track_metadata,
 )
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.utils.redis_cache import extract_key, use_redis_cache
 
 UNPOPULATED_REMIXES_CACHE_DURATION_SEC = 10
-
-
-def make_cache_key(args):
-    cache_keys = {
-        "limit": args.get("limit"),
-        "offset": args.get("offset"),
-        "track_id": args.get("track_id"),
-    }
-    return extract_key(f"unpopulated-remix-parents:{request.path}", cache_keys.items())
 
 
 def get_remixes_of(args):
     track_id = args.get("track_id")
     current_user_id = args.get("current_user_id")
     limit, offset = args.get("limit"), args.get("offset")
+    sort_method = args.get("sort_method", "recent")
+    only_cosigns = args.get("only_cosigns", False)
+    only_contest_entries = args.get("only_contest_entries", False)
+
     db = get_db_read_replica()
 
     with db.scoped_session() as session:
@@ -54,6 +51,8 @@ def get_remixes_of(args):
 
             # Get the 'children' remix tracks
             # Use the track owner id to fetch reposted/saved tracks returned first
+            ParentTrack = aliased(Track)
+
             base_query = (
                 session.query(Track)
                 .join(
@@ -87,42 +86,53 @@ def get_remixes_of(args):
                     AggregateTrack,
                     AggregateTrack.track_id == Track.track_id,
                 )
+                .outerjoin(
+                    AggregatePlay,
+                    AggregatePlay.play_item_id == Track.track_id,
+                )
+                .outerjoin(ParentTrack, ParentTrack.track_id == Remix.parent_track_id)
+                .outerjoin(
+                    Event,
+                    and_(
+                        Event.entity_id == ParentTrack.track_id,
+                        Event.event_type == EventType.remix_contest,
+                        Event.is_deleted == False,
+                    ),
+                )
                 .filter(
                     Track.is_current == True,
                     Track.is_delete == False,
                     Track.is_unlisted == False,
                 )
-                # 1. Co-signed tracks ordered by save + repost count
-                # 2. Other tracks ordered by save + repost count
-                .order_by(
-                    desc(
-                        # If there is no "co-sign" for the track (no repost or save from the parent owner),
-                        # defer to secondary sort
-                        case(
-                            [
-                                (
-                                    and_(
-                                        Repost.created_at == None,
-                                        Save.created_at == None,
-                                    ),
-                                    0,
-                                ),
-                            ],
-                            else_=(
-                                func.coalesce(AggregateTrack.repost_count, 0)
-                                + func.coalesce(AggregateTrack.save_count, 0)
-                            ),
-                        )
-                    ),
-                    # Order by saves + reposts
-                    desc(
-                        func.coalesce(AggregateTrack.repost_count, 0)
-                        + func.coalesce(AggregateTrack.save_count, 0)
-                    ),
-                    # Ties, pick latest track id
+            )
+            if only_cosigns:
+                base_query = base_query.filter(
+                    or_(
+                        ParentTrack.owner_id == Save.user_id,
+                        ParentTrack.owner_id == Repost.user_id,
+                    )
+                )
+            if only_contest_entries:
+                base_query = base_query.filter(
+                    and_(
+                        Event.created_at <= Track.created_at,
+                        Track.created_at <= Event.end_date,
+                    )
+                )
+
+            if sort_method == RemixesSortMethod.recent:
+                base_query = base_query.order_by(
+                    desc(Track.created_at), desc(Track.track_id)
+                )
+            elif sort_method == RemixesSortMethod.likes:
+                base_query = base_query.order_by(
+                    desc(func.coalesce(AggregateTrack.save_count, 0)),
                     desc(Track.track_id),
                 )
-            )
+            elif sort_method == RemixesSortMethod.plays:
+                base_query = base_query.order_by(
+                    desc(func.coalesce(AggregatePlay.count, 0)), desc(Track.track_id)
+                )
 
             (tracks, count) = add_query_pagination(
                 base_query, limit, offset, True, True
@@ -132,11 +142,7 @@ def get_remixes_of(args):
             track_ids = list(map(lambda track: track["track_id"], tracks))
             return (tracks, track_ids, count)
 
-        key = make_cache_key(args)
-        (tracks, track_ids, count) = use_redis_cache(
-            key, UNPOPULATED_REMIXES_CACHE_DURATION_SEC, get_unpopulated_remixes
-        )
-
+        (tracks, track_ids, count) = get_unpopulated_remixes()
         tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
         if args.get("with_users", False):
             add_users_to_tracks(session, tracks, current_user_id)

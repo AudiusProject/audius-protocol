@@ -375,6 +375,7 @@ export const useSearchTrackResults = (
   })
 
   return useLineupQuery({
+    lineupData: queryData.data ?? [],
     queryData,
     queryKey: getSearchResultsQueryKey({
       ...searchArgs,

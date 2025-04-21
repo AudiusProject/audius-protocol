@@ -12,6 +12,7 @@ import { SolanaWalletService } from '~/services/solana'
 import {
   AllTrackingEvents,
   AnalyticsEvent,
+  IdentifyTraits,
   LineupState,
   ReportToSentryArgs,
   Track
@@ -40,8 +41,7 @@ export type CommonStoreContext = {
     init: (isMobile: boolean) => Promise<void>
     track: (event: AnalyticsEvent, callback?: () => void) => Promise<void>
     identify: (
-      handle: string,
-      traits?: Record<string, unknown>,
+      traits?: IdentifyTraits,
       options?: Record<string, unknown>,
       callback?: () => void
     ) => Promise<void>

@@ -1,12 +1,12 @@
 import { BNWei } from '@audius/common/models'
-import { formatWei } from '@audius/common/utils'
+import { AUDIO, type AudioWei } from '@audius/fixed-decimal'
 import cn from 'classnames'
 
 import styles from './DisplayAudio.module.css'
 import TokenHoverTooltip from './TokenHoverTooltip'
 
 type DisplayAudioProps = {
-  amount: BNWei
+  amount: BNWei | AudioWei
   showLabel?: boolean
   className?: string
   tokenClassName?: string
@@ -30,7 +30,7 @@ const DisplayAudio = ({
             [tokenClassName!]: !!tokenClassName
           })}
         >
-          {formatWei(amount, true)}
+          {AUDIO(amount).trunc().toLocaleString()}
         </span>
       </TokenHoverTooltip>
       {showLabel && <span className={styles.label}>{messages.currency}</span>}

@@ -53,6 +53,7 @@ export const DASHBOARD_PAGE = '/dashboard'
 export const AUDIO_PAGE = '/audio'
 export const REWARDS_PAGE = '/rewards'
 export const AIRDROP_PAGE = '/rewards/airdrop'
+export const WALLET_AUDIO_PAGE = '/wallet/audio'
 export const UPLOAD_PAGE = '/upload'
 export const UPLOAD_ALBUM_PAGE = '/upload/album'
 export const UPLOAD_PLAYLIST_PAGE = '/upload/playlist'
@@ -79,7 +80,8 @@ export const PAYMENTS_PAGE = '/payments'
 export const PURCHASES_PAGE = '/payments/purchases'
 export const SALES_PAGE = '/payments/sales'
 export const WITHDRAWALS_PAGE = '/payments/withdrawals'
-export const TRANSACTION_HISTORY_PAGE = '/transaction-history'
+export const TRANSACTION_HISTORY_PAGE = '/wallet/transaction-history'
+export const WALLET_PAGE = '/wallet'
 export const PRIVATE_KEY_EXPORTER_SETTINGS_PAGE = '/settings/export-private-key'
 
 // Multi-stage sign up flow routes
@@ -222,7 +224,8 @@ export const authenticatedRoutes = [
   PURCHASES_PAGE,
   SALES_PAGE,
   PAYMENTS_PAGE,
-  WITHDRAWALS_PAGE
+  WITHDRAWALS_PAGE,
+  WALLET_PAGE
 ]
 
 export const guestRoutes = [
@@ -270,6 +273,8 @@ export const orderedRoutes = [
   DASHBOARD_PAGE,
   PAYMENTS_PAGE,
   AUDIO_PAGE,
+  WALLET_AUDIO_PAGE,
+  WALLET_PAGE,
   REWARDS_PAGE,
   SETTINGS_PAGE,
   ACCOUNT_SETTINGS_PAGE,
@@ -293,7 +298,6 @@ export const orderedRoutes = [
   FOLLOWERS_USERS_ROUTE,
   SUPPORTING_USERS_ROUTE,
   TOP_SUPPORTERS_USERS_ROUTE,
-  REWARDS_PAGE,
   PROFILE_PAGE_COMMENTS,
   PROFILE_PAGE,
   PROFILE_PAGE_COLLECTIBLES,
@@ -317,6 +321,7 @@ export const staticRoutes = new Set([
   DASHBOARD_PAGE,
   PAYMENTS_PAGE,
   AUDIO_PAGE,
+  WALLET_AUDIO_PAGE,
   REWARDS_PAGE,
   TRACK_EDIT_PAGE,
   UPLOAD_PAGE,

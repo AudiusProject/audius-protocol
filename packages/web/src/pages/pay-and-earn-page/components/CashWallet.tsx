@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import { useIsManagedAccount, useUSDCBalance } from '@audius/common/hooks'
 import { Name, Status } from '@audius/common/models'
+import { TRANSACTION_HISTORY_PAGE } from '@audius/common/src/utils/route'
 import {
   WithdrawUSDCModalPages,
   useWithdrawUSDCModal,
@@ -12,16 +13,22 @@ import {
   Button,
   Flex,
   IconInfo,
-  IconLogoCircle,
   IconLogoCircleUSDC,
   Paper,
   Text,
-  TextLink
+  IconButton,
+  useMedia
 } from '@audius/harmony'
 import BN from 'bn.js'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { TextLink } from 'components/link'
+import { PayoutWalletDisplay } from 'components/payout-wallet-display'
+import Tooltip from 'components/tooltip/Tooltip'
 import { make, track } from 'services/analytics'
+import { zIndex } from 'utils/zIndex'
+
+import { useCashWalletStyles } from './CashWallet.styles'
 
 const messages = {
   usdc: 'USDC',
@@ -35,7 +42,9 @@ const messages = {
   cashBalance: 'Cash Balance',
   payoutWallet: 'Payout Wallet',
   builtInWallet: 'Built-In Wallet',
-  transactionHistory: 'Transaction History'
+  transactionHistory: 'Transaction History',
+  cashBalanceTooltip:
+    'Your cash balance is stored as USDC in your built-in wallet'
 }
 
 export const CashWallet = () => {
@@ -45,14 +54,16 @@ export const CashWallet = () => {
   const { data: balance, status: balanceStatus } = useUSDCBalance()
   const [, setPayoutWalletModalOpen] = useModalState('PayoutWallet')
 
+  const styles = useCashWalletStyles()
+
+  // We still need useMedia for responsive conditionals
+  const { isSmall: isMobile, isExtraSmall: isSmallMobile } = useMedia()
+
   // Calculate the balance in cents by flooring to 2 decimal places then multiplying by 100
   const usdcValue = USDC(balance ?? new BN(0)).floor(2)
-  const balanceCents = Number(usdcValue.toString()) * 100
 
-  // Format the balance for display using the trunc and toShorthand methods
-  const balanceFormatted = USDC(balanceCents / 100)
-    .trunc()
-    .toShorthand()
+  // Format the balance for display with exactly 2 decimal places
+  const balanceFormatted = usdcValue.toFixed(2).replace('$', '')
 
   const handleWithdraw = () => {
     openWithdrawUSDCModal({
@@ -61,7 +72,7 @@ export const CashWallet = () => {
     track(
       make({
         eventName: Name.WITHDRAW_USDC_MODAL_OPENED,
-        currentBalance: balanceCents / 100
+        currentBalance: Number(usdcValue.toString())
       })
     )
   }
@@ -80,8 +91,19 @@ export const CashWallet = () => {
   }, [setPayoutWalletModalOpen])
 
   return (
-    <Paper direction='column' shadow='far' ph='xl' pv='l' borderRadius='l'>
-      <Flex justifyContent='space-between' alignItems='flex-start' w='100%'>
+    <Paper
+      direction='column'
+      shadow='far'
+      ph={isMobile ? 'l' : 'xl'}
+      pv={isMobile ? 'm' : 'l'}
+      borderRadius='l'
+    >
+      <Flex
+        justifyContent='space-between'
+        alignItems='flex-start'
+        w='100%'
+        css={styles.mainFlex}
+      >
         {/* Left Column - Balance Info */}
         <Flex direction='column' gap='s' alignItems='flex-start'>
           <Flex alignItems='center' gap='s'>
@@ -90,7 +112,21 @@ export const CashWallet = () => {
               <Text variant='heading' size='s' color='subdued'>
                 {messages.cashBalance}
               </Text>
-              <IconInfo size='s' color='subdued' />
+              <Tooltip
+                text={messages.cashBalanceTooltip}
+                placement='top'
+                mount='page'
+                shouldWrapContent={false}
+                css={{ zIndex: zIndex.CASH_WALLET_TOOLTIP }}
+              >
+                <IconButton
+                  icon={IconInfo}
+                  size='s'
+                  color='subdued'
+                  activeColor='default'
+                  aria-label='Cash balance information'
+                />
+              </Tooltip>
             </Flex>
           </Flex>
 
@@ -100,7 +136,7 @@ export const CashWallet = () => {
           </Text>
 
           {/* Payout Wallet Info */}
-          <Flex alignItems='center' gap='s'>
+          <Flex alignItems='center' gap='s' css={styles.payoutWalletFlex}>
             <TextLink
               variant='visible'
               size='m'
@@ -109,32 +145,28 @@ export const CashWallet = () => {
               {messages.payoutWallet}
             </TextLink>
             {/* Wallet Display */}
-            <Flex
-              alignItems='center'
-              backgroundColor='surface1'
-              border='default'
-              borderRadius='circle'
-              pt='xs'
-              pl='xs'
-              pr='s'
-              gap='xs'
-            >
-              <IconLogoCircle size='l' />
-              <Text variant='body' size='m' strength='strong' ellipses>
-                {messages.builtInWallet}
-              </Text>
-            </Flex>
+            <PayoutWalletDisplay />
           </Flex>
         </Flex>
 
         {/* Right Side - Transaction History Link */}
-        <TextLink variant='visible' size='m'>
+        <TextLink
+          variant='visible'
+          size='m'
+          to={TRANSACTION_HISTORY_PAGE}
+          css={styles.transactionLink}
+        >
           {messages.transactionHistory}
         </TextLink>
       </Flex>
 
       {/* Bottom Button Area */}
-      <Flex gap='l' pt='m' w='100%'>
+      <Flex
+        gap={isSmallMobile ? 'm' : 'l'}
+        pt='m'
+        w='100%'
+        css={styles.buttonArea}
+      >
         {!isManagedAccount ? (
           <>
             <Button

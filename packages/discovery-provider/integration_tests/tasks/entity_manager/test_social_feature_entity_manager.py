@@ -424,7 +424,7 @@ def test_index_cosign(app, mocker):
             {
                 "args": AttributeDict(
                     {
-                        "_entityId": 2,
+                        "_entityId": entity_id,
                         "_entityType": "Track",
                         "_userId": 1,
                         "_action": "Repost",
@@ -432,7 +432,8 @@ def test_index_cosign(app, mocker):
                         "_signer": "user1wallet",
                     }
                 )
-            },
+            }
+            for entity_id in range(2, 8)
         ],
     }
 
@@ -462,11 +463,14 @@ def test_index_cosign(app, mocker):
         ],
         "tracks": [
             {"track_id": 1, "owner_id": 1},
-            {
-                "track_id": 2,
-                "owner_id": 2,
-                "remix_of": {"tracks": [{"parent_track_id": 1}]},
-            },
+            *(
+                {
+                    "track_id": track_id,
+                    "owner_id": 2,
+                    "remix_of": {"tracks": [{"parent_track_id": 1}]},
+                }
+                for track_id in range(2, 8)
+            ),
         ],
         "remixes": [
             {
@@ -491,12 +495,20 @@ def test_index_cosign(app, mocker):
 
         # Verify cosign
         all_reposts: List[Repost] = session.query(Repost).all()
-        assert len(all_reposts) == 1
+        assert len(all_reposts) == 6
 
     calls = [
         mock.call.dispatch(
-            ChallengeEvent.cosign, 1, BLOCK_DATETIME, 2, {"track_id": 2}
-        ),
+            ChallengeEvent.cosign,
+            1,
+            BLOCK_DATETIME,
+            2,
+            {
+                "original_track_owner_id": 1,
+                "remix_track_id": 2,
+                "cosign_date": BLOCK_DATETIME.timestamp(),
+            },
+        )
     ]
     bus_mock.assert_has_calls(calls, any_order=True)
 

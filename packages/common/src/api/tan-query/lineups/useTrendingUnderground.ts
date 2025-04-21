@@ -84,6 +84,7 @@ export const useTrendingUnderground = (
   })
 
   return useLineupQuery({
+    lineupData: queryData.data ?? [],
     queryData,
     queryKey: getTrendingUndergroundQueryKey({
       pageSize

@@ -3,8 +3,6 @@ import { useCallback, memo, ReactNode, useEffect, useState } from 'react'
 import {
   useCurrentUserId,
   useGetMutedUsers,
-  useProfileReposts,
-  useProfileTracks,
   useUserCollectibles
 } from '@audius/common/api'
 import { useMuteUser } from '@audius/common/context'
@@ -44,7 +42,7 @@ import cn from 'classnames'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
 import { ConfirmationModal } from 'components/confirmation-modal'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
-import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
+import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
 import Mask from 'components/mask/Mask'
 import NavBanner, { EmptyNavBanner } from 'components/nav-banner/NavBanner'
@@ -189,101 +187,6 @@ export type ProfilePageProps = {
   onCloseUnmuteUserConfirmationModal: () => void
 }
 
-const messages = {
-  emptyTab: {
-    uploadedTracks: 'uploaded any tracks',
-    repostedAnything: 'reposted anything'
-  },
-  tabs: {
-    tracks: ProfilePageTabs.TRACKS,
-    albums: ProfilePageTabs.ALBUMS,
-    playlists: ProfilePageTabs.PLAYLISTS,
-    reposts: ProfilePageTabs.REPOSTS,
-    collectibles: ProfilePageTabs.COLLECTIBLES
-  },
-  muteUser: commentsMessages.popups.muteUser,
-  unmuteUser: commentsMessages.popups.unmuteUser
-}
-const RepostsTab = ({ handle }: { handle: string }) => {
-  const {
-    data,
-    isPending,
-    isFetching,
-    isError,
-    pageSize,
-    hasNextPage,
-    loadNextPage,
-    play,
-    pause,
-    lineup,
-    isPlaying
-  } = useProfileReposts({
-    handle
-  })
-  return (
-    <div className={styles.tiles}>
-      <TanQueryLineup
-        data={data}
-        isPending={isPending}
-        isFetching={isFetching}
-        isError={isError}
-        pageSize={pageSize}
-        hasNextPage={hasNextPage}
-        loadNextPage={loadNextPage}
-        play={play}
-        pause={pause}
-        variant={LineupVariant.CONDENSED}
-        actions={feedActions}
-        lineup={lineup}
-        isPlaying={isPlaying}
-      />
-    </div>
-  )
-}
-
-const TracksTab = ({
-  artistPickTrackId,
-  handle
-}: {
-  handle: string
-  artistPickTrackId: ID | null
-}) => {
-  const {
-    data,
-    isPending,
-    isFetching,
-    isError,
-    pageSize,
-    hasNextPage,
-    loadNextPage,
-    play,
-    pause,
-    lineup,
-    isPlaying
-  } = useProfileTracks({
-    handle
-  })
-
-  return (
-    <TanQueryLineup
-      leadingElementId={artistPickTrackId}
-      data={data}
-      isPending={isPending}
-      isFetching={isFetching}
-      isError={isError}
-      pageSize={pageSize}
-      hasNextPage={hasNextPage}
-      loadNextPage={loadNextPage}
-      play={play}
-      pause={pause}
-      lineup={lineup}
-      isPlaying={isPlaying}
-      actions={tracksActions}
-      variant={LineupVariant.CONDENSED}
-    />
-  )
-}
-
 const LeftColumnSpacer = () => (
   <Box
     w={PROFILE_LEFT_COLUMN_WIDTH_PX}
@@ -404,28 +307,37 @@ const ProfilePage = ({
   const getArtistProfileContent = () => {
     if (!profile) return { headers: [], elements: [] }
 
+    const trackUploadChip = isOwner ? (
+      <UploadChip
+        key='upload-chip'
+        type='track'
+        variant='tile'
+        source='profile'
+      />
+    ) : null
+
     const headers: TabHeader[] = [
       {
         icon: <IconNote />,
-        text: messages.tabs.tracks,
+        text: ProfilePageTabs.TRACKS,
         label: ProfilePageTabs.TRACKS,
         to: 'tracks'
       },
       {
         icon: <IconAlbum />,
-        text: messages.tabs.albums,
+        text: ProfilePageTabs.ALBUMS,
         label: ProfilePageTabs.ALBUMS,
         to: 'albums'
       },
       {
         icon: <IconPlaylists />,
-        text: messages.tabs.playlists,
+        text: ProfilePageTabs.PLAYLISTS,
         label: ProfilePageTabs.PLAYLISTS,
         to: 'playlists'
       },
       {
         icon: <IconReposts />,
-        text: messages.tabs.reposts,
+        text: ProfilePageTabs.REPOSTS,
         label: ProfilePageTabs.REPOSTS,
         to: 'reposts'
       }
@@ -448,13 +360,20 @@ const ProfilePage = ({
               <EmptyTab
                 isOwner={isOwner}
                 name={profile.name}
-                text={messages.emptyTab.uploadedTracks}
+                text={'uploaded any tracks'}
               />
             </>
           ) : (
-            <TracksTab
-              handle={handle}
-              artistPickTrackId={profile.artist_pick_track_id}
+            <Lineup
+              {...getLineupProps(artistTracks)}
+              extraPrecedingElement={trackUploadChip}
+              animateLeadingElement
+              leadingElementId={profile.artist_pick_track_id}
+              loadMore={loadMoreArtistTracks}
+              playTrack={playArtistTrack}
+              pauseTrack={pauseArtistTrack}
+              actions={tracksActions}
+              variant={LineupVariant.GRID}
             />
           )
         ) : null}
@@ -473,10 +392,16 @@ const ProfilePage = ({
             <EmptyTab
               isOwner={isOwner}
               name={profile.name}
-              text={messages.emptyTab.repostedAnything}
+              text={'reposted anything'}
             />
           ) : (
-            <RepostsTab handle={handle} />
+            <Lineup
+              {...getLineupProps(userFeed)}
+              loadMore={loadMoreUserFeed}
+              playTrack={playUserFeedTrack}
+              pauseTrack={pauseUserFeedTrack}
+              actions={feedActions}
+            />
           )
         ) : null}
       </Box>
@@ -490,7 +415,7 @@ const ProfilePage = ({
     ) {
       headers.push({
         icon: <IconCollectibles />,
-        text: messages.tabs.collectibles,
+        text: ProfilePageTabs.COLLECTIBLES,
         label: ProfilePageTabs.COLLECTIBLES,
         to: 'collectibles'
       })
@@ -526,13 +451,13 @@ const ProfilePage = ({
     const headers: TabHeader[] = [
       {
         icon: <IconReposts />,
-        text: messages.tabs.reposts,
+        text: ProfilePageTabs.REPOSTS,
         label: ProfilePageTabs.REPOSTS,
         to: 'reposts'
       },
       {
         icon: <IconPlaylists />,
-        text: messages.tabs.playlists,
+        text: ProfilePageTabs.PLAYLISTS,
         label: ProfilePageTabs.PLAYLISTS,
         to: 'playlists'
       }
@@ -546,10 +471,17 @@ const ProfilePage = ({
           <EmptyTab
             isOwner={isOwner}
             name={profile.name}
-            text={messages.emptyTab.repostedAnything}
+            text={'reposted anything'}
           />
         ) : (
-          <RepostsTab handle={handle} />
+          <Lineup
+            {...getLineupProps(userFeed)}
+            count={profile.repost_count}
+            loadMore={loadMoreUserFeed}
+            playTrack={playUserFeedTrack}
+            pauseTrack={pauseUserFeedTrack}
+            actions={feedActions}
+          />
         )}
       </Box>,
       <Box w='100%' key={ProfilePageTabs.PLAYLISTS}>
@@ -564,7 +496,7 @@ const ProfilePage = ({
     ) {
       headers.push({
         icon: <IconCollectibles />,
-        text: messages.tabs.collectibles,
+        text: ProfilePageTabs.COLLECTIBLES,
         label: ProfilePageTabs.COLLECTIBLES,
         to: 'collectibles'
       })
@@ -615,10 +547,10 @@ const ProfilePage = ({
   const muteUserConfirmationBody = (
     <Flex gap='l' direction='column'>
       <Text color='default' textAlign='left'>
-        {messages.muteUser.body(name)}
+        {commentsMessages.popups.muteUser.body(name)}
       </Text>
       <Hint icon={IconQuestionCircle} css={{ textAlign: 'left' }}>
-        {messages.muteUser.hint}
+        {commentsMessages.popups.muteUser.hint}
       </Hint>
     </Flex>
   ) as ReactNode
@@ -626,10 +558,10 @@ const ProfilePage = ({
   const unMuteUserConfirmationBody = (
     <Flex gap='l' direction='column'>
       <Text color='default' textAlign='left'>
-        {messages.unmuteUser.body(name)}
+        {commentsMessages.popups.unmuteUser.body(name)}
       </Text>
       <Hint icon={IconQuestionCircle} css={{ textAlign: 'left' }}>
-        {messages.unmuteUser.hint}
+        {commentsMessages.popups.unmuteUser.hint}
       </Hint>
     </Flex>
   ) as ReactNode
@@ -879,14 +811,14 @@ const ProfilePage = ({
             messages={
               isMutedState
                 ? {
-                    header: messages.unmuteUser.title,
+                    header: commentsMessages.popups.unmuteUser.title,
                     description: unMuteUserConfirmationBody,
-                    confirm: messages.unmuteUser.confirm
+                    confirm: commentsMessages.popups.unmuteUser.confirm
                   }
                 : {
-                    header: messages.muteUser.title,
+                    header: commentsMessages.popups.muteUser.title,
                     description: muteUserConfirmationBody,
-                    confirm: messages.muteUser.confirm
+                    confirm: commentsMessages.popups.muteUser.confirm
                   }
             }
             onConfirm={() => {

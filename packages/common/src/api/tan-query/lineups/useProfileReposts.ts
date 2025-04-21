@@ -120,6 +120,7 @@ export const useProfileReposts = (
   })
 
   return useLineupQuery({
+    lineupData: queryData.data ?? [],
     queryData,
     queryKey: getProfileRepostsQueryKey({
       handle,

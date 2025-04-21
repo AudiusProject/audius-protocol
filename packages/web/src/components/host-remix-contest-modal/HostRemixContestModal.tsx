@@ -3,10 +3,13 @@ import { useCallback, useState } from 'react'
 import {
   useCreateEvent,
   useCurrentUserId,
+  useDeleteEvent,
   useRemixContest,
+  useRemixes,
   useUpdateEvent
 } from '@audius/common/api'
 import { useHostRemixContestModal } from '@audius/common/store'
+import { dayjs } from '@audius/common/utils'
 import {
   Button,
   Flex,
@@ -17,15 +20,14 @@ import {
   ModalHeader,
   ModalTitle,
   Select,
-  Text,
-  TextInput
+  Text
 } from '@audius/harmony'
 import { EventEntityTypeEnum, EventEventTypeEnum } from '@audius/sdk'
-import { css } from '@emotion/css'
-import dayjs from 'dayjs'
 
 import { DatePicker } from 'components/edit/fields/DatePickerField'
 import { mergeReleaseDateValues } from 'components/edit/fields/visibility/mergeReleaseDateValues'
+
+import { TimeInput, parseTime } from './TimeInput'
 
 const messages = {
   hostTitle: 'Host Remix Contest',
@@ -36,11 +38,13 @@ const messages = {
   startContest: 'Start Contest',
   save: 'Save',
   contestEndDateLabel: 'Last day to submit to contest',
-  endDateError: 'Contest end date must be in the future',
+  endDateError: 'Contest end date must be in the future within 90 days',
   timeLabel: 'Time',
   timePlaceholder: '12:00',
+  timeError: 'Invalid time',
   meridianLabel: 'Meridian',
-  meridianPlaceholder: 'AM'
+  meridianPlaceholder: 'AM',
+  turnOff: 'Turn Off Contest'
 }
 
 export const HostRemixContestModal = () => {
@@ -48,45 +52,79 @@ export const HostRemixContestModal = () => {
   const { trackId } = data
   const { mutate: createEvent } = useCreateEvent()
   const { mutate: updateEvent } = useUpdateEvent()
+  const { mutate: deleteEvent } = useDeleteEvent()
   const { data: userId } = useCurrentUserId()
-  const { data: events } = useRemixContest(trackId, {
-    entityType: EventEntityTypeEnum.Track
+  const { data: remixes, isLoading: remixesLoading } = useRemixes({
+    trackId,
+    isContestEntry: true
   })
-  const userTimezone = dayjs.tz.guess()
-
-  const event = events?.[0]
-  const isEdit = !!event
+  const { data: remixContest } = useRemixContest(trackId)
+  const isEdit = !!remixContest
+  const hasContestEntries = remixesLoading || remixes?.length
+  const displayTurnOffButton = !hasContestEntries && isEdit
 
   const [contestEndDate, setContestEndDate] = useState(
-    event ? dayjs(event.endDate).utc(true).local().tz(userTimezone) : null
+    remixContest ? dayjs(remixContest.endDate) : null
   )
   const [endDateTouched, setEndDateTouched] = useState(false)
   const [endDateError, setEndDateError] = useState(false)
-
-  const meridianValue = contestEndDate ? dayjs(contestEndDate).format('A') : ''
-  const timeValue = contestEndDate ? dayjs(contestEndDate).format('hh:mm') : ''
-  const [timeInputValue, setTimeInputValue] = useState(timeValue)
-
-  const handleChange = useCallback(
-    (date: string, time: string, meridian: string) => {
-      const newDate = mergeReleaseDateValues(date, time, meridian)
-      setContestEndDate(dayjs(newDate.toISOString()))
-    },
-    []
+  const [timeValue, setTimeValue] = useState(
+    contestEndDate ? dayjs(contestEndDate).format('hh:mm') : ''
+  )
+  const [timeError, setTimeError] = useState(false)
+  const [meridianValue, setMeridianValue] = useState(
+    contestEndDate ? dayjs(contestEndDate).format('A') : ''
   )
 
+  const handleEndDateChange = useCallback(
+    (value: string) => {
+      setContestEndDate(dayjs(value))
+      if (value && !timeValue) {
+        setTimeValue('11:59')
+        setMeridianValue('PM')
+      }
+      setEndDateError(false)
+    },
+    [timeValue]
+  )
+
+  const handleTimeChange = useCallback((value: string) => {
+    setTimeValue(value)
+    setEndDateError(false)
+  }, [])
+
+  const handleTimeError = useCallback((hasError: boolean) => {
+    setTimeError(hasError)
+  }, [])
+
+  const handleMeridianChange = useCallback((value: string) => {
+    setMeridianValue(value)
+    setEndDateError(false)
+  }, [])
+
   const handleSubmit = useCallback(() => {
-    const hasError = !contestEndDate
+    const parsedTime = parseTime(timeValue)
+    if (!parsedTime) return
+
+    const parsedDate = mergeReleaseDateValues(
+      contestEndDate?.toISOString() ?? '',
+      parsedTime,
+      meridianValue
+    )
+    const hasError =
+      !parsedDate ||
+      dayjs(parsedDate.toISOString()).isBefore(dayjs()) ||
+      dayjs(parsedDate.toISOString()).isAfter(dayjs().add(90, 'days'))
 
     setEndDateTouched(true)
     setEndDateError(hasError)
     if (hasError || !trackId || !userId) return
 
-    const endDate = dayjs(contestEndDate).toISOString()
+    const endDate = parsedDate.toISOString()
 
     if (isEdit) {
       updateEvent({
-        eventId: event.eventId,
+        eventId: remixContest.eventId,
         endDate,
         userId
       })
@@ -103,14 +141,22 @@ export const HostRemixContestModal = () => {
     onClose()
   }, [
     contestEndDate,
+    timeValue,
+    meridianValue,
     trackId,
     userId,
     isEdit,
     onClose,
     updateEvent,
-    event?.eventId,
+    remixContest?.eventId,
     createEvent
   ])
+
+  const handleDeleteEvent = useCallback(() => {
+    if (!remixContest || !userId) return
+    deleteEvent({ eventId: remixContest.eventId, userId })
+    onClose()
+  }, [remixContest, userId, deleteEvent, onClose])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} onClosed={onClosed} size='medium'>
@@ -127,44 +173,32 @@ export const HostRemixContestModal = () => {
             <DatePicker
               name='contestEndDate'
               label={messages.contestEndDateLabel}
-              onChange={(value) =>
-                handleChange(value, timeValue, meridianValue)
-              }
-              value={contestEndDate?.toISOString() ?? undefined}
+              onChange={handleEndDateChange}
+              value={contestEndDate?.toISOString()}
               futureDatesOnly
               error={endDateError ? messages.endDateError : undefined}
               touched={endDateTouched}
+              maxDate={dayjs().add(90, 'days').toDate()}
             />
             <Flex gap='l'>
-              <TextInput
+              <TimeInput
                 css={{ flex: 1 }}
                 label={messages.timeLabel}
                 placeholder={messages.timePlaceholder}
-                value={timeInputValue}
                 disabled={!contestEndDate}
-                onChange={(e) => {
-                  setTimeInputValue(e.target.value)
-                  handleChange(
-                    contestEndDate?.toISOString() ?? '',
-                    e.target.value,
-                    meridianValue
-                  )
-                }}
+                value={timeValue}
+                helperText={timeError ? messages.timeError : undefined}
+                onChange={handleTimeChange}
+                onError={handleTimeError}
               />
               <Select
                 css={{ flex: 1 }}
                 label={messages.meridianLabel}
                 placeholder={messages.meridianPlaceholder}
                 hideLabel
-                value={meridianValue}
                 disabled={!contestEndDate}
-                onChange={(value) =>
-                  handleChange(
-                    contestEndDate?.toISOString() ?? '',
-                    timeValue,
-                    value
-                  )
-                }
+                value={meridianValue}
+                onChange={handleMeridianChange}
                 options={[
                   { value: 'AM', label: 'AM' },
                   { value: 'PM', label: 'PM' }
@@ -177,14 +211,25 @@ export const HostRemixContestModal = () => {
               </Text>
             </Hint>
           </Flex>
-          <Button
-            variant='secondary'
-            onClick={handleSubmit}
-            disabled={!contestEndDate || endDateError}
-            className={css({ alignSelf: 'center' })}
-          >
-            {isEdit ? messages.save : messages.startContest}
-          </Button>
+          <Flex gap='l' justifyContent='center'>
+            {displayTurnOffButton ? (
+              <Button
+                variant='secondary'
+                onClick={handleDeleteEvent}
+                fullWidth={displayTurnOffButton}
+              >
+                {messages.turnOff}
+              </Button>
+            ) : null}
+            <Button
+              variant='primary'
+              onClick={handleSubmit}
+              disabled={!contestEndDate || endDateError || timeError}
+              fullWidth={displayTurnOffButton}
+            >
+              {isEdit ? messages.save : messages.startContest}
+            </Button>
+          </Flex>
         </Flex>
       </ModalContent>
     </Modal>

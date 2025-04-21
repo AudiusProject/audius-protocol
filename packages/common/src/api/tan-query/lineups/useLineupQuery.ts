@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useCallback } from 'react'
 
 import { EntityType } from '@audius/sdk'
 import {
@@ -32,19 +32,34 @@ import { TQCollection, TQTrack } from '../models'
 import { LineupData } from '../types'
 import { loadNextPage } from '../utils/infiniteQueryLoadNextPage'
 
+type PartialQueryData<T> = Pick<
+  UseInfiniteQueryResult<T>,
+  | 'isInitialLoading'
+  | 'hasNextPage'
+  | 'isLoading'
+  | 'isPending'
+  | 'isError'
+  | 'isFetching'
+  | 'isSuccess'
+  | 'fetchNextPage'
+>
+
 /**
  * Helper to provide stitch together tan-query data and easily provide lineup methods as part of our query hooks
  */
-export const useLineupQuery = ({
+export const useLineupQuery = <T>({
+  lineupData,
   queryData,
   queryKey,
   lineupActions,
   lineupSelector,
   playbackSource,
-  pageSize
+  pageSize,
+  initialPageSize
 }: {
   // Lineup related props
-  queryData: UseInfiniteQueryResult<LineupData[]>
+  lineupData: LineupData[]
+  queryData: PartialQueryData<T>
   queryKey: QueryKey
   lineupActions: LineupActions
   lineupSelector: Selector<
@@ -52,6 +67,7 @@ export const useLineupQuery = ({
     LineupState<LineupTrack | Track | Collection>
   >
   pageSize: number
+  initialPageSize?: number
   playbackSource: PlaybackSource
 }) => {
   const { reportToSentry } = useAudiusQueryContext()
@@ -77,7 +93,6 @@ export const useLineupQuery = ({
     dispatch(lineupActions.updateLineupOrder(orderedIds))
   }
 
-  const { data: lineupData } = queryData
   const prevQueryKey = usePrevious(queryKey)
   const hasQueryKeyChanged = !isEqual(prevQueryKey, queryKey)
 
@@ -149,6 +164,10 @@ export const useLineupQuery = ({
     queryData.isFetching ? Status.LOADING : Status.SUCCESS,
     lineup.status
   ])
+  const refresh = useCallback(() => {
+    dispatch(lineupActions.reset())
+    queryClient.resetQueries({ queryKey })
+  }, [dispatch, lineupActions, queryClient, queryKey])
 
   return {
     status,
@@ -163,16 +182,18 @@ export const useLineupQuery = ({
           ? queryData.hasNextPage
           : false
     },
+    refresh,
     togglePlay,
     play,
     pause,
     updateLineupOrder,
     isPlaying,
+    initialPageSize,
     pageSize,
     // pass through specific queryData props
     //   this avoids spreading all queryData props which causes extra renders
     loadNextPage: loadNextPage(queryData),
-    data: queryData.data,
+    data: lineupData,
     isInitialLoading: queryData.isInitialLoading,
     hasNextPage: queryData.hasNextPage,
     isLoading: queryData.isLoading,

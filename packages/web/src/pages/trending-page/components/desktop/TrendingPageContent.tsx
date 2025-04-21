@@ -1,11 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 
-import {
-  TRENDING_INITIAL_PAGE_SIZE,
-  TRENDING_LOAD_MORE_PAGE_SIZE,
-  useTrending
-} from '@audius/common/api'
-import { Name, TimeRange } from '@audius/common/models'
+import { Name, Status, TimeRange } from '@audius/common/models'
 import { trendingPageLineupActions } from '@audius/common/store'
 import { ELECTRONIC_PREFIX, TRENDING_GENRES } from '@audius/common/utils'
 import { IconTrending } from '@audius/harmony'
@@ -13,7 +8,7 @@ import { IconTrending } from '@audius/harmony'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Header } from 'components/header/desktop/Header'
 import EndOfLineup from 'components/lineup/EndOfLineup'
-import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
+import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
 import Page from 'components/page/Page'
 import useTabs from 'hooks/useTabs/useTabs'
@@ -42,37 +37,158 @@ const getTimeGenreCacheKey = (timeRange: TimeRange, genre: string | null) => {
   return `${timeRange}-${newGenre}`
 }
 
+// For a given timeRange with no tracks,
+// what other time ranges do we need to disable?
+const getRangesToDisable = (timeRange: TimeRange) => {
+  switch (timeRange) {
+    case TimeRange.ALL_TIME:
+    case TimeRange.MONTH:
+      // In the case of TimeRangeALL_TIME,
+      // we don't want to return ALL_TIME because
+      // we don't want to disable ALL_TIME (it's the only possible tab left, even if it's empty).
+      return [TimeRange.MONTH, TimeRange.WEEK]
+    case TimeRange.WEEK:
+      return [TimeRange.WEEK]
+  }
+}
+
 const TrendingPageContent = (props: TrendingPageContentProps) => {
   const {
     trendingTitle,
     pageTitle,
     trendingDescription,
+    trendingWeek,
+    trendingMonth,
+    trendingAllTime,
+    getLineupProps,
     trendingGenre,
-    setTrendingTimeRange,
     setTrendingGenre,
+    setTrendingTimeRange,
     trendingTimeRange,
+    lastFetchedTrendingGenre,
+    makeLoadMore,
+    makePlayTrack,
+    makePauseTrack,
+    makeSetInView,
+    makeResetTrending,
+    getLineupForRange,
     scrollToTop
   } = props
 
-  const {
-    data,
-    isFetching,
-    isPending,
-    isError,
-    hasNextPage,
-    play,
-    pause,
-    loadNextPage,
-    isPlaying,
-    lineup
-  } = useTrending({
-    timeRange: trendingTimeRange,
-    genre: trendingGenre
-  })
+  const weekProps = getLineupProps(trendingWeek)
+  const monthProps = getLineupProps(trendingMonth)
+  const allTimeProps = getLineupProps(trendingAllTime)
 
   // Maintain a set of combinations of time range & genre that
   // have no tracks.
   const emptyTimeGenreSet = useRef(new Set())
+
+  const getLimit = useCallback(
+    (timeRange: TimeRange) => {
+      return getLineupForRange(timeRange).lineup.total
+    },
+    [getLineupForRange]
+  )
+
+  const reloadAndSwitchTabs = (timeRange: TimeRange) => {
+    makeResetTrending(timeRange)()
+    setTrendingTimeRange(timeRange)
+    scrollToTop(timeRange)
+    const offset = 0
+    makeLoadMore(timeRange)(offset, getLimit(timeRange), true)
+  }
+
+  // Called when we have an empty state
+  const moveToNextTab = () => {
+    switch (trendingTimeRange) {
+      case TimeRange.WEEK: {
+        // If week is empty, month might also be empty (because we accessed it previously.)
+        // If month is also empty, jump straight to all time.
+        const monthAlsoEmpty = emptyTimeGenreSet.current.has(
+          getTimeGenreCacheKey(TimeRange.MONTH, trendingGenre!)
+        )
+        const newTimeRange = monthAlsoEmpty
+          ? TimeRange.ALL_TIME
+          : TimeRange.MONTH
+        reloadAndSwitchTabs(newTimeRange)
+        break
+      }
+      case TimeRange.MONTH:
+        reloadAndSwitchTabs(TimeRange.ALL_TIME)
+        break
+      case TimeRange.ALL_TIME:
+      default:
+      // Nothing to do for all time
+    }
+  }
+
+  const setGenreAndRefresh = useCallback(
+    (genre: string | null) => {
+      const trimmedGenre =
+        genre !== null ? genre.replace(ELECTRONIC_PREFIX, '') : genre
+      setTrendingGenre(trimmedGenre)
+
+      // Call reset to change everything everything to skeleton tiles
+      makeResetTrending(TimeRange.WEEK)()
+      makeResetTrending(TimeRange.MONTH)()
+      makeResetTrending(TimeRange.ALL_TIME)()
+
+      scrollToTop(trendingTimeRange)
+
+      const limit = getLimit(trendingTimeRange)
+      const offset = 0
+      makeLoadMore(trendingTimeRange)(offset, limit, true)
+    },
+    [
+      setTrendingGenre,
+      makeLoadMore,
+      trendingTimeRange,
+      scrollToTop,
+      makeResetTrending,
+      getLimit
+    ]
+  )
+
+  const cacheKey = getTimeGenreCacheKey(trendingTimeRange, trendingGenre)
+  const currentLineup = getLineupForRange(trendingTimeRange)
+
+  // We switch genres slightly before we fetch new lineup metadata, so if we're on a dead page
+  // (e.g. some obscure genre with no All Time tracks), and then switch to a more popular genre
+  // we will briefly be in a state with the New Genre set, but lineup status === Success and an empty
+  // entries list. This would errantly cause us to think the lineup was empty and insert it into the cache.
+  const unfetchedLineup = trendingGenre !== lastFetchedTrendingGenre
+
+  // Should move to next tab if:
+  //  - We've already seen this tab is empty AND we're not in the loading state
+  //  OR
+  //  - The current lineup was the last lineup fetched
+  //    AND
+  //  - The current lineup has finished fetching
+  //    AND
+  //  - The current lineup has no trending order (to ensure we're not in the middle of resetting/refretching)
+  //    AND
+  //  - We're not in the all genres (genre = null) state
+  const shouldMoveToNextTab =
+    (emptyTimeGenreSet.current.has(cacheKey) &&
+      currentLineup.lineup.status !== Status.LOADING) ||
+    (!unfetchedLineup &&
+      currentLineup.lineup.status === Status.SUCCESS &&
+      !currentLineup.lineup.entries.length &&
+      trendingGenre !== null)
+
+  if (shouldMoveToNextTab) {
+    getRangesToDisable(trendingTimeRange)
+      .map((r) => getTimeGenreCacheKey(r, trendingGenre))
+      .forEach((k) => {
+        emptyTimeGenreSet.current.add(k)
+      })
+
+    moveToNextTab()
+  }
+
+  const mainLineupProps = {
+    variant: LineupVariant.MAIN
+  }
 
   const trendingLineups = [
     <div
@@ -84,95 +200,61 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
           <RewardsBanner bannerType='tracks' />
         </div>
       ) : null}
-      <TanQueryLineup
-        data={data}
-        isFetching={isFetching}
-        isPending={isPending}
-        isError={isError}
-        hasNextPage={hasNextPage}
-        play={play}
-        pause={pause}
-        loadNextPage={loadNextPage}
-        isPlaying={isPlaying}
-        lineup={lineup}
+      <Lineup
         aria-label='weekly trending tracks'
         ordered
-        pageSize={TRENDING_LOAD_MORE_PAGE_SIZE}
-        initialPageSize={TRENDING_INITIAL_PAGE_SIZE}
+        {...weekProps}
+        setInView={makeSetInView(TimeRange.WEEK)}
+        loadMore={makeLoadMore(TimeRange.WEEK)}
+        playTrack={makePlayTrack(TimeRange.WEEK)}
+        pauseTrack={makePauseTrack(TimeRange.WEEK)}
         actions={trendingWeekActions}
-        endOfLineupElement={
+        endOfLineup={
           <EndOfLineup description={messages.endOfLineupDescription} />
         }
-        variant={LineupVariant.MAIN}
+        {...mainLineupProps}
       />
     </div>,
     <div
       key={`monthly-trending-tracks-${trendingGenre}`}
       className={styles.lineupContainer}
     >
-      <TanQueryLineup
+      <Lineup
         aria-label='monthly trending tracks'
         ordered
-        pageSize={TRENDING_LOAD_MORE_PAGE_SIZE}
-        initialPageSize={TRENDING_INITIAL_PAGE_SIZE}
-        actions={trendingMonthActions}
-        data={data}
-        isFetching={isFetching}
-        isPending={isPending}
-        isError={isError}
-        hasNextPage={hasNextPage}
-        play={play}
-        pause={pause}
-        loadNextPage={loadNextPage}
-        isPlaying={isPlaying}
-        lineup={lineup}
-        endOfLineupElement={
+        {...monthProps}
+        setInView={makeSetInView(TimeRange.MONTH)}
+        loadMore={makeLoadMore(TimeRange.MONTH)}
+        playTrack={makePlayTrack(TimeRange.MONTH)}
+        pauseTrack={makePauseTrack(TimeRange.MONTH)}
+        endOfLineup={
           <EndOfLineup description={messages.endOfLineupDescription} />
         }
-        variant={LineupVariant.MAIN}
+        actions={trendingMonthActions}
+        {...mainLineupProps}
       />
     </div>,
     <div
       key={`all-time-trending-tracks-${trendingGenre}`}
       className={styles.lineupContainer}
     >
-      <TanQueryLineup
+      <Lineup
         aria-label='all-time trending tracks'
         ordered
-        pageSize={TRENDING_LOAD_MORE_PAGE_SIZE}
-        initialPageSize={TRENDING_INITIAL_PAGE_SIZE}
+        {...allTimeProps}
+        setInView={makeSetInView(TimeRange.ALL_TIME)}
+        loadMore={makeLoadMore(TimeRange.ALL_TIME)}
+        playTrack={makePlayTrack(TimeRange.ALL_TIME)}
+        pauseTrack={makePauseTrack(TimeRange.ALL_TIME)}
         actions={trendingAllTimeActions}
-        data={data}
-        isFetching={isFetching}
-        isPending={isPending}
-        isError={isError}
-        hasNextPage={hasNextPage}
-        play={play}
-        pause={pause}
-        loadNextPage={loadNextPage}
-        isPlaying={isPlaying}
-        lineup={lineup}
-        endOfLineupElement={
+        endOfLineup={
           <EndOfLineup description={messages.endOfLineupDescription} />
         }
-        variant={LineupVariant.MAIN}
+        {...mainLineupProps}
       />
     </div>
   ]
   const record = useRecord()
-
-  const setGenre = useCallback(
-    (genre: string | null) => {
-      setTrendingGenre(genre)
-      record(
-        make(Name.TRENDING_CHANGE_VIEW, {
-          timeframe: trendingTimeRange,
-          genre: genre || ''
-        })
-      )
-    },
-    [setTrendingGenre, record, trendingTimeRange]
-  )
 
   // Setup tabs
   const didChangeTabs = (from: string, to: string) => {
@@ -217,6 +299,19 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
     interElementSpacing: 100,
     disabledTabTooltipText: messages.disabledTabTooltip
   })
+
+  const setGenre = useCallback(
+    (genre: string | null) => {
+      setGenreAndRefresh(genre)
+      record(
+        make(Name.TRENDING_CHANGE_VIEW, {
+          timeframe: trendingTimeRange,
+          genre: genre || ''
+        })
+      )
+    },
+    [setGenreAndRefresh, record, trendingTimeRange]
+  )
 
   // Setup Modal
   const [modalIsOpen, setModalIsOpen] = useState(false)

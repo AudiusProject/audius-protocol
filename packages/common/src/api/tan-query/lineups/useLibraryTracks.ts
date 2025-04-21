@@ -129,6 +129,7 @@ export const useLibraryTracks = (
   })
 
   const lineupData = useLineupQuery({
+    lineupData: queryData.data ?? [],
     queryData,
     queryKey: getLibraryTracksQueryKey({
       currentUserId,

@@ -96,6 +96,7 @@ export const useAiTracks = (
   })
 
   return useLineupQuery({
+    lineupData: queryData.data ?? [],
     queryData,
     queryKey: getAiTracksQueryKey({
       handle,
