@@ -35,10 +35,9 @@ export function fetchTopTracks(): ThunkAction<
   Audius,
   Action<string>
 > {
-  return async (dispatch, _, aud) => {
+  return async (dispatch) => {
     try {
-      // TODO: Fix sdk type to use limit and pass 4 here
-      const { data } = await audiusSdk.tracks.getTrendingTracks()
+      const { data } = await audiusSdk.tracks.getTrendingTracks({ limit: 4 })
       const tracks: Track[] = data.slice(0, 4).map((d) => ({
         title: d.title,
         handle: d.user.handle,
@@ -60,7 +59,7 @@ export function fetchTopPlaylists(): ThunkAction<
   Audius,
   Action<string>
 > {
-  return async (dispatch, _) => {
+  return async (dispatch) => {
     try {
       const limit = 5
       const { data } = await audiusSdk.full.playlists.getTrendingPlaylists({
@@ -87,7 +86,7 @@ export function fetchTopAlbums(): ThunkAction<
   Audius,
   Action<string>
 > {
-  return async (dispatch, _) => {
+  return async (dispatch) => {
     try {
       const { data } = await audiusSdk.full.playlists.getTopPlaylists({
         type: 'album',
