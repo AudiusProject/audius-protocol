@@ -89,8 +89,8 @@ export const useRemixes = (
     }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: RemixesQueryData, allPages) => {
-      if (lastPage?.count < pageSize) return undefined
-      return allPages.length * pageSize
+      if (lastPage?.tracks?.length < pageSize) return undefined
+      return allPages.reduce((acc, page) => acc + page.tracks.length, 0)
     },
     queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
@@ -104,18 +104,20 @@ export const useRemixes = (
           onlyCosigns: isCosign,
           onlyContestEntries: isContestEntry
         })
-      let processedTracks = transformAndCleanList(
+      const processedTracks = transformAndCleanList(
         data.tracks,
         userTrackMetadataFromSDK
       )
+
       primeTrackData({ tracks: processedTracks, queryClient, dispatch })
 
+      let tracksWithOriginal
       if (includeOriginal && pageParam === 0) {
         const track = queryClient.getQueryData(getTrackQueryKey(trackId))
         if (track && data.tracks) {
           const user = queryClient.getQueryData(getUserQueryKey(track.owner_id))
           if (user) {
-            processedTracks = [{ ...track, user }, ...processedTracks]
+            tracksWithOriginal = [{ ...track, user }, ...processedTracks]
           }
         }
       }
@@ -126,7 +128,7 @@ export const useRemixes = (
           pageParam,
           pageSize,
           false,
-          { items: processedTracks }
+          { items: tracksWithOriginal ?? processedTracks }
         )
       )
       dispatch(remixesPageActions.setCount({ count: data.count }))
