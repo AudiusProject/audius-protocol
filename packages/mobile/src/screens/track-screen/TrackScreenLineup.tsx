@@ -3,9 +3,8 @@ import { trackPageMessages as messages } from '@audius/common/messages'
 import type { ID, User } from '@audius/common/models'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
 
-import { Button, Flex, Text } from '@audius/harmony-native'
+import { Flex, Text } from '@audius/harmony-native'
 import { TanQueryLineup } from 'app/components/lineup/TanQueryLineup'
-import { useNavigation } from 'app/hooks/useNavigation'
 
 import { ViewOtherRemixesButton } from './ViewOtherRemixesButton'
 
@@ -48,11 +47,7 @@ export const TrackScreenLineup = ({
     data
   } = useTrackPageLineup({ trackId })
 
-  const navigation = useNavigation()
-
   if (!indices) return null
-
-  console.log(indices)
 
   const renderRemixParentSection = () => {
     if (indices.remixParentSection.index === undefined) return null
