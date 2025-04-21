@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import { EntityType, Id, OptionalId } from '@audius/sdk'
 import {
   useInfiniteQuery,
@@ -69,15 +71,29 @@ export const useTrackPageLineup = (
   const dispatch = useDispatch()
 
   const { data: heroTrack } = useTrack(trackId)
-
   const { data: ownerHandle } = useUser(heroTrack?.owner_id, {
     select: (user) => user?.handle
   })
 
+  // Memoize the track filtering function
+  const filterDuplicateTracks = useMemo(() => {
+    return (
+      existingTracks: UserTrackMetadata[],
+      newTracks: UserTrackMetadata[]
+    ) => {
+      return newTracks.filter(
+        (track) =>
+          !existingTracks.some(
+            (existingTrack) => existingTrack.track_id === track.track_id
+          ) && track.track_id !== trackId
+      )
+    }
+  }, [trackId])
+
   const queryData = useInfiniteQuery({
     queryKey: getTrackPageLineupQueryKey(trackId),
     initialPageParam: 0,
-    getNextPageParam: () => undefined, // Always return undefined to indicate no more pages
+    getNextPageParam: () => undefined,
     queryFn: async () => {
       const sdk = await audiusSdk()
       const tracks: UserTrackMetadata[] = []
@@ -94,74 +110,79 @@ export const useTrackPageLineup = (
       tracks.push(heroTrack as UserTrackMetadata)
       indices.mainTrackIndex = 0
 
-      // If hero track is a remix, get the parent track
       const heroTrackRemixParentTrackId =
         heroTrack.remix_of?.tracks?.[0]?.parent_track_id
 
-      if (heroTrackRemixParentTrackId) {
-        const remixParentTrack = await sdk.full.tracks.getTrack({
-          trackId: Id.parse(heroTrackRemixParentTrackId),
-          userId: OptionalId.parse(currentUserId)
-        })
-        const processedParentTrack = remixParentTrack?.data
-          ? userTrackMetadataFromSDK(remixParentTrack.data)
-          : undefined
-        if (processedParentTrack) {
-          indices.remixParentSection.index = tracks.length
-          tracks.push(processedParentTrack)
-          indices.remixParentSection.pageSize = 1
-        }
-      } else {
-        // If hero track is remixable (not a remix), get its remixes
-        const { data: remixesData } = await sdk.full.tracks.getTrackRemixes({
-          trackId: Id.parse(trackId),
-          userId: OptionalId.parse(currentUserId),
-          limit: pageSize,
-          offset: 0
-        })
+      // Parallelize API calls where possible
+      const [remixParentTrackResult, remixesResult, moreByArtistResult] =
+        await Promise.all([
+          // Get parent track if it's a remix
+          heroTrackRemixParentTrackId
+            ? sdk.full.tracks.getTrack({
+                trackId: Id.parse(heroTrackRemixParentTrackId),
+                userId: OptionalId.parse(currentUserId)
+              })
+            : Promise.resolve(null),
+          // Get remixes if not a remix
+          !heroTrackRemixParentTrackId
+            ? sdk.full.tracks.getTrackRemixes({
+                trackId: Id.parse(trackId),
+                userId: OptionalId.parse(currentUserId),
+                limit: pageSize,
+                offset: 0
+              })
+            : Promise.resolve(null),
+          // Get more tracks by artist (always fetch)
+          sdk.full.users.getTracksByUserHandle({
+            handle: ownerHandle,
+            userId: OptionalId.parse(currentUserId),
+            sort: 'plays',
+            limit: pageSize,
+            offset: 0
+          })
+        ])
 
-        if (remixesData?.tracks) {
-          const processedRemixes = transformAndCleanList(
-            remixesData.tracks,
-            userTrackMetadataFromSDK
-          )
-          if (processedRemixes.length > 0) {
-            indices.remixesSection.index = tracks.length
-            tracks.push(...processedRemixes)
-            indices.remixesSection.pageSize = processedRemixes.length
-          }
+      // Process parent track if exists
+      if (remixParentTrackResult?.data) {
+        const processedParentTrack = userTrackMetadataFromSDK(
+          remixParentTrackResult.data
+        ) as UserTrackMetadata
+        indices.remixParentSection.index = tracks.length
+        tracks.push(processedParentTrack)
+        indices.remixParentSection.pageSize = 1
+      }
+
+      // Process remixes if exist
+      if (remixesResult?.data?.tracks) {
+        const processedRemixes = transformAndCleanList(
+          remixesResult.data.tracks,
+          userTrackMetadataFromSDK
+        )
+        if (processedRemixes.length > 0) {
+          indices.remixesSection.index = tracks.length
+          tracks.push(...processedRemixes)
+          indices.remixesSection.pageSize = processedRemixes.length
         }
       }
 
-      // Get more tracks by the artist
-      const { data = [] } = await sdk.full.users.getTracksByUserHandle({
-        handle: ownerHandle,
-        userId: OptionalId.parse(currentUserId),
-        sort: 'plays',
-        limit: pageSize,
-        offset: 0
-      })
-
-      const processedTracks = transformAndCleanList(
-        data,
+      // Process more by artist tracks
+      const processedMoreByArtist = transformAndCleanList(
+        moreByArtistResult.data || [],
         userTrackMetadataFromSDK
       )
-        .filter(
-          (track) =>
-            !tracks.some(
-              (existingTrack) => existingTrack.track_id === track.track_id
-            )
-        )
-        .slice(0, pageSize)
+      const filteredMoreByArtist = filterDuplicateTracks(
+        tracks,
+        processedMoreByArtist
+      ).slice(0, pageSize)
 
-      if (processedTracks.length > 0) {
+      if (filteredMoreByArtist.length > 0) {
         indices.moreBySection.index = tracks.length
-        tracks.push(...processedTracks)
-        indices.moreBySection.pageSize = processedTracks.length
+        tracks.push(...filteredMoreByArtist)
+        indices.moreBySection.pageSize = filteredMoreByArtist.length
       }
 
-      // If there are no remixes, get recommended tracks based on genre
-      if (indices.remixesSection.index === null) {
+      // Only fetch recommended if no remixes
+      if (!indices.remixesSection.index) {
         const { data: trendingData } = await sdk.full.tracks.getTrendingTracks({
           genre: heroTrack.genre,
           limit: pageSize
@@ -171,17 +192,16 @@ export const useTrackPageLineup = (
           const processedTracks = transformAndCleanList(
             trendingData,
             userTrackMetadataFromSDK
-          ).filter(
-            (track) =>
-              !tracks.some(
-                (existingTrack) => existingTrack.track_id === track.track_id
-              ) && track.track_id !== trackId
+          )
+          const filteredRecommended = filterDuplicateTracks(
+            tracks,
+            processedTracks
           )
 
-          if (processedTracks.length > 0) {
+          if (filteredRecommended.length > 0) {
             indices.recommendedSection.index = tracks.length
-            tracks.push(...processedTracks)
-            indices.recommendedSection.pageSize = processedTracks.length
+            tracks.push(...filteredRecommended)
+            indices.recommendedSection.pageSize = filteredRecommended.length
           }
         }
       }
