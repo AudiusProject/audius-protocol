@@ -10,18 +10,18 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
-import { metaMask } from '@wagmi/connectors'
-import { disconnect } from '@wagmi/core'
+import { useDisconnect } from '@reown/appkit/react'
+import type { ParsedCaipAddress } from '@reown/appkit-common'
 import { useDispatch } from 'react-redux'
-import { useAccount, useConnect, useSwitchChain } from 'wagmi'
 
 import { getRouteOnCompletion } from 'common/store/pages/signon/selectors'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { doesUserExist } from 'pages/sign-up-page/components/ExternalWalletSignUpModal'
+import {
+  doesUserExist,
+  useExternalWalletAuth
+} from 'pages/sign-up-page/components/useExternalWalletAuth'
 import { userHasMetaMask } from 'pages/sign-up-page/utils/metamask'
 import { initSdk } from 'services/audius-sdk'
-import { audiusChain, wagmiConfig } from 'services/audius-sdk/wagmi'
-import { reportToSentry } from 'store/errors/reportToSentry'
 import { useSelector } from 'utils/reducer'
 
 const messages = {
@@ -38,66 +38,45 @@ const messages = {
 }
 
 export const SignInWithMetaMaskButton = (props: ButtonProps) => {
-  const { connectAsync } = useConnect()
-  const { isConnected, address } = useAccount()
-  const { switchChainAsync } = useSwitchChain()
+  const { disconnect } = useDisconnect()
   const navigate = useNavigateToPage()
   const route = useSelector(getRouteOnCompletion)
   const [status, setStatus] = useState(Status.IDLE)
   const [isNoAccountError, setIsNoAccountError] = useState(false)
   const dispatch = useDispatch()
 
-  const handleClick = useCallback(async () => {
-    try {
-      setStatus(Status.LOADING)
-      let wallet = address
-      // Ensure the wallet is connected
-      if (!isConnected) {
-        const connection = await connectAsync({
-          chainId: audiusChain.id,
-          connector: metaMask()
-        })
-        wallet = connection.accounts[0]
-      }
-      if (!wallet) {
-        throw new Error('No wallet connected')
-      }
-
-      // Ensure we're on the Audius chain
-      await switchChainAsync({ chainId: audiusChain.id })
-
-      // Reinit SDK with the connected wallet
-      const sdk = await initSdk({ ignoreCachedUserWallet: true })
-
-      // Check that the user exists.
-      // If they don't, disconnect and try to get them to sign up.
-      const userExists = await doesUserExist(sdk, wallet)
+  const onConnect = useCallback(
+    async ({ address }: ParsedCaipAddress) => {
+      const sdk = await initSdk()
+      const userExists = await doesUserExist(sdk, address)
       if (!userExists) {
-        await disconnect(wagmiConfig)
+        console.debug('User does not exist, resetting...')
+        await disconnect()
         await initSdk()
         setIsNoAccountError(true)
         setStatus(Status.ERROR)
         return
       }
 
-      // Otherwise, refetch the user account in the saga.
+      console.debug('User exists. Fetching account and signing in...')
       dispatch(
         accountActions.fetchAccount({ shouldMarkAccountAsLoading: true })
       )
       navigate(route ?? FEED_PAGE)
-    } catch (e) {
-      setStatus(Status.ERROR)
-      await reportToSentry({ error: e as Error })
-    }
-  }, [
-    address,
-    connectAsync,
-    dispatch,
-    isConnected,
-    navigate,
-    route,
-    switchChainAsync
-  ])
+    },
+    [disconnect, dispatch, navigate, route]
+  )
+
+  const onError = useCallback((e: unknown) => {
+    setStatus(Status.ERROR)
+  }, [])
+
+  const { connect } = useExternalWalletAuth({ onSuccess: onConnect, onError })
+
+  const handleClick = useCallback(async () => {
+    setStatus(Status.LOADING)
+    await connect('metamask')
+  }, [connect])
 
   if (!userHasMetaMask) return null
 

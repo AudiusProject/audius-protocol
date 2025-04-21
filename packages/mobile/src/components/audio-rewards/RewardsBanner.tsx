@@ -50,7 +50,7 @@ export const RewardsBanner = (props: RewardsBannerProps) => {
         end={color.special.gradient.start}
         style={{ width: '100%', borderRadius: 8 }}
       >
-        <Flex direction='column' alignItems='center' style={{ padding: 16 }}>
+        <Flex direction='column' alignItems='center' ph='l' pv='m'>
           <Flex direction='row' alignItems='center' gap='xs'>
             <IconCrown size='s' color='staticWhite' />
             <Text variant='title' size='s' color='staticWhite'>

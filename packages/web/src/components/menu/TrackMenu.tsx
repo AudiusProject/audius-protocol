@@ -1,6 +1,10 @@
 import { useContext } from 'react'
 
-import { useGetTrackById, useToggleFavoriteTrack } from '@audius/common/api'
+import {
+  useGetTrackById,
+  useRemixContest,
+  useToggleFavoriteTrack
+} from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -118,6 +122,7 @@ const TrackMenu = ({
   includeFavorite = true,
   includeAlbumPage = true,
   includeTrackPage = true,
+  includeRemixContest = false,
   isArtistPick,
   isDeleted,
   isOwner,
@@ -140,6 +145,10 @@ const TrackMenu = ({
   const toggleSaveTrack = useToggleFavoriteTrack({
     trackId: props.trackId,
     source: FavoriteSource.OVERFLOW
+  })
+
+  const { data: remixContest } = useRemixContest(props.trackId, {
+    enabled: includeRemixContest
   })
 
   const onDeleteTrack = (trackId: Nullable<number>) => {
@@ -166,7 +175,6 @@ const TrackMenu = ({
       handle,
       includeRepost,
       includeShare,
-      includeRemixContest,
       openAddToCollectionModal,
       openEmbedModal,
       repostTrack,
@@ -300,18 +308,17 @@ const TrackMenu = ({
     }
 
     const remixContestMenuItem = {
-      // TODO: Update this to edit when the track is a contest ()
-      text: messages.hostRemixContest,
+      text: remixContest
+        ? messages.editRemixContest
+        : messages.hostRemixContest,
       onClick: () => {
-        openHostRemixContest({
-          trackId
-        })
+        openHostRemixContest({ trackId })
       }
     }
 
     const menu: { items: PopupMenuItem[] } = { items: [] }
 
-    if (includeRemixContest && isOwner && !isDeleted) {
+    if (includeRemixContest && isOwner && !isDeleted && !track?.remix_of) {
       menu.items.push(remixContestMenuItem)
     }
 

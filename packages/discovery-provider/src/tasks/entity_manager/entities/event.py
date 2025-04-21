@@ -28,13 +28,19 @@ def validate_create_event_tx(params: ManageEntityParameters):
         if field not in metadata:
             raise IndexingValidationError(f"Missing required field: {field}")
 
-    # Validate end_date is not in the past
-    if (
-        params.metadata.get("end_date")
-        and datetime.fromisoformat(params.metadata["end_date"]).timestamp()
-        < params.block_datetime.timestamp()
-    ):
-        raise IndexingValidationError("end_date cannot be in the past")
+    if params.metadata.get("end_date"):
+        # Validate end_date is a valid iso format
+        try:
+            datetime.fromisoformat(params.metadata["end_date"])
+        except ValueError:
+            raise IndexingValidationError("end_date is not a valid iso format")
+
+        # Validate end_date is not in the past
+        if (
+            datetime.fromisoformat(params.metadata["end_date"]).timestamp()
+            < params.block_datetime.timestamp()
+        ):
+            raise IndexingValidationError("end_date cannot be in the past")
 
     # Validate entity_type is valid
     valid_entity_types = [EventEntityType.track.value]
@@ -86,6 +92,11 @@ def validate_create_event_tx(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"An existing remix contest for entity_id {metadata['entity_id']} already exists"
             )
+        track = params.existing_records[EntityType.TRACK.value][metadata["entity_id"]]
+        if track.remix_of:
+            raise IndexingValidationError(
+                f"Track {metadata['entity_id']} is a remix and cannot host a remix contest"
+            )
 
 
 def create_event(params: ManageEntityParameters):
@@ -125,13 +136,19 @@ def validate_update_event_tx(params: ManageEntityParameters):
     if user_id != existing_event.user_id:
         raise IndexingValidationError(f"Only event owner can update event {event_id}")
 
-    # Validate end_date is not in the past
-    if (
-        params.metadata.get("end_date")
-        and datetime.fromisoformat(params.metadata["end_date"]).timestamp()
-        < params.block_datetime.timestamp()
-    ):
-        raise IndexingValidationError("end_date cannot be in the past")
+    if params.metadata.get("end_date"):
+        # Validate end_date is a valid iso format
+        try:
+            datetime.fromisoformat(params.metadata["end_date"])
+        except ValueError:
+            raise IndexingValidationError("end_date is not a valid iso format")
+
+        # Validate end_date is not in the past
+        if (
+            datetime.fromisoformat(params.metadata["end_date"]).timestamp()
+            < params.block_datetime.timestamp()
+        ):
+            raise IndexingValidationError("end_date cannot be in the past")
 
 
 def update_event(params: ManageEntityParameters):

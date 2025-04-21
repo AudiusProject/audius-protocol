@@ -254,8 +254,12 @@ export const StemsAndDownloadsMenuFields = (
 
   const handleDeleteStem = useCallback(
     (index: number) => {
-      stemsValue.splice(index, 1)
-      setStemsValue(stemsValue)
+      // Make a copy to be sure children reading this value will re-render.
+      const newStems = [
+        ...stemsValue.slice(0, index),
+        ...stemsValue.slice(index + 1)
+      ]
+      setStemsValue(newStems)
       props.onDeleteStem?.(index)
     },
     [props, setStemsValue, stemsValue]

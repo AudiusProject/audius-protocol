@@ -11,6 +11,7 @@ import { ArtistPickModal } from 'components/artist-pick-modal/ArtistPickModal'
 import BrowserPushConfirmationModal from 'components/browser-push-confirmation-modal/BrowserPushConfirmationModal'
 import { BuyAudioModal } from 'components/buy-audio-modal/BuyAudioModal'
 import { BuyAudioRecoveryModal } from 'components/buy-audio-modal/BuyAudioRecoveryModal'
+import { BuySellModal } from 'components/buy-sell-modal/BuySellModal'
 import CoinflowOnrampModal from 'components/coinflow-onramp-modal'
 import CollectibleDetailsModal from 'components/collectibles/components/CollectibleDetailsModal'
 import ConfirmerPreview from 'components/confirmer-preview/ConfirmerPreview'
@@ -55,6 +56,7 @@ import { WithdrawUSDCModal } from 'components/withdraw-usdc-modal/WithdrawUSDCMo
 import { CoinflowWithdrawModal } from 'components/withdraw-usdc-modal/components/CoinflowWithdrawModal'
 import { useIsMobile } from 'hooks/useIsMobile'
 import AudioBreakdownModal from 'pages/audio-page/components/modals/AudioBreakdownModal'
+import { ConnectedWalletsModal } from 'pages/audio-page/components/modals/ConnectedWalletsModal'
 import TransferAudioMobileDrawer from 'pages/audio-page/components/modals/TransferAudioMobileDrawer'
 import { ChatBlastModal } from 'pages/chat-page/components/ChatBlastModal'
 import { ChallengeRewardsModal } from 'pages/rewards-page/components/modals/ChallengeRewardsModal'
@@ -128,7 +130,9 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   WaitForDownloadModal,
   ArtistPick: ArtistPickModal,
   PayoutWallet: PayoutWalletModal,
-  DownloadTrackArchive: DownloadTrackArchiveModal
+  ConnectedWallets: ConnectedWalletsModal,
+  DownloadTrackArchive: DownloadTrackArchiveModal,
+  BuySellModal
 }
 
 const commonModals = Object.entries(commonModalsMap) as [

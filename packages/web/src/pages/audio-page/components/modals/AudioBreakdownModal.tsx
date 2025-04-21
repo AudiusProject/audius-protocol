@@ -1,8 +1,6 @@
+import { useWalletAudioBalances, useConnectedWallets } from '@audius/common/api'
 import { BNWei } from '@audius/common/models'
-import {
-  tokenDashboardPageSelectors,
-  walletSelectors
-} from '@audius/common/store'
+import { walletSelectors } from '@audius/common/store'
 import { IconInfo } from '@audius/harmony'
 import BN from 'bn.js'
 
@@ -17,7 +15,6 @@ import WalletsTable from '../WalletsTable'
 
 import styles from './AudioBreakdownModal.module.css'
 const { getAccountBalance } = walletSelectors
-const { getAssociatedWallets } = tokenDashboardPageSelectors
 
 const messages = {
   modalTitle: '$AUDIO BREAKDOWN',
@@ -36,14 +33,21 @@ const AudioBreakdownBody = () => {
   const accountBalance = (useSelector(getAccountBalance) ??
     new BN('0')) as BNWei
 
-  const { connectedEthWallets: ethWallets, connectedSolWallets: solWallets } =
-    useSelector(getAssociatedWallets)
+  const { data: connectedWallets, isPending: isConnectedWalletsPending } =
+    useConnectedWallets()
+  const balances = useWalletAudioBalances(
+    {
+      wallets: connectedWallets ?? [],
+      includeStaked: true
+    },
+    { enabled: !isConnectedWalletsPending }
+  )
 
-  const linkedWalletsBalance = ((ethWallets ?? [])
-    .concat(solWallets ?? [])
-    .reduce((total, wallet) => {
-      return total.add(wallet.balance)
-    }, new BN('0')) ?? new BN('0')) as BNWei
+  const linkedWalletsBalance = new BN(
+    balances
+      .reduce((acc, result) => acc + (result.data ?? BigInt(0)), BigInt(0))
+      .toString()
+  ) as BNWei
 
   const totalBalance = accountBalance.add(linkedWalletsBalance) as BNWei
 

@@ -67,6 +67,7 @@ import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { fetchUserByHandle, fetchUsers } from 'common/store/cache/users/sagas'
 import { sendRecoveryEmail } from 'common/store/recovery-email/sagas'
 import { UiErrorCode } from 'store/errors/actions'
+import { reportToSentry } from 'store/errors/reportToSentry'
 import { setHasRequestedBrowserPermission } from 'utils/browserNotifications'
 import { push as pushRoute } from 'utils/navigation'
 import { restrictedHandles } from 'utils/restrictedHandles'
@@ -703,7 +704,8 @@ function* signUp() {
             }
 
             yield* put(
-              identify(handle, {
+              identify({
+                handle,
                 name,
                 email,
                 userId
@@ -908,7 +910,18 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
           accountAlreadyExisted: true
         })
       )
+
+      yield* put(make(Name.SIGN_IN_WITH_INCOMPLETE_ACCOUNT, { handle: '' }))
+      yield* call(reportToSentry, {
+        error: new Error('Failed to fetch account')
+      })
+
       yield* put(toastActions.toast({ content: messages.incompleteAccount }))
+      yield* put(
+        make(Name.SIGN_IN_WITH_INCOMPLETE_ACCOUNT, {
+          email
+        })
+      )
       return
     }
 
@@ -947,6 +960,7 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
 
       yield* put(
         make(Name.SIGN_IN_WITH_INCOMPLETE_ACCOUNT, {
+          email,
           handle: user.handle
         })
       )
@@ -993,6 +1007,7 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
     yield* put(pushRoute(route || FEED_PAGE))
 
     const trackEvent = make(Name.SIGN_IN_FINISH, { status: 'success' })
+
     yield* put(trackEvent)
 
     yield* put(signOnActions.resetSignOn())

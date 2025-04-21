@@ -1,4 +1,8 @@
-import { AnalyticsEvent, AllTrackingEvents } from '@audius/common/models'
+import {
+  AnalyticsEvent,
+  AllTrackingEvents,
+  IdentifyTraits
+} from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 
 import { env } from 'services/env'
@@ -63,18 +67,19 @@ export const track = async (
 }
 
 export const identify = async (
-  handle: string,
-  traits?: Record<string, any>,
+  traits?: IdentifyTraits,
   options?: Record<string, any>,
   callback?: () => void
 ) => {
   try {
     if (!IS_PRODUCTION_BUILD) {
-      console.info('Amplitude | identify', handle, traits, options)
+      console.info('Amplitude | identify', { traits, options })
     }
-
+    if (!traits) {
+      return
+    }
     await didInit
-    return amplitude.identify(handle, traits, callback)
+    return amplitude.identify(traits, callback)
   } catch (err) {
     console.error(err)
   }

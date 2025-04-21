@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import { Feature } from '@audius/common/models'
 import type { TrackForUpload } from '@audius/common/store'
 import {
   uploadActions,
@@ -17,6 +18,7 @@ import { Screen, ScreenContent, Text, Tile } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
+import { reportToSentry } from 'app/utils/reportToSentry'
 import { useThemeColors } from 'app/utils/theme'
 
 import { UploadingTrackTile } from '../components'
@@ -84,6 +86,26 @@ export const UploadingTracksScreen = () => {
   })
 
   const trackUploadProgress = useSelector(getCombinedUploadPercentage)
+  // NOTE: We've observed a bug where the upload saga stalls out sometimes. The user gets stuck at 100% in this case
+  // So this is intentionally not a saga to avoid this timer getting stuck in the saga loop as well
+  useEffect(() => {
+    if (trackUploadProgress === 100) {
+      const timeout = setTimeout(
+        () => {
+          const err = new Error('Upload error: stalled at 100% for 5+ minutes')
+          reportToSentry({
+            error: err,
+            feature: Feature.Upload,
+            additionalInfo: { params, trackUploadProgress }
+          })
+          // TODO: For now this is just logging the error so we can better understand the issue & frequency of it.
+          // We need to figure out how to resolve this
+        },
+        1000 * 60 * 5 // 5 minutes
+      )
+      return () => clearTimeout(timeout)
+    }
+  }, [trackUploadProgress, navigation, params])
   const uploadSuccess = useSelector(getUploadSuccess)
   const uploadError = useSelector(getUploadError)
   const isUploading = useSelector(getIsUploading)

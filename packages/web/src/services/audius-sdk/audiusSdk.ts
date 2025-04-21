@@ -23,7 +23,7 @@ declare global {
 let inProgress = false
 const SDK_LOADED_EVENT_NAME = 'AUDIUS_SDK_LOADED'
 
-export const initSdk = async (opts?: { ignoreCachedUserWallet?: boolean }) => {
+export const initSdk = async () => {
   inProgress = true
 
   // For now, the only solana relay we want to use is on DN 1, so hardcode
@@ -65,7 +65,7 @@ export const initSdk = async (opts?: { ignoreCachedUserWallet?: boolean }) => {
 
   // Set up a relay to identity for Ethereum RPC requests so that identity can
   // pay for gas fees on approved transactions.
-  const audiusWalletClient = await getAudiusWalletClient(opts)
+  const audiusWalletClient = await getAudiusWalletClient()
   const ethWalletClient = createWalletClient({
     account: '0x0000000000000000000000000000000000000000', // dummy replaced by relay DO NOT REMOVE
     chain: mainnet,

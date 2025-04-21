@@ -25,15 +25,16 @@ INNER JOIN
         s.save_type = 'playlist' AND
         s.user_id = :user_id
 LEFT JOIN
-  playlist_seen ps ON 
+  playlist_seen ps ON
     ps.is_current AND
     ps.playlist_id = p.playlist_id AND
     ps.user_id = :user_id
 where
     p.is_current = true AND
     p.is_delete = false AND
-    s.created_at < p.updated_at AND 
+    s.created_at < p.updated_at AND
     (ps.seen_at is NULL OR p.updated_at > ps.seen_at)
+order by p.playlist_id
 """
 )
 

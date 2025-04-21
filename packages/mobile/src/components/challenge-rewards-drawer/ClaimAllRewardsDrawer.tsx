@@ -158,9 +158,9 @@ export const ClaimAllRewardsDrawer = () => {
                 </Text>
                 <Flex direction='row' gap='l'>
                   <Text variant='label' size='s' color='default'>
-                    {`${
+                    {`${formatNumberCommas(
                       totalClaimableAmount - claimableAmount
-                    }/${totalClaimableAmount}`}
+                    )}/${formatNumberCommas(totalClaimableAmount)}`}
                   </Text>
                   <LoadingSpinner style={styles.spinner} />
                 </Flex>

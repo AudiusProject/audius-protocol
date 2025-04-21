@@ -407,7 +407,9 @@ export const productionConfig: SdkServicesConfig = {
       "serviceProviderFactoryAddress": "0xD17A9bc90c582249e211a4f4b16721e7f65156c8",
       "serviceTypeManagerAddress": "0x9EfB0f4F38aFbb4b0984D00C126E97E21b8417C5",
       "audiusTokenAddress": "0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998",
-      "audiusWormholeAddress": "0x6E7a1F7339bbB62b23D44797b63e4258d283E095"
+      "audiusWormholeAddress": "0x6E7a1F7339bbB62b23D44797b63e4258d283E095",
+      "delegateManagerAddress": "0x4d7968ebfD390D5E7926Cb3587C39eFf2F9FB225",
+      "stakingAddress": "0xe6D97B2099F142513be7A2a068bE040656Ae4591"
     }
   }
 }

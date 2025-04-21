@@ -1,9 +1,15 @@
 import { useCallback, useState } from 'react'
 
-import { useCurrentUserId, useCreateEvent } from '@audius/common/api'
+import {
+  useCurrentUserId,
+  useCreateEvent,
+  useRemixContest,
+  useUpdateEvent,
+  useDeleteEvent,
+  useRemixes
+} from '@audius/common/api'
 import { useHostRemixContestModal } from '@audius/common/store'
 import { EventEntityTypeEnum, EventEventTypeEnum } from '@audius/sdk'
-import type { Dayjs } from 'dayjs'
 import dayjs from 'dayjs'
 
 import {
@@ -28,8 +34,10 @@ const messages = {
   hint: 'You can host one contest per song and adjust the submission deadline anytime within 90 days of the contest start.',
   dateLabel: 'Last day to submit to contest',
   timeLabel: 'Time',
+  startContestError: 'Contest end date must be in the future within 90 days',
   startContest: 'Start Contest',
-  startContestError: 'Contest end date must be in the future'
+  save: 'Save',
+  turnOff: 'Turn Off Contest'
 }
 
 const mergeDateTime = (day: string, time: string) => {
@@ -48,16 +56,31 @@ const mergeDateTime = (day: string, time: string) => {
 export const HostRemixContestDrawer = () => {
   const { data, onClose } = useHostRemixContestModal()
   const { mutate: createEvent } = useCreateEvent()
-  const { data: currentUserId } = useCurrentUserId()
+  const { mutate: deleteEvent } = useDeleteEvent()
+  const { mutate: updateEvent } = useUpdateEvent()
+  const { data: userId } = useCurrentUserId()
   const { trackId } = data
+  const { data: remixContest } = useRemixContest(trackId)
+  const { data: remixes, isLoading: remixesLoading } = useRemixes({
+    trackId,
+    isContestEntry: true
+  })
+  const isEdit = !!remixContest
+  const hasContestEntries = remixesLoading || remixes?.length
+  const displayTurnOffButton = !hasContestEntries && isEdit
 
-  const [endDate, setEndDate] = useState<Dayjs>(
-    dayjs().add(1, 'day').endOf('day')
+  const [endDate, setEndDate] = useState(
+    remixContest ? dayjs(remixContest.endDate) : null
   )
   const [endDateError, setEndDateError] = useState<boolean>(false)
 
   const handleChange = useCallback((date: string, time: string) => {
-    const newDate = mergeDateTime(date, time)
+    if (!date && !time) {
+      setEndDate(null)
+      return
+    }
+
+    const newDate = mergeDateTime(date || time, time || date)
     if (newDate.isBefore(dayjs())) {
       setEndDateError(true)
     } else {
@@ -68,34 +91,55 @@ export const HostRemixContestDrawer = () => {
 
   const handleDateChange = useCallback(
     (date: string) => {
-      handleChange(date, endDate.toString())
+      handleChange(date, endDate?.toString() ?? '')
     },
     [endDate, handleChange]
   )
 
   const handleTimeChange = useCallback(
     (time: string) => {
-      handleChange(endDate.toString(), time)
+      handleChange(endDate?.toString() ?? '', time)
     },
     [endDate, handleChange]
   )
 
   const handleSubmit = useCallback(() => {
-    if (endDateError || !trackId || !currentUserId) return
+    if (endDateError || !trackId || !userId || !endDate) return
 
-    // Create event
-    createEvent({
-      eventType: EventEventTypeEnum.RemixContest,
-      entityType: EventEntityTypeEnum.Track,
-      entityId: trackId,
-      endDate: endDate.toISOString(),
-      userId: currentUserId
-    })
+    if (isEdit) {
+      updateEvent({
+        eventId: remixContest.eventId,
+        endDate: endDate.toISOString(),
+        userId
+      })
+    } else {
+      createEvent({
+        eventType: EventEventTypeEnum.RemixContest,
+        entityType: EventEntityTypeEnum.Track,
+        entityId: trackId,
+        endDate: endDate.toISOString(),
+        userId
+      })
+    }
 
-    // Reset form and close modal
-    setEndDate(dayjs().add(1, 'day').endOf('day'))
     onClose()
-  }, [endDateError, trackId, currentUserId, createEvent, endDate, onClose])
+  }, [
+    endDateError,
+    trackId,
+    userId,
+    isEdit,
+    onClose,
+    updateEvent,
+    remixContest?.eventId,
+    endDate,
+    createEvent
+  ])
+
+  const handleDeleteEvent = useCallback(() => {
+    if (!remixContest || !userId) return
+    deleteEvent({ eventId: remixContest.eventId, userId })
+    onClose()
+  }, [remixContest, userId, deleteEvent, onClose])
 
   return (
     <AppDrawer
@@ -114,8 +158,12 @@ export const HostRemixContestDrawer = () => {
             </Text>
             <DateTimeInput
               mode='date'
-              date={endDate.toString()}
+              date={endDate?.toString() ?? ''}
               onChange={handleDateChange}
+              dateTimeProps={{
+                minimumDate: new Date(),
+                maximumDate: dayjs().add(90, 'days').toDate()
+              }}
               inputProps={{
                 label: messages.dateLabel,
                 startIcon: IconCalendarMonth,
@@ -125,7 +173,7 @@ export const HostRemixContestDrawer = () => {
             />
             <DateTimeInput
               mode='time'
-              date={endDate.toString()}
+              date={endDate?.toString() ?? ''}
               onChange={handleTimeChange}
               inputProps={{ label: messages.timeLabel }}
             />
@@ -136,15 +184,20 @@ export const HostRemixContestDrawer = () => {
             </Hint>
           </Flex>
         </Flex>
-        <Flex direction='row' p='l' pb='3xl' borderTop='strong'>
+        <Flex direction='column' gap='l' p='l' pb='3xl' borderTop='strong'>
           <Button
             disabled={!endDate || endDateError}
             variant='primary'
             fullWidth
             onPress={handleSubmit}
           >
-            {messages.startContest}
+            {isEdit ? messages.save : messages.startContest}
           </Button>
+          {displayTurnOffButton ? (
+            <Button variant='secondary' fullWidth onPress={handleDeleteEvent}>
+              {messages.turnOff}
+            </Button>
+          ) : null}
         </Flex>
       </Flex>
     </AppDrawer>

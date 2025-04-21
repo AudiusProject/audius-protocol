@@ -1,6 +1,7 @@
 import { Event as EventSDK, HashId, OptionalHashId } from '@audius/sdk'
 
 import { Event } from '~/models/Event'
+import { dayjs } from '~/utils'
 
 export const eventMetadataFromSDK = (input: EventSDK): Event | undefined => {
   const { eventId, userId, entityId, ...rest } = input
@@ -13,11 +14,17 @@ export const eventMetadataFromSDK = (input: EventSDK): Event | undefined => {
     return undefined
   }
 
+  const localEndDate = dayjs
+    .utc(rest.endDate)
+    .local()
+    .format('ddd MMM DD YYYY HH:mm:ss [GMT]ZZ')
+
   return {
     ...rest,
     eventId: decodedEventId,
     userId: decodedUserId,
-    entityId: decodedEntityId ?? null
+    entityId: decodedEntityId ?? null,
+    endDate: localEndDate
   }
 }
 

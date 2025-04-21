@@ -24,6 +24,7 @@ import type {
   TrackCommentNotificationResponse,
   TrackCommentsResponse,
   TrackInspect,
+  TrackInspectList,
   TrackResponse,
   TrackSearch,
   TracksResponse,
@@ -45,6 +46,8 @@ import {
     TrackCommentsResponseToJSON,
     TrackInspectFromJSON,
     TrackInspectToJSON,
+    TrackInspectListFromJSON,
+    TrackInspectListToJSON,
     TrackResponseFromJSON,
     TrackResponseToJSON,
     TrackSearchFromJSON,
@@ -118,6 +121,11 @@ export interface GetUndergroundTrendingTracksRequest {
 
 export interface InspectTrackRequest {
     trackId: string;
+    original?: boolean;
+}
+
+export interface InspectTracksRequest {
+    id: Array<string>;
     original?: boolean;
 }
 
@@ -607,6 +615,47 @@ export class TracksApi extends runtime.BaseAPI {
      */
     async inspectTrack(params: InspectTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackInspect> {
         const response = await this.inspectTrackRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Inspect multiple tracks
+     * Inspects the details of the files for multiple tracks
+     */
+    async inspectTracksRaw(params: InspectTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackInspectList>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling inspectTracks.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.id) {
+            queryParameters['id'] = params.id;
+        }
+
+        if (params.original !== undefined) {
+            queryParameters['original'] = params.original;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/inspect`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TrackInspectListFromJSON(jsonValue));
+    }
+
+    /**
+     * Inspect multiple tracks
+     * Inspects the details of the files for multiple tracks
+     */
+    async inspectTracks(params: InspectTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackInspectList> {
+        const response = await this.inspectTracksRaw(params, initOverrides);
         return await response.value();
     }
 

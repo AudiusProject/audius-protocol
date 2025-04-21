@@ -1,11 +1,12 @@
 import { EventEventTypeEnum, EventEntityTypeEnum } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { cloneDeep } from 'lodash'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { Event, Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
-import { getEventQueryKey } from './utils'
+import { getEventQueryKey, getEventIdsByEntityIdQueryKey } from './utils'
 
 export type CreateEventArgs = {
   eventId?: ID
@@ -49,18 +50,71 @@ export const useCreateEvent = () => {
         updatedAt: new Date().toISOString()
       }
 
-      // TODO: Update event list query keys here
-
       // Update the individual event cache
       queryClient.setQueryData(getEventQueryKey(newId), newEvent)
+
+      // Add event to the list of events for the entity
+      let prevEntityState: ID[] = []
+      queryClient.setQueryData(
+        getEventIdsByEntityIdQueryKey({ entityId, entityType }),
+        (prevData) => {
+          const newState = cloneDeep(prevData) ?? []
+          prevEntityState = newState
+          newState.unshift(newEvent.eventId)
+          return newState
+        }
+      )
+
+      // Add event to list of events for the entity by event type
+      let prevEventTypeState: ID[] = []
+      queryClient.setQueryData(
+        getEventIdsByEntityIdQueryKey({ entityId, entityType, eventType }),
+        (prevData) => {
+          const newState = cloneDeep(prevData) ?? []
+          prevEventTypeState = newState
+          newState.unshift(newEvent.eventId)
+          return newState
+        }
+      )
+
+      return { prevEntityState, prevEventTypeState }
     },
-    onError: (error: Error, args) => {
+    onError: (error: Error, args, context) => {
       reportToSentry({
         error,
         additionalInfo: args,
         name: 'Events',
         feature: Feature.Events
       })
+
+      // Revert the optimistic updates
+      queryClient.resetQueries({
+        queryKey: getEventQueryKey(args.eventId)
+      })
+
+      const prevEntityState = context?.prevEntityState
+      if (prevEntityState) {
+        queryClient.setQueryData(
+          getEventIdsByEntityIdQueryKey({
+            entityId: args.entityId,
+            entityType: args.entityType
+          }),
+          prevEntityState
+        )
+      }
+
+      const prevEventTypeState = context?.prevEventTypeState
+      if (prevEventTypeState) {
+        queryClient.setQueryData(
+          getEventIdsByEntityIdQueryKey({
+            entityId: args.entityId,
+            entityType: args.entityType,
+            eventType: args.eventType
+          }),
+          prevEventTypeState
+        )
+      }
+
       // Toast generic error message
       toast({
         content: 'There was an error creating the event. Please try again'

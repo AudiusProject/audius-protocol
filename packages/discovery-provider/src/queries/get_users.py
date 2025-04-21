@@ -1,7 +1,7 @@
 import logging
 from typing import List  # pylint: disable=C0302
 
-from sqlalchemy import asc
+from sqlalchemy import asc, desc
 
 from src import exceptions
 from src.models.users.user import User
@@ -48,7 +48,9 @@ def get_users(args):
                 wallet = wallet.lower()
                 if len(wallet) == 42:
                     base_query = base_query.filter_by(wallet=wallet)
-                    base_query = base_query.order_by(asc(User.created_at))
+                    base_query = base_query.order_by(
+                        desc(User.handle.isnot(None)), asc(User.created_at)
+                    )
                 else:
                     logger.warning("Invalid wallet length")
             if "handle" in args:

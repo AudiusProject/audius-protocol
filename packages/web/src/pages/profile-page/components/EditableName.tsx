@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react'
 import { IconButton, IconPencil } from '@audius/harmony'
 import cn from 'classnames'
 
-import UserBadges from 'components/user-badges/UserBadges'
+import UserBadges from 'components/user-badges'
 
 import styles from './EditableName.module.css'
 

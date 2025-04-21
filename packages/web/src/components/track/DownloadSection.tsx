@@ -1,9 +1,7 @@
 import { useCallback, useState } from 'react'
 
-import { useTrack } from '@audius/common/api'
+import { useFileSizes, useStems, useTrack } from '@audius/common/api'
 import {
-  useCurrentStems,
-  useFileSizes,
   useDownloadableContentAccess,
   useUploadingStems,
   useFeatureFlag
@@ -43,7 +41,6 @@ import {
   useRequiresAccountCallback,
   useRequiresAccountOnClick
 } from 'hooks/useRequiresAccount'
-import { audiusSdk } from 'services/audius-sdk'
 
 import { DownloadRow } from './DownloadRow'
 
@@ -81,8 +78,8 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
   })
   const { is_downloadable, access } = partialTrack ?? {}
 
-  const { stemTracks } = useCurrentStems({ trackId })
-  const { uploadingTracks: uploadingStems } = useUploadingStems({ trackId })
+  const { data: stemTracks = [], isSuccess: isStemsSuccess } = useStems(trackId)
+  const { uploadingTracks: uploadingStems } = useUploadingStems(trackId)
   const {
     price,
     shouldDisplayPremiumDownloadLocked,
@@ -107,11 +104,14 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
 
   const { onOpen: openDownloadTrackArchiveModal } =
     useDownloadTrackArchiveModal()
-  const fileSizes = useFileSizes({
-    audiusSdk,
-    trackIds: [trackId, ...stemTracks.map((s) => s.id)],
-    downloadQuality
-  })
+
+  const { data: fileSizes } = useFileSizes(
+    {
+      trackIds: [trackId, ...stemTracks.map((s) => s.track_id)],
+      downloadQuality
+    },
+    { enabled: isStemsSuccess }
+  )
   const { onOpen: openWaitForDownloadModal } = useWaitForDownloadModal()
 
   const onToggleExpand = useCallback(() => setExpanded((val) => !val), [])
@@ -177,10 +177,10 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
 
   return (
     <Box border='default' borderRadius='m' css={{ overflow: 'hidden' }}>
-      <Flex direction='column'>
+      <Flex column>
         <Flex
           gap='m'
-          direction='row'
+          row
           justifyContent='space-between'
           alignItems='center'
           p='l'
@@ -198,7 +198,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
             gap='m'
             css={{ flexGrow: 1 }}
           >
-            <Flex direction='row' alignItems='center' gap='s'>
+            <Flex row alignItems='center' gap='s'>
               <IconReceive size='l' color='default' />
               <Text variant='label' size='l' strength='strong'>
                 {messages.title}
@@ -216,31 +216,50 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                   {messages.unlockAll(formattedPrice)}
                 </Button>
               ) : null}
-              {shouldDisplayPremiumDownloadUnlocked ? (
-                <Flex gap='s'>
-                  <Flex
-                    borderRadius='3xl'
-                    ph='s'
-                    css={{
-                      backgroundColor: 'var(--harmony-light-green)',
-                      paddingTop: '1px',
-                      paddingBottom: '1px'
-                    }}
-                  >
-                    <IconLockUnlocked color='white' size='xs' />
-                  </Flex>
-                  <Text
-                    variant='label'
-                    size='l'
-                    strength='strong'
-                    color='subdued'
-                  >
-                    {messages.purchased}
-                  </Text>
-                </Flex>
-              ) : null}
             </Flex>
           </Flex>
+          <Flex
+            row
+            alignItems='center'
+            justifyContent='flex-end'
+            gap='m'
+            role='row'
+          >
+            {shouldHideDownload || !isDownloadAllTrackFilesEnabled ? null : (
+              <Button
+                variant='secondary'
+                size='small'
+                onClick={handleDownloadAll}
+              >
+                {messages.downloadAll}
+              </Button>
+            )}
+
+            {shouldDisplayPremiumDownloadUnlocked ? (
+              <Flex gap='s'>
+                <Flex
+                  borderRadius='3xl'
+                  ph='s'
+                  css={{
+                    backgroundColor: 'var(--harmony-light-green)',
+                    paddingTop: '1px',
+                    paddingBottom: '1px'
+                  }}
+                >
+                  <IconLockUnlocked color='white' size='xs' />
+                </Flex>
+                <Text
+                  variant='label'
+                  size='l'
+                  strength='strong'
+                  color='subdued'
+                >
+                  {messages.purchased}
+                </Text>
+              </Flex>
+            ) : null}
+          </Flex>
+
           <IconCaretDown
             css={{
               transition: 'transform var(--harmony-expressive)',
@@ -266,17 +285,17 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 onDownload={handleDownload}
                 index={ORIGINAL_TRACK_INDEX}
                 hideDownload={shouldHideDownload}
-                size={fileSizes[trackId]?.[downloadQuality]}
+                size={fileSizes?.[trackId]?.[downloadQuality]}
               />
             ) : null}
-            {stemTracks.map((s, i) => (
+            {stemTracks.map((stemTrack, i) => (
               <DownloadRow
-                trackId={s.id}
+                trackId={stemTrack.track_id}
                 parentTrackId={trackId}
-                key={s.id}
+                key={stemTrack.track_id}
                 onDownload={handleDownload}
                 hideDownload={shouldHideDownload}
-                size={fileSizes[s.id]?.[downloadQuality]}
+                size={fileSizes?.[stemTrack.track_id]?.[downloadQuality]}
                 index={
                   i +
                   (is_downloadable
@@ -285,27 +304,6 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 }
               />
             ))}
-            {shouldHideDownload || !isDownloadAllTrackFilesEnabled ? null : (
-              <Flex
-                p='l'
-                borderTop='default'
-                direction='row'
-                alignItems='center'
-                justifyContent='center'
-                w='100%'
-                gap='xs'
-                role='row'
-              >
-                <Button
-                  variant='secondary'
-                  size='small'
-                  iconLeft={IconReceive}
-                  onClick={handleDownloadAll}
-                >
-                  {messages.downloadAll}
-                </Button>
-              </Flex>
-            )}
             {uploadingStems.map((s, i) => (
               <DownloadRow
                 key={`uploading-stem-${i}`}

@@ -3,6 +3,7 @@ from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
+    Enum,
     Float,
     ForeignKey,
     Integer,
@@ -122,6 +123,17 @@ class Track(Base, RepresentableMixin):
     cover_original_song_title = Column(String)
     cover_original_artist = Column(String)
     is_owned_by_user = Column(Boolean, nullable=False, server_default=text("false"))
+    territory_codes = Column(ARRAY(String))
+    no_ai_use = Column(Boolean, nullable=False, server_default=text("false"))
+    parental_warning = Column(
+        Enum(
+            "explicit",
+            "explicit_content_edited",
+            "not_explicit",
+            "no_advice_available",
+            name="parental_warning_type",
+        )
+    )
 
     block1 = relationship(  # type: ignore
         "Block", primaryjoin="Track.blocknumber == Block.number"
