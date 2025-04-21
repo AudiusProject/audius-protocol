@@ -12,6 +12,7 @@ import { useHostRemixContestModal } from '@audius/common/store'
 import { dayjs } from '@audius/common/utils'
 import {
   Button,
+  Divider,
   Flex,
   Hint,
   IconTrophy,
@@ -20,10 +21,12 @@ import {
   ModalHeader,
   ModalTitle,
   Select,
-  Text
+  Text,
+  TextLink
 } from '@audius/harmony'
 import { EventEntityTypeEnum, EventEventTypeEnum } from '@audius/sdk'
 
+import { TextAreaV2 } from 'components/data-entry/TextAreaV2'
 import { DatePicker } from 'components/edit/fields/DatePickerField'
 import { mergeReleaseDateValues } from 'components/edit/fields/visibility/mergeReleaseDateValues'
 
@@ -33,18 +36,34 @@ const messages = {
   hostTitle: 'Host Remix Contest',
   description:
     'Turn your track into a remix challenge and co-sign your favorite submissions.',
-  deadlineTitle: 'Submission Deadline',
   hint: 'You can host one contest per song and adjust the submission deadline anytime within 90 days of the contest start.',
   startContest: 'Start Contest',
   save: 'Save',
   contestEndDateLabel: 'Last day to submit to contest',
   endDateError: 'Contest end date must be in the future within 90 days',
+  descriptionLabel: 'Contest Description',
+  descriptionPlaceholder:
+    'Write your contest description here. Include clear rules, guidelines, and any other important details you want your fans to know about your contest.',
+  descriptionError: 'Contest description is required',
+  prizeInfoLabel: 'Prizes',
+  prizeInfoPlaceholder:
+    'Describe what winners will receive. Be clear about how many winners there will be, and what each prize includes (e.g. cash, reposts, feedback, collaborations, etc.)',
+  deadlineLabel: 'Submission Deadline',
   timeLabel: 'Time',
   timePlaceholder: '12:00',
   timeError: 'Invalid time',
   meridianLabel: 'Meridian',
   meridianPlaceholder: 'AM',
-  turnOff: 'Turn Off Contest'
+  turnOff: 'Turn Off Contest',
+  contestHostingLabel: 'Learn how to host a remix contest'
+}
+
+const contestHostingLink =
+  'https://help.audius.co/artists/hosting-a-remix-contest'
+
+type RemixContestData = {
+  description: string
+  prizeInfo: string
 }
 
 export const HostRemixContestModal = () => {
@@ -63,11 +82,21 @@ export const HostRemixContestModal = () => {
   const hasContestEntries = remixesLoading || remixes?.length
   const displayTurnOffButton = !hasContestEntries && isEdit
 
+  const remixContestData = remixContest?.eventData as RemixContestData
+
+  // Form state
+  const [contestDescription, setContestDescription] = useState(
+    remixContestData ? remixContestData.description : ''
+  )
+  const [contestPrizeInfo, setContestPrizeInfo] = useState(
+    remixContest ? remixContestData.prizeInfo : ''
+  )
   const [contestEndDate, setContestEndDate] = useState(
     remixContest ? dayjs(remixContest.endDate) : null
   )
   const [endDateTouched, setEndDateTouched] = useState(false)
   const [endDateError, setEndDateError] = useState(false)
+  const [descriptionError, setDescriptionError] = useState(false)
   const [timeValue, setTimeValue] = useState(
     contestEndDate ? dayjs(contestEndDate).format('hh:mm') : ''
   )
@@ -111,20 +140,30 @@ export const HostRemixContestModal = () => {
       parsedTime,
       meridianValue
     )
-    const hasError =
+
+    const hasDescriptionError = !contestDescription
+    const hasDateError =
       !parsedDate ||
       dayjs(parsedDate.toISOString()).isBefore(dayjs()) ||
       dayjs(parsedDate.toISOString()).isAfter(dayjs().add(90, 'days'))
+    const hasError = hasDateError || hasDescriptionError
 
     setEndDateTouched(true)
-    setEndDateError(hasError)
+    setEndDateError(hasDateError)
+    setDescriptionError(hasDescriptionError)
     if (hasError || !trackId || !userId) return
 
     const endDate = parsedDate.toISOString()
 
+    const eventData: RemixContestData = {
+      description: contestDescription,
+      prizeInfo: contestPrizeInfo
+    }
+
     if (isEdit) {
       updateEvent({
         eventId: remixContest.eventId,
+        eventData,
         endDate,
         userId
       })
@@ -133,6 +172,7 @@ export const HostRemixContestModal = () => {
         eventType: EventEventTypeEnum.RemixContest,
         entityType: EventEntityTypeEnum.Track,
         entityId: trackId,
+        eventData,
         endDate,
         userId
       })
@@ -140,8 +180,8 @@ export const HostRemixContestModal = () => {
 
     onClose()
   }, [
-    contestEndDate,
     timeValue,
+    contestEndDate,
     meridianValue,
     trackId,
     userId,
@@ -149,6 +189,8 @@ export const HostRemixContestModal = () => {
     onClose,
     updateEvent,
     remixContest?.eventId,
+    contestDescription,
+    contestPrizeInfo,
     createEvent
   ])
 
@@ -168,7 +210,44 @@ export const HostRemixContestModal = () => {
           <Text variant='body'>{messages.description}</Text>
           <Flex direction='column' gap='l'>
             <Text variant='title' size='l'>
-              {messages.deadlineTitle}
+              {messages.descriptionLabel}
+            </Text>
+            <TextAreaV2
+              aria-label='contestDescription'
+              placeholder={messages.descriptionPlaceholder}
+              maxLength={1000}
+              value={contestDescription}
+              error={descriptionError}
+              helperText={
+                descriptionError ? messages.descriptionError : undefined
+              }
+              onChange={(e) => setContestDescription(e.target.value)}
+              css={{ minHeight: 144, maxHeight: 300 }}
+              showMaxLength
+            />
+            <TextLink variant='visible' href={contestHostingLink} isExternal>
+              {messages.contestHostingLabel}
+            </TextLink>
+          </Flex>
+          <Divider color='default' />
+          <Flex direction='column' gap='l'>
+            <Text variant='title' size='l'>
+              {messages.prizeInfoLabel}
+            </Text>
+            <TextAreaV2
+              aria-label='contestPrizeInfo'
+              placeholder={messages.prizeInfoPlaceholder}
+              maxLength={1000}
+              css={{ minHeight: 144, maxHeight: 300 }}
+              showMaxLength
+              value={contestPrizeInfo}
+              onChange={(e) => setContestPrizeInfo(e.target.value)}
+            />
+          </Flex>
+          <Divider color='default' />
+          <Flex direction='column' gap='l'>
+            <Text variant='title' size='l'>
+              {messages.deadlineLabel}
             </Text>
             <DatePicker
               name='contestEndDate'
