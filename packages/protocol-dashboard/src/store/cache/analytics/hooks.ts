@@ -218,7 +218,11 @@ async function fetchUptime(
 
   const endpoints =
     nodeType === ServiceType.DiscoveryProvider
-      ? ['https://api.audius.co']
+      ? [
+          `https://discoveryprovider.audius.co`,
+          `https://discoveryprovider2.audius.co`,
+          `https://discoveryprovider3.audius.co`
+        ]
       : [
           `https://creatornode.audius.co`,
           `https://creatornode2.audius.co`,
