@@ -38,8 +38,7 @@ class CosignChallengeUpdater(ChallengeUpdater):
             session.query(UserChallenge)
             .filter(
                 UserChallenge.challenge_id == "cs",
-                UserChallenge.specifier.like(f"{specifier_prefix}%"),  # Cosigner
-                UserChallenge.user_id == user_id,
+                UserChallenge.specifier.like(f"{specifier_prefix}:%"),  # Cosigner
                 UserChallenge.created_at >= one_month_ago,
             )
             .all()

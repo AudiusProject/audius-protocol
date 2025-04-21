@@ -101,10 +101,8 @@ def test_cosign_challenge(app):
         scope_and_process = make_scope_and_process(bus, session)
 
         # limited to 5 verified cosigns per month
-        for track_id in range(1, 10):
-            scope_and_process(
-                lambda: dc(track_id, 2, 1, datetime.now() - timedelta(days=50))
-            )
+        for i in range(1, 10):
+            scope_and_process(lambda: dc(i, 2, i, datetime.now() - timedelta(days=50)))
 
         scope_and_process(lambda: dc(11, 2, 1, datetime.now()))
 
