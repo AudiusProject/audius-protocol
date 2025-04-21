@@ -28,7 +28,8 @@ export enum FeatureFlags {
   CLAIM_ALL_REWARDS_TILE = 'claim_all_rewards_tile',
   RECENT_COMMENTS = 'recent_comments',
   DOWNLOAD_ALL_TRACK_FILES = 'download_all_track_files',
-  REMIX_CONTEST = 'remix_contest'
+  REMIX_CONTEST = 'remix_contest',
+  WALLET_UI_UPDATE = 'wallet_ui_update'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -51,7 +52,7 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.VERIFY_HANDLE_WITH_TIKTOK]: false,
   [FeatureFlags.VERIFY_HANDLE_WITH_TWITTER]: false,
   [FeatureFlags.VERIFY_HANDLE_WITH_INSTAGRAM]: false,
-  [FeatureFlags.USDC_PURCHASES]: false,
+  [FeatureFlags.USDC_PURCHASES]: true,
   [FeatureFlags.FEATURE_FLAG_ACCESS]: false,
   [FeatureFlags.IOS_USDC_PURCHASE_ENABLED]: true,
   [FeatureFlags.BUY_WITH_COINFLOW]: false,
@@ -72,5 +73,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.CLAIM_ALL_REWARDS_TILE]: true,
   [FeatureFlags.RECENT_COMMENTS]: false,
   [FeatureFlags.DOWNLOAD_ALL_TRACK_FILES]: false,
-  [FeatureFlags.REMIX_CONTEST]: false
+  [FeatureFlags.REMIX_CONTEST]: false,
+  [FeatureFlags.WALLET_UI_UPDATE]: false
 }

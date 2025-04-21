@@ -1,8 +1,7 @@
-import { useCallback, useState } from 'react'
+import React, { Fragment, useCallback, useState } from 'react'
 
-import { useTrack } from '@audius/common/api'
+import { useStems, useTrack } from '@audius/common/api'
 import {
-  useCurrentStems,
   useDownloadableContentAccess,
   useFeatureFlag
 } from '@audius/common/hooks'
@@ -21,6 +20,7 @@ import { LayoutAnimation } from 'react-native'
 
 import {
   Button,
+  Divider,
   Flex,
   IconLockUnlocked,
   IconReceive,
@@ -61,7 +61,9 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
   const { onOpen: openWaitForDownloadModal } = useWaitForDownloadModal()
   const [isExpanded, setIsExpanded] = useState(false)
   const { data: track } = useTrack(trackId)
-  const { stemTracks } = useCurrentStems({ trackId })
+  const { data: stemTracks = [] } = useStems(trackId)
+
+  // console.log('stemTracks', stemTracks)
   const {
     price,
     shouldDisplayPremiumDownloadLocked,
@@ -144,118 +146,106 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
 
   const renderHeader = () => {
     return (
-      <>
-        <Flex
-          p='l'
-          direction='row'
-          justifyContent='space-between'
-          alignItems='center'
-        >
-          <Flex gap='m'>
-            <Flex direction='row' alignItems='center' gap='s'>
-              <IconReceive color='default' />
-              <Text variant='label' size='l' strength='strong'>
-                {messages.title}
-              </Text>
-            </Flex>
-            {shouldDisplayPremiumDownloadLocked &&
-            formattedPrice !== undefined ? (
-              <Button
-                variant='primary'
-                size='small'
-                color='lightGreen'
-                onPress={handlePurchasePress}
-              >
-                {messages.unlockAll(formattedPrice)}
-              </Button>
-            ) : null}
-            {shouldDisplayPremiumDownloadUnlocked ? (
-              <>
-                <Flex gap='s' direction='row' alignItems='center'>
-                  <Flex
-                    borderRadius='3xl'
-                    ph='s'
-                    style={css({
-                      backgroundColor: color.special.lightGreen,
-                      paddingTop: 1,
-                      paddingBottom: 1
-                    })}
-                  >
-                    <IconLockUnlocked color='white' size='xs' />
-                  </Flex>
-                  <Text
-                    variant='label'
-                    // TODO: size other than m causes misalignment C-3709
-                    size='l'
-                    strength='strong'
-                    color='subdued'
-                  >
-                    {messages.purchased}
-                  </Text>
-                </Flex>
-              </>
-            ) : null}
+      <Flex gap='l' column pb={isExpanded ? 'l' : undefined}>
+        <Flex row justifyContent='space-between' alignItems='center'>
+          <Flex row alignItems='center' gap='s'>
+            <IconReceive color='default' />
+            <Text variant='label' size='l' strength='strong'>
+              {messages.title}
+            </Text>
           </Flex>
           <ExpandableArrowIcon expanded={isExpanded} />
         </Flex>
+        {shouldDisplayPremiumDownloadLocked && formattedPrice !== undefined ? (
+          <Button
+            variant='primary'
+            size='small'
+            color='lightGreen'
+            onPress={handlePurchasePress}
+          >
+            {messages.unlockAll(formattedPrice)}
+          </Button>
+        ) : null}
+        {shouldDisplayPremiumDownloadUnlocked ? (
+          <Flex row alignItems='center' gap='s'>
+            <Flex
+              borderRadius='3xl'
+              ph='s'
+              style={css({
+                backgroundColor: color.special.lightGreen,
+                paddingTop: 1,
+                paddingBottom: 1
+              })}
+            >
+              <IconLockUnlocked color='white' size='xs' />
+            </Flex>
+            <Text
+              variant='label'
+              // TODO: size other than m causes misalignment C-3709
+              size='l'
+              strength='strong'
+              color='subdued'
+            >
+              {messages.purchased}
+            </Text>
+          </Flex>
+        ) : null}
+        {isDownloadAllTrackFilesEnabled && !shouldHideDownload ? (
+          <Button
+            variant='secondary'
+            size='small'
+            onPress={handleDownloadAll}
+            fullWidth
+          >
+            {messages.downloadAll}
+          </Button>
+        ) : null}
         {shouldDisplayOwnerPremiumDownloads && formattedPrice ? (
-          <Flex pl='l' pr='l' pb='l'>
+          <Flex>
             <Text variant='body' size='m' strength='strong'>
               {messages.purchaseableIsOwner(formattedPrice)}
             </Text>
           </Flex>
         ) : null}
-      </>
+      </Flex>
     )
   }
 
   return (
-    <Flex>
-      <Expandable
-        renderHeader={renderHeader}
-        expanded={isExpanded}
-        onToggleExpand={onToggleExpand}
-      >
+    <Expandable
+      renderHeader={renderHeader}
+      expanded={isExpanded}
+      onToggleExpand={onToggleExpand}
+    >
+      <Flex gap='m'>
         {track?.is_downloadable ? (
-          <DownloadRow
-            trackId={trackId}
-            index={ORIGINAL_TRACK_INDEX}
-            hideDownload={shouldHideDownload}
-            onDownload={handleDownload}
-          />
+          <>
+            <Divider />
+            <DownloadRow
+              trackId={trackId}
+              index={ORIGINAL_TRACK_INDEX}
+              hideDownload={shouldHideDownload}
+              onDownload={handleDownload}
+            />
+          </>
         ) : null}
-        {stemTracks?.map((s, i) => (
-          <DownloadRow
-            trackId={s.id}
-            key={s.id}
-            index={
-              i +
-              (track?.is_downloadable
-                ? STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK
-                : STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK)
-            }
-            hideDownload={shouldHideDownload}
-            onDownload={handleDownload}
-          />
+        {stemTracks?.map((stemTrack, i) => (
+          <Fragment key={stemTrack.track_id}>
+            <Divider />
+            <DownloadRow
+              trackId={stemTrack.track_id}
+              index={
+                i +
+                (track?.is_downloadable
+                  ? STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK
+                  : STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK)
+              }
+              hideDownload={shouldHideDownload}
+              onDownload={handleDownload}
+            />
+          </Fragment>
         ))}
-        {isDownloadAllTrackFilesEnabled && !shouldHideDownload ? (
-          <Flex
-            borderTop='default'
-            direction='row'
-            alignItems='center'
-            justifyContent='center'
-            p='l'
-          >
-            <Button
-              variant='secondary'
-              size='small'
-              onPress={handleDownloadAll}
-            >
-              {messages.downloadAll}
-            </Button>
-          </Flex>
-        ) : null}
-      </Expandable>
-    </Flex>
+      </Flex>
+    </Expandable>
   )
 }

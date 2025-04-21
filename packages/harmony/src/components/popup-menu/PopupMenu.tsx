@@ -81,7 +81,7 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
       color: color.text.default,
       cursor: 'pointer',
       '&:hover': {
-        color: color.text.staticWhite,
+        color: color.text.white,
         background: color.secondary.s300,
         path: {
           fill: color.text.staticWhite

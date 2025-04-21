@@ -113,6 +113,7 @@ export const useTrackHistory = (
   })
 
   return useLineupQuery({
+    lineupData: queryData.data ?? [],
     queryData,
     queryKey: getTrackHistoryQueryKey({
       pageSize,

@@ -4,6 +4,7 @@ import {
   useTrackRank,
   useRemixContest,
   useToggleFavoriteTrack,
+  useStems,
   useTrack
 } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
@@ -50,10 +51,10 @@ import IconCalendarMonth from '@audius/harmony/src/assets/icons/CalendarMonth.sv
 import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
 import IconTrending from '@audius/harmony/src/assets/icons/Trending.svg'
 import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
-import { EventEntityTypeEnum } from '@audius/sdk'
 import { useTheme } from '@emotion/react'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
+import { pick } from 'lodash'
 import { useToggle } from 'react-use'
 import useMeasure from 'react-use-measure'
 
@@ -66,6 +67,7 @@ import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement } from 'components/types'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 
 import { AiTrackSection } from './AiTrackSection'
 import { CardTitle } from './CardTitle'
@@ -113,6 +115,7 @@ const messages = {
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`,
   contestDeadline: 'Contest Deadline',
   uploadRemixButtonText: 'Upload Your Remix',
+  contestEnded: 'Contest Ended',
   deadline: (deadline?: string) => {
     return deadline
       ? `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`
@@ -226,29 +229,22 @@ export const GiantTrackTile = ({
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
   )
-  const { data: event, isLoading: isEventsLoading } = useRemixContest(trackId, {
-    entityType: EventEntityTypeEnum.Track
-  })
-  const isRemixContest = isRemixContestEnabled && !!event
+  const { data: remixContest, isLoading: isEventsLoading } =
+    useRemixContest(trackId)
+  const isRemixContest = isRemixContestEnabled && !!remixContest
 
   const isLongFormContent =
     genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
-  const { data: partialTrack } = useTrack(trackId, {
-    select: (track) => {
-      return {
-        is_downloadable: track?.is_downloadable,
-        _stems: track?._stems,
-        preview_cid: track?.preview_cid
-      }
-    }
+  const { data: track } = useTrack(trackId, {
+    select: (track) => pick(track, ['is_downloadable', 'preview_cid'])
   })
-  const { is_downloadable, _stems, preview_cid } = partialTrack ?? {}
-  const hasDownloadableAssets = is_downloadable || (_stems?.length ?? 0) > 0
+  const { data: stems = [] } = useStems(trackId)
+  const hasDownloadableAssets = track?.is_downloadable || stems.length > 0
   // Preview button is shown for USDC-gated tracks if user does not have access
   // or is the owner
   const showPreview =
-    isUSDCPurchaseGated && (isOwner || !hasStreamAccess) && preview_cid
+    isUSDCPurchaseGated && (isOwner || !hasStreamAccess) && track?.preview_cid
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
   const shouldShowScheduledRelease =
@@ -472,8 +468,9 @@ export const GiantTrackTile = ({
     )
   }
 
-  const goToUploadWithRemix = useCallback(() => {
+  const goToUploadWithRemix = useRequiresAccountCallback(() => {
     if (!trackId) return
+
     const state = {
       initialMetadata: {
         is_remix: true,
@@ -487,13 +484,14 @@ export const GiantTrackTile = ({
 
   const renderSubmitRemixContestSection = useCallback(() => {
     if (!isRemixContest) return null
+    const isContestOver = dayjs(remixContest.endDate).isBefore(dayjs())
     return (
       <Flex row gap='m'>
         <Flex gap='xs' alignItems='center'>
           <Text variant='label' color='accent'>
-            {messages.contestDeadline}
+            {isContestOver ? messages.contestEnded : messages.contestDeadline}
           </Text>
-          <Text>{messages.deadline(event?.endDate)}</Text>
+          <Text>{messages.deadline(remixContest.endDate)}</Text>
         </Flex>
         {!isOwner ? (
           <Button
@@ -507,7 +505,7 @@ export const GiantTrackTile = ({
         ) : null}
       </Flex>
     )
-  }, [isRemixContest, event?.endDate, isOwner, goToUploadWithRemix])
+  }, [isRemixContest, remixContest, isOwner, goToUploadWithRemix])
 
   const isLoading = loading || artworkLoading || isEventsLoading
 

@@ -1,4 +1,3 @@
-import asyncio
 import json
 import logging
 import os
@@ -238,7 +237,9 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     latest_block_num = -1
     if core_health:
         latest_indexed_block_num = core_health.get("latest_indexed_block") or 0
-        latest_block_num = core_health.get("latest_chain_block") or 0
+
+    # Get latest chain block from tip, irrespective of indexer
+    (latest_block_num, _) = get_latest_chain_block_set_if_nx(redis)
 
     user_bank_health_info = get_solana_indexer_status(
         redis, redis_keys.solana.user_bank, user_bank_max_drift
@@ -466,11 +467,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     delist_statuses_ok = get_delist_statuses_ok()
     if not delist_statuses_ok:
         errors.append("unhealthy delist statuses")
-
-    if verbose:
-        api_healthy, reason = is_api_healthy(url)
-        if not api_healthy:
-            errors.append(f"api unhealthy: {reason}")
 
     health_results["errors"] = errors
     health_results["discovery_provider_healthy"] = not errors or bypass_errors
@@ -712,87 +708,3 @@ def get_latest_chain_block_set_if_nx(redis=None):
         latest_block_hash = stored_latest_blockhash.decode("utf-8")
 
     return latest_block_num, latest_block_hash
-
-
-def is_api_healthy(my_url):
-    if not my_url:
-        return True, ""
-
-    if "staging" in my_url:
-        user_search_term = "ray"
-        user_search_response_keyword = "ray"
-        track_id = "7eP5n"
-        track_response_keyword = "April"
-    else:
-        user_search_term = "Brownies"
-        user_search_response_keyword = "keeping you on your toes"
-        track_id = "D7KyD"
-        track_response_keyword = "live set at Brownies"
-
-    user_search_endpoint = f"{my_url}/v1/users/search?query={user_search_term}"
-    track_stream_endpoint = f"{my_url}/v1/tracks/{track_id}/stream"
-    track_endpoint = f"{my_url}/v1/tracks/{track_id}"
-    trending_endpoint = f"{my_url}/v1/tracks/trending"
-    urls = [
-        user_search_endpoint,
-        track_stream_endpoint,
-        track_endpoint,
-        trending_endpoint,
-    ]
-
-    async def fetch_url(url):
-        try:
-            loop = asyncio.get_event_loop()
-            future = loop.run_in_executor(None, requests.get, url)
-            response = await future
-            response.raise_for_status()
-            return response.text
-        except Exception as e:
-            return f"error getting {url}: {str(e)}"
-
-    async def request_all(urls):
-        responses = {}
-        tasks = [
-            asyncio.create_task(fetch_url(url), name=f"fetch:{url}") for url in urls
-        ]
-        done, _ = await asyncio.wait(
-            tasks, return_when=asyncio.ALL_COMPLETED, timeout=0.5
-        )
-        for task in done:
-            url = task.get_name().removeprefix("fetch:")
-            try:
-                responses[url] = task.result()
-            except Exception as e:
-                responses[url] = f"error getting {url}: {str(e)}"
-        return responses
-
-    errors = []
-    try:
-        responses = asyncio.run(request_all(urls))
-
-        for url, response_text in responses.items():
-            if "error getting" in response_text:
-                errors.append(response_text)
-            else:
-                if (
-                    url == user_search_endpoint
-                    and user_search_response_keyword not in response_text
-                ):
-                    errors.append(
-                        f"missing keyword '{user_search_response_keyword}' in response from {url}"
-                    )
-                if (
-                    url == track_endpoint
-                    and track_response_keyword not in response_text
-                ):
-                    errors.append(
-                        f"missing keyword '{track_response_keyword}' in response from {url}"
-                    )
-                if url == trending_endpoint and "artwork" not in response_text:
-                    errors.append(f"missing keyword 'artwork' in response from {url}")
-    except Exception as e:
-        logger.error(f"Could not check api health: {e}")
-
-    if errors:
-        return False, ", ".join(errors)
-    return True, ""

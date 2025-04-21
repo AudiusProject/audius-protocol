@@ -28,7 +28,6 @@ import {
 } from '@audius/common/store'
 import { Genre, Nullable, route } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/harmony'
-import { EventEntityTypeEnum } from '@audius/sdk'
 import { connect, useDispatch, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
@@ -123,6 +122,7 @@ const TrackMenu = ({
   includeFavorite = true,
   includeAlbumPage = true,
   includeTrackPage = true,
+  includeRemixContest = false,
   isArtistPick,
   isDeleted,
   isOwner,
@@ -147,8 +147,8 @@ const TrackMenu = ({
     source: FavoriteSource.OVERFLOW
   })
 
-  const { data: event } = useRemixContest(props.trackId, {
-    entityType: EventEntityTypeEnum.Track
+  const { data: remixContest } = useRemixContest(props.trackId, {
+    enabled: includeRemixContest
   })
 
   const onDeleteTrack = (trackId: Nullable<number>) => {
@@ -175,7 +175,6 @@ const TrackMenu = ({
       handle,
       includeRepost,
       includeShare,
-      includeRemixContest,
       openAddToCollectionModal,
       openEmbedModal,
       repostTrack,
@@ -309,7 +308,9 @@ const TrackMenu = ({
     }
 
     const remixContestMenuItem = {
-      text: event ? messages.editRemixContest : messages.hostRemixContest,
+      text: remixContest
+        ? messages.editRemixContest
+        : messages.hostRemixContest,
       onClick: () => {
         openHostRemixContest({ trackId })
       }
@@ -317,7 +318,7 @@ const TrackMenu = ({
 
     const menu: { items: PopupMenuItem[] } = { items: [] }
 
-    if (includeRemixContest && isOwner && !isDeleted) {
+    if (includeRemixContest && isOwner && !isDeleted && !track?.remix_of) {
       menu.items.push(remixContestMenuItem)
     }
 

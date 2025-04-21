@@ -162,7 +162,7 @@ export type LineupProps = {
   actions: LineupBaseActions
 
   /** The maximum number of total tracks to fetch */
-  count?: number
+  maxEntries?: number
 
   /**
    * Whether or not to delineate the lineup by time of the `activityTimestamp`
@@ -264,7 +264,7 @@ export type LineupProps = {
   /**
    * Which item to start the lineup at (previous items will not be rendered)
    */
-  start?: number
+  offset?: number
 
   /**
    * The variant of the Lineup
@@ -298,7 +298,7 @@ export type LineupProps = {
   itemStyles?: ViewStyle
 
   // Tan query props
-  pageSize?: number
+  pageSize: number
   initialPageSize?: number
   isFetching: boolean
   loadNextPage: () => void
@@ -318,7 +318,6 @@ export type LineupProps = {
  */
 export const TanQueryLineup = ({
   actions,
-  count,
   delineate,
   disableTopTabScroll,
   fetchPayload,
@@ -335,7 +334,7 @@ export const TanQueryLineup = ({
   pullToRefresh,
   rankIconCount = 0,
   refresh,
-  start = 0,
+  offset = 0,
   variant = LineupVariant.MAIN,
   listKey,
   selfLoad,
@@ -350,6 +349,7 @@ export const TanQueryLineup = ({
   isFetching,
   isPending,
   queryData = [],
+  maxEntries = Infinity,
   ...listProps
 }: LineupProps) => {
   const debouncedLoadNextPage = useDebouncedCallback(
@@ -424,21 +424,16 @@ export const TanQueryLineup = ({
 
     // Apply offset and maxEntries to the lineup entries
     const items =
-      count !== undefined
-        ? entries.slice(start, start + count)
-        : entries.slice(start)
+      maxEntries !== undefined
+        ? entries.slice(offset, offset + maxEntries)
+        : entries.slice(offset)
 
     const getSkeletonCount = () => {
-      // No skeletons if not fetching
-      if (!isFetching && !isLineupPending) {
-        return 0
+      if (lineup.entries.length === 0 && (isPending || isLineupPending)) {
+        return Math.min(maxEntries, initialPageSize ?? pageSize)
       }
-      // Lineups like Feed load a different number of items on the first page
-      if (initialPageSize && isPending) {
-        return initialPageSize
-      }
-      if (pageSize) {
-        return count ? Math.min(count, pageSize) : pageSize
+      if (isFetching) {
+        return Math.min(maxEntries, pageSize)
       }
       return 0
     }
@@ -447,7 +442,7 @@ export const TanQueryLineup = ({
       () => ({ _loading: true }) as LoadingLineupItem
     )
 
-    if (leadingElementId) {
+    if (leadingElementId !== undefined) {
       const [artistPick, ...restEntries] = [...items, ...skeletonItems]
 
       const result: Section[] = [
@@ -466,8 +461,8 @@ export const TanQueryLineup = ({
     return [{ delineate: false, data }]
   }, [
     lineup.entries,
-    count,
-    start,
+    maxEntries,
+    offset,
     leadingElementId,
     isFetching,
     isLineupPending,

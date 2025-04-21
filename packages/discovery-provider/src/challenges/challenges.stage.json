@@ -211,7 +211,7 @@
     "amount": 10,
     "active": true,
     "step_count": 2147483647,
-    "starting_block": 0,
+    "starting_block": 2718415,
     "weekly_pool": 2147483647,
     "cooldown_days": 7
   },

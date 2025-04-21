@@ -194,19 +194,23 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
                     TrackWithAggregates.release_date,
                     TrackWithAggregates.created_at,
                 )
-            )
+            ),
+            desc(TrackWithAggregates.track_id),
         )
     elif sort_method == SortMethod.plays:
         base_query = base_query.join(TrackWithAggregates.aggregate_play).order_by(
-            sort_fn(AggregatePlay.count)
+            sort_fn(AggregatePlay.count),
+            desc(TrackWithAggregates.track_id),
         )
     elif sort_method == SortMethod.reposts:
         base_query = base_query.join(TrackWithAggregates.aggregate_track).order_by(
-            sort_fn(AggregateTrack.repost_count)
+            sort_fn(AggregateTrack.repost_count),
+            desc(TrackWithAggregates.track_id),
         )
     elif sort_method == SortMethod.saves:
         base_query = base_query.join(TrackWithAggregates.aggregate_track).order_by(
-            sort_fn(AggregateTrack.save_count)
+            sort_fn(AggregateTrack.save_count),
+            desc(TrackWithAggregates.track_id),
         )
     else:
         # This branch covers added_date, or any other sort method

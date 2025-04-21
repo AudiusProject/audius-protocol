@@ -1,9 +1,11 @@
+import type { RefObject } from 'react'
 import React, { useCallback } from 'react'
 
 import {
   useRemixContest,
   useToggleFavoriteTrack,
-  useTrackRank
+  useTrackRank,
+  useStems
 } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
@@ -47,8 +49,8 @@ import {
   useEarlyReleaseConfirmationModal
 } from '@audius/common/store'
 import { formatReleaseDate, Genre, removeNullable } from '@audius/common/utils'
-import { EventEntityTypeEnum } from '@audius/sdk'
 import dayjs from 'dayjs'
+import type { FlatList } from 'react-native'
 import { TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -123,11 +125,10 @@ const messages = {
   releases: (releaseDate: string) =>
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`,
   remixContest: 'Remix Contest',
+  contestEnded: 'Contest Ended',
   contestDeadline: 'Contest Deadline',
   deadline: (deadline?: string) =>
-    deadline
-      ? `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`
-      : '',
+    deadline ? `${dayjs(deadline).format('MM/DD/YYYY')}` : '',
   uploadRemixButtonText: 'Upload Your Remix'
 }
 
@@ -147,6 +148,7 @@ type TrackScreenDetailsTileProps = {
   user: User | SearchUser
   uid: UID
   isLineupLoading: boolean
+  scrollViewRef: RefObject<FlatList>
 }
 
 const recordPlay = (id, play = true, isPreview = false) => {
@@ -164,7 +166,8 @@ export const TrackScreenDetailsTile = ({
   track,
   user,
   uid,
-  isLineupLoading
+  isLineupLoading,
+  scrollViewRef
 }: TrackScreenDetailsTileProps) => {
   const styles = useStyles()
   const { hasStreamAccess } = useGatedContentAccess(track as Track) // track is of type Track | SearchTrack but we only care about some of their common fields, maybe worth refactoring later
@@ -223,9 +226,9 @@ export const TrackScreenDetailsTile = ({
 
   const remixParentTrackId = remixOf?.tracks?.[0]?.parent_track_id
   const isRemix = !!remixParentTrackId
+  const { data: stems = [] } = useStems(track.track_id)
   const hasDownloadableAssets =
-    (track as Track)?.is_downloadable ||
-    ((track as Track)?._stems?.length ?? 0) > 0
+    (track as Track)?.is_downloadable || stems.length > 0
 
   const { open: openCommentDrawer } = useCommentDrawer()
 
@@ -236,10 +239,8 @@ export const TrackScreenDetailsTile = ({
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
   )
-  const { data: event } = useRemixContest(trackId, {
-    entityType: EventEntityTypeEnum.Track
-  })
-  const isRemixContest = isRemixContestEnabled && event
+  const { data: remixContest } = useRemixContest(trackId)
+  const isRemixContest = isRemixContestEnabled && remixContest
 
   const isPlayingPreview = isPreviewing && isPlaying
   const isPlayingFullAccess = isPlaying && !isPreviewing
@@ -445,7 +446,7 @@ export const TrackScreenDetailsTile = ({
     const addToAlbumAction =
       isOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null
     const overflowActions = [
-      isOwner && isRemixContestEnabled
+      isOwner && isRemixContestEnabled && !isRemix
         ? OverflowAction.HOST_REMIX_CONTEST
         : null,
       addToAlbumAction,
@@ -515,14 +516,15 @@ export const TrackScreenDetailsTile = ({
 
   const renderRemixContestSection = () => {
     if (!isRemixContest) return null
+    const isContestOver = dayjs(remixContest?.endDate).isBefore(dayjs())
     return (
       <Flex gap='m'>
         <Flex row gap='xs' alignItems='center'>
           <Text variant='label' color='accent'>
-            {messages.contestDeadline}
+            {isContestOver ? messages.contestEnded : messages.contestDeadline}
           </Text>
           <Text size='s' strength='strong'>
-            {messages.deadline(event?.endDate)}
+            {messages.deadline(remixContest?.endDate)}
           </Text>
         </Flex>
         {!isOwner ? (
@@ -700,7 +702,7 @@ export const TrackScreenDetailsTile = ({
           onPressReposts={handlePressReposts}
           onPressComments={handlePressComments}
         />
-        <TrackDescription description={description} />
+        <TrackDescription description={description} scrollRef={scrollViewRef} />
         <TrackMetadataList trackId={trackId} />
         {renderTags()}
         {renderRemixContestSection()}

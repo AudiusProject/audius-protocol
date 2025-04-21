@@ -1,5 +1,4 @@
-import type { ReactElement } from 'react'
-import { useRef } from 'react'
+import React, { type ReactElement, useRef, forwardRef } from 'react'
 
 import type { FlatListProps } from 'react-native'
 import { FlatList } from 'react-native'
@@ -23,13 +22,17 @@ type VirtualizedScrollViewProps = BaseFlatListProps & {
  * This gives us much more flexibility with the layout and styling of FlatLists,
  * for example styling the FlatList content separately from the Header
  */
-export const VirtualizedScrollView = (props: VirtualizedScrollViewProps) => {
+export const VirtualizedScrollView = forwardRef<
+  FlatList,
+  VirtualizedScrollViewProps
+>((props, ref) => {
   const { children, ...other } = props
   const listHeader = Array.isArray(children) ? <>{children}</> : children
-  const ref = useRef<FlatList>(null)
+  const innerRef = useRef<FlatList>(null)
+  const combinedRef = (ref ?? innerRef) as React.RefObject<FlatList>
 
   useScrollToTop(() => {
-    ref.current?.scrollToOffset({
+    combinedRef.current?.scrollToOffset({
       offset: 0,
       animated: true
     })
@@ -37,7 +40,7 @@ export const VirtualizedScrollView = (props: VirtualizedScrollViewProps) => {
 
   return (
     <FlatList
-      ref={ref}
+      ref={combinedRef}
       ListHeaderComponent={listHeader}
       data={null}
       renderItem={() => null}
@@ -46,4 +49,4 @@ export const VirtualizedScrollView = (props: VirtualizedScrollViewProps) => {
       {...other}
     />
   )
-}
+})

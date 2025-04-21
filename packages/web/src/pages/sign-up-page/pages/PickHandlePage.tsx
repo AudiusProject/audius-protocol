@@ -25,6 +25,7 @@ import {
 import { ToastContext } from 'components/toast/ToastContext'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { identify } from 'services/analytics'
 import { restrictedHandles } from 'utils/restrictedHandles'
 
 import { HandleField } from '../components/HandleField'
@@ -123,6 +124,7 @@ export const PickHandlePage = () => {
   const handleSubmit = useCallback(
     (values: PickHandleValues) => {
       const { handle } = values
+      identify({ handle })
       dispatch(setValueField('handle', handle))
       if (isFastReferral) {
         dispatch(setValueField('name', handle))

@@ -1,28 +1,3 @@
-.trackHeader {
-  --border-width: 1px;
-  padding: var(--harmony-unit-4);
-  position: relative;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: var(--harmony-unit-4);
-  align-items: center;
-  background: var(--harmony-white);
-  border: var(--border-width) solid var(--harmony-n-100);
-  border-radius: var(--harmony-unit-2);
-  box-shadow:
-    0 0 1px 0 var(--tile-shadow-1),
-    0 1px 0 0 var(--tile-shadow-2),
-    0 2px 5px -2px var(--tile-shadow-3);
-  text-align: left;
-}
-
-.borderOffset {
-  position: absolute;
-  top: calc(-1 * var(--border-width));
-  left: calc(-1 * var(--border-width));
-}
-
 .coverArt {
   height: 195px;
   width: 195px;
@@ -48,25 +23,11 @@
   text-align: center;
 }
 
-.verified {
-  margin-left: 8px;
-}
-
 .titleArtistSection {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--harmony-unit-3);
-}
-
-.buttonContainer {
-  width: 100%;
-}
-
-.shareButton {
-  width: 100%;
-  display: flex;
-  justify-content: center;
 }
 
 /* Co-sign Info Label Section */
@@ -100,52 +61,6 @@
   right: 0px !important;
   display: inline-flex;
   justify-content: center;
-}
-
-/* Info Section */
-.infoSection {
-  display: flex;
-  gap: var(--harmony-unit-4);
-  flex-wrap: wrap;
-  width: 100%;
-}
-
-.infoFact {
-  flex: 1;
-  display: flex;
-  gap: var(--harmony-unit-2);
-  text-align: left;
-  width: 50%;
-}
-
-.infoLabel {
-  color: var(--harmony-n-300);
-  font-family: var(--harmony-font-family);
-  font-size: var(--harmony-font-s);
-  font-weight: var(--harmony-font-bold);
-  letter-spacing: 0.35px;
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-}
-
-.infoValue {
-  color: var(--harmony-neutral);
-  font-family: var(--harmony-font-family);
-  font-size: var(--harmony-font-s);
-  font-weight: var(--harmony-font-demi-bold);
-  line-height: 16px;
-  display: flex;
-  align-items: center;
-}
-
-.infoValue div {
-  display: flex;
-  align-items: center;
-}
-
-.infoValue div :global(.emoji) {
-  margin: -4px 0px 0px 4px;
 }
 
 /* Loading */
@@ -215,16 +130,4 @@
 
 .aiSectionDescription h2 {
   margin: 0;
-}
-
-.badgeAi {
-  background: linear-gradient(
-      180deg,
-      var(--ai-primary) 0%,
-      var(--ai-secondary) 100%
-    ),
-    var(--ai-primary);
-  width: 100%;
-  display: flex;
-  justify-content: center;
 }

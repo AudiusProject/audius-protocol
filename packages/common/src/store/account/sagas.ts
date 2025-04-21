@@ -141,12 +141,15 @@ function* initializeMetricsForUser({
     const traits = {
       isVerified: accountUser.is_verified,
       trackCount: accountUser.track_count,
+      handle: accountUser.handle,
+      name: accountUser.name,
+      userId: accountUser.user_id,
       managerHandle,
       managerUserId,
       solanaWallet
     }
 
-    yield* call([analytics, analytics.identify], accountUser.handle, traits)
+    yield* call([analytics, analytics.identify], traits)
     yield* call(setSentryUser, accountUser, traits)
   }
 }

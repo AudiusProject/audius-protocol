@@ -5,29 +5,23 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { eventMetadataFromSDK } from '~/adapters/event'
 import { useAudiusQueryContext } from '~/audius-query'
-import { Event } from '~/models/Event'
-import { ID } from '~/models/Identifiers'
+import { ID } from '~/models'
 import { removeNullable } from '~/utils'
 
 import { SelectableQueryOptions } from '../types'
 import { useCurrentUserId } from '../useCurrentUserId'
 
 import {
-  getEventsByEntityIdQueryKey,
-  EventsByEntityIdOptions,
+  getEventIdsByEntityIdQueryKey,
+  EventIdsByEntityIdOptions,
   getEventQueryKey
 } from './utils'
 
-type UseEventsByEntityIdOptions<TResult = Event[]> = SelectableQueryOptions<
-  Event[],
-  TResult
-> &
-  EventsByEntityIdOptions
-
-export const useEventsByEntityId = <TResult>(
-  entityId: ID | null | undefined,
-  options?: UseEventsByEntityIdOptions<TResult>
+export const useEventIdsByEntityId = (
+  args: EventIdsByEntityIdOptions,
+  options?: SelectableQueryOptions<ID[]>
 ) => {
+  const { entityId, ...restArgs } = args ?? {}
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
@@ -36,16 +30,13 @@ export const useEventsByEntityId = <TResult>(
   const select = useMemo(() => options?.select, [])
 
   const queryData = useQuery({
-    queryKey: getEventsByEntityIdQueryKey(entityId, options),
+    queryKey: getEventIdsByEntityIdQueryKey(args),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const response = await sdk.events.getEntityEvents({
         entityId: Id.parse(entityId),
         userId: OptionalId.parse(currentUserId),
-        entityType: options?.entityType,
-        filterDeleted: options?.filterDeleted,
-        offset: options?.offset,
-        limit: options?.limit
+        ...restArgs
       })
       const events = response.data ?? []
       const eventsMetadata = events
@@ -56,9 +47,10 @@ export const useEventsByEntityId = <TResult>(
         queryClient.setQueryData(getEventQueryKey(event.eventId), event)
       })
 
-      return eventsMetadata
+      return eventsMetadata.map((event) => event.eventId)
     },
-    enabled: options?.enabled !== false && entityId !== undefined,
+    ...options,
+    enabled: options?.enabled !== false && !!entityId,
     select
   })
 
