@@ -1,7 +1,5 @@
 import { useRemixContest } from '@audius/common/api'
-import { useFeatureFlag } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { UPLOAD_PAGE } from '@audius/common/src/utils/route'
 import {
   Box,
