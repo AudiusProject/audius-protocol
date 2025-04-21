@@ -1,10 +1,11 @@
 import { Event as EventSDK, HashId, OptionalHashId } from '@audius/sdk'
+import camelcaseKeys from 'camelcase-keys'
 
 import { Event } from '~/models/Event'
 import { dayjs } from '~/utils'
 
 export const eventMetadataFromSDK = (input: EventSDK): Event | undefined => {
-  const { eventId, userId, entityId, ...rest } = input
+  const { eventId, userId, entityId, eventData, ...rest } = input
 
   const decodedEventId = HashId.parse(eventId)
   const decodedUserId = HashId.parse(userId)
@@ -21,6 +22,7 @@ export const eventMetadataFromSDK = (input: EventSDK): Event | undefined => {
 
   return {
     ...rest,
+    eventData: camelcaseKeys(eventData),
     eventId: decodedEventId,
     userId: decodedUserId,
     entityId: decodedEntityId ?? null,
