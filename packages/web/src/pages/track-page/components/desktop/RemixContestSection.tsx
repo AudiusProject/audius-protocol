@@ -99,18 +99,20 @@ export const RemixContestSection = ({
         </Text>
       </Flex>
       <Box backgroundColor='white' shadow='mid' borderRadius='l'>
-        <Flex column gap='l' pv='m'>
+        <Flex column pv='m'>
           <Flex justifyContent='space-between' borderBottom='default' ph='xl'>
-            {TabBar}
+            <Flex alignItems='center'>{TabBar}</Flex>
             {!isOwner ? (
-              <Button
-                variant='secondary'
-                size='small'
-                onClick={goToUploadWithRemix}
-                iconLeft={IconCloudUpload}
-              >
-                {messages.uploadRemixButtonText}
-              </Button>
+              <Flex mb='m'>
+                <Button
+                  variant='secondary'
+                  size='small'
+                  onClick={goToUploadWithRemix}
+                  iconLeft={IconCloudUpload}
+                >
+                  {messages.uploadRemixButtonText}
+                </Button>
+              </Flex>
             ) : null}
           </Flex>
           {TabBody}
