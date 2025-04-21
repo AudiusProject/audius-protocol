@@ -210,11 +210,8 @@ export const useTrackPageLineup = (
   const indices = queryData.data?.pages?.[0]?.indices
 
   const lineupData = useLineupQuery({
-    // @ts-ignore
-    queryData: {
-      ...queryData,
-      data: queryData.data?.pages.map((page) => page.tracks).flat()
-    },
+    lineupData: queryData.data?.pages.flatMap((page) => page.tracks) ?? [],
+    queryData,
     queryKey: getTrackPageLineupQueryKey(trackId),
     lineupActions: tracksActions,
     lineupSelector: trackPageSelectors.getLineup,
