@@ -318,7 +318,6 @@ export type LineupProps = {
  */
 export const TanQueryLineup = ({
   actions,
-  maxEntries,
   delineate,
   disableTopTabScroll,
   fetchPayload,
@@ -350,6 +349,7 @@ export const TanQueryLineup = ({
   isFetching,
   isPending,
   queryData = [],
+  maxEntries = Infinity,
   ...listProps
 }: LineupProps) => {
   const debouncedLoadNextPage = useDebouncedCallback(
@@ -429,15 +429,13 @@ export const TanQueryLineup = ({
         : entries.slice(offset)
 
     const getSkeletonCount = () => {
-      // No skeletons if not fetching
-      if (!isFetching && !isLineupPending) {
-        return 0
+      if (lineup.entries.length === 0 && (isPending || isLineupPending)) {
+        return Math.min(maxEntries, initialPageSize ?? pageSize)
       }
-      // Lineups like Feed load a different number of items on the first page
-      if (initialPageSize && isPending) {
-        return initialPageSize
+      if (isFetching) {
+        return Math.min(maxEntries, pageSize)
       }
-      return maxEntries ? Math.min(maxEntries, pageSize) : pageSize
+      return 0
     }
 
     const skeletonItems = range(getSkeletonCount()).map(
