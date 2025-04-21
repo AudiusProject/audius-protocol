@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-import dayjs from 'dayjs'
+import dayjs from '../utils/dayjs'
 
 type TimeUnit = {
   value: number
@@ -32,15 +32,18 @@ export const useRemixCountdown = (endDate?: string): TimeLeft => {
     const calculateTimeLeft = () => {
       const now = dayjs()
       const end = dayjs(endDate)
-      const diff = end.diff(now)
 
-      if (diff <= 0) {
+      if (end.isBefore(now)) {
         setTimeLeft(null)
         return
       }
 
-      const duration = dayjs.duration(diff)
-      const daysValue = duration.days()
+      // Calculate total days between dates
+      const totalDays = end.diff(now, 'days')
+      const remainingTime = end.diff(now)
+      const duration = dayjs.duration(remainingTime)
+
+      const daysValue = totalDays
       const hoursValue = duration.hours()
       const minutesValue = duration.minutes()
       const secondsValue = duration.seconds()
