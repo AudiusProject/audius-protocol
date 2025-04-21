@@ -1,7 +1,4 @@
-import { IconButton } from '~harmony/components/button'
-import { Flex } from '~harmony/components/layout'
-import { Text } from '~harmony/components/text'
-import { IconArrowRight } from '~harmony/icons'
+import { Flex, IconButton, Text } from '@audius/harmony'
 
 import { HoverCardHeaderProps } from './types'
 

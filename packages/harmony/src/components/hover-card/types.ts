@@ -48,6 +48,10 @@ export type HoverCardHeaderProps = {
    */
   icon?: ReactNode
   /**
+   * Optional icon for the button on the right side of the header.
+   */
+  iconRight?: IconComponent
+  /**
    * The title to display in the header
    */
   title: string
@@ -56,8 +60,4 @@ export type HoverCardHeaderProps = {
    * If not provided, the close button will be rendered as a non-interactive icon.
    */
   onClose?: () => void
-  /**
-   * Optional icon for right button.
-   */
-  iconRight?: IconComponent
 }

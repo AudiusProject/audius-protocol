@@ -34,9 +34,9 @@ import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHid
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import HoverInfo from 'components/co-sign/HoverInfo'
-import TrackFlair from 'components/co-sign/TrackFlair'
-import { Size } from 'components/co-sign/types'
+import HoverInfo from 'components/track-flair/HoverInfo'
+import TrackFlair from 'components/track-flair/TrackFlair'
+import { Size } from 'components/track-flair/types'
 import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'

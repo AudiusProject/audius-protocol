@@ -38,7 +38,7 @@ import { Dispatch } from 'redux'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import { useRecord, make } from 'common/store/analytics/actions'
-import TrackFlair, { Size } from 'components/co-sign/TrackFlair'
+import TrackFlair, { Size } from 'components/track-flair/TrackFlair'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { LockedStatusBadge } from 'components/locked-status-badge'
 import PlayButton from 'components/play-bar/PlayButton'

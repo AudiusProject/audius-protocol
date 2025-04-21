@@ -1,7 +1,7 @@
 import { SquareSizes } from '@audius/common/models'
 import { TrackEntity } from '@audius/common/store'
 
-import TrackFlair, { Size } from 'components/co-sign/TrackFlair'
+import TrackFlair, { Size } from 'components/track-flair/TrackFlair'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 

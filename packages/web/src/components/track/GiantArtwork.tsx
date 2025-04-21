@@ -3,8 +3,8 @@ import { memo, useEffect } from 'react'
 import { SquareSizes, Remix } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 
-import TrackFlair from 'components/co-sign/TrackFlair'
-import { Size } from 'components/co-sign/types'
+import TrackFlair from 'components/track-flair/TrackFlair'
+import { Size } from 'components/track-flair/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 

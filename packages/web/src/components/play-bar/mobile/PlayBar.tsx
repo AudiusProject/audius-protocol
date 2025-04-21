@@ -22,7 +22,7 @@ import { Dispatch } from 'redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
-import TrackFlair, { Size } from 'components/co-sign/TrackFlair'
+import TrackFlair, { Size } from 'components/track-flair/TrackFlair'
 import { LockedStatusBadge } from 'components/locked-status-badge'
 import PlayButton from 'components/play-bar/PlayButton'
 import TrackingBar from 'components/play-bar/TrackingBar'
