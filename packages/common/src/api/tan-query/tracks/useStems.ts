@@ -7,9 +7,9 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 import { StemTrack } from '~/models/Track'
 
-import { QUERY_KEYS } from './queryKeys'
-import { QueryKey, QueryOptions } from './types'
-import { primeTrackData } from './utils/primeTrackData'
+import { QUERY_KEYS } from '../queryKeys'
+import { QueryKey, QueryOptions } from '../types'
+import { primeTrackData } from '../utils/primeTrackData'
 
 export const getStemsQueryKey = (trackId: ID | null | undefined) =>
   [QUERY_KEYS.stems, trackId] as unknown as QueryKey<StemTrack[]>

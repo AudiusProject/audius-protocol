@@ -1,7 +1,7 @@
 import { useFeatureFlag } from '@audius/common/hooks'
 import { User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { useTrackPageLineup } from '@audius/common/src/api/tan-query/useTrackPageLineup'
+import { useTrackPageLineup } from '@audius/common/src/api'
 import { tracksActions } from '@audius/common/src/store/pages/track/lineup/actions'
 import { Flex, Text, IconRemix } from '@audius/harmony'
 import type { IconComponent } from '@audius/harmony'

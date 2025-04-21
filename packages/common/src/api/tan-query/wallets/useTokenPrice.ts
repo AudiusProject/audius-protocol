@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
-import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions, type QueryKey } from './types'
+import { QUERY_KEYS } from '../queryKeys'
+import { QueryOptions, type QueryKey } from '../types'
 
 /**
  * Structure of a token price response from Jupiter API

@@ -5,8 +5,8 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { DownloadQuality } from '~/models'
 import { ID } from '~/models/Identifiers'
 
-import { QUERY_KEYS } from './queryKeys'
-import { QueryKey, SelectableQueryOptions } from './types'
+import { QUERY_KEYS } from '../queryKeys'
+import { QueryKey, SelectableQueryOptions } from '../types'
 
 type FileSizeResponse = {
   [trackId: ID]: {

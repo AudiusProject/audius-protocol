@@ -5,8 +5,8 @@ import { useQuery } from '@tanstack/react-query'
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
 import { SolanaWalletAddress } from '~/models'
 
-import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions, type QueryKey } from './types'
+import { QUERY_KEYS } from '../queryKeys'
+import { QueryOptions, type QueryKey } from '../types'
 
 /**
  * Get the query key for wallet owner lookup

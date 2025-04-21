@@ -9,11 +9,12 @@ import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
 import { Chain } from '~/models'
 import type { Env } from '~/services'
 
-import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions, type QueryKey } from './types'
+import { QUERY_KEYS } from '../queryKeys'
+import { QueryOptions, type QueryKey } from '../types'
+import { useCurrentUserId } from '../users/account/useCurrentUserId'
+import { useUser } from '../users/useUser'
+
 import { useConnectedWallets } from './useConnectedWallets'
-import { useCurrentUserId } from './useCurrentUserId'
-import { useUser } from './useUser'
 
 type UseWalletAudioBalanceParams = {
   /** Ethereum or Solana wallet address */

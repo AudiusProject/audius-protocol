@@ -7,10 +7,10 @@ import { Chain, type ID } from '~/models'
 import { profilePageActions } from '~/store/pages'
 import { walletActions } from '~/store/wallet'
 
-import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions, type QueryKey } from './types'
-import { useCurrentUserId } from './useCurrentUserId'
-import { getUserCollectiblesQueryKey } from './useUserCollectibles'
+import { QUERY_KEYS } from '../queryKeys'
+import { QueryOptions, type QueryKey } from '../types'
+import { useCurrentUserId } from '../users/account/useCurrentUserId'
+import { getUserCollectiblesQueryKey } from '../users/useUserCollectibles'
 
 export type ConnectedWallet = {
   address: string

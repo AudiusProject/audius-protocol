@@ -18,13 +18,13 @@ import {
   remixesPageActions
 } from '~/store/pages'
 
-import { QUERY_KEYS } from './queryKeys'
-import { QueryKey, QueryOptions } from './types'
-import { useCurrentUserId } from './useCurrentUserId'
-import { getTrackQueryKey } from './useTrack'
-import { getUserQueryKey } from './useUser'
-import { primeTrackData } from './utils/primeTrackData'
-import { useLineupQuery } from './utils/useLineupQuery'
+import { useLineupQuery } from '../lineups/useLineupQuery'
+import { QUERY_KEYS } from '../queryKeys'
+import { getTrackQueryKey } from '../tracks/useTrack'
+import { QueryKey, QueryOptions } from '../types'
+import { useCurrentUserId } from '../users/account/useCurrentUserId'
+import { getUserQueryKey } from '../users/useUser'
+import { primeTrackData } from '../utils/primeTrackData'
 
 const DEFAULT_PAGE_SIZE = 10
 

@@ -14,13 +14,14 @@ import { UserTrackMetadata } from '~/models/Track'
 import { trackPageSelectors } from '~/store/pages'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
 
-import { QUERY_KEYS } from './queryKeys'
-import { QueryKey, QueryOptions } from './types'
-import { useCurrentUserId } from './useCurrentUserId'
-import { useTrack } from './useTrack'
-import { useUser } from './useUser'
-import { primeTrackData } from './utils/primeTrackData'
-import { useLineupQuery } from './utils/useLineupQuery'
+import { QUERY_KEYS } from '../queryKeys'
+import { useTrack } from '../tracks/useTrack'
+import { QueryKey, QueryOptions } from '../types'
+import { useCurrentUserId } from '../users/account/useCurrentUserId'
+import { useUser } from '../users/useUser'
+import { primeTrackData } from '../utils/primeTrackData'
+
+import { useLineupQuery } from './useLineupQuery'
 
 const DEFAULT_PAGE_SIZE = 6
 

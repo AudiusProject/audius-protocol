@@ -4,8 +4,8 @@ import { useQuery } from '@tanstack/react-query'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 
-import { QUERY_KEYS } from './queryKeys'
-import { QueryKey, SelectableQueryOptions } from './types'
+import { QUERY_KEYS } from '../queryKeys'
+import { QueryKey, SelectableQueryOptions } from '../types'
 
 export const getTrackFileInfoQueryKey = (
   trackId: ID | null | undefined,

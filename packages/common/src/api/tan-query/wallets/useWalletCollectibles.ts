@@ -4,8 +4,8 @@ import { useQuery } from '@tanstack/react-query'
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
 import { Chain } from '~/models'
 
-import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions, type QueryKey } from './types'
+import { QUERY_KEYS } from '../queryKeys'
+import { QueryOptions, type QueryKey } from '../types'
 
 type UseWalletCollectibles = {
   /** Ethereum or Solana wallet address */
