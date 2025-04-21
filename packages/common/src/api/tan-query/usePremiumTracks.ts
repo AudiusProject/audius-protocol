@@ -86,6 +86,7 @@ export const usePremiumTracks = (
   })
 
   return useLineupQuery({
+    lineupData: queryData.data ?? [],
     queryData,
     queryKey: getPremiumTracksQueryKey(pageSize),
     lineupActions: premiumTracksPageLineupActions,

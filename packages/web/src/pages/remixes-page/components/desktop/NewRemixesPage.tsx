@@ -105,8 +105,8 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
               <Text variant='heading'>
                 {count}{' '}
                 {isRemixContest
-                  ? pluralize(messages.submissions, count)
-                  : pluralize(messages.remixes, count, 'es')}
+                  ? pluralize(messages.submissions, count ?? 0)
+                  : pluralize(messages.remixes, count ?? 0, 'es')}
               </Text>
               <Flex gap='s' mb='xl'>
                 <FilterButton

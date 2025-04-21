@@ -9,7 +9,13 @@ import { UseInfiniteQueryResult } from '@tanstack/react-query'
  * @returns
  */
 export const loadNextPage =
-  (queryData: Omit<UseInfiniteQueryResult, 'data'>) => () => {
+  (
+    queryData: Pick<
+      UseInfiniteQueryResult,
+      'isFetching' | 'hasNextPage' | 'fetchNextPage'
+    >
+  ) =>
+  () => {
     if (!queryData.isFetching && queryData.hasNextPage) {
       queryData.fetchNextPage()
     }
