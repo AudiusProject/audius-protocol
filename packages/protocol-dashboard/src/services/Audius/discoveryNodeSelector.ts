@@ -19,8 +19,6 @@ export const discoveryNodeAllowlist =
       ])
     : undefined
 
-export let discoveryNodeSelector: DiscoveryNodeSelector | undefined
-
 // Initialize a DN selector with allow list to be shared by SDK/libs
 const servicesConfig =
   env === 'development'
@@ -29,7 +27,7 @@ const servicesConfig =
       ? stagingConfig
       : productionConfig
 
-discoveryNodeSelector = new DiscoveryNodeSelector({
+export const discoveryNodeSelector = new DiscoveryNodeSelector({
   ...getDefaultDiscoveryNodeSelectorConfig(servicesConfig),
   allowlist: discoveryNodeAllowlist
 })
