@@ -1,5 +1,7 @@
 import { useUser } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { route } from '@audius/common/utils'
 import { IconSize, Text, useTheme } from '@audius/harmony'
 import { Link } from 'react-router-dom'
@@ -7,6 +9,7 @@ import { Link } from 'react-router-dom'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { MountPlacement } from 'components/types'
 import UserBadges from 'components/user-badges'
+import UserBadgesV2 from 'components/user-badges/UserBadgesV2'
 
 import { TextLink, TextLinkProps } from './TextLink'
 
@@ -36,6 +39,9 @@ export const UserLink = (props: UserLinkProps) => {
     ...other
   } = props
   const { spacing } = useTheme()
+  const { isEnabled: isWalletUIUpdate } = useFeatureFlag(
+    FeatureFlags.WALLET_UI_UPDATE
+  )
 
   const { data: partialUser } = useUser(userId, {
     select: (user) => {
@@ -50,31 +56,19 @@ export const UserLink = (props: UserLinkProps) => {
   }
 
   // Prepare the user badges
-  const badges = noBadges ? null : (
+  const badges = noBadges ? null : isWalletUIUpdate ? (
+    <UserBadgesV2
+      userId={userId}
+      size={badgeSize}
+      css={{ marginTop: spacing['2xs'] }}
+    />
+  ) : (
     <UserBadges
       userId={userId}
       size={badgeSize}
       css={{ marginTop: spacing['2xs'] }}
     />
   )
-
-  // Create a text element that may or may not be wrapped in a popover
-  const textElement =
-    popover && handle ? (
-      <ArtistPopover
-        css={{
-          display: 'inline-flex',
-          overflow: noOverflow ? 'visible' : 'hidden'
-        }}
-        handle={handle}
-        component='span'
-        mount={popoverMount}
-      >
-        <Text ellipses>{name}</Text>
-      </ArtistPopover>
-    ) : (
-      <Text ellipses>{name}</Text>
-    )
 
   const textLink = (
     <TextLink
@@ -87,13 +81,60 @@ export const UserLink = (props: UserLinkProps) => {
       ellipses={popover}
       {...other}
     >
-      {textElement}
+      <Text ellipses>{name}</Text>
       {badges}
       {children}
     </TextLink>
   )
   const noTextLink = <Link to={url}>{children}</Link>
   const linkElement = noText ? noTextLink : textLink
+
+  // In legacy UI, wrap the entire link element in ArtistPopover
+  if (!isWalletUIUpdate && popover && handle) {
+    return (
+      <ArtistPopover
+        css={{
+          display: 'inline-flex',
+          overflow: noOverflow ? 'visible' : 'hidden'
+        }}
+        handle={handle}
+        component='span'
+        mount={popoverMount}
+      >
+        {linkElement}
+      </ArtistPopover>
+    )
+  }
+
+  // In new UI, wrap the text in ArtistPopover if needed
+  if (isWalletUIUpdate && popover && handle) {
+    return (
+      <TextLink
+        to={url}
+        css={{
+          columnGap: spacing.xs,
+          alignItems: 'center',
+          lineHeight: 'normal'
+        }}
+        ellipses={popover}
+        {...other}
+      >
+        <ArtistPopover
+          css={{
+            display: 'inline-flex',
+            overflow: noOverflow ? 'visible' : 'hidden'
+          }}
+          handle={handle}
+          component='span'
+          mount={popoverMount}
+        >
+          <Text ellipses>{name}</Text>
+        </ArtistPopover>
+        {badges}
+        {children}
+      </TextLink>
+    )
+  }
 
   return linkElement
 }
