@@ -1,7 +1,7 @@
 import { ID, Remix } from '@audius/common/models'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
-import CoSign from 'components/co-sign/CoSign'
+import TrackFlair from 'components/co-sign/TrackFlair'
 import { Size } from 'components/co-sign/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'components/user-badges/UserBadges'
@@ -21,6 +21,7 @@ type RemixCardProps = {
   onClick: () => void
   onClickArtistName: () => void
   userId: ID
+  trackId: ID
 }
 
 const RemixCard = ({
@@ -31,7 +32,8 @@ const RemixCard = ({
   artistHandle,
   onClick,
   onClickArtistName,
-  userId
+  userId,
+  trackId
 }: RemixCardProps) => {
   const images = (
     <div className={styles.images}>
@@ -47,15 +49,9 @@ const RemixCard = ({
     <div className={styles.remixCard}>
       <div className={styles.imagesContainer} onClick={onClick}>
         {coSign ? (
-          <CoSign
-            size={Size.MEDIUM}
-            coSignName={coSign.user.name}
-            hasFavorited={coSign.has_remix_author_saved}
-            hasReposted={coSign.has_remix_author_reposted}
-            userId={coSign.user?.user_id ?? 0}
-          >
+          <TrackFlair size={Size.MEDIUM} id={trackId}>
             {images}
-          </CoSign>
+          </TrackFlair>
         ) : (
           images
         )}

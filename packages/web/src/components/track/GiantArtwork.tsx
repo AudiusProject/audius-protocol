@@ -3,7 +3,7 @@ import { memo, useEffect } from 'react'
 import { SquareSizes, Remix } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 
-import CoSign from 'components/co-sign/CoSign'
+import TrackFlair from 'components/co-sign/TrackFlair'
 import { Size } from 'components/co-sign/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
@@ -21,7 +21,7 @@ const messages = {
 }
 
 const GiantArtwork = (props: GiantArtworkProps) => {
-  const { trackId, coSign, callback } = props
+  const { trackId, callback } = props
   const image = useTrackCoverArt({
     trackId,
     size: SquareSizes.SIZE_1000_BY_1000
@@ -38,19 +38,10 @@ const GiantArtwork = (props: GiantArtworkProps) => {
     />
   )
 
-  return coSign ? (
-    <CoSign
-      size={Size.XLARGE}
-      hasFavorited={coSign.has_remix_author_saved}
-      hasReposted={coSign.has_remix_author_reposted}
-      coSignName={coSign.user.name}
-      className={styles.giantArtwork}
-      userId={coSign.user?.user_id}
-    >
+  return (
+    <TrackFlair size={Size.XLARGE} className={styles.giantArtwork} id={trackId}>
       {imageElement}
-    </CoSign>
-  ) : (
-    <div className={styles.giantArtwork}>{imageElement}</div>
+    </TrackFlair>
   )
 }
 

@@ -1,5 +1,6 @@
 import { useMemo, ReactNode, RefObject } from 'react'
 
+import { useTrack } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import cn from 'classnames'
 
@@ -52,41 +53,42 @@ const CoSignCheck = ({
   )
 }
 
-type CoSignProps =
-  | {
-      coSignName: string
-      userId: ID
-      hasFavorited: boolean
-      hasReposted: boolean
-      hideTooltip?: boolean
-      size: Size
-      children: ReactNode
-      className?: string
-      forwardRef?: RefObject<HTMLDivElement>
-    }
-  | {
-      hideTooltip: true
-      size: Size
-      children: ReactNode
-      className?: string
-      forwardRef?: RefObject<HTMLDivElement>
-    }
+// Define the CoSignProps interface
+interface CoSignProps {
+  size: Size
+  children: ReactNode
+  className?: string
+  hideToolTip?: boolean
+  id: ID
+  forwardRef?: RefObject<HTMLDivElement>
+}
 
-const CoSign = (props: CoSignProps) => {
-  const { forwardRef, size, children, className } = props
+const TrackFlair = (props: CoSignProps) => {
+  const { forwardRef, size, children, className, id, hideToolTip } = props
+  const { data: track } = useTrack(id)
   const isMobile = useIsMobile()
-  const check =
-    isMobile || props.hideTooltip ? (
+
+  if (!track) return
+
+  const remixTrack = track.remix_of?.tracks[0]
+  const hasRemixAuthorReposted = remixTrack?.has_remix_author_reposted ?? false
+  const hasRemixAuthorSaved = remixTrack?.has_remix_author_saved ?? false
+
+  const isCosign = hasRemixAuthorReposted || hasRemixAuthorSaved
+
+  const flair = isCosign ? (
+    isMobile || hideToolTip ? (
       <Check size={size} />
     ) : (
       <CoSignCheck
-        coSignName={props.coSignName}
-        hasFavorited={props.hasFavorited}
-        hasReposted={props.hasReposted}
+        coSignName={remixTrack?.user.name}
+        hasFavorited={hasRemixAuthorSaved}
+        hasReposted={hasRemixAuthorReposted}
         size={size}
-        userId={props.userId}
+        userId={remixTrack?.user.user_id}
       />
     )
+  ) : null
 
   return (
     <div ref={forwardRef} className={cn(styles.content, className)}>
@@ -100,11 +102,11 @@ const CoSign = (props: CoSignProps) => {
           [styles.xlarge]: size === Size.XLARGE
         })}
       >
-        {check}
+        {flair}
       </div>
     </div>
   )
 }
 
 export { Size }
-export default CoSign
+export default TrackFlair

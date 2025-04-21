@@ -34,8 +34,8 @@ import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHid
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import CoSign from 'components/co-sign/CoSign'
 import HoverInfo from 'components/co-sign/HoverInfo'
+import TrackFlair from 'components/co-sign/TrackFlair'
 import { Size } from 'components/co-sign/types'
 import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -298,20 +298,13 @@ const TrackHeader = ({
   }, [dispatch, permalink])
 
   const imageElement = coSign ? (
-    <CoSign
-      size={Size.LARGE}
-      hasFavorited={coSign.has_remix_author_saved}
-      hasReposted={coSign.has_remix_author_reposted}
-      coSignName={coSign.user.name}
-      className={styles.coverArt}
-      userId={coSign.user.user_id}
-    >
+    <TrackFlair size={Size.LARGE} id={trackId}>
       <DynamicImage
         image={image ?? undefined}
         alt={messages.artworkAltText}
         wrapperClassName={cn(styles.imageWrapper, styles.cosignImageWrapper)}
       />
-    </CoSign>
+    </TrackFlair>
   ) : (
     <DynamicImage
       image={image ?? undefined}

@@ -8,7 +8,7 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 
-import CoSign from 'components/co-sign/CoSign'
+import TrackFlair from 'components/co-sign/TrackFlair'
 import { Size } from 'components/co-sign/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -75,6 +75,7 @@ type ArtworkProps = TileArtworkProps & {
 
 const Artwork = memo(
   ({
+    id,
     size,
     showSkeleton,
     showArtworkIcon,
@@ -109,22 +110,17 @@ const Artwork = memo(
         )}
       </DynamicImage>
     )
-    return coSign ? (
-      <CoSign
+    return (
+      <TrackFlair
         size={Size.MEDIUM}
-        hasFavorited={coSign.has_remix_author_saved}
-        hasReposted={coSign.has_remix_author_reposted}
-        coSignName={coSign.user.name}
-        userId={coSign.user?.user_id ?? 0}
+        id={id}
         className={cn(styles.artworkInset, {
           [styles.small]: size === 'small',
           [styles.large]: size === 'large'
         })}
       >
         {imageElement}
-      </CoSign>
-    ) : (
-      imageElement
+      </TrackFlair>
     )
   }
 )

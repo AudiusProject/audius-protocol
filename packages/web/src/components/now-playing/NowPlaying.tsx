@@ -38,7 +38,7 @@ import { Dispatch } from 'redux'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import { useRecord, make } from 'common/store/analytics/actions'
-import CoSign, { Size } from 'components/co-sign/CoSign'
+import TrackFlair, { Size } from 'components/co-sign/TrackFlair'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { LockedStatusBadge } from 'components/locked-status-badge'
 import PlayButton from 'components/play-bar/PlayButton'
@@ -419,14 +419,11 @@ const NowPlaying = g(
           <div className={styles.titleContainer}>{messages.nowPlaying}</div>
         </div>
         {_co_sign ? (
-          <CoSign
+          <TrackFlair
             className={styles.artwork}
             size={Size.XLARGE}
-            hasFavorited={_co_sign.has_remix_author_saved}
-            hasReposted={_co_sign.has_remix_author_reposted}
-            coSignName={_co_sign.user.name}
+            id={track_id}
             forwardRef={artworkRef}
-            userId={_co_sign.user.user_id}
           >
             <div
               className={styles.image}
@@ -436,7 +433,7 @@ const NowPlaying = g(
               <TrackDogEar trackId={track_id} borderOffset={2} />
               <DynamicImage image={image} />
             </div>
-          </CoSign>
+          </TrackFlair>
         ) : (
           <div className={styles.artwork}>
             <div
