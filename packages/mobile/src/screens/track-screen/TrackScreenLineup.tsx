@@ -73,6 +73,7 @@ export const TrackScreenLineup = ({
             lineup={lineup}
             offset={indices.remixParentSection.index}
             maxEntries={indices.remixParentSection.pageSize}
+            pageSize={indices.remixParentSection.pageSize}
             includeLineupStatus
             itemStyles={itemStyles}
             isFetching={isFetching}
@@ -98,6 +99,7 @@ export const TrackScreenLineup = ({
             lineup={lineup}
             offset={indices.remixesSection.index}
             maxEntries={indices.remixesSection.pageSize}
+            pageSize={indices.remixesSection.pageSize}
             includeLineupStatus
             itemStyles={itemStyles}
             isFetching={isFetching}
@@ -122,6 +124,7 @@ export const TrackScreenLineup = ({
           lineup={lineup}
           offset={indices.moreBySection.index}
           maxEntries={indices.moreBySection.pageSize ?? pageSize}
+          pageSize={indices.moreBySection.pageSize ?? pageSize}
           includeLineupStatus
           itemStyles={itemStyles}
           isFetching={isFetching}
@@ -144,6 +147,7 @@ export const TrackScreenLineup = ({
           lineup={lineup}
           offset={indices.recommendedSection.index}
           maxEntries={indices.recommendedSection.pageSize}
+          pageSize={indices.recommendedSection.pageSize}
           includeLineupStatus
           itemStyles={itemStyles}
           isFetching={isFetching}

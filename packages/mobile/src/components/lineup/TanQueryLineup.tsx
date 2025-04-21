@@ -298,7 +298,7 @@ export type LineupProps = {
   itemStyles?: ViewStyle
 
   // Tan query props
-  pageSize?: number
+  pageSize: number
   initialPageSize?: number
   isFetching: boolean
   loadNextPage: () => void
@@ -437,10 +437,7 @@ export const TanQueryLineup = ({
       if (initialPageSize && isPending) {
         return initialPageSize
       }
-      if (pageSize) {
-        return maxEntries ? Math.min(maxEntries, pageSize) : pageSize
-      }
-      return 0
+      return maxEntries ? Math.min(maxEntries, pageSize) : pageSize
     }
 
     const skeletonItems = range(getSkeletonCount()).map(
