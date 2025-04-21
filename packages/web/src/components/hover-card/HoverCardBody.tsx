@@ -3,7 +3,7 @@ import { ReactNode } from 'react'
 import { Flex, Text } from '@audius/harmony'
 
 export type HoverCardBodyProps = {
-  icon: ReactNode
+  icon?: ReactNode
   amount: string
   currency?: string
 }

@@ -11,7 +11,8 @@ import { HoverCardHeaderProps } from './types'
 export const HoverCardHeader = ({
   icon,
   title,
-  onClose
+  onClose,
+  iconRight
 }: HoverCardHeaderProps) => {
   return (
     <Flex
@@ -36,18 +37,15 @@ export const HoverCardHeader = ({
           {title}
         </Text>
       </Flex>
-
-      {onClose ? (
+      {iconRight ? (
         <IconButton
-          icon={IconArrowRight}
+          icon={iconRight}
           color='subdued'
           size='s'
           aria-label='Close'
           onClick={onClose}
         />
-      ) : (
-        <IconArrowRight color='subdued' size='s' />
-      )}
+      ) : null}
     </Flex>
   )
 }

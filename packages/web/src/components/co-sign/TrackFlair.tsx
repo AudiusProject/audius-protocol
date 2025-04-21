@@ -2,15 +2,38 @@ import { useMemo, ReactNode, RefObject } from 'react'
 
 import { useTrack } from '@audius/common/api'
 import { ID } from '@audius/common/models'
+import {
+  Divider,
+  Flex,
+  HoverCard,
+  HoverCardHeader,
+  IconHeart,
+  IconRepost,
+  Origin,
+  Text
+} from '@audius/harmony'
 import cn from 'classnames'
 
+import { HoverCardBody } from 'components/hover-card'
+import { IconFavorite } from 'components/notification/Notification/components/icons'
 import Tooltip from 'components/tooltip/Tooltip'
+import UserBadges from 'components/user-badges'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import Check from './Check'
 import styles from './CoSign.module.css'
 import HoverInfo from './HoverInfo'
 import { Size } from './types'
+
+const anchorOrigin: Origin = {
+  horizontal: 'center',
+  vertical: 'top'
+}
+
+const transformOrigin: Origin = {
+  horizontal: 'center',
+  vertical: 'top'
+}
 
 const CoSignCheck = ({
   coSignName,
@@ -25,31 +48,58 @@ const CoSignCheck = ({
   size: Size
   userId: ID
 }) => {
-  const tooltipText = useMemo(() => {
-    return (
-      <HoverInfo
-        coSignName={coSignName}
-        hasReposted={hasReposted}
-        hasFavorited={hasFavorited}
-        userId={userId}
-      />
+  const message =
+    hasReposted && hasFavorited
+      ? 'Reposted & Favorited'
+      : hasReposted
+        ? 'Reposted'
+        : 'Favorited'
+  const icons =
+    hasReposted && hasFavorited ? (
+      <>
+        <IconRepost color='subdued' /> <IconHeart color='subdued' />
+      </>
+    ) : hasReposted ? (
+      <IconRepost color='subdued' />
+    ) : (
+      <IconHeart color='subdued' />
     )
-  }, [coSignName, hasReposted, hasFavorited, userId])
 
   return (
-    <Tooltip
-      shouldWrapContent={false}
-      mouseEnterDelay={0.1}
-      shouldDismissOnClick={false}
-      text={tooltipText}
-      mount='page'
-      className={styles.tooltip}
-      color='white'
+    <HoverCard
+      content={
+        <Flex
+          column
+          css={{
+            minWidth: 200
+          }}
+        >
+          <Flex ph='m' pv='s' justifyContent='center'>
+            <Text size='m' textAlign='center' variant='label'>
+              Co-SIGN
+            </Text>
+          </Flex>
+          <Divider orientation='horizontal' />
+          <Flex ph='m' pv='s' column gap='xs'>
+            <Flex row justifyContent='center'>
+              {' '}
+              <Text textAlign='center'> {coSignName}</Text>
+              <UserBadges userId={userId} />
+            </Flex>
+            <Flex row gap='s' justifyContent='center'>
+              {icons}
+              <Text strength='strong' textAlign='center'>
+                {message}
+              </Text>
+            </Flex>
+          </Flex>
+        </Flex>
+      }
+      anchorOrigin={anchorOrigin}
+      transformOrigin={transformOrigin}
     >
-      <div>
-        <Check size={size} />
-      </div>
-    </Tooltip>
+      <Check size={size} />
+    </HoverCard>
   )
 }
 
@@ -86,6 +136,7 @@ const TrackFlair = (props: CoSignProps) => {
         hasReposted={hasRemixAuthorReposted}
         size={size}
         userId={remixTrack?.user.user_id}
+        forwardRef={forwardRef}
       />
     )
   ) : null

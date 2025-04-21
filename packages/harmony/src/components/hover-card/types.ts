@@ -1,5 +1,6 @@
 import { ReactNode } from 'react'
 
+import { IconComponent } from '../icon'
 import { Origin } from '../popup/types'
 
 export type HoverCardProps = {
@@ -45,7 +46,7 @@ export type HoverCardHeaderProps = {
   /**
    * The icon or component to display on the left side of the header
    */
-  icon: ReactNode
+  icon?: ReactNode
   /**
    * The title to display in the header
    */
@@ -55,4 +56,8 @@ export type HoverCardHeaderProps = {
    * If not provided, the close button will be rendered as a non-interactive icon.
    */
   onClose?: () => void
+  /**
+   * Optional icon for right button.
+   */
+  iconRight?: IconComponent
 }
