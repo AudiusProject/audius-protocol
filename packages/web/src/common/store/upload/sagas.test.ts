@@ -112,7 +112,12 @@ describe('upload', () => {
           [select(accountSelectors.getUserId), 12345],
           [call.fn(uploadMultipleTracks), undefined],
           [call.fn(addPremiumMetadata), testTrack],
-          [getContext('queryClient'), { invalidateQueries: vitest.fn() }]
+          [
+            getContext('queryClient'),
+            {
+              invalidateQueries: () => {}
+            }
+          ]
         ])
         // Assertions
         // Assert that we format the tracks for premium conditions
@@ -170,7 +175,12 @@ describe('upload', () => {
               }
             }
           ],
-          [getContext('queryClient'), { invalidateQueries: vitest.fn() }],
+          [
+            getContext('queryClient'),
+            {
+              invalidateQueries: () => {}
+            }
+          ],
           [call.fn(confirmTransaction), true],
           [call.fn(waitForAccount), undefined],
           [call.fn(retrieveTracks), [testTrack.metadata]]
@@ -268,7 +278,12 @@ describe('upload', () => {
               }
             }
           ],
-          [getContext('queryClient'), { invalidateQueries: vitest.fn() }],
+          [
+            getContext('queryClient'),
+            {
+              invalidateQueries: () => {}
+            }
+          ],
           [call.fn(confirmTransaction), true],
           [call.fn(waitForAccount), undefined],
           [call.fn(retrieveTracks), [testTrack.metadata]],
@@ -429,7 +444,24 @@ describe('upload', () => {
     // Publish parent after final stem uploaded
     expect(mockPublishChannel.put).toBeCalledTimes(2)
     test
+      .take(mockResponseChannel)
+      .next({
+        type: 'PUBLISHED',
+        payload: {
+          trackIndex: 0,
+          stemIndex: null,
+          trackId: 2,
+          metadata: camelcaseKeys(stem.metadata)
+        }
+      })
+      // Mark progress as complete
+      .next()
+      .next()
+      // Report analytics stem upload success
+      .next()
       // Close progress channel
+      .next()
+      // Close progress dispatcher
       .next()
       // Success
       .put(
@@ -561,6 +593,8 @@ describe('upload', () => {
     test
       // Close progress channel
       .next()
+      // Close progress dispatcher
+      .next()
       // Success
       .put(
         make(Name.TRACK_UPLOAD_COMPLETE_UPLOAD, {
@@ -635,7 +669,12 @@ describe('upload', () => {
           [select(accountSelectors.getAccountUser), {}],
           [select(accountSelectors.getUserId), 12345],
           [getContext('audiusSdk'), () => sdkMock],
-          [getContext('queryClient'), { invalidateQueries: vitest.fn() }],
+          [
+            getContext('queryClient'),
+            {
+              invalidateQueries: () => {}
+            }
+          ],
           [call.fn(confirmTransaction), true],
           [call.fn(waitForAccount), undefined],
           [
