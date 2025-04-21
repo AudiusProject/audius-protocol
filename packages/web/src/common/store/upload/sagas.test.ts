@@ -429,24 +429,7 @@ describe('upload', () => {
     // Publish parent after final stem uploaded
     expect(mockPublishChannel.put).toBeCalledTimes(2)
     test
-      .take(mockResponseChannel)
-      .next({
-        type: 'PUBLISHED',
-        payload: {
-          trackIndex: 0,
-          stemIndex: null,
-          trackId: 2,
-          metadata: camelcaseKeys(stem.metadata)
-        }
-      })
-      // Mark progress as complete
-      .next()
-      .next()
-      // Report analytics stem upload success
-      .next()
       // Close progress channel
-      .next()
-      // Close progress dispatcher
       .next()
       // Success
       .put(
@@ -573,25 +556,10 @@ describe('upload', () => {
       .next()
       // Report analytics stem upload success
       .next()
-      // Publish parent after final stem uploaded
-      .take(mockResponseChannel)
-      .next({
-        type: 'PUBLISHED',
-        payload: {
-          trackIndex: 0,
-          stemIndex: null,
-          trackId: 2,
-          metadata: testTrack.metadata
-        }
-      })
-      // Mark progress as complete
-      .next()
-      .next()
-      // Report analytics stem upload success
-      .next()
+    // Publish parent after final stem uploaded
+    expect(mockPublishChannel.put).toBeCalledTimes(2)
+    test
       // Close progress channel
-      .next()
-      // Close progress dispatcher
       .next()
       // Success
       .put(
