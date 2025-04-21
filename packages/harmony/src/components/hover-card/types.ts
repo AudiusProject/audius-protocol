@@ -60,4 +60,8 @@ export type HoverCardHeaderProps = {
    * If not provided, the close button will be rendered as a non-interactive icon.
    */
   onClose?: () => void
+  /**
+   * Optional icon for right button.
+   */
+  iconRight?: IconComponent
 }
