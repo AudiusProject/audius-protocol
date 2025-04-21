@@ -100,6 +100,7 @@ export const useTrendingPlaylists = (
   })
 
   return useLineupQuery({
+    lineupData: queryData.data ?? [],
     queryData,
     queryKey: getTrendingPlaylistsQueryKey({
       pageSize,

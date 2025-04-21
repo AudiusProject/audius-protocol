@@ -66,8 +66,6 @@ export const EditableName = (props: EditableNameProps) => {
             size='l'
             className={styles.iconVerified}
             isVerifiedOverride={verified}
-            anchorOrigin={{ horizontal: 'center', vertical: 'top' }}
-            transformOrigin={{ horizontal: 'center', vertical: 'bottom' }}
           />
         </>
       )}
