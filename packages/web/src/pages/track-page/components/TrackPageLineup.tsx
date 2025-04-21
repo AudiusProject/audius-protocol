@@ -55,9 +55,6 @@ export const TrackPageLineup = ({
 
   const { isDesktop, isMobile } = useTrackPageSize()
 
-  const isRemixContestEnabled = useFeatureFlag(FeatureFlags.REMIX_CONTEST)
-  const { data: remixContest } = useRemixContest(trackId)
-  const isRemixContest = isRemixContestEnabled && remixContest
   const isCommentingEnabled = !commentsDisabled
   const lineupVariant =
     (isCommentingEnabled && isDesktop) || isMobile
@@ -89,12 +86,7 @@ export const TrackPageLineup = ({
   }
 
   const renderRemixesSection = () => {
-    if (
-      indices.remixesSection.index === undefined ||
-      isRemixContest ||
-      !trackId
-    )
-      return null
+    if (indices.remixesSection.index === undefined || !trackId) return null
 
     return (
       <Section title={messages.remixes} icon={IconRemix}>
