@@ -43,6 +43,7 @@ type Props = {
   user: User
   isPlayingUid: boolean
   type: 'track' | 'playlist' | 'album'
+  trackId: ID
 }
 
 export const LineupTileMetadata = ({
@@ -52,7 +53,8 @@ export const LineupTileMetadata = ({
   title,
   user,
   isPlayingUid,
-  type
+  type,
+  trackId
 }: Props) => {
   const styles = useStyles()
   const trackTileStyles = useTrackTileStyles()
@@ -70,6 +72,7 @@ export const LineupTileMetadata = ({
         renderImage={renderImage}
         coSign={coSign}
         style={trackTileStyles.imageContainer}
+        trackId={trackId}
       />
       <FadeInView
         style={trackTileStyles.titles}

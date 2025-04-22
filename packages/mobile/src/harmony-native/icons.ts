@@ -92,6 +92,8 @@ export { default as IconTrending } from '@audius/harmony/src/assets/icons/Trendi
 export { default as IconCloudDownloadPaused } from '@audius/harmony/src/assets/icons/CloudDownloadPaused.svg'
 export { default as IconNotificationOn } from '@audius/harmony/src/assets/icons/NotificationOn.svg'
 export { default as IconTrophy } from '@audius/harmony/src/assets/icons/Trophy.svg'
+export { default as IconCosign } from '@audius/harmony/src/assets/icons/Cosign.svg'
+export { default as IconContestSign } from '@audius/harmony/src/assets/icons/ContestSign.svg'
 export { default as IconCloudDownloadQueued } from '@audius/harmony/src/assets/icons/CloudDownloadQueued.svg'
 export { default as IconPause } from '@audius/harmony/src/assets/icons/Pause.svg'
 export { default as IconTurntable } from '@audius/harmony/src/assets/icons/Turntable.svg'
@@ -163,7 +165,6 @@ export { default as IconArrowUpToLine } from '@audius/harmony/src/assets/icons/A
 // Two Tone / Special Styling
 
 export { default as IconArtistBadge } from '@audius/harmony/src/assets/icons/ArtistBadge.svg'
-export { default as IconCosign } from '@audius/harmony/src/assets/icons/Cosign.svg'
 export { default as IconMultiselectAdd } from '@audius/harmony/src/assets/icons/MultiselectAdd.svg'
 export { default as IconMultiselectRemove } from '@audius/harmony/src/assets/icons/MultiselectRemove.svg'
 export { default as IconPlaybackPause } from '@audius/harmony/src/assets/icons/PlaybackPause.svg'

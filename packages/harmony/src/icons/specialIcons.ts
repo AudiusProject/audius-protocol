@@ -2,6 +2,7 @@ import { IconComponent } from '~harmony/components'
 
 // Two Tone / Special Styling
 import IconArtistBadgeSVG from '../assets/icons/ArtistBadge.svg'
+import IconContestSignSVG from '../assets/icons/ContestSign.svg'
 import IconCosignSVG from '../assets/icons/Cosign.svg'
 import IconMultiselectAddSVG from '../assets/icons/MultiselectAdd.svg'
 import IconMultiselectRemoveSVG from '../assets/icons/MultiselectRemove.svg'
@@ -74,8 +75,9 @@ import IconPlaybackRate3xSVG from '../assets/icons/iconPlaybackRate3x.svg'
 import { createImageIcon } from '../utils/createImageIcon'
 
 // Two Tone / Special Styling
-export const IconArtistBadge = IconArtistBadgeSVG as IconComponent
+export const IconContestSign = IconContestSignSVG as IconComponent
 export const IconCosign = IconCosignSVG as IconComponent
+export const IconArtistBadge = IconArtistBadgeSVG as IconComponent
 export const IconMultiselectAdd = IconMultiselectAddSVG as IconComponent
 export const IconMultiselectRemove = IconMultiselectRemoveSVG as IconComponent
 

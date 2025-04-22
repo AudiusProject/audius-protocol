@@ -69,7 +69,6 @@ import {
   spacing,
   type ImageProps
 } from '@audius/harmony-native'
-import CoSign, { Size } from 'app/components/co-sign'
 import { useCommentDrawer } from 'app/components/comments/CommentDrawerContext'
 import { Tag } from 'app/components/core'
 import { DeletedTile } from 'app/components/details-tile/DeletedTile'
@@ -83,6 +82,7 @@ import { TrackMetadataList } from 'app/components/details-tile/TrackMetadataList
 import { TrackImage } from 'app/components/image/TrackImage'
 import { OfflineStatusRow } from 'app/components/offline-downloads'
 import { TrackDogEar } from 'app/components/track/TrackDogEar'
+import TrackFlair, { Size } from 'app/components/track-flair'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { make, track as trackEvent } from 'app/services/analytics'
@@ -189,7 +189,6 @@ export const TrackScreenDetailsTile = ({
     useEarlyReleaseConfirmationModal()
 
   const {
-    _co_sign: coSign,
     description,
     genre,
     has_current_user_reposted: hasReposted,
@@ -318,10 +317,10 @@ export const TrackScreenDetailsTile = ({
     style: styles.coverArt
   })
 
-  const imageElement = coSign ? (
-    <CoSign size={Size.LARGE}>{innerImageElement}</CoSign>
-  ) : (
-    innerImageElement
+  const imageElement = (
+    <TrackFlair trackId={track.track_id} size={Size.LARGE}>
+      {innerImageElement}
+    </TrackFlair>
   )
 
   const currentQueueItem = useSelector(getCurrentQueueItem)

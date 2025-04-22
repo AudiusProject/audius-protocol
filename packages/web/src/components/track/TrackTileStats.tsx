@@ -49,6 +49,7 @@ export const TrackTileStats = (props: TrackTileStatsProps) => {
       justifyContent='space-between'
       alignItems='center'
       pv={isMobile ? 's' : 'xs'}
+      mt='xs'
     >
       <Flex gap='l'>
         {isTrending ? <EntityRank index={rankIndex!} /> : null}

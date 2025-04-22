@@ -12,7 +12,7 @@ type CheckProps = {
 const FlairIcon = ({ size, Icon }: CheckProps) => {
   return (
     <div
-      className={cn(styles.boxBorder, {
+      className={cn(styles.box, {
         [styles.tiny]: size === Size.TINY,
         [styles.small]: size === Size.SMALL,
         [styles.medium]: size === Size.MEDIUM,
@@ -20,17 +20,7 @@ const FlairIcon = ({ size, Icon }: CheckProps) => {
         [styles.xlarge]: size === Size.XLARGE
       })}
     >
-      <div
-        className={cn(styles.box, {
-          [styles.tiny]: size === Size.TINY,
-          [styles.small]: size === Size.SMALL,
-          [styles.medium]: size === Size.MEDIUM,
-          [styles.large]: size === Size.LARGE,
-          [styles.xlarge]: size === Size.XLARGE
-        })}
-      >
-        <Icon className={styles.icon} />
-      </div>
+      <Icon className={styles.icon} />
     </div>
   )
 }

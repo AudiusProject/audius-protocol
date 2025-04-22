@@ -1,17 +1,13 @@
-import { ID } from '@audius/common/models'
 import { formatDate } from '@audius/common/utils'
 import {
   Divider,
   Flex,
   HoverCard,
-  IconHeart,
-  IconRepost,
-  IconTrophy,
+  IconContestSign,
   Origin,
   Text
 } from '@audius/harmony'
 
-import UserBadges from 'components/user-badges'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import FlairIcon from './FlairIcon'
@@ -41,7 +37,7 @@ const RemixContestFlair = ({
   const isMobile = useIsMobile()
 
   if (isMobile || hideToolTip) {
-    return <FlairIcon Icon={IconTrophy} size={size} />
+    return <FlairIcon Icon={IconContestSign} size={size} />
   }
 
   return (
@@ -71,7 +67,7 @@ const RemixContestFlair = ({
       anchorOrigin={anchorOrigin}
       transformOrigin={transformOrigin}
     >
-      <FlairIcon Icon={IconTrophy} size={size} />
+      <FlairIcon Icon={IconContestSign} size={size} />
     </HoverCard>
   )
 }
