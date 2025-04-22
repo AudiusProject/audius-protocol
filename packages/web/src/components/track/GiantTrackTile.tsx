@@ -20,13 +20,7 @@ import {
   useEarlyReleaseConfirmationModal,
   usePublishConfirmationModal
 } from '@audius/common/store'
-import {
-  Genre,
-  Nullable,
-  dayjs,
-  formatReleaseDate,
-  route
-} from '@audius/common/utils'
+import { Genre, Nullable, dayjs, formatReleaseDate } from '@audius/common/utils'
 import {
   Text,
   Box,
@@ -39,7 +33,6 @@ import {
   Button,
   MusicBadge,
   Paper,
-  IconCloudUpload,
   PlainButton,
   IconCaretDown,
   IconCaretUp,
@@ -64,8 +57,6 @@ import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement } from 'components/types'
 import { UserGeneratedText } from 'components/user-generated-text'
-import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 
 import { AiTrackSection } from './AiTrackSection'
 import { CardTitle } from './CardTitle'
@@ -77,8 +68,6 @@ import { PlayPauseButton } from './PlayPauseButton'
 import { TrackDogEar } from './TrackDogEar'
 import { TrackMetadataList } from './TrackMetadataList'
 import { TrackStats } from './TrackStats'
-
-const { UPLOAD_PAGE } = route
 
 const DownloadSection = lazy(() =>
   import('./DownloadSection').then((module) => ({
@@ -213,7 +202,6 @@ export const GiantTrackTile = ({
   ddexApp,
   scrollToCommentSection
 }: GiantTrackTileProps) => {
-  const navigate = useNavigateToPage()
   const [artworkLoading, setArtworkLoading] = useState(false)
   const onArtworkLoad = useCallback(
     () => setArtworkLoading(false),
@@ -227,10 +215,6 @@ export const GiantTrackTile = ({
   const { data: remixContest, isLoading: isEventsLoading } =
     useRemixContest(trackId)
   const isRemixContest = !!remixContest
-  // If remix contest has description, show the RemixContestSection. If not,
-  // show the end date in the metadata section
-  const shouldShowRemixInfo =
-    isRemixContest && !remixContest.eventData.description
 
   const isLongFormContent =
     genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
@@ -466,45 +450,6 @@ export const GiantTrackTile = ({
       </Flex>
     )
   }
-
-  const goToUploadWithRemix = useRequiresAccountCallback(() => {
-    if (!trackId) return
-
-    const state = {
-      initialMetadata: {
-        is_remix: true,
-        remix_of: {
-          tracks: [{ parent_track_id: trackId }]
-        }
-      }
-    }
-    navigate(UPLOAD_PAGE, state)
-  }, [trackId, navigate])
-
-  const renderSubmitRemixContestSection = useCallback(() => {
-    if (!shouldShowRemixInfo) return null
-    const isContestOver = dayjs(remixContest.endDate).isBefore(dayjs())
-    return (
-      <Flex row gap='m'>
-        <Flex gap='xs' alignItems='center'>
-          <Text variant='label' color='accent'>
-            {isContestOver ? messages.contestEnded : messages.contestDeadline}
-          </Text>
-          <Text>{messages.deadline(remixContest.endDate)}</Text>
-        </Flex>
-        {!isOwner ? (
-          <Button
-            variant='secondary'
-            size='small'
-            onClick={goToUploadWithRemix}
-            iconLeft={IconCloudUpload}
-          >
-            {messages.uploadRemixButtonText}
-          </Button>
-        ) : null}
-      </Flex>
-    )
-  }, [shouldShowRemixInfo, remixContest.endDate, isOwner, goToUploadWithRemix])
 
   const isLoading = loading || artworkLoading || isEventsLoading
 
@@ -755,7 +700,6 @@ export const GiantTrackTile = ({
         ) : null}
 
         {renderTags()}
-        {renderSubmitRemixContestSection()}
         {hasDownloadableAssets ? (
           <Box w='100%'>
             <Suspense>

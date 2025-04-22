@@ -58,7 +58,6 @@ import {
   Divider,
   Flex,
   IconCalendarMonth,
-  IconCloudUpload,
   IconPause,
   IconPlay,
   IconRepeatOff,
@@ -236,10 +235,6 @@ export const TrackScreenDetailsTile = ({
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
   const { data: remixContest } = useRemixContest(trackId)
   const isRemixContest = !!remixContest
-  // If remix contest has description, show the RemixContestSection. If not,
-  // show the end date in the metadata section
-  const shouldShowRemixInfo =
-    isRemixContest && !remixContest.eventData.description
 
   const isPlayingPreview = isPreviewing && isPlaying
   const isPlayingFullAccess = isPlaying && !isPreviewing
@@ -499,46 +494,6 @@ export const TrackScreenDetailsTile = ({
     publish
   ])
 
-  const handlePressSubmitRemix = useCallback(() => {
-    if (!track?.track_id) return
-    navigation.push('Upload', {
-      initialMetadata: {
-        is_remix: true,
-        remix_of: {
-          tracks: [{ parent_track_id: track.track_id }]
-        }
-      }
-    })
-  }, [navigation, track])
-
-  const renderRemixContestSection = () => {
-    if (!shouldShowRemixInfo) return null
-    const isContestOver = dayjs(remixContest?.endDate).isBefore(dayjs())
-    return (
-      <Flex gap='m'>
-        <Flex row gap='xs' alignItems='center'>
-          <Text variant='label' color='accent'>
-            {isContestOver ? messages.contestEnded : messages.contestDeadline}
-          </Text>
-          <Text size='s' strength='strong'>
-            {messages.deadline(remixContest?.endDate)}
-          </Text>
-        </Flex>
-        {!isOwner ? (
-          <Flex flex={1}>
-            <Button
-              variant='secondary'
-              size='small'
-              iconLeft={IconCloudUpload}
-              onPress={handlePressSubmitRemix}
-            >
-              {messages.uploadRemixButtonText}
-            </Button>
-          </Flex>
-        ) : null}
-      </Flex>
-    )
-  }
   const renderBottomContent = () => {
     return hasDownloadableAssets ? (
       <>
@@ -702,7 +657,6 @@ export const TrackScreenDetailsTile = ({
         <TrackDescription description={description} scrollRef={scrollViewRef} />
         <TrackMetadataList trackId={trackId} />
         {renderTags()}
-        {renderRemixContestSection()}
         <OfflineStatusRow contentId={trackId} isCollection={false} />
         {renderBottomContent()}
       </Flex>
