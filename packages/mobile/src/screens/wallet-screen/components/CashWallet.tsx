@@ -1,16 +1,13 @@
 import React, { useCallback, useRef } from 'react'
 
 import {
-  useIsManagedAccount,
-  useFormattedUSDCBalance
+  useFormattedUSDCBalance,
+  useIsManagedAccount
 } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
 import { Name } from '@audius/common/models'
-import {
-  WithdrawUSDCModalPages,
-  useWithdrawUSDCModal
-} from '@audius/common/store'
-import { BottomSheetModal, BottomSheetBackdrop } from '@gorhom/bottom-sheet'
+import { useAddFundsModal } from '@audius/common/store'
+import { BottomSheetBackdrop, BottomSheetModal } from '@gorhom/bottom-sheet'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import {
@@ -28,24 +25,21 @@ import { make, track } from 'app/services/analytics'
 
 export const CashWallet = () => {
   const isManagedAccount = useIsManagedAccount()
-  const { onOpen: openWithdrawUSDCModal } = useWithdrawUSDCModal()
-  const { balanceFormatted, usdcValue, isLoading } = useFormattedUSDCBalance()
+  const { onOpen: openAddFundsModal } = useAddFundsModal()
+  const { balanceFormatted, isLoading } = useFormattedUSDCBalance()
   const insets = useSafeAreaInsets()
 
   // Create a ref for the bottom sheet modal
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
 
-  const handleWithdraw = useCallback(() => {
-    openWithdrawUSDCModal({
-      page: WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS
-    })
+  const handleAddCash = useCallback(() => {
+    openAddFundsModal()
     track(
       make({
-        eventName: Name.WITHDRAW_USDC_MODAL_OPENED,
-        currentBalance: Number(usdcValue.toString())
+        eventName: Name.BUY_USDC_ADD_FUNDS_MANUALLY
       })
     )
-  }, [openWithdrawUSDCModal, usdcValue])
+  }, [openAddFundsModal])
 
   // Function to handle opening the bottom sheet
   const handleOpenInfoModal = useCallback(() => {
@@ -81,8 +75,8 @@ export const CashWallet = () => {
           </Text>
 
           {!isManagedAccount ? (
-            <Button variant='primary' onPress={handleWithdraw} fullWidth>
-              {walletMessages.withdraw}
+            <Button variant='secondary' onPress={handleAddCash} fullWidth>
+              {walletMessages.addFunds}
             </Button>
           ) : null}
         </Flex>
