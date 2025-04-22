@@ -20,6 +20,7 @@ interface TrackFlairProps {
 
 const TrackFlair = (props: TrackFlairProps) => {
   const { forwardRef, size, children, className, id, hideToolTip } = props
+
   const { data: track } = useTrack(id)
   const { data: remixContest } = useRemixContest(id)
 

@@ -98,7 +98,7 @@ const CoSignFlair = ({
       anchorOrigin={anchorOrigin}
       transformOrigin={transformOrigin}
     >
-      <FlairIcon Icon={IconCosign} fill='subdued' size={size} />
+      <FlairIcon Icon={IconCosign} size={size} />
     </HoverCard>
   )
 }
