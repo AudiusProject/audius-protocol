@@ -60,7 +60,11 @@ export const UserLink = (props: UserLinkProps) => {
     <UserBadgesV2
       userId={userId}
       size={badgeSize}
-      css={{ marginTop: spacing['2xs'] }}
+      css={{
+        marginTop: spacing['2xs'],
+        display: 'inline-flex',
+        verticalAlign: 'middle'
+      }}
     />
   ) : (
     <UserBadges
@@ -107,14 +111,16 @@ export const UserLink = (props: UserLinkProps) => {
   }
 
   // In new UI, wrap the text in ArtistPopover if needed
-  if (isWalletUIUpdate && popover && handle) {
+  if (isWalletUIUpdate && popover && handle && !noText) {
     return (
       <TextLink
         to={url}
         css={{
           columnGap: spacing.xs,
           alignItems: 'center',
-          lineHeight: 'normal'
+          lineHeight: 'normal',
+          display: 'inline-flex',
+          flexWrap: 'nowrap'
         }}
         ellipses={popover}
         {...other}
