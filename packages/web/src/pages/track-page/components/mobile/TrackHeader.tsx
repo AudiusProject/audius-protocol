@@ -298,7 +298,7 @@ const TrackHeader = ({
   }, [dispatch, permalink])
 
   const imageElement = coSign ? (
-    <TrackFlair size={Size.LARGE} id={trackId}>
+    <TrackFlair size={Size.LARGE} id={trackId} className={styles.coverArt}>
       <DynamicImage
         image={image ?? undefined}
         alt={messages.artworkAltText}

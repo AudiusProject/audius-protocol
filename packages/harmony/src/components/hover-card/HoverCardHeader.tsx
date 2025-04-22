@@ -1,4 +1,4 @@
-import { Flex, IconButton, Text } from '@audius/harmony'
+import { Flex, Text, IconButton } from '~harmony/index'
 
 import { HoverCardHeaderProps } from './types'
 
@@ -6,7 +6,7 @@ import { HoverCardHeaderProps } from './types'
  * A shared base component for hover card headers
  */
 export const HoverCardHeader = ({
-  icon,
+  iconLeft,
   title,
   onClose,
   iconRight
@@ -24,7 +24,15 @@ export const HoverCardHeader = ({
       justifyContent='space-between'
     >
       <Flex alignSelf='stretch' alignItems='center' gap='xs'>
-        {icon}
+        {iconLeft ? (
+          <IconButton
+            icon={iconLeft}
+            color='subdued'
+            size='l'
+            aria-label={''}
+            onClick={onClose}
+          />
+        ) : null}
         <Text
           variant='label'
           size='s'

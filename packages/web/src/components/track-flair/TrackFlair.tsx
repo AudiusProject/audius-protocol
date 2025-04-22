@@ -21,7 +21,7 @@ const TrackFlair = (props: TrackFlairProps) => {
   const { forwardRef, size, children, className, id, hideToolTip } = props
   const { data: track } = useTrack(id)
 
-  if (!track) return
+  if (!track) return null
 
   const remixTrack = track.remix_of?.tracks[0]
   const hasRemixAuthorReposted = remixTrack?.has_remix_author_reposted ?? false

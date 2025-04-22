@@ -12,7 +12,8 @@ import {
   HoverCardHeader,
   HoverCard,
   IconLogoCircle,
-  IconArrowRight
+  IconArrowRight,
+  IconComponent
 } from '@audius/harmony'
 import { Origin } from '@audius/harmony/src/components/popup/types'
 import BN from 'bn.js'
@@ -57,11 +58,11 @@ type AudioHoverCardProps = {
 }
 
 // Audio tier badge map for header icons
-const audioTierBadgeMap: Record<AudioTiers, JSX.Element> = {
-  bronze: <IconTokenBronze size='l' />,
-  silver: <IconTokenSilver size='l' />,
-  gold: <IconTokenGold size='l' />,
-  platinum: <IconTokenPlatinum size='l' />
+const audioTierBadgeMap: Record<AudioTiers, IconComponent> = {
+  bronze: IconTokenBronze,
+  silver: IconTokenSilver,
+  gold: IconTokenGold,
+  platinum: IconTokenPlatinum
 }
 
 const getBadgeName = (tier: BadgeTier) => {
@@ -95,7 +96,7 @@ export const AudioHoverCard = ({
       content={
         <>
           <HoverCardHeader
-            icon={audioTierBadgeMap[tier]}
+            iconLeft={audioTierBadgeMap[tier]}
             title={getBadgeName(tier)}
             onClose={onClose}
             iconRight={IconArrowRight}

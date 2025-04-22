@@ -2,6 +2,7 @@ import { memo, useEffect } from 'react'
 
 import { SquareSizes, Remix } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
+import { IconArrowLeft } from '@audius/harmony'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import TrackFlair from 'components/track-flair/TrackFlair'
@@ -14,6 +15,7 @@ type GiantArtworkProps = {
   trackId: number
   coSign: Nullable<Remix>
   callback: () => void
+  onIconLeftClick?: () => void
 }
 
 const messages = {
@@ -21,7 +23,7 @@ const messages = {
 }
 
 const GiantArtwork = (props: GiantArtworkProps) => {
-  const { trackId, callback } = props
+  const { trackId, callback, onIconLeftClick } = props
   const image = useTrackCoverArt({
     trackId,
     size: SquareSizes.SIZE_1000_BY_1000
@@ -35,7 +37,13 @@ const GiantArtwork = (props: GiantArtworkProps) => {
       wrapperClassName={styles.imageWrapper}
       image={image}
       alt={messages.artworkAltText}
-    />
+    >
+      {onIconLeftClick && (
+        <div className={styles.iconLeftWrapper} onClick={onIconLeftClick}>
+          <IconArrowLeft width={24} height={24} />
+        </div>
+      )}
+    </DynamicImage>
   )
 
   return (

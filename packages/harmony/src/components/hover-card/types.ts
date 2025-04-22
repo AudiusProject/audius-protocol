@@ -44,11 +44,11 @@ export type HoverCardProps = {
 
 export type HoverCardHeaderProps = {
   /**
-   * The icon or component to display on the left side of the header
+   * Optional icon to display on the left side of the header
    */
-  icon?: ReactNode
+  iconLeft?: IconComponent
   /**
-   * Optional icon for the button on the right side of the header.
+   * Optional icon to display on the right side of the header
    */
   iconRight?: IconComponent
   /**
