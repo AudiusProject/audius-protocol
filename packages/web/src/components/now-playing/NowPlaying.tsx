@@ -38,7 +38,6 @@ import { Dispatch } from 'redux'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import { useRecord, make } from 'common/store/analytics/actions'
-import TrackFlair, { Size } from 'components/track-flair/TrackFlair'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { LockedStatusBadge } from 'components/locked-status-badge'
 import PlayButton from 'components/play-bar/PlayButton'
@@ -49,6 +48,7 @@ import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleBut
 import { PlayButtonStatus } from 'components/play-bar/types'
 import { GatedConditionsPill } from 'components/track/GatedConditionsPill'
 import { TrackDogEar } from 'components/track/TrackDogEar'
+import TrackFlair, { Size } from 'components/track-flair/TrackFlair'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
 import {

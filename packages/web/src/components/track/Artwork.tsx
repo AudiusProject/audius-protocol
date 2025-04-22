@@ -8,10 +8,10 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 
-import TrackFlair from 'components/track-flair/TrackFlair'
-import { Size } from 'components/track-flair/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import TrackFlair from 'components/track-flair/TrackFlair'
+import { Size } from 'components/track-flair/types'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 

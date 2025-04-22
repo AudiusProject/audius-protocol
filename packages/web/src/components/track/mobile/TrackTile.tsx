@@ -25,7 +25,6 @@ import { useModalState } from 'common/hooks/useModalState'
 import { TextLink, UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { TrackTileProps, TrackTileSize } from 'components/track/types'
-import UserBadges from 'components/user-badges/UserBadges'
 import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
 
 import { TrackDogEar } from '../TrackDogEar'
@@ -55,21 +54,6 @@ type ExtraProps = {
 }
 
 type CombinedProps = TrackTileProps & ExtraProps
-
-const formatCoSign = ({
-  hasReposted,
-  hasFavorited
-}: {
-  hasReposted: boolean
-  hasFavorited: boolean
-}) => {
-  if (hasReposted && hasFavorited) {
-    return messages.repostedAndFavorited
-  } else if (hasFavorited) {
-    return messages.favorited
-  }
-  return messages.reposted
-}
 
 const TrackTile = (props: CombinedProps) => {
   const {

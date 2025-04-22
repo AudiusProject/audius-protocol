@@ -3,9 +3,9 @@ import { memo } from 'react'
 import { SquareSizes, ID, Remix } from '@audius/common/models'
 import cn from 'classnames'
 
+import DynamicImage from 'components/dynamic-image/DynamicImage'
 import TrackFlair from 'components/track-flair/TrackFlair'
 import { Size } from 'components/track-flair/types'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 

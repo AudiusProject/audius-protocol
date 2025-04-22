@@ -1,9 +1,9 @@
 import { ID, Remix } from '@audius/common/models'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
+import DynamicImage from 'components/dynamic-image/DynamicImage'
 import TrackFlair from 'components/track-flair/TrackFlair'
 import { Size } from 'components/track-flair/types'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'components/user-badges/UserBadges'
 
 import styles from './RemixCard.module.css'
