@@ -7,7 +7,6 @@ import {
   useStems,
   useTrack
 } from '@audius/common/api'
-import { useFeatureFlag } from '@audius/common/hooks'
 import {
   isContentUSDCPurchaseGated,
   ID,
@@ -16,7 +15,6 @@ import {
   AccessConditions,
   FavoriteSource
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   PurchaseableContentType,
   useEarlyReleaseConfirmationModal,
@@ -226,12 +224,13 @@ export const GiantTrackTile = ({
     source: FavoriteSource.TRACK_PAGE
   })
 
-  const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
-    FeatureFlags.REMIX_CONTEST
-  )
   const { data: remixContest, isLoading: isEventsLoading } =
     useRemixContest(trackId)
-  const isRemixContest = isRemixContestEnabled && !!remixContest
+  const isRemixContest = !!remixContest
+  // If remix contest has description, show the RemixContestSection. If not,
+  // show the end date in the metadata section
+  const shouldShowRemixInfo =
+    isRemixContest && !remixContest.eventData.description
 
   const isLongFormContent =
     genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
@@ -483,7 +482,7 @@ export const GiantTrackTile = ({
   }, [trackId, navigate])
 
   const renderSubmitRemixContestSection = useCallback(() => {
-    if (!isRemixContest) return null
+    if (!shouldShowRemixInfo) return null
     const isContestOver = dayjs(remixContest.endDate).isBefore(dayjs())
     return (
       <Flex row gap='m'>
@@ -505,7 +504,7 @@ export const GiantTrackTile = ({
         ) : null}
       </Flex>
     )
-  }, [isRemixContest, remixContest, isOwner, goToUploadWithRemix])
+  }, [shouldShowRemixInfo, remixContest.endDate, isOwner, goToUploadWithRemix])
 
   const isLoading = loading || artworkLoading || isEventsLoading
 
@@ -538,7 +537,7 @@ export const GiantTrackTile = ({
       includeEmbed: !(isUnlisted || isStreamGated),
       includeArtistPick: true,
       includeAddToAlbum: isOwner && !ddexApp,
-      includeRemixContest: isRemixContestEnabled,
+      includeRemixContest: true,
       extraMenuItems: overflowMenuExtraItems
     }
   }
