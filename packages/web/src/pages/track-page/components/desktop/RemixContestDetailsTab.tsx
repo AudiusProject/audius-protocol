@@ -12,7 +12,9 @@ const messages = {
     const date = dayjs(deadline)
     return `${date.format('ddd. MMM D, YYYY')} at ${date.format('h:mm A')}`
   },
-  ended: 'Contest Ended'
+  ended: 'Contest Ended',
+  fallbackDescription:
+    'Enter my remix contest before the deadline for your chance to win!'
 }
 
 type RemixContestDetailsTabProps = {
@@ -41,7 +43,7 @@ export const RemixContestDetailsTab = ({
         </Text>
       </Flex>
       <UserGeneratedText variant='body' size='l'>
-        {remixContest?.eventData?.description}
+        {remixContest?.eventData?.description ?? messages.fallbackDescription}
       </UserGeneratedText>
     </Flex>
   )
