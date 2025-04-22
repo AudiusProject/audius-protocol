@@ -1,11 +1,12 @@
 import { ReactNode, RefObject } from 'react'
 
-import { useTrack } from '@audius/common/api'
+import { useRemixContest, useTrack } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import cn from 'classnames'
 
 import CoSignFlair from './CosignFlair'
 import styles from './Flair.module.css'
+import RemixContestFlair from './RemixContestFlair'
 import { Size } from './types'
 
 interface TrackFlairProps {
@@ -20,6 +21,7 @@ interface TrackFlairProps {
 const TrackFlair = (props: TrackFlairProps) => {
   const { forwardRef, size, children, className, id, hideToolTip } = props
   const { data: track } = useTrack(id)
+  const { data: remixContest } = useRemixContest(id)
 
   if (!track) return null
 
@@ -36,6 +38,12 @@ const TrackFlair = (props: TrackFlairProps) => {
       hasReposted={hasRemixAuthorReposted}
       size={size}
       userId={remixTrack?.user.user_id}
+      hideToolTip={hideToolTip}
+    />
+  ) : remixContest?.endDate ? (
+    <RemixContestFlair
+      endDate={remixContest.endDate}
+      size={size}
       hideToolTip={hideToolTip}
     />
   ) : null

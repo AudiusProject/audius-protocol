@@ -123,7 +123,6 @@ const PlayBar = ({
     title,
     track_id,
     has_current_user_saved,
-    _co_sign,
     is_unlisted: isUnlisted
   } = getDisplayInfo()
 
@@ -174,28 +173,13 @@ const PlayBar = ({
             />
           )}
           <div className={styles.info} onClick={onClickInfo}>
-            {_co_sign ? (
-              <TrackFlair
-                className={styles.artwork}
-                size={Size.TINY}
-                id={track_id}
-              >
-                <div
-                  className={styles.image}
-                  style={{
-                    backgroundImage: `url(${image})`
-                  }}
-                >
-                  {shouldShowPreviewLock ? (
-                    <div className={styles.lockOverlay}>
-                      <IconLock className={styles.iconLock} />
-                    </div>
-                  ) : null}
-                </div>
-              </TrackFlair>
-            ) : (
+            <TrackFlair
+              className={styles.artwork}
+              size={Size.TINY}
+              id={track_id}
+            >
               <div
-                className={cn(styles.artwork, styles.image)}
+                className={styles.image}
                 style={{
                   backgroundImage: `url(${image})`
                 }}
@@ -206,7 +190,7 @@ const PlayBar = ({
                   </div>
                 ) : null}
               </div>
-            )}
+            </TrackFlair>
             <div className={styles.title}>{title}</div>
             <div className={styles.separator}>•</div>
             <div className={styles.artist}>{name}</div>

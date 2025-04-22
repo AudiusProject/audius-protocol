@@ -1,0 +1,52 @@
+.boxBorder {
+  border-width: 2px;
+  border-style: solid;
+  border-radius: 4px; 
+  border-color: var(--harmony-white); 
+  background-color: var(--harmony-white); 
+}
+
+.box {
+  border-radius: 2px;
+  border-color: var(--harmony-p-300);
+  background-color: var(--harmony-p-300);
+}
+
+.box.tiny {
+  height: 10px;
+  width: 10px;
+}
+
+.box.small {
+  height: 16px;
+  width: 16px;
+}
+
+.box.medium {
+  height: 24px;
+  width: 24px;
+}
+
+.box.large {
+  height: 32px;
+  width: 32px;
+}
+
+.boxBorder.xlarge {
+  border-width: 4px;
+}
+
+.box.xlarge {
+  height: 44px;
+  width: 44px;
+}
+
+.icon {
+  height: 100%;
+  width: 100%;
+  fill: var(--harmony-white);
+}
+
+.icon rect {
+  fill: var(--harmony-p-300);
+}

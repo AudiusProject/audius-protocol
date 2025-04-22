@@ -1,11 +1,12 @@
 import { ID } from '@audius/common/models'
+import { formatDate } from '@audius/common/utils'
 import {
   Divider,
   Flex,
   HoverCard,
-  IconCosign,
   IconHeart,
   IconRepost,
+  IconTrophy,
   Origin,
   Text
 } from '@audius/harmony'
@@ -26,45 +27,22 @@ const transformOrigin: Origin = {
   vertical: 'bottom'
 }
 
-const messages = { title: 'Co-Sign' }
+const messages = { title: 'Remix Contest', submissionDue: 'Submission Due: ' }
 
-const CoSignFlair = ({
-  coSignName,
-  hasReposted,
-  hasFavorited,
+const RemixContestFlair = ({
+  endDate,
   size,
-  userId,
   hideToolTip
 }: {
-  coSignName: string
-  hasFavorited: boolean
-  hasReposted: boolean
+  endDate: string
   size: Size
-  userId: ID
   hideToolTip?: boolean
 }) => {
   const isMobile = useIsMobile()
 
   if (isMobile || hideToolTip) {
-    return <FlairIcon Icon={IconCosign} size={size} />
+    return <FlairIcon Icon={IconTrophy} size={size} />
   }
-
-  const message =
-    hasReposted && hasFavorited
-      ? 'Reposted & Favorited'
-      : hasReposted
-        ? 'Reposted'
-        : 'Favorited'
-  const icons =
-    hasReposted && hasFavorited ? (
-      <>
-        <IconRepost color='default' /> <IconHeart color='default' />
-      </>
-    ) : hasReposted ? (
-      <IconRepost color='default' />
-    ) : (
-      <IconHeart color='default' />
-    )
 
   return (
     <HoverCard
@@ -82,14 +60,9 @@ const CoSignFlair = ({
           </Flex>
           <Divider orientation='horizontal' />
           <Flex ph='m' pv='s' column gap='xs'>
-            <Flex row justifyContent='center' alignItems='center' gap='xs'>
-              <Text textAlign='center'> {coSignName}</Text>
-              <UserBadges userId={userId} />
-            </Flex>
             <Flex row gap='s' justifyContent='center'>
-              {icons}
               <Text strength='strong' textAlign='center'>
-                {message}
+                {messages.submissionDue} {formatDate(endDate)}
               </Text>
             </Flex>
           </Flex>
@@ -98,8 +71,8 @@ const CoSignFlair = ({
       anchorOrigin={anchorOrigin}
       transformOrigin={transformOrigin}
     >
-      <FlairIcon Icon={IconCosign} size={size} />
+      <FlairIcon Icon={IconTrophy} size={size} />
     </HoverCard>
   )
 }
-export default CoSignFlair
+export default RemixContestFlair
