@@ -34,6 +34,7 @@ export const getTrackPageLineupQueryKey = (trackId: ID | null | undefined) =>
 type UseTrackPageLineupArgs = {
   trackId: ID | null | undefined
   pageSize?: number
+  disableAutomaticCacheHandling?: boolean
 }
 
 type TrackIndices = {
@@ -62,7 +63,11 @@ type TrackPageData = {
 }
 
 export const useTrackPageLineup = (
-  { trackId, pageSize = DEFAULT_PAGE_SIZE }: UseTrackPageLineupArgs,
+  {
+    trackId,
+    pageSize = DEFAULT_PAGE_SIZE,
+    disableAutomaticCacheHandling = false
+  }: UseTrackPageLineupArgs,
   options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
@@ -236,7 +241,8 @@ export const useTrackPageLineup = (
     lineupActions: tracksActions,
     lineupSelector: trackPageSelectors.getLineup,
     playbackSource: PlaybackSource.TRACK_TILE,
-    pageSize
+    pageSize,
+    disableAutomaticCacheHandling
   })
 
   return {
