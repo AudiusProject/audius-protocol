@@ -43,17 +43,19 @@ const TrackFlair = (props: TrackFlairProps) => {
   return (
     <div ref={forwardRef} className={cn(styles.content, className)}>
       <div className={styles.children}>{children}</div>
-      <div
-        className={cn(styles.flair, {
-          [styles.tiny]: size === Size.TINY,
-          [styles.small]: size === Size.SMALL,
-          [styles.medium]: size === Size.MEDIUM,
-          [styles.large]: size === Size.LARGE,
-          [styles.xlarge]: size === Size.XLARGE
-        })}
-      >
-        {flair}
-      </div>
+      {flair ? (
+        <div
+          className={cn(styles.flair, {
+            [styles.tiny]: size === Size.TINY,
+            [styles.small]: size === Size.SMALL,
+            [styles.medium]: size === Size.MEDIUM,
+            [styles.large]: size === Size.LARGE,
+            [styles.xlarge]: size === Size.XLARGE
+          })}
+        >
+          {flair}
+        </div>
+      ) : null}
     </div>
   )
 }
