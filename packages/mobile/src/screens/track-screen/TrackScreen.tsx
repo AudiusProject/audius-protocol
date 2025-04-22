@@ -1,14 +1,9 @@
 import { useRef } from 'react'
 
 import { useTrackByParams, useUser } from '@audius/common/api'
-import {
-  trackPageLineupActions,
-  trackPageSelectors,
-  reachabilitySelectors
-} from '@audius/common/store'
+import { trackPageSelectors, reachabilitySelectors } from '@audius/common/store'
 import type { FlatList } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
-import { useEffectOnce } from 'react-use'
+import { useSelector } from 'react-redux'
 
 import { Flex } from '@audius/harmony-native'
 import { CommentPreview } from 'app/components/comments/CommentPreview'
@@ -26,13 +21,11 @@ import { TrackScreenDetailsTile } from './TrackScreenDetailsTile'
 import { TrackScreenLineup } from './TrackScreenLineup'
 import { TrackScreenSkeleton } from './TrackScreenSkeleton'
 
-const { tracksActions } = trackPageLineupActions
 const { getLineup } = trackPageSelectors
 const { getIsReachable } = reachabilitySelectors
 
 export const TrackScreen = () => {
   const { params } = useRoute<'Track'>()
-  const dispatch = useDispatch()
   const isReachable = useSelector(getIsReachable)
   const scrollViewRef = useRef<FlatList>(null)
 
@@ -43,10 +36,6 @@ export const TrackScreen = () => {
   const { data: user } = useUser(track?.owner_id)
 
   const lineup = useSelector(getLineup)
-
-  useEffectOnce(() => {
-    dispatch(tracksActions.reset())
-  })
 
   if (!track || !user) {
     return (
