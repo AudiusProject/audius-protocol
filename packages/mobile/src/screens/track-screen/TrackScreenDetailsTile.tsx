@@ -26,7 +26,6 @@ import type {
   Track,
   User
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import type { CommonState } from '@audius/common/store'
 import {
   accountSelectors,
@@ -59,7 +58,6 @@ import {
   Divider,
   Flex,
   IconCalendarMonth,
-  IconCloudUpload,
   IconPause,
   IconPlay,
   IconRepeatOff,
@@ -87,7 +85,6 @@ import { OfflineStatusRow } from 'app/components/offline-downloads'
 import { TrackDogEar } from 'app/components/track/TrackDogEar'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track as trackEvent } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 
@@ -236,11 +233,8 @@ export const TrackScreenDetailsTile = ({
     track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
   const aiAttributionUserId = track?.ai_attribution_user_id
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
-  const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
-    FeatureFlags.REMIX_CONTEST
-  )
   const { data: remixContest } = useRemixContest(trackId)
-  const isRemixContest = isRemixContestEnabled && remixContest
+  const isRemixContest = !!remixContest
 
   const isPlayingPreview = isPreviewing && isPlaying
   const isPlayingFullAccess = isPlaying && !isPreviewing
@@ -446,9 +440,7 @@ export const TrackScreenDetailsTile = ({
     const addToAlbumAction =
       isOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null
     const overflowActions = [
-      isOwner && isRemixContestEnabled && !isRemix
-        ? OverflowAction.HOST_REMIX_CONTEST
-        : null,
+      isOwner && !isRemix ? OverflowAction.HOST_REMIX_CONTEST : null,
       addToAlbumAction,
       !isUnlisted || isOwner ? OverflowAction.ADD_TO_PLAYLIST : null,
       isOwner
@@ -502,46 +494,6 @@ export const TrackScreenDetailsTile = ({
     publish
   ])
 
-  const handlePressSubmitRemix = useCallback(() => {
-    if (!track?.track_id) return
-    navigation.push('Upload', {
-      initialMetadata: {
-        is_remix: true,
-        remix_of: {
-          tracks: [{ parent_track_id: track.track_id }]
-        }
-      }
-    })
-  }, [navigation, track])
-
-  const renderRemixContestSection = () => {
-    if (!isRemixContest) return null
-    const isContestOver = dayjs(remixContest?.endDate).isBefore(dayjs())
-    return (
-      <Flex gap='m'>
-        <Flex row gap='xs' alignItems='center'>
-          <Text variant='label' color='accent'>
-            {isContestOver ? messages.contestEnded : messages.contestDeadline}
-          </Text>
-          <Text size='s' strength='strong'>
-            {messages.deadline(remixContest?.endDate)}
-          </Text>
-        </Flex>
-        {!isOwner ? (
-          <Flex flex={1}>
-            <Button
-              variant='secondary'
-              size='small'
-              iconLeft={IconCloudUpload}
-              onPress={handlePressSubmitRemix}
-            >
-              {messages.uploadRemixButtonText}
-            </Button>
-          </Flex>
-        ) : null}
-      </Flex>
-    )
-  }
   const renderBottomContent = () => {
     return hasDownloadableAssets ? (
       <>
@@ -705,7 +657,6 @@ export const TrackScreenDetailsTile = ({
         <TrackDescription description={description} scrollRef={scrollViewRef} />
         <TrackMetadataList trackId={trackId} />
         {renderTags()}
-        {renderRemixContestSection()}
         <OfflineStatusRow contentId={trackId} isCollection={false} />
         {renderBottomContent()}
       </Flex>
