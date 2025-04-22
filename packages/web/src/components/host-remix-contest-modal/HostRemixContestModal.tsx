@@ -89,7 +89,7 @@ export const HostRemixContestModal = () => {
     remixContestData ? remixContestData.description : ''
   )
   const [contestPrizeInfo, setContestPrizeInfo] = useState(
-    remixContest ? remixContestData.prizeInfo : ''
+    remixContestData ? remixContestData.prizeInfo : ''
   )
   const [contestEndDate, setContestEndDate] = useState(
     remixContest ? dayjs(remixContest.endDate) : null
