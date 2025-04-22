@@ -32,7 +32,10 @@ import TotalStakedStat from 'components/TotalStakedStat'
 import TransactionStatus from 'components/TransactionStatus'
 import UniqueUsersStat from 'components/UniqueUsersStat'
 import { useAccount } from 'store/account/hooks'
-import { useProposals } from 'store/cache/proposals/hooks'
+import {
+  useActiveProposals,
+  useRecentProposals
+} from 'store/cache/proposals/hooks'
 import { TICKER } from 'utils/consts'
 import { usePushRoute } from 'utils/effects'
 import { createStyles, isMobile } from 'utils/mobile'
@@ -78,10 +81,20 @@ const messages = {
 
 const Home = () => {
   const { isLoggedIn, wallet } = useAccount()
-  const { recentProposals } = useProposals()
+  const { recentProposals } = useRecentProposals()
+  const { activeProposals } = useActiveProposals()
   const pushRoute = usePushRoute()
   const mobile = isMobile()
   const { typography } = useTheme() as HarmonyTheme // Need to cast because the type from import is incorrect
+
+  const proposalsToShow =
+    activeProposals && recentProposals
+      ? activeProposals && activeProposals.length < 5
+        ? activeProposals.concat(
+            recentProposals.slice(0, 5 - activeProposals.length) || []
+          )
+        : activeProposals
+      : null
 
   return (
     <Page icon={IconHouse} title={messages.title}>
@@ -194,9 +207,9 @@ const Home = () => {
             </Text>
           </Box>
           <div className={styles.list}>
-            {recentProposals ? (
-              recentProposals.length > 0 ? (
-                recentProposals.map((proposal, i) => (
+            {proposalsToShow ? (
+              proposalsToShow.length > 0 ? (
+                proposalsToShow.map((proposal, i) => (
                   <Proposal key={i} proposal={proposal} />
                 ))
               ) : (

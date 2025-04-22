@@ -59,7 +59,7 @@
     "chart.js": "2.9.3",
     "classnames": "^2.3.2",
     "clsx": "1.1.1",
-    "dayjs": "1.8.36",
+    "dayjs": "1.11.10",
     "ethers": "6.11.1",
     "graphql": "15.5.0",
     "identicon.js": "2.3.3",
@@ -85,8 +85,7 @@
     "remark-gfm": "1.0.0",
     "semver": "6.3.0",
     "simplebar-react": "3.0.0-beta.5",
-    "url-join": "4.0.1",
-    "vite": "4.4.9"
+    "url-join": "4.0.1"
   },
   "devDependencies": {
     "@audius/dotenv-linter": "*",
@@ -135,6 +134,7 @@
     "typescript": "5.2.2",
     "url": "0.11.0",
     "util": "0.12.4",
+    "vite": "4.5.0",
     "vite-plugin-node-polyfills": "0.15.0",
     "vite-plugin-svgr": "4.1.0",
     "vite-plugin-top-level-await": "1.3.1",

@@ -124,6 +124,7 @@ export const useFeed = (
   })
 
   return useLineupQuery({
+    lineupData: queryData.data ?? [],
     queryData,
     queryKey: getFeedQueryKey({
       userId: currentUserId,
