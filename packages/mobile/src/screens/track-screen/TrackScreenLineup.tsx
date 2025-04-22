@@ -1,6 +1,9 @@
+import { useCallback } from 'react'
+
 import { useTrackPageLineup } from '@audius/common/api'
 import { trackPageMessages as messages } from '@audius/common/messages'
 import type { ID, User } from '@audius/common/models'
+import { useFocusEffect } from '@react-navigation/native'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
 
 import { Flex, Text } from '@audius/harmony-native'
@@ -44,8 +47,18 @@ export const TrackScreenLineup = ({
     isFetching,
     loadNextPage,
     isPending,
-    data
-  } = useTrackPageLineup({ trackId })
+    data,
+    loadCachedDataIntoLineup
+  } = useTrackPageLineup({ trackId, disableAutomaticCacheHandling: true })
+
+  useFocusEffect(
+    useCallback(() => {
+      if (data.length > 0) {
+        loadCachedDataIntoLineup()
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [loadCachedDataIntoLineup])
+  )
 
   if (!indices) return null
 
