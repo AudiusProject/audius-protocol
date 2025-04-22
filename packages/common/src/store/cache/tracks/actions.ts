@@ -7,6 +7,8 @@ export const EDIT_TRACK_SUCCEEDED = 'CACHE/TRACKS/EDIT_TRACK_SUCCEEDED'
 export const EDIT_TRACK_FAILED = 'CACHE/TRACKS/EDIT_TRACK_FAILED'
 
 export const DELETE_TRACK = 'CACHE/TRACKS/DELETE_TRACK'
+export const DELETE_TRACK_SUCCEEDED = 'CACHE/TRACKS/DELETE_TRACK_SUCCEEDED'
+export const DELETE_TRACK_FAILED = 'CACHE/TRACKS/DELETE_TRACK_FAILED'
 export const DELETE_TRACK_REQUESTED = 'CACHE/TRACKS/DELETE_TRACK_REQUESTED'
 
 export const SET_PERMALINK = 'CACHE/TRACKS/SET_PERMALINK'
@@ -32,6 +34,14 @@ export function editTrackFailed() {
 
 export function deleteTrack(trackId: ID) {
   return { type: DELETE_TRACK, trackId }
+}
+
+export function deleteTrackSucceeded(trackId: ID) {
+  return { type: DELETE_TRACK_SUCCEEDED, trackId }
+}
+
+export function deleteTrackFailed() {
+  return { type: DELETE_TRACK_FAILED }
 }
 
 export function deleteTrackRequested(trackId: ID) {

@@ -1,19 +1,10 @@
 import { createContext } from 'react'
 
-import {
-  useGetCurrentUserId,
-  useGetTrackByPermalink,
-  useUpdateTrack,
-  useStems
-} from '@audius/common/api'
-import {
-  SquareSizes,
-  Status,
-  StemUpload,
-  TrackMetadata
-} from '@audius/common/models'
+import { useStems, useTrackByParams } from '@audius/common/api'
+import { SquareSizes, StemUpload, TrackMetadata } from '@audius/common/models'
 import {
   TrackMetadataForUpload,
+  cacheTracksActions,
   uploadActions,
   useReplaceTrackConfirmationModal,
   useReplaceTrackProgressModal
@@ -32,6 +23,8 @@ import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { push } from 'utils/navigation'
 
+const { editTrack } = cacheTracksActions
+
 const { updateTrackAudio } = uploadActions
 
 const messages = {
@@ -46,21 +39,16 @@ export const EditFormScrollContext = createContext(() => {})
 
 export const EditTrackPage = (props: EditPageProps) => {
   const { scrollToTop } = props
-  const { handle, slug } = useParams<{ handle: string; slug: string }>()
+  const params = useParams<{ handle: string; slug: string }>()
+  const { handle } = params
   const dispatch = useDispatch()
   useRequiresAccount()
   useIsUnauthorizedForHandleRedirect(handle)
   const { onOpen: openReplaceTrackConfirmation } =
     useReplaceTrackConfirmationModal()
   const { onOpen: openReplaceTrackProgress } = useReplaceTrackProgressModal()
-  const { mutate: updateTrack } = useUpdateTrack()
 
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const permalink = `/${handle}/${slug}`
-  const { data: track, status: trackStatus } = useGetTrackByPermalink({
-    permalink,
-    currentUserId
-  })
+  const { data: track, status: trackStatus } = useTrackByParams(params)
 
   const { data: stemTracks = [] } = useStems(track?.track_id)
 
@@ -97,11 +85,7 @@ export const EditTrackPage = (props: EditPageProps) => {
         }
       })
     } else {
-      updateTrack({
-        trackId,
-        userId: currentUserId!,
-        metadata
-      })
+      dispatch(editTrack(trackId, metadata))
       dispatch(push(metadata.permalink))
     }
   }
@@ -146,7 +130,7 @@ export const EditTrackPage = (props: EditPageProps) => {
       title={messages.title}
       header={<Header primary={messages.title} showBackButton />}
     >
-      {trackStatus !== Status.SUCCESS || !coverArtUrl ? (
+      {trackStatus !== 'success' || !coverArtUrl ? (
         <LoadingSpinnerFullPage />
       ) : (
         <EditFormScrollContext.Provider value={scrollToTop}>
