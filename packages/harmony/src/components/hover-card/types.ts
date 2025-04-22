@@ -52,10 +52,6 @@ export type HoverCardHeaderProps = {
    */
   iconRight?: IconComponent
   /**
-   * Optional icon for the button on the right side of the header.
-   */
-  iconRight?: IconComponent
-  /**
    * The title to display in the header
    */
   title: string
