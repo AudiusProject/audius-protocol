@@ -1,6 +1,6 @@
 import { useRemixContest } from '@audius/common/api'
 import { ID } from '@audius/common/models'
-import { Text, Flex } from '@audius/harmony'
+import { Flex } from '@audius/harmony'
 
 import { UserGeneratedText } from 'components/user-generated-text'
 
