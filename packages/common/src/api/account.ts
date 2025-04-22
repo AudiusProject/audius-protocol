@@ -244,6 +244,7 @@ export const useGetCurrentWeb3User = (
   options?: QueryHookOptions
 ) => {
   const wallets = useSelector(accountSelectors.getWalletAddresses)
+  console.log('selecting web3 user')
   const result = useGetUserAccount(
     { wallet: wallets.web3User! },
     { ...options, disabled: !wallets.web3User }

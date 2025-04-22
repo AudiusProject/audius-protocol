@@ -15,7 +15,7 @@ import { AccountListContent } from './AccountListContent'
 
 export const AccountSwitcher = () => {
   const [isExpanded, setIsExpanded] = useState(false)
-  const isAccountComplete = useSelector(accountSelectors.getIsAccountComplete)
+  const isAccountComplete = true // useSelector(accountSelectors.getIsAccountComplete)
   const [checkedAccess, setCheckedAccess] = useState(false)
 
   const { data: currentWeb3User } = useGetCurrentWeb3User(

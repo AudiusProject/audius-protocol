@@ -48,6 +48,7 @@ export const getProfileUser = (
   params?: { handle?: string | null; id?: ID }
 ) => {
   const profileHandle = getProfileUserHandle(state)
+  console.log({ params })
   if (!params) return getUser(state, { handle: profileHandle })
 
   const { id, handle } = params
