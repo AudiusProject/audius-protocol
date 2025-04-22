@@ -3,9 +3,9 @@ import { memo, useEffect } from 'react'
 import { SquareSizes, Remix } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 
+import DynamicImage from 'components/dynamic-image/DynamicImage'
 import TrackFlair from 'components/track-flair/TrackFlair'
 import { Size } from 'components/track-flair/types'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 import styles from './GiantArtwork.module.css'

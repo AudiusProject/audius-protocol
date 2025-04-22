@@ -275,29 +275,7 @@ const TrackTile = (props: CombinedProps) => {
               ) : null}
             </UserLink>
           </Flex>
-          {coSign && (
-            <Text
-              variant='label'
-              size='s'
-              strength='strong'
-              className={cn(styles.coSignLabel)}
-            >
-              {messages.coSign}
-            </Text>
-          )}
         </div>
-        {coSign ? (
-          <Text variant='body' size='xs' className={styles.coSignText}>
-            <div className={styles.name}>
-              {coSign.user.name}
-              <UserBadges userId={coSign.user.user_id} size='4xs' />
-            </div>
-            {formatCoSign({
-              hasReposted: coSign.has_remix_author_reposted,
-              hasFavorited: coSign.has_remix_author_saved
-            })}
-          </Text>
-        ) : null}
         <TrackTileStats
           trackId={id}
           isTrending={isTrending}
