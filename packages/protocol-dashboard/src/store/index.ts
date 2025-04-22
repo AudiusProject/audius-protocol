@@ -86,7 +86,8 @@ export const createStore = () => {
       getDefaultMiddleware({
         thunk: {
           extraArgument: aud
-        }
+        },
+        serializableCheck: false
       })
   })
   window.store = store

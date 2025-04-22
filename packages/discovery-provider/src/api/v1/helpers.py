@@ -1150,8 +1150,6 @@ trending_parser_paginated = full_trending_parser.copy()
 trending_parser_paginated.remove_argument("user_id")
 
 trending_parser = trending_parser_paginated.copy()
-trending_parser.remove_argument("limit")
-trending_parser.remove_argument("offset")
 
 
 notifications_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)

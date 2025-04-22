@@ -110,6 +110,8 @@ export interface GetTrackTopListenersRequest {
 }
 
 export interface GetTrendingTracksRequest {
+    offset?: number;
+    limit?: number;
     genre?: string;
     time?: GetTrendingTracksTimeEnum;
 }
@@ -517,6 +519,14 @@ export class TracksApi extends runtime.BaseAPI {
      */
     async getTrendingTracksRaw(params: GetTrendingTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TracksResponse>> {
         const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
 
         if (params.genre !== undefined) {
             queryParameters['genre'] = params.genre;
