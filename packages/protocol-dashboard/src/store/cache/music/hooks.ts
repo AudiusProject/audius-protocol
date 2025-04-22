@@ -38,7 +38,7 @@ export function fetchTopTracks(): ThunkAction<
   return async (dispatch) => {
     try {
       const { data } = await audiusSdk.tracks.getTrendingTracks({ limit: 4 })
-      const tracks: Track[] = data.map((d) => ({
+      const tracks: Track[] = data.slice(0, 4).map((d) => ({
         title: d.title,
         handle: d.user.handle,
         artwork: d.artwork?._480x480 ?? imageBlank,
