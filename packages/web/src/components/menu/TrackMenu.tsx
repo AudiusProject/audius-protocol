@@ -380,7 +380,6 @@ const TrackMenu = ({
 
 function mapStateToProps(state: AppState) {
   return {
-    playlists: getAccountOwnedPlaylists(state),
     currentCollectionId: getCollectionId(state)
   }
 }
