@@ -1,5 +1,6 @@
 import { ReactNode } from 'react'
 
+import { IconComponent } from '../icon'
 import { Origin } from '../popup/types'
 
 export type HoverCardProps = {
@@ -43,9 +44,13 @@ export type HoverCardProps = {
 
 export type HoverCardHeaderProps = {
   /**
-   * The icon or component to display on the left side of the header
+   * Optional icon to display on the left side of the header
    */
-  icon: ReactNode
+  iconLeft?: IconComponent
+  /**
+   * Optional icon to display on the right side of the header
+   */
+  iconRight?: IconComponent
   /**
    * The title to display in the header
    */

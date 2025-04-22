@@ -34,9 +34,6 @@ import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHid
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import CoSign from 'components/co-sign/CoSign'
-import HoverInfo from 'components/co-sign/HoverInfo'
-import { Size } from 'components/co-sign/types'
 import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
@@ -45,6 +42,9 @@ import { AiTrackSection } from 'components/track/AiTrackSection'
 import { GatedContentSection } from 'components/track/GatedContentSection'
 import { TrackDogEar } from 'components/track/TrackDogEar'
 import { TrackMetadataList } from 'components/track/TrackMetadataList'
+import HoverInfo from 'components/track-flair/HoverInfo'
+import TrackFlair from 'components/track-flair/TrackFlair'
+import { Size } from 'components/track-flair/types'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { push as pushRoute } from 'utils/navigation'
 import { isDarkMode } from 'utils/theme/theme'
@@ -298,20 +298,13 @@ const TrackHeader = ({
   }, [dispatch, permalink])
 
   const imageElement = coSign ? (
-    <CoSign
-      size={Size.LARGE}
-      hasFavorited={coSign.has_remix_author_saved}
-      hasReposted={coSign.has_remix_author_reposted}
-      coSignName={coSign.user.name}
-      className={styles.coverArt}
-      userId={coSign.user.user_id}
-    >
+    <TrackFlair size={Size.LARGE} id={trackId} className={styles.coverArt}>
       <DynamicImage
         image={image ?? undefined}
         alt={messages.artworkAltText}
         wrapperClassName={cn(styles.imageWrapper, styles.cosignImageWrapper)}
       />
-    </CoSign>
+    </TrackFlair>
   ) : (
     <DynamicImage
       image={image ?? undefined}

@@ -22,11 +22,11 @@ import { Dispatch } from 'redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
-import CoSign, { Size } from 'components/co-sign/CoSign'
 import { LockedStatusBadge } from 'components/locked-status-badge'
 import PlayButton from 'components/play-bar/PlayButton'
 import TrackingBar from 'components/play-bar/TrackingBar'
 import { PlayButtonStatus } from 'components/play-bar/types'
+import TrackFlair, { Size } from 'components/track-flair/TrackFlair'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { audioPlayer } from 'services/audio-player'
 import { AppState } from 'store/types'
@@ -175,13 +175,10 @@ const PlayBar = ({
           )}
           <div className={styles.info} onClick={onClickInfo}>
             {_co_sign ? (
-              <CoSign
+              <TrackFlair
                 className={styles.artwork}
                 size={Size.TINY}
-                hasFavorited={_co_sign.has_remix_author_saved}
-                hasReposted={_co_sign.has_remix_author_reposted}
-                coSignName={_co_sign.user.name}
-                userId={_co_sign.user.user_id}
+                id={track_id}
               >
                 <div
                   className={styles.image}
@@ -195,7 +192,7 @@ const PlayBar = ({
                     </div>
                   ) : null}
                 </div>
-              </CoSign>
+              </TrackFlair>
             ) : (
               <div
                 className={cn(styles.artwork, styles.image)}
