@@ -48,13 +48,9 @@ const RemixCard = ({
   return (
     <div className={styles.remixCard}>
       <div className={styles.imagesContainer} onClick={onClick}>
-        {coSign ? (
-          <TrackFlair size={Size.MEDIUM} id={trackId}>
-            {images}
-          </TrackFlair>
-        ) : (
-          images
-        )}
+        <TrackFlair size={Size.MEDIUM} id={trackId}>
+          {images}
+        </TrackFlair>
       </div>
       <div className={styles.artist} onClick={onClickArtistName}>
         <ArtistPopover handle={artistHandle}>

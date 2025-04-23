@@ -16,7 +16,6 @@ import {
   playerSelectors
 } from '@audius/common/store'
 import { IconLock } from '@audius/harmony'
-import cn from 'classnames'
 import { connect, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
@@ -123,7 +122,6 @@ const PlayBar = ({
     title,
     track_id,
     has_current_user_saved,
-    _co_sign,
     is_unlisted: isUnlisted
   } = getDisplayInfo()
 
@@ -174,11 +172,11 @@ const PlayBar = ({
             />
           )}
           <div className={styles.info} onClick={onClickInfo}>
-            {_co_sign ? (
+            {track?.track_id ? (
               <TrackFlair
                 className={styles.artwork}
                 size={Size.TINY}
-                id={track_id}
+                id={track?.track_id}
               >
                 <div
                   className={styles.image}
@@ -193,20 +191,7 @@ const PlayBar = ({
                   ) : null}
                 </div>
               </TrackFlair>
-            ) : (
-              <div
-                className={cn(styles.artwork, styles.image)}
-                style={{
-                  backgroundImage: `url(${image})`
-                }}
-              >
-                {shouldShowPreviewLock ? (
-                  <div className={styles.lockOverlay}>
-                    <IconLock className={styles.iconLock} />
-                  </div>
-                ) : null}
-              </div>
-            )}
+            ) : null}
             <div className={styles.title}>{title}</div>
             <div className={styles.separator}>•</div>
             <div className={styles.artist}>{name}</div>
