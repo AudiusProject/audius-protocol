@@ -41,14 +41,14 @@ const messages = {
   save: 'Save',
   contestEndDateLabel: 'Last day to submit to contest',
   endDateError: 'Contest end date must be in the future within 90 days',
-  descriptionLabel: 'Contest Description',
+  descriptionLabel: 'Contest Description*',
   descriptionPlaceholder:
     'Write your contest description here. Include clear rules, guidelines, and any other important details you want your fans to know about your contest.',
   descriptionError: 'Contest description is required',
   prizeInfoLabel: 'Prizes',
   prizeInfoPlaceholder:
     'Describe what winners will receive. Be clear about how many winners there will be, and what each prize includes (e.g. cash, reposts, feedback, collaborations, etc.)',
-  deadlineLabel: 'Submission Deadline',
+  deadlineLabel: 'Submission Deadline*',
   timeLabel: 'Time',
   timePlaceholder: '12:00',
   timeError: 'Invalid time',
