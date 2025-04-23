@@ -139,6 +139,7 @@ export const UserLink = (props: UserLinkProps) => {
     return (
       <Flex
         css={{
+          height: spacing.unit5,
           columnGap: spacing.xs,
           alignItems: 'center',
           lineHeight: 'normal',

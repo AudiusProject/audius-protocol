@@ -18,7 +18,8 @@ import {
   Text,
   Flex,
   ProgressBar,
-  Paper
+  Paper,
+  Divider
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
@@ -225,7 +226,7 @@ const TrackTile = ({
         <CollectionDogEar collectionId={collectionId} hideUnlocked />
       ) : null}
       <div className={styles.body}>
-        <Flex inline direction='column' h='100%' justifyContent='space-between'>
+        <Flex inline direction='column' justifyContent='space-between'>
           {size === TrackTileSize.LARGE ? (
             <Text
               variant='label'
@@ -236,7 +237,7 @@ const TrackTile = ({
               {isLoading || !header ? null : header}
             </Text>
           ) : null}
-          <Flex direction='column' gap='2xs' mb={header ? 'xs' : 's'}>
+          <Flex direction='column' gap='xs' mb={header ? 'xs' : ''} pv='xs'>
             {isLoading ? (
               <Skeleton width='80%' height='20px' />
             ) : (
@@ -280,8 +281,8 @@ const TrackTile = ({
           </Text>
         </Flex>
         {isTrack && trackId ? (
-          <>
-            <div className={styles.divider} />
+          <Flex column gap='s'>
+            <Divider orientation='horizontal' />
             {isOwner ? (
               <OwnerActionButtons
                 contentId={trackId}
@@ -317,7 +318,7 @@ const TrackTile = ({
                 }
               />
             )}
-          </>
+          </Flex>
         ) : null}
       </div>
     </Root>
