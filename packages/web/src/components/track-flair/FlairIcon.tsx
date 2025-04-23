@@ -1,4 +1,4 @@
-import { IconComponent } from '@audius/harmony'
+import { IconComponent, useTheme } from '@audius/harmony'
 import cn from 'classnames'
 
 import styles from './FlairIcon.module.css'
@@ -10,6 +10,12 @@ type CheckProps = {
 }
 
 const FlairIcon = ({ size, Icon }: CheckProps) => {
+  const {
+    color: {
+      primary: { p300 }
+    }
+  } = useTheme()
+
   return (
     <div
       className={cn(styles.box, {
@@ -20,7 +26,7 @@ const FlairIcon = ({ size, Icon }: CheckProps) => {
         [styles.xlarge]: size === Size.XLARGE
       })}
     >
-      <Icon className={styles.icon} />
+      <Icon className={styles.icon} fill={p300} />
     </div>
   )
 }
