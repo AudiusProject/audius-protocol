@@ -6,9 +6,10 @@ import { walletMessages } from '@audius/common/messages'
 import {
   Flex,
   IconCaretRight,
-  IconLogoCircle,
+  IconTokenAUDIO,
   Paper,
-  Text
+  Text,
+  cornerRadius
 } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 
@@ -39,7 +40,7 @@ export const YourCoins = () => {
         alignItems='center'
       >
         <Flex direction='row' alignItems='center' gap='m'>
-          <IconLogoCircle size='4xl' />
+          <IconTokenAUDIO size='4xl' borderRadius={cornerRadius.circle} />
           <Flex direction='column' gap='xs'>
             <Flex direction='row' alignItems='center' gap='xs'>
               <Text variant='heading' size='l' color='default'>
