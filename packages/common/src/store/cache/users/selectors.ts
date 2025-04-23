@@ -8,40 +8,34 @@ import {
 import { getEntryTimestamp } from '~/store/cache/selectors'
 import type { CommonState } from '~/store/commonStore'
 
-import { Kind } from '../../../models'
+import { Kind, UID } from '../../../models'
 import type { ID, User } from '../../../models'
 
 /** @deprecated use a tan-query method instead - either useUser for hooks or queryClient.getQueryData */
 export const getUser = (
   state: CommonState,
-  props:
-    | { handle: string | null }
-    | { id: ID | null | undefined }
-    | { uid: any }
-) => {
-  if ('uid' in props) {
-    // TODO: what to do about select by UID -
-    return undefined
+  props: { handle?: string | null; id?: ID | null; uid?: UID | null }
+): User | null => {
+  let userId = props.id
+  if (props.uid) {
+    return null
   }
-  return 'handle' in props
-    ? getUserByHandle(state, { handle: props.handle })
-    : 'id' in props
-      ? state.queryClient.getQueryData(getUserQueryKey(props.id))
-      : undefined
+  if (props.handle) {
+    userId = getUserByHandle(state, { handle: props.handle })
+  }
+  return state.queryClient.getQueryData(getUserQueryKey(userId)) ?? null
 }
 
 /** @deprecated use a tan-query method instead - either useUserByHandle for hooks or queryClient.getQueryData */
 export const getUserByHandle = (
   state: CommonState,
   props: { handle: string | null }
-  // TODO: should we put some form of this into tan-query
-) => {
-  if (!props.handle) return undefined
-  const userId = state.queryClient.getQueryData(
-    getUserByHandleQueryKey(props.handle)
+): ID | null => {
+  if (!props.handle) return null
+  return (
+    state.queryClient.getQueryData(getUserByHandleQueryKey(props.handle)) ??
+    null
   )
-  if (!userId) return undefined
-  return state.queryClient.getQueryData(getUserQueryKey(userId))
 }
 
 /** @deprecated use a tan-query method instead - either useUsers for hooks or queryClient.getQueriesData */
@@ -51,7 +45,10 @@ export const getUsers = (
     ids?: ID[] | null
     handles?: string[] | null
   }
-) => {
+):
+  | { [id: number]: User }
+  | { [uid: string]: User }
+  | { [permalink: string]: User } => {
   const { ids, handles } = identifiers ?? {}
   if (ids) {
     return ids.reduce(

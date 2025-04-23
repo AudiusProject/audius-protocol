@@ -9,83 +9,96 @@ import type { CommonState } from '~/store/commonStore'
 import { removeNullable } from '~/utils/typeUtils'
 import { Uid } from '~/utils/uid'
 
-import type { ID, UID, Collection, User } from '../../../models'
+import type { ID, UID, Collection, User, Track } from '../../../models'
 
 /** @deprecated Use a tan-query equivalent instead. useCollection or queryClient.getQueryData */
 export const getCollection = (
   state: CommonState,
-  props:
-    | { id: ID | null | undefined }
-    | { permalink: string | null }
-    | { uid: string | null }
-) => {
-  if ('permalink' in props && props.permalink) {
+  props: {
+    id?: ID | null | undefined
+    permalink?: string | null
+    uid?: string | null
+  }
+): Collection | null => {
+  if (props.permalink) {
     const collectionId = state.queryClient.getQueryData(
       getCollectionByPermalinkQueryKey(props.permalink)
     )
-    return state.queryClient.getQueryData(getCollectionQueryKey(collectionId))
-  } else if ('id' in props && props.id) {
-    return state.queryClient.getQueryData(getCollectionQueryKey(props.id))
-  } else if ('uid' in props && props.uid) {
+    return (
+      state.queryClient.getQueryData(getCollectionQueryKey(collectionId)) ??
+      null
+    )
+  } else if (props.id) {
+    return (
+      state.queryClient.getQueryData(getCollectionQueryKey(props.id)) ?? null
+    )
+  } else if (props.uid) {
     const collectionId = parseInt(Uid.fromString(props.uid).id as string, 10)
-    return state.queryClient.getQueryData(getCollectionQueryKey(collectionId))
+    return (
+      state.queryClient.getQueryData(getCollectionQueryKey(collectionId)) ??
+      null
+    )
   }
-  return undefined
+  return null
 }
 
 /** @deprecated Use a tan-query equivalent instead. useCollections or queryClient.getQueriesData */
 export const getCollections = (
   state: CommonState,
-  props?:
-    | {
-        ids: ID[] | null
-      }
-    | {
-        uids: UID[] | null
-      }
-    | {
-        permalinks: string[] | null
-      }
-) => {
-  if (props && 'ids' in props) {
-    return props.ids?.reduce(
-      (acc, id) => {
-        const collection = getCollection(state, { id })
-        if (collection) {
-          acc[id] = collection
-        }
-        return acc
-      },
-      {} as { [id: number]: Collection }
+  props?: {
+    ids?: ID[] | null
+    uids?: UID[] | null
+    permalinks?: string[] | null
+  }
+):
+  | { [id: number]: Collection }
+  | { [uid: string]: Collection }
+  | { [permalink: string]: Collection } => {
+  if (props && props.ids) {
+    return (
+      props.ids?.reduce(
+        (acc, id) => {
+          const collection = getCollection(state, { id })
+          if (collection) {
+            acc[id] = collection
+          }
+          return acc
+        },
+        {} as { [id: number]: Collection }
+      ) ?? {}
     )
-  } else if (props && 'uids' in props) {
-    return props.uids?.reduce(
-      (acc, uid) => {
-        const collection = getCollection(state, { uid })
-        if (collection) {
-          acc[uid] = collection
-        }
-        return acc
-      },
-      {} as { [uid: string]: Collection }
+  } else if (props && props.uids) {
+    return (
+      props.uids?.reduce(
+        (acc, uid) => {
+          const collection = getCollection(state, { uid })
+          if (collection) {
+            acc[uid] = collection
+          }
+          return acc
+        },
+        {} as { [uid: string]: Collection }
+      ) ?? {}
     )
-  } else if (props && 'permalinks' in props) {
-    return props.permalinks?.reduce(
-      (acc, permalink) => {
-        const collection = getCollection(state, { permalink })
-        if (collection) {
-          acc[permalink] = collection
-        }
-        return acc
-      },
-      {} as { [permalink: string]: Collection }
+  } else if (props && props.permalinks) {
+    return (
+      props.permalinks?.reduce(
+        (acc, permalink) => {
+          const collection = getCollection(state, { permalink })
+          if (collection) {
+            acc[permalink] = collection
+          }
+          return acc
+        },
+        {} as { [permalink: string]: Collection }
+      ) ?? {}
     )
   }
   // Returns all tracks in cache. TODO: this horribly inefficient dear god why on earth was this done
   const collectionQueryResults = state.queryClient.getQueriesData({
     queryKey: [QUERY_KEYS.collection]
   })
-  return collectionQueryResults.reduce((acc, queryData) => {
+  const idMap = collectionQueryResults.reduce((acc, queryData) => {
     const [, collection] = queryData as [QueryKey, Collection]
     if (collection !== undefined) {
       return {
@@ -95,12 +108,13 @@ export const getCollections = (
     }
     return acc
   }, {})
+  return idMap
 }
 
 export const getCollectionTracks = (
   state: CommonState,
   { id }: { id?: ID }
-) => {
+): Track[] | null => {
   const collection = getCollection(state, { id })
   if (!collection) return null
 

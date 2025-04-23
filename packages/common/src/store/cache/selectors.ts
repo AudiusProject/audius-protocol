@@ -52,10 +52,10 @@ export function getEntry(
   state: CommonState,
   props: {
     kind: Kind
-    id?: ID
-    uid?: UID
+    id?: ID | null
+    uid?: UID | null
   }
-) {
+): Track | User | Collection | null {
   if (props.kind === Kind.USERS) {
     return getUser(state, props)
   }
@@ -65,7 +65,7 @@ export function getEntry(
   if (props.kind === Kind.COLLECTIONS) {
     return getCollection(state, props)
   }
-  return undefined
+  return null
 }
 
 /**

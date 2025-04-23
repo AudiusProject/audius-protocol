@@ -2,6 +2,7 @@ import { useCallback, useContext, useEffect, useState } from 'react'
 
 import { ResponseError } from '@audius/sdk'
 import { CaseReducerActions, createSlice } from '@reduxjs/toolkit'
+import { QueryClient, useQueryClient } from '@tanstack/react-query'
 import retry from 'async-retry'
 import { produce } from 'immer'
 import { isEqual, mapValues } from 'lodash'
@@ -11,6 +12,11 @@ import { useCustomCompareEffect, useDebounce } from 'react-use'
 import { Dispatch } from 'redux'
 import { call, select } from 'typed-redux-saga'
 
+import {
+  getCollectionQueryKey,
+  getTrackQueryKey,
+  getUserQueryKey
+} from '~/api/tan-query/queryKeys'
 import {
   Collection,
   CollectionMetadata,
@@ -206,6 +212,7 @@ const useQueryState = <Args, Data>(
   endpointName: string,
   endpoint: EndpointConfig<Args, Data>
 ): Nullable<PerKeyState<any> & { isInitialValue?: boolean }> => {
+  const queryClient = useQueryClient()
   return useSelector((state: CommonState) => {
     if (!state.api[reducerPath]) {
       throw new Error(
@@ -244,19 +251,17 @@ const useQueryState = <Args, Data>(
               : parseInt(fetchArgsRecord[idArgKey])
           switch (kind) {
             case Kind.TRACKS:
-              cachedData = getTrack(state, {
-                id: idAsNumber
-              })
+              cachedData = queryClient.getQueryData(
+                getTrackQueryKey(idAsNumber)
+              )
               break
             case Kind.COLLECTIONS:
-              cachedData = getCollection(state, {
-                id: idAsNumber
-              })
+              cachedData = queryClient.getQueryData(
+                getCollectionQueryKey(idAsNumber)
+              )
               break
             case Kind.USERS:
-              cachedData = getUser(state, {
-                id: idAsNumber
-              })
+              cachedData = queryClient.getQueryData(getUserQueryKey(idAsNumber))
               break
           }
         } else if (permalinkArgKey && fetchArgsRecord[permalinkArgKey]) {
@@ -307,7 +312,7 @@ const useQueryState = <Args, Data>(
   }, isEqual)
 }
 
-const createCacheDataSelector =
+const createLegacyCacheDataSelector =
   <Args, Data>(
     endpoint: EndpointConfig<Args, Data>,
     normalizedData: any,
@@ -330,14 +335,69 @@ const createCacheDataSelector =
     return normalizedData
   }
 
+const createCacheDataSelector =
+  <Args, Data>(
+    endpoint: EndpointConfig<Args, Data>,
+    normalizedData: any,
+    queryClient: QueryClient,
+    hookOptions?: QueryHookOptions
+  ) =>
+  () => {
+    if (hookOptions?.shallow && !endpoint.options.kind) return normalizedData
+    if (
+      endpoint.options.schemaKey ||
+      (typeof normalizedData === 'object' && !Array.isArray(normalizedData))
+    ) {
+      let finalData = {
+        ...normalizedData
+      }
+      const schemaData = endpoint.options.schemaKey
+        ? normalizedData?.[endpoint.options.schemaKey]
+        : normalizedData
+
+      if (schemaData?.user) {
+        finalData.user = queryClient.getQueryData(
+          getUserQueryKey(schemaData.user)
+        )
+      }
+      if (schemaData?.track) {
+        finalData.track = queryClient.getQueryData(
+          getTrackQueryKey(schemaData.track)
+        )
+      }
+      if (schemaData?.collection) {
+        finalData.collection = queryClient.getQueryData(
+          getCollectionQueryKey(schemaData.collection)
+        )
+      }
+      if (
+        typeof schemaData === 'number' &&
+        schemaData > 0 &&
+        endpoint.options.kind
+      ) {
+        if (endpoint.options.kind === Kind.USERS) {
+          finalData = queryClient.getQueryData(getUserQueryKey(finalData))
+        } else if (endpoint.options.kind === Kind.TRACKS) {
+          finalData = queryClient.getQueryData(getTrackQueryKey(finalData))
+        } else if (endpoint.options.kind === Kind.COLLECTIONS) {
+          finalData = queryClient.getQueryData(getCollectionQueryKey(finalData))
+        }
+      }
+      return finalData
+    }
+
+    return normalizedData
+  }
+
 // Rehydrate local normalizedData using entities from global normalized cache
 const useCacheData = <Args, Data>(
   endpoint: EndpointConfig<Args, Data>,
   normalizedData: any,
   hookOptions?: QueryHookOptions
 ) => {
+  const queryClient = useQueryClient()
   return useSelector(
-    createCacheDataSelector(endpoint, normalizedData, hookOptions),
+    createCacheDataSelector(endpoint, normalizedData, queryClient, hookOptions),
     isEqual
   )
 }
@@ -473,6 +533,8 @@ const fetchData = async <Args, Data>(
   }
 }
 
+const endpointsCalled: any = {}
+
 const buildEndpointHooks = <
   EndpointDefinitions extends DefaultEndpointDefinitions,
   Args,
@@ -515,6 +577,9 @@ const buildEndpointHooks = <
     }
 
     let cachedData = useCacheData(endpoint, normalizedData, hookOptions)
+    if (!endpointsCalled[endpointName] && normalizedData) {
+      endpointsCalled[endpointName] = true
+    }
 
     const context = useContext(AudiusQueryContext)
 
@@ -792,7 +857,7 @@ const buildEndpointHooks = <
         const { normalizedData } = endpointState
 
         const cacheData = yield* select(
-          createCacheDataSelector(endpoint, normalizedData)
+          createLegacyCacheDataSelector(endpoint, normalizedData)
         )
         return endpoint.options?.schemaKey
           ? cacheData[endpoint.options.schemaKey]

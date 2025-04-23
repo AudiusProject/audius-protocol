@@ -10,37 +10,32 @@ import { ID, UID, Track, StemTrack } from '../../../models'
 /** @deprecated Use a tan-query equivalent instead. useTrack or queryClient.getQueryData */
 export const getTrack = (
   state: CommonState,
-  props?: { id: ID | null } | { uid: UID | null } | { permalink: string | null }
-): Track | undefined => {
-  if (props && 'permalink' in props && props.permalink) {
+  props?: { id?: ID | null; uid?: UID | null; permalink?: string | null }
+): Track | null => {
+  if (props && props.permalink) {
     const trackId = state.queryClient.getQueryData(
       getTrackByPermalinkQueryKey(props.permalink)
     )
-    return state.queryClient.getQueryData(getTrackQueryKey(trackId))
-  } else if (props && 'uid' in props && props.uid) {
+    return state.queryClient.getQueryData(getTrackQueryKey(trackId)) ?? null
+  } else if (props && props.uid) {
     const trackId = parseInt(Uid.fromString(props.uid).id as string, 10)
-    return state.queryClient.getQueryData(getTrackQueryKey(trackId))
-  } else if (props && 'id' in props && props.id) {
-    return state.queryClient.getQueryData(getTrackQueryKey(props.id))
+    return state.queryClient.getQueryData(getTrackQueryKey(trackId)) ?? null
+  } else if (props && props.id) {
+    return state.queryClient.getQueryData(getTrackQueryKey(props.id)) ?? null
   }
-  return undefined
+  return null
 }
 
 /** @deprecated Use a tan-query equivalent instead. useTracks or queryClient.getQueriesData */
 export const getTracks = (
   state: CommonState,
-  props?:
-    | {
-        ids: ID[] | null
-      }
-    | {
-        uids: UID[] | null
-      }
-    | {
-        permalinks: string[] | null
-      }
+  props?: {
+    ids?: ID[] | null
+    uids?: UID[] | null
+    permalinks?: string[] | null
+  }
 ): { [id: number]: Track } | undefined => {
-  if (props && 'ids' in props) {
+  if (props && props.ids) {
     return props.ids?.reduce(
       (acc, id) => {
         const track = getTrack(state, { id })
@@ -51,7 +46,7 @@ export const getTracks = (
       },
       {} as { [id: number]: Track }
     )
-  } else if (props && 'uids' in props) {
+  } else if (props && props.uids) {
     return props.uids?.reduce(
       (acc, uid) => {
         const track = getTrack(state, { uid })
@@ -62,7 +57,7 @@ export const getTracks = (
       },
       {} as { [uid: string]: Track }
     )
-  } else if (props && 'permalinks' in props) {
+  } else if (props && props.permalinks) {
     return props.permalinks?.reduce(
       (acc, permalink) => {
         const track = getTrack(state, { permalink })
@@ -96,7 +91,7 @@ export const getTracksByUid = (state: CommonState) => {
       entries[uid] = getTrack(state, { uid })
       return entries
     },
-    {} as { [uid: string]: Track | undefined }
+    {} as { [uid: string]: Track | null }
   )
 }
 

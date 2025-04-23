@@ -293,6 +293,7 @@ function* add(
 
 // Adds entries but first checks if they are confirming.
 // If they are, don't add or else we could be in an inconsistent state.
+
 function* watchAdd() {
   yield* takeEvery(
     cacheActions.ADD,
@@ -303,21 +304,8 @@ function* watchAdd() {
   )
 }
 
-function* initializeCacheType() {
-  const remoteConfig = yield* getContext('remoteConfigInstance')
-  yield* call(remoteConfig.waitForRemoteConfig)
-
-  const cacheEntryTTL = remoteConfig.getRemoteVar(IntKeys.CACHE_ENTRY_TTL)!
-
-  yield* put(
-    cacheActions.setCacheConfig({
-      entryTTL: cacheEntryTTL
-    })
-  )
-}
-
 const sagas = () => {
-  return [initializeCacheType, watchAdd]
+  return [watchAdd]
 }
 
 export default sagas

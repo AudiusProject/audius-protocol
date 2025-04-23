@@ -10,8 +10,7 @@ import {
   FavoriteType,
   PlayableType,
   ID,
-  Track,
-  Status
+  Track
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -142,17 +141,8 @@ class TrackPageProviderClass extends Component<
   componentDidUpdate(
     prevProps: TrackPageProviderProps & { track: Track | null }
   ) {
-    const {
-      pathname,
-      track,
-      status,
-      refetchTracksLinup,
-      user,
-      trackPermalink
-    } = this.props
-    if (status === Status.ERROR) {
-      this.props.goToRoute(NOT_FOUND_PAGE)
-    }
+    const { pathname, track, refetchTracksLinup, user, trackPermalink } =
+      this.props
     if (user && user.is_deactivated) {
       this.goToProfilePage(user.handle)
     }

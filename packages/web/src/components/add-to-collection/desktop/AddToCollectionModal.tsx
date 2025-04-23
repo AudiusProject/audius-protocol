@@ -79,7 +79,9 @@ const AddToCollectionModal = () => {
   const collectionTrackIdMap = filteredCollections.reduce<
     Record<number, number[]>
   >((acc, collection) => {
-    const trackIds = collection.playlist_contents.track_ids.map((t) => t.track)
+    const trackIds = collection.playlist_contents.track_ids.map(
+      (t: any) => t.track
+    )
     acc[collection.playlist_id] = trackIds
     return acc
   }, {})
