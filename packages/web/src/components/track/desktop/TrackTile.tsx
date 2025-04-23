@@ -104,6 +104,7 @@ const TrackTile = ({
   trackId,
   source
 }: TrackTileProps) => {
+  console.log('asdf header: ', header)
   const { data: currentUserId } = useCurrentUserId()
   const trackPositionInfo = useSelector((state: CommonState) =>
     getTrackPosition(state, { trackId, userId: currentUserId })

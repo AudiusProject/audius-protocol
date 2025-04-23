@@ -50,7 +50,7 @@ export const TrackTileStats = (props: TrackTileStatsProps) => {
       alignItems='center'
       pv={isMobile ? 's' : 'xs'}
     >
-      <Flex gap='l'>
+      <Flex gap='l' h={size === TrackTileSize.LARGE ? 'xl' : 'm'}>
         {isTrending ? <EntityRank index={rankIndex!} /> : null}
         <TrackAccessTypeLabel trackId={trackId} />
         {isUnlisted ? null : (
