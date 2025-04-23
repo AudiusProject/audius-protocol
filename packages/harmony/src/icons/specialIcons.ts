@@ -6,6 +6,7 @@ import IconCosignSVG from '../assets/icons/Cosign.svg'
 import IconMultiselectAddSVG from '../assets/icons/MultiselectAdd.svg'
 import IconMultiselectRemoveSVG from '../assets/icons/MultiselectRemove.svg'
 // Token Tier Badges
+import TokenAUDIOPng from '../assets/icons/TokenAUDIO.png'
 import TokenBronzePng from '../assets/icons/TokenBronze.png'
 import TokenGoldPng from '../assets/icons/TokenGold.png'
 import TokenNoTierPng from '../assets/icons/TokenNoTier.png'
@@ -148,3 +149,6 @@ export const IconPlaybackRate1_5x = IconPlaybackRate1_5xSVG as IconComponent
 export const IconPlaybackRate2x = IconPlaybackRate2xSVG as IconComponent
 export const IconPlaybackRate2_5x = IconPlaybackRate2_5xSVG as IconComponent
 export const IconPlaybackRate3x = IconPlaybackRate3xSVG as IconComponent
+
+// Token Icons
+export const IconTokenAUDIO = createImageIcon(TokenAUDIOPng)

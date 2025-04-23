@@ -176,6 +176,7 @@ export { IconTokenPlatinum } from './components/IconTokenPlatinum'
 export { IconTokenSilver } from './components/IconTokenSilver'
 export { IconTokenGold } from './components/IconTokenGold'
 export { IconTokenNoTier } from './components/IconTokenNoTier'
+export { IconTokenAUDIO } from './components/IconTokenAUDIO'
 
 // File Types
 export { default as IconFile3GA } from '@audius/harmony/src/assets/icons/file3GA.svg'

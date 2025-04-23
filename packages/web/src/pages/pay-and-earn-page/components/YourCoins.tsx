@@ -6,10 +6,11 @@ import { route } from '@audius/common/utils'
 import {
   Flex,
   IconCaretRight,
-  IconLogoCircle,
+  IconTokenAUDIO,
   Paper,
   Text,
-  useTheme
+  useTheme,
+  useMedia
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 import { push } from 'redux-first-history'
@@ -19,7 +20,8 @@ const { WALLET_AUDIO_PAGE } = route
 
 export const YourCoins = () => {
   const dispatch = useDispatch()
-  const { color, spacing } = useTheme()
+  const { color, spacing, cornerRadius } = useTheme()
+  const { isMobile, isExtraSmall } = useMedia()
 
   const {
     audioBalanceFormatted,
@@ -46,48 +48,26 @@ export const YourCoins = () => {
       <Flex
         alignItems='center'
         justifyContent='space-between'
-        p='xl'
+        p={isMobile ? spacing.l : spacing.xl}
         alignSelf='stretch'
         onClick={handleTokenClick}
         css={{
           cursor: 'pointer',
           '&:hover': {
             backgroundColor: color.background.surface2
-          },
-          '@media (max-width: 768px)': {
-            padding: spacing.l
           }
         }}
       >
-        <Flex
-          alignItems='center'
-          gap='l'
-          css={{
-            '@media (max-width: 480px)': {
-              gap: spacing.m
-            }
-          }}
-        >
-          <IconLogoCircle
+        <Flex alignItems='center' gap={isExtraSmall ? 'm' : 'l'}>
+          <IconTokenAUDIO
             width={DIMENSIONS}
             height={DIMENSIONS}
             css={{
-              '@media (max-width: 480px)': {
-                width: '48px',
-                height: '48px'
-              }
+              borderRadius: cornerRadius.circle
             }}
           />
           <Flex direction='column' gap='xs'>
-            <Flex
-              gap='xs'
-              css={{
-                '@media (max-width: 480px)': {
-                  flexDirection: 'column',
-                  gap: '0'
-                }
-              }}
-            >
+            <Flex gap='xs'>
               <Text variant='heading' size='l' color='default'>
                 {displayAmount}
               </Text>
