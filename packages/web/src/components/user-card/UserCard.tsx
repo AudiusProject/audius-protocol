@@ -81,6 +81,7 @@ export const UserCard = (props: UserCardProps) => {
       />
       <CardContent p='s' pt={0} gap='xs'>
         <UserLink
+          ellipses
           userId={id}
           textVariant='title'
           size='l'

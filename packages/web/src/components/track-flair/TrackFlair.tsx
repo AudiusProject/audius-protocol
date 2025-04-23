@@ -24,7 +24,7 @@ const TrackFlair = (props: TrackFlairProps) => {
   const { data: track } = useTrack(id)
   const { data: remixContest } = useRemixContest(id)
 
-  if (!track) return null
+  if (!track) return <>{children}</>
 
   const remixTrack = track.remix_of?.tracks[0]
   const hasRemixAuthorReposted = remixTrack?.has_remix_author_reposted ?? false
