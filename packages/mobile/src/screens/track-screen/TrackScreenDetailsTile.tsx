@@ -82,7 +82,7 @@ import { TrackMetadataList } from 'app/components/details-tile/TrackMetadataList
 import { TrackImage } from 'app/components/image/TrackImage'
 import { OfflineStatusRow } from 'app/components/offline-downloads'
 import { TrackDogEar } from 'app/components/track/TrackDogEar'
-import TrackFlair, { Size } from 'app/components/track-flair'
+import { TrackFlair, Size } from 'app/components/track-flair'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { make, track as trackEvent } from 'app/services/analytics'

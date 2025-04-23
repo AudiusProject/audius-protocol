@@ -1,2 +1,2 @@
-export { default } from './TrackFlair'
+export { TrackFlair } from './TrackFlair'
 export { Size } from './types'

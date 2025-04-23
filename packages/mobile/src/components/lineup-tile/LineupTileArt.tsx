@@ -1,7 +1,7 @@
 import type { StyleProp, ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
-import TrackFlair, { Size } from 'app/components/track-flair'
+import { TrackFlair, Size } from 'app/components/track-flair'
 import { makeStyles } from 'app/styles'
 
 import { FadeInView } from '../core'

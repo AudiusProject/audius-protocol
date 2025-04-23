@@ -77,7 +77,7 @@ const layoutBySize = {
   }
 }
 
-const TrackFlair = ({ size, children, style, trackId }: CoSignProps) => {
+export const TrackFlair = ({ size, children, style, trackId }: CoSignProps) => {
   const styles = useStyles()
   const { color } = useTheme()
   const { data: track } = useTrack(trackId)
@@ -106,5 +106,3 @@ const TrackFlair = ({ size, children, style, trackId }: CoSignProps) => {
     </View>
   )
 }
-
-export default TrackFlair
