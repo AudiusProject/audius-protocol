@@ -1,5 +1,8 @@
+import { useRemixContest } from '@audius/common/api'
 import { ID } from '@audius/common/models'
-import { Text, Flex } from '@audius/harmony'
+import { Flex } from '@audius/harmony'
+
+import { UserGeneratedText } from 'components/user-generated-text'
 
 type RemixContestPrizesTabProps = {
   trackId: ID
@@ -11,26 +14,13 @@ type RemixContestPrizesTabProps = {
 export const RemixContestPrizesTab = ({
   trackId
 }: RemixContestPrizesTabProps) => {
+  const { data: remixContest } = useRemixContest(trackId)
+
   return (
     <Flex column gap='l' p='xl'>
-      <Text variant='body' size='l'>
-        {'Best Remix Award - $500'}
-      </Text>
-      <Text variant='body' size='l'>
-        {'Audience Choice Award - $300'}
-      </Text>
-      <Text variant='body' size='l'>
-        {'Most Creative Remix - $200'}
-      </Text>
-      <Text variant='body' size='l'>
-        {'Best Use of Original Material - $250'}
-      </Text>
-      <Text variant='body' size='l'>
-        {'Rising Star Award - $150'}
-      </Text>
-      <Text variant='body' size='l'>
-        {'Honorable Mention - $100'}
-      </Text>
+      <UserGeneratedText variant='body' size='l'>
+        {remixContest?.eventData?.prizeInfo}
+      </UserGeneratedText>
     </Flex>
   )
 }

@@ -67,6 +67,7 @@ const ConnectedRemixCard = ({
       onClick={goToTrackPage}
       onClickArtistName={goToArtistPage}
       userId={partialUser?.user_id}
+      trackId={trackId}
     />
   )
 }

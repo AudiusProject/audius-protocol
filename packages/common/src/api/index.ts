@@ -78,7 +78,6 @@ export * from './tan-query/useFeed'
 export * from './tan-query/useTrending'
 export * from './tan-query/useRemixes'
 export * from './tan-query/useTrackRank'
-export * from './tan-query/useUpdateTrack'
 export * from './tan-query/useWalletOwner'
 export * from './tan-query/useTokenPrice'
 

@@ -2,10 +2,11 @@ import { memo, useEffect } from 'react'
 
 import { SquareSizes, Remix } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
+import { IconArrowLeft } from '@audius/harmony'
 
-import CoSign from 'components/co-sign/CoSign'
-import { Size } from 'components/co-sign/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import TrackFlair from 'components/track-flair/TrackFlair'
+import { Size } from 'components/track-flair/types'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 import styles from './GiantArtwork.module.css'
@@ -14,6 +15,7 @@ type GiantArtworkProps = {
   trackId: number
   coSign: Nullable<Remix>
   callback: () => void
+  onIconLeftClick?: () => void
 }
 
 const messages = {
@@ -21,7 +23,7 @@ const messages = {
 }
 
 const GiantArtwork = (props: GiantArtworkProps) => {
-  const { trackId, coSign, callback } = props
+  const { trackId, callback, onIconLeftClick } = props
   const image = useTrackCoverArt({
     trackId,
     size: SquareSizes.SIZE_1000_BY_1000
@@ -35,22 +37,19 @@ const GiantArtwork = (props: GiantArtworkProps) => {
       wrapperClassName={styles.imageWrapper}
       image={image}
       alt={messages.artworkAltText}
-    />
+    >
+      {onIconLeftClick && (
+        <div className={styles.iconLeftWrapper} onClick={onIconLeftClick}>
+          <IconArrowLeft width={24} height={24} />
+        </div>
+      )}
+    </DynamicImage>
   )
 
-  return coSign ? (
-    <CoSign
-      size={Size.XLARGE}
-      hasFavorited={coSign.has_remix_author_saved}
-      hasReposted={coSign.has_remix_author_reposted}
-      coSignName={coSign.user.name}
-      className={styles.giantArtwork}
-      userId={coSign.user?.user_id}
-    >
+  return (
+    <TrackFlair size={Size.XLARGE} className={styles.giantArtwork} id={trackId}>
       {imageElement}
-    </CoSign>
-  ) : (
-    <div className={styles.giantArtwork}>{imageElement}</div>
+    </TrackFlair>
   )
 }
 

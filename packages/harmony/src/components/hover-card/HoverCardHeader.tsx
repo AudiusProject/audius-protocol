@@ -1,7 +1,4 @@
-import { IconButton } from '~harmony/components/button'
-import { Flex } from '~harmony/components/layout'
-import { Text } from '~harmony/components/text'
-import { IconArrowRight } from '~harmony/icons'
+import { Flex, Text, IconButton } from '~harmony/index'
 
 import { HoverCardHeaderProps } from './types'
 
@@ -9,9 +6,10 @@ import { HoverCardHeaderProps } from './types'
  * A shared base component for hover card headers
  */
 export const HoverCardHeader = ({
-  icon,
+  iconLeft,
   title,
-  onClose
+  onClose,
+  iconRight
 }: HoverCardHeaderProps) => {
   return (
     <Flex
@@ -26,7 +24,15 @@ export const HoverCardHeader = ({
       justifyContent='space-between'
     >
       <Flex alignSelf='stretch' alignItems='center' gap='xs'>
-        {icon}
+        {iconLeft ? (
+          <IconButton
+            icon={iconLeft}
+            color='subdued'
+            size='l'
+            aria-label={''}
+            onClick={onClose}
+          />
+        ) : null}
         <Text
           variant='label'
           size='s'
@@ -36,18 +42,15 @@ export const HoverCardHeader = ({
           {title}
         </Text>
       </Flex>
-
-      {onClose ? (
+      {iconRight ? (
         <IconButton
-          icon={IconArrowRight}
+          icon={iconRight}
           color='subdued'
           size='s'
           aria-label='Close'
           onClick={onClose}
         />
-      ) : (
-        <IconArrowRight color='subdued' size='s' />
-      )}
+      ) : null}
     </Flex>
   )
 }

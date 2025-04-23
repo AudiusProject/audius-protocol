@@ -1,0 +1,63 @@
+import { useCallback } from 'react'
+
+import { useFormattedAudioBalance } from '@audius/common/hooks'
+import { walletMessages } from '@audius/common/messages'
+
+import {
+  Flex,
+  IconCaretRight,
+  IconLogoCircle,
+  Paper,
+  Text
+} from '@audius/harmony-native'
+import { useNavigation } from 'app/hooks/useNavigation'
+
+export const YourCoins = () => {
+  const navigation = useNavigation()
+
+  const {
+    audioBalanceFormatted,
+    audioDollarValue,
+    isAudioBalanceLoading,
+    isAudioPriceLoading
+  } = useFormattedAudioBalance()
+
+  const handleTokenClick = useCallback(() => {
+    navigation.navigate('AudioScreen')
+  }, [navigation])
+
+  const displayAmount = isAudioBalanceLoading
+    ? walletMessages.loading
+    : audioBalanceFormatted
+
+  return (
+    <Paper onPress={handleTokenClick}>
+      <Flex
+        p='l'
+        direction='row'
+        justifyContent='space-between'
+        alignItems='center'
+      >
+        <Flex direction='row' alignItems='center' gap='m'>
+          <IconLogoCircle size='4xl' />
+          <Flex direction='column' gap='xs'>
+            <Flex direction='row' alignItems='center' gap='xs'>
+              <Text variant='heading' size='l' color='default'>
+                {displayAmount}
+              </Text>
+              <Text variant='heading' size='l' color='subdued'>
+                $AUDIO
+              </Text>
+            </Flex>
+            <Text variant='heading' size='s' color='subdued'>
+              {isAudioPriceLoading
+                ? walletMessages.loadingPrice
+                : audioDollarValue}
+            </Text>
+          </Flex>
+        </Flex>
+        <IconCaretRight size='s' color='subdued' />
+      </Flex>
+    </Paper>
+  )
+}
