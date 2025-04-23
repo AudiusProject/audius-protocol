@@ -1,6 +1,7 @@
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 
 import { Flex, Paper, Popup } from '..'
+import { useHoverDelay } from '../../hooks/useHoverDelay'
 import { Origin } from '../popup/types'
 
 import { HoverCardProps } from './types'
@@ -43,28 +44,22 @@ export const HoverCard = ({
   onClose,
   onClick,
   anchorOrigin = DEFAULT_ANCHOR_ORIGIN,
-  transformOrigin = DEFAULT_TRANSFORM_ORIGIN
+  transformOrigin = DEFAULT_TRANSFORM_ORIGIN,
+  mouseEnterDelay = 0.5
 }: HoverCardProps) => {
-  const [isHovered, setIsHovered] = useState(false)
   const anchorRef = useRef<HTMLDivElement | null>(null)
-
-  const handleMouseEnter = () => {
-    setIsHovered(true)
-  }
-
-  const handleMouseLeave = () => {
-    setIsHovered(false)
-  }
+  const { isHovered, handleMouseEnter, handleMouseLeave, clearTimer } =
+    useHoverDelay(mouseEnterDelay)
 
   const handleClose = () => {
-    setIsHovered(false)
+    clearTimer()
     if (onClose) onClose()
   }
 
   const handleClick = () => {
     if (onClick) {
       onClick()
-      setIsHovered(false)
+      clearTimer()
     }
   }
 
