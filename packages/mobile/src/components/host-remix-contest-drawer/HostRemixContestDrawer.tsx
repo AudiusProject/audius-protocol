@@ -32,11 +32,6 @@ const maxDescriptionLength = 1000
 const maxPrizeInfoLength = 1000
 const hostContestUrl = 'https://help.audius.co/artists/hosting-a-remix-contest'
 
-type RemixContestData = {
-  description: string
-  prizeInfo: string
-}
-
 const messages = {
   modalTitle: 'Host Remix Contest',
   description:
@@ -103,7 +98,7 @@ export const HostRemixContestDrawer = () => {
   const hasContestEntries = remixesLoading || remixes?.length
   const displayTurnOffButton = !hasContestEntries && isEdit
 
-  const remixContestData = remixContest?.eventData as RemixContestData
+  const remixContestData = remixContest?.eventData
 
   // Form State
   const [description, setDescription] = useState(
