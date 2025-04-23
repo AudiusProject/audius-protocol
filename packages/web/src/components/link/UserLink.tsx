@@ -3,7 +3,7 @@ import { useFeatureFlag } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { route } from '@audius/common/utils'
-import { IconSize, Text, useTheme } from '@audius/harmony'
+import { IconSize, Text, useTheme, Flex } from '@audius/harmony'
 import { Link } from 'react-router-dom'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
@@ -74,7 +74,30 @@ export const UserLink = (props: UserLinkProps) => {
     />
   )
 
-  const textLink = (
+  // In new UI, badges should be outside the TextLink to prevent hover effects on badges
+  const textLink = isWalletUIUpdate ? (
+    <Flex
+      css={{
+        columnGap: spacing.xs,
+        alignItems: 'center',
+        lineHeight: 'normal',
+        display: 'inline-flex'
+      }}
+    >
+      <TextLink
+        to={url}
+        css={{
+          lineHeight: 'normal'
+        }}
+        ellipses={popover}
+        {...other}
+      >
+        <Text ellipses>{name}</Text>
+      </TextLink>
+      {badges}
+      {children}
+    </Flex>
+  ) : (
     <TextLink
       to={url}
       css={{
@@ -90,6 +113,7 @@ export const UserLink = (props: UserLinkProps) => {
       {children}
     </TextLink>
   )
+
   const noTextLink = <Link to={url}>{children}</Link>
   const linkElement = noText ? noTextLink : textLink
 
@@ -113,8 +137,7 @@ export const UserLink = (props: UserLinkProps) => {
   // In new UI, wrap the text in ArtistPopover if needed
   if (isWalletUIUpdate && popover && handle && !noText) {
     return (
-      <TextLink
-        to={url}
+      <Flex
         css={{
           columnGap: spacing.xs,
           alignItems: 'center',
@@ -122,8 +145,6 @@ export const UserLink = (props: UserLinkProps) => {
           display: 'inline-flex',
           flexWrap: 'nowrap'
         }}
-        ellipses={popover}
-        {...other}
       >
         <ArtistPopover
           css={{
@@ -134,11 +155,13 @@ export const UserLink = (props: UserLinkProps) => {
           component='span'
           mount={popoverMount}
         >
-          <Text ellipses>{name}</Text>
+          <TextLink to={url} ellipses={popover} {...other}>
+            <Text ellipses>{name}</Text>
+          </TextLink>
         </ArtistPopover>
         {badges}
         {children}
-      </TextLink>
+      </Flex>
     )
   }
 
