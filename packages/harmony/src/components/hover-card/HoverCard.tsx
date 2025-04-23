@@ -69,28 +69,26 @@ const HoverCardComponent = ({
     >
       {children}
 
-      {isHovered && (
-        <Popup
-          anchorRef={anchorRef}
-          isVisible
-          onClose={handleClose}
-          dismissOnMouseLeave
-          hideCloseButton
-          zIndex={30000}
-          anchorOrigin={anchorOrigin}
-          transformOrigin={transformOrigin}
+      <Popup
+        anchorRef={anchorRef}
+        isVisible={isHovered}
+        onClose={handleClose}
+        dismissOnMouseLeave
+        hideCloseButton
+        zIndex={30000}
+        anchorOrigin={anchorOrigin}
+        transformOrigin={transformOrigin}
+      >
+        <Paper
+          className={className}
+          borderRadius='m'
+          backgroundColor='white'
+          direction='column'
+          onClick={handleClick}
         >
-          <Paper
-            className={className}
-            borderRadius='m'
-            backgroundColor='white'
-            direction='column'
-            onClick={handleClick}
-          >
-            {content}
-          </Paper>
-        </Popup>
-      )}
+          {content}
+        </Paper>
+      </Popup>
     </Flex>
   )
 }
