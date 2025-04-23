@@ -46,6 +46,7 @@ export const useHoverDelay = (delay = 0.5) => {
     isHovered,
     handleMouseEnter,
     handleMouseLeave,
-    clearTimer
+    clearTimer,
+    setIsHovered
   }
 }

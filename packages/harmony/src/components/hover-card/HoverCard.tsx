@@ -48,8 +48,13 @@ const HoverCardComponent = ({
   mouseEnterDelay = 0.5
 }: HoverCardProps) => {
   const anchorRef = useRef<HTMLDivElement | null>(null)
-  const { isHovered, handleMouseEnter, handleMouseLeave, clearTimer } =
-    useHoverDelay(mouseEnterDelay)
+  const {
+    isHovered,
+    handleMouseEnter,
+    handleMouseLeave,
+    clearTimer,
+    setIsHovered
+  } = useHoverDelay(mouseEnterDelay)
 
   const handleClose = useCallback(() => {
     clearTimer()
@@ -59,7 +64,8 @@ const HoverCardComponent = ({
   const handleClick = useCallback(() => {
     onClick?.()
     clearTimer()
-  }, [onClick, clearTimer])
+    setIsHovered(false)
+  }, [onClick, clearTimer, setIsHovered])
 
   return (
     <Flex
