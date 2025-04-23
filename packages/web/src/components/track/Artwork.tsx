@@ -115,7 +115,7 @@ const Artwork = memo(
         size={Size.MEDIUM}
         id={id}
         className={cn(styles.artworkInset, {
-          [styles.small]: size === 'smqall',
+          [styles.small]: size === 'small',
           [styles.large]: size === 'large'
         })}
       >
