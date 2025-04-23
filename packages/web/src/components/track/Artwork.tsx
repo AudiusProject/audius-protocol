@@ -110,17 +110,19 @@ const Artwork = memo(
         )}
       </DynamicImage>
     )
-    return (
+    return isTrack ? (
       <TrackFlair
         size={Size.MEDIUM}
         id={id}
         className={cn(styles.artworkInset, {
-          [styles.small]: size === 'small',
+          [styles.small]: size === 'smqall',
           [styles.large]: size === 'large'
         })}
       >
         {imageElement}
       </TrackFlair>
+    ) : (
+      imageElement
     )
   }
 )
@@ -139,6 +141,7 @@ export const CollectionArtwork = memo((props: TileArtworkProps) => {
     collectionId: props.id,
     size: SquareSizes.SIZE_150_BY_150
   })
+  console.log('asdf image: ', image)
 
   return <Artwork {...props} image={image} />
 })

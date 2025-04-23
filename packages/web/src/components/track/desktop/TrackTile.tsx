@@ -227,38 +227,47 @@ const TrackTile = ({
         <CollectionDogEar collectionId={collectionId} hideUnlocked />
       ) : null}
       <div className={styles.body}>
-        <Flex inline direction='column' justifyContent='space-between'>
-          {size === TrackTileSize.LARGE ? (
-            <Text
-              variant='label'
-              strength='default'
-              textAlign='left'
-              color='subdued'
-            >
-              {isLoading || !header ? null : header}
-            </Text>
-          ) : null}
-          <Flex direction='column' gap='xs' mb={header ? 'xs' : ''} pv='xs'>
-            {isLoading ? (
-              <Skeleton width='80%' height='20px' />
-            ) : (
-              <Flex css={{ marginRight: 132 }}>
-                <TextLink
-                  css={{ alignItems: 'center' }}
-                  to={permalink}
-                  isActive={isActive}
-                  textVariant='title'
-                  applyHoverStylesToInnerSvg
-                  onClick={onClickTitle}
-                  disabled={isDisabled}
-                  ellipses
+        <Flex inline direction='column' justifyContent='space-between' h='100%'>
+          <Flex column gap='s'>
+            {!isLoading && header ? (
+              <Flex pt='xs'>
+                <Text
+                  variant='label'
+                  strength='default'
+                  textAlign='left'
+                  color='subdued'
                 >
-                  <Text ellipses>{title}</Text>
-                  {isPlaying ? <IconVolume size='m' /> : null}
-                </TextLink>
+                  {header}
+                </Text>
               </Flex>
-            )}
-            {isLoading ? <Skeleton width='50%' height='20px' /> : userName}
+            ) : null}
+            <Flex
+              direction='column'
+              gap='xs'
+              mb={header ? 'xs' : undefined}
+              pv={!header ? 'xs' : undefined}
+            >
+              {isLoading ? (
+                <Skeleton width='80%' height='20px' />
+              ) : (
+                <Flex css={{ marginRight: 132 }}>
+                  <TextLink
+                    css={{ alignItems: 'center' }}
+                    to={permalink}
+                    isActive={isActive}
+                    textVariant='title'
+                    applyHoverStylesToInnerSvg
+                    onClick={onClickTitle}
+                    disabled={isDisabled}
+                    ellipses
+                  >
+                    <Text ellipses>{title}</Text>
+                    {isPlaying ? <IconVolume size='m' /> : null}
+                  </TextLink>
+                </Flex>
+              )}
+              {isLoading ? <Skeleton width='50%' height='20px' /> : userName}
+            </Flex>
           </Flex>
           {trackId ? (
             <TrackTileStats
