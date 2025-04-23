@@ -59,7 +59,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 }))
 
 export const TrackRemixesScreen = () => {
-  const dispatch = useDispatch()
   const { params } = useRoute<'TrackRemixes'>()
   const { data: track } = useTrackByParams(params)
   const trackId = track?.track_id
@@ -76,21 +75,6 @@ export const TrackRemixesScreen = () => {
   const isRemixContest = isRemixContestEnabled && contest
 
   const styles = useStyles()
-
-  useEffect(() => {
-    if (trackId) {
-      dispatch(fetchTrackSucceeded({ trackId }))
-      dispatch(
-        tracksActions.fetchLineupMetadatas(0, 10, false, {
-          trackId
-        })
-      )
-
-      return function cleanup() {
-        dispatch(tracksActions.reset())
-      }
-    }
-  }, [dispatch, trackId])
 
   const remixesText = pluralize(legacyMessages.remix, count, 'es', !count)
   const remixesCountText = `${count || ''} ${remixesText} ${legacyMessages.of}`
