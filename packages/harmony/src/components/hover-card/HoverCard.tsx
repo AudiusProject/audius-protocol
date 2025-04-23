@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useCallback, memo } from 'react'
 
 import { Flex, Paper, Popup } from '..'
 import { useHoverDelay } from '../../hooks/useHoverDelay'
@@ -37,7 +37,7 @@ const DEFAULT_TRANSFORM_ORIGIN: Origin = {
  * </HoverCard>
  * ```
  */
-export const HoverCard = ({
+const HoverCardComponent = ({
   children,
   className,
   content,
@@ -51,17 +51,15 @@ export const HoverCard = ({
   const { isHovered, handleMouseEnter, handleMouseLeave, clearTimer } =
     useHoverDelay(mouseEnterDelay)
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     clearTimer()
-    if (onClose) onClose()
-  }
+    onClose?.()
+  }, [clearTimer, onClose])
 
-  const handleClick = () => {
-    if (onClick) {
-      onClick()
-      clearTimer()
-    }
-  }
+  const handleClick = useCallback(() => {
+    onClick?.()
+    clearTimer()
+  }, [onClick, clearTimer])
 
   return (
     <Flex
@@ -70,26 +68,31 @@ export const HoverCard = ({
       onMouseLeave={handleMouseLeave}
     >
       {children}
-      <Popup
-        anchorRef={anchorRef}
-        isVisible={isHovered}
-        onClose={handleClose}
-        dismissOnMouseLeave
-        hideCloseButton
-        zIndex={30000} // Using tooltip z-index
-        anchorOrigin={anchorOrigin}
-        transformOrigin={transformOrigin}
-      >
-        <Paper
-          className={className}
-          borderRadius='m'
-          backgroundColor='white'
-          direction='column'
-          onClick={handleClick}
+
+      {isHovered && (
+        <Popup
+          anchorRef={anchorRef}
+          isVisible
+          onClose={handleClose}
+          dismissOnMouseLeave
+          hideCloseButton
+          zIndex={30000}
+          anchorOrigin={anchorOrigin}
+          transformOrigin={transformOrigin}
         >
-          {content}
-        </Paper>
-      </Popup>
+          <Paper
+            className={className}
+            borderRadius='m'
+            backgroundColor='white'
+            direction='column'
+            onClick={handleClick}
+          >
+            {content}
+          </Paper>
+        </Popup>
+      )}
     </Flex>
   )
 }
+
+export const HoverCard = memo(HoverCardComponent)
