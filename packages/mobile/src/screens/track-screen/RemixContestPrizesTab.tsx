@@ -17,7 +17,7 @@ export const RemixContestPrizesTab = ({ trackId }: Props) => {
   if (!remixContest) return null
 
   return (
-    <Flex p='xl'>
+    <Flex p='xl' borderTop='default'>
       <UserGeneratedText variant='body' size='l'>
         {remixContest.eventData?.prizeInfo ?? ''}
       </UserGeneratedText>

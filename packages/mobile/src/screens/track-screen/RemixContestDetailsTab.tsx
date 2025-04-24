@@ -29,7 +29,7 @@ export const RemixContestDetailsTab = ({ trackId }: Props) => {
   if (!remixContest) return null
 
   return (
-    <Flex column gap='s' p='xl'>
+    <Flex column gap='s' p='xl' borderTop='default'>
       <Flex row gap='s'>
         <Text variant='title' color='accent'>
           {messages.due}
