@@ -16,7 +16,7 @@ export const RemixContestSubmissionsTab = ({ trackId }: Props) => {
   if (!remixContest) return null
 
   return (
-    <Flex p='xl'>
+    <Flex p='xl' borderTop='default'>
       <Text variant='body' size='l'>
         {/* TODO: Implement submissions content */}
       </Text>
