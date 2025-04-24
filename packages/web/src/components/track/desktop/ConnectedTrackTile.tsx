@@ -43,7 +43,8 @@ import TrackTile from './TrackTile'
 
 const { getUid, getPlaying, getBuffering } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
-const { repostTrack, undoRepostTrack } = tracksSocialActions
+const { repostTrack, undoRepostTrack, saveTrack, unsaveTrack } =
+  tracksSocialActions
 const { setLockedContentId } = gatedContentActions
 
 type OwnProps = {
@@ -115,6 +116,19 @@ const ConnectedTrackTile = ({
     },
     [dispatch]
   )
+  const handleSaveTrack = useCallback(
+    (trackId: ID, isFeed: boolean) => {
+      dispatch(saveTrack(trackId, FavoriteSource.TILE, isFeed))
+    },
+    [dispatch]
+  )
+
+  const handleUndoSaveTrack = useCallback(
+    (trackId: ID) => {
+      dispatch(unsaveTrack(trackId, FavoriteSource.TILE))
+    },
+    [dispatch]
+  )
 
   const handleRepostTrack = useCallback(
     (trackId: ID, isFeed: boolean) => {
@@ -160,11 +174,6 @@ const ConnectedTrackTile = ({
 
   const [, setLockedContentVisibility] = useModalState('LockedContent')
   const menuRef = useRef<HTMLDivElement>(null)
-
-  const toggleSaveTrack = useToggleFavoriteTrack({
-    trackId,
-    source: FavoriteSource.TILE
-  })
 
   useEffect(() => {
     if (!loading && hasLoaded) {
@@ -243,8 +252,12 @@ const ConnectedTrackTile = ({
   )
 
   const onClickFavorite = useCallback(() => {
-    toggleSaveTrack()
-  }, [toggleSaveTrack])
+    if (isFavorited) {
+      handleUndoSaveTrack(trackId)
+    } else {
+      handleSaveTrack(trackId, isFeed)
+    }
+  }, [isFavorited, handleUndoSaveTrack, trackId, handleSaveTrack, isFeed])
 
   const onClickRepost = useCallback(() => {
     if (isReposted) {
