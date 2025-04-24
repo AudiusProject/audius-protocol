@@ -19,7 +19,7 @@ export const RemixContestPrizesTab = ({ trackId }: Props) => {
   return (
     <Flex p='xl'>
       <UserGeneratedText variant='body' size='l'>
-        {remixContest?.eventData?.prizeInfo ?? ''}
+        {remixContest.eventData?.prizeInfo ?? ''}
       </UserGeneratedText>
     </Flex>
   )

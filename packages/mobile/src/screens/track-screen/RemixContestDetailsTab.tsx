@@ -35,11 +35,11 @@ export const RemixContestDetailsTab = ({ trackId }: Props) => {
           {messages.due}
         </Text>
         <Text variant='body' strength='strong'>
-          {messages.deadline(remixContest?.endDate)}
+          {messages.deadline(remixContest.endDate)}
         </Text>
       </Flex>
       <UserGeneratedText variant='body'>
-        {remixContest?.eventData?.description ?? messages.fallbackDescription}
+        {remixContest.eventData?.description ?? messages.fallbackDescription}
       </UserGeneratedText>
     </Flex>
   )

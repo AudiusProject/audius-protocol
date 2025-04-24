@@ -1,9 +1,6 @@
 import React, { useCallback } from 'react'
 
-import { useRemixContest, useTrack, useUser } from '@audius/common/api'
-import { useCurrentUser } from '@audius/common/api/tan-query/useCurrentUser'
 import type { ID } from '@audius/common/models'
-import { dayjs } from '@audius/common/utils'
 
 import { Button, Flex, IconCloudUpload } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'

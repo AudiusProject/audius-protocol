@@ -71,7 +71,8 @@ export const RemixContestSection = ({ trackId }: RemixContestSectionProps) => {
 
   const { data: track } = useTrack(trackId)
   const { data: currentUserId } = useCurrentUserId()
-  const isOwner = track?.owner_id === currentUserId
+  // const isOwner = track?.owner_id === currentUserId
+  const isOwner = false
 
   const [index, setIndex] = useState(0)
   const [routes] = useState<Route[]>([
