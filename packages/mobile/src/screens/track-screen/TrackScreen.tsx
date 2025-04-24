@@ -17,6 +17,7 @@ import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSeconda
 import { useRoute } from 'app/hooks/useRoute'
 
 import { RemixContestCountdown } from './RemixContestCountdown'
+import { RemixContestSection } from './RemixContestSection'
 import { TrackScreenDetailsTile } from './TrackScreenDetailsTile'
 import { TrackScreenLineup } from './TrackScreenLineup'
 import { TrackScreenSkeleton } from './TrackScreenSkeleton'
@@ -69,6 +70,8 @@ export const TrackScreen = () => {
             {isReachable ? (
               <ScreenSecondaryContent>
                 <Flex gap='2xl'>
+                  {/* Remix Contest */}
+                  <RemixContestSection trackId={track_id} />
                   {/* Comments */}
                   {!comments_disabled ? (
                     <Flex flex={3}>
