@@ -16,6 +16,9 @@ import { TrackArtwork } from 'components/track/TrackArtwork'
 import TrackFlair, { Size } from 'components/track-flair/TrackFlair'
 import { trackRemixesPage } from 'utils/route'
 
+const artworkSize = 160
+const userAvatarSize = 64
+
 const messages = {
   noSubmissions: 'No submissions yet',
   beFirst: 'Be the first to upload a remix!',
@@ -50,9 +53,9 @@ const SubmissionCard = ({ submission }: { submission: LineupData }) => {
 
   return (
     <Flex column gap='s'>
-      <Flex h={160} w={160} borderRadius='s'>
+      <Flex h={artworkSize} w={artworkSize} borderRadius='s'>
         {displaySkeleton ? (
-          <Skeleton h={160} w={160} borderRadius='s' />
+          <Skeleton h={artworkSize} w={artworkSize} borderRadius='s' />
         ) : (
           <>
             {/* Track Artwork with Flair */}
@@ -73,8 +76,8 @@ const SubmissionCard = ({ submission }: { submission: LineupData }) => {
             </TrackFlair>
             {/* User Avatar */}
             <Box
-              h={64}
-              w={64}
+              h={userAvatarSize}
+              w={userAvatarSize}
               css={{ position: 'absolute', top: -8, right: -8 }}
               borderRadius='circle'
             >
