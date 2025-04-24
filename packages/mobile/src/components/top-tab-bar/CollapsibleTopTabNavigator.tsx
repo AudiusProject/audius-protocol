@@ -8,33 +8,23 @@ import type {
 import type { Animated } from 'react-native'
 import type { SvgProps } from 'react-native-svg'
 
-import { TopTabBar } from 'app/components/top-tab-bar'
-
+import { CollapsibleTopTabBar } from './CollapsibleTopTabBar'
 import { createCollapsibleTabNavigator } from './createCollapsibleTabNavigator'
 
 const Tab = createCollapsibleTabNavigator()
 
 type CollapsibleTabNavigatorContextProps = {
-  sceneName?: string
   refreshing?: boolean
   onRefresh?: () => void
-  scrollY?: Animated.Value
   params?: Record<string, unknown>
 }
 
 export const CollapsibleTabNavigatorContext =
-  createContext<CollapsibleTabNavigatorContextProps>({
-    sceneName: undefined,
-    refreshing: undefined,
-    onRefresh: undefined,
-    scrollY: undefined
-  })
+  createContext<CollapsibleTabNavigatorContextProps>({})
 
 type CollapsibleTabNavigatorContextProviderProps = {
-  sceneName: string
   refreshing?: boolean
   onRefresh?: () => void
-  scrollY?: Animated.Value
   children: ReactNode
   params?: Record<string, unknown>
 }
@@ -42,11 +32,11 @@ type CollapsibleTabNavigatorContextProviderProps = {
 export const CollapsibleTabNavigatorContextProvider = (
   props: CollapsibleTabNavigatorContextProviderProps
 ) => {
-  const { sceneName, refreshing, onRefresh, scrollY, params, children } = props
+  const { refreshing, onRefresh, params, children } = props
 
   const context = useMemo(
-    () => ({ sceneName, refreshing, onRefresh, scrollY, params }),
-    [sceneName, refreshing, onRefresh, scrollY, params]
+    () => ({ refreshing, onRefresh, params }),
+    [refreshing, onRefresh, params]
   )
 
   return (
@@ -56,7 +46,9 @@ export const CollapsibleTabNavigatorContextProvider = (
   )
 }
 
-const renderTabBar = (props: MaterialTopTabBarProps) => <TopTabBar {...props} />
+const renderTabBar = (props: MaterialTopTabBarProps) => (
+  <CollapsibleTopTabBar {...props} />
+)
 
 type CollapsibleTabNavigatorProps = {
   /**
@@ -113,7 +105,6 @@ type TabScreenConfig = ScreenConfig & {
   initialParams?: Record<string, unknown>
   refreshing?: boolean
   onRefresh?: () => void
-  scrollY?: Animated.Value
 }
 
 export const collapsibleTabScreen = (config: TabScreenConfig) => {
@@ -125,8 +116,7 @@ export const collapsibleTabScreen = (config: TabScreenConfig) => {
     component: Component,
     initialParams,
     refreshing,
-    onRefresh,
-    scrollY
+    onRefresh
   } = config
 
   return (
@@ -143,10 +133,8 @@ export const collapsibleTabScreen = (config: TabScreenConfig) => {
     >
       {() => (
         <CollapsibleTabNavigatorContextProvider
-          sceneName={name}
           refreshing={refreshing}
           onRefresh={onRefresh}
-          scrollY={scrollY}
           params={initialParams}
         >
           <Component />

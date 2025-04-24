@@ -1,10 +1,14 @@
-import { Animated, Dimensions, TouchableOpacity, View } from 'react-native'
+import { useMemo } from 'react'
 
-import { Text } from '@audius/harmony-native'
+import { Dimensions, View } from 'react-native'
+import Animated, {
+  interpolate,
+  useAnimatedStyle
+} from 'react-native-reanimated'
+
 import { makeStyles } from 'app/styles'
-import { useThemeColors } from 'app/utils/theme'
 
-const AnimatedText = Animated.createAnimatedComponent(Text)
+import { TabItem } from './TabItem'
 
 // How much the tab indicator should horizontally stretch
 // while it translates for a nice effect.
@@ -30,10 +34,7 @@ const getSinAnimationRanges = (len: number) => {
     i += 1 / INDICATOR_ANIM_GRANULARITY
   }
 
-  return {
-    inputRange,
-    outputRange
-  }
+  return { inputRange, outputRange }
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -54,19 +55,6 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     flexDirection: 'row'
   },
 
-  tabContainer: {
-    flex: 1,
-    height: spacing(12)
-  },
-
-  tab: {
-    alignItems: 'center',
-    flex: 1,
-    flexDirection: 'column',
-    height: spacing(12),
-    justifyContent: 'space-evenly'
-  },
-
   tabIndicator: {
     backgroundColor: palette.primary,
     borderBottomLeftRadius: 20,
@@ -78,7 +66,13 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   }
 }))
 
-export const TopTabBar = ({ state, descriptors, navigation, position }) => {
+export const CollapsibleTopTabBar = (props: any) => {
+  const { state, descriptors, navigation, onTabPress, indexDecimal, position } =
+    props
+  const positionValue = indexDecimal ?? position
+  // console.log('position', props.position, typeof props.position)
+  const styles = useStyles()
+
   // Horizontal padding decreases as the number of tabs increases
   const horizontalPadding =
     Math.max(6 - state.routes.length, 0) * HORIZONTAL_PADDING
@@ -86,11 +80,11 @@ export const TopTabBar = ({ state, descriptors, navigation, position }) => {
   const tabsWidth = screenWidth - horizontalPadding * 2
   const tabWidth = tabsWidth / state.routes.length
 
-  const isFocused = (tabIndex) => state.index === tabIndex
-  const styles = useStyles()
-  const { neutral } = useThemeColors()
+  const isFocused = (tabIndex: number) => state.index === tabIndex
 
-  const onPress = (route, tabIndex: number) => {
+  const onPressTab = (route: any, tabIndex: number) => {
+    onTabPress(route.name)
+
     const event = navigation.emit({
       type: 'tabPress',
       target: route.key,
@@ -103,67 +97,59 @@ export const TopTabBar = ({ state, descriptors, navigation, position }) => {
     }
   }
 
-  const onLongPress = (route, tabIndex: number) => {
+  const onLongPressTab = (route: any) => {
     navigation.emit({
       type: 'tabLongPress',
       target: route.key
     })
   }
 
-  const left = position.interpolate({
-    inputRange: [0, state.routes.length],
-    outputRange: [horizontalPadding, screenWidth - horizontalPadding]
-  })
-
-  const xScale = position.interpolate(
-    getSinAnimationRanges(state.routes.length)
+  const sinInputRange = useMemo(
+    () => getSinAnimationRanges(state.routes.length),
+    [state.routes.length]
   )
+
+  const indicatorStyles = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateX: interpolate(
+            positionValue.value,
+            [0, state.routes.length],
+            [horizontalPadding, screenWidth - horizontalPadding]
+          )
+        },
+        {
+          scaleX: interpolate(
+            positionValue.value,
+            sinInputRange.inputRange,
+            sinInputRange.outputRange
+          )
+        }
+      ]
+    }
+  })
 
   return (
     <View style={styles.tabBarContainer}>
       <View
         style={[styles.tabsContainer, { paddingHorizontal: horizontalPadding }]}
       >
-        {state.routes.map((route, index) => {
-          const { options } = descriptors[route.key]
-          const label = options.tabBarLabel ?? options.title ?? route.name
-          const icon = options.tabBarIcon({ color: neutral })
-
-          const inputRange = state.routes.map((_, i) => i)
-          const opacity = position.interpolate({
-            inputRange,
-            outputRange: inputRange.map((i) => (i === index ? 1 : 0.52)) // opacity range
-          })
-
-          return (
-            <View key={label} style={styles.tabContainer}>
-              <TouchableOpacity
-                accessibilityLabel={options.tabBarAccessibilityLabel}
-                accessibilityRole='button'
-                accessibilityState={{ selected: isFocused(index) }}
-                activeOpacity={0.8}
-                onLongPress={() => onLongPress(route, index)}
-                onPress={() => onPress(route, index)}
-                style={styles.tab}
-                testID={options.tabBarTestID}
-              >
-                <Animated.View style={{ opacity }}>{icon}</Animated.View>
-                <AnimatedText size='xs' strength='strong' style={{ opacity }}>
-                  {label}
-                </AnimatedText>
-              </TouchableOpacity>
-            </View>
-          )
-        })}
+        {state.routes.map((route: any, index: number) => (
+          <TabItem
+            key={route.key}
+            route={route}
+            index={index}
+            isFocused={isFocused(index)}
+            indexDecimal={positionValue}
+            options={descriptors[route.key].options}
+            onPress={() => onPressTab(route, index)}
+            onLongPress={() => onLongPressTab(route)}
+          />
+        ))}
       </View>
       <Animated.View
-        style={[
-          styles.tabIndicator,
-          {
-            transform: [{ translateX: left }, { scaleX: xScale }],
-            width: tabWidth
-          }
-        ]}
+        style={[styles.tabIndicator, indicatorStyles, { width: tabWidth }]}
       />
     </View>
   )

@@ -7,14 +7,20 @@ import type {
   NativeSyntheticEvent,
   ScrollView
 } from 'react-native'
-import { Animated } from 'react-native'
+import Animated, {
+  interpolate,
+  useAnimatedReaction,
+  useAnimatedStyle,
+  runOnJS,
+  useSharedValue
+} from 'react-native-reanimated'
+import type { SharedValue } from 'react-native-reanimated'
 import { usePrevious } from 'react-use'
 
 import IconRefreshPull from 'app/assets/animations/iconRefreshPull.json'
 import IconRefreshSpin from 'app/assets/animations/iconRefreshSpin.json'
 import * as haptics from 'app/haptics'
 import { makeAnimations, makeStyles } from 'app/styles'
-import { attachToScroll } from 'app/utils/animation'
 import { colorize } from 'app/utils/colorizeLottie'
 
 const PULL_DISTANCE = 75
@@ -70,28 +76,6 @@ const useStyles = makeStyles(() => ({
   }
 }))
 
-const interpolateTranslateY = (scrollAnim: Animated.Value) =>
-  scrollAnim.interpolate({
-    inputRange: [-24, 0],
-    outputRange: [10, 0],
-    extrapolateLeft: 'extend',
-    extrapolateRight: 'clamp'
-  })
-
-const interpolateHitTopOpacity = (scrollAnim: Animated.Value, scrollDistance) =>
-  scrollAnim.interpolate({
-    inputRange: [-60, scrollDistance, scrollDistance + 12],
-    outputRange: [1, 1, 0],
-    extrapolateRight: 'clamp'
-  })
-
-const interpolateOpacity = (scrollAnim: Animated.Value) =>
-  scrollAnim.interpolate({
-    inputRange: [-60, -16],
-    outputRange: [1, 0],
-    extrapolateRight: 'clamp'
-  })
-
 type UseOverflowHandlersConfig = {
   isRefreshing?: boolean | null
   scrollResponder?: FlatList<any> | Animated.FlatList<any> | ScrollView | null
@@ -109,7 +93,7 @@ export const useOverflowHandlers = ({
   onRefresh,
   onScroll
 }: UseOverflowHandlersConfig) => {
-  const scrollAnim = useRef(new Animated.Value(0)).current
+  const scrollAnim = useSharedValue(0)
 
   const [isMomentumScroll, setIsMomentumScroll] = useState(false)
   const currentYOffset = useRef(0)
@@ -139,11 +123,13 @@ export const useOverflowHandlers = ({
   }, [isRefreshing, wasRefreshing, scrollTo, isMomentumScroll])
 
   const handleScroll = useCallback(
-    (e) => {
-      currentYOffset.current = e.nativeEvent.contentOffset.y
-      onScroll?.(e)
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const { contentOffset } = event.nativeEvent
+      scrollAnim.value = contentOffset.y
+      currentYOffset.current = contentOffset.y
+      onScroll?.(event)
     },
-    [onScroll]
+    [onScroll, scrollAnim]
   )
 
   const onScrollBeginDrag = useCallback(
@@ -165,16 +151,12 @@ export const useOverflowHandlers = ({
     [setIsMomentumScroll, scrollTo, isRefreshing]
   )
 
-  const attachedHandleScroll = attachToScroll(scrollAnim, {
-    listener: handleScroll
-  })
-
   return {
     isRefreshing: onRefresh ? Boolean(isRefreshing) : undefined,
     isRefreshDisabled: isMomentumScroll,
     handleRefresh: onRefresh,
     scrollAnim,
-    handleScroll: attachedHandleScroll,
+    handleScroll,
     onScrollBeginDrag,
     onScrollEndDrag
   }
@@ -183,7 +165,7 @@ export const useOverflowHandlers = ({
 type PullToRefreshProps = {
   isRefreshing?: boolean
   onRefresh?: () => void
-  scrollAnim?: Animated.Value
+  scrollY: SharedValue<number>
   isRefreshDisabled?: boolean
   topOffset?: number
   color?: string
@@ -222,35 +204,21 @@ export const PullToRefresh = ({
   isRefreshing,
   onRefresh,
   isRefreshDisabled,
-  scrollAnim,
+  scrollY,
   topOffset = 0,
   yOffsetDisappearance = 0,
   color
 }: PullToRefreshProps) => {
   const styles = useStyles()
   const wasRefreshing = usePrevious(isRefreshing)
-
   const [didHitTop, setDidHitTop] = useState(false)
   const hitTop = useRef(false)
-
   const [shouldShowSpinner, setShouldShowSpinner] = useState(false)
   const animationRef = useRef<LottieView | null>()
 
   const { neutral, white } = useAnimations()
   const { spin, pull } = color ? white : neutral
   const colorizedIcon = shouldShowSpinner ? spin : pull
-
-  const handleAnimationFinish = useCallback(
-    (isCancelled: boolean) => {
-      if (!isCancelled) {
-        setShouldShowSpinner(true)
-        setImmediate(() => {
-          animationRef.current?.play()
-        })
-      }
-    },
-    [setShouldShowSpinner]
-  )
 
   useEffect(() => {
     if (
@@ -264,51 +232,66 @@ export const PullToRefresh = ({
     }
   }, [isRefreshing, hitTop, wasRefreshing, isRefreshDisabled])
 
-  const listenerRef = useRef<string>()
-
-  const handleScroll = useCallback(
-    ({ value }: { value: number }) => {
-      if (value === 0) {
-        hitTop.current = false
-        setDidHitTop(false)
-      }
-      if (value < -1 * PULL_DISTANCE && !hitTop.current && !isRefreshDisabled) {
-        hitTop.current = true
-        setDidHitTop(true)
-        haptics.light()
-        onRefresh?.()
-        animationRef.current?.play()
+  const handleAnimationFinish = useCallback(
+    (isCancelled: boolean) => {
+      if (!isCancelled) {
+        setShouldShowSpinner(true)
+        setImmediate(() => {
+          animationRef.current?.play()
+        })
       }
     },
-    [onRefresh, isRefreshDisabled]
+    [setShouldShowSpinner]
+  )
+
+  const animatedStyles = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { translateY: interpolate(scrollY.value, [-24, 0], [10, 0]) }
+      ],
+      opacity: didHitTop
+        ? interpolate(
+            scrollY.value,
+            [-60, yOffsetDisappearance, yOffsetDisappearance + 12],
+            [1, 1, 0],
+            'clamp'
+          )
+        : interpolate(scrollY.value, [-60, -16], [1, 0], 'clamp')
+    }
+  }, [didHitTop, scrollY.value, yOffsetDisappearance])
+
+  useAnimatedReaction(
+    () => scrollY.value,
+    (currentValue) => {
+      if (currentValue === 0) {
+        runOnJS(setDidHitTop)(false)
+        hitTop.current = false
+      }
+      if (
+        currentValue < -1 * PULL_DISTANCE &&
+        !hitTop.current &&
+        !isRefreshDisabled
+      ) {
+        hitTop.current = true
+        runOnJS(setDidHitTop)(true)
+        runOnJS(haptics.light)()
+        runOnJS(setShouldShowSpinner)(true)
+        if (onRefresh) {
+          runOnJS(onRefresh)()
+        }
+      }
+    },
+    [isRefreshDisabled, onRefresh]
   )
 
   useEffect(() => {
-    listenerRef.current = scrollAnim?.addListener(handleScroll)
-    return () => {
-      if (listenerRef.current) {
-        scrollAnim?.removeListener(listenerRef.current)
-      }
+    if (shouldShowSpinner) {
+      animationRef.current?.play()
     }
-  }, [scrollAnim, handleScroll])
+  }, [shouldShowSpinner])
 
-  return scrollAnim ? (
-    <Animated.View
-      style={[
-        styles.root,
-        {
-          top: topOffset,
-          transform: [
-            {
-              translateY: interpolateTranslateY(scrollAnim)
-            }
-          ],
-          opacity: didHitTop
-            ? interpolateHitTopOpacity(scrollAnim, yOffsetDisappearance)
-            : interpolateOpacity(scrollAnim)
-        }
-      ]}
-    >
+  return scrollY ? (
+    <Animated.View style={[styles.root, { top: topOffset }, animatedStyles]}>
       <LottieView
         style={{ height: '100%', width: '100%' }}
         ref={(animation) => (animationRef.current = animation)}

@@ -6,15 +6,6 @@ import {
   useNavigationBuilder
 } from '@react-navigation/native'
 import { Tabs } from 'react-native-collapsible-tab-view'
-import { Flex, Text } from '@audius/harmony-native'
-
-const Header = () => {
-  return (
-    <Flex backgroundColor='red' h={200}>
-      <Text>hello world</Text>
-    </Flex>
-  )
-}
 
 export const CollapsibleTabNavigator = ({
   renderHeader,
@@ -30,8 +21,6 @@ export const CollapsibleTabNavigator = ({
     [animatedValue, headerHeight, renderHeader]
   )
 
-  console.log('renderTabBar', renderTabBar)
-
   const { state, navigation, descriptors } = useNavigationBuilder(TabRouter, {
     children,
     screenOptions,
@@ -42,34 +31,47 @@ export const CollapsibleTabNavigator = ({
 
   const onTabChange = useCallback(
     ({ tabName }) => {
+      const target = tabName.toString()
+      const isFocused = target === state.routes[state.index].name
+
+      // Don't do anything if we're already on the target tab
+      if (isFocused) {
+        return
+      }
+
+      // Find the index of the target route
+      const index = state.routes.findIndex((route) => route.name === target)
+      if (index === -1) return
+
+      // Emit the event and navigate to the tab
       navigation.emit({
         type: 'tabPress',
-        target: tabName.toString(),
-        data: {
-          isAlreadyFocused:
-            tabName.toString() === state.routes[state.index].name
-        }
+        target: state.routes[index].key,
+        canPreventDefault: true
       })
+
+      navigation.navigate(target)
     },
-    [navigation, state.index, state.routes]
+    [navigation, state.routes, state.index]
   )
 
   return (
     <Tabs.Container
       ref={ref}
       {...collapsibleOptions}
+      allowHeaderOverscroll
       initialTabName={state.routes[state.index].name}
       renderTabBar={(props) =>
         renderTabBar({ ...props, state, navigation, descriptors })
       }
       onTabChange={onTabChange}
-      // screenOptions={{ ...screenOptions, lazy: false }}
+      lazy={screenOptions?.lazy ?? false}
     >
       {state.routes.map((route) => (
         <Tabs.Tab
           key={route.key}
           name={route.name}
-          label={descriptors[route.name]?.options?.title}
+          label={descriptors[route.key]?.options?.title ?? route.name}
         >
           {descriptors[route.key].render()}
         </Tabs.Tab>

@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
 
 import { ProfilePageTabs } from '@audius/common/store'
-import type { Animated } from 'react-native'
 
 import {
   IconAlbum,
@@ -34,19 +33,12 @@ type ProfileTabNavigatorProps = {
    * Function that renders the collapsible header
    */
   renderHeader: () => ReactNode
-  /**
-   * Animated value to capture scrolling. If unset, an
-   * animated value is created.
-   */
-  animatedValue?: Animated.Value
-
   refreshing?: boolean
   onRefresh?: () => void
 }
 
 export const ProfileTabNavigator = ({
   renderHeader,
-  animatedValue,
   refreshing,
   onRefresh
 }: ProfileTabNavigatorProps) => {
@@ -64,8 +56,7 @@ export const ProfileTabNavigator = ({
     component: TracksTab,
     initialParams,
     refreshing,
-    onRefresh,
-    scrollY: animatedValue
+    onRefresh
   })
 
   const albumsScreen = collapsibleTabScreen({
@@ -74,8 +65,7 @@ export const ProfileTabNavigator = ({
     component: AlbumsTab,
     initialParams,
     refreshing,
-    onRefresh,
-    scrollY: animatedValue
+    onRefresh
   })
 
   const playlistsScreen = collapsibleTabScreen({
@@ -84,8 +74,7 @@ export const ProfileTabNavigator = ({
     component: PlaylistsTab,
     initialParams,
     refreshing,
-    onRefresh,
-    scrollY: animatedValue
+    onRefresh
   })
 
   const repostsScreen = collapsibleTabScreen({
@@ -94,8 +83,7 @@ export const ProfileTabNavigator = ({
     component: RepostsTab,
     initialParams: isArtist ? { ...initialParams, lazy: true } : initialParams,
     refreshing,
-    onRefresh,
-    scrollY: animatedValue
+    onRefresh
   })
 
   const collectiblesScreen = collapsibleTabScreen({
@@ -104,15 +92,13 @@ export const ProfileTabNavigator = ({
     component: CollectiblesTab,
     initialParams,
     refreshing,
-    onRefresh,
-    scrollY: animatedValue
+    onRefresh
   })
 
   if (isArtist) {
     return (
       <CollapsibleTabNavigator
         renderHeader={renderHeader}
-        animatedValue={animatedValue}
         headerHeight={INITIAL_PROFILE_HEADER_HEIGHT}
       >
         {trackScreen}
@@ -127,7 +113,6 @@ export const ProfileTabNavigator = ({
   return (
     <CollapsibleTabNavigator
       renderHeader={renderHeader}
-      animatedValue={animatedValue}
       headerHeight={INITIAL_PROFILE_HEADER_HEIGHT}
     >
       {repostsScreen}
