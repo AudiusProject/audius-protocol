@@ -232,8 +232,8 @@ const TrackTile = (props: CombinedProps) => {
           />
           <Flex
             direction='column'
-            justifyContent='center'
-            gap='2xs'
+            gap='xs'
+            pv='xs'
             mr='m'
             flex='0 1 65%'
             css={{ overflow: 'hidden' }}

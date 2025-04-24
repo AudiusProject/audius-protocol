@@ -1,3 +1,4 @@
+import { useRemixContest } from '@audius/common/api'
 import { User } from '@audius/common/models'
 import { useTrackPageLineup } from '@audius/common/src/api/tan-query/useTrackPageLineup'
 import { tracksActions } from '@audius/common/src/store/pages/track/lineup/actions'
@@ -49,6 +50,8 @@ export const TrackPageLineup = ({
   commentsDisabled
 }: TrackPageLineupProps) => {
   const { indices, ...lineupData } = useTrackPageLineup({ trackId })
+  const { data: remixContest } = useRemixContest(trackId)
+  const isRemixContest = !!remixContest
 
   const { isDesktop, isMobile } = useTrackPageSize()
 
@@ -142,8 +145,8 @@ export const TrackPageLineup = ({
         maxWidth: isCommentingEnabled ? '100%' : 774
       }}
     >
-      {renderRemixParentSection()}
-      {renderRemixesSection()}
+      {!isRemixContest ? renderRemixParentSection() : null}
+      {!isRemixContest ? renderRemixesSection() : null}
       {renderMoreBySection()}
       {renderRecommendedSection()}
     </Flex>

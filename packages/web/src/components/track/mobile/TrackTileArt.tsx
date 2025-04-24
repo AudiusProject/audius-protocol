@@ -62,7 +62,7 @@ const TrackTileArt = ({
     </DynamicImage>
   )
 
-  return coSign ? (
+  return (
     <TrackFlair
       size={Size.SMALL}
       className={cn(styles.container, className)}
@@ -70,8 +70,6 @@ const TrackTileArt = ({
     >
       {renderImage()}
     </TrackFlair>
-  ) : (
-    renderImage()
   )
 }
 

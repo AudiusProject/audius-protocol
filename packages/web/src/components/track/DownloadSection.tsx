@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { MouseEvent, useCallback, useState } from 'react'
 
 import { useFileSizes, useStems, useTrack } from '@audius/common/api'
 import {
@@ -168,12 +168,16 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     ]
   )
 
-  const handleDownloadAll = useRequiresAccountCallback(() => {
-    openDownloadTrackArchiveModal({
-      trackId,
-      fileCount: stemTracks.length + 1
-    })
-  }, [trackId, stemTracks])
+  const handleDownloadAll = useRequiresAccountCallback(
+    (e: MouseEvent) => {
+      e.stopPropagation()
+      openDownloadTrackArchiveModal({
+        trackId,
+        fileCount: stemTracks.length + 1
+      })
+    },
+    [trackId, stemTracks]
+  )
 
   return (
     <Box border='default' borderRadius='m' css={{ overflow: 'hidden' }}>

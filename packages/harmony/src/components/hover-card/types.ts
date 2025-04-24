@@ -40,6 +40,12 @@ export type HoverCardProps = {
    * @default { horizontal: 'left', vertical: 'center' }
    */
   transformOrigin?: Origin
+
+  /**
+   * Delay in seconds before the hover card appears after mouse enter
+   * @default 0.5
+   */
+  mouseEnterDelay?: number
 }
 
 export type HoverCardHeaderProps = {

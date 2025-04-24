@@ -1,4 +1,4 @@
-import { useRemixContest } from '@audius/common/api'
+import { useRemixContest, useRemixes } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { UPLOAD_PAGE } from '@audius/common/src/utils/route'
 import {
@@ -40,6 +40,7 @@ export const RemixContestSection = ({
 }: RemixContestSectionProps) => {
   const navigate = useNavigateToPage()
   const { data: remixContest } = useRemixContest(trackId)
+  const { data: remixes } = useRemixes({ trackId, isContestEntry: true })
 
   const tabs = [
     {
@@ -51,7 +52,8 @@ export const RemixContestSection = ({
       label: 'prizes'
     },
     {
-      text: messages.submissions,
+      text:
+        messages.submissions + (remixes?.length ? ` (${remixes.length})` : ''),
       label: 'submissions'
     }
   ]
@@ -59,7 +61,11 @@ export const RemixContestSection = ({
   const elements = [
     <RemixContestDetailsTab key='details' trackId={trackId} />,
     <RemixContestPrizesTab key='prizes' trackId={trackId} />,
-    <RemixContestSubmissionsTab key='submissions' trackId={trackId} />
+    <RemixContestSubmissionsTab
+      key='submissions'
+      trackId={trackId}
+      submissions={remixes.slice(0, 10)}
+    />
   ]
 
   const { tabs: TabBar, body: TabBody } = useTabs({
@@ -93,7 +99,12 @@ export const RemixContestSection = ({
           {messages.title}
         </Text>
       </Flex>
-      <Box backgroundColor='white' shadow='mid' borderRadius='l'>
+      <Box
+        backgroundColor='white'
+        shadow='mid'
+        borderRadius='l'
+        css={{ overflow: 'hidden' }}
+      >
         <Flex column pv='m'>
           <Flex justifyContent='space-between' borderBottom='default' ph='xl'>
             <Flex alignItems='center'>{TabBar}</Flex>

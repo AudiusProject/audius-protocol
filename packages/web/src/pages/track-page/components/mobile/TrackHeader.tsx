@@ -297,7 +297,7 @@ const TrackHeader = ({
     dispatch(pushRoute(`${permalink}/comments`))
   }, [dispatch, permalink])
 
-  const imageElement = coSign ? (
+  const imageElement = (
     <TrackFlair size={Size.LARGE} id={trackId} className={styles.coverArt}>
       <DynamicImage
         image={image ?? undefined}
@@ -305,12 +305,6 @@ const TrackHeader = ({
         wrapperClassName={cn(styles.imageWrapper, styles.cosignImageWrapper)}
       />
     </TrackFlair>
-  ) : (
-    <DynamicImage
-      image={image ?? undefined}
-      alt='Track Artwork'
-      wrapperClassName={cn(styles.coverArt, styles.imageWrapper)}
-    />
   )
 
   const renderHeaderText = () => {

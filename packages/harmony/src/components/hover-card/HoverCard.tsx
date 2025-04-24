@@ -1,6 +1,7 @@
-import { useRef, useState } from 'react'
+import { useRef, useCallback, memo } from 'react'
 
 import { Flex, Paper, Popup } from '..'
+import { useHoverDelay } from '../../hooks/useHoverDelay'
 import { Origin } from '../popup/types'
 
 import { HoverCardProps } from './types'
@@ -36,37 +37,35 @@ const DEFAULT_TRANSFORM_ORIGIN: Origin = {
  * </HoverCard>
  * ```
  */
-export const HoverCard = ({
+const HoverCardComponent = ({
   children,
   className,
   content,
   onClose,
   onClick,
   anchorOrigin = DEFAULT_ANCHOR_ORIGIN,
-  transformOrigin = DEFAULT_TRANSFORM_ORIGIN
+  transformOrigin = DEFAULT_TRANSFORM_ORIGIN,
+  mouseEnterDelay = 0.5
 }: HoverCardProps) => {
-  const [isHovered, setIsHovered] = useState(false)
   const anchorRef = useRef<HTMLDivElement | null>(null)
+  const {
+    isHovered,
+    handleMouseEnter,
+    handleMouseLeave,
+    clearTimer,
+    setIsHovered
+  } = useHoverDelay(mouseEnterDelay)
 
-  const handleMouseEnter = () => {
-    setIsHovered(true)
-  }
+  const handleClose = useCallback(() => {
+    clearTimer()
+    onClose?.()
+  }, [clearTimer, onClose])
 
-  const handleMouseLeave = () => {
+  const handleClick = useCallback(() => {
+    onClick?.()
+    clearTimer()
     setIsHovered(false)
-  }
-
-  const handleClose = () => {
-    setIsHovered(false)
-    if (onClose) onClose()
-  }
-
-  const handleClick = () => {
-    if (onClick) {
-      onClick()
-      setIsHovered(false)
-    }
-  }
+  }, [onClick, clearTimer, setIsHovered])
 
   return (
     <Flex
@@ -75,13 +74,14 @@ export const HoverCard = ({
       onMouseLeave={handleMouseLeave}
     >
       {children}
+
       <Popup
         anchorRef={anchorRef}
         isVisible={isHovered}
         onClose={handleClose}
         dismissOnMouseLeave
         hideCloseButton
-        zIndex={30000} // Using tooltip z-index
+        zIndex={30000}
         anchorOrigin={anchorOrigin}
         transformOrigin={transformOrigin}
       >
@@ -98,3 +98,5 @@ export const HoverCard = ({
     </Flex>
   )
 }
+
+export const HoverCard = memo(HoverCardComponent)

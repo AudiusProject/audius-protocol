@@ -1,14 +1,21 @@
-import { IconCosign as IconCoSign } from '@audius/harmony'
+import { IconComponent, useTheme } from '@audius/harmony'
 import cn from 'classnames'
 
-import styles from './Check.module.css'
+import styles from './FlairIcon.module.css'
 import { Size } from './types'
 
 type CheckProps = {
   size: Size
+  Icon: IconComponent
 }
 
-const Check = ({ size }: CheckProps) => {
+const FlairIcon = ({ size, Icon }: CheckProps) => {
+  const {
+    color: {
+      primary: { p300 }
+    }
+  } = useTheme()
+
   return (
     <div
       className={cn(styles.box, {
@@ -19,9 +26,9 @@ const Check = ({ size }: CheckProps) => {
         [styles.xlarge]: size === Size.XLARGE
       })}
     >
-      <IconCoSign className={styles.iconCoSign} />
+      <Icon className={styles.icon} fill={p300} />
     </div>
   )
 }
 
-export default Check
+export default FlairIcon

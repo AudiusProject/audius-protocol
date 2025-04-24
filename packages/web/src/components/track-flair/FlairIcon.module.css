@@ -23,12 +23,12 @@
   width: 44px;
 }
 
-.iconCoSign {
+.icon {
   height: 100%;
   width: 100%;
+  fill: var(--harmony-white);
 }
 
-.iconCoSign rect {
-  stroke: var(--harmony-white);
-  fill: var(--harmony-static-primary);
+.icon rect {
+  fill: var(--harmony-white);
 }

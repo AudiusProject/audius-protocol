@@ -1,4 +1,4 @@
-import type { Remix, User } from '@audius/common/models'
+import type { ID, Remix, User } from '@audius/common/models'
 import { playerSelectors } from '@audius/common/store'
 import { TouchableOpacity, View } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -43,6 +43,7 @@ type Props = {
   user: User
   isPlayingUid: boolean
   type: 'track' | 'playlist' | 'album'
+  trackId: ID
 }
 
 export const LineupTileMetadata = ({
@@ -52,7 +53,8 @@ export const LineupTileMetadata = ({
   title,
   user,
   isPlayingUid,
-  type
+  type,
+  trackId
 }: Props) => {
   const styles = useStyles()
   const trackTileStyles = useTrackTileStyles()
@@ -68,8 +70,8 @@ export const LineupTileMetadata = ({
     <View style={styles.metadata}>
       <LineupTileArt
         renderImage={renderImage}
-        coSign={coSign}
         style={trackTileStyles.imageContainer}
+        trackId={trackId}
       />
       <FadeInView
         style={trackTileStyles.titles}

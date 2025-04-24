@@ -110,7 +110,7 @@ const Artwork = memo(
         )}
       </DynamicImage>
     )
-    return (
+    return isTrack ? (
       <TrackFlair
         size={Size.MEDIUM}
         id={id}
@@ -121,6 +121,8 @@ const Artwork = memo(
       >
         {imageElement}
       </TrackFlair>
+    ) : (
+      imageElement
     )
   }
 )
