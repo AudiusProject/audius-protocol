@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useContext } from 'react'
 
 import { buySellMessages as messages } from '@audius/common/messages'
+import { useSwapTokens } from '@audius/common/src/api/tan-query/useSwapTokens'
 import { useBuySellModal } from '@audius/common/store'
 import {
   Button,
@@ -17,9 +18,12 @@ import {
 } from '@audius/harmony'
 import { useTheme } from '@emotion/react'
 
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { ToastContext } from 'components/toast/ToastContext'
+
 import { BuyTab } from './BuyTab'
 import { SellTab } from './SellTab'
-import { SUPPORTED_TOKEN_PAIRS, TOKENS } from './constants'
+import { SUPPORTED_TOKEN_PAIRS } from './constants'
 import { BuySellTab } from './types'
 
 // import { useIsMobile } from 'hooks/useIsMobile' // Keep for potential mobile-specific adjustments - Removing for now
@@ -32,28 +36,101 @@ type TabOption = {
 export const BuySellModal = () => {
   const { isOpen, onClose } = useBuySellModal()
   const { spacing, color } = useTheme()
+  const { toast } = useContext(ToastContext)
   // const isMobile = useIsMobile() // Keep for potential mobile-specific adjustments - Removing for now
   const [activeTab, setActiveTab] = useState<BuySellTab>('buy')
   // selectedPairIndex will be used in future when multiple token pairs are supported
   const [selectedPairIndex] = useState(0)
+
+  // Transaction state
+  const [transactionData, setTransactionData] = useState<{
+    inputAmount: number
+    outputAmount: number
+    isValid: boolean
+  } | null>(null)
+
+  // Get the swap tokens mutation
+  const {
+    mutate: swapTokens,
+    status: swapStatus,
+    error: swapError
+  } = useSwapTokens()
 
   const tabs: TabOption[] = [
     { key: 'buy', text: messages.buy },
     { key: 'sell', text: messages.sell }
   ]
 
-  // Update token balances (placeholder - would connect to wallet)
-  useEffect(() => {
-    // This would be replaced with actual balance fetching logic
-    TOKENS.AUDIO.balance = 15000.0
-    TOKENS.USDC.balance = 100.0
-  }, [])
-
   const selectedPair = SUPPORTED_TOKEN_PAIRS[selectedPairIndex]
 
   const handleActiveTabChange = useCallback((newTab: BuySellTab) => {
     setActiveTab(newTab)
+    // Reset transaction data when changing tabs
+    setTransactionData(null)
   }, [])
+
+  const handleTransactionDataChange = useCallback(
+    (data: { inputAmount: number; outputAmount: number; isValid: boolean }) => {
+      setTransactionData(data)
+    },
+    []
+  )
+
+  // Handle continue button click
+  const handleContinueClick = useCallback(() => {
+    if (!transactionData || !transactionData.isValid) return
+
+    const { inputAmount } = transactionData
+
+    // Default slippage is 50 basis points (0.5%)
+    const slippageBps = 50
+
+    // Determine swap direction based on active tab
+    if (activeTab === 'buy') {
+      // Buy AUDIO with USDC
+      swapTokens({
+        inputTokenSymbol: 'USDC',
+        outputTokenSymbol: 'AUDIO',
+        inputAmount,
+        slippageBps
+      })
+    } else {
+      // Sell AUDIO for USDC
+      swapTokens({
+        inputTokenSymbol: 'AUDIO',
+        outputTokenSymbol: 'USDC',
+        inputAmount,
+        slippageBps
+      })
+    }
+  }, [activeTab, transactionData, swapTokens])
+
+  // Handle swap status changes
+  useEffect(() => {
+    if (swapStatus === 'success') {
+      toast(
+        activeTab === 'buy'
+          ? 'Successfully purchased AUDIO!'
+          : 'Successfully sold AUDIO!',
+        3000
+      )
+
+      // Close modal after 1 second on success
+      const timer = setTimeout(() => {
+        onClose()
+      }, 1000)
+
+      return () => clearTimeout(timer)
+    } else if (swapStatus === 'error') {
+      toast(swapError?.message || 'Transaction failed. Please try again.', 5000)
+    }
+  }, [swapStatus, swapError, activeTab, onClose, toast])
+
+  // Determine button state
+  const isContinueButtonDisabled =
+    !transactionData?.isValid || swapStatus === 'pending'
+
+  const isContinueButtonLoading = swapStatus === 'pending'
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size='medium'>
@@ -72,9 +149,15 @@ export const BuySellModal = () => {
           </Flex>
 
           {activeTab === 'buy' ? (
-            <BuyTab tokenPair={selectedPair} />
+            <BuyTab
+              tokenPair={selectedPair}
+              onTransactionDataChange={handleTransactionDataChange}
+            />
           ) : (
-            <SellTab tokenPair={selectedPair} />
+            <SellTab
+              tokenPair={selectedPair}
+              onTransactionDataChange={handleTransactionDataChange}
+            />
           )}
 
           <Hint>
@@ -87,8 +170,20 @@ export const BuySellModal = () => {
             </TextLink>
           </Hint>
 
-          <Button variant='primary' fullWidth>
-            {messages.continue}
+          <Button
+            variant='primary'
+            fullWidth
+            disabled={isContinueButtonDisabled}
+            onClick={handleContinueClick}
+          >
+            {isContinueButtonLoading ? (
+              <Flex alignItems='center' justifyContent='center' gap='s'>
+                <LoadingSpinner css={{ width: '16px', height: '16px' }} />
+                <span>Processing...</span>
+              </Flex>
+            ) : (
+              messages.continue
+            )}
           </Button>
         </Flex>
       </ModalContent>
