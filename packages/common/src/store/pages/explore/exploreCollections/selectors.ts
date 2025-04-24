@@ -31,7 +31,9 @@ export const getCollections = (
   const collectionsList = collectionIds.map((id) => collections[id])
 
   const userIds = collectionsList.map((c: Collection) => c.playlist_owner_id)
-  const users = getUsers(state, { ids: userIds })
+  const users = getUsers('exploreCollections/getCollections')(state, {
+    ids: userIds
+  })
 
   const userCollections = collectionsList.map((c: Collection) => ({
     ...c,

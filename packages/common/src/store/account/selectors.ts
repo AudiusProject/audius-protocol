@@ -1,8 +1,12 @@
 import { createSelector } from 'reselect'
 
+import {
+  getCollectionQueryKey,
+  getUserQueryKey
+} from '~/api/tan-query/queryKeys'
 import { AccountCollection } from '~/models/Collection'
 import { getCollections } from '~/store/cache/collections/selectors'
-import { getUser, getUsers } from '~/store/cache/users/selectors'
+import { getUser } from '~/store/cache/users/selectors'
 import { removeNullable } from '~/utils/typeUtils'
 
 import { CommonState } from '../commonStore'
@@ -101,25 +105,30 @@ export const getAccountSplWallet = createSelector(
  * TODO: Add handle directly to playlist metadata so we don't need to join against users.
  */
 export const getAccountWithCollections = createSelector(
-  [getAccountUser, internalGetUserPlaylists, getCollections, getUsers],
-  (account, userPlaylists, collections, users) => {
+  [getAccountUser, internalGetUserPlaylists, (state) => state.queryClient],
+  (account, userPlaylists, queryClient) => {
     if (!account) return undefined
     return {
       ...account,
       collections: [...userPlaylists]
-        .map((collection) =>
-          collections[collection.id] &&
-          !collections[collection.id]?._marked_deleted &&
-          !collections[collection.id]?.is_delete &&
-          collection.user.id in users &&
-          !users[collection.user.id].is_deactivated
+        .map((collection) => {
+          const fullCollection = queryClient.getQueryData(
+            getCollectionQueryKey(collection.id)
+          )
+          const collectionUser = queryClient.getQueryData(
+            getUserQueryKey(fullCollection?.playlist_owner_id)
+          )
+          return fullCollection &&
+            !fullCollection?._marked_deleted &&
+            !fullCollection?.is_delete &&
+            !collectionUser?.is_deactivated
             ? {
-                ...collections[collection.id],
-                ownerHandle: collection.user.handle,
-                ownerName: users[collection.user.id].name
+                ...fullCollection,
+                ownerHandle: collectionUser?.handle,
+                ownerName: collectionUser?.name
               }
             : null
-        )
+        })
         .filter(removeNullable)
     }
   }

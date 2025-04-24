@@ -18,7 +18,7 @@ export const getKeyFromFetchArgs = (fetchArgs: any) => {
 }
 
 const entitySelectorMap = {
-  [Kind.USERS]: getUsers,
+  [Kind.USERS]: getUsers('audius-query'),
   [Kind.TRACKS]: getTracks,
   [Kind.COLLECTIONS]: getCollections
 }

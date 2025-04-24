@@ -52,7 +52,9 @@ export const getNotificationUsers = (
 ) => {
   if ('userIds' in notification) {
     const userIds = notification.userIds.slice(0, limit)
-    const userMap = getUsers(state, { ids: userIds })
+    const userMap = getUsers('notifications/getNotificationUsers')(state, {
+      ids: userIds
+    })
     return userIds.map((id) => userMap[id])
   }
   return null

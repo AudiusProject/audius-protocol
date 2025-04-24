@@ -27,7 +27,7 @@ export const getFetchedCollectionIds = createSelector(
 /** Returns a Set of collection IDs which should be treated as visible (aren't
  * deleted or owned by a deactivated user) */
 export const getVisibleCollectionIds = createSelector(
-  [getCollections, getUsers],
+  [getCollections, getUsers('account/getVisibleCollectionIds')],
   (collections, users) => {
     return Object.values(collections).reduce((accum, collection) => {
       const owner = users[collection.playlist_owner_id]

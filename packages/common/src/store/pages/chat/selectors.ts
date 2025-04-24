@@ -148,7 +148,7 @@ export const getOtherChatUsersFromChat = (state: CommonState, chat?: Chat) => {
     .filter((u) => HashId.parse(u.user_id) !== currentUserId)
     .map((u) => HashId.parse(u.user_id) ?? -1)
     .filter((u) => u > -1)
-  const users = getUsers(state, {
+  const users = getUsers('chat/getOtherChatUsersFromChat')(state, {
     ids
   })
   return Object.values(users)
@@ -257,7 +257,7 @@ export const getCanCreateChat = createSelector(
     getChats,
     (state: CommonState, { userId }: { userId: Maybe<ID> }) => {
       if (!userId) return null
-      const usersMap = getUsers(state, { ids: [userId] })
+      const usersMap = getUsers('chat/getCanCreateChat')(state, { ids: [userId] })
       return usersMap[userId]
     }
   ],

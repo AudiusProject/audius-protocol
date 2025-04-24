@@ -69,6 +69,7 @@ export const getTracks = (
       {} as { [permalink: string]: Track }
     )
   }
+  console.log('batch get tracks')
   // Returns all tracks in cache. TODO: this horribly inefficient dear god why on earth was this done
   const trackQueryResults = state.queryClient.getQueriesData({
     queryKey: [QUERY_KEYS.track]

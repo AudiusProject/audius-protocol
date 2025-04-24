@@ -94,7 +94,6 @@ export const getCollections = (
       ) ?? {}
     )
   }
-  // Returns all tracks in cache. TODO: this horribly inefficient dear god why on earth was this done
   const collectionQueryResults = state.queryClient.getQueriesData({
     queryKey: [QUERY_KEYS.collection]
   })

@@ -1,8 +1,8 @@
 import { createSelector } from 'reselect'
 
+import { getUserQueryKey } from '~/api/tan-query/queryKeys'
 import { Kind } from '~/models'
-import { getTrack, getTracksByUid } from '~/store/cache/tracks/selectors'
-import { getUsers } from '~/store/cache/users/selectors'
+import { getTrack } from '~/store/cache/tracks/selectors'
 import { Nullable, removeNullable } from '~/utils/typeUtils'
 
 import { LineupState } from '../../models/Lineup'
@@ -32,12 +32,11 @@ export const makeGetTableMetadatas = <T, State>(
 ) => {
   return createSelector(
     lineupSelector,
-    getUsers,
     (state: CommonState) =>
       ({
         queryClient: state.queryClient
       }) as CommonState,
-    (lineup, users, state) => {
+    (lineup, state) => {
       let deleted = lineup.deleted
       const entries = lineup.entries
         .map((entry) => {
@@ -48,7 +47,12 @@ export const makeGetTableMetadatas = <T, State>(
               ...track,
               uid: entry.uid,
               followeeReposts: track.followee_reposts
-                .map((repost) => ({ ...repost, user: users[repost.user_id] }))
+                .map((repost) => ({
+                  ...repost,
+                  user: state.queryClient.getQueryData(
+                    getUserQueryKey(repost.user_id)
+                  )
+                }))
                 .filter((repost) => !!repost.user)
             }
           } else if (entry.kind === Kind.EMPTY) {
@@ -61,8 +65,13 @@ export const makeGetTableMetadatas = <T, State>(
         .filter(removeNullable)
         .map((entry) => {
           const ownerId = entry.owner_id
-          if (ownerId && ownerId in users) {
-            return { ...entry, user: users[ownerId] }
+          if (ownerId) {
+            const user = state.queryClient.getQueryData(
+              getUserQueryKey(ownerId)
+            )
+            if (user) {
+              return { ...entry, user }
+            }
           } else if (entry.kind === Kind.EMPTY) {
             return entry
           }
