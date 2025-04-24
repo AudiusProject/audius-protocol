@@ -96,6 +96,7 @@ export const CashWallet = () => {
                 placement='top'
                 mount='page'
                 shouldWrapContent={false}
+                shouldDismissOnClick={false}
                 css={{ zIndex: zIndex.CASH_WALLET_TOOLTIP }}
               >
                 <IconButton
@@ -110,12 +111,25 @@ export const CashWallet = () => {
           </Flex>
 
           {/* Balance Value */}
-          <Text variant='display' size='m' color='default'>
-            ${isLoading ? '--.--' : balanceFormatted}
+          <Text
+            variant='display'
+            size='m'
+            color='default'
+            css={{
+              opacity: isLoading ? 0 : 1,
+              transition: 'opacity 0.3s ease'
+            }}
+          >
+            ${balanceFormatted}
           </Text>
 
           {/* Payout Wallet Info */}
-          <Flex alignItems='center' gap='s' css={styles.payoutWalletFlex}>
+          <Flex
+            alignItems='center'
+            gap='s'
+            css={styles.payoutWalletFlex}
+            onClick={handlePayoutWalletClick}
+          >
             <TextLink
               variant='visible'
               size='m'
