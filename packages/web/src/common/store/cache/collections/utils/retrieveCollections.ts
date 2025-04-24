@@ -49,7 +49,8 @@ function* markCollectionDeleted(
     if (!(metadata.playlist_id in collections)) return metadata
     return {
       ...metadata,
-      _marked_deleted: !!collections[metadata.playlist_id]._marked_deleted
+      _marked_deleted:
+        !!collections[metadata.playlist_id]?.metadata?._marked_deleted
     }
   })
 }
@@ -236,7 +237,7 @@ export function* retrieveCollections(
     deleteExistingEntry
   } = config ?? {}
   // @ts-ignore retrieve should be refactored to ts first
-  const { entries, uids } = yield* call(retrieve<Collection>, {
+  const { entries, uids } = yield* call(retrieve<BatchCachedCollections>, {
     ids: collectionIds,
     selectFromCache: function* (ids: ID[]) {
       return yield* select(getCollections, { ids })

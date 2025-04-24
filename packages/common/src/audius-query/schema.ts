@@ -49,3 +49,43 @@ export const schemas = {
 }
 
 export const apiResponseSchema = new schema.Object(schemas)
+
+export const userMetadataSchema = new schema.Object({
+  metadata: userSchema
+})
+
+export const managedUserMetadataSchema = new schema.Object({
+  user: userMetadataSchema
+})
+
+export const accountUserMetadataSchema = new schema.Object({
+  user: userMetadataSchema
+})
+
+export const userManagerMetadataSchema = new schema.Object({
+  manager: userMetadataSchema
+})
+
+export const trackMetadataSchema = new schema.Object({
+  metadata: trackSchema
+})
+
+export const collectionMetadataSchema = new schema.Object({
+  metadata: collectionSchema
+})
+
+export const metadataSchemas = {
+  accountUser: accountUserMetadataSchema,
+  managedUsers: new schema.Array(managedUserMetadataSchema),
+  user: userMetadataSchema,
+  userManagers: new schema.Array(userManagerMetadataSchema),
+  track: trackMetadataSchema,
+  collection: collectionMetadataSchema,
+  users: new schema.Array(userMetadataSchema),
+  tracks: new schema.Array(trackMetadataSchema),
+  collections: new schema.Array(collectionMetadataSchema),
+  albums: new schema.Array(collectionMetadataSchema),
+  playlists: new schema.Array(collectionMetadataSchema)
+}
+
+export const apiMetadataResponseSchema = new schema.Object(metadataSchemas)

@@ -1,5 +1,6 @@
 import { userMetadataListFromSDK } from '@audius/common/adapters'
-import { Kind, User, UserMetadata } from '@audius/common/models'
+import { Kind, User } from '@audius/common/models'
+import { BatchCachedUsers } from '@audius/common/src/store/cache/users/selectors'
 import {
   Metadata,
   accountSelectors,
@@ -36,7 +37,7 @@ export function* fetchUsers(
   const sdk = yield* getSDK()
   const userId = yield* select(getUserId)
 
-  return yield* call(retrieve<UserMetadata>, {
+  return yield* call(retrieve<BatchCachedUsers>, {
     ids: userIds,
     selectFromCache: function* (ids) {
       return yield* select(getUsers, { ids: ids as number[] })
@@ -92,7 +93,7 @@ export function* fetchUserByHandle(
     return yield* retrieveUserByHandle(handles[0].toString(), retry)
   }
 
-  const { entries: users } = yield* call(retrieve<UserMetadata>, {
+  const { entries: users } = yield* call(retrieve<BatchCachedUsers>, {
     ids: [handle],
     selectFromCache: function* (handles) {
       return yield* select(getUsers, { handles: handles as string[] })
@@ -113,7 +114,7 @@ export function* fetchUserByHandle(
     shouldSetLoading,
     deleteExistingEntry
   })
-  return users[handle]
+  return users[handle].metadata
 }
 
 // For updates and adds, sync the account user to local storage.

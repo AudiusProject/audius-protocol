@@ -200,7 +200,7 @@ export const AudioPlayer = () => {
   )
   const queueTracks: QueueableTrack[] = queueOrder.map(
     ({ id, playerBehavior }) => ({
-      track: queueTrackMap[id] as Nullable<Track>,
+      track: queueTrackMap[id]?.metadata,
       playerBehavior
     })
   )
@@ -315,7 +315,7 @@ export const AudioPlayer = () => {
       }
       setRetries(retries ?? 0)
 
-      const trackOwner = queueTrackOwnersMap[track.owner_id]
+      const trackOwner = queueTrackOwnersMap[track.owner_id].metadata
       const trackId = track.track_id
       const offlineTrackAvailable =
         trackId && offlineAvailabilityByTrackId[trackId]

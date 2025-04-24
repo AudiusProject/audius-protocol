@@ -9,6 +9,7 @@ import {
   Track,
   UserTrackMetadata
 } from '@audius/common/models'
+import { BatchCachedTracks } from '@audius/common/src/store/cache/tracks/selectors'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -74,7 +75,7 @@ export function* retrieveTracks({
     : (trackIds as ID[])
 
   // @ts-ignore retrieve should be refactored to ts first
-  const tracks: { entries: { [id: number]: Track } } = yield* call(retrieve, {
+  const tracks = yield* call(retrieve<BatchCachedTracks>, {
     ids,
     selectFromCache: function* (ids: ID[]) {
       return yield* select(getTracksSelector, { ids })
