@@ -9,7 +9,7 @@ import Animated, {
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
-import { TabView, SceneMap, TabBar } from 'react-native-tab-view'
+import { TabView, SceneMap, TabBar, TabBarItem } from 'react-native-tab-view'
 import { usePrevious } from 'react-use'
 
 import { Paper } from '@audius/harmony-native'
@@ -168,6 +168,17 @@ export const RemixContestSection = ({
       inactiveColor={textIconSubdued}
       pressColor='transparent'
       pressOpacity={0.7}
+      renderTabBarItem={({ route, key, ...restProps }) => (
+        <TabBarItem
+          {...restProps}
+          key={key}
+          route={route}
+          getAccessibilityLabel={() => route.title}
+          getAccessible={() => true}
+          getLabelText={() => route.title}
+          getTestID={() => `tab-${route.key}`}
+        />
+      )}
     />
   )
 
