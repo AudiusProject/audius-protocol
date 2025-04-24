@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect, useRef } from 'react'
-import type { ReactNode } from 'react'
+import type { ReactNode, RefObject } from 'react'
 
 import type { View } from 'react-native'
 import { Platform } from 'react-native'
@@ -33,7 +33,7 @@ type ExpandableContentProps = {
   children: ReactNode
   maxLines?: number
   lineHeight?: number
-  scrollRef?: React.RefObject<ScrollView | FlatList>
+  scrollRef?: RefObject<ScrollView | FlatList>
 }
 
 export const ExpandableContent = ({
@@ -70,14 +70,9 @@ export const ExpandableContent = ({
             animated: true
           })
         } else if ('scrollToOffset' in scrollRef.current) {
-          console.log('REED scrollToButton', {
-            pageY,
-            height,
-            offset: pageY - height / 2
-          })
           // FlatList
           scrollRef.current.scrollToOffset({
-            offset: pageY - height / 2,
+            offset: pageY,
             animated: true
           })
         }
@@ -91,13 +86,6 @@ export const ExpandableContent = ({
       if (!toggleButtonRef.current || !isButtonLayoutReady) return
 
       toggleButtonRef.current.measureInWindow((x, y, width, height) => {
-        console.log('REED measuring', {
-          y,
-          height,
-          retryCount,
-          isButtonLayoutReady
-        })
-
         if (typeof y === 'number' && typeof height === 'number') {
           scrollToButton(y, height)
         } else if (retryCount < 3) {
@@ -135,7 +123,6 @@ export const ExpandableContent = ({
           pageX: number,
           pageY: number
         ) => {
-          console.log('REED', { pageY, height })
           if (typeof pageY === 'number' && typeof height === 'number') {
             scrollToButton(pageY, height)
           }
