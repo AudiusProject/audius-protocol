@@ -1,11 +1,6 @@
 import { memo, useCallback, useEffect, MouseEvent, useRef } from 'react'
 
-import {
-  useCurrentUserId,
-  useToggleFavoriteTrack,
-  useTrack,
-  useUser
-} from '@audius/common/api'
+import { useCurrentUserId, useTrack, useUser } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,
