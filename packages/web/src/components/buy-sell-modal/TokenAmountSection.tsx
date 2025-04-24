@@ -84,7 +84,7 @@ export const TokenAmountSection = ({
               <Text variant='heading' size='s' color='subdued'>
                 {tokenTicker}
               </Text>
-              {exchangeRate && (
+              {exchangeRate !== null && exchangeRate !== undefined && (
                 <Text variant='heading' size='s' color='subdued'>
                   ({isStablecoin ? '$' : ''}
                   {exchangeRate})

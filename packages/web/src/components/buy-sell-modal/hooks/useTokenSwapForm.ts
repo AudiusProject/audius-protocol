@@ -1,28 +1,40 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { TokenExchangeRateParams } from '@audius/common/src/api/tan-query/useTokenExchangeRate'
+import { useTokenExchangeRate } from '@audius/common/src/api/tan-query/useTokenExchangeRate'
 import { JupiterTokenSymbol } from '@audius/common/src/services/JupiterTokenExchange'
 
 import { TokenInfo } from '../types'
 
-export type TokenSwapDirection = 'buy' | 'sell'
+export type BalanceConfig = {
+  get: () => number | undefined
+  loading: boolean
+  formatError: (amount: number) => string
+}
 
 export type TokenSwapFormProps = {
+  /**
+   * The token the user is paying with (input)
+   */
   inputToken: TokenInfo
+  /**
+   * The token the user is receiving (output)
+   */
   outputToken: TokenInfo
-  inputTokenSymbol: JupiterTokenSymbol
-  outputTokenSymbol: JupiterTokenSymbol
-  minAmount: number
-  maxAmount: number
-  getInputBalance: () => number | undefined
-  isBalanceLoading: boolean
-  formatBalanceError: (amount: number) => string
-  getExchangeRate: (params: TokenExchangeRateParams) => {
-    data: { rate: number } | undefined
-    isLoading: boolean
-    error: Error | null
-  }
-  defaultExchangeRate: number
+  /**
+   * Minimum amount allowed for input (optional)
+   */
+  min?: number
+  /**
+   * Maximum amount allowed for input (optional)
+   */
+  max?: number
+  /**
+   * Configuration for handling the input token balance
+   */
+  balance: BalanceConfig
+  /**
+   * Callback for when transaction data changes
+   */
   onTransactionDataChange?: (data: {
     inputAmount: number
     outputAmount: number
@@ -31,22 +43,26 @@ export type TokenSwapFormProps = {
 }
 
 /**
- * A hook to manage the common functionality for both Buy and Sell tabs
+ * A hook to manage the common functionality for token swaps
  */
 export const useTokenSwapForm = ({
   inputToken,
   outputToken,
-  inputTokenSymbol,
-  outputTokenSymbol,
-  minAmount,
-  maxAmount,
-  getInputBalance,
-  isBalanceLoading,
-  formatBalanceError,
-  getExchangeRate,
-  defaultExchangeRate,
+  min = 0,
+  max = Number.MAX_SAFE_INTEGER,
+  balance,
   onTransactionDataChange
 }: TokenSwapFormProps) => {
+  // Get token symbols for the exchange rate API
+  const inputTokenSymbol = inputToken.symbol as JupiterTokenSymbol
+  const outputTokenSymbol = outputToken.symbol as JupiterTokenSymbol
+
+  // Destructure the balance config for easier access
+  const {
+    get: getInputBalance,
+    loading: isBalanceLoading,
+    formatError: formatBalanceError
+  } = balance
   const [inputAmount, setInputAmount] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
 
@@ -59,7 +75,7 @@ export const useTokenSwapForm = ({
   // Get the available balance
   const availableBalance = useMemo(() => {
     const balance = getInputBalance()
-    return balance !== undefined ? balance : inputToken.balance
+    return balance !== undefined ? balance : (inputToken.balance ?? 0)
   }, [getInputBalance, inputToken.balance])
 
   // Use Jupiter API to get real-time exchange rate
@@ -67,7 +83,7 @@ export const useTokenSwapForm = ({
     data: exchangeRateData,
     isLoading: isExchangeRateLoading,
     error: exchangeRateError
-  } = getExchangeRate({
+  } = useTokenExchangeRate({
     inputTokenSymbol,
     outputTokenSymbol,
     inputAmount: numericInputAmount > 0 ? numericInputAmount : 1
@@ -88,13 +104,13 @@ export const useTokenSwapForm = ({
       return
     }
 
-    if (numericInputAmount < minAmount) {
-      setError(`Minimum amount is ${minAmount} ${inputToken.symbol}`)
+    if (numericInputAmount < min) {
+      setError(`Minimum amount is ${min} ${inputToken.symbol}`)
       return
     }
 
-    if (numericInputAmount > maxAmount) {
-      setError(`Maximum amount is ${maxAmount} ${inputToken.symbol}`)
+    if (numericInputAmount > max) {
+      setError(`Maximum amount is ${max} ${inputToken.symbol}`)
       return
     }
 
@@ -108,8 +124,8 @@ export const useTokenSwapForm = ({
     setError(null)
   }, [
     numericInputAmount,
-    minAmount,
-    maxAmount,
+    min,
+    max,
     getInputBalance,
     formatBalanceError,
     inputToken.symbol
@@ -145,15 +161,13 @@ export const useTokenSwapForm = ({
     const balance = getInputBalance()
     if (balance !== undefined) {
       // Limit to MAX_AMOUNT
-      const finalAmount = Math.min(balance, maxAmount)
+      const finalAmount = Math.min(balance, max)
       setInputAmount(finalAmount.toString())
     }
-  }, [getInputBalance, maxAmount])
+  }, [getInputBalance, max])
 
-  // Use the real exchange rate if available, otherwise use the default
-  const currentExchangeRate = exchangeRateData
-    ? exchangeRateData.rate
-    : defaultExchangeRate
+  // Use the real exchange rate if available, otherwise null (no default fallback)
+  const currentExchangeRate = exchangeRateData ? exchangeRateData.rate : null
 
   return {
     inputAmount,
@@ -166,6 +180,9 @@ export const useTokenSwapForm = ({
     availableBalance,
     currentExchangeRate,
     handleInputAmountChange,
-    handleMaxClick
+    handleMaxClick,
+    // Including these for the component that consumes this hook
+    inputToken,
+    outputToken
   }
 }
