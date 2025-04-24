@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useTrackPageLineup } from '@audius/common/api'
+import { useRemixContest, useTrackPageLineup } from '@audius/common/api'
 import { trackPageMessages as messages } from '@audius/common/messages'
 import type { ID, User } from '@audius/common/models'
 import { useFocusEffect } from '@react-navigation/native'
@@ -50,6 +50,8 @@ export const TrackScreenLineup = ({
     data,
     loadCachedDataIntoLineup
   } = useTrackPageLineup({ trackId, disableAutomaticCacheHandling: true })
+  const { data: remixContest } = useRemixContest(trackId)
+  const isRemixContest = !!remixContest
 
   useFocusEffect(
     useCallback(() => {
@@ -166,8 +168,8 @@ export const TrackScreenLineup = ({
 
   return (
     <Flex direction='column' gap='2xl'>
-      {renderRemixParentSection()}
-      {renderRemixesSection()}
+      {!isRemixContest ? renderRemixParentSection() : null}
+      {!isRemixContest ? renderRemixesSection() : null}
       {renderMoreBySection()}
       {renderRecommendedSection()}
     </Flex>
