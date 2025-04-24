@@ -1,4 +1,4 @@
-import type { ID, Remix, User } from '@audius/common/models'
+import type { ID, User } from '@audius/common/models'
 import { playerSelectors } from '@audius/common/store'
 import { TouchableOpacity, View } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -11,7 +11,7 @@ import type { GestureResponderHandler } from 'app/types/gesture'
 import { useThemeColors } from 'app/utils/theme'
 
 import { LineupTileArt } from './LineupTileArt'
-import { useStyles as useTrackTileStyles } from './styles'
+import { useStyles as useTileStyles } from './styles'
 import type { LineupTileProps } from './types'
 
 const { getPlaying } = playerSelectors
@@ -36,7 +36,6 @@ const useStyles = makeStyles(({ palette }) => ({
 }))
 
 type Props = {
-  coSign?: Remix | null
   onPressTitle?: GestureResponderHandler
   renderImage: LineupTileProps['renderImage']
   title: string
@@ -47,7 +46,6 @@ type Props = {
 }
 
 export const LineupTileMetadata = ({
-  coSign,
   onPressTitle,
   renderImage,
   title,
@@ -57,7 +55,7 @@ export const LineupTileMetadata = ({
   trackId
 }: Props) => {
   const styles = useStyles()
-  const trackTileStyles = useTrackTileStyles()
+  const tileStyles = useTileStyles()
   const { primary } = useThemeColors()
 
   const isActive = isPlayingUid
@@ -70,11 +68,13 @@ export const LineupTileMetadata = ({
     <View style={styles.metadata}>
       <LineupTileArt
         renderImage={renderImage}
-        style={trackTileStyles.imageContainer}
+        style={tileStyles.imageContainer}
         trackId={trackId}
       />
       <FadeInView
-        style={trackTileStyles.titles}
+        style={
+          type === 'track' ? tileStyles.titles : tileStyles.collectionTitles
+        }
         startOpacity={0}
         duration={500}
       >
@@ -91,8 +91,8 @@ export const LineupTileMetadata = ({
 
         <TouchableOpacity
           style={{
-            ...trackTileStyles.title,
-            ...(isPlaying ? trackTileStyles.titlePlaying : {})
+            ...tileStyles.title,
+            ...(isPlaying ? tileStyles.titlePlaying : {})
           }}
           onPress={onPressTitle}
         >

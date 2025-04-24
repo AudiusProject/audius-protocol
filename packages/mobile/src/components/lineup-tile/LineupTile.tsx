@@ -101,7 +101,6 @@ export const LineupTile = ({
           isCollection={isCollection}
         />
         <LineupTileMetadata
-          coSign={coSign}
           renderImage={renderImage}
           onPressTitle={onPressTitle}
           title={title}
