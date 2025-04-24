@@ -48,7 +48,6 @@ export const TopArtistsCardList = (props: Props) => {
           showPreviewHint={genre === 'Featured' && index === 0}
         />
       )}
-      sceneName={genre}
       numColumns={2}
       // TODO: Figure out sticky header and footers
       ListFooterComponent={<Box h={148} />}
