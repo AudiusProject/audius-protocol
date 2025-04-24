@@ -71,7 +71,10 @@ export const TrackScreen = () => {
               <ScreenSecondaryContent>
                 <Flex gap='2xl'>
                   {/* Remix Contest */}
-                  <RemixContestSection trackId={track_id} />
+                  <RemixContestSection
+                    trackId={track_id}
+                    scrollRef={scrollViewRef}
+                  />
                   {/* Comments */}
                   {!comments_disabled ? (
                     <Flex flex={3}>

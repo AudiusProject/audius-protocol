@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import type { RefObject } from 'react'
 
 import { useRemixContest, useTrack, useCurrentUserId } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
+import type { FlatList } from 'react-native'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -50,6 +52,7 @@ export type RemixContestTabParamList = {
 
 type RemixContestSectionProps = {
   trackId: ID
+  scrollRef?: RefObject<FlatList>
 }
 
 type Route = {
@@ -62,14 +65,18 @@ const AnimatedPaper = Animated.createAnimatedComponent(Paper)
 /**
  * Section displaying remix contest information for a track
  */
-export const RemixContestSection = ({ trackId }: RemixContestSectionProps) => {
+export const RemixContestSection = ({
+  trackId,
+  scrollRef
+}: RemixContestSectionProps) => {
   const { data: remixContest } = useRemixContest(trackId)
   const { textIconSubdued, neutral } = useThemeColors()
   const styles = useStyles()
 
   const { data: track } = useTrack(trackId)
   const { data: currentUserId } = useCurrentUserId()
-  const isOwner = track?.owner_id === currentUserId
+  // const isOwner = track?.owner_id === currentUserId
+  const isOwner = false
 
   const [index, setIndex] = useState(0)
   const [routes] = useState<Route[]>([
@@ -123,7 +130,11 @@ export const RemixContestSection = ({ trackId }: RemixContestSectionProps) => {
             onLayout={handleLayout('details')}
             isVisible={index === 0 && !firstRender}
           >
-            <RemixContestDetailsTab key='details' trackId={trackId} />
+            <RemixContestDetailsTab
+              key='details'
+              trackId={trackId}
+              scrollRef={scrollRef}
+            />
           </TabBody>
         ),
         prizes: () => (
@@ -145,7 +156,7 @@ export const RemixContestSection = ({ trackId }: RemixContestSectionProps) => {
       }),
     // Don't want handleLayout to re-trigger on index changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [scrollRef]
   )
 
   const renderTabBar = (props: any) => (
