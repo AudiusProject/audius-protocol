@@ -87,6 +87,10 @@ export const CollapsibleTabNavigator = ({
       screenOptions={{ ...screenOptions, lazy: false }}
       renderHeader={renderHeader}
       renderTabBar={renderTabBar}
+      headerContainerStyle={{
+        backgroundColor: 'red',
+        shadowRadius: 0
+      }}
     >
       {children}
     </Tab.Navigator>

@@ -7,6 +7,8 @@ import {
 } from '@react-navigation/native'
 import { Tabs } from 'react-native-collapsible-tab-view'
 
+import { useTheme } from '@audius/harmony-native'
+
 export const CollapsibleTabNavigator = ({
   renderHeader,
   animatedValue,
@@ -55,12 +57,20 @@ export const CollapsibleTabNavigator = ({
     [navigation, state.routes, state.index]
   )
 
+  const { color } = useTheme()
+
   return (
     <Tabs.Container
       ref={ref}
       {...collapsibleOptions}
       allowHeaderOverscroll
       initialTabName={state.routes[state.index].name}
+      headerContainerStyle={{
+        shadowColor: color.neutral.n900,
+        shadowOpacity: 0.12,
+        shadowOffset: { height: 2, width: 0 },
+        shadowRadius: 2
+      }}
       renderTabBar={(props) =>
         renderTabBar({ ...props, state, navigation, descriptors })
       }

@@ -38,18 +38,6 @@ const getSinAnimationRanges = (len: number) => {
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
-  tabBarContainer: {
-    elevation: 3,
-    marginBottom: -1 * spacing(1),
-    paddingBottom: spacing(1),
-    position: 'relative',
-    zIndex: 100,
-    shadowColor: palette.neutralDark1,
-    shadowOpacity: 0.12,
-    shadowOffset: { height: 2, width: 0 },
-    shadowRadius: 2
-  },
-
   tabsContainer: {
     backgroundColor: palette.white,
     flexDirection: 'row'
@@ -131,7 +119,7 @@ export const CollapsibleTopTabBar = (props: any) => {
   })
 
   return (
-    <View style={styles.tabBarContainer}>
+    <>
       <View
         style={[styles.tabsContainer, { paddingHorizontal: horizontalPadding }]}
       >
@@ -151,6 +139,6 @@ export const CollapsibleTopTabBar = (props: any) => {
       <Animated.View
         style={[styles.tabIndicator, indicatorStyles, { width: tabWidth }]}
       />
-    </View>
+    </>
   )
 }
