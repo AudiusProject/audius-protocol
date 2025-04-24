@@ -22,8 +22,9 @@ import { RemixContestPrizesTab } from './RemixContestPrizesTab'
 import { RemixContestSubmissionsTab } from './RemixContestSubmissionsTab'
 import { UploadRemixFooter } from './UploadRemixFooter'
 
-const TAB_HEADER_HEIGHT = 48
 const TAB_FOOTER_HEIGHT = 64
+const TAB_HEADER_HEIGHT = 48
+const HEIGHT_OFFSET = 24
 
 const useStyles = makeStyles(({ palette, typography, spacing }) => ({
   tabBar: {
@@ -75,8 +76,7 @@ export const RemixContestSection = ({
 
   const { data: track } = useTrack(trackId)
   const { data: currentUserId } = useCurrentUserId()
-  // const isOwner = track?.owner_id === currentUserId
-  const isOwner = false
+  const isOwner = track?.owner_id === currentUserId
 
   const [index, setIndex] = useState(0)
   const [routes] = useState<Route[]>([
@@ -109,12 +109,11 @@ export const RemixContestSection = ({
 
   useEffect(() => {
     if (hasHeightChanged) {
-      animatedHeight.value = withTiming(
-        currentHeight + TAB_HEADER_HEIGHT + (isOwner ? 0 : TAB_FOOTER_HEIGHT),
-        {
-          duration: 250
-        }
-      )
+      const height =
+        currentHeight + HEIGHT_OFFSET + (isOwner ? 0 : TAB_FOOTER_HEIGHT)
+      animatedHeight.value = withTiming(height, {
+        duration: 250
+      })
     }
   }, [index, hasHeightChanged, currentHeight, animatedHeight, isOwner])
 

@@ -91,7 +91,12 @@ export const ExpandableContent = ({
       if (!toggleButtonRef.current || !isButtonLayoutReady) return
 
       toggleButtonRef.current.measureInWindow((x, y, width, height) => {
-        console.log('REED', { y, height, retryCount, isButtonLayoutReady })
+        console.log('REED measuring', {
+          y,
+          height,
+          retryCount,
+          isButtonLayoutReady
+        })
 
         if (typeof y === 'number' && typeof height === 'number') {
           scrollToButton(y, height)
@@ -176,6 +181,7 @@ export const ExpandableContent = ({
     [contentHeight, containerHeight, lineHeight, maxLines]
   )
 
+  // Wait for the button to be laid out before measuring - needed for Android
   const handleButtonLayout = useCallback((e: LayoutChangeEvent) => {
     setIsButtonLayoutReady(true)
   }, [])
