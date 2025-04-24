@@ -1,10 +1,28 @@
-import { Flex, Text } from '@audius/harmony'
-
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { Flex, Text, Skeleton } from '@audius/harmony'
 
 import { TokenAmountSection } from './TokenAmountSection'
 import { useTokenSwapForm } from './hooks/useTokenSwapForm'
 import { TokenInfo } from './types'
+
+const TokenSectionSkeleton = ({ title }: { title: string }) => (
+  <Flex direction='column' gap='s'>
+    <Skeleton h='xl' w={title === 'input' ? 'unit20' : 'unit24'} />
+    <Skeleton h='unit14' w='100%' />
+  </Flex>
+)
+
+const ExchangeRateSkeleton = () => (
+  <Flex justifyContent='center' p='s'>
+    <Skeleton w='unit30' h='xl' />
+  </Flex>
+)
+
+const SwapFormSkeleton = () => (
+  <Flex direction='column' gap='l'>
+    <TokenSectionSkeleton title='input' />
+    <TokenSectionSkeleton title='output' />
+  </Flex>
+)
 
 export type SwapTabProps = {
   inputToken: TokenInfo
@@ -61,11 +79,7 @@ export const SwapTab = ({
   return (
     <Flex direction='column' gap='l'>
       {/* Show loading state while fetching balance or initial exchange rate */}
-      {isInitialLoading && (
-        <Flex justifyContent='center' css={{ padding: '8px' }}>
-          <LoadingSpinner />
-        </Flex>
-      )}
+      {isInitialLoading && <SwapFormSkeleton />}
 
       {/* Show error from exchange rate fetch */}
       {exchangeRateError && (
@@ -122,9 +136,7 @@ export const SwapTab = ({
 
       {/* Loading indicator for exchange rate */}
       {isExchangeRateLoading && numericInputAmount > 0 && !isInitialLoading && (
-        <Flex justifyContent='center' css={{ padding: '8px' }}>
-          <LoadingSpinner css={{ width: '24px', height: '24px' }} />
-        </Flex>
+        <ExchangeRateSkeleton />
       )}
     </Flex>
   )

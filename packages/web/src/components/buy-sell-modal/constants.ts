@@ -9,7 +9,7 @@ export const TOKENS: Record<string, TokenInfo> = {
     name: 'Audius',
     icon: IconLogoCircle,
     decimals: 18,
-    balance: null, // Changed from 0 to null
+    balance: null,
     isStablecoin: false
   },
   USDC: {
@@ -17,7 +17,7 @@ export const TOKENS: Record<string, TokenInfo> = {
     name: 'USD Coin',
     icon: IconLogoCircleUSDC,
     decimals: 6,
-    balance: null, // Changed from 0 to null
+    balance: null,
     isStablecoin: true
   }
 }
@@ -27,6 +27,6 @@ export const SUPPORTED_TOKEN_PAIRS: TokenPair[] = [
   {
     baseToken: TOKENS.AUDIO,
     quoteToken: TOKENS.USDC,
-    exchangeRate: null // Changed from 0.082 to null
+    exchangeRate: null
   }
 ]

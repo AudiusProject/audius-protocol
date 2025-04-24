@@ -126,11 +126,10 @@ export const BuySellModal = () => {
     }
   }, [swapStatus, swapError, activeTab, onClose, toast])
 
-  // Determine button state
-  const isContinueButtonDisabled =
-    !transactionData?.isValid || swapStatus === 'pending'
-
   const isContinueButtonLoading = swapStatus === 'pending'
+
+  const isContinueButtonDisabled =
+    !transactionData?.isValid || isContinueButtonLoading
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size='medium'>
