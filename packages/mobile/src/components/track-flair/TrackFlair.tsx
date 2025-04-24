@@ -85,7 +85,7 @@ export const TrackFlair = ({ size, children, style, trackId }: CoSignProps) => {
 
   const { size: iconSize, position } = layoutBySize[size]
 
-  if (!track) return children
+  if (!track) return <>{children}</>
 
   const remixTrack = track.remix_of?.tracks[0]
   const hasRemixAuthorReposted = remixTrack?.has_remix_author_reposted ?? false
