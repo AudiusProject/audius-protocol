@@ -85,7 +85,7 @@ export const TrackFlair = ({ size, children, style, trackId }: CoSignProps) => {
 
   const { size: iconSize, position } = layoutBySize[size]
 
-  if (!track) return null
+  if (!track) return children
 
   const remixTrack = track.remix_of?.tracks[0]
   const hasRemixAuthorReposted = remixTrack?.has_remix_author_reposted ?? false
@@ -100,9 +100,9 @@ export const TrackFlair = ({ size, children, style, trackId }: CoSignProps) => {
   ) : null
 
   return (
-    <View style={style}>
+    <>
       <View>{children}</View>
       <View style={[styles.check, position]}>{flair}</View>
-    </View>
+    </>
   )
 }
