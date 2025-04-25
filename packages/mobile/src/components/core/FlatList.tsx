@@ -6,7 +6,7 @@ import type {
   FlatList as RNFlatList
 } from 'react-native'
 import { Animated, Platform, RefreshControl, View } from 'react-native'
-import { useCollapsibleScene } from 'react-native-collapsible-tab-view'
+import { Tabs, useCurrentTabScrollY } from 'react-native-collapsible-tab-view'
 
 import { useThemeColors } from 'app/utils/theme'
 
@@ -18,27 +18,22 @@ import { PullToRefresh, useOverflowHandlers } from './PullToRefresh'
 export type FlatListT<ItemT> = RNFlatList<ItemT>
 export type AnimatedFlatListT<ItemT> = Animated.FlatList<ItemT>
 
-type CollapsibleFlatListProps<ItemT> = {
-  sceneName: string
-} & Animated.AnimatedProps<RNFlatListProps<ItemT>>
+type CollapsibleFlatListProps<ItemT> = RNFlatListProps<ItemT>
 
 function CollapsibleFlatList<ItemT>(props: CollapsibleFlatListProps<ItemT>) {
-  const { sceneName, onScroll, ...other } = props
-  const { refreshing, onRefresh } = other
-  const scrollPropsAndRef = useCollapsibleScene(sceneName)
+  const { refreshing, onRefresh } = props
   const { neutral } = useThemeColors()
+
+  const scrollY = useCurrentTabScrollY()
+
   return (
     <View>
-      {onRefresh ? <PullToRefresh /> : null}
-      <Animated.FlatList
-        {...other}
-        {...scrollPropsAndRef}
-        // @ts-ignore `forkEvent` is not defined on the type but it exists
-        onScroll={Animated.forkEvent(scrollPropsAndRef.onScroll, onScroll)}
+      {onRefresh ? <PullToRefresh scrollY={scrollY} /> : null}
+      <Tabs.FlatList
+        {...props}
         refreshControl={
           Platform.OS === 'ios' ? undefined : (
             <RefreshControl
-              progressViewOffset={scrollPropsAndRef.progressViewOffset}
               refreshing={!!refreshing}
               onRefresh={onRefresh ?? undefined}
               colors={[neutral]}
@@ -68,6 +63,7 @@ const AnimatedFlatList = forwardRef(function AnimatedFlatList<ItemT>(
     onScrollEndDrag
   } = useOverflowHandlers({
     isRefreshing: Boolean(refreshing),
+    // @ts-expect-error: weirdness around types here, but it works
     scrollResponder: ref?.current || scrollRef.current,
     onRefresh,
     onScroll
@@ -79,7 +75,7 @@ const AnimatedFlatList = forwardRef(function AnimatedFlatList<ItemT>(
         <PullToRefresh
           isRefreshing={isRefreshing}
           onRefresh={handleRefresh}
-          scrollAnim={scrollAnim}
+          scrollY={scrollAnim}
           isRefreshDisabled={isRefreshDisabled}
           yOffsetDisappearance={-16}
         />
@@ -106,7 +102,7 @@ const AnimatedFlatList = forwardRef(function AnimatedFlatList<ItemT>(
 })
 
 export type FlatListProps<ItemT> = RNFlatListProps<ItemT> & {
-  sceneName?: string
+  isCollapsible?: boolean
 }
 
 /**
@@ -117,11 +113,14 @@ export const FlatList = forwardRef(function FlatList<ItemT>(
   props: FlatListProps<ItemT>,
   ref: Ref<FlatListT<ItemT>>
 ) {
-  const { ListFooterComponent, sceneName: sceneNameProp, ...other } = props
-  const { sceneName: sceneNameContext } = useContext(
-    CollapsibleTabNavigatorContext
-  )
-  const sceneName = sceneNameProp ?? sceneNameContext
+  const {
+    ListFooterComponent,
+    isCollapsible: isCollapsibleProp,
+    ...other
+  } = props
+  const collapsibleContext = useContext(CollapsibleTabNavigatorContext)
+  const isCollapsible =
+    isCollapsibleProp ?? Object.keys(collapsibleContext).length > 0
   const FooterComponent = ListFooterComponent ? (
     <>
       {ListFooterComponent}
@@ -136,13 +135,8 @@ export const FlatList = forwardRef(function FlatList<ItemT>(
     ListFooterComponent: FooterComponent
   }
 
-  if (sceneName) {
-    return (
-      <CollapsibleFlatList
-        sceneName={sceneName}
-        {...(flatListProps as Animated.AnimatedProps<RNFlatListProps<ItemT>>)}
-      />
-    )
+  if (isCollapsible) {
+    return <CollapsibleFlatList {...flatListProps} />
   }
   return (
     <AnimatedFlatList

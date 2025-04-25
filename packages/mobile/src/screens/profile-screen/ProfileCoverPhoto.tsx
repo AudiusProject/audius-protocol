@@ -1,5 +1,10 @@
 import { BlurView } from '@react-native-community/blur'
-import { Animated, StyleSheet, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
+import { useCurrentTabScrollY } from 'react-native-collapsible-tab-view'
+import Animated, {
+  interpolate,
+  useAnimatedStyle
+} from 'react-native-reanimated'
 
 import BadgeArtist from 'app/assets/images/badgeArtist.svg'
 import { CoverPhoto } from 'app/components/image/CoverPhoto'
@@ -20,65 +25,47 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-const interpolateBlurViewOpacity = (scrollY: Animated.Value) =>
-  scrollY.interpolate({
-    inputRange: [-100, 0],
-    outputRange: [1, 0],
-    extrapolateLeft: 'extend',
-    extrapolateRight: 'clamp'
-  })
-
-const interpolateBadgeImagePosition = (scrollY: Animated.Value) =>
-  scrollY.interpolate({
-    inputRange: [-200, 0],
-    outputRange: [-200, 0],
-    extrapolateLeft: 'extend',
-    extrapolateRight: 'clamp'
-  })
-
-type ProfileCoverPhotoProps = { scrollY?: Animated.Value }
-
-export const ProfileCoverPhoto = (props: ProfileCoverPhotoProps) => {
-  const { scrollY } = props
+export const ProfileCoverPhoto = () => {
   const styles = useStyles()
   const user = useSelectProfile(['user_id', 'track_count'])
   const { user_id, track_count } = user
 
+  const scrollY = useCurrentTabScrollY()
+
   const isArtist = track_count > 0
+
+  const blurViewStyle = useAnimatedStyle(() => ({
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 2,
+    opacity: interpolate(scrollY.value, [-100, 0], [1, 0], {
+      extrapolateLeft: 'extend',
+      extrapolateRight: 'clamp'
+    })
+  }))
+
+  const badgeStyle = useAnimatedStyle(() => ({
+    ...styles.artistBadge,
+    transform: [
+      {
+        translateY: interpolate(scrollY.value, [-200, 0], [-200, 0], {
+          extrapolateLeft: 'extend',
+          extrapolateRight: 'clamp'
+        })
+      }
+    ]
+  }))
 
   return (
     <View pointerEvents='none'>
-      <CoverPhoto
-        animatedValue={scrollY}
-        style={styles.coverPhoto}
-        userId={user_id}
-      >
+      <CoverPhoto style={styles.coverPhoto} userId={user_id}>
         <AnimatedBlurView
           blurType='dark'
           blurAmount={100}
-          style={[
-            { ...StyleSheet.absoluteFillObject, zIndex: 2 },
-            scrollY
-              ? { opacity: interpolateBlurViewOpacity(scrollY) }
-              : undefined
-          ]}
+          style={blurViewStyle}
         />
       </CoverPhoto>
       {isArtist ? (
-        <Animated.View
-          style={[
-            styles.artistBadge,
-            scrollY
-              ? {
-                  transform: [
-                    {
-                      translateY: interpolateBadgeImagePosition(scrollY)
-                    }
-                  ]
-                }
-              : undefined
-          ]}
-        >
+        <Animated.View style={badgeStyle}>
           <BadgeArtist />
         </Animated.View>
       ) : null}

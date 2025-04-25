@@ -171,6 +171,7 @@ export type LineupProps = {
   isFetching?: boolean
   // TODO:
   queryData?: any
+  isCollapsible?: boolean
 } & Pick<
   SectionListProps<unknown>,
   | 'showsVerticalScrollIndicator'

@@ -1,6 +1,6 @@
 import { createElement, memo, useCallback, useMemo } from 'react'
 
-import type { Collection, UserCollection, ID } from '@audius/common/models'
+import type { Collection, ID } from '@audius/common/models'
 import { CreatePlaylistSource } from '@audius/common/models'
 import type { ListRenderItem } from 'react-native'
 
@@ -13,11 +13,17 @@ import { CollectionCardSkeleton } from './CollectionCardSkeleton'
 
 const MemoizedCollectionCard = memo(CollectionCard)
 
-type FullListProps = Omit<CardListProps<UserCollection>, 'data' | 'renderItem'>
+type FullListProps = Omit<
+  CardListProps<Collection>,
+  'data' | 'renderItem' | 'FlatListComponent'
+>
 type IDCardListItem = {
   id: ID
 }
-type IDListProps = Omit<CardListProps<IDCardListItem>, 'data' | 'renderItem'>
+type IDListProps = Omit<
+  CardListProps<IDCardListItem>,
+  'data' | 'renderItem' | 'FlatListComponent'
+>
 type CreateCard = { _create: boolean }
 
 // Props to show and setup tile for creating new playlists
