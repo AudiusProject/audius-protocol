@@ -12,10 +12,10 @@ import {
   getGenres,
   getStatus
 } from 'common/store/pages/signon/selectors'
-import { createMaterialCollapsibleTopTabNavigator } from 'react-native-collapsible-tab-view'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Flex, Text } from '@audius/harmony-native'
+import { createCollapsibleTabNavigator } from 'app/components/top-tab-bar/createCollapsibleTabNavigator'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { ReadOnlyAccountHeader } from '../../components/AccountHeader'
@@ -27,7 +27,7 @@ import { SelectedGenresTabBar } from './SelectedGenresTabBar'
 import { TopArtistsCardList } from './TopArtistsCardList'
 import { SelectArtistsPreviewContextProvider } from './selectArtistPreviewContext'
 
-const Tab = createMaterialCollapsibleTopTabNavigator()
+const Tab = createCollapsibleTabNavigator()
 
 // Note for this screen we are not using Formik due to performance issues, and using redux instead.
 export const SelectArtistsScreen = () => {
@@ -75,12 +75,10 @@ export const SelectArtistsScreen = () => {
     <SelectArtistsPreviewContextProvider>
       <Flex flex={1} pb='l'>
         <Tab.Navigator
-          tabBar={SelectedGenresTabBar}
-          collapsibleOptions={{
-            renderHeader,
-            headerHeight: 244,
-            disableSnap: true
-          }}
+          renderTabBar={(props) => <SelectedGenresTabBar {...props} />}
+          renderHeader={renderHeader}
+          headerHeight={244}
+          snapThreshold={null}
         >
           {genres.map((genre) => (
             <Tab.Screen

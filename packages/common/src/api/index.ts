@@ -80,6 +80,7 @@ export * from './tan-query/useRemixes'
 export * from './tan-query/useTrackRank'
 export * from './tan-query/useWalletOwner'
 export * from './tan-query/useTokenPrice'
+export * from './tan-query/useUSDCBalance'
 
 export * from './tan-query/useStems'
 export * from './tan-query/useFileSizes'
