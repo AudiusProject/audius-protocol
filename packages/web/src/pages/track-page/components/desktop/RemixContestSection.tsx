@@ -1,3 +1,5 @@
+import { useState, useCallback } from 'react'
+
 import { useRemixContest, useRemixes } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { UPLOAD_PAGE } from '@audius/common/src/utils/route'
@@ -41,6 +43,11 @@ export const RemixContestSection = ({
   const navigate = useNavigateToPage()
   const { data: remixContest } = useRemixContest(trackId)
   const { data: remixes } = useRemixes({ trackId, isContestEntry: true })
+  const [contentHeight, setContentHeight] = useState(0)
+
+  const handleDetailsHeightChange = useCallback((height: number) => {
+    setContentHeight(height)
+  }, [])
 
   const tabs = [
     {
@@ -59,7 +66,11 @@ export const RemixContestSection = ({
   ]
 
   const elements = [
-    <RemixContestDetailsTab key='details' trackId={trackId} />,
+    <RemixContestDetailsTab
+      key='details'
+      trackId={trackId}
+      onHeightChange={handleDetailsHeightChange}
+    />,
     <RemixContestPrizesTab key='prizes' trackId={trackId} />,
     <RemixContestSubmissionsTab
       key='submissions'
@@ -91,8 +102,22 @@ export const RemixContestSection = ({
   // TODO: Also return null if no remix contest description
   if (!trackId || !remixContest) return null
 
+  const headerHeight = 48 // Height of the title section
+  const titleGap = 16 // Gap between title and box (from gap='l')
+  const tabBarHeight = 56 // Height of the tab bar
+  const verticalPadding = 16 // From pv='m' on the Flex
+  const totalBoxHeight = tabBarHeight + contentHeight + verticalPadding * 2
+  const totalHeight = headerHeight + titleGap + totalBoxHeight
+
   return (
-    <Flex column gap='l'>
+    <Flex
+      column
+      gap='l'
+      css={{
+        transition: 'height var(--harmony-expressive)',
+        height: totalHeight
+      }}
+    >
       <Flex alignItems='center' gap='s'>
         <IconTrophy color='default' />
         <Text variant='title' size='l'>
@@ -103,9 +128,12 @@ export const RemixContestSection = ({
         backgroundColor='white'
         shadow='mid'
         borderRadius='l'
-        css={{ overflow: 'hidden' }}
+        css={{
+          transition: 'height var(--harmony-expressive)',
+          height: totalBoxHeight
+        }}
       >
-        <Flex column pv='m'>
+        <Flex column pv='m' css={{ height: '100%' }}>
           <Flex justifyContent='space-between' borderBottom='default' ph='xl'>
             <Flex alignItems='center'>{TabBar}</Flex>
             {!isOwner ? (
@@ -121,7 +149,14 @@ export const RemixContestSection = ({
               </Flex>
             ) : null}
           </Flex>
-          {TabBody}
+          <Box
+            css={{
+              transition: 'height var(--harmony-expressive)',
+              height: contentHeight
+            }}
+          >
+            {TabBody}
+          </Box>
         </Flex>
       </Box>
     </Flex>

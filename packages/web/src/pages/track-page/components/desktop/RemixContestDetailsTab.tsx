@@ -1,8 +1,9 @@
 import { useRemixContest } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { dayjs } from '@audius/common/utils'
-import { Flex, Text } from '@audius/harmony'
+import { Flex, spacing, Text } from '@audius/harmony'
 
+import { CollapsibleContent } from 'components/collapsible-content'
 import { UserGeneratedText } from 'components/user-generated-text'
 
 const messages = {
@@ -19,19 +20,30 @@ const messages = {
 
 type RemixContestDetailsTabProps = {
   trackId: ID
+  onHeightChange?: (height: number) => void
 }
+
+const COLLAPSED_HEIGHT = 10 * spacing.m
 
 /**
  * Tab content displaying details about a remix contest
  */
 export const RemixContestDetailsTab = ({
-  trackId
+  trackId,
+  onHeightChange
 }: RemixContestDetailsTabProps) => {
   const { data: remixContest } = useRemixContest(trackId)
   const isContestEnded = dayjs(remixContest?.endDate).isBefore(dayjs())
 
   return (
-    <Flex column gap='l' p='xl'>
+    <Flex
+      column
+      gap='l'
+      p='xl'
+      css={{
+        transition: 'height var(--harmony-quick)'
+      }}
+    >
       <Flex row gap='s'>
         <Text variant='title' size='m' color='accent'>
           {messages.due}
@@ -42,9 +54,15 @@ export const RemixContestDetailsTab = ({
             : messages.deadline(remixContest?.endDate)}
         </Text>
       </Flex>
-      <UserGeneratedText variant='body' size='l'>
-        {remixContest?.eventData?.description ?? messages.fallbackDescription}
-      </UserGeneratedText>
+      <CollapsibleContent
+        id='remix-contest-details-tab'
+        collapsedHeight={COLLAPSED_HEIGHT}
+        onHeightChange={onHeightChange}
+      >
+        <UserGeneratedText variant='body'>
+          {remixContest?.eventData?.description ?? messages.fallbackDescription}
+        </UserGeneratedText>
+      </CollapsibleContent>
     </Flex>
   )
 }
