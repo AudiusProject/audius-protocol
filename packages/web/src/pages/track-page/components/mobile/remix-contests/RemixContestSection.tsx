@@ -1,17 +1,7 @@
 import { useRemixContest, useRemixes } from '@audius/common/api'
 import { ID } from '@audius/common/models'
-import { UPLOAD_PAGE } from '@audius/common/src/utils/route'
-import {
-  Box,
-  Button,
-  Flex,
-  IconCloudUpload,
-  IconTrophy,
-  Text
-} from '@audius/harmony'
+import { Box, Flex, Text, IconTrophy } from '@audius/harmony'
 
-import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import useTabs from 'hooks/useTabs/useTabs'
 
 import { RemixContestDetailsTab } from './RemixContestDetailsTab'
@@ -31,14 +21,10 @@ type RemixContestSectionProps = {
   isOwner: boolean
 }
 
-/**
- * Section component that displays remix contest information for a track
- */
 export const RemixContestSection = ({
   trackId,
   isOwner
 }: RemixContestSectionProps) => {
-  const navigate = useNavigateToPage()
   const { data: remixContest } = useRemixContest(trackId)
   const { data: remixes } = useRemixes({ trackId, isContestEntry: true })
 
@@ -52,41 +38,31 @@ export const RemixContestSection = ({
       label: 'prizes'
     },
     {
-      text:
-        messages.submissions + (remixes?.length ? ` (${remixes.length})` : ''),
+      text: messages.submissions,
       label: 'submissions'
     }
   ]
 
   const elements = [
-    <RemixContestDetailsTab key='details' trackId={trackId} />,
+    <RemixContestDetailsTab
+      key='details'
+      trackId={trackId}
+      isOwner={isOwner}
+    />,
     <RemixContestPrizesTab key='prizes' trackId={trackId} />,
     <RemixContestSubmissionsTab
       key='submissions'
       trackId={trackId}
-      submissions={remixes.slice(0, 10)}
+      submissions={remixes.slice(0, 6)}
     />
   ]
 
   const { tabs: TabBar, body: TabBody } = useTabs({
     tabs,
     elements,
-    isMobile: false
+    isMobile: false,
+    isMobileV2: true
   })
-
-  const goToUploadWithRemix = useRequiresAccountCallback(() => {
-    if (!trackId) return
-
-    const state = {
-      initialMetadata: {
-        is_remix: true,
-        remix_of: {
-          tracks: [{ parent_track_id: trackId }]
-        }
-      }
-    }
-    navigate(UPLOAD_PAGE, state)
-  }, [trackId, navigate])
 
   if (!trackId || !remixContest) return null
 
@@ -105,20 +81,8 @@ export const RemixContestSection = ({
         css={{ overflow: 'hidden' }}
       >
         <Flex column pv='m'>
-          <Flex justifyContent='space-between' borderBottom='default' ph='xl'>
-            <Flex alignItems='center'>{TabBar}</Flex>
-            {!isOwner ? (
-              <Flex mb='m'>
-                <Button
-                  variant='secondary'
-                  size='small'
-                  onClick={goToUploadWithRemix}
-                  iconLeft={IconCloudUpload}
-                >
-                  {messages.uploadRemixButtonText}
-                </Button>
-              </Flex>
-            ) : null}
+          <Flex w='100%' alignItems='center' borderBottom='default' ph='xl'>
+            {TabBar}
           </Flex>
           {TabBody}
         </Flex>
