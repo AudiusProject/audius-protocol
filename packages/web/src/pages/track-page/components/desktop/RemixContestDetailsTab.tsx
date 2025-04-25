@@ -42,7 +42,7 @@ export const RemixContestDetailsTab = ({
       gap='l'
       p='xl'
       css={{
-        transition: 'height var(--harmony-quick)'
+        transition: 'height var(--harmony-expressive)'
       }}
     >
       <Flex row gap='s'>
