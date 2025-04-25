@@ -120,7 +120,7 @@ const RemixContestSubmissions = ({
   const remixesRoute = trackRemixesPage(permalink ?? '')
 
   return (
-    <Flex p='xl'>
+    <Flex column p='xl'>
       <Flex gap='2xl' wrap='wrap'>
         {submissions.map((submission) => (
           <SubmissionCard key={submission.id} submission={submission} />
