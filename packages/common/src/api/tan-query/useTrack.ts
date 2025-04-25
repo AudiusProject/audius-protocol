@@ -39,8 +39,6 @@ export const useTrack = <TResult = TQTrack>(
         queryClient,
         dispatch
       })
-
-      console.log('queryFn called on ', trackId)
       return await batchGetTracks.fetch(trackId!)
     },
     ...options,
