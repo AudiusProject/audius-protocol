@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import type { ReactNode } from 'react'
 
 import {
   PlainButton,
@@ -23,9 +24,9 @@ type CollapsibleContentProps = {
   toggleButtonClassName?: string
   showByDefault?: boolean
   collapsedHeight?: number
-  showText: string
-  hideText: string
-  children: React.ReactNode
+  showText?: string
+  hideText?: string
+  children: ReactNode
 }
 
 export const CollapsibleContent = ({
