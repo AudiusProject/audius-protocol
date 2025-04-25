@@ -3,6 +3,7 @@ import { useMemo, type ReactNode } from 'react'
 import {
   useAccountHasClaimableRewards,
   useChallengeCooldownSchedule,
+  useFeatureFlag,
   useSelectTierInfo,
   useTotalBalanceWithFallback,
   useUSDCBalance
@@ -31,12 +32,13 @@ import {
   IconCloudUpload,
   IconUser,
   IconGift,
+  IconWallet,
   useTheme,
   NotificationCount
 } from '@audius/harmony-native'
 import LogoUSDC from 'app/assets/images/logoUSDC.svg'
 import { IconAudioBadge } from 'app/components/audio-rewards'
-import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
 import { make } from 'app/services/analytics'
 import { env } from 'app/services/env'
@@ -52,6 +54,7 @@ const messages = {
   upload: 'Upload',
   settings: 'Settings',
   featureFlags: 'Feature Flags',
+  wallet: 'Wallet',
   usdcDollarSign: (balance: string) => `$${balance}`
 }
 
@@ -69,6 +72,9 @@ export const useNavConfig = () => {
   const { spacing } = useTheme()
   const { isEnabled: isFeatureFlagAccessEnabled } = useFeatureFlag(
     FeatureFlags.FEATURE_FLAG_ACCESS
+  )
+  const { isEnabled: isWalletUIUpdateEnabled } = useFeatureFlag(
+    FeatureFlags.WALLET_UI_UPDATE
   )
   const challengeRewardIds = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)
   const hasClaimableRewards = useAccountHasClaimableRewards(challengeRewardIds)
@@ -111,31 +117,45 @@ export const useNavConfig = () => {
           unreadMessagesCount > 0 ? (
             <NotificationCount count={unreadMessagesCount} />
           ) : undefined
-      },
-      {
-        icon: IconCrown,
-        label: messages.audio,
-        to: 'AudioScreen',
-        rightIcon: (
-          <BalancePill
-            balance={audioBalanceFormatted}
-            icon={<IconAudioBadge tier={tier} showNoTier size='m' />}
-            isLoading={isAudioBalanceLoading}
-          />
-        )
-      },
-      {
-        icon: IconDonate,
-        label: messages.usdc,
-        to: 'PayAndEarnScreen',
-        rightIcon: (
-          <BalancePill
-            balance={messages.usdcDollarSign(usdcBalanceFormatted)}
-            icon={<LogoUSDC height={spacing.unit5} width={spacing.unit5} />}
-            isLoading={isUSDCBalanceLoading}
-          />
-        )
-      },
+      }
+    ]
+
+    if (isWalletUIUpdateEnabled) {
+      items.push({
+        icon: IconWallet,
+        label: messages.wallet,
+        to: 'wallet'
+      })
+    } else {
+      items.push(
+        {
+          icon: IconCrown,
+          label: messages.audio,
+          to: 'AudioScreen',
+          rightIcon: (
+            <BalancePill
+              balance={audioBalanceFormatted}
+              icon={<IconAudioBadge tier={tier} showNoTier size='m' />}
+              isLoading={isAudioBalanceLoading}
+            />
+          )
+        },
+        {
+          icon: IconDonate,
+          label: messages.usdc,
+          to: 'PayAndEarnScreen',
+          rightIcon: (
+            <BalancePill
+              balance={messages.usdcDollarSign(usdcBalanceFormatted)}
+              icon={<LogoUSDC height={spacing.unit5} width={spacing.unit5} />}
+              isLoading={isUSDCBalanceLoading}
+            />
+          )
+        }
+      )
+    }
+
+    items.push(
       {
         icon: IconGift,
         label: messages.rewards,
@@ -155,7 +175,7 @@ export const useNavConfig = () => {
         label: messages.settings,
         to: 'SettingsScreen'
       }
-    ]
+    )
 
     if (env.ENVIRONMENT === 'staging' || isFeatureFlagAccessEnabled) {
       items.push({
@@ -177,7 +197,8 @@ export const useNavConfig = () => {
     usdcBalanceFormatted,
     isUSDCBalanceLoading,
     hasClaimableRewards,
-    isFeatureFlagAccessEnabled
+    isFeatureFlagAccessEnabled,
+    isWalletUIUpdateEnabled
   ])
 
   return {

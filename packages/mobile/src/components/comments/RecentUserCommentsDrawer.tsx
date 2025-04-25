@@ -67,7 +67,7 @@ const CommentItem = ({ comment }: { comment: CommentOrReply }) => {
     if (track?.track_id) {
       trackUserCommentClick()
       // @ts-ignore (bad types on useNavigation)
-      navigation.push('Track', { id: track.track_id })
+      navigation.push('Track', { trackId: track.track_id })
     }
     onClose()
   }, [navigation, track?.track_id, onClose, trackUserCommentClick])

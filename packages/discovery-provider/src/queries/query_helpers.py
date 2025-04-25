@@ -2,6 +2,7 @@
 import enum
 import json
 import logging
+import random
 import re
 from collections import defaultdict
 from typing import List, Optional, Tuple, TypedDict
@@ -177,6 +178,12 @@ class LibraryFilterType(str, enum.Enum):
     repost = "repost"
     favorite = "favorite"
     purchase = "purchase"
+
+
+class RemixesSortMethod(str, enum.Enum):
+    likes = "likes"
+    plays = "plays"
+    recent = "recent"
 
 
 # given list of user ids and corresponding users, populates each user object with:
@@ -732,6 +739,8 @@ def get_content_url_with_mirrors(
             f"helpers.py | get_content_url_with_mirrors | No Content Nodes found for CID {cid}"
         )
         return {"url": None, "mirrors": []}
+
+    random.shuffle(content_nodes)
 
     # Add additional query parameters
     joined_url = urljoin(content_nodes[0], path)

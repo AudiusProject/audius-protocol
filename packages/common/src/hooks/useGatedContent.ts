@@ -15,6 +15,7 @@ import {
   isContentTipGated,
   isContentUSDCPurchaseGated
 } from '~/models/Track'
+import { FeatureFlags } from '~/services/remote-config'
 import { getHasAccount } from '~/store/account/selectors'
 import {
   cacheCollectionsSelectors,
@@ -25,6 +26,8 @@ import { gatedContentSelectors } from '~/store/gated-content'
 import { CommonState } from '~/store/reducers'
 import { isContentCollection, isContentTrack } from '~/utils/contentTypeUtils'
 import { Nullable, removeNullable } from '~/utils/typeUtils'
+
+import { useFeatureFlag } from './useFeatureFlag'
 
 const { getTrack } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
@@ -211,6 +214,9 @@ export const useLockedContent = () => {
 }
 
 export const useDownloadableContentAccess = ({ trackId }: { trackId: ID }) => {
+  const { isEnabled: isUsdcPurchasesEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES
+  )
   const track = useSelector((state: CommonState) =>
     getTrack(state, { id: trackId })
   )
@@ -250,15 +256,18 @@ export const useDownloadableContentAccess = ({ trackId }: { trackId: ID }) => {
     shouldDisplayPremiumDownloadLocked:
       isOnlyDownloadableContentPurchaseGated &&
       track?.access?.download === false &&
-      !isOwner,
+      !isOwner &&
+      isUsdcPurchasesEnabled,
     shouldDisplayPremiumDownloadUnlocked:
       isOnlyDownloadableContentPurchaseGated &&
       track?.access?.download === true &&
-      !isOwner,
+      !isOwner &&
+      isUsdcPurchasesEnabled,
     shouldDisplayOwnerPremiumDownloads:
       isOnlyDownloadableContentPurchaseGated &&
       track?.access?.download === true &&
-      isOwner,
+      isOwner &&
+      isUsdcPurchasesEnabled,
     shouldDisplayDownloadFollowGated
   }
 }

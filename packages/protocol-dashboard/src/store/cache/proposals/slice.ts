@@ -7,6 +7,8 @@ export type State = {
   activeProposals: Proposal[] | null
   // Mapping of all proposals, keyed by proposal id
   allProposals: { [key: number]: Proposal }
+  // Recent proposals
+  recentProposals: Proposal[] | null
   // Ordered array recent proposals
   resolvedProposals: number[] | null
   // Voting period to determine when votes are due
@@ -18,6 +20,7 @@ export type State = {
 export const initialState: State = {
   activeProposals: null,
   allProposals: {},
+  recentProposals: null,
   resolvedProposals: null,
   votingPeriod: null,
   executionDelay: null
@@ -43,12 +46,19 @@ type SetExecutionDelay = {
   executionDelay: number
 }
 
+type SetRecentProposals = {
+  proposals: Proposal[]
+}
+
 const slice = createSlice({
   name: 'proposals',
   initialState,
   reducers: {
     setActiveProposals: (state, action: PayloadAction<SetActiveProposals>) => {
       state.activeProposals = action.payload.proposals
+    },
+    setRecentProposals: (state, action: PayloadAction<SetRecentProposals>) => {
+      state.recentProposals = action.payload.proposals
     },
     setAllProposals: (state, action: PayloadAction<SetAllProposals>) => {
       const { proposals } = action.payload
@@ -85,6 +95,7 @@ const slice = createSlice({
 export const {
   setActiveProposals,
   setAllProposals,
+  setRecentProposals,
   setProposal,
   setVotingPeriod,
   setExecutionDelay

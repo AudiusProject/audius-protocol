@@ -101,13 +101,13 @@ export const LineupTile = ({
           isCollection={isCollection}
         />
         <LineupTileMetadata
-          coSign={coSign}
           renderImage={renderImage}
           onPressTitle={onPressTitle}
           title={title}
           user={user}
           isPlayingUid={isPlayingUid}
           type={contentType}
+          trackId={id}
         />
         {/* We weren't passing coSign in and the ui is broken so I'm disabling for now */}
         {/* {coSign ? <LineupTileCoSign coSign={coSign} /> : null} */}

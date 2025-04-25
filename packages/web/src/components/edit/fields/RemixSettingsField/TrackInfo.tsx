@@ -1,13 +1,11 @@
-import { useGetTrackById } from '@audius/common/api'
+import { useTrack } from '@audius/common/api'
 import { SquareSizes, ID } from '@audius/common/models'
 import { Text } from '@audius/harmony'
+import { pick } from 'lodash'
 
 import { SelectedValue } from 'components/data-entry/ContextualMenu'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
-import UserBadges from 'components/user-badges/UserBadges'
-import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
-
-import styles from './RemixSettingsField.module.css'
+import { UserLink } from 'components/link'
+import { TrackArtwork } from 'components/track/TrackArtwork'
 
 const messages = {
   by: 'By'
@@ -19,28 +17,25 @@ type TrackInfoProps = {
 
 export const TrackInfo = (props: TrackInfoProps) => {
   const { trackId } = props
-  const image = useTrackCoverArt({
-    trackId,
-    size: SquareSizes.SIZE_150_BY_150
-  })
 
-  const { data: track } = useGetTrackById({ id: trackId })
+  const { data: track } = useTrack(trackId, {
+    select: (track) => pick(track, ['title', 'owner_id'])
+  })
 
   if (!track) return null
 
-  const { user } = track
-
   return (
     <SelectedValue>
-      <DynamicImage wrapperClassName={styles.artwork} image={image} />
+      <TrackArtwork
+        trackId={trackId}
+        size={SquareSizes.SIZE_150_BY_150}
+        mr='xs'
+        css={{ minHeight: 24, minWidth: 24 }}
+      />
       <Text variant='body' strength='strong'>
-        <Text tag='span'>{track.title}</Text>{' '}
-        <Text tag='span' color='subdued'>
-          {messages.by}
-        </Text>{' '}
-        <Text tag='span'>{user.name}</Text>
+        {track.title} <Text color='subdued'>{messages.by}</Text>{' '}
+        <UserLink userId={track.owner_id} />
       </Text>
-      <UserBadges className={styles.iconVerified} userId={user.user_id} />
     </SelectedValue>
   )
 }

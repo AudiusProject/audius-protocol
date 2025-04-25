@@ -1,6 +1,7 @@
-import { Suspense, useCallback } from 'react'
+import { Suspense, useCallback, useState } from 'react'
 
-import { useTrack } from '@audius/common/api'
+import { useRemixContest, useTrack, useTrackRank } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
   SquareSizes,
   isContentCollectibleGated,
@@ -10,8 +11,9 @@ import {
   Remix,
   AccessConditions
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { OverflowAction, PurchaseableContentType } from '@audius/common/store'
-import { Nullable, formatReleaseDate } from '@audius/common/utils'
+import { Nullable, formatReleaseDate, dayjs } from '@audius/common/utils'
 import {
   Flex,
   IconCollectible,
@@ -22,33 +24,35 @@ import {
   Box,
   Button,
   MusicBadge,
-  Text
+  Text,
+  IconCloudUpload
 } from '@audius/harmony'
 import IconCalendarMonth from '@audius/harmony/src/assets/icons/CalendarMonth.svg'
 import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
+import IconTrending from '@audius/harmony/src/assets/icons/Trending.svg'
 import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
 import cn from 'classnames'
-import dayjs from 'dayjs'
 import { useDispatch } from 'react-redux'
 
-import CoSign from 'components/co-sign/CoSign'
-import HoverInfo from 'components/co-sign/HoverInfo'
-import { Size } from 'components/co-sign/types'
+import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
 import { SearchTag } from 'components/search-bar/SearchTag'
 import { AiTrackSection } from 'components/track/AiTrackSection'
-import { DownloadSection } from 'components/track/DownloadSection'
 import { GatedContentSection } from 'components/track/GatedContentSection'
 import { TrackDogEar } from 'components/track/TrackDogEar'
 import { TrackMetadataList } from 'components/track/TrackMetadataList'
-import { UserGeneratedText } from 'components/user-generated-text'
+import HoverInfo from 'components/track-flair/HoverInfo'
+import TrackFlair from 'components/track-flair/TrackFlair'
+import { Size } from 'components/track-flair/types'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { push as pushRoute } from 'utils/navigation'
 import { isDarkMode } from 'utils/theme/theme'
 
 import ActionButtonRow from './ActionButtonRow'
+import { DownloadSection } from './DownloadSection'
 import StatsButtonRow from './StatsButtonRow'
+import { TrackDescription } from './TrackDescription'
 import styles from './TrackHeader.module.css'
 
 const messages = {
@@ -64,7 +68,16 @@ const messages = {
   artworkAltText: 'Track Artwork',
   hidden: 'Hidden',
   releases: (releaseDate: string) =>
-    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
+    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`,
+  remixContest: 'Remix Contest',
+  contestEnded: 'Contest Ended',
+  contestDeadline: 'Contest Deadline',
+  uploadRemixButtonText: 'Upload Remix',
+  deadline: (deadline?: string) => {
+    return deadline
+      ? `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`
+      : ''
+  }
 }
 
 type PlayButtonProps = {
@@ -216,6 +229,11 @@ const TrackHeader = ({
   const albumInfo = album_backlink
   const shouldShowScheduledRelease =
     release_date && dayjs(release_date).isAfter(dayjs())
+  const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
+    FeatureFlags.REMIX_CONTEST
+  )
+  const { data: remixContest } = useRemixContest(trackId)
+  const isRemixContest = isRemixContestEnabled && !!remixContest
 
   const image = useTrackCoverArt({
     trackId,
@@ -279,30 +297,27 @@ const TrackHeader = ({
     dispatch(pushRoute(`${permalink}/comments`))
   }, [dispatch, permalink])
 
-  const imageElement = coSign ? (
-    <CoSign
-      size={Size.LARGE}
-      hasFavorited={coSign.has_remix_author_saved}
-      hasReposted={coSign.has_remix_author_reposted}
-      coSignName={coSign.user.name}
-      className={styles.coverArt}
-      userId={coSign.user.user_id}
-    >
+  const imageElement = (
+    <TrackFlair size={Size.LARGE} id={trackId} className={styles.coverArt}>
       <DynamicImage
         image={image ?? undefined}
         alt={messages.artworkAltText}
         wrapperClassName={cn(styles.imageWrapper, styles.cosignImageWrapper)}
       />
-    </CoSign>
-  ) : (
-    <DynamicImage
-      image={image ?? undefined}
-      alt='Track Artwork'
-      wrapperClassName={cn(styles.coverArt, styles.imageWrapper)}
-    />
+    </TrackFlair>
   )
 
   const renderHeaderText = () => {
+    if (isRemixContest) {
+      return (
+        <Flex justifyContent='center' alignItems='center'>
+          <Text variant='label' color='subdued'>
+            {messages.remixContest}
+          </Text>
+        </Flex>
+      )
+    }
+
     if (isStreamGated) {
       let IconComponent = IconSparkles
       let titleMessage = messages.specialAccess
@@ -332,123 +347,179 @@ const TrackHeader = ({
     )
   }
 
-  return (
-    <div className={styles.trackHeader}>
-      <TrackDogEar trackId={trackId} />
-      <Flex gap='s' direction='column'>
-        {renderHeaderText()}
-        {aiAttributedUserId ? (
-          <MusicBadge icon={IconRobot} color='lightGreen' size='s'>
-            {messages.generatedWithAi}
-          </MusicBadge>
-        ) : null}
-        {shouldShowScheduledRelease ? (
-          <MusicBadge variant='accent' icon={IconCalendarMonth} size='s'>
-            {messages.releases(releaseDate)}
-          </MusicBadge>
-        ) : isUnlisted ? (
-          <MusicBadge icon={IconVisibilityHidden} size='s'>
-            {messages.hidden}
-          </MusicBadge>
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const handleDrawerClose = useCallback(() => {
+    setIsDrawerOpen(false)
+  }, [setIsDrawerOpen])
+
+  const handleClick = useCallback(() => {
+    setIsDrawerOpen(true)
+  }, [setIsDrawerOpen])
+
+  const renderSubmitRemixContestSection = useCallback(() => {
+    if (!isRemixContest) return null
+    const isContestOver = dayjs(remixContest.endDate).isBefore(dayjs())
+    return (
+      <Flex column gap='m' w='100%'>
+        <Flex gap='xs' alignItems='center'>
+          <Text variant='label' color='accent'>
+            {isContestOver ? messages.contestEnded : messages.contestDeadline}
+          </Text>
+          <Text>{messages.deadline(remixContest.endDate)}</Text>
+        </Flex>
+        {!isOwner ? (
+          <Button
+            variant='secondary'
+            size='small'
+            onClick={handleClick}
+            iconLeft={IconCloudUpload}
+          >
+            {messages.uploadRemixButtonText}
+          </Button>
         ) : null}
       </Flex>
-      {imageElement}
-      <div className={styles.titleArtistSection}>
-        <h1 className={styles.title}>{title}</h1>
-        <UserLink userId={userId} variant='visible' size='l' />
-      </div>
-      {showPlay ? (
-        <PlayButton
-          disabled={!hasStreamAccess}
-          playing={isPlaying && !isPreviewing}
-          onPlay={onPlay}
-        />
-      ) : null}
-      {showPreview ? (
-        <PreviewButton playing={isPlaying && isPreviewing} onPlay={onPreview} />
-      ) : null}
-      {streamConditions && trackId ? (
-        <Box w='100%'>
-          <GatedContentSection
-            isLoading={isLoading}
-            contentId={trackId}
-            contentType={PurchaseableContentType.TRACK}
-            streamConditions={streamConditions}
-            hasStreamAccess={hasStreamAccess}
-            isOwner={isOwner}
-            wrapperClassName={styles.gatedContentSectionWrapper}
-            className={styles.gatedContentSection}
-            buttonClassName={styles.gatedContentSectionButton}
-            ownerId={userId}
-          />
-        </Box>
-      ) : null}
+    )
+  }, [isRemixContest, remixContest?.endDate, isOwner, handleClick])
 
-      <ActionButtonRow
-        showRepost={showSocials}
-        showFavorite={showSocials}
-        showShare={!isUnlisted || isOwner}
-        showOverflow={!isUnlisted || isOwner}
-        shareToastDisabled
-        isOwner={isOwner}
-        isReposted={isReposted}
-        isSaved={isSaved}
-        onClickOverflow={onClickOverflow}
-        onRepost={onRepost}
-        onFavorite={onSaveHeroTrack}
-        onShare={onShare}
-        darkMode={isDarkMode()}
-      />
-      {coSign ? (
-        <div className={cn(styles.coSignInfo, styles.withSectionDivider)}>
-          <HoverInfo
-            coSignName={coSign.user.name}
-            hasFavorited={coSign.has_remix_author_saved}
-            hasReposted={coSign.has_remix_author_reposted}
-            userId={coSign.user.user_id}
-          />
+  const trendingRank = useTrackRank(trackId)
+
+  return (
+    <Box w='100%' borderRadius='m' backgroundColor='white' p='l'>
+      <Flex column gap='l' alignItems='center'>
+        <TrackDogEar trackId={trackId} />
+        <Flex gap='s' column>
+          {renderHeaderText()}
+          {aiAttributedUserId ? (
+            <MusicBadge icon={IconRobot} color='lightGreen' size='s'>
+              {messages.generatedWithAi}
+            </MusicBadge>
+          ) : null}
+          {trendingRank ? (
+            <MusicBadge color='blue' icon={IconTrending} size='s'>
+              {trendingRank}
+            </MusicBadge>
+          ) : null}
+          {shouldShowScheduledRelease ? (
+            <MusicBadge variant='accent' icon={IconCalendarMonth} size='s'>
+              {messages.releases(releaseDate)}
+            </MusicBadge>
+          ) : isUnlisted ? (
+            <MusicBadge icon={IconVisibilityHidden} size='s'>
+              {messages.hidden}
+            </MusicBadge>
+          ) : null}
+        </Flex>
+        {imageElement}
+        <div className={styles.titleArtistSection}>
+          <h1 className={styles.title}>{title}</h1>
+          <UserLink userId={userId} variant='visible' size='l' />
         </div>
-      ) : null}
-      <StatsButtonRow
-        className={styles.withSectionDivider}
-        showListenCount={showListenCount}
-        showFavoriteCount={!isUnlisted}
-        showRepostCount={!isUnlisted}
-        showCommentCount={!isUnlisted && !commentsDisabled}
-        listenCount={listenCount}
-        favoriteCount={saveCount}
-        repostCount={repostCount}
-        commentCount={commentCount}
-        onClickFavorites={onClickFavorites}
-        onClickReposts={onClickReposts}
-        onClickComments={onClickComments}
-      />
-      {aiAttributedUserId ? (
-        <AiTrackSection
-          attributedUserId={aiAttributedUserId}
-          className={cn(styles.aiSection, styles.withSectionDivider)}
-          descriptionClassName={styles.aiSectionDescription}
-        />
-      ) : null}
+        {showPlay ? (
+          <PlayButton
+            disabled={!hasStreamAccess}
+            playing={isPlaying && !isPreviewing}
+            onPlay={onPlay}
+          />
+        ) : null}
+        {showPreview ? (
+          <PreviewButton
+            playing={isPlaying && isPreviewing}
+            onPlay={onPreview}
+          />
+        ) : null}
+        {streamConditions && trackId ? (
+          <Box w='100%'>
+            <GatedContentSection
+              isLoading={isLoading}
+              contentId={trackId}
+              contentType={PurchaseableContentType.TRACK}
+              streamConditions={streamConditions}
+              hasStreamAccess={hasStreamAccess}
+              isOwner={isOwner}
+              wrapperClassName={styles.gatedContentSectionWrapper}
+              className={styles.gatedContentSection}
+              buttonClassName={styles.gatedContentSectionButton}
+              ownerId={userId}
+            />
+          </Box>
+        ) : null}
 
-      {description ? (
-        <UserGeneratedText
-          className={styles.description}
-          linkSource='track page'
-        >
-          {description}
-        </UserGeneratedText>
-      ) : null}
-      <TrackMetadataList trackId={trackId} />
-      {renderTags()}
-      {hasDownloadableAssets ? (
-        <Box pt='l' w='100%'>
-          <Suspense>
-            <DownloadSection trackId={trackId} />
-          </Suspense>
-        </Box>
-      ) : null}
-    </div>
+        <ActionButtonRow
+          showRepost={showSocials}
+          showFavorite={showSocials}
+          showShare={!isUnlisted || isOwner}
+          showOverflow={!isUnlisted || isOwner}
+          shareToastDisabled
+          isOwner={isOwner}
+          isReposted={isReposted}
+          isSaved={isSaved}
+          onClickOverflow={onClickOverflow}
+          onRepost={onRepost}
+          onFavorite={onSaveHeroTrack}
+          onShare={onShare}
+          darkMode={isDarkMode()}
+        />
+        {coSign ? (
+          <div className={cn(styles.coSignInfo, styles.withSectionDivider)}>
+            <HoverInfo
+              coSignName={coSign.user.name}
+              hasFavorited={coSign.has_remix_author_saved}
+              hasReposted={coSign.has_remix_author_reposted}
+              userId={coSign.user.user_id}
+            />
+          </div>
+        ) : null}
+        <StatsButtonRow
+          className={styles.withSectionDivider}
+          showListenCount={showListenCount}
+          showFavoriteCount={!isUnlisted}
+          showRepostCount={!isUnlisted}
+          showCommentCount={!isUnlisted && !commentsDisabled}
+          listenCount={listenCount}
+          favoriteCount={saveCount}
+          repostCount={repostCount}
+          commentCount={commentCount}
+          onClickFavorites={onClickFavorites}
+          onClickReposts={onClickReposts}
+          onClickComments={onClickComments}
+        />
+        {aiAttributedUserId ? (
+          <AiTrackSection
+            attributedUserId={aiAttributedUserId}
+            className={cn(styles.aiSection, styles.withSectionDivider)}
+            descriptionClassName={styles.aiSectionDescription}
+          />
+        ) : null}
+
+        {description ? (
+          <TrackDescription
+            description={description}
+            className={styles.description}
+          />
+        ) : null}
+        <TrackMetadataList trackId={trackId} />
+        {renderTags()}
+        {isRemix ? (
+          <Flex>
+            <Text variant='label' color='subdued'>
+              {messages.remixContest}
+            </Text>
+          </Flex>
+        ) : null}
+        {renderSubmitRemixContestSection()}
+        {hasDownloadableAssets ? (
+          <Box pt='l' w='100%'>
+            <Suspense>
+              <DownloadSection trackId={trackId} />
+            </Suspense>
+          </Box>
+        ) : null}
+        <DownloadMobileAppDrawer
+          isOpen={isDrawerOpen}
+          onClose={handleDrawerClose}
+        />
+      </Flex>
+    </Box>
   )
 }
 

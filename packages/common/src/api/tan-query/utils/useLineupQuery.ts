@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useCallback } from 'react'
 
 import { EntityType } from '@audius/sdk'
 import {
@@ -33,19 +33,35 @@ import { LineupData } from '../types'
 
 import { loadNextPage } from './infiniteQueryLoadNextPage'
 
+type PartialQueryData<T> = Pick<
+  UseInfiniteQueryResult<T>,
+  | 'isInitialLoading'
+  | 'hasNextPage'
+  | 'isLoading'
+  | 'isPending'
+  | 'isError'
+  | 'isFetching'
+  | 'isSuccess'
+  | 'fetchNextPage'
+>
+
 /**
  * Helper to provide stitch together tan-query data and easily provide lineup methods as part of our query hooks
  */
-export const useLineupQuery = ({
+export const useLineupQuery = <T>({
+  lineupData,
   queryData,
   queryKey,
   lineupActions,
   lineupSelector,
   playbackSource,
-  pageSize
+  pageSize,
+  initialPageSize,
+  disableAutomaticCacheHandling = false
 }: {
   // Lineup related props
-  queryData: UseInfiniteQueryResult<LineupData[]>
+  lineupData: LineupData[]
+  queryData: PartialQueryData<T>
   queryKey: QueryKey
   lineupActions: LineupActions
   lineupSelector: Selector<
@@ -53,7 +69,9 @@ export const useLineupQuery = ({
     LineupState<LineupTrack | Track | Collection>
   >
   pageSize: number
+  initialPageSize?: number
   playbackSource: PlaybackSource
+  disableAutomaticCacheHandling?: boolean
 }) => {
   const { reportToSentry } = useAudiusQueryContext()
   const queryClient = useQueryClient()
@@ -78,78 +96,90 @@ export const useLineupQuery = ({
     dispatch(lineupActions.updateLineupOrder(orderedIds))
   }
 
-  const { data: lineupData } = queryData
   const prevQueryKey = usePrevious(queryKey)
   const hasQueryKeyChanged = !isEqual(prevQueryKey, queryKey)
 
-  // On a cache hit, we need to manually load the cached data into the lineup since the queryFn won't run.
-  useEffect(() => {
-    if (hasQueryKeyChanged) {
-      dispatch(lineupActions.reset())
-      // NOTE: This squashes all previously cached pages into the first page of the lineup.
-      // This means the first page may have more entries than the pageSize.
-      // If this causes issues we can slice the data back into pages, but this seems more inefficient.
-      if (lineupData?.length) {
-        // The TQ cache for lineups only stores data in ID form, but our legacy lineup logic requires full entries.
-        // Here we take the ids and retrieve full entities from the tq cache
-        // There should never be a cache miss here because if the lineup believes entity is cached, it was primed at some point.
-        const fullLineupItems = lineupData
-          ?.map((item) => {
-            if (item.type === EntityType.TRACK) {
-              const track = queryClient.getQueryData<TQTrack>(
-                getTrackQueryKey(item.id)
-              )
-              if (!track) {
-                reportToSentry({
-                  feature: Feature.TanQuery,
-                  error: new Error(
-                    `Missing cache entry for track from ${lineup.prefix} lineup. Missing id: ${item.id}`
-                  )
-                })
-                return undefined
-              } else {
-                return track
-              }
+  // Function to handle loading cached data into the lineup
+  const loadCachedDataIntoLineup = useCallback(() => {
+    dispatch(lineupActions.reset())
+    // NOTE: This squashes all previously cached pages into the first page of the lineup.
+    // This means the first page may have more entries than the pageSize.
+    // If this causes issues we can slice the data back into pages, but this seems more inefficient.
+    if (lineupData?.length) {
+      // The TQ cache for lineups only stores data in ID form, but our legacy lineup logic requires full entries.
+      // Here we take the ids and retrieve full entities from the tq cache
+      // There should never be a cache miss here because if the lineup believes entity is cached, it was primed at some point.
+      const fullLineupItems = lineupData
+        ?.map((item) => {
+          if (item.type === EntityType.TRACK) {
+            const track = queryClient.getQueryData<TQTrack>(
+              getTrackQueryKey(item.id)
+            )
+            if (!track) {
+              reportToSentry({
+                feature: Feature.TanQuery,
+                error: new Error(
+                  `Missing cache entry for track from ${lineup.prefix} lineup. Missing id: ${item.id}`
+                )
+              })
+              return undefined
             } else {
-              const collection = queryClient.getQueryData<TQCollection>(
-                getCollectionQueryKey(item.id)
-              )
-              if (!collection) {
-                reportToSentry({
-                  feature: Feature.TanQuery,
-                  error: new Error(
-                    `Missing cache entry for collection from ${lineup.prefix} lineup. Missing id: ${item.id}`
-                  )
-                })
-                return undefined
-              } else {
-                return collection
-              }
+              return track
             }
-          })
-          .filter(Boolean)
-        // Put the full entities in the lineup
-        dispatch(
-          lineupActions.fetchLineupMetadatas(0, lineupData.length, false, {
-            items: fullLineupItems
-          })
-        )
-      }
+          } else {
+            const collection = queryClient.getQueryData<TQCollection>(
+              getCollectionQueryKey(item.id)
+            )
+            if (!collection) {
+              reportToSentry({
+                feature: Feature.TanQuery,
+                error: new Error(
+                  `Missing cache entry for collection from ${lineup.prefix} lineup. Missing id: ${item.id}`
+                )
+              })
+              return undefined
+            } else {
+              return collection
+            }
+          }
+        })
+        .filter(Boolean)
+      // Put the full entities in the lineup
+      dispatch(
+        lineupActions.fetchLineupMetadatas(0, lineupData.length, false, {
+          items: fullLineupItems
+        })
+      )
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     dispatch,
     lineupActions,
-    lineupData,
-    hasQueryKeyChanged,
+    lineupData.length,
     queryClient,
     lineup.prefix,
     reportToSentry
+  ])
+
+  // On a cache hit, we need to manually load the cached data into the lineup since the queryFn won't run.
+  useEffect(() => {
+    if (!disableAutomaticCacheHandling && hasQueryKeyChanged) {
+      loadCachedDataIntoLineup()
+    }
+  }, [
+    disableAutomaticCacheHandling,
+    hasQueryKeyChanged,
+    loadCachedDataIntoLineup
   ])
 
   const status = combineStatuses([
     queryData.isFetching ? Status.LOADING : Status.SUCCESS,
     lineup.status
   ])
+  const refresh = useCallback(() => {
+    dispatch(lineupActions.reset())
+    queryClient.resetQueries({ queryKey })
+  }, [dispatch, lineupActions, queryClient, queryKey])
 
   return {
     status,
@@ -164,16 +194,19 @@ export const useLineupQuery = ({
           ? queryData.hasNextPage
           : false
     },
+    refresh,
     togglePlay,
     play,
     pause,
     updateLineupOrder,
     isPlaying,
+    initialPageSize,
     pageSize,
     // pass through specific queryData props
     //   this avoids spreading all queryData props which causes extra renders
     loadNextPage: loadNextPage(queryData),
-    data: queryData.data,
+    loadCachedDataIntoLineup,
+    data: lineupData,
     isInitialLoading: queryData.isInitialLoading,
     hasNextPage: queryData.hasNextPage,
     isLoading: queryData.isLoading,

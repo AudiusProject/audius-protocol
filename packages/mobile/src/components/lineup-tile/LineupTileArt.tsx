@@ -1,8 +1,7 @@
-import type { Remix } from '@audius/common/models'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
-import CoSign, { Size } from 'app/components/co-sign'
+import { TrackFlair, Size } from 'app/components/track-flair'
 import { makeStyles } from 'app/styles'
 
 import { FadeInView } from '../core'
@@ -24,30 +23,34 @@ const useStyles = makeStyles(({ palette }) => ({
 }))
 
 type LineupTileArtProps = {
-  coSign?: Remix | null
   renderImage: LineupTileProps['renderImage']
   style?: StyleProp<ViewStyle>
+  trackId: number
 }
 
 export const LineupTileArt = (props: LineupTileArtProps) => {
-  const { coSign, renderImage, style } = props
+  const { renderImage, style, trackId } = props
   const trackTileStyles = useTrackTileStyles()
   const styles = useStyles()
 
   const imageElement = (
-    <View style={styles.imageRoot}>
-      <View style={[trackTileStyles.image, styles.backdrop]} />
-      <FadeInView style={styles.image} startOpacity={0} duration={500}>
-        {renderImage({ style: trackTileStyles.image })}
-      </FadeInView>
+    <View style={[style, trackTileStyles.image]}>
+      <View style={styles.imageRoot}>
+        <View style={[trackTileStyles.image, styles.backdrop]} />
+        <FadeInView style={styles.image} startOpacity={0} duration={500}>
+          {renderImage({ style: trackTileStyles.image })}
+        </FadeInView>
+      </View>
     </View>
   )
 
-  return coSign ? (
-    <CoSign size={Size.SMALL} style={[style, trackTileStyles.image]}>
+  return (
+    <TrackFlair
+      trackId={trackId}
+      size={Size.SMALL}
+      style={[style, trackTileStyles.image]}
+    >
       {imageElement}
-    </CoSign>
-  ) : (
-    <View style={[style, trackTileStyles.image]}>{imageElement}</View>
+    </TrackFlair>
   )
 }

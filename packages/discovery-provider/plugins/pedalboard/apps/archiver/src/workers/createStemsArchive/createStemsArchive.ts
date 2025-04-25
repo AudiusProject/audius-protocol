@@ -19,6 +19,24 @@ type StemsArchiveWorkerListener = WorkerListener<
   StemsArchiveJobResult
 >
 
+const getRedirectUrl = async (url: string) => {
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      redirect: 'manual'
+    })
+
+    if (response.status >= 300 && response.status < 400) {
+      const redirectUrl = response.headers.get('Location')
+      return redirectUrl ?? url
+    } else {
+      return url
+    }
+  } catch (error) {
+    throw new Error(`Fetch failed: ${(error as Error).message}`)
+  }
+}
+
 export const createStemsArchiveWorker = (services: WorkerServices) => {
   const { config, spaceManager, fs, sdk } = services
   const workerLogger = services.logger.child({
@@ -148,6 +166,8 @@ export const createStemsArchiveWorker = (services: WorkerServices) => {
       // Download each stem
       const downloadedFiles = await Promise.all(
         filesToDownload.map(async (stem) => {
+          let url
+
           const downloadUrl = await sdk.tracks.getTrackDownloadUrl({
             trackId: stem.id,
             userId: hashedUserId,
@@ -157,9 +177,19 @@ export const createStemsArchiveWorker = (services: WorkerServices) => {
             original: true
           })
 
+          if (config.environment === 'prod') {
+            url = downloadUrl
+            const redirectUrl = await getRedirectUrl(downloadUrl)
+            const modifiedUrl = new URL(redirectUrl)
+            modifiedUrl.host = 'creatornode2.audius.co'
+            url = modifiedUrl.toString()
+          } else {
+            url = downloadUrl
+          }
+
           const filePath = path.join(jobTempDir, stem.origFilename)
           return downloadFile({
-            url: downloadUrl,
+            url,
             filePath,
             jobId,
             signal: abortController.signal

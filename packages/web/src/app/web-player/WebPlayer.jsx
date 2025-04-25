@@ -1,12 +1,13 @@
 import { Component, lazy, Suspense } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
   Client,
   Name,
   SmartCollectionVariant,
   Status
 } from '@audius/common/models'
-import { StringKeys } from '@audius/common/services'
+import { FeatureFlags, StringKeys } from '@audius/common/services'
 import { guestRoutes } from '@audius/common/src/utils/route'
 import {
   accountSelectors,
@@ -92,6 +93,7 @@ import TrendingPage from 'pages/trending-page/TrendingPage'
 import TrendingPlaylistsPage from 'pages/trending-playlists/TrendingPlaylistPage'
 import TrendingUndergroundPage from 'pages/trending-underground/TrendingUndergroundPage'
 import Visualizer from 'pages/visualizer/Visualizer'
+import { WalletPage } from 'pages/wallet-page'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { initializeSentry } from 'services/sentry'
 import { SsrContext } from 'ssr/SsrContext'
@@ -126,6 +128,7 @@ const {
   HISTORY_PAGE,
   DASHBOARD_PAGE,
   AUDIO_PAGE,
+  WALLET_AUDIO_PAGE,
   REWARDS_PAGE,
   UPLOAD_PAGE,
   UPLOAD_ALBUM_PAGE,
@@ -190,7 +193,8 @@ const {
   SEARCH_BASE_ROUTE,
   EDIT_PLAYLIST_PAGE,
   EDIT_ALBUM_PAGE,
-  AIRDROP_PAGE
+  AIRDROP_PAGE,
+  WALLET_PAGE
 } = route
 
 const {
@@ -430,7 +434,12 @@ class WebPlayer extends Component {
   }
 
   render() {
-    const { incrementScroll, decrementScroll, userHandle } = this.props
+    const {
+      incrementScroll,
+      decrementScroll,
+      userHandle,
+      isWalletUIUpdateEnabled
+    } = this.props
 
     const {
       showWebUpdateBanner,
@@ -779,13 +788,37 @@ class WebPlayer extends Component {
                   exact
                   path={PAYMENTS_PAGE}
                   isMobile={isMobile}
-                  component={PayAndEarnPage}
+                  render={(props) =>
+                    isWalletUIUpdateEnabled ? (
+                      <Redirect to={WALLET_PAGE} />
+                    ) : (
+                      <PayAndEarnPage {...props} />
+                    )
+                  }
                 />
                 <Route
                   exact
                   path={AUDIO_PAGE}
                   isMobile={isMobile}
+                  render={(props) =>
+                    isWalletUIUpdateEnabled ? (
+                      <Redirect to={WALLET_AUDIO_PAGE} />
+                    ) : (
+                      <AudioPage {...props} />
+                    )
+                  }
+                />
+                <Route
+                  exact
+                  path={WALLET_AUDIO_PAGE}
+                  isMobile={isMobile}
                   component={AudioPage}
+                />
+                <Route
+                  exact
+                  path={WALLET_PAGE}
+                  isMobile={isMobile}
+                  component={WalletPage}
                 />
                 <Route
                   exact
@@ -1084,12 +1117,29 @@ const RouterWebPlayer = withRouter(
   connect(mapStateToProps, mapDispatchToProps)(WebPlayer)
 )
 
+// Taking this approach because the class component cannot use hooks
+const FeatureFlaggedWebPlayer = (props) => {
+  const { isEnabled: isWalletUIUpdateEnabled } = useFeatureFlag(
+    FeatureFlags.WALLET_UI_UPDATE
+  )
+
+  return (
+    <RouterWebPlayer
+      {...props}
+      isWalletUIUpdateEnabled={isWalletUIUpdateEnabled}
+    />
+  )
+}
+
 const MainContentRouterWebPlayer = () => {
   return (
     <MainContentContext.Consumer>
       {({ ref, setRef }) => {
         return (
-          <RouterWebPlayer setMainContentRef={setRef} mainContentRef={ref} />
+          <FeatureFlaggedWebPlayer
+            setMainContentRef={setRef}
+            mainContentRef={ref}
+          />
         )
       }}
     </MainContentContext.Consumer>

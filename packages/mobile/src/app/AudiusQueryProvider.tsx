@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 
 import { AudiusQueryContext } from '@audius/common/audius-query'
+import { FetchNFTClient } from '@audius/fetch-nft'
 
 import * as analytics from 'app/services/analytics'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
@@ -33,6 +34,18 @@ export const audiusQueryContext = {
   remoteConfigInstance,
   getFeatureEnabled,
   analytics,
+  nftClient: new FetchNFTClient({
+    openSeaConfig: {
+      apiEndpoint: env.OPENSEA_API_URL
+    },
+    heliusConfig: {
+      apiEndpoint: env.HELIUS_DAS_API_URL
+    },
+    solanaConfig: {
+      rpcEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
+      metadataProgramId: env.METADATA_PROGRAM_ID
+    }
+  }),
   imageUtils: {
     generatePlaylistArtwork
   }

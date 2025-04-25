@@ -1,8 +1,9 @@
 import type { Ref } from 'react'
-import { forwardRef } from 'react'
+import { forwardRef, useState } from 'react'
 
 import type { TextInput as RNTextInput } from 'react-native'
 import { Dimensions } from 'react-native'
+import { useDebounce } from 'react-use'
 
 import {
   IconButton,
@@ -28,6 +29,8 @@ type SearchBarProps = {
 export const SearchBar = forwardRef(
   ({ autoFocus = false }: SearchBarProps, ref: Ref<RNTextInput>) => {
     const [query, setQuery] = useSearchQuery()
+    const [searchInput, setSearchInput] = useState(query)
+    useDebounce(() => setQuery(searchInput), 400, [searchInput])
 
     const clearQuery = () => {
       setQuery('')
@@ -54,8 +57,8 @@ export const SearchBar = forwardRef(
         placeholder={messages.label}
         style={{ width: searchBarWidth }}
         innerContainerStyle={query ? { paddingRight: spacing.s } : {}}
-        value={query}
-        onChangeText={setQuery}
+        value={searchInput}
+        onChangeText={setSearchInput}
       />
     )
   }

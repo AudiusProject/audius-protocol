@@ -50,7 +50,6 @@ import playlistLibrarySagas from 'common/store/playlist-library/sagas'
 import profileSagas from 'common/store/profile/sagas'
 import queueSagas from 'common/store/queue/sagas'
 import recoveryEmailSagas from 'common/store/recovery-email/sagas'
-import remixSettingsSagas from 'common/store/remix-settings/sagas'
 import savedCollectionsSagas from 'common/store/saved-collections/sagas'
 import smartCollectionPageSagas from 'common/store/smart-collection/sagas'
 import socialSagas from 'common/store/social/sagas'
@@ -162,7 +161,6 @@ export default function* rootSaga() {
     ...themeSagas(),
     ...tokenDashboardSagas(),
     ...uploadSagas(),
-    ...remixSettingsSagas(),
     ...offlineDownloadSagas(),
     ...reachabilitySagas(),
     ...toastSagas(),

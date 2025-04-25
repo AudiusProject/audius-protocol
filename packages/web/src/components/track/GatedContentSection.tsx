@@ -553,10 +553,10 @@ const UnlockedGatedContentSection = ({
   }
 
   return (
-    <Flex className={className} gap='s' alignItems='center'>
+    <Flex column className={className} gap='s'>
       <Flex gap='s'>
         {isOwner ? (
-          <IconComponent />
+          <IconComponent size='s' color='default' />
         ) : (
           <LockedStatusBadge
             locked={false}

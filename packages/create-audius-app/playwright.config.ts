@@ -21,7 +21,9 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry'
+    trace: 'on-first-retry',
+    /* Set custom user agent for tests to identify them */
+    userAgent: 'create-audius-app-e2e-tests'
   },
 
   /* Run your local dev server before starting the tests */

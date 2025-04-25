@@ -9,6 +9,7 @@ import {
   isBpmValid,
   parseMusicalKey
 } from '@audius/common/utils'
+import { MAX_DESCRIPTION_LENGTH } from '@audius/sdk'
 import { Formik } from 'formik'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -110,7 +111,10 @@ const useEditTrackSchema = () => {
         )
         .refine(
           (values) => {
-            return !values.description || values.description.length <= 1000
+            return (
+              !values.description ||
+              values.description.length <= MAX_DESCRIPTION_LENGTH
+            )
           },
           { message: errorMessages.description, path: ['description'] }
         )

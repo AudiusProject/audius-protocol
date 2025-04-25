@@ -4,7 +4,8 @@
   justify-content: flex-start;
   align-items: center;
   height: 38px;
-  width: 300px;
+  min-width: 300px;
+  width: 100%;
 }
 
 .datePicker {

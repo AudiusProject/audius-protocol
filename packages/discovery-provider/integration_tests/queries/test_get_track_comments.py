@@ -5,7 +5,7 @@ from integration_tests.utils import populate_mock_db
 from src.models.comments.comment_report import COMMENT_KARMA_THRESHOLD
 from src.queries.comments import (
     COMMENT_ROOT_DEFAULT_LIMIT,
-    get_paginated_replies,
+    get_replies,
     get_track_comments,
 )
 from src.utils.db_session import get_db
@@ -166,9 +166,7 @@ def test_get_comments_replies(app):
     with app.app_context():
         db = get_db()
         populate_mock_db(db, test_entities)
-        response = get_paginated_replies(
-            {"limit": 2, "offset": 2, "sort_method": "newest"}, 10
-        )
+        response = get_replies({"limit": 2, "offset": 2, "sort_method": "newest"}, 10)
         replies = response["data"]
         for reply in replies:
             assert 103 <= decode_string_id(reply["id"]) <= 105
@@ -324,7 +322,7 @@ def test_get_comment_replies_from_muted_user_by_track_owner(app):
         populate_mock_db(db, entities)
 
         # the person who muted the user should not see the comment
-        response = get_paginated_replies(
+        response = get_replies(
             {"limit": 10, "offset": 0, "sort_method": "newest"}, 1, current_user_id=10
         )
         replies = response["data"]
@@ -332,14 +330,14 @@ def test_get_comment_replies_from_muted_user_by_track_owner(app):
 
         # to a third party user, there should be no comment replies
         # because the track owner muted the user
-        response = get_paginated_replies(
+        response = get_replies(
             {"limit": 10, "offset": 0, "sort_method": "newest"}, 1, current_user_id=2
         )
         replies = response["data"]
         assert len(replies) == 0
 
         # the muted user should see their own comment
-        response = get_paginated_replies(
+        response = get_replies(
             {"limit": 10, "offset": 0, "sort_method": "newest"}, 1, current_user_id=1
         )
         replies = response["data"]
@@ -381,21 +379,21 @@ def test_get_comment_replies_from_muted_user_by_other_user(app):
         populate_mock_db(db, entities)
 
         # the person who muted the user should not see the comment
-        response = get_paginated_replies(
+        response = get_replies(
             {"limit": 10, "offset": 0, "sort_method": "newest"}, 1, current_user_id=9
         )
         replies = response["data"]
         assert len(replies) == 0
 
         # to a third party user, they should still see the comment replies
-        response = get_paginated_replies(
+        response = get_replies(
             {"limit": 10, "offset": 0, "sort_method": "newest"}, 1, current_user_id=2
         )
         replies = response["data"]
         assert len(replies) == 1
 
         # the muted user should see their own comment
-        response = get_paginated_replies(
+        response = get_replies(
             {"limit": 10, "offset": 0, "sort_method": "newest"}, 1, current_user_id=1
         )
         replies = response["data"]
@@ -717,7 +715,7 @@ def test_get_comment_replies_related_field(app):
         db = get_db()
         populate_mock_db(db, entities)
 
-        response = get_paginated_replies(
+        response = get_replies(
             {"limit": 10, "offset": 0, "sort_method": "newest"}, 1, None, True
         )
 
@@ -771,3 +769,98 @@ def test_get_comment_replies_related_field(app):
         # Check that replies don't have their own related field
         for reply in replies:
             assert "related" not in reply
+
+
+def test_get_comment_reactions(app):
+    """Test that comment reactions are correctly reflected for both users and artists"""
+    entities = {
+        "comments": [
+            {
+                "comment_id": 1,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "text": "Parent comment",
+            },
+            {
+                "comment_id": 2,
+                "user_id": 2,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "text": "Reply comment",
+            },
+        ],
+        "comment_threads": [{"parent_comment_id": 1, "comment_id": 2}],
+        "tracks": [{"track_id": 1, "owner_id": 10}],  # Artist is user_id 10
+        "comment_reactions": [
+            # Artist reacted to parent comment
+            {"comment_id": 1, "user_id": 10},
+            # User 3 reacted to parent comment
+            {"comment_id": 1, "user_id": 3},
+            # User 3 reacted to reply
+            {"comment_id": 2, "user_id": 3},
+            # Deleted reaction shouldn't count
+            {"comment_id": 1, "user_id": 4, "is_delete": True},
+        ],
+        "users": [
+            {"user_id": 1},
+            {"user_id": 2},
+            {"user_id": 3},
+            {"user_id": 10},
+            {"user_id": 4},
+        ],
+    }
+
+    with app.app_context():
+        db = get_db()
+        populate_mock_db(db, entities)
+
+        # Test reactions for track comments
+        response = get_track_comments({}, 1, current_user_id=3)
+        comments = response["data"]
+        assert len(comments) == 1
+
+        # Check parent comment reactions
+        parent_comment = comments[0]
+        assert parent_comment["react_count"] == 2  # Artist and user 3
+        assert parent_comment["is_current_user_reacted"] == True  # User 3 reacted
+        assert parent_comment["is_artist_reacted"] == True  # Artist reacted
+
+        # Check reply reactions
+        replies = parent_comment["replies"]
+        assert len(replies) == 1
+        reply = replies[0]
+        assert reply["react_count"] == 1  # Only user 3
+        assert reply["is_current_user_reacted"] == True  # User 3 reacted
+        assert reply["is_artist_reacted"] == False  # Artist didn't react
+
+        # Test reactions from artist's perspective
+        response = get_track_comments({}, 1, current_user_id=10)
+        comments = response["data"]
+        parent_comment = comments[0]
+        assert parent_comment["is_current_user_reacted"] == True  # Artist reacted
+        assert parent_comment["is_artist_reacted"] == True  # Artist reacted
+
+        reply = parent_comment["replies"][0]
+        assert reply["is_current_user_reacted"] == False  # Artist didn't react
+        assert reply["is_artist_reacted"] == False  # Artist didn't react
+
+        # Test reactions from non-reacted user's perspective
+        response = get_track_comments({}, 1, current_user_id=5)
+        comments = response["data"]
+        parent_comment = comments[0]
+        assert parent_comment["is_current_user_reacted"] == False  # User 5 didn't react
+        assert parent_comment["is_artist_reacted"] == True  # Artist reacted
+
+        reply = parent_comment["replies"][0]
+        assert reply["is_current_user_reacted"] == False  # User 5 didn't react
+        assert reply["is_artist_reacted"] == False  # Artist didn't react
+
+        # Test direct replies endpoint
+        response = get_replies({"limit": 10, "offset": 0}, 1, current_user_id=3)
+        replies = response["data"]
+        assert len(replies) == 1
+        reply = replies[0]
+        assert reply["react_count"] == 1
+        assert reply["is_current_user_reacted"] == True  # User 3 reacted
+        assert reply["is_artist_reacted"] == False  # Artist didn't react

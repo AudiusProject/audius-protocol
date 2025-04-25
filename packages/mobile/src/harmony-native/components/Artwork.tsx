@@ -55,6 +55,8 @@ export const Artwork = (props: ArtworkProps) => {
         ? { uri: source[0].uri, priority }
         : { uri: source.uri, priority }
 
+  const hasImageSource = typeof imageSource === 'number' || imageSource?.uri
+
   // Create shared value for opacity
   const opacity = useSharedValue(0)
 
@@ -80,7 +82,7 @@ export const Artwork = (props: ArtworkProps) => {
         shadow={shadow}
         style={{ borderWidth }}
       >
-        {isLoading ? (
+        {isLoading && hasImageSource ? (
           <Skeleton
             borderRadius={borderRadius}
             h='100%'
@@ -97,12 +99,12 @@ export const Artwork = (props: ArtworkProps) => {
           borderRadius={borderRadius}
           style={{
             backgroundColor:
-              !source && children
+              !hasImageSource && children
                 ? color.neutral.n400
                 : color.background.surface2
           }}
         />
-        {source ? (
+        {hasImageSource ? (
           <AnimatedFastImage
             testID={testId}
             style={[
@@ -133,8 +135,8 @@ export const Artwork = (props: ArtworkProps) => {
               position: 'absolute',
               top: 0,
               left: 0,
-              backgroundColor: source ? color.static.black : undefined,
-              opacity: source ? 0.4 : undefined,
+              backgroundColor: hasImageSource ? color.static.black : undefined,
+              opacity: hasImageSource ? 0.4 : undefined,
               zIndex: 1
             }}
           >

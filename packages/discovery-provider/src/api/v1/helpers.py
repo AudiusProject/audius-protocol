@@ -25,6 +25,7 @@ from src.queries.query_helpers import (
     CollectionLibrarySortMethod,
     CollectionSortMethod,
     LibraryFilterType,
+    RemixesSortMethod,
     SearchSortMethod,
     SortDirection,
     SortMethod,
@@ -801,6 +802,29 @@ pagination_with_current_user_parser.add_argument(
     "user_id", required=False, description="The user ID of the user making the request"
 )
 
+remixes_parser = pagination_with_current_user_parser.copy()
+remixes_parser.add_argument(
+    "sort_method",
+    required=False,
+    description="The sort method to use",
+    type=str,
+    default=RemixesSortMethod.recent,
+    choices=RemixesSortMethod._member_names_,
+)
+remixes_parser.add_argument(
+    "only_cosigns",
+    required=False,
+    description="Only remixes cosigned by the original artist",
+    type=inputs.boolean,
+)
+remixes_parser.add_argument(
+    "only_contest_entries",
+    required=False,
+    description="Only entries to a remix contest",
+    type=inputs.boolean,
+)
+
+
 search_parser = pagination_parser.copy()
 search_parser.add_argument("query", required=False, description="The search query")
 search_parser.add_argument(
@@ -1126,8 +1150,6 @@ trending_parser_paginated = full_trending_parser.copy()
 trending_parser_paginated.remove_argument("user_id")
 
 trending_parser = trending_parser_paginated.copy()
-trending_parser.remove_argument("limit")
-trending_parser.remove_argument("offset")
 
 
 notifications_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)

@@ -42,16 +42,12 @@ type InAppAudioPurchaseMetadata = {
 
 export type IdentityServiceConfig = {
   identityServiceEndpoint: string
-  getAudiusWalletClient: (opts?: {
-    ignoreCachedUserWallet?: boolean
-  }) => Promise<AudiusWalletClient>
+  getAudiusWalletClient: () => Promise<AudiusWalletClient>
 }
 
 export class IdentityService {
   identityServiceEndpoint: string
-  getAudiusWalletClient: (opts?: {
-    ignoreCachedUserWallet?: boolean
-  }) => Promise<AudiusWalletClient>
+  getAudiusWalletClient: () => Promise<AudiusWalletClient>
 
   constructor({
     identityServiceEndpoint,
@@ -63,9 +59,7 @@ export class IdentityService {
 
   // #region: Internal Functions
   private async _getSignatureHeaders() {
-    const audiusWalletClient = await this.getAudiusWalletClient({
-      ignoreCachedUserWallet: false
-    })
+    const audiusWalletClient = await this.getAudiusWalletClient()
     const [currentAddress] = await audiusWalletClient.getAddresses()
     if (!currentAddress) {
       throw new Error('User is not authenticated')

@@ -1,5 +1,6 @@
 import { ReactNode, useState } from 'react'
 
+import { MediaProvider } from '@audius/harmony/src/contexts'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Provider as ReduxProvider } from 'react-redux'
@@ -15,7 +16,6 @@ import { ScrollProvider } from 'components/scroll-provider/ScrollProvider'
 import { ToastContextProvider } from 'components/toast/ToastContext'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { MainContentContextProvider } from 'pages/MainContentContext'
-import { wagmiConfig } from 'services/audius-sdk/wagmi'
 import { queryClient } from 'services/query-client'
 import { configureStore } from 'store/configureStore'
 import { getSystemAppearance, getTheme } from 'utils/theme/theme'
@@ -23,6 +23,7 @@ import { getSystemAppearance, getTheme } from 'utils/theme/theme'
 import { AppContextProvider } from './AppContextProvider'
 import { AudiusQueryProvider } from './AudiusQueryProvider'
 import { useHistoryContext } from './HistoryProvider'
+import { wagmiAdapter } from './ReownAppKitModal'
 import { ThemeProvider } from './ThemeProvider'
 
 type AppProvidersProps = {
@@ -56,35 +57,37 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
   })
 
   return (
-    <WagmiProvider config={wagmiConfig}>
+    <WagmiProvider config={wagmiAdapter.wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <ReduxProvider store={store}>
-          <Router history={storeHistory}>
-            <CompatRouter>
-              <LastLocationProvider>
-                <RouterContextProvider>
-                  <HeaderContextProvider>
-                    <NavProvider>
-                      <ScrollProvider>
-                        <ThemeProvider>
-                          <ToastContextProvider>
-                            <AppContextProvider>
-                              <AudiusQueryProvider>
-                                <MainContentContextProvider>
-                                  {children}
-                                </MainContentContextProvider>
-                              </AudiusQueryProvider>
-                            </AppContextProvider>
-                          </ToastContextProvider>
-                        </ThemeProvider>
-                      </ScrollProvider>
-                    </NavProvider>
-                  </HeaderContextProvider>
-                </RouterContextProvider>
-              </LastLocationProvider>
-            </CompatRouter>
-          </Router>
-        </ReduxProvider>
+        <MediaProvider>
+          <ReduxProvider store={store}>
+            <Router history={storeHistory}>
+              <CompatRouter>
+                <LastLocationProvider>
+                  <RouterContextProvider>
+                    <HeaderContextProvider>
+                      <NavProvider>
+                        <ScrollProvider>
+                          <ThemeProvider>
+                            <ToastContextProvider>
+                              <AppContextProvider>
+                                <AudiusQueryProvider>
+                                  <MainContentContextProvider>
+                                    {children}
+                                  </MainContentContextProvider>
+                                </AudiusQueryProvider>
+                              </AppContextProvider>
+                            </ToastContextProvider>
+                          </ThemeProvider>
+                        </ScrollProvider>
+                      </NavProvider>
+                    </HeaderContextProvider>
+                  </RouterContextProvider>
+                </LastLocationProvider>
+              </CompatRouter>
+            </Router>
+          </ReduxProvider>
+        </MediaProvider>
         <ReactQueryDevtools />
       </QueryClientProvider>
     </WagmiProvider>

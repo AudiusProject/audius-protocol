@@ -1,10 +1,9 @@
 import { SdkServicesConfig } from '../../../../config/types'
-import { getDefaultEthereumClientConfig } from '../getDefaultConfig'
 
-import type { DelegateManagerConfig } from './types'
+import type { DelegateManagerConfigInternal } from './types'
 
 export const getDefaultDelegateManagerConfig = (config: {
   ethereum: SdkServicesConfig['ethereum']
-}): DelegateManagerConfig => ({
-  ...getDefaultEthereumClientConfig(config)
+}): DelegateManagerConfigInternal => ({
+  address: config.ethereum.addresses.delegateManagerAddress
 })

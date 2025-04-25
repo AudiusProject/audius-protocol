@@ -4,8 +4,10 @@ import { addFundsModalReducer } from './add-funds-modal'
 import { albumTrackRemoveConfirmationModalReducer } from './album-track-remove-confirmation-modal'
 import { announcementModalReducer } from './announcement-modal'
 import { artistPickModalReducer } from './artist-pick-modal'
+import { buySellModalReducer } from './buy-sell-modal'
 import { coinflowOnrampModalReducer } from './coinflow-onramp-modal'
 import { coinflowWithdrawModalReducer } from './coinflow-withdraw-modal'
+import { connectedWalletsModalReducer } from './connected-wallets-modal'
 import { chatBlastModalReducer } from './create-chat-blast-modal'
 import { createChatModalReducer } from './create-chat-modal'
 import { deleteTrackConfirmationModalReducer } from './delete-track-confirmation-modal'
@@ -57,6 +59,7 @@ const combinedReducers = combineReducers({
   USDCPurchaseDetailsModal: usdcPurchaseDetailsModalReducer,
   USDCManualTransferModal: usdcManualTransferModalReducer,
   AddFundsModal: addFundsModalReducer,
+  BuySellModal: buySellModalReducer,
   USDCTransactionDetailsModal: usdcTransactionDetailsModalReducer,
   PremiumContentPurchaseModal: premiumContentPurchaseModalReducer,
   CoinflowOnramp: coinflowOnrampModalReducer,
@@ -73,6 +76,7 @@ const combinedReducers = combineReducers({
   PublishConfirmation: publishConfirmationModalReducer,
   HideContentConfirmation: hideContentConfirmationModalReducer,
   ExternalWalletSignUp: externalWalletSignUpModalReducer,
+  ConnectedWallets: connectedWalletsModalReducer,
   Announcement: announcementModalReducer,
   Notification: notificationModalReducer,
   DownloadTrackArchive: downloadTrackArchiveModalReducer,

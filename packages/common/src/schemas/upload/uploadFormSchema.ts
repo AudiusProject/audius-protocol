@@ -3,7 +3,8 @@ import {
   Mood,
   EthCollectibleGatedConditions,
   SolCollectibleGatedConditions,
-  NativeFile
+  NativeFile,
+  MAX_DESCRIPTION_LENGTH
 } from '@audius/sdk'
 import { z } from 'zod'
 
@@ -154,7 +155,9 @@ const createSdkSchema = () =>
       track_id: z.optional(z.number()).nullable(),
       ai_attribution_user_id: z.optional(z.number()).nullable(),
       allowed_api_keys: z.optional(z.array(z.string())).nullable(),
-      description: z.optional(z.string().max(1000)).nullable(),
+      description: z
+        .optional(z.string().max(MAX_DESCRIPTION_LENGTH))
+        .nullable(),
 
       genre: GenreSchema,
       isrc: z.optional(z.string().nullable()),

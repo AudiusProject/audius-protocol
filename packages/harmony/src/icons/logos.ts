@@ -7,6 +7,7 @@ import IconAudiusLogoHorizontalColorSVG from '../assets/icons/AudiusLogoHorizont
 import IconAudiusLogoHorizontalColorNewSVG from '../assets/icons/AudiusLogoHorizontalColorNew.svg'
 import IconAudiusLogoHorizontalNewSVG from '../assets/icons/AudiusLogoHorizontalNew.svg'
 import IconAudiusLogoVerticalSVG from '../assets/icons/AudiusLogoVertical.svg'
+import IconLogoWhiteBackgroundPng from '../assets/icons/AudiusLogoWhiteBg.png'
 import IconLogoCoinbaseSVG from '../assets/icons/Coinbase.svg'
 import IconLogoCoinbasePaySVG from '../assets/icons/CoinbasePay.svg'
 import IconDiscordSVG from '../assets/icons/Discord.svg'
@@ -57,6 +58,9 @@ export const IconLogoCircleSTR = IconLogoCircleSTRSVG as IconComponent
 export const IconLogoCircleUSD = IconLogoCircleUSDSVG as IconComponent
 export const IconLogoCircleUSDC = IconLogoCircleUSDCSVG as IconComponent
 export const IconLogoCircleUSDCPng = createImageIcon(LogoCircleUSDCPng)
+export const IconLogoWhiteBackground = createImageIcon(
+  IconLogoWhiteBackgroundPng
+)
 export const IconPhantom = IconPhantomSVG as IconComponent
 export const IconPhantomPlain = IconPhantomPlainSVG as IconComponent
 export const IconSolana = IconSolanaSVG as IconComponent

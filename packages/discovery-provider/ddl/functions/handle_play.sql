@@ -22,8 +22,7 @@ begin
         set count = count + 1
         where play_item_id = new.play_item_id
         and timestamp = date_trunc('month', new.created_at)
-        and country = coalesce(new.country, '')
-        returning count into new_listen_count;
+        and country = coalesce(new.country, '');
 
     select new_listen_count 
         into milestone 

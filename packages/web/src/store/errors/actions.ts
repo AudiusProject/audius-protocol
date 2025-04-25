@@ -7,6 +7,7 @@ import {
 
 export const HANDLE_ERROR = 'ERROR/HANDLE_ERROR'
 export const OPEN_ERROR_PAGE = 'ERROR/OPEN_ERROR_PAGE'
+export const CLOSE_ERROR_PAGE = 'ERROR/CLOSE_ERROR_PAGE'
 
 export enum UiErrorCode {
   UNKNOWN,
@@ -31,6 +32,10 @@ export type HandleErrorAction = {
 
 export type OpenErrorPageAction = {
   type: typeof OPEN_ERROR_PAGE
+}
+
+export type CloseErrorPageAction = {
+  type: typeof CLOSE_ERROR_PAGE
 }
 
 export type HandleErrorArgs = {
@@ -64,4 +69,8 @@ export const handleError = ({
 
 export const openErrorPage = (): OpenErrorPageAction => ({
   type: OPEN_ERROR_PAGE
+})
+
+export const closeErrorPage = (): CloseErrorPageAction => ({
+  type: CLOSE_ERROR_PAGE
 })

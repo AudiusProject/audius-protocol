@@ -136,6 +136,9 @@ export interface GetTrackRemixesRequest {
     offset?: number;
     limit?: number;
     userId?: string;
+    sortMethod?: GetTrackRemixesSortMethodEnum;
+    onlyCosigns?: boolean;
+    onlyContestEntries?: boolean;
 }
 
 export interface GetTrackStemsRequest {
@@ -150,6 +153,8 @@ export interface GetTrackTopListenersRequest {
 }
 
 export interface GetTrendingTrackIDsRequest {
+    offset?: number;
+    limit?: number;
     genre?: string;
 }
 
@@ -163,6 +168,8 @@ export interface GetTrendingTracksRequest {
 
 export interface GetTrendingTracksIDsWithVersionRequest {
     version: string;
+    offset?: number;
+    limit?: number;
     genre?: string;
 }
 
@@ -725,6 +732,18 @@ export class TracksApi extends runtime.BaseAPI {
             queryParameters['user_id'] = params.userId;
         }
 
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
+        }
+
+        if (params.onlyCosigns !== undefined) {
+            queryParameters['only_cosigns'] = params.onlyCosigns;
+        }
+
+        if (params.onlyContestEntries !== undefined) {
+            queryParameters['only_contest_entries'] = params.onlyContestEntries;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
@@ -826,6 +845,14 @@ export class TracksApi extends runtime.BaseAPI {
     async getTrendingTrackIDsRaw(params: GetTrendingTrackIDsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrendingIdsResponse>> {
         const queryParameters: any = {};
 
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
         if (params.genre !== undefined) {
             queryParameters['genre'] = params.genre;
         }
@@ -907,6 +934,14 @@ export class TracksApi extends runtime.BaseAPI {
         }
 
         const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
 
         if (params.genre !== undefined) {
             queryParameters['genre'] = params.genre;
@@ -1340,6 +1375,15 @@ export const GetTrackCommentsSortMethodEnum = {
     Timestamp: 'timestamp'
 } as const;
 export type GetTrackCommentsSortMethodEnum = typeof GetTrackCommentsSortMethodEnum[keyof typeof GetTrackCommentsSortMethodEnum];
+/**
+ * @export
+ */
+export const GetTrackRemixesSortMethodEnum = {
+    Likes: 'likes',
+    Plays: 'plays',
+    Recent: 'recent'
+} as const;
+export type GetTrackRemixesSortMethodEnum = typeof GetTrackRemixesSortMethodEnum[keyof typeof GetTrackRemixesSortMethodEnum];
 /**
  * @export
  */
