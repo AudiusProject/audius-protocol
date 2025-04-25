@@ -12,6 +12,11 @@ import useMeasure from 'react-use-measure'
 
 import styles from './CollapsibleContent.module.css'
 
+const messages = {
+  seeMore: 'See More',
+  seeLess: 'See Less'
+}
+
 type CollapsibleContentProps = {
   id: string
   className?: string
@@ -29,9 +34,9 @@ export const CollapsibleContent = ({
   toggleButtonClassName,
   showByDefault = false,
   collapsedHeight = 0,
-  showText,
-  hideText,
   children
+  showText = messages.seeMore,
+  hideText = messages.seeLess,
 }: CollapsibleContentProps) => {
   const [isCollapsed, setIsCollapsed] = useState(!showByDefault)
   const { spacing } = useTheme()
