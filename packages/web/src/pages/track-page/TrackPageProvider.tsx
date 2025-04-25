@@ -101,6 +101,7 @@ type TrackPageProviderState = {
 const TrackPageProviderWrapper = (props: TrackPageProviderProps) => {
   const params = parseTrackRoute(props.pathname)
   const { data: track } = useTrackByParams(params)
+  console.log('REED track', track)
 
   return <TrackPageProviderClass {...props} track={track as Track | null} />
 }
