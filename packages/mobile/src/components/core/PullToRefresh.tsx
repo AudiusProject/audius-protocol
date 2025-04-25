@@ -44,7 +44,7 @@ const useAnimations = makeAnimations(({ palette }) => {
   })
 
   const iconRefreshSpinWhite = colorize(IconRefreshSpin, {
-    'assets.0.layers.0.shapes.0.it.1.ck': staticWhite
+    'assets.0.layers.0.shapes.0.it.1.c.k': staticWhite
   })
 
   const iconRefreshPullWhite = colorize(IconRefreshPull, {
