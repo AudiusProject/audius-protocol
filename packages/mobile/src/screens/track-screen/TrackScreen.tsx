@@ -1,13 +1,9 @@
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 
 import { useTrackByParams, useUser } from '@audius/common/api'
-import {
-  trackPageLineupActions,
-  trackPageSelectors,
-  reachabilitySelectors
-} from '@audius/common/store'
+import { trackPageSelectors, reachabilitySelectors } from '@audius/common/store'
 import type { FlatList } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import { Flex } from '@audius/harmony-native'
 import { CommentPreview } from 'app/components/comments/CommentPreview'
@@ -18,21 +14,19 @@ import {
 } from 'app/components/core'
 import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
 import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
-import { useIsScreenReady } from 'app/components/core/Screen/hooks/useIsScreenReady'
 import { useRoute } from 'app/hooks/useRoute'
 
 import { RemixContestCountdown } from './RemixContestCountdown'
+import { RemixContestSection } from './RemixContestSection'
 import { TrackScreenDetailsTile } from './TrackScreenDetailsTile'
 import { TrackScreenLineup } from './TrackScreenLineup'
 import { TrackScreenSkeleton } from './TrackScreenSkeleton'
 
-const { tracksActions } = trackPageLineupActions
 const { getLineup } = trackPageSelectors
 const { getIsReachable } = reachabilitySelectors
 
 export const TrackScreen = () => {
   const { params } = useRoute<'Track'>()
-  const dispatch = useDispatch()
   const isReachable = useSelector(getIsReachable)
   const scrollViewRef = useRef<FlatList>(null)
 
@@ -43,14 +37,6 @@ export const TrackScreen = () => {
   const { data: user } = useUser(track?.owner_id)
 
   const lineup = useSelector(getLineup)
-
-  const isScreenReady = useIsScreenReady()
-
-  useEffect(() => {
-    if (isScreenReady) {
-      dispatch(tracksActions.reset())
-    }
-  }, [dispatch, isScreenReady])
 
   if (!track || !user) {
     return (
@@ -84,6 +70,11 @@ export const TrackScreen = () => {
             {isReachable ? (
               <ScreenSecondaryContent>
                 <Flex gap='2xl'>
+                  {/* Remix Contest */}
+                  <RemixContestSection
+                    trackId={track_id}
+                    scrollRef={scrollViewRef}
+                  />
                   {/* Comments */}
                   {!comments_disabled ? (
                     <Flex flex={3}>

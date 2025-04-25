@@ -2,33 +2,33 @@
   position: relative;
 }
 
-.check {
+.flair {
   position: absolute;
 }
 
-.check.tiny {
+.flair.tiny {
   bottom: 2px;
   right: -2px;
 }
 
-.check.small {
+.flair.small {
   bottom: -4px;
   right: -5px;
 }
 
-.check.medium {
+.flair.medium {
   bottom: -3px;
   right: -3px;
 }
 
-.check.large {
+.flair.large {
   bottom: -8px;
   right: -8px;
 }
 
-.check.xlarge {
+.flair.xlarge {
   bottom: -7px;
-  right: -7px;
+  right: -8px;
 }
 
 .children {

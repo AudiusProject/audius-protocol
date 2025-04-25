@@ -39,6 +39,7 @@ export const RepostsTab = () => {
   return (
     <Lineup
       selfLoad
+      isCollapsible
       lazy={lazy}
       pullToRefresh
       actions={feedActions}

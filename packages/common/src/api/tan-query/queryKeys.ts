@@ -87,5 +87,6 @@ export const QUERY_KEYS = {
   eventsByEntityId: 'eventsByEntityId',
   walletOwner: 'walletOwner',
   tokenPrice: 'tokenPrice',
+  usdcBalance: 'usdcBalance',
   fileSizes: 'fileSizes'
 } as const

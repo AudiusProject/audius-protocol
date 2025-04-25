@@ -10,7 +10,7 @@ import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import Audius from 'services/Audius'
 import { AppState } from 'store/types'
 import { ServiceType } from 'types'
-import { fetchWithLibs, fetchWithTimeout } from 'utils/fetch'
+import { apiFetch, fetchWithTimeout } from 'utils/fetch'
 import { weiAudToAud } from 'utils/numeric'
 
 import { useAverageBlockTime, useEthBlockNumber } from '../protocol/hooks'
@@ -136,10 +136,10 @@ async function fetchRoutesTimeSeries(bucket: Bucket) {
   let metric: TimeSeriesRecord[] = []
   try {
     const bucketSize = BUCKET_GRANULARITY_MAP[bucket]
-    metric = (await fetchWithLibs({
-      endpoint: `v1/metrics/aggregates/routes/${bucket}`,
+    const { data } = await apiFetch(`v1/metrics/aggregates/routes/${bucket}`, {
       queryParams: { bucket_size: bucketSize }
-    })) as any
+    })
+    metric = data
   } catch (e) {
     console.error(e)
     error = true
@@ -155,7 +155,6 @@ export function fetchApiCalls(
   bucket: Bucket
 ): ThunkAction<void, AppState, Audius, Action<string>> {
   return async (dispatch, _, aud) => {
-    await aud.awaitSetup()
     const metric = await fetchRoutesTimeSeries(bucket)
     dispatch(setApiCalls({ metric, bucket }))
   }
@@ -189,8 +188,7 @@ async function fetchTimeSeries(
       data = (await fetchWithTimeout(endpoint)).data.slice(1) // Trim off the first day so we don't show partial data
       metric = data
     } else {
-      data = await fetchWithLibs({
-        endpoint: `v1/metrics/${route}`,
+      const { data } = await apiFetch(`v1/metrics/${route}`, {
         queryParams: { bucket_size: bucketSize, start_time: startTime }
       })
       metric = data.reverse()
@@ -260,7 +258,6 @@ export function fetchPlays(
   bucket: Bucket
 ): ThunkAction<void, AppState, Audius, Action<string>> {
   return async (dispatch, _, aud) => {
-    await aud.awaitSetup()
     let metric = await fetchTimeSeries('plays', bucket, true)
     if (metric !== MetricError.ERROR) {
       metric = metric.filter(
@@ -357,9 +354,9 @@ export function fetchTotalStaked(
 }
 
 const getTrailingAPI = async (timeRange: 'year' | 'month' | 'week') => {
-  const data = (await fetchWithLibs({
-    endpoint: `v1/metrics/aggregates/routes/trailing/${timeRange}`
-  })) as any
+  const { data } = await apiFetch(
+    `v1/metrics/aggregates/routes/trailing/${timeRange}`
+  )
   return {
     total_count: data?.total_count ?? 0,
     unique_count: data?.unique_count ?? 0,
@@ -371,7 +368,6 @@ export function fetchTrailingApiCalls(
   bucket: Bucket.MONTH | Bucket.WEEK | Bucket.YEAR
 ): ThunkAction<void, AppState, Audius, Action<string>> {
   return async (dispatch, _, aud) => {
-    await aud.awaitSetup()
     let error = false
     let metric = {}
     try {
@@ -389,8 +385,7 @@ export function fetchTrailingApiCalls(
 }
 
 const getTrailingTopApps = async (bucket: Bucket, limit: number) => {
-  const data = await fetchWithLibs({
-    endpoint: `v1/metrics/aggregates/apps/${bucket}`,
+  const { data } = await apiFetch(`v1/metrics/aggregates/apps/${bucket}`, {
     queryParams: { limit }
   })
   return data as { name: string; count: number }[]
@@ -400,8 +395,7 @@ export function fetchTopApps(
   bucket: Bucket,
   limit: number = 500
 ): ThunkAction<void, AppState, Audius, Action<string>> {
-  return async (dispatch, _, aud) => {
-    await aud.awaitSetup()
+  return async (dispatch) => {
     let error = false
     let metric: CountRecord = {}
     try {
@@ -443,14 +437,12 @@ export function fetchTopApps(
 export function fetchTrailingTopGenres(
   bucket: Bucket
 ): ThunkAction<void, AppState, Audius, Action<string>> {
-  return async (dispatch, _, aud) => {
-    await aud.awaitSetup()
+  return async (dispatch) => {
     try {
       const startTime = getStartTime(bucket)
-      const data = (await fetchWithLibs({
-        endpoint: 'v1/metrics/genres',
+      const { data } = await apiFetch('v1/metrics/genres', {
         queryParams: { start_time: startTime }
-      })) as any
+      })
 
       const agg: CountRecord = {
         Electronic: 0

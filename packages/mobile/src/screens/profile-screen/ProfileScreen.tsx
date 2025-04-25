@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   getProfileRepostsQueryKey,
@@ -19,7 +19,7 @@ import { encodeUrlName } from '@audius/common/utils'
 import { PortalHost } from '@gorhom/portal'
 import { useFocusEffect, useNavigationState } from '@react-navigation/native'
 import { useQueryClient } from '@tanstack/react-query'
-import { Animated, View } from 'react-native'
+import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
@@ -191,12 +191,7 @@ export const ProfileScreen = () => {
     />
   )
 
-  const scrollY = useRef(new Animated.Value(0)).current
-
-  const renderHeader = useCallback(
-    () => <ProfileHeader scrollY={scrollY} />,
-    [scrollY]
-  )
+  const renderHeader = useCallback(() => <ProfileHeader />, [])
 
   return (
     <Screen
@@ -221,7 +216,6 @@ export const ProfileScreen = () => {
                   <ScreenSecondaryContent skeleton={<ProfileScreenSkeleton />}>
                     <ProfileTabNavigator
                       renderHeader={renderHeader}
-                      animatedValue={scrollY}
                       refreshing={isRefreshing}
                       onRefresh={handleRefresh}
                     />

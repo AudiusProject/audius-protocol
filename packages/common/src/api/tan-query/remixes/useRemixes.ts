@@ -89,7 +89,12 @@ export const useRemixes = (
     }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: RemixesQueryData, allPages) => {
-      if (lastPage?.tracks?.length < pageSize) return undefined
+      const isSecondPage = allPages.length === 1
+      if (
+        lastPage?.tracks?.length < pageSize ||
+        (isSecondPage && includeOriginal && lastPage?.tracks?.length - 1 === 0)
+      )
+        return undefined
       return allPages.reduce((acc, page) => acc + page.tracks.length, 0)
     },
     queryFn: async ({ pageParam }) => {
@@ -104,20 +109,19 @@ export const useRemixes = (
           onlyCosigns: isCosign,
           onlyContestEntries: isContestEntry
         })
-      const processedTracks = transformAndCleanList(
+      let processedTracks = transformAndCleanList(
         data.tracks,
         userTrackMetadataFromSDK
       )
 
       primeTrackData({ tracks: processedTracks, queryClient, dispatch })
 
-      let tracksWithOriginal
       if (includeOriginal && pageParam === 0) {
         const track = queryClient.getQueryData(getTrackQueryKey(trackId))
         if (track && data.tracks) {
           const user = queryClient.getQueryData(getUserQueryKey(track.owner_id))
           if (user) {
-            tracksWithOriginal = [{ ...track, user }, ...processedTracks]
+            processedTracks = [{ ...track, user }, ...processedTracks]
           }
         }
       }
@@ -128,7 +132,7 @@ export const useRemixes = (
           pageParam,
           pageSize,
           false,
-          { items: tracksWithOriginal ?? processedTracks }
+          { items: processedTracks }
         )
       )
       dispatch(remixesPageActions.setCount({ count: data.count }))

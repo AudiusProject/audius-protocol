@@ -3,8 +3,8 @@ import { accountSelectors } from '@audius/common/store'
 import { shortenSPLAddress } from '@audius/common/utils'
 import {
   Flex,
-  IconLogoCircle,
   IconLogoCircleSOL,
+  IconLogoWhiteBackground,
   Skeleton,
   Text
 } from '@audius/harmony'
@@ -50,7 +50,10 @@ export const PayoutWalletDisplay = () => {
 
   const isExternalWallet = !!payoutWallet
 
-  const IconComponent = isExternalWallet ? IconLogoCircleSOL : IconLogoCircle
+  const IconComponent = isExternalWallet
+    ? IconLogoCircleSOL
+    : IconLogoWhiteBackground
+
   const displayText = isExternalWallet
     ? shortenSPLAddress(displayAddress ?? '') // shorten the owner address or the stored address
     : messages.builtInWallet

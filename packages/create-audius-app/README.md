@@ -29,4 +29,29 @@ Options:
     from the Audius repo. They are found in AudiusProject/audius-protocol/packages/libs/src/sdk/examples
 
   -h, --help                           output usage information
+
+Example:
+
+npx create-audius-app my-cool-app --example react-hono
+```
+
+## Development
+
+Start up the codebase in watch mode
+
+```
+npm run dev
+```
+
+Invoke create audius app as you would but replace `npx create-audius-app` with
+```bash
+./dist/index.js
+```
+
+For example:
+
+```bash
+./dist/index.js my-cool-app --example react-hono
+cd my-cool-app
+npm run dev
 ```

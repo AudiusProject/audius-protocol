@@ -1,9 +1,8 @@
 import { useCallback, useRef } from 'react'
 
 import { useToggleFavoriteTrack } from '@audius/common/api'
-import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import { ID, Track, User, FavoriteSource } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { Box, Flex } from '@audius/harmony'
 
 import { CommentSection } from 'components/comments/CommentSection'
@@ -18,6 +17,8 @@ import { getTrackDefaults, emptyStringGuard } from 'pages/track-page/utils'
 
 import { TrackPageLineup } from '../TrackPageLineup'
 import { useTrackPageSize } from '../useTrackPageSize'
+
+import { RemixContestSection } from './RemixContestSection'
 
 export type OwnProps = {
   title: string
@@ -72,11 +73,7 @@ const TrackPage = ({
   const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(heroTrack)
 
-  const { isEnabled: commentsFlagEnabled } = useFeatureFlag(
-    FeatureFlags.COMMENTS_ENABLED
-  )
-  const isCommentingEnabled =
-    commentsFlagEnabled && !heroTrack?.comments_disabled
+  const isCommentingEnabled = !heroTrack?.comments_disabled
   const loading = !heroTrack || isFetchingNFTAccess
 
   const toggleSaveTrack = useToggleFavoriteTrack({
@@ -184,13 +181,17 @@ const TrackPage = ({
           pt={200}
           pb={60}
           css={{ position: 'relative' }}
+          gap='unit12'
         >
           {renderGiantTrackTile()}
+          <RemixContestSection
+            trackId={heroTrack?.track_id ?? 0}
+            isOwner={isOwner}
+          />
           <Flex
             gap='2xl'
             w='100%'
             direction={isDesktop ? 'row' : 'column'}
-            mt='3xl'
             mh='auto'
             css={{ maxWidth: 1080 }}
             justifyContent='center'

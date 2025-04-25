@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 
 import { AnyAction } from '@reduxjs/toolkit'
 import { useSelector, useDispatch } from 'react-redux'
+import { useEffectOnce } from 'react-use'
 import { Action } from 'redux'
 import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 
@@ -20,12 +21,15 @@ import {
   setAllProposals,
   setExecutionDelay,
   setProposal,
+  setRecentProposals,
   setVotingPeriod
 } from './slice'
 
 // -------------------------------- Selectors  --------------------------------
 export const getActiveProposals = (state: AppState) =>
   state.cache.proposals.activeProposals
+export const getRecentProposals = (state: AppState) =>
+  state.cache.proposals.recentProposals
 export const getAllProposals = (state: AppState) =>
   state.cache.proposals.allProposals
 export const getResolvedProposals = (state: AppState) => {
@@ -34,15 +38,7 @@ export const getResolvedProposals = (state: AppState) => {
     state.cache.proposals.resolvedProposals?.map((p) => allProposals[p]) ?? null
   )
 }
-export const getRecentProposals = (state: AppState) => {
-  const active = getActiveProposals(state)
-  if (active && active.length < 5) {
-    const resolved = getResolvedProposals(state)
-    if (resolved === null) return null
-    return active.concat(resolved.slice(0, 5 - active.length) || [])
-  }
-  return active
-}
+
 export const getProposal = (
   state: AppState,
   { proposalId }: { proposalId: number }
@@ -124,6 +120,40 @@ export function fetchAllProposals(): ThunkAction<
   }
 }
 
+export function fetchRecentProposals(): ThunkAction<
+  void,
+  AppState,
+  Audius,
+  Action<string>
+> {
+  return async (dispatch, getState, aud) => {
+    const proposalEvents = (await aud.Governance.getProposals()).slice(0, 5)
+    const allProposals: (Proposal | null)[] = await Promise.all(
+      proposalEvents.map(async (p: ProposalEvent) => {
+        const { proposalId, description, name } = p
+        if (filteredProposals.has(proposalId)) {
+          return null
+        }
+        const proposal = await aud.Governance.getProposalById(proposalId)
+        const quorum = await aud.Governance.getProposalQuorum(proposalId)
+        proposal.description = description
+        proposal.name = name
+        proposal.quorum = quorum
+        if (proposal.outcome !== Outcome.InProgress) {
+          const evaluationBlockNumber =
+            await aud.Governance.getProposalEvaluationBlock(proposalId)
+          proposal.evaluatedBlock = evaluationBlockNumber
+        }
+        return proposal
+      })
+    )
+
+    const proposals = allProposals.filter(Boolean) as Proposal[]
+
+    dispatch(setRecentProposals({ proposals }))
+  }
+}
+
 export function fetchProposal(
   proposalId: number
 ): ThunkAction<void, AppState, Audius, Action<string>> {
@@ -171,6 +201,32 @@ export function fetchExecutionDelay(): ThunkAction<
 
 // -------------------------------- Hooks  --------------------------------
 
+export const useActiveProposals = () => {
+  const activeProposals = useSelector(getActiveProposals)
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
+
+  useEffectOnce(() => {
+    if (activeProposals === null) {
+      dispatch(fetchActiveProposals())
+    }
+  })
+
+  return { activeProposals }
+}
+
+export const useRecentProposals = () => {
+  const recentProposals = useSelector(getRecentProposals)
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
+
+  useEffectOnce(() => {
+    if (recentProposals === null) {
+      dispatch(fetchRecentProposals())
+    }
+  })
+
+  return { recentProposals }
+}
+
 export const useProposals = () => {
   const activeProposals = useSelector(getActiveProposals)
   const allProposals = useSelector(getAllProposals)
@@ -178,14 +234,18 @@ export const useProposals = () => {
   const recentProposals = useSelector(getRecentProposals)
   const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
 
-  useEffect(() => {
+  // Get all proposals
+  useEffectOnce(() => {
+    if (recentProposals === null) {
+      dispatch(fetchRecentProposals())
+    }
     if (activeProposals === null) {
       dispatch(fetchActiveProposals())
     }
     if (resolvedProposals === null) {
       dispatch(fetchAllProposals())
     }
-  }, [dispatch, activeProposals, resolvedProposals, allProposals])
+  })
 
   useDispatchBasedOnBlockNumber(
     [fetchActiveProposals(), fetchAllProposals()],

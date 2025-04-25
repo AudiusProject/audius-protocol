@@ -25,7 +25,6 @@ import { useModalState } from 'common/hooks/useModalState'
 import { TextLink, UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { TrackTileProps, TrackTileSize } from 'components/track/types'
-import UserBadges from 'components/user-badges/UserBadges'
 import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
 
 import { TrackDogEar } from '../TrackDogEar'
@@ -55,21 +54,6 @@ type ExtraProps = {
 }
 
 type CombinedProps = TrackTileProps & ExtraProps
-
-const formatCoSign = ({
-  hasReposted,
-  hasFavorited
-}: {
-  hasReposted: boolean
-  hasFavorited: boolean
-}) => {
-  if (hasReposted && hasFavorited) {
-    return messages.repostedAndFavorited
-  } else if (hasFavorited) {
-    return messages.favorited
-  }
-  return messages.reposted
-}
 
 const TrackTile = (props: CombinedProps) => {
   const {
@@ -248,8 +232,8 @@ const TrackTile = (props: CombinedProps) => {
           />
           <Flex
             direction='column'
-            justifyContent='center'
-            gap='2xs'
+            gap='xs'
+            pv='xs'
             mr='m'
             flex='0 1 65%'
             css={{ overflow: 'hidden' }}
@@ -275,29 +259,7 @@ const TrackTile = (props: CombinedProps) => {
               ) : null}
             </UserLink>
           </Flex>
-          {coSign && (
-            <Text
-              variant='label'
-              size='s'
-              strength='strong'
-              className={cn(styles.coSignLabel)}
-            >
-              {messages.coSign}
-            </Text>
-          )}
         </div>
-        {coSign ? (
-          <Text variant='body' size='xs' className={styles.coSignText}>
-            <div className={styles.name}>
-              {coSign.user.name}
-              <UserBadges userId={coSign.user.user_id} size='4xs' />
-            </div>
-            {formatCoSign({
-              hasReposted: coSign.has_remix_author_reposted,
-              hasFavorited: coSign.has_remix_author_saved
-            })}
-          </Text>
-        ) : null}
         <TrackTileStats
           trackId={id}
           isTrending={isTrending}

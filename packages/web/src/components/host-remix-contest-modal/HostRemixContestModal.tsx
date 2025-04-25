@@ -8,44 +8,32 @@ import {
   useRemixes,
   useUpdateEvent
 } from '@audius/common/api'
+import { remixMessages } from '@audius/common/messages'
 import { useHostRemixContestModal } from '@audius/common/store'
 import { dayjs } from '@audius/common/utils'
 import {
   Button,
+  Divider,
   Flex,
-  Hint,
   IconTrophy,
   Modal,
   ModalContent,
   ModalHeader,
   ModalTitle,
   Select,
-  Text
+  Text,
+  TextLink
 } from '@audius/harmony'
 import { EventEntityTypeEnum, EventEventTypeEnum } from '@audius/sdk'
 
+import { TextAreaV2 } from 'components/data-entry/TextAreaV2'
 import { DatePicker } from 'components/edit/fields/DatePickerField'
 import { mergeReleaseDateValues } from 'components/edit/fields/visibility/mergeReleaseDateValues'
 
 import { TimeInput, parseTime } from './TimeInput'
 
-const messages = {
-  hostTitle: 'Host Remix Contest',
-  description:
-    'Turn your track into a remix challenge and co-sign your favorite submissions.',
-  deadlineTitle: 'Submission Deadline',
-  hint: 'You can host one contest per song and adjust the submission deadline anytime within 90 days of the contest start.',
-  startContest: 'Start Contest',
-  save: 'Save',
-  contestEndDateLabel: 'Last day to submit to contest',
-  endDateError: 'Contest end date must be in the future within 90 days',
-  timeLabel: 'Time',
-  timePlaceholder: '12:00',
-  timeError: 'Invalid time',
-  meridianLabel: 'Meridian',
-  meridianPlaceholder: 'AM',
-  turnOff: 'Turn Off Contest'
-}
+const contestHostingLink =
+  'https://help.audius.co/artists/hosting-a-remix-contest'
 
 export const HostRemixContestModal = () => {
   const { data, isOpen, onClose, onClosed } = useHostRemixContestModal()
@@ -63,11 +51,21 @@ export const HostRemixContestModal = () => {
   const hasContestEntries = remixesLoading || remixes?.length
   const displayTurnOffButton = !hasContestEntries && isEdit
 
+  const remixContestData = remixContest?.eventData
+
+  // Form state
+  const [contestDescription, setContestDescription] = useState(
+    remixContestData ? remixContestData.description : ''
+  )
+  const [contestPrizeInfo, setContestPrizeInfo] = useState(
+    remixContestData ? remixContestData.prizeInfo : ''
+  )
   const [contestEndDate, setContestEndDate] = useState(
     remixContest ? dayjs(remixContest.endDate) : null
   )
   const [endDateTouched, setEndDateTouched] = useState(false)
   const [endDateError, setEndDateError] = useState(false)
+  const [descriptionError, setDescriptionError] = useState(false)
   const [timeValue, setTimeValue] = useState(
     contestEndDate ? dayjs(contestEndDate).format('hh:mm') : ''
   )
@@ -111,20 +109,29 @@ export const HostRemixContestModal = () => {
       parsedTime,
       meridianValue
     )
-    const hasError =
+
+    const hasDescriptionError = !contestDescription
+    const hasDateError =
       !parsedDate ||
       dayjs(parsedDate.toISOString()).isBefore(dayjs()) ||
       dayjs(parsedDate.toISOString()).isAfter(dayjs().add(90, 'days'))
+    const hasError = hasDateError || hasDescriptionError
 
     setEndDateTouched(true)
-    setEndDateError(hasError)
+    setEndDateError(hasDateError)
+    setDescriptionError(hasDescriptionError)
     if (hasError || !trackId || !userId) return
 
     const endDate = parsedDate.toISOString()
+    const eventData = {
+      description: contestDescription,
+      prizeInfo: contestPrizeInfo
+    }
 
     if (isEdit) {
       updateEvent({
         eventId: remixContest.eventId,
+        eventData,
         endDate,
         userId
       })
@@ -133,6 +140,7 @@ export const HostRemixContestModal = () => {
         eventType: EventEventTypeEnum.RemixContest,
         entityType: EventEntityTypeEnum.Track,
         entityId: trackId,
+        eventData,
         endDate,
         userId
       })
@@ -140,8 +148,8 @@ export const HostRemixContestModal = () => {
 
     onClose()
   }, [
-    contestEndDate,
     timeValue,
+    contestEndDate,
     meridianValue,
     trackId,
     userId,
@@ -149,6 +157,8 @@ export const HostRemixContestModal = () => {
     onClose,
     updateEvent,
     remixContest?.eventId,
+    contestDescription,
+    contestPrizeInfo,
     createEvent
   ])
 
@@ -161,40 +171,89 @@ export const HostRemixContestModal = () => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} onClosed={onClosed} size='medium'>
       <ModalHeader onClose={onClose}>
-        <ModalTitle Icon={IconTrophy} title={messages.hostTitle} />
+        <ModalTitle Icon={IconTrophy} title={remixMessages.modalTitle} />
       </ModalHeader>
       <ModalContent>
         <Flex direction='column' gap='xl'>
-          <Text variant='body'>{messages.description}</Text>
+          <Text variant='body'>{remixMessages.modalDescription}</Text>
+          <Flex direction='column' gap='l'>
+            <Text
+              variant='title'
+              size='l'
+              tag='label'
+              htmlFor='contestDescription'
+            >
+              {remixMessages.descriptionLabel}
+            </Text>
+            <TextAreaV2
+              id='contestDescription'
+              aria-label='contestDescription'
+              placeholder={remixMessages.descriptionPlaceholder}
+              maxLength={1000}
+              value={contestDescription}
+              error={descriptionError}
+              helperText={
+                descriptionError ? remixMessages.descriptionError : undefined
+              }
+              onChange={(e) => setContestDescription(e.target.value)}
+              css={{ minHeight: 144, maxHeight: 300 }}
+              showMaxLength
+            />
+            <TextLink variant='visible' href={contestHostingLink} isExternal>
+              {remixMessages.contestHostingLabel}
+            </TextLink>
+          </Flex>
+          <Divider color='default' />
+          <Flex direction='column' gap='l'>
+            <Text
+              variant='title'
+              size='l'
+              tag='label'
+              htmlFor='contestPrizeInfo'
+            >
+              {remixMessages.prizeInfoLabel}
+            </Text>
+            <TextAreaV2
+              id='contestPrizeInfo'
+              aria-label='contestPrizeInfo'
+              placeholder={remixMessages.prizeInfoPlaceholder}
+              maxLength={1000}
+              css={{ minHeight: 144, maxHeight: 300 }}
+              showMaxLength
+              value={contestPrizeInfo}
+              onChange={(e) => setContestPrizeInfo(e.target.value)}
+            />
+          </Flex>
+          <Divider color='default' />
           <Flex direction='column' gap='l'>
             <Text variant='title' size='l'>
-              {messages.deadlineTitle}
+              {remixMessages.endDateLabel}
             </Text>
             <DatePicker
               name='contestEndDate'
-              label={messages.contestEndDateLabel}
+              label={remixMessages.endDateLabel}
               onChange={handleEndDateChange}
               value={contestEndDate?.toISOString()}
               futureDatesOnly
-              error={endDateError ? messages.endDateError : undefined}
+              error={endDateError ? remixMessages.endDateError : undefined}
               touched={endDateTouched}
               maxDate={dayjs().add(90, 'days').toDate()}
             />
             <Flex gap='l'>
               <TimeInput
                 css={{ flex: 1 }}
-                label={messages.timeLabel}
-                placeholder={messages.timePlaceholder}
+                label={remixMessages.timeLabel}
+                placeholder={remixMessages.timePlaceholder}
                 disabled={!contestEndDate}
                 value={timeValue}
-                helperText={timeError ? messages.timeError : undefined}
+                helperText={timeError ? remixMessages.timeError : undefined}
                 onChange={handleTimeChange}
                 onError={handleTimeError}
               />
               <Select
                 css={{ flex: 1 }}
-                label={messages.meridianLabel}
-                placeholder={messages.meridianPlaceholder}
+                label={remixMessages.meridianLabel}
+                placeholder={remixMessages.meridianPlaceholder}
                 hideLabel
                 disabled={!contestEndDate}
                 value={meridianValue}
@@ -205,11 +264,6 @@ export const HostRemixContestModal = () => {
                 ]}
               />
             </Flex>
-            <Hint>
-              <Text variant='body' color='subdued'>
-                {messages.hint}
-              </Text>
-            </Hint>
           </Flex>
           <Flex gap='l' justifyContent='center'>
             {displayTurnOffButton ? (
@@ -218,7 +272,7 @@ export const HostRemixContestModal = () => {
                 onClick={handleDeleteEvent}
                 fullWidth={displayTurnOffButton}
               >
-                {messages.turnOff}
+                {remixMessages.turnOff}
               </Button>
             ) : null}
             <Button
@@ -227,7 +281,7 @@ export const HostRemixContestModal = () => {
               disabled={!contestEndDate || endDateError || timeError}
               fullWidth={displayTurnOffButton}
             >
-              {isEdit ? messages.save : messages.startContest}
+              {isEdit ? remixMessages.save : remixMessages.startContest}
             </Button>
           </Flex>
         </Flex>

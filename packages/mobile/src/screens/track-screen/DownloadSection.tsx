@@ -63,7 +63,6 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
   const { data: track } = useTrack(trackId)
   const { data: stemTracks = [] } = useStems(trackId)
 
-  // console.log('stemTracks', stemTracks)
   const {
     price,
     shouldDisplayPremiumDownloadLocked,

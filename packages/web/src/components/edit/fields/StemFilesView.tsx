@@ -119,7 +119,11 @@ export const StemFilesView = ({
         const duplicateStems = []
 
         for (const stem of toAdd) {
-          if (stems.find((s) => s.file.name === stem.name)) {
+          const hasDup = stems.find(
+            (s) => s.metadata.orig_filename === stem.name
+          )
+
+          if (hasDup) {
             duplicateStems.push(stem.name)
           } else {
             newStems.push(stem)

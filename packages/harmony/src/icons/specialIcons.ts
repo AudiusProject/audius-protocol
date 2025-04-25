@@ -2,10 +2,12 @@ import { IconComponent } from '~harmony/components'
 
 // Two Tone / Special Styling
 import IconArtistBadgeSVG from '../assets/icons/ArtistBadge.svg'
+import IconContestSignSVG from '../assets/icons/ContestSign.svg'
 import IconCosignSVG from '../assets/icons/Cosign.svg'
 import IconMultiselectAddSVG from '../assets/icons/MultiselectAdd.svg'
 import IconMultiselectRemoveSVG from '../assets/icons/MultiselectRemove.svg'
 // Token Tier Badges
+import TokenAUDIOPng from '../assets/icons/TokenAUDIO.png'
 import TokenBronzePng from '../assets/icons/TokenBronze.png'
 import TokenGoldPng from '../assets/icons/TokenGold.png'
 import TokenNoTierPng from '../assets/icons/TokenNoTier.png'
@@ -74,8 +76,9 @@ import IconPlaybackRate3xSVG from '../assets/icons/iconPlaybackRate3x.svg'
 import { createImageIcon } from '../utils/createImageIcon'
 
 // Two Tone / Special Styling
-export const IconArtistBadge = IconArtistBadgeSVG as IconComponent
+export const IconContestSign = IconContestSignSVG as IconComponent
 export const IconCosign = IconCosignSVG as IconComponent
+export const IconArtistBadge = IconArtistBadgeSVG as IconComponent
 export const IconMultiselectAdd = IconMultiselectAddSVG as IconComponent
 export const IconMultiselectRemove = IconMultiselectRemoveSVG as IconComponent
 
@@ -148,3 +151,6 @@ export const IconPlaybackRate1_5x = IconPlaybackRate1_5xSVG as IconComponent
 export const IconPlaybackRate2x = IconPlaybackRate2xSVG as IconComponent
 export const IconPlaybackRate2_5x = IconPlaybackRate2_5xSVG as IconComponent
 export const IconPlaybackRate3x = IconPlaybackRate3xSVG as IconComponent
+
+// Token Icons
+export const IconTokenAUDIO = createImageIcon(TokenAUDIOPng)
