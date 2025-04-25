@@ -141,14 +141,12 @@ const EmptyRemixContestSubmissions = () => {
       column
       w='100%'
       pv='3xl'
-      gap='m'
+      gap='xs'
       justifyContent='center'
       alignItems='center'
     >
-      <Text variant='heading' size='s'>
-        {messages.noSubmissions}
-      </Text>
-      <Text variant='body' size='l' color='subdued'>
+      <Text variant='title'>{messages.noSubmissions}</Text>
+      <Text variant='body' color='subdued'>
         {messages.beFirst}
       </Text>
     </Flex>

@@ -18,7 +18,7 @@ export const RemixContestPrizesTab = ({
 
   return (
     <Flex column gap='l' p='xl'>
-      <UserGeneratedText variant='body' size='l'>
+      <UserGeneratedText variant='body' multiline={true}>
         {remixContest?.eventData?.prizeInfo}
       </UserGeneratedText>
     </Flex>
