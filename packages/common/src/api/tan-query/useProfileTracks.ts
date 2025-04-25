@@ -1,4 +1,4 @@
-import { EntityType, Id, OptionalId } from '@audius/sdk'
+import { EntityType, OptionalId } from '@audius/sdk'
 import {
   InfiniteData,
   useInfiniteQuery,
