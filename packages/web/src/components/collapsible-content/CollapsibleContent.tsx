@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useLayoutEffect } from 'react'
+import type { ReactNode } from 'react'
 
 import {
   PlainButton,
@@ -12,15 +13,23 @@ import useMeasure from 'react-use-measure'
 
 import styles from './CollapsibleContent.module.css'
 
+const BUTTON_HEIGHT = 48 // Height of the toggle button
+
+const messages = {
+  seeMore: 'See More',
+  seeLess: 'See Less'
+}
+
 type CollapsibleContentProps = {
   id: string
   className?: string
   toggleButtonClassName?: string
   showByDefault?: boolean
   collapsedHeight?: number
-  showText: string
-  hideText: string
-  children: React.ReactNode
+  showText?: string
+  hideText?: string
+  children: ReactNode
+  onHeightChange?: (height: number) => void
 }
 
 export const CollapsibleContent = ({
@@ -29,9 +38,10 @@ export const CollapsibleContent = ({
   toggleButtonClassName,
   showByDefault = false,
   collapsedHeight = 0,
-  showText,
-  hideText,
-  children
+  showText = messages.seeMore,
+  hideText = messages.seeLess,
+  children,
+  onHeightChange
 }: CollapsibleContentProps) => {
   const [isCollapsed, setIsCollapsed] = useState(!showByDefault)
   const { spacing } = useTheme()
@@ -44,6 +54,12 @@ export const CollapsibleContent = ({
     polyfill: ResizeObserver,
     offsetSize: true
   })
+
+  useLayoutEffect(() => {
+    const totalHeight =
+      (isCollapsed ? collapsedHeight : bounds.height) + BUTTON_HEIGHT
+    onHeightChange?.(totalHeight)
+  }, [bounds.height, isCollapsed, collapsedHeight, onHeightChange])
 
   return (
     <div className={cn(className, { collapsed: isCollapsed })}>

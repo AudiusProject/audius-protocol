@@ -120,7 +120,7 @@ const RemixContestSubmissions = ({
   const remixesRoute = trackRemixesPage(permalink ?? '')
 
   return (
-    <Flex w='100%' column gap='2xl' p='xl'>
+    <Flex column p='xl'>
       <Flex gap='2xl' wrap='wrap'>
         {submissions.map((submission) => (
           <SubmissionCard key={submission.id} submission={submission} />
@@ -137,18 +137,9 @@ const RemixContestSubmissions = ({
 
 const EmptyRemixContestSubmissions = () => {
   return (
-    <Flex
-      column
-      w='100%'
-      pv='3xl'
-      gap='m'
-      justifyContent='center'
-      alignItems='center'
-    >
-      <Text variant='heading' size='s'>
-        {messages.noSubmissions}
-      </Text>
-      <Text variant='body' size='l' color='subdued'>
+    <Flex column pv='3xl' gap='xs' alignItems='center'>
+      <Text variant='title'>{messages.noSubmissions}</Text>
+      <Text variant='body' color='subdued'>
         {messages.beFirst}
       </Text>
     </Flex>
