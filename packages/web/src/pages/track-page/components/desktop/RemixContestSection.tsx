@@ -20,6 +20,7 @@ import useTabs from 'hooks/useTabs/useTabs'
 import { RemixContestDetailsTab } from './RemixContestDetailsTab'
 import { RemixContestPrizesTab } from './RemixContestPrizesTab'
 import { RemixContestSubmissionsTab } from './RemixContestSubmissionsTab'
+import { TabBody } from './TabBody'
 
 const messages = {
   title: 'Remix Contest',
@@ -29,9 +30,7 @@ const messages = {
   uploadRemixButtonText: 'Upload Your Remix'
 }
 
-// Height constants
-const TAB_BAR_HEIGHT = 56 // Height of the tab bar
-const HEIGHT_PADDING = 64
+const TAB_BAR_HEIGHT = 56
 
 type RemixContestSectionProps = {
   trackId: ID
@@ -50,7 +49,7 @@ export const RemixContestSection = ({
   const { data: remixes } = useRemixes({ trackId, isContestEntry: true })
   const [contentHeight, setContentHeight] = useState(0)
 
-  const handleDetailsHeightChange = useCallback((height: number) => {
+  const handleHeightChange = useCallback((height: number) => {
     setContentHeight(height)
   }, [])
 
@@ -70,23 +69,22 @@ export const RemixContestSection = ({
     }
   ]
 
-  const elements = [
-    <RemixContestDetailsTab
-      key='details'
-      trackId={trackId}
-      onHeightChange={handleDetailsHeightChange}
-    />,
-    <RemixContestPrizesTab key='prizes' trackId={trackId} />,
-    <RemixContestSubmissionsTab
-      key='submissions'
-      trackId={trackId}
-      submissions={remixes.slice(0, 10)}
-    />
-  ]
-
-  const { tabs: TabBar, body: TabBody } = useTabs({
+  const { tabs: TabBar, body: ContentBody } = useTabs({
     tabs,
-    elements,
+    elements: [
+      <TabBody key='details' onHeightChange={handleHeightChange}>
+        <RemixContestDetailsTab trackId={trackId} />
+      </TabBody>,
+      <TabBody key='prizes' onHeightChange={handleHeightChange}>
+        <RemixContestPrizesTab trackId={trackId} />
+      </TabBody>,
+      <TabBody key='submissions' onHeightChange={handleHeightChange}>
+        <RemixContestSubmissionsTab
+          trackId={trackId}
+          submissions={remixes.slice(0, 10)}
+        />
+      </TabBody>
+    ],
     isMobile: false
   })
 
@@ -107,7 +105,7 @@ export const RemixContestSection = ({
   // TODO: Also return null if no remix contest description
   if (!trackId || !remixContest) return null
 
-  const totalBoxHeight = TAB_BAR_HEIGHT + contentHeight + HEIGHT_PADDING
+  const totalBoxHeight = TAB_BAR_HEIGHT + contentHeight
 
   return (
     <Flex
@@ -156,7 +154,7 @@ export const RemixContestSection = ({
               height: contentHeight
             }}
           >
-            {TabBody}
+            {ContentBody}
           </Box>
         </Flex>
       </Box>
