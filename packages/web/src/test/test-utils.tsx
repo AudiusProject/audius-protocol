@@ -4,6 +4,8 @@ import {
   AudiusQueryContext,
   AudiusQueryContextType
 } from '@audius/common/audius-query'
+import { AppContext } from '@audius/common/context'
+import { FeatureFlags } from '@audius/common/services'
 import { ThemeProvider } from '@audius/harmony'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { render, RenderOptions } from '@testing-library/react'
@@ -24,8 +26,11 @@ import { queryClient } from 'services/query-client'
 import { configureStore } from 'store/configureStore'
 import { AppState } from 'store/types'
 
+import { createMockAppContext } from './mocks/app-context'
+
 type TestOptions = {
   reduxState?: PartialDeep<AppState>
+  featureFlags?: Partial<Record<FeatureFlags, boolean>>
 }
 
 type ReduxProviderProps = {
@@ -48,12 +53,13 @@ type TestProvidersProps = {
   children: ReactNode
 }
 
-const audiusQueryContext = {} as unknown as AudiusQueryContextType
-
 const TestProviders =
   (options?: TestOptions) => (props: TestProvidersProps) => {
     const { children } = props
-    const { reduxState } = options ?? {}
+    const { reduxState, featureFlags } = options ?? {}
+    const mockAppContext = createMockAppContext(featureFlags)
+    const audiusQueryContext = {} as unknown as AudiusQueryContextType
+
     return (
       <HistoryContextProvider>
         <QueryClientProvider client={queryClient}>
@@ -61,15 +67,17 @@ const TestProviders =
             <ThemeProvider theme='day'>
               <ReduxProvider initialStoreState={reduxState}>
                 <RouterContextProvider>
-                  <ToastContextProvider>
-                    <HistoryContext.Consumer>
-                      {({ history }) => (
-                        <Router history={history}>
-                          <CompatRouter>{children}</CompatRouter>
-                        </Router>
-                      )}
-                    </HistoryContext.Consumer>
-                  </ToastContextProvider>
+                  <AppContext.Provider value={mockAppContext}>
+                    <ToastContextProvider>
+                      <HistoryContext.Consumer>
+                        {({ history }) => (
+                          <Router history={history}>
+                            <CompatRouter>{children}</CompatRouter>
+                          </Router>
+                        )}
+                      </HistoryContext.Consumer>
+                    </ToastContextProvider>
+                  </AppContext.Provider>
                 </RouterContextProvider>
               </ReduxProvider>
             </ThemeProvider>

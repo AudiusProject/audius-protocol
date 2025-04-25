@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { useFormattedAudioBalance } from '@audius/common/hooks'
-import { walletMessages } from '@audius/common/messages'
 import { route } from '@audius/common/utils'
 import {
   Flex,
@@ -34,9 +33,7 @@ export const YourCoins = () => {
     dispatch(push(WALLET_AUDIO_PAGE))
   }, [dispatch])
 
-  const displayAmount = isAudioBalanceLoading
-    ? walletMessages.loading
-    : audioBalanceFormatted
+  const isLoading = isAudioBalanceLoading || isAudioPriceLoading
 
   return (
     <Paper
@@ -66,19 +63,24 @@ export const YourCoins = () => {
               borderRadius: cornerRadius.circle
             }}
           />
-          <Flex direction='column' gap='xs'>
+          <Flex
+            direction='column'
+            gap='xs'
+            css={{
+              opacity: isLoading ? 0 : 1,
+              transition: 'opacity 0.3s ease'
+            }}
+          >
             <Flex gap='xs'>
               <Text variant='heading' size='l' color='default'>
-                {displayAmount}
+                {audioBalanceFormatted}
               </Text>
               <Text variant='heading' size='l' color='subdued'>
                 $AUDIO
               </Text>
             </Flex>
             <Text variant='heading' size='s' color='subdued'>
-              {isAudioPriceLoading
-                ? walletMessages.loadingPrice
-                : audioDollarValue}
+              {audioDollarValue}
             </Text>
           </Flex>
         </Flex>

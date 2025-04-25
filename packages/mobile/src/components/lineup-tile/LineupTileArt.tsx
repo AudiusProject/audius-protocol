@@ -34,11 +34,13 @@ export const LineupTileArt = (props: LineupTileArtProps) => {
   const styles = useStyles()
 
   const imageElement = (
-    <View style={styles.imageRoot}>
-      <View style={[trackTileStyles.image, styles.backdrop]} />
-      <FadeInView style={styles.image} startOpacity={0} duration={500}>
-        {renderImage({ style: trackTileStyles.image })}
-      </FadeInView>
+    <View style={[style, trackTileStyles.image]}>
+      <View style={styles.imageRoot}>
+        <View style={[trackTileStyles.image, styles.backdrop]} />
+        <FadeInView style={styles.image} startOpacity={0} duration={500}>
+          {renderImage({ style: trackTileStyles.image })}
+        </FadeInView>
+      </View>
     </View>
   )
 

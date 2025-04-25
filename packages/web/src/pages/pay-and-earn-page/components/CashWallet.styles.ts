@@ -21,6 +21,9 @@ export const useCashWalletStyles = makeResponsiveStyles<Styles>(
 
     // Payout wallet flex container
     payoutWalletFlex: {
+      base: {
+        cursor: 'pointer'
+      },
       mobile: {
         ...(media.isExtraSmall && {
           flexDirection: 'column',
