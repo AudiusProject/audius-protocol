@@ -1,14 +1,14 @@
-import { Id } from '@audius/sdk'
+import { OptionalId } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { transformAndCleanList } from '~/adapters/utils'
 import { useAudiusQueryContext } from '~/audius-query'
-import { getUserId } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
+import { useCurrentUserId } from './useCurrentUserId'
 import { useTracks } from './useTracks'
 import { primeTrackData } from './utils/primeTrackData'
 
@@ -43,7 +43,7 @@ export const useUserTracksByHandle = (
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
 
   const { handle, filterTracks = 'public', sort = 'date', limit, offset } = args
 
@@ -53,7 +53,7 @@ export const useUserTracksByHandle = (
       const sdk = await audiusSdk()
       const { data = [] } = await sdk.full.users.getTracksByUserHandle({
         handle: handle!,
-        userId: Id.parse(currentUserId),
+        userId: OptionalId.parse(currentUserId),
         filterTracks,
         sort,
         limit,

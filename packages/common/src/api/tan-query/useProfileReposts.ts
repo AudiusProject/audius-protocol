@@ -1,4 +1,4 @@
-import { Id, EntityType } from '@audius/sdk'
+import { EntityType, OptionalId } from '@audius/sdk'
 import {
   InfiniteData,
   useInfiniteQuery,
@@ -62,7 +62,7 @@ export const useProfileReposts = (
       const handleNoAt = handle.startsWith('@') ? handle.substring(1) : handle
       const { data: repostsSDKData } = await sdk.full.users.getRepostsByHandle({
         handle: handleNoAt,
-        userId: currentUserId ? Id.parse(currentUserId) : undefined,
+        userId: OptionalId.parse(currentUserId),
         limit: pageSize,
         offset: pageParam
       })
