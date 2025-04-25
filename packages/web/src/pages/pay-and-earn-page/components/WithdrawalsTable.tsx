@@ -13,6 +13,8 @@ import { TransactionCell, TransactionRow } from '../types'
 import { isEmptyTransactionRow } from '../utils'
 
 import styles from './WithdrawalsTable.module.css'
+import payAndEarnStyles from '../PayAndEarnPage.module.css'
+
 
 const messages = {
   cash: 'Cash',
@@ -171,6 +173,7 @@ export const WithdrawalsTable = ({
       totalRowCount={totalRowCount ?? 0}
       scrollRef={scrollRef}
       fetchBatchSize={fetchBatchSize}
+      wrapperClassName={payAndEarnStyles.tableWrapper}
     />
   )
 }

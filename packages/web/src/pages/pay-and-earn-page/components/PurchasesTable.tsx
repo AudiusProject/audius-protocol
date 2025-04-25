@@ -12,6 +12,7 @@ import { PurchaseCell, PurchaseRow } from '../types'
 import { isEmptyPurchaseRow } from '../utils'
 
 import { TrackNameWithArtwork } from './TrackNameWithArtwork'
+import styles from '../PayAndEarnPage.module.css'
 
 export type PurchasesTableColumn =
   | 'contentName'
@@ -170,6 +171,7 @@ export const PurchasesTable = ({
       totalRowCount={totalRowCount ?? 0}
       scrollRef={scrollRef}
       fetchBatchSize={fetchBatchSize}
+      wrapperClassName={styles.tableWrapper}
     />
   )
 }
