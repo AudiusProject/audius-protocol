@@ -68,19 +68,21 @@ export const RemixContestDetailsTab = ({
           {remixContest?.eventData?.description ?? messages.fallbackDescription}
         </UserGeneratedText>
       </Flex>
-      <Divider />
       {!isOwner ? (
-        <Flex p='l' pb='s'>
-          <Button
-            variant='secondary'
-            size='small'
-            fullWidth
-            onClick={goToUploadWithRemix}
-            iconLeft={IconCloudUpload}
-          >
-            {messages.uploadRemixButtonText}
-          </Button>
-        </Flex>
+        <>
+          <Divider />
+          <Flex p='l' pb='s'>
+            <Button
+              variant='secondary'
+              size='small'
+              fullWidth
+              onClick={goToUploadWithRemix}
+              iconLeft={IconCloudUpload}
+            >
+              {messages.uploadRemixButtonText}
+            </Button>
+          </Flex>
+        </>
       ) : null}
     </Flex>
   )
