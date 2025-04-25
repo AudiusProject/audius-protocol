@@ -53,7 +53,7 @@ const SubmissionCard = ({ submission }: { submission: LineupData }) => {
   const displaySkeleton = isLoading || !track || !user
 
   return (
-    <Flex column gap='s' borderTop='default'>
+    <Flex column gap='s'>
       <Flex h={artworkSize} w={artworkSize}>
         {displaySkeleton ? (
           <Skeleton />
@@ -117,7 +117,7 @@ const RemixContestSubmissions = ({
   const navigation = useNavigation()
 
   return (
-    <Flex w='100%' column gap='2xl' pv='xl' ph='l'>
+    <Flex w='100%' column gap='2xl' pv='xl' ph='l' borderTop='default'>
       <Flex gap='2xl' wrap='wrap'>
         {submissions.map((submission) => (
           <SubmissionCard key={submission.id} submission={submission} />
