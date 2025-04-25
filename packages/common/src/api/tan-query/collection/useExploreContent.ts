@@ -3,8 +3,8 @@ import { useQuery } from '@tanstack/react-query'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models'
 
-import { QUERY_KEYS } from './queryKeys'
-import { QueryKey, SelectableQueryOptions } from './types'
+import { QUERY_KEYS } from '../queryKeys'
+import { QueryKey, SelectableQueryOptions } from '../types'
 
 const STATIC_EXPLORE_CONTENT_URL =
   'https://download.audius.co/static-resources/explore-content.json'

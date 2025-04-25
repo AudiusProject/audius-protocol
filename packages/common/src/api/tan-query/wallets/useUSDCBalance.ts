@@ -10,10 +10,9 @@ import { getUserbankAccountInfo } from '~/services/index'
 import { getRecoveryStatus } from '~/store/buy-usdc/selectors'
 import { setUSDCBalance } from '~/store/wallet/slice'
 
-import { useGetCurrentUser } from '../index'
-
-import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions, type QueryKey } from './types'
+import { useGetCurrentUser } from '../../index'
+import { QUERY_KEYS } from '../queryKeys'
+import { QueryOptions, type QueryKey } from '../types'
 
 export const getUSDCBalanceQueryKey = (
   ethAddress: string | null,
