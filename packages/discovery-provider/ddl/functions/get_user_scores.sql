@@ -7,8 +7,8 @@ create or replace function get_user_scores(
         play_count bigint,
         distinct_tracks_played bigint,
         follower_count bigint,
-        challenge_count bigint,
         following_count bigint,
+        challenge_count bigint,
         chat_block_count bigint,
         is_audius_impersonator boolean,
         score bigint
@@ -53,7 +53,12 @@ create or replace function get_user_scores(
     aggregate_scores as (
         select users.user_id,
             users.handle_lc,
-            users.created_at,
+            coalesce(play_activity.play_count, 0) as play_count,
+            coalesce(play_activity.distinct_tracks_played, 0) as distinct_tracks_played,
+            coalesce(aggregate_user.following_count, 0) as following_count,
+            coalesce(aggregate_user.follower_count, 0) as follower_count,
+            coalesce(fast_challenge_completion.challenge_count, 0) as challenge_count,
+            coalesce(chat_blocks.block_count, 0) as chat_block_count,
             case
                 when (
                     users.handle_lc ilike '%audius%'
@@ -61,13 +66,7 @@ create or replace function get_user_scores(
                 )
                 and users.is_verified = false then true
                 else false
-            end as is_audius_impersonator,
-            coalesce(play_activity.play_count, 0) as play_count,
-            coalesce(play_activity.distinct_tracks_played, 0) as distinct_tracks_played,
-            coalesce(fast_challenge_completion.challenge_count, 0) as challenge_count,
-            coalesce(aggregate_user.following_count, 0) as following_count,
-            coalesce(aggregate_user.follower_count, 0) as follower_count,
-            coalesce(chat_blocks.block_count, 0) as chat_block_count
+            end as is_audius_impersonator
         from users
             left join play_activity on users.user_id = play_activity.user_id
             left join fast_challenge_completion on users.user_id = fast_challenge_completion.user_id
@@ -79,26 +78,15 @@ create or replace function get_user_scores(
                 or users.user_id = any(target_user_ids)
             )
     )
-select a.user_id,
-    a.handle_lc,
-    a.play_count,
-    a.distinct_tracks_played,
-    a.follower_count,
-    a.challenge_count,
-    a.following_count,
-    a.chat_block_count,
-    a.is_audius_impersonator,
-    (
-        (a.play_count / 2) + a.follower_count - a.challenge_count - (a.chat_block_count * 100) + case
-            when a.following_count < 5 then -1
-            else 0
-        end + case
-            when a.is_audius_impersonator then -1000
-            else 0
-        end + case
-            when a.distinct_tracks_played <= 3 then -10
-            else 0
-        end
+select a.*,
+    compute_user_score(
+        a.play_count,
+        a.follower_count,
+        a.challenge_count,
+        a.chat_block_count,
+        a.following_count,
+        a.is_audius_impersonator,
+        a.distinct_tracks_played
     ) as score
 from aggregate_scores a;
 $function$;
