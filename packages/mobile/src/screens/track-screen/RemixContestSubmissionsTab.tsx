@@ -1,3 +1,5 @@
+import React from 'react'
+
 import type { LineupData } from '@audius/common/api'
 import { useRemixes, useTrack, useUser } from '@audius/common/api'
 import type { ID } from '@audius/common/models'

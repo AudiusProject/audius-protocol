@@ -1,13 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import type { RefObject } from 'react'
 
 import { useRemixContest, useTrack, useCurrentUserId } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
+import type { FlatList } from 'react-native'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
-import { TabView, SceneMap, TabBar } from 'react-native-tab-view'
+import { TabView, SceneMap, TabBar, TabBarItem } from 'react-native-tab-view'
 import { usePrevious } from 'react-use'
 
 import { Paper } from '@audius/harmony-native'
@@ -20,8 +22,9 @@ import { RemixContestPrizesTab } from './RemixContestPrizesTab'
 import { RemixContestSubmissionsTab } from './RemixContestSubmissionsTab'
 import { UploadRemixFooter } from './UploadRemixFooter'
 
-const TAB_HEADER_HEIGHT = 48
 const TAB_FOOTER_HEIGHT = 64
+const TAB_HEADER_HEIGHT = 48
+const HEIGHT_OFFSET = 24
 
 const useStyles = makeStyles(({ palette, typography, spacing }) => ({
   tabBar: {
@@ -50,6 +53,7 @@ export type RemixContestTabParamList = {
 
 type RemixContestSectionProps = {
   trackId: ID
+  scrollRef?: RefObject<FlatList>
 }
 
 type Route = {
@@ -62,7 +66,10 @@ const AnimatedPaper = Animated.createAnimatedComponent(Paper)
 /**
  * Section displaying remix contest information for a track
  */
-export const RemixContestSection = ({ trackId }: RemixContestSectionProps) => {
+export const RemixContestSection = ({
+  trackId,
+  scrollRef
+}: RemixContestSectionProps) => {
   const { data: remixContest } = useRemixContest(trackId)
   const { textIconSubdued, neutral } = useThemeColors()
   const styles = useStyles()
@@ -102,12 +109,11 @@ export const RemixContestSection = ({ trackId }: RemixContestSectionProps) => {
 
   useEffect(() => {
     if (hasHeightChanged) {
-      animatedHeight.value = withTiming(
-        currentHeight + TAB_HEADER_HEIGHT + (isOwner ? 0 : TAB_FOOTER_HEIGHT),
-        {
-          duration: 250
-        }
-      )
+      const height =
+        currentHeight + HEIGHT_OFFSET + (isOwner ? 0 : TAB_FOOTER_HEIGHT)
+      animatedHeight.value = withTiming(height, {
+        duration: 250
+      })
     }
   }, [index, hasHeightChanged, currentHeight, animatedHeight, isOwner])
 
@@ -123,7 +129,11 @@ export const RemixContestSection = ({ trackId }: RemixContestSectionProps) => {
             onLayout={handleLayout('details')}
             isVisible={index === 0 && !firstRender}
           >
-            <RemixContestDetailsTab key='details' trackId={trackId} />
+            <RemixContestDetailsTab
+              key='details'
+              trackId={trackId}
+              scrollRef={scrollRef}
+            />
           </TabBody>
         ),
         prizes: () => (
@@ -145,7 +155,7 @@ export const RemixContestSection = ({ trackId }: RemixContestSectionProps) => {
       }),
     // Don't want handleLayout to re-trigger on index changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [scrollRef]
   )
 
   const renderTabBar = (props: any) => (
@@ -158,6 +168,17 @@ export const RemixContestSection = ({ trackId }: RemixContestSectionProps) => {
       inactiveColor={textIconSubdued}
       pressColor='transparent'
       pressOpacity={0.7}
+      renderTabBarItem={({ route, key, ...restProps }) => (
+        <TabBarItem
+          {...restProps}
+          key={key}
+          route={route}
+          getAccessibilityLabel={() => route.title}
+          getAccessible={() => true}
+          getLabelText={() => route.title}
+          getTestID={() => `tab-${route.key}`}
+        />
+      )}
     />
   )
 
