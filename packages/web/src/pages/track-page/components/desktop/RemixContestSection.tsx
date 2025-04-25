@@ -88,7 +88,6 @@ export const RemixContestSection = ({
     navigate(UPLOAD_PAGE, state)
   }, [trackId, navigate])
 
-  // TODO: Also return null if no remix contest description
   if (!trackId || !remixContest) return null
 
   return (

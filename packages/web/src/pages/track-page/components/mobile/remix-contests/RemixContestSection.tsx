@@ -64,7 +64,6 @@ export const RemixContestSection = ({
     isMobileV2: true
   })
 
-  // TODO: Also return null if no remix contest description
   if (!trackId || !remixContest) return null
 
   return (
