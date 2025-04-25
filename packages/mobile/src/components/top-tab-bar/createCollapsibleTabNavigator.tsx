@@ -1,68 +1,56 @@
-import { useCallback, useMemo, useRef } from 'react'
+import type { ReactElement } from 'react'
+import { useRef } from 'react'
 
+import type { MaterialTopTabNavigationOptions } from '@react-navigation/material-top-tabs'
+import type { MaterialTopTabDescriptorMap } from '@react-navigation/material-top-tabs/lib/typescript/src/types'
+import type { DefaultRouterOptions } from '@react-navigation/native'
 import {
   createNavigatorFactory,
   TabRouter,
   useNavigationBuilder
 } from '@react-navigation/native'
+import type { CollapsibleProps } from 'react-native-collapsible-tab-view'
 import { Tabs } from 'react-native-collapsible-tab-view'
 
 import { useTheme } from '@audius/harmony-native'
 
+import type { CollapsibleTopTabBarProps } from './CollapsibleTopTabBar'
+
+type CollapsibleTabNavigatorProps = Omit<CollapsibleProps, 'renderTabBar'> &
+  DefaultRouterOptions & {
+    screenOptions: MaterialTopTabNavigationOptions
+    renderTabBar: (props: CollapsibleTopTabBarProps) => ReactElement
+  }
+
 export const CollapsibleTabNavigator = ({
   renderHeader,
-  animatedValue,
-  initialScreenName,
+  initialRouteName,
   children,
   screenOptions,
   headerHeight,
   renderTabBar
-}: any) => {
-  const collapsibleOptions = useMemo(
-    () => ({ renderHeader, disableSnap: true, animatedValue, headerHeight }),
-    [animatedValue, headerHeight, renderHeader]
-  )
-
+}: CollapsibleTabNavigatorProps) => {
   const { state, navigation, descriptors } = useNavigationBuilder(TabRouter, {
     children,
     screenOptions,
-    initialRouteName: initialScreenName
+    initialRouteName
   })
 
   const ref = useRef()
 
-  const onTabChange = useCallback(
-    ({ tabName }) => {
-      const target = tabName.toString()
-      const isFocused = target === state.routes[state.index].name
-
-      // Don't do anything if we're already on the target tab
-      if (isFocused) {
-        return
-      }
-
-      // Find the index of the target route
-      const index = state.routes.findIndex((route) => route.name === target)
-      if (index === -1) return
-
-      // Emit the event and navigate to the tab
-      navigation.emit({
-        type: 'tabPress',
-        target: state.routes[index].key,
-        canPreventDefault: true
-      })
-
+  const onTabChange = ({ tabName, index, prevIndex }) => {
+    const target = tabName.toString()
+    // A swipe occured we need to navigate
+    if (index !== prevIndex) {
       navigation.navigate(target)
-    },
-    [navigation, state.routes, state.index]
-  )
+    }
+  }
 
   const { color } = useTheme()
 
   return (
     <Tabs.Container
       ref={ref}
-      {...collapsibleOptions}
       allowHeaderOverscroll
       initialTabName={state.routes[state.index].name}
       headerContainerStyle={{
@@ -71,8 +59,16 @@ export const CollapsibleTabNavigator = ({
         shadowOffset: { height: 2, width: 0 },
         shadowRadius: 2
       }}
+      renderHeader={renderHeader}
+      headerHeight={headerHeight}
+      snapThreshold={null}
       renderTabBar={(props) =>
-        renderTabBar({ ...props, state, navigation, descriptors })
+        renderTabBar({
+          ...props,
+          state,
+          navigation,
+          descriptors: descriptors as unknown as MaterialTopTabDescriptorMap
+        })
       }
       onTabChange={onTabChange}
       lazy={screenOptions?.lazy ?? false}

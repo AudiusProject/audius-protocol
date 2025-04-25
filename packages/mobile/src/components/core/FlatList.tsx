@@ -101,7 +101,9 @@ const AnimatedFlatList = forwardRef(function AnimatedFlatList<ItemT>(
   )
 })
 
-export type FlatListProps<ItemT> = RNFlatListProps<ItemT>
+export type FlatListProps<ItemT> = RNFlatListProps<ItemT> & {
+  isCollapsible?: boolean
+}
 
 /**
  * Provides either a FlatList or an animated FlatList
@@ -111,9 +113,14 @@ export const FlatList = forwardRef(function FlatList<ItemT>(
   props: FlatListProps<ItemT>,
   ref: Ref<FlatListT<ItemT>>
 ) {
-  const { ListFooterComponent, ...other } = props
+  const {
+    ListFooterComponent,
+    isCollapsible: isCollapsibleProp,
+    ...other
+  } = props
   const collapsibleContext = useContext(CollapsibleTabNavigatorContext)
-  const isCollapsible = Object.keys(collapsibleContext).length > 0
+  const isCollapsible =
+    isCollapsibleProp ?? Object.keys(collapsibleContext).length > 0
   const FooterComponent = ListFooterComponent ? (
     <>
       {ListFooterComponent}

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { ReactElement } from 'react'
 
 import { ProfilePageTabs } from '@audius/common/store'
 
@@ -32,7 +32,7 @@ type ProfileTabNavigatorProps = {
   /**
    * Function that renders the collapsible header
    */
-  renderHeader: () => ReactNode
+  renderHeader: () => ReactElement
   refreshing?: boolean
   onRefresh?: () => void
 }

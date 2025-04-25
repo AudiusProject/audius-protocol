@@ -1,13 +1,10 @@
-import type { ComponentType, ReactNode } from 'react'
+import type { ComponentType, ReactElement, ReactNode } from 'react'
 import { useMemo, createContext } from 'react'
 
-import type {
-  MaterialTopTabBarProps,
-  MaterialTopTabNavigationOptions
-} from '@react-navigation/material-top-tabs'
-import type { Animated } from 'react-native'
+import type { MaterialTopTabNavigationOptions } from '@react-navigation/material-top-tabs'
 import type { SvgProps } from 'react-native-svg'
 
+import type { CollapsibleTopTabBarProps } from './CollapsibleTopTabBar'
 import { CollapsibleTopTabBar } from './CollapsibleTopTabBar'
 import { createCollapsibleTabNavigator } from './createCollapsibleTabNavigator'
 
@@ -46,21 +43,12 @@ export const CollapsibleTabNavigatorContextProvider = (
   )
 }
 
-const renderTabBar = (props: MaterialTopTabBarProps) => (
+const renderTabBar = (props: CollapsibleTopTabBarProps) => (
   <CollapsibleTopTabBar {...props} />
 )
 
 type CollapsibleTabNavigatorProps = {
-  /**
-   * Function that renders the collapsible header
-   */
-  renderHeader: () => ReactNode
-  /**
-   * Animated value to capture scrolling. If unset, an
-   * animated value is created.
-   */
-  animatedValue?: Animated.Value
-
+  renderHeader: () => ReactElement
   initialScreenName?: string
   children: ReactNode
   screenOptions?: MaterialTopTabNavigationOptions
@@ -69,28 +57,18 @@ type CollapsibleTabNavigatorProps = {
 
 export const CollapsibleTabNavigator = ({
   renderHeader,
-  animatedValue,
   initialScreenName,
   children,
   screenOptions,
   headerHeight
 }: CollapsibleTabNavigatorProps) => {
-  const collapsibleOptions = useMemo(
-    () => ({ renderHeader, disableSnap: true, animatedValue, headerHeight }),
-    [animatedValue, headerHeight, renderHeader]
-  )
-
   return (
     <Tab.Navigator
-      collapsibleOptions={collapsibleOptions}
       initialRouteName={initialScreenName}
       screenOptions={{ ...screenOptions, lazy: false }}
+      headerHeight={headerHeight}
       renderHeader={renderHeader}
       renderTabBar={renderTabBar}
-      headerContainerStyle={{
-        backgroundColor: 'red',
-        shadowRadius: 0
-      }}
     >
       {children}
     </Tab.Navigator>

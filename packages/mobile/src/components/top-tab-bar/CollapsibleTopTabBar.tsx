@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 
+import type { MaterialTopTabBarProps } from '@react-navigation/material-top-tabs'
 import { Dimensions, View } from 'react-native'
+import type { TabBarProps } from 'react-native-collapsible-tab-view'
 import Animated, {
   interpolate,
   useAnimatedStyle
@@ -54,11 +56,12 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   }
 }))
 
-export const CollapsibleTopTabBar = (props: any) => {
-  const { state, descriptors, navigation, onTabPress, indexDecimal, position } =
-    props
-  const positionValue = indexDecimal ?? position
-  // console.log('position', props.position, typeof props.position)
+export type CollapsibleTopTabBarProps = TabBarProps &
+  Pick<MaterialTopTabBarProps, 'state' | 'descriptors' | 'navigation'>
+
+export const CollapsibleTopTabBar = (props: CollapsibleTopTabBarProps) => {
+  const { state, descriptors, navigation, onTabPress, indexDecimal } = props
+  const positionValue = indexDecimal
   const styles = useStyles()
 
   // Horizontal padding decreases as the number of tabs increases
@@ -80,7 +83,7 @@ export const CollapsibleTopTabBar = (props: any) => {
     })
 
     if (!isFocused(tabIndex) && !event.defaultPrevented) {
-      // The `merge: true` option makes sure that the params inside the tab screen are preserved
+      // @ts-expect-error The `merge: true` option makes sure that the params inside the tab screen are preserved
       navigation.navigate({ name: route.name, merge: true })
     }
   }

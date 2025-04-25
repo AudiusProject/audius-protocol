@@ -75,12 +75,10 @@ export const SelectArtistsScreen = () => {
     <SelectArtistsPreviewContextProvider>
       <Flex flex={1} pb='l'>
         <Tab.Navigator
-          tabBar={SelectedGenresTabBar}
-          collapsibleOptions={{
-            renderHeader,
-            headerHeight: 244,
-            disableSnap: true
-          }}
+          renderTabBar={(props) => <SelectedGenresTabBar {...props} />}
+          renderHeader={renderHeader}
+          headerHeight={244}
+          snapThreshold={null}
         >
           {genres.map((genre) => (
             <Tab.Screen
