@@ -6,7 +6,6 @@ import { playlistPermalinkToHandleAndSlug } from '@audius/common/api'
 import {
   Kind,
   CollectionMetadata,
-  Collection,
   UserCollectionMetadata,
   ID
 } from '@audius/common/models'
@@ -18,7 +17,8 @@ import {
   reformatCollection,
   getContext,
   CommonState,
-  getSDK
+  getSDK,
+  BatchCachedCollections
 } from '@audius/common/store'
 import { makeUid, Nullable } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'

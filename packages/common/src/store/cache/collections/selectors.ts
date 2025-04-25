@@ -11,10 +11,10 @@ import type { CommonState } from '~/store/commonStore'
 import { removeNullable } from '~/utils/typeUtils'
 import { Uid } from '~/utils/uid'
 
-import type { ID, UID, Collection, User, Cacheable } from '../../../models'
+import type { ID, UID, Collection, User } from '../../../models'
 import { Status, Kind } from '../../../models'
 
-import type { EnhancedCollectionTrack } from './types'
+import type { BatchCachedCollections, EnhancedCollectionTrack } from './types'
 
 /** @deprecated Use useCollection instead */
 export const getCollection = (
@@ -33,7 +33,6 @@ export const getCollection = (
 export const getStatus = (state: CommonState, props: { id: ID }) =>
   state.collections.statuses[props.id] || null
 
-export type BatchCachedCollections = Omit<Cacheable<Collection>, '_timestamp'>
 /** @deprecated Use useCollections instead */
 export const getCollections = (
   state: CommonState,

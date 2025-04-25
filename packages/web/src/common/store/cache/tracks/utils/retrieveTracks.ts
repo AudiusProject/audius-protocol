@@ -6,11 +6,10 @@ import {
   Kind,
   ID,
   TrackMetadata,
-  Track,
   UserTrackMetadata
 } from '@audius/common/models'
-import { BatchCachedTracks } from '@audius/common/src/store/cache/tracks/selectors'
 import {
+  BatchCachedTracks,
   accountSelectors,
   cacheTracksSelectors,
   cacheSelectors,
@@ -150,7 +149,7 @@ export function* retrieveTracks({
   })
 
   const trackId = ids[0]
-  const track = tracks.entries[trackId]
+  const track = tracks.entries[trackId].metadata
 
   if (withRemixes) {
     yield* spawn(function* () {

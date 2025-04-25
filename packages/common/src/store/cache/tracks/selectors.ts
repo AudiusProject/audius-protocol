@@ -1,7 +1,9 @@
 import { getEntry, getAllEntries } from '~/store/cache/selectors'
 import { CommonState } from '~/store/commonStore'
 
-import { Kind, ID, UID, Status, Track, Cacheable } from '../../../models'
+import { Kind, ID, UID, Status, Track } from '../../../models'
+
+import { BatchCachedTracks } from './types'
 
 /** @deprecated Use useTrack instead */
 export const getTrack = (
@@ -23,7 +25,6 @@ export const getTrack = (
 export const getStatus = (state: CommonState, props: { id?: ID | null }) =>
   (props.id && state.tracks.statuses[props.id]) || null
 
-export type BatchCachedTracks = Omit<Cacheable<Track>, '_timestamp'>
 /** @deprecated Use useTracks instead */
 export const getTracks = (
   state: CommonState,

@@ -5,8 +5,10 @@ import {
 } from '~/store/cache/selectors'
 import type { CommonState } from '~/store/commonStore'
 
-import { Cacheable, Kind } from '../../../models'
-import type { ID, UID, User } from '../../../models'
+import { Kind } from '../../../models'
+import type { ID, UID } from '../../../models'
+
+import { BatchCachedUsers } from './types'
 
 /** @deprecated use useUser instead */
 export const getUser = (
@@ -28,7 +30,6 @@ export const getUserByHandle = (
   props: { handle: string }
 ) => state.users.handles[props.handle] || null
 
-export type BatchCachedUsers = Omit<Cacheable<User>, '_timestamp'>
 /** @deprecated use useUsers instead */
 export const getUsers = (
   state: CommonState,

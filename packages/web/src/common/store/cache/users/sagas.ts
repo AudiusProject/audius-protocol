@@ -1,7 +1,7 @@
 import { userMetadataListFromSDK } from '@audius/common/adapters'
 import { Kind, User } from '@audius/common/models'
-import { BatchCachedUsers } from '@audius/common/src/store/cache/users/selectors'
 import {
+  BatchCachedUsers,
   Metadata,
   accountSelectors,
   cacheActions,
@@ -37,7 +37,7 @@ export function* fetchUsers(
   const sdk = yield* getSDK()
   const userId = yield* select(getUserId)
 
-  return yield* call(retrieve<BatchCachedUsers>, {
+  return (yield* call(retrieve, {
     ids: userIds,
     selectFromCache: function* (ids) {
       return yield* select(getUsers, { ids: ids as number[] })
@@ -59,7 +59,10 @@ export function* fetchUsers(
     idField: 'user_id',
     requiredFields,
     forceRetrieveFromSource
-  })
+  })) as {
+    entries: Record<string | number, BatchCachedUsers>
+    uids: Record<string | number, string>
+  }
 }
 
 function* retrieveUserByHandle(handle: string, retry: boolean) {
@@ -93,7 +96,7 @@ export function* fetchUserByHandle(
     return yield* retrieveUserByHandle(handles[0].toString(), retry)
   }
 
-  const { entries: users } = yield* call(retrieve<BatchCachedUsers>, {
+  const { entries: users } = (yield* call(retrieve, {
     ids: [handle],
     selectFromCache: function* (handles) {
       return yield* select(getUsers, { handles: handles as string[] })
@@ -113,7 +116,10 @@ export function* fetchUserByHandle(
     forceRetrieveFromSource,
     shouldSetLoading,
     deleteExistingEntry
-  })
+  })) as {
+    entries: Record<string | number, BatchCachedUsers>
+    uids: Record<string | number, string>
+  }
   return users[handle].metadata
 }
 
