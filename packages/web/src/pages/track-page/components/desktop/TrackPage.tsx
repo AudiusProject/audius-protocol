@@ -101,7 +101,6 @@ const TrackPage = ({
 
   const renderGiantTrackTile = () => (
     <GiantTrackTile
-      loading={loading}
       playing={heroPlaying}
       previewing={previewing}
       trackTitle={defaults.title}

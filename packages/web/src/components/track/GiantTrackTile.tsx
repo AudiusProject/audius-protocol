@@ -135,7 +135,6 @@ type GiantTrackTileProps = {
   isUnlisted: boolean
   isScheduledRelease: boolean
   listenCount: number
-  loading: boolean
   mood: string
   onMakePublic: (trackId: ID) => void
   onFollow: () => void
@@ -180,7 +179,6 @@ export const GiantTrackTile = ({
   isScheduledRelease,
   isUnlisted,
   listenCount,
-  loading,
   onFollow,
   onMakePublic,
   onPlay,
