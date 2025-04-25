@@ -14,12 +14,12 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
-  useGetTrackById,
   useTrackComments,
   QUERY_KEYS,
   useTrackCommentCount,
   resetPreviousCommentCount,
-  useSupporters
+  useSupporters,
+  useTrack
 } from '~/api'
 import { useGatedContentAccess } from '~/hooks'
 import {
@@ -106,7 +106,7 @@ export function CommentSectionProvider<NavigationProp>(
     uid: lineupUid,
     lineupActions
   } = props
-  const { data: track } = useGetTrackById({ id: entityId })
+  const { data: track } = useTrack(entityId)
   const trackOwnerId = track?.owner_id
 
   // Prefetch the track owner's supporters

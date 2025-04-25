@@ -8,7 +8,7 @@ import {
   useState
 } from 'react'
 
-import { useGetTrackById } from '@audius/common/api'
+import { useTrack } from '@audius/common/api'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
 import type { ID, UserMetadata } from '@audius/common/models'
 import {
@@ -133,7 +133,14 @@ export const ComposerInput = forwardRef(function ComposerInput(
   const latestValueRef = useRef(value)
   const messageIdRef = useRef(messageId)
   const lastKeyPressMsRef = useRef<number | null>(null)
-  const { data: track } = useGetTrackById({ id: entityId ?? -1 })
+  const { data: partialTrack } = useTrack(entityId, {
+    select: (track) => ({
+      duration: track.duration,
+      genre: track.genre,
+      release_date: track.release_date,
+      access: track.access
+    })
+  })
 
   useEffect(() => {
     setUserMentions(
@@ -183,9 +190,9 @@ export const ComposerInput = forwardRef(function ComposerInput(
   const prevLinkEntities = usePrevious(linkEntities)
 
   const timestamps = useMemo(() => {
-    if (!track || !track.access.stream) return []
+    if (!partialTrack || !partialTrack.access.stream) return []
 
-    const { duration } = track
+    const { duration } = partialTrack
     return Array.from(value.matchAll(timestampRegex))
       .filter((match) => getDurationFromTimestampMatch(match) <= duration)
       .map((match) => ({
@@ -194,7 +201,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
         index: match.index,
         link: ''
       }))
-  }, [track, value])
+  }, [partialTrack, value])
   const prevTimestamps = usePrevious(timestamps)
 
   useEffect(() => {

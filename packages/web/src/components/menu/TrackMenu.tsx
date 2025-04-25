@@ -1,9 +1,9 @@
 import { useContext } from 'react'
 
 import {
-  useGetTrackById,
   useRemixContest,
-  useToggleFavoriteTrack
+  useToggleFavoriteTrack,
+  useTrack
 } from '@audius/common/api'
 import {
   ShareSource,
@@ -140,7 +140,13 @@ const TrackMenu = ({
   const { onOpen: openDeleteTrackConfirmation } =
     useDeleteTrackConfirmationModal()
   const { onOpen: openHostRemixContest } = useHostRemixContestModal()
-  const { data: track } = useGetTrackById({ id: props.trackId })
+  const { data: partialTrack } = useTrack(props.trackId, {
+    select: (track) => ({
+      album_backlink: track.album_backlink,
+      permalink: track.permalink,
+      remix_of: track.remix_of
+    })
+  })
 
   const toggleSaveTrack = useToggleFavoriteTrack({
     trackId: props.trackId,
@@ -161,7 +167,7 @@ const TrackMenu = ({
 
   const onEditTrack = (trackId: Nullable<number>) => {
     if (!trackId) return
-    const permalink = trackPermalink || track?.permalink
+    const permalink = trackPermalink || partialTrack?.permalink
     permalink && goToRoute(`${permalink}/edit`)
   }
 
@@ -187,7 +193,7 @@ const TrackMenu = ({
       unsetArtistPick
     } = props
 
-    const albumInfo = track?.album_backlink
+    const albumInfo = partialTrack?.album_backlink
     const isLongFormContent =
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
 
@@ -318,7 +324,12 @@ const TrackMenu = ({
 
     const menu: { items: PopupMenuItem[] } = { items: [] }
 
-    if (includeRemixContest && isOwner && !isDeleted && !track?.remix_of) {
+    if (
+      includeRemixContest &&
+      isOwner &&
+      !isDeleted &&
+      !partialTrack?.remix_of
+    ) {
       menu.items.push(remixContestMenuItem)
     }
 

@@ -2,8 +2,9 @@ import { MouseEventHandler, useCallback, useMemo } from 'react'
 
 import {
   useGetPlaylistById,
-  useGetTrackById,
-  useGetUserById
+  useGetUserById,
+  useTrack,
+  useUser
 } from '@audius/common/api'
 import { recentSearchMessages as messages } from '@audius/common/messages'
 import { Kind, SquareSizes, Status } from '@audius/common/models'
@@ -111,19 +112,27 @@ const RecentSearch = (props: RecentSearchProps) => {
 const RecentSearchTrack = (props: { searchItem: SearchItem }) => {
   const { searchItem } = props
   const { id } = searchItem
-  const { data: track, status } = useGetTrackById({ id })
+  const { data: partialTrack } = useTrack(id, {
+    select: (track) => ({
+      title: track.title,
+      permalink: track.permalink,
+      owner_id: track.owner_id,
+      track_id: track.track_id
+    })
+  })
+  const { data: user } = useUser(partialTrack?.owner_id)
 
   const image = useTrackCoverArt({
-    trackId: track?.track_id,
+    trackId: partialTrack?.track_id,
     size: SquareSizes.SIZE_150_BY_150
   })
 
   if (status === Status.LOADING) return <RecentSearchSkeleton />
 
-  if (!track) return null
-  const { permalink, title, user } = track
-
+  if (!partialTrack) return null
   if (!user) return null
+
+  const { permalink, title } = partialTrack
 
   return (
     <RecentSearch searchItem={searchItem} title={title} linkTo={permalink}>

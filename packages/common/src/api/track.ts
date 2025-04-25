@@ -124,7 +124,6 @@ const trackApi = createApi({
 })
 
 export const {
-  useGetTrackById,
   useGetTrackByPermalink,
   useGetTracksByIds,
   useGetUserTracksByHandle

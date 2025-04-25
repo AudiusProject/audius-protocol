@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { useGetPlaylistById, useGetTrackById } from '@audius/common/api'
+import { useGetPlaylistById, useTrack, useUser } from '@audius/common/api'
 import type { ID, UserMetadata } from '@audius/common/models'
 import { SquareSizes } from '@audius/common/models'
 
@@ -11,8 +11,8 @@ import UserBadges from 'app/components/user-badges'
 
 type ComposePreviewInfoProps = {
   title: string
-  name: string
-  user: UserMetadata
+  name?: string
+  user?: UserMetadata
   image?: ReactNode
 }
 
@@ -43,7 +43,7 @@ const ComposePreviewInfo = (props: ComposePreviewInfoProps) => {
           <Text variant='body' strength='strong'>
             {name}
           </Text>
-          <UserBadges hideName user={user} badgeSize={14} />
+          {user ? <UserBadges hideName user={user} badgeSize={14} /> : null}
         </Flex>
       </Flex>
     </Flex>
@@ -57,15 +57,21 @@ type ComposerTrackInfoProps = {
 export const ComposerTrackInfo = (props: ComposerTrackInfoProps) => {
   const { trackId } = props
 
-  const { data: track } = useGetTrackById({ id: trackId }, { force: true })
+  const { data: partialTrack } = useTrack(trackId, {
+    select: (track) => ({
+      title: track.title,
+      owner_id: track.owner_id
+    })
+  })
+  const { data: user } = useUser(partialTrack?.owner_id)
 
-  if (!track) return null
+  if (!partialTrack) return null
 
   return (
     <ComposePreviewInfo
-      title={track.title}
-      name={track.user.name}
-      user={track.user}
+      title={partialTrack.title}
+      name={user?.name ?? ''}
+      user={user}
       image={
         <TrackImage trackId={trackId} size={SquareSizes.SIZE_150_BY_150} />
       }
