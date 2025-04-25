@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
-import { keyBy } from 'lodash'
+import { keyBy, uniq } from 'lodash'
 
 import { ID } from '~/models/Identifiers'
 
@@ -22,8 +22,13 @@ export const useComments = (
 ) => {
   const queryClient = useQueryClient()
 
+  const dedupedCommentIds = useMemo(
+    () => (commentIds ? uniq(commentIds) : commentIds),
+    [commentIds]
+  )
+
   const queryResults = useQueries({
-    queries: commentIds?.map((commentId) => ({
+    queries: dedupedCommentIds?.map((commentId) => ({
       queryKey: getCommentQueryKey(commentId),
       queryFn: async (): Promise<CommentOrReply | {}> => {
         // Comments are expected to be pre-populated in the cache from other queries

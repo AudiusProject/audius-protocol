@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
-import { keyBy } from 'lodash'
+import { keyBy, uniq } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
@@ -32,8 +32,13 @@ export const useCollections = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
+  const dedupedCollectionIds = useMemo(
+    () => (collectionIds ? uniq(collectionIds) : collectionIds),
+    [collectionIds]
+  )
+
   const queriesResults = useQueries({
-    queries: collectionIds?.map((collectionId) => ({
+    queries: dedupedCollectionIds?.map((collectionId) => ({
       queryKey: getCollectionQueryKey(collectionId),
       queryFn: async () => {
         const sdk = await audiusSdk()

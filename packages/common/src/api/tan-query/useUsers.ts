@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
-import { keyBy } from 'lodash'
+import { keyBy, uniq } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
@@ -30,8 +30,13 @@ export const useUsers = (
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
 
+  const dedupedUserIds = useMemo(
+    () => (userIds ? uniq(userIds) : userIds),
+    [userIds]
+  )
+
   const queryResults = useQueries({
-    queries: userIds?.map((userId) => ({
+    queries: dedupedUserIds?.map((userId) => ({
       queryKey: getUserQueryKey(userId),
       queryFn: async () => {
         const sdk = await audiusSdk()
@@ -53,7 +58,7 @@ export const useUsers = (
   const byId = useMemo(() => keyBy(users, 'user_id'), [users])
 
   const isSavedToRedux = useSelector((state: CommonState) =>
-    userIds?.every((userId) => !!state.users.entries[userId])
+    dedupedUserIds?.every((userId) => !!state.users.entries[userId])
   )
 
   return {
