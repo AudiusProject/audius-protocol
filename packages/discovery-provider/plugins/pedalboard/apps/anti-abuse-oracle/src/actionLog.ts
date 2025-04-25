@@ -91,6 +91,7 @@ export async function getRecentUsers(page: number) {
 
 export type ClaimDetails = {
   disbursement_date: string
+  user_id: number
   handle: string
   sign_up_date: Date
   challenge_id: string
@@ -98,7 +99,7 @@ export type ClaimDetails = {
 }
 export async function getRecentClaims(page: number) {
   const rows = await sql`
-    select challenge_disbursements.created_at as disbursement_date, handle_lc as handle, users.created_at as sign_up_date, challenge_disbursements.challenge_id, ROUND(CAST(challenge_disbursements.amount AS numeric) / 100000000, 0) as amount
+    select challenge_disbursements.created_at as disbursement_date, handle_lc as handle, users.user_id, users.created_at as sign_up_date, challenge_disbursements.challenge_id, ROUND(CAST(challenge_disbursements.amount AS numeric) / 100000000, 0) as amount
     from challenge_disbursements
     join users on users.user_id = challenge_disbursements.user_id
     order by challenge_disbursements.created_at desc 

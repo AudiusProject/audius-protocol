@@ -1,3 +1,6 @@
+-- identical to get_user_score but for a user batch
+-- used for updating score in aggregate_user
+-- this score is used in shadowbanning
 drop function if exists get_user_scores(integer []);
 create or replace function get_user_scores(
         target_user_ids integer [] default null::integer []

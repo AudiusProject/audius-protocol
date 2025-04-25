@@ -1,3 +1,4 @@
+-- shared computation function used in get_user_score(s)
 create or replace function compute_user_score(
         play_count bigint,
         follower_count bigint,

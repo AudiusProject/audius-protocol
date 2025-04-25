@@ -203,7 +203,14 @@ app.use(
 app.get('/attestation/ui', async (c) => {
   const page = parseInt(c.req.query('page') || '0')
   const recentClaims = await getRecentClaims(page)
-
+  const userScores = Object.fromEntries(
+    await Promise.all(
+      (recentClaims || []).map(async (claim) => [
+        claim.handle,
+        await getUserNormalizedScore(claim.user_id)
+      ])
+    )
+  )
   let lastDate = ''
   function dateHeader(timestamp: Date) {
     const d = timestamp?.toDateString()
@@ -220,6 +227,7 @@ app.get('/attestation/ui', async (c) => {
             <th>Claim Timestamp</th>
             <th>Handle</th>
             <th>Sign Up Timestamp</th>
+            <th>Score</th>
             <th>Challenge ID</th>
             <th>Amount</th>
           </tr>
@@ -232,12 +240,23 @@ app.get('/attestation/ui', async (c) => {
   return c.html(
     <Layout container>
       <h1 class='text-4xl font-bold mt-8'>Recent Claims</h1>
+      <p>
+        <span className='bg-red-100'>
+          Red rows indicate who would be blocked under current scoring.
+        </span>
+      </p>
       <table class='table'>
         <tbody>
           {recentClaims?.map((recentClaim) => (
             <>
               {dateHeader(new Date(recentClaim.disbursement_date))}
-              <tr>
+              <tr
+                className={
+                  userScores[recentClaim.handle].overallScore < 0
+                    ? 'bg-red-100'
+                    : ''
+                }
+              >
                 <td>
                   {new Date(recentClaim.disbursement_date).toLocaleTimeString()}
                 </td>
@@ -251,6 +270,7 @@ app.get('/attestation/ui', async (c) => {
                   </a>
                 </td>
                 <td>{recentClaim.sign_up_date.toLocaleString()}</td>
+                <td>{userScores[recentClaim.handle].overallScore}</td>
                 <td>{recentClaim.challenge_id}</td>
                 <td>{recentClaim.amount}</td>
               </tr>

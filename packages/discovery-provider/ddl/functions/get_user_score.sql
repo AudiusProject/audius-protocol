@@ -1,3 +1,5 @@
+-- identical to get_user_scores but for a single user
+-- used to generate a user score for attestations and in UI tool
 create or replace function get_user_score(target_user_id integer) returns table(
         user_id integer,
         handle_lc text,
