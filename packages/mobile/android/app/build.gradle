@@ -216,7 +216,7 @@ dependencies {
 
 
 
-apply from: "../../../../node_modules/react-native-code-push/android/codepush.gradle"
+apply from: "../../node_modules/react-native-code-push/android/codepush.gradle"
 
 // Google Services Gradle plugin
 apply plugin: 'com.google.gms.google-services'
