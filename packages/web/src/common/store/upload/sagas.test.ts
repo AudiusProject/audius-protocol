@@ -183,7 +183,7 @@ describe('upload', () => {
           ],
           [call.fn(confirmTransaction), true],
           [call.fn(waitForAccount), undefined],
-          [call.fn(retrieveTracks), [testTrack.metadata]]
+          [call.fn(retrieveTracks), [testTrack]]
         ])
         // Assertions
         // Uploaded track

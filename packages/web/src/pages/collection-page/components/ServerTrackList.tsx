@@ -1,5 +1,5 @@
 import { ID } from '@audius/common/src/models'
-import { cacheCollectionsSelectors } from '@audius/common/store'
+import { getCollectionTracks } from '@audius/common/src/store/cache/collections/selectors'
 import IconKebabHorizontal from '@audius/harmony/src/assets/icons/KebabHorizontal.svg'
 import { Artwork } from '@audius/harmony/src/components/artwork/Artwork'
 import { IconButton } from '@audius/harmony/src/components/button/IconButton/IconButton'
@@ -15,7 +15,7 @@ type ServerTrackListProps = {
 export const ServerTrackList = (props: ServerTrackListProps) => {
   const { collectionId } = props
   const tracks = useSelector((state) =>
-    cacheCollectionsSelectors.getCollectionTracks(state, { id: collectionId })
+    getCollectionTracks(state, { id: collectionId })
   )
   if (!tracks) return null
 
