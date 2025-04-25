@@ -300,9 +300,9 @@ export const challengeRewardsConfig: Record<
     shortTitle: 'Co-signed Remix',
     title: 'Co-signed Remix',
     description: () =>
-      'If your remix is co-signed by a verified artist you will earn a reward!',
+      'If a remix you’ve uploaded is co-signed by a verified artist, you may earn a reward!',
     fullDescription: () =>
-      'If your remix is co-signed by a verified artist you will earn a reward!',
+      'If a remix you’ve uploaded is co-signed by a verified artist, you may earn a reward!',
     panelButtonText: 'cosign description',
     id: ChallengeName.Cosign,
     progressLabel: 'Available',

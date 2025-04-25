@@ -26,8 +26,6 @@ const TAB_FOOTER_HEIGHT = 64
 const useStyles = makeStyles(({ palette, typography, spacing }) => ({
   tabBar: {
     backgroundColor: 'transparent',
-    borderBottomWidth: 1,
-    borderBottomColor: palette.neutralLight8,
     height: spacing(10)
   },
   tabLabel: {
@@ -172,6 +170,7 @@ export const RemixContestSection = ({ trackId }: RemixContestSectionProps) => {
         renderScene={renderScene}
         renderTabBar={renderTabBar}
         onIndexChange={setIndex}
+        swipeEnabled
       />
       {!isOwner && <UploadRemixFooter trackId={trackId} />}
     </AnimatedPaper>
