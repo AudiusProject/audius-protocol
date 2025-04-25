@@ -13,6 +13,8 @@ import useMeasure from 'react-use-measure'
 
 import styles from './CollapsibleContent.module.css'
 
+const BUTTON_HEIGHT = 48 // Height of the toggle button
+
 const messages = {
   seeMore: 'See More',
   seeLess: 'See Less'
@@ -54,9 +56,8 @@ export const CollapsibleContent = ({
   })
 
   useLayoutEffect(() => {
-    const buttonHeight = 48 // Height of the toggle button
     const totalHeight =
-      (isCollapsed ? collapsedHeight : bounds.height) + buttonHeight
+      (isCollapsed ? collapsedHeight : bounds.height) + BUTTON_HEIGHT
     onHeightChange?.(totalHeight)
   }, [bounds.height, isCollapsed, collapsedHeight, onHeightChange])
 

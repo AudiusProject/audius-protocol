@@ -31,8 +31,7 @@ const messages = {
 
 // Height constants
 const TAB_BAR_HEIGHT = 56 // Height of the tab bar
-const VERTICAL_PADDING = spacing.l
-const BUTTON_HEIGHT = 32 // Height of the expand/collapse button
+const HEIGHT_PADDING = 64
 
 type RemixContestSectionProps = {
   trackId: ID
@@ -108,8 +107,7 @@ export const RemixContestSection = ({
   // TODO: Also return null if no remix contest description
   if (!trackId || !remixContest) return null
 
-  const totalBoxHeight =
-    TAB_BAR_HEIGHT + contentHeight + VERTICAL_PADDING * 2 + BUTTON_HEIGHT
+  const totalBoxHeight = TAB_BAR_HEIGHT + contentHeight + HEIGHT_PADDING
 
   return (
     <Flex

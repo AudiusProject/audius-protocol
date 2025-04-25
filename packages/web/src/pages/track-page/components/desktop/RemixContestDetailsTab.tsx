@@ -23,6 +23,7 @@ type RemixContestDetailsTabProps = {
   onHeightChange?: (height: number) => void
 }
 
+// 10 lines of text
 const COLLAPSED_HEIGHT = 10 * spacing.m
 
 /**
