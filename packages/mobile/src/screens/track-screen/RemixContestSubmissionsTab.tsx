@@ -3,6 +3,7 @@ import { useRemixes, useTrack, useUser } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
 
 import {
+  Artwork,
   Box,
   Flex,
   IconArrowRight,
@@ -10,7 +11,6 @@ import {
   Skeleton,
   Text
 } from '@audius/harmony-native'
-import { DynamicImage } from 'app/components/core/DynamicImage'
 import { TrackLink } from 'app/components/track/TrackLink'
 import { TrackFlair, Size } from 'app/components/track-flair'
 import { UserLink } from 'app/components/user-link'
@@ -69,7 +69,7 @@ const SubmissionCard = ({ submission }: { submission: LineupData }) => {
               trackId={track.track_id}
               size={Size.SMALL}
             >
-              <DynamicImage source={{ uri: track.artwork['150x150'] }} />
+              <Artwork source={{ uri: track.artwork['150x150'] }} />
             </TrackFlair>
             <Box
               h={userAvatarSize}
@@ -82,7 +82,7 @@ const SubmissionCard = ({ submission }: { submission: LineupData }) => {
                 overflow: 'hidden'
               }}
             >
-              <DynamicImage source={{ uri: user.profile_picture['150x150'] }} />
+              <Artwork source={{ uri: user.profile_picture['150x150'] }} />
             </Box>
           </>
         )}
