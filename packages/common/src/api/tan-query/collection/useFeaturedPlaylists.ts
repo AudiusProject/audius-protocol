@@ -1,7 +1,7 @@
 import { QueryOptions } from '../types'
-import { useExploreContent } from './useExploreContent'
 
 import { useCollections } from './useCollections'
+import { useExploreContent } from './useExploreContent'
 
 type Args = {
   limit?: number

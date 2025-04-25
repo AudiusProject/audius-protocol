@@ -1,5 +1,5 @@
-import { QueryOptions } from '../types'
 import { useExploreContent } from '../collection/useExploreContent'
+import { QueryOptions } from '../types'
 
 import { useUsers } from './useUsers'
 
