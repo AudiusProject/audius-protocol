@@ -9,6 +9,7 @@ import {
   Flex,
   IconCloudUpload,
   IconTrophy,
+  spacing,
   Text
 } from '@audius/harmony'
 
@@ -27,6 +28,11 @@ const messages = {
   submissions: 'Submissions',
   uploadRemixButtonText: 'Upload Your Remix'
 }
+
+// Height constants
+const TAB_BAR_HEIGHT = 56 // Height of the tab bar
+const VERTICAL_PADDING = spacing.l
+const BUTTON_HEIGHT = 32 // Height of the expand/collapse button
 
 type RemixContestSectionProps = {
   trackId: ID
@@ -102,20 +108,15 @@ export const RemixContestSection = ({
   // TODO: Also return null if no remix contest description
   if (!trackId || !remixContest) return null
 
-  const headerHeight = 48 // Height of the title section
-  const titleGap = 16 // Gap between title and box (from gap='l')
-  const tabBarHeight = 56 // Height of the tab bar
-  const verticalPadding = 16 // From pv='m' on the Flex
-  const totalBoxHeight = tabBarHeight + contentHeight + verticalPadding * 2
-  const totalHeight = headerHeight + titleGap + totalBoxHeight
+  const totalBoxHeight =
+    TAB_BAR_HEIGHT + contentHeight + VERTICAL_PADDING * 2 + BUTTON_HEIGHT
 
   return (
     <Flex
       column
       gap='l'
       css={{
-        transition: 'height var(--harmony-expressive)',
-        height: totalHeight
+        transition: 'height var(--harmony-expressive)'
       }}
     >
       <Flex alignItems='center' gap='s'>
@@ -133,7 +134,7 @@ export const RemixContestSection = ({
           height: totalBoxHeight
         }}
       >
-        <Flex column pv='m' css={{ height: '100%' }}>
+        <Flex column pv='m'>
           <Flex justifyContent='space-between' borderBottom='default' ph='xl'>
             <Flex alignItems='center'>{TabBar}</Flex>
             {!isOwner ? (
@@ -147,7 +148,9 @@ export const RemixContestSection = ({
                   {messages.uploadRemixButtonText}
                 </Button>
               </Flex>
-            ) : null}
+            ) : (
+              <Flex h={spacing.m + spacing['2xl']} />
+            )}
           </Flex>
           <Box
             css={{
