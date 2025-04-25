@@ -5,8 +5,8 @@ import { env } from './env'
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      gcTime: 1000 * 60 * 50000, // 50000 minutes
-      staleTime: 1000 * 60 * 50000, // 50000 minutes
+      gcTime: 1000 * 60 * 5, // 5 minutes
+      staleTime: 1000 * 60 * 5, // 5 minutes
       refetchOnWindowFocus: true,
       refetchOnReconnect: true,
       refetchOnMount: true,
