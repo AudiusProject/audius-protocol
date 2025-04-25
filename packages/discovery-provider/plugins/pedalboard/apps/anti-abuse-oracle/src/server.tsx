@@ -4,7 +4,7 @@ import { basicAuth } from 'hono/basic-auth'
 import {
   actionLogForUser,
   getUser,
-  getRecentUsers,
+  getRecentClaims,
   getUserNormalizedScore,
   getUserScore,
   recentTips,
@@ -202,19 +202,7 @@ app.use(
 
 app.get('/attestation/ui', async (c) => {
   const page = parseInt(c.req.query('page') || '0')
-  const recentUsers = await getRecentUsers(page)
-  const userScores = recentUsers
-    ? await Promise.all(
-        recentUsers.map(async (user) => {
-          const [userScore] = await Promise.all([
-            getUserNormalizedScore(user.id)
-          ])
-          return {
-            ...userScore
-          }
-        })
-      )
-    : []
+  const recentClaims = await getRecentClaims(page)
 
   let lastDate = ''
   function dateHeader(timestamp: Date) {
@@ -229,9 +217,11 @@ app.get('/attestation/ui', async (c) => {
             </td>
           </tr>
           <tr>
-            <th>Timestamp</th>
+            <th>Claim Timestamp</th>
             <th>Handle</th>
-            <th>Overall Score</th>
+            <th>Sign Up Timestamp</th>
+            <th>Challenge ID</th>
+            <th>Amount</th>
           </tr>
         </>
       )
@@ -241,22 +231,28 @@ app.get('/attestation/ui', async (c) => {
 
   return c.html(
     <Layout container>
-      <h1 class='text-4xl font-bold mt-8'>Recent Users</h1>
+      <h1 class='text-4xl font-bold mt-8'>Recent Claims</h1>
       <table class='table'>
         <tbody>
-          {userScores.map((userScore) => (
+          {recentClaims?.map((recentClaim) => (
             <>
-              {dateHeader(userScore.timestamp)}
-              <tr className={userScore.overallScore < 0 ? 'bg-red-100' : ''}>
-                <td>{userScore.timestamp.toLocaleTimeString()}</td>
+              {dateHeader(new Date(recentClaim.disbursement_date))}
+              <tr>
                 <td>
+                  {new Date(recentClaim.disbursement_date).toLocaleTimeString()}
+                </td>
+                <td>
+                  {' '}
                   <a
-                    href={`/attestation/ui/user?q=${encodeURIComponent(userScore.handleLowerCase)}`}
+                    href={`/attestation/ui/user?q=${recentClaim.handle}`}
+                    target='_blank'
                   >
-                    {userScore.handleLowerCase}
+                    {recentClaim.handle}
                   </a>
                 </td>
-                <td>{userScore.overallScore}</td>
+                <td>{recentClaim.sign_up_date.toLocaleString()}</td>
+                <td>{recentClaim.challenge_id}</td>
+                <td>{recentClaim.amount}</td>
               </tr>
             </>
           ))}
@@ -380,7 +376,9 @@ app.get('/attestation/ui/user', async (c) => {
               </td>
               <td
                 class={
-                  userScore.chatBlockCount ? 'text-red-500' : 'text-green-500'
+                  userScore.chatBlockCount > 0
+                    ? 'text-red-500'
+                    : 'text-green-500'
                 }
               >
                 {userScore.chatBlockCount}
@@ -408,7 +406,8 @@ app.get('/attestation/ui/user', async (c) => {
         <table>
           <thead>
             <tr>
-              <th class='text-left border-left'>Fingerprint Count</th>
+              <th class='text-left'>Fingerprint Count</th>
+              <th class='text-left'>Deliverable Email</th>
               <th class='text-left'>Override</th>
               <th class='text-left'>Overall Score</th>
             </tr>
@@ -416,6 +415,9 @@ app.get('/attestation/ui/user', async (c) => {
           <tbody>
             <td class={userScore.fingerprintCount > 0 ? 'text-red-500' : ''}>
               {userScore.fingerprintCount}
+            </td>
+            <td class={!userScore.isEmailDeliverable ? 'text-red-500' : ''}>
+              {userScore.isEmailDeliverable.toString()}
             </td>
             <td
               class={`${
