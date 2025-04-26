@@ -239,7 +239,7 @@ def get_create_sender_attestation(new_sender_address: str) -> Tuple[str, str]:
         raise Exception("No Rewards Manager Account initialized")
 
     is_valid_dn = verify_discovery_node_exists_on_chain(new_sender_address)
-    is_valid_cn = verify_discovery_node_exists_on_chain(new_sender_address)
+    is_valid_cn = verify_content_node_exists_on_chain(new_sender_address)
     if not is_valid_dn and not is_valid_cn:
         raise Exception(f"Expected {new_sender_address} to be registered on chain")
 
