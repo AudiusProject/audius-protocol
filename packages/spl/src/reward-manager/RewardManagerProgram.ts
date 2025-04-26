@@ -13,6 +13,7 @@ import {
 import { borshString, ethAddress } from '../layout-utils'
 
 import { attestationLayout } from './AttestationLayout'
+import { senderAttestationLayout } from './SenderAttestationLayout'
 import { RewardManagerInstruction } from './constants'
 import {
   Attestation,
@@ -32,7 +33,8 @@ import {
   SubmitAttestationInstructionData,
   SubmitRewardAttestationParams,
   VerifiedMessage,
-  AttestationsAccountData
+  AttestationsAccountData,
+  type SenderAttestation
 } from './types'
 
 const encoder = new TextEncoder()
@@ -201,7 +203,7 @@ export class RewardManagerProgram {
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
       ...existingSenders.map((pubkey) => ({
         pubkey,
-        isSigner: true,
+        isSigner: false,
         isWritable: false
       }))
     ]
@@ -617,5 +619,11 @@ export class RewardManagerProgram {
     return RewardManagerProgram.layouts.rewardManagerStateData.decode(
       accountData
     )
+  }
+
+  public static encodeSenderAttestation(attestation: SenderAttestation) {
+    const data = Buffer.alloc(senderAttestationLayout().span)
+    const span = senderAttestationLayout().encode(attestation, data)
+    return data.subarray(0, span)
   }
 }
