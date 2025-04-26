@@ -5,7 +5,12 @@ import type { ID } from '@audius/common/models'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
-import { IconCosign, IconContestSign, useTheme } from '@audius/harmony-native'
+import {
+  IconCosign,
+  IconContestSign,
+  useTheme,
+  Flex
+} from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 
 import { Size } from './types'
@@ -85,9 +90,7 @@ export const TrackFlair = ({ size, children, style, trackId }: CoSignProps) => {
 
   const { size: iconSize, position } = layoutBySize[size]
 
-  if (!track) return <>{children}</>
-
-  const remixTrack = track.remix_of?.tracks[0]
+  const remixTrack = track?.remix_of?.tracks[0]
   const hasRemixAuthorReposted = remixTrack?.has_remix_author_reposted ?? false
   const hasRemixAuthorSaved = remixTrack?.has_remix_author_saved ?? false
 
@@ -100,9 +103,9 @@ export const TrackFlair = ({ size, children, style, trackId }: CoSignProps) => {
   ) : null
 
   return (
-    <>
+    <View style={style}>
       <View>{children}</View>
-      <View style={[styles.check, position]}>{flair}</View>
-    </>
+      {flair ? <View style={[styles.check, position]}>{flair}</View> : null}
+    </View>
   )
 }
