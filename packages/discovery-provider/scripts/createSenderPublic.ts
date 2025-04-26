@@ -73,12 +73,6 @@ const createSenderPublicInstructions = async ({
       recoveryId,
       instructionIndex: instructions.length
     })
-    const decoded = Secp256k1Program.decode(secpInstruction)
-    if (!Secp256k1Program.verifySignature(decoded)) {
-      console.log('big sad')
-      const recovered = Secp256k1Program.recoverSigner(decoded)
-      console.log(recovered)
-    }
     instructions.push(secpInstruction)
 
     const sender = RewardManagerProgram.deriveSender({
