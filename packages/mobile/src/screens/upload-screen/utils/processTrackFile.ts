@@ -5,8 +5,8 @@ import {
   ALLOWED_AUDIO_FILE_EXTENSIONS,
   ALLOWED_AUDIO_FILE_MIME
 } from '@audius/common/utils'
+import type { DocumentPickerResponse } from '@react-native-documents/picker'
 import { FFprobeKit } from 'ffmpeg-kit-react-native'
-import type { DocumentPickerResponse } from 'react-native-document-picker'
 
 const getAudioDuration = async (filePath: string): Promise<number | null> => {
   try {
@@ -34,9 +34,9 @@ const getAudioDuration = async (filePath: string): Promise<number | null> => {
 }
 
 export const processTrackFile = async (
-  trackFile: DocumentPickerResponse
+  trackFile: DocumentPickerResponse & { localCopyUri: string }
 ): Promise<TrackForUpload> => {
-  const { name, size, fileCopyUri, uri, type } = trackFile
+  const { name, size, localCopyUri, uri, type } = trackFile
   if (!size || size <= 0) {
     throw new Error(
       'File is corrupted. Please ensure it is playable and stored locally.'
@@ -59,11 +59,11 @@ export const processTrackFile = async (
     throw new Error('File must be an audio file')
   }
 
-  const duration = await getAudioDuration(fileCopyUri ?? uri)
+  const duration = await getAudioDuration(localCopyUri ?? uri)
   const title = name?.replace(/\.[^/.]+$/, '') ?? null // strip file extension
 
   return {
-    file: { ...trackFile, uri: fileCopyUri ?? uri },
+    file: { ...trackFile, uri: localCopyUri ?? uri },
     preview: null,
     metadata: newTrackMetadata({
       title,
