@@ -118,6 +118,7 @@ mobile-release-ios:
   steps:
     - run:
         name: fastlane build and upload
+        no_output_timeout: 60m
         command: cd packages/mobile/ios && bundle exec fastlane build_and_upload bundle_id:<<parameters.bundle-id>>
     - run:
         name: slack announce
