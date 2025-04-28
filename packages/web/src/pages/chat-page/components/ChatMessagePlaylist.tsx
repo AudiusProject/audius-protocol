@@ -3,7 +3,8 @@ import { useCallback, useMemo, useEffect } from 'react'
 import {
   useGetPlaylistByPermalink,
   useCollection,
-  useTracks
+  useTracks,
+  useUsers
 } from '@audius/common/api'
 import { usePlayTrack, usePauseTrack } from '@audius/common/hooks'
 import {
@@ -66,6 +67,7 @@ export const ChatMessagePlaylist = ({
   const trackIds =
     playlist?.playlist_contents?.track_ids?.map((t) => t.track) ?? []
   const { data: tracks } = useTracks(trackIds)
+  const { byId: usersById } = useUsers(tracks?.map((t) => t.owner_id))
 
   const uidMap = useMemo(() => {
     return trackIds.reduce((result: { [id: ID]: string }, id) => {
@@ -83,11 +85,11 @@ export const ChatMessagePlaylist = ({
   const tracksWithUids = useMemo(() => {
     return (tracks || []).map((track) => ({
       ...track,
-      user: track.user,
+      user: usersById[track.owner_id],
       id: track.track_id,
       uid: uidMap[track.track_id]
     }))
-  }, [tracks, uidMap])
+  }, [tracks, uidMap, usersById])
 
   const entries = useMemo(() => {
     return (tracks || []).map((track) => ({
