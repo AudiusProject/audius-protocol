@@ -87,7 +87,7 @@ const TrackScreenRemixComponent = ({
   const styles = useStyles()
   const { spacing, color } = useTheme()
 
-  const { _co_sign, track_id } = track
+  const { track_id } = track
   const { name, handle } = user
   const navigation = useNavigation()
 
@@ -138,13 +138,9 @@ const TrackScreenRemixComponent = ({
   return (
     <View style={[styles.root, style, stylesProp?.root]}>
       <Pressable onPress={handlePressTrack}>
-        {_co_sign ? (
-          <TrackFlair trackId={track_id} size={Size.MEDIUM} style={{ flex: 0 }}>
-            {images}
-          </TrackFlair>
-        ) : (
-          images
-        )}
+        <TrackFlair trackId={track_id} size={Size.MEDIUM}>
+          {images}
+        </TrackFlair>
       </Pressable>
       <Pressable style={styles.artist} onPress={handlePressArtist}>
         <View style={styles.name}>
