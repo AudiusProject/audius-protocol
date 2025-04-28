@@ -22,14 +22,7 @@ import {
   useTrack
 } from '~/api'
 import { useGatedContentAccess } from '~/hooks'
-import {
-  ModalSource,
-  ID,
-  Comment,
-  ReplyComment,
-  UserTrackMetadata,
-  Name
-} from '~/models'
+import { ModalSource, ID, Comment, ReplyComment, Name, Track } from '~/models'
 import { LineupBaseActions, playerActions } from '~/store'
 import { getUserId } from '~/store/account/selectors'
 import { seek } from '~/store/player/slice'
@@ -74,7 +67,7 @@ type CommentSectionContextType<NavigationProp> = {
   artistId: ID
   isEntityOwner: boolean
   commentCount: number | undefined
-  track: UserTrackMetadata
+  track: Track
   playTrack: (timestampSeconds?: number) => void
   commentSectionLoading: boolean
   commentIds: ID[]
