@@ -1,9 +1,9 @@
 import { useCallback, useEffect } from 'react'
 
 import {
+  useCollection,
   useGetCurrentUser,
   useGetCurrentUserId,
-  useGetPlaylistById,
   useGetUserById,
   useTrack
 } from '@audius/common/api'
@@ -45,6 +45,7 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 import { Formik, useField, useFormikContext } from 'formik'
+import { pick } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 import { useLocalStorage } from 'react-use'
 import { z } from 'zod'
@@ -226,10 +227,9 @@ export const PremiumContentPurchaseModal = () => {
   const isAlbum = contentType === PurchaseableContentType.ALBUM
   const { data: track } = useTrack(contentId, { enabled: !isAlbum })
 
-  const { data: album } = useGetPlaylistById(
-    { playlistId: contentId!, currentUserId },
-    { disabled: !isAlbum || !contentId }
-  )
+  const { data: album } = useCollection(contentId, {
+    enabled: isAlbum
+  })
 
   const { data: user } = useGetUserById(
     {

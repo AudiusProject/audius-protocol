@@ -1,8 +1,8 @@
 import { useCallback, type ReactNode, useEffect } from 'react'
 
 import {
+  useCollection,
   useCurrentUserId,
-  useGetPlaylistById,
   useGetUserById,
   useTrack
 } from '@audius/common/api'
@@ -453,10 +453,9 @@ export const PremiumContentPurchaseDrawer = () => {
   const isAlbum = contentType === PurchaseableContentType.ALBUM
   const { data: currentUserId } = useCurrentUserId()
   const { data: track, isPending: isTrackPending } = useTrack(contentId)
-  const { data: album } = useGetPlaylistById(
-    { playlistId: contentId!, currentUserId },
-    { disabled: !isAlbum || !contentId }
-  )
+  const { data: album } = useCollection(contentId, {
+    enabled: isAlbum
+  })
   const { data: user } = useGetUserById(
     {
       id: track?.owner_id ?? album?.playlist_owner_id ?? 0,

@@ -36,7 +36,7 @@ const messages = {
 type PurchaseModalContentProps = {
   purchaseDetails: USDCPurchaseDetails
   contentLabel: string
-  contentTitle: string
+  contentTitle?: string
   link: string
   artwork?: string
   onClose: () => void

@@ -1,5 +1,6 @@
-import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
+import { useCollection } from '@audius/common/api'
 import { IconPencil, IconButton, IconButtonProps } from '@audius/harmony'
+import { pick } from 'lodash'
 import { Link } from 'react-router-dom'
 
 import { Tooltip } from 'components/tooltip'
@@ -14,15 +15,13 @@ type EditButtonProps = Partial<IconButtonProps> & {
 
 export const EditButton = (props: EditButtonProps) => {
   const { collectionId, ...other } = props
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: collection } = useGetPlaylistById({
-    playlistId: collectionId,
-    currentUserId
+  const { data: partialCollection } = useCollection(collectionId, {
+    select: (collection) => pick(collection, ['is_album', 'permalink'])
   })
 
-  if (!collection) return null
+  if (!partialCollection) return null
 
-  const { is_album, permalink } = collection
+  const { is_album, permalink } = partialCollection
 
   return (
     <Tooltip text={messages.edit(is_album)}>
