@@ -1,3 +1,4 @@
+import { Cacheable } from '~/models'
 import { CommonState } from '~/store/commonStore'
 import { Uid } from '~/utils/uid'
 
@@ -86,31 +87,29 @@ export const getEntryTimestamp = (
 export function getAllEntries(
   state: CommonState,
   props: { kind: Kind.USERS }
-): { [id: string]: User }
+): { [id: string]: Cacheable<User> }
 export function getAllEntries(
   state: CommonState,
   props: { kind: Kind.COLLECTIONS }
-): { [id: string]: Collection }
+): { [id: string]: Cacheable<Collection> }
 export function getAllEntries(
   state: CommonState,
   props: { kind: Kind.TRACKS }
-): { [id: string]: Track }
+): { [id: string]: Cacheable<Track> }
 export function getAllEntries(
   state: CommonState,
   props: { kind: Kind.USERS }
-):
-  | { [id: string]: User }
-  | { [id: string]: Track }
-  | { [id: string]: Collection }
+): { [id: string]: Cacheable<User> }
+export function getAllEntries(
+  state: CommonState,
+  props: { kind: Kind.TRACKS }
+): { [id: string]: Cacheable<Track> }
+export function getAllEntries(
+  state: CommonState,
+  props: { kind: Kind.COLLECTIONS }
+): { [id: string]: Cacheable<Collection> }
 export function getAllEntries(state: CommonState, props: { kind: Kind }) {
-  const entries = getCache(state, props).entries
-  return Object.keys(entries).reduce(
-    (acc, id) => {
-      acc[id] = entries[id as unknown as number].metadata
-      return acc
-    },
-    {} as { [id: string]: Track | Collection | User }
-  )
+  return getCache(state, props).entries
 }
 
 export function getCache(

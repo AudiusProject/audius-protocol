@@ -98,11 +98,11 @@ function* getTracks({ offset, limit }: { offset: number; limit: number }) {
     })
     const tracksMap = tracks.reduce((map, track) => {
       const save = {
-        ...track,
-        dateSaved: allSavedTrackTimestamps[track.track_id]
+        ...track.metadata,
+        dateSaved: allSavedTrackTimestamps[track.metadata.track_id]
       }
 
-      map[track.track_id] = save
+      map[track.metadata.track_id] = save
       return map
     }, {})
     return allSavedTrackIds.map((id) =>

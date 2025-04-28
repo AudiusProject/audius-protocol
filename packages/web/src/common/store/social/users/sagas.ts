@@ -57,7 +57,7 @@ export function* followUser(
     try {
       // If we haven't cached the followed user, need to fetch and cache it first to ensure that we have the correct `does_current_user_follow` on the user value before the follow gets indexed.
       const { entries } = yield* call(fetchUsers, [action.userId])
-      followedUser = entries[action.userId]
+      followedUser = entries[action.userId].metadata
     } catch (e) {
       console.error('Failed to fetch the followed user', action.userId)
     }
@@ -209,8 +209,8 @@ export function* unfollowUser(
   }
 
   const users = yield* select(getUsers, { ids: [action.userId, accountId] })
-  const unfollowedUser = users[action.userId]
-  const currentUser = users[accountId]
+  const unfollowedUser = users[action.userId].metadata
+  const currentUser = users[accountId].metadata
 
   // Decrement the follower count on the unfollowed user
   yield* put(
@@ -285,8 +285,8 @@ export function* confirmUnfollowUser(userId: ID, accountId: ID) {
           )
         )
         const users = yield* select(getUsers, { ids: [userId, accountId] })
-        const unfollowedUser = users[userId]
-        const currentUser = users[accountId]
+        const unfollowedUser = users[userId].metadata
+        const currentUser = users[accountId].metadata
 
         // Revert decremented follower count on unfollowed user
         yield* put(

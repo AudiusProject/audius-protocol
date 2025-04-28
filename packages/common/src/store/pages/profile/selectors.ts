@@ -68,20 +68,21 @@ export const getProfileCollections = createDeepEqualSelector(
   ],
   (userId, users, collections) => {
     if (!userId) return undefined
-    const user: User = users[userId]
+    const user: User = users[userId].metadata
     if (!user) return undefined
     const { handle, _collectionIds } = user
     const userCollections = _collectionIds
-      ?.map((collectionId) => collections[collectionId as unknown as number])
+      ?.map((collectionId) => collections[collectionId])
       .filter((collection) => {
         if (collection) {
-          const { is_delete, _marked_deleted, _moved } = collection
+          const { is_delete, _marked_deleted, _moved } = collection.metadata
           return !(is_delete || _marked_deleted || _moved)
         }
         return false
       })
       .map(
-        (collection) => ({ ...collection, user: { handle } }) as UserCollection
+        (collection) =>
+          ({ ...collection.metadata, user: { handle } }) as UserCollection
       )
     return userCollections
   }
@@ -119,7 +120,7 @@ export const makeGetProfile = () => {
       if (!userId) return emptyState
       if (!(userId in users)) return emptyState
 
-      const user = users[userId]
+      const user = users[userId].metadata
       return {
         profile: user,
         status,
