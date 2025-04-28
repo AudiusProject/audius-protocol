@@ -56,18 +56,19 @@ export const CollapsibleContent = ({
   })
 
   const shouldShowToggle = bounds.height > collapsedHeight
+  const contentHeight =
+    isCollapsed && shouldShowToggle ? collapsedHeight : bounds.height
 
   useLayoutEffect(() => {
-    const totalHeight =
-      (isCollapsed && shouldShowToggle ? collapsedHeight : bounds.height) +
-      (shouldShowToggle ? BUTTON_HEIGHT : 0)
+    const totalHeight = contentHeight + (shouldShowToggle ? BUTTON_HEIGHT : 0)
     onHeightChange?.(totalHeight)
   }, [
     bounds.height,
     isCollapsed,
     collapsedHeight,
     onHeightChange,
-    shouldShowToggle
+    shouldShowToggle,
+    contentHeight
   ])
 
   return (
@@ -76,8 +77,7 @@ export const CollapsibleContent = ({
         id={id}
         className={styles.collapsibleContainer}
         style={{
-          height:
-            isCollapsed && shouldShowToggle ? collapsedHeight : bounds.height
+          height: contentHeight
         }}
       >
         <div ref={ref}>{children}</div>
