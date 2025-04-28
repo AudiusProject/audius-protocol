@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
-import { useGetTrackById } from '@audius/common/api'
+import { useTrack } from '@audius/common/api'
 import {
   CommentSectionProvider,
   useCurrentCommentSection
@@ -37,7 +37,9 @@ const CommentPreviewHeader = () => {
     commentCount
   } = useCurrentCommentSection()
 
-  const { data: track } = useGetTrackById({ id: entityId })
+  const { data: trackPermalink } = useTrack(entityId, {
+    select: (track) => track.permalink
+  })
 
   const isShowingComments = !isLoading && commentIds?.length
 
@@ -59,7 +61,7 @@ const CommentPreviewHeader = () => {
       </Flex>
       {isShowingComments ? (
         <PlainButton iconRight={IconCaretRight} variant='subdued' asChild>
-          <Link to={`${track?.permalink}/comments`}>{messages.viewAll}</Link>
+          <Link to={`${trackPermalink}/comments`}>{messages.viewAll}</Link>
         </PlainButton>
       ) : null}
     </Flex>
@@ -75,11 +77,13 @@ const CommentPreviewContent = () => {
   } = useCurrentCommentSection()
   const dispatch = useDispatch()
 
-  const { data: track } = useGetTrackById({ id: entityId })
+  const { data: trackPermalink } = useTrack(entityId, {
+    select: (track) => track.permalink
+  })
 
   const handleClick = useCallback(() => {
-    dispatch(pushRoute(`${track?.permalink}/comments`))
-  }, [track, dispatch])
+    dispatch(pushRoute(`${trackPermalink}/comments`))
+  }, [trackPermalink, dispatch])
 
   // Loading state
   if (isLoading) {
@@ -129,7 +133,9 @@ type CommentPreviewProps = {
 export const CommentPreview = (props: CommentPreviewProps) => {
   const { entityId } = props
   const dispatch = useDispatch()
-  const { data: track } = useGetTrackById({ id: entityId })
+  const { data: trackPermalink } = useTrack(entityId, {
+    select: (track) => track.permalink
+  })
   const [searchParams] = useSearchParams()
   const showComments = searchParams.get('showComments')
   const { history } = useHistoryContext()
@@ -140,9 +146,9 @@ export const CommentPreview = (props: CommentPreviewProps) => {
   useEffect(() => {
     if (showComments) {
       history.replace({ search: '' })
-      dispatch(pushRoute(`${track?.permalink}/comments`))
+      dispatch(pushRoute(`${trackPermalink}/comments`))
     }
-  }, [showComments, track, dispatch, searchParams, history])
+  }, [showComments, trackPermalink, dispatch, searchParams, history])
 
   return (
     <CommentSectionProvider
