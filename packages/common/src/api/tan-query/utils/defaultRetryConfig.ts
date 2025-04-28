@@ -10,7 +10,6 @@ export const defaultRetryConfig = (failureCount: number, error: any) => {
     Object.hasOwnProperty.call(error, 'status') &&
     HTTP_STATUSES_TO_NOT_RETRY.includes(error.status)
   ) {
-    console.log('this is a 404')
     return false
   }
 
