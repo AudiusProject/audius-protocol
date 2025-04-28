@@ -359,9 +359,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -376,9 +380,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -434,6 +442,7 @@
 				CODE_SIGN_ENTITLEMENTS = "AudiusReactNative/Audius Music.entitlements";
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = LRFCG93S85;
+				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = AudiusReactNative/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -449,6 +458,7 @@
 				PRODUCT_NAME = "Audius Music";
 				PROVISIONING_PROFILE_SPECIFIER = "match Development co.audius.audiusmusic";
 				SCSDK_CLIENT_ID = "e4716145-55b7-4a90-9d90-e977733713ed";
+				STRIP_BITCODE_FROM_COPIED_FILES = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "AudiusReactNative-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -469,6 +479,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = LRFCG93S85;
+				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = AudiusReactNative/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -484,6 +495,7 @@
 				PRODUCT_NAME = "Audius Music";
 				PROVISIONING_PROFILE_SPECIFIER = "match Development co.audius.audiusmusic";
 				SCSDK_CLIENT_ID = "e4716145-55b7-4a90-9d90-e977733713ed";
+				STRIP_BITCODE_FROM_COPIED_FILES = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "AudiusReactNative-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TIKTOK_APP_ID = awa9re2w7ec3xrn6;
@@ -689,6 +701,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = LRFCG93S85;
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = LRFCG93S85;
+				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = AudiusReactNative/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -705,6 +718,7 @@
 				PROVISIONING_PROFILE_SPECIFIER = "match AppStore co.audius.audiusmusic.releasecandidate";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match AppStore co.audius.audiusmusic.releasecandidate";
 				SCSDK_CLIENT_ID = "e4716145-55b7-4a90-9d90-e977733713ed";
+				STRIP_BITCODE_FROM_COPIED_FILES = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "AudiusReactNative-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TIKTOK_APP_ID = awa9re2w7ec3xrn6;
@@ -785,6 +799,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = LRFCG93S85;
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = LRFCG93S85;
+				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = AudiusReactNative/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -801,6 +816,7 @@
 				PROVISIONING_PROFILE_SPECIFIER = "match AppStore co.audius.audiusmusic.staging.releasecandidate";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match AppStore co.audius.audiusmusic.staging.releasecandidate";
 				SCSDK_CLIENT_ID = "6f90a744-e5d0-4115-ad14-fb1a356085cd";
+				STRIP_BITCODE_FROM_COPIED_FILES = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "AudiusReactNative-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TIKTOK_APP_ID = awa9re2w7ec3xrn6;
@@ -886,6 +902,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = LRFCG93S85;
+				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = AudiusReactNative/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -901,6 +918,7 @@
 				PRODUCT_NAME = "Audius Music Staging";
 				PROVISIONING_PROFILE_SPECIFIER = "match Development co.audius.audiusmusic.staging";
 				SCSDK_CLIENT_ID = "6f90a744-e5d0-4115-ad14-fb1a356085cd";
+				STRIP_BITCODE_FROM_COPIED_FILES = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "AudiusReactNative-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -980,6 +998,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = LRFCG93S85;
+				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = AudiusReactNative/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -995,6 +1014,7 @@
 				PRODUCT_NAME = "Audius Music Staging";
 				PROVISIONING_PROFILE_SPECIFIER = "match Development co.audius.audiusmusic.staging";
 				SCSDK_CLIENT_ID = "6f90a744-e5d0-4115-ad14-fb1a356085cd";
+				STRIP_BITCODE_FROM_COPIED_FILES = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "AudiusReactNative-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TIKTOK_APP_ID = awa9re2w7ec3xrn6;
