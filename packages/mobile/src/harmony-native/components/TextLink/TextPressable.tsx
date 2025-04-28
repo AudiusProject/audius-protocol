@@ -70,6 +70,7 @@ export const TextPressable = (props: TextLinkProps) => {
       onPressOut={() => {
         animatedPressed.value = withTiming(0, motion.press)
       }}
+      style={style}
       {...other}
     >
       <Text>

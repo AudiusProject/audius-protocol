@@ -3,7 +3,7 @@ import { getContext } from '~/store/effects'
 
 import { TQTrack } from '../models'
 import { QUERY_KEYS } from '../queryKeys'
-import { getTrackQueryKey } from '../useTrack'
+import { getTrackQueryKey } from '../tracks/useTrack'
 
 export function* queryTrack(id: ID | null | undefined) {
   if (!id) return null

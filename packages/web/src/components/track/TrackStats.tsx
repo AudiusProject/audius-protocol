@@ -1,4 +1,4 @@
-import { useGetCurrentUserId, useGetTrackById } from '@audius/common/api'
+import { useGetCurrentUserId, useTrack } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { ID, Name } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -11,6 +11,7 @@ import {
   IconRepost,
   PlainButton
 } from '@audius/harmony'
+import { pick } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { make, track as trackEvent } from 'services/analytics'
@@ -34,16 +35,29 @@ type TrackStatsProps = {
 
 export const TrackStats = (props: TrackStatsProps) => {
   const { trackId, scrollToCommentSection } = props
-  const { data: track } = useGetTrackById({ id: trackId })
+  const { data: partialTrack } = useTrack(trackId, {
+    select: (track) =>
+      pick(track, [
+        'comment_count',
+        'repost_count',
+        'save_count',
+        'is_stream_gated',
+        'owner_id',
+        'is_unlisted',
+        'play_count',
+        'comments_disabled',
+        'genre'
+      ])
+  })
   const { data: currentUserId } = useGetCurrentUserId({})
   const dispatch = useDispatch()
   const { isEnabled: isCommentsEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED
   )
 
-  const comment_count = track?.comment_count ?? 0
+  const comment_count = partialTrack?.comment_count ?? 0
 
-  if (!track) return null
+  if (!partialTrack) return null
 
   const {
     repost_count,
@@ -53,7 +67,7 @@ export const TrackStats = (props: TrackStatsProps) => {
     is_stream_gated,
     owner_id,
     is_unlisted
-  } = track
+  } = partialTrack
 
   const isOwner = currentUserId === owner_id
 
@@ -126,7 +140,7 @@ export const TrackStats = (props: TrackStatsProps) => {
         </PlainButton>
       )}
       {play_count > 0 &&
-      isLongFormContent(track) &&
+      isLongFormContent(partialTrack) &&
       (isOwner || !is_stream_gated) ? (
         <PlainButton iconLeft={IconPlay}>
           {formatCount(play_count)} {pluralize(messages.play, play_count)}
