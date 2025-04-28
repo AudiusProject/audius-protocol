@@ -5,12 +5,7 @@ import type { ID } from '@audius/common/models'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
-import {
-  IconCosign,
-  IconContestSign,
-  useTheme,
-  Flex
-} from '@audius/harmony-native'
+import { IconCosign, IconContestSign, useTheme } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 
 import { Size } from './types'

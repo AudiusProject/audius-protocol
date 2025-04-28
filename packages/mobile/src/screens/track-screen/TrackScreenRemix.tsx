@@ -87,7 +87,7 @@ const TrackScreenRemixComponent = ({
   const styles = useStyles()
   const { spacing, color } = useTheme()
 
-  const { _co_sign, track_id } = track
+  const { track_id } = track
   const { name, handle } = user
   const navigation = useNavigation()
 
