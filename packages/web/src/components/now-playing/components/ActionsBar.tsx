@@ -45,7 +45,7 @@ const ActionsBar = ({
     has_current_user_saved: hasSaved
   } = track ?? {}
   const isOwner = ownerId === currentUserId
-  const { hasStreamAccess } = useGatedContentAccess(track ?? {})
+  const { hasStreamAccess } = useGatedContentAccess(track)
   const shouldShowActions = hasStreamAccess && !isUnlisted
 
   if (!shouldShowActions) return null
