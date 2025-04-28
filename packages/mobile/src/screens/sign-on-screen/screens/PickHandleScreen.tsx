@@ -121,7 +121,6 @@ export const PickHandleScreen = () => {
     (values: PickHandleValues) => {
       const { handle } = values
       dispatch(setValueField('handle', handle))
-      identify({ handle })
       navigation.navigate('FinishProfile')
     },
     [dispatch, navigation]

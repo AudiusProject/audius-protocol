@@ -124,7 +124,6 @@ export const PickHandlePage = () => {
   const handleSubmit = useCallback(
     (values: PickHandleValues) => {
       const { handle } = values
-      identify({ handle })
       dispatch(setValueField('handle', handle))
       if (isFastReferral) {
         dispatch(setValueField('name', handle))
