@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import { LineupData, useTrack, useUser } from '@audius/common/api'
 import { ID, SquareSizes } from '@audius/common/models'
 import {
@@ -9,6 +11,7 @@ import {
   Text
 } from '@audius/harmony'
 import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 import { Avatar } from 'components/avatar'
 import { TrackLink, UserLink } from 'components/link'
@@ -18,7 +21,7 @@ import { Size } from 'components/track-flair/types'
 import { trackRemixesPage } from 'utils/route'
 
 const artworkSize = 140
-const userAvatarSize = 40
+const userAvatarSize = 50
 
 const messages = {
   noSubmissions: 'No submissions yet',
@@ -47,10 +50,16 @@ export const RemixContestSubmissionsTab = ({
 }
 
 const SubmissionCard = ({ submission }: { submission: LineupData }) => {
+  const navigate = useNavigate()
   const { data: track, isLoading: trackLoading } = useTrack(submission.id)
   const { data: user, isLoading: userLoading } = useUser(track?.owner_id)
   const isLoading = trackLoading || userLoading
   const displaySkeleton = isLoading || !track || !user
+
+  const goToTrack = useCallback(() => {
+    if (!track?.permalink) return
+    navigate(track.permalink)
+  }, [navigate, track?.permalink])
 
   return (
     <Flex column gap='s'>
@@ -67,12 +76,13 @@ const SubmissionCard = ({ submission }: { submission: LineupData }) => {
               hideToolTip
             >
               <TrackArtwork
-                style={{
+                css={{
                   width: '100%',
                   height: '100%'
                 }}
                 trackId={track.track_id}
                 size={SquareSizes.SIZE_480_BY_480}
+                onClick={goToTrack}
               />
             </TrackFlair>
             {/* User Avatar */}
