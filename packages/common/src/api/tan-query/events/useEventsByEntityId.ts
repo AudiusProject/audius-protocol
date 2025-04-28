@@ -9,7 +9,7 @@ import { ID } from '~/models'
 import { removeNullable } from '~/utils'
 
 import { SelectableQueryOptions } from '../types'
-import { useCurrentUserId } from '../useCurrentUserId'
+import { useCurrentUserId } from '../users/account/useCurrentUserId'
 
 import {
   getEventIdsByEntityIdQueryKey,
