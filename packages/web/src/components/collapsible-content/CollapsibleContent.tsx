@@ -55,36 +55,50 @@ export const CollapsibleContent = ({
     offsetSize: true
   })
 
+  const shouldShowToggle = bounds.height > collapsedHeight
+
   useLayoutEffect(() => {
     const totalHeight =
-      (isCollapsed ? collapsedHeight : bounds.height) + BUTTON_HEIGHT
+      (isCollapsed && shouldShowToggle ? collapsedHeight : bounds.height) +
+      (shouldShowToggle ? BUTTON_HEIGHT : 0)
     onHeightChange?.(totalHeight)
-  }, [bounds.height, isCollapsed, collapsedHeight, onHeightChange])
+  }, [
+    bounds.height,
+    isCollapsed,
+    collapsedHeight,
+    onHeightChange,
+    shouldShowToggle
+  ])
 
   return (
     <div className={cn(className, { collapsed: isCollapsed })}>
       <div
         id={id}
         className={styles.collapsibleContainer}
-        style={{ height: isCollapsed ? collapsedHeight : bounds.height }}
+        style={{
+          height:
+            isCollapsed && shouldShowToggle ? collapsedHeight : bounds.height
+        }}
       >
         <div ref={ref}>{children}</div>
       </div>
-      <PlainButton
-        className={cn(styles.toggleCollapsedButton, toggleButtonClassName)}
-        css={{
-          paddingTop: spacing.l,
-          paddingBottom: spacing.l,
-          margin: '0 auto'
-        }}
-        aria-controls={id}
-        aria-expanded={!isCollapsed}
-        iconRight={isCollapsed ? IconCaretDownLine : IconCaretUpLine}
-        onClick={handleToggle}
-        variant='subdued'
-      >
-        {isCollapsed ? showText : hideText}
-      </PlainButton>
+      {shouldShowToggle ? (
+        <PlainButton
+          className={cn(styles.toggleCollapsedButton, toggleButtonClassName)}
+          css={{
+            paddingTop: spacing.l,
+            paddingBottom: spacing.l,
+            margin: '0 auto'
+          }}
+          aria-controls={id}
+          aria-expanded={!isCollapsed}
+          iconRight={isCollapsed ? IconCaretDownLine : IconCaretUpLine}
+          onClick={handleToggle}
+          variant='subdued'
+        >
+          {isCollapsed ? showText : hideText}
+        </PlainButton>
+      ) : null}
     </div>
   )
 }
