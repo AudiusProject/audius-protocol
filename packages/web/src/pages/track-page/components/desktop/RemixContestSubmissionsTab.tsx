@@ -55,7 +55,8 @@ const SubmissionCard = ({ submission }: { submission: LineupData }) => {
   const displaySkeleton = isLoading || !track || !user
 
   const goToTrack = useCallback(() => {
-    navigate(track?.permalink ?? '')
+    if (!track?.permalink) return
+    navigate(track.permalink)
   }, [navigate, track?.permalink])
 
   return (
