@@ -21,7 +21,7 @@ export const getSavedCollectionsState = (
 
 export const getFetchedCollectionIds = createSelector(
   [getCollections],
-  (collections) => Object.values(collections).map((c) => c.playlist_id)
+  (collections) => Object.values(collections).map((c) => c.metadata.playlist_id)
 )
 
 /** Returns a Set of collection IDs which should be treated as visible (aren't
@@ -29,8 +29,9 @@ export const getFetchedCollectionIds = createSelector(
 export const getVisibleCollectionIds = createSelector(
   [getCollections, getUsers],
   (collections, users) => {
-    return Object.values(collections).reduce((accum, collection) => {
-      const owner = users[collection.playlist_owner_id]
+    return Object.values(collections).reduce((accum, cachedCollection) => {
+      const collection = cachedCollection.metadata
+      const owner = users[collection.playlist_owner_id].metadata
       const shouldHideCollection =
         collection._marked_deleted ||
         collection.is_delete ||

@@ -2,7 +2,7 @@ import { getCollections as getCachedCollections } from '~/store/cache/collection
 import { getUsers } from '~/store/cache/users/selectors'
 import { CommonState } from '~/store/commonStore'
 
-import { Collection, Status } from '../../../../models'
+import { Status } from '../../../../models'
 import { ExploreCollectionsVariant } from '../types'
 
 const getBaseState = (state: CommonState) => state.pages.exploreCollections
@@ -28,14 +28,14 @@ export const getCollections = (
   const collectionIds = baseState ? baseState.collectionIds : []
   const collections = getCachedCollections(state, { ids: collectionIds })
 
-  const collectionsList = collectionIds.map((id) => collections[id])
+  const collectionsList = collectionIds.map((id) => collections[id]?.metadata)
 
-  const userIds = collectionsList.map((c: Collection) => c.playlist_owner_id)
+  const userIds = collectionsList.map((c) => c.playlist_owner_id)
   const users = getUsers(state, { ids: userIds })
 
-  const userCollections = collectionsList.map((c: Collection) => ({
+  const userCollections = collectionsList.map((c) => ({
     ...c,
-    user: users[c.playlist_owner_id]
+    user: users[c.playlist_owner_id].metadata
   }))
 
   return userCollections.filter((playlist) => !playlist.user.is_deactivated)

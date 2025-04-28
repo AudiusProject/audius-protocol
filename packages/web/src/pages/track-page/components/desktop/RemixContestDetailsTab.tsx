@@ -37,14 +37,7 @@ export const RemixContestDetailsTab = ({
   const isContestEnded = dayjs(remixContest?.endDate).isBefore(dayjs())
 
   return (
-    <Flex
-      column
-      gap='l'
-      p='xl'
-      css={{
-        transition: 'height var(--harmony-expressive)'
-      }}
-    >
+    <Flex column gap='l' p='xl'>
       <Flex row gap='s'>
         <Text variant='title' size='m' color='accent'>
           {messages.due}

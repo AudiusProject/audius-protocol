@@ -15,7 +15,6 @@ import {
 import {
   accountSelectors,
   cacheCollectionsActions,
-  collectionPageSelectors,
   tracksSocialActions,
   addToCollectionUIActions,
   playbackPositionActions,
@@ -33,7 +32,6 @@ import { Dispatch } from 'redux'
 
 import * as embedModalActions from 'components/embed-modal/store/actions'
 import { ToastContext } from 'components/toast/ToastContext'
-import { AppState } from 'store/types'
 import { push } from 'utils/navigation'
 import { albumPage } from 'utils/route'
 
@@ -43,9 +41,8 @@ const { profilePage } = route
 const { requestOpen: openAddToCollection } = addToCollectionUIActions
 const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
   tracksSocialActions
-const { getCollectionId } = collectionPageSelectors
 const { addTrackToPlaylist } = cacheCollectionsActions
-const { getAccountOwnedPlaylists, getUserId } = accountSelectors
+const { getUserId } = accountSelectors
 const { clearTrackPosition, setTrackPosition } = playbackPositionActions
 const { getUserTrackPositions } = playbackPositionSelectors
 
@@ -108,9 +105,7 @@ export type OwnProps = {
   type: 'track'
 }
 
-type TrackMenuProps = OwnProps &
-  ReturnType<typeof mapDispatchToProps> &
-  ReturnType<typeof mapStateToProps>
+type TrackMenuProps = OwnProps & ReturnType<typeof mapDispatchToProps>
 
 const TrackMenu = ({
   includeDelete = true,
@@ -378,13 +373,6 @@ const TrackMenu = ({
   return props.children(menu.items)
 }
 
-function mapStateToProps(state: AppState) {
-  return {
-    playlists: getAccountOwnedPlaylists(state),
-    currentCollectionId: getCollectionId(state)
-  }
-}
-
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
     goToRoute: (route: string) => dispatch(push(route)),
@@ -422,4 +410,4 @@ function mapDispatchToProps(dispatch: Dispatch) {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(TrackMenu)
+export default connect(null, mapDispatchToProps)(TrackMenu)

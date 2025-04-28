@@ -6,7 +6,9 @@ import {
 import type { CommonState } from '~/store/commonStore'
 
 import { Kind } from '../../../models'
-import type { ID, UID, User } from '../../../models'
+import type { ID, UID } from '../../../models'
+
+import { BatchCachedUsers } from './types'
 
 /** @deprecated use useUser instead */
 export const getUser = (
@@ -36,32 +38,32 @@ export const getUsers = (
     uids?: UID[] | null
     handles?: string[] | null
   }
-) => {
+): { [id: number]: BatchCachedUsers } => {
   if (props && props.ids) {
-    const users: { [id: number]: User } = {}
+    const users: { [id: number]: BatchCachedUsers } = {}
     props.ids.forEach((id) => {
       const user = getUser(state, { id })
       if (user) {
-        users[id] = user
+        users[id] = { metadata: user }
       }
     })
     return users
   } else if (props && props.uids) {
-    const users: { [id: number]: User } = {}
+    const users: { [id: number]: BatchCachedUsers } = {}
     props.uids.forEach((uid) => {
       const user = getUser(state, { uid })
       if (user) {
-        users[user.user_id] = user
+        users[user.user_id] = { metadata: user }
       }
     })
     return users
   } else if (props && props.handles) {
-    const users: { [handle: string]: User } = {}
+    const users: { [handle: string]: BatchCachedUsers } = {}
     props.handles.forEach((handle) => {
       const id = getUserByHandle(state, { handle: handle?.toLowerCase() })
       if (id) {
         const user = getUser(state, { id })
-        if (user) users[handle] = user
+        if (user) users[handle] = { metadata: user }
       }
     })
     return users

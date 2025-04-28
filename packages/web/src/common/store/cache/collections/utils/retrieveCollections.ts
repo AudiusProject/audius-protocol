@@ -6,7 +6,6 @@ import { playlistPermalinkToHandleAndSlug } from '@audius/common/api'
 import {
   Kind,
   CollectionMetadata,
-  Collection,
   UserCollectionMetadata,
   ID
 } from '@audius/common/models'
@@ -18,7 +17,8 @@ import {
   reformatCollection,
   getContext,
   CommonState,
-  getSDK
+  getSDK,
+  BatchCachedCollections
 } from '@audius/common/store'
 import { makeUid, Nullable } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
@@ -49,7 +49,8 @@ function* markCollectionDeleted(
     if (!(metadata.playlist_id in collections)) return metadata
     return {
       ...metadata,
-      _marked_deleted: !!collections[metadata.playlist_id]._marked_deleted
+      _marked_deleted:
+        !!collections[metadata.playlist_id]?.metadata?._marked_deleted
     }
   })
 }
@@ -236,7 +237,7 @@ export function* retrieveCollections(
     deleteExistingEntry
   } = config ?? {}
   // @ts-ignore retrieve should be refactored to ts first
-  const { entries, uids } = yield* call(retrieve<Collection>, {
+  const { entries, uids } = yield* call(retrieve<BatchCachedCollections>, {
     ids: collectionIds,
     selectFromCache: function* (ids: ID[]) {
       return yield* select(getCollections, { ids })

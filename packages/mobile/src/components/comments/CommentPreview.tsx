@@ -181,7 +181,7 @@ export const CommentPreview = (props: CommentPreviewProps) => {
     >
       <Flex gap='s' direction='column' w='100%' alignItems='flex-start'>
         <CommentPreviewHeader openCommentDrawer={openCommentDrawer} />
-        <Paper w='100%' direction='column' gap='s' p='l'>
+        <Paper w='100%' direction='column' gap='s' p='l' border='default'>
           <CommentPreviewContent openCommentDrawer={openCommentDrawer} />
         </Paper>
       </Flex>

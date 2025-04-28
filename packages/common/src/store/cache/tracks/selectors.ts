@@ -3,6 +3,8 @@ import { CommonState } from '~/store/commonStore'
 
 import { Kind, ID, UID, Status, Track } from '../../../models'
 
+import { BatchCachedTracks } from './types'
+
 /** @deprecated Use useTrack instead */
 export const getTrack = (
   state: CommonState,
@@ -31,30 +33,30 @@ export const getTracks = (
     uids?: UID[] | null
     permalinks?: string[] | null
   }
-) => {
+): { [id: number]: BatchCachedTracks } => {
   if (props && props.ids) {
-    const tracks: { [id: number]: Track } = {}
+    const tracks: { [id: number]: BatchCachedTracks } = {}
     props.ids.forEach((id) => {
       const track = getTrack(state, { id })
       if (track) {
-        tracks[id] = track
+        tracks[id] = { metadata: track }
       }
     })
     return tracks
   } else if (props && props.uids) {
-    const tracks: { [id: number]: Track } = {}
+    const tracks: { [id: number]: BatchCachedTracks } = {}
     props.uids.forEach((uid) => {
       const track = getTrack(state, { uid })
       if (track) {
-        tracks[track.track_id] = track
+        tracks[track.track_id] = { metadata: track }
       }
     })
     return tracks
   } else if (props && props.permalinks) {
-    const tracks: { [permalink: string]: Track } = {}
+    const tracks: { [permalink: string]: BatchCachedTracks } = {}
     props.permalinks.forEach((permalink) => {
       const track = getTrack(state, { permalink })
-      if (track) tracks[permalink] = track
+      if (track) tracks[permalink] = { metadata: track }
     })
     return tracks
   }
