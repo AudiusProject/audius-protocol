@@ -114,7 +114,12 @@ const CommentSectionInner = (props: CommentSectionInnerProps) => {
       ref={commentSectionRef}
     >
       <CommentHeader />
-      <Paper w='100%' direction='column' css={{ overflow: 'visible' }}>
+      <Paper
+        w='100%'
+        direction='column'
+        css={{ overflow: 'visible' }}
+        border='default'
+      >
         {commentPostAllowed ? (
           <>
             <Flex gap='s' p='xl' w='100%' direction='column'>

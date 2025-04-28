@@ -32,6 +32,7 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
     height: spacing(10)
   },
   tabLabel: {
+    marginHorizontal: 0,
     textTransform: 'none',
     fontFamily: typography.fontByWeight.demiBold,
     fontSize: typography.fontSize.medium
@@ -185,7 +186,11 @@ export const RemixContestSection = ({
   if (!remixContest) return null
 
   return (
-    <AnimatedPaper backgroundColor='white' style={animatedStyle}>
+    <AnimatedPaper
+      backgroundColor='white'
+      border='default'
+      style={animatedStyle}
+    >
       <TabView
         navigationState={{ index, routes }}
         renderScene={renderScene}
