@@ -4,7 +4,6 @@ from src.api.v1.helpers import (
     abort_not_found,
     current_user_parser,
     decode_ids_array,
-    decode_with_abort,
     format_limit,
     format_offset,
     make_response,
@@ -120,6 +119,7 @@ entity_events_parser.add_argument(
     "entity_id",
     required=True,
     type=str,
+    action="append",
     description="The ID of the entity to get events for",
 )
 entity_events_parser.add_argument(
@@ -139,7 +139,7 @@ entity_events_parser.add_argument(
 
 
 @ns.route("/entity")
-class EntityEvents(Resource):
+class BulkEntityEvents(Resource):
     @ns.doc(
         id="Get Entity Events",
         description="Get events for a specific entity",
@@ -151,10 +151,13 @@ class EntityEvents(Resource):
     def get(self):
         """Get events for a specific entity"""
         args = entity_events_parser.parse_args()
-        decoded_entity_id = decode_with_abort(args.get("entity_id"), ns)
+        decoded_entity_ids = decode_ids_array(
+            args.get("entity_id") if args.get("entity_id") else []
+        )
+
         events = get_events(
             {
-                "entity_id": decoded_entity_id,
+                "entity_ids": decoded_entity_ids,
                 "entity_type": args.get("entity_type"),
                 "filter_deleted": args.get("filter_deleted", True),
                 "limit": format_limit(args),
