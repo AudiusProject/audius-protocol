@@ -3,6 +3,7 @@ import React from 'react'
 import type { LineupData } from '@audius/common/api'
 import { useRemixes, useTrack, useUser } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
+import { css } from '@emotion/native'
 
 import {
   Artwork,
@@ -18,9 +19,9 @@ import { TrackFlair, Size } from 'app/components/track-flair'
 import { UserLink } from 'app/components/user-link'
 import { useNavigation } from 'app/hooks/useNavigation'
 
-const artworkSize = 120
-const userAvatarSize = 40
-
+const ARTWORK_SIZE = 120
+const USER_AVATAR_SIZE = 40
+const NAME_WIDTH = 120
 const messages = {
   noSubmissions: 'No submissions yet',
   beFirst: 'Be the first to upload a remix!',
@@ -56,7 +57,7 @@ const SubmissionCard = ({ submission }: { submission: LineupData }) => {
 
   return (
     <Flex column gap='s'>
-      <Flex h={artworkSize} w={artworkSize}>
+      <Flex h={ARTWORK_SIZE} w={ARTWORK_SIZE}>
         {displaySkeleton ? (
           <Skeleton />
         ) : (
@@ -74,8 +75,8 @@ const SubmissionCard = ({ submission }: { submission: LineupData }) => {
               <Artwork source={{ uri: track.artwork['150x150'] }} />
             </TrackFlair>
             <Box
-              h={userAvatarSize}
-              w={userAvatarSize}
+              h={USER_AVATAR_SIZE}
+              w={USER_AVATAR_SIZE}
               borderRadius='circle'
               style={{
                 position: 'absolute',
@@ -101,14 +102,28 @@ const SubmissionCard = ({ submission }: { submission: LineupData }) => {
           </>
         ) : (
           <>
-            <TrackLink textVariant='title' size='s' trackId={track.track_id} />
-            <UserLink userId={user.user_id} size='s' />
+            <TrackLink
+              textVariant='title'
+              size='s'
+              trackId={track.track_id}
+              ellipses
+              numberOfLines={1}
+              style={{ maxWidth: NAME_WIDTH }}
+            />
+            <UserLink
+              userId={user.user_id}
+              size='s'
+              ellipses
+              numberOfLines={1}
+              style={{ maxWidth: NAME_WIDTH }}
+            />
           </>
         )}
       </Flex>
     </Flex>
   )
 }
+
 const RemixContestSubmissions = ({
   trackId,
   submissions
@@ -120,7 +135,7 @@ const RemixContestSubmissions = ({
 
   return (
     <Flex w='100%' column gap='2xl' pv='xl' ph='l' borderTop='default'>
-      <Flex gap='2xl' wrap='wrap'>
+      <Flex row gap='2xl' wrap='wrap' justifyContent='space-around'>
         {submissions.map((submission) => (
           <SubmissionCard key={submission.id} submission={submission} />
         ))}
