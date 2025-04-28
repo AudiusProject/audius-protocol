@@ -5,7 +5,7 @@ import { env } from './env'
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Tan-query auto retries on errors like 404s. This doesnt fit with our backend design so we've disabled retries by default. They can be re-enabled at the query level if needed.
+      // By default, tan-query will retry on 404s. We intentionally disable retrying on 400 type errors.
       retry: defaultRetryConfig,
       gcTime: 1000 * 60 * 5, // 5 minutes
       staleTime: 1000 * 60 * 5, // 5 minutes
