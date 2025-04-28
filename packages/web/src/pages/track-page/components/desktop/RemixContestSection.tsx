@@ -107,13 +107,7 @@ export const RemixContestSection = ({
   const totalBoxHeight = TAB_BAR_HEIGHT + contentHeight
 
   return (
-    <Flex
-      column
-      gap='l'
-      css={{
-        transition: 'height var(--harmony-expressive)'
-      }}
-    >
+    <Flex column gap='l'>
       <Flex alignItems='center' gap='s'>
         <IconTrophy color='default' />
         <Text variant='title' size='l'>
@@ -125,7 +119,8 @@ export const RemixContestSection = ({
         shadow='mid'
         borderRadius='l'
         css={{
-          transition: 'height var(--harmony-expressive)',
+          transition: 'height var(--harmony-quick)',
+          overflow: 'hidden',
           height: totalBoxHeight
         }}
       >
@@ -147,14 +142,7 @@ export const RemixContestSection = ({
               <Flex h={spacing.m + spacing['2xl']} />
             )}
           </Flex>
-          <Box
-            css={{
-              transition: 'height var(--harmony-expressive)',
-              height: contentHeight
-            }}
-          >
-            {ContentBody}
-          </Box>
+          {ContentBody}
         </Flex>
       </Box>
     </Flex>
