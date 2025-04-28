@@ -9,6 +9,7 @@ import {
   IconButton,
   Flex
 } from '@audius/harmony'
+import { pick } from 'lodash'
 
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
@@ -37,12 +38,13 @@ const ActionsBar = ({
   isMatrixMode
 }: ActionsBarProps) => {
   const { data: partialTrack } = useTrack(trackId, {
-    select: (track) => ({
-      is_unlisted: track.is_unlisted,
-      owner_id: track.owner_id,
-      has_current_user_reposted: track.has_current_user_reposted,
-      has_current_user_saved: track.has_current_user_saved
-    })
+    select: (track) =>
+      pick(track, [
+        'is_unlisted',
+        'owner_id',
+        'has_current_user_reposted',
+        'has_current_user_saved'
+      ])
   })
   const { data: currentUserId } = useCurrentUserId()
   const {

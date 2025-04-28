@@ -28,6 +28,7 @@ import {
 } from '@audius/common/store'
 import { Genre, Nullable, route } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/harmony'
+import { pick } from 'lodash'
 import { connect, useDispatch, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
@@ -141,11 +142,7 @@ const TrackMenu = ({
     useDeleteTrackConfirmationModal()
   const { onOpen: openHostRemixContest } = useHostRemixContestModal()
   const { data: partialTrack } = useTrack(props.trackId, {
-    select: (track) => ({
-      album_backlink: track.album_backlink,
-      permalink: track.permalink,
-      remix_of: track.remix_of
-    })
+    select: (track) => pick(track, ['album_backlink', 'permalink', 'remix_of'])
   })
 
   const toggleSaveTrack = useToggleFavoriteTrack({
