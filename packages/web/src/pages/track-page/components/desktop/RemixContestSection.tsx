@@ -9,6 +9,7 @@ import {
   Flex,
   IconCloudUpload,
   IconTrophy,
+  motion,
   spacing,
   Text
 } from '@audius/harmony'
@@ -119,7 +120,7 @@ export const RemixContestSection = ({
         shadow='mid'
         borderRadius='l'
         css={{
-          transition: 'height var(--harmony-quick)',
+          transition: motion.quick,
           overflow: 'hidden',
           height: totalBoxHeight
         }}
