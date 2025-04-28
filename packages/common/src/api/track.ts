@@ -73,28 +73,6 @@ const trackApi = createApi({
         schemaKey: 'track'
       }
     },
-    getTracksByIds: {
-      fetch: async (
-        { ids, currentUserId }: { ids: ID[]; currentUserId: Nullable<ID> },
-        { audiusSdk }
-      ) => {
-        const id = ids.filter((id) => id && id !== -1).map((id) => Id.parse(id))
-        if (id.length === 0) return []
-
-        const sdk = await audiusSdk()
-
-        const { data = [] } = await sdk.full.tracks.getBulkTracks({
-          id,
-          userId: OptionalId.parse(currentUserId)
-        })
-        return transformAndCleanList(data, userTrackMetadataFromSDK)
-      },
-      options: {
-        idListArgKey: 'ids',
-        kind: Kind.TRACKS,
-        schemaKey: 'tracks'
-      }
-    },
     getUserTracksByHandle: {
       fetch: async (
         {
@@ -123,11 +101,8 @@ const trackApi = createApi({
   }
 })
 
-export const {
-  useGetTrackByPermalink,
-  useGetTracksByIds,
-  useGetUserTracksByHandle
-} = trackApi.hooks
+export const { useGetTrackByPermalink, useGetUserTracksByHandle } =
+  trackApi.hooks
 export const trackApiFetch = trackApi.fetch
 export const trackApiReducer = trackApi.reducer
 export const trackApiActions = trackApi.actions
