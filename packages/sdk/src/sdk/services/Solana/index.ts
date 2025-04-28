@@ -1,5 +1,6 @@
 export * from './SolanaRelay'
 export * from './SolanaRelayWalletAdapter'
+export { SolanaClient } from './programs/SolanaClient'
 export * from './programs/ClaimableTokensClient'
 export * from './programs/RewardManagerClient'
 export * from './programs/PaymentRouterClient'

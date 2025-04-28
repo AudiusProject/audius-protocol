@@ -1,6 +1,7 @@
-import { useGetTrackById } from '@audius/common/api'
+import { useTrack } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
 import { SquareSizes } from '@audius/common/models'
+import { pick } from 'lodash'
 import type { StyleProp, ViewStyle } from 'react-native'
 
 import { Flex, Paper, Text } from '@audius/harmony-native'
@@ -44,12 +45,14 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 
 export const RemixTrackPill = (props: RemixTrackPillProps) => {
   const { trackId, style } = props
-  const { data: track } = useGetTrackById({ id: trackId })
+  const { data: track } = useTrack(trackId, {
+    select: (track) => pick(track, ['title', 'owner_id'])
+  })
   const styles = useStyles()
 
   if (!track) return null
 
-  const { user, title } = track
+  const { title, owner_id } = track
 
   return (
     <Paper
@@ -76,7 +79,7 @@ export const RemixTrackPill = (props: RemixTrackPillProps) => {
       </Flex>
       <Flex row alignItems='center'>
         <Text color='subdued'>{messages.trackBy}</Text>
-        <UserLink userId={user.user_id} size='s' disabled />
+        <UserLink userId={owner_id} size='s' disabled />
       </Flex>
     </Paper>
   )

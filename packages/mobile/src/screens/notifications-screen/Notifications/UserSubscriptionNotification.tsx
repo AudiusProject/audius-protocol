@@ -34,7 +34,7 @@ export const UserSubscriptionNotification = (
   props: UserSubscriptionNotificationProps
 ) => {
   const { notification } = props
-  const { entityType } = notification
+  const { entityType, entityIds } = notification
   const navigation = useNotificationNavigation()
   const user = useSelector((state) => getNotificationUser(state, notification))
   const entities = useProxySelector(
@@ -42,7 +42,7 @@ export const UserSubscriptionNotification = (
     [notification]
   )
 
-  const uploadCount = entities?.length ?? 0
+  const uploadCount = entityIds.length
   const isSingleUpload = uploadCount === 1
 
   const handlePress = useCallback(() => {

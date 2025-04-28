@@ -1,4 +1,12 @@
-import { Track, UID, User, ID, Cache, Collection } from '../../../models'
+import {
+  Track,
+  UID,
+  User,
+  ID,
+  Cache,
+  Collection,
+  Cacheable
+} from '../../../models'
 
 export enum PlaylistOperations {
   ADD_TRACK = 'ADD_TRACK',
@@ -27,3 +35,5 @@ export type EditCollectionValues = Collection & {
   artwork: Image
   tracks?: { metadata: Track }[]
 }
+
+export type BatchCachedCollections = Omit<Cacheable<Collection>, '_timestamp'>

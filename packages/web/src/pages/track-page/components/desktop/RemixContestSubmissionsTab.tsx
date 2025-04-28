@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import { LineupData, useUser, useTrack } from '@audius/common/api'
 import { ID, SquareSizes } from '@audius/common/models'
 import {
@@ -8,7 +10,7 @@ import {
   Skeleton,
   Text
 } from '@audius/harmony'
-import { Link } from 'react-router-dom-v5-compat'
+import { Link, useNavigate } from 'react-router-dom-v5-compat'
 
 import { Avatar } from 'components/avatar'
 import { TrackLink, UserLink } from 'components/link'
@@ -16,8 +18,9 @@ import { TrackArtwork } from 'components/track/TrackArtwork'
 import TrackFlair, { Size } from 'components/track-flair/TrackFlair'
 import { trackRemixesPage } from 'utils/route'
 
-const artworkSize = 160
-const userAvatarSize = 64
+const ARTWORK_SIZE = 160
+const USER_AVATAR_SIZE = 64
+const NAME_WIDTH = 140
 
 const messages = {
   noSubmissions: 'No submissions yet',
@@ -46,16 +49,22 @@ export const RemixContestSubmissionsTab = ({
 }
 
 const SubmissionCard = ({ submission }: { submission: LineupData }) => {
+  const navigate = useNavigate()
   const { data: track, isLoading: trackLoading } = useTrack(submission.id)
   const { data: user, isLoading: userLoading } = useUser(track?.owner_id)
   const isLoading = trackLoading || userLoading
   const displaySkeleton = isLoading || !track || !user
 
+  const goToTrack = useCallback(() => {
+    if (!track?.permalink) return
+    navigate(track.permalink)
+  }, [navigate, track?.permalink])
+
   return (
     <Flex column gap='s'>
-      <Flex h={artworkSize} w={artworkSize} borderRadius='s'>
+      <Flex h={ARTWORK_SIZE} w={ARTWORK_SIZE} borderRadius='s'>
         {displaySkeleton ? (
-          <Skeleton h={artworkSize} w={artworkSize} borderRadius='s' />
+          <Skeleton h={ARTWORK_SIZE} w={ARTWORK_SIZE} borderRadius='s' />
         ) : (
           <>
             {/* Track Artwork with Flair */}
@@ -66,19 +75,21 @@ const SubmissionCard = ({ submission }: { submission: LineupData }) => {
               hideToolTip
             >
               <TrackArtwork
-                style={{
+                css={{
                   width: '100%',
-                  height: '100%'
+                  height: '100%',
+                  cursor: 'pointer'
                 }}
                 trackId={track.track_id}
+                onClick={goToTrack}
                 size={SquareSizes.SIZE_480_BY_480}
               />
             </TrackFlair>
             {/* User Avatar */}
             <Box
-              h={userAvatarSize}
-              w={userAvatarSize}
-              css={{ position: 'absolute', top: -8, right: -8 }}
+              h={USER_AVATAR_SIZE}
+              w={USER_AVATAR_SIZE}
+              css={{ position: 'absolute', top: -8, right: -8, zIndex: 10 }}
               borderRadius='circle'
             >
               <Avatar
@@ -97,8 +108,18 @@ const SubmissionCard = ({ submission }: { submission: LineupData }) => {
           </>
         ) : (
           <>
-            <TrackLink textVariant='title' trackId={track.track_id} />
-            <UserLink userId={user.user_id} popover />
+            <TrackLink
+              textVariant='title'
+              trackId={track.track_id}
+              ellipses
+              css={{ display: 'block', maxWidth: NAME_WIDTH }}
+            />
+            <UserLink
+              userId={user.user_id}
+              popover
+              ellipses
+              css={{ display: 'block', maxWidth: NAME_WIDTH }}
+            />
           </>
         )}
       </Flex>
@@ -120,7 +141,7 @@ const RemixContestSubmissions = ({
   const remixesRoute = trackRemixesPage(permalink ?? '')
 
   return (
-    <Flex w='100%' column gap='2xl' p='xl'>
+    <Flex column p='xl'>
       <Flex gap='2xl' wrap='wrap'>
         {submissions.map((submission) => (
           <SubmissionCard key={submission.id} submission={submission} />
@@ -137,18 +158,9 @@ const RemixContestSubmissions = ({
 
 const EmptyRemixContestSubmissions = () => {
   return (
-    <Flex
-      column
-      w='100%'
-      pv='3xl'
-      gap='m'
-      justifyContent='center'
-      alignItems='center'
-    >
-      <Text variant='heading' size='s'>
-        {messages.noSubmissions}
-      </Text>
-      <Text variant='body' size='l' color='subdued'>
+    <Flex column pv='3xl' gap='xs' alignItems='center'>
+      <Text variant='title'>{messages.noSubmissions}</Text>
+      <Text variant='body' color='subdued'>
         {messages.beFirst}
       </Text>
     </Flex>

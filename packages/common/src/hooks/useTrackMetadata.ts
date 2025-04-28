@@ -1,6 +1,7 @@
 import { Mood } from '@audius/sdk'
+import { pick } from 'lodash'
 
-import { useGetTrackById } from '~/api/track'
+import { useTrack } from '~/api/tan-query/useTrack'
 import { ID } from '~/models'
 import { parseMusicalKey } from '~/utils/musicalKeys'
 import { searchPage } from '~/utils/route'
@@ -33,9 +34,22 @@ export type TrackMetadataInfo = {
 export const useTrackMetadata = ({
   trackId
 }: TrackMetadataProps): TrackMetadataInfo[] => {
-  const { data: track } = useGetTrackById({ id: trackId })
+  const { data: trackMetadata } = useTrack(trackId, {
+    select: (track) =>
+      pick(track, [
+        'duration',
+        'genre',
+        'release_date',
+        'mood',
+        'is_unlisted',
+        'musical_key',
+        'bpm',
+        'is_custom_bpm',
+        'album_backlink'
+      ])
+  })
 
-  if (!track) return []
+  if (!trackMetadata) return []
 
   const {
     duration,
@@ -47,7 +61,7 @@ export const useTrackMetadata = ({
     bpm,
     is_custom_bpm: isCustomBpm,
     album_backlink
-  } = track
+  } = trackMetadata
 
   const parsedBpm = bpm
     ? parseFloat((bpm ?? 0).toFixed(isCustomBpm ? 2 : 0)).toString()

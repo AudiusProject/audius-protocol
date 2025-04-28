@@ -1,6 +1,6 @@
 import { memo, MouseEvent } from 'react'
 
-import { useGetCurrentUserId, useGetTrackById } from '@audius/common/api'
+import { useCurrentUserId, useTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
 import {
@@ -9,6 +9,7 @@ import {
   IconButton,
   Flex
 } from '@audius/harmony'
+import { pick } from 'lodash'
 
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
@@ -36,16 +37,24 @@ const ActionsBar = ({
   isDarkMode,
   isMatrixMode
 }: ActionsBarProps) => {
-  const { data: track } = useGetTrackById({ id: trackId })
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: partialTrack } = useTrack(trackId, {
+    select: (track) =>
+      pick(track, [
+        'is_unlisted',
+        'owner_id',
+        'has_current_user_reposted',
+        'has_current_user_saved'
+      ])
+  })
+  const { data: currentUserId } = useCurrentUserId()
   const {
-    is_unlisted: isUnlisted,
     owner_id: ownerId,
     has_current_user_reposted: hasReposted,
-    has_current_user_saved: hasSaved
-  } = track ?? {}
+    has_current_user_saved: hasSaved,
+    is_unlisted: isUnlisted
+  } = partialTrack ?? {}
   const isOwner = ownerId === currentUserId
-  const { hasStreamAccess } = useGatedContentAccess(track ?? {})
+  const { hasStreamAccess } = useGatedContentAccess(partialTrack ?? {})
   const shouldShowActions = hasStreamAccess && !isUnlisted
 
   if (!shouldShowActions) return null

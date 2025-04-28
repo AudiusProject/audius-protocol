@@ -20,6 +20,7 @@ import { getTrackDefaults } from 'pages/track-page/utils'
 import { TrackPageLineup } from '../TrackPageLineup'
 
 import TrackPageHeader from './TrackHeader'
+import { RemixContestSection } from './remix-contests/RemixContestSection'
 
 export type OwnProps = {
   title: string
@@ -165,6 +166,7 @@ const TrackPage = ({
             goToRepostsPage={goToRepostsPage}
           />
         </Flex>
+        <RemixContestSection trackId={defaults.trackId} isOwner={isOwner} />
         {isCommentingEnabled ? (
           <CommentPreview entityId={defaults.trackId} />
         ) : null}

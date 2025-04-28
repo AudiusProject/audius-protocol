@@ -1,6 +1,7 @@
 import { TrackMetadata } from '~/models'
 
-import { Maybe, Nullable } from './typeUtils'
+import { Maybe } from './typeUtils'
 
-export const isLongFormContent = (track: Maybe<Nullable<TrackMetadata>>) =>
-  track?.genre === 'podcast' || track?.genre === 'audiobook'
+export const isLongFormContent = (
+  track: Maybe<Pick<TrackMetadata, 'genre'> | null>
+) => track?.genre === 'podcast' || track?.genre === 'audiobook'

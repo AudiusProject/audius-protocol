@@ -44,7 +44,10 @@ export const makeGetTableMetadatas = <T, State>(
               ...track,
               uid: entry.uid,
               followeeReposts: track.followee_reposts
-                .map((repost) => ({ ...repost, user: users[repost.user_id] }))
+                .map((repost) => ({
+                  ...repost,
+                  user: users[repost.user_id].metadata
+                }))
                 .filter((repost) => !!repost.user)
             }
           } else if (entry.kind === Kind.EMPTY) {
@@ -58,7 +61,7 @@ export const makeGetTableMetadatas = <T, State>(
         .map((entry) => {
           const ownerId = entry.owner_id
           if (ownerId && ownerId in users) {
-            return { ...entry, user: users[ownerId] }
+            return { ...entry, user: users[ownerId].metadata }
           } else if (entry.kind === Kind.EMPTY) {
             return entry
           }

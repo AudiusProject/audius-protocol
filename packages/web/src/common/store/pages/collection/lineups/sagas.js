@@ -68,11 +68,11 @@ function* getCollectionTracks() {
 
   if (trackIds.length > 0) {
     const trackMetadatas = yield call(retrieveTracks, { trackIds })
-    const keyedMetadatas = keyBy(trackMetadatas, (m) => m.track_id)
+    const keyedMetadatas = keyBy(trackMetadatas, (m) => m.metadata.track_id)
 
     return trackIds
       .map((id, i) => {
-        const metadata = { ...keyedMetadatas[id] }
+        const metadata = { ...keyedMetadatas[id].metadata }
 
         // For whatever reason, the track id was retrieved and doesn't exist or is malformatted.
         // This can happen if the collection references an unlisted track or one that

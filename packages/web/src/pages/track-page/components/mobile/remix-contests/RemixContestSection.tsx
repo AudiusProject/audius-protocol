@@ -1,0 +1,93 @@
+import { useRemixContest, useRemixes } from '@audius/common/api'
+import { ID } from '@audius/common/models'
+import { Box, Flex, Text, IconTrophy } from '@audius/harmony'
+
+import useTabs from 'hooks/useTabs/useTabs'
+
+import { RemixContestDetailsTab } from './RemixContestDetailsTab'
+import { RemixContestPrizesTab } from './RemixContestPrizesTab'
+import { RemixContestSubmissionsTab } from './RemixContestSubmissionsTab'
+
+const messages = {
+  title: 'Remix Contest',
+  details: 'Details',
+  prizes: 'Prizes',
+  submissions: 'Submissions',
+  uploadRemixButtonText: 'Upload Your Remix'
+}
+
+type RemixContestSectionProps = {
+  trackId: ID
+  isOwner: boolean
+}
+
+export const RemixContestSection = ({
+  trackId,
+  isOwner
+}: RemixContestSectionProps) => {
+  const { data: remixContest } = useRemixContest(trackId)
+  const { data: remixes } = useRemixes({ trackId, isContestEntry: true })
+
+  const tabs = [
+    {
+      text: messages.details,
+      label: 'details'
+    },
+    {
+      text: messages.prizes,
+      label: 'prizes'
+    },
+    {
+      text: messages.submissions,
+      label: 'submissions'
+    }
+  ]
+
+  const elements = [
+    <RemixContestDetailsTab
+      key='details'
+      trackId={trackId}
+      isOwner={isOwner}
+    />,
+    <RemixContestPrizesTab key='prizes' trackId={trackId} />,
+    <RemixContestSubmissionsTab
+      key='submissions'
+      trackId={trackId}
+      submissions={remixes.slice(0, 6)}
+    />
+  ]
+
+  const { tabs: TabBar, body: TabBody } = useTabs({
+    tabs,
+    elements,
+    isMobile: false,
+    isMobileV2: true
+  })
+
+  if (!trackId || !remixContest) return null
+
+  return (
+    <Flex column gap='l'>
+      <Flex alignItems='center' gap='s'>
+        <IconTrophy color='default' />
+        <Text variant='title' size='l'>
+          {messages.title}
+        </Text>
+      </Flex>
+      <Box
+        backgroundColor='white'
+        shadow='mid'
+        borderRadius='l'
+        border='default'
+        css={{ overflow: 'hidden' }}
+      >
+        <Flex column pv='m'>
+          <Flex w='100%' alignItems='center' borderBottom='default' ph='xl'>
+            {TabBar}
+          </Flex>
+          {TabBody}
+        </Flex>
+      </Box>
+    </Flex>
+  )
+}

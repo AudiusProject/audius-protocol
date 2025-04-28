@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useLayoutEffect } from 'react'
+import type { ReactNode } from 'react'
 
 import {
   PlainButton,
@@ -12,15 +13,23 @@ import useMeasure from 'react-use-measure'
 
 import styles from './CollapsibleContent.module.css'
 
+const BUTTON_HEIGHT = 48 // Height of the toggle button
+
+const messages = {
+  seeMore: 'See More',
+  seeLess: 'See Less'
+}
+
 type CollapsibleContentProps = {
   id: string
   className?: string
   toggleButtonClassName?: string
   showByDefault?: boolean
   collapsedHeight?: number
-  showText: string
-  hideText: string
-  children: React.ReactNode
+  showText?: string
+  hideText?: string
+  children: ReactNode
+  onHeightChange?: (height: number) => void
 }
 
 export const CollapsibleContent = ({
@@ -29,9 +38,10 @@ export const CollapsibleContent = ({
   toggleButtonClassName,
   showByDefault = false,
   collapsedHeight = 0,
-  showText,
-  hideText,
-  children
+  showText = messages.seeMore,
+  hideText = messages.seeLess,
+  children,
+  onHeightChange
 }: CollapsibleContentProps) => {
   const [isCollapsed, setIsCollapsed] = useState(!showByDefault)
   const { spacing } = useTheme()
@@ -45,30 +55,43 @@ export const CollapsibleContent = ({
     offsetSize: true
   })
 
+  const shouldShowToggle = bounds.height > collapsedHeight
+  const contentHeight =
+    isCollapsed && shouldShowToggle ? collapsedHeight : bounds.height
+
+  useLayoutEffect(() => {
+    const totalHeight = contentHeight + (shouldShowToggle ? BUTTON_HEIGHT : 0)
+    onHeightChange?.(totalHeight)
+  }, [onHeightChange, shouldShowToggle, contentHeight])
+
   return (
     <div className={cn(className, { collapsed: isCollapsed })}>
       <div
         id={id}
         className={styles.collapsibleContainer}
-        style={{ height: isCollapsed ? collapsedHeight : bounds.height }}
+        style={{
+          height: contentHeight
+        }}
       >
         <div ref={ref}>{children}</div>
       </div>
-      <PlainButton
-        className={cn(styles.toggleCollapsedButton, toggleButtonClassName)}
-        css={{
-          paddingTop: spacing.l,
-          paddingBottom: spacing.l,
-          margin: '0 auto'
-        }}
-        aria-controls={id}
-        aria-expanded={!isCollapsed}
-        iconRight={isCollapsed ? IconCaretDownLine : IconCaretUpLine}
-        onClick={handleToggle}
-        variant='subdued'
-      >
-        {isCollapsed ? showText : hideText}
-      </PlainButton>
+      {shouldShowToggle ? (
+        <PlainButton
+          className={cn(styles.toggleCollapsedButton, toggleButtonClassName)}
+          css={{
+            paddingTop: spacing.l,
+            paddingBottom: spacing.l,
+            margin: '0 auto'
+          }}
+          aria-controls={id}
+          aria-expanded={!isCollapsed}
+          iconRight={isCollapsed ? IconCaretDownLine : IconCaretUpLine}
+          onClick={handleToggle}
+          variant='subdued'
+        >
+          {isCollapsed ? showText : hideText}
+        </PlainButton>
+      ) : null}
     </div>
   )
 }

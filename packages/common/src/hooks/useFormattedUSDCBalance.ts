@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { USDC } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 
-import { useUSDCBalance } from '../api/tan-query/useUSDCBalance'
+import { useUSDCBalance } from '../api/tan-query/wallets/useUSDCBalance'
 import { BNUSDC, Status } from '../models'
 
 type UseFormattedUSDCBalanceReturn = {
