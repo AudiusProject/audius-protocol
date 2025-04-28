@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
-import { useGetTrackByPermalink } from '@audius/common/api'
+import { useTrackByPermalink } from '@audius/common/api'
 import {
   TrackPlayback,
   useGatedContentAccess,
@@ -14,18 +14,13 @@ import {
   ID,
   ModalSource
 } from '@audius/common/models'
-import {
-  accountSelectors,
-  QueueSource,
-  ChatMessageTileProps
-} from '@audius/common/store'
+import { QueueSource, ChatMessageTileProps } from '@audius/common/store'
 import { getPathFromTrackUrl, makeUid } from '@audius/common/utils'
-import { useDispatch, useSelector } from 'react-redux'
+import { pick } from 'lodash'
+import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import MobileTrackTile from 'components/track/mobile/ConnectedTrackTile'
-
-const { getUserId } = accountSelectors
 
 export const ChatMessageTrack = ({
   link,
@@ -34,30 +29,35 @@ export const ChatMessageTrack = ({
   className
 }: ChatMessageTileProps) => {
   const dispatch = useDispatch()
-  const currentUserId = useSelector(getUserId)
   const permalink = getPathFromTrackUrl(link)
 
-  const { data: track, status } = useGetTrackByPermalink(
-    {
-      permalink: permalink!,
-      currentUserId: currentUserId!
-    },
-    { disabled: !permalink || !currentUserId }
-  )
+  const { data: partialTrack } = useTrackByPermalink(permalink, {
+    select: (track) =>
+      pick(track, [
+        'track_id',
+        'is_delete',
+        'is_stream_gated',
+        'preview_cid',
+        'access',
+        'stream_conditions',
+        'is_download_gated',
+        'download_conditions'
+      ])
+  })
+  const trackExists = !!partialTrack
 
-  const { hasStreamAccess } = useGatedContentAccess(track ?? null)
-  const isPreview =
-    !!track?.is_stream_gated && !!track?.preview_cid && !hasStreamAccess
-
-  const trackId = track?.track_id
+  const { hasStreamAccess } = useGatedContentAccess(partialTrack)
+  const { track_id, is_delete, is_stream_gated, preview_cid } =
+    partialTrack ?? {}
+  const isPreview = !!is_stream_gated && !!preview_cid && !hasStreamAccess
 
   const uid = useMemo(() => {
-    return trackId ? makeUid(Kind.TRACKS, trackId) : null
-  }, [trackId])
+    return track_id ? makeUid(Kind.TRACKS, track_id) : null
+  }, [track_id])
 
   const recordAnalytics = useCallback(
     ({ name, id }: { name: TrackPlayback; id: ID }) => {
-      if (!track) return
+      if (!trackExists) return
       dispatch(
         make(name, {
           id: `${id}`,
@@ -65,11 +65,11 @@ export const ChatMessageTrack = ({
         })
       )
     },
-    [dispatch, track]
+    [dispatch, trackExists]
   )
 
   const { togglePlay, isTrackPlaying } = useToggleTrack({
-    id: track?.track_id,
+    id: track_id,
     uid,
     isPreview,
     source: QueueSource.CHAT_TRACKS,
@@ -77,22 +77,22 @@ export const ChatMessageTrack = ({
   })
 
   useEffect(() => {
-    if (track && uid && !track.is_delete) {
+    if (trackExists && uid && !is_delete) {
       dispatch(make(Name.MESSAGE_UNFURL_TRACK, {}))
       onSuccess?.()
     } else {
       onEmpty?.()
     }
-  }, [track, uid, onSuccess, onEmpty, dispatch])
+  }, [trackExists, uid, onSuccess, onEmpty, dispatch, is_delete])
 
-  return track && uid && trackId ? (
+  return trackExists && uid && track_id ? (
     // You may wonder why we use the mobile web track tile here.
     // It's simply because the chat track tile uses the same design as mobile web.
     <MobileTrackTile
       containerClassName={className}
       index={0}
       togglePlay={togglePlay}
-      id={trackId}
+      id={track_id}
       uid={uid}
       isLoading={status === Status.LOADING || status === Status.IDLE}
       hasLoaded={() => {}}
