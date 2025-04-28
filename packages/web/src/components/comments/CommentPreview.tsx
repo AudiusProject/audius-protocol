@@ -84,7 +84,7 @@ const CommentPreviewContent = () => {
   // Loading state
   if (isLoading) {
     return (
-      <Paper w='100%' direction='column' gap='s' p='l'>
+      <Paper w='100%' direction='column' gap='s' p='l' border='default'>
         <Flex direction='row' gap='s' alignItems='center'>
           <Skeleton w={40} h={40} css={{ borderRadius: 100 }} />
           <Flex gap='s' direction='column'>
@@ -99,7 +99,7 @@ const CommentPreviewContent = () => {
   // Empty state
   if (!commentIds || !commentIds.length) {
     return (
-      <Paper w='100%' direction='column' gap='s' p='l'>
+      <Paper w='100%' direction='column' gap='s' p='l' border='default'>
         <Flex gap='m' column alignItems='flex-start'>
           <Text variant='body'>{messages.noComments}</Text>
           <CommentForm hideAvatar={!currentUserId} />
@@ -109,7 +109,14 @@ const CommentPreviewContent = () => {
   }
 
   return (
-    <Paper w='100%' direction='column' gap='s' p='l' onClick={handleClick}>
+    <Paper
+      w='100%'
+      direction='column'
+      gap='s'
+      p='l'
+      border='default'
+      onClick={handleClick}
+    >
       <CommentBlock commentId={commentIds[0]} isPreview />
     </Paper>
   )

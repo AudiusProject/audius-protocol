@@ -78,6 +78,7 @@ export const RemixContestSection = ({
         backgroundColor='white'
         shadow='mid'
         borderRadius='l'
+        border='default'
         css={{ overflow: 'hidden' }}
       >
         <Flex column pv='m'>

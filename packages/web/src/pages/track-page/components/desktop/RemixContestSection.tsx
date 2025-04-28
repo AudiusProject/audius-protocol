@@ -124,6 +124,7 @@ export const RemixContestSection = ({
         backgroundColor='white'
         shadow='mid'
         borderRadius='l'
+        border='default'
         css={{
           transition: 'height var(--harmony-expressive)',
           height: totalBoxHeight
