@@ -18,8 +18,9 @@ import { TrackArtwork } from 'components/track/TrackArtwork'
 import TrackFlair, { Size } from 'components/track-flair/TrackFlair'
 import { trackRemixesPage } from 'utils/route'
 
-const artworkSize = 160
-const userAvatarSize = 64
+const ARTWORK_SIZE = 160
+const USER_AVATAR_SIZE = 64
+const NAME_WIDTH = 140
 
 const messages = {
   noSubmissions: 'No submissions yet',
@@ -61,9 +62,9 @@ const SubmissionCard = ({ submission }: { submission: LineupData }) => {
 
   return (
     <Flex column gap='s'>
-      <Flex h={artworkSize} w={artworkSize} borderRadius='s'>
+      <Flex h={ARTWORK_SIZE} w={ARTWORK_SIZE} borderRadius='s'>
         {displaySkeleton ? (
-          <Skeleton h={artworkSize} w={artworkSize} borderRadius='s' />
+          <Skeleton h={ARTWORK_SIZE} w={ARTWORK_SIZE} borderRadius='s' />
         ) : (
           <>
             {/* Track Artwork with Flair */}
@@ -86,8 +87,8 @@ const SubmissionCard = ({ submission }: { submission: LineupData }) => {
             </TrackFlair>
             {/* User Avatar */}
             <Box
-              h={userAvatarSize}
-              w={userAvatarSize}
+              h={USER_AVATAR_SIZE}
+              w={USER_AVATAR_SIZE}
               css={{ position: 'absolute', top: -8, right: -8, zIndex: 10 }}
               borderRadius='circle'
             >
@@ -107,8 +108,18 @@ const SubmissionCard = ({ submission }: { submission: LineupData }) => {
           </>
         ) : (
           <>
-            <TrackLink textVariant='title' trackId={track.track_id} />
-            <UserLink userId={user.user_id} popover />
+            <TrackLink
+              textVariant='title'
+              trackId={track.track_id}
+              ellipses
+              css={{ display: 'block', maxWidth: NAME_WIDTH }}
+            />
+            <UserLink
+              userId={user.user_id}
+              popover
+              ellipses
+              css={{ display: 'block', maxWidth: NAME_WIDTH }}
+            />
           </>
         )}
       </Flex>

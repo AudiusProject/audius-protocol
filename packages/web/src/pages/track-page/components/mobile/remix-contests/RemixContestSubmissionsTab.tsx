@@ -20,8 +20,9 @@ import TrackFlair from 'components/track-flair/TrackFlair'
 import { Size } from 'components/track-flair/types'
 import { trackRemixesPage } from 'utils/route'
 
-const artworkSize = 140
-const userAvatarSize = 50
+const ARTWORK_SIZE = 140
+const USER_AVATAR_SIZE = 50
+const NAME_WIDTH = 120
 
 const messages = {
   noSubmissions: 'No submissions yet',
@@ -63,9 +64,9 @@ const SubmissionCard = ({ submission }: { submission: LineupData }) => {
 
   return (
     <Flex column gap='s'>
-      <Flex h={artworkSize} w={artworkSize} borderRadius='s'>
+      <Flex h={ARTWORK_SIZE} w={ARTWORK_SIZE} borderRadius='s'>
         {displaySkeleton ? (
-          <Skeleton h={artworkSize} w={artworkSize} borderRadius='s' />
+          <Skeleton h={ARTWORK_SIZE} w={ARTWORK_SIZE} borderRadius='s' />
         ) : (
           <>
             {/* Track Artwork with Flair */}
@@ -87,8 +88,8 @@ const SubmissionCard = ({ submission }: { submission: LineupData }) => {
             </TrackFlair>
             {/* User Avatar */}
             <Box
-              h={userAvatarSize}
-              w={userAvatarSize}
+              h={USER_AVATAR_SIZE}
+              w={USER_AVATAR_SIZE}
               css={{ position: 'absolute', top: -8, right: -8 }}
               borderRadius='circle'
             >
@@ -108,8 +109,20 @@ const SubmissionCard = ({ submission }: { submission: LineupData }) => {
           </>
         ) : (
           <>
-            <TrackLink textVariant='title' size='s' trackId={track.track_id} />
-            <UserLink userId={user.user_id} size='s' noOverflow />
+            <TrackLink
+              textVariant='title'
+              size='s'
+              trackId={track.track_id}
+              css={{ display: 'block', maxWidth: NAME_WIDTH }}
+              ellipses
+            />
+            <UserLink
+              userId={user.user_id}
+              size='s'
+              noOverflow
+              ellipses
+              css={{ display: 'block', maxWidth: NAME_WIDTH }}
+            />
           </>
         )}
       </Flex>
