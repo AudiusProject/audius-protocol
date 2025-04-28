@@ -1,5 +1,5 @@
 import { Nullable } from '@audius/common/utils'
-import { spacing } from '@audius/harmony'
+import { Flex, spacing } from '@audius/harmony'
 
 import { CollapsibleContent } from 'components/collapsible-content/CollapsibleContent'
 import { UserGeneratedText } from 'components/user-generated-text'
@@ -19,13 +19,21 @@ export const TrackDescription = ({
   if (!description) return null
 
   return (
-    <CollapsibleContent
-      id='track-description'
-      collapsedHeight={DEFAULT_LINE_HEIGHT * MAX_DESCRIPTION_LINES}
-    >
-      <UserGeneratedText className={className} linkSource='track page'>
-        {description}
-      </UserGeneratedText>
-    </CollapsibleContent>
+    <Flex column w='100%'>
+      <CollapsibleContent
+        id='track-description'
+        collapsedHeight={DEFAULT_LINE_HEIGHT * MAX_DESCRIPTION_LINES}
+      >
+        <Flex css={{ overflow: 'hidden', textWrap: 'wrap' }}>
+          <UserGeneratedText
+            variant='body'
+            className={className}
+            linkSource='track page'
+          >
+            {description}
+          </UserGeneratedText>
+        </Flex>
+      </CollapsibleContent>
+    </Flex>
   )
 }
