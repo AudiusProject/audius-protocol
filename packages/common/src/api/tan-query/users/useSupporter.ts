@@ -1,4 +1,4 @@
-import { Id } from '@audius/sdk'
+import { Id, OptionalId } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
@@ -50,7 +50,7 @@ export const useSupporter = (
       const { data } = await sdk.full.users.getSupporter({
         id: Id.parse(userId),
         supporterUserId: Id.parse(supporterUserId),
-        userId: Id.parse(currentUserId)
+        userId: OptionalId.parse(currentUserId)
       })
 
       if (!data) return null
@@ -85,7 +85,7 @@ export const useTopSupporter = (userId: ID | null | undefined) => {
       const sdk = await audiusSdk()
       const { data } = await sdk.full.users.getSupporters({
         id: Id.parse(userId),
-        userId: Id.parse(currentUserId),
+        userId: OptionalId.parse(currentUserId),
         limit: 1
       })
 

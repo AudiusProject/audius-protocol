@@ -1,4 +1,4 @@
-import { Id } from '@audius/sdk'
+import { Id, OptionalId } from '@audius/sdk'
 import {
   InfiniteData,
   useInfiniteQuery,
@@ -55,7 +55,7 @@ export const useTrackReposts = (
         trackId: Id.parse(trackId),
         limit: pageSize,
         offset: pageParam,
-        userId: currentUserId ? Id.parse(currentUserId) : undefined
+        userId: OptionalId.parse(currentUserId)
       })
       const users = userMetadataListFromSDK(data)
       primeUserData({ users, queryClient, dispatch })

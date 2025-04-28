@@ -1,16 +1,16 @@
-import { Id } from '@audius/sdk'
+import { OptionalId } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { pick } from 'lodash'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
-import { getUserId } from '~/store/account/selectors'
 
 import { TQCollection } from '../models'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, QueryOptions, SelectableQueryOptions } from '../types'
+import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { primeCollectionData } from '../utils/primeCollectionData'
 
 import { useCollection } from './useCollection'
@@ -45,7 +45,7 @@ export const useCollectionByPermalink = <TResult = TQCollection>(
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
 
   const simpleOptions = pick(options, [
     'enabled',
@@ -62,7 +62,7 @@ export const useCollectionByPermalink = <TResult = TQCollection>(
         {
           handle,
           slug,
-          userId: Id.parse(currentUserId)
+          userId: OptionalId.parse(currentUserId)
         }
       )
 

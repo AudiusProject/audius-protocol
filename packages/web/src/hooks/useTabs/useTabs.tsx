@@ -40,6 +40,7 @@ type TabProps = {
   onClick: () => void
   isActive: boolean
   isMobile: boolean
+  isMobileV2: boolean
   icon?: ReactNode
   text: string
   label: string
@@ -48,14 +49,15 @@ type TabProps = {
 
 const Tab = forwardRef(
   (
-    { onClick, icon, text, isActive, isMobile, disabled }: TabProps,
+    { onClick, icon, text, isActive, isMobile, isMobileV2, disabled }: TabProps,
     ref?: Ref<HTMLDivElement>
   ) => (
     <div
       className={cn(
         styles.tab,
         { [styles.tabMobile]: isMobile },
-        { [styles.tabDesktop]: !isMobile },
+        { [styles.tabMobileV2]: isMobileV2 },
+        { [styles.tabDesktop]: !isMobile && !isMobileV2 },
         { [styles.tabActive]: isActive },
         { [styles.tabDisabled]: disabled }
       )}
@@ -65,6 +67,10 @@ const Tab = forwardRef(
       {icon && <div className={styles.icon}>{icon}</div>}
       {isMobile ? (
         <Text variant='body' size='xs' strength='strong' color='inherit'>
+          {text}
+        </Text>
+      ) : isMobileV2 ? (
+        <Text variant='body' strength='strong' color='inherit'>
           {text}
         </Text>
       ) : (
@@ -92,6 +98,7 @@ type TabBarProps = {
   onClick: (index: number) => void
   shouldAnimate: boolean
   isMobile: boolean
+  isMobileV2: boolean
   disabledTabTooltipText?: string
   // Offset the tab to the left or right.
   // offset of 1 offsets 1 tab to the right,
@@ -107,6 +114,7 @@ const TabBar = memo(
     tabs,
     onClick,
     isMobile,
+    isMobileV2,
     disabledTabTooltipText,
     fractionalOffset = 0,
     pathname
@@ -235,7 +243,8 @@ const TabBar = memo(
         className={cn(
           styles.tabBarContainer,
           { [styles.tabBarContainerMobile]: isMobile },
-          { [styles.tabBarContainerDesktop]: !isMobile }
+          { [styles.tabBarContainerMobileV2]: isMobileV2 },
+          { [styles.tabBarContainerDesktop]: !isMobile && !isMobileV2 }
         )}
         role='tablist'
       >
@@ -260,6 +269,7 @@ const TabBar = memo(
               isActive={isActive}
               key={tab.label}
               isMobile={isMobile}
+              isMobileV2={isMobileV2}
               disabled={!!tab.disabled}
               icon={tab.icon}
               label={tab.label}
@@ -380,6 +390,7 @@ type BodyContainerProps = {
   lastActive: number
   didTransitionCallback: () => void
   isMobile: boolean
+  isMobileV2: boolean
   interElementSpacing: number
 
   // If container dimensions are dirty and need a resize.
@@ -921,6 +932,7 @@ type UseTabsArguments = {
   bodyClassName?: string
   elementClassName?: string
   isMobile?: boolean
+  isMobileV2?: boolean
 
   // Optionally allow useTabs to be a controlled component
   selectedTabLabel?: string
@@ -987,6 +999,7 @@ const useTabs = ({
   bodyClassName,
   elementClassName,
   isMobile = true,
+  isMobileV2 = false,
   interElementSpacing = 0,
   disabledTabTooltipText,
   tabRecalculator,
@@ -1110,6 +1123,7 @@ const useTabs = ({
     tabRecalculator._setRecalculateFunc(recalculateDimensions)
   }
 
+  // TODO: Add isMobileV2 to the condition and fix the bugs with scrolling
   const BodyContainerElement = isMobile
     ? GestureSupportingBodyContainer
     : BodyContainer
@@ -1126,10 +1140,18 @@ const useTabs = ({
       // when the animation finishes. On desktop, it's fired
       // immediately
       setActiveIndex(newIndex)
-      !isMobile && onChangeComplete(activeIndex, newIndex)
+      !isMobile && !isMobileV2 && onChangeComplete(activeIndex, newIndex)
       onTabClickCb && onTabClickCb(tabs[newIndex].label)
     },
-    [isControlled, isMobile, onChangeComplete, activeIndex, onTabClickCb, tabs]
+    [
+      isControlled,
+      isMobile,
+      isMobileV2,
+      onChangeComplete,
+      activeIndex,
+      onTabClickCb,
+      tabs
+    ]
   )
 
   const tabBarKey = tabs.map((t) => t.label).join('-')
@@ -1143,6 +1165,7 @@ const useTabs = ({
         onClick={onTabClick}
         shouldAnimate={shouldAnimate}
         isMobile={isMobile}
+        isMobileV2={isMobileV2}
         disabledTabTooltipText={disabledTabTooltipText}
         fractionalOffset={accentFractionalOffset}
         pathname={pathname}
@@ -1155,6 +1178,7 @@ const useTabs = ({
       onTabClick,
       shouldAnimate,
       isMobile,
+      isMobileV2,
       disabledTabTooltipText,
       accentFractionalOffset,
       pathname
@@ -1176,6 +1200,7 @@ const useTabs = ({
           didTransitionCallback || emptyDidTransitionCallback
         }
         isMobile={isMobile}
+        isMobileV2={isMobileV2}
         interElementSpacing={interElementSpacing}
         dimensionsAreDirty={dimensionsAreDirty}
         didSetDimensions={didSetDimensions}
@@ -1197,6 +1222,7 @@ const useTabs = ({
       didTransitionCallback,
       emptyDidTransitionCallback,
       isMobile,
+      isMobileV2,
       interElementSpacing,
       dimensionsAreDirty,
       didSetDimensions,

@@ -1,4 +1,4 @@
-import { EntityType, Id } from '@audius/sdk'
+import { EntityType, OptionalId } from '@audius/sdk'
 import {
   InfiniteData,
   useInfiniteQuery,
@@ -71,7 +71,7 @@ export const useProfileTracks = (
       const handleNoAt = handle.startsWith('@') ? handle.substring(1) : handle
       const { data: tracks } = await sdk.full.users.getTracksByUserHandle({
         handle: handleNoAt,
-        userId: currentUserId ? Id.parse(currentUserId) : undefined,
+        userId: OptionalId.parse(currentUserId),
         limit: pageSize,
         offset: pageParam,
         sort: sort === TracksSortMode.POPULAR ? 'plays' : 'date',
