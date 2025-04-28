@@ -18,7 +18,7 @@ import {
   timestampRegex
 } from '@audius/common/utils'
 import { OptionalHashId } from '@audius/sdk'
-import { isEqual } from 'lodash'
+import { isEqual, pick } from 'lodash'
 import type { TextInput as RnTextInput } from 'react-native'
 import { Platform, TouchableOpacity } from 'react-native'
 import type {
@@ -134,12 +134,8 @@ export const ComposerInput = forwardRef(function ComposerInput(
   const messageIdRef = useRef(messageId)
   const lastKeyPressMsRef = useRef<number | null>(null)
   const { data: partialTrack } = useTrack(entityId, {
-    select: (track) => ({
-      duration: track.duration,
-      genre: track.genre,
-      release_date: track.release_date,
-      access: track.access
-    })
+    select: (track) =>
+      pick(track, ['duration', 'genre', 'release_date', 'access'])
   })
 
   useEffect(() => {

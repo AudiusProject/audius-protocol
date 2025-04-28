@@ -24,7 +24,7 @@ import {
   useTheme
 } from '@audius/harmony'
 import { EntityType, HashId } from '@audius/sdk'
-import { isEqual } from 'lodash'
+import { isEqual, pick } from 'lodash'
 import { usePrevious } from 'react-use'
 
 import { TextAreaV2 } from 'components/data-entry/TextAreaV2'
@@ -88,15 +88,10 @@ export const ComposerInput = (props: ComposerInputProps) => {
     ...other
   } = props
   const ref = useRef<HTMLTextAreaElement>(null)
-  const { data: partialTrack } = useTrack(
-    entityType === EntityType.TRACK ? entityId : undefined,
-    {
-      select: (track) => ({
-        access: track.access,
-        duration: track.duration
-      })
-    }
-  )
+  const { data: partialTrack } = useTrack(entityId, {
+    select: (track) => pick(track, ['access', 'duration']),
+    enabled: entityType === EntityType.TRACK
+  })
 
   const [value, setValue] = useState(presetMessage ?? '')
   const [focused, setFocused] = useState(false)

@@ -9,6 +9,7 @@ import {
   USDCContentPurchaseType
 } from '@audius/common/models'
 import { Text } from '@audius/harmony'
+import { pick } from 'lodash'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
@@ -26,10 +27,7 @@ export const TrackNameWithArtwork = ({
   const isTrack = contentType === USDCContentPurchaseType.TRACK
   const { data: partialTrack, isPending: isTrackPending } = useTrack(id, {
     enabled: isTrack,
-    select: (track) => ({
-      title: track.title,
-      owner_id: track.owner_id
-    })
+    select: (track) => pick(track, ['title', 'owner_id'])
   })
   const { data: currentUserId } = useCurrentUserId()
   const { status: albumStatus, data: album } = useGetPlaylistById(

@@ -6,6 +6,7 @@ import {
 import { recentSearchMessages as messages } from '@audius/common/messages'
 import { Kind, SquareSizes, Status } from '@audius/common/models'
 import type { SearchItem as SearchItemType } from '@audius/common/store'
+import { pick } from 'lodash'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
 import type { IconComponent } from '@audius/harmony-native'
@@ -82,10 +83,7 @@ export const SearchItemTrack = (props: SearchItemProps) => {
   const { searchItem, onPress } = props
   const { id } = searchItem
   const { data: partialTrack, isPending: isTrackPending } = useTrack(id, {
-    select: (track) => ({
-      title: track.title,
-      owner_id: track.owner_id
-    })
+    select: (track) => pick(track, ['title', 'owner_id'])
   })
   const { data: user } = useGetUserById({ id: partialTrack?.owner_id ?? 0 })
   const { spacing } = useTheme()

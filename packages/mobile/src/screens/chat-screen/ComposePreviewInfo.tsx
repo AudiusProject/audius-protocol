@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { useGetPlaylistById, useTrack, useUser } from '@audius/common/api'
 import type { ID, UserMetadata } from '@audius/common/models'
 import { SquareSizes } from '@audius/common/models'
+import { pick } from 'lodash'
 
 import { Flex, Text } from '@audius/harmony-native'
 import { CollectionImage } from 'app/components/image/CollectionImage'
@@ -58,10 +59,7 @@ export const ComposerTrackInfo = (props: ComposerTrackInfoProps) => {
   const { trackId } = props
 
   const { data: partialTrack } = useTrack(trackId, {
-    select: (track) => ({
-      title: track.title,
-      owner_id: track.owner_id
-    })
+    select: (track) => pick(track, ['title', 'owner_id'])
   })
   const { data: user } = useUser(partialTrack?.owner_id)
 

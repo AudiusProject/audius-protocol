@@ -452,7 +452,7 @@ export const PremiumContentPurchaseDrawer = () => {
   } = usePremiumContentPurchaseModal()
   const isAlbum = contentType === PurchaseableContentType.ALBUM
   const { data: currentUserId } = useCurrentUserId()
-  const { data: track, isPending: isTrackLoading } = useTrack(contentId)
+  const { data: track, isPending: isTrackPending } = useTrack(contentId)
   const { data: album } = useGetPlaylistById(
     { playlistId: contentId!, currentUserId },
     { disabled: !isAlbum || !contentId }
@@ -518,7 +518,7 @@ export const PremiumContentPurchaseDrawer = () => {
       isFullscreen
       dismissKeyboardOnOpen
     >
-      {isTrackLoading ? (
+      {isTrackPending ? (
         <View style={styles.spinnerContainer}>
           <LoadingSpinner />
         </View>

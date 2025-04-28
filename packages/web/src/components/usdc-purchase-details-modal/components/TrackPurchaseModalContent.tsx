@@ -1,5 +1,6 @@
 import { useTrack } from '@audius/common/api'
 import { SquareSizes, USDCPurchaseDetails } from '@audius/common/models'
+import { pick } from 'lodash'
 
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
@@ -18,10 +19,7 @@ export const TrackPurchaseModalContent = ({
 }) => {
   const { contentId } = purchaseDetails
   const { data: partialTrack } = useTrack(contentId, {
-    select: (track) => ({
-      title: track.title,
-      permalink: track.permalink
-    })
+    select: (track) => pick(track, ['title', 'permalink'])
   })
   const trackArtwork = useTrackCoverArt({
     trackId: contentId,

@@ -26,6 +26,7 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
+import { pick } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, useRouteMatch } from 'react-router-dom'
 
@@ -113,12 +114,8 @@ const RecentSearchTrack = (props: { searchItem: SearchItem }) => {
   const { searchItem } = props
   const { id } = searchItem
   const { data: partialTrack } = useTrack(id, {
-    select: (track) => ({
-      title: track.title,
-      permalink: track.permalink,
-      owner_id: track.owner_id,
-      track_id: track.track_id
-    })
+    select: (track) =>
+      pick(track, ['title', 'permalink', 'owner_id', 'track_id'])
   })
   const { data: user } = useUser(partialTrack?.owner_id)
 
