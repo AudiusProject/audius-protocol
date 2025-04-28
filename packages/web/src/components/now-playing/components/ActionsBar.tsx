@@ -40,10 +40,16 @@ const ActionsBar = ({
   const { data: partialTrack } = useTrack(trackId, {
     select: (track) =>
       pick(track, [
+        'track_id',
         'is_unlisted',
         'owner_id',
         'has_current_user_reposted',
-        'has_current_user_saved'
+        'has_current_user_saved',
+        'access',
+        'is_stream_gated',
+        'stream_conditions',
+        'is_download_gated',
+        'download_conditions'
       ])
   })
   const { data: currentUserId } = useCurrentUserId()
@@ -54,7 +60,7 @@ const ActionsBar = ({
     is_unlisted: isUnlisted
   } = partialTrack ?? {}
   const isOwner = ownerId === currentUserId
-  const { hasStreamAccess } = useGatedContentAccess(partialTrack ?? {})
+  const { hasStreamAccess } = useGatedContentAccess(partialTrack)
   const shouldShowActions = hasStreamAccess && !isUnlisted
 
   if (!shouldShowActions) return null

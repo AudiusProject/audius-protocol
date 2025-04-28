@@ -49,6 +49,7 @@ export const RemixContestSection = ({
   const { data: remixContest } = useRemixContest(trackId)
   const { data: remixes } = useRemixes({ trackId, isContestEntry: true })
   const [contentHeight, setContentHeight] = useState(0)
+  const hasPrizeInfo = !!remixContest?.eventData?.prizeInfo
 
   const handleHeightChange = useCallback((height: number) => {
     setContentHeight(height)
@@ -59,10 +60,14 @@ export const RemixContestSection = ({
       text: messages.details,
       label: 'details'
     },
-    {
-      text: messages.prizes,
-      label: 'prizes'
-    },
+    ...(hasPrizeInfo
+      ? [
+          {
+            text: messages.prizes,
+            label: 'prizes'
+          }
+        ]
+      : []),
     {
       text:
         messages.submissions + (remixes?.length ? ` (${remixes.length})` : ''),
@@ -76,9 +81,13 @@ export const RemixContestSection = ({
       <TabBody key='details' onHeightChange={handleHeightChange}>
         <RemixContestDetailsTab trackId={trackId} />
       </TabBody>,
-      <TabBody key='prizes' onHeightChange={handleHeightChange}>
-        <RemixContestPrizesTab trackId={trackId} />
-      </TabBody>,
+      ...(hasPrizeInfo
+        ? [
+            <TabBody key='prizes' onHeightChange={handleHeightChange}>
+              <RemixContestPrizesTab trackId={trackId} />
+            </TabBody>
+          ]
+        : []),
       <TabBody key='submissions' onHeightChange={handleHeightChange}>
         <RemixContestSubmissionsTab
           trackId={trackId}

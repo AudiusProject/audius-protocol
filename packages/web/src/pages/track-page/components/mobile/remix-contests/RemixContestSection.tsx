@@ -27,16 +27,21 @@ export const RemixContestSection = ({
 }: RemixContestSectionProps) => {
   const { data: remixContest } = useRemixContest(trackId)
   const { data: remixes } = useRemixes({ trackId, isContestEntry: true })
+  const hasPrizeInfo = !!remixContest?.eventData?.prizeInfo
 
   const tabs = [
     {
       text: messages.details,
       label: 'details'
     },
-    {
-      text: messages.prizes,
-      label: 'prizes'
-    },
+    ...(hasPrizeInfo
+      ? [
+          {
+            text: messages.prizes,
+            label: 'prizes'
+          }
+        ]
+      : []),
     {
       text: messages.submissions,
       label: 'submissions'
@@ -49,7 +54,9 @@ export const RemixContestSection = ({
       trackId={trackId}
       isOwner={isOwner}
     />,
-    <RemixContestPrizesTab key='prizes' trackId={trackId} />,
+    ...(hasPrizeInfo
+      ? [<RemixContestPrizesTab key='prizes' trackId={trackId} />]
+      : []),
     <RemixContestSubmissionsTab
       key='submissions'
       trackId={trackId}

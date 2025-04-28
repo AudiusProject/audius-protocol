@@ -78,11 +78,12 @@ export const RemixContestSection = ({
   const { data: track } = useTrack(trackId)
   const { data: currentUserId } = useCurrentUserId()
   const isOwner = track?.owner_id === currentUserId
+  const hasPrizeInfo = !!remixContest?.eventData?.prizeInfo
 
   const [index, setIndex] = useState(0)
   const [routes] = useState<Route[]>([
     { key: 'details', title: 'Details' },
-    { key: 'prizes', title: 'Prizes' },
+    ...(hasPrizeInfo ? [{ key: 'prizes', title: 'Prizes' }] : []),
     { key: 'submissions', title: 'Submissions' }
   ])
   const [heights, setHeights] = useState({})

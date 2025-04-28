@@ -45,7 +45,11 @@ export const getTrackWithFallback = (track: Track | null | undefined) => {
       ddex_app: null,
       comment_count: 0,
       comments_disabled: false,
-      album_backlink: undefined
+      album_backlink: undefined,
+      access: {
+        stream: false,
+        download: false
+      }
     }
   )
 }

@@ -1,7 +1,7 @@
 import { Mood } from '@audius/sdk'
 import { pick } from 'lodash'
 
-import { useTrack } from '~/api/tan-query/useTrack'
+import { useTrack } from '~/api'
 import { ID } from '~/models'
 import { parseMusicalKey } from '~/utils/musicalKeys'
 import { searchPage } from '~/utils/route'
