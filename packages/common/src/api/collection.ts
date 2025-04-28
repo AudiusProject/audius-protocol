@@ -22,44 +22,6 @@ const playlistPermalinkToHandleAndSlug = (permalink: string) => {
 const collectionApi = createApi({
   reducerPath: 'collectionApi',
   endpoints: {
-    getPlaylistById: {
-      fetch: async (
-        {
-          playlistId,
-          currentUserId
-        }: { playlistId: Nullable<ID>; currentUserId?: Nullable<ID> },
-        { audiusSdk }
-      ) => {
-        if (!playlistId || playlistId === -1) return null
-        const sdk = await audiusSdk()
-        const { data = [] } = await sdk.full.playlists.getPlaylist({
-          playlistId: Id.parse(playlistId),
-          userId: OptionalId.parse(currentUserId)
-        })
-        return data.length
-          ? (userCollectionMetadataFromSDK(data[0]) ?? null)
-          : null
-      },
-      fetchBatch: async (
-        { ids, currentUserId }: { ids: ID[]; currentUserId?: Nullable<ID> },
-        { audiusSdk }
-      ) => {
-        const id = ids.filter((id) => id && id !== -1).map((id) => Id.parse(id))
-        if (id.length === 0) return []
-
-        const sdk = await audiusSdk()
-        const { data = [] } = await sdk.full.playlists.getBulkPlaylists({
-          id,
-          userId: OptionalId.parse(currentUserId)
-        })
-        return transformAndCleanList(data, userCollectionMetadataFromSDK)
-      },
-      options: {
-        idArgKey: 'playlistId',
-        kind: Kind.COLLECTIONS,
-        schemaKey: 'collection'
-      }
-    },
     getPlaylistsByIds: {
       fetch: async (
         { ids, currentUserId }: { ids: ID[]; currentUserId?: Nullable<ID> },
