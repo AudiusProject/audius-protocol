@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import { LineupData, useUser, useTrack } from '@audius/common/api'
 import { ID, SquareSizes } from '@audius/common/models'
 import {
@@ -8,7 +10,7 @@ import {
   Skeleton,
   Text
 } from '@audius/harmony'
-import { Link } from 'react-router-dom-v5-compat'
+import { Link, useNavigate } from 'react-router-dom-v5-compat'
 
 import { Avatar } from 'components/avatar'
 import { TrackLink, UserLink } from 'components/link'
@@ -46,10 +48,15 @@ export const RemixContestSubmissionsTab = ({
 }
 
 const SubmissionCard = ({ submission }: { submission: LineupData }) => {
+  const navigate = useNavigate()
   const { data: track, isLoading: trackLoading } = useTrack(submission.id)
   const { data: user, isLoading: userLoading } = useUser(track?.owner_id)
   const isLoading = trackLoading || userLoading
   const displaySkeleton = isLoading || !track || !user
+
+  const goToTrack = useCallback(() => {
+    navigate(track?.permalink ?? '')
+  }, [navigate, track?.permalink])
 
   return (
     <Flex column gap='s'>
@@ -68,9 +75,11 @@ const SubmissionCard = ({ submission }: { submission: LineupData }) => {
               <TrackArtwork
                 style={{
                   width: '100%',
-                  height: '100%'
+                  height: '100%',
+                  cursor: 'pointer'
                 }}
                 trackId={track.track_id}
+                onClick={goToTrack}
                 size={SquareSizes.SIZE_480_BY_480}
               />
             </TrackFlair>
@@ -78,7 +87,7 @@ const SubmissionCard = ({ submission }: { submission: LineupData }) => {
             <Box
               h={userAvatarSize}
               w={userAvatarSize}
-              css={{ position: 'absolute', top: -8, right: -8 }}
+              css={{ position: 'absolute', top: -8, right: -8, zIndex: 10 }}
               borderRadius='circle'
             >
               <Avatar
