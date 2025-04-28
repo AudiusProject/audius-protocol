@@ -62,14 +62,7 @@ export const CollapsibleContent = ({
   useLayoutEffect(() => {
     const totalHeight = contentHeight + (shouldShowToggle ? BUTTON_HEIGHT : 0)
     onHeightChange?.(totalHeight)
-  }, [
-    bounds.height,
-    isCollapsed,
-    collapsedHeight,
-    onHeightChange,
-    shouldShowToggle,
-    contentHeight
-  ])
+  }, [onHeightChange, shouldShowToggle, contentHeight])
 
   return (
     <div className={cn(className, { collapsed: isCollapsed })}>
