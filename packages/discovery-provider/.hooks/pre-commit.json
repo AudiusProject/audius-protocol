@@ -2,19 +2,19 @@
   "steps": [
     {
       "name": "Sort imports",
-      "command": "isort --diff --check . --skip ./src/tasks/core/gen --skip ./plugins"
+      "command": "isort --diff --check . --skip ./src/tasks/core/gen --skip ./plugins --skip ./src/tasks/core/audiusd_gen"
     },
     {
       "name": "Flake8",
-      "command": "flake8 . --exclude=./src/tasks/core/gen,./plugins"
+      "command": "flake8 . --exclude=./src/tasks/core/gen,./plugins,./src/tasks/core/audiusd_gen"
     },
     {
       "name": "Format",
-      "command": "black --diff --check . --exclude './src/tasks/core/gen|./plugins'"
+      "command": "black --diff --check . --exclude './src/tasks/core/gen|./plugins|./src/tasks/core/audiusd_gen'"
     },
     {
       "name": "Typecheck",
-      "command": "mypy . --exclude './src/tasks/core/gen|./plugins'"
+      "command": "mypy . --exclude './src/tasks/core/gen|./plugins|./src/tasks/core/audiusd_gen'"
     }
   ]
 }
