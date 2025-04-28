@@ -119,7 +119,7 @@ const RemixContestSubmissions = ({
   const navigation = useNavigation()
 
   return (
-    <Flex w='100%' column gap='2xl' pv='xl' ph='l' borderTop='default'>
+    <Flex w='100%' column gap='2xl' pt='xl' pb='2xl' ph='l' borderTop='default'>
       <Flex gap='2xl' wrap='wrap'>
         {submissions.map((submission) => (
           <SubmissionCard key={submission.id} submission={submission} />
