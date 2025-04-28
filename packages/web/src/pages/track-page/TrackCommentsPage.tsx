@@ -1,9 +1,10 @@
 import { useContext, useEffect } from 'react'
 
-import { useGetCurrentUserId, useGetTrackByPermalink } from '@audius/common/api'
+import { useTrackByPermalink } from '@audius/common/api'
 import { CommentSectionProvider } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import { Flex, Text } from '@audius/harmony'
+import { pick } from 'lodash'
 import { useParams } from 'react-router-dom'
 
 import { CommentList } from 'components/comments/CommentList'
@@ -17,10 +18,8 @@ type TrackCommentsParams = {
 
 export const TrackCommentsPage = () => {
   const { slug, handle } = useParams<TrackCommentsParams>()
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: track } = useGetTrackByPermalink({
-    permalink: `/${handle}/${slug}`,
-    currentUserId
+  const { data: partialTrack } = useTrackByPermalink(`/${handle}/${slug}`, {
+    select: (track) => pick(track, ['track_id', 'comments_disabled'])
   })
 
   const { setLeft, setCenter, setRight } = useContext(NavContext)
@@ -30,9 +29,9 @@ export const TrackCommentsPage = () => {
     setRight(null)
   }, [setCenter, setLeft, setRight])
 
-  if (!track) return null
+  if (!partialTrack) return null
 
-  const { track_id, comments_disabled } = track
+  const { track_id, comments_disabled } = partialTrack
 
   return (
     <MobilePageContainer
