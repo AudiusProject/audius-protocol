@@ -23,7 +23,6 @@ import {
 } from '@audius/harmony-native'
 import { ScrollView } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { identify } from 'app/services/analytics'
 
 import { HandleField } from '../components/HandleField'
 import { SocialMediaLoading } from '../components/SocialMediaLoading'
@@ -121,7 +120,6 @@ export const PickHandleScreen = () => {
     (values: PickHandleValues) => {
       const { handle } = values
       dispatch(setValueField('handle', handle))
-      identify({ handle })
       navigation.navigate('FinishProfile')
     },
     [dispatch, navigation]
