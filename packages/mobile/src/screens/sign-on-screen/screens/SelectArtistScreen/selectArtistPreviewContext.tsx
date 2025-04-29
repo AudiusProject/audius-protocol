@@ -53,7 +53,7 @@ export const SelectArtistsPreviewContextProvider = (props: {
 
   const { data: artistTracks } = useUserTracksByHandle({
     handle: artist?.handle,
-    // We just need one playable track. It's unlikely all 3 of an artist's tracks are unavailable.
+    // We just need one playable track. It's unlikely all 3 of an artist's top tracks are unavailable.
     limit: 3
   })
   useEffect(() => {
