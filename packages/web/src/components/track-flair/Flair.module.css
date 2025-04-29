@@ -5,7 +5,7 @@
 .flair {
   position: absolute;
   background-color: var(--harmony-white);
-  border-radius: 4px;
+  border-radius: 2px;
 }
 
 .flair.tiny {

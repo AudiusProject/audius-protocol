@@ -18,9 +18,10 @@ type CoSignProps = {
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
-  check: {
+  icon: {
     position: 'absolute',
-    backgroundColor: palette.white
+    backgroundColor: palette.white,
+    borderRadius: 2
   }
 }))
 
@@ -100,7 +101,7 @@ export const TrackFlair = ({ size, children, style, trackId }: CoSignProps) => {
   return (
     <View style={style}>
       <View>{children}</View>
-      {flair ? <View style={[styles.check, position]}>{flair}</View> : null}
+      {flair ? <View style={[styles.icon, position]}>{flair}</View> : null}
     </View>
   )
 }
