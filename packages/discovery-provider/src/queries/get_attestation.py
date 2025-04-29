@@ -24,7 +24,10 @@ from src.tasks.index_oracles import (
     oracle_addresses_key,
 )
 from src.utils.config import shared_config
-from src.utils.get_all_nodes import get_all_discovery_nodes_cached
+from src.utils.get_all_nodes import (
+    get_all_content_nodes_cached,
+    get_all_discovery_nodes_cached,
+)
 from src.utils.redis_connection import get_redis
 
 REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]
@@ -219,6 +222,13 @@ def verify_discovery_node_exists_on_chain(new_sender_address: str) -> bool:
     return new_sender_address in wallets
 
 
+def verify_content_node_exists_on_chain(new_sender_address: str) -> bool:
+    redis = get_redis()
+    nodes = get_all_content_nodes_cached(redis)
+    wallets = set([d["delegateOwnerWallet"] for d in nodes] if nodes else [])
+    return new_sender_address in wallets
+
+
 def get_create_sender_attestation(new_sender_address: str) -> Tuple[str, str]:
     """
     Returns a owner_wallet, signed_attestation tuple,
@@ -228,8 +238,9 @@ def get_create_sender_attestation(new_sender_address: str) -> Tuple[str, str]:
     if not REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY:
         raise Exception("No Rewards Manager Account initialized")
 
-    is_valid = verify_discovery_node_exists_on_chain(new_sender_address)
-    if not is_valid:
+    is_valid_dn = verify_discovery_node_exists_on_chain(new_sender_address)
+    is_valid_cn = verify_content_node_exists_on_chain(new_sender_address)
+    if not is_valid_dn and not is_valid_cn:
         raise Exception(f"Expected {new_sender_address} to be registered on chain")
 
     items = [

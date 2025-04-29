@@ -24,8 +24,7 @@ import {
   Box,
   Button,
   MusicBadge,
-  Text,
-  IconCloudUpload
+  Text
 } from '@audius/harmony'
 import IconCalendarMonth from '@audius/harmony/src/assets/icons/CalendarMonth.svg'
 import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
@@ -69,15 +68,7 @@ const messages = {
   hidden: 'Hidden',
   releases: (releaseDate: string) =>
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`,
-  remixContest: 'Remix Contest',
-  contestEnded: 'Contest Ended',
-  contestDeadline: 'Contest Deadline',
-  uploadRemixButtonText: 'Upload Remix',
-  deadline: (deadline?: string) => {
-    return deadline
-      ? `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`
-      : ''
-  }
+  remixContest: 'Remix Contest'
 }
 
 type PlayButtonProps = {
@@ -352,35 +343,6 @@ const TrackHeader = ({
     setIsDrawerOpen(false)
   }, [setIsDrawerOpen])
 
-  const handleClick = useCallback(() => {
-    setIsDrawerOpen(true)
-  }, [setIsDrawerOpen])
-
-  const renderSubmitRemixContestSection = useCallback(() => {
-    if (!isRemixContest) return null
-    const isContestOver = dayjs(remixContest.endDate).isBefore(dayjs())
-    return (
-      <Flex column gap='m' w='100%'>
-        <Flex gap='xs' alignItems='center'>
-          <Text variant='label' color='accent'>
-            {isContestOver ? messages.contestEnded : messages.contestDeadline}
-          </Text>
-          <Text>{messages.deadline(remixContest.endDate)}</Text>
-        </Flex>
-        {!isOwner ? (
-          <Button
-            variant='secondary'
-            size='small'
-            onClick={handleClick}
-            iconLeft={IconCloudUpload}
-          >
-            {messages.uploadRemixButtonText}
-          </Button>
-        ) : null}
-      </Flex>
-    )
-  }, [isRemixContest, remixContest?.endDate, isOwner, handleClick])
-
   const trendingRank = useTrackRank(trackId)
 
   return (
@@ -506,7 +468,6 @@ const TrackHeader = ({
             </Text>
           </Flex>
         ) : null}
-        {renderSubmitRemixContestSection()}
         {hasDownloadableAssets ? (
           <Box pt='l' w='100%'>
             <Suspense>

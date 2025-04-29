@@ -65,7 +65,7 @@ function* getReposts({ offset, limit, handle }) {
         const kind = getKindFromKindId(kindId)
         const id = getIdFromKindId(kindId)
         if (kind === Kind.TRACKS) {
-          const track = tracks[id]
+          const track = tracks[id]?.metadata
           if (
             track.has_current_user_reposted &&
             !repostTrackIds.has(track.track_id)
@@ -73,7 +73,7 @@ function* getReposts({ offset, limit, handle }) {
             reposts = [track, ...reposts]
           }
         } else if (kind === Kind.COLLECTIONS) {
-          const collection = collections[id]
+          const collection = collections[id]?.metadata
           if (
             collection.has_current_user_reposted &&
             !repostCollectionIds.has(collection.playlist_id)

@@ -7,7 +7,7 @@ import {
   useState
 } from 'react'
 
-import { useGetTrackById } from '@audius/common/api'
+import { useTrack } from '@audius/common/api'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
 import { ID, UserMetadata } from '@audius/common/models'
 import {
@@ -24,7 +24,7 @@ import {
   useTheme
 } from '@audius/harmony'
 import { EntityType, HashId } from '@audius/sdk'
-import { isEqual } from 'lodash'
+import { isEqual, pick } from 'lodash'
 import { usePrevious } from 'react-use'
 
 import { TextAreaV2 } from 'components/data-entry/TextAreaV2'
@@ -88,8 +88,9 @@ export const ComposerInput = (props: ComposerInputProps) => {
     ...other
   } = props
   const ref = useRef<HTMLTextAreaElement>(null)
-  const { data: track } = useGetTrackById({
-    id: entityType === EntityType.TRACK && entityId ? entityId : -1
+  const { data: partialTrack } = useTrack(entityId, {
+    select: (track) => pick(track, ['access', 'duration']),
+    enabled: entityType === EntityType.TRACK
   })
 
   const [value, setValue] = useState(presetMessage ?? '')
@@ -177,9 +178,9 @@ export const ComposerInput = (props: ComposerInputProps) => {
   )
 
   const timestamps = useMemo(() => {
-    if (!track || !track.access.stream) return []
+    if (!partialTrack || !partialTrack.access.stream) return []
 
-    const { duration } = track
+    const { duration } = partialTrack
     return Array.from(value.matchAll(timestampRegex))
       .filter((match) => getDurationFromTimestampMatch(match) <= duration)
       .map((match) => ({
@@ -188,7 +189,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
         index: match.index,
         link: ''
       }))
-  }, [track, value])
+  }, [partialTrack, value])
   const prevTimestamps = usePrevious(timestamps)
 
   const getAutocompleteRange = useCallback(() => {

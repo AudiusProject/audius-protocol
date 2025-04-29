@@ -1,6 +1,5 @@
-import { useRemixContest } from '@audius/common/api'
+import { useRemixContest, useTrackPageLineup } from '@audius/common/api'
 import { User } from '@audius/common/models'
-import { useTrackPageLineup } from '@audius/common/src/api/tan-query/useTrackPageLineup'
 import { tracksActions } from '@audius/common/src/store/pages/track/lineup/actions'
 import { Flex, Text, IconRemix } from '@audius/harmony'
 import type { IconComponent } from '@audius/harmony'

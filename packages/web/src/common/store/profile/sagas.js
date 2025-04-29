@@ -277,7 +277,7 @@ function* fetchProfileAsync(action) {
         action.forceUpdate,
         action.shouldSetLoading
       )
-      user = users.entries[action.userId]
+      user = users.entries[action.userId].metadata
     }
     if (!user) {
       const isReachable = yield select(getIsReachable)

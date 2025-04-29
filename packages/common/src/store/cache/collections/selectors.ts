@@ -14,7 +14,7 @@ import { Uid } from '~/utils/uid'
 import type { ID, UID, Collection, User } from '../../../models'
 import { Status, Kind } from '../../../models'
 
-import type { EnhancedCollectionTrack } from './types'
+import type { BatchCachedCollections, EnhancedCollectionTrack } from './types'
 
 /** @deprecated Use useCollection instead */
 export const getCollection = (
@@ -41,30 +41,32 @@ export const getCollections = (
     uids?: UID[] | null
     permalinks?: string[] | null
   }
-) => {
+): { [id: number]: BatchCachedCollections } => {
   if (props && props.ids) {
-    const collections: { [id: number]: Collection } = {}
+    const collections: {
+      [id: number]: BatchCachedCollections
+    } = {}
     props.ids.forEach((id) => {
       const collection = getCollection(state, { id })
       if (collection) {
-        collections[id] = collection
+        collections[id] = { metadata: collection }
       }
     })
     return collections
   } else if (props && props.uids) {
-    const collections: { [uid: string]: Collection } = {}
+    const collections: { [uid: string]: BatchCachedCollections } = {}
     props.uids.forEach((uid) => {
       const collection = getCollection(state, { uid })
       if (collection) {
-        collections[collection.playlist_id] = collection
+        collections[collection.playlist_id] = { metadata: collection }
       }
     })
     return collections
   } else if (props && props.permalinks) {
-    const collections: { [permalink: string]: Collection } = {}
+    const collections: { [permalink: string]: BatchCachedCollections } = {}
     props.permalinks.forEach((permalink) => {
       const collection = getCollection(state, { permalink })
-      if (collection) collections[permalink] = collection
+      if (collection) collections[permalink] = { metadata: collection }
     })
     return collections
   }
@@ -150,7 +152,7 @@ export const getTracksFromCollection = (
 
   const userIds = Object.keys(tracks)
     .map((id) => {
-      const track = tracks[id as unknown as number]
+      const track = tracks[id as unknown as number].metadata
       if (track?.owner_id) {
         return track.owner_id
       }
@@ -174,9 +176,9 @@ export const getTracksFromCollection = (
         return null
       }
       return {
-        ...tracks[t.track],
+        ...tracks[t.track].metadata,
         uid: trackUid.toString(),
-        user: users[tracks[t.track].owner_id]
+        user: users[tracks[t.track].metadata.owner_id].metadata
       }
     })
     .filter(Boolean) as EnhancedCollectionTrack[]

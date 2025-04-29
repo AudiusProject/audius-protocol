@@ -27,7 +27,7 @@ function* fetchAiUserWorker(action: FetchAiUserAction) {
 
   if (userId) {
     const users = yield* call(fetchUsers, [userId])
-    user = users.entries[userId]
+    user = users.entries[userId].metadata
   }
 
   if (user) {

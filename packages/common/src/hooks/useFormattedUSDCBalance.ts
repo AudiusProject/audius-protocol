@@ -3,12 +3,12 @@ import { useMemo } from 'react'
 import { USDC } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 
-import { useUSDCBalance } from '../api/tan-query/useUSDCBalance'
+import { useUSDCBalance } from '../api/tan-query/wallets/useUSDCBalance'
 import { BNUSDC, Status } from '../models'
 
 type UseFormattedUSDCBalanceReturn = {
   balance: BNUSDC | null
-  balanceFormatted: string
+  balanceFormatted: string | null
   balanceCents: number
   usdcValue: ReturnType<typeof USDC>
   isLoading: boolean
@@ -20,9 +20,11 @@ export const useFormattedUSDCBalance = (): UseFormattedUSDCBalanceReturn => {
   const usdcValue = USDC(balance ?? new BN(0)).floor(2)
   const balanceCents = Number(usdcValue.floor(2).toString()) * 100
   const balanceFormatted = useMemo(() => {
-    return balanceStatus === Status.LOADING
-      ? '0.00'
-      : usdcValue.toFixed(2).replace('$', '')
+    const balance =
+      balanceStatus === Status.LOADING
+        ? null
+        : usdcValue.toFixed(2).replace('$', '')
+    return balance ? `$${balance}` : null
   }, [usdcValue, balanceStatus])
 
   const isLoading = balanceStatus === Status.LOADING

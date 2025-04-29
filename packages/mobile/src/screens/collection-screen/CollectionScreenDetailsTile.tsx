@@ -285,7 +285,7 @@ export const CollectionScreenDetailsTile = ({
   const uids = isLineupLoading ? Array(Math.min(5, trackCount ?? 0)) : trackUids
   const tracks = useSelector((state) => getTracks(state, { uids }))
   const areAllTracksDeleted = Object.values(tracks).every(
-    (track) => track.is_delete
+    (track) => track?.metadata?.is_delete
   )
   const isPlayable =
     Object.values(tracks).length === 0

@@ -6,10 +6,10 @@ import {
   Kind,
   ID,
   TrackMetadata,
-  Track,
   UserTrackMetadata
 } from '@audius/common/models'
 import {
+  BatchCachedTracks,
   accountSelectors,
   cacheTracksSelectors,
   cacheSelectors,
@@ -74,7 +74,7 @@ export function* retrieveTracks({
     : (trackIds as ID[])
 
   // @ts-ignore retrieve should be refactored to ts first
-  const tracks: { entries: { [id: number]: Track } } = yield* call(retrieve, {
+  const tracks = yield* call(retrieve<BatchCachedTracks>, {
     ids,
     selectFromCache: function* (ids: ID[]) {
       return yield* select(getTracksSelector, { ids })
@@ -149,7 +149,7 @@ export function* retrieveTracks({
   })
 
   const trackId = ids[0]
-  const track = tracks.entries[trackId]
+  const track = tracks.entries[trackId].metadata
 
   if (withRemixes) {
     yield* spawn(function* () {

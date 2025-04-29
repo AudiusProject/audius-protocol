@@ -283,6 +283,11 @@ export type Attestation = {
   antiAbuseOracleEthAddress?: string | null
 }
 
+export type SenderAttestation = {
+  rewardManagerState: PublicKey
+  senderEthAddress: string
+}
+
 export type VerifiedMessage = {
   senderEthAddress: string
   attestation: Attestation

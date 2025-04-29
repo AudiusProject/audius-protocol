@@ -108,15 +108,15 @@ export const getAccountWithCollections = createSelector(
       ...account,
       collections: [...userPlaylists]
         .map((collection) =>
-          collections[collection.id] &&
-          !collections[collection.id]?._marked_deleted &&
-          !collections[collection.id]?.is_delete &&
+          collections[collection.id]?.metadata &&
+          !collections[collection.id]?.metadata?._marked_deleted &&
+          !collections[collection.id]?.metadata?.is_delete &&
           collection.user.id in users &&
-          !users[collection.user.id].is_deactivated
+          !users[collection.user.id].metadata.is_deactivated
             ? {
-                ...collections[collection.id],
+                ...collections[collection.id].metadata,
                 ownerHandle: collection.user.handle,
-                ownerName: users[collection.user.id].name
+                ownerName: users[collection.user.id].metadata.name
               }
             : null
         )
@@ -153,7 +153,7 @@ export const getUserPlaylists = createSelector(
     // If we haven't cached the collection (e.g. on first load), always return it.
     // If we have cached it and it's marked delete, don't return it bc we know better now.
     return playlists.filter(
-      (p) => !collections[p.id] || !collections[p.id]._marked_deleted
+      (p) => !collections[p.id] || !collections[p.id]?.metadata?._marked_deleted
     )
   }
 )
@@ -164,7 +164,10 @@ export const getAccountCollections = createSelector(
     return Object.keys(accountCollections).reduce(
       (acc, cur) => {
         const track = accountCollections[cur as unknown as number]
-        if (!collections[track.id] || collections[track.id]._marked_deleted)
+        if (
+          !collections[track.id] ||
+          collections[track.id]?.metadata?._marked_deleted
+        )
           return acc
         return {
           ...acc,

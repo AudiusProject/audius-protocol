@@ -21,7 +21,8 @@ import {
   Paper,
   Text,
   IconButton,
-  useMedia
+  useMedia,
+  motion
 } from '@audius/harmony'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -124,10 +125,10 @@ export const CashWallet = () => {
             color='default'
             css={{
               opacity: isLoading ? 0 : 1,
-              transition: 'opacity 0.3s ease'
+              transition: `opacity ${motion.calm}`
             }}
           >
-            ${balanceFormatted}
+            {balanceFormatted}
           </Text>
 
           {/* Payout Wallet Info */}
