@@ -151,7 +151,7 @@ export const getOtherChatUsersFromChat = (state: CommonState, chat?: Chat) => {
   const users = getUsers(state, {
     ids
   })
-  return Object.values(users)
+  return Object.values(users).map((user) => user.metadata)
 }
 
 export const getOtherChatUsers = (state: CommonState, chatId?: string) => {
@@ -258,7 +258,7 @@ export const getCanCreateChat = createSelector(
     (state: CommonState, { userId }: { userId: Maybe<ID> }) => {
       if (!userId) return null
       const usersMap = getUsers(state, { ids: [userId] })
-      return usersMap[userId]
+      return usersMap[userId].metadata
     }
   ],
   (

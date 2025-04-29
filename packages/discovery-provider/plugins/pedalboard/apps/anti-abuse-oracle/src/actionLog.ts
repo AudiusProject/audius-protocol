@@ -2,7 +2,7 @@ import 'dotenv/config'
 
 import postgres from 'postgres'
 import fetch from 'cross-fetch'
-import { useFingerprintDeviceCount } from './identity'
+import { useEmailDeliverable, useFingerprintDeviceCount } from './identity'
 
 export const sql = postgres(process.env.audius_db_url || '')
 
@@ -89,6 +89,26 @@ export async function getRecentUsers(page: number) {
   return rows.map((row) => row.user as UserDetails)
 }
 
+export type ClaimDetails = {
+  disbursement_date: string
+  user_id: number
+  handle: string
+  sign_up_date: Date
+  challenge_id: string
+  amount: number
+}
+export async function getRecentClaims(page: number) {
+  const rows = await sql`
+    select challenge_disbursements.created_at as disbursement_date, handle_lc as handle, users.user_id, users.created_at as sign_up_date, challenge_disbursements.challenge_id, ROUND(CAST(challenge_disbursements.amount AS numeric) / 100000000, 0) as amount
+    from challenge_disbursements
+    join users on users.user_id = challenge_disbursements.user_id
+    order by challenge_disbursements.created_at desc 
+    limit 10 offset ${page * 10}
+  `
+  if (!rows.length) return
+  return rows.map((row) => row as ClaimDetails)
+}
+
 export async function getUserScore(userId: number) {
   const rows = await sql`
   select
@@ -112,7 +132,7 @@ export async function getUserNormalizedScore(userId: number) {
       users.created_at as timestamp,
       user_scores.*,
       anti_abuse_blocked_users.is_blocked 
-    FROM get_user_scores(${[userId]}) as user_scores
+    FROM get_user_score(${userId}) as user_scores
     LEFT JOIN users on users.user_id = user_scores.user_id
     LEFT JOIN anti_abuse_blocked_users ON anti_abuse_blocked_users.handle_lc = user_scores.handle_lc
 
@@ -134,8 +154,12 @@ export async function getUserNormalizedScore(userId: number) {
   const shadowbanScore = Number(shadowban_score)
 
   const numberOfUserWithFingerprint = (await useFingerprintDeviceCount(userId))!
-
   let overallScore = shadowbanScore - numberOfUserWithFingerprint
+
+  const isEmailDeliverable = await useEmailDeliverable(userId)
+  if (!isEmailDeliverable) {
+    overallScore -= 1000
+  }
 
   // override score
   if (is_blocked === true) {
@@ -158,6 +182,7 @@ export async function getUserNormalizedScore(userId: number) {
     chatBlockCount: chat_block_count,
     fingerprintCount: numberOfUserWithFingerprint,
     isAudiusImpersonator: is_audius_impersonator,
+    isEmailDeliverable,
     isBlocked: is_blocked,
     shadowbanScore,
     overallScore,

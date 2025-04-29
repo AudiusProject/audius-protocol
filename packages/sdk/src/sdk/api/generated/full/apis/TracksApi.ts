@@ -153,6 +153,8 @@ export interface GetTrackTopListenersRequest {
 }
 
 export interface GetTrendingTrackIDsRequest {
+    offset?: number;
+    limit?: number;
     genre?: string;
 }
 
@@ -166,6 +168,8 @@ export interface GetTrendingTracksRequest {
 
 export interface GetTrendingTracksIDsWithVersionRequest {
     version: string;
+    offset?: number;
+    limit?: number;
     genre?: string;
 }
 
@@ -841,6 +845,14 @@ export class TracksApi extends runtime.BaseAPI {
     async getTrendingTrackIDsRaw(params: GetTrendingTrackIDsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrendingIdsResponse>> {
         const queryParameters: any = {};
 
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
         if (params.genre !== undefined) {
             queryParameters['genre'] = params.genre;
         }
@@ -922,6 +934,14 @@ export class TracksApi extends runtime.BaseAPI {
         }
 
         const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
 
         if (params.genre !== undefined) {
             queryParameters['genre'] = params.genre;
@@ -1359,9 +1379,9 @@ export type GetTrackCommentsSortMethodEnum = typeof GetTrackCommentsSortMethodEn
  * @export
  */
 export const GetTrackRemixesSortMethodEnum = {
-    Recent: 'recent',
+    Likes: 'likes',
     Plays: 'plays',
-    Likes: 'likes'
+    Recent: 'recent'
 } as const;
 export type GetTrackRemixesSortMethodEnum = typeof GetTrackRemixesSortMethodEnum[keyof typeof GetTrackRemixesSortMethodEnum];
 /**

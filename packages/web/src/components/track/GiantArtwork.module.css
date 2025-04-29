@@ -10,4 +10,29 @@
   border-radius: 8px;
   border: 1px solid var(--harmony-n-100);
   overflow: hidden;
+  position: relative;
+}
+
+.iconLeftWrapper {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s ease-in-out;
+}
+
+.iconLeftWrapper:hover {
+  transform: scale(1.1);
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.iconLeftWrapper svg path {
+  fill: var(--harmony-static-white);
 }

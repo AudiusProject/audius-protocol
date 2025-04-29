@@ -1,5 +1,3 @@
-import { useEffect } from 'react'
-
 import {
   useRemixContest,
   useRemixes,
@@ -10,12 +8,11 @@ import { remixMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
 import {
   remixesPageLineupActions as tracksActions,
-  remixesPageActions,
   remixesPageSelectors
 } from '@audius/common/store'
 import { pluralize } from '@audius/common/utils'
 import { Text as RNText, View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import { Flex, IconRemix, IconTrophy, Text } from '@audius/harmony-native'
 import {
@@ -33,7 +30,6 @@ import { useRoute } from 'app/hooks/useRoute'
 import { flexRowCentered, makeStyles } from 'app/styles'
 
 const { getCount } = remixesPageSelectors
-const { fetchTrackSucceeded } = remixesPageActions
 const legacyMessages = {
   remix: 'Remix',
   of: 'of',
@@ -59,7 +55,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 }))
 
 export const TrackRemixesScreen = () => {
-  const dispatch = useDispatch()
   const { params } = useRoute<'TrackRemixes'>()
   const { data: track } = useTrackByParams(params)
   const trackId = track?.track_id
@@ -76,21 +71,6 @@ export const TrackRemixesScreen = () => {
   const isRemixContest = isRemixContestEnabled && contest
 
   const styles = useStyles()
-
-  useEffect(() => {
-    if (trackId) {
-      dispatch(fetchTrackSucceeded({ trackId }))
-      dispatch(
-        tracksActions.fetchLineupMetadatas(0, 10, false, {
-          trackId
-        })
-      )
-
-      return function cleanup() {
-        dispatch(tracksActions.reset())
-      }
-    }
-  }, [dispatch, trackId])
 
   const remixesText = pluralize(legacyMessages.remix, count, 'es', !count)
   const remixesCountText = `${count || ''} ${remixesText} ${legacyMessages.of}`

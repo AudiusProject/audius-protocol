@@ -67,7 +67,7 @@ export function* retrieveTrending({
       (state: AppState) => getTracks(state, { ids: trackIds })
     )
     const tracks = trackIds
-      .map((id) => tracksMap[id])
+      .map((id) => tracksMap[id].metadata)
       .filter((t) => t && !t.is_unlisted)
     return tracks
   }
@@ -95,7 +95,7 @@ export function* retrieveTrending({
       getTracks(state, { ids: apiTracks.map((t) => t.track_id) })
   )
   apiTracks = apiTracks.filter(
-    (t) => !tracksMap[t.track_id] || !tracksMap[t.track_id].is_unlisted
+    (t) => !tracksMap[t.track_id] || !tracksMap[t.track_id].metadata.is_unlisted
   )
 
   if (TF.size > 0) {

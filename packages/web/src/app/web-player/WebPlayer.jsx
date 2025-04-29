@@ -1,12 +1,13 @@
 import { Component, lazy, Suspense } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
   Client,
   Name,
   SmartCollectionVariant,
   Status
 } from '@audius/common/models'
-import { StringKeys } from '@audius/common/services'
+import { FeatureFlags, StringKeys } from '@audius/common/services'
 import { guestRoutes } from '@audius/common/src/utils/route'
 import {
   accountSelectors,
@@ -433,7 +434,12 @@ class WebPlayer extends Component {
   }
 
   render() {
-    const { incrementScroll, decrementScroll, userHandle } = this.props
+    const {
+      incrementScroll,
+      decrementScroll,
+      userHandle,
+      isWalletUIUpdateEnabled
+    } = this.props
 
     const {
       showWebUpdateBanner,
@@ -782,13 +788,25 @@ class WebPlayer extends Component {
                   exact
                   path={PAYMENTS_PAGE}
                   isMobile={isMobile}
-                  component={PayAndEarnPage}
+                  render={(props) =>
+                    isWalletUIUpdateEnabled ? (
+                      <Redirect to={WALLET_PAGE} />
+                    ) : (
+                      <PayAndEarnPage {...props} />
+                    )
+                  }
                 />
                 <Route
                   exact
                   path={AUDIO_PAGE}
                   isMobile={isMobile}
-                  component={AudioPage}
+                  render={(props) =>
+                    isWalletUIUpdateEnabled ? (
+                      <Redirect to={WALLET_AUDIO_PAGE} />
+                    ) : (
+                      <AudioPage {...props} />
+                    )
+                  }
                 />
                 <Route
                   exact
@@ -1099,12 +1117,29 @@ const RouterWebPlayer = withRouter(
   connect(mapStateToProps, mapDispatchToProps)(WebPlayer)
 )
 
+// Taking this approach because the class component cannot use hooks
+const FeatureFlaggedWebPlayer = (props) => {
+  const { isEnabled: isWalletUIUpdateEnabled } = useFeatureFlag(
+    FeatureFlags.WALLET_UI_UPDATE
+  )
+
+  return (
+    <RouterWebPlayer
+      {...props}
+      isWalletUIUpdateEnabled={isWalletUIUpdateEnabled}
+    />
+  )
+}
+
 const MainContentRouterWebPlayer = () => {
   return (
     <MainContentContext.Consumer>
       {({ ref, setRef }) => {
         return (
-          <RouterWebPlayer setMainContentRef={setRef} mainContentRef={ref} />
+          <FeatureFlaggedWebPlayer
+            setMainContentRef={setRef}
+            mainContentRef={ref}
+          />
         )
       }}
     </MainContentContext.Consumer>

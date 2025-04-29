@@ -5,9 +5,9 @@ import {
   useConnectedWallets,
   useAddConnectedWallet
 } from '@audius/common/api'
+import { useCurrentUser } from '@audius/common/api'
 import { useAppContext } from '@audius/common/context'
 import { Name, Chain } from '@audius/common/models'
-import { useCurrentUser } from '@audius/common/src/api/tan-query/useCurrentUser'
 import { useTheme } from '@emotion/react'
 import type { NamespaceTypeMap } from '@reown/appkit'
 import { mainnet } from '@reown/appkit/networks'

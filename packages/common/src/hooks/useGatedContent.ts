@@ -66,7 +66,23 @@ export const useGatedCollectionAccess = (collectionId: ID) => {
 
 // Returns whether user has access to given track.
 export const useGatedContentAccess = (
-  content: Nullable<Partial<Track | Collection>> | undefined
+  content:
+    | Nullable<
+        | Pick<
+            Track,
+            | 'track_id'
+            | 'is_stream_gated'
+            | 'is_download_gated'
+            | 'access'
+            | 'stream_conditions'
+            | 'download_conditions'
+          >
+        | Pick<
+            Collection,
+            'playlist_id' | 'is_stream_gated' | 'access' | 'stream_conditions'
+          >
+      >
+    | undefined
 ) => {
   const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
   const hasAccount = useSelector(getHasAccount)
@@ -175,8 +191,8 @@ export const useStreamConditionsEntity = (
       ids: [followUserId, tipUserId].filter(removeNullable)
     })
   )
-  const followee = followUserId ? users[followUserId] : null
-  const tippedUser = tipUserId ? users[tipUserId] : null
+  const followee = followUserId ? users[followUserId]?.metadata : null
+  const tippedUser = tipUserId ? users[tipUserId]?.metadata : null
 
   const collectionLink = useMemo(() => {
     if (!nftCollection) return ''

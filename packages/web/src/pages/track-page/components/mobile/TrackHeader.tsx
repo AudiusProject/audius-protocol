@@ -24,8 +24,7 @@ import {
   Box,
   Button,
   MusicBadge,
-  Text,
-  IconCloudUpload
+  Text
 } from '@audius/harmony'
 import IconCalendarMonth from '@audius/harmony/src/assets/icons/CalendarMonth.svg'
 import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
@@ -34,9 +33,6 @@ import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHid
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import CoSign from 'components/co-sign/CoSign'
-import HoverInfo from 'components/co-sign/HoverInfo'
-import { Size } from 'components/co-sign/types'
 import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
@@ -45,6 +41,9 @@ import { AiTrackSection } from 'components/track/AiTrackSection'
 import { GatedContentSection } from 'components/track/GatedContentSection'
 import { TrackDogEar } from 'components/track/TrackDogEar'
 import { TrackMetadataList } from 'components/track/TrackMetadataList'
+import HoverInfo from 'components/track-flair/HoverInfo'
+import TrackFlair from 'components/track-flair/TrackFlair'
+import { Size } from 'components/track-flair/types'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { push as pushRoute } from 'utils/navigation'
 import { isDarkMode } from 'utils/theme/theme'
@@ -69,15 +68,7 @@ const messages = {
   hidden: 'Hidden',
   releases: (releaseDate: string) =>
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`,
-  remixContest: 'Remix Contest',
-  contestEnded: 'Contest Ended',
-  contestDeadline: 'Contest Deadline',
-  uploadRemixButtonText: 'Upload Remix',
-  deadline: (deadline?: string) => {
-    return deadline
-      ? `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`
-      : ''
-  }
+  remixContest: 'Remix Contest'
 }
 
 type PlayButtonProps = {
@@ -297,27 +288,14 @@ const TrackHeader = ({
     dispatch(pushRoute(`${permalink}/comments`))
   }, [dispatch, permalink])
 
-  const imageElement = coSign ? (
-    <CoSign
-      size={Size.LARGE}
-      hasFavorited={coSign.has_remix_author_saved}
-      hasReposted={coSign.has_remix_author_reposted}
-      coSignName={coSign.user.name}
-      className={styles.coverArt}
-      userId={coSign.user.user_id}
-    >
+  const imageElement = (
+    <TrackFlair size={Size.LARGE} id={trackId} className={styles.coverArt}>
       <DynamicImage
         image={image ?? undefined}
         alt={messages.artworkAltText}
         wrapperClassName={cn(styles.imageWrapper, styles.cosignImageWrapper)}
       />
-    </CoSign>
-  ) : (
-    <DynamicImage
-      image={image ?? undefined}
-      alt='Track Artwork'
-      wrapperClassName={cn(styles.coverArt, styles.imageWrapper)}
-    />
+    </TrackFlair>
   )
 
   const renderHeaderText = () => {
@@ -364,35 +342,6 @@ const TrackHeader = ({
   const handleDrawerClose = useCallback(() => {
     setIsDrawerOpen(false)
   }, [setIsDrawerOpen])
-
-  const handleClick = useCallback(() => {
-    setIsDrawerOpen(true)
-  }, [setIsDrawerOpen])
-
-  const renderSubmitRemixContestSection = useCallback(() => {
-    if (!isRemixContest) return null
-    const isContestOver = dayjs(remixContest.endDate).isBefore(dayjs())
-    return (
-      <Flex column gap='m' w='100%'>
-        <Flex gap='xs' alignItems='center'>
-          <Text variant='label' color='accent'>
-            {isContestOver ? messages.contestEnded : messages.contestDeadline}
-          </Text>
-          <Text>{messages.deadline(remixContest.endDate)}</Text>
-        </Flex>
-        {!isOwner ? (
-          <Button
-            variant='secondary'
-            size='small'
-            onClick={handleClick}
-            iconLeft={IconCloudUpload}
-          >
-            {messages.uploadRemixButtonText}
-          </Button>
-        ) : null}
-      </Flex>
-    )
-  }, [isRemixContest, remixContest?.endDate, isOwner, handleClick])
 
   const trendingRank = useTrackRank(trackId)
 
@@ -519,7 +468,6 @@ const TrackHeader = ({
             </Text>
           </Flex>
         ) : null}
-        {renderSubmitRemixContestSection()}
         {hasDownloadableAssets ? (
           <Box pt='l' w='100%'>
             <Suspense>

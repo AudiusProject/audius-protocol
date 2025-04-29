@@ -84,9 +84,6 @@ export const identify = async (traits: IdentifyTraits) => {
 
   if (traits.handle) {
     setUserId(traits.handle)
-  } else if (traits.email) {
-    // Use email as our user identifier before we have handle (works better for partial accounts in the signup flow)
-    setUserId(traits.email)
   }
   const identifyObj = new Identify()
   Object.entries(traits).forEach(([key, value]) => {

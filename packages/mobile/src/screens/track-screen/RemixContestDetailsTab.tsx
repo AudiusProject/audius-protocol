@@ -1,0 +1,52 @@
+import type { RefObject } from 'react'
+
+import { useRemixContest } from '@audius/common/api'
+import type { ID } from '@audius/common/models'
+import { dayjs } from '@audius/common/utils'
+import type { ScrollView, FlatList } from 'react-native/types'
+
+import { Flex, Text } from '@audius/harmony-native'
+import { ExpandableContent, UserGeneratedText } from 'app/components/core'
+
+const messages = {
+  due: 'Submission Due:',
+  deadline: (deadline?: string) => {
+    if (!deadline) return ''
+    const date = dayjs(deadline)
+    return `${date.format('MM/DD/YY')} at ${date.format('h:mm A')}`
+  },
+  fallbackDescription:
+    'Enter my remix contest before the deadline for your chance to win!'
+}
+
+type Props = {
+  trackId: ID
+  scrollRef?: RefObject<ScrollView | FlatList>
+}
+
+/**
+ * Tab content displaying details about a remix contest
+ */
+export const RemixContestDetailsTab = ({ trackId, scrollRef }: Props) => {
+  const { data: remixContest } = useRemixContest(trackId)
+
+  if (!remixContest) return null
+
+  return (
+    <Flex column gap='s' p='xl' pb='2xl' borderTop='default'>
+      <Flex row gap='s'>
+        <Text variant='title' color='accent'>
+          {messages.due}
+        </Text>
+        <Text variant='body' strength='strong'>
+          {messages.deadline(remixContest.endDate)}
+        </Text>
+      </Flex>
+      <ExpandableContent scrollRef={scrollRef}>
+        <UserGeneratedText variant='body'>
+          {remixContest.eventData?.description ?? messages.fallbackDescription}
+        </UserGeneratedText>
+      </ExpandableContent>
+    </Flex>
+  )
+}

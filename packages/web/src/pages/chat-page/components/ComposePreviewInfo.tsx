@@ -1,4 +1,4 @@
-import { useGetPlaylistById, useGetTrackById } from '@audius/common/api'
+import { useGetPlaylistById, useTrack } from '@audius/common/api'
 import { SquareSizes, ID } from '@audius/common/models'
 import { Flex, Text } from '@audius/harmony'
 
@@ -48,14 +48,19 @@ export const ComposerTrackInfo = (props: ComposerTrackInfoProps) => {
     size: SquareSizes.SIZE_150_BY_150
   })
 
-  const { data: track } = useGetTrackById({ id: trackId }, { force: true })
+  const { data: track } = useTrack(trackId, {
+    select: (track) => ({
+      title: track.title,
+      owner_id: track.owner_id
+    })
+  })
 
   if (!track) return null
 
   return (
     <ComposePreviewInfo
       title={track.title}
-      userId={track.user.user_id}
+      userId={track.owner_id}
       image={image}
     />
   )

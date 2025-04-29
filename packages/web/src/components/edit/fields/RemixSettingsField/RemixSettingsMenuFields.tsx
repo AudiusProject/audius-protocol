@@ -1,11 +1,10 @@
 import { useEffect } from 'react'
 
-import { useGetTrackByPermalink } from '@audius/common/api'
+import { useTrackByPermalink } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
-import { accountSelectors } from '@audius/common/store'
 import { getPathFromTrackUrl } from '@audius/common/utils'
 import { useField } from 'formik'
-import { useSelector } from 'react-redux'
+import { pick } from 'lodash'
 import { useThrottle } from 'react-use'
 
 import { Divider } from 'components/divider'
@@ -16,7 +15,6 @@ import { SwitchRowField } from '../SwitchRowField'
 import styles from './RemixSettingsField.module.css'
 import { TrackInfo } from './TrackInfo'
 import { CAN_REMIX_PARENT, IS_REMIX, REMIX_LINK, SHOW_REMIXES } from './types'
-const { getUserId } = accountSelectors
 
 const messages = {
   hideRemix: {
@@ -36,24 +34,29 @@ export const RemixSettingsMenuFields = () => {
   const [{ value: trackUrl }] = useField(REMIX_LINK)
   const [, , { setValue: setCanRemixParent }] = useField(CAN_REMIX_PARENT)
   const permalink = useThrottle(getPathFromTrackUrl(trackUrl), 1000)
-  const currentUserId = useSelector(getUserId)
 
-  const { data: track } = useGetTrackByPermalink(
-    { permalink, currentUserId },
-    { disabled: !permalink }
-  )
+  const { data: partialTrack } = useTrackByPermalink(permalink, {
+    select: (track) =>
+      pick(track, [
+        'track_id',
+        'is_stream_gated',
+        'stream_conditions',
+        'is_download_gated',
+        'download_conditions',
+        'access'
+      ])
+  })
 
-  const trackId = track?.track_id
-  const { hasStreamAccess: canRemixParent } = useGatedContentAccess(
-    track ?? null
-  )
+  const { track_id } = partialTrack ?? {}
+  const { hasStreamAccess: canRemixParent } =
+    useGatedContentAccess(partialTrack)
 
   const [, , { setValue: setParentTrackId }] = useField('parentTrackId')
 
   useEffect(() => {
-    setParentTrackId(trackId)
+    setParentTrackId(track_id)
     setCanRemixParent(canRemixParent)
-  }, [trackId, setParentTrackId, canRemixParent, setCanRemixParent])
+  }, [track_id, setParentTrackId, canRemixParent, setCanRemixParent])
 
   return (
     <div className={styles.fields}>
@@ -63,7 +66,7 @@ export const RemixSettingsMenuFields = () => {
         description={messages.remixOf.description}
       >
         <TextField name={REMIX_LINK} label={messages.remixOf.linkLabel} />
-        {track ? <TrackInfo trackId={track.track_id} /> : null}
+        {track_id ? <TrackInfo trackId={track_id} /> : null}
       </SwitchRowField>
 
       <Divider />

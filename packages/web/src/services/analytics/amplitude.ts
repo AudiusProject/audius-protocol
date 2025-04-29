@@ -46,15 +46,10 @@ export const identify = (traits?: IdentifyTraits, callback?: () => void) => {
 
   if (traits?.handle) {
     amplitude.setUserId(traits.handle)
-  } else if (traits?.email) {
-    // Use email as our user identifier before we have handle (works better for partial accounts in the signup flow)
-    amplitude.setUserId(traits.email)
   }
-
   if (traits && Object.keys(traits).length > 0) {
     const identifyObj = new amplitude.Identify()
-    // @ts-ignore - for some reason it doesn't want you to pass strings, but it works fine
-    Object.entries(traits).map(([k, v]) => identifyObj.add(k, v))
+    Object.entries(traits).map(([k, v]) => identifyObj.set(k, v))
     amplitude.identify(identifyObj)
   }
   if (callback) callback()

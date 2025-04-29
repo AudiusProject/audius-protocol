@@ -15,7 +15,6 @@ import { Dispatch } from 'redux'
 
 import { DragAutoscroller } from 'components/drag-autoscroller/DragAutoscroller'
 import { ProfileCompletionPanel } from 'components/profile-progress/ProfileCompletionPanel'
-import { selectDraggingKind } from 'store/dragndrop/slice'
 import { AppState } from 'store/types'
 
 import { AccountDetails } from './AccountDetails'
@@ -29,7 +28,7 @@ import { NavItemConfig, useNavConfig } from './useNavConfig'
 
 const { saveTrack } = tracksSocialActions
 const { saveCollection } = collectionsSocialActions
-const { getAccountStatus, getUserId, getUserHandle } = accountSelectors
+const { getAccountStatus } = accountSelectors
 
 export const LEFT_NAV_WIDTH = 240
 
@@ -191,10 +190,7 @@ const LeftNav = (props: NavColumnProps) => {
 
 const mapStateToProps = (state: AppState) => {
   return {
-    accountUserId: getUserId(state),
-    accountHandle: getUserHandle(state),
-    accountStatus: getAccountStatus(state),
-    draggingKind: selectDraggingKind(state)
+    accountStatus: getAccountStatus(state)
   }
 }
 

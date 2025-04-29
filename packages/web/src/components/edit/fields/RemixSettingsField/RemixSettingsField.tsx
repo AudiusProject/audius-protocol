@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
-import { useGetTrackById } from '@audius/common/api'
+import { useTrack } from '@audius/common/api'
 import {
   isContentUSDCPurchaseGated,
   ID,
@@ -67,13 +67,12 @@ export const RemixSettingsField = (props: RemixSettingsFieldProps) => {
     )
 
   const parentTrackId = remixOf?.tracks[0].parent_track_id
-  const { data: remixOfTrack } = useGetTrackById(
-    { id: parentTrackId! },
-    { disabled: !parentTrackId }
-  )
+  const { data: remixOfTrackPermalink } = useTrack(parentTrackId, {
+    select: (track) => track.permalink
+  })
 
-  const remixLink = remixOfTrack?.permalink
-    ? fullTrackPage(remixOfTrack?.permalink)
+  const remixLink = remixOfTrackPermalink
+    ? fullTrackPage(remixOfTrackPermalink)
     : ''
 
   const isRemix = Boolean(remixOf && remixOf?.tracks.length > 0)

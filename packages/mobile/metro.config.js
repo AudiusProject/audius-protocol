@@ -90,8 +90,12 @@ const config = {
         './node_modules',
         'react-native-svg'
       ),
+      'react-native-reanimated': path.resolve(
+        __dirname,
+        './node_modules',
+        'react-native-reanimated'
+      ),
 
-      'react-native': resolveModule('react-native'),
       react: resolveModule('react'),
 
       // Aliases for '@audius/web' to allow for absolute paths

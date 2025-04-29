@@ -8,10 +8,10 @@ import { useTheme } from '@emotion/react'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { Pressable, View } from 'react-native'
 
-import CoSign, { Size } from 'app/components/co-sign'
 import { ProfilePicture } from 'app/components/core'
 import { TrackImage } from 'app/components/image/TrackImage'
 import Text from 'app/components/text'
+import { TrackFlair, Size } from 'app/components/track-flair'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import type { StylesProp } from 'app/styles'
@@ -87,7 +87,7 @@ const TrackScreenRemixComponent = ({
   const styles = useStyles()
   const { spacing, color } = useTheme()
 
-  const { _co_sign, track_id } = track
+  const { track_id } = track
   const { name, handle } = user
   const navigation = useNavigation()
 
@@ -138,13 +138,9 @@ const TrackScreenRemixComponent = ({
   return (
     <View style={[styles.root, style, stylesProp?.root]}>
       <Pressable onPress={handlePressTrack}>
-        {_co_sign ? (
-          <CoSign size={Size.MEDIUM} style={{ flex: 0 }}>
-            {images}
-          </CoSign>
-        ) : (
-          images
-        )}
+        <TrackFlair trackId={track_id} size={Size.MEDIUM}>
+          {images}
+        </TrackFlair>
       </Pressable>
       <Pressable style={styles.artist} onPress={handlePressArtist}>
         <View style={styles.name}>

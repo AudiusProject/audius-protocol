@@ -9,6 +9,7 @@ import moment from 'moment'
 
 import { Table } from 'components/table'
 
+import payAndEarnStyles from '../PayAndEarnPage.module.css'
 import { TransactionCell, TransactionRow } from '../types'
 import { isEmptyTransactionRow } from '../utils'
 
@@ -171,6 +172,7 @@ export const WithdrawalsTable = ({
       totalRowCount={totalRowCount ?? 0}
       scrollRef={scrollRef}
       fetchBatchSize={fetchBatchSize}
+      wrapperClassName={payAndEarnStyles.tableWrapper}
     />
   )
 }

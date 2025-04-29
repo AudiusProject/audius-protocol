@@ -55,7 +55,7 @@ function* watchFetchCollection() {
       }
     }
     const identifier = collectionId || permalink
-    const collection = collections[identifier]
+    const collection = collections[identifier].metadata
     const userUid = makeUid(Kind.USERS, collection.playlist_owner_id)
     const collectionUid = collectionUids[identifier]
     if (collection) {
