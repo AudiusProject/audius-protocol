@@ -3,8 +3,8 @@ import { useMemo } from 'react'
 import { keyBy } from 'lodash'
 
 import {
+  useCollections,
   useGetCurrentUserId,
-  useGetPlaylistsByIds,
   useGetPurchasersCount,
   useGetSalesAggegrate,
   useGetTracksByIds
@@ -36,10 +36,9 @@ export const usePurchasersAudience = ({
     ids: trackAggregates?.map((sale) => sale.contentId) ?? [],
     currentUserId
   })
-  const { data: albums } = useGetPlaylistsByIds({
-    ids: albumAggregates?.map((sale) => sale.contentId) ?? [],
-    currentUserId
-  })
+  const { data: albums } = useCollections(
+    albumAggregates?.map((sale) => sale.contentId) ?? []
+  )
   const tracksById = useMemo(() => keyBy(tracks, 'track_id'), [tracks])
   const albumsById = useMemo(() => keyBy(albums, 'playlist_id'), [albums])
 

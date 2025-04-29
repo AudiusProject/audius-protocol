@@ -1,9 +1,6 @@
 import { useCallback, useMemo, useEffect } from 'react'
 
-import {
-  useGetTracksByIds,
-  useGetPlaylistByPermalink
-} from '@audius/common/api'
+import { useCollectionByPermalink, useGetTracksByIds } from '@audius/common/api'
 import { usePlayTrack, usePauseTrack } from '@audius/common/hooks'
 import type { TrackPlayback } from '@audius/common/hooks'
 import { Name, PlaybackSource, Kind } from '@audius/common/models'
@@ -36,16 +33,9 @@ export const ChatMessagePlaylist = ({
   const playingUid = useSelector(getUid)
 
   const permalink = getPathFromPlaylistUrl(link) ?? ''
-  const { data: collection } = useGetPlaylistByPermalink(
-    {
-      permalink,
-      currentUserId: currentUserId!
-    },
-    { disabled: !permalink || !currentUserId }
-  )
+  const { data: collection } = useCollectionByPermalink(permalink)
 
-  const trackIds =
-    collection?.playlist_contents?.track_ids?.map((t) => t.track) ?? []
+  const trackIds = collection?.trackIds ?? []
   const { data: tracks } = useGetTracksByIds(
     {
       ids: trackIds,
@@ -132,8 +122,9 @@ export const ChatMessagePlaylist = ({
     pauseTrack
   ])
 
+  const collectionExists = !!collection
   useEffect(() => {
-    if (collection && uid) {
+    if (collectionExists && uid) {
       trackEvent(
         make({
           eventName: Name.MESSAGE_UNFURL_PLAYLIST
@@ -143,12 +134,12 @@ export const ChatMessagePlaylist = ({
     } else {
       onEmpty?.()
     }
-  }, [collection, uid, onSuccess, onEmpty])
+  }, [collectionExists, uid, onSuccess, onEmpty])
 
-  return collection && uid ? (
+  return collectionId && uid ? (
     <CollectionTile
       index={0}
-      id={collection.playlist_id}
+      id={collectionId}
       togglePlay={togglePlay}
       uid={uid}
       collection={collection}

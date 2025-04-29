@@ -2,8 +2,8 @@ import { useCallback, useMemo, useEffect } from 'react'
 
 import {
   useGetTracksByIds,
-  useGetPlaylistByPermalink,
-  useCollection
+  useCollection,
+  useCollectionByPermalink
 } from '@audius/common/api'
 import { usePlayTrack, usePauseTrack } from '@audius/common/hooks'
 import {
@@ -42,13 +42,7 @@ export const ChatMessagePlaylist = ({
   const playingTrackId = useSelector(getTrackId)
 
   const permalink = getPathFromPlaylistUrl(link) ?? ''
-  const { data: playlist, status } = useGetPlaylistByPermalink(
-    {
-      permalink,
-      currentUserId: currentUserId!
-    },
-    { disabled: !permalink || !currentUserId }
-  )
+  const { data: playlist } = useCollectionByPermalink(permalink)
 
   const collectionId = playlist?.playlist_id
   const { data: collection } = useCollection(collectionId)
@@ -113,16 +107,17 @@ export const ChatMessagePlaylist = ({
 
   const pauseTrack = usePauseTrack()
 
+  const collectionExists = !!collection && !collection.is_delete
   useEffect(() => {
-    if (collection && uid && !collection.is_delete) {
+    if (collectionExists && uid) {
       dispatch(make(Name.MESSAGE_UNFURL_PLAYLIST, {}))
       onSuccess?.()
     } else {
       onEmpty?.()
     }
-  }, [collection, uid, onSuccess, onEmpty, dispatch])
+  }, [collectionExists, uid, onSuccess, onEmpty, dispatch])
 
-  return collection && uid ? (
+  return collectionId && uid ? (
     // You may wonder why we use the mobile web playlist tile here.
     // It's simply because the chat playlist tile uses the same design as mobile web.
     <MobilePlaylistTile
