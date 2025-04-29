@@ -10,6 +10,7 @@ import { SDKRequest } from './types'
 const trackApi = createApi({
   reducerPath: 'trackApi',
   endpoints: {
+    // TODO: Remove after purchases.ts is deprecated
     getTracksByIds: {
       fetch: async (
         { ids, currentUserId }: { ids: ID[]; currentUserId: Nullable<ID> },
