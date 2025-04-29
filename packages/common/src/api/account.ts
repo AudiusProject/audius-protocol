@@ -2,12 +2,10 @@ import { useMemo } from 'react'
 
 import { Id } from '@audius/sdk'
 import dayjs from 'dayjs'
-import { useSelector } from 'react-redux'
 
 import { managedUserListFromSDK, userManagerListFromSDK } from '~/adapters/user'
-import { QueryHookOptions, createApi } from '~/audius-query'
+import { createApi } from '~/audius-query'
 import { ID, User, UserMetadata } from '~/models'
-import { accountSelectors } from '~/store/account'
 
 import {
   CurrentUserWalletType,
@@ -230,20 +228,29 @@ const accountApi = createApi({
   }
 })
 
-export const useGetCurrentUser = () => {
-  return useCurrentAccount(CurrentUserWalletType.currentUser)
+// TODO: this is temporary jank to scope down changes - this will go soon when removing this whole file
+export const useGetCurrentUser = (_args?: any, options?: any) => {
+  return {
+    data: useCurrentAccount(CurrentUserWalletType.currentUser, options)?.data
+      ?.user
+  }
 }
 
-export const useGetCurrentWeb3User = () => {
-  return useCurrentAccount(CurrentUserWalletType.web3User)
+// TODO: this is temporary jank to scope down changes - this will go soon when removing this whole file
+export const useGetCurrentWeb3User = (_args?: any, options?: any) => {
+  return {
+    data: useCurrentAccount(CurrentUserWalletType.web3User, options)?.data?.user
+  }
 }
 
-export const useGetCurrentUserId = (
-  ...args: Parameters<typeof useGetCurrentUser>
-) => {
-  const result = useGetCurrentUser(...args)
+// TODO: this is temporary jank to scope down changes - this will go soon when removing this whole file
+export const useGetCurrentUserId = (_args?: any, options?: any) => {
+  const result = useGetCurrentUser(_args, options)
   return useMemo(() => {
-    return { ...result, data: result.data ? result.data.user_id : null }
+    return {
+      ...result,
+      data: result.data ? result.data.user_id : null
+    }
   }, [result])
 }
 
