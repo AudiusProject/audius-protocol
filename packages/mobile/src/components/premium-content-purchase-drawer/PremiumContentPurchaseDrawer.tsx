@@ -1,4 +1,4 @@
-import { useCallback, type ReactNode, useEffect } from 'react'
+import React, { useCallback, type ReactNode, useEffect } from 'react'
 
 import {
   useGetCurrentUserId,
@@ -39,7 +39,11 @@ import {
   PurchaseableContentType
 } from '@audius/common/store'
 import type { PurchaseContentError } from '@audius/common/store'
-import { formatPrice } from '@audius/common/utils'
+import {
+  formatPrice,
+  AUDIO_MATCHING_REWARDS_MULTIPLIER
+} from '@audius/common/utils'
+import { USDC } from '@audius/fixed-decimal'
 import { Formik, useField, useFormikContext } from 'formik'
 import { Linking, View, ScrollView, TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -344,7 +348,11 @@ const RenderForm = ({
               <TrackDetailsTile
                 trackId={contentId}
                 showLabel={false}
-                earnAmount={Math.round(price / 100).toString()}
+                earnAmount={USDC(
+                  (price * AUDIO_MATCHING_REWARDS_MULTIPLIER) / 100
+                )
+                  .round()
+                  .toShorthand()}
               />
               {isPurchaseSuccessful ? null : (
                 <PayExtraFormSection
