@@ -17,7 +17,7 @@ if [[ -z "${CI}" ]]; then
 fi
 
 printf "${GREEN}Setting up initial package links...\n${NC}"
-if [ "${SKIP_POD_INSTALL}" != "true" ]; then
+if [[ -z "${SKIP_POD_INSTALL}" ]]; then
 {
   # First ensure react-native exists in root node_modules for patch-package
   if [ ! -e "node_modules/react-native" ]; then
@@ -43,7 +43,7 @@ printf "${GREEN}Applying patches...\n${NC}"
 npm run patch-package > /dev/null
 
 printf "${GREEN}Moving react-native back to mobile...\n${NC}"
-if [ "${SKIP_POD_INSTALL}" != "true" ]; then
+if [[ -z "${SKIP_POD_INSTALL}" ]]; then
 {
   # Move react-native back to mobile/node_modules for pod install
   if [ -e "node_modules/react-native" ]; then
