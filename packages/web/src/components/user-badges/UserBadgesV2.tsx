@@ -14,7 +14,8 @@ import {
   IconTokenPlatinum,
   IconTokenSilver,
   IconVerified,
-  Text
+  Text,
+  motion
 } from '@audius/harmony'
 import { Origin } from '@audius/harmony/src/components/popup/types'
 import cn from 'classnames'
@@ -95,7 +96,17 @@ const UserBadges = ({
         </Flex>
       }
     >
-      <IconVerified height={iconSizes[size]} width={iconSizes[size]} />
+      <Box
+        css={{
+          cursor: 'pointer',
+          transition: `opacity ${motion.calm}`,
+          '&:hover': {
+            opacity: 0.6
+          }
+        }}
+      >
+        <IconVerified height={iconSizes[size]} width={iconSizes[size]} />
+      </Box>
     </HoverCard>
   ) : null
 
@@ -109,7 +120,17 @@ const UserBadges = ({
         transformOrigin={transformOrigin}
         onClick={handleClick}
       >
-        {cloneElement(audioTierMap[tier]!, { size })}
+        <Box
+          css={{
+            cursor: 'pointer',
+            transition: `opacity ${motion.calm}`,
+            '&:hover': {
+              opacity: 0.6
+            }
+          }}
+        >
+          {cloneElement(audioTierMap[tier]!, { size })}
+        </Box>
       </AudioHoverCard>
     ) : null
 

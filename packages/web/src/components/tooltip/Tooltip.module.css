@@ -18,5 +18,9 @@
 
 .tooltip :global(.ant-tooltip-inner) {
   border-radius: 4px;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   box-shadow: none;
 }
