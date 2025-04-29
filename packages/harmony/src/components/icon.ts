@@ -8,6 +8,7 @@ type SVGBaseProps = SVGProps<SVGSVGElement>
 
 export type IconProps = {
   color?: IconColors
+  colorSecondary?: IconColors
   size?: IconSize
   sizeW?: IconSize
   sizeH?: IconSize

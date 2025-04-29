@@ -1,5 +1,6 @@
 import type { FunctionComponent } from 'react'
 
+import { default as IconVerifiedSvg } from '@audius/harmony/src/assets/icons/Verified.svg'
 import { type IconProps as HarmonyIconProps } from '@audius/harmony/src/components/icon'
 import type { AnimatedProps } from 'react-native-reanimated'
 import type { SvgProps } from 'react-native-svg'
@@ -169,7 +170,10 @@ export { default as IconMultiselectAdd } from '@audius/harmony/src/assets/icons/
 export { default as IconMultiselectRemove } from '@audius/harmony/src/assets/icons/MultiselectRemove.svg'
 export { default as IconPlaybackPause } from '@audius/harmony/src/assets/icons/PlaybackPause.svg'
 export { default as IconPlaybackPlay } from '@audius/harmony/src/assets/icons/PlaybackPlay.svg'
-export { default as IconVerified } from '@audius/harmony/src/assets/icons/Verified.svg'
+
+export const IconVerified = (props: IconProps) => (
+  <IconVerifiedSvg color='active' colorSecondary='white' {...props} />
+)
 
 // VIP Tier Badges
 export { IconTokenBronze } from './components/IconTokenBronze'

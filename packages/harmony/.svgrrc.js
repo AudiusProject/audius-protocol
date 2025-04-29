@@ -4,6 +4,7 @@ module.exports = {
   descProp: true,
   replaceAttrValues: {
     red: '{props.fill}',
-    '#FF0000': '{props.fill}'
+    '#FF0000': '{props.fill}',
+    '#000000': '{props.fillSecondary}'
   }
 }
