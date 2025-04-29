@@ -1,8 +1,4 @@
-import {
-  useGetPlaylistById,
-  useGetUserById,
-  useTrack
-} from '@audius/common/api'
+import { useGetPlaylistById, useTrack, useUser } from '@audius/common/api'
 import { recentSearchMessages as messages } from '@audius/common/messages'
 import { Kind, SquareSizes, Status } from '@audius/common/models'
 import type { SearchItem as SearchItemType } from '@audius/common/store'
@@ -85,7 +81,6 @@ export const SearchItemTrack = (props: SearchItemProps) => {
   const { data: partialTrack, isPending: isTrackPending } = useTrack(id, {
     select: (track) => pick(track, ['title', 'owner_id'])
   })
-  const { data: user } = useGetUserById({ id: partialTrack?.owner_id ?? 0 })
   const { spacing } = useTheme()
   const navigation = useNavigation()
 
@@ -93,8 +88,6 @@ export const SearchItemTrack = (props: SearchItemProps) => {
 
   if (!partialTrack) return null
   const { title } = partialTrack
-
-  if (!user) return null
 
   const handlePress = () => {
     onPress?.()
@@ -132,7 +125,7 @@ export const SearchItemTrack = (props: SearchItemProps) => {
           </Text>
           <UserLink
             size='xs'
-            userId={user.user_id}
+            userId={partialTrack?.owner_id}
             variant='subdued'
             badgeSize='2xs'
           />
@@ -150,16 +143,10 @@ export const SearchItemCollection = (props: SearchItemProps) => {
   })
   const navigation = useNavigation()
 
-  const { data: user } = useGetUserById({
-    id: playlist?.playlist_owner_id ?? 0
-  })
-
   if (status === Status.LOADING) return <SearchItemSkeleton />
 
   if (!playlist) return null
   const { is_album, playlist_name } = playlist
-
-  if (!user) return null
 
   const handlePress = () => {
     onPress?.()
@@ -188,7 +175,7 @@ export const SearchItemCollection = (props: SearchItemProps) => {
             {' | '}
           </Text>
           <UserLink
-            userId={user.user_id}
+            userId={playlist?.playlist_owner_id}
             size='xs'
             variant='subdued'
             badgeSize='2xs'
@@ -202,10 +189,12 @@ export const SearchItemCollection = (props: SearchItemProps) => {
 const SearchItemUser = (props: SearchItemProps) => {
   const { searchItem, onPress } = props
   const { id } = searchItem
-  const { data: user, status } = useGetUserById({ id })
+  const { data: user, isPending: isUserPending } = useUser(id, {
+    select: (user) => pick(user, ['handle', 'user_id'])
+  })
   const navigation = useNavigation()
 
-  if (status === Status.LOADING) return <SearchItemSkeleton />
+  if (isUserPending) return <SearchItemSkeleton />
 
   if (!user) return null
   const { handle } = user
@@ -224,7 +213,7 @@ const SearchItemUser = (props: SearchItemProps) => {
         flex={1}
         pointerEvents='none'
       >
-        <UserLink userId={user.user_id} size='s' badgeSize='xs' />
+        <UserLink userId={id} size='s' badgeSize='xs' />
         <Text variant='body' size='xs' color='subdued'>
           Profile
         </Text>

@@ -2,8 +2,8 @@ import { createContext, useCallback, useEffect, useMemo, useState } from 'react'
 
 import {
   useGetUserTracksByHandle,
-  useGetUserById,
-  useGetCurrentUserId
+  useGetCurrentUserId,
+  useUser
 } from '@audius/common/api'
 import { type ID } from '@audius/common/models'
 import { Id, OptionalId } from '@audius/sdk'
@@ -43,20 +43,16 @@ export const SelectArtistsPreviewContextProvider = (props: {
     TrackPlayer.setRepeatMode(RepeatMode.Track)
   })
 
-  const { data: artist } = useGetUserById(
-    {
-      id: nowPlayingArtistId,
-      currentUserId: null
-    },
-    { disabled: nowPlayingArtistId === -1 }
-  )
+  const { data: artistHandle } = useUser(nowPlayingArtistId, {
+    select: (user) => user.handle
+  })
 
   const { data: artistTracks } = useGetUserTracksByHandle(
     {
-      handle: artist?.handle ?? '',
+      handle: artistHandle as string,
       currentUserId: null
     },
-    { disabled: !artist?.handle }
+    { disabled: !artistHandle }
   )
   useEffect(() => {
     if (!nowPlayingArtistId || !currentUserId || !artistTracks) return

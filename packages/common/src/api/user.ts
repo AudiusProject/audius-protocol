@@ -46,6 +46,7 @@ const parseTransaction = ({
 const userApi = createApi({
   reducerPath: 'userApi',
   endpoints: {
+    // TODO: Remove this once saga calls are removed
     getUserAccount: {
       fetch: async ({ wallet }: { wallet: string }, { audiusSdk }) => {
         try {
@@ -67,39 +68,6 @@ const userApi = createApi({
       },
       options: {
         schemaKey: 'accountUser'
-      }
-    },
-    getUserById: {
-      fetch: async (
-        {
-          id,
-          currentUserId
-        }: { id: ID | undefined; currentUserId?: Nullable<ID> },
-        { audiusSdk }
-      ) => {
-        if (!id || id === -1) return null
-        const sdk = await audiusSdk()
-        const { data: users = [] } = await sdk.full.users.getUser({
-          id: Id.parse(id),
-          userId: OptionalId.parse(currentUserId)
-        })
-        return userMetadataListFromSDK(users)[0]
-      },
-      fetchBatch: async (
-        { ids, currentUserId }: { ids: ID[]; currentUserId?: Nullable<ID> },
-        { audiusSdk }
-      ) => {
-        const sdk = await audiusSdk()
-        const { data: users = [] } = await sdk.full.users.getBulkUsers({
-          id: ids.filter((id) => id && id !== -1).map((id) => Id.parse(id)),
-          userId: OptionalId.parse(currentUserId)
-        })
-        return userMetadataListFromSDK(users)
-      },
-      options: {
-        idArgKey: 'id',
-        kind: Kind.USERS,
-        schemaKey: 'user'
       }
     },
     getUserByHandle: {
@@ -368,8 +336,6 @@ const userApi = createApi({
 })
 
 export const {
-  useGetUserAccount,
-  useGetUserById,
   useGetUsersByIds,
   useGetUserByHandle,
   useGetTracksByUser,

@@ -4,8 +4,8 @@ import {
   useGetCurrentUser,
   useGetCurrentUserId,
   useGetPlaylistById,
-  useGetUserById,
-  useTrack
+  useTrack,
+  useUser
 } from '@audius/common/api'
 import {
   useFeatureFlag,
@@ -231,13 +231,8 @@ export const PremiumContentPurchaseModal = () => {
     { disabled: !isAlbum || !contentId }
   )
 
-  const { data: user } = useGetUserById(
-    {
-      id: track?.owner_id ?? album?.playlist_owner_id ?? 0,
-      currentUserId
-    },
-    { disabled: !(track?.owner_id && album?.playlist_owner_id) }
-  )
+  const { data: user } = useUser(track?.owner_id ?? album?.playlist_owner_id)
+
   const metadata = {
     ...(isAlbum ? album : track),
     user
