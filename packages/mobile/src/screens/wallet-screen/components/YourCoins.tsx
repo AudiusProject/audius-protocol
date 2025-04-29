@@ -28,8 +28,6 @@ export const YourCoins = () => {
     navigation.navigate('AudioScreen')
   }, [navigation])
 
-  const displayAmount = isAudioBalanceLoading ? null : audioBalanceFormatted
-
   return (
     <Paper onPress={handleTokenClick}>
       <Flex
@@ -49,7 +47,7 @@ export const YourCoins = () => {
               ) : (
                 <>
                   <Text variant='heading' size='l' color='default'>
-                    {displayAmount}
+                    {audioBalanceFormatted}
                   </Text>
                   <Text variant='heading' size='l' color='subdued'>
                     $AUDIO
