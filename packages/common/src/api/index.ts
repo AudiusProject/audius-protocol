@@ -54,6 +54,7 @@ export * from './tan-query/purchases/usePurchases'
 export * from './tan-query/purchases/usePurchasesCount'
 export * from './tan-query/purchases/usePurchasers'
 export * from './tan-query/purchases/usePurchasersCount'
+export * from './tan-query/purchases/useSalesAggregate'
 
 // Remixes
 export * from './tan-query/remixes/useRemixes'
@@ -83,6 +84,7 @@ export * from './tan-query/tracks/useStems'
 export * from './tan-query/tracks/useFileSizes'
 export * from './tan-query/tracks/useTrackFileInfo'
 export * from './tan-query/tracks/useUpdateTrack'
+export * from './tan-query/tracks/useRemixedTracks'
 
 // Users
 export * from './tan-query/users/account/useCurrentUserId'

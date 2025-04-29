@@ -1,26 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import {
-  useGetUSDCTransactions,
-  useGetUSDCTransactionsCount,
   useUSDCTransactions,
   useUSDCTransactionsCount,
-  userApiFetch,
-  userApiUtils
+  userApiFetch
 } from '@audius/common/api'
-import {
-  useAllPaginatedQuery,
-  useAudiusQueryContext
-} from '@audius/common/audius-query'
+import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { useUSDCBalance } from '@audius/common/hooks'
-import {
-  BNUSDC,
-  Name,
-  Status,
-  USDCTransactionDetails,
-  combineStatuses,
-  statusIsNotFinalized
-} from '@audius/common/models'
+import { BNUSDC, Name, USDCTransactionDetails } from '@audius/common/models'
 import {
   WithdrawUSDCModalPages,
   accountSelectors,
@@ -34,7 +21,6 @@ import BN from 'bn.js'
 import { useDispatch } from 'react-redux'
 import { ThunkDispatch } from 'redux-thunk'
 
-import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useMainContentRef } from 'pages/MainContentContext'
 import { make, track } from 'services/analytics'
