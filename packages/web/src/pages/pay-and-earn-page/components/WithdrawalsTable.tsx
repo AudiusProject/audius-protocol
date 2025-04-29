@@ -9,12 +9,11 @@ import moment from 'moment'
 
 import { Table } from 'components/table'
 
+import payAndEarnStyles from '../PayAndEarnPage.module.css'
 import { TransactionCell, TransactionRow } from '../types'
 import { isEmptyTransactionRow } from '../utils'
 
 import styles from './WithdrawalsTable.module.css'
-import payAndEarnStyles from '../PayAndEarnPage.module.css'
-
 
 const messages = {
   cash: 'Cash',

@@ -8,11 +8,11 @@ import moment from 'moment'
 import { UserLink } from 'components/link'
 import { Table } from 'components/table'
 
+import styles from '../PayAndEarnPage.module.css'
 import { PurchaseCell, PurchaseRow } from '../types'
 import { isEmptyPurchaseRow } from '../utils'
 
 import { TrackNameWithArtwork } from './TrackNameWithArtwork'
-import styles from '../PayAndEarnPage.module.css'
 
 export type PurchasesTableColumn =
   | 'contentName'
