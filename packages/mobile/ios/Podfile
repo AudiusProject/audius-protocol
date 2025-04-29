@@ -57,9 +57,9 @@ target 'AudiusReactNative' do
     framework_paths = [
       "Pods/TikTokOpenSDK/TikTokOpenSDK.framework/TikTokOpenSDK",
       "Pods/google-cast-sdk-dynamic-xcframework-no-bluetooth/GoogleCast.xcframework/ios-arm64/GoogleCast.framework/GoogleCast",
-      "Pods/SnapSDK/SCSDKCoreKit/ios-arm64_armv7_armv7s/SCSDKCoreKit.framework/SCSDKCoreKit",
-      "Pods/SnapSDK/SCSDKCreativeKit/ios-arm64_armv7_armv7s/SCSDKCreativeKit.framework/SCSDKCreativeKit",
-      "Pods/SnapSDK/SCSDKLoginKit/ios-arm64_armv7_armv7s/SCSDKLoginKit.framework/SCSDKLoginKit",
+      "Pods/SnapSDK/SCSDKCoreKit.xcframework/ios-arm64_armv7_armv7s/SCSDKCoreKit.framework/SCSDKCoreKit",
+      "Pods/SnapSDK/SCSDKCreativeKit.xcframework/ios-arm64_armv7_armv7s/SCSDKCreativeKit.framework/SCSDKCreativeKit",
+      "Pods/SnapSDK/SCSDKLoginKit.xcframework/ios-arm64_armv7_armv7s/SCSDKLoginKit.framework/SCSDKLoginKit",
     ]
 
     framework_paths.each do |framework_relative_path|
