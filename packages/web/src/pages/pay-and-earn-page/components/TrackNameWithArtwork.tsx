@@ -44,7 +44,7 @@ export const TrackNameWithArtwork = ({
   })
   const title = isTrack ? partialTrack?.title : album?.playlist_name
   const image = isTrack ? trackArtwork : albumArtwork
-  const loading = albumStatus !== Status.SUCCESS || isTrackPending
+  const loading = isTrack ? isTrackPending : albumStatus !== Status.SUCCESS
 
   return loading ? null : (
     <div className={styles.container}>

@@ -76,6 +76,7 @@ const HoverCardComponent = ({
       {children}
 
       <Popup
+        shadow='near'
         anchorRef={anchorRef}
         isVisible={isHovered}
         onClose={handleClose}
