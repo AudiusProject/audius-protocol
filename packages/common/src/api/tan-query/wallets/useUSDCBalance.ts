@@ -81,7 +81,7 @@ export const useUSDCBalance = ({
 
   // Map TanStack Query states to the Status enum for API compatibility
   let status = Status.IDLE
-  if (result.isLoading) {
+  if (result.isPending) {
     status = Status.LOADING
   } else if (result.isError) {
     status = Status.ERROR

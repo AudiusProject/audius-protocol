@@ -12,8 +12,5 @@ export const walletMessages = {
 
   // YourCoins messages
   yourCoins: 'Your Coins',
-  loading: '-- $AUDIO',
-  dollarZero: '$0.00',
-  loadingPrice: '$0.00 (loading...)',
   buySell: 'Buy/Sell'
 }

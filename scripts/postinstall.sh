@@ -19,22 +19,24 @@ fi
 printf "${GREEN}Setting up initial package links...\n${NC}"
 {
   # First ensure react-native exists in root node_modules for patch-package
-  if [ ! -e "node_modules/react-native" ]; then
+  if [ ! -e "node_modules/react-native" ] && [ -e "./packages/mobile/node_modules/react-native" ]; then
     printf "${GREEN}Moving react-native to root node_modules...\n${NC}"
     cp -R ./packages/mobile/node_modules/react-native ./node_modules/
     rm -rf ./packages/mobile/node_modules/react-native
   fi
 
-  cd ./packages/mobile/node_modules
+  if [ -d "./packages/mobile/node_modules" ]; then
+    cd ./packages/mobile/node_modules
 
-  # Link react-native-code-push from root since it's not in mobile/node_modules
-  source_path=../../../node_modules/react-native-code-push
-  target_path=react-native-code-push
-  if [ ! -e "$target_path" ]; then
-    ln -s "$source_path" "$target_path"
+    # Link react-native-code-push from root since it's not in mobile/node_modules
+    source_path=../../../node_modules/react-native-code-push
+    target_path=react-native-code-push
+    if [ ! -e "$target_path" ]; then
+      ln -s "$source_path" "$target_path"
+    fi
+
+    cd ../../..
   fi
-
-  cd ../../..
 } > /dev/null
 
 printf "${GREEN}Applying patches...\n${NC}"
@@ -43,7 +45,7 @@ npm run patch-package > /dev/null
 printf "${GREEN}Moving react-native back to mobile...\n${NC}"
 {
   # Move react-native back to mobile/node_modules for pod install
-  if [ -e "node_modules/react-native" ]; then
+  if [ -e "node_modules/react-native" ] && [ -d "./packages/mobile/node_modules" ]; then
     rm -rf ./packages/mobile/node_modules/react-native
     mv ./node_modules/react-native ./packages/mobile/node_modules/
     # Create symlink back to root
