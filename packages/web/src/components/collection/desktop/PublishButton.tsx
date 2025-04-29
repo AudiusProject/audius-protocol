@@ -1,10 +1,6 @@
 import { useCallback } from 'react'
 
-import {
-  useCollection,
-  useGetCurrentUserId,
-  useGetPlaylistById
-} from '@audius/common/api'
+import { useCollection } from '@audius/common/api'
 import {
   cacheCollectionsActions,
   useEarlyReleaseConfirmationModal,
@@ -31,16 +27,18 @@ export const PublishButton = (props: PublishButtonProps) => {
   const { collectionId, ...other } = props
   const { data: partialCollection } = useCollection(collectionId, {
     select: (collection) =>
-      pick(collection, '_is_publishing', 'is_scheduled_release', 'is_album')
+      pick(collection, [
+        '_is_publishing',
+        'is_scheduled_release',
+        'is_album',
+        'track_count',
+        'cover_art_sizes'
+      ])
   })
   const { _is_publishing, is_scheduled_release, is_album } =
     partialCollection ?? {}
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: collection } = useGetPlaylistById({
-    playlistId: collectionId,
-    currentUserId
-  })
-  const { track_count, cover_art_sizes } = collection ?? {}
+
+  const { track_count, cover_art_sizes } = partialCollection ?? {}
 
   const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
   const { onOpen: openEarlyReleaseConfirmation } =

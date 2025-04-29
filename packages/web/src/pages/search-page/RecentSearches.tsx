@@ -1,7 +1,7 @@
 import { MouseEventHandler, useCallback, useMemo } from 'react'
 
 import {
-  useGetPlaylistById,
+  useCollection,
   useGetUserById,
   useTrack,
   useUser
@@ -169,21 +169,27 @@ const RecentSearchTrack = (props: { searchItem: SearchItem }) => {
 const RecentSearchCollection = (props: { searchItem: SearchItem }) => {
   const { searchItem } = props
   const { id } = searchItem
-  const { data: playlist, status } = useGetPlaylistById({
-    playlistId: id
+  const { data: partialCollection, isPending } = useCollection(id, {
+    select: (collection) =>
+      pick(collection, [
+        'playlist_id',
+        'playlist_name',
+        'permalink',
+        'playlist_owner_id',
+        'is_album'
+      ])
   })
+  const { playlist_id, playlist_name, permalink, playlist_owner_id, is_album } =
+    partialCollection ?? {}
 
   const image = useCollectionCoverArt({
-    collectionId: playlist?.playlist_id,
+    collectionId: playlist_id,
     size: SquareSizes.SIZE_150_BY_150
   })
 
-  if (status === Status.LOADING) return <RecentSearchSkeleton />
+  if (isPending) return <RecentSearchSkeleton />
 
-  if (!playlist) return null
-  const { is_album, playlist_name, permalink, user } = playlist
-
-  if (!user) return null
+  if (!partialCollection || !playlist_name || !permalink) return null
 
   return (
     <RecentSearch
@@ -216,7 +222,11 @@ const RecentSearchCollection = (props: { searchItem: SearchItem }) => {
             {is_album ? messages.album : messages.playlist}
             {' |'}
             &nbsp;
-            <UserLink userId={user.user_id} variant='subdued' badgeSize='2xs' />
+            <UserLink
+              userId={playlist_owner_id}
+              variant='subdued'
+              badgeSize='2xs'
+            />
           </Text>
         </Flex>
       </Flex>

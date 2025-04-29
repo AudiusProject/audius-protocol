@@ -3,9 +3,9 @@ import { useMemo } from 'react'
 import { ChatBlast, ChatBlastAudience, OptionalHashId } from '@audius/sdk'
 
 import {
+  useCollection,
   useGetCurrentUser,
   useGetCurrentUserId,
-  useGetPlaylistById,
   useGetPurchasersCount,
   useRemixersCount,
   useTrack
@@ -34,12 +34,10 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
     enabled: !!decodedContentId && audienceContentType === 'track',
     select: (track) => track.title
   })
-  const { data: album } = useGetPlaylistById(
-    {
-      playlistId: decodedContentId!
-    },
-    { disabled: !decodedContentId || audienceContentType !== 'album' }
-  )
+  const { data: albumTitle } = useCollection(decodedContentId!, {
+    enabled: audienceContentType === 'album',
+    select: (collection) => collection.playlist_name
+  })
 
   const { data: purchasersCount } = useGetPurchasersCount(
     {
@@ -81,7 +79,7 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
   const contentTitle = audienceContentId
     ? audienceContentType === 'track'
       ? trackTitle
-      : album?.playlist_name
+      : albumTitle
     : undefined
 
   const chatBlastTitle = getChatBlastTitle(audience)

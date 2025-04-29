@@ -1,9 +1,10 @@
 import { useLayoutEffect, useState } from 'react'
 
-import { useGetPlaylistById } from '@audius/common/api'
+import { useCollection } from '@audius/common/api'
 import { useThrottledCallback } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
 import { accountSelectors, reachabilitySelectors } from '@audius/common/store'
+import { pick } from 'lodash'
 import { useSelector, useDispatch } from 'react-redux'
 
 import { getCollectionDownloadStatus } from 'app/components/offline-downloads/CollectionDownloadStatusIndicator'
@@ -33,10 +34,16 @@ export const CollectionDownloadStatusRow = (
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
 
-  const { data: collection } = useGetPlaylistById({
-    playlistId: collectionId,
-    currentUserId
+  const { data: partialCollection } = useCollection(collectionId, {
+    select: (collection) =>
+      pick(collection, [
+        'playlist_owner_id',
+        'has_current_user_saved',
+        'access'
+      ])
   })
+  const { playlist_owner_id, has_current_user_saved, access } =
+    partialCollection ?? {}
 
   const isMarkedForDownload = useSelector((state) =>
     Boolean(getCollectionDownloadStatus(state, collectionId))
@@ -66,10 +73,9 @@ export const CollectionDownloadStatusRow = (
     [collectionId, downloadSwitchValue]
   )
   const isAvailableForDownload =
-    !!collection &&
-    (collection.has_current_user_saved ||
-      collection.playlist_owner_id === currentUserId) &&
-    collection.access?.stream
+    !!partialCollection &&
+    (has_current_user_saved || playlist_owner_id === currentUserId) &&
+    access?.stream
 
   // Ensure removing or favoriting also triggers switch
   useLayoutEffect(() => {
@@ -98,7 +104,7 @@ export const CollectionDownloadStatusRow = (
   return (
     <DownloadStatusRowDisplay
       downloadStatus={downloadStatus}
-      isAvailableForDownload={isAvailableForDownload}
+      isAvailableForDownload={!!isAvailableForDownload}
       switchValue={downloadSwitchValue}
       handleSwitchChange={handleDownloadSwitchValueChange}
       disabled={isSwitchDisabled}

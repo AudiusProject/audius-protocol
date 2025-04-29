@@ -2,7 +2,6 @@
 // TODO: migrate all of these to tan-query
 export * from './account'
 export * from './authorizedApps'
-export * from './collection'
 export * from './developerApps'
 export * from './library'
 export * from './purchases'
@@ -22,6 +21,7 @@ export * from './tan-query/comments'
 
 // Collection
 export * from './tan-query/collection/useCollection'
+export * from './tan-query/collection/useCollections'
 export * from './tan-query/collection/useCollectionByPermalink'
 export * from './tan-query/collection/useCollectionFavorites'
 export * from './tan-query/collection/useCollectionReposts'
