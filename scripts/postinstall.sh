@@ -20,7 +20,7 @@ printf "${GREEN}Setting up initial package links...\n${NC}"
 if [[ -z "${SKIP_POD_INSTALL}" ]]; then
 {
   # First ensure react-native exists in root node_modules for patch-package
-  if [ ! -e "node_modules/react-native" ]; then
+  if [ ! -e "node_modules/react-native" ] && [ -e "./packages/mobile/node_modules/react-native" ]; then
     printf "${GREEN}Moving react-native to root node_modules...\n${NC}"
     cp -R ./packages/mobile/node_modules/react-native ./node_modules/
     rm -rf ./packages/mobile/node_modules/react-native
