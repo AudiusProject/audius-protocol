@@ -111,6 +111,7 @@ export * from './tan-query/users/useUserByParams'
 export * from './tan-query/users/useUserCollectibles'
 export * from './tan-query/users/useUserPlaylists'
 export * from './tan-query/users/useUsers'
+export * from './tan-query/users/useUserTracksByHandle'
 
 // Wallet logic
 export * from './tan-query/wallets/useAudioBalance'
