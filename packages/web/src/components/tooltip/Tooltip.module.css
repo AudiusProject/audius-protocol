@@ -11,7 +11,9 @@
   user-select: none;
   text-transform: none;
   border-radius: 4px;
-  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.12)) drop-shadow(0 6px 16px rgba(0, 0, 0, 0.08)) drop-shadow(0 9px 28px rgba(0, 0, 0, 0.05));
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.12))
+    drop-shadow(0 6px 16px rgba(0, 0, 0, 0.08))
+    drop-shadow(0 9px 28px rgba(0, 0, 0, 0.05));
 }
 
 .tooltip :global(.ant-tooltip-inner) {
