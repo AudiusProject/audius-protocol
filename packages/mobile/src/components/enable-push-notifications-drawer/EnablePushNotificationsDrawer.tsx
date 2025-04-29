@@ -125,12 +125,7 @@ export const EnablePushNotificationsDrawer = () => {
   const { onClose } = useDrawer('EnablePushNotifications')
   const styles = useStyles()
 
-  const {
-    background,
-    neutralLight2,
-    pageHeaderGradientColor1,
-    pageHeaderGradientColor2
-  } = useThemeColors()
+  const { neutralLight2, pageHeaderGradientColor2 } = useThemeColors()
 
   const enablePushNotifications = useCallback(() => {
     dispatch(
@@ -147,7 +142,6 @@ export const EnablePushNotificationsDrawer = () => {
             height={66}
             width={66}
             fill={pageHeaderGradientColor2}
-            fillSecondary={pageHeaderGradientColor1}
           />
           <GradientText style={styles.cta}>{messages.dontMiss}</GradientText>
           <Text style={styles.turnOn}>{messages.turnOn}</Text>
@@ -159,7 +153,6 @@ export const EnablePushNotificationsDrawer = () => {
                 height={30}
                 width={30}
                 fill={neutralLight2}
-                fillSecondary={background}
                 style={styles.actionIcon}
               />
               <Text style={styles.actionText} weight='bold'>
