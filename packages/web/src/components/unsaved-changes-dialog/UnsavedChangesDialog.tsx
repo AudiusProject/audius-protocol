@@ -1,38 +1,41 @@
 import { useState, useEffect, useRef } from 'react'
 
-import { confirmerSelectors } from '@audius/common/store'
 import {
-  Modal,
-  setupHotkeys,
-  removeHotkeys,
-  ModifierKeys,
-  ModalHeader,
-  ModalTitle,
-  ModalContent,
-  ModalContentText,
-  ModalFooter,
-  Button
-} from '@audius/harmony'
+  CommonState,
+  confirmerSelectors,
+  stemsUploadSelectors,
+  uploadSelectors
+} from '@audius/common/store'
+import { setupHotkeys, removeHotkeys, ModifierKeys } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
+import { ConfirmationModal } from 'components/confirmation-modal/ConfirmationModal'
 import { isElectron } from 'utils/clientUtil'
 
 const { getIsConfirming } = confirmerSelectors
+const { getIsUploading } = uploadSelectors
+const { getIsUploadingStems } = stemsUploadSelectors
+const messages = {
+  header: 'Hang tight',
+  syncDescription:
+    "We're still syncing your latest changes. You might lose changes if you leave.",
+  uploadDescription:
+    "We're still uploading! You might lose changes if you leave.",
+  reload: 'Reload',
+  quit: 'Quit',
+  cancel: 'Cancel'
+}
 
-const MESSAGE_TEXT = `
-  We're working on syncing your
-  latest changes to the Audius network.
-  Please wait a moment for your changes to get saved.
-  `
-
-const RELOAD_TEXT = 'Reload anyway'
-const QUIT_TEXT = 'Quit anyway'
-
-export const UnloadDialog = () => {
+export const UnsavedChangesDialog = () => {
   const [showModal, setShowModal] = useState(false)
   const [reload, setReload] = useState(true)
 
   const isConfirming = useSelector(getIsConfirming)
+  const isUploading = useSelector((state: CommonState) => {
+    const isUploading = getIsUploading(state)
+    const isStemUploading = getIsUploadingStems(state)
+    return isUploading || isStemUploading
+  })
 
   const seenModalRef = useRef(false)
   const hotkeyHookRef = useRef<(e: KeyboardEvent) => void>()
@@ -41,7 +44,7 @@ export const UnloadDialog = () => {
   const ipcRef = useRef<any>(null)
 
   useEffect(() => {
-    if (isConfirming) {
+    if (isConfirming || isUploading) {
       const beforeUnload = (event: BeforeUnloadEvent) => {
         event.preventDefault()
         if (!seenModalRef.current) event.returnValue = ''
@@ -74,7 +77,7 @@ export const UnloadDialog = () => {
         window.removeEventListener('beforeunload', beforeUnload)
       }
     }
-  }, [isConfirming, addElectronListener])
+  }, [isConfirming, addElectronListener, isUploading])
 
   const onRefreshHotkey = () => {
     setReload(true)
@@ -103,30 +106,20 @@ export const UnloadDialog = () => {
   }
 
   return (
-    <Modal isOpen={showModal} onClose={onModalClose}>
-      <ModalHeader>
-        <ModalTitle
-          title={
-            <>
-              Hang tight! <i className='emoji woman-surfing' />
-            </>
-          }
-        />
-      </ModalHeader>
-      <ModalContent>
-        <ModalContentText>{MESSAGE_TEXT}</ModalContentText>
-      </ModalContent>
-      <ModalFooter>
-        <Button variant='secondary' onClick={onModalClose}>
-          Got It
-        </Button>
-        <Button
-          variant='destructive'
-          onClick={reload ? onReloadAnyway : onQuitAnyway}
-        >
-          {reload ? RELOAD_TEXT : QUIT_TEXT}
-        </Button>
-      </ModalFooter>
-    </Modal>
+    <ConfirmationModal
+      isOpen={showModal}
+      onClose={onModalClose}
+      messages={{
+        header: messages.header,
+        description: isUploading
+          ? messages.uploadDescription
+          : messages.syncDescription,
+        confirm: reload ? messages.reload : messages.quit,
+        cancel: messages.cancel
+      }}
+      onConfirm={reload ? onReloadAnyway : onQuitAnyway}
+      onCancel={onModalClose}
+      destructive
+    />
   )
 }
