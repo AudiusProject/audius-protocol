@@ -3,7 +3,6 @@ import React, { useCallback } from 'react'
 import { useFormattedAudioBalance } from '@audius/common/hooks'
 
 import {
-  Box,
   Flex,
   IconCaretRight,
   IconTokenAUDIO,
@@ -41,9 +40,7 @@ export const YourCoins = () => {
           <Flex direction='column' gap='xs'>
             <Flex direction='row' alignItems='center' gap='xs'>
               {isAudioBalanceLoading ? (
-                <Box h='4xl' w='5xl'>
-                  <Skeleton />
-                </Box>
+                <Skeleton h='4xl' w='5xl' />
               ) : (
                 <>
                   <Text variant='heading' size='l' color='default'>
@@ -56,9 +53,7 @@ export const YourCoins = () => {
               )}
             </Flex>
             {isAudioPriceLoading ? (
-              <Box h='l' w='3xl'>
-                <Skeleton />
-              </Box>
+              <Skeleton h='l' w='3xl' />
             ) : (
               <Text variant='heading' size='s' color='subdued'>
                 {audioDollarValue}

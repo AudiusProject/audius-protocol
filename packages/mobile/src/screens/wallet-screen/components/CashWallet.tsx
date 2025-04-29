@@ -67,9 +67,7 @@ export const CashWallet = () => {
           </Flex>
 
           {isLoading ? (
-            <Box h='4xl' w='5xl'>
-              <Skeleton />
-            </Box>
+            <Skeleton h='4xl' w='5xl' />
           ) : (
             <Text variant='display' size='m' color='default'>
               {balanceFormatted}
