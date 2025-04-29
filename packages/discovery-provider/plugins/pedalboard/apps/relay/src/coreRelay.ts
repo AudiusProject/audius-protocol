@@ -2,17 +2,63 @@ import { ethers } from 'ethers'
 import { decodeAbi } from './abi.js'
 import { create } from '@bufbuild/protobuf'
 import { createClient, Client } from '@connectrpc/connect'
-import { createGrpcTransport } from '@connectrpc/connect-node'
+import { createGrpcTransport, createConnectTransport } from '@connectrpc/connect-node'
 import {
   Protocol,
   SignedTransactionSchema,
-  ManageEntityLegacySchema
+  ManageEntityLegacySchema,
+  PingRequestSchema as GrpcPingRequestSchema,
+  TransactionResponse as GrpcTransactionResponse
 } from './core-sdk/protocol_pb'
 import { ValidatedRelayRequest } from './types/relay'
 import { readConfig } from './config/config.js'
 import pino from 'pino'
+import { CoreService } from './audiusd-sdk/core/v1/service_pb.js'
+import {
+  PingRequestSchema,
+  SendTransactionResponse as ConnectTransactionResponse
+} from './audiusd-sdk/core/v1/types_pb.js'
 
-let client: Client<typeof Protocol> | null = null
+type ClientType = 'grpc' | 'connect'
+let activeClient: { type: ClientType; client: Client<typeof Protocol | typeof CoreService> } | null = null
+
+async function initializeClients(logger: pino.Logger): Promise<boolean> {
+  if (activeClient) return true
+
+  const config = readConfig()
+
+  // Try GRPC client first
+  try {
+    const grpcTransport = createGrpcTransport({
+      baseUrl: config.coreEndpoint,
+      useBinaryFormat: true
+    })
+    const grpcClient = createClient(Protocol, grpcTransport)
+    await grpcClient.ping(create(GrpcPingRequestSchema, {}))
+    activeClient = { type: 'grpc', client: grpcClient }
+    logger.info('Successfully connected using gRPC client')
+    return true
+  } catch (e) {
+    logger.warn({ err: e }, 'gRPC client ping failed, trying Connect client')
+  }
+
+  // Try Connect client if GRPC failed
+  try {
+    const connectTransport = createConnectTransport({
+      baseUrl: config.coreEndpoint,
+      httpVersion: "2",
+      useBinaryFormat: true
+    })
+    const connectClient = createClient(CoreService, connectTransport)
+    await connectClient.ping(create(PingRequestSchema, {}))
+    activeClient = { type: 'connect', client: connectClient }
+    logger.info('Successfully connected using Connect client')
+    return true
+  } catch (e) {
+    logger.error({ err: e }, 'Both client connection attempts failed')
+    return false
+  }
+}
 
 type CoreRelayResponse = {
   status: boolean
@@ -36,13 +82,10 @@ export const coreRelay = async (
   request: ValidatedRelayRequest
 ): Promise<CoreRelayResponse | null> => {
   try {
-    if (client === null) {
-      const config = readConfig()
-      const transport = createGrpcTransport({
-        baseUrl: config.coreEndpoint,
-        useBinaryFormat: true
-      })
-      client = createClient(Protocol, transport)
+    // Initialize clients if needed
+    const clientsInitialized = await initializeClients(logger)
+    if (!clientsInitialized || !activeClient) {
+      throw new Error('Failed to initialize any client')
     }
 
     const { encodedABI } = request
@@ -84,26 +127,43 @@ export const coreRelay = async (
       requestId: requestId
     })
 
-    const res = await client.sendTransaction({
+    // Use the active client to send transaction
+    const res = await activeClient.client.sendTransaction({
       transaction: signedTransaction
     })
 
-    const { transaction, txhash } = res
+    // Extract transaction info based on client type
+    let txHash = '', blockHeight = BigInt(0), blockHash = ''
+
+    if (activeClient.type === 'grpc') {
+      const grpcRes = res as GrpcTransactionResponse
+      txHash = grpcRes.txhash
+      blockHeight = grpcRes.blockHeight
+      blockHash = grpcRes.blockHash
+    } else {
+      const connectRes = res as ConnectTransactionResponse
+      if (connectRes.transaction) {
+        txHash = connectRes.transaction.hash || ''
+        blockHeight = connectRes.transaction.height || BigInt(0)
+        blockHash = connectRes.transaction.blockHash || ''
+      }
+    }
+
     logger.info(
       {
-        tx: transaction,
-        txhash: txhash,
-        block: res.blockHeight,
-        blockhash: res.blockHash
+        tx: res.transaction,
+        txhash: txHash,
+        block: blockHeight,
+        blockhash: blockHash
       },
       'core relay success'
     )
     return {
       status: true,
-      transactionHash: txhash,
+      transactionHash: txHash,
       transactionIndex: 0,
-      blockHash: res.blockHash,
-      blockNumber: Number(res.blockHeight),
+      blockHash: blockHash,
+      blockNumber: Number(blockHeight),
       from: signer || '',
       to: signer || '',
       cumulativeGasUsed: 10,
