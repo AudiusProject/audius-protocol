@@ -45,7 +45,6 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 import { Formik, useField, useFormikContext } from 'formik'
-import { pick } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 import { useLocalStorage } from 'react-use'
 import { z } from 'zod'
