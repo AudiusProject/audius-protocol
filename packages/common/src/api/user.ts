@@ -1,6 +1,5 @@
-import { full, HashId, Id, OptionalId } from '@audius/sdk'
+import { full, Id, OptionalId } from '@audius/sdk'
 
-import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { accountFromSDK, userMetadataListFromSDK } from '~/adapters/user'
 import { createApi } from '~/audius-query'
 import { ID, Kind, StringUSDC } from '~/models'
@@ -11,8 +10,6 @@ import {
 } from '~/models/USDCTransactions'
 import { isResponseError } from '~/utils'
 import { Nullable } from '~/utils/typeUtils'
-
-import { SDKRequest } from './types'
 
 type GetUSDCTransactionListArgs = {
   userId: Nullable<ID>
@@ -132,7 +129,7 @@ const userApi = createApi({
         return data.map((transaction) => parseTransaction({ transaction }))
       },
       options: { retry: true }
-    },
+    }
   }
 })
 
