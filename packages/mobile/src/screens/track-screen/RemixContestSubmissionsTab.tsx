@@ -65,8 +65,7 @@ const SubmissionCard = ({ submission }: { submission: LineupData }) => {
               style={{
                 height: '100%',
                 width: '100%',
-                borderRadius: 4,
-                overflow: 'hidden'
+                borderRadius: 4
               }}
               trackId={track.track_id}
               size={Size.SMALL}
@@ -133,8 +132,8 @@ const RemixContestSubmissions = ({
   const navigation = useNavigation()
 
   return (
-    <Flex w='100%' column gap='2xl' pt='xl' pb='2xl' ph='l' borderTop='default'>
-      <Flex gap='2xl' wrap='wrap' justifyContent='space-around'>
+    <Flex w='100%' column gap='2xl' p='xl' pb='2xl' borderTop='default'>
+      <Flex row gap='2xl' wrap='wrap' justifyContent='space-between'>
         {submissions.map((submission) => (
           <SubmissionCard key={submission.id} submission={submission} />
         ))}
