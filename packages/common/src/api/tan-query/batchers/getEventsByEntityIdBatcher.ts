@@ -1,5 +1,5 @@
 import { Id, OptionalId } from '@audius/sdk'
-import { create, keyResolver, windowScheduler } from '@yornaath/batshit'
+import { create, windowScheduler } from '@yornaath/batshit'
 import { memoize } from 'lodash'
 
 import { eventMetadataListFromSDK } from '~/adapters/event'
