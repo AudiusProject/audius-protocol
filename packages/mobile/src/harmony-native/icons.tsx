@@ -1,6 +1,6 @@
 import type { FunctionComponent } from 'react'
 
-import { default as IconVerifiedSvg } from '@audius/harmony/src/assets/icons/Verified.svg'
+import IconVerifiedSvg from '@audius/harmony/src/assets/icons/Verified.svg'
 import { type IconProps as HarmonyIconProps } from '@audius/harmony/src/components/icon'
 import type { AnimatedProps } from 'react-native-reanimated'
 import type { SvgProps } from 'react-native-svg'
