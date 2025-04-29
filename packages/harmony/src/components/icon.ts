@@ -19,6 +19,6 @@ export type IconProps = {
   onClick?: MouseEventHandler<SVGSVGElement>
 }
 
-type SVGIconProps = SVGBaseProps & IconProps
+export type SVGIconProps = SVGBaseProps & IconProps
 
 export type IconComponent = ComponentType<SVGBaseProps | SVGIconProps>

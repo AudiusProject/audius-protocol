@@ -1,4 +1,4 @@
-import { IconComponent, IconProps } from '~harmony/components/icon'
+import { IconComponent, SVGIconProps } from '~harmony/components/icon'
 
 // Two Tone / Special Styling
 import IconArtistBadgeSVG from '../assets/icons/ArtistBadge.svg'
@@ -83,9 +83,9 @@ export const IconMultiselectAdd = IconMultiselectAddSVG as IconComponent
 export const IconMultiselectRemove = IconMultiselectRemoveSVG as IconComponent
 
 // Token Tier Badge Components
-export const IconVerified = (props: IconProps) => (
+export const IconVerified = ((props: SVGIconProps) => (
   <IconVerifiedSVG color='active' colorSecondary='white' {...props} />
-)
+)) as IconComponent
 export const IconTokenNoTier = createImageIcon(TokenNoTierPng)
 export const IconTokenBronze = createImageIcon(TokenBronzePng)
 export const IconTokenGold = createImageIcon(TokenGoldPng)
