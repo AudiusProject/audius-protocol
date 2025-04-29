@@ -1437,7 +1437,7 @@ PODS:
     - React-Core
   - react-native-notifications (5.1.0):
     - React-Core
-  - react-native-pager-view (6.4.0):
+  - react-native-pager-view (6.7.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2471,7 +2471,7 @@ SPEC CHECKSUMS:
   react-native-keep-awake: ad1d67f617756b139536977a0bf06b27cec0714a
   react-native-netinfo: 8a7fd3f7130ef4ad2fb4276d5c9f8d3f28d2df3d
   react-native-notifications: 4601a5a8db4ced6ae7cfc43b44d35fe437ac50c4
-  react-native-pager-view: d9c1185fdb50e28e25a1d79c5d1094c50789e424
+  react-native-pager-view: ad90e78510ae4cb5f91d8b0d7ebb8a794c2ad266
   react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
   react-native-restart: 7595693413fe3ca15893702f2c8306c62a708162
   react-native-safe-area-context: 3e6db312a77016d4f618550c814d9e236e0c0879
