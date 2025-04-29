@@ -29,7 +29,8 @@ const HEIGHT_OFFSET = 24
 const useStyles = makeStyles(({ palette, typography, spacing }) => ({
   tabBar: {
     backgroundColor: 'transparent',
-    height: spacing(10)
+    height: spacing(10),
+    marginHorizontal: spacing(4)
   },
   tabLabel: {
     marginHorizontal: 0,
