@@ -25,10 +25,8 @@ import {
 import { gatedContentSelectors } from '~/store/gated-content'
 import { CommonState } from '~/store/reducers'
 import {
-  isContentCollection,
   isContentPartialCollection,
-  isContentPartialTrack,
-  isContentTrack
+  isContentPartialTrack
 } from '~/utils/contentTypeUtils'
 import { Nullable, removeNullable } from '~/utils/typeUtils'
 
