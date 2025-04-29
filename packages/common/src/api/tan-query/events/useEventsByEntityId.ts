@@ -1,28 +1,27 @@
 import { useMemo } from 'react'
 
-import { Id, OptionalId } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useDispatch } from 'react-redux'
 
-import { eventMetadataFromSDK } from '~/adapters/event'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models'
-import { removeNullable } from '~/utils'
 
+import { getEventsByEntityIdBatcher } from '../batchers/getEventsByEntityIdBatcher'
 import { SelectableQueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 
 import {
   getEventIdsByEntityIdQueryKey,
-  EventIdsByEntityIdOptions,
-  getEventQueryKey
+  EventIdsByEntityIdOptions
 } from './utils'
 
 export const useEventIdsByEntityId = (
   args: EventIdsByEntityIdOptions,
   options?: SelectableQueryOptions<ID[]>
 ) => {
-  const { entityId, ...restArgs } = args ?? {}
+  const { entityId } = args ?? {}
   const { audiusSdk } = useAudiusQueryContext()
+  const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
 
@@ -33,21 +32,17 @@ export const useEventIdsByEntityId = (
     queryKey: getEventIdsByEntityIdQueryKey(args),
     queryFn: async () => {
       const sdk = await audiusSdk()
-      const response = await sdk.events.getEntityEvents({
-        entityId: Id.parse(entityId),
-        userId: OptionalId.parse(currentUserId),
-        ...restArgs
-      })
-      const events = response.data ?? []
-      const eventsMetadata = events
-        .map(eventMetadataFromSDK)
-        .filter(removeNullable)
 
-      eventsMetadata.forEach((event) => {
-        queryClient.setQueryData(getEventQueryKey(event.eventId), event)
+      const batchGetEvents = getEventsByEntityIdBatcher({
+        sdk,
+        currentUserId,
+        queryClient,
+        dispatch
       })
 
-      return eventsMetadata.map((event) => event.eventId)
+      const events = await batchGetEvents.fetch(entityId!)
+
+      return events.map((event) => event.eventId)
     },
     ...options,
     enabled: options?.enabled !== false && !!entityId,

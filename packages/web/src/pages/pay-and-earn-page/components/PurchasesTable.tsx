@@ -8,6 +8,7 @@ import moment from 'moment'
 import { UserLink } from 'components/link'
 import { Table } from 'components/table'
 
+import styles from '../PayAndEarnPage.module.css'
 import { PurchaseCell, PurchaseRow } from '../types'
 import { isEmptyPurchaseRow } from '../utils'
 
@@ -170,6 +171,7 @@ export const PurchasesTable = ({
       totalRowCount={totalRowCount ?? 0}
       scrollRef={scrollRef}
       fetchBatchSize={fetchBatchSize}
+      wrapperClassName={styles.tableWrapper}
     />
   )
 }

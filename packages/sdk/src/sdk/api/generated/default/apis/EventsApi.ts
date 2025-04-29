@@ -41,7 +41,7 @@ export interface GetBulkEventsRequest {
 }
 
 export interface GetEntityEventsRequest {
-    entityId: string;
+    entityId: Array<string>;
     offset?: number;
     limit?: number;
     userId?: string;
@@ -166,7 +166,7 @@ export class EventsApi extends runtime.BaseAPI {
             queryParameters['user_id'] = params.userId;
         }
 
-        if (params.entityId !== undefined) {
+        if (params.entityId) {
             queryParameters['entity_id'] = params.entityId;
         }
 

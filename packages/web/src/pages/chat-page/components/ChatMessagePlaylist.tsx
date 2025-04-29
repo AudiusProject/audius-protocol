@@ -1,9 +1,10 @@
 import { useCallback, useMemo, useEffect } from 'react'
 
 import {
-  useGetTracksByIds,
   useCollection,
-  useCollectionByPermalink
+  useCollectionByPermalink,
+  useTracks,
+  useUsers
 } from '@audius/common/api'
 import { usePlayTrack, usePauseTrack } from '@audius/common/hooks'
 import {
@@ -15,7 +16,6 @@ import {
   ModalSource
 } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheCollectionsActions,
   QueueSource,
   playerSelectors,
@@ -27,7 +27,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { make } from 'common/store/analytics/actions'
 import MobilePlaylistTile from 'components/track/mobile/ConnectedPlaylistTile'
 
-const { getUserId } = accountSelectors
 const { getTrackId } = playerSelectors
 const { fetchCoverArt } = cacheCollectionsActions
 
@@ -38,7 +37,6 @@ export const ChatMessagePlaylist = ({
   className
 }: ChatMessageTileProps) => {
   const dispatch = useDispatch()
-  const currentUserId = useSelector(getUserId)
   const playingTrackId = useSelector(getTrackId)
 
   const permalink = getPathFromPlaylistUrl(link) ?? ''
@@ -59,13 +57,8 @@ export const ChatMessagePlaylist = ({
 
   const trackIds =
     playlist?.playlist_contents?.track_ids?.map((t) => t.track) ?? []
-  const { data: tracks } = useGetTracksByIds(
-    {
-      ids: trackIds,
-      currentUserId: currentUserId!
-    },
-    { disabled: !trackIds.length || !currentUserId }
-  )
+  const { data: tracks } = useTracks(trackIds)
+  const { byId: usersById } = useUsers(tracks?.map((t) => t.owner_id))
 
   const uidMap = useMemo(() => {
     return trackIds.reduce((result: { [id: ID]: string }, id) => {
@@ -83,11 +76,11 @@ export const ChatMessagePlaylist = ({
   const tracksWithUids = useMemo(() => {
     return (tracks || []).map((track) => ({
       ...track,
-      user: track.user,
+      user: usersById[track.owner_id],
       id: track.track_id,
       uid: uidMap[track.track_id]
     }))
-  }, [tracks, uidMap])
+  }, [tracks, uidMap, usersById])
 
   const entries = useMemo(() => {
     return (tracks || []).map((track) => ({

@@ -111,6 +111,7 @@ export * from './tan-query/users/useUserByParams'
 export * from './tan-query/users/useUserCollectibles'
 export * from './tan-query/users/useUserPlaylists'
 export * from './tan-query/users/useUsers'
+export * from './tan-query/users/useUserTracksByHandle'
 
 // Wallet logic
 export * from './tan-query/wallets/useAudioBalance'
@@ -122,3 +123,4 @@ export * from './tan-query/wallets/useUSDCBalance'
 
 // Saga fetch utils, remove when migration is complete
 export * from './tan-query/saga-utils'
+export * from './tan-query/utils/defaultRetryConfig'

@@ -179,7 +179,7 @@ class ChallengeEventBus:
         try:
             # get the first max_events elements.
             events_json = self._redis.lrange(REDIS_QUEUE_PREFIX, 0, max_events)
-            logger.debug(f"ChallengeEventBus: dequeued {len(events_json)} events")
+            # logger.debug(f"ChallengeEventBus: dequeued {len(events_json)} events")
             # trim the first from the front of the list
             self._redis.ltrim(REDIS_QUEUE_PREFIX, len(events_json), -1)
             events_dicts = list(map(self._json_to_event, events_json))
@@ -187,7 +187,7 @@ class ChallengeEventBus:
             # map of {"event_type": [{ user_id: number, block_number: number, extra: {} }]}}
             event_user_dict: DefaultDict[
                 ChallengeEvent, List[EventMetadata]
-            ] = defaultdict(lambda: [])
+            ] = defaultdict(list)
             for event_dict in events_dicts:
                 event_type = event_dict["event"]
                 event_user_dict[event_type].append(

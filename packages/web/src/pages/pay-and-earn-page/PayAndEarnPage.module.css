@@ -53,8 +53,7 @@
 }
 
 .tableWrapper {
-  box-shadow: 'none';
-  background-color: 'red';
+  box-shadow: none;
 }
 
 .tableHeaderSmallPadding {
