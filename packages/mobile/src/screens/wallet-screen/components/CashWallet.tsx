@@ -18,9 +18,9 @@ import {
   IconInfo,
   IconLogoCircleUSDC,
   Paper,
+  Skeleton,
   Text
 } from '@audius/harmony-native'
-import LoadingSpinner from 'app/components/loading-spinner'
 import { make, track } from 'app/services/analytics'
 
 export const CashWallet = () => {
@@ -46,10 +46,6 @@ export const CashWallet = () => {
     bottomSheetModalRef.current?.present()
   }, [])
 
-  if (isLoading) {
-    return <LoadingSpinner />
-  }
-
   return (
     <>
       <Paper>
@@ -70,9 +66,15 @@ export const CashWallet = () => {
             />
           </Flex>
 
-          <Text variant='display' size='m' color='default'>
-            ${balanceFormatted}
-          </Text>
+          {isLoading ? (
+            <Box h='4xl' w='5xl'>
+              <Skeleton />
+            </Box>
+          ) : (
+            <Text variant='display' size='m' color='default'>
+              {balanceFormatted}
+            </Text>
+          )}
 
           {!isManagedAccount ? (
             <Button variant='secondary' onPress={handleAddCash} fullWidth>

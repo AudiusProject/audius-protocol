@@ -1,13 +1,14 @@
-import { useCallback } from 'react'
+import React, { useCallback } from 'react'
 
 import { useFormattedAudioBalance } from '@audius/common/hooks'
-import { walletMessages } from '@audius/common/messages'
 
 import {
+  Box,
   Flex,
   IconCaretRight,
   IconTokenAUDIO,
   Paper,
+  Skeleton,
   Text,
   cornerRadius
 } from '@audius/harmony-native'
@@ -27,9 +28,7 @@ export const YourCoins = () => {
     navigation.navigate('AudioScreen')
   }, [navigation])
 
-  const displayAmount = isAudioBalanceLoading
-    ? walletMessages.loading
-    : audioBalanceFormatted
+  const displayAmount = isAudioBalanceLoading ? null : audioBalanceFormatted
 
   return (
     <Paper onPress={handleTokenClick}>
@@ -43,18 +42,30 @@ export const YourCoins = () => {
           <IconTokenAUDIO size='4xl' borderRadius={cornerRadius.circle} />
           <Flex direction='column' gap='xs'>
             <Flex direction='row' alignItems='center' gap='xs'>
-              <Text variant='heading' size='l' color='default'>
-                {displayAmount}
-              </Text>
-              <Text variant='heading' size='l' color='subdued'>
-                $AUDIO
-              </Text>
+              {isAudioBalanceLoading ? (
+                <Box h='4xl' w='5xl'>
+                  <Skeleton />
+                </Box>
+              ) : (
+                <>
+                  <Text variant='heading' size='l' color='default'>
+                    {displayAmount}
+                  </Text>
+                  <Text variant='heading' size='l' color='subdued'>
+                    $AUDIO
+                  </Text>
+                </>
+              )}
             </Flex>
-            <Text variant='heading' size='s' color='subdued'>
-              {isAudioPriceLoading
-                ? walletMessages.loadingPrice
-                : audioDollarValue}
-            </Text>
+            {isAudioPriceLoading ? (
+              <Box h='l' w='3xl'>
+                <Skeleton />
+              </Box>
+            ) : (
+              <Text variant='heading' size='s' color='subdued'>
+                {audioDollarValue}
+              </Text>
+            )}
           </Flex>
         </Flex>
         <IconCaretRight size='s' color='subdued' />

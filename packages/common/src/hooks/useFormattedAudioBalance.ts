@@ -25,7 +25,7 @@ export const useFormattedAudioBalance = (): UseFormattedAudioBalanceReturn => {
   const audioBalanceFormatted = formatWei(audioBalance, true, 0)
   const isAudioBalanceLoading = isNullOrUndefined(audioBalance)
 
-  const { data: audioPriceData, isPending: isAudioPriceLoading } =
+  const { data: audioPriceData, isLoading: isAudioPriceLoading } =
     useTokenPrice(AUDIO_TOKEN_ID)
   const audioPrice = audioPriceData?.price || null
 
