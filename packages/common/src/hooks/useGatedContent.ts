@@ -23,7 +23,10 @@ import {
 } from '~/store/cache'
 import { gatedContentSelectors } from '~/store/gated-content'
 import { CommonState } from '~/store/reducers'
-import { isContentCollection, isContentTrack } from '~/utils/contentTypeUtils'
+import {
+  isContentPartialCollection,
+  isContentPartialTrack
+} from '~/utils/contentTypeUtils'
 import { Nullable, removeNullable } from '~/utils/typeUtils'
 
 import { useFeatureFlag } from './useFeatureFlag'
@@ -63,25 +66,24 @@ export const useGatedCollectionAccess = (collectionId: ID) => {
   return { hasStreamAccess }
 }
 
+type PartialTrack = Pick<
+  Track,
+  | 'track_id'
+  | 'is_stream_gated'
+  | 'is_download_gated'
+  | 'access'
+  | 'stream_conditions'
+  | 'download_conditions'
+>
+
+type PartialCollection = Pick<
+  Collection,
+  'playlist_id' | 'is_stream_gated' | 'access' | 'stream_conditions'
+>
+
 // Returns whether user has access to given track.
 export const useGatedContentAccess = (
-  content:
-    | Nullable<
-        | Pick<
-            Track,
-            | 'track_id'
-            | 'is_stream_gated'
-            | 'is_download_gated'
-            | 'access'
-            | 'stream_conditions'
-            | 'download_conditions'
-          >
-        | Pick<
-            Collection,
-            'playlist_id' | 'is_stream_gated' | 'access' | 'stream_conditions'
-          >
-      >
-    | undefined
+  content: Nullable<PartialTrack> | Nullable<PartialCollection> | undefined
 ) => {
   const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
   const hasAccount = useSelector(getHasAccount)
@@ -96,8 +98,9 @@ export const useGatedContentAccess = (
         }
       }
 
-      const isTrack = isContentTrack(content)
-      const isCollection = isContentCollection(content)
+      const isTrack = isContentPartialTrack<PartialTrack>(content)
+      const isCollection =
+        isContentPartialCollection<PartialCollection>(content)
       const trackId = isTrack
         ? content.track_id
         : isCollection

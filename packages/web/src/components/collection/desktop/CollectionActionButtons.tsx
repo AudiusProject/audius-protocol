@@ -1,4 +1,4 @@
-import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
+import { useCollection } from '@audius/common/api'
 import {
   useGatedContentAccess,
   useGatedContentAccessMap
@@ -8,6 +8,7 @@ import { CommonState, cacheCollectionsSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { Button, Flex, IconPause, IconPlay } from '@audius/harmony'
 import cn from 'classnames'
+import { pick } from 'lodash'
 import { useSelector } from 'react-redux'
 
 import styles from './CollectionHeader.module.css'
@@ -53,15 +54,17 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
     isPremium
   } = props
 
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: collection } = useGetPlaylistById(
-    {
-      playlistId: typeof collectionId === 'number' ? collectionId : null,
-      currentUserId
-    },
-    { disabled: typeof collectionId !== 'number' }
-  )
-  const { hasStreamAccess } = useGatedContentAccess(collection)
+  const { data: partialCollection } = useCollection(collectionId as number, {
+    enabled: typeof collectionId === 'number',
+    select: (collection) =>
+      pick(collection, [
+        'playlist_id',
+        'is_stream_gated',
+        'access',
+        'stream_conditions'
+      ])
+  })
+  const { hasStreamAccess } = useGatedContentAccess(partialCollection)
   // Dirty hack to get around the possibility that collectionId is a SmartCollectionVariant
   const tracks = useSelector((state: CommonState) =>
     getCollectionTracks(state, {

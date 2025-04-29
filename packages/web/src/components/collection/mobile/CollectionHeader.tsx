@@ -1,6 +1,6 @@
 import { memo, useCallback } from 'react'
 
-import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
+import { useCollection } from '@audius/common/api'
 import {
   useGatedContentAccessMap,
   useGatedContentAccess
@@ -25,6 +25,7 @@ import {
   Text
 } from '@audius/harmony'
 import cn from 'classnames'
+import { pick } from 'lodash'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom-v5-compat'
 
@@ -110,19 +111,27 @@ const CollectionHeader = ({
 }: MobileCollectionHeaderProps) => {
   const navigate = useNavigate()
 
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: collection } = useGetPlaylistById({
-    playlistId: collectionId,
-    currentUserId
+  const { data: partialCollection } = useCollection(collectionId, {
+    select: (collection) =>
+      pick(collection, [
+        'is_private',
+        'is_stream_gated',
+        'is_scheduled_release',
+        'release_date',
+        'permalink',
+        'access',
+        'stream_conditions',
+        'playlist_id'
+      ])
   })
-  const { hasStreamAccess } = useGatedContentAccess(collection)
+  const { hasStreamAccess } = useGatedContentAccess(partialCollection)
   const {
     is_private: isPrivate,
     is_stream_gated: isPremium,
     is_scheduled_release: isScheduledRelease,
     release_date: releaseDate,
     permalink
-  } = collection ?? {}
+  } = partialCollection ?? {}
 
   const tracks = useSelector((state: CommonState) =>
     getCollectionTracks(state, { id: collectionId })

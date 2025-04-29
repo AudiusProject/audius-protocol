@@ -2,7 +2,6 @@
 // TODO: migrate all of these to tan-query
 export * from './account'
 export * from './authorizedApps'
-export * from './collection'
 export * from './developerApps'
 export * from './library'
 export * from './purchases'
@@ -22,6 +21,7 @@ export * from './tan-query/comments'
 
 // Collection
 export * from './tan-query/collection/useCollection'
+export * from './tan-query/collection/useCollections'
 export * from './tan-query/collection/useCollectionByPermalink'
 export * from './tan-query/collection/useCollectionFavorites'
 export * from './tan-query/collection/useCollectionReposts'
@@ -115,6 +115,7 @@ export * from './tan-query/users/useUserByParams'
 export * from './tan-query/users/useUserCollectibles'
 export * from './tan-query/users/useUserPlaylists'
 export * from './tan-query/users/useUsers'
+export * from './tan-query/users/useUserTracksByHandle'
 
 // Wallet logic
 export * from './tan-query/wallets/useAudioBalance'
@@ -126,3 +127,4 @@ export * from './tan-query/wallets/useUSDCBalance'
 
 // Saga fetch utils, remove when migration is complete
 export * from './tan-query/saga-utils'
+export * from './tan-query/utils/defaultRetryConfig'
