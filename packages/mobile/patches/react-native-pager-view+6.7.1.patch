@@ -1,110 +1,34 @@
 diff --git a/node_modules/react-native-pager-view/ios/Fabric/RNCPagerViewComponentView.mm b/node_modules/react-native-pager-view/ios/Fabric/RNCPagerViewComponentView.mm
-index 652a5c1..c7de2e9 100644
+index 652a5c1..9141b23 100644
 --- a/node_modules/react-native-pager-view/ios/Fabric/RNCPagerViewComponentView.mm
 +++ b/node_modules/react-native-pager-view/ios/Fabric/RNCPagerViewComponentView.mm
-@@ -14,7 +14,7 @@
- 
- using namespace facebook::react;
- 
--@interface RNCPagerViewComponentView () <RCTRNCViewPagerViewProtocol, UIPageViewControllerDataSource, UIPageViewControllerDelegate, UIScrollViewDelegate, UIGestureRecognizerDelegate>
-+@interface RNCPagerViewComponentView () <RCTRNCViewPagerViewProtocol, UIPageViewControllerDataSource, UIPageViewControllerDelegate, UIScrollViewDelegate>
- 
- @property(nonatomic, assign) UIPanGestureRecognizer* panGestureRecognizer;
- 
-@@ -73,11 +73,6 @@ using namespace facebook::react;
-         _destinationIndex = -1;
-         _layoutDirection = @"ltr";
-         _overdrag = NO;
--        UIPanGestureRecognizer* panGestureRecognizer = [UIPanGestureRecognizer new];
--        self.panGestureRecognizer = panGestureRecognizer;
--        panGestureRecognizer.delegate = self;
--        [self addGestureRecognizer: panGestureRecognizer];
--
+@@ -439,6 +439,13 @@ using namespace facebook::react;
+         
+         return YES;
      }
-     
-     return self;
-@@ -421,29 +416,6 @@ using namespace facebook::react;
- }
- 
- 
--- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
--
--    // Recognize simultaneously only if the other gesture is RN Screen's pan gesture (one that is used to perform fullScreenGestureEnabled)
--    if (gestureRecognizer == self.panGestureRecognizer && [NSStringFromClass([otherGestureRecognizer class]) isEqual: @"RNSPanGestureRecognizer"]) {
--        UIPanGestureRecognizer* panGestureRecognizer = (UIPanGestureRecognizer*) gestureRecognizer;
--        CGPoint velocity = [panGestureRecognizer velocityInView:self];
--        BOOL isLTR = [self isLtrLayout];
--        BOOL isBackGesture = (isLTR && velocity.x > 0) || (!isLTR && velocity.x < 0);
--        
--        if (self.currentIndex == 0 && isBackGesture) {
--            scrollView.panGestureRecognizer.enabled = false;
--        } else {
--            const auto &viewProps = *std::static_pointer_cast<const RNCViewPagerProps>(_props);
--            scrollView.panGestureRecognizer.enabled = viewProps.scrollEnabled;
--        }
--        
--        return YES;
--    }
--    const auto &viewProps = *std::static_pointer_cast<const RNCViewPagerProps>(_props);
--    scrollView.panGestureRecognizer.enabled = viewProps.scrollEnabled;
--    return NO;
--}
--
- @end
- 
- Class<RCTComponentViewProtocol> RNCViewPagerCls(void)
++
++
++    // Allow nested scroll views to scroll simultaneously with the pager
++    if ([otherGestureRecognizer.view isKindOfClass: UIScrollView.class]) {
++        return YES;
++    }
++
+     const auto &viewProps = *std::static_pointer_cast<const RNCViewPagerProps>(_props);
+     scrollView.panGestureRecognizer.enabled = viewProps.scrollEnabled;
+     return NO;
 diff --git a/node_modules/react-native-pager-view/ios/RNCPagerView.m b/node_modules/react-native-pager-view/ios/RNCPagerView.m
-index 507b45d..4253edc 100644
+index 507b45d..cdd95c3 100644
 --- a/node_modules/react-native-pager-view/ios/RNCPagerView.m
 +++ b/node_modules/react-native-pager-view/ios/RNCPagerView.m
-@@ -8,9 +8,7 @@
- #import "RCTOnPageSelected.h"
- #import <math.h>
- 
--@interface RNCPagerView () <UIPageViewControllerDataSource, UIPageViewControllerDelegate, UIScrollViewDelegate, UIGestureRecognizerDelegate>
--
--@property(nonatomic, assign) UIPanGestureRecognizer* panGestureRecognizer;
-+@interface RNCPagerView () <UIPageViewControllerDataSource, UIPageViewControllerDelegate, UIScrollViewDelegate>
- 
- @property(nonatomic, strong) UIPageViewController *reactPageViewController;
- @property(nonatomic, strong) RCTEventDispatcher *eventDispatcher;
-@@ -48,10 +46,6 @@
-         _cachedControllers = [NSHashTable hashTableWithOptions:NSHashTableStrongMemory];
-         _overdrag = NO;
-         _layoutDirection = @"ltr";
--        UIPanGestureRecognizer* panGestureRecognizer = [UIPanGestureRecognizer new];
--        self.panGestureRecognizer = panGestureRecognizer;
--        panGestureRecognizer.delegate = self;
--        [self addGestureRecognizer: panGestureRecognizer];
+@@ -492,6 +492,11 @@
+         return YES;
      }
-     return self;
- }
-@@ -474,28 +468,6 @@
-     return scrollDirection;
- }
  
--- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
--
--    // Recognize simultaneously only if the other gesture is RN Screen's pan gesture (one that is used to perform fullScreenGestureEnabled)
--    if (gestureRecognizer == self.panGestureRecognizer && [NSStringFromClass([otherGestureRecognizer class]) isEqual: @"RNSPanGestureRecognizer"]) {
--        UIPanGestureRecognizer* panGestureRecognizer = (UIPanGestureRecognizer*) gestureRecognizer;
--        CGPoint velocity = [panGestureRecognizer velocityInView:self];
--        BOOL isLTR = [self isLtrLayout];
--        BOOL isBackGesture = (isLTR && velocity.x > 0) || (!isLTR && velocity.x < 0);
--        
--        if (self.currentIndex == 0 && isBackGesture) {
--            self.scrollView.panGestureRecognizer.enabled = false;
--        } else {
--            self.scrollView.panGestureRecognizer.enabled = self.scrollEnabled;
--        }
--        
--        return YES;
--    }
--    
--    self.scrollView.panGestureRecognizer.enabled = self.scrollEnabled;
--    return NO;
--}
--
- - (BOOL)isLtrLayout {
-     return [_layoutDirection isEqualToString:@"ltr"];
++    // Allow nested scroll views to scroll simultaneously with the pager
++    if ([otherGestureRecognizer.view isKindOfClass: UIScrollView.class]) {
++        return YES;
++    }
++    
+     self.scrollView.panGestureRecognizer.enabled = self.scrollEnabled;
+     return NO;
  }
