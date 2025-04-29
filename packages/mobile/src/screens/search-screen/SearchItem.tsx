@@ -141,8 +141,6 @@ export const SearchItemCollection = (props: SearchItemProps) => {
   const { data: playlist, isPending } = useCollection(id)
   const navigation = useNavigation()
 
-  const { data: user } = useUser(playlist?.playlist_owner_id)
-
   if (isPending) return <SearchItemSkeleton />
 
   if (!playlist) return null
