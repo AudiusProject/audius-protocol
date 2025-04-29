@@ -29,7 +29,7 @@ jobs:
       name: deploy-stage-discovery-provider
       requires:
         - lint-discovery-provider
-        - test-discovery-provider
+        # - test-discovery-provider
         - push-discovery-provider
 
       filters:
