@@ -10,18 +10,12 @@ import { CommonState } from '~/store'
 
 import { getCollectionsBatcher } from '../batchers/getCollectionsBatcher'
 import { TQCollection } from '../models'
-import { QUERY_KEYS } from '../queryKeys'
-import { QueryKey, QueryOptions } from '../types'
+import { QueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { combineQueryResults } from '../utils/combineQueryResults'
 import { useQueries } from '../utils/useQueries'
 
-export const getCollectionQueryKey = (collectionId: ID | null | undefined) => {
-  return [
-    QUERY_KEYS.collection,
-    collectionId
-  ] as unknown as QueryKey<TQCollection>
-}
+import { getCollectionQueryKey } from './useCollection'
 
 export const useCollections = (
   collectionIds: ID[] | null | undefined,

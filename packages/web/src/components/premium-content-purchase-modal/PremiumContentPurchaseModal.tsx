@@ -1,9 +1,9 @@
 import { useCallback, useEffect } from 'react'
 
 import {
+  useCollection,
   useGetCurrentUser,
   useGetCurrentUserId,
-  useGetPlaylistById,
   useGetUserById,
   useTrack
 } from '@audius/common/api'
@@ -226,10 +226,9 @@ export const PremiumContentPurchaseModal = () => {
   const isAlbum = contentType === PurchaseableContentType.ALBUM
   const { data: track } = useTrack(contentId, { enabled: !isAlbum })
 
-  const { data: album } = useGetPlaylistById(
-    { playlistId: contentId!, currentUserId },
-    { disabled: !isAlbum || !contentId }
-  )
+  const { data: album } = useCollection(contentId, {
+    enabled: isAlbum
+  })
 
   const { data: user } = useGetUserById(
     {

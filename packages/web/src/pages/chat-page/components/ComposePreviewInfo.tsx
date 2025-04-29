@@ -1,6 +1,7 @@
-import { useGetPlaylistById, useTrack } from '@audius/common/api'
+import { useCollection, useTrack } from '@audius/common/api'
 import { SquareSizes, ID } from '@audius/common/models'
 import { Flex, Text } from '@audius/harmony'
+import { pick } from 'lodash'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link/UserLink'
@@ -77,17 +78,19 @@ export const ComposerCollectionInfo = (props: ComposerCollectionInfoProps) => {
     size: SquareSizes.SIZE_150_BY_150
   })
 
-  const { data: collection } = useGetPlaylistById(
-    { playlistId: collectionId },
-    { force: true }
-  )
+  const { data: partialCollection } = useCollection(collectionId, {
+    enabled: !!collectionId,
+    select: (collection) =>
+      pick(collection, ['playlist_name', 'playlist_owner_id'])
+  })
+  const { playlist_name, playlist_owner_id } = partialCollection ?? {}
 
-  if (!collection) return null
+  if (!partialCollection || !playlist_name || !playlist_owner_id) return null
 
   return (
     <ComposePreviewInfo
-      title={collection.playlist_name}
-      userId={collection.user.user_id}
+      title={playlist_name}
+      userId={playlist_owner_id}
       image={image}
     />
   )

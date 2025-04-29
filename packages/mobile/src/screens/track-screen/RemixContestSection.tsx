@@ -29,7 +29,8 @@ const HEIGHT_OFFSET = 24
 const useStyles = makeStyles(({ palette, typography, spacing }) => ({
   tabBar: {
     backgroundColor: 'transparent',
-    height: spacing(10)
+    height: spacing(10),
+    marginHorizontal: spacing(4)
   },
   tabLabel: {
     marginHorizontal: 0,
@@ -81,15 +82,11 @@ export const RemixContestSection = ({
   const hasPrizeInfo = !!remixContest?.eventData?.prizeInfo
 
   const [index, setIndex] = useState(0)
-  const [routes] = useState<Route[]>([
-    { key: 'details', title: 'Details' },
-    ...(hasPrizeInfo ? [{ key: 'prizes', title: 'Prizes' }] : []),
-    { key: 'submissions', title: 'Submissions' }
-  ])
+  const [routes, setRoutes] = useState<Route[]>([])
   const [heights, setHeights] = useState({})
   const [firstRender, setFirstRender] = useState(true)
   const animatedHeight = useSharedValue(TAB_HEADER_HEIGHT)
-  const currentHeight = heights[routes[index].key]
+  const currentHeight = heights[routes[index]?.key]
   const previousHeight = usePrevious(currentHeight)
   const hasHeightChanged = currentHeight !== previousHeight
 
@@ -98,6 +95,14 @@ export const RemixContestSection = ({
       setFirstRender(false)
     }
   }, [firstRender])
+
+  useEffect(() => {
+    setRoutes([
+      { key: 'details', title: 'Details' },
+      ...(hasPrizeInfo ? [{ key: 'prizes', title: 'Prizes' }] : []),
+      { key: 'submissions', title: 'Submissions' }
+    ])
+  }, [hasPrizeInfo])
 
   const handleLayout = (key: string) => (e: any) => {
     const height = e.nativeEvent.layout.height
