@@ -47,6 +47,8 @@ export * from './tan-query/notifications/useNotificationValidTypes'
 
 // Purchases
 export * from './tan-query/purchases/useAudioTransactions'
+export * from './tan-query/purchases/useUSDCTransactions'
+export * from './tan-query/purchases/useUSDCTransactionsCount'
 export * from './tan-query/purchases/useAudioTransactionsCount'
 export * from './tan-query/purchases/usePurchases'
 export * from './tan-query/purchases/usePurchasesCount'

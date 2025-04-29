@@ -8,7 +8,7 @@ import {
   MouseEvent
 } from 'react'
 
-import { useGetUsersByIds, useUserByHandle } from '@audius/common/api'
+import { useUserByHandle, useUsers } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { profilePage } from '@audius/common/src/utils/route'
 import {
@@ -234,9 +234,7 @@ export const UserGeneratedTextV2 = forwardRef(function (
   } = props
 
   // Fetch the users for artists popovers for mentions
-  useGetUsersByIds({
-    ids: mentions ? mentions.map((mention) => mention.userId) : []
-  })
+  useUsers(mentions ? mentions.map((mention) => mention.userId) : [])
 
   const mentionRegex = useMemo(() => {
     const nullRegex = /(?!)/

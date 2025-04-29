@@ -336,9 +336,6 @@ const userApi = createApi({
 })
 
 export const {
-  useGetUsersByIds,
-  useGetUserByHandle,
-  useGetTracksByUser,
   useGetUSDCTransactions,
   useGetUSDCTransactionsCount,
   useGetFollowers,
