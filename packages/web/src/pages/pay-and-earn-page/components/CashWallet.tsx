@@ -120,7 +120,7 @@ export const CashWallet = () => {
               transition: 'opacity 0.3s ease'
             }}
           >
-            ${balanceFormatted}
+            {balanceFormatted}
           </Text>
 
           {/* Payout Wallet Info */}
