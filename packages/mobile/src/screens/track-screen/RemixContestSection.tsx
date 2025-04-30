@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import type { RefObject } from 'react'
 
 import { useRemixContest, useTrack, useCurrentUserId } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
+import { css } from '@emotion/native'
 import type { FlatList } from 'react-native'
 import Animated, {
   useAnimatedStyle,
@@ -10,9 +11,10 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 import { TabView, SceneMap, TabBar, TabBarItem } from 'react-native-tab-view'
+import type { Props as TabBarItemProps } from 'react-native-tab-view/lib/typescript/src/TabBarItem'
 import { usePrevious } from 'react-use'
 
-import { Paper } from '@audius/harmony-native'
+import { Flex, Paper, Text } from '@audius/harmony-native'
 import { TabBody } from 'app/components/core/TabBody'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
@@ -26,17 +28,17 @@ const TAB_FOOTER_HEIGHT = 64
 const TAB_HEADER_HEIGHT = 48
 const HEIGHT_OFFSET = 24
 
+const messages = {
+  submissions: 'Submissions',
+  details: 'Details',
+  prizes: 'Prizes'
+}
+
 const useStyles = makeStyles(({ palette, typography, spacing }) => ({
   tabBar: {
     backgroundColor: 'transparent',
     height: spacing(10),
     marginHorizontal: spacing(4)
-  },
-  tabLabel: {
-    marginHorizontal: 0,
-    textTransform: 'none',
-    fontFamily: typography.fontByWeight.demiBold,
-    fontSize: typography.fontSize.medium
   },
   tabIndicator: {
     backgroundColor: palette.secondary,
@@ -98,9 +100,9 @@ export const RemixContestSection = ({
 
   useEffect(() => {
     setRoutes([
-      { key: 'details', title: 'Details' },
-      ...(hasPrizeInfo ? [{ key: 'prizes', title: 'Prizes' }] : []),
-      { key: 'submissions', title: 'Submissions' }
+      { key: 'details', title: messages.details },
+      ...(hasPrizeInfo ? [{ key: 'prizes', title: messages.prizes }] : []),
+      { key: 'submissions', title: messages.submissions }
     ])
   }, [hasPrizeInfo])
 
@@ -165,28 +167,70 @@ export const RemixContestSection = ({
     [scrollRef]
   )
 
-  const renderTabBar = (props: any) => (
-    <TabBar
-      {...props}
-      style={styles.tabBar}
-      labelStyle={styles.tabLabel}
-      indicatorStyle={styles.tabIndicator}
-      activeColor={neutral}
-      inactiveColor={textIconSubdued}
-      pressColor='transparent'
-      pressOpacity={0.7}
-      renderTabBarItem={({ route, key, ...restProps }) => (
-        <TabBarItem
-          {...restProps}
-          key={key}
-          route={route}
-          getAccessibilityLabel={() => route.title}
-          getAccessible={() => true}
-          getLabelText={() => route.title}
-          getTestID={() => `tab-${route.key}`}
-        />
-      )}
-    />
+  const renderLabel = useCallback(
+    ({ route, focused }: { route: Route; focused: boolean }) => {
+      if (route.title === messages.submissions) {
+        return (
+          // Needed for small screens - otherwise the text is cut off
+          <Flex style={css({ minWidth: 100 })}>
+            <Text
+              variant='body'
+              strength='strong'
+              color={focused ? 'default' : 'subdued'}
+            >
+              {route.title}
+            </Text>
+          </Flex>
+        )
+      }
+      return (
+        <Text
+          variant='body'
+          strength='strong'
+          color={focused ? 'default' : 'subdued'}
+        >
+          {route.title}
+        </Text>
+      )
+    },
+    []
+  )
+
+  const renderTabBarItem = useCallback(
+    (props: TabBarItemProps<Route>) => (
+      <TabBarItem
+        {...props}
+        getAccessibilityLabel={() => props.route.title}
+        getAccessible={() => true}
+        getLabelText={() => props.route.title}
+        getTestID={() => `tab-${props.route.key}`}
+      />
+    ),
+    []
+  )
+
+  const renderTabBar = useCallback(
+    (props: any) => (
+      <TabBar
+        {...props}
+        style={styles.tabBar}
+        indicatorStyle={styles.tabIndicator}
+        activeColor={neutral}
+        inactiveColor={textIconSubdued}
+        pressColor='transparent'
+        pressOpacity={0.7}
+        renderLabel={renderLabel}
+        renderTabBarItem={renderTabBarItem}
+      />
+    ),
+    [
+      styles.tabBar,
+      styles.tabIndicator,
+      neutral,
+      textIconSubdued,
+      renderLabel,
+      renderTabBarItem
+    ]
   )
 
   if (!remixContest) return null
