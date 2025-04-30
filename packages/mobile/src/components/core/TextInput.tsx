@@ -25,6 +25,7 @@ import {
   View,
   Pressable
 } from 'react-native'
+import { Colors } from 'react-native/Libraries/NewAppScreen'
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 import type { SvgProps } from 'react-native-svg'
 
@@ -33,7 +34,8 @@ import {
   Flex,
   Text as HarmonyText,
   IconCloseAlt,
-  PlainButton
+  PlainButton,
+  useTheme
 } from '@audius/harmony-native'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import type { StylesProp } from 'app/styles'
@@ -88,9 +90,6 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
     fill: palette.neutralLight5,
     width: spacing(4),
     height: spacing(4)
-  },
-  placeholderText: {
-    color: palette.neutralLight7
   },
   startAdornment: {},
   endAdornment: {
@@ -185,6 +184,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
     } = props
     const { autoFocus, returnKeyType, hideKeyboard } = other
     const styles = useStyles()
+    const { color } = useTheme()
 
     const [isFocused, setIsFocused] = useState(Boolean(autoFocus))
     const isLabelActive = isFocused || !!value || !!startAdornment
@@ -396,7 +396,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
             autoComplete='off'
             autoCorrect={autoCorrect}
             selectionColor={secondary}
-            placeholderTextColor={styles.placeholderText.color}
+            placeholderTextColor={color.text.subdued}
             value={value}
             onFocus={handleFocus}
             onBlur={handleBlur}
