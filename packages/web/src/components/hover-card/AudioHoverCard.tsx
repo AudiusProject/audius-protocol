@@ -1,19 +1,20 @@
 import { ReactNode } from 'react'
 
 import { useUser } from '@audius/common/api'
-import { BadgeTier, AudioTiers, ID } from '@audius/common/models'
+import { AudioTiers, BadgeTier, ID } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
 import {
+  HoverCard,
+  HoverCardHeader,
+  IconArrowRight,
+  IconComponent,
+  IconTokenAUDIO,
   IconTokenBronze,
-  IconTokenSilver,
   IconTokenGold,
   IconTokenPlatinum,
-  HoverCardHeader,
-  HoverCard,
-  IconLogoCircle,
-  IconArrowRight,
-  IconComponent
+  IconTokenSilver,
+  useTheme
 } from '@audius/harmony'
 import { Origin } from '@audius/harmony/src/components/popup/types'
 import BN from 'bn.js'
@@ -81,6 +82,8 @@ export const AudioHoverCard = ({
   transformOrigin,
   onClick
 }: AudioHoverCardProps) => {
+  const { cornerRadius } = useTheme()
+
   // Get user's formatted balance directly using select
   const { data: formattedBalance = '0' } = useUser(userId, {
     select: (user) => {
@@ -102,7 +105,12 @@ export const AudioHoverCard = ({
             iconRight={IconArrowRight}
           />
           <HoverCardBody
-            icon={<IconLogoCircle size='3xl' />}
+            icon={
+              <IconTokenAUDIO
+                size='3xl'
+                css={{ borderRadius: cornerRadius.circle }}
+              />
+            }
             amount={formattedBalance}
           />
         </>
