@@ -22,6 +22,7 @@
   position: relative;
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 
 .followerCount {
@@ -42,7 +43,7 @@
 
 .userName span {
   max-width: 200px;
-  display: inline-block;
+  display: inline-flex;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

@@ -4,6 +4,7 @@
   gap: 4px;
 }
 
-.inlineContainer svg:first-child {
-  margin-right: 4px !important;
+.inlineContainer {
+  display: inline-flex;
+  gap: 4px;
 }
