@@ -1,6 +1,6 @@
 import { useCollection, useTrack } from '@audius/common/api'
 import { SquareSizes, USDCContentPurchaseType } from '@audius/common/models'
-import { Text } from '@audius/harmony'
+import { Skeleton, Text } from '@audius/harmony'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
@@ -36,10 +36,16 @@ export const TrackNameWithArtwork = ({
   const image = isTrack ? trackArtwork : albumArtwork
   const loading = isAlbumPending || isTrackPending
 
-  return loading ? null : (
+  return (
     <div className={styles.container}>
-      <DynamicImage wrapperClassName={styles.artwork} image={image} />
-      <Text ellipses>{title}</Text>
+      {loading ? (
+        <Skeleton />
+      ) : (
+        <>
+          <DynamicImage wrapperClassName={styles.artwork} image={image} />
+          <Text ellipses>{title}</Text>
+        </>
+      )}
     </div>
   )
 }
