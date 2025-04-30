@@ -2,7 +2,7 @@ import { ChatBlast, ChatBlastAudience, OptionalHashId } from '@audius/sdk'
 
 import {
   useCurrentUserId,
-  useGetFollowers,
+  useFollowers,
   usePurchasers,
   useRemixers,
   useSupporters,
@@ -14,10 +14,11 @@ import { PurchaseableContentType } from '~/store/purchase-content'
 export const useAudienceUsers = (chat: ChatBlast, limit?: number) => {
   const { data: currentUserId } = useCurrentUserId()
 
-  const { data: followers } = useGetFollowers({
-    userId: currentUserId!,
-    limit
+  const { data: followerIds } = useFollowers({
+    userId: currentUserId,
+    pageSize: limit
   })
+  const { data: followers } = useUsers(followerIds)
   const { data: supporters } = useSupporters(
     { userId: currentUserId, pageSize: limit },
     { enabled: chat.audience === ChatBlastAudience.TIPPERS }

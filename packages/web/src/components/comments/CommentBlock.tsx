@@ -1,13 +1,12 @@
 import { useContext, useMemo, useState } from 'react'
 
-import { useComment, useGetUserById } from '@audius/common/api'
+import { useComment, useUser } from '@audius/common/api'
 import {
   useCurrentCommentSection,
   useDeleteComment
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import { Comment, ID, ReplyComment, Status } from '@audius/common/models'
-import { cacheUsersSelectors } from '@audius/common/store'
+import { Comment, ID, ReplyComment } from '@audius/common/models'
 import { dayjs } from '@audius/common/utils'
 import {
   Box,
@@ -18,12 +17,10 @@ import {
   useTheme
 } from '@audius/harmony'
 import { keyframes } from '@emotion/react'
-import { useSelector } from 'react-redux'
 
 import { Avatar } from 'components/avatar'
 import { UserLink } from 'components/link'
 import { ToastContext } from 'components/toast/ToastContext'
-import { AppState } from 'store/types'
 
 import { ArtistPick } from './ArtistPick'
 import { CommentActionBar } from './CommentActionBar'
@@ -32,7 +29,6 @@ import { CommentForm } from './CommentForm'
 import { CommentText } from './CommentText'
 import { Timestamp } from './Timestamp'
 import { TimestampLink } from './TimestampLink'
-const { getUser } = cacheUsersSelectors
 
 type CommentBlockProps = {
   commentId: ID
@@ -76,16 +72,12 @@ const CommentBlockInternal = (
     [createdAt]
   )
 
-  const userHandle = useSelector(
-    (state: AppState) => getUser(state, { id: userId })?.handle
-  )
-
   const [deleteComment] = useDeleteComment()
   const { toast } = useContext(ToastContext)
 
-  // triggers a fetch to get user profile info
-  const { status } = useGetUserById({ id: userId })
-  const isLoadingUser = status === Status.LOADING
+  const { data: userHandle, isPending: isUserPending } = useUser(userId, {
+    select: (user) => user.handle
+  })
 
   const [showEditInput, setShowEditInput] = useState(false)
   const [showReplyInput, setShowReplyInput] = useState(false)
@@ -119,8 +111,8 @@ const CommentBlockInternal = (
           {!isTombstone ? (
             <Flex justifyContent='space-between' alignItems='center'>
               <Flex gap='s' alignItems='center'>
-                {isLoadingUser ? <Skeleton w={80} h={18} /> : null}
-                {userId ? (
+                {isUserPending ? <Skeleton w={80} h={18} /> : null}
+                {!isUserPending && userId ? (
                   <UserLink
                     userId={userId}
                     popover

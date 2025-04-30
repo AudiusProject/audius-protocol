@@ -1,24 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import {
-  useGetUSDCTransactions,
-  useGetUSDCTransactionsCount,
-  userApiFetch,
-  userApiUtils
+  useUSDCTransactions,
+  useUSDCTransactionsCount,
+  userApiFetch
 } from '@audius/common/api'
-import {
-  useAllPaginatedQuery,
-  useAudiusQueryContext
-} from '@audius/common/audius-query'
+import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { useUSDCBalance } from '@audius/common/hooks'
-import {
-  BNUSDC,
-  Name,
-  Status,
-  USDCTransactionDetails,
-  combineStatuses,
-  statusIsNotFinalized
-} from '@audius/common/models'
+import { BNUSDC, Name, USDCTransactionDetails } from '@audius/common/models'
 import {
   WithdrawUSDCModalPages,
   accountSelectors,
@@ -32,11 +21,11 @@ import BN from 'bn.js'
 import { useDispatch } from 'react-redux'
 import { ThunkDispatch } from 'redux-thunk'
 
-import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useMainContentRef } from 'pages/MainContentContext'
 import { make, track } from 'services/analytics'
 import { audiusSdk } from 'services/audius-sdk'
+import { handleError } from 'store/errors/actions'
 import { formatToday } from 'utils/dateUtils'
 import { useSelector } from 'utils/reducer'
 
@@ -195,36 +184,43 @@ export const useWithdrawals = () => {
   const { onOpen: openDetailsModal } = useUSDCTransactionDetailsModal()
 
   const {
-    status: dataStatus,
     data: transactions,
-    hasMore,
-    loadMore,
+    isPending: transactionsIsPending,
+    isSuccess: transactionsIsSuccess,
+    isError: transactionsIsError,
+    loadNextPage,
     reset
-  } = useAllPaginatedQuery(
-    useGetUSDCTransactions,
-    {
-      userId,
-      sortMethod,
-      sortDirection,
-      type: [
-        full.GetUSDCTransactionsTypeEnum.Withdrawal,
-        full.GetUSDCTransactionsTypeEnum.Transfer
-      ],
-      method: full.GetUSDCTransactionsMethodEnum.Send
-    },
-    { disabled: !userId, pageSize: TRANSACTIONS_BATCH_SIZE, force: true }
-  )
-  const { status: countStatus, data: count } = useGetUSDCTransactionsCount(
-    {
-      userId,
-      method: full.GetUSDCTransactionsMethodEnum.Send
-    },
-    { disabled: !userId, force: true }
-  )
+  } = useUSDCTransactions({
+    sortMethod,
+    sortDirection,
+    type: [
+      full.GetUSDCTransactionsTypeEnum.Withdrawal,
+      full.GetUSDCTransactionsTypeEnum.Transfer
+    ],
+    method: full.GetUSDCTransactionsMethodEnum.Send
+  })
+  const {
+    isError: countIsError,
+    data: count,
+    isPending: countIsPending
+  } = useUSDCTransactionsCount({
+    method: full.GetUSDCTransactionsMethodEnum.Send
+  })
 
-  const status = combineStatuses([dataStatus, countStatus])
-  useErrorPageOnFailedStatus({ status })
+  // Error handling
+  useEffect(() => {
+    if (transactionsIsError || countIsError) {
+      dispatch(
+        handleError({
+          message: 'Status: Failed',
+          shouldReport: false,
+          shouldRedirect: true
+        })
+      )
+    }
+  }, [transactionsIsError, countIsError, dispatch])
 
+  // Polling for new transactions
   useEffect(() => {
     if (lastCompletedTransaction && userId) {
       // Wait for new transaction and re-sort table to show newest first
@@ -234,8 +230,6 @@ export const useWithdrawals = () => {
         onSuccess: () => {
           setSortMethod(full.GetUSDCTransactionsSortMethodEnum.Date)
           setSortDirection(full.GetUSDCTransactionsSortDirectionEnum.Desc)
-          dispatch(userApiUtils.reset('getUSDCTransactions'))
-          dispatch(userApiUtils.reset('getUSDCTransactionsCount'))
           reset()
         }
       })
@@ -253,12 +247,6 @@ export const useWithdrawals = () => {
     []
   )
 
-  const fetchMore = useCallback(() => {
-    if (hasMore) {
-      loadMore()
-    }
-  }, [hasMore, loadMore])
-
   const onClickRow = useCallback(
     (transactionDetails: USDCTransactionDetails) => {
       openDetailsModal({ transactionDetails })
@@ -266,8 +254,8 @@ export const useWithdrawals = () => {
     [openDetailsModal]
   )
 
-  const isEmpty = status === Status.SUCCESS && transactions.length === 0
-  const isLoading = isPolling || statusIsNotFinalized(status)
+  const isEmpty = transactionsIsSuccess && transactions?.length === 0
+  const isLoading = transactionsIsPending || countIsPending || isPolling
 
   const downloadCSV = useCallback(async () => {
     const sdk = await audiusSdk()
@@ -285,7 +273,7 @@ export const useWithdrawals = () => {
   return {
     count,
     data: transactions,
-    fetchMore,
+    fetchMore: loadNextPage,
     onSort,
     onClickRow,
     isEmpty,
@@ -321,7 +309,7 @@ export const WithdrawalsTab = ({
         <WithdrawalsTable
           key='withdrawals'
           columns={columns}
-          data={transactions}
+          data={transactions ?? []}
           loading={isLoading}
           onSort={onSort}
           onClickRow={onClickRow}

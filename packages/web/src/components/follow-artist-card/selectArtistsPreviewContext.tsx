@@ -1,8 +1,9 @@
 import { createContext, useCallback, useEffect, useState } from 'react'
 
-import { useGetUserById, useUserTracksByHandle } from '@audius/common/api'
+import { useUserTracksByHandle, useUser } from '@audius/common/api'
 import { ID, Track } from '@audius/common/models'
 import { PlayerBehavior, playerActions } from '@audius/common/store'
+import { pick } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { useUnmount } from 'react-use'
 
@@ -32,15 +33,12 @@ export const SelectArtistsPreviewContextProvider = (props: {
   const [track, setTrack] = useState<Track | null>(null)
   const dispatch = useDispatch()
 
-  const { data: artist } = useGetUserById(
-    {
-      id: nowPlayingArtistId,
-      currentUserId: null
-    },
-    { disabled: nowPlayingArtistId === -1 }
-  )
+  const { data: partialArtist } = useUser(nowPlayingArtistId, {
+    select: (user) => pick(user, ['handle', 'user_id'])
+  })
+  const { handle, user_id } = partialArtist ?? {}
   const { data: artistTracks } = useUserTracksByHandle({
-    handle: artist?.handle,
+    handle,
     // We just need one playable track. It's unlikely all 3 of an artist's top tracks are unavailable.
     limit: 3
   })
@@ -113,7 +111,7 @@ export const SelectArtistsPreviewContextProvider = (props: {
 
     const { track_id, preview_cid, duration } = track
     // Sometimes we rerender before the next track starts playing, so we need to double check the track matches the artist
-    if (artist?.user_id !== nowPlayingArtistId) return
+    if (user_id !== nowPlayingArtistId) return
     const isPreview = !!preview_cid
     const startTime = isPreview
       ? undefined
@@ -138,7 +136,7 @@ export const SelectArtistsPreviewContextProvider = (props: {
     )
 
     setIsPlaying(true)
-  }, [nowPlayingArtistId, stopPreview, track, dispatch, artist?.user_id])
+  }, [nowPlayingArtistId, stopPreview, track, dispatch, user_id])
 
   useUnmount(stopPreview)
 

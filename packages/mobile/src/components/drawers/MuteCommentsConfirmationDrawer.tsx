@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useGetUserById } from '@audius/common/api'
+import { useUser } from '@audius/common/api'
 import { useMuteUser } from '@audius/common/context'
 import { commentsMessages } from '@audius/common/messages'
 
@@ -18,7 +18,9 @@ export const MuteCommentsConfirmationDrawer = () => {
   const { data } = useDrawer(drawerName)
   const { userId, isMuted } = data
   const [muteUser] = useMuteUser()
-  const { data: user } = useGetUserById({ id: userId })
+  const { data: userName } = useUser(userId, {
+    select: (user) => user?.name
+  })
 
   const handleConfirm = useCallback(() => {
     muteUser({
@@ -34,8 +36,8 @@ export const MuteCommentsConfirmationDrawer = () => {
       messages={{
         header: messages.header,
         description: isMuted
-          ? commentsMessages.popups.unmuteUser.body(user?.name)
-          : commentsMessages.popups.muteUser.body(user?.name),
+          ? commentsMessages.popups.unmuteUser.body(userName)
+          : commentsMessages.popups.muteUser.body(userName),
         confirm: isMuted
           ? commentsMessages.popups.unmuteUser.confirm
           : commentsMessages.popups.muteUser.confirm

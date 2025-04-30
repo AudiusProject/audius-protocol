@@ -21,19 +21,26 @@ export const getCurrentAccountQueryKey = (
     currentUserId
   ] as unknown as QueryKey<AccountUserMetadata>
 
+export enum CurrentUserWalletType {
+  currentUser = 'currentUser',
+  web3User = 'web3User'
+}
+
 /**
  * Hook to get the currently logged in user's account
  */
 export const useCurrentAccount = <
   TResult = AccountUserMetadata | null | undefined
 >(
+  walletType: CurrentUserWalletType = CurrentUserWalletType.currentUser,
   options?: SelectableQueryOptions<
     AccountUserMetadata | null | undefined,
     TResult
   >
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
-  const { currentUser } = useSelector(getWalletAddresses)
+  const walletAddresses = useSelector(getWalletAddresses)
+  const currentUserWallet = walletAddresses[walletType]
   const { data: currentUserId } = useCurrentUserId()
   const { localStorage } = useAppContext()
 
@@ -58,7 +65,7 @@ export const useCurrentAccount = <
         return account
       }
       const { data } = await sdk.full.users.getUserAccount({
-        wallet: currentUser!
+        wallet: currentUserWallet!
       })
 
       if (!data) {
@@ -71,6 +78,6 @@ export const useCurrentAccount = <
     },
     staleTime: options?.staleTime ?? Infinity,
     gcTime: Infinity,
-    enabled: options?.enabled !== false && !!currentUser
+    enabled: options?.enabled !== false && !!currentUserWallet
   })
 }

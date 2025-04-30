@@ -2,8 +2,7 @@ import { useMemo } from 'react'
 
 import { useSelector } from 'react-redux'
 
-import { useGetCurrentUserId } from '~/api'
-import { statusIsNotFinalized } from '~/models'
+import { useCurrentAccount } from '~/api'
 import { Chain } from '~/models/Chain'
 import { Collection } from '~/models/Collection'
 import { ID } from '~/models/Identifiers'
@@ -239,15 +238,14 @@ export const useDownloadableContentAccess = ({ trackId }: { trackId: ID }) => {
   const track = useSelector((state: CommonState) =>
     getTrack(state, { id: trackId })
   )
-  const { data: currentUserId, status: currentUserStatus } =
-    useGetCurrentUserId({})
-  const isOwner = track?.owner_id === currentUserId
+  const { data: currentAccount, isPending } = useCurrentAccount()
+  const isOwner = track?.owner_id === currentAccount?.user?.user_id
 
   const price = isContentUSDCPurchaseGated(track?.download_conditions)
     ? track?.download_conditions.usdc_purchase.price
     : undefined
 
-  if (statusIsNotFinalized(currentUserStatus)) {
+  if (isPending) {
     return {
       price,
       shouldDisplayPremiumDownloadLocked: false,
