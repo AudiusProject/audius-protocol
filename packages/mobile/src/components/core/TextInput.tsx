@@ -25,7 +25,6 @@ import {
   View,
   Pressable
 } from 'react-native'
-import { Colors } from 'react-native/Libraries/NewAppScreen'
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 import type { SvgProps } from 'react-native-svg'
 
