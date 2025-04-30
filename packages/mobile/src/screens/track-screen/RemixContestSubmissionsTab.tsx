@@ -148,7 +148,7 @@ const RemixContestSubmissions = ({
         <PlainButton
           iconRight={IconArrowRight}
           onPress={() => {
-            navigation.navigate('TrackRemixes', { trackId })
+            navigation.push('TrackRemixes', { trackId })
           }}
         >
           {messages.viewAll}
