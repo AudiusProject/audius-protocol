@@ -1,5 +1,5 @@
 import type { Ref, RefObject } from 'react'
-import { forwardRef, useContext } from 'react'
+import React, { forwardRef, useContext } from 'react'
 
 import { Portal } from '@gorhom/portal'
 import type {
@@ -125,19 +125,21 @@ export const SectionList = forwardRef(function SectionList<
   ItemT,
   SectionT = DefaultSectionT
 >(
-  props: Animated.AnimatedProps<RNSectionListProps<ItemT, SectionT>>,
+  props: Animated.AnimatedProps<RNSectionListProps<ItemT, SectionT>> & {
+    shouldShowPlayBarChin?: boolean
+  },
   ref: Ref<RNSectionList<ItemT, SectionT>>
 ) {
-  const { ListFooterComponent, ...other } = props
+  const { ListFooterComponent, shouldShowPlayBarChin, ...other } = props
 
   const FooterComponent = ListFooterComponent ? (
     <>
       {ListFooterComponent}
-      <PlayBarChin />
+      {shouldShowPlayBarChin ? <PlayBarChin /> : null}
     </>
-  ) : (
-    PlayBarChin
-  )
+  ) : shouldShowPlayBarChin ? (
+    <PlayBarChin />
+  ) : null
 
   const sectionListProps = {
     ...other,
