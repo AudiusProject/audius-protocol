@@ -5,7 +5,7 @@ import { TextLink, type TextLinkProps } from 'components/link'
 export const ContentLink = (
   props: {
     link: string
-    title: string
+    title?: string
   } & Omit<TextLinkProps, 'to' | 'size'>
 ) => {
   const { link, title, ...other } = props

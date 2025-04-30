@@ -68,6 +68,7 @@ const ${variables.componentName} = forwardRef((${variables.props}, ref) => {
   const theme = useTheme()
   let {
     color,
+    colorSecondary,
     size,
     sizeH,
     sizeW,
@@ -91,13 +92,14 @@ const ${variables.componentName} = forwardRef((${variables.props}, ref) => {
 
   // Using let here because it may be updated by webStyles
   let fill = other.fill ?? theme.color?.icon[color]
+  let fillSecondary = other.fillSecondary ?? theme.color?.icon[colorSecondary]
 
   ${native ? nativeStyles : webStyles}
 
   other.role = title ? 'img' : undefined
   other['aria-hidden'] = title ? undefined : true
 
-  props = {...other, ref, fill}
+  props = {...other, ref, fill, fillSecondary}
 
   ${native ? `const Path = animatedProps ? AnimatedPath : RNSVGPath` : ''}
 

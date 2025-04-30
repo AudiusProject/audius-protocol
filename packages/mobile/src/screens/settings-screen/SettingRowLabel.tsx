@@ -35,7 +35,6 @@ export const SettingsRowLabel = (props: SettingsRowLabelProps) => {
           height={styles.icon.height}
           width={styles.icon.width}
           fill={palette.neutral}
-          fillSecondary={palette.white}
           style={styles.icon}
         />
       ) : null}

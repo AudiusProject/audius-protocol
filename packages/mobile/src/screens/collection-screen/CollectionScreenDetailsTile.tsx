@@ -1,10 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
-import {
-  useCollection,
-  useGetCurrentUserId,
-  useGetPlaylistById
-} from '@audius/common/api'
+import { useCollection } from '@audius/common/api'
 import {
   Name,
   PlaybackSource,
@@ -32,6 +28,7 @@ import {
 import { formatReleaseDate } from '@audius/common/utils'
 import type { Maybe, Nullable } from '@audius/common/utils'
 import dayjs from 'dayjs'
+import { pick } from 'lodash'
 import { TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
@@ -230,22 +227,23 @@ export const CollectionScreenDetailsTile = ({
 
   const isReachable = useSelector(getIsReachable)
 
-  const { data: currentUserId } = useGetCurrentUserId({})
   // Since we're supporting SmartCollections, need to explicitly check that
   // collectionId is a number before fetching the playlist. -1 is a placeholder,
   // the request should not go out as the hook is disabled in that case.
-  const { data: collection } = useGetPlaylistById(
-    {
-      playlistId: typeof collectionId === 'number' ? collectionId : -1,
-      currentUserId
-    },
-    { disabled: typeof collectionId !== 'number' }
-  )
+  const { data: partialCollection } = useCollection(collectionId as number, {
+    enabled: typeof collectionId === 'number',
+    select: (collection) =>
+      pick(collection, [
+        'is_stream_gated',
+        'is_scheduled_release',
+        'is_private'
+      ])
+  })
   const {
     is_stream_gated: isStreamGated,
     is_scheduled_release: isScheduledRelease,
     is_private: isPrivate
-  } = collection ?? {}
+  } = partialCollection ?? {}
 
   const numericCollectionId =
     typeof collectionId === 'number' ? collectionId : undefined

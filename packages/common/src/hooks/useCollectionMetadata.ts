@@ -1,7 +1,7 @@
+import { pick } from 'lodash'
 import { useSelector } from 'react-redux'
 
-import { useGetCurrentUserId } from '~/api/account'
-import { useGetPlaylistById } from '~/api/collection'
+import { useCollection } from '~/api'
 import { ID } from '~/models/Identifiers'
 import { getCollectionDuration } from '~/store/cache/collections/selectors'
 import { CommonState } from '~/store/commonStore'
@@ -32,24 +32,30 @@ type CollectionMetadataProps = {
 export const useCollectionMetadata = ({
   collectionId
 }: CollectionMetadataProps): CollectionMetadataInfo[] => {
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: collection } = useGetPlaylistById({
-    playlistId: collectionId,
-    currentUserId
+  const { data: collectionMetadata } = useCollection(collectionId, {
+    select: (playlist) =>
+      pick(playlist, [
+        'is_private',
+        'updated_at',
+        'release_date',
+        'created_at',
+        'playlist_contents'
+      ])
   })
   const duration = useSelector((state: CommonState) =>
     getCollectionDuration(state, { id: collectionId })
   )
 
-  if (!collection) return []
+  if (!collectionMetadata) return []
 
   const {
     is_private: isPrivate,
     updated_at: updatedAt,
     release_date: releaseDate,
-    created_at: createdAt
-  } = collection
-  const numTracks = collection.playlist_contents?.track_ids?.length ?? 0
+    created_at: createdAt,
+    playlist_contents: playlistContents
+  } = collectionMetadata
+  const numTracks = playlistContents?.track_ids?.length ?? 0
 
   const metadataItems = [
     {

@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useEffect } from 'react'
 
 import {
-  useGetPlaylistByPermalink,
   useCollection,
+  useCollectionByPermalink,
   useTracks,
   useUsers
 } from '@audius/common/api'
@@ -16,7 +16,6 @@ import {
   ModalSource
 } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheCollectionsActions,
   QueueSource,
   playerSelectors,
@@ -28,7 +27,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { make } from 'common/store/analytics/actions'
 import MobilePlaylistTile from 'components/track/mobile/ConnectedPlaylistTile'
 
-const { getUserId } = accountSelectors
 const { getTrackId } = playerSelectors
 const { fetchCoverArt } = cacheCollectionsActions
 
@@ -39,17 +37,10 @@ export const ChatMessagePlaylist = ({
   className
 }: ChatMessageTileProps) => {
   const dispatch = useDispatch()
-  const currentUserId = useSelector(getUserId)
   const playingTrackId = useSelector(getTrackId)
 
   const permalink = getPathFromPlaylistUrl(link) ?? ''
-  const { data: playlist, status } = useGetPlaylistByPermalink(
-    {
-      permalink,
-      currentUserId: currentUserId!
-    },
-    { disabled: !permalink || !currentUserId }
-  )
+  const { data: playlist } = useCollectionByPermalink(permalink)
 
   const collectionId = playlist?.playlist_id
   const { data: collection } = useCollection(collectionId)
@@ -109,16 +100,17 @@ export const ChatMessagePlaylist = ({
 
   const pauseTrack = usePauseTrack()
 
+  const collectionExists = !!collection && !collection.is_delete
   useEffect(() => {
-    if (collection && uid && !collection.is_delete) {
+    if (collectionExists && uid) {
       dispatch(make(Name.MESSAGE_UNFURL_PLAYLIST, {}))
       onSuccess?.()
     } else {
       onEmpty?.()
     }
-  }, [collection, uid, onSuccess, onEmpty, dispatch])
+  }, [collectionExists, uid, onSuccess, onEmpty, dispatch])
 
-  return collection && uid ? (
+  return collectionId && uid ? (
     // You may wonder why we use the mobile web playlist tile here.
     // It's simply because the chat playlist tile uses the same design as mobile web.
     <MobilePlaylistTile

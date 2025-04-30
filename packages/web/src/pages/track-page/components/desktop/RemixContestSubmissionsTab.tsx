@@ -142,7 +142,7 @@ const RemixContestSubmissions = ({
 
   return (
     <Flex column p='xl' gap='xl'>
-      <Flex gap='2xl' wrap='wrap'>
+      <Flex row gap='2xl' wrap='wrap'>
         {submissions.map((submission) => (
           <SubmissionCard key={submission.id} submission={submission} />
         ))}

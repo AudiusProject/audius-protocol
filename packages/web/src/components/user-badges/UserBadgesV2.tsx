@@ -99,7 +99,7 @@ const UserBadges = ({
       <Box
         css={{
           cursor: 'pointer',
-          transition: `opacity ${motion.calm}`,
+          transition: `opacity ${motion.quick}`,
           '&:hover': {
             opacity: 0.6
           }
@@ -123,7 +123,7 @@ const UserBadges = ({
         <Box
           css={{
             cursor: 'pointer',
-            transition: `opacity ${motion.calm}`,
+            transition: `opacity ${motion.quick}`,
             '&:hover': {
               opacity: 0.6
             }
