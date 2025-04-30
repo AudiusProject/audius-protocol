@@ -64,6 +64,7 @@ export const useTracks = (
     isPending: queryResults.isPending || !isSavedToRedux,
     isLoading: queryResults.isLoading || !isSavedToRedux,
     isFetching: queryResults.isFetching,
-    isSuccess: queryResults.isSuccess
+    isSuccess: queryResults.isSuccess,
+    isError: queryResults.isError
   }
 }

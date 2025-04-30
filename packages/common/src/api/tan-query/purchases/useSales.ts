@@ -16,7 +16,8 @@ import { QUERY_KEYS } from '../queryKeys'
 import { useTracks } from '../tracks/useTracks'
 import { QueryKey, QueryOptions } from '../types'
 import { useUsers } from '../users/useUsers'
-import { combineQueryResults, loadNextPage } from '../utils'
+import { loadNextPage } from '../utils'
+import { combineQueryStatuses } from '../utils/combineQueryResults'
 
 const PAGE_SIZE = 10
 
@@ -98,7 +99,7 @@ export const useSales = (args: GetSalesListArgs, options?: QueryOptions) => {
   }, [queryResult])
 
   return {
-    ...combineQueryResults([
+    ...combineQueryStatuses([
       queryResult,
       usersQueryResult,
       tracksQueryResult,
