@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { useGetUserById } from '@audius/common/api'
+import { useUser } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import { Name } from '@audius/common/models'
@@ -103,12 +103,13 @@ export const CommentForm = (props: CommentFormProps) => {
   const adjustedCursorPosition = useRef(false)
 
   const replyingToUserId = Number(replyingToComment?.userId)
-  const { data: replyingToUser } = useGetUserById(
-    {
-      id: replyingToUserId
-    },
-    { disabled: !replyingToComment }
-  )
+  const { data: partialReplyingToUser } = useUser(replyingToUserId, {
+    select: (user) => ({
+      handle: user.handle,
+      user_id: user.user_id
+    })
+  })
+  const { handle: replyingToUserHandle } = partialReplyingToUser ?? {}
 
   const handleSubmit = useCallback(
     (message: string, mentions?: CommentMention[]) => {
@@ -128,17 +129,17 @@ export const CommentForm = (props: CommentFormProps) => {
    * Populate and focus input when replying to a comment
    */
   useEffect(() => {
-    if (replyingToComment && replyingToUser) {
-      setInitialMessage(replyInitialMessage(replyingToUser.handle))
+    if (replyingToComment && replyingToUserHandle && replyingToUserId) {
+      setInitialMessage(replyInitialMessage(replyingToUserHandle))
       setInitialMentions([
         {
-          handle: replyingToUser.handle,
-          userId: replyingToUser.user_id
+          handle: replyingToUserHandle,
+          userId: replyingToUserId
         }
       ])
       focusInput()
     }
-  }, [replyingToComment, replyingToUser, focusInput])
+  }, [replyingToComment, replyingToUserHandle, replyingToUserId, focusInput])
 
   /**
    * Populate and focus input when editing a comment
@@ -225,9 +226,7 @@ export const CommentForm = (props: CommentFormProps) => {
       ) : null}
       <Flex flex={1}>
         {showHelperText ? (
-          <CommentFormHelperText
-            replyingToUserHandle={replyingToUser?.handle}
-          />
+          <CommentFormHelperText replyingToUserHandle={replyingToUserHandle} />
         ) : null}
         <Box flex={1}>
           <ComposerInput

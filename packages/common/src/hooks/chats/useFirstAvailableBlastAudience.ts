@@ -2,33 +2,13 @@ import { useMemo } from 'react'
 
 import { ChatBlastAudience } from '@audius/sdk'
 
-import {
-  useGetCurrentUser,
-  useGetCurrentUserId,
-  useGetPurchasersCount,
-  useGetRemixersCount
-} from '~/api'
+import { useGetCurrentUser, usePurchasersCount, useRemixersCount } from '~/api'
 
 export const useFirstAvailableBlastAudience = () => {
-  const { data: currentUserId } = useGetCurrentUserId({})
   const { data: user } = useGetCurrentUser({})
 
-  const { data: purchasersCount } = useGetPurchasersCount(
-    {
-      userId: currentUserId!
-    },
-    {
-      disabled: !currentUserId
-    }
-  )
-  const { data: remixersCount } = useGetRemixersCount(
-    {
-      userId: currentUserId!
-    },
-    {
-      disabled: !currentUserId
-    }
-  )
+  const { data: purchasersCount } = usePurchasersCount()
+  const { data: remixersCount } = useRemixersCount()
 
   const firstAvailableAudience = useMemo(() => {
     if (user?.follower_count) return ChatBlastAudience.FOLLOWERS
