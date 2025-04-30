@@ -300,7 +300,7 @@ export type LineupProps = {
   /**
    * Whether to show the play bar chin
    */
-  shouldShowPlayBarChin?: boolean
+  hidePlayBarChin?: boolean
 
   // Tan query props
   pageSize: number
@@ -355,7 +355,7 @@ export const TanQueryLineup = ({
   isPending,
   queryData = [],
   maxEntries = Infinity,
-  shouldShowPlayBarChin = true,
+  hidePlayBarChin = false,
   ...listProps
 }: LineupProps) => {
   const debouncedLoadNextPage = useDebouncedCallback(
@@ -526,7 +526,7 @@ export const TanQueryLineup = ({
         onScroll={handleScroll}
         ListHeaderComponent={hideHeaderOnEmpty && isEmpty ? undefined : header}
         ListFooterComponent={lineup.hasMore ? null : ListFooterComponent}
-        shouldShowPlayBarChin={shouldShowPlayBarChin}
+        hidePlayBarChin={true}
         ListEmptyComponent={LineupEmptyComponent}
         onEndReached={handleEndReached}
         onEndReachedThreshold={LOAD_MORE_THRESHOLD}

@@ -126,20 +126,20 @@ export const SectionList = forwardRef(function SectionList<
   SectionT = DefaultSectionT
 >(
   props: Animated.AnimatedProps<RNSectionListProps<ItemT, SectionT>> & {
-    shouldShowPlayBarChin?: boolean
+    hidePlayBarChin?: boolean
   },
   ref: Ref<RNSectionList<ItemT, SectionT>>
 ) {
-  const { ListFooterComponent, shouldShowPlayBarChin, ...other } = props
+  const { ListFooterComponent, hidePlayBarChin, ...other } = props
 
   const FooterComponent = ListFooterComponent ? (
     <>
       {ListFooterComponent}
-      {shouldShowPlayBarChin ? <PlayBarChin /> : null}
+      {hidePlayBarChin ? null : <PlayBarChin />}
     </>
-  ) : shouldShowPlayBarChin ? (
+  ) : hidePlayBarChin ? null : (
     <PlayBarChin />
-  ) : null
+  )
 
   const sectionListProps = {
     ...other,
