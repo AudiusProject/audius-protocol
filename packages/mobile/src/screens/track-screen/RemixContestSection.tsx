@@ -197,14 +197,10 @@ export const RemixContestSection = ({
   )
 
   const renderTabBarItem = useCallback(
-    (props: TabBarItemProps<Route>) => (
-      <TabBarItem
-        {...props}
-        getAccessibilityLabel={() => props.route.title}
-        getAccessible={() => true}
-        getLabelText={() => props.route.title}
-        getTestID={() => `tab-${props.route.key}`}
-      />
+    // Weird type issue with TabBarItem, need to pass key prop. Otherwise we get:
+    // Warning: A props object containing a "key" prop is being spread into JSX:
+    ({ route, key, ...props }: TabBarItemProps<Route> & { key: string }) => (
+      <TabBarItem key={key} route={route} {...props} />
     ),
     []
   )
