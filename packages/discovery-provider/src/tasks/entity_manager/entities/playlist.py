@@ -718,7 +718,12 @@ def populate_playlist_record_metadata(
         for track_obj in playlist_record.playlist_contents["track_ids"]:
             if track_obj["time"] > last_added_to:
                 last_added_to = track_obj["time"]
-        playlist_record.last_added_to = datetime.utcfromtimestamp(last_added_to)
+        try:
+            playlist_record.last_added_to = datetime.utcfromtimestamp(last_added_to)
+        except ValueError:
+            params.logger.error(
+                f"playlist.py | EntityManager | Invalid last_added_to timestamp: {last_added_to}"
+            )
 
     playlist_record.updated_at = block_datetime
     playlist_record.metadata_multihash = metadata_cid
