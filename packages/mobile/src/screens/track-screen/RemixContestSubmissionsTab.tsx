@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 
 import type { LineupData } from '@audius/common/api'
 import { useRemixes, useTrack, useUser } from '@audius/common/api'
@@ -9,6 +9,7 @@ import {
   Box,
   Flex,
   IconArrowRight,
+  Paper,
   PlainButton,
   Skeleton,
   Text
@@ -49,10 +50,15 @@ export const RemixContestSubmissionsTab = ({
 }
 
 const SubmissionCard = ({ submission }: { submission: LineupData }) => {
+  const navigation = useNavigation()
   const { data: track, isLoading: trackLoading } = useTrack(submission.id)
   const { data: user, isLoading: userLoading } = useUser(track?.owner_id)
   const isLoading = trackLoading || userLoading
   const displaySkeleton = isLoading || !track || !user
+
+  const handlePress = useCallback(() => {
+    navigation.navigate('Track', { trackId: submission.id })
+  }, [navigation, submission.id])
 
   return (
     <Flex column gap='s'>
@@ -60,7 +66,7 @@ const SubmissionCard = ({ submission }: { submission: LineupData }) => {
         {displaySkeleton ? (
           <Skeleton />
         ) : (
-          <>
+          <Paper onPress={handlePress}>
             <TrackFlair
               style={{
                 height: '100%',
@@ -85,7 +91,7 @@ const SubmissionCard = ({ submission }: { submission: LineupData }) => {
             >
               <Artwork source={{ uri: user.profile_picture['150x150'] }} />
             </Box>
-          </>
+          </Paper>
         )}
       </Flex>
       <Flex column gap='xs' alignItems='center'>
