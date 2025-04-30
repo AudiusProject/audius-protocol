@@ -1,13 +1,12 @@
 import { useCallback } from 'react'
 
-import { useFeed, useCurrentUserId } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import {
   lineupSelectors,
   feedPageLineupActions as feedActions,
   feedPageSelectors
 } from '@audius/common/store'
-import { useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { IconFeed } from '@audius/harmony-native'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
@@ -19,7 +18,7 @@ import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 import { make, track } from 'app/services/analytics'
 
 import { FeedFilterButton } from './FeedFilterButton'
-const { getDiscoverFeedLineup, getFeedFilter } = feedPageSelectors
+const { getDiscoverFeedLineup } = feedPageSelectors
 const { makeGetLineupMetadatas } = lineupSelectors
 
 const getFeedLineup = makeGetLineupMetadatas(getDiscoverFeedLineup)
@@ -32,19 +31,14 @@ const messages = {
 export const FeedScreen = () => {
   useAppTabScreen()
 
-  const feedFilter = useSelector(getFeedFilter)
-  const { data: currentUserId } = useCurrentUserId()
-  const { lineup, loadNextPage } = useFeed({
-    filter: feedFilter,
-    userId: currentUserId
-  })
+  const dispatch = useDispatch()
 
   const loadMore = useCallback(
     (offset: number, limit: number, overwrite: boolean) => {
-      loadNextPage()
+      dispatch(feedActions.fetchLineupMetadatas(offset, limit, overwrite))
       track(make({ eventName: Name.FEED_PAGINATE, offset, limit }))
     },
-    [loadNextPage]
+    [dispatch]
   )
 
   return (
@@ -56,8 +50,6 @@ export const FeedScreen = () => {
       </ScreenHeader>
       <ScreenContent>
         <Lineup
-          tanQuery
-          lineup={lineup}
           pullToRefresh
           delineate
           selfLoad

@@ -22,7 +22,7 @@ export type CardListProps<ItemT> = Omit<FlatListProps<ItemT>, 'data'> & {
   totalCount?: number
 }
 
-type LoadingCard = { _loading: true }
+export type LoadingCard = { _loading: true }
 
 const getSkeletonData = (skeletonCount = 6): LoadingCard[] => {
   return Array(Math.min(skeletonCount, 6)).fill({ _loading: true })

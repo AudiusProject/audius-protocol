@@ -9,8 +9,8 @@ import {
 
 import { ID } from '~/models'
 
+import { UseLineupQueryData } from './lineups/useLineupQuery'
 import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
-import { UseLineupQueryData } from './utils/useLineupQuery'
 
 /**
  * Using DataTag allows tan-query to infer the data type stored at this key
@@ -21,8 +21,8 @@ export type QueryKey<TData> = DataTag<TanQueryKey, TData, Error>
 /**
  * Standard tan-query pass-thru options that we use
  */
-export type QueryOptions = Pick<
-  DefinedInitialDataOptions<any>,
+export type QueryOptions<T = any> = Pick<
+  DefinedInitialDataOptions<T>,
   'staleTime' | 'enabled' | 'placeholderData' | 'refetchOnMount'
 >
 

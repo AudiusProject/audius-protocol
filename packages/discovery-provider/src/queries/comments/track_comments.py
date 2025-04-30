@@ -65,6 +65,7 @@ def get_track_comments(args, track_id, current_user_id=None, include_related=Fal
         track_comments = query.all()
 
         # Format comments and collect user/track IDs
+        # The optimized format_comments function will fetch all replies in a single query
         formatted_comments = format_comments(
             session=session,
             comments=track_comments,

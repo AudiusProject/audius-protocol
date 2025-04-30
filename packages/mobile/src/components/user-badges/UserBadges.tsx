@@ -54,7 +54,6 @@ export const UserBadges = (props: UserBadgesProps) => {
           width={badgeSize}
           style={styles.badge}
           fill={palette.staticPrimary}
-          fillSecondary={palette.staticWhite}
         />
       ) : null}
       <IconAudioBadge tier={tier} style={styles.badge} size='xs' />

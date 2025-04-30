@@ -41,7 +41,7 @@ import {
 } from './AudiusQueryContext'
 import { createRequestBatcher } from './createRequestBatcher'
 import { RemoteDataNotFoundError } from './errors'
-import { apiResponseSchema } from './schema'
+import { apiMetadataResponseSchema, apiResponseSchema } from './schema'
 import {
   Api,
   ApiState,
@@ -310,7 +310,26 @@ const createCacheDataSelector =
       endpoint.options.schemaKey ||
       (typeof normalizedData === 'object' && !Array.isArray(normalizedData))
     ) {
-      return denormalize(normalizedData, apiResponseSchema, entityMap) as Data
+      const denormalizedData = denormalize(
+        normalizedData,
+        apiResponseSchema,
+        entityMap
+      )
+
+      if (denormalizedData) {
+        const { entities } = normalize(
+          denormalizedData,
+          apiMetadataResponseSchema
+        )
+        const reDenormalizedData = denormalize(
+          normalizedData,
+          apiResponseSchema,
+          entities
+        ) as Data
+        return reDenormalizedData
+      }
+
+      return denormalizedData
     }
     return normalizedData
   }

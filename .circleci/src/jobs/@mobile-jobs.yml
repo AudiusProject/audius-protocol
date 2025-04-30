@@ -46,7 +46,7 @@ mobile-build-staging-ios:
   # run on macos so app can be created and signed.
   resource_class: macos.m1.medium.gen1
   macos:
-    xcode: '15.4.0'
+    xcode: '16.2.0'
   environment:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
@@ -65,7 +65,7 @@ mobile-build-upload-staging-ios:
   # run on macos so app can be created and signed.
   resource_class: macos.m1.medium.gen1
   macos:
-    xcode: '15.4.0'
+    xcode: '16.2.0'
   environment:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
@@ -84,7 +84,7 @@ mobile-build-production-ios:
   # run on macos so app can be created and signed.
   resource_class: macos.m1.medium.gen1
   macos:
-    xcode: '15.4.0'
+    xcode: '16.2.0'
   environment:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
@@ -103,7 +103,7 @@ mobile-build-upload-production-ios-if-full-release:
   # run on macos so app can be created and signed.
   resource_class: macos.m1.medium.gen1
   macos:
-    xcode: '15.4.0'
+    xcode: '16.2.0'
   environment:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
@@ -123,7 +123,7 @@ mobile-build-upload-releasecandidate-ios:
   # run on macos so app can be created and signed.
   resource_class: macos.m1.medium.gen1
   macos:
-    xcode: '15.4.0'
+    xcode: '16.2.0'
   environment:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
@@ -142,7 +142,7 @@ mobile-build-upload-staging-releasecandidate-ios:
   # run on macos so app can be created and signed.
   resource_class: macos.m1.medium.gen1
   macos:
-    xcode: '15.4.0'
+    xcode: '16.2.0'
   environment:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail

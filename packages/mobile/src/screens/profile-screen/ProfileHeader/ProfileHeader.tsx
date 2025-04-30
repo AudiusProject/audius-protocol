@@ -5,7 +5,6 @@ import { useFeatureFlag, useSelectTierInfo } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { css } from '@emotion/native'
-import type { Animated } from 'react-native'
 import { LayoutAnimation } from 'react-native'
 import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
@@ -31,13 +30,8 @@ import { SocialsAndSites } from './SocialsAndSites'
 
 const getUserId = accountSelectors.getUserId
 
-type ProfileHeaderProps = {
-  scrollY: Animated.Value
-}
-
 // Memoized since material-top-tabs triggers unecessary rerenders
-export const ProfileHeader = memo((props: ProfileHeaderProps) => {
-  const { scrollY } = props
+export const ProfileHeader = memo(() => {
   const accountId = useSelector(getUserId)
   const [hasUserFollowed, setHasUserFollowed] = useToggle(false)
   const [isExpanded, setIsExpanded] = useToggle(false)
@@ -117,7 +111,7 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
 
   return (
     <>
-      <ProfileCoverPhoto scrollY={scrollY} />
+      <ProfileCoverPhoto />
       <Box
         style={css({
           position: 'absolute',

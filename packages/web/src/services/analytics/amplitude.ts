@@ -1,6 +1,6 @@
 import * as amplitude from '@amplitude/analytics-browser'
 import { sessionReplayPlugin } from '@amplitude/plugin-session-replay-browser'
-import { Name, MobileOS } from '@audius/common/models'
+import { Name, MobileOS, IdentifyTraits } from '@audius/common/models'
 
 import { env } from 'services/env'
 import { isElectron as getIsElectron, getMobileOS } from 'utils/clientUtil'
@@ -38,19 +38,18 @@ export const init = async (isMobile: boolean) => {
 }
 
 // Identify User
-export const identify = (
-  handle: string,
-  traits?: Record<string, any>,
-  callback?: () => void
-) => {
+export const identify = (traits?: IdentifyTraits, callback?: () => void) => {
   if (!isAmplitudeConfigured) {
     if (callback) callback()
     return
   }
-  amplitude.setUserId(handle)
+
+  if (traits?.handle) {
+    amplitude.setUserId(traits.handle)
+  }
   if (traits && Object.keys(traits).length > 0) {
     const identifyObj = new amplitude.Identify()
-    Object.entries(traits).map(([k, v]) => identifyObj.add(k, v))
+    Object.entries(traits).map(([k, v]) => identifyObj.set(k, v))
     amplitude.identify(identifyObj)
   }
   if (callback) callback()

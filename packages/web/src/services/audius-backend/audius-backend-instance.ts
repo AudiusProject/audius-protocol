@@ -48,8 +48,5 @@ export const audiusBackendInstance = audiusBackend({
     waudioMintAddress: env.WAUDIO_MINT_ADDRESS,
     usdcMintAddress: env.USDC_MINT_ADDRESS,
     wormholeAddress: env.WORMHOLE_ADDRESS ?? undefined
-  },
-  userNodeUrl: env.USER_NODE,
-  web3NetworkId: env.WEB3_NETWORK_ID,
-  web3ProviderUrls: (env.WEB3_PROVIDER_URL || '').split(',')
+  }
 })

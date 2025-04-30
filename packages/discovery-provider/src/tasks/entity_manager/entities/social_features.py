@@ -132,7 +132,11 @@ def create_social_record(params: ManageEntityParameters):
                     params.block_number,
                     params.block_datetime,
                     remixer,
-                    {"track_id": params.entity_id},
+                    {
+                        "original_track_owner_id": params.user_id,
+                        "remix_track_id": params.entity_id,
+                        "cosign_date": params.block_datetime.timestamp(),
+                    },
                 )
 
 

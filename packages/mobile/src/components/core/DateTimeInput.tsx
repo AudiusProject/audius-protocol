@@ -40,11 +40,12 @@ export const DateTimeInput = (props: DateTimeModalProps) => {
 
   const handleChange = useCallback(
     (date: Date) => {
+      setIsDateTimeOpen(false)
       if (mode === 'date') {
         date.setHours(0, 0, 0, 0)
       }
       onChange(date.toString())
-      setIsDateTimeOpen((d) => !d)
+      setIsDateTimeOpen(false)
     },
     [onChange, setIsDateTimeOpen, mode]
   )

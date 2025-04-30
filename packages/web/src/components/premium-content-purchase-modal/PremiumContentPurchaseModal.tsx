@@ -1,11 +1,11 @@
 import { useCallback, useEffect } from 'react'
 
 import {
+  useCollection,
   useGetCurrentUser,
   useGetCurrentUserId,
-  useGetPlaylistById,
-  useGetTrackById,
-  useGetUserById
+  useGetUserById,
+  useTrack
 } from '@audius/common/api'
 import {
   useFeatureFlag,
@@ -224,15 +224,11 @@ export const PremiumContentPurchaseModal = () => {
   const guestEmail = useSelector(getGuestEmail)
 
   const isAlbum = contentType === PurchaseableContentType.ALBUM
-  const { data: track } = useGetTrackById(
-    { id: contentId! },
-    { disabled: isAlbum || !contentId }
-  )
+  const { data: track } = useTrack(contentId, { enabled: !isAlbum })
 
-  const { data: album } = useGetPlaylistById(
-    { playlistId: contentId!, currentUserId },
-    { disabled: !isAlbum || !contentId }
-  )
+  const { data: album } = useCollection(contentId, {
+    enabled: isAlbum
+  })
 
   const { data: user } = useGetUserById(
     {

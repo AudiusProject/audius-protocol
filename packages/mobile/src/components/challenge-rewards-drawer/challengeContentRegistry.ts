@@ -7,6 +7,7 @@ import { CosignChallengeContent } from './CosignChallengeContent'
 import { DefaultChallengeContent } from './DefaultChallengeContent'
 import { FirstWeeklyCommentChallengeContent } from './FirstWeeklyCommentChallengeContent'
 import { ListenStreakEndlessChallengeContent } from './ListenStreakEndlessChallengeContent'
+import { PinnedCommentChallengeContent } from './PinnedCommentChallengeContent'
 import { PlayCountMilestoneContent } from './PlayCountMilestoneContent'
 import { ProfileCompletionChallengeContent } from './ProfileCompletionChallengeContent'
 import { ReferralChallengeContent } from './ReferralChallengeContent'
@@ -30,6 +31,7 @@ export const challengeContentRegistry: ChallengeContentMap = {
   [ChallengeName.PlayCount1000]: PlayCountMilestoneContent,
   [ChallengeName.PlayCount10000]: PlayCountMilestoneContent,
   [ChallengeName.Tastemaker]: TastemakerChallengeContent,
+  [ChallengeName.CommentPin]: PinnedCommentChallengeContent,
   [ChallengeName.Cosign]: CosignChallengeContent,
 
   default: DefaultChallengeContent

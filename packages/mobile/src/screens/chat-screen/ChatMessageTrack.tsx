@@ -1,20 +1,18 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
-import { useGetTrackByPermalink } from '@audius/common/api'
+import { useTrackByPermalink, useUser } from '@audius/common/api'
 import { useGatedContentAccess, useToggleTrack } from '@audius/common/hooks'
 import type { TrackPlayback } from '@audius/common/hooks'
 import { Name, PlaybackSource, Kind } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
-import { accountSelectors, QueueSource } from '@audius/common/store'
+import { QueueSource } from '@audius/common/store'
 import type { ChatMessageTileProps } from '@audius/common/store'
 import { getPathFromTrackUrl, makeUid } from '@audius/common/utils'
-import { useSelector } from 'react-redux'
+import { pick } from 'lodash'
 
 import { TrackTile } from 'app/components/lineup-tile'
 import { LineupTileSource } from 'app/components/lineup-tile/types'
 import { make, track as trackEvent } from 'app/services/analytics'
-
-const { getUserId } = accountSelectors
 
 export const ChatMessageTrack = ({
   link,
@@ -22,30 +20,34 @@ export const ChatMessageTrack = ({
   onSuccess,
   styles
 }: ChatMessageTileProps) => {
-  const currentUserId = useSelector(getUserId)
-
   const permalink = getPathFromTrackUrl(link)
-  const { data: track } = useGetTrackByPermalink(
-    {
-      permalink,
-      currentUserId
-    },
-    { disabled: !permalink }
-  )
-  const { hasStreamAccess } = useGatedContentAccess(track ?? null)
-  const isPreview =
-    !!track?.is_stream_gated && !!track?.preview_cid && !hasStreamAccess
+  const { data: partialTrack } = useTrackByPermalink(permalink, {
+    select: (track) =>
+      pick(track, [
+        'track_id',
+        'owner_id',
+        'preview_cid',
+        'access',
+        'is_download_gated',
+        'is_stream_gated',
+        'download_conditions',
+        'stream_conditions'
+      ])
+  })
+  const trackExists = !!partialTrack
+  const { hasStreamAccess } = useGatedContentAccess(partialTrack)
+  const { track_id, is_stream_gated, preview_cid, owner_id } =
+    partialTrack ?? {}
+  const { data: user } = useUser(owner_id)
+  const isPreview = !!is_stream_gated && !!preview_cid && !hasStreamAccess
 
-  const user = useMemo(() => (track ? { ...track.user } : null), [track])
-
-  const trackId = track?.track_id
   const uid = useMemo(() => {
-    return trackId ? makeUid(Kind.TRACKS, trackId) : null
-  }, [trackId])
+    return track_id ? makeUid(Kind.TRACKS, track_id) : null
+  }, [track_id])
 
   const recordAnalytics = useCallback(
     ({ name, id }: { name: TrackPlayback; id: ID }) => {
-      if (!track) return
+      if (!trackExists) return
       trackEvent(
         make({
           eventName: name,
@@ -54,11 +56,11 @@ export const ChatMessageTrack = ({
         })
       )
     },
-    [track]
+    [trackExists]
   )
 
   const { togglePlay } = useToggleTrack({
-    id: track?.track_id,
+    id: track_id,
     uid,
     isPreview,
     source: QueueSource.CHAT_TRACKS,
@@ -66,7 +68,7 @@ export const ChatMessageTrack = ({
   })
 
   useEffect(() => {
-    if (track && user && uid) {
+    if (trackExists && user && uid) {
       trackEvent(
         make({
           eventName: Name.MESSAGE_UNFURL_TRACK
@@ -76,11 +78,11 @@ export const ChatMessageTrack = ({
     } else {
       onEmpty?.()
     }
-  }, [track, user, uid, onSuccess, onEmpty])
+  }, [trackExists, user, uid, onSuccess, onEmpty])
 
-  return track && user && uid ? (
+  return track_id && user && uid ? (
     <TrackTile
-      id={track.track_id}
+      id={track_id}
       index={0}
       togglePlay={togglePlay}
       uid={uid}

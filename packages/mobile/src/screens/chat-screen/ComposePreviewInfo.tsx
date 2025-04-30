@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react'
 
-import { useGetPlaylistById, useGetTrackById } from '@audius/common/api'
+import { useCollection, useTrack, useUser } from '@audius/common/api'
 import type { ID, UserMetadata } from '@audius/common/models'
 import { SquareSizes } from '@audius/common/models'
+import { pick } from 'lodash'
 
 import { Flex, Text } from '@audius/harmony-native'
 import { CollectionImage } from 'app/components/image/CollectionImage'
@@ -10,9 +11,9 @@ import { TrackImage } from 'app/components/image/TrackImage'
 import UserBadges from 'app/components/user-badges'
 
 type ComposePreviewInfoProps = {
-  title: string
-  name: string
-  user: UserMetadata
+  title?: string
+  name?: string
+  user?: UserMetadata
   image?: ReactNode
 }
 
@@ -43,7 +44,7 @@ const ComposePreviewInfo = (props: ComposePreviewInfoProps) => {
           <Text variant='body' strength='strong'>
             {name}
           </Text>
-          <UserBadges hideName user={user} badgeSize={14} />
+          {user ? <UserBadges hideName user={user} badgeSize={14} /> : null}
         </Flex>
       </Flex>
     </Flex>
@@ -57,15 +58,18 @@ type ComposerTrackInfoProps = {
 export const ComposerTrackInfo = (props: ComposerTrackInfoProps) => {
   const { trackId } = props
 
-  const { data: track } = useGetTrackById({ id: trackId }, { force: true })
+  const { data: partialTrack } = useTrack(trackId, {
+    select: (track) => pick(track, ['title', 'owner_id'])
+  })
+  const { data: user } = useUser(partialTrack?.owner_id)
 
-  if (!track) return null
+  if (!partialTrack) return null
 
   return (
     <ComposePreviewInfo
-      title={track.title}
-      name={track.user.name}
-      user={track.user}
+      title={partialTrack.title}
+      name={user?.name ?? ''}
+      user={user}
       image={
         <TrackImage trackId={trackId} size={SquareSizes.SIZE_150_BY_150} />
       }
@@ -80,18 +84,21 @@ type ComposerCollectionInfoProps = {
 export const ComposerCollectionInfo = (props: ComposerCollectionInfoProps) => {
   const { collectionId } = props
 
-  const { data: collection } = useGetPlaylistById(
-    { playlistId: collectionId },
-    { force: true }
-  )
+  const { data: partialCollection } = useCollection(collectionId, {
+    select: (collection) =>
+      pick(collection, ['playlist_name', 'playlist_owner_id'])
+  })
+  const { playlist_name: albumTitle, playlist_owner_id: albumOwnerId } =
+    partialCollection ?? {}
+  const { data: user } = useUser(albumOwnerId)
 
-  if (!collection) return null
+  if (!partialCollection) return null
 
   return (
     <ComposePreviewInfo
-      title={collection.playlist_name}
-      name={collection.user.name}
-      user={collection.user}
+      title={albumTitle}
+      name={user?.name ?? ''}
+      user={user}
       image={
         <CollectionImage
           collectionId={collectionId}

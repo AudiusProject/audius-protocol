@@ -1,6 +1,6 @@
 {
   "name": "root",
-  "version": "1.5.129",
+  "version": "1.5.132",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
@@ -25,7 +25,7 @@
     "validate-ci-config": "circleci config pack .circleci/src > .circleci/continue_config.yml && circleci config validate .circleci/continue_config.yml",
     "verify": "turbo run verify",
     "CORE=======================================": "",
-    "buf:generate": "buf generate buf.build/audiusd/protocol:main --include-imports && npm run buf:generate:postinstall",
+    "buf:generate": "buf generate buf.build/audiusd/audiusd:as/rm-old-protos --include-imports && npm run buf:generate:postinstall",
     "buf:generate:postinstall": "cd packages/discovery-provider/src/tasks/core && ./fix-proto-imports.sh",
     "WEB========================================": "",
     "web:dev": "npm run start:dev -w @audius/web",
@@ -110,13 +110,14 @@
     "@escape.tech/mookme": "2.4.1",
     "@redux-devtools/remote": "0.8.0",
     "@types/express": "^4.17.21",
-    "@web3modal/ethers": "4.1.0",
+    "@wagmi/core": "2.16.7",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "pg": "8.8.0",
     "pino": "^9.1.0",
     "react-native-google-cast": "4.6.2",
-    "elliptic": "6.6.1"
+    "elliptic": "6.6.1",
+    "valtio": "1.13.2"
   },
   "overrides": {
     "@types/prop-types": "15.7.5",

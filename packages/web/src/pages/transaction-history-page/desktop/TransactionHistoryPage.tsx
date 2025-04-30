@@ -3,7 +3,6 @@ import { useCallback, useState } from 'react'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
-import { route } from '@audius/common/utils'
 import {
   Button,
   Flex,
@@ -11,11 +10,10 @@ import {
   Paper,
   SelectablePill
 } from '@audius/harmony'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import { Header } from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
-import { replace } from 'utils/navigation'
 
 import {
   PurchasesTab,
@@ -28,7 +26,6 @@ import {
 } from '../../pay-and-earn-page/components/WithdrawalsTab'
 import { TableType, TransactionHistoryPageProps } from '../types'
 
-const { PURCHASES_PAGE, SALES_PAGE, WITHDRAWALS_PAGE } = route
 const { getAccountHasTracks, getIsGuestAccount } = accountSelectors
 
 export const messages = {
@@ -48,7 +45,6 @@ type TableMetadata = {
 export const TransactionHistoryPage = ({
   tableView
 }: TransactionHistoryPageProps) => {
-  const dispatch = useDispatch()
   const accountHasTracks = useSelector(getAccountHasTracks)
   const isGuest = useSelector(getIsGuestAccount)
   const [tableOptions, setTableOptions] = useState<TableType[] | null>(null)
@@ -101,7 +97,7 @@ export const TransactionHistoryPage = ({
     downloadCSV: downloadWithdrawalsCSV
   } = useWithdrawals()
 
-  const header = <Header primary={messages.title} />
+  const header = <Header primary={messages.title} showBackButton />
 
   const tables: Record<TableType, TableMetadata> = {
     [TableType.SALES]: {
@@ -125,22 +121,9 @@ export const TransactionHistoryPage = ({
 
   const handleSelectablePillClick = useCallback(
     (t: TableType) => {
-      let route: string
-      switch (t) {
-        case TableType.SALES:
-          route = SALES_PAGE
-          break
-        case TableType.PURCHASES:
-          route = PURCHASES_PAGE
-          break
-        case TableType.WITHDRAWALS:
-          route = WITHDRAWALS_PAGE
-          break
-      }
       setSelectedTable(t)
-      dispatch(replace(route))
     },
-    [setSelectedTable, dispatch]
+    [setSelectedTable]
   )
 
   return (

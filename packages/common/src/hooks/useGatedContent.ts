@@ -15,6 +15,7 @@ import {
   isContentTipGated,
   isContentUSDCPurchaseGated
 } from '~/models/Track'
+import { FeatureFlags } from '~/services/remote-config'
 import { getHasAccount } from '~/store/account/selectors'
 import {
   cacheCollectionsSelectors,
@@ -23,8 +24,13 @@ import {
 } from '~/store/cache'
 import { gatedContentSelectors } from '~/store/gated-content'
 import { CommonState } from '~/store/reducers'
-import { isContentCollection, isContentTrack } from '~/utils/contentTypeUtils'
+import {
+  isContentPartialCollection,
+  isContentPartialTrack
+} from '~/utils/contentTypeUtils'
 import { Nullable, removeNullable } from '~/utils/typeUtils'
+
+import { useFeatureFlag } from './useFeatureFlag'
 
 const { getTrack } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
@@ -61,9 +67,24 @@ export const useGatedCollectionAccess = (collectionId: ID) => {
   return { hasStreamAccess }
 }
 
+type PartialTrack = Pick<
+  Track,
+  | 'track_id'
+  | 'is_stream_gated'
+  | 'is_download_gated'
+  | 'access'
+  | 'stream_conditions'
+  | 'download_conditions'
+>
+
+type PartialCollection = Pick<
+  Collection,
+  'playlist_id' | 'is_stream_gated' | 'access' | 'stream_conditions'
+>
+
 // Returns whether user has access to given track.
 export const useGatedContentAccess = (
-  content: Nullable<Partial<Track | Collection>> | undefined
+  content: Nullable<PartialTrack> | Nullable<PartialCollection> | undefined
 ) => {
   const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
   const hasAccount = useSelector(getHasAccount)
@@ -78,8 +99,9 @@ export const useGatedContentAccess = (
         }
       }
 
-      const isTrack = isContentTrack(content)
-      const isCollection = isContentCollection(content)
+      const isTrack = isContentPartialTrack<PartialTrack>(content)
+      const isCollection =
+        isContentPartialCollection<PartialCollection>(content)
       const trackId = isTrack
         ? content.track_id
         : isCollection
@@ -172,8 +194,8 @@ export const useStreamConditionsEntity = (
       ids: [followUserId, tipUserId].filter(removeNullable)
     })
   )
-  const followee = followUserId ? users[followUserId] : null
-  const tippedUser = tipUserId ? users[tipUserId] : null
+  const followee = followUserId ? users[followUserId]?.metadata : null
+  const tippedUser = tipUserId ? users[tipUserId]?.metadata : null
 
   const collectionLink = useMemo(() => {
     if (!nftCollection) return ''
@@ -211,6 +233,9 @@ export const useLockedContent = () => {
 }
 
 export const useDownloadableContentAccess = ({ trackId }: { trackId: ID }) => {
+  const { isEnabled: isUsdcPurchasesEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES
+  )
   const track = useSelector((state: CommonState) =>
     getTrack(state, { id: trackId })
   )
@@ -250,15 +275,18 @@ export const useDownloadableContentAccess = ({ trackId }: { trackId: ID }) => {
     shouldDisplayPremiumDownloadLocked:
       isOnlyDownloadableContentPurchaseGated &&
       track?.access?.download === false &&
-      !isOwner,
+      !isOwner &&
+      isUsdcPurchasesEnabled,
     shouldDisplayPremiumDownloadUnlocked:
       isOnlyDownloadableContentPurchaseGated &&
       track?.access?.download === true &&
-      !isOwner,
+      !isOwner &&
+      isUsdcPurchasesEnabled,
     shouldDisplayOwnerPremiumDownloads:
       isOnlyDownloadableContentPurchaseGated &&
       track?.access?.download === true &&
-      isOwner,
+      isOwner &&
+      isUsdcPurchasesEnabled,
     shouldDisplayDownloadFollowGated
   }
 }

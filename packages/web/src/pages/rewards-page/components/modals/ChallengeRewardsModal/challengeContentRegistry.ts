@@ -6,6 +6,7 @@ import { DefaultChallengeContent } from './DefaultChallengeContent'
 import { FirstWeeklyCommentChallengeModalContent } from './FirstWeeklyCommentChallengeModalContent'
 import { ListenStreakChallengeModalContent } from './ListenStreakChallengeModalContent'
 import { OneShotChallengeModalContent } from './OneShotChallengeModalContent'
+import { PinnedCommentChallengeModalContent } from './PinnedCommentChallengeModalContent'
 import { PlayCountMilestoneContent } from './PlayCountMilestoneContent'
 import { ReferralsChallengeModalContent } from './ReferralsChallengeModalContent'
 import { TastemakerChallengeModalContent } from './TastemakerChallengeModalContent'
@@ -39,6 +40,8 @@ export const challengeContentRegistry: ChallengeContentMap = {
     TastemakerChallengeModalContent as ChallengeContentComponent,
   [ChallengeName.Cosign]:
     CosignChallengeModalContent as ChallengeContentComponent,
+  [ChallengeName.CommentPin]:
+    PinnedCommentChallengeModalContent as ChallengeContentComponent,
   default: DefaultChallengeContent as ChallengeContentComponent
 }
 

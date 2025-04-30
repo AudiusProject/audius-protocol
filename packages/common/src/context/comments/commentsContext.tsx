@@ -14,21 +14,15 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
-  useGetTrackById,
   useTrackComments,
   QUERY_KEYS,
   useTrackCommentCount,
-  resetPreviousCommentCount
+  resetPreviousCommentCount,
+  useSupporters,
+  useTrack
 } from '~/api'
 import { useGatedContentAccess } from '~/hooks'
-import {
-  ModalSource,
-  ID,
-  Comment,
-  ReplyComment,
-  UserTrackMetadata,
-  Name
-} from '~/models'
+import { ModalSource, ID, Comment, ReplyComment, Name, Track } from '~/models'
 import { LineupBaseActions, playerActions } from '~/store'
 import { getUserId } from '~/store/account/selectors'
 import { seek } from '~/store/player/slice'
@@ -73,7 +67,7 @@ type CommentSectionContextType<NavigationProp> = {
   artistId: ID
   isEntityOwner: boolean
   commentCount: number | undefined
-  track: UserTrackMetadata
+  track: Track
   playTrack: (timestampSeconds?: number) => void
   commentSectionLoading: boolean
   commentIds: ID[]
@@ -105,7 +99,12 @@ export function CommentSectionProvider<NavigationProp>(
     uid: lineupUid,
     lineupActions
   } = props
-  const { data: track } = useGetTrackById({ id: entityId })
+  const { data: track } = useTrack(entityId)
+  const trackOwnerId = track?.owner_id
+
+  // Prefetch the track owner's supporters
+  useSupporters({ userId: trackOwnerId })
+
   const {
     analytics: { make, track: trackEvent }
   } = useAppContext()

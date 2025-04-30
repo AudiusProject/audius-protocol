@@ -4,7 +4,6 @@ import {
   OverflowAction,
   OverflowSource
 } from '@audius/common/store'
-import { EventEntityTypeEnum } from '@audius/sdk'
 import { useSelector } from 'react-redux'
 
 import ActionDrawer from 'app/components/action-drawer'
@@ -89,12 +88,8 @@ export const OverflowMenuDrawer = () => {
     }
   })
 
-  const { data: events } = useRemixContest(id, {
-    entityType: EventEntityTypeEnum.Track
-  })
-
-  const event = events?.[0]
-  const isRemixContest = !!event
+  const { data: remixContest } = useRemixContest(id)
+  const isRemixContest = !!remixContest
 
   if (!overflowMenu?.id) {
     return <></>

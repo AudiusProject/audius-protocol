@@ -7,8 +7,8 @@ import { User } from '~/models/User'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
-import { getUserQueryKey } from '../useUser'
-import { getUserByHandleQueryKey } from '../useUserByHandle'
+import { getUserQueryKey } from '../users/useUser'
+import { getUserByHandleQueryKey } from '../users/useUserByHandle'
 
 export const primeUserData = ({
   users,

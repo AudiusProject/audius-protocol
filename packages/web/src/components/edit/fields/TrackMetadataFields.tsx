@@ -1,4 +1,5 @@
 import { Flex } from '@audius/harmony'
+import { MAX_DESCRIPTION_LENGTH } from '@audius/sdk'
 import { useField } from 'formik'
 
 import { getTrackFieldName } from 'components/edit-track/hooks'
@@ -7,7 +8,6 @@ import { ArtworkField, TagField, TextAreaField } from 'components/form-fields'
 import { SelectGenreField } from './SelectGenreField'
 import { SelectMoodField } from './SelectMoodField'
 import { TrackNameField } from './TrackNameField'
-
 const messages = {
   description: 'Description'
 }
@@ -30,8 +30,8 @@ export const TrackMetadataFields = () => {
         name={getTrackFieldName(index, 'description')}
         aria-label='description'
         placeholder={messages.description}
-        maxLength={1000}
-        css={{ minHeight: 96 }}
+        maxLength={MAX_DESCRIPTION_LENGTH}
+        css={{ minHeight: 96, maxHeight: 300 }}
         showMaxLength
         grows
       />

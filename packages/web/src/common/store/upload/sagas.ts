@@ -1091,9 +1091,9 @@ export function* uploadMultipleTracks(
   // At this point, the upload was success! The rest is metrics.
   yield* put(
     uploadActions.uploadTracksSucceeded({
-      id: newTracks[0].track_id,
-      trackMetadatas: newTracks,
-      completedEntity: newTracks[0],
+      id: newTracks[0].metadata.track_id,
+      trackMetadatas: newTracks.map((t) => t.metadata),
+      completedEntity: newTracks[0].metadata,
       uploadType
     })
   )
@@ -1106,7 +1106,7 @@ export function* uploadMultipleTracks(
 
   // If the hide remixes is turned on, send analytics event
   for (let i = 0; i < newTracks.length; i += 1) {
-    const track = newTracks[i]
+    const track = newTracks[i].metadata
     if (track.field_visibility?.remixes === false) {
       yield* put(
         make(Name.REMIX_HIDE, {
@@ -1118,7 +1118,8 @@ export function* uploadMultipleTracks(
   }
 
   // Send analytics for any remixes
-  for (const remixTrack of newTracks) {
+  for (const remixTrackData of newTracks) {
+    const remixTrack = remixTrackData.metadata
     if (
       remixTrack.remix_of !== null &&
       Array.isArray(remixTrack.remix_of?.tracks) &&
@@ -1130,6 +1131,29 @@ export function* uploadMultipleTracks(
 
   // Bust the cache so we refetch the user
   yield* put(cacheActions.setExpired(Kind.USERS, account!.user_id))
+
+  const queryClient = yield* getContext('queryClient')
+
+  // Invalidate the uploader's profile tracks cache
+  queryClient.invalidateQueries({
+    queryKey: ['profileTracks', account!.handle]
+  })
+
+  for (const track of newTracks) {
+    const parentTrackId = track.metadata.remix_of?.tracks[0]?.parent_track_id
+
+    // If it's a remix, invalidate the parent track's lineup and remixes page
+    if (parentTrackId) {
+      queryClient.invalidateQueries({
+        queryKey: ['trackPageLineup', parentTrackId]
+      })
+      // Invalidate all possible combinations of remixes queries for the parent track
+      queryClient.invalidateQueries({
+        queryKey: ['remixes', parentTrackId],
+        exact: false
+      })
+    }
+  }
 }
 
 function* uploadTracksAsync(
@@ -1226,7 +1250,7 @@ function* updateTrackAudioAsync(
     if (!tracks[0]) {
       throw new Error('Missing track for track audio replace.')
     }
-    const track = tracks[0]
+    const track = tracks[0].metadata
     const sdk = yield* getSDK()
     const userId = yield* select(accountSelectors.getUserId)
 

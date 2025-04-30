@@ -1,10 +1,10 @@
-import { useCallback, type ReactNode, useEffect } from 'react'
+import React, { useCallback, type ReactNode, useEffect } from 'react'
 
 import {
-  useGetCurrentUserId,
-  useGetPlaylistById,
-  useGetTrackById,
-  useGetUserById
+  useCollection,
+  useCurrentUserId,
+  useGetUserById,
+  useTrack
 } from '@audius/common/api'
 import type { PurchaseableContentMetadata } from '@audius/common/hooks'
 import {
@@ -22,12 +22,7 @@ import {
   PURCHASE_METHOD_MINT_ADDRESS
 } from '@audius/common/hooks'
 import type { ID, USDCPurchaseConditions } from '@audius/common/models'
-import {
-  Name,
-  PurchaseMethod,
-  PurchaseVendor,
-  statusIsNotFinalized
-} from '@audius/common/models'
+import { Name, PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import { IntKeys, FeatureFlags } from '@audius/common/services'
 import {
   usePremiumContentPurchaseModal,
@@ -39,15 +34,13 @@ import {
   PurchaseableContentType
 } from '@audius/common/store'
 import type { PurchaseContentError } from '@audius/common/store'
-import { formatPrice } from '@audius/common/utils'
-import { Formik, useField, useFormikContext } from 'formik'
 import {
-  Linking,
-  View,
-  ScrollView,
-  TouchableOpacity,
-  Platform
-} from 'react-native'
+  formatPrice,
+  AUDIO_MATCHING_REWARDS_MULTIPLIER
+} from '@audius/common/utils'
+import { USDC } from '@audius/fixed-decimal'
+import { Formik, useField, useFormikContext } from 'formik'
+import { Linking, View, ScrollView, TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -246,10 +239,9 @@ const RenderForm = ({
   const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
     FeatureFlags.BUY_WITH_COINFLOW
   )
-  const { isEnabled: isIOSUSDCPurchaseEnabled } = useFeatureFlag(
-    FeatureFlags.IOS_USDC_PURCHASE_ENABLED
+  const { isEnabled: isUsdcPurchaseEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES
   )
-  const isIOSDisabled = Platform.OS === 'ios' && !isIOSUSDCPurchaseEnabled
 
   const { submitForm, resetForm } = useFormikContext()
 
@@ -351,7 +343,11 @@ const RenderForm = ({
               <TrackDetailsTile
                 trackId={contentId}
                 showLabel={false}
-                earnAmount={Math.round(price / 100).toString()}
+                earnAmount={USDC(
+                  (price * AUDIO_MATCHING_REWARDS_MULTIPLIER) / 100
+                )
+                  .round()
+                  .toShorthand()}
               />
               {isPurchaseSuccessful ? null : (
                 <PayExtraFormSection
@@ -368,7 +364,9 @@ const RenderForm = ({
                   streamPurchaseCount={streamPurchaseCount}
                   totalPriceInCents={totalPriceInCents}
                 />
-                {isIOSDisabled || isUnlocking || isPurchaseSuccessful ? null : (
+                {!isUsdcPurchaseEnabled ||
+                isUnlocking ||
+                isPurchaseSuccessful ? null : (
                   <PaymentMethod
                     selectedMethod={purchaseMethod}
                     setSelectedMethod={setPurchaseMethod}
@@ -387,7 +385,7 @@ const RenderForm = ({
                   />
                 )}
               </View>
-              {isIOSDisabled ? (
+              {!isUsdcPurchaseEnabled ? (
                 <PurchaseUnavailable />
               ) : isPurchaseSuccessful ? (
                 <PurchaseSuccess
@@ -420,7 +418,7 @@ const RenderForm = ({
           />
         </View>
       )}
-      {isPurchaseSuccessful || isIOSDisabled ? null : (
+      {isPurchaseSuccessful || !isUsdcPurchaseEnabled ? null : (
         <View style={styles.formActions}>
           {error ? <RenderError error={error} /> : null}
           {page === PurchaseContentPage.TRANSFER ? (
@@ -461,15 +459,11 @@ export const PremiumContentPurchaseDrawer = () => {
     onClosed
   } = usePremiumContentPurchaseModal()
   const isAlbum = contentType === PurchaseableContentType.ALBUM
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: track, status: trackStatus } = useGetTrackById(
-    { id: contentId },
-    { disabled: !contentId }
-  )
-  const { data: album } = useGetPlaylistById(
-    { playlistId: contentId!, currentUserId },
-    { disabled: !isAlbum || !contentId }
-  )
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: track, isPending: isTrackPending } = useTrack(contentId)
+  const { data: album } = useCollection(contentId, {
+    enabled: isAlbum
+  })
   const { data: user } = useGetUserById(
     {
       id: track?.owner_id ?? album?.playlist_owner_id ?? 0,
@@ -485,8 +479,6 @@ export const PremiumContentPurchaseDrawer = () => {
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
-
-  const isLoading = statusIsNotFinalized(trackStatus)
 
   const isValidStreamGatedTrack = !!metadata && isStreamPurchaseable(metadata)
   const isValidDownloadGatedTrack =
@@ -533,7 +525,7 @@ export const PremiumContentPurchaseDrawer = () => {
       isFullscreen
       dismissKeyboardOnOpen
     >
-      {isLoading ? (
+      {isTrackPending ? (
         <View style={styles.spinnerContainer}>
           <LoadingSpinner />
         </View>

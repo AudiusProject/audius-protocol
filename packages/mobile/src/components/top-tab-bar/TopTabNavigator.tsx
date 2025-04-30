@@ -4,7 +4,7 @@ import type { MaterialTopTabNavigationOptions } from '@react-navigation/material
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs'
 import type { SvgProps } from 'react-native-svg'
 
-import { TopTabBar } from 'app/components/top-tab-bar'
+import { TopTabBar } from './TopTabBar'
 
 const Tab = createMaterialTopTabNavigator()
 

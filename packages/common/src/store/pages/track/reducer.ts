@@ -8,12 +8,8 @@ import {
   SET_TRACK_ID,
   SET_TRACK_PERMALINK,
   RESET,
-  SET_TRACK_RANK,
-  SET_TRACK_TRENDING_RANKS,
   SetTrackIdAction,
   SetTrackPermalinkAction,
-  SetTrackRankAction,
-  SetTrackTrendingRanksAction,
   ResetAction,
   TrackPageAction
 } from './actions'
@@ -23,18 +19,6 @@ import { TrackPageState } from './types'
 const initialState: TrackPageState = {
   trackId: null,
   trackPermalink: null,
-  rank: {
-    week: null,
-    month: null,
-    year: null,
-    allTime: null
-  },
-  trendingTrackRanks: {
-    week: null,
-    month: null,
-    year: null,
-    allTime: null
-  },
   tracks: initialLineupState
 }
 
@@ -52,27 +36,6 @@ const actionsMap = {
     return {
       ...state,
       trackPermalink: action.permalink
-    }
-  },
-  [SET_TRACK_RANK](state: TrackPageState, action: SetTrackRankAction) {
-    return {
-      ...state,
-      rank: {
-        ...state.rank,
-        [action.duration]: action.rank
-      }
-    }
-  },
-  [SET_TRACK_TRENDING_RANKS](
-    state: TrackPageState,
-    action: SetTrackTrendingRanksAction
-  ) {
-    return {
-      ...state,
-      trendingTrackRanks: {
-        ...state.trendingTrackRanks,
-        ...action.trendingTrackRanks
-      }
     }
   },
   [RESET](state: TrackPageState, action: ResetAction) {

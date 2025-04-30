@@ -1,6 +1,6 @@
 import { ChangeEvent, useCallback, useState } from 'react'
 
-import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
+import { useCollection, useGetCurrentUserId } from '@audius/common/api'
 import {
   AccessConditions,
   AccessPermissions,
@@ -29,6 +29,7 @@ import {
   IconCalendarMonth
 } from '@audius/harmony'
 import cn from 'classnames'
+import { pick } from 'lodash'
 import { Link } from 'react-router-dom'
 
 import { UserLink } from 'components/link'
@@ -123,16 +124,21 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
 
   const { spacing } = useTheme()
   const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: collection } = useGetPlaylistById({
-    playlistId: collectionId,
-    currentUserId
+  const { data: partialCollection } = useCollection(collectionId, {
+    select: (collection) =>
+      pick(collection, [
+        'is_scheduled_release',
+        'release_date',
+        'permalink',
+        'is_private'
+      ])
   })
   const {
     is_scheduled_release: isScheduledRelease,
     release_date: releaseDate,
     permalink,
     is_private: isPrivate
-  } = collection ?? {}
+  } = partialCollection ?? {}
   const [artworkLoading, setIsArtworkLoading] = useState(true)
   const [filterText, setFilterText] = useState('')
 

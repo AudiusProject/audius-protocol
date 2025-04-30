@@ -1,5 +1,25 @@
+import { HTTPQuery, querystring } from '@audius/sdk'
+
 const DEFAULT_TIMEOUT_MS = 3000
 export const TIMED_OUT_ERROR = 'Request Timed Out'
+
+const DISCOVERY_API = import.meta.env.VITE_DISCOVERY_API
+
+type ApiFetchOptions = RequestInit & {
+  queryParams?: HTTPQuery
+}
+
+export const apiFetch = async (
+  endpoint: string,
+  options: ApiFetchOptions = {}
+) => {
+  let url = `${DISCOVERY_API}/${endpoint}`
+  if (options.queryParams) {
+    url += `?${querystring(options.queryParams)}`
+  }
+  const res = await fetch(url, options)
+  return res.json()
+}
 
 export const fetchWithTimeout = async (
   url: string,
@@ -26,18 +46,4 @@ export const withTimeout = async (
 
   const res = await Promise.race([asyncCall, timeoutPromise])
   return res
-}
-
-// use discovery node from libs to fetch data
-export const fetchWithLibs = async (req: {
-  endpoint: string
-  queryParams?: object
-}) => {
-  // TODO use audius client instead of window.audiusLibs
-  const data = await window.audiusLibs.discoveryProvider._makeRequest(req)
-
-  // if all nodes are unhealthy and unavailable
-  if (!data) return Promise.reject(new Error())
-
-  return data
 }

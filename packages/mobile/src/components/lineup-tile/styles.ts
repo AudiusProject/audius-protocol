@@ -36,12 +36,19 @@ export const useStyles = makeStyles(({ palette }) => ({
     marginLeft: spacing(2)
   },
   titles: {
-    justifyContent: 'center',
+    paddingVertical: spacing(1),
     alignItems: 'flex-start',
     flexBasis: '65%',
     marginRight: spacing(3),
     marginTop: spacing(2),
-    gap: 2
+    gap: spacing(1)
+  },
+  collectionTitles: {
+    alignItems: 'flex-start',
+    flexBasis: '65%',
+    marginRight: spacing(3),
+    marginTop: spacing(2),
+    gap: spacing(1)
   },
   title: {
     ...flexRowCentered(),

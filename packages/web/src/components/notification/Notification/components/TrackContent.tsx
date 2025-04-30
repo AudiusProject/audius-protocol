@@ -1,8 +1,8 @@
 import { SquareSizes } from '@audius/common/models'
 import { TrackEntity } from '@audius/common/store'
 
-import CoSign, { Size } from 'components/co-sign/CoSign'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import TrackFlair, { Size } from 'components/track-flair/TrackFlair'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 import styles from './TrackContent.module.css'
@@ -21,12 +21,17 @@ export const TrackContent = (props: TrackContentProps) => {
 
   return (
     <div className={styles.trackContent}>
-      <CoSign hideTooltip size={Size.SMALL} className={styles.cosign}>
+      <TrackFlair
+        hideToolTip
+        id={track.track_id}
+        size={Size.SMALL}
+        className={styles.cosign}
+      >
         <DynamicImage
           wrapperClassName={styles.trackContentArtwork}
           image={image}
         />
-      </CoSign>
+      </TrackFlair>
       <span className={styles.trackContentText}>{track.title}</span>
     </div>
   )

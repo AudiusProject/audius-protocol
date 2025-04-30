@@ -168,6 +168,10 @@ export type LineupProps = {
   pageSize?: number
   initialPageSize?: number
   tanQuery?: boolean
+  isFetching?: boolean
+  // TODO:
+  queryData?: any
+  isCollapsible?: boolean
 } & Pick<
   SectionListProps<unknown>,
   | 'showsVerticalScrollIndicator'

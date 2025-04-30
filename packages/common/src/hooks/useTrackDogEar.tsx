@@ -1,5 +1,5 @@
 import { useCurrentUserId } from '~/api'
-import { useTrack } from '~/api/tan-query/useTrack'
+import { useTrack } from '~/api/tan-query/tracks/useTrack'
 import { DogEarType } from '~/models'
 import { ID } from '~/models/Identifiers'
 import {

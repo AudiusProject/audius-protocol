@@ -3,11 +3,11 @@ import { useMemo } from 'react'
 import { keyBy } from 'lodash'
 
 import {
+  useCollections,
   useGetCurrentUserId,
-  useGetPlaylistsByIds,
   useGetPurchasersCount,
   useGetSalesAggegrate,
-  useGetTracksByIds
+  useTracks
 } from '~/api'
 import { ID } from '~/models'
 import { removeNullable } from '~/utils'
@@ -32,14 +32,12 @@ export const usePurchasersAudience = ({
     (sale) => sale.contentType === 'album'
   )
 
-  const { data: tracks } = useGetTracksByIds({
-    ids: trackAggregates?.map((sale) => sale.contentId) ?? [],
-    currentUserId
-  })
-  const { data: albums } = useGetPlaylistsByIds({
-    ids: albumAggregates?.map((sale) => sale.contentId) ?? [],
-    currentUserId
-  })
+  const { data: tracks } = useTracks(
+    trackAggregates?.map((sale) => sale.contentId) ?? []
+  )
+  const { data: albums } = useCollections(
+    albumAggregates?.map((sale) => sale.contentId) ?? []
+  )
   const tracksById = useMemo(() => keyBy(tracks, 'track_id'), [tracks])
   const albumsById = useMemo(() => keyBy(albums, 'playlist_id'), [albums])
 

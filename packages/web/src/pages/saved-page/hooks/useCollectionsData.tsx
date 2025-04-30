@@ -41,7 +41,7 @@ export const useCollectionsData = ({
     const collectionsMap = getCollections(state, {
       ids
     })
-    return ids.map((id) => collectionsMap[id])
+    return ids.map((id) => collectionsMap[id]?.metadata)
   })
 
   const locallyRemovedCollections = useSelector((state: CommonState) => {

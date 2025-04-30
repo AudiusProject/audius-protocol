@@ -1,10 +1,10 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
 
-import { useUsers } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
 import {
   accountSelectors,
+  cacheUsersSelectors,
   cacheTracksSelectors,
   savedPageTracksLineupActions,
   queueActions,
@@ -69,6 +69,7 @@ export const DEFAULT_IMAGE_URL =
   'https://download.audius.co/static-resources/preview-image.jpg'
 
 const { getUserId } = accountSelectors
+const { getUsers } = cacheUsersSelectors
 const { getTracks } = cacheTracksSelectors
 const {
   getPlaying,
@@ -199,7 +200,7 @@ export const AudioPlayer = () => {
   )
   const queueTracks: QueueableTrack[] = queueOrder.map(
     ({ id, playerBehavior }) => ({
-      track: queueTrackMap[id] as Nullable<Track>,
+      track: queueTrackMap[id]?.metadata,
       playerBehavior
     })
   )
@@ -207,7 +208,10 @@ export const AudioPlayer = () => {
     .map(({ track }) => track?.owner_id)
     .filter(removeNullable)
 
-  const { byId: queueTrackOwnersMap } = useUsers(queueTrackOwnerIds)
+  const queueTrackOwnersMap = useSelector(
+    (state) => getUsers(state, { ids: queueTrackOwnerIds }),
+    shallowCompare
+  )
 
   const isCollectionMarkedForDownload = useSelector(
     getIsCollectionMarkedForDownload(
@@ -311,7 +315,7 @@ export const AudioPlayer = () => {
       }
       setRetries(retries ?? 0)
 
-      const trackOwner = queueTrackOwnersMap[track.owner_id]
+      const trackOwner = queueTrackOwnersMap[track.owner_id].metadata
       const trackId = track.track_id
       const offlineTrackAvailable =
         trackId && offlineAvailabilityByTrackId[trackId]

@@ -61,6 +61,8 @@ export interface GetPlaylistTracksRequest {
 }
 
 export interface GetTrendingPlaylistsRequest {
+    offset?: number;
+    limit?: number;
     time?: GetTrendingPlaylistsTimeEnum;
 }
 
@@ -261,6 +263,14 @@ export class PlaylistsApi extends runtime.BaseAPI {
      */
     async getTrendingPlaylistsRaw(params: GetTrendingPlaylistsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrendingPlaylistsResponse>> {
         const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
 
         if (params.time !== undefined) {
             queryParameters['time'] = params.time;

@@ -1,15 +1,14 @@
-import { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect } from 'react'
 
 import {
-  tokenDashboardPageSelectors,
+  modalsActions,
   tokenDashboardPageActions,
-  walletSelectors,
+  tokenDashboardPageSelectors,
   walletActions,
-  modalsActions
+  walletSelectors
 } from '@audius/common/store'
 import { isNullOrUndefined } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
-import { css } from '@emotion/native'
 import { useFocusEffect } from '@react-navigation/native'
 import { Image, Linking } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
@@ -17,20 +16,20 @@ import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
-  IconCrown,
-  IconInfo,
   Button,
   Flex,
-  Text,
-  Paper
+  IconCrown,
+  IconInfo,
+  Paper,
+  Text
 } from '@audius/harmony-native'
 import TokenStill from 'app/assets/images/tokenSpinStill.png'
 import {
-  ScrollView,
-  Screen,
   GradientText,
-  Tile,
-  ScreenContent
+  Screen,
+  ScreenContent,
+  ScrollView,
+  Tile
 } from 'app/components/core'
 import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
 import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
@@ -166,14 +165,10 @@ export const AudioScreen = () => {
               />
             ) : (
               <Text
-                variant='heading'
-                color='white'
+                variant='display'
+                size='l'
+                color='staticWhite'
                 strength='strong'
-                style={css({
-                  fontSize: 80,
-                  lineHeight: 96,
-                  paddingVertical: 8
-                })}
               >
                 {AUDIO(totalBalance).toShorthand()}
               </Text>

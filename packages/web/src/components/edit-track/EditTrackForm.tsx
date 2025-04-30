@@ -148,6 +148,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
       <Formik<TrackEditFormValues>
         initialValues={initialValues}
         onSubmit={handleSubmit}
+        enableReinitialize
         validationSchema={toFormikValidationSchema(EditFormValidationSchema)}
       >
         {(props) => (

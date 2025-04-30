@@ -53,7 +53,7 @@ export const getNotificationUsers = (
   if ('userIds' in notification) {
     const userIds = notification.userIds.slice(0, limit)
     const userMap = getUsers(state, { ids: userIds })
-    return userIds.map((id) => userMap[id])
+    return userIds.map((id) => userMap[id].metadata)
   }
   return null
 }
@@ -112,8 +112,8 @@ export const getNotificationEntities = <T extends Notification>(
       notification.entityType === Entity.Track ? getTracks : getCollections
     const entityMap = getEntities(state, { ids: notification.entityIds })
     const entities = notification.entityIds
-      .map((id: number) => (entityMap as any)[id])
-      .map((entity: Track | Collection | null) => {
+      .map((entityId) => {
+        const entity: Track | Collection = entityMap[entityId]?.metadata
         if (entity) {
           const userId =
             'owner_id' in entity ? entity.owner_id : entity.playlist_owner_id

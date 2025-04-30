@@ -24,7 +24,7 @@ function* trackEventAsync(action: TrackEvent) {
 
 function* identifyEventAsync(action: IdentifyEvent) {
   const analytics = yield* getContext('analytics')
-  yield call(analytics.identify, action.handle, action.traits)
+  yield call(analytics.identify, action.traits)
 }
 
 function* watchTrackEvent() {

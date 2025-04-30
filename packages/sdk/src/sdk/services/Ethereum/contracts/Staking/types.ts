@@ -1,3 +1,7 @@
-import type { EthereumContractConfigInternal } from '../types'
+import type { Hex } from 'viem'
 
-export type StakingConfig = {} & EthereumContractConfigInternal
+import type { EthereumClientConfig } from '../types'
+
+export type StakingConfig = StakingConfigInternal & EthereumClientConfig
+
+export type StakingConfigInternal = { address: Hex }

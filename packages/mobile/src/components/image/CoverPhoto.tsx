@@ -4,7 +4,12 @@ import type { ID } from '@audius/common/models'
 import { SquareSizes, WidthSizes } from '@audius/common/models'
 import { BlurView } from '@react-native-community/blur'
 import { pick } from 'lodash'
-import { Animated, StyleSheet } from 'react-native'
+import { StyleSheet } from 'react-native'
+import { useCurrentTabScrollY } from 'react-native-collapsible-tab-view'
+import Animated, {
+  interpolate,
+  useAnimatedStyle
+} from 'react-native-reanimated'
 
 import type { FastImageProps } from '@audius/harmony-native'
 import { FastImage, preload } from '@audius/harmony-native'
@@ -13,30 +18,6 @@ import { useProfilePicture } from './UserImage'
 import { primitiveToImageSource } from './primitiveToImageSource'
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView)
-
-const interpolateBlurViewOpacity = (scrollY: Animated.Value) =>
-  scrollY.interpolate({
-    inputRange: [-100, 0],
-    outputRange: [1, 0],
-    extrapolateLeft: 'extend',
-    extrapolateRight: 'clamp'
-  })
-
-const interpolateImageScale = (animatedValue: Animated.Value) =>
-  animatedValue.interpolate({
-    inputRange: [-200, 0],
-    outputRange: [4, 1],
-    extrapolateLeft: 'extend',
-    extrapolateRight: 'clamp'
-  })
-
-const interpolateImageTranslate = (animatedValue: Animated.Value) =>
-  animatedValue.interpolate({
-    inputRange: [-200, 0],
-    outputRange: [-40, 0],
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp'
-  })
 
 export const useCoverPhoto = ({
   userId,
@@ -86,43 +67,53 @@ export const useCoverPhoto = ({
 
 type CoverPhotoProps = {
   userId: ID
-  animatedValue?: Animated.Value
 } & Partial<FastImageProps>
 
 export const CoverPhoto = (props: CoverPhotoProps) => {
-  const { userId, animatedValue, ...imageProps } = props
+  const { userId, ...imageProps } = props
+  const scrollY = useCurrentTabScrollY()
 
   const { source, shouldBlur } = useCoverPhoto({
     userId,
     size: WidthSizes.SIZE_640
   })
 
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        scale: interpolate(scrollY.value, [-200, 0], [4, 1], {
+          extrapolateLeft: 'extend',
+          extrapolateRight: 'clamp'
+        })
+      },
+      {
+        translateY: interpolate(scrollY.value, [-200, 0], [-40, 0], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp'
+        })
+      }
+    ]
+  }))
+
+  const blurViewStyle = useAnimatedStyle(() => ({
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 2,
+    opacity: interpolate(scrollY.value, [-100, 0], [1, 0], {
+      extrapolateLeft: 'extend',
+      extrapolateRight: 'clamp'
+    })
+  }))
+
   if (!source) return null
 
   return (
-    <Animated.View
-      style={
-        animatedValue && {
-          transform: [
-            { scale: interpolateImageScale(animatedValue) },
-            { translateY: interpolateImageTranslate(animatedValue) }
-          ]
-        }
-      }
-    >
+    <Animated.View style={animatedStyle}>
       <FastImage source={source} {...imageProps}>
-        {shouldBlur || animatedValue ? (
+        {shouldBlur || scrollY ? (
           <AnimatedBlurView
             blurType='light'
             blurAmount={20}
-            style={[
-              { ...StyleSheet.absoluteFillObject, zIndex: 2 },
-              animatedValue && !shouldBlur
-                ? {
-                    opacity: interpolateBlurViewOpacity(animatedValue)
-                  }
-                : undefined
-            ]}
+            style={blurViewStyle}
           />
         ) : null}
       </FastImage>

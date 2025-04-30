@@ -6,6 +6,7 @@ import { AddFundsModalState } from './add-funds-modal'
 import { AlbumTrackRemoveConfirmationModalState } from './album-track-remove-confirmation-modal'
 import { AnnouncementModalState } from './announcement-modal'
 import { ArtistPickModalState } from './artist-pick-modal'
+import { BuySellModalState } from './buy-sell-modal'
 import { CoinflowOnrampModalState } from './coinflow-onramp-modal'
 import { CoinflowWithdrawModalState } from './coinflow-withdraw-modal'
 import { ChatBlastModalState } from './create-chat-blast-modal'
@@ -106,9 +107,11 @@ export type Modals =
   | 'PayoutWallet'
   | 'EditTrackFormOverflowMenu'
   | 'ExternalWalletSignUp'
+  | 'ConnectedWallets'
   | 'Announcement'
   | 'Notification'
   | 'DownloadTrackArchive'
+  | 'BuySellModal'
   | 'HostRemixContest'
 
 export type BasicModalsState = {
@@ -142,6 +145,7 @@ export type StatefulModalsState = {
   Announcement: AnnouncementModalState
   Notification: BaseModalState
   DownloadTrackArchive: DownloadTrackArchiveModalState
+  BuySellModal: BuySellModalState
   HostRemixContest: HostRemixContestModalState
 }
 

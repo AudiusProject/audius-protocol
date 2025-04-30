@@ -105,7 +105,7 @@ export const SummaryTable = ({
         borderBottom={isExpanded ? 'default' : undefined}
       >
         <Flex direction='row' alignItems='center' gap='s'>
-          <ExpandableArrowIcon expanded={isExpanded} iconSize='s' />
+          <ExpandableArrowIcon expanded={isExpanded} size='s' />
           <Text variant='title' strength='default'>
             {title}
           </Text>

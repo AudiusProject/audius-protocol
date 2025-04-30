@@ -3,9 +3,9 @@ import { memo } from 'react'
 import { SquareSizes, ID, Remix } from '@audius/common/models'
 import cn from 'classnames'
 
-import CoSign from 'components/co-sign/CoSign'
-import { Size } from 'components/co-sign/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import TrackFlair from 'components/track-flair/TrackFlair'
+import { Size } from 'components/track-flair/types'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
@@ -62,19 +62,14 @@ const TrackTileArt = ({
     </DynamicImage>
   )
 
-  return coSign ? (
-    <CoSign
+  return (
+    <TrackFlair
       size={Size.SMALL}
       className={cn(styles.container, className)}
-      hasFavorited={coSign.has_remix_author_saved}
-      hasReposted={coSign.has_remix_author_reposted}
-      coSignName={coSign.user.name}
-      userId={coSign.user.user_id}
+      id={id}
     >
       {renderImage()}
-    </CoSign>
-  ) : (
-    renderImage()
+    </TrackFlair>
   )
 }
 
@@ -113,20 +108,7 @@ const CollectionTileArt = ({
     </DynamicImage>
   )
 
-  return coSign ? (
-    <CoSign
-      size={Size.SMALL}
-      className={cn(styles.container, className)}
-      hasFavorited={coSign.has_remix_author_saved}
-      hasReposted={coSign.has_remix_author_reposted}
-      coSignName={coSign.user.name}
-      userId={coSign.user.user_id}
-    >
-      {renderImage()}
-    </CoSign>
-  ) : (
-    renderImage()
-  )
+  return renderImage()
 }
 
 const TileArt = (props: TrackTileArtProps) => {

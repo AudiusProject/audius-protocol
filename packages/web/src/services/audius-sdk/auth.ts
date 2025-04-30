@@ -6,64 +6,72 @@ import {
   createHedgehogWalletClient,
   type AudiusWalletClient
 } from '@audius/sdk'
-import { getAccount, getWalletClient } from '@wagmi/core'
+import { getWalletClient } from '@wagmi/core'
 import { type WalletClient } from 'viem'
+
+import { audiusChain, wagmiAdapter } from 'app/ReownAppKitModal'
 
 import { env } from '../env'
 import { localStorage } from '../local-storage'
 
-import { audiusChain, wagmiConfig } from './wagmi'
+const wagmiConfig = wagmiAdapter.wagmiConfig
 
-export const getAudiusWalletClient = async (opts?: {
-  ignoreCachedUserWallet?: boolean
-}): Promise<AudiusWalletClient> => {
-  const { ignoreCachedUserWallet = false } = opts ?? {}
-  const account = getAccount(wagmiConfig)
-  const user = await localStorage.getAudiusAccountUser()
-
-  // Check that the local storage user's wallet matches the connected external wallet
-  if (
-    ignoreCachedUserWallet ||
-    (user?.wallet?.toLocaleLowerCase() &&
-      user?.wallet?.toLowerCase() === account.address?.toLowerCase())
-  ) {
-    console.debug('[audiusSdk] Initializing SDK with external wallet...', {
-      ignoreCachedUserWallet,
-      userWallet: user?.wallet?.toLowerCase(),
-      externalWallet: account?.address?.toLowerCase()
-    })
-
-    // Wait for the wallet to finish connecting/reconnecting
-    if (
-      wagmiConfig.state.status === 'reconnecting' ||
-      wagmiConfig.state.status === 'connecting'
-    ) {
-      console.debug(
-        `[audiusSdk] Waiting for external wallet to finish ${wagmiConfig.state.status}...`
-      )
-      let unsubscribe: undefined | (() => void)
-      await new Promise<void>((resolve) => {
-        unsubscribe = wagmiConfig.subscribe(
-          (state) => state.status,
-          () => {
-            resolve()
-          }
-        )
-      })
-      console.debug(`[audiusSdk] External wallet ${wagmiConfig.state.status}.`)
-      unsubscribe?.()
-    }
-
-    // If connected, initialize the viem WalletClient. Else fall back to Hedgehog.
-    if (wagmiConfig.state.status === 'connected') {
-      const client = await getWalletClient(wagmiConfig, {
-        chainId: audiusChain.id
-      })
-      return client satisfies WalletClient as unknown as AudiusWalletClient
-    }
+export const getAudiusWalletClient = async (): Promise<AudiusWalletClient> => {
+  // Check if the user has already connected Hedgehog first...
+  await authService.hedgehogInstance.waitUntilReady()
+  const hedgehogWallet = authService.getWallet()
+  if (hedgehogWallet) {
+    console.debug(
+      '[audiusSdk] Found Hedgehog wallet:',
+      hedgehogWallet.getAddressString(),
+      'Initializing SDK with Hedgehog...'
+    )
+    return createHedgehogWalletClient(authService.hedgehogInstance)
   }
-  console.debug('[audiusSdk] Initializing SDK with Hedgehog...')
-  return createHedgehogWalletClient(authService.hedgehogInstance)
+
+  // Try the connected external wallet next...
+  console.debug('[audiusSdk] Initializing SDK with external wallet...')
+
+  // Wait for the wallet to finish connecting/reconnecting
+  if (
+    wagmiConfig.state.status === 'reconnecting' ||
+    wagmiConfig.state.status === 'connecting'
+  ) {
+    console.debug(
+      `[audiusSdk] Waiting for external wallet to finish ${wagmiConfig.state.status}...`
+    )
+    let unsubscribe: undefined | (() => void)
+    await new Promise<void>((resolve) => {
+      unsubscribe = wagmiConfig.subscribe(
+        (state) => state.status,
+        () => {
+          resolve()
+        }
+      )
+    })
+    unsubscribe?.()
+  }
+  console.debug(`[audiusSdk] External wallet ${wagmiConfig.state.status}`)
+
+  // If connected, initialize the viem WalletClient. Else fall back to Hedgehog.
+  if (
+    wagmiConfig.state.status === 'connected' &&
+    wagmiConfig.state.chainId === audiusChain.id
+  ) {
+    const client = await getWalletClient(wagmiConfig, {
+      chainId: audiusChain.id
+    })
+    return client satisfies WalletClient as unknown as AudiusWalletClient
+  } else {
+    console.warn(
+      '[audiusSdk] External wallet not connected to Audius chain. Falling back to Hedgehog.',
+      {
+        status: wagmiConfig.state.status,
+        chainId: wagmiConfig.state.chainId
+      }
+    )
+    return createHedgehogWalletClient(authService.hedgehogInstance)
+  }
 }
 
 export const authService = createAuthService({

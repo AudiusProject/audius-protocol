@@ -111,7 +111,13 @@ describe('upload', () => {
           [select(accountSelectors.getAccountUser), {}],
           [select(accountSelectors.getUserId), 12345],
           [call.fn(uploadMultipleTracks), undefined],
-          [call.fn(addPremiumMetadata), testTrack]
+          [call.fn(addPremiumMetadata), testTrack],
+          [
+            getContext('queryClient'),
+            {
+              invalidateQueries: () => {}
+            }
+          ]
         ])
         // Assertions
         // Assert that we format the tracks for premium conditions
@@ -169,9 +175,15 @@ describe('upload', () => {
               }
             }
           ],
+          [
+            getContext('queryClient'),
+            {
+              invalidateQueries: () => {}
+            }
+          ],
           [call.fn(confirmTransaction), true],
           [call.fn(waitForAccount), undefined],
-          [call.fn(retrieveTracks), [testTrack.metadata]]
+          [call.fn(retrieveTracks), [testTrack]]
         ])
         // Assertions
         // Uploaded track
@@ -264,6 +276,12 @@ describe('upload', () => {
                   writeTrackToChain: mockWriteTrackUploadToChain
                 }
               }
+            }
+          ],
+          [
+            getContext('queryClient'),
+            {
+              invalidateQueries: () => {}
             }
           ],
           [call.fn(confirmTransaction), true],
@@ -651,6 +669,12 @@ describe('upload', () => {
           [select(accountSelectors.getAccountUser), {}],
           [select(accountSelectors.getUserId), 12345],
           [getContext('audiusSdk'), () => sdkMock],
+          [
+            getContext('queryClient'),
+            {
+              invalidateQueries: () => {}
+            }
+          ],
           [call.fn(confirmTransaction), true],
           [call.fn(waitForAccount), undefined],
           [
