@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import { useWalletOwner } from '@audius/common/api'
 import { accountSelectors } from '@audius/common/store'
 import { shortenSPLAddress } from '@audius/common/utils'
@@ -6,7 +8,8 @@ import {
   IconLogoCircleSOL,
   IconLogoWhiteBackground,
   Skeleton,
-  Text
+  Text,
+  useTheme
 } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
@@ -38,21 +41,31 @@ const PayoutWalletDisplaySkeleton = () => {
 export const PayoutWalletDisplay = () => {
   const user = useSelector(getAccountUser)
   const payoutWallet = user?.spl_usdc_payout_wallet
+  const { cornerRadius } = useTheme()
 
   const { data: externalWalletOwner, isLoading: isLoadingOwner } =
     useWalletOwner(payoutWallet)
+
+  const isExternalWallet = !!payoutWallet
+
+  const iconComponent = useMemo(() => {
+    if (isExternalWallet) {
+      return <IconLogoCircleSOL size='l' />
+    } else {
+      return (
+        <IconLogoWhiteBackground
+          size='l'
+          css={{ borderRadius: cornerRadius.circle }}
+        />
+      )
+    }
+  }, [cornerRadius.circle, isExternalWallet])
 
   if (isLoadingOwner) {
     return <PayoutWalletDisplaySkeleton />
   }
 
   const displayAddress = externalWalletOwner ?? payoutWallet
-
-  const isExternalWallet = !!payoutWallet
-
-  const IconComponent = isExternalWallet
-    ? IconLogoCircleSOL
-    : IconLogoWhiteBackground
 
   const displayText = isExternalWallet
     ? shortenSPLAddress(displayAddress ?? '') // shorten the owner address or the stored address
@@ -69,7 +82,7 @@ export const PayoutWalletDisplay = () => {
       pr='s'
       gap='xs'
     >
-      <IconComponent size='l' />
+      {iconComponent}
       <Text variant='body' size='m' strength='strong' ellipses>
         {displayText}
       </Text>

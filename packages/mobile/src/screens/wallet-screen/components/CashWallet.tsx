@@ -19,7 +19,8 @@ import {
   IconLogoCircleUSDC,
   Paper,
   Skeleton,
-  Text
+  Text,
+  useTheme
 } from '@audius/harmony-native'
 import { make, track } from 'app/services/analytics'
 
@@ -28,6 +29,7 @@ export const CashWallet = () => {
   const { onOpen: openAddFundsModal } = useAddFundsModal()
   const { balanceFormatted, isLoading } = useFormattedUSDCBalance()
   const insets = useSafeAreaInsets()
+  const { color } = useTheme()
 
   // Create a ref for the bottom sheet modal
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
@@ -86,6 +88,7 @@ export const CashWallet = () => {
         ref={bottomSheetModalRef}
         snapPoints={['25%']}
         topInset={insets.top}
+        backgroundStyle={{ backgroundColor: color.background.white }}
         backdropComponent={(props) => (
           <BottomSheetBackdrop
             {...props}
