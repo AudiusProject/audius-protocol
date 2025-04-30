@@ -1,5 +1,5 @@
 import type { Ref, RefObject } from 'react'
-import React, { forwardRef, useContext } from 'react'
+import { forwardRef, useContext } from 'react'
 
 import { Portal } from '@gorhom/portal'
 import type {
