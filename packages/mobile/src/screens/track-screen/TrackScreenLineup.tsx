@@ -85,6 +85,7 @@ export const TrackScreenLineup = ({
             hasMore={false}
             isPending={isPending}
             queryData={data}
+            hidePlayBarChin={true}
           />
           {parentTrackId ? (
             <ViewOtherRemixesButton parentTrackId={parentTrackId} />
