@@ -34,7 +34,7 @@ export const TrackNameWithArtwork = ({
   })
   const title = isTrack ? trackTitle : albumTitle
   const image = isTrack ? trackArtwork : albumArtwork
-  const loading = isAlbumPending || isTrackPending
+  const loading = isTrack ? isTrackPending : isAlbumPending
 
   return (
     <div className={styles.container}>
