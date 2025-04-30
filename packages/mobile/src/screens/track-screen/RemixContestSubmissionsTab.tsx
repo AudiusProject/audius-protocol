@@ -57,7 +57,7 @@ const SubmissionCard = ({ submission }: { submission: LineupData }) => {
   const displaySkeleton = isLoading || !track || !user
 
   const handlePress = useCallback(() => {
-    navigation.navigate('Track', { trackId: submission.id })
+    navigation.push('Track', { trackId: submission.id })
   }, [navigation, submission.id])
 
   return (
