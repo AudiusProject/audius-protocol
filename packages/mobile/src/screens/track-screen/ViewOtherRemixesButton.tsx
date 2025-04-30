@@ -18,7 +18,7 @@ export const ViewOtherRemixesButton = ({
       style={{ alignSelf: 'flex-start' }}
       size='small'
       onPress={() => {
-        navigation.navigate('TrackRemixes', { trackId })
+        navigation.push('TrackRemixes', { trackId })
       }}
     >
       {messages.viewOtherRemixes}
