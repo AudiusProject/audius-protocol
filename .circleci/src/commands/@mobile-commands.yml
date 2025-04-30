@@ -86,8 +86,6 @@ mobile-build-ios:
     - store_test_results:
         path: packages/mobile/output/scan
 
-# If the app can be released via CodePush, release it via CodePush.
-# Otherwise, build and upload it to the App Store.
 mobile-release-ios:
   parameters:
     build-directory:
@@ -208,8 +206,6 @@ mobile-build-android:
         command: |
           echo "yes" | sdkmanager "platforms;android-30" && cd packages/mobile/android && ./gradlew <<parameters.build-type>>
 
-# If the app can be released via CodePush, release it via CodePush.
-# Otherwise, build and upload it to the App Store.
 mobile-release-android:
   parameters:
     build-directory:

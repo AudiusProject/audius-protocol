@@ -19,7 +19,6 @@ const { version: appVersion } = packageInfo
 const OPTIMIZELY_KEY = env.OPTIMIZELY_KEY
 const DATA_FILE_URL = 'https://experiments.audius.co/datafiles/%s.json'
 
-/** Returns mobile platform (ios or android), mobile app version, and code push update number (if any) */
 const getMobileClientInfo = async () => {
   const mobilePlatform = Platform.OS
   const mobileAppVersion = VersionNumber.appVersion
