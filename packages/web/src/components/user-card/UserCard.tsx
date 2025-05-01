@@ -85,7 +85,7 @@ export const UserCard = (props: UserCardProps) => {
           userId={id}
           textVariant='title'
           size='l'
-          css={{ justifyContent: 'center' }}
+          center
           onClick={onUserLinkClick}
         />
         <Text variant='body' ellipses css={{ textAlign: 'center' }}>
