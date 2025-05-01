@@ -18,6 +18,6 @@ export const ExplorePage = () => {
     description: messages.description
   }
 
-  const Component = isMobile ? MobileExplorePage : DesktopExplorePage
+  const Component = isMobile ? MobileExplorePage : NewDesktopExplorePage
   return <Component {...props} />
 }
