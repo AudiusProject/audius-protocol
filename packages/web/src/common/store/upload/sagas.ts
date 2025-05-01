@@ -430,7 +430,7 @@ export function* handleUploads({
   // Channel to listen for responses
   const responseChannel = yield* call(
     channel<UploadTrackResponse>,
-    buffers.expanding(10)
+    buffers.expanding(200)
   )
 
   // Channel to relay progress actions
