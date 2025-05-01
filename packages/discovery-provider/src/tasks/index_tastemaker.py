@@ -116,6 +116,11 @@ def dedupe_notifications_from_existing_notifications(
     return deduped_notifications
 
 
+blacklisted_user_ids = [
+    51,  # Audius account
+]
+
+
 def create_action_tastemaker_notifications(
     tastemaker_notification_threshold,
     session,
@@ -133,6 +138,7 @@ def create_action_tastemaker_notifications(
         .filter(
             action_type.is_current == True,
             action_type.is_delete == False,
+            action_type.user_id.notin_(blacklisted_user_ids),
             query_action_item_id == track["track_id"],
         )
         .order_by(asc(action_type.created_at))
