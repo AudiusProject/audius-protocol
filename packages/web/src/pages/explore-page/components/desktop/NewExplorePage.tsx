@@ -90,10 +90,10 @@ const tabHeaders = [
 ]
 
 export const justForYou = [
-  PREMIUM_TRACKS,
   TRENDING_PLAYLISTS,
   TRENDING_UNDERGROUND,
-  DOWNLOADS_AVAILABLE
+  DOWNLOADS_AVAILABLE,
+  PREMIUM_TRACKS
 ]
 
 const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
@@ -255,11 +255,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                   useOverlayBlendMode={
                     i.variant !== ExploreCollectionsVariant.DIRECT_LINK
                   }
-                  backgroundIcon={
-                    Icon ? (
-                      <Icon height={512} width={512} color='inverse' />
-                    ) : undefined
-                  }
+                  backgroundIcon={Icon ? <Icon color='inverse' /> : undefined}
                   onClick={() => onClickCard(i.link)}
                   isIncentivized={!!i.incentivized}
                   sensitivity={i.cardSensitivity}

@@ -56,10 +56,10 @@ export const DOWNLOADS_AVAILABLE: ExploreCollection = {
   variant: ExploreCollectionsVariant.DIRECT_LINK,
   title: 'Downloads Available',
   subtitle: 'Popular tracks with downloads you can use in your own tracks.',
-  gradient: 'linear-gradient(95deg, #13C65A 0%, #16A653 100%)',
-  shadow: 'rgba(196,81,193,0.35)',
+  gradient: 'linear-gradient(138deg, #FF00F5 -5.01%, #00D1FF 110.47%)',
+  shadow: 'rgba(9, 175, 233, 0.35)',
   icon: IconRemix,
-  link: EXPLORE_PREMIUM_TRACKS_PAGE,
+  link: EXPLORE_PREMIUM_TRACKS_PAGE, // TODO make a downloads page
   cardSensitivity: WIDE_CARD_SENSITIVTY
 }
 
