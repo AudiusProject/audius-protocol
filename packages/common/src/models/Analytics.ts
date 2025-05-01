@@ -1089,12 +1089,13 @@ type TrackUploadStartUploading = {
 type TrackUploadTrackUploading = {
   eventName: Name.TRACK_UPLOAD_TRACK_UPLOADING
   artworkSource: 'unsplash' | 'original'
-  genre: string
-  mood: string
   downloadable: 'yes' | 'no' | 'follow'
+  trackId: number
   size: number
-  type: string
+  kind: string
   name: string
+  genre: string
+  mood?: string
 }
 type TrackUploadCompleteUpload = {
   eventName: Name.TRACK_UPLOAD_COMPLETE_UPLOAD
@@ -2194,7 +2195,7 @@ type StripeSessionCreationError = StripeEventFields & {
   eventName: Name.STRIPE_SESSION_CREATION_ERROR
   code: string
   stripeErrorMessage: string
-  type: string
+  kind: string
 }
 
 type StripeSessionCreated = StripeEventFields & {

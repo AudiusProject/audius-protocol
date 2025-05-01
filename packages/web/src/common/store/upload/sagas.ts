@@ -38,7 +38,8 @@ import {
   replaceTrackProgressModalActions,
   queueSelectors,
   queueActions,
-  playerActions
+  playerActions,
+  BatchCachedTracks
 } from '@audius/common/store'
 import {
   actionChannelDispatcher,
@@ -453,10 +454,11 @@ export function* handleUploads({
           track.metadata.artwork && 'source' in track.metadata.artwork
             ? track.metadata.artwork?.source
             : undefined,
+        trackId: track.metadata.track_id,
         genre: track.metadata.genre,
         moode: track.metadata.mood,
         size: track.file.size,
-        type: track.file.type,
+        kind: track.file.type,
         name: track.file.name,
         downloadable: isContentFollowGated(track.metadata.download_conditions)
           ? 'follow'
@@ -1072,10 +1074,20 @@ export function* uploadMultipleTracks(
   })
 
   // Get true track metadatas back
-  const newTracks = yield* call(retrieveTracks, {
-    trackIds,
-    forceRetrieveFromSource: true
-  })
+  // Allow for retries in case the tracks are not immediately available
+  let retries = 20
+  let newTracks: BatchCachedTracks[] = []
+  while (retries > 0) {
+    newTracks = yield* call(retrieveTracks, {
+      trackIds,
+      forceRetrieveFromSource: true
+    })
+    if (newTracks.length > 0) {
+      break
+    }
+    yield* delay(2000)
+    retries--
+  }
   if (newTracks.length === 0) {
     throw new Error('No tracks found after uploading.')
   }
