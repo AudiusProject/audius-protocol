@@ -1,8 +1,8 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react'
 
 import {
-  useGetUserById,
   useGetCurrentUserId,
+  useUser,
   useUserTracksByHandle
 } from '@audius/common/api'
 import { type ID } from '@audius/common/models'
@@ -43,16 +43,12 @@ export const SelectArtistsPreviewContextProvider = (props: {
     TrackPlayer.setRepeatMode(RepeatMode.Track)
   })
 
-  const { data: artist } = useGetUserById(
-    {
-      id: nowPlayingArtistId,
-      currentUserId: null
-    },
-    { disabled: nowPlayingArtistId === -1 }
-  )
+  const { data: artistHandle } = useUser(nowPlayingArtistId, {
+    select: (user) => user.handle
+  })
 
   const { data: artistTracks } = useUserTracksByHandle({
-    handle: artist?.handle,
+    handle: artistHandle,
     // We just need one playable track. It's unlikely all 3 of an artist's top tracks are unavailable.
     limit: 3
   })

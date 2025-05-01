@@ -102,7 +102,9 @@ export const CashWallet = () => {
               <Tooltip
                 text={walletMessages.cashBalanceTooltip}
                 placement='top'
-                mount='page'
+                getPopupContainer={() =>
+                  document.getElementById('page') ?? document.body
+                }
                 shouldWrapContent={false}
                 shouldDismissOnClick={false}
                 css={{ zIndex: zIndex.CASH_WALLET_TOOLTIP }}

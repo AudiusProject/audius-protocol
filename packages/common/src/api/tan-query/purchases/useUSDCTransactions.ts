@@ -1,5 +1,12 @@
+import { useCallback } from 'react'
+
 import { full, Id } from '@audius/sdk'
-import { InfiniteData, useInfiniteQuery } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  UseInfiniteQueryResult,
+  useQueryClient
+} from '@tanstack/react-query'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
@@ -8,6 +15,7 @@ import { USDCTransactionDetails } from '~/models/USDCTransactions'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, QueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
+import { loadNextPage } from '../utils'
 
 const DEFAULT_PAGE_SIZE = 50
 
@@ -73,15 +81,17 @@ export const useUSDCTransactions = (
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
+  const queryClient = useQueryClient()
+  const queryKey = getUSDCTransactionsQueryKey(currentUserId, {
+    pageSize,
+    sortMethod,
+    sortDirection,
+    type,
+    method
+  })
 
-  return useInfiniteQuery({
-    queryKey: getUSDCTransactionsQueryKey(currentUserId, {
-      pageSize,
-      sortMethod,
-      sortDirection,
-      type,
-      method
-    }),
+  const queryData = useInfiniteQuery({
+    queryKey,
     initialPageParam: 0,
     getNextPageParam: (lastPage: USDCTransactionDetails[], allPages) => {
       if (lastPage.length < pageSize) return undefined
@@ -106,4 +116,22 @@ export const useUSDCTransactions = (
     ...options,
     enabled: options?.enabled !== false && !!currentUserId
   })
+  const reset = useCallback(() => {
+    queryClient.resetQueries({
+      queryKey
+    })
+  }, [queryClient, queryKey])
+
+  // @ts-ignore
+  queryData.reset = reset
+  const loadNextPageCallback = useCallback(
+    () => loadNextPage(queryData),
+    [queryData]
+  )
+  // @ts-ignore
+  queryData.loadNextPage = loadNextPageCallback
+  return queryData as UseInfiniteQueryResult<USDCTransactionDetails[]> & {
+    reset: typeof reset
+    loadNextPage: typeof loadNextPageCallback
+  }
 }

@@ -4,9 +4,8 @@ import { keyBy } from 'lodash'
 
 import {
   useCollections,
-  useGetCurrentUserId,
-  useGetPurchasersCount,
-  useGetSalesAggegrate,
+  usePurchasersCount,
+  useSalesAggregate,
   useTracks
 } from '~/api'
 import { ID } from '~/models'
@@ -19,10 +18,7 @@ export const usePurchasersAudience = ({
   contentId?: ID
   contentType?: 'track' | 'album'
 }) => {
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: salesAggregate } = useGetSalesAggegrate({
-    userId: currentUserId!
-  })
+  const { data: salesAggregate } = useSalesAggregate()
   const isDisabled = !salesAggregate?.length
 
   const trackAggregates = salesAggregate?.filter(
@@ -59,8 +55,7 @@ export const usePurchasersAudience = ({
     [salesAggregate, tracksById, albumsById]
   )
 
-  const { data: purchasersCount } = useGetPurchasersCount({
-    userId: currentUserId!,
+  const { data: purchasersCount } = usePurchasersCount({
     contentId,
     contentType
   })
