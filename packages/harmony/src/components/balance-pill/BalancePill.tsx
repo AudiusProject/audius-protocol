@@ -1,6 +1,7 @@
 import { useTheme, CSSObject } from '@emotion/react'
 
 import { Flex } from '../layout/Flex'
+import { Skeleton } from '../skeleton/Skeleton'
 import { Text } from '../text/Text'
 
 import type { BalancePillProps } from './types'
@@ -19,6 +20,8 @@ export const BalancePill = ({
     color: color.neutral.n950
   }
 
+  const isLoading = balance === null
+
   return (
     <Flex
       pl='s'
@@ -29,9 +32,13 @@ export const BalancePill = ({
       backgroundColor='surface1'
       {...props}
     >
-      <Text variant='label' size='s' textAlign='center' css={textStyles}>
-        {balance}
-      </Text>
+      {isLoading ? (
+        <Skeleton w='m' h='s' />
+      ) : (
+        <Text variant='label' size='s' textAlign='center' css={textStyles}>
+          {balance}
+        </Text>
+      )}
       <Flex h='unit6' p='unitHalf' justifyContent='center' alignItems='center'>
         {children}
       </Flex>

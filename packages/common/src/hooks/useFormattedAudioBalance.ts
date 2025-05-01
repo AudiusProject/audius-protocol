@@ -4,7 +4,7 @@ import { AUDIO } from '@audius/fixed-decimal'
 
 import { useTokenPrice } from '../api'
 import { TOKEN_LISTING_MAP } from '../store'
-import { formatWei, isNullOrUndefined } from '../utils'
+import { isNullOrUndefined } from '../utils'
 
 import { useTotalBalanceWithFallback } from './useAudioBalance'
 
@@ -13,7 +13,7 @@ const AUDIO_TOKEN_ID = TOKEN_LISTING_MAP.AUDIO.address
 
 type UseFormattedAudioBalanceReturn = {
   audioBalance: ReturnType<typeof useTotalBalanceWithFallback>
-  audioBalanceFormatted: string
+  audioBalanceFormatted: string | null
   isAudioBalanceLoading: boolean
   audioPrice: string | null
   audioDollarValue: string
@@ -22,7 +22,9 @@ type UseFormattedAudioBalanceReturn = {
 
 export const useFormattedAudioBalance = (): UseFormattedAudioBalanceReturn => {
   const audioBalance = useTotalBalanceWithFallback()
-  const audioBalanceFormatted = formatWei(audioBalance, true, 0)
+  const audioBalanceFormatted = audioBalance
+    ? AUDIO(audioBalance).toLocaleString()
+    : null
   const isAudioBalanceLoading = isNullOrUndefined(audioBalance)
 
   const { data: audioPriceData, isPending: isAudioPriceLoading } =
