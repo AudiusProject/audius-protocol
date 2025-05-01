@@ -100,7 +100,11 @@ const assertAllowedAssociatedTokenAccountProgramInstruction = async (
     isCreateAssociatedTokenAccountInstruction(decodedInstruction) ||
     isCreateAssociatedTokenAccountIdempotentInstruction(decodedInstruction)
   ) {
-    const allowedMints = [NATIVE_MINT.toBase58(), usdcMintAddress]
+    const allowedMints = [
+      NATIVE_MINT.toBase58(),
+      usdcMintAddress,
+      waudioMintAddress
+    ]
     const mintAddress = decodedInstruction.keys.mint.pubkey.toBase58()
     if (!allowedMints.includes(mintAddress)) {
       throw new InvalidRelayInstructionError(
@@ -273,7 +277,11 @@ const JupiterSharedSwapAccountIndex = {
   TOKEN_2022_PROGRAM: 10
 }
 // Only allow swaps from USDC (for withdrawals) or SOL (for userbank purchases)
-const allowedSourceMints = [NATIVE_MINT.toBase58(), usdcMintAddress]
+const allowedSourceMints = [
+  NATIVE_MINT.toBase58(),
+  usdcMintAddress,
+  waudioMintAddress
+]
 const allowedDestinationMints = [
   NATIVE_MINT.toBase58(),
   usdcMintAddress,
