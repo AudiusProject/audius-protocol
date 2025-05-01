@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState, useContext } from 'react'
 
+import { useSwapTokens } from '@audius/common/api'
 import { buySellMessages as messages } from '@audius/common/messages'
-import { useSwapTokens } from '@audius/common/src/api/tan-query/useSwapTokens'
+import { TOKEN_LISTING_MAP } from '@audius/common/src/store/ui/buy-audio/constants'
 import { useBuySellModal } from '@audius/common/store'
 import {
   Button,
@@ -89,17 +90,17 @@ export const BuySellModal = () => {
     if (activeTab === 'buy') {
       // Buy AUDIO with USDC
       swapTokens({
-        inputTokenSymbol: 'USDC',
-        outputTokenSymbol: 'AUDIO',
-        inputAmount,
+        inputMint: TOKEN_LISTING_MAP.USDC.address,
+        outputMint: TOKEN_LISTING_MAP.AUDIO.address,
+        amountUi: inputAmount,
         slippageBps
       })
     } else {
       // Sell AUDIO for USDC
       swapTokens({
-        inputTokenSymbol: 'AUDIO',
-        outputTokenSymbol: 'USDC',
-        inputAmount,
+        inputMint: TOKEN_LISTING_MAP.AUDIO.address,
+        outputMint: TOKEN_LISTING_MAP.USDC.address,
+        amountUi: inputAmount,
         slippageBps
       })
     }

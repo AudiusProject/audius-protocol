@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { useUSDCBalance } from '@audius/common/src/api/tan-query/useUSDCBalance'
+import { useUSDCBalance } from '@audius/common/api'
 import { Status } from '@audius/common/src/models/Status'
 
 import { SwapTab } from './SwapTab'

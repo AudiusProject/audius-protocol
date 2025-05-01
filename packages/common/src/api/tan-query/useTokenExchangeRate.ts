@@ -5,8 +5,9 @@ import { useQuery } from '@tanstack/react-query'
 
 import {
   JupiterTokenSymbol,
-  getJupiterQuote
+  getJupiterQuoteByMint
 } from '~/services/JupiterTokenExchange'
+import { TOKEN_LISTING_MAP } from '~/store/ui/buy-audio/constants'
 
 import { QueryOptions, type QueryKey } from './types'
 
@@ -76,11 +77,21 @@ export const useTokenExchangeRate = (
     }),
     queryFn: async () => {
       try {
-        // Get quote from Jupiter using the shared service
-        const quoteResult = await getJupiterQuote({
-          inputTokenSymbol: params.inputTokenSymbol,
-          outputTokenSymbol: params.outputTokenSymbol,
-          inputAmount,
+        // Get token mint addresses
+        const inputToken = TOKEN_LISTING_MAP[params.inputTokenSymbol]
+        const outputToken = TOKEN_LISTING_MAP[params.outputTokenSymbol]
+
+        if (!inputToken || !outputToken) {
+          throw new Error(
+            `Token not found: ${params.inputTokenSymbol} or ${params.outputTokenSymbol}`
+          )
+        }
+
+        // Get quote from Jupiter using the mint addresses
+        const quoteResult = await getJupiterQuoteByMint({
+          inputMint: inputToken.address,
+          outputMint: outputToken.address,
+          amountUi: inputAmount,
           slippageBps,
           swapMode: params.swapMode ?? 'ExactIn',
           onlyDirectRoutes: false
