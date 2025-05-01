@@ -96,6 +96,8 @@ export const justForYou = [
   PREMIUM_TRACKS
 ]
 
+const FEATURED_LIMIT = 5
+
 const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const { tabs } = useTabs({
     isMobile: false,
@@ -104,12 +106,12 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   })
   const isUSDCPurchasesEnabled = useIsUSDCEnabled()
   const navigate = useNavigate()
-
-  const justForYouTiles = justForYou.filter((tile) => {
-    const isPremiumTracksTile =
-      tile.variant === ExploreCollectionsVariant.DIRECT_LINK &&
-      tile.title === PREMIUM_TRACKS.title
-    return !isPremiumTracksTile || isUSDCPurchasesEnabled
+  const { data: featuredPlaylists } = useFeaturedPlaylists(
+    { limit: FEATURED_LIMIT },
+    { placeholderData: (prev: TQCollection[]) => prev }
+  )
+  const { data: featuredProfiles } = useFeaturedProfiles({
+    limit: FEATURED_LIMIT
   })
   const onClickCard = useCallback(
     (url: string) => {
@@ -124,11 +126,14 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
     },
     [navigate]
   )
-  const { data: featuredPlaylists } = useFeaturedPlaylists(
-    { limit: 5 },
-    { placeholderData: (prev: TQCollection[]) => prev }
-  )
-  const { data: featuredProfiles } = useFeaturedProfiles({ limit: 5 })
+
+  const justForYouTiles = justForYou.filter((tile) => {
+    const isPremiumTracksTile =
+      tile.variant === ExploreCollectionsVariant.DIRECT_LINK &&
+      tile.title === PREMIUM_TRACKS.title
+    return !isPremiumTracksTile || isUSDCPurchasesEnabled
+  })
+
   // const [categoryKey] = useSearchCategory()
 
   // const filterKeys: string[] = categories[categoryKey].filters
