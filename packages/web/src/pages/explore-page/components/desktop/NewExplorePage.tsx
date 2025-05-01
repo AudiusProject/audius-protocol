@@ -1,11 +1,7 @@
 import { useCallback } from 'react'
 
 import { useFeaturedPlaylists, useFeaturedProfiles } from '@audius/common/api'
-import {
-  Variant as CollectionVariant,
-  User,
-  Variant
-} from '@audius/common/models'
+import { User } from '@audius/common/models'
 import { TQCollection } from '@audius/common/src/api/tan-query/models'
 import { ExploreCollectionsVariant } from '@audius/common/store'
 import {
@@ -18,22 +14,12 @@ import {
   TextInput,
   TextInputSize,
   IconSearch,
-  spacing,
   IconUser,
-  Button,
   TextLink
 } from '@audius/harmony'
 import { useNavigate } from 'react-router-dom-v5-compat'
 
-import BackgroundWaves from 'assets/img/publicSite/BackgroundWaves.png'
-import {
-  HEAVY_ROTATION,
-  BEST_NEW_RELEASES,
-  UNDER_THE_RADAR,
-  REMIXABLES,
-  MOST_LOVED,
-  FEELING_LUCKY
-} from 'common/store/smart-collection/smartCollections'
+import BackgroundWaves from 'assets/img/publicSite/imageSearchHeaderBackground@2x.webp'
 import { CollectionCard } from 'components/collection'
 import PerspectiveCard, {
   TextInterior
@@ -41,21 +27,15 @@ import PerspectiveCard, {
 import { UserCard } from 'components/user-card'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import useTabs from 'hooks/useTabs/useTabs'
-import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons'
 import {
-  LET_THEM_DJ,
   PREMIUM_TRACKS,
-  TOP_ALBUMS,
   TRENDING_PLAYLISTS,
   TRENDING_UNDERGROUND,
   DOWNLOADS_AVAILABLE
 } from 'pages/explore-page/collections'
-import { explore } from 'services/explore'
+// import { categories } from 'pages/search-page/categories'
+// import { useSearchCategory } from 'pages/search-page/hooks'
 import { BASE_URL, stripBaseUrl } from 'utils/route'
-
-import { CollectionArtCard } from './CollectionArtCard'
-import { FeaturedPlaylists } from './FeaturedPlaylists'
-import UserArtCard from './UserArtCard'
 
 export type ExplorePageProps = {
   title: string
@@ -117,7 +97,7 @@ export const justForYou = [
 ]
 
 const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
-  const { tabs, body } = useTabs({
+  const { tabs } = useTabs({
     isMobile: false,
     tabs: tabHeaders,
     elements: tabHeaders.map((tab) => <Flex key={tab.label}>{tab.text}</Flex>)
@@ -149,16 +129,20 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
     { placeholderData: (prev: TQCollection[]) => prev }
   )
   const { data: featuredProfiles } = useFeaturedProfiles({ limit: 5 })
+  // const [categoryKey] = useSearchCategory()
+
+  // const filterKeys: string[] = categories[categoryKey].filters
 
   return (
     <Flex justifyContent='center'>
       <Flex
         direction='column'
-        p='3xl'
+        pv='3xl'
+        ph='unit15'
         gap='3xl'
-        alignItems='flex-start'
-        alignSelf='stretch'
-        // w={1088}
+        alignItems='stretch'
+        // justifyContent='stretch'
+        w={1200}
       >
         <Paper
           alignItems='center'
@@ -168,7 +152,11 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
           pv='xl'
           ph='unit14'
           css={{
-            backgroundImage: `url(${BackgroundWaves})`
+            backgroundImage: ` url(${BackgroundWaves})`,
+            backgroundPosition: 'center',
+            backgroundSize: 'cover',
+            backgroundRepeat: 'no-repeat',
+            backgroundColor: 'lightgray'
           }}
           borderRadius='l'
           alignSelf='stretch'
@@ -188,8 +176,14 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
             />
           </Flex>
         </Paper>
-        <Flex>{tabs}</Flex>
-        <div>{body}</div>
+        <Flex alignSelf='flex-start'>{tabs}</Flex>
+        {/* <Flex direction='row' gap='s' mv={filterKeys.length ? 'm' : undefined}>
+          {filterKeys.map((filterKey) => {
+            const FilterComponent = filters[filterKey]
+            return <FilterComponent key={filterKey} />
+          })}
+        </Flex> */}
+
         <Flex direction='column' gap='l'>
           <Flex
             gap='m'
@@ -202,7 +196,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
               {messages.viewAll}
             </TextLink>
           </Flex>
-          <Flex gap='l'>
+          <Flex gap='l' justifyContent='space-between'>
             {featuredPlaylists?.map((playlist) => {
               return (
                 <CollectionCard
@@ -215,7 +209,9 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
           </Flex>
         </Flex>
         <Flex>
-          <Text variant='heading'>{messages.remixContests}</Text>
+          <Flex>
+            <Text variant='heading'>{messages.remixContests}</Text>
+          </Flex>
         </Flex>
         <Flex direction='column' gap='l'>
           <Flex
@@ -229,7 +225,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
               {messages.viewAll}
             </TextLink>
           </Flex>
-          <Flex gap='l' alignSelf='stretch'>
+          <Flex gap='l' alignSelf='stretch' justifyContent='space-between'>
             {featuredProfiles?.map((featuredProfile: User, i: number) => {
               return (
                 <UserCard
@@ -243,25 +239,17 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
         </Flex>
         <Flex direction='column' gap='l'>
           <Text variant='heading'>{messages.bestOfAudius}</Text>
-          <Flex wrap='wrap' gap='l' direction='row' alignItems='flex-start'>
+          <Flex
+            wrap='wrap'
+            gap='l'
+            direction='row'
+            justifyContent='space-between'
+          >
             {justForYouTiles.map((i) => {
-              const title =
-                i.variant === CollectionVariant.SMART
-                  ? i.playlist_name
-                  : i.title
-              const subtitle =
-                i.variant === CollectionVariant.SMART
-                  ? i.description
-                  : i.subtitle
-              const Icon =
-                i.variant === Variant.SMART
-                  ? smartCollectionIcons[
-                      i.playlist_name as keyof typeof smartCollectionIcons
-                    ]
-                  : i.icon
+              const Icon = i.icon
               return (
                 <PerspectiveCard
-                  key={title}
+                  key={i.title}
                   backgroundGradient={i.gradient}
                   shadowColor={i.shadow}
                   useOverlayBlendMode={
@@ -276,8 +264,8 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                   isIncentivized={!!i.incentivized}
                   sensitivity={i.cardSensitivity}
                 >
-                  <Flex w={504} h={168}>
-                    <TextInterior title={title} subtitle={subtitle} />
+                  <Flex w={532} h={200}>
+                    <TextInterior title={i.title} subtitle={i.subtitle} />
                   </Flex>
                 </PerspectiveCard>
               )
