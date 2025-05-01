@@ -1092,7 +1092,7 @@ type TrackUploadTrackUploading = {
   downloadable: 'yes' | 'no' | 'follow'
   trackId: number
   size: number
-  kind: string
+  fileType: string
   name: string
   genre: string
   mood?: string

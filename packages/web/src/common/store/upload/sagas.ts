@@ -458,7 +458,7 @@ export function* handleUploads({
         genre: track.metadata.genre,
         moode: track.metadata.mood,
         size: track.file.size,
-        kind: track.file.type,
+        fileType: track.file.type,
         name: track.file.name,
         downloadable: isContentFollowGated(track.metadata.download_conditions)
           ? 'follow'
