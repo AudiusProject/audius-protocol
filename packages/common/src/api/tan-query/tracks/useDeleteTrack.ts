@@ -12,8 +12,8 @@ import { UserMetadata } from '~/models/User'
 import { getWalletAddresses } from '~/store/account/selectors'
 import { deleteTrackRequested } from '~/store/cache/tracks/actions'
 
-import { getCurrentUserQueryKey } from '../users/account/useCurrentUser'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
+import { getWalletUserQueryKey } from '../users/account/useWalletUser'
 import { useUser } from '../users/useUser'
 import { primeTrackData } from '../utils/primeTrackData'
 import { primeUserData } from '../utils/primeUserData'
@@ -80,7 +80,7 @@ export const useDeleteTrack = () => {
         })
 
         queryClient.setQueryData(
-          getCurrentUserQueryKey(currentUserWallet),
+          getWalletUserQueryKey(currentUserWallet),
           updatedCurrentUser
         )
       }
