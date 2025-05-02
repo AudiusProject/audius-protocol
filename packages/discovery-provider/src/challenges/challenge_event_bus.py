@@ -1,5 +1,4 @@
 import json
-import logging
 from collections import defaultdict
 from contextlib import contextmanager
 from datetime import datetime
@@ -49,8 +48,9 @@ from src.challenges.trending_challenge import (
     trending_underground_track_challenge_manager,
 )
 from src.utils.redis_connection import get_redis
+from src.utils.structured_logger import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__)
 REDIS_QUEUE_PREFIX = "challenges-event-queue"
 
 

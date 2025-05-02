@@ -1,7 +1,11 @@
+import { FeatureFlags } from '@audius/common/services'
+
 import { useIsMobile } from 'hooks/useIsMobile'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { createSeoDescription } from 'utils/seo'
 
 import DesktopExplorePage from './components/desktop/ExplorePage'
+import NewDesktopExplorePage from './components/desktop/NewExplorePage'
 import MobileExplorePage from './components/mobile/ExplorePage'
 
 const messages = {
@@ -12,12 +16,21 @@ const messages = {
 
 export const ExplorePage = () => {
   const isMobile = useIsMobile()
+
+  const { isEnabled: isSearchExploreEnabled } = useFlag(
+    FeatureFlags.SEARCH_EXPLORE
+  )
+
   const props = {
     title: messages.title,
     pageTitle: messages.pageTitle,
     description: messages.description
   }
 
-  const Component = isMobile ? MobileExplorePage : DesktopExplorePage
+  const Component = isMobile
+    ? MobileExplorePage
+    : isSearchExploreEnabled
+      ? NewDesktopExplorePage
+      : DesktopExplorePage
   return <Component {...props} />
 }
