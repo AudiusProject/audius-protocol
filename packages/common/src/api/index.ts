@@ -127,4 +127,4 @@ export * from './tan-query/wallets/useUSDCBalance'
 
 // Saga fetch utils, remove when migration is complete
 export * from './tan-query/saga-utils'
-export * from './tan-query/utils/defaultRetryConfig'
+export * from './tan-query/utils/defaultConfig'
