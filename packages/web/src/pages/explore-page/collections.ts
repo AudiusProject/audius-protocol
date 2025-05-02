@@ -5,7 +5,8 @@ import { route } from '@audius/common/utils'
 import {
   IconTurntable as IconExploreTopAlbums,
   IconPlaylists as IconExploreTopPlaylists,
-  IconCart
+  IconCart,
+  IconRemix
 } from '@audius/harmony'
 
 import IconCassette from 'assets/img/iconCassette.svg'
@@ -48,6 +49,17 @@ export const PREMIUM_TRACKS: ExploreCollection = {
   shadow: 'rgba(196,81,193,0.35)',
   icon: IconCart,
   link: EXPLORE_PREMIUM_TRACKS_PAGE,
+  cardSensitivity: WIDE_CARD_SENSITIVTY
+}
+
+export const DOWNLOADS_AVAILABLE: ExploreCollection = {
+  variant: ExploreCollectionsVariant.DIRECT_LINK,
+  title: 'Downloads Available',
+  subtitle: 'Popular tracks with downloads you can use in your own tracks.',
+  gradient: 'linear-gradient(138deg, #FF00F5 -5.01%, #00D1FF 110.47%)',
+  shadow: 'rgba(9, 175, 233, 0.35)',
+  icon: IconRemix,
+  link: EXPLORE_PREMIUM_TRACKS_PAGE, // TODO make a downloads page
   cardSensitivity: WIDE_CARD_SENSITIVTY
 }
 

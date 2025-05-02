@@ -135,7 +135,7 @@ export const CollectionCard = forwardRef(
               <Text ellipses>{playlist_name}</Text>
             </TextLink>
             <Flex justifyContent='center'>
-              <UserLink userId={playlist_owner_id!} popover />
+              <UserLink userId={playlist_owner_id!} popover center />
             </Flex>
           </CardContent>
         </Flex>
