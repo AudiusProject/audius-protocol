@@ -170,7 +170,7 @@ export const useSwapTokens = () => {
         // The Audius relay requires the fee payer (slot 0) signature to be cleared
         // and the transaction to be signed by the actual user (which we do here).
         // The relay service will then sign as the fee payer.
-        swapTx.sign([keypair]) // Removed this line - letting the relay handle signing
+        swapTx.sign([keypair])
 
         // ---------- Debug: Log transaction instructions ----------
         try {
