@@ -643,5 +643,14 @@ export const notificationFromSDK = (
         ...formatBaseNotification(notification)
       }
     }
+    case 'remix_contest_started': {
+      const data = notification.actions[0].data
+      return {
+        type: NotificationType.RemixContestStarted,
+        entityId: HashId.parse(data.entityId),
+        entityUserId: HashId.parse(data.entityUserId),
+        ...formatBaseNotification(notification)
+      }
+    }
   }
 }
