@@ -1,8 +1,8 @@
 import chalk from 'chalk'
-import { Command } from '@commander-js/extra-typings'
+import { Command, Option } from '@commander-js/extra-typings'
 
 import { getCurrentUserId, initializeAudiusSdk } from '../utils.js'
-import type { ChallengeId, GenerateSpecifierRequest } from '@audius/sdk'
+import { ChallengeId, GenerateSpecifierRequest } from '@audius/sdk'
 
 export const claimRewardCommand = new Command('claim-reward')
   .description('Claim a challenge reward')
@@ -35,6 +35,33 @@ export const claimRewardCommand = new Command('claim-reward')
     })
     console.log(chalk.green('Successfully claimed reward'))
     console.log(chalk.yellow.bold('Transaction Signature:'), res)
+  })
+
+export const claimRewardsCommand = new Command('claim-rewards')
+  .description('Claim all challenge rewards')
+  .option('-f, --from <from>', 'The account to claim from')
+  .option(
+    '-u, --userId <userId>',
+    'The user ID to claim for (defaults to signed in user)'
+  )
+  .addOption(
+    new Option(
+      '-c, --challengeId <challengeId>',
+      'The challenge ID to claim'
+    ).argParser((v) => ChallengeId[v as keyof typeof ChallengeId])
+  )
+  .option('-s, --specifier <specifier>', 'The specifier to claim')
+  .action(async ({ from, userId, challengeId, specifier }) => {
+    const audiusSdk = await initializeAudiusSdk({ handle: from })
+    const currentUserId = await getCurrentUserId()
+
+    const res = await audiusSdk.challenges.claimAllRewards({
+      userId: userId === undefined ? currentUserId : userId,
+      challengeId,
+      specifier
+    })
+    console.log(chalk.green('Successfully claimed reward'))
+    console.log(chalk.yellow.bold('Transaction Signatures:'), res)
   })
 
 export const rewardSpecifierCommand = new Command('reward-specifier')

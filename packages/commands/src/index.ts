@@ -8,6 +8,7 @@ import { managerCommand } from './manager/account-managers.js'
 import { authHeadersCommand } from './misc/auth-headers.js'
 import {
   claimRewardCommand,
+  claimRewardsCommand,
   rewardSpecifierCommand
 } from './misc/claim-reward.js'
 import { createUserBankCommand } from './misc/create-user-bank.js'
@@ -32,6 +33,7 @@ async function main() {
   program.addCommand(managerCommand)
   program.addCommand(authHeadersCommand)
   program.addCommand(claimRewardCommand)
+  program.addCommand(claimRewardsCommand)
   program.addCommand(rewardSpecifierCommand)
   program.addCommand(createUserBankCommand)
   program.addCommand(mintCommand)
