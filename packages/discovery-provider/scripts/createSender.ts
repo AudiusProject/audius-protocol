@@ -40,19 +40,31 @@ const rewardManagerProgramId = new PublicKey(
   process.env.SOLANA_REWARD_MANAGER_PUBLIC_KEY
 )
 
-const main = async (id: number) => {
+const main = async (serviceType: string, id: number) => {
   const connection = new Connection(
     'http://audius-protocol-solana-test-validator-1:8899'
   )
 
   // Get senderEthAddress
-  const senderEthAddress = process.env[`DP${id}_DELEGATE_OWNER_ADDRESS`]
+  const senderAddressEnvKey =
+    serviceType === 'content-node'
+      ? `CN${id}_SP_OWNER_ADDRESS`
+      : serviceType === 'aao'
+        ? `AAO_WALLET_ADDRESS`
+        : `DP${id}_DELEGATE_OWNER_ADDRESS`
+  const senderPrivateKeyEnvKey =
+    serviceType === 'content-node'
+      ? `CN${id}_SP_OWNER_PRIVATE_KEY`
+      : serviceType === 'aao'
+        ? `AAO_WALLET_PRIVATE_KEY`
+        : `DP${id}_DELEGATE_OWNER_PRIVATE_KEY`
+  const senderEthAddress = process.env[senderAddressEnvKey]
   if (!senderEthAddress) {
-    throw new Error(`DP${id}_DELEGATE_OWNER_ADDRESS not set`)
+    throw new Error(`${senderAddressEnvKey} not set`)
   }
-  const senderEthPrivateKey = process.env[`DP${id}_DELEGATE_OWNER_PRIVATE_KEY`]
+  const senderEthPrivateKey = process.env[senderPrivateKeyEnvKey]
   if (!senderEthPrivateKey) {
-    throw new Error(`DP${id}_DELEGATE_OWNER_PRIVATE_KEY not set`)
+    throw new Error(`${senderPrivateKeyEnvKey} not set`)
   }
 
   // Derive authority
@@ -99,4 +111,4 @@ const main = async (id: number) => {
 
 program.parse()
 
-main(Number.parseInt(program.args[0]))
+main(program.args[0], Number.parseInt(program.args[1]))

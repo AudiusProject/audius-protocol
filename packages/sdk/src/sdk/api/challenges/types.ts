@@ -109,3 +109,29 @@ export type AttestationTransactionSignature = {
 export type AAOErrorResponse = {
   aaoErrorCode: number
 }
+
+export const ClaimAllRewardsSchema = z
+  .object({
+    userId: HashId,
+    challengeId: z.nativeEnum(ChallengeId).optional()
+  })
+  .or(
+    z.object({
+      challengeId: z.nativeEnum(ChallengeId),
+      specifier: z.string()
+    })
+  )
+
+export type ClaimAllRewardsRequest = z.input<typeof ClaimAllRewardsSchema>
+
+type ClaimResult = {
+  challengeId: string
+  specifier: string
+  amount: string
+  signatures: string[]
+  error?: string
+}
+
+export type ClaimAllResponseBody = {
+  data: ClaimResult[]
+}
