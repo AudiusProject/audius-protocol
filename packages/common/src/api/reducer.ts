@@ -19,7 +19,6 @@ export default combineReducers({
   libraryApi: libraryApiReducer,
   searchApi: searchApiReducer,
   signUpApi: signUpReducer,
-  topArtistsApi: topArtistsApiReducer,
   trendingApi: trendingApiReducer,
   userApi: userApiReducer
 })
