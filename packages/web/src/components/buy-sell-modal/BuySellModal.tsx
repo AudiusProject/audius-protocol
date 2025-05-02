@@ -22,8 +22,6 @@ import { SellTab } from './SellTab'
 import { SUPPORTED_TOKEN_PAIRS, TOKENS } from './constants'
 import { BuySellTab } from './types'
 
-// import { useIsMobile } from 'hooks/useIsMobile' // Keep for potential mobile-specific adjustments - Removing for now
-
 type TabOption = {
   key: BuySellTab
   text: string
@@ -32,7 +30,6 @@ type TabOption = {
 export const BuySellModal = () => {
   const { isOpen, onClose } = useBuySellModal()
   const { spacing, color } = useTheme()
-  // const isMobile = useIsMobile() // Keep for potential mobile-specific adjustments - Removing for now
   const [activeTab, setActiveTab] = useState<BuySellTab>('buy')
   // selectedPairIndex will be used in future when multiple token pairs are supported
   const [selectedPairIndex] = useState(0)
