@@ -3,10 +3,7 @@ import { useMemo } from 'react'
 import { QuoteResponse } from '@jup-ag/api'
 import { useQuery } from '@tanstack/react-query'
 
-import {
-  JupiterTokenSymbol,
-  getJupiterQuoteByMint
-} from '~/services/JupiterTokenExchange'
+import { JupiterTokenSymbol, getJupiterQuoteByMint } from '~/services/Jupiter'
 import { TOKEN_LISTING_MAP } from '~/store/ui/buy-audio/constants'
 
 import { QueryOptions, type QueryKey } from './types'
@@ -119,11 +116,6 @@ export const useTokenExchangeRate = (
         throw error
       }
     },
-    // Stale time of 30 seconds - rates are fetched frequently but not too often
-    staleTime: 30 * 1000,
-    // Retain cached data for 1 minute
-    gcTime: 60 * 1000,
-    // Default to enabled
     ...options,
     enabled: options?.enabled !== false
   })

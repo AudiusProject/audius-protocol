@@ -3,11 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { Feature } from '~/models'
-import {
-  getJupiterQuoteByMint,
-  JupiterTokenExchange,
-  SLIPPAGE_TOLERANCE_EXCEEDED_ERROR
-} from '~/services/JupiterTokenExchange'
+import { getJupiterQuoteByMint, JupiterTokenExchange } from '~/services/Jupiter'
 
 // Enums and Types defined earlier in the provided context
 export enum SwapStatus {
@@ -237,29 +233,6 @@ export const useSwapTokens = () => {
             `useSwapTokens: Transaction confirmation error (Sig: ${signature}):`,
             error
           )
-          // Check specifically for slippage error text if possible
-          if (
-            error instanceof Error &&
-            error.message.includes(SLIPPAGE_TOLERANCE_EXCEEDED_ERROR)
-          ) {
-            console.warn('useSwapTokens: Slippage tolerance exceeded.')
-            reportToSentry({
-              name: 'JupiterSwapSlippageError',
-              error,
-              feature: Feature.TanQuery,
-              additionalInfo: { signature, params }
-            })
-            return {
-              status: SwapStatus.ERROR,
-              signature,
-              error: {
-                type: SwapErrorType.SLIPPAGE_EXCEEDED,
-                message: 'Price moved too much during swap (slippage exceeded)'
-              },
-              inputAmount: quoteResult.inputAmount,
-              outputAmount: quoteResult.outputAmount
-            }
-          }
 
           // Generic confirmation failure
           reportToSentry({

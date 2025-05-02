@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useTokenExchangeRate } from '@audius/common/src/api/tan-query/useTokenExchangeRate'
-import { JupiterTokenSymbol } from '@audius/common/src/services/JupiterTokenExchange'
+import { JupiterTokenSymbol } from '@audius/common/src/services/Jupiter'
 
 import { TokenInfo } from '../types'
 
