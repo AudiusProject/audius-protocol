@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { full, Id } from '@audius/sdk'
 import { InfiniteData, useInfiniteQuery } from '@tanstack/react-query'
@@ -16,6 +16,8 @@ import { QUERY_KEYS } from '../queryKeys'
 import { useTracks } from '../tracks/useTracks'
 import { QueryKey, QueryOptions } from '../types'
 import { useUsers } from '../users/useUsers'
+import { loadNextPage } from '../utils'
+import { combineQueryStatuses } from '../utils/combineQueryResults'
 
 const PAGE_SIZE = 10
 
@@ -88,9 +90,22 @@ export const useSales = (args: GetSalesListArgs, options?: QueryOptions) => {
   )
 
   // Call the hooks dropping results to pre-fetch the data
-  useUsers(userIdsToFetch)
-  useTracks(trackIdsToFetch)
-  useCollections(collectionIdsToFetch)
+  const usersQueryResult = useUsers(userIdsToFetch)
+  const tracksQueryResult = useTracks(trackIdsToFetch)
+  const collectionsQueryResult = useCollections(collectionIdsToFetch)
 
-  return queryResult
+  const loadNextPageCallback = useCallback(() => {
+    loadNextPage(queryResult)
+  }, [queryResult])
+
+  return {
+    ...combineQueryStatuses([
+      queryResult,
+      usersQueryResult,
+      tracksQueryResult,
+      collectionsQueryResult
+    ]),
+    data: queryResult.data,
+    loadNextPage: loadNextPageCallback
+  }
 }
