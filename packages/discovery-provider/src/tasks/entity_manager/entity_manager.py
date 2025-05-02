@@ -194,356 +194,362 @@ def entity_manager_update(
         update_start_time = time.time()
         challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
 
-        num_total_changes = 0
+        with challenge_bus.use_scoped_dispatch_queue():
+            num_total_changes = 0
 
-        changed_entity_ids: Dict[str, Set[(int)]] = defaultdict(set)
-        if not entity_manager_txs:
-            return num_total_changes, changed_entity_ids
+            changed_entity_ids: Dict[str, Set[(int)]] = defaultdict(set)
+            if not entity_manager_txs:
+                return num_total_changes, changed_entity_ids
 
-        metric_latency = PrometheusMetric(
-            PrometheusMetricNames.ENTITY_MANAGER_UPDATE_DURATION_SECONDS
-        )
-        metric_num_changed = PrometheusMetric(
-            PrometheusMetricNames.ENTITY_MANAGER_UPDATE_CHANGED_LATEST
-        )
-
-        # collect events by entity type and action
-        entities_to_fetch = collect_entities_to_fetch(update_task, entity_manager_txs)
-        # fetch existing tracks and playlists
-        existing_records, existing_records_in_json = fetch_existing_entities(
-            session, entities_to_fetch
-        )
-        # copy original record since existing_records will be modified
-        original_records = copy_original_records(existing_records)
-
-        new_records: RecordDict = cast(
-            RecordDict, defaultdict(lambda: defaultdict(list))
-        )
-
-        pending_track_routes: List[TrackRoute] = []
-        pending_playlist_routes: List[PlaylistRoute] = []
-
-        # cid -> metadata type
-        cid_type: Dict[str, str] = {}
-        # cid -> metadata
-        cid_metadata: Dict[str, Dict] = {}
-
-        # process in tx order and populate records_to_save
-        for tx_receipt in entity_manager_txs:
-            txhash = to_hex(tx_receipt["transactionHash"])
-            entity_manager_event_tx = get_entity_manager_events_tx(
-                update_task, tx_receipt
+            metric_latency = PrometheusMetric(
+                PrometheusMetricNames.ENTITY_MANAGER_UPDATE_DURATION_SECONDS
+            )
+            metric_num_changed = PrometheusMetric(
+                PrometheusMetricNames.ENTITY_MANAGER_UPDATE_CHANGED_LATEST
             )
 
-            for event in entity_manager_event_tx:
-                try:
-                    params = ManageEntityParameters(
-                        session,
-                        update_task.redis,
-                        challenge_bus,
-                        event,
-                        new_records,  # actions below populate these records
-                        existing_records,
-                        pending_track_routes,
-                        pending_playlist_routes,
-                        update_task.eth_manager,
-                        update_task.web3,
-                        update_task.solana_client_manager,
-                        block_timestamp,
-                        block_number,
-                        block_hash,
-                        txhash,
-                        logger,
-                    )
+            # collect events by entity type and action
+            entities_to_fetch = collect_entities_to_fetch(
+                update_task, entity_manager_txs
+            )
+            # fetch existing tracks and playlists
+            existing_records, existing_records_in_json = fetch_existing_entities(
+                session, entities_to_fetch
+            )
+            # copy original record since existing_records will be modified
+            original_records = copy_original_records(existing_records)
 
-                    # update logger context with this tx event
-                    reset_entity_manager_event_tx_context(logger, event["args"])
+            new_records: RecordDict = cast(
+                RecordDict, defaultdict(lambda: defaultdict(list))
+            )
 
-                    if (
-                        params.action == Action.CREATE
-                        and params.entity_type == EntityType.PLAYLIST
-                    ):
-                        create_playlist(params)
-                    elif (
-                        params.action == Action.UPDATE
-                        and params.entity_type == EntityType.PLAYLIST
-                    ):
-                        update_playlist(params)
-                    elif (
-                        params.action == Action.DELETE
-                        and params.entity_type == EntityType.PLAYLIST
-                    ):
-                        delete_playlist(params)
-                    elif (
-                        params.action == Action.CREATE
-                        and params.entity_type == EntityType.TRACK
-                        and ENABLE_DEVELOPMENT_FEATURES
-                    ):
-                        create_track(params)
-                    elif (
-                        params.action == Action.UPDATE
-                        and params.entity_type == EntityType.TRACK
-                        and ENABLE_DEVELOPMENT_FEATURES
-                    ):
-                        update_track(params)
+            pending_track_routes: List[TrackRoute] = []
+            pending_playlist_routes: List[PlaylistRoute] = []
 
-                    elif (
-                        params.action == Action.DELETE
-                        and params.entity_type == EntityType.TRACK
-                        and ENABLE_DEVELOPMENT_FEATURES
-                    ):
-                        delete_track(params)
-                    elif (
-                        params.action == Action.DOWNLOAD
-                        and params.entity_type == EntityType.TRACK
-                    ):
-                        download_track(params)
-                    elif (
-                        params.action == Action.MUTE or params.action == Action.UNMUTE
-                    ) and params.entity_type == EntityType.TRACK:
-                        update_comment_notification_setting(params)
-                    elif params.action in create_social_action_types:
-                        create_social_record(params)
-                    elif params.action in delete_social_action_types:
-                        delete_social_record(params)
-                    elif (
-                        params.action == Action.CREATE
-                        and params.entity_type == EntityType.USER
-                        and ENABLE_DEVELOPMENT_FEATURES
-                    ):
-                        create_user(params)
-                    elif (
-                        params.action == Action.UPDATE
-                        and params.entity_type == EntityType.USER
-                        and ENABLE_DEVELOPMENT_FEATURES
-                    ):
-                        update_user(params)
-                    elif (
-                        params.action == Action.VERIFY
-                        and params.entity_type == EntityType.USER
-                        and ENABLE_DEVELOPMENT_FEATURES
-                    ):
-                        verify_user(params)
-                    elif (
-                        params.action == Action.MUTE
-                        and params.entity_type == EntityType.USER
-                    ):
-                        mute_user(params)
-                    elif (
-                        params.action == Action.UNMUTE
-                        and params.entity_type == EntityType.USER
-                    ):
-                        unmute_user(params)
-                    elif (
-                        params.action == Action.VIEW
-                        and params.entity_type == EntityType.NOTIFICATION
-                        and ENABLE_DEVELOPMENT_FEATURES
-                    ):
-                        view_notification(params)
-                    elif (
-                        params.action == Action.CREATE
-                        and params.entity_type == EntityType.NOTIFICATION
-                        and ENABLE_DEVELOPMENT_FEATURES
-                    ):
-                        create_notification(params)
-                    elif (
-                        params.action == Action.VIEW_PLAYLIST
-                        and params.entity_type == EntityType.NOTIFICATION
-                        and ENABLE_DEVELOPMENT_FEATURES
-                    ):
-                        view_playlist(params)
-                    elif (
-                        params.action == Action.CREATE
-                        and params.entity_type == EntityType.DEVELOPER_APP
-                    ):
-                        create_developer_app(params)
-                    elif (
-                        params.action == Action.UPDATE
-                        and params.entity_type == EntityType.DEVELOPER_APP
-                    ):
-                        update_developer_app(params)
-                    elif (
-                        params.action == Action.DELETE
-                        and params.entity_type == EntityType.DEVELOPER_APP
-                    ):
-                        delete_developer_app(params)
-                    elif (
-                        params.action == Action.CREATE
-                        and params.entity_type == EntityType.GRANT
-                    ):
-                        create_grant(params)
-                    elif (
-                        params.action == Action.DELETE
-                        and params.entity_type == EntityType.GRANT
-                    ):
-                        revoke_grant(params)
-                    elif (
-                        params.action == Action.APPROVE
-                        and params.entity_type == EntityType.GRANT
-                    ):
-                        approve_grant(params)
-                    elif (
-                        params.action == Action.REJECT
-                        and params.entity_type == EntityType.GRANT
-                    ):
-                        reject_grant(params)
-                    elif (
-                        params.action == Action.CREATE
-                        and params.entity_type == EntityType.DASHBOARD_WALLET_USER
-                    ):
-                        create_dashboard_wallet_user(params)
-                    elif (
-                        params.action == Action.DELETE
-                        and params.entity_type == EntityType.DASHBOARD_WALLET_USER
-                    ):
-                        delete_dashboard_wallet_user(params)
-                    elif (
-                        params.action == Action.UPDATE
-                        and params.entity_type == EntityType.TIP
-                    ):
-                        tip_reaction(params)
-                    elif (
-                        params.action == Action.CREATE
-                        and params.entity_type == EntityType.COMMENT
-                    ):
-                        create_comment(params)
-                    elif (
-                        params.action == Action.UPDATE
-                        and params.entity_type == EntityType.COMMENT
-                    ):
-                        update_comment(params)
-                    elif (
-                        params.action == Action.DELETE
-                        and params.entity_type == EntityType.COMMENT
-                    ):
-                        delete_comment(params)
-                    elif (
-                        params.action == Action.REACT
-                        and params.entity_type == EntityType.COMMENT
-                    ):
-                        react_comment(params)
-                    elif (
-                        params.action == Action.UNREACT
-                        and params.entity_type == EntityType.COMMENT
-                    ):
-                        unreact_comment(params)
-                    elif (
-                        params.action == Action.PIN
-                        and params.entity_type == EntityType.COMMENT
-                    ):
-                        pin_comment(params)
-                    elif (
-                        params.action == Action.UNPIN
-                        and params.entity_type == EntityType.COMMENT
-                    ):
-                        unpin_comment(params)
-                    elif (
-                        params.action == Action.REPORT
-                        and params.entity_type == EntityType.COMMENT
-                    ):
-                        report_comment(params)
-                    elif (
-                        params.action == Action.MUTE or params.action == Action.UNMUTE
-                    ) and params.entity_type == EntityType.COMMENT:
-                        update_comment_notification_setting(params)
-                    elif (
-                        params.action == Action.ADD_EMAIL
-                        and params.entity_type == EntityType.ENCRYPTED_EMAIL
-                    ):
-                        create_encrypted_email(params)
-                    elif (
-                        params.action == Action.UPDATE
-                        and params.entity_type == EntityType.EMAIL_ACCESS
-                    ):
-                        grant_email_access(params)
-                    elif (
-                        params.action == Action.CREATE
-                        and params.entity_type == EntityType.ASSOCIATED_WALLET
-                    ):
-                        add_associated_wallet(params)
-                    elif (
-                        params.action == Action.DELETE
-                        and params.entity_type == EntityType.ASSOCIATED_WALLET
-                    ):
-                        remove_associated_wallet(params)
-                    elif (
-                        params.action == Action.CREATE or params.action == Action.UPDATE
-                    ) and params.entity_type == EntityType.COLLECTIBLES:
-                        update_user_collectibles(params)
-                    elif (
-                        params.action == Action.CREATE
-                        and params.entity_type == EntityType.EVENT
-                    ):
-                        create_event(params)
-                    elif (
-                        params.action == Action.UPDATE
-                        and params.entity_type == EntityType.EVENT
-                    ):
-                        update_event(params)
-                    elif (
-                        params.action == Action.DELETE
-                        and params.entity_type == EntityType.EVENT
-                    ):
-                        delete_event(params)
+            # cid -> metadata type
+            cid_type: Dict[str, str] = {}
+            # cid -> metadata
+            cid_metadata: Dict[str, Dict] = {}
 
-                    logger.debug("process transaction")  # log event context
-                except IndexingValidationError as e:
-                    # swallow exception to keep indexing
-                    logger.error(f"failed to process transaction error {e}")
-                except Exception as e:
-                    indexing_error = IndexingError(
-                        "tx-failure",
-                        block_number,
-                        block_hash,
-                        txhash,
-                        str(e),
-                    )
-                    logger.error(
-                        f"entity_manager.py | Indexing error {e}", exc_info=True
-                    )
-                    create_and_raise_indexing_error(
-                        indexing_error, update_task.redis, session
-                    )
-                    logger.error(f"skipping transaction hash {indexing_error}")
+            # process in tx order and populate records_to_save
+            for tx_receipt in entity_manager_txs:
+                txhash = to_hex(tx_receipt["transactionHash"])
+                entity_manager_event_tx = get_entity_manager_events_tx(
+                    update_task, tx_receipt
+                )
 
-        # compile records_to_save
-        save_new_records(
-            block_timestamp,
-            block_number,
-            new_records,
-            original_records,
-            existing_records_in_json,
-            session,
-        )
+                for event in entity_manager_event_tx:
+                    try:
+                        params = ManageEntityParameters(
+                            session,
+                            update_task.redis,
+                            challenge_bus,
+                            event,
+                            new_records,  # actions below populate these records
+                            existing_records,
+                            pending_track_routes,
+                            pending_playlist_routes,
+                            update_task.eth_manager,
+                            update_task.web3,
+                            update_task.solana_client_manager,
+                            block_timestamp,
+                            block_number,
+                            block_hash,
+                            txhash,
+                            logger,
+                        )
 
-        num_total_changes += len(new_records)
-        # update metrics
-        metric_latency.save_time(
-            {"scope": "entity_manager_update"},
-            start_time=update_start_time,
-        )
-        metric_num_changed.save(
-            len(new_records["Playlist"]), {"entity_type": EntityType.PLAYLIST.value}
-        )
-        metric_num_changed.save(
-            len(new_records["Track"]), {"entity_type": EntityType.TRACK.value}
-        )
+                        # update logger context with this tx event
+                        reset_entity_manager_event_tx_context(logger, event["args"])
 
-        logger.debug(
-            f"entity_manager.py | Completed with {num_total_changes} total changes"
-        )
+                        if (
+                            params.action == Action.CREATE
+                            and params.entity_type == EntityType.PLAYLIST
+                        ):
+                            create_playlist(params)
+                        elif (
+                            params.action == Action.UPDATE
+                            and params.entity_type == EntityType.PLAYLIST
+                        ):
+                            update_playlist(params)
+                        elif (
+                            params.action == Action.DELETE
+                            and params.entity_type == EntityType.PLAYLIST
+                        ):
+                            delete_playlist(params)
+                        elif (
+                            params.action == Action.CREATE
+                            and params.entity_type == EntityType.TRACK
+                            and ENABLE_DEVELOPMENT_FEATURES
+                        ):
+                            create_track(params)
+                        elif (
+                            params.action == Action.UPDATE
+                            and params.entity_type == EntityType.TRACK
+                            and ENABLE_DEVELOPMENT_FEATURES
+                        ):
+                            update_track(params)
 
-        # bulk save to metadata to cid_data
-        if cid_metadata:
-            save_cid_metadata_time = time.time()
-            save_cid_metadata(session, cid_metadata, cid_type)
+                        elif (
+                            params.action == Action.DELETE
+                            and params.entity_type == EntityType.TRACK
+                            and ENABLE_DEVELOPMENT_FEATURES
+                        ):
+                            delete_track(params)
+                        elif (
+                            params.action == Action.DOWNLOAD
+                            and params.entity_type == EntityType.TRACK
+                        ):
+                            download_track(params)
+                        elif (
+                            params.action == Action.MUTE
+                            or params.action == Action.UNMUTE
+                        ) and params.entity_type == EntityType.TRACK:
+                            update_comment_notification_setting(params)
+                        elif params.action in create_social_action_types:
+                            create_social_record(params)
+                        elif params.action in delete_social_action_types:
+                            delete_social_record(params)
+                        elif (
+                            params.action == Action.CREATE
+                            and params.entity_type == EntityType.USER
+                            and ENABLE_DEVELOPMENT_FEATURES
+                        ):
+                            create_user(params)
+                        elif (
+                            params.action == Action.UPDATE
+                            and params.entity_type == EntityType.USER
+                            and ENABLE_DEVELOPMENT_FEATURES
+                        ):
+                            update_user(params)
+                        elif (
+                            params.action == Action.VERIFY
+                            and params.entity_type == EntityType.USER
+                            and ENABLE_DEVELOPMENT_FEATURES
+                        ):
+                            verify_user(params)
+                        elif (
+                            params.action == Action.MUTE
+                            and params.entity_type == EntityType.USER
+                        ):
+                            mute_user(params)
+                        elif (
+                            params.action == Action.UNMUTE
+                            and params.entity_type == EntityType.USER
+                        ):
+                            unmute_user(params)
+                        elif (
+                            params.action == Action.VIEW
+                            and params.entity_type == EntityType.NOTIFICATION
+                            and ENABLE_DEVELOPMENT_FEATURES
+                        ):
+                            view_notification(params)
+                        elif (
+                            params.action == Action.CREATE
+                            and params.entity_type == EntityType.NOTIFICATION
+                            and ENABLE_DEVELOPMENT_FEATURES
+                        ):
+                            create_notification(params)
+                        elif (
+                            params.action == Action.VIEW_PLAYLIST
+                            and params.entity_type == EntityType.NOTIFICATION
+                            and ENABLE_DEVELOPMENT_FEATURES
+                        ):
+                            view_playlist(params)
+                        elif (
+                            params.action == Action.CREATE
+                            and params.entity_type == EntityType.DEVELOPER_APP
+                        ):
+                            create_developer_app(params)
+                        elif (
+                            params.action == Action.UPDATE
+                            and params.entity_type == EntityType.DEVELOPER_APP
+                        ):
+                            update_developer_app(params)
+                        elif (
+                            params.action == Action.DELETE
+                            and params.entity_type == EntityType.DEVELOPER_APP
+                        ):
+                            delete_developer_app(params)
+                        elif (
+                            params.action == Action.CREATE
+                            and params.entity_type == EntityType.GRANT
+                        ):
+                            create_grant(params)
+                        elif (
+                            params.action == Action.DELETE
+                            and params.entity_type == EntityType.GRANT
+                        ):
+                            revoke_grant(params)
+                        elif (
+                            params.action == Action.APPROVE
+                            and params.entity_type == EntityType.GRANT
+                        ):
+                            approve_grant(params)
+                        elif (
+                            params.action == Action.REJECT
+                            and params.entity_type == EntityType.GRANT
+                        ):
+                            reject_grant(params)
+                        elif (
+                            params.action == Action.CREATE
+                            and params.entity_type == EntityType.DASHBOARD_WALLET_USER
+                        ):
+                            create_dashboard_wallet_user(params)
+                        elif (
+                            params.action == Action.DELETE
+                            and params.entity_type == EntityType.DASHBOARD_WALLET_USER
+                        ):
+                            delete_dashboard_wallet_user(params)
+                        elif (
+                            params.action == Action.UPDATE
+                            and params.entity_type == EntityType.TIP
+                        ):
+                            tip_reaction(params)
+                        elif (
+                            params.action == Action.CREATE
+                            and params.entity_type == EntityType.COMMENT
+                        ):
+                            create_comment(params)
+                        elif (
+                            params.action == Action.UPDATE
+                            and params.entity_type == EntityType.COMMENT
+                        ):
+                            update_comment(params)
+                        elif (
+                            params.action == Action.DELETE
+                            and params.entity_type == EntityType.COMMENT
+                        ):
+                            delete_comment(params)
+                        elif (
+                            params.action == Action.REACT
+                            and params.entity_type == EntityType.COMMENT
+                        ):
+                            react_comment(params)
+                        elif (
+                            params.action == Action.UNREACT
+                            and params.entity_type == EntityType.COMMENT
+                        ):
+                            unreact_comment(params)
+                        elif (
+                            params.action == Action.PIN
+                            and params.entity_type == EntityType.COMMENT
+                        ):
+                            pin_comment(params)
+                        elif (
+                            params.action == Action.UNPIN
+                            and params.entity_type == EntityType.COMMENT
+                        ):
+                            unpin_comment(params)
+                        elif (
+                            params.action == Action.REPORT
+                            and params.entity_type == EntityType.COMMENT
+                        ):
+                            report_comment(params)
+                        elif (
+                            params.action == Action.MUTE
+                            or params.action == Action.UNMUTE
+                        ) and params.entity_type == EntityType.COMMENT:
+                            update_comment_notification_setting(params)
+                        elif (
+                            params.action == Action.ADD_EMAIL
+                            and params.entity_type == EntityType.ENCRYPTED_EMAIL
+                        ):
+                            create_encrypted_email(params)
+                        elif (
+                            params.action == Action.UPDATE
+                            and params.entity_type == EntityType.EMAIL_ACCESS
+                        ):
+                            grant_email_access(params)
+                        elif (
+                            params.action == Action.CREATE
+                            and params.entity_type == EntityType.ASSOCIATED_WALLET
+                        ):
+                            add_associated_wallet(params)
+                        elif (
+                            params.action == Action.DELETE
+                            and params.entity_type == EntityType.ASSOCIATED_WALLET
+                        ):
+                            remove_associated_wallet(params)
+                        elif (
+                            params.action == Action.CREATE
+                            or params.action == Action.UPDATE
+                        ) and params.entity_type == EntityType.COLLECTIBLES:
+                            update_user_collectibles(params)
+                        elif (
+                            params.action == Action.CREATE
+                            and params.entity_type == EntityType.EVENT
+                        ):
+                            create_event(params)
+                        elif (
+                            params.action == Action.UPDATE
+                            and params.entity_type == EntityType.EVENT
+                        ):
+                            update_event(params)
+                        elif (
+                            params.action == Action.DELETE
+                            and params.entity_type == EntityType.EVENT
+                        ):
+                            delete_event(params)
+
+                        logger.debug("process transaction")  # log event context
+                    except IndexingValidationError as e:
+                        # swallow exception to keep indexing
+                        logger.error(f"failed to process transaction error {e}")
+                    except Exception as e:
+                        indexing_error = IndexingError(
+                            "tx-failure",
+                            block_number,
+                            block_hash,
+                            txhash,
+                            str(e),
+                        )
+                        logger.error(
+                            f"entity_manager.py | Indexing error {e}", exc_info=True
+                        )
+                        create_and_raise_indexing_error(
+                            indexing_error, update_task.redis, session
+                        )
+                        logger.error(f"skipping transaction hash {indexing_error}")
+
+            # compile records_to_save
+            save_new_records(
+                block_timestamp,
+                block_number,
+                new_records,
+                original_records,
+                existing_records_in_json,
+                session,
+            )
+
+            num_total_changes += len(new_records)
+            # update metrics
             metric_latency.save_time(
-                {"scope": "save_cid_metadata"},
-                start_time=save_cid_metadata_time,
+                {"scope": "entity_manager_update"},
+                start_time=update_start_time,
             )
+            metric_num_changed.save(
+                len(new_records["Playlist"]), {"entity_type": EntityType.PLAYLIST.value}
+            )
+            metric_num_changed.save(
+                len(new_records["Track"]), {"entity_type": EntityType.TRACK.value}
+            )
+
             logger.debug(
-                f"entity_manager.py | save_cid_metadata in {time.time() - save_cid_metadata_time}s"
+                f"entity_manager.py | Completed with {num_total_changes} total changes"
             )
+
+            # bulk save to metadata to cid_data
+            if cid_metadata:
+                save_cid_metadata_time = time.time()
+                save_cid_metadata(session, cid_metadata, cid_type)
+                metric_latency.save_time(
+                    {"scope": "save_cid_metadata"},
+                    start_time=save_cid_metadata_time,
+                )
+                logger.debug(
+                    f"entity_manager.py | save_cid_metadata in {time.time() - save_cid_metadata_time}s"
+                )
     except Exception as e:
         logger.error(f"entity_manager.py | Exception occurred {e}", exc_info=True)
         raise e
