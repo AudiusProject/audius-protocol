@@ -28,7 +28,8 @@ export enum ChallengeId {
   PLAY_COUNT_1000_MILESTONE_2025 = 'p2',
   PLAY_COUNT_10000_MILESTONE_2025 = 'p3',
   TASTEMAKER = 't',
-  COSIGN = 'cs'
+  COSIGN = 'cs',
+  PINNED_COMMENT = 'cp'
 }
 
 const DefaultSpecifier = z.object({
@@ -45,7 +46,8 @@ const DefaultSpecifier = z.object({
     ChallengeId.PLAY_COUNT_250_MILESTONE_2025,
     ChallengeId.PLAY_COUNT_1000_MILESTONE_2025,
     ChallengeId.PLAY_COUNT_10000_MILESTONE_2025,
-    ChallengeId.TASTEMAKER
+    ChallengeId.TASTEMAKER,
+    ChallengeId.PINNED_COMMENT
   ]),
   /** The user ID of the user completing the challenge. */
   userId: HashId
