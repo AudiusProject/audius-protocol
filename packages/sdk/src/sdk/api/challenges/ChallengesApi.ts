@@ -23,10 +23,13 @@ import type { UsersApi } from '../users/UsersApi'
 
 import {
   ChallengeId,
+  ClaimAllRewardsSchema,
   ClaimRewardsRequest,
   ClaimRewardsSchema,
   GenerateSpecifierRequest,
-  GenerateSpecifierSchema
+  GenerateSpecifierSchema,
+  type ClaimAllResponseBody,
+  type ClaimAllRewardsRequest
 } from './types'
 
 export class ChallengesApi extends GeneratedChallengesApi {
