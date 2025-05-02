@@ -49,6 +49,7 @@ export const CollectionArtCard = ({ id }: CollectionArtCardProps) => {
           popover
           textVariant='title'
           strength='weak'
+          center
         />
       </Flex>
       <Flex gap='m'>

@@ -15,9 +15,9 @@ import { accountSelectors, chatSelectors } from '@audius/common/store'
 import {
   formatCurrencyBalance,
   formatUSDCWeiToFloorCentsNumber,
-  formatWei,
   isNullOrUndefined
 } from '@audius/common/utils'
+import { AUDIO } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 import { useSelector } from 'react-redux'
 
@@ -87,7 +87,9 @@ export const useNavConfig = () => {
   const { user_id } = accountUser ?? ({} as User)
   const { tier } = useSelectTierInfo(user_id)
   const audioBalance = useTotalBalanceWithFallback()
-  const audioBalanceFormatted = formatWei(audioBalance, true, 0)
+  const audioBalanceFormatted = audioBalance
+    ? AUDIO(audioBalance).toLocaleString()
+    : null
   const isAudioBalanceLoading = isNullOrUndefined(audioBalance)
 
   const { data: usdcBalance, status: usdcBalanceStatus } = useUSDCBalance()

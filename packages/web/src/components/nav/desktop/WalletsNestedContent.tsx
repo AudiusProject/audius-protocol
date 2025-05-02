@@ -1,16 +1,16 @@
 import {
+  useSelectTierInfo,
   useUSDCBalance,
-  useTotalBalanceWithFallback,
-  useSelectTierInfo
+  useTotalBalanceWithFallback
 } from '@audius/common/hooks'
 import { BNUSDC } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import {
-  formatUSDCWeiToFloorCentsNumber,
-  route,
   formatCount,
-  WEI_DIVISOR
+  formatUSDCWeiToFloorCentsNumber,
+  route
 } from '@audius/common/utils'
+import { AUDIO } from '@audius/fixed-decimal'
 import {
   BalancePill,
   Flex,
@@ -56,8 +56,8 @@ export const WalletsNestedContent = () => {
   }[tier]
 
   const audioBalanceFormatted = audioBalance
-    ? formatCount(audioBalance.div(WEI_DIVISOR).toNumber())
-    : '0'
+    ? AUDIO(audioBalance).toLocaleString()
+    : null
 
   const usdcBalanceFormatted = usdcBalance ? formatCount(usdcCentBalance) : '0'
 

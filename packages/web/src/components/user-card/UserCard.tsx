@@ -79,13 +79,13 @@ export const UserCard = (props: UserCardProps) => {
         pb='s'
         imageSize={avatarSizeMap[size]}
       />
-      <CardContent p='s' pt={0} gap='xs'>
+      <CardContent p='s' pt={0} gap='xs' alignItems='center'>
         <UserLink
           ellipses
           userId={id}
           textVariant='title'
           size='l'
-          css={{ justifyContent: 'center' }}
+          center
           onClick={onUserLinkClick}
         />
         <Text variant='body' ellipses css={{ textAlign: 'center' }}>

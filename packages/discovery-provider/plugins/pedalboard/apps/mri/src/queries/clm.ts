@@ -62,21 +62,29 @@ export const clm = async (db: Knex, date: Date): Promise<void> => {
       "tracks"."track_id" as "UniqueTrackIdentifier",
       "tracks"."title" as "TrackTitle",
       coalesce(nullif(trim("users"."name"), ''), "users"."handle") as "Artist",
-      "playlists"."playlist_name" as "AlbumTitle",
-      "playlists"."playlist_id" as "AlbumId",
+      "album"."playlist_name" as "AlbumTitle",
+      "album"."playlist_id" as "AlbumId",
       '' as "ReleaseLabel",
       "tracks"."isrc" as "ISRC",
-      "playlists"."upc" as "UPC",
+      "album"."upc" as "UPC",
       '' as "Composer",
       "tracks"."duration" as "Duration",
       'Audio' as "ResourceType"
-    from "tracks"
-    join "users" on "tracks"."owner_id" = "users"."user_id"
-    left join "playlist_tracks" on "tracks"."track_id" = "playlist_tracks"."track_id"
-    left join "playlists" on "playlist_tracks"."playlist_id" = "playlists"."playlist_id"
-      and "playlists"."is_album" = true
-    where "tracks"."created_at" >= :start
-      and "tracks"."created_at" < :end
+    FROM "tracks"
+    JOIN "users" ON "tracks"."owner_id" = "users"."user_id"
+    LEFT JOIN LATERAL (
+      SELECT playlist_id, playlist_name, upc
+      FROM playlist_tracks
+      JOIN playlists USING (playlist_id)
+      WHERE playlist_tracks.track_id = tracks.track_id
+      AND is_album = TRUE
+      AND is_delete = FALSE
+      AND is_private = FALSE
+      ORDER BY playlists.created_at ASC, playlist_id ASC
+      LIMIT 1
+    ) album ON true
+    WHERE "tracks"."created_at" >= :start
+      AND "tracks"."created_at" < :end
   `,
       { start, end }
     )
