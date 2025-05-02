@@ -6,7 +6,6 @@ export * from './developerApps'
 export * from './library'
 export * from './signUp'
 export * from './suggestedTracks'
-export * from './topArtists'
 export * from './trending'
 export * from './user'
 
