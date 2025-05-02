@@ -37,7 +37,7 @@ begin
           ARRAY[notified_user_id],
           new.created_at,
           'remix_contest_started',
-          new.user_id,
+          notified_user_id,
           'remix_contest_started:' || new.entity_id || ':user:' || new.user_id || ':blocknumber:' || new.blocknumber,
           json_build_object(
             'entity_user_id', owner_user_id,

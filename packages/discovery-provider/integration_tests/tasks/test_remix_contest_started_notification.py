@@ -104,7 +104,6 @@ def test_remix_contest_started_notification_for_followers_and_favoriters(app):
             assert notification.data["entity_user_id"] == TEST_EVENT_CREATOR_ID
             assert notification.data["entity_id"] == TEST_TRACK_ID
             assert notification.type == NotificationType.REMIX_CONTEST_STARTED
-            assert notification.specifier == str(TEST_EVENT_CREATOR_ID)
             assert notification.group_id.startswith("remix_contest_started:")
         # Should notify both the follower and the favoriter
         assert TEST_FOLLOWER_ID in notified_user_ids
