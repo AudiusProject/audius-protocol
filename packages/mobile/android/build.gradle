@@ -38,5 +38,8 @@ allprojects {
         maven { url "https://maven.fpregistry.io/releases" }
         maven { url "https://storage.googleapis.com/snap-kit-build/maven" }
         maven { url "https://artifact.bytedance.com/repository/AwemeOpenSDK" }
+        flatDir {
+            dirs "$rootDir/libs"
+        }
     }
 }
