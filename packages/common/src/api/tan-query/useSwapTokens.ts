@@ -128,7 +128,6 @@ export const useSwapTokens = () => {
         let swapTx: VersionedTransaction
         const sdk = await audiusSdk()
         try {
-          // instructions are now already TransactionInstruction[]
           const { instructions, lookupTableAddresses } =
             await JupiterTokenExchange.getSwapInstructions({
               quote: quoteResult.quote,
@@ -141,13 +140,12 @@ export const useSwapTokens = () => {
           // Build the transaction with the pre-converted instructions
           swapTx = await sdk.services.solanaClient.buildTransaction({
             feePayer,
-            instructions, // Pass directly
+            instructions,
             addressLookupTables: lookupTableAddresses.map(
               (address: string) => new PublicKey(address)
-            )
-            // Let relay handle priority fees and compute limits as needed
-            // priorityFee: null,
-            // computeLimit: null
+            ),
+            priorityFee: null,
+            computeLimit: null
           })
         } catch (error: any) {
           console.error('useSwapTokens: Error building transaction:', error)
@@ -172,7 +170,7 @@ export const useSwapTokens = () => {
         // The Audius relay requires the fee payer (slot 0) signature to be cleared
         // and the transaction to be signed by the actual user (which we do here).
         // The relay service will then sign as the fee payer.
-        // swapTx.sign([keypair]) // Removed this line - letting the relay handle signing
+        swapTx.sign([keypair]) // Removed this line - letting the relay handle signing
 
         // ---------- Debug: Log transaction instructions ----------
         try {
