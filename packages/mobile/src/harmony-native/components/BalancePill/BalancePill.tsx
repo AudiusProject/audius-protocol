@@ -4,7 +4,7 @@ import { Skeleton } from '../Skeleton'
 import { Text } from '../Text/Text'
 import { Flex } from '../layout/Flex/Flex'
 type BalancePillProps = {
-  balance: string
+  balance: string | null
   icon: ReactNode
   isLoading: boolean
 }
@@ -26,7 +26,7 @@ export const BalancePill = (props: BalancePillProps) => {
       borderRadius='circle'
       backgroundColor='surface1'
     >
-      {isLoading ? (
+      {isLoading || !balance ? (
         <Flex h='unit4' w='unit6'>
           <Skeleton />
         </Flex>

@@ -110,22 +110,24 @@ const SignedInView = ({
       <Avatar userId={userId} h={48} w={48} />
       <AccountInfo>
         <Flex alignItems='center' justifyContent='space-between' gap='s' h={20}>
-          <UserLink
-            textVariant='title'
-            size='s'
-            userId={userId}
-            badgeSize='xs'
-            css={{
-              flex: 1,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              wordBreak: 'break-word',
-              ...(isManagedAccount && {
-                color: color.secondary.s500,
-                '&:hover': { color: color.secondary.s500 }
-              })
-            }}
-          />
+          <Flex css={{ maxWidth: '85%' }}>
+            <UserLink
+              textVariant='title'
+              size='s'
+              userId={userId}
+              badgeSize='xs'
+              css={{
+                flex: 1,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                wordBreak: 'break-word',
+                ...(isManagedAccount && {
+                  color: color.secondary.s500,
+                  '&:hover': { color: color.secondary.s500 }
+                })
+              }}
+            />
+          </Flex>
           <AccountSwitcher />
         </Flex>
         <TextLink

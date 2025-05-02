@@ -98,7 +98,7 @@ function* handleInitializeStripeModal({
         code,
         destinationCurrency,
         stripeErrorMessage,
-        type
+        kind: type
       })
     )
   }
