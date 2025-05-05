@@ -532,6 +532,11 @@ export const GiantTrackTile = ({
                     strength='weak'
                     tag='h2'
                     className={cn(fadeIn)}
+                    css={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
                   >
                     <Text color='subdued'>By </Text>
                     <UserLink userId={userId} popover />
