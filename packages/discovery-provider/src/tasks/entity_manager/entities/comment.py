@@ -175,14 +175,13 @@ def create_comment(params: ManageEntityParameters):
 
     params.add_record(comment_id, comment_record, EntityType.COMMENT)
 
-    with challenge_bus.use_scoped_dispatch_queue():
-        challenge_bus.dispatch(
-            ChallengeEvent.first_weekly_comment,
-            params.block_number,
-            params.block_datetime,
-            user_id,
-            {"created_at": params.block_datetime.timestamp()},
-        )
+    challenge_bus.dispatch(
+        ChallengeEvent.first_weekly_comment,
+        params.block_number,
+        params.block_datetime,
+        user_id,
+        {"created_at": params.block_datetime.timestamp()},
+    )
 
     if (
         not is_reply
@@ -746,18 +745,17 @@ def pin_comment(params: ManageEntityParameters):
         )
 
         if artist_is_verified:
-            with params.challenge_bus.use_scoped_dispatch_queue():
-                params.challenge_bus.dispatch(
-                    ChallengeEvent.pinned_comment,
-                    params.block_number,
-                    params.block_datetime,
-                    comment_user_id,
-                    {
-                        "track_id": track_id,
-                        "comment_id": comment_id,
-                        "track_owner_id": track_owner_id,
-                    },
-                )
+            params.challenge_bus.dispatch(
+                ChallengeEvent.pinned_comment,
+                params.block_number,
+                params.block_datetime,
+                comment_user_id,
+                {
+                    "track_id": track_id,
+                    "comment_id": comment_id,
+                    "track_owner_id": track_owner_id,
+                },
+            )
 
     params.add_record(track_id, track, EntityType.TRACK)
 

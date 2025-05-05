@@ -38,6 +38,7 @@ import {
   CommentReactionNotification
 } from './Notifications'
 import { ListenStreakReminderNotification } from './Notifications/ListenStreakReminderNotification'
+import { RemixContestStartedNotification } from './Notifications/RemixContestStartedNotification'
 
 type NotificationListItemProps = {
   notification: Notification
@@ -128,6 +129,8 @@ export const NotificationListItem = (props: NotificationListItemProps) => {
         return <CommentReactionNotification notification={notification} />
       case NotificationType.ListenStreakReminder:
         return <ListenStreakReminderNotification notification={notification} />
+      case NotificationType.RemixContestStarted:
+        return <RemixContestStartedNotification notification={notification} />
       default:
         return null
     }

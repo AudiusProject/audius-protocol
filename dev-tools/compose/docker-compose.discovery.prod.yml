@@ -148,6 +148,8 @@ services:
       audius_delegate_owner_wallet: '0x73EB6d82CFB20bA669e9c178b718d770C49BB52f'
       audius_delegate_private_key: d09ba371c359f10f22ccda12fd26c598c7921bda3220c9942174562bc6a36fe8
 
+      anti_abuse_wallet_pubkey: '0xF0D5BC18421fa04D0a2A2ef540ba5A9f04014BE3'
+
       audius_discprov_dev_mode: 'true'
       audius_discprov_loglevel: 'debug'
     volumes:

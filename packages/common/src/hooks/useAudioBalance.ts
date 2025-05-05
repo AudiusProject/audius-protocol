@@ -11,7 +11,7 @@ import { isNullOrUndefined } from '~/utils/typeUtils'
 /**
  * Pulls balances from account and wallet selectors. Will prefer the wallet
  * balance once it has loaded. Otherwise, will return the account balance if
- * available. Falls back to 0 if neither wallet or account balance are available.
+ * available. Falls back to null if neither wallet or account balance are available.
  */
 export const useTotalBalanceWithFallback = () => {
   const account = useSelector(getAccountUser)
@@ -27,6 +27,6 @@ export const useTotalBalanceWithFallback = () => {
       return new BN(account.total_balance) as BNWei
     }
 
-    return new BN(0) as BNWei
+    return null
   }, [account, walletTotalBalance])
 }

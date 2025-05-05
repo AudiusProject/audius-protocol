@@ -22,6 +22,7 @@ from src.queries.get_notifications import (
     NotificationData,
     PlaylistMilestoneNotification,
     ReactionNotification,
+    RemixContestStartedNotification,
     RemixNotification,
     RepostNotification,
     RepostOfRepostNotification,
@@ -759,6 +760,23 @@ def extend_listen_streak_reminder(action: NotificationAction):
     }
 
 
+def extend_remix_contest_started(action: NotificationAction):
+    data: RemixContestStartedNotification = action["data"]  # type: ignore
+    return {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
+        "data": {
+            "entity_user_id": encode_int_id(data["entity_user_id"]),
+            "entity_id": encode_int_id(data["entity_id"]),
+        },
+    }
+
+
 notification_action_handler = {
     "follow": extend_follow,
     "repost": extend_repost,
@@ -794,4 +812,5 @@ notification_action_handler = {
     "comment_mention": extend_comment_mention,
     "comment_reaction": extend_comment_reaction,
     "listen_streak_reminder": extend_listen_streak_reminder,
+    "remix_contest_started": extend_remix_contest_started,
 }

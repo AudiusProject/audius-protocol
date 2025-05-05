@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 
+import { useTrack } from '@audius/common/api'
 import { imageBlank as imageEmpty } from '@audius/common/assets'
 import { useImageSize } from '@audius/common/hooks'
 import { SquareSizes, ID } from '@audius/common/models'
@@ -24,9 +25,9 @@ export const useTrackCoverArt = ({
   size: SquareSizes
   defaultImage?: string
 }) => {
-  const artwork = useSelector(
-    (state) => getTrack(state, { id: trackId })?.artwork
-  )
+  const { data: artwork } = useTrack(trackId, {
+    select: (track) => track.artwork
+  })
   const image = useImageSize({
     artwork,
     targetSize: size,

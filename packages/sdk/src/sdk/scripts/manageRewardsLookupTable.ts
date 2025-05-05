@@ -26,7 +26,7 @@ import { Logger } from '../services'
 import type { SdkConfig } from '../types'
 
 /**
- * Derives the sender addresses for Discovery Nodes and Anti Abuse Oracles
+ * Derives the sender addresses for Validators and Anti Abuse Oracles
  * for the given config.
  */
 const getSenders = async (config: SdkServicesConfig) => {
@@ -62,7 +62,19 @@ const getSenders = async (config: SdkServicesConfig) => {
     }).toBase58()
   }))
 
-  return { discoverySenders, oracleSenders }
+  const storageSenders = config.network.storageNodes.map((node) => ({
+    ...node,
+    sender: RewardManagerProgram.deriveSender({
+      ethAddress: node.delegateOwnerWallet,
+      programId: rewardManagerProgramId,
+      authority: rewardManagerAuthority
+    }).toBase58()
+  }))
+
+  return {
+    validatorSenders: [...discoverySenders, ...storageSenders],
+    oracleSenders
+  }
 }
 
 /**
@@ -125,8 +137,8 @@ const getConfig = (environment: SdkConfig['environment']) => {
     environment === 'development'
       ? developmentConfig
       : environment === 'staging'
-        ? stagingConfig
-        : productionConfig
+      ? stagingConfig
+      : productionConfig
   return config
 }
 
@@ -236,7 +248,7 @@ const createLookupTable = async ({
   console.info('Confirmed.')
 
   console.info('Adding senders...')
-  const { discoverySenders, oracleSenders } = await getSenders(config)
+  const { validatorSenders, oracleSenders } = await getSenders(config)
   await extendLookupTable({
     connection,
     lookupTableAddress,
@@ -244,7 +256,7 @@ const createLookupTable = async ({
     authority: wallet.publicKey,
     addresses: oracleSenders
       .map((node) => new PublicKey(node.sender))
-      .concat(discoverySenders.map((node) => new PublicKey(node.sender)))
+      .concat(validatorSenders.map((node) => new PublicKey(node.sender)))
   })
 }
 
@@ -289,8 +301,9 @@ const updateLookupTable = async ({
   const connection = sdk.services.solanaClient.connection
 
   const lookupTableAddress = sdk.services.rewardManagerClient.lookupTable
-  const lookupTableAccount =
-    await connection.getAddressLookupTable(lookupTableAddress)
+  const lookupTableAccount = await connection.getAddressLookupTable(
+    lookupTableAddress
+  )
   if (!lookupTableAccount.value) {
     console.warn(
       'Lookup table',
@@ -310,7 +323,7 @@ const updateLookupTable = async ({
   const existingAccounts = new Set(
     lookupTableAccount.value?.state.addresses.map((a) => a.toBase58())
   )
-  const { discoverySenders, oracleSenders } = await getSenders(config)
+  const { validatorSenders, oracleSenders } = await getSenders(config)
 
   const oracleSendersToAdd = []
   for (const node of oracleSenders) {
@@ -327,25 +340,24 @@ const updateLookupTable = async ({
     )
   )
 
-  const discoveryNodeSendersToAdd = []
-  for (const node of discoverySenders) {
+  const validatorSendersToAdd = []
+  for (const node of validatorSenders) {
     if (!existingAccounts.has(node.sender)) {
-      discoveryNodeSendersToAdd.push(node.sender)
+      validatorSendersToAdd.push(node.sender)
     }
   }
   console.info(
     'Found',
-    discoveryNodeSendersToAdd.length,
-    'new Discovery Nodes to add:',
-    discoveryNodeSendersToAdd.map((sender) =>
-      discoverySenders.find((node) => node.sender === sender)
+    validatorSendersToAdd.length,
+    'new Validators to add:',
+    validatorSendersToAdd.map((sender) =>
+      validatorSenders.find((node) => node.sender === sender)
     )
   )
 
-  const allAddresses = [
-    ...oracleSendersToAdd,
-    ...discoveryNodeSendersToAdd
-  ].map((p) => new PublicKey(p))
+  const allAddresses = [...oracleSendersToAdd, ...validatorSendersToAdd].map(
+    (p) => new PublicKey(p)
+  )
 
   await extendLookupTable({
     connection,
