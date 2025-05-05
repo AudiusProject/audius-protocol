@@ -1,17 +1,23 @@
+import {
+  createCloseAccountInstruction,
+  createTransferInstruction,
+  getAssociatedTokenAddressSync
+} from '@solana/spl-token'
 import { PublicKey, VersionedTransaction } from '@solana/web3.js'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
+import { useGetCurrentUser } from '~/api'
 import { useAudiusQueryContext } from '~/audius-query'
 import { Feature } from '~/models'
 import { getJupiterQuoteByMint, JupiterTokenExchange } from '~/services/Jupiter'
+import { TOKEN_LISTING_MAP } from '~/store/ui/buy-audio/constants'
 
 // Enums and Types defined earlier in the provided context
 export enum SwapStatus {
   IDLE = 'IDLE',
   GETTING_QUOTE = 'GETTING_QUOTE',
   BUILDING_TRANSACTION = 'BUILDING_TRANSACTION', // Added for clarity
-  RELAYING_TRANSACTION = 'RELAYING_TRANSACTION', // Added for clarity
-  CONFIRMING_TRANSACTION = 'CONFIRMING_TRANSACTION',
+  SENDING_TRANSACTION = 'SENDING_TRANSACTION', // Updated from RELAYING_TRANSACTION
   SUCCESS = 'SUCCESS',
   ERROR = 'ERROR'
 }
@@ -23,7 +29,7 @@ export enum SwapErrorType {
   WALLET_ERROR = 'WALLET_ERROR', // e.g., couldn't get keypair
   QUOTE_FAILED = 'QUOTE_FAILED', // Jupiter API quote failure
   BUILD_FAILED = 'BUILD_FAILED', // Failed during instruction/tx build
-  RELAY_FAILED = 'RELAY_FAILED', // Relay service specific error
+  SEND_FAILED = 'SEND_FAILED', // Failed to send transaction
   UNKNOWN = 'UNKNOWN'
 }
 
@@ -67,6 +73,7 @@ export const useSwapTokens = () => {
   const queryClient = useQueryClient()
   const { solanaWalletService, reportToSentry, audiusSdk } =
     useAudiusQueryContext()
+  const { data: user } = useGetCurrentUser({})
 
   return useMutation<SwapTokensResult, Error, SwapTokensParams>({
     mutationFn: async (params): Promise<SwapTokensResult> => {
@@ -120,19 +127,87 @@ export const useSwapTokens = () => {
         }
 
         // ---------- 3. Build Transaction ----------
-        let swapTx: VersionedTransaction
         const sdk = await audiusSdk()
-        try {
-          const { instructions, lookupTableAddresses } =
-            await JupiterTokenExchange.getSwapInstructions({
-              quote: quoteResult.quote,
-              userPublicKey: userPublicKey.toBase58(),
-              wrapAndUnwrapSol: wrapUnwrapSol
+
+        // Get the transaction instructions from Jupiter
+        const { instructions: jupiterInstructions, lookupTableAddresses } =
+          await JupiterTokenExchange.getSwapInstructions({
+            quote: quoteResult.quote,
+            userPublicKey: userPublicKey.toBase58(),
+            wrapAndUnwrapSol: wrapUnwrapSol
+          })
+
+        // Create a copy of the instructions array
+        const instructions = [...jupiterInstructions]
+
+        // Check if this is an AUDIO -> USDC swap using the tokens from constants
+        const audioMintAddress = TOKEN_LISTING_MAP.AUDIO.address
+        const usdcMintAddress = TOKEN_LISTING_MAP.USDC.address
+
+        const isAudioToUsdc =
+          inputMint.toUpperCase() === audioMintAddress.toUpperCase() &&
+          outputMint.toUpperCase() === usdcMintAddress.toUpperCase()
+
+        // For AUDIO -> USDC swaps, add instructions to transfer USDC to userbank and close ATA
+        if (isAudioToUsdc && user?.wallet) {
+          try {
+            console.debug(
+              'SWAP: Adding USDC userbank transfer for AUDIO -> USDC swap'
+            )
+
+            const ethAddress = user.wallet
+
+            const usdcAssociatedTokenAccount = getAssociatedTokenAddressSync(
+              new PublicKey(usdcMintAddress),
+              userPublicKey,
+              true
+            )
+
+            const userBank =
+              await sdk.services.claimableTokensClient.deriveUserBank({
+                ethWallet: ethAddress,
+                mint: 'USDC'
+              })
+
+            const transferToUserbankInstruction = createTransferInstruction(
+              usdcAssociatedTokenAccount,
+              userBank,
+              userPublicKey,
+              BigInt(quoteResult.outputAmount.amount)
+            )
+
+            const closeAccountInstruction = createCloseAccountInstruction(
+              usdcAssociatedTokenAccount,
+              userPublicKey,
+              userPublicKey,
+              []
+            )
+
+            instructions.push(
+              transferToUserbankInstruction,
+              closeAccountInstruction
+            )
+
+            console.debug('SWAP: Added userbank transfer instructions', {
+              usdcAta: usdcAssociatedTokenAccount.toBase58(),
+              userBank: userBank.toBase58(),
+              amount: quoteResult.outputAmount.amount
             })
+          } catch (error) {
+            console.error(
+              'SWAP: Failed to add USDC userbank transfer instructions:',
+              error
+            )
+            // Continue with the swap even if we can't add these instructions
+            // Better to have USDC in an ATA than to fail the swap entirely
+          }
+        }
 
-          const feePayer = await sdk.services.solanaRelay.getFeePayer()
+        const feePayer = await sdk.services.solanaRelay.getFeePayer()
 
-          // Build the transaction with the pre-converted instructions
+        // Build the transaction with all instructions
+        let swapTx: VersionedTransaction
+        try {
           swapTx = await sdk.services.solanaClient.buildTransaction({
             feePayer,
             instructions,
@@ -162,9 +237,7 @@ export const useSwapTokens = () => {
         }
 
         // ---------- 4. Sign Transaction ----------
-        // The Audius relay requires the fee payer (slot 0) signature to be cleared
-        // and the transaction to be signed by the actual user (which we do here).
-        // The relay service will then sign as the fee payer.
+        // The transaction needs to be signed by the actual user (which we do here).
         swapTx.sign([keypair])
 
         // ---------- Debug: Log transaction instructions ----------
@@ -179,82 +252,43 @@ export const useSwapTokens = () => {
             return programId
           })
           // Print all program IDs in order
-          console.debug(
-            'SWAP RELAY DEBUG: Transaction program IDs:',
-            programIds
-          )
+          console.debug('SWAP DEBUG: Transaction program IDs:', programIds)
           // Optionally, print the raw instruction data for further debugging
           console.debug(
-            'SWAP RELAY DEBUG: Compiled instructions:',
+            'SWAP DEBUG: Compiled instructions:',
             message.compiledInstructions
           )
         } catch (e) {
-          console.warn(
-            'SWAP RELAY DEBUG: Failed to log transaction instructions',
-            e
-          )
+          console.warn('SWAP DEBUG: Failed to log transaction instructions', e)
         }
 
-        // ---------- 5. Relay Transaction ----------
+        // ---------- 5. Send Transaction ----------
         try {
-          const relayResult = await sdk.services.solanaRelay.relay({
-            transaction: swapTx,
-            sendOptions: { skipPreflight: false } // Preflight checks happen during build/quote
+          signature = await sdk.services.solanaClient.sendTransaction(swapTx, {
+            skipPreflight: false // Preflight checks happen during build/quote
           })
-          signature = relayResult.signature
         } catch (error: any) {
-          console.error('useSwapTokens: Error relaying transaction:', error)
+          console.error('useSwapTokens: Error sending transaction:', error)
           reportToSentry({
-            name: 'JupiterSwapRelayError',
+            name: 'JupiterSwapSendError',
             error,
             feature: Feature.TanQuery,
             additionalInfo: { params, quoteResponse: quoteResult.quote }
           })
-          // Use the error message from the relay if available
-          const relayErrorMessage =
-            error?.response?.data?.error ?? error?.message
+          // Use the error message if available
+          const errorMessage = error?.message
           return {
             status: SwapStatus.ERROR,
             error: {
-              type: SwapErrorType.RELAY_FAILED,
-              message: relayErrorMessage ?? 'Failed to relay swap transaction'
+              type: SwapErrorType.SEND_FAILED,
+              message: errorMessage ?? 'Failed to send swap transaction'
             },
             inputAmount: quoteResult.inputAmount,
             outputAmount: quoteResult.outputAmount
           }
         }
 
-        // ---------- 6. Confirm Transaction ----------
-        const connection = sdk.services.solanaClient.connection
-        try {
-          await connection.confirmTransaction(signature, 'confirmed')
-        } catch (error: any) {
-          console.error(
-            `useSwapTokens: Transaction confirmation error (Sig: ${signature}):`,
-            error
-          )
-
-          // Generic confirmation failure
-          reportToSentry({
-            name: 'JupiterSwapConfirmationError',
-            error,
-            feature: Feature.TanQuery,
-            additionalInfo: { signature, params }
-          })
-          return {
-            status: SwapStatus.ERROR,
-            signature,
-            error: {
-              type: SwapErrorType.TRANSACTION_FAILED,
-              message:
-                error?.message ?? 'Failed to confirm swap transaction on-chain'
-            },
-            inputAmount: quoteResult.inputAmount,
-            outputAmount: quoteResult.outputAmount
-          }
-        }
-
-        // ---------- 7. Success & Invalidation ----------
+        // ---------- 6. Success & Invalidation ----------
         // Generate dynamic query keys based on mints
         // Assuming your balance hooks use keys like ['audioBalance', userId] or ['usdcBalance', userId]
         // We need a more generic pattern if swapping arbitrary tokens.
