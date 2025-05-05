@@ -1,5 +1,7 @@
 import { useExploreContent } from '@audius/common/api'
 
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+
 import Section from './Section'
 import { TrackArtCard } from './TrackArtCard'
 
@@ -8,14 +10,20 @@ const messages = {
 }
 
 export const FeaturedRemixContests = () => {
-  const { data: exploreContent } = useExploreContent()
+  const { data: exploreContent, isLoading } = useExploreContent()
   const contestIds = exploreContent?.featuredRemixContests ?? []
 
   return (
     <Section title={messages.remixContests}>
-      {contestIds.slice(0, 4).map((id) => (
-        <TrackArtCard key={id} id={id} />
-      ))}
+      {isLoading ? (
+        <LoadingSpinner />
+      ) : (
+        <>
+          {contestIds.slice(0, 4).map((id) => (
+            <TrackArtCard key={id} id={id} />
+          ))}
+        </>
+      )}
     </Section>
   )
 }
