@@ -39,6 +39,7 @@ import { BASE_URL, stripBaseUrl } from 'utils/route'
 import styles from './ExplorePage.module.css'
 import { FeaturedPlaylists } from './FeaturedPlaylists'
 import { FeaturedProfiles } from './FeaturedProfiles'
+import { FeaturedRemixContests } from './FeaturedRemixContests'
 import Section, { Layout } from './Section'
 
 const { EXPLORE_PAGE } = route
@@ -48,7 +49,8 @@ const messages = {
   justForYouSubtitle: `Content curated for you based on your likes,
 reposts, and follows. Refreshes often so if you like a track, favorite it.`,
   lifestyle: 'Playlists to Fit Your Mood',
-  lifestyleSubtitle: 'Playlists made by Audius users, sorted by mood and feel'
+  lifestyleSubtitle: 'Playlists made by Audius users, sorted by mood and feel',
+  remixContests: 'Remix Contests'
 }
 
 export const justForYou = [
@@ -119,6 +121,23 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
       contentClassName={styles.page}
       header={header}
     >
+      <Section title={messages.lifestyle} subtitle={messages.lifestyleSubtitle}>
+        {lifestyle.map((i) => (
+          <PerspectiveCard
+            key={i.title}
+            backgroundGradient={i.gradient}
+            shadowColor={i.shadow}
+            onClick={() => navigate(i.link)}
+          >
+            <EmojiInterior title={i.title} emoji={i.emoji} />
+          </PerspectiveCard>
+        ))}
+      </Section>
+
+      <FeaturedPlaylists />
+      <FeaturedRemixContests />
+      <FeaturedProfiles />
+
       <Section
         title={messages.justForYou}
         subtitle={messages.justForYouSubtitle}
@@ -162,22 +181,6 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
           )
         })}
       </Section>
-
-      <Section title={messages.lifestyle} subtitle={messages.lifestyleSubtitle}>
-        {lifestyle.map((i) => (
-          <PerspectiveCard
-            key={i.title}
-            backgroundGradient={i.gradient}
-            shadowColor={i.shadow}
-            onClick={() => navigate(i.link)}
-          >
-            <EmojiInterior title={i.title} emoji={i.emoji} />
-          </PerspectiveCard>
-        ))}
-      </Section>
-
-      <FeaturedPlaylists />
-      <FeaturedProfiles />
     </Page>
   )
 }
