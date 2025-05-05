@@ -16,6 +16,8 @@ type CollectionArtCardProps = {
   id: ID
 }
 
+const ARTWORK_SIZE = 240
+
 export const CollectionArtCard = ({ id }: CollectionArtCardProps) => {
   const [isPerspectiveDisabled, setIsPerspectiveDisabled] = useState(false)
 
@@ -36,11 +38,17 @@ export const CollectionArtCard = ({ id }: CollectionArtCardProps) => {
         <CollectionImage
           collectionId={id}
           size={SquareSizes.SIZE_480_BY_480}
-          h={240}
-          w={240}
+          h={ARTWORK_SIZE}
+          w={ARTWORK_SIZE}
         />
       </PerspectiveCard>
-      <Flex column gap='xs' alignItems='center'>
+      <Flex
+        column
+        gap='xs'
+        alignItems='center'
+        ph='m'
+        css={{ maxWidth: ARTWORK_SIZE }}
+      >
         <CollectionLink collectionId={id} textVariant='title' size='l'>
           {playlist_name}
         </CollectionLink>
@@ -52,7 +60,7 @@ export const CollectionArtCard = ({ id }: CollectionArtCardProps) => {
           center
         />
       </Flex>
-      <Flex gap='m'>
+      <Flex gap='m' ph='m' css={{ maxWidth: ARTWORK_SIZE }}>
         <RepostStats
           id={playlist_id}
           entityType={UserListEntityType.COLLECTION}

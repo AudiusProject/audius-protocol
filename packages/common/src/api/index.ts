@@ -29,6 +29,9 @@ export * from './tan-query/collection/useFeaturedPlaylists'
 // Events
 export * from './tan-query/events'
 
+// Explore
+export * from './tan-query/collection/useExploreContent'
+
 // Lineups
 export * from './tan-query/lineups/useFeed'
 export * from './tan-query/lineups/useLibraryTracks'
