@@ -1,6 +1,7 @@
 {
   "extends": "@react-native/typescript-config/tsconfig.json",
   "compilerOptions": {
+    "skipLibCheck": true,
     // Use react-native's builtin lib when no longer dependent on @audius/web
     "lib": [
       "dom",
@@ -36,7 +37,10 @@
       "services/*": ["../../node_modules/@audius/web/src/services/*"],
       "store/*": ["../../node_modules/@audius/web/src/store/*"],
       "utils/*": ["../../node_modules/@audius/web/src/utils/*"],
-      "workers/*": ["../../node_modules/@audius/web/src/workers/*"]
+      "workers/*": ["../../node_modules/@audius/web/src/workers/*"],
+      // TODO remove these after updating bottom-sheet and rn-dynamic
+      "@types/react-native": ["./node_modules/react-native"],
+      "react-native": ["./node_modules/react-native"]
     },
     "strictNullChecks": true,
     "types": ["vite/client", "jest"],
