@@ -18,7 +18,13 @@ type TrackArtCardProps = {
 const messages = {
   remixContest: 'Remix Contest',
   deadline: 'Deadline',
-  ended: 'Ended'
+  ended: 'Ended',
+  contestDeadline: (endDate: string | undefined) => {
+    if (!endDate) return null
+
+    const isContestEnded = dayjs(endDate).isBefore(dayjs())
+    return `${isContestEnded ? messages.ended : messages.deadline}: ${dayjs(endDate).format('MM/DD/YY')}`
+  }
 }
 
 const ARTWORK_SIZE = 240
@@ -30,8 +36,6 @@ export const TrackArtCard = ({ id }: TrackArtCardProps) => {
   const { data: contest, isLoading: isContestLoading } = useRemixContest(id)
   const isLoading = isTrackLoading || isContestLoading
   const isRemixContest = !!contest
-  const isContestEnded =
-    isRemixContest && dayjs(contest?.endDate).isBefore(dayjs())
 
   const goToTrack = useCallback(() => {
     if (!track?.permalink) return
@@ -64,7 +68,7 @@ export const TrackArtCard = ({ id }: TrackArtCardProps) => {
           </>
         ) : (
           <>
-            <TrackLink trackId={id} textVariant='title' size='l' />
+            <TrackLink maxLines={2} trackId={id} textVariant='title' size='l' />
             <UserLink
               userId={track.owner_id}
               popover
@@ -74,7 +78,7 @@ export const TrackArtCard = ({ id }: TrackArtCardProps) => {
             />
             {isRemixContest && (
               <Text variant='body' size='s' strength='strong' color='subdued'>
-                {`${isContestEnded ? messages.ended : messages.deadline}: ${dayjs(contest.endDate).format('MM/DD/YY')}`}
+                {messages.contestDeadline(contest.endDate)}
               </Text>
             )}
           </>
