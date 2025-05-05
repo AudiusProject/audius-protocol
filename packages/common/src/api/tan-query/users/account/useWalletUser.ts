@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 
 import { accountFromSDK } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
-import { AccountUserMetadata, UserMetadata } from '~/models/User'
+import { AccountUserMetadata, ID } from '~/models'
 import { getWalletAddresses } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from '../../queryKeys'
@@ -17,7 +17,7 @@ export const getWalletAccountQueryKey = (wallet: string | null | undefined) =>
   ] as unknown as QueryKey<AccountUserMetadata | null>
 
 export const getWalletUserQueryKey = (wallet: string | null | undefined) =>
-  [QUERY_KEYS.walletUser, wallet] as unknown as QueryKey<UserMetadata | null>
+  [QUERY_KEYS.walletUser, wallet] as unknown as QueryKey<ID | null>
 
 // This queryFn is separate in order to be used in sagas
 export const getWalletAccountQueryFn = async (
@@ -40,8 +40,8 @@ export const getWalletAccountQueryFn = async (
 /**
  * Hook to get the currently logged in user's data
  */
-export const useWalletUser = <TResult = UserMetadata | null | undefined>(
-  options?: SelectableQueryOptions<UserMetadata | null | undefined, TResult>
+export const useWalletUser = <TResult = ID | null | undefined>(
+  options?: SelectableQueryOptions<ID | null | undefined, TResult>
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { currentUser: currentUserWallet } = useSelector(getWalletAddresses)
@@ -51,6 +51,7 @@ export const useWalletUser = <TResult = UserMetadata | null | undefined>(
     queryFn: async () => {
       const sdk = await audiusSdk()
       return (await getWalletAccountQueryFn(currentUserWallet!, sdk))?.user
+        ?.user_id
     },
     ...options,
     enabled: options?.enabled !== false && !!currentUserWallet

@@ -206,7 +206,7 @@ export function* fetchAccountAsync({
   }
 
   const accountData = (yield* call([queryClient, queryClient.fetchQuery], {
-    queryKey: getWalletAccountQueryKey(web3WalletAddress),
+    queryKey: getWalletAccountQueryKey(wallet),
     queryFn: async () => getWalletAccountQueryFn(wallet!, sdk)
   })) as AccountUserMetadata | undefined
 
