@@ -94,50 +94,47 @@ def create_social_record(params: ManageEntityParameters):
                 record_type=record_type,
             )
 
-    with params.challenge_bus.use_scoped_dispatch_queue():
-        # dispatch repost, favorite, follow challenges
-        if create_record and params.action in action_to_challenge_event:
-            challenge_event = action_to_challenge_event[params.action]
+    # dispatch repost, favorite, follow challenges
+    if create_record and params.action in action_to_challenge_event:
+        challenge_event = action_to_challenge_event[params.action]
+        params.challenge_bus.dispatch(
+            challenge_event,
+            params.block_number,
+            params.block_datetime,
+            params.user_id,
+        )
+
+    # dispatch verified cosign challenge
+    if (
+        params.action in [Action.SAVE, Action.REPOST]
+        and params.entity_type == EntityType.TRACK
+        and params.existing_records[EntityType.TRACK][params.entity_id].remix_of
+    ):
+        remixed_track = (
+            params.session.query(Track)
+            .join(Remix, Remix.parent_track_id == Track.track_id)
+            .filter(Remix.child_track_id == params.entity_id)
+            .first()
+        )
+        remixer = params.existing_records[EntityType.TRACK][params.entity_id].owner_id
+        cosigner = params.existing_records[EntityType.USER][params.user_id]
+
+        if (
+            remixed_track
+            and remixed_track.owner_id == params.user_id
+            and cosigner.is_verified
+        ):
             params.challenge_bus.dispatch(
-                challenge_event,
+                ChallengeEvent.cosign,
                 params.block_number,
                 params.block_datetime,
-                params.user_id,
+                remixer,
+                {
+                    "original_track_owner_id": params.user_id,
+                    "remix_track_id": params.entity_id,
+                    "cosign_date": params.block_datetime.timestamp(),
+                },
             )
-
-        # dispatch verified cosign challenge
-        if (
-            params.action in [Action.SAVE, Action.REPOST]
-            and params.entity_type == EntityType.TRACK
-            and params.existing_records[EntityType.TRACK][params.entity_id].remix_of
-        ):
-            remixed_track = (
-                params.session.query(Track)
-                .join(Remix, Remix.parent_track_id == Track.track_id)
-                .filter(Remix.child_track_id == params.entity_id)
-                .first()
-            )
-            remixer = params.existing_records[EntityType.TRACK][
-                params.entity_id
-            ].owner_id
-            cosigner = params.existing_records[EntityType.USER][params.user_id]
-
-            if (
-                remixed_track
-                and remixed_track.owner_id == params.user_id
-                and cosigner.is_verified
-            ):
-                params.challenge_bus.dispatch(
-                    ChallengeEvent.cosign,
-                    params.block_number,
-                    params.block_datetime,
-                    remixer,
-                    {
-                        "original_track_owner_id": params.user_id,
-                        "remix_track_id": params.entity_id,
-                        "cosign_date": params.block_datetime.timestamp(),
-                    },
-                )
 
 
 def get_attribute_from_record_metadata(params, attribute):

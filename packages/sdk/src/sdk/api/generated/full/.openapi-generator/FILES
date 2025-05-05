@@ -150,6 +150,9 @@ models/ReceiveTipNotificationAction.ts
 models/ReceiveTipNotificationActionData.ts
 models/Related.ts
 models/RelatedArtistResponseFull.ts
+models/RemixContestStartedNotification.ts
+models/RemixContestStartedNotificationAction.ts
+models/RemixContestStartedNotificationActionData.ts
 models/RemixNotification.ts
 models/RemixNotificationAction.ts
 models/RemixNotificationActionData.ts

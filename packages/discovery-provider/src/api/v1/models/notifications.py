@@ -199,6 +199,32 @@ remix_notification = ns.clone(
     },
 )
 
+remix_contest_started_notification_action_data = ns.model(
+    "remix_contest_started_notification_action_data",
+    {
+        "entity_user_id": fields.String(required=True),
+        "entity_id": fields.String(required=True),
+    },
+)
+remix_contest_started_notification_action = ns.clone(
+    "remix_contest_started_notification_action",
+    notification_action_base,
+    {
+        "data": fields.Nested(
+            remix_contest_started_notification_action_data, required=True
+        )
+    },
+)
+remix_contest_started_notification = ns.clone(
+    "remix_contest_started_notification",
+    notification_base,
+    {
+        "actions": fields.List(
+            fields.Nested(remix_contest_started_notification_action, required=True),
+            required=True,
+        )
+    },
+)
 
 cosign_notification_action_data = ns.model(
     "cosign_notification_action_data",
@@ -973,6 +999,7 @@ notification = ns.add_model(
             "comment_mention": comment_mention_notification,
             "comment_reaction": comment_reaction_notification,
             "listen_streak_reminder": listen_streak_reminder_notification,
+            "remix_contest_started": remix_contest_started_notification,
         },
         discriminator="type",
     ),

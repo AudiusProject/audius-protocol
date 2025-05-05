@@ -5,6 +5,27 @@ import {
 } from '@tanstack/react-query'
 import { sumBy } from 'lodash'
 
+export const combineQueryStatuses = (
+  queries: Pick<
+    UseQueryResult<any, Error>,
+    'isPending' | 'isFetching' | 'isLoading' | 'isSuccess' | 'isError'
+  >[]
+) => {
+  const isPending = queries.some((query) => query.isPending)
+  const isFetching = queries.some((query) => query.isFetching)
+  const isLoading = queries.some((query) => query.isLoading)
+  const isSuccess = queries.every((query) => query.isSuccess)
+  const isError = queries.some((query) => query.isError)
+
+  return {
+    isPending,
+    isFetching,
+    isLoading,
+    isSuccess,
+    isError
+  }
+}
+
 /**
  * Combines multiple query results into a single query result status
  * @param queries Array of query results to combine
@@ -13,12 +34,10 @@ import { sumBy } from 'lodash'
 export const combineQueryResults = <T>(
   queries: UseQueryResult<T, Error>[]
 ): UseQueryResult<T, Error> => {
-  const isPending = queries.some((query) => query.isPending)
-  const isFetching = queries.some((query) => query.isFetching)
-  const isLoading = queries.some((query) => query.isLoading)
-  const isSuccess = queries.every((query) => query.isSuccess)
+  const { isPending, isFetching, isLoading, isSuccess, isError } =
+    combineQueryStatuses(queries)
+
   const isFetched = queries.every((query) => query.isFetched)
-  const isError = queries.some((query) => query.isError)
   const isFetchedAfterMount = queries.every(
     (query) => query.isFetchedAfterMount
   )
