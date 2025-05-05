@@ -1,16 +1,13 @@
-import { useMemo } from 'react'
-
 import { Id } from '@audius/sdk'
 import dayjs from 'dayjs'
+import { useSelector } from 'react-redux'
 
 import { managedUserListFromSDK, userManagerListFromSDK } from '~/adapters/user'
 import { createApi } from '~/audius-query'
 import { ID, User, UserMetadata } from '~/models'
+import { getWalletAddresses } from '~/store/account/selectors'
 
-import {
-  CurrentUserWalletType,
-  useCurrentAccount
-} from './tan-query/users/account/useCurrentAccount'
+import { useWalletAccount } from './tan-query/users/account/useWalletUser'
 
 type ResetPasswordArgs = {
   email: string
@@ -228,30 +225,25 @@ const accountApi = createApi({
   }
 })
 
-// TODO: this is temporary jank to scope down changes - this will go soon when removing this whole file
-export const useGetCurrentUser = (_args?: any, options?: any) => {
-  return {
-    data: useCurrentAccount(CurrentUserWalletType.currentUser, options)?.data
-      ?.user
-  }
+export const useGetCurrentUser = (_args?: any) => {
+  const { currentUser } = useSelector(getWalletAddresses)
+
+  const { data: currentAccount } = useWalletAccount(currentUser)
+
+  return { data: currentAccount?.user }
 }
 
-// TODO: this is temporary jank to scope down changes - this will go soon when removing this whole file
-export const useGetCurrentWeb3User = (_args?: any, options?: any) => {
-  return {
-    data: useCurrentAccount(CurrentUserWalletType.web3User, options)?.data?.user
-  }
+export const useGetCurrentWeb3User = (_args?: any) => {
+  const { web3User } = useSelector(getWalletAddresses)
+
+  const { data: currentAccount } = useWalletAccount(web3User)
+
+  return { data: currentAccount?.user }
 }
 
-// TODO: this is temporary jank to scope down changes - this will go soon when removing this whole file
-export const useGetCurrentUserId = (_args?: any, options?: any) => {
-  const result = useGetCurrentUser(_args, options)
-  return useMemo(() => {
-    return {
-      ...result,
-      data: result.data ? result.data.user_id : null
-    }
-  }, [result])
+export const useGetCurrentUserId = (_args?: any) => {
+  const { data: currentUser } = useGetCurrentUser(_args) ?? {}
+  return { data: currentUser?.user_id as number }
 }
 
 export const {

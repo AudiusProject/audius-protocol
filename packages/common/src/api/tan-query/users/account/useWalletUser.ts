@@ -16,9 +16,6 @@ export const getWalletAccountQueryKey = (wallet: string | null | undefined) =>
     wallet
   ] as unknown as QueryKey<AccountUserMetadata | null>
 
-export const getWalletUserQueryKey = (wallet: string | null | undefined) =>
-  [QUERY_KEYS.walletUser, wallet] as unknown as QueryKey<ID | null>
-
 // This queryFn is separate in order to be used in sagas
 export const getWalletAccountQueryFn = async (
   wallet: string,
@@ -40,20 +37,24 @@ export const getWalletAccountQueryFn = async (
 /**
  * Hook to get the currently logged in user's data
  */
-export const useWalletUser = <TResult = ID | null | undefined>(
-  options?: SelectableQueryOptions<ID | null | undefined, TResult>
+export const useWalletAccount = <
+  TResult = AccountUserMetadata | null | undefined
+>(
+  wallet: string | null | undefined,
+  options?: SelectableQueryOptions<
+    AccountUserMetadata | null | undefined,
+    TResult
+  >
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
-  const { currentUser: currentUserWallet } = useSelector(getWalletAddresses)
 
   return useQuery({
-    queryKey: getWalletUserQueryKey(currentUserWallet),
+    queryKey: getWalletAccountQueryKey(wallet),
     queryFn: async () => {
       const sdk = await audiusSdk()
-      return (await getWalletAccountQueryFn(currentUserWallet!, sdk))?.user
-        ?.user_id
+      return await getWalletAccountQueryFn(wallet!, sdk)
     },
     ...options,
-    enabled: options?.enabled !== false && !!currentUserWallet
+    enabled: options?.enabled !== false && !!wallet
   })
 }
