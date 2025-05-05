@@ -1,11 +1,13 @@
 import { OptionalId } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { pick } from 'lodash'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
+import { Status } from '~/models/Status'
+import { getAccountStatus } from '~/store/account/selectors'
 
 import { TQTrack } from '../models'
 import { QUERY_KEYS } from '../queryKeys'
@@ -29,6 +31,7 @@ export const useTrackByPermalink = <TResult = TQTrack>(
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
+  const accountStatus = useSelector(getAccountStatus)
 
   const simpleOptions = pick(options, [
     'enabled',
@@ -58,7 +61,11 @@ export const useTrackByPermalink = <TResult = TQTrack>(
       return track?.track_id
     },
     staleTime: simpleOptions?.staleTime ?? Infinity,
-    enabled: simpleOptions?.enabled !== false && !!permalink
+    enabled:
+      simpleOptions?.enabled !== false &&
+      !!permalink &&
+      // Need to wait for account status to load so that we're able to query with the correct user id
+      (accountStatus === Status.SUCCESS || accountStatus === Status.ERROR)
   })
 
   return useTrack(trackId, options)
