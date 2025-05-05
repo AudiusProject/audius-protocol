@@ -9,7 +9,7 @@ import {
   takeLatest
 } from 'typed-redux-saga'
 
-import { userApiFetchSaga } from '~/api/user'
+import { getWalletAccountQueryFn, getWalletAccountQueryKey } from '~/api'
 import { AccountUserMetadata, ErrorLevel, Kind, UserMetadata } from '~/models'
 import { getContext } from '~/store/effects'
 import { chatActions } from '~/store/pages/chat'
@@ -103,15 +103,18 @@ function* initializeMetricsForUser({
   const solanaWalletService = yield* getContext('solanaWalletService')
   const analytics = yield* getContext('analytics')
   const sdk = yield* getSDK()
+  const queryClient = yield* getContext('queryClient')
 
   if (accountUser && accountUser.handle) {
     const [web3WalletAddress] = yield* call([
       sdk.services.audiusWalletClient,
       sdk.services.audiusWalletClient.getAddresses
     ])
-    const { user: web3User } = yield* call(userApiFetchSaga.getUserAccount, {
-      wallet: web3WalletAddress
-    })
+    const accountData = (yield* call([queryClient, queryClient.fetchQuery], {
+      queryKey: getWalletAccountQueryKey(web3WalletAddress),
+      queryFn: async () => getWalletAccountQueryFn(web3WalletAddress, sdk)
+    })) as AccountUserMetadata | undefined
+    const { user: web3User } = accountData ?? {}
 
     let solanaWallet
     let managerUserId
@@ -164,13 +167,15 @@ export function* fetchAccountAsync({
   const localStorage = yield* getContext('localStorage')
   const reportToSentry = yield* getContext('reportToSentry')
   const sdk = yield* getSDK()
+  const queryClient = yield* getContext('queryClient')
 
   // Don't revert successful local account fetch
   if (shouldMarkAccountAsLoading) {
     yield* put(fetchAccountRequested())
   }
 
-  let wallet, web3WalletAddress
+  let wallet: string | undefined
+  let web3WalletAddress: string | undefined
   try {
     const connectedWallets = yield* call([
       sdk.services.audiusWalletClient,
@@ -200,13 +205,10 @@ export function* fetchAccountAsync({
     return
   }
 
-  const accountData: AccountUserMetadata | undefined = yield* call(
-    userApiFetchSaga.getUserAccount,
-    {
-      wallet
-    },
-    true // force refresh to get updated user w handle
-  )
+  const accountData = (yield* call([queryClient, queryClient.fetchQuery], {
+    queryKey: getWalletAccountQueryKey(wallet),
+    queryFn: async () => getWalletAccountQueryFn(wallet!, sdk)
+  })) as AccountUserMetadata | undefined
 
   if (!accountData) {
     yield* put(resetAccount())
