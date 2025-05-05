@@ -54,11 +54,6 @@ const toEntityType = (
   return Entity.Playlist
 }
 
-type CustomNotificationType =
-  | 'remix_contest_started'
-  | 'remix_contest_ended'
-  | 'remix_contest_ending_soon'
-
 /**
  * Maps the SDK notifications type to the type that the UI expects,
  * decoding hashIds and in some cases extracting userId from the groupId
@@ -67,7 +62,7 @@ type CustomNotificationType =
 export const notificationFromSDK = (
   notification: full.Notification
 ): Notification => {
-  switch (notification.type as NotificationType | CustomNotificationType) {
+  switch (notification.type) {
     case 'follow': {
       const userIds = notification.actions.map((action) => {
         const data = action.data
@@ -649,7 +644,6 @@ export const notificationFromSDK = (
       }
     }
     case 'remix_contest_started': {
-      // @ts-expect-error: custom notification type from backend
       const data = notification.actions[0].data
       return {
         type: NotificationType.RemixContestStarted,
@@ -659,7 +653,6 @@ export const notificationFromSDK = (
       }
     }
     case 'remix_contest_ended': {
-      // @ts-expect-error: custom notification type from backend
       const data = notification.actions[0].data
       return {
         type: NotificationType.RemixContestEnded,
@@ -669,7 +662,6 @@ export const notificationFromSDK = (
       }
     }
     case 'remix_contest_ending_soon': {
-      // @ts-expect-error: custom notification type from backend
       const data = notification.actions[0].data
       return {
         type: NotificationType.RemixContestEndingSoon,
