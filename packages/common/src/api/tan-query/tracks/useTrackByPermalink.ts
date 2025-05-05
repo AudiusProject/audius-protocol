@@ -32,7 +32,6 @@ export const useTrackByPermalink = <TResult = TQTrack>(
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
   const accountStatus = useSelector(getAccountStatus)
-  console.log({ accountStatus })
 
   const simpleOptions = pick(options, [
     'enabled',
