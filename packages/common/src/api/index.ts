@@ -91,7 +91,7 @@ export * from './tan-query/tracks/useRemixedTracks'
 
 // Users
 export * from './tan-query/users/account/useCurrentUserId'
-export * from './tan-query/users/account/useCurrentUser'
+export * from './tan-query/users/account/useWalletUser'
 export * from './tan-query/users/account/useAddToPlaylistFolder'
 export * from './tan-query/users/account/useCurrentAccount'
 export * from './tan-query/users/account/usePlaylistLibrary'
