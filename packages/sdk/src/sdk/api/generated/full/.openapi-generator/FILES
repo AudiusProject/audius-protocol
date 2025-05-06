@@ -153,6 +153,9 @@ models/RelatedArtistResponseFull.ts
 models/RemixContestEndedNotification.ts
 models/RemixContestEndedNotificationAction.ts
 models/RemixContestEndedNotificationActionData.ts
+models/RemixContestEndingSoonNotification.ts
+models/RemixContestEndingSoonNotificationAction.ts
+models/RemixContestEndingSoonNotificationActionData.ts
 models/RemixContestStartedNotification.ts
 models/RemixContestStartedNotificationAction.ts
 models/RemixContestStartedNotificationActionData.ts
