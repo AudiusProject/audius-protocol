@@ -1,9 +1,16 @@
 import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  createAssociatedTokenAccountIdempotentInstruction,
   createCloseAccountInstruction,
-  createTransferInstruction,
+  createTransferCheckedInstruction,
+  getAccount,
   getAssociatedTokenAddressSync
 } from '@solana/spl-token'
-import { PublicKey, VersionedTransaction } from '@solana/web3.js'
+import {
+  PublicKey,
+  TransactionInstruction,
+  VersionedTransaction
+} from '@solana/web3.js'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { useGetCurrentUser } from '~/api'
@@ -23,13 +30,11 @@ export enum SwapStatus {
 }
 
 export enum SwapErrorType {
-  INSUFFICIENT_BALANCE = 'INSUFFICIENT_BALANCE', // Good to add pre-check later
-  SLIPPAGE_EXCEEDED = 'SLIPPAGE_EXCEEDED',
-  TRANSACTION_FAILED = 'TRANSACTION_FAILED', // Generic relay/confirm failure
-  WALLET_ERROR = 'WALLET_ERROR', // e.g., couldn't get keypair
-  QUOTE_FAILED = 'QUOTE_FAILED', // Jupiter API quote failure
-  BUILD_FAILED = 'BUILD_FAILED', // Failed during instruction/tx build
-  SEND_FAILED = 'SEND_FAILED', // Failed to send transaction
+  WALLET_ERROR = 'WALLET_ERROR',
+  QUOTE_FAILED = 'QUOTE_FAILED',
+  BUILD_FAILED = 'BUILD_FAILED',
+  RELAY_FAILED = 'RELAY_FAILED',
+  SIMULATION_FAILED = 'SIMULATION_FAILED',
   UNKNOWN = 'UNKNOWN'
 }
 
@@ -107,7 +112,8 @@ export const useSwapTokens = () => {
             outputMint,
             amountUi,
             slippageBps,
-            swapMode: 'ExactIn'
+            swapMode: 'ExactIn',
+            onlyDirectRoutes: true
           })
         } catch (error: any) {
           console.error('useSwapTokens: Error getting Jupiter quote:', error)
@@ -129,81 +135,365 @@ export const useSwapTokens = () => {
         // ---------- 3. Build Transaction ----------
         const sdk = await audiusSdk()
 
+        const audioMintAddress = TOKEN_LISTING_MAP.AUDIO.address
+        const usdcMintAddress = TOKEN_LISTING_MAP.USDC.address
+
+        // Create a copy of the instructions array for all transaction instructions
+        const instructions: TransactionInstruction[] = []
+
+        // Check if this is an AUDIO -> any token swap
+        const isAudioSwap =
+          inputMint.toUpperCase() === audioMintAddress.toUpperCase()
+        const isAudioToUsdc =
+          isAudioSwap &&
+          outputMint.toUpperCase() === usdcMintAddress.toUpperCase()
+
+        // For AUDIO based swaps, first transfer from user bank to standard ATA
+        if (isAudioSwap && user?.wallet) {
+          try {
+            console.debug('SWAP: Setting up AUDIO transfer from user bank')
+            const ethAddress = user.wallet
+
+            // Create the AUDIO ATA if it doesn't already exist
+            const audioMint = new PublicKey(audioMintAddress)
+            const audioAta = getAssociatedTokenAddressSync(
+              audioMint,
+              userPublicKey,
+              true
+            )
+
+            // Check if ATA exists before trying to create it
+            try {
+              await getAccount(sdk.services.solanaClient.connection, audioAta)
+              console.debug('SWAP: Source AUDIO ATA already exists')
+            } catch (e) {
+              // If getAccount throws, ATA doesn't exist, add instruction to create
+              console.debug(
+                'SWAP: Source AUDIO ATA does not exist, adding create instruction'
+              )
+              const feePayer = await sdk.services.solanaRelay.getFeePayer()
+              const createAudioAtaInstruction =
+                createAssociatedTokenAccountIdempotentInstruction(
+                  feePayer,
+                  audioAta,
+                  userPublicKey,
+                  audioMint
+                )
+              instructions.push(createAudioAtaInstruction)
+            }
+
+            // Create instructions to transfer from userbank to ATA
+            const secpTransferInstruction =
+              await sdk.services.claimableTokensClient.createTransferSecpInstruction(
+                {
+                  amount: BigInt(quoteResult.inputAmount.amount),
+                  ethWallet: ethAddress,
+                  mint: 'wAUDIO',
+                  destination: audioAta,
+                  instructionIndex: instructions.length
+                }
+              )
+
+            // Add the instruction to actually move the tokens
+            const transferInstruction =
+              await sdk.services.claimableTokensClient.createTransferInstruction(
+                {
+                  ethWallet: ethAddress,
+                  mint: 'wAUDIO',
+                  destination: audioAta
+                  // No amount needed here, it uses the verified Secp amount
+                }
+              )
+            instructions.push(secpTransferInstruction)
+            instructions.push(transferInstruction)
+
+            console.debug(
+              'SWAP: Added AUDIO userbank to ATA secp + transfer instructions',
+              {
+                audioAta: audioAta.toBase58(),
+                amount: BigInt(quoteResult.inputAmount.amount)
+              }
+            )
+          } catch (error) {
+            console.error(
+              'SWAP: Failed to add AUDIO userbank transfer instructions:',
+              error
+            )
+            return {
+              status: SwapStatus.ERROR,
+              error: {
+                type: SwapErrorType.BUILD_FAILED,
+                message: 'Failed to set up AUDIO transfer from user bank'
+              },
+              inputAmount: quoteResult.inputAmount,
+              outputAmount: quoteResult.outputAmount
+            }
+          }
+        }
+
+        const feePayer = await sdk.services.solanaRelay.getFeePayer()
+
+        // Pre-determine the USDC userbank for AUDIO -> USDC swaps to use as destination
+        let usdcUserBank: PublicKey | undefined
+        if (isAudioToUsdc && user?.wallet) {
+          try {
+            usdcUserBank =
+              await sdk.services.claimableTokensClient.deriveUserBank({
+                ethWallet: user.wallet,
+                mint: 'USDC'
+              })
+            console.debug('SWAP: Using USDC userbank as destination', {
+              userBank: usdcUserBank.toBase58()
+            })
+          } catch (error) {
+            console.error('SWAP: Failed to derive USDC userbank:', error)
+            // Continue with the swap even if we can't derive the userbank
+            // We'll fall back to standard ATA in this case
+          }
+        }
+
         // Get the transaction instructions from Jupiter
         const { instructions: jupiterInstructions, lookupTableAddresses } =
           await JupiterTokenExchange.getSwapInstructions({
             quote: quoteResult.quote,
             userPublicKey: userPublicKey.toBase58(),
+            destinationTokenAccount: usdcUserBank?.toBase58(), // Pass the userbank as destination for AUDIO -> USDC
             wrapAndUnwrapSol: wrapUnwrapSol
           })
 
-        // Create a copy of the instructions array
-        const instructions = [...jupiterInstructions]
+        // Log the intended destination if we provided one
+        console.debug('SWAP: Requested Jupiter destination:', {
+          destination: usdcUserBank?.toBase58() ?? 'Default ATA'
+        })
 
-        // Check if this is an AUDIO -> USDC swap using the tokens from constants
-        const audioMintAddress = TOKEN_LISTING_MAP.AUDIO.address
-        const usdcMintAddress = TOKEN_LISTING_MAP.USDC.address
+        // Find the actual Jupiter swap instruction to log the real destination
+        const jupiterSwapInstruction = jupiterInstructions.find(
+          (ix) =>
+            ix.programId.toBase58() ===
+            'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
+        )
+        let actualJupiterDestination: PublicKey | undefined
+        if (jupiterSwapInstruction) {
+          // Heuristic: In Jupiter's SharedAccountsRoute, the 6th key is often the final destination token account
+          // A more robust method would involve decoding the specific instruction data based on its ID.
+          const destKeyMeta = jupiterSwapInstruction.keys[6]
+          if (destKeyMeta) {
+            actualJupiterDestination = destKeyMeta.pubkey
+            console.debug('SWAP: Actual Jupiter destination account:', {
+              destination: actualJupiterDestination.toBase58()
+            })
+          } else {
+            console.warn(
+              'SWAP: Could not determine actual Jupiter destination account from keys.'
+            )
+          }
+        } else {
+          console.warn('SWAP: Could not find Jupiter swap instruction in list.')
+        }
 
-        const isAudioToUsdc =
-          inputMint.toUpperCase() === audioMintAddress.toUpperCase() &&
-          outputMint.toUpperCase() === usdcMintAddress.toUpperCase()
+        // --- Modification Start ---
+        // Find and update the fee payer for Jupiter's ATA creation instruction
+        for (const ix of jupiterInstructions) {
+          // Check if it's the Associated Token Program
+          if (ix.programId.equals(ASSOCIATED_TOKEN_PROGRAM_ID)) {
+            // Basic check for createAssociatedTokenAccountIdempotentInstruction:
+            // It typically has 7 keys, and the first key is the fee payer.
+            // We assume Jupiter might use the userPublicKey as the default fee payer here.
+            if (
+              ix.keys.length >= 1 && // Ensure keys exist
+              ix.keys[0].pubkey.equals(userPublicKey) && // Check if fee payer is the user
+              ix.keys[0].isSigner && // Fee payer must be a signer
+              ix.keys[0].isWritable // Fee payer must be writable
+            ) {
+              console.debug(
+                'SWAP: Updating fee payer for Jupiter ATA creation instruction'
+              )
+              // Update the first key (fee payer) to use the relay fee payer
+              ix.keys[0].pubkey = feePayer
+              // Ensure the user is no longer marked as signer/writable *for this instruction's fee payer role*
+              // Find the user's key if it exists elsewhere in the instruction and ensure it's not the fee payer
+              // Note: The userPublicKey *will* still be a signer for the overall transaction later.
+              // This modification only changes who pays the fee *for this specific ATA instruction*.
+              // We don't need to remove the user as a signer generally, just ensure the *first* key (fee payer) is correct.
+              // A more robust check could involve decoding instruction data, but this heuristic is common.
+              break // Assuming only one such instruction from Jupiter per swap
+            }
+          }
+        }
+        // --- Modification End ---
+
+        // Find the ATA created by Jupiter's setup instruction for potential closure later
+        let jupiterSetupAta: PublicKey | undefined
+        const createAtaInstruction = jupiterInstructions.find(
+          (ix) =>
+            ix.programId.equals(ASSOCIATED_TOKEN_PROGRAM_ID) &&
+            // Check keys length or instruction data for more specific match if needed
+            ix.keys.length >= 4 && // Basic check for create instructions
+            ix.keys[3].pubkey.toBase58() === usdcMintAddress // Check if it's for the USDC mint
+        )
+        if (createAtaInstruction) {
+          jupiterSetupAta = createAtaInstruction.keys[1].pubkey // ATA address is typically the 2nd key
+          console.debug('SWAP: Identified Jupiter setup ATA:', {
+            ata: jupiterSetupAta.toBase58()
+          })
+        } else {
+          console.warn(
+            'SWAP: Could not identify Jupiter setup ATA instruction.'
+          )
+        }
+
+        // Add Jupiter instructions (potentially modified) to our instruction array
+        instructions.push(...jupiterInstructions)
+
+        // Determine if we need the fallback transfer/close logic
+        const needsFallback =
+          isAudioToUsdc &&
+          user?.wallet &&
+          (!usdcUserBank ||
+            !actualJupiterDestination ||
+            !actualJupiterDestination.equals(usdcUserBank))
 
         // For AUDIO -> USDC swaps, add instructions to transfer USDC to userbank and close ATA
-        if (isAudioToUsdc && user?.wallet) {
+        // Only add these if we couldn't use the userbank as the direct destination
+        if (needsFallback) {
           try {
             console.debug(
-              'SWAP: Adding USDC userbank transfer for AUDIO -> USDC swap'
+              'SWAP: Using fallback: Adding USDC transfer + close instructions.',
+              {
+                intendedUserBank: usdcUserBank?.toBase58(),
+                actualJupiterDestination: actualJupiterDestination?.toBase58()
+              }
             )
 
             const ethAddress = user.wallet
 
-            const usdcAssociatedTokenAccount = getAssociatedTokenAddressSync(
-              new PublicKey(usdcMintAddress),
-              userPublicKey,
-              true
-            )
+            // The source for this transfer is the actual destination Jupiter used
+            const sourceAccount =
+              actualJupiterDestination ??
+              getAssociatedTokenAddressSync(
+                new PublicKey(usdcMintAddress),
+                userPublicKey,
+                true
+              )
 
-            const userBank =
-              await sdk.services.claimableTokensClient.deriveUserBank({
+            // The destination is always the userbank in the fallback
+            const finalUserBankDestination =
+              usdcUserBank ??
+              (await sdk.services.claimableTokensClient.deriveUserBank({
                 ethWallet: ethAddress,
                 mint: 'USDC'
-              })
+              }))
 
-            const transferToUserbankInstruction = createTransferInstruction(
-              usdcAssociatedTokenAccount,
-              userBank,
-              userPublicKey,
-              BigInt(quoteResult.outputAmount.amount)
-            )
+            // Use TransferChecked instead of Transfer
+            const usdcMintPublicKey = new PublicKey(usdcMintAddress)
+            const usdcDecimals = TOKEN_LISTING_MAP.USDC.decimals // Assuming decimals are available
 
-            const closeAccountInstruction = createCloseAccountInstruction(
-              usdcAssociatedTokenAccount,
-              userPublicKey,
-              userPublicKey,
-              []
+            const transferToUserbankInstruction =
+              createTransferCheckedInstruction(
+                sourceAccount, // source (actual Jupiter destination)
+                usdcMintPublicKey, // mint
+                finalUserBankDestination, // destination (userbank)
+                userPublicKey, // owner
+                BigInt(quoteResult.outputAmount.amount), // amount
+                usdcDecimals // decimals
+              )
+
+            const closeUsdcAccountInstruction = createCloseAccountInstruction(
+              sourceAccount, // Close the actual Jupiter destination
+              feePayer,
+              userPublicKey
             )
 
             instructions.push(
               transferToUserbankInstruction,
-              closeAccountInstruction
+              closeUsdcAccountInstruction
             )
 
-            console.debug('SWAP: Added userbank transfer instructions', {
-              usdcAta: usdcAssociatedTokenAccount.toBase58(),
-              userBank: userBank.toBase58(),
-              amount: quoteResult.outputAmount.amount
-            })
+            console.debug(
+              'SWAP: Added fallback userbank transfer instructions',
+              {
+                source: sourceAccount.toBase58(),
+                destination: finalUserBankDestination.toBase58(),
+                amount: quoteResult.outputAmount.amount
+              }
+            )
+
+            // For AUDIO swaps, optionally close the AUDIO ATA if we created it only for this swap
+            // This needs to happen even in the fallback case
+            if (isAudioSwap) {
+              console.debug(
+                'SWAP: Adding instruction to close AUDIO ATA after swap (fallback path)'
+              )
+              const audioAta = getAssociatedTokenAddressSync(
+                new PublicKey(audioMintAddress),
+                userPublicKey,
+                true
+              )
+
+              const closeAudioAccountInstruction =
+                createCloseAccountInstruction(audioAta, feePayer, userPublicKey)
+
+              instructions.push(closeAudioAccountInstruction)
+            }
           } catch (error) {
             console.error(
-              'SWAP: Failed to add USDC userbank transfer instructions:',
+              'SWAP: Failed to add fallback USDC userbank transfer instructions:',
               error
             )
             // Continue with the swap even if we can't add these instructions
             // Better to have USDC in an ATA than to fail the swap entirely
           }
         }
+        // Close AUDIO ATA if we used direct destination successfully
+        else if (
+          isAudioToUsdc &&
+          isAudioSwap &&
+          usdcUserBank &&
+          actualJupiterDestination?.equals(usdcUserBank)
+        ) {
+          // Even if we're sending directly to userbank, we still need to close the AUDIO ATA
+          // and the potentially orphaned ATA created by Jupiter's setup
+          try {
+            console.debug(
+              'SWAP: Direct deposit successful. Adding instructions to close AUDIO ATA and Jupiter setup ATA.'
+            )
+            // Close AUDIO ATA
+            const audioAta = getAssociatedTokenAddressSync(
+              new PublicKey(audioMintAddress),
+              userPublicKey,
+              true
+            )
+            const closeAudioAccountInstruction = createCloseAccountInstruction(
+              audioAta,
+              feePayer,
+              userPublicKey
+            )
+            instructions.push(closeAudioAccountInstruction)
 
-        const feePayer = await sdk.services.solanaRelay.getFeePayer()
+            // Close Jupiter Setup ATA (if identified)
+            if (jupiterSetupAta) {
+              const closeJupiterSetupAtaInstruction =
+                createCloseAccountInstruction(
+                  jupiterSetupAta, // The ATA created by Jupiter's setup
+                  feePayer, // Destination for rent refund
+                  userPublicKey // Owner/Authority of the ATA
+                )
+              instructions.push(closeJupiterSetupAtaInstruction)
+              console.debug(
+                'SWAP: Added instruction to close Jupiter setup ATA',
+                {
+                  ata: jupiterSetupAta.toBase58()
+                }
+              )
+            }
+          } catch (error) {
+            console.error(
+              'SWAP: Failed to add ATA close instruction(s) (direct path):',
+              error
+            )
+            // Continue with the swap even if we can't close the ATAs
+          }
+        }
 
         // Build the transaction with all instructions
         let swapTx: VersionedTransaction
@@ -240,48 +530,28 @@ export const useSwapTokens = () => {
         // The transaction needs to be signed by the actual user (which we do here).
         swapTx.sign([keypair])
 
-        // ---------- Debug: Log transaction instructions ----------
-        try {
-          const message = swapTx.message
-          // For v0 transactions, use compiledInstructions and staticAccountKeys
-          const programIds = message.compiledInstructions.map((ix) => {
-            // Map programIdIndex to staticAccountKeys if available
-            const programId =
-              message.staticAccountKeys?.[ix.programIdIndex]?.toBase58?.() ||
-              `idx:${ix.programIdIndex}`
-            return programId
-          })
-          // Print all program IDs in order
-          console.debug('SWAP DEBUG: Transaction program IDs:', programIds)
-          // Optionally, print the raw instruction data for further debugging
-          console.debug(
-            'SWAP DEBUG: Compiled instructions:',
-            message.compiledInstructions
-          )
-        } catch (e) {
-          console.warn('SWAP DEBUG: Failed to log transaction instructions', e)
-        }
-
         // ---------- 5. Send Transaction ----------
         try {
           signature = await sdk.services.solanaClient.sendTransaction(swapTx, {
-            skipPreflight: false // Preflight checks happen during build/quote
+            skipPreflight: true
           })
+          console.debug(`Swap completed with signature: ${signature}`)
         } catch (error: any) {
-          console.error('useSwapTokens: Error sending transaction:', error)
+          console.error('useSwapTokens: Failed to relay transaction', error)
           reportToSentry({
-            name: 'JupiterSwapSendError',
+            name: 'JupiterSwapRelayError',
             error,
             feature: Feature.TanQuery,
-            additionalInfo: { params, quoteResponse: quoteResult.quote }
+            additionalInfo: {
+              params,
+              quoteResponse: quoteResult.quote
+            }
           })
-          // Use the error message if available
-          const errorMessage = error?.message
           return {
             status: SwapStatus.ERROR,
             error: {
-              type: SwapErrorType.SEND_FAILED,
-              message: errorMessage ?? 'Failed to send swap transaction'
+              type: SwapErrorType.RELAY_FAILED,
+              message: error?.message ?? 'Failed to relay transaction'
             },
             inputAmount: quoteResult.inputAmount,
             outputAmount: quoteResult.outputAmount
@@ -330,35 +600,8 @@ export const useSwapTokens = () => {
         }
       }
     },
-    // Provide initial status feedback
     onMutate: () => {
-      return {
-        status: SwapStatus.GETTING_QUOTE,
-        inputAmount: undefined,
-        outputAmount: undefined
-      }
-    },
-    // Centralized error reporting for mutation failures
-    onError: (error: Error, variables) => {
-      // This catches errors thrown *before* returning a structured SwapTokensResult
-      // (e.g., failure in `getKeypair`, or unhandled exceptions).
-      // Errors handled *within* mutationFn return structured results and don't hit this onError.
-      console.error(
-        'useSwapTokens: Unhandled mutation error:',
-        error,
-        'with variables:',
-        variables
-      )
-      reportToSentry({
-        name: 'JupiterSwapUnhandledMutationError',
-        error,
-        feature: Feature.TanQuery,
-        additionalInfo: { params: variables }
-      })
-      // Optionally, you could return a default error state here to update the mutation cache,
-      // but usually, letting the mutation stay in 'error' state is sufficient.
-    },
-    // Add meta for React Query DevTools
-    meta: { feature: 'Swap Tokens using Jupiter' }
+      return { status: SwapStatus.SENDING_TRANSACTION }
+    }
   })
 }

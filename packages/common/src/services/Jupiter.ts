@@ -244,10 +244,12 @@ export const getJupiterQuoteByMint = async ({
 export const getSwapInstructions = async ({
   quote,
   userPublicKey,
+  destinationTokenAccount,
   wrapAndUnwrapSol = true
 }: {
   quote: QuoteResponse
   userPublicKey: string
+  destinationTokenAccount?: string
   wrapAndUnwrapSol?: boolean
 }) => {
   const jupiter = getJupiterClient()
@@ -255,6 +257,7 @@ export const getSwapInstructions = async ({
     swapRequest: {
       quoteResponse: quote,
       userPublicKey,
+      destinationTokenAccount,
       wrapAndUnwrapSol,
       computeUnitPriceMicroLamports: 100000,
       useSharedAccounts: true
