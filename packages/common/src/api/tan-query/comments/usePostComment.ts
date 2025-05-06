@@ -81,7 +81,7 @@ export const usePostComment = () => {
           (comment) =>
             ({
               ...comment,
-              replyCount: (comment as Comment)?.replyCount ?? 0 + 1,
+              replyCount: ((comment as Comment)?.replyCount ?? 0) + 1,
               replies: [...((comment as Comment)?.replies ?? []), newComment]
             }) as Comment
         )
