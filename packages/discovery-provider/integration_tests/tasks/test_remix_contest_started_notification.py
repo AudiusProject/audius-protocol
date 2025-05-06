@@ -200,6 +200,6 @@ def test_remix_contest_started_notification_no_duplicate_for_follower_and_favori
                 assert notification.data["entity_user_id"] == TEST_EVENT_CREATOR_ID
                 assert notification.data["entity_id"] == TEST_TRACK_ID
                 assert notification.type == NotificationType.REMIX_CONTEST_STARTED
-                assert notification.specifier == str(TEST_EVENT_CREATOR_ID)
+                assert notification.specifier == str(BOTH_ID)
                 assert notification.group_id.startswith("remix_contest_started:")
         assert notif_count == 1

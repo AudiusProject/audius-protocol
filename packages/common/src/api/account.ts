@@ -1,16 +1,14 @@
-import { useMemo } from 'react'
-
 import { Id } from '@audius/sdk'
 import dayjs from 'dayjs'
+import { useSelector } from 'react-redux'
 
 import { managedUserListFromSDK, userManagerListFromSDK } from '~/adapters/user'
 import { createApi } from '~/audius-query'
-import { ID, User, UserMetadata } from '~/models'
+import { AccountUserMetadata, ID, User, UserMetadata } from '~/models'
+import { getWalletAddresses } from '~/store/account/selectors'
 
-import {
-  CurrentUserWalletType,
-  useCurrentAccount
-} from './tan-query/users/account/useCurrentAccount'
+import { SelectableQueryOptions } from './tan-query/types'
+import { useWalletAccount } from './tan-query/users/account/useWalletUser'
 
 type ResetPasswordArgs = {
   email: string
@@ -37,30 +35,47 @@ const accountApi = createApi({
   endpoints: {}
 })
 
-// TODO: this is temporary jank to scope down changes - this will go soon when removing this whole file
-export const useGetCurrentUser = (_args?: any, options?: any) => {
-  return {
-    data: useCurrentAccount(CurrentUserWalletType.currentUser, options)?.data
-      ?.user
-  }
+export const useGetCurrentUser = <TResult = UserMetadata | undefined>(
+  options?: SelectableQueryOptions<
+    AccountUserMetadata | null | undefined,
+    TResult
+  >
+) => {
+  const { currentUser } = useSelector(getWalletAddresses)
+
+  return useWalletAccount<TResult>(currentUser, {
+    select: (data: AccountUserMetadata | null | undefined): TResult =>
+      data?.user as TResult,
+    ...options
+  })
 }
 
-// TODO: this is temporary jank to scope down changes - this will go soon when removing this whole file
-export const useGetCurrentWeb3User = (_args?: any, options?: any) => {
-  return {
-    data: useCurrentAccount(CurrentUserWalletType.web3User, options)?.data?.user
-  }
+export const useGetCurrentWeb3User = <TResult = UserMetadata | undefined>(
+  options?: SelectableQueryOptions<
+    AccountUserMetadata | null | undefined,
+    TResult
+  >
+) => {
+  const { web3User } = useSelector(getWalletAddresses)
+
+  return useWalletAccount<TResult>(web3User, {
+    select: (data: AccountUserMetadata | null | undefined): TResult =>
+      data?.user as TResult,
+    ...options
+  })
 }
 
-// TODO: this is temporary jank to scope down changes - this will go soon when removing this whole file
-export const useGetCurrentUserId = (_args?: any, options?: any) => {
-  const result = useGetCurrentUser(_args, options)
-  return useMemo(() => {
-    return {
-      ...result,
-      data: result.data ? result.data.user_id : null
-    }
-  }, [result])
+export const useGetCurrentUserId = <TResult = number | undefined>(
+  options?: SelectableQueryOptions<
+    AccountUserMetadata | null | undefined,
+    TResult
+  >
+) => {
+  return useGetCurrentUser<TResult>({
+    select: (accountData: AccountUserMetadata | null | undefined): TResult =>
+      accountData?.user.user_id as TResult,
+    ...options
+  })
 }
 
 export const accountApiReducer = accountApi.reducer

@@ -1,6 +1,8 @@
 export const QUERY_KEYS = {
   aiTracks: 'aiTracks',
   accountUser: 'accountUser',
+  walletUser: 'walletUser',
+  walletAccount: 'walletAccount',
   trackCommentList: 'trackCommentList',
   userCommentList: 'userCommentList',
   comment: 'comment',

@@ -19,6 +19,7 @@ import { FavoriteOfRepostNotification } from './FavoriteOfRepostNotification'
 import { FollowNotification } from './FollowNotification'
 import { ListenStreakReminderNotification } from './ListenStreakReminderNotification'
 import { MilestoneNotification } from './MilestoneNotification'
+import { RemixContestEndedNotification } from './RemixContestEndedNotification'
 import { RemixContestStartedNotification } from './RemixContestStartedNotification'
 import { RemixCosignNotification } from './RemixCosignNotification'
 import { RemixCreateNotification } from './RemixCreateNotification'
@@ -156,6 +157,9 @@ export const Notification = (props: NotificationProps) => {
       }
       case NotificationType.RemixContestStarted: {
         return <RemixContestStartedNotification notification={notification} />
+      }
+      case NotificationType.RemixContestEnded: {
+        return <RemixContestEndedNotification notification={notification} />
       }
       default: {
         return null

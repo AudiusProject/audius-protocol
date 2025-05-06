@@ -1,6 +1,6 @@
 import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { useAppContext } from '~/context/appContext'
@@ -9,10 +9,8 @@ import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
 import { Track } from '~/models/Track'
 import { UserMetadata } from '~/models/User'
-import { getWalletAddresses } from '~/store/account/selectors'
 import { deleteTrackRequested } from '~/store/cache/tracks/actions'
 
-import { getCurrentUserQueryKey } from '../users/account/useCurrentUser'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { useUser } from '../users/useUser'
 import { primeTrackData } from '../utils/primeTrackData'
@@ -35,7 +33,6 @@ export const useDeleteTrack = () => {
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
-  const { currentUser: currentUserWallet } = useSelector(getWalletAddresses)
   const { data: currentUser } = useUser(currentUserId)
   const {
     analytics: { track: trackEvent }
@@ -78,11 +75,6 @@ export const useDeleteTrack = () => {
           dispatch,
           forceReplace: true
         })
-
-        queryClient.setQueryData(
-          getCurrentUserQueryKey(currentUserWallet),
-          updatedCurrentUser
-        )
       }
 
       // Optimistic update in cache
