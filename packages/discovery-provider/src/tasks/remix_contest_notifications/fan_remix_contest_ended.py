@@ -3,9 +3,12 @@ from datetime import datetime, timedelta
 from src.models.events.event import Event, EventType
 from src.models.notifications.notification import Notification
 from src.models.tracks.track import Track
+from src.utils.structured_logger import StructuredLogger
 
 REMIX_CONTEST_ENDED = "remix_contest_ended"
 REMIX_CONTEST_ENDED_WINDOW_HOURS = 24
+
+logger = StructuredLogger(__name__)
 
 
 def get_remix_contest_ended_group_id(event_id):
@@ -79,5 +82,6 @@ def create_fan_remix_contest_ended_notifications(session, now=None):
                     timestamp=now,
                 )
                 new_notifications.append(new_notification)
+    logger.info(f"Inserting {len(new_notifications)} remix contest ended notifications")
     session.add_all(new_notifications)
     session.commit()

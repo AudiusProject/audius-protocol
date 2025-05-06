@@ -5,6 +5,10 @@ from src.models.notifications.notification import Notification
 from src.models.social.follow import Follow
 from src.models.social.save import Save, SaveType
 from src.models.tracks.track import Track
+from src.utils.structured_logger import StructuredLogger
+
+logger = StructuredLogger(__name__)
+
 
 REMIX_CONTEST_ENDING_SOON = "remix_contest_ending_soon"
 REMIX_CONTEST_ENDING_SOON_WINDOW_HOURS = 72
@@ -90,5 +94,8 @@ def create_fan_remix_contest_ending_soon_notifications(session, now=None):
                     timestamp=now,
                 )
                 new_notifications.append(new_notification)
+    logger.info(
+        f"Inserting {len(new_notifications)} remix contest ending soon notifications"
+    )
     session.add_all(new_notifications)
     session.commit()
