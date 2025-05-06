@@ -23,10 +23,7 @@ export enum NotificationType {
   RemixCosign = 'RemixCosign',
   RemixContestStarted = 'RemixContestStarted',
   RemixContestEnded = 'RemixContestEnded',
-<<<<<<< HEAD
   RemixContestEndingSoon = 'RemixContestEndingSoon',
-=======
->>>>>>> origin/main
   Tastemaker = 'Tastemaker',
   TrendingTrack = 'TrendingTrack',
   TrendingPlaylist = 'TrendingPlaylist',
@@ -732,10 +729,7 @@ export type Notification =
   | RemixCosignNotification
   | RemixContestStartedNotification
   | RemixContestEndedNotification
-<<<<<<< HEAD
   | RemixContestEndingSoonNotification
-=======
->>>>>>> origin/main
   | TastemakerNotification
   | TrendingPlaylistNotification
   | TrendingTrackNotification
