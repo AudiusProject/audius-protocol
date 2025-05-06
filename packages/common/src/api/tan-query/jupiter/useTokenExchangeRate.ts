@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query'
 import { JupiterTokenSymbol, getJupiterQuoteByMint } from '~/services/Jupiter'
 import { TOKEN_LISTING_MAP } from '~/store/ui/buy-audio/constants'
 
-import { QueryOptions, type QueryKey } from './types'
+import { QueryOptions, type QueryKey } from '../types'
 
 export type TokenExchangeRateParams = {
   inputTokenSymbol: JupiterTokenSymbol

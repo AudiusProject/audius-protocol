@@ -52,6 +52,7 @@ export const SwapTab = ({
 }: SwapTabProps) => {
   // Use the shared hook for form logic
   const {
+    inputAmount,
     numericInputAmount,
     outputAmount,
     error,
@@ -101,7 +102,7 @@ export const SwapTab = ({
         title='You Pay'
         tokenInfo={inputToken}
         isInput={true}
-        amount={numericInputAmount}
+        amount={inputAmount}
         onAmountChange={handleInputAmountChange}
         onMaxClick={handleMaxClick}
         availableBalance={availableBalance}

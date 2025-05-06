@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { useTokenExchangeRate } from '@audius/common/src/api/tan-query/useTokenExchangeRate'
+import { useTokenExchangeRate } from '@audius/common/src/api'
 import { JupiterTokenSymbol } from '@audius/common/src/services/Jupiter'
 
 import { TokenInfo } from '../types'
@@ -68,7 +68,8 @@ export const useTokenSwapForm = ({
 
   // Calculate the numeric value of the input amount
   const numericInputAmount = useMemo(() => {
-    const parsed = parseFloat(inputAmount || '0')
+    if (!inputAmount) return 0
+    const parsed = parseFloat(inputAmount)
     return isNaN(parsed) ? 0 : parsed
   }, [inputAmount])
 
@@ -150,8 +151,8 @@ export const useTokenSwapForm = ({
 
   // Handle input changes
   const handleInputAmountChange = useCallback((value: string) => {
-    // Allow only valid number input
-    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+    // Allow only valid number input with better decimal handling
+    if (value === '' || /^(\d*\.?\d*|\d+\.)$/.test(value)) {
       setInputAmount(value)
     }
   }, [])
@@ -170,7 +171,7 @@ export const useTokenSwapForm = ({
   const currentExchangeRate = exchangeRateData ? exchangeRateData.rate : null
 
   return {
-    inputAmount,
+    inputAmount, // Raw string input for display
     numericInputAmount,
     outputAmount,
     error,

@@ -1,4 +1,9 @@
-import { createJupiterApiClient, Instruction, QuoteResponse } from '@jup-ag/api'
+import {
+  createJupiterApiClient,
+  Instruction,
+  QuoteResponse,
+  SwapMode
+} from '@jup-ag/api'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 
 import { Name } from '~/models/Analytics'
@@ -16,36 +21,18 @@ export const SLIPPAGE_TOLERANCE_EXCEEDED_ERROR = 6001
 // Define JupiterTokenSymbol type here since we can't import it directly
 export type JupiterTokenSymbol = keyof typeof TOKEN_LISTING_MAP
 
-export const parseJupiterInstruction = (instruction: Instruction) => {
-  return new TransactionInstruction({
-    programId: new PublicKey(instruction.programId),
-    keys: instruction.accounts.map((a) => ({
-      pubkey: new PublicKey(a.pubkey),
-      isSigner: a.isSigner,
-      isWritable: a.isWritable
-    })),
-    data: Buffer.from(instruction.data, 'base64')
-  })
-}
+// Jupiter API instance - using the default URL
+const jupiterInstance = createJupiterApiClient()
 
-let jupiterClient: ReturnType<typeof createJupiterApiClient> | null = null
-
-export const getJupiterClient = () => {
-  if (!jupiterClient) {
-    jupiterClient = createJupiterApiClient()
-  }
-  return jupiterClient
-}
-
-// Legacy instance for backward compatibility
-export const jupiterInstance = createJupiterApiClient()
+// Get the Jupiter API client
+export const getJupiterClient = () => jupiterInstance
 
 export type JupiterQuoteParams = {
   inputTokenSymbol: JupiterTokenSymbol
   outputTokenSymbol: JupiterTokenSymbol
   inputAmount: number
   slippageBps: number
-  swapMode?: 'ExactIn' | 'ExactOut'
+  swapMode?: SwapMode
   onlyDirectRoutes?: boolean
 }
 
@@ -55,7 +42,7 @@ export type JupiterMintQuoteParams = {
   outputMint: string
   amountUi: number
   slippageBps: number
-  swapMode?: 'ExactIn' | 'ExactOut'
+  swapMode?: SwapMode
   onlyDirectRoutes?: boolean
 }
 
@@ -259,7 +246,6 @@ export const getSwapInstructions = async ({
       userPublicKey,
       destinationTokenAccount,
       wrapAndUnwrapSol,
-      computeUnitPriceMicroLamports: 100000,
       useSharedAccounts: true
     }
   })

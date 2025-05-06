@@ -22,7 +22,7 @@ export type TokenAmountSectionProps = {
   title: string
   tokenInfo: TokenInfo
   isInput: boolean
-  amount: number
+  amount: number | string
   onAmountChange?: (value: string) => void
   onMaxClick?: () => void
   availableBalance: number
