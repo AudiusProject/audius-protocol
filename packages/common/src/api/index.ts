@@ -122,6 +122,9 @@ export * from './tan-query/users/useUserTracksByHandle'
 export * from './tan-query/users/account/useResetPassword'
 export * from './tan-query/users/account/useManagedAccounts'
 export * from './tan-query/users/account/useManagers'
+export * from './tan-query/users/account/useRequestAddManager'
+export * from './tan-query/users/account/useApproveManagedAccount'
+export * from './tan-query/users/account/useRemoveManager'
 
 // Wallet logic
 export * from './tan-query/wallets/useAudioBalance'

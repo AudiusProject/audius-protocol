@@ -15,9 +15,7 @@ export const getManagedAccountsQueryKey = (userId: ID | null | undefined) =>
     ManagedUserMetadata[]
   >
 
-export const useManagedAccounts = <
-  TResult = ManagedUserMetadata[] | null | undefined
->(
+export const useManagedAccounts = <TResult = ManagedUserMetadata[] | undefined>(
   userId?: ID | null,
   options?: SelectableQueryOptions<TResult>
 ) => {
@@ -30,7 +28,7 @@ export const useManagedAccounts = <
         id: Id.parse(userId)
       })
       const { data = [] } = managedUsers
-      return managedUserListFromSDK(data)
+      return managedUserListFromSDK(data) as TResult
     },
     enabled: isValidId(userId),
     ...options

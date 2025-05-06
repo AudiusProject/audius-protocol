@@ -59,7 +59,7 @@ export const ManagerListItem = ({
     analytics: { track, make }
   } = useAppContext()
 
-  const [cancelPendingInvite] = useRemoveManager()
+  const { mutate: cancelPendingInvite } = useRemoveManager()
 
   const { canCreateChat } = useSelector((state) =>
     getCanCreateChat(state, { userId: manager.user_id })

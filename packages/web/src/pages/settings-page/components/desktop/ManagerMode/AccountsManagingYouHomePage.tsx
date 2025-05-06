@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
-import { useGetManagers } from '@audius/common/api'
-import { Status } from '@audius/common/models'
+import { useManagers } from '@audius/common/api'
 import { accountSelectors } from '@audius/common/store'
 import { Box, Button, Divider, Flex, IconPlus, Text } from '@audius/harmony'
 
@@ -29,13 +28,13 @@ export const AccountsManagingYouHomePage = (
   const userId = useSelector(getUserId) as number
 
   // Always update manager list when mounting this page
-  const { data: managers, status: managersStatus } = useGetManagers(
-    { userId },
-    { force: true }
-  )
-  // Don't flash loading spinner if we are refreshing the cache
-  const isLoading =
-    managersStatus !== Status.SUCCESS && (!managers || managers.length === 0)
+  const {
+    data: managers,
+    isFetching,
+    isSuccess
+  } = useManagers(userId, {
+    staleTime: 0
+  })
 
   const handleRemoveManager = useCallback(
     (params: { userId: number; managerUserId: number }) => {
@@ -70,7 +69,7 @@ export const AccountsManagingYouHomePage = (
         </Button>
       </Flex>
       <Flex direction='column' gap='s'>
-        {isLoading ? (
+        {isFetching ? (
           <Box pv='2xl'>
             <LoadingSpinner
               css={({ spacing }) => ({
@@ -80,21 +79,21 @@ export const AccountsManagingYouHomePage = (
             />
           </Box>
         ) : null}
-        {managersStatus === Status.SUCCESS &&
-        (!managers || managers.length === 0) ? (
+        {isSuccess && !isFetching && (!managers || managers.length === 0) ? (
           <Text variant='body' size='l'>
             {messages.noManagers}
           </Text>
         ) : null}
-        {managers?.map((data) => {
-          return (
-            <ManagerListItem
-              onRemoveManager={handleRemoveManager}
-              key={data.manager.user_id}
-              managerData={data}
-            />
-          )
-        })}
+        {!isFetching &&
+          managers?.map((data) => {
+            return (
+              <ManagerListItem
+                onRemoveManager={handleRemoveManager}
+                key={data.manager.user_id}
+                managerData={data}
+              />
+            )
+          })}
       </Flex>
     </Flex>
   )

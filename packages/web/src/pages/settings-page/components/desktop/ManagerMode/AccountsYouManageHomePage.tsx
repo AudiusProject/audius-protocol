@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { useManagedAccounts } from '@audius/common/api'
-import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Box, Divider, Flex, Text } from '@audius/harmony'
 
@@ -25,11 +24,13 @@ export const AccountsYouManageHomePage = ({
   setPageState
 }: AccountsYouManagePageProps) => {
   const userId = useSelector(getUserId)
-  const { data: managedAccounts } = useManagedAccounts(userId, { staleTime: 0 })
-  // Don't flash loading spinner if we are refreshing the cache
-  const isLoading =
-    status !== Status.SUCCESS &&
-    (!managedAccounts || managedAccounts.length === 0)
+  const {
+    data: managedAccounts,
+    isPending,
+    isSuccess
+  } = useManagedAccounts(userId, {
+    refetchOnMount: true
+  })
 
   usePendingInviteValidator({
     managedAccounts,
@@ -51,7 +52,7 @@ export const AccountsYouManageHomePage = ({
       <Text variant='body' size='l'>
         {messages.takeControl}{' '}
       </Text>
-      {isLoading ? (
+      {isPending ? (
         <Box pv='2xl'>
           <LoadingSpinner
             css={({ spacing }) => ({
@@ -61,8 +62,7 @@ export const AccountsYouManageHomePage = ({
           />
         </Box>
       ) : null}
-      {status === Status.SUCCESS &&
-      (!managedAccounts || managedAccounts.length === 0) ? (
+      {isSuccess && (!managedAccounts || managedAccounts.length === 0) ? (
         <>
           <Divider />
           <Text variant='body' size='l'>

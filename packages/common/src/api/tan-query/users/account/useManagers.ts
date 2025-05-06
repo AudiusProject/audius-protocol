@@ -7,7 +7,7 @@ import { ID } from '~/models/Identifiers'
 import { UserManagerMetadata } from '~/models/User'
 
 import { QUERY_KEYS } from '../../queryKeys'
-import { QueryKey } from '../../types'
+import { QueryKey, SelectableQueryOptions } from '../../types'
 import { isValidId } from '../../utils/isValidId'
 
 export const getManagersQueryKey = (userId: ID | null | undefined) =>
@@ -15,9 +15,12 @@ export const getManagersQueryKey = (userId: ID | null | undefined) =>
     UserManagerMetadata[]
   >
 
-export const useManagers = (userId?: ID) => {
+export const useManagers = <TResult = UserManagerMetadata[] | undefined>(
+  userId?: ID,
+  options?: SelectableQueryOptions<TResult>
+) => {
   const { audiusSdk } = useAudiusQueryContext()
-  return useQuery<UserManagerMetadata[]>({
+  return useQuery({
     queryKey: getManagersQueryKey(userId),
     queryFn: async () => {
       const sdk = await audiusSdk()
@@ -27,8 +30,9 @@ export const useManagers = (userId?: ID) => {
       const { data: rawData = [] } = managers
       // Only include approved or pending (not explicitly false)
       const data = rawData.filter((g: any) => g.grant.isApproved !== false)
-      return userManagerListFromSDK(data)
+      return userManagerListFromSDK(data) as TResult
     },
-    enabled: isValidId(userId)
+    enabled: isValidId(userId),
+    ...options
   })
 }

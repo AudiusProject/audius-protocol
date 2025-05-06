@@ -4,7 +4,6 @@ import { accountFromSDK } from '@audius/common/adapters'
 import {
   useGetCurrentUserId,
   useGetCurrentWeb3User,
-  useGetManagedAccounts,
   useManagedAccounts
 } from '@audius/common/api'
 import { useAccountSwitcher } from '@audius/common/hooks'
