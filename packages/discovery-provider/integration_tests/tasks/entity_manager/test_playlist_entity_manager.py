@@ -1071,7 +1071,8 @@ def test_invalid_playlist_description(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(web3, None, None, None)
+        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
+        update_task = UpdateTask(web3, challenge_event_bus)
 
     metadata = {
         "PlaylistInvalidDescriptionMetadata": {

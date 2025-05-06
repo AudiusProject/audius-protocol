@@ -6,6 +6,7 @@ from web3.datastructures import AttributeDict
 
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
+from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
 from src.models.indexing.revert_block import RevertBlock
 from src.models.notifications.notification import PlaylistSeen
 from src.tasks.entity_manager.entity_manager import entity_manager_update
@@ -20,7 +21,8 @@ def test_index_playlist_view(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(web3, None)
+        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
+        update_task = UpdateTask(web3, challenge_event_bus)
 
     tx_receipts = {
         "PlaylistSeenTx1": [
