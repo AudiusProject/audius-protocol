@@ -1,7 +1,6 @@
 export * as userListActions from './actions'
 export * from './reducer'
 export { default as UserListSagaFactory } from './sagas'
-export * as userListSelectors from './selectors'
 export * from './types'
 
 export * as topSupportersUserListActions from './top-supporters/actions'
