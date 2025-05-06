@@ -27,12 +27,12 @@ export const AccountsManagingYouHomePage = (
   const { setPageState } = props
   const userId = useSelector(getUserId) as number
 
-  // Always update manager list when mounting this page
   const {
     data: managers,
     isFetching,
     isSuccess
   } = useManagers(userId, {
+    // Always refetch the data
     staleTime: 0
   })
 

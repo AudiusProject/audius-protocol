@@ -26,10 +26,11 @@ export const AccountsYouManageHomePage = ({
   const userId = useSelector(getUserId)
   const {
     data: managedAccounts,
-    isPending,
+    isFetching,
     isSuccess
   } = useManagedAccounts(userId, {
-    refetchOnMount: true
+    // Always refetch the data
+    staleTime: 0
   })
 
   usePendingInviteValidator({
@@ -52,7 +53,7 @@ export const AccountsYouManageHomePage = ({
       <Text variant='body' size='l'>
         {messages.takeControl}{' '}
       </Text>
-      {isPending ? (
+      {isFetching ? (
         <Box pv='2xl'>
           <LoadingSpinner
             css={({ spacing }) => ({
@@ -62,7 +63,9 @@ export const AccountsYouManageHomePage = ({
           />
         </Box>
       ) : null}
-      {isSuccess && (!managedAccounts || managedAccounts.length === 0) ? (
+      {isSuccess &&
+      !isFetching &&
+      (!managedAccounts || managedAccounts.length === 0) ? (
         <>
           <Divider />
           <Text variant='body' size='l'>
@@ -70,15 +73,16 @@ export const AccountsYouManageHomePage = ({
           </Text>
         </>
       ) : null}
-      {managedAccounts?.map((data) => {
-        return (
-          <ManagedUserListItem
-            key={data.user.user_id}
-            userData={data}
-            onRemoveManager={handleStopManaging}
-          />
-        )
-      })}
+      {!isFetching &&
+        managedAccounts?.map((data) => {
+          return (
+            <ManagedUserListItem
+              key={data.user.user_id}
+              userData={data}
+              onRemoveManager={handleStopManaging}
+            />
+          )
+        })}
     </Flex>
   )
 }
