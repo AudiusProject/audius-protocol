@@ -1,6 +1,8 @@
 import { useCallback } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { Variant as CollectionVariant, Variant } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { ExploreCollectionsVariant } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { IconExplore } from '@audius/harmony'
@@ -39,6 +41,7 @@ import { BASE_URL, stripBaseUrl } from 'utils/route'
 import styles from './ExplorePage.module.css'
 import { FeaturedPlaylists } from './FeaturedPlaylists'
 import { FeaturedProfiles } from './FeaturedProfiles'
+import { FeaturedRemixContests } from './FeaturedRemixContests'
 import Section, { Layout } from './Section'
 
 const { EXPLORE_PAGE } = route
@@ -48,7 +51,8 @@ const messages = {
   justForYouSubtitle: `Content curated for you based on your likes,
 reposts, and follows. Refreshes often so if you like a track, favorite it.`,
   lifestyle: 'Playlists to Fit Your Mood',
-  lifestyleSubtitle: 'Playlists made by Audius users, sorted by mood and feel'
+  lifestyleSubtitle: 'Playlists made by Audius users, sorted by mood and feel',
+  remixContests: 'Remix Contests'
 }
 
 export const justForYou = [
@@ -81,6 +85,9 @@ export type ExplorePageProps = {
 
 const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const isUSDCPurchasesEnabled = useIsUSDCEnabled()
+  const { isEnabled: isRemixSectionEnabled } = useFeatureFlag(
+    FeatureFlags.EXPLORE_REMIX_SECTION
+  )
   const justForYouTiles = justForYou.filter((tile) => {
     const isPremiumTracksTile =
       tile.variant === ExploreCollectionsVariant.DIRECT_LINK &&
@@ -119,6 +126,30 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
       contentClassName={styles.page}
       header={header}
     >
+      {isRemixSectionEnabled ? (
+        <>
+          <Section
+            title={messages.lifestyle}
+            subtitle={messages.lifestyleSubtitle}
+          >
+            {lifestyle.map((i) => (
+              <PerspectiveCard
+                key={i.title}
+                backgroundGradient={i.gradient}
+                shadowColor={i.shadow}
+                onClick={() => navigate(i.link)}
+              >
+                <EmojiInterior title={i.title} emoji={i.emoji} />
+              </PerspectiveCard>
+            ))}
+          </Section>
+
+          <FeaturedPlaylists />
+          <FeaturedRemixContests />
+          <FeaturedProfiles />
+        </>
+      ) : null}
+
       <Section
         title={messages.justForYou}
         subtitle={messages.justForYouSubtitle}
@@ -162,22 +193,28 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
           )
         })}
       </Section>
-
-      <Section title={messages.lifestyle} subtitle={messages.lifestyleSubtitle}>
-        {lifestyle.map((i) => (
-          <PerspectiveCard
-            key={i.title}
-            backgroundGradient={i.gradient}
-            shadowColor={i.shadow}
-            onClick={() => navigate(i.link)}
+      {!isRemixSectionEnabled ? (
+        <>
+          <Section
+            title={messages.lifestyle}
+            subtitle={messages.lifestyleSubtitle}
           >
-            <EmojiInterior title={i.title} emoji={i.emoji} />
-          </PerspectiveCard>
-        ))}
-      </Section>
+            {lifestyle.map((i) => (
+              <PerspectiveCard
+                key={i.title}
+                backgroundGradient={i.gradient}
+                shadowColor={i.shadow}
+                onClick={() => navigate(i.link)}
+              >
+                <EmojiInterior title={i.title} emoji={i.emoji} />
+              </PerspectiveCard>
+            ))}
+          </Section>
 
-      <FeaturedPlaylists />
-      <FeaturedProfiles />
+          <FeaturedPlaylists />
+          <FeaturedProfiles />
+        </>
+      ) : null}
     </Page>
   )
 }

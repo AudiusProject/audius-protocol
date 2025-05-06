@@ -40,13 +40,9 @@ export const RemixContestDetailsTab = ({
     <Flex column gap='l' p='xl'>
       <Flex row gap='s'>
         <Text variant='title' size='m' color='accent'>
-          {messages.due}
+          {isContestEnded ? messages.ended : messages.due}
         </Text>
-        <Text variant='body'>
-          {isContestEnded
-            ? messages.ended
-            : messages.deadline(remixContest?.endDate)}
-        </Text>
+        <Text variant='body'>{messages.deadline(remixContest?.endDate)}</Text>
       </Flex>
       <CollapsibleContent
         id='remix-contest-details-tab'

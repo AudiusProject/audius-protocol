@@ -61,7 +61,8 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
       asChild
       onClick={onClick}
       css={{
-        display: 'inline-flex',
+        // MaxLines requires a special webkit display to work, dont override here
+        display: other.maxLines ? undefined : 'inline-flex',
         gap: spacing.s,
         color: variantColors[variant],
         textDecoration: 'none',
