@@ -10,6 +10,7 @@ import {
   getIsVerified
 } from '@audius/web/src/common/store/pages/signon/selectors'
 import { css } from '@emotion/native'
+import { useQueryClient } from '@tanstack/react-query'
 import { Formik, useField } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
@@ -37,11 +38,12 @@ const EmailField = ({ onChangeScreen }: { onChangeScreen: () => void }) => {
   const [, , { setValue }] = useField('email')
   const existingEmailValue = useSelector(getEmailField)
   const audiusQueryContext = useAudiusQueryContext()
-
+  const queryClient = useQueryClient()
+  
   // For the email field on this page, design requested that the field only be prepoulated if the email is valid.
   // Since the schema is async we have to do some async shenanigans to set the value after mount.
   useAsync(async () => {
-    const schema = emailSchema(audiusQueryContext)
+    const schema = emailSchema(audiusQueryContext, queryClient)
     try {
       await schema.parseAsync({
         email: existingEmailValue.value
@@ -64,10 +66,13 @@ export const CreateLoginDetailsScreen = () => {
   const dispatch = useDispatch()
   const handleField = useSelector(getHandleField)
   const audiusQueryContext = useAudiusQueryContext()
+  const queryClient = useQueryClient()
   const loginDetailsFormikSchema = useMemo(
     () =>
-      toFormikValidationSchema(createLoginDetailsSchema(audiusQueryContext)),
-    [audiusQueryContext]
+      toFormikValidationSchema(
+        createLoginDetailsSchema(audiusQueryContext, queryClient)
+      ),
+    [audiusQueryContext, queryClient]
   )
 
   useTrackScreen('CreateLoginDetails')

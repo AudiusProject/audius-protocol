@@ -4,6 +4,7 @@ import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { pickHandleSchema } from '@audius/common/schemas'
 import { route } from '@audius/common/utils'
 import { Paper, useTheme } from '@audius/harmony'
+import { useQueryClient } from '@tanstack/react-query'
 import { Formik, Form } from 'formik'
 import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -47,12 +48,13 @@ export const ReviewHandlePage = () => {
   const profileImage = useSelector(getProfileImageField)
   const hasImages = coverPhoto || profileImage
 
-  const audiusQueryContext = useAudiusQueryContext()
+  const queryContext = useAudiusQueryContext()
+  const queryClient = useQueryClient()
   const validationSchema = useMemo(() => {
     return toFormikValidationSchema(
-      pickHandleSchema({ audiusQueryContext, restrictedHandles })
+      pickHandleSchema({ queryContext, queryClient, restrictedHandles })
     )
-  }, [audiusQueryContext])
+  }, [queryContext, queryClient])
 
   const handleSubmit = useCallback(
     (values: ReviewHandleValues) => {

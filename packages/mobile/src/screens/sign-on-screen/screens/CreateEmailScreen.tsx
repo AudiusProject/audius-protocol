@@ -5,6 +5,7 @@ import { useFeatureFlag } from '@audius/common/hooks'
 import { createEmailPageMessages } from '@audius/common/messages'
 import { emailSchema } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   setLinkedSocialOnFirstPage,
   setValueField,
@@ -51,12 +52,14 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
   const existingEmailValue = useSelector(getEmailField)
   const alreadyLinkedSocial = useSelector(getLinkedSocialOnFirstPage)
   const queryContext = useAudiusQueryContext()
+  const queryClient = useQueryClient()
+
   const initialValues = {
     email: existingEmailValue.value ?? ''
   }
   const EmailSchema = useMemo(() => {
-    return toFormikValidationSchema(emailSchema(queryContext))
-  }, [queryContext])
+    return toFormikValidationSchema(emailSchema(queryContext, queryClient))
+  }, [queryContext, queryClient])
 
   useTrackScreen('CreateEmail')
 

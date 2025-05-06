@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo } from 'react'
 
+import { useQueryClient } from '@tanstack/react-query'
 import { FormikHelpers } from 'formik'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -63,9 +64,12 @@ export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
   const [page, setPage] = useState(ChangeEmailPage.ConfirmPassword)
   const audiusQueryContext = useAudiusQueryContext()
   const { authService } = audiusQueryContext
+  const queryClient = useQueryClient()
+
   const EmailSchema = useMemo(
-    () => toFormikValidationSchema(emailSchema(audiusQueryContext)),
-    [audiusQueryContext]
+    () =>
+      toFormikValidationSchema(emailSchema(audiusQueryContext, queryClient)),
+    [audiusQueryContext, queryClient]
   )
   const reportToSentry = audiusQueryContext.reportToSentry
 
