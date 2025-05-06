@@ -17,7 +17,7 @@ export const getTrackCommentNotificationSettingQueryKey = (trackId: ID) => {
 
 export const useGetTrackCommentNotificationSetting = (
   trackId: ID,
-  currentUserId: Nullable<ID>
+  currentUserId: Nullable<ID> | undefined
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
 

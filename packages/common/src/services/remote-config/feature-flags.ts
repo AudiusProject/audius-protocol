@@ -30,7 +30,8 @@ export enum FeatureFlags {
   DOWNLOAD_ALL_TRACK_FILES = 'download_all_track_files',
   REMIX_CONTEST = 'remix_contest',
   WALLET_UI_UPDATE = 'wallet_ui_update',
-  SEARCH_EXPLORE = 'search_explore'
+  SEARCH_EXPLORE = 'search_explore',
+  EXPLORE_REMIX_SECTION = 'explore_remix_section'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -76,5 +77,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.DOWNLOAD_ALL_TRACK_FILES]: false,
   [FeatureFlags.REMIX_CONTEST]: false,
   [FeatureFlags.WALLET_UI_UPDATE]: false,
-  [FeatureFlags.SEARCH_EXPLORE]: false
+  [FeatureFlags.SEARCH_EXPLORE]: false,
+  [FeatureFlags.EXPLORE_REMIX_SECTION]: false
 }

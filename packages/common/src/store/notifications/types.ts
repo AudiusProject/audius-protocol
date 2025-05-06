@@ -22,6 +22,8 @@ export enum NotificationType {
   RemixCreate = 'RemixCreate',
   RemixCosign = 'RemixCosign',
   RemixContestStarted = 'RemixContestStarted',
+  RemixContestEnded = 'RemixContestEnded',
+  RemixContestEndingSoon = 'RemixContestEndingSoon',
   Tastemaker = 'Tastemaker',
   TrendingTrack = 'TrendingTrack',
   TrendingPlaylist = 'TrendingPlaylist',
@@ -702,6 +704,18 @@ export type RemixContestStartedNotification = BaseNotification & {
   entityUserId: ID
 }
 
+export type RemixContestEndedNotification = BaseNotification & {
+  type: NotificationType.RemixContestEnded
+  entityId: ID
+  entityUserId: ID
+}
+
+export type RemixContestEndingSoonNotification = BaseNotification & {
+  type: NotificationType.RemixContestEndingSoon
+  entityId: ID
+  entityUserId: ID
+}
+
 export type Notification =
   | AnnouncementNotification
   | UserSubscriptionNotification
@@ -714,6 +728,8 @@ export type Notification =
   | RemixCreateNotification
   | RemixCosignNotification
   | RemixContestStartedNotification
+  | RemixContestEndedNotification
+  | RemixContestEndingSoonNotification
   | TastemakerNotification
   | TrendingPlaylistNotification
   | TrendingTrackNotification

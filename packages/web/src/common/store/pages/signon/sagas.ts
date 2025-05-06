@@ -1,4 +1,7 @@
-import { userApiFetchSaga } from '@audius/common/api'
+import {
+  getWalletAccountQueryFn,
+  getWalletAccountQueryKey
+} from '@audius/common/api'
 import { GUEST_EMAIL } from '@audius/common/hooks'
 import {
   Name,
@@ -538,6 +541,7 @@ function* createGuestAccount(
 function* signUp() {
   const reportToSentry = yield* getContext('reportToSentry')
   const localStorage = yield* getContext('localStorage')
+  const queryClient = yield* getContext('queryClient')
 
   try {
     const signOn = yield* select(getSignOn)
@@ -587,12 +591,14 @@ function* signUp() {
                 sdk.services.audiusWalletClient,
                 sdk.services.audiusWalletClient.getAddresses
               ])
-              const account: AccountUserMetadata | null = yield* call(
-                userApiFetchSaga.getUserAccount,
+              const account = (yield* call(
+                [queryClient, queryClient.fetchQuery],
                 {
-                  wallet
+                  queryKey: getWalletAccountQueryKey(wallet),
+                  queryFn: async () => getWalletAccountQueryFn(wallet!, sdk)
                 }
-              )
+              )) as AccountUserMetadata | undefined
+              // TODO: Do I need to prime the accountUser slice here?
               if (!account) {
                 throw new Error('Account user ID does not exist')
               }
@@ -858,6 +864,7 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
   const authService = yield* getContext('authService')
   const isNativeMobile = yield* getContext('isNativeMobile')
   const isElectron = yield* getContext('isElectron')
+  const queryClient = yield* getContext('queryClient')
   const clientOrigin = isNativeMobile
     ? 'mobile'
     : isElectron
@@ -896,12 +903,11 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
       return
     }
 
-    const account: AccountUserMetadata | null = yield* call(
-      userApiFetchSaga.getUserAccount,
-      {
-        wallet: signInResponse.walletAddress
-      }
-    )
+    const account = (yield* call([queryClient, queryClient.fetchQuery], {
+      queryKey: getWalletAccountQueryKey(signInResponse.walletAddress),
+      queryFn: async () =>
+        getWalletAccountQueryFn(signInResponse.walletAddress, sdk)
+    })) as AccountUserMetadata | undefined
 
     // Login succeeded but we found no account for the user (incomplete signup)
     if (!account) {

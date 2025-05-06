@@ -175,6 +175,8 @@ class NotificationType(str, Enum):
     COMMENT_REACTION = "comment_reaction"
     LISTEN_STREAK_REMINDER = "listen_streak_reminder"
     REMIX_CONTEST_STARTED = "remix_contest_started"
+    REMIX_CONTEST_ENDED = "remix_contest_ended"
+    REMIX_CONTEST_ENDING_SOON = "remix_contest_ending_soon"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -488,6 +490,16 @@ class RemixContestStartedNotification(TypedDict):
     entity_id: int
 
 
+class RemixContestEndedNotification(TypedDict):
+    entity_user_id: int
+    entity_id: int
+
+
+class RemixContestEndingSoonNotification(TypedDict):
+    entity_user_id: int
+    entity_id: int
+
+
 NotificationData = Union[
     AnnouncementNotification,
     FollowNotification,
@@ -521,6 +533,8 @@ NotificationData = Union[
     CommentReactionNotification,
     ListenStreakReminderNotification,
     RemixContestStartedNotification,
+    RemixContestEndedNotification,
+    RemixContestEndingSoonNotification,
 ]
 
 

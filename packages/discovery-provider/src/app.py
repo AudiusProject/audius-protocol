@@ -307,6 +307,8 @@ def configure_celery(celery, test_config=None):
             "src.tasks.publish_scheduled_releases",
             "src.tasks.create_engagement_notifications",
             "src.tasks.create_listen_streak_reminder_notifications",
+            "src.tasks.create_remix_contest_ended_notifications",
+            "src.tasks.create_remix_contest_ending_soon_notifications",
             "src.tasks.index_core",
         ],
         beat_schedule={
@@ -397,6 +399,14 @@ def configure_celery(celery, test_config=None):
             "create_listen_streak_reminder_notifications": {
                 "task": "create_listen_streak_reminder_notifications",
                 "schedule": timedelta(seconds=10),
+            },
+            "create_remix_contest_ended_notifications": {
+                "task": "create_remix_contest_ended_notifications",
+                "schedule": timedelta(hours=1),
+            },
+            "create_remix_contest_ending_soon_notifications": {
+                "task": "create_remix_contest_ending_soon_notifications",
+                "schedule": timedelta(hours=1),
             },
             "repair_audio_analyses": {
                 "task": "repair_audio_analyses",

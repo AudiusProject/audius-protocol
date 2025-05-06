@@ -1,6 +1,6 @@
 import { full, Id, OptionalId } from '@audius/sdk'
 
-import { accountFromSDK, userMetadataListFromSDK } from '~/adapters/user'
+import { userMetadataListFromSDK } from '~/adapters/user'
 import { createApi } from '~/audius-query'
 import { ID, Kind, StringUSDC } from '~/models'
 import {
@@ -8,7 +8,6 @@ import {
   USDCTransactionMethod,
   USDCTransactionType
 } from '~/models/USDCTransactions'
-import { isResponseError } from '~/utils'
 import { Nullable } from '~/utils/typeUtils'
 
 type GetUSDCTransactionListArgs = {
@@ -43,30 +42,7 @@ const parseTransaction = ({
 const userApi = createApi({
   reducerPath: 'userApi',
   endpoints: {
-    // TODO: Remove this once saga calls are removed
-    getUserAccount: {
-      fetch: async ({ wallet }: { wallet: string }, { audiusSdk }) => {
-        try {
-          const sdk = await audiusSdk()
-          const { data } = await sdk.full.users.getUserAccount({ wallet })
-          if (!data) {
-            console.warn('Missing user from account response')
-            return null
-          }
-
-          return accountFromSDK(data)
-        } catch (e) {
-          // Account doesn't exist, don't bubble up an error, just return null
-          if (isResponseError(e) && [401, 404].includes(e.response.status)) {
-            return null
-          }
-          throw e
-        }
-      },
-      options: {
-        schemaKey: 'accountUser'
-      }
-    },
+    // TODO: Remove these once fetch export calls are removed
     getUserByHandle: {
       fetch: async (
         {
@@ -135,6 +111,5 @@ const userApi = createApi({
 
 export const userApiReducer = userApi.reducer
 export const userApiFetch = userApi.fetch
-export const userApiFetchSaga = userApi.fetchSaga
 export const userApiActions = userApi.actions
 export const userApiUtils = userApi.util

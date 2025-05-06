@@ -7,7 +7,6 @@ import { favoritesApiReducer } from './favorites'
 import { libraryApiReducer } from './library'
 import { searchApiReducer } from './search'
 import { signUpReducer } from './signUp'
-import { topArtistsApiReducer } from './topArtists'
 import { trendingApiReducer } from './trending'
 import { userApiReducer } from './user'
 
@@ -19,7 +18,6 @@ export default combineReducers({
   libraryApi: libraryApiReducer,
   searchApi: searchApiReducer,
   signUpApi: signUpReducer,
-  topArtistsApi: topArtistsApiReducer,
   trendingApi: trendingApiReducer,
   userApi: userApiReducer
 })

@@ -12,11 +12,13 @@ const STATIC_EXPLORE_CONTENT_URL =
 type ExploreContentResponse = {
   featuredPlaylists: string[]
   featuredProfiles: string[]
+  featuredRemixContests: string[]
 }
 
 export type ExploreContent = {
   featuredPlaylists: ID[]
   featuredProfiles: ID[]
+  featuredRemixContests: ID[]
 }
 
 export const getExploreContentQueryKey = () => {
@@ -40,6 +42,9 @@ export const useExploreContent = <TResult = ExploreContent>(
           (id: string) => parseInt(id) as ID
         ),
         featuredProfiles: json.featuredProfiles.map(
+          (id: string) => parseInt(id) as ID
+        ),
+        featuredRemixContests: json.featuredRemixContests.map(
           (id: string) => parseInt(id) as ID
         )
       }

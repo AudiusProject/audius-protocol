@@ -22,6 +22,8 @@ from src.queries.get_notifications import (
     NotificationData,
     PlaylistMilestoneNotification,
     ReactionNotification,
+    RemixContestEndedNotification,
+    RemixContestEndingSoonNotification,
     RemixContestStartedNotification,
     RemixNotification,
     RepostNotification,
@@ -777,6 +779,40 @@ def extend_remix_contest_started(action: NotificationAction):
     }
 
 
+def extend_remix_contest_ended(action: NotificationAction):
+    data: RemixContestEndedNotification = action["data"]  # type: ignore
+    return {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
+        "data": {
+            "entity_user_id": encode_int_id(data["entity_user_id"]),
+            "entity_id": encode_int_id(data["entity_id"]),
+        },
+    }
+
+
+def extend_remix_contest_ending_soon(action: NotificationAction):
+    data: RemixContestEndingSoonNotification = action["data"]  # type: ignore
+    return {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
+        "data": {
+            "entity_user_id": encode_int_id(data["entity_user_id"]),
+            "entity_id": encode_int_id(data["entity_id"]),
+        },
+    }
+
+
 notification_action_handler = {
     "follow": extend_follow,
     "repost": extend_repost,
@@ -813,4 +849,6 @@ notification_action_handler = {
     "comment_reaction": extend_comment_reaction,
     "listen_streak_reminder": extend_listen_streak_reminder,
     "remix_contest_started": extend_remix_contest_started,
+    "remix_contest_ended": extend_remix_contest_ended,
+    "remix_contest_ending_soon": extend_remix_contest_ending_soon,
 }
