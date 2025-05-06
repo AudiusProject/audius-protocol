@@ -4,7 +4,7 @@ import { AUDIO } from '@audius/fixed-decimal'
 
 import { useTokenPrice } from '../api'
 import { TOKEN_LISTING_MAP } from '../store'
-import { getDecimalPlaces, isNullOrUndefined } from '../utils'
+import { getCurrencyDecimalPlaces, isNullOrUndefined } from '../utils'
 
 import { useTotalBalanceWithFallback } from './useAudioBalance'
 
@@ -29,7 +29,7 @@ export const useFormattedAudioBalance = (): UseFormattedAudioBalanceReturn => {
 
   const decimalPlaces = useMemo(() => {
     if (!audioPrice) return 2
-    return getDecimalPlaces(parseFloat(audioPrice))
+    return getCurrencyDecimalPlaces(parseFloat(audioPrice))
   }, [audioPrice])
 
   const audioBalanceFormatted = audioBalance
