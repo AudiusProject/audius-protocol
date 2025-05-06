@@ -1,3 +1,4 @@
+import { Id } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
 import { userManagerListFromSDK } from '~/adapters/user'
@@ -5,29 +6,29 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 import { UserManagerMetadata } from '~/models/User'
 
+import { QUERY_KEYS } from '../../queryKeys'
 import { QueryKey } from '../../types'
-
-import { useCurrentUserId } from './useCurrentUserId'
+import { isValidId } from '../../utils/isValidId'
 
 export const getManagersQueryKey = (userId: ID | null | undefined) =>
-  ['userManagers', userId] as unknown as QueryKey<UserManagerMetadata[]>
+  [QUERY_KEYS.userManagers, userId] as unknown as QueryKey<
+    UserManagerMetadata[]
+  >
 
-export const useGetManagers = (userId?: ID) => {
+export const useManagers = (userId?: ID) => {
   const { audiusSdk } = useAudiusQueryContext()
-  const { data: currentUserId } = useCurrentUserId()
-  const resolvedUserId = userId ?? currentUserId
   return useQuery<UserManagerMetadata[]>({
-    queryKey: getManagersQueryKey(resolvedUserId),
+    queryKey: getManagersQueryKey(userId),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const managers = await sdk.full.users.getManagers({
-        id: resolvedUserId
+        id: Id.parse(userId)
       })
       const { data: rawData = [] } = managers
       // Only include approved or pending (not explicitly false)
       const data = rawData.filter((g: any) => g.grant.isApproved !== false)
       return userManagerListFromSDK(data)
     },
-    enabled: !!resolvedUserId
+    enabled: isValidId(userId)
   })
 }

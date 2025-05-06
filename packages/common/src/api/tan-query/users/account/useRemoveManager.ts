@@ -3,8 +3,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { useAudiusQueryContext } from '~/audius-query'
 
-import { getManagedAccountsQueryKey } from './useGetManagedAccounts'
-import { getManagersQueryKey } from './useGetManagers'
+import { getManagedAccountsQueryKey } from './useManagedAccounts'
+import { getManagersQueryKey } from './useManagers'
 
 type RemoveManagerPayload = {
   userId: number

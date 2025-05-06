@@ -35,20 +35,20 @@ type ApproveManagedAccountPayload = {
 const accountApi = createApi({
   reducerPath: 'accountApi',
   endpoints: {
-    resetPassword: {
-      async fetch(args: ResetPasswordArgs, context) {
-        const { email, password } = args
-        const { authService } = context
-        await authService.resetPassword({
-          username: email,
-          password
-        })
-        return { status: 'ok' }
-      },
-      options: {
-        type: 'mutation'
-      }
-    },
+    // resetPassword: {
+    //   async fetch(args: ResetPasswordArgs, context) {
+    //     const { email, password } = args
+    //     const { authService } = context
+    //     await authService.resetPassword({
+    //       username: email,
+    //       password
+    //     })
+    //     return { status: 'ok' }
+    //   },
+    //   options: {
+    //     type: 'mutation'
+    //   }
+    // },
     getManagedAccounts: {
       async fetch({ userId }: { userId: ID }, { audiusSdk }) {
         const sdk = await audiusSdk()
@@ -255,7 +255,7 @@ export const useGetCurrentUserId = (_args?: any, options?: any) => {
 }
 
 export const {
-  useResetPassword,
+  // useResetPassword,
   useGetManagedAccounts,
   useGetManagers,
   useRequestAddManager,

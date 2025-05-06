@@ -119,6 +119,9 @@ export * from './tan-query/users/useUserCollectibles'
 export * from './tan-query/users/useUserPlaylists'
 export * from './tan-query/users/useUsers'
 export * from './tan-query/users/useUserTracksByHandle'
+export * from './tan-query/users/account/useResetPassword'
+export * from './tan-query/users/account/useManagedAccounts'
+export * from './tan-query/users/account/useManagers'
 
 // Wallet logic
 export * from './tan-query/wallets/useAudioBalance'

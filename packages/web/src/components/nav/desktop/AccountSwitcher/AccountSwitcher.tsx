@@ -3,10 +3,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   useGetCurrentUserId,
   useGetCurrentWeb3User,
-  useGetManagedAccounts
+  useManagedAccounts
 } from '@audius/common/api'
 import { useAccountSwitcher } from '@audius/common/hooks'
-import { Status, UserMetadata } from '@audius/common/models'
+import { UserMetadata } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Box, IconButton, IconCaretDown, Popup } from '@audius/harmony'
 import { useSelector } from 'react-redux'
@@ -38,8 +38,8 @@ export const AccountSwitcher = () => {
 
   const web3UserId = currentWeb3User?.user_id ?? null
 
-  const { data: managedAccounts = [], status: accountsStatus } =
-    useGetManagedAccounts({ userId: web3UserId! }, { disabled: !web3UserId })
+  const { data: managedAccounts = [], isSuccess: isManagedAccountsSuccess } =
+    useManagedAccounts(web3UserId)
 
   const parentElementRef = useRef<HTMLDivElement>(null)
   const onClickExpander = useCallback(
@@ -57,7 +57,7 @@ export const AccountSwitcher = () => {
     if (
       !currentUserId ||
       !currentWeb3User ||
-      accountsStatus !== Status.SUCCESS ||
+      !isManagedAccountsSuccess ||
       checkedAccess
     ) {
       return
@@ -72,10 +72,10 @@ export const AccountSwitcher = () => {
     }
   }, [
     accounts,
-    accountsStatus,
     checkedAccess,
     currentUserId,
     currentWeb3User,
+    isManagedAccountsSuccess,
     switchToWeb3User
   ])
 

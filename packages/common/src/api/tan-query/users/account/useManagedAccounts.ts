@@ -1,3 +1,4 @@
+import { Id } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
 import { managedUserListFromSDK } from '~/adapters/user'
@@ -5,26 +6,33 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 import { ManagedUserMetadata } from '~/models/User'
 
-import { QueryKey } from '../../types'
+import { QUERY_KEYS } from '../../queryKeys'
+import { QueryKey, SelectableQueryOptions } from '../../types'
+import { isValidId } from '../../utils/isValidId'
 
-import { useCurrentUserId } from './useCurrentUserId'
 export const getManagedAccountsQueryKey = (userId: ID | null | undefined) =>
-  ['managedAccounts', userId] as unknown as QueryKey<ManagedUserMetadata[]>
+  [QUERY_KEYS.managedAccounts, userId] as unknown as QueryKey<
+    ManagedUserMetadata[]
+  >
 
-export const useGetManagedAccounts = (userId?: ID) => {
+export const useManagedAccounts = <
+  TResult = ManagedUserMetadata[] | null | undefined
+>(
+  userId?: ID | null,
+  options?: SelectableQueryOptions<TResult>
+) => {
   const { audiusSdk } = useAudiusQueryContext()
-  const { data: currentUserId } = useCurrentUserId()
-  const resolvedUserId = userId ?? currentUserId
-  return useQuery<ManagedUserMetadata[]>({
-    queryKey: getManagedAccountsQueryKey(resolvedUserId),
+  return useQuery({
+    queryKey: getManagedAccountsQueryKey(userId),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const managedUsers = await sdk.full.users.getManagedUsers({
-        id: resolvedUserId
+        id: Id.parse(userId)
       })
       const { data = [] } = managedUsers
       return managedUserListFromSDK(data)
     },
-    enabled: !!resolvedUserId
+    enabled: isValidId(userId),
+    ...options
   })
 }

@@ -4,7 +4,8 @@ import { accountFromSDK } from '@audius/common/adapters'
 import {
   useGetCurrentUserId,
   useGetCurrentWeb3User,
-  useGetManagedAccounts
+  useGetManagedAccounts,
+  useManagedAccounts
 } from '@audius/common/api'
 import { useAccountSwitcher } from '@audius/common/hooks'
 import { Name, ErrorLevel, UserMetadata } from '@audius/common/models'
@@ -274,10 +275,7 @@ export const OAuthLoginPage = () => {
 
   const web3UserId = currentWeb3User?.user_id ?? null
 
-  const { data: managedAccounts = [] } = useGetManagedAccounts(
-    { userId: web3UserId! },
-    { disabled: !web3UserId }
-  )
+  const { data: managedAccounts = [] } = useManagedAccounts(web3UserId)
 
   const accounts = useMemo(() => {
     return managedAccounts.filter(({ grant }) => grant.is_approved)

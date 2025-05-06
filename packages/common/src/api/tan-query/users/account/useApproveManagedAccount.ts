@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAudiusQueryContext } from '~/audius-query'
 import { User, UserMetadata } from '~/models'
 
-import { getManagedAccountsQueryKey } from './useGetManagedAccounts'
+import { getManagedAccountsQueryKey } from './useManagedAccounts'
 
 type ApproveManagedAccountPayload = {
   userId: number

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useGetManagedAccounts } from '@audius/common/api'
+import { useManagedAccounts } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Box, Divider, Flex, Text } from '@audius/harmony'
@@ -25,11 +25,7 @@ export const AccountsYouManageHomePage = ({
   setPageState
 }: AccountsYouManagePageProps) => {
   const userId = useSelector(getUserId)
-  const { data: managedAccounts, status } = useGetManagedAccounts(
-    { userId: userId! },
-    // Always update managed accounts list when mounting this page
-    { disabled: userId == null, force: true }
-  )
+  const { data: managedAccounts } = useManagedAccounts(userId, { staleTime: 0 })
   // Don't flash loading spinner if we are refreshing the cache
   const isLoading =
     status !== Status.SUCCESS &&
