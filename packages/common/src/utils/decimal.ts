@@ -54,3 +54,10 @@ export const decimalIntegerFromHumanReadable = (
 ) => {
   return parseFloat(value) * 10 ** precision
 }
+
+export const getCurrencyDecimalPlaces = (priceUSD: number) => {
+  if (priceUSD >= 1) return 2
+  if (priceUSD >= 0.01) return 4
+  if (priceUSD >= 0.0001) return 6
+  return 8
+}

@@ -1,8 +1,5 @@
-import {
-  useGetTopArtistsInGenre,
-  useGetFeaturedArtists
-} from '@audius/common/api'
-import type { QueryHookOptions } from '@audius/common/audius-query'
+import type { QueryOptions } from '@audius/common/api'
+import { useTopArtistsInGenre, useSuggestedArtists } from '@audius/common/api'
 import type { Genre } from '@audius/common/utils'
 import { convertGenreLabelToValue } from '@audius/common/utils'
 import { css } from '@emotion/native'
@@ -14,9 +11,9 @@ import { CardList } from 'app/components/core'
 import { FollowArtistCard, FollowArtistTileSkeleton } from './FollowArtistCard'
 import { PreviewArtistHint } from './PreviewArtistHint'
 
-export const useGetTopArtists = (genre: string, options?: QueryHookOptions) => {
+export const useGetTopArtists = (genre: string, options?: QueryOptions) => {
   const useGetArtistsHook =
-    genre === 'Featured' ? useGetFeaturedArtists : useGetTopArtistsInGenre
+    genre === 'Featured' ? useSuggestedArtists : useTopArtistsInGenre
 
   return useGetArtistsHook({ genre }, options)
 }
@@ -33,7 +30,7 @@ export const TopArtistsCardList = (props: Props) => {
   const { data: artists } = useGetTopArtists(
     convertGenreLabelToValue(genre as Genre),
     {
-      disabled: !isFocused
+      enabled: isFocused
     }
   )
 

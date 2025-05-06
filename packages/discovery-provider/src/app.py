@@ -307,6 +307,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.publish_scheduled_releases",
             "src.tasks.create_engagement_notifications",
             "src.tasks.create_listen_streak_reminder_notifications",
+            "src.tasks.create_remix_contest_notifications",
             "src.tasks.index_core",
         ],
         beat_schedule={
@@ -397,6 +398,10 @@ def configure_celery(celery, test_config=None):
             "create_listen_streak_reminder_notifications": {
                 "task": "create_listen_streak_reminder_notifications",
                 "schedule": timedelta(seconds=10),
+            },
+            "create_remix_contest_notifications": {
+                "task": "create_remix_contest_notifications",
+                "schedule": timedelta(hours=1),
             },
             "repair_audio_analyses": {
                 "task": "repair_audio_analyses",

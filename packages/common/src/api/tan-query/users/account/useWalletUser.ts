@@ -1,11 +1,9 @@
 import { AudiusSdk } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
-import { useSelector } from 'react-redux'
 
 import { accountFromSDK } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
-import { AccountUserMetadata, ID } from '~/models'
-import { getWalletAddresses } from '~/store/account/selectors'
+import { AccountUserMetadata } from '~/models'
 
 import { QUERY_KEYS } from '../../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../../types'
@@ -15,9 +13,6 @@ export const getWalletAccountQueryKey = (wallet: string | null | undefined) =>
     QUERY_KEYS.walletAccount,
     wallet
   ] as unknown as QueryKey<AccountUserMetadata | null>
-
-export const getWalletUserQueryKey = (wallet: string | null | undefined) =>
-  [QUERY_KEYS.walletUser, wallet] as unknown as QueryKey<ID | null>
 
 // This queryFn is separate in order to be used in sagas
 export const getWalletAccountQueryFn = async (
@@ -40,20 +35,24 @@ export const getWalletAccountQueryFn = async (
 /**
  * Hook to get the currently logged in user's data
  */
-export const useWalletUser = <TResult = ID | null | undefined>(
-  options?: SelectableQueryOptions<ID | null | undefined, TResult>
+export const useWalletAccount = <
+  TResult = AccountUserMetadata | null | undefined
+>(
+  wallet: string | null | undefined,
+  options?: SelectableQueryOptions<
+    AccountUserMetadata | null | undefined,
+    TResult
+  >
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
-  const { currentUser: currentUserWallet } = useSelector(getWalletAddresses)
 
   return useQuery({
-    queryKey: getWalletUserQueryKey(currentUserWallet),
+    queryKey: getWalletAccountQueryKey(wallet),
     queryFn: async () => {
       const sdk = await audiusSdk()
-      return (await getWalletAccountQueryFn(currentUserWallet!, sdk))?.user
-        ?.user_id
+      return await getWalletAccountQueryFn(wallet!, sdk)
     },
     ...options,
-    enabled: options?.enabled !== false && !!currentUserWallet
+    enabled: options?.enabled !== false && !!wallet
   })
 }
