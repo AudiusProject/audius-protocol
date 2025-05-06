@@ -11,6 +11,8 @@
   border: 1px solid var(--harmony-n-100);
   overflow: hidden;
   position: relative;
+  width: 338px;
+  height: 338px;
 }
 
 .iconLeftWrapper {
