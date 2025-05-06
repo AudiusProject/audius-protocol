@@ -813,6 +813,22 @@ def extend_remix_contest_ending_soon(action: NotificationAction):
     }
 
 
+def extend_artist_remix_contest_ended(action: NotificationAction):
+    data = action["data"]  # type: ignore
+    return {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
+        "data": {
+            "entity_id": encode_int_id(data["entity_id"]),
+        },
+    }
+
+
 notification_action_handler = {
     "follow": extend_follow,
     "repost": extend_repost,
@@ -851,4 +867,5 @@ notification_action_handler = {
     "remix_contest_started": extend_remix_contest_started,
     "remix_contest_ended": extend_remix_contest_ended,
     "remix_contest_ending_soon": extend_remix_contest_ending_soon,
+    "artist_remix_contest_ended": extend_artist_remix_contest_ended,
 }

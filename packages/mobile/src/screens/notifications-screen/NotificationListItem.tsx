@@ -37,6 +37,7 @@ import {
   CommentMentionNotification,
   CommentReactionNotification
 } from './Notifications'
+import { ArtistRemixContestEndedNotification } from './Notifications/ArtistRemixContestEndedNotification'
 import { ListenStreakReminderNotification } from './Notifications/ListenStreakReminderNotification'
 import { RemixContestEndedNotification } from './Notifications/RemixContestEndedNotification'
 import { RemixContestEndingSoonNotification } from './Notifications/RemixContestEndingSoonNotification'
@@ -135,6 +136,10 @@ export const NotificationListItem = (props: NotificationListItemProps) => {
         return <RemixContestStartedNotification notification={notification} />
       case NotificationType.RemixContestEnded:
         return <RemixContestEndedNotification notification={notification} />
+      case NotificationType.ArtistRemixContestEnded:
+        return (
+          <ArtistRemixContestEndedNotification notification={notification} />
+        )
       case NotificationType.RemixContestEndingSoon:
         return (
           <RemixContestEndingSoonNotification notification={notification} />
