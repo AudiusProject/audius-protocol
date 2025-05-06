@@ -1,6 +1,5 @@
 // Audius query
 // TODO: migrate all of these to tan-query
-export * from './account'
 export * from './authorizedApps'
 export * from './developerApps'
 export * from './library'

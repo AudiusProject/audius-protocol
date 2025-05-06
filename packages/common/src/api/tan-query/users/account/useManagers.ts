@@ -16,7 +16,7 @@ export const getManagersQueryKey = (userId: ID | null | undefined) =>
   >
 
 export const useManagers = <TResult = UserManagerMetadata[] | undefined>(
-  userId?: ID,
+  userId?: ID | null,
   options?: SelectableQueryOptions<TResult>
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
