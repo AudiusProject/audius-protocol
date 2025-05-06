@@ -1,8 +1,17 @@
-import { defaultRetryConfig } from '@audius/common/api'
-import { QueryClient } from '@tanstack/react-query'
+import { defaultRetryConfig, queryErrorHandler } from '@audius/common/api'
+import { QueryCache, QueryClient } from '@tanstack/react-query'
+
+import { reportToSentry } from 'store/errors/reportToSentry'
 
 import { env } from './env'
 export const queryClient = new QueryClient({
+  // In order to have a default error catcher, we need to use a custom query cache
+  // ref: https://tkdodo.eu/blog/react-query-error-handling
+  queryCache: new QueryCache({
+    onError(error, query) {
+      queryErrorHandler(error, query, reportToSentry)
+    }
+  }),
   defaultOptions: {
     queries: {
       // By default, tan-query will retry on 404s. We intentionally disable retrying on 400 type errors.

@@ -1,3 +1,4 @@
+import java.net.URL
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
@@ -112,6 +113,12 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    repositories {
+        flatDir {
+            dirs "$rootDir/libs"
+        }
+    }
+
     defaultConfig {
         applicationId "co.audius.app"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -121,7 +128,7 @@ android {
         // versionCode is automatically incremented in CI
         versionCode 1
         // Make sure this is above the currently released Android version in the play store if your changes touch native code:
-        versionName "1.1.482"
+        versionName "1.1.483"
         resValue "string", "build_config_package", "co.audius.app"
         resConfigs "en"
     }
@@ -199,6 +206,9 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging'
     implementation 'com.google.firebase:firebase-analytics'
 
+    implementation(name: 'ffmpeg-kit-full-gpl', ext: 'aar')
+    implementation 'com.arthenica:smart-exception-java:0.2.1'
+
     implementation 'com.github.nsure-ai:android-sdk:1.3.2'
 
     if (hermesEnabled.toBoolean()) {
@@ -208,6 +218,31 @@ dependencies {
     }
 }
 
+afterEvaluate {
+    def aarUrl = 'https://github.com/NooruddinLakhani/ffmpeg-kit-full-gpl/releases/download/v1.0.0/ffmpeg-kit-full-gpl.aar'
+    def aarFile = file("${rootDir}/libs/ffmpeg-kit-full-gpl.aar")
+
+    tasks.register("downloadAar") {
+        doLast {
+             if (!aarFile.parentFile.exists()) {
+                println "📁 Creating directory: ${aarFile.parentFile.absolutePath}"
+                aarFile.parentFile.mkdirs()
+            }
+            if (!aarFile.exists()) {
+                println "⏬ Downloading AAR from $aarUrl..."
+                new URL(aarUrl).withInputStream { i ->
+                    aarFile.withOutputStream { it << i }
+                }
+                println "✅ AAR downloaded to ${aarFile.absolutePath}"
+            } else {
+                println "ℹ️ AAR already exists at ${aarFile.absolutePath}"
+            }
+        }
+    }
+
+    // Make sure the AAR is downloaded before compilation begins
+    preBuild.dependsOn("downloadAar")
+}
 
 // Google Services Gradle plugin
 apply plugin: 'com.google.gms.google-services'

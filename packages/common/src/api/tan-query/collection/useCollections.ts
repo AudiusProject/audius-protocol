@@ -62,6 +62,7 @@ export const useCollections = (
     isPending: queriesResults.isPending || !isSavedToRedux,
     isLoading: queriesResults.isLoading || !isSavedToRedux,
     isFetching: queriesResults.isFetching,
-    isSuccess: queriesResults.isSuccess
+    isSuccess: queriesResults.isSuccess,
+    isError: queriesResults.isError
   }
 }

@@ -16,48 +16,8 @@ if [[ -z "${CI}" ]]; then
   npm run install-git-secrets > /dev/null
 fi
 
-printf "${GREEN}Setting up initial package links...\n${NC}"
-{
-  # First ensure react-native exists in root node_modules for patch-package
-  if [ ! -e "node_modules/react-native" ] && [ -e "./packages/mobile/node_modules/react-native" ]; then
-    printf "${GREEN}Moving react-native to root node_modules...\n${NC}"
-    cp -R ./packages/mobile/node_modules/react-native ./node_modules/
-    rm -rf ./packages/mobile/node_modules/react-native
-  fi
-
-  if [ -d "./packages/mobile/node_modules" ]; then
-    cd ./packages/mobile/node_modules
-
-    # Link react-native-code-push from root since it's not in mobile/node_modules
-    source_path=../../../node_modules/react-native-code-push
-    target_path=react-native-code-push
-    if [ ! -e "$target_path" ]; then
-      ln -s "$source_path" "$target_path"
-    fi
-
-    cd ../../..
-  fi
-} > /dev/null
-
 printf "${GREEN}Applying patches...\n${NC}"
 npm run patch-package > /dev/null
-
-printf "${GREEN}Moving react-native back to mobile...\n${NC}"
-{
-  # Move react-native back to mobile/node_modules for pod install
-  if [ -e "node_modules/react-native" ] && [ -d "./packages/mobile/node_modules" ]; then
-    rm -rf ./packages/mobile/node_modules/react-native
-    mv ./node_modules/react-native ./packages/mobile/node_modules/
-    # Create symlink back to root
-    cd node_modules
-    source_path=../packages/mobile/node_modules/react-native
-    target_path=react-native
-    if [ ! -e "$target_path" ]; then
-      ln -s "$source_path" "$target_path"
-    fi
-    cd ..
-  fi
-} > /dev/null
 
 # xcodebuild may exist (e.g. if xcode-select is installed via homebrew) but won't work alone
 if [[ -z "${SKIP_POD_INSTALL}" ]]; then
@@ -78,6 +38,10 @@ if [[ -z "${SKIP_POD_INSTALL}" ]]; then
     if command -v pod >/dev/null; then
       RCT_NEW_ARCH_ENABLED=0 bundle exec pod install
     fi
+    cd ../android
+ 
+    ./gradlew :app:downloadAar
+ 
     cd ../../..
   } > /dev/null
 fi

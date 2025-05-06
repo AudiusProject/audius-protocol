@@ -9,10 +9,11 @@ import styles from './TrackContent.module.css'
 
 type TrackContentProps = {
   track: TrackEntity
+  hideTitle?: boolean
 }
 
 export const TrackContent = (props: TrackContentProps) => {
-  const { track } = props
+  const { track, hideTitle = false } = props
 
   const image = useTrackCoverArt({
     trackId: track.track_id,
@@ -32,7 +33,9 @@ export const TrackContent = (props: TrackContentProps) => {
           image={image}
         />
       </TrackFlair>
-      <span className={styles.trackContentText}>{track.title}</span>
+      {hideTitle ? null : (
+        <span className={styles.trackContentText}>{track.title}</span>
+      )}
     </div>
   )
 }

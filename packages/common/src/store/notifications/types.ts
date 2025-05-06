@@ -21,6 +21,7 @@ export enum NotificationType {
   Milestone = 'Milestone',
   RemixCreate = 'RemixCreate',
   RemixCosign = 'RemixCosign',
+  RemixContestStarted = 'RemixContestStarted',
   Tastemaker = 'Tastemaker',
   TrendingTrack = 'TrendingTrack',
   TrendingPlaylist = 'TrendingPlaylist',
@@ -695,6 +696,12 @@ export type ListenStreakReminderNotification = BaseNotification & {
   streak: number
 }
 
+export type RemixContestStartedNotification = BaseNotification & {
+  type: NotificationType.RemixContestStarted
+  entityId: ID
+  entityUserId: ID
+}
+
 export type Notification =
   | AnnouncementNotification
   | UserSubscriptionNotification
@@ -706,6 +713,7 @@ export type Notification =
   | MilestoneNotification
   | RemixCreateNotification
   | RemixCosignNotification
+  | RemixContestStartedNotification
   | TastemakerNotification
   | TrendingPlaylistNotification
   | TrendingTrackNotification

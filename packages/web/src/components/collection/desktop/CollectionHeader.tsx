@@ -243,7 +243,17 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
             {isLoading ? (
               <Skeleton height='24px' width='150px' />
             ) : userId !== null ? (
-              <Text variant='title' strength='weak' tag='h2' textAlign='left'>
+              <Text
+                css={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: spacing.xs
+                }}
+                variant='title'
+                strength='weak'
+                tag='h2'
+                textAlign='left'
+              >
                 <Text color='subdued'>{messages.by}</Text>
                 <UserLink userId={userId} popover variant='visible' />
               </Text>
