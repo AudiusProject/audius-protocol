@@ -280,7 +280,6 @@ const itemKindByCategory = {
 
 export const RecentSearches = () => {
   const searchItems = useSelector(getSearchHistory)
-  console.log('asdf searchItems', searchItems)
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
   const routeMatch = useRouteMatch<{ category: string }>(SEARCH_PAGE)

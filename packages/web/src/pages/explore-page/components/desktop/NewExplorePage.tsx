@@ -109,9 +109,7 @@ const justForYou = [
 const FEATURED_LIMIT = 5
 const DEBOUNCE_MS = 400
 
-// Component
 const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
-  // Hooks
   const [categoryKey, setCategory] = useSearchCategory()
   const [searchParams, setSearchParams] = useSearchParams()
   const [inputValue, setInputValue] = useState(searchParams.get('query') || '')
@@ -121,7 +119,6 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const navigate = useNavigate()
   const showSearchResults = useShowSearchResults()
 
-  // Data Fetching
   const { data: featuredPlaylists } = useFeaturedPlaylists(
     { limit: FEATURED_LIMIT },
     { placeholderData: (prev: TQCollection[]) => prev }
@@ -130,7 +127,6 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
     limit: FEATURED_LIMIT
   })
 
-  // Handlers
   const handleTabClick = useCallback(
     (newTab: string) => {
       setCategory(newTab.toLowerCase() as CategoryView)
@@ -159,7 +155,6 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
     [navigate]
   )
 
-  // Effects
   useDebounce(
     () => {
       setDebouncedValue(inputValue)
@@ -176,7 +171,6 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
     }
   }, [debouncedValue, setSearchParams, searchParams, previousDebouncedValue])
 
-  // Derived Data
   const filterKeys: string[] = categories[categoryKey].filters
   const justForYouTiles = justForYou.filter((tile) => {
     const isPremiumTracksTile =
@@ -192,7 +186,6 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
     onTabClick: handleTabClick
   })
 
-  // Render
   return (
     <Flex justifyContent='center'>
       <Flex

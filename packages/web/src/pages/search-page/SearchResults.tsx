@@ -7,7 +7,7 @@ import { TrackResultsPage } from './search-results/TrackResults'
 
 export const SearchResults = () => {
   const [category] = useSearchCategory()
-  console.log('asdf category', category)
+
   switch (category) {
     case 'profiles':
       return <ProfileResultsPage />
