@@ -7,7 +7,7 @@ import {
   SmartCollectionVariant,
   Status
 } from '@audius/common/models'
-import { FeatureFlags, StringKeys } from '@audius/common/services'
+import { FeatureFlags, StringKeys, useFlag } from '@audius/common/services'
 import { guestRoutes } from '@audius/common/src/utils/route'
 import {
   accountSelectors,
@@ -469,6 +469,9 @@ class WebPlayer extends Component {
 
     const SwitchComponent = this.context.isMobile ? AnimatedSwitch : Switch
     const noScroll = matchPath(this.state.currentRoute, CHAT_PAGE)
+    const { isEnabled: isSearchExploreEnabled } = useFeatureFlag(
+      FeatureFlags.SEARCH_EXPLORE
+    )
 
     return (
       <div className={styles.root}>
@@ -714,6 +717,8 @@ class WebPlayer extends Component {
                           }).toString()
                         }}
                       />
+                    ) : isSearchExploreEnabled ? (
+                      <ExplorePage />
                     ) : (
                       <SearchPage />
                     )
