@@ -28,7 +28,7 @@ import {
 const { getNotificationEntities, getNotificationUser } = notificationsSelectors
 
 const messages = {
-  title: 'Remix Co-sign',
+  title: 'Remix was Co-signed',
   cosign: 'Co-signed your Remix of',
   shareTwitterText: (trackTitle: string, handle: string) =>
     `My remix of ${trackTitle} was Co-Signed by ${handle} on @audius #Audius $AUDIO`

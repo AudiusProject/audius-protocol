@@ -8,6 +8,7 @@ import {
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
+import { Flex } from '~harmony/components/layout/Flex'
 
 import { make } from 'common/store/analytics/actions'
 import { push } from 'utils/navigation'
@@ -27,7 +28,7 @@ import { getEntityLink } from './utils'
 const { getNotificationEntities, getNotificationUser } = notificationsSelectors
 
 const messages = {
-  title: 'Remix Co-sign',
+  title: 'Remix was Co-signed',
   cosign: 'Co-signed your Remix of',
   shareTwitterText: (trackTitle: string, handle: string) =>
     `My remix of ${trackTitle} was Co-Signed by ${handle} on @audius #Audius $AUDIO`
@@ -88,14 +89,14 @@ export const RemixCosignNotification = (
       <NotificationHeader icon={<IconRemix />}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
-      <NotificationBody>
-        <UserNameLink user={user} notification={notification} />{' '}
-        {messages.cosign}{' '}
-        <EntityLink entity={parentTrack} entityType={entityType} />
-      </NotificationBody>
-      <div>
-        <TrackContent track={childTrack} />
-      </div>
+      <Flex>
+        <TrackContent track={childTrack} hideTitle />
+        <NotificationBody>
+          <UserNameLink user={user} notification={notification} />{' '}
+          {messages.cosign}{' '}
+          <EntityLink entity={parentTrack} entityType={entityType} />
+        </NotificationBody>
+      </Flex>
       <TwitterShareButton
         type='dynamic'
         handle={user.handle}
