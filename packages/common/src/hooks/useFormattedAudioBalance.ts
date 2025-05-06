@@ -4,7 +4,7 @@ import { AUDIO } from '@audius/fixed-decimal'
 
 import { useTokenPrice } from '../api'
 import { TOKEN_LISTING_MAP } from '../store'
-import { isNullOrUndefined } from '../utils'
+import { getDecimalPlaces, isNullOrUndefined } from '../utils'
 
 import { useTotalBalanceWithFallback } from './useAudioBalance'
 
@@ -22,14 +22,21 @@ type UseFormattedAudioBalanceReturn = {
 
 export const useFormattedAudioBalance = (): UseFormattedAudioBalanceReturn => {
   const audioBalance = useTotalBalanceWithFallback()
-  const audioBalanceFormatted = audioBalance
-    ? AUDIO(audioBalance).toLocaleString()
-    : null
-  const isAudioBalanceLoading = isNullOrUndefined(audioBalance)
-
   const { data: audioPriceData, isPending: isAudioPriceLoading } =
     useTokenPrice(AUDIO_TOKEN_ID)
   const audioPrice = audioPriceData?.price || null
+  const isAudioBalanceLoading = isNullOrUndefined(audioBalance)
+
+  const decimalPlaces = useMemo(() => {
+    if (!audioPrice) return 2
+    return getDecimalPlaces(parseFloat(audioPrice))
+  }, [audioPrice])
+
+  const audioBalanceFormatted = audioBalance
+    ? AUDIO(audioBalance).toLocaleString('en-US', {
+        maximumFractionDigits: decimalPlaces
+      })
+    : null
 
   // Calculate dollar value of user's AUDIO balance
   const audioDollarValue = useMemo(() => {
