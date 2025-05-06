@@ -197,20 +197,12 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         latest_indexed_block_num = redis.get(most_recent_indexed_block_redis_key)
         if latest_indexed_block_num is not None:
             latest_indexed_block_num = int(latest_indexed_block_num)
-        else:
-            logger.warning(
-                "[HEALTH_BLOCK_DEBUG] latest_indexed_block_num missing from redis, will fallback to DB or default"
-            )
 
         latest_indexed_block_hash_bytes = redis.get(
             most_recent_indexed_block_hash_redis_key
         )
         if latest_indexed_block_hash_bytes is not None:
             latest_indexed_block_hash = latest_indexed_block_hash_bytes.decode("utf-8")
-        else:
-            logger.warning(
-                "[HEALTH_BLOCK_DEBUG] latest_indexed_block_hash missing from redis, will fallback to DB or default"
-            )
 
     core_health: CoreHealth = get_core_health(redis=redis)
     core_listens_health = get_core_listens_health(
@@ -230,15 +222,9 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         or latest_indexed_block_num is None
         or latest_indexed_block_hash is None
     ):
-        logger.warning(
-            f"[HEALTH_BLOCK_DEBUG] Fallback to DB for latest_indexed_block_num/hash. use_redis_cache={use_redis_cache} latest_indexed_block_num={latest_indexed_block_num} latest_indexed_block_hash={latest_indexed_block_hash}"
-        )
         db_block_state = _get_db_block_state()
         latest_indexed_block_num = db_block_state["number"] or 0
         latest_indexed_block_hash = db_block_state["blockhash"]
-        logger.info(
-            f"[HEALTH_BLOCK_DEBUG] DB fallback values: latest_indexed_block_num={latest_indexed_block_num} latest_indexed_block_hash={latest_indexed_block_hash}"
-        )
 
     current_ts = int(time.time())  # Current UTC time in seconds
 
@@ -251,27 +237,9 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     latest_block_num = -1
     if core_health:
         latest_indexed_block_num = core_health.get("latest_indexed_block") or 0
-        if latest_indexed_block_num == 0:
-            logger.warning(
-                f"[HEALTH_BLOCK_DEBUG] core_health present but latest_indexed_block_num is 0: {core_health}"
-            )
-    else:
-        logger.warning(
-            "[HEALTH_BLOCK_DEBUG] core_health is None, using default -1 for latest_indexed_block_num"
-        )
 
     # Get latest chain block from tip, irrespective of indexer
     (latest_block_num, _) = get_latest_chain_block_set_if_nx(redis)
-    if latest_block_num is None:
-        logger.warning(
-            "[HEALTH_BLOCK_DEBUG] latest_block_num from get_latest_chain_block_set_if_nx is None, using default -1"
-        )
-        latest_block_num = -1
-
-    # Log the final values before calculating block_difference
-    logger.info(
-        f"[HEALTH_BLOCK_DEBUG] Final values before block_difference: latest_block_num={latest_block_num}, latest_indexed_block_num={latest_indexed_block_num}"
-    )
 
     user_bank_health_info = get_solana_indexer_status(
         redis, redis_keys.solana.user_bank, user_bank_max_drift
