@@ -503,7 +503,7 @@ export const GiantTrackTile = ({
       css={{ maxWidth: 1080, textAlign: 'left' }}
     >
       <TrackDogEar trackId={trackId} borderOffset={0} />
-      <Flex p='l' gap='xl' css={{ flexWrap: 'wrap' }}>
+      <Flex p='l' gap='xl'>
         <GiantArtwork
           trackId={trackId}
           coSign={coSign}
@@ -523,9 +523,10 @@ export const GiantTrackTile = ({
                   <Text variant='heading' size='xl' className={cn(fadeIn)}>
                     {trackTitle}
                   </Text>
-                  {isLoading && <Skeleton className={styles.skeleton} />}
+                  {isLoading && <Skeleton width='686px' height='96px' />}
                 </Box>
                 <Flex>
+                  {isLoading && <Skeleton width='200px' height='24px' />}
                   <Text
                     variant='title'
                     strength='weak'
@@ -535,9 +536,6 @@ export const GiantTrackTile = ({
                     <Text color='subdued'>By </Text>
                     <UserLink userId={userId} popover />
                   </Text>
-                  {isLoading && (
-                    <Skeleton className={styles.skeleton} width='60%' />
-                  )}
                 </Flex>
                 <div className={cn(fadeIn)}>
                   <TrackStats
