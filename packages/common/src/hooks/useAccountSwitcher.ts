@@ -1,10 +1,6 @@
 import { useCallback } from 'react'
 
-import {
-  useGetCurrentUser,
-  useGetCurrentUserId,
-  useGetCurrentWeb3User
-} from '~/api/account'
+import { useGetCurrentUserId, useGetCurrentWeb3User } from '~/api/account'
 import { useAppContext } from '~/context'
 import { Name } from '~/models/Analytics'
 import { UserMetadata } from '~/models/User'

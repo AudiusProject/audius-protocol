@@ -1,11 +1,9 @@
 import { AudiusSdk } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
-import { useSelector } from 'react-redux'
 
 import { accountFromSDK } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
-import { AccountUserMetadata, ID } from '~/models'
-import { getWalletAddresses } from '~/store/account/selectors'
+import { AccountUserMetadata } from '~/models'
 
 import { QUERY_KEYS } from '../../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../../types'
