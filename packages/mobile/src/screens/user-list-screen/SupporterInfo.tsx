@@ -1,83 +1,50 @@
+import { useSupporter } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
-import {
-  tippingSelectors,
-  topSupportersUserListSelectors
-} from '@audius/common/store'
-import { View } from 'react-native'
-import { useSelector } from 'react-redux'
 
-import { IconTrending, IconTrophy } from '@audius/harmony-native'
-import { Text } from 'app/components/core'
-import { makeStyles } from 'app/styles'
+import { Flex, Text, IconTrending, IconTrophy } from '@audius/harmony-native'
+import { useRoute } from 'app/hooks/useRoute'
 import { useThemeColors } from 'app/utils/theme'
 
 import { Tip } from './Tip'
-const { getId: getSupportersId } = topSupportersUserListSelectors
-const { getOptimisticSupporters } = tippingSelectors
-
-const useStyles = makeStyles(({ spacing, typography }) => ({
-  root: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: spacing(1)
-  },
-  rankText: {
-    marginLeft: spacing(1),
-    fontSize: typography.fontSize.small
-  },
-  rankContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center'
-  }
-}))
 
 type SupporterInfoProps = {
   userId: ID
 }
 
 export const SupporterInfo = (props: SupporterInfoProps) => {
-  const styles = useStyles()
+  const { userId } = props
+  const {
+    params: { userId: supportersId }
+  } = useRoute<'TopSupporters'>()
+
   const { secondary, neutralLight4 } = useThemeColors()
-  const supportersMap = useSelector(getOptimisticSupporters)
-  const supportersId = useSelector(getSupportersId)
-  const supportersForUser = supportersId
-    ? (supportersMap[supportersId] ?? null)
-    : null
-  const supporter = supportersForUser?.[props.userId] ?? null
+  const { data: supportFor } = useSupporter({
+    userId: supportersId,
+    supporterUserId: userId
+  })
 
-  if (!supporter) return null
-
-  const { rank, amount } = supporter
+  const rank = supportFor?.rank
+  const amount = supportFor?.amount
 
   const isTopRank = rank <= 5
   const RankIcon = isTopRank ? IconTrophy : IconTrending
 
   return (
-    <View style={styles.root}>
-      <View style={styles.rankContainer}>
+    <Flex row justifyContent='space-between' gap='l'>
+      <Flex row alignItems='center' gap='xs'>
         <RankIcon
           fill={isTopRank ? secondary : neutralLight4}
           height={15}
           width={15}
         />
-        <Text
-          style={styles.rankText}
-          color={isTopRank ? 'secondary' : 'neutralLight4'}
-          weight='bold'
-        >
-          #{rank}
+        <Text size='s' color={isTopRank ? 'accent' : 'subdued'}>
+          <Text strength='strong' color='inherit'>
+            #{rank}
+          </Text>{' '}
+          {isTopRank ? 'Supporter' : null}
         </Text>
-        {isTopRank ? (
-          <Text
-            style={styles.rankText}
-            color={isTopRank ? 'secondary' : 'neutralLight4'}
-          >
-            Supporter
-          </Text>
-        ) : null}
-      </View>
+      </Flex>
       <Tip amount={amount} />
-    </View>
+    </Flex>
   )
 }
