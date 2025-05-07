@@ -7,7 +7,7 @@ import {
   developerAppEditSchema,
   useEditDeveloperApp
 } from '@audius/common/api'
-import { Name, Status } from '@audius/common/models'
+import { Name } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { IconCopy, IconButton, Button, Flex, IconEmbed } from '@audius/harmony'
 import { Form, Formik, useField } from 'formik'
@@ -69,13 +69,11 @@ export const EditAppPage = (props: EditAppPageProps) => {
 
   const record = useRecord()
 
-  const [editDeveloperApp, result] = useEditDeveloperApp()
+  const { isSuccess, isError, error, mutate, isPending } = useEditDeveloperApp()
   const [submitError, setSubmitError] = useState<string | null>(null)
 
-  const { status, data, errorMessage } = result
-
   useEffect(() => {
-    if (status === Status.SUCCESS) {
+    if (isSuccess) {
       setPage(CreateAppsPages.YOUR_APPS)
       record(
         make(Name.DEVELOPER_APP_EDIT_SUCCESS, {
@@ -84,18 +82,18 @@ export const EditAppPage = (props: EditAppPageProps) => {
         })
       )
     }
-  }, [data, apiKey, name, record, setPage, status])
+  }, [isSuccess, apiKey, name, record, setPage])
 
   useEffect(() => {
-    if (status === Status.ERROR) {
+    if (isError) {
       setSubmitError(messages.miscError)
       record(
         make(Name.DEVELOPER_APP_EDIT_ERROR, {
-          error: errorMessage
+          error: error?.message
         })
       )
     }
-  }, [errorMessage, record, status])
+  }, [isError, record, error?.message])
 
   const handleSubmit = useCallback(
     (values: DeveloperAppValues) => {
@@ -106,9 +104,9 @@ export const EditAppPage = (props: EditAppPageProps) => {
           description: values.description
         })
       )
-      editDeveloperApp(values)
+      mutate(values)
     },
-    [editDeveloperApp, record]
+    [mutate, record]
   )
 
   const initialValues: DeveloperAppValues = {
@@ -118,8 +116,6 @@ export const EditAppPage = (props: EditAppPageProps) => {
     description,
     imageUrl
   }
-
-  const isSubmitting = status !== Status.IDLE && status !== Status.ERROR
 
   const copyApiKey = useCallback(() => {
     if (!apiKey) return
@@ -154,13 +150,13 @@ export const EditAppPage = (props: EditAppPageProps) => {
               <TextField
                 name='name'
                 label={messages.appNameLabel}
-                disabled={isSubmitting}
+                disabled={isPending}
                 maxLength={DEVELOPER_APP_NAME_MAX_LENGTH}
               />
               <TextField
                 name='imageUrl'
                 label={messages.imageUrlLabel}
-                disabled={isSubmitting}
+                disabled={isPending}
                 maxLength={DEVELOPER_APP_IMAGE_URL_MAX_LENGTH}
               />
             </Flex>
@@ -169,7 +165,7 @@ export const EditAppPage = (props: EditAppPageProps) => {
             name='description'
             showMaxLength
             maxLength={DEVELOPER_APP_DESCRIPTION_MAX_LENGTH}
-            disabled={isSubmitting}
+            disabled={isPending}
           />
           <div className={styles.keyRoot}>
             <span className={styles.keyLabel}>{messages.apiKey}</span>
@@ -192,7 +188,7 @@ export const EditAppPage = (props: EditAppPageProps) => {
               variant='secondary'
               type='button'
               fullWidth
-              disabled={isSubmitting}
+              disabled={isPending}
               onClick={() => setPage(CreateAppsPages.YOUR_APPS)}
             >
               {messages.back}
@@ -201,9 +197,9 @@ export const EditAppPage = (props: EditAppPageProps) => {
               variant='primary'
               type='submit'
               fullWidth
-              isLoading={isSubmitting}
+              isLoading={isPending}
             >
-              {isSubmitting ? messages.saving : messages.save}
+              {isPending ? messages.saving : messages.save}
             </Button>
           </div>
           {submitError == null ? null : (
