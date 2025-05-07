@@ -1,6 +1,5 @@
 // Audius query
 // TODO: migrate all of these to tan-query
-export * from './authorizedApps'
 export * from './library'
 export * from './suggestedTracks'
 export * from './trending'
@@ -23,7 +22,7 @@ export * from './tan-query/collection/useCollectionTracksWithUid'
 export * from './tan-query/collection/useFeaturedPlaylists'
 
 // Developer Apps
-export * from './tan-query/developer-apps/developerApps'
+export * from '../schemas/developerApps'
 export * from './tan-query/developer-apps/useDeveloperApps'
 export * from './tan-query/developer-apps/useAddDeveloperApp'
 export * from './tan-query/developer-apps/useEditDeveloperApp'
@@ -140,3 +139,7 @@ export * from './tan-query/wallets/useUSDCBalance'
 // Saga fetch utils, remove when migration is complete
 export * from './tan-query/saga-utils'
 export * from './tan-query/utils/defaultConfig'
+
+// New authorized-apps exports
+export * from './tan-query/authorized-apps/useAuthorizedApps'
+export * from './tan-query/authorized-apps/useRemoveAuthorizedApp'

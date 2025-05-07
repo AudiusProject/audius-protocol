@@ -3,22 +3,21 @@ import { useQuery } from '@tanstack/react-query'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models'
+import { DeveloperApp } from '~/schemas/developerApps'
 import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../types'
 
-import { DeveloperApp } from './developerApps'
-
 export const getDeveloperAppsQueryKey = (userId: Nullable<ID>) => {
-  return [QUERY_KEYS.developerApps, userId] as unknown as QueryKey<{
-    apps: DeveloperApp[]
-  }>
+  return [QUERY_KEYS.developerApps, userId] as unknown as QueryKey<
+    DeveloperApp[]
+  >
 }
 
-export const useDeveloperApps = <TResult = { apps: DeveloperApp[] }>(
+export const useDeveloperApps = <TResult = DeveloperApp[]>(
   userId: Nullable<ID>,
-  options?: SelectableQueryOptions<{ apps: DeveloperApp[] }, TResult>
+  options?: SelectableQueryOptions<DeveloperApp[], TResult>
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
 
@@ -30,16 +29,14 @@ export const useDeveloperApps = <TResult = { apps: DeveloperApp[] }>(
         id: Id.parse(userId)
       })
 
-      return {
-        apps: data.map(
-          ({ address, name, description, imageUrl }): DeveloperApp => ({
-            name,
-            description,
-            imageUrl,
-            apiKey: address.slice(2)
-          })
-        )
-      }
+      return data.map(
+        ({ address, name, description, imageUrl }): DeveloperApp => ({
+          name,
+          description,
+          imageUrl,
+          apiKey: address.slice(2)
+        })
+      )
     },
     ...options,
     enabled: options?.enabled !== false && !!userId

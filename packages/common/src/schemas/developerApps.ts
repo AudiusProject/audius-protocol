@@ -9,8 +9,15 @@ const messages = {
   invalidUrl: 'Invalid URL'
 }
 
+export type DeveloperApp = {
+  name: string
+  description?: string
+  imageUrl?: string
+  apiKey: string
+  apiSecret?: string
+}
+
 export const developerAppSchema = z.object({
-  userId: z.number(),
   name: z.string().max(DEVELOPER_APP_NAME_MAX_LENGTH),
   imageUrl: z.optional(
     z
@@ -24,7 +31,6 @@ export const developerAppSchema = z.object({
 })
 
 export const developerAppEditSchema = z.object({
-  userId: z.number(),
   apiKey: z.string(),
   name: z.string().max(DEVELOPER_APP_NAME_MAX_LENGTH),
   imageUrl: z.optional(
@@ -38,23 +44,6 @@ export const developerAppEditSchema = z.object({
   description: z.string().max(DEVELOPER_APP_DESCRIPTION_MAX_LENGTH).optional()
 })
 
-export type DeveloperApp = {
-  name: string
-  description?: string
-  imageUrl?: string
-  apiKey: string
-  apiSecret?: string
-}
+export type NewAppPayload = Omit<DeveloperApp, 'apiKey'>
 
-export type NewAppPayload = Omit<DeveloperApp, 'apiKey'> & {
-  userId: number
-}
-
-export type EditAppPayload = Omit<DeveloperApp, 'apiSecret'> & {
-  userId: number
-}
-
-export type DeleteDeveloperAppArgs = {
-  apiKey: string
-  userId: number
-}
+export type EditAppPayload = Omit<DeveloperApp, 'apiSecret'>

@@ -2,18 +2,24 @@ import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { useAudiusQueryContext } from '~/audius-query'
+import { DeveloperApp, NewAppPayload } from '~/schemas/developerApps'
 
-import { DeveloperApp, NewAppPayload } from './developerApps'
+import { useCurrentUserId } from '../users/account/useCurrentUserId'
+
 import { getDeveloperAppsQueryKey } from './useDeveloperApps'
 
 export const useAddDeveloperApp = () => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
+  const { data: currentUserId } = useCurrentUserId()
 
   return useMutation({
     mutationFn: async (newApp: NewAppPayload) => {
-      const { name, description, imageUrl, userId } = newApp
-      const encodedUserId = Id.parse(userId)
+      if (!currentUserId) {
+        throw new Error('No current user ID')
+      }
+      const { name, description, imageUrl } = newApp
+      const encodedUserId = Id.parse(currentUserId)
       const sdk = await audiusSdk()
 
       const { apiKey, apiSecret } = await sdk.developerApps.createDeveloperApp({
@@ -30,17 +36,17 @@ export const useAddDeveloperApp = () => {
 
       return { name, description, imageUrl, apiKey, apiSecret }
     },
-    onSuccess: (newApp: DeveloperApp, newAppArgs: NewAppPayload) => {
-      const { userId } = newAppArgs
+    onSuccess: (newApp: DeveloperApp) => {
+      if (!currentUserId) {
+        throw new Error('No current user ID')
+      }
       const { apiSecret: apiSecretIgnored, ...restNewApp } = newApp
 
       queryClient.setQueryData(
-        getDeveloperAppsQueryKey(userId),
-        (oldData: { apps: DeveloperApp[] } | undefined) => {
-          if (!oldData) return { apps: [restNewApp] }
-          return {
-            apps: [...oldData.apps, restNewApp]
-          }
+        getDeveloperAppsQueryKey(currentUserId),
+        (oldData: DeveloperApp[] | undefined) => {
+          if (!oldData) return [restNewApp]
+          return [...oldData, restNewApp]
         }
       )
     }

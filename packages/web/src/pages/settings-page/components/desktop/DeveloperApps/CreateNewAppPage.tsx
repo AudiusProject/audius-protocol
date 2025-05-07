@@ -8,7 +8,6 @@ import {
   useAddDeveloperApp
 } from '@audius/common/api'
 import { Name } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { Button } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { z } from 'zod'
@@ -16,11 +15,9 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { TextAreaField, TextField } from 'components/form-fields'
-import { useSelector } from 'utils/reducer'
 
 import styles from './CreateNewAppPage.module.css'
 import { CreateAppPageProps, CreateAppsPages } from './types'
-const { getUserId } = accountSelectors
 
 type DeveloperAppValues = z.input<typeof developerAppSchema>
 
@@ -38,7 +35,6 @@ type CreateNewAppPageProps = CreateAppPageProps
 
 export const CreateNewAppPage = (props: CreateNewAppPageProps) => {
   const { setPage } = props
-  const userId = useSelector(getUserId) as number
   const record = useRecord()
 
   const { data, isSuccess, isError, error, mutate, isPending } =
@@ -83,7 +79,6 @@ export const CreateNewAppPage = (props: CreateNewAppPageProps) => {
   )
 
   const initialValues: DeveloperAppValues = {
-    userId,
     name: '',
     description: '',
     // Undefined unless set to pass validation

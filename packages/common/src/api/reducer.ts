@@ -1,13 +1,11 @@
 import { combineReducers } from 'redux'
 
-import { authorizedAppsApiReducer } from './authorizedApps'
 import { favoritesApiReducer } from './favorites'
 import { libraryApiReducer } from './library'
 import { trendingApiReducer } from './trending'
 import { userApiReducer } from './user'
 
 export default combineReducers({
-  authorizedAppsApi: authorizedAppsApiReducer,
   favoritesApi: favoritesApiReducer,
   libraryApi: libraryApiReducer,
   trendingApi: trendingApiReducer,
