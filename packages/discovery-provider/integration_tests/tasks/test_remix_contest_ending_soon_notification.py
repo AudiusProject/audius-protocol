@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 from integration_tests.utils import populate_mock_db
 from src.models.notifications.notification import Notification
 from src.queries.get_notifications import NotificationType
-from src.tasks.remix_contest_notifications.fan_remix_contest_ending_soon import (
-    create_fan_remix_contest_ending_soon_notifications,
+from src.tasks.create_remix_contest_ending_soon_notifications import (
+    _create_remix_contest_ending_soon_notifications,
 )
 from src.utils.db_session import get_db
 
@@ -91,7 +91,7 @@ def test_remix_contest_ending_soon_notification_for_followers_and_favoriters(app
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-        create_fan_remix_contest_ending_soon_notifications(session)
+        _create_remix_contest_ending_soon_notifications(session)
         notifications = (
             session.query(Notification)
             .filter(Notification.type == NotificationType.REMIX_CONTEST_ENDING_SOON)
@@ -181,7 +181,7 @@ def test_remix_contest_ending_soon_notification_no_duplicate_for_follower_and_fa
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-        create_fan_remix_contest_ending_soon_notifications(session)
+        _create_remix_contest_ending_soon_notifications(session)
         notifications = (
             session.query(Notification)
             .filter(Notification.type == NotificationType.REMIX_CONTEST_ENDING_SOON)

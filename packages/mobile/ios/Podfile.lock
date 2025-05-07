@@ -2042,7 +2042,7 @@ DEPENDENCIES:
   - fast_float (from `../node_modules/react-native/third-party-podspecs/fast_float.podspec`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - ffmpeg-kit-ios-https-gpl (from `./vendor/ffmpeg-kit-ios-https-gpl`)
-  - ffmpeg-kit-react-native/https-gpl-lts (from `../node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec`)
+  - ffmpeg-kit-react-native/https-gpl-lts (from `../../../node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec`)
   - fmt (from `../node_modules/react-native/third-party-podspecs/fmt.podspec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
@@ -2191,7 +2191,7 @@ EXTERNAL SOURCES:
   ffmpeg-kit-ios-https-gpl:
     :path: "./vendor/ffmpeg-kit-ios-https-gpl"
   ffmpeg-kit-react-native:
-    :podspec: "../node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec"
+    :podspec: "../../../node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec"
   fmt:
     :podspec: "../node_modules/react-native/third-party-podspecs/fmt.podspec"
   glog:
@@ -2540,6 +2540,6 @@ SPEC CHECKSUMS:
   TOCropViewController: 80b8985ad794298fb69d3341de183f33d1853654
   Yoga: feb4910aba9742cfedc059e2b2902e22ffe9954a
 
-PODFILE CHECKSUM: 10c25bd4f168e5cb4086cb241e0cfe9d66c7e59a
+PODFILE CHECKSUM: 787f7d4a45417340b4c750bf64a6b629e2ffaf31
 
 COCOAPODS: 1.15.2
