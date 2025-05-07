@@ -7,14 +7,11 @@ import {
   encodeHashId,
   decodeHashId,
   ResponseError,
-  Logger,
   type LoggerService
 } from '@audius/sdk'
 
 import {
   Hedgehog,
-  WalletManager,
-  getPlatformCreateKey,
   type GetFn,
   type SetAuthFn,
   type SetUserFn
