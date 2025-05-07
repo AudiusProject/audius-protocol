@@ -50,6 +50,7 @@ import DesktopRoute from 'components/routes/DesktopRoute'
 import MobileRoute from 'components/routes/MobileRoute'
 import TrendingGenreSelectionPage from 'components/trending-genre-selection/TrendingGenreSelectionPage'
 import { USDCBalanceFetcher } from 'components/usdc-balance-fetcher/USDCBalanceFetcher'
+import { useIsDevOrStaging } from 'hooks/useIsDevOrStaging'
 import { MAIN_CONTENT_ID, MainContentContext } from 'pages/MainContentContext'
 import { AiAttributedTracksPage } from 'pages/ai-attributed-tracks-page'
 import { AudioPage } from 'pages/audio-page/AudioPage'
@@ -442,7 +443,8 @@ class WebPlayer extends Component {
       incrementScroll,
       decrementScroll,
       userHandle,
-      isWalletUIUpdateEnabled
+      isWalletUIUpdateEnabled,
+      isDevOrStaging
     } = this.props
 
     const {
@@ -1051,16 +1053,20 @@ class WebPlayer extends Component {
                     />
                   )}
                 />
-                <Route
-                  exact
-                  path={DEV_TOOLS_PAGE}
-                  render={(props) => <DevTools {...props} />}
-                />
-                <Route
-                  exact
-                  path={SOLANA_TOOLS_PAGE}
-                  component={SolanaToolsPage}
-                />
+                {isDevOrStaging && (
+                  <>
+                    <Route
+                      exact
+                      path={DEV_TOOLS_PAGE}
+                      render={(props) => <DevTools {...props} />}
+                    />
+                    <Route
+                      exact
+                      path={SOLANA_TOOLS_PAGE}
+                      component={SolanaToolsPage}
+                    />
+                  </>
+                )}
                 <Redirect
                   from={HOME_PAGE}
                   to={{
@@ -1142,11 +1148,13 @@ const FeatureFlaggedWebPlayer = (props) => {
   const { isEnabled: isWalletUIUpdateEnabled } = useFeatureFlag(
     FeatureFlags.WALLET_UI_UPDATE
   )
+  const isDevOrStaging = useIsDevOrStaging()
 
   return (
     <RouterWebPlayer
       {...props}
       isWalletUIUpdateEnabled={isWalletUIUpdateEnabled}
+      isDevOrStaging={isDevOrStaging}
     />
   )
 }

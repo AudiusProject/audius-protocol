@@ -16,9 +16,9 @@ import {
   IconLibrary,
   IconMessages,
   IconPlaylists,
+  IconSettings,
   IconTrending,
   IconWallet,
-  IconSettings,
   LoadingSpinner,
   NotificationCount,
   useTheme
@@ -26,8 +26,8 @@ import {
 import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 
+import { useIsDevOrStaging } from 'hooks/useIsDevOrStaging'
 import { RestrictionType } from 'hooks/useRequiresAccount'
-import { env } from 'services/env'
 import { matchesRoute } from 'utils/route'
 
 import { NavSpeakerIcon } from './NavSpeakerIcon'
@@ -101,11 +101,7 @@ export const useNavConfig = () => {
     FeatureFlags.WALLET_UI_UPDATE
   )
 
-  const isDevOrStaging =
-    env.ENVIRONMENT === 'development' ||
-    env.ENVIRONMENT === 'staging' ||
-    import.meta.env.DEV === true ||
-    import.meta.env.MODE === 'development'
+  const isDevOrStaging = useIsDevOrStaging()
 
   const navItems = useMemo(
     (): NavItemConfig[] => [
