@@ -138,7 +138,6 @@ class ErrorLogger implements LoggerService {
 export const initializeAudiusSdk = async ({
   handle
 }: { handle?: string } = {}) => {
-  let isDummyWallet = false
   const solanaRelay = new SolanaRelay(
     new Configuration({
       basePath: '/solana',
@@ -167,29 +166,6 @@ export const initializeAudiusSdk = async ({
         throw new Error(`Failed to find entropy for handle ${handle}`)
       }
       localStorage.setItem('hedgehog-entropy-key', handleEntropy)
-    } else {
-      isDummyWallet = true
-      // If we aren't logged in, create dummy entropy so sdk/libs work correctly
-      const entropy = localStorage.getItem('hedgehog-entropy-key')
-      if (!entropy) {
-        const password = `audius-dummy-pkey-${Math.floor(
-          Math.random() * 1000000
-        )}`
-        const result = await WalletManager.createWalletObj(
-          password,
-          null,
-          localStorage,
-          getPlatformCreateKey()
-        )
-        if (result instanceof Error) {
-          throw result
-        }
-        console.log(result.walletObj.getPrivateKeyString())
-        const entropy = localStorage.getItem('hedgehog-entropy-key')
-        if (!entropy) {
-          throw new Error('Failed to create entropy')
-        }
-      }
     }
 
     const audiusWalletClient = createHedgehogWalletClient(getHedgehog())
@@ -205,25 +181,6 @@ export const initializeAudiusSdk = async ({
     })
 
     currentHandle = handle
-
-    if (!isDummyWallet) {
-      try {
-        const [address] =
-          await audiusSdk.services.audiusWalletClient.getAddresses()
-        // Try to get current user. May fail if we're using a dummy entropy
-        const { data } = await audiusSdk.full.users.getUserAccount({
-          wallet: address
-        })
-        if (data?.user) {
-          currentUserId = await parseUserId(data.user.id)
-          if (!currentUserId) {
-            console.warn('Failed to parse currentUserId')
-          }
-        }
-      } catch (e) {
-        console.warn('Failed to get currentUser', e)
-      }
-    }
   }
 
   return audiusSdk
