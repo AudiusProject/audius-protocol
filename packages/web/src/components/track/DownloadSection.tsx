@@ -29,7 +29,8 @@ import {
   IconReceive,
   Button,
   IconCaretDown,
-  IconLockUnlocked
+  IconLockUnlocked,
+  LoadingSpinner
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
@@ -87,6 +88,12 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     shouldDisplayDownloadFollowGated,
     shouldDisplayOwnerPremiumDownloads
   } = useDownloadableContentAccess({ trackId })
+
+  // Filter out uploading stems that are already in the stemTracks array
+  const filteredUploadingStems = uploadingStems.filter(
+    (s) => !stemTracks.find((t) => t.orig_filename === s.name)
+  )
+  const isUploadingStems = filteredUploadingStems.length > 0
 
   const { isEnabled: isDownloadAllTrackFilesEnabled } = useFeatureFlag(
     FeatureFlags.DOWNLOAD_ALL_TRACK_FILES
@@ -179,6 +186,18 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     [trackId, stemTracks]
   )
 
+  const renderDownloadAllButton = () => {
+    if (shouldHideDownload || !isDownloadAllTrackFilesEnabled) {
+      return null
+    }
+
+    return (
+      <Button variant='secondary' size='small' onClick={handleDownloadAll}>
+        {messages.downloadAll}
+      </Button>
+    )
+  }
+
   return (
     <Box border='default' borderRadius='m' css={{ overflow: 'hidden' }}>
       <Flex column>
@@ -229,14 +248,10 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
             gap='m'
             role='row'
           >
-            {shouldHideDownload || !isDownloadAllTrackFilesEnabled ? null : (
-              <Button
-                variant='secondary'
-                size='small'
-                onClick={handleDownloadAll}
-              >
-                {messages.downloadAll}
-              </Button>
+            {isUploadingStems ? (
+              <LoadingSpinner size='xl' />
+            ) : (
+              renderDownloadAllButton()
             )}
 
             {shouldDisplayPremiumDownloadUnlocked ? (
@@ -297,6 +312,8 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 trackId={stemTrack.track_id}
                 parentTrackId={trackId}
                 key={stemTrack.track_id}
+                category={stemTrack.stem_of?.category}
+                filename={stemTrack.orig_filename ?? undefined}
                 onDownload={handleDownload}
                 hideDownload={shouldHideDownload}
                 size={fileSizes?.[stemTrack.track_id]?.[downloadQuality]}
@@ -308,7 +325,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 }
               />
             ))}
-            {uploadingStems.map((s, i) => (
+            {filteredUploadingStems.map((s, i) => (
               <DownloadRow
                 key={`uploading-stem-${i}`}
                 onDownload={() => {}}

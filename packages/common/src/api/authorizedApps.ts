@@ -3,7 +3,7 @@ import { Id } from '@audius/sdk'
 import { createApi } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 
-import { DeveloperApp } from './developerApps'
+import { DeveloperApp } from './tan-query/developer-apps/developerApps'
 
 type RemoveAuthorizedAppArgs = {
   apiKey: string

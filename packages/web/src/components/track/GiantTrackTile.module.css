@@ -188,11 +188,6 @@
   transition: opacity ease-in-out 0.5s;
 }
 
-.skeleton {
-  position: absolute;
-  top: 0;
-}
-
 .spinner {
   height: var(--harmony-unit-6);
   width: var(--harmony-unit-6);

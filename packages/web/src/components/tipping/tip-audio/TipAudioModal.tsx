@@ -9,7 +9,7 @@ import {
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import {
-  IconVerified as IconSuccess,
+  CompletionCheck,
   Modal,
   ModalHeader,
   ModalTitle
@@ -64,7 +64,12 @@ const titleIconsMap: { [key in TippingSendStatus]?: Nullable<JSX.Element> } = {
   SENDING: <GoldBadgeIconImage />,
   CONVERTING: null,
   ERROR: <GoldBadgeIconImage />,
-  SUCCESS: <IconSuccess width={24} height={24} className={styles.iconSuccess} />
+  SUCCESS: (
+    <CompletionCheck
+      value='complete'
+      css={{ svg: { path: { fill: 'var(--harmony-white)' } } }}
+    />
+  )
 }
 
 const renderModalContent = (pageNumber: number) => {

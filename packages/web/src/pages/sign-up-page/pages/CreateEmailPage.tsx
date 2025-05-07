@@ -16,6 +16,7 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
+import { useQueryClient } from '@tanstack/react-query'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
@@ -70,9 +71,12 @@ export const CreateEmailPage = () => {
   const existingEmailValue = useSelector(getEmailField)
   const alreadyLinkedSocial = useSelector(getLinkedSocialOnFirstPage)
   const audiusQueryContext = useAudiusQueryContext()
+  const queryClient = useQueryClient()
+
   const EmailSchema = useMemo(
-    () => toFormikValidationSchema(emailSchema(audiusQueryContext)),
-    [audiusQueryContext]
+    () =>
+      toFormikValidationSchema(emailSchema(audiusQueryContext, queryClient)),
+    [audiusQueryContext, queryClient]
   )
 
   const initialValues = {

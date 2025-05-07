@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
 import { USDC } from '@audius/fixed-decimal'
+import { useQueryClient } from '@tanstack/react-query'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 import { z } from 'zod'
@@ -59,7 +60,8 @@ export const usePurchaseContentFormConfiguration = ({
   presetValues: PayExtraAmountPresetValues
   purchaseVendor?: PurchaseVendor
 }) => {
-  const audiusQueryContext = useAudiusQueryContext()
+  const queryClient = useQueryClient()
+  const queryContext = useAudiusQueryContext()
 
   const dispatch = useDispatch()
   const isAlbum = isContentCollection(metadata)
@@ -109,11 +111,12 @@ export const usePurchaseContentFormConfiguration = ({
   const validationSchema = useMemo(
     () =>
       createPurchaseContentSchema(
-        audiusQueryContext,
+        queryContext,
+        queryClient,
         page,
         guestEmail ?? undefined
       ),
-    [audiusQueryContext, guestEmail, page]
+    [queryContext, queryClient, guestEmail, page]
   )
   type PurchaseContentValues = z.input<typeof validationSchema>
 

@@ -8,6 +8,7 @@ import ErrorWrapper from 'components/error-wrapper/ErrorWrapper'
 import { AddTrackToPlaylistNotification } from './AddTrackToPlaylistNotification'
 import { AnnouncementNotification } from './AnnouncementNotification'
 import { ApproveManagerNotification } from './ApproveManagerRequestNotification'
+import { ArtistRemixContestEndedNotification } from './ArtistRemixContestEndedNotification'
 import { ChallengeRewardNotification } from './ChallengeRewardNotification'
 import { ClaimableRewardNotification } from './ClaimableRewardNotification'
 import { CommentMentionNotification } from './CommentMentionNotification'
@@ -165,6 +166,11 @@ export const Notification = (props: NotificationProps) => {
       case NotificationType.RemixContestEndingSoon: {
         return (
           <RemixContestEndingSoonNotification notification={notification} />
+        )
+      }
+      case NotificationType.ArtistRemixContestEnded: {
+        return (
+          <ArtistRemixContestEndedNotification notification={notification} />
         )
       }
       default: {
