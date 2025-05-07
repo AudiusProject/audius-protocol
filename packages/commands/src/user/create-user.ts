@@ -59,6 +59,18 @@ export const createUserCommand = new Command('create')
 
     const entropy = localStorage.getItem('hedgehog-entropy-key')
 
+    // Ping identity with a signature to set the handle/blockchainUserId
+    const message = `audius-cmd ping`
+    const signature = await audiusSdk.services.audiusWalletClient.signMessage({
+      message
+    })
+    await fetch('http://audius-protocol-identity-service-1/user/email', {
+      headers: {
+        ['Encoded-Data-Message']: message,
+        ['Encoded-Data-Signature']: signature
+      }
+    })
+
     if (options.output === 'json') {
       console.log(JSON.stringify(newMetadata))
     } else {
