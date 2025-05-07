@@ -24,7 +24,6 @@ x-common: &common
     - 'audius-protocol-solana-test-validator-1:host-gateway'
     - 'audius-protocol-eth-ganache-1:host-gateway'
     - 'audius-protocol-pedalboard:host-gateway'
-    - 'audius-protocol-api-bridge:host-gateway'
   deploy:
     resources:
       limits:
