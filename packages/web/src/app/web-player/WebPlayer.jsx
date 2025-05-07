@@ -748,12 +748,16 @@ class WebPlayer extends Component {
                   component={SavedPage}
                 />
                 <Route exact path={HISTORY_PAGE} component={HistoryPage} />
-                <Route exact path={DEV_TOOLS_PAGE} component={DevTools} />
-                <Route
-                  exact
-                  path={SOLANA_TOOLS_PAGE}
-                  component={SolanaToolsPage}
-                />
+                {isDevOrStaging && (
+                  <>
+                    <Route exact path={DEV_TOOLS_PAGE} component={DevTools} />
+                    <Route
+                      exact
+                      path={SOLANA_TOOLS_PAGE}
+                      component={SolanaToolsPage}
+                    />
+                  </>
+                )}
                 <DesktopRoute
                   exact
                   path={DASHBOARD_PAGE}
@@ -1053,20 +1057,6 @@ class WebPlayer extends Component {
                     />
                   )}
                 />
-                {isDevOrStaging && (
-                  <>
-                    <Route
-                      exact
-                      path={DEV_TOOLS_PAGE}
-                      render={(props) => <DevTools {...props} />}
-                    />
-                    <Route
-                      exact
-                      path={SOLANA_TOOLS_PAGE}
-                      component={SolanaToolsPage}
-                    />
-                  </>
-                )}
                 <Redirect
                   from={HOME_PAGE}
                   to={{
