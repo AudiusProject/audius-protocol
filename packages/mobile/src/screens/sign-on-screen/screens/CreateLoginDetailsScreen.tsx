@@ -39,7 +39,7 @@ const EmailField = ({ onChangeScreen }: { onChangeScreen: () => void }) => {
   const existingEmailValue = useSelector(getEmailField)
   const audiusQueryContext = useAudiusQueryContext()
   const queryClient = useQueryClient()
-  
+
   // For the email field on this page, design requested that the field only be prepoulated if the email is valid.
   // Since the schema is async we have to do some async shenanigans to set the value after mount.
   useAsync(async () => {

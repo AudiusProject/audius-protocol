@@ -1,9 +1,4 @@
-import { useContext } from 'react'
-
-import {
-  AudiusQueryContext,
-  useAudiusQueryContext
-} from '@audius/common/audius-query'
+import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { Name } from '@audius/common/models'
 import { pickHandleSchema } from '@audius/common/schemas'
 import {
