@@ -17,7 +17,7 @@ export const useRemoveManager = () => {
   return useMutation({
     mutationFn: async (payload: RemoveManagerPayload) => {
       const { managerUserId, userId } = payload
-      const encodedUserId = Id.parse(userId) as string
+      const encodedUserId = Id.parse(userId)
       const encodedManagerUserId = Id.parse(managerUserId)
       const sdk = await audiusSdk()
       await sdk.grants.removeManager({

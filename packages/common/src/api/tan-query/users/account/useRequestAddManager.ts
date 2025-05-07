@@ -18,7 +18,7 @@ export const useRequestAddManager = () => {
     mutationFn: async (payload: RequestAddManagerPayload) => {
       const { managerUser, userId } = payload
       const managerUserId = managerUser.user_id
-      const encodedUserId = Id.parse(userId) as string
+      const encodedUserId = Id.parse(userId)
       const encodedManagerUserId = Id.parse(managerUserId)
       const sdk = await audiusSdk()
       await sdk.grants.addManager({

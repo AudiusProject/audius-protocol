@@ -18,7 +18,7 @@ export const useApproveManagedAccount = () => {
     mutationFn: async (payload: ApproveManagedAccountPayload) => {
       const { grantorUser, userId } = payload
       const grantorUserId = grantorUser.user_id
-      const encodedUserId = Id.parse(userId) as string
+      const encodedUserId = Id.parse(userId)
       const encodedGrantorUserId = Id.parse(grantorUserId)
       const sdk = await audiusSdk()
       await sdk.grants.approveGrant({
