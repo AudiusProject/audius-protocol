@@ -109,7 +109,7 @@ export const SignatureDecoder = () => {
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
           setSignatureInput(e.target.value)
         }
-        css={{ width: '100%' }}
+        width='100%'
       />
       <Button variant='secondary' fullWidth onClick={handleDecodeSignature}>
         {messages.signatureDecoderButton}
@@ -119,17 +119,7 @@ export const SignatureDecoder = () => {
           <Text variant='label' size='s'>
             {messages.signatureDecoderOutputLabel}
           </Text>
-          <Paper
-            as='pre'
-            p='s'
-            css={{
-              width: '100%',
-              overflowX: 'auto',
-              background: 'var(--harmony-n-50)', // Light background for pre
-              maxHeight: '300px', // Max height for scrollable output
-              border: '1px solid var(--harmony-n-100)'
-            }}
-          >
+          <Paper as='pre' p='s' w='100%' backgroundColor='default'>
             <Text variant='body' size='s'>
               {decodedSignatureMessage}
             </Text>

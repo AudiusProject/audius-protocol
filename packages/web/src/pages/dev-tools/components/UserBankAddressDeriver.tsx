@@ -13,7 +13,7 @@ import {
 import { ClaimableTokensProgram } from '@audius/spl'
 import { PublicKey } from '@solana/web3.js'
 
-import { useDevToolCardStyles } from '../DevTools' // Reusing styles for consistency
+import { useDevToolCardStyles } from '../DevTools'
 import { messages } from '../messages'
 
 const supportedTokens = ['AUDIO', 'USDC'] as const
@@ -24,7 +24,7 @@ export const UserBankAddressDeriver = () => {
   const [selectedToken, setSelectedToken] = useState<SupportedToken>('AUDIO')
   const [derivedAddress, setDerivedAddress] = useState('')
   const [error, setError] = useState('')
-  const styles = useDevToolCardStyles() // Reuse card styles
+  const styles = useDevToolCardStyles()
 
   const handleDeriveAddress = async () => {
     setDerivedAddress('')
@@ -72,7 +72,7 @@ export const UserBankAddressDeriver = () => {
       alignItems='flex-start'
       gap='l'
       p='l'
-      css={styles.root} // Consistent sizing with other cards
+      css={styles.root}
     >
       <Flex alignItems='center' gap='m'>
         <IconKey size='l' color='default' />
@@ -93,7 +93,7 @@ export const UserBankAddressDeriver = () => {
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
           setEthAddress(e.target.value)
         }
-        css={{ width: '100%' }}
+        width='100%'
       />
 
       <Text variant='label' size='s'>
@@ -109,7 +109,7 @@ export const UserBankAddressDeriver = () => {
           value: token,
           label: token
         }))}
-        css={{ width: '100%' }}
+        width='100%'
       />
 
       <Button variant='secondary' fullWidth onClick={handleDeriveAddress}>
@@ -121,17 +121,7 @@ export const UserBankAddressDeriver = () => {
           <Text variant='label' size='s'>
             {messages.userBankDeriverOutputLabel}
           </Text>
-          <Paper
-            as='pre'
-            p='s'
-            css={{
-              width: '100%',
-              overflowX: 'auto',
-              background: 'var(--harmony-n-50)',
-              maxHeight: '100px',
-              border: '1px solid var(--harmony-n-100)'
-            }}
-          >
+          <Paper as='pre' p='s' w='100%' backgroundColor='default'>
             <Text variant='body' size='s'>
               {derivedAddress}
             </Text>
