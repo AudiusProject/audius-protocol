@@ -815,9 +815,7 @@ def extend_remix_contest_ending_soon(action: NotificationAction):
 
 
 def extend_artist_remix_contest_ended(action: NotificationAction):
-    data: ArtistRemixContestEndedNotification = cast(
-        ArtistRemixContestEndedNotification, action["data"]
-    )
+    data: ArtistRemixContestEndedNotification = action["data"]  # type: ignore
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
