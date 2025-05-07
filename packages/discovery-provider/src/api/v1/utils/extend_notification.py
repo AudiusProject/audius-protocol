@@ -15,6 +15,9 @@ from src.queries.get_notifications import (
     CosignRemixNotification,
     CreatePlaylistNotification,
     CreateTrackNotification,
+    FanRemixContestEndedNotification,
+    FanRemixContestEndingSoonNotification,
+    FanRemixContestStartedNotification,
     FollowerMilestoneNotification,
     FollowNotification,
     ListenStreakReminderNotification,
@@ -761,7 +764,7 @@ def extend_listen_streak_reminder(action: NotificationAction):
 
 
 def extend_fan_remix_contest_started(action: NotificationAction):
-    data = action["data"]  # type: ignore
+    data: FanRemixContestStartedNotification = action["data"]  # type: ignore
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
@@ -778,7 +781,7 @@ def extend_fan_remix_contest_started(action: NotificationAction):
 
 
 def extend_fan_remix_contest_ended(action: NotificationAction):
-    data = action["data"]  # type: ignore
+    data: FanRemixContestEndedNotification = action["data"]  # type: ignore
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
@@ -795,7 +798,7 @@ def extend_fan_remix_contest_ended(action: NotificationAction):
 
 
 def extend_fan_remix_contest_ending_soon(action: NotificationAction):
-    data = action["data"]  # type: ignore
+    data: FanRemixContestEndingSoonNotification = action["data"]  # type: ignore
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
