@@ -1,4 +1,3 @@
-import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { ModalContentText } from '@audius/harmony'
 import { useAuthorizedApps } from '~/api/tan-query/authorized-apps/useAuthorizedApps'
@@ -25,7 +24,7 @@ type YourAppsPageProps = AuthorizedAppPageProps
 export const YourAppsPage = (props: YourAppsPageProps) => {
   const { setPage } = props
   const userId = useSelector(getUserId)
-  const { data, status } = useAuthorizedApps({
+  const { data, isPending } = useAuthorizedApps({
     enabled: !!userId
   })
 
@@ -37,7 +36,7 @@ export const YourAppsPage = (props: YourAppsPageProps) => {
           <h4 className={styles.appsHeaderText}>{messages.yourAppsTitle}</h4>
         </div>
         <Divider className={styles.divider} />
-        {status !== Status.SUCCESS ? (
+        {isPending ? (
           <LoadingSpinner className={styles.spinner} />
         ) : data?.length === 0 ? (
           <p className={styles.noApps}>{messages.noApps}</p>

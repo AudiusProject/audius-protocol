@@ -1,4 +1,4 @@
-import { useGetDeveloperApps, DeveloperApp } from '@audius/common/api'
+import { useDeveloperApps, DeveloperApp } from '@audius/common/api'
 import { accountSelectors } from '@audius/common/store'
 import { ModalContentText, IconPlus, Button } from '@audius/harmony'
 
@@ -29,7 +29,7 @@ type YourAppsPageProps = CreateAppPageProps
 export const YourAppsPage = (props: YourAppsPageProps) => {
   const { setPage } = props
   const userId = useSelector(getUserId)
-  const { data, status } = useGetDeveloperApps(userId)
+  const { data, status } = useDeveloperApps(userId)
 
   const hasMaxAllowedApps = (data?.apps?.length ?? 0) >= maxAppsAllowed
 
