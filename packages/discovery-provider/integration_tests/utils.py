@@ -627,12 +627,13 @@ def populate_mock_db(db, entities, block_offset=None):
         for i, challenge_meta in enumerate(challenges):
             challenge = Challenge(
                 id=challenge_meta.get("id", ""),
-                type=challenge_meta.get("type", ""),
+                type=challenge_meta.get("type", "boolean"),
                 amount=challenge_meta.get("amount", ""),
                 active=challenge_meta.get("active", True),
                 step_count=challenge_meta.get("step_count", None),
                 starting_block=challenge_meta.get("starting_block", None),
                 weekly_pool=challenge_meta.get("weekly_pool", None),
+                cooldown_days=challenge_meta.get("cooldown_days", None),
             )
             session.add(challenge)
         for i, user_challenge_meta in enumerate(user_challenges):

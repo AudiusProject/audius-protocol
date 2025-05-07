@@ -5,6 +5,7 @@ from typing import List, Union, cast
 from src.queries.get_notifications import (
     AnnouncementNotification,
     ApproveManagerNotification,
+    ArtistRemixContestEndedNotification,
     ChallengeRewardNotification,
     ClaimableRewardNotification,
     CommentMentionNotification,
@@ -814,7 +815,7 @@ def extend_remix_contest_ending_soon(action: NotificationAction):
 
 
 def extend_artist_remix_contest_ended(action: NotificationAction):
-    data = action["data"]  # type: ignore
+    data: ArtistRemixContestEndedNotification = action["data"]  # type: ignore
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
