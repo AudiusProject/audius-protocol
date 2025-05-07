@@ -42,7 +42,7 @@ import TrackList from 'components/track/mobile/TrackList'
 import { TrackItemAction } from 'components/track/mobile/TrackListItem'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import useTabs from 'hooks/useTabs/useTabs'
-import { useCollectionsData } from 'pages/saved-page/hooks/useCollectionsData'
+import { useLibraryCollections } from 'pages/saved-page/hooks/useLibraryCollections'
 
 import { LibraryCategorySelectionMenu } from '../desktop/LibraryCategorySelectionMenu'
 import { emptyStateMessages } from '../emptyStateMessages'
@@ -293,15 +293,15 @@ const AlbumCardLineup = () => {
 
   const [filterText, setFilterText] = useState('')
   const {
-    status,
     hasMore,
     fetchMore,
-    collections: albums
-  } = useCollectionsData({
+    collectionIds: albumIds,
+    isPending,
+    isFetchingNextPage
+  } = useLibraryCollections({
     collectionType: 'album',
     filterValue: filterText || undefined
   })
-  const albumIds = albums?.map((a) => a.playlist_id)
 
   const emptyAlbumsHeader = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
@@ -339,13 +339,9 @@ const AlbumCardLineup = () => {
     return <CollectionCard key={id} id={id} size='xs' />
   })
 
-  const noSavedAlbums =
-    !statusIsNotFinalized(status) && albumIds?.length === 0 && !filterText
+  const noSavedAlbums = !isPending && albumIds?.length === 0 && !filterText
 
-  const isLoadingInitial =
-    statusIsNotFinalized(status) && albumIds?.length === 0
-
-  const shouldHideFilterInput = isLoadingInitial && !filterText
+  const shouldHideFilterInput = isPending && !filterText
 
   const containerRef = useTabContainerRef({
     resultsLength: albumIds?.length,
@@ -379,9 +375,7 @@ const AlbumCardLineup = () => {
               </div>
             </div>
           )}
-          {isLoadingInitial ? (
-            <LoadingSpinner className={styles.spinner} />
-          ) : null}
+          {isPending ? <LoadingSpinner className={styles.spinner} /> : null}
           {albumIds?.length > 0 ? (
             <div className={styles.cardsContainer}>
               <InfiniteCardLineup
@@ -389,7 +383,7 @@ const AlbumCardLineup = () => {
                 loadMore={fetchMore}
                 cardsClassName={styles.cardLineup}
                 cards={albumCards}
-                isLoadingMore={statusIsNotFinalized(status)}
+                isLoadingMore={isFetchingNextPage}
               />
             </div>
           ) : null}
@@ -412,13 +406,14 @@ const PlaylistCardLineup = ({
   const [filterText, setFilterText] = useState('')
 
   const {
-    status,
     hasMore,
     fetchMore,
-    collections: playlists
-  } = useCollectionsData({
+    collectionIds: playlistIds,
+    isPending,
+    isFetchingNextPage
+  } = useLibraryCollections({
     collectionType: 'playlist',
-    filterValue: filterText || undefined
+    filterValue: filterText
   })
 
   const debouncedSetFilter = useDebouncedCallback(
@@ -435,8 +430,6 @@ const PlaylistCardLineup = ({
     debouncedSetFilter(value)
   }
 
-  const playlistIds = playlists?.map((p) => p.playlist_id)
-
   const emptyPlaylistsHeader = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
       currentTab: SavedPageTabs.PLAYLISTS
@@ -451,12 +444,9 @@ const PlaylistCardLineup = ({
     }
   })
   const noSavedPlaylists =
-    !statusIsNotFinalized(status) && playlistIds?.length === 0 && !filterText
+    !isPending && playlistIds?.length === 0 && !filterText
 
-  const isLoadingInitial =
-    statusIsNotFinalized(status) && playlistIds?.length === 0
-
-  const shouldHideFilterInput = isLoadingInitial && !filterText
+  const shouldHideFilterInput = isPending && !filterText
 
   const playlistCards = playlistIds?.map((id) => {
     return (
@@ -505,9 +495,7 @@ const PlaylistCardLineup = ({
             </div>
           )}
           <NewCollectionButton collectionType='playlist' />
-          {isLoadingInitial ? (
-            <LoadingSpinner className={styles.spinner} />
-          ) : null}
+          {isPending ? <LoadingSpinner className={styles.spinner} /> : null}
           {playlistIds?.length > 0 ? (
             <div className={styles.cardsContainer}>
               <InfiniteCardLineup
@@ -515,7 +503,7 @@ const PlaylistCardLineup = ({
                 loadMore={fetchMore}
                 cardsClassName={styles.cardLineup}
                 cards={playlistCards}
-                isLoadingMore={statusIsNotFinalized(status)}
+                isLoadingMore={isFetchingNextPage}
               />
             </div>
           ) : null}

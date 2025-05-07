@@ -3,7 +3,6 @@
 export * from './account'
 export * from './authorizedApps'
 export * from './developerApps'
-export * from './library'
 export * from './signUp'
 export * from './suggestedTracks'
 export * from './trending'
@@ -24,6 +23,7 @@ export * from './tan-query/collection/useCollectionFavorites'
 export * from './tan-query/collection/useCollectionReposts'
 export * from './tan-query/collection/useCollectionTracksWithUid'
 export * from './tan-query/collection/useFeaturedPlaylists'
+export * from './tan-query/collection/useLibraryCollections'
 
 // Events
 export * from './tan-query/events'

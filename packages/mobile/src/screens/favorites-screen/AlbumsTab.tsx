@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react'
 
-import { statusIsNotFinalized } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import {
   savedPageSelectors,
@@ -18,7 +17,7 @@ import { FilterInput } from 'app/components/filter-input'
 import { LoadingMoreSpinner } from './LoadingMoreSpinner'
 import { NoTracksPlaceholder } from './NoTracksPlaceholder'
 import { OfflineContentBanner } from './OfflineContentBanner'
-import { useCollectionsScreenData } from './useCollectionsScreenData'
+import { useLibraryCollections } from './useLibraryCollections'
 
 const { getCategory } = savedPageSelectors
 const { getIsReachable } = reachabilitySelectors
@@ -34,8 +33,8 @@ const messages = {
 
 export const AlbumsTab = () => {
   const [filterValue, setFilterValue] = useState('')
-  const { collectionIds, hasMore, fetchMore, status } =
-    useCollectionsScreenData({
+  const { collectionIds, hasMore, fetchMore, isPending, isFetchingNextPage } =
+    useLibraryCollections({
       filterValue,
       collectionType: 'albums'
     })
@@ -63,12 +62,11 @@ export const AlbumsTab = () => {
   })
 
   const loadingSpinner = <LoadingMoreSpinner />
+  const noItemsLoaded = !isPending && !collectionIds?.length && !filterValue
 
   return (
     <VirtualizedScrollView>
-      {!statusIsNotFinalized(status) &&
-      !collectionIds?.length &&
-      !filterValue ? (
+      {noItemsLoaded ? (
         !isReachable ? (
           <NoTracksPlaceholder />
         ) : (
@@ -90,7 +88,7 @@ export const AlbumsTab = () => {
             collectionIds={collectionIds}
             showCreateCollectionTile={!!isReachable}
             ListFooterComponent={
-              statusIsNotFinalized(status) && isReachable
+              isPending || (isFetchingNextPage && hasMore)
                 ? loadingSpinner
                 : null
             }
