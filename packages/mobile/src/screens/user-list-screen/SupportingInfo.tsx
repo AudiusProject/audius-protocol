@@ -1,25 +1,27 @@
+import { useSupporter } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
-import {
-  tippingSelectors,
-  supportingUserListSelectors
-} from '@audius/common/store'
-import { useSelector } from 'react-redux'
+
+import { useRoute } from 'app/hooks/useRoute'
 
 import { Tip } from './Tip'
-const { getId: getSupportingId } = supportingUserListSelectors
-const { getOptimisticSupporting } = tippingSelectors
 
 type SupportingInfoProps = {
   userId: ID
 }
 
 export const SupportingInfo = (props: SupportingInfoProps) => {
-  const supportingMap = useSelector(getOptimisticSupporting)
-  const supportingId = useSelector(getSupportingId)
-  const supportingForUser = supportingId
-    ? (supportingMap[supportingId] ?? null)
-    : null
-  const supporting = supportingForUser?.[props.userId] ?? null
+  const { userId } = props
 
-  return supporting ? <Tip amount={supporting.amount} /> : null
+  const {
+    params: { userId: supportingId }
+  } = useRoute<'SupportingUsers'>()
+
+  const { data: supportFor } = useSupporter({
+    userId,
+    supporterUserId: supportingId
+  })
+
+  const amount = supportFor?.amount
+
+  return <Tip amount={amount} />
 }

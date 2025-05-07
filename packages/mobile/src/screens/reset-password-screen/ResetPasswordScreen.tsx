@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import { useResetPassword } from '@audius/common/api'
-import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import type { NavigationProp, RouteProp } from '@react-navigation/native'
@@ -49,16 +48,18 @@ const ResetPasswordScreen = () => {
   const { login, email } = params
   const navigation = useNavigation<NavigationProp<RootScreenParamList>>()
   const isSignedIn = useSelector(getHasAccount)
-  const [resetStatus, setResetStatus] = useState(Status.IDLE)
   const { toast } = useToast()
 
   useAsync(async () => {
     await AsyncStorage.setItem(ENTROPY_KEY, atob(login))
   }, [])
 
-  const [resetPassword, result] = useResetPassword()
-
-  const { status } = result
+  const {
+    mutate: resetPassword,
+    isPending,
+    isSuccess,
+    isError
+  } = useResetPassword()
 
   const handleCancel = useCallback(() => {
     if (isSignedIn) {
@@ -71,18 +72,23 @@ const ResetPasswordScreen = () => {
   const handleSubmit = useCallback(
     (password: string) => {
       resetPassword({ email, password })
-      setResetStatus(Status.LOADING)
     },
     [resetPassword, email]
   )
 
+  // Restart on success
   useEffect(() => {
-    if (status === Status.SUCCESS) {
+    if (isSuccess) {
       RNRestart.Restart()
-    } else if (status === Status.ERROR) {
+    }
+  }, [isSuccess])
+
+  // Error handling
+  useEffect(() => {
+    if (isError) {
       toast({ content: messages.error })
     }
-  }, [status, toast])
+  }, [isError, toast])
 
   return (
     <Screen
@@ -98,7 +104,7 @@ const ResetPasswordScreen = () => {
         <EnterPassword
           onSubmit={handleSubmit}
           submitButtonText={messages.resetButton}
-          isLoading={resetStatus === Status.LOADING}
+          isLoading={isPending}
         />
       </View>
     </Screen>

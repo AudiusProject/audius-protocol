@@ -1,6 +1,6 @@
 import { useCallback, useContext, useMemo, useRef } from 'react'
 
-import { AudiusQueryContext } from '@audius/common/audius-query'
+import { useAudiusQueryContext } from '@audius/common/audius-query'
 import {
   pickHandlePageMessages,
   socialMediaMessages
@@ -9,6 +9,7 @@ import { SocialPlatform } from '@audius/common/models'
 import { pickHandleSchema } from '@audius/common/schemas'
 import { route } from '@audius/common/utils'
 import { Divider, Flex, IconVerified, Paper, Text } from '@audius/harmony'
+import { useQueryClient } from '@tanstack/react-query'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -91,14 +92,15 @@ const SocialMediaSection = (props: SocialMediaSectionProps) => {
 export const PickHandlePage = () => {
   const { isMobile } = useMedia()
   const dispatch = useDispatch()
-  const audiusQueryContext = useContext(AudiusQueryContext)
+  const queryContext = useAudiusQueryContext()
+  const queryClient = useQueryClient()
 
   const PickHandleValidationSchema = useMemo(
     () =>
       toFormikValidationSchema(
-        pickHandleSchema({ audiusQueryContext, restrictedHandles })
+        pickHandleSchema({ queryContext, queryClient, restrictedHandles })
       ),
-    [audiusQueryContext]
+    [queryContext, queryClient]
   )
 
   const alreadyLinkedSocial = useSelector(getIsSocialConnected)

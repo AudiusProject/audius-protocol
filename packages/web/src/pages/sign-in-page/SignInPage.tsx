@@ -12,6 +12,7 @@ import {
   TextLink,
   Box
 } from '@audius/harmony'
+import { useQueryClient } from '@tanstack/react-query'
 import { Form, Formik, useField } from 'formik'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
@@ -60,9 +61,11 @@ export const SignInPage = () => {
   const requiresOtp = useSelector(getRequiresOtp)
 
   const audiusQueryContext = useAudiusQueryContext()
+  const queryClient = useQueryClient()
   const SignInSchema = useMemo(
-    () => toFormikValidationSchema(signInSchema(audiusQueryContext)),
-    [audiusQueryContext]
+    () =>
+      toFormikValidationSchema(signInSchema(audiusQueryContext, queryClient)),
+    [audiusQueryContext, queryClient]
   )
 
   useEffect(() => {

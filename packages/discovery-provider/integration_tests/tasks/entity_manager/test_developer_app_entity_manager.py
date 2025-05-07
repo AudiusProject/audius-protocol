@@ -7,6 +7,7 @@ from web3.types import TxReceipt
 
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
+from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
 from src.models.grants.developer_app import DeveloperApp
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import Action, EntityType
@@ -100,7 +101,8 @@ def test_index_app(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(web3, None)
+        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
+        update_task = UpdateTask(web3, challenge_event_bus)
 
     """"
     const resp = await this.manageEntity({
@@ -764,7 +766,8 @@ def test_developer_app_update(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(web3, None)
+        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
+        update_task = UpdateTask(web3, challenge_event_bus)
 
     # Create one app first
     tx_receipts = {
