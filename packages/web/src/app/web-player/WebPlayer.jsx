@@ -444,6 +444,7 @@ class WebPlayer extends Component {
       decrementScroll,
       userHandle,
       isWalletUIUpdateEnabled,
+      isSearchExploreEnabled,
       isDevOrStaging
     } = this.props
 
@@ -720,6 +721,8 @@ class WebPlayer extends Component {
                           }).toString()
                         }}
                       />
+                    ) : isSearchExploreEnabled ? (
+                      <ExplorePage />
                     ) : (
                       <SearchPage />
                     )
@@ -1139,12 +1142,16 @@ const FeatureFlaggedWebPlayer = (props) => {
   const { isEnabled: isWalletUIUpdateEnabled } = useFeatureFlag(
     FeatureFlags.WALLET_UI_UPDATE
   )
+  const { isEnabled: isSearchExploreEnabled } = useFeatureFlag(
+    FeatureFlags.SEARCH_EXPLORE
+  )
   const isDevOrStaging = useIsDevOrStaging()
 
   return (
     <RouterWebPlayer
       {...props}
       isWalletUIUpdateEnabled={isWalletUIUpdateEnabled}
+      isSearchExploreEnabled={isSearchExploreEnabled}
       isDevOrStaging={isDevOrStaging}
     />
   )
