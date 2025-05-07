@@ -12,6 +12,8 @@ import {
 import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 
+import { Header } from 'components/header/desktop/Header'
+import { Page } from 'components/page/Page'
 import { env } from 'services/env'
 
 import { messages } from './messages'
@@ -119,21 +121,12 @@ export const DevTools = () => {
   }
 
   return (
-    <Box p='l'>
-      <Flex direction='column' gap='xl' alignItems='flex-start'>
-        <Flex
-          direction='column'
-          gap='s'
-          css={{ marginBottom: 'var(--harmony-spacing-l)' }}
-        >
-          <Text variant='display' size='l' tag='h1'>
-            {messages.pageTitle}
-          </Text>
-          <Text variant='body' size='l'>
-            {messages.pageDescription}
-          </Text>
-        </Flex>
-
+    <Page
+      title={messages.pageTitle}
+      description={messages.pageDescription}
+      header={<Header primary={messages.pageTitle} />}
+    >
+      <Box p='l'>
         <Flex
           direction='row'
           wrap='wrap'
@@ -175,8 +168,8 @@ export const DevTools = () => {
             onButtonClick={handleOpenSolanaTools}
           />
         </Flex>
-      </Flex>
-    </Box>
+      </Box>
+    </Page>
   )
 }
 
