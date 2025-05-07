@@ -2,8 +2,8 @@ import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { useAudiusQueryContext } from '~/audius-query'
+import { DeleteDeveloperAppArgs, DeveloperApp } from '~/schemas/developerApps'
 
-import { DeleteDeveloperAppArgs, DeveloperApp } from './developerApps'
 import { getDeveloperAppsQueryKey } from './useDeveloperApps'
 
 export const useDeleteDeveloperApp = () => {

@@ -24,7 +24,7 @@ export * from './tan-query/collection/useCollectionTracksWithUid'
 export * from './tan-query/collection/useFeaturedPlaylists'
 
 // Developer Apps
-export * from './tan-query/developer-apps/developerApps'
+export * from '../schemas/developerApps'
 export * from './tan-query/developer-apps/useDeveloperApps'
 export * from './tan-query/developer-apps/useAddDeveloperApp'
 export * from './tan-query/developer-apps/useEditDeveloperApp'

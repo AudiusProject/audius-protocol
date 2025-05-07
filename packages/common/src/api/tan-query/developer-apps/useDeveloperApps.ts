@@ -3,12 +3,11 @@ import { useQuery } from '@tanstack/react-query'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models'
+import { DeveloperApp } from '~/schemas/developerApps'
 import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../types'
-
-import { DeveloperApp } from './developerApps'
 
 export const getDeveloperAppsQueryKey = (userId: Nullable<ID>) => {
   return [QUERY_KEYS.developerApps, userId] as unknown as QueryKey<{

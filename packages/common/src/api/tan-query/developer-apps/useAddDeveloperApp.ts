@@ -2,8 +2,8 @@ import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { useAudiusQueryContext } from '~/audius-query'
+import { DeveloperApp, NewAppPayload } from '~/schemas/developerApps'
 
-import { DeveloperApp, NewAppPayload } from './developerApps'
 import { getDeveloperAppsQueryKey } from './useDeveloperApps'
 
 export const useAddDeveloperApp = () => {
