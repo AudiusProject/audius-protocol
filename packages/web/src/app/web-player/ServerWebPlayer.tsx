@@ -1,5 +1,6 @@
 import { PropsWithChildren, ReactElement } from 'react'
 
+import { FeatureFlags } from '@audius/common/services'
 import imageProfilePicEmpty from '@audius/common/src/assets/img/imageProfilePicEmpty2X.png'
 import '@audius/harmony/dist/harmony.css'
 import IconAudiusLogoHorizontal from '@audius/harmony/src/assets/icons/AudiusLogoHorizontal.svg'
@@ -25,8 +26,6 @@ import { SsrContextProvider } from 'ssr/SsrContext'
 import { AppState } from 'store/types'
 
 import { ServerReduxProvider } from '../ServerReduxProvider'
-
-import { FeatureFlags } from '@audius/common/services'
 
 type ServerProviderProps = PropsWithChildren<{
   initialState: PartialDeep<AppState>
