@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { useFeaturedPlaylists, useFeaturedProfiles } from '@audius/common/api'
+import {
+  useExploreContent,
+  useFeaturedPlaylists,
+  useFeaturedProfiles
+} from '@audius/common/api'
 import { User } from '@audius/common/models'
 import { TQCollection } from '@audius/common/src/api/tan-query/models'
 import { ExploreCollectionsVariant } from '@audius/common/store'
@@ -26,6 +30,7 @@ import { CollectionCard } from 'components/collection'
 import PerspectiveCard, {
   TextInterior
 } from 'components/perspective-card/PerspectiveCard'
+import { RemixContestCard } from 'components/remix-contest-card'
 import { UserCard } from 'components/user-card'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import useTabs from 'hooks/useTabs/useTabs'
@@ -66,7 +71,7 @@ const messages = {
   description: 'Discover the hottest and trendiest tracks on Audius right now',
   searchPlaceholder: 'What do you want to listen to?',
   featuredPlaylists: 'Featured Playlists',
-  remixContests: 'Remix Contests',
+  featuredRemixContests: 'Featured Remix Contests',
   artistSpotlight: 'Artist Spotlight',
   bestOfAudius: 'Best of Audius',
   viewAll: 'View All'
@@ -126,6 +131,8 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const { data: featuredProfiles } = useFeaturedProfiles({
     limit: FEATURED_LIMIT
   })
+  const { data: exploreContent, isLoading } = useExploreContent()
+  const featuredRemixContests = exploreContent?.featuredRemixContests ?? []
 
   const handleTabClick = useCallback(
     (newTab: string) => {
@@ -284,6 +291,20 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                     size={'s'}
                   />
                 ))}
+              </Flex>
+            </Flex>
+            <Flex>
+              <Flex direction='column' gap='l'>
+                <Text variant='heading'>{messages.featuredRemixContests}</Text>
+                <Flex gap='l' justifyContent='space-between'>
+                  {featuredRemixContests?.map((featuredRemixContest) => (
+                    <RemixContestCard
+                      key={featuredRemixContest}
+                      id={featuredRemixContest}
+                      size={'s'}
+                    />
+                  ))}
+                </Flex>
               </Flex>
             </Flex>
 
