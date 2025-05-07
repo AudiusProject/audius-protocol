@@ -10,38 +10,7 @@ const models = require('./models')
 
 const audiusLibsWrapper = require('./audiusLibsInstance')
 const { encodeHashId } = require('./notifications/utils')
-
-/**
- * queryDiscprovForUserId - Queries the discovery provider for the user w/ the walletaddress
- * @param {string} walletAddress
- * @returns {object} User Metadata object
- */
-const queryDiscprovForUserId = async (walletAddress, handle) => {
-  const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
-
-  const response = await axios({
-    method: 'get',
-    url: `${discoveryProvider.discoveryProviderEndpoint}/users`,
-    params: {
-      wallet: walletAddress
-    }
-  })
-
-  if (!Array.isArray(response.data.data) || !(response.data.data.length >= 1)) {
-    throw new Error('Unable to retrieve user from discovery provder')
-  }
-  const usersList = response.data.data
-  if (usersList.length === 1) {
-    const [user] = response.data.data
-    return user
-  } else {
-    for (const respUser of usersList) {
-      if (respUser.handle === handle) {
-        return respUser
-      }
-    }
-  }
-}
+const { decodeHashId } = require('@audius/sdk')
 
 /**
  * Queries for whether the wallet address has privilege to act as actingUserId
@@ -101,7 +70,6 @@ async function authMiddleware(req, res, next) {
   try {
     const encodedDataMessage = req.get('Encoded-Data-Message')
     const signature = req.get('Encoded-Data-Signature')
-    const handle = req.query.handle
     const actingUserId = Number.parseInt(req.query.user_id, 10)
 
     if (!encodedDataMessage) throw new Error('[Error]: Encoded data missing')
@@ -146,12 +114,24 @@ async function authMiddleware(req, res, next) {
       // This overwrites any provisionally set handles (b/c blockchainUserId is never set with those),
       // ensuring that the user.handle always represents the latest state on chain
       if (!user.blockchainUserId || !user.handle) {
-        const discprovUser = await queryDiscprovForUserId(walletAddress, handle)
-        user = await user.update({
-          blockchainUserId: discprovUser.user_id,
-          handle: discprovUser.handle,
-          isGuest: !discprovUser.handle
-        })
+        try {
+          const res = await req.app.get('audiusSdk').full.users.getUserAccount({
+            wallet: walletAddress,
+            encodedDataMessage,
+            encodedDataSignature: signature
+          })
+          const discprovUser = res.data.user
+          const userId = decodeHashId(discprovUser.id)
+          const handle = discprovUser.handle
+          user = await user.update({
+            blockchainUserId: userId,
+            handle,
+            isGuest: !handle
+          })
+        } catch (e) {
+          console.error(e)
+          req.logger.error(e, 'Failed to update blockchainUserId/handle')
+        }
       }
       req.user = user
       next()
@@ -178,7 +158,6 @@ const parameterizedAuthMiddleware = ({ shouldRespondBadRequest }) => {
     try {
       const encodedDataMessage = req.get('Encoded-Data-Message')
       const signature = req.get('Encoded-Data-Signature')
-      const handle = req.query.handle
 
       if (!encodedDataMessage) throw new Error('[Error]: Encoded data missing')
       if (!signature) throw new Error('[Error]: Encoded data signature missing')
@@ -187,7 +166,7 @@ const parameterizedAuthMiddleware = ({ shouldRespondBadRequest }) => {
         data: encodedDataMessage,
         sig: signature
       })
-      const user = await models.User.findOne({
+      let user = await models.User.findOne({
         where: { walletAddress },
         attributes: [
           'id',
@@ -203,11 +182,24 @@ const parameterizedAuthMiddleware = ({ shouldRespondBadRequest }) => {
         )
 
       if (!user.blockchainUserId || !user.handle) {
-        const discprovUser = await queryDiscprovForUserId(walletAddress, handle)
-        await user.update({
-          blockchainUserId: discprovUser.user_id,
-          handle: discprovUser.handle
-        })
+        try {
+          const res = await req.app.get('audiusSdk').full.users.getUserAccount({
+            wallet: walletAddress,
+            encodedDataMessage,
+            encodedDataSignature: signature
+          })
+          const discprovUser = res.data.user
+          const userId = decodeHashId(discprovUser.id)
+          const handle = discprovUser.handle
+          user = await user.update({
+            blockchainUserId: userId,
+            handle,
+            isGuest: !handle
+          })
+        } catch (e) {
+          console.error(e)
+          req.logger.error(e, 'Failed to update blockchainUserId/handle')
+        }
       }
       req.user = user
       next()
