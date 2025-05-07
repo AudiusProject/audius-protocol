@@ -3,7 +3,6 @@
 export * from './account'
 export * from './authorizedApps'
 export * from './library'
-export * from './signUp'
 export * from './suggestedTracks'
 export * from './trending'
 export * from './user'
