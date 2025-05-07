@@ -120,20 +120,19 @@ const CommentBlockInternal = (
                     strength='strong'
                   />
                 ) : null}
-                <Flex gap='xs' alignItems='flex-end' h='100%'>
-                  <Timestamp time={createdAtDate} />
+                <Text
+                  variant='body'
+                  size='s'
+                  color='subdued'
+                  css={{ whiteSpace: 'nowrap' }}
+                >
+                  <Timestamp time={createdAtDate} />{' '}
                   {trackTimestampS !== undefined && !isPreview ? (
                     <>
-                      <Text color='subdued' size='s'>
-                        •
-                      </Text>
-                      <TimestampLink
-                        size='s'
-                        timestampSeconds={trackTimestampS}
-                      />
+                      • <TimestampLink timestampSeconds={trackTimestampS} />
                     </>
                   ) : null}
-                </Flex>
+                </Text>
               </Flex>
               {userId && (isPreview || !(isPinned || isArtistReacted)) ? (
                 <CommentBadge
