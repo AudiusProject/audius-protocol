@@ -19,6 +19,7 @@ export const useNotificationValidTypes = () => {
     ValidTypes.ClaimableReward,
     ValidTypes.ListenStreakReminder,
     ValidTypes.ArtistRemixContestEnded,
+    ValidTypes.ArtistRemixContestEndingSoon,
     ValidTypes.FanRemixContestStarted,
     ValidTypes.FanRemixContestEnded,
     ValidTypes.FanRemixContestEndingSoon
