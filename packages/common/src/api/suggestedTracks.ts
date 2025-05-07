@@ -14,7 +14,7 @@ import { getCollection } from '~/store/cache/collections/selectors'
 import { getTrack } from '~/store/cache/tracks/selectors'
 import { CommonState } from '~/store/index'
 
-import { useGetFavoritedTrackList } from './favorites'
+import { useFavoritedTracks } from './tan-query/tracks/useFavoritedTracks'
 import { useTracks } from './tan-query/tracks/useTracks'
 import { useGetTrending } from './trending'
 
@@ -101,28 +101,24 @@ export const useGetSuggestedPlaylistTracks = (collectionId: ID) => {
   const dispatch = useDispatch()
   const [suggestedTrackIds, setSuggestedTrackIds] = useState<ID[]>([])
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const [suggestedTrackStatus, setSuggestedTrackStatus] = useState<Status>(
-    Status.LOADING
-  )
 
   const collectionTrackIds = useSelector((state: CommonState) =>
     selectCollectionTrackIds(state, collectionId)
   )
 
-  const { data: favoritedTracks, status: favoritedStatus } =
-    useGetFavoritedTrackList({ currentUserId }, { disabled: !currentUserId })
+  const { data: favoritedTracks, isSuccess: favoritedTracksSuccess } =
+    useFavoritedTracks(currentUserId)
 
   useEffect(() => {
-    if (favoritedStatus === Status.SUCCESS) {
+    if (favoritedTracksSuccess) {
       const suggestedTrackIds = difference(
         shuffle(favoritedTracks).map((track) => track.save_item_id),
         collectionTrackIds
       )
-      setSuggestedTrackStatus(Status.SUCCESS)
       setSuggestedTrackIds(suggestedTrackIds)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [favoritedStatus])
+  }, [favoritedTracksSuccess])
 
   const {
     data: trendingTracks,
@@ -137,15 +133,12 @@ export const useGetSuggestedPlaylistTracks = (collectionId: ID) => {
     },
     {
       pageSize: 10,
-      disabled: favoritedStatus !== Status.SUCCESS
+      disabled: !favoritedTracksSuccess
     }
   )
 
   useEffect(() => {
-    if (
-      trendingStatus === Status.SUCCESS &&
-      suggestedTrackStatus === Status.SUCCESS
-    ) {
+    if (trendingStatus === Status.SUCCESS && favoritedTracksSuccess) {
       const trendingTrackIds = difference(
         trendingTracks.filter(isValidTrack).map((track) => track.track_id),
         collectionTrackIds
@@ -153,7 +146,7 @@ export const useGetSuggestedPlaylistTracks = (collectionId: ID) => {
       setSuggestedTrackIds([...suggestedTrackIds, ...trendingTrackIds])
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trendingStatus, suggestedTrackStatus])
+  }, [trendingStatus, favoritedTracksSuccess])
 
   useEffect(() => {
     if (suggestedTrackIds.length < suggestedTrackCount) {
