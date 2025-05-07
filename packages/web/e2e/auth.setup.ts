@@ -9,7 +9,7 @@ setup('authenticate', async ({ page }) => {
   const user = getUser()
   const base64Entropy = btoa(user.entropy.trim())
   await page.goto(`/feed?login=${base64Entropy}`)
-  await expect(page.getByRole('heading', { name: 'Your Feed' })).toBeVisible({
+  await expect(page.getByText(user.name)).toBeVisible({
     timeout: 15000
   })
   await page.evaluate(() => {
