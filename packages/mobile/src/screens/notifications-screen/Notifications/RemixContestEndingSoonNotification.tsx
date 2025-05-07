@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import { useTrack, useUser } from '@audius/common/api'
-import type { RemixContestEndingSoonNotification as RemixContestEndingSoonNotificationType } from '@audius/common/store'
+import type { FanRemixContestEndingSoonNotification as FanRemixContestEndingSoonNotificationType } from '@audius/common/store'
 
 import { IconTrophy } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
@@ -21,12 +21,12 @@ const messages = {
     " has a remix contest ending in 72 hours - don't forget to submit your remix"
 }
 
-type RemixContestEndingSoonNotificationProps = {
-  notification: RemixContestEndingSoonNotificationType
+type FanRemixContestEndingSoonNotificationProps = {
+  notification: FanRemixContestEndingSoonNotificationType
 }
 
-export const RemixContestEndingSoonNotification = (
-  props: RemixContestEndingSoonNotificationProps
+export const FanRemixContestEndingSoonNotification = (
+  props: FanRemixContestEndingSoonNotificationProps
 ) => {
   const { notification } = props
   const { entityId, entityUserId } = notification

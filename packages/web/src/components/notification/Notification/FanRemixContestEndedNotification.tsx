@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { useTrack, useUser } from '@audius/common/api'
 import {
   Entity,
-  RemixContestEndedNotification as RemixContestEndedNotificationType,
+  FanRemixContestEndedNotification as FanRemixContestEndedNotificationType,
   TrackEntity
 } from '@audius/common/store'
 import { Flex, IconTrophy } from '@audius/harmony'
@@ -27,12 +27,12 @@ const messages = {
     "'s remix contest has closed and winners should be announced soon. Good luck!"
 }
 
-type RemixContestEndedNotificationProps = {
-  notification: RemixContestEndedNotificationType
+type FanRemixContestEndedNotificationProps = {
+  notification: FanRemixContestEndedNotificationType
 }
 
-export const RemixContestEndedNotification = (
-  props: RemixContestEndedNotificationProps
+export const FanRemixContestEndedNotification = (
+  props: FanRemixContestEndedNotificationProps
 ) => {
   const { notification } = props
   const { timeLabel, isViewed, entityId, entityUserId } = notification
@@ -58,8 +58,8 @@ export const RemixContestEndedNotification = (
         <TrackContent track={track as TrackEntity} hideTitle />
         <NotificationBody>
           <UserNameLink user={user} notification={notification} />{' '}
+          {messages.description}{' '}
           <EntityLink entity={track as TrackEntity} entityType={Entity.Track} />
-          {messages.description}
         </NotificationBody>
       </Flex>
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
