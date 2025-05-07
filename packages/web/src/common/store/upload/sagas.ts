@@ -2,11 +2,12 @@ import {
   albumMetadataForSDK,
   fileToSdk,
   playlistMetadataForCreateWithSDK,
+  stemTrackMetadataFromSDK,
   trackMetadataForUploadToSdk,
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { queryUser } from '@audius/common/api'
+import { getStemsQueryKey, queryUser } from '@audius/common/api'
 import {
   Collection,
   Feature,
@@ -14,6 +15,7 @@ import {
   ID,
   Kind,
   Name,
+  StemTrack,
   StemUploadWithFile,
   isContentFollowGated,
   isContentUSDCPurchaseGated
@@ -414,6 +416,8 @@ export function* handleUploads({
   kind: 'album' | 'playlist' | 'tracks' | 'stems'
 }) {
   const isCollection = kind === 'album' || kind === 'playlist'
+  const queryClient = yield* getContext('queryClient')
+  const userId = (yield* select(getUserId))!
 
   // Queue for the upload tasks (uploading files to storage)
   const uploadQueue = yield* call(
@@ -529,6 +533,27 @@ export function* handleUploads({
       } uploaded`,
       { trackIndex, stemIndex }
     )
+
+    if (payload.metadata.stemOf?.parentTrackId) {
+      const parentTrackId = payload.metadata.stemOf.parentTrackId
+
+      queryClient.setQueryData(
+        getStemsQueryKey(parentTrackId),
+        (currentStems: StemTrack[] | undefined) => {
+          const newStem = stemTrackMetadataFromSDK({
+            ...payload.metadata,
+            id: Id.parse(parentTrackId + (payload.trackIndex + 1 + Date.now())),
+            parentId: Id.parse(parentTrackId),
+            userId: Id.parse(userId),
+            blocknumber: 0,
+            cid: '',
+            category: payload.metadata.stemOf!.category!,
+            origFilename: payload.metadata.origFilename!
+          })
+          return [...(currentStems ?? []), newStem!]
+        }
+      )
+    }
 
     // We know trackId exists because we generate it in uploadMultipleTracks
     const trackId = metadata.trackId!
