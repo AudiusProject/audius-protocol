@@ -1,6 +1,5 @@
 // Audius query
 // TODO: migrate all of these to tan-query
-export * from './account'
 export * from './authorizedApps'
 export * from './library'
 export * from './suggestedTracks'
@@ -123,6 +122,12 @@ export * from './tan-query/users/useUserCollectibles'
 export * from './tan-query/users/useUserPlaylists'
 export * from './tan-query/users/useUsers'
 export * from './tan-query/users/useUserTracksByHandle'
+export * from './tan-query/users/account/useResetPassword'
+export * from './tan-query/users/account/useManagedAccounts'
+export * from './tan-query/users/account/useManagers'
+export * from './tan-query/users/account/useRequestAddManager'
+export * from './tan-query/users/account/useApproveManagedAccount'
+export * from './tan-query/users/account/useRemoveManager'
 
 // Wallet logic
 export * from './tan-query/wallets/useAudioBalance'

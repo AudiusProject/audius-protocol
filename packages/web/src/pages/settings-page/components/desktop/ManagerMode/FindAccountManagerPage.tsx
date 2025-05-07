@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 
-import { useGetManagers } from '@audius/common/api'
+import { useManagers } from '@audius/common/api'
 import { User } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Box, Flex, IconShieldUser, Text } from '@audius/harmony'
@@ -25,10 +25,7 @@ export const FindAccountManagerPage = (props: FindAccountManagerPageProps) => {
   const { setPageState, params } = props
   const [query, setQuery] = useState(params?.query ?? '')
   const userId = useSelector(getUserId)
-  const { data: managers } = useGetManagers(
-    { userId: userId! },
-    { disabled: userId == null }
-  )
+  const { data: managers } = useManagers(userId)
   const excludedUserIds = useMemo(() => {
     const res: number[] = managers?.map((m) => m.manager.user_id) ?? []
     if (userId) {

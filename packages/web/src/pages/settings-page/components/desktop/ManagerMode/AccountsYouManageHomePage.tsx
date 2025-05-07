@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
-import { useGetManagedAccounts } from '@audius/common/api'
-import { Status } from '@audius/common/models'
+import { useManagedAccounts } from '@audius/common/api'
 import { accountSelectors } from '@audius/common/store'
 import { Box, Divider, Flex, Text } from '@audius/harmony'
 
@@ -25,15 +24,14 @@ export const AccountsYouManageHomePage = ({
   setPageState
 }: AccountsYouManagePageProps) => {
   const userId = useSelector(getUserId)
-  const { data: managedAccounts, status } = useGetManagedAccounts(
-    { userId: userId! },
-    // Always update managed accounts list when mounting this page
-    { disabled: userId == null, force: true }
-  )
-  // Don't flash loading spinner if we are refreshing the cache
-  const isLoading =
-    status !== Status.SUCCESS &&
-    (!managedAccounts || managedAccounts.length === 0)
+  const {
+    data: managedAccounts,
+    isFetching,
+    isSuccess
+  } = useManagedAccounts(userId, {
+    // Always refetch the data
+    staleTime: 0
+  })
 
   usePendingInviteValidator({
     managedAccounts,
@@ -55,7 +53,7 @@ export const AccountsYouManageHomePage = ({
       <Text variant='body' size='l'>
         {messages.takeControl}{' '}
       </Text>
-      {isLoading ? (
+      {isFetching ? (
         <Box pv='2xl'>
           <LoadingSpinner
             css={({ spacing }) => ({
@@ -65,7 +63,8 @@ export const AccountsYouManageHomePage = ({
           />
         </Box>
       ) : null}
-      {status === Status.SUCCESS &&
+      {isSuccess &&
+      !isFetching &&
       (!managedAccounts || managedAccounts.length === 0) ? (
         <>
           <Divider />
@@ -74,15 +73,16 @@ export const AccountsYouManageHomePage = ({
           </Text>
         </>
       ) : null}
-      {managedAccounts?.map((data) => {
-        return (
-          <ManagedUserListItem
-            key={data.user.user_id}
-            userData={data}
-            onRemoveManager={handleStopManaging}
-          />
-        )
-      })}
+      {!isFetching &&
+        managedAccounts?.map((data) => {
+          return (
+            <ManagedUserListItem
+              key={data.user.user_id}
+              userData={data}
+              onRemoveManager={handleStopManaging}
+            />
+          )
+        })}
     </Flex>
   )
 }
