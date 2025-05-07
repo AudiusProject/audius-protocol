@@ -2,7 +2,7 @@
 // TODO: migrate all of these to tan-query
 export * from './account'
 export * from './authorizedApps'
-export * from './developerApps'
+// export * from './developerApps' // Removed as we've migrated to tan-query
 export * from './library'
 export * from './signUp'
 export * from './suggestedTracks'
@@ -24,6 +24,13 @@ export * from './tan-query/collection/useCollectionFavorites'
 export * from './tan-query/collection/useCollectionReposts'
 export * from './tan-query/collection/useCollectionTracksWithUid'
 export * from './tan-query/collection/useFeaturedPlaylists'
+
+// Developer Apps
+export * from './tan-query/developer-apps/developerApps'
+export * from './tan-query/developer-apps/useDeveloperApps'
+export * from './tan-query/developer-apps/useAddDeveloperApp'
+export * from './tan-query/developer-apps/useEditDeveloperApp'
+export * from './tan-query/developer-apps/useDeleteDeveloperApp'
 
 // Events
 export * from './tan-query/events'

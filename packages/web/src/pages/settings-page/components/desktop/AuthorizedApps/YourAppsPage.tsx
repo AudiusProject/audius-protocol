@@ -1,7 +1,7 @@
-import { useGetAuthorizedApps } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { ModalContentText } from '@audius/harmony'
+import { useAuthorizedApps } from '~/api/tan-query/authorized-apps/useAuthorizedApps'
 
 import { Divider } from 'components/divider'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -25,10 +25,9 @@ type YourAppsPageProps = AuthorizedAppPageProps
 export const YourAppsPage = (props: YourAppsPageProps) => {
   const { setPage } = props
   const userId = useSelector(getUserId)
-  const { data, status } = useGetAuthorizedApps(
-    { id: userId as number },
-    { disabled: !userId }
-  )
+  const { data, status } = useAuthorizedApps({
+    enabled: !!userId
+  })
 
   return (
     <div className={styles.content}>
@@ -40,15 +39,20 @@ export const YourAppsPage = (props: YourAppsPageProps) => {
         <Divider className={styles.divider} />
         {status !== Status.SUCCESS ? (
           <LoadingSpinner className={styles.spinner} />
-        ) : data?.apps.length === 0 ? (
+        ) : data?.length === 0 ? (
           <p className={styles.noApps}>{messages.noApps}</p>
         ) : (
           <ol className={styles.appList}>
-            {data?.apps.map((app, index) => (
+            {data?.map((app, index) => (
               <AuthorizedAppListItem
-                key={app.apiKey}
+                key={app.address.slice(2)}
                 index={index + 1}
-                app={app}
+                app={{
+                  name: app.name,
+                  description: app.description,
+                  imageUrl: app.imageUrl,
+                  apiKey: app.address.slice(2)
+                }}
                 setPage={setPage}
               />
             ))}

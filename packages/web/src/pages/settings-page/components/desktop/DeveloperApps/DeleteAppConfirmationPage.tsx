@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react'
 
 import { useDeleteDeveloperApp } from '@audius/common/api'
-import { Name, Status } from '@audius/common/models'
+import { Name } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Button, ModalFooter } from '@audius/harmony'
 
@@ -27,8 +27,7 @@ export const DeleteAppConfirmationPage = (
   props: DeleteAppConfirmationPageProps
 ) => {
   const { params, setPage } = props
-  const [deleteDeveloperApp, result] = useDeleteDeveloperApp()
-  const { status, errorMessage } = result
+  const deleteDeveloperApp = useDeleteDeveloperApp()
   const userId = useSelector(getUserId)
   const record = useRecord()
   const apiKey = params?.apiKey
@@ -39,11 +38,11 @@ export const DeleteAppConfirmationPage = (
 
   const handleDelete = useCallback(() => {
     if (!userId || !apiKey) return
-    deleteDeveloperApp({ userId, apiKey })
+    deleteDeveloperApp.mutate({ userId, apiKey })
   }, [userId, apiKey, deleteDeveloperApp])
 
   useEffect(() => {
-    if (status === Status.SUCCESS) {
+    if (deleteDeveloperApp.isSuccess) {
       setPage(CreateAppsPages.YOUR_APPS)
       record(
         make(Name.DEVELOPER_APP_DELETE_SUCCESS, {
@@ -52,26 +51,39 @@ export const DeleteAppConfirmationPage = (
         })
       )
     }
-  }, [status, setPage, record, params?.name, params?.apiKey])
+  }, [
+    deleteDeveloperApp.isSuccess,
+    setPage,
+    record,
+    params?.name,
+    params?.apiKey
+  ])
 
   useEffect(() => {
-    if (status === Status.ERROR) {
+    if (deleteDeveloperApp.isError) {
       setPage(CreateAppsPages.YOUR_APPS)
       record(
         make(Name.DEVELOPER_APP_DELETE_ERROR, {
           name: params?.name,
           apiKey: params?.apiKey,
-          error: errorMessage
+          error: deleteDeveloperApp.error?.message
         })
       )
     }
-  }, [status, setPage, record, params?.name, params?.apiKey, errorMessage])
+  }, [
+    deleteDeveloperApp.isError,
+    setPage,
+    record,
+    params?.name,
+    params?.apiKey,
+    deleteDeveloperApp.error?.message
+  ])
 
   if (!params) return null
 
   const { name } = params
 
-  const isDeleting = status !== Status.IDLE
+  const isDeleting = deleteDeveloperApp.isPending
 
   return (
     <div>

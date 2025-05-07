@@ -7,7 +7,7 @@ import {
   developerAppEditSchema,
   useEditDeveloperApp
 } from '@audius/common/api'
-import { Name, Status } from '@audius/common/models'
+import { Name } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { IconCopy, IconButton, Button, Flex, IconEmbed } from '@audius/harmony'
 import { Form, Formik, useField } from 'formik'
@@ -69,13 +69,11 @@ export const EditAppPage = (props: EditAppPageProps) => {
 
   const record = useRecord()
 
-  const [editDeveloperApp, result] = useEditDeveloperApp()
+  const editDeveloperApp = useEditDeveloperApp()
   const [submitError, setSubmitError] = useState<string | null>(null)
 
-  const { status, data, errorMessage } = result
-
   useEffect(() => {
-    if (status === Status.SUCCESS) {
+    if (editDeveloperApp.isSuccess) {
       setPage(CreateAppsPages.YOUR_APPS)
       record(
         make(Name.DEVELOPER_APP_EDIT_SUCCESS, {
@@ -84,18 +82,18 @@ export const EditAppPage = (props: EditAppPageProps) => {
         })
       )
     }
-  }, [data, apiKey, name, record, setPage, status])
+  }, [editDeveloperApp.isSuccess, apiKey, name, record, setPage])
 
   useEffect(() => {
-    if (status === Status.ERROR) {
+    if (editDeveloperApp.isError) {
       setSubmitError(messages.miscError)
       record(
         make(Name.DEVELOPER_APP_EDIT_ERROR, {
-          error: errorMessage
+          error: editDeveloperApp.error?.message
         })
       )
     }
-  }, [errorMessage, record, status])
+  }, [editDeveloperApp.isError, record, editDeveloperApp.error?.message])
 
   const handleSubmit = useCallback(
     (values: DeveloperAppValues) => {
@@ -106,7 +104,7 @@ export const EditAppPage = (props: EditAppPageProps) => {
           description: values.description
         })
       )
-      editDeveloperApp(values)
+      editDeveloperApp.mutate(values)
     },
     [editDeveloperApp, record]
   )
@@ -119,7 +117,7 @@ export const EditAppPage = (props: EditAppPageProps) => {
     imageUrl
   }
 
-  const isSubmitting = status !== Status.IDLE && status !== Status.ERROR
+  const isSubmitting = editDeveloperApp.isPending
 
   const copyApiKey = useCallback(() => {
     if (!apiKey) return

@@ -7,7 +7,7 @@ import {
   developerAppSchema,
   useAddDeveloperApp
 } from '@audius/common/api'
-import { Name, Status } from '@audius/common/models'
+import { Name } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Button } from '@audius/harmony'
 import { Form, Formik } from 'formik'
@@ -41,33 +41,31 @@ export const CreateNewAppPage = (props: CreateNewAppPageProps) => {
   const userId = useSelector(getUserId) as number
   const record = useRecord()
 
-  const [addDeveloperApp, result] = useAddDeveloperApp()
+  const addDeveloperApp = useAddDeveloperApp()
   const [submitError, setSubmitError] = useState<string | null>(null)
 
-  const { status, data, errorMessage } = result
-
   useEffect(() => {
-    if (status === Status.SUCCESS && data) {
-      setPage(CreateAppsPages.APP_DETAILS, data)
+    if (addDeveloperApp.isSuccess && addDeveloperApp.data) {
+      setPage(CreateAppsPages.APP_DETAILS, addDeveloperApp.data)
       record(
         make(Name.DEVELOPER_APP_CREATE_SUCCESS, {
-          name: data.name,
-          apiKey: data.apiKey
+          name: addDeveloperApp.data.name,
+          apiKey: addDeveloperApp.data.apiKey
         })
       )
     }
-  }, [data, record, setPage, status])
+  }, [addDeveloperApp.isSuccess, addDeveloperApp.data, record, setPage])
 
   useEffect(() => {
-    if (status === Status.ERROR) {
+    if (addDeveloperApp.isError) {
       setSubmitError(messages.miscError)
       record(
         make(Name.DEVELOPER_APP_CREATE_ERROR, {
-          error: errorMessage
+          error: addDeveloperApp.error?.message
         })
       )
     }
-  }, [errorMessage, record, status])
+  }, [addDeveloperApp.isError, record, addDeveloperApp.error?.message])
 
   const handleSubmit = useCallback(
     (values: DeveloperAppValues) => {
@@ -78,7 +76,7 @@ export const CreateNewAppPage = (props: CreateNewAppPageProps) => {
           description: values.description
         })
       )
-      addDeveloperApp(values)
+      addDeveloperApp.mutate(values)
     },
     [addDeveloperApp, record]
   )
@@ -91,7 +89,7 @@ export const CreateNewAppPage = (props: CreateNewAppPageProps) => {
     imageUrl: undefined
   }
 
-  const isSubmitting = status !== Status.IDLE && status !== Status.ERROR
+  const isSubmitting = addDeveloperApp.isPending
   return (
     <Formik
       initialValues={initialValues}
