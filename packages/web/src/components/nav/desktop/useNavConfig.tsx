@@ -16,7 +16,6 @@ import {
   IconLibrary,
   IconMessages,
   IconPlaylists,
-  IconSettings,
   IconTrending,
   IconWallet,
   LoadingSpinner,
@@ -26,7 +25,6 @@ import {
 import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 
-import { useIsDevOrStaging } from 'hooks/useIsDevOrStaging'
 import { RestrictionType } from 'hooks/useRequiresAccount'
 import { matchesRoute } from 'utils/route'
 
@@ -45,8 +43,7 @@ const {
   CHATS_PAGE,
   UPLOAD_PAGE,
   REWARDS_PAGE,
-  WALLET_PAGE,
-  DEV_TOOLS_PAGE
+  WALLET_PAGE
 } = route
 
 const { getUnreadMessagesCount } = chatSelectors
@@ -98,8 +95,6 @@ export const useNavConfig = () => {
   const { isEnabled: isWalletUIUpdateEnabled } = useFeatureFlag(
     FeatureFlags.WALLET_UI_UPDATE
   )
-
-  const isDevOrStaging = useIsDevOrStaging()
 
   const navItems = useMemo(
     (): NavItemConfig[] => [
@@ -207,17 +202,6 @@ export const useNavConfig = () => {
         restriction: 'account' as RestrictionType,
         disabled: !hasAccount
       },
-      // Add DevTools nav item that only appears in development and staging environments
-      ...(isDevOrStaging
-        ? [
-            {
-              label: 'DevTools',
-              leftIcon: IconSettings,
-              to: DEV_TOOLS_PAGE,
-              restriction: 'none' as RestrictionType
-            }
-          ]
-        : []),
       {
         label: 'Playlists',
         leftIcon: IconPlaylists,
@@ -241,8 +225,7 @@ export const useNavConfig = () => {
       playingFromRoute,
       color,
       spacing,
-      isWalletUIUpdateEnabled,
-      isDevOrStaging
+      isWalletUIUpdateEnabled
     ]
   )
 
