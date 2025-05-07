@@ -44,7 +44,6 @@ export const parseUserId = async (arg: string) => {
 }
 
 let audiusSdk: AudiusSdk | undefined
-let currentUserId: number | undefined
 let currentHandle: string | undefined
 
 let hedgehog: Hedgehog | undefined
@@ -156,7 +155,7 @@ export const initializeAudiusSdk = async ({
     })
   )
 
-  if (!audiusSdk || !currentUserId || (handle && currentHandle !== handle)) {
+  if (!audiusSdk || (handle && currentHandle !== handle)) {
     // If handle was provided, unset current entropy and replace with the entropy
     // for the given user before initializing UserAuth
     if (handle) {
