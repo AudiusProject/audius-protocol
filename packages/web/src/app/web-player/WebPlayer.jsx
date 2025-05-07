@@ -364,6 +364,7 @@ class WebPlayer extends Component {
       : authenticatedRoutes
     if (
       !this.props.hasAccount &&
+      this.props.accountStatus !== Status.IDLE &&
       this.props.accountStatus !== Status.LOADING &&
       allowedRoutes.some((route) => {
         const match = matchPath(getPathname(this.props.location), {
