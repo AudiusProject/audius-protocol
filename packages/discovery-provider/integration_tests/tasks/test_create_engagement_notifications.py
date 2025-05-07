@@ -25,15 +25,6 @@ TEST_GROUP_ID = get_claimable_reward_notification_group_id(
 def test_create_challenge_claimable_notif(app):
     with app.app_context():
         db = get_db()
-        # challenge = Challenge(
-        #     id=challenge_meta.get("id", ""),
-        #     type=challenge_meta.get("type", ""),
-        #     amount=challenge_meta.get("amount", ""),
-        #     active=challenge_meta.get("active", True),
-        #     step_count=challenge_meta.get("step_count", None),
-        #     starting_block=challenge_meta.get("starting_block", None),
-        #     weekly_pool=challenge_meta.get("weekly_pool", None),
-        # )
 
     entities = {
         "user_challenges": [
