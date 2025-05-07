@@ -41,31 +41,32 @@ export const CreateNewAppPage = (props: CreateNewAppPageProps) => {
   const userId = useSelector(getUserId) as number
   const record = useRecord()
 
-  const addDeveloperApp = useAddDeveloperApp()
+  const { data, isSuccess, isError, error, mutate, isPending } =
+    useAddDeveloperApp()
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (addDeveloperApp.isSuccess && addDeveloperApp.data) {
-      setPage(CreateAppsPages.APP_DETAILS, addDeveloperApp.data)
+    if (isSuccess && data) {
+      setPage(CreateAppsPages.APP_DETAILS, data)
       record(
         make(Name.DEVELOPER_APP_CREATE_SUCCESS, {
-          name: addDeveloperApp.data.name,
-          apiKey: addDeveloperApp.data.apiKey
+          name: data.name,
+          apiKey: data.apiKey
         })
       )
     }
-  }, [addDeveloperApp.isSuccess, addDeveloperApp.data, record, setPage])
+  }, [isSuccess, data, record, setPage])
 
   useEffect(() => {
-    if (addDeveloperApp.isError) {
+    if (isError) {
       setSubmitError(messages.miscError)
       record(
         make(Name.DEVELOPER_APP_CREATE_ERROR, {
-          error: addDeveloperApp.error?.message
+          error: error?.message
         })
       )
     }
-  }, [addDeveloperApp.isError, record, addDeveloperApp.error?.message])
+  }, [isError, record, error?.message])
 
   const handleSubmit = useCallback(
     (values: DeveloperAppValues) => {
@@ -76,9 +77,9 @@ export const CreateNewAppPage = (props: CreateNewAppPageProps) => {
           description: values.description
         })
       )
-      addDeveloperApp.mutate(values)
+      mutate(values)
     },
-    [addDeveloperApp, record]
+    [mutate, record]
   )
 
   const initialValues: DeveloperAppValues = {
@@ -89,7 +90,6 @@ export const CreateNewAppPage = (props: CreateNewAppPageProps) => {
     imageUrl: undefined
   }
 
-  const isSubmitting = addDeveloperApp.isPending
   return (
     <Formik
       initialValues={initialValues}
@@ -101,13 +101,13 @@ export const CreateNewAppPage = (props: CreateNewAppPageProps) => {
           <TextField
             name='name'
             label={messages.appNameLabel}
-            disabled={isSubmitting}
+            disabled={isPending}
             maxLength={DEVELOPER_APP_NAME_MAX_LENGTH}
           />
           <TextField
             name='imageUrl'
             label={messages.imageUrlLabel}
-            disabled={isSubmitting}
+            disabled={isPending}
             maxLength={DEVELOPER_APP_IMAGE_URL_MAX_LENGTH}
           />
           <TextAreaField
@@ -115,14 +115,14 @@ export const CreateNewAppPage = (props: CreateNewAppPageProps) => {
             placeholder={messages.descriptionLabel}
             showMaxLength
             maxLength={DEVELOPER_APP_DESCRIPTION_MAX_LENGTH}
-            disabled={isSubmitting}
+            disabled={isPending}
           />
           <div className={styles.actionsContainer}>
             <Button
               variant='secondary'
               type='button'
               fullWidth
-              disabled={isSubmitting}
+              disabled={isPending}
               onClick={() => setPage(CreateAppsPages.YOUR_APPS)}
             >
               {messages.cancel}
@@ -131,9 +131,9 @@ export const CreateNewAppPage = (props: CreateNewAppPageProps) => {
               variant='primary'
               type='submit'
               fullWidth
-              isLoading={isSubmitting}
+              isLoading={isPending}
             >
-              {isSubmitting ? messages.creating : messages.create}
+              {isPending ? messages.creating : messages.create}
             </Button>
           </div>
           {submitError == null ? null : (

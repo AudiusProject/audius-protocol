@@ -2,7 +2,6 @@
 // TODO: migrate all of these to tan-query
 export * from './account'
 export * from './authorizedApps'
-// export * from './developerApps' // Removed as we've migrated to tan-query
 export * from './library'
 export * from './signUp'
 export * from './suggestedTracks'
