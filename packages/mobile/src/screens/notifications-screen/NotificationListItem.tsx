@@ -38,9 +38,9 @@ import {
   CommentReactionNotification
 } from './Notifications'
 import { FanRemixContestEndedNotification } from './Notifications/FanRemixContestEndedNotification'
+import { FanRemixContestEndingSoonNotification } from './Notifications/FanRemixContestEndingSoonNotification'
 import { FanRemixContestStartedNotification } from './Notifications/FanRemixContestStartedNotification'
 import { ListenStreakReminderNotification } from './Notifications/ListenStreakReminderNotification'
-import { FanRemixContestEndingSoonNotification } from './Notifications/RemixContestEndingSoonNotification'
 
 type NotificationListItemProps = {
   notification: Notification
