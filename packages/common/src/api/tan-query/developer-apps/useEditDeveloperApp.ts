@@ -4,16 +4,21 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAudiusQueryContext } from '~/audius-query'
 import { DeveloperApp, EditAppPayload } from '~/schemas/developerApps'
 
+import { useCurrentUserId } from '../users/account/useCurrentUserId'
+
 import { getDeveloperAppsQueryKey } from './useDeveloperApps'
 
 export const useEditDeveloperApp = () => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
+  const { data: currentUserId } = useCurrentUserId()
 
   return useMutation({
     mutationFn: async (editApp: EditAppPayload) => {
-      const { name, description, imageUrl, userId, apiKey } = editApp
-      const encodedUserId = Id.parse(userId)
+      if (!currentUserId) {
+        throw new Error('No current user ID')
+      }
+      const { name, description, imageUrl, apiKey } = editApp
       const sdk = await audiusSdk()
 
       await sdk.developerApps.updateDeveloperApp({
@@ -21,23 +26,19 @@ export const useEditDeveloperApp = () => {
         name,
         description,
         imageUrl,
-        userId: encodedUserId
+        userId: Id.parse(currentUserId)
       })
 
       return { name, description, imageUrl, apiKey }
     },
-    onSuccess: (editApp: DeveloperApp, editAppArgs: EditAppPayload) => {
-      const { userId } = editAppArgs
-
+    onSuccess: (editApp: DeveloperApp) => {
       queryClient.setQueryData(
-        getDeveloperAppsQueryKey(userId),
-        (oldData: { apps: DeveloperApp[] } | undefined) => {
-          if (!oldData) return { apps: [editApp] }
-          return {
-            apps: oldData.apps.map((app) =>
-              app.apiKey === editApp.apiKey ? editApp : app
-            )
-          }
+        getDeveloperAppsQueryKey(currentUserId),
+        (oldData: DeveloperApp[] | undefined) => {
+          if (!oldData) return [editApp]
+          return oldData.map((app) =>
+            app.apiKey === editApp.apiKey ? editApp : app
+          )
         }
       )
     }

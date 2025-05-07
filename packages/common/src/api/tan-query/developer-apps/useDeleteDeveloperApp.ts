@@ -2,36 +2,39 @@ import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { useAudiusQueryContext } from '~/audius-query'
-import { DeleteDeveloperAppArgs, DeveloperApp } from '~/schemas/developerApps'
+import { DeveloperApp } from '~/schemas/developerApps'
+
+import { useCurrentUserId } from '../users/account/useCurrentUserId'
 
 import { getDeveloperAppsQueryKey } from './useDeveloperApps'
 
 export const useDeleteDeveloperApp = () => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
+  const { data: currentUserId } = useCurrentUserId()
 
   return useMutation({
-    mutationFn: async (args: DeleteDeveloperAppArgs) => {
-      const { userId, apiKey } = args
-      const encodedUserId = Id.parse(userId)
+    mutationFn: async (apiKey: string) => {
+      if (!currentUserId) {
+        throw new Error('No current user ID')
+      }
       const sdk = await audiusSdk()
 
       await sdk.developerApps.deleteDeveloperApp({
-        userId: encodedUserId,
+        userId: Id.parse(currentUserId),
         appApiKey: apiKey
       })
       return {}
     },
-    onSuccess: (_response, args) => {
-      const { userId, apiKey } = args
-
+    onSuccess: (_response, apiKey) => {
+      if (!currentUserId) {
+        throw new Error('No current user ID')
+      }
       queryClient.setQueryData(
-        getDeveloperAppsQueryKey(userId),
-        (oldData: { apps: DeveloperApp[] } | undefined) => {
-          if (!oldData) return { apps: [] }
-          return {
-            apps: oldData.apps.filter((app) => app.apiKey !== apiKey)
-          }
+        getDeveloperAppsQueryKey(currentUserId),
+        (oldData: DeveloperApp[] | undefined) => {
+          if (!oldData) return []
+          return oldData.filter((app) => app.apiKey !== apiKey)
         }
       )
     }

@@ -29,9 +29,9 @@ type YourAppsPageProps = CreateAppPageProps
 export const YourAppsPage = (props: YourAppsPageProps) => {
   const { setPage } = props
   const userId = useSelector(getUserId)
-  const { data, status } = useDeveloperApps(userId)
+  const { data: apps, status } = useDeveloperApps(userId)
 
-  const hasMaxAllowedApps = (data?.apps?.length ?? 0) >= maxAppsAllowed
+  const hasMaxAllowedApps = (apps?.length ?? 0) >= maxAppsAllowed
 
   let createAppButton = (
     <Button
@@ -64,11 +64,11 @@ export const YourAppsPage = (props: YourAppsPageProps) => {
         <Divider className={styles.divider} />
         {status !== 'success' ? (
           <LoadingSpinner className={styles.spinner} />
-        ) : !data?.apps?.length ? (
+        ) : !apps?.length ? (
           <p className={styles.noApps}>{messages.noApps}</p>
         ) : (
           <ol className={styles.appList}>
-            {data.apps.map((app: DeveloperApp, index: number) => (
+            {apps.map((app: DeveloperApp, index: number) => (
               <DeveloperAppListItem
                 key={app.apiKey}
                 index={index + 1}
