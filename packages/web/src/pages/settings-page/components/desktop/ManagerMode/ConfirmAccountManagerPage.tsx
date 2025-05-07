@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { useRequestAddManager } from '@audius/common/api'
-import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import {
   Box,
@@ -40,25 +39,28 @@ export const ConfirmAccountManagerPage = (
   const userId = useSelector(getUserId)
   const [submitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [requestAddManager, result] = useRequestAddManager()
-  const { status } = result
+  const {
+    mutate: requestAddManager,
+    isSuccess,
+    isError
+  } = useRequestAddManager()
 
   const manager = params?.user
   useEffect(() => {
-    if (status === Status.SUCCESS) {
+    if (isSuccess) {
       setPageState({
         page: AccountsManagingYouPages.HOME,
         transitionDirection: 'forward'
       })
     }
-  }, [setPageState, status])
+  }, [isSuccess, setPageState])
 
   useEffect(() => {
-    if (status === Status.ERROR) {
+    if (isError) {
       setError(messages.errorGeneral)
       setIsSubmitting(false)
     }
-  }, [status])
+  }, [isError])
 
   const handleConfirm = useCallback(() => {
     setIsSubmitting(true)

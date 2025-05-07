@@ -748,16 +748,17 @@ class WebPlayer extends Component {
                   component={SavedPage}
                 />
                 <Route exact path={HISTORY_PAGE} component={HistoryPage} />
-                {isDevOrStaging && (
-                  <>
-                    <Route exact path={DEV_TOOLS_PAGE} component={DevTools} />
-                    <Route
-                      exact
-                      path={SOLANA_TOOLS_PAGE}
-                      component={SolanaToolsPage}
-                    />
-                  </>
-                )}
+                {isDevOrStaging ? (
+                  <Route exact path={DEV_TOOLS_PAGE} component={DevTools} />
+                ) : null}
+                {isDevOrStaging ? (
+                  <Route
+                    exact
+                    path={SOLANA_TOOLS_PAGE}
+                    component={SolanaToolsPage}
+                  />
+                ) : null}
+
                 <DesktopRoute
                   exact
                   path={DASHBOARD_PAGE}
