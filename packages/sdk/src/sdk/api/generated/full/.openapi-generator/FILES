@@ -26,6 +26,9 @@ models/AnnouncementNotificationActionData.ts
 models/ApproveManagerRequestNotification.ts
 models/ApproveManagerRequestNotificationAction.ts
 models/ApproveManagerRequestNotificationActionData.ts
+models/ArtistRemixContestEndedNotification.ts
+models/ArtistRemixContestEndedNotificationAction.ts
+models/ArtistRemixContestEndedNotificationActionData.ts
 models/Attestation.ts
 models/AttestationReponse.ts
 models/ChallengeRewardNotification.ts
