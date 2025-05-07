@@ -5,10 +5,9 @@ import { cloneDeep } from 'lodash'
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
 import { ID } from '~/models'
 
+import { DeveloperApp } from '../developer-apps/developerApps'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey } from '../types'
-
-import { DeveloperApp } from './developerApps'
 
 export type UseRemoveAuthorizedAppArgs = {
   apiKey: string
