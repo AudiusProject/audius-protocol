@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 from integration_tests.utils import populate_mock_db
 from src.models.notifications.notification import Notification
 from src.queries.get_notifications import NotificationType
-from src.tasks.create_remix_contest_ended_notifications import (
-    _create_remix_contest_ended_notifications,
+from src.tasks.remix_contest_notifications.fan_remix_contest_ended import (
+    create_fan_remix_contest_ended_notifications,
 )
 from src.utils.db_session import get_db
 
@@ -93,7 +93,7 @@ def test_remix_contest_ended_notification_for_remixers(app):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-        _create_remix_contest_ended_notifications(session)
+        create_fan_remix_contest_ended_notifications(session)
         notifications = (
             session.query(Notification)
             .filter(Notification.type == NotificationType.REMIX_CONTEST_ENDED)
@@ -183,7 +183,7 @@ def test_remix_contest_ended_notification_no_duplicate_for_multiple_remixes(app)
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-        _create_remix_contest_ended_notifications(session)
+        create_fan_remix_contest_ended_notifications(session)
         notifications = (
             session.query(Notification)
             .filter(Notification.type == NotificationType.REMIX_CONTEST_ENDED)

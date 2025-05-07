@@ -17,6 +17,10 @@ import { push } from 'redux-first-history'
 const DIMENSIONS = 64
 const { WALLET_AUDIO_PAGE } = route
 
+const messages = {
+  audio: '$AUDIO'
+}
+
 export const YourCoins = () => {
   const dispatch = useDispatch()
   const { color, spacing, cornerRadius } = useTheme()
@@ -76,7 +80,7 @@ export const YourCoins = () => {
                 {audioBalanceFormatted}
               </Text>
               <Text variant='heading' size='l' color='subdued'>
-                $AUDIO
+                {messages.audio}
               </Text>
             </Flex>
             <Text variant='heading' size='s' color='subdued'>

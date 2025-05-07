@@ -1,8 +1,7 @@
 import qs from 'query-string'
 import { matchPath, generatePath } from 'react-router'
 
-import { SearchCategory, SearchFilters } from '~/api/search'
-import { ID } from '~/models'
+import { ID, SearchCategory, SearchFilters } from '~/models'
 
 import { encodeUrlName } from './formatUtil'
 import { convertGenreLabelToValue, Genre } from './genres'

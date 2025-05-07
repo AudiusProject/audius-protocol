@@ -661,6 +661,14 @@ export const notificationFromSDK = (
         ...formatBaseNotification(notification)
       }
     }
+    case 'artist_remix_contest_ended': {
+      const data = notification.actions[0].data
+      return {
+        type: NotificationType.ArtistRemixContestEnded,
+        entityId: HashId.parse(data.entityId),
+        ...formatBaseNotification(notification)
+      }
+    }
     case 'remix_contest_ending_soon': {
       const data = notification.actions[0].data
       return {

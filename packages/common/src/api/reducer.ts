@@ -5,7 +5,6 @@ import { authorizedAppsApiReducer } from './authorizedApps'
 import { developerAppsApiReducer } from './developerApps'
 import { favoritesApiReducer } from './favorites'
 import { libraryApiReducer } from './library'
-import { searchApiReducer } from './search'
 import { trendingApiReducer } from './trending'
 import { userApiReducer } from './user'
 
@@ -15,7 +14,6 @@ export default combineReducers({
   developerAppsApi: developerAppsApiReducer,
   favoritesApi: favoritesApiReducer,
   libraryApi: libraryApiReducer,
-  searchApi: searchApiReducer,
   trendingApi: trendingApiReducer,
   userApi: userApiReducer
 })
