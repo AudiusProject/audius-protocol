@@ -1077,16 +1077,6 @@ class WebPlayer extends Component {
                       : ''
                   }}
                 />
-                {isDevOrStaging && (
-                  <>
-                    <Route exact path={DEV_TOOLS_PAGE} component={DevTools} />
-                    <Route
-                      exact
-                      path={SOLANA_TOOLS_PAGE}
-                      component={SolanaToolsPage}
-                    />
-                  </>
-                )}
               </SwitchComponent>
             </Suspense>
           </div>
