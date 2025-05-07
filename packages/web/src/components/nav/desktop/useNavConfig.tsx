@@ -45,11 +45,9 @@ const {
   CHATS_PAGE,
   UPLOAD_PAGE,
   REWARDS_PAGE,
-  WALLET_PAGE
+  WALLET_PAGE,
+  DEV_TOOLS_PAGE
 } = route
-
-// Define a new route for the DevTools page
-const DEV_TOOLS_PAGE = '/dev-tools'
 
 const { getUnreadMessagesCount } = chatSelectors
 const { getIsAccountComplete, getHasAccount } = accountSelectors
