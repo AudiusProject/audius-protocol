@@ -59,6 +59,8 @@ import CollectionPage from 'pages/collection-page/CollectionPage'
 import CommentHistoryPage from 'pages/comment-history/CommentHistoryPage'
 import { DashboardPage } from 'pages/dashboard-page/DashboardPage'
 import { DeactivateAccountPage } from 'pages/deactivate-account-page/DeactivateAccountPage'
+import DevTools from 'pages/dev-tools/DevTools'
+import SolanaToolsPage from 'pages/dev-tools/SolanaToolsPage'
 import { EditCollectionPage } from 'pages/edit-collection-page'
 import EmptyPage from 'pages/empty-page/EmptyPage'
 import ExploreCollectionsPage from 'pages/explore-page/ExploreCollectionsPage'
@@ -194,7 +196,9 @@ const {
   EDIT_PLAYLIST_PAGE,
   EDIT_ALBUM_PAGE,
   AIRDROP_PAGE,
-  WALLET_PAGE
+  WALLET_PAGE,
+  DEV_TOOLS_PAGE,
+  SOLANA_TOOLS_PAGE
 } = route
 
 const {
@@ -742,6 +746,12 @@ class WebPlayer extends Component {
                   component={SavedPage}
                 />
                 <Route exact path={HISTORY_PAGE} component={HistoryPage} />
+                <Route exact path={DEV_TOOLS_PAGE} component={DevTools} />
+                <Route
+                  exact
+                  path={SOLANA_TOOLS_PAGE}
+                  component={SolanaToolsPage}
+                />
                 <DesktopRoute
                   exact
                   path={DASHBOARD_PAGE}
@@ -1040,6 +1050,16 @@ class WebPlayer extends Component {
                       containerRef={this.props.mainContentRef.current}
                     />
                   )}
+                />
+                <Route
+                  exact
+                  path={DEV_TOOLS_PAGE}
+                  render={(props) => <DevTools {...props} />}
+                />
+                <Route
+                  exact
+                  path={SOLANA_TOOLS_PAGE}
+                  component={SolanaToolsPage}
                 />
                 <Redirect
                   from={HOME_PAGE}

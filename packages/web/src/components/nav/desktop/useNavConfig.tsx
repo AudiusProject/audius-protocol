@@ -18,6 +18,7 @@ import {
   IconPlaylists,
   IconTrending,
   IconWallet,
+  IconSettings,
   LoadingSpinner,
   NotificationCount,
   useTheme
@@ -26,6 +27,7 @@ import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 
 import { RestrictionType } from 'hooks/useRequiresAccount'
+import { env } from 'services/env'
 import { matchesRoute } from 'utils/route'
 
 import { NavSpeakerIcon } from './NavSpeakerIcon'
@@ -45,6 +47,9 @@ const {
   REWARDS_PAGE,
   WALLET_PAGE
 } = route
+
+// Define a new route for the DevTools page
+const DEV_TOOLS_PAGE = '/dev-tools'
 
 const { getUnreadMessagesCount } = chatSelectors
 const { getIsAccountComplete, getHasAccount } = accountSelectors
@@ -95,6 +100,12 @@ export const useNavConfig = () => {
   const { isEnabled: isWalletUIUpdateEnabled } = useFeatureFlag(
     FeatureFlags.WALLET_UI_UPDATE
   )
+
+  const isDevOrStaging =
+    env.ENVIRONMENT === 'development' ||
+    env.ENVIRONMENT === 'staging' ||
+    import.meta.env.DEV === true ||
+    import.meta.env.MODE === 'development'
 
   const navItems = useMemo(
     (): NavItemConfig[] => [
@@ -202,6 +213,17 @@ export const useNavConfig = () => {
         restriction: 'account' as RestrictionType,
         disabled: !hasAccount
       },
+      // Add DevTools nav item that only appears in development and staging environments
+      ...(isDevOrStaging
+        ? [
+            {
+              label: 'DevTools',
+              leftIcon: IconSettings,
+              to: DEV_TOOLS_PAGE,
+              restriction: 'none' as RestrictionType
+            }
+          ]
+        : []),
       {
         label: 'Playlists',
         leftIcon: IconPlaylists,
@@ -225,7 +247,8 @@ export const useNavConfig = () => {
       playingFromRoute,
       color,
       spacing,
-      isWalletUIUpdateEnabled
+      isWalletUIUpdateEnabled,
+      isDevOrStaging
     ]
   )
 

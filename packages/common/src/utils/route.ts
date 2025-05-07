@@ -83,6 +83,8 @@ export const WITHDRAWALS_PAGE = '/payments/withdrawals'
 export const TRANSACTION_HISTORY_PAGE = '/wallet/transaction-history'
 export const WALLET_PAGE = '/wallet'
 export const PRIVATE_KEY_EXPORTER_SETTINGS_PAGE = '/settings/export-private-key'
+export const DEV_TOOLS_PAGE = '/dev-tools'
+export const SOLANA_TOOLS_PAGE = '/dev-tools/solana'
 
 // Multi-stage sign up flow routes
 export enum SignUpPath {
