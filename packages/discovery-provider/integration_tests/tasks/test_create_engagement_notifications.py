@@ -3,6 +3,7 @@ from datetime import datetime
 
 from integration_tests.utils import populate_mock_db
 from src.models.notifications.notification import Notification
+from src.models.rewards.challenge import Challenge
 from src.tasks.create_engagement_notifications import (
     CLAIMABLE_REWARD,
     _create_engagement_notifications,
@@ -24,6 +25,15 @@ TEST_GROUP_ID = get_claimable_reward_notification_group_id(
 def test_create_challenge_claimable_notif(app):
     with app.app_context():
         db = get_db()
+        # challenge = Challenge(
+        #     id=challenge_meta.get("id", ""),
+        #     type=challenge_meta.get("type", ""),
+        #     amount=challenge_meta.get("amount", ""),
+        #     active=challenge_meta.get("active", True),
+        #     step_count=challenge_meta.get("step_count", None),
+        #     starting_block=challenge_meta.get("starting_block", None),
+        #     weekly_pool=challenge_meta.get("weekly_pool", None),
+        # )
 
     entities = {
         "user_challenges": [
@@ -44,6 +54,8 @@ def test_create_challenge_claimable_notif(app):
             },
         ],
     }
+    with db.scoped_session() as session:
+        session.query(Challenge).update({"cooldown_days": 7})
 
     populate_mock_db(db, entities)
     with db.scoped_session() as session:
@@ -93,6 +105,8 @@ def test_debounce_claimable_reward_notif(app):
             }
         ],
     }
+    with db.scoped_session() as session:
+        session.query(Challenge).update({"cooldown_days": 7})
 
     populate_mock_db(db, entities)
     with db.scoped_session() as session:
@@ -133,6 +147,9 @@ def test_ignore_existing_claimable_notification(app):
         ],
     }
 
+    with db.scoped_session() as session:
+        session.query(Challenge).update({"cooldown_days": 7})
+
     populate_mock_db(db, entities)
     with db.scoped_session() as session:
         _create_engagement_notifications(session)
@@ -162,6 +179,9 @@ def test_ignore_existing_disbursement(app):
             }
         ],
     }
+
+    with db.scoped_session() as session:
+        session.query(Challenge).update({"cooldown_days": 7})
 
     populate_mock_db(db, entities)
     with db.scoped_session() as session:
