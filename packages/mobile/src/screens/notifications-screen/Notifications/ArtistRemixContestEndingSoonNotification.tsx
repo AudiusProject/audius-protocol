@@ -11,13 +11,13 @@ import {
   NotificationText,
   NotificationTile,
   NotificationTitle,
-  EntityLink,
-  UserNameLink
+  EntityLink
 } from '../Notification'
 
 const messages = {
-  title: 'Your Remix Contest is Ending Soon',
-  description: ' is ending in 48 hours - check your contest!'
+  title: 'Remix Contest',
+  description1: `Your remix contest for `,
+  description2: ` is ending in 48 hours!`
 }
 
 type ArtistRemixContestEndingSoonNotificationProps = {
@@ -48,8 +48,8 @@ export const ArtistRemixContestEndingSoonNotification = (
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationText>
-        <UserNameLink user={user} /> <EntityLink entity={track} />
-        {messages.description}
+        {messages.description1}
+        <EntityLink entity={track} /> {messages.description2}
       </NotificationText>
     </NotificationTile>
   )
