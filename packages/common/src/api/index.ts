@@ -1,7 +1,6 @@
 // Audius query
 // TODO: migrate all of these to tan-query
 export * from './account'
-export * from './authorizedApps'
 export * from './developerApps'
 export * from './library'
 export * from './signUp'
@@ -130,3 +129,7 @@ export * from './tan-query/wallets/useUSDCBalance'
 // Saga fetch utils, remove when migration is complete
 export * from './tan-query/saga-utils'
 export * from './tan-query/utils/defaultConfig'
+
+// New authorized-apps exports
+export * from './tan-query/authorized-apps/useAuthorizedApps'
+export * from './tan-query/authorized-apps/useRemoveAuthorizedApp'
