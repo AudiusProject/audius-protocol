@@ -1,31 +1,27 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from integration_tests.utils import populate_mock_db
 from src.models.notifications.notification import Notification
 from src.queries.get_notifications import NotificationType
-from src.tasks.remix_contest_notifications.fan_remix_contest_ended import (
-    create_fan_remix_contest_ended_notifications,
-)
 from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
 
 TEST_EVENT_CREATOR_ID = 1
 TEST_TRACK_ID = 100
-TEST_REMIXER_ID_1 = 2
-TEST_REMIXER_ID_2 = 3
+TEST_FOLLOWER_ID = 2
+TEST_FAVORITER_ID = 3
 
 
-def test_remix_contest_ended_notification_for_remixers(app):
-    """Test that remix contest ended notification is created for all remixers of the contest track"""
+def test_fan_remix_contest_started_notification_for_followers_and_favoriters(app):
+    """Test that remix contest started notification is created for followers and users who favorited the track"""
     with app.app_context():
         db = get_db()
 
     now = datetime.now()
-    event_time = now - timedelta(hours=1)
-    remix_time = now - timedelta(minutes=30)
 
+    # First: insert all entities except events
     entities = {
         "users": [
             {
@@ -35,13 +31,13 @@ def test_remix_contest_ended_notification_for_remixers(app):
                 "updated_at": now,
             },
             {
-                "user_id": TEST_REMIXER_ID_1,
+                "user_id": TEST_FOLLOWER_ID,
                 "is_current": True,
                 "created_at": now,
                 "updated_at": now,
             },
             {
-                "user_id": TEST_REMIXER_ID_2,
+                "user_id": TEST_FAVORITER_ID,
                 "is_current": True,
                 "created_at": now,
                 "updated_at": now,
@@ -55,28 +51,33 @@ def test_remix_contest_ended_notification_for_remixers(app):
                 "is_delete": False,
                 "created_at": now,
                 "updated_at": now,
-            },
-            # Remix 1 by REMIXER_ID_1
-            {
-                "track_id": 200,
-                "owner_id": TEST_REMIXER_ID_1,
-                "is_current": True,
-                "is_delete": False,
-                "created_at": remix_time,
-                "updated_at": remix_time,
-                "remix_of": {"tracks": [{"parent_track_id": TEST_TRACK_ID}]},
-            },
-            # Remix 2 by REMIXER_ID_2
-            {
-                "track_id": 201,
-                "owner_id": TEST_REMIXER_ID_2,
-                "is_current": True,
-                "is_delete": False,
-                "created_at": remix_time,
-                "updated_at": remix_time,
-                "remix_of": {"tracks": [{"parent_track_id": TEST_TRACK_ID}]},
-            },
+            }
         ],
+        "follows": [
+            {
+                "follower_user_id": TEST_FOLLOWER_ID,
+                "followee_user_id": TEST_EVENT_CREATOR_ID,
+                "is_current": True,
+                "is_delete": False,
+                "created_at": now,
+            }
+        ],
+        "saves": [
+            {
+                "user_id": TEST_FAVORITER_ID,
+                "save_item_id": TEST_TRACK_ID,
+                "save_type": "track",
+                "is_current": True,
+                "is_delete": False,
+                "created_at": now,
+            }
+        ],
+        # no "events"
+    }
+    populate_mock_db(db, entities)
+
+    # Second: insert just the event
+    event_entities = {
         "events": [
             {
                 "event_type": "remix_contest",
@@ -84,45 +85,43 @@ def test_remix_contest_ended_notification_for_remixers(app):
                 "entity_id": TEST_TRACK_ID,
                 "entity_type": "track",
                 "is_deleted": False,
-                "end_date": event_time,
-                "created_at": event_time,
-                "updated_at": event_time,
+                "created_at": now,
+                "updated_at": now,
             }
-        ],
+        ]
     }
-    populate_mock_db(db, entities)
+    populate_mock_db(db, event_entities)
 
     with db.scoped_session() as session:
-        create_fan_remix_contest_ended_notifications(session)
         notifications = (
             session.query(Notification)
-            .filter(Notification.type == NotificationType.REMIX_CONTEST_ENDED)
+            .filter(Notification.type == NotificationType.FAN_REMIX_CONTEST_STARTED)
             .all()
         )
         notified_user_ids = set()
         for notification in notifications:
             notified_user_ids.update(notification.user_ids)
-            # entity_user_id should be the original artist
             assert notification.data["entity_user_id"] == TEST_EVENT_CREATOR_ID
             assert notification.data["entity_id"] == TEST_TRACK_ID
-            assert notification.type == NotificationType.REMIX_CONTEST_ENDED
-            assert notification.group_id.startswith("remix_contest_ended:")
-        # Should notify both remixers
-        assert TEST_REMIXER_ID_1 in notified_user_ids
-        assert TEST_REMIXER_ID_2 in notified_user_ids
+            assert notification.type == NotificationType.FAN_REMIX_CONTEST_STARTED
+            assert notification.group_id.startswith("fan_remix_contest_started:")
+        # Should notify both the follower and the favoriter
+        assert TEST_FOLLOWER_ID in notified_user_ids
+        assert TEST_FAVORITER_ID in notified_user_ids
         assert len(notified_user_ids) == 2
 
 
-def test_remix_contest_ended_notification_no_duplicate_for_multiple_remixes(app):
-    """Test that a user who submitted multiple remixes only gets one notification"""
+def test_fan_remix_contest_started_notification_no_duplicate_for_follower_and_favoriter(
+    app,
+):
+    """Test that a user who both follows the creator and saved the track only gets one notification"""
     with app.app_context():
         db = get_db()
 
     now = datetime.now()
-    event_time = now - timedelta(hours=1)
-    remix_time = now - timedelta(minutes=30)
-    REMIXER_ID = 4
+    BOTH_ID = 4
 
+    # First: insert all entities except events
     entities = {
         "users": [
             {
@@ -132,7 +131,7 @@ def test_remix_contest_ended_notification_no_duplicate_for_multiple_remixes(app)
                 "updated_at": now,
             },
             {
-                "user_id": REMIXER_ID,
+                "user_id": BOTH_ID,
                 "is_current": True,
                 "created_at": now,
                 "updated_at": now,
@@ -146,27 +145,33 @@ def test_remix_contest_ended_notification_no_duplicate_for_multiple_remixes(app)
                 "is_delete": False,
                 "created_at": now,
                 "updated_at": now,
-            },
-            # Two remixes by the same user
-            {
-                "track_id": 300,
-                "owner_id": REMIXER_ID,
-                "is_current": True,
-                "is_delete": False,
-                "created_at": remix_time,
-                "updated_at": remix_time,
-                "remix_of": {"tracks": [{"parent_track_id": TEST_TRACK_ID}]},
-            },
-            {
-                "track_id": 301,
-                "owner_id": REMIXER_ID,
-                "is_current": True,
-                "is_delete": False,
-                "created_at": remix_time,
-                "updated_at": remix_time,
-                "remix_of": {"tracks": [{"parent_track_id": TEST_TRACK_ID}]},
-            },
+            }
         ],
+        "follows": [
+            {
+                "follower_user_id": BOTH_ID,
+                "followee_user_id": TEST_EVENT_CREATOR_ID,
+                "is_current": True,
+                "is_delete": False,
+                "created_at": now,
+            }
+        ],
+        "saves": [
+            {
+                "user_id": BOTH_ID,
+                "save_item_id": TEST_TRACK_ID,
+                "save_type": "track",
+                "is_current": True,
+                "is_delete": False,
+                "created_at": now,
+            }
+        ],
+        # no "events"
+    }
+    populate_mock_db(db, entities)
+
+    # Second: insert just the event
+    event_entities = {
         "events": [
             {
                 "event_type": "remix_contest",
@@ -174,27 +179,27 @@ def test_remix_contest_ended_notification_no_duplicate_for_multiple_remixes(app)
                 "entity_id": TEST_TRACK_ID,
                 "entity_type": "track",
                 "is_deleted": False,
-                "end_date": event_time,
-                "created_at": event_time,
-                "updated_at": event_time,
+                "created_at": now,
+                "updated_at": now,
             }
-        ],
+        ]
     }
-    populate_mock_db(db, entities)
+    populate_mock_db(db, event_entities)
 
     with db.scoped_session() as session:
-        create_fan_remix_contest_ended_notifications(session)
         notifications = (
             session.query(Notification)
-            .filter(Notification.type == NotificationType.REMIX_CONTEST_ENDED)
+            .filter(Notification.type == NotificationType.FAN_REMIX_CONTEST_STARTED)
             .all()
         )
+        # There should be only one notification for BOTH_ID
         notif_count = 0
         for notification in notifications:
-            if REMIXER_ID in notification.user_ids:
+            if BOTH_ID in notification.user_ids:
                 notif_count += 1
                 assert notification.data["entity_user_id"] == TEST_EVENT_CREATOR_ID
                 assert notification.data["entity_id"] == TEST_TRACK_ID
-                assert notification.type == NotificationType.REMIX_CONTEST_ENDED
-                assert notification.group_id.startswith("remix_contest_ended:")
+                assert notification.type == NotificationType.FAN_REMIX_CONTEST_STARTED
+                assert notification.specifier == str(BOTH_ID)
+                assert notification.group_id.startswith("fan_remix_contest_started:")
         assert notif_count == 1
