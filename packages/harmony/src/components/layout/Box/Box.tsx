@@ -66,9 +66,13 @@ export const Box = styled.div<BoxProps>(
       marginBottom: (marginB && spacing[marginB as SpacingOptions]) ?? marginB,
       backgroundColor:
         backgroundColor &&
-        (backgroundColor === 'none'
+        (backgroundColor === 'none' || backgroundColor === 'gradient'
           ? undefined
           : theme.color.background[backgroundColor]),
+      background:
+        backgroundColor === 'gradient'
+          ? theme.color.background.gradient
+          : undefined,
       border: border && `1px solid ${color.border[border]}`,
       borderTop: borderTop && `1px solid ${color.border[borderTop]}`,
       borderRight: borderRight && `1px solid ${color.border[borderRight]}`,
