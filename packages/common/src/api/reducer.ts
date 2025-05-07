@@ -5,7 +5,6 @@ import { authorizedAppsApiReducer } from './authorizedApps'
 import { developerAppsApiReducer } from './developerApps'
 import { libraryApiReducer } from './library'
 import { signUpReducer } from './signUp'
-import { trendingApiReducer } from './trending'
 import { userApiReducer } from './user'
 
 export default combineReducers({
@@ -14,6 +13,5 @@ export default combineReducers({
   developerAppsApi: developerAppsApiReducer,
   libraryApi: libraryApiReducer,
   signUpApi: signUpReducer,
-  trendingApi: trendingApiReducer,
   userApi: userApiReducer
 })
