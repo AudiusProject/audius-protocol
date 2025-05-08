@@ -4,8 +4,6 @@ import { useRemixContest, useTrackPageLineup } from '@audius/common/api'
 import { trackPageMessages as messages } from '@audius/common/messages'
 import type { ID, User } from '@audius/common/models'
 import { useFocusEffect } from '@react-navigation/native'
-import { confirmSaveCollection } from 'common/store/social/collections/sagas'
-import { useDispatch } from 'react-redux'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
 
 import { Flex, Text } from '@audius/harmony-native'

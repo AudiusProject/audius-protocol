@@ -45,6 +45,7 @@ export const useTrackByParams = (
     if (track && isSuccess) {
       const { track_id } = track
 
+      // Reset lineup before adding the hero track
       dispatch(tracksActions.reset())
       // Add hero track to lineup early so that we can play it ASAP
       // instead of waiting for the entire lineup to load
