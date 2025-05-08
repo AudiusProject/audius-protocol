@@ -2,6 +2,7 @@
 
 import { ethereumRouter } from './typed-routes/ethereum/ethRpc'
 import { solanaRouter } from './typed-routes/solana/solanaRelay'
+import { DiscoveryNodeSelector, sdk } from '@audius/sdk'
 
 // Import libs before anything else becaues it takes a very long time to load.
 // Once it's imported once, it'll be in the cache and subsequent imports will be ~instant.
@@ -26,6 +27,27 @@ process.on('unhandledRejection', (reason, promise) => {
 const start = async () => {
   const port = config.get('port')
   const app = new App(port)
+
+  const environment = process.env.environment as
+    | 'development'
+    | 'staging'
+    | 'production'
+    | undefined
+  logger.info('Starting SDK in environment:', environment)
+
+  const audiusSdk = sdk({
+    appName: 'identity-service',
+    environment: environment ?? 'development',
+    services: {
+      discoveryNodeSelector: new DiscoveryNodeSelector({
+        allowlist: config.get('discoveryProviderWhitelist')
+          ? new Set(config.get('discoveryProviderWhitelist').split(','))
+          : undefined
+      })
+    }
+  })
+  app.express.set('audiusSdk', audiusSdk)
+
   // TODO: Move this into App once it's typed
   app.express.use('/solana', solanaRouter)
   app.express.use('/ethereum', ethereumRouter)
