@@ -1,8 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import { useTokenExchangeRate } from '@audius/common/src/api'
 import { JupiterTokenSymbol } from '@audius/common/src/services/Jupiter'
+import { useFormik } from 'formik'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import { createSwapFormSchema, SwapFormValues } from '../schemas/swapFormSchema'
 import { TokenInfo } from '../types'
 
 export type BalanceConfig = {
@@ -57,29 +60,43 @@ export const useTokenSwapForm = ({
   const inputTokenSymbol = inputToken.symbol as JupiterTokenSymbol
   const outputTokenSymbol = outputToken.symbol as JupiterTokenSymbol
 
-  // Destructure the balance config for easier access
-  const {
-    get: getInputBalance,
-    loading: isBalanceLoading,
-    formatError: formatBalanceError
-  } = balance
-  const [inputAmount, setInputAmount] = useState<string>('')
-  const [error, setError] = useState<string | null>(null)
+  const { get: getInputBalance, loading: isBalanceLoading } = balance
 
-  // Calculate the numeric value of the input amount
-  const numericInputAmount = useMemo(() => {
-    if (!inputAmount) return 0
-    const parsed = parseFloat(inputAmount)
-    return isNaN(parsed) ? 0 : parsed
-  }, [inputAmount])
-
-  // Get the available balance
   const availableBalance = useMemo(() => {
     const balance = getInputBalance()
     return balance !== undefined ? balance : (inputToken.balance ?? 0)
   }, [getInputBalance, inputToken.balance])
 
-  // Use Jupiter API to get real-time exchange rate
+  // Create validation schema
+  const validationSchema = useMemo(() => {
+    return toFormikValidationSchema(
+      createSwapFormSchema(min, max, availableBalance, inputToken.symbol)
+    )
+  }, [min, max, availableBalance, inputToken.symbol])
+
+  // Initialize form with Formik
+  const formik = useFormik<SwapFormValues>({
+    initialValues: {
+      inputAmount: ''
+    },
+    validationSchema,
+    validateOnBlur: true,
+    validateOnChange: true,
+    onSubmit: () => {
+      // The form is never actually submitted - we just use Formik for validation
+      // and state management
+    }
+  })
+
+  const { values, errors, touched, setFieldValue, setFieldTouched } = formik
+
+  // Calculate the numeric value of the input amount
+  const numericInputAmount = useMemo(() => {
+    if (!values.inputAmount) return 0
+    const parsed = parseFloat(values.inputAmount)
+    return isNaN(parsed) ? 0 : parsed
+  }, [values.inputAmount])
+
   const {
     data: exchangeRateData,
     isLoading: isExchangeRateLoading,
@@ -98,80 +115,54 @@ export const useTokenSwapForm = ({
     return exchangeRateData.rate * numericInputAmount
   }, [numericInputAmount, exchangeRateData, isExchangeRateLoading])
 
-  // Validate the input amount
-  useEffect(() => {
-    if (numericInputAmount === 0) {
-      setError(null)
-      return
-    }
-
-    if (numericInputAmount < min) {
-      setError(`Minimum amount is ${min} ${inputToken.symbol}`)
-      return
-    }
-
-    if (numericInputAmount > max) {
-      setError(`Maximum amount is ${max} ${inputToken.symbol}`)
-      return
-    }
-
-    // Check if user has enough balance
-    const balance = getInputBalance()
-    if (balance !== undefined && numericInputAmount > balance) {
-      setError(formatBalanceError(numericInputAmount))
-      return
-    }
-
-    setError(null)
-  }, [
-    numericInputAmount,
-    min,
-    max,
-    getInputBalance,
-    formatBalanceError,
-    inputToken.symbol
-  ])
-
-  // Update the parent component with transaction data
   useEffect(() => {
     if (onTransactionDataChange) {
+      const isValid =
+        numericInputAmount > 0 && !errors.inputAmount && !isExchangeRateLoading
+
       onTransactionDataChange({
         inputAmount: numericInputAmount,
         outputAmount,
-        isValid: numericInputAmount > 0 && !error && !isExchangeRateLoading
+        isValid
       })
     }
   }, [
     numericInputAmount,
     outputAmount,
-    error,
+    errors.inputAmount,
     isExchangeRateLoading,
     onTransactionDataChange
   ])
 
   // Handle input changes
-  const handleInputAmountChange = useCallback((value: string) => {
-    // Allow only valid number input with better decimal handling
-    if (value === '' || /^(\d*\.?\d*|\d+\.)$/.test(value)) {
-      setInputAmount(value)
-    }
-  }, [])
+  const handleInputAmountChange = useCallback(
+    (value: string) => {
+      // Allow only valid number input with better decimal handling
+      if (value === '' || /^(\d*\.?\d*|\d+\.)$/.test(value)) {
+        setFieldValue('inputAmount', value, true)
+        setFieldTouched('inputAmount', true, false)
+      }
+    },
+    [setFieldValue, setFieldTouched]
+  )
 
   // Handle max button click
   const handleMaxClick = useCallback(() => {
     const balance = getInputBalance()
     if (balance !== undefined) {
-      // Limit to MAX_AMOUNT
       const finalAmount = Math.min(balance, max)
-      setInputAmount(finalAmount.toString())
+      setFieldValue('inputAmount', finalAmount.toString(), true)
+      setFieldTouched('inputAmount', true, false)
     }
-  }, [getInputBalance, max])
+  }, [getInputBalance, max, setFieldValue, setFieldTouched])
 
-  // Use the real exchange rate if available, otherwise null (no default fallback)
   const currentExchangeRate = exchangeRateData ? exchangeRateData.rate : null
 
+  const error =
+    touched.inputAmount && errors.inputAmount ? errors.inputAmount : null
+
   return {
-    inputAmount, // Raw string input for display
+    inputAmount: values.inputAmount, // Raw string input for display
     numericInputAmount,
     outputAmount,
     error,
@@ -182,7 +173,7 @@ export const useTokenSwapForm = ({
     currentExchangeRate,
     handleInputAmountChange,
     handleMaxClick,
-    // Including these for the component that consumes this hook
+    formik,
     inputToken,
     outputToken
   }

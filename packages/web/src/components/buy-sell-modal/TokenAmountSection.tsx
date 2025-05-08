@@ -1,3 +1,4 @@
+import { getCurrencyDecimalPlaces } from '@audius/common/utils'
 import {
   Button,
   Divider,
@@ -8,7 +9,22 @@ import {
 } from '@audius/harmony'
 import { useTheme } from '@emotion/react'
 
+import { useTokenAmountFormatting } from './hooks'
 import { TokenAmountSectionProps } from './types'
+
+const messages = {
+  available: 'Available',
+  max: 'MAX',
+  amountInputLabel: (symbol: string) => `Amount (${symbol})`,
+  exchangeRate: (rate: number, isTokenStablecoin: boolean) => {
+    const decimalPlaces = isTokenStablecoin ? 2 : getCurrencyDecimalPlaces(rate)
+    const formattedRateStr = rate.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: decimalPlaces
+    })
+    return `(${isTokenStablecoin ? '$' : ''}${formattedRateStr} ea.)`
+  }
+}
 
 export const TokenAmountSection = ({
   title,
@@ -26,6 +42,15 @@ export const TokenAmountSection = ({
   const { icon: TokenIcon, symbol, isStablecoin } = tokenInfo
   const tokenTicker = isStablecoin ? symbol : `$${symbol}`
 
+  const { formattedAvailableBalance, formattedAmount } =
+    useTokenAmountFormatting({
+      amount,
+      availableBalance,
+      exchangeRate,
+      isStablecoin: !!isStablecoin,
+      placeholder
+    })
+
   return (
     <Flex direction='column' gap='m'>
       <Flex alignItems='center' gap='m'>
@@ -38,7 +63,7 @@ export const TokenAmountSection = ({
         <Flex gap='s' p='l' alignItems='flex-start'>
           <Flex alignItems='flex-start' gap='s'>
             <TextInput
-              label={`Amount (${symbol})`}
+              label={messages.amountInputLabel(symbol)}
               placeholder={placeholder}
               value={amount?.toString() || ''}
               onChange={(e) => onAmountChange?.(e.target.value)}
@@ -50,7 +75,7 @@ export const TokenAmountSection = ({
               }}
               onClick={onMaxClick}
             >
-              MAX
+              {messages.max}
             </Button>
           </Flex>
           <Flex
@@ -63,13 +88,13 @@ export const TokenAmountSection = ({
             <Flex alignItems='center' gap='s'>
               <TokenIcon size='l' />
               <Text variant='heading' size='s' color='subdued'>
-                Available
+                {messages.available}
               </Text>
               <IconInfo size='s' color='subdued' />
             </Flex>
             <Text variant='heading' size='xl'>
               {isStablecoin ? '$' : ''}
-              {availableBalance.toFixed(2)}
+              {formattedAvailableBalance}
             </Text>
           </Flex>
         </Flex>
@@ -78,7 +103,7 @@ export const TokenAmountSection = ({
           <TokenIcon width={spacing.unit16} height={spacing.unit16} />
           <Flex direction='column'>
             <Text variant='heading' size='l'>
-              {amount}
+              {formattedAmount}
             </Text>
             <Flex gap='xs'>
               <Text variant='heading' size='s' color='subdued'>
@@ -86,8 +111,7 @@ export const TokenAmountSection = ({
               </Text>
               {exchangeRate !== null && exchangeRate !== undefined && (
                 <Text variant='heading' size='s' color='subdued'>
-                  ({isStablecoin ? '$' : ''}
-                  {exchangeRate})
+                  {messages.exchangeRate(exchangeRate, !!isStablecoin)}
                 </Text>
               )}
             </Flex>

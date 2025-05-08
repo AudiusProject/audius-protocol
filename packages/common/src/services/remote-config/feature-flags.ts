@@ -31,7 +31,8 @@ export enum FeatureFlags {
   REMIX_CONTEST = 'remix_contest',
   WALLET_UI_UPDATE = 'wallet_ui_update',
   SEARCH_EXPLORE = 'search_explore',
-  EXPLORE_REMIX_SECTION = 'explore_remix_section'
+  EXPLORE_REMIX_SECTION = 'explore_remix_section',
+  WALLET_UI_BUY_SELL = 'wallet_ui_buy_sell'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -78,5 +79,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.REMIX_CONTEST]: false,
   [FeatureFlags.WALLET_UI_UPDATE]: false,
   [FeatureFlags.SEARCH_EXPLORE]: false,
-  [FeatureFlags.EXPLORE_REMIX_SECTION]: false
+  [FeatureFlags.EXPLORE_REMIX_SECTION]: false,
+  [FeatureFlags.WALLET_UI_BUY_SELL]: false
 }

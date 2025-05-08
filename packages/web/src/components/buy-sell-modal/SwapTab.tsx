@@ -1,4 +1,7 @@
-import { Flex, Text, Skeleton } from '@audius/harmony'
+import { useRef } from 'react'
+
+import { Flex, Skeleton } from '@audius/harmony'
+import { Form, FormikProvider } from 'formik'
 
 import { TokenAmountSection } from './TokenAmountSection'
 import { useTokenSwapForm } from './hooks/useTokenSwapForm'
@@ -52,11 +55,10 @@ export const SwapTab = ({
 }: SwapTabProps) => {
   // Use the shared hook for form logic
   const {
+    formik,
     inputAmount,
     numericInputAmount,
     outputAmount,
-    error,
-    exchangeRateError,
     isExchangeRateLoading,
     isBalanceLoading,
     availableBalance,
@@ -69,76 +71,56 @@ export const SwapTab = ({
     min,
     max,
     balance,
-
     onTransactionDataChange
   })
 
-  // Show initial loading state if we don't have a balance or exchange rate yet
+  // Track if an exchange rate has ever been successfully fetched
+  const hasRateEverBeenFetched = useRef(false)
+  if (currentExchangeRate !== null) {
+    hasRateEverBeenFetched.current = true
+  }
+
+  // Show initial loading state if balance is loading,
+  // OR if exchange rate is loading AND we've never fetched a rate before.
   const isInitialLoading =
-    isBalanceLoading || (isExchangeRateLoading && !currentExchangeRate)
+    isBalanceLoading ||
+    (isExchangeRateLoading && !hasRateEverBeenFetched.current)
 
   return (
-    <Flex direction='column' gap='l'>
-      {/* Show loading state while fetching balance or initial exchange rate */}
-      {isInitialLoading && <SwapFormSkeleton />}
+    <FormikProvider value={formik}>
+      <Form>
+        <Flex direction='column' gap='l'>
+          {isInitialLoading ? (
+            <SwapFormSkeleton />
+          ) : (
+            <>
+              <TokenAmountSection
+                title='You Pay'
+                tokenInfo={inputToken}
+                isInput={true}
+                amount={inputAmount}
+                onAmountChange={handleInputAmountChange}
+                onMaxClick={handleMaxClick}
+                availableBalance={availableBalance}
+                placeholder='0.00'
+              />
 
-      {/* Show error from exchange rate fetch */}
-      {exchangeRateError && (
-        <Flex
-          direction='column'
-          css={{
-            padding: '16px',
-            backgroundColor: 'var(--harmony-error-100)',
-            borderRadius: '4px',
-            color: 'var(--harmony-error-600)'
-          }}
-        >
-          <Text>Unable to fetch exchange rate. Please try again.</Text>
+              <TokenAmountSection
+                title='You Receive'
+                tokenInfo={outputToken}
+                isInput={false}
+                amount={outputAmount}
+                availableBalance={0}
+                exchangeRate={currentExchangeRate}
+              />
+            </>
+          )}
+
+          {isExchangeRateLoading &&
+            numericInputAmount > 0 &&
+            !isInitialLoading && <ExchangeRateSkeleton />}
         </Flex>
-      )}
-
-      {/* Input amount section */}
-      <TokenAmountSection
-        title='You Pay'
-        tokenInfo={inputToken}
-        isInput={true}
-        amount={inputAmount}
-        onAmountChange={handleInputAmountChange}
-        onMaxClick={handleMaxClick}
-        availableBalance={availableBalance}
-        placeholder='0.00'
-      />
-
-      {/* Show validation error */}
-      {error && (
-        <Flex
-          direction='column'
-          css={{
-            marginTop: '-12px',
-            padding: '12px',
-            backgroundColor: 'var(--harmony-error-100)',
-            borderRadius: '4px',
-            color: 'var(--harmony-error-600)'
-          }}
-        >
-          <Text>{error}</Text>
-        </Flex>
-      )}
-
-      {/* Output amount section */}
-      <TokenAmountSection
-        title='You Receive'
-        tokenInfo={outputToken}
-        isInput={false}
-        amount={outputAmount}
-        availableBalance={0}
-        exchangeRate={currentExchangeRate}
-      />
-
-      {/* Loading indicator for exchange rate */}
-      {isExchangeRateLoading && numericInputAmount > 0 && !isInitialLoading && (
-        <ExchangeRateSkeleton />
-      )}
-    </Flex>
+      </Form>
+    </FormikProvider>
   )
 }
