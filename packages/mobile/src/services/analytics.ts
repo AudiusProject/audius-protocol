@@ -10,7 +10,6 @@ import type { IdentifyTraits } from '@audius/common/models'
 import VersionNumber from 'react-native-version-number'
 
 import { env } from 'app/services/env'
-import { versionInfo } from 'app/utils/appVersionWithCodepush'
 
 import packageInfo from '../../package.json'
 import type { Track, Screen, AllEvents } from '../types/analytics'
@@ -101,8 +100,7 @@ export const track = async ({ eventName, properties }: Track) => {
     ...properties,
     clientVersion,
     isNativeMobile: true,
-    mobileClientVersion: version,
-    mobileClientVersionInclOTA: versionInfo ?? 'unknown'
+    mobileClientVersion: version
   }
   if (!IS_PRODUCTION_BUILD) {
     console.info('Amplitude | track', eventName, properties)

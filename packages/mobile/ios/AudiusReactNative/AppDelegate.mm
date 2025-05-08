@@ -8,7 +8,6 @@
 #import <React/RCTLinkingManager.h>
 #import "RNNotifications.h"
 
-#import <CodePush/CodePush.h>
 #import <TikTokOpenSDK/TikTokOpenSDKApplicationDelegate.h>
 
 @implementation AppDelegate
@@ -60,8 +59,6 @@
 {
 #if DEBUG
   return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
-#else
-  return [CodePush bundleURL];
 #endif
 }
 
