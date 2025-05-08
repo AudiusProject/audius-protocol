@@ -7,6 +7,12 @@ import { TokenAmountSection } from './TokenAmountSection'
 import { useTokenSwapForm } from './hooks/useTokenSwapForm'
 import { TokenInfo } from './types'
 
+const messages = {
+  youPay: 'You Pay',
+  youReceive: 'You Receive',
+  placeholder: '0.00'
+}
+
 const TokenSectionSkeleton = ({ title }: { title: string }) => (
   <Flex direction='column' gap='s'>
     <Skeleton h='xl' w={title === 'input' ? 'unit20' : 'unit24'} />
@@ -53,7 +59,6 @@ export const SwapTab = ({
   balance,
   onTransactionDataChange
 }: SwapTabProps) => {
-  // Use the shared hook for form logic
   const {
     formik,
     inputAmount,
@@ -95,18 +100,18 @@ export const SwapTab = ({
           ) : (
             <>
               <TokenAmountSection
-                title='You Pay'
+                title={messages.youPay}
                 tokenInfo={inputToken}
                 isInput={true}
                 amount={inputAmount}
                 onAmountChange={handleInputAmountChange}
                 onMaxClick={handleMaxClick}
                 availableBalance={availableBalance}
-                placeholder='0.00'
+                placeholder={messages.placeholder}
               />
 
               <TokenAmountSection
-                title='You Receive'
+                title={messages.youReceive}
                 tokenInfo={outputToken}
                 isInput={false}
                 amount={outputAmount}

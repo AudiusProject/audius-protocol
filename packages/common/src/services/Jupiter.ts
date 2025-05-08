@@ -7,7 +7,7 @@ import {
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 
 import { TOKEN_LISTING_MAP } from '~/store/ui/buy-audio/constants'
-import { convertBigIntToAmountObject } from '~/utils'
+import { convertBigIntToAmountObject, removeNullable } from '~/utils'
 
 /**
  * The error that gets returned if the slippage is exceeded
@@ -38,6 +38,15 @@ const getInstance = () => {
 }
 
 export const jupiterInstance = getInstance()
+
+/**
+ * Helper function to find a token by its mint address
+ */
+const findTokenByMint = (mintAddress: string) => {
+  return Object.values(TOKEN_LISTING_MAP).find(
+    (token) => token.address === mintAddress
+  )
+}
 
 export type JupiterQuoteParams = {
   inputTokenSymbol: JupiterTokenSymbol
@@ -80,6 +89,8 @@ export type JupiterQuoteResult = {
   quote: QuoteResponse
 }
 
+const DEFAULT_DECIMALS = 9
+
 /**
  * Gets a quote from Jupiter using mint addresses directly
  * This version is used by the useSwapTokens hook
@@ -92,19 +103,12 @@ export const getJupiterQuoteByMint = async ({
   swapMode = 'ExactIn',
   onlyDirectRoutes = false
 }: JupiterMintQuoteParams): Promise<JupiterQuoteResult> => {
-  // Get quote from Jupiter
-  // Look up token decimals from TOKEN_LISTING_MAP
-  // We'll find tokens by their address to get the correct decimals
-  const inputToken = Object.values(TOKEN_LISTING_MAP).find(
-    (token) => token.address === inputMint
-  )
-  const outputToken = Object.values(TOKEN_LISTING_MAP).find(
-    (token) => token.address === outputMint
-  )
+  const inputToken = findTokenByMint(inputMint)
+  const outputToken = findTokenByMint(outputMint)
 
   // Default to 9 decimals if tokens aren't found (fallback for safety)
-  const inputDecimals = inputToken?.decimals ?? 9
-  const outputDecimals = outputToken?.decimals ?? 9
+  const inputDecimals = inputToken?.decimals ?? DEFAULT_DECIMALS
+  const outputDecimals = outputToken?.decimals ?? DEFAULT_DECIMALS
 
   const amount =
     swapMode === 'ExactIn'
@@ -149,9 +153,7 @@ export const convertJupiterInstructions = (
   instructions: (Instruction | undefined)[]
 ): TransactionInstruction[] => {
   // Flatten and filter out undefined instructions
-  const filteredInstructions = instructions.filter(
-    (i): i is Instruction => i !== undefined
-  )
+  const filteredInstructions = instructions.filter(removeNullable)
 
   // Convert to Solana TransactionInstruction format
   return filteredInstructions.map((i) => {

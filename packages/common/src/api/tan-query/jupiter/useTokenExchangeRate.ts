@@ -1,6 +1,4 @@
-import { useMemo } from 'react'
-
-import { QuoteResponse } from '@jup-ag/api'
+import { QuoteResponse, SwapMode } from '@jup-ag/api'
 import { useQuery } from '@tanstack/react-query'
 
 import { JupiterTokenSymbol, getJupiterQuoteByMint } from '~/services/Jupiter'
@@ -12,7 +10,7 @@ export type TokenExchangeRateParams = {
   inputTokenSymbol: JupiterTokenSymbol
   outputTokenSymbol: JupiterTokenSymbol
   inputAmount?: number
-  swapMode?: 'ExactIn' | 'ExactOut'
+  swapMode?: SwapMode
 }
 
 export type TokenExchangeRateResponse = {
@@ -28,6 +26,9 @@ export type TokenExchangeRateResponse = {
   priceImpactPct: number
   quote: QuoteResponse
 }
+
+// Default slippage is 50 basis points (0.5%)
+const SLIPPAGE_BPS = 50
 
 // Define exchange rate query key
 export const getTokenExchangeRateQueryKey = ({
@@ -58,13 +59,6 @@ export const useTokenExchangeRate = (
   // Default to 1 unit of input token if no amount specified
   const inputAmount = params.inputAmount ?? 1
 
-  // Get appropriate slippage value based on swap direction
-  const slippageBps = useMemo(() => {
-    // Default slippage is 50 basis points (0.5%)
-    // We're not using remote config for now to avoid dependency issues
-    return 50
-  }, [])
-
   return useQuery({
     queryKey: getTokenExchangeRateQueryKey({
       inputTokenSymbol: params.inputTokenSymbol,
@@ -89,7 +83,7 @@ export const useTokenExchangeRate = (
           inputMint: inputToken.address,
           outputMint: outputToken.address,
           amountUi: inputAmount,
-          slippageBps,
+          slippageBps: SLIPPAGE_BPS,
           swapMode: params.swapMode ?? 'ExactIn',
           onlyDirectRoutes: false
         })
@@ -116,7 +110,6 @@ export const useTokenExchangeRate = (
         throw error
       }
     },
-    ...options,
-    enabled: options?.enabled !== false
+    ...options
   })
 }
