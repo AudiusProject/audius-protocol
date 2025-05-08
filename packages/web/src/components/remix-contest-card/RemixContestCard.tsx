@@ -1,11 +1,6 @@
 import { MouseEvent, Ref, forwardRef, useCallback } from 'react'
 
-import {
-  useCurrentUserId,
-  useRemixContest,
-  useTrack,
-  useUser
-} from '@audius/common/api'
+import { useRemixContest, useTrack, useUser } from '@audius/common/api'
 import { ID, SquareSizes } from '@audius/common/models'
 import { formatDate } from '@audius/common/utils'
 import { Flex, Skeleton, Text } from '@audius/harmony'
