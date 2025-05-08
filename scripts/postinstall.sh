@@ -42,12 +42,16 @@ if [[ -z "${SKIP_POD_INSTALL}" ]]; then
   } > /dev/null
 fi
 
-printf "${GREEN}Setting up Android dependencies...\n${NC}"
-{
-  cd ./packages/mobile/android
-  ./gradlew :app:downloadAar
-  cd ../../..
-} > /dev/null
+if command -v java >/dev/null; then
+  {
+    printf "${GREEN}Setting up Android dependencies...\n${NC}"
+    cd ./packages/mobile/android
+    ./gradlew :app:downloadAar
+    cd ../../..
+  } > /dev/null
+else
+  printf "${YELLOW}WARNING: Java not found. Skipping Android AAR installation.${NC}\n"
+fi
 
 if [[ -z "${CI}" ]]; then
   printf "${GREEN}Setting up audius-compose...\n${NC}"
