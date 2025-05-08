@@ -8,7 +8,6 @@ import {
   useEditDeveloperApp
 } from '@audius/common/api'
 import { Name } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { IconCopy, IconButton, Button, Flex, IconEmbed } from '@audius/harmony'
 import { Form, Formik, useField } from 'formik'
 import { z } from 'zod'
@@ -21,12 +20,9 @@ import PreloadImage from 'components/preload-image/PreloadImage'
 import Toast from 'components/toast/Toast'
 import { MountPlacement } from 'components/types'
 import { copyToClipboard } from 'utils/clipboardUtil'
-import { useSelector } from 'utils/reducer'
 
 import styles from './EditAppPage.module.css'
 import { CreateAppPageProps, CreateAppsPages } from './types'
-
-const { getUserId } = accountSelectors
 
 type EditAppPageProps = CreateAppPageProps
 
@@ -64,7 +60,6 @@ const ImageField = ({ name }: { name: string }) => {
 
 export const EditAppPage = (props: EditAppPageProps) => {
   const { params, setPage } = props
-  const userId = useSelector(getUserId) as number
   const { name, description, apiKey, imageUrl } = params || {}
 
   const record = useRecord()
@@ -110,7 +105,6 @@ export const EditAppPage = (props: EditAppPageProps) => {
   )
 
   const initialValues: DeveloperAppValues = {
-    userId,
     apiKey: apiKey || '',
     name: name || '',
     description,
