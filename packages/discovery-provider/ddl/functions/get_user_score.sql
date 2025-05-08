@@ -1,13 +1,15 @@
 -- identical to get_user_scores but for a single user
 -- used to generate a user score for attestations and in UI tool
+drop function if exists get_user_score(integer);
 create or replace function get_user_score(target_user_id integer) returns table(
+        -- order matters
         user_id integer,
         handle_lc text,
         play_count bigint,
         distinct_tracks_played bigint,
-        follower_count bigint,
         challenge_count bigint,
         following_count bigint,
+        follower_count bigint,
         chat_block_count bigint,
         is_audius_impersonator boolean,
         score bigint
