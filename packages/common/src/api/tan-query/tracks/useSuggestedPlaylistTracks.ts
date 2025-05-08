@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { difference, shuffle } from 'lodash'
 import { useDispatch } from 'react-redux'
-import { usePrevious } from 'react-use'
 
 import { ID } from '~/models/Identifiers'
 import { TimeRange } from '~/models/TimeRange'
