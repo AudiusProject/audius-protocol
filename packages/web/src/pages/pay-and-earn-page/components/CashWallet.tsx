@@ -10,8 +10,7 @@ import { TRANSACTION_HISTORY_PAGE } from '@audius/common/src/utils/route'
 import {
   WithdrawUSDCModalPages,
   useWithdrawUSDCModal,
-  useAddFundsModal,
-  useBuySellModal
+  useAddFundsModal
 } from '@audius/common/store'
 import {
   Button,
@@ -38,7 +37,6 @@ export const CashWallet = () => {
   const isManagedAccount = useIsManagedAccount()
   const { onOpen: openWithdrawUSDCModal } = useWithdrawUSDCModal()
   const { onOpen: openAddFundsModal } = useAddFundsModal()
-  const { onOpen: openBuySellModal } = useBuySellModal()
   const { balanceFormatted, usdcValue, isLoading } = useFormattedUSDCBalance()
   const [, setPayoutWalletModalOpen] = useModalState('PayoutWallet')
 
@@ -66,11 +64,6 @@ export const CashWallet = () => {
         eventName: Name.BUY_USDC_ADD_FUNDS_MANUALLY
       })
     )
-  }
-
-  const handleBuySell = () => {
-    openBuySellModal()
-    // TODO: Add analytics tracking if needed
   }
 
   const handlePayoutWalletClick = useCallback(() => {
@@ -187,16 +180,6 @@ export const CashWallet = () => {
               disabled={isLoading}
             >
               {walletMessages.addFunds}
-            </Button>
-            <Button
-              variant='secondary'
-              css={{
-                flex: 1
-              }}
-              onClick={handleBuySell}
-              disabled={isLoading}
-            >
-              {walletMessages.buySell}
             </Button>
           </>
         ) : null}

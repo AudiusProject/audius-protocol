@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import { useFeatureFlag, useFormattedAudioBalance } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
+import { useBuySellModal } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
   Button,
@@ -27,6 +28,11 @@ const messages = {
 
 const TokensHeader = () => {
   const { color } = useTheme()
+  const { onOpen: openBuySellModal } = useBuySellModal()
+
+  const handleBuySellClick = useCallback(() => {
+    openBuySellModal()
+  }, [openBuySellModal])
 
   return (
     <Flex
@@ -38,7 +44,7 @@ const TokensHeader = () => {
       <Text variant='heading' size='m' color='heading'>
         {messages.yourCoins}
       </Text>
-      <Button variant='secondary' size='small'>
+      <Button variant='secondary' size='small' onClick={handleBuySellClick}>
         {messages.buySell}
       </Button>
     </Flex>
