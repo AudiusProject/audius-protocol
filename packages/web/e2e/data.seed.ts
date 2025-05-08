@@ -77,7 +77,7 @@ setup('seed data', async () => {
     (async () => {
       console.info('Uploading remix...')
       await audiusCmd(
-        `track upload --remix-of '{"tracks":[{"parentTrackId":"${trackId}"}]}' -o json > ${dataFilePath('remix.json')}`
+        `track upload --remix-of ${trackId} -o json > ${dataFilePath('remix.json')}`
       )
       const remixId = JSON.parse(
         await readFile(dataFilePath('remix.json'), 'utf8')

@@ -8,20 +8,22 @@ import ErrorWrapper from 'components/error-wrapper/ErrorWrapper'
 import { AddTrackToPlaylistNotification } from './AddTrackToPlaylistNotification'
 import { AnnouncementNotification } from './AnnouncementNotification'
 import { ApproveManagerNotification } from './ApproveManagerRequestNotification'
+import { ArtistRemixContestEndedNotification } from './ArtistRemixContestEndedNotification'
+import { ArtistRemixContestEndingSoonNotification } from './ArtistRemixContestEndingSoonNotification'
 import { ChallengeRewardNotification } from './ChallengeRewardNotification'
 import { ClaimableRewardNotification } from './ClaimableRewardNotification'
 import { CommentMentionNotification } from './CommentMentionNotification'
 import { CommentNotification } from './CommentNotification'
 import { CommentReactionNotification } from './CommentReactionNotification'
 import { CommentThreadNotification } from './CommentThreadNotification'
+import { FanRemixContestEndedNotification } from './FanRemixContestEndedNotification'
+import { FanRemixContestEndingSoonNotification } from './FanRemixContestEndingSoonNotification'
+import { FanRemixContestStartedNotification } from './FanRemixContestStartedNotification'
 import { FavoriteNotification } from './FavoriteNotification'
 import { FavoriteOfRepostNotification } from './FavoriteOfRepostNotification'
 import { FollowNotification } from './FollowNotification'
 import { ListenStreakReminderNotification } from './ListenStreakReminderNotification'
 import { MilestoneNotification } from './MilestoneNotification'
-import { RemixContestEndedNotification } from './RemixContestEndedNotification'
-import { RemixContestEndingSoonNotification } from './RemixContestEndingSoonNotification'
-import { RemixContestStartedNotification } from './RemixContestStartedNotification'
 import { RemixCosignNotification } from './RemixCosignNotification'
 import { RemixCreateNotification } from './RemixCreateNotification'
 import { RepostNotification } from './RepostNotification'
@@ -156,16 +158,30 @@ export const Notification = (props: NotificationProps) => {
       case NotificationType.ListenStreakReminder: {
         return <ListenStreakReminderNotification notification={notification} />
       }
-      case NotificationType.RemixContestStarted: {
-        return <RemixContestStartedNotification notification={notification} />
-      }
-      case NotificationType.RemixContestEnded: {
-        return <RemixContestEndedNotification notification={notification} />
-      }
-      case NotificationType.RemixContestEndingSoon: {
+      case NotificationType.FanRemixContestEndingSoon: {
         return (
-          <RemixContestEndingSoonNotification notification={notification} />
+          <FanRemixContestEndingSoonNotification notification={notification} />
         )
+      }
+      case NotificationType.ArtistRemixContestEndingSoon: {
+        return (
+          <ArtistRemixContestEndingSoonNotification
+            notification={notification}
+          />
+        )
+      }
+      case NotificationType.ArtistRemixContestEnded: {
+        return (
+          <ArtistRemixContestEndedNotification notification={notification} />
+        )
+      }
+      case NotificationType.FanRemixContestStarted: {
+        return (
+          <FanRemixContestStartedNotification notification={notification} />
+        )
+      }
+      case NotificationType.FanRemixContestEnded: {
+        return <FanRemixContestEndedNotification notification={notification} />
       }
       default: {
         return null

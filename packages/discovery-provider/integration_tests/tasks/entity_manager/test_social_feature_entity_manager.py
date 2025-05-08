@@ -516,11 +516,14 @@ def test_index_cosign(app, mocker):
 def test_index_invalid_social_features(app, mocker):
     "Tests valid batch of social create/update/delete actions"
 
+    bus_mock = mocker.patch(
+        "src.challenges.challenge_event_bus.ChallengeEventBus", autospec=True
+    )
     # setup db and mocked txs
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(web3, None)
+        update_task = UpdateTask(web3, challenge_event_bus=bus_mock)
 
     tx_receipts = {
         "UserDoesNotExistTx1": [

@@ -21,9 +21,9 @@ export enum NotificationType {
   Milestone = 'Milestone',
   RemixCreate = 'RemixCreate',
   RemixCosign = 'RemixCosign',
-  RemixContestStarted = 'RemixContestStarted',
-  RemixContestEnded = 'RemixContestEnded',
-  RemixContestEndingSoon = 'RemixContestEndingSoon',
+  FanRemixContestStarted = 'FanRemixContestStarted',
+  FanRemixContestEnded = 'FanRemixContestEnded',
+  FanRemixContestEndingSoon = 'FanRemixContestEndingSoon',
   Tastemaker = 'Tastemaker',
   TrendingTrack = 'TrendingTrack',
   TrendingPlaylist = 'TrendingPlaylist',
@@ -47,7 +47,9 @@ export enum NotificationType {
   CommentThread = 'CommentThread',
   CommentMention = 'CommentMention',
   CommentReaction = 'CommentReaction',
-  ListenStreakReminder = 'ListenStreakReminder'
+  ListenStreakReminder = 'ListenStreakReminder',
+  ArtistRemixContestEnded = 'ArtistRemixContestEnded',
+  ArtistRemixContestEndingSoon = 'ArtistRemixContestEndingSoon'
 }
 
 export enum PushNotificationType {
@@ -698,20 +700,31 @@ export type ListenStreakReminderNotification = BaseNotification & {
   streak: number
 }
 
-export type RemixContestStartedNotification = BaseNotification & {
-  type: NotificationType.RemixContestStarted
+export type FanRemixContestStartedNotification = BaseNotification & {
+  type: NotificationType.FanRemixContestStarted
   entityId: ID
   entityUserId: ID
 }
 
-export type RemixContestEndedNotification = BaseNotification & {
-  type: NotificationType.RemixContestEnded
+export type FanRemixContestEndingSoonNotification = BaseNotification & {
+  type: NotificationType.FanRemixContestEndingSoon
   entityId: ID
   entityUserId: ID
 }
 
-export type RemixContestEndingSoonNotification = BaseNotification & {
-  type: NotificationType.RemixContestEndingSoon
+export type ArtistRemixContestEndedNotification = BaseNotification & {
+  type: NotificationType.ArtistRemixContestEnded
+  entityId: ID
+}
+
+export type FanRemixContestEndedNotification = BaseNotification & {
+  type: NotificationType.FanRemixContestEnded
+  entityId: ID
+  entityUserId: ID
+}
+
+export type ArtistRemixContestEndingSoonNotification = BaseNotification & {
+  type: NotificationType.ArtistRemixContestEndingSoon
   entityId: ID
   entityUserId: ID
 }
@@ -727,9 +740,8 @@ export type Notification =
   | MilestoneNotification
   | RemixCreateNotification
   | RemixCosignNotification
-  | RemixContestStartedNotification
-  | RemixContestEndedNotification
-  | RemixContestEndingSoonNotification
+  | FanRemixContestStartedNotification
+  | FanRemixContestEndingSoonNotification
   | TastemakerNotification
   | TrendingPlaylistNotification
   | TrendingTrackNotification
@@ -754,6 +766,9 @@ export type Notification =
   | CommentMentionNotification
   | CommentReactionNotification
   | ListenStreakReminderNotification
+  | ArtistRemixContestEndedNotification
+  | FanRemixContestEndedNotification
+  | ArtistRemixContestEndingSoonNotification
 
 export type IdentityNotification = Omit<Notification, 'timestamp'> & {
   timestamp: string

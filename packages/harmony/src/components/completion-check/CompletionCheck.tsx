@@ -47,13 +47,14 @@ const completionComponents = {
 }
 
 export const CompletionCheck = (props: CompletionCheckProps) => {
-  const transitions = useTransition(props.value, {
+  const { value, className } = props
+  const transitions = useTransition(value, {
     from: { x: 0 },
     enter: { x: 1 },
     leave: { x: 0 }
   })
   return (
-    <Flex alignItems='center' className={styles.container}>
+    <Flex alignItems='center' className={cn(styles.container, className)}>
       <CompletionDefault />
       {transitions((style, value) => {
         if (completionComponents[value]) {

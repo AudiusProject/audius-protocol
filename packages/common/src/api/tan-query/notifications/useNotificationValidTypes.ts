@@ -18,8 +18,10 @@ export const useNotificationValidTypes = () => {
     ValidTypes.CommentReaction,
     ValidTypes.ClaimableReward,
     ValidTypes.ListenStreakReminder,
-    ValidTypes.RemixContestStarted,
-    ValidTypes.RemixContestEnded,
-    ValidTypes.RemixContestEndingSoon
+    ValidTypes.ArtistRemixContestEnded,
+    ValidTypes.ArtistRemixContestEndingSoon,
+    ValidTypes.FanRemixContestStarted,
+    ValidTypes.FanRemixContestEnded,
+    ValidTypes.FanRemixContestEndingSoon
   ]
 }

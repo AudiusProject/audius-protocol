@@ -199,82 +199,141 @@ remix_notification = ns.clone(
     },
 )
 
-remix_contest_started_notification_action_data = ns.model(
-    "remix_contest_started_notification_action_data",
+fan_remix_contest_started_notification_action_data = ns.model(
+    "fan_remix_contest_started_notification_action_data",
     {
         "entity_user_id": fields.String(required=True),
         "entity_id": fields.String(required=True),
     },
 )
-remix_contest_started_notification_action = ns.clone(
-    "remix_contest_started_notification_action",
+fan_remix_contest_started_notification_action = ns.clone(
+    "fan_remix_contest_started_notification_action",
     notification_action_base,
     {
         "data": fields.Nested(
-            remix_contest_started_notification_action_data, required=True
+            fan_remix_contest_started_notification_action_data, required=True
         )
     },
 )
-remix_contest_started_notification = ns.clone(
-    "remix_contest_started_notification",
+fan_remix_contest_started_notification = ns.clone(
+    "fan_remix_contest_started_notification",
     notification_base,
     {
         "actions": fields.List(
-            fields.Nested(remix_contest_started_notification_action, required=True),
+            fields.Nested(fan_remix_contest_started_notification_action, required=True),
             required=True,
         )
     },
 )
 
-remix_contest_ended_notification_action_data = ns.model(
-    "remix_contest_ended_notification_action_data",
+fan_remix_contest_ended_notification_action_data = ns.model(
+    "fan_remix_contest_ended_notification_action_data",
     {
         "entity_user_id": fields.String(required=True),
         "entity_id": fields.String(required=True),
     },
 )
-remix_contest_ended_notification_action = ns.clone(
-    "remix_contest_ended_notification_action",
+fan_remix_contest_ended_notification_action = ns.clone(
+    "fan_remix_contest_ended_notification_action",
     notification_action_base,
     {
         "data": fields.Nested(
-            remix_contest_ended_notification_action_data, required=True
+            fan_remix_contest_ended_notification_action_data, required=True
         )
     },
 )
-remix_contest_ended_notification = ns.clone(
-    "remix_contest_ended_notification",
+fan_remix_contest_ended_notification = ns.clone(
+    "fan_remix_contest_ended_notification",
     notification_base,
     {
         "actions": fields.List(
-            fields.Nested(remix_contest_ended_notification_action, required=True),
+            fields.Nested(fan_remix_contest_ended_notification_action, required=True),
             required=True,
         )
     },
 )
 
-remix_contest_ending_soon_notification_action_data = ns.model(
-    "remix_contest_ending_soon_notification_action_data",
+fan_remix_contest_ending_soon_notification_action_data = ns.model(
+    "fan_remix_contest_ending_soon_notification_action_data",
     {
         "entity_user_id": fields.String(required=True),
         "entity_id": fields.String(required=True),
     },
 )
-remix_contest_ending_soon_notification_action = ns.clone(
-    "remix_contest_ending_soon_notification_action",
+fan_remix_contest_ending_soon_notification_action = ns.clone(
+    "fan_remix_contest_ending_soon_notification_action",
     notification_action_base,
     {
         "data": fields.Nested(
-            remix_contest_ending_soon_notification_action_data, required=True
+            fan_remix_contest_ending_soon_notification_action_data, required=True
         )
     },
 )
-remix_contest_ending_soon_notification = ns.clone(
-    "remix_contest_ending_soon_notification",
+fan_remix_contest_ending_soon_notification = ns.clone(
+    "fan_remix_contest_ending_soon_notification",
     notification_base,
     {
         "actions": fields.List(
-            fields.Nested(remix_contest_ending_soon_notification_action, required=True),
+            fields.Nested(
+                fan_remix_contest_ending_soon_notification_action, required=True
+            ),
+            required=True,
+        )
+    },
+)
+
+artist_remix_contest_ended_notification_action_data = ns.model(
+    "artist_remix_contest_ended_notification_action_data",
+    {
+        "entity_id": fields.String(required=True),
+    },
+)
+artist_remix_contest_ended_notification_action = ns.clone(
+    "artist_remix_contest_ended_notification_action",
+    notification_action_base,
+    {
+        "data": fields.Nested(
+            artist_remix_contest_ended_notification_action_data, required=True
+        )
+    },
+)
+artist_remix_contest_ended_notification = ns.clone(
+    "artist_remix_contest_ended_notification",
+    notification_base,
+    {
+        "actions": fields.List(
+            fields.Nested(
+                artist_remix_contest_ended_notification_action, required=True
+            ),
+            required=True,
+        )
+    },
+)
+
+artist_remix_contest_ending_soon_notification_action_data = ns.model(
+    "artist_remix_contest_ending_soon_notification_action_data",
+    {
+        "entity_user_id": fields.String(required=True),
+        "entity_id": fields.String(required=True),
+    },
+)
+artist_remix_contest_ending_soon_notification_action = ns.clone(
+    "artist_remix_contest_ending_soon_notification_action",
+    notification_action_base,
+    {
+        "data": fields.Nested(
+            artist_remix_contest_ending_soon_notification_action_data, required=True
+        )
+    },
+)
+artist_remix_contest_ending_soon_notification = ns.clone(
+    "artist_remix_contest_ending_soon_notification",
+    notification_base,
+    {
+        "actions": fields.List(
+            fields.Nested(
+                artist_remix_contest_ending_soon_notification_action, required=True
+            ),
             required=True,
         )
     },
@@ -1053,9 +1112,11 @@ notification = ns.add_model(
             "comment_mention": comment_mention_notification,
             "comment_reaction": comment_reaction_notification,
             "listen_streak_reminder": listen_streak_reminder_notification,
-            "remix_contest_started": remix_contest_started_notification,
-            "remix_contest_ended": remix_contest_ended_notification,
-            "remix_contest_ending_soon": remix_contest_ending_soon_notification,
+            "fan_remix_contest_started": fan_remix_contest_started_notification,
+            "fan_remix_contest_ended": fan_remix_contest_ended_notification,
+            "fan_remix_contest_ending_soon": fan_remix_contest_ending_soon_notification,
+            "artist_remix_contest_ended": artist_remix_contest_ended_notification,
+            "artist_remix_contest_ending_soon": artist_remix_contest_ending_soon_notification,
         },
         discriminator="type",
     ),

@@ -17,8 +17,6 @@ import { QueryKey, QueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { primeCollectionData } from '../utils/primeCollectionData'
 
-import { useCollections } from './useCollections'
-
 const PAGE_SIZE = 20
 
 type UseLibraryCollectionsArgs = {
@@ -68,7 +66,7 @@ export const useLibraryCollections = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const { data: collectionIds } = useInfiniteQuery({
+  return useInfiniteQuery({
     queryKey: getLibraryCollectionsQueryKey({
       currentUserId,
       collectionType,
@@ -118,6 +116,4 @@ export const useLibraryCollections = (
     gcTime: Infinity,
     enabled: options?.enabled !== false && !!currentUserId
   })
-
-  return useCollections(collectionIds)
 }

@@ -15,7 +15,7 @@ import { USDCTransactionDetails } from '~/models/USDCTransactions'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, QueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
-import { loadNextPage } from '../utils'
+import { makeLoadNextPage } from '../utils'
 
 const DEFAULT_PAGE_SIZE = 50
 
@@ -125,7 +125,7 @@ export const useUSDCTransactions = (
   // @ts-ignore
   queryData.reset = reset
   const loadNextPageCallback = useCallback(
-    () => loadNextPage(queryData),
+    () => makeLoadNextPage(queryData),
     [queryData]
   )
   // @ts-ignore

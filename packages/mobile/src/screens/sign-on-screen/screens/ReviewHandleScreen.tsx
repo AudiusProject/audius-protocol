@@ -10,6 +10,7 @@ import {
   getLinkedSocialOnFirstPage,
   getProfileImageField
 } from '@audius/web/src/common/store/pages/signon/selectors'
+import { useQueryClient } from '@tanstack/react-query'
 import { Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -38,15 +39,16 @@ export const ReviewHandleScreen = () => {
   const initialValues = {
     handle
   }
-  const audiusQueryContext = useAudiusQueryContext()
+  const queryContext = useAudiusQueryContext()
+  const queryClient = useQueryClient()
   const navigation = useNavigation<SignOnScreenParamList>()
   const isLinkingSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
 
   const validationSchema = useMemo(() => {
     return toFormikValidationSchema(
-      pickHandleSchema({ audiusQueryContext, restrictedHandles })
+      pickHandleSchema({ queryContext, queryClient, restrictedHandles })
     )
-  }, [audiusQueryContext])
+  }, [queryContext, queryClient])
 
   useTrackScreen('ReviewHandle')
 

@@ -2,6 +2,9 @@ from src.tasks.celery_app import celery
 from src.tasks.remix_contest_notifications.artist_remix_contest_ended import (
     create_artist_remix_contest_ended_notifications,
 )
+from src.tasks.remix_contest_notifications.artist_remix_contest_ending_soon import (
+    create_artist_remix_contest_ending_soon_notifications,
+)
 from src.tasks.remix_contest_notifications.fan_remix_contest_ended import (
     create_fan_remix_contest_ended_notifications,
 )
@@ -34,6 +37,8 @@ def create_remix_contest_notifications(self):
                 create_fan_remix_contest_ending_soon_notifications(session)
                 logger.info("Running artist remix contest ended notifications")
                 create_artist_remix_contest_ended_notifications(session)
+                logger.info("Running artist remix contest ending soon notifications")
+                create_artist_remix_contest_ending_soon_notifications(session)
         else:
             logger.info("Failed to acquire lock")
     except Exception as e:

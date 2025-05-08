@@ -1,9 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import {
-  CreatePlaylistSource,
-  statusIsNotFinalized
-} from '@audius/common/models'
+import { CreatePlaylistSource } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import {
   savedPageSelectors,
@@ -22,7 +19,7 @@ import { FilterInput } from 'app/components/filter-input'
 import { LoadingMoreSpinner } from './LoadingMoreSpinner'
 import { NoTracksPlaceholder } from './NoTracksPlaceholder'
 import { OfflineContentBanner } from './OfflineContentBanner'
-import { useCollectionsScreenData } from './useCollectionsScreenData'
+import { useLibraryCollections } from './useLibraryCollections'
 
 const { getIsReachable } = reachabilitySelectors
 const { getCategory } = savedPageSelectors
@@ -37,22 +34,26 @@ const messages = {
 
 export const PlaylistsTab = () => {
   const [filterValue, setFilterValue] = useState('')
-  const { collectionIds, hasMore, fetchMore, status } =
-    useCollectionsScreenData({
-      filterValue,
-      collectionType: 'playlists'
-    })
+  const {
+    collectionIds,
+    loadNextPage,
+    isPending,
+    isFetchingNextPage,
+    hasNextPage
+  } = useLibraryCollections({
+    filterValue,
+    collectionType: 'playlists'
+  })
   const isReachable = useSelector(getIsReachable)
 
   const handleEndReached = useCallback(() => {
-    if (isReachable && hasMore) {
-      fetchMore()
+    if (isReachable) {
+      loadNextPage()
     }
-  }, [isReachable, hasMore, fetchMore])
+  }, [isReachable, loadNextPage])
 
   const loadingSpinner = <LoadingMoreSpinner />
-  const noItemsLoaded =
-    !statusIsNotFinalized(status) && !collectionIds?.length && !filterValue
+  const noItemsLoaded = !isPending && !collectionIds?.length && !filterValue
 
   const emptyTabText = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
@@ -91,7 +92,7 @@ export const PlaylistsTab = () => {
               scrollEnabled={false}
               collectionIds={collectionIds}
               ListFooterComponent={
-                statusIsNotFinalized(status) && isReachable
+                isPending || (isFetchingNextPage && hasNextPage)
                   ? loadingSpinner
                   : null
               }
