@@ -339,9 +339,9 @@ export const useNotificationNavigation = () => {
       [NotificationType.CommentMention]: entityHandler,
       [NotificationType.CommentThread]: entityHandler,
       [NotificationType.CommentReaction]: entityHandler,
-      [NotificationType.RemixContestStarted]: entityHandler,
-      [NotificationType.RemixContestEnded]: entityHandler,
-      [NotificationType.RemixContestEndingSoon]: entityHandler
+      [NotificationType.FanRemixContestStarted]: entityHandler,
+      [NotificationType.FanRemixContestEnded]: entityHandler,
+      [NotificationType.FanRemixContestEndingSoon]: entityHandler
     }),
     [
       dispatch,

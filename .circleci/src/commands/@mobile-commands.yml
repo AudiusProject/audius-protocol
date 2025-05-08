@@ -5,18 +5,6 @@ mobile-halt-if-no-native-changes:
         command: |
           ! git diff --quiet origin/main... -- 'packages/mobile' ':!packages/mobile/src' || circleci-agent step halt
 
-mobile-halt-if-codepush-release-ios:
-  steps:
-    - run:
-        name: fastlane build
-        command: cd packages/mobile/ios && bundle exec fastlane haltIfCodePushEligible
-
-mobile-halt-if-codepush-release-android:
-  steps:
-    - run:
-        name: fastlane build
-        command: cd packages/mobile/android && bundle exec fastlane haltIfCodePushEligible
-
 # Bundle ios app and prepare to build/upload/release
 mobile-prepare-ios:
   parameters:
@@ -50,7 +38,6 @@ mobile-prepare-ios:
         command: |
           ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native || true
           ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native || true
-          ln -s $PWD/node_modules/react-native-code-push $PWD/packages/mobile/node_modules/react-native-code-push || true
     - restore_cache:
         key: pods-{{ checksum "packages/mobile/ios/Podfile.lock" }}
     - run:
@@ -99,8 +86,6 @@ mobile-build-ios:
     - store_test_results:
         path: packages/mobile/output/scan
 
-# If the app can be released via CodePush, release it via CodePush.
-# Otherwise, build and upload it to the App Store.
 mobile-release-ios:
   parameters:
     build-directory:
@@ -216,14 +201,11 @@ mobile-build-android:
         name: Symlink react-native
         command: |
           ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native || true
-          ln -s $PWD/node_modules/react-native-code-push $PWD/packages/mobile/node_modules/react-native-code-push || true
     - run:
         name: generating the release apk & bundle
         command: |
           echo "yes" | sdkmanager "platforms;android-30" && cd packages/mobile/android && ./gradlew <<parameters.build-type>>
 
-# If the app can be released via CodePush, release it via CodePush.
-# Otherwise, build and upload it to the App Store.
 mobile-release-android:
   parameters:
     build-directory:
@@ -244,7 +226,6 @@ mobile-release-android:
         command: |
           ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native || true
           ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native || true
-          ln -s $PWD/node_modules/react-native-code-push $PWD/packages/mobile/node_modules/react-native-code-push || true
     - run:
         name: release android
         command: |
@@ -320,7 +301,6 @@ mobile-release-saga-dapp-store:
         command: |
           ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native || true
           ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native || true
-          ln -s $PWD/node_modules/react-native-code-push $PWD/packages/mobile/node_modules/react-native-code-push || true
     - run:
         name: Build Android
         command: |

@@ -30,7 +30,7 @@ import { getPlaying } from '~/store/player/selectors'
 
 import { TQCollection, TQTrack } from '../models'
 import { LineupData } from '../types'
-import { loadNextPage } from '../utils/infiniteQueryLoadNextPage'
+import { makeLoadNextPage } from '../utils/infiniteQueryLoadNextPage'
 
 type PartialQueryData<T> = Pick<
   UseInfiniteQueryResult<T>,
@@ -203,7 +203,7 @@ export const useLineupQuery = <T>({
     pageSize,
     // pass through specific queryData props
     //   this avoids spreading all queryData props which causes extra renders
-    loadNextPage: loadNextPage(queryData),
+    loadNextPage: makeLoadNextPage(queryData),
     loadCachedDataIntoLineup,
     data: lineupData,
     isInitialLoading: queryData.isInitialLoading,

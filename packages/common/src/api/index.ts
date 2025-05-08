@@ -1,10 +1,5 @@
 // Audius query
 // TODO: migrate all of these to tan-query
-export * from './account'
-export * from './authorizedApps'
-export * from './developerApps'
-export * from './library'
-export * from './signUp'
 export * from './user'
 
 // TanStack Query Hooks
@@ -22,6 +17,14 @@ export * from './tan-query/collection/useCollectionFavorites'
 export * from './tan-query/collection/useCollectionReposts'
 export * from './tan-query/collection/useCollectionTracksWithUid'
 export * from './tan-query/collection/useFeaturedPlaylists'
+export * from './tan-query/collection/useLibraryCollections'
+
+// Developer Apps
+export * from '../schemas/developerApps'
+export * from './tan-query/developer-apps/useDeveloperApps'
+export * from './tan-query/developer-apps/useAddDeveloperApp'
+export * from './tan-query/developer-apps/useEditDeveloperApp'
+export * from './tan-query/developer-apps/useDeleteDeveloperApp'
 
 // Events
 export * from './tan-query/events'
@@ -117,6 +120,12 @@ export * from './tan-query/users/useUserCollectibles'
 export * from './tan-query/users/useUserPlaylists'
 export * from './tan-query/users/useUsers'
 export * from './tan-query/users/useUserTracksByHandle'
+export * from './tan-query/users/account/useResetPassword'
+export * from './tan-query/users/account/useManagedAccounts'
+export * from './tan-query/users/account/useManagers'
+export * from './tan-query/users/account/useRequestAddManager'
+export * from './tan-query/users/account/useApproveManagedAccount'
+export * from './tan-query/users/account/useRemoveManager'
 
 // Wallet logic
 export * from './tan-query/wallets/useAudioBalance'
@@ -129,3 +138,8 @@ export * from './tan-query/wallets/useUSDCBalance'
 // Saga fetch utils, remove when migration is complete
 export * from './tan-query/saga-utils'
 export * from './tan-query/utils/defaultConfig'
+export * from './tan-query/utils'
+
+// New authorized-apps exports
+export * from './tan-query/authorized-apps/useAuthorizedApps'
+export * from './tan-query/authorized-apps/useRemoveAuthorizedApp'

@@ -159,7 +159,10 @@ const TrackPlayerContainer = ({
     streamConditions: track?.streamConditions,
     did404,
     hasPremiumExtras,
-    audioPlayer
+    audioPlayer,
+    isRemixContest: track?.events?.some(
+      (event) => event.eventType === 'remix_contest'
+    )
   }
 
   let trackPlayer

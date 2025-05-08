@@ -24,7 +24,7 @@ import { userTrackMetadataFromSDK } from '../../../adapters/track'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, QueryOptions, LineupData } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
-import { loadNextPage } from '../utils/infiniteQueryLoadNextPage'
+import { makeLoadNextPage } from '../utils/infiniteQueryLoadNextPage'
 import { primeTrackData } from '../utils/primeTrackData'
 
 import { useLineupQuery } from './useLineupQuery'
@@ -147,7 +147,7 @@ export const useLibraryTracks = (
 
   return {
     ...lineupData,
-    loadNextPage: loadNextPage(queryData),
+    loadNextPage: makeLoadNextPage(queryData),
     pageSize
   }
 }

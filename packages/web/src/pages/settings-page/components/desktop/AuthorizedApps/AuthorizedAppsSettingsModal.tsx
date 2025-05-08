@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { DeveloperApp } from '@audius/common/api'
 import {
   Modal,
   ModalContentPages,
@@ -10,6 +9,7 @@ import {
   IconTrash,
   IconShieldCheck
 } from '@audius/harmony'
+import { AuthorizedApp } from '@audius/sdk'
 
 import { AppDetailsPage } from './AppDetailsPage'
 import styles from './AuthorizedAppsSettingsModal.module.css'
@@ -61,10 +61,10 @@ export const AuthorizedAppsSettingsModal = (
     AuthorizedAppsPages.APP_DETAILS
   )
 
-  const [currentPageParams, setCurrentPageParams] = useState<DeveloperApp>()
+  const [currentPageParams, setCurrentPageParams] = useState<AuthorizedApp>()
 
   const handleSetPage = useCallback(
-    (page: AuthorizedAppsPages, params?: DeveloperApp) => {
+    (page: AuthorizedAppsPages, params?: AuthorizedApp) => {
       setCurrentPage(page)
       if (params) {
         setCurrentPageParams(params)

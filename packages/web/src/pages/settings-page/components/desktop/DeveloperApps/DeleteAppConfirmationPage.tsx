@@ -1,17 +1,13 @@
 import { useCallback, useEffect } from 'react'
 
 import { useDeleteDeveloperApp } from '@audius/common/api'
-import { Name, Status } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
+import { Name } from '@audius/common/models'
 import { Button, ModalFooter } from '@audius/harmony'
 
-import { useSelector } from 'common/hooks/useSelector'
 import { make, useRecord } from 'common/store/analytics/actions'
 
 import styles from './DeleteAppConfirmationPage.module.css'
 import { CreateAppPageProps, CreateAppsPages } from './types'
-
-const { getUserId } = accountSelectors
 
 const messages = {
   confirmation:
@@ -27,51 +23,45 @@ export const DeleteAppConfirmationPage = (
   props: DeleteAppConfirmationPageProps
 ) => {
   const { params, setPage } = props
-  const [deleteDeveloperApp, result] = useDeleteDeveloperApp()
-  const { status, errorMessage } = result
-  const userId = useSelector(getUserId)
+  const { isSuccess, isError, error, mutate, isPending } =
+    useDeleteDeveloperApp()
   const record = useRecord()
   const apiKey = params?.apiKey
+  const name = params?.name
 
   const handleCancel = useCallback(() => {
     setPage(CreateAppsPages.YOUR_APPS)
   }, [setPage])
 
   const handleDelete = useCallback(() => {
-    if (!userId || !apiKey) return
-    deleteDeveloperApp({ userId, apiKey })
-  }, [userId, apiKey, deleteDeveloperApp])
+    if (!apiKey) return
+    mutate(apiKey)
+  }, [apiKey, mutate])
 
   useEffect(() => {
-    if (status === Status.SUCCESS) {
+    if (isSuccess) {
       setPage(CreateAppsPages.YOUR_APPS)
       record(
         make(Name.DEVELOPER_APP_DELETE_SUCCESS, {
-          name: params?.name,
-          apiKey: params?.apiKey
+          name,
+          apiKey
         })
       )
     }
-  }, [status, setPage, record, params?.name, params?.apiKey])
+  }, [isSuccess, setPage, record, name, apiKey])
 
   useEffect(() => {
-    if (status === Status.ERROR) {
+    if (isError) {
       setPage(CreateAppsPages.YOUR_APPS)
       record(
         make(Name.DEVELOPER_APP_DELETE_ERROR, {
           name: params?.name,
           apiKey: params?.apiKey,
-          error: errorMessage
+          error: error?.message
         })
       )
     }
-  }, [status, setPage, record, params?.name, params?.apiKey, errorMessage])
-
-  if (!params) return null
-
-  const { name } = params
-
-  const isDeleting = status !== Status.IDLE
+  }, [isError, setPage, record, params?.name, params?.apiKey, error?.message])
 
   return (
     <div>
@@ -81,7 +71,7 @@ export const DeleteAppConfirmationPage = (
         <Button
           variant='secondary'
           onClick={handleCancel}
-          disabled={isDeleting}
+          disabled={isPending}
           fullWidth
         >
           {messages.cancel}
@@ -90,9 +80,9 @@ export const DeleteAppConfirmationPage = (
           variant='destructive'
           fullWidth
           onClick={handleDelete}
-          isLoading={isDeleting}
+          isLoading={isPending}
         >
-          {isDeleting ? messages.deletingApp : messages.deleteApp}
+          {isPending ? messages.deletingApp : messages.deleteApp}
         </Button>
       </ModalFooter>
     </div>

@@ -23,10 +23,6 @@ PROD_PACKAGE = 'co.audius.app'
 RC_PROD_PACKAGE = 'co.audius.app.releasecandidate'
 RC_STAGING_PACKAGE = 'co.audius.app.staging.releasecandidate'
 STAGING_PACKAGE = 'co.audius.app.staging'
-CODEPUSH_APP_NAME = 'Audius-Music/Audius-Android'
-CODEPUSH_STAGING_DEPLOYMENT = 'Staging'
-CODEPUSH_RC_DEPLOYMENT = 'ReleaseCandidate'
-CODEPUSH_PROD_DEPLOYMENT = 'Production'
 GRADLE_FILE_PATH = '../app/build.gradle'
 VERSION_NAME_REGEX = /versionName\s+"([\d\.]+)"/
 
@@ -47,16 +43,7 @@ platform :android do
       versionName
   end
 
-  lane :haltIfCodePushEligible do |options|
-    releasedVersion = getCurrentlyReleasedVersionName()
-    buildFileVersion = getVersionNameFromBuildFile()
-    if buildFileVersion <= releasedVersion
-      UI.message "Release will be through an over-the-air (Codepush) update, which can be triggered by approving the hold on the next job. Aborting full app release."
-      sh("circleci-agent step halt")
-    end
-  end  
-  
-  desc "If needed, upload a new version to the Google Play. Otherwise, release via CodePush."
+  desc "If needed, upload a new version to the Google Play"
   lane :releaseCandidate do |options|
       build_and_upload(package_name: RC_PROD_PACKAGE, track: options[:track])
   end
@@ -78,22 +65,18 @@ platform :android do
       if packageName === PROD_PACKAGE
         buildType = 'bundleRelease'
         aab = './app/build/outputs/bundle/prodRelease/app-prod-release.aab'
-        codepushDeployment = CODEPUSH_PROD_DEPLOYMENT
         remoteDirectory = 'audius-mobile'
       elsif packageName === RC_PROD_PACKAGE
         buildType = 'bundleReleaseCandidateRelease'
         aab = './app/build/outputs/bundle/releaseCandidateRelease/app-releaseCandidate-release.aab'
-        codepushDeployment = CODEPUSH_RC_DEPLOYMENT
         remoteDirectory = 'audius-mobile-releasecandidate'
       elsif packageName === RC_STAGING_PACKAGE
         buildType = 'bundleStagingReleaseCandidateRelease'
         aab = './app/build/outputs/bundle/stagingReleaseCandidateRelease/app-stagingReleaseCandidate-release.aab'
-        codepushDeployment = CODEPUSH_RC_DEPLOYMENT
         remoteDirectory = 'audius-mobile-staging-releasecandidate'
       elsif packageName === STAGING_PACKAGE
         buildType = 'bundleStagingRelease'
         aab = './app/build/outputs/bundle/stagingRelease/app-staging-release.aab'
-        codepushDeployment = CODEPUSH_STAGING_DEPLOYMENT
         remoteDirectory = 'audius-mobile-staging'
       end
       releasedVersion = getCurrentlyReleasedVersionName()
@@ -102,7 +85,7 @@ platform :android do
       packageJsonData = JSON.load packageJson
 
       if buildFileVersion > releasedVersion
-        UI.message "Doing a full build and release (not over-the-air/Codepush)"
+        UI.message "Doing a full build and release"
         # Build app and release via play store
 
         incrementVersionCode(package_name: packageName, track: options[:track])
@@ -121,16 +104,6 @@ platform :android do
           skip_upload_images: true,
           skip_upload_screenshots: true
         )
-      elsif packageName != RC_STAGING_PACKAGE
-        # ^ Hacky - don't codepush to RC deployment if this lane is running for Staging RC because we assume we will codepush to RC deployment in the Prod RC job. I.e. avoid codepushing to RC deployment twice.
-        UI.message "Doing an over-the-air (Codepush) deployment"
-
-        sh("npm install --prefix=$HOME/.local --global appcenter-cli")
-        sh("appcenter login --token #{ENV['APPCENTER_CODEPUSH_API_KEY']}")
-        sh("cd ../../ && appcenter codepush release-react -a #{CODEPUSH_APP_NAME} -d #{codepushDeployment} -t #{releasedVersion.to_s} --disable-duplicate-release-error --description #{packageJsonData["version"]}")
-        sh("appcenter logout")
-      else
-        UI.message "Did not do a deployment in order to avoid pushing to Release Candidate Codepush deployment twice."
       end
   end
   lane :incrementVersionCode do |options|

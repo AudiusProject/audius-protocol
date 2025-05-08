@@ -18,12 +18,40 @@
   min-width: 0;
 }
 
-.topSection {
-  height: 10px;
+.contestLabelWrapper {
+  position: relative;
   display: flex;
   align-items: center;
-  margin-top: 20px;
+  gap: 4px;
+}
+
+.contestLabel {
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 16px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.topSection {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 16px;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  gap: 4px;
+}
+
+.topSectionLeft {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  gap: 4px;
+}
+
+.scrubberContainer {
+  display: flex;
+  align-items: center;
   gap: 4px;
 }
 

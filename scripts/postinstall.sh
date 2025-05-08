@@ -16,22 +16,6 @@ if [[ -z "${CI}" ]]; then
   npm run install-git-secrets > /dev/null
 fi
 
-printf "${GREEN}Setting up initial package links...\n${NC}"
-{
-  if [ -d "./packages/mobile/node_modules" ]; then
-    cd ./packages/mobile/node_modules
-
-    # Link react-native-code-push from root since it's not in mobile/node_modules
-    source_path=../../../node_modules/react-native-code-push
-    target_path=react-native-code-push
-    if [ ! -e "$target_path" ]; then
-      ln -s "$source_path" "$target_path"
-    fi
-
-    cd ../../..
-  fi
-} > /dev/null
-
 printf "${GREEN}Applying patches...\n${NC}"
 npm run patch-package > /dev/null
 
@@ -54,12 +38,19 @@ if [[ -z "${SKIP_POD_INSTALL}" ]]; then
     if command -v pod >/dev/null; then
       RCT_NEW_ARCH_ENABLED=0 bundle exec pod install
     fi
-    cd ../android
- 
-    ./gradlew :app:downloadAar
- 
     cd ../../..
   } > /dev/null
+fi
+
+if command -v java >/dev/null; then
+  {
+    printf "${GREEN}Setting up Android dependencies...\n${NC}"
+    cd ./packages/mobile/android
+    ./gradlew :app:downloadAar
+    cd ../../..
+  } > /dev/null
+else
+  printf "${YELLOW}WARNING: Java not found. Skipping Android AAR installation.${NC}\n"
 fi
 
 if [[ -z "${CI}" ]]; then

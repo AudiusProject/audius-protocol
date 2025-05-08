@@ -338,15 +338,18 @@ export class ChallengesApi extends GeneratedChallengesApi {
    * or challenge ID + specifier.
    */
   public async claimAllRewards(request: ClaimAllRewardsRequest) {
-    const args = await parseParams(
-      'claimAllRewards',
-      ClaimAllRewardsSchema
-    )(request)
+    await parseParams('claimAllRewards', ClaimAllRewardsSchema)(request)
     const res = await this.request({
       path: '/rewards/claim',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: args
+      body: {
+        ...('userId' in request ? { userId: request.userId } : {}),
+        ...('challengeId' in request
+          ? { challengeId: request.challengeId }
+          : {}),
+        ...('specifier' in request ? { specifier: request.specifier } : {})
+      }
     })
     return (await res.json()) as ClaimAllResponseBody
   }

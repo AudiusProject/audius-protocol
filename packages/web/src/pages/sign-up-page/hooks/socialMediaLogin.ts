@@ -1,6 +1,4 @@
-import { useContext } from 'react'
-
-import { AudiusQueryContext } from '@audius/common/audius-query'
+import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { Name } from '@audius/common/models'
 import { pickHandleSchema } from '@audius/common/schemas'
 import {
@@ -13,6 +11,7 @@ import {
   TwitterProfile,
   TikTokProfile
 } from '@audius/common/store'
+import { useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
@@ -29,7 +28,8 @@ const GENERAL_ADMISSION = env.GENERAL_ADMISSION ?? ''
 
 export const useSetProfileFromTwitter = () => {
   const dispatch = useDispatch()
-  const audiusQueryContext = useContext(AudiusQueryContext)
+  const queryContext = useAudiusQueryContext()
+  const queryClient = useQueryClient()
 
   return async ({
     uuid,
@@ -43,7 +43,8 @@ export const useSetProfileFromTwitter = () => {
     const { profile, profileImage, profileBanner, handleTooLong } = profileData
 
     const handleSchema = pickHandleSchema({
-      audiusQueryContext: audiusQueryContext!,
+      queryContext,
+      queryClient,
       skipReservedHandleCheck: profile.verified,
       restrictedHandles
     })
@@ -66,7 +67,8 @@ export const useSetProfileFromTwitter = () => {
 
 export const useSetProfileFromInstagram = () => {
   const dispatch = useDispatch()
-  const audiusQueryContext = useContext(AudiusQueryContext)
+  const queryContext = useAudiusQueryContext()
+  const queryClient = useQueryClient()
 
   return async ({
     uuid,
@@ -83,7 +85,8 @@ export const useSetProfileFromInstagram = () => {
 
     const { profile, profileImage, handleTooLong } = profileData
     const handleSchema = pickHandleSchema({
-      audiusQueryContext: audiusQueryContext!,
+      queryContext,
+      queryClient,
       skipReservedHandleCheck: profile.is_verified,
       restrictedHandles
     })
@@ -107,7 +110,8 @@ export const useSetProfileFromInstagram = () => {
 
 export const useSetProfileFromTikTok = () => {
   const dispatch = useDispatch()
-  const audiusQueryContext = useContext(AudiusQueryContext)
+  const queryContext = useAudiusQueryContext()
+  const queryClient = useQueryClient()
 
   return async ({
     uuid,
@@ -120,7 +124,8 @@ export const useSetProfileFromTikTok = () => {
 
     const { profile, profileImage, handleTooLong } = profileData
     const handleSchema = pickHandleSchema({
-      audiusQueryContext: audiusQueryContext!,
+      queryContext,
+      queryClient,
       skipReservedHandleCheck: profile.is_verified,
       restrictedHandles
     })

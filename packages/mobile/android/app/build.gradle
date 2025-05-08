@@ -127,26 +127,22 @@ android {
         // Make sure this is above the currently released Android version in the play store if your changes touch native code:
         versionName "1.1.483"
         resValue "string", "build_config_package", "co.audius.app"
-        resValue 'string', "CODE_PUSH_APK_BUILD_TIME", String.format("\"%d\"", System.currentTimeMillis())
         resConfigs "en"
     }
 
     productFlavors {
         prod {
-            resValue "string", "CodePushDeploymentKey", '"09yN4-3LHKp_GVKFJEOoDDRqx2o3fJirP5nZf"'
             manifestPlaceholders = [
                 appIcon: "@mipmap/ic_launcher"
             ]
         }
         releaseCandidate {
-            resValue "string", "CodePushDeploymentKey", '"ceWFTSWpNzjz-T8OV_RGTClMLUTHne9GeVoSh"'
             applicationIdSuffix ".releasecandidate"
             manifestPlaceholders = [
                 appIcon: "@mipmap/ic_launcher_releasecandidate"
             ]
         }
         staging {
-            resValue "string", "CodePushDeploymentKey", '"aJJpI95hNbTkgKjlCWkiPpCa2fkvqmHl1CKpU"'
             // Pre-compile run ENVFILE=.env.stage
             applicationIdSuffix ".staging"
             manifestPlaceholders = [
@@ -154,7 +150,6 @@ android {
             ]
         }
         stagingReleaseCandidate {
-            resValue "string", "CodePushDeploymentKey", '"ceWFTSWpNzjz-T8OV_RGTClMLUTHne9GeVoSh"'
             applicationIdSuffix ".staging.releasecandidate"
             manifestPlaceholders = [
                 appIcon: "@mipmap/ic_launcher_staging_releasecandidate"
@@ -180,7 +175,6 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
-            resValue "string", "CodePushDeploymentKey", '""'
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
@@ -246,9 +240,6 @@ afterEvaluate {
     // Make sure the AAR is downloaded before compilation begins
     preBuild.dependsOn("downloadAar")
 }
-
-
-apply from: "../../node_modules/react-native-code-push/android/codepush.gradle"
 
 // Google Services Gradle plugin
 apply plugin: 'com.google.gms.google-services'

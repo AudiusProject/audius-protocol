@@ -50,6 +50,7 @@ import DesktopRoute from 'components/routes/DesktopRoute'
 import MobileRoute from 'components/routes/MobileRoute'
 import TrendingGenreSelectionPage from 'components/trending-genre-selection/TrendingGenreSelectionPage'
 import { USDCBalanceFetcher } from 'components/usdc-balance-fetcher/USDCBalanceFetcher'
+import { useEnvironment } from 'hooks/useEnvironment'
 import { MAIN_CONTENT_ID, MainContentContext } from 'pages/MainContentContext'
 import { AiAttributedTracksPage } from 'pages/ai-attributed-tracks-page'
 import { AudioPage } from 'pages/audio-page/AudioPage'
@@ -59,6 +60,8 @@ import CollectionPage from 'pages/collection-page/CollectionPage'
 import CommentHistoryPage from 'pages/comment-history/CommentHistoryPage'
 import { DashboardPage } from 'pages/dashboard-page/DashboardPage'
 import { DeactivateAccountPage } from 'pages/deactivate-account-page/DeactivateAccountPage'
+import DevTools from 'pages/dev-tools/DevTools'
+import SolanaToolsPage from 'pages/dev-tools/SolanaToolsPage'
 import { EditCollectionPage } from 'pages/edit-collection-page'
 import EmptyPage from 'pages/empty-page/EmptyPage'
 import ExploreCollectionsPage from 'pages/explore-page/ExploreCollectionsPage'
@@ -194,7 +197,9 @@ const {
   EDIT_PLAYLIST_PAGE,
   EDIT_ALBUM_PAGE,
   AIRDROP_PAGE,
-  WALLET_PAGE
+  WALLET_PAGE,
+  DEV_TOOLS_PAGE,
+  SOLANA_TOOLS_PAGE
 } = route
 
 const {
@@ -364,6 +369,7 @@ class WebPlayer extends Component {
       : authenticatedRoutes
     if (
       !this.props.hasAccount &&
+      this.props.accountStatus !== Status.IDLE &&
       this.props.accountStatus !== Status.LOADING &&
       allowedRoutes.some((route) => {
         const match = matchPath(getPathname(this.props.location), {
@@ -438,7 +444,9 @@ class WebPlayer extends Component {
       incrementScroll,
       decrementScroll,
       userHandle,
-      isWalletUIUpdateEnabled
+      isWalletUIUpdateEnabled,
+      isSearchExploreEnabled,
+      isProduction
     } = this.props
 
     const {
@@ -714,6 +722,8 @@ class WebPlayer extends Component {
                           }).toString()
                         }}
                       />
+                    ) : isSearchExploreEnabled ? (
+                      <ExplorePage />
                     ) : (
                       <SearchPage />
                     )
@@ -742,6 +752,17 @@ class WebPlayer extends Component {
                   component={SavedPage}
                 />
                 <Route exact path={HISTORY_PAGE} component={HistoryPage} />
+                {!isProduction ? (
+                  <Route exact path={DEV_TOOLS_PAGE} component={DevTools} />
+                ) : null}
+                {!isProduction ? (
+                  <Route
+                    exact
+                    path={SOLANA_TOOLS_PAGE}
+                    component={SolanaToolsPage}
+                  />
+                ) : null}
+
                 <DesktopRoute
                   exact
                   path={DASHBOARD_PAGE}
@@ -1122,11 +1143,17 @@ const FeatureFlaggedWebPlayer = (props) => {
   const { isEnabled: isWalletUIUpdateEnabled } = useFeatureFlag(
     FeatureFlags.WALLET_UI_UPDATE
   )
+  const { isEnabled: isSearchExploreEnabled } = useFeatureFlag(
+    FeatureFlags.SEARCH_EXPLORE
+  )
+  const { isProduction } = useEnvironment()
 
   return (
     <RouterWebPlayer
       {...props}
       isWalletUIUpdateEnabled={isWalletUIUpdateEnabled}
+      isSearchExploreEnabled={isSearchExploreEnabled}
+      isProduction={isProduction}
     />
   )
 }

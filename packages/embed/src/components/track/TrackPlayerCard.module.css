@@ -18,6 +18,23 @@
   margin-top: 12px;
 }
 
+.contestLabelWrapper {
+  margin-top: 16px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.contestLabel {
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 16px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
 .titlesWrapper {
   margin-right: 8px;
   min-width: 0;

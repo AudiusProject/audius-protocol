@@ -16,7 +16,7 @@ import { QUERY_KEYS } from '../queryKeys'
 import { useTracks } from '../tracks/useTracks'
 import { QueryKey, QueryOptions } from '../types'
 import { useUsers } from '../users/useUsers'
-import { loadNextPage } from '../utils'
+import { makeLoadNextPage } from '../utils'
 import { combineQueryStatuses } from '../utils/combineQueryResults'
 
 const PAGE_SIZE = 10
@@ -100,7 +100,7 @@ export const usePurchases = (
   const collectionsQueryResult = useCollections(collectionIdsToFetch)
 
   const loadNextPageCallback = useCallback(() => {
-    loadNextPage(queryResult)
+    makeLoadNextPage(queryResult)
   }, [queryResult])
 
   return {
