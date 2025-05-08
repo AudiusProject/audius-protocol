@@ -51,7 +51,6 @@ type NotificationProps = {
 
 export const Notification = (props: NotificationProps) => {
   const { notification } = props
-  console.log('REED notification', notification)
 
   const getNotificationElement = () => {
     switch (notification.type) {
