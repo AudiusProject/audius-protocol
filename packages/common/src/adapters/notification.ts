@@ -701,7 +701,5 @@ export const notificationFromSDK = (
         ...formatBaseNotification(notification)
       }
     }
-    default:
-      throw new Error(`Unknown notification type: ${notification.type}`)
   }
 }
