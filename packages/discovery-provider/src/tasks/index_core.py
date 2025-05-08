@@ -123,7 +123,7 @@ def update_latest_block_redis(
 ):
     try:
         block = core.get_block(latest_block)
-        block_number = block.height
+        block_number = block.current_height
         block_hash = block.blockhash
         redis.set(latest_block_redis_key, block_number)
         redis.set(latest_block_hash_redis_key, block_hash)

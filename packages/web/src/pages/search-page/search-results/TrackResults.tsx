@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 
 import { SEARCH_PAGE_SIZE, useSearchTrackResults } from '@audius/common/api'
 import { Kind, Name } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   searchResultsPageTracksLineupActions,
   searchActions,
@@ -15,6 +16,7 @@ import { make } from 'common/store/analytics/actions'
 import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import { LineupVariant } from 'components/lineup/types'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { useMainContentRef } from 'pages/MainContentContext'
 
 import { NoResultsTile } from '../NoResultsTile'
@@ -134,8 +136,11 @@ export const TrackResultsPage = () => {
   const { isPending, isFetching, isError } = useSearchTrackResults(searchParams)
 
   const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
+  const { isEnabled: isSearchExploreEnabled } = useFlag(
+    FeatureFlags.SEARCH_EXPLORE
+  )
 
-  return !isMobile ? (
+  return !isMobile && !isSearchExploreEnabled ? (
     <Flex direction='column' gap='xl' wrap='wrap'>
       <Flex justifyContent='space-between' alignItems='center'>
         <Text variant='heading' textAlign='left'>

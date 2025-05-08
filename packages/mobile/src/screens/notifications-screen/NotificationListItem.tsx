@@ -37,10 +37,10 @@ import {
   CommentMentionNotification,
   CommentReactionNotification
 } from './Notifications'
+import { FanRemixContestEndedNotification } from './Notifications/FanRemixContestEndedNotification'
+import { FanRemixContestEndingSoonNotification } from './Notifications/FanRemixContestEndingSoonNotification'
+import { FanRemixContestStartedNotification } from './Notifications/FanRemixContestStartedNotification'
 import { ListenStreakReminderNotification } from './Notifications/ListenStreakReminderNotification'
-import { RemixContestEndedNotification } from './Notifications/RemixContestEndedNotification'
-import { RemixContestEndingSoonNotification } from './Notifications/RemixContestEndingSoonNotification'
-import { RemixContestStartedNotification } from './Notifications/RemixContestStartedNotification'
 
 type NotificationListItemProps = {
   notification: Notification
@@ -131,13 +131,15 @@ export const NotificationListItem = (props: NotificationListItemProps) => {
         return <CommentReactionNotification notification={notification} />
       case NotificationType.ListenStreakReminder:
         return <ListenStreakReminderNotification notification={notification} />
-      case NotificationType.RemixContestStarted:
-        return <RemixContestStartedNotification notification={notification} />
-      case NotificationType.RemixContestEnded:
-        return <RemixContestEndedNotification notification={notification} />
-      case NotificationType.RemixContestEndingSoon:
+      case NotificationType.FanRemixContestEnded:
+        return <FanRemixContestEndedNotification notification={notification} />
+      case NotificationType.FanRemixContestEndingSoon:
         return (
-          <RemixContestEndingSoonNotification notification={notification} />
+          <FanRemixContestEndingSoonNotification notification={notification} />
+        )
+      case NotificationType.FanRemixContestStarted:
+        return (
+          <FanRemixContestStartedNotification notification={notification} />
         )
       default:
         return null

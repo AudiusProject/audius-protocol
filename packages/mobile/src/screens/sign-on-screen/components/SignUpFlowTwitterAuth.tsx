@@ -4,6 +4,7 @@ import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { socialMediaMessages } from '@audius/common/messages'
 import { pickHandleSchema } from '@audius/common/schemas'
 import { formatTwitterProfile } from '@audius/common/services'
+import { useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import type { SocialButtonProps } from '@audius/harmony-native'
@@ -114,7 +115,8 @@ export const SignUpFlowTwitterAuth = ({
 }: SignUpFlowTwitterAuthProps) => {
   const dispatch = useDispatch()
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const audiusQueryContext = useAudiusQueryContext()
+  const queryContext = useAudiusQueryContext()
+  const queryClient = useQueryClient()
 
   const [authToken, setAuthToken] = useState<string | undefined>()
   const getOauthToken = async () => {
@@ -188,7 +190,8 @@ export const SignUpFlowTwitterAuth = ({
         })
       // Verify the handle against our schema - this also does a network call to see if it's already in use
       const handleSchema = pickHandleSchema({
-        audiusQueryContext: audiusQueryContext!,
+        queryContext,
+        queryClient,
         skipReservedHandleCheck: isVerified,
         restrictedHandles
       })

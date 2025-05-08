@@ -5,6 +5,7 @@ from typing import List, Union, cast
 from src.queries.get_notifications import (
     AnnouncementNotification,
     ApproveManagerNotification,
+    ArtistRemixContestEndedNotification,
     ChallengeRewardNotification,
     ClaimableRewardNotification,
     CommentMentionNotification,
@@ -14,6 +15,9 @@ from src.queries.get_notifications import (
     CosignRemixNotification,
     CreatePlaylistNotification,
     CreateTrackNotification,
+    FanRemixContestEndedNotification,
+    FanRemixContestEndingSoonNotification,
+    FanRemixContestStartedNotification,
     FollowerMilestoneNotification,
     FollowNotification,
     ListenStreakReminderNotification,
@@ -22,9 +26,6 @@ from src.queries.get_notifications import (
     NotificationData,
     PlaylistMilestoneNotification,
     ReactionNotification,
-    RemixContestEndedNotification,
-    RemixContestEndingSoonNotification,
-    RemixContestStartedNotification,
     RemixNotification,
     RepostNotification,
     RepostOfRepostNotification,
@@ -762,8 +763,8 @@ def extend_listen_streak_reminder(action: NotificationAction):
     }
 
 
-def extend_remix_contest_started(action: NotificationAction):
-    data: RemixContestStartedNotification = action["data"]  # type: ignore
+def extend_fan_remix_contest_started(action: NotificationAction):
+    data: FanRemixContestStartedNotification = action["data"]  # type: ignore
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
@@ -779,8 +780,8 @@ def extend_remix_contest_started(action: NotificationAction):
     }
 
 
-def extend_remix_contest_ended(action: NotificationAction):
-    data: RemixContestEndedNotification = action["data"]  # type: ignore
+def extend_fan_remix_contest_ended(action: NotificationAction):
+    data: FanRemixContestEndedNotification = action["data"]  # type: ignore
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
@@ -796,8 +797,8 @@ def extend_remix_contest_ended(action: NotificationAction):
     }
 
 
-def extend_remix_contest_ending_soon(action: NotificationAction):
-    data: RemixContestEndingSoonNotification = action["data"]  # type: ignore
+def extend_fan_remix_contest_ending_soon(action: NotificationAction):
+    data: FanRemixContestEndingSoonNotification = action["data"]  # type: ignore
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
@@ -808,6 +809,22 @@ def extend_remix_contest_ending_soon(action: NotificationAction):
         ),
         "data": {
             "entity_user_id": encode_int_id(data["entity_user_id"]),
+            "entity_id": encode_int_id(data["entity_id"]),
+        },
+    }
+
+
+def extend_artist_remix_contest_ended(action: NotificationAction):
+    data: ArtistRemixContestEndedNotification = action["data"]  # type: ignore
+    return {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
+        "data": {
             "entity_id": encode_int_id(data["entity_id"]),
         },
     }
@@ -848,7 +865,8 @@ notification_action_handler = {
     "comment_mention": extend_comment_mention,
     "comment_reaction": extend_comment_reaction,
     "listen_streak_reminder": extend_listen_streak_reminder,
-    "remix_contest_started": extend_remix_contest_started,
-    "remix_contest_ended": extend_remix_contest_ended,
-    "remix_contest_ending_soon": extend_remix_contest_ending_soon,
+    "fan_remix_contest_started": extend_fan_remix_contest_started,
+    "fan_remix_contest_ended": extend_fan_remix_contest_ended,
+    "fan_remix_contest_ending_soon": extend_fan_remix_contest_ending_soon,
+    "artist_remix_contest_ended": extend_artist_remix_contest_ended,
 }

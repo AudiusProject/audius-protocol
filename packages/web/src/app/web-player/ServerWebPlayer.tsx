@@ -1,5 +1,6 @@
 import { PropsWithChildren, ReactElement } from 'react'
 
+import { FeatureFlags } from '@audius/common/services'
 import imageProfilePicEmpty from '@audius/common/src/assets/img/imageProfilePicEmpty2X.png'
 import '@audius/harmony/dist/harmony.css'
 import IconAudiusLogoHorizontal from '@audius/harmony/src/assets/icons/AudiusLogoHorizontal.svg'
@@ -20,6 +21,7 @@ import { ThemeProvider } from '@audius/harmony/src/foundations/theme/ThemeProvid
 import { Link, StaticRouter } from 'react-router-dom'
 import { PartialDeep } from 'type-fest'
 
+import { useFlag } from 'hooks/useRemoteConfig'
 import { SsrContextProvider } from 'ssr/SsrContext'
 import { AppState } from 'store/types'
 
@@ -51,6 +53,9 @@ type WebPlayerContentProps = {
 
 const WebPlayerContent = (props: WebPlayerContentProps) => {
   const { isMobile, children } = props
+  const { isEnabled: isSearchExploreEnabled } = useFlag(
+    FeatureFlags.SEARCH_EXPLORE
+  )
 
   if (isMobile) {
     return (
@@ -107,7 +112,7 @@ const WebPlayerContent = (props: WebPlayerContentProps) => {
               </Link>
             </Flex>
             <Flex as='li' w='100%' justifyContent='center'>
-              <Link to='/explore'>
+              <Link to={isSearchExploreEnabled ? '/search' : '/explore'}>
                 <IconExplore color='default' height={28} width={28} />
               </Link>
             </Flex>
@@ -195,7 +200,10 @@ const WebPlayerContent = (props: WebPlayerContentProps) => {
               <TextLink size='s' href='/trending'>
                 Trending
               </TextLink>
-              <TextLink size='s' href='/explore'>
+              <TextLink
+                size='s'
+                href={isSearchExploreEnabled ? '/search' : '/explore'}
+              >
                 Explore
               </TextLink>
             </Flex>

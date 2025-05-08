@@ -1,6 +1,7 @@
+import { QueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 
-import { signUpFetch } from '~/api'
+import { fetchHandleInUse, fetchHandleReservedStatus, QUERY_KEYS } from '~/api'
 import { AudiusQueryContextType } from '~/audius-query'
 import { MAX_HANDLE_LENGTH } from '~/services/oauth'
 import { restrictedHandles as commonRestrictedHandles } from '~/utils/restrictedHandles'
@@ -22,11 +23,13 @@ export const pickHandleErrorMessages = {
  * @param restrictedHandles
  */
 export const pickHandleSchema = ({
-  audiusQueryContext,
+  queryContext,
+  queryClient,
   skipReservedHandleCheck = false,
   restrictedHandles = commonRestrictedHandles
 }: {
-  audiusQueryContext: AudiusQueryContextType
+  queryContext: AudiusQueryContextType
+  queryClient: QueryClient
   skipReservedHandleCheck?: boolean
   restrictedHandles?: Set<string>
 }) => {
@@ -41,10 +44,10 @@ export const pickHandleSchema = ({
       )
       .superRefine(async (handle, context) => {
         try {
-          const isHandleInUse = await signUpFetch.isHandleInUse(
-            { handle },
-            audiusQueryContext
-          )
+          const isHandleInUse = await queryClient.fetchQuery({
+            queryKey: [QUERY_KEYS.handleInUse, handle],
+            queryFn: async () => await fetchHandleInUse(handle, queryContext)
+          })
 
           if (isHandleInUse) {
             context.addIssue({
@@ -66,11 +69,11 @@ export const pickHandleSchema = ({
       .superRefine(async (handle, context) => {
         if (skipReservedHandleCheck) return
         try {
-          const handleReservedStatus =
-            await signUpFetch.getHandleReservedStatus(
-              { handle },
-              audiusQueryContext
-            )
+          const handleReservedStatus = await queryClient.fetchQuery({
+            queryKey: [QUERY_KEYS.handleReservedStatus, handle],
+            queryFn: async () =>
+              await fetchHandleReservedStatus(handle, queryContext)
+          })
 
           if (handleReservedStatus === 'twitterReserved') {
             context.addIssue({

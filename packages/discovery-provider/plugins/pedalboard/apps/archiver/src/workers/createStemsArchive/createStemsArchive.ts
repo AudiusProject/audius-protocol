@@ -13,6 +13,7 @@ import {
 import path from 'path'
 import { WorkerServices } from '../services'
 import { createUtils } from './utils'
+import fetch from 'node-fetch'
 
 type StemsArchiveWorkerListener = WorkerListener<
   StemsArchiveJobData,
