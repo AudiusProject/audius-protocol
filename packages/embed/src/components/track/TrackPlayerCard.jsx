@@ -2,6 +2,7 @@ import { useState, useContext, useEffect } from 'react'
 
 import { full } from '@audius/sdk'
 
+import IconTrophy from '../../assets/img/iconTrophy.svg'
 import { isMobileWebTwitter } from '../../util/isMobileWebTwitter'
 import Artwork from '../artwork/Artwork'
 import ShareButton from '../button/ShareButton'
@@ -33,7 +34,8 @@ const TrackPlayerCard = ({
   isTwitter,
   streamConditions,
   hasPremiumExtras,
-  audioPlayer
+  audioPlayer,
+  isRemixContest
 }) => {
   const mobileWebTwitter = isMobileWebTwitter(isTwitter)
   const getBottomWrapperStyle = () =>
@@ -96,6 +98,12 @@ const TrackPlayerCard = ({
           />
         </div>
         <div className={styles.bottomWrapper} style={getBottomWrapperStyle()}>
+          {isRemixContest ? (
+            <div className={styles.contestLabelWrapper}>
+              <IconTrophy height={20} width={20} />
+              <div className={styles.contestLabel}>Remix Contest</div>
+            </div>
+          ) : null}
           <div className={styles.scrubber}>
             {!isGated || isPurchaseable ? (
               <BedtimeScrubber
