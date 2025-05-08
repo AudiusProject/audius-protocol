@@ -62,7 +62,7 @@ const toEntityType = (
 export const notificationFromSDK = (
   notification: full.Notification
 ): Notification => {
-  switch (notification.type) {
+  switch (notification.type as string) {
     case 'follow': {
       const userIds = notification.actions.map((action) => {
         const data = action.data
@@ -662,6 +662,7 @@ export const notificationFromSDK = (
     }
     case 'artist_remix_contest_ending_soon': {
       const data = notification.actions[0].data
+      console.log('REED ending soon', { data, notification })
       return {
         type: NotificationType.ArtistRemixContestEndingSoon,
         entityId: HashId.parse(data.entityId),
@@ -687,5 +688,22 @@ export const notificationFromSDK = (
         ...formatBaseNotification(notification)
       }
     }
+    case 'artist_remix_contest_submissions': {
+      const data = notification.actions[0].data as {
+        eventId: string
+        milestone: number
+        entityId: string
+      }
+      console.log('REED', { data, notification })
+      return {
+        type: NotificationType.ArtistRemixContestSubmissions,
+        eventId: HashId.parse(data.eventId),
+        milestone: data.milestone,
+        entityId: HashId.parse(data.entityId),
+        ...formatBaseNotification(notification)
+      }
+    }
+    default:
+      throw new Error(`Unknown notification type: ${notification.type}`)
   }
 }

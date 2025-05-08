@@ -49,7 +49,8 @@ export enum NotificationType {
   CommentReaction = 'CommentReaction',
   ListenStreakReminder = 'ListenStreakReminder',
   ArtistRemixContestEnded = 'ArtistRemixContestEnded',
-  ArtistRemixContestEndingSoon = 'ArtistRemixContestEndingSoon'
+  ArtistRemixContestEndingSoon = 'ArtistRemixContestEndingSoon',
+  ArtistRemixContestSubmissions = 'ArtistRemixContestSubmissions'
 }
 
 export enum PushNotificationType {
@@ -729,6 +730,13 @@ export type ArtistRemixContestEndingSoonNotification = BaseNotification & {
   entityUserId: ID
 }
 
+export type ArtistRemixContestSubmissionsNotification = BaseNotification & {
+  type: NotificationType.ArtistRemixContestSubmissions
+  eventId: ID
+  milestone: number
+  entityId: ID
+}
+
 export type Notification =
   | AnnouncementNotification
   | UserSubscriptionNotification
@@ -769,6 +777,7 @@ export type Notification =
   | ArtistRemixContestEndedNotification
   | FanRemixContestEndedNotification
   | ArtistRemixContestEndingSoonNotification
+  | ArtistRemixContestSubmissionsNotification
 
 export type IdentityNotification = Omit<Notification, 'timestamp'> & {
   timestamp: string
