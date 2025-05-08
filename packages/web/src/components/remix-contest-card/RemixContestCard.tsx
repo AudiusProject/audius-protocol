@@ -1,40 +1,21 @@
 import { MouseEvent, Ref, forwardRef, useCallback } from 'react'
 
 import {
-  useCollection,
   useCurrentUserId,
   useRemixContest,
   useTrack,
   useUser
 } from '@audius/common/api'
-import {
-  ID,
-  SquareSizes,
-  isContentUSDCPurchaseGated
-} from '@audius/common/models'
-import {
-  formatCount,
-  formatDate,
-  formatReleaseDate
-} from '@audius/common/utils'
+import { ID, SquareSizes } from '@audius/common/models'
+import { formatDate } from '@audius/common/utils'
 import { Flex, Skeleton, Text } from '@audius/harmony'
-import IconHeart from '@audius/harmony/src/assets/icons/Heart.svg'
-import IconRepost from '@audius/harmony/src/assets/icons/Repost.svg'
-import { pick } from 'lodash'
 import { useLinkClickHandler } from 'react-router-dom-v5-compat'
 
 import { Card, CardProps, CardFooter, CardContent } from 'components/card'
 import { TextLink, UserLink } from 'components/link'
-import { LockedStatusBadge } from 'components/locked-status-badge'
 import { TrackArtwork } from 'components/track/TrackArtwork'
 
-// import { CollectionDogEar } from './CollectionDogEar'
-// import { CollectionImage } from './CollectionImage'
-
 const messages = {
-  repost: 'Reposts',
-  favorites: 'Favorites',
-  hidden: 'Hidden',
   deadline: (releaseDate?: string) =>
     `Deadline ${releaseDate ? (new Date(releaseDate) < new Date() ? formatDate(releaseDate) : 'Ended') : releaseDate}`
 }
@@ -46,26 +27,10 @@ type RemixContestCardProps = Omit<CardProps, 'id'> & {
   onCollectionLinkClick?: (e: MouseEvent<HTMLAnchorElement>) => void
 }
 
-const cardSizeToCoverArtSizeMap = {
-  xs: SquareSizes.SIZE_150_BY_150,
-  s: SquareSizes.SIZE_480_BY_480,
-  m: SquareSizes.SIZE_480_BY_480,
-  l: SquareSizes.SIZE_480_BY_480
-}
-
 export const RemixContestCard = forwardRef(
   (props: RemixContestCardProps, ref: Ref<HTMLDivElement>) => {
-    const {
-      id,
-      loading,
-      size,
-      onClick,
-      onCollectionLinkClick,
-      noNavigation,
-      ...other
-    } = props
-    console.log('asdf props: ', props)
-    const { data: currentUserId } = useCurrentUserId()
+    const { id, loading, size, onClick, noNavigation, ...other } = props
+
     const { data: remixContest, isPending: isRemixContestPending } =
       useRemixContest(id)
     const { data: track, isPending: isTrackPending } = useTrack(
@@ -75,8 +40,7 @@ export const RemixContestCard = forwardRef(
 
     const isPending =
       isRemixContestPending || isTrackPending || isUserPending || !track
-    console.log('asdf remixContest: ', remixContest)
-    console.log('asdf track: ', track)
+
     const permalink = track?.permalink
 
     const handleNavigate = useLinkClickHandler<HTMLDivElement>(permalink ?? '')
@@ -109,7 +73,6 @@ export const RemixContestCard = forwardRef(
 
     return (
       <Card ref={ref} onClick={handleClick} size={size} {...other}>
-        {/* <CollectionDogEar collectionId={id} /> */}
         <Flex direction='column' p='s' gap='s'>
           <TrackArtwork
             trackId={track.track_id}
@@ -122,7 +85,6 @@ export const RemixContestCard = forwardRef(
               to={permalink}
               textVariant='title'
               css={{ justifyContent: 'center' }}
-              onClick={onCollectionLinkClick}
             >
               <Text ellipses>{track?.title}</Text>
             </TextLink>

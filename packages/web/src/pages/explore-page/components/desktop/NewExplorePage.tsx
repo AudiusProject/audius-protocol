@@ -1,12 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import {
-  useExploreContent,
-  useFeaturedPlaylists,
-  useFeaturedProfiles
-} from '@audius/common/api'
-import { User } from '@audius/common/models'
-import { TQCollection } from '@audius/common/src/api/tan-query/models'
+import { useExploreContent } from '@audius/common/api'
 import { ExploreCollectionsVariant } from '@audius/common/store'
 import {
   Paper,
@@ -124,15 +118,13 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const navigate = useNavigate()
   const showSearchResults = useShowSearchResults()
 
-  const { data: featuredPlaylists } = useFeaturedPlaylists(
-    { limit: FEATURED_LIMIT },
-    { placeholderData: (prev: TQCollection[]) => prev }
-  )
-  const { data: featuredProfiles } = useFeaturedProfiles({
-    limit: FEATURED_LIMIT
-  })
-  const { data: exploreContent, isLoading } = useExploreContent()
-  const featuredRemixContests = exploreContent?.featuredRemixContests ?? []
+  const { data: exploreContent } = useExploreContent()
+  const featuredPlaylists =
+    exploreContent?.featuredPlaylists.slice(0, FEATURED_LIMIT) ?? []
+  const featuredProfiles =
+    exploreContent?.featuredProfiles.slice(0, FEATURED_LIMIT) ?? []
+  const featuredRemixContests =
+    exploreContent?.featuredRemixContests.slice(0, FEATURED_LIMIT) ?? []
 
   const handleTabClick = useCallback(
     (newTab: string) => {
@@ -284,10 +276,10 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                 </TextLink>
               </Flex>
               <Flex gap='l' justifyContent='space-between'>
-                {featuredPlaylists?.map((playlist) => (
+                {featuredPlaylists?.map((playlist_id) => (
                   <CollectionCard
-                    key={playlist.playlist_id}
-                    id={playlist.playlist_id}
+                    key={playlist_id}
+                    id={playlist_id}
                     size={'s'}
                   />
                 ))}
@@ -322,12 +314,8 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                 </TextLink>
               </Flex>
               <Flex gap='l' alignSelf='stretch' justifyContent='space-between'>
-                {featuredProfiles?.map((featuredProfile: User) => (
-                  <UserCard
-                    key={featuredProfile.user_id}
-                    id={featuredProfile.user_id}
-                    size='s'
-                  />
+                {featuredProfiles?.map((user_id) => (
+                  <UserCard key={user_id} id={user_id} size='s' />
                 ))}
               </Flex>
             </Flex>
