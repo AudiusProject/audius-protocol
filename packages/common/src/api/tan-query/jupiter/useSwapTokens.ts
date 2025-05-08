@@ -9,7 +9,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useGetCurrentUser } from '~/api'
 import { useAudiusQueryContext } from '~/audius-query'
 import { Feature } from '~/models'
-import { getJupiterQuoteByMint, JupiterTokenExchange } from '~/services/Jupiter'
+import {
+  convertJupiterInstructions,
+  getJupiterQuoteByMint,
+  jupiterInstance
+} from '~/services/Jupiter'
 
 import { QUERY_KEYS } from '../queryKeys'
 
@@ -172,13 +176,24 @@ export const useSwapTokens = () => {
         }
 
         // --- 3c. Get Jupiter Swap Instructions ---
-        const { instructions: jupiterInstructions, lookupTableAddresses } =
-          await JupiterTokenExchange.getSwapInstructions({
-            quote: quoteResult.quote,
+        const {
+          tokenLedgerInstruction,
+          swapInstruction,
+          addressLookupTableAddresses
+        } = await jupiterInstance.swapInstructionsPost({
+          swapRequest: {
+            quoteResponse: quoteResult.quote,
             userPublicKey: userPublicKey.toBase58(),
             destinationTokenAccount: preferredJupiterDestination,
-            wrapAndUnwrapSol: wrapUnwrapSol
-          })
+            wrapAndUnwrapSol: wrapUnwrapSol,
+            useSharedAccounts: true
+          }
+        })
+
+        const jupiterInstructions = convertJupiterInstructions([
+          tokenLedgerInstruction,
+          swapInstruction
+        ])
 
         updateJupiterAtaCreationFeePayer(
           jupiterInstructions,
@@ -271,7 +286,7 @@ export const useSwapTokens = () => {
           swapTx = await sdk.services.solanaClient.buildTransaction({
             feePayer,
             instructions,
-            addressLookupTables: lookupTableAddresses.map(
+            addressLookupTables: addressLookupTableAddresses.map(
               (addr: string) => new PublicKey(addr)
             )
           })

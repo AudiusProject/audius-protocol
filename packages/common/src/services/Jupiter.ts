@@ -6,8 +6,6 @@ import {
 } from '@jup-ag/api'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 
-import { Name } from '~/models/Analytics'
-import { CommonStoreContext } from '~/store/storeContext'
 import { TOKEN_LISTING_MAP } from '~/store/ui/buy-audio/constants'
 import { convertBigIntToAmountObject } from '~/utils'
 
@@ -21,11 +19,25 @@ export const SLIPPAGE_TOLERANCE_EXCEEDED_ERROR = 6001
 // Define JupiterTokenSymbol type here since we can't import it directly
 export type JupiterTokenSymbol = keyof typeof TOKEN_LISTING_MAP
 
-// Jupiter API instance - using the default URL
-const jupiterInstance = createJupiterApiClient()
+let _jup: ReturnType<typeof createJupiterApiClient>
 
-// Get the Jupiter API client
-export const getJupiterClient = () => jupiterInstance
+const initJupiter = () => {
+  try {
+    return createJupiterApiClient()
+  } catch (e) {
+    console.error('Jupiter failed to initialize', e)
+    throw e
+  }
+}
+
+const getInstance = () => {
+  if (!_jup) {
+    _jup = initJupiter()
+  }
+  return _jup
+}
+
+export const jupiterInstance = getInstance()
 
 export type JupiterQuoteParams = {
   inputTokenSymbol: JupiterTokenSymbol
@@ -68,99 +80,6 @@ export type JupiterQuoteResult = {
   quote: QuoteResponse
 }
 
-export const quoteWithAnalytics = async ({
-  quoteArgs,
-  track,
-  make
-}: {
-  quoteArgs: Parameters<typeof jupiterInstance.quoteGet>[0]
-  track: CommonStoreContext['analytics']['track']
-  make: CommonStoreContext['analytics']['make']
-}) => {
-  await track(
-    make({
-      eventName: Name.JUPITER_QUOTE_REQUEST,
-      inputMint: quoteArgs.inputMint,
-      outputMint: quoteArgs.outputMint,
-      swapMode: quoteArgs.swapMode,
-      slippageBps: quoteArgs.slippageBps,
-      amount: quoteArgs.amount
-    })
-  )
-  const quoteResponse = await jupiterInstance.quoteGet(quoteArgs)
-  await track(
-    make({
-      eventName: Name.JUPITER_QUOTE_RESPONSE,
-      inputMint: quoteResponse.inputMint,
-      outputMint: quoteResponse.outputMint,
-      swapMode: quoteResponse.swapMode,
-      slippageBps: quoteResponse.slippageBps,
-      otherAmountThreshold: Number(quoteResponse.otherAmountThreshold),
-      inAmount: Number(quoteResponse.inAmount),
-      outAmount: Number(quoteResponse.outAmount)
-    })
-  )
-  return quoteResponse
-}
-
-/**
- * Gets a quote from Jupiter for an exchange between tokens
- */
-export const getJupiterQuote = async ({
-  inputTokenSymbol,
-  outputTokenSymbol,
-  inputAmount,
-  slippageBps,
-  swapMode = 'ExactIn',
-  onlyDirectRoutes = false
-}: JupiterQuoteParams): Promise<JupiterQuoteResult> => {
-  const inputToken = TOKEN_LISTING_MAP[inputTokenSymbol]
-  const outputToken = TOKEN_LISTING_MAP[outputTokenSymbol]
-
-  if (!inputToken || !outputToken) {
-    throw new Error(
-      `Tokens not found: ${inputTokenSymbol} => ${outputTokenSymbol}`
-    )
-  }
-
-  // Calculate amount with proper decimal precision
-  const amount =
-    swapMode === 'ExactIn'
-      ? Math.ceil(inputAmount * 10 ** inputToken.decimals)
-      : Math.floor(inputAmount * 10 ** outputToken.decimals)
-
-  // Get quote from Jupiter
-  const jupiter = getJupiterClient()
-  const quote = await jupiter.quoteGet({
-    inputMint: inputToken.address,
-    outputMint: outputToken.address,
-    amount,
-    slippageBps,
-    swapMode,
-    onlyDirectRoutes
-  })
-
-  if (!quote) {
-    throw new Error('Failed to get Jupiter quote')
-  }
-
-  return {
-    inputAmount: convertBigIntToAmountObject(
-      BigInt(quote.inAmount),
-      inputToken.decimals
-    ),
-    outputAmount: convertBigIntToAmountObject(
-      BigInt(quote.outAmount),
-      outputToken.decimals
-    ),
-    otherAmountThreshold: convertBigIntToAmountObject(
-      BigInt(quote.otherAmountThreshold),
-      swapMode === 'ExactIn' ? outputToken.decimals : inputToken.decimals
-    ),
-    quote
-  }
-}
-
 /**
  * Gets a quote from Jupiter using mint addresses directly
  * This version is used by the useSwapTokens hook
@@ -174,8 +93,6 @@ export const getJupiterQuoteByMint = async ({
   onlyDirectRoutes = false
 }: JupiterMintQuoteParams): Promise<JupiterQuoteResult> => {
   // Get quote from Jupiter
-  const jupiter = getJupiterClient()
-
   // Look up token decimals from TOKEN_LISTING_MAP
   // We'll find tokens by their address to get the correct decimals
   const inputToken = Object.values(TOKEN_LISTING_MAP).find(
@@ -194,7 +111,7 @@ export const getJupiterQuoteByMint = async ({
       ? Math.ceil(amountUi * 10 ** inputDecimals)
       : Math.floor(amountUi * 10 ** outputDecimals)
 
-  const quote = await jupiter.quoteGet({
+  const quote = await jupiterInstance.quoteGet({
     inputMint,
     outputMint,
     amount,
@@ -225,51 +142,19 @@ export const getJupiterQuoteByMint = async ({
 }
 
 /**
- * Gets swap instructions from Jupiter for executing a token swap
- * Converts raw Jupiter instructions to Solana TransactionInstructions
+ * Converts an array of Jupiter instructions to Solana TransactionInstructions
+ * Filters out undefined instructions and handles the conversion
  */
-export const getSwapInstructions = async ({
-  quote,
-  userPublicKey,
-  destinationTokenAccount,
-  wrapAndUnwrapSol = true
-}: {
-  quote: QuoteResponse
-  userPublicKey: string
-  destinationTokenAccount?: string
-  wrapAndUnwrapSol?: boolean
-}) => {
-  const jupiter = getJupiterClient()
-  const response = await jupiter.swapInstructionsPost({
-    swapRequest: {
-      quoteResponse: quote,
-      userPublicKey,
-      destinationTokenAccount,
-      wrapAndUnwrapSol,
-      useSharedAccounts: true
-    }
-  })
-
-  const {
-    tokenLedgerInstruction,
-    computeBudgetInstructions,
-    setupInstructions,
-    swapInstruction,
-    cleanupInstruction,
-    addressLookupTableAddresses
-  } = response
-
+export const convertJupiterInstructions = (
+  instructions: (Instruction | undefined)[]
+): TransactionInstruction[] => {
   // Flatten and filter out undefined instructions
-  const instructions = [
-    tokenLedgerInstruction,
-    ...(computeBudgetInstructions || []),
-    ...(setupInstructions || []),
-    swapInstruction,
-    cleanupInstruction
-  ].filter((i): i is Instruction => i !== undefined)
+  const filteredInstructions = instructions.filter(
+    (i): i is Instruction => i !== undefined
+  )
 
   // Convert to Solana TransactionInstruction format
-  const transactionInstructions = instructions.map((i) => {
+  return filteredInstructions.map((i) => {
     return {
       programId: new PublicKey(i.programId),
       data: Buffer.from(i.data, 'base64'),
@@ -282,15 +167,4 @@ export const getSwapInstructions = async ({
       })
     } as TransactionInstruction
   })
-
-  return {
-    instructions: transactionInstructions,
-    lookupTableAddresses: addressLookupTableAddresses || []
-  }
-}
-
-// Export a singleton for convenient access
-export const JupiterTokenExchange = {
-  getQuote: getJupiterQuoteByMint,
-  getSwapInstructions
 }
