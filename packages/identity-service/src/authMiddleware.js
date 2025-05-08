@@ -129,7 +129,6 @@ async function authMiddleware(req, res, next) {
             isGuest: !handle
           })
         } catch (e) {
-          console.error(e)
           req.logger.error(e, 'Failed to update blockchainUserId/handle')
         }
       }
@@ -197,7 +196,6 @@ const parameterizedAuthMiddleware = ({ shouldRespondBadRequest }) => {
             isGuest: !handle
           })
         } catch (e) {
-          console.error(e)
           req.logger.error(e, 'Failed to update blockchainUserId/handle')
         }
       }
