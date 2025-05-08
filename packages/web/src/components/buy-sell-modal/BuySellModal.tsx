@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useContext } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 
 import { useSwapTokens } from '@audius/common/api'
 import { buySellMessages as messages } from '@audius/common/messages'
@@ -20,7 +20,6 @@ import {
 } from '@audius/harmony'
 import { useTheme } from '@emotion/react'
 
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { ToastContext } from 'components/toast/ToastContext'
 
 import { BuyTab } from './BuyTab'
@@ -28,18 +27,18 @@ import { SellTab } from './SellTab'
 import { SUPPORTED_TOKEN_PAIRS } from './constants'
 import { BuySellTab } from './types'
 
-// import { useIsMobile } from 'hooks/useIsMobile' // Keep for potential mobile-specific adjustments - Removing for now
-
 type TabOption = {
   key: BuySellTab
   text: string
 }
 
+// Default slippage is 50 basis points (0.5%)
+const DEFAULT_SLIPPAGE_BPS = 50
+
 export const BuySellModal = () => {
   const { isOpen, onClose } = useBuySellModal()
   const { spacing, color } = useTheme()
   const { toast } = useContext(ToastContext)
-  // const isMobile = useIsMobile() // Keep for potential mobile-specific adjustments - Removing for now
   const [activeTab, setActiveTab] = useState<BuySellTab>('buy')
   // selectedPairIndex will be used in future when multiple token pairs are supported
   const [selectedPairIndex] = useState(0)
@@ -71,21 +70,11 @@ export const BuySellModal = () => {
     setTransactionData(null)
   }, [])
 
-  const handleTransactionDataChange = useCallback(
-    (data: { inputAmount: number; outputAmount: number; isValid: boolean }) => {
-      setTransactionData(data)
-    },
-    []
-  )
-
   // Handle continue button click
   const handleContinueClick = useCallback(() => {
     if (!transactionData || !transactionData.isValid) return
 
     const { inputAmount } = transactionData
-
-    // Default slippage is 50 basis points (0.5%)
-    const slippageBps = 50
 
     // Determine swap direction based on active tab
     if (activeTab === 'buy') {
@@ -94,7 +83,7 @@ export const BuySellModal = () => {
         inputMint: TOKEN_LISTING_MAP.USDC.address,
         outputMint: TOKEN_LISTING_MAP.AUDIO.address,
         amountUi: inputAmount,
-        slippageBps
+        slippageBps: DEFAULT_SLIPPAGE_BPS
       })
     } else {
       // Sell AUDIO for USDC
@@ -102,7 +91,7 @@ export const BuySellModal = () => {
         inputMint: TOKEN_LISTING_MAP.AUDIO.address,
         outputMint: TOKEN_LISTING_MAP.USDC.address,
         amountUi: inputAmount,
-        slippageBps
+        slippageBps: DEFAULT_SLIPPAGE_BPS
       })
     }
   }, [activeTab, transactionData, swapTokens])
@@ -111,9 +100,7 @@ export const BuySellModal = () => {
   useEffect(() => {
     if (swapStatus === 'success') {
       toast(
-        activeTab === 'buy'
-          ? 'Successfully purchased AUDIO!'
-          : 'Successfully sold AUDIO!',
+        activeTab === 'buy' ? messages.buySuccess : messages.sellSuccess,
         3000
       )
 
@@ -124,7 +111,7 @@ export const BuySellModal = () => {
 
       return () => clearTimeout(timer)
     } else if (swapStatus === 'error') {
-      toast(swapError?.message || 'Transaction failed. Please try again.', 5000)
+      toast(swapError?.message || messages.transactionFailed, 5000)
     }
   }, [swapStatus, swapError, activeTab, onClose, toast])
 
@@ -152,12 +139,12 @@ export const BuySellModal = () => {
           {activeTab === 'buy' ? (
             <BuyTab
               tokenPair={selectedPair}
-              onTransactionDataChange={handleTransactionDataChange}
+              onTransactionDataChange={setTransactionData}
             />
           ) : (
             <SellTab
               tokenPair={selectedPair}
-              onTransactionDataChange={handleTransactionDataChange}
+              onTransactionDataChange={setTransactionData}
             />
           )}
 
@@ -175,16 +162,10 @@ export const BuySellModal = () => {
             variant='primary'
             fullWidth
             disabled={isContinueButtonDisabled}
+            isLoading={isContinueButtonLoading}
             onClick={handleContinueClick}
           >
-            {isContinueButtonLoading ? (
-              <Flex alignItems='center' justifyContent='center' gap='s'>
-                <LoadingSpinner css={{ width: '16px', height: '16px' }} />
-                <span>Processing...</span>
-              </Flex>
-            ) : (
-              messages.continue
-            )}
+            {messages.continue}
           </Button>
         </Flex>
       </ModalContent>
