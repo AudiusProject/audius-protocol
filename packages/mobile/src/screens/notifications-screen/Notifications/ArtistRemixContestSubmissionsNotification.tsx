@@ -9,7 +9,6 @@ import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import {
   NotificationHeader,
   NotificationBody,
-  NotificationFooter,
   NotificationTile,
   NotificationTitle,
   EntityLink
@@ -17,8 +16,10 @@ import {
 
 const messages = {
   title: 'Remix Contest Milestone!',
-  description: (milestone: number) =>
-    `Your remix contest has reached ${milestone} submission${milestone === 1 ? '' : 's'}!`
+  description: 'Your remix contest for ',
+  firstSubmission: ' received its first submission!',
+  description2: (milestone: number) =>
+    ` has reached ${milestone} submission${milestone === 1 ? '' : 's'}!`
 }
 
 type ArtistRemixContestSubmissionsNotificationProps = {
@@ -29,7 +30,7 @@ export const ArtistRemixContestSubmissionsNotification = (
   props: ArtistRemixContestSubmissionsNotificationProps
 ) => {
   const { notification } = props
-  const { entityId, milestone, timeLabel, isViewed } = notification
+  const { entityId, milestone } = notification
 
   const navigation = useNotificationNavigation()
   const { data: track } = useTrack(entityId)
@@ -48,9 +49,11 @@ export const ArtistRemixContestSubmissionsNotification = (
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationBody>
-        {messages.description(milestone)} <EntityLink entity={track} />
+        {messages.description} <EntityLink entity={track} />
+        {milestone === 1
+          ? messages.firstSubmission
+          : messages.description2(milestone)}
       </NotificationBody>
-      <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )
 }

@@ -62,7 +62,7 @@ const toEntityType = (
 export const notificationFromSDK = (
   notification: full.Notification
 ): Notification => {
-  switch (notification.type as string) {
+  switch (notification.type) {
     case 'follow': {
       const userIds = notification.actions.map((action) => {
         const data = action.data
@@ -662,7 +662,6 @@ export const notificationFromSDK = (
     }
     case 'artist_remix_contest_ending_soon': {
       const data = notification.actions[0].data
-      console.log('REED ending soon', { data, notification })
       return {
         type: NotificationType.ArtistRemixContestEndingSoon,
         entityId: HashId.parse(data.entityId),
@@ -694,7 +693,6 @@ export const notificationFromSDK = (
         milestone: number
         entityId: string
       }
-      console.log('REED', { data, notification })
       return {
         type: NotificationType.ArtistRemixContestSubmissions,
         eventId: HashId.parse(data.eventId),

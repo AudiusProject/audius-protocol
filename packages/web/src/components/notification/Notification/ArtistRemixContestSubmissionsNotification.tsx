@@ -22,8 +22,8 @@ import { NotificationTitle } from './components/NotificationTitle'
 const messages = {
   title: 'New Remix Submission!',
   description: 'Your remix contest for ',
-  description2: (milestone: number) =>
-    ` has reached ${milestone} submission${milestone === 1 ? '' : 's'}!`
+  firstSubmission: ' received its first submission!',
+  description2: (milestone: number) => ` has received ${milestone} submissions!`
 }
 
 type ArtistRemixContestSubmissionsNotificationProps = {
@@ -53,7 +53,9 @@ export const ArtistRemixContestSubmissionsNotification = ({
       <NotificationBody>
         {messages.description}
         <EntityLink entity={track as TrackEntity} entityType={Entity.Track} />
-        {messages.description2(milestone)}
+        {milestone === 1
+          ? messages.firstSubmission
+          : messages.description2(milestone)}
       </NotificationBody>
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
