@@ -1,15 +1,17 @@
 import { useCallback } from 'react'
 
-import { useFormattedAudioBalance } from '@audius/common/hooks'
+import { useFeatureFlag, useFormattedAudioBalance } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import { route } from '@audius/common/utils'
 import {
+  Button,
   Flex,
   IconCaretRight,
   IconTokenAUDIO,
   Paper,
   Text,
-  useTheme,
-  useMedia
+  useMedia,
+  useTheme
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 import { push } from 'redux-first-history'
@@ -18,13 +20,38 @@ const DIMENSIONS = 64
 const { WALLET_AUDIO_PAGE } = route
 
 const messages = {
-  audio: '$AUDIO'
+  audio: '$AUDIO',
+  yourCoins: 'Your Coins',
+  buySell: 'Buy/sell'
+}
+
+const TokensHeader = () => {
+  const { color } = useTheme()
+
+  return (
+    <Flex
+      alignItems='center'
+      justifyContent='space-between'
+      p='l'
+      css={{ borderBottom: `1px solid ${color.border.default}` }}
+    >
+      <Text variant='heading' size='m' color='heading'>
+        {messages.yourCoins}
+      </Text>
+      <Button variant='secondary' size='small'>
+        {messages.buySell}
+      </Button>
+    </Flex>
+  )
 }
 
 export const YourCoins = () => {
   const dispatch = useDispatch()
   const { color, spacing, cornerRadius } = useTheme()
   const { isMobile, isExtraSmall } = useMedia()
+  const { isEnabled: isWalletUIBuySellEnabled } = useFeatureFlag(
+    FeatureFlags.WALLET_UI_BUY_SELL
+  )
 
   const {
     audioBalanceFormatted,
@@ -46,6 +73,7 @@ export const YourCoins = () => {
       borderRadius='l'
       css={{ overflow: 'hidden' }}
     >
+      {isWalletUIBuySellEnabled ? <TokensHeader /> : null}
       <Flex
         alignItems='center'
         justifyContent='space-between'
