@@ -116,7 +116,6 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
     useSuggestedPlaylistTracks(collectionId)
   const [isExpanded, toggleIsExpanded] = useToggle(false)
   const { motion } = useTheme()
-  console.log('suggestedTracks', suggestedTracks)
 
   const contentHeight = 66 + SUGGESTED_TRACK_COUNT * 74
   const contentStyles = useSpring({

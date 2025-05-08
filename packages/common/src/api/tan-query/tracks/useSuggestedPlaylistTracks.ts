@@ -58,7 +58,6 @@ export const useSuggestedPlaylistTracks = (collectionId: ID) => {
       !isFavoritedTracksPending &&
       !isCollectionPending
     ) {
-      console.log('updating full list with random tracks')
       setSuggestedTrackIds(getRandomTracksFromList())
     }
   }, [
