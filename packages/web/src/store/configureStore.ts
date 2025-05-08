@@ -3,8 +3,10 @@ import { chatMiddleware } from '@audius/common/store'
 import { composeWithDevToolsLogOnlyInProduction } from '@redux-devtools/extension'
 import { configureScope, addBreadcrumb } from '@sentry/browser'
 import { History } from 'history'
+import localforage from 'localforage'
 import { createStore, applyMiddleware, Action, Store } from 'redux'
 import { createReduxHistoryContext } from 'redux-first-history'
+import { persistStore, persistReducer } from 'redux-persist'
 import createSagaMiddleware from 'redux-saga'
 import createSentryMiddleware from 'redux-sentry-middleware'
 import thunk from 'redux-thunk'
@@ -151,8 +153,15 @@ export const configureStore = (
     maxAge: 1000
   })
 
+  const rootReducer = createRootReducer(routerReducer)
+  const persistConfig = {
+    key: 'root',
+    storage: localforage
+  }
+  const persistedReducer = persistReducer(persistConfig, rootReducer)
+
   const store = createStore(
-    createRootReducer(routerReducer),
+    persistedReducer,
     // @ts-ignore - Initial state is just for test mocking purposes
     initialStoreState,
     composeEnhancers(middlewares)
@@ -164,6 +173,7 @@ export const configureStore = (
   }
 
   const reduxHistory = createReduxHistory(store)
+  const persistor = persistStore(store)
 
-  return { store, history: reduxHistory }
+  return { store, history: reduxHistory, persistor }
 }
