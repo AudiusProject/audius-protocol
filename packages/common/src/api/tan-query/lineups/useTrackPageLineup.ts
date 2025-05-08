@@ -194,9 +194,10 @@ export const useTrackPageLineup = (
 
       primeTrackData({ tracks, queryClient, dispatch })
 
+      // offset is 1 because the hero track is already in the lineup
       dispatch(
-        tracksActions.fetchLineupMetadatas(0, pageSize, false, {
-          items: tracks,
+        tracksActions.fetchLineupMetadatas(1, pageSize, false, {
+          items: tracks.slice(1),
           indices
         })
       )

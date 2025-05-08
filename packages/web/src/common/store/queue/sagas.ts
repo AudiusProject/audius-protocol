@@ -32,6 +32,7 @@ import { Uid, makeUid, waitForAccount, Nullable } from '@audius/common/utils'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 import { PREFIX as REMIXES_PREFIX } from '~/store/pages/remixes/lineup/actions'
 import { PREFIX as SEARCH_PREFIX } from '~/store/pages/search-results/lineup/tracks/actions'
+import { PREFIX as TRACK_PAGE_LINEUP_PREFIX } from '~/store/pages/track/lineup/actions'
 
 import { make } from 'common/store/analytics/actions'
 import { getRecommendedTracks } from 'common/store/recommendation/sagas'
@@ -66,7 +67,11 @@ const { getIsReachable } = reachabilitySelectors
 
 const QUEUE_SUBSCRIBER_NAME = 'QUEUE'
 
-const TAN_QUERY_LINEUP_PREFIXES = [SEARCH_PREFIX, REMIXES_PREFIX]
+const TAN_QUERY_LINEUP_PREFIXES = [
+  SEARCH_PREFIX,
+  REMIXES_PREFIX,
+  TRACK_PAGE_LINEUP_PREFIX
+]
 export function* getToQueue(
   prefix: string,
   entry: LineupEntry<Track | Collection>
@@ -130,12 +135,20 @@ function* handleQueueAutoplay({
   const length = yield* select(getLength)
   const shuffle = yield* select(getShuffle)
   const repeatMode = yield* select(getRepeat)
+  const source = yield* select(getSource)
+  const trackPageException = source === QueueSource.TRACK_TRACKS && length === 1
+
   const isCloseToEndOfQueue = index + 2 >= length
   const isNotRepeating =
     repeatMode === RepeatMode.OFF ||
     (repeatMode === RepeatMode.SINGLE && (skip || ignoreSkip))
 
-  if (!shuffle && isNotRepeating && isCloseToEndOfQueue) {
+  if (
+    !shuffle &&
+    isNotRepeating &&
+    isCloseToEndOfQueue &&
+    !trackPageException
+  ) {
     yield* waitForAccount()
     const userId = yield* select(getUserId)
     yield* put(
