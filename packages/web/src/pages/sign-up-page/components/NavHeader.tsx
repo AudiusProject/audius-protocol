@@ -28,8 +28,7 @@ const {
   SIGN_UP_FINISH_PROFILE_PAGE,
   SIGN_UP_GENRES_PAGE,
   SIGN_UP_HANDLE_PAGE,
-  SIGN_UP_PAGE,
-  TRENDING_PAGE
+  SIGN_UP_PAGE
 } = route
 
 const useIsBackAllowed = () => {
