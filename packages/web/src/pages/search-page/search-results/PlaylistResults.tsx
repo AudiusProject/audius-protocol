@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import { useSearchPlaylistResults } from '@audius/common/api'
 import { Kind, Name, UserCollectionMetadata } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { searchActions } from '@audius/common/store'
 import { Box, Flex, Text, useTheme } from '@audius/harmony'
 import { range } from 'lodash'
@@ -11,6 +12,7 @@ import { useDispatch } from 'react-redux'
 import { make } from 'common/store/analytics/actions'
 import { CollectionCard } from 'components/collection'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { useMainContentRef } from 'pages/MainContentContext'
 
 import { NoResultsTile } from '../NoResultsTile'
@@ -130,6 +132,9 @@ export const PlaylistResultsPage = () => {
   const isMobile = useIsMobile()
   const { color } = useTheme()
   const mainContentRef = useMainContentRef()
+  const { isEnabled: isSearchExploreEnabled } = useFlag(
+    FeatureFlags.SEARCH_EXPLORE
+  )
 
   const getMainContentRef = useCallback(() => {
     if (isMobile) {
@@ -165,7 +170,7 @@ export const PlaylistResultsPage = () => {
         gap='xl'
         css={isMobile ? { backgroundColor: color.background.default } : {}}
       >
-        {!isMobile ? (
+        {!isMobile && !isSearchExploreEnabled ? (
           <Flex justifyContent='space-between' alignItems='center'>
             <Text variant='heading' textAlign='left'>
               {messages.playlists}

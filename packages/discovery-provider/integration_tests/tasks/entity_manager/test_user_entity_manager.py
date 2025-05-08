@@ -12,6 +12,7 @@ from web3.datastructures import AttributeDict
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db, populate_mock_db_blocks
 from src.challenges.challenge_event import ChallengeEvent
+from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
 from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.collectibles import Collectibles
 from src.models.users.user import User
@@ -464,7 +465,8 @@ def test_index_invalid_users(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(web3, None)
+        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
+        update_task = UpdateTask(web3, challenge_event_bus)
 
     test_metadata = {
         "QmCreateUser1": {

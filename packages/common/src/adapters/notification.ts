@@ -643,28 +643,36 @@ export const notificationFromSDK = (
         ...formatBaseNotification(notification)
       }
     }
-    case 'remix_contest_started': {
+    case 'fan_remix_contest_ended': {
       const data = notification.actions[0].data
       return {
-        type: NotificationType.RemixContestStarted,
+        type: NotificationType.FanRemixContestEnded,
         entityId: HashId.parse(data.entityId),
         entityUserId: HashId.parse(data.entityUserId),
         ...formatBaseNotification(notification)
       }
     }
-    case 'remix_contest_ended': {
+    case 'artist_remix_contest_ended': {
       const data = notification.actions[0].data
       return {
-        type: NotificationType.RemixContestEnded,
+        type: NotificationType.ArtistRemixContestEnded,
+        entityId: HashId.parse(data.entityId),
+        ...formatBaseNotification(notification)
+      }
+    }
+    case 'fan_remix_contest_ending_soon': {
+      const data = notification.actions[0].data
+      return {
+        type: NotificationType.FanRemixContestEndingSoon,
         entityId: HashId.parse(data.entityId),
         entityUserId: HashId.parse(data.entityUserId),
         ...formatBaseNotification(notification)
       }
     }
-    case 'remix_contest_ending_soon': {
+    case 'fan_remix_contest_started': {
       const data = notification.actions[0].data
       return {
-        type: NotificationType.RemixContestEndingSoon,
+        type: NotificationType.FanRemixContestStarted,
         entityId: HashId.parse(data.entityId),
         entityUserId: HashId.parse(data.entityUserId),
         ...formatBaseNotification(notification)

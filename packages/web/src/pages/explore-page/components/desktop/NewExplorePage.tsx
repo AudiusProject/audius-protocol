@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { useFeaturedPlaylists, useFeaturedProfiles } from '@audius/common/api'
 import { User } from '@audius/common/models'
@@ -15,9 +15,11 @@ import {
   TextInputSize,
   IconSearch,
   IconUser,
-  TextLink
+  TextLink,
+  Divider
 } from '@audius/harmony'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { useNavigate, useSearchParams } from 'react-router-dom-v5-compat'
+import { useDebounce, usePrevious } from 'react-use'
 
 import BackgroundWaves from 'assets/img/publicSite/imageSearchHeaderBackground@2x.webp'
 import { CollectionCard } from 'components/collection'
@@ -33,8 +35,17 @@ import {
   TRENDING_UNDERGROUND,
   DOWNLOADS_AVAILABLE
 } from 'pages/explore-page/collections'
-// import { categories } from 'pages/search-page/categories'
-// import { useSearchCategory } from 'pages/search-page/hooks'
+import { RecentSearches } from 'pages/search-page/RecentSearches'
+import { SearchCatalogTile } from 'pages/search-page/SearchCatalogTile'
+import { filters } from 'pages/search-page/SearchFilters'
+import { SearchResults } from 'pages/search-page/SearchResults'
+import { SortMethodFilterButton } from 'pages/search-page/SortMethodFilterButton'
+import { categories } from 'pages/search-page/categories'
+import {
+  useSearchCategory,
+  useShowSearchResults
+} from 'pages/search-page/hooks'
+import { CategoryView } from 'pages/search-page/types'
 import { BASE_URL, stripBaseUrl } from 'utils/route'
 
 export type ExplorePageProps = {
@@ -42,7 +53,7 @@ export type ExplorePageProps = {
   pageTitle: string
   description: string
 }
-export enum SavedPageTabs {
+export enum SearchTabs {
   ALL = 'All',
   PROFILES = 'Profiles',
   TRACKS = 'Tracks',
@@ -64,48 +75,50 @@ const messages = {
 const tabHeaders = [
   {
     icon: <IconSearch />,
-    text: SavedPageTabs.ALL,
-    label: SavedPageTabs.ALL
+    text: SearchTabs.ALL,
+    label: SearchTabs.ALL
   },
   {
     icon: <IconUser />,
-    text: SavedPageTabs.PROFILES,
-    label: SavedPageTabs.PROFILES
+    text: SearchTabs.PROFILES,
+    label: SearchTabs.PROFILES
   },
   {
     icon: <IconNote />,
-    text: SavedPageTabs.TRACKS,
-    label: SavedPageTabs.TRACKS
+    text: SearchTabs.TRACKS,
+    label: SearchTabs.TRACKS
   },
   {
     icon: <IconAlbum />,
-    text: SavedPageTabs.ALBUMS,
-    label: SavedPageTabs.ALBUMS
+    text: SearchTabs.ALBUMS,
+    label: SearchTabs.ALBUMS
   },
   {
     icon: <IconPlaylists />,
-    text: SavedPageTabs.PLAYLISTS,
-    label: SavedPageTabs.PLAYLISTS
+    text: SearchTabs.PLAYLISTS,
+    label: SearchTabs.PLAYLISTS
   }
 ]
 
-export const justForYou = [
+const justForYou = [
   TRENDING_PLAYLISTS,
   TRENDING_UNDERGROUND,
   DOWNLOADS_AVAILABLE,
   PREMIUM_TRACKS
 ]
-
 const FEATURED_LIMIT = 5
+const DEBOUNCE_MS = 400
 
 const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
-  const { tabs } = useTabs({
-    isMobile: false,
-    tabs: tabHeaders,
-    elements: tabHeaders.map((tab) => <Flex key={tab.label}>{tab.text}</Flex>)
-  })
+  const [categoryKey, setCategory] = useSearchCategory()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [inputValue, setInputValue] = useState(searchParams.get('query') || '')
+  const [debouncedValue, setDebouncedValue] = useState(inputValue)
+  const previousDebouncedValue = usePrevious(debouncedValue)
   const isUSDCPurchasesEnabled = useIsUSDCEnabled()
   const navigate = useNavigate()
+  const showSearchResults = useShowSearchResults()
+
   const { data: featuredPlaylists } = useFeaturedPlaylists(
     { limit: FEATURED_LIMIT },
     { placeholderData: (prev: TQCollection[]) => prev }
@@ -113,6 +126,21 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const { data: featuredProfiles } = useFeaturedProfiles({
     limit: FEATURED_LIMIT
   })
+
+  const handleTabClick = useCallback(
+    (newTab: string) => {
+      setCategory(newTab.toLowerCase() as CategoryView)
+    },
+    [setCategory]
+  )
+
+  const handleSearch = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setInputValue(event.target.value)
+    },
+    []
+  )
+
   const onClickCard = useCallback(
     (url: string) => {
       if (url.startsWith(BASE_URL)) {
@@ -127,6 +155,23 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
     [navigate]
   )
 
+  useDebounce(
+    () => {
+      setDebouncedValue(inputValue)
+    },
+    DEBOUNCE_MS,
+    [inputValue]
+  )
+
+  useEffect(() => {
+    if (debouncedValue !== previousDebouncedValue) {
+      const newParams = new URLSearchParams(searchParams)
+      newParams.set('query', debouncedValue)
+      setSearchParams(newParams)
+    }
+  }, [debouncedValue, setSearchParams, searchParams, previousDebouncedValue])
+
+  const filterKeys: string[] = categories[categoryKey].filters
   const justForYouTiles = justForYou.filter((tile) => {
     const isPremiumTracksTile =
       tile.variant === ExploreCollectionsVariant.DIRECT_LINK &&
@@ -134,9 +179,12 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
     return !isPremiumTracksTile || isUSDCPurchasesEnabled
   })
 
-  // const [categoryKey] = useSearchCategory()
-
-  // const filterKeys: string[] = categories[categoryKey].filters
+  const { tabs } = useTabs({
+    isMobile: false,
+    tabs: tabHeaders,
+    elements: tabHeaders.map((tab) => <Flex key={tab.label}>{tab.text}</Flex>),
+    onTabClick: handleTabClick
+  })
 
   return (
     <Flex justifyContent='center'>
@@ -146,18 +194,17 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
         ph='unit15'
         gap='3xl'
         alignItems='stretch'
-        // justifyContent='stretch'
         w={1200}
       >
+        {/* Header Section */}
         <Paper
           alignItems='center'
           direction='column'
-          mb='2xl'
           gap='xl'
           pv='xl'
           ph='unit14'
           css={{
-            backgroundImage: ` url(${BackgroundWaves})`,
+            backgroundImage: `url(${BackgroundWaves})`,
             backgroundPosition: 'center',
             backgroundSize: 'cover',
             backgroundRepeat: 'no-repeat',
@@ -176,103 +223,133 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
             <TextInput
               width={400}
               label={messages.searchPlaceholder}
+              value={inputValue}
               size={TextInputSize.SMALL}
               startIcon={IconSearch}
+              onChange={handleSearch}
             />
           </Flex>
         </Paper>
-        <Flex alignSelf='flex-start'>{tabs}</Flex>
-        {/* <Flex direction='row' gap='s' mv={filterKeys.length ? 'm' : undefined}>
-          {filterKeys.map((filterKey) => {
-            const FilterComponent = filters[filterKey]
-            return <FilterComponent key={filterKey} />
-          })}
-        </Flex> */}
 
+        {/* Tabs and Filters */}
         <Flex direction='column' gap='l'>
-          <Flex
-            gap='m'
-            alignItems='center'
-            alignSelf='stretch'
-            justifyContent='space-between'
-          >
-            <Text variant='heading'>{messages.featuredPlaylists}</Text>
-            <TextLink textVariant='title' size='m'>
-              {messages.viewAll}
-            </TextLink>
-          </Flex>
-          <Flex gap='l' justifyContent='space-between'>
-            {featuredPlaylists?.map((playlist) => {
-              return (
-                <CollectionCard
-                  key={playlist.playlist_id}
-                  id={playlist.playlist_id}
-                  size={'s'}
-                />
-              )
-            })}
-          </Flex>
+          <Flex alignSelf='flex-start'>{tabs}</Flex>
+          <Divider orientation='horizontal' />
+          {filterKeys.length ? (
+            <Flex
+              direction='row'
+              justifyContent='space-between'
+              alignItems='center'
+            >
+              <Flex direction='row' gap='s' mv='m'>
+                {filterKeys.map((filterKey) => {
+                  const FilterComponent =
+                    filters[filterKey as keyof typeof filters]
+                  return <FilterComponent key={filterKey} />
+                })}
+              </Flex>
+              <SortMethodFilterButton />
+            </Flex>
+          ) : null}
         </Flex>
-        <Flex>
-          <Flex>
-            <Text variant='heading'>{messages.remixContests}</Text>
+
+        {/* Content Section */}
+        {!showSearchResults && categoryKey !== 'all' ? (
+          <Flex direction='column' alignItems='center' gap={'xl'}>
+            <SearchCatalogTile />
+            <RecentSearches />
           </Flex>
-        </Flex>
-        <Flex direction='column' gap='l'>
-          <Flex
-            gap='m'
-            alignItems='center'
-            alignSelf='stretch'
-            justifyContent='space-between'
-          >
-            <Text variant='heading'>{messages.artistSpotlight}</Text>
-            <TextLink textVariant='title' size='m'>
-              {messages.viewAll}
-            </TextLink>
-          </Flex>
-          <Flex gap='l' alignSelf='stretch' justifyContent='space-between'>
-            {featuredProfiles?.map((featuredProfile: User, i: number) => {
-              return (
-                <UserCard
-                  key={featuredProfile.user_id}
-                  id={featuredProfile.user_id}
-                  size='s'
-                />
-              )
-            })}
-          </Flex>
-        </Flex>
-        <Flex direction='column' gap='l'>
-          <Text variant='heading'>{messages.bestOfAudius}</Text>
-          <Flex
-            wrap='wrap'
-            gap='l'
-            direction='row'
-            justifyContent='space-between'
-          >
-            {justForYouTiles.map((i) => {
-              const Icon = i.icon
-              return (
-                <PerspectiveCard
-                  key={i.title}
-                  backgroundGradient={i.gradient}
-                  shadowColor={i.shadow}
-                  useOverlayBlendMode={
-                    i.variant !== ExploreCollectionsVariant.DIRECT_LINK
-                  }
-                  backgroundIcon={Icon ? <Icon color='inverse' /> : undefined}
-                  onClick={() => onClickCard(i.link)}
-                  isIncentivized={!!i.incentivized}
-                  sensitivity={i.cardSensitivity}
-                >
-                  <Flex w={532} h={200}>
-                    <TextInterior title={i.title} subtitle={i.subtitle} />
-                  </Flex>
-                </PerspectiveCard>
-              )
-            })}
-          </Flex>
-        </Flex>
+        ) : inputValue || showSearchResults ? (
+          <SearchResults />
+        ) : (
+          <>
+            {/* Featured Playlists */}
+            <Flex direction='column' gap='l'>
+              <Flex
+                gap='m'
+                alignItems='center'
+                alignSelf='stretch'
+                justifyContent='space-between'
+              >
+                <Text variant='heading'>{messages.featuredPlaylists}</Text>
+                <TextLink textVariant='title' size='m'>
+                  {messages.viewAll}
+                </TextLink>
+              </Flex>
+              <Flex gap='l' justifyContent='space-between'>
+                {featuredPlaylists?.map((playlist) => (
+                  <CollectionCard
+                    key={playlist.playlist_id}
+                    id={playlist.playlist_id}
+                    size={'s'}
+                  />
+                ))}
+              </Flex>
+            </Flex>
+
+            {/* Artist Spotlight */}
+            <Flex direction='column' gap='l'>
+              <Flex
+                gap='m'
+                alignItems='center'
+                alignSelf='stretch'
+                justifyContent='space-between'
+              >
+                <Text variant='heading'>{messages.artistSpotlight}</Text>
+                <TextLink textVariant='title' size='m'>
+                  {messages.viewAll}
+                </TextLink>
+              </Flex>
+              <Flex gap='l' alignSelf='stretch' justifyContent='space-between'>
+                {featuredProfiles?.map((featuredProfile: User) => (
+                  <UserCard
+                    key={featuredProfile.user_id}
+                    id={featuredProfile.user_id}
+                    size='s'
+                  />
+                ))}
+              </Flex>
+            </Flex>
+
+            {/* Just For You */}
+            <Flex direction='column' gap='l'>
+              <Text variant='heading'>{messages.bestOfAudius}</Text>
+              <Flex
+                wrap='wrap'
+                gap='l'
+                direction='row'
+                justifyContent='space-between'
+              >
+                {justForYouTiles.map((tile) => {
+                  const Icon = tile.icon
+                  return (
+                    <PerspectiveCard
+                      key={tile.title}
+                      backgroundGradient={tile.gradient}
+                      shadowColor={tile.shadow}
+                      useOverlayBlendMode={
+                        tile.variant !== ExploreCollectionsVariant.DIRECT_LINK
+                      }
+                      backgroundIcon={
+                        Icon ? <Icon color='inverse' /> : undefined
+                      }
+                      onClick={() => onClickCard(tile.link)}
+                      isIncentivized={!!tile.incentivized}
+                      sensitivity={tile.cardSensitivity}
+                    >
+                      <Flex w={532} h={200}>
+                        <TextInterior
+                          title={tile.title}
+                          subtitle={tile.subtitle}
+                        />
+                      </Flex>
+                    </PerspectiveCard>
+                  )
+                })}
+              </Flex>
+            </Flex>
+          </>
+        )}
       </Flex>
     </Flex>
   )

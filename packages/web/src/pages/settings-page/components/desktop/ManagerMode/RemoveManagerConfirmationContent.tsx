@@ -3,7 +3,7 @@ import { useCallback, useContext, useEffect } from 'react'
 import { useGetCurrentWeb3User, useRemoveManager } from '@audius/common/api'
 import { useAppContext } from '@audius/common/context'
 import { useAccountSwitcher } from '@audius/common/hooks'
-import { Name, Status } from '@audius/common/models'
+import { Name } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Button, Flex, Text } from '@audius/harmony'
 import { useSelector } from 'react-redux'
@@ -33,7 +33,12 @@ export const RemoveManagerConfirmationContent = ({
   onSuccess,
   onCancel
 }: RemoveManagerConfirmationContentProps) => {
-  const [removeManager, result] = useRemoveManager()
+  const {
+    mutate: removeManager,
+    isPending,
+    isSuccess,
+    isError
+  } = useRemoveManager()
   const { data: currentWeb3User } = useGetCurrentWeb3User({})
   const currentUserId = useSelector(accountSelectors.getUserId)
   const managerIsCurrentWeb3User = currentWeb3User?.user_id === managerUserId
@@ -42,7 +47,6 @@ export const RemoveManagerConfirmationContent = ({
   const {
     analytics: { track, make }
   } = useAppContext()
-  const { status } = result
 
   const handleDelete = useCallback(() => {
     if (!userId || !managerUserId) return
@@ -56,28 +60,30 @@ export const RemoveManagerConfirmationContent = ({
   }, [userId, managerUserId, removeManager, make, track])
 
   useEffect(() => {
-    if (status === Status.SUCCESS) {
+    if (isSuccess) {
       onSuccess()
       // If we are currently switched into this user and removing ourselves
       // as manager, switch back to primary account
       if (currentUserId === userId && managerIsCurrentWeb3User)
         switchToWeb3User()
-    } else if (status === Status.ERROR) {
-      toast(sharedMessages.somethingWentWrong)
     }
   }, [
-    status,
-    managerIsCurrentWeb3User,
     currentUserId,
-    userId,
-    toast,
+    managerIsCurrentWeb3User,
     switchToWeb3User,
+    userId,
+    isSuccess,
     onSuccess
   ])
 
-  if (!managerUserId) return null
+  // error handling
+  useEffect(() => {
+    if (isError) {
+      toast(sharedMessages.somethingWentWrong)
+    }
+  }, [isError, toast])
 
-  const isSubmitting = status !== Status.IDLE && status !== Status.ERROR
+  if (!managerUserId) return null
 
   return (
     <Flex direction='column' gap='xl'>
@@ -88,7 +94,7 @@ export const RemoveManagerConfirmationContent = ({
         <Button
           variant='secondary'
           onClick={onCancel}
-          disabled={isSubmitting}
+          disabled={isPending}
           fullWidth
         >
           {messages.cancel}
@@ -97,16 +103,16 @@ export const RemoveManagerConfirmationContent = ({
           variant='destructive'
           fullWidth
           onClick={handleDelete}
-          isLoading={isSubmitting}
+          isLoading={isPending}
         >
           {messages.remove}
         </Button>
       </Flex>
-      {status !== Status.ERROR ? null : (
+      {isError ? (
         <Text textAlign='center' color='danger' variant='body'>
           {messages.errorGeneral}
         </Text>
-      )}
+      ) : null}
     </Flex>
   )
 }

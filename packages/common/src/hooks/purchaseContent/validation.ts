@@ -1,6 +1,8 @@
+import { QueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 
-import { signUpFetch } from '~/api'
+import { QUERY_KEYS } from '~/api'
+import { fetchEmailInUse } from '~/api/tan-query/users/useEmailInUse'
 import { AudiusQueryContextType } from '~/audius-query/AudiusQueryContext'
 import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
 import { PurchaseContentPage } from '~/store'
@@ -29,6 +31,7 @@ export const messages = {
 
 export const createPurchaseContentSchema = (
   queryContext: AudiusQueryContextType,
+  queryClient: QueryClient,
   page: PurchaseContentPage,
   emailFromLocalStorage?: string
 ) => {
@@ -84,10 +87,10 @@ export const createPurchaseContentSchema = (
         return
       }
 
-      const { exists: isEmailInUse, isGuest } = await signUpFetch.isEmailInUse(
-        { email: guestEmail },
-        queryContext
-      )
+      const { exists: isEmailInUse, isGuest } = await queryClient.fetchQuery({
+        queryKey: [QUERY_KEYS.emailInUse, guestEmail],
+        queryFn: async () => await fetchEmailInUse(guestEmail, queryContext)
+      })
 
       if (isEmailInUse === undefined) {
         ctx.addIssue({

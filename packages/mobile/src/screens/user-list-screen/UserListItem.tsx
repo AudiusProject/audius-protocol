@@ -74,7 +74,12 @@ export const UserListItem = (props: UserListItemProps) => {
               <UserLink userId={userId} strength='strong' />
               <Text size='s'>@{handle}</Text>
             </Flex>
-            <Flex row justifyContent='space-between' alignItems='center'>
+            <Flex
+              row
+              justifyContent='space-between'
+              alignItems='center'
+              gap='l'
+            >
               <Flex row gap='xs' alignItems='center'>
                 <IconUser color='subdued' size='s' />
                 <Text size='s' color='subdued'>

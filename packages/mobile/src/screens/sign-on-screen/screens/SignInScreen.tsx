@@ -13,6 +13,7 @@ import {
   getRequiresOtp,
   getStatus
 } from '@audius/web/src/common/store/pages/signon/selectors'
+import { useQueryClient } from '@tanstack/react-query'
 import { setValueField, signIn } from 'common/store/pages/signon/actions'
 import { Formik, useField } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -43,12 +44,14 @@ export const SignInScreen = () => {
   const { onOpen } = useDrawer('ForgotPassword')
   const requiresOtp = useSelector(getRequiresOtp)
   const navigation = useNavigation<SignOnScreenParamList>()
+  const queryClient = useQueryClient()
   useTrackScreen('SignIn')
 
   const audiusQueryContext = useAudiusQueryContext()
   const SignInSchema = useMemo(
-    () => toFormikValidationSchema(signInSchema(audiusQueryContext)),
-    [audiusQueryContext]
+    () =>
+      toFormikValidationSchema(signInSchema(audiusQueryContext, queryClient)),
+    [audiusQueryContext, queryClient]
   )
 
   useEffect(() => {

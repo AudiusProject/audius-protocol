@@ -1,5 +1,4 @@
-import { useGetDeveloperApps } from '@audius/common/api'
-import { Status } from '@audius/common/models'
+import { useDeveloperApps, DeveloperApp } from '@audius/common/api'
 import { accountSelectors } from '@audius/common/store'
 import { ModalContentText, IconPlus, Button } from '@audius/harmony'
 
@@ -30,12 +29,9 @@ type YourAppsPageProps = CreateAppPageProps
 export const YourAppsPage = (props: YourAppsPageProps) => {
   const { setPage } = props
   const userId = useSelector(getUserId)
-  const { data, status } = useGetDeveloperApps(
-    { id: userId as number },
-    { disabled: !userId }
-  )
+  const { data: apps, status } = useDeveloperApps(userId)
 
-  const hasMaxAllowedApps = data?.apps.length >= maxAppsAllowed
+  const hasMaxAllowedApps = (apps?.length ?? 0) >= maxAppsAllowed
 
   let createAppButton = (
     <Button
@@ -43,7 +39,7 @@ export const YourAppsPage = (props: YourAppsPageProps) => {
       size='small'
       iconLeft={IconPlus}
       onClick={() => setPage(CreateAppsPages.NEW_APP)}
-      disabled={status !== Status.SUCCESS || hasMaxAllowedApps}
+      disabled={status !== 'success' || hasMaxAllowedApps}
     >
       {messages.newAppButton}
     </Button>
@@ -66,13 +62,13 @@ export const YourAppsPage = (props: YourAppsPageProps) => {
           {createAppButton}
         </div>
         <Divider className={styles.divider} />
-        {status !== Status.SUCCESS ? (
+        {status !== 'success' ? (
           <LoadingSpinner className={styles.spinner} />
-        ) : data?.apps.length === 0 ? (
+        ) : !apps?.length ? (
           <p className={styles.noApps}>{messages.noApps}</p>
         ) : (
           <ol className={styles.appList}>
-            {data?.apps.map((app, index) => (
+            {apps.map((app: DeveloperApp, index: number) => (
               <DeveloperAppListItem
                 key={app.apiKey}
                 index={index + 1}

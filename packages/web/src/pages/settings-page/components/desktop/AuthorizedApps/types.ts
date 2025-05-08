@@ -1,4 +1,4 @@
-import { DeveloperApp } from '@audius/common/api'
+import { AuthorizedApp } from '@audius/sdk'
 
 export enum AuthorizedAppsPages {
   YOUR_APPS = 'your_apps',
@@ -7,6 +7,6 @@ export enum AuthorizedAppsPages {
 }
 
 export type AuthorizedAppPageProps = {
-  setPage: (page: AuthorizedAppsPages, params?: DeveloperApp) => void
-  params?: DeveloperApp
+  setPage: (page: AuthorizedAppsPages, params?: AuthorizedApp) => void
+  params?: AuthorizedApp
 }

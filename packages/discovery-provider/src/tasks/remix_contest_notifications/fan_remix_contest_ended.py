@@ -5,14 +5,14 @@ from src.models.notifications.notification import Notification
 from src.models.tracks.track import Track
 from src.utils.structured_logger import StructuredLogger
 
-REMIX_CONTEST_ENDED = "remix_contest_ended"
+FAN_REMIX_CONTEST_ENDED = "fan_remix_contest_ended"
 REMIX_CONTEST_ENDED_WINDOW_HOURS = 24
 
 logger = StructuredLogger(__name__)
 
 
-def get_remix_contest_ended_group_id(event_id):
-    return f"{REMIX_CONTEST_ENDED}:{event_id}"
+def get_fan_remix_contest_ended_group_id(event_id):
+    return f"{FAN_REMIX_CONTEST_ENDED}:{event_id}"
 
 
 def create_fan_remix_contest_ended_notifications(session, now=None):
@@ -48,7 +48,7 @@ def create_fan_remix_contest_ended_notifications(session, now=None):
         )
         remixer_user_ids = {row[0] for row in remixers}
         for user_id in remixer_user_ids:
-            group_id = get_remix_contest_ended_group_id(event.event_id)
+            group_id = get_fan_remix_contest_ended_group_id(event.event_id)
             parent_track = (
                 session.query(Track)
                 .filter(
@@ -63,7 +63,7 @@ def create_fan_remix_contest_ended_notifications(session, now=None):
                 session.query(Notification)
                 .filter(
                     Notification.group_id == group_id,
-                    Notification.type == REMIX_CONTEST_ENDED,
+                    Notification.type == FAN_REMIX_CONTEST_ENDED,
                     Notification.user_ids.any(user_id),
                 )
                 .first()
@@ -74,7 +74,7 @@ def create_fan_remix_contest_ended_notifications(session, now=None):
                     group_id=group_id,
                     blocknumber=None,
                     user_ids=[user_id],
-                    type=REMIX_CONTEST_ENDED,
+                    type=FAN_REMIX_CONTEST_ENDED,
                     data={
                         "entity_id": event.entity_id,
                         "entity_user_id": parent_track_owner_id,
@@ -82,6 +82,8 @@ def create_fan_remix_contest_ended_notifications(session, now=None):
                     timestamp=now,
                 )
                 new_notifications.append(new_notification)
-    logger.info(f"Inserting {len(new_notifications)} remix contest ended notifications")
+    logger.info(
+        f"Inserting {len(new_notifications)} fan remix contest ended notifications"
+    )
     session.add_all(new_notifications)
     session.commit()

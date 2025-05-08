@@ -4,6 +4,7 @@ import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { socialMediaMessages } from '@audius/common/messages'
 import { Name } from '@audius/common/models'
 import { pickHandleSchema } from '@audius/common/schemas'
+import { useQueryClient } from '@tanstack/react-query'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { useDispatch } from 'react-redux'
 
@@ -40,7 +41,8 @@ const signUpFlowInstagramAuthorizeUrl = `https://api.instagram.com/oauth/authori
 
 const useSetProfileFromInstagram = () => {
   const dispatch = useDispatch()
-  const audiusQueryContext = useAudiusQueryContext()
+  const queryContext = useAudiusQueryContext()
+  const queryClient = useQueryClient()
 
   return async ({ code }: { code: string }) => {
     const res = await getInstagramProfile(code, env.IDENTITY_SERVICE)
@@ -66,7 +68,8 @@ const useSetProfileFromInstagram = () => {
 
     // Check if handle is valid using same schema as handle page
     const handleSchema = pickHandleSchema({
-      audiusQueryContext: audiusQueryContext!,
+      queryContext,
+      queryClient,
       skipReservedHandleCheck: profile.is_verified,
       restrictedHandles
     })

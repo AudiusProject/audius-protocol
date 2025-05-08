@@ -78,6 +78,7 @@ export const useCurrentAccount = <
     },
     staleTime: options?.staleTime ?? Infinity,
     gcTime: Infinity,
-    enabled: options?.enabled !== false && !!currentUserWallet
+    enabled: options?.enabled !== false && !!currentUserWallet,
+    ...options
   })
 }
