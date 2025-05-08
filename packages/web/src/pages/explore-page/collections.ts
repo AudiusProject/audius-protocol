@@ -15,10 +15,11 @@ import { exploreMoodPlaylistsPage } from 'utils/route'
 
 const {
   EXPLORE_LET_THEM_DJ_PAGE,
-  EXPLORE_PREMIUM_TRACKS_PAGE,
   EXPLORE_TOP_ALBUMS_PAGE,
   TRENDING_PLAYLISTS_PAGE,
-  TRENDING_UNDERGROUND_PAGE
+  TRENDING_UNDERGROUND_PAGE,
+  SEARCH_DOWNLOADS_AVAILABLE,
+  SEARCH_PREMIUM_TRACKS
 } = route
 
 export type ExploreCollection = {
@@ -48,7 +49,7 @@ export const PREMIUM_TRACKS: ExploreCollection = {
   gradient: 'linear-gradient(95deg, #13C65A 0%, #16A653 100%)',
   shadow: 'rgba(196,81,193,0.35)',
   icon: IconCart,
-  link: EXPLORE_PREMIUM_TRACKS_PAGE,
+  link: SEARCH_PREMIUM_TRACKS,
   cardSensitivity: WIDE_CARD_SENSITIVTY
 }
 
@@ -59,7 +60,7 @@ export const DOWNLOADS_AVAILABLE: ExploreCollection = {
   gradient: 'linear-gradient(138deg, #FF00F5 -5.01%, #00D1FF 110.47%)',
   shadow: 'rgba(9, 175, 233, 0.35)',
   icon: IconRemix,
-  link: EXPLORE_PREMIUM_TRACKS_PAGE, // TODO make a downloads page
+  link: SEARCH_DOWNLOADS_AVAILABLE, // TODO make a downloads page
   cardSensitivity: WIDE_CARD_SENSITIVTY
 }
 
