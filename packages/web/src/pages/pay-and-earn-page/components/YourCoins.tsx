@@ -47,7 +47,7 @@ const TokensHeader = () => {
 
 export const YourCoins = () => {
   const dispatch = useDispatch()
-  const { color, spacing, cornerRadius } = useTheme()
+  const { color, spacing, cornerRadius, motion } = useTheme()
   const { isMobile, isExtraSmall } = useMedia()
   const { isEnabled: isWalletUIBuySellEnabled } = useFeatureFlag(
     FeatureFlags.WALLET_UI_BUY_SELL
@@ -100,7 +100,7 @@ export const YourCoins = () => {
             gap='xs'
             css={{
               opacity: isLoading ? 0 : 1,
-              transition: 'opacity 0.3s ease'
+              transition: `opacity ${motion.expressive}`
             }}
           >
             <Flex gap='xs'>
