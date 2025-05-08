@@ -2,7 +2,6 @@ import { History } from 'history'
 import { combineReducers } from 'redux'
 import type { Storage } from 'redux-persist'
 
-import apiReducer from '../api/reducer'
 import { Kind } from '../models'
 
 import account from './account/slice'
@@ -130,8 +129,6 @@ import wallet from './wallet/slice'
  */
 export const reducers = (storage: Storage, history?: History) => ({
   account,
-
-  api: apiReducer,
 
   // TODO: Move to common
   // signOn: signOnReducer,
