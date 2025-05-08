@@ -1,7 +1,5 @@
 // Audius query
 // TODO: migrate all of these to tan-query
-export * from './suggestedTracks'
-export * from './trending'
 export * from './user'
 
 // TanStack Query Hooks
@@ -90,6 +88,7 @@ export * from './tan-query/tracks/useFileSizes'
 export * from './tan-query/tracks/useTrackFileInfo'
 export * from './tan-query/tracks/useUpdateTrack'
 export * from './tan-query/tracks/useRemixedTracks'
+export * from './tan-query/tracks/useSuggestedPlaylistTracks'
 
 // Users
 export * from './tan-query/users/account/useCurrentUserId'
