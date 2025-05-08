@@ -24,7 +24,7 @@ import { UserNameLink } from './components/UserNameLink'
 const messages = {
   title: 'Remix Contest',
   description:
-    "'s remix contest has closed and winners should be announced soon. Good luck!"
+    "'s remix contest has closed and winners will be announced soon. Good luck!"
 }
 
 type FanRemixContestEndedNotificationProps = {

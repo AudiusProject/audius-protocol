@@ -18,7 +18,7 @@ import {
 const messages = {
   title: 'Remix Contest Ended',
   description:
-    "'s remix contest has closed and winners should be announced soon. Good luck!"
+    "'s remix contest has closed and winners will be announced soon. Good luck!"
 }
 
 type FanRemixContestEndedNotificationProps = {
