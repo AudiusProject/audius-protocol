@@ -38,13 +38,16 @@ if [[ -z "${SKIP_POD_INSTALL}" ]]; then
     if command -v pod >/dev/null; then
       RCT_NEW_ARCH_ENABLED=0 bundle exec pod install
     fi
-    cd ../android
- 
-    ./gradlew :app:downloadAar
- 
     cd ../../..
   } > /dev/null
 fi
+
+printf "${GREEN}Setting up Android dependencies...\n${NC}"
+{
+  cd ./packages/mobile/android
+  ./gradlew :app:downloadAar
+  cd ../../..
+} > /dev/null
 
 if [[ -z "${CI}" ]]; then
   printf "${GREEN}Setting up audius-compose...\n${NC}"
