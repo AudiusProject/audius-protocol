@@ -44,6 +44,7 @@ import { TrackMetadataList } from 'components/track/TrackMetadataList'
 import HoverInfo from 'components/track-flair/HoverInfo'
 import TrackFlair from 'components/track-flair/TrackFlair'
 import { Size } from 'components/track-flair/types'
+import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { push as pushRoute } from 'utils/navigation'
 import { isDarkMode } from 'utils/theme/theme'
@@ -231,9 +232,10 @@ const TrackHeader = ({
     size: SquareSizes.SIZE_480_BY_480
   })
 
-  const onSaveHeroTrack = () => {
+  const onSaveHeroTrack = useRequiresAccountCallback(() => {
     if (!isOwner) onSave()
-  }
+  }, [isOwner, onSave])
+
   const filteredTags = (tags || '').split(',').filter(Boolean)
 
   const onClickOverflow = () => {
