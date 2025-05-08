@@ -116,8 +116,9 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
     useSuggestedPlaylistTracks(collectionId)
   const [isExpanded, toggleIsExpanded] = useToggle(false)
   const { motion } = useTheme()
+  console.log('suggestedTracks', suggestedTracks)
 
-  const contentHeight = 66 + suggestedTracks.length * 74
+  const contentHeight = 66 + SUGGESTED_TRACK_COUNT * 74
   const contentStyles = useSpring({
     height: isExpanded ? contentHeight : 0
   })
@@ -146,10 +147,10 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
         <ul>
           <Divider />
           {[...Array(SUGGESTED_TRACK_COUNT)].map((_, i) => (
-            <li key={suggestedTracks[i]?.id ?? i}>
+            <li key={suggestedTracks[i]?.track_id ?? i}>
               {suggestedTracks[i] ? (
                 <SuggestedTrackRow
-                  track={suggestedTracks[i].track}
+                  track={suggestedTracks[i]}
                   collectionId={collectionId}
                   onAddTrack={onAddTrack}
                 />
