@@ -33,18 +33,23 @@ const messages = {
 
 export const AlbumsTab = () => {
   const [filterValue, setFilterValue] = useState('')
-  const { collectionIds, hasMore, fetchMore, isPending, isFetchingNextPage } =
-    useLibraryCollections({
-      filterValue,
-      collectionType: 'albums'
-    })
+  const {
+    collectionIds,
+    hasNextPage,
+    loadNextPage,
+    isPending,
+    isFetchingNextPage
+  } = useLibraryCollections({
+    filterValue,
+    collectionType: 'albums'
+  })
   const isReachable = useSelector(getIsReachable)
 
   const handleEndReached = useCallback(() => {
-    if (isReachable && hasMore) {
-      fetchMore()
+    if (isReachable) {
+      loadNextPage()
     }
-  }, [isReachable, hasMore, fetchMore])
+  }, [isReachable, loadNextPage])
 
   const emptyTabText = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
@@ -88,7 +93,7 @@ export const AlbumsTab = () => {
             collectionIds={collectionIds}
             showCreateCollectionTile={!!isReachable}
             ListFooterComponent={
-              isPending || (isFetchingNextPage && hasMore)
+              isPending || (isFetchingNextPage && hasNextPage)
                 ? loadingSpinner
                 : null
             }

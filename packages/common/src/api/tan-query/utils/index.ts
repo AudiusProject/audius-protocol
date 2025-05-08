@@ -1,5 +1,5 @@
 export { combineQueryResults } from './combineQueryResults'
-export { loadNextPage } from './infiniteQueryLoadNextPage'
+export { makeLoadNextPage } from './infiniteQueryLoadNextPage'
 export { handleStemUpdates } from './handleStemUpdates'
 export { parsePurchase } from './parsePurchase'
 export { primeCollectionData } from './primeCollectionData'

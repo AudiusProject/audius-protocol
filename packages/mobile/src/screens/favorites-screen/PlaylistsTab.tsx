@@ -34,18 +34,23 @@ const messages = {
 
 export const PlaylistsTab = () => {
   const [filterValue, setFilterValue] = useState('')
-  const { collectionIds, fetchMore, isPending, isFetchingNextPage, hasMore } =
-    useLibraryCollections({
-      filterValue,
-      collectionType: 'playlists'
-    })
+  const {
+    collectionIds,
+    loadNextPage,
+    isPending,
+    isFetchingNextPage,
+    hasNextPage
+  } = useLibraryCollections({
+    filterValue,
+    collectionType: 'playlists'
+  })
   const isReachable = useSelector(getIsReachable)
 
   const handleEndReached = useCallback(() => {
     if (isReachable) {
-      fetchMore()
+      loadNextPage()
     }
-  }, [isReachable, fetchMore])
+  }, [isReachable, loadNextPage])
 
   const loadingSpinner = <LoadingMoreSpinner />
   const noItemsLoaded = !isPending && !collectionIds?.length && !filterValue
@@ -87,7 +92,7 @@ export const PlaylistsTab = () => {
               scrollEnabled={false}
               collectionIds={collectionIds}
               ListFooterComponent={
-                isPending || (isFetchingNextPage && hasMore)
+                isPending || (isFetchingNextPage && hasNextPage)
                   ? loadingSpinner
                   : null
               }

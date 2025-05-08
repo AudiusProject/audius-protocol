@@ -1,6 +1,9 @@
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 
-import { useLibraryCollections as useLibraryCollectionsTQ } from '@audius/common/api'
+import {
+  makeLoadNextPage,
+  useLibraryCollections as useLibraryCollectionsQuery
+} from '@audius/common/api'
 import { savedPageSelectors, CommonState } from '@audius/common/store'
 import { uniq } from 'lodash'
 import { useSelector } from 'react-redux'
@@ -40,12 +43,12 @@ export const useLibraryCollections = ({
 
   const {
     data: fetchedCollectionIds,
-    status,
     hasNextPage,
     isFetchingNextPage,
     isPending,
+    isFetching,
     fetchNextPage
-  } = useLibraryCollectionsTQ({
+  } = useLibraryCollectionsQuery({
     collectionType: collectionType === 'album' ? 'albums' : 'playlists',
     category: selectedCategory,
     query: filterValue,
@@ -54,11 +57,15 @@ export const useLibraryCollections = ({
     sortDirection: 'desc'
   })
 
-  const fetchMore = useCallback(() => {
-    if (!isFetchingNextPage && hasNextPage) {
-      fetchNextPage()
-    }
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
+  const loadNextPage = useMemo(
+    () =>
+      makeLoadNextPage({
+        isFetching,
+        hasNextPage,
+        fetchNextPage
+      }),
+    [isFetching, hasNextPage, fetchNextPage]
+  )
 
   const collectionIds = useMemo(() => {
     return uniq(
@@ -73,9 +80,8 @@ export const useLibraryCollections = ({
   ])
 
   return {
-    status,
-    hasMore: hasNextPage,
-    fetchMore,
+    hasNextPage,
+    loadNextPage,
     collectionIds,
     isPending,
     isFetchingNextPage

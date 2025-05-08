@@ -34,8 +34,8 @@ const messages = {
 export const PlaylistsTabPage = () => {
   const dispatch = useDispatch()
   const {
-    hasMore,
-    fetchMore,
+    hasNextPage,
+    loadNextPage,
     collectionIds: playlistIds,
     isPending,
     isFetchingNextPage
@@ -101,8 +101,8 @@ export const PlaylistsTabPage = () => {
 
   return (
     <InfiniteCardLineup
-      hasMore={hasMore}
-      loadMore={fetchMore}
+      hasMore={hasNextPage}
+      loadMore={loadNextPage}
       cards={cards}
       cardsClassName={styles.cardsContainer}
       isLoadingMore={isFetchingNextPage}

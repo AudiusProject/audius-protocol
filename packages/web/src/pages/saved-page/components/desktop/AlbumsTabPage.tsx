@@ -31,8 +31,8 @@ const messages = {
 export const AlbumsTabPage = () => {
   const navigate = useNavigateToPage()
   const {
-    hasMore,
-    fetchMore,
+    hasNextPage,
+    loadNextPage,
     collectionIds: albumIds,
     isPending,
     isFetchingNextPage
@@ -79,8 +79,8 @@ export const AlbumsTabPage = () => {
 
   return (
     <InfiniteCardLineup
-      hasMore={hasMore}
-      loadMore={fetchMore}
+      hasMore={hasNextPage}
+      loadMore={loadNextPage}
       cards={cards}
       cardsClassName={styles.cardsContainer}
       isLoadingMore={isFetchingNextPage}

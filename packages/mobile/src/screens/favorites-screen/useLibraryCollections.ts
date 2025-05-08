@@ -1,6 +1,9 @@
-import { useCallback } from 'react'
+import { useMemo } from 'react'
 
-import { useLibraryCollections as useLibraryCollectionsTQ } from '@audius/common/api'
+import {
+  makeLoadNextPage,
+  useLibraryCollections as useLibraryCollectionsQuery
+} from '@audius/common/api'
 import { useProxySelector } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
 import {
@@ -81,7 +84,7 @@ export const useLibraryCollections = ({
     isFetchingNextPage,
     fetchNextPage,
     isPending
-  } = useLibraryCollectionsTQ({
+  } = useLibraryCollectionsQuery({
     collectionType,
     category: selectedCategory,
     query: filterValue,
@@ -159,11 +162,15 @@ export const useLibraryCollections = ({
     shallowCompare
   )
 
-  const fetchMore = useCallback(() => {
-    if (!isFetchingNextPage && hasNextPage) {
-      fetchNextPage()
-    }
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
+  const loadNextPage = useMemo(
+    () =>
+      makeLoadNextPage({
+        isFetching,
+        hasNextPage,
+        fetchNextPage
+      }),
+    [isFetching, hasNextPage, fetchNextPage]
+  )
 
   let status: Status
   if (isReachable) {
@@ -178,8 +185,8 @@ export const useLibraryCollections = ({
 
   return {
     collectionIds,
-    hasMore: hasNextPage,
-    fetchMore,
+    hasNextPage,
+    loadNextPage,
     status,
     isPending,
     isFetchingNextPage

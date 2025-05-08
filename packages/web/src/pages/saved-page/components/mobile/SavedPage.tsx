@@ -293,8 +293,8 @@ const AlbumCardLineup = () => {
 
   const [filterText, setFilterText] = useState('')
   const {
-    hasMore,
-    fetchMore,
+    hasNextPage,
+    loadNextPage,
     collectionIds: albumIds,
     isPending,
     isFetchingNextPage
@@ -379,8 +379,8 @@ const AlbumCardLineup = () => {
           {albumIds?.length > 0 ? (
             <div className={styles.cardsContainer}>
               <InfiniteCardLineup
-                hasMore={hasMore}
-                loadMore={fetchMore}
+                hasMore={hasNextPage}
+                loadMore={loadNextPage}
                 cardsClassName={styles.cardLineup}
                 cards={albumCards}
                 isLoadingMore={isFetchingNextPage}
@@ -406,8 +406,8 @@ const PlaylistCardLineup = ({
   const [filterText, setFilterText] = useState('')
 
   const {
-    hasMore,
-    fetchMore,
+    hasNextPage,
+    loadNextPage,
     collectionIds: playlistIds,
     isPending,
     isFetchingNextPage
@@ -499,8 +499,8 @@ const PlaylistCardLineup = ({
           {playlistIds?.length > 0 ? (
             <div className={styles.cardsContainer}>
               <InfiniteCardLineup
-                hasMore={hasMore}
-                loadMore={fetchMore}
+                hasMore={hasNextPage}
+                loadMore={loadNextPage}
                 cardsClassName={styles.cardLineup}
                 cards={playlistCards}
                 isLoadingMore={isFetchingNextPage}
