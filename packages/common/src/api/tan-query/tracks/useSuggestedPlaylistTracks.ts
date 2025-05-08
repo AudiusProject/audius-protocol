@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { difference } from 'lodash'
+import { difference, shuffle } from 'lodash'
 import { useDispatch } from 'react-redux'
+import { usePrevious } from 'react-use'
 
 import { ID } from '~/models/Identifiers'
 import { TimeRange } from '~/models/TimeRange'
@@ -30,41 +31,47 @@ export const useSuggestedPlaylistTracks = (collectionId: ID) => {
     useCollection(collectionId)
 
   // Get favorited tracks
-  const { data: favoritedTracks = [], isPending: isFavoritedTracksPending } =
+  const { data: favorites = [], isPending: isFavoritedTracksPending } =
     useFavoritedTracks(currentUserId)
 
   // Get trending tracks
   const {
     data: trendingTracks = [],
     loadNextPage: loadNextPageTrending,
-    isPending: isTrendingTracksPending
+    // Note: specifically using isFetching here so that the effect below gets called on future page loads
+    isFetching: isTrendingTracksFetching
   } = useTrending({ timeRange: TimeRange.WEEK })
 
   const getRandomTracksFromList = useCallback(() => {
-    const favoriteIds = favoritedTracks.map((track) => track.save_item_id)
+    const favoriteIds = favorites.map((favorite) => favorite.save_item_id)
     const trendingIds = trendingTracks.map((track) => track.id)
     // Combine, dedupe, and exclude collection tracks
-    const combinedIds = difference(
-      [...new Set([...favoriteIds, ...trendingIds])],
-      collection?.trackIds ?? []
+    const combinedIds = shuffle(
+      difference(
+        [...new Set([...favoriteIds, ...trendingIds])],
+        collection?.trackIds ?? []
+      )
     )
     // Take the first 5 tracks from the pool and use those as our suggested tracks
     return combinedIds.slice(0, SUGGESTED_TRACK_COUNT)
-  }, [collection?.trackIds, favoritedTracks, trendingTracks])
+  }, [collection?.trackIds, favorites, trendingTracks])
 
+  // Set up our initial 5 tracks
   useEffect(() => {
     if (
-      !isTrendingTracksPending &&
+      !isTrendingTracksFetching &&
       !isFavoritedTracksPending &&
-      !isCollectionPending
+      !isCollectionPending &&
+      suggestedTrackIds.length === 0
     ) {
       setSuggestedTrackIds(getRandomTracksFromList())
     }
   }, [
-    isTrendingTracksPending,
+    isTrendingTracksFetching,
     isFavoritedTracksPending,
     isCollectionPending,
-    getRandomTracksFromList
+    getRandomTracksFromList,
+    suggestedTrackIds.length
   ])
 
   // Load track data
@@ -83,6 +90,8 @@ export const useSuggestedPlaylistTracks = (collectionId: ID) => {
     // If this list length is under our track count that means we've used all the possible tracks we fetched
     // So we need to get more from trending in this scenario
     if (moreTracks.length < SUGGESTED_TRACK_COUNT) {
+      // reload the trackss
+      setSuggestedTrackIds([])
       loadNextPageTrending()
     } else {
       setSuggestedTrackIds(moreTracks)
