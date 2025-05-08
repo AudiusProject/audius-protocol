@@ -660,6 +660,15 @@ export const notificationFromSDK = (
         ...formatBaseNotification(notification)
       }
     }
+    case 'artist_remix_contest_ending_soon': {
+      const data = notification.actions[0].data
+      return {
+        type: NotificationType.ArtistRemixContestEndingSoon,
+        entityId: HashId.parse(data.entityId),
+        entityUserId: HashId.parse(data.entityUserId),
+        ...formatBaseNotification(notification)
+      }
+    }
     case 'fan_remix_contest_ending_soon': {
       const data = notification.actions[0].data
       return {
