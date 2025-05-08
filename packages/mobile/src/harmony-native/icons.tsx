@@ -162,6 +162,7 @@ export { default as IconMoneyBracket } from '@audius/harmony/src/assets/icons/Mo
 export { default as IconPin } from '@audius/harmony/src/assets/icons/Pin.svg'
 export { default as IconPaperAirplane } from '@audius/harmony/src/assets/icons/PaperAirplane.svg'
 export { default as IconArrowUpToLine } from '@audius/harmony/src/assets/icons/ArrowUpToLine.svg'
+export { default as IconJupiterLogo } from '@audius/harmony/src/assets/icons/JupiterLogo.svg'
 
 // Two Tone / Special Styling
 

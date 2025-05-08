@@ -8,6 +8,7 @@ import {
   Button,
   Flex,
   Hint,
+  IconJupiterLogo,
   Modal,
   ModalContent,
   ModalFooter,
@@ -198,6 +199,7 @@ export const BuySellModal = () => {
         <Text variant='label' size='xs' color='subdued'>
           {messages.poweredBy}
         </Text>
+        <IconJupiterLogo />
       </ModalFooter>
     </Modal>
   )
