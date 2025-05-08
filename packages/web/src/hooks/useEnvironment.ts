@@ -6,11 +6,11 @@ export const useEnvironment = () => {
     import.meta.env.DEV === true ||
     import.meta.env.MODE === 'development'
 
-  const isDevOrStaging = env.ENVIRONMENT === 'staging' || isDev
+  const isStaging = env.ENVIRONMENT === 'staging'
 
   return {
     isDev,
-    isStaging: env.ENVIRONMENT === 'staging',
-    isProduction: !isDevOrStaging
+    isStaging,
+    isProduction: !isDev && !isStaging
   }
 }
