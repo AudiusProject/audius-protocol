@@ -13,7 +13,9 @@ import {
 } from '@audius/harmony'
 import { Route, Switch, useHistory, useRouteMatch } from 'react-router-dom'
 
+import { getRouteOnExit } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
+import { useSelector } from 'utils/reducer'
 
 import { useDetermineAllowedRoute } from '../utils/useDetermineAllowedRoutes'
 
@@ -86,10 +88,11 @@ export const NavHeader = () => {
   const history = useHistory()
   const { isMobile } = useMedia()
   const { iconSizes } = useTheme()
+  const routeOnExit = useSelector(getRouteOnExit)
 
   const handleClose = useCallback(() => {
-    history.push(TRENDING_PAGE)
-  }, [history])
+    history.push(routeOnExit)
+  }, [history, routeOnExit])
 
   const audiusLogo = <IconAudiusLogoHorizontal color='subdued' sizeH='l' />
 
