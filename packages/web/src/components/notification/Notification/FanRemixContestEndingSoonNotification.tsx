@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { useTrack, useUser } from '@audius/common/api'
 import {
   Entity,
-  RemixContestEndingSoonNotification as RemixContestEndingSoonNotificationType,
+  FanRemixContestEndingSoonNotification as FanRemixContestEndingSoonNotificationType,
   TrackEntity
 } from '@audius/common/store'
 import { Flex, IconTrophy } from '@audius/harmony'
@@ -27,12 +27,12 @@ const messages = {
     " has a remix contest ending in 72 hours - don't forget to submit your remix"
 }
 
-type RemixContestEndingSoonNotificationProps = {
-  notification: RemixContestEndingSoonNotificationType
+type FanRemixContestEndingSoonNotificationProps = {
+  notification: FanRemixContestEndingSoonNotificationType
 }
 
-export const RemixContestEndingSoonNotification = (
-  props: RemixContestEndingSoonNotificationProps
+export const FanRemixContestEndingSoonNotification = (
+  props: FanRemixContestEndingSoonNotificationProps
 ) => {
   const { notification } = props
   const { timeLabel, isViewed, entityId, entityUserId } = notification

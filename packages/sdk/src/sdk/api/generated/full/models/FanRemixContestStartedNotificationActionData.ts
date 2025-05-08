@@ -17,27 +17,27 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface RemixContestEndedNotificationActionData
+ * @interface FanRemixContestStartedNotificationActionData
  */
-export interface RemixContestEndedNotificationActionData {
+export interface FanRemixContestStartedNotificationActionData {
     /**
      * 
      * @type {string}
-     * @memberof RemixContestEndedNotificationActionData
+     * @memberof FanRemixContestStartedNotificationActionData
      */
     entityUserId: string;
     /**
      * 
      * @type {string}
-     * @memberof RemixContestEndedNotificationActionData
+     * @memberof FanRemixContestStartedNotificationActionData
      */
     entityId: string;
 }
 
 /**
- * Check if a given object implements the RemixContestEndedNotificationActionData interface.
+ * Check if a given object implements the FanRemixContestStartedNotificationActionData interface.
  */
-export function instanceOfRemixContestEndedNotificationActionData(value: object): value is RemixContestEndedNotificationActionData {
+export function instanceOfFanRemixContestStartedNotificationActionData(value: object): value is FanRemixContestStartedNotificationActionData {
     let isInstance = true;
     isInstance = isInstance && "entityUserId" in value && value["entityUserId"] !== undefined;
     isInstance = isInstance && "entityId" in value && value["entityId"] !== undefined;
@@ -45,11 +45,11 @@ export function instanceOfRemixContestEndedNotificationActionData(value: object)
     return isInstance;
 }
 
-export function RemixContestEndedNotificationActionDataFromJSON(json: any): RemixContestEndedNotificationActionData {
-    return RemixContestEndedNotificationActionDataFromJSONTyped(json, false);
+export function FanRemixContestStartedNotificationActionDataFromJSON(json: any): FanRemixContestStartedNotificationActionData {
+    return FanRemixContestStartedNotificationActionDataFromJSONTyped(json, false);
 }
 
-export function RemixContestEndedNotificationActionDataFromJSONTyped(json: any, ignoreDiscriminator: boolean): RemixContestEndedNotificationActionData {
+export function FanRemixContestStartedNotificationActionDataFromJSONTyped(json: any, ignoreDiscriminator: boolean): FanRemixContestStartedNotificationActionData {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -60,7 +60,7 @@ export function RemixContestEndedNotificationActionDataFromJSONTyped(json: any, 
     };
 }
 
-export function RemixContestEndedNotificationActionDataToJSON(value?: RemixContestEndedNotificationActionData | null): any {
+export function FanRemixContestStartedNotificationActionDataToJSON(value?: FanRemixContestStartedNotificationActionData | null): any {
     if (value === undefined) {
         return undefined;
     }

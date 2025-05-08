@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import { useTrack, useUser } from '@audius/common/api'
-import type { RemixContestStartedNotification as RemixContestStartedNotificationType } from '@audius/common/store'
+import type { FanRemixContestStartedNotification as FanRemixContestStartedNotificationType } from '@audius/common/store'
 
 import { IconTrophy } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
@@ -20,12 +20,12 @@ const messages = {
   description: 'started a remix contest for'
 }
 
-type RemixContestStartedNotificationProps = {
-  notification: RemixContestStartedNotificationType
+type FanRemixContestStartedNotificationProps = {
+  notification: FanRemixContestStartedNotificationType
 }
 
-export const RemixContestStartedNotification = (
-  props: RemixContestStartedNotificationProps
+export const FanRemixContestStartedNotification = (
+  props: FanRemixContestStartedNotificationProps
 ) => {
   const { notification } = props
   const { entityId, entityUserId } = notification

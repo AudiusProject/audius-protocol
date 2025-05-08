@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { useTrack, useUser } from '@audius/common/api'
 import {
   Entity,
-  RemixContestStartedNotification as RemixContestStartedNotificationType,
+  FanRemixContestStartedNotification as FanRemixContestStartedNotificationType,
   TrackEntity
 } from '@audius/common/store'
 import { Flex, IconTrophy } from '@audius/harmony'
@@ -26,12 +26,12 @@ const messages = {
   description: 'started a new remix contest for'
 }
 
-type RemixContestStartedNotificationProps = {
-  notification: RemixContestStartedNotificationType
+type FanRemixContestStartedNotificationProps = {
+  notification: FanRemixContestStartedNotificationType
 }
 
-export const RemixContestStartedNotification = (
-  props: RemixContestStartedNotificationProps
+export const FanRemixContestStartedNotification = (
+  props: FanRemixContestStartedNotificationProps
 ) => {
   const { notification } = props
   const { timeLabel, isViewed, entityId, entityUserId } = notification

@@ -14,55 +14,55 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { RemixContestEndedNotificationAction } from './RemixContestEndedNotificationAction';
+import type { FanRemixContestEndedNotificationAction } from './FanRemixContestEndedNotificationAction';
 import {
-    RemixContestEndedNotificationActionFromJSON,
-    RemixContestEndedNotificationActionFromJSONTyped,
-    RemixContestEndedNotificationActionToJSON,
-} from './RemixContestEndedNotificationAction';
+    FanRemixContestEndedNotificationActionFromJSON,
+    FanRemixContestEndedNotificationActionFromJSONTyped,
+    FanRemixContestEndedNotificationActionToJSON,
+} from './FanRemixContestEndedNotificationAction';
 
 /**
  * 
  * @export
- * @interface RemixContestEndedNotification
+ * @interface FanRemixContestEndedNotification
  */
-export interface RemixContestEndedNotification {
+export interface FanRemixContestEndedNotification {
     /**
      * 
      * @type {string}
-     * @memberof RemixContestEndedNotification
+     * @memberof FanRemixContestEndedNotification
      */
     type: string;
     /**
      * 
      * @type {string}
-     * @memberof RemixContestEndedNotification
+     * @memberof FanRemixContestEndedNotification
      */
     groupId: string;
     /**
      * 
      * @type {boolean}
-     * @memberof RemixContestEndedNotification
+     * @memberof FanRemixContestEndedNotification
      */
     isSeen: boolean;
     /**
      * 
      * @type {number}
-     * @memberof RemixContestEndedNotification
+     * @memberof FanRemixContestEndedNotification
      */
     seenAt?: number;
     /**
      * 
-     * @type {Array<RemixContestEndedNotificationAction>}
-     * @memberof RemixContestEndedNotification
+     * @type {Array<FanRemixContestEndedNotificationAction>}
+     * @memberof FanRemixContestEndedNotification
      */
-    actions: Array<RemixContestEndedNotificationAction>;
+    actions: Array<FanRemixContestEndedNotificationAction>;
 }
 
 /**
- * Check if a given object implements the RemixContestEndedNotification interface.
+ * Check if a given object implements the FanRemixContestEndedNotification interface.
  */
-export function instanceOfRemixContestEndedNotification(value: object): value is RemixContestEndedNotification {
+export function instanceOfFanRemixContestEndedNotification(value: object): value is FanRemixContestEndedNotification {
     let isInstance = true;
     isInstance = isInstance && "type" in value && value["type"] !== undefined;
     isInstance = isInstance && "groupId" in value && value["groupId"] !== undefined;
@@ -72,11 +72,11 @@ export function instanceOfRemixContestEndedNotification(value: object): value is
     return isInstance;
 }
 
-export function RemixContestEndedNotificationFromJSON(json: any): RemixContestEndedNotification {
-    return RemixContestEndedNotificationFromJSONTyped(json, false);
+export function FanRemixContestEndedNotificationFromJSON(json: any): FanRemixContestEndedNotification {
+    return FanRemixContestEndedNotificationFromJSONTyped(json, false);
 }
 
-export function RemixContestEndedNotificationFromJSONTyped(json: any, ignoreDiscriminator: boolean): RemixContestEndedNotification {
+export function FanRemixContestEndedNotificationFromJSONTyped(json: any, ignoreDiscriminator: boolean): FanRemixContestEndedNotification {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -86,11 +86,11 @@ export function RemixContestEndedNotificationFromJSONTyped(json: any, ignoreDisc
         'groupId': json['group_id'],
         'isSeen': json['is_seen'],
         'seenAt': !exists(json, 'seen_at') ? undefined : json['seen_at'],
-        'actions': ((json['actions'] as Array<any>).map(RemixContestEndedNotificationActionFromJSON)),
+        'actions': ((json['actions'] as Array<any>).map(FanRemixContestEndedNotificationActionFromJSON)),
     };
 }
 
-export function RemixContestEndedNotificationToJSON(value?: RemixContestEndedNotification | null): any {
+export function FanRemixContestEndedNotificationToJSON(value?: FanRemixContestEndedNotification | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -103,7 +103,7 @@ export function RemixContestEndedNotificationToJSON(value?: RemixContestEndedNot
         'group_id': value.groupId,
         'is_seen': value.isSeen,
         'seen_at': value.seenAt,
-        'actions': ((value.actions as Array<any>).map(RemixContestEndedNotificationActionToJSON)),
+        'actions': ((value.actions as Array<any>).map(FanRemixContestEndedNotificationActionToJSON)),
     };
 }
 

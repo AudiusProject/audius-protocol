@@ -10,12 +10,12 @@ from src.utils.structured_logger import StructuredLogger
 logger = StructuredLogger(__name__)
 
 
-REMIX_CONTEST_ENDING_SOON = "remix_contest_ending_soon"
+FAN_REMIX_CONTEST_ENDING_SOON = "fan_remix_contest_ending_soon"
 REMIX_CONTEST_ENDING_SOON_WINDOW_HOURS = 72
 
 
-def get_remix_contest_ending_soon_group_id(event_id):
-    return f"{REMIX_CONTEST_ENDING_SOON}:{event_id}"
+def get_fan_remix_contest_ending_soon_group_id(event_id):
+    return f"{FAN_REMIX_CONTEST_ENDING_SOON}:{event_id}"
 
 
 def create_fan_remix_contest_ending_soon_notifications(session, now=None):
@@ -69,13 +69,13 @@ def create_fan_remix_contest_ending_soon_notifications(session, now=None):
             .first()
         )
         parent_track_owner_id = parent_track.owner_id if parent_track else None
-        group_id = get_remix_contest_ending_soon_group_id(event.event_id)
+        group_id = get_fan_remix_contest_ending_soon_group_id(event.event_id)
         for user_id in notified_user_ids:
             exists = (
                 session.query(Notification)
                 .filter(
                     Notification.group_id == group_id,
-                    Notification.type == REMIX_CONTEST_ENDING_SOON,
+                    Notification.type == FAN_REMIX_CONTEST_ENDING_SOON,
                     Notification.user_ids.any(user_id),
                 )
                 .first()
@@ -86,7 +86,7 @@ def create_fan_remix_contest_ending_soon_notifications(session, now=None):
                     group_id=group_id,
                     blocknumber=None,
                     user_ids=[user_id],
-                    type=REMIX_CONTEST_ENDING_SOON,
+                    type=FAN_REMIX_CONTEST_ENDING_SOON,
                     data={
                         "entity_id": contest_track_id,
                         "entity_user_id": parent_track_owner_id,
@@ -95,7 +95,7 @@ def create_fan_remix_contest_ending_soon_notifications(session, now=None):
                 )
                 new_notifications.append(new_notification)
     logger.info(
-        f"Inserting {len(new_notifications)} remix contest ending soon notifications"
+        f"Inserting {len(new_notifications)} fan remix contest ending soon notifications"
     )
     session.add_all(new_notifications)
     session.commit()
