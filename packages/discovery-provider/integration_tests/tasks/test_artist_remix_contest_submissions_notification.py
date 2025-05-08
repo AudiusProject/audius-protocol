@@ -27,23 +27,13 @@ def make_remix(track_id, owner_id, created_at):
 
 def get_milestone_notifications(db):
     with db.scoped_session() as session:
-        notifications = (
+        return (
             session.query(Notification)
             .filter(
                 Notification.type == NotificationType.ARTIST_REMIX_CONTEST_SUBMISSIONS
             )
             .all()
         )
-        # Eagerly extract all needed fields
-        return [
-            {
-                "user_ids": n.user_ids,
-                "event_id": n.data["event_id"],
-                "entity_id": n.data["entity_id"],
-                "milestone": n.data["milestone"],
-            }
-            for n in notifications
-        ]
 
 
 def test_artist_remix_contest_submissions_milestones(app):
@@ -105,7 +95,7 @@ def test_artist_remix_contest_submissions_milestones(app):
     remix_entities = {"tracks": [make_remix(1001, 3, now + timedelta(minutes=1))]}
     populate_mock_db(db, remix_entities)
     notifications = get_milestone_notifications(db)
-    milestones = {n["milestone"] for n in notifications}
+    milestones = {n.data["milestone"] for n in notifications}
     assert milestones == {1}
     assert len(notifications) == 1
 
@@ -118,9 +108,9 @@ def test_artist_remix_contest_submissions_milestones(app):
     }
     populate_mock_db(db, remix_entities)
     notifications = get_milestone_notifications(db)
-    milestones = {n["milestone"] for n in notifications}
+    milestones = {n.data["milestone"] for n in notifications}
     assert milestones == {1, 10}
-    assert len([n for n in notifications if n["milestone"] == 10]) == 1
+    assert len([n for n in notifications if n.data["milestone"] == 10]) == 1
 
     # Insert 40 more remixes (total 50 after contest start)
     remix_entities = {
@@ -131,13 +121,13 @@ def test_artist_remix_contest_submissions_milestones(app):
     }
     populate_mock_db(db, remix_entities)
     notifications = get_milestone_notifications(db)
-    milestones = {n["milestone"] for n in notifications}
+    milestones = {n.data["milestone"] for n in notifications}
     assert milestones == {1, 10, 50}
-    assert len([n for n in notifications if n["milestone"] == 50]) == 1
+    assert len([n for n in notifications if n.data["milestone"] == 50]) == 1
 
     # Final check: only 3 notifications, and all are for the contest creator and correct event/track
     assert len(notifications) == 3
     for n in notifications:
-        assert n["user_ids"] == [TEST_CONTEST_CREATOR_ID]
-        assert n["event_id"] == TEST_EVENT_ID
-        assert n["entity_id"] == TEST_PARENT_TRACK_ID
+        assert n.user_ids == [TEST_CONTEST_CREATOR_ID]
+        assert n.data["event_id"] == TEST_EVENT_ID
+        assert n.data["entity_id"] == TEST_PARENT_TRACK_ID
