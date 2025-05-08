@@ -10,7 +10,7 @@ import {
 import { ID } from '~/models'
 
 import { UseLineupQueryData } from './lineups/useLineupQuery'
-import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
+import { makeLoadNextPage } from './utils/infiniteQueryLoadNextPage'
 
 /**
  * Using DataTag allows tan-query to infer the data type stored at this key
@@ -43,7 +43,7 @@ export type LineupQueryData = UseLineupQueryData &
     | 'isPending'
     | 'isError'
   > & {
-    loadNextPage: ReturnType<typeof loadNextPage>
+    loadNextPage: ReturnType<typeof makeLoadNextPage>
     pageSize?: number
   }
 

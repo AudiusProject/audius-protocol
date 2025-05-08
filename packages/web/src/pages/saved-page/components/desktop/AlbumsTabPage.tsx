@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 
-import { statusIsNotFinalized } from '@audius/common/models'
 import {
   savedPageSelectors,
   LibraryCategory,
@@ -15,7 +14,7 @@ import { InfiniteCardLineup } from 'components/lineup/InfiniteCardLineup'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import EmptyTable from 'components/tracks-table/EmptyTable'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { useCollectionsData } from 'pages/saved-page/hooks/useCollectionsData'
+import { useLibraryCollections } from 'pages/saved-page/hooks/useLibraryCollections'
 
 import { emptyStateMessages } from '../emptyStateMessages'
 
@@ -32,11 +31,12 @@ const messages = {
 export const AlbumsTabPage = () => {
   const navigate = useNavigateToPage()
   const {
-    status,
-    hasMore,
-    fetchMore,
-    collections: albums
-  } = useCollectionsData({ collectionType: 'album' })
+    hasNextPage,
+    loadNextPage,
+    collectionIds: albumIds,
+    isPending,
+    isFetchingNextPage
+  } = useLibraryCollections({ collectionType: 'album' })
 
   const emptyAlbumsHeader = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
@@ -53,22 +53,20 @@ export const AlbumsTabPage = () => {
     }
   })
 
-  const noResults = !statusIsNotFinalized(status) && albums?.length === 0
-
-  const isLoadingInitial = statusIsNotFinalized(status) && albums?.length === 0
+  const noResults = !isPending && albumIds?.length === 0
 
   const cards = useMemo(() => {
-    return albums?.map(({ playlist_id }) => {
-      return <CollectionCard key={playlist_id} id={playlist_id} size='m' />
+    return albumIds?.map((albumId) => {
+      return <CollectionCard key={albumId} id={albumId} size='m' />
     })
-  }, [albums])
+  }, [albumIds])
 
-  if (isLoadingInitial) {
+  if (isPending) {
     return <LoadingSpinner className={styles.spinner} />
   }
 
   // TODO(nkang) - Add separate error state
-  if (noResults || !albums) {
+  if (noResults || !albumIds) {
     return (
       <EmptyTable
         primaryText={emptyAlbumsHeader}
@@ -81,11 +79,11 @@ export const AlbumsTabPage = () => {
 
   return (
     <InfiniteCardLineup
-      hasMore={hasMore}
-      loadMore={fetchMore}
+      hasMore={hasNextPage}
+      loadMore={loadNextPage}
       cards={cards}
       cardsClassName={styles.cardsContainer}
-      isLoadingMore={statusIsNotFinalized(status)}
+      isLoadingMore={isFetchingNextPage}
     />
   )
 }

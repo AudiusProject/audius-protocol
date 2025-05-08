@@ -1,9 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import {
-  CreatePlaylistSource,
-  statusIsNotFinalized
-} from '@audius/common/models'
+import { CreatePlaylistSource } from '@audius/common/models'
 import {
   cacheCollectionsActions,
   savedPageSelectors,
@@ -19,7 +16,7 @@ import { InfiniteCardLineup } from 'components/lineup/InfiniteCardLineup'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import EmptyTable from 'components/tracks-table/EmptyTable'
 import UploadChip from 'components/upload/UploadChip'
-import { useCollectionsData } from 'pages/saved-page/hooks/useCollectionsData'
+import { useLibraryCollections } from 'pages/saved-page/hooks/useLibraryCollections'
 
 import { emptyStateMessages } from '../emptyStateMessages'
 
@@ -36,7 +33,13 @@ const messages = {
 
 export const PlaylistsTabPage = () => {
   const dispatch = useDispatch()
-  const { status, hasMore, fetchMore, collections } = useCollectionsData({
+  const {
+    hasNextPage,
+    loadNextPage,
+    collectionIds: playlistIds,
+    isPending,
+    isFetchingNextPage
+  } = useLibraryCollections({
     collectionType: 'playlist'
   })
   const emptyPlaylistsHeader = useSelector((state: CommonState) => {
@@ -52,9 +55,7 @@ export const PlaylistsTabPage = () => {
     }
   })
 
-  const noResults = !statusIsNotFinalized(status) && collections?.length === 0
-  const isLoadingInitial =
-    statusIsNotFinalized(status) && collections?.length === 0
+  const noResults = !isPending && playlistIds?.length === 0
 
   const handleCreatePlaylist = useCallback(() => {
     dispatch(
@@ -75,18 +76,18 @@ export const PlaylistsTabPage = () => {
     )
     return [
       createPlaylistCard,
-      ...collections?.map(({ playlist_id: id }) => {
-        return <CollectionCard key={id} id={id} size='m' />
+      ...playlistIds?.map((playlistId) => {
+        return <CollectionCard key={playlistId} id={playlistId} size='m' />
       })
     ]
-  }, [collections])
+  }, [playlistIds])
 
-  if (isLoadingInitial) {
+  if (isPending) {
     return <LoadingSpinner className={styles.spinner} />
   }
 
   // TODO(nkang) - Add separate error state
-  if (noResults || !collections) {
+  if (noResults || !playlistIds) {
     return (
       <EmptyTable
         primaryText={emptyPlaylistsHeader}
@@ -100,11 +101,11 @@ export const PlaylistsTabPage = () => {
 
   return (
     <InfiniteCardLineup
-      hasMore={hasMore}
-      loadMore={fetchMore}
+      hasMore={hasNextPage}
+      loadMore={loadNextPage}
       cards={cards}
       cardsClassName={styles.cardsContainer}
-      isLoadingMore={statusIsNotFinalized(status)}
+      isLoadingMore={isFetchingNextPage}
     />
   )
 }
