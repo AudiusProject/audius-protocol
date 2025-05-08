@@ -24,7 +24,6 @@ type RemixContestCardProps = Omit<CardProps, 'id'> & {
   id: ID
   loading?: boolean
   noNavigation?: boolean
-  onCollectionLinkClick?: (e: MouseEvent<HTMLAnchorElement>) => void
 }
 
 export const RemixContestCard = forwardRef(
