@@ -176,7 +176,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
         fileCount: stemTracks.length + 1
       })
     },
-    [trackId, stemTracks]
+    [openDownloadTrackArchiveModal, trackId, stemTracks.length]
   )
 
   return (

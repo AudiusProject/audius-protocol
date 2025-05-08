@@ -80,7 +80,7 @@ module.exports = {
       'warn',
       {
         additionalHooks:
-          '(useThrottledCallback|useDebouncedCallback|useAuthenticatedCallback)'
+          '(useThrottledCallback|useDebouncedCallback|useRequiresAccountCallback)'
       }
     ],
     'react/display-name': 'off',
