@@ -1,8 +1,12 @@
 import { QueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 
-import { fetchHandleInUse, fetchHandleReservedStatus, QUERY_KEYS } from '~/api'
-import { AudiusQueryContextType } from '~/audius-query'
+import {
+  fetchHandleInUse,
+  fetchHandleReservedStatus,
+  QUERY_KEYS,
+  QueryContextType
+} from '~/api'
 import { MAX_HANDLE_LENGTH } from '~/services/oauth'
 import { restrictedHandles as commonRestrictedHandles } from '~/utils/restrictedHandles'
 
@@ -28,7 +32,7 @@ export const pickHandleSchema = ({
   skipReservedHandleCheck = false,
   restrictedHandles = commonRestrictedHandles
 }: {
-  queryContext: AudiusQueryContextType
+  queryContext: QueryContextType
   queryClient: QueryClient
   skipReservedHandleCheck?: boolean
   restrictedHandles?: Set<string>

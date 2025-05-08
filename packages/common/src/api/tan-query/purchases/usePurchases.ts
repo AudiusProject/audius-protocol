@@ -4,7 +4,7 @@ import { full, Id } from '@audius/sdk'
 import { InfiniteData, useInfiniteQuery } from '@tanstack/react-query'
 
 import { purchaseFromSDK } from '~/adapters/purchase'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { ID } from '~/models'
 import {
   USDCContentPurchaseType,
@@ -49,7 +49,7 @@ export const usePurchases = (
   options?: QueryOptions
 ) => {
   const { userId, sortMethod, sortDirection, pageSize = PAGE_SIZE } = args
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const queryResult = useInfiniteQuery({
     queryKey: getPurchasesQueryKey(args),
     initialPageParam: 0,

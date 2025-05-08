@@ -9,7 +9,7 @@ import {
 import { useDispatch } from 'react-redux'
 
 import { commentFromSDK, transformAndCleanList } from '~/adapters'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
@@ -31,7 +31,7 @@ export const useUserComments = (
   },
   options?: QueryOptions
 ) => {
-  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const { audiusSdk, reportToSentry } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const isMutating = useIsMutating()
   const queryClient = useQueryClient()

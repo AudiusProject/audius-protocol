@@ -2,7 +2,7 @@ import { OptionalId, Event as SDKEvent } from '@audius/sdk'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 
 import { eventMetadataFromSDK } from '~/adapters/event'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { ID } from '~/models'
 import { removeNullable } from '~/utils'
 
@@ -25,7 +25,7 @@ export const useAllEvents = (
   { pageSize = DEFAULT_PAGE_SIZE }: UseAllEventsArgs = {},
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
 

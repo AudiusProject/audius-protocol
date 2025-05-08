@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useQueryContext } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import { pickHandleSchema } from '@audius/common/schemas'
 import { formatTikTokProfile } from '@audius/common/services'
@@ -42,7 +42,7 @@ export const SignUpFlowTikTokAuth = ({
   const isOpen = useSelector(getIsOpen)
 
   const [tikTokOpen, setTikTokOpen] = useState(false)
-  const queryContext = useAudiusQueryContext()
+  const queryContext = useQueryContext()
   const queryClient = useQueryClient()
 
   useEffect(() => {

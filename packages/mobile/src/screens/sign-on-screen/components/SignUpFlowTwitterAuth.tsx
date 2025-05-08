@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useQueryContext } from '@audius/common/api'
 import { socialMediaMessages } from '@audius/common/messages'
 import { pickHandleSchema } from '@audius/common/schemas'
 import { formatTwitterProfile } from '@audius/common/services'
@@ -115,7 +115,7 @@ export const SignUpFlowTwitterAuth = ({
 }: SignUpFlowTwitterAuthProps) => {
   const dispatch = useDispatch()
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const queryContext = useAudiusQueryContext()
+  const queryContext = useQueryContext()
   const queryClient = useQueryClient()
 
   const [authToken, setAuthToken] = useState<string | undefined>()

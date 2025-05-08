@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useQueryContext } from '@audius/common/api'
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { settingsMessages } from '@audius/common/messages'
 import { Name, Theme } from '@audius/common/models'
@@ -126,7 +126,7 @@ const messages = {
 export const SettingsPage = () => {
   const dispatch = useDispatch()
   const isManagedAccount = useIsManagedAccount()
-  const { authService, identityService } = useAudiusQueryContext()
+  const { authService, identityService } = useQueryContext()
 
   const userId = useSelector(getUserId) ?? 0
   const handle = useSelector(getUserHandle) ?? ''

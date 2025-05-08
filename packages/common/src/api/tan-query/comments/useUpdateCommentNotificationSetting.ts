@@ -2,7 +2,7 @@ import { EntityManagerAction, EntityType } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
@@ -16,7 +16,7 @@ export type UpdateCommentNotificationSettingArgs = {
 }
 
 export const useUpdateCommentNotificationSetting = () => {
-  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const { audiusSdk, reportToSentry } = useQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   return useMutation({

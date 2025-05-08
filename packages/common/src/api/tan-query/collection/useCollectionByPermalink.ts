@@ -4,7 +4,7 @@ import { pick } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { ID } from '~/models/Identifiers'
 
 import { TQCollection } from '../models'
@@ -42,7 +42,7 @@ export const useCollectionByPermalink = <TResult = TQCollection>(
   permalink: string | undefined | null,
   options?: SelectableQueryOptions<TQCollection, TResult>
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()

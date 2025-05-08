@@ -1,7 +1,7 @@
 import { HashId, Id } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { ID } from '~/models'
 
 import { QUERY_KEYS } from '../queryKeys'
@@ -27,7 +27,7 @@ export const getRemixedTracksQueryKey = ({ userId }: UseRemixedTracksArgs) => {
 export const useRemixedTracks = <TResult = RemixedTrack[]>(
   options?: SelectableQueryOptions<RemixedTrack[], TResult>
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
 
   return useQuery({

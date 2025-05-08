@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useQueryContext } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Nullable, shortenSPLAddress } from '@audius/common/utils'
@@ -91,7 +91,7 @@ export const AdvancedWalletDetails = () => {
   const [publicKey, setPublicKey] = useState<Nullable<string>>(null)
   const [encodedPrivateKey, setEncodedPrivateKey] =
     useState<Nullable<string>>(null)
-  const { solanaWalletService } = useAudiusQueryContext()
+  const { solanaWalletService } = useQueryContext()
 
   useEffect(() => {
     const fetchKeypair = async () => {

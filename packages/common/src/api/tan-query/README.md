@@ -192,14 +192,14 @@ The `as unknown as QueryKey<MyData>` type cast is necessary for TanStack Query's
 1.  **Create the Hook:**
 
     - Use the `useQuery` or `useInfiniteQuery` (paginated) hook from `@tanstack/react-query`.
-    - Use `useAudiusQueryContext` to get access to the `audiusSdk`.
+    - Use `useQueryContext` to get access to the `audiusSdk`.
     - Implement the `queryFn` to call the relevant SDK method.
     - Use the query key function defined in step 1.
 
     ```typescript
     // useMyData.ts
     import { useQuery } from '@tanstack/react-query'
-    import { useAudiusQueryContext } from '~/audius-query'
+    import { useQueryContext } from '~/api'
     import { MyData } from '~/models'
     import { SelectableQueryOptions } from './types'
 
@@ -214,7 +214,7 @@ The `as unknown as QueryKey<MyData>` type cast is necessary for TanStack Query's
       params: UseMyDataParams,
       options?: SelectableQueryOptions<MyData, TResult>
     ) => {
-      const { audiusSdk } = useAudiusQueryContext()
+      const { audiusSdk } = useQueryContext()
       const { param } = params
 
       return useQuery({
@@ -238,7 +238,7 @@ The `as unknown as QueryKey<MyData>` type cast is necessary for TanStack Query's
 2.  **Create the Hook:**
 
     - Use the `useMutation` hook from `@tanstack/react-query`.
-    - Use `useAudiusQueryContext` for the SDK and `useQueryClient` for cache interaction.
+    - Use `useQueryContext` for the SDK and `useQueryClient` for cache interaction.
     - Implement the `mutationFn` to call the SDK method that performs the change.
     - Implement `onMutate` for optimistic updates:
       - Cancel relevant ongoing queries (`queryClient.cancelQueries`).
@@ -251,7 +251,7 @@ The `as unknown as QueryKey<MyData>` type cast is necessary for TanStack Query's
     ```typescript
     // useMyMutation.ts
     import { useMutation, useQueryClient } from '@tanstack/react-query'
-    import { useAudiusQueryContext } from '~/audius-query'
+    import { useQueryContext } from '~/api'
     import { MyData } from '~/models'
     import { QUERY_KEYS } from './queryKeys'
 
@@ -268,7 +268,7 @@ The `as unknown as QueryKey<MyData>` type cast is necessary for TanStack Query's
     }
 
     export const useMyMutation = () => {
-      const { audiusSdk } = useAudiusQueryContext()
+      const { audiusSdk } = useQueryContext()
       const queryClient = useQueryClient()
 
       return useMutation({

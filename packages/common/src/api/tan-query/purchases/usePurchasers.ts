@@ -7,7 +7,7 @@ import {
 import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { ID } from '~/models/Identifiers'
 import { PurchaseableContentType } from '~/store'
 
@@ -43,7 +43,7 @@ export const usePurchasers = (
   options?: QueryOptions
 ) => {
   const { contentId, contentType, pageSize = PAGE_SIZE } = args
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()

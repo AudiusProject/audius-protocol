@@ -4,7 +4,7 @@ import { pick } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { ID } from '~/models/Identifiers'
 import { UserMetadata } from '~/models/User'
 
@@ -22,7 +22,7 @@ export const getMutedUsersQueryKey = (currentUserId: ID | null | undefined) => {
 export const useMutedUsers = <TResult = UserMetadata[]>(
   options?: SelectableQueryOptions<UserMetadata[], TResult>
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()

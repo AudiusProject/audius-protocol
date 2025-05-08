@@ -2,7 +2,7 @@ import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { useAppContext } from '~/context/appContext'
 import { Name } from '~/models/Analytics'
 import { Feature } from '~/models/ErrorReporting'
@@ -23,7 +23,7 @@ type FavoriteTrackArgs = {
 }
 
 export const useFavoriteTrack = () => {
-  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const { audiusSdk, reportToSentry } = useQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()

@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { ID } from '~/models/Identifiers'
 
 import { getTracksBatcher } from '../batchers/getTracksBatcher'
@@ -20,7 +20,7 @@ export const useTrack = <TResult = TQTrack>(
   trackId: ID | null | undefined,
   options?: SelectableQueryOptions<TQTrack, TResult>
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()

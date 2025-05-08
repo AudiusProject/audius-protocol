@@ -6,7 +6,7 @@ import {
 } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { ID } from '~/models/Identifiers'
 import {
   SupporterMetadata,
@@ -39,7 +39,7 @@ export const useSupporters = (
   { userId, pageSize = DEFAULT_PAGE_SIZE }: UseSupportersArgs,
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()

@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
 import { useDispatch } from 'react-redux'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { Event } from '~/models/Event'
 import { ID } from '~/models/Identifiers'
 
@@ -20,7 +20,7 @@ export const useEvents = (
   eventIds: ID[] | null | undefined,
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const dispatch = useDispatch()
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()

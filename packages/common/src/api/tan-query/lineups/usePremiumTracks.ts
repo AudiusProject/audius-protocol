@@ -8,7 +8,7 @@ import { useDispatch } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { transformAndCleanList } from '~/adapters/utils'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { PlaybackSource } from '~/models'
 import {
   premiumTracksPageLineupActions,
@@ -38,7 +38,7 @@ export const usePremiumTracks = (
   { pageSize = DEFAULT_PAGE_SIZE }: UsePremiumTracksArgs = {},
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()

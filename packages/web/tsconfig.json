@@ -26,7 +26,6 @@
       "@audius/common/adapters": ["../../common/src/adapters/index.ts"],
       "@audius/common/api": ["../../common/src/api/index.ts"],
       "@audius/common/assets": ["../../common/src/assets/index.ts"],
-      "@audius/common/audius-query": ["../../common/src/audius-query/index.ts"],
       "@audius/common/context": ["../../common/src/context/index.ts"],
       "@audius/common/hooks": ["../../common/src/hooks/index.ts"],
       "@audius/common/messages": ["../../common/src/messages/index.ts"],

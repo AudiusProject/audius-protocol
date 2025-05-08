@@ -1,7 +1,7 @@
 import { Id, type BlobInfo } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { DownloadQuality } from '~/models'
 import { ID } from '~/models/Identifiers'
 
@@ -31,7 +31,7 @@ export const useFileSizes = (
   { trackIds, downloadQuality }: UseFileSizesProps,
   options?: SelectableQueryOptions<FileSizeResponse>
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
 
   return useQuery({
     queryKey: getFileSizesQueryKey({ trackIds, downloadQuality }),

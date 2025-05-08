@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { z } from 'zod'
 
 import { useGetCurrentUser } from '~/api'
-import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
+import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 import { UserCollectionMetadata } from '~/models'
 import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
 import { UserTrackMetadata } from '~/models/Track'
@@ -61,7 +61,7 @@ export const usePurchaseContentFormConfiguration = ({
   purchaseVendor?: PurchaseVendor
 }) => {
   const queryClient = useQueryClient()
-  const queryContext = useAudiusQueryContext()
+  const queryContext = useQueryContext()
 
   const dispatch = useDispatch()
   const isAlbum = isContentCollection(metadata)

@@ -5,7 +5,7 @@ import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { replyCommentFromSDK, transformAndCleanList } from '~/adapters'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { Comment, Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
@@ -27,7 +27,7 @@ export const useCommentReplies = (
   { commentId, pageSize = COMMENT_REPLIES_PAGE_SIZE }: GetRepliesArgs,
   options?: QueryOptions
 ) => {
-  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const { audiusSdk, reportToSentry } = useQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const startingLimit = 3 // comments will load in with 3 already so we don't start pagination at 0

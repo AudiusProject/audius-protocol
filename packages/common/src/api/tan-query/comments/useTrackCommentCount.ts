@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 import { usePrevious } from 'react-use'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { ID } from '~/models'
 import { setTrackCommentCount } from '~/store/cache/tracks/actions'
 import { Nullable } from '~/utils'
@@ -19,7 +19,7 @@ export const useTrackCommentCount = (
   userId: Nullable<ID>,
   shouldPoll = false
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const dispatch = useDispatch()
   const queryClient = useQueryClient()
   const queryData = useQuery({

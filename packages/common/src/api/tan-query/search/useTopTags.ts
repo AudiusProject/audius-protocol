@@ -1,7 +1,7 @@
 import { Id } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { ID } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from '../queryKeys'
@@ -20,7 +20,7 @@ export const useTopTags = (
   { userId, limit = 5 }: UseTopTagsArgs,
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
 
   return useQuery({
     queryKey: getTopTagsQueryKey(userId),

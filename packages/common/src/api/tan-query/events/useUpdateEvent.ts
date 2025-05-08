@@ -1,7 +1,7 @@
 import { EventEntityTypeEnum, EventEventTypeEnum } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { Event, Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
@@ -18,7 +18,7 @@ export type UpdateEventArgs = {
 }
 
 export const useUpdateEvent = () => {
-  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const { audiusSdk, reportToSentry } = useQueryContext()
   const queryClient = useQueryClient()
 
   return useMutation({

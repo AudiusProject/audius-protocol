@@ -10,7 +10,7 @@ import {
 } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { PlaybackSource } from '~/models/Analytics'
 import { ID } from '~/models/Identifiers'
 import {
@@ -70,7 +70,7 @@ export const useLibraryTracks = (
   config?: QueryOptions
 ) => {
   const { data: currentUserId } = useCurrentUserId()
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 

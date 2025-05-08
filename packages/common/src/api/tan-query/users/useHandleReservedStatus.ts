@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
-import { useAudiusQueryContext } from '~/audius-query'
-import { AudiusQueryContextType } from '~/audius-query/AudiusQueryContext'
+import { useQueryContext } from '~/api'
+import { QueryContextType } from '~/api/tan-query/utils/QueryContext'
 import { FeatureFlags } from '~/services/remote-config/feature-flags'
 import { IntKeys } from '~/services/remote-config/types'
 import { parseHandleReservedStatusFromSocial } from '~/utils/handleReservedStatus'
@@ -19,7 +19,7 @@ export const fetchHandleReservedStatus = async (
     identityService,
     remoteConfigInstance,
     env
-  }: AudiusQueryContextType
+  }: QueryContextType
 ) => {
   if (!handle) return 'notReserved'
 
@@ -87,7 +87,7 @@ export const useHandleReservedStatus = (
   handle: string | null | undefined,
   options?: QueryOptions
 ) => {
-  const context = useAudiusQueryContext()
+  const context = useQueryContext()
 
   return useQuery({
     queryKey: getHandleReservedStatusQueryKey(handle),

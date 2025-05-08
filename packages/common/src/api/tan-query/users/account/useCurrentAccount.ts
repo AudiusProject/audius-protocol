@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 
 import { accountFromSDK } from '~/adapters/user'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { useAppContext } from '~/context/appContext'
 import { ID } from '~/models/Identifiers'
 import { AccountUserMetadata } from '~/models/User'
@@ -38,7 +38,7 @@ export const useCurrentAccount = <
     TResult
   >
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const walletAddresses = useSelector(getWalletAddresses)
   const currentUserWallet = walletAddresses[walletType]
   const { data: currentUserId } = useCurrentUserId()

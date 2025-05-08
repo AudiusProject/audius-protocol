@@ -7,7 +7,7 @@ import {
 import { useDispatch } from 'react-redux'
 
 import { repostActivityFromSDK, transformAndCleanList } from '~/adapters'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { UserTrackMetadata, UserCollectionMetadata } from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
 import {
@@ -43,7 +43,7 @@ export const useProfileReposts = (
   { handle, pageSize = DEFAULT_PAGE_SIZE }: UseProfileRepostsArgs,
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()

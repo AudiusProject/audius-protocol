@@ -8,7 +8,7 @@ import { useDispatch } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { transformAndCleanList } from '~/adapters/utils'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { PlaybackSource } from '~/models'
 import { TimeRange } from '~/models/TimeRange'
 import { StringKeys } from '~/services/remote-config'
@@ -61,7 +61,7 @@ export const useTrending = (
   }: GetTrendingArgs,
   options?: QueryOptions
 ) => {
-  const { audiusSdk, remoteConfigInstance } = useAudiusQueryContext()
+  const { audiusSdk, remoteConfigInstance } = useQueryContext()
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
   const dispatch = useDispatch()

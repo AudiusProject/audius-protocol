@@ -19,9 +19,9 @@ import {
   AnalyticsEvent,
   IdentifyTraits,
   ReportToSentryArgs
-} from '../models'
+} from '../../../models'
 
-export type AudiusQueryContextType = {
+export type QueryContextType = {
   audiusSdk: () => Promise<AudiusSdk>
   audiusBackend: AudiusBackend
   authService: AuthService
@@ -59,62 +59,48 @@ export type AudiusQueryContextType = {
   }
 }
 
-export const AudiusQueryContext = createContext<AudiusQueryContextType>(
-  null as any
-)
+export const QueryContext = createContext<QueryContextType>(null as any)
 
-export const useAudiusQueryContext = () => {
-  const audiusQueryContext = useContext(AudiusQueryContext)
+export const useQueryContext = () => {
+  const queryContext = useContext(QueryContext)
 
-  if (!audiusQueryContext) {
+  if (!queryContext) {
     throw new Error(
-      'useAudiusQueryContext has to be used within <AudiusQueryContext.Provider>'
+      'useQueryContext has to be used within <QueryContext.Provider>'
     )
   }
 
-  return audiusQueryContext
+  return queryContext
 }
 
-export function* getAudiusQueryContext(): Generator<
-  any,
-  AudiusQueryContextType,
-  any
-> {
+export function* getQueryContext(): Generator<any, QueryContextType, any> {
   // We can't use common typed `getContext` here because of circular dependency
   return {
-    audiusBackend: yield* getContext<AudiusQueryContextType['audiusBackend']>(
+    audiusBackend: yield* getContext<QueryContextType['audiusBackend']>(
       'audiusBackendInstance'
     ),
     authService:
-      yield* getContext<AudiusQueryContextType['authService']>('authService'),
+      yield* getContext<QueryContextType['authService']>('authService'),
     identityService:
-      yield* getContext<AudiusQueryContextType['identityService']>(
-        'identityService'
-      ),
-    audiusSdk:
-      yield* getContext<AudiusQueryContextType['audiusSdk']>('audiusSdk'),
+      yield* getContext<QueryContextType['identityService']>('identityService'),
+    audiusSdk: yield* getContext<QueryContextType['audiusSdk']>('audiusSdk'),
     solanaWalletService: yield* getContext<
-      AudiusQueryContextType['solanaWalletService']
+      QueryContextType['solanaWalletService']
     >('solanaWalletService'),
-    dispatch: yield* getContext<AudiusQueryContextType['dispatch']>('dispatch'),
-    env: yield* getContext<AudiusQueryContextType['env']>('env'),
+    dispatch: yield* getContext<QueryContextType['dispatch']>('dispatch'),
+    env: yield* getContext<QueryContextType['env']>('env'),
     fetch,
     getFeatureEnabled:
-      yield* getContext<AudiusQueryContextType['getFeatureEnabled']>(
+      yield* getContext<QueryContextType['getFeatureEnabled']>(
         'getFeatureEnabled'
       ),
     remoteConfigInstance: yield* getContext<
-      AudiusQueryContextType['remoteConfigInstance']
+      QueryContextType['remoteConfigInstance']
     >('remoteConfigInstance'),
     reportToSentry:
-      yield* getContext<AudiusQueryContextType['reportToSentry']>(
-        'reportToSentry'
-      ),
-    analytics:
-      yield* getContext<AudiusQueryContextType['analytics']>('analytics'),
-    nftClient:
-      yield* getContext<AudiusQueryContextType['nftClient']>('nftClient'),
-    imageUtils:
-      yield* getContext<AudiusQueryContextType['imageUtils']>('imageUtils')
+      yield* getContext<QueryContextType['reportToSentry']>('reportToSentry'),
+    analytics: yield* getContext<QueryContextType['analytics']>('analytics'),
+    nftClient: yield* getContext<QueryContextType['nftClient']>('nftClient'),
+    imageUtils: yield* getContext<QueryContextType['imageUtils']>('imageUtils')
   }
 }

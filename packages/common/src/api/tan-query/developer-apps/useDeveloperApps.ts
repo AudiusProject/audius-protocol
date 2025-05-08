@@ -1,7 +1,7 @@
 import { Id } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { ID } from '~/models'
 import { DeveloperApp } from '~/schemas/developerApps'
 import { Nullable } from '~/utils/typeUtils'
@@ -19,7 +19,7 @@ export const useDeveloperApps = <TResult = DeveloperApp[]>(
   userId: Nullable<ID>,
   options?: SelectableQueryOptions<DeveloperApp[], TResult>
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
 
   return useQuery({
     queryKey: getDeveloperAppsQueryKey(userId),

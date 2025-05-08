@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useQueryContext } from '@audius/common/api'
 import { reviewHandlePageMessages } from '@audius/common/messages'
 import { pickHandleSchema } from '@audius/common/schemas'
 import { setValueField } from '@audius/web/src/common/store/pages/signon/actions'
@@ -39,7 +39,7 @@ export const ReviewHandleScreen = () => {
   const initialValues = {
     handle
   }
-  const queryContext = useAudiusQueryContext()
+  const queryContext = useQueryContext()
   const queryClient = useQueryClient()
   const navigation = useNavigation<SignOnScreenParamList>()
   const isLinkingSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)

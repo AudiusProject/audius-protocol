@@ -4,7 +4,7 @@ import { FormikHelpers } from 'formik'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 
 import { confirmEmailSchema, passwordSchema } from '../schemas'
 
@@ -61,7 +61,7 @@ const initialValues: ChangePasswordFormValues = {
 }
 
 export const useChangePasswordFormConfiguration = (onComplete: () => void) => {
-  const { authService } = useAudiusQueryContext()
+  const { authService } = useQueryContext()
   const [page, setPage] = useState(ChangePasswordPage.ConfirmPassword)
 
   const validationSchema =

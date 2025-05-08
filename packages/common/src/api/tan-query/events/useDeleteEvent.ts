@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { cloneDeep } from 'lodash'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { Event, Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
@@ -13,7 +13,7 @@ export type DeleteEventArgs = {
 }
 
 export const useDeleteEvent = () => {
-  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const { audiusSdk, reportToSentry } = useQueryContext()
   const queryClient = useQueryClient()
 
   return useMutation({

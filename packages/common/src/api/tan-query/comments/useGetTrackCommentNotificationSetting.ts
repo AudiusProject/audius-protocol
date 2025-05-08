@@ -1,7 +1,7 @@
 import { Id, TrackCommentNotificationResponse } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { ID } from '~/models'
 import { Nullable } from '~/utils'
 
@@ -19,7 +19,7 @@ export const useGetTrackCommentNotificationSetting = (
   trackId: ID,
   currentUserId: Nullable<ID> | undefined
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
 
   return useQuery({
     queryKey: getTrackCommentNotificationSettingQueryKey(trackId),

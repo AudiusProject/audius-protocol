@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { Status } from '~/models/Status'
 import { BNUSDC, StringUSDC } from '~/models/Wallet'
 import { getUserbankAccountInfo } from '~/services/index'
@@ -41,7 +41,7 @@ export const useUSDCBalance = ({
   pollingInterval?: number
   commitment?: Commitment
 } & QueryOptions = {}) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: user } = useGetCurrentUser({})
   const ethAddress = user?.wallet ?? null
   const dispatch = useDispatch()

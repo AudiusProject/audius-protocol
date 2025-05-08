@@ -4,7 +4,7 @@ import { omit } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { ID } from '~/models/Identifiers'
 import { User } from '~/models/User'
 
@@ -23,7 +23,7 @@ export const useUserByHandle = <TResult = User>(
   handle: string | null | undefined,
   options?: SelectableQueryOptions<User, TResult>
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()

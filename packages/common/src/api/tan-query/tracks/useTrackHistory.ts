@@ -3,7 +3,7 @@ import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { trackActivityFromSDK, transformAndCleanList } from '~/adapters'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { PlaybackSource } from '~/models/Analytics'
 import {
   historyPageTracksLineupActions,
@@ -44,7 +44,7 @@ export const useTrackHistory = (
   }: UseTrackHistoryArgs = {},
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()

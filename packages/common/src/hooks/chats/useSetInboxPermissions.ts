@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { useDispatch, useSelector } from 'react-redux'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { useAppContext } from '~/context/appContext'
 import { Name } from '~/models/Analytics'
 import { accountSelectors } from '~/store/account'
@@ -18,7 +18,7 @@ const { getChatPermissionsStatus, getUserChatPermissions } = chatSelectors
 const { getUserId } = accountSelectors
 
 export const useSetInboxPermissions = () => {
-  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const { audiusSdk, reportToSentry } = useQueryContext()
   const dispatch = useDispatch()
   const permissions = useSelector(getUserChatPermissions)
   const {

@@ -1,15 +1,15 @@
 import { useQuery } from '@tanstack/react-query'
 import { isEmpty } from 'lodash'
 
-import { useAudiusQueryContext } from '~/audius-query'
-import { AudiusQueryContextType } from '~/audius-query/AudiusQueryContext'
+import { useQueryContext } from '~/api'
+import { QueryContextType } from '~/api/tan-query/utils/QueryContext'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, QueryOptions } from '../types'
 
 export const fetchHandleInUse = async (
   handle: string | null | undefined,
-  { audiusSdk }: AudiusQueryContextType
+  { audiusSdk }: QueryContextType
 ) => {
   if (!handle) return false
   const sdk = await audiusSdk()
@@ -38,7 +38,7 @@ export const useHandleInUse = (
   handle: string | null | undefined,
   options?: QueryOptions
 ) => {
-  const context = useAudiusQueryContext()
+  const context = useQueryContext()
 
   return useQuery({
     queryKey: getHandleInUseQueryKey(handle),

@@ -1,7 +1,7 @@
 import { Id } from '@audius/sdk'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
 
@@ -37,7 +37,7 @@ export const getDownloadTrackStemsQueryKey = (trackId: ID) => {
 }
 
 export const useDownloadTrackStems = ({ trackId }: { trackId: ID }) => {
-  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const { audiusSdk, reportToSentry } = useQueryContext()
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
 
@@ -75,7 +75,7 @@ export const useDownloadTrackStems = ({ trackId }: { trackId: ID }) => {
 }
 
 export const useCancelStemsArchiveJob = () => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -101,7 +101,7 @@ export const useGetStemsArchiveJobStatus = (
   { jobId }: { jobId?: string },
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
 
   return useQuery({
     queryKey: getStemsArchiveJobQueryKey(jobId),

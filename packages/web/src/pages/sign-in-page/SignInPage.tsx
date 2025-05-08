@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useQueryContext } from '@audius/common/api'
 import { signInPageMessages } from '@audius/common/messages'
 import { signInSchema, signInErrorMessages } from '@audius/common/schemas'
 import { route } from '@audius/common/utils'
@@ -60,12 +60,12 @@ export const SignInPage = () => {
   const { value: existingPassword } = useSelector(getPasswordField)
   const requiresOtp = useSelector(getRequiresOtp)
 
-  const audiusQueryContext = useAudiusQueryContext()
+  const queryContext = useQueryContext()
   const queryClient = useQueryClient()
   const SignInSchema = useMemo(
     () =>
-      toFormikValidationSchema(signInSchema(audiusQueryContext, queryClient)),
-    [audiusQueryContext, queryClient]
+      toFormikValidationSchema(signInSchema(queryContext, queryClient)),
+    [queryContext, queryClient]
   )
 
   useEffect(() => {

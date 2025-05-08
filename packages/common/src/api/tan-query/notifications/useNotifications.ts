@@ -2,7 +2,7 @@ import { Id } from '@audius/sdk'
 import { InfiniteData, useInfiniteQuery } from '@tanstack/react-query'
 
 import { notificationFromSDK, transformAndCleanList } from '~/adapters'
-import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
+import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 import { ID } from '~/models/Identifiers'
 import {
   Entity,
@@ -182,7 +182,7 @@ export const getNotificationsQueryKey = ({
  * Pagination is based on the timestamp and groupId of the last notification.
  */
 export const useNotifications = (options?: QueryOptions) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const validTypes = useNotificationValidTypes()
   const pageSize = DEFAULT_LIMIT

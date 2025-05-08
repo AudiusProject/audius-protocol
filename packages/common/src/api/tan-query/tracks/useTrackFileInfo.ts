@@ -1,7 +1,7 @@
 import { BlobInfo, Id } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { ID } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from '../queryKeys'
@@ -24,7 +24,7 @@ export const useTrackFileInfo = <TResult = BlobInfo>(
     original?: boolean
   }
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const validTrackId = !!trackId && trackId > 0
 
   return useQuery({

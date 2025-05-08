@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useQueryContext } from '@audius/common/api'
 import { createLoginDetailsPageMessages } from '@audius/common/messages'
 import { emailSchema, createLoginDetailsSchema } from '@audius/common/schemas'
 import { setValueField } from '@audius/web/src/common/store/pages/signon/actions'
@@ -37,13 +37,13 @@ export type CreateLoginDetailsValues = {
 const EmailField = ({ onChangeScreen }: { onChangeScreen: () => void }) => {
   const [, , { setValue }] = useField('email')
   const existingEmailValue = useSelector(getEmailField)
-  const audiusQueryContext = useAudiusQueryContext()
+  const queryContext = useQueryContext()
   const queryClient = useQueryClient()
 
   // For the email field on this page, design requested that the field only be prepoulated if the email is valid.
   // Since the schema is async we have to do some async shenanigans to set the value after mount.
   useAsync(async () => {
-    const schema = emailSchema(audiusQueryContext, queryClient)
+    const schema = emailSchema(queryContext, queryClient)
     try {
       await schema.parseAsync({
         email: existingEmailValue.value
@@ -65,14 +65,14 @@ const EmailField = ({ onChangeScreen }: { onChangeScreen: () => void }) => {
 export const CreateLoginDetailsScreen = () => {
   const dispatch = useDispatch()
   const handleField = useSelector(getHandleField)
-  const audiusQueryContext = useAudiusQueryContext()
+  const queryContext = useQueryContext()
   const queryClient = useQueryClient()
   const loginDetailsFormikSchema = useMemo(
     () =>
       toFormikValidationSchema(
-        createLoginDetailsSchema(audiusQueryContext, queryClient)
+        createLoginDetailsSchema(queryContext, queryClient)
       ),
-    [audiusQueryContext, queryClient]
+    [queryContext, queryClient]
   )
 
   useTrackScreen('CreateLoginDetails')

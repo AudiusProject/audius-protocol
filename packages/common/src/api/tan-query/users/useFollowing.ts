@@ -7,7 +7,7 @@ import {
 import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { ID } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from '../queryKeys'
@@ -36,7 +36,7 @@ export const useFollowing = (
   { userId, pageSize = DEFAULT_PAGE_SIZE }: UseFollowingArgs,
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()

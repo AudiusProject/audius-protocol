@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 
 import { useSelector } from 'react-redux'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { AnalyticsEvent } from '~/models/Analytics'
 import { createUserBankIfNeeded } from '~/services/audius-backend'
 import { getWalletAddresses } from '~/store/account/selectors'
@@ -15,7 +15,7 @@ export const useCreateUserbankIfNeeded = ({
   mint: 'USDC' | 'wAUDIO'
 }) => {
   const { currentUser } = useSelector(getWalletAddresses)
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
 
   useEffect(() => {
     const initUserBank = async () => {

@@ -1,13 +1,13 @@
 import { QueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 
-import { AudiusQueryContextType } from '~/audius-query'
+import { QueryContextType } from '~/api'
 import { isNotCommonPassword } from '~/utils/commonPasswordCheck'
 
 import { emailSchema } from './emailSchema'
 
-export const createLoginDetailsSchema = <T extends AudiusQueryContextType>(
-  audiusQueryContext: T,
+export const createLoginDetailsSchema = <T extends QueryContextType>(
+  queryContext: T,
   queryClient: QueryClient
 ) =>
   z
@@ -19,7 +19,7 @@ export const createLoginDetailsSchema = <T extends AudiusQueryContextType>(
         .refine(isNotCommonPassword, { message: 'notCommon' }),
       confirmPassword: z.string()
     })
-    .merge(emailSchema(audiusQueryContext, queryClient))
+    .merge(emailSchema(queryContext, queryClient))
     .refine((data) => data.password === data.confirmPassword, {
       message: 'matches',
       path: ['confirmPassword']

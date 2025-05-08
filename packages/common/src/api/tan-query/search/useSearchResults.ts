@@ -8,7 +8,7 @@ import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { searchResultsFromSDK } from '~/adapters'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import {
   Name,
   PlaybackSource,
@@ -124,7 +124,7 @@ const useSearchQueryProps = <T>(
     pageSize,
     ...filters
   }
-  const { audiusSdk, getFeatureEnabled, analytics } = useAudiusQueryContext()
+  const { audiusSdk, getFeatureEnabled, analytics } = useQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 

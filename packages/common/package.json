@@ -10,7 +10,6 @@
     "./adapters": "./src/adapters/index.ts",
     "./api": "./src/api/index.ts",
     "./assets": "./src/assets/index.ts",
-    "./audius-query": "./src/audius-query/index.ts",
     "./context": "./src/context/index.ts",
     "./hooks": "./src/hooks/index.ts",
     "./messages": "./src/messages/index.ts",

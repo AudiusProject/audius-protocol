@@ -4,7 +4,7 @@ import { full, Id } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
 import { audioTransactionFromSdk } from '~/adapters/audioTransactions'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api'
 import { ID } from '~/models'
 import {
   TransactionDetails,
@@ -48,7 +48,7 @@ export const useAudioTransactions = (
   args: GetAudioTransactionsArgs,
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: userId } = useCurrentUserId()
   const {
     page = 0,
