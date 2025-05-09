@@ -1,6 +1,5 @@
 import { AudiusSdk } from '@audius/sdk'
 import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
   createAssociatedTokenAccountIdempotentInstruction,
   createCloseAccountInstruction,
   createTransferCheckedInstruction,
@@ -9,8 +8,7 @@ import {
 } from '@solana/spl-token'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 
-import { JUPITER_PROGRAM_ID } from './constants'
-import { UserBankManagedTokenInfo } from './types'
+import { SwapErrorType, SwapStatus, UserBankManagedTokenInfo } from './types'
 
 export async function addUserBankToAtaInstructions({
   tokenInfo,
@@ -104,71 +102,68 @@ export async function addAtaToUserBankInstructions({
   return userBankAddress
 }
 
-export function updateJupiterAtaCreationFeePayer(
-  jupiterInstructions: TransactionInstruction[],
-  userPublicKey: PublicKey,
-  relayFeePayer: PublicKey
-): void {
-  for (const ix of jupiterInstructions) {
-    const isAssociatedTokenProgram = ix.programId.equals(
-      ASSOCIATED_TOKEN_PROGRAM_ID
-    )
-    const isPayerTheUser =
-      ix.keys.length > 0 &&
-      ix.keys[0].pubkey.equals(userPublicKey) &&
-      ix.keys[0].isSigner &&
-      ix.keys[0].isWritable
+/**
+ * Get the appropriate error response for a swap error based on the error stage.
+ */
+export function getSwapErrorResponse(params: {
+  errorStage: string
+  error: Error
+  inputAmount?: {
+    amount: number
+    uiAmount: number
+  }
+  outputAmount?: {
+    amount: number
+    uiAmount: number
+  }
+}) {
+  const { errorStage, error, inputAmount, outputAmount } = params
 
-    if (isAssociatedTokenProgram && isPayerTheUser) {
-      ix.keys[0].pubkey = relayFeePayer
-      break
+  if (errorStage === 'QUOTE_RETRIEVAL') {
+    return {
+      status: SwapStatus.ERROR,
+      error: {
+        type: SwapErrorType.QUOTE_FAILED,
+        message: error?.message ?? 'Failed to get swap quote'
+      }
+    }
+  } else if (errorStage === 'INPUT_TOKEN_PREPARATION') {
+    return {
+      status: SwapStatus.ERROR,
+      error: {
+        type: SwapErrorType.BUILD_FAILED,
+        message: `Failed to prepare input token: ${error.message}`
+      },
+      inputAmount,
+      outputAmount
+    }
+  } else if (errorStage === 'TRANSACTION_BUILD') {
+    return {
+      status: SwapStatus.ERROR,
+      error: {
+        type: SwapErrorType.BUILD_FAILED,
+        message: error?.message ?? 'Failed to build transaction'
+      },
+      inputAmount,
+      outputAmount
+    }
+  } else if (errorStage === 'TRANSACTION_RELAY') {
+    return {
+      status: SwapStatus.ERROR,
+      error: {
+        type: SwapErrorType.RELAY_FAILED,
+        message: error?.message ?? 'Failed to relay transaction'
+      },
+      inputAmount,
+      outputAmount
+    }
+  } else {
+    return {
+      status: SwapStatus.ERROR,
+      error: {
+        type: SwapErrorType.UNKNOWN,
+        message: error?.message ?? 'An unknown error occurred'
+      }
     }
   }
-}
-
-export function findActualJupiterDestination(
-  jupiterInstructions: TransactionInstruction[]
-): PublicKey | undefined {
-  const jupiterSwapInstruction = jupiterInstructions.find((ix) =>
-    ix.programId.equals(JUPITER_PROGRAM_ID)
-  )
-  if (jupiterSwapInstruction) {
-    const destinationKeyIndex = 6
-    if (jupiterSwapInstruction.keys.length > destinationKeyIndex) {
-      return jupiterSwapInstruction.keys[destinationKeyIndex].pubkey
-    }
-  }
-  return undefined
-}
-
-export function findJupiterTemporarySetupAta(
-  jupiterInstructions: TransactionInstruction[],
-  outputMintAddress: string,
-  actualFinalJupiterDestination?: PublicKey
-): PublicKey | undefined {
-  const createAtaInstruction = jupiterInstructions.find((ix) => {
-    const isAssociatedTokenProgram = ix.programId.equals(
-      ASSOCIATED_TOKEN_PROGRAM_ID
-    )
-    const isForOutputMint =
-      ix.keys.length >= 4 &&
-      ix.keys[3].pubkey.toBase58().toUpperCase() ===
-        outputMintAddress.toUpperCase()
-    const createdAtaAddress =
-      ix.keys.length >= 2 ? ix.keys[1].pubkey : undefined
-
-    const isNotTheFinalDestination =
-      !actualFinalJupiterDestination ||
-      (createdAtaAddress &&
-        !createdAtaAddress.equals(actualFinalJupiterDestination))
-
-    return (
-      isAssociatedTokenProgram &&
-      isForOutputMint &&
-      isNotTheFinalDestination &&
-      createdAtaAddress
-    )
-  })
-
-  return createAtaInstruction ? createAtaInstruction.keys[1].pubkey : undefined
 }
