@@ -94,15 +94,25 @@ const Page = () => {
       ) : (
         <>
           <Nav />
-          <Flex flex={1} direction='column' alignItems='center' p='unit14'>
+          <Flex
+            flex={1}
+            direction='column'
+            alignItems='center'
+            p='unit14'
+            css={{
+              '@media (max-width: 600px)': { padding: '8px' }
+            }}
+          >
             <Flex
-              w='660px'
+              css={{
+                maxWidth: '660px'
+              }}
               gap='xl'
               direction='column'
               justifyContent='center'
               alignItems='center'
             >
-              <Paper direction='column' p='2xl' gap='2xl' w='660px'>
+              <Paper direction='column' p='2xl' gap='2xl'>
                 <Flex justifyContent='center'>
                   <IconAudiusLogoHorizontalColor />
                 </Flex>

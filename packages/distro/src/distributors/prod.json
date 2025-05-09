@@ -19,6 +19,11 @@
       "name": "revelator",
       "appKey": "2ee33a0d99972fbe344c694cbd89e9f2553f7ac4",
       "url": "http://ddex.audius.co"
+    },
+    {
+      "name": "toolroom",
+      "appKey": "0971d74d0ea82387d6fc8d780eeb3f122ece8792",
+      "url": "http://ddex.audius.co"
     }
   ]
 }

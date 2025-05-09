@@ -24,6 +24,7 @@ export const Footer = () => (
       pv='m'
       wrap='wrap'
       columnGap='2xl'
+      rowGap='m'
     >
       <Flex alignItems='center' columnGap='2xl' wrap='wrap'>
         <Flex alignItems='center' gap='s'>
