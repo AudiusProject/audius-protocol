@@ -1,7 +1,3 @@
-// Audius query
-// TODO: migrate all of these to tan-query
-export * from './user'
-
 // TanStack Query Hooks
 export * from './tan-query/queryKeys'
 export * from './tan-query/types'
