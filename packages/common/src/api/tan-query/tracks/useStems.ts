@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { stemTrackMetadataFromSDK, transformAndCleanList } from '~/adapters'
-import { useQueryContext } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models/Identifiers'
 import { StemTrack } from '~/models/Track'
 

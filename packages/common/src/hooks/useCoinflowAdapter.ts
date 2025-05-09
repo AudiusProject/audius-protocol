@@ -8,7 +8,7 @@ import {
 } from '@solana/web3.js'
 import { useSelector, useDispatch } from 'react-redux'
 
-import { useQueryContext } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { useAppContext } from '~/context'
 import { Name } from '~/models/Analytics'
 import { decorateCoinflowWithdrawalTransaction } from '~/services/audius-backend'

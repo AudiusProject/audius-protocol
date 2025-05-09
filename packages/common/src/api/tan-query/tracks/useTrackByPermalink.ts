@@ -4,7 +4,7 @@ import { pick } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
-import { useQueryContext } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models/Identifiers'
 import { Status } from '~/models/Status'
 import { getAccountStatus } from '~/store/account/selectors'

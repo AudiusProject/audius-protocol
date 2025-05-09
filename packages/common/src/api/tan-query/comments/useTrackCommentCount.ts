@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 import { usePrevious } from 'react-use'
 
-import { useQueryContext } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models'
 import { setTrackCommentCount } from '~/store/cache/tracks/actions'
 import { Nullable } from '~/utils'

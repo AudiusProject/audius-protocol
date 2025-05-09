@@ -8,7 +8,7 @@ import {
   useQueryClient
 } from '@tanstack/react-query'
 
-import { useQueryContext } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models/Identifiers'
 import { USDCTransactionDetails } from '~/models/USDCTransactions'
 

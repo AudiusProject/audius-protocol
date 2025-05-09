@@ -7,11 +7,11 @@ import { useDispatch, useSelector } from 'react-redux'
 import { playlistMetadataForUpdateWithSDK } from '~/adapters/collection'
 import { fileToSdk } from '~/adapters/track'
 import {
-  useQueryContext,
   getCollectionQueryKey,
   getTrackQueryKey,
   useCurrentUserId
 } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { isContentUSDCPurchaseGated } from '~/models'
 import { Collection } from '~/models/Collection'
 import { ID } from '~/models/Identifiers'

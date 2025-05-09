@@ -8,7 +8,8 @@ import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { searchResultsFromSDK } from '~/adapters'
-import { useQueryContext, useCurrentUserId } from '~/api'
+import { useCurrentUserId } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import {
   Name,
   PlaybackSource,

@@ -2,7 +2,7 @@ import { OptionalId, Event as SDKEvent } from '@audius/sdk'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 
 import { eventMetadataFromSDK } from '~/adapters/event'
-import { useQueryContext } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models'
 import { removeNullable } from '~/utils'
 

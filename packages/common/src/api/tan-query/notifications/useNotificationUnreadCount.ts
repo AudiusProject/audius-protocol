@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 import { usePrevious } from 'react-use'
 
-import { useQueryContext } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { useRemoteVar } from '~/hooks/useRemoteVar'
 import { ID } from '~/models/Identifiers'
 import { getBalance } from '~/store/wallet/slice'

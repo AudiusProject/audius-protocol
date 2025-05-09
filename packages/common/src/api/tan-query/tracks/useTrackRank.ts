@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
 import { trendingIdsFromSDK } from '~/adapters/trending'
-import { useQueryContext } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from '../queryKeys'

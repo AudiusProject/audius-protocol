@@ -8,7 +8,7 @@ import { useDispatch } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { transformAndCleanList } from '~/adapters/utils'
-import { useQueryContext } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID, PlaybackSource } from '~/models'
 import { UserTrackMetadata } from '~/models/Track'
 import { trackPageSelectors } from '~/store/pages'

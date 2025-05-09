@@ -2,7 +2,7 @@ import { Id } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
 import { managedUserListFromSDK } from '~/adapters/user'
-import { useQueryContext } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models/Identifiers'
 import { ManagedUserMetadata } from '~/models/User'
 

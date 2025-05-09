@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 
 import { useSelector } from 'react-redux'
 
-import { useQueryContext } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { AnalyticsEvent } from '~/models/Analytics'
 import { createUserBankIfNeeded } from '~/services/audius-backend'
 import { getWalletAddresses } from '~/store/account/selectors'

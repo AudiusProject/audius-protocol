@@ -1,7 +1,7 @@
 import { QueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 
-import { QueryContextType } from '~/api'
+import { QueryContextType } from '~/api/tan-query/utils'
 import { isNotCommonPassword } from '~/utils/commonPasswordCheck'
 
 import { emailSchema } from './emailSchema'

@@ -2,7 +2,7 @@ import { OptionalId } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
 import { SearchResults, searchResultsFromSDK } from '~/adapters/search'
-import { useQueryContext } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { useFeatureFlag } from '~/hooks/useFeatureFlag'
 import { FeatureFlags } from '~/services/remote-config'
 

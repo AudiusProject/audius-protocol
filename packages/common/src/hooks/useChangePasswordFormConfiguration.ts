@@ -4,7 +4,7 @@ import { FormikHelpers } from 'formik'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { useQueryContext } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 
 import { confirmEmailSchema, passwordSchema } from '../schemas'
 

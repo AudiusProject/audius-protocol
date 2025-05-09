@@ -199,7 +199,7 @@ The `as unknown as QueryKey<MyData>` type cast is necessary for TanStack Query's
     ```typescript
     // useMyData.ts
     import { useQuery } from '@tanstack/react-query'
-    import { useQueryContext } from '~/api'
+    import { useQueryContext } from '~/api/tan-query/utils'
     import { MyData } from '~/models'
     import { SelectableQueryOptions } from './types'
 
@@ -251,7 +251,7 @@ The `as unknown as QueryKey<MyData>` type cast is necessary for TanStack Query's
     ```typescript
     // useMyMutation.ts
     import { useMutation, useQueryClient } from '@tanstack/react-query'
-    import { useQueryContext } from '~/api'
+    import { useQueryContext } from '~/api/tan-query/utils'
     import { MyData } from '~/models'
     import { QUERY_KEYS } from './queryKeys'
 

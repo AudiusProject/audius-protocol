@@ -1,3 +1,5 @@
+export * from './tan-query/users/useUser'
+
 // TanStack Query Hooks
 export * from './tan-query/queryKeys'
 export * from './tan-query/types'
@@ -108,7 +110,6 @@ export * from './tan-query/users/useSupporters'
 export * from './tan-query/users/useSupportedUsers'
 export * from './tan-query/users/useTopArtists'
 export * from './tan-query/users/useTopArtistsInGenre'
-export * from './tan-query/users/useUser'
 export * from './tan-query/users/useUserAlbums'
 export * from './tan-query/users/useUserByHandle'
 export * from './tan-query/users/useUserByParams'

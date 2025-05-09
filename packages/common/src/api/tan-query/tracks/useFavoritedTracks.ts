@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import { transformAndCleanList } from '~/adapters'
 import { favoriteFromSDK } from '~/adapters/favorite'
-import { useQueryContext } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { Favorite } from '~/models/Favorite'
 import { ID } from '~/models/Identifiers'
 

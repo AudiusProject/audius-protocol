@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
 import { useDispatch } from 'react-redux'
 
-import { useQueryContext } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { Event } from '~/models/Event'
 import { ID } from '~/models/Identifiers'
 

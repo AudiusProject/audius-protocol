@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { useDispatch, useSelector } from 'react-redux'
 
-import { useQueryContext } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { useAppContext } from '~/context/appContext'
 import { Name } from '~/models/Analytics'
 import { accountSelectors } from '~/store/account'

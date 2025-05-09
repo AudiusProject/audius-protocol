@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { isEmpty } from 'lodash'
 
-import { useQueryContext } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { QueryContextType } from '~/api/tan-query/utils/QueryContext'
 
 import { QUERY_KEYS } from '../queryKeys'

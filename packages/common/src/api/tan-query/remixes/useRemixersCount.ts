@@ -1,7 +1,7 @@
 import { Id, OptionalId } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
-import { useQueryContext } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models'
 
 import { QUERY_KEYS } from '../queryKeys'

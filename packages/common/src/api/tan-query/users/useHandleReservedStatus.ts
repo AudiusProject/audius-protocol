@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 
-import { useQueryContext } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { QueryContextType } from '~/api/tan-query/utils/QueryContext'
 import { FeatureFlags } from '~/services/remote-config/feature-flags'
 import { IntKeys } from '~/services/remote-config/types'

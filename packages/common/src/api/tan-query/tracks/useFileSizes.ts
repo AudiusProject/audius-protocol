@@ -1,7 +1,7 @@
 import { Id, type BlobInfo } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
-import { useQueryContext } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { DownloadQuality } from '~/models'
 import { ID } from '~/models/Identifiers'
 

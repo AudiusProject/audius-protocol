@@ -4,7 +4,7 @@ import { full, Id } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
 import { audioTransactionFromSdk } from '~/adapters/audioTransactions'
-import { useQueryContext } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models'
 import {
   TransactionDetails,

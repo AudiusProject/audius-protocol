@@ -10,7 +10,7 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '~/adapters'
-import { useQueryContext } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { PlaybackSource } from '~/models/Analytics'
 import {
   trendingPlaylistsPageLineupActions,

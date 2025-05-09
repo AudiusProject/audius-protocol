@@ -1,7 +1,7 @@
 import { Id } from '@audius/sdk'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { useQueryContext } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { CollectiblesMetadata, ID } from '~/models'
 
 import { QUERY_KEYS } from '../queryKeys'
