@@ -40,6 +40,7 @@ export async function recentTips() {
 export type UserDetails = {
   id: number
   handle: string
+  wallet: string
   name: string
   img: string
   isVerified: boolean
@@ -51,6 +52,7 @@ const buildUserDetails = `
 select json_build_object(
   'id', user_id,
   'handle', handle,
+  'wallet', wallet,
   'name', name,
   'isVerified', is_verified,
   'img', profile_picture_sizes
@@ -93,13 +95,14 @@ export type ClaimDetails = {
   disbursement_date: string
   user_id: number
   handle: string
+  wallet: string
   sign_up_date: Date
   challenge_id: string
   amount: number
 }
 export async function getRecentClaims(page: number) {
   const rows = await sql`
-    select challenge_disbursements.created_at as disbursement_date, handle_lc as handle, users.user_id, users.created_at as sign_up_date, challenge_disbursements.challenge_id, ROUND(CAST(challenge_disbursements.amount AS numeric) / 100000000, 0) as amount
+    select challenge_disbursements.created_at as disbursement_date, handle_lc as handle, users.wallet as wallet, users.user_id, users.created_at as sign_up_date, challenge_disbursements.challenge_id, ROUND(CAST(challenge_disbursements.amount AS numeric) / 100000000, 0) as amount
     from challenge_disbursements
     join users on users.user_id = challenge_disbursements.user_id
     order by challenge_disbursements.created_at desc 
@@ -125,7 +128,7 @@ export async function getUserScore(userId: number) {
   return rows[0]
 }
 
-export async function getUserNormalizedScore(userId: number) {
+export async function getUserNormalizedScore(userId: number, wallet: string) {
   const rows = await sql`
     SELECT 
       user_scores.handle_lc,
@@ -156,7 +159,7 @@ export async function getUserNormalizedScore(userId: number) {
   const numberOfUserWithFingerprint = (await useFingerprintDeviceCount(userId))!
   let overallScore = shadowbanScore - numberOfUserWithFingerprint
 
-  const isEmailDeliverable = await useEmailDeliverable(userId)
+  const isEmailDeliverable = await useEmailDeliverable(wallet)
   if (!isEmailDeliverable) {
     overallScore -= 1000
   }
