@@ -1,5 +1,26 @@
 # @audius/sdk
 
+## 9.1.0
+
+### Minor Changes
+
+- 4bd9fe8: Add eventType to events endpoint
+- af6158f: Adds missing pagination parameters for trending APIs
+
+### Patch Changes
+
+- f9efab9: Remix contest ended notification
+- 2fb34d2: Export SolanaClient
+- 1870048: export MAX_DESCRIPTION_LENGTH
+- 68d4a85: Artist remix contest ending soon notification
+- 69e076b: Add pinned comment challenge to valid challenge enums
+- 80f84a0: Artist remix contest ended notification
+- 3f9bedf: Add 'fan' prefix to remix contest notifs
+- a5a5304: Add alpha version of challengesApi.claimAllRewards
+- 1b79555: Remix contest submission milestone notification
+- Updated dependencies [2fb34d2]
+  - @audius/spl@2.0.2
+
 ## 9.0.0
 
 ### Major Changes

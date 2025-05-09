@@ -1,5 +1,11 @@
 # @audius/spl
 
+## 2.0.2
+
+### Patch Changes
+
+- 2fb34d2: Add support for encoding createSenderPublic attestations, fix instruction to not require signers for senders
+
 ## 2.0.1
 
 ### Patch Changes
