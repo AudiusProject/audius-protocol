@@ -86,6 +86,8 @@
 	<string>audius://snap-kit/oauth2</string>
 	<key>TikTokAppID</key>
 	<string>${TIKTOK_APP_ID}</string>
+	<key>TikTokClientKey</key>
+	<string>${TIKTOK_APP_ID}</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>AvenirNextLTPro-Bold.otf</string>
