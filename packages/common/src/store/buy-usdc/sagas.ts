@@ -1,6 +1,5 @@
 import { USDC } from '@audius/fixed-decimal'
 import {
-  Account,
   createTransferCheckedInstruction,
   getAccount,
   getAssociatedTokenAddressSync,
@@ -386,12 +385,22 @@ function* recoverPurchaseIfNecessary() {
         mint: 'USDC'
       }
     )
-    const accountInfo = yield* call(
-      getAccount,
-      sdk.services.solanaClient.connection,
-      usdcTokenAccount
-    )
-    const amount = accountInfo?.amount ?? BigInt(0)
+
+    let amount: bigint
+    try {
+      const accountInfo = yield* call(
+        getAccount,
+        sdk.services.solanaClient.connection,
+        usdcTokenAccount
+      )
+      amount = accountInfo.amount
+    } catch (e) {
+      if (e instanceof TokenAccountNotFoundError) {
+        amount = BigInt(0)
+      }
+      throw e
+    }
+
     if (amount === BigInt(0)) {
       return
     }
@@ -457,9 +466,6 @@ function* recoverPurchaseIfNecessary() {
       })
     )
   } catch (e) {
-    if (e instanceof TokenAccountNotFoundError) {
-      return
-    }
     yield* put(recoveryStatusChanged({ status: Status.ERROR }))
     yield* call(reportToSentry, {
       level: ErrorLevel.Error,
