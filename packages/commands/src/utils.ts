@@ -219,6 +219,23 @@ export const getCurrentUserId = async () => {
   return data.user.id
 }
 
+export const getCurrentUserHandle = async () => {
+  if (!audiusSdk) {
+    throw new Error('sdk not initialized')
+  }
+  if (currentHandle) {
+    return currentHandle
+  }
+  const [address] = await audiusSdk.services.audiusWalletClient.getAddresses()
+  const { data } = await audiusSdk.full.users.getUserAccount({
+    wallet: address
+  })
+  if (!data?.user) {
+    throw new Error('not signed in')
+  }
+  return data.user.handle
+}
+
 export const createRandomImage = () => {
   const width = 100 // Width of the image
   const height = 100 // Height of the image
