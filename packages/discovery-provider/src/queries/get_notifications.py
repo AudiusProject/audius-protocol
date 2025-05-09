@@ -179,6 +179,7 @@ class NotificationType(str, Enum):
     FAN_REMIX_CONTEST_ENDING_SOON = "fan_remix_contest_ending_soon"
     ARTIST_REMIX_CONTEST_ENDED = "artist_remix_contest_ended"
     ARTIST_REMIX_CONTEST_ENDING_SOON = "artist_remix_contest_ending_soon"
+    ARTIST_REMIX_CONTEST_SUBMISSIONS = "artist_remix_contest_submissions"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -511,6 +512,12 @@ class ArtistRemixContestEndingSoonNotification(TypedDict):
     entity_id: int
 
 
+class ArtistRemixContestSubmissionsNotification(TypedDict):
+    event_id: int
+    milestone: int
+    entity_id: int
+
+
 NotificationData = Union[
     AnnouncementNotification,
     FollowNotification,
@@ -548,6 +555,7 @@ NotificationData = Union[
     FanRemixContestEndingSoonNotification,
     ArtistRemixContestEndedNotification,
     ArtistRemixContestEndingSoonNotification,
+    ArtistRemixContestSubmissionsNotification,
 ]
 
 

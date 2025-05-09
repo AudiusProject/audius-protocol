@@ -98,6 +98,68 @@ begin
       raise warning 'An error occurred in %: %', tg_name, sqlerrm;
   end;
 
+  -- If new remix is a submission to an active remix contest, check for milestone notifications
+  begin
+    if track_should_notify(OLD, new, TG_OP) AND new.remix_of is not null THEN
+      declare
+        contest_event_id int;
+        contest_creator_id int;
+        submission_count int;
+        milestone int;
+        parent_track_id int := (new.remix_of->'tracks'->0->>'parent_track_id')::int;
+      begin
+        select event_id, user_id
+        into contest_event_id, contest_creator_id
+        from events
+        where event_type = 'remix_contest'
+          and is_deleted = false
+          and end_date > now()
+          and entity_id = parent_track_id
+        limit 1;
+
+        if contest_event_id is not null then
+          -- Count submissions for this contest (only those after contest start)
+          select count(*) into submission_count
+          from tracks t
+          join events e on e.event_type = 'remix_contest'
+            and e.is_deleted = false
+            and e.entity_id = parent_track_id
+          where t.is_current = true
+            and t.is_delete = false
+            and t.remix_of is not null
+            and (t.remix_of->'tracks'->0->>'parent_track_id')::int = parent_track_id
+            and t.created_at >= e.created_at;
+
+          -- For each milestone, insert notification if this is the Nth submission
+          FOREACH milestone IN ARRAY ARRAY[1, 10, 50] LOOP
+            IF submission_count = milestone THEN
+              insert into notification
+                (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
+              values
+                (
+                  new.blocknumber,
+                  ARRAY [contest_creator_id],
+                  new.updated_at,
+                  'artist_remix_contest_submissions',
+                  milestone || ':' || contest_event_id,
+                  'artist_remix_contest_submissions:' || contest_event_id || ':' || milestone,
+                  json_build_object(
+                    'event_id', contest_event_id,
+                    'milestone', milestone,
+                    'entity_id', parent_track_id
+                  )
+                )
+              on conflict do nothing;
+            END IF;
+          END LOOP;
+        end if;
+      end;
+    end if;
+    exception
+      when others then
+        raise warning 'An error occurred in %: %', tg_name, sqlerrm;
+  end;
+
   return null;
 
 exception
