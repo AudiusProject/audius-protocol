@@ -47,7 +47,8 @@ import {
   FanRemixContestEndedNotification,
   FanRemixContestEndingSoonNotification,
   FanRemixContestStartedNotification,
-  ArtistRemixContestEndingSoonNotification
+  ArtistRemixContestEndingSoonNotification,
+  ArtistRemixContestSubmissionsNotification
 } from '../../types/notifications'
 import { ApproveManagerRequest } from './approveManagerRequest'
 import { Follow } from './follow'
@@ -91,6 +92,7 @@ import { FanRemixContestEnded } from './fanRemixContestEnded'
 import { FanRemixContestEndingSoon } from './fanRemixContestEndingSoon'
 import { FanRemixContestStarted } from './fanRemixContestStarted'
 import { ArtistRemixContestEndingSoon } from './artistRemixContestEndingSoon'
+import { ArtistRemixContestSubmissions } from './artistRemixContestSubmissions'
 
 export const mapNotifications = (
   notifications: (NotificationRow | EmailNotification)[],
@@ -378,6 +380,16 @@ const mapNotification = (
       dnDb,
       identityDb,
       artistRemixContestEndingSoonNotification
+    )
+  } else if (notification.type == 'artist_remix_contest_submissions') {
+    const artistRemixContestSubmissionsNotification =
+      notification as NotificationRow & {
+        data: ArtistRemixContestSubmissionsNotification
+      }
+    return new ArtistRemixContestSubmissions(
+      dnDb,
+      identityDb,
+      artistRemixContestSubmissionsNotification
     )
   }
   logger.info(`Notification type: ${notification.type} has no handler`)

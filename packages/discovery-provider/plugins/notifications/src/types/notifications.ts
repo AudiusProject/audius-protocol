@@ -352,6 +352,12 @@ export type ArtistRemixContestEndingSoonNotification = {
   entityUserId: number
 }
 
+export type ArtistRemixContestSubmissionsNotification = {
+  entityId: number
+  eventId: number
+  milestone: number
+}
+
 export type NotificationData =
   | DMNotification
   | DMReactionNotification
@@ -393,6 +399,7 @@ export type NotificationData =
   | FanRemixContestEndingSoonNotification
   | FanRemixContestStartedNotification
   | ArtistRemixContestEndingSoonNotification
+  | ArtistRemixContestSubmissionsNotification
 
 export class RequiresRetry extends Error {
   constructor(message: string) {

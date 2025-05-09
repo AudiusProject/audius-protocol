@@ -98,7 +98,9 @@ export const notificationTypeMapping = {
   fan_remix_contest_ending_soon: MappingVariable.PushFanRemixContestEndingSoon,
   fan_remix_contest_started: MappingVariable.PushFanRemixContestStarted,
   artist_remix_contest_ending_soon:
-    MappingVariable.PushArtistRemixContestEndingSoon
+    MappingVariable.PushArtistRemixContestEndingSoon,
+  artist_remix_contest_submissions:
+    MappingVariable.PushArtistRemixContestSubmissions
 }
 
 export class AppNotificationsProcessor {
