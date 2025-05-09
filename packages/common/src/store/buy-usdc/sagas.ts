@@ -387,19 +387,11 @@ function* recoverPurchaseIfNecessary() {
       }
     )
 
-    let accountInfo: Account | null = null
-    try {
-      accountInfo = yield* call(
-        getAccount,
-        sdk.services.solanaClient.connection,
-        usdcTokenAccount
-      )
-    } catch (e) {
-      if (e instanceof TokenAccountNotFoundError) {
-        return
-      }
-      throw e
-    }
+    const accountInfo = yield* call(
+      getAccount,
+      sdk.services.solanaClient.connection,
+      usdcTokenAccount
+    )
     const amount = accountInfo?.amount ?? BigInt(0)
     if (amount === BigInt(0)) {
       return
@@ -466,6 +458,9 @@ function* recoverPurchaseIfNecessary() {
       })
     )
   } catch (e) {
+    if (e instanceof TokenAccountNotFoundError) {
+      return
+    }
     yield* put(recoveryStatusChanged({ status: Status.ERROR }))
     yield* call(reportToSentry, {
       level: ErrorLevel.Error,
