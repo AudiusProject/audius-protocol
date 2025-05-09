@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useQueryContext } from '@audius/common/api'
 import { signInPageMessages } from '@audius/common/messages'
 import {
   signInSchema,
@@ -47,11 +47,10 @@ export const SignInScreen = () => {
   const queryClient = useQueryClient()
   useTrackScreen('SignIn')
 
-  const audiusQueryContext = useAudiusQueryContext()
+  const queryContext = useQueryContext()
   const SignInSchema = useMemo(
-    () =>
-      toFormikValidationSchema(signInSchema(audiusQueryContext, queryClient)),
-    [audiusQueryContext, queryClient]
+    () => toFormikValidationSchema(signInSchema(queryContext, queryClient)),
+    [queryContext, queryClient]
   )
 
   useEffect(() => {

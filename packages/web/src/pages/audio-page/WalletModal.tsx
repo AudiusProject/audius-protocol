@@ -1,6 +1,6 @@
 import { ReactNode, useCallback } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useQueryContext } from '@audius/common/api'
 import {
   Chain,
   StringWei,
@@ -153,7 +153,7 @@ const ModalContent = ({
     useSelector(getAccountBalance) ?? stringWeiToBN('0' as StringWei)
   const account = useSelector(getAccountUser)
   const amountPendingTransfer = useSelector(getSendData)
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
 
   const { value: solWallet } = useAsync(async () => {
     if (!account?.erc_wallet) return null

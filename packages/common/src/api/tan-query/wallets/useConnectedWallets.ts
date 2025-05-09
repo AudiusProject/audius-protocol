@@ -2,7 +2,7 @@ import { Id } from '@audius/sdk'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
-import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
+import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 import { Chain, type ID } from '~/models'
 import { profilePageActions } from '~/store/pages'
 import { walletActions } from '~/store/wallet'
@@ -28,7 +28,7 @@ export const getConnectedWalletsQueryKey = ({
   >
 
 export const useConnectedWallets = (options?: QueryOptions) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
 
   return useQuery({
@@ -61,7 +61,7 @@ type AddConnectedWalletParams = {
 
 export const useAddConnectedWallet = () => {
   const queryClient = useQueryClient()
-  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const { audiusSdk, reportToSentry } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
 
   // for priming cache
@@ -133,7 +133,7 @@ export type RemoveConnectedWalletParams = {
 
 export const useRemoveConnectedWallet = () => {
   const queryClient = useQueryClient()
-  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const { audiusSdk, reportToSentry } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
 
   // for priming cache

@@ -8,7 +8,7 @@ import { useDispatch } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { transformAndCleanList } from '~/adapters/utils'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models'
 
 import { useCollections } from '../collection/useCollections'
@@ -40,7 +40,7 @@ export const useUserAlbums = (
   params: GetAlbumsOptions,
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const { userId, pageSize = 10, sortMethod = 'recent' } = params
   const queryClient = useQueryClient()

@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 
 type ResetPasswordArgs = {
   email: string
@@ -8,7 +8,7 @@ type ResetPasswordArgs = {
 }
 
 export const useResetPassword = () => {
-  const { authService } = useAudiusQueryContext()
+  const { authService } = useQueryContext()
   return useMutation({
     mutationFn: async ({ email, password }: ResetPasswordArgs) => {
       await authService.resetPassword({

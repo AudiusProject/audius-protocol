@@ -4,8 +4,6 @@
 
 ## Links
 
-[audius-query docs](./src/audius-query/README.md)
-
 ## Usage
 
 ```

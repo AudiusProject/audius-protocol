@@ -1,9 +1,6 @@
 import { ReactElement, ReactNode } from 'react'
 
-import {
-  AudiusQueryContext,
-  AudiusQueryContextType
-} from '@audius/common/audius-query'
+import { QueryContext, QueryContextType } from '@audius/common/api'
 import { AppContext } from '@audius/common/context'
 import { FeatureFlags } from '@audius/common/services'
 import { ThemeProvider } from '@audius/harmony'
@@ -58,12 +55,12 @@ const TestProviders =
     const { children } = props
     const { reduxState, featureFlags } = options ?? {}
     const mockAppContext = createMockAppContext(featureFlags)
-    const audiusQueryContext = {} as unknown as AudiusQueryContextType
+    const queryContext = {} as unknown as QueryContextType
 
     return (
       <HistoryContextProvider>
         <QueryClientProvider client={queryClient}>
-          <AudiusQueryContext.Provider value={audiusQueryContext}>
+          <QueryContext.Provider value={queryContext}>
             <ThemeProvider theme='day'>
               <ReduxProvider initialStoreState={reduxState}>
                 <RouterContextProvider>
@@ -81,7 +78,7 @@ const TestProviders =
                 </RouterContextProvider>
               </ReduxProvider>
             </ThemeProvider>
-          </AudiusQueryContext.Provider>
+          </QueryContext.Provider>
         </QueryClientProvider>
       </HistoryContextProvider>
     )

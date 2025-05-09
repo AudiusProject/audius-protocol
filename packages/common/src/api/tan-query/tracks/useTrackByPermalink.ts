@@ -4,7 +4,7 @@ import { pick } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models/Identifiers'
 import { Status } from '~/models/Status'
 import { getAccountStatus } from '~/store/account/selectors'
@@ -27,7 +27,7 @@ export const useTrackByPermalink = <TResult = TQTrack>(
   permalink: string | undefined | null,
   options?: SelectableQueryOptions<TQTrack, TResult>
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()

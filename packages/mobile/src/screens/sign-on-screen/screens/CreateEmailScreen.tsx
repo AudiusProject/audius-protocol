@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useQueryContext } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { createEmailPageMessages } from '@audius/common/messages'
 import { emailSchema } from '@audius/common/schemas'
@@ -51,7 +51,7 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
   const navigation = useNavigation<SignOnScreenParamList>()
   const existingEmailValue = useSelector(getEmailField)
   const alreadyLinkedSocial = useSelector(getLinkedSocialOnFirstPage)
-  const queryContext = useAudiusQueryContext()
+  const queryContext = useQueryContext()
   const queryClient = useQueryClient()
 
   const initialValues = {

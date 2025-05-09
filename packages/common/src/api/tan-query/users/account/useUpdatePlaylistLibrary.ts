@@ -3,7 +3,7 @@ import { useQueryClient, useMutation, QueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
+import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 import { ID } from '~/models/Identifiers'
 import { PlaylistLibrary } from '~/models/PlaylistLibrary'
 import { AccountUserMetadata } from '~/models/User'
@@ -19,7 +19,7 @@ export const useUpdatePlaylistLibrary = () => {
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   return useMutation({
     mutationFn: async (playlistLibrary: PlaylistLibrary) => {
       updatePlaylistLibrary(

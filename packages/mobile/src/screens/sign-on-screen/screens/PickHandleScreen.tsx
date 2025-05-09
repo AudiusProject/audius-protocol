@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useQueryContext } from '@audius/common/api'
 import { pickHandlePageMessages } from '@audius/common/messages'
 import type { SocialPlatform } from '@audius/common/models'
 import { pickHandleSchema } from '@audius/common/schemas'
@@ -108,7 +108,7 @@ export const PickHandleScreen = () => {
   })
   useTrackScreen('PickHandle')
 
-  const queryContext = useAudiusQueryContext()
+  const queryContext = useQueryContext()
   const queryClient = useQueryClient()
   const validationSchema = useMemo(
     () =>

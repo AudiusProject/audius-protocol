@@ -11,7 +11,7 @@ import { Selector, useDispatch, useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 
 import { getCollectionQueryKey, getTrackQueryKey } from '~/api'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import {
   Collection,
   Feature,
@@ -72,7 +72,7 @@ export const useLineupQuery = <T>({
   playbackSource: PlaybackSource
   disableAutomaticCacheHandling?: boolean
 }) => {
-  const { reportToSentry } = useAudiusQueryContext()
+  const { reportToSentry } = useQueryContext()
   const queryClient = useQueryClient()
   const lineup = useSelector(lineupSelector)
 

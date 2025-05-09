@@ -8,7 +8,7 @@ import { useDispatch } from 'react-redux'
 
 import { userMetadataFromSDK } from '~/adapters'
 import { transformAndCleanList } from '~/adapters/utils'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from '../queryKeys'
@@ -33,7 +33,7 @@ export const useTopArtistsInGenre = (
   args: UseTopArtistsInGenreArgs,
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const { genre, pageSize = ARTISTS_PER_GENRE_PAGE_SIZE } = args

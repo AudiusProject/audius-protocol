@@ -1,6 +1,6 @@
 import { useState, useContext, useCallback } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useQueryContext } from '@audius/common/api'
 import { Name, SquareSizes } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -134,7 +134,7 @@ const AccountSettingsItem = ({
 
 const AccountSettingsPage = () => {
   const dispatch = useDispatch()
-  const { authService, identityService } = useAudiusQueryContext()
+  const { authService, identityService } = useQueryContext()
   const userId = useSelector(getUserId) ?? 0
   const handle = useSelector(getUserHandle) ?? ''
   const name = useSelector(getUserName) ?? ''

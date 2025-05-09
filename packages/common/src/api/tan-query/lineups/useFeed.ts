@@ -3,7 +3,7 @@ import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userFeedItemFromSDK } from '~/adapters'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import {
   FeedFilter,
   UserCollectionMetadata,
@@ -53,7 +53,7 @@ export const useFeed = (
   options?: QueryOptions
 ) => {
   const { data: currentUserId } = useCurrentUserId()
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 

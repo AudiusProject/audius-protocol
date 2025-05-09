@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models'
 
 import { QUERY_KEYS } from '../queryKeys'
@@ -28,7 +28,7 @@ export const getExploreContentQueryKey = () => {
 export const useExploreContent = <TResult = ExploreContent>(
   options?: SelectableQueryOptions<ExploreContent, TResult>
 ) => {
-  const { env } = useAudiusQueryContext()
+  const { env } = useQueryContext()
   const exploreContentUrl =
     env.EXPLORE_CONTENT_URL ?? STATIC_EXPLORE_CONTENT_URL
 

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
 import { trendingIdsFromSDK } from '~/adapters/trending'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from '../queryKeys'
@@ -34,7 +34,7 @@ export const getTrendingIdsQueryKey = (args?: GetTrendingIdsArgs) => {
  * Hook that returns trending track IDs for all time periods
  */
 export const useGetTrendingIds = (args?: GetTrendingIdsArgs) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   return useQuery({
     queryKey: getTrendingIdsQueryKey(args),
     queryFn: async () => {

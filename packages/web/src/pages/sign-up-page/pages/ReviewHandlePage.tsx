@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useQueryContext } from '@audius/common/api'
 import { pickHandleSchema } from '@audius/common/schemas'
 import { route } from '@audius/common/utils'
 import { Paper, useTheme } from '@audius/harmony'
@@ -48,7 +48,7 @@ export const ReviewHandlePage = () => {
   const profileImage = useSelector(getProfileImageField)
   const hasImages = coverPhoto || profileImage
 
-  const queryContext = useAudiusQueryContext()
+  const queryContext = useQueryContext()
   const queryClient = useQueryClient()
   const validationSchema = useMemo(() => {
     return toFormikValidationSchema(

@@ -1,7 +1,7 @@
 import { Id } from '@audius/sdk'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { CollectiblesMetadata, ID } from '~/models'
 
 import { QUERY_KEYS } from '../queryKeys'
@@ -26,7 +26,7 @@ export const useUserCollectibles = (
   options?: QueryOptions
 ) => {
   const { userId } = args
-  const context = useAudiusQueryContext()
+  const context = useQueryContext()
   const { audiusSdk } = context
 
   const queryResult = useQuery({
@@ -55,7 +55,7 @@ type MutationContext = {
 }
 
 export const useUpdateUserCollectibles = () => {
-  const context = useAudiusQueryContext()
+  const context = useQueryContext()
   const queryClient = useQueryClient()
   const { audiusSdk } = context
 

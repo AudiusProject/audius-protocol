@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import { transformAndCleanList } from '~/adapters'
 import { favoriteFromSDK } from '~/adapters/favorite'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { Favorite } from '~/models/Favorite'
 import { ID } from '~/models/Identifiers'
 
@@ -18,7 +18,7 @@ export const useFavoritedTracks = (
   userId: ID | null | undefined,
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
 
   return useQuery({
     queryKey: getFavoritedTracksQueryKey(userId),

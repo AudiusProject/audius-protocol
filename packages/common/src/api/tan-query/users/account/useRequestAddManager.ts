@@ -1,7 +1,7 @@
 import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { User, UserMetadata } from '~/models'
 
 import { getManagersQueryKey } from './useManagers'
@@ -12,7 +12,7 @@ type RequestAddManagerPayload = {
 }
 
 export const useRequestAddManager = () => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (payload: RequestAddManagerPayload) => {

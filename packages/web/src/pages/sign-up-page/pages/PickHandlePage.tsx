@@ -1,6 +1,6 @@
 import { useCallback, useContext, useMemo, useRef } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useQueryContext } from '@audius/common/api'
 import {
   pickHandlePageMessages,
   socialMediaMessages
@@ -92,7 +92,7 @@ const SocialMediaSection = (props: SocialMediaSectionProps) => {
 export const PickHandlePage = () => {
   const { isMobile } = useMedia()
   const dispatch = useDispatch()
-  const queryContext = useAudiusQueryContext()
+  const queryContext = useQueryContext()
   const queryClient = useQueryClient()
 
   const PickHandleValidationSchema = useMemo(
