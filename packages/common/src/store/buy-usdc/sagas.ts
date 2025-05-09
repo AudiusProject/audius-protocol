@@ -2,7 +2,8 @@ import { USDC } from '@audius/fixed-decimal'
 import {
   createTransferCheckedInstruction,
   getAccount,
-  getAssociatedTokenAddressSync
+  getAssociatedTokenAddressSync,
+  TokenAccountNotFoundError
 } from '@solana/spl-token'
 import { Keypair, PublicKey, TransactionInstruction } from '@solana/web3.js'
 import retry from 'async-retry'
@@ -384,12 +385,22 @@ function* recoverPurchaseIfNecessary() {
         mint: 'USDC'
       }
     )
-    const accountInfo = yield* call(
-      getAccount,
-      sdk.services.solanaClient.connection,
-      usdcTokenAccount
-    )
-    const amount = accountInfo?.amount ?? BigInt(0)
+
+    let amount: bigint
+    try {
+      const accountInfo = yield* call(
+        getAccount,
+        sdk.services.solanaClient.connection,
+        usdcTokenAccount
+      )
+      amount = accountInfo.amount
+    } catch (e) {
+      if (e instanceof TokenAccountNotFoundError) {
+        amount = BigInt(0)
+      }
+      throw e
+    }
+
     if (amount === BigInt(0)) {
       return
     }
