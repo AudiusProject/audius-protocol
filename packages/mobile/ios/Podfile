@@ -35,6 +35,7 @@ target 'AudiusReactNative' do
   pod 'ffmpeg-kit-ios-https-gpl', :path => './vendor/ffmpeg-kit-ios-https-gpl'
   pod 'ffmpeg-kit-react-native', :subspecs => ['https-gpl-lts'], :podspec => '../../../node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec'
   pod 'nSure'
+  pod 'TikTokOpenSDK', :path => './vendor/TikTokOpenSDK'
 
   config = use_native_modules!
 
@@ -55,7 +56,6 @@ target 'AudiusReactNative' do
     end
 
     framework_paths = [
-      "Pods/TikTokOpenSDK/TikTokOpenSDK.framework/TikTokOpenSDK",
       "Pods/google-cast-sdk-dynamic-xcframework-no-bluetooth/GoogleCast.xcframework/ios-arm64/GoogleCast.framework/GoogleCast",
       "Pods/SnapSDK/SCSDKCoreKit.xcframework/ios-arm64_armv7_armv7s/SCSDKCoreKit.framework/SCSDKCoreKit",
       "Pods/SnapSDK/SCSDKCreativeKit.xcframework/ios-arm64_armv7_armv7s/SCSDKCreativeKit.framework/SCSDKCreativeKit",
