@@ -328,6 +328,30 @@ export type ListenStreakReminderNotification = {
   streak: number
 }
 
+export type ArtistRemixContestEndedNotification = {
+  entityId: number
+}
+
+export type FanRemixContestEndedNotification = {
+  entityId: number
+  entityUserId: number
+}
+
+export type FanRemixContestEndingSoonNotification = {
+  entityId: number
+  entityUserId: number
+}
+
+export type FanRemixContestStartedNotification = {
+  entityId: number
+  entityUserId: number
+}
+
+export type ArtistRemixContestEndingSoonNotification = {
+  entityId: number
+  entityUserId: number
+}
+
 export type NotificationData =
   | DMNotification
   | DMReactionNotification
@@ -364,6 +388,11 @@ export type NotificationData =
   | CommentMentionNotification
   | CommentReactionNotification
   | ListenStreakReminderNotification
+  | ArtistRemixContestEndedNotification
+  | FanRemixContestEndedNotification
+  | FanRemixContestEndingSoonNotification
+  | FanRemixContestStartedNotification
+  | ArtistRemixContestEndingSoonNotification
 
 export class RequiresRetry extends Error {
   constructor(message: string) {
