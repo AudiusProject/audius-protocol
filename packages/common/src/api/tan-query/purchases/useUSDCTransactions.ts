@@ -8,14 +8,13 @@ import {
   useQueryClient
 } from '@tanstack/react-query'
 
-import { useQueryContext } from '~/api/tan-query/utils'
+import { useQueryContext, makeLoadNextPage } from '~/api/tan-query/utils'
 import { ID } from '~/models/Identifiers'
 import { USDCTransactionDetails } from '~/models/USDCTransactions'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, QueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
-import { makeLoadNextPage } from '../utils'
 
 const DEFAULT_PAGE_SIZE = 50
 

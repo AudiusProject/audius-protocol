@@ -7,7 +7,7 @@ import {
 import { useDispatch } from 'react-redux'
 
 import { repostActivityFromSDK, transformAndCleanList } from '~/adapters'
-import { useQueryContext } from '~/api/tan-query/utils'
+import { useQueryContext, primeUserData } from '~/api/tan-query/utils'
 import { UserTrackMetadata, UserCollectionMetadata } from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
 import {
@@ -18,7 +18,6 @@ import {
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, LineupData, QueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
-import { primeUserData } from '../utils'
 import { primeCollectionData } from '../utils/primeCollectionData'
 import { primeTrackData } from '../utils/primeTrackData'
 

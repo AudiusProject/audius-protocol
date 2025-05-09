@@ -4,7 +4,7 @@ import { full, Id } from '@audius/sdk'
 import { InfiniteData, useInfiniteQuery } from '@tanstack/react-query'
 
 import { purchaseFromSDK } from '~/adapters/purchase'
-import { useQueryContext } from '~/api/tan-query/utils'
+import { useQueryContext, makeLoadNextPage } from '~/api/tan-query/utils'
 import { ID } from '~/models'
 import {
   USDCContentPurchaseType,
@@ -16,7 +16,6 @@ import { QUERY_KEYS } from '../queryKeys'
 import { useTracks } from '../tracks/useTracks'
 import { QueryKey, QueryOptions } from '../types'
 import { useUsers } from '../users/useUsers'
-import { makeLoadNextPage } from '../utils'
 import { combineQueryStatuses } from '../utils/combineQueryResults'
 
 const PAGE_SIZE = 10
