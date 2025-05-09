@@ -1,5 +1,3 @@
-export * from './tan-query/users/useUser'
-
 // TanStack Query Hooks
 export * from './tan-query/queryKeys'
 export * from './tan-query/types'
