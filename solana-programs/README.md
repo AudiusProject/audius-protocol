@@ -64,8 +64,7 @@ Do feel free to check the git history for previous attempts at building this all
 
 The Macs we use for development use ARM64, the CI runs with AMD64.
 
-The docker image will pull the output from the build above into it, as well as
-the fixtures set up in the `./fixtures/` folder.
+The docker image will pull the output from the build above into it, as well as the fixtures set up in the `./fixtures/` folder.
 
 ```bash
 cd ../dev-tools/compose
