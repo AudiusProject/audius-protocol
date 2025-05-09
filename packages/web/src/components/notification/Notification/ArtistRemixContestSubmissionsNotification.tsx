@@ -1,18 +1,13 @@
 import { useCallback } from 'react'
 
 import { useTrack } from '@audius/common/api'
-import {
-  Entity,
-  ArtistRemixContestSubmissionsNotification as ArtistRemixContestSubmissionsNotificationType,
-  TrackEntity
-} from '@audius/common/store'
+import { ArtistRemixContestSubmissionsNotification as ArtistRemixContestSubmissionsNotificationType } from '@audius/common/store'
 import { IconTrophy } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
+import { TrackLink } from 'components/link'
 import { push } from 'utils/navigation'
-import { fullTrackPage } from 'utils/route'
 
-import { EntityLink } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
 import { NotificationFooter } from './components/NotificationFooter'
 import { NotificationHeader } from './components/NotificationHeader'
@@ -39,7 +34,7 @@ export const ArtistRemixContestSubmissionsNotification = ({
 
   const handleClick = useCallback(() => {
     if (track) {
-      dispatch(push(fullTrackPage((track as TrackEntity).permalink)))
+      dispatch(push(track.permalink))
     }
   }, [track, dispatch])
 
@@ -52,7 +47,7 @@ export const ArtistRemixContestSubmissionsNotification = ({
       </NotificationHeader>
       <NotificationBody>
         {messages.description}
-        <EntityLink entity={track as TrackEntity} entityType={Entity.Track} />
+        <TrackLink size='l' trackId={track.track_id} />
         {milestone === 1
           ? messages.firstSubmission
           : messages.description2(milestone)}

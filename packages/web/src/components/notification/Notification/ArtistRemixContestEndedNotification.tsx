@@ -6,7 +6,6 @@ import { Flex, IconTrophy } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { push } from 'utils/navigation'
-import { fullTrackPage } from 'utils/route'
 
 import { NotificationBody } from './components/NotificationBody'
 import { NotificationFooter } from './components/NotificationFooter'
@@ -35,7 +34,7 @@ export const ArtistRemixContestEndedNotification = (
 
   const handleClick = useCallback(() => {
     if (track) {
-      dispatch(push(fullTrackPage(track.permalink)))
+      dispatch(push(track.permalink))
     }
   }, [track, dispatch])
 
