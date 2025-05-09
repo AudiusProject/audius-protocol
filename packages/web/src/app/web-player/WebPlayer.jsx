@@ -50,7 +50,7 @@ import DesktopRoute from 'components/routes/DesktopRoute'
 import MobileRoute from 'components/routes/MobileRoute'
 import TrendingGenreSelectionPage from 'components/trending-genre-selection/TrendingGenreSelectionPage'
 import { USDCBalanceFetcher } from 'components/usdc-balance-fetcher/USDCBalanceFetcher'
-import { useIsDevOrStaging } from 'hooks/useIsDevOrStaging'
+import { useEnvironment } from 'hooks/useEnvironment'
 import { MAIN_CONTENT_ID, MainContentContext } from 'pages/MainContentContext'
 import { AiAttributedTracksPage } from 'pages/ai-attributed-tracks-page'
 import { AudioPage } from 'pages/audio-page/AudioPage'
@@ -446,7 +446,7 @@ class WebPlayer extends Component {
       userHandle,
       isWalletUIUpdateEnabled,
       isSearchExploreEnabled,
-      isDevOrStaging
+      isProduction
     } = this.props
 
     const {
@@ -752,10 +752,10 @@ class WebPlayer extends Component {
                   component={SavedPage}
                 />
                 <Route exact path={HISTORY_PAGE} component={HistoryPage} />
-                {isDevOrStaging ? (
+                {!isProduction ? (
                   <Route exact path={DEV_TOOLS_PAGE} component={DevTools} />
                 ) : null}
-                {isDevOrStaging ? (
+                {!isProduction ? (
                   <Route
                     exact
                     path={SOLANA_TOOLS_PAGE}
@@ -1146,14 +1146,14 @@ const FeatureFlaggedWebPlayer = (props) => {
   const { isEnabled: isSearchExploreEnabled } = useFeatureFlag(
     FeatureFlags.SEARCH_EXPLORE
   )
-  const isDevOrStaging = useIsDevOrStaging()
+  const { isProduction } = useEnvironment()
 
   return (
     <RouterWebPlayer
       {...props}
       isWalletUIUpdateEnabled={isWalletUIUpdateEnabled}
       isSearchExploreEnabled={isSearchExploreEnabled}
-      isDevOrStaging={isDevOrStaging}
+      isProduction={isProduction}
     />
   )
 }

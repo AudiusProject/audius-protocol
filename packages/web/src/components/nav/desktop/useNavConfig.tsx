@@ -26,7 +26,7 @@ import {
 import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 
-import { useIsDevOrStaging } from 'hooks/useIsDevOrStaging'
+import { useEnvironment } from 'hooks/useEnvironment'
 import { RestrictionType } from 'hooks/useRequiresAccount'
 import { matchesRoute } from 'utils/route'
 
@@ -99,7 +99,7 @@ export const useNavConfig = () => {
     FeatureFlags.WALLET_UI_UPDATE
   )
 
-  const isDevOrStaging = useIsDevOrStaging()
+  const { isProduction } = useEnvironment()
 
   const navItems = useMemo(
     (): NavItemConfig[] => [
@@ -208,7 +208,7 @@ export const useNavConfig = () => {
         disabled: !hasAccount
       },
       // Add DevTools nav item that only appears in development and staging environments
-      ...(isDevOrStaging
+      ...(!isProduction
         ? [
             {
               label: 'DevTools',
@@ -242,7 +242,7 @@ export const useNavConfig = () => {
       color,
       spacing,
       isWalletUIUpdateEnabled,
-      isDevOrStaging
+      isProduction
     ]
   )
 

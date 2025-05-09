@@ -28,7 +28,8 @@ import {
   getCollection,
   getCollectionWithHashId,
   getTrack,
-  getTrackWithHashId
+  getTrackWithHashId,
+  getEntityEvents
 } from '../util/BedtimeClient'
 import { getArtworkUrl } from '../util/getArtworkUrl'
 import { decodeHashId } from '../util/hashIds'
@@ -205,8 +206,9 @@ const App = (props) => {
           setDid404(true)
           setTracksResponse(null)
         } else {
+          const events = await getEntityEvents(track.id, 'track')
           setDid404(false)
-          setTracksResponse(track)
+          setTracksResponse({ ...track, events })
           recordOpen(
             decodeHashId(track.id),
             track.title,

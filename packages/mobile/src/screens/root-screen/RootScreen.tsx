@@ -23,12 +23,8 @@ import useAppState from 'app/hooks/useAppState'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useUpdateRequired } from 'app/hooks/useUpdateRequired'
-import { useSyncCodePush } from 'app/screens/root-screen/useSyncCodePush'
 import { SplashScreen } from 'app/screens/splash-screen'
-import {
-  UpdateRequiredScreen,
-  RestartRequiredScreen
-} from 'app/screens/update-required-screen'
+import { UpdateRequiredScreen } from 'app/screens/update-required-screen'
 import { enterBackground, enterForeground } from 'app/store/lifecycle/actions'
 
 import { AppDrawerScreen } from '../app-drawer-screen'
@@ -60,7 +56,6 @@ export type RootScreenParamList = {
  * based on if the user is authed
  */
 export const RootScreen = () => {
-  const { isPendingMandatoryCodePushUpdate } = useSyncCodePush()
   const { updateRequired } = useUpdateRequired()
   const dispatch = useDispatch()
   const accountStatus = useSelector(getAccountStatus)
@@ -148,15 +143,8 @@ export const RootScreen = () => {
         <Stack.Navigator
           screenOptions={{ gestureEnabled: false, headerShown: false }}
         >
-          {isPendingMandatoryCodePushUpdate || updateRequired ? (
-            <Stack.Screen
-              name='UpdateStack'
-              component={
-                isPendingMandatoryCodePushUpdate
-                  ? RestartRequiredScreen
-                  : UpdateRequiredScreen
-              }
-            />
+          {updateRequired ? (
+            <Stack.Screen name='UpdateStack' component={UpdateRequiredScreen} />
           ) : null}
 
           {showHomeStack ? (

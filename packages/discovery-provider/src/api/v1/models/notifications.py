@@ -310,6 +310,35 @@ artist_remix_contest_ended_notification = ns.clone(
     },
 )
 
+artist_remix_contest_ending_soon_notification_action_data = ns.model(
+    "artist_remix_contest_ending_soon_notification_action_data",
+    {
+        "entity_user_id": fields.String(required=True),
+        "entity_id": fields.String(required=True),
+    },
+)
+artist_remix_contest_ending_soon_notification_action = ns.clone(
+    "artist_remix_contest_ending_soon_notification_action",
+    notification_action_base,
+    {
+        "data": fields.Nested(
+            artist_remix_contest_ending_soon_notification_action_data, required=True
+        )
+    },
+)
+artist_remix_contest_ending_soon_notification = ns.clone(
+    "artist_remix_contest_ending_soon_notification",
+    notification_base,
+    {
+        "actions": fields.List(
+            fields.Nested(
+                artist_remix_contest_ending_soon_notification_action, required=True
+            ),
+            required=True,
+        )
+    },
+)
+
 cosign_notification_action_data = ns.model(
     "cosign_notification_action_data",
     {
@@ -1087,6 +1116,7 @@ notification = ns.add_model(
             "fan_remix_contest_ended": fan_remix_contest_ended_notification,
             "fan_remix_contest_ending_soon": fan_remix_contest_ending_soon_notification,
             "artist_remix_contest_ended": artist_remix_contest_ended_notification,
+            "artist_remix_contest_ending_soon": artist_remix_contest_ending_soon_notification,
         },
         discriminator="type",
     ),

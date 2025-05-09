@@ -52,14 +52,15 @@ export const TrackScreenLineup = ({
   } = useTrackPageLineup({ trackId, disableAutomaticCacheHandling: true })
   const { data: remixContest } = useRemixContest(trackId)
   const isRemixContest = !!remixContest
+  const hasData = data.length > 0
 
   useFocusEffect(
     useCallback(() => {
-      if (data.length > 0) {
+      if (hasData) {
         loadCachedDataIntoLineup()
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [loadCachedDataIntoLineup])
+    }, [hasData])
   )
 
   if (!indices) return null

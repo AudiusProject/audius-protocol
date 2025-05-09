@@ -41,7 +41,6 @@ type MobileClientInfo = {
   /** This is the type of Platform.OS, but we only expect ios or android here */
   mobilePlatform: 'ios' | 'android' | 'web' | 'windows' | 'macos'
   mobileAppVersion: string
-  codePushUpdateNumber: number | undefined
 }
 
 export type RemoteConfigOptions<Client> = {
@@ -246,8 +245,7 @@ export const remoteConfig = <
         appVersion,
         platform,
         mobilePlatform: mobileClientInfo?.mobilePlatform ?? null,
-        mobileAppVersion: mobileClientInfo?.mobileAppVersion ?? null,
-        codePushUpdateNumber: mobileClientInfo?.codePushUpdateNumber ?? null
+        mobileAppVersion: mobileClientInfo?.mobileAppVersion ?? null
       })
     }
 

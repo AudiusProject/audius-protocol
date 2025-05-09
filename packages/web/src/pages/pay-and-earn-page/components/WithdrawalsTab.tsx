@@ -2,12 +2,10 @@ import { useCallback, useEffect, useState } from 'react'
 
 import {
   useUSDCTransactions,
-  useUSDCTransactionsCount,
-  userApiFetch
+  useUSDCTransactionsCount
 } from '@audius/common/api'
-import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { useUSDCBalance } from '@audius/common/hooks'
-import { BNUSDC, Name, USDCTransactionDetails } from '@audius/common/models'
+import { BNUSDC, ID, Name, USDCTransactionDetails } from '@audius/common/models'
 import {
   WithdrawUSDCModalPages,
   accountSelectors,
@@ -15,7 +13,7 @@ import {
   useWithdrawUSDCModal,
   withdrawUSDCSelectors
 } from '@audius/common/store'
-import { formatUSDCWeiToFloorCentsNumber, wait } from '@audius/common/utils'
+import { formatUSDCWeiToFloorCentsNumber } from '@audius/common/utils'
 import { Id, full } from '@audius/sdk'
 import BN from 'bn.js'
 import { useDispatch } from 'react-redux'
@@ -99,93 +97,18 @@ const NoWithdrawals = () => {
   )
 }
 
-const useWithdrawalTransactionPoller = () => {
-  const audiusQueryContext = useAudiusQueryContext()
+const useWithdrawalTransactionPoller = (
+  userId: ID | null,
+  lastCompletedTransaction: string | undefined,
+  sortMethod: full.GetUSDCTransactionsSortMethodEnum,
+  sortDirection: full.GetUSDCTransactionsSortDirectionEnum
+) => {
   const [isPolling, setIsPolling] = useState(false)
 
-  const beginPolling = useCallback(
-    async ({
-      userId,
-      signature,
-      onSuccess
-    }: {
-      userId: number
-      signature: string
-      onSuccess: () => void
-    }) => {
-      setIsPolling(true)
-
-      const pollForTransaction = async () => {
-        let timedOut = false
-        const timerId = setTimeout(() => {
-          timedOut = true
-        }, 60000)
-
-        let foundTransaction = false
-        let aborted = false
-        while (!aborted && !foundTransaction) {
-          // We don't yet have a single transaction fetch API, so grab the latest 5 and check
-          // for the desired signature in the response. Since this utility is meant to be used
-          // for the most recently completed transaction, this is a relatively safe strategy
-          const transactions: USDCTransactionDetails[] =
-            await userApiFetch.getUSDCTransactions(
-              {
-                userId,
-                sortMethod: full.GetUSDCTransactionsSortMethodEnum.Date,
-                sortDirection: full.GetUSDCTransactionsSortDirectionEnum.Desc,
-                method: full.GetUSDCTransactionsMethodEnum.Send,
-                offset: 0,
-                limit: 5
-              },
-              audiusQueryContext
-            )
-          if (transactions.some((t) => t.signature === signature)) {
-            foundTransaction = true
-          } else if (timedOut) {
-            aborted = true
-          }
-          await wait(1000)
-        }
-        if (timedOut) {
-          throw new Error('Timed Out')
-        }
-        clearTimeout(timerId)
-      }
-
-      try {
-        await pollForTransaction()
-        onSuccess()
-        setIsPolling(false)
-      } catch (e) {
-        console.error(`Failed to poll for transaction: ${signature}: ${e}`)
-        setIsPolling(false)
-      }
-    },
-    [audiusQueryContext]
-  )
-
-  return { isPolling, beginPolling }
-}
-
-export const useWithdrawals = () => {
-  const userId = useSelector(getUserId)
-  // Type override required because we're dispatching thunk actions below
-  const dispatch = useDispatch<ThunkDispatch<any, any, any>>()
-  const lastCompletedTransaction = useSelector(
-    withdrawUSDCSelectors.getLastCompletedTransactionSignature
-  )
-  const { isPolling, beginPolling } = useWithdrawalTransactionPoller()
-  // Defaults: sort method = date, sort direction = desc
-  const [sortMethod, setSortMethod] =
-    useState<full.GetUSDCTransactionsSortMethodEnum>(DEFAULT_SORT_METHOD)
-  const [sortDirection, setSortDirection] =
-    useState<full.GetUSDCTransactionsSortDirectionEnum>(DEFAULT_SORT_DIRECTION)
-
-  const { onOpen: openDetailsModal } = useUSDCTransactionDetailsModal()
-
+  // Use the existing useUSDCTransactions hook
   const {
     data: transactions,
-    isPending: transactionsIsPending,
+    isFetching: transactionsIsFetching,
     isSuccess: transactionsIsSuccess,
     isError: transactionsIsError,
     loadNextPage,
@@ -199,10 +122,89 @@ export const useWithdrawals = () => {
     ],
     method: full.GetUSDCTransactionsMethodEnum.Send
   })
+
+  useEffect(() => {
+    if (!lastCompletedTransaction || !userId) return
+
+    setIsPolling(true)
+    let timedOut = false
+    const timerId = setTimeout(() => {
+      timedOut = true
+      setIsPolling(false)
+    }, 60000)
+
+    const pollInterval = setInterval(async () => {
+      // Check if transaction exists in current data
+      const found = transactions?.some(
+        (t) => t.signature === lastCompletedTransaction
+      )
+
+      if (found) {
+        clearInterval(pollInterval)
+        clearTimeout(timerId)
+        setIsPolling(false)
+        return
+      }
+
+      // If we've timed out, stop polling
+      if (timedOut) {
+        clearInterval(pollInterval)
+        return
+      }
+
+      // Refetch transactions
+      await reset()
+    }, 1000)
+
+    // Cleanup
+    return () => {
+      clearInterval(pollInterval)
+      clearTimeout(timerId)
+      setIsPolling(false)
+    }
+  }, [lastCompletedTransaction, userId, transactions, reset])
+
+  return {
+    isPolling,
+    transactions,
+    transactionsIsFetching: transactionsIsFetching || isPolling,
+    transactionsIsSuccess,
+    transactionsIsError,
+    loadNextPage
+  }
+}
+
+export const useWithdrawals = () => {
+  const userId = useSelector(getUserId)
+  // Type override required because we're dispatching thunk actions below
+  const dispatch = useDispatch<ThunkDispatch<any, any, any>>()
+  const lastCompletedTransaction = useSelector(
+    withdrawUSDCSelectors.getLastCompletedTransactionSignature
+  )
+  // Defaults: sort method = date, sort direction = desc
+  const [sortMethod, setSortMethod] =
+    useState<full.GetUSDCTransactionsSortMethodEnum>(DEFAULT_SORT_METHOD)
+  const [sortDirection, setSortDirection] =
+    useState<full.GetUSDCTransactionsSortDirectionEnum>(DEFAULT_SORT_DIRECTION)
+
+  const {
+    transactions,
+    transactionsIsFetching,
+    transactionsIsSuccess,
+    transactionsIsError,
+    loadNextPage
+  } = useWithdrawalTransactionPoller(
+    userId,
+    lastCompletedTransaction,
+    sortMethod,
+    sortDirection
+  )
+  const { onOpen: openDetailsModal } = useUSDCTransactionDetailsModal()
+
   const {
     isError: countIsError,
-    data: count,
-    isPending: countIsPending
+    data: transactionsCount,
+    isPending: transactionsCountIsPending
   } = useUSDCTransactionsCount({
     method: full.GetUSDCTransactionsMethodEnum.Send
   })
@@ -219,22 +221,6 @@ export const useWithdrawals = () => {
       )
     }
   }, [transactionsIsError, countIsError, dispatch])
-
-  // Polling for new transactions
-  useEffect(() => {
-    if (lastCompletedTransaction && userId) {
-      // Wait for new transaction and re-sort table to show newest first
-      beginPolling({
-        userId,
-        signature: lastCompletedTransaction,
-        onSuccess: () => {
-          setSortMethod(full.GetUSDCTransactionsSortMethodEnum.Date)
-          setSortDirection(full.GetUSDCTransactionsSortDirectionEnum.Desc)
-          reset()
-        }
-      })
-    }
-  }, [lastCompletedTransaction, userId, beginPolling, reset, dispatch])
 
   const onSort = useCallback(
     (
@@ -255,7 +241,7 @@ export const useWithdrawals = () => {
   )
 
   const isEmpty = transactionsIsSuccess && transactions?.length === 0
-  const isLoading = transactionsIsPending || countIsPending || isPolling
+  const isLoading = transactionsIsFetching || transactionsCountIsPending
 
   const downloadCSV = useCallback(async () => {
     const sdk = await audiusSdk()
@@ -271,7 +257,7 @@ export const useWithdrawals = () => {
   }, [userId])
 
   return {
-    count,
+    count: transactionsCount,
     data: transactions,
     fetchMore: loadNextPage,
     onSort,

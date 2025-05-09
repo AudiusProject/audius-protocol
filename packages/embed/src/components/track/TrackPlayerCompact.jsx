@@ -1,5 +1,6 @@
 import { full } from '@audius/sdk'
 
+import IconTrophy from '../../assets/img/iconTrophy.svg'
 import Artwork from '../artwork/Artwork'
 import AudiusLogoButton from '../button/AudiusLogoButton'
 import ShareButton from '../button/ShareButton'
@@ -29,7 +30,8 @@ const TrackPlayerCompact = ({
   backgroundColor,
   streamConditions,
   hasPremiumExtras,
-  audioPlayer
+  audioPlayer,
+  isRemixContest
 }) => {
   const isGated = !!streamConditions
   const isPurchaseable =
@@ -65,24 +67,37 @@ const TrackPlayerCompact = ({
           />
         ) : null}
         <div className={styles.topSection}>
-          {isPurchaseable ? <Preview /> : null}
-          {!isGated || isPurchaseable ? (
-            <div className={styles.scrubber}>
-              <BedtimeScrubber
-                mediaKey={`title-${mediaKey}`}
-                playingState={playingState}
-                seekTo={seekTo}
-                duration={duration}
-                elapsedSeconds={position}
-                audioPlayer={audioPlayer}
-              />
+          <div className={styles.topSectionLeft}>
+            {isRemixContest ? (
+              <div className={styles.contestLabelWrapper}>
+                <IconTrophy height={16} width={16} />
+                <div className={styles.contestLabel}>Remix Contest</div>
+              </div>
+            ) : null}
+            <div className={styles.scrubberContainer}>
+              {isPurchaseable ? <Preview /> : null}
+              {!isGated || isPurchaseable ? (
+                <div className={styles.scrubber}>
+                  <BedtimeScrubber
+                    mediaKey={`title-${mediaKey}`}
+                    playingState={playingState}
+                    seekTo={seekTo}
+                    duration={duration}
+                    elapsedSeconds={position}
+                    audioPlayer={audioPlayer}
+                  />
+                </div>
+              ) : null}
             </div>
-          ) : null}
+          </div>
           <div className={styles.logo}>
             <AudiusLogoButton />
           </div>
         </div>
-        <div className={styles.bottomSection}>
+        <div
+          className={styles.bottomSection}
+          style={{ marginTop: isRemixContest && isPurchaseable ? 4 : 18 }}
+        >
           <PlayButton
             playingState={playingState}
             onTogglePlay={onTogglePlay}

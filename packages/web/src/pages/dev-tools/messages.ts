@@ -14,9 +14,9 @@ export const messages = {
   confirmerPreviewDescription:
     "Preview the state of the confirmer, which manages transaction retries. Alternatively, press 'C' key to toggle this tool.",
   confirmerPreviewButton: 'Open Confirmer Preview',
-  signatureDecoderTitle: 'Signature Decoder',
+  signatureDecoderTitle: 'Secp256k1 Instruction Data Decoder',
   signatureDecoderDescription:
-    'Input a raw Secp256k1 instruction hex string (e.g., the "Instruction Data" from Solana Explorer for a Secp256k1 SigVerify Precompile instruction) to decode the underlying Claimable Tokens message.',
+    'Input the "Instruction Data" from Solana Explorer for a Secp256k1 SigVerify Precompile instruction to decode the underlying Claimable Tokens message.',
   signatureDecoderInputLabel: 'Secp256k1 Instruction Hex String:',
   signatureDecoderButton: 'Decode Message',
   signatureDecoderOutputLabel: 'Decoded Claimable Tokens Message:',
@@ -34,5 +34,13 @@ export const messages = {
   userBankDeriverTokenLabel: 'Token Symbol:',
   userBankDeriverButton: 'Derive User Bank Address',
   userBankDeriverOutputLabel: 'Derived User Bank Address:',
-  userBankDeriverErrorLabel: 'Error Deriving Address:'
+  userBankDeriverErrorLabel: 'Error Deriving Address:',
+  aaoTitle: 'Anti-Abuse Oracle (AAO)',
+  aaoDescription:
+    'Access the Anti-Abuse Oracle attestation interface used to validate reward claims and verify legitimate user activity in the protocol.',
+  aaoButton: 'Open AAO UI',
+  healthzTitle: 'Health Monitor (Healthz)',
+  healthzDescription:
+    'Access the health monitoring dashboard for Audius network services including discovery nodes, content nodes, and other protocol infrastructure.',
+  healthzButton: 'Open Healthz Dashboard'
 }

@@ -5,6 +5,8 @@ import {
   Flex,
   IconSettings,
   IconSolana,
+  IconShieldCheck,
+  IconDashboard,
   Paper,
   Text,
   makeResponsiveStyles
@@ -120,6 +122,14 @@ export const DevTools = () => {
     history.push('/dev-tools/solana')
   }
 
+  const handleOpenAAOUI = () => {
+    window.open('https://discoveryprovider.audius.co/attestation/ui', '_blank')
+  }
+
+  const handleOpenHealthzDashboard = () => {
+    window.open('https://healthz.audius.co/', '_blank')
+  }
+
   return (
     <Page
       title={messages.pageTitle}
@@ -166,6 +176,22 @@ export const DevTools = () => {
             description={messages.solanaToolsDescription}
             buttonText={messages.solanaToolsButton}
             onButtonClick={handleOpenSolanaTools}
+          />
+
+          <DevToolCard
+            icon={IconShieldCheck}
+            title={messages.aaoTitle}
+            description={messages.aaoDescription}
+            buttonText={messages.aaoButton}
+            onButtonClick={handleOpenAAOUI}
+          />
+
+          <DevToolCard
+            icon={IconDashboard}
+            title={messages.healthzTitle}
+            description={messages.healthzDescription}
+            buttonText={messages.healthzButton}
+            onButtonClick={handleOpenHealthzDashboard}
           />
         </Flex>
       </Box>

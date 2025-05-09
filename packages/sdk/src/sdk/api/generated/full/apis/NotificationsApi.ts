@@ -166,6 +166,7 @@ export const GetNotificationsValidTypesEnum = {
     FanRemixContestStarted: 'fan_remix_contest_started',
     FanRemixContestEnded: 'fan_remix_contest_ended',
     FanRemixContestEndingSoon: 'fan_remix_contest_ending_soon',
-    ArtistRemixContestEnded: 'artist_remix_contest_ended'
+    ArtistRemixContestEnded: 'artist_remix_contest_ended',
+    ArtistRemixContestEndingSoon: 'artist_remix_contest_ending_soon'
 } as const;
 export type GetNotificationsValidTypesEnum = typeof GetNotificationsValidTypesEnum[keyof typeof GetNotificationsValidTypesEnum];

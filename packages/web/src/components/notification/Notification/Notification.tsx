@@ -9,6 +9,7 @@ import { AddTrackToPlaylistNotification } from './AddTrackToPlaylistNotification
 import { AnnouncementNotification } from './AnnouncementNotification'
 import { ApproveManagerNotification } from './ApproveManagerRequestNotification'
 import { ArtistRemixContestEndedNotification } from './ArtistRemixContestEndedNotification'
+import { ArtistRemixContestEndingSoonNotification } from './ArtistRemixContestEndingSoonNotification'
 import { ChallengeRewardNotification } from './ChallengeRewardNotification'
 import { ClaimableRewardNotification } from './ClaimableRewardNotification'
 import { CommentMentionNotification } from './CommentMentionNotification'
@@ -160,6 +161,13 @@ export const Notification = (props: NotificationProps) => {
       case NotificationType.FanRemixContestEndingSoon: {
         return (
           <FanRemixContestEndingSoonNotification notification={notification} />
+        )
+      }
+      case NotificationType.ArtistRemixContestEndingSoon: {
+        return (
+          <ArtistRemixContestEndingSoonNotification
+            notification={notification}
+          />
         )
       }
       case NotificationType.ArtistRemixContestEnded: {

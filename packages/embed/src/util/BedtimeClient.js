@@ -166,3 +166,11 @@ export const getCollectibles = async (handle) => {
     user: user.data[0]
   }
 }
+
+export const getEntityEvents = async (entityId, entityType) => {
+  const res = await audiusSdk.events.getEntityEvents({
+    entityId: [entityId],
+    entityType
+  })
+  return res.data
+}

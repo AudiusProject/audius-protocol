@@ -1,6 +1,10 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
-import { useGetSuggestedPlaylistTracks } from '@audius/common/api'
+import {
+  SUGGESTED_TRACK_COUNT,
+  useCollection,
+  useSuggestedPlaylistTracks
+} from '@audius/common/api'
 import { SquareSizes, ID, Track } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import {
@@ -15,7 +19,6 @@ import { animated, useSpring } from '@react-spring/web'
 import { useToggle } from 'react-use'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Skeleton from 'components/skeleton/Skeleton'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
@@ -28,6 +31,7 @@ const { getUser } = cacheUsersSelectors
 const messages = {
   title: 'Add some tracks',
   addTrack: 'Add',
+  added: 'Added',
   refresh: 'Refresh',
   expandLabel: 'Expand suggested tracks panel',
   collapseLabel: 'Collapse suggested tracks panel',
@@ -41,13 +45,22 @@ type SuggestedTrackProps = {
 }
 
 const SuggestedTrackRow = (props: SuggestedTrackProps) => {
-  const { track, onAddTrack } = props
+  const { collectionId, track, onAddTrack } = props
   const { track_id, title, owner_id } = track
   const user = useSelector((state) => getUser(state, { id: owner_id }))
+  const { data: collection } = useCollection(collectionId)
   const image = useTrackCoverArt({
     trackId: track_id,
     size: SquareSizes.SIZE_150_BY_150
   })
+
+  const trackIsInCollection = useMemo(
+    () =>
+      collection?.playlist_contents.track_ids.some(
+        (trackId) => trackId.track === track_id
+      ),
+    [collection?.playlist_contents.track_ids, track_id]
+  )
 
   const handleAddTrack = useCallback(() => {
     onAddTrack(track_id)
@@ -67,8 +80,13 @@ const SuggestedTrackRow = (props: SuggestedTrackProps) => {
           ) : null}
         </div>
       </div>
-      <Button variant='secondary' size='small' onClick={handleAddTrack}>
-        {messages.addTrack}
+      <Button
+        variant='secondary'
+        size='small'
+        onClick={handleAddTrack}
+        disabled={trackIsInCollection}
+      >
+        {trackIsInCollection ? messages.added : messages.addTrack}
       </Button>
     </div>
   )
@@ -94,12 +112,12 @@ type SuggestedTracksProps = {
 
 export const SuggestedTracks = (props: SuggestedTracksProps) => {
   const { collectionId } = props
-  const { suggestedTracks, onRefresh, onAddTrack, isRefreshing } =
-    useGetSuggestedPlaylistTracks(collectionId)
+  const { suggestedTracks, onRefresh, onAddTrack } =
+    useSuggestedPlaylistTracks(collectionId)
   const [isExpanded, toggleIsExpanded] = useToggle(false)
   const { motion } = useTheme()
 
-  const contentHeight = 66 + suggestedTracks.length * 74
+  const contentHeight = 66 + SUGGESTED_TRACK_COUNT * 74
   const contentStyles = useSpring({
     height: isExpanded ? contentHeight : 0
   })
@@ -127,14 +145,11 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
       <animated.div className={styles.content} style={contentStyles}>
         <ul>
           <Divider />
-          {!suggestedTracks ? (
-            <LoadingSpinner className={styles.loading} />
-          ) : null}
-          {suggestedTracks?.map((suggestedTrack) => (
-            <li key={suggestedTrack.key}>
-              {!isRefreshing && 'track' in suggestedTrack ? (
+          {[...Array(SUGGESTED_TRACK_COUNT)].map((_, i) => (
+            <li key={suggestedTracks[i]?.track_id ?? i}>
+              {suggestedTracks[i] ? (
                 <SuggestedTrackRow
-                  track={suggestedTrack.track}
+                  track={suggestedTracks[i]}
                   collectionId={collectionId}
                   onAddTrack={onAddTrack}
                 />

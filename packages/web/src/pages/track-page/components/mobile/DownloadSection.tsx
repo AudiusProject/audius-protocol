@@ -159,7 +159,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
       trackId,
       fileCount: stemTracks.length + 1
     })
-  }, [trackId, stemTracks])
+  }, [openDownloadTrackArchiveModal, trackId, stemTracks.length])
 
   return (
     <Box css={{ overflow: 'hidden' }}>

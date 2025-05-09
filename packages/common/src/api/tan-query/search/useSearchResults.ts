@@ -32,7 +32,7 @@ import {
   QueryOptions,
   LineupData
 } from '../types'
-import { loadNextPage } from '../utils/infiniteQueryLoadNextPage'
+import { makeLoadNextPage } from '../utils/infiniteQueryLoadNextPage'
 import { primeCollectionData } from '../utils/primeCollectionData'
 import { primeTrackData } from '../utils/primeTrackData'
 import { primeUserData } from '../utils/primeUserData'
@@ -417,7 +417,7 @@ export const useSearchUserResults = (
   const queryDataWithLoadNextPage = queryData as typeof queryData & {
     loadNextPage: () => void
   }
-  queryDataWithLoadNextPage.loadNextPage = loadNextPage(queryData)
+  queryDataWithLoadNextPage.loadNextPage = makeLoadNextPage(queryData)
 
   return queryDataWithLoadNextPage
 }
@@ -450,7 +450,7 @@ export const useSearchAlbumResults = (
   const queryDataWithLoadNextPage = queryData as typeof queryData & {
     loadNextPage: () => void
   }
-  queryDataWithLoadNextPage.loadNextPage = loadNextPage(queryData)
+  queryDataWithLoadNextPage.loadNextPage = makeLoadNextPage(queryData)
 
   return queryDataWithLoadNextPage
 }
@@ -483,7 +483,7 @@ export const useSearchPlaylistResults = (
   const queryDataWithLoadNextPage = queryData as typeof queryData & {
     loadNextPage: () => void
   }
-  queryDataWithLoadNextPage.loadNextPage = loadNextPage(queryData)
+  queryDataWithLoadNextPage.loadNextPage = makeLoadNextPage(queryData)
 
   return queryDataWithLoadNextPage
 }
