@@ -386,7 +386,6 @@ function* recoverPurchaseIfNecessary() {
         mint: 'USDC'
       }
     )
-
     const accountInfo = yield* call(
       getAccount,
       sdk.services.solanaClient.connection,
