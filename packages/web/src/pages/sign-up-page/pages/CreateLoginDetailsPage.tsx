@@ -75,9 +75,7 @@ export const CreateLoginDetailsPage = () => {
 
   const loginDetailsFormikSchema = useMemo(
     () =>
-      toFormikValidationSchema(
-        loginDetailsSchema(queryContext, queryClient)
-      ),
+      toFormikValidationSchema(loginDetailsSchema(queryContext, queryClient)),
     [queryContext, queryClient]
   )
 

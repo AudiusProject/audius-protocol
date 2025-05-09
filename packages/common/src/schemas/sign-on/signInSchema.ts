@@ -1,9 +1,8 @@
 import { QueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 
-import { QUERY_KEYS } from '~/api'
+import { QUERY_KEYS, QueryContextType } from '~/api'
 import { fetchEmailInUse } from '~/api/tan-query/users/useEmailInUse'
-import { QueryContextType } from '~/api'
 
 export const messages = {
   emailRequired: 'Please enter an email.',

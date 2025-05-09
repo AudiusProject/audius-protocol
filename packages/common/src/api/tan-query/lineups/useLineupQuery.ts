@@ -10,8 +10,7 @@ import { isEqual } from 'lodash'
 import { Selector, useDispatch, useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 
-import { getCollectionQueryKey, getTrackQueryKey } from '~/api'
-import { useQueryContext } from '~/api'
+import { getCollectionQueryKey, getTrackQueryKey, useQueryContext } from '~/api'
 import {
   Collection,
   Feature,

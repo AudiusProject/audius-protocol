@@ -8,7 +8,7 @@ import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { searchResultsFromSDK } from '~/adapters'
-import { useQueryContext } from '~/api'
+import { useQueryContext, useCurrentUserId } from '~/api'
 import {
   Name,
   PlaybackSource,
@@ -23,7 +23,6 @@ import { tracksActions as searchResultsPageTracksLineupActions } from '~/store/p
 import { getSearchTracksLineup } from '~/store/pages/search-results/selectors'
 import { Genre, formatMusicalKey } from '~/utils'
 
-import { useCurrentUserId } from '../..'
 import { useLineupQuery } from '../lineups/useLineupQuery'
 import { QUERY_KEYS } from '../queryKeys'
 import {

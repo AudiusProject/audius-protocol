@@ -3,14 +3,13 @@ import { useQuery } from '@tanstack/react-query'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { useQueryContext } from '~/api'
+import { useQueryContext, useGetCurrentUser } from '~/api'
 import { Status } from '~/models/Status'
 import { BNUSDC, StringUSDC } from '~/models/Wallet'
 import { getUserbankAccountInfo } from '~/services/index'
 import { getRecoveryStatus } from '~/store/buy-usdc/selectors'
 import { setUSDCBalance } from '~/store/wallet/slice'
 
-import { useGetCurrentUser } from '../../index'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryOptions, type QueryKey } from '../types'
 

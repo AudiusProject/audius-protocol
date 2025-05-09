@@ -67,8 +67,7 @@ export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
   const queryClient = useQueryClient()
 
   const EmailSchema = useMemo(
-    () =>
-      toFormikValidationSchema(emailSchema(queryContext, queryClient)),
+    () => toFormikValidationSchema(emailSchema(queryContext, queryClient)),
     [queryContext, queryClient]
   )
   const reportToSentry = queryContext.reportToSentry

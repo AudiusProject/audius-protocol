@@ -1,9 +1,6 @@
 import { ReactElement, ReactNode } from 'react'
 
-import {
-  QueryContext,
-  QueryContextType
-} from '@audius/common/api'
+import { QueryContext, QueryContextType } from '@audius/common/api'
 import { AppContext } from '@audius/common/context'
 import { FeatureFlags } from '@audius/common/services'
 import { ThemeProvider } from '@audius/harmony'

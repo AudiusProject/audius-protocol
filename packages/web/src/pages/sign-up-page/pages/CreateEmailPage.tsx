@@ -74,8 +74,7 @@ export const CreateEmailPage = () => {
   const queryClient = useQueryClient()
 
   const EmailSchema = useMemo(
-    () =>
-      toFormikValidationSchema(emailSchema(queryContext, queryClient)),
+    () => toFormikValidationSchema(emailSchema(queryContext, queryClient)),
     [queryContext, queryClient]
   )
 

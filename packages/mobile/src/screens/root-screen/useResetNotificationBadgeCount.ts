@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
-import { useCurrentUserId } from '@audius/common/api'
-import { useQueryContext } from '@audius/common/api'
+import { useCurrentUserId, useQueryContext } from '@audius/common/api'
 
 import { useEnterForeground } from 'app/hooks/useAppState'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'

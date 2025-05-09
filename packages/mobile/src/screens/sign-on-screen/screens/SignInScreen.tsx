@@ -49,8 +49,7 @@ export const SignInScreen = () => {
 
   const queryContext = useQueryContext()
   const SignInSchema = useMemo(
-    () =>
-      toFormikValidationSchema(signInSchema(queryContext, queryClient)),
+    () => toFormikValidationSchema(signInSchema(queryContext, queryClient)),
     [queryContext, queryClient]
   )
 
