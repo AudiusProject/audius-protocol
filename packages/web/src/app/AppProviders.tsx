@@ -44,11 +44,11 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
       }
     }
 
-    const { store, history: storeHistory } = configureStore(
+    const { store, history: storeHistory } = configureStore({
       history,
       isMobile,
       initialStoreState
-    )
+    })
     // Mount store to window for easy access
     if (typeof window !== 'undefined' && !window.store) {
       window.store = store

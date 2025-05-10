@@ -11,18 +11,18 @@ Element.prototype.scrollTo = vi.fn()
 document.addEventListener = vi.fn()
 document.removeEventListener = vi.fn()
 
-vi.mock('@audius/sdk', async (importOriginal) => {
-  const originalImport: any = await importOriginal()
-  return {
-    ...originalImport,
-    ClaimableTokensClient: vi.fn(),
-    RewardManagerClient: vi.fn(),
-    full: Object.entries(originalImport.full).reduce(
-      (acc, [k, v]) => ({ ...acc, [k]: vi.fn() }),
-      {}
-    )
-  }
-})
+// vi.mock('@audius/sdk', async (importOriginal) => {
+//   const originalImport: any = await importOriginal()
+//   return {
+//     ...originalImport,
+//     ClaimableTokensClient: vi.fn(),
+//     RewardManagerClient: vi.fn(),
+//     full: Object.entries(originalImport.full).reduce(
+//       (acc, [k, v]) => ({ ...acc, [k]: vi.fn() }),
+//       {}
+//     )
+//   }
+// })
 
 vi.mock('@reown/appkit/react', () => {
   // See https://github.com/orgs/WalletConnect/discussions/5729#discussioncomment-12770662

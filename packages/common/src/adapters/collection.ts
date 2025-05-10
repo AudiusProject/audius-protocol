@@ -53,6 +53,8 @@ export const userCollectionMetadataFromSDK = (
   const decodedPlaylistId = OptionalHashId.parse(input.id)
   const decodedOwnerId = OptionalHashId.parse(input.userId ?? input.user.id)
   const user = userMetadataFromSDK(input.user)
+
+  console.log('deconding', decodedPlaylistId, decodedOwnerId, user)
   if (!decodedPlaylistId || !decodedOwnerId || !user) {
     return undefined
   }

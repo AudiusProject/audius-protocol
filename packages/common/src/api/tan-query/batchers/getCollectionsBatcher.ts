@@ -19,28 +19,38 @@ export const getCollectionsBatcher = memoize(
         const { sdk, currentUserId, queryClient, dispatch } = context
         if (!ids.length) return []
 
-        const { data } = await sdk.full.playlists.getBulkPlaylists({
-          id: ids.map((id) => Id.parse(id)),
-          userId: OptionalId.parse(currentUserId)
-        })
+        console.log('calling api')
 
-        const collections = transformAndCleanList(
-          data,
-          userCollectionMetadataFromSDK
-        )
+        try {
+          const { data } = await sdk.full.playlists.getBulkPlaylists({
+            id: ids.map((id) => Id.parse(id)),
+            userId: OptionalId.parse(currentUserId)
+          })
 
-        primeCollectionData({
-          collections,
-          queryClient,
-          dispatch,
-          skipQueryData: true
-        })
+          console.log('data', data)
 
-        const tqCollections: TQCollection[] = collections.map((c) => ({
-          ...omit(c, ['tracks', 'user']),
-          trackIds: c.tracks?.map((t) => t.track_id) ?? []
-        }))
-        return tqCollections
+          const collections = transformAndCleanList(
+            data,
+            userCollectionMetadataFromSDK
+          )
+
+          primeCollectionData({
+            collections,
+            queryClient,
+            dispatch,
+            skipQueryData: true
+          })
+
+          const tqCollections: TQCollection[] = collections.map((c) => ({
+            ...omit(c, ['tracks', 'user']),
+            trackIds: c.tracks?.map((t) => t.track_id) ?? []
+          }))
+          console.log('returning tqCollections', tqCollections)
+          return tqCollections
+        } catch (e) {
+          console.error('error!', e)
+          throw e
+        }
       },
       resolver: keyResolver('playlist_id'),
       scheduler: windowScheduler(10)
