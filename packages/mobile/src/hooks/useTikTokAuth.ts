@@ -5,11 +5,8 @@ import { FeatureFlags } from '@audius/common/services'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import CookieManager from '@react-native-cookies/cookies'
 import { Linking } from 'react-native'
-import {
-  init as tikTokInit,
-  auth as tikTokAuth,
-  events as tikTokEvents
-} from 'react-native-tiktok'
+// eslint-disable-next-line import/no-unresolved
+import { authorize, Scopes } from 'react-native-tiktok'
 
 import { track, make } from 'app/services/analytics'
 import { env } from 'app/services/env'
@@ -34,7 +31,6 @@ const createAuthenticate =
     )
 
     // Perform WebView auth if TikTok is not installed
-    // TikTok LoginKit is supposed to handle this but it doesn't seem to work
     if (!(await canOpenTikTok()) || !isNativeTikTokAuthEnabled) {
       return new Promise((resolve, reject) => {
         dispatch(
@@ -47,8 +43,6 @@ const createAuthenticate =
         )
       })
     }
-
-    tikTokInit(env.TIKTOK_APP_ID!)
 
     return new Promise((resolve, reject) => {
       let authDone = false
@@ -157,13 +151,13 @@ const createAuthenticate =
         }
       }
 
-      // Needed for Android
-      const listener = tikTokEvents.addListener('onAuthCompleted', (resp) => {
-        listener?.remove()
-        handleTikTokAuth(resp.code, !!resp.status, resp.status)
+      authorize({
+        scopes: [Scopes.user.info.basic],
+        redirectURI: 'audius://',
+        callback: (authCode: string) => {
+          handleTikTokAuth(authCode, false, '')
+        }
       })
-
-      tikTokAuth(handleTikTokAuth)
     })
   }
 
