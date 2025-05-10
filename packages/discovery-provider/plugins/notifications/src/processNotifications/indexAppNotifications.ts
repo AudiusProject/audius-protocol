@@ -92,7 +92,15 @@ export const notificationTypeMapping = {
   comment_thread: MappingVariable.PushCommentThread,
   comment_mention: MappingVariable.PushCommentMention,
   comment_reaction: MappingVariable.PushCommentReaction,
-  listen_streak_reminder: MappingVariable.PushListenStreakReminder
+  listen_streak_reminder: MappingVariable.PushListenStreakReminder,
+  artist_remix_contest_ended: MappingVariable.PushArtistRemixContestEnded,
+  fan_remix_contest_ended: MappingVariable.PushFanRemixContestEnded,
+  fan_remix_contest_ending_soon: MappingVariable.PushFanRemixContestEndingSoon,
+  fan_remix_contest_started: MappingVariable.PushFanRemixContestStarted,
+  artist_remix_contest_ending_soon:
+    MappingVariable.PushArtistRemixContestEndingSoon,
+  artist_remix_contest_submissions:
+    MappingVariable.PushArtistRemixContestSubmissions
 }
 
 export class AppNotificationsProcessor {
