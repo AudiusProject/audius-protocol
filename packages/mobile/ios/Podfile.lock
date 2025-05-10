@@ -18,17 +18,17 @@ PODS:
   - hermes-engine (0.76.9):
     - hermes-engine/Pre-built (= 0.76.9)
   - hermes-engine/Pre-built (0.76.9)
-  - libwebp (1.3.2):
-    - libwebp/demux (= 1.3.2)
-    - libwebp/mux (= 1.3.2)
-    - libwebp/sharpyuv (= 1.3.2)
-    - libwebp/webp (= 1.3.2)
-  - libwebp/demux (1.3.2):
+  - libwebp (1.5.0):
+    - libwebp/demux (= 1.5.0)
+    - libwebp/mux (= 1.5.0)
+    - libwebp/sharpyuv (= 1.5.0)
+    - libwebp/webp (= 1.5.0)
+  - libwebp/demux (1.5.0):
     - libwebp/webp
-  - libwebp/mux (1.3.2):
+  - libwebp/mux (1.5.0):
     - libwebp/demux
-  - libwebp/sharpyuv (1.3.2)
-  - libwebp/webp (1.3.2):
+  - libwebp/sharpyuv (1.5.0)
+  - libwebp/webp (1.5.0):
     - libwebp/sharpyuv
   - lottie-ios (4.5.0)
   - lottie-react-native (7.1.0):
@@ -53,8 +53,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - nSure (1.3.3):
-    - FingerprintPro (~> 2.2)
+  - nSure (1.3.9)
   - PromisesObjC (2.4.0)
   - RCT-Folly (2024.10.14.00):
     - boost
@@ -2142,6 +2141,7 @@ DEPENDENCIES:
   - RNZipArchive (from `../../../node_modules/react-native-zip-archive`)
   - "snap-kit-react-native (from `../../../node_modules/@snapchat/snap-kit-react-native`)"
   - SRSRadialGradient (from `../../../node_modules/react-native-radial-gradient/ios`)
+  - TikTokOpenSDK (from `./vendor/TikTokOpenSDK`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -2159,7 +2159,6 @@ SPEC REPOS:
     - SocketRocket
     - SSZipArchive
     - SwiftAudioEx
-    - TikTokOpenSDK
     - TOCropViewController
 
 EXTERNAL SOURCES:
@@ -2390,6 +2389,8 @@ EXTERNAL SOURCES:
     :path: "../../../node_modules/@snapchat/snap-kit-react-native"
   SRSRadialGradient:
     :path: "../../../node_modules/react-native-radial-gradient/ios"
+  TikTokOpenSDK:
+    :path: "./vendor/TikTokOpenSDK"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -2407,10 +2408,10 @@ SPEC CHECKSUMS:
   glog: 08b301085f15bcbb6ff8632a8ebaf239aae04e6a
   google-cast-sdk-dynamic-xcframework-no-bluetooth: 1fa9e267df3fd6f8a1c6e3345142ca5286297968
   hermes-engine: 9e868dc7be781364296d6ee2f56d0c1a9ef0bb11
-  libwebp: 1786c9f4ff8a279e4dac1e8f385004d5fc253009
+  libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
   lottie-ios: a881093fab623c467d3bce374367755c272bdd59
   lottie-react-native: 440dc225dc9e4c4ebc160f9b48d63090e4d6cafb
-  nSure: ce410631caf715d7080838c00a42169427847a01
+  nSure: abc4bec0da460d5998b931b5f708c90c0e648823
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   RCT-Folly: 7b4f73a92ad9571b9dbdb05bb30fad927fa971e1
   RCTDeprecation: ebe712bb05077934b16c6bf25228bdec34b64f83
@@ -2520,10 +2521,10 @@ SPEC CHECKSUMS:
   SRSRadialGradient: 8363f6c3ce63636f5ffee74a7016f5c84a6df0a1
   SSZipArchive: c69881e8ac5521f0e622291387add5f60f30f3c4
   SwiftAudioEx: 6f511018b7a0fdfd14ed1bb4081f953588245cc0
-  TikTokOpenSDK: a63564ea4dc1fabc56352bf7aa9ddc386cdb63b6
+  TikTokOpenSDK: d42cfe2f218746477aacad99be4b60d2103a0050
   TOCropViewController: 80b8985ad794298fb69d3341de183f33d1853654
   Yoga: feb4910aba9742cfedc059e2b2902e22ffe9954a
 
-PODFILE CHECKSUM: 787f7d4a45417340b4c750bf64a6b629e2ffaf31
+PODFILE CHECKSUM: 116a567ddd1c6173d21f03ae9398692a3692dcef
 
 COCOAPODS: 1.15.2
