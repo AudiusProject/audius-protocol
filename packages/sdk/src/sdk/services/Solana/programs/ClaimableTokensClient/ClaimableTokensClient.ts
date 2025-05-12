@@ -94,12 +94,10 @@ export class ClaimableTokensClient {
   > = {}
 
   constructor(config: ClaimableTokensConfig) {
-    console.log('config', config)
     const configWithDefaults = mergeConfigWithDefaults(
       config,
       getDefaultClaimableTokensConfig(productionConfig)
     )
-    console.log('configWithDefaults', configWithDefaults)
     this.client = configWithDefaults.solanaClient
     this.programId = configWithDefaults.programId
     this.mints = configWithDefaults.mints
@@ -145,9 +143,8 @@ export class ClaimableTokensClient {
 
     // Create a new lock on the fetch/creation process for this user bank
     this._pendingUserBankCreationPromises[userBank.toBase58()] = (async () => {
-      const userBankAccount = await this.client.connection.getAccountInfo(
-        userBank
-      )
+      const userBankAccount =
+        await this.client.connection.getAccountInfo(userBank)
       if (!userBankAccount) {
         this.logger.debug(`User bank ${userBank} does not exist. Creating...`)
         const createUserBankInstruction =
