@@ -1,11 +1,14 @@
+import { useCollection, useTrack, useUser } from '@audius/common/api'
 import { imageBlank, imageProfilePicEmpty } from '@audius/common/assets'
 import {
   User,
   UserTrackMetadata,
-  UserCollectionMetadata
+  UserCollectionMetadata,
+  ID
 } from '@audius/common/models'
+import { SearchItemBackwardsCompatible } from '@audius/common/src/store/search/types'
 import { route } from '@audius/common/utils'
-import { Text, Flex, Avatar, Artwork } from '@audius/harmony'
+import { Text, Flex, Avatar, Artwork, IconCloseAlt } from '@audius/harmony'
 import { Link } from 'react-router-dom'
 
 import UserBadges from 'components/user-badges/UserBadges'
@@ -28,7 +31,7 @@ const ResultWrapper = ({
     alignItems='center'
     gap='s'
     p='s'
-    css={{ minWidth: 0 }}
+    // css={{ minWidth: 0 }}
   >
     {children}
   </Flex>
@@ -69,65 +72,81 @@ const ResultText = ({ primary, secondary, badges }: ResultTextProps) => (
 )
 
 type UserResultProps = {
-  user: User
+  userId: ID
+  onRemove?: (searchItem: SearchItemBackwardsCompatible) => void
 }
 
-export const UserResult = ({ user }: UserResultProps) => (
-  <ResultWrapper to={profilePage(user.handle)}>
-    <Avatar
-      h={30}
-      w={30}
-      src={user.profile_picture?.['150x150'] || imageProfilePicEmpty}
-      borderWidth='thin'
-      css={{ flexShrink: 0 }}
-    />
-    <ResultText
-      primary={user.name}
-      secondary={`@${user.handle}`}
-      badges={<UserBadges userId={user.user_id} size='s' inline />}
-    />
-  </ResultWrapper>
-)
+export const UserResult = ({ userId, onRemove }: UserResultProps) => {
+  const { data: user } = useUser(userId)
+  if (!user) return null
+  return (
+    <ResultWrapper to={profilePage(user.handle)}>
+      <Avatar
+        h={30}
+        w={30}
+        src={user.profile_picture?.['150x150'] || imageProfilePicEmpty}
+        borderWidth='thin'
+        css={{ flexShrink: 0 }}
+      />
+      <ResultText
+        primary={user.name}
+        secondary={`@${user.handle}`}
+        badges={<UserBadges userId={user.user_id} size='s' inline />}
+      />
+      {onRemove ? <IconCloseAlt onClick={onRemove} /> : null}
+    </ResultWrapper>
+  )
+}
 
 type TrackResultProps = {
-  track: UserTrackMetadata
+  trackId: ID
 }
 
-export const TrackResult = ({ track }: TrackResultProps) => (
-  <ResultWrapper to={track.permalink}>
-    <Artwork
-      h={30}
-      w={30}
-      src={track.artwork?.['150x150'] || imageBlank}
-      css={{ flexShrink: 0 }}
-    />
-    <ResultText primary={track.title} secondary={track.user.name} />
-  </ResultWrapper>
-)
+export const TrackResult = ({ trackId }: TrackResultProps) => {
+  const { data: track } = useTrack(trackId)
+  if (!track) return null
+
+  return (
+    <ResultWrapper to={track.permalink}>
+      <Artwork
+        h={30}
+        w={30}
+        src={track.artwork?.['150x150'] || imageBlank}
+        css={{ flexShrink: 0 }}
+      />
+      <ResultText primary={track.title} secondary={track.user.name} />
+    </ResultWrapper>
+  )
+}
 
 type CollectionResultProps = {
-  collection: UserCollectionMetadata
+  collectionId: ID
 }
 
-export const CollectionResult = ({ collection }: CollectionResultProps) => (
-  <ResultWrapper
-    to={collectionPage(
-      collection.user.handle,
-      collection.playlist_name,
-      collection.playlist_id,
-      collection.permalink,
-      collection.is_album
-    )}
-  >
-    <Artwork
-      h={30}
-      w={30}
-      src={collection.artwork?.['150x150'] || imageBlank}
-      css={{ flexShrink: 0 }}
-    />
-    <ResultText
-      primary={collection.playlist_name}
-      secondary={collection.user.name}
-    />
-  </ResultWrapper>
-)
+export const CollectionResult = ({ collectionId }: CollectionResultProps) => {
+  const { data: collection } = useCollection(collectionId)
+  const { data: user } = useUser(
+    collection ? collection.playlist_owner_id : null
+  )
+
+  if (!collection || !user) return null
+  return (
+    <ResultWrapper
+      to={collectionPage(
+        user.handle,
+        collection.playlist_name,
+        collection.playlist_id,
+        collection.permalink,
+        collection.is_album
+      )}
+    >
+      <Artwork
+        h={30}
+        w={30}
+        src={collection.artwork?.['150x150'] || imageBlank}
+        css={{ flexShrink: 0 }}
+      />
+      <ResultText primary={collection.playlist_name} secondary={user.name} />
+    </ResultWrapper>
+  )
+}
