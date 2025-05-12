@@ -2,7 +2,7 @@ import '@testing-library/jest-dom/vitest'
 import './vitest-canvas-mock'
 
 import { cleanup } from '@testing-library/react'
-import { afterEach, beforeAll, vi } from 'vitest'
+import { afterEach, vi } from 'vitest'
 
 import { queryClient } from 'services/query-client'
 
@@ -29,7 +29,13 @@ document.removeEventListener = vi.fn()
 class MockImage {
   onload: () => void = () => {}
   onerror: () => void = () => {}
+  private _src: string = ''
+  get src() {
+    return this._src
+  }
+
   set src(url: string) {
+    this._src = url
     // simulate successful load
     setTimeout(() => {
       this.onload()
