@@ -73,6 +73,7 @@
         </activity>
 
         <meta-data android:name="com.snapchat.kit.sdk.clientId" android:value="e4716145-55b7-4a90-9d90-e977733713ed" />
+        <meta-data android:name="com.tiktokopensdkreactnative.tiktok.CLIENT_KEY" android:value="@string/tiktok_app_id"/>
 
         <!-- Google Cast -->
         <meta-data android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME" android:value="com.reactnative.googlecast.GoogleCastOptionsProvider" />
@@ -81,13 +82,13 @@
         <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@mipmap/ic_notification" />
 
         <provider
-            android:authorities="${applicationId}.fileprovider"
+            android:authorities="${applicationId}.tiktokopensdkfileprovider;${applicationId}.fileprovider"
             android:name="androidx.core.content.FileProvider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths"
+                android:resource="@xml/filepaths"
                 tools:replace="android:resource"
             />
         </provider>

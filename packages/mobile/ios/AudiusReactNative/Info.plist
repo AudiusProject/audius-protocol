@@ -84,7 +84,7 @@
 	<string>$(SCSDK_CLIENT_ID)</string>
 	<key>SCSDKRedirectUrl</key>
 	<string>audius://snap-kit/oauth2</string>
-	<key>TikTokAppID</key>
+	<key>TikTokClientKey</key>
 	<string>${TIKTOK_APP_ID}</string>
 	<key>UIAppFonts</key>
 	<array>
