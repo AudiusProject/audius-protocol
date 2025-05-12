@@ -4,7 +4,7 @@ import { useTrack } from '@audius/common/api'
 import type { ArtistRemixContestEndedNotification as ArtistRemixContestEndedNotificationType } from '@audius/common/store'
 
 import { IconTrophy } from '@audius/harmony-native'
-import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
+import { useNavigation } from 'app/hooks/useNavigation'
 
 import {
   NotificationHeader,
@@ -29,14 +29,16 @@ export const ArtistRemixContestEndedNotification = (
   const { notification } = props
   const { entityId } = notification
 
-  const navigation = useNotificationNavigation()
+  const navigation = useNavigation()
   const { data: track } = useTrack(entityId)
 
   const handlePress = useCallback(() => {
     if (track) {
-      navigation.navigate(notification)
+      navigation.push('Track', {
+        trackId: track.track_id
+      })
     }
-  }, [track, navigation, notification])
+  }, [track, navigation])
 
   if (!track) return null
 
