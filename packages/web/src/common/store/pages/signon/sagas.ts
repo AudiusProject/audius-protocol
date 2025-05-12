@@ -1,6 +1,7 @@
 import {
   getWalletAccountQueryFn,
-  getWalletAccountQueryKey
+  getWalletAccountQueryKey,
+  queryUserByHandle
 } from '@audius/common/api'
 import { GUEST_EMAIL } from '@audius/common/hooks'
 import {
@@ -67,7 +68,7 @@ import {
 
 import { identify, make } from 'common/store/analytics/actions'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
-import { fetchUserByHandle, fetchUsers } from 'common/store/cache/users/sagas'
+import { fetchUsers } from 'common/store/cache/users/sagas'
 import { sendRecoveryEmail } from 'common/store/recovery-email/sagas'
 import { UiErrorCode } from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
@@ -146,7 +147,7 @@ function* fetchReferrer(
   const { handle } = action
   if (handle) {
     try {
-      const user = yield* call(fetchUserByHandle, handle)
+      const user = yield* call(queryUserByHandle, handle)
       if (!user) return
       yield* put(signOnActions.setReferrer(user.user_id))
     } catch (e: any) {
@@ -193,15 +194,7 @@ function* validateHandle(
 
     // Call fetch user by handle and do not retry if the user is not created, it will
     // return 404 and force discovery reselection
-    const user = yield* call(
-      fetchUserByHandle,
-      handle,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      false
-    )
+    const user = yield* call(queryUserByHandle, handle)
     const handleInUse = !isEmpty(user)
     const handleCheckTimeout =
       remoteConfigInstance.getRemoteVar(

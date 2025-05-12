@@ -1,7 +1,8 @@
-import { OptionalId } from '@audius/sdk'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { AudiusSdk, OptionalId } from '@audius/sdk'
+import { QueryClient, useQuery, useQueryClient } from '@tanstack/react-query'
 import { omit } from 'lodash'
 import { useDispatch } from 'react-redux'
+import { AnyAction, Dispatch } from 'redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
 import { useQueryContext } from '~/api/tan-query/utils'
@@ -19,6 +20,24 @@ export const getUserByHandleQueryKey = (handle: string | null | undefined) => {
   return [QUERY_KEYS.userByHandle, handle] as unknown as QueryKey<ID>
 }
 
+export const getUserByHandleQueryFn = async (
+  handle: string | null | undefined,
+  sdk: AudiusSdk,
+  queryClient: QueryClient,
+  dispatch: Dispatch<AnyAction>,
+  currentUserId?: ID | null
+) => {
+  if (!handle) return undefined
+  const { data } = await sdk.full.users.getUserByHandle({
+    handle: handle.toLowerCase(),
+    userId: OptionalId.parse(currentUserId)
+  })
+  const user = userMetadataListFromSDK(data)[0]
+
+  primeUserData({ users: [user], queryClient, dispatch })
+  return user.user_id
+}
+
 export const useUserByHandle = <TResult = User>(
   handle: string | null | undefined,
   options?: SelectableQueryOptions<User, TResult>
@@ -30,18 +49,14 @@ export const useUserByHandle = <TResult = User>(
 
   const { data: userId } = useQuery({
     queryKey: getUserByHandleQueryKey(handle),
-    queryFn: async () => {
-      if (!handle) return null
-      const sdk = await audiusSdk()
-      const { data } = await sdk.full.users.getUserByHandle({
-        handle: handle.toLowerCase(),
-        userId: OptionalId.parse(currentUserId)
-      })
-      const user = userMetadataListFromSDK(data)[0]
-
-      primeUserData({ users: [user], queryClient, dispatch })
-      return user.user_id
-    },
+    queryFn: async () =>
+      getUserByHandleQueryFn(
+        handle,
+        await audiusSdk(),
+        queryClient,
+        dispatch,
+        currentUserId
+      ),
     ...(omit(options, 'select') as QueryOptions),
     enabled: options?.enabled !== false && !!handle
   })

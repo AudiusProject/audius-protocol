@@ -6,8 +6,7 @@ import {
 } from '@solana/web3.js'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { useGetCurrentUser } from '~/api'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useGetCurrentUser, useQueryContext } from '~/api'
 import { Feature } from '~/models'
 import {
   convertJupiterInstructions,
@@ -32,8 +31,7 @@ import { addUserBankToAtaInstructions, getSwapErrorResponse } from './utils'
  */
 export const useSwapTokens = () => {
   const queryClient = useQueryClient()
-  const { solanaWalletService, reportToSentry, audiusSdk } =
-    useAudiusQueryContext()
+  const { solanaWalletService, reportToSentry, audiusSdk } = useQueryContext()
   const { data: user } = useGetCurrentUser({})
 
   return useMutation<SwapTokensResult, Error, SwapTokensParams>({
