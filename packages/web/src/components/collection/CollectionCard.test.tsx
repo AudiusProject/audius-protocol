@@ -153,7 +153,7 @@ describe('CollectionCard', () => {
     server.close()
   })
 
-  it.only('renders a button with the label comprising the collection and artist name, and favorites and reposts', async () => {
+  it('renders a button with the label comprising the collection and artist name, and favorites and reposts', async () => {
     renderCollectionCard()
 
     expect(
@@ -166,7 +166,12 @@ describe('CollectionCard', () => {
   it('navigates to collection page when clicked', async () => {
     renderCollectionCard()
 
-    screen.getByRole('button').click()
+    const collectionCard = await screen.findByRole('button', {
+      name: /test collection/i
+    })
+
+    collectionCard.click()
+
     expect(
       await screen.findByRole('heading', { name: /test collection page/i })
     ).toBeInTheDocument()
@@ -184,15 +189,17 @@ describe('CollectionCard', () => {
   it('renders the collection owner link which navigates to user page', async () => {
     renderCollectionCard()
 
-    const userNameElement = screen.getByRole('link', { name: 'Test User' })
-    expect(userNameElement).toBeInTheDocument()
-    userNameElement.click()
+    const userLink = await screen.findByRole('link', {
+      name: 'Test User'
+    })
+    userLink.click()
+
     expect(
       await screen.findByRole('heading', { name: /test user page/i })
     ).toBeInTheDocument()
   })
 
-  it.only('hidden collections are show as hidden', async () => {
+  it('hidden collections are show as hidden', async () => {
     renderCollectionCard({ is_private: true })
 
     expect(
