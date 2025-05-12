@@ -49,6 +49,9 @@ export type SwapTabProps = {
     outputAmount: number
     isValid: boolean
   }) => void
+  isDefault?: boolean
+  error?: boolean
+  errorMessage?: string
 }
 
 export const SwapTab = ({
@@ -57,7 +60,10 @@ export const SwapTab = ({
   min,
   max,
   balance,
-  onTransactionDataChange
+  onTransactionDataChange,
+  isDefault = true,
+  error,
+  errorMessage
 }: SwapTabProps) => {
   const {
     formik,
@@ -108,6 +114,9 @@ export const SwapTab = ({
                 onMaxClick={handleMaxClick}
                 availableBalance={availableBalance}
                 placeholder={messages.placeholder}
+                isDefault={isDefault}
+                error={error}
+                errorMessage={errorMessage}
               />
 
               <TokenAmountSection

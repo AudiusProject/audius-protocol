@@ -3,7 +3,7 @@ import { useCallback, useContext, useEffect, useState } from 'react'
 import { useSwapTokens } from '@audius/common/api'
 import { buySellMessages as messages } from '@audius/common/messages'
 import { TOKEN_LISTING_MAP } from '@audius/common/src/store/ui/buy-audio/constants'
-import { useBuySellModal } from '@audius/common/store'
+import { useBuySellModal, useAddFundsModal } from '@audius/common/store'
 import {
   Button,
   Flex,
@@ -42,6 +42,7 @@ export const BuySellModal = () => {
   const [activeTab, setActiveTab] = useState<BuySellTab>('buy')
   // selectedPairIndex will be used in future when multiple token pairs are supported
   const [selectedPairIndex] = useState(0)
+  const { onOpen: openAddFundsModal } = useAddFundsModal()
 
   // Transaction state
   const [transactionData, setTransactionData] = useState<{
@@ -49,6 +50,7 @@ export const BuySellModal = () => {
     outputAmount: number
     isValid: boolean
   } | null>(null)
+  const [hasSufficientBalance, setHasSufficientBalance] = useState(true)
 
   // Get the swap tokens mutation
   const {
@@ -69,6 +71,16 @@ export const BuySellModal = () => {
     // Reset transaction data when changing tabs
     setTransactionData(null)
   }, [])
+
+  const handleTransactionDataChange = useCallback(
+    (data: { inputAmount: number; outputAmount: number; isValid: boolean }) => {
+      setTransactionData(data)
+      // Update sufficient balance based on input amount and validity
+      // (Inferring insufficient balance if amount > 0 and not valid)
+      setHasSufficientBalance(!(data.inputAmount > 0 && !data.isValid))
+    },
+    []
+  )
 
   // Handle continue button click
   const handleContinueClick = useCallback(() => {
@@ -120,6 +132,11 @@ export const BuySellModal = () => {
   const isContinueButtonDisabled =
     !transactionData?.isValid || isContinueButtonLoading
 
+  const errorMessage =
+    activeTab === 'sell' && !hasSufficientBalance
+      ? messages.insufficientAUDIOForSale
+      : undefined
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size='medium'>
       <ModalHeader onClose={onClose} showDismissButton={true}>
@@ -139,24 +156,47 @@ export const BuySellModal = () => {
           {activeTab === 'buy' ? (
             <BuyTab
               tokenPair={selectedPair}
-              onTransactionDataChange={setTransactionData}
+              onTransactionDataChange={handleTransactionDataChange}
+              error={!hasSufficientBalance}
             />
           ) : (
             <SellTab
               tokenPair={selectedPair}
-              onTransactionDataChange={setTransactionData}
+              onTransactionDataChange={handleTransactionDataChange}
+              error={!hasSufficientBalance}
+              errorMessage={errorMessage}
             />
           )}
 
-          <Hint>
-            {messages.helpCenter}{' '}
-            <TextLink
-              variant='visible'
-              href='#' // Replace with actual URL when available
-            >
-              {messages.walletGuide}
-            </TextLink>
-          </Hint>
+          {/* Insufficient USDC balance hint, only on buy tab */}
+          {activeTab === 'buy' && !hasSufficientBalance ? (
+            <Hint>
+              {messages.insufficientUSDC}
+              <br />
+              <TextLink
+                variant='visible'
+                href='#'
+                onClick={() => {
+                  onClose()
+                  openAddFundsModal()
+                }}
+              >
+                {messages.addCash}
+              </TextLink>
+            </Hint>
+          ) : null}
+
+          {hasSufficientBalance ? (
+            <Hint>
+              {messages.helpCenter}{' '}
+              <TextLink
+                variant='visible'
+                href='#' // Replace with actual URL when available
+              >
+                {messages.walletGuide}
+              </TextLink>
+            </Hint>
+          ) : null}
 
           <Button
             variant='primary'
