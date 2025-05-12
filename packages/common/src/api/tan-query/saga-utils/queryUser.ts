@@ -1,7 +1,6 @@
 import { Dispatch, AnyAction } from 'redux'
 import { call, select, put } from 'typed-redux-saga'
 
-import { UserMetadata } from '@audius/common/models'
 import { ID } from '~/models/Identifiers'
 import { User } from '~/models/User'
 import { getUserId } from '~/store/account/selectors'

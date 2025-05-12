@@ -1,7 +1,7 @@
 /** Helper Sagas */
 
 import { eventChannel, END, EventChannel } from 'redux-saga'
-import { ActionPattern, GetContextEffect } from 'redux-saga/effects'
+import { ActionPattern } from 'redux-saga/effects'
 import {
   all,
   call,
