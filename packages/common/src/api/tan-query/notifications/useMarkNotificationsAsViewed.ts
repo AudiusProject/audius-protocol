@@ -1,7 +1,7 @@
 import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
+import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 
@@ -14,7 +14,7 @@ import {
  * Hook to mark all notifications as viewed
  */
 export const useMarkNotificationsAsViewed = () => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const { data: unreadCount } = useNotificationUnreadCount()

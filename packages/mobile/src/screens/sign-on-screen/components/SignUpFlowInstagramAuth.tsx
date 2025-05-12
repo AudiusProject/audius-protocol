@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useQueryContext } from '@audius/common/api'
 import { socialMediaMessages } from '@audius/common/messages'
 import { Name } from '@audius/common/models'
 import { pickHandleSchema } from '@audius/common/schemas'
@@ -41,7 +41,7 @@ const signUpFlowInstagramAuthorizeUrl = `https://api.instagram.com/oauth/authori
 
 const useSetProfileFromInstagram = () => {
   const dispatch = useDispatch()
-  const queryContext = useAudiusQueryContext()
+  const queryContext = useQueryContext()
   const queryClient = useQueryClient()
 
   return async ({ code }: { code: string }) => {

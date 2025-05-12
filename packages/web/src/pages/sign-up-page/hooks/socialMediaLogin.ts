@@ -1,4 +1,4 @@
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useQueryContext } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import { pickHandleSchema } from '@audius/common/schemas'
 import {
@@ -28,7 +28,7 @@ const GENERAL_ADMISSION = env.GENERAL_ADMISSION ?? ''
 
 export const useSetProfileFromTwitter = () => {
   const dispatch = useDispatch()
-  const queryContext = useAudiusQueryContext()
+  const queryContext = useQueryContext()
   const queryClient = useQueryClient()
 
   return async ({
@@ -67,7 +67,7 @@ export const useSetProfileFromTwitter = () => {
 
 export const useSetProfileFromInstagram = () => {
   const dispatch = useDispatch()
-  const queryContext = useAudiusQueryContext()
+  const queryContext = useQueryContext()
   const queryClient = useQueryClient()
 
   return async ({
@@ -110,7 +110,7 @@ export const useSetProfileFromInstagram = () => {
 
 export const useSetProfileFromTikTok = () => {
   const dispatch = useDispatch()
-  const queryContext = useAudiusQueryContext()
+  const queryContext = useQueryContext()
   const queryClient = useQueryClient()
 
   return async ({

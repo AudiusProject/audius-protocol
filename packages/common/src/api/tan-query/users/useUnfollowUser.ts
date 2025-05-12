@@ -2,7 +2,7 @@ import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
-import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
+import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 import { useAppContext } from '~/context/appContext'
 import { Kind } from '~/models'
 import { Name, FollowSource } from '~/models/Analytics'
@@ -28,7 +28,7 @@ type MutationContext = {
 }
 
 export const useUnfollowUser = () => {
-  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const { audiusSdk, reportToSentry } = useQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const {

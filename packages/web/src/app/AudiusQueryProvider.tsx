@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 
-import { AudiusQueryContext } from '@audius/common/audius-query'
+import { QueryContext } from '@audius/common/api'
 import { FetchNFTClient } from '@audius/fetch-nft'
 import { useDispatch } from 'react-redux'
 
@@ -26,7 +26,7 @@ export const AudiusQueryProvider = (props: AudiusQueryProviderProps) => {
   const { children } = props
   const dispatch = useDispatch()
   return (
-    <AudiusQueryContext.Provider
+    <QueryContext.Provider
       value={{
         audiusBackend: audiusBackendInstance,
         audiusSdk,
@@ -58,6 +58,6 @@ export const AudiusQueryProvider = (props: AudiusQueryProviderProps) => {
       }}
     >
       {children}
-    </AudiusQueryContext.Provider>
+    </QueryContext.Provider>
   )
 }

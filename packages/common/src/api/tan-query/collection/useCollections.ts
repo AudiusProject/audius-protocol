@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
+import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 import { ID } from '~/models'
 import { CommonState } from '~/store'
 
@@ -21,7 +21,7 @@ export const useCollections = (
   collectionIds: ID[] | null | undefined,
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()

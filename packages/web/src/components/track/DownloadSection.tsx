@@ -37,6 +37,7 @@ import { useDispatch } from 'react-redux'
 import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Expandable } from 'components/expandable/Expandable'
+import { Tooltip } from 'components/tooltip'
 import { useIsMobile } from 'hooks/useIsMobile'
 import {
   useRequiresAccountCallback,
@@ -192,9 +193,23 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     }
 
     return (
-      <Button variant='secondary' size='small' onClick={handleDownloadAll}>
-        {messages.downloadAll}
-      </Button>
+      <Tooltip
+        mount='body'
+        placement='left'
+        text={messages.followToDownload}
+        disabled={!shouldDisplayDownloadFollowGated}
+      >
+        <Flex onClick={(e) => e.stopPropagation()}>
+          <Button
+            disabled={shouldDisplayDownloadFollowGated}
+            variant='secondary'
+            size='small'
+            onClick={handleDownloadAll}
+          >
+            {messages.downloadAll}
+          </Button>
+        </Flex>
+      </Tooltip>
     )
   }
 

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useQueryContext } from '@audius/common/api'
 import {
   stripeModalUIActions,
   buyAudioActions,
@@ -26,7 +26,7 @@ const messages = {
 
 export const StripeBuyAudioButton = () => {
   const dispatch = useDispatch()
-  const { solanaWalletService } = useAudiusQueryContext()
+  const { solanaWalletService } = useQueryContext()
 
   const purchaseInfo = useSelector(getAudioPurchaseInfo)
   const amount =

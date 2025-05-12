@@ -7,7 +7,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models'
 import { getUserId } from '~/store/account/selectors'
 
@@ -34,7 +34,7 @@ export const useMutualFollowers = (
   { userId, pageSize = DEFAULT_PAGE_SIZE }: UseMutualFollowersArgs,
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const currentUserId = useSelector(getUserId)
   const queryClient = useQueryClient()
   const dispatch = useDispatch()

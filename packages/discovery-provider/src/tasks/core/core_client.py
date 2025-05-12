@@ -128,13 +128,7 @@ core_instance: Optional[CoreClient] = None
 def get_core_instance() -> CoreClient:
     # pylint: disable=W0603
     global core_instance
-    try:
-        client = AudiusdClient()
-        client.ping()
-        # If no exception, use AudiusdClient
-        if not isinstance(core_instance, AudiusdClient):
-            logger.info("CORE_CLIENT Switching to AudiusdClient.")
-        core_instance = client
-    except Exception:
-        core_instance = CoreClient()
+    if not core_instance:
+        core_instance = AudiusdClient()
+        return core_instance
     return core_instance

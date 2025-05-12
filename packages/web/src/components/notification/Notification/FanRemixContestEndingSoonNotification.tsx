@@ -10,7 +10,6 @@ import { Flex, IconTrophy } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { push } from 'utils/navigation'
-import { fullTrackPage } from 'utils/route'
 
 import { EntityLink } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
@@ -43,7 +42,7 @@ export const FanRemixContestEndingSoonNotification = (
 
   const handleClick = useCallback(() => {
     if (track) {
-      dispatch(push(fullTrackPage(track.permalink)))
+      dispatch(push(track.permalink))
     }
   }, [track, dispatch])
 

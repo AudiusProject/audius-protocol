@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 import { QUERY_KEYS } from '~/api'
 import { fetchEmailInUse } from '~/api/tan-query/users/useEmailInUse'
-import { AudiusQueryContextType } from '~/audius-query/AudiusQueryContext'
+import { QueryContextType } from '~/api/tan-query/utils/QueryContext'
 import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
 import { PurchaseContentPage } from '~/store'
 
@@ -30,7 +30,7 @@ export const messages = {
 }
 
 export const createPurchaseContentSchema = (
-  queryContext: AudiusQueryContextType,
+  queryContext: QueryContextType,
   queryClient: QueryClient,
   page: PurchaseContentPage,
   emailFromLocalStorage?: string

@@ -69,7 +69,6 @@ const setDefaultFolloweeSaves = <T extends TrackMetadata>(track: T) => {
 export const reformat = <T extends TrackMetadata>(track: T): Track => {
   const t = track
   const withoutUser = omit(t, 'user')
-  // audius-query denormalization expects track.user to contain the id of the owner.
   const withUserIdAsUser = { ...withoutUser, user: t.owner_id }
   const withCosign = setIsCoSigned(withUserIdAsUser)
   const withFieldVisibility = setFieldVisibility(withCosign)

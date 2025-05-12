@@ -6,7 +6,12 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { playlistMetadataForUpdateWithSDK } from '~/adapters/collection'
 import { fileToSdk } from '~/adapters/track'
-import { useAudiusQueryContext } from '~/audius-query'
+import {
+  getCollectionQueryKey,
+  getTrackQueryKey,
+  useCurrentUserId
+} from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { isContentUSDCPurchaseGated } from '~/models'
 import { Collection } from '~/models/Collection'
 import { ID } from '~/models/Identifiers'
@@ -16,11 +21,6 @@ import { EditCollectionValues } from '~/store/cache/collections/types'
 import { removeNullable } from '~/utils'
 import { updatePlaylistArtwork } from '~/utils/updatePlaylistArtwork'
 
-import {
-  getCollectionQueryKey,
-  getTrackQueryKey,
-  useCurrentUserId
-} from '../..'
 import { TQCollection } from '../models'
 import { primeCollectionData } from '../utils/primeCollectionData'
 
@@ -41,7 +41,7 @@ export const useUpdateCollection = () => {
   const {
     audiusSdk,
     imageUtils: { generatePlaylistArtwork }
-  } = useAudiusQueryContext()
+  } = useQueryContext()
   const queryClient = useQueryClient()
   const account = useSelector(getAccountUser)
   const dispatch = useDispatch()

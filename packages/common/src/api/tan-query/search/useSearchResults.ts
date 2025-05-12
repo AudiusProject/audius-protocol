@@ -8,7 +8,8 @@ import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { searchResultsFromSDK } from '~/adapters'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useCurrentUserId } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import {
   Name,
   PlaybackSource,
@@ -23,7 +24,6 @@ import { tracksActions as searchResultsPageTracksLineupActions } from '~/store/p
 import { getSearchTracksLineup } from '~/store/pages/search-results/selectors'
 import { Genre, formatMusicalKey } from '~/utils'
 
-import { useCurrentUserId } from '../..'
 import { useLineupQuery } from '../lineups/useLineupQuery'
 import { QUERY_KEYS } from '../queryKeys'
 import {
@@ -124,7 +124,7 @@ const useSearchQueryProps = <T>(
     pageSize,
     ...filters
   }
-  const { audiusSdk, getFeatureEnabled, analytics } = useAudiusQueryContext()
+  const { audiusSdk, getFeatureEnabled, analytics } = useQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 

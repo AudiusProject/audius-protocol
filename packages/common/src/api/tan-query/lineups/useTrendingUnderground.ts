@@ -7,7 +7,7 @@ import {
 import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { PlaybackSource } from '~/models/Analytics'
 import {
   trendingUndergroundPageLineupActions,
@@ -38,7 +38,7 @@ export const useTrendingUnderground = (
   { pageSize = DEFAULT_PAGE_SIZE }: UseTrendingUndergroundArgs = {},
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()

@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 import { QUERY_KEYS } from '~/api'
 import { fetchEmailInUse } from '~/api/tan-query/users/useEmailInUse'
-import { AudiusQueryContextType } from '~/audius-query'
+import { QueryContextType } from '~/api/tan-query/utils'
 
 export const messages = {
   emailRequired: 'Please enter an email.',
@@ -14,7 +14,7 @@ export const messages = {
 }
 
 export const signInSchema = (
-  queryContext: AudiusQueryContextType,
+  queryContext: QueryContextType,
   queryClient: QueryClient
 ) =>
   z.object({

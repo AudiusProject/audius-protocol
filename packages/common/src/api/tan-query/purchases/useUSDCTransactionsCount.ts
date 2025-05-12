@@ -1,7 +1,7 @@
 import { full, Id } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from '../queryKeys'
@@ -29,7 +29,7 @@ export const useUSDCTransactionsCount = (
   args?: UseUSDCTransactionsCountArgs,
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
 
   return useQuery({

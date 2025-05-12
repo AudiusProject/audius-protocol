@@ -1,7 +1,7 @@
 import { Id } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models'
 
 import { QUERY_KEYS } from '../queryKeys'
@@ -15,7 +15,7 @@ export const useSalesCount = (
   userId: ID | null | undefined,
   options?: QueryOptions
 ) => {
-  const context = useAudiusQueryContext()
+  const context = useQueryContext()
   const audiusSdk = context.audiusSdk
 
   return useQuery({
