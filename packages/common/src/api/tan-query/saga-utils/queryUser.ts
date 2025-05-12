@@ -28,7 +28,7 @@ export function* queryUser(id: ID | null | undefined) {
       getUserQueryFn(id!, currentUserId, queryClient, sdk, put)
   })
 
-  return queryData as UserMetadata | undefined
+  return queryData as User | undefined
 }
 
 export function* queryUserByHandle(handle: string) {

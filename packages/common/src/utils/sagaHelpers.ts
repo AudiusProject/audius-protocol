@@ -86,29 +86,6 @@ export function* waitForValue(
   return value
 }
 
-/**
- * Waits for a query function to return a truthy value.
- * Similar to waitForValue but for tanstack query data.
- *
- * @template TResult The type of the value returned by the query function
- * @param {function} query A function that returns a Generator that resolves to a value of type TResult
- * @param {any} args Arguments to pass to the query function
- * @param {(v: TResult) => boolean} customCheck special check to run rather than checking truthy-ness
- * @returns {TResult} The value from the query function once it's truthy
- */
-export function* waitForQueryValue<TResult>(
-  query: (args: any) => Generator<GetContextEffect, TResult | null, any>,
-  args?: any,
-  customCheck?: (value: TResult) => boolean
-) {
-  let value: TResult | null = yield* call(query, args)
-  while (customCheck ? !customCheck(value as TResult) : !value) {
-    yield* take()
-    value = yield* call(query, args)
-  }
-  return value as TResult
-}
-
 function doEveryImpl(millis: number, times: number | null) {
   return eventChannel((emitter) => {
     // Emit once at the start
