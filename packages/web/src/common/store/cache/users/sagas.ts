@@ -1,6 +1,6 @@
 import { userMetadataListFromSDK } from '@audius/common/adapters'
 import { queryUserByHandle } from '@audius/common/api'
-import { Kind, User, UserMetadata } from '@audius/common/models'
+import { Kind, User } from '@audius/common/models'
 import {
   BatchCachedUsers,
   accountSelectors,
@@ -11,7 +11,7 @@ import {
   getContext,
   getSDK
 } from '@audius/common/store'
-import { waitForAccount, waitForValue } from '@audius/common/utils'
+import { waitForAccount } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
 import { mergeWith } from 'lodash'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
