@@ -74,10 +74,14 @@ export const RemixContestSection = ({
           }
         ]
       : []),
-    {
-      text: `${messages.submissions} (${remixCount})`,
-      label: 'submissions'
-    }
+    ...(remixCount
+      ? [
+          {
+            text: `${messages.submissions} (${remixCount})`,
+            label: 'submissions'
+          }
+        ]
+      : [])
   ]
 
   const { tabs: TabBar, body: ContentBody } = useTabs({
@@ -93,12 +97,16 @@ export const RemixContestSection = ({
             </TabBody>
           ]
         : []),
-      <TabBody key='submissions' onHeightChange={handleHeightChange}>
-        <RemixContestSubmissionsTab
-          trackId={trackId}
-          submissions={remixes.slice(0, 10)}
-        />
-      </TabBody>
+      ...(remixCount
+        ? [
+            <TabBody key='submissions' onHeightChange={handleHeightChange}>
+              <RemixContestSubmissionsTab
+                trackId={trackId}
+                submissions={remixes.slice(0, 10)}
+              />
+            </TabBody>
+          ]
+        : [])
     ],
     isMobile: false
   })
@@ -117,7 +125,7 @@ export const RemixContestSection = ({
     navigate(UPLOAD_PAGE, state)
   }, [trackId, navigate])
 
-  if (!trackId || !remixContest || !remixCount) return null
+  if (!trackId || !remixContest) return null
 
   const totalBoxHeight = TAB_BAR_HEIGHT + contentHeight
 
