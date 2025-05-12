@@ -157,7 +157,7 @@ export const BuySellModal = () => {
             <BuyTab
               tokenPair={selectedPair}
               onTransactionDataChange={handleTransactionDataChange}
-              error={false}
+              error={!hasSufficientBalance}
             />
           ) : (
             <SellTab
