@@ -60,7 +60,7 @@ export const DOWNLOADS_AVAILABLE: ExploreCollection = {
   gradient: 'linear-gradient(138deg, #FF00F5 -5.01%, #00D1FF 110.47%)',
   shadow: 'rgba(9, 175, 233, 0.35)',
   icon: IconRemix,
-  link: SEARCH_DOWNLOADS_AVAILABLE, // TODO make a downloads page
+  link: SEARCH_DOWNLOADS_AVAILABLE,
   cardSensitivity: WIDE_CARD_SENSITIVTY
 }
 

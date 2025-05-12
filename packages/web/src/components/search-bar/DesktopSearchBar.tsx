@@ -258,8 +258,7 @@ export const DesktopSearchBar = () => {
   )
 
   const recentSearchOptions = useMemo(() => {
-    console.log('asdf searchHistory', searchHistory)
-    if (!searchHistory) return []
+    if (!searchHistory || inputValue) return []
     const searchHistoryOptions = searchHistory.map((searchItem) => {
       if (searchItem.kind === Kind.USERS) {
         return {
@@ -273,12 +272,22 @@ export const DesktopSearchBar = () => {
         }
       } else if (searchItem.kind === Kind.TRACKS) {
         return {
-          label: <TrackResult trackId={searchItem.id} />,
+          label: (
+            <TrackResult
+              trackId={searchItem.id}
+              onRemove={() => handleClickClear(searchItem)}
+            />
+          ),
           value: searchItem.id
         }
       } else {
         return {
-          label: <CollectionResult collectionId={searchItem.id} />,
+          label: (
+            <CollectionResult
+              collectionId={searchItem.id}
+              onRemove={() => handleClickClear(searchItem)}
+            />
+          ),
           value: searchItem.id
         }
       }
@@ -288,22 +297,22 @@ export const DesktopSearchBar = () => {
         label: 'Recent Searches',
         options: [
           ...searchHistoryOptions,
-          {
-            label: <ClearRecentSearchesButton />,
-            // @ts-expect-error
-            value: 'Clear search'
-          }
+          ...(searchHistoryOptions
+            ? [
+                {
+                  label: <ClearRecentSearchesButton />,
+                  // @ts-expect-error
+                  value: 'Clear search'
+                }
+              ]
+            : [])
         ]
       }
     ]
 
     return baseOptions
-  }, [searchHistory])
-  console.log(
-    'asdf recentSearchOptions',
-    recentSearchOptions,
-    autocompleteOptions
-  )
+  }, [handleClickClear, inputValue, searchHistory])
+
   const showResults = !isSearchPage && !!(data || searchHistory || isLoading)
   // Calculate hasNoResults for the dropdown class name
   const hasNoResults =

@@ -45,7 +45,7 @@
   border-radius: 4px;
   width: 160px;
   box-shadow: 0 2px 5px 0 var(--search-bar-shadow);
-  background-color: red;
+  background-color: var(--search-bar-background);
   transition:
     width 0.2s ease-in-out,
     background 0.04s ease-in-out;
@@ -125,7 +125,7 @@
 
 .searchBox :global(.ant-select-item-option) {
   margin: auto 8px;
-  padding: 0px 8px;
+  padding: 0px;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -341,7 +341,7 @@
 }
 
 .removeIcon{opacity: 0}
-.removeIcon :global(.ant-select-item-option.ant-select-item-option-active) {
+:global(.ant-select-item-option.ant-select-item-option-active) .removeIcon{
   opacity: 1;
 }
 
