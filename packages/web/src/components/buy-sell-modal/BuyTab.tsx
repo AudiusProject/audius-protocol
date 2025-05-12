@@ -13,9 +13,14 @@ type BuyTabProps = {
     outputAmount: number
     isValid: boolean
   }) => void
+  error?: boolean
 }
 
-export const BuyTab = ({ tokenPair, onTransactionDataChange }: BuyTabProps) => {
+export const BuyTab = ({
+  tokenPair,
+  onTransactionDataChange,
+  error
+}: BuyTabProps) => {
   // Extract the tokens from the pair
   const { baseToken, quoteToken } = tokenPair
   // Fetch real USDC balance
@@ -43,6 +48,7 @@ export const BuyTab = ({ tokenPair, onTransactionDataChange }: BuyTabProps) => {
         formatError: () => 'Insufficient balance'
       }}
       onTransactionDataChange={onTransactionDataChange}
+      error={error}
     />
   )
 }

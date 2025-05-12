@@ -8,6 +8,7 @@ export const buySellMessages = {
   amountAUDIO: 'Amount (AUDIO)',
   max: 'MAX',
   available: 'Available',
+  addCash: 'Add Cash',
   audioTicker: '$AUDIO',
   usdcTicker: 'USDC',
   continue: 'Continue',
@@ -18,5 +19,9 @@ export const buySellMessages = {
   buySuccess: 'Successfully purchased AUDIO!',
   sellSuccess: 'Successfully sold AUDIO!',
   transactionSuccess: 'Transaction successful!',
-  transactionFailed: 'Transaction failed. Please try again.'
+  transactionFailed: 'Transaction failed. Please try again.',
+  insufficientUSDC:
+    "You don't have the available balance required to complete this purchase.",
+  insufficientAUDIOForSale:
+    "You don't have the available balance required to complete this sale."
 }
