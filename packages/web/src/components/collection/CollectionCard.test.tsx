@@ -48,65 +48,7 @@ const testCollection = {
   }
 }
 
-const server = setupServer(
-  http.get('http://audius-protocol-discovery-provider-1/health_check', () => {
-    return HttpResponse.json({
-      data: {
-        service: 'discovery-node',
-        version: '1.0.0',
-        healthy: true,
-        chain_health: { status: 'healthy' },
-        latest_block_num: 1000,
-        latest_indexed_block_num: 999,
-        block_difference: 1,
-        maximum_healthy_block_difference: 15,
-        meets_min_requirements: true,
-        network: {
-          content_nodes: [],
-          discovery_nodes: [],
-          discovery_nodes_with_owner: []
-        }
-      }
-    })
-  }),
-  http.get(
-    'http://audius-protocol-discovery-provider-1/v1/full/playlists',
-    ({ request }) => {
-      const url = new URL(request.url)
-      const id = url.searchParams.get('id')
-      if (id === '7eP5n') {
-        return HttpResponse.json({ data: [testCollection] })
-      }
-      return new HttpResponse(null, { status: 404 })
-    }
-  ),
-  http.get(
-    'http://audius-protocol-creator-node-1/image-collection-small.jpg',
-    () => {
-      return new HttpResponse(
-        new Blob(['mock image content'], { type: 'image/jpeg' }),
-        {
-          headers: {
-            'Content-Type': 'image/jpeg'
-          }
-        }
-      )
-    }
-  ),
-  http.get(
-    'http://audius-protocol-creator-node-1/image-collection-medium.jpg',
-    () => {
-      return new HttpResponse(
-        new Blob(['mock image content'], { type: 'image/jpeg' }),
-        {
-          headers: {
-            'Content-Type': 'image/jpeg'
-          }
-        }
-      )
-    }
-  )
-)
+const server = setupServer()
 
 const renderCollectionCard = (overrides = {}) => {
   const collection = { ...testCollection, ...overrides }
