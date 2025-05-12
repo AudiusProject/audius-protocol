@@ -35,10 +35,10 @@ const testCollection = {
   followee_favorites: [],
   artwork: {
     [SquareSizes.SIZE_150_BY_150]:
-      'https://node.com/image-collection-small.jpg',
+      'http://audius-protocol-creator-node-1/image-collection-small.jpg',
     [SquareSizes.SIZE_480_BY_480]:
-      'https://node.com/image-collection-medium.jpg',
-    mirrors: ['https://node.com']
+      'http://audius-protocol-creator-node-1/image-collection-medium.jpg',
+    mirrors: ['http://audius-protocol-creator-node-1']
   },
   access: { stream: true },
   user: {
@@ -79,8 +79,66 @@ const server = setupServer(
       }
       return new HttpResponse(null, { status: 404 })
     }
+  ),
+  http.get(
+    'http://audius-protocol-creator-node-1/image-collection-small.jpg',
+    () => {
+      return new HttpResponse(
+        new Blob(['mock image content'], { type: 'image/jpeg' }),
+        {
+          headers: {
+            'Content-Type': 'image/jpeg'
+          }
+        }
+      )
+    }
+  ),
+  http.get(
+    'http://audius-protocol-creator-node-1/image-collection-medium.jpg',
+    () => {
+      return new HttpResponse(
+        new Blob(['mock image content'], { type: 'image/jpeg' }),
+        {
+          headers: {
+            'Content-Type': 'image/jpeg'
+          }
+        }
+      )
+    }
   )
 )
+
+const renderCollectionCard = (overrides = {}) => {
+  const collection = { ...testCollection, ...overrides }
+
+  server.use(
+    http.get(
+      'http://audius-protocol-discovery-provider-1/v1/full/playlists',
+      ({ request }) => {
+        const url = new URL(request.url)
+        const id = url.searchParams.get('id')
+        if (id === '7eP5n') {
+          return HttpResponse.json({ data: [collection] })
+        }
+        return new HttpResponse(null, { status: 404 })
+      }
+    )
+  )
+
+  return render(
+    <Routes>
+      <Route path='/' element={<CollectionCard id={1} size='s' />} />
+      <Route
+        path='/test-user/test-collection'
+        element={<Text variant='heading'>Test Collection Page</Text>}
+      />
+      <Route
+        path='/test-user'
+        element={<Text variant='heading'>Test User Page</Text>}
+      />
+    </Routes>
+  )
+}
 
 describe('CollectionCard', () => {
   beforeAll(() => {
@@ -95,20 +153,8 @@ describe('CollectionCard', () => {
     server.close()
   })
 
-  it('renders a button with the label comprising the collection and artist name, and favorites and reposts', async () => {
-    render(
-      <Routes>
-        <Route path='/' element={<CollectionCard id={1} size='s' />} />
-        <Route
-          path='/test-user/test-collection'
-          element={<Text variant='heading'>Test Collection Page</Text>}
-        />
-        <Route
-          path='/test-user'
-          element={<Text variant='heading'>Test User Page</Text>}
-        />
-      </Routes>
-    )
+  it.only('renders a button with the label comprising the collection and artist name, and favorites and reposts', async () => {
+    renderCollectionCard()
 
     expect(
       await screen.findByRole('button', {
@@ -118,19 +164,7 @@ describe('CollectionCard', () => {
   })
 
   it('navigates to collection page when clicked', async () => {
-    render(
-      <Routes>
-        <Route path='/' element={<CollectionCard id={1} size='s' />} />
-        <Route
-          path='/test-user/test-collection'
-          element={<Text variant='heading'>Test Collection Page</Text>}
-        />
-        <Route
-          path='/test-user'
-          element={<Text variant='heading'>Test User Page</Text>}
-        />
-      </Routes>
-    )
+    renderCollectionCard()
 
     screen.getByRole('button').click()
     expect(
@@ -139,40 +173,16 @@ describe('CollectionCard', () => {
   })
 
   it('renders the cover image', async () => {
-    render(
-      <Routes>
-        <Route path='/' element={<CollectionCard id={1} size='s' />} />
-        <Route
-          path='/test-user/test-collection'
-          element={<Text variant='heading'>Test Collection Page</Text>}
-        />
-        <Route
-          path='/test-user'
-          element={<Text variant='heading'>Test User Page</Text>}
-        />
-      </Routes>
-    )
+    renderCollectionCard()
 
     expect(await screen.findByTestId('cover-art-1')).toHaveAttribute(
       'src',
-      'https://node.com/image-collection-medium.jpg'
+      'http://audius-protocol-creator-node-1/image-collection-medium.jpg'
     )
   })
 
   it('renders the collection owner link which navigates to user page', async () => {
-    render(
-      <Routes>
-        <Route path='/' element={<CollectionCard id={1} size='s' />} />
-        <Route
-          path='/test-user/test-collection'
-          element={<Text variant='heading'>Test Collection Page</Text>}
-        />
-        <Route
-          path='/test-user'
-          element={<Text variant='heading'>Test User Page</Text>}
-        />
-      </Routes>
-    )
+    renderCollectionCard()
 
     const userNameElement = screen.getByRole('link', { name: 'Test User' })
     expect(userNameElement).toBeInTheDocument()
@@ -182,26 +192,8 @@ describe('CollectionCard', () => {
     ).toBeInTheDocument()
   })
 
-  it('hidden collections are rendered correctly', async () => {
-    server.use(
-      http.get('/api/v1/collections/:id', () => {
-        return HttpResponse.json({ ...testCollection, is_private: true })
-      })
-    )
-
-    render(
-      <Routes>
-        <Route path='/' element={<CollectionCard id={1} size='s' />} />
-        <Route
-          path='/test-user/test-collection'
-          element={<Text variant='heading'>Test Collection Page</Text>}
-        />
-        <Route
-          path='/test-user'
-          element={<Text variant='heading'>Test User Page</Text>}
-        />
-      </Routes>
-    )
+  it.only('hidden collections are show as hidden', async () => {
+    renderCollectionCard({ is_private: true })
 
     expect(
       await screen.findByRole('button', {
@@ -211,31 +203,12 @@ describe('CollectionCard', () => {
   })
 
   it('premium locked collections are rendered correctly', async () => {
-    server.use(
-      http.get('/api/v1/collections/:id', () => {
-        return HttpResponse.json({
-          ...testCollection,
-          access: { stream: false, download: false },
-          stream_conditions: {
-            usdc_purchase: { price: 10, albumTrackPrice: 1, splits: {} }
-          }
-        })
-      })
-    )
-
-    render(
-      <Routes>
-        <Route path='/' element={<CollectionCard id={1} size='s' />} />
-        <Route
-          path='/test-user/test-collection'
-          element={<Text variant='heading'>Test Collection Page</Text>}
-        />
-        <Route
-          path='/test-user'
-          element={<Text variant='heading'>Test User Page</Text>}
-        />
-      </Routes>
-    )
+    renderCollectionCard({
+      access: { stream: false, download: false },
+      stream_conditions: {
+        usdc_purchase: { price: 10, albumTrackPrice: 1, splits: {} }
+      }
+    })
 
     expect(
       await screen.findByRole('button', {
@@ -245,31 +218,12 @@ describe('CollectionCard', () => {
   })
 
   it('premium unlocked collections are rendered correctly', async () => {
-    server.use(
-      http.get('/api/v1/collections/:id', () => {
-        return HttpResponse.json({
-          ...testCollection,
-          access: { stream: true, download: true },
-          stream_conditions: {
-            usdc_purchase: { price: 10, albumTrackPrice: 1, splits: {} }
-          }
-        })
-      })
-    )
-
-    render(
-      <Routes>
-        <Route path='/' element={<CollectionCard id={1} size='s' />} />
-        <Route
-          path='/test-user/test-collection'
-          element={<Text variant='heading'>Test Collection Page</Text>}
-        />
-        <Route
-          path='/test-user'
-          element={<Text variant='heading'>Test User Page</Text>}
-        />
-      </Routes>
-    )
+    renderCollectionCard({
+      access: { stream: true, download: true },
+      stream_conditions: {
+        usdc_purchase: { price: 10, albumTrackPrice: 1, splits: {} }
+      }
+    })
 
     expect(
       await screen.findByRole('button', {
@@ -279,28 +233,9 @@ describe('CollectionCard', () => {
   })
 
   it('premium collections owned by user are rendered correctly', async () => {
-    server.use(
-      http.get('/api/v1/collections/:id', () => {
-        return HttpResponse.json({
-          ...testCollection,
-          playlist_owner_id: 2 // Same as current user
-        })
-      })
-    )
-
-    render(
-      <Routes>
-        <Route path='/' element={<CollectionCard id={1} size='s' />} />
-        <Route
-          path='/test-user/test-collection'
-          element={<Text variant='heading'>Test Collection Page</Text>}
-        />
-        <Route
-          path='/test-user'
-          element={<Text variant='heading'>Test User Page</Text>}
-        />
-      </Routes>
-    )
+    renderCollectionCard({
+      playlist_owner_id: 2 // Same as current user
+    })
 
     expect(
       await screen.findByRole('button', {

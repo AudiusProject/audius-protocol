@@ -1,4 +1,4 @@
-import { rest } from 'msw'
+import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import {
   expect,
@@ -29,7 +29,7 @@ const discoveryNode = 'https://discovery-provider.audius.co'
 const logger = new Logger()
 
 const mswHandlers = [
-  rest.get(`${discoveryNode}/health_check`, (_req, res, ctx) => {
+  http.get(`${discoveryNode}/health_check`, () => {
     const data: HealthCheckResponseData = {
       service: 'discovery-node',
       version: '1.2.3',
@@ -42,21 +42,18 @@ const mswHandlers = [
       }
     }
 
-    return res(
-      ctx.status(200),
-      ctx.json({
-        data,
-        comms: { healthy: true }
-      })
-    )
+    return HttpResponse.json({
+      data,
+      comms: { healthy: true }
+    })
   }),
 
-  rest.get(`${storageNodeA.endpoint}/health_check`, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json({ data: { diskHasSpace: true } }))
+  http.get(`${storageNodeA.endpoint}/health_check`, () => {
+    return HttpResponse.json({ data: { diskHasSpace: true } })
   }),
 
-  rest.get(`${storageNodeB.endpoint}/health_check`, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json({ data: { diskHasSpace: true } }))
+  http.get(`${storageNodeB.endpoint}/health_check`, () => {
+    return HttpResponse.json({ data: { diskHasSpace: true } })
   })
 ]
 
@@ -94,8 +91,8 @@ describe('StorageNodeSelector', () => {
 
   it('selects the first healthy node', async () => {
     server.use(
-      rest.get(`${storageNodeA.endpoint}/health_check`, (_req, res, ctx) => {
-        return res(ctx.status(400))
+      http.get(`${storageNodeA.endpoint}/health_check`, () => {
+        return new HttpResponse(null, { status: 400 })
       })
     )
     const bootstrapNodes = [storageNodeA, storageNodeB]
@@ -129,13 +126,13 @@ describe('StorageNodeSelector', () => {
 
   it('tries selecting all nodes', async () => {
     server.use(
-      rest.get(`${storageNodeA.endpoint}/health_check`, (_req, res, ctx) => {
-        return res(ctx.status(400))
+      http.get(`${storageNodeA.endpoint}/health_check`, () => {
+        return new HttpResponse(null, { status: 400 })
       })
     )
     server.use(
-      rest.get(`${storageNodeB.endpoint}/health_check`, (_req, res, ctx) => {
-        return res(ctx.status(400))
+      http.get(`${storageNodeB.endpoint}/health_check`, () => {
+        return new HttpResponse(null, { status: 400 })
       })
     )
     const bootstrapNodes = [storageNodeA, storageNodeB]

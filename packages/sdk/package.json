@@ -140,7 +140,7 @@
     "crypto-browserify": "^3.12.0",
     "esm": "3.2.25",
     "ethereumjs-wallet": "^1.0.2",
-    "msw": "1.3.1",
+    "msw": "2.7.6",
     "patch-package": "6.5.0",
     "prettier": "3.4.2",
     "prettier-config-standard": "7.0.0",

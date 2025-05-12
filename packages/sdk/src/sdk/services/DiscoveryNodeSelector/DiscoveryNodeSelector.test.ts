@@ -1,5 +1,5 @@
 import shuffle from 'lodash/shuffle'
-import { rest } from 'msw'
+import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import {
   describe,
@@ -73,115 +73,98 @@ const healthyComms = {
 }
 
 const handlers = [
-  rest.get(
-    /https:\/\/healthy(.*).audius.co\/health_check/,
-    (_req, res, ctx) => {
-      const data: HealthCheckResponseData = {
-        service: 'discovery-node',
-        version: '1.2.3',
-        block_difference: 0,
-        network: {
-          discovery_nodes: NETWORK_DISCOVERY_NODES
-        }
+  http.get(/https:\/\/healthy(.*).audius.co\/health_check/, async () => {
+    const data: HealthCheckResponseData = {
+      service: 'discovery-node',
+      version: '1.2.3',
+      block_difference: 0,
+      network: {
+        discovery_nodes: NETWORK_DISCOVERY_NODES
       }
-      return res(
-        ctx.delay(25),
-        ctx.status(200),
-        ctx.json({ data, comms: healthyComms })
-      )
     }
-  ),
+    await new Promise((resolve) => setTimeout(resolve, 25))
+    return HttpResponse.json({ data, comms: healthyComms })
+  }),
 
   // Slower healthy
-  rest.get(
-    /https:\/\/healthy-slow(.*).audius.co\/health_check/,
-    (_req, res, ctx) => {
-      return res(
-        ctx.delay(50),
-        ctx.status(200),
-        ctx.json({
-          data: {
-            service: 'discovery-node',
-            version: '1.2.3',
-            block_difference: 0
-          },
-          comms: healthyComms
-        })
-      )
-    }
-  ),
+  http.get(/https:\/\/healthy-slow(.*).audius.co\/health_check/, async () => {
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    return HttpResponse.json({
+      data: {
+        service: 'discovery-node',
+        version: '1.2.3',
+        block_difference: 0
+      },
+      comms: healthyComms
+    })
+  }),
 
-  rest.get(`${BEHIND_BLOCKDIFF_NODE}/health_check`, (_req, res, ctx) => {
+  http.get(`${BEHIND_BLOCKDIFF_NODE}/health_check`, () => {
     const data: HealthCheckResponseData = {
       service: 'discovery-node',
       version: '1.2.3',
       block_difference: 50
     }
-    return res(ctx.status(200), ctx.json({ data, comms: healthyComms }))
+    return HttpResponse.json({ data, comms: healthyComms })
   }),
 
-  rest.get(`${BEHIND_LARGE_BLOCKDIFF_NODE}/health_check`, (_req, res, ctx) => {
+  http.get(`${BEHIND_LARGE_BLOCKDIFF_NODE}/health_check`, () => {
     const data: HealthCheckResponseData = {
       service: 'discovery-node',
       version: '1.2.3',
       block_difference: 200
     }
-    return res(ctx.status(200), ctx.json({ data, comms: healthyComms }))
+    return HttpResponse.json({ data, comms: healthyComms })
   }),
 
-  rest.get(`${BEHIND_PATCH_VERSION_NODE}/health_check`, (_req, res, ctx) => {
+  http.get(`${BEHIND_PATCH_VERSION_NODE}/health_check`, () => {
     const data: HealthCheckResponseData = {
       service: 'discovery-node',
       version: '1.2.2',
       block_difference: 0
     }
-    return res(ctx.status(200), ctx.json({ data, comms: healthyComms }))
+    return HttpResponse.json({ data, comms: healthyComms })
   }),
 
-  rest.get(
-    `${BEHIND_EARLIER_PATCH_VERSION_NODE}/health_check`,
-    (_req, res, ctx) => {
-      const data: HealthCheckResponseData = {
-        service: 'discovery-node',
-        version: '1.2.2',
-        block_difference: 0
-      }
-      return res(ctx.status(200), ctx.json({ data, comms: healthyComms }))
+  http.get(`${BEHIND_EARLIER_PATCH_VERSION_NODE}/health_check`, () => {
+    const data: HealthCheckResponseData = {
+      service: 'discovery-node',
+      version: '1.2.2',
+      block_difference: 0
     }
-  ),
+    return HttpResponse.json({ data, comms: healthyComms })
+  }),
 
-  rest.get(`${BEHIND_MINOR_VERSION_NODE}/health_check`, (_req, res, ctx) => {
+  http.get(`${BEHIND_MINOR_VERSION_NODE}/health_check`, () => {
     const data: HealthCheckResponseData = {
       service: 'discovery-node',
       version: '1.1.0',
       block_difference: 0
     }
-    return res(ctx.status(200), ctx.json({ data, comms: healthyComms }))
+    return HttpResponse.json({ data, comms: healthyComms })
   }),
 
   // Unhealthy (offline)
-  rest.get(
-    /https:\/\/unhealthy(.*).audius.co\/health_check/,
-    (_req, res, _ctx) => {
-      return res.networkError('')
-    }
-  ),
-
-  rest.get(`${UNHEALTHY_DATA_NODE}/health_check`, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(null))
+  http.get(/https:\/\/unhealthy(.*).audius.co\/health_check/, () => {
+    return HttpResponse.error()
   }),
 
-  rest.get(`${UNRESPONSIVE_NODE}/health_check`, (_req, res, ctx) => {
-    return res(ctx.delay('infinite'))
+  http.get(`${UNHEALTHY_DATA_NODE}/health_check`, () => {
+    return HttpResponse.json(null)
   }),
 
-  rest.get(`${CONTENT_NODE}/health_check`, (_req, res, ctx) => {
+  http.get(`${UNRESPONSIVE_NODE}/health_check`, async () => {
+    await new Promise(() => {}) // Never resolves
+    return new HttpResponse(null)
+  }),
+
+  http.get(`${CONTENT_NODE}/health_check`, () => {
     const data: HealthCheckResponseData = {
       service: 'content-node',
       version: '1.2.3',
       block_difference: 0
     }
-    return res(ctx.json({ data, comms: healthyComms }))
+    return HttpResponse.json({ data, comms: healthyComms })
   })
 ]
 const server = setupServer(...handlers)
@@ -425,17 +408,14 @@ describe('discoveryNodeSelector', () => {
     })
     let requestCount = 0
     server.use(
-      rest.get(
-        `${TEMP_BEHIND_BLOCKDIFF_NODE}/health_check`,
-        (_req, res, ctx) => {
-          const data: HealthCheckResponseData = {
-            service: 'discovery-node',
-            version: '1.2.3',
-            block_difference: requestCount++ < 1 ? 50 : 0 // switch to healthy
-          }
-          return res(ctx.status(200), ctx.json({ data, comms: healthyComms }))
+      http.get(`${TEMP_BEHIND_BLOCKDIFF_NODE}/health_check`, () => {
+        const data: HealthCheckResponseData = {
+          service: 'discovery-node',
+          version: '1.2.3',
+          block_difference: requestCount++ < 1 ? 50 : 0 // switch to healthy
         }
-      )
+        return HttpResponse.json({ data, comms: healthyComms })
+      })
     )
 
     // First select healthy node
@@ -601,13 +581,10 @@ describe('discoveryNodeSelector', () => {
       }
 
       server.use(
-        rest.get(`${HEALTHY_NODE}/v1/full/tracks`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: {}
-            })
-          )
+        http.get(`${HEALTHY_NODE}/v1/full/tracks`, () => {
+          return HttpResponse.json({
+            data: {}
+          })
         })
       )
 
@@ -646,13 +623,10 @@ describe('discoveryNodeSelector', () => {
         }
       }
       server.use(
-        rest.get(`${HEALTHY_NODE}/v1/full/tracks`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: {}
-            })
-          )
+        http.get(`${HEALTHY_NODE}/v1/full/tracks`, () => {
+          return HttpResponse.json({
+            data: {}
+          })
         })
       )
 
@@ -752,7 +726,7 @@ describe('discoveryNodeSelector', () => {
 
       let requestCount = 0
       server.use(
-        rest.get(`${BEHIND_BLOCKDIFF_NODE}/health_check`, (_req, res, ctx) => {
+        http.get(`${BEHIND_BLOCKDIFF_NODE}/health_check`, async () => {
           const data: HealthCheckResponseData = {
             service: 'discovery-node',
             version: '1.2.3',
@@ -765,24 +739,19 @@ describe('discoveryNodeSelector', () => {
               ].map(addDelegateOwnerWallets)
             }
           }
-          return requestCount++ > 0
-            ? res.networkError('')
-            : res(
-                ctx.delay(25),
-                ctx.status(200),
-                ctx.json({ data, comms: healthyComms })
-              )
+          if (requestCount++ > 0) {
+            return HttpResponse.error()
+          }
+          await new Promise((resolve) => setTimeout(resolve, 25))
+          return HttpResponse.json({ data, comms: healthyComms })
         })
       )
 
       server.use(
-        rest.get(`${HEALTHY_NODE}/v1/full/tracks`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: {}
-            })
-          )
+        http.get(`${HEALTHY_NODE}/v1/full/tracks`, () => {
+          return HttpResponse.json({
+            data: {}
+          })
         })
       )
 

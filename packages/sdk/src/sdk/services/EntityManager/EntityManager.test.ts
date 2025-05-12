@@ -1,4 +1,4 @@
-import { rest } from 'msw'
+import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import type { Hex } from 'viem'
 import {
@@ -32,20 +32,18 @@ const audiusWalletClient = createAppWalletClient({ apiKey: userWallet }).extend(
 )
 
 const mswHandlers = [
-  rest.post(`${discoveryNode}/relay`, (_req, res, ctx) => {
-    return res(
-      ctx.status(200),
-      ctx.json({
-        receipt: {
-          blockHash: '',
-          blockNumber: 1
-        }
-      })
-    )
+  http.post(`${discoveryNode}/relay`, () => {
+    return HttpResponse.json({
+      receipt: {
+        blockHash: '',
+        blockNumber: 1
+      }
+    })
   }),
 
-  rest.get(`${discoveryNode}/block_confirmation`, (req, res, ctx) => {
-    const blockNumber = req.url.searchParams.get('blocknumber')
+  http.get(`${discoveryNode}/block_confirmation`, ({ request }) => {
+    const url = new URL(request.url)
+    const blockNumber = url.searchParams.get('blocknumber')
 
     const data = {
       0: {
@@ -56,12 +54,9 @@ const mswHandlers = [
       }
     }[Number(blockNumber)!]
 
-    return res(
-      ctx.status(200),
-      ctx.json({
-        data
-      })
-    )
+    return HttpResponse.json({
+      data
+    })
   })
 ]
 

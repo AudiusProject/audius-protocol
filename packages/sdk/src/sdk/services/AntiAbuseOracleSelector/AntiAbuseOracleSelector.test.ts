@@ -1,4 +1,4 @@
-import { rest } from 'msw'
+import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
 
@@ -11,25 +11,21 @@ const UNREGISTERED_NODE = 'https://unregistered-aao.audius.co'
 const registeredAddresses = ['0x11111111']
 
 const handlers = [
-  rest.get(`${HEALTHY_NODE}/health_check`, (_req, res, ctx) => {
-    return res(
-      ctx.json({
-        walletPubkey: registeredAddresses[0]
-      })
-    )
+  http.get(`${HEALTHY_NODE}/health_check`, () => {
+    return HttpResponse.json({
+      walletPubkey: registeredAddresses[0]
+    })
   }),
-  rest.get(`${OFFLINE_NODE}/health_check`, (_req, res, _ctx) => {
-    return res.networkError('')
+  http.get(`${OFFLINE_NODE}/health_check`, () => {
+    return HttpResponse.error()
   }),
-  rest.get(`${UNHEALTHY_NODE}/health_check`, (_req, res, ctx) => {
-    return res(ctx.status(500))
+  http.get(`${UNHEALTHY_NODE}/health_check`, () => {
+    return new HttpResponse(null, { status: 500 })
   }),
-  rest.get(`${UNREGISTERED_NODE}/health_check`, (_req, res, ctx) => {
-    return res(
-      ctx.json({
-        walletPubkey: '0x12345'
-      })
-    )
+  http.get(`${UNREGISTERED_NODE}/health_check`, () => {
+    return HttpResponse.json({
+      walletPubkey: '0x12345'
+    })
   })
 ]
 const server = setupServer(...handlers)

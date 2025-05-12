@@ -4,14 +4,12 @@ import { QueryContext, QueryContextType } from '@audius/common/api'
 import { AppContext } from '@audius/common/context'
 import { FeatureFlags } from '@audius/common/services'
 import { ThemeProvider } from '@audius/harmony'
-import { sdk } from '@audius/sdk'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { render, RenderOptions } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import { Router } from 'react-router-dom'
 import { CompatRouter } from 'react-router-dom-v5-compat'
 import { PartialDeep } from 'type-fest'
-import { vi } from 'vitest'
 
 import {
   HistoryContext,
@@ -26,7 +24,7 @@ import { configureStore } from 'store/configureStore'
 import { AppState } from 'store/types'
 
 import { createMockAppContext } from './mocks/app-context'
-// import { audiusSdk } from 'services/audius-sdk'
+import { audiusSdk } from './mocks/audiusSdk'
 
 type TestOptions = {
   reduxState?: PartialDeep<AppState>
@@ -56,25 +54,6 @@ export const ReduxProvider = ({
 
 type TestProvidersProps = {
   children: ReactNode
-}
-
-const audiusSdk = () => {
-  return sdk({
-    appName: 'test',
-    environment: 'development',
-    services: {
-      claimableTokensClient: vi.fn(),
-      rewardManagerClient: vi.fn(),
-      paymentRouterClient: vi.fn(),
-      storageNodeSelector: vi.fn(),
-      audiusWalletClient: {
-        signMessage: vi.fn(),
-        getAddresses: vi
-          .fn()
-          .mockResolvedValue(['0x0000000000000000000000000000000000000000'])
-      }
-    }
-  })
 }
 
 const TestProviders =

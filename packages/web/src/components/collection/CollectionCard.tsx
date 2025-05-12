@@ -55,7 +55,6 @@ export const CollectionCard = forwardRef(
 
     const { data: currentUserId } = useCurrentUserId()
     const { data: collection, isPending } = useCollection(id)
-    console.log('getting collection!', collection)
 
     const {
       playlist_name,

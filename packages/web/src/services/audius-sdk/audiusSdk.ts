@@ -26,107 +26,93 @@ const SDK_LOADED_EVENT_NAME = 'AUDIUS_SDK_LOADED'
 export const initSdk = async () => {
   inProgress = true
 
-  try {
-    // For now, the only solana relay we want to use is on DN 1, so hardcode
-    // the selection there.
-    console.log('initSdk: creating solana relay')
-    const solanaRelay = new SolanaRelay(
-      new Configuration({
-        basePath: '/solana',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        middleware: [
-          {
-            pre: async (context) => {
-              const endpoint = env.SOLANA_RELAY_ENDPOINT
-              const url = `${endpoint}${context.url}`
-              return { url, init: context.init }
-            }
+  // For now, the only solana relay we want to use is on DN 1, so hardcode
+  // the selection there.
+  const solanaRelay = new SolanaRelay(
+    new Configuration({
+      basePath: '/solana',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      middleware: [
+        {
+          pre: async (context) => {
+            const endpoint = env.SOLANA_RELAY_ENDPOINT
+            const url = `${endpoint}${context.url}`
+            return { url, init: context.init }
           }
-        ]
-      })
-    )
-    console.log('initSdk: creating archiver service')
-    const archiverService = new ArchiverService(
-      new Configuration({
-        basePath: '/archive',
-        middleware: [
-          {
-            pre: async (context) => {
-              const endpoint = env.ARCHIVE_ENDPOINT
-              const url = `${endpoint}${context.url}`
-              return { url, init: context.init }
-            }
-          }
-        ]
-      })
-    )
-    // Overrides some DN configuration from optimizely
-    console.log('initSdk: creating discovery node selector')
-    const discoveryNodeSelector =
-      await discoveryNodeSelectorService.getInstance()
+        }
+      ]
+    })
+  )
 
-    // Set up a relay to identity for Ethereum RPC requests so that identity can
-    // pay for gas fees on approved transactions.
-    console.log('initSdk: creating audius wallet client')
-    const audiusWalletClient = await getAudiusWalletClient()
-    console.log('initSdk: creating eth wallet client')
-    const ethWalletClient = createWalletClient({
-      account: '0x0000000000000000000000000000000000000000', // dummy replaced by relay DO NOT REMOVE
-      chain: mainnet,
-      transport: custom({
-        request: async (request) => {
-          const message = `signature:${new Date().getTime()}`
-          const signature = await audiusWalletClient.signMessage({ message })
-          const rpcClient = getHttpRpcClient(
-            `${env.IDENTITY_SERVICE}/ethereum/rpc`,
-            {
-              fetchOptions: {
-                headers: {
-                  'Encoded-Data-Message': message,
-                  'Encoded-Data-Signature': signature
-                }
+  const archiverService = new ArchiverService(
+    new Configuration({
+      basePath: '/archive',
+      middleware: [
+        {
+          pre: async (context) => {
+            const endpoint = env.ARCHIVE_ENDPOINT
+            const url = `${endpoint}${context.url}`
+            return { url, init: context.init }
+          }
+        }
+      ]
+    })
+  )
+  // Overrides some DN configuration from optimizely
+  const discoveryNodeSelector = await discoveryNodeSelectorService.getInstance()
+
+  // Set up a relay to identity for Ethereum RPC requests so that identity can
+  // pay for gas fees on approved transactions.
+  const audiusWalletClient = await getAudiusWalletClient()
+  const ethWalletClient = createWalletClient({
+    account: '0x0000000000000000000000000000000000000000', // dummy replaced by relay DO NOT REMOVE
+    chain: mainnet,
+    transport: custom({
+      request: async (request) => {
+        const message = `signature:${new Date().getTime()}`
+        const signature = await audiusWalletClient.signMessage({ message })
+        const rpcClient = getHttpRpcClient(
+          `${env.IDENTITY_SERVICE}/ethereum/rpc`,
+          {
+            fetchOptions: {
+              headers: {
+                'Encoded-Data-Message': message,
+                'Encoded-Data-Signature': signature
               }
             }
-          )
-          return await rpcClient.request(request)
-        }
-      })
-    })
-    console.log('initSdk: creating audius sdk')
-    const audiusSdk = sdk({
-      appName: env.APP_NAME,
-      apiKey: env.API_KEY,
-      environment: env.ENVIRONMENT,
-      services: {
-        discoveryNodeSelector,
-        solanaRelay,
-        audiusWalletClient,
-        ethWalletClient,
-        archiverService
+          }
+        )
+        return await rpcClient.request(request)
       }
     })
-    console.debug('[audiusSdk] SDK initted.')
-    window.audiusSdk = audiusSdk
-    inProgress = false
-    window.dispatchEvent(new CustomEvent(SDK_LOADED_EVENT_NAME))
-    return audiusSdk
-  } catch (e) {
-    console.error('[audiusSdk] Error initting SDK', e)
-    throw e
-  }
+  })
+  const audiusSdk = sdk({
+    appName: env.APP_NAME,
+    apiKey: env.API_KEY,
+    environment: env.ENVIRONMENT,
+    services: {
+      discoveryNodeSelector,
+      solanaRelay,
+      audiusWalletClient,
+      ethWalletClient,
+      archiverService
+    }
+  })
+  console.debug('[audiusSdk] SDK initted.')
+  window.audiusSdk = audiusSdk
+  inProgress = false
+  window.dispatchEvent(new CustomEvent(SDK_LOADED_EVENT_NAME))
+  return audiusSdk
 }
 
 export const audiusSdk = async () => {
-  console.log('audiusSdk loading')
   if (inProgress) {
-    console.log('audiusSdk in progress')
     await new Promise((resolve) => {
       window.addEventListener(SDK_LOADED_EVENT_NAME, resolve)
     })
   } else if (!window.audiusSdk) {
-    console.log('initting the hard way')
     return await initSdk()
   }
   return window.audiusSdk
