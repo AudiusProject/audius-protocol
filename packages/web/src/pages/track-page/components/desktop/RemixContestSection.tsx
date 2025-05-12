@@ -3,7 +3,6 @@ import { useState, useCallback } from 'react'
 import { useRemixContest, useRemixes } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { UPLOAD_PAGE } from '@audius/common/src/utils/route'
-import { remixesPageSelectors } from '@audius/common/store'
 import {
   Box,
   Button,
@@ -15,7 +14,6 @@ import {
   Text
 } from '@audius/harmony'
 
-import { useSelector } from 'common/hooks/useSelector'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import useTabs from 'hooks/useTabs/useTabs'
@@ -40,8 +38,6 @@ type RemixContestSectionProps = {
   isOwner: boolean
 }
 
-const { getCount } = remixesPageSelectors
-
 /**
  * Section component that displays remix contest information for a track
  */
@@ -51,8 +47,10 @@ export const RemixContestSection = ({
 }: RemixContestSectionProps) => {
   const navigate = useNavigateToPage()
   const { data: remixContest } = useRemixContest(trackId)
-  const { data: remixes } = useRemixes({ trackId, isContestEntry: true })
-  const remixCount = useSelector((state) => getCount(state))
+  const { data: remixes, count: remixCount } = useRemixes({
+    trackId,
+    isContestEntry: true
+  })
 
   const [contentHeight, setContentHeight] = useState(0)
   const hasPrizeInfo = !!remixContest?.eventData?.prizeInfo
@@ -74,14 +72,12 @@ export const RemixContestSection = ({
           }
         ]
       : []),
-    ...(remixCount
-      ? [
-          {
-            text: `${messages.submissions} (${remixCount})`,
-            label: 'submissions'
-          }
-        ]
-      : [])
+    {
+      text: remixCount
+        ? `${messages.submissions} (${remixCount})`
+        : messages.submissions,
+      label: 'submissions'
+    }
   ]
 
   const { tabs: TabBar, body: ContentBody } = useTabs({
@@ -97,16 +93,12 @@ export const RemixContestSection = ({
             </TabBody>
           ]
         : []),
-      ...(remixCount
-        ? [
-            <TabBody key='submissions' onHeightChange={handleHeightChange}>
-              <RemixContestSubmissionsTab
-                trackId={trackId}
-                submissions={remixes.slice(0, 10)}
-              />
-            </TabBody>
-          ]
-        : [])
+      <TabBody key='submissions' onHeightChange={handleHeightChange}>
+        <RemixContestSubmissionsTab
+          trackId={trackId}
+          submissions={remixes.slice(0, 10)}
+        />
+      </TabBody>
     ],
     isMobile: false
   })
@@ -124,7 +116,6 @@ export const RemixContestSection = ({
     }
     navigate(UPLOAD_PAGE, state)
   }, [trackId, navigate])
-
   if (!trackId || !remixContest) return null
 
   const totalBoxHeight = TAB_BAR_HEIGHT + contentHeight
