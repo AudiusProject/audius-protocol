@@ -45,7 +45,7 @@
   border-radius: 4px;
   width: 160px;
   box-shadow: 0 2px 5px 0 var(--search-bar-shadow);
-  background-color: var(--search-bar-background);
+  background-color: red;
   transition:
     width 0.2s ease-in-out,
     background 0.04s ease-in-out;
@@ -217,7 +217,9 @@
  * otherwise unsetting in hover will unset us everywhere.
  */
 .searchBox :global(.ant-select-item-option.ant-select-item-option-active) {
-  background-color: var(--harmony-secondary) !important;
+  border-radius: 4px;
+  border: 1px solid var(--harmony-n-100);
+  background-color: var(--harmony-n-50) !important;
 }
 .searchBox :global(.ant-select-item-option:hover) {
   background-color: unset;
@@ -337,3 +339,9 @@
 :global(.ant-select-item-option-active) .iconArrow path {
   fill: var(--harmony-static-white);
 }
+
+.removeIcon{opacity: 0}
+.removeIcon :global(.ant-select-item-option.ant-select-item-option-active) {
+  opacity: 1;
+}
+

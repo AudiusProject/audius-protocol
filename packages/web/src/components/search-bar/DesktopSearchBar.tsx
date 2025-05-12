@@ -2,6 +2,7 @@ import { useCallback, useState, useRef, useEffect, useMemo } from 'react'
 
 import { useSearchAutocomplete, useUser } from '@audius/common/api'
 import { Kind } from '@audius/common/models'
+import { SearchItemBackwardsCompatible } from '@audius/common/src/store/search/types'
 import { searchActions, searchSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -13,9 +14,7 @@ import {
   LoadingSpinner,
   Text,
   Button,
-  PlainButton,
-  IconX,
-  IconCloseAlt
+  PlainButton
 } from '@audius/harmony'
 import AutoComplete from 'antd/lib/auto-complete'
 import Input from 'antd/lib/input'
@@ -252,8 +251,8 @@ export const DesktopSearchBar = () => {
   }, [data, inputValue])
 
   const handleClickClear = useCallback(
-    (searchItem) => {
-      dispatch(removeItem(searchItem))
+    (searchItem: SearchItemBackwardsCompatible) => {
+      dispatch(removeItem({ searchItem }))
     },
     [dispatch]
   )
@@ -267,7 +266,7 @@ export const DesktopSearchBar = () => {
           label: (
             <UserResult
               userId={searchItem.id}
-              onRemove={handleClickClear(searchItem)}
+              onRemove={() => handleClickClear(searchItem)}
             />
           ),
           value: searchItem.id

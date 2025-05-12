@@ -73,7 +73,7 @@ const ResultText = ({ primary, secondary, badges }: ResultTextProps) => (
 
 type UserResultProps = {
   userId: ID
-  onRemove?: (searchItem: SearchItemBackwardsCompatible) => void
+  onRemove?: () => void
 }
 
 export const UserResult = ({ userId, onRemove }: UserResultProps) => {
@@ -93,7 +93,14 @@ export const UserResult = ({ userId, onRemove }: UserResultProps) => {
         secondary={`@${user.handle}`}
         badges={<UserBadges userId={user.user_id} size='s' inline />}
       />
-      {onRemove ? <IconCloseAlt onClick={onRemove} /> : null}
+      {onRemove ? (
+        <IconCloseAlt
+          onClick={onRemove}
+          size='s'
+          color='subdued'
+          className={styles.removeIcon}
+        />
+      ) : null}
     </ResultWrapper>
   )
 }
@@ -114,7 +121,10 @@ export const TrackResult = ({ trackId }: TrackResultProps) => {
         src={track.artwork?.['150x150'] || imageBlank}
         css={{ flexShrink: 0 }}
       />
-      <ResultText primary={track.title} secondary={track.user.name} />
+      <ResultText
+        primary={track.title}
+        //  secondary={track.user.name}
+      />
     </ResultWrapper>
   )
 }
