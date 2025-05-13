@@ -90,7 +90,7 @@ export const getReactionsBatcher = memoize(
         }
       },
       resolver: keyResolver('reactedTo'),
-      scheduler: windowScheduler(3000) // 3s window to collect requests
+      scheduler: windowScheduler(2000) // 2s window to collect requests
     }),
   contextCacheResolver()
 )
