@@ -97,7 +97,6 @@ import mobileOverflowModalReducer from './ui/mobile-overflow-menu/slice'
 import { MobileOverflowModalState } from './ui/mobile-overflow-menu/types'
 import { modalsReducer, ModalsState } from './ui/modals'
 import nowPlayingReducer, { NowPlayingState } from './ui/now-playing/slice'
-import reactionsReducer, { ReactionsState } from './ui/reactions/slice'
 import shareModalReducer from './ui/share-modal/slice'
 import { ShareModalState } from './ui/share-modal/types'
 import stripeModalReducer from './ui/stripe-modal/slice'
@@ -179,7 +178,6 @@ export const reducers = (storage: Storage, history?: History) => ({
     modals: modalsReducer,
     musicConfetti: musicConfettiReducer,
     nowPlaying: nowPlayingReducer,
-    reactions: reactionsReducer,
     shareModal: shareModalReducer,
     stripeModal: stripeModalReducer,
     coinflowModal: coinflowModalReducer,
@@ -297,7 +295,6 @@ export type CommonState = {
     modals: ModalsState
     musicConfetti: MusicConfettiState
     nowPlaying: NowPlayingState
-    reactions: ReactionsState
     searchUsersModal: SearchUsersModalState
     shareModal: ShareModalState
     stripeModal: StripeModalState

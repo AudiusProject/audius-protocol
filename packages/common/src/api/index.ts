@@ -58,12 +58,7 @@ export * from './tan-query/purchases/useSalesAggregate'
 // Reactions
 export * from './tan-query/reactions/useReaction'
 export * from './tan-query/reactions/useWriteReaction'
-export type {
-  Reaction,
-  ReactionResponse,
-  GetReactionsArgs,
-  WriteReactionArgs
-} from './tan-query/reactions/types'
+export * from './tan-query/reactions/types'
 export * from './tan-query/reactions/utils'
 
 // Remixes

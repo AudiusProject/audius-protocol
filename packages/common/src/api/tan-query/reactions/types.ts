@@ -1,5 +1,4 @@
 import { ID } from '~/models/Identifiers'
-import { ReactionTypes } from '~/store/ui/reactions/types'
 
 export type Reaction = {
   reactedTo: string
@@ -22,4 +21,14 @@ export type WriteReactionArgs = {
   userId: ID
 }
 
-export { messages } from './messages'
+export type ReactionTypes = '😍' | '🔥' | '🥳' | '🤯'
+
+// The order these reactions appear in the web + mobile UI
+export const reactionOrder: ReactionTypes[] = ['😍', '🔥', '🥳', '🤯']
+
+export const reactionsMap: { [k in ReactionTypes]: number } = {
+  '😍': 1,
+  '🔥': 2,
+  '🥳': 3,
+  '🤯': 4
+}

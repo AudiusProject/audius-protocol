@@ -6,7 +6,8 @@ import { useQueryContext } from '~/api/tan-query/utils'
 import { Feature } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
-import { Reaction, WriteReactionArgs, messages } from './types'
+import { messages } from './messages'
+import { Reaction, WriteReactionArgs } from './types'
 import {
   getEntityReactionQueryKey,
   getRawValueFromReaction,

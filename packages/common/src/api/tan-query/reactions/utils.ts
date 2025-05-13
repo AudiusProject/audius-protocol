@@ -1,9 +1,7 @@
-import { ReactionTypes, reactionsMap } from '~/store/ui/reactions/types'
-
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey } from '../types'
 
-import { Reaction } from './types'
+import { ReactionTypes, reactionsMap, Reaction } from './types'
 
 export const getReactionsQueryKey = (entityIds: string[]) =>
   [QUERY_KEYS.reactions, entityIds] as unknown as QueryKey<

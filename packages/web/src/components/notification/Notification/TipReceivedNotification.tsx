@@ -3,16 +3,16 @@ import { ComponentType, useCallback } from 'react'
 import {
   useWriteReaction,
   useCurrentUserId,
-  useReaction
+  useReaction,
+  reactionOrder,
+  ReactionTypes,
+  getReactionFromRawValue
 } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 import {
   notificationsSelectors,
-  reactionOrder,
-  TipReceiveNotification,
-  ReactionTypes,
-  getReactionFromRawValue
+  TipReceiveNotification
 } from '@audius/common/store'
 
 import { make } from 'common/store/analytics/actions'

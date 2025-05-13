@@ -1,19 +1,15 @@
 import { useCallback } from 'react'
 
+import type { ReactionTypes } from '@audius/common/api'
 import {
   useReaction,
   useWriteReaction,
-  useCurrentUserId
+  useCurrentUserId,
+  getReactionFromRawValue
 } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
-import type {
-  TipReceiveNotification,
-  ReactionTypes
-} from '@audius/common/store'
-import {
-  notificationsSelectors,
-  getReactionFromRawValue
-} from '@audius/common/store'
+import type { TipReceiveNotification } from '@audius/common/store'
+import { notificationsSelectors } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import { Image, Platform, View } from 'react-native'
