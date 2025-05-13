@@ -1,5 +1,7 @@
 export type BuySellTab = 'buy' | 'sell'
 
+export type Screen = 'input' | 'confirm'
+
 export type TokenType = 'AUDIO' | 'USDC'
 
 export type TokenInfo = {

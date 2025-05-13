@@ -28,7 +28,7 @@ export type TokenExchangeRateResponse = {
 }
 
 // Default slippage is 50 basis points (0.5%)
-const SLIPPAGE_BPS = 50
+export const SLIPPAGE_BPS = 50
 
 // Define exchange rate query key
 export const getTokenExchangeRateQueryKey = ({
