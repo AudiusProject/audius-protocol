@@ -1,5 +1,3 @@
-import { useEffect } from 'react'
-
 import {
   useRemixes,
   useRemixContest,
@@ -88,18 +86,6 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
   })
 
   const pickWinnersRoute = pickWinnersPage(originalTrack?.permalink)
-
-  // On first load, set contest entry filter to true by default
-  useEffect(() => {
-    if (
-      isRemixContest &&
-      !isContestEntry &&
-      urlSearchParams.get('isContestEntry') === null
-    ) {
-      updateIsContestEntryParam('true')
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   const renderHeader = () => (
     <Header
