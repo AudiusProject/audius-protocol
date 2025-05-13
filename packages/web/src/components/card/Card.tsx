@@ -33,7 +33,11 @@ export const Card = forwardRef((props: CardProps, ref: Ref<HTMLDivElement>) => {
       direction='column'
       border='default'
       w={cardSizes[size]}
-      css={{ overflow: 'unset', ...(size === 'xs' ? xsSize : undefined) }}
+      css={{
+        overflow: 'unset',
+        flexShrink: 0,
+        ...(size === 'xs' ? xsSize : undefined)
+      }}
       {...other}
     >
       <CardContext.Provider value={{ size }}>{children}</CardContext.Provider>

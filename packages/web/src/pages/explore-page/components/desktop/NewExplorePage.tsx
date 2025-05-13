@@ -105,7 +105,7 @@ const justForYou = [
   DOWNLOADS_AVAILABLE,
   PREMIUM_TRACKS
 ]
-const FEATURED_LIMIT = 5
+const FEATURED_LIMIT = 10
 const DEBOUNCE_MS = 400
 
 const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
@@ -271,18 +271,23 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                 justifyContent='space-between'
               >
                 <Text variant='heading'>{messages.featuredPlaylists}</Text>
-                <TextLink textVariant='title' size='m'>
-                  {messages.viewAll}
-                </TextLink>
               </Flex>
-              <Flex gap='l' justifyContent='space-between'>
-                {featuredPlaylists?.map((playlist_id) => (
-                  <CollectionCard
-                    key={playlist_id}
-                    id={playlist_id}
-                    size={'s'}
-                  />
-                ))}
+              <Flex
+                css={{
+                  overflowX: 'auto',
+                  // marginRight: '-200px',
+                  paddingRight: '16px'
+                }}
+              >
+                <Flex gap='l' css={{ minWidth: 'max-content' }}>
+                  {featuredPlaylists?.map((playlist_id) => (
+                    <CollectionCard
+                      key={playlist_id}
+                      id={playlist_id}
+                      size={'s'}
+                    />
+                  ))}
+                </Flex>
               </Flex>
             </Flex>
             <Flex>
@@ -309,11 +314,11 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                 justifyContent='space-between'
               >
                 <Text variant='heading'>{messages.artistSpotlight}</Text>
-                <TextLink textVariant='title' size='m'>
+                {/* <TextLink textVariant='title' size='m'>
                   {messages.viewAll}
-                </TextLink>
+                </TextLink> */}
               </Flex>
-              <Flex gap='l' alignSelf='stretch' justifyContent='space-between'>
+              <Flex gap='l' alignSelf='stretch' css={{ overflowX: 'auto' }}>
                 {featuredProfiles?.map((user_id) => (
                   <UserCard key={user_id} id={user_id} size='s' />
                 ))}
