@@ -82,6 +82,11 @@ export interface TanQueryLineupProps {
   leadingElementDelineator?: JSX.Element | null
 
   /**
+   * JSX Element that can be used to adorn the tile
+   */
+  elementAdornment?: (elementId: ID, index: number) => JSX.Element | null
+
+  /**
    * Track tile properties to optionally pass to the leading element track tile
    */
   leadingElementTileProps?: Partial<TileProps>
@@ -143,6 +148,7 @@ export const TanQueryLineup = ({
   leadingElementId,
   lineupContainerStyles,
   leadingElementDelineator,
+  elementAdornment,
   tileContainerStyles,
   tileStyles,
   emptyElement,
@@ -461,6 +467,8 @@ export const TanQueryLineup = ({
                       w='100%'
                     >
                       {tile}
+                      {elementAdornment &&
+                        elementAdornment(tile.props.id, index)}
                     </Flex>
                     {index === 0 &&
                     tiles.length >= 1 &&

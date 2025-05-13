@@ -76,6 +76,7 @@ import { NotFoundPage } from 'pages/not-found-page/NotFoundPage'
 import { NotificationUsersPage } from 'pages/notification-users-page/NotificationUsersPage'
 import { PayAndEarnPage } from 'pages/pay-and-earn-page/PayAndEarnPage'
 import { TableType } from 'pages/pay-and-earn-page/types'
+import { PickWinnersPage } from 'pages/pick-winners-page/PickWinnersPage'
 import { PremiumTracksPage } from 'pages/premium-tracks-page/PremiumTracksPage'
 import ProfilePage from 'pages/profile-page/ProfilePage'
 import RemixesPage from 'pages/remixes-page/RemixesPage'
@@ -145,6 +146,7 @@ const {
   TRACK_PAGE,
   TRACK_COMMENTS_PAGE,
   TRACK_REMIXES_PAGE,
+  PICK_WINNERS_PAGE,
   PROFILE_PAGE,
   authenticatedRoutes,
   EMPTY_PAGE,
@@ -1009,6 +1011,11 @@ class WebPlayer extends Component {
                       containerRef={this.props.mainContentRef.current}
                     />
                   )}
+                />
+                <Route
+                  exact
+                  path={PICK_WINNERS_PAGE}
+                  component={PickWinnersPage}
                 />
                 <MobileRoute
                   exact

@@ -6,6 +6,13 @@ export const remixMessages = {
   coSigned: 'Co-Signs',
   contestEntries: 'Contest Entries',
   originalTrack: 'Original Track',
+  pickWinnersTitle: 'Pick Your Winners',
+  pickWinners: 'Pick Winners',
+  finalizeWinners: 'Finalize Winners',
+  winners: 'Winners',
+  winnersDescription: 'Pick up to 5 winners in ranked order.',
+  maxWinnersReached: 'You can only pick up to 5 winners.',
+  winnerPlaceholder: 'Click the +/- buttons to add or remove winners.',
 
   // Modal Messages
   modalTitle: 'Host Remix Contest',
