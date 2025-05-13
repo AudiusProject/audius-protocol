@@ -73,16 +73,17 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
 
   useEffect(() => {
     if (swapStatus === 'success') {
+      setCurrentScreen('input')
       toast(
         activeTab === 'buy' ? messages.buySuccess : messages.sellSuccess,
         3000
       )
       const timer = setTimeout(() => {
-        setCurrentScreen('input')
         onClose()
       }, 1000)
       return () => clearTimeout(timer)
     } else if (swapStatus === 'error') {
+      setCurrentScreen('input')
       toast(swapError?.message || messages.transactionFailed, 5000)
     }
   }, [swapStatus, swapError, activeTab, onClose, toast, setCurrentScreen])

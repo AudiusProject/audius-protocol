@@ -22,13 +22,18 @@ export const BuySellModal = () => {
 
   // State to control the modal title based on the flow screen
   const [modalScreen, setModalScreen] = useState<'input' | 'confirm'>('input')
+  const [isFlowLoading, setIsFlowLoading] = useState(false)
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size='medium'>
-      <ModalHeader onClose={onClose} showDismissButton={true}>
+      <ModalHeader onClose={onClose} showDismissButton={!isFlowLoading}>
         <ModalTitle
           title={
-            modalScreen === 'confirm' ? messages.confirmDetails : messages.title
+            isFlowLoading
+              ? ''
+              : modalScreen === 'confirm'
+                ? messages.confirmDetails
+                : messages.title
           }
         />
       </ModalHeader>
@@ -37,21 +42,24 @@ export const BuySellModal = () => {
           onClose={onClose}
           openAddFundsModal={openAddFundsModal}
           onScreenChange={setModalScreen}
+          onLoadingStateChange={setIsFlowLoading}
         />
       </ModalContent>
-      <ModalFooter
-        css={{
-          justifyContent: 'center',
-          gap: spacing.s,
-          borderTop: `1px solid ${color.border.strong}`,
-          backgroundColor: color.background.surface1
-        }}
-      >
-        <Text variant='label' size='xs' color='subdued'>
-          {messages.poweredBy}
-        </Text>
-        <IconJupiterLogo />
-      </ModalFooter>
+      {!isFlowLoading && (
+        <ModalFooter
+          css={{
+            justifyContent: 'center',
+            gap: spacing.s,
+            borderTop: `1px solid ${color.border.strong}`,
+            backgroundColor: color.background.surface1
+          }}
+        >
+          <Text variant='label' size='xs' color='subdued'>
+            {messages.poweredBy}
+          </Text>
+          <IconJupiterLogo />
+        </ModalFooter>
+      )}
     </Modal>
   )
 }

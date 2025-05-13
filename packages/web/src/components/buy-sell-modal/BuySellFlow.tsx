@@ -1,7 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 
 import { buySellMessages as messages } from '@audius/common/messages'
 import { Button, Flex, Hint, SegmentedControl, TextLink } from '@audius/harmony'
+
+import { ModalLoading } from 'components/modal-loading'
 
 import { BuyTab } from './BuyTab'
 import { ConfirmSwapScreen } from './ConfirmSwapScreen'
@@ -19,10 +21,12 @@ type BuySellFlowProps = {
   onClose: () => void
   openAddFundsModal: () => void
   onScreenChange: (screen: 'input' | 'confirm') => void
+  onLoadingStateChange?: (isLoading: boolean) => void
 }
 
 export const BuySellFlow = (props: BuySellFlowProps) => {
-  const { onClose, openAddFundsModal, onScreenChange } = props
+  const { onClose, openAddFundsModal, onScreenChange, onLoadingStateChange } =
+    props
 
   const { currentScreen, setCurrentScreen } = useBuySellScreen({
     onScreenChange
@@ -52,6 +56,10 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     activeTab,
     onClose
   })
+
+  useEffect(() => {
+    onLoadingStateChange?.(isConfirmButtonLoading)
+  }, [isConfirmButtonLoading, onLoadingStateChange])
 
   const [selectedPairIndex] = useState(0)
 
@@ -91,6 +99,10 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     activeTab === 'sell' && !hasSufficientBalance
       ? messages.insufficientAUDIOForSale
       : undefined
+
+  if (isConfirmButtonLoading) {
+    return <ModalLoading />
+  }
 
   return (
     <>
