@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 
 import { useTrack, useUser } from '@audius/common/api'
 import {
-  Entity,
   FanRemixContestEndingSoonNotification as FanRemixContestEndingSoonNotificationType,
   TrackEntity
 } from '@audius/common/store'
@@ -11,7 +10,6 @@ import { useDispatch } from 'react-redux'
 
 import { push } from 'utils/navigation'
 
-import { EntityLink } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
 import { NotificationFooter } from './components/NotificationFooter'
 import { NotificationHeader } from './components/NotificationHeader'
@@ -57,7 +55,6 @@ export const FanRemixContestEndingSoonNotification = (
         <TrackContent track={track as TrackEntity} hideTitle />
         <NotificationBody>
           <UserNameLink user={user} notification={notification} />{' '}
-          <EntityLink entity={track as TrackEntity} entityType={Entity.Track} />
           {messages.description}
         </NotificationBody>
       </Flex>
