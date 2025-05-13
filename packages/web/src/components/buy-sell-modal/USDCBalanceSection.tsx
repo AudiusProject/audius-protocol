@@ -2,6 +2,10 @@ import { Divider, Flex, IconInfo, Text } from '@audius/harmony'
 
 import { TokenInfo } from './types'
 
+const messages = {
+  amount: (amount: string) => `$${amount}`
+}
+
 type USDCBalanceSectionProps = {
   title: string
   tokenInfo: TokenInfo
@@ -26,7 +30,7 @@ export const USDCBalanceSection = ({
         <Divider css={{ flexGrow: 1 }} />
       </Flex>
       <Text variant='heading' size='xl'>
-        {amount}
+        {messages.amount(amount)}
       </Text>
     </Flex>
   )
