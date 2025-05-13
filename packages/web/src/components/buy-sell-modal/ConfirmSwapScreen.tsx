@@ -1,31 +1,44 @@
 import { buySellMessages as baseMessages } from '@audius/common/messages'
-import { formatNumberCommas } from '@audius/common/utils'
 import { Button, Flex, Text } from '@audius/harmony'
 
 import { CryptoBalanceSection } from './CryptoBalanceSection'
 import { USDCBalanceSection } from './USDCBalanceSection'
+import { useTokenAmountFormatting } from './hooks/useTokenAmountFormatting'
 import { TokenInfo } from './types'
-
-// Helper function to format currency (assuming USD)
-const formatCurrency = (amount: number) => {
-  return amount.toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'USD'
-  })
-}
-
-// Helper function to format token amounts based on whether it's a stablecoin
-const formatTokenAmount = (amount: number, tokenInfo: TokenInfo) => {
-  const formatted = formatNumberCommas(amount.toFixed(2)) // Basic formatting
-  if (tokenInfo.isStablecoin) {
-    return formatCurrency(amount)
-  }
-  return formatted
-}
 
 const messages = {
   ...baseMessages,
-  priceEach: (price: number) => `(${formatCurrency(price)} ea.)`
+  priceEach: (price: number) => {
+    const formatted = price.toLocaleString('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    })
+    return `(${formatted} ea.)`
+  }
+}
+
+type SwapBalanceSectionProps = {
+  title: string
+  tokenInfo: TokenInfo
+  amount: string
+  priceLabel?: string
+}
+
+const SwapBalanceSection = (props: SwapBalanceSectionProps) => {
+  const { title, tokenInfo, amount, priceLabel } = props
+  if (tokenInfo.symbol === 'USDC') {
+    return (
+      <USDCBalanceSection title={title} tokenInfo={tokenInfo} amount={amount} />
+    )
+  }
+  return (
+    <CryptoBalanceSection
+      title={title}
+      tokenInfo={tokenInfo}
+      amount={amount}
+      priceLabel={priceLabel}
+    />
+  )
 }
 
 type ConfirmSwapScreenProps = {
@@ -53,11 +66,18 @@ export const ConfirmSwapScreen = (props: ConfirmSwapScreenProps) => {
     isConfirming
   } = props
 
-  const formattedPayAmount = formatTokenAmount(payAmount, payTokenInfo)
-  const formattedReceiveAmount = formatTokenAmount(
-    receiveAmount,
-    receiveTokenInfo
-  )
+  // balance isn't needed so we pass 0
+  const { formattedAmount: formattedPayAmount } = useTokenAmountFormatting({
+    amount: payAmount,
+    availableBalance: 0,
+    isStablecoin: !!payTokenInfo.isStablecoin
+  })
+
+  const { formattedAmount: formattedReceiveAmount } = useTokenAmountFormatting({
+    amount: receiveAmount,
+    availableBalance: 0,
+    isStablecoin: !!receiveTokenInfo.isStablecoin
+  })
 
   const isReceivingBaseToken = receiveTokenInfo.symbol === baseTokenSymbol
   const priceLabel = isReceivingBaseToken
@@ -70,33 +90,17 @@ export const ConfirmSwapScreen = (props: ConfirmSwapScreenProps) => {
         {messages.confirmReview}
       </Text>
       <Flex direction='column' gap='xl'>
-        {payTokenInfo.symbol === 'USDC' ? (
-          <USDCBalanceSection
-            title={messages.youPay}
-            tokenInfo={payTokenInfo}
-            amount={formattedPayAmount}
-          />
-        ) : (
-          <CryptoBalanceSection
-            title={messages.youPay}
-            tokenInfo={payTokenInfo}
-            amount={formattedPayAmount}
-          />
-        )}
-        {receiveTokenInfo.symbol === 'USDC' ? (
-          <USDCBalanceSection
-            title={messages.youReceive}
-            tokenInfo={receiveTokenInfo}
-            amount={formattedReceiveAmount}
-          />
-        ) : (
-          <CryptoBalanceSection
-            title={messages.youReceive}
-            tokenInfo={receiveTokenInfo}
-            amount={formattedReceiveAmount}
-            priceLabel={priceLabel}
-          />
-        )}
+        <SwapBalanceSection
+          title={messages.youPay}
+          tokenInfo={payTokenInfo}
+          amount={formattedPayAmount}
+        />
+        <SwapBalanceSection
+          title={messages.youReceive}
+          tokenInfo={receiveTokenInfo}
+          amount={formattedReceiveAmount}
+          priceLabel={priceLabel}
+        />
       </Flex>
 
       <Flex gap='s' mt='xl'>
