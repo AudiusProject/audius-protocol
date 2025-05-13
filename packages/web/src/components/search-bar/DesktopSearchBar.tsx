@@ -1,6 +1,6 @@
 import { useCallback, useState, useRef, useEffect, useMemo } from 'react'
 
-import { useSearchAutocomplete, useUser } from '@audius/common/api'
+import { useSearchAutocomplete } from '@audius/common/api'
 import { Kind } from '@audius/common/models'
 import { SearchItemBackwardsCompatible } from '@audius/common/src/store/search/types'
 import { searchActions, searchSelectors } from '@audius/common/store'
@@ -13,7 +13,6 @@ import {
   Flex,
   LoadingSpinner,
   Text,
-  Button,
   PlainButton
 } from '@audius/harmony'
 import AutoComplete from 'antd/lib/auto-complete'
@@ -24,7 +23,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Link, useHistory, useLocation, matchPath } from 'react-router-dom'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 import { useDebounce, usePrevious } from 'react-use'
-import { Collection } from 'react-virtualized'
 
 import { searchResultsPage } from 'utils/route'
 
@@ -100,7 +98,6 @@ export const DesktopSearchBar = () => {
   const initialQuery = searchParams.get('query') || ''
   const searchHistory = useSelector(getSearchHistory)
   const dispatch = useDispatch()
-  console.log('asdf searchHistory', searchHistory)
 
   const [inputValue, setInputValue] = useState(initialQuery)
   const [debouncedValue, setDebouncedValue] = useState(inputValue)
@@ -301,7 +298,6 @@ export const DesktopSearchBar = () => {
             ? [
                 {
                   label: <ClearRecentSearchesButton />,
-                  // @ts-expect-error
                   value: 'Clear search'
                 }
               ]

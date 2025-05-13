@@ -340,8 +340,9 @@
   fill: var(--harmony-static-white);
 }
 
-.removeIcon{opacity: 0}
-:global(.ant-select-item-option.ant-select-item-option-active) .removeIcon{
+.removeIcon {
+  opacity: 0;
+}
+:global(.ant-select-item-option.ant-select-item-option-active) .removeIcon {
   opacity: 1;
 }
-

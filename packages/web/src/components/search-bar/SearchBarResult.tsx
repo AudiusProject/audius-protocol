@@ -1,13 +1,6 @@
 import { useCollection, useTrack, useUser } from '@audius/common/api'
 import { imageBlank, imageProfilePicEmpty } from '@audius/common/assets'
-import {
-  User,
-  UserTrackMetadata,
-  UserCollectionMetadata,
-  ID,
-  Kind
-} from '@audius/common/models'
-import { SearchItemBackwardsCompatible } from '@audius/common/src/store/search/types'
+import { ID, Kind } from '@audius/common/models'
 import { searchActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Text, Flex, Avatar, Artwork, IconCloseAlt } from '@audius/harmony'
