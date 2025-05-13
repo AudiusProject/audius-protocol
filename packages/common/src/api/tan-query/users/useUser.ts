@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import { AudiusSdk } from '@audius/sdk'
 import { QueryClient, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
@@ -42,19 +44,21 @@ export const useUser = <TResult = User>(
   const currentUserId = useSelector(getUserId)
   const validUserId = !!userId && userId > 0
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const select = useMemo(() => options?.select, [])
+
   return useQuery({
     queryKey: getUserQueryKey(userId),
-    queryFn: async () => {
-      const sdk = await audiusSdk()
-      const batchGetUsers = getUsersBatcher({
-        sdk,
+    queryFn: async () =>
+      getUserQueryFn(
+        userId!,
         currentUserId,
         queryClient,
+        await audiusSdk(),
         dispatch
-      })
-      return await batchGetUsers.fetch(userId!)
-    },
+      ),
     ...options,
+    select,
     enabled: options?.enabled !== false && validUserId
   })
 }

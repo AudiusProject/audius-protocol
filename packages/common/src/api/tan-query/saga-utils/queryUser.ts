@@ -1,5 +1,4 @@
-import { Dispatch, AnyAction } from 'redux'
-import { call, select, put } from 'typed-redux-saga'
+import { call, select } from 'typed-redux-saga'
 
 import { ID } from '~/models/Identifiers'
 import { User } from '~/models/User'
@@ -18,13 +17,14 @@ import { isValidId } from '../utils/isValidId'
 export function* queryUser(id: ID | null | undefined) {
   if (!isValidId(id)) return undefined
   const queryClient = yield* getContext('queryClient')
+  const dispatch = yield* getContext('dispatch')
   const sdk = yield* getSDK()
   const currentUserId = yield* select(getUserId)
 
   const queryData = yield* call([queryClient, queryClient.fetchQuery], {
     queryKey: getUserQueryKey(id),
     queryFn: async () =>
-      getUserQueryFn(id!, currentUserId, queryClient, sdk, put)
+      getUserQueryFn(id!, currentUserId, queryClient, sdk, dispatch)
   })
 
   return queryData as User | undefined
@@ -32,18 +32,13 @@ export function* queryUser(id: ID | null | undefined) {
 
 export function* queryUserByHandle(handle: string) {
   const queryClient = yield* getContext('queryClient')
+  const dispatch = yield* getContext('dispatch')
   const currentUserId = yield* select(getUserId)
   const sdk = yield* getSDK()
   const userId = (yield* call([queryClient, queryClient.fetchQuery], {
     queryKey: getUserByHandleQueryKey(handle),
     queryFn: async () =>
-      getUserByHandleQueryFn(
-        handle,
-        sdk,
-        queryClient,
-        put as Dispatch<AnyAction>,
-        currentUserId
-      )
+      getUserByHandleQueryFn(handle, sdk, queryClient, dispatch, currentUserId)
   })) as ID | undefined
   if (!userId) return undefined
   const userMetadata = yield* call(queryUser, userId)
