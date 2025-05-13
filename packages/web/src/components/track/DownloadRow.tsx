@@ -84,16 +84,8 @@ export const DownloadRow = ({
         <Text variant='body' color='subdued'>
           {index}
         </Text>
-        <Text variant='body' strength='default'>
-          {category
-            ? stemCategoryFriendlyNames[category]
-            : track?.stem_of?.category
-              ? stemCategoryFriendlyNames[track?.stem_of?.category]
-              : messages.fullTrack}
-        </Text>
         <Text
           variant='body'
-          color='subdued'
           css={{
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -108,6 +100,13 @@ export const DownloadRow = ({
                   isOriginal: true
                 })
               : null)}
+        </Text>
+        <Text variant='body' color='subdued' strength='default'>
+          {category
+            ? stemCategoryFriendlyNames[category]
+            : track?.stem_of?.category
+              ? stemCategoryFriendlyNames[track?.stem_of?.category]
+              : messages.fullTrack}
         </Text>
       </Flex>
       <Flex gap='2xl'>

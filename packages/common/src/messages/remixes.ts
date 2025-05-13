@@ -11,7 +11,7 @@ export const remixMessages = {
   finalizeWinners: 'Finalize Winners',
   winners: 'Winners',
   winnersDescription: 'Pick up to 5 winners in ranked order.',
-  maxWinnersReached: 'You can only pick up to 5 winners.',
+  maxWinnersReached: 'Maximum winners reached.',
   winnerPlaceholder: 'Click the +/- buttons to add or remove winners.',
 
   // Modal Messages
