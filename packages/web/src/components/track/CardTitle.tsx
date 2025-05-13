@@ -44,7 +44,13 @@ export const CardTitle = ({
 }: CardTitleProps) => {
   let content
 
-  if (isStreamGated) {
+  if (isRemixContest) {
+    content = (
+      <Text variant='label' color='subdued'>
+        {messages.remixContest}
+      </Text>
+    )
+  } else if (isStreamGated) {
     let icon
     let message
     if (isContentCollectibleGated(streamConditions)) {
@@ -68,13 +74,11 @@ export const CardTitle = ({
   } else {
     content = (
       <Text variant='label' color='subdued'>
-        {isRemixContest
-          ? messages.remixContest
-          : isRemix
-            ? messages.remixTitle
-            : isPodcast
-              ? messages.podcastTitle
-              : messages.trackTitle}
+        {isRemix
+          ? messages.remixTitle
+          : isPodcast
+            ? messages.podcastTitle
+            : messages.trackTitle}
       </Text>
     )
   }

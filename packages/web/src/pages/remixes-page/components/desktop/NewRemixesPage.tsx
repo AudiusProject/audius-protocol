@@ -4,7 +4,6 @@ import { remixMessages as messages } from '@audius/common/messages'
 import { Track, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { remixesPageLineupActions } from '@audius/common/store'
-import { pluralize } from '@audius/common/utils'
 import {
   IconRemix,
   Text,
@@ -103,10 +102,8 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
           leadingElementDelineator={
             <Flex justifyContent='space-between'>
               <Text variant='heading'>
-                {count}{' '}
-                {isRemixContest
-                  ? pluralize(messages.submissions, count ?? 0)
-                  : pluralize(messages.remixes, count ?? 0, 'es')}
+                {messages.remixesTitle}
+                {count !== undefined ? ` (${count})` : ''}
               </Text>
               <Flex gap='s' mb='xl'>
                 <FilterButton
