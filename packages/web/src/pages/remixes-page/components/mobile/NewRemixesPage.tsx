@@ -27,7 +27,9 @@ import styles from './RemixesPage.module.css'
 export type RemixesPageProps = {
   title: string
   count: number | null
-  originalTrack: Pick<Track, 'track_id' | 'permalink' | 'title'> | undefined
+  originalTrack:
+    | Pick<Track, 'track_id' | 'permalink' | 'title' | 'owner_id'>
+    | undefined
   user: User | undefined
   goToTrackPage: () => void
   goToArtistPage: () => void

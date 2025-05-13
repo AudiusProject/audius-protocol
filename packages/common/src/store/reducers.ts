@@ -39,6 +39,7 @@ import exploreCollectionsReducer from './pages/explore/exploreCollections/slice'
 import feed from './pages/feed/reducer'
 import { FeedPageState } from './pages/feed/types'
 import historyPageReducer from './pages/history-page/reducer'
+import pickWinners from './pages/pick-winners/slice'
 import premiumTracks from './pages/premium-tracks/slice'
 import profileReducer from './pages/profile/reducer'
 import { ProfilePageState } from './pages/profile/types'
@@ -214,6 +215,7 @@ export const reducers = (storage: Storage, history?: History) => ({
     feed,
     exploreCollections: exploreCollectionsReducer,
     historyPage: historyPageReducer,
+    pickWinners,
     profile: profileReducer,
     smartCollection,
     savedPage: persistedSavePageReducer(storage),
@@ -334,6 +336,7 @@ export type CommonState = {
     tokenDashboard: ReturnType<typeof tokenDashboardSlice.reducer>
     historyPage: HistoryPageState
     track: TrackPageState
+    pickWinners: ReturnType<typeof pickWinners>
     profile: ProfilePageState
     savedPage: SavedPageState
     searchResults: SearchPageState
