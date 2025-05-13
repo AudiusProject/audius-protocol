@@ -187,6 +187,7 @@ def test_index_trending(app, mocker):
     entities = {
         "users": [{"user_id": i} for i in range(10)],
         "tracks": [{"track_id": i, "owner_id": 3} for i in range(10)],
+        "playlists": [{"playlist_id": i, "owner_id": 3} for i in range(10)],
         "saves": [
             {"save_item_id": 6, "user_id": i, "repost_type": "track"} for i in range(20)
         ],

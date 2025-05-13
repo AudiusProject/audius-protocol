@@ -183,7 +183,6 @@ class TrendingPlaylistsStrategypnagD(BaseTrendingStrategy):
                         p.is_delete is False AND
                         p.is_private is False AND
                         p.is_album is False AND
-                        jsonb_typeof(p.playlist_contents->'track_ids') = 'array' AND
                         jsonb_array_length(p.playlist_contents['track_ids']) >= :mt;
                 INSERT INTO playlist_trending_scores
                     (playlist_id, type, version, time_range, score, created_at)
@@ -304,7 +303,6 @@ class TrendingPlaylistsStrategypnagD(BaseTrendingStrategy):
                         p.is_delete is False AND
                         p.is_private is False AND
                         p.is_album is False AND
-                        jsonb_typeof(p.playlist_contents->'track_ids') = 'array' AND
                         jsonb_array_length(p.playlist_contents['track_ids']) >= :mt;
                 INSERT INTO playlist_trending_scores
                     (playlist_id, type, version, time_range, score, created_at)
