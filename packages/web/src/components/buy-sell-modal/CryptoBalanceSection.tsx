@@ -3,6 +3,10 @@ import { useTheme } from '@emotion/react'
 
 import { TokenInfo } from './types'
 
+const messages = {
+  symbol: (symbol: string) => `$${symbol}`
+}
+
 type CryptoBalanceSectionProps = {
   title: string
   tokenInfo: TokenInfo
@@ -41,7 +45,7 @@ export const CryptoBalanceSection = ({
           </Text>
           <Flex gap='xs'>
             <Text variant='heading' size='s' color='subdued'>
-              {tokenInfo.symbol}
+              {messages.symbol(tokenInfo.symbol)}
             </Text>
             {priceLabel && (
               <Text variant='heading' size='s' color='subdued'>
