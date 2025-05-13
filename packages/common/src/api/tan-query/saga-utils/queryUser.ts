@@ -1,23 +1,53 @@
+import { Dispatch, AnyAction } from 'redux'
+import { call, select, put } from 'typed-redux-saga'
+
 import { ID } from '~/models/Identifiers'
 import { User } from '~/models/User'
+import { getUserId } from '~/store/account/selectors'
 import { getContext } from '~/store/effects'
+import { getSDK } from '~/store/sdkUtils'
 
 import { QUERY_KEYS } from '../queryKeys'
-import { getUserQueryKey } from '../users/useUser'
-import { getUserByHandleQueryKey } from '../users/useUserByHandle'
+import { getUserQueryFn, getUserQueryKey } from '../users/useUser'
+import {
+  getUserByHandleQueryFn,
+  getUserByHandleQueryKey
+} from '../users/useUserByHandle'
+import { isValidId } from '../utils/isValidId'
 
 export function* queryUser(id: ID | null | undefined) {
-  if (!id) return null
+  if (!isValidId(id)) return undefined
   const queryClient = yield* getContext('queryClient')
-  return queryClient.getQueryData(getUserQueryKey(id))
+  const sdk = yield* getSDK()
+  const currentUserId = yield* select(getUserId)
+
+  const queryData = yield* call([queryClient, queryClient.fetchQuery], {
+    queryKey: getUserQueryKey(id),
+    queryFn: async () =>
+      getUserQueryFn(id!, currentUserId, queryClient, sdk, put)
+  })
+
+  return queryData as User | undefined
 }
 
-export function* queryUserByHandle(handle: string | null | undefined) {
-  if (!handle) return null
+export function* queryUserByHandle(handle: string) {
   const queryClient = yield* getContext('queryClient')
-  const id = queryClient.getQueryData(getUserByHandleQueryKey(handle))
-  if (!id) return null
-  return yield* queryUser(id)
+  const currentUserId = yield* select(getUserId)
+  const sdk = yield* getSDK()
+  const userId = (yield* call([queryClient, queryClient.fetchQuery], {
+    queryKey: getUserByHandleQueryKey(handle),
+    queryFn: async () =>
+      getUserByHandleQueryFn(
+        handle,
+        sdk,
+        queryClient,
+        put as Dispatch<AnyAction>,
+        currentUserId
+      )
+  })) as ID | undefined
+  if (!userId) return undefined
+  const userMetadata = yield* call(queryUser, userId)
+  return userMetadata
 }
 
 export function* queryUsers(ids: ID[]) {

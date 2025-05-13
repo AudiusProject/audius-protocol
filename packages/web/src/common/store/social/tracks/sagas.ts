@@ -16,8 +16,7 @@ import {
   makeKindId,
   waitForValue,
   removeNullable,
-  getFilename,
-  waitForQueryValue
+  getFilename
 } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
 import {
@@ -557,7 +556,7 @@ export function* watchSetArtistPick() {
           }
         ])
       )
-      const user = yield* waitForQueryValue(queryUser, userId)
+      const user = yield* call(queryUser, userId)
       yield* fork(updateProfileAsync, { metadata: user })
 
       const event = make(Name.ARTIST_PICK_SELECT_TRACK, { id: action.trackId })
@@ -582,7 +581,7 @@ export function* watchUnsetArtistPick() {
         }
       ])
     )
-    const user = yield* call(waitForQueryValue, queryUser, userId)
+    const user = yield* call(queryUser, userId)
     yield* fork(updateProfileAsync, { metadata: user })
 
     const event = make(Name.ARTIST_PICK_SELECT_TRACK, { id: 'none' })

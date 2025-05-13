@@ -96,20 +96,18 @@ function* setSentryUser(
 }
 
 function* initializeMetricsForUser({
-  accountUser
+  accountUser,
+  web3WalletAddress
 }: {
   accountUser: UserMetadata
+  web3WalletAddress: string
 }) {
   const solanaWalletService = yield* getContext('solanaWalletService')
   const analytics = yield* getContext('analytics')
   const sdk = yield* getSDK()
   const queryClient = yield* getContext('queryClient')
 
-  if (accountUser && accountUser.handle) {
-    const [web3WalletAddress] = yield* call([
-      sdk.services.audiusWalletClient,
-      sdk.services.audiusWalletClient.getAddresses
-    ])
+  if (accountUser && accountUser.handle && web3WalletAddress) {
     const accountData = (yield* call([queryClient, queryClient.fetchQuery], {
       queryKey: getWalletAccountQueryKey(web3WalletAddress),
       queryFn: async () => getWalletAccountQueryFn(web3WalletAddress, sdk)
@@ -253,7 +251,7 @@ export function* fetchAccountAsync({
   }
 
   // Cache the account and put the signedIn action. We're done.
-  yield* call(cacheAccountAndUser, accountData)
+  yield* call(setLocalStorageAccountAndUser, accountData)
   const formattedAccount = {
     userId: user.user_id,
     collections: accountData.playlists,
@@ -272,7 +270,10 @@ export function* fetchAccountAsync({
   )
 
   try {
-    yield* call(initializeMetricsForUser, { accountUser: user })
+    yield* call(initializeMetricsForUser, {
+      accountUser: user,
+      web3WalletAddress
+    })
   } catch (e) {
     console.error('Failed to initialize metrics for user', e)
   }
@@ -345,7 +346,7 @@ function* fetchLocalAccountAsync() {
   }
 }
 
-function* cacheAccountAndUser(
+function* setLocalStorageAccountAndUser(
   account: AccountUserMetadata & { guestEmail?: string | null }
 ) {
   const {
