@@ -25,8 +25,6 @@ const formatTokenAmount = (amount: number, tokenInfo: TokenInfo) => {
 
 const messages = {
   ...baseMessages,
-  youPay: 'You Pay',
-  youReceive: 'You Receive',
   priceEach: (price: number) => `(${formatCurrency(price)} ea.)`
 }
 
@@ -72,17 +70,33 @@ export const ConfirmSwapScreen = (props: ConfirmSwapScreenProps) => {
         {messages.confirmReview}
       </Text>
       <Flex direction='column' gap='xl'>
-        <USDCBalanceSection
-          title={messages.youPay}
-          tokenInfo={payTokenInfo}
-          amount={formattedPayAmount}
-        />
-        <CryptoBalanceSection
-          title={messages.youReceive}
-          tokenInfo={receiveTokenInfo}
-          amount={formattedReceiveAmount}
-          priceLabel={priceLabel}
-        />
+        {payTokenInfo.symbol === 'USDC' ? (
+          <USDCBalanceSection
+            title={messages.youPay}
+            tokenInfo={payTokenInfo}
+            amount={formattedPayAmount}
+          />
+        ) : (
+          <CryptoBalanceSection
+            title={messages.youPay}
+            tokenInfo={payTokenInfo}
+            amount={formattedPayAmount}
+          />
+        )}
+        {receiveTokenInfo.symbol === 'USDC' ? (
+          <USDCBalanceSection
+            title={messages.youReceive}
+            tokenInfo={receiveTokenInfo}
+            amount={formattedReceiveAmount}
+          />
+        ) : (
+          <CryptoBalanceSection
+            title={messages.youReceive}
+            tokenInfo={receiveTokenInfo}
+            amount={formattedReceiveAmount}
+            priceLabel={priceLabel}
+          />
+        )}
       </Flex>
 
       <Flex gap='s' mt='xl'>
