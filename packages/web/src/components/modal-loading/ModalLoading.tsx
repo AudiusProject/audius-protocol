@@ -2,14 +2,19 @@ import { Flex, Text } from '@audius/harmony'
 
 import LoadingSpinner from '../loading-spinner/LoadingSpinner'
 
+const messages = {
+  title: 'Transaction in Progress',
+  subtitle: 'This may take a moment.'
+}
+
 type ModalLoadingProps = {
   title?: string
   subtitle?: string
 }
 
 export const ModalLoading = ({
-  title = 'Transaction in Progress',
-  subtitle = 'This may take a moment.'
+  title = messages.title,
+  subtitle = messages.subtitle
 }: ModalLoadingProps) => {
   return (
     <Flex
