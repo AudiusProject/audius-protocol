@@ -203,8 +203,8 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
 
   const horizontalScrollStyle: CSSObject = {
     overflowX: 'auto',
-    marginRight: 'calc(-50vw)',
-    paddingRight: '49.5vw',
+    // marginRight: 'calc(-50vw)',
+    // paddingRight: '49.5vw',
     scrollbarWidth: 'none', // Firefox
     msOverflowStyle: 'none', // IE/Edge
     '&::-webkit-scrollbar': {
