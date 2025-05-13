@@ -161,7 +161,7 @@ class TrendingPlaylistsStrategypnagD(BaseTrendingStrategy):
                             is_current is True AND
                             is_delete is False AND
                             save_type = 'playlist' AND
-                            created_at > now() - interval '7 days'
+                            created_at > now() - interval ':week days'
                         group by save_item_id
                     ) s on p.playlist_id = s.save_item_id
                     left join (
@@ -173,7 +173,7 @@ class TrendingPlaylistsStrategypnagD(BaseTrendingStrategy):
                             is_current is True AND
                             is_delete is False AND
                             repost_type = 'playlist' AND
-                            created_at > now() - interval '7 days'
+                            created_at > now() - interval ':week days'
                         group by repost_item_id
                     ) rp on p.playlist_id = rp.repost_item_id
                     left join karma_scores k
