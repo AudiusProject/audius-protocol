@@ -18,7 +18,6 @@ import {
   Button
 } from '@audius/harmony'
 import { Link } from 'react-router-dom'
-import { useSearchParams as useParams } from 'react-router-dom-v5-compat'
 
 import { Header } from 'components/header/desktop/Header'
 import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
@@ -52,7 +51,6 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
   const updateSortParam = useUpdateSearchParams('sortMethod')
   const updateIsCosignParam = useUpdateSearchParams('isCosign')
   const updateIsContestEntryParam = useUpdateSearchParams('isContestEntry')
-  const [urlSearchParams] = useParams()
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
   )
