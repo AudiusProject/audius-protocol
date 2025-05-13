@@ -101,7 +101,7 @@ export const DownloadRow = ({
                 })
               : null)}
         </Text>
-        <Text variant='body' color='subdued' strength='default'>
+        <Text variant='body' color='subdued'>
           {category
             ? stemCategoryFriendlyNames[category]
             : track?.stem_of?.category
