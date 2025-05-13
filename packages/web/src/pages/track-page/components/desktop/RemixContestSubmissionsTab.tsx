@@ -138,7 +138,7 @@ const RemixContestSubmissions = ({
     select: (track) => track.permalink
   })
 
-  const remixesRoute = trackRemixesPage(permalink ?? '')
+  const remixesRoute = `${trackRemixesPage(permalink ?? '')}?isContestEntry=true`
 
   return (
     <Flex column p='xl' gap='xl'>
