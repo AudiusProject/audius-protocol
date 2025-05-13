@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { buySellMessages as messages } from '@audius/common/messages'
 import { useBuySellModal, useAddFundsModal } from '@audius/common/store'
@@ -24,18 +24,16 @@ export const BuySellModal = () => {
   const [modalScreen, setModalScreen] = useState<'input' | 'confirm'>('input')
   const [isFlowLoading, setIsFlowLoading] = useState(false)
 
+  const title = useMemo(() => {
+    if (isFlowLoading) return ''
+    if (modalScreen === 'confirm') return messages.confirmDetails
+    return messages.title
+  }, [isFlowLoading, modalScreen])
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size='medium'>
       <ModalHeader onClose={onClose} showDismissButton={!isFlowLoading}>
-        <ModalTitle
-          title={
-            isFlowLoading
-              ? ''
-              : modalScreen === 'confirm'
-                ? messages.confirmDetails
-                : messages.title
-          }
-        />
+        <ModalTitle title={title} />
       </ModalHeader>
       <ModalContent>
         <BuySellFlow
