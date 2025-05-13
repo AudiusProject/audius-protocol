@@ -139,7 +139,7 @@ const RemixContestSubmissions = ({
   })
 
   const pathname = trackRemixesPage(permalink ?? '')
-  const search = `${new URLSearchParams({ isContestEntry: 'true' }).toString()}`
+  const search = new URLSearchParams({ isContestEntry: 'true' }).toString()
 
   return (
     <Flex column p='xl' gap='xl'>
