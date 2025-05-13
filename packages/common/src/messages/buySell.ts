@@ -12,6 +12,11 @@ export const buySellMessages = {
   audioTicker: '$AUDIO',
   usdcTicker: 'USDC',
   continue: 'Continue',
+  confirmDetails: 'CONFIRM DETAILS',
+  confirmReview:
+    'Please review your transaction details. This action cannot be undone.',
+  back: 'Back',
+  confirm: 'Confirm',
   poweredBy: 'POWERED BY',
   helpCenter: 'Check out our help center for more info!',
   walletGuide: 'Wallet Guide',
