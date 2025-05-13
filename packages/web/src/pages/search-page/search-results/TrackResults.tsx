@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import { SEARCH_PAGE_SIZE, useSearchTrackResults } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { Kind, Name } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -129,14 +130,18 @@ export const TrackResults = (props: TrackResultsProps) => {
   )
 }
 
-export const TrackResultsPage = () => {
+type TrackResultsPageProps = {
+  layout?: ViewLayout
+}
+
+export const TrackResultsPage = ({ layout }: TrackResultsPageProps) => {
   const isMobile = useIsMobile()
   const { color } = useTheme()
   const searchParams = useSearchParams()
   const { isPending, isFetching, isError } = useSearchTrackResults(searchParams)
 
   const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
-  const { isEnabled: isSearchExploreEnabled } = useFlag(
+  const { isEnabled: isSearchExploreEnabled } = useFeatureFlag(
     FeatureFlags.SEARCH_EXPLORE
   )
 
@@ -165,8 +170,12 @@ export const TrackResultsPage = () => {
       />
     </Flex>
   ) : (
-    <Flex p='m' css={{ backgroundColor: color.background.default }}>
+    <Flex
+      p={isSearchExploreEnabled ? '' : 'm'}
+      css={{ backgroundColor: color.background.default }}
+    >
       <TrackResults
+        viewLayout={layout}
         isPending={isPending}
         isFetching={isFetching}
         isError={isError}
