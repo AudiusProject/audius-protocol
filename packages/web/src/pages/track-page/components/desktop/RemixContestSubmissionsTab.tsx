@@ -138,7 +138,8 @@ const RemixContestSubmissions = ({
     select: (track) => track.permalink
   })
 
-  const remixesRoute = `${trackRemixesPage(permalink ?? '')}?isContestEntry=true`
+  const pathname = trackRemixesPage(permalink ?? '')
+  const search = `?${new URLSearchParams({ isContestEntry: 'true' }).toString()}`
 
   return (
     <Flex column p='xl' gap='xl'>
@@ -149,7 +150,7 @@ const RemixContestSubmissions = ({
       </Flex>
       <Flex justifyContent='center'>
         <PlainButton size='large' iconRight={IconArrowRight} asChild>
-          <Link to={remixesRoute}>{messages.viewAll}</Link>
+          <Link to={{ pathname, search }}>{messages.viewAll}</Link>
         </PlainButton>
       </Flex>
     </Flex>
