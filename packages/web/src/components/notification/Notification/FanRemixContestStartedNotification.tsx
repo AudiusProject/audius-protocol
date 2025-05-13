@@ -56,7 +56,12 @@ export const FanRemixContestStartedNotification = (
         <NotificationBody>
           <UserNameLink user={user} notification={notification} />{' '}
           {messages.description}
-          <TrackLink variant='secondary' size='l' trackId={track.track_id} />
+          <TrackLink
+            css={{ display: 'inline' }}
+            variant='secondary'
+            size='l'
+            trackId={track.track_id}
+          />
         </NotificationBody>
       </Flex>
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
