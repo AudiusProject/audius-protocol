@@ -1,8 +1,6 @@
 import { ReactNode } from 'react'
 
-import cn from 'classnames'
-
-import styles from './NotificationBody.module.css'
+import { Text } from '@audius/harmony'
 
 type NotificationBodyProps = {
   className?: string
@@ -14,7 +12,9 @@ export const NotificationBody = (props: NotificationBodyProps) => {
 
   return (
     <div>
-      <span className={cn(styles.root, className)}>{children}</span>
+      <Text variant='body' size='l' lineHeight='multi' className={className}>
+        {children}
+      </Text>
     </div>
   )
 }
