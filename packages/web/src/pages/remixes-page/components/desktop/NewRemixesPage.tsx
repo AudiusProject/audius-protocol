@@ -59,7 +59,7 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
 
   const isRemixContest = isRemixContestEnabled && contest
   const isTrackOwner = currentUserId === originalTrack.owner_id
-  const isRemixContestOver =
+  const isRemixContestEnded =
     isRemixContest && dayjs(contest.endDate).isBefore(dayjs())
 
   const { sortMethod, isCosign, isContestEntry } = useRemixPageParams()
@@ -91,7 +91,7 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
       primary={title}
       containerStyles={styles.header}
       rightDecorator={
-        isTrackOwner && isRemixContestOver ? (
+        isTrackOwner && isRemixContestEnded ? (
           <Button size='small' asChild>
             <Link to={pickWinnersRoute}>{messages.pickWinners}</Link>
           </Button>

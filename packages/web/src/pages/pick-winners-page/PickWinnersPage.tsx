@@ -16,7 +16,8 @@ import {
   IconCheck,
   Paper,
   Text,
-  useTheme
+  useTheme,
+  spacing
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router'
@@ -97,6 +98,13 @@ export const PickWinnersPage = () => {
     [winners]
   )
 
+  const submissionHeading = useCallback((count: number | undefined) => {
+    return `${count !== undefined ? count : '...'} ${pluralize(
+      messages.submissions,
+      count ?? 0
+    )}`
+  }, [])
+
   const tileAdornment = (elementId: ID, index: number) => {
     const Icon = winners.includes(elementId) ? IconCheck : IconPlus
     return (
@@ -153,7 +161,7 @@ export const PickWinnersPage = () => {
           ) : (
             <Paper
               p='3xl'
-              pv={56}
+              pv={spacing.unit14}
               border='default'
               justifyContent='center'
               alignItems='center'
@@ -165,12 +173,7 @@ export const PickWinnersPage = () => {
         <Flex column gap='xl'>
           <Flex column gap='s'>
             <Flex justifyContent='space-between'>
-              <Text variant='heading'>
-                {`${count !== undefined ? count : '...'} ${pluralize(
-                  messages.submissions,
-                  count ?? 0
-                )}`}
-              </Text>
+              <Text variant='heading'>{submissionHeading(count)}</Text>
               <Flex gap='s' mb='xl'>
                 <FilterButton
                   label={messages.coSigned}

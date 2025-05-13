@@ -24,6 +24,7 @@ const RemixesPage = ({ containerRef }: RemixesPageProps) => {
   let content = isMobile ? RemixesPageMobileContent : RemixesPageDesktopContent
 
   if (isRemixContestEnabled) {
+    // @ts-ignore: These props match
     content = isMobile
       ? NewRemixesPageMobileContent
       : NewRemixesPageDesktopContent
