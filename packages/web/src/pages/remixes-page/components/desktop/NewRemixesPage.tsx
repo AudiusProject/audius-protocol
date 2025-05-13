@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+
 import {
   useRemixes,
   useRemixContest,
@@ -18,6 +20,7 @@ import {
   Button
 } from '@audius/harmony'
 import { Link } from 'react-router-dom'
+import { useSearchParams as useParams } from 'react-router-dom-v5-compat'
 
 import { Header } from 'components/header/desktop/Header'
 import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
@@ -51,6 +54,7 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
   const updateSortParam = useUpdateSearchParams('sortMethod')
   const updateIsCosignParam = useUpdateSearchParams('isCosign')
   const updateIsContestEntryParam = useUpdateSearchParams('isContestEntry')
+  const [urlSearchParams] = useParams()
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
   )
@@ -84,6 +88,18 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
   })
 
   const pickWinnersRoute = pickWinnersPage(originalTrack?.permalink)
+
+  // On first load, set contest entry filter to true by default
+  useEffect(() => {
+    if (
+      isRemixContest &&
+      !isContestEntry &&
+      urlSearchParams.get('isContestEntry') === null
+    ) {
+      updateIsContestEntryParam('true')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const renderHeader = () => (
     <Header
