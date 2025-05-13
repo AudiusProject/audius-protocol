@@ -44,16 +44,14 @@ export const useUser = <TResult = User>(
 
   return useQuery({
     queryKey: getUserQueryKey(userId),
-    queryFn: async () => {
-      const sdk = await audiusSdk()
-      const batchGetUsers = getUsersBatcher({
-        sdk,
+    queryFn: async () =>
+      getUserQueryFn(
+        userId!,
         currentUserId,
         queryClient,
+        await audiusSdk(),
         dispatch
-      })
-      return await batchGetUsers.fetch(userId!)
-    },
+      ),
     ...options,
     enabled: options?.enabled !== false && validUserId
   })

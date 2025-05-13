@@ -1,7 +1,8 @@
 import {
   getWalletAccountQueryFn,
   getWalletAccountQueryKey,
-  queryUserByHandle
+  queryUserByHandle,
+  queryUsers
 } from '@audius/common/api'
 import { GUEST_EMAIL } from '@audius/common/hooks'
 import {
@@ -68,7 +69,6 @@ import {
 
 import { identify, make } from 'common/store/analytics/actions'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
-import { fetchUsers } from 'common/store/cache/users/sagas'
 import { sendRecoveryEmail } from 'common/store/recovery-email/sagas'
 import { UiErrorCode } from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
@@ -129,7 +129,7 @@ function* fetchDefaultFollowArtists() {
   yield* call(waitForRead)
   try {
     const defaultFollowUserIds = yield* call(getDefautFollowUserIds)
-    yield* call(fetchUsers, Array.from(defaultFollowUserIds))
+    yield* call(queryUsers, Array.from(defaultFollowUserIds))
   } catch (e: any) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({

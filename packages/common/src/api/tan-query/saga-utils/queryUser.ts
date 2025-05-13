@@ -30,7 +30,8 @@ export function* queryUser(id: ID | null | undefined) {
   return queryData as User | undefined
 }
 
-export function* queryUserByHandle(handle: string) {
+export function* queryUserByHandle(handle: string | null | undefined) {
+  if (!handle) return undefined
   const queryClient = yield* getContext('queryClient')
   const currentUserId = yield* select(getUserId)
   const sdk = yield* getSDK()
@@ -51,21 +52,18 @@ export function* queryUserByHandle(handle: string) {
 }
 
 export function* queryUsers(ids: ID[]) {
-  const queryClient = yield* getContext('queryClient')
-
-  return ids.reduce(
-    (acc, id) => {
-      const user = queryClient.getQueryData(getUserQueryKey(id))
-      if (user) {
-        acc[id] = user
-      }
-      return acc
-    },
-    {} as Record<ID, User>
-  )
+  const users = {} as Record<ID, User>
+  for (const id of ids) {
+    // Call each queryUser individually. They will be batched together in the queryFn (if necessary)
+    const user = yield* call(queryUser, id)
+    if (user) {
+      users[id] = user
+    }
+  }
+  return users
 }
 
-export function* queryAllUsers() {
+export function* queryAllCachedUsers() {
   const queryClient = yield* getContext('queryClient')
   const queries = queryClient.getQueriesData<User>({
     queryKey: [QUERY_KEYS.user]
