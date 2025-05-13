@@ -53,14 +53,7 @@ const ResultWrapper = ({
         alignItems='center'
         css={{ minWidth: 0 }}
         onClick={() => {
-          dispatch(
-            addRecentSearch({
-              searchItem: {
-                kind,
-                id
-              }
-            })
-          )
+          dispatch(addRecentSearch({ searchItem: { kind, id } }))
           navigate(to)
         }}
       >
