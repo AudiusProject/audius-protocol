@@ -2,7 +2,6 @@ import { transformAndCleanList } from '@audius/common/adapters'
 import { AudiusBackend } from '@audius/common/services'
 import {
   reactionsUIActions,
-  reactionsUISelectors,
   getReactionFromRawValue,
   getContext,
   ReactionTypes,
@@ -22,7 +21,6 @@ import { waitForWrite } from 'utils/sagaHelpers'
 const { getUserId } = accountSelectors
 const { fetchReactionValues, setLocalReactionValues, writeReactionValue } =
   reactionsUIActions
-const { makeGetReactionForSignature } = reactionsUISelectors
 
 type SubmitReactionConfig = {
   reactedTo: string
@@ -104,9 +102,11 @@ function* writeReactionValueAsync({
     return
   }
 
-  // If we're toggling a reaction, set it to null
-  const existingReaction = yield* select(makeGetReactionForSignature(entityId))
-  const newReactionValue = existingReaction === reaction ? null : reaction
+  // Get the current reaction from the store
+  const currentReaction = yield* select(
+    (state) => state.ui.reactions.reactionsForEntityMap[entityId]
+  )
+  const newReactionValue = currentReaction === reaction ? null : reaction
 
   yield put(
     setLocalReactionValues({
