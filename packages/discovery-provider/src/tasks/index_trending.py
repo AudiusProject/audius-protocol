@@ -93,6 +93,10 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
             TrendingType.TRACKS
         ).keys()
 
+        trending_playlist_versions = trending_strategy_factory.get_versions_for_type(
+            TrendingType.PLAYLISTS
+        ).keys()
+
         update_view(session, AGGREGATE_INTERVAL_PLAYS)
         update_view(session, TRENDING_PARAMS)
         for version in trending_track_versions:
@@ -160,6 +164,13 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
                 in {total_time} seconds"
             )
 
+        # Update trending playlists
+        for version in trending_playlist_versions:
+            strategy = trending_strategy_factory.get_strategy(
+                TrendingType.PLAYLISTS, version
+            )
+            strategy.update_playlist_score_query(session)
+
     update_end = time.time()
     update_total = update_end - update_start
     metric.save_time()
@@ -215,12 +226,12 @@ def index_trending_notifications(
 
         latest_notification_query = text(
             """
-                SELECT 
+                SELECT
                     DISTINCT ON (specifier) specifier,
                     timestamp,
                     data
                 FROM notification
-                WHERE 
+                WHERE
                     type=:type AND
                     specifier in :track_ids
                 ORDER BY
@@ -328,12 +339,12 @@ def index_trending_underground_notifications(db: SessionManager, timestamp: int)
 
         latest_notification_query = text(
             """
-                SELECT 
+                SELECT
                     DISTINCT ON (specifier) specifier,
                     timestamp,
                     data
                 FROM notification
-                WHERE 
+                WHERE
                     type=:type AND
                     specifier in :track_ids
                 ORDER BY
