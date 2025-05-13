@@ -1,4 +1,5 @@
 import { buySellMessages as baseMessages } from '@audius/common/messages'
+import { USDC } from '@audius/fixed-decimal'
 import { Button, Flex, Text } from '@audius/harmony'
 
 import { CryptoBalanceSection } from './CryptoBalanceSection'
@@ -9,10 +10,7 @@ import { TokenInfo } from './types'
 const messages = {
   ...baseMessages,
   priceEach: (price: number) => {
-    const formatted = price.toLocaleString('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    })
+    const formatted = USDC(price).toLocaleString('en-US')
     return `(${formatted} ea.)`
   }
 }

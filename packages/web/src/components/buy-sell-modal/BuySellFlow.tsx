@@ -79,8 +79,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
       receiveTokenInfo: receiveInfo,
       pricePerBaseToken: price,
       baseTokenSymbol: selectedPair.baseToken.symbol,
-      inputAmount: transactionData.inputAmount,
-      outputAmount: transactionData.outputAmount
+      payAmount: transactionData.inputAmount,
+      receiveAmount: transactionData.outputAmount
     }
   }, [activeTab, selectedPair, transactionData])
 
@@ -170,12 +170,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
       >
         {currentScreen === 'confirm' && confirmationScreenData ? (
           <ConfirmSwapScreen
-            payTokenInfo={confirmationScreenData.payTokenInfo}
-            receiveTokenInfo={confirmationScreenData.receiveTokenInfo}
-            payAmount={confirmationScreenData.inputAmount}
-            receiveAmount={confirmationScreenData.outputAmount}
-            pricePerBaseToken={confirmationScreenData.pricePerBaseToken}
-            baseTokenSymbol={confirmationScreenData.baseTokenSymbol}
+            {...confirmationScreenData}
             onBack={() => setCurrentScreen('input')}
             onConfirm={handleConfirmSwap}
             isConfirming={isConfirmButtonLoading}
