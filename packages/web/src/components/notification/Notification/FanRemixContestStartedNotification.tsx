@@ -21,7 +21,7 @@ import { UserNameLink } from './components/UserNameLink'
 
 const messages = {
   title: 'New Remix Contest',
-  description: 'started a new remix contest for'
+  description: 'started a new remix contest for '
 }
 
 type FanRemixContestStartedNotificationProps = {
@@ -51,11 +51,12 @@ export const FanRemixContestStartedNotification = (
       <NotificationHeader icon={<IconTrophy color='accent' />}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
-      <Flex>
+      <Flex alignItems='flex-start'>
         <TrackContent track={track as TrackEntity} hideTitle />
         <NotificationBody>
           <UserNameLink user={user} notification={notification} />{' '}
-          {messages.description} <TrackLink size='l' trackId={track.track_id} />
+          {messages.description}
+          <TrackLink variant='secondary' size='l' trackId={track.track_id} />
         </NotificationBody>
       </Flex>
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />

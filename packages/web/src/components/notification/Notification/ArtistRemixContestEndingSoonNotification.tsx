@@ -50,7 +50,7 @@ export const ArtistRemixContestEndingSoonNotification = (
         <NotificationBody>
           <Text variant='body' size='l'>
             {messages.description1}
-            <TrackLink size='l' trackId={track.track_id} />
+            <TrackLink variant='secondary' size='l' trackId={track.track_id} />
             {messages.description2}
           </Text>
         </NotificationBody>

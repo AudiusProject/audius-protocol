@@ -51,7 +51,7 @@ export const FanRemixContestEndingSoonNotification = (
       <NotificationHeader icon={<IconTrophy color='accent' />}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
-      <Flex>
+      <Flex alignItems='flex-start'>
         <TrackContent track={track as TrackEntity} hideTitle />
         <NotificationBody>
           <UserNameLink user={user} notification={notification} />{' '}

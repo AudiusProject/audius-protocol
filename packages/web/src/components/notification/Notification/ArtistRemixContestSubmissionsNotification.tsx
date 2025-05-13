@@ -47,7 +47,7 @@ export const ArtistRemixContestSubmissionsNotification = ({
       </NotificationHeader>
       <NotificationBody>
         {messages.description}
-        <TrackLink size='l' trackId={track.track_id} />
+        <TrackLink variant='secondary' size='l' trackId={track.track_id} />
         {milestone === 1
           ? messages.firstSubmission
           : messages.description2(milestone)}
