@@ -60,6 +60,12 @@ export function* queryUsers(ids: ID[]) {
   )
 }
 
+export function* queryAccountUser() {
+  const currentUserId = yield* select(getUserId)
+  const accountUser = yield* call(queryUser, currentUserId)
+  return accountUser
+}
+
 export function* queryAllUsers() {
   const queryClient = yield* getContext('queryClient')
   const queries = queryClient.getQueriesData<User>({

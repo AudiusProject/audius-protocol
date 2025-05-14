@@ -239,22 +239,6 @@ export const getAccountWithNameSortedPlaylistsAndAlbums = createSelector(
   }
 )
 
-export const getAccountWithSavedPlaylistsAndAlbums = createSelector(
-  [getUserHandle, getAccountWithCollections],
-  (handle, account) => {
-    if (!account) return undefined
-    return {
-      ...account,
-      playlists: account.collections.filter(
-        (c) => !c.is_album && c.ownerHandle !== handle
-      ),
-      albums: account.collections.filter(
-        (c) => c.is_album && c.ownerHandle !== handle
-      )
-    }
-  }
-)
-
 export const getAccountOwnedPlaylists = createSelector(
   [getUserPlaylists, getUserId],
   (collections, userId) =>
