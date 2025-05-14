@@ -70,7 +70,7 @@ export const useAddToPlaylistFolder = () => {
     onSuccess: ({ updatedLibrary, entityId, folder }) => {
       // Invalidate the playlist library query
       queryClient.setQueryData(
-        getCurrentAccountQueryKey(currentUserId),
+        getCurrentAccountQueryKey(),
         (old: AccountUserMetadata | undefined) => {
           if (!old) return old
           return { ...old, playlist_library: updatedLibrary }

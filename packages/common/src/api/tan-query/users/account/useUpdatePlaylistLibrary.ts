@@ -45,7 +45,7 @@ export const updatePlaylistLibrary = async (
   const dedupedPlaylistLibrary =
     removePlaylistLibraryDuplicates(playlistLibrary)
   queryClient.setQueryData(
-    getCurrentAccountQueryKey(userId),
+    getCurrentAccountQueryKey(),
     (old: AccountUserMetadata | undefined) => {
       if (!old) return old
       return { ...old, playlist_library: dedupedPlaylistLibrary }
