@@ -42,7 +42,7 @@ const messages = {
 }
 
 type VerifyBodyProps = {
-  handle: string
+  handle?: string
   onClick: () => void
   onFailure: (kind: 'instagram' | 'twitter' | 'tiktok', error: Error) => void
   onTwitterLogin: (uuid: string, profile: TwitterProfile) => void

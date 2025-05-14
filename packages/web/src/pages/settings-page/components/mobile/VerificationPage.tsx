@@ -61,7 +61,7 @@ const messages = {
 }
 
 type VerifyBodyProps = {
-  handle: string
+  handle?: string
   onClick: () => void
   onFailure: () => void
   onTwitterLogin: (uuid: string, profile: TwitterProfile) => void
@@ -162,7 +162,7 @@ const LoadingBody = () => {
 
 type SuccessBodyProps = {
   userId: ID
-  handle: string
+  handle?: string
   name: string
   goToRoute: (route: string) => void
 }
