@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import { SEARCH_PAGE_SIZE, useSearchTrackResults } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { Kind, Name } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -8,7 +9,7 @@ import {
   searchActions,
   SearchKind
 } from '@audius/common/store'
-import { FilterButton, Flex, Text, useTheme } from '@audius/harmony'
+import { FilterButton, Flex, Text } from '@audius/harmony'
 import { css } from '@emotion/css'
 import { useDispatch } from 'react-redux'
 
@@ -16,7 +17,6 @@ import { make } from 'common/store/analytics/actions'
 import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import { LineupVariant } from 'components/lineup/types'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { useMainContentRef } from 'pages/MainContentContext'
 
 import { NoResultsTile } from '../NoResultsTile'
@@ -129,14 +129,17 @@ export const TrackResults = (props: TrackResultsProps) => {
   )
 }
 
-export const TrackResultsPage = () => {
+type TrackResultsPageProps = {
+  layout?: ViewLayout
+}
+
+export const TrackResultsPage = ({ layout }: TrackResultsPageProps) => {
   const isMobile = useIsMobile()
-  const { color } = useTheme()
   const searchParams = useSearchParams()
   const { isPending, isFetching, isError } = useSearchTrackResults(searchParams)
 
   const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
-  const { isEnabled: isSearchExploreEnabled } = useFlag(
+  const { isEnabled: isSearchExploreEnabled } = useFeatureFlag(
     FeatureFlags.SEARCH_EXPLORE
   )
 
@@ -165,8 +168,12 @@ export const TrackResultsPage = () => {
       />
     </Flex>
   ) : (
-    <Flex p='m' css={{ backgroundColor: color.background.default }}>
+    <Flex
+      p={isSearchExploreEnabled ? '' : 'm'}
+      css={{ backgroundColor: 'default' }}
+    >
       <TrackResults
+        viewLayout={isSearchExploreEnabled ? layout : undefined}
         isPending={isPending}
         isFetching={isFetching}
         isError={isError}
