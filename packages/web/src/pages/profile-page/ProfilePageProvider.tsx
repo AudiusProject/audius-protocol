@@ -143,7 +143,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   componentDidMount() {
     // If routing from a previous profile page
     // the lineups must be reset to refetch & update for new user
-    console.log('asdf fetching profile: ', this.props.location)
     this.fetchProfile(getPathname(this.props.location))
 
     // Switching from profile page => profile page
@@ -153,8 +152,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         getPathname(this.props.location) !== getPathname(location) ||
         action === 'POP'
       ) {
-        console.log('asdf changing: ', this.props.location, location)
-
         const params = parseUserRoute(getPathname(location))
         if (params) {
           // Fetch profile if this is a new profile page
