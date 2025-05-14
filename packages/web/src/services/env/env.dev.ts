@@ -75,8 +75,7 @@ export const env: Env = {
   SOLANA_RELAY_ENDPOINT: 'http://audius-protocol-discovery-provider-1',
   SOLANA_TOKEN_PROGRAM_ADDRESS: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
   SOLANA_WEB3_CLUSTER: 'devnet',
-  SUGGESTED_FOLLOW_HANDLES:
-    'https://download.staging.audius.co/static-resources/signup-follows.json',
+  SUGGESTED_FOLLOW_HANDLES: '',
   TIKTOK_APP_ID: 'awa9re2w7ec3xrn6',
   USDC_MINT_ADDRESS: '26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y',
   USE_HASH_ROUTING: false,
