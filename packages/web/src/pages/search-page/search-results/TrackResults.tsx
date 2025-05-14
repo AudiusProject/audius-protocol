@@ -9,7 +9,7 @@ import {
   searchActions,
   SearchKind
 } from '@audius/common/store'
-import { FilterButton, Flex, Text, useTheme } from '@audius/harmony'
+import { FilterButton, Flex, Text } from '@audius/harmony'
 import { css } from '@emotion/css'
 import { useDispatch } from 'react-redux'
 
@@ -135,7 +135,6 @@ type TrackResultsPageProps = {
 
 export const TrackResultsPage = ({ layout }: TrackResultsPageProps) => {
   const isMobile = useIsMobile()
-  const { color } = useTheme()
   const searchParams = useSearchParams()
   const { isPending, isFetching, isError } = useSearchTrackResults(searchParams)
 
@@ -171,7 +170,7 @@ export const TrackResultsPage = ({ layout }: TrackResultsPageProps) => {
   ) : (
     <Flex
       p={isSearchExploreEnabled ? '' : 'm'}
-      css={{ backgroundColor: color.background.default }}
+      css={{ backgroundColor: 'default' }}
     >
       <TrackResults
         viewLayout={isSearchExploreEnabled ? layout : undefined}
