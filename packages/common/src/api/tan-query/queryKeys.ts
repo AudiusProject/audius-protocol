@@ -7,6 +7,7 @@ export const QUERY_KEYS = {
   userCommentList: 'userCommentList',
   comment: 'comment',
   commentReplies: 'commentReplies',
+  computedProps: 'computedProps',
   downloadTrackStems: 'downloadTrackStems',
   stemsArchiveJob: 'stemsArchiveJob',
   exploreContent: 'exploreContent',

@@ -1,13 +1,10 @@
+import { useCurrentAccount } from '@audius/common/api'
 import { SmartCollectionVariant } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
-import { useSelector } from 'react-redux'
 
 import { SMART_COLLECTION_MAP } from 'common/store/smart-collection/smartCollections'
 import { audioNftPlaylistPage } from 'utils/route'
 
 import { CollectionNavItem } from './CollectionNavItem'
-
-const { getUserHandle } = accountSelectors
 
 type AudioNftPlaylistNavItemProps = {
   level: number
@@ -20,7 +17,9 @@ export const AudioNftPlaylistNavItem = (
   const playlistId = SmartCollectionVariant.AUDIO_NFT_PLAYLIST
   const playlist = SMART_COLLECTION_MAP[playlistId]
   const { playlist_name } = playlist
-  const accountHandle = useSelector(getUserHandle)
+  const { data: accountHandle } = useCurrentAccount({
+    select: (data) => data?.user.handle
+  })
 
   if (!accountHandle) return null
 

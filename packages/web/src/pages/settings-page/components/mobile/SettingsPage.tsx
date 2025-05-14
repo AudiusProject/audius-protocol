@@ -1,5 +1,6 @@
 import { useContext, useEffect, FC } from 'react'
 
+import { useCurrentAccount } from '@audius/common/api'
 import { Name, SquareSizes, Theme } from '@audius/common/models'
 import {
   settingsPageActions,
@@ -48,7 +49,7 @@ const {
   getNotificationSettings: getNotificationSettingsAction,
   getPushNotificationSettings: getPushNotificationSettingsAction
 } = settingsPageActions
-const { getUserId, getUserHandle, getUserName } = accountSelectors
+const { getUserId, getUserName } = accountSelectors
 const { setTheme } = themeActions
 const { getTheme } = themeSelectors
 const { show } = musicConfettiActions
@@ -106,7 +107,9 @@ export const SettingsPage = (props: SettingsPageProps) => {
   useScrollToTop()
 
   const userId = useSelector(getUserId) ?? 0
-  const handle = useSelector(getUserHandle)
+  const { data: handle } = useCurrentAccount({
+    select: (account) => account?.user?.handle
+  })
   const name = useSelector(getUserName)
   const theme = useSelector(getTheme)
   const tier = useSelector(

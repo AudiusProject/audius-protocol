@@ -1,8 +1,8 @@
 import React from 'react'
 
-import { accountSelectors, ClaimStatus } from '@audius/common/store'
+import { useCurrentAccount } from '@audius/common/api'
+import { ClaimStatus } from '@audius/common/store'
 import { getChallengeStatusLabel } from '@audius/common/utils'
-import { useSelector } from 'react-redux'
 
 import { Button, IconValidationCheck, Text, Flex } from '@audius/harmony-native'
 import { getChallengeConfig } from 'app/utils/challenges'
@@ -12,8 +12,6 @@ import { ClaimError } from './ClaimError'
 import { ReferralLinkCopyButton } from './ReferralLinkCopyButton'
 import { TwitterShareButton } from './TwitterShareButton'
 import type { ChallengeContentProps } from './types'
-
-const { getUserHandle } = accountSelectors
 
 const messages = {
   audio: '$AUDIO / Invite',
@@ -31,7 +29,9 @@ export const ReferralChallengeContent = ({
   onClaim,
   onClose
 }: ChallengeContentProps) => {
-  const handle = useSelector(getUserHandle)
+  const { data: handle } = useCurrentAccount({
+    select: (account) => account?.user?.handle
+  })
   const inviteUrl = `audius.co/signup?rf=${handle}`
 
   const config = getChallengeConfig(challengeName)

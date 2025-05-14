@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { useCurrentAccount } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -13,11 +14,13 @@ import { push as pushRoute } from 'utils/navigation'
 import './CheckPage.module.css'
 
 const { SIGN_IN_PAGE, TRENDING_PAGE } = route
-const { getUserHandle, getAccountStatus } = accountSelectors
+const { getAccountStatus } = accountSelectors
 
 const CheckPage = () => {
   const dispatch = useDispatch()
-  const accountHandle = useSelector(getUserHandle)
+  const { data: accountHandle } = useCurrentAccount({
+    select: (data) => data?.user.handle
+  })
   const accountStatus = useSelector(getAccountStatus)
 
   useEffect(() => {
