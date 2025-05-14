@@ -15,10 +15,7 @@ import { waitForAccount } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
 import { mergeWith } from 'lodash'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
-import {
-  getUserComputedPropsQueryKey,
-  getUserQueryKey
-} from '~/api/tan-query/users/useUser'
+import { getUserComputedPropsQueryKey } from '~/api/tan-query/users/useUser'
 
 import { retrieve } from 'common/store/cache/sagas'
 
