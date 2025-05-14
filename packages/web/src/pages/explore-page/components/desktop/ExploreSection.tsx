@@ -18,7 +18,6 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
   data,
   Card
 }) => {
-  if (!data) return null
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -46,6 +45,7 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
       window.removeEventListener('resize', updateScrollButtons)
     }
   }, [updateScrollButtons])
+  if (!data) return null
 
   return (
     <Flex direction='column' gap='l'>

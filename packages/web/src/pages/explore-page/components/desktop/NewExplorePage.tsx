@@ -50,7 +50,6 @@ import {
   ViewLayout,
   viewLayoutOptions
 } from 'pages/search-page/types'
-import { explore } from 'services/explore'
 import { BASE_URL, stripBaseUrl } from 'utils/route'
 
 import { ExploreSection } from './ExploreSection'
