@@ -64,11 +64,6 @@ jobs:
       - run: sudo apt-get update
       - run: sudo apt-get install -y build-essential libssl-dev
       - run:
-          name: Setup Java environment
-          command: |
-            echo 'export PATH=$PATH:$JAVA_HOME/bin' >> $BASH_ENV
-            source $BASH_ENV
-      - run:
           name: Install dependencies
           # If node_modules exists in cache, run postinstall. Otherwise, run npm ci
           command: |
@@ -82,7 +77,6 @@ jobs:
             - ./packages/protocol-dashboard/node_modules
             - ./packages/web/node_modules
             - ./packages/mobile/node_modules
-            - ./packages/mobile/android/libs
             - ./packages/embed/node_modules
             - ./packages/harmony/node_modules
             - ./packages/common/node_modules
