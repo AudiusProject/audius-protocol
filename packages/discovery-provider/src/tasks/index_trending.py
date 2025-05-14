@@ -7,6 +7,7 @@ from redis import Redis
 from sqlalchemy import bindparam, text
 from sqlalchemy.orm.session import Session
 
+from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.core.core_indexed_blocks import CoreIndexedBlocks
 from src.models.indexing.block import Block
 from src.models.notifications.notification import Notification
@@ -79,7 +80,13 @@ def update_view(session: Session, mat_view_name: str):
     )
 
 
-def index_trending(self, db: SessionManager, redis: Redis, timestamp):
+def index_trending(
+    self,
+    db: SessionManager,
+    redis: Redis,
+    timestamp,
+    challenge_event_bus: ChallengeEventBus,
+):
     logger.debug("index_trending.py | starting indexing")
     update_start = time.time()
     metric = PrometheusMetric(PrometheusMetricNames.INDEX_TRENDING_DURATION_SECONDS)
@@ -91,6 +98,10 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
 
         trending_track_versions = trending_strategy_factory.get_versions_for_type(
             TrendingType.TRACKS
+        ).keys()
+
+        trending_playlist_versions = trending_strategy_factory.get_versions_for_type(
+            TrendingType.PLAYLISTS
         ).keys()
 
         update_view(session, AGGREGATE_INTERVAL_PLAYS)
@@ -160,6 +171,13 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
                 in {total_time} seconds"
             )
 
+        # Update trending playlists
+        for version in trending_playlist_versions:
+            strategy = trending_strategy_factory.get_strategy(
+                TrendingType.PLAYLISTS, version
+            )
+            strategy.update_playlist_score_query(session)
+
     update_end = time.time()
     update_total = update_end - update_start
     metric.save_time()
@@ -174,7 +192,7 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
     top_trending_tracks = get_top_trending_to_notify(db)
 
     index_trending_notifications(db, timestamp, top_trending_tracks)
-    index_tastemaker(db, top_trending_tracks, index_trending_task.challenge_event_bus)
+    index_tastemaker(db, top_trending_tracks, challenge_event_bus)
     index_trending_underground_notifications(db, timestamp)
 
 
@@ -215,12 +233,12 @@ def index_trending_notifications(
 
         latest_notification_query = text(
             """
-                SELECT 
+                SELECT
                     DISTINCT ON (specifier) specifier,
                     timestamp,
                     data
                 FROM notification
-                WHERE 
+                WHERE
                     type=:type AND
                     specifier in :track_ids
                 ORDER BY
@@ -328,12 +346,12 @@ def index_trending_underground_notifications(db: SessionManager, timestamp: int)
 
         latest_notification_query = text(
             """
-                SELECT 
+                SELECT
                     DISTINCT ON (specifier) specifier,
                     timestamp,
                     data
                 FROM notification
-                WHERE 
+                WHERE
                     type=:type AND
                     specifier in :track_ids
                 ORDER BY
@@ -522,6 +540,7 @@ def index_trending_task(self):
     """Caches all trending combination of time-range and genre (including no genre)."""
     db = index_trending_task.db
     redis = index_trending_task.redis
+    challenge_event_bus = index_trending_task.challenge_event_bus
     have_lock = False
     timeout = 60 * 60 * 2
     update_lock = redis.lock("index_trending_lock", timeout=timeout)
@@ -533,7 +552,7 @@ def index_trending_task(self):
                 db, core, redis, UPDATE_TRENDING_DURATION_DIFF_SEC
             )
             if min_block is not None and min_timestamp is not None:
-                index_trending(self, db, redis, min_timestamp)
+                index_trending(self, db, redis, min_timestamp, challenge_event_bus)
             else:
                 logger.debug("index_trending.py | skip indexing: not min block")
         else:
