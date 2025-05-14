@@ -1,4 +1,5 @@
-import { useExploreContent } from '@audius/common/api'
+import { useExploreContent, useTracks } from '@audius/common/api'
+import { Flex } from '@audius/harmony'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
@@ -12,11 +13,18 @@ const messages = {
 export const FeaturedRemixContests = () => {
   const { data: exploreContent, isLoading } = useExploreContent()
   const contestIds = exploreContent?.featuredRemixContests ?? []
+  const { isLoading: isTracksLoading } = useTracks(contestIds)
 
   return (
-    <Section title={messages.remixContests}>
-      {isLoading ? (
-        <LoadingSpinner />
+    <Section title={messages.remixContests} css={{ minHeight: 380 }}>
+      {isLoading || isTracksLoading ? (
+        <Flex
+          justifyContent='center'
+          alignItems='center'
+          css={{ minHeight: 300 }}
+        >
+          <LoadingSpinner css={{ width: 48 }} />
+        </Flex>
       ) : (
         <>
           {contestIds.slice(0, 4).map((id) => (
