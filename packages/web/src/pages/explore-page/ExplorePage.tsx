@@ -28,7 +28,7 @@ export const ExplorePage = () => {
   }
 
   const Component = isMobile
-    ? NewDesktopExplorePage
+    ? MobileExplorePage
     : isSearchExploreEnabled
       ? NewDesktopExplorePage
       : DesktopExplorePage

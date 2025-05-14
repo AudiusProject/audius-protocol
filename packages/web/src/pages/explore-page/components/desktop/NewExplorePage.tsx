@@ -1,4 +1,4 @@
-import { Key, useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { useExploreContent } from '@audius/common/api'
 import { ExploreCollectionsVariant } from '@audius/common/store'
@@ -13,15 +13,9 @@ import {
   TextInputSize,
   IconSearch,
   IconUser,
-  TextLink,
   Divider,
-  Tag,
-  FilterButton,
-  IconButton,
-  IconCaretLeft,
-  IconCaretRight
+  FilterButton
 } from '@audius/harmony'
-import { CSSObject, useTheme } from '@emotion/react'
 import { useNavigate, useSearchParams } from 'react-router-dom-v5-compat'
 import { useDebounce, usePrevious } from 'react-use'
 
@@ -58,6 +52,8 @@ import {
 } from 'pages/search-page/types'
 import { explore } from 'services/explore'
 import { BASE_URL, stripBaseUrl } from 'utils/route'
+
+import { ExploreSection } from './ExploreSection'
 
 export type ExplorePageProps = {
   title: string
@@ -120,7 +116,6 @@ const justForYou = [
   DOWNLOADS_AVAILABLE,
   PREMIUM_TRACKS
 ]
-const FEATURED_LIMIT = 10
 const DEBOUNCE_MS = 400
 
 const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
@@ -135,12 +130,6 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
 
   const { data: exploreContent } = useExploreContent()
-  const featuredPlaylists =
-    exploreContent?.featuredPlaylists.slice(0, FEATURED_LIMIT) ?? []
-  const featuredProfiles =
-    exploreContent?.featuredProfiles.slice(0, FEATURED_LIMIT) ?? []
-  const featuredRemixContests =
-    exploreContent?.featuredRemixContests.slice(0, FEATURED_LIMIT) ?? []
 
   const handleTabClick = useCallback(
     (newTab: string) => {
@@ -200,17 +189,6 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
     elements: tabHeaders.map((tab) => <Flex key={tab.label}>{tab.text}</Flex>),
     onTabClick: handleTabClick
   })
-
-  const horizontalScrollStyle: CSSObject = {
-    overflowX: 'auto',
-    // marginRight: 'calc(-50vw)',
-    // paddingRight: '49.5vw',
-    scrollbarWidth: 'none', // Firefox
-    msOverflowStyle: 'none', // IE/Edge
-    '&::-webkit-scrollbar': {
-      display: 'none' // Chrome/Safari
-    }
-  }
 
   return (
     <Flex justifyContent='center'>
@@ -274,7 +252,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                   return <FilterComponent key={filterKey} />
                 })}
               </Flex>
-              <Flex>
+              <Flex gap='s'>
                 <SortMethodFilterButton />
                 {categoryKey === CategoryView.TRACKS ? (
                   <FilterButton
@@ -300,95 +278,29 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
           <SearchResults tracksLayout={tracksLayout} />
         ) : (
           <>
-            {/* Featured Playlists */}
-            <Flex direction='column' gap='l'>
-              <Flex
-                gap='m'
-                alignItems='center'
-                alignSelf='stretch'
-                justifyContent='space-between'
-              >
-                <Text variant='heading'>{messages.featuredPlaylists}</Text>
-                <Flex gap='l'>
-                  <IconButton icon={IconCaretLeft} aria-label={''} />
-                  <IconButton icon={IconCaretRight} aria-label={''} />
-                </Flex>
-              </Flex>
-              <Flex css={horizontalScrollStyle}>
-                <Flex gap='l' css={{ minWidth: 'max-content' }}>
-                  {featuredPlaylists?.map((playlist_id) => (
-                    <CollectionCard
-                      key={playlist_id}
-                      id={playlist_id}
-                      size={'s'}
-                    />
-                  ))}
-                </Flex>
-              </Flex>
-            </Flex>
-            <Flex>
-              <Flex direction='column' gap='l'>
-                <Text variant='heading'>{messages.featuredRemixContests}</Text>
-                <Flex gap='l' justifyContent='space-between'>
-                  {featuredRemixContests?.map((featuredRemixContest) => (
-                    <RemixContestCard
-                      key={featuredRemixContest}
-                      id={featuredRemixContest}
-                      size={'s'}
-                    />
-                  ))}
-                </Flex>
-              </Flex>
-            </Flex>
+            <ExploreSection
+              title={messages.featuredPlaylists}
+              data={exploreContent?.featuredPlaylists}
+              Card={CollectionCard}
+            />
+            <ExploreSection
+              title={messages.featuredRemixContests}
+              data={exploreContent?.featuredRemixContests}
+              Card={RemixContestCard}
+            />
 
-            {/* Artist Spotlight */}
-            <Flex direction='column' gap='l'>
-              <Flex
-                gap='m'
-                alignItems='center'
-                alignSelf='stretch'
-                justifyContent='space-between'
-              >
-                <Text variant='heading'>{messages.artistSpotlight}</Text>
-                <Flex gap='l'>
-                  <IconButton icon={IconCaretLeft} aria-label={''} />
-                  <IconButton icon={IconCaretRight} aria-label={''} />
-                </Flex>
-              </Flex>
-              {/* <TextLink textVariant='title' size='m'>
-                  {messages.viewAll}
-                </TextLink> */}
-              <Flex css={horizontalScrollStyle}>
-                <Flex gap='l' css={{ minWidth: 'max-content' }}>
-                  {featuredProfiles?.map((user_id) => (
-                    <UserCard key={user_id} id={user_id} size='s' />
-                  ))}
-                </Flex>
-              </Flex>
-            </Flex>
+            <ExploreSection
+              title={messages.artistSpotlight}
+              data={exploreContent?.featuredProfiles}
+              Card={UserCard}
+            />
 
-            {/* Label Spotlight */}
-            <Flex direction='column' gap='l'>
-              <Flex
-                gap='m'
-                alignItems='center'
-                alignSelf='stretch'
-                justifyContent='space-between'
-              >
-                <Text variant='heading'>{messages.labelSpotlight}</Text>
-                <Flex gap='l'>
-                  <IconButton icon={IconCaretLeft} aria-label={''} />
-                  <IconButton icon={IconCaretRight} aria-label={''} />
-                </Flex>
-              </Flex>
-              <Flex css={horizontalScrollStyle}>
-                <Flex gap='l' css={{ minWidth: 'max-content' }}>
-                  {featuredProfiles?.map((user_id) => (
-                    <UserCard key={user_id} id={user_id} size='s' />
-                  ))}
-                </Flex>
-              </Flex>
-            </Flex>
+            <ExploreSection
+              title={messages.labelSpotlight}
+              data={exploreContent?.featuredLabels}
+              Card={UserCard}
+            />
+
             {/* Explore by mood */}
             <Flex direction='column' gap='l' alignItems='center'>
               <Text variant='heading'>{messages.exploreByMood}</Text>
@@ -397,12 +309,11 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                 justifyContent='center'
                 alignItems='flex-start'
                 wrap='wrap'
-                // w={900}
               >
                 {Object.entries(MOODS)
                   .sort()
                   .map(([mood, moodInfo]) => (
-                    <Flex
+                    <Paper
                       key={mood}
                       pv='l'
                       ph='xl'
@@ -418,7 +329,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                       <Text variant='title' size='s'>
                         {moodInfo.label}
                       </Text>
-                    </Flex>
+                    </Paper>
                   ))}
               </Flex>
             </Flex>

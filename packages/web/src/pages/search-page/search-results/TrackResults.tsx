@@ -17,7 +17,6 @@ import { make } from 'common/store/analytics/actions'
 import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import { LineupVariant } from 'components/lineup/types'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { useMainContentRef } from 'pages/MainContentContext'
 
 import { NoResultsTile } from '../NoResultsTile'
@@ -175,7 +174,7 @@ export const TrackResultsPage = ({ layout }: TrackResultsPageProps) => {
       css={{ backgroundColor: color.background.default }}
     >
       <TrackResults
-        viewLayout={layout}
+        viewLayout={isSearchExploreEnabled ? layout : undefined}
         isPending={isPending}
         isFetching={isFetching}
         isError={isError}

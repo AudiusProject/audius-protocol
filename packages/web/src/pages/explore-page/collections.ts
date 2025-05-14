@@ -169,12 +169,3 @@ export const EXPLORE_MOOD_COLLECTIONS_MAP: ExploreMoodMap = {
   upbeat: UPBEAT_PLAYLISTS,
   intense: INTENSE_PLAYLISTS
 }
-
-// TODO replace the one above
-export const NEW_EXPLORE_MOOD_COLLECTIONS_MAP: ExploreMoodMap = {
-  chill: CHILL_PLAYLISTS,
-  provoking: PROVOKING_PLAYLISTS,
-  intimate: INTIMATE_PLAYLISTS,
-  upbeat: UPBEAT_PLAYLISTS,
-  intense: INTENSE_PLAYLISTS
-}

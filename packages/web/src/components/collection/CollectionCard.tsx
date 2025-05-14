@@ -98,7 +98,7 @@ export const CollectionCard = forwardRef(
 
     if (isPending || loading) {
       return (
-        <Card size={size} {...other} css={{ flex: '0 0 auto' }}>
+        <Card size={size} {...other}>
           <Flex direction='column' p='s' gap='s'>
             <Skeleton border='default' css={{ aspectRatio: 1 }} />
             <CardContent gap='xs'>
