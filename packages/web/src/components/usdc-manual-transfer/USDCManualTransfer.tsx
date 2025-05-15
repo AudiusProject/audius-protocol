@@ -11,17 +11,17 @@ import { USDC } from '@audius/fixed-decimal'
 import {
   Button,
   Flex,
-  IconLogoCircleUSDC,
   IconError,
   Text,
-  LoadingSpinner
+  LoadingSpinner,
+  Divider
 } from '@audius/harmony'
 import BN from 'bn.js'
-import cn from 'classnames'
 import QRCode from 'react-qr-code'
 import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
+import { CashBalanceSection } from 'components/add-funds/CashBalanceSection'
 import { AddressTile } from 'components/address-tile'
 import { ToastContext } from 'components/toast/ToastContext'
 import { Hint } from 'components/withdraw-usdc-modal/components/Hint'
@@ -30,22 +30,21 @@ import { track as trackAnalytics, make } from 'services/analytics'
 import { getUSDCUserBank } from 'services/solana/solana'
 import { copyToClipboard } from 'utils/clipboardUtil'
 
-import styles from './USDCManualTransfer.module.css'
-
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
 const { getWalletAddresses } = accountSelectors
 
 const USDCLearnMore =
   'https://support.audius.co/help/Understanding-USDC-on-Audius'
+const DIMENSIONS = 160
 
 const messages = {
   explainer:
-    'Add funds by sending Solana based (SPL) USDC to your Audius account.',
+    'Add cash to your Audius account by depositing USDC via the Solana network!',
   disclaimer: 'Use caution to avoid errors and lost funds.',
   learnMore: 'Learn More',
   copy: 'Copy Wallet Address',
-  goBack: 'Go Back',
+  close: 'Close',
   copied: 'Copied to Clipboard!',
   buy: (amount: string) => `Buy ${amount}`
 }
@@ -100,14 +99,29 @@ export const USDCManualTransfer = ({
       <LoadingSpinner css={{ height: 32 }} />
     </Flex>
   ) : (
-    <Flex direction='column' gap='xl' p='xl'>
-      <Flex gap='l' alignItems='center' direction={isMobile ? 'column' : 'row'}>
+    <Flex direction='column' gap='xl' p='xl' h='100%'>
+      <CashBalanceSection balance={balanceBN} />
+      <Divider orientation='horizontal' color='default' />
+      <Flex
+        gap='xl'
+        alignItems='center'
+        direction={isMobile ? 'column' : 'row'}
+      >
         {isMobile ? <Text>{messages.explainer}</Text> : null}
-        <div className={styles.qr}>
+        <Flex
+          w={DIMENSIONS}
+          h={DIMENSIONS}
+          alignItems='center'
+          justifyContent='center'
+        >
           {USDCUserBank ? <QRCode value={USDCUserBank} /> : null}
-        </div>
-        <Flex direction='column' gap='xl'>
-          {!isMobile ? <Text>{messages.explainer}</Text> : null}
+        </Flex>
+        <Flex column gap='xl' h={DIMENSIONS} justifyContent='space-between'>
+          {!isMobile ? (
+            <Text variant='body' size='l'>
+              {messages.explainer}
+            </Text>
+          ) : null}
           <Hint
             text={messages.disclaimer}
             link={USDCLearnMore}
@@ -116,12 +130,8 @@ export const USDCManualTransfer = ({
           />
         </Flex>
       </Flex>
-      <AddressTile address={USDCUserBank ?? ''} iconLeft={IconLogoCircleUSDC} />
-      <div
-        className={cn(styles.buttonContainer, {
-          [styles.mobile]: isMobile
-        })}
-      >
+      <AddressTile address={USDCUserBank} />
+      <Flex gap='s' alignItems='center' direction={isMobile ? 'column' : 'row'}>
         {amountInCents === undefined ? (
           <>
             <Button variant='primary' fullWidth onClick={handleCopy}>
@@ -129,7 +139,7 @@ export const USDCManualTransfer = ({
             </Button>
             {isMobile ? null : (
               <Button variant='tertiary' fullWidth onClick={onClose}>
-                {messages.goBack}
+                {messages.close}
               </Button>
             )}
           </>
@@ -137,7 +147,7 @@ export const USDCManualTransfer = ({
           <>
             {isMobile ? null : (
               <Button variant='secondary' fullWidth onClick={onClose}>
-                {messages.goBack}
+                {messages.close}
               </Button>
             )}
             <Button
@@ -156,7 +166,7 @@ export const USDCManualTransfer = ({
             </Button>
           </>
         )}
-      </div>
+      </Flex>
     </Flex>
   )
 }
