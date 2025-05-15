@@ -21,12 +21,14 @@ import useTabs from 'hooks/useTabs/useTabs'
 import { RemixContestDetailsTab } from './RemixContestDetailsTab'
 import { RemixContestPrizesTab } from './RemixContestPrizesTab'
 import { RemixContestSubmissionsTab } from './RemixContestSubmissionsTab'
+import { RemixContestWinnersTab } from './RemixContestWinnersTab'
 import { TabBody } from './TabBody'
 
 const messages = {
   title: 'Remix Contest',
   details: 'Details',
   prizes: 'Prizes',
+  winners: 'Winners',
   submissions: 'Submissions',
   uploadRemixButtonText: 'Upload Your Remix'
 }
@@ -54,6 +56,7 @@ export const RemixContestSection = ({
 
   const [contentHeight, setContentHeight] = useState(0)
   const hasPrizeInfo = !!remixContest?.eventData?.prizeInfo
+  const hasWinners = (remixContest?.eventData?.winners?.length ?? 0) > 0
 
   const handleHeightChange = useCallback((height: number) => {
     setContentHeight(height)
@@ -77,7 +80,15 @@ export const RemixContestSection = ({
         ? `${messages.submissions} (${remixCount})`
         : messages.submissions,
       label: 'submissions'
-    }
+    },
+    ...(hasWinners
+      ? [
+          {
+            text: messages.winners,
+            label: 'winners'
+          }
+        ]
+      : [])
   ]
 
   const { tabs: TabBar, body: ContentBody } = useTabs({
@@ -98,7 +109,17 @@ export const RemixContestSection = ({
           trackId={trackId}
           submissions={remixes.slice(0, 10)}
         />
-      </TabBody>
+      </TabBody>,
+      ...(hasWinners
+        ? [
+            <TabBody key='winners' onHeightChange={handleHeightChange}>
+              <RemixContestWinnersTab
+                trackId={trackId}
+                winnerIds={remixContest?.eventData?.winners ?? []}
+              />
+            </TabBody>
+          ]
+        : [])
     ],
     isMobile: false
   })
