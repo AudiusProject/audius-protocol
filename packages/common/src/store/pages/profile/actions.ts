@@ -46,7 +46,7 @@ export type FetchProfileFailedAction = {
 
 export type SetCurrentUserAction = {
   type: typeof SET_CURRENT_USER
-  handle: string
+  handle: string | null
 }
 
 export type UpdateProfileAction = {
@@ -134,7 +134,7 @@ export function fetchProfileFailed(handle: string): FetchProfileFailedAction {
   return { type: FETCH_PROFILE_FAILED, handle }
 }
 
-export function setCurrentUser(handle: string): SetCurrentUserAction {
+export function setCurrentUser(handle: string | null): SetCurrentUserAction {
   return { type: SET_CURRENT_USER, handle }
 }
 

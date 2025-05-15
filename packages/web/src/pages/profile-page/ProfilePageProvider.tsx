@@ -10,7 +10,6 @@ import {
   UID
 } from '@audius/common/models'
 import { newUserMetadata } from '@audius/common/schemas'
-import { staticRoutes } from '@audius/common/src/utils/route'
 import {
   accountActions,
   accountSelectors,
@@ -39,6 +38,7 @@ import {
 } from '@audius/common/store'
 import { getErrorMessage, Nullable, route } from '@audius/common/utils'
 import { UnregisterCallback } from 'history'
+import { set } from 'lodash'
 import moment from 'moment'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
@@ -144,11 +144,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   componentDidMount() {
     // If routing from a previous profile page
     // the lineups must be reset to refetch & update for new user
-
-    const params = parseUserRoute(getPathname(this.props.location))
-    if (params?.handle) {
-      this.fetchProfile(getPathname(this.props.location))
-    }
+    this.fetchProfile(getPathname(this.props.location))
 
     // Switching from profile page => profile page
     this.unlisten = this.props.history.listen((location, action) => {
@@ -171,6 +167,9 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   }
 
   componentWillUnmount() {
+    // Reset current user to prevent jarring users with previous profile state
+    // e.g. profile -> explore -> profile
+    this.props.setCurrentUser(null)
     if (this.unlisten) {
       // Push unlisten to end of event loop. On some browsers, the back button
       // will cause the component to unmount and remove the unlisten faster than
@@ -290,9 +289,9 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     shouldSetLoading = true
   ) => {
     const params = parseUserRoute(pathname)
-    if (params) {
+    if (params?.handle) {
       this.props.fetchProfile(
-        params?.handle?.toLowerCase() ?? null,
+        params.handle.toLowerCase(),
         params.userId,
         forceUpdate,
         shouldSetLoading
@@ -1013,6 +1012,8 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
           deleteExistingEntry
         )
       ),
+    setCurrentUser: (handle: string | null) =>
+      dispatch(profileActions.setCurrentUser(handle)),
     fetchAccountHasTracks: () => {
       dispatch(fetchHasTracks())
     },
