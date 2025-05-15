@@ -5,6 +5,7 @@ import { configureScope, addBreadcrumb } from '@sentry/browser'
 import { History } from 'history'
 import { createStore, applyMiddleware, Action, Store } from 'redux'
 import { createReduxHistoryContext } from 'redux-first-history'
+import { persistStore } from 'redux-persist'
 import createSagaMiddleware from 'redux-saga'
 import createSentryMiddleware from 'redux-sentry-middleware'
 import thunk from 'redux-thunk'
@@ -178,6 +179,7 @@ export const configureStore = ({
   }
 
   const reduxHistory = createReduxHistory(store)
+  const persistor = persistStore(store)
 
-  return { store, history: reduxHistory }
+  return { store, history: reduxHistory, persistor }
 }

@@ -65,6 +65,17 @@ export * from './saved-page/utils'
 export { persistedSavePageReducer } from './saved-page/reducer'
 
 export {
+  default as pickWinnersPageLineupReducer,
+  initialState as pickWinnersPageLineupInitialState
+} from './pick-winners/lineup/reducer'
+export { tracksActions as pickWinnersPageLineupActions } from './pick-winners/lineup/actions'
+export {
+  default as pickWinnersPageReducer,
+  actions as pickWinnersPageActions
+} from './pick-winners/slice'
+export * as pickWinnersPageSelectors from './pick-winners/selectors'
+
+export {
   default as remixesPageLineupReducer,
   initialState as remixesPageLineupInitialState
 } from './remixes/lineup/reducer'

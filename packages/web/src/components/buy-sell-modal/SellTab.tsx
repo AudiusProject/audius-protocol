@@ -14,11 +14,15 @@ type SellTabProps = {
     outputAmount: number
     isValid: boolean
   }) => void
+  error?: boolean
+  errorMessage?: string
 }
 
 export const SellTab = ({
   tokenPair,
-  onTransactionDataChange
+  onTransactionDataChange,
+  error,
+  errorMessage
 }: SellTabProps) => {
   // Extract the tokens from the pair
   const { baseToken, quoteToken } = tokenPair
@@ -46,6 +50,9 @@ export const SellTab = ({
         formatError: () => 'Insufficient balance'
       }}
       onTransactionDataChange={onTransactionDataChange}
+      isDefault={false}
+      error={error}
+      errorMessage={errorMessage}
     />
   )
 }

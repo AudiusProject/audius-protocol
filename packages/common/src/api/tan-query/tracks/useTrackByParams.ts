@@ -8,6 +8,7 @@ import { trackPageLineupActions, trackPageSelectors } from '~/store/pages'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
 import { makeUid } from '~/utils/uid'
 
+import { useTrackPageLineup } from '../lineups/useTrackPageLineup'
 import { QueryOptions } from '../types'
 
 import { useTrack } from './useTrack'
@@ -41,8 +42,14 @@ export const useTrackByParams = (
 
   const { data: track, isSuccess } = query
 
+  const fetchTrackId = track?.track_id
+  const { isPending } = useTrackPageLineup(
+    { trackId: fetchTrackId, disableAutomaticCacheHandling: true },
+    { enabled: false }
+  )
+
   useEffect(() => {
-    if (track && isSuccess) {
+    if (track && isSuccess && isPending) {
       const { track_id } = track
 
       // Reset lineup before adding the hero track
@@ -61,7 +68,7 @@ export const useTrackByParams = (
         )
       )
     }
-  }, [isSuccess, track, dispatch, source])
+  }, [isSuccess, track, dispatch, source, isPending])
 
   return query
 }

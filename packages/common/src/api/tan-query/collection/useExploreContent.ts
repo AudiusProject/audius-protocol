@@ -13,12 +13,14 @@ type ExploreContentResponse = {
   featuredPlaylists: string[]
   featuredProfiles: string[]
   featuredRemixContests: string[]
+  featuredLabels: string[]
 }
 
 export type ExploreContent = {
   featuredPlaylists: ID[]
   featuredProfiles: ID[]
   featuredRemixContests: ID[]
+  featuredLabels: ID[]
 }
 
 export const getExploreContentQueryKey = () => {
@@ -45,6 +47,9 @@ export const useExploreContent = <TResult = ExploreContent>(
           (id: string) => parseInt(id) as ID
         ),
         featuredRemixContests: json.featuredRemixContests.map(
+          (id: string) => parseInt(id) as ID
+        ),
+        featuredLabels: json.featuredLabels.map(
           (id: string) => parseInt(id) as ID
         )
       }

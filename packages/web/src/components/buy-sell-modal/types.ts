@@ -1,5 +1,7 @@
 export type BuySellTab = 'buy' | 'sell'
 
+export type Screen = 'input' | 'confirm'
+
 export type TokenType = 'AUDIO' | 'USDC'
 
 export type TokenInfo = {
@@ -28,4 +30,7 @@ export type TokenAmountSectionProps = {
   availableBalance: number
   exchangeRate?: number | null
   placeholder?: string
+  isDefault?: boolean
+  error?: boolean
+  errorMessage?: string
 }

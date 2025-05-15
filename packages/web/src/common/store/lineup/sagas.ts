@@ -1,4 +1,4 @@
-import { queryAllTracks, queryAllUsers } from '@audius/common/api'
+import { queryAllTracks, queryAllCachedUsers } from '@audius/common/api'
 import {
   Name,
   Kind,
@@ -59,7 +59,7 @@ function* filterDeletes<T extends Track | Collection>(
   lineupPrefix: string
 ) {
   const tracks = yield* queryAllTracks()
-  const users = yield* queryAllUsers()
+  const users = yield* queryAllCachedUsers()
   const remoteConfig = yield* getContext('remoteConfigInstance')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   yield* call(remoteConfig.waitForRemoteConfig)

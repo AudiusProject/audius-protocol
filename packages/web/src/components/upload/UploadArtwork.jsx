@@ -59,6 +59,7 @@ const UploadArtwork = ({
       ref={imageSelectionAnchorRef}
     >
       <div
+        aria-label='artwork preview'
         className={styles.artworkWrapper}
         style={{
           backgroundImage: `url(${

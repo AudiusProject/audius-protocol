@@ -1,127 +1,18 @@
-import { userMetadataListFromSDK } from '@audius/common/adapters'
+import { getUserQueryKey, queryUserByHandle } from '@audius/common/api'
 import { Kind, User } from '@audius/common/models'
 import {
-  BatchCachedUsers,
-  Metadata,
   accountSelectors,
   cacheActions,
   cacheUsersActions as userActions,
-  cacheReducer,
-  cacheUsersSelectors,
   getContext,
-  reformatUser,
-  getSDK
+  cacheReducer
 } from '@audius/common/store'
-import { waitForAccount, waitForValue } from '@audius/common/utils'
-import { Id, OptionalId } from '@audius/sdk'
+import { waitForAccount } from '@audius/common/utils'
 import { mergeWith } from 'lodash'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 
-import { retrieve } from 'common/store/cache/sagas'
-import { waitForRead } from 'utils/sagaHelpers'
-
 const { mergeCustomizer } = cacheReducer
-const { getUser, getUsers, getUserTimestamps } = cacheUsersSelectors
 const { getUserId } = accountSelectors
-
-/**
- * @param {Nullable<Array<number>>} userIds array of user ids to fetch
- * @param {Set<any>} requiredFields
- * @param {boolean} forceRetrieveFromSource
- */
-export function* fetchUsers(
-  userIds: number[],
-  requiredFields?: Set<string>,
-  forceRetrieveFromSource?: boolean
-) {
-  const sdk = yield* getSDK()
-  const userId = yield* select(getUserId)
-
-  return (yield* call(retrieve, {
-    ids: userIds,
-    selectFromCache: function* (ids) {
-      return yield* select(getUsers, { ids: ids as number[] })
-    },
-    getEntriesTimestamp: function* (ids) {
-      return yield* select(getUserTimestamps, { ids: ids as number[] })
-    },
-    retrieveFromSource: function* (ids: (number | string)[]) {
-      const { data } = yield* call(
-        [sdk.full.users, sdk.full.users.getBulkUsers],
-        {
-          id: ids.map((id) => Id.parse(id)),
-          userId: OptionalId.parse(userId)
-        }
-      )
-      return userMetadataListFromSDK(data)
-    },
-    kind: Kind.USERS,
-    idField: 'user_id',
-    requiredFields,
-    forceRetrieveFromSource
-  })) as {
-    entries: Record<string | number, BatchCachedUsers>
-    uids: Record<string | number, string>
-  }
-}
-
-function* retrieveUserByHandle(handle: string, retry: boolean) {
-  yield* waitForRead()
-  const sdk = yield* getSDK()
-  const userId = yield* select(getUserId)
-  if (Array.isArray(handle)) {
-    handle = handle[0]
-  }
-
-  const { data: users = [] } = yield* call(
-    [sdk.full.users, sdk.full.users.getUserByHandle],
-    {
-      handle,
-      userId: OptionalId.parse(userId)
-    }
-  )
-  return userMetadataListFromSDK(users)
-}
-
-export function* fetchUserByHandle(
-  handle: string,
-  requiredFields?: Set<string>,
-  forceRetrieveFromSource = false,
-  shouldSetLoading = true,
-  deleteExistingEntry = false,
-  retry = true
-) {
-  // We only need to handle 1 handle
-  const retrieveFromSource = function* (handles: (string | number)[]) {
-    return yield* retrieveUserByHandle(handles[0].toString(), retry)
-  }
-
-  const { entries: users } = (yield* call(retrieve, {
-    ids: [handle],
-    selectFromCache: function* (handles) {
-      return yield* select(getUsers, { handles: handles as string[] })
-    },
-    getEntriesTimestamp: function* (handles) {
-      return yield* select(getUserTimestamps, {
-        handles: handles.map(toString)
-      })
-    },
-    retrieveFromSource,
-    onBeforeAddToCache: function* (users: Metadata[]) {
-      return users.map((user) => reformatUser(user as User))
-    },
-    kind: Kind.USERS,
-    idField: 'user_id',
-    requiredFields,
-    forceRetrieveFromSource,
-    shouldSetLoading,
-    deleteExistingEntry
-  })) as {
-    entries: Record<string | number, BatchCachedUsers>
-    uids: Record<string | number, string>
-  }
-  return users[handle].metadata
-}
 
 // For updates and adds, sync the account user to local storage.
 // We use the same mergeCustomizer we use in cacheSagas to merge
@@ -181,26 +72,27 @@ export function* adjustUserField({
 export function* fetchUserSocials({
   handle
 }: ReturnType<typeof userActions.fetchUserSocials>) {
-  let user = yield* select(getUser, { handle })
-  if (!user && handle) {
-    yield* call(fetchUserByHandle, handle, new Set())
-  }
-  user = yield* call(waitForValue, getUser, { handle })
+  const user = yield* call(queryUserByHandle, handle)
+
   if (!user) return
 
-  yield* put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: user.user_id,
-        metadata: {
-          twitter_handle: user.twitter_handle || null,
-          instagram_handle: user.instagram_handle || null,
-          tiktok_handle: user.tiktok_handle || null,
-          website: user.website || null,
-          donation: user.donation || null
-        }
-      }
-    ])
+  const queryClient = yield* getContext('queryClient')
+
+  queryClient.setQueryData(
+    getUserQueryKey(user.user_id),
+    (oldData: User | undefined) =>
+      // TODO: is returning undefined correct? Whats the correct behavior here if cache miss occurs?
+      oldData
+        ? {
+            ...oldData,
+            twitter_handle: user.twitter_handle || null,
+            instagram_handle: user.instagram_handle || null,
+            tiktok_handle: user.tiktok_handle || null,
+            website: user.website || null,
+            donation: user.donation || null
+          }
+        : // No existing user (cache miss) means there's nothing to update
+          undefined
   )
 }
 
@@ -208,19 +100,8 @@ function* watchFetchUserSocials() {
   yield* takeEvery(userActions.FETCH_USER_SOCIALS, fetchUserSocials)
 }
 
-function* watchFetchUsers() {
-  yield* takeEvery(
-    userActions.FETCH_USERS,
-    function* (action: ReturnType<typeof userActions.fetchUsers>) {
-      const { userIds, requiredFields, forceRetrieveFromSource } =
-        action.payload
-      yield* call(fetchUsers, userIds, requiredFields, forceRetrieveFromSource)
-    }
-  )
-}
-
 const sagas = () => {
-  return [watchSyncLocalStorageUser, watchFetchUserSocials, watchFetchUsers]
+  return [watchSyncLocalStorageUser, watchFetchUserSocials]
 }
 
 export default sagas

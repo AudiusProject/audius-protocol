@@ -17,6 +17,9 @@ export const useSuggestedArtists = (options?: QueryOptions) => {
   const { data: suggestedIds } = useQuery<number[]>({
     queryKey: getSuggestedArtistsQueryKey(),
     queryFn: async () => {
+      if (!env.SUGGESTED_FOLLOW_HANDLES) {
+        return []
+      }
       const response = await fetch(env.SUGGESTED_FOLLOW_HANDLES!)
       const suggestedArtists = await response.json()
       // dedupe the artists just in case the team accidentally adds the same artist twice
