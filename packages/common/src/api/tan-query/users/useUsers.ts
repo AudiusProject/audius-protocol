@@ -9,14 +9,13 @@ import { ID } from '~/models/Identifiers'
 import { UserMetadata } from '~/models/User'
 import { CommonState } from '~/store'
 
-import { getUsersBatcher } from '../batchers/getUsersBatcher'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, QueryOptions } from '../types'
 import { combineQueryResults } from '../utils/combineQueryResults'
 import { useQueries } from '../utils/useQueries'
 
 import { useCurrentUserId } from './account/useCurrentUserId'
-import { getUserQueryKey } from './useUser'
+import { getUserQueryFn, getUserQueryKey } from './useUser'
 
 export const getUsersQueryKey = (userIds: ID[] | null | undefined) => {
   return [QUERY_KEYS.users, userIds] as unknown as QueryKey<UserMetadata[]>
@@ -34,16 +33,14 @@ export const useUsers = (
   const queryResults = useQueries({
     queries: userIds?.map((userId) => ({
       queryKey: getUserQueryKey(userId),
-      queryFn: async () => {
-        const sdk = await audiusSdk()
-        const batchGetUsers = getUsersBatcher({
-          sdk,
+      queryFn: async () =>
+        getUserQueryFn(
+          userId,
           currentUserId,
           queryClient,
+          await audiusSdk(),
           dispatch
-        })
-        return await batchGetUsers.fetch(userId)
-      },
+        ),
       ...options,
       enabled: options?.enabled !== false && !!userId && userId > 0
     })),

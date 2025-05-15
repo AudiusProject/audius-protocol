@@ -1,3 +1,4 @@
+import { queryUsers } from '@audius/common/api'
 import { Kind } from '@audius/common/models'
 import {
   cacheReducer,
@@ -16,7 +17,6 @@ import { describe, it, beforeAll, expect, vitest } from 'vitest'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import cacheSagas from 'common/store/cache/sagas'
-import { fetchUsers } from 'common/store/cache/users/sagas'
 import { LineupSagas } from 'common/store/lineup/sagas'
 import { noopReducer, allSagas } from 'store/testHelper'
 
@@ -128,7 +128,7 @@ describe.skip('fetch', () => {
       )
       .provide([
         [matchers.call.fn(waitForBackendSetup), true],
-        [matchers.call.fn(fetchUsers), []]
+        [matchers.call.fn(queryUsers), []]
       ])
       .dispatch(actions.fetchLineupMetadatas())
       .silentRun()
