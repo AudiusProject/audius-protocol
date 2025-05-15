@@ -10,6 +10,7 @@ import { formatCount, formatReleaseDate } from '@audius/common/utils'
 import { Flex, Skeleton, Text } from '@audius/harmony'
 import IconHeart from '@audius/harmony/src/assets/icons/Heart.svg'
 import IconRepost from '@audius/harmony/src/assets/icons/Repost.svg'
+import { pick } from 'lodash'
 import { useLinkClickHandler } from 'react-router-dom-v5-compat'
 
 import { Card, CardProps, CardFooter, CardContent } from 'components/card'
@@ -54,7 +55,22 @@ export const CollectionCard = forwardRef(
     } = props
 
     const { data: currentUserId } = useCurrentUserId()
-    const { data: collection, isPending } = useCollection(id)
+    const { data: collection, isPending } = useCollection(id, {
+      select: (collection) =>
+        pick(
+          collection,
+          'playlist_name',
+          'permalink',
+          'playlist_owner_id',
+          'repost_count',
+          'save_count',
+          'is_private',
+          'access',
+          'stream_conditions',
+          'is_scheduled_release',
+          'release_date'
+        )
+    })
 
     const {
       playlist_name,

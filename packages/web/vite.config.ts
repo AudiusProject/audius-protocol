@@ -195,12 +195,6 @@ export default defineConfig(async ({ mode }) => {
       threads: false,
       minWorkers: 1,
       maxWorkers: 1 // Segfaults if multithreaded
-      // globals: true,
-      // environmentOptions: {
-      //   jsdom: {
-      //     resources: 'usable'
-      //   }
-      // }
     }
   }
 })

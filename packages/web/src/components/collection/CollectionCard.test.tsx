@@ -1,5 +1,6 @@
 import { SquareSizes } from '@audius/common/models'
 import { Text } from '@audius/harmony'
+import { developmentConfig } from '@audius/sdk'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { Routes, Route } from 'react-router-dom-v5-compat'
@@ -8,6 +9,8 @@ import { describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
 import { render, screen } from 'test/test-utils'
 
 import { CollectionCard } from './CollectionCard'
+
+const { apiEndpoint } = developmentConfig.network
 
 const testCollection = {
   id: '7eP5n',
@@ -34,11 +37,9 @@ const testCollection = {
   followee_reposts: [],
   followee_favorites: [],
   artwork: {
-    [SquareSizes.SIZE_150_BY_150]:
-      'http://audius-protocol-creator-node-1/image-collection-small.jpg',
-    [SquareSizes.SIZE_480_BY_480]:
-      'http://audius-protocol-creator-node-1/image-collection-medium.jpg',
-    mirrors: ['http://audius-protocol-creator-node-1']
+    [SquareSizes.SIZE_150_BY_150]: `${apiEndpoint}/image-collection-small.jpg`,
+    [SquareSizes.SIZE_480_BY_480]: `${apiEndpoint}/image-collection-medium.jpg`,
+    mirrors: [apiEndpoint]
   },
   access: { stream: true },
   user: {
@@ -54,17 +55,14 @@ const renderCollectionCard = (overrides = {}) => {
   const collection = { ...testCollection, ...overrides }
 
   server.use(
-    http.get(
-      'http://audius-protocol-discovery-provider-1/v1/full/playlists',
-      ({ request }) => {
-        const url = new URL(request.url)
-        const id = url.searchParams.get('id')
-        if (id === '7eP5n') {
-          return HttpResponse.json({ data: [collection] })
-        }
-        return new HttpResponse(null, { status: 404 })
+    http.get(`${apiEndpoint}/v1/full/playlists`, ({ request }) => {
+      const url = new URL(request.url)
+      const id = url.searchParams.get('id')
+      if (id === '7eP5n') {
+        return HttpResponse.json({ data: [collection] })
       }
-    )
+      return new HttpResponse(null, { status: 404 })
+    })
   )
 
   return render(
@@ -124,7 +122,7 @@ describe('CollectionCard', () => {
 
     expect(await screen.findByTestId('cover-art-1')).toHaveAttribute(
       'src',
-      'http://audius-protocol-creator-node-1/image-collection-medium.jpg'
+      `${apiEndpoint}/image-collection-medium.jpg`
     )
   })
 

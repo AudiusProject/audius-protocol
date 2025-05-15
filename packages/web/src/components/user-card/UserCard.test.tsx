@@ -1,5 +1,6 @@
 import { SquareSizes } from '@audius/common/models'
 import { Text } from '@audius/harmony'
+import { developmentConfig } from '@audius/sdk'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { Route, Routes } from 'react-router-dom-v5-compat'
@@ -9,16 +10,16 @@ import { RenderOptions, render, screen } from 'test/test-utils'
 
 import { UserCard } from './UserCard'
 
+const { apiEndpoint } = developmentConfig.network
+
 const testUser = {
   id: '7eP5n',
   handle: 'test-user',
   name: 'Test User',
   profile_picture: {
-    [SquareSizes.SIZE_150_BY_150]:
-      'http://audius-protocol-creator-node-1/image-profile-small.jpg',
-    [SquareSizes.SIZE_480_BY_480]:
-      'http://audius-protocol-creator-node-1/image-profile-medium.jpg',
-    mirrors: ['http://audius-protocol-creator-node-1']
+    [SquareSizes.SIZE_150_BY_150]: `${apiEndpoint}/image-profile-small.jpg`,
+    [SquareSizes.SIZE_480_BY_480]: `${apiEndpoint}/image-profile-medium.jpg`,
+    mirrors: [apiEndpoint]
   },
   follower_count: 1
 }
@@ -29,17 +30,14 @@ function renderUserCard(overrides = {}, options?: RenderOptions) {
   const user = { ...testUser, ...overrides }
 
   server.use(
-    http.get(
-      'http://audius-protocol-discovery-provider-1/v1/full/users',
-      ({ request }) => {
-        const url = new URL(request.url)
-        const id = url.searchParams.get('id')
-        if (id === '7eP5n') {
-          return HttpResponse.json({ data: [user] })
-        }
-        return new HttpResponse(null, { status: 404 })
+    http.get(`${apiEndpoint}/v1/full/users`, ({ request }) => {
+      const url = new URL(request.url)
+      const id = url.searchParams.get('id')
+      if (id === '7eP5n') {
+        return HttpResponse.json({ data: [user] })
       }
-    )
+      return new HttpResponse(null, { status: 404 })
+    })
   )
 
   return render(
@@ -89,7 +87,7 @@ describe('UserCard', () => {
     renderUserCard()
     expect(await screen.findByRole('img')).toHaveAttribute(
       'src',
-      'http://audius-protocol-creator-node-1/image-profile-small.jpg'
+      `${apiEndpoint}/image-profile-small.jpg`
     )
   })
 
