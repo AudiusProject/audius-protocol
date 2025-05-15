@@ -3,6 +3,7 @@ import path from 'path'
 import { expect, type Locator, type Page } from '@playwright/test'
 
 export class EditAlbumPage {
+  private readonly artwork: Locator
   private readonly artworkButton: Locator
   private readonly dropzoneFileInput: Locator
   private readonly titleInput: Locator
@@ -23,6 +24,7 @@ export class EditAlbumPage {
       name: /price & audience/i
     })
     this.saveChangesButton = page.getByRole('button', { name: /save changes/i })
+    this.artwork = page.getByLabel(/artwork preview/)
   }
 
   async setTitle(title: string) {
@@ -44,6 +46,10 @@ export class EditAlbumPage {
       path.join(__dirname, '..', 'files', file)
     )
     await this.dropzoneFileInput.page().getByLabel('close popup').click()
+    // Wait until finished loading
+    await this.artwork
+      .getByRole('progressbar')
+      .waitFor({ state: 'hidden', timeout: 30_000 })
   }
 
   async openPriceAndAudienceModal() {
