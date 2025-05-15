@@ -110,12 +110,15 @@
 .searchBar :global(.ant-select-dropdown) {
   -webkit-app-region: none;
   animation-duration: 0.2s !important;
-  box-shadow: 0 2px 5px 0 rgba(133, 129, 153, 0.15);
+  box-shadow:
+    0px 0px 4px 0px rgba(0, 0, 0, 0.04),
+    0px 4px 8px 0px rgba(0, 0, 0, 0.06);
   position: absolute;
   background: var(--harmony-white);
   width: 100%;
   top: 32px !important;
-  border-radius: 4px;
+  border-radius: 8px;
+  border: 1px solid var(--harmony-n-100);
   padding: 0;
 }
 
