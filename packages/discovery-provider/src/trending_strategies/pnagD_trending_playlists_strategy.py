@@ -73,7 +73,7 @@ class TrendingPlaylistsStrategypnagD(BaseTrendingStrategy):
                             is_current is True AND
                             is_delete is False AND
                             repost_type = 'playlist' AND
-                            repost_item_id in (select playlist_id from playlists where is_current is True AND is_delete is False AND is_private is False AND is_album is False) AND
+                            repost_item_id in (select playlist_id from playlists where is_current is True AND is_delete is False AND is_private is False) AND
                             created_at >= NOW() - interval ':week days'
                         union all
                         select user_id, save_item_id as item_id
@@ -82,7 +82,7 @@ class TrendingPlaylistsStrategypnagD(BaseTrendingStrategy):
                             is_current is True AND
                             is_delete is False AND
                             save_type = 'playlist' AND
-                            save_item_id in (select playlist_id from playlists where is_current is True AND is_delete is False AND is_private is False AND is_album is False) AND
+                            save_item_id in (select playlist_id from playlists where is_current is True AND is_delete is False AND is_private is False) AND
                             created_at >= NOW() - interval ':week days'
                     ),
                     filtered_users as (
@@ -182,7 +182,6 @@ class TrendingPlaylistsStrategypnagD(BaseTrendingStrategy):
                         p.is_current is True AND
                         p.is_delete is False AND
                         p.is_private is False AND
-                        p.is_album is False AND
                         jsonb_array_length(p.playlist_contents->'track_ids') >= :mt;
                 INSERT INTO playlist_trending_scores
                     (playlist_id, type, version, time_range, score, created_at)
@@ -193,7 +192,7 @@ class TrendingPlaylistsStrategypnagD(BaseTrendingStrategy):
                             is_current is True AND
                             is_delete is False AND
                             repost_type = 'playlist' AND
-                            repost_item_id in (select playlist_id from playlists where is_current is True AND is_delete is False AND is_private is False AND is_album is False) AND
+                            repost_item_id in (select playlist_id from playlists where is_current is True AND is_delete is False AND is_private is False) AND
                             created_at >= NOW() - interval ':month days'
                         union all
                         select user_id, save_item_id as item_id
@@ -202,7 +201,7 @@ class TrendingPlaylistsStrategypnagD(BaseTrendingStrategy):
                             is_current is True AND
                             is_delete is False AND
                             save_type = 'playlist' AND
-                            save_item_id in (select playlist_id from playlists where is_current is True AND is_delete is False AND is_private is False AND is_album is False) AND
+                            save_item_id in (select playlist_id from playlists where is_current is True AND is_delete is False AND is_private is False) AND
                             created_at >= NOW() - interval ':month days'
                     ),
                     filtered_users as (
@@ -302,7 +301,6 @@ class TrendingPlaylistsStrategypnagD(BaseTrendingStrategy):
                         p.is_current is True AND
                         p.is_delete is False AND
                         p.is_private is False AND
-                        p.is_album is False AND
                         jsonb_array_length(p.playlist_contents->'track_ids') >= :mt;
                 INSERT INTO playlist_trending_scores
                     (playlist_id, type, version, time_range, score, created_at)
@@ -313,7 +311,7 @@ class TrendingPlaylistsStrategypnagD(BaseTrendingStrategy):
                             is_current is True AND
                             is_delete is False AND
                             repost_type = 'playlist' AND
-                            repost_item_id in (select playlist_id from playlists where is_current is True AND is_delete is False AND is_private is False AND is_album is False)
+                            repost_item_id in (select playlist_id from playlists where is_current is True AND is_delete is False AND is_private is False)
                         union all
                         select user_id, save_item_id as item_id
                         from saves
@@ -321,7 +319,7 @@ class TrendingPlaylistsStrategypnagD(BaseTrendingStrategy):
                             is_current is True AND
                             is_delete is False AND
                             save_type = 'playlist' AND
-                            save_item_id in (select playlist_id from playlists where is_current is True AND is_delete is False AND is_private is False AND is_album is False)
+                            save_item_id in (select playlist_id from playlists where is_current is True AND is_delete is False AND is_private is False)
                     ),
                     filtered_users as (
                         select sr.user_id, sr.item_id
@@ -367,7 +365,6 @@ class TrendingPlaylistsStrategypnagD(BaseTrendingStrategy):
                         p.is_current is True AND
                         p.is_delete is False AND
                         p.is_private is False AND
-                        p.is_album is False AND
                         jsonb_array_length(p.playlist_contents->'track_ids') >= :mt;
             commit;
         """
