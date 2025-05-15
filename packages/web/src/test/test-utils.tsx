@@ -24,6 +24,7 @@ import { configureStore } from 'store/configureStore'
 import { AppState } from 'store/types'
 
 import { createMockAppContext } from './mocks/app-context'
+import { audiusSdk } from './mocks/audiusSdk'
 
 type TestOptions = {
   reduxState?: PartialDeep<AppState>
@@ -41,7 +42,12 @@ export const ReduxProvider = ({
 }: ReduxProviderProps) => {
   const { history } = useHistoryContext()
   const isMobile = useIsMobile()
-  const { store } = configureStore(history, isMobile, initialStoreState)
+  const { store } = configureStore({
+    history,
+    isMobile,
+    initialStoreState,
+    isTest: true
+  })
 
   return <Provider store={store}>{children}</Provider>
 }
@@ -55,7 +61,9 @@ const TestProviders =
     const { children } = props
     const { reduxState, featureFlags } = options ?? {}
     const mockAppContext = createMockAppContext(featureFlags)
-    const queryContext = {} as unknown as QueryContextType
+    const queryContext = {
+      audiusSdk
+    } as unknown as QueryContextType
 
     return (
       <HistoryContextProvider>

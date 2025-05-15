@@ -2,7 +2,7 @@ import {
   userMetadataListFromSDK,
   userWalletsFromSDK
 } from '@audius/common/adapters'
-import { queryUserByHandle } from '@audius/common/api'
+import { queryUser, queryUserByHandle } from '@audius/common/api'
 import { Kind } from '@audius/common/models'
 import {
   accountSelectors,
@@ -34,7 +34,6 @@ import {
   takeEvery
 } from 'redux-saga/effects'
 
-import { fetchUsers } from 'common/store/cache/users/sagas'
 import feedSagas from 'common/store/pages/profile/lineups/feed/sagas.js'
 import tracksSagas from 'common/store/pages/profile/lineups/tracks/sagas.js'
 import {
@@ -264,13 +263,7 @@ function* fetchProfileAsync(action) {
     if (action.handle) {
       user = yield call(queryUserByHandle, action.handle)
     } else if (action.userId) {
-      const users = yield call(
-        fetchUsers,
-        [action.userId],
-        new Set(),
-        action.forceUpdate,
-        action.shouldSetLoading
-      )
+      const users = yield call(queryUser, action.userId)
       user = users.entries[action.userId].metadata
     }
     if (!user) {

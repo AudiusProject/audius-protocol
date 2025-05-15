@@ -27,7 +27,6 @@ export const useCollection = <TResult = TQCollection>(
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
-  const validCollectionId = !!collectionId && collectionId > 0
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const select = useMemo(() => options?.select, [])
@@ -46,6 +45,6 @@ export const useCollection = <TResult = TQCollection>(
     },
     ...options,
     select,
-    enabled: options?.enabled !== false && validCollectionId
+    enabled: options?.enabled !== false && !!collectionId
   })
 }

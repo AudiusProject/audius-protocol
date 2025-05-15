@@ -1,18 +1,13 @@
-import { userMetadataListFromSDK } from '@audius/common/adapters'
-import { queryUserByHandle } from '@audius/common/api'
+import { getUserQueryKey, queryUserByHandle } from '@audius/common/api'
 import { Kind, User } from '@audius/common/models'
 import {
-  BatchCachedUsers,
   accountSelectors,
   cacheActions,
   cacheUsersActions as userActions,
-  cacheReducer,
-  cacheUsersSelectors,
   getContext,
-  getSDK
+  cacheReducer
 } from '@audius/common/store'
 import { waitForAccount } from '@audius/common/utils'
-import { Id, OptionalId } from '@audius/sdk'
 import { mergeWith } from 'lodash'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 import { getUserComputedPropsQueryKey } from '~/api/tan-query/users/useUser'
@@ -20,49 +15,7 @@ import { getUserComputedPropsQueryKey } from '~/api/tan-query/users/useUser'
 import { retrieve } from 'common/store/cache/sagas'
 
 const { mergeCustomizer } = cacheReducer
-const { getUsers, getUserTimestamps } = cacheUsersSelectors
 const { getUserId } = accountSelectors
-
-/**
- * @param {Nullable<Array<number>>} userIds array of user ids to fetch
- * @param {Set<any>} requiredFields
- * @param {boolean} forceRetrieveFromSource
- */
-export function* fetchUsers(
-  userIds: number[],
-  requiredFields?: Set<string>,
-  forceRetrieveFromSource?: boolean
-) {
-  const sdk = yield* getSDK()
-  const userId = yield* select(getUserId)
-
-  return (yield* call(retrieve, {
-    ids: userIds,
-    selectFromCache: function* (ids) {
-      return yield* select(getUsers, { ids: ids as number[] })
-    },
-    getEntriesTimestamp: function* (ids) {
-      return yield* select(getUserTimestamps, { ids: ids as number[] })
-    },
-    retrieveFromSource: function* (ids: (number | string)[]) {
-      const { data } = yield* call(
-        [sdk.full.users, sdk.full.users.getBulkUsers],
-        {
-          id: ids.map((id) => Id.parse(id)),
-          userId: OptionalId.parse(userId)
-        }
-      )
-      return userMetadataListFromSDK(data)
-    },
-    kind: Kind.USERS,
-    idField: 'user_id',
-    requiredFields,
-    forceRetrieveFromSource
-  })) as {
-    entries: Record<string | number, BatchCachedUsers>
-    uids: Record<string | number, string>
-  }
-}
 
 // For updates and adds, sync the account user to local storage.
 // We use the same mergeCustomizer we use in cacheSagas to merge
@@ -150,19 +103,8 @@ function* watchFetchUserSocials() {
   yield* takeEvery(userActions.FETCH_USER_SOCIALS, fetchUserSocials)
 }
 
-function* watchFetchUsers() {
-  yield* takeEvery(
-    userActions.FETCH_USERS,
-    function* (action: ReturnType<typeof userActions.fetchUsers>) {
-      const { userIds, requiredFields, forceRetrieveFromSource } =
-        action.payload
-      yield* call(fetchUsers, userIds, requiredFields, forceRetrieveFromSource)
-    }
-  )
-}
-
 const sagas = () => {
-  return [watchSyncLocalStorageUser, watchFetchUserSocials, watchFetchUsers]
+  return [watchSyncLocalStorageUser, watchFetchUserSocials]
 }
 
 export default sagas

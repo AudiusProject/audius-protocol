@@ -7,7 +7,8 @@ import {
   getStemsQueryKey,
   queryAccountUser,
   queryTrack,
-  queryUser
+  queryUser,
+  queryUsers
 } from '@audius/common/api'
 import {
   Name,
@@ -44,7 +45,6 @@ import { Id, OptionalId } from '@audius/sdk'
 import { call, fork, put, select, takeEvery } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { fetchUsers } from 'common/store/cache/users/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { updateProfileAsync } from 'common/store/profile/sagas'
 import { addPremiumMetadata } from 'common/store/upload/sagaHelpers'
@@ -69,7 +69,7 @@ function* fetchRepostInfo(entries: Entry<Collection>[]) {
   })
 
   if (userIds.length) {
-    yield* call(fetchUsers, userIds)
+    yield* call(queryUsers, userIds)
   }
 }
 

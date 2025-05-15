@@ -9,7 +9,6 @@ buildscript {
         castFrameworkVersion = "21.0.0"
         ndkVersion = "26.1.10909125"
         kotlinVersion = "1.9.25"
-        // ffmpegKitPackage = "https-gpl-lts"
     }
     repositories {
         google()

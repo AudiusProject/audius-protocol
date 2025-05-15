@@ -4,6 +4,21 @@ import './vitest-canvas-mock'
 import { cleanup } from '@testing-library/react'
 import { afterEach, vi } from 'vitest'
 
+import { queryClient } from 'services/query-client'
+
+// Mock console.error to filter out React prop warnings
+const originalError = console.error
+console.error = (...args) => {
+  if (
+    typeof args[0] === 'string' &&
+    args[0].includes('React does not recognize the `') &&
+    args[0].includes('` prop on a DOM element')
+  ) {
+    return
+  }
+  originalError.call(console, ...args)
+}
+
 // Some global mocks that most tests will need.
 // If you need to provide any form of mocked responses, you can replace them in your test with a hoisted implementation
 // @ts-ignore
@@ -11,18 +26,24 @@ Element.prototype.scrollTo = vi.fn()
 document.addEventListener = vi.fn()
 document.removeEventListener = vi.fn()
 
-vi.mock('@audius/sdk', async (importOriginal) => {
-  const originalImport: any = await importOriginal()
-  return {
-    ...originalImport,
-    ClaimableTokensClient: vi.fn(),
-    RewardManagerClient: vi.fn(),
-    full: Object.entries(originalImport.full).reduce(
-      (acc, [k, v]) => ({ ...acc, [k]: vi.fn() }),
-      {}
-    )
+class MockImage {
+  onload: () => void = () => {}
+  onerror: () => void = () => {}
+  private _src: string = ''
+  get src() {
+    return this._src
   }
-})
+
+  set src(url: string) {
+    this._src = url
+    // simulate successful load
+    setTimeout(() => {
+      this.onload()
+    }, 0)
+  }
+}
+
+vi.stubGlobal('Image', MockImage)
 
 vi.mock('@reown/appkit/react', () => {
   // See https://github.com/orgs/WalletConnect/discussions/5729#discussioncomment-12770662
@@ -50,4 +71,8 @@ window.matchMedia = vi.fn().mockReturnValue({
   removeListener: vi.fn()
 })
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  // Clear the query cache after each test
+  queryClient.clear()
+})
