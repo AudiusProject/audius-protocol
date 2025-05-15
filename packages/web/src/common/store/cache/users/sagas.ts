@@ -1,4 +1,4 @@
-import { getUserQueryKey, queryUserByHandle } from '@audius/common/api'
+import { queryUserByHandle } from '@audius/common/api'
 import { Kind, User } from '@audius/common/models'
 import {
   accountSelectors,
@@ -11,8 +11,6 @@ import { waitForAccount } from '@audius/common/utils'
 import { mergeWith } from 'lodash'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 import { getUserComputedPropsQueryKey } from '~/api/tan-query/users/useUser'
-
-import { retrieve } from 'common/store/cache/sagas'
 
 const { mergeCustomizer } = cacheReducer
 const { getUserId } = accountSelectors
