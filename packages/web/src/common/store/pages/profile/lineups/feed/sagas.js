@@ -1,3 +1,4 @@
+import { queryAccountUser } from '@audius/common/api'
 import { Kind } from '@audius/common/models'
 import {
   accountSelectors,
@@ -23,7 +24,7 @@ import { retrieveUserReposts } from './retrieveUserReposts'
 const { getProfileUserId, getProfileFeedLineup } = profilePageSelectors
 const { getTracks } = cacheTracksSelectors
 const { getCollections } = cacheCollectionsSelectors
-const { getUserId, getUserHandle } = accountSelectors
+const { getUserId } = accountSelectors
 const { getConfirmCalls } = confirmerSelectors
 
 function* getReposts({ offset, limit, handle }) {
@@ -107,7 +108,8 @@ class FeedSagas extends LineupSagas {
 
 function* addTrackRepost(action) {
   const { trackId, source } = action
-  const accountHandle = yield select(getUserHandle)
+  const accountUser = yield call(queryAccountUser)
+  const accountHandle = accountUser?.handle
 
   const formattedTrack = {
     kind: Kind.TRACKS,
@@ -124,7 +126,8 @@ function* watchRepostTrack() {
 
 function* removeTrackRepost(action) {
   const { trackId } = action
-  const accountHandle = yield select(getUserHandle)
+  const accountUser = yield call(queryAccountUser)
+  const accountHandle = accountUser?.handle
   const lineup = yield select((state) =>
     getProfileFeedLineup(state, accountHandle)
   )
@@ -142,7 +145,8 @@ function* watchUndoRepostTrack() {
 
 function* addCollectionRepost(action) {
   const { collectionId, source } = action
-  const accountHandle = yield select(getUserHandle)
+  const accountUser = yield call(queryAccountUser)
+  const accountHandle = accountUser?.handle
 
   const formattedCollection = {
     kind: Kind.COLLECTIONS,
@@ -164,7 +168,8 @@ function* watchRepostCollection() {
 
 function* removeCollectionRepost(action) {
   const { collectionId } = action
-  const accountHandle = yield select(getUserHandle)
+  const accountUser = yield call(queryAccountUser)
+  const accountHandle = accountUser?.handle
   const lineup = yield select((state) =>
     getProfileFeedLineup(state, accountHandle)
   )

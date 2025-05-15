@@ -1,7 +1,3 @@
-// Audius query
-// TODO: migrate all of these to tan-query
-export * from './user'
-
 // TanStack Query Hooks
 export * from './tan-query/queryKeys'
 export * from './tan-query/types'
@@ -112,13 +108,13 @@ export * from './tan-query/users/useSupporters'
 export * from './tan-query/users/useSupportedUsers'
 export * from './tan-query/users/useTopArtists'
 export * from './tan-query/users/useTopArtistsInGenre'
-export * from './tan-query/users/useUser'
 export * from './tan-query/users/useUserAlbums'
 export * from './tan-query/users/useUserByHandle'
 export * from './tan-query/users/useUserByParams'
 export * from './tan-query/users/useUserCollectibles'
 export * from './tan-query/users/useUserPlaylists'
 export * from './tan-query/users/useUsers'
+export * from './tan-query/users/useUser'
 export * from './tan-query/users/useUserTracksByHandle'
 export * from './tan-query/users/account/useResetPassword'
 export * from './tan-query/users/account/useManagedAccounts'
@@ -134,6 +130,8 @@ export * from './tan-query/wallets/useTokenPrice'
 export * from './tan-query/wallets/useWalletCollectibles'
 export * from './tan-query/wallets/useWalletOwner'
 export * from './tan-query/wallets/useUSDCBalance'
+export * from './tan-query/jupiter/useSwapTokens'
+export * from './tan-query/jupiter/useTokenExchangeRate'
 
 // Saga fetch utils, remove when migration is complete
 export * from './tan-query/saga-utils'

@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
-import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
+import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 import { ID } from '~/models'
 
 import { getCollectionsBatcher } from '../batchers/getCollectionsBatcher'
@@ -23,11 +23,10 @@ export const useCollection = <TResult = TQCollection>(
   collectionId: ID | null | undefined,
   options?: SelectableQueryOptions<TQCollection, TResult>
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
-  const validCollectionId = !!collectionId && collectionId > 0
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const select = useMemo(() => options?.select, [])
@@ -46,6 +45,6 @@ export const useCollection = <TResult = TQCollection>(
     },
     ...options,
     select,
-    enabled: options?.enabled !== false && validCollectionId
+    enabled: options?.enabled !== false && !!collectionId
   })
 }

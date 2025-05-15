@@ -3,7 +3,13 @@ import {
   trackMetadataForUploadToSdk,
   fileToSdk
 } from '@audius/common/adapters'
-import { getStemsQueryKey, queryTrack, queryUser } from '@audius/common/api'
+import {
+  getStemsQueryKey,
+  queryAccountUser,
+  queryTrack,
+  queryUser,
+  queryUsers
+} from '@audius/common/api'
 import {
   Name,
   Kind,
@@ -39,7 +45,6 @@ import { Id, OptionalId } from '@audius/sdk'
 import { call, fork, put, select, takeEvery } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { fetchUsers } from 'common/store/cache/users/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { updateProfileAsync } from 'common/store/profile/sagas'
 import { addPremiumMetadata } from 'common/store/upload/sagaHelpers'
@@ -49,7 +54,7 @@ import { recordEditTrackAnalytics } from './sagaHelpers'
 
 const { startStemUploads } = stemsUploadActions
 const { getCurrentUploads } = stemsUploadSelectors
-const { getUserId, getUserHandle, getAccountUser } = accountSelectors
+const { getUserId, getAccountUser } = accountSelectors
 const { getTrack } = cacheTracksSelectors
 const { getUser } = cacheUsersSelectors
 
@@ -64,7 +69,7 @@ function* fetchRepostInfo(entries: Entry<Collection>[]) {
   })
 
   if (userIds.length) {
-    yield* call(fetchUsers, userIds)
+    yield* call(queryUsers, userIds)
   }
 }
 
@@ -90,7 +95,8 @@ type TrackWithRemix = Pick<Track, 'track_id' | 'title'> & {
 
 export function* trackNewRemixEvent(track: TrackWithRemix) {
   yield* waitForAccount()
-  const accountHandle = yield* select(getUserHandle)
+  const accountUser = yield* call(queryAccountUser)
+  const accountHandle = accountUser?.handle
   if (!track.remix_of || !accountHandle) return
   const remixParentTrack = track.remix_of.tracks[0]
   const parentTrack = yield* queryTrack(remixParentTrack.parent_track_id)

@@ -7,6 +7,7 @@ import { Provider as ReduxProvider } from 'react-redux'
 import { Router } from 'react-router-dom'
 import { CompatRouter } from 'react-router-dom-v5-compat'
 import { LastLocationProvider } from 'react-router-last-location'
+import { PersistGate } from 'redux-persist/integration/react'
 import { WagmiProvider } from 'wagmi'
 
 import { RouterContextProvider } from 'components/animated-switch/RouterContextProvider'
@@ -34,7 +35,7 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
   const { history } = useHistoryContext()
   const isMobile = useIsMobile()
 
-  const [{ store, storeHistory }] = useState(() => {
+  const [{ store, storeHistory, persistor }] = useState(() => {
     const initialStoreState = {
       ui: {
         theme: {
@@ -44,16 +45,16 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
       }
     }
 
-    const { store, history: storeHistory } = configureStore(
-      history,
-      isMobile,
-      initialStoreState
-    )
+    const {
+      store,
+      history: storeHistory,
+      persistor
+    } = configureStore({ history, isMobile, initialStoreState })
     // Mount store to window for easy access
     if (typeof window !== 'undefined' && !window.store) {
       window.store = store
     }
-    return { store, storeHistory }
+    return { store, storeHistory, persistor }
   })
 
   return (
@@ -61,31 +62,33 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
       <QueryClientProvider client={queryClient}>
         <MediaProvider>
           <ReduxProvider store={store}>
-            <Router history={storeHistory}>
-              <CompatRouter>
-                <LastLocationProvider>
-                  <RouterContextProvider>
-                    <HeaderContextProvider>
-                      <NavProvider>
-                        <ScrollProvider>
-                          <ThemeProvider>
-                            <ToastContextProvider>
-                              <AppContextProvider>
-                                <AudiusQueryProvider>
-                                  <MainContentContextProvider>
-                                    {children}
-                                  </MainContentContextProvider>
-                                </AudiusQueryProvider>
-                              </AppContextProvider>
-                            </ToastContextProvider>
-                          </ThemeProvider>
-                        </ScrollProvider>
-                      </NavProvider>
-                    </HeaderContextProvider>
-                  </RouterContextProvider>
-                </LastLocationProvider>
-              </CompatRouter>
-            </Router>
+            <PersistGate loading={null} persistor={persistor}>
+              <Router history={storeHistory}>
+                <CompatRouter>
+                  <LastLocationProvider>
+                    <RouterContextProvider>
+                      <HeaderContextProvider>
+                        <NavProvider>
+                          <ScrollProvider>
+                            <ThemeProvider>
+                              <ToastContextProvider>
+                                <AppContextProvider>
+                                  <AudiusQueryProvider>
+                                    <MainContentContextProvider>
+                                      {children}
+                                    </MainContentContextProvider>
+                                  </AudiusQueryProvider>
+                                </AppContextProvider>
+                              </ToastContextProvider>
+                            </ThemeProvider>
+                          </ScrollProvider>
+                        </NavProvider>
+                      </HeaderContextProvider>
+                    </RouterContextProvider>
+                  </LastLocationProvider>
+                </CompatRouter>
+              </Router>
+            </PersistGate>
           </ReduxProvider>
         </MediaProvider>
         <ReactQueryDevtools />

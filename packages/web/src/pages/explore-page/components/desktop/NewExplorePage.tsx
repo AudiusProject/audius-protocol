@@ -13,8 +13,8 @@ import {
   TextInputSize,
   IconSearch,
   IconUser,
-  TextLink,
-  Divider
+  Divider,
+  FilterButton
 } from '@audius/harmony'
 import { useNavigate, useSearchParams } from 'react-router-dom-v5-compat'
 import { useDebounce, usePrevious } from 'react-use'
@@ -44,8 +44,15 @@ import {
   useSearchCategory,
   useShowSearchResults
 } from 'pages/search-page/hooks'
-import { CategoryView } from 'pages/search-page/types'
+import { MOODS } from 'pages/search-page/moods'
+import {
+  CategoryView,
+  ViewLayout,
+  viewLayoutOptions
+} from 'pages/search-page/types'
 import { BASE_URL, stripBaseUrl } from 'utils/route'
+
+import { ExploreSection } from './ExploreSection'
 
 export type ExplorePageProps = {
   title: string
@@ -64,11 +71,14 @@ const messages = {
   explore: 'Explore',
   description: 'Discover the hottest and trendiest tracks on Audius right now',
   searchPlaceholder: 'What do you want to listen to?',
-  featuredPlaylists: 'Featured Playlists',
+  featuredPlaylists: 'Community Playlists',
   featuredRemixContests: 'Featured Remix Contests',
   artistSpotlight: 'Artist Spotlight',
+  labelSpotlight: 'Label Spotlight',
+  exploreByMood: 'Explore by Mood',
   bestOfAudius: 'Best of Audius',
-  viewAll: 'View All'
+  viewAll: 'View All',
+  layoutOptionsLabel: 'View As'
 }
 
 const tabHeaders = [
@@ -105,7 +115,6 @@ const justForYou = [
   DOWNLOADS_AVAILABLE,
   PREMIUM_TRACKS
 ]
-const FEATURED_LIMIT = 5
 const DEBOUNCE_MS = 400
 
 const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
@@ -117,14 +126,9 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const isUSDCPurchasesEnabled = useIsUSDCEnabled()
   const navigate = useNavigate()
   const showSearchResults = useShowSearchResults()
+  const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
 
   const { data: exploreContent } = useExploreContent()
-  const featuredPlaylists =
-    exploreContent?.featuredPlaylists.slice(0, FEATURED_LIMIT) ?? []
-  const featuredProfiles =
-    exploreContent?.featuredProfiles.slice(0, FEATURED_LIMIT) ?? []
-  const featuredRemixContests =
-    exploreContent?.featuredRemixContests.slice(0, FEATURED_LIMIT) ?? []
 
   const handleTabClick = useCallback(
     (newTab: string) => {
@@ -247,7 +251,18 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                   return <FilterComponent key={filterKey} />
                 })}
               </Flex>
-              <SortMethodFilterButton />
+              <Flex gap='s'>
+                <SortMethodFilterButton />
+                {categoryKey === CategoryView.TRACKS ? (
+                  <FilterButton
+                    value={tracksLayout}
+                    variant='replaceLabel'
+                    optionsLabel={messages.layoutOptionsLabel}
+                    onChange={setTracksLayout}
+                    options={viewLayoutOptions}
+                  />
+                ) : null}
+              </Flex>
             </Flex>
           ) : null}
         </Flex>
@@ -259,64 +274,62 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
             <RecentSearches />
           </Flex>
         ) : inputValue || showSearchResults ? (
-          <SearchResults />
+          <SearchResults tracksLayout={tracksLayout} />
         ) : (
           <>
-            {/* Featured Playlists */}
-            <Flex direction='column' gap='l'>
-              <Flex
-                gap='m'
-                alignItems='center'
-                alignSelf='stretch'
-                justifyContent='space-between'
-              >
-                <Text variant='heading'>{messages.featuredPlaylists}</Text>
-                <TextLink textVariant='title' size='m'>
-                  {messages.viewAll}
-                </TextLink>
-              </Flex>
-              <Flex gap='l' justifyContent='space-between'>
-                {featuredPlaylists?.map((playlist_id) => (
-                  <CollectionCard
-                    key={playlist_id}
-                    id={playlist_id}
-                    size={'s'}
-                  />
-                ))}
-              </Flex>
-            </Flex>
-            <Flex>
-              <Flex direction='column' gap='l'>
-                <Text variant='heading'>{messages.featuredRemixContests}</Text>
-                <Flex gap='l' justifyContent='space-between'>
-                  {featuredRemixContests?.map((featuredRemixContest) => (
-                    <RemixContestCard
-                      key={featuredRemixContest}
-                      id={featuredRemixContest}
-                      size={'s'}
-                    />
-                  ))}
-                </Flex>
-              </Flex>
-            </Flex>
+            <ExploreSection
+              title={messages.featuredPlaylists}
+              data={exploreContent?.featuredPlaylists}
+              Card={CollectionCard}
+            />
+            <ExploreSection
+              title={messages.featuredRemixContests}
+              data={exploreContent?.featuredRemixContests}
+              Card={RemixContestCard}
+            />
 
-            {/* Artist Spotlight */}
-            <Flex direction='column' gap='l'>
+            <ExploreSection
+              title={messages.artistSpotlight}
+              data={exploreContent?.featuredProfiles}
+              Card={UserCard}
+            />
+
+            <ExploreSection
+              title={messages.labelSpotlight}
+              data={exploreContent?.featuredLabels}
+              Card={UserCard}
+            />
+
+            {/* Explore by mood */}
+            <Flex direction='column' gap='l' alignItems='center'>
+              <Text variant='heading'>{messages.exploreByMood}</Text>
               <Flex
                 gap='m'
-                alignItems='center'
-                alignSelf='stretch'
-                justifyContent='space-between'
+                justifyContent='center'
+                alignItems='flex-start'
+                wrap='wrap'
               >
-                <Text variant='heading'>{messages.artistSpotlight}</Text>
-                <TextLink textVariant='title' size='m'>
-                  {messages.viewAll}
-                </TextLink>
-              </Flex>
-              <Flex gap='l' alignSelf='stretch' justifyContent='space-between'>
-                {featuredProfiles?.map((user_id) => (
-                  <UserCard key={user_id} id={user_id} size='s' />
-                ))}
+                {Object.entries(MOODS)
+                  .sort()
+                  .map(([mood, moodInfo]) => (
+                    <Paper
+                      key={mood}
+                      pv='l'
+                      ph='xl'
+                      gap='m'
+                      borderRadius='m'
+                      border='default'
+                      backgroundColor='white'
+                      onClick={() => {
+                        navigate(`/search/tracks?mood=${mood}`)
+                      }}
+                    >
+                      {moodInfo.icon}
+                      <Text variant='title' size='s'>
+                        {moodInfo.label}
+                      </Text>
+                    </Paper>
+                  ))}
               </Flex>
             </Flex>
 

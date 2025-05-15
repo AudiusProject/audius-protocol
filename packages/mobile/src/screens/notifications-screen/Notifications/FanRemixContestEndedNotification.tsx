@@ -4,15 +4,14 @@ import { useTrack, useUser } from '@audius/common/api'
 import type { FanRemixContestEndedNotification as FanRemixContestEndedNotificationType } from '@audius/common/store'
 
 import { IconTrophy } from '@audius/harmony-native'
-import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
+import { useNavigation } from 'app/hooks/useNavigation'
 
 import {
   NotificationHeader,
   NotificationText,
   NotificationTile,
   NotificationTitle,
-  UserNameLink,
-  EntityLink
+  UserNameLink
 } from '../Notification'
 
 const messages = {
@@ -31,15 +30,17 @@ export const FanRemixContestEndedNotification = (
   const { notification } = props
   const { entityId, entityUserId } = notification
 
-  const navigation = useNotificationNavigation()
+  const navigation = useNavigation()
   const { data: user } = useUser(entityUserId)
   const { data: track } = useTrack(entityId)
 
   const handlePress = useCallback(() => {
     if (track) {
-      navigation.navigate(notification)
+      navigation.push('Track', {
+        trackId: track.track_id
+      })
     }
-  }, [track, navigation, notification])
+  }, [track, navigation])
 
   if (!user || !track) return null
 
@@ -50,7 +51,6 @@ export const FanRemixContestEndedNotification = (
       </NotificationHeader>
       <NotificationText>
         <UserNameLink user={user} /> {messages.description}{' '}
-        <EntityLink entity={track} />
       </NotificationText>
     </NotificationTile>
   )

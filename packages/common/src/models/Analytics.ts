@@ -782,31 +782,31 @@ type SettingsChangeTheme = {
 }
 type SettingsStartTwitterOauth = {
   eventName: Name.SETTINGS_START_TWITTER_OAUTH
-  handle: string
+  handle?: string
 }
 type SettingsCompleteTwitterOauth = {
   eventName: Name.SETTINGS_COMPLETE_TWITTER_OAUTH
-  handle: string
+  handle?: string
   screen_name: string
   is_verified: boolean
 }
 type SettingsStartInstagramOauth = {
   eventName: Name.SETTINGS_START_INSTAGRAM_OAUTH
-  handle: string
+  handle?: string
 }
 type SettingsCompleteInstagramOauth = {
   eventName: Name.SETTINGS_COMPLETE_INSTAGRAM_OAUTH
-  handle: string
+  handle?: string
   username: string
   is_verified: boolean
 }
 type SettingsStartTikTokOauth = {
   eventName: Name.SETTINGS_START_TIKTOK_OAUTH
-  handle: string
+  handle?: string
 }
 type SettingsCompleteTikTokOauth = {
   eventName: Name.SETTINGS_COMPLETE_TIKTOK_OAUTH
-  handle: string
+  handle?: string
   username: string
   is_verified: boolean
 }
@@ -1884,20 +1884,20 @@ type TipFeedTileDismiss = {
 type SocialProofOpen = {
   eventName: Name.SOCIAL_PROOF_OPEN
   kind: 'instagram' | 'twitter' | 'tiktok'
-  handle: string
+  handle?: string
 }
 
 type SocialProofSuccess = {
   eventName: Name.SOCIAL_PROOF_SUCCESS
   kind: 'instagram' | 'twitter' | 'tiktok'
-  handle: string
+  handle?: string
   screenName: string
 }
 
 type SocialProofError = {
   eventName: Name.SOCIAL_PROOF_ERROR
   kind: 'instagram' | 'twitter' | 'tiktok'
-  handle: string
+  handle?: string
   error: string
 }
 

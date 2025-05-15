@@ -2,7 +2,6 @@ import { History } from 'history'
 import { combineReducers } from 'redux'
 import type { Storage } from 'redux-persist'
 
-import apiReducer from '../api/reducer'
 import { Kind } from '../models'
 
 import account from './account/slice'
@@ -40,6 +39,7 @@ import exploreCollectionsReducer from './pages/explore/exploreCollections/slice'
 import feed from './pages/feed/reducer'
 import { FeedPageState } from './pages/feed/types'
 import historyPageReducer from './pages/history-page/reducer'
+import pickWinners from './pages/pick-winners/slice'
 import premiumTracks from './pages/premium-tracks/slice'
 import profileReducer from './pages/profile/reducer'
 import { ProfilePageState } from './pages/profile/types'
@@ -131,8 +131,6 @@ import wallet from './wallet/slice'
 export const reducers = (storage: Storage, history?: History) => ({
   account,
 
-  api: apiReducer,
-
   // TODO: Move to common
   // signOn: signOnReducer,
   // backend,
@@ -217,6 +215,7 @@ export const reducers = (storage: Storage, history?: History) => ({
     feed,
     exploreCollections: exploreCollectionsReducer,
     historyPage: historyPageReducer,
+    pickWinners,
     profile: profileReducer,
     smartCollection,
     savedPage: persistedSavePageReducer(storage),
@@ -337,6 +336,7 @@ export type CommonState = {
     tokenDashboard: ReturnType<typeof tokenDashboardSlice.reducer>
     historyPage: HistoryPageState
     track: TrackPageState
+    pickWinners: ReturnType<typeof pickWinners>
     profile: ProfilePageState
     savedPage: SavedPageState
     searchResults: SearchPageState

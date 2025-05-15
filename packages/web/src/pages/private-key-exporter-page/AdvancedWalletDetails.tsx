@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useCurrentAccount, useQueryContext } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Nullable, shortenSPLAddress } from '@audius/common/utils'
@@ -13,7 +13,7 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { copyToClipboard } from 'utils/clipboardUtil'
 import { useSelector } from 'utils/reducer'
 
-const { getUserHandle, getUserId } = accountSelectors
+const { getUserId } = accountSelectors
 
 const messages = {
   advancedWalletDetails: 'Advanced Wallet Details',
@@ -33,7 +33,9 @@ const Key = ({ label, value, isPrivate }: KeyProps) => {
   const { toast } = useContext(ToastContext)
   const record = useRecord()
   const isMobile = useIsMobile()
-  const accountHandle = useSelector(getUserHandle)
+  const { data: accountHandle } = useCurrentAccount({
+    select: (data) => data?.user.handle
+  })
   const accountUserId = useSelector(getUserId)
   const handleClick = useCallback(() => {
     copyToClipboard(value)
@@ -91,7 +93,7 @@ export const AdvancedWalletDetails = () => {
   const [publicKey, setPublicKey] = useState<Nullable<string>>(null)
   const [encodedPrivateKey, setEncodedPrivateKey] =
     useState<Nullable<string>>(null)
-  const { solanaWalletService } = useAudiusQueryContext()
+  const { solanaWalletService } = useQueryContext()
 
   useEffect(() => {
     const fetchKeypair = async () => {

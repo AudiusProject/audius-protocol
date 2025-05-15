@@ -7,9 +7,9 @@ PODS:
   - DoubleConversion (1.1.6)
   - fast_float (6.1.4)
   - FBLazyVector (0.76.9)
-  - ffmpeg-kit-ios-https-gpl (6.0.LTS)
-  - ffmpeg-kit-react-native/https-gpl-lts (6.0.2):
-    - ffmpeg-kit-ios-https-gpl (= 6.0.LTS)
+  - ffmpeg-kit-ios-full-gpl (6.0)
+  - ffmpeg-kit-react-native/full-gpl (6.0.2):
+    - ffmpeg-kit-ios-full-gpl (= 6.0)
     - React-Core
   - FingerprintPro (2.3.2)
   - fmt (11.0.2)
@@ -1477,9 +1477,30 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-tiktok (1.1.2):
+  - react-native-tiktok (2.1.15):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.10.14.00)
+    - RCTRequired
+    - RCTTypeSafety
     - React-Core
-    - TikTokOpenSDK (= 5.0.0)
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - TikTokOpenAuthSDK
+    - TikTokOpenSDKCore
+    - TikTokOpenShareSDK
+    - Yoga
   - react-native-track-player (4.0.1):
     - React-Core
     - SwiftAudioEx (= 1.0.0)
@@ -2021,7 +2042,42 @@ PODS:
     - React
   - SSZipArchive (2.5.5)
   - SwiftAudioEx (1.0.0)
-  - TikTokOpenSDK (5.0.0)
+  - tiktok-opensdk-react-native (0.10.7):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.10.14.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - TikTokOpenSDKCore (= 2.5.0)
+    - TikTokOpenShareSDK (= 2.5.0)
+    - Yoga
+  - TikTokOpenAuthSDK (2.5.0):
+    - TikTokOpenAuthSDK/Auth (= 2.5.0)
+    - TikTokOpenSDKCore (= 2.5.0)
+  - TikTokOpenAuthSDK/Auth (2.5.0):
+    - TikTokOpenSDKCore (= 2.5.0)
+  - TikTokOpenSDKCore (2.5.0):
+    - TikTokOpenSDKCore/Core (= 2.5.0)
+  - TikTokOpenSDKCore/Core (2.5.0)
+  - TikTokOpenShareSDK (2.5.0):
+    - TikTokOpenSDKCore (= 2.5.0)
+    - TikTokOpenShareSDK/Share (= 2.5.0)
+  - TikTokOpenShareSDK/Share (2.5.0):
+    - TikTokOpenSDKCore (= 2.5.0)
   - TOCropViewController (2.7.4)
   - Yoga (0.0.0)
 
@@ -2032,8 +2088,8 @@ DEPENDENCIES:
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - fast_float (from `../node_modules/react-native/third-party-podspecs/fast_float.podspec`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
-  - ffmpeg-kit-ios-https-gpl (from `./vendor/ffmpeg-kit-ios-https-gpl`)
-  - ffmpeg-kit-react-native/https-gpl-lts (from `../../../node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec`)
+  - ffmpeg-kit-ios-full-gpl (from `./ffmpeg-kit-ios-full-gpl.podspec`)
+  - ffmpeg-kit-react-native/full-gpl (from `../../../node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec`)
   - fmt (from `../node_modules/react-native/third-party-podspecs/fmt.podspec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
@@ -2142,6 +2198,7 @@ DEPENDENCIES:
   - RNZipArchive (from `../../../node_modules/react-native-zip-archive`)
   - "snap-kit-react-native (from `../../../node_modules/@snapchat/snap-kit-react-native`)"
   - SRSRadialGradient (from `../../../node_modules/react-native-radial-gradient/ios`)
+  - tiktok-opensdk-react-native (from `../../../node_modules/tiktok-opensdk-react-native`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -2159,7 +2216,9 @@ SPEC REPOS:
     - SocketRocket
     - SSZipArchive
     - SwiftAudioEx
-    - TikTokOpenSDK
+    - TikTokOpenAuthSDK
+    - TikTokOpenSDKCore
+    - TikTokOpenShareSDK
     - TOCropViewController
 
 EXTERNAL SOURCES:
@@ -2175,8 +2234,8 @@ EXTERNAL SOURCES:
     :podspec: "../node_modules/react-native/third-party-podspecs/fast_float.podspec"
   FBLazyVector:
     :path: "../node_modules/react-native/Libraries/FBLazyVector"
-  ffmpeg-kit-ios-https-gpl:
-    :path: "./vendor/ffmpeg-kit-ios-https-gpl"
+  ffmpeg-kit-ios-full-gpl:
+    :podspec: "./ffmpeg-kit-ios-full-gpl.podspec"
   ffmpeg-kit-react-native:
     :podspec: "../../../node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec"
   fmt:
@@ -2390,6 +2449,8 @@ EXTERNAL SOURCES:
     :path: "../../../node_modules/@snapchat/snap-kit-react-native"
   SRSRadialGradient:
     :path: "../../../node_modules/react-native-radial-gradient/ios"
+  tiktok-opensdk-react-native:
+    :path: "../../../node_modules/tiktok-opensdk-react-native"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -2400,7 +2461,7 @@ SPEC CHECKSUMS:
   DoubleConversion: f16ae600a246532c4020132d54af21d0ddb2a385
   fast_float: 06eeec4fe712a76acc9376682e4808b05ce978b6
   FBLazyVector: 7605ea4810e0e10ae4815292433c09bf4324ba45
-  ffmpeg-kit-ios-https-gpl: 5725a44ee0aec22aad82994851331507a5c9a276
+  ffmpeg-kit-ios-full-gpl: 7d416729f7b3604b64cee2a752c42608a8d228e0
   ffmpeg-kit-react-native: 3cea88c9c5cfad62e1465279ea7d800dfbba3b00
   FingerprintPro: c6444f5a00d1126446da664124529e754475f198
   fmt: 01b82d4ca6470831d1cc0852a1af644be019e8f6
@@ -2460,7 +2521,7 @@ SPEC CHECKSUMS:
   react-native-restart: 7595693413fe3ca15893702f2c8306c62a708162
   react-native-safe-area-context: 3e6db312a77016d4f618550c814d9e236e0c0879
   react-native-slider: bd05f3318a0216c03bb64222155e00d00f7ba0b5
-  react-native-tiktok: cbaefd9b0e41341d4fd853b4246ca199aba25cac
+  react-native-tiktok: ee66cc4a86de400596c9a242353c47fb998bc986
   react-native-track-player: 97d76dbbd35f27cc709e5f04540615e54264b3f9
   react-native-version-number: b415bbec6a13f2df62bf978e85bc0d699462f37f
   react-native-video: d4f7885c4b13b5ddc982438eff51bd514267fb49
@@ -2520,10 +2581,13 @@ SPEC CHECKSUMS:
   SRSRadialGradient: 8363f6c3ce63636f5ffee74a7016f5c84a6df0a1
   SSZipArchive: c69881e8ac5521f0e622291387add5f60f30f3c4
   SwiftAudioEx: 6f511018b7a0fdfd14ed1bb4081f953588245cc0
-  TikTokOpenSDK: a63564ea4dc1fabc56352bf7aa9ddc386cdb63b6
+  tiktok-opensdk-react-native: fa65107e1421e0b3d8b21e4a19fe09a651b9342c
+  TikTokOpenAuthSDK: 35d99f5778b9635ab983bb25c4acf6ccad4404a9
+  TikTokOpenSDKCore: e6f34e48bd6e85e4d94f9c04782c13d5defafb55
+  TikTokOpenShareSDK: a7da017bc66c28d0aefea9342c0cfcc7e52ea2b7
   TOCropViewController: 80b8985ad794298fb69d3341de183f33d1853654
   Yoga: feb4910aba9742cfedc059e2b2902e22ffe9954a
 
-PODFILE CHECKSUM: 787f7d4a45417340b4c750bf64a6b629e2ffaf31
+PODFILE CHECKSUM: 85cfd74f1d3df0d3492c06649e02d4150c39af2d
 
 COCOAPODS: 1.15.2

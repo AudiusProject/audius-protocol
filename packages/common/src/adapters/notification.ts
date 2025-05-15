@@ -687,5 +687,19 @@ export const notificationFromSDK = (
         ...formatBaseNotification(notification)
       }
     }
+    case 'artist_remix_contest_submissions': {
+      const data = notification.actions[0].data as {
+        eventId: string
+        milestone: number
+        entityId: string
+      }
+      return {
+        type: NotificationType.ArtistRemixContestSubmissions,
+        eventId: HashId.parse(data.eventId),
+        milestone: data.milestone,
+        entityId: HashId.parse(data.entityId),
+        ...formatBaseNotification(notification)
+      }
+    }
   }
 }

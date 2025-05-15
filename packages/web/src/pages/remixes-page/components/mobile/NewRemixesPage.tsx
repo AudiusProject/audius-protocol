@@ -6,7 +6,6 @@ import { remixMessages as messages } from '@audius/common/messages'
 import { Track, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { remixesPageLineupActions } from '@audius/common/store'
-import { pluralize } from '@audius/common/utils'
 import {
   Flex,
   Text,
@@ -27,7 +26,9 @@ import styles from './RemixesPage.module.css'
 export type RemixesPageProps = {
   title: string
   count: number | null
-  originalTrack: Pick<Track, 'track_id' | 'permalink' | 'title'> | undefined
+  originalTrack:
+    | Pick<Track, 'track_id' | 'permalink' | 'title' | 'owner_id'>
+    | undefined
   user: User | undefined
   goToTrackPage: () => void
   goToArtistPage: () => void
@@ -120,10 +121,8 @@ const RemixesPage = nullGuard(
             leadingElementDelineator={
               <Flex justifyContent='space-between' gap='l' mb='xl'>
                 <Text variant='title'>
-                  {count}{' '}
-                  {isRemixContest
-                    ? pluralize(messages.submissions, count)
-                    : pluralize(messages.remixes, count, 'es')}
+                  {messages.remixesTitle}
+                  {count !== undefined ? ` (${count})` : ''}
                 </Text>
               </Flex>
             }

@@ -20,7 +20,8 @@ RUN apt-get update && \
         build-essential \
         pkg-config \
         libudev-dev llvm libclang-dev \
-        protobuf-compiler libssl-dev
+        protobuf-compiler libssl-dev \
+        jq
 
 # Installs Solana CLIs either from the install script (for available builds like linux x86_64)
 # or using cargo install to build from source (for unavailable builds like linux aarch64)
@@ -82,5 +83,11 @@ CMD solana-test-validator --ledger /usr/db \
     --account ${SOLANA_TOKEN_MINT_PUBLIC_KEY} ./fixtures/waudio.json \
     --account ${SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY} ./fixtures/usdc.json \
     --account ${SOLANA_STAKING_BRIDGE_USDC_PAYOUT_WALLET} ./fixtures/owner-usdc.json \
-    --account ${SOLANA_REWARD_MANAGER_LOOKUP_TABLE} ./fixtures/reward-manager-lookup-table.json\
+    --account ${SOLANA_REWARD_MANAGER_LOOKUP_TABLE} ./fixtures/reward-manager-lookup-table.json \
+    --account $(cat ./fixtures/aao-sender.json | jq -r .pubkey) ./fixtures/aao-sender.json \
+    --account $(cat ./fixtures/dn1-sender.json | jq -r .pubkey) ./fixtures/dn1-sender.json \
+    --account $(cat ./fixtures/cn1-sender.json | jq -r .pubkey) ./fixtures/cn1-sender.json \
+    --account $(cat ./fixtures/cn2-sender.json | jq -r .pubkey) ./fixtures/cn2-sender.json \
+    --account $(cat ./fixtures/cn3-sender.json | jq -r .pubkey) ./fixtures/cn3-sender.json \
+    --account $(cat ./fixtures/cn4-sender.json | jq -r .pubkey) ./fixtures/cn4-sender.json \
     --reset

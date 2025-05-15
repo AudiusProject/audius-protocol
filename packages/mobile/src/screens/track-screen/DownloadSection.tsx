@@ -137,11 +137,22 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
     useDownloadTrackArchiveModal()
 
   const handleDownloadAll = useCallback(() => {
+    if (shouldDisplayDownloadFollowGated) {
+      toast({ content: messages.followToDownload })
+      return
+    }
+
     openDownloadTrackArchiveModal({
       trackId,
       fileCount: stemTracks.length + 1
     })
-  }, [openDownloadTrackArchiveModal, stemTracks, trackId])
+  }, [
+    openDownloadTrackArchiveModal,
+    shouldDisplayDownloadFollowGated,
+    stemTracks.length,
+    toast,
+    trackId
+  ])
 
   const renderHeader = () => {
     return (

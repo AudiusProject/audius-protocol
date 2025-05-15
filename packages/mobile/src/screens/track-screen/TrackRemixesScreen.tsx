@@ -105,7 +105,8 @@ export const TrackRemixesScreen = () => {
                   <Flex justifyContent='space-between' ph='l' pt='xl'>
                     {count ? (
                       <Text variant='title'>
-                        {count} {pluralize(messages.submissions, count)}
+                        {messages.remixesTitle}
+                        {count !== undefined ? ` (${count})` : ''}
                       </Text>
                     ) : null}
                   </Flex>

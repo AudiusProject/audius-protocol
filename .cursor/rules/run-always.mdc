@@ -1,7 +1,7 @@
 ---
 description: 
 globs: 
-alwaysApply: true
+alwaysApply: false
 ---
 Always implement high quality production ready code that performs the requested task, using the requested tools, libraries, external systems, infrastructure etc. Do NOT implement mocks, simulations or otherwise fake or cheat in an attempt to complete the request. Do not update or delete unrelated code (this includes insertions, deletions, and additions).
 

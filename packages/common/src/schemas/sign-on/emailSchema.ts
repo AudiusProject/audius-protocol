@@ -1,9 +1,8 @@
 import { QueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 
-import { QUERY_KEYS } from '~/api'
+import { QUERY_KEYS, QueryContextType } from '~/api'
 import { fetchEmailInUse } from '~/api/tan-query/users/useEmailInUse'
-import { AudiusQueryContextType } from '~/audius-query'
 import { EMAIL_REGEX } from '~/utils/email'
 
 export const emailSchemaMessages = {
@@ -15,7 +14,7 @@ export const emailSchemaMessages = {
 }
 
 export const emailSchema = (
-  queryContext: AudiusQueryContextType,
+  queryContext: QueryContextType,
   queryClient: QueryClient
 ) =>
   z.object({

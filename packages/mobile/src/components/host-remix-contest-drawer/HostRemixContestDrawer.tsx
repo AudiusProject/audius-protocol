@@ -135,7 +135,8 @@ export const HostRemixContestDrawer = () => {
         endDate: endDate.toISOString(),
         eventData: {
           description,
-          prizeInfo
+          prizeInfo,
+          winners: remixContest.eventData.winners ?? []
         },
         userId
       })
@@ -148,7 +149,8 @@ export const HostRemixContestDrawer = () => {
         userId,
         eventData: {
           description,
-          prizeInfo
+          prizeInfo,
+          winners: []
         }
       })
     }
@@ -165,6 +167,7 @@ export const HostRemixContestDrawer = () => {
     onClose,
     updateEvent,
     remixContest?.eventId,
+    remixContest?.eventData.winners,
     prizeInfo,
     createEvent
   ])

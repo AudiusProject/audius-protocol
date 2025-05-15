@@ -125,7 +125,8 @@ export const HostRemixContestModal = () => {
     const endDate = parsedDate.toISOString()
     const eventData = {
       description: contestDescription,
-      prizeInfo: contestPrizeInfo
+      prizeInfo: contestPrizeInfo,
+      winners: remixContest?.eventData.winners ?? []
     }
 
     if (isEdit) {
@@ -151,14 +152,15 @@ export const HostRemixContestModal = () => {
     timeValue,
     contestEndDate,
     meridianValue,
+    contestDescription,
     trackId,
     userId,
+    contestPrizeInfo,
+    remixContest?.eventData.winners,
+    remixContest?.eventId,
     isEdit,
     onClose,
     updateEvent,
-    remixContest?.eventId,
-    contestDescription,
-    contestPrizeInfo,
     createEvent
   ])
 

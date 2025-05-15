@@ -7,8 +7,7 @@
 #import <React/RCTRootView.h>
 #import <React/RCTLinkingManager.h>
 #import "RNNotifications.h"
-
-#import <TikTokOpenSDK/TikTokOpenSDKApplicationDelegate.h>
+#import <TiktokOpensdkReactNative-Bridging-Header.h>
 
 @implementation AppDelegate
 
@@ -16,16 +15,20 @@
    openURL:(NSURL *)url
    options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
 {
-  return [[TikTokOpenSDKApplicationDelegate sharedInstance] application:application openURL:url sourceApplication:options[UIApplicationOpenURLOptionsSourceApplicationKey] annotation:options[UIApplicationOpenURLOptionsAnnotationKey]] || [RCTLinkingManager application:application openURL:url options:options];
+  BOOL handledByTikTokOpenSDK = [TiktokOpensdkReactNative handleOpenURL:url];
+  BOOL handledByRNLinkingManager = [RCTLinkingManager application:application openURL:url options:options];
+  return handledByTikTokOpenSDK || handledByRNLinkingManager;
 }
 
 // Only if your app is using [Universal Links](https://developer.apple.com/library/prerelease/ios/documentation/General/Conceptual/AppSearch/UniversalLinks.html).
 - (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity
  restorationHandler:(void (^)(NSArray * _Nullable))restorationHandler
 {
- return [RCTLinkingManager application:application
+  BOOL handledByTikTokOpenSDK = [TiktokOpensdkReactNative handleUserActivity:userActivity];
+  BOOL handledByRNLinkingManager = [RCTLinkingManager application:application
                   continueUserActivity:userActivity
                     restorationHandler:restorationHandler];
+  return handledByTikTokOpenSDK || handledByRNLinkingManager;
 }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
@@ -46,7 +49,6 @@
   self.initialProps = @{};
   [super application:application didFinishLaunchingWithOptions:launchOptions];
 
-  [[TikTokOpenSDKApplicationDelegate sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
   return YES;
 }
 
@@ -59,6 +61,8 @@
 {
 #if DEBUG
   return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
+#else
+  return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
 #endif
 }
 

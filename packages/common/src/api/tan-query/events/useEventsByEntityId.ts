@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models'
 
 import { getEventsByEntityIdBatcher } from '../batchers/getEventsByEntityIdBatcher'
@@ -20,7 +20,7 @@ export const useEventIdsByEntityId = (
   options?: SelectableQueryOptions<ID[]>
 ) => {
   const { entityId } = args ?? {}
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()

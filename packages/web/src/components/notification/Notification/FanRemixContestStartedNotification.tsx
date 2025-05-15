@@ -2,17 +2,15 @@ import { useCallback } from 'react'
 
 import { useTrack, useUser } from '@audius/common/api'
 import {
-  Entity,
   FanRemixContestStartedNotification as FanRemixContestStartedNotificationType,
   TrackEntity
 } from '@audius/common/store'
 import { Flex, IconTrophy } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
+import { TrackLink } from 'components/link'
 import { push } from 'utils/navigation'
-import { fullTrackPage } from 'utils/route'
 
-import { EntityLink } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
 import { NotificationFooter } from './components/NotificationFooter'
 import { NotificationHeader } from './components/NotificationHeader'
@@ -23,7 +21,7 @@ import { UserNameLink } from './components/UserNameLink'
 
 const messages = {
   title: 'New Remix Contest',
-  description: 'started a new remix contest for'
+  description: 'started a new remix contest for '
 }
 
 type FanRemixContestStartedNotificationProps = {
@@ -42,7 +40,7 @@ export const FanRemixContestStartedNotification = (
 
   const handleClick = useCallback(() => {
     if (track) {
-      dispatch(push(fullTrackPage(track.permalink)))
+      dispatch(push(track.permalink))
     }
   }, [track, dispatch])
 
@@ -53,12 +51,17 @@ export const FanRemixContestStartedNotification = (
       <NotificationHeader icon={<IconTrophy color='accent' />}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
-      <Flex>
+      <Flex alignItems='flex-start'>
         <TrackContent track={track as TrackEntity} hideTitle />
         <NotificationBody>
           <UserNameLink user={user} notification={notification} />{' '}
-          {messages.description}{' '}
-          <EntityLink entity={track as TrackEntity} entityType={Entity.Track} />
+          {messages.description}
+          <TrackLink
+            css={{ display: 'inline' }}
+            variant='secondary'
+            size='l'
+            trackId={track.track_id}
+          />
         </NotificationBody>
       </Flex>
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />

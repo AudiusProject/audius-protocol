@@ -7,6 +7,7 @@ from src.queries.get_notifications import (
     ApproveManagerNotification,
     ArtistRemixContestEndedNotification,
     ArtistRemixContestEndingSoonNotification,
+    ArtistRemixContestSubmissionsNotification,
     ChallengeRewardNotification,
     ClaimableRewardNotification,
     CommentMentionNotification,
@@ -848,6 +849,24 @@ def extend_artist_remix_contest_ending_soon(action: NotificationAction):
     }
 
 
+def extend_artist_remix_contest_submissions(action: NotificationAction):
+    data: ArtistRemixContestSubmissionsNotification = action["data"]  # type: ignore
+    return {
+        "specifier": action["specifier"],
+        "type": action["type"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
+        "data": {
+            "event_id": encode_int_id(data["event_id"]),
+            "milestone": data["milestone"],
+            "entity_id": encode_int_id(data["entity_id"]),
+        },
+    }
+
+
 notification_action_handler = {
     "follow": extend_follow,
     "repost": extend_repost,
@@ -888,4 +907,5 @@ notification_action_handler = {
     "fan_remix_contest_ending_soon": extend_fan_remix_contest_ending_soon,
     "artist_remix_contest_ended": extend_artist_remix_contest_ended,
     "artist_remix_contest_ending_soon": extend_artist_remix_contest_ending_soon,
+    "artist_remix_contest_submissions": extend_artist_remix_contest_submissions,
 }

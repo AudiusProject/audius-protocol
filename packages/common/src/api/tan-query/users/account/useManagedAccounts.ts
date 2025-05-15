@@ -2,7 +2,7 @@ import { Id } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
 import { managedUserListFromSDK } from '~/adapters/user'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models/Identifiers'
 import { ManagedUserMetadata } from '~/models/User'
 
@@ -19,7 +19,7 @@ export const useManagedAccounts = <TResult = ManagedUserMetadata[] | undefined>(
   userId?: ID | null,
   options?: SelectableQueryOptions<TResult>
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   return useQuery({
     queryKey: getManagedAccountsQueryKey(userId),
     queryFn: async () => {

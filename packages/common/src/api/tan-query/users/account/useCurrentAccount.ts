@@ -2,29 +2,16 @@ import { useQuery } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 
 import { accountFromSDK } from '~/adapters/user'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { useAppContext } from '~/context/appContext'
-import { ID } from '~/models/Identifiers'
 import { AccountUserMetadata } from '~/models/User'
 import { getWalletAddresses } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from '../../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../../types'
 
-import { useCurrentUserId } from './useCurrentUserId'
-
-export const getCurrentAccountQueryKey = (
-  currentUserId: ID | null | undefined
-) =>
-  [
-    QUERY_KEYS.accountUser,
-    currentUserId
-  ] as unknown as QueryKey<AccountUserMetadata>
-
-export enum CurrentUserWalletType {
-  currentUser = 'currentUser',
-  web3User = 'web3User'
-}
+export const getCurrentAccountQueryKey = () =>
+  [QUERY_KEYS.accountUser] as unknown as QueryKey<AccountUserMetadata>
 
 /**
  * Hook to get the currently logged in user's account
@@ -32,20 +19,18 @@ export enum CurrentUserWalletType {
 export const useCurrentAccount = <
   TResult = AccountUserMetadata | null | undefined
 >(
-  walletType: CurrentUserWalletType = CurrentUserWalletType.currentUser,
   options?: SelectableQueryOptions<
     AccountUserMetadata | null | undefined,
     TResult
   >
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const walletAddresses = useSelector(getWalletAddresses)
-  const currentUserWallet = walletAddresses[walletType]
-  const { data: currentUserId } = useCurrentUserId()
+  const currentUserWallet = walletAddresses.currentUser
   const { localStorage } = useAppContext()
 
   return useQuery({
-    queryKey: getCurrentAccountQueryKey(currentUserId),
+    queryKey: getCurrentAccountQueryKey(),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const localAccount = await localStorage.getAudiusAccount()

@@ -1,8 +1,13 @@
-import { createJupiterApiClient, Instruction } from '@jup-ag/api'
+import {
+  createJupiterApiClient,
+  Instruction,
+  QuoteResponse,
+  SwapMode
+} from '@jup-ag/api'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 
-import { Name } from '~/models/Analytics'
-import { CommonStoreContext } from '~/store/storeContext'
+import { TOKEN_LISTING_MAP } from '~/store/ui/buy-audio/constants'
+import { convertBigIntToAmountObject, removeNullable } from '~/utils'
 
 /**
  * The error that gets returned if the slippage is exceeded
@@ -11,51 +16,157 @@ import { CommonStoreContext } from '~/store/storeContext'
  */
 export const SLIPPAGE_TOLERANCE_EXCEEDED_ERROR = 6001
 
-export const parseJupiterInstruction = (instruction: Instruction) => {
-  return new TransactionInstruction({
-    programId: new PublicKey(instruction.programId),
-    keys: instruction.accounts.map((a) => ({
-      pubkey: new PublicKey(a.pubkey),
-      isSigner: a.isSigner,
-      isWritable: a.isWritable
-    })),
-    data: Buffer.from(instruction.data, 'base64')
-  })
+// Define JupiterTokenSymbol type here since we can't import it directly
+export type JupiterTokenSymbol = keyof typeof TOKEN_LISTING_MAP
+
+let _jup: ReturnType<typeof createJupiterApiClient>
+
+const initJupiter = () => {
+  try {
+    return createJupiterApiClient()
+  } catch (e) {
+    console.error('Jupiter failed to initialize', e)
+    throw e
+  }
 }
 
-export const jupiterInstance = createJupiterApiClient()
+const getInstance = () => {
+  if (!_jup) {
+    _jup = initJupiter()
+  }
+  return _jup
+}
 
-export const quoteWithAnalytics = async ({
-  quoteArgs,
-  track,
-  make
-}: {
-  quoteArgs: Parameters<typeof jupiterInstance.quoteGet>[0]
-  track: CommonStoreContext['analytics']['track']
-  make: CommonStoreContext['analytics']['make']
-}) => {
-  await track(
-    make({
-      eventName: Name.JUPITER_QUOTE_REQUEST,
-      inputMint: quoteArgs.inputMint,
-      outputMint: quoteArgs.outputMint,
-      swapMode: quoteArgs.swapMode,
-      slippageBps: quoteArgs.slippageBps,
-      amount: quoteArgs.amount
-    })
+export const jupiterInstance = getInstance()
+
+/**
+ * Helper function to find a token by its mint address
+ */
+const findTokenByMint = (mintAddress: string) => {
+  return Object.values(TOKEN_LISTING_MAP).find(
+    (token) => token.address === mintAddress
   )
-  const quoteResponse = await jupiterInstance.quoteGet(quoteArgs)
-  await track(
-    make({
-      eventName: Name.JUPITER_QUOTE_RESPONSE,
-      inputMint: quoteResponse.inputMint,
-      outputMint: quoteResponse.outputMint,
-      swapMode: quoteResponse.swapMode,
-      slippageBps: quoteResponse.slippageBps,
-      otherAmountThreshold: Number(quoteResponse.otherAmountThreshold),
-      inAmount: Number(quoteResponse.inAmount),
-      outAmount: Number(quoteResponse.outAmount)
-    })
-  )
-  return quoteResponse
+}
+
+export type JupiterQuoteParams = {
+  inputTokenSymbol: JupiterTokenSymbol
+  outputTokenSymbol: JupiterTokenSymbol
+  inputAmount: number
+  slippageBps: number
+  swapMode?: SwapMode
+  onlyDirectRoutes?: boolean
+}
+
+// Add support for mint-based parameters for the useSwapTokens hook
+export type JupiterMintQuoteParams = {
+  inputMint: string
+  outputMint: string
+  amountUi: number
+  slippageBps: number
+  swapMode?: SwapMode
+  onlyDirectRoutes?: boolean
+}
+
+export type JupiterQuoteResult = {
+  inputAmount: {
+    amount: number
+    amountString: string
+    uiAmount: number
+    uiAmountString: string
+  }
+  outputAmount: {
+    amount: number
+    amountString: string
+    uiAmount: number
+    uiAmountString: string
+  }
+  otherAmountThreshold: {
+    amount: number
+    amountString: string
+    uiAmount: number
+    uiAmountString: string
+  }
+  quote: QuoteResponse
+}
+
+const DEFAULT_DECIMALS = 9
+
+/**
+ * Gets a quote from Jupiter using mint addresses directly
+ * This version is used by the useSwapTokens hook
+ */
+export const getJupiterQuoteByMint = async ({
+  inputMint,
+  outputMint,
+  amountUi,
+  slippageBps,
+  swapMode = 'ExactIn',
+  onlyDirectRoutes = false
+}: JupiterMintQuoteParams): Promise<JupiterQuoteResult> => {
+  const inputToken = findTokenByMint(inputMint)
+  const outputToken = findTokenByMint(outputMint)
+
+  // Default to 9 decimals if tokens aren't found (fallback for safety)
+  const inputDecimals = inputToken?.decimals ?? DEFAULT_DECIMALS
+  const outputDecimals = outputToken?.decimals ?? DEFAULT_DECIMALS
+
+  const amount =
+    swapMode === 'ExactIn'
+      ? Math.ceil(amountUi * 10 ** inputDecimals)
+      : Math.floor(amountUi * 10 ** outputDecimals)
+
+  const quote = await jupiterInstance.quoteGet({
+    inputMint,
+    outputMint,
+    amount,
+    slippageBps,
+    swapMode,
+    onlyDirectRoutes
+  })
+
+  if (!quote) {
+    throw new Error('Failed to get Jupiter quote')
+  }
+
+  return {
+    inputAmount: convertBigIntToAmountObject(
+      BigInt(quote.inAmount),
+      inputDecimals
+    ),
+    outputAmount: convertBigIntToAmountObject(
+      BigInt(quote.outAmount),
+      outputDecimals
+    ),
+    otherAmountThreshold: convertBigIntToAmountObject(
+      BigInt(quote.otherAmountThreshold),
+      swapMode === 'ExactIn' ? outputDecimals : inputDecimals
+    ),
+    quote
+  }
+}
+
+/**
+ * Converts an array of Jupiter instructions to Solana TransactionInstructions
+ * Filters out undefined instructions and handles the conversion
+ */
+export const convertJupiterInstructions = (
+  instructions: (Instruction | undefined)[]
+): TransactionInstruction[] => {
+  // Flatten and filter out undefined instructions
+  const filteredInstructions = instructions.filter(removeNullable)
+
+  // Convert to Solana TransactionInstruction format
+  return filteredInstructions.map((i) => {
+    return {
+      programId: new PublicKey(i.programId),
+      data: Buffer.from(i.data, 'base64'),
+      keys: i.accounts.map((a) => {
+        return {
+          pubkey: new PublicKey(a.pubkey),
+          isSigner: a.isSigner,
+          isWritable: a.isWritable
+        }
+      })
+    } as TransactionInstruction
+  })
 }

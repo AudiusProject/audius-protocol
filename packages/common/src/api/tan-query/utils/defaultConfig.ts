@@ -15,8 +15,8 @@ export const defaultRetryConfig = (failureCount: number, error: any) => {
   }
 
   if (
-    Object.hasOwnProperty.call(error, 'status') &&
-    HTTP_STATUSES_TO_NOT_RETRY.includes(error.status)
+    error?.response?.status &&
+    HTTP_STATUSES_TO_NOT_RETRY.includes(error?.response?.status)
   ) {
     return false
   }

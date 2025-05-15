@@ -4,6 +4,7 @@ import {
 } from '@audius/common/adapters'
 import { Track } from '@audius/common/models'
 import { IntKeys } from '@audius/common/services'
+import { queryAccountUser } from '@audius/common/src/api/tan-query/saga-utils/queryUser'
 import {
   accountSelectors,
   walletActions,
@@ -27,7 +28,7 @@ import ArtistDashboardState from './types'
 
 const { DASHBOARD_PAGE } = route
 const { getBalance } = walletActions
-const { getUserHandle, getUserId } = accountSelectors
+const { getUserId } = accountSelectors
 
 const formatMonth = (date: moment.Moment | string) =>
   moment.utc(date).format('MMM').toUpperCase()
@@ -35,11 +36,16 @@ const formatMonth = (date: moment.Moment | string) =>
 function* fetchDashboardTracksAsync(
   action: ReturnType<typeof dashboardActions.fetchTracks>
 ) {
-  const accountHandle = yield* call(waitForValue, getUserHandle)
+  const accountUser = yield* call(queryAccountUser)
+  const accountHandle = accountUser?.handle
   const accountUserId = yield* call(waitForValue, getUserId)
   const { offset, limit } = action.payload
 
   try {
+    if (!accountHandle) {
+      yield* put(dashboardActions.fetchTracksFailed({}))
+      return
+    }
     const tracks = yield* call(retrieveUserTracks, {
       handle: accountHandle,
       currentUserId: accountUserId,
@@ -59,7 +65,8 @@ function* fetchDashboardAsync(
 ) {
   yield* call(waitForRead)
 
-  const accountHandle = yield* call(waitForValue, getUserHandle)
+  const accountUser = yield* call(queryAccountUser)
+  const accountHandle = accountUser?.handle
   const accountUserId: number | null = yield* call(waitForValue, getUserId)
   if (!accountUserId) {
     yield* put(dashboardActions.fetchFailed({}))
@@ -70,6 +77,10 @@ function* fetchDashboardAsync(
   const sdk = yield* getSDK()
   const { offset, limit } = action.payload
   try {
+    if (!accountHandle) {
+      yield* put(dashboardActions.fetchFailed({}))
+      return
+    }
     const data = yield* all([
       call(retrieveUserTracks, {
         handle: accountHandle,

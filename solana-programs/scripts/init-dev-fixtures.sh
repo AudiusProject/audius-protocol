@@ -141,9 +141,84 @@ echo "Minting 100000000 wAUDIO to reward manager..."
 spl-token mint "$(solana address -k "$token_keypair")" 100000000 -- "$(solana address -k "$reward_manager_token_pda_keypair")"
 echo
 
-echo "------------- Creating fixtures  ---------------"
-
 mkdir -p ./fixtures
+
+echo "------------- Register rewards senders ---------------"
+
+if [[ "$AAO_WALLET_ADDRESSES" != "" ]]; then
+    echo "Registering AAO..."
+    sender=$(./target/debug/audius-reward-manager-cli  create-sender \
+            --reward-manager "$(solana address -k $reward_manager_pda_keypair)" \
+            --eth-sender-address "$AAO_WALLET_ADDRESSES" \
+            --eth-operator-address "$AAO_WALLET_ADDRESSES" \
+        | grep -i "New sender" \
+        | awk -F': ' '{print $2}'
+    )
+    solana account --output json-compact --output-file ./fixtures/aao-sender.json "$sender"
+    echo
+fi
+if [[ "$DP1_DELEGATE_OWNER_ADDRESS" != "" ]]; then
+    echo "Registering DN 1..."
+    sender=$(./target/debug/audius-reward-manager-cli  create-sender \
+            --reward-manager "$(solana address -k $reward_manager_pda_keypair)" \
+            --eth-sender-address "$DP1_DELEGATE_OWNER_ADDRESS" \
+            --eth-operator-address "$DP1_DELEGATE_OWNER_ADDRESS" \
+        | grep -i "New sender" \
+        | awk -F': ' '{print $2}'
+    )
+    solana account --output json-compact --output-file ./fixtures/dn1-sender.json "$sender"
+    echo
+fi
+if [[ "$CN1_SP_OWNER_ADDRESS" != "" ]]; then
+    echo "Registering CN 1..."
+    sender=$(./target/debug/audius-reward-manager-cli  create-sender \
+            --reward-manager "$(solana address -k $reward_manager_pda_keypair)" \
+            --eth-sender-address "$CN1_SP_OWNER_ADDRESS" \
+            --eth-operator-address "$CN1_SP_OWNER_ADDRESS" \
+        | grep -i "New sender" \
+        | awk -F': ' '{print $2}'
+    )
+    solana account --output json-compact --output-file ./fixtures/cn1-sender.json "$sender"
+    echo
+fi
+if [[ "$CN2_SP_OWNER_ADDRESS" != "" ]]; then
+    echo "Registering CN 2..."
+    sender=$(./target/debug/audius-reward-manager-cli  create-sender \
+            --reward-manager "$(solana address -k $reward_manager_pda_keypair)" \
+            --eth-sender-address "$CN2_SP_OWNER_ADDRESS" \
+            --eth-operator-address "$CN2_SP_OWNER_ADDRESS" \
+        | grep -i "New sender" \
+        | awk -F': ' '{print $2}'
+    )
+    solana account --output json-compact --output-file ./fixtures/cn2-sender.json "$sender"
+    echo
+fi
+if [[ "$CN3_SP_OWNER_ADDRESS" != "" ]]; then
+    echo "Registering CN 3..."
+    sender=$(./target/debug/audius-reward-manager-cli  create-sender \
+            --reward-manager "$(solana address -k $reward_manager_pda_keypair)" \
+            --eth-sender-address "$CN3_SP_OWNER_ADDRESS" \
+            --eth-operator-address "$CN3_SP_OWNER_ADDRESS" \
+        | grep -i "New sender" \
+        | awk -F': ' '{print $2}'
+    )
+    solana account --output json-compact --output-file ./fixtures/cn3-sender.json "$sender"
+    echo
+fi
+if [[ "$CN4_SP_OWNER_ADDRESS" != "" ]]; then
+    echo "Registering CN 4..."
+    sender=$(./target/debug/audius-reward-manager-cli  create-sender \
+            --reward-manager "$(solana address -k $reward_manager_pda_keypair)" \
+            --eth-sender-address "$CN4_SP_OWNER_ADDRESS" \
+            --eth-operator-address "$CN4_SP_OWNER_ADDRESS" \
+        | grep -i "New sender" \
+        | awk -F': ' '{print $2}'
+    )
+    solana account --output json-compact --output-file ./fixtures/cn4-sender.json "$sender"
+    echo
+fi
+
+echo "------------- Creating other fixtures  ---------------"
 
 echo "Owner account:"
 solana account --output json-compact --output-file ./fixtures/owner.json "$(solana address -k "$owner_keypair")"

@@ -3,7 +3,7 @@ import { Action } from '@reduxjs/toolkit'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { useAppContext } from '~/context/appContext'
 import { Kind } from '~/models'
 import { Name, FollowSource } from '~/models/Analytics'
@@ -28,7 +28,7 @@ type MutationContext = {
 }
 
 export const useFollowUser = () => {
-  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const { audiusSdk, reportToSentry } = useQueryContext()
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
   const {
@@ -110,7 +110,7 @@ export const useFollowUser = () => {
       }
 
       const previousAccountUser = queryClient.getQueryData(
-        getCurrentAccountQueryKey(currentUserId)
+        getCurrentAccountQueryKey()
       )
 
       if (previousAccountUser) {
@@ -150,7 +150,7 @@ export const useFollowUser = () => {
 
       if (previousAccountUser) {
         queryClient.setQueryData(
-          getCurrentAccountQueryKey(currentUserId),
+          getCurrentAccountQueryKey(),
           previousAccountUser
         )
       }

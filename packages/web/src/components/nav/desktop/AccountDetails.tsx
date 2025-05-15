@@ -1,18 +1,18 @@
+import { useCurrentAccount } from '@audius/common/api'
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Box, Flex, Text, useTheme } from '@audius/harmony'
+import { useSelector } from 'react-redux'
 
 import { Avatar } from 'components/avatar/Avatar'
 import { TextLink, UserLink } from 'components/link'
-import { useSelector } from 'utils/reducer'
 import { backgroundOverlay } from 'utils/styleUtils'
 
 import { AccountSwitcher } from './AccountSwitcher/AccountSwitcher'
 
 const { SIGN_IN_PAGE, SIGN_UP_PAGE, profilePage } = route
-const { getUserHandle, getUserId, getIsAccountComplete, getGuestEmail } =
-  accountSelectors
+const { getUserId, getIsAccountComplete, getGuestEmail } = accountSelectors
 const messages = {
   haveAccount: 'Have an account?',
   managedAccount: 'Managed Account',
@@ -177,18 +177,20 @@ const GuestView = () => {
 }
 
 export const AccountDetails = () => {
-  const accountHandle = useSelector(getUserHandle)
-  const accountUserId = useSelector(getUserId)
+  const { data: accountHandle } = useCurrentAccount({
+    select: (data) => data?.user.handle
+  })
+  const userId = useSelector(getUserId)
+  const guestEmail = useSelector(getGuestEmail)
   const isManagedAccount = useIsManagedAccount()
   const hasCompletedAccount = useSelector(getIsAccountComplete)
-  const guestEmail = useSelector(getGuestEmail)
 
   // Determine which state to show
-  if (accountUserId && accountHandle) {
+  if (userId && accountHandle) {
     return (
       <AccountDetailsContainer isManagedAccount={isManagedAccount}>
         <SignedInView
-          userId={accountUserId}
+          userId={userId}
           handle={accountHandle}
           isManagedAccount={isManagedAccount}
         />

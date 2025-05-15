@@ -2,7 +2,7 @@ import { getAccount } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import { useQuery } from '@tanstack/react-query'
 
-import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
+import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 import { SolanaWalletAddress } from '~/models'
 
 import { QUERY_KEYS } from '../queryKeys'
@@ -27,7 +27,7 @@ export const useWalletOwner = (
   walletAddress: SolanaWalletAddress | null | undefined,
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
 
   return useQuery({
     queryKey: getWalletOwnerQueryKey(walletAddress),

@@ -4,13 +4,11 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { Kind } from '~/models'
 import { ID } from '~/models/Identifiers'
-import {
-  trackPageActions,
-  trackPageLineupActions,
-  trackPageSelectors
-} from '~/store/pages'
+import { trackPageLineupActions, trackPageSelectors } from '~/store/pages'
+import { tracksActions } from '~/store/pages/track/lineup/actions'
 import { makeUid } from '~/utils/uid'
 
+import { useTrackPageLineup } from '../lineups/useTrackPageLineup'
 import { QueryOptions } from '../types'
 
 import { useTrack } from './useTrack'
@@ -44,12 +42,18 @@ export const useTrackByParams = (
 
   const { data: track, isSuccess } = query
 
-  useEffect(() => {
-    if (track && isSuccess) {
-      const { track_id, permalink } = track
-      dispatch(trackPageActions.setTrackId(track_id))
-      dispatch(trackPageActions.setTrackPermalink(permalink))
+  const fetchTrackId = track?.track_id
+  const { isPending } = useTrackPageLineup(
+    { trackId: fetchTrackId, disableAutomaticCacheHandling: true },
+    { enabled: false }
+  )
 
+  useEffect(() => {
+    if (track && isSuccess && isPending) {
+      const { track_id } = track
+
+      // Reset lineup before adding the hero track
+      dispatch(tracksActions.reset())
       // Add hero track to lineup early so that we can play it ASAP
       // instead of waiting for the entire lineup to load
       dispatch(
@@ -64,7 +68,7 @@ export const useTrackByParams = (
         )
       )
     }
-  }, [isSuccess, track, dispatch, source])
+  }, [isSuccess, track, dispatch, source, isPending])
 
   return query
 }

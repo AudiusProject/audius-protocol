@@ -5,7 +5,7 @@ import { PublicKey } from '@solana/web3.js'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { getAddress } from 'viem'
 
-import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
+import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 import { Chain } from '~/models'
 import type { Env } from '~/services'
 
@@ -78,7 +78,7 @@ export const useWalletAudioBalance = (
   { address, includeStaked, chain }: UseWalletAudioBalanceParams,
   options?: QueryOptions
 ) => {
-  const { audiusSdk, env } = useAudiusQueryContext()
+  const { audiusSdk, env } = useQueryContext()
 
   return useQuery({
     queryKey: getWalletAudioBalanceQueryKey({ address, includeStaked, chain }),
@@ -105,7 +105,7 @@ export const useWalletAudioBalances = (
   params: UseAudioBalancesParams,
   options?: QueryOptions<AudioWei>
 ) => {
-  const { audiusSdk, env } = useAudiusQueryContext()
+  const { audiusSdk, env } = useQueryContext()
   return useQueries({
     queries: params.wallets.map(({ address, chain }) => ({
       queryKey: getWalletAudioBalanceQueryKey({

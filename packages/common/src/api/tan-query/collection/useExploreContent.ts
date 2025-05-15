@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models'
 
 import { QUERY_KEYS } from '../queryKeys'
@@ -13,12 +13,14 @@ type ExploreContentResponse = {
   featuredPlaylists: string[]
   featuredProfiles: string[]
   featuredRemixContests: string[]
+  featuredLabels: string[]
 }
 
 export type ExploreContent = {
   featuredPlaylists: ID[]
   featuredProfiles: ID[]
   featuredRemixContests: ID[]
+  featuredLabels: ID[]
 }
 
 export const getExploreContentQueryKey = () => {
@@ -28,7 +30,7 @@ export const getExploreContentQueryKey = () => {
 export const useExploreContent = <TResult = ExploreContent>(
   options?: SelectableQueryOptions<ExploreContent, TResult>
 ) => {
-  const { env } = useAudiusQueryContext()
+  const { env } = useQueryContext()
   const exploreContentUrl =
     env.EXPLORE_CONTENT_URL ?? STATIC_EXPLORE_CONTENT_URL
 
@@ -45,6 +47,9 @@ export const useExploreContent = <TResult = ExploreContent>(
           (id: string) => parseInt(id) as ID
         ),
         featuredRemixContests: json.featuredRemixContests.map(
+          (id: string) => parseInt(id) as ID
+        ),
+        featuredLabels: json.featuredLabels.map(
           (id: string) => parseInt(id) as ID
         )
       }

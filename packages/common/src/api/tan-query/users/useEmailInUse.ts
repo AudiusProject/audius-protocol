@@ -1,14 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
 
-import { useAudiusQueryContext } from '~/audius-query'
-import { AudiusQueryContextType } from '~/audius-query/AudiusQueryContext'
+import { useQueryContext } from '~/api/tan-query/utils'
+import { QueryContextType } from '~/api/tan-query/utils/QueryContext'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../types'
 
 export const fetchEmailInUse = async (
   email: string | null | undefined,
-  { identityService }: AudiusQueryContextType
+  { identityService }: QueryContextType
 ) => {
   if (!email) return { exists: false, isGuest: false }
   return await identityService.checkIfEmailRegistered(email)
@@ -31,7 +31,7 @@ export const useEmailInUse = <TResult = { exists: boolean; isGuest: boolean }>(
     TResult
   >
 ) => {
-  const context = useAudiusQueryContext()
+  const context = useQueryContext()
 
   return useQuery({
     queryKey: getEmailInUseQueryKey(email),

@@ -1,7 +1,7 @@
 import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { DeveloperApp, EditAppPayload } from '~/schemas/developerApps'
 
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
@@ -9,7 +9,7 @@ import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { getDeveloperAppsQueryKey } from './useDeveloperApps'
 
 export const useEditDeveloperApp = () => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
 

@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Audius Music</string>
     <string name="blob_provider_authority">co.audius.app.blob</string>
+    <string name="tiktok_app_id">awa9re2w7ec3xrn6</string>
 </resources>

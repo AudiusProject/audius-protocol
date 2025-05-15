@@ -19,6 +19,7 @@ import {
 } from 'typed-redux-saga'
 import { ulid } from 'ulid'
 
+import { queryUsers } from '~/api'
 import { Name } from '~/models/Analytics'
 import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
@@ -28,7 +29,6 @@ import * as toastActions from '~/store/ui/toast/slice'
 import dayjs from '~/utils/dayjs'
 
 import { makeBlastChatId, removeNullable } from '../../../utils'
-import { cacheUsersActions } from '../../cache'
 import { getContext } from '../../effects'
 
 import * as chatSelectors from './selectors'
@@ -98,17 +98,14 @@ const MESSAGES_PAGE_SIZE = 50
  * Helper to dispatch actions for fetching chat users
  */
 function* fetchUsersForChats(chats: UserChat[]) {
-  const userIds = new Set<number>([])
-  for (const chat of chats) {
-    for (const member of chat.chat_members) {
-      userIds.add(HashId.parse(member.user_id))
-    }
-  }
-  yield* put(
-    cacheUsersActions.fetchUsers({
-      userIds: Array.from(userIds.values())
+  const userIds = chats.reduce((acc, chat) => {
+    chat.chat_members.forEach((member) => {
+      acc.add(HashId.parse(member.user_id))
     })
-  )
+    return acc
+  }, new Set<number>())
+
+  yield* call(queryUsers, Array.from(userIds.values()))
 }
 
 function* doFetchUnreadMessagesCount() {

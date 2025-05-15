@@ -12,6 +12,7 @@ import { useEventIdsByEntityId } from './useEventsByEntityId'
 type RemixContestData = {
   description: string
   prizeInfo: string
+  winners: ID[]
 }
 
 type RemixContestEvent = OverrideProperties<

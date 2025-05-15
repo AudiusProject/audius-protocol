@@ -5,7 +5,7 @@ import { FormikHelpers } from 'formik'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { confirmEmailSchema, emailSchema } from '~/schemas'
 
 import { isOtpMissingError } from './useChangePasswordFormConfiguration'
@@ -62,16 +62,15 @@ const verifyEmailFormikSchema = toFormikValidationSchema(confirmEmailSchema)
 
 export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
   const [page, setPage] = useState(ChangeEmailPage.ConfirmPassword)
-  const audiusQueryContext = useAudiusQueryContext()
-  const { authService } = audiusQueryContext
+  const queryContext = useQueryContext()
+  const { authService } = queryContext
   const queryClient = useQueryClient()
 
   const EmailSchema = useMemo(
-    () =>
-      toFormikValidationSchema(emailSchema(audiusQueryContext, queryClient)),
-    [audiusQueryContext, queryClient]
+    () => toFormikValidationSchema(emailSchema(queryContext, queryClient)),
+    [queryContext, queryClient]
   )
-  const reportToSentry = audiusQueryContext.reportToSentry
+  const reportToSentry = queryContext.reportToSentry
 
   const validationSchema =
     page === ChangeEmailPage.ConfirmPassword

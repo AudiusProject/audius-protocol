@@ -401,7 +401,7 @@ def configure_celery(celery, test_config=None):
             },
             "create_remix_contest_notifications": {
                 "task": "create_remix_contest_notifications",
-                "schedule": timedelta(hours=1),
+                "schedule": timedelta(seconds=30),
             },
             "repair_audio_analyses": {
                 "task": "repair_audio_analyses",

@@ -2,7 +2,7 @@ import { OptionalId } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
 import { SearchResults, searchResultsFromSDK } from '~/adapters/search'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { useFeatureFlag } from '~/hooks/useFeatureFlag'
 import { FeatureFlags } from '~/services/remote-config'
 
@@ -27,7 +27,7 @@ export const useSearchAutocomplete = (
   { query, limit = DEFAULT_LIMIT }: UseSearchAutocompleteArgs,
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const { isEnabled: isUSDCEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES

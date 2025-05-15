@@ -1,4 +1,4 @@
-import { queryTrack, queryUser } from '@audius/common/api'
+import { queryAccountUser, queryTrack, queryUser } from '@audius/common/api'
 import { Name, Kind, ID, Track, User } from '@audius/common/models'
 import {
   accountSelectors,
@@ -16,8 +16,7 @@ import {
   makeKindId,
   waitForValue,
   removeNullable,
-  getFilename,
-  waitForQueryValue
+  getFilename
 } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
 import {
@@ -38,7 +37,7 @@ import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import watchTrackErrors from './errorSagas'
 import { watchRecordListen } from './recordListen'
-const { getUserId, getUserHandle, getIsGuestAccount } = accountSelectors
+const { getUserId, getIsGuestAccount } = accountSelectors
 const { getNftAccessSignatureMap } = gatedContentSelectors
 const { incrementTrackSaveCount, decrementTrackSaveCount } = accountActions
 const { setVisibility } = modalsActions
@@ -382,7 +381,8 @@ export function* saveTrackAsync(
       remixTrack.has_remix_author_reposted || remixTrack.has_remix_author_saved
 
     const parentTrack = yield* queryTrack(parentTrackId)
-    const handle = yield* select(getUserHandle)
+    const accountUser = yield* call(queryAccountUser)
+    const handle = accountUser?.handle
     const coSignIndicatorEvent = make(Name.REMIX_COSIGN_INDICATOR, {
       id: action.trackId,
       handle,
@@ -557,7 +557,7 @@ export function* watchSetArtistPick() {
           }
         ])
       )
-      const user = yield* waitForQueryValue(queryUser, userId)
+      const user = yield* call(queryUser, userId)
       yield* fork(updateProfileAsync, { metadata: user })
 
       const event = make(Name.ARTIST_PICK_SELECT_TRACK, { id: action.trackId })
@@ -582,7 +582,7 @@ export function* watchUnsetArtistPick() {
         }
       ])
     )
-    const user = yield* call(waitForQueryValue, queryUser, userId)
+    const user = yield* call(queryUser, userId)
     yield* fork(updateProfileAsync, { metadata: user })
 
     const event = make(Name.ARTIST_PICK_SELECT_TRACK, { id: 'none' })
