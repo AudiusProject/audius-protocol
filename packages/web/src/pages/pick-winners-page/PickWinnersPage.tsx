@@ -339,7 +339,7 @@ export const PickWinnersPage = () => {
 
   return (
     <Page title={messages.pickWinnersTitle} header={pageHeader}>
-      {remixContest ? (
+      {!remixContest ? (
         // TODO: Add loading skeletons here
         <Flex justifyContent='center' alignItems='center' p='2xl'>
           <LoadingSpinner css={{ width: 48, height: 48 }} />
