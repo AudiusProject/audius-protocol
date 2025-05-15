@@ -45,6 +45,7 @@ import {
   SegmentedControl
 } from '@audius/harmony'
 import cn from 'classnames'
+import { pick } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 
@@ -101,7 +102,7 @@ const {
   getNotificationSettings,
   updateEmailFrequency: updateEmailFrequencyAction
 } = settingsPageActions
-const { getAccountVerified, getUserId, getUserName } = accountSelectors
+const { getUserId, getUserName } = accountSelectors
 const { subscribeBrowserPushNotifications, instagramLogin } = accountActions
 
 const {
@@ -127,13 +128,15 @@ export const SettingsPage = () => {
   const isManagedAccount = useIsManagedAccount()
   const { authService, identityService } = useQueryContext()
 
-  const userId = useSelector(getUserId) ?? 0
-  const { data: accountHandle } = useCurrentAccount({
-    select: (data) => data?.user.handle
+  const { data: accountData } = useCurrentAccount({
+    select: (data) => pick(data, ['handle', 'userId', ''])
   })
-  const handle = accountHandle ?? ''
+  const {
+    handle,
+    user_id: userId,
+    is_verified: isVerified
+  } = accountData?.user ?? {}
   const name = useSelector(getUserName) ?? ''
-  const isVerified = useSelector(getAccountVerified)
   const theme = useSelector(getTheme)
   const emailFrequency = useSelector(getEmailFrequency)
   const notificationSettings = useSelector(getBrowserNotificationSettings)
