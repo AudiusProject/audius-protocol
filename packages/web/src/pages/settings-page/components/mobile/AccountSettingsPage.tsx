@@ -1,6 +1,6 @@
 import { useState, useContext, useCallback } from 'react'
 
-import { useQueryContext } from '@audius/common/api'
+import { useQueryContext, useCurrentAccount } from '@audius/common/api'
 import { Name, SquareSizes } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -30,8 +30,7 @@ import { push } from 'utils/navigation'
 import styles from './AccountSettingsPage.module.css'
 import settingsPageStyles from './SettingsPage.module.css'
 
-const { getUserId, getAccountVerified, getUserHandle, getUserName } =
-  accountSelectors
+const { getUserId, getAccountVerified, getUserName } = accountSelectors
 
 const {
   ACCOUNT_VERIFICATION_SETTINGS_PAGE,
@@ -136,7 +135,9 @@ const AccountSettingsPage = () => {
   const dispatch = useDispatch()
   const { authService, identityService } = useQueryContext()
   const userId = useSelector(getUserId) ?? 0
-  const handle = useSelector(getUserHandle) ?? ''
+  const { data: handle } = useCurrentAccount({
+    select: (account) => account?.user?.handle
+  })
   const name = useSelector(getUserName) ?? ''
   const isVerified = useSelector(getAccountVerified)
   const [showModalSignOut, setShowModalSignOut] = useState(false)

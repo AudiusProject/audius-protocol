@@ -101,7 +101,7 @@ export const useUnfollowUser = () => {
       }
 
       const previousAccountUser = queryClient.getQueryData(
-        getCurrentAccountQueryKey(currentUserId)
+        getCurrentAccountQueryKey()
       )
 
       if (previousAccountUser) {

@@ -9,7 +9,11 @@ import {
   takeLatest
 } from 'typed-redux-saga'
 
-import { getWalletAccountQueryFn, getWalletAccountQueryKey } from '~/api'
+import {
+  getWalletAccountQueryFn,
+  getWalletAccountQueryKey,
+  queryAccountUser
+} from '~/api'
 import { AccountUserMetadata, ErrorLevel, Kind, UserMetadata } from '~/models'
 import { getContext } from '~/store/effects'
 import { chatActions } from '~/store/pages/chat'
@@ -19,12 +23,7 @@ import { cacheActions } from '../cache'
 import { fetchProfile } from '../pages/profile/actions'
 import { getSDK } from '../sdkUtils'
 
-import {
-  getUserId,
-  getUserHandle,
-  getAccountUser,
-  getAccount
-} from './selectors'
+import { getUserId, getAccountUser, getAccount } from './selectors'
 import {
   fetchAccount,
   fetchAccountFailed,
@@ -48,7 +47,8 @@ const IP_STORAGE_KEY = 'user-ip-timestamp'
 
 function* handleFetchTrackCount() {
   const currentUserId = yield* select(getUserId)
-  const handle = yield* select(getUserHandle)
+  const accountUser = yield* call(queryAccountUser)
+  const handle = accountUser?.handle
   const sdk = yield* getSDK()
 
   if (!currentUserId || !handle) return
@@ -412,7 +412,8 @@ function* associateTwitterAccount(action: ReturnType<typeof twitterLogin>) {
   const identityService = yield* getContext('identityService')
   const reportToSentry = yield* getContext('reportToSentry')
   const userId = yield* select(getUserId)
-  const handle = yield* select(getUserHandle)
+  const accountUser = yield* call(queryAccountUser)
+  const handle = accountUser?.handle
   if (!userId || !handle) {
     reportToSentry({
       error: new Error('Missing userId or handle'),
@@ -462,7 +463,8 @@ function* associateInstagramAccount(action: ReturnType<typeof instagramLogin>) {
   const identityService = yield* getContext('identityService')
   const reportToSentry = yield* getContext('reportToSentry')
   const userId = yield* select(getUserId)
-  const handle = yield* select(getUserHandle)
+  const accountUser = yield* call(queryAccountUser)
+  const handle = accountUser?.handle
   if (!userId || !handle) {
     reportToSentry({
       error: new Error('Missing userId or handle'),
@@ -512,7 +514,8 @@ function* associateTikTokAccount(action: ReturnType<typeof tikTokLogin>) {
   const identityService = yield* getContext('identityService')
   const reportToSentry = yield* getContext('reportToSentry')
   const userId = yield* select(getUserId)
-  const handle = yield* select(getUserHandle)
+  const accountUser = yield* call(queryAccountUser)
+  const handle = accountUser?.handle
   if (!userId || !handle) {
     reportToSentry({
       error: new Error('Missing userId or handle'),

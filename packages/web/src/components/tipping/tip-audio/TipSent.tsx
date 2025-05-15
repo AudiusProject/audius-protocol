@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useCurrentAccount } from '@audius/common/api'
 import { Name, type SolanaWalletAddress } from '@audius/common/models'
 import { accountSelectors, tippingSelectors } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
@@ -16,7 +17,7 @@ import { ProfileInfo } from '../../profile-info/ProfileInfo'
 
 import styles from './TipAudio.module.css'
 const { getSendTipData } = tippingSelectors
-const { getUserId, getAccountERCWallet, getUserHandle } = accountSelectors
+const { getUserId, getAccountERCWallet } = accountSelectors
 
 const messages = {
   sending: 'SENDING',
@@ -30,7 +31,9 @@ const messages = {
 export const TipSent = () => {
   const record = useRecord()
   const accountUserId = useSelector(getUserId)
-  const accountHandle = useSelector(getUserHandle)
+  const { data: accountHandle } = useCurrentAccount({
+    select: (account) => account?.user?.handle
+  })
   const accountErcWallet = useSelector(getAccountERCWallet)
   if (!accountErcWallet) {
     throw new Error('Failed to get account ERC wallet')

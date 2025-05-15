@@ -5,6 +5,7 @@ import {
 } from '@audius/common/adapters'
 import {
   getStemsQueryKey,
+  queryAccountUser,
   queryTrack,
   queryUser,
   queryUsers
@@ -53,7 +54,7 @@ import { recordEditTrackAnalytics } from './sagaHelpers'
 
 const { startStemUploads } = stemsUploadActions
 const { getCurrentUploads } = stemsUploadSelectors
-const { getUserId, getUserHandle, getAccountUser } = accountSelectors
+const { getUserId, getAccountUser } = accountSelectors
 const { getTrack } = cacheTracksSelectors
 const { getUser } = cacheUsersSelectors
 
@@ -94,7 +95,8 @@ type TrackWithRemix = Pick<Track, 'track_id' | 'title'> & {
 
 export function* trackNewRemixEvent(track: TrackWithRemix) {
   yield* waitForAccount()
-  const accountHandle = yield* select(getUserHandle)
+  const accountUser = yield* call(queryAccountUser)
+  const accountHandle = accountUser?.handle
   if (!track.remix_of || !accountHandle) return
   const remixParentTrack = track.remix_of.tracks[0]
   const parentTrack = yield* queryTrack(remixParentTrack.parent_track_id)

@@ -1,3 +1,4 @@
+import { queryAccountUser } from '@audius/common/api'
 import {
   Name,
   TrackAccessType,
@@ -7,12 +8,9 @@ import {
   isContentUSDCPurchaseGated,
   Track
 } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
-import { put, select } from 'typed-redux-saga'
+import { call, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-
-const { getUserHandle } = accountSelectors
 
 function getTrackAccess({
   is_stream_gated,
@@ -39,7 +37,8 @@ export function* recordEditTrackAnalytics(prevTrack: Track, newTrack: Track) {
     (prevTrack?.field_visibility?.remixes ?? true) &&
     newTrack?.field_visibility?.remixes === false
   ) {
-    const handle = yield* select(getUserHandle)
+    const accountUser = yield* call(queryAccountUser)
+    const handle = accountUser?.handle
     // Record event if hide remixes was turned on
     yield* put(
       make(Name.REMIX_HIDE, {
