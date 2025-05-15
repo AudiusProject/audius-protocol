@@ -36,6 +36,7 @@ const { getWalletAddresses } = accountSelectors
 
 const USDCLearnMore =
   'https://support.audius.co/help/Understanding-USDC-on-Audius'
+const DIMENSIONS = 160
 
 const messages = {
   explainer:
@@ -107,10 +108,15 @@ export const USDCManualTransfer = ({
         direction={isMobile ? 'column' : 'row'}
       >
         {isMobile ? <Text>{messages.explainer}</Text> : null}
-        <Flex w={160} h={160} alignItems='center' justifyContent='center'>
+        <Flex
+          w={DIMENSIONS}
+          h={DIMENSIONS}
+          alignItems='center'
+          justifyContent='center'
+        >
           {USDCUserBank ? <QRCode value={USDCUserBank} /> : null}
         </Flex>
-        <Flex column gap='xl' h={160} justifyContent='space-between'>
+        <Flex column gap='xl' h={DIMENSIONS} justifyContent='space-between'>
           {!isMobile ? (
             <Text variant='body' size='l'>
               {messages.explainer}
@@ -124,7 +130,7 @@ export const USDCManualTransfer = ({
           />
         </Flex>
       </Flex>
-      <AddressTile address={USDCUserBank ?? ''} />
+      <AddressTile address={USDCUserBank} />
       <Flex gap='s' alignItems='center' direction={isMobile ? 'column' : 'row'}>
         {amountInCents === undefined ? (
           <>

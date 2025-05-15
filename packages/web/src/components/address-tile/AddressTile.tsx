@@ -19,7 +19,7 @@ const messages = {
 }
 
 type AddressTileProps = {
-  address: string
+  address?: string
   iconRight?: IconComponent
 }
 
@@ -39,6 +39,10 @@ export const AddressTile = ({
       <IconCopy size='s' color='subdued' />
     </PlainButton>
   )
+
+  if (!address) {
+    return null
+  }
 
   return (
     <Flex column border='default' borderRadius='s'>
