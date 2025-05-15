@@ -33,11 +33,6 @@ mobile-prepare-ios:
         key: 1-gems-{{ checksum "packages/mobile/ios/Gemfile.lock" }}
         paths:
           - packages/mobile/ios/vendor/bundle
-    - run:
-        name: Symlink react-native
-        command: |
-          ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native || true
-          ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native || true
     - restore_cache:
         key: pods-{{ checksum "packages/mobile/ios/Podfile.lock" }}
     - run:
@@ -152,6 +147,17 @@ mobile-prepare-android:
           sudo apt update
           sudo apt install python3-pip ninja-build
     - restore_cache:
+        key: ffmpeg-aar-{{ checksum "packages/mobile/android/build.gradle" }}
+    - run:
+        name: install ffmpeg-aar
+        command: |
+          cd ./packages/mobile/android
+          ./gradlew :app:downloadAar
+    - save_cache:
+        key: ffmpeg-aar-{{ checksum "packages/mobile/android/build.gradle" }}
+        paths:
+          - packages/mobile/android/libs
+    - restore_cache:
         key: 1-gems-{{ checksum "packages/mobile/android/Gemfile.lock" }}
     - run: cd packages/mobile/android && (bundle check || bundle install --path vendor/bundle)
     - save_cache:
@@ -198,10 +204,6 @@ mobile-build-android:
           cd packages/mobile/android
           bundle exec fastlane incrementVersionCode package_name:<<parameters.bundle-id>> track:<<parameters.track>>
     - run:
-        name: Symlink react-native
-        command: |
-          ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native || true
-    - run:
         name: generating the release apk & bundle
         command: |
           echo "yes" | sdkmanager "platforms;android-30" && cd packages/mobile/android && ./gradlew <<parameters.build-type>>
@@ -221,11 +223,6 @@ mobile-release-android:
       default: true
       type: boolean
   steps:
-    - run:
-        name: Symlink react-native
-        command: |
-          ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native || true
-          ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native || true
     - run:
         name: release android
         command: |
@@ -296,11 +293,6 @@ mobile-release-saga-dapp-store:
         command: |
           cd packages/mobile/android
           bundle exec fastlane incrementVersionCode package_name:<<parameters.bundle-id>> track:<<parameters.track>>
-    - run:
-        name: Symlink react-native
-        command: |
-          ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native || true
-          ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native || true
     - run:
         name: Build Android
         command: |
