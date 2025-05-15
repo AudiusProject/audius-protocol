@@ -10,6 +10,7 @@ import {
   UID
 } from '@audius/common/models'
 import { newUserMetadata } from '@audius/common/schemas'
+import { staticRoutes } from '@audius/common/src/utils/route'
 import {
   accountActions,
   accountSelectors,
@@ -143,7 +144,11 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   componentDidMount() {
     // If routing from a previous profile page
     // the lineups must be reset to refetch & update for new user
-    this.fetchProfile(getPathname(this.props.location))
+
+    const params = parseUserRoute(getPathname(this.props.location))
+    if (params?.handle) {
+      this.fetchProfile(getPathname(this.props.location))
+    }
 
     // Switching from profile page => profile page
     this.unlisten = this.props.history.listen((location, action) => {
@@ -153,7 +158,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         action === 'POP'
       ) {
         const params = parseUserRoute(getPathname(location))
-        if (params) {
+        if (params?.handle) {
           // Fetch profile if this is a new profile page
           this.fetchProfile(getPathname(location))
         }
