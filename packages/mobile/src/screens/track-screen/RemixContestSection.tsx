@@ -22,6 +22,7 @@ import { useThemeColors } from 'app/utils/theme'
 import { RemixContestDetailsTab } from './RemixContestDetailsTab'
 import { RemixContestPrizesTab } from './RemixContestPrizesTab'
 import { RemixContestSubmissionsTab } from './RemixContestSubmissionsTab'
+import { RemixContestWinnersTab } from './RemixContestWinnersTab'
 import { UploadRemixFooter } from './UploadRemixFooter'
 
 const TAB_FOOTER_HEIGHT = 64
@@ -31,7 +32,8 @@ const HEIGHT_OFFSET = 24
 const messages = {
   submissions: 'Submissions',
   details: 'Details',
-  prizes: 'Prizes'
+  prizes: 'Prizes',
+  winners: 'Winners'
 }
 
 const useStyles = makeStyles(({ palette, typography, spacing }) => ({
@@ -82,6 +84,7 @@ export const RemixContestSection = ({
   const { data: currentUserId } = useCurrentUserId()
   const isOwner = track?.owner_id === currentUserId
   const hasPrizeInfo = !!remixContest?.eventData?.prizeInfo
+  const hasWinners = (remixContest?.eventData?.winners?.length ?? 0) > 0
 
   const [index, setIndex] = useState(0)
   const [routes, setRoutes] = useState<Route[]>([])
@@ -102,9 +105,11 @@ export const RemixContestSection = ({
     setRoutes([
       { key: 'details', title: messages.details },
       ...(hasPrizeInfo ? [{ key: 'prizes', title: messages.prizes }] : []),
-      { key: 'submissions', title: messages.submissions }
+      ...(hasWinners
+        ? [{ key: 'winners', title: messages.winners }]
+        : [{ key: 'submissions', title: messages.submissions }])
     ])
-  }, [hasPrizeInfo])
+  }, [hasPrizeInfo, hasWinners])
 
   const handleLayout = (key: string) => (e: any) => {
     const height = e.nativeEvent.layout.height
@@ -159,6 +164,14 @@ export const RemixContestSection = ({
             isVisible={index === 2 && !firstRender}
           >
             <RemixContestSubmissionsTab key='submissions' trackId={trackId} />
+          </TabBody>
+        ),
+        winners: () => (
+          <TabBody
+            onLayout={handleLayout('winners')}
+            isVisible={index === 2 && !firstRender}
+          >
+            <RemixContestWinnersTab key='winners' trackId={trackId} />
           </TabBody>
         )
       }),

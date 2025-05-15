@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { useRemixes } from '@audius/common/api'
+import { useRemixContest } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
 
 import { Flex, IconArrowRight, PlainButton, Text } from '@audius/harmony-native'
@@ -9,35 +9,36 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { RemixSubmissionCard } from './RemixSubmissionCard'
 
 const messages = {
-  noSubmissions: 'No submissions yet',
-  beFirst: 'Be the first to upload a remix!',
+  noWinners: 'No winners announced yet',
+  stayTuned: 'Stay tuned for the results!',
   viewAll: 'View All'
 }
 
-type RemixContestSubmissionsTabProps = {
+type RemixContestWinnersTabProps = {
   trackId: ID
 }
 
 /**
- * Tab content displaying submissions for a remix contest
+ * Tab content displaying winners for a remix contest
  */
-export const RemixContestSubmissionsTab = ({
+export const RemixContestWinnersTab = ({
   trackId
-}: RemixContestSubmissionsTabProps) => {
+}: RemixContestWinnersTabProps) => {
   const navigation = useNavigation()
-  const { data: remixes } = useRemixes({ trackId, isContestEntry: true })
-  const submissions = remixes?.slice(0, 6)
+  const { data: remixContest } = useRemixContest(trackId)
+  const winners = remixContest?.eventData?.winners ?? []
 
-  // If there are no submissions, show the empty state
-  if (submissions.length === 0) {
-    return <EmptyRemixContestSubmissions />
+  // If there are no winners, show the empty state
+  // NOTE: This should never happen, but just in case
+  if (winners.length === 0) {
+    return <EmptyRemixContestWinners />
   }
 
   return (
     <Flex w='100%' column gap='2xl' p='xl' pb='2xl' borderTop='default'>
       <Flex row gap='2xl' wrap='wrap' justifyContent='space-between'>
-        {submissions.map((submission) => (
-          <RemixSubmissionCard key={submission.id} trackId={submission.id} />
+        {winners.map((winnerId) => (
+          <RemixSubmissionCard key={winnerId} trackId={winnerId} />
         ))}
       </Flex>
       <Flex justifyContent='center'>
@@ -54,7 +55,7 @@ export const RemixContestSubmissionsTab = ({
   )
 }
 
-const EmptyRemixContestSubmissions = () => {
+const EmptyRemixContestWinners = () => {
   return (
     <Flex
       column
@@ -64,9 +65,9 @@ const EmptyRemixContestSubmissions = () => {
       justifyContent='center'
       alignItems='center'
     >
-      <Text variant='title'>{messages.noSubmissions}</Text>
+      <Text variant='title'>{messages.noWinners}</Text>
       <Text variant='body' color='subdued'>
-        {messages.beFirst}
+        {messages.stayTuned}
       </Text>
     </Flex>
   )
