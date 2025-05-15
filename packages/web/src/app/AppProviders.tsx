@@ -49,7 +49,7 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
       store,
       history: storeHistory,
       persistor
-    } = configureStore(history, isMobile, initialStoreState)
+    } = configureStore({ history, isMobile, initialStoreState })
     // Mount store to window for easy access
     if (typeof window !== 'undefined' && !window.store) {
       window.store = store
