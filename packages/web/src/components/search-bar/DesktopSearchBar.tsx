@@ -218,6 +218,7 @@ export const DesktopSearchBar = () => {
     const hasResults = baseOptions.length > 0
 
     if (hasResults && inputValue) {
+      // append to last group to avoid extra spacing between groups
       baseOptions[baseOptions.length - 1].options.push({
         label: <ViewMoreButton query={inputValue} />,
         // @ts-expect-error
