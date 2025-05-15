@@ -1,4 +1,4 @@
-import { CSSProperties, MouseEvent, ReactNode, useCallback } from 'react'
+import { MouseEvent, useCallback } from 'react'
 
 import { useCurrentUserId, useTrack } from '@audius/common/api'
 import { SquareSizes } from '@audius/common/models'
@@ -7,7 +7,8 @@ import {
   IconWaveForm as IconVisualizer,
   IconButton,
   useTheme,
-  Box
+  Box,
+  Paper
 } from '@audius/harmony'
 import { animated, useSpring } from '@react-spring/web'
 import { useDispatch, useSelector } from 'react-redux'
@@ -31,47 +32,13 @@ const messages = {
   showVisualizer: 'Show Visualizer'
 }
 
-type FadeInUpProps = {
-  children: ReactNode
-  style: CSSProperties
-}
-
-const AnimatedBox = animated(Box)
-
-const FadeInUp = (props: FadeInUpProps) => {
-  const { children, style } = props
-  const { motion } = useTheme()
-
-  const slideInProps = useSpring({
-    from: { opacity: 0, height: 0 },
-    to: { opacity: 1, height: 208 }
-  })
-
-  return (
-    <AnimatedBox
-      border='default'
-      borderRadius='m'
-      css={{
-        boxShadow: '0 1px 20px -3px var(--currently-playing-default-shadow)',
-        overflow: 'hidden',
-        transition: `opacity ${motion.quick}`,
-        cursor: 'pointer',
-        ':hover': {
-          opacity: 0.96
-        }
-      }}
-      style={{ ...slideInProps, ...style }}
-    >
-      {children}
-    </AnimatedBox>
-  )
-}
+const AnimatedPaper = animated(Paper)
 
 export const NowPlayingArtworkTile = () => {
   const dispatch = useDispatch()
   const { location } = useHistory()
   const { pathname } = location
-  const { color, spacing } = useTheme()
+  const { color, spacing, motion } = useTheme()
 
   const { data: currentUserId } = useCurrentUserId()
   const trackId = useSelector(getTrackId)
@@ -115,19 +82,30 @@ export const NowPlayingArtworkTile = () => {
     trackId: trackId ?? undefined
   })
 
+  const slideInProps = useSpring({
+    from: { opacity: 0, height: 0 },
+    to:
+      permalink && trackId
+        ? { opacity: 1, height: 208 }
+        : { opacity: 0, height: 0 }
+  })
+
   if (!permalink || !trackId) return null
 
   const renderCoverArt = () => {
     return (
-      <FadeInUp
-        style={{
-          boxShadow: `0px 3px 4px 0px rgba(
+      <AnimatedPaper
+        border='default'
+        css={{
+          display: 'block',
+          transition: `opacity ${motion.quick}, box-shadow ${motion.quick}`,
+          boxShadow: `0 1px 20px -3px rgba(
             ${coverArtColor?.r},
             ${coverArtColor?.g},
             ${coverArtColor?.b},
-            ${coverArtColor ? 0.25 : 0})`,
-          transition: 'box-shadow 0.3s ease-in-out'
+            ${coverArtColor ? 0.25 : 0})`
         }}
+        style={slideInProps}
       >
         <Link to={permalink} aria-label={messages.viewTrack}>
           <DynamicImage
@@ -150,19 +128,12 @@ export const NowPlayingArtworkTile = () => {
             />
           </DynamicImage>
         </Link>
-      </FadeInUp>
+      </AnimatedPaper>
     )
   }
 
   const content = (
-    <Box
-      mt='unit5'
-      mh='auto'
-      mb={0}
-      css={{ position: 'relative' }}
-      h={208}
-      w={208}
-    >
+    <Box mh='auto' mb={0} css={{ position: 'relative' }} h={208} w={208}>
       <TrackDogEar trackId={trackId} />
       {renderCoverArt()}
     </Box>
