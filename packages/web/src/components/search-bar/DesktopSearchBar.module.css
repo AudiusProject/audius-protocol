@@ -219,7 +219,10 @@
   border: 1px solid var(--border-border-default);
   background-color: var(--harmony-bg-surface-2) !important;
 }
-.searchBox :global(.ant-select-item-option.ant-select-item-option-active):has([class*="PlainButton"]) {
+.searchBox
+  :global(.ant-select-item-option.ant-select-item-option-active):has(
+    [class*='PlainButton']
+  ) {
   background-color: transparent !important;
 }
 .searchBox :global(.ant-select-item-option:hover) {
