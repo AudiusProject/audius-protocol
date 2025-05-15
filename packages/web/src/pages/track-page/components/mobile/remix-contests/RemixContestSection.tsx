@@ -7,11 +7,12 @@ import useTabs from 'hooks/useTabs/useTabs'
 import { RemixContestDetailsTab } from './RemixContestDetailsTab'
 import { RemixContestPrizesTab } from './RemixContestPrizesTab'
 import { RemixContestSubmissionsTab } from './RemixContestSubmissionsTab'
-
+import { RemixContestWinnersTab } from './RemixContestWinnersTab'
 const messages = {
   title: 'Remix Contest',
   details: 'Details',
   prizes: 'Prizes',
+  winners: 'Winners',
   submissions: 'Submissions',
   uploadRemixButtonText: 'Upload Your Remix'
 }
@@ -28,6 +29,7 @@ export const RemixContestSection = ({
   const { data: remixContest } = useRemixContest(trackId)
   const { data: remixes } = useRemixes({ trackId, isContestEntry: true })
   const hasPrizeInfo = !!remixContest?.eventData?.prizeInfo
+  const hasWinners = (remixContest?.eventData?.winners?.length ?? 0) > 0
 
   const tabs = [
     {
@@ -42,10 +44,19 @@ export const RemixContestSection = ({
           }
         ]
       : []),
-    {
-      text: messages.submissions,
-      label: 'submissions'
-    }
+    ...(hasWinners
+      ? [
+          {
+            text: messages.winners,
+            label: 'winners'
+          }
+        ]
+      : [
+          {
+            text: messages.submissions,
+            label: 'submissions'
+          }
+        ])
   ]
 
   const elements = [
@@ -57,11 +68,21 @@ export const RemixContestSection = ({
     ...(hasPrizeInfo
       ? [<RemixContestPrizesTab key='prizes' trackId={trackId} />]
       : []),
-    <RemixContestSubmissionsTab
-      key='submissions'
-      trackId={trackId}
-      submissions={remixes.slice(0, 6)}
-    />
+    ...(hasWinners
+      ? [
+          <RemixContestWinnersTab
+            key='winners'
+            trackId={trackId}
+            winnerIds={remixContest?.eventData?.winners ?? []}
+          />
+        ]
+      : [
+          <RemixContestSubmissionsTab
+            key='submissions'
+            trackId={trackId}
+            submissions={remixes.slice(0, 6)}
+          />
+        ])
   ]
 
   const { tabs: TabBar, body: TabBody } = useTabs({
