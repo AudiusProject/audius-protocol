@@ -41,8 +41,8 @@ FAILED_WORKFLOW=$(jq -r '.items | map(.status == "failed") | any' < /tmp/workflo
 
 # Add help text in the case of failure
 echo "Generating Summary..."
-if [[ $CIRCLE_BRANCH == "main" ]] then
-  if [[ $FAILED_WORKFLOW == "true" ]] then
+if [[ $CIRCLE_BRANCH == "main" ]]; then
+  if [[ $FAILED_WORKFLOW == "true" ]]; then
     SUMMARY_MESSAGE="*Action Items*:\n1. If you broke `$CIRCLE_BRANCH`, then fix it or revert your change.\n2. If you think a test is flaky, confirm it, make a change to skip the test with a ticket comment, and assign the ticket to the test owner.\n3. Once CI is green again, give this a :white_check_mark:."
     AUTHOR="$author_name <@$SLACK_USER_ID>"
   else
@@ -50,7 +50,7 @@ if [[ $CIRCLE_BRANCH == "main" ]] then
     AUTHOR="$author_name"
   fi
 else
-  if [[ $FAILED_WORKFLOW == "true" ]] then
+  if [[ $FAILED_WORKFLOW == "true" ]]; then
     SUMMARY_MESSAGE="If automerge was enabled, the change likely did not merge. Fix your branch and try again."
     AUTHOR="$author_name <@$SLACK_USER_ID>"
   else 
