@@ -4,6 +4,7 @@ from datetime import datetime
 from logging import LoggerAdapter
 from typing import Optional, TypedDict, cast
 
+from celery.exceptions import SoftTimeLimitExceeded
 from redis import Redis
 from sqlalchemy import desc
 from web3 import Web3
@@ -147,7 +148,7 @@ def update_latest_indexed_block_redis(
         logger.error(f"couldn't update latest redis block: {e}")
 
 
-@celery.task(name="index_core", bind=True)
+@celery.task(name="index_core", bind=True, soft_time_limit=500)
 def index_core(self):
     redis: Redis = index_core.redis
     db: SessionManager = index_core.db
@@ -316,6 +317,9 @@ def index_core(self):
                 sol_plays_cutover=get_sol_cutover(),
             )
 
+    except SoftTimeLimitExceeded:
+        # Soft time limit exceeded, release lock and re-queue and doesn't commit the session
+        logger.error("Soft time limit exceeded. Releasing lock and re-queuing.")
     except Exception as e:
         root_logger.error(f"Error in indexing core blocks {e}", exc_info=True)
     finally:
