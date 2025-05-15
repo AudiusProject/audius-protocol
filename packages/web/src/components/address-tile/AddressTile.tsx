@@ -29,9 +29,12 @@ export const AddressTile = ({
 }: AddressTileProps) => {
   const { toast } = useContext(ToastContext)
   const isMobile = useIsMobile()
+
   const handleCopyPress = useCallback(() => {
-    copyToClipboard(address)
-    toast(messages.copied)
+    if (address) {
+      copyToClipboard(address)
+      toast(messages.copied)
+    }
   }, [address, toast])
 
   const defaultRight = (
