@@ -10,7 +10,7 @@ import { put, call } from 'redux-saga/effects'
 
 import { addTracksFromCollections } from './addTracksFromCollections'
 import { addUsersFromCollections } from './addUsersFromCollections'
-import { retrieveTracksForCollections } from './retrieveCollections'
+import { retrieveTracksForCollections } from './retrieveTracksForCollections'
 
 function isUserCollections(
   collections: CollectionMetadata[] | UserCollectionMetadata[]
