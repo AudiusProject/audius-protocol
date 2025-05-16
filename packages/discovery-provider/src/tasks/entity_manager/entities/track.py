@@ -13,7 +13,6 @@ from src.gated_content.content_access_checker import (
     ContentAccessBatchArgs,
     content_access_checker,
 )
-from src.models.events.event import Event
 from src.models.tracks.remix import Remix
 from src.models.tracks.stem import Stem
 from src.models.tracks.track import Track
