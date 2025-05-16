@@ -13,6 +13,10 @@ from src.gated_content.content_access_checker import (
     ContentAccessBatchArgs,
     content_access_checker,
 )
+from src.models.events.event import Event, EventType
+from src.models.notifications.notification import Notification
+from src.models.social.follow import Follow
+from src.models.social.save import Save
 from src.models.tracks.remix import Remix
 from src.models.tracks.stem import Stem
 from src.models.tracks.track import Track
@@ -30,6 +34,7 @@ from src.tasks.entity_manager.utils import (
     convert_legacy_purchase_access_gate,
     copy_record,
     parse_release_date,
+    safe_add_notification,
     validate_signer,
 )
 from src.tasks.metadata import (
@@ -573,6 +578,83 @@ def update_track_record(
         track.cover_art = None
 
 
+def create_remix_contest_notification(
+    params: ManageEntityParameters, track_record: Track
+):
+    """
+    Check if there's a remix contest event for this track and create notifications if needed.
+    """
+    is_newly_public = track_record.is_unlisted and not params.metadata.get(
+        "is_unlisted"
+    )
+    if not is_newly_public:
+        return
+
+    # Check for an active remix contest event for this track
+    remix_contest_event = (
+        params.session.query(Event)
+        .filter(
+            Event.event_type == EventType.remix_contest,
+            Event.entity_id == track_record.track_id,
+            Event.is_deleted == False,
+        )
+        .first()
+    )
+
+    if not remix_contest_event:
+        return
+
+    # Get all followers of the event creator
+    follower_user_ids = (
+        params.session.query(Follow.follower_user_id)
+        .filter(
+            Follow.followee_user_id == remix_contest_event.user_id,
+            Follow.is_current == True,
+            Follow.is_delete == False,
+        )
+        .all()
+    )
+
+    # Get all users who favorited the track
+    save_user_ids = (
+        params.session.query(Save.user_id)
+        .filter(
+            Save.save_item_id == track_record.track_id,
+            Save.save_type == "track",
+            Save.is_current == True,
+            Save.is_delete == False,
+        )
+        .all()
+    )
+
+    # Combine and deduplicate user IDs
+    user_ids = list(
+        set(
+            [user_id for (user_id,) in follower_user_ids]
+            + [user_id for (user_id,) in save_user_ids]
+        )
+    )
+
+    if not user_ids:
+        return
+
+    # Create individual notification for each user
+    for user_id in user_ids:
+        notification = Notification(
+            blocknumber=params.block_number,
+            user_ids=[user_id],
+            timestamp=params.block_datetime,
+            type="fan_remix_contest_started",
+            specifier=str(user_id),
+            group_id=f"fan_remix_contest_started:{track_record.track_id}:user:{remix_contest_event.user_id}:blocknumber:{params.block_number}",
+            data={
+                "entity_user_id": track_record.owner_id,
+                "entity_id": track_record.track_id,
+            },
+        )
+        safe_add_notification(params, notification)
+
+
 def create_track(params: ManageEntityParameters):
     handle = get_handle(params)
     validate_track_tx(params)
@@ -611,6 +693,7 @@ def create_track(params: ManageEntityParameters):
     dispatch_challenge_track_upload(
         params.challenge_bus, params.block_number, params.block_datetime, track_record
     )
+
     params.add_record(track_id, track_record)
 
 
@@ -653,6 +736,7 @@ def update_track(params: ManageEntityParameters):
         params.block_number,
         params.block_datetime,
     )
+    create_remix_contest_notification(params, track_record)
     update_track_record(params, track_record, params.metadata, handle)
     update_remixes_table(params.session, track_record, params.metadata)
 
