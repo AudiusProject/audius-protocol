@@ -30,7 +30,7 @@ from src.tasks.entity_manager.utils import (
     ManageEntityParameters,
     convert_legacy_purchase_access_gate,
     copy_record,
-    create_remix_contest_notification_base,
+    create_remix_contest_notification,
     parse_release_date,
     validate_signer,
 )
@@ -575,7 +575,7 @@ def update_track_record(
         track.cover_art = None
 
 
-def create_remix_contest_notification(
+def create_remix_contest_notification_helper(
     params: ManageEntityParameters, track_record: Track
 ):
     """Create notifications for followers and favoriters when a track with a remix contest becomes public.
@@ -587,7 +587,7 @@ def create_remix_contest_notification(
     if not is_newly_public:
         return
 
-    create_remix_contest_notification_base(
+    create_remix_contest_notification(
         params.session, track_record, params.block_number, params.block_datetime
     )
 
@@ -673,7 +673,7 @@ def update_track(params: ManageEntityParameters):
         params.block_number,
         params.block_datetime,
     )
-    create_remix_contest_notification(params, track_record)
+    create_remix_contest_notification_helper(params, track_record)
     update_track_record(params, track_record, params.metadata, handle)
     update_remixes_table(params.session, track_record, params.metadata)
 

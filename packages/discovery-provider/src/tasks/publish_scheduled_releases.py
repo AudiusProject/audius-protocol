@@ -3,7 +3,7 @@ from sqlalchemy import func
 from src.models.playlists.playlist import Playlist
 from src.models.tracks.track import Track
 from src.tasks.celery_app import celery
-from src.tasks.entity_manager.utils import create_remix_contest_notification_base
+from src.tasks.entity_manager.utils import create_remix_contest_notification
 from src.utils.structured_logger import StructuredLogger, log_duration
 from src.utils.web3_provider import get_eth_web3
 
@@ -35,7 +35,7 @@ def _publish_scheduled_releases(session):
     for track in tracks_to_release:
         logger.debug(f"Releasing track {track.track_id}")
         track.is_unlisted = False
-        create_remix_contest_notification_base(session, track)
+        create_remix_contest_notification(session, track)
 
     playlists_to_release = (
         session.query(Playlist)

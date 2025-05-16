@@ -666,7 +666,7 @@ def safe_add_notification(session: Session, notification: Notification):
         session.add(notification)
 
 
-def create_remix_contest_notification_base(
+def create_remix_contest_notification(
     session: Session,
     track: Track,
     block_number: Optional[int] = None,
