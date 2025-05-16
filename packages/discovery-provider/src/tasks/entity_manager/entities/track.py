@@ -579,7 +579,7 @@ def update_track_record(
 
 
 def create_remix_contest_notification_base(
-    session: Session,
+    params: ManageEntityParameters,
     track: Track,
     block_number: Optional[int] = None,
     block_datetime: Optional[datetime] = None,
@@ -588,14 +588,14 @@ def create_remix_contest_notification_base(
     This is the base function used by both the entity manager and scheduled release flows.
 
     Args:
-        session: The database session
+        params: The entity manager parameters
         track: The track that became public
         block_number: Optional block number for the notification (used by entity manager)
         block_datetime: Optional block datetime for the notification (used by entity manager)
     """
     # Check for an active remix contest event for this track
     remix_contest_event = (
-        session.query(Event)
+        params.session.query(Event)
         .filter(
             Event.event_type == EventType.remix_contest,
             Event.entity_id == track.track_id,
@@ -609,7 +609,7 @@ def create_remix_contest_notification_base(
 
     # Get all followers of the event creator
     follower_user_ids = (
-        session.query(Follow.follower_user_id)
+        params.session.query(Follow.follower_user_id)
         .filter(
             Follow.followee_user_id == remix_contest_event.user_id,
             Follow.is_current == True,
@@ -620,7 +620,7 @@ def create_remix_contest_notification_base(
 
     # Get all users who favorited the track
     save_user_ids = (
-        session.query(Save.user_id)
+        params.session.query(Save.user_id)
         .filter(
             Save.save_item_id == track.track_id,
             Save.save_type == "track",
@@ -663,7 +663,7 @@ def create_remix_contest_notification_base(
                 "entity_id": track.track_id,
             },
         )
-        session.add(notification)
+        safe_add_notification(params.session, notification)
 
 
 def create_remix_contest_notification(
@@ -679,7 +679,7 @@ def create_remix_contest_notification(
         return
 
     create_remix_contest_notification_base(
-        params.session, track_record, params.block_number, params.block_datetime
+        params, track_record, params.block_number, params.block_datetime
     )
 
 

@@ -645,16 +645,22 @@ def convert_legacy_purchase_access_gate(owner_id: int, access_gate: dict):
     return access_gate
 
 
-def safe_add_notification(params: ManageEntityParameters, notification: Notification):
+def safe_add_notification(session: Session, notification: Notification):
+    """Add a notification to the session if an identical one doesn't already exist.
+
+    Args:
+        session: The database session
+        notification: The notification to add
+    """
     group_id = notification.group_id
     specifier = notification.specifier
     notification_type = notification.type
 
     existing_notification = (
-        params.session.query(Notification)
+        session.query(Notification)
         .filter_by(type=notification_type, group_id=group_id, specifier=specifier)
         .first()
     )
 
     if existing_notification is None:
-        params.session.add(notification)
+        session.add(notification)

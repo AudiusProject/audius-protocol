@@ -1,11 +1,6 @@
 from sqlalchemy import func
-from sqlalchemy.orm.session import Session
 
-from src.models.events.event import Event, EventType
-from src.models.notifications.notification import Notification
 from src.models.playlists.playlist import Playlist
-from src.models.social.follow import Follow
-from src.models.social.save import Save
 from src.models.tracks.track import Track
 from src.tasks.celery_app import celery
 from src.tasks.entity_manager.entities.track import (
