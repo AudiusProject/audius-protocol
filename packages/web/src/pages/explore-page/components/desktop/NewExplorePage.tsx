@@ -236,8 +236,10 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
 
         {/* Tabs and Filters */}
         <Flex direction='column' gap='l'>
-          <Flex alignSelf='flex-start'>{tabs}</Flex>
-          <Divider orientation='horizontal' />
+          <Flex direction='column'>
+            <Flex alignSelf='flex-start'>{tabs}</Flex>
+            <Divider orientation='horizontal' />
+          </Flex>
           {filterKeys.length ? (
             <Flex
               direction='row'

@@ -158,7 +158,7 @@ export const TanQueryLineup = ({
   initialPageSize,
   scrollParent: externalScrollParent,
   loadMoreThreshold = DEFAULT_LOAD_MORE_THRESHOLD,
-  offset,
+  offset = 0,
   shouldLoadMore = true,
   data,
   pageSize,

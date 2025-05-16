@@ -1,8 +1,9 @@
 import { useRef } from 'react'
 
 import { useSearchAllResults } from '@audius/common/api'
+import { show } from '@audius/common/src/store/music-confetti/slice'
 import { SearchKind } from '@audius/common/store'
-import { Flex, Text } from '@audius/harmony'
+import { Flex, PlainButton, Text, TextLink } from '@audius/harmony'
 
 import { useIsMobile } from 'hooks/useIsMobile'
 
@@ -18,7 +19,8 @@ const messages = {
   profiles: 'Profiles',
   tracks: 'Tracks',
   albums: 'Albums',
-  playlists: 'Playlists'
+  playlists: 'Playlists',
+  showAll: 'Show All'
 }
 
 export const AllResults = () => {
@@ -53,9 +55,16 @@ export const AllResults = () => {
     >
       {isLoading || data?.users?.length ? (
         <Flex gap='xl' direction='column'>
-          <Text variant='heading' textAlign='left'>
-            {messages.profiles}
-          </Text>
+          <Flex justifyContent='space-between' alignItems='center'>
+            <Text variant='heading' textAlign='left'>
+              {messages.profiles}
+            </Text>
+            <PlainButton>
+              <Text strength='strong' size='l'>
+                {messages.showAll}
+              </Text>
+            </PlainButton>
+          </Flex>
           <ProfileResultsTiles
             skeletonCount={5}
             limit={5}
@@ -68,11 +77,18 @@ export const AllResults = () => {
 
       {isLoading || data?.tracks?.length ? (
         <Flex gap='xl' direction='column'>
-          <Text variant='heading' textAlign='left'>
-            {messages.tracks}
-          </Text>
+          <Flex justifyContent='space-between' alignItems='center'>
+            <Text variant='heading' textAlign='left'>
+              {messages.tracks}
+            </Text>
+            <PlainButton>
+              <Text strength='strong' size='l'>
+                {messages.showAll}
+              </Text>
+            </PlainButton>
+          </Flex>
           <TrackResults
-            count={12}
+            count={10}
             viewLayout='grid'
             category={SearchKind.ALL}
             isFetching={isLoading}
@@ -84,10 +100,18 @@ export const AllResults = () => {
 
       {isLoading || data?.albums?.length ? (
         <Flex gap='xl' direction='column'>
-          <Text variant='heading' textAlign='left'>
-            {messages.albums}
-          </Text>
+          <Flex justifyContent='space-between' alignItems='center'>
+            <Text variant='heading' textAlign='left'>
+              {messages.albums}
+            </Text>
+            <PlainButton>
+              <Text strength='strong' size='l'>
+                {messages.showAll}
+              </Text>
+            </PlainButton>
+          </Flex>
           <AlbumResults
+            limit={5}
             data={data?.albums ?? []}
             isFetching={isLoading}
             isPending={isPending}
@@ -98,9 +122,16 @@ export const AllResults = () => {
 
       {isLoading || data?.playlists?.length ? (
         <Flex gap='xl' direction='column'>
-          <Text variant='heading' textAlign='left'>
-            {messages.playlists}
-          </Text>
+          <Flex justifyContent='space-between' alignItems='center'>
+            <Text variant='heading' textAlign='left'>
+              {messages.playlists}
+            </Text>
+            <PlainButton>
+              <Text strength='strong' size='l'>
+                {messages.showAll}
+              </Text>
+            </PlainButton>
+          </Flex>
           <PlaylistResults
             skeletonCount={5}
             limit={5}

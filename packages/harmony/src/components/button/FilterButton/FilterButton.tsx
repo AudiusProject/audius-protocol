@@ -147,12 +147,14 @@ export const FilterButton = forwardRef(function FilterButton<
   }
 
   const iconCss = size === 'small' ? smallIconStyles : defaultIconStyles
-
   const handleClick = useCallback(() => {
     if (onClick) {
       onClick()
     } else {
-      setIsOpen((isOpen: boolean) => !isOpen)
+      setIsOpen((prev) => {
+        console.log('asdf setting to ', !prev)
+        return !prev
+      })
     }
   }, [onClick])
 
@@ -176,7 +178,7 @@ export const FilterButton = forwardRef(function FilterButton<
             {...props}
           />
         )) as IconComponent)
-      : (iconRight ?? (hasOptions ? IconCaretDown : null))
+      : iconRight ?? (hasOptions ? IconCaretDown : null)
   }, [variant, value, iconRight, hasOptions, onClick, onChange, onReset])
 
   useEffect(() => {
@@ -199,6 +201,7 @@ export const FilterButton = forwardRef(function FilterButton<
 
   const handleOptionSelected = useCallback(
     (value: Value) => {
+      console.log('asdf handleOptionSelected ', value)
       handleChange(value)
       setIsOpen(false)
     },
@@ -234,7 +237,7 @@ export const FilterButton = forwardRef(function FilterButton<
       />
     )
   ) : null
-
+  console.log('asdf isOpen', isOpen)
   return (
     <BaseButton
       ref={mergeRefs([ref, anchorRef])}
@@ -251,7 +254,6 @@ export const FilterButton = forwardRef(function FilterButton<
       <Menu
         anchorRef={anchorRef}
         isVisible={isOpen}
-        onClose={() => setIsOpen(false)}
         PaperProps={menuProps?.PaperProps}
       >
         {children ? (

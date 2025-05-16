@@ -57,6 +57,7 @@ const ViewMoreButton = ({ query }: { query: string }) => {
       <PlainButton
         iconRight={IconArrowRight}
         onClick={() => navigate(searchResultsPage('all', query))}
+        className='dropdown-action'
       >
         {messages.viewMoreResults}
       </PlainButton>
@@ -72,7 +73,7 @@ const ClearRecentSearchesButton = () => {
 
   return (
     <Flex alignItems='center' pt='l' gap='2xs' justifyContent='center'>
-      <PlainButton onClick={handleClickClear}>
+      <PlainButton onClick={handleClickClear} className='dropdown-action'>
         {messages.clearRecentSearches}
       </PlainButton>
     </Flex>
