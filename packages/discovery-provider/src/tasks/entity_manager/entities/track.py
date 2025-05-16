@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
@@ -578,24 +578,27 @@ def update_track_record(
         track.cover_art = None
 
 
-def create_remix_contest_notification(
-    params: ManageEntityParameters, track_record: Track
+def create_remix_contest_notification_base(
+    session: Session,
+    track: Track,
+    block_number: Optional[int] = None,
+    block_datetime: Optional[datetime] = None,
 ):
-    """
-    Check if there's a remix contest event for this track and create notifications if needed.
-    """
-    is_newly_public = track_record.is_unlisted and not params.metadata.get(
-        "is_unlisted"
-    )
-    if not is_newly_public:
-        return
+    """Create notifications for followers and favoriters when a track with a remix contest becomes public.
+    This is the base function used by both the entity manager and scheduled release flows.
 
+    Args:
+        session: The database session
+        track: The track that became public
+        block_number: Optional block number for the notification (used by entity manager)
+        block_datetime: Optional block datetime for the notification (used by entity manager)
+    """
     # Check for an active remix contest event for this track
     remix_contest_event = (
-        params.session.query(Event)
+        session.query(Event)
         .filter(
             Event.event_type == EventType.remix_contest,
-            Event.entity_id == track_record.track_id,
+            Event.entity_id == track.track_id,
             Event.is_deleted == False,
         )
         .first()
@@ -606,7 +609,7 @@ def create_remix_contest_notification(
 
     # Get all followers of the event creator
     follower_user_ids = (
-        params.session.query(Follow.follower_user_id)
+        session.query(Follow.follower_user_id)
         .filter(
             Follow.followee_user_id == remix_contest_event.user_id,
             Follow.is_current == True,
@@ -617,9 +620,9 @@ def create_remix_contest_notification(
 
     # Get all users who favorited the track
     save_user_ids = (
-        params.session.query(Save.user_id)
+        session.query(Save.user_id)
         .filter(
-            Save.save_item_id == track_record.track_id,
+            Save.save_item_id == track.track_id,
             Save.save_type == "track",
             Save.is_current == True,
             Save.is_delete == False,
@@ -638,21 +641,46 @@ def create_remix_contest_notification(
     if not user_ids:
         return
 
+    # Use provided block info or fall back to track info
+    notification_block_number = (
+        block_number if block_number is not None else track.blocknumber
+    )
+    notification_timestamp = (
+        block_datetime if block_datetime is not None else track.updated_at
+    )
+
     # Create individual notification for each user
     for user_id in user_ids:
         notification = Notification(
-            blocknumber=params.block_number,
+            blocknumber=notification_block_number,
             user_ids=[user_id],
-            timestamp=params.block_datetime,
+            timestamp=notification_timestamp,
             type="fan_remix_contest_started",
             specifier=str(user_id),
-            group_id=f"fan_remix_contest_started:{track_record.track_id}:user:{remix_contest_event.user_id}:blocknumber:{params.block_number}",
+            group_id=f"fan_remix_contest_started:{track.track_id}:user:{remix_contest_event.user_id}:blocknumber:{notification_block_number}",
             data={
-                "entity_user_id": track_record.owner_id,
-                "entity_id": track_record.track_id,
+                "entity_user_id": track.owner_id,
+                "entity_id": track.track_id,
             },
         )
-        safe_add_notification(params, notification)
+        session.add(notification)
+
+
+def create_remix_contest_notification(
+    params: ManageEntityParameters, track_record: Track
+):
+    """Create notifications for followers and favoriters when a track with a remix contest becomes public.
+    This version is used by the entity manager flow.
+    """
+    is_newly_public = track_record.is_unlisted and not params.metadata.get(
+        "is_unlisted"
+    )
+    if not is_newly_public:
+        return
+
+    create_remix_contest_notification_base(
+        params.session, track_record, params.block_number, params.block_datetime
+    )
 
 
 def create_track(params: ManageEntityParameters):
