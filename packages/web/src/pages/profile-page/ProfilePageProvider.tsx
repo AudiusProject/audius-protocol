@@ -38,7 +38,6 @@ import {
 } from '@audius/common/store'
 import { getErrorMessage, Nullable, route } from '@audius/common/utils'
 import { UnregisterCallback } from 'history'
-import { set } from 'lodash'
 import moment from 'moment'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
