@@ -141,16 +141,14 @@ export const configureStore = ({
   const context = isTest
     ? { dispatch: undefined }
     : buildStoreContext({ isMobile })
-  const sagaMiddleware = isTest
-    ? null
-    : createSagaMiddleware({
-        onError: onSagaError,
-        context
-      })
+  const sagaMiddleware = createSagaMiddleware({
+    onError: onSagaError,
+    context
+  })
 
   // For tests, only use basic middleware without sagas
   const middlewares = isTest
-    ? applyMiddleware(routerMiddleware, thunk)
+    ? applyMiddleware(routerMiddleware, thunk, sagaMiddleware!)
     : applyMiddleware(
         chatMiddleware(audiusSdk),
         routerMiddleware,

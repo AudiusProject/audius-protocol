@@ -261,6 +261,7 @@ function* fetchProfileAsync(action) {
   try {
     let user
     if (action.handle) {
+      console.log('action.handle', action.handle)
       user = yield call(queryUserByHandle, action.handle)
     } else if (action.userId) {
       const users = yield call(queryUser, action.userId)
