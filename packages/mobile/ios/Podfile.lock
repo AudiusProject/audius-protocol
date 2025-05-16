@@ -1833,7 +1833,7 @@ PODS:
     - React-Core
   - RNCMaskedView (0.3.1):
     - React-Core
-  - RNDateTimePicker (7.6.2):
+  - RNDateTimePicker (8.3.0):
     - React-Core
   - RNFastImage (8.6.3):
     - React-Core
@@ -2182,7 +2182,7 @@ DEPENDENCIES:
   - "RNCAsyncStorage (from `../../../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
-  - "RNDateTimePicker (from `../../../node_modules/@react-native-community/datetimepicker`)"
+  - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - RNFastImage (from `../../../node_modules/react-native-fast-image`)
   - "RNFingerprintjsPro (from `../node_modules/@fingerprintjs/fingerprintjs-pro-react-native`)"
   - RNFS (from `../../../node_modules/react-native-fs`)
@@ -2418,7 +2418,7 @@ EXTERNAL SOURCES:
   RNCMaskedView:
     :path: "../node_modules/@react-native-masked-view/masked-view"
   RNDateTimePicker:
-    :path: "../../../node_modules/@react-native-community/datetimepicker"
+    :path: "../node_modules/@react-native-community/datetimepicker"
   RNFastImage:
     :path: "../../../node_modules/react-native-fast-image"
   RNFingerprintjsPro:
@@ -2558,7 +2558,7 @@ SPEC CHECKSUMS:
   RNCAsyncStorage: 618d03a5f52fbccb3d7010076bc54712844c18ef
   RNCClipboard: 60fed4b71560d7bfe40e9d35dea9762b024da86d
   RNCMaskedView: 090213d32d8b3bb83a4dcb7d12c18f0152591906
-  RNDateTimePicker: fc2e4f2795877d45e84d85659bebe627eba5c931
+  RNDateTimePicker: a793ed8822283f576dd0a205a0916c5098c2611f
   RNFastImage: 5c9c9fed9c076e521b3f509fe79e790418a544e8
   RNFingerprintjsPro: b92c7eeff80f567abea771a4a3aaa196799caf7c
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
