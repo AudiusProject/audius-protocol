@@ -1,4 +1,3 @@
-import { getCurrencyDecimalPlaces } from '@audius/common/utils'
 import {
   Button,
   Divider,
@@ -16,13 +15,13 @@ const messages = {
   available: 'Available',
   max: 'MAX',
   amountInputLabel: (symbol: string) => `Amount (${symbol})`,
-  exchangeRate: (rate: number, isTokenStablecoin: boolean) => {
-    const decimalPlaces = isTokenStablecoin ? 2 : getCurrencyDecimalPlaces(rate)
-    const formattedRateStr = rate.toLocaleString('en-US', {
+  tokenPrice: (price: string, decimalPlaces: number) => {
+    const priceNum = parseFloat(price)
+    const formattedPrice = priceNum.toLocaleString('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: decimalPlaces
     })
-    return `(${isTokenStablecoin ? '$' : ''}${formattedRateStr} ea.)`
+    return `($${formattedPrice} ea.)`
   },
   stackedBalance: (formattedAvailableBalance: string) =>
     `${formattedAvailableBalance}  Available`,
@@ -117,7 +116,10 @@ export const TokenAmountSection = ({
   placeholder = '0.00',
   isDefault = true,
   error,
-  errorMessage
+  errorMessage,
+  tokenPrice,
+  isTokenPriceLoading,
+  tokenPriceDecimalPlaces = 2
 }: TokenAmountSectionProps) => {
   const { spacing, cornerRadius } = useTheme()
 
@@ -132,6 +134,11 @@ export const TokenAmountSection = ({
       isStablecoin: !!isStablecoin,
       placeholder
     })
+
+  const priceDisplay =
+    tokenPrice && !isTokenPriceLoading
+      ? messages.tokenPrice(tokenPrice, tokenPriceDecimalPlaces)
+      : null
 
   return (
     <Flex direction='column' gap='m'>
@@ -196,9 +203,9 @@ export const TokenAmountSection = ({
               <Text variant='heading' size='s' color='subdued'>
                 {tokenTicker}
               </Text>
-              {exchangeRate !== null && exchangeRate !== undefined && (
+              {priceDisplay && (
                 <Text variant='heading' size='s' color='subdued'>
-                  {messages.exchangeRate(exchangeRate, !!isStablecoin)}
+                  {priceDisplay}
                 </Text>
               )}
             </Flex>

@@ -33,4 +33,7 @@ export type TokenAmountSectionProps = {
   isDefault?: boolean
   error?: boolean
   errorMessage?: string
+  tokenPrice?: string | null
+  isTokenPriceLoading?: boolean
+  tokenPriceDecimalPlaces?: number
 }
