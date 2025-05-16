@@ -21,18 +21,24 @@ export const BuySellModal = () => {
   const { onOpen: openAddFundsModal } = useAddFundsModal()
 
   // State to control the modal title based on the flow screen
-  const [modalScreen, setModalScreen] = useState<'input' | 'confirm'>('input')
+  const [modalScreen, setModalScreen] = useState<
+    'input' | 'confirm' | 'success'
+  >('input')
   const [isFlowLoading, setIsFlowLoading] = useState(false)
 
   const title = useMemo(() => {
     if (isFlowLoading) return ''
     if (modalScreen === 'confirm') return messages.confirmDetails
+    if (modalScreen === 'success') return messages.modalSuccessTitle // To be defined in common messages as 'SUCCESS!'
     return messages.title
   }, [isFlowLoading, modalScreen])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size='medium'>
-      <ModalHeader onClose={onClose} showDismissButton={!isFlowLoading}>
+      <ModalHeader
+        onClose={onClose}
+        showDismissButton={!isFlowLoading && modalScreen !== 'success'}
+      >
         <ModalTitle title={title} />
       </ModalHeader>
       <ModalContent>
@@ -43,7 +49,7 @@ export const BuySellModal = () => {
           onLoadingStateChange={setIsFlowLoading}
         />
       </ModalContent>
-      {!isFlowLoading && (
+      {modalScreen !== 'success' && !isFlowLoading && (
         <ModalFooter
           css={{
             justifyContent: 'center',

@@ -1,6 +1,6 @@
 export type BuySellTab = 'buy' | 'sell'
 
-export type Screen = 'input' | 'confirm'
+export type Screen = 'input' | 'confirm' | 'success'
 
 export type TokenType = 'AUDIO' | 'USDC'
 
