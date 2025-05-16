@@ -34,3 +34,13 @@ export type TokenAmountSectionProps = {
   error?: boolean
   errorMessage?: string
 }
+
+// Data structure for the transaction success screen
+export type SuccessDisplayData = {
+  payTokenInfo: TokenInfo
+  receiveTokenInfo: TokenInfo
+  payAmount: number
+  receiveAmount: number
+  pricePerBaseToken: number
+  baseTokenSymbol: string
+}
