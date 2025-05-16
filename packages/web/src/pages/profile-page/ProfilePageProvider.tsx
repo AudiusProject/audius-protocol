@@ -153,7 +153,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         action === 'POP'
       ) {
         const params = parseUserRoute(getPathname(location))
-        if (params) {
+        if (params?.handle) {
           // Fetch profile if this is a new profile page
           this.fetchProfile(getPathname(location))
         }
@@ -166,6 +166,9 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   }
 
   componentWillUnmount() {
+    // Reset current user to prevent jarring users with previous profile state
+    // e.g. profile -> explore -> profile
+    this.props.setCurrentUser(null)
     if (this.unlisten) {
       // Push unlisten to end of event loop. On some browsers, the back button
       // will cause the component to unmount and remove the unlisten faster than
@@ -285,9 +288,9 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     shouldSetLoading = true
   ) => {
     const params = parseUserRoute(pathname)
-    if (params) {
+    if (params?.handle) {
       this.props.fetchProfile(
-        params?.handle?.toLowerCase() ?? null,
+        params.handle.toLowerCase(),
         params.userId,
         forceUpdate,
         shouldSetLoading
@@ -1008,6 +1011,8 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
           deleteExistingEntry
         )
       ),
+    setCurrentUser: (handle: string | null) =>
+      dispatch(profileActions.setCurrentUser(handle)),
     fetchAccountHasTracks: () => {
       dispatch(fetchHasTracks())
     },

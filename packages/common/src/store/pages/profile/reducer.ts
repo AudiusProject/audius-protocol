@@ -130,7 +130,7 @@ const actionsMap = {
   },
   [SET_CURRENT_USER](state: ProfilePageState, action: SetCurrentUserAction) {
     const { handle } = action
-    const lowerHandle = handle.toLowerCase()
+    const lowerHandle = handle?.toLowerCase()
 
     return {
       ...state,
