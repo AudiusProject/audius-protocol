@@ -17,10 +17,10 @@ type ExploreContentResponse = {
 }
 
 export type ExploreContent = {
-  featuredPlaylists: ID[]
-  featuredProfiles: ID[]
-  featuredRemixContests: ID[]
-  featuredLabels: ID[]
+  featuredPlaylists?: ID[]
+  featuredProfiles?: ID[]
+  featuredRemixContests?: ID[]
+  featuredLabels?: ID[]
 }
 
 export const getExploreContentQueryKey = () => {

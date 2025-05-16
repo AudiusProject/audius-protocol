@@ -179,7 +179,7 @@ export const FilterButton = forwardRef(function FilterButton<
             {...props}
           />
         )) as IconComponent)
-      : (iconRight ?? (hasOptions ? IconCaretDown : null))
+      : iconRight ?? (hasOptions ? IconCaretDown : null)
   }, [variant, value, iconRight, hasOptions, onClick, onChange, onReset])
 
   useEffect(() => {
@@ -202,6 +202,7 @@ export const FilterButton = forwardRef(function FilterButton<
 
   const handleOptionSelected = useCallback(
     (value: Value) => {
+      console.log('asdf handleOptionSelected ', value)
       handleChange(value)
       setIsOpen(false)
     },
@@ -237,7 +238,7 @@ export const FilterButton = forwardRef(function FilterButton<
       />
     )
   ) : null
-
+  console.log('asdf isOpen', isOpen)
   return (
     <BaseButton
       ref={mergeRefs([ref, anchorRef])}
