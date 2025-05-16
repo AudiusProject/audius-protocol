@@ -157,21 +157,29 @@ export const useNotificationNavigation = () => {
       if (notification.type === NotificationType.Milestone) {
         if (notification.achievement === Achievement.Followers) {
           navigation.navigate('Profile', { id: notification.entityId })
+        } else if (notification.entityType === Entity.Track) {
+          navigation.navigate('Track', {
+            trackId: notification.entityId,
+            canBeUnlisted: false
+          })
         } else {
-          navigation.navigate(
-            notification.entityType === Entity.Track ? 'Track' : 'Collection',
-            { id: notification.entityId, canBeUnlisted: false }
-          )
+          navigation.navigate('Collection', {
+            id: notification.entityId,
+            canBeUnlisted: false
+          })
         }
       } else if (notification.type === PushNotificationType.MilestoneFollow) {
         navigation.navigate('Profile', { id: notification.initiator })
+      } else if (notification.actions[0].actionEntityType === Entity.Track) {
+        navigation.navigate('Track', {
+          trackId: notification.entityId,
+          canBeUnlisted: false
+        })
       } else {
-        navigation.navigate(
-          notification.actions[0].actionEntityType === Entity.Track
-            ? 'Track'
-            : 'Collection',
-          { id: notification.entityId, canBeUnlisted: false }
-        )
+        navigation.navigate('Collection', {
+          id: notification.entityId,
+          canBeUnlisted: false
+        })
       }
     },
     [navigation]
@@ -313,11 +321,16 @@ export const useNotificationNavigation = () => {
 
         if (notification.entityType === Entity.Track && multiUpload) {
           navigation.navigate('Profile', { id: notification.userId })
+        } else if (notification.entityType === Entity.Track) {
+          navigation.navigate('Track', {
+            trackId: notification.entityIds[0],
+            canBeUnlisted: false
+          })
         } else {
-          navigation.navigate(
-            notification.entityType === Entity.Track ? 'Track' : 'Collection',
-            { id: notification.entityIds[0], canBeUnlisted: false }
-          )
+          navigation.navigate('Collection', {
+            id: notification.entityIds[0],
+            canBeUnlisted: false
+          })
         }
       },
       [NotificationType.Tastemaker]: entityHandler,
