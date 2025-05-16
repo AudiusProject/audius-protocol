@@ -1026,7 +1026,7 @@ def test_fan_remix_contest_started_notification_no_duplicate_with_existing_on_sc
                 "timestamp": now,
                 "type": NotificationType.FAN_REMIX_CONTEST_STARTED,
                 "specifier": str(FOLLOWER_ID),
-                "group_id": f"fan_remix_contest_started:{TEST_TRACK_ID}:user:{TEST_EVENT_CREATOR_ID}:blocknumber:1",
+                "group_id": f"fan_remix_contest_started:{TEST_TRACK_ID}:user:{TEST_EVENT_CREATOR_ID}:blocknumber:0",
                 "data": {
                     "entity_user_id": TEST_EVENT_CREATOR_ID,
                     "entity_id": TEST_TRACK_ID,
@@ -1063,5 +1063,6 @@ def test_fan_remix_contest_started_notification_no_duplicate_with_existing_on_sc
             )
             .all()
         )
+        logger.info(f"notifications_after: {notifications_after}")
         assert len(notifications_after) == 1
         assert notifications_after[0].user_ids == [FOLLOWER_ID]

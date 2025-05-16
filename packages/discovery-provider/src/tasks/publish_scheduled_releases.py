@@ -3,9 +3,7 @@ from sqlalchemy import func
 from src.models.playlists.playlist import Playlist
 from src.models.tracks.track import Track
 from src.tasks.celery_app import celery
-from src.tasks.entity_manager.entities.track import (
-    create_remix_contest_notification_base,
-)
+from src.tasks.entity_manager.utils import create_remix_contest_notification_base
 from src.utils.structured_logger import StructuredLogger, log_duration
 from src.utils.web3_provider import get_eth_web3
 

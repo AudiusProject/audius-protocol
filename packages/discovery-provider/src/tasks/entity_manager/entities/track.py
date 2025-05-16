@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Union
 
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
@@ -13,10 +13,7 @@ from src.gated_content.content_access_checker import (
     ContentAccessBatchArgs,
     content_access_checker,
 )
-from src.models.events.event import Event, EventType
-from src.models.notifications.notification import Notification
-from src.models.social.follow import Follow
-from src.models.social.save import Save
+from src.models.events.event import Event
 from src.models.tracks.remix import Remix
 from src.models.tracks.stem import Stem
 from src.models.tracks.track import Track
@@ -33,8 +30,8 @@ from src.tasks.entity_manager.utils import (
     ManageEntityParameters,
     convert_legacy_purchase_access_gate,
     copy_record,
+    create_remix_contest_notification_base,
     parse_release_date,
-    safe_add_notification,
     validate_signer,
 )
 from src.tasks.metadata import (
@@ -578,94 +575,6 @@ def update_track_record(
         track.cover_art = None
 
 
-def create_remix_contest_notification_base(
-    params: ManageEntityParameters,
-    track: Track,
-    block_number: Optional[int] = None,
-    block_datetime: Optional[datetime] = None,
-):
-    """Create notifications for followers and favoriters when a track with a remix contest becomes public.
-    This is the base function used by both the entity manager and scheduled release flows.
-
-    Args:
-        params: The entity manager parameters
-        track: The track that became public
-        block_number: Optional block number for the notification (used by entity manager)
-        block_datetime: Optional block datetime for the notification (used by entity manager)
-    """
-    # Check for an active remix contest event for this track
-    remix_contest_event = (
-        params.session.query(Event)
-        .filter(
-            Event.event_type == EventType.remix_contest,
-            Event.entity_id == track.track_id,
-            Event.is_deleted == False,
-        )
-        .first()
-    )
-
-    if not remix_contest_event:
-        return
-
-    # Get all followers of the event creator
-    follower_user_ids = (
-        params.session.query(Follow.follower_user_id)
-        .filter(
-            Follow.followee_user_id == remix_contest_event.user_id,
-            Follow.is_current == True,
-            Follow.is_delete == False,
-        )
-        .all()
-    )
-
-    # Get all users who favorited the track
-    save_user_ids = (
-        params.session.query(Save.user_id)
-        .filter(
-            Save.save_item_id == track.track_id,
-            Save.save_type == "track",
-            Save.is_current == True,
-            Save.is_delete == False,
-        )
-        .all()
-    )
-
-    # Combine and deduplicate user IDs
-    user_ids = list(
-        set(
-            [user_id for (user_id,) in follower_user_ids]
-            + [user_id for (user_id,) in save_user_ids]
-        )
-    )
-
-    if not user_ids:
-        return
-
-    # Use provided block info or fall back to track info
-    notification_block_number = (
-        block_number if block_number is not None else track.blocknumber
-    )
-    notification_timestamp = (
-        block_datetime if block_datetime is not None else track.updated_at
-    )
-
-    # Create individual notification for each user
-    for user_id in user_ids:
-        notification = Notification(
-            blocknumber=notification_block_number,
-            user_ids=[user_id],
-            timestamp=notification_timestamp,
-            type="fan_remix_contest_started",
-            specifier=str(user_id),
-            group_id=f"fan_remix_contest_started:{track.track_id}:user:{remix_contest_event.user_id}:blocknumber:{notification_block_number}",
-            data={
-                "entity_user_id": track.owner_id,
-                "entity_id": track.track_id,
-            },
-        )
-        safe_add_notification(params.session, notification)
-
-
 def create_remix_contest_notification(
     params: ManageEntityParameters, track_record: Track
 ):
@@ -679,7 +588,7 @@ def create_remix_contest_notification(
         return
 
     create_remix_contest_notification_base(
-        params, track_record, params.block_number, params.block_datetime
+        params.session, track_record, params.block_number, params.block_datetime
     )
 
 
