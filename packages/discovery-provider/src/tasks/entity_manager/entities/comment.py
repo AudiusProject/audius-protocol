@@ -204,7 +204,7 @@ def create_comment(params: ManageEntityParameters):
             },
         )
 
-        safe_add_notification(params, comment_notification)
+        safe_add_notification(params.session, comment_notification)
     if mentions:
         mention_mutes = (
             params.session.query(MutedUser)
@@ -254,7 +254,7 @@ def create_comment(params: ManageEntityParameters):
                         "comment_user_id": user_id,
                     },
                 )
-                safe_add_notification(params, mention_notification)
+                safe_add_notification(params.session, mention_notification)
 
     if parent_comment_id:
         # Avoid re-adding stem if it already exists
@@ -317,7 +317,7 @@ def create_comment(params: ManageEntityParameters):
                     "comment_user_id": user_id,
                 },
             )
-            safe_add_notification(params, thread_notification)
+            safe_add_notification(params.session, thread_notification)
 
 
 def get_existing_mentions_for_comment(params: ManageEntityParameters, comment_id: int):
@@ -487,7 +487,7 @@ def update_comment(params: ManageEntityParameters):
                             "comment_user_id": user_id,
                         },
                     )
-                    safe_add_notification(params, mention_notification)
+                    safe_add_notification(params.session, mention_notification)
 
 
 def delete_comment(params: ManageEntityParameters):
@@ -633,7 +633,7 @@ def react_comment(params: ManageEntityParameters):
                 },
             )
 
-            safe_add_notification(params, comment_reaction_notification)
+            safe_add_notification(params.session, comment_reaction_notification)
 
 
 def unreact_comment(params: ManageEntityParameters):
