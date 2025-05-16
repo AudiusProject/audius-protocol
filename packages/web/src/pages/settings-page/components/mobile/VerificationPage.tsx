@@ -13,6 +13,7 @@ import {
 import { route } from '@audius/common/utils'
 import { IconValidationX, IconNote, Button } from '@audius/harmony'
 import cn from 'classnames'
+import { pick } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useRecord, make, TrackEvent } from 'common/store/analytics/actions'
@@ -30,7 +31,6 @@ import { push } from 'utils/navigation'
 import settingsPageStyles from './SettingsPage.module.css'
 import styles from './VerificationPage.module.css'
 
-const { getUserId, getUserName } = accountSelectors
 const {
   twitterLogin: twitterLoginAction,
   instagramLogin: instagramLoginAction,
@@ -161,9 +161,9 @@ const LoadingBody = () => {
 }
 
 type SuccessBodyProps = {
-  userId: ID
+  userId?: ID
   handle?: string
-  name: string
+  name?: string
   goToRoute: (route: string) => void
 }
 
@@ -208,11 +208,10 @@ const SuccessBody = ({ handle, userId, name, goToRoute }: SuccessBodyProps) => {
 
 const VerificationPage = () => {
   const dispatch = useDispatch()
-  const userId = useSelector(getUserId) ?? 0
-  const { data: handle } = useCurrentAccount({
-    select: (account) => account?.user?.handle
+  const { data: accountData } = useCurrentAccount({
+    select: (account) => pick(account?.user, ['user_id', 'handle', 'name'])
   })
-  const name = useSelector(getUserName) ?? ''
+  const { user_id: userId, handle, name } = accountData ?? {}
   const [error, setError] = useState('')
   const [status, setStatus] = useState('')
 

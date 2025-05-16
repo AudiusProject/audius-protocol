@@ -1,8 +1,12 @@
 import { useCallback, useState } from 'react'
 
+import {
+  selectAccountHasTracks,
+  selectIsGuestAccount,
+  useCurrentAccount
+} from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
-import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
   Button,
@@ -11,7 +15,7 @@ import {
   Paper,
   SelectablePill
 } from '@audius/harmony'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import { replace } from 'utils/navigation'
@@ -28,7 +32,6 @@ import {
 import { TableType, TransactionHistoryPageProps } from '../types'
 
 const { PURCHASES_PAGE, SALES_PAGE, WITHDRAWALS_PAGE } = route
-const { getAccountHasTracks, getIsGuestAccount } = accountSelectors
 
 export const messages = {
   title: 'Transaction History',
@@ -48,15 +51,20 @@ export const TransactionHistoryPage = ({
   tableView
 }: TransactionHistoryPageProps) => {
   const dispatch = useDispatch()
-  const accountHasTracks = useSelector(getAccountHasTracks)
-  const isGuest = useSelector(getIsGuestAccount)
+  const { data: accountData } = useCurrentAccount({
+    select: (account) => ({
+      hasTracks: selectAccountHasTracks(account),
+      isGuest: selectIsGuestAccount(account)
+    })
+  })
+  const { hasTracks, isGuest } = accountData ?? {}
   const [tableOptions, setTableOptions] = useState<TableType[] | null>(null)
   const [selectedTable, setSelectedTable] = useState<TableType | null>(null)
 
   // Initialize table options based on account type
   useState(() => {
-    if (accountHasTracks !== null || isGuest) {
-      const tableOptions = accountHasTracks
+    if (hasTracks !== null || isGuest) {
+      const tableOptions = hasTracks
         ? [TableType.SALES, TableType.PURCHASES, TableType.WITHDRAWALS]
         : [TableType.PURCHASES, TableType.WITHDRAWALS]
       setTableOptions(tableOptions)

@@ -1,7 +1,6 @@
 import { useCurrentAccount } from '@audius/common/api'
 import { imageProfilePicEmpty } from '@audius/common/assets'
 import { Name, SquareSizes } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import {
   Avatar,
   Box,
@@ -14,6 +13,7 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
+import { pick } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 
@@ -30,8 +30,6 @@ import { useSelector } from 'utils/reducer'
 
 import { CoverPhotoBanner } from './CoverPhotoBanner'
 import { ImageField, ImageFieldValue } from './ImageField'
-
-const { getUserId, getUserName } = accountSelectors
 
 type AccountHeaderProps = {
   backButtonText?: string
@@ -97,15 +95,18 @@ export const AccountHeader = (props: AccountHeaderProps) => {
   const { value: displayNameField } = useSelector(getNameField)
   const { value: handleField } = useSelector(getHandleField)
   const isVerified = useSelector(getIsVerified)
-  const userId = useSelector(getUserId)
+  const { data: accountData } = useCurrentAccount({
+    select: (account) => pick(account?.user, ['user_id', 'handle', 'name'])
+  })
+  const {
+    user_id: userId,
+    handle: accountHandle,
+    name: accountDisplayName
+  } = accountData ?? {}
   const accountProfilePic = useProfilePicture({
     userId: userId ?? undefined,
     size: SquareSizes.SIZE_150_BY_150
   })
-  const { data: accountHandle } = useCurrentAccount({
-    select: (account) => account?.user?.handle
-  })
-  const accountDisplayName = useSelector(getUserName)
 
   const isEditing = mode === 'editing'
   const { spacing } = useTheme()

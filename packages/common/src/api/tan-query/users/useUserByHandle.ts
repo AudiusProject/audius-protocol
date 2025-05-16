@@ -28,6 +28,7 @@ export const getUserByHandleQueryFn = async (
   currentUserId?: ID | null
 ) => {
   if (!handle) return undefined
+  console.log('getUserByHandleQueryFn', handle)
   const { data } = await sdk.full.users.getUserByHandle({
     handle: handle.toLowerCase(),
     userId: OptionalId.parse(currentUserId)

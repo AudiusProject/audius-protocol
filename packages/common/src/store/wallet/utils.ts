@@ -48,7 +48,7 @@ export const badgeTiers: BadgeTierInfo[] = [
 
 export const getVerifiedForUser = (
   state: CommonState,
-  { userId }: { userId: ID }
+  { userId }: { userId?: ID }
 ) => {
   const user = getUser(state, { id: userId })
   return !!user?.is_verified
@@ -56,7 +56,7 @@ export const getVerifiedForUser = (
 
 export const getWeiBalanceForUser = (
   state: CommonState,
-  { userId }: { userId: ID }
+  { userId }: { userId?: ID }
 ) => {
   const accountUser = getAccountUser(state)
   const user = getUser(state, { id: userId })

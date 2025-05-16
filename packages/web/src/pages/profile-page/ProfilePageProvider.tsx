@@ -1,4 +1,4 @@
-import { ComponentType, PureComponent, RefObject } from 'react'
+import { ComponentType, RefObject, useEffect, useRef, useState } from 'react'
 
 import {
   Name,
@@ -73,7 +73,7 @@ const { createPlaylist } = cacheCollectionsActions
 
 const { makeGetProfile, getProfileFeedLineup, getProfileTracksLineup } =
   profilePageSelectors
-const { getUserId, getAccountHasTracks } = accountSelectors
+const { getUserId } = accountSelectors
 const { createChat, blockUser, unblockUser } = chatActions
 const { getBlockees, getBlockers, getCanCreateChat } = chatSelectors
 
@@ -124,8 +124,8 @@ type ProfilePageState = {
   showUnmuteUserConfirmationModal: boolean
 }
 
-class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
-  state: ProfilePageState = {
+const ProfilePage = (props: ProfilePageProps) => {
+  const [state, setState] = useState<ProfilePageState>({
     activeTab: null,
     editMode: false,
     shouldMaskContent: false,
@@ -136,58 +136,51 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     showMuteUserConfirmationModal: false,
     showUnmuteUserConfirmationModal: false,
     ...INITIAL_UPDATE_FIELDS
-  }
+  })
 
-  unlisten!: UnregisterCallback
+  const unlistenRef = useRef<UnregisterCallback>()
+  const prevPropsRef = useRef(props)
+  const accountHasTracks = false
 
-  componentDidMount() {
+  useEffect(() => {
     // If routing from a previous profile page
     // the lineups must be reset to refetch & update for new user
-    this.fetchProfile(getPathname(this.props.location))
+    props.fetchProfile(getPathname(props.location), null, false, true)
 
     // Switching from profile page => profile page
-    this.unlisten = this.props.history.listen((location, action) => {
+    unlistenRef.current = props.history.listen((location, action) => {
       // If changing pages or "POP" on router (with goBack, the pathnames are equal)
       if (
-        getPathname(this.props.location) !== getPathname(location) ||
+        getPathname(props.location) !== getPathname(location) ||
         action === 'POP'
       ) {
         const params = parseUserRoute(getPathname(location))
         if (params) {
           // Fetch profile if this is a new profile page
-          this.fetchProfile(getPathname(location))
+          props.fetchProfile(getPathname(location), null, false, true)
         }
-        this.setState({
+        setState((prevState) => ({
+          ...prevState,
           activeTab: null,
           ...INITIAL_UPDATE_FIELDS
-        })
+        }))
       }
     })
-  }
 
-  componentWillUnmount() {
-    if (this.unlisten) {
-      // Push unlisten to end of event loop. On some browsers, the back button
-      // will cause the component to unmount and remove the unlisten faster than
-      // the history listener will run. See [AUD-403].
-      setImmediate(this.unlisten)
+    return () => {
+      if (unlistenRef.current) {
+        // Push unlisten to end of event loop. On some browsers, the back button
+        // will cause the component to unmount and remove the unlisten faster than
+        // the history listener will run. See [AUD-403].
+        setImmediate(unlistenRef.current)
+      }
     }
-  }
+  }, [props, props.history, props.location])
 
-  componentDidUpdate(prevProps: ProfilePageProps, prevState: ProfilePageState) {
-    const {
-      pathname,
-      profile,
-      artistTracks,
-      goToRoute,
-      accountUserId,
-      accountHasTracks
-    } = this.props
-    const { editMode, activeTab } = this.state
-
-    if (!this.getIsOwner(prevProps) && this.getIsOwner()) {
-      this.props.fetchAccountHasTracks()
-    }
+  useEffect(() => {
+    const prevProps = prevPropsRef.current
+    const { pathname, profile, artistTracks, goToRoute, accountUserId } = props
+    const { editMode, activeTab } = state
 
     if (profile && profile.status === Status.ERROR) {
       goToRoute(NOT_FOUND_PAGE)
@@ -206,18 +199,21 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         artistTracks!.status === Status.SUCCESS
       ) {
         if (hasTracks) {
-          this.setState({
+          setState((prevState) => ({
+            ...prevState,
             activeTab: ProfilePageTabs.TRACKS
-          })
+          }))
         } else {
-          this.setState({
+          setState((prevState) => ({
+            ...prevState,
             activeTab: ProfilePageTabs.REPOSTS
-          })
+          }))
         }
       } else if (!activeTab && profile && profile.profile && !hasTracks) {
-        this.setState({
+        setState((prevState) => ({
+          ...prevState,
           activeTab: ProfilePageTabs.REPOSTS
-        })
+        }))
       }
     }
 
@@ -228,89 +224,131 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         const { handle } = params
         if (handle === null) {
           const newPath = profilePage(profile.profile.handle)
-          this.props.replaceRoute(newPath)
+          props.replaceRoute(newPath)
         }
       }
     }
 
     if (prevProps.profile?.profile?.handle !== profile?.profile?.handle) {
       // If editing profile and route to another user profile, exit edit mode
-      if (editMode) this.setState({ editMode: false })
+      if (editMode) {
+        setState((prevState) => ({
+          ...prevState,
+          editMode: false
+        }))
+      }
       // Close artist recommendations when the profile changes
-      this.setState({ areArtistRecommendationsVisible: false })
+      setState((prevState) => ({
+        ...prevState,
+        areArtistRecommendationsVisible: false
+      }))
     }
-  }
 
-  onFollow = () => {
+    prevPropsRef.current = props
+  }, [
+    props.profile,
+    props.artistTracks,
+    props.goToRoute,
+    props.accountUserId,
+    accountHasTracks,
+    state.editMode,
+    state.activeTab,
+    props,
+    state
+  ])
+
+  const onFollow = () => {
     const {
       profile: { profile }
-    } = this.props
+    } = props
     if (!profile) return
-    this.props.onFollow(profile.user_id)
-    this.setState({ areArtistRecommendationsVisible: true })
+    props.onFollow(profile.user_id)
+    setState((prevState) => ({
+      ...prevState,
+      areArtistRecommendationsVisible: true
+    }))
   }
 
-  onUnfollow = () => {
+  const onUnfollow = () => {
     const {
       profile: { profile }
-    } = this.props
+    } = props
     if (!profile) return
     const userId = profile.user_id
-    this.props.onUnfollow(userId)
+    props.onUnfollow(userId)
   }
 
-  onCloseArtistRecommendations = () => {
-    this.setState({ areArtistRecommendationsVisible: false })
+  const onCloseArtistRecommendations = () => {
+    setState((prevState) => ({
+      ...prevState,
+      areArtistRecommendationsVisible: false
+    }))
   }
 
-  onCloseBlockUserConfirmationModal = () => {
-    this.setState({ showBlockUserConfirmationModal: false })
+  const onCloseBlockUserConfirmationModal = () => {
+    setState((prevState) => ({
+      ...prevState,
+      showBlockUserConfirmationModal: false
+    }))
   }
 
-  onCloseUnblockUserConfirmationModal = () => {
-    this.setState({ showUnblockUserConfirmationModal: false })
+  const onCloseUnblockUserConfirmationModal = () => {
+    setState((prevState) => ({
+      ...prevState,
+      showUnblockUserConfirmationModal: false
+    }))
   }
 
-  onCloseMuteUserConfirmationModal = () => {
-    this.setState({ showMuteUserConfirmationModal: false })
+  const onCloseMuteUserConfirmationModal = () => {
+    setState((prevState) => ({
+      ...prevState,
+      showMuteUserConfirmationModal: false
+    }))
   }
 
-  onCloseUnmuteUserConfirmationModal = () => {
-    this.setState({ showUnmuteUserConfirmationModal: false })
+  const onCloseUnmuteUserConfirmationModal = () => {
+    setState((prevState) => ({
+      ...prevState,
+      showUnmuteUserConfirmationModal: false
+    }))
   }
 
-  fetchProfile = (
+  const fetchProfile = (
     pathname: string,
     forceUpdate = false,
     shouldSetLoading = true
   ) => {
     const params = parseUserRoute(pathname)
     if (params) {
-      this.props.fetchProfile(
+      props.fetchProfile(
         params?.handle?.toLowerCase() ?? null,
         params.userId,
         forceUpdate,
         shouldSetLoading
       )
       if (params.tab) {
-        this.setState({ activeTab: getTabForRoute(params.tab) })
+        setState((prevState) => ({
+          ...prevState,
+          activeTab: getTabForRoute(params.tab)
+        }))
       }
     } else {
-      this.props.goToRoute(NOT_FOUND_PAGE)
+      props.goToRoute(NOT_FOUND_PAGE)
     }
   }
 
-  refreshProfile = () => {
-    this.fetchProfile(getPathname(this.props.location), true, false)
+  const refreshProfile = () => {
+    fetchProfile(getPathname(props.location), true, false)
   }
 
-  updateName = (name: string) => {
-    this.setState({
+  const updateName = (name: string) => {
+    setState((prevState) => ({
+      ...prevState,
       updatedName: name
-    })
+    }))
   }
 
-  updateCoverPhoto = async (
+  const updateCoverPhoto = async (
     selectedFiles: any,
     source: 'original' | 'unsplash' | 'url'
   ) => {
@@ -318,20 +356,22 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       let file = selectedFiles[0]
       file = await resizeImage(file, 2000, /* square= */ false)
       const url = URL.createObjectURL(file)
-      this.setState({
+      setState((prevState) => ({
+        ...prevState,
         updatedCoverPhoto: { file, url, source }
-      })
+      }))
     } catch (error) {
-      this.setState({
+      setState((prevState) => ({
+        ...prevState,
         updatedCoverPhoto: {
-          ...(this.state.updatedCoverPhoto || {}),
+          ...(prevState.updatedCoverPhoto || {}),
           error: getErrorMessage(error)
         }
-      })
+      }))
     }
   }
 
-  updateProfilePicture = async (
+  const updateProfilePicture = async (
     selectedFiles: any,
     source: 'original' | 'unsplash' | 'url'
   ) => {
@@ -339,80 +379,91 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       let file = selectedFiles[0]
       file = await resizeImage(file)
       const url = URL.createObjectURL(file)
-      this.setState({
+      setState((prevState) => ({
+        ...prevState,
         updatedProfilePicture: { file, url, source }
-      })
+      }))
     } catch (error) {
-      const { updatedProfilePicture } = this.state
-      this.setState({
+      setState((prevState) => ({
+        ...prevState,
         updatedProfilePicture: {
-          ...(updatedProfilePicture && updatedProfilePicture.url
-            ? this.state.updatedProfilePicture
+          ...(prevState.updatedProfilePicture &&
+          prevState.updatedProfilePicture.url
+            ? prevState.updatedProfilePicture
             : {}),
           error: getErrorMessage(error)
         }
-      })
+      }))
     }
   }
 
-  updateBio = (bio: string) => {
-    this.setState({
+  const updateBio = (bio: string) => {
+    setState((prevState) => ({
+      ...prevState,
       updatedBio: bio
-    })
+    }))
   }
 
-  updateLocation = (location: string) => {
-    this.setState({
+  const updateLocation = (location: string) => {
+    setState((prevState) => ({
+      ...prevState,
       updatedLocation: location
-    })
+    }))
   }
 
-  updateTwitterHandle = (handle: string) => {
-    this.setState({
+  const updateTwitterHandle = (handle: string) => {
+    setState((prevState) => ({
+      ...prevState,
       updatedTwitterHandle: handle
-    })
+    }))
   }
 
-  updateInstagramHandle = (handle: string) => {
-    this.setState({
+  const updateInstagramHandle = (handle: string) => {
+    setState((prevState) => ({
+      ...prevState,
       updatedInstagramHandle: handle
-    })
+    }))
   }
 
-  updateTikTokHandle = (handle: string) => {
-    this.setState({
+  const updateTikTokHandle = (handle: string) => {
+    setState((prevState) => ({
+      ...prevState,
       updatedTikTokHandle: handle
-    })
+    }))
   }
 
-  updateWebsite = (website: string) => {
-    this.setState({
+  const updateWebsite = (website: string) => {
+    setState((prevState) => ({
+      ...prevState,
       updatedWebsite: website
-    })
+    }))
   }
 
-  updateDonation = (donation: string) => {
-    this.setState({
+  const updateDonation = (donation: string) => {
+    setState((prevState) => ({
+      ...prevState,
       updatedDonation: donation
-    })
+    }))
   }
 
-  changeTab = (tab: ProfilePageTabs) => {
-    this.setState({
+  const changeTab = (tab: ProfilePageTabs) => {
+    setState((prevState) => ({
+      ...prevState,
       activeTab: tab
-    })
+    }))
 
     // Once the hero card settles into place, then turn the mask off
     setTimeout(() => {
-      const firstTab = this.getIsArtist() ? 'Tracks' : 'Reposts'
-      this.setState({
+      const firstTab = getIsArtist() ? 'Tracks' : 'Reposts'
+      setState((prevState) => ({
+        ...prevState,
         shouldMaskContent: tab !== firstTab
-      })
+      }))
     }, 300)
   }
 
-  getLineupProps = (lineup: any) => {
-    const { currentQueueItem, playing, buffering, containerRef } = this.props
+  const getLineupProps = (lineup: any) => {
+    const { currentQueueItem, playing, buffering, containerRef } = props
     const { uid: playingUid, track, source } = currentQueueItem
     return {
       lineup,
@@ -426,12 +477,13 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     }
   }
 
-  getMode = (isOwner: boolean): ProfileMode => {
-    return isOwner ? (this.state.editMode ? 'editing' : 'owner') : 'visitor'
+  const getMode = (isOwner: boolean): ProfileMode => {
+    return isOwner ? (state.editMode ? 'editing' : 'owner') : 'visitor'
   }
 
-  onEdit = () => {
-    this.setState({
+  const onEdit = () => {
+    setState((prevState) => ({
+      ...prevState,
       editMode: true,
       updatedName: null,
       updatedCoverPhoto: null,
@@ -443,15 +495,15 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       updatedTikTokHandle: null,
       updatedWebsite: null,
       updatedDonation: null
-    })
+    }))
   }
 
-  onSave = () => {
+  const onSave = () => {
     const {
       profile: { profile },
       recordUpdateCoverPhoto,
       recordUpdateProfilePicture
-    } = this.props
+    } = props
     const {
       updatedCoverPhoto,
       updatedProfilePicture,
@@ -463,7 +515,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       updatedTikTokHandle,
       updatedWebsite,
       updatedDonation
-    } = this.state
+    } = state
 
     const updatedMetadata = newUserMetadata({ ...profile })
     if (updatedCoverPhoto && updatedCoverPhoto.file) {
@@ -498,35 +550,34 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     if (updatedDonation !== null) {
       updatedMetadata.donation = updatedDonation
     }
-    this.props.updateProfile(updatedMetadata)
-    this.setState({
+    props.updateProfile(updatedMetadata)
+    setState((prevState) => ({
+      ...prevState,
       editMode: false
-    })
+    }))
   }
 
-  onShare = () => {
-    const {
-      profile: { profile }
-    } = this.props
-    if (!profile) return
-    this.props.onShare(profile.user_id)
-  }
-
-  onCancel = () => {
-    this.setState({
+  const onCancel = () => {
+    setState((prevState) => ({
+      ...prevState,
       editMode: false,
       updatedName: null,
       updatedCoverPhoto: null,
       updatedProfilePicture: null,
       updatedBio: null,
-      updatedLocation: null
-    })
+      updatedLocation: null,
+      updatedTwitterHandle: null,
+      updatedInstagramHandle: null,
+      updatedTikTokHandle: null,
+      updatedWebsite: null,
+      updatedDonation: null
+    }))
   }
 
-  getStats = (isArtist: boolean): StatProps[] => {
+  const getStats = (isArtist: boolean): StatProps[] => {
     const {
       profile: { profile }
-    } = this.props
+    } = props
 
     let trackCount = 0
     let playlistCount = 0
@@ -569,18 +620,21 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         ]
   }
 
-  onSortByRecent = () => {
+  const onSortByRecent = () => {
     const {
       artistTracks,
       updateCollectionOrder,
       profile: { profile },
       trackUpdateSort
-    } = this.props
+    } = props
     if (!profile) return
-    this.setState({ tracksLineupOrder: TracksSortMode.RECENT })
+    setState((prevState) => ({
+      ...prevState,
+      tracksLineupOrder: TracksSortMode.RECENT
+    }))
     updateCollectionOrder(CollectionSortMode.TIMESTAMP)
     trackUpdateSort('recent')
-    this.props.loadMoreArtistTracks(
+    props.loadMoreArtistTracks(
       0,
       artistTracks!.entries.length,
       profile.user_id,
@@ -588,16 +642,19 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     )
   }
 
-  onSortByPopular = () => {
+  const onSortByPopular = () => {
     const {
       artistTracks,
       updateCollectionOrder,
       profile: { profile },
       trackUpdateSort
-    } = this.props
+    } = props
     if (!profile) return
-    this.setState({ tracksLineupOrder: TracksSortMode.POPULAR })
-    this.props.loadMoreArtistTracks(
+    setState((prevState) => ({
+      ...prevState,
+      tracksLineupOrder: TracksSortMode.POPULAR
+    }))
+    props.loadMoreArtistTracks(
       0,
       artistTracks!.entries.length,
       profile.user_id,
@@ -607,28 +664,27 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     trackUpdateSort('popular')
   }
 
-  loadMoreArtistTracks = (offset: number, limit: number) => {
+  const loadMoreArtistTracks = (offset: number, limit: number) => {
     const {
       profile: { profile }
-    } = this.props
+    } = props
     if (!profile) return
-    this.props.loadMoreArtistTracks(
+    props.loadMoreArtistTracks(
       offset,
       limit,
       profile.user_id,
-      this.state.tracksLineupOrder
+      state.tracksLineupOrder
     )
   }
 
-  didChangeTabsFrom = (prevLabel: string, currLabel: string) => {
+  const didChangeTabsFrom = (prevLabel: string, currLabel: string) => {
     const {
       didChangeTabsFrom,
-      profile: { profile },
-      accountHasTracks
-    } = this.props
+      profile: { profile }
+    } = props
     if (profile) {
       let tab = `/${currLabel.toLowerCase()}`
-      const isOwner = this.getIsOwner()
+      const isOwner = getIsOwner()
       if (profile.track_count > 0 || (isOwner && accountHasTracks)) {
         // An artist, default route is tracks
         if (currLabel === ProfilePageTabs.TRACKS) {
@@ -647,306 +703,310 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       )
     }
     didChangeTabsFrom(prevLabel, currLabel)
-    this.setState({ activeTab: currLabel as ProfilePageTabs })
+    setState((prevState) => ({
+      ...prevState,
+      activeTab: currLabel as ProfilePageTabs
+    }))
   }
 
-  loadMoreUserFeed = (offset: number, limit: number) => {
+  const loadMoreUserFeed = (offset: number, limit: number) => {
     const {
       profile: { profile }
-    } = this.props
+    } = props
     if (!profile) return
-    this.props.loadMoreUserFeed(offset, limit, profile.user_id)
+    props.loadMoreUserFeed(offset, limit, profile.user_id)
   }
 
-  getIsArtist = () => {
+  const getIsArtist = () => {
     const {
-      profile: { profile },
-      accountHasTracks
-    } = this.props
-    const isOwner = this.getIsOwner()
+      profile: { profile }
+    } = props
+    const isOwner = getIsOwner()
     return !!(
       (profile && profile.track_count > 0) ||
       (isOwner && accountHasTracks)
     )
   }
 
-  getIsOwner = (overrideProps?: ProfilePageProps) => {
+  const getIsOwner = (overrideProps?: ProfilePageProps) => {
     const {
       profile: { profile },
       accountUserId
-    } = overrideProps || this.props
+    } = overrideProps || props
     return profile && accountUserId ? profile.user_id === accountUserId : false
   }
 
-  onMessage = () => {
+  const onMessage = () => {
     const {
       profile: { profile }
-    } = this.props
+    } = props
     // Handle logged-out case, redirect to signup
-    if (
-      this.props.chatPermissions.callToAction === ChatPermissionAction.SIGN_UP
-    ) {
-      return this.props.redirectUnauthenticatedAction()
+    if (props.chatPermissions.callToAction === ChatPermissionAction.SIGN_UP) {
+      return props.redirectUnauthenticatedAction()
     }
 
-    if (this.props.chatPermissions?.canCreateChat) {
-      return this.props.onMessage(profile!.user_id)
+    if (props.chatPermissions?.canCreateChat) {
+      return props.onMessage(profile!.user_id)
     } else if (profile) {
-      this.props.onShowInboxUnavailableModal(profile.user_id)
+      props.onShowInboxUnavailableModal(profile.user_id)
     }
   }
 
-  onBlock = () => {
-    return this.setState({ showBlockUserConfirmationModal: true })
+  const onBlock = () => {
+    setState((prevState) => ({
+      ...prevState,
+      showBlockUserConfirmationModal: true
+    }))
   }
 
-  onUnblock = () => {
-    return this.setState({ showUnblockUserConfirmationModal: true })
+  const onUnblock = () => {
+    setState((prevState) => ({
+      ...prevState,
+      showUnblockUserConfirmationModal: true
+    }))
   }
 
-  onMute = () => {
-    return this.setState({ showMuteUserConfirmationModal: true })
+  const onMute = () => {
+    setState((prevState) => ({
+      ...prevState,
+      showMuteUserConfirmationModal: true
+    }))
   }
 
-  onUnmute = () => {
-    return this.setState({ showUnmuteUserConfirmationModal: true })
+  const {
+    profile: { profile, status: profileLoadingStatus, isSubscribed },
+    // Tracks
+    artistTracks,
+    playArtistTrack,
+    pauseArtistTrack,
+    // Feed
+    userFeed,
+    playUserFeedTrack,
+    pauseUserFeedTrack,
+    accountUserId,
+    goToRoute,
+    createPlaylist,
+    currentQueueItem,
+    setNotificationSubscription,
+    setFollowingUserId,
+    setFollowersUserId
+  } = props
+  const {
+    activeTab,
+    editMode,
+    shouldMaskContent,
+    areArtistRecommendationsVisible,
+    updatedName,
+    updatedBio,
+    updatedLocation,
+    updatedCoverPhoto,
+    updatedProfilePicture,
+    updatedTwitterHandle,
+    updatedInstagramHandle,
+    updatedTikTokHandle,
+    updatedWebsite,
+    updatedDonation
+  } = state
+
+  const isArtist = getIsArtist()
+  const isOwner = getIsOwner()
+  const mode = getMode(isOwner)
+  const stats = getStats(isArtist)
+
+  const userId = profile ? profile.user_id : null
+  const handle = profile ? `@${profile.handle}` : ''
+  const verified = profile ? profile.is_verified : false
+  const twitterVerified = !!profile?.verified_with_twitter
+  const instagramVerified = !!profile?.verified_with_instagram
+  const tikTokVerified = !!profile?.verified_with_tiktok
+  const created = profile
+    ? moment(profile.created_at).format('YYYY')
+    : moment().format('YYYY')
+
+  const name = profile ? updatedName || profile.name || '' : ''
+  const bio = profile
+    ? updatedBio !== null
+      ? updatedBio
+      : profile.bio || ''
+    : ''
+  const location = profile
+    ? updatedLocation !== null
+      ? updatedLocation
+      : profile.location || ''
+    : ''
+  const twitterHandle = profile
+    ? updatedTwitterHandle !== null
+      ? updatedTwitterHandle
+      : twitterVerified && !verifiedHandleWhitelist.has(handle)
+        ? profile.handle
+        : profile.twitter_handle || ''
+    : ''
+  const instagramHandle = profile
+    ? updatedInstagramHandle !== null
+      ? updatedInstagramHandle
+      : instagramVerified
+        ? profile.handle
+        : profile.instagram_handle || ''
+    : ''
+  const tikTokHandle = profile
+    ? updatedTikTokHandle !== null
+      ? updatedTikTokHandle
+      : tikTokVerified
+        ? profile.handle
+        : profile.tiktok_handle || ''
+    : ''
+  const website = profile
+    ? updatedWebsite !== null
+      ? updatedWebsite
+      : profile.website || ''
+    : ''
+  const donation = profile
+    ? updatedDonation !== null
+      ? updatedDonation
+      : profile.donation || ''
+    : ''
+  const hasProfilePicture = profile
+    ? !!profile.profile_picture ||
+      !!profile.profile_picture_sizes ||
+      updatedProfilePicture
+    : false
+
+  const dropdownDisabled =
+    activeTab === ProfilePageTabs.REPOSTS ||
+    activeTab === ProfilePageTabs.COLLECTIBLES
+  const following = !!profile && profile.does_current_user_follow
+
+  const childProps = {
+    // Computed
+    accountUserId,
+    userId,
+    isArtist,
+    isOwner,
+    handle,
+    verified,
+    created,
+    name,
+    bio,
+    location,
+    twitterHandle,
+    instagramHandle,
+    tikTokHandle,
+    website,
+    donation,
+    hasProfilePicture,
+    following,
+    mode,
+    stats,
+    activeTab,
+    twitterVerified,
+    instagramVerified,
+    tikTokVerified,
+
+    profile,
+    status: profileLoadingStatus,
+    artistTracks,
+    playArtistTrack,
+    pauseArtistTrack,
+    goToRoute,
+
+    // Methods
+    changeTab,
+    getLineupProps,
+    onSortByRecent,
+    onSortByPopular,
+    loadMoreArtistTracks,
+    loadMoreUserFeed,
+    refreshProfile,
+    setFollowingUserId,
+    setFollowersUserId,
+    onFollow,
+    onUnfollow,
+    onShare: props.onShare,
+    onEdit,
+    onSave,
+    onCancel,
+    updateProfilePicture,
+    updateName,
+    updateBio,
+    updateLocation,
+    updateTwitterHandle,
+    updateInstagramHandle,
+    updateTikTokHandle,
+    updateWebsite,
+    updateDonation,
+    updateCoverPhoto,
+    didChangeTabsFrom,
+    onMessage,
+    onBlock,
+    onUnblock,
+    onMute,
+    onCloseBlockUserConfirmationModal,
+    onCloseUnblockUserConfirmationModal,
+    onCloseMuteUserConfirmationModal,
+    onCloseUnmuteUserConfirmationModal
   }
 
-  render() {
-    const {
-      profile: { profile, status: profileLoadingStatus, isSubscribed },
-      // Tracks
-      artistTracks,
-      playArtistTrack,
-      pauseArtistTrack,
-      // Feed
-      userFeed,
-      playUserFeedTrack,
-      pauseUserFeedTrack,
-      accountUserId,
-      goToRoute,
-      createPlaylist,
-      currentQueueItem,
-      setNotificationSubscription,
-      setFollowingUserId,
-      setFollowersUserId
-    } = this.props
-    const {
-      activeTab,
-      editMode,
-      shouldMaskContent,
-      areArtistRecommendationsVisible,
-      updatedName,
-      updatedBio,
-      updatedLocation,
-      updatedCoverPhoto,
-      updatedProfilePicture,
-      updatedTwitterHandle,
-      updatedInstagramHandle,
-      updatedTikTokHandle,
-      updatedWebsite,
-      updatedDonation
-    } = this.state
-
-    const isArtist = this.getIsArtist()
-    const isOwner = this.getIsOwner()
-    const mode = this.getMode(isOwner)
-    const stats = this.getStats(isArtist)
-
-    const userId = profile ? profile.user_id : null
-    const handle = profile ? `@${profile.handle}` : ''
-    const verified = profile ? profile.is_verified : false
-    const twitterVerified = !!profile?.verified_with_twitter
-    const instagramVerified = !!profile?.verified_with_instagram
-    const tikTokVerified = !!profile?.verified_with_tiktok
-    const created = profile
-      ? moment(profile.created_at).format('YYYY')
-      : moment().format('YYYY')
-
-    const name = profile ? updatedName || profile.name || '' : ''
-    const bio = profile
-      ? updatedBio !== null
-        ? updatedBio
-        : profile.bio || ''
-      : ''
-    const location = profile
-      ? updatedLocation !== null
-        ? updatedLocation
-        : profile.location || ''
-      : ''
-    const twitterHandle = profile
-      ? updatedTwitterHandle !== null
-        ? updatedTwitterHandle
-        : twitterVerified && !verifiedHandleWhitelist.has(handle)
-          ? profile.handle
-          : profile.twitter_handle || ''
-      : ''
-    const instagramHandle = profile
-      ? updatedInstagramHandle !== null
-        ? updatedInstagramHandle
-        : instagramVerified
-          ? profile.handle
-          : profile.instagram_handle || ''
-      : ''
-    const tikTokHandle = profile
-      ? updatedTikTokHandle !== null
-        ? updatedTikTokHandle
-        : tikTokVerified
-          ? profile.handle
-          : profile.tiktok_handle || ''
-      : ''
-    const website = profile
-      ? updatedWebsite !== null
-        ? updatedWebsite
-        : profile.website || ''
-      : ''
-    const donation = profile
-      ? updatedDonation !== null
-        ? updatedDonation
-        : profile.donation || ''
-      : ''
-    const hasProfilePicture = profile
-      ? !!profile.profile_picture ||
-        !!profile.profile_picture_sizes ||
-        updatedProfilePicture
-      : false
-
-    const dropdownDisabled =
-      activeTab === ProfilePageTabs.REPOSTS ||
-      activeTab === ProfilePageTabs.COLLECTIBLES
-    const following = !!profile && profile.does_current_user_follow
-
-    const childProps = {
-      // Computed
-      accountUserId,
-      userId,
-      isArtist,
-      isOwner,
-      handle,
-      verified,
-      created,
-      name,
-      bio,
-      location,
-      twitterHandle,
-      instagramHandle,
-      tikTokHandle,
-      website,
-      donation,
-      hasProfilePicture,
-      following,
-      mode,
-      stats,
-      activeTab,
-      twitterVerified,
-      instagramVerified,
-      tikTokVerified,
-
-      profile,
-      status: profileLoadingStatus,
-      artistTracks,
-      playArtistTrack,
-      pauseArtistTrack,
-      goToRoute,
-
-      // Methods
-      changeTab: this.changeTab,
-      getLineupProps: this.getLineupProps,
-      onSortByRecent: this.onSortByRecent,
-      onSortByPopular: this.onSortByPopular,
-      loadMoreArtistTracks: this.loadMoreArtistTracks,
-      loadMoreUserFeed: this.loadMoreUserFeed,
-      refreshProfile: this.refreshProfile,
-      setFollowingUserId,
-      setFollowersUserId,
-      onFollow: this.onFollow,
-      onUnfollow: this.onUnfollow,
-      onShare: this.onShare,
-      onEdit: this.onEdit,
-      onSave: this.onSave,
-      onCancel: this.onCancel,
-      updateProfilePicture: this.updateProfilePicture,
-      updateName: this.updateName,
-      updateBio: this.updateBio,
-      updateLocation: this.updateLocation,
-      updateTwitterHandle: this.updateTwitterHandle,
-      updateInstagramHandle: this.updateInstagramHandle,
-      updateTikTokHandle: this.updateTikTokHandle,
-      updateWebsite: this.updateWebsite,
-      updateDonation: this.updateDonation,
-      updateCoverPhoto: this.updateCoverPhoto,
-      didChangeTabsFrom: this.didChangeTabsFrom,
-      onMessage: this.onMessage,
-      onBlock: this.onBlock,
-      onUnblock: this.onUnblock,
-      onMute: this.onMute
-    }
-
-    const mobileProps = {
-      trackIsActive: !!currentQueueItem,
-      onConfirmUnfollow: this.props.onConfirmUnfollow,
-      hasMadeEdit:
-        updatedName !== null ||
-        updatedBio !== null ||
-        updatedLocation !== null ||
-        updatedTwitterHandle !== null ||
-        updatedInstagramHandle !== null ||
-        updatedTikTokHandle !== null ||
-        updatedWebsite !== null ||
-        updatedDonation !== null ||
-        updatedCoverPhoto !== null ||
-        updatedProfilePicture !== null,
-      onClickMobileOverflow: this.props.clickOverflow
-    }
-
-    const desktopProps = {
-      editMode,
-      shouldMaskContent,
-
-      areArtistRecommendationsVisible,
-      onCloseArtistRecommendations: this.onCloseArtistRecommendations,
-      setNotificationSubscription,
-      isSubscribed: !!isSubscribed,
-
-      userFeed,
-      playUserFeedTrack,
-      pauseUserFeedTrack,
-
-      dropdownDisabled,
-      updatedCoverPhoto,
-      updatedProfilePicture,
-
-      createPlaylist,
-
-      updateProfile: this.props.updateProfile,
-      isBlocked: this.props.profile.profile
-        ? this.props.blockeeList.includes(this.props.profile.profile.user_id)
-        : false,
-      canCreateChat:
-        // In the signed out case, we show the chat button (but redirect to signup)
-        this.props.chatPermissions.canCreateChat ||
-        this.props.chatPermissions.callToAction ===
-          ChatPermissionAction.SIGN_UP,
-      showBlockUserConfirmationModal: this.state.showBlockUserConfirmationModal,
-      onCloseBlockUserConfirmationModal: this.onCloseBlockUserConfirmationModal,
-      showUnblockUserConfirmationModal:
-        this.state.showUnblockUserConfirmationModal,
-      onCloseUnblockUserConfirmationModal:
-        this.onCloseUnblockUserConfirmationModal,
-      showMuteUserConfirmationModal: this.state.showMuteUserConfirmationModal,
-      onCloseMuteUserConfirmationModal: this.onCloseMuteUserConfirmationModal
-    }
-
-    return (
-      // @ts-ignore wrong lineup type
-      <this.props.children
-        key={getPathname(this.props.location)}
-        {...childProps}
-        {...mobileProps}
-        {...desktopProps}
-      />
-    )
+  const mobileProps = {
+    trackIsActive: !!currentQueueItem,
+    onConfirmUnfollow: props.onConfirmUnfollow,
+    hasMadeEdit:
+      updatedName !== null ||
+      updatedBio !== null ||
+      updatedLocation !== null ||
+      updatedTwitterHandle !== null ||
+      updatedInstagramHandle !== null ||
+      updatedTikTokHandle !== null ||
+      updatedWebsite !== null ||
+      updatedDonation !== null ||
+      updatedCoverPhoto !== null ||
+      updatedProfilePicture !== null,
+    onClickMobileOverflow: props.clickOverflow
   }
+
+  const desktopProps = {
+    editMode,
+    shouldMaskContent,
+
+    areArtistRecommendationsVisible,
+    onCloseArtistRecommendations,
+    setNotificationSubscription,
+    isSubscribed: !!isSubscribed,
+
+    userFeed,
+    playUserFeedTrack,
+    pauseUserFeedTrack,
+
+    dropdownDisabled,
+    updatedCoverPhoto,
+    updatedProfilePicture,
+
+    createPlaylist,
+
+    updateProfile: props.updateProfile,
+    isBlocked: props.profile.profile
+      ? props.blockeeList.includes(props.profile.profile.user_id)
+      : false,
+    canCreateChat:
+      // In the signed out case, we show the chat button (but redirect to signup)
+      props.chatPermissions.canCreateChat ||
+      props.chatPermissions.callToAction === ChatPermissionAction.SIGN_UP,
+    showBlockUserConfirmationModal: state.showBlockUserConfirmationModal,
+    onCloseBlockUserConfirmationModal,
+    showUnblockUserConfirmationModal: state.showUnblockUserConfirmationModal,
+    onCloseUnblockUserConfirmationModal,
+    showMuteUserConfirmationModal: state.showMuteUserConfirmationModal,
+    onCloseMuteUserConfirmationModal
+  }
+
+  return (
+    // @ts-ignore wrong lineup type
+    <props.children
+      key={getPathname(props.location)}
+      {...childProps}
+      {...mobileProps}
+      {...desktopProps}
+    />
+  )
 }
 
 function makeMapStateToProps() {
@@ -961,10 +1021,6 @@ function makeMapStateToProps() {
 
     const profile = getProfile(state)
     const accountUserId = getUserId(state)
-    const accountHasTracks =
-      accountUserId === profile.profile?.user_id
-        ? getAccountHasTracks(state)
-        : null
     return {
       accountUserId,
       profile,
@@ -978,8 +1034,7 @@ function makeMapStateToProps() {
         userId: profile.profile?.user_id
       }),
       blockeeList: getBlockees(state),
-      blockerList: getBlockers(state),
-      accountHasTracks
+      blockerList: getBlockers(state)
     }
   }
   return mapStateToProps

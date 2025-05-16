@@ -5,7 +5,6 @@ import { Name, SquareSizes, Theme } from '@audius/common/models'
 import {
   settingsPageActions,
   themeSelectors,
-  accountSelectors,
   getTierAndVerifiedForUser,
   themeActions,
   musicConfettiActions
@@ -22,6 +21,7 @@ import {
   IconTokenPlatinum
 } from '@audius/harmony'
 import cn from 'classnames'
+import { pick } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
@@ -49,7 +49,6 @@ const {
   getNotificationSettings: getNotificationSettingsAction,
   getPushNotificationSettings: getPushNotificationSettingsAction
 } = settingsPageActions
-const { getUserId, getUserName } = accountSelectors
 const { setTheme } = themeActions
 const { getTheme } = themeSelectors
 const { show } = musicConfettiActions
@@ -106,11 +105,10 @@ export const SettingsPage = (props: SettingsPageProps) => {
   const dispatch = useDispatch()
   useScrollToTop()
 
-  const userId = useSelector(getUserId) ?? 0
-  const { data: handle } = useCurrentAccount({
-    select: (account) => account?.user?.handle
+  const { data: accountData } = useCurrentAccount({
+    select: (account) => pick(account?.user, ['user_id', 'handle', 'name'])
   })
-  const name = useSelector(getUserName)
+  const { user_id: userId, handle, name } = accountData ?? {}
   const theme = useSelector(getTheme)
   const tier = useSelector(
     (state: AppState) => getTierAndVerifiedForUser(state, { userId }).tier

@@ -1,7 +1,10 @@
 import {
+  queryAccountUser,
   queryCollection,
+  queryCurrentAccount,
   queryUser,
-  queryUserByHandle
+  queryUserByHandle,
+  selectIsGuestAccount
 } from '@audius/common/api'
 import {
   Name,
@@ -13,7 +16,6 @@ import {
 } from '@audius/common/models'
 import {
   accountActions,
-  accountSelectors,
   cacheActions,
   savedPageActions,
   LibraryCategory,
@@ -32,7 +34,7 @@ import {
   route
 } from '@audius/common/utils'
 import { Id } from '@audius/sdk'
-import { call, select, takeEvery, put } from 'typed-redux-saga'
+import { call, takeEvery, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { adjustUserField } from 'common/store/cache/users/sagas'
@@ -49,7 +51,6 @@ const { updatedPlaylistViewed } = playlistUpdatesActions
 const { update: updatePlaylistLibrary } = playlistLibraryActions
 const { removeFromPlaylistLibrary } = playlistLibraryHelpers
 const { addLocalCollection, removeLocalCollection } = savedPageActions
-const { getPlaylistLibrary, getUserId, getIsGuestAccount } = accountSelectors
 const { collectionPage } = route
 
 /* REPOST COLLECTION */
@@ -62,8 +63,9 @@ export function* repostCollectionAsync(
   action: ReturnType<typeof socialActions.repostCollection>
 ) {
   yield* call(waitForWrite)
-  const userId = yield* select(getUserId)
-  const isGuest = yield* select(getIsGuestAccount)
+  const accountUser = yield* queryAccountUser()
+  const { user_id: userId } = accountUser ?? {}
+  const isGuest = yield* call(selectIsGuestAccount, accountUser)
   if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
@@ -138,7 +140,8 @@ export function* confirmRepostCollection(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
-        const userId = yield* select(getUserId)
+        const accountUser = yield* queryAccountUser()
+        const { user_id: userId } = accountUser ?? {}
         if (!userId) {
           throw new Error('No userId set, cannot repost collection')
         }
@@ -183,8 +186,9 @@ export function* undoRepostCollectionAsync(
   action: ReturnType<typeof socialActions.undoRepostCollection>
 ) {
   yield* call(waitForWrite)
-  const userId = yield* select(getUserId)
-  const isGuest = yield* select(getIsGuestAccount)
+  const accountUser = yield* queryAccountUser()
+  const { user_id: userId } = accountUser ?? {}
+  const isGuest = yield* call(selectIsGuestAccount, accountUser)
   if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
@@ -246,7 +250,8 @@ export function* confirmUndoRepostCollection(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
-        const userId = yield* select(getUserId)
+        const accountUser = yield* queryAccountUser()
+        const { user_id: userId } = accountUser ?? {}
         if (!userId) {
           throw new Error('No userId set, cannot undo repost collection')
         }
@@ -301,15 +306,17 @@ export function* saveSmartCollection(
   action: ReturnType<typeof socialActions.saveSmartCollection>
 ) {
   yield* call(waitForWrite)
-  const userId = yield* select(getUserId)
-  const isGuest = yield* select(getIsGuestAccount)
+  const accountData = yield* queryCurrentAccount()
+  const { playlist_library: playlistLibrary } = accountData ?? {}
+  const { user_id: userId } = accountData?.user ?? {}
+
+  const isGuest = yield* call(selectIsGuestAccount, accountData)
   if (!userId || isGuest) {
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(signOnActions.openSignOn(false))
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
-  const playlistLibrary = yield* select(getPlaylistLibrary)
   const newPlaylistLibrary: PlaylistLibrary = {
     ...playlistLibrary,
     contents: [
@@ -334,8 +341,9 @@ export function* saveCollectionAsync(
   action: ReturnType<typeof socialActions.saveCollection>
 ) {
   yield* call(waitForWrite)
-  const userId = yield* select(getUserId)
-  const isGuest = yield* select(getIsGuestAccount)
+  const accountUser = yield* queryAccountUser()
+  const { user_id: userId } = accountUser ?? {}
+  const isGuest = yield* call(selectIsGuestAccount, accountUser)
   if (!userId || isGuest) {
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(signOnActions.openSignOn(false))
@@ -431,7 +439,8 @@ export function* confirmSaveCollection(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
-        const userId = yield* select(getUserId)
+        const accountUser = yield* queryAccountUser()
+        const { user_id: userId } = accountUser ?? {}
         if (!userId) {
           throw new Error('No userId set, cannot save collection')
         }
@@ -483,7 +492,8 @@ export function* unsaveSmartCollection(
 ) {
   yield* call(waitForWrite)
 
-  const playlistLibrary = yield* select(getPlaylistLibrary)
+  const accountData = yield* queryCurrentAccount()
+  const { playlist_library: playlistLibrary } = accountData ?? {}
   if (!playlistLibrary) return
 
   const newPlaylistLibrary = removeFromPlaylistLibrary(
@@ -553,7 +563,8 @@ export function* confirmUnsaveCollection(ownerId: ID, collectionId: ID) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
-        const userId = yield* select(getUserId)
+        const accountUser = yield* queryAccountUser()
+        const { user_id: userId } = accountUser ?? {}
         if (!userId) {
           throw new Error('No userId set, cannot save collection')
         }

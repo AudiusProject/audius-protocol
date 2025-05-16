@@ -1,12 +1,16 @@
 import { call, select } from 'typed-redux-saga'
 
 import { ID } from '~/models/Identifiers'
-import { User } from '~/models/User'
-import { getUserId } from '~/store/account/selectors'
+import { AccountUserMetadata, User } from '~/models/User'
+import { getUserId, getWalletAddresses } from '~/store/account/selectors'
 import { getContext } from '~/store/effects'
 import { getSDK } from '~/store/sdkUtils'
 
 import { QUERY_KEYS } from '../queryKeys'
+import {
+  getCurrentAccountQueryFn,
+  getCurrentAccountQueryKey
+} from '../users/account/useCurrentAccount'
 import { getUserQueryFn, getUserQueryKey } from '../users/useUser'
 import {
   getUserByHandleQueryFn,
@@ -32,6 +36,7 @@ export function* queryUser(id: ID | null | undefined) {
 
 export function* queryUserByHandle(handle: string | null | undefined) {
   if (!handle) return undefined
+  console.log('queryUserByHandle', handle)
   const queryClient = yield* getContext('queryClient')
   const dispatch = yield* getContext('dispatch')
   const currentUserId = yield* select(getUserId)
@@ -41,8 +46,10 @@ export function* queryUserByHandle(handle: string | null | undefined) {
     queryFn: async () =>
       getUserByHandleQueryFn(handle, sdk, queryClient, dispatch, currentUserId)
   })) as ID | undefined
+  console.log('userId', userId)
   if (!userId) return undefined
   const userMetadata = yield* call(queryUser, userId)
+  console.log('userMetadata', userMetadata)
   return userMetadata
 }
 
@@ -62,6 +69,21 @@ export function* queryAccountUser() {
   const currentUserId = yield* select(getUserId)
   const accountUser = yield* call(queryUser, currentUserId)
   return accountUser
+}
+
+export function* queryCurrentAccount() {
+  const sdk = yield* getSDK()
+  const queryClient = yield* getContext('queryClient')
+  const walletAddresses = yield* select(getWalletAddresses)
+  const currentUserWallet = walletAddresses.currentUser
+
+  const queryData = yield* call([queryClient, queryClient.fetchQuery], {
+    queryKey: getCurrentAccountQueryKey(),
+    queryFn: async () =>
+      getCurrentAccountQueryFn(sdk, queryClient, currentUserWallet)
+  })
+
+  return queryData as AccountUserMetadata | null | undefined
 }
 
 export function* queryAllCachedUsers() {

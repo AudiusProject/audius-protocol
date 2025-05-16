@@ -34,15 +34,6 @@ export const getGuestEmail = (state: CommonState) => {
   return state.account.guestEmail ?? null
 }
 
-export const getIsGuestAccount = (state: CommonState) => {
-  const { userId } = state.account
-
-  const user = getUser(state, { id: userId })
-  if (!user) return false
-
-  const { handle, name } = user
-  return Boolean(!handle && !name)
-}
 export const getUserId = (state: CommonState) => state.account.userId
 export const getAccountStatus = (state: CommonState) => state.account.status
 export const getNeedsAccountRecovery = (state: CommonState) =>
@@ -56,13 +47,6 @@ export const getAccountUser = createSelector(
   (user) => user
 )
 
-export const getUserName = createSelector([internalGetAccountUser], (user) =>
-  user ? user.name : null
-)
-export const getAccountVerified = createSelector(
-  [internalGetAccountUser],
-  (user) => (user ? user.is_verified : false)
-)
 export const getAccountHasTracks = createSelector(
   [hasTracksInternal, internalGetAccountUser],
   (hasTracks, user) =>

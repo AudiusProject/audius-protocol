@@ -10,16 +10,12 @@ import { CommonState } from '~/store'
 
 import { getTracksBatcher } from '../batchers/getTracksBatcher'
 import { TQTrack } from '../models'
-import { QUERY_KEYS } from '../queryKeys'
-import { QueryKey, QueryOptions } from '../types'
+import { QueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { combineQueryResults } from '../utils/combineQueryResults'
 import { useQueries } from '../utils/useQueries'
 
 import { getTrackQueryKey } from './useTrack'
-
-export const getTracksQueryKey = (trackIds: ID[] | null | undefined) =>
-  [QUERY_KEYS.tracks, trackIds] as unknown as QueryKey<TQTrack[]>
 
 export const useTracks = (
   trackIds: ID[] | null | undefined,

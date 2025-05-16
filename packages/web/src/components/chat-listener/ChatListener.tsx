@@ -1,20 +1,23 @@
 import { useEffect } from 'react'
 
-import { Status } from '@audius/common/models'
-import { accountSelectors, chatActions } from '@audius/common/store'
-import { useDispatch, useSelector } from 'react-redux'
+import { selectIsGuestAccount, useCurrentAccount } from '@audius/common/api'
+import { chatActions } from '@audius/common/store'
+import { useDispatch } from 'react-redux'
 
 const { connect, disconnect, fetchMoreChats, fetchUnreadMessagesCount } =
   chatActions
-const { getAccountStatus, getIsGuestAccount } = accountSelectors
 
 export const ChatListener = () => {
   const dispatch = useDispatch()
-  const accountStatus = useSelector(getAccountStatus)
-  const isGuest = useSelector(getIsGuestAccount)
+  const { data: accountData, isSuccess: isAccountSuccess } = useCurrentAccount({
+    select: (account) => ({
+      isGuest: selectIsGuestAccount(account)
+    })
+  })
+  const { isGuest } = accountData ?? {}
   // Connect to chats websockets and prefetch chats
   useEffect(() => {
-    if (accountStatus === Status.SUCCESS && !isGuest) {
+    if (isAccountSuccess && !isGuest) {
       dispatch(connect())
       dispatch(fetchMoreChats())
       dispatch(fetchUnreadMessagesCount())
@@ -22,6 +25,6 @@ export const ChatListener = () => {
     return () => {
       dispatch(disconnect())
     }
-  }, [dispatch, accountStatus, isGuest])
+  }, [dispatch, isAccountSuccess, isGuest])
   return null
 }

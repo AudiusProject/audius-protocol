@@ -17,7 +17,6 @@ import {
   themeSelectors,
   themeActions,
   signOutActions,
-  accountSelectors,
   getTierAndVerifiedForUser,
   musicConfettiActions
 } from '@audius/common/store'
@@ -102,7 +101,6 @@ const {
   getNotificationSettings,
   updateEmailFrequency: updateEmailFrequencyAction
 } = settingsPageActions
-const { getUserId, getUserName } = accountSelectors
 const { subscribeBrowserPushNotifications, instagramLogin } = accountActions
 
 const {
@@ -129,14 +127,14 @@ export const SettingsPage = () => {
   const { authService, identityService } = useQueryContext()
 
   const { data: accountData } = useCurrentAccount({
-    select: (data) => pick(data, ['handle', 'userId', ''])
+    select: (account) => ({
+      handle: account?.user?.handle,
+      name: account?.user?.name,
+      userId: account?.user?.user_id,
+      isVerified: account?.user?.is_verified
+    })
   })
-  const {
-    handle,
-    user_id: userId,
-    is_verified: isVerified
-  } = accountData?.user ?? {}
-  const name = useSelector(getUserName) ?? ''
+  const { handle, name, userId, isVerified } = accountData ?? {}
   const theme = useSelector(getTheme)
   const emailFrequency = useSelector(getEmailFrequency)
   const notificationSettings = useSelector(getBrowserNotificationSettings)
