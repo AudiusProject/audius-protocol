@@ -52,6 +52,9 @@ export type SwapTabProps = {
   isDefault?: boolean
   error?: boolean
   errorMessage?: string
+  tokenPrice?: string | null
+  isTokenPriceLoading?: boolean
+  tokenPriceDecimalPlaces?: number
 }
 
 export const SwapTab = ({
@@ -63,7 +66,10 @@ export const SwapTab = ({
   onTransactionDataChange,
   isDefault = true,
   error,
-  errorMessage
+  errorMessage,
+  tokenPrice,
+  isTokenPriceLoading,
+  tokenPriceDecimalPlaces = 2
 }: SwapTabProps) => {
   const {
     formik,
@@ -126,6 +132,9 @@ export const SwapTab = ({
                 amount={outputAmount}
                 availableBalance={0}
                 exchangeRate={currentExchangeRate}
+                tokenPrice={tokenPrice}
+                isTokenPriceLoading={isTokenPriceLoading}
+                tokenPriceDecimalPlaces={tokenPriceDecimalPlaces}
               />
             </>
           )}
