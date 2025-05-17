@@ -1,6 +1,6 @@
 import { ComponentType } from 'react'
 
-import { ReactionTypes } from '@audius/common/store'
+import { ReactionTypes } from '@audius/common/api'
 
 import { Reaction, ReactionProps as BaseReactionProps } from './Reaction'
 
