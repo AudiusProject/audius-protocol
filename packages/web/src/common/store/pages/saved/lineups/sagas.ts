@@ -1,5 +1,5 @@
-import { queryTrack } from '@audius/common/api'
-import { Collection, Kind, LineupEntry, UID } from '@audius/common/models'
+import { queryTrack, queryTracks } from '@audius/common/api'
+import { Collection, ID, Kind, LineupEntry, UID } from '@audius/common/models'
 import {
   savedPageTracksLineupActions as savedTracksActions,
   savedPageActions as saveActions,
@@ -22,7 +22,6 @@ import { uniq } from 'lodash'
 import moment from 'moment'
 import { call, select, put, takeEvery } from 'typed-redux-saga'
 
-import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
 import { AppState } from 'store/types'
 
@@ -89,20 +88,22 @@ function* getTracks({ offset, limit }: { offset: number; limit: number }) {
   const allSavedTrackTimestamps = {
     ...localLibraryAdditionsTimestamps,
     ...savedTrackTimestamps
-  }
+  } as Record<ID, string>
 
   if (allSavedTrackIds.length > 0) {
-    // @ts-ignore - Strings can be passed for the local save track ids
-    const tracks = yield* call(retrieveTracks, {
-      trackIds: allSavedTrackIds.filter((id) => id !== null)
-    })
+    const tracks = yield* call(
+      // @ts-ignore - Mobile for some reason fails to type-check this
+      queryTracks,
+      allSavedTrackIds.filter((id) => id !== null && typeof id === 'number')
+    )
+
     const tracksMap = tracks.reduce((map, track) => {
       const save = {
-        ...track.metadata,
-        dateSaved: allSavedTrackTimestamps[track.metadata.track_id]
+        ...track,
+        dateSaved: allSavedTrackTimestamps[track.track_id]
       }
 
-      map[track.metadata.track_id] = save
+      map[track.track_id] = save
       return map
     }, {})
     return allSavedTrackIds.map((id) =>
