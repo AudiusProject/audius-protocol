@@ -1,32 +1,23 @@
-import { buySellMessages as baseMessages } from '@audius/common/messages'
-import { USDC } from '@audius/fixed-decimal'
-import { Button, Flex, Text } from '@audius/harmony'
+import { buySellMessages as messages } from '@audius/common/messages'
+import { Button, CompletionCheck, Flex, Text } from '@audius/harmony'
 
 import { SwapBalanceSection } from './SwapBalanceSection'
 import { useTokenAmountFormatting } from './hooks/useTokenAmountFormatting'
 import { TokenInfo } from './types'
 
-const messages = {
-  ...baseMessages,
-  priceEach: (price: number) => {
-    const formatted = USDC(price).toLocaleString('en-US')
-    return `(${formatted} ea.)`
-  }
-}
-
-type ConfirmSwapScreenProps = {
+type TransactionSuccessScreenProps = {
   payTokenInfo: TokenInfo
   receiveTokenInfo: TokenInfo
   payAmount: number
   receiveAmount: number
   pricePerBaseToken: number
   baseTokenSymbol: string
-  onBack: () => void
-  onConfirm: () => void
-  isConfirming: boolean
+  onDone: () => void
 }
 
-export const ConfirmSwapScreen = (props: ConfirmSwapScreenProps) => {
+export const TransactionSuccessScreen = (
+  props: TransactionSuccessScreenProps
+) => {
   const {
     payTokenInfo,
     receiveTokenInfo,
@@ -34,21 +25,18 @@ export const ConfirmSwapScreen = (props: ConfirmSwapScreenProps) => {
     receiveAmount,
     pricePerBaseToken,
     baseTokenSymbol,
-    onBack,
-    onConfirm,
-    isConfirming
+    onDone
   } = props
 
-  // balance isn't needed so we pass 0
   const { formattedAmount: formattedPayAmount } = useTokenAmountFormatting({
     amount: payAmount,
-    availableBalance: 0,
+    availableBalance: payAmount, // Use actual amount as available balance for display
     isStablecoin: !!payTokenInfo.isStablecoin
   })
 
   const { formattedAmount: formattedReceiveAmount } = useTokenAmountFormatting({
     amount: receiveAmount,
-    availableBalance: 0,
+    availableBalance: receiveAmount, // Use actual amount as available balance for display
     isStablecoin: !!receiveTokenInfo.isStablecoin
   })
 
@@ -58,35 +46,30 @@ export const ConfirmSwapScreen = (props: ConfirmSwapScreenProps) => {
     : undefined
 
   return (
-    <Flex direction='column' gap='l'>
-      <Text variant='body' size='m' textAlign='center'>
-        {messages.confirmReview}
-      </Text>
-      <Flex direction='column' gap='xl'>
+    <Flex direction='column' gap='xl'>
+      <Flex direction='row' gap='xs' alignItems='center'>
+        <CompletionCheck value='complete' />
+        <Text variant='heading' size='s' color='subdued'>
+          {messages.transactionComplete}
+        </Text>
+      </Flex>
+      <Flex direction='column' gap='xl' w='100%'>
         <SwapBalanceSection
-          title={messages.youPay}
+          title={messages.youPaid}
           tokenInfo={payTokenInfo}
           amount={formattedPayAmount}
         />
         <SwapBalanceSection
-          title={messages.youReceive}
+          title={messages.youReceived}
           tokenInfo={receiveTokenInfo}
           amount={formattedReceiveAmount}
           priceLabel={priceLabel}
         />
       </Flex>
 
-      <Flex gap='s' mt='xl'>
-        <Button variant='secondary' fullWidth onClick={onBack}>
-          {messages.back}
-        </Button>
-        <Button
-          variant='primary'
-          fullWidth
-          onClick={onConfirm}
-          isLoading={isConfirming}
-        >
-          {messages.confirm}
+      <Flex>
+        <Button variant='primary' fullWidth onClick={onDone}>
+          {messages.done}
         </Button>
       </Flex>
     </Flex>

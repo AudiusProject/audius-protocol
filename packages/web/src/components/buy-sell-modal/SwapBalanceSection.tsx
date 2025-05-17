@@ -1,0 +1,27 @@
+import { CryptoBalanceSection } from './CryptoBalanceSection'
+import { USDCBalanceSection } from './USDCBalanceSection'
+import { TokenInfo } from './types'
+
+type SwapBalanceSectionProps = {
+  title: string
+  tokenInfo: TokenInfo
+  amount: string
+  priceLabel?: string
+}
+
+export const SwapBalanceSection = (props: SwapBalanceSectionProps) => {
+  const { title, tokenInfo, amount, priceLabel } = props
+  if (tokenInfo.symbol === 'USDC') {
+    return (
+      <USDCBalanceSection title={title} tokenInfo={tokenInfo} amount={amount} />
+    )
+  }
+  return (
+    <CryptoBalanceSection
+      title={title}
+      tokenInfo={tokenInfo}
+      amount={amount}
+      priceLabel={priceLabel}
+    />
+  )
+}
