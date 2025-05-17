@@ -15,7 +15,6 @@ import {
   cacheCollectionsSelectors,
   cacheActions,
   PlaylistOperations,
-  reformatCollection,
   audioRewardsPageActions,
   toastActions,
   getContext,
@@ -36,7 +35,6 @@ import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { optimisticUpdateCollection } from './utils/optimisticUpdateCollection'
-import { retrieveCollection } from './utils/retrieveCollections'
 
 const { getCollectionTracks } = cacheCollectionsSelectors
 const { setOptimisticChallengeCompleted } = audioRewardsPageActions
@@ -191,22 +189,18 @@ function* confirmAddTrackToPlaylist(
         return playlistId
       },
       function* (confirmedPlaylistId: ID) {
-        const [confirmedPlaylist] = yield* call(retrieveCollection, {
-          playlistId: confirmedPlaylistId
-        })
+        const confirmedPlaylist = yield* call(
+          queryCollection,
+          confirmedPlaylistId
+        )
 
-        const playlist = yield* queryCollection(playlistId)
-        if (!playlist) return
-
-        const formattedCollection = reformatCollection({
-          collection: confirmedPlaylist
-        })
+        if (!confirmedPlaylist) return
 
         yield* put(
           cacheActions.update(Kind.COLLECTIONS, [
             {
               id: confirmedPlaylist.playlist_id,
-              metadata: { ...formattedCollection, artwork: {} }
+              metadata: { ...confirmedPlaylist, artwork: {} }
             }
           ])
         )

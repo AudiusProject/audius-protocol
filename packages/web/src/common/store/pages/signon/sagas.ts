@@ -68,7 +68,6 @@ import {
 } from 'typed-redux-saga'
 
 import { identify, make } from 'common/store/analytics/actions'
-import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { sendRecoveryEmail } from 'common/store/recovery-email/sagas'
 import { UiErrorCode } from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
@@ -90,7 +89,7 @@ import { Pages } from './types'
 const { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE, SIGN_UP_PASSWORD_PAGE } = route
 const { requestPushNotificationPermissions } = settingsPageActions
 const { saveCollection } = collectionsSocialActions
-const { getAccountUser, getHasAccount, getUserId } = accountSelectors
+const { getAccountUser, getHasAccount } = accountSelectors
 const { toast } = toastActions
 
 const SIGN_UP_TIMEOUT_MILLIS = 20 /* min */ * 60 * 1000
@@ -1040,15 +1039,9 @@ function* followCollections(
   favoriteSource: FavoriteSource
 ) {
   yield* call(waitForWrite)
-  const userId = yield* select(getUserId)
   try {
-    const result = yield* call(retrieveCollections, collectionIds, { userId })
-
-    for (let i = 0; i < collectionIds.length; i++) {
-      const id = collectionIds[i]
-      if (result?.collections?.[id]) {
-        yield* put(saveCollection(id, favoriteSource))
-      }
+    for (const collectionId of collectionIds) {
+      yield* put(saveCollection(collectionId, favoriteSource))
     }
   } catch (err) {
     const reportToSentry = yield* getContext('reportToSentry')

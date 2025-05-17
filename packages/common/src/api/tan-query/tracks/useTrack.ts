@@ -1,7 +1,9 @@
 import { useMemo } from 'react'
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { AudiusSdk } from '@audius/sdk'
+import { QueryClient, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
+import { AnyAction, Dispatch } from 'redux'
 
 import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models/Identifiers'
@@ -14,6 +16,22 @@ import { useCurrentUserId } from '../users/account/useCurrentUserId'
 
 export const getTrackQueryKey = (trackId: ID | null | undefined) => {
   return [QUERY_KEYS.track, trackId] as unknown as QueryKey<TQTrack>
+}
+
+export const getTrackQueryFn = async (
+  trackId: ID,
+  currentUserId: ID | null | undefined,
+  queryClient: QueryClient,
+  sdk: AudiusSdk,
+  dispatch: Dispatch<AnyAction>
+) => {
+  const batchGetTracks = getTracksBatcher({
+    sdk,
+    currentUserId,
+    queryClient,
+    dispatch
+  })
+  return await batchGetTracks.fetch(trackId!)
 }
 
 export const useTrack = <TResult = TQTrack>(

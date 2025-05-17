@@ -8,14 +8,13 @@ import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 import { ID } from '~/models'
 import { CommonState } from '~/store'
 
-import { getCollectionsBatcher } from '../batchers/getCollectionsBatcher'
 import { TQCollection } from '../models'
 import { QueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { combineQueryResults } from '../utils/combineQueryResults'
 import { useQueries } from '../utils/useQueries'
 
-import { getCollectionQueryKey } from './useCollection'
+import { getCollectionQueryKey, getCollectionQueryFn } from './useCollection'
 
 export const useCollections = (
   collectionIds: ID[] | null | undefined,
@@ -31,13 +30,13 @@ export const useCollections = (
       queryKey: getCollectionQueryKey(collectionId),
       queryFn: async () => {
         const sdk = await audiusSdk()
-        const batchGetCollections = getCollectionsBatcher({
-          sdk,
+        return getCollectionQueryFn(
+          collectionId,
           currentUserId,
           queryClient,
+          sdk,
           dispatch
-        })
-        return await batchGetCollections.fetch(collectionId)
+        )
       },
       ...options,
       enabled: options?.enabled !== false && !!collectionId && collectionId > 0

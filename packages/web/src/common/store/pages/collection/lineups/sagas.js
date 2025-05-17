@@ -1,3 +1,4 @@
+import { queryTracks } from '@audius/common/api'
 import { Kind } from '@audius/common/models'
 import {
   smartCollectionPageSelectors,
@@ -10,7 +11,6 @@ import { keyBy } from 'lodash'
 import moment from 'moment'
 import { select, call } from 'redux-saga/effects'
 
-import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
 const { getPositions } = queueSelectors
 const {
@@ -67,12 +67,12 @@ function* getCollectionTracks() {
     }, {})
 
   if (trackIds.length > 0) {
-    const trackMetadatas = yield call(retrieveTracks, { trackIds })
-    const keyedMetadatas = keyBy(trackMetadatas, (m) => m.metadata.track_id)
+    const trackMetadatas = yield call(queryTracks, trackIds)
+    const keyedMetadatas = keyBy(trackMetadatas, (m) => m.track_id)
 
     return trackIds
       .map((id, i) => {
-        const metadata = { ...keyedMetadatas[id].metadata }
+        const metadata = { ...keyedMetadatas[id] }
 
         // For whatever reason, the track id was retrieved and doesn't exist or is malformatted.
         // This can happen if the collection references an unlisted track or one that

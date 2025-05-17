@@ -24,7 +24,6 @@ import { CollectionsPageState } from './types'
 
 export const initialState = {
   collectionId: null,
-  collectionUid: null,
   userUid: null,
   status: null,
   smartCollectionVariant: null,
@@ -50,7 +49,6 @@ const actionsMap = {
     return {
       ...state,
       collectionId: action.collectionId,
-      collectionUid: action.collectionUid,
       userUid: action.userUid,
       status: Status.SUCCESS,
       collectionPermalink: action.collectionPermalink

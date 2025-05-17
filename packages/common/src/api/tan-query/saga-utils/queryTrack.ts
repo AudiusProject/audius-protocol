@@ -1,28 +1,46 @@
+import { call, select, all } from 'typed-redux-saga'
+
+import { Track } from '~/models'
 import { ID } from '~/models/Identifiers'
+import { getUserId } from '~/store/account/selectors'
 import { getContext } from '~/store/effects'
+import { getSDK } from '~/store/sdkUtils'
+import { removeNullable } from '~/utils'
 
 import { TQTrack } from '../models'
 import { QUERY_KEYS } from '../queryKeys'
-import { getTrackQueryKey } from '../tracks/useTrack'
+import { getTrackQueryFn, getTrackQueryKey } from '../tracks/useTrack'
 
-export function* queryTrack(id: ID | null | undefined) {
+export function* queryTrack(id: ID | null | undefined, forceRetrieve = false) {
   if (!id) return null
   const queryClient = yield* getContext('queryClient')
-  return queryClient.getQueryData(getTrackQueryKey(id))
+  const sdk = yield* getSDK()
+  const currentUserId = yield* select(getUserId)
+  const dispatch = yield* getContext('dispatch')
+
+  const queryData = yield* call([queryClient, queryClient.fetchQuery], {
+    queryKey: getTrackQueryKey(id),
+    queryFn: async () =>
+      getTrackQueryFn(id!, currentUserId, queryClient, sdk, dispatch),
+    staleTime: forceRetrieve ? 0 : undefined
+  })
+
+  return queryData as TQTrack | undefined
 }
 
-export function* queryTracks(ids: ID[]) {
-  const queryClient = yield* getContext('queryClient')
-  return ids.reduce(
-    (acc, id) => {
-      const track = queryClient.getQueryData(getTrackQueryKey(id))
-      if (track) {
-        acc[id] = track
-      }
-      return acc
-    },
-    {} as Record<ID, TQTrack>
+export function* queryTracks(
+  ids: ID[],
+  forceRetrieve = false
+): Generator<any, Track[], any> {
+  if (!ids.length) return [] as Track[]
+
+  // Query each track in parallel using queryTrack
+  const tracks = yield* all(
+    ids.map((id) => call(queryTrack, id, forceRetrieve))
   )
+
+  // Filter out null and undefined results and return as Track[]
+  return tracks.filter(removeNullable)
 }
 
 export function* queryAllTracks() {
