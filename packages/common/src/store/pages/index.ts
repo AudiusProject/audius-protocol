@@ -51,7 +51,6 @@ export * from './settings/types'
 
 export { default as searchResultsPageTracksLineupReducer } from './search-results/lineup/tracks/reducer'
 export { tracksActions as searchResultsPageTracksLineupActions } from './search-results/lineup/tracks/actions'
-export * as searchResultsPageActions from './search-results/actions'
 export * as searchResultsPageSelectors from './search-results/selectors'
 export * from './search-results/types'
 export { default as searchResultsPageReducer } from './search-results/reducer'

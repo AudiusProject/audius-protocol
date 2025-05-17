@@ -38,7 +38,6 @@ import historySagas from 'common/store/pages/history/sagas'
 import premiumTracksSagas from 'common/store/pages/premium-tracks/sagas'
 import remixesSagas from 'common/store/pages/remixes-page/sagas'
 import savedSagas from 'common/store/pages/saved/sagas'
-import searchResultsSagas from 'common/store/pages/search-page/sagas'
 import signOnSagas from 'common/store/pages/signon/sagas'
 import tokenDashboardSagas from 'common/store/pages/token-dashboard/sagas'
 import trackPageSagas from 'common/store/pages/track/sagas'
@@ -79,7 +78,6 @@ export default function* rootSaga() {
     ...backendSagas(),
     ...analyticsSagas(),
     ...confirmerSagas(),
-    ...searchResultsSagas(),
 
     // Account
     ...accountSagas(),
