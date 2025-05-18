@@ -1,3 +1,4 @@
+# Cache busted at 05/17/25 to force fresh pod installation
 PODS:
   - amplitude-react-native (1.4.11):
     - React-Core
