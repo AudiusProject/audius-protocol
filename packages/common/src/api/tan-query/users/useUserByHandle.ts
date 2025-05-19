@@ -27,13 +27,11 @@ export const getUserByHandleQueryFn = async (
   dispatch: Dispatch<AnyAction>,
   currentUserId?: ID | null
 ) => {
-  console.log('getUserByHandleQueryFn', handle)
   if (!handle) return undefined
   const { data } = await sdk.full.users.getUserByHandle({
     handle: handle.toLowerCase(),
     userId: OptionalId.parse(currentUserId)
   })
-  console.log('data', data)
   const user = userMetadataListFromSDK(data)[0]
 
   primeUserData({ users: [user], queryClient, dispatch })

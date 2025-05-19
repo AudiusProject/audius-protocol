@@ -76,6 +76,7 @@ const ProfilePicture = ({
           image={updatedProfilePicture || image}
           skeletonClassName={styles.profilePictureSkeleton}
           wrapperClassName={styles.profilePicture}
+          data-testid='profile-picture'
         >
           {editMode && (
             <div

@@ -109,6 +109,7 @@ const CoverPhoto = ({
         useBlur={shouldBlur}
         usePlaceholder={false}
         immediate={imageSettings.immediate}
+        data-testid='cover-photo'
       >
         <div className={styles.spinner}>
           {processing ? loadingElement : null}

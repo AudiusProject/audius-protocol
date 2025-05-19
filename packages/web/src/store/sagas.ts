@@ -192,3 +192,96 @@ export default function* rootSaga() {
   )
   yield* all(sagas.map((saga) => spawn(sagaWithErrorHandler, saga)))
 }
+
+export function* testRootSaga() {
+  const sagas = ([] as (() => Generator<any, void, any>)[]).concat(
+    // Config
+    backendSagas(),
+    confirmerSagas(),
+    routingSagas(),
+
+    // Account
+    // accountSagas(),
+    // playlistLibrarySagas(),
+    // playlistUpdatesSagas(),
+    // recoveryEmailSagas(),
+    // signOutSagas(),
+
+    // Pages
+    // aiSagas(),
+    // collectionSagas(),
+    // chatSagas(),
+    // dashboardSagas(),
+    // exploreCollectionsPageSagas(),
+    // feedPageSagas(),
+    // historySagas(),
+    // passwordResetSagas(),
+    profileSagas(),
+    // reactionSagas(),
+    // rewardsPageSagas(),
+    // savedSagas(),
+    // searchResultsSagas(),
+    // settingsSagas(),
+    // signOnSaga(),
+    // socialSagas(),
+    // trackPageSagas(),
+    // trendingPageSagas(),
+    // trendingPlaylistSagas(),
+    // trendingUndergroundSagas(),
+    // uploadSagas(),
+    // premiumTracksSagas(),
+
+    modalsSagas(),
+
+    // Cache
+    cacheSagas(),
+    coreCacheSagas(),
+    collectionsSagas(),
+    tracksSagas(),
+    usersSagas(),
+    savedCollectionsSagas(),
+
+    // Application
+    // addToCollectionSagas(),
+    // buyAudioSagas(),
+    // changePasswordSagas(),
+    // chatWebSagas(),
+    // deactivateAccountSagas(),
+    // deletedSagas(),
+    // deletePlaylistConfirmationModalSagas(),
+    // duplicateAddConfirmationModalSagas(),
+    // firstUploadModalSagas(),
+    // remixesSagas(),
+    // scrollLockSagas(),
+    // shareModalSagas(),
+    // stripeModalSagas(),
+    // overflowMenuSagas(),
+    // toastSagas(),
+    // smartCollectionPageSagas(),
+    // searchUsersModalSagas(),
+    // stemUploadSagas(),
+    // tokenDashboardSagas(),
+    // userListModalSagas(),
+    // vipDiscordModalSagas(),
+    // commonReachabilitySagas(),
+
+    // Remote config
+    // remoteConfigSagas(),
+
+    // Tipping
+    // tippingSagas(),
+
+    // Gated content
+    // gatedContentSagas(),
+    // buyUSDCSagas(),
+    // purchaseContentSagas(),
+    // withdrawUSDCSagas(),
+
+    // Error
+    errorSagas()
+
+    // Version refresh
+    // reloadSagas()
+  )
+  yield* all(sagas.map((saga) => spawn(sagaWithErrorHandler, saga)))
+}

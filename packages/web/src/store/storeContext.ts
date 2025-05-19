@@ -21,6 +21,7 @@ import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { trackDownload } from 'services/track-download'
 import { walletClient } from 'services/wallet-client'
+import { audiusSdk as mockAudiusSdk } from 'test/mocks/audiusSdk'
 import { isElectron } from 'utils/clientUtil'
 import { generatePlaylistArtwork } from 'utils/imageProcessingUtil'
 import { getShare } from 'utils/share'
@@ -29,9 +30,11 @@ import { reportToSentry } from './errors/reportToSentry'
 import { getLineupSelectorForRoute } from './lineup/lineupForRoute'
 
 export const buildStoreContext = ({
-  isMobile
+  isMobile,
+  isTest
 }: {
   isMobile: boolean
+  isTest: boolean | undefined
 }): CommonStoreContext => ({
   getLocalStorageItem: async (key: string) =>
     window?.localStorage?.getItem(key),
@@ -76,7 +79,7 @@ export const buildStoreContext = ({
   instagramAppId: env.INSTAGRAM_APP_ID,
   instagramRedirectUrl: env.INSTAGRAM_REDIRECT_URL,
   share: getShare(isMobile),
-  audiusSdk,
+  audiusSdk: isTest ? mockAudiusSdk : audiusSdk,
   solanaWalletService,
   authService,
   identityService,
