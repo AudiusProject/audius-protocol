@@ -223,7 +223,7 @@ test('should upload a premium track', async ({ page, browser }) => {
   const buyButton = newPage.getByRole('button', { name: /buy/i })
   newPage.goto(trackUrl)
   await expect(buyButton).toBeVisible({ timeout: 20000 })
-  await expect(newPage.getByText('$' + price)).toBeVisible({ timeout: 20000 })
+  await expect(newPage.getByText('$' + price)).toBeVisible()
 })
 
 test('should upload a track with free stems', async ({ page }) => {
