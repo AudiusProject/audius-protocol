@@ -1,7 +1,6 @@
 import { useRef } from 'react'
 
 import { useSearchAllResults } from '@audius/common/api'
-import { show } from '@audius/common/src/store/music-confetti/slice'
 import { SearchKind } from '@audius/common/store'
 import { Flex, PlainButton, Text } from '@audius/harmony'
 import { Link } from 'react-router-dom-v5-compat'
