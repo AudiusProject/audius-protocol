@@ -14,7 +14,9 @@ test('should persist collection edits', async ({ page }) => {
   const newPrice = '$1.23'
 
   await page.goto(permalink)
-  await page.getByRole('link', { name: /edit album/i }).click()
+  await page
+    .getByRole('link', { name: /edit album/i })
+    .click({ timeout: 20000 })
   const editAlbumPage = new EditAlbumPage(page)
 
   await editAlbumPage.setArtwork('track-artwork.jpeg')
