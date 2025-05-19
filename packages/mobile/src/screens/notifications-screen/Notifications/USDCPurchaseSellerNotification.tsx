@@ -1,15 +1,8 @@
-import { useCallback } from 'react'
+import React, { useCallback } from 'react'
 
-import type { StringUSDC } from '@audius/common/models'
-import type {
-  CollectionEntity,
-  Entity,
-  TrackEntity,
-  USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType
-} from '@audius/common/store'
+import { useNotificationEntity } from '@audius/common/api'
 import { notificationsSelectors } from '@audius/common/store'
 import { stringUSDCToBN, formatUSDCWeiToUSDString } from '@audius/common/utils'
-import type { Nullable } from '@audius/common/utils'
 import { capitalize } from 'lodash'
 import { useSelector } from 'react-redux'
 
@@ -17,29 +10,28 @@ import { IconCart } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {
-  EntityLink,
+  NotificationTile,
   NotificationHeader,
   NotificationText,
-  NotificationTile,
   NotificationTitle,
-  UserNameLink
+  UserNameLink,
+  EntityLink
 } from '../Notification'
 
-const { getNotificationUsers, getNotificationEntity } = notificationsSelectors
+const { getNotificationUsers } = notificationsSelectors
 
 const messages = {
-  title: (type: Entity.Track | Entity.Album) => `${capitalize(type)} Sold`,
-  congrats: 'Congrats,',
+  title: (type: string) => `${capitalize(type)} Sold`,
+  congrats: 'Congrats, ',
   someone: 'someone',
-  justBoughtYourTrack: (type: Entity.Track | Entity.Album) =>
-    ` just bought your ${type} `,
+  justBoughtYourTrack: (type: string) => ` just bought your ${type} `,
   for: ' for ',
   exclamation: '!',
   dollar: '$'
 }
 
 type USDCPurchaseSellerNotificationProps = {
-  notification: USDCPurchaseSellerNotificationType
+  notification: any
 }
 
 export const USDCPurchaseSellerNotification = (
@@ -48,9 +40,7 @@ export const USDCPurchaseSellerNotification = (
   const { notification } = props
   const { entityType } = notification
   const navigation = useNotificationNavigation()
-  const content = useSelector((state) =>
-    getNotificationEntity(state, notification)
-  ) as Nullable<TrackEntity | CollectionEntity>
+  const content = useNotificationEntity(notification)
   const notificationUsers = useSelector((state) =>
     getNotificationUsers(state, notification, 1)
   )
@@ -80,7 +70,7 @@ export const USDCPurchaseSellerNotification = (
         {formatUSDCWeiToUSDString(
           stringUSDCToBN(amount)
             .add(stringUSDCToBN(extraAmount))
-            .toString() as StringUSDC
+            .toString() as any
         )}
         {messages.exclamation}
       </NotificationText>

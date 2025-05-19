@@ -1,6 +1,6 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
-import { useCollection } from '@audius/common/api'
+import { useCollection, useTracks } from '@audius/common/api'
 import {
   Name,
   PlaybackSource,
@@ -25,10 +25,10 @@ import {
   queueActions,
   collectionPageActions
 } from '@audius/common/store'
-import { formatReleaseDate } from '@audius/common/utils'
+import { formatReleaseDate, Uid } from '@audius/common/utils'
 import type { Maybe, Nullable } from '@audius/common/utils'
 import dayjs from 'dayjs'
-import { pick } from 'lodash'
+import { pick, uniq } from 'lodash'
 import { TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
@@ -75,7 +75,6 @@ const { getPlaying, getPreviewing, getUid, getCurrentTrack } = playerSelectors
 const { getIsReachable } = reachabilitySelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
 const { getCollectionTracks } = cacheCollectionsSelectors
-const { getTracks } = cacheTracksSelectors
 const { resetCollection, fetchCollection } = collectionPageActions
 
 const selectTrackUids = createSelector(
@@ -281,12 +280,14 @@ export const CollectionScreenDetailsTile = ({
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
 
   const uids = isLineupLoading ? Array(Math.min(5, trackCount ?? 0)) : trackUids
-  const tracks = useSelector((state) => getTracks(state, { uids }))
-  const areAllTracksDeleted = Object.values(tracks).every(
-    (track) => track?.metadata?.is_delete
+  const trackIds = useMemo(
+    () => uniq(uids.map((uid) => Uid.fromString(uid)?.id as ID)),
+    [uids]
   )
+  const { data: tracks = [] } = useTracks(trackIds)
+  const areAllTracksDeleted = tracks.every((track) => track.is_delete)
   const isPlayable =
-    Object.values(tracks).length === 0
+    tracks.length === 0
       ? true
       : !areAllTracksDeleted && (isQueued || (trackCount > 0 && !!firstTrack))
 

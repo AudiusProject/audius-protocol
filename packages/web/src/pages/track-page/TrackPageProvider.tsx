@@ -9,7 +9,6 @@ import {
   PlaybackSource,
   FavoriteType,
   PlayableType,
-  Status,
   ID,
   Track
 } from '@audius/common/models'
@@ -34,6 +33,7 @@ import {
   playerActions
 } from '@audius/common/store'
 import { formatDate, route } from '@audius/common/utils'
+import { QueryStatus } from '@tanstack/react-query'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
@@ -69,7 +69,6 @@ const {
   getUser,
   getLineup,
   getRemixParentTrack,
-  getStatus,
   getSourceSelector,
   getTrackPermalink
 } = trackPageSelectors
@@ -100,13 +99,19 @@ type TrackPageProviderState = {
 
 const TrackPageProviderWrapper = (props: TrackPageProviderProps) => {
   const params = parseTrackRoute(props.pathname)
-  const { data: track } = useTrackByParams(params)
+  const { data: track, status } = useTrackByParams(params)
 
-  return <TrackPageProviderClass {...props} track={track as Track | null} />
+  return (
+    <TrackPageProviderClass
+      {...props}
+      track={track as Track | null}
+      status={status}
+    />
+  )
 }
 
 class TrackPageProviderClass extends Component<
-  TrackPageProviderProps & { track: Track | null },
+  TrackPageProviderProps & { track: Track | null; status: QueryStatus },
   TrackPageProviderState
 > {
   static contextType = SsrContext
@@ -151,7 +156,7 @@ class TrackPageProviderClass extends Component<
       user,
       trackPermalink
     } = this.props
-    if (status === Status.ERROR) {
+    if (status === 'error') {
       this.props.goToRoute(NOT_FOUND_PAGE)
     }
     if (user && user.is_deactivated) {
@@ -470,7 +475,6 @@ function makeMapStateToProps() {
       trackPermalink: getTrackPermalink(state),
       remixParentTrack: getRemixParentTrack(state),
       user: getUser(state),
-      status: getStatus(state),
       moreByArtist: getMoreByArtistLineup(state),
       userId: getUserId(state),
 

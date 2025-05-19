@@ -1,14 +1,11 @@
 import { useCallback } from 'react'
 
-import { useProxySelector } from '@audius/common/hooks'
+import { useNotificationEntities } from '@audius/common/api'
 import type {
   TrackEntity,
   RemixCosignNotification as RemixCosignNotificationType
 } from '@audius/common/store'
-import { notificationsSelectors } from '@audius/common/store'
-import type { Nullable } from '@audius/common/utils'
 import { View } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import { IconRemix } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
@@ -25,7 +22,6 @@ import {
   NotificationProfilePicture,
   NotificationTwitterButton
 } from '../Notification'
-const { getNotificationEntities, getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'Remix was Co-signed',
@@ -44,13 +40,10 @@ export const RemixCosignNotification = (
   const { notification } = props
   const navigation = useNotificationNavigation()
   const { childTrackId, parentTrackUserId } = notification
-  const user = useSelector((state) => getNotificationUser(state, notification))
-  // TODO: casting from EntityType to TrackEntity here, but
-  // getNotificationEntities should be smart enough based on notif type
-  const tracks = useProxySelector(
-    (state) => getNotificationEntities(state, notification),
-    [notification]
-  ) as Nullable<TrackEntity[]>
+
+  const entities = useNotificationEntities(notification)
+  const tracks = entities as TrackEntity[]
+  const user = tracks?.[0]?.user
 
   const childTrack = tracks?.find(({ track_id }) => track_id === childTrackId)
   const parentTrack = tracks?.find(

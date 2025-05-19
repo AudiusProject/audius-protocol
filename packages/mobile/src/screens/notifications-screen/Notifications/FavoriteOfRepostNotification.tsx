@@ -1,9 +1,10 @@
 import { useCallback } from 'react'
 
-import { useProxySelector } from '@audius/common/hooks'
+import { useNotificationEntity } from '@audius/common/api'
 import type { FavoriteOfRepostNotification as FavoriteOfRepostNotificationType } from '@audius/common/store'
 import { notificationsSelectors, Entity } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
+import { useSelector } from 'react-redux'
 
 import { IconHeart } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
@@ -18,7 +19,7 @@ import {
   EntityLink
 } from '../Notification'
 
-const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
+const { getNotificationUsers } = notificationsSelectors
 
 const messages = {
   others: (userCount: number) =>
@@ -37,18 +38,14 @@ export const FavoriteOfRepostNotification = (
   const { userIds, entityType } = notification
   const navigation = useNotificationNavigation()
 
-  const users = useProxySelector(
-    (state) => getNotificationUsers(state, notification, USER_LENGTH_LIMIT),
-    [notification]
+  const users = useSelector((state) =>
+    getNotificationUsers(state, notification, USER_LENGTH_LIMIT)
   )
 
   const firstUser = users?.[0]
   const otherUsersCount = userIds.length - 1
 
-  const entity = useProxySelector(
-    (state) => getNotificationEntity(state, notification),
-    [notification]
-  )
+  const entity = useNotificationEntity(notification)
 
   const entityTypeText =
     entity && 'is_album' in entity && entity.is_album
@@ -68,7 +65,7 @@ export const FavoriteOfRepostNotification = (
       </NotificationHeader>
       <NotificationText>
         <UserNameLink user={firstUser} />
-        {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}
+        {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}{' '}
         {messages.favorited} {entityTypeText.toLowerCase()}{' '}
         <EntityLink entity={entity} />
       </NotificationText>

@@ -1,7 +1,7 @@
 import { getEntry, getAllEntries } from '~/store/cache/selectors'
 import { CommonState } from '~/store/commonStore'
 
-import { Kind, ID, UID, Status, Track } from '../../../models'
+import { Kind, ID, UID } from '../../../models'
 
 import { BatchCachedTracks } from './types'
 
@@ -21,9 +21,6 @@ export const getTrack = (
     kind: Kind.TRACKS
   })
 }
-
-export const getStatus = (state: CommonState, props: { id?: ID | null }) =>
-  (props.id && state.tracks.statuses[props.id]) || null
 
 /** @deprecated Use useTracks instead */
 export const getTracks = (
@@ -61,26 +58,4 @@ export const getTracks = (
     return tracks
   }
   return getAllEntries(state, { kind: Kind.TRACKS })
-}
-
-// TODO:
-export const getTracksByUid = (state: CommonState) => {
-  return Object.keys(state.tracks.uids).reduce(
-    (entries, uid) => {
-      entries[uid] = getTrack(state, { uid })
-      return entries
-    },
-    {} as { [uid: string]: Track | null }
-  )
-}
-
-export const getStatuses = (state: CommonState, props: { ids: ID[] }) => {
-  const statuses: { [id: number]: Status } = {}
-  props.ids.forEach((id) => {
-    const status = getStatus(state, { id })
-    if (status) {
-      statuses[id] = status
-    }
-  })
-  return statuses
 }

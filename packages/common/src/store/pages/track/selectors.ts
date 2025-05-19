@@ -1,7 +1,4 @@
-import {
-  getTrack as getCachedTrack,
-  getStatus as getCachedTrackStatus
-} from '~/store/cache/tracks/selectors'
+import { getTrack as getCachedTrack } from '~/store/cache/tracks/selectors'
 import { getUser as getCachedUser } from '~/store/cache/users/selectors'
 import { CommonState } from '~/store/commonStore'
 import { PREFIX } from '~/store/pages/track/lineup/actions'
@@ -50,9 +47,6 @@ export const getUser = (state: CommonState, params?: { id?: ID }) => {
   if (!trackId) return null
   return getCachedUser(state, { id: trackId })
 }
-export const getStatus = (state: CommonState) =>
-  getCachedTrackStatus(state, { id: getTrackId(state) as ID })
-
 export const getLineup = (state: CommonState) => getBaseState(state).tracks
 export const getSourceSelector = (state: CommonState) =>
   `${PREFIX}:${getTrackId(state)}`
