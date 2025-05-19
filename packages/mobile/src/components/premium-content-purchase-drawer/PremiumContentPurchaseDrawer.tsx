@@ -305,10 +305,6 @@ const RenderForm = ({
     trackEvent(make({ eventName: Name.PURCHASE_CONTENT_TOS_CLICKED }))
   }, [])
 
-  const handleUSDCManualTransferClose = useCallback(() => {
-    dispatch(setPurchasePage({ page: PurchaseContentPage.PURCHASE }))
-  }, [dispatch])
-
   const handleGoBackPress = useCallback(() => {
     dispatch(setPurchasePage({ page: PurchaseContentPage.PURCHASE }))
   }, [dispatch])

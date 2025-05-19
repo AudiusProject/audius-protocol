@@ -1,15 +1,8 @@
 import { useCallback } from 'react'
 
 import Clipboard from '@react-native-clipboard/clipboard'
-import { TouchableOpacity } from 'react-native'
 
-import {
-  Text,
-  IconCopy,
-  Flex,
-  spacing,
-  IconButton
-} from '@audius/harmony-native'
+import { Text, IconCopy, Flex, IconButton } from '@audius/harmony-native'
 import { useToast } from 'app/hooks/useToast'
 import { make, track as trackEvent } from 'app/services/analytics'
 import type { AllEvents } from 'app/types/analytics'

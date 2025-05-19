@@ -11,7 +11,6 @@ import { useToast } from 'app/hooks/useToast'
 import { make, track, track as trackEvent } from 'app/services/analytics'
 import { getUSDCUserBank } from 'app/services/buyCrypto'
 import type { AllEvents } from 'app/types/analytics'
-import { useThemeColors } from 'app/utils/theme'
 
 import { CashBalanceSection } from '../add-funds-drawer/CashBalanceSection'
 import { AddressTile } from '../core/AddressTile'
@@ -37,7 +36,6 @@ type USDCManualTransferProps = {
 export const USDCManualTransfer = ({
   amountInCents
 }: USDCManualTransferProps) => {
-  const { neutral } = useThemeColors()
   const { toast } = useToast()
 
   useCreateUserbankIfNeeded({
