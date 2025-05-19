@@ -1,8 +1,5 @@
 import { useRef } from 'react'
 
-import { debug } from 'console'
-import fs from 'fs'
-
 import { SquareSizes, WidthSizes } from '@audius/common/models'
 import { developmentConfig } from '@audius/sdk'
 import { http, HttpResponse } from 'msw'
@@ -172,7 +169,7 @@ describe('ProfilePage', () => {
   })
 
   it.only('should render the profile page for a non-artist', async () => {
-    const { debug } = renderProfilePage()
+    renderProfilePage()
 
     // User header
     expect(
