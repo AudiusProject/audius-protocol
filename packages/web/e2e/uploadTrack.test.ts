@@ -169,6 +169,7 @@ test('should upload a remix, hidden, AI-attributed track', async ({ page }) => {
 })
 
 test('should upload a premium track', async ({ page, browser }) => {
+  test.setTimeout(20000)
   const trackTitle = `Test premium track ${Date.now()}`
   const genre = 'Alternative'
   const price = '1.05'
