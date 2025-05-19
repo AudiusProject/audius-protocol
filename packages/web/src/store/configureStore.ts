@@ -145,15 +145,7 @@ export const configureStore = ({
 
   // For tests, only use basic middleware without sagas
   const middlewares = isTest
-    ? applyMiddleware(
-        routerMiddleware,
-        thunk,
-        sagaMiddleware!,
-        (store) => (next) => (action) => {
-          // console.log('Action:', action.type, action.payload)
-          return next(action)
-        }
-      )
+    ? applyMiddleware(routerMiddleware, thunk, sagaMiddleware!)
     : applyMiddleware(
         chatMiddleware(audiusSdk),
         routerMiddleware,
