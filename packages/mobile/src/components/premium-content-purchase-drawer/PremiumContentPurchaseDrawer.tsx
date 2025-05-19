@@ -407,10 +407,7 @@ const RenderForm = ({
         </>
       ) : (
         <View style={styles.paddingTop}>
-          <USDCManualTransfer
-            onClose={handleUSDCManualTransferClose}
-            amountInCents={totalPriceInCents}
-          />
+          <USDCManualTransfer amountInCents={totalPriceInCents} />
         </View>
       )}
       {isPurchaseSuccessful || !isUsdcPurchaseEnabled ? null : (
