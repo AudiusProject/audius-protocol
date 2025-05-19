@@ -56,11 +56,6 @@ export const useCurrentAccount = <
   return useQuery({
     queryKey: getCurrentAccountQueryKey(),
     queryFn: async () => {
-      // this means unauthenticated user
-      if (!currentUserWallet) {
-        return null
-      }
-
       const sdk = await audiusSdk()
       const { data } = await sdk.full.users.getUserAccount({
         wallet: currentUserWallet!
