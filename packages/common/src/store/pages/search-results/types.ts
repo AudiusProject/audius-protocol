@@ -1,13 +1,6 @@
-import { ID, LineupState, Status, Track } from '../../../models'
+import { LineupState, Track } from '../../../models'
 
 export type SearchPageState = {
-  status: Status
-  searchText: string
-  trackIds?: ID[]
-  albumIds?: ID[]
-  playlistIds?: ID[]
-  artistIds?: ID[]
-  isTagSearch: boolean
   tracks: LineupState<Track>
 }
 

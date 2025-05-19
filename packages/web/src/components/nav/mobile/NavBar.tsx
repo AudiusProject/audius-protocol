@@ -39,7 +39,6 @@ const { SIGN_UP_PAGE, TRENDING_PAGE } = route
 interface NavBarProps {
   isLoading: boolean
   isSignedIn: boolean
-  searchStatus: Status
   rewardsCount: number
   signUp: () => void
   goToNotificationPage: () => void
@@ -58,7 +57,6 @@ const messages = {
 const NavBar = ({
   isLoading,
   isSignedIn,
-  searchStatus,
   rewardsCount,
   search,
   signUp,
@@ -304,7 +302,7 @@ const NavBar = ({
             )}
             iconClassname={styles.searchIcon}
             beginSearch={beginSearch}
-            status={searchStatus}
+            status={isSearching ? Status.LOADING : Status.IDLE}
           />
         ) : (
           rightElement
