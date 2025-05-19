@@ -3,12 +3,16 @@ import { useCallback } from 'react'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { TouchableOpacity } from 'react-native'
 
-import { Text, IconCopy, Flex } from '@audius/harmony-native'
+import {
+  Text,
+  IconCopy,
+  Flex,
+  spacing,
+  IconButton
+} from '@audius/harmony-native'
 import { useToast } from 'app/hooks/useToast'
 import { make, track as trackEvent } from 'app/services/analytics'
-import { spacing } from 'app/styles/spacing'
 import type { AllEvents } from 'app/types/analytics'
-import { useColor } from 'app/utils/theme'
 
 const messages = {
   copied: 'Copied to Clipboard!'
@@ -21,7 +25,6 @@ type AddressTileProps = {
 
 export const AddressTile = ({ address, analytics }: AddressTileProps) => {
   const { toast } = useToast()
-  const textSubdued = useColor('textIconSubdued')
 
   const handleCopyPress = useCallback(() => {
     if (address) {
@@ -45,9 +48,12 @@ export const AddressTile = ({ address, analytics }: AddressTileProps) => {
         pv='l'
         borderLeft='default'
       >
-        <TouchableOpacity onPress={handleCopyPress} hitSlop={spacing(6)}>
-          <IconCopy fill={textSubdued} width={spacing(4)} height={spacing(4)} />
-        </TouchableOpacity>
+        <IconButton
+          onPress={handleCopyPress}
+          size='s'
+          color='subdued'
+          icon={IconCopy}
+        />
       </Flex>
     </Flex>
   )

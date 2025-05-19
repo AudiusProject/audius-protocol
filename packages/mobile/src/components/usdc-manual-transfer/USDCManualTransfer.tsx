@@ -10,7 +10,6 @@ import { IconError, Button, Flex, Text, TextLink } from '@audius/harmony-native'
 import { useToast } from 'app/hooks/useToast'
 import { make, track, track as trackEvent } from 'app/services/analytics'
 import { getUSDCUserBank } from 'app/services/buyCrypto'
-import { spacing } from 'app/styles/spacing'
 import type { AllEvents } from 'app/types/analytics'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -85,7 +84,7 @@ export const USDCManualTransfer = ({
         border='strong'
         borderRadius='m'
       >
-        <IconError width={spacing(6)} height={spacing(6)} fill={neutral} />
+        <IconError size='m' color='default' />
         <Flex gap='m' flex={1}>
           <Text>
             {messages.hint}
