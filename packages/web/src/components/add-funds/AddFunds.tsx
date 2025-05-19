@@ -3,7 +3,9 @@ import { useState } from 'react'
 import { useUSDCBalance, useCreateUserbankIfNeeded } from '@audius/common/hooks'
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import { BuyUSDCStage, buyUSDCSelectors } from '@audius/common/store'
-import { Button, Flex } from '@audius/harmony'
+import { USDC } from '@audius/fixed-decimal'
+import { Box, Button, Flex, Text, IconLogoCircleUSDC } from '@audius/harmony'
+import { BN } from 'bn.js'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
@@ -12,11 +14,11 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { track } from 'services/analytics'
 
 import styles from './AddFunds.module.css'
-import { CashBalanceSection } from './CashBalanceSection'
 
 const { getBuyUSDCFlowStage } = buyUSDCSelectors
 
 const messages = {
+  usdcBalance: 'USDC Balance',
   purchasing: 'Purchasing',
   continue: 'Continue'
 }
@@ -44,6 +46,7 @@ export const AddFunds = ({
     isPolling: true,
     commitment: 'confirmed'
   })
+  const balance = USDC(balanceBN ?? new BN(0)).value
 
   const buyUSDCStage = useSelector(getBuyUSDCFlowStage)
   const inProgress = [
@@ -52,17 +55,30 @@ export const AddFunds = ({
   ].includes(buyUSDCStage)
 
   return (
-    <Flex className={styles.root}>
-      <Flex
+    <div className={styles.root}>
+      <div
         className={cn(styles.buttonContainer, {
           [styles.mobile]: isMobile
         })}
       >
-        <Flex column w='100%' gap='xl' p='xl'>
-          <CashBalanceSection balance={balanceBN} />
+        <Flex direction='column' w='100%' gap='xl' p='xl'>
+          <Box border='strong' p='m' borderRadius='s'>
+            <Flex alignItems='center' justifyContent='space-between'>
+              <Flex alignItems='center'>
+                <IconLogoCircleUSDC />
+                <Box pl='s'>
+                  <Text variant='title' size='m'>
+                    {messages.usdcBalance}
+                  </Text>
+                </Box>
+              </Flex>
+              <Text variant='title' size='l' strength='strong'>
+                {USDC(balance).toLocaleString()}
+              </Text>
+            </Flex>
+          </Box>
           <PaymentMethod
             showVendorChoice
-            showExtraItemsToggle={false}
             selectedVendor={selectedPurchaseVendor ?? null}
             selectedMethod={selectedPurchaseMethod}
             setSelectedMethod={setSelectedPurchaseMethod}
@@ -80,7 +96,7 @@ export const AddFunds = ({
             {inProgress ? messages.purchasing : messages.continue}
           </Button>
         </Flex>
-      </Flex>
-    </Flex>
+      </div>
+    </div>
   )
 }
