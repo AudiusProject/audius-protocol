@@ -26,9 +26,6 @@ const testUser = {
 function renderUserCard(overrides = {}, options?: RenderOptions) {
   const user = { ...testUser, ...overrides }
 
-  mswServer.events.on('request:start', ({ request }) => {
-    console.log('Outgoing:', request.method, request.url)
-  })
   mswServer.use(
     http.get(`${apiEndpoint}/v1/full/users`, ({ request }) => {
       const url = new URL(request.url)

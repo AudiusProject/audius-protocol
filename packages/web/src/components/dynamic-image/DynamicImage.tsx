@@ -108,6 +108,7 @@ const DynamicImage = ({
   usePlaceholder = true,
   useSkeleton = true,
   useBlur = false,
+  alt,
   ...other
 }: DynamicImageProps) => {
   const first = useRef<HTMLDivElement>(null)
@@ -165,6 +166,7 @@ const DynamicImage = ({
       className={cn(styles.wrapper, wrapperClassName)}
       {...other}
       role='img'
+      aria-label={alt}
       css={{
         '&:before': {
           content: '""',
@@ -190,12 +192,14 @@ const DynamicImage = ({
         className={cn(styles.image, className)}
         style={imageStyle}
         onClick={onClick}
+        data-testid='dynamic-image-first'
       />
       <div
         ref={second}
         className={cn(styles.image, className)}
         style={imageStyle}
         onClick={onClick}
+        data-testid='dynamic-image-second'
       />
       {children && <div className={styles.children}>{children}</div>}
     </Box>

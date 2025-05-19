@@ -15,7 +15,8 @@ import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import styles from './CoverPhoto.module.css'
 
 const messages = {
-  imageName: 'Cover Photo'
+  imageName: 'Cover Photo',
+  altText: 'User Cover Photo'
 }
 
 type CoverPhotoProps = {
@@ -102,6 +103,7 @@ const CoverPhoto = ({
   return (
     <div className={cn(styles.coverPhoto, className)}>
       <DynamicImage
+        alt={messages.altText}
         image={imageSettings.backgroundImage}
         isUrl={false}
         wrapperClassName={styles.photo}
@@ -109,7 +111,6 @@ const CoverPhoto = ({
         useBlur={shouldBlur}
         usePlaceholder={false}
         immediate={imageSettings.immediate}
-        data-testid='cover-photo'
       >
         <div className={styles.spinner}>
           {processing ? loadingElement : null}
