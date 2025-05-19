@@ -1,5 +1,6 @@
 import { ComponentType, PureComponent, RefObject } from 'react'
 
+import { selectAccountHasTracks, useCurrentAccount } from '@audius/common/api'
 import {
   Name,
   ShareSource,
@@ -73,7 +74,6 @@ const { createPlaylist } = cacheCollectionsActions
 
 const { makeGetProfile, getProfileFeedLineup, getProfileTracksLineup } =
   profilePageSelectors
-const { getUserId, getAccountHasTracks } = accountSelectors
 const { createChat, blockUser, unblockUser } = chatActions
 const { getBlockees, getBlockers, getCanCreateChat } = chatSelectors
 
@@ -100,7 +100,8 @@ type OwnProps = {
 type ProfilePageProps = OwnProps &
   ReturnType<ReturnType<typeof makeMapStateToProps>> &
   ReturnType<typeof mapDispatchToProps> &
-  RouteComponentProps
+  RouteComponentProps &
+  HookStateProps
 
 type ProfilePageState = {
   activeTab: ProfilePageTabs | null
@@ -960,13 +961,7 @@ function makeMapStateToProps() {
     const handleLower = params?.handle?.toLowerCase() as string
 
     const profile = getProfile(state)
-    const accountUserId = getUserId(state)
-    const accountHasTracks =
-      accountUserId === profile.profile?.user_id
-        ? getAccountHasTracks(state)
-        : null
     return {
-      accountUserId,
       profile,
       artistTracks: getProfileTracksLineup(state, handleLower),
       userFeed: getProfileFeedLineup(state, handleLower),
@@ -978,8 +973,7 @@ function makeMapStateToProps() {
         userId: profile.profile?.user_id
       }),
       blockeeList: getBlockees(state),
-      blockerList: getBlockers(state),
-      accountHasTracks
+      blockerList: getBlockers(state)
     }
   }
   return mapStateToProps
@@ -1147,6 +1141,25 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
   }
 }
 
+type HookStateProps = {
+  accountUserId: ID | undefined
+  accountHasTracks: boolean | undefined
+}
+const hookStateToProps = (Component: typeof ProfilePage) => {
+  return (props: ProfilePageProps) => {
+    const { data: accountData } = useCurrentAccount({
+      select: (account) => ({
+        accountUserId: account?.user?.user_id,
+        accountHasTracks: selectAccountHasTracks(account)
+      })
+    })
+    return <ProfilePage {...(accountData as HookStateProps)} {...props} />
+  }
+}
+
 export default withRouter(
-  connect(makeMapStateToProps, mapDispatchToProps)(ProfilePage)
+  connect(
+    makeMapStateToProps,
+    mapDispatchToProps
+  )(hookStateToProps(ProfilePage))
 )
