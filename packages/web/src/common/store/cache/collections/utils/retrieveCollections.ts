@@ -2,7 +2,10 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { playlistPermalinkToHandleAndSlug } from '@audius/common/api'
+import {
+  playlistPermalinkToHandleAndSlug,
+  queryTracks
+} from '@audius/common/api'
 import {
   Kind,
   CollectionMetadata,
@@ -26,7 +29,6 @@ import { chunk } from 'lodash'
 import { all, call, select, put } from 'typed-redux-saga'
 
 import { retrieve } from 'common/store/cache/sagas'
-import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { waitForRead } from 'utils/sagaHelpers'
 
 import { addTracksFromCollections } from './addTracksFromCollections'
@@ -68,9 +70,7 @@ export function* retrieveTracksForCollections(
   ]
   const chunkedTracks = yield* all(
     chunk(filteredTrackIds, TRACKS_BATCH_LIMIT).map((chunkedTrackIds) =>
-      call(retrieveTracks, {
-        trackIds: chunkedTrackIds
-      })
+      call(queryTracks, chunkedTrackIds)
     )
   )
 

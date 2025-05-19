@@ -7,7 +7,7 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { getStemsQueryKey, queryUser } from '@audius/common/api'
+import { getStemsQueryKey, queryTracks, queryUser } from '@audius/common/api'
 import {
   Collection,
   Feature,
@@ -17,6 +17,7 @@ import {
   Name,
   StemTrack,
   StemUploadWithFile,
+  Track,
   isContentFollowGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
@@ -40,8 +41,7 @@ import {
   replaceTrackProgressModalActions,
   queueSelectors,
   queueActions,
-  playerActions,
-  BatchCachedTracks
+  playerActions
 } from '@audius/common/store'
 import {
   actionChannelDispatcher,
@@ -77,7 +77,6 @@ import { push } from 'utils/navigation'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { trackNewRemixEvent } from '../cache/tracks/sagas'
-import { retrieveTracks } from '../cache/tracks/utils'
 import { adjustUserField } from '../cache/users/sagas'
 import { addPlaylistsNotInLibrary } from '../playlist-library/sagas'
 
@@ -1101,12 +1100,9 @@ export function* uploadMultipleTracks(
   // Get true track metadatas back
   // Allow for retries in case the tracks are not immediately available
   let retries = 20
-  let newTracks: BatchCachedTracks[] = []
+  let newTracks: Track[] = []
   while (retries > 0) {
-    newTracks = yield* call(retrieveTracks, {
-      trackIds,
-      forceRetrieveFromSource: true
-    })
+    newTracks = yield* call(queryTracks, trackIds, true)
     if (newTracks.length > 0) {
       break
     }
@@ -1128,9 +1124,9 @@ export function* uploadMultipleTracks(
   // At this point, the upload was success! The rest is metrics.
   yield* put(
     uploadActions.uploadTracksSucceeded({
-      id: newTracks[0].metadata.track_id,
-      trackMetadatas: newTracks.map((t) => t.metadata),
-      completedEntity: newTracks[0].metadata,
+      id: newTracks[0].track_id,
+      trackMetadatas: newTracks,
+      completedEntity: newTracks[0],
       uploadType
     })
   )
@@ -1143,7 +1139,7 @@ export function* uploadMultipleTracks(
 
   // If the hide remixes is turned on, send analytics event
   for (let i = 0; i < newTracks.length; i += 1) {
-    const track = newTracks[i].metadata
+    const track = newTracks[i]
     if (track.field_visibility?.remixes === false) {
       yield* put(
         make(Name.REMIX_HIDE, {
@@ -1156,7 +1152,7 @@ export function* uploadMultipleTracks(
 
   // Send analytics for any remixes
   for (const remixTrackData of newTracks) {
-    const remixTrack = remixTrackData.metadata
+    const remixTrack = remixTrackData
     if (
       remixTrack.remix_of !== null &&
       Array.isArray(remixTrack.remix_of?.tracks) &&
@@ -1177,7 +1173,7 @@ export function* uploadMultipleTracks(
   })
 
   for (const track of newTracks) {
-    const parentTrackId = track.metadata.remix_of?.tracks[0]?.parent_track_id
+    const parentTrackId = track.remix_of?.tracks[0]?.parent_track_id
 
     // If it's a remix, invalidate the parent track's lineup and remixes page
     if (parentTrackId) {
@@ -1280,14 +1276,12 @@ function* updateTrackAudioAsync(
   const payload = action.payload
 
   try {
-    const tracks = yield* call(retrieveTracks, {
-      trackIds: [payload.trackId]
-    })
+    const tracks = yield* call(queryTracks, [payload.trackId])
 
     if (!tracks[0]) {
       throw new Error('Missing track for track audio replace.')
     }
-    const track = tracks[0].metadata
+    const track = tracks[0]
     const sdk = yield* getSDK()
     const userId = yield* select(accountSelectors.getUserId)
 
