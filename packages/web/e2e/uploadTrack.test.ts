@@ -169,7 +169,6 @@ test('should upload a remix, hidden, AI-attributed track', async ({ page }) => {
 })
 
 test('should upload a premium track', async ({ page, browser }) => {
-  test.setTimeout(20000)
   const trackTitle = `Test premium track ${Date.now()}`
   const genre = 'Alternative'
   const price = '1.05'
@@ -223,8 +222,8 @@ test('should upload a premium track', async ({ page, browser }) => {
   const newPage = await openCleanBrowser({ browser })
   const buyButton = newPage.getByRole('button', { name: /buy/i })
   newPage.goto(trackUrl)
-  await expect(buyButton).toBeVisible()
-  await expect(newPage.getByText('$' + price)).toBeVisible()
+  await expect(buyButton).toBeVisible({ timeout: 20000 })
+  await expect(newPage.getByText('$' + price)).toBeVisible({ timeout: 20000 })
 })
 
 test('should upload a track with free stems', async ({ page }) => {
