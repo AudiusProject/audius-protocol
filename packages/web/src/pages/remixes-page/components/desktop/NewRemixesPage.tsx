@@ -54,6 +54,9 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
   )
+  const { isEnabled: isRemixContestWinnersMilestoneEnabled } = useFeatureFlag(
+    FeatureFlags.REMIX_CONTEST_WINNERS_MILESTONE
+  )
   const { data: contest } = useRemixContest(originalTrack?.track_id)
   const { data: currentUserId } = useCurrentUserId()
 
@@ -61,6 +64,8 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
   const isTrackOwner = currentUserId === originalTrack.owner_id
   const isRemixContestEnded =
     isRemixContest && dayjs(contest.endDate).isBefore(dayjs())
+  const showPickWinnersButton =
+    isRemixContestWinnersMilestoneEnabled && isTrackOwner && isRemixContestEnded
 
   const { sortMethod, isCosign, isContestEntry } = useRemixPageParams()
   const {
@@ -91,7 +96,7 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
       primary={title}
       containerStyles={styles.header}
       rightDecorator={
-        isTrackOwner && isRemixContestEnded ? (
+        showPickWinnersButton ? (
           <Button size='small' asChild>
             <Link to={pickWinnersRoute}>{messages.pickWinners}</Link>
           </Button>

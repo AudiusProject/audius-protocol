@@ -15,7 +15,27 @@ import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { combineQueryResults } from '../utils/combineQueryResults'
 import { useQueries } from '../utils/useQueries'
 
-import { getTrackQueryKey } from './useTrack'
+import { getTrackQueryFn, getTrackQueryKey } from './useTrack'
+
+// This function is only used for batch operations in saga utilities
+export const getTracksQueryFn = async (
+  trackIds: ID[],
+  currentUserId: ID | null,
+  queryClient: any,
+  sdk: any,
+  dispatch: any
+) => {
+  const batchGetTracks = getTracksBatcher({
+    sdk,
+    currentUserId,
+    queryClient,
+    dispatch
+  })
+  const tracks = await Promise.all(
+    trackIds.map((trackId) => batchGetTracks.fetch(trackId))
+  )
+  return tracks.filter((track): track is TQTrack => !!track)
+}
 
 export const useTracks = (
   trackIds: ID[] | null | undefined,
@@ -31,13 +51,13 @@ export const useTracks = (
       queryKey: getTrackQueryKey(trackId),
       queryFn: async () => {
         const sdk = await audiusSdk()
-        const batchGetTracks = getTracksBatcher({
-          sdk,
+        return getTrackQueryFn(
+          trackId,
           currentUserId,
           queryClient,
+          sdk,
           dispatch
-        })
-        return await batchGetTracks.fetch(trackId)
+        )
       },
       ...options,
       enabled: options?.enabled !== false && !!trackId && trackId > 0

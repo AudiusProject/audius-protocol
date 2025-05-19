@@ -74,9 +74,7 @@ export const RemixCreateNotification = (
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
       <NotificationHeader icon={IconRemix}>
-        <NotificationTitle>
-          {messages.title} <EntityLink entity={parentTrack} />
-        </NotificationTitle>
+        <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationText>
         <EntityLink entity={childTrack} /> {messages.by}{' '}

@@ -36,7 +36,6 @@ export function* queryUser(id: ID | null | undefined) {
 
 export function* queryUserByHandle(handle: string | null | undefined) {
   if (!handle) return undefined
-  console.log('queryUserByHandle', handle)
   const queryClient = yield* getContext('queryClient')
   const dispatch = yield* getContext('dispatch')
   const currentUserId = yield* select(getUserId)
@@ -46,10 +45,8 @@ export function* queryUserByHandle(handle: string | null | undefined) {
     queryFn: async () =>
       getUserByHandleQueryFn(handle, sdk, queryClient, dispatch, currentUserId)
   })) as ID | undefined
-  console.log('userId', userId)
   if (!userId) return undefined
   const userMetadata = yield* call(queryUser, userId)
-  console.log('userMetadata', userMetadata)
   return userMetadata
 }
 

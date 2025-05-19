@@ -52,6 +52,7 @@ type PaymentMethodProps = {
   isPayWithAnythingEnabled?: boolean
   showExistingBalance?: boolean
   showVendorChoice?: boolean
+  showExtraItemsToggle?: boolean
 }
 
 export const PaymentMethod = ({
@@ -66,7 +67,8 @@ export const PaymentMethod = ({
   showExistingBalance,
   isCoinflowEnabled,
   isPayWithAnythingEnabled,
-  showVendorChoice
+  showVendorChoice,
+  showExtraItemsToggle = true
 }: PaymentMethodProps) => {
   const isMobile = useIsMobile()
   const balanceCents = formatUSDCWeiToFloorCentsNumber(
@@ -169,6 +171,10 @@ export const PaymentMethod = ({
     })
   }
 
+  if (!showExtraItemsToggle) {
+    options.push(...extraOptions)
+  }
+
   const handleRadioChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       setSelectedMethod(e.target.value as PurchaseMethod)
@@ -254,8 +260,8 @@ export const PaymentMethod = ({
     <SummaryTable
       title={messages.paymentMethod}
       items={options}
-      extraItems={extraOptions}
-      onHideExtraItems={handleHideExtraItems}
+      onHideExtraItems={showExtraItemsToggle ? handleHideExtraItems : undefined}
+      extraItems={showExtraItemsToggle ? extraOptions : undefined}
       showExtraItemsCopy={messages.showAdvanced}
       disableExtraItemsToggle={
         selectedMethod === PurchaseMethod.WALLET ||

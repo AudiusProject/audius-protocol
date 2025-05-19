@@ -1,7 +1,9 @@
 import { useState, useCallback } from 'react'
 
 import { useRemixContest, useRemixes } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { UPLOAD_PAGE } from '@audius/common/src/utils/route'
 import {
   Box,
@@ -49,6 +51,9 @@ export const RemixContestSection = ({
 }: RemixContestSectionProps) => {
   const navigate = useNavigateToPage()
   const { data: remixContest } = useRemixContest(trackId)
+  const { isEnabled: isRemixContestWinnersMilestoneEnabled } = useFeatureFlag(
+    FeatureFlags.REMIX_CONTEST_WINNERS_MILESTONE
+  )
   const { data: remixes, count: remixCount } = useRemixes({
     trackId,
     isContestEntry: true
@@ -56,7 +61,9 @@ export const RemixContestSection = ({
 
   const [contentHeight, setContentHeight] = useState(0)
   const hasPrizeInfo = !!remixContest?.eventData?.prizeInfo
-  const hasWinners = (remixContest?.eventData?.winners?.length ?? 0) > 0
+  const hasWinners =
+    isRemixContestWinnersMilestoneEnabled &&
+    (remixContest?.eventData?.winners?.length ?? 0) > 0
 
   const handleHeightChange = useCallback((height: number) => {
     setContentHeight(height)

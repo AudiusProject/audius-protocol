@@ -1,6 +1,6 @@
 {
   "name": "@audius/mobile",
-  "version": "1.5.134",
+  "version": "1.5.135",
   "private": true,
   "scripts": {
     "android:dev": "ENVFILE=.env.dev turbo run android -- --mode=prodDebug",
@@ -67,7 +67,7 @@
     "@react-native-async-storage/async-storage": "1.21.0",
     "@react-native-clipboard/clipboard": "1.13.2",
     "@react-native-community/blur": "4.4.1",
-    "@react-native-community/datetimepicker": "7.6.2",
+    "@react-native-community/datetimepicker": "8.3.0",
     "@react-native-community/hooks": "3.0.0",
     "@react-native-community/netinfo": "11.2.1",
     "@react-native-community/slider": "4.5.0",
@@ -137,7 +137,7 @@
     "react-native-linear-gradient": "2.8.3",
     "react-native-markdown-display": "7.0.2",
     "react-native-modal": "13.0.1",
-    "react-native-modal-datetime-picker": "17.1.0",
+    "react-native-modal-datetime-picker": "18.0.0",
     "react-native-notifications": "5.1.0",
     "react-native-pager-view": "6.7.1",
     "react-native-permissions": "4.0.1",

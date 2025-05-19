@@ -36,6 +36,7 @@ export const RemixSettingsMenuFields = () => {
   const permalink = useThrottle(getPathFromTrackUrl(trackUrl), 1000)
 
   const { data: partialTrack } = useTrackByPermalink(permalink, {
+    throwOnError: false, // Workaround for legacy python endpoint - currently we get a 404 in our pw tests
     select: (track) =>
       pick(track, [
         'track_id',
