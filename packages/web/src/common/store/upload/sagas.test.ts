@@ -1,3 +1,4 @@
+import { queryTracks } from '@audius/common/api'
 import { Feature, StemUploadWithFile } from '@audius/common/models'
 import {
   TrackForUpload,
@@ -17,8 +18,6 @@ import { beforeAll, describe, expect, it, vitest } from 'vitest'
 
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { waitForWrite } from 'utils/sagaHelpers'
-
-import { retrieveTracks } from '../cache/tracks/utils'
 
 import { addPremiumMetadata } from './sagaHelpers'
 import uploadSagas, {
@@ -182,7 +181,7 @@ describe('upload', () => {
           ],
           [call.fn(confirmTransaction), true],
           [call.fn(waitForAccount), undefined],
-          [call.fn(retrieveTracks), [testTrack]]
+          [call.fn(queryTracks), [testTrack]]
         ])
         // Assertions
         // Uploaded track
@@ -285,7 +284,7 @@ describe('upload', () => {
           ],
           [call.fn(confirmTransaction), true],
           [call.fn(waitForAccount), undefined],
-          [call.fn(retrieveTracks), [testTrack.metadata]],
+          [call.fn(queryTracks), [testTrack.metadata]],
           [call.fn(deleteTracks), undefined]
         ])
         // Reports to sentry

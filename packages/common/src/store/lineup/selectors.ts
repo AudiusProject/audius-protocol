@@ -46,7 +46,7 @@ export const makeGetTableMetadatas = <T, State>(
               followeeReposts: track.followee_reposts
                 .map((repost) => ({
                   ...repost,
-                  user: users[repost.user_id].metadata
+                  user: users[repost.user_id]?.metadata
                 }))
                 .filter((repost) => !!repost.user)
             }
