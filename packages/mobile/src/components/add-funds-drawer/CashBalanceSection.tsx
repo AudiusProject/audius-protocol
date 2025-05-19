@@ -2,10 +2,9 @@ import { useUSDCBalance } from '@audius/common/hooks'
 import type { BNUSDC } from '@audius/common/models'
 import { USDC } from '@audius/fixed-decimal'
 
-import { Flex, Text } from '@audius/harmony-native'
+import { Flex, Text, spacing } from '@audius/harmony-native'
 import LogoUSDC from 'app/assets/images/logoUSDC.svg'
 import Skeleton from 'app/components/skeleton'
-import { spacing } from 'app/styles/spacing'
 
 const messages = {
   cashBalance: 'Cash Balance',
@@ -26,13 +25,17 @@ export const CashBalanceSection = () => {
   return (
     <Flex direction='column' gap='xs'>
       <Flex direction='row' alignItems='center' gap='s'>
-        <LogoUSDC height={spacing(6)} width={spacing(6)} />
+        <LogoUSDC height={spacing.unit6} width={spacing.unit6} />
         <Text variant='heading' color='subdued' size='s'>
           {messages.cashBalance}
         </Text>
       </Flex>
       {isLoading ? (
-        <Skeleton height={spacing(6)} width={spacing(16)} />
+        <Skeleton
+          height={spacing.unit14}
+          width={spacing.unit24}
+          style={{ marginTop: spacing.unit4 }}
+        />
       ) : (
         <Text variant='display'>{messages.balance(usdcBalance)}</Text>
       )}
