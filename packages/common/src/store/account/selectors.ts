@@ -13,7 +13,6 @@ const internalGetUserPlaylists = (state: CommonState) =>
   Object.values(state.account.collections)
 export const internalGetAccountUser = (state: CommonState) =>
   getUser(state, { id: getUserId(state) })
-const hasTracksInternal = (state: CommonState) => state.account.hasTracks
 
 export const getAccount = (state: CommonState) => state.account
 export const getHasAccount = (state: CommonState) => !!state.account.userId
@@ -47,24 +46,6 @@ export const getAccountUser = createSelector(
   (user) => user
 )
 
-export const getAccountHasTracks = createSelector(
-  [hasTracksInternal, internalGetAccountUser],
-  (hasTracks, user) =>
-    hasTracks === null
-      ? null // still loading
-      : hasTracks || (user ? user.track_count > 0 : false)
-)
-export const getAccountFolloweeCount = createSelector(
-  [internalGetAccountUser],
-  (user) => user?.followee_count ?? null
-)
-export const getAccountCollectibles = createSelector(
-  [internalGetAccountUser],
-  (user) => [
-    ...(user?.collectibleList ?? []),
-    ...(user?.solanaCollectibleList ?? [])
-  ]
-)
 export const getPlaylistLibrary = (state: CommonState) => {
   return state.account.playlistLibrary
 }

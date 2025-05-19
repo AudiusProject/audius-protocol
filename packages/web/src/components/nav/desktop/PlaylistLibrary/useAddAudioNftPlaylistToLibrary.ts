@@ -1,45 +1,44 @@
 import { useEffect } from 'react'
 
+import { useCurrentAccount } from '@audius/common/api'
 import { FavoriteSource, SmartCollectionVariant } from '@audius/common/models'
 import {
-  accountSelectors,
   playlistLibraryHelpers,
   collectionsSocialActions
 } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import { AUDIO_NFT_PLAYLIST } from 'common/store/smart-collection/smartCollections'
-import { useSelector } from 'utils/reducer'
 const { findInPlaylistLibrary } = playlistLibraryHelpers
 const { saveSmartCollection } = collectionsSocialActions
-const { getAccountCollectibles, getPlaylistLibrary } = accountSelectors
 
 const audioFormatSet = new Set(['mp3', 'wav', 'oga', 'mp4'])
 
 export const useAddAudioNftPlaylistToLibrary = () => {
   const dispatch = useDispatch()
+  const { data: hasUnaddedAudioNftPlaylist } = useCurrentAccount({
+    select: (account) => {
+      const playlistLibrary = account?.playlist_library
+      if (!playlistLibrary) return false
+      if (
+        findInPlaylistLibrary(
+          playlistLibrary,
+          SmartCollectionVariant.AUDIO_NFT_PLAYLIST
+        )
+      ) {
+        return false
+      }
+      const accountCollectibles = account?.user?.collectibleList
+      const hasAudioNfts = accountCollectibles?.some((collectible) => {
+        const { hasAudio, animationUrl, videoUrl } = collectible
+        if (hasAudio) return true
+        const mediaUrl = animationUrl ?? videoUrl
+        const collectibleExtension = mediaUrl?.split('.').pop()
+        return collectibleExtension && audioFormatSet.has(collectibleExtension)
+      })
 
-  const hasUnaddedAudioNftPlaylist = useSelector((state) => {
-    const playlistLibrary = getPlaylistLibrary(state)
-    if (!playlistLibrary) return false
-    if (
-      findInPlaylistLibrary(
-        playlistLibrary,
-        SmartCollectionVariant.AUDIO_NFT_PLAYLIST
-      )
-    ) {
-      return false
+      return hasAudioNfts
     }
-    const accountCollectibles = getAccountCollectibles(state)
-    const hasAudioNfts = accountCollectibles?.some((collectible) => {
-      const { hasAudio, animationUrl, videoUrl } = collectible
-      if (hasAudio) return true
-      const mediaUrl = animationUrl ?? videoUrl
-      const collectibleExtension = mediaUrl?.split('.').pop()
-      return collectibleExtension && audioFormatSet.has(collectibleExtension)
-    })
-
-    return hasAudioNfts
   })
 
   useEffect(() => {

@@ -13,7 +13,6 @@ import {
 import { newUserMetadata } from '@audius/common/schemas'
 import {
   accountActions,
-  accountSelectors,
   cacheCollectionsActions,
   profilePageFeedLineupActions as feedActions,
   profilePageTracksLineupActions as tracksActions,
