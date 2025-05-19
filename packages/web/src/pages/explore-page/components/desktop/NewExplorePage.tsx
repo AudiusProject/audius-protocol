@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useExploreContent } from '@audius/common/api'
 import { ExploreCollectionsVariant } from '@audius/common/store'
@@ -14,10 +14,14 @@ import {
   IconSearch,
   IconUser,
   Divider,
-  FilterButton
+  FilterButton,
+  IconCloseAlt,
+  useTheme
 } from '@audius/harmony'
+import { css } from '@emotion/css'
+import { capitalize } from 'lodash'
 import { useNavigate, useSearchParams } from 'react-router-dom-v5-compat'
-import { useDebounce, usePrevious } from 'react-use'
+import { useDebounce, useEffectOnce, usePrevious } from 'react-use'
 
 import BackgroundWaves from 'assets/img/publicSite/imageSearchHeaderBackground@2x.webp'
 import { CollectionCard } from 'components/collection'
@@ -112,8 +116,8 @@ const tabHeaders = [
 const justForYou = [
   TRENDING_PLAYLISTS,
   TRENDING_UNDERGROUND,
-  DOWNLOADS_AVAILABLE,
-  PREMIUM_TRACKS
+  PREMIUM_TRACKS,
+  DOWNLOADS_AVAILABLE
 ]
 const DEBOUNCE_MS = 400
 
@@ -127,15 +131,23 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const navigate = useNavigate()
   const showSearchResults = useShowSearchResults()
   const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
+  const searchBarRef = useRef<HTMLInputElement>(null)
+  const { color } = useTheme()
 
   const { data: exploreContent } = useExploreContent()
 
-  const handleTabClick = useCallback(
+  const handleSearchTab = useCallback(
     (newTab: string) => {
       setCategory(newTab.toLowerCase() as CategoryView)
     },
     [setCategory]
   )
+
+  useEffectOnce(() => {
+    if (inputValue && searchBarRef.current) {
+      searchBarRef.current.focus()
+    }
+  })
 
   const handleSearch = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -143,6 +155,10 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
     },
     []
   )
+
+  const handleClearSearch = useCallback(() => {
+    setInputValue('')
+  }, [])
 
   const onClickCard = useCallback(
     (url: string) => {
@@ -186,7 +202,8 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
     isMobile: false,
     tabs: tabHeaders,
     elements: tabHeaders.map((tab) => <Flex key={tab.label}>{tab.text}</Flex>),
-    onTabClick: handleTabClick
+    onTabClick: handleSearchTab,
+    selectedTabLabel: capitalize(categoryKey)
   })
 
   return (
@@ -224,12 +241,15 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
           </Text>
           <Flex w={400}>
             <TextInput
+              ref={searchBarRef}
               width={400}
               label={messages.searchPlaceholder}
               value={inputValue}
               size={TextInputSize.SMALL}
               startIcon={IconSearch}
               onChange={handleSearch}
+              // endIcon={IconCloseAlt}
+              onClear={handleClearSearch}
             />
           </Flex>
         </Paper>
@@ -276,7 +296,10 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
             <RecentSearches />
           </Flex>
         ) : inputValue || showSearchResults ? (
-          <SearchResults tracksLayout={tracksLayout} />
+          <SearchResults
+            tracksLayout={tracksLayout}
+            handleSearchTab={handleSearchTab}
+          />
         ) : (
           <>
             <ExploreSection
@@ -325,6 +348,12 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                       onClick={() => {
                         navigate(`/search/tracks?mood=${mood}`)
                       }}
+                      css={{
+                        ':hover': {
+                          background: color.neutral.n100,
+                          border: `1px solid ${color.neutral.n150}`
+                        }
+                      }}
                     >
                       {moodInfo.icon}
                       <Text variant='title' size='s'>
@@ -355,7 +384,9 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                         tile.variant !== ExploreCollectionsVariant.DIRECT_LINK
                       }
                       backgroundIcon={
-                        Icon ? <Icon color='inverse' /> : undefined
+                        Icon ? (
+                          <Icon height={180} width={180} color='inverse' />
+                        ) : undefined
                       }
                       onClick={() => onClickCard(tile.link)}
                       isIncentivized={!!tile.incentivized}

@@ -172,6 +172,7 @@ export const DesktopSearchBar = () => {
           color='subdued'
           onClick={handleClear}
           aria-label={messages.clearSearch}
+          onMouseDown={(e) => e.preventDefault()}
         />
       )
     }
@@ -310,8 +311,6 @@ export const DesktopSearchBar = () => {
     autocompleteOptions.length === 1 &&
     String(autocompleteOptions[0].options?.[0]?.value) === 'no-results'
 
-  const [isFocused, setIsFocused] = useState(false)
-
   const handleFocus = useCallback(() => {
     const searchElement = inputRef.current?.input?.closest(
       '.ant-select-selection-search'
@@ -319,7 +318,6 @@ export const DesktopSearchBar = () => {
     if (searchElement) {
       searchElement.classList.add('expanded')
     }
-    setIsFocused(true)
   }, [])
 
   const handleBlur = useCallback(() => {
@@ -335,7 +333,6 @@ export const DesktopSearchBar = () => {
         showResults ? 100 : 0
       )
     }
-    setIsFocused(false)
   }, [showResults])
 
   return (
@@ -350,7 +347,6 @@ export const DesktopSearchBar = () => {
         onSearch={handleSearch}
         onSelect={handleSelect}
         getPopupContainer={(trigger) => trigger.parentNode as HTMLElement}
-        open={showResults && isFocused}
       >
         <Input
           inputMode='search'

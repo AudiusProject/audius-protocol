@@ -4,6 +4,7 @@ import { useSearchAllResults } from '@audius/common/api'
 import { show } from '@audius/common/src/store/music-confetti/slice'
 import { SearchKind } from '@audius/common/store'
 import { Flex, PlainButton, Text, TextLink } from '@audius/harmony'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 import { useIsMobile } from 'hooks/useIsMobile'
 
@@ -23,10 +24,15 @@ const messages = {
   showAll: 'Show All'
 }
 
-export const AllResults = () => {
+type AllResultsProps = {
+  handleSearchTab?: (tab: string) => void
+}
+
+export const AllResults = ({ handleSearchTab }: AllResultsProps) => {
   const isMobile = useIsMobile()
   const containerRef = useRef<HTMLDivElement>(null)
   const { query, ...filters } = useSearchParams()
+  const navigate = useNavigate()
 
   const queryData = useSearchAllResults({
     query,
@@ -59,7 +65,12 @@ export const AllResults = () => {
             <Text variant='heading' textAlign='left'>
               {messages.profiles}
             </Text>
-            <PlainButton>
+            <PlainButton
+              onClick={() => {
+                navigate(`/search/profiles?query=${query}`)
+                handleSearchTab?.('Profiles')
+              }}
+            >
               <Text strength='strong' size='l'>
                 {messages.showAll}
               </Text>
@@ -81,7 +92,9 @@ export const AllResults = () => {
             <Text variant='heading' textAlign='left'>
               {messages.tracks}
             </Text>
-            <PlainButton>
+            <PlainButton
+              onClick={() => navigate(`/search/tracks?query=${query}`)}
+            >
               <Text strength='strong' size='l'>
                 {messages.showAll}
               </Text>
@@ -104,7 +117,9 @@ export const AllResults = () => {
             <Text variant='heading' textAlign='left'>
               {messages.albums}
             </Text>
-            <PlainButton>
+            <PlainButton
+              onClick={() => navigate(`/search/albums?query=${query}`)}
+            >
               <Text strength='strong' size='l'>
                 {messages.showAll}
               </Text>
@@ -126,7 +141,9 @@ export const AllResults = () => {
             <Text variant='heading' textAlign='left'>
               {messages.playlists}
             </Text>
-            <PlainButton>
+            <PlainButton
+              onClick={() => navigate(`/search/playlists?query=${query}`)}
+            >
               <Text strength='strong' size='l'>
                 {messages.showAll}
               </Text>

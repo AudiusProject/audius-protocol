@@ -4,6 +4,7 @@ import cn from 'classnames'
 
 import { Text, TextSize } from '~harmony/components/text'
 import type { TextColors } from '~harmony/foundations/color/semantic'
+import { IconCloseAlt } from '~harmony/icons'
 
 import { Flex } from '../../layout'
 import { useFocusState } from '../useFocusState'
@@ -45,6 +46,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       IconProps,
       endAdornment: endAdornmentProp,
       elevateLabel,
+      onClear,
       _incorrectError,
       _isHovered,
       _isFocused,
@@ -86,8 +88,8 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       required && hideLabel
         ? `${placeholder} *`
         : size === TextInputSize.SMALL
-          ? labelText
-          : placeholder
+        ? labelText
+        : placeholder
     const helperTextSize: TextSize = size === TextInputSize.SMALL ? 'xs' : 's'
 
     // Whenever a label isn't visible the placeholder should be visible in it's place (if provided)
@@ -148,7 +150,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           maxLength={maxLength}
           disabled={disabled}
           placeholder={shouldShowPlaceholder ? placeholderText : undefined}
-          aria-label={(ariaLabel ?? shouldShowLabel) ? labelText : undefined}
+          aria-label={ariaLabel ?? shouldShowLabel ? labelText : undefined}
           aria-required={required}
           id={id}
           autoComplete='off'
@@ -228,6 +230,9 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
             ) : null}
             {inputElement}
           </Flex>
+          {onClear && value ? (
+            <IconCloseAlt onClick={onClear} color='subdued' />
+          ) : null}
           {endAdornment}
         </label>
         {helperText ? (

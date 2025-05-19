@@ -152,7 +152,6 @@ export const FilterButton = forwardRef(function FilterButton<
       onClick()
     } else {
       setIsOpen((prev) => {
-        console.log('asdf setting to ', !prev)
         return !prev
       })
     }
@@ -167,6 +166,7 @@ export const FilterButton = forwardRef(function FilterButton<
             aria-label='cancel'
             onClick={(e: React.MouseEvent<SVGSVGElement>) => {
               e.stopPropagation()
+              setIsOpen(false)
               if (onClick) {
                 onClick()
               } else {
@@ -201,7 +201,6 @@ export const FilterButton = forwardRef(function FilterButton<
 
   const handleOptionSelected = useCallback(
     (value: Value) => {
-      console.log('asdf handleOptionSelected ', value)
       handleChange(value)
       setIsOpen(false)
     },
@@ -237,7 +236,7 @@ export const FilterButton = forwardRef(function FilterButton<
       />
     )
   ) : null
-  console.log('asdf isOpen', isOpen)
+
   return (
     <BaseButton
       ref={mergeRefs([ref, anchorRef])}
