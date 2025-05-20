@@ -14,25 +14,29 @@ import {
 import { useTheme } from '@emotion/react'
 
 import { BuySellFlow } from './BuySellFlow'
+import { Screen } from './types'
 
 export const BuySellModal = () => {
   const { isOpen, onClose } = useBuySellModal()
   const { spacing, color } = useTheme()
   const { onOpen: openAddFundsModal } = useAddFundsModal()
 
-  // State to control the modal title based on the flow screen
-  const [modalScreen, setModalScreen] = useState<'input' | 'confirm'>('input')
+  const [modalScreen, setModalScreen] = useState<Screen>('input')
   const [isFlowLoading, setIsFlowLoading] = useState(false)
 
   const title = useMemo(() => {
     if (isFlowLoading) return ''
     if (modalScreen === 'confirm') return messages.confirmDetails
+    if (modalScreen === 'success') return messages.modalSuccessTitle
     return messages.title
   }, [isFlowLoading, modalScreen])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size='medium'>
-      <ModalHeader onClose={onClose} showDismissButton={!isFlowLoading}>
+      <ModalHeader
+        onClose={onClose}
+        showDismissButton={!isFlowLoading && modalScreen !== 'success'}
+      >
         <ModalTitle title={title} />
       </ModalHeader>
       <ModalContent>
@@ -43,7 +47,7 @@ export const BuySellModal = () => {
           onLoadingStateChange={setIsFlowLoading}
         />
       </ModalContent>
-      {!isFlowLoading && (
+      {modalScreen !== 'success' && !isFlowLoading && (
         <ModalFooter
           css={{
             justifyContent: 'center',
