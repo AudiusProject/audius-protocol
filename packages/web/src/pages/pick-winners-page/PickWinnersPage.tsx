@@ -8,7 +8,7 @@ import {
   useUpdateEvent
 } from '@audius/common/api'
 import { remixMessages as messages } from '@audius/common/messages'
-import { ID, Kind } from '@audius/common/models'
+import { ID, Kind, Name } from '@audius/common/models'
 import { toast } from '@audius/common/src/store/ui/toast/slice'
 import {
   pickWinnersPageLineupActions,
@@ -45,6 +45,7 @@ import { Page } from 'components/page/Page'
 import ConnectedTrackTile from 'components/track/desktop/ConnectedTrackTile'
 import { TrackTileSize } from 'components/track/types'
 import { useUpdateSearchParams } from 'pages/search-page/hooks'
+import { track, make } from 'services/analytics'
 import { selectDragnDropState } from 'store/dragndrop/slice'
 import { trackRemixesPage } from 'utils/route'
 
@@ -129,6 +130,16 @@ export const PickWinnersPage = () => {
           },
           userId: currentUserId
         })
+
+        if (originalTrack?.track_id) {
+          track(
+            make({
+              eventName: Name.REMIX_CONTEST_PICK_WINNERS_FINALIZE,
+              remixContestId: remixContest.eventId,
+              trackId: originalTrack?.track_id
+            })
+          )
+        }
       }
 
       // Navigate back to the track remixes page for the original track
@@ -141,6 +152,7 @@ export const PickWinnersPage = () => {
     currentUserId,
     history,
     originalTrack?.permalink,
+    originalTrack?.track_id,
     remixContest,
     updateEvent,
     winners
@@ -253,14 +265,14 @@ export const PickWinnersPage = () => {
           onClick={handleClick}
           aria-label='Add Winner'
         >
-          <Icon fill={color.icon.staticWhite} />
+          <Icon fill={color.icon.default} />
         </Paper>
       )
     },
     [
       addIdToWinners,
       color.background.white,
-      color.icon.staticWhite,
+      color.icon.default,
       color.neutral.n100,
       color.neutral.n150,
       motion.hover,
