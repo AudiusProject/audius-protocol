@@ -8,4 +8,4 @@ npx patch-package --patch-dir=packages/identity-service/patches --error-on-fail
 
 cd packages/mobile
 npx patch-package --patch-dir=mobile-patches --error-on-fail 
-cd ...
+cd ../..
