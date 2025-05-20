@@ -1,8 +1,11 @@
 import { useCallback, useContext } from 'react'
 
+import {
+  selectNameSortedPlaylistsAndAlbums,
+  useCurrentAccount
+} from '@audius/common/api'
 import { CreatePlaylistSource, Collection, ID } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheCollectionsActions,
   addToCollectionUISelectors,
   addToCollectionUIActions,
@@ -31,8 +34,6 @@ const { addTrackToPlaylist, createPlaylist, createAlbum } =
   cacheCollectionsActions
 const { setVisibility } = modalsActions
 
-const { getAccountWithNameSortedPlaylistsAndAlbums } = accountSelectors
-
 const getMessages = (collectionType: 'album' | 'playlist') => ({
   title: `Add To ${capitalize(collectionType)}`,
   addedToast: `Added To ${capitalize(collectionType)}!`,
@@ -43,7 +44,8 @@ type AddToCollectionProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
 const g = withNullGuard((props: AddToCollectionProps) => {
-  const { account, trackTitle } = props
+  const { data: account } = useCurrentAccount()
+  const { trackTitle } = props
   if (account && trackTitle) {
     return {
       ...props,
@@ -55,7 +57,6 @@ const g = withNullGuard((props: AddToCollectionProps) => {
 
 const AddToCollection = g(
   ({
-    account,
     trackId,
     trackTitle,
     collectionType,
@@ -64,6 +65,9 @@ const AddToCollection = g(
     createAlbum,
     createPlaylist
   }) => {
+    const { data: accountCollections } = useCurrentAccount({
+      select: (account) => selectNameSortedPlaylistsAndAlbums(account)
+    })
     // Close the page if the route was changed
     useHasChangedRoute(close)
     const messages = getMessages(collectionType)
@@ -82,17 +86,19 @@ const AddToCollection = g(
     const { toast } = useContext(ToastContext)
 
     const cards = (
-      collectionType === 'album' ? account.albums : account.playlists
-    ).map((playlist) => {
+      collectionType === 'album'
+        ? accountCollections?.albums
+        : accountCollections?.playlists
+    )?.map((playlist) => {
       return (
         <CollectionCard
-          key={playlist.playlist_id}
-          id={playlist.playlist_id}
+          key={playlist.id}
+          id={playlist.id}
           size='xs'
           noNavigation
           onClick={() => {
             toast(messages.addedToast)
-            addTrackToPlaylist(trackId!, playlist.playlist_id)
+            addTrackToPlaylist(trackId!, playlist.id)
             close()
           }}
         />
@@ -126,7 +132,7 @@ const AddToCollection = g(
             collectionType={collectionType}
           />
           <div className={styles.cardsContainer}>
-            <CardLineup cards={cards} />
+            <CardLineup cards={cards ?? []} />
           </div>
         </div>
       </MobilePageContainer>
@@ -136,7 +142,6 @@ const AddToCollection = g(
 
 function mapStateToProps(state: AppState) {
   return {
-    account: getAccountWithNameSortedPlaylistsAndAlbums(state),
     trackId: getTrackId(state),
     trackTitle: getTrackTitle(state),
     collectionType: getCollectionType(state)

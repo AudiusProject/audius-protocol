@@ -9,7 +9,7 @@ import { accountFromSDK } from '~/adapters/user'
 import { primeUserData, useQueryContext } from '~/api/tan-query/utils'
 import { useAppContext } from '~/context/appContext'
 import { Status } from '~/models'
-import { AccountUserMetadata, User, UserMetadata } from '~/models/User'
+import { User, UserMetadata } from '~/models/User'
 import { LocalStorage } from '~/services'
 import { AccountState } from '~/store'
 import { getWalletAddresses } from '~/store/account/selectors'
@@ -129,28 +129,4 @@ export const useCurrentAccountUser = <TResult = User>(
 ) => {
   const { data: currentAccount } = useCurrentAccount()
   return useUser(currentAccount?.userId, options)
-}
-
-/**
- * Some helper utils that can be used to pass into the select option
- */
-export const selectIsGuestAccount = (
-  data?: AccountUserMetadata | UserMetadata | null
-) => {
-  const user = data && 'user' in data ? data?.user : data
-  return Boolean(!user?.handle && !user?.name)
-}
-
-export const selectAccountHasTracks = (
-  data?: AccountUserMetadata | UserMetadata | null
-) => {
-  const user = data && 'user' in data ? data?.user : data
-  return (user?.track_count ?? 0) > 0
-}
-
-export const selectHasAccount = (
-  data?: AccountUserMetadata | UserMetadata | null
-) => {
-  const user = data && 'user' in data ? data?.user : data
-  return Boolean(user?.handle && user?.name)
 }

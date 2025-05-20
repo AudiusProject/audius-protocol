@@ -1,12 +1,17 @@
 import { useMemo, useState } from 'react'
 
 import {
+  useCurrentAccount,
+  useCurrentAccountUser,
+  selectNameSortedPlaylistsAndAlbums,
+  useCollections
+} from '@audius/common/api'
+import {
   CreatePlaylistSource,
   SquareSizes,
   Collection
 } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheCollectionsActions,
   addToCollectionUISelectors,
   duplicateAddConfirmationModalUIActions,
@@ -29,7 +34,6 @@ const { getCollectionType, getTrackId, getTrackTitle } =
   addToCollectionUISelectors
 const { addTrackToPlaylist, createAlbum, createPlaylist } =
   cacheCollectionsActions
-const { getAccountWithNameSortedPlaylistsAndAlbums } = accountSelectors
 const { requestOpen: openDuplicateAddConfirmation } =
   duplicateAddConfirmationModalUIActions
 const { toast } = toastActions
@@ -53,39 +57,48 @@ const AddToCollectionModal = () => {
   const trackId = useSelector(getTrackId)
   const trackTitle = useSelector(getTrackTitle)
   const isAlbumType = collectionType === 'album'
-  const account = useSelector(getAccountWithNameSortedPlaylistsAndAlbums)
+  const { data: nameSortedPlaylistsAndAlbums } = useCurrentAccount({
+    select: (account) => selectNameSortedPlaylistsAndAlbums(account)
+  })
+  const { data: currentUser } = useCurrentAccountUser()
   const [searchValue, setSearchValue] = useState('')
 
   const messages = getMessages(collectionType)
 
-  const filteredCollections = useMemo(() => {
-    return ((isAlbumType ? account?.albums : account?.playlists) ?? []).filter(
-      (collection: Collection) =>
-        collection.playlist_owner_id === account?.user_id &&
+  const filteredAccountCollections = useMemo(() => {
+    return (
+      (isAlbumType
+        ? nameSortedPlaylistsAndAlbums?.albums
+        : nameSortedPlaylistsAndAlbums?.playlists) ?? []
+    ).filter(
+      (collection) =>
+        collection.user.id === currentUser?.user_id &&
         (searchValue
-          ? collection.playlist_name
-              .toLowerCase()
-              .includes(searchValue.toLowerCase())
+          ? collection.name.toLowerCase().includes(searchValue.toLowerCase())
           : true)
     )
   }, [
     isAlbumType,
-    account?.albums,
-    account?.playlists,
-    account?.user_id,
+    nameSortedPlaylistsAndAlbums?.albums,
+    nameSortedPlaylistsAndAlbums?.playlists,
+    currentUser?.user_id,
     searchValue
   ])
-
-  const collectionTrackIdMap = filteredCollections.reduce<
-    Record<number, number[]>
-  >((acc, collection) => {
-    const trackIds = collection.playlist_contents.track_ids.map((t) => t.track)
-    acc[collection.playlist_id] = trackIds
-    return acc
-  }, {})
+  const { data: collections } = useCollections(
+    filteredAccountCollections.map((c) => c.id)
+  )
 
   const handleCollectionClick = (playlist: Collection) => {
     if (!trackId) return
+
+    const collectionTrackIdMap =
+      collections?.reduce<Record<number, number[]>>((acc, collection) => {
+        const trackIds = collection.playlist_contents.track_ids.map(
+          (t) => t.track
+        )
+        acc[collection.playlist_id] = trackIds
+        return acc
+      }, {}) ?? {}
 
     const doesCollectionContainTrack =
       collectionTrackIdMap[playlist.playlist_id]?.includes(trackId)
@@ -99,11 +112,11 @@ const AddToCollectionModal = () => {
       )
     } else {
       dispatch(addTrackToPlaylist(trackId, playlist.playlist_id))
-      if (account && trackTitle) {
+      if (currentUser && trackTitle) {
         toast({
           content: messages.addedToast,
           link: collectionPage(
-            account.handle,
+            currentUser?.handle,
             trackTitle,
             playlist.playlist_id,
             playlist.permalink,
@@ -160,7 +173,7 @@ const AddToCollectionModal = () => {
             <span>{messages.newCollection}</span>
           </div>
           <div className={styles.list}>
-            {filteredCollections.map((collection) => (
+            {collections?.map((collection) => (
               <div key={`${collection.playlist_id}`}>
                 <CollectionItem
                   collectionType={collectionType}

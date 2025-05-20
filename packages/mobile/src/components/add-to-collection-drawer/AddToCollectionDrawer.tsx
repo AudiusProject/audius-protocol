@@ -1,10 +1,14 @@
 import { useCallback, useMemo, useState } from 'react'
 
+import {
+  useCurrentAccount,
+  selectNameSortedPlaylistsAndAlbums,
+  useCurrentAccountUser,
+  useCollections
+} from '@audius/common/api'
 import type { Collection } from '@audius/common/models'
 import { CreatePlaylistSource } from '@audius/common/models'
-import type { CommonState } from '@audius/common/store'
 import {
-  accountSelectors,
   cacheCollectionsActions,
   addToCollectionUISelectors,
   duplicateAddConfirmationModalUIActions
@@ -29,21 +33,8 @@ const { addTrackToPlaylist, createAlbum, createPlaylist } =
   cacheCollectionsActions
 const { getTrackId, getTrackTitle, getCollectionType } =
   addToCollectionUISelectors
-const { getAccountWithNameSortedPlaylistsAndAlbums } = accountSelectors
 const { requestOpen: openDuplicateAddConfirmation } =
   duplicateAddConfirmationModalUIActions
-
-const selectCollectionsToAddTo = (state: CommonState) => {
-  const collectionType = getCollectionType(state)
-  const account = getAccountWithNameSortedPlaylistsAndAlbums(state)
-  if (!account) return []
-  const { albums, playlists, user_id } = account
-  const collections = collectionType === 'album' ? albums : playlists
-
-  return collections.filter(
-    (collection) => collection.playlist_owner_id === user_id
-  )
-}
 
 const getMessages = (collectionType: 'album' | 'playlist') => ({
   title: `Add To ${capitalize(collectionType)}`,
@@ -71,24 +62,33 @@ export const AddToCollectionDrawer = () => {
   const trackTitle = useSelector(getTrackTitle)
   const [filter, setFilter] = useState('')
 
+  const { data: nameSortedPlaylistsAndAlbums } = useCurrentAccount({
+    select: (account) => selectNameSortedPlaylistsAndAlbums(account)
+  })
+  const { data: currentUser } = useCurrentAccountUser()
+
+  const accountCollectionsToAddTo = useMemo(() => {
+    if (!nameSortedPlaylistsAndAlbums) return []
+    const collections =
+      collectionType === 'album'
+        ? nameSortedPlaylistsAndAlbums.albums
+        : nameSortedPlaylistsAndAlbums.playlists
+    const userCollections = collections.filter(
+      (collection) => collection.user.id === currentUser?.user_id
+    )
+    return filter
+      ? fuzzySearch(filter, userCollections, 3, (collection) => collection.name)
+      : userCollections
+  }, [nameSortedPlaylistsAndAlbums, collectionType, currentUser, filter])
+  const { data: fullCollectionsToAddTo } = useCollections(
+    accountCollectionsToAddTo.map((c) => c.id)
+  )
+
   const messages = getMessages(collectionType)
 
   useEffectOnce(() => {
     dispatch(fetchAccountCollections())
   })
-
-  const collectionsToAddTo = useSelector(selectCollectionsToAddTo)
-
-  const filteredCollectionsToAddTo = useMemo(() => {
-    return filter
-      ? fuzzySearch(
-          filter,
-          collectionsToAddTo,
-          3,
-          (collection) => collection.playlist_name
-        )
-      : collectionsToAddTo
-  }, [collectionsToAddTo, filter])
 
   const handleAddToNewCollection = useCallback(() => {
     const metadata = {
@@ -180,7 +180,7 @@ export const AddToCollectionDrawer = () => {
             />
           }
           contentContainerStyle={styles.cardList}
-          collection={filteredCollectionsToAddTo}
+          collection={fullCollectionsToAddTo}
           showCreateCollectionTile
           renderItem={renderCard}
         />

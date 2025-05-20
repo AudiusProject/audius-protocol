@@ -116,12 +116,14 @@ export * from './tan-query/users/useUserPlaylists'
 export * from './tan-query/users/useUsers'
 export * from './tan-query/users/useUser'
 export * from './tan-query/users/useUserTracksByHandle'
+// Account
 export * from './tan-query/users/account/useResetPassword'
 export * from './tan-query/users/account/useManagedAccounts'
 export * from './tan-query/users/account/useManagers'
 export * from './tan-query/users/account/useRequestAddManager'
 export * from './tan-query/users/account/useApproveManagedAccount'
 export * from './tan-query/users/account/useRemoveManager'
+export * from './tan-query/users/account/accountSelectors'
 
 // Wallet logic
 export * from './tan-query/wallets/useAudioBalance'

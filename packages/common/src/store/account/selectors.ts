@@ -86,24 +86,6 @@ export const getAccountWithCollections = createSelector(
 )
 
 /**
- * Gets the account's playlist nav bar info
- */
-export const getAccountNavigationPlaylists = (state: CommonState) => {
-  return Object.keys(state.account.collections).reduce(
-    (acc, cur) => {
-      const collection = state.account.collections[cur as unknown as number]
-      if (collection.is_album) return acc
-      if (getUser(state, { id: collection.user.id })?.is_deactivated) return acc
-      return {
-        ...acc,
-        [cur]: collection
-      }
-    },
-    {} as { [id: number]: AccountCollection }
-  )
-}
-
-/**
  * Gets user playlists with playlists marked delete removed.
  */
 export const getUserPlaylists = createSelector(
@@ -197,31 +179,4 @@ export const getAccountWithNameSortedPlaylistsAndAlbums = createSelector(
       albums: nameSortedCollections.filter((c) => c.is_album)
     }
   }
-)
-
-export const getAccountOwnedPlaylists = createSelector(
-  [getUserPlaylists, getUserId],
-  (collections, userId) =>
-    collections.filter((c) => !c.is_album && c.user.id === userId)
-)
-
-export const getAccountAlbumIds = createSelector(
-  [getUserPlaylists],
-  (collections) => collections.filter((c) => c.is_album).map(({ id }) => id)
-)
-
-export const getAccountSavedPlaylistIds = createSelector(
-  [getUserPlaylists, getUserId],
-  (collections, userId) =>
-    collections
-      .filter((c) => !c.is_album && c.user.id !== userId)
-      .map(({ id }) => id)
-)
-
-export const getAccountOwnedPlaylistIds = createSelector(
-  [getUserPlaylists, getUserId],
-  (collections, userId) =>
-    collections
-      .filter((c) => !c.is_album && c.user.id === userId)
-      .map(({ id }) => id)
 )

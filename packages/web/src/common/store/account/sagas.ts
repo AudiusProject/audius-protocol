@@ -1,3 +1,5 @@
+import { queryCurrentAccount } from '@audius/common/api'
+import { AccountCollection } from '@audius/common/models'
 import { accountActions, accountSelectors } from '@audius/common/store'
 import { call, fork, select, takeEvery } from 'typed-redux-saga'
 
@@ -6,8 +8,7 @@ import { waitForRead } from 'utils/sagaHelpers'
 
 import { retrieveCollections } from '../cache/collections/utils'
 
-const { getUserId, getAccountSavedPlaylistIds, getAccountOwnedPlaylistIds } =
-  accountSelectors
+const { getUserId } = accountSelectors
 
 const { signedIn, fetchSavedPlaylists } = accountActions
 
@@ -20,10 +21,14 @@ function* onSignedIn() {
 function* fetchSavedPlaylistsAsync() {
   yield* waitForRead()
   const userId = yield* select(getUserId)
+  const account = yield* call(queryCurrentAccount)
 
   // Fetch other people's playlists you've saved
   yield* fork(function* () {
-    const savedPlaylists = yield* select(getAccountSavedPlaylistIds)
+    if (!account) return
+    const savedPlaylists: number[] = Object.values(account.collections)
+      .filter((c: AccountCollection) => !c.is_album && c.user.id !== userId)
+      .map((c: AccountCollection) => c.id)
     if (savedPlaylists.length > 0) {
       yield* call(retrieveCollections, savedPlaylists, { userId })
     }
@@ -31,7 +36,12 @@ function* fetchSavedPlaylistsAsync() {
 
   // Fetch your own playlists
   yield* fork(function* () {
-    const ownPlaylists = yield* select(getAccountOwnedPlaylistIds)
+    if (!account) return
+
+    const ownPlaylists: number[] = Object.values(account.collections)
+      .filter((c: AccountCollection) => !c.is_album && c.user.id === userId)
+      .map((c: AccountCollection) => c.id)
+
     if (ownPlaylists.length > 0) {
       yield* call(retrieveCollections, ownPlaylists, { userId })
     }
