@@ -16,7 +16,8 @@
   background-color: var(--harmony-bg-surface-1);
   transition: border ease-in-out 0.1s;
   box-sizing: border-box;
-  box-shadow: 1px 1px 4px 0px rgba(0, 0, 0, 0.02) inset,
+  box-shadow:
+    1px 1px 4px 0px rgba(0, 0, 0, 0.02) inset,
     1px 1px 2px 0px rgba(0, 0, 0, 0.02) inset;
 }
 
@@ -50,7 +51,7 @@
 /* focused border color */
 .contentContainer.focused,
 .contentContainer.focused:hover {
-  border-color: var(--harmony-secondary);
+  border-color: var(--harmony-s-300);
 }
 
 /* warning border color */

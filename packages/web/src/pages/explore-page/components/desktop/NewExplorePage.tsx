@@ -15,10 +15,8 @@ import {
   IconUser,
   Divider,
   FilterButton,
-  IconCloseAlt,
   useTheme
 } from '@audius/harmony'
-import { css } from '@emotion/css'
 import { capitalize } from 'lodash'
 import { useNavigate, useSearchParams } from 'react-router-dom-v5-compat'
 import { useDebounce, useEffectOnce, usePrevious } from 'react-use'

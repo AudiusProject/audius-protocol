@@ -34,9 +34,6 @@ export type ExploreCollection = {
   cardSensitivity?: number
 }
 
-// How much full width cards move
-const WIDE_CARD_SENSITIVTY = 0.04
-
 export type ExploreMoodCollection = ExploreCollection & {
   emoji: string
   moods: string[]

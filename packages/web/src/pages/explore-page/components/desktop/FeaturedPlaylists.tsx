@@ -1,10 +1,8 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 
 import { useFeaturedPlaylists } from '@audius/common/api'
 import { TQCollection } from '@audius/common/src/api/tan-query/models'
 import { Flex, LoadingSpinner } from '@audius/harmony'
-
-import PerspectiveCard from 'components/perspective-card/PerspectiveCard'
 
 import { CollectionArtCard } from './CollectionArtCard'
 import Section from './Section'

@@ -17,10 +17,10 @@ type ExploreContentResponse = {
 }
 
 export type ExploreContent = {
-  featuredPlaylists?: ID[]
-  featuredProfiles?: ID[]
-  featuredRemixContests?: ID[]
-  featuredLabels?: ID[]
+  featuredPlaylists: ID[]
+  featuredProfiles: ID[]
+  featuredRemixContests: ID[]
+  featuredLabels: ID[]
 }
 
 export const getExploreContentQueryKey = () => {
@@ -40,18 +40,15 @@ export const useExploreContent = <TResult = ExploreContent>(
       const response = await fetch(exploreContentUrl)
       const json: ExploreContentResponse = await response.json()
       return {
-        featuredPlaylists: json.featuredPlaylists?.map(
-          (id: string) => parseInt(id) as ID
-        ),
-        featuredProfiles: json.featuredProfiles?.map(
-          (id: string) => parseInt(id) as ID
-        ),
-        featuredRemixContests: json.featuredRemixContests?.map(
-          (id: string) => parseInt(id) as ID
-        ),
-        featuredLabels: json.featuredLabels?.map(
-          (id: string) => parseInt(id) as ID
-        )
+        featuredPlaylists:
+          json.featuredPlaylists?.map((id: string) => parseInt(id) as ID) ?? [],
+        featuredProfiles:
+          json.featuredProfiles?.map((id: string) => parseInt(id) as ID) ?? [],
+        featuredRemixContests:
+          json.featuredRemixContests?.map((id: string) => parseInt(id) as ID) ??
+          [],
+        featuredLabels:
+          json.featuredLabels?.map((id: string) => parseInt(id) as ID) ?? []
       }
     },
     ...options,
