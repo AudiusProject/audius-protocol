@@ -6,7 +6,6 @@ import {
 } from '@audius/common/api'
 import { Name, Kind, ID, Track, User } from '@audius/common/models'
 import {
-  accountSelectors,
   accountActions,
   cacheActions,
   tracksSocialActions as socialActions,
@@ -19,7 +18,6 @@ import {
 import {
   formatShareText,
   makeKindId,
-  waitForValue,
   removeNullable,
   getFilename
 } from '@audius/common/utils'

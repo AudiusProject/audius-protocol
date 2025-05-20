@@ -204,7 +204,7 @@ const {
   SOLANA_TOOLS_PAGE
 } = route
 
-const { getHasAccount, getAccountStatus } = accountSelectors
+const { getHasAccount } = accountSelectors
 
 // TODO: do we need to lazy load edit?
 const EditTrackPage = lazy(() => import('pages/edit-page'))

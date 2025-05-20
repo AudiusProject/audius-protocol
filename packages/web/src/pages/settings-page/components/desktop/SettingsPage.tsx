@@ -44,7 +44,6 @@ import {
   SegmentedControl
 } from '@audius/harmony'
 import cn from 'classnames'
-import { pick } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 

@@ -7,14 +7,13 @@ import {
   InstagramProfile,
   TwitterProfile,
   TikTokProfile,
-  accountSelectors,
   accountActions
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { IconValidationX, IconNote, Button } from '@audius/harmony'
 import cn from 'classnames'
 import { pick } from 'lodash'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { useRecord, make, TrackEvent } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
