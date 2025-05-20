@@ -1,6 +1,6 @@
 import { Action, combineReducers, Reducer } from '@reduxjs/toolkit'
 
-import { addFundsModalReducer } from './add-funds-modal'
+import { addCashModalReducer } from './add-cash-modal'
 import { albumTrackRemoveConfirmationModalReducer } from './album-track-remove-confirmation-modal'
 import { announcementModalReducer } from './announcement-modal'
 import { artistPickModalReducer } from './artist-pick-modal'
@@ -58,7 +58,7 @@ const combinedReducers = combineReducers({
   WithdrawUSDCModal: withdrawUSDCModalReducer,
   USDCPurchaseDetailsModal: usdcPurchaseDetailsModalReducer,
   USDCManualTransferModal: usdcManualTransferModalReducer,
-  AddFundsModal: addFundsModalReducer,
+  AddCashModal: addCashModalReducer,
   BuySellModal: buySellModalReducer,
   USDCTransactionDetailsModal: usdcTransactionDetailsModalReducer,
   PremiumContentPurchaseModal: premiumContentPurchaseModalReducer,

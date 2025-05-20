@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 
 import { buySellMessages as messages } from '@audius/common/messages'
-import { useBuySellModal, useAddFundsModal } from '@audius/common/store'
+import { useBuySellModal, useAddCashModal } from '@audius/common/store'
 import {
   IconJupiterLogo,
   Modal,
@@ -19,7 +19,7 @@ import { Screen } from './types'
 export const BuySellModal = () => {
   const { isOpen, onClose } = useBuySellModal()
   const { spacing, color } = useTheme()
-  const { onOpen: openAddFundsModal } = useAddFundsModal()
+  const { onOpen: openAddCashModal } = useAddCashModal()
 
   const [modalScreen, setModalScreen] = useState<Screen>('input')
   const [isFlowLoading, setIsFlowLoading] = useState(false)
@@ -42,7 +42,7 @@ export const BuySellModal = () => {
       <ModalContent>
         <BuySellFlow
           onClose={onClose}
-          openAddFundsModal={openAddFundsModal}
+          openAddCashModal={openAddCashModal}
           onScreenChange={setModalScreen}
           onLoadingStateChange={setIsFlowLoading}
         />

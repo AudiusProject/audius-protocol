@@ -6,31 +6,31 @@ import {
   buyUSDCActions,
   buyUSDCSelectors,
   BuyUSDCStage,
-  useAddFundsModal
+  useAddCashModal
 } from '@audius/common/store'
 import { ModalContent, ModalHeader, ModalTitle } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { AddFunds } from 'components/add-funds/AddFunds'
+import { AddCash } from 'components/add-cash/AddCash'
 import ModalDrawer from 'components/modal-drawer/ModalDrawer'
 import { USDCManualTransfer } from 'components/usdc-manual-transfer/USDCManualTransfer'
 import { useIsMobile } from 'hooks/useIsMobile'
 import zIndex from 'utils/zIndex'
 
-import styles from './AddFundsModal.module.css'
+import styles from './AddCashModal.module.css'
 
 const { getBuyUSDCFlowStage } = buyUSDCSelectors
 
 const messages = {
-  addFunds: 'Add Funds',
+  addCash: 'Add Cash',
   cryptoTransfer: 'Crypto Transfer'
 }
 
-type Page = 'add-funds' | 'crypto-transfer'
+type Page = 'add-cash' | 'crypto-transfer'
 
-export const AddFundsModal = () => {
-  const { isOpen, onClose } = useAddFundsModal()
+export const AddCashModal = () => {
+  const { isOpen, onClose } = useAddCashModal()
   const dispatch = useDispatch()
   const buyUSDCStage = useSelector(getBuyUSDCFlowStage)
   const inProgress = [
@@ -39,10 +39,10 @@ export const AddFundsModal = () => {
   ].includes(buyUSDCStage)
   const isMobile = useIsMobile()
 
-  const [page, setPage] = useState<Page>('add-funds')
+  const [page, setPage] = useState<Page>('add-cash')
 
   const handleClosed = useCallback(() => {
-    setPage('add-funds')
+    setPage('add-cash')
   }, [setPage])
 
   useEffect(() => {
@@ -70,7 +70,7 @@ export const AddFundsModal = () => {
           break
         }
         case PurchaseMethod.BALANCE:
-          throw new Error('Add funds not supported with existing balance')
+          throw new Error('Add cash not supported with existing balance')
       }
     },
     [setPage, dispatch]
@@ -94,13 +94,13 @@ export const AddFundsModal = () => {
       >
         <ModalTitle
           title={
-            page === 'add-funds' ? messages.addFunds : messages.cryptoTransfer
+            page === 'add-cash' ? messages.addCash : messages.cryptoTransfer
           }
         />
       </ModalHeader>
       <ModalContent className={styles.noPadding}>
-        {page === 'add-funds' ? (
-          <AddFunds onContinue={handleContinue} />
+        {page === 'add-cash' ? (
+          <AddCash onContinue={handleContinue} />
         ) : (
           <USDCManualTransfer onClose={onClose} />
         )}

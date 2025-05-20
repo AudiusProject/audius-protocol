@@ -21,13 +21,13 @@ import { BuySellTab, Screen } from './types'
 
 type BuySellFlowProps = {
   onClose: () => void
-  openAddFundsModal: () => void
+  openAddCashModal: () => void
   onScreenChange: (screen: Screen) => void
   onLoadingStateChange?: (isLoading: boolean) => void
 }
 
 export const BuySellFlow = (props: BuySellFlowProps) => {
-  const { onClose, openAddFundsModal, onScreenChange, onLoadingStateChange } =
+  const { onClose, openAddCashModal, onScreenChange, onLoadingStateChange } =
     props
 
   const { currentScreen, setCurrentScreen } = useBuySellScreen({
@@ -139,7 +139,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
                 href='#'
                 onClick={() => {
                   onClose()
-                  openAddFundsModal()
+                  openAddCashModal()
                 }}
               >
                 {messages.addCash}
