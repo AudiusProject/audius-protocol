@@ -212,7 +212,6 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
     img.src = BackgroundWaves
     img.onload = () => setBannerIsVisible(true)
   }, [])
-  console.log('asdf isLarge', isLarge)
 
   return (
     <Flex justifyContent='center'>

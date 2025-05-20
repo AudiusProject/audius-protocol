@@ -27,11 +27,6 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
   const updateScrollButtons = useCallback(() => {
     const container = scrollContainerRef.current
     if (container) {
-      console.log(
-        'asdf right',
-        container.scrollLeft + container.clientWidth,
-        container.scrollWidth
-      )
       setCanScrollLeft(container.scrollLeft > 0)
       setCanScrollRight(
         container.scrollLeft + container.clientWidth < container.scrollWidth - 1
