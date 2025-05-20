@@ -736,6 +736,12 @@ def create_remix_contest_notification(
     notification_timestamp = (
         block_datetime if block_datetime is not None else track.updated_at
     )
+    utils_logger.info(
+        f"Creating fan remix contest started notification for track {track.track_id} by user {remix_contest_event.user_id}"
+    )
+    utils_logger.info(
+        f"group_id: fan_remix_contest_started:{track.track_id}:user:{remix_contest_event.user_id}"
+    )
 
     # Create individual notification for each user
     for user_id in user_ids:
@@ -745,7 +751,7 @@ def create_remix_contest_notification(
             timestamp=notification_timestamp,
             type="fan_remix_contest_started",
             specifier=str(user_id),
-            group_id=f"fan_remix_contest_started:{track.track_id}:user:{remix_contest_event.user_id}:blocknumber:{notification_block_number}",
+            group_id=f"fan_remix_contest_started:{track.track_id}:user:{remix_contest_event.user_id}",
             data={
                 "entity_user_id": track.owner_id,
                 "entity_id": track.track_id,

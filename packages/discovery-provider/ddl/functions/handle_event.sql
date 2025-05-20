@@ -45,7 +45,7 @@ begin
             new.created_at,
             'fan_remix_contest_started',
             notified_user_id,
-            'fan_remix_contest_started:' || new.entity_id || ':user:' || new.user_id || ':blocknumber:' || new.blocknumber,
+            'fan_remix_contest_started:' || new.entity_id || ':user:' || new.user_id,
             json_build_object(
               'entity_user_id', owner_user_id,
               'entity_id', new.entity_id
