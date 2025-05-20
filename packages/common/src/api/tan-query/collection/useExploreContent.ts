@@ -10,10 +10,10 @@ const STATIC_EXPLORE_CONTENT_URL =
   'https://download.audius.co/static-resources/explore-content.json'
 
 type ExploreContentResponse = {
-  featuredPlaylists: string[]
-  featuredProfiles: string[]
-  featuredRemixContests: string[]
-  featuredLabels: string[]
+  featuredPlaylists?: string[]
+  featuredProfiles?: string[]
+  featuredRemixContests?: string[]
+  featuredLabels?: string[]
 }
 
 export type ExploreContent = {
@@ -40,18 +40,15 @@ export const useExploreContent = <TResult = ExploreContent>(
       const response = await fetch(exploreContentUrl)
       const json: ExploreContentResponse = await response.json()
       return {
-        featuredPlaylists: json.featuredPlaylists.map(
-          (id: string) => parseInt(id) as ID
-        ),
-        featuredProfiles: json.featuredProfiles.map(
-          (id: string) => parseInt(id) as ID
-        ),
-        featuredRemixContests: json.featuredRemixContests.map(
-          (id: string) => parseInt(id) as ID
-        ),
-        featuredLabels: json.featuredLabels.map(
-          (id: string) => parseInt(id) as ID
-        )
+        featuredPlaylists:
+          json.featuredPlaylists?.map((id: string) => parseInt(id) as ID) ?? [],
+        featuredProfiles:
+          json.featuredProfiles?.map((id: string) => parseInt(id) as ID) ?? [],
+        featuredRemixContests:
+          json.featuredRemixContests?.map((id: string) => parseInt(id) as ID) ??
+          [],
+        featuredLabels:
+          json.featuredLabels?.map((id: string) => parseInt(id) as ID) ?? []
       }
     },
     ...options,

@@ -1133,6 +1133,7 @@ const useTabs = ({
     (newIndex: number) => {
       if (isControlled) {
         onChangeComplete(activeIndex, newIndex)
+        onTabClickCb && onTabClickCb(tabs[newIndex].label)
         return
       }
 

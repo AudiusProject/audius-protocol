@@ -2,7 +2,8 @@ import { useRef } from 'react'
 
 import { useSearchAllResults } from '@audius/common/api'
 import { SearchKind } from '@audius/common/store'
-import { Flex, Text } from '@audius/harmony'
+import { Flex, PlainButton, Text } from '@audius/harmony'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 import { useIsMobile } from 'hooks/useIsMobile'
 
@@ -18,13 +19,19 @@ const messages = {
   profiles: 'Profiles',
   tracks: 'Tracks',
   albums: 'Albums',
-  playlists: 'Playlists'
+  playlists: 'Playlists',
+  showAll: 'Show All'
 }
 
-export const AllResults = () => {
+type AllResultsProps = {
+  handleSearchTab?: (tab: string) => void
+}
+
+export const AllResults = ({ handleSearchTab }: AllResultsProps) => {
   const isMobile = useIsMobile()
   const containerRef = useRef<HTMLDivElement>(null)
   const { query, ...filters } = useSearchParams()
+  const navigate = useNavigate()
 
   const queryData = useSearchAllResults({
     query,
@@ -53,9 +60,21 @@ export const AllResults = () => {
     >
       {isLoading || data?.users?.length ? (
         <Flex gap='xl' direction='column'>
-          <Text variant='heading' textAlign='left'>
-            {messages.profiles}
-          </Text>
+          <Flex justifyContent='space-between' alignItems='center'>
+            <Text variant='heading' textAlign='left'>
+              {messages.profiles}
+            </Text>
+            <PlainButton
+              onClick={() => {
+                navigate(`/search/profiles?query=${query}`)
+                handleSearchTab?.('Profiles')
+              }}
+            >
+              <Text strength='strong' size='l'>
+                {messages.showAll}
+              </Text>
+            </PlainButton>
+          </Flex>
           <ProfileResultsTiles
             skeletonCount={5}
             limit={5}
@@ -68,11 +87,20 @@ export const AllResults = () => {
 
       {isLoading || data?.tracks?.length ? (
         <Flex gap='xl' direction='column'>
-          <Text variant='heading' textAlign='left'>
-            {messages.tracks}
-          </Text>
+          <Flex justifyContent='space-between' alignItems='center'>
+            <Text variant='heading' textAlign='left'>
+              {messages.tracks}
+            </Text>
+            <PlainButton
+              onClick={() => navigate(`/search/tracks?query=${query}`)}
+            >
+              <Text strength='strong' size='l'>
+                {messages.showAll}
+              </Text>
+            </PlainButton>
+          </Flex>
           <TrackResults
-            count={12}
+            count={10}
             viewLayout='grid'
             category={SearchKind.ALL}
             isFetching={isLoading}
@@ -84,10 +112,20 @@ export const AllResults = () => {
 
       {isLoading || data?.albums?.length ? (
         <Flex gap='xl' direction='column'>
-          <Text variant='heading' textAlign='left'>
-            {messages.albums}
-          </Text>
+          <Flex justifyContent='space-between' alignItems='center'>
+            <Text variant='heading' textAlign='left'>
+              {messages.albums}
+            </Text>
+            <PlainButton
+              onClick={() => navigate(`/search/albums?query=${query}`)}
+            >
+              <Text strength='strong' size='l'>
+                {messages.showAll}
+              </Text>
+            </PlainButton>
+          </Flex>
           <AlbumResults
+            limit={5}
             data={data?.albums ?? []}
             isFetching={isLoading}
             isPending={isPending}
@@ -98,9 +136,18 @@ export const AllResults = () => {
 
       {isLoading || data?.playlists?.length ? (
         <Flex gap='xl' direction='column'>
-          <Text variant='heading' textAlign='left'>
-            {messages.playlists}
-          </Text>
+          <Flex justifyContent='space-between' alignItems='center'>
+            <Text variant='heading' textAlign='left'>
+              {messages.playlists}
+            </Text>
+            <PlainButton
+              onClick={() => navigate(`/search/playlists?query=${query}`)}
+            >
+              <Text strength='strong' size='l'>
+                {messages.showAll}
+              </Text>
+            </PlainButton>
+          </Flex>
           <PlaylistResults
             skeletonCount={5}
             limit={5}

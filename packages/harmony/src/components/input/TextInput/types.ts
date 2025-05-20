@@ -61,6 +61,10 @@ export type TextInputProps = Omit<
    */
   hidePlaceholder?: boolean
   /**
+   * Handler for when input is cleared.
+   */
+  onClear?: () => void
+  /**
    * Label Text. Required due to accessibility. If hideLabel is true, the label is set via aria-label
    */
   label: string

@@ -51,7 +51,7 @@
 /* focused border color */
 .contentContainer.focused,
 .contentContainer.focused:hover {
-  border-color: var(--harmony-secondary);
+  border-color: var(--harmony-s-300);
 }
 
 /* warning border color */
