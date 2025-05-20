@@ -5,7 +5,8 @@ import {
   Text,
   IconButton,
   IconCaretLeft,
-  IconCaretRight
+  IconCaretRight,
+  useMedia
 } from '@audius/harmony'
 
 type ExploreSectionProps = {
@@ -21,13 +22,19 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const { isLarge } = useMedia()
 
   const updateScrollButtons = useCallback(() => {
     const container = scrollContainerRef.current
     if (container) {
+      console.log(
+        'asdf right',
+        container.scrollLeft + container.clientWidth,
+        container.scrollWidth
+      )
       setCanScrollLeft(container.scrollLeft > 0)
       setCanScrollRight(
-        container.scrollLeft + container.clientWidth < container.scrollWidth
+        container.scrollLeft + container.clientWidth < container.scrollWidth - 1
       )
     }
   }, [])
@@ -84,19 +91,31 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
         ) : null}
       </Flex>
       <Flex
-        ref={scrollContainerRef}
-        css={{
-          overflowX: 'auto',
-
-          scrollbarWidth: 'none', // Firefox
-          msOverflowStyle: 'none', // IE/Edge
-          '&::-webkit-scrollbar': {
-            display: 'none' // Chrome/Safari
-          }
-        }}
+        css={
+          isLarge
+            ? {
+                marginRight: '-50vw',
+                overflow: 'visible'
+              }
+            : null
+        }
       >
-        <Flex gap='l' css={{ minWidth: 'max-content' }} pv='2xs'>
-          {data?.map((id) => <Card key={id} id={id} size='s' />)}
+        <Flex
+          ref={scrollContainerRef}
+          css={{
+            overflowX: 'auto',
+
+            scrollbarWidth: 'none', // Firefox
+            msOverflowStyle: 'none', // IE/Edge
+            '&::-webkit-scrollbar': {
+              display: 'none' // Chrome/Safari
+            },
+            paddingRight: isLarge ? '50vw' : undefined
+          }}
+        >
+          <Flex gap='l' css={{ minWidth: 'max-content' }} pv='2xs'>
+            {data?.map((id) => <Card key={id} id={id} size='s' />)}
+          </Flex>
         </Flex>
       </Flex>
     </Flex>

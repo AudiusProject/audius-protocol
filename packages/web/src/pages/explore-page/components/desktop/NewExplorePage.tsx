@@ -15,7 +15,8 @@ import {
   IconUser,
   Divider,
   FilterButton,
-  useTheme
+  useTheme,
+  useMedia
 } from '@audius/harmony'
 import { capitalize } from 'lodash'
 import { useNavigate, useSearchParams } from 'react-router-dom-v5-compat'
@@ -71,7 +72,7 @@ export enum SearchTabs {
 
 const messages = {
   explore: 'Explore',
-  description: 'Discover the hottest and trendiest tracks on Audius right now',
+  description: 'Discover the hottest tracks on Audius right now',
   searchPlaceholder: 'What do you want to listen to?',
   featuredPlaylists: 'Community Playlists',
   featuredRemixContests: 'Featured Remix Contests',
@@ -130,7 +131,8 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const showSearchResults = useShowSearchResults()
   const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
   const searchBarRef = useRef<HTMLInputElement>(null)
-  const { color } = useTheme()
+  const { color, motion } = useTheme()
+  const { isLarge } = useMedia()
 
   const { data: exploreContent } = useExploreContent()
 
@@ -203,6 +205,14 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
     onTabClick: handleSearchTab,
     selectedTabLabel: capitalize(categoryKey)
   })
+  const [bannerIsVisible, setBannerIsVisible] = useState(false)
+
+  useEffect(() => {
+    const img = new window.Image()
+    img.src = BackgroundWaves
+    img.onload = () => setBannerIsVisible(true)
+  }, [])
+  console.log('asdf isLarge', isLarge)
 
   return (
     <Flex justifyContent='center'>
@@ -212,7 +222,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
         ph='unit15'
         gap='3xl'
         alignItems='stretch'
-        w={1200}
+        w={isLarge ? '90%' : 1200}
       >
         {/* Header Section */}
         <Paper
@@ -226,7 +236,8 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
             backgroundPosition: 'center',
             backgroundSize: 'cover',
             backgroundRepeat: 'no-repeat',
-            backgroundColor: 'lightgray'
+            opacity: bannerIsVisible ? 1 : 0,
+            transition: `opacity ${motion.quick}`
           }}
           borderRadius='l'
           alignSelf='stretch'
@@ -234,7 +245,12 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
           <Text variant='display' size='s' color='staticWhite'>
             {messages.explore}
           </Text>
-          <Text variant='heading' size='s' color='staticWhite'>
+          <Text
+            variant='heading'
+            size='s'
+            color='staticWhite'
+            textAlign='center'
+          >
             {messages.description}
           </Text>
           <Flex w={400}>

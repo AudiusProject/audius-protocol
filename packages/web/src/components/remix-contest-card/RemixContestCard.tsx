@@ -13,7 +13,7 @@ import { TrackArtwork } from 'components/track/TrackArtwork'
 const messages = {
   deadline: (releaseDate?: string) =>
     releaseDate
-      ? new Date(releaseDate) < new Date()
+      ? new Date(releaseDate) > new Date()
         ? `Deadline: ${formatDate(releaseDate)}`
         : 'Ended'
       : releaseDate
