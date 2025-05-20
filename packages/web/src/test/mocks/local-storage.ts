@@ -13,6 +13,7 @@ export const createMockLocalStorage = () => {
   return {
     localStorage: mockLocalStorage,
     getItem: async (key: string) => storage.get(key) ?? null,
+    getItemSync: (key: string) => storage.get(key) ?? null,
     setItem: async (key: string, value: string) => {
       storage.set(key, value)
     },
@@ -20,10 +21,15 @@ export const createMockLocalStorage = () => {
       storage.delete(key)
     },
     getValue: async (key: string) => storage.get(key) ?? null,
+    getValueSync: (key: string) => storage.get(key) ?? null,
     setValue: async (key: string, value: string) => {
       storage.set(key, value)
     },
     getJSONValue: async (key: string) => {
+      const value = storage.get(key)
+      return value ? JSON.parse(value) : null
+    },
+    getJSONValueSync: (key: string) => {
       const value = storage.get(key)
       return value ? JSON.parse(value) : null
     },
@@ -65,9 +71,11 @@ export const createMockLocalStorage = () => {
       )
     },
     getAudiusAccount: async () => null,
+    getAudiusAccountSync: () => null,
     setAudiusAccount: async () => {},
     clearAudiusAccount: async () => {},
     getAudiusAccountUser: async () => null,
+    getAudiusAccountUserSync: () => null,
     setAudiusAccountUser: async () => {},
     clearAudiusAccountUser: async () => {},
     clearAudiusUserWalletOverride: async () => {},
