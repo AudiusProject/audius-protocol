@@ -6,7 +6,6 @@ import { Dispatch } from 'redux'
 import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 import { ID } from '~/models/Identifiers'
 import { PlaylistLibrary } from '~/models/PlaylistLibrary'
-import { AccountUserMetadata } from '~/models/User'
 import { accountActions } from '~/store/account'
 import { removePlaylistLibraryDuplicates } from '~/store/playlist-library/helpers'
 

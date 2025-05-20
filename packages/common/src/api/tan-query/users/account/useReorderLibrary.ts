@@ -9,7 +9,6 @@ import {
   PlaylistLibraryKind,
   PlaylistLibraryItem
 } from '~/models/PlaylistLibrary'
-import { AccountUserMetadata } from '~/models/User'
 import { playlistLibraryHelpers } from '~/store/playlist-library'
 import { saveCollection } from '~/store/social/collections/actions'
 

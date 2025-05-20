@@ -1,7 +1,7 @@
 import { call, select } from 'typed-redux-saga'
 
 import { ID } from '~/models/Identifiers'
-import { AccountUserMetadata, User } from '~/models/User'
+import { User } from '~/models/User'
 import { AccountState } from '~/store'
 import { getUserId, getWalletAddresses } from '~/store/account/selectors'
 import { getContext } from '~/store/effects'

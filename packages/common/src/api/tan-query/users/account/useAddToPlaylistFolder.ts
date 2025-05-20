@@ -8,7 +8,6 @@ import {
   PlaylistLibraryID,
   PlaylistLibraryFolder
 } from '~/models/PlaylistLibrary'
-import { AccountState } from '~/store'
 import { playlistLibraryHelpers } from '~/store/playlist-library'
 import { saveCollection } from '~/store/social/collections/actions'
 import { toast } from '~/store/ui/toast/slice'
