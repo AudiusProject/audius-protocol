@@ -8,7 +8,14 @@ import {
   BuyUSDCStage,
   useAddCashModal
 } from '@audius/common/store'
-import { ModalContent, ModalHeader, ModalTitle } from '@audius/harmony'
+import {
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  Flex,
+  Text,
+  IconLogoLinkByStripe
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -24,7 +31,8 @@ const { getBuyUSDCFlowStage } = buyUSDCSelectors
 
 const messages = {
   addCash: 'Add Cash',
-  cryptoTransfer: 'Crypto Transfer'
+  cryptoTransfer: 'Crypto Transfer',
+  poweredBy: 'Powered by'
 }
 
 type Page = 'add-cash' | 'crypto-transfer'
@@ -105,6 +113,21 @@ export const AddCashModal = () => {
           <USDCManualTransfer onClose={onClose} />
         )}
       </ModalContent>
+      {page === 'add-cash' && (
+        <Flex
+          justifyContent='center'
+          alignItems='center'
+          gap='m'
+          borderTop='default'
+          backgroundColor='surface1'
+          pv='2xs'
+        >
+          <Text variant='label' size='s' color='subdued'>
+            {messages.poweredBy}
+          </Text>
+          <IconLogoLinkByStripe width={100} color='subdued' />
+        </Flex>
+      )}
     </ModalDrawer>
   )
 }
