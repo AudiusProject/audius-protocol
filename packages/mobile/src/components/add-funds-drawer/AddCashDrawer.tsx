@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react'
 
 import { DEFAULT_PURCHASE_AMOUNT_CENTS } from '@audius/common/hooks'
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
-import { buyUSDCActions, useAddFundsModal } from '@audius/common/store'
+import { buyUSDCActions, useAddCashModal } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Button, Flex, Text } from '@audius/harmony-native'
@@ -16,7 +16,7 @@ import { USDCManualTransfer } from '../usdc-manual-transfer/USDCManualTransfer'
 import { CashBalanceSection } from './CashBalanceSection'
 import { StripeSection } from './StripeSection'
 
-enum AddFundsDrawerPage {
+enum AddCashDrawerPage {
   MAIN = 'MAIN',
   TRANSFER = 'TRANSFER'
 }
@@ -27,14 +27,14 @@ const messages = {
   continue: 'Continue'
 }
 
-export const AddFundsDrawer = () => {
+export const AddCashDrawer = () => {
   const dispatch = useDispatch()
   const purchaseVendorState = useSelector(getPurchaseVendor)
-  const { isOpen, onClose, onClosed } = useAddFundsModal()
+  const { isOpen, onClose, onClosed } = useAddCashModal()
 
   const [selectedPurchaseMethod, setSelectedPurchaseMethod] =
     useState<PurchaseMethod>(PurchaseMethod.CARD)
-  const [page, setPage] = useState<AddFundsDrawerPage>(AddFundsDrawerPage.MAIN)
+  const [page, setPage] = useState<AddCashDrawerPage>(AddCashDrawerPage.MAIN)
 
   const openCardFlow = useCallback(() => {
     dispatch(
@@ -51,7 +51,7 @@ export const AddFundsDrawer = () => {
     if (selectedPurchaseMethod === PurchaseMethod.CARD) {
       openCardFlow()
     } else if (selectedPurchaseMethod === PurchaseMethod.CRYPTO) {
-      setPage(AddFundsDrawerPage.TRANSFER)
+      setPage(AddCashDrawerPage.TRANSFER)
     }
   }, [selectedPurchaseMethod, openCardFlow])
 
@@ -63,7 +63,7 @@ export const AddFundsDrawer = () => {
   return (
     <Drawer isOpen={isOpen} onClose={handleClose} onClosed={onClosed}>
       <Flex gap='xl' pb='xl'>
-        {page === AddFundsDrawerPage.MAIN ? (
+        {page === AddCashDrawerPage.MAIN ? (
           <>
             <Flex row justifyContent='center' pt='xl'>
               <Text variant='label' strength='strong' size='xl' color='default'>

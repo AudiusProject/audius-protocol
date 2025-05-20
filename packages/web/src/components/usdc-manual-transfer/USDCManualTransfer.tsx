@@ -21,7 +21,7 @@ import QRCode from 'react-qr-code'
 import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
-import { CashBalanceSection } from 'components/add-funds/CashBalanceSection'
+import { CashBalanceSection } from 'components/add-cash/CashBalanceSection'
 import { AddressTile } from 'components/address-tile'
 import { ToastContext } from 'components/toast/ToastContext'
 import { Hint } from 'components/withdraw-usdc-modal/components/Hint'
