@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { accountActions } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
@@ -10,10 +10,10 @@ const { fetchHasTracks } = accountActions
 
 export const useIsArtist = () => {
   const { user_id, track_count } = useSelectProfile(['user_id', 'track_count'])
-  const { data: accountData } = useCurrentAccount({
-    select: (account) => ({
-      userId: account?.user?.user_id,
-      hasTracks: (account?.user?.track_count ?? 0) > 0
+  const { data: accountData } = useCurrentAccountUser({
+    select: (user) => ({
+      userId: user?.user_id,
+      hasTracks: (user?.track_count ?? 0) > 0
     })
   })
   const { userId: currentUserId, hasTracks } = accountData ?? {}

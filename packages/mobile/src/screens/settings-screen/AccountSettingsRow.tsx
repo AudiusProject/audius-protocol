@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { css } from '@emotion/native'
 import { useTheme } from '@emotion/react'
 import { pick } from 'lodash'
@@ -29,8 +29,8 @@ const useStyles = makeStyles(({ typography, spacing, palette }) => ({
 
 export const AccountSettingsRow = () => {
   const styles = useStyles()
-  const { data: accountData } = useCurrentAccount({
-    select: (account) => pick(account?.user, ['user_id', 'handle', 'name'])
+  const { data: accountData } = useCurrentAccountUser({
+    select: (user) => pick(user, ['user_id', 'handle', 'name'])
   })
   const { user_id, handle, name } = accountData ?? {}
   const navigation = useNavigation<ProfileTabScreenParamList>()

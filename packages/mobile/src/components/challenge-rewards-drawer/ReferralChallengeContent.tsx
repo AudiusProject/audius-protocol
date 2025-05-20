@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { ClaimStatus } from '@audius/common/store'
 import { getChallengeStatusLabel } from '@audius/common/utils'
 
@@ -29,8 +29,8 @@ export const ReferralChallengeContent = ({
   onClaim,
   onClose
 }: ChallengeContentProps) => {
-  const { data: handle } = useCurrentAccount({
-    select: (account) => account?.user?.handle
+  const { data: handle } = useCurrentAccountUser({
+    select: (user) => user?.handle
   })
   const inviteUrl = `audius.co/signup?rf=${handle}`
 

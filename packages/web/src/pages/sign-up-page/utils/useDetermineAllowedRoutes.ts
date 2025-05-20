@@ -1,4 +1,4 @@
-import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { route } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
@@ -26,15 +26,14 @@ const isDevEnvironment =
 export const useDetermineAllowedRoute = () => {
   const [, setIsWelcomeModalOpen] = useModalState('Welcome')
   const signUpState = useSelector(getSignOn)
-  const { data: accountData } = useCurrentAccount({
-    select: (account) => ({
-      accountExists: !!account,
-      accountUserId: account?.user?.user_id,
-      followeeCount: account?.user?.followee_count
+  const { data: accountUser } = useCurrentAccountUser({
+    select: (user) => ({
+      userId: user?.user_id,
+      followeeCount: user?.followee_count
     })
   })
-  const { accountExists, accountUserId, followeeCount } = accountData ?? {}
-  const isAccountComplete = accountExists && !!accountUserId
+  const { userId, followeeCount } = accountUser ?? {}
+  const isAccountComplete = !!userId
   const hasAlreadySignedUp = useSelector(getAccountAlreadyExisted)
   const isFastReferral = useFastReferral()
 

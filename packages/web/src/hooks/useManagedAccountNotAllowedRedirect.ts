@@ -1,6 +1,6 @@
 import { useContext, useEffect } from 'react'
 
-import { useCurrentAccount, useManagedAccounts } from '@audius/common/api'
+import { useCurrentAccountUser, useManagedAccounts } from '@audius/common/api'
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -70,8 +70,8 @@ export const useIsUnauthorizedForHandleRedirect = (
   handle: string,
   route: string = FEED_PAGE
 ) => {
-  const { data: accountHandle } = useCurrentAccount({
-    select: (account) => account?.user?.handle
+  const { data: accountHandle } = useCurrentAccountUser({
+    select: (user: { handle?: string }) => user?.handle
   })
   const accountUserId = useSelector(getUserId)
   const navigate = useNavigateToPage()

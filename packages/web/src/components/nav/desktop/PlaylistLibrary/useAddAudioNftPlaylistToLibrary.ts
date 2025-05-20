@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccount, useCurrentAccountUser } from '@audius/common/api'
 import { FavoriteSource, SmartCollectionVariant } from '@audius/common/models'
 import {
   playlistLibraryHelpers,
@@ -16,9 +16,9 @@ const audioFormatSet = new Set(['mp3', 'wav', 'oga', 'mp4'])
 
 export const useAddAudioNftPlaylistToLibrary = () => {
   const dispatch = useDispatch()
-  const { data: hasUnaddedAudioNftPlaylist } = useCurrentAccount({
+  const { data: hasNftPlaylists } = useCurrentAccount({
     select: (account) => {
-      const playlistLibrary = account?.playlist_library
+      const playlistLibrary = account?.playlistLibrary
       if (!playlistLibrary) return false
       if (
         findInPlaylistLibrary(
@@ -28,7 +28,12 @@ export const useAddAudioNftPlaylistToLibrary = () => {
       ) {
         return false
       }
-      const accountCollectibles = account?.user?.collectibleList
+      return true
+    }
+  })
+  const { data: hasAudioNfts } = useCurrentAccountUser({
+    select: (account) => {
+      const accountCollectibles = account?.collectibleList
       const hasAudioNfts = accountCollectibles?.some((collectible) => {
         const { hasAudio, animationUrl, videoUrl } = collectible
         if (hasAudio) return true
@@ -42,7 +47,7 @@ export const useAddAudioNftPlaylistToLibrary = () => {
   })
 
   useEffect(() => {
-    if (hasUnaddedAudioNftPlaylist) {
+    if (hasNftPlaylists && hasAudioNfts) {
       dispatch(
         saveSmartCollection(
           AUDIO_NFT_PLAYLIST.playlist_name,
@@ -50,5 +55,5 @@ export const useAddAudioNftPlaylistToLibrary = () => {
         )
       )
     }
-  }, [hasUnaddedAudioNftPlaylist, dispatch])
+  }, [hasNftPlaylists, hasAudioNfts, dispatch])
 }

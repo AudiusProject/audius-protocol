@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { selectIsGuestAccount, useCurrentAccount } from '@audius/common/api'
+import { selectIsGuestAccount, useCurrentAccountUser } from '@audius/common/api'
 import { route } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
@@ -20,10 +20,10 @@ type ConnectedBottomBarProps = RouteComponentProps<any>
 
 const ConnectedBottomBar = ({ history }: ConnectedBottomBarProps) => {
   const dispatch = useDispatch()
-  const { data: accountData } = useCurrentAccount({
-    select: (account) => ({
-      handle: account?.user?.handle,
-      isGuestAccount: selectIsGuestAccount(account)
+  const { data: accountData } = useCurrentAccountUser({
+    select: (user) => ({
+      handle: user?.handle,
+      isGuestAccount: selectIsGuestAccount(user)
     })
   })
   const { handle, isGuestAccount } = accountData ?? {}

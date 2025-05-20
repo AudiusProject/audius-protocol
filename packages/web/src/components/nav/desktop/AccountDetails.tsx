@@ -1,4 +1,4 @@
-import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -177,8 +177,13 @@ const GuestView = () => {
 }
 
 export const AccountDetails = () => {
-  const { data } = useCurrentAccount()
-  const { user_id: userId, handle: accountHandle } = data?.user ?? {}
+  const { data: user } = useCurrentAccountUser({
+    select: (user) => ({
+      userId: user?.user_id,
+      handle: user?.handle
+    })
+  })
+  const { userId, handle: accountHandle } = user ?? {}
   const guestEmail = useSelector(getGuestEmail)
   const isManagedAccount = useIsManagedAccount()
   const hasCompletedAccount = useSelector(getIsAccountComplete)

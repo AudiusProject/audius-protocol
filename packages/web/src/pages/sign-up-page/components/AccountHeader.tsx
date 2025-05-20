@@ -1,4 +1,4 @@
-import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { imageProfilePicEmpty } from '@audius/common/assets'
 import { Name, SquareSizes } from '@audius/common/models'
 import {
@@ -13,7 +13,6 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
-import { pick } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 
@@ -95,14 +94,14 @@ export const AccountHeader = (props: AccountHeaderProps) => {
   const { value: displayNameField } = useSelector(getNameField)
   const { value: handleField } = useSelector(getHandleField)
   const isVerified = useSelector(getIsVerified)
-  const { data: accountData } = useCurrentAccount({
-    select: (account) => pick(account?.user, ['user_id', 'handle', 'name'])
+  const { data: accountData } = useCurrentAccountUser({
+    select: (user) => ({
+      accountHandle: user?.handle,
+      userId: user?.user_id,
+      accountDisplayName: user?.name
+    })
   })
-  const {
-    user_id: userId,
-    handle: accountHandle,
-    name: accountDisplayName
-  } = accountData ?? {}
+  const { accountHandle, userId, accountDisplayName } = accountData ?? {}
   const accountProfilePic = useProfilePicture({
     userId: userId ?? undefined,
     size: SquareSizes.SIZE_150_BY_150

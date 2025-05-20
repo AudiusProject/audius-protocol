@@ -1,6 +1,6 @@
 import { useState, useContext, useCallback } from 'react'
 
-import { useQueryContext, useCurrentAccount } from '@audius/common/api'
+import { useQueryContext, useCurrentAccountUser } from '@audius/common/api'
 import { Name, SquareSizes } from '@audius/common/models'
 import { route } from '@audius/common/utils'
 import {
@@ -131,12 +131,12 @@ const AccountSettingsItem = ({
 const AccountSettingsPage = () => {
   const dispatch = useDispatch()
   const { authService, identityService } = useQueryContext()
-  const { data: accountData } = useCurrentAccount({
-    select: (account) => ({
-      userId: account?.user?.user_id,
-      handle: account?.user?.handle,
-      name: account?.user?.name,
-      isVerified: account?.user?.is_verified
+  const { data: accountData } = useCurrentAccountUser({
+    select: (user) => ({
+      handle: user?.handle,
+      userId: user?.user_id,
+      name: user?.name,
+      isVerified: user?.is_verified
     })
   })
   const { userId, handle, name, isVerified } = accountData ?? {}

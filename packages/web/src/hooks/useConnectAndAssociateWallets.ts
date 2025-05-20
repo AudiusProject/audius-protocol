@@ -4,7 +4,7 @@ import {
   type ConnectedWallet,
   useConnectedWallets,
   useAddConnectedWallet,
-  useCurrentAccount
+  useCurrentAccountUser
 } from '@audius/common/api'
 import { useAppContext } from '@audius/common/context'
 import { Name, Chain } from '@audius/common/models'
@@ -89,8 +89,7 @@ export const useConnectAndAssociateWallets = (
   const theme = useTheme()
   const { open } = useAppKit()
   const { signMessageAgnostic } = useSignMessageAgnostic()
-  const { data: currentAccount } = useCurrentAccount()
-  const currentUser = currentAccount!.user
+  const { data: currentUser } = useCurrentAccountUser()
   const { data: connectedWallets } = useConnectedWallets()
   const { switchAccountAsync } = useSwitchAccount()
   const { disconnect } = useDisconnect()
@@ -154,7 +153,7 @@ export const useConnectAndAssociateWallets = (
         await switchAccountAsync({ connector })
       }
     }
-  }, [currentUser.wallet, switchAccountAsync])
+  }, [currentUser, switchAccountAsync])
 
   /**
    * Associates any Reown connected wallets to the user's account.
@@ -219,7 +218,7 @@ export const useConnectAndAssociateWallets = (
           })
         )
         const signature = await signMessageAgnostic(
-          `AudiusUserID:${currentUser.user_id}`,
+          `AudiusUserID:${currentUser?.user_id}`,
           address,
           namespace
         )
@@ -260,8 +259,7 @@ export const useConnectAndAssociateWallets = (
   }, [
     addConnectedWalletAsync,
     connectedWallets,
-    currentUser.user_id,
-    currentUser.wallet,
+    currentUser,
     make,
     onError,
     onSuccess,

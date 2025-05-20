@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { useCurrentAccount, useQueryContext } from '@audius/common/api'
+import { useCurrentAccountUser, useQueryContext } from '@audius/common/api'
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { settingsMessages } from '@audius/common/messages'
 import { Name, Theme } from '@audius/common/models'
@@ -125,12 +125,12 @@ export const SettingsPage = () => {
   const isManagedAccount = useIsManagedAccount()
   const { authService, identityService } = useQueryContext()
 
-  const { data: accountData } = useCurrentAccount({
-    select: (account) => ({
-      handle: account?.user?.handle,
-      name: account?.user?.name,
-      userId: account?.user?.user_id,
-      isVerified: account?.user?.is_verified
+  const { data: accountData } = useCurrentAccountUser({
+    select: (user) => ({
+      handle: user?.handle,
+      userId: user?.user_id,
+      name: user?.name,
+      isVerified: user?.is_verified
     })
   })
   const { handle, name, userId, isVerified } = accountData ?? {}

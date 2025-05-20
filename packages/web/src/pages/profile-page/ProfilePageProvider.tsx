@@ -1,6 +1,9 @@
 import { ComponentType, PureComponent, RefObject } from 'react'
 
-import { selectAccountHasTracks, useCurrentAccount } from '@audius/common/api'
+import {
+  selectAccountHasTracks,
+  useCurrentAccountUser
+} from '@audius/common/api'
 import {
   Name,
   ShareSource,
@@ -1146,10 +1149,10 @@ type HookStateProps = {
 }
 const hookStateToProps = (Component: typeof ProfilePage) => {
   return (props: ProfilePageProps) => {
-    const { data: accountData } = useCurrentAccount({
-      select: (account) => ({
-        accountUserId: account?.user?.user_id,
-        accountHasTracks: selectAccountHasTracks(account)
+    const { data: accountData } = useCurrentAccountUser({
+      select: (user) => ({
+        accountUserId: user?.user_id,
+        accountHasTracks: selectAccountHasTracks(user)
       })
     })
     return <ProfilePage {...(accountData as HookStateProps)} {...props} />

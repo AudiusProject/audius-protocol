@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import {
@@ -161,8 +161,8 @@ const AdditionalResources = () => {
 const PrivateKeyExporterModal = () => {
   const record = useRecord()
   const isMobile = useIsMobile()
-  const { data: accountHandle } = useCurrentAccount({
-    select: (data) => data?.user.handle
+  const { data: accountHandle } = useCurrentAccountUser({
+    select: (user) => user?.handle
   })
   const accountUserId = useSelector(getUserId)
   const [isVisible, setIsVisible] = useModalState('PrivateKeyExporter')

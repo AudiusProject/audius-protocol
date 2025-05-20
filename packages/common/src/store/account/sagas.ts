@@ -12,7 +12,8 @@ import {
 import {
   getWalletAccountQueryFn,
   getWalletAccountQueryKey,
-  queryAccountUser
+  queryAccountUser,
+  getCurrentAccountQueryKey
 } from '~/api'
 import { AccountUserMetadata, ErrorLevel, Kind, UserMetadata } from '~/models'
 import { getContext } from '~/store/effects'
@@ -39,8 +40,15 @@ import {
   signedIn,
   tikTokLogin,
   twitterLogin,
-  updatePlaylistLibrary
+  updatePlaylistLibrary,
+  addAccountPlaylist,
+  removeAccountPlaylist,
+  renameAccountPlaylist,
+  fetchSavedPlaylistsSucceeded,
+  incrementTrackSaveCount,
+  decrementTrackSaveCount
 } from './slice'
+import { AccountState } from './types'
 
 const { fetchBlockees, fetchBlockers } = chatActions
 const IP_STORAGE_KEY = 'user-ip-timestamp'
@@ -630,6 +638,50 @@ export function* watchUploadTrack() {
   yield* takeLatest(UPLOAD_TRACKS_SUCCEEDED, handleUploadTrack)
 }
 
+function* syncAccountToQueryClient() {
+  const queryClient = yield* getContext('queryClient')
+
+  // Listen to all account slice actions
+  yield* takeEvery(
+    [
+      fetchAccountSucceeded.type,
+      addAccountPlaylist.type,
+      removeAccountPlaylist.type,
+      renameAccountPlaylist.type,
+      fetchSavedPlaylistsSucceeded.type,
+      setHasTracks.type,
+      updatePlaylistLibrary.type,
+      incrementTrackSaveCount.type,
+      decrementTrackSaveCount.type
+    ],
+    function* () {
+      const state = yield* select((state) => state.account)
+
+      // Convert the account state to the expected query data format
+      const queryData: AccountState = {
+        collections: state.collections,
+        userId: state.userId,
+        hasTracks: state.hasTracks,
+        status: state.status,
+        reason: state.reason,
+        connectivityFailure: state.connectivityFailure,
+        needsAccountRecovery: state.needsAccountRecovery,
+        walletAddresses: state.walletAddresses,
+        playlistLibrary: state.playlistLibrary,
+        trackSaveCount: state.trackSaveCount,
+        guestEmail: state.guestEmail
+      }
+
+      // Update the query client
+      yield* call(
+        [queryClient, queryClient.setQueryData],
+        getCurrentAccountQueryKey(),
+        queryData
+      )
+    }
+  )
+}
+
 export default function sagas() {
   return [
     watchFetchAccount,
@@ -642,6 +694,7 @@ export default function sagas() {
     watchTikTokLogin,
     watchTwitterLogin,
     watchUploadTrack,
-    watchUpdatePlaylistLibrary
+    watchUpdatePlaylistLibrary,
+    syncAccountToQueryClient
   ]
 }

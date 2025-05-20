@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import {
   recoveryEmailActions,
@@ -80,8 +80,8 @@ export const AccountSettingsScreen = () => {
   const styles = useStyles()
   const { toast } = useToast()
   const dispatch = useDispatch()
-  const { data: accountData } = useCurrentAccount({
-    select: (account) => pick(account?.user, ['user_id', 'handle', 'name'])
+  const { data: accountData } = useCurrentAccountUser({
+    select: (user) => pick(user, ['user_id', 'handle', 'name'])
   })
   const {
     user_id: accountUserId,

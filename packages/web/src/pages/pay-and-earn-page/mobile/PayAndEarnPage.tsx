@@ -1,6 +1,9 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
-import { selectAccountHasTracks, useCurrentAccount } from '@audius/common/api'
+import {
+  selectAccountHasTracks,
+  useCurrentAccountUser
+} from '@audius/common/api'
 import { route } from '@audius/common/utils'
 import { Flex, Paper, SelectablePill } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
@@ -37,8 +40,8 @@ type TableMetadata = {
 
 export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
   const dispatch = useDispatch()
-  const { data: hasTracks } = useCurrentAccount({
-    select: (account) => selectAccountHasTracks(account)
+  const { data: hasTracks } = useCurrentAccountUser({
+    select: (user) => selectAccountHasTracks(user)
   })
 
   const [tableOptions, setTableOptions] = useState<TableType[] | null>(null)

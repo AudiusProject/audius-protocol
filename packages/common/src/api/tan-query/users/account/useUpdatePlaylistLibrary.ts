@@ -44,13 +44,10 @@ export const updatePlaylistLibrary = async (
   if (!userId) return
   const dedupedPlaylistLibrary =
     removePlaylistLibraryDuplicates(playlistLibrary)
-  queryClient.setQueryData(
-    getCurrentAccountQueryKey(),
-    (old: AccountUserMetadata | undefined) => {
-      if (!old) return old
-      return { ...old, playlist_library: dedupedPlaylistLibrary }
-    }
-  )
+  queryClient.setQueryData(getCurrentAccountQueryKey(), (old) => {
+    if (!old) return old
+    return { ...old, playlist_library: dedupedPlaylistLibrary }
+  })
 
   await updateUser(audiusSdk, userId, {
     playlist_library: dedupedPlaylistLibrary

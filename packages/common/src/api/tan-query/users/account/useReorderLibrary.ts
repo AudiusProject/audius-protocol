@@ -77,13 +77,10 @@ export const useReorderLibrary = () => {
       collectionType
     }) => {
       // Invalidate the playlist library query
-      queryClient.setQueryData(
-        getCurrentAccountQueryKey(),
-        (old: AccountUserMetadata | undefined) => {
-          if (!old) return old
-          return { ...old, playlist_library: updatedLibrary }
-        }
-      )
+      queryClient.setQueryData(getCurrentAccountQueryKey(), (old) => {
+        if (!old) return old
+        return { ...old, playlist_library: updatedLibrary }
+      })
 
       // Analytics
       track(

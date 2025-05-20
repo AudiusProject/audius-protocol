@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { Name, type SolanaWalletAddress } from '@audius/common/models'
 import { accountSelectors, tippingSelectors } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
@@ -31,8 +31,8 @@ const messages = {
 export const TipSent = () => {
   const record = useRecord()
   const accountUserId = useSelector(getUserId)
-  const { data: accountHandle } = useCurrentAccount({
-    select: (account) => account?.user?.handle
+  const { data: accountHandle } = useCurrentAccountUser({
+    select: (user) => user?.handle
   })
   const accountErcWallet = useSelector(getAccountERCWallet)
   if (!accountErcWallet) {

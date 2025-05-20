@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import {
   selectIsGuestAccount,
-  useCurrentAccount,
+  useCurrentAccountUser,
   selectAccountHasTracks
 } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
@@ -49,10 +49,10 @@ type TableMetadata = {
 
 export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
   const dispatch = useDispatch()
-  const { data: accountData } = useCurrentAccount({
-    select: (account) => ({
-      hasTracks: selectAccountHasTracks(account),
-      isGuest: selectIsGuestAccount(account)
+  const { data: accountData } = useCurrentAccountUser({
+    select: (user) => ({
+      hasTracks: selectAccountHasTracks(user),
+      isGuest: selectIsGuestAccount(user)
     })
   })
   const { hasTracks, isGuest } = accountData ?? {}

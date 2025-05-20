@@ -306,11 +306,10 @@ export function* saveSmartCollection(
   action: ReturnType<typeof socialActions.saveSmartCollection>
 ) {
   yield* call(waitForWrite)
-  const accountData = yield* queryCurrentAccount()
-  const { playlist_library: playlistLibrary } = accountData ?? {}
-  const { user_id: userId } = accountData?.user ?? {}
-
-  const isGuest = yield* call(selectIsGuestAccount, accountData)
+  const account = yield* queryCurrentAccount()
+  const { playlistLibrary, userId } = account ?? {}
+  const accountUser = yield* queryAccountUser()
+  const isGuest = yield* call(selectIsGuestAccount, accountUser)
   if (!userId || isGuest) {
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(signOnActions.openSignOn(false))
@@ -493,7 +492,7 @@ export function* unsaveSmartCollection(
   yield* call(waitForWrite)
 
   const accountData = yield* queryCurrentAccount()
-  const { playlist_library: playlistLibrary } = accountData ?? {}
+  const { playlistLibrary } = accountData ?? {}
   if (!playlistLibrary) return
 
   const newPlaylistLibrary = removeFromPlaylistLibrary(

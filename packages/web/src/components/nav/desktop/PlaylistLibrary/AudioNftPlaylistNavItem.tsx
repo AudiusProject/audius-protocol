@@ -1,4 +1,4 @@
-import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { SmartCollectionVariant } from '@audius/common/models'
 
 import { SMART_COLLECTION_MAP } from 'common/store/smart-collection/smartCollections'
@@ -17,8 +17,8 @@ export const AudioNftPlaylistNavItem = (
   const playlistId = SmartCollectionVariant.AUDIO_NFT_PLAYLIST
   const playlist = SMART_COLLECTION_MAP[playlistId]
   const { playlist_name } = playlist
-  const { data: accountHandle } = useCurrentAccount({
-    select: (data) => data?.user.handle
+  const { data: accountHandle } = useCurrentAccountUser({
+    select: (user) => user?.handle
   })
 
   if (!accountHandle) return null

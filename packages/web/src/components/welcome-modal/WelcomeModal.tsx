@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { imageProfilePicEmpty } from '@audius/common/assets'
 import { welcomeModalMessages } from '@audius/common/messages'
 import { Name, SquareSizes } from '@audius/common/models'
@@ -15,7 +15,6 @@ import {
   Avatar,
   Box
 } from '@audius/harmony'
-import { pick } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 
@@ -37,13 +36,13 @@ export const WelcomeModal = () => {
   const dispatch = useDispatch()
   const { isMobile } = useMedia()
   const { value: nameField } = useSelector(getNameField)
-  const { data: accountData } = useCurrentAccount({
-    select: (account) => pick(account?.user, ['user_id', 'name'])
+  const { data: accountData } = useCurrentAccountUser({
+    select: (user) => ({ userId: user?.user_id, accountName: user?.name })
   })
   const profileImageField = useSelector(getProfileImageField)
-  const { user_id, name: accountName } = accountData ?? {}
+  const { userId, accountName } = accountData ?? {}
   const presavedProfilePic = useProfilePicture({
-    userId: user_id ?? undefined,
+    userId: userId ?? undefined,
     size: SquareSizes.SIZE_150_BY_150
   })
 

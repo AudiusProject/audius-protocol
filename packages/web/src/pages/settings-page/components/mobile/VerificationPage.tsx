@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { Name, SquareSizes, Status, ID } from '@audius/common/models'
 import { BooleanKeys } from '@audius/common/services'
 import {
@@ -12,7 +12,6 @@ import {
 import { route } from '@audius/common/utils'
 import { IconValidationX, IconNote, Button } from '@audius/harmony'
 import cn from 'classnames'
-import { pick } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { useRecord, make, TrackEvent } from 'common/store/analytics/actions'
@@ -207,10 +206,14 @@ const SuccessBody = ({ handle, userId, name, goToRoute }: SuccessBodyProps) => {
 
 const VerificationPage = () => {
   const dispatch = useDispatch()
-  const { data: accountData } = useCurrentAccount({
-    select: (account) => pick(account?.user, ['user_id', 'handle', 'name'])
+  const { data: accountData } = useCurrentAccountUser({
+    select: (user) => ({
+      handle: user?.handle,
+      userId: user?.user_id,
+      name: user?.name
+    })
   })
-  const { user_id: userId, handle, name } = accountData ?? {}
+  const { userId, handle, name } = accountData ?? {}
   const [error, setError] = useState('')
   const [status, setStatus] = useState('')
 

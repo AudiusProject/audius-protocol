@@ -1,6 +1,6 @@
 import { useContext, useEffect, FC } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { Name, SquareSizes, Theme } from '@audius/common/models'
 import {
   settingsPageActions,
@@ -21,7 +21,6 @@ import {
   IconTokenPlatinum
 } from '@audius/harmony'
 import cn from 'classnames'
-import { pick } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
@@ -105,10 +104,14 @@ export const SettingsPage = (props: SettingsPageProps) => {
   const dispatch = useDispatch()
   useScrollToTop()
 
-  const { data: accountData } = useCurrentAccount({
-    select: (account) => pick(account?.user, ['user_id', 'handle', 'name'])
+  const { data: accountData } = useCurrentAccountUser({
+    select: (user) => ({
+      handle: user?.handle,
+      userId: user?.user_id,
+      name: user?.name
+    })
   })
-  const { user_id: userId, handle, name } = accountData ?? {}
+  const { userId, handle, name } = accountData ?? {}
   const theme = useSelector(getTheme)
   const tier = useSelector(
     (state: AppState) => getTierAndVerifiedForUser(state, { userId }).tier
