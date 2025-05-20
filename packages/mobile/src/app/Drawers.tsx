@@ -1,8 +1,9 @@
+import React from 'react'
 import type { ComponentType } from 'react'
 
 import type { Modals } from '@audius/common/store'
 
-import { AddFundsDrawer } from 'app/components/add-funds-drawer/AddFundsDrawer'
+import { AddCashDrawer } from 'app/components/add-funds-drawer/AddCashDrawer'
 import { AddToCollectionDrawer } from 'app/components/add-to-collection-drawer'
 import { ApiRewardsDrawer } from 'app/components/api-rewards-drawer/ApiRewardsDrawer'
 import { AudioBreakdownDrawer } from 'app/components/audio-breakdown-drawer'
@@ -42,7 +43,6 @@ import { StripeOnrampDrawer } from 'app/components/stripe-onramp-drawer'
 import { SupportersInfoDrawer } from 'app/components/supporters-info-drawer'
 import { TransferAudioMobileDrawer } from 'app/components/transfer-audio-mobile-drawer'
 import { TrendingRewardsDrawer } from 'app/components/trending-rewards-drawer'
-import { USDCManualTransferDrawer } from 'app/components/usdc-manual-transfer-drawer'
 import { WaitForDownloadDrawer } from 'app/components/wait-for-download-drawer'
 import { ReplaceTrackProgressDrawer } from 'app/screens/edit-track-screen/components'
 import { EarlyReleaseConfirmationDrawer } from 'app/screens/edit-track-screen/components/EarlyReleaseConfirmationDrawer'
@@ -121,12 +121,11 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   VipDiscord: VipDiscordDrawer,
   ProfileActions: ProfileActionsDrawer,
   PlaybackRate: PlaybackRateDrawer,
-  // PremiumContent, AddFunds, PurchaseVendor, USDCManualTransfer, and StripOnRamp *must* be in this order
+  // PremiumContent, AddCash, PurchaseVendor, and StripOnRamp *must* be in this order
   // to avoid zIndex issues.
   PremiumContentPurchaseModal: PremiumContentPurchaseDrawer,
-  AddFundsModal: AddFundsDrawer,
+  AddCashModal: AddCashDrawer,
   PurchaseVendor: PurchaseVendorDrawer,
-  USDCManualTransferModal: USDCManualTransferDrawer,
   StripeOnRamp: StripeOnrampDrawer,
   CoinflowOnramp: CoinflowOnrampDrawer,
   InboxUnavailableModal: InboxUnavailableDrawer,

@@ -224,7 +224,7 @@
 }
 .searchBox
   :global(.ant-select-item-option.ant-select-item-option-active):has(
-    [class*='PlainButton']
+    :global(.dropdown-action)
   ) {
   background-color: transparent !important;
 }

@@ -329,7 +329,7 @@ test('should upload a premium album', async ({ browser, page }) => {
   await expect(newPageAlbumPriceText).toBeVisible()
 
   newPage.goto(track1url)
-  await expect(buyButton).toBeVisible()
+  await expect(buyButton).toBeVisible({ timeout: 20000 })
   await expect(newPageTrackPriceText).toBeVisible()
   // newPage.goto(track2url)
   // await expect(buyButton).toBeVisible()

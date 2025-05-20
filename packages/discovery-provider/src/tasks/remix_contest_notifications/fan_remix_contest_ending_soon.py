@@ -37,6 +37,19 @@ def create_fan_remix_contest_ending_soon_notifications(session, now=None):
     new_notifications = []
     for event in ending_soon_contests:
         contest_track_id = event.entity_id
+        parent_track = (
+            session.query(Track)
+            .filter(
+                Track.track_id == contest_track_id,
+                Track.is_current == True,
+                Track.is_delete == False,
+            )
+            .first()
+        )
+        # Don't create notifications for private tracks
+        if parent_track.is_unlisted:
+            continue
+
         follower_user_ids = set(
             row[0]
             for row in session.query(Follow.follower_user_id)
@@ -59,15 +72,6 @@ def create_fan_remix_contest_ending_soon_notifications(session, now=None):
             .all()
         )
         notified_user_ids = follower_user_ids | favoriter_user_ids
-        parent_track = (
-            session.query(Track)
-            .filter(
-                Track.track_id == contest_track_id,
-                Track.is_current == True,
-                Track.is_delete == False,
-            )
-            .first()
-        )
         parent_track_owner_id = parent_track.owner_id if parent_track else None
         group_id = get_fan_remix_contest_ending_soon_group_id(event.event_id)
         for user_id in notified_user_ids:

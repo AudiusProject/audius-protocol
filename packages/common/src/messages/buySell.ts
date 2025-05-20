@@ -1,9 +1,13 @@
+import { USDC } from '@audius/fixed-decimal'
+
 export const buySellMessages = {
   title: 'BUY / SELL',
   buy: 'Buy',
   sell: 'Sell',
   youPay: 'You Pay',
+  youPaid: 'You Paid',
   youReceive: 'You Receive',
+  youReceived: 'You Received',
   amountUSDC: 'Amount (USDC)',
   amountAUDIO: 'Amount (AUDIO)',
   max: 'MAX',
@@ -28,5 +32,12 @@ export const buySellMessages = {
   insufficientUSDC:
     "You don't have the available balance required to complete this purchase.",
   insufficientAUDIOForSale:
-    "You don't have the available balance required to complete this sale."
+    "You don't have the available balance required to complete this sale.",
+  modalSuccessTitle: 'SUCCESS!',
+  transactionComplete: 'Your transaction is complete!',
+  done: 'Done',
+  priceEach: (price: number) => {
+    const formatted = USDC(price).toLocaleString('en-US')
+    return `(${formatted} ea.)`
+  }
 }

@@ -10,7 +10,8 @@ export const TOKENS: Record<string, TokenInfo> = {
     icon: IconTokenAUDIO,
     decimals: TOKEN_LISTING_MAP.AUDIO.decimals,
     balance: null,
-    isStablecoin: false
+    isStablecoin: false,
+    address: TOKEN_LISTING_MAP.AUDIO.address
   },
   USDC: {
     symbol: 'USDC',
@@ -18,7 +19,8 @@ export const TOKENS: Record<string, TokenInfo> = {
     icon: IconLogoCircleUSDC,
     decimals: TOKEN_LISTING_MAP.USDC.decimals,
     balance: null,
-    isStablecoin: true
+    isStablecoin: true,
+    address: TOKEN_LISTING_MAP.USDC.address
   }
 }
 

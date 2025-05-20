@@ -3,7 +3,7 @@ import { useCallback, MouseEvent } from 'react'
 import { useUser } from '@audius/common/api'
 import { ID, SquareSizes } from '@audius/common/models'
 import { formatCount, route } from '@audius/common/utils'
-import { Box, Skeleton, Text } from '@audius/harmony'
+import { Box, Skeleton, Text, TextLink } from '@audius/harmony'
 import { pick } from 'lodash'
 import { useLinkClickHandler } from 'react-router-dom-v5-compat'
 
@@ -87,10 +87,15 @@ export const UserCard = (props: UserCardProps) => {
           size='l'
           center
           onClick={onUserLinkClick}
+          popover={true}
         />
-        <Text variant='body' ellipses css={{ textAlign: 'center' }}>
+        <TextLink
+          onClick={onUserLinkClick}
+          ellipses
+          css={{ textAlign: 'center' }}
+        >
           @{handle}
-        </Text>
+        </TextLink>
       </CardContent>
       <CardFooter>
         <Text variant='body' size='s' strength='strong'>

@@ -305,10 +305,6 @@ const RenderForm = ({
     trackEvent(make({ eventName: Name.PURCHASE_CONTENT_TOS_CLICKED }))
   }, [])
 
-  const handleUSDCManualTransferClose = useCallback(() => {
-    dispatch(setPurchasePage({ page: PurchaseContentPage.PURCHASE }))
-  }, [dispatch])
-
   const handleGoBackPress = useCallback(() => {
     dispatch(setPurchasePage({ page: PurchaseContentPage.PURCHASE }))
   }, [dispatch])
@@ -407,10 +403,7 @@ const RenderForm = ({
         </>
       ) : (
         <View style={styles.paddingTop}>
-          <USDCManualTransfer
-            onClose={handleUSDCManualTransferClose}
-            amountInCents={totalPriceInCents}
-          />
+          <USDCManualTransfer amountInCents={totalPriceInCents} />
         </View>
       )}
       {isPurchaseSuccessful || !isUsdcPurchaseEnabled ? null : (
