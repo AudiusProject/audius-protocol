@@ -1,6 +1,7 @@
 import { useRef, useEffect, useCallback, useState, useMemo } from 'react'
 
 import { useTracks } from '@audius/common/api'
+import { useCurrentTrack } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 import type { ID, Track } from '@audius/common/models'
 import {
@@ -70,14 +71,8 @@ export const DEFAULT_IMAGE_URL =
 
 const { getUserId } = accountSelectors
 const { getUsers } = cacheUsersSelectors
-const {
-  getPlaying,
-  getSeek,
-  getCurrentTrack,
-  getCounter,
-  getPlaybackRate,
-  getUid
-} = playerSelectors
+const { getPlaying, getSeek, getCounter, getPlaybackRate, getUid } =
+  playerSelectors
 const { setTrackPosition } = playbackPositionActions
 const { getUserTrackPositions } = playbackPositionSelectors
 const { recordListen } = tracksSocialActions
@@ -162,7 +157,7 @@ type QueueableTrack = {
 } & Pick<Queueable, 'playerBehavior'>
 
 export const AudioPlayer = () => {
-  const track = useSelector(getCurrentTrack)
+  const track = useCurrentTrack()
   const playing = useSelector(getPlaying)
   const seek = useSelector(getSeek)
   const counter = useSelector(getCounter)

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { useToggleFavoriteTrack } from '@audius/common/api'
-import { useGatedContentAccess } from '@audius/common/hooks'
+import { useCurrentTrack, useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,
   FavoriteSource,
@@ -59,7 +59,8 @@ const PlayBar = ({
   pause,
   onClickInfo
 }: PlayBarProps) => {
-  const { uid, track, user, collectible } = currentQueueItem
+  const { uid, user, collectible } = currentQueueItem
+  const track = useCurrentTrack()
 
   const [percentComplete, setPercentComplete] = useState(0)
   const record = useRecord()

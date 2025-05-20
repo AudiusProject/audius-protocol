@@ -54,17 +54,16 @@ export const useTrackCoverArtDominantColors = ({
     size: SquareSizes.SIZE_150_BY_150
   })
 
-  const { data: track } = useTrack(trackId ?? undefined, {
+  const { data: track } = useTrack(trackId, {
     select: (track) => ({
-      cover_art_sizes: track?.cover_art_sizes
+      cover_art_sizes: track?.cover_art_sizes,
+      cover_art: track?.cover_art
     })
   })
 
   // Pull existing dominant colors from redux
   const coverArtDominantColors = useSelector((state: CommonState) => {
-    return getDominantColorsByTrack(state, {
-      track: trackId ? { cover_art_sizes: track?.cover_art_sizes } : undefined
-    })
+    return getDominantColorsByTrack(state, { track })
   })
 
   // Fetch dominant colors if we don't have them yet and set in redux

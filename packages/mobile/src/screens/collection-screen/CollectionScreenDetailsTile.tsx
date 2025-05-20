@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
 import { useCollection, useTracks } from '@audius/common/api'
+import { useCurrentTrack, useGatedContentAccessMap } from '@audius/common/hooks'
 import {
   Name,
   PlaybackSource,
@@ -32,7 +33,6 @@ import { TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 import { createSelector } from 'reselect'
-import { useGatedContentAccessMap } from '~/hooks'
 
 import {
   Box,
@@ -70,7 +70,7 @@ import { makeStyles } from 'app/styles'
 import { CollectionScreenSkeleton } from './CollectionScreenSkeleton'
 import { useFetchCollectionLineup } from './useFetchCollectionLineup'
 
-const { getPlaying, getPreviewing, getUid, getCurrentTrack } = playerSelectors
+const { getPlaying, getPreviewing, getUid } = playerSelectors
 const { getIsReachable } = reachabilitySelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
 const { getCollectionTracks } = cacheCollectionsSelectors
@@ -261,7 +261,7 @@ export const CollectionScreenDetailsTile = ({
   const isPlaying = isPlaybackActive && isQueued
   const isPreviewing = useSelector(getPreviewing)
   const isPlayingPreview = isPreviewing && isPlaying
-  const playingTrack = useSelector(getCurrentTrack)
+  const playingTrack = useCurrentTrack()
   const playingTrackId = playingTrack?.track_id
   const firstTrack = useSelector(selectFirstTrack)
   const messages = getMessages(isAlbum ? 'album' : 'playlist', isStreamGated)

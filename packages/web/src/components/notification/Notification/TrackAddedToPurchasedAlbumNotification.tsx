@@ -1,7 +1,10 @@
 import { useCallback } from 'react'
 
 import { useNotificationEntities } from '@audius/common/api'
-import { TrackAddedToPurchasedAlbumNotification as TrackAddedToPurchasedAlbumNotificationType } from '@audius/common/store'
+import {
+  Entity,
+  TrackAddedToPurchasedAlbumNotification as TrackAddedToPurchasedAlbumNotificationType
+} from '@audius/common/store'
 import { Flex, IconStars } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
@@ -58,9 +61,9 @@ export const TrackAddedToPurchasedAlbumNotification = (
           <span>
             <UserNameLink user={playlistOwner} notification={notification} />
             {messages.released}
-            <EntityLink entity={track} entityType='Track' />
+            <EntityLink entity={track} entityType={Entity.Track} />
             {messages.onAlbum}
-            <EntityLink entity={playlist} entityType='Playlist' />
+            <EntityLink entity={playlist} entityType={Entity.Playlist} />
           </span>
         </Flex>
       </NotificationBody>

@@ -1,5 +1,6 @@
 import { ComponentType, PureComponent } from 'react'
 
+import { useCurrentTrack } from '@audius/common/hooks'
 import {
   Name,
   RepostSource,
@@ -7,7 +8,8 @@ import {
   PlaybackSource,
   ID,
   UID,
-  LineupTrack
+  LineupTrack,
+  Track
 } from '@audius/common/models'
 import {
   SavedPageTabs as ProfileTabs,
@@ -97,7 +99,15 @@ type SavedPageState = {
   shouldReturnToTrackPurchases: boolean
 }
 
-class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
+const SavedPage = (props: SavedPageProps) => {
+  const currentTrack = useCurrentTrack()
+  return <SavedPageClassComponent {...props} currentTrack={currentTrack} />
+}
+
+class SavedPageClassComponent extends PureComponent<
+  SavedPageProps & { currentTrack: Track | null },
+  SavedPageState
+> {
   static contextType = SsrContext
   declare context: React.ContextType<typeof SsrContext>
   state: SavedPageState = {
@@ -216,8 +226,8 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
   }
 
   getPlayingId = () => {
-    const { currentQueueItem } = this.props
-    return currentQueueItem.track ? currentQueueItem.track.track_id : null
+    const { currentTrack } = this.props
+    return currentTrack?.track_id ?? null
   }
 
   getFormattedData = (

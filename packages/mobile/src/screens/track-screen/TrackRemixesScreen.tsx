@@ -1,18 +1,15 @@
 import {
   useRemixContest,
+  useRemixersCount,
   useRemixes,
   useTrackByParams
 } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { remixMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
-import {
-  remixesPageLineupActions as tracksActions,
-  remixesPageSelectors
-} from '@audius/common/store'
+import { remixesPageLineupActions as tracksActions } from '@audius/common/store'
 import { pluralize } from '@audius/common/utils'
 import { Text as RNText, View } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import { Flex, IconRemix, IconTrophy, Text } from '@audius/harmony-native'
 import {
@@ -29,7 +26,6 @@ import { UserLink } from 'app/components/user-link'
 import { useRoute } from 'app/hooks/useRoute'
 import { flexRowCentered, makeStyles } from 'app/styles'
 
-const { getCount } = remixesPageSelectors
 const legacyMessages = {
   remix: 'Remix',
   of: 'of',
@@ -58,7 +54,7 @@ export const TrackRemixesScreen = () => {
   const { params } = useRoute<'TrackRemixes'>()
   const { data: track } = useTrackByParams(params)
   const trackId = track?.track_id
-  const count = useSelector(getCount)
+  const { data: count } = useRemixersCount({ trackId })
   const { data, isFetching, isPending, loadNextPage, lineup, pageSize } =
     useRemixes({
       trackId: track?.track_id,

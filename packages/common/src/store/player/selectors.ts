@@ -21,6 +21,8 @@ export const getPlaybackRate = (state: CommonState) => state.player.playbackRate
 export const getPlayerBehavior = (state: CommonState) =>
   state.player.playerBehavior
 
+// Note: getCurrentTrack has been moved to a hook: useCurrentTrack
+// This selector is kept for backwards compatibility in makeGetCurrent
 export const getCurrentTrack = (state: CommonState) =>
   getTrack(state, { id: getTrackId(state) })
 

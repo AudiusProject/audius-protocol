@@ -49,6 +49,8 @@ export const getCollectionId = (state: CommonState) => {
   return Uid.getCollectionId(uid)
 }
 
+// Note: getCurrentTrack has been moved to a hook: useCurrentTrack
+// This selector is kept for backwards compatibility in makeGetCurrent
 const getCurrentTrack = (state: CommonState) =>
   getTrack(state, { id: getPlayerTrackId(state) })
 
@@ -63,17 +65,10 @@ export const getCurrentArtist = (state: CommonState) => {
 
 export const makeGetCurrent = () => {
   return createSelector(
-    [
-      getPlayerUid,
-      getSource,
-      getCurrentTrack,
-      getCurrentArtist,
-      getCollectible
-    ],
-    (uid, source, track, user, collectible) => ({
+    [getPlayerUid, getSource, getCurrentArtist, getCollectible],
+    (uid, source, user, collectible) => ({
       uid,
       source,
-      track,
       user,
       collectible
     })
