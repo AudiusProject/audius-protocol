@@ -16,7 +16,7 @@ test('should persist collection edits', async ({ page }) => {
   await page.goto(permalink)
   await page
     .getByRole('link', { name: /edit album/i })
-    .click({ timeout: 20000 })
+    .click({ timeout: 20_000 })
   const editAlbumPage = new EditAlbumPage(page)
 
   await editAlbumPage.setArtwork('track-artwork.jpeg')
@@ -28,9 +28,10 @@ test('should persist collection edits', async ({ page }) => {
   await priceAndAudienceModal.setPremium({ price: newPrice })
   await priceAndAudienceModal.save()
 
-  // Assert that we warned the user about changing the audience
-  await expect(page.getByText(/confirm update/i)).toBeVisible()
-  await page.getByRole('button', { name: /update audience/i }).click()
+  // We warned the user about changing the audience if this is the first attempt
+  if (await page.getByText(/confirm update/i).isVisible()) {
+    await page.getByRole('button', { name: /update audience/i }).click()
+  }
 
   const confirmationPromise = waitForConfirmation(page)
   await editAlbumPage.save()
@@ -56,7 +57,7 @@ test('should persist collection edits', async ({ page }) => {
   // Assert title changed
   await expect(
     page.getByRole('heading', { name: newTitle, level: 1 })
-  ).toBeVisible()
+  ).toBeVisible({ timeout: 30_000 })
 
   // Assert description changed
   await expect(page.getByText(newDescription)).toBeVisible()

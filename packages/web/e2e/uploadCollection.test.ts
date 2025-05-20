@@ -280,7 +280,7 @@ test('should upload a premium album', async ({ browser, page }) => {
 
   // Visit track 1
   await trackOne.getByRole('link', { name: trackOneDetails.name }).click()
-  const track1url = await page.url()
+  const track1url = page.url()
 
   // Assert premium track price
   const trackPriceText = page.getByText(`$${albumTrackPrice}.00`)
@@ -325,11 +325,11 @@ test('should upload a premium album', async ({ browser, page }) => {
   const newPageTrackPriceText = newPage.getByText(`$${albumTrackPrice}.00`)
 
   newPage.goto(albumUrl)
-  await expect(buyButton).toBeVisible({ timeout: 20000 }) // The first track page load can take extra long sometimes (mainly in CI)
+  await expect(buyButton).toBeVisible({ timeout: 20_000 }) // The first track page load can take extra long sometimes (mainly in CI)
   await expect(newPageAlbumPriceText).toBeVisible()
 
   newPage.goto(track1url)
-  await expect(buyButton).toBeVisible({ timeout: 20000 })
+  await expect(buyButton).toBeVisible({ timeout: 20_000 })
   await expect(newPageTrackPriceText).toBeVisible()
   // newPage.goto(track2url)
   // await expect(buyButton).toBeVisible()
