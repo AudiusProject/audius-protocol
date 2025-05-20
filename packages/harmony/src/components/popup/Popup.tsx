@@ -271,7 +271,8 @@ export const PopupInternal = forwardRef<
     handleClose,
     isVisible,
     checkIfClickInside,
-    typeof ref === 'function' ? undefined : ref
+    typeof ref === 'function' ? undefined : ref,
+    anchorRef
   )
 
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -333,20 +334,7 @@ export const PopupInternal = forwardRef<
 
       originalTopPosition.current = top
     }
-  }, [
-    isVisible,
-    wrapperRef,
-    anchorRef,
-    anchorOrigin,
-    transformOrigin,
-    setComputedTransformOrigin,
-    originalTopPosition,
-    portalLocation,
-    containerRef,
-    previousIsVisible,
-    previousHeight,
-    wrapperSizeChange
-  ])
+  }, [isVisible, wrapperRef, anchorRef, anchorOrigin, transformOrigin, setComputedTransformOrigin, originalTopPosition, portalLocation, containerRef, previousIsVisible, previousHeight, wrapperSizeChange])
 
   // Callback invoked on each scroll. Uses original top position to scroll with content.
   // Takes scrollParent to get the current scroll position as well as the intitial scroll position

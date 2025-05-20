@@ -90,6 +90,7 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
           isLarge
             ? {
                 marginRight: '-50vw',
+                marginLeft: '-50vw',
                 overflow: 'visible'
               }
             : null
@@ -105,7 +106,8 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
             '&::-webkit-scrollbar': {
               display: 'none' // Chrome/Safari
             },
-            paddingRight: isLarge ? '50vw' : undefined
+            paddingRight: isLarge ? '50vw' : undefined,
+            paddingLeft: isLarge ? '50vw' : undefined
           }}
         >
           <Flex gap='l' css={{ minWidth: 'max-content' }} pv='2xs'>

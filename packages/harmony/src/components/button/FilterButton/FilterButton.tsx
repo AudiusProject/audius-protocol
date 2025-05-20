@@ -147,13 +147,12 @@ export const FilterButton = forwardRef(function FilterButton<
   }
 
   const iconCss = size === 'small' ? smallIconStyles : defaultIconStyles
+
   const handleClick = useCallback(() => {
     if (onClick) {
       onClick()
     } else {
-      setIsOpen((prev) => {
-        return !prev
-      })
+      setIsOpen((isOpen: boolean) => !isOpen)
     }
   }, [onClick])
 
@@ -166,7 +165,6 @@ export const FilterButton = forwardRef(function FilterButton<
             aria-label='cancel'
             onClick={(e: React.MouseEvent<SVGSVGElement>) => {
               e.stopPropagation()
-              setIsOpen(false)
               if (onClick) {
                 onClick()
               } else {
@@ -178,7 +176,7 @@ export const FilterButton = forwardRef(function FilterButton<
             {...props}
           />
         )) as IconComponent)
-      : (iconRight ?? (hasOptions ? IconCaretDown : null))
+      : iconRight ?? (hasOptions ? IconCaretDown : null)
   }, [variant, value, iconRight, hasOptions, onClick, onChange, onReset])
 
   useEffect(() => {
@@ -253,6 +251,7 @@ export const FilterButton = forwardRef(function FilterButton<
       <Menu
         anchorRef={anchorRef}
         isVisible={isOpen}
+        onClose={() => setIsOpen(false)}
         PaperProps={menuProps?.PaperProps}
       >
         {children ? (

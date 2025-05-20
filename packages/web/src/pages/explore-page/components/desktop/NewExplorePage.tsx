@@ -72,7 +72,7 @@ export enum SearchTabs {
 
 const messages = {
   explore: 'Explore',
-  description: 'Discover the hottest tracks on Audius right now',
+  description: 'Discover new releases, fan favorites, and rising hits',
   searchPlaceholder: 'What do you want to listen to?',
   featuredPlaylists: 'Community Playlists',
   featuredRemixContests: 'Featured Remix Contests',
@@ -221,7 +221,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
         ph='unit15'
         gap='3xl'
         alignItems='stretch'
-        w={isLarge ? '90%' : 1200}
+        w={isLarge ? '95%' : 1200}
       >
         {/* Header Section */}
         <Paper
@@ -258,7 +258,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
               width={400}
               label={messages.searchPlaceholder}
               value={inputValue}
-              size={TextInputSize.SMALL}
+              size={TextInputSize.DEFAULT}
               startIcon={IconSearch}
               onChange={handleSearch}
               onClear={handleClearSearch}
