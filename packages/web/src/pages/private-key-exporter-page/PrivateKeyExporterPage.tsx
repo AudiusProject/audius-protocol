@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -36,7 +35,7 @@ import { isDarkMode } from 'utils/theme/theme'
 import styles from './PrivateKeyExporterPage.module.css'
 
 const { SETTINGS_PAGE, TRENDING_PAGE } = route
-const { getUserId } = accountSelectors
+const { getUserId, getUserHandle } = accountSelectors
 
 const messages = {
   backToSettings: 'Back To Settings',
@@ -345,9 +344,7 @@ const PrivateKeyExporterPage = () => {
   useRequiresAccount()
   const record = useRecord()
   const accountUserId = useSelector(getUserId)
-  const { data: accountHandle } = useCurrentAccount({
-    select: (account) => account?.user?.handle
-  })
+  const accountHandle = useSelector(getUserHandle)
   const [hasViewed, setHasViewed] = useState(false)
   useEffect(() => {
     if (accountHandle && accountUserId && !hasViewed) {

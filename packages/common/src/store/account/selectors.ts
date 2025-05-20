@@ -55,7 +55,9 @@ export const getAccountUser = createSelector(
   [internalGetAccountUser],
   (user) => user
 )
-
+export const getUserHandle = createSelector([internalGetAccountUser], (user) =>
+  user ? user.handle : null
+)
 export const getUserName = createSelector([internalGetAccountUser], (user) =>
   user ? user.name : null
 )
@@ -233,6 +235,22 @@ export const getAccountWithNameSortedPlaylistsAndAlbums = createSelector(
       ...account,
       playlists: nameSortedCollections.filter((c) => !c.is_album),
       albums: nameSortedCollections.filter((c) => c.is_album)
+    }
+  }
+)
+
+export const getAccountWithSavedPlaylistsAndAlbums = createSelector(
+  [getUserHandle, getAccountWithCollections],
+  (handle, account) => {
+    if (!account) return undefined
+    return {
+      ...account,
+      playlists: account.collections.filter(
+        (c) => !c.is_album && c.ownerHandle !== handle
+      ),
+      albums: account.collections.filter(
+        (c) => c.is_album && c.ownerHandle !== handle
+      )
     }
   }
 )

@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
+import { getUserHandle } from '@audius/common/src/store/account/selectors'
 import {
   audioRewardsPageSelectors,
   challengesSelectors,
@@ -46,9 +46,7 @@ const messages = {
 }
 
 export const InviteLink = () => {
-  const { data: userHandle } = useCurrentAccount({
-    select: (data) => data?.user.handle
-  })
+  const userHandle = useSelector(getUserHandle)
   const inviteLink = useMemo(
     () => (userHandle ? fillString(messages.inviteLink, userHandle) : ''),
     [userHandle]

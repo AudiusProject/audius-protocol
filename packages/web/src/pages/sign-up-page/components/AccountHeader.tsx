@@ -1,4 +1,3 @@
-import { useCurrentAccount } from '@audius/common/api'
 import { imageProfilePicEmpty } from '@audius/common/assets'
 import { Name, SquareSizes } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
@@ -31,7 +30,7 @@ import { useSelector } from 'utils/reducer'
 import { CoverPhotoBanner } from './CoverPhotoBanner'
 import { ImageField, ImageFieldValue } from './ImageField'
 
-const { getUserId, getUserName } = accountSelectors
+const { getUserId, getUserHandle, getUserName } = accountSelectors
 
 type AccountHeaderProps = {
   backButtonText?: string
@@ -102,9 +101,7 @@ export const AccountHeader = (props: AccountHeaderProps) => {
     userId: userId ?? undefined,
     size: SquareSizes.SIZE_150_BY_150
   })
-  const { data: accountHandle } = useCurrentAccount({
-    select: (account) => account?.user?.handle
-  })
+  const accountHandle = useSelector(getUserHandle)
   const accountDisplayName = useSelector(getUserName)
 
   const isEditing = mode === 'editing'

@@ -1,7 +1,10 @@
-import { queryAccountUser } from '@audius/common/api'
 import { Name } from '@audius/common/models'
-import { recoveryEmailActions, getContext } from '@audius/common/store'
-import { takeLatest, put, call } from 'typed-redux-saga'
+import {
+  recoveryEmailActions,
+  getContext,
+  accountSelectors
+} from '@audius/common/store'
+import { takeLatest, put, call, select } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 
@@ -26,8 +29,7 @@ export function* sendRecoveryEmail() {
 
 function* watchResendRecoveryEmail() {
   yield* takeLatest(resendRecoveryEmail.type, function* () {
-    const accountUser = yield* call(queryAccountUser)
-    const handle = accountUser?.handle
+    const handle = yield* select(accountSelectors.getUserHandle)
     if (!handle) return
 
     try {

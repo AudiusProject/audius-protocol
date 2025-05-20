@@ -1,4 +1,4 @@
-import { queryAccountUser, queryTrack, queryUser } from '@audius/common/api'
+import { queryTrack, queryUser } from '@audius/common/api'
 import { Name, Kind, ID, Track, User } from '@audius/common/models'
 import {
   accountSelectors,
@@ -37,7 +37,7 @@ import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import watchTrackErrors from './errorSagas'
 import { watchRecordListen } from './recordListen'
-const { getUserId, getIsGuestAccount } = accountSelectors
+const { getUserId, getUserHandle, getIsGuestAccount } = accountSelectors
 const { getNftAccessSignatureMap } = gatedContentSelectors
 const { incrementTrackSaveCount, decrementTrackSaveCount } = accountActions
 const { setVisibility } = modalsActions
@@ -381,8 +381,7 @@ export function* saveTrackAsync(
       remixTrack.has_remix_author_reposted || remixTrack.has_remix_author_saved
 
     const parentTrack = yield* queryTrack(parentTrackId)
-    const accountUser = yield* call(queryAccountUser)
-    const handle = accountUser?.handle
+    const handle = yield* select(getUserHandle)
     const coSignIndicatorEvent = make(Name.REMIX_COSIGN_INDICATOR, {
       id: action.trackId,
       handle,

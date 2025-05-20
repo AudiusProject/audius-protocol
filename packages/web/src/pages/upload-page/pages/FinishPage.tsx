@@ -1,10 +1,10 @@
 import { useCallback, useMemo } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
 import { imageBlank as placeholderArt } from '@audius/common/assets'
 import { useUploadCompletionRoute } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 import {
+  accountSelectors,
   uploadSelectors,
   UploadType,
   ProgressStatus,
@@ -35,6 +35,7 @@ import { ShareBanner } from '../components/ShareBanner'
 
 import styles from './FinishPage.module.css'
 
+const { getUserHandle } = accountSelectors
 const { getCombinedUploadPercentage } = uploadSelectors
 
 const messages = {
@@ -110,9 +111,7 @@ export const FinishPage = (props: FinishPageProps) => {
   const { formState, onContinue } = props
   const { tracks, uploadType } = formState
   const upload = useSelector((state: CommonState) => state.upload)
-  const { data: accountHandle } = useCurrentAccount({
-    select: (account) => account?.user?.handle
-  })
+  const accountHandle = useSelector(getUserHandle)
   const fullUploadPercent = useSelector(getCombinedUploadPercentage)
   const dispatch = useDispatch()
 
@@ -160,7 +159,7 @@ export const FinishPage = (props: FinishPageProps) => {
   const visitButtonPath = useUploadCompletionRoute({
     uploadType,
     upload,
-    accountHandle: accountHandle as string | null
+    accountHandle
   })
 
   const handleViewUpload = useCallback(() => {

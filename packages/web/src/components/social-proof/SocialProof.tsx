@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
 import { Name, Status } from '@audius/common/models'
 import { BooleanKeys } from '@audius/common/services'
 import {
   accountActions,
+  accountSelectors,
   InstagramProfile,
   TwitterProfile,
   TikTokProfile
 } from '@audius/common/store'
 import { IconValidationX } from '@audius/harmony'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { make, TrackEvent, useRecord } from 'common/store/analytics/actions'
@@ -28,6 +28,7 @@ const {
   twitterLogin: twitterLoginAction,
   tikTokLogin: tikTokLoginAction
 } = accountActions
+const getUserHandle = accountSelectors.getUserHandle
 
 const messages = {
   modalTitle: 'Confirm Your Identity',
@@ -42,7 +43,7 @@ const messages = {
 }
 
 type VerifyBodyProps = {
-  handle?: string
+  handle: string
   onClick: () => void
   onFailure: (kind: 'instagram' | 'twitter' | 'tiktok', error: Error) => void
   onTwitterLogin: (uuid: string, profile: TwitterProfile) => void
@@ -181,9 +182,7 @@ const SocialProof = ({ onSuccess }: SocialProofProps) => {
   const [error, setError] = useState<string | undefined>()
   const [status, setStatus] = useState(Status.IDLE)
   const [isOpen, setIsOpen] = useModalState('SocialProof')
-  const { data: handle } = useCurrentAccount({
-    select: (data) => data?.user.handle
-  })
+  const handle = useSelector(getUserHandle)
 
   const onClick = useCallback(() => setStatus(Status.LOADING), [setStatus])
   const record = useRecord()

@@ -10,7 +10,7 @@ export const useUploadCompletionRoute = ({
 }: {
   uploadType: UploadType
   upload: UploadState
-  accountHandle: string | undefined | null
+  accountHandle: string | null
 }) => {
   const route = useMemo(() => {
     switch (uploadType) {

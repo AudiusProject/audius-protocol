@@ -4,14 +4,27 @@ import { useSelector } from 'react-redux'
 import { accountFromSDK } from '~/adapters/user'
 import { useQueryContext } from '~/api/tan-query/utils'
 import { useAppContext } from '~/context/appContext'
+import { ID } from '~/models/Identifiers'
 import { AccountUserMetadata } from '~/models/User'
 import { getWalletAddresses } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from '../../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../../types'
 
-export const getCurrentAccountQueryKey = () =>
-  [QUERY_KEYS.accountUser] as unknown as QueryKey<AccountUserMetadata>
+import { useCurrentUserId } from './useCurrentUserId'
+
+export const getCurrentAccountQueryKey = (
+  currentUserId: ID | null | undefined
+) =>
+  [
+    QUERY_KEYS.accountUser,
+    currentUserId
+  ] as unknown as QueryKey<AccountUserMetadata>
+
+export enum CurrentUserWalletType {
+  currentUser = 'currentUser',
+  web3User = 'web3User'
+}
 
 /**
  * Hook to get the currently logged in user's account
@@ -19,6 +32,7 @@ export const getCurrentAccountQueryKey = () =>
 export const useCurrentAccount = <
   TResult = AccountUserMetadata | null | undefined
 >(
+  walletType: CurrentUserWalletType = CurrentUserWalletType.currentUser,
   options?: SelectableQueryOptions<
     AccountUserMetadata | null | undefined,
     TResult
@@ -26,11 +40,12 @@ export const useCurrentAccount = <
 ) => {
   const { audiusSdk } = useQueryContext()
   const walletAddresses = useSelector(getWalletAddresses)
-  const currentUserWallet = walletAddresses.currentUser
+  const currentUserWallet = walletAddresses[walletType]
+  const { data: currentUserId } = useCurrentUserId()
   const { localStorage } = useAppContext()
 
   return useQuery({
-    queryKey: getCurrentAccountQueryKey(),
+    queryKey: getCurrentAccountQueryKey(currentUserId),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const localAccount = await localStorage.getAudiusAccount()

@@ -58,12 +58,6 @@ export function* queryUsers(ids: ID[]) {
   return users
 }
 
-export function* queryAccountUser() {
-  const currentUserId = yield* select(getUserId)
-  const accountUser = yield* call(queryUser, currentUserId)
-  return accountUser
-}
-
 export function* queryAllCachedUsers() {
   const queryClient = yield* getContext('queryClient')
   const queries = queryClient.getQueriesData<User>({

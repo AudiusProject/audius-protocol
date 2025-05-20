@@ -53,7 +53,7 @@ export const useUpdateUser = () => {
       // Snapshot the previous account user if it matches
       const previousAccountUser = queryClient
         .getQueriesData<UserMetadata>({
-          queryKey: getCurrentAccountQueryKey()
+          queryKey: getCurrentAccountQueryKey(userId)
         })
         .find(([_, data]) => data?.user_id === userId)?.[1]
 
@@ -65,7 +65,7 @@ export const useUpdateUser = () => {
 
       // Optimistically update accountUser queries if they match the user
       queryClient.setQueriesData(
-        { queryKey: getCurrentAccountQueryKey() },
+        { queryKey: getCurrentAccountQueryKey(userId) },
         (oldData: any) => {
           if (!oldData?.user_id || oldData.user_id !== userId) return oldData
           return { ...oldData, ...metadata }
@@ -84,7 +84,7 @@ export const useUpdateUser = () => {
       // Roll back accountUser queries if we have the previous state
       if (context?.previousAccountUser) {
         queryClient.setQueriesData(
-          { queryKey: getCurrentAccountQueryKey() },
+          { queryKey: getCurrentAccountQueryKey(userId) },
           (oldData: any) => {
             if (!oldData?.user_id || oldData.user_id !== userId) return oldData
             return context.previousAccountUser

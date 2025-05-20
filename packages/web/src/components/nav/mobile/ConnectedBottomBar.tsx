@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { connect } from 'react-redux'
@@ -18,7 +17,7 @@ import { getPathname } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 const { FEED_PAGE, TRENDING_PAGE, EXPLORE_PAGE, profilePage, LIBRARY_PAGE } =
   route
-const { getIsGuestAccount } = accountSelectors
+const { getUserHandle, getIsGuestAccount } = accountSelectors
 
 type ConnectedBottomBarProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps> &
@@ -26,13 +25,11 @@ type ConnectedBottomBarProps = ReturnType<typeof mapStateToProps> &
 
 const ConnectedBottomBar = ({
   goToRoute,
+  handle,
   isGuestAccount,
   history,
   openSignOn
 }: ConnectedBottomBarProps) => {
-  const { data: handle } = useCurrentAccount({
-    select: (account) => account?.user?.handle
-  })
   const userProfilePage = handle ? profilePage(handle) : null
   const navRoutes = new Set([
     FEED_PAGE,
@@ -102,6 +99,7 @@ const ConnectedBottomBar = ({
 
 function mapStateToProps(state: AppState) {
   return {
+    handle: getUserHandle(state),
     isGuestAccount: getIsGuestAccount(state)
   }
 }

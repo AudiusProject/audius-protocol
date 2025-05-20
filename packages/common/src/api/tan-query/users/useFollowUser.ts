@@ -110,7 +110,7 @@ export const useFollowUser = () => {
       }
 
       const previousAccountUser = queryClient.getQueryData(
-        getCurrentAccountQueryKey()
+        getCurrentAccountQueryKey(currentUserId)
       )
 
       if (previousAccountUser) {
@@ -150,7 +150,7 @@ export const useFollowUser = () => {
 
       if (previousAccountUser) {
         queryClient.setQueryData(
-          getCurrentAccountQueryKey(),
+          getCurrentAccountQueryKey(currentUserId),
           previousAccountUser
         )
       }

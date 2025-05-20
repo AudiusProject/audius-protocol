@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { useCurrentAccount, useQueryContext } from '@audius/common/api'
+import { useQueryContext } from '@audius/common/api'
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { settingsMessages } from '@audius/common/messages'
 import { Name, Theme } from '@audius/common/models'
@@ -101,7 +101,8 @@ const {
   getNotificationSettings,
   updateEmailFrequency: updateEmailFrequencyAction
 } = settingsPageActions
-const { getAccountVerified, getUserId, getUserName } = accountSelectors
+const { getAccountVerified, getUserId, getUserHandle, getUserName } =
+  accountSelectors
 const { subscribeBrowserPushNotifications, instagramLogin } = accountActions
 
 const {
@@ -128,10 +129,7 @@ export const SettingsPage = () => {
   const { authService, identityService } = useQueryContext()
 
   const userId = useSelector(getUserId) ?? 0
-  const { data: accountHandle } = useCurrentAccount({
-    select: (data) => data?.user.handle
-  })
-  const handle = accountHandle ?? ''
+  const handle = useSelector(getUserHandle) ?? ''
   const name = useSelector(getUserName) ?? ''
   const isVerified = useSelector(getAccountVerified)
   const theme = useSelector(getTheme)

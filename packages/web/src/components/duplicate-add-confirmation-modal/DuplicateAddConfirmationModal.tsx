@@ -1,7 +1,8 @@
 import { useCallback, useContext } from 'react'
 
-import { useCurrentAccount, useCollection } from '@audius/common/api'
+import { useCollection } from '@audius/common/api'
 import {
+  accountSelectors,
   cacheCollectionsActions,
   duplicateAddConfirmationModalUISelectors
 } from '@audius/common/store'
@@ -25,6 +26,7 @@ import ToastLinkContent from 'components/toast/mobile/ToastLinkContent'
 
 const { addTrackToPlaylist } = cacheCollectionsActions
 const { getPlaylistId, getTrackId } = duplicateAddConfirmationModalUISelectors
+const { getUserHandle } = accountSelectors
 const { collectionPage } = route
 
 const messages = {
@@ -48,9 +50,7 @@ export const DuplicateAddConfirmationModal = () => {
       pick(collection, 'is_album', 'playlist_name', 'permalink')
   })
   const { is_album, playlist_name, permalink } = partialPlaylist ?? {}
-  const { data: accountHandle } = useCurrentAccount({
-    select: (data) => data?.user.handle
-  })
+  const accountHandle = useSelector(getUserHandle)
   const [isOpen, setIsOpen] = useModalState('DuplicateAddConfirmation')
   const collectionType = is_album ? 'album' : 'playlist'
 

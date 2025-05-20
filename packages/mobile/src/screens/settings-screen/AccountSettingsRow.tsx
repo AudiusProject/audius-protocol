@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
 import { accountSelectors } from '@audius/common/store'
 import { css } from '@emotion/native'
 import { useTheme } from '@emotion/react'
@@ -14,7 +13,7 @@ import { makeStyles } from 'app/styles'
 import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 
 import { SettingsRow } from './SettingsRow'
-const { getUserName, getUserId } = accountSelectors
+const { getUserHandle, getUserName, getUserId } = accountSelectors
 
 const useStyles = makeStyles(({ typography, spacing, palette }) => ({
   root: { paddingVertical: spacing(4) },
@@ -32,9 +31,7 @@ const useStyles = makeStyles(({ typography, spacing, palette }) => ({
 export const AccountSettingsRow = () => {
   const styles = useStyles()
   const accountUserId = useSelector(getUserId)
-  const { data: accountHandle } = useCurrentAccount({
-    select: (account) => account?.user?.handle
-  })
+  const accountHandle = useSelector(getUserHandle)
   const accountName = useSelector(getUserName)
   const navigation = useNavigation<ProfileTabScreenParamList>()
   const { spacing } = useTheme()

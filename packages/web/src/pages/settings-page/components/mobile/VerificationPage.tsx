@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
 import { Name, SquareSizes, Status, ID } from '@audius/common/models'
 import { BooleanKeys } from '@audius/common/services'
 import {
@@ -30,7 +29,7 @@ import { push } from 'utils/navigation'
 import settingsPageStyles from './SettingsPage.module.css'
 import styles from './VerificationPage.module.css'
 
-const { getUserId, getUserName } = accountSelectors
+const { getUserId, getUserHandle, getUserName } = accountSelectors
 const {
   twitterLogin: twitterLoginAction,
   instagramLogin: instagramLoginAction,
@@ -61,7 +60,7 @@ const messages = {
 }
 
 type VerifyBodyProps = {
-  handle?: string
+  handle: string
   onClick: () => void
   onFailure: () => void
   onTwitterLogin: (uuid: string, profile: TwitterProfile) => void
@@ -162,7 +161,7 @@ const LoadingBody = () => {
 
 type SuccessBodyProps = {
   userId: ID
-  handle?: string
+  handle: string
   name: string
   goToRoute: (route: string) => void
 }
@@ -209,9 +208,7 @@ const SuccessBody = ({ handle, userId, name, goToRoute }: SuccessBodyProps) => {
 const VerificationPage = () => {
   const dispatch = useDispatch()
   const userId = useSelector(getUserId) ?? 0
-  const { data: handle } = useCurrentAccount({
-    select: (account) => account?.user?.handle
-  })
+  const handle = useSelector(getUserHandle) ?? ''
   const name = useSelector(getUserName) ?? ''
   const [error, setError] = useState('')
   const [status, setStatus] = useState('')
@@ -232,7 +229,7 @@ const VerificationPage = () => {
       if (!profile.is_verified) {
         setError(messages.errorVerifiedInstagram)
         setStatus(Status.ERROR)
-      } else if (profile.username.toLowerCase() !== handle?.toLowerCase()) {
+      } else if (profile.username.toLowerCase() !== handle.toLowerCase()) {
         setError(messages.errorHandle)
         setStatus(Status.ERROR)
       } else {
@@ -253,7 +250,7 @@ const VerificationPage = () => {
       if (!profile.verified) {
         setError(messages.errorVerifiedTwitter)
         setStatus(Status.ERROR)
-      } else if (profile.screen_name.toLowerCase() !== handle?.toLowerCase()) {
+      } else if (profile.screen_name.toLowerCase() !== handle.toLowerCase()) {
         setError(messages.errorHandle)
         setStatus(Status.ERROR)
       } else {
@@ -278,7 +275,7 @@ const VerificationPage = () => {
       if (!profile.is_verified) {
         setError(messages.errorVerifiedTikTok)
         setStatus(Status.ERROR)
-      } else if (profile.username.toLowerCase() !== handle?.toLowerCase()) {
+      } else if (profile.username.toLowerCase() !== handle.toLowerCase()) {
         setError(messages.errorHandle)
         setStatus(Status.ERROR)
       } else {

@@ -1,4 +1,4 @@
-import { queryUserByHandle } from '@audius/common/api'
+import { getUserQueryKey, queryUserByHandle } from '@audius/common/api'
 import { Kind, User } from '@audius/common/models'
 import {
   accountSelectors,
@@ -10,7 +10,6 @@ import {
 import { waitForAccount } from '@audius/common/utils'
 import { mergeWith } from 'lodash'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
-import { getUserComputedPropsQueryKey } from '~/api/tan-query/users/useUser'
 
 const { mergeCustomizer } = cacheReducer
 const { getUserId } = accountSelectors
@@ -80,7 +79,7 @@ export function* fetchUserSocials({
   const queryClient = yield* getContext('queryClient')
 
   queryClient.setQueryData(
-    getUserComputedPropsQueryKey(user.user_id),
+    getUserQueryKey(user.user_id),
     (oldData: User | undefined) =>
       // TODO: is returning undefined correct? Whats the correct behavior here if cache miss occurs?
       oldData

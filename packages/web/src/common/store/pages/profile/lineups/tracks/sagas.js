@@ -1,4 +1,3 @@
-import { queryAccountUser } from '@audius/common/api'
 import { Kind } from '@audius/common/models'
 import {
   profilePageTracksLineupActions as tracksActions,
@@ -22,7 +21,7 @@ const { SET_ARTIST_PICK } = tracksSocialActions
 const { getProfileTracksLineup, getTrackSource } = profilePageSelectors
 const { getTrack } = cacheTracksSelectors
 const { DELETE_TRACK_REQUESTED } = cacheTracksActions
-const { getUserId } = accountSelectors
+const { getUserId, getUserHandle } = accountSelectors
 const PREFIX = tracksActions.prefix
 
 function* getTracks({ offset, limit, payload, handle }) {
@@ -60,8 +59,7 @@ class TracksSagas extends LineupSagas {
 
 function* watchSetArtistPick() {
   yield takeEvery(SET_ARTIST_PICK, function* (action) {
-    const accountUser = yield* call(queryAccountUser)
-    const accountHandle = accountUser?.handle
+    const accountHandle = yield select(getUserHandle)
     const lineup = yield select((state) =>
       getProfileTracksLineup(state, accountHandle)
     )
@@ -85,8 +83,7 @@ function* watchSetArtistPick() {
 function* watchDeleteTrackRequested() {
   yield takeEvery(DELETE_TRACK_REQUESTED, function* (action) {
     const { trackId } = action
-    const accountUser = yield* call(queryAccountUser)
-    const accountHandle = accountUser?.handle
+    const accountHandle = yield select(getUserHandle)
     const lineup = yield select((state) =>
       getProfileTracksLineup(state, accountHandle)
     )
