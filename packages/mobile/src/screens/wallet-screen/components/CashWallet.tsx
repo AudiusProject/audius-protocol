@@ -68,13 +68,15 @@ export const CashWallet = () => {
             />
           </Flex>
 
-          {isLoading ? (
-            <Skeleton h='4xl' w='5xl' />
-          ) : (
-            <Text variant='display' size='m' color='default'>
-              {balanceFormatted}
-            </Text>
-          )}
+          <Flex h='4xl' justifyContent='center'>
+            {isLoading ? (
+              <Skeleton h='4xl' w='5xl' />
+            ) : (
+              <Text variant='display' size='m' color='default'>
+                {balanceFormatted}
+              </Text>
+            )}
+          </Flex>
 
           {!isManagedAccount ? (
             <Button variant='secondary' onPress={handleAddCash} fullWidth>
