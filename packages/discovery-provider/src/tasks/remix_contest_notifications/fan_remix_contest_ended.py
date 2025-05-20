@@ -59,6 +59,11 @@ def create_fan_remix_contest_ended_notifications(session, now=None):
                 .first()
             )
             parent_track_owner_id = parent_track.owner_id if parent_track else None
+
+            # Don't create notifications for private tracks
+            if parent_track.is_unlisted and parent_track_owner_id is not None:
+                continue
+
             exists = (
                 session.query(Notification)
                 .filter(
@@ -68,7 +73,7 @@ def create_fan_remix_contest_ended_notifications(session, now=None):
                 )
                 .first()
             )
-            if not exists and parent_track_owner_id is not None:
+            if not exists:
                 new_notification = Notification(
                     specifier=str(user_id),
                     group_id=group_id,

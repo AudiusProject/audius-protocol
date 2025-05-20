@@ -200,3 +200,75 @@ def test_fan_remix_contest_ending_soon_notification_no_duplicate_for_follower_an
                     "fan_remix_contest_ending_soon:"
                 )
         assert notif_count == 1
+
+
+def test_fan_remix_contest_ending_soon_notification_private_track(app):
+    """Test that no notification is created for a remix contest on a private (unlisted) track"""
+    with app.app_context():
+        db = get_db()
+
+    now = datetime.now()
+    end_date = now + timedelta(hours=48)
+    PRIVATE_TRACK_ID = 200
+    PRIVATE_TRACK_OWNER_ID = 5
+    PRIVATE_TRACK_FOLLOWER_ID = 6
+
+    entities = {
+        "users": [
+            {
+                "user_id": PRIVATE_TRACK_OWNER_ID,
+                "is_current": True,
+                "created_at": now,
+                "updated_at": now,
+            },
+            {
+                "user_id": PRIVATE_TRACK_FOLLOWER_ID,
+                "is_current": True,
+                "created_at": now,
+                "updated_at": now,
+            },
+        ],
+        "tracks": [
+            {
+                "track_id": PRIVATE_TRACK_ID,
+                "owner_id": PRIVATE_TRACK_OWNER_ID,
+                "is_current": True,
+                "is_delete": False,
+                "is_unlisted": True,  # Mark as private
+                "created_at": now,
+                "updated_at": now,
+            },
+        ],
+        "follows": [
+            {
+                "follower_user_id": PRIVATE_TRACK_FOLLOWER_ID,
+                "followee_user_id": PRIVATE_TRACK_OWNER_ID,
+                "is_current": True,
+                "is_delete": False,
+                "created_at": now,
+            },
+        ],
+        "events": [
+            {
+                "event_type": "remix_contest",
+                "user_id": PRIVATE_TRACK_OWNER_ID,
+                "entity_id": PRIVATE_TRACK_ID,
+                "entity_type": "track",
+                "is_deleted": False,
+                "created_at": now,
+                "updated_at": now,
+                "end_date": end_date,
+            },
+        ],
+    }
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        create_fan_remix_contest_ending_soon_notifications(session)
+        notifications = (
+            session.query(Notification)
+            .filter(Notification.type == NotificationType.FAN_REMIX_CONTEST_ENDING_SOON)
+            .all()
+        )
+        # Should not notify anyone for private tracks
+        assert len(notifications) == 0

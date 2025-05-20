@@ -46,6 +46,10 @@ def create_artist_remix_contest_ending_soon_notifications(session, now=None):
             )
             .first()
         )
+
+        # Don't create notifications for private tracks
+        if parent_track.is_unlisted:
+            continue
         parent_track_owner_id = parent_track.owner_id if parent_track else None
         exists = (
             session.query(Notification)
