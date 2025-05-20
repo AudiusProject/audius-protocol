@@ -246,7 +246,6 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
               size={TextInputSize.SMALL}
               startIcon={IconSearch}
               onChange={handleSearch}
-              // endIcon={IconCloseAlt}
               onClear={handleClearSearch}
             />
           </Flex>
