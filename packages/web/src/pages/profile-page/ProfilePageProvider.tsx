@@ -1141,8 +1141,8 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
 }
 
 type HookStateProps = {
-  accountUserId: ID | undefined
-  accountHasTracks: boolean | undefined
+  accountUserId?: ID | undefined
+  accountHasTracks?: boolean | undefined
 }
 const hookStateToProps = (Component: typeof ProfilePage) => {
   return (props: ProfilePageProps) => {
