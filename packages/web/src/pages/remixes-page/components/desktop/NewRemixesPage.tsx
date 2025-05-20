@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import {
   useRemixes,
   useRemixContest,
@@ -5,7 +7,7 @@ import {
 } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { remixMessages as messages } from '@audius/common/messages'
-import { Track, User } from '@audius/common/models'
+import { Name, Track, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { remixesPageLineupActions } from '@audius/common/store'
 import { dayjs } from '@audius/common/utils'
@@ -24,6 +26,7 @@ import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import Page from 'components/page/Page'
 import { useRemixPageParams } from 'pages/remixes-page/hooks'
 import { useUpdateSearchParams } from 'pages/search-page/hooks'
+import { track, make } from 'services/analytics'
 import { fullTrackRemixesPage, pickWinnersPage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'
 
@@ -90,6 +93,18 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
 
   const pickWinnersRoute = pickWinnersPage(originalTrack?.permalink)
 
+  const handlePickWinnersClick = useCallback(() => {
+    if (contest?.eventId) {
+      track(
+        make({
+          eventName: Name.REMIX_CONTEST_PICK_WINNERS_OPEN,
+          remixContestId: contest?.eventId,
+          trackId: originalTrack?.track_id
+        })
+      )
+    }
+  }, [contest?.eventId, originalTrack?.track_id])
+
   const renderHeader = () => (
     <Header
       icon={isRemixContest ? IconTrophy : IconRemix}
@@ -97,7 +112,7 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
       containerStyles={styles.header}
       rightDecorator={
         showPickWinnersButton ? (
-          <Button size='small' asChild>
+          <Button size='small' asChild onClick={handlePickWinnersClick}>
             <Link to={pickWinnersRoute}>{messages.pickWinners}</Link>
           </Button>
         ) : null

@@ -12,7 +12,8 @@ import { useCurrentUserId } from '../users/account/useCurrentUserId'
 
 import {
   getEventIdsByEntityIdQueryKey,
-  EventIdsByEntityIdOptions
+  EventIdsByEntityIdOptions,
+  getEventQueryKey
 } from './utils'
 
 export const useEventIdsByEntityId = (
@@ -41,6 +42,11 @@ export const useEventIdsByEntityId = (
       })
 
       const events = await batchGetEvents.fetch(entityId!)
+
+      // Prime the events in the cache
+      events.forEach((event) => {
+        queryClient.setQueryData(getEventQueryKey(event.eventId), event)
+      })
 
       return events.map((event) => event.eventId)
     },
