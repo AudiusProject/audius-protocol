@@ -1,54 +1,40 @@
-import { useCallback, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 
 import { DEFAULT_PURCHASE_AMOUNT_CENTS } from '@audius/common/hooks'
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
-import {
-  buyUSDCActions,
-  useUSDCManualTransferModal,
-  useAddFundsModal
-} from '@audius/common/store'
-import { View } from 'react-native'
+import { buyUSDCActions, useAddFundsModal } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Button } from '@audius/harmony-native'
-import { Text } from 'app/components/core'
+import { Button, Flex, Text } from '@audius/harmony-native'
 import Drawer from 'app/components/drawer'
 import { getPurchaseVendor } from 'app/store/purchase-vendor/selectors'
 import { reset as resetPurchaseMethod } from 'app/store/purchase-vendor/slice'
-import { flexRowCentered, makeStyles } from 'app/styles'
 
 import { PaymentMethod } from '../payment-method/PaymentMethod'
-import { USDCBalanceRow } from '../usdc-balance-row/USDCBalanceRow'
+import { USDCManualTransfer } from '../usdc-manual-transfer/USDCManualTransfer'
+
+import { CashBalanceSection } from './CashBalanceSection'
+import { StripeSection } from './StripeSection'
+
+enum AddFundsDrawerPage {
+  MAIN = 'MAIN',
+  TRANSFER = 'TRANSFER'
+}
 
 const messages = {
-  title: 'Add Funds',
+  addCash: 'Add Cash',
+  transferUSDC: 'USDC Transfer',
   continue: 'Continue'
 }
 
-const useStyles = makeStyles(({ spacing, palette }) => ({
-  drawer: {
-    paddingVertical: spacing(6),
-    paddingHorizontal: spacing(4),
-    gap: spacing(6)
-  },
-  titleContainer: {
-    ...flexRowCentered(),
-    justifyContent: 'center',
-    paddingBottom: spacing(4),
-    borderBottomWidth: 1,
-    borderBottomColor: palette.neutralLight8
-  }
-}))
-
 export const AddFundsDrawer = () => {
-  const styles = useStyles()
   const dispatch = useDispatch()
   const purchaseVendorState = useSelector(getPurchaseVendor)
   const { isOpen, onClose, onClosed } = useAddFundsModal()
-  const { onOpen: openUSDCManualTransferModal } = useUSDCManualTransferModal()
 
   const [selectedPurchaseMethod, setSelectedPurchaseMethod] =
     useState<PurchaseMethod>(PurchaseMethod.CARD)
+  const [page, setPage] = useState<AddFundsDrawerPage>(AddFundsDrawerPage.MAIN)
 
   const openCardFlow = useCallback(() => {
     dispatch(
@@ -65,9 +51,9 @@ export const AddFundsDrawer = () => {
     if (selectedPurchaseMethod === PurchaseMethod.CARD) {
       openCardFlow()
     } else if (selectedPurchaseMethod === PurchaseMethod.CRYPTO) {
-      openUSDCManualTransferModal()
+      setPage(AddFundsDrawerPage.TRANSFER)
     }
-  }, [selectedPurchaseMethod, openCardFlow, openUSDCManualTransferModal])
+  }, [selectedPurchaseMethod, openCardFlow])
 
   const handleClose = useCallback(() => {
     dispatch(resetPurchaseMethod())
@@ -76,28 +62,46 @@ export const AddFundsDrawer = () => {
 
   return (
     <Drawer isOpen={isOpen} onClose={handleClose} onClosed={onClosed}>
-      <View style={styles.drawer}>
-        <View style={styles.titleContainer}>
-          <Text
-            variant='label'
-            weight='heavy'
-            color='neutralLight2'
-            fontSize='xl'
-            textTransform='uppercase'
-          >
-            {messages.title}
-          </Text>
-        </View>
-        <USDCBalanceRow />
-        <PaymentMethod
-          selectedMethod={selectedPurchaseMethod}
-          setSelectedMethod={setSelectedPurchaseMethod}
-          showVendorChoice
-        />
-        <Button onPress={onContinuePress} fullWidth>
-          {messages.continue}
-        </Button>
-      </View>
+      <Flex gap='xl' pb='xl'>
+        {page === AddFundsDrawerPage.MAIN ? (
+          <>
+            <Flex row justifyContent='center' pt='xl'>
+              <Text variant='label' strength='strong' size='xl' color='default'>
+                {messages.addCash}
+              </Text>
+            </Flex>
+            <StripeSection />
+            <Flex ph='l' gap='xl'>
+              <CashBalanceSection />
+              <PaymentMethod
+                selectedMethod={selectedPurchaseMethod}
+                setSelectedMethod={setSelectedPurchaseMethod}
+                showVendorChoice
+                showExtraItemsToggle={false}
+              />
+              <Button onPress={onContinuePress} fullWidth>
+                {messages.continue}
+              </Button>
+            </Flex>
+          </>
+        ) : (
+          <>
+            <Flex
+              row
+              justifyContent='center'
+              borderBottom='default'
+              pt='xl'
+              pb='l'
+              mh='l'
+            >
+              <Text variant='label' strength='strong' size='xl' color='default'>
+                {messages.transferUSDC}
+              </Text>
+            </Flex>
+            <USDCManualTransfer />
+          </>
+        )}
+      </Flex>
     </Drawer>
   )
 }
