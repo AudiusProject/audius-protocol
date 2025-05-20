@@ -20,7 +20,6 @@ import {
   collectionPageSelectors,
   reachabilitySelectors,
   playerSelectors,
-  cacheTracksSelectors,
   PurchaseableContentType,
   queueActions,
   collectionPageActions

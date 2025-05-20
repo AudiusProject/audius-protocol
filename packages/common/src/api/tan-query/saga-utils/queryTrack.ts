@@ -5,7 +5,7 @@ import { ID } from '~/models/Identifiers'
 import { getUserId } from '~/store/account/selectors'
 import { getContext } from '~/store/effects'
 import { getSDK } from '~/store/sdkUtils'
-import { removeNullable } from '~/utils'
+import { removeNullable, Uid } from '~/utils'
 
 import { TQTrack } from '../models'
 import { QUERY_KEYS } from '../queryKeys'
@@ -57,4 +57,13 @@ export function* queryAllTracks() {
     },
     {} as Record<ID, TQTrack>
   )
+}
+
+export function* queryTrackByUid(
+  uid: string | null | undefined,
+  forceRetrieve = false
+) {
+  if (!uid) return null
+  const trackId = Number(Uid.fromString(uid).id)
+  return yield* queryTrack(trackId, forceRetrieve)
 }

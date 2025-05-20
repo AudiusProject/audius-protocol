@@ -1,4 +1,8 @@
-import { queryAllTracks, queryAllCachedUsers } from '@audius/common/api'
+import {
+  queryAllTracks,
+  queryAllCachedUsers,
+  queryTrackByUid
+} from '@audius/common/api'
 import {
   Name,
   Kind,
@@ -13,7 +17,6 @@ import {
 import { StringKeys, FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
-  cacheTracksSelectors,
   cacheActions,
   lineupActions as baseLineupActions,
   premiumTracksPageLineupActions,
@@ -45,7 +48,6 @@ import { isPreview } from 'common/utils/isPreview'
 import { AppState } from 'store/types'
 const { getSource, getUid, getPositions, getPlayerBehavior } = queueSelectors
 const { getUid: getCurrentPlayerTrackUid, getPlaying } = playerSelectors
-const { getTrack } = cacheTracksSelectors
 const { getUserId } = accountSelectors
 
 const getEntryId = <T>(entry: LineupEntry<T>) => `${entry.kind}:${entry.id}`
@@ -412,7 +414,7 @@ function* play<T extends Track | Collection>(
   action: ReturnType<LineupBaseActions['play']>
 ) {
   const lineup = yield* select(lineupSelector)
-  const requestedPlayTrack = yield* select(getTrack, { uid: action.uid })
+  const requestedPlayTrack = yield* queryTrackByUid(action.uid)
   const isPreview = !!action.isPreview
 
   if (action.uid) {
