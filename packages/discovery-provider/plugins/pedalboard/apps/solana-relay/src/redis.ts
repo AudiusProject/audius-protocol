@@ -1,6 +1,7 @@
 import { createClient, RedisClientType } from 'redis'
 
 import { config } from './config'
+import { logger } from './logger'
 
 let redisClient: RedisClientType
 let isReady: boolean
@@ -88,12 +89,38 @@ export const rateLimitTokenAccountCreation = async (
   const limit = isVerified
     ? TOKEN_ACCOUNT_CREATION_VERIFIED_USER_LIMIT
     : TOKEN_ACCOUNT_CREATION_USER_LIMIT
+
+  const currentUserCount = await redis.get(userKey)
+  const currentSystemKey = 'ata-creation-count'
+  const currentSystemCount = await redis.get(currentSystemKey)
+
+  logger.info(
+    {
+      wallet,
+      isVerified,
+      currentUserCount: currentUserCount ? parseInt(currentUserCount) : 0,
+      currentSystemCount: currentSystemCount ? parseInt(currentSystemCount) : 0,
+      userLimit: limit,
+      systemLimit: TOKEN_ACCOUNT_CREATION_SYSTEM_LIMIT
+    },
+    'Token account creation rate limit check'
+  )
+
   const [userCount] = await redis
     .multi()
     .incr(userKey)
     .expire(userKey, TOKEN_ACCOUNT_CREATION_USER_KEY_EXPIRY)
     .exec()
   if (typeof userCount !== 'number' || userCount > limit) {
+    logger.error(
+      {
+        wallet,
+        isVerified,
+        userCount,
+        limit
+      },
+      'User exceeded token account creation limit'
+    )
     throw new Error(`User ${wallet} has created too many token accounts`)
   }
 
@@ -108,6 +135,23 @@ export const rateLimitTokenAccountCreation = async (
     typeof systemCount !== 'number' ||
     systemCount > TOKEN_ACCOUNT_CREATION_SYSTEM_LIMIT
   ) {
+    logger.error(
+      {
+        systemCount,
+        systemLimit: TOKEN_ACCOUNT_CREATION_SYSTEM_LIMIT
+      },
+      'System exceeded token account creation limit'
+    )
     throw new Error('System has created too many token accounts')
   }
+
+  logger.info(
+    {
+      wallet,
+      isVerified,
+      newUserCount: userCount,
+      newSystemCount: systemCount
+    },
+    'Token account creation rate limit passed'
+  )
 }
