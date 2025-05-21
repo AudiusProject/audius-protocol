@@ -1,6 +1,8 @@
 import React, { useCallback } from 'react'
 
 import { useNotificationEntity } from '@audius/common/api'
+import { Name } from '@audius/common/models'
+import type { USDCPurchaseBuyerNotification as USDCPurchaseBuyerNotificationType } from '@audius/common/store'
 import { notificationsSelectors } from '@audius/common/store'
 import { getEntityTitle } from '@audius/common/utils'
 import { make } from '@audius/web/src/common/store/analytics/actions'
@@ -35,7 +37,7 @@ const messages = {
 }
 
 type USDCPurchaseBuyerNotificationProps = {
-  notification: any
+  notification: USDCPurchaseBuyerNotificationType
 }
 
 export const USDCPurchaseBuyerNotification = ({
@@ -59,7 +61,7 @@ export const USDCPurchaseBuyerNotification = ({
         entityType
       )
       const analytics = make(
-        'NOTIFICATIONS_CLICK_USDC_PURCHASE_TWITTER_SHARE' as any,
+        Name.NOTIFICATIONS_CLICK_USDC_PURCHASE_TWITTER_SHARE,
         { text: shareText }
       )
       return { shareText, analytics }

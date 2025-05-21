@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react'
 
 import { useGetCurrentUserId, useNotificationEntity } from '@audius/common/api'
+import type { CommentMentionNotification as CommentMentionNotificationType } from '@audius/common/store'
 import { notificationsSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
@@ -27,7 +28,7 @@ const messages = {
 }
 
 type CommentMentionNotificationProps = {
-  notification: any // TODO: Add proper type
+  notification: CommentMentionNotificationType
 }
 
 export const CommentMentionNotification = (

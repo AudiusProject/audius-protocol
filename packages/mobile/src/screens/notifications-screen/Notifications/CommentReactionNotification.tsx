@@ -2,6 +2,7 @@ import React, { useCallback } from 'react'
 
 import { useGetCurrentUserId, useNotificationEntity } from '@audius/common/api'
 import { notificationsSelectors } from '@audius/common/store'
+import type { CommentReactionNotification as CommentReactionNotificationType } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
 import { IconMessage } from '@audius/harmony-native'
@@ -28,7 +29,7 @@ const messages = {
 }
 
 type CommentReactionNotificationProps = {
-  notification: any // TODO: Add proper type
+  notification: CommentReactionNotificationType
 }
 
 export const CommentReactionNotification = (

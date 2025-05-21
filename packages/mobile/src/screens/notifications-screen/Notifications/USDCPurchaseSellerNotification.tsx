@@ -1,6 +1,8 @@
 import React, { useCallback } from 'react'
 
 import { useNotificationEntity } from '@audius/common/api'
+import type { StringUSDC } from '@audius/common/models'
+import type { USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType } from '@audius/common/store'
 import { notificationsSelectors } from '@audius/common/store'
 import { stringUSDCToBN, formatUSDCWeiToUSDString } from '@audius/common/utils'
 import { capitalize } from 'lodash'
@@ -31,7 +33,7 @@ const messages = {
 }
 
 type USDCPurchaseSellerNotificationProps = {
-  notification: any
+  notification: USDCPurchaseSellerNotificationType
 }
 
 export const USDCPurchaseSellerNotification = (
@@ -70,7 +72,7 @@ export const USDCPurchaseSellerNotification = (
         {formatUSDCWeiToUSDString(
           stringUSDCToBN(amount)
             .add(stringUSDCToBN(extraAmount))
-            .toString() as any
+            .toString() as StringUSDC
         )}
         {messages.exclamation}
       </NotificationText>

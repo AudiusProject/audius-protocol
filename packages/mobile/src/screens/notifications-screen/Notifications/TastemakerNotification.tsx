@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react'
 
 import { useNotificationEntity } from '@audius/common/api'
+import type { TastemakerNotification as TastemakerNotificationType } from '@audius/common/store'
 import { notificationsSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
@@ -26,7 +27,7 @@ const messages = {
 }
 
 type TastemakerNotificationProps = {
-  notification: any
+  notification: TastemakerNotificationType
 }
 
 export const TastemakerNotification = (props: TastemakerNotificationProps) => {
