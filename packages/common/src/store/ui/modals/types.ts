@@ -14,6 +14,7 @@ import { DeleteTrackConfirmationModalState } from './delete-track-confirmation-m
 import { DownloadTrackArchiveModalState } from './download-track-archive-modal'
 import { EarlyReleaseConfirmationModalState } from './early-release-confirmation-modal'
 import { EditAccessConfirmationModalState } from './edit-access-confirmation-modal'
+import { FinalizeWinnersConfirmationModalState } from './finalize-winners-confirmation-modal'
 import { HideContentConfirmationModalState } from './hide-confirmation-modal'
 import { HostRemixContestModalState } from './host-remix-contest-modal'
 import { InboxUnavailableModalState } from './inbox-unavailable-modal'
@@ -113,6 +114,7 @@ export type Modals =
   | 'DownloadTrackArchive'
   | 'BuySellModal'
   | 'HostRemixContest'
+  | 'FinalizeWinnersConfirmation'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState
@@ -142,6 +144,7 @@ export type StatefulModalsState = {
   DeleteTrackConfirmation: DeleteTrackConfirmationModalState
   ReplaceTrackConfirmation: ReplaceTrackConfirmationModalState
   ReplaceTrackProgress: ReplaceTrackProgressModalState
+  FinalizeWinnersConfirmation: FinalizeWinnersConfirmationModalState
   Announcement: AnnouncementModalState
   Notification: BaseModalState
   DownloadTrackArchive: DownloadTrackArchiveModalState
