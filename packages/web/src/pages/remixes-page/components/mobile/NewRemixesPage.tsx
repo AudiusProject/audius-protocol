@@ -1,10 +1,6 @@
 import { useEffect, useContext } from 'react'
 
-import {
-  RemixContestData,
-  useRemixContest,
-  useRemixes
-} from '@audius/common/api'
+import { useRemixContest, useRemixes } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { remixMessages as messages } from '@audius/common/messages'
 import { Track, User } from '@audius/common/models'
@@ -69,8 +65,7 @@ const RemixesPage = nullGuard(
     )
     const { data: contest } = useRemixContest(originalTrack?.track_id)
     const isRemixContest = isRemixContestEnabled && contest
-    const winnerCount =
-      (contest?.eventData as RemixContestData)?.winners?.length ?? 0
+    const winnerCount = contest?.eventData?.winners?.length ?? 0
 
     const { setHeader } = useContext(HeaderContext)
     useEffect(() => {
