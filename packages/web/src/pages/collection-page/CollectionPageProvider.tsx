@@ -126,8 +126,8 @@ type CollectionPageProps = OwnProps &
   ReturnType<ReturnType<typeof makeMapStateToProps>> &
   ReturnType<typeof mapDispatchToProps> &
   RouteComponentProps & {
-    userId: number | null | undefined
-    userPlaylists: AccountCollection[] | undefined
+    userId?: number | null | undefined
+    userPlaylists?: AccountCollection[] | undefined
   }
 
 type CollectionPageState = {

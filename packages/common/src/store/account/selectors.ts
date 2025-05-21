@@ -35,7 +35,3 @@ export const getAccountUser = createSelector(
   [internalGetAccountUser],
   (user) => user
 )
-
-export const getPlaylistLibrary = (state: CommonState) => {
-  return state.account.playlistLibrary
-}

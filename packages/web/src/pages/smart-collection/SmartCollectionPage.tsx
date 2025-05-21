@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 
+import { useCurrentAccount } from '@audius/common/api'
 import { SmartCollectionVariant } from '@audius/common/models'
 import {
-  accountSelectors,
   smartCollectionPageSelectors,
   smartCollectionPageActions,
   playlistLibraryHelpers
@@ -14,7 +14,6 @@ import CollectionPage from 'pages/collection-page/CollectionPage'
 import { AppState } from 'store/types'
 const { fetchSmartCollection } = smartCollectionPageActions
 const { getCollection } = smartCollectionPageSelectors
-const { getPlaylistLibrary } = accountSelectors
 const { findInPlaylistLibrary } = playlistLibraryHelpers
 
 type OwnProps = {
@@ -28,9 +27,12 @@ type SmartCollectionPageProps = OwnProps &
 const SmartCollectionPage = ({
   variant,
   collection,
-  playlistLibrary,
   fetch
 }: SmartCollectionPageProps) => {
+  const { data: playlistLibrary } = useCurrentAccount({
+    select: (account) => account?.playlistLibrary
+  })
+
   useEffect(() => {
     fetch(variant)
   }, [variant, fetch])
@@ -55,8 +57,7 @@ const SmartCollectionPage = ({
 
 function mapStateToProps(state: AppState, ownProps: OwnProps) {
   return {
-    collection: getCollection(state, { variant: ownProps.variant }),
-    playlistLibrary: getPlaylistLibrary(state)
+    collection: getCollection(state, { variant: ownProps.variant })
   }
 }
 
