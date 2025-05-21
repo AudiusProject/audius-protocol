@@ -134,7 +134,7 @@ export const useRemixes = (
         userTrackMetadataFromSDK
       )
 
-      let winnerCount = null
+      let winnerCount: number | null = null
 
       if (trackId) {
         const { data: eventsData } = await sdk.events.getEntityEvents({
