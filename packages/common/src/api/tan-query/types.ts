@@ -23,7 +23,11 @@ export type QueryKey<TData> = DataTag<TanQueryKey, TData, Error>
  */
 export type QueryOptions<T = any> = Pick<
   DefinedInitialDataOptions<T>,
-  'staleTime' | 'enabled' | 'placeholderData' | 'refetchOnMount'
+  | 'staleTime'
+  | 'enabled'
+  | 'placeholderData'
+  | 'refetchOnMount'
+  | 'throwOnError'
 >
 
 export type SelectableQueryOptions<TData, TResult = TData> = Omit<

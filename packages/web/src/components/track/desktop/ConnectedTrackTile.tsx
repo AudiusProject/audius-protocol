@@ -26,6 +26,7 @@ import { UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
 import { TrackArtwork } from 'components/track/Artwork'
+import { DragDropKind } from 'store/dragndrop/slice'
 import { isDescendantElementOf } from 'utils/domUtils'
 import { fullTrackPage } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
@@ -57,6 +58,7 @@ type OwnProps = {
   isTrending: boolean
   isFeed: boolean
   onClick?: (trackId: ID) => void
+  dragKind?: DragDropKind
 }
 
 type ConnectedTrackTileProps = OwnProps
@@ -73,7 +75,8 @@ const ConnectedTrackTile = ({
   containerClassName,
   isTrending,
   isFeed = false,
-  onClick
+  onClick,
+  dragKind
 }: ConnectedTrackTileProps) => {
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
@@ -367,7 +370,7 @@ const ConnectedTrackTile = ({
   return (
     <Draggable
       text={title}
-      kind='track'
+      kind={dragKind ?? 'track'}
       id={trackId}
       isOwner={isOwner}
       isDisabled={disableActions || showSkeleton}

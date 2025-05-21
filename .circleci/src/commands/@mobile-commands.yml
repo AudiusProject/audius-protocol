@@ -34,14 +34,14 @@ mobile-prepare-ios:
         paths:
           - packages/mobile/ios/vendor/bundle
     - restore_cache:
-        key: pods-{{ checksum "packages/mobile/ios/Podfile.lock" }}
+        key: pods-1{{ checksum "packages/mobile/ios/Podfile.lock" }}
     - run:
         name: install pods
         command: |
           cd packages/mobile/ios
           RCT_NEW_ARCH_ENABLED=0 bundle exec pod install
     - save_cache:
-        key: pods-{{ checksum "packages/mobile/ios/Podfile.lock" }}
+        key: pods-1{{ checksum "packages/mobile/ios/Podfile.lock" }}
         paths:
           - packages/mobile/ios/pods
     - run:

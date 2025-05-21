@@ -28,7 +28,7 @@
 
 .perspectiveCard .backgroundIcon {
   position: absolute;
-  right: -160px;
+  right: 10px;
   top: -16px;
   bottom: -16px;
   display: flex;
@@ -60,11 +60,6 @@
   .perspectiveCard .backgroundIcon {
     transform: translate3d(0, 0, 0);
   }
-}
-
-.perspectiveCard .backgroundIcon svg {
-  height: 110% !important;
-  min-width: 250px !important;
 }
 
 .perspectiveCard .backgroundIcon path {

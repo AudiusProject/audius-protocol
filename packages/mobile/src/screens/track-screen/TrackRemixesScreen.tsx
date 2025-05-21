@@ -1,4 +1,5 @@
 import {
+  useCurrentUserId,
   useRemixContest,
   useRemixes,
   useTrackByParams
@@ -10,11 +11,17 @@ import {
   remixesPageLineupActions as tracksActions,
   remixesPageSelectors
 } from '@audius/common/store'
-import { pluralize } from '@audius/common/utils'
+import { dayjs, pluralize } from '@audius/common/utils'
 import { Text as RNText, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { Flex, IconRemix, IconTrophy, Text } from '@audius/harmony-native'
+import {
+  Button,
+  Flex,
+  IconRemix,
+  IconTrophy,
+  Text
+} from '@audius/harmony-native'
 import {
   Screen,
   ScreenContent,
@@ -26,6 +33,7 @@ import { Lineup } from 'app/components/lineup'
 import { TanQueryLineup } from 'app/components/lineup/TanQueryLineup'
 import { TrackLink } from 'app/components/track/TrackLink'
 import { UserLink } from 'app/components/user-link'
+import { useDrawer } from 'app/hooks/useDrawer'
 import { useRoute } from 'app/hooks/useRoute'
 import { flexRowCentered, makeStyles } from 'app/styles'
 
@@ -55,6 +63,8 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 }))
 
 export const TrackRemixesScreen = () => {
+  const { onOpen: openPickWinnersDrawer } = useDrawer('PickWinners')
+  const { data: currentUserId } = useCurrentUserId()
   const { params } = useRoute<'TrackRemixes'>()
   const { data: track } = useTrackByParams(params)
   const trackId = track?.track_id
@@ -67,8 +77,16 @@ export const TrackRemixesScreen = () => {
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
   )
+  const { isEnabled: isRemixContestWinnersMilestoneEnabled } = useFeatureFlag(
+    FeatureFlags.REMIX_CONTEST_WINNERS_MILESTONE
+  )
   const { data: contest } = useRemixContest(trackId)
   const isRemixContest = isRemixContestEnabled && contest
+  const isRemixContestEnded =
+    isRemixContest && dayjs(contest.endDate).isBefore(dayjs())
+  const isTrackOwner = currentUserId === track?.owner_id
+  const showPickWinnersButton =
+    isRemixContestWinnersMilestoneEnabled && isTrackOwner && isRemixContestEnded
 
   const styles = useStyles()
 
@@ -87,8 +105,19 @@ export const TrackRemixesScreen = () => {
         {isRemixContest ? (
           <ScreenPrimaryContent>
             <ScrollView>
-              <Flex ph='l' mt='l'>
+              <Flex
+                row
+                ph='l'
+                mt='l'
+                alignItems='center'
+                justifyContent='space-between'
+              >
                 <Text variant='title'>{messages.originalTrack}</Text>
+                {showPickWinnersButton ? (
+                  <Button size='xs' onPress={openPickWinnersDrawer}>
+                    {messages.pickWinners}
+                  </Button>
+                ) : null}
               </Flex>
 
               <TanQueryLineup

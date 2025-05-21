@@ -8,7 +8,7 @@ import {
   useUpdateEvent
 } from '@audius/common/api'
 import { remixMessages as messages } from '@audius/common/messages'
-import { ID, Kind } from '@audius/common/models'
+import { ID, Kind, Name } from '@audius/common/models'
 import { toast } from '@audius/common/src/store/ui/toast/slice'
 import {
   pickWinnersPageLineupActions,
@@ -29,20 +29,24 @@ import {
   Text,
   useTheme,
   spacing,
-  Box,
-  LoadingSpinner
+  LoadingSpinner,
+  Box
 } from '@audius/harmony'
+import { ClassNames } from '@emotion/react'
 import { isEqual } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 import { useParams } from 'react-router'
 
 import { useHistoryContext } from 'app/HistoryProvider'
+import { Droppable } from 'components/dragndrop'
 import { Header } from 'components/header/desktop/Header'
 import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import { Page } from 'components/page/Page'
 import ConnectedTrackTile from 'components/track/desktop/ConnectedTrackTile'
 import { TrackTileSize } from 'components/track/types'
 import { useUpdateSearchParams } from 'pages/search-page/hooks'
+import { track, make } from 'services/analytics'
+import { selectDragnDropState } from 'store/dragndrop/slice'
 import { trackRemixesPage } from 'utils/route'
 
 import { usePickWinnersPageParams } from './hooks'
@@ -51,6 +55,7 @@ const {
   clear,
   add,
   remove,
+  reorder,
   play: playAction,
   pause: pauseAction
 } = queueActions
@@ -62,10 +67,10 @@ const PICK_WINNERS_PAGE_SIZE = 10
 const MAX_WINNERS = 5
 
 export const PickWinnersPage = () => {
+  const { data: currentUserId } = useCurrentUserId()
   const dispatch = useDispatch()
   const { history } = useHistoryContext()
-  const { data: currentUserId } = useCurrentUserId()
-  const { color, motion } = useTheme()
+  const { color, cornerRadius, motion } = useTheme()
   const { handle, slug } = useParams<{ handle: string; slug: string }>()
   const { data: originalTrack } = useTrackByPermalink(
     handle && slug ? `/${handle}/${slug}` : null
@@ -74,6 +79,8 @@ export const PickWinnersPage = () => {
   const { mutate: updateEvent } = useUpdateEvent()
   const playingUid = useSelector(getUid)
   const isPlayerPlaying = useSelector(getPlaying)
+  const { dragging: isDragging, id: draggingId } =
+    useSelector(selectDragnDropState)
 
   const updateSortParam = useUpdateSearchParams('sortMethod')
   const updateIsCosignParam = useUpdateSearchParams('isCosign')
@@ -123,6 +130,16 @@ export const PickWinnersPage = () => {
           },
           userId: currentUserId
         })
+
+        if (originalTrack?.track_id) {
+          track(
+            make({
+              eventName: Name.REMIX_CONTEST_PICK_WINNERS_FINALIZE,
+              remixContestId: remixContest.eventId,
+              trackId: originalTrack?.track_id
+            })
+          )
+        }
       }
 
       // Navigate back to the track remixes page for the original track
@@ -135,6 +152,7 @@ export const PickWinnersPage = () => {
     currentUserId,
     history,
     originalTrack?.permalink,
+    originalTrack?.track_id,
     remixContest,
     updateEvent,
     winners
@@ -247,14 +265,14 @@ export const PickWinnersPage = () => {
           onClick={handleClick}
           aria-label='Add Winner'
         >
-          <Icon fill={color.icon.staticWhite} />
+          <Icon fill={color.icon.default} />
         </Paper>
       )
     },
     [
       addIdToWinners,
       color.background.white,
-      color.icon.staticWhite,
+      color.icon.default,
       color.neutral.n100,
       color.neutral.n150,
       motion.hover,
@@ -305,25 +323,81 @@ export const PickWinnersPage = () => {
         }
       }
 
+      const handleDrop = (trackId: ID) => {
+        const originIdx = winners.indexOf(trackId)
+        const placeIdx = winners.indexOf(winnerId)
+
+        if (trackId === winnerId || originIdx === placeIdx + 1) return
+
+        const offset = originIdx > placeIdx ? 1 : 0
+        const winnersCopy = [...winners]
+        const item = winnersCopy.splice(originIdx, 1)[0]
+        winnersCopy.splice(placeIdx + offset, 0, item)
+        setWinners(winnersCopy)
+        dispatch(
+          reorder({ orderedUids: winnersCopy.map((id) => winnerTileUid(id)) })
+        )
+      }
+
       return (
         <Box key={winnerId}>
-          <ConnectedTrackTile
-            key={winnerId}
-            id={winnerId}
-            uid={uid}
-            index={index}
-            order={index}
-            ordered={false}
-            size={TrackTileSize.LARGE}
-            isLoading={false}
-            statSize='small'
-            isTrending={false}
-            isFeed={false}
-            togglePlay={togglePlay}
-            hasLoaded={() => {}}
-            onClick={() => {}}
-          />
-          <TileButton elementId={winnerId} isAdd={false} />
+          <ClassNames>
+            {({ css }) => (
+              <Droppable
+                onDrop={handleDrop}
+                acceptedKinds={['winner-tile']}
+                hoverClassName='winnerTileHover'
+                inactiveClassName='winnerTileInactive'
+                className={css({
+                  width: '100%',
+                  position: 'relative',
+                  // Drop Indicator
+                  '::after': {
+                    content: '""',
+                    position: 'absolute',
+                    bottom: 7,
+                    left: 0,
+                    right: 0,
+                    height: 2,
+                    borderRadius: cornerRadius.xs,
+                    backgroundColor: color.background.accent,
+                    transition: `opacity ${motion.expressive}`,
+                    opacity: 0
+                  },
+                  '&.winnerTileInactive > *': {
+                    opacity: 0.6,
+                    cursor: 'not-allowed'
+                  },
+                  ...(isDragging && draggingId === winnerId
+                    ? // Fade out tile when dragging
+                      { '& > *': { opacity: 0.6 } }
+                    : // Display drop indicator when hovering over tile
+                      { '&.winnerTileHover::after': { opacity: 1 } })
+                })}
+              >
+                <>
+                  <ConnectedTrackTile
+                    key={winnerId}
+                    dragKind='winner-tile'
+                    id={winnerId}
+                    uid={uid}
+                    index={index}
+                    order={index}
+                    ordered={false}
+                    size={TrackTileSize.LARGE}
+                    isLoading={false}
+                    statSize='small'
+                    isTrending={false}
+                    isFeed={false}
+                    togglePlay={togglePlay}
+                    hasLoaded={() => {}}
+                    onClick={() => {}}
+                  />
+                  <TileButton elementId={winnerId} isAdd={false} />
+                </>
+              </Droppable>
+            )}
+          </ClassNames>
         </Box>
       )
     },
@@ -331,9 +405,16 @@ export const PickWinnersPage = () => {
       winnerTileUid,
       playingUid,
       isPlayerPlaying,
-      TileButton,
       handlePause,
-      handlePlay
+      handlePlay,
+      winners,
+      dispatch,
+      cornerRadius.xs,
+      color.background.accent,
+      motion.expressive,
+      isDragging,
+      draggingId,
+      TileButton
     ]
   )
 
@@ -352,8 +433,6 @@ export const PickWinnersPage = () => {
               <Text variant='body'>{messages.winnersDescription}</Text>
             </Flex>
             {winners.length > 0 ? (
-              // TODO: Update tiles to be reorderable
-              // Can use the reorder action in queue actions when a reorder occurs
               <Flex column>
                 {winners.map((winnerId, index) =>
                   renderWinnerTile(winnerId, index)

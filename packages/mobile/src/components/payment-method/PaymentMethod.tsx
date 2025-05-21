@@ -85,6 +85,7 @@ type PaymentMethodProps = {
   isCoinflowEnabled?: boolean
   isPayWithAnythingEnabled?: boolean
   showVendorChoice?: boolean
+  showExtraItemsToggle?: boolean
 }
 
 export const PaymentMethod = ({
@@ -97,7 +98,8 @@ export const PaymentMethod = ({
   showExistingBalance,
   isCoinflowEnabled,
   isPayWithAnythingEnabled,
-  showVendorChoice
+  showVendorChoice,
+  showExtraItemsToggle = true
 }: PaymentMethodProps) => {
   const styles = useStyles()
   const neutral = useColor('neutral')
@@ -230,6 +232,12 @@ export const PaymentMethod = ({
     })
   }
 
+  // NEW: If showExtraItemsToggle is false, append extraItems to items
+  const summaryTableItems = showExtraItemsToggle
+    ? items
+    : [...items, ...extraItems]
+  const summaryTableExtraItems = showExtraItemsToggle ? extraItems : undefined
+
   const renderItem = ({ item }) => {
     const { label, value, icon: Icon, content, disabled } = item
     const isSelected = value === selectedMethod
@@ -256,12 +264,13 @@ export const PaymentMethod = ({
   return (
     <SummaryTable
       title={messages.title}
-      items={items}
-      extraItems={extraItems}
+      items={summaryTableItems}
+      extraItems={summaryTableExtraItems}
       showExtraItemsCopy={messages.showAdvanced}
       disableExtraItemsToggle={
-        selectedMethod === PurchaseMethod.WALLET ||
-        selectedMethod === PurchaseMethod.CRYPTO
+        showExtraItemsToggle &&
+        (selectedMethod === PurchaseMethod.WALLET ||
+          selectedMethod === PurchaseMethod.CRYPTO)
       }
       hideExtraItemsCopy={messages.hideAdvanced}
       renderBody={(items: SummaryTableItem[]) => (

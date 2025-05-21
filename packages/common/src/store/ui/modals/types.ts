@@ -2,7 +2,7 @@ import { Action } from '@reduxjs/toolkit'
 
 import { ModalSource } from '~/models/Analytics'
 
-import { AddFundsModalState } from './add-funds-modal'
+import { AddCashModalState } from './add-cash-modal'
 import { AlbumTrackRemoveConfirmationModalState } from './album-track-remove-confirmation-modal'
 import { AnnouncementModalState } from './announcement-modal'
 import { ArtistPickModalState } from './artist-pick-modal'
@@ -98,7 +98,7 @@ export type Modals =
   | 'USDCPurchaseDetailsModal'
   | 'USDCTransactionDetailsModal'
   | 'USDCManualTransferModal'
-  | 'AddFundsModal'
+  | 'AddCashModal'
   | 'Welcome'
   | 'CoinflowWithdraw'
   | 'WaitForDownloadModal'
@@ -128,7 +128,7 @@ export type StatefulModalsState = {
   USDCPurchaseDetailsModal: USDCPurchaseDetailsModalState
   USDCTransactionDetailsModal: USDCTransactionDetailsModalState
   USDCManualTransferModal: USDCManualTransferModalState
-  AddFundsModal: AddFundsModalState
+  AddCashModal: AddCashModalState
   PremiumContentPurchaseModal: PremiumContentPurchaseModalState
   CoinflowWithdraw: CoinflowWithdrawModalState
   WaitForDownloadModal: WaitForDownloadModalState

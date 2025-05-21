@@ -36,7 +36,8 @@ export const useTrackByPermalink = <TResult = TQTrack>(
   const simpleOptions = pick(options, [
     'enabled',
     'staleTime',
-    'placeholderData'
+    'placeholderData',
+    'throwOnError'
   ]) as QueryOptions
 
   const { data: trackId } = useQuery({
@@ -61,6 +62,7 @@ export const useTrackByPermalink = <TResult = TQTrack>(
       return track?.track_id
     },
     staleTime: simpleOptions?.staleTime ?? Infinity,
+    throwOnError: simpleOptions?.throwOnError ?? true,
     enabled:
       simpleOptions?.enabled !== false &&
       !!permalink &&
