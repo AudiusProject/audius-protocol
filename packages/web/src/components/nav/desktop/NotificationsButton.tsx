@@ -1,5 +1,6 @@
 import { MouseEvent, useCallback, useEffect, useMemo, useRef } from 'react'
 
+import { useNotificationUnreadCount } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Flex, IconNotificationOn, NotificationCount } from '@audius/harmony'
@@ -21,8 +22,7 @@ const messages = {
 }
 
 export const NotificationsButton = () => {
-  // const { data: notificationCount = 0 } = useNotificationUnreadCount()
-  const notificationCount = 5
+  const { data: notificationCount = 0 } = useNotificationUnreadCount()
   const hasAccount = useSelector(getHasAccount)
   const isAccountComplete = useSelector(getIsAccountComplete)
   const buttonRef = useRef<HTMLButtonElement>(null)
