@@ -53,7 +53,7 @@ const messages = {
   title: 'Withdraw Cash',
   errors: {
     insufficientBalance:
-      'Your USDC wallet does not have enough funds to cover this transaction.',
+      'Your cash balance is insufficient to complete this transaction.',
     amountTooLow: 'Please withdraw at least $0.01.',
     invalidAddress: 'A valid Solana USDC wallet address is required.',
     minCashTransfer: 'A minimum of $5 is required for cash withdrawals.',
@@ -151,7 +151,6 @@ export const WithdrawUSDCModal = () => {
     IntKeys.MIN_USDC_WITHDRAW_BALANCE_CENTS
   )
   const { page } = data
-  // const page = WithdrawUSDCModalPages.TRANSFER_IN_PROGRESS
   const { data: balance } = useUSDCBalance()
   const balanceNumberCents = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC

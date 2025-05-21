@@ -68,7 +68,7 @@ export const EnterTransferDetails = () => {
 
   const [
     { value },
-    _ignoredAmountMeta,
+    { error: amountError },
     { setValue: setAmount, setTouched: setAmountTouched }
   ] = useField(AMOUNT)
   const [{ value: methodValue }, _ignoredMethodMeta, { setValue: setMethod }] =
@@ -93,14 +93,15 @@ export const EnterTransferDetails = () => {
 
   const [
     { value: address },
-    _ignoredAddressMeta,
+    { error: addressError },
     { setTouched: setAddressTouched }
   ] = useField(ADDRESS)
 
+  const isBalanceLessThanMinimum = balance ? balance.lt(new BN(5)) : false
   const disableContinue =
     methodValue === WithdrawMethod.COINFLOW
       ? !!balance?.isZero()
-      : !address || !!balance?.isZero()
+      : !address || !!addressError || !!amountError || isBalanceLessThanMinimum
 
   const handlePasteAddress = useCallback(
     (event: React.ClipboardEvent) => {
