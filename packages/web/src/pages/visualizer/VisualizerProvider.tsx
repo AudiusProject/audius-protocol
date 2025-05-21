@@ -34,6 +34,7 @@ import {
 } from 'hooks/useTrackCoverArt'
 import { audioPlayer } from 'services/audio-player'
 import { useCurrentTrack } from '@audius/common/hooks'
+import { useUser } from '@audius/common/api'
 
 const { profilePage } = route
 const { makeGetCurrent } = queueSelectors
@@ -78,6 +79,7 @@ const Visualizer = ({
   const [showVisualizer, setShowVisualizer] = useState(false)
 
   const currentTrack = useCurrentTrack()
+  const { data: user } = useUser(currentTrack?.owner_id)
 
   useEffect(() => {
     if (showVisualizer) {
@@ -150,21 +152,19 @@ const Visualizer = ({
   }, [fadeVisualizer])
 
   const goToTrackPage = useCallback(() => {
-    const { user } = currentQueueItem
     if (currentTrack && user) {
       goToRoute(currentTrack.permalink)
     }
-  }, [currentQueueItem])
+  }, [currentTrack, user])
 
   const goToArtistPage = useCallback(() => {
-    const { user } = currentQueueItem
     if (user) {
       goToRoute(profilePage(user.handle))
     }
-  }, [currentQueueItem])
+  }, [user])
 
   const renderTrackInfo = () => {
-    const { uid, user } = currentQueueItem
+    const { uid } = currentQueueItem
     const dominantColor = dominantColors
       ? dominantColors[0]
       : { r: 0, g: 0, b: 0 }

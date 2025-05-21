@@ -12,7 +12,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { useReachabilityEffect } from 'app/hooks/useReachabilityEffect'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
-import { getOfflineTracks } from 'app/store/offline-downloads/selectors'
+import { useOfflineTracks } from 'app/store/offline-downloads/hooks'
 
 const { getSavedTracksLineup } = savedPageSelectors
 
@@ -22,7 +22,7 @@ const { getSavedTracksLineup } = savedPageSelectors
  */
 export const useFavoritesLineup = (fetchLineup: () => void) => {
   const dispatch = useDispatch()
-  const offlineTracks = useSelector(getOfflineTracks)
+  const offlineTracks = useOfflineTracks()
   const savedTracks = useSelector(getSavedTracksLineup)
   const savedTracksUidMap = savedTracks.entries.reduce((acc, track) => {
     acc[track.id] = track.uid

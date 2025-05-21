@@ -1,10 +1,6 @@
-import { createSelector } from 'reselect'
-
 import { getAllEntries, getEntry } from '~/store/cache/selectors'
-import { getTrack } from '~/store/cache/tracks/selectors'
-import { getUser, getUser as getUserById } from '~/store/cache/users/selectors'
+import { getUser as getUserById } from '~/store/cache/users/selectors'
 import type { CommonState } from '~/store/commonStore'
-import { removeNullable } from '~/utils/typeUtils'
 
 import type { ID, UID, Collection, User } from '../../../models'
 import { Status, Kind } from '../../../models'
@@ -76,43 +72,6 @@ export const getCollectionsByUid = (state: CommonState) => {
     },
     {} as { [uid: string]: Collection | null }
   )
-}
-
-export const getCollectionTracks = (
-  state: CommonState,
-  { id }: { id?: ID }
-) => {
-  const collection = getCollection(state, { id })
-  if (!collection) return null
-
-  const trackIds = collection.playlist_contents.track_ids.map(
-    ({ track }) => track
-  )
-  const tracks = trackIds
-    .map((trackId) => getTrack(state, { id: trackId }))
-    .filter(removeNullable)
-
-  return tracks
-}
-
-export const getCollectionDuration = createSelector(
-  [getCollectionTracks],
-  (collectionTracks) =>
-    collectionTracks?.reduce((acc, track) => acc + track.duration, 0) ?? 0
-)
-
-export const getCollectionTracksWithUsers = (
-  state: CommonState,
-  { id }: { id?: ID }
-) => {
-  const tracks = getCollectionTracks(state, { id })
-  return tracks
-    ?.map((track) => {
-      const user = getUser(state, { id: track.owner_id })
-      if (!user) return null
-      return { ...track, user }
-    })
-    .filter(removeNullable)
 }
 
 export const getStatuses = (state: CommonState, props: { ids: ID[] }) => {

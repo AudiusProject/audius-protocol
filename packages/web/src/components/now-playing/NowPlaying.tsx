@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { useToggleFavoriteTrack } from '@audius/common/api'
+import { useToggleFavoriteTrack, useUser } from '@audius/common/api'
 import { useCurrentTrack, useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,
@@ -97,12 +97,13 @@ const messages = {
 }
 
 const g = withNullGuard((wide: NowPlayingProps) => {
-  const { uid, source, user, collectible } = wide.currentQueueItem
+  const { uid, source, collectible } = wide.currentQueueItem
   const currentTrack = useCurrentTrack()
+  const { data: user } = useUser(currentTrack?.owner_id)
   if (
     ((uid !== null && currentTrack !== null) || collectible !== null) &&
     source !== null &&
-    user !== null
+    !!user
   ) {
     const currentQueueItem = {
       uid,

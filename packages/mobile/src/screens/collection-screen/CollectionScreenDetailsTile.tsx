@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
-import { useCollection, useTracks } from '@audius/common/api'
+import {
+  useCollection,
+  useCollectionTracks,
+  useTracks
+} from '@audius/common/api'
 import { useCurrentTrack, useGatedContentAccessMap } from '@audius/common/hooks'
 import {
   Name,
@@ -14,9 +18,7 @@ import type {
   UID,
   AccessConditions
 } from '@audius/common/models'
-import type { CommonState } from '@audius/common/store'
 import {
-  cacheCollectionsSelectors,
   collectionPageLineupActions as tracksActions,
   collectionPageSelectors,
   reachabilitySelectors,
@@ -73,7 +75,6 @@ import { useFetchCollectionLineup } from './useFetchCollectionLineup'
 const { getPlaying, getPreviewing, getUid } = playerSelectors
 const { getIsReachable } = reachabilitySelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
-const { getCollectionTracks } = cacheCollectionsSelectors
 const { resetCollection, fetchCollection } = collectionPageActions
 
 const selectTrackUids = createSelector(
@@ -245,9 +246,7 @@ export const CollectionScreenDetailsTile = ({
 
   const numericCollectionId =
     typeof collectionId === 'number' ? collectionId : undefined
-  const collectionTracks = useSelector((state: CommonState) =>
-    getCollectionTracks(state, { id: numericCollectionId })
-  )
+  const { data: collectionTracks } = useCollectionTracks(numericCollectionId)
   const trackAccessMap = useGatedContentAccessMap(collectionTracks ?? [])
   const doesUserHaveAccessToAnyTrack = Object.values(trackAccessMap).some(
     ({ hasStreamAccess }) => hasStreamAccess

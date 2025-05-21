@@ -11,6 +11,8 @@ import { TQTrack } from '../models'
 import { QUERY_KEYS } from '../queryKeys'
 import { getTrackQueryFn, getTrackQueryKey } from '../tracks/useTrack'
 
+import { queryCollection } from './queryCollection'
+
 export function* queryTrack(id: ID | null | undefined, forceRetrieve = false) {
   if (!id) return null
   const queryClient = yield* getContext('queryClient')
@@ -66,4 +68,23 @@ export function* queryTrackByUid(
   if (!uid) return null
   const trackId = Number(Uid.fromString(uid).id)
   return yield* queryTrack(trackId, forceRetrieve)
+}
+
+export function* queryCollectionTracks(
+  collectionId: ID | null | undefined,
+  forceRetrieve = false
+): Generator<any, Track[], any> {
+  if (!collectionId) return [] as Track[]
+
+  // Get collection data
+  const collection = yield* call(queryCollection, collectionId)
+  if (!collection) return [] as Track[]
+
+  // Extract track IDs from collection
+  const trackIds = collection.playlist_contents.track_ids.map(
+    ({ track }: { track: ID }) => track
+  )
+
+  // Query all tracks in parallel
+  return yield* call(queryTracks, trackIds, forceRetrieve)
 }
